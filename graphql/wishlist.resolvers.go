@@ -7,19 +7,16 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/wishlist"
+	"github.com/sitename/sitename/store"
 )
 
 func (r *wishlistResolver) Items(ctx context.Context, obj *gqlmodel.Wishlist) ([]*gqlmodel.WishlistItem, error) {
 	items, appErr := r.Srv().WishlistService().WishlistItemsByOption(&wishlist.WishlistItemFilterOption{
-		WishlistID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: obj.ID,
-			},
-		},
+		WishlistID: squirrel.Eq{store.WishlistItemTableName + ".WishlistID": obj.ID},
 	})
 	if appErr != nil {
 		return nil, appErr

@@ -111,13 +111,13 @@ func (ws *SqlWishlistItemStore) commonQueryBuilder(option *wishlist.WishlistItem
 
 	// parse option
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 	if option.WishlistID != nil {
-		query = query.Where(option.WishlistID.ToSquirrel("WishlistID"))
+		query = query.Where(option.WishlistID)
 	}
 	if option.ProductID != nil {
-		query = query.Where(option.ProductID.ToSquirrel("ProductID"))
+		query = query.Where(option.ProductID)
 	}
 
 	return query.ToSql()
@@ -168,13 +168,13 @@ func (ws *SqlWishlistItemStore) DeleteItemsByOption(transaction *gorp.Transactio
 
 	// parse options
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 	if option.WishlistID != nil {
-		query = query.Where(option.WishlistID.ToSquirrel("WishlistID"))
+		query = query.Where(option.WishlistID)
 	}
 	if option.ProductID != nil {
-		query = query.Where(option.ProductID.ToSquirrel("ProductID"))
+		query = query.Where(option.ProductID)
 	}
 
 	result, err := query.RunWith(runner).Exec()

@@ -1,6 +1,7 @@
 package wishlist
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -13,9 +14,9 @@ type WishlistItem struct {
 
 // WishlistItemFilterOption is used to build squirrel filtering options
 type WishlistItemFilterOption struct {
-	Id         *model.StringFilter
-	WishlistID *model.StringFilter
-	ProductID  *model.StringFilter
+	Id         squirrel.Sqlizer
+	WishlistID squirrel.Sqlizer
+	ProductID  squirrel.Sqlizer
 }
 
 type WishlistItems []*WishlistItem

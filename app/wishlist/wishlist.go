@@ -3,6 +3,7 @@ package wishlist
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
@@ -93,16 +94,8 @@ func (a *ServiceWishlist) AddProduct(wishlistID string, productID string) (*wish
 // RemoveProduct removes a wishlist item of given wishlist that have ProductID property is given productID
 func (a *ServiceWishlist) RemoveProduct(wishlistID string, productID string) *model.AppError {
 	_, appErr := a.DeleteWishlistItemsByOption(nil, &wishlist.WishlistItemFilterOption{
-		WishlistID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: wishlistID,
-			},
-		},
-		ProductID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: productID,
-			},
-		},
+		WishlistID: squirrel.Eq{store.WishlistItemTableName + ".WishlistID": wishlistID},
+		ProductID:  squirrel.Eq{store.WishlistItemTableName + ".ProductID": productID},
 	})
 
 	return appErr
@@ -129,16 +122,8 @@ func (a *ServiceWishlist) AddProductVariant(wishlistID string, productVariant *p
 // RemoveProductVariant remove a wishlist item from given wishlist
 func (a *ServiceWishlist) RemoveProductVariant(wishlistID string, productVariant *product_and_discount.ProductVariant) *model.AppError {
 	wishlistItem, appErr := a.WishlistItemByOption(&wishlist.WishlistItemFilterOption{
-		WishlistID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: wishlistID,
-			},
-		},
-		ProductID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: productVariant.ProductID,
-			},
-		},
+		WishlistID: squirrel.Eq{store.WishlistItemTableName + ".WishlistID": wishlistID},
+		ProductID:  squirrel.Eq{store.WishlistItemTableName + ".ProductID": productVariant.ProductID},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -157,11 +142,7 @@ func (a *ServiceWishlist) RemoveProductVariant(wishlistID string, productVariant
 
 	if numOfRelationsLeft == 0 {
 		_, appErr = a.DeleteWishlistItemsByOption(nil, &wishlist.WishlistItemFilterOption{
-			Id: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: wishlistItem.Id,
-				},
-			},
+			Id: squirrel.Eq{store.WishlistItemTableName + ".Id": wishlistItem.Id},
 		})
 	}
 

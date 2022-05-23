@@ -3,6 +3,7 @@ package wishlist
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
@@ -55,25 +56,13 @@ func (a *ServiceWishlist) GetOrCreateWishlistItem(wishlistItem *wishlist.Wishlis
 	option := &wishlist.WishlistItemFilterOption{}
 
 	if model.IsValidId(wishlistItem.Id) {
-		option.Id = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: wishlistItem.Id,
-			},
-		}
+		option.Id = squirrel.Eq{store.WishlistItemTableName + ".Id": wishlistItem.Id}
 	}
 	if model.IsValidId(wishlistItem.WishlistID) {
-		option.WishlistID = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: wishlistItem.WishlistID,
-			},
-		}
+		option.WishlistID = squirrel.Eq{store.WishlistItemTableName + ".WishlistID": wishlistItem.WishlistID}
 	}
 	if model.IsValidId(wishlistItem.ProductID) {
-		option.ProductID = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: wishlistItem.ProductID,
-			},
-		}
+		option.ProductID = squirrel.Eq{store.WishlistItemTableName + ".ProductID": wishlistItem.ProductID}
 	}
 
 	item, appErr := a.WishlistItemByOption(option)
@@ -111,11 +100,7 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishli
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	itemsFromBothWishlists, appErr := a.WishlistItemsByOption(&wishlist.WishlistItemFilterOption{
-		WishlistID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: []string{srcWishlist.Id, dstWishlist.Id},
-			},
-		},
+		WishlistID: squirrel.Eq{store.WishlistItemTableName + ".WishlistID": []string{srcWishlist.Id, dstWishlist.Id}},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -198,11 +183,7 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishli
 			}
 
 			_, appErr = a.DeleteWishlistItemsByOption(transaction, &wishlist.WishlistItemFilterOption{
-				Id: &model.StringFilter{
-					StringOption: &model.StringOption{
-						Eq: srcItem.Id,
-					},
-				},
+				Id: squirrel.Eq{store.WishlistItemTableName + ".Id": srcItem.Id},
 			})
 			if appErr != nil {
 				return appErr
