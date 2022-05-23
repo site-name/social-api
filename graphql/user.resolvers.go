@@ -279,7 +279,7 @@ func (r *userResolver) Wishlist(ctx context.Context, obj *gqlmodel.User) (*gqlmo
 	if appErr != nil {
 		return nil, appErr
 	}
-	return gqlmodel.DatabaseWishlistToGraphqlWishlist(wishList), nil
+	return gqlmodel.SystemWishlistToGraphqlWishlist(wishList), nil
 }
 
 // CustomerEvent returns graphql1.CustomerEventResolver implementation.

@@ -10,11 +10,11 @@ import (
 
 // MapToGraphqlMetaDataItems converts a map of key-value into a slice of graphql MetadataItems
 func MapToGraphqlMetaDataItems(m map[string]string) []*MetadataItem {
-	if m == nil {
-		return []*MetadataItem{}
+	res := []*MetadataItem{}
+	if len(m) == 0 {
+		return res
 	}
 
-	res := []*MetadataItem{}
 	for key, value := range m {
 		res = append(res, &MetadataItem{Key: key, Value: value})
 	}
@@ -50,6 +50,20 @@ func I18nAddressValidationRulesToGraphql(r *i18naddress.ValidationRules) *Addres
 		return nil
 	}
 
+	// choicesToChoiceValues convert [][2]string => []*ChoiceValue
+	var choicesToChoiceValues = func(choices [][2]string) []*ChoiceValue {
+		res := make([]*ChoiceValue, len(choices))
+
+		for i := range choices {
+			res[i] = &ChoiceValue{
+				Raw:     &choices[i][0],
+				Verbose: &choices[i][1],
+			}
+		}
+
+		return res
+	}
+
 	return &AddressValidationData{
 		CountryCode:        &r.CountryCode,
 		CountryName:        &r.CountryName,
@@ -69,20 +83,6 @@ func I18nAddressValidationRulesToGraphql(r *i18naddress.ValidationRules) *Addres
 		PostalCodeExamples: util.StringSliceToStringPointerSlice(r.PostalCodeExamples),
 		PostalCodePrefix:   &r.PostalCodePrefix,
 	}
-}
-
-// choicesToChoiceValues convert [][2]string => []*ChoiceValue
-func choicesToChoiceValues(choices [][2]string) []*ChoiceValue {
-	res := make([]*ChoiceValue, len(choices))
-
-	for i := range choices {
-		res[i] = &ChoiceValue{
-			Raw:     &choices[i][0],
-			Verbose: &choices[i][1],
-		}
-	}
-
-	return res
 }
 
 // toCamelCase converts "the_snake" => "theSnake"

@@ -19,13 +19,13 @@ const (
 )
 
 type Collection struct {
-	Id                 string  `json:"id"`
-	ShopID             string  `json:"shop_id"` // shop that owns this collection
-	Name               string  `json:"name"`
-	Slug               string  `json:"slug"`
-	BackgroundImage    *string `json:"background_image"`
-	BackgroundImageAlt string  `json:"background_image_alt"`
-	Description        *string `json:"description"`
+	Id                 string                `json:"id"`
+	ShopID             string                `json:"shop_id"` // shop that owns this collection
+	Name               string                `json:"name"`
+	Slug               string                `json:"slug"`
+	BackgroundImage    *string               `json:"background_image"`
+	BackgroundImageAlt string                `json:"background_image_alt"`
+	Description        model.StringInterface `json:"description"`
 	model.ModelMetadata
 	seo.Seo
 }

@@ -24,7 +24,7 @@ func (r *wishlistResolver) Items(ctx context.Context, obj *gqlmodel.Wishlist) ([
 	if appErr != nil {
 		return nil, appErr
 	}
-	return gqlmodel.DatabaseWishlistItemsToGraphqlWishlistItems(items), nil
+	return gqlmodel.SystemWishlistItemsToGraphqlWishlistItems(items), nil
 }
 
 func (r *wishlistItemResolver) Product(ctx context.Context, obj *gqlmodel.WishlistItem) (*gqlmodel.Product, error) {

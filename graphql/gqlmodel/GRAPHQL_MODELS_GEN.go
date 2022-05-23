@@ -885,25 +885,6 @@ type ChoiceValue struct {
 	Verbose *string `json:"verbose"`
 }
 
-type Collection struct {
-	ID              string                      `json:"id"`
-	SeoTitle        *string                     `json:"seoTitle"`
-	SeoDescription  *string                     `json:"seoDescription"`
-	Name            string                      `json:"name"`
-	Description     model.StringInterface       `json:"description"`
-	Slug            string                      `json:"slug"`
-	PrivateMetadata []*MetadataItem             `json:"privateMetadata"`
-	Metadata        []*MetadataItem             `json:"metadata"`
-	Channel         *string                     `json:"channel"`
-	Products        *ProductCountableConnection `json:"products"`
-	BackgroundImage *Image                      `json:"backgroundImage"`
-	Translation     *CollectionTranslation      `json:"translation"`
-	ChannelListings []*CollectionChannelListing `json:"channelListings"`
-}
-
-func (Collection) IsNode()               {}
-func (Collection) IsObjectWithMetadata() {}
-
 type CollectionAddProducts struct {
 	Collection *Collection        `json:"collection"`
 	Errors     []*CollectionError `json:"errors"`

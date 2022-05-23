@@ -68,7 +68,7 @@ func Max(nums ...int) int {
 	return max
 }
 
-// Min min of ints
+// Min returns min of ints
 func Min(nums ...int) int {
 	if len(nums) == 0 {
 		return 0
