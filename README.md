@@ -7,6 +7,8 @@ not all at one like other platforms (tiki, lazada, amazon, shopee, ...)
 
 **Run server**
 
+go 1.17 required
+
 `$ go mod tidy`
 
 `$ go run cmd/sitename/main.go server`
