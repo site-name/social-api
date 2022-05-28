@@ -4,6 +4,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -114,11 +115,11 @@ type Order struct {
 
 // OrderFilterOption is used to buils sql queries for filtering orders
 type OrderFilterOption struct {
-	Status        *model.StringFilter // for filtering order's Status
-	CheckoutToken *model.StringFilter // for filtering order's CheckoutToken
-	ChannelSlug   *model.StringFilter // for comparing the channel of this order's slug
-	UserEmail     *model.StringFilter // for filtering order's UserEmail
-	UserID        *model.StringFilter // for filtering order's UserID
+	Status        squirrel.Sqlizer // for filtering order's Status
+	CheckoutToken squirrel.Sqlizer // for filtering order's CheckoutToken
+	ChannelSlug   squirrel.Sqlizer // for comparing the channel of this order's slug
+	UserEmail     squirrel.Sqlizer // for filtering order's UserEmail
+	UserID        squirrel.Sqlizer // for filtering order's UserID
 }
 
 // PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.

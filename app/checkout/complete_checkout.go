@@ -297,16 +297,8 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 	}
 
 	productTranslations, appErr := s.srv.ProductService().ProductTranslationsByOption(&product_and_discount.ProductTranslationFilterOption{
-		ProductID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: products.IDs(),
-			},
-		},
-		LanguageCode: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: translationLanguageCode,
-			},
-		},
+		ProductID:    squirrel.Eq{store.ProductTranslationTableName + ".ProductID": products.IDs()},
+		LanguageCode: squirrel.Eq{store.ProductTranslationTableName + ".LanguageCode": translationLanguageCode},
 	})
 	if appErr != nil && appErr.StatusCode != http.StatusNotFound {
 		return nil, nil, appErr
@@ -322,16 +314,8 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 	}
 
 	variantTranslations, appErr := s.srv.ProductService().ProductVariantTranslationsByOption(&product_and_discount.ProductVariantTranslationFilterOption{
-		ProductVariantID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: variants.IDs(),
-			},
-		},
-		LanguageCode: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: translationLanguageCode,
-			},
-		},
+		ProductVariantID: squirrel.Eq{store.ProductVariantTranslationTableName + ".ProductVariantID": variants.IDs()},
+		LanguageCode:     squirrel.Eq{store.ProductVariantTranslationTableName + ".LanguageCode": translationLanguageCode},
 	})
 	if appErr != nil && appErr.StatusCode != http.StatusNotFound {
 		return nil, nil, appErr
@@ -535,11 +519,7 @@ func (s *ServiceCheckout) createOrder(checkoutInfo checkout.CheckoutInfo, orderD
 	// checkOut.PopulateNonDbFields() // this call is important
 
 	orders, appErr := s.srv.OrderService().FilterOrdersByOptions(&order.OrderFilterOption{
-		CheckoutToken: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: checkOut.Token,
-			},
-		},
+		CheckoutToken: squirrel.Eq{store.OrderTableName + ".CheckoutToken": checkOut.Token},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

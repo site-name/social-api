@@ -846,16 +846,8 @@ func (s *ServiceOrder) AddVariantToOrder(orDer order.Order, variant product_and_
 
 		var translatedProductName string
 		productTranslations, appErr := s.srv.ProductService().ProductTranslationsByOption(&product_and_discount.ProductTranslationFilterOption{
-			LanguageCode: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: user.Locale,
-				},
-			},
-			ProductID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: product.Id,
-				},
-			},
+			LanguageCode: squirrel.Eq{store.ProductTranslationTableName + ".LanguageCode": user.Locale},
+			ProductID:    squirrel.Eq{store.ProductTranslationTableName + ".ProductID": product.Id},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -867,16 +859,8 @@ func (s *ServiceOrder) AddVariantToOrder(orDer order.Order, variant product_and_
 
 		var translatedVariantName string
 		variantTranslations, appErr := s.srv.ProductService().ProductVariantTranslationsByOption(&product_and_discount.ProductVariantTranslationFilterOption{
-			LanguageCode: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: user.Locale,
-				},
-			},
-			ProductVariantID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: variant.Id,
-				},
-			},
+			LanguageCode:     squirrel.Eq{store.ProductVariantTranslationTableName + ".LanguageCode": user.Locale},
+			ProductVariantID: squirrel.Eq{store.ProductVariantTranslationTableName + ".ProductVariantID": variant.Id},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -1523,24 +1507,9 @@ func (a *ServiceOrder) GetProductsVoucherDiscountForOrder(ord *order.Order) (*go
 
 func (a *ServiceOrder) MatchOrdersWithNewUser(user *account.User) *model.AppError {
 	ordersByOption, appErr := a.FilterOrdersByOptions(&order.OrderFilterOption{
-		Status: &model.StringFilter{
-			StringOption: &model.StringOption{
-				NotIn: []string{
-					string(order.STATUS_DRAFT),
-					string(order.UNCONFIRMED),
-				},
-			},
-		},
-		UserEmail: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: user.Email,
-			},
-		},
-		UserID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				NULL: model.NewBool(true),
-			},
-		},
+		Status:    squirrel.NotEq{store.OrderTableName + ".Status": []string{string(order.STATUS_DRAFT), string(order.UNCONFIRMED)}},
+		UserEmail: squirrel.Eq{store.OrderTableName + ".UserEmail": user.Email},
+		UserID:    squirrel.Eq{store.OrderTableName + ".UserID": nil},
 	})
 	if appErr != nil {
 		return appErr

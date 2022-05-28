@@ -327,21 +327,21 @@ func (os *SqlOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*ord
 
 	// parse options:
 	if option.Status != nil {
-		query = query.Where(option.Status.ToSquirrel("Orders.Status"))
+		query = query.Where(option.Status)
 	}
 	if option.CheckoutToken != nil {
-		query = query.Where(option.CheckoutToken.ToSquirrel("Orders.CheckoutToken"))
+		query = query.Where(option.CheckoutToken)
 	}
 	if option.ChannelSlug != nil {
 		query = query.
 			InnerJoin(store.ChannelTableName + " ON (Channels.Id = Orders.ChannelID)").
-			Where(option.ChannelSlug.ToSquirrel("Channels.Slug"))
+			Where(option.ChannelSlug)
 	}
 	if option.UserEmail != nil {
-		query = query.Where(option.UserEmail.ToSquirrel("Orders.UserEmail"))
+		query = query.Where(option.UserEmail)
 	}
 	if option.UserID != nil {
-		query = query.Where(option.UserID.ToSquirrel("Orders.UserID"))
+		query = query.Where(option.UserID)
 	}
 
 	queryString, args, err := query.ToSql()

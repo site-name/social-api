@@ -4,6 +4,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/seo"
 	"golang.org/x/text/language"
@@ -20,10 +21,10 @@ type ProductTranslation struct {
 
 // ProductTranslationFilterOption is used to build squirrel sql queries
 type ProductTranslationFilterOption struct {
-	Id           *model.StringFilter
-	LanguageCode *model.StringFilter
-	ProductID    *model.StringFilter
-	Name         *model.StringFilter
+	Id           squirrel.Sqlizer
+	LanguageCode squirrel.Sqlizer
+	ProductID    squirrel.Sqlizer
+	Name         squirrel.Sqlizer
 }
 
 func (p *ProductTranslation) String() string {

@@ -98,16 +98,16 @@ func (ps *SqlProductVariantTranslationStore) FilterByOption(option *product_and_
 
 	// parse options
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 	if option.LanguageCode != nil {
-		query = query.Where(option.LanguageCode.ToSquirrel("LanguageCode"))
+		query = query.Where(option.LanguageCode)
 	}
 	if option.ProductVariantID != nil {
-		query = query.Where(option.ProductVariantID.ToSquirrel("ProductVariantID"))
+		query = query.Where(option.ProductVariantID)
 	}
 	if option.Name != nil {
-		query = query.Where(option.Name.ToSquirrel("Name"))
+		query = query.Where(option.Name)
 	}
 
 	queryString, args, err := query.ToSql()
