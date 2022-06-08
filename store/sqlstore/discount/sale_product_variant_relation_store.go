@@ -83,13 +83,13 @@ func (ss *SqlSaleProductVariantStore) FilterByOption(options *product_and_discou
 
 	// parse options
 	if options.Id != nil {
-		andCondition = append(andCondition, options.Id.ToSquirrel("Id"))
+		andCondition = append(andCondition, options.Id)
 	}
 	if options.SaleID != nil {
-		andCondition = append(andCondition, options.SaleID.ToSquirrel("SaleID"))
+		andCondition = append(andCondition, options.SaleID)
 	}
 	if options.ProductVariantID != nil {
-		andCondition = append(andCondition, options.ProductVariantID.ToSquirrel("ProductVariantID"))
+		andCondition = append(andCondition, options.ProductVariantID)
 	}
 
 	queryString, args, err := query.Where(andCondition).ToSql()

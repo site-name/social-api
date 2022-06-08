@@ -102,16 +102,16 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *product_and_discount
 		OrderBy(store.TableOrderingMap[store.SaleTableName])
 
 	// check shop id
-	query = query.Where(option.ShopID.ToSquirrel("ShopID"))
+	query = query.Where(option.ShopID)
 
 	// check sale start date
 	if option.StartDate != nil {
-		query = query.Where(option.StartDate.ToSquirrel("StartDate"))
+		query = query.Where(option.StartDate)
 	}
 
 	// check sale end date
 	if option.EndDate != nil {
-		query = query.Where(option.EndDate.ToSquirrel("EndDate"))
+		query = query.Where(option.EndDate)
 	}
 
 	queryString, args, err := query.ToSql()

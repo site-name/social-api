@@ -13,12 +13,6 @@ type Publishable struct {
 	IsPublished     bool       `json:"is_published"`
 }
 
-// PublishableFilter is used for building time/timestampt sql quries
-type PublishableFilter struct {
-	PublicationDate *TimeFilter
-	IsPublished     *bool
-}
-
 // check is this publication is visible to users
 func (p *Publishable) IsVisible() bool {
 	return p.IsPublished && (p.PublicationDate == nil || p.PublicationDate.Before(time.Now()))

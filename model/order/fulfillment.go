@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 )
@@ -57,13 +58,13 @@ type Fulfillment struct {
 
 // FulfillmentFilterOption is used to build squirrel sql queries
 type FulfillmentFilterOption struct {
-	Id      *model.StringFilter
-	OrderID *model.StringFilter
-	Status  *model.StringFilter
+	Id      squirrel.Sqlizer
+	OrderID squirrel.Sqlizer
+	Status  squirrel.Sqlizer
 
 	SelectRelatedOrder bool // if true, tells store to select related order also
 
-	FulfillmentLineID *model.StringFilter // LEFT/INNER JOIN FulfillmentLines ON (...) WHERE FulfillmentLines.Id ...
+	FulfillmentLineID squirrel.Sqlizer // LEFT/INNER JOIN FulfillmentLines ON (...) WHERE FulfillmentLines.Id ...
 
 	SelectForUpdate bool // if true, add `FOR UPDATE`to the end of sql queries
 }

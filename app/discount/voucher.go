@@ -45,16 +45,8 @@ func (a *ServiceDiscount) VoucherById(voucherID string) (*product_and_discount.V
 // GetVoucherDiscount
 func (a *ServiceDiscount) GetVoucherDiscount(voucher *product_and_discount.Voucher, channelID string) (types.DiscountCalculator, *model.AppError) {
 	voucherChannelListings, appErr := a.VoucherChannelListingsByOption(&product_and_discount.VoucherChannelListingFilterOption{
-		VoucherID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: voucher.Id,
-			},
-		},
-		ChannelID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: channelID,
-			},
-		},
+		VoucherID: squirrel.Eq{store.VoucherChannelListingTableName + ".VoucherID": voucher.Id},
+		ChannelID: squirrel.Eq{store.VoucherChannelListingTableName + ".ChannelID": channelID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -155,16 +147,8 @@ func (a *ServiceDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher
 	}
 
 	voucherChannelListings, appErr := a.VoucherChannelListingsByOption(&product_and_discount.VoucherChannelListingFilterOption{
-		VoucherID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: voucher.Id,
-			},
-		},
-		ChannelID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: channelID,
-			},
-		},
+		VoucherID: squirrel.Eq{store.VoucherChannelListingTableName + ".VoucherID": voucher.Id},
+		ChannelID: squirrel.Eq{store.VoucherChannelListingTableName + ".ChannelID": channelID},
 	})
 	if appErr != nil {
 		return
@@ -273,11 +257,7 @@ func (s *ServiceDiscount) VoucherByOption(options *product_and_discount.VoucherF
 // PromoCodeIsVoucher checks if given code is belong to a voucher
 func (a *ServiceDiscount) PromoCodeIsVoucher(code string) (bool, *model.AppError) {
 	vouchers, appErr := a.VouchersByOption(&product_and_discount.VoucherFilterOption{
-		Code: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: code,
-			},
-		},
+		Code: squirrel.Eq{store.VoucherTableName + ".Code": code},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {
@@ -292,37 +272,21 @@ func (a *ServiceDiscount) PromoCodeIsVoucher(code string) (bool, *model.AppError
 // FilterActiveVouchers returns a list of vouchers that are active.
 //
 // `channelSlug` is optional (can be empty). pass this argument if you want to find active vouchers in specific channel
-func (s *ServiceDiscount) FilterActiveVouchers(date *time.Time, channelSlug string) ([]*product_and_discount.Voucher, *model.AppError) {
+func (s *ServiceDiscount) FilterActiveVouchers(date time.Time, channelSlug string) ([]*product_and_discount.Voucher, *model.AppError) {
 	filterOptions := &product_and_discount.VoucherFilterOption{
-		UsageLimit: &model.NumberFilter{
-			Or: &model.NumberOption{
-				NULL: model.NewBool(true),
-				ExtraExpr: []squirrel.Sqlizer{
-					squirrel.Expr("?.UsageLimit > ?.Used", store.VoucherTableName, store.VoucherTableName),
-				},
-			},
+		UsageLimit: squirrel.Or{
+			squirrel.Eq{store.VoucherTableName + ".UsageLimit": nil},
+			squirrel.Gt{store.VoucherTableName + ".UsageLimit": store.VoucherTableName + ".Used"},
 		},
-		EndDate: &model.TimeFilter{
-			Or: &model.TimeOption{
-				NULL:              model.NewBool(true),
-				GtE:               date,
-				CompareStartOfDay: true,
-			},
+		EndDate: squirrel.Or{
+			squirrel.Eq{store.VoucherTableName + ".EndDate": nil},
+			squirrel.GtOrEq{store.VoucherTableName + ".EndDate": util.StartOfDay(date)},
 		},
-		StartDate: &model.TimeFilter{
-			TimeOption: &model.TimeOption{
-				LtE:               date,
-				CompareStartOfDay: true,
-			},
-		},
+		StartDate: squirrel.LtOrEq{store.VoucherTableName + ".StartDate": util.StartOfDay(date)},
 	}
 
 	if channelSlug != "" {
-		filterOptions.ChannelListingSlug = &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: channelSlug,
-			},
-		}
+		filterOptions.ChannelListingSlug = squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug}
 		filterOptions.ChannelListingActive = model.NewBool(true)
 	}
 

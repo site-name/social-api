@@ -147,13 +147,9 @@ func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorp.Transaction, orDer
 // OrderIsPreAuthorized checks if order is pre-authorized
 func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
-		OrderID:  orderID,
-		IsActive: model.NewBool(true),
-		TransactionsKind: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: payment.AUTH,
-			},
-		},
+		OrderID:                    orderID,
+		IsActive:                   model.NewBool(true),
+		TransactionsKind:           squirrel.Eq{store.TransactionTableName + ".Kind": payment.AUTH},
 		TransactionsActionRequired: model.NewBool(false),
 		TransactionsIsSuccess:      model.NewBool(true),
 	})
@@ -167,13 +163,9 @@ func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppErr
 // OrderIsCaptured checks if given order is captured
 func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
-		OrderID:  orderID,
-		IsActive: model.NewBool(true),
-		TransactionsKind: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: payment.CAPTURE,
-			},
-		},
+		OrderID:                    orderID,
+		IsActive:                   model.NewBool(true),
+		TransactionsKind:           squirrel.Eq{store.TransactionTableName + ".Kind": payment.CAPTURE},
 		TransactionsActionRequired: model.NewBool(false),
 		TransactionsIsSuccess:      model.NewBool(true),
 	})
@@ -200,22 +192,14 @@ func (a *ServiceOrder) OrderSubTotal(ord *order.Order) (*goprices.TaxedMoney, *m
 // OrderCanCalcel checks if given order can be canceled
 func (a *ServiceOrder) OrderCanCancel(ord *order.Order) (bool, *model.AppError) {
 	fulfillments, err := a.FulfillmentsByOption(nil, &order.FulfillmentFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
-		Status: &model.StringFilter{
-			StringOption: &model.StringOption{
-				NotIn: []string{
-					string(order.FULFILLMENT_CANCELED),
-					string(order.FULFILLMENT_REFUNDED),
-					string(order.FULFILLMENT_RETURNED),
-					string(order.FULFILLMENT_REFUNDED_AND_RETURNED),
-					string(order.FULFILLMENT_REPLACED),
-				},
-			},
-		},
+		OrderID: squirrel.Eq{store.FulfillmentTableName + ".OrderID": ord.Id},
+		Status: squirrel.NotEq{store.FulfillmentTableName + ".Status": []string{
+			string(order.FULFILLMENT_CANCELED),
+			string(order.FULFILLMENT_REFUNDED),
+			string(order.FULFILLMENT_RETURNED),
+			string(order.FULFILLMENT_REFUNDED_AND_RETURNED),
+			string(order.FULFILLMENT_REPLACED),
+		}},
 	})
 
 	if err != nil {

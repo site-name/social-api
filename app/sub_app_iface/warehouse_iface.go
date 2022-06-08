@@ -70,7 +70,7 @@ type WarehouseService interface {
 	// as needed of available in stock for order line, until deallocated all required
 	// quantity for the order line. If there is less quantity in stocks then
 	// raise an exception.
-	DeallocateStock(orderLineDatas []*order.OrderLineData, manager interfaces.PluginManagerInterface) (*warehouse.AllocationError, *model.AppError)
+	DeallocateStock(orderLineDatas order.OrderLineDatas, manager interfaces.PluginManagerInterface) (*warehouse.AllocationError, *model.AppError)
 	// Decrease stocks quantities for given `order_lines` in given warehouses.
 	//
 	// Function deallocate as many quantities as requested if order_line has less quantity

@@ -104,13 +104,13 @@ func (ws *SqlWishlistStore) GetByOption(option *wishlist.WishlistFilterOption) (
 
 	// parse options
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 	if option.Token != nil {
-		query = query.Where(option.Token.ToSquirrel("Token"))
+		query = query.Where(option.Token)
 	}
 	if option.UserID != nil {
-		query = query.Where(option.UserID.ToSquirrel("UserID"))
+		query = query.Where(option.UserID)
 	}
 
 	queryString, args, err := query.ToSql()

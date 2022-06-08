@@ -67,12 +67,8 @@ func (a *ServiceWishlist) SetUserForWishlist(wishList *wishlist.Wishlist, userID
 // GetAllVariants returns all product variants in child wishlist items of given wishlist
 func (a *ServiceWishlist) GetAllVariants(wishlistID string) ([]*product_and_discount.ProductVariant, *model.AppError) {
 	productVariants, appErr := a.srv.ProductService().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
-		WishlistID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: wishlistID,
-			},
-		},
-		Distinct: true,
+		WishlistID: squirrel.Eq{store.WishlistItemTableName + ".WishlistID": wishlistID},
+		Distinct:   true,
 	})
 	if appErr != nil {
 		return nil, appErr

@@ -129,13 +129,13 @@ func (fls *SqlFulfillmentLineStore) commonQueryBuilder(option *order.Fulfillment
 
 	// parse option
 	if option.Id != nil {
-		res = append(res, option.Id.ToSquirrel("FulfillmentLines.Id"))
+		res = append(res, option.Id)
 	}
 	if option.FulfillmentID != nil {
-		res = append(res, option.FulfillmentID.ToSquirrel("FulfillmentLines.FulfillmentID"))
+		res = append(res, option.FulfillmentID)
 	}
 	if option.OrderLineID != nil {
-		res = append(res, option.OrderLineID.ToSquirrel("FulfillmentLines.OrderLineID"))
+		res = append(res, option.OrderLineID)
 	}
 
 	return res
@@ -155,7 +155,7 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLine
 	if option.FulfillmentOrderID != nil {
 		query = query.
 			InnerJoin(store.FulfillmentTableName + " ON (FulfillmentLines.FulfillmentID = Fulfillments.Id)").
-			Where(option.FulfillmentOrderID.ToSquirrel("Fulfillments.OrderID"))
+			Where(option.FulfillmentOrderID)
 
 		joinedFulfillmentTable = true
 	}
@@ -163,7 +163,7 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLine
 		if !joinedFulfillmentTable {
 			query = query.InnerJoin(store.FulfillmentTableName + " ON (FulfillmentLines.FulfillmentID = Fulfillments.Id)")
 		}
-		query = query.Where(option.FulfillmentStatus.ToSquirrel("Fulfillments.Status"))
+		query = query.Where(option.FulfillmentStatus)
 	}
 
 	queryString, args, err := query.ToSql()

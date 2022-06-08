@@ -103,13 +103,13 @@ func (vcls *SqlVoucherChannelListingStore) FilterbyOption(option *product_and_di
 
 	// parse options
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 	if option.ChannelID != nil {
-		query = query.Where(option.ChannelID.ToSquirrel("ChannelID"))
+		query = query.Where(option.ChannelID)
 	}
 	if option.VoucherID != nil {
-		query = query.Where(option.VoucherID.ToSquirrel("VoucherID"))
+		query = query.Where(option.VoucherID)
 	}
 
 	queryString, args, err := query.ToSql()

@@ -1,6 +1,7 @@
 package order
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -16,12 +17,11 @@ type FulfillmentLine struct {
 
 // FulfillmentLineFilterOption is used to build sql queries
 type FulfillmentLineFilterOption struct {
-	Id            *model.StringFilter
-	OrderLineID   *model.StringFilter
-	FulfillmentID *model.StringFilter
-
-	FulfillmentOrderID *model.StringFilter // INNER JOIN 'Fulfillments' WHERE Fulfillments.OrderID...
-	FulfillmentStatus  *model.StringFilter // INNER JOIN 'Fulfillments' WHERE Fulfillments.Status...
+	Id                 squirrel.Sqlizer
+	OrderLineID        squirrel.Sqlizer
+	FulfillmentID      squirrel.Sqlizer
+	FulfillmentOrderID squirrel.Sqlizer // INNER JOIN 'Fulfillments' WHERE Fulfillments.OrderID...
+	FulfillmentStatus  squirrel.Sqlizer // INNER JOIN 'Fulfillments' WHERE Fulfillments.Status...
 
 	PrefetchRelatedOrderLine                bool // this asks to prefetch related order lines of returning fulfillment lines
 	PrefetchRelatedOrderLine_ProductVariant bool // this asks to prefetch related product variants of associated order lines of returning fulfillment lines

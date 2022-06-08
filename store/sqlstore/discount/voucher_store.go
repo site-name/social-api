@@ -154,16 +154,16 @@ func (vs *SqlVoucherStore) commonQueryBuilder(option *product_and_discount.Vouch
 
 	// parse options:
 	if option.UsageLimit != nil {
-		query = query.Where(option.UsageLimit.ToSquirrel("Vouchers.UsageLimit"))
+		query = query.Where(option.UsageLimit)
 	}
 	if option.EndDate != nil {
-		query = query.Where(option.EndDate.ToSquirrel("Vouchers.EndDate"))
+		query = query.Where(option.EndDate)
 	}
 	if option.StartDate != nil {
-		query = query.Where(option.StartDate.ToSquirrel("Vouchers.StartDate"))
+		query = query.Where(option.StartDate)
 	}
 	if option.Code != nil {
-		query = query.Where(option.Code.ToSquirrel("Vouchers.Code"))
+		query = query.Where(option.Code)
 	}
 	if option.ChannelListingSlug != nil || option.ChannelListingActive != nil {
 		query = query.
@@ -171,7 +171,7 @@ func (vs *SqlVoucherStore) commonQueryBuilder(option *product_and_discount.Vouch
 			InnerJoin(store.ChannelTableName + " ON (Channels.Id = VoucherChannelListings.ChannelID)")
 
 		if option.ChannelListingSlug != nil {
-			query = query.Where(option.ChannelListingSlug.ToSquirrel("Channels.Slug"))
+			query = query.Where(option.ChannelListingSlug)
 		}
 
 		if option.ChannelListingActive != nil {
@@ -223,7 +223,7 @@ func (vs *SqlVoucherStore) GetByOptions(options *product_and_discount.VoucherFil
 // ExpiredVouchers finds and returns vouchers that are expired before given date
 func (vs *SqlVoucherStore) ExpiredVouchers(date *time.Time) ([]*product_and_discount.Voucher, error) {
 	if date == nil {
-		date = model.NewTime(time.Now())
+		date = util.NewTime(time.Now())
 	}
 	beginOfDate := util.StartOfDay(*date)
 

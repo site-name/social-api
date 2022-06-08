@@ -3,6 +3,7 @@ package product_and_discount
 import (
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/currency"
@@ -18,9 +19,9 @@ type SaleChannelListing struct {
 }
 
 type SaleChannelListingFilterOption struct {
-	Id        *model.StringFilter
-	SaleID    *model.StringFilter
-	ChannelID *model.StringFilter
+	Id        squirrel.Sqlizer
+	SaleID    squirrel.Sqlizer
+	ChannelID squirrel.Sqlizer
 }
 
 func (s *SaleChannelListing) PreSave() {

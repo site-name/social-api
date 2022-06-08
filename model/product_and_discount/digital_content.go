@@ -3,6 +3,7 @@ package product_and_discount
 import (
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -35,8 +36,8 @@ type DigitalContent struct {
 
 // DigitalContenetFilterOption is used for building sql queries
 type DigitalContenetFilterOption struct {
-	Id               *model.StringFilter
-	ProductVariantID *model.StringFilter
+	Id               squirrel.Sqlizer
+	ProductVariantID squirrel.Sqlizer
 }
 
 func (d *DigitalContent) IsValid() *model.AppError {

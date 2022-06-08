@@ -3,6 +3,7 @@ package shipping
 import (
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/store"
@@ -11,11 +12,7 @@ import (
 // DefaultShippingZoneExists returns all shipping zones that have Ids differ than given shippingZoneID and has `Default` properties equal to true
 func (a *ServiceShipping) DefaultShippingZoneExists(shippingZoneID string) ([]*shipping.ShippingZone, *model.AppError) {
 	return a.ShippingZonesByOption(&shipping.ShippingZoneFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				NotEq: shippingZoneID,
-			},
-		},
+		Id:           squirrel.NotEq{store.ShippingZoneTableName + ".Id": shippingZoneID},
 		DefaultValue: model.NewBool(true),
 	})
 }

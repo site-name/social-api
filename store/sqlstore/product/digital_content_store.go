@@ -99,10 +99,10 @@ func (ds *SqlDigitalContentStore) GetByOption(option *product_and_discount.Digit
 
 	// parse option
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("DigitalContents.Id"))
+		query = query.Where(option.Id)
 	}
 	if option.ProductVariantID != nil {
-		query = query.Where(option.ProductVariantID.ToSquirrel("DigitalContents.ProductVariantID"))
+		query = query.Where(option.ProductVariantID)
 	}
 
 	queryString, args, err := query.ToSql()

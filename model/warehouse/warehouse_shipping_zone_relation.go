@@ -1,6 +1,9 @@
 package warehouse
 
-import "github.com/sitename/sitename/model"
+import (
+	"github.com/Masterminds/squirrel"
+	"github.com/sitename/sitename/model"
+)
 
 // WarehouseShippingZone represents relationships between warehouses and shipping zones (m2m)
 type WarehouseShippingZone struct {
@@ -11,8 +14,8 @@ type WarehouseShippingZone struct {
 
 // WarehouseShippingZoneFilterOption is used to build squirrel sql queries
 type WarehouseShippingZoneFilterOption struct {
-	WarehouseID    *model.StringFilter
-	ShippingZoneID *model.StringFilter
+	WarehouseID    squirrel.Sqlizer
+	ShippingZoneID squirrel.Sqlizer
 }
 
 func (w *WarehouseShippingZone) IsValid() *model.AppError {

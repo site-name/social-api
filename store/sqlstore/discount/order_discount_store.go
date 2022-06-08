@@ -107,13 +107,13 @@ func (ods *SqlOrderDiscountStore) FilterbyOption(option *product_and_discount.Or
 		From(store.OrderDiscountTableName)
 
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 	if option.OrderID != nil {
-		query = query.Where(option.OrderID.ToSquirrel("OrderID"))
+		query = query.Where(option.OrderID)
 	}
 	if option.Type != nil {
-		query = query.Where(option.Type.ToSquirrel("Type"))
+		query = query.Where(option.Type)
 	}
 
 	queryString, args, err := query.ToSql()

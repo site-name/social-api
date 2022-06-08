@@ -4,6 +4,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/language"
 )
@@ -28,9 +29,9 @@ type Sale struct {
 
 // SaleFilterOption can be used to
 type SaleFilterOption struct {
-	StartDate *model.TimeFilter
-	EndDate   *model.TimeFilter
-	ShopID    model.StringFilter
+	StartDate squirrel.Sqlizer
+	EndDate   squirrel.Sqlizer
+	ShopID    squirrel.Sqlizer
 }
 
 type Sales []*Sale

@@ -3,6 +3,7 @@ package order
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
@@ -25,11 +26,7 @@ func (a *ServiceOrder) UpsertFulfillment(transaction *gorp.Transaction, fulfillm
 	// Assign an auto incremented value as a fulfillment order.
 	if fulfillment.Id == "" {
 		fulfillmentsByOrder, appErr := a.FulfillmentsByOption(nil, &order.FulfillmentFilterOption{
-			OrderID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: fulfillment.OrderID,
-				},
-			},
+			OrderID: squirrel.Eq{store.FulfillmentTableName + ".OrderID": fulfillment.OrderID},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError { // returns immediately if error was caused by system
@@ -82,16 +79,45 @@ func (a *ServiceOrder) GetOrCreateFulfillment(transaction *gorp.Transaction, opt
 			return nil, appErr
 		}
 
+		// not found, create a new one:
+		var parser = func(expr squirrel.Sqlizer) interface{} {
+			if expr == nil {
+				return nil
+			}
+
+			if equal, ok := expr.(squirrel.Eq); ok && len(equal) > 0 {
+				// get first value only
+				index := 0
+				for _, value := range equal {
+					if index == 0 {
+						return value
+					}
+					return nil
+				}
+			}
+
+			return nil
+		}
+
 		fulfillmentByOption = new(order.Fulfillment)
 		// parse options. if any option is provided, take its Eq property:
 		if option.Id != nil {
-			fulfillmentByOption.Id = option.Id.Eq
+			value := parser(option.Id)
+			if value != nil {
+				fulfillmentByOption.Id = value.(string)
+			}
 		}
 		if option.OrderID != nil {
-			fulfillmentByOption.OrderID = option.OrderID.Eq
+			value := parser(option.OrderID)
+			if value != nil {
+				fulfillmentByOption.OrderID = value.(string)
+			}
 		}
 		if option.Status != nil {
-			fulfillmentByOption.Status = order.FulfillmentStatus(option.Status.Eq)
+			value := parser(option.Status)
+			if value != nil {
+				fulfillmentByOption.Status = order.FulfillmentStatus(value.(string))
+			}
 		}
 
 		fulfillmentByOption, appErr = a.UpsertFulfillment(transaction, fulfillmentByOption)

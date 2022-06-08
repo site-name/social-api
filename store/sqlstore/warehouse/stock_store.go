@@ -370,13 +370,13 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction *gorp.Transactio
 			LeftJoin(store.AllocationTableName + " ON (Stocks.Id = Allocations.StockID)")
 	}
 	if options.Id != nil {
-		query = query.Where(options.Id.ToSquirrel("Stocks.Id"))
+		query = query.Where(options.Id)
 	}
 	if options.WarehouseIDFilter != nil {
-		query = query.Where(options.WarehouseIDFilter.ToSquirrel("Stocks.WarehouseID"))
+		query = query.Where(options.WarehouseIDFilter)
 	}
 	if options.ProductVariantIDFilter != nil {
-		query = query.Where(options.ProductVariantIDFilter.ToSquirrel("Stocks.ProductVariantID"))
+		query = query.Where(options.ProductVariantIDFilter)
 	}
 	if options.LockForUpdate {
 		query = query.Suffix("FOR UPDATE")

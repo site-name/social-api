@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"golang.org/x/text/language"
 )
@@ -58,11 +59,11 @@ type Voucher struct {
 
 // VoucherFilterOption
 type VoucherFilterOption struct {
-	UsageLimit           *model.NumberFilter
-	EndDate              *model.TimeFilter
-	StartDate            *model.TimeFilter
-	ChannelListingSlug   *model.StringFilter
-	Code                 *model.StringFilter
+	UsageLimit           squirrel.Sqlizer
+	EndDate              squirrel.Sqlizer
+	StartDate            squirrel.Sqlizer
+	ChannelListingSlug   squirrel.Sqlizer // INNER JOIN ChannelListings ON ... INNER JOIN Channels ON ... WHERE Channels.Slug ...
+	Code                 squirrel.Sqlizer
 	ChannelListingActive *bool
 	WithLook             bool // this add FOR UPDATE to sql queries
 }
@@ -172,9 +173,9 @@ type VoucherTranslation struct {
 
 // VoucherTranslationFilterOption is used to build squirrel queries
 type VoucherTranslationFilterOption struct {
-	Id           *model.StringFilter
-	LanguageCode *model.StringFilter
-	VoucherID    *model.StringFilter
+	Id           squirrel.Sqlizer
+	LanguageCode squirrel.Sqlizer
+	VoucherID    squirrel.Sqlizer
 }
 
 func (v *VoucherTranslation) IsValid() *model.AppError {

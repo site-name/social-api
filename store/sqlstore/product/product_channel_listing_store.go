@@ -161,34 +161,34 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_disc
 
 	// parse option
 	if option.ProductID != nil {
-		query = query.Where(option.ProductID.ToSquirrel("ProductChannelListings.ProductID"))
+		query = query.Where(option.ProductID)
 	}
 	if option.ChannelID != nil {
-		query = query.Where(option.ChannelID.ToSquirrel("ProductChannelListings.ChannelID"))
+		query = query.Where(option.ChannelID)
 	}
-	if option.ChannelSlug != nil {
+	if option.ChannelSlug != nil && *option.ChannelSlug != "" {
 		query = query.
-			InnerJoin(store.ChannelTableName + " ON (Channels.Id = ProductChannelListings.ChannelID)").
+			InnerJoin(store.ChannelTableName + " ON Channels.Id = ProductChannelListings.ChannelID").
 			Where(squirrel.Eq{"Channels.ChannelSlug": *option.ChannelSlug})
 	}
 	if option.VisibleInListings != nil {
 		query = query.Where(squirrel.Eq{"ProductChannelListings.VisibleInListings": *option.VisibleInListings})
 	}
-	if pur := option.AvailableForPurchase; pur != nil {
-		query = query.Where(pur.ToSquirrel("ProductChannelListings.AvailableForPurchase"))
+	if option.AvailableForPurchase != nil {
+		query = query.Where(option.AvailableForPurchase)
 	}
 	if option.Currency != nil {
-		query = query.Where(option.Currency.ToSquirrel("ProductChannelListings.Currency"))
+		query = query.Where(option.Currency)
 	}
 
 	if option.ProductVariantsId != nil {
 		query = query.
 			InnerJoin(store.ProductTableName + " ON (Products.Id = ProductChannelListings.ProductID)").
 			InnerJoin(store.ProductVariantTableName + " ON (ProductVariants.ProductID = Products.Id)").
-			Where(option.ProductVariantsId.ToSquirrel("ProductVariants.Id"))
+			Where(option.ProductVariantsId)
 	}
 	if option.PublicationDate != nil {
-		query = query.Where(option.PublicationDate.ToSquirrel("ProductChannelListings.PublicationDate"))
+		query = query.Where(option.PublicationDate)
 	}
 	if option.IsPublished != nil {
 		query = query.Where(squirrel.Eq{"ProductChannelListings.IsPublished": *option.IsPublished})

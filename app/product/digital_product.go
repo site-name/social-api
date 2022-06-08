@@ -3,11 +3,13 @@ package product
 import (
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 func (a *ServiceProduct) GetDefaultDigitalContentSettings(aShop *shop.Shop) *shop.ShopDefaultDigitalContentSettings {
@@ -24,11 +26,7 @@ func (a *ServiceProduct) GetDefaultDigitalContentSettings(aShop *shop.Shop) *sho
 // to check if url is still valid.
 func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *product_and_discount.DigitalContentUrl) (bool, *model.AppError) {
 	digitalContent, appErr := a.DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: contentURL.ContentID,
-			},
-		},
+		Id: squirrel.Eq{store.ProductDigitalContentTableName + ".Id": contentURL.ContentID},
 	})
 	if appErr != nil {
 		return false, appErr

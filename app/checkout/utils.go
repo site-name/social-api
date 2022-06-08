@@ -94,16 +94,8 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 
 	checkOut := checkoutInfo.Checkout
 	productChannelListings, appErr := a.srv.ProductService().ProductChannelListingsByOption(&product_and_discount.ProductChannelListingFilterOption{
-		ChannelID: &model.StringFilter{
-			StringOption: (&model.StringOption{
-				Eq: checkOut.ChannelID,
-			}),
-		},
-		ProductID: &model.StringFilter{
-			StringOption: (&model.StringOption{
-				Eq: variant.ProductID,
-			}),
-		},
+		ChannelID: squirrel.Eq{store.ProductChannelListingTableName + ".ChannelID": checkOut.ChannelID},
+		ProductID: squirrel.Eq{store.ProductChannelListingTableName + ".ProductID": variant.ProductID},
 	})
 	if appErr != nil {
 		return nil, nil, appErr
@@ -202,16 +194,8 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkOut *checkout.Checkout, var
 	}
 	channelListings, appErr := a.srv.ProductService().
 		ProductChannelListingsByOption(&product_and_discount.ProductChannelListingFilterOption{
-			ChannelID: &model.StringFilter{
-				StringOption: (&model.StringOption{
-					Eq: checkOut.ChannelID,
-				}).WithFilter(model.IsValidId),
-			},
-			ProductID: &model.StringFilter{
-				And: (&model.StringOption{
-					In: productIDs,
-				}).WithFilter(model.IsValidId),
-			},
+			ChannelID: squirrel.Eq{store.ProductChannelListingTableName + ".ChannelID": checkOut.ChannelID},
+			ProductID: squirrel.Eq{store.ProductChannelListingTableName + ".ProductID": productIDs},
 		})
 	if appErr != nil {
 		return nil, nil, appErr
@@ -627,35 +611,20 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.Check
 //
 // `withLock` default to false
 func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo checkout.CheckoutInfo, withLock bool) (*product_and_discount.Voucher, *model.AppError) {
-
-	now := model.NewTime(time.Now()) // NOTE: not sure to use UTC or system time
+	now := util.NewTime(time.Now().UTC()) // NOTE: not sure to use UTC or system time
 	checKout := checkoutInfo.Checkout
 
 	voucherFilterOption := &product_and_discount.VoucherFilterOption{
-		UsageLimit: &model.NumberFilter{
-			Or: &model.NumberOption{
-				NULL: model.NewBool(true),
-				ExtraExpr: []squirrel.Sqlizer{
-					squirrel.Expr("?.UsageLimit > ?.Used", store.VoucherTableName, store.VoucherTableName),
-				},
-			},
+		UsageLimit: squirrel.Or{
+			squirrel.Eq{store.VoucherTableName + ".UsageLimit": nil},
+			squirrel.Gt{store.VoucherTableName + ".UsageLimit": store.VoucherTableName + ".Used"},
 		},
-		EndDate: &model.TimeFilter{
-			Or: &model.TimeOption{
-				NULL: model.NewBool(true),
-				GtE:  now,
-			},
+		EndDate: squirrel.Or{
+			squirrel.Eq{store.VoucherTableName + ".EndDate": nil},
+			squirrel.GtOrEq{store.VoucherTableName + ".EndDate": now},
 		},
-		StartDate: &model.TimeFilter{
-			TimeOption: &model.TimeOption{
-				LtE: now,
-			},
-		},
-		ChannelListingSlug: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: checkoutInfo.Channel.Slug,
-			},
-		},
+		StartDate:            squirrel.LtOrEq{store.VoucherTableName + ".StartDate": now},
+		ChannelListingSlug:   squirrel.Eq{store.ChannelTableName + ".Slug": checkoutInfo.Channel.Slug},
 		ChannelListingActive: model.NewBool(true),
 	}
 
@@ -728,16 +697,8 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginM
 		// check if the owner of this checkout has ther primary language:
 		if checkoutInfo.User != nil && model.Languages[checkoutInfo.User.Locale] != "" {
 			voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&product_and_discount.VoucherTranslationFilterOption{
-				LanguageCode: &model.StringFilter{
-					StringOption: &model.StringOption{
-						Eq: checkoutInfo.User.Locale,
-					},
-				},
-				VoucherID: &model.StringFilter{
-					StringOption: &model.StringOption{
-						Eq: voucher.Id,
-					},
-				},
+				LanguageCode: squirrel.Eq{store.VoucherTranslationTableName + ".LanguageCode": checkoutInfo.User.Locale},
+				VoucherID:    squirrel.Eq{store.VoucherTranslationTableName + ".VoucherID": voucher.Id},
 			})
 			if appErr != nil {
 				if appErr.StatusCode == http.StatusInternalServerError {
@@ -790,7 +751,7 @@ func (s *ServiceCheckout) AddPromoCodeToCheckout(manager interfaces.PluginManage
 // AddVoucherCodeToCheckout Add voucher data to checkout by code.
 // Raise InvalidPromoCode() if voucher of given type cannot be applied.
 func (s *ServiceCheckout) AddVoucherCodeToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, voucherCode string, discounts []*product_and_discount.DiscountInfo) (*giftcard.InvalidPromoCode, *model.AppError) {
-	vouchers, appErr := s.srv.DiscountService().FilterActiveVouchers(model.NewTime(time.Now().UTC()), checkoutInfo.Channel.Slug)
+	vouchers, appErr := s.srv.DiscountService().FilterActiveVouchers(time.Now().UTC(), checkoutInfo.Channel.Slug)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
@@ -831,11 +792,7 @@ func (s *ServiceCheckout) AddVoucherToCheckout(manager interfaces.PluginManagerI
 
 	if user := checkoutInfo.User; user != nil && model.Languages[user.Locale] != "" {
 		voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&product_and_discount.VoucherTranslationFilterOption{
-			LanguageCode: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: user.Locale,
-				},
-			},
+			LanguageCode: squirrel.Eq{store.VoucherTranslationTableName + ".LanguageCode": user.Locale},
 		})
 		if appErr != nil {
 			return nil, appErr

@@ -67,13 +67,13 @@ func (vts *SqlVoucherTranslationStore) commonQueryBuilder(option *product_and_di
 
 	// parse option
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 	if option.LanguageCode != nil {
-		query = query.Where(option.LanguageCode.ToSquirrel("LanguageCode"))
+		query = query.Where(option.LanguageCode)
 	}
 	if option.VoucherID != nil {
-		query = query.Where(option.VoucherID.ToSquirrel("VoucherID"))
+		query = query.Where(option.VoucherID)
 	}
 
 	return query

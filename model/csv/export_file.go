@@ -1,6 +1,7 @@
 package csv
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -13,7 +14,7 @@ type ExportFile struct {
 }
 
 type ExportFileFilterOption struct {
-	Id *model.StringFilter
+	Id squirrel.Sqlizer
 }
 
 func (e *ExportFile) ToJSON() string {

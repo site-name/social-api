@@ -55,7 +55,6 @@ type StockFilterOption struct {
 	ForUpdateOf string
 }
 
-// StockFilterForCountryAndChannel is used in specific filter function located at store/sqlstore/channel/channel_store.go
 type StockFilterForCountryAndChannel struct {
 	CountryCode      string
 	ChannelSlug      string
@@ -64,9 +63,9 @@ type StockFilterForCountryAndChannel struct {
 	ProductID        string
 
 	// additional fields
-	Id                     *model.StringFilter //
-	WarehouseIDFilter      *model.StringFilter //
-	ProductVariantIDFilter *model.StringFilter //
+	Id                     squirrel.Sqlizer
+	WarehouseIDFilter      squirrel.Sqlizer
+	ProductVariantIDFilter squirrel.Sqlizer
 
 	AnnotateAvailabeQuantity bool // if true, store selects another column: `Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity`
 

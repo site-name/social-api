@@ -37,14 +37,14 @@ type ProductVariant struct {
 
 // ProductVariantFilterOption is used to build sql queries
 type ProductVariantFilterOption struct {
-	Id   *model.StringFilter
-	Name *model.StringFilter
+	Id   squirrel.Sqlizer
+	Name squirrel.Sqlizer
 
-	WishlistItemID *model.StringFilter // INNER JOIN WishlistItemProductVariants ON (...) WHERE WishlistItemProductVariants.WishlistItemID ...
-	WishlistID     *model.StringFilter // INNER JOIN WishlistItemProductVariants ON (...) INNER JOIN WishlistItems ON (...) WHERE WishlistItems.WishlistID ...
+	WishlistItemID squirrel.Sqlizer // INNER JOIN WishlistItemProductVariants ON (...) WHERE WishlistItemProductVariants.WishlistItemID ...
+	WishlistID     squirrel.Sqlizer // INNER JOIN WishlistItemProductVariants ON (...) INNER JOIN WishlistItems ON (...) WHERE WishlistItems.WishlistID ...
 
-	ProductVariantChannelListingPriceAmount *model.NumberFilter // LEFT JOIN `ProductVariantChannelListing`
-	ProductVariantChannelListingChannelSlug *model.StringFilter // LEFT JOIN `ProductVariantChannelListing`
+	ProductVariantChannelListingPriceAmount squirrel.Sqlizer // INNER JOIN `ProductVariantChannelListing` ON ... WHERE ProductVariantChannelListing.PriceAmount ...
+	ProductVariantChannelListingChannelSlug squirrel.Sqlizer // INNER JOIN `ProductVariantChannelListing` ON ... INNER JOIN Channels ON ... WHERE Channels.Slug ...
 
 	Distinct bool // if true, use SELECT DISTINCT
 

@@ -406,11 +406,7 @@ func (a *ServiceDiscount) FetchCollections(saleIDs []string) (map[string][]strin
 // FetchProducts returns a map with keys are sale ids, values are slices of UNIQUE product ids
 func (a *ServiceDiscount) FetchProducts(saleIDs []string) (map[string][]string, *model.AppError) {
 	saleProducts, appErr := a.SaleProductsByOptions(&product_and_discount.SaleProductRelationFilterOption{
-		SaleID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: saleIDs,
-			},
-		},
+		SaleID: squirrel.Eq{store.SaleProductRelationTableName + ".SaleID": saleIDs},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -442,11 +438,7 @@ func (a *ServiceDiscount) FetchProducts(saleIDs []string) (map[string][]string, 
 // FetchVariants returns a map with keys are sale ids and values are slice of UNIQUE product variant ids
 func (s *ServiceDiscount) FetchVariants(salePKs []string) (map[string][]string, *model.AppError) {
 	saleProductVariants, appErr := s.SaleProductVariantsByOptions(&product_and_discount.SaleProductVariantFilterOption{
-		SaleID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: salePKs,
-			},
-		},
+		SaleID: squirrel.Eq{store.SaleProductVariantTableName + ".SaleID": salePKs},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -478,11 +470,7 @@ func (s *ServiceDiscount) FetchVariants(salePKs []string) (map[string][]string, 
 // FetchSaleChannelListings returns a map with keys are sale ids, values are maps with keys are channel slugs
 func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string]map[string]*product_and_discount.SaleChannelListing, *model.AppError) {
 	channelListings, err := a.srv.Store.DiscountSaleChannelListing().SaleChannelListingsWithOption(&product_and_discount.SaleChannelListingFilterOption{
-		SaleID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: saleIDs,
-			},
-		},
+		SaleID: squirrel.Eq{store.SaleChannelListingTableName + ".SaleID": saleIDs},
 	})
 
 	if err != nil {

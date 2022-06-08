@@ -78,11 +78,7 @@ func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*warehouse.WareHo
 // WarehouseCountries returns countries of given warehouse
 func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *model.AppError) {
 	shippingZonesOfWarehouse, appErr := a.srv.ShippingService().ShippingZonesByOption(&shipping.ShippingZoneFilterOption{
-		WarehouseID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: warehouseID,
-			},
-		},
+		WarehouseID: squirrel.Eq{store.ShippingZoneTableName + ".WarehouseID": warehouseID},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

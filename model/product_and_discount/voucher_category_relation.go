@@ -1,6 +1,9 @@
 package product_and_discount
 
-import "github.com/sitename/sitename/model"
+import (
+	"github.com/Masterminds/squirrel"
+	"github.com/sitename/sitename/model"
+)
 
 type VoucherCategory struct {
 	Id         string `json:"id"`
@@ -11,9 +14,9 @@ type VoucherCategory struct {
 
 // VoucherCategoryFilterOption is used when building sql queries
 type VoucherCategoryFilterOption struct {
-	Id         *model.StringFilter
-	VoucherID  *model.StringFilter
-	CategoryID *model.StringFilter
+	Id         squirrel.Sqlizer
+	VoucherID  squirrel.Sqlizer
+	CategoryID squirrel.Sqlizer
 }
 
 func (v *VoucherCategory) PreSave() {

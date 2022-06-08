@@ -1,6 +1,9 @@
 package product_and_discount
 
-import "github.com/sitename/sitename/model"
+import (
+	"github.com/Masterminds/squirrel"
+	"github.com/sitename/sitename/model"
+)
 
 type VoucherProductVariant struct {
 	Id               string `json:"id"`
@@ -11,9 +14,9 @@ type VoucherProductVariant struct {
 
 // VoucherProductVariantFilterOption is used to build squirrel sql queries
 type VoucherProductVariantFilterOption struct {
-	Id               *model.StringFilter
-	VoucherID        *model.StringFilter
-	ProductVariantID *model.StringFilter
+	Id               squirrel.Sqlizer
+	VoucherID        squirrel.Sqlizer
+	ProductVariantID squirrel.Sqlizer
 }
 
 func (v *VoucherProductVariant) PreSave() {

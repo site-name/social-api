@@ -455,17 +455,13 @@ func (a *ServiceOrder) CancelFulfillment(fulfillment order.Fulfillment, user *ac
 	// initialize a transaction
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
-		return nil, model.NewAppError("CancelOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("CancelFulfillment", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	// refetch fulfillment from database, lock for update
 	fulfillment_, appErr := a.FulfillmentByOption(transaction, &order.FulfillmentFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: fulfillment.Id,
-			},
-		},
+		Id:                 squirrel.Eq{store.FulfillmentTableName + ".Id": fulfillment.Id},
 		SelectForUpdate:    true, // this tells store to add `FOR UPDATE` to select query
 		SelectRelatedOrder: true, // this make you free to acces `Order` of returning `fulfillment`
 	})
@@ -550,11 +546,7 @@ func (s *ServiceOrder) CancelWaitingFulfillment(fulfillment order.Fulfillment, u
 	defer s.srv.Store.FinalizeTransaction(transaction)
 
 	fulfillment_, appErr := s.FulfillmentByOption(transaction, &order.FulfillmentFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: fulfillment.Id,
-			},
-		},
+		Id:                 squirrel.Eq{store.FulfillmentTableName + ".Id": fulfillment.Id},
 		SelectRelatedOrder: true, // this
 	})
 	if appErr != nil {
@@ -567,11 +559,7 @@ func (s *ServiceOrder) CancelWaitingFulfillment(fulfillment order.Fulfillment, u
 	}
 
 	fulfillmentLinesOfFulfillment, appErr := s.FulfillmentLinesByOption(&order.FulfillmentLineFilterOption{
-		FulfillmentID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: fulfillment_.Id,
-			},
-		},
+		FulfillmentID:            squirrel.Eq{store.FulfillmentLineTableName + ".FulfillmentID": fulfillment_.Id},
 		PrefetchRelatedOrderLine: true, // this make us able to access OrderLine fields of returned fulfillment lines
 	})
 	if appErr != nil {
@@ -642,11 +630,7 @@ func (s *ServiceOrder) ApproveFulfillment(fulfillment *order.Fulfillment, user *
 	}
 
 	fulfillmentLines, appErr := s.FulfillmentLinesByOption(&order.FulfillmentLineFilterOption{
-		FulfillmentID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: fulfillment.Id,
-			},
-		},
+		FulfillmentID:                           squirrel.Eq{store.FulfillmentLineTableName + ".FulfillmentID": fulfillment.Id},
 		PrefetchRelatedOrderLine:                true, // NOTE: this make us able to get OrderLine of returning fulfillment lines
 		PrefetchRelatedOrderLine_ProductVariant: true,
 	})
@@ -906,11 +890,7 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord order.Order, manager
 	}
 
 	fulfillment, appErr := a.GetOrCreateFulfillment(transaction, &order.FulfillmentFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{store.FulfillmentTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -953,11 +933,7 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord order.Order, manager
 		})
 
 		allocationsOfOrderLine, appErr := a.srv.WarehouseService().AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
-			OrderLineID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: orderLine.Id,
-				},
-			},
+			OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLine.Id},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -1049,11 +1025,7 @@ func (a *ServiceOrder) createFulfillmentLines(fulfillment *order.Fulfillment, wa
 	}
 
 	productVariants, appErr := a.srv.ProductService().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: variantIDs,
-			},
-		},
+		Id:                          squirrel.Eq{store.ProductVariantTableName + ".Id": variantIDs},
 		SelectRelatedDigitalContent: true, // NOTE: this asks store to populate related DigitalContent data to returned product variants
 	})
 	if appErr != nil {
@@ -1339,11 +1311,7 @@ func (a *ServiceOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*ord
 		})
 
 		allocationsOfOrderLine, appErr := a.srv.WarehouseService().AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
-			OrderLineID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: lineData.Line.Id,
-				},
-			},
+			OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": lineData.Line.Id},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -1398,7 +1366,7 @@ func (a *ServiceOrder) moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesT
 	var (
 		fulfillmentLinesToCreate      []*order.FulfillmentLine
 		fulfillmentLinesToUpdate      []*order.FulfillmentLine
-		emptyFulfillmentLinesToDelete []*order.FulfillmentLine
+		emptyFulfillmentLinesToDelete order.FulfillmentLines
 	)
 
 	for _, fulfillmentLineData := range fulfillmentLinesToMove {
@@ -1441,11 +1409,7 @@ func (a *ServiceOrder) moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesT
 	}
 
 	appErr = a.DeleteFulfillmentLinesByOption(transaction, &order.FulfillmentLineFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: order.FulfillmentLines(emptyFulfillmentLinesToDelete).IDs(),
-			},
-		},
+		Id: squirrel.Eq{store.FulfillmentLineTableName + ".Id": emptyFulfillmentLinesToDelete.IDs()},
 	})
 	if appErr != nil {
 		return appErr
@@ -1522,24 +1486,12 @@ func (a *ServiceOrder) CreateRefundFulfillment(
 
 	// delete fulfillments without lines after lines are removed
 	fulfillments, appErr := a.FulfillmentsByOption(transaction, &order.FulfillmentFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
-		FulfillmentLineID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				NULL: model.NewBool(true),
-			},
-		},
-		Status: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: []string{
-					string(order.FULFILLMENT_FULFILLED),
-					string(order.FULFILLMENT_WAITING_FOR_APPROVAL),
-				},
-			},
-		},
+		OrderID:           squirrel.Eq{store.FulfillmentTableName + ".OrderID": ord.Id},
+		FulfillmentLineID: squirrel.Eq{store.FulfillmentLineTableName + ".Id": nil},
+		Status: squirrel.Eq{store.FulfillmentTableName + ".Status": []string{
+			string(order.FULFILLMENT_FULFILLED),
+			string(order.FULFILLMENT_WAITING_FOR_APPROVAL),
+		}},
 	})
 	if appErr != nil {
 		return nil, paymentErr, appErr
@@ -1751,16 +1703,8 @@ func (a *ServiceOrder) moveLinesToReturnFulfillment(
 	}
 
 	fulfillmentLinesAlreadyRefunded, appErr := a.FulfillmentLinesByOption(&order.FulfillmentLineFilterOption{
-		FulfillmentOrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
-		FulfillmentStatus: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: string(order.FULFILLMENT_REFUNDED),
-			},
-		},
+		FulfillmentOrderID: squirrel.Eq{store.FulfillmentTableName + ".OrderID": ord.Id},
+		FulfillmentStatus:  squirrel.Eq{store.FulfillmentTableName + ".Status": order.FULFILLMENT_REFUNDED},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -2129,24 +2073,12 @@ func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 	}
 
 	fulfillmentsToDelete, appErr := a.FulfillmentsByOption(transaction, &order.FulfillmentFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
-		Status: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: []string{
-					string(order.FULFILLMENT_FULFILLED),
-					string(order.FULFILLMENT_WAITING_FOR_APPROVAL),
-				},
-			},
-		},
-		FulfillmentLineID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				NULL: model.NewBool(true),
-			},
-		},
+		OrderID:           squirrel.Eq{store.FulfillmentTableName + ".OrderID": ord.Id},
+		FulfillmentLineID: squirrel.Eq{store.FulfillmentLineTableName + ".Id": nil},
+		Status: squirrel.Eq{store.FulfillmentTableName + ".Status": []string{
+			string(order.FULFILLMENT_FULFILLED),
+			string(order.FULFILLMENT_WAITING_FOR_APPROVAL),
+		}},
 	})
 	if appErr != nil && appErr.StatusCode == http.StatusInternalServerError { // ignore not found err
 		return nil, nil, nil, nil, appErr
@@ -2212,11 +2144,7 @@ func (a *ServiceOrder) calculateRefundAmount(
 	}
 
 	fulfillments, appErr := a.FulfillmentsByOption(nil, &order.FulfillmentFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: fulfillmentIDs,
-			},
-		},
+		Id: squirrel.Eq{store.FulfillmentTableName + ".Id": fulfillmentIDs},
 	})
 	if appErr != nil {
 		return nil, appErr

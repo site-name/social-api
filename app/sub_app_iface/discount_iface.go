@@ -60,7 +60,7 @@ type DiscountService interface {
 	// FilterActiveVouchers returns a list of vouchers that are active.
 	//
 	// `channelSlug` is optional (can be empty). pass this argument if you want to find active vouchers in specific channel
-	FilterActiveVouchers(date *time.Time, channelSlug string) ([]*product_and_discount.Voucher, *model.AppError)
+	FilterActiveVouchers(date time.Time, channelSlug string) ([]*product_and_discount.Voucher, *model.AppError)
 	// FilterSalesByOption should be used to filter active or expired sales
 	// refer: saleor/discount/models.SaleQueryset for details
 	FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, *model.AppError)

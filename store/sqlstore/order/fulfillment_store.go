@@ -158,24 +158,28 @@ func (fs *SqlFulfillmentStore) commonQueryBuild(option *order.FulfillmentFilterO
 
 	// parse option
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Fulfillments.Id"))
+		query = query.Where(option.Id)
 	}
 	if option.OrderID != nil {
-		query = query.Where(option.OrderID.ToSquirrel("Fulfillments.OrderID"))
+		query = query.Where(option.OrderID)
 	}
 	if option.Status != nil {
-		query = query.Where(option.Status.ToSquirrel("Fulfillments.Status"))
+		query = query.Where(option.Status)
 	}
 	if option.FulfillmentLineID != nil {
 		// joinFunc can be either LeftJoin or InnerJoin
 		var joinFunc func(join string, rest ...interface{}) squirrel.SelectBuilder = query.InnerJoin
-
-		if option.FulfillmentLineID.NULL != nil && *option.FulfillmentLineID.NULL { // meaning fulfillment must have no fulfillment line
-			joinFunc = query.LeftJoin
+		if equal, ok := option.FulfillmentLineID.(squirrel.Eq); ok && len(equal) > 0 {
+			for _, value := range equal {
+				if value == nil {
+					joinFunc = query.LeftJoin
+					break
+				}
+			}
 		}
 
 		query = joinFunc(store.FulfillmentLineTableName + " ON (FulfillmentLines.FulfillmentID = Fulfillments.Id)").
-			Where(option.FulfillmentLineID.ToSquirrel("FulfillmentLines.Id"))
+			Where(option.FulfillmentLineID)
 	}
 	if option.SelectRelatedOrder {
 		query = query.InnerJoin(store.OrderTableName + " ON (Orders.Id = Fulfillments.OrderID)")

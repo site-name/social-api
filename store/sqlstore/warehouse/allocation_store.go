@@ -200,28 +200,29 @@ func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, opti
 		query = query.InnerJoin(store.StockTableName + " ON Stocks.Id = Allocations.StockID")
 	}
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
 	if option.OrderLineID != nil {
-		query = query.Where(option.OrderLineID.ToSquirrel("OrderLineID"))
+		query = query.Where(option.OrderLineID)
 	}
 	if option.StockID != nil {
-		query = query.Where(option.StockID.ToSquirrel("StockID"))
+		query = query.Where(option.StockID)
 	}
 	if option.QuantityAllocated != nil {
-		query = query.Where(option.QuantityAllocated.ToSquirrel("QuantityAllocated"))
+		query = query.Where(option.QuantityAllocated)
 	}
 	if option.OrderLineOrderID != nil {
 		if !joined_OrderLines_tableName { // check if have joined Orderlines table
 			query = query.InnerJoin(store.OrderLineTableName + " ON Orderlines.Id = Allocations.OrderLineID")
 		}
-		query = query.Where(option.OrderLineOrderID.ToSquirrel("Orderlines.OrderID"))
+		query = query.Where(option.OrderLineOrderID)
 	}
 	if option.LockForUpdate {
-		query = query.Suffix("FOR UPDATE")
-	}
-	if option.ForUpdateOf != "" && option.LockForUpdate {
-		query = query.Suffix("OF " + option.ForUpdateOf)
+		suf := "FOR UPDATE"
+		if option.ForUpdateOf != "" {
+			suf += " OF " + option.ForUpdateOf
+		}
+		query = query.Suffix(suf)
 	}
 
 	queryString, args, err := query.ToSql()

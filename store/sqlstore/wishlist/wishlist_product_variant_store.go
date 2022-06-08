@@ -18,7 +18,7 @@ func NewSqlWishlistItemProductVariantStore(s store.Store) store.WishlistItemProd
 	ws := &SqlWishlistItemProductVariantStore{s}
 
 	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(wishlist.WishlistItemProductVariant{}, store.WishlistProductVariantTableName).SetKeys(false, "Id")
+		table := db.AddTableWithName(wishlist.WishlistItemProductVariant{}, store.WishlistItemProductVariantTableName).SetKeys(false, "Id")
 		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("WishlistItemID").SetMaxSize(store.UUID_MAX_LENGTH)
 		table.ColMap("ProductVariantID").SetMaxSize(store.UUID_MAX_LENGTH)
@@ -29,8 +29,8 @@ func NewSqlWishlistItemProductVariantStore(s store.Store) store.WishlistItemProd
 }
 
 func (w *SqlWishlistItemProductVariantStore) CreateIndexesIfNotExists() {
-	w.CreateForeignKeyIfNotExists(store.WishlistProductVariantTableName, "WishlistItemID", store.WishlistItemTableName, "Id", true)
-	w.CreateForeignKeyIfNotExists(store.WishlistProductVariantTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
+	w.CreateForeignKeyIfNotExists(store.WishlistItemProductVariantTableName, "WishlistItemID", store.WishlistItemTableName, "Id", true)
+	w.CreateForeignKeyIfNotExists(store.WishlistItemProductVariantTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
 }
 
 // Save inserts given wishlist item-product variant relation into database and returns it
@@ -42,7 +42,7 @@ func (w *SqlWishlistItemProductVariantStore) Save(item *wishlist.WishlistItemPro
 
 	if err := w.GetMaster().Insert(item); err != nil {
 		if w.IsUniqueConstraintError(err, []string{"WishlistItemID", "ProductVariantID", "wishlistitemproductvariants_wishlistitemid_productvariantid_key"}) {
-			return nil, store.NewErrInvalidInput(store.WishlistProductVariantTableName, "WishlistItemID/ProductVariantID", item.WishlistItemID+"/"+item.ProductVariantID)
+			return nil, store.NewErrInvalidInput(store.WishlistItemProductVariantTableName, "WishlistItemID/ProductVariantID", item.WishlistItemID+"/"+item.ProductVariantID)
 		}
 		return nil, errors.Wrapf(err, "failed to save wishlist product variant with id=%s", item.Id)
 	} else {
@@ -88,7 +88,7 @@ func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction *gorp.Transa
 
 		if err != nil {
 			if w.IsUniqueConstraintError(err, []string{"WishlistItemID", "ProductVariantID", "wishlistitemproductvariants_wishlistitemid_productvariantid_key"}) {
-				return nil, store.NewErrInvalidInput(store.WishlistProductVariantTableName, "WishlistItemID/ProductVariantID", "duplicate")
+				return nil, store.NewErrInvalidInput(store.WishlistItemProductVariantTableName, "WishlistItemID/ProductVariantID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to upsert relation with id=%s", relation.Id)
 		}
@@ -108,9 +108,9 @@ func (w *SqlWishlistItemProductVariantStore) GetById(transaction *gorp.Transacti
 	}
 
 	var res wishlist.WishlistItemProductVariant
-	if err := selector.SelectOne(&res, "SELECT * FROM "+store.WishlistProductVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id}); err != nil {
+	if err := selector.SelectOne(&res, "SELECT * FROM "+store.WishlistItemProductVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id}); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.WishlistProductVariantTableName, id)
+			return nil, store.NewErrNotFound(store.WishlistItemProductVariantTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find item with Id=%s", id)
 	}
@@ -126,7 +126,7 @@ func (w *SqlWishlistItemProductVariantStore) DeleteRelation(relation *wishlist.W
 	defer w.FinalizeTransaction(transaction)
 
 	query := w.GetQueryBuilder().
-		Delete(store.WishlistProductVariantTableName)
+		Delete(store.WishlistItemProductVariantTableName)
 	if model.IsValidId(relation.Id) {
 		query = query.Where("Id = ?", relation.Id)
 	}
@@ -154,7 +154,7 @@ func (w *SqlWishlistItemProductVariantStore) DeleteRelation(relation *wishlist.W
 		return 0, errors.Errorf("multiple wishlist item-product variant relations were deleted: %d instead of 1", numDeleted)
 	}
 
-	numOfRelationsLeft, err := transaction.SelectInt("SELECT COUNT(Id) FROM " + store.WishlistProductVariantTableName)
+	numOfRelationsLeft, err := transaction.SelectInt("SELECT COUNT(Id) FROM " + store.WishlistItemProductVariantTableName)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count number of wishlist item-product variant left")
 	}

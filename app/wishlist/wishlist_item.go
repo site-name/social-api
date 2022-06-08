@@ -127,11 +127,7 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishli
 	// this function will not execute if not triggered
 	populate_productVariantsOfSourceWishlistMap := func() *model.AppError {
 		productVariantsOfSourceWishlist, appErr := a.srv.ProductService().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
-			WishlistItemID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					In: itemsOfSourceWishlist.IDs(),
-				},
-			},
+			WishlistItemID: squirrel.Eq{store.WishlistItemProductVariantTableName + ".WishlistItemID": itemsOfSourceWishlist.IDs()},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {

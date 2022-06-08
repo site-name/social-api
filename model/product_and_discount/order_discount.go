@@ -4,6 +4,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -49,9 +50,9 @@ type OrderDiscount struct {
 
 // OrderDiscountFilterOption is used to build sql queries
 type OrderDiscountFilterOption struct {
-	Id      *model.StringFilter
-	OrderID *model.StringFilter
-	Type    *model.StringFilter
+	Id      squirrel.Sqlizer
+	OrderID squirrel.Sqlizer
+	Type    squirrel.Sqlizer
 }
 
 type OrderDiscounts []*OrderDiscount

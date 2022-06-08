@@ -138,11 +138,7 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(product product_and_discou
 		defer mut.Unlock()
 
 		res, appErr := a.ProductChannelListingsByOption(&product_and_discount.ProductChannelListingFilterOption{
-			ProductID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: product.Id,
-				},
-			},
+			ProductID:       squirrel.Eq{store.ProductChannelListingTableName + ".ProductID": product.Id},
 			PrefetchChannel: true, // this will populate `Channel` fields of every product channel listings
 		})
 		if appErr != nil {

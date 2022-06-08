@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -29,14 +30,14 @@ type ProductChannelListing struct {
 
 // ProductChannelListingFilterOption is option for filtering product channel listing
 type ProductChannelListingFilterOption struct {
-	ProductID            *model.StringFilter
-	ChannelID            *model.StringFilter
-	ChannelSlug          *string // inner join Channel
+	ProductID            squirrel.Sqlizer
+	ChannelID            squirrel.Sqlizer
+	AvailableForPurchase squirrel.Sqlizer
+	Currency             squirrel.Sqlizer
+	ProductVariantsId    squirrel.Sqlizer // INNER JOIN Products ON ... INNER JOIN ProductVariants ON ... WHERE ProductVariants.Id ...
+	PublicationDate      squirrel.Sqlizer //
+	ChannelSlug          *string          // INNER JOIN Channels ON ... WHERE Channels.Slug ...
 	VisibleInListings    *bool
-	AvailableForPurchase *model.TimeFilter
-	Currency             *model.StringFilter
-	ProductVariantsId    *model.StringFilter // inner join product, product variant
-	PublicationDate      *model.TimeFilter
 	IsPublished          *bool
 	PrefetchChannel      bool // this tell store to prefetch channel instances also
 }

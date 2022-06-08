@@ -4,6 +4,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -27,9 +28,9 @@ type ShippingZone struct {
 
 // ShippingZoneFilterOption is used to build sql queries to finds shipping zones
 type ShippingZoneFilterOption struct {
-	Id           *model.StringFilter // filter on Id field
-	DefaultValue *bool               // filter on Default field
-	WarehouseID  *model.StringFilter
+	Id           squirrel.Sqlizer
+	DefaultValue *bool
+	WarehouseID  squirrel.Sqlizer // INNER JOIN WarehouseShippingZones ON ... WHERE WarehouseShippingZones.WarehouseID
 
 	SelectRelatedThroughData bool // if true, `RelativeWarehouseIDs` property get populated with related data
 }

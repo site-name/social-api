@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 // getAvailableQuantity get all stocks quantity (both in stocks and their allocations) not exported
@@ -34,11 +35,7 @@ func (a *ServiceWarehouse) getAvailableQuantity(stocks warehouse.Stocks) (int, *
 	}
 
 	allocations, appErr := a.AllocationsByOption(nil, &warehouse.AllocationFilterOption{
-		StockID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: stockIDs,
-			},
-		},
+		StockID: squirrel.Eq{store.AllocationTableName + ".StockID": stockIDs},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -175,14 +172,9 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 
 	// build a filter option
 	allVariantStockFilterOption := &warehouse.StockFilterForCountryAndChannel{
-		CountryCode: countryCode,
-		ChannelSlug: channelSlug,
-
-		ProductVariantIDFilter: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: variants.IDs(),
-			},
-		},
+		CountryCode:              countryCode,
+		ChannelSlug:              channelSlug,
+		ProductVariantIDFilter:   squirrel.Eq{store.StockTableName + ".ProductVariantID": variants.IDs()},
 		AnnotateAvailabeQuantity: true,
 	}
 

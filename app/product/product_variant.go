@@ -3,6 +3,7 @@ package product
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -95,16 +96,8 @@ func (a *ServiceProduct) DisplayProduct(productVariant *product_and_discount.Pro
 // ProductVariantsAvailableInChannel returns product variants based on given channel slug
 func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) ([]*product_and_discount.ProductVariant, *model.AppError) {
 	productVariants, appErr := a.ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
-		ProductVariantChannelListingPriceAmount: &model.NumberFilter{
-			NumberOption: &model.NumberOption{
-				NULL: model.NewBool(false),
-			},
-		},
-		ProductVariantChannelListingChannelSlug: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: channelSlug,
-			},
-		},
+		ProductVariantChannelListingPriceAmount: squirrel.NotEq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+		ProductVariantChannelListingChannelSlug: squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug},
 	})
 
 	if appErr != nil {

@@ -3,6 +3,7 @@ package product_and_discount
 import (
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -23,9 +24,9 @@ type VoucherChannelListing struct {
 
 // VoucherChannelListingFilterOption is mainly used to build sql queries to filter voucher channel listing relationship instances
 type VoucherChannelListingFilterOption struct {
-	Id        *model.StringFilter
-	VoucherID *model.StringFilter
-	ChannelID *model.StringFilter
+	Id        squirrel.Sqlizer
+	VoucherID squirrel.Sqlizer
+	ChannelID squirrel.Sqlizer
 }
 
 func (v *VoucherChannelListing) PreSave() {

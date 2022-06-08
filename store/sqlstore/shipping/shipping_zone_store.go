@@ -130,15 +130,15 @@ func (s *SqlShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilte
 
 	// check option id
 	if option != nil && option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("ShippingZones.Id"))
+		query = query.Where(option.Id)
 	}
 	if option != nil && option.DefaultValue != nil {
 		query = query.Where(squirrel.Eq{"ShippingZones.Default": *option.DefaultValue})
 	}
 	if option.WarehouseID != nil {
 		query = query.
-			InnerJoin(store.WarehouseShippingZoneTableName + " ON (ShippingZones.Id = WarehouseShippingZones.ShippingZoneID)").
-			Where(option.WarehouseID.ToSquirrel("WarehouseShippingZones.WarehouseID"))
+			InnerJoin(store.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
+			Where(option.WarehouseID)
 	}
 
 	rows, err := query.RunWith(s.GetReplica()).Query()

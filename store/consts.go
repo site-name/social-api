@@ -53,9 +53,9 @@ func init() {
 
 		ChannelTableName: "Slug ASC", //channel
 
-		WishlistItemTableName:           "CreateAt ASC", // wishlist
-		WishlistProductVariantTableName: "",             //
-		WishlistTableName:               "CreateAt ASC", //
+		WishlistItemTableName:               "CreateAt ASC", // wishlist
+		WishlistItemProductVariantTableName: "",             //
+		WishlistTableName:                   "CreateAt ASC", //
 
 		StockTableName:                 "CreateAt ASC", // warehouse
 		WarehouseTableName:             "Slug DESC",    //
@@ -178,9 +178,9 @@ const (
 
 // wishlist-related table names
 const (
-	WishlistItemTableName           = "WishlistItems"               //
-	WishlistProductVariantTableName = "WishlistItemProductVariants" //
-	WishlistTableName               = "Wishlists"                   //
+	WishlistItemTableName               = "WishlistItems"               //
+	WishlistItemProductVariantTableName = "WishlistItemProductVariants" //
+	WishlistTableName                   = "Wishlists"                   //
 )
 
 // warehouse-related table names

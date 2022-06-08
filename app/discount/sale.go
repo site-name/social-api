@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount/types"
@@ -49,17 +50,11 @@ func (a *ServiceDiscount) ActiveSales(date *time.Time) (product_and_discount.Sal
 
 	activeSalesByDate, err := a.srv.Store.DiscountSale().
 		FilterSalesByOption(&product_and_discount.SaleFilterOption{
-			EndDate: &model.TimeFilter{
-				Or: &model.TimeOption{
-					NULL: model.NewBool(true),
-					GtE:  date,
-				},
+			EndDate: squirrel.Or{
+				squirrel.Eq{store.SaleTableName + ".EndDate": nil},
+				squirrel.GtOrEq{store.SaleTableName + ".EndDate": *date},
 			},
-			StartDate: &model.TimeFilter{
-				TimeOption: &model.TimeOption{
-					LtE: date,
-				},
-			},
+			StartDate: squirrel.LtOrEq{store.SaleTableName + ".StartDate": *date},
 		})
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ActiveSales", "app.discount.active_sales_by_date.app_error", err)
@@ -78,16 +73,8 @@ func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*product_and_discount
 
 	expiredSalesByDate, err := a.srv.Store.DiscountSale().
 		FilterSalesByOption(&product_and_discount.SaleFilterOption{
-			EndDate: &model.TimeFilter{
-				TimeOption: &model.TimeOption{
-					Lt: date,
-				},
-			},
-			StartDate: &model.TimeFilter{
-				TimeOption: &model.TimeOption{
-					Lt: date,
-				},
-			},
+			EndDate:   squirrel.Lt{store.SaleTableName + ".EndDate": date},
+			StartDate: squirrel.Lt{store.SaleTableName + ".StartDate": date},
 		})
 
 	if err != nil {

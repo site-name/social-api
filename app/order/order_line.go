@@ -37,7 +37,7 @@ func (a *ServiceOrder) DeleteOrderLines(orderLineIDs []string) *model.AppError {
 }
 
 // OrderLinesByOption returns a list of order lines by given option
-func (a *ServiceOrder) OrderLinesByOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, *model.AppError) {
+func (a *ServiceOrder) OrderLinesByOption(option *order.OrderLineFilterOption) (order.OrderLines, *model.AppError) {
 	orderLines, err := a.srv.Store.OrderLine().FilterbyOption(option)
 	var (
 		statusCode int
@@ -137,11 +137,7 @@ func (a *ServiceOrder) OrderLineIsDigital(orderLine *order.OrderLine) (bool, *mo
 
 	// check if there is a digital content accompanies order line's product variant:
 	digitalContent, appErr := a.srv.ProductService().DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
-		ProductVariantID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: *orderLine.VariantID,
-			},
-		},
+		ProductVariantID: squirrel.Eq{store.ProductDigitalContentTableName + ".ProductVariantID": *orderLine.VariantID},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {

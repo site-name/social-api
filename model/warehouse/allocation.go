@@ -3,6 +3,7 @@ package warehouse
 import (
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 )
@@ -21,11 +22,11 @@ type Allocation struct {
 
 // AllocationFilterOption is used to build sql queries to filtering warehouse allocations
 type AllocationFilterOption struct {
-	Id                *model.StringFilter
-	OrderLineID       *model.StringFilter
-	OrderLineOrderID  *model.StringFilter // INNER JOIN OrderLines ON (...) WHERE OrderLines.OrderID = ...
-	StockID           *model.StringFilter
-	QuantityAllocated *model.NumberFilter
+	Id                squirrel.Sqlizer
+	OrderLineID       squirrel.Sqlizer
+	OrderLineOrderID  squirrel.Sqlizer // INNER JOIN OrderLines ON (...) WHERE OrderLines.OrderID = ...
+	StockID           squirrel.Sqlizer
+	QuantityAllocated squirrel.Sqlizer
 
 	LockForUpdate bool   // if true, `FOR UPDATE` will be placed in the end of sqlqueries
 	ForUpdateOf   string // this is placed after `FOR UPDATE`. E.g: "Warehouses" => `FOR UPDATE OF Warehouses`

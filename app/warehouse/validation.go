@@ -3,9 +3,11 @@ package warehouse
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/warehouse"
+	"github.com/sitename/sitename/store"
 )
 
 // ValidateWarehouseCount
@@ -14,16 +16,8 @@ import (
 // If not there would be issue with automatically selecting stock for operation.
 func (a *ServiceWarehouse) ValidateWarehouseCount(shippingZones shipping.ShippingZones, instance *warehouse.WareHouse) (bool, *model.AppError) {
 	shippingZones, appErr := a.srv.ShippingService().ShippingZonesByOption(&shipping.ShippingZoneFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: shippingZones.IDs(),
-			},
-		},
-		WarehouseID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				NULL: model.NewBool(false),
-			},
-		},
+		Id:                       squirrel.Eq{store.ShippingZoneTableName + ".Id": shippingZones.IDs()},
+		WarehouseID:              squirrel.NotEq{store.WarehouseShippingZoneTableName + ".WarehouseID": nil},
 		SelectRelatedThroughData: true, // this tells store to populate `RelativeWarehouseIDs` of returning shipping zones
 	})
 	if appErr != nil {

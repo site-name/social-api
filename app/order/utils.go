@@ -66,11 +66,7 @@ func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *order.Order
 
 	if digitalContent == nil {
 		digitalContent, appErr = a.srv.ProductService().DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
-			ProductVariantID: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: *orderLine.VariantID,
-				},
-			},
+			ProductVariantID: squirrel.Eq{store.ProductDigitalContentTableName + ".ProductVariantID": *orderLine.VariantID},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -120,11 +116,7 @@ func (a *ServiceOrder) OrderNeedsAutomaticFulfillment(ord order.Order) (bool, *m
 func (a *ServiceOrder) GetVoucherDiscountAssignedToOrder(ord *order.Order) (*product_and_discount.OrderDiscount, *model.AppError) {
 	orderDiscountsOfOrder, appErr := a.srv.DiscountService().
 		OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
-			Type: &model.StringFilter{
-				StringOption: &model.StringOption{
-					Eq: product_and_discount.VOUCHER,
-				},
-			},
+			Type: squirrel.Eq{store.OrderDiscountTableName + ".Type": product_and_discount.VOUCHER},
 		})
 
 	if appErr != nil {
@@ -142,16 +134,8 @@ func (a *ServiceOrder) RecalculateOrderDiscounts(transaction *gorp.Transaction, 
 	var changedOrderDiscounts [][2]*product_and_discount.OrderDiscount
 
 	orderDiscounts, appErr := a.srv.DiscountService().OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
-		Type: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: product_and_discount.MANUAL,
-			},
-		},
+		OrderID: squirrel.Eq{store.OrderDiscountTableName + ".OrderID": ord.Id},
+		Type:    squirrel.Eq{store.OrderDiscountTableName + ".Type": product_and_discount.MANUAL},
 	})
 
 	if appErr != nil {
@@ -678,11 +662,7 @@ func (a *ServiceOrder) calculateQuantityIncludingReturns(ord order.Order) (int, 
 	}
 
 	fulfillmentsOfOrder, appErr := a.FulfillmentsByOption(nil, &order.FulfillmentFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{store.FulfillmentTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return 0, 0, 0, appErr
@@ -706,11 +686,7 @@ func (a *ServiceOrder) calculateQuantityIncludingReturns(ord order.Order) (int, 
 
 	// finds all fulfillment lines belong to filtered fulfillments
 	fulfillmentLines, appErr := a.FulfillmentLinesByOption(&order.FulfillmentLineFilterOption{
-		FulfillmentID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: filteredFulfillmentIDs,
-			},
-		},
+		FulfillmentID: squirrel.Eq{store.FulfillmentLineTableName + ".FulfillmentID": filteredFulfillmentIDs},
 	})
 	if appErr != nil {
 		return 0, 0, 0, appErr
@@ -1229,11 +1205,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interfaces.Pl
 
 						if anOrderLine.QuantityFulfilled > 0 {
 							allocations, appErr := a.srv.WarehouseService().AllocationsByOption(nil, &warehouse.AllocationFilterOption{
-								OrderLineID: &model.StringFilter{
-									StringOption: &model.StringOption{
-										Eq: anOrderLine.Id,
-									},
-								},
+								OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": anOrderLine.Id},
 							})
 							if appErr != nil {
 								setAppError(appErr)
@@ -1281,18 +1253,14 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interfaces.Pl
 // Return products to stocks and update order lines quantity fulfilled values.
 func (a *ServiceOrder) RestockFulfillmentLines(transaction *gorp.Transaction, fulfillment *order.Fulfillment, warehouse *warehouse.WareHouse) (appErr *model.AppError) {
 	fulfillmentLines, appErr := a.FulfillmentLinesByOption(&order.FulfillmentLineFilterOption{
-		FulfillmentID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: fulfillment.Id,
-			},
-		},
+		FulfillmentID: squirrel.Eq{store.FulfillmentLineTableName + ".FulfillmentID": fulfillment.Id},
 	})
 	if appErr != nil {
 		return appErr
 	}
 
 	orderLinesOfFulfillmentLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		Id: squirrel.Eq{a.srv.Store.OrderLine().TableName("Id"): fulfillmentLines.OrderLineIDs()},
+		Id: squirrel.Eq{store.OrderLineTableName + ".Id": fulfillmentLines.OrderLineIDs()},
 	})
 	if appErr != nil {
 		return appErr
@@ -1309,11 +1277,7 @@ func (a *ServiceOrder) RestockFulfillmentLines(transaction *gorp.Transaction, fu
 	}
 
 	productVariantsOfOrderLines, appErr := a.srv.ProductService().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
-		Id: &model.StringFilter{
-			StringOption: &model.StringOption{
-				In: order.OrderLines(orderLinesOfFulfillmentLines).ProductVariantIDs(),
-			},
-		},
+		Id: squirrel.Eq{store.ProductVariantTableName + ".Id": orderLinesOfFulfillmentLines.ProductVariantIDs()},
 	})
 	if appErr != nil {
 		return appErr
@@ -1525,11 +1489,7 @@ func (a *ServiceOrder) MatchOrdersWithNewUser(user *account.User) *model.AppErro
 // GetTotalOrderDiscount Return total order discount assigned to the order
 func (a *ServiceOrder) GetTotalOrderDiscount(ord *order.Order) (*goprices.Money, *model.AppError) {
 	orderDiscountsOfOrder, appErr := a.srv.DiscountService().OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		OrderID: squirrel.Eq{store.OrderDiscountTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -1556,16 +1516,8 @@ func (a *ServiceOrder) GetTotalOrderDiscount(ord *order.Order) (*goprices.Money,
 // GetOrderDiscounts Return all discounts applied to the order by staff user
 func (a *ServiceOrder) GetOrderDiscounts(ord *order.Order) ([]*product_and_discount.OrderDiscount, *model.AppError) {
 	orderDiscounts, appErr := a.srv.DiscountService().OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
-		Type: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: product_and_discount.MANUAL,
-			},
-		},
-		OrderID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: ord.Id,
-			},
-		},
+		Type:    squirrel.Eq{store.OrderDiscountTableName + ".Type": product_and_discount.MANUAL},
+		OrderID: squirrel.Eq{store.OrderDiscountTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return nil, appErr

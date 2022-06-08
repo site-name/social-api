@@ -248,13 +248,13 @@ func (s *ServiceGiftcard) CalculateExpiryDate(shopSettings *shop.Shop) *time.Tim
 		if expiryPeriod := shopSettings.GiftcardExpiryPeriod; expiryPeriod != nil {
 			switch shopSettings.GiftcardExpiryPeriodType {
 			case model.DAY:
-				expiryDate = model.NewTime(today.Add(time.Duration(*expiryPeriod) * 24 * time.Hour))
+				expiryDate = util.NewTime(today.Add(time.Duration(*expiryPeriod) * 24 * time.Hour))
 			case model.WEEK:
-				expiryDate = model.NewTime(today.Add(time.Duration(*expiryPeriod) * 24 * 7 * time.Hour))
+				expiryDate = util.NewTime(today.Add(time.Duration(*expiryPeriod) * 24 * 7 * time.Hour))
 			case model.MONTH:
-				expiryDate = model.NewTime(today.Add(time.Duration(*expiryPeriod) * 24 * 30 * time.Hour))
+				expiryDate = util.NewTime(today.Add(time.Duration(*expiryPeriod) * 24 * 30 * time.Hour))
 			case model.YEAR:
-				expiryDate = model.NewTime(today.Add(time.Duration(*expiryPeriod) * 24 * 365 * time.Hour))
+				expiryDate = util.NewTime(today.Add(time.Duration(*expiryPeriod) * 24 * 365 * time.Hour))
 			}
 		}
 	}

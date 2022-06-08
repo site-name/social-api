@@ -70,15 +70,13 @@ func (ss *SqlSaleProductRelationStore) SaleProductsByOption(option *product_and_
 		OrderBy(store.TableOrderingMap[store.SaleProductRelationTableName])
 
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Id"))
+		query = query.Where(option.Id)
 	}
-
 	if option.SaleID != nil {
-		query = query.Where(option.SaleID.ToSquirrel("SaleID"))
+		query = query.Where(option.SaleID)
 	}
-
 	if option.ProductID != nil {
-		query = query.Where(option.ProductID.ToSquirrel("ProductID"))
+		query = query.Where(option.ProductID)
 	}
 
 	queryString, args, err := query.ToSql()

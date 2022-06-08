@@ -111,13 +111,13 @@ func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *pr
 
 	// parse filter option
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("SaleChannelListings.Id"))
+		query = query.Where(option.Id)
 	}
 	if option.SaleID != nil {
-		query = query.Where(option.SaleID.ToSquirrel("SaleChannelListings.SaleID"))
+		query = query.Where(option.SaleID)
 	}
 	if option.ChannelID != nil {
-		query = query.Where(option.ChannelID.ToSquirrel("SaleChannelListings.ChannelID"))
+		query = query.Where(option.ChannelID)
 	}
 
 	queryString, args, err := query.ToSql()

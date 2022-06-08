@@ -1,6 +1,9 @@
 package product_and_discount
 
-import "github.com/sitename/sitename/model"
+import (
+	"github.com/Masterminds/squirrel"
+	"github.com/sitename/sitename/model"
+)
 
 type SaleProductRelation struct {
 	Id        string `json:"id"`
@@ -10,9 +13,9 @@ type SaleProductRelation struct {
 }
 
 type SaleProductRelationFilterOption struct {
-	Id        *model.StringFilter
-	SaleID    *model.StringFilter
-	ProductID *model.StringFilter
+	Id        squirrel.Sqlizer
+	SaleID    squirrel.Sqlizer
+	ProductID squirrel.Sqlizer
 }
 
 func (s *SaleProductRelation) PreSave() {

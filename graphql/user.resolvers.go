@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
@@ -16,6 +17,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/wishlist"
+	"github.com/sitename/sitename/store"
 )
 
 func (r *customerEventResolver) User(ctx context.Context, obj *gqlmodel.CustomerEvent) (*gqlmodel.User, error) {
@@ -270,11 +272,7 @@ func (r *userResolver) Wishlist(ctx context.Context, obj *gqlmodel.User) (*gqlmo
 	}
 
 	wishList, appErr := r.Srv().WishlistService().WishlistByOption(&wishlist.WishlistFilterOption{
-		UserID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: obj.ID,
-			},
-		},
+		UserID: squirrel.Eq{store.WishlistTableName + ".UserID": obj.ID},
 	})
 	if appErr != nil {
 		return nil, appErr

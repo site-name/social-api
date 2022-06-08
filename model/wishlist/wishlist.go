@@ -1,6 +1,7 @@
 package wishlist
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -13,9 +14,9 @@ type Wishlist struct {
 
 // WishlistFilterOption is used to build squirrel sql queries
 type WishlistFilterOption struct {
-	Id     *model.StringFilter
-	Token  *model.StringFilter
-	UserID *model.StringFilter
+	Id     squirrel.Sqlizer
+	Token  squirrel.Sqlizer
+	UserID squirrel.Sqlizer
 }
 
 func (w *Wishlist) IsValid() *model.AppError {

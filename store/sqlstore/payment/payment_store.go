@@ -257,7 +257,7 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 
 	// parse option
 	if option.Id != nil {
-		query = query.Where(option.Id.ToSquirrel("Payments.Id"))
+		query = query.Where(option.Id)
 	}
 	if model.IsValidId(option.OrderID) {
 		query = query.Where(squirrel.Eq{"Payments.OrderID": option.OrderID})
@@ -274,7 +274,7 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 	if option.TransactionsKind != nil {
 		query = query.
 			InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)").
-			Where(option.TransactionsKind.ToSquirrel("Transactions.Kind"))
+			Where(option.TransactionsKind)
 
 		joinedTransactionTable = true // indicate that we have joined transaction table
 	}

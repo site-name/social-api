@@ -4,6 +4,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -97,13 +98,13 @@ type Payment struct {
 
 // PaymentFilterOption is used to build sql queries
 type PaymentFilterOption struct {
-	Id                         *model.StringFilter
+	Id                         squirrel.Sqlizer
 	OrderID                    string // payments belong to order
 	CheckoutToken              string
 	IsActive                   *bool
-	TransactionsKind           *model.StringFilter // for filtering payment's transactions's `Kind`
-	TransactionsActionRequired *bool               // for filtering payment's transactions's `ActionRequired`
-	TransactionsIsSuccess      *bool               // for filtering payment's transactions's `IsSuccess`
+	TransactionsKind           squirrel.Sqlizer // for filtering payment's transactions's `Kind`
+	TransactionsActionRequired *bool            // for filtering payment's transactions's `ActionRequired`
+	TransactionsIsSuccess      *bool            // for filtering payment's transactions's `IsSuccess`
 }
 
 // PaymentPatch is used to update payments
