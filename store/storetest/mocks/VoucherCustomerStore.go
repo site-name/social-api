@@ -19,13 +19,13 @@ func (_m *VoucherCustomerStore) CreateIndexesIfNotExists() {
 	_m.Called()
 }
 
-// DeleteInBulk provides a mock function with given fields: relations
-func (_m *VoucherCustomerStore) DeleteInBulk(relations []*product_and_discount.VoucherCustomer) error {
-	ret := _m.Called(relations)
+// DeleteInBulk provides a mock function with given fields: options
+func (_m *VoucherCustomerStore) DeleteInBulk(options *product_and_discount.VoucherCustomerFilterOption) error {
+	ret := _m.Called(options)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func([]*product_and_discount.VoucherCustomer) error); ok {
-		r0 = rf(relations)
+	if rf, ok := ret.Get(0).(func(*product_and_discount.VoucherCustomerFilterOption) error); ok {
+		r0 = rf(options)
 	} else {
 		r0 = ret.Error(0)
 	}

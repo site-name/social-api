@@ -9225,7 +9225,7 @@ func (s *OpenTracingLayerVoucherCollectionStore) Upsert(voucherCollection *produ
 	return result, err
 }
 
-func (s *OpenTracingLayerVoucherCustomerStore) DeleteInBulk(relations []*product_and_discount.VoucherCustomer) error {
+func (s *OpenTracingLayerVoucherCustomerStore) DeleteInBulk(options *product_and_discount.VoucherCustomerFilterOption) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherCustomerStore.DeleteInBulk")
 	s.Root.Store.SetContext(newCtx)
@@ -9234,7 +9234,7 @@ func (s *OpenTracingLayerVoucherCustomerStore) DeleteInBulk(relations []*product
 	}()
 
 	defer span.Finish()
-	err := s.VoucherCustomerStore.DeleteInBulk(relations)
+	err := s.VoucherCustomerStore.DeleteInBulk(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

@@ -9984,11 +9984,11 @@ func (s *RetryLayerVoucherCollectionStore) Upsert(voucherCollection *product_and
 
 }
 
-func (s *RetryLayerVoucherCustomerStore) DeleteInBulk(relations []*product_and_discount.VoucherCustomer) error {
+func (s *RetryLayerVoucherCustomerStore) DeleteInBulk(options *product_and_discount.VoucherCustomerFilterOption) error {
 
 	tries := 0
 	for {
-		err := s.VoucherCustomerStore.DeleteInBulk(relations)
+		err := s.VoucherCustomerStore.DeleteInBulk(options)
 		if err == nil {
 			return nil
 		}

@@ -1,6 +1,7 @@
 package product_and_discount
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -13,9 +14,9 @@ type VoucherCustomer struct {
 
 // VoucherCustomerFilterOption is used to build squirrel sql queries
 type VoucherCustomerFilterOption struct {
-	Id            *model.StringFilter
-	VoucherID     *model.StringFilter
-	CustomerEmail *model.StringFilter
+	Id            squirrel.Sqlizer
+	VoucherID     squirrel.Sqlizer
+	CustomerEmail squirrel.Sqlizer
 }
 
 func (vc *VoucherCustomer) PreSave() {

@@ -57,13 +57,13 @@ func (vcs *SqlVoucherCustomerStore) commonQueryBuilder(options *product_and_disc
 
 	// parse options
 	if options.Id != nil {
-		query = query.Where(options.Id.ToSquirrel("Id"))
+		query = query.Where(options.Id)
 	}
 	if options.VoucherID != nil {
-		query = query.Where(options.VoucherID.ToSquirrel("VoucherID"))
+		query = query.Where(options.VoucherID)
 	}
 	if options.CustomerEmail != nil {
-		query = query.Where(options.CustomerEmail.ToSquirrel("CustomerEmail"))
+		query = query.Where(options.CustomerEmail)
 	}
 
 	return query
@@ -105,25 +105,28 @@ func (vcs *SqlVoucherCustomerStore) FilterByOptions(options *product_and_discoun
 }
 
 // DeleteInBulk deletes given voucher-customers with given id
-func (vcs *SqlVoucherCustomerStore) DeleteInBulk(relations []*product_and_discount.VoucherCustomer) error {
-	tx, err := vcs.GetMaster().Begin()
+func (vcs *SqlVoucherCustomerStore) DeleteInBulk(options *product_and_discount.VoucherCustomerFilterOption) error {
+	deleteQuery := vcs.GetQueryBuilder().Delete(store.VoucherCustomerTableName)
+
+	// parse options
+	if options.Id != nil {
+		deleteQuery = deleteQuery.Where(options.Id)
+	}
+	if options.VoucherID != nil {
+		deleteQuery = deleteQuery.Where(options.VoucherID)
+	}
+	if options.CustomerEmail != nil {
+		deleteQuery = deleteQuery.Where(options.CustomerEmail)
+	}
+
+	res, err := deleteQuery.RunWith(vcs.GetMaster()).Exec()
 	if err != nil {
-		return errors.Wrap(err, "trnsaction_begin")
-	}
-	defer store.FinalizeTransaction(tx)
-
-	for _, rel := range relations {
-		numDeleted, err := tx.Delete(rel)
-		if err != nil {
-			return errors.Wrapf(err, "failed to delete a voucher-customer relation with id=%d", rel.Id)
-		}
-		if numDeleted > 1 {
-			return errors.Errorf("multiple voucher-customer relations have been deleted: %d instead of 1", numDeleted)
-		}
+		return errors.Wrap(err, "failed to delete voucher-customer relations by given options")
 	}
 
-	if err := tx.Commit(); err != nil {
-		return errors.Wrap(err, "transaction_commit")
+	_, err = res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "failed to get number of deleted voucher-customer relations")
 	}
 
 	return nil

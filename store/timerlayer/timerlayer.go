@@ -8400,10 +8400,10 @@ func (s *TimerLayerVoucherCollectionStore) Upsert(voucherCollection *product_and
 	return result, err
 }
 
-func (s *TimerLayerVoucherCustomerStore) DeleteInBulk(relations []*product_and_discount.VoucherCustomer) error {
+func (s *TimerLayerVoucherCustomerStore) DeleteInBulk(options *product_and_discount.VoucherCustomerFilterOption) error {
 	start := timemodule.Now()
 
-	err := s.VoucherCustomerStore.DeleteInBulk(relations)
+	err := s.VoucherCustomerStore.DeleteInBulk(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

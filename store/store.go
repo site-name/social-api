@@ -847,7 +847,7 @@ type (
 	VoucherCustomerStore interface {
 		CreateIndexesIfNotExists()
 		Save(voucherCustomer *product_and_discount.VoucherCustomer) (*product_and_discount.VoucherCustomer, error)                  // Save inserts given voucher customer instance into database ands returns it
-		DeleteInBulk(relations []*product_and_discount.VoucherCustomer) error                                                       // DeleteInBulk deletes given voucher-customers with given id
+		DeleteInBulk(options *product_and_discount.VoucherCustomerFilterOption) error                                               // DeleteInBulk deletes given voucher-customers with given id
 		GetByOption(options *product_and_discount.VoucherCustomerFilterOption) (*product_and_discount.VoucherCustomer, error)       // GetByOption finds and returns a voucher customer with given options
 		FilterByOptions(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, error) // FilterByOptions finds and returns a slice of voucher customers by given options
 	}

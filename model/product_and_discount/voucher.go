@@ -38,7 +38,7 @@ var (
 type Voucher struct {
 	Id                       string  `json:"id"`
 	ShopID                   string  `json:"shop_id"` // the shop which issued this voucher
-	Type                     string  `json:"type"`
+	Type                     string  `json:"type"`    // default to "entire_order"
 	Name                     *string `json:"name"`
 	Code                     string  `json:"code"` // UNIQUE
 	UsageLimit               *int    `json:"usage_limit"`
@@ -149,6 +149,9 @@ func (v *Voucher) commonPre() {
 	}
 	if v.Type == "" {
 		v.Type = ENTIRE_ORDER
+	}
+	if v.UsageLimit != nil && *v.UsageLimit < 0 {
+		v.UsageLimit = model.NewInt(0)
 	}
 	v.Countries = strings.ToUpper(v.Countries)
 }

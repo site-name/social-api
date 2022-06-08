@@ -195,16 +195,8 @@ func (a *ServiceDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher
 // ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
 func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError) {
 	voucherCustomers, appErr := a.VoucherCustomersByOption(&product_and_discount.VoucherCustomerFilterOption{
-		VoucherID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: voucher.Id,
-			},
-		},
-		CustomerEmail: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: customerEmail,
-			},
-		},
+		VoucherID:     squirrel.Eq{store.VoucherCustomerTableName + ".VoucherID": voucher.Id},
+		CustomerEmail: squirrel.Eq{store.VoucherCustomerTableName + ".CustomerEmail": customerEmail},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError { // must returns here since it's system error

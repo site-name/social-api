@@ -38,16 +38,8 @@ func (a *ServiceDiscount) DecreaseVoucherUsage(voucher *product_and_discount.Vou
 // AddVoucherUsageByCustomer adds an usage for given voucher, by given customer
 func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) (*product_and_discount.NotApplicable, *model.AppError) {
 	_, appErr := a.VoucherCustomerByOptions(&product_and_discount.VoucherCustomerFilterOption{
-		VoucherID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: voucher.Id,
-			},
-		},
-		CustomerEmail: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: customerEmail,
-			},
-		},
+		VoucherID:     squirrel.Eq{store.VoucherCustomerTableName + ".VoucherID": voucher.Id},
+		CustomerEmail: squirrel.Eq{store.VoucherCustomerTableName + ".CustomerEmail": customerEmail},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -66,30 +58,12 @@ func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *product_and_discoun
 
 // RemoveVoucherUsageByCustomer deletes voucher customers for given voucher
 func (a *ServiceDiscount) RemoveVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError {
-	voucherCustomers, appErr := a.VoucherCustomersByOption(&product_and_discount.VoucherCustomerFilterOption{
-		VoucherID: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: voucher.Id,
-			},
-		},
-		CustomerEmail: &model.StringFilter{
-			StringOption: &model.StringOption{
-				Eq: customerEmail,
-			},
-		},
+	err := a.srv.Store.VoucherCustomer().DeleteInBulk(&product_and_discount.VoucherCustomerFilterOption{
+		VoucherID:     squirrel.Eq{store.VoucherCustomerTableName + ".VoucherID": voucher.Id},
+		CustomerEmail: squirrel.Eq{store.VoucherCustomerTableName + ".CustomerEmail": customerEmail},
 	})
-	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return appErr
-		}
-		return nil
-	}
-
-	if len(voucherCustomers) > 0 {
-		err := a.srv.Store.VoucherCustomer().DeleteInBulk(voucherCustomers)
-		if err != nil {
-			return model.NewAppError("RemoveVoucherUsageByCustomer", "app.discount.error_delating_voucher_customer_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
+	if err != nil {
+		return model.NewAppError("RemoveVoucherUsageByCustomer", "app.discount.error_delating_voucher_customer_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil
