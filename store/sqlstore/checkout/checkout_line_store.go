@@ -231,7 +231,10 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 
 		scanFields = append(
 			cls.ScanFields(checkoutLine),
-			append(cls.ProductVariant().ScanFields(productVariant), cls.Product().ScanFields(product)...),
+			append(
+				cls.ProductVariant().ScanFields(productVariant),
+				cls.Product().ScanFields(product)...,
+			)...,
 		)
 	)
 

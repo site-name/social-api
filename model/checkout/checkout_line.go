@@ -99,5 +99,8 @@ func (c *CheckoutLine) PreSave() {
 
 func (c *CheckoutLine) DeepCopy() *CheckoutLine {
 	res := *c
+	if c.ProductVariant != nil {
+		res.ProductVariant = c.ProductVariant.DeepCopy()
+	}
 	return &res
 }

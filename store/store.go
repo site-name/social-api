@@ -4,10 +4,12 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	"database/sql/driver"
 	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/jmoiron/sqlx"
 	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/graphql/gqlmodel"
@@ -37,29 +39,47 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 )
 
+type Builder interface {
+	ToSql() (string, []interface{}, error)
+}
+
+// SqlxExecutor exposes sqlx operations. It is used to enable some internal store methods to
+// accept both transactions (*sqlxTxWrapper) and common db handlers (*sqlxDbWrapper).
+type SqlxExecutor interface {
+	Get(dest interface{}, query string, args ...interface{}) error
+	GetBuilder(dest interface{}, builder Builder) error
+	NamedExec(query string, arg interface{}) (sql.Result, error)
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	ExecBuilder(builder Builder) (sql.Result, error)
+	ExecRaw(query string, args ...interface{}) (sql.Result, error)
+	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
+	QueryRowX(query string, args ...interface{}) *sqlx.Row
+	QueryX(query string, args ...interface{}) (*sqlx.Rows, error)
+	Select(dest interface{}, query string, args ...interface{}) error
+	SelectBuilder(dest interface{}, builder Builder) error
+	ExecNoTimeout(query string, args ...interface{}) (sql.Result, error)
+}
+
 // Store is database gateway of the system
 type Store interface {
-	Context() context.Context                                                                                          // Context gets context
-	Close()                                                                                                            // Close closes databases
-	LockToMaster()                                                                                                     // LockToMaster constraints all queries to be performed on master
-	UnlockFromMaster()                                                                                                 // UnlockFromMaster makes all datasources available
-	DropAllTables()                                                                                                    // DropAllTables drop all tables in databases
-	SetContext(context context.Context)                                                                                // set context
-	GetDbVersion(numerical bool) (string, error)                                                                       // GetDbVersion returns version in use of database
-	GetMaster() *gorp.DbMap                                                                                            // GetMaster get master datasource
-	GetReplica() *gorp.DbMap                                                                                           // GetMaster gets slave datasource
-	CommonMetaDataIndex(tableName string)                                                                              // CommonMetaDataIndex create indexes for tables that have fields `metadata` and `privatemetadata`
-	CommonSeoMaxLength(table *gorp.TableMap)                                                                           // CommonSeoMaxLength is common method for settings max lengths for tables's `seotitle` and `seodescription`
-	CreateIndexIfNotExists(indexName, tableName, columnName string) bool                                               // CreateIndexIfNotExists creates indexes for tables
-	GetAllConns() []*gorp.DbMap                                                                                        // GetAllConns returns all datasources available in use
-	GetQueryBuilder() squirrel.StatementBuilderType                                                                    // GetQueryBuilder create squirrel sql query builder
-	CreateFullTextIndexIfNotExists(indexName string, tableName string, columnName string) bool                         //
-	IsUniqueConstraintError(err error, indexName []string) bool                                                        //
-	DBFromContext(ctx context.Context) *gorp.DbMap                                                                     //
-	CreateForeignKeyIfNotExists(tableName, columnName, refTableName, refColumnName string, onDeleteCascade bool) error //
-	CreateFullTextFuncIndexIfNotExists(indexName string, tableName string, function string) bool                       //
-	MarkSystemRanUnitTests()                                                                                           //
-	FinalizeTransaction(transaction driver.Tx)                                                                         // FinalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
+	Context() context.Context           // Context gets context
+	SetContext(context context.Context) // set context
+	Close()                             // Close closes databases
+	LockToMaster()                      // LockToMaster constraints all queries to be performed on master
+	UnlockFromMaster()                  // UnlockFromMaster makes all datasources available
+	// GetInternalMasterDB() *sql.DB       // GetInternalMasterDB allows access to the raw master DB handle for the multi-product architecture.
+	GetInternalReplicaDBs() []*sql.DB // GetInternalReplicaDBs allows access to the raw replica DB handles for the multi-product architecture.
+	ReplicaLagTime() error
+	ReplicaLagAbs() error
+	CheckIntegrity() <-chan model.IntegrityCheckResult
+	DropAllTables()                                             // DropAllTables drop all tables in databases
+	GetDbVersion(numerical bool) (string, error)                // GetDbVersion returns version in use of database
+	GetMasterX() SqlxExecutor                                   // GetMaster get master datasource
+	GetReplicaX() SqlxExecutor                                  // GetMaster gets slave datasource
+	GetQueryBuilder() squirrel.StatementBuilderType             // GetQueryBuilder create squirrel sql query builder
+	IsUniqueConstraintError(err error, indexName []string) bool //
+	MarkSystemRanUnitTests()                                    //
+	FinalizeTransaction(transaction driver.Tx)                  // FinalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
 
 	User() UserStore                                                   // account
 	Address() AddressStore                                             //
@@ -356,7 +376,7 @@ type ComplianceStore interface {
 	MessageExport(cursor compliance.MessageExportCursor, limit int) ([]*compliance.MessageExport, compliance.MessageExportCursor, error)
 }
 
-//plugin
+// plugin
 type PluginConfigurationStore interface {
 	CreateIndexesIfNotExists()
 	TableName(withField string) string
