@@ -86,7 +86,7 @@ func (w *sqlxDBWrapper) GetBuilder(dest interface{}, builder store.Builder) erro
 	return w.Get(dest, query, args...)
 }
 
-func (w *sqlxDBWrapper) Beginx() (*sqlxTxWrapper, error) {
+func (w *sqlxDBWrapper) Beginx() (store.SqlxTxExecutor, error) {
 	tx, err := w.DB.Beginx()
 	if err != nil {
 		return nil, err
@@ -240,6 +240,10 @@ func newSqlxTxWrapper(tx *sqlx.Tx, timeout time.Duration, trace bool) *sqlxTxWra
 		queryTimeout: timeout,
 		trace:        trace,
 	}
+}
+
+func (w *sqlxTxWrapper) Beginx() (store.SqlxTxExecutor, error) {
+	return w, nil
 }
 
 func (w *sqlxTxWrapper) Get(dest interface{}, query string, args ...interface{}) error {

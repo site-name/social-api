@@ -1107,12 +1107,13 @@ func (a *OpenTracingAppLayer) Metrics() einterfaces.MetricsInterface {
 	return a.metrics
 }
 
-// func (a *OpenTracingAppLayer) MessageExport() einterfaces.MessageExportInterface {
-// 	return a.messageExport
-// }
-// func (a *OpenTracingAppLayer) Notification() einterfaces.NotificationInterface {
-// 	return a.notification
-// }
+//	func (a *OpenTracingAppLayer) MessageExport() einterfaces.MessageExportInterface {
+//		return a.messageExport
+//	}
+//
+//	func (a *OpenTracingAppLayer) Notification() einterfaces.NotificationInterface {
+//		return a.notification
+//	}
 func (a *OpenTracingAppLayer) Saml() einterfaces.SamlInterface {
 	return a.saml
 }

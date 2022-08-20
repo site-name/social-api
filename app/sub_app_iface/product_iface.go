@@ -127,13 +127,13 @@ type ProductService interface {
 	UpsertProductVariant(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, *model.AppError)
 	// VisibleCollectionsToUser returns all collections that belong to given shop and can be viewed by given user
 	VisibleCollectionsToUser(userID string, shopID string, channelSlug string) ([]*product_and_discount.Collection, *model.AppError)
+	CountProductTypesByOptions(options *product_and_discount.ProductTypeFilterOption) (int64, *model.AppError)
 	GetDefaultDigitalContentSettings(aShop *shop.Shop) *shop.ShopDefaultDigitalContentSettings
 	GetProductAvailability(product product_and_discount.Product, productChannelListing *product_and_discount.ProductChannelListing, variants []*product_and_discount.ProductVariant, variantsChannelListing []*product_and_discount.ProductVariantChannelListing, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel channel.Channel, manager interfaces.PluginManagerInterface, countryCode string, localCurrency string) (*product_and_discount.ProductAvailability, *model.AppError)
 	GetProductPriceRange(product product_and_discount.Product, variants product_and_discount.ProductVariants, variantsChannelListing []*product_and_discount.ProductVariantChannelListing, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel channel.Channel) (*goprices.MoneyRange, *model.AppError)
 	GetVariantAvailability(variant product_and_discount.ProductVariant, variantChannelListing product_and_discount.ProductVariantChannelListing, product product_and_discount.Product, productChannelListing *product_and_discount.ProductChannelListing, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, chanNel channel.Channel, plugins interfaces.PluginManagerInterface, country string, localCurrency string) (*product_and_discount.VariantAvailability, *model.AppError)
 	IncrementDownloadCount(contentURL *product_and_discount.DigitalContentUrl) *model.AppError
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, *model.AppError)
-	UpdateProductsDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) *model.AppError
 	ProductTypesByOptions(options *product_and_discount.ProductTypeFilterOption) ([]*product_and_discount.ProductType, *model.AppError)
-	CountProductTypesByOptions(options *product_and_discount.ProductTypeFilterOption) (int64, *model.AppError)
+	UpdateProductsDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) *model.AppError
 }

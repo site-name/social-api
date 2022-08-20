@@ -20,6 +20,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/util/fileutils"
+	"github.com/sitename/sitename/store"
 )
 
 var (
@@ -163,26 +164,26 @@ func (s *ServiceAccount) StoreUserAddress(user *account.User, address account.Ad
 
 	addressFilterOptions := squirrel.And{}
 	if address_.FirstName != "" {
-		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{s.srv.Store.Address().TableName("FirstName"): address_.FirstName})
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{store.AddressTableName + ".FirstName": address_.FirstName})
 	}
 	if address_.LastName != "" {
-		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{s.srv.Store.Address().TableName("LastName"): address_.LastName})
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{store.AddressTableName + ".LastName": address_.LastName})
 	}
 	if address_.CompanyName != "" {
-		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{s.srv.Store.Address().TableName("CompanyName"): address_.CompanyName})
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{store.AddressTableName + ".CompanyName": address_.CompanyName})
 	}
 	if address_.Phone != "" {
-		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{s.srv.Store.Address().TableName("Phone"): address_.Phone})
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{store.AddressTableName + ".Phone": address_.Phone})
 	}
 	if address_.PostalCode != "" {
-		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{s.srv.Store.Address().TableName("PostalCode"): address_.PostalCode})
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{store.AddressTableName + ".PostalCode": address_.PostalCode})
 	}
 	if address_.Country != "" {
-		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{s.srv.Store.Address().TableName("Country"): address_.Country})
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{store.AddressTableName + ".Country": address_.Country})
 	}
 
 	addresses, appErr := s.AddressesByOption(&account.AddressFilterOption{
-		UserID: squirrel.Eq{s.srv.Store.UserAddress().TableName("UserID"): user.Id},
+		UserID: squirrel.Eq{store.UserAddressTableName + ".UserID": user.Id},
 		Other:  addressFilterOptions,
 	})
 	if appErr != nil {

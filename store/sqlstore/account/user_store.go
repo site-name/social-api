@@ -45,27 +45,6 @@ func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface)
 		Select(us.ModelFields()...).
 		From(store.UserTableName)
 
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(account.User{}, store.UserTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("DefaultShippingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("DefaultBillingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Username").SetMaxSize(model.USER_NAME_MAX_LENGTH).SetUnique(true)
-		table.ColMap("Password").SetMaxSize(account.USER_HASH_PASSWORD_MAX_LENGTH)
-		table.ColMap("AuthData").SetMaxSize(account.USER_AUTH_DATA_MAX_LENGTH).SetUnique(true)
-		table.ColMap("AuthService").SetMaxSize(32)
-		table.ColMap("Email").SetMaxSize(model.USER_EMAIL_MAX_LENGTH).SetUnique(true)
-		table.ColMap("Nickname").SetMaxSize(model.USER_NAME_MAX_LENGTH)
-		table.ColMap("FirstName").SetMaxSize(account.USER_FIRST_NAME_MAX_RUNES)
-		table.ColMap("LastName").SetMaxSize(account.USER_LAST_NAME_MAX_RUNES)
-		table.ColMap("Roles").SetMaxSize(256)
-		table.ColMap("Locale").SetMaxSize(account.USER_LOCALE_MAX_LENGTH)
-		table.ColMap("MfaSecret").SetMaxSize(128)
-		table.ColMap("Timezone").SetMaxSize(account.USER_TIMEZONE_MAX_RUNES)
-		table.ColMap("NotifyProps").SetMaxSize(2000)
-		table.ColMap("Props").SetMaxSize(4000)
-	}
-
 	return us
 }
 
@@ -144,24 +123,6 @@ func (us *SqlUserStore) GetUnreadCount(userID string) (int64, error) {
 	panic("not implemented")
 }
 
-func (us *SqlUserStore) CreateIndexesIfNotExists() {
-	us.CreateIndexIfNotExists("idx_users_email", store.UserTableName, "Email")
-	us.CreateIndexIfNotExists("idx_users_email_lower_textpattern", store.UserTableName, "lower(Email) text_pattern_ops")
-	us.CreateIndexIfNotExists("idx_users_username_lower_textpattern", store.UserTableName, "lower(Username) text_pattern_ops")
-	us.CreateIndexIfNotExists("idx_users_nickname_lower_textpattern", store.UserTableName, "lower(Nickname) text_pattern_ops")
-	us.CreateIndexIfNotExists("idx_users_firstname_lower_textpattern", store.UserTableName, "lower(FirstName) text_pattern_ops")
-	us.CreateIndexIfNotExists("idx_users_lastname_lower_textpattern", store.UserTableName, "lower(LastName) text_pattern_ops")
-	us.CreateFullTextIndexIfNotExists("idx_users_all_txt", store.UserTableName, strings.Join(UserSearchTypeAll, ", "))
-	us.CreateFullTextIndexIfNotExists("idx_users_all_no_full_name_txt", store.UserTableName, strings.Join(UserSearchTypeAll_NO_FULL_NAME, ", "))
-	us.CreateFullTextIndexIfNotExists("idx_users_names_txt", store.UserTableName, strings.Join(UserSearchTypeNames, ", "))
-	us.CreateFullTextIndexIfNotExists("idx_users_names_no_full_name_txt", store.UserTableName, strings.Join(UserSearchTypeNames_NO_FULL_NAME, ", "))
-
-	us.CreateForeignKeyIfNotExists(store.UserTableName, "DefaultShippingAddressID", store.AddressTableName, "Id", false)
-	us.CreateForeignKeyIfNotExists(store.UserTableName, "DefaultBillingAddressID", store.AddressTableName, "Id", false)
-	// create indexes for metadata
-	us.CommonMetaDataIndex(store.UserTableName)
-}
-
 // DeactivateGuests
 func (us *SqlUserStore) DeactivateGuests() ([]string, error) {
 	curTime := model.GetMillis()
@@ -178,7 +139,7 @@ func (us *SqlUserStore) DeactivateGuests() ([]string, error) {
 		return nil, errors.Wrap(err, "deactivate_guests_tosql")
 	}
 
-	_, err = us.GetMaster().Exec(queryString, args...)
+	_, err = us.GetMasterX().Exec(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to update Users with roles=system_guest")
 	}
@@ -195,7 +156,7 @@ func (us *SqlUserStore) DeactivateGuests() ([]string, error) {
 	}
 
 	userIds := []string{}
-	_, err = us.GetMaster().Select(&userIds, queryString, args...)
+	err = us.GetMasterX().Select(&userIds, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find Users")
 	}
@@ -218,30 +179,29 @@ func (us *SqlUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []s
 	}
 
 	if dryRun {
-		builder := us.
-			GetQueryBuilder().
+		builder := us.GetQueryBuilder().
 			Select("COUNT(*)").
-			From(store.UserTableName).
+			From("Users").
 			Where(whereEquals)
 		query, args, err := builder.ToSql()
 		if err != nil {
 			return 0, errors.Wrap(err, "select_count_users_tosql")
 		}
-		numAffected, err := us.GetReplica().SelectInt(query, args...)
-		return int(numAffected), err
+		var numAffected int
+		err = us.GetReplicaX().Get(&numAffected, query, args...)
+		return numAffected, err
 	}
-	builder := us.
-		GetQueryBuilder().
-		Update(store.UserTableName).
+	builder := us.GetQueryBuilder().
+		Update("Users").
 		Set("AuthData", squirrel.Expr("Email")).
 		Where(whereEquals)
 	query, args, err := builder.ToSql()
 	if err != nil {
 		return 0, errors.Wrap(err, "update_users_tosql")
 	}
-	result, err := us.GetMaster().Exec(query, args...)
+	result, err := us.GetMasterX().Exec(query, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to update user's AuthData")
+		return 0, errors.Wrap(err, "failed to update users' AuthData")
 	}
 	numAffected, err := result.RowsAffected()
 	return int(numAffected), err
@@ -250,17 +210,12 @@ func (us *SqlUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []s
 func (us *SqlUserStore) InvalidateProfileCacheForUser(userId string) {}
 
 func (us *SqlUserStore) GetEtagForProfiles(teamId string) string {
-	// updateAt, err := us.GetReplica().SelectInt("SELECT UpdateAt FROM User")
-	// if err != nil {
-	// 	return fmt.Sprintf("%v.%v", model.CurrentVersion, updateAt)
-	// }
-	// return fmt.Sprintf("%v.%v", model.CurrentVersion, updateAt)
-	// TODO: fixme
 	panic("not implemented")
 }
 
 func (us *SqlUserStore) GetEtagForAllProfiles() string {
-	updateAt, err := us.GetReplica().SelectInt("SELECT UpdateAt FROM " + store.UserTableName + " ORDER BY UpdateAt DESC LIMIT 1")
+	var updateAt int64
+	err := us.GetReplicaX().Get(&updateAt, "SELECT UpdateAt FROM "+store.UserTableName+" ORDER BY UpdateAt DESC LIMIT 1")
 	if err != nil {
 		return fmt.Sprintf("%v.%v", model.CurrentVersion, model.GetMillis())
 	}
@@ -273,7 +228,7 @@ func (us *SqlUserStore) Save(user *account.User) (*account.User, error) {
 		return nil, err
 	}
 
-	if err := us.GetMaster().Insert(user); err != nil {
+	if err := us.GetMasterX().Insert(user); err != nil {
 		if us.IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique"}) {
 			return nil, store.NewErrInvalidInput("User", "email", user.Email)
 		}

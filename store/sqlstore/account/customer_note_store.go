@@ -1,7 +1,10 @@
 package account
 
 import (
+	"database/sql"
+
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
@@ -10,22 +13,27 @@ type SqlCustomerNoteStore struct {
 	store.Store
 }
 
-func NewSqlCustomerNoteStore(s store.Store) store.CustomerNoteStore {
-	cs := &SqlCustomerNoteStore{s}
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(account.CustomerNote{}, store.CustomerNoteTableName)
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CustomerID").SetMaxSize(store.UUID_MAX_LENGTH)
-	}
-
-	return cs
+var customerNoteModelFields = model.StringArray{
+	"Id",
+	"UserID",
+	"Date",
+	"Content",
+	"IsPublic",
+	"CustomerID",
 }
 
-func (cs *SqlCustomerNoteStore) CreateIndexesIfNotExists() {
-	cs.CreateIndexIfNotExists("idx_customer_notes_date", store.CustomerNoteTableName, "Date")
-	cs.CreateForeignKeyIfNotExists(store.CustomerNoteTableName, "UserID", store.UserTableName, "Id", false)
-	cs.CreateForeignKeyIfNotExists(store.CustomerNoteTableName, "CustomerID", store.UserTableName, "Id", true)
+func NewSqlCustomerNoteStore(s store.Store) store.CustomerNoteStore {
+	return &SqlCustomerNoteStore{s}
+}
+
+func (cs *SqlCustomerNoteStore) ModelFields(prefix string) model.StringArray {
+	if prefix == "" {
+		return customerNoteModelFields
+	}
+
+	return customerNoteModelFields.Map(func(_ int, item string) string {
+		return prefix + item
+	})
 }
 
 func (cs *SqlCustomerNoteStore) Save(note *account.CustomerNote) (*account.CustomerNote, error) {
@@ -34,7 +42,8 @@ func (cs *SqlCustomerNoteStore) Save(note *account.CustomerNote) (*account.Custo
 		return nil, err
 	}
 
-	if err := cs.GetMaster().Insert(note); err != nil {
+	query := "INSERT INTO " + store.CustomerNoteTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
+	if _, err := cs.GetMasterX().NamedExec(query, note); err != nil {
 		return nil, errors.Wrapf(err, "failed to save customer note with id=%s", note.Id)
 	}
 
@@ -42,9 +51,14 @@ func (cs *SqlCustomerNoteStore) Save(note *account.CustomerNote) (*account.Custo
 }
 
 func (cs *SqlCustomerNoteStore) Get(id string) (*account.CustomerNote, error) {
-	if res, err := cs.GetReplica().Get(account.CustomerNote{}, id); err != nil {
+	var res account.CustomerNote
+
+	if err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+store.CustomerNoteTableName+" WHERE Id = ?", id); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.CustomerNoteTableName, id)
+		}
 		return nil, errors.Wrapf(err, "failed to find customer note with id=%s", id)
-	} else {
-		return res.(*account.CustomerNote), nil
 	}
+
+	return &res, nil
 }

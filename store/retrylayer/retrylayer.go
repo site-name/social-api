@@ -1255,37 +1255,11 @@ func (s *RetryLayerAddressStore) Get(addressID string) (*account.Address, error)
 
 }
 
-func (s *RetryLayerAddressStore) OrderBy() string {
-
-	return s.AddressStore.OrderBy()
-
-}
-
-func (s *RetryLayerAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
+func (s *RetryLayerAddressStore) Upsert(transaction SqlxExecutor, address *account.Address) (*account.Address, error) {
 
 	tries := 0
 	for {
-		result, err := s.AddressStore.Save(transaction, address)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerAddressStore) Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-
-	tries := 0
-	for {
-		result, err := s.AddressStore.Update(transaction, address)
+		result, err := s.AddressStore.Upsert(transaction, address)
 		if err == nil {
 			return result, nil
 		}
@@ -9755,12 +9729,6 @@ func (s *RetryLayerUserAddressStore) FilterByOptions(options *account.UserAddres
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerUserAddressStore) OrderBy() string {
-
-	return s.UserAddressStore.OrderBy()
 
 }
 

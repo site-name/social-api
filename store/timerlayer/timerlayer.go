@@ -1232,26 +1232,10 @@ func (s *TimerLayerAddressStore) Get(addressID string) (*account.Address, error)
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) OrderBy() string {
+func (s *TimerLayerAddressStore) Upsert(transaction SqlxExecutor, address *account.Address) (*account.Address, error) {
 	start := timemodule.Now()
 
-	result := s.AddressStore.OrderBy()
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if true {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.OrderBy", success, elapsed)
-	}
-	return result
-}
-
-func (s *TimerLayerAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	start := timemodule.Now()
-
-	result, err := s.AddressStore.Save(transaction, address)
+	result, err := s.AddressStore.Upsert(transaction, address)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1259,23 +1243,7 @@ func (s *TimerLayerAddressStore) Save(transaction *gorp.Transaction, address *ac
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAddressStore) Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	start := timemodule.Now()
-
-	result, err := s.AddressStore.Update(transaction, address)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.Update", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -8206,22 +8174,6 @@ func (s *TimerLayerUserAddressStore) FilterByOptions(options *account.UserAddres
 		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
-}
-
-func (s *TimerLayerUserAddressStore) OrderBy() string {
-	start := timemodule.Now()
-
-	result := s.UserAddressStore.OrderBy()
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if true {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.OrderBy", success, elapsed)
-	}
-	return result
 }
 
 func (s *TimerLayerUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {

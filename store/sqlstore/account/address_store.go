@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -16,70 +15,36 @@ type SqlAddressStore struct {
 	store.Store
 }
 
+var modelFields = model.StringArray{
+	"Id",
+	"FirstName",
+	"LastName",
+	"CompanyName",
+	"StreetAddress1",
+	"StreetAddress2",
+	"City",
+	"CityArea",
+	"PostalCode",
+	"Country",
+	"CountryArea",
+	"Phone",
+	"CreateAt",
+	"UpdateAt",
+}
+
 // new address database store
 func NewSqlAddressStore(sqlStore store.Store) store.AddressStore {
-	as := &SqlAddressStore{Store: sqlStore}
+	return &SqlAddressStore{Store: sqlStore}
+}
 
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(account.Address{}, as.TableName("")).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("FirstName").SetMaxSize(account.USER_FIRST_NAME_MAX_RUNES)
-		table.ColMap("LastName").SetMaxSize(account.USER_LAST_NAME_MAX_RUNES)
-		table.ColMap("CompanyName").SetMaxSize(account.ADDRESS_COMPANY_NAME_MAX_LENGTH)
-		table.ColMap("StreetAddress1").SetMaxSize(account.ADDRESS_STREET_ADDRESS_MAX_LENGTH)
-		table.ColMap("StreetAddress2").SetMaxSize(account.ADDRESS_STREET_ADDRESS_MAX_LENGTH)
-		table.ColMap("City").SetMaxSize(account.ADDRESS_CITY_NAME_MAX_LENGTH)
-		table.ColMap("CityArea").SetMaxSize(account.ADDRESS_CITY_AREA_MAX_LENGTH)
-		table.ColMap("PostalCode").SetMaxSize(account.ADDRESS_POSTAL_CODE_MAX_LENGTH)
-		table.ColMap("Country").SetMaxSize(account.ADDRESS_COUNTRY_MAX_LENGTH)
-		table.ColMap("CountryArea").SetMaxSize(account.ADDRESS_COUNTRY_AREA_MAX_LENGTH)
-		table.ColMap("Phone").SetMaxSize(account.ADDRESS_PHONE_MAX_LENGTH)
+func (as *SqlAddressStore) ModelFields(prefix string) model.StringArray {
+	if prefix == "" {
+		return modelFields
 	}
 
-	return as
-}
-
-func (as *SqlAddressStore) CreateIndexesIfNotExists() {
-	as.CreateIndexIfNotExists("idx_address_lastname", as.TableName(""), "LastName")
-	as.CreateIndexIfNotExists("idx_address_firstname", as.TableName(""), "FirstName")
-	as.CreateIndexIfNotExists("idx_address_city", as.TableName(""), "City")
-	as.CreateIndexIfNotExists("idx_address_country", as.TableName(""), "Country")
-	as.CreateIndexIfNotExists("idx_address_phone", as.TableName(""), "Phone")
-
-	as.CreateIndexIfNotExists("idx_address_firstname_lower_textpattern", as.TableName(""), "lower(FirstName) text_pattern_ops")
-	as.CreateIndexIfNotExists("idx_address_lastname_lower_textpattern", as.TableName(""), "lower(LastName) text_pattern_ops")
-}
-
-func (as *SqlAddressStore) TableName(withField string) string {
-	name := "Addresses"
-	if withField != "" {
-		name += "." + withField
-	}
-
-	return name
-}
-
-func (as *SqlAddressStore) OrderBy() string {
-	return "CreateAt ASC"
-}
-
-func (as *SqlAddressStore) ModelFields() model.StringArray {
-	return model.StringArray{
-		"Addresses.Id",
-		"Addresses.FirstName",
-		"Addresses.LastName",
-		"Addresses.CompanyName",
-		"Addresses.StreetAddress1",
-		"Addresses.StreetAddress2",
-		"Addresses.City",
-		"Addresses.CityArea",
-		"Addresses.PostalCode",
-		"Addresses.Country",
-		"Addresses.CountryArea",
-		"Addresses.Phone",
-		"Addresses.CreateAt",
-		"Addresses.UpdateAt",
-	}
+	return modelFields.Map(func(_ int, item string) string {
+		return prefix + item
+	})
 }
 
 func (as *SqlAddressStore) ScanFields(addr account.Address) []interface{} {
@@ -101,39 +66,57 @@ func (as *SqlAddressStore) ScanFields(addr account.Address) []interface{} {
 	}
 }
 
-func (as *SqlAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	var upsertor gorp.SqlExecutor = as.GetMaster()
-	if transaction != nil {
-		upsertor = transaction
+func (as *SqlAddressStore) Upsert(transaction store.SqlxExecutor, address *account.Address) (*account.Address, error) {
+	if transaction == nil {
+		transaction = as.GetMasterX()
 	}
 
-	address.PreSave()
+	// to check is saving or updating
+	var isSaving = false
+	if !model.IsValidId(address.Id) {
+		address.Id = ""
+		address.PreSave()
+		isSaving = true
+	}
+
 	if err := address.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := upsertor.Insert(address); err != nil {
-		return nil, errors.Wrapf(err, "failed to save Address with addressId=%s", address.Id)
+	var (
+		errorUpsert          error
+		errCheckRowsAffected error
+		rowsAffected         int64
+	)
+	if isSaving {
+		query := "INSERT INTO " + store.AddressTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+		_, errorUpsert = transaction.NamedExec(query, address)
+
+	} else {
+		query := "UPDATE " + store.AddressTableName + " SET " + as.
+			ModelFields("").
+			Map(func(_ int, item string) string {
+				return item + "=:" + item // Id=:Id
+			}).
+			Join(",") + "WHERE Id=:Id"
+
+		var res sql.Result
+		res, errorUpsert = transaction.NamedExec(query, address)
+		if errorUpsert == nil {
+			rowsAffected, errCheckRowsAffected = res.RowsAffected()
+		}
 	}
 
-	return address, nil
-}
-
-func (as *SqlAddressStore) Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	var upsertor gorp.SqlExecutor = as.GetMaster()
-	if transaction != nil {
-		upsertor = transaction
+	if errorUpsert != nil {
+		return nil, errors.Wrap(errorUpsert, "failed to upsert address to database")
 	}
 
-	address.PreUpdate()
-	if err := address.IsValid(); err != nil {
-		return nil, err
+	if errCheckRowsAffected != nil {
+		return nil, errors.Wrap(errCheckRowsAffected, "failed to get number of address(es) updated")
 	}
 
-	if numUpdate, err := upsertor.Update(address); err != nil {
-		return nil, errors.Wrapf(err, "failed to update address with id=%s", address.Id)
-	} else if numUpdate > 1 {
-		return nil, errors.New("multiple addresses updated instead of one")
+	if rowsAffected != 1 {
+		return nil, errors.Errorf("%d address(es) updated instead of 1", rowsAffected)
 	}
 
 	return address, nil
@@ -141,12 +124,12 @@ func (as *SqlAddressStore) Update(transaction *gorp.Transaction, address *accoun
 
 func (as *SqlAddressStore) Get(addressID string) (*account.Address, error) {
 	var res account.Address
-	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+as.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": addressID})
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AddressTableName+" WHERE Id = ?", addressID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(as.TableName(""), addressID)
+			return nil, store.NewErrNotFound(store.AddressTableName, addressID)
 		}
-		return nil, errors.Wrapf(err, "failed to get %s with Id=%s", as.TableName(""), addressID)
+		return nil, errors.Wrapf(err, "failed to get %s with Id=%s", store.AddressTableName, addressID)
 	}
 
 	return &res, nil
@@ -155,9 +138,9 @@ func (as *SqlAddressStore) Get(addressID string) (*account.Address, error) {
 // FilterByOption finds and returns a list of address(es) filtered by given option
 func (as *SqlAddressStore) FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) {
 	query := as.GetQueryBuilder().
-		Select(as.ModelFields()...).
-		From(as.TableName("")).
-		OrderBy(as.OrderBy())
+		Select(as.ModelFields(store.AddressTableName + ".")...).
+		From(store.AddressTableName).
+		OrderBy(store.TableOrderingMap[store.AddressTableName])
 
 	// parse query
 	if option.Id != nil {
@@ -184,7 +167,7 @@ func (as *SqlAddressStore) FilterByOption(option *account.AddressFilterOption) (
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 	var res []*account.Address
-	_, err = as.GetReplica().Select(&res, queryString, args...)
+	err = as.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find addresses based on given option")
 	}
@@ -193,7 +176,7 @@ func (as *SqlAddressStore) FilterByOption(option *account.AddressFilterOption) (
 }
 
 func (as *SqlAddressStore) DeleteAddresses(addressIDs []string) error {
-	result, err := as.GetMaster().Exec("DELETE FROM "+as.TableName("")+" WHERE Id IN $1", addressIDs)
+	result, err := as.GetMasterX().Exec("DELETE FROM "+store.AddressTableName+" WHERE Id IN ?", addressIDs)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete addresses")
 	}

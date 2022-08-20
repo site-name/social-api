@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -117,6 +119,9 @@ var tables = []string{
 }
 
 func main() {
+
+	sort.Strings(tables)
+
 	for index, name := range tables {
 		var (
 			lowerName = strings.ToLower(name)
@@ -126,25 +131,25 @@ func main() {
 		)
 
 		// check up file exist
-		// if _, err := os.Stat(upName); err != nil && errors.Is(err, os.ErrNotExist) {
-		upFile, err := os.Create(upName)
-		if err != nil {
-			log.Fatalln(err)
+		if _, err := os.Stat(upName); err != nil && errors.Is(err, os.ErrNotExist) {
+			upFile, err := os.Create(upName)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			defer upFile.Close()
+
+			upFile.WriteString("CREATE TABLE IF NOT EXISTS " + lowerName + " ();")
 		}
-		defer upFile.Close()
 
-		upFile.WriteString("CREATE TABLE IF NOT EXISTS " + lowerName + " ();")
-		// }
+		if _, err := os.Stat(downName); err != nil && errors.Is(err, os.ErrNotExist) {
+			downFile, err := os.Create(downName)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			defer downFile.Close()
 
-		// if _, err := os.Stat(downName); err != nil && errors.Is(err, os.ErrNotExist) {
-		downFile, err := os.Create(downName)
-		if err != nil {
-			log.Fatalln(err)
+			downFile.WriteString("DROP TABLE IF EXISTS " + lowerName + ";")
 		}
-		defer downFile.Close()
-
-		downFile.WriteString("DROP TABLE IF EXISTS " + lowerName + ";")
-		// }
 
 	}
 }

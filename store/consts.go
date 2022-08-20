@@ -72,6 +72,7 @@ func init() {
 		UserAddressTableName:                "",               //
 		TermsOfServiceTableName:             "",               //
 		StatusTableName:                     "",               //
+		UserAccessTokenTableName:            "",
 
 		GiftcardTableName:         "Code ASC", // giftcard
 		GiftcardEventTableName:    "Date ASC", //
@@ -209,6 +210,7 @@ const (
 
 // account-related table names
 const (
+	UserAccessTokenTableName            = "UserAccessTokens"
 	AddressTableName                    = "Addresses"                   //
 	UserTableName                       = "Users"                       //
 	CustomerEventTableName              = "CustomerEvents"              //

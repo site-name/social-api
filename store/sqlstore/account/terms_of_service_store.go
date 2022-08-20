@@ -15,42 +15,44 @@ type SqlTermsOfServiceStore struct {
 	metrics einterfaces.MetricsInterface
 }
 
-func NewSqlTermsOfServiceStore(sqlStore store.Store, metrics einterfaces.MetricsInterface) store.TermsOfServiceStore {
-	s := &SqlTermsOfServiceStore{sqlStore, metrics}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(model.TermsOfService{}, store.TermsOfServiceTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("UserId").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Text").SetMaxSize(model.POST_MESSAGE_MAX_BYTES_V2)
+func (s *SqlTermsOfServiceStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"CreateAt",
+		"UserID",
+		"Text",
 	}
 
-	return s
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, item string) string {
+		return prefix + item
+	})
 }
 
-func (s *SqlTermsOfServiceStore) CreateIndexesIfNotExists() {
+func NewSqlTermsOfServiceStore(sqlStore store.Store, metrics einterfaces.MetricsInterface) store.TermsOfServiceStore {
+	return &SqlTermsOfServiceStore{sqlStore, metrics}
 }
 
 func (s *SqlTermsOfServiceStore) Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error) {
-	if termsOfService.Id != "" {
-		return nil, store.NewErrInvalidInput("TermsOfService", "Id", termsOfService.Id)
-	}
-
 	termsOfService.PreSave()
 
 	if err := termsOfService.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := s.GetMaster().Insert(termsOfService); err != nil {
-		return nil, errors.Wrapf(err, "could not save a new TermsOfService")
+	query := "INSERT INTO " + store.TermsOfServiceTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+	if _, err := s.GetMasterX().NamedExec(query, termsOfService); err != nil {
+		return nil, errors.Wrapf(err, "failed to save save a new TermsOfService")
 	}
 
 	return termsOfService, nil
 }
 
 func (s *SqlTermsOfServiceStore) GetLatest(allowFromCache bool) (*model.TermsOfService, error) {
-	var termsOfService *model.TermsOfService
+	var termsOfService model.TermsOfService
 
 	query := s.GetQueryBuilder().
 		Select("*").
@@ -63,20 +65,22 @@ func (s *SqlTermsOfServiceStore) GetLatest(allowFromCache bool) (*model.TermsOfS
 		return nil, errors.Wrap(err, "could not build sql query to get latest TOS")
 	}
 
-	if err := s.GetReplica().SelectOne(&termsOfService, queryString, args...); err != nil {
+	if err := s.GetReplicaX().Get(&termsOfService, queryString, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("TermsOfService", "CreateAt=latest")
 		}
 		return nil, errors.Wrap(err, "could not find latest TermsOfService")
 	}
 
-	return termsOfService, nil
+	return &termsOfService, nil
 }
 
 func (s *SqlTermsOfServiceStore) Get(id string, allowFromCache bool) (*model.TermsOfService, error) {
-	obj, err := s.GetReplica().Get(model.TermsOfService{}, id)
+	var res model.TermsOfService
+
+	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+store.TermsOfServiceTableName+" WHERE Id = ?", id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not find TermsOfService with id=%s", id)
 	}
-	return obj.(*model.TermsOfService), nil
+	return &res, nil
 }

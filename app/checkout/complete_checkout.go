@@ -74,7 +74,7 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo checkout.Chec
 		}
 
 		addressesOfUser, appErr := s.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
-			Id:     squirrel.Eq{s.srv.Store.Address().TableName("Id"): shippingAddress.Id},
+			Id:     squirrel.Eq{store.AddressTableName + ".Id": shippingAddress.Id},
 			UserID: squirrel.Eq{s.srv.Store.UserAddress().TableName("UserID"): checkoutInfo.User.Id},
 		})
 		if appErr != nil {
@@ -132,7 +132,7 @@ func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo checkout.Checkout
 
 		billingAddressOfUser, appErr := s.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
 			UserID: squirrel.Eq{s.srv.Store.UserAddress().TableName("UserID"): checkoutInfo.User.Id},
-			Id:     squirrel.Eq{s.srv.Store.Address().TableName("Id"): billingAddress.Id},
+			Id:     squirrel.Eq{store.AddressTableName + ".Id": billingAddress.Id},
 		})
 		if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr

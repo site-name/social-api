@@ -58,6 +58,12 @@ type SqlxExecutor interface {
 	Select(dest interface{}, query string, args ...interface{}) error
 	SelectBuilder(dest interface{}, builder Builder) error
 	ExecNoTimeout(query string, args ...interface{}) (sql.Result, error)
+	Beginx() (SqlxTxExecutor, error)
+}
+
+type SqlxTxExecutor interface {
+	SqlxExecutor
+	driver.Tx
 }
 
 // Store is database gateway of the system
@@ -67,8 +73,7 @@ type Store interface {
 	Close()                             // Close closes databases
 	LockToMaster()                      // LockToMaster constraints all queries to be performed on master
 	UnlockFromMaster()                  // UnlockFromMaster makes all datasources available
-	// GetInternalMasterDB() *sql.DB       // GetInternalMasterDB allows access to the raw master DB handle for the multi-product architecture.
-	GetInternalReplicaDBs() []*sql.DB // GetInternalReplicaDBs allows access to the raw replica DB handles for the multi-product architecture.
+	GetInternalReplicaDBs() []*sql.DB   // GetInternalReplicaDBs allows access to the raw replica DB handles for the multi-product architecture.
 	ReplicaLagTime() error
 	ReplicaLagAbs() error
 	CheckIntegrity() <-chan model.IntegrityCheckResult
@@ -989,7 +994,6 @@ type AuditStore interface {
 }
 
 type TermsOfServiceStore interface {
-	CreateIndexesIfNotExists()
 	Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error)
 	GetLatest(allowFromCache bool) (*model.TermsOfService, error)
 	Get(id string, allowFromCache bool) (*model.TermsOfService, error)
@@ -1040,26 +1044,20 @@ type StatusStore interface {
 // account stores
 type (
 	AddressStore interface {
-		ModelFields() model.StringArray
-		TableName(withField string) string
-		OrderBy() string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(addr account.Address) []interface{}
-		CreateIndexesIfNotExists()                                                                // CreateIndexesIfNotExists creates indexes for table if needed
-		Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error)   // Save saves address into database
-		Get(addressID string) (*account.Address, error)                                           // Get returns an Address with given addressID is exist
-		Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) // Update update given address and returns it
-		DeleteAddresses(addressIDs []string) error                                                // DeleteAddress deletes given address and returns an error
-		FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error)           // FilterByOption finds and returns a list of address(es) filtered by given option
+		Upsert(transaction SqlxExecutor, address *account.Address) (*account.Address, error)
+		Get(addressID string) (*account.Address, error)                                 // Get returns an Address with given addressID is exist
+		DeleteAddresses(addressIDs []string) error                                      // DeleteAddress deletes given address and returns an error
+		FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) // FilterByOption finds and returns a list of address(es) filtered by given option
 	}
 	UserTermOfServiceStore interface {
-		CreateIndexesIfNotExists()                                                                //
 		GetByUser(userID string) (*account.UserTermsOfService, error)                             // GetByUser returns a term of service with given user id
 		Save(userTermsOfService *account.UserTermsOfService) (*account.UserTermsOfService, error) // Save inserts new user term of service to database
 		Delete(userID, termsOfServiceId string) error                                             // Delete deletes from database an usder term of service with given userId and term of service id
 	}
 	UserStore interface {
 		ClearCaches()
-		CreateIndexesIfNotExists()
 		ModelFields() []string
 		Save(user *account.User) (*account.User, error)                               // Save takes an user struct and save into database
 		Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) // Update update given user
@@ -1106,13 +1104,8 @@ type (
 		GetProfiles(options *account.UserGetOptions) ([]*account.User, error)
 		GetUnreadCount(userID string) (int64, error)         // TODO: consider me
 		UserByOrderID(orderID string) (*account.User, error) // UserByOrderID finds and returns an user who whose order is given
-
-		// PromoteGuestToUser(userID string) error
-		// DemoteUserToGuest(userID string) (*account.User, error)
-		// DeactivateGuests() ([]string, error)
 	}
 	TokenStore interface {
-		CreateIndexesIfNotExists()
 		Save(recovery *model.Token) error
 		Delete(token string) error
 		GetByToken(token string) (*model.Token, error)
@@ -1121,7 +1114,6 @@ type (
 		GetAllTokensByType(tokenType string) ([]*model.Token, error)
 	}
 	UserAccessTokenStore interface {
-		CreateIndexesIfNotExists()
 		Save(token *account.UserAccessToken) (*account.UserAccessToken, error)
 		DeleteAllForUser(userID string) error
 		Delete(tokenID string) error
@@ -1134,28 +1126,24 @@ type (
 		UpdateTokenDisable(tokenID string) error
 	}
 	UserAddressStore interface {
-		CreateIndexesIfNotExists()
-		TableName(withField string) string
-		OrderBy() string
 		Save(userAddress *account.UserAddress) (*account.UserAddress, error)
 		DeleteForUser(userID string, addressID string) error // DeleteForUser delete the relationship between user & address
 		// FilterByOptions finds and returns a list of user-address relations with given options
 		FilterByOptions(options *account.UserAddressFilterOptions) ([]*account.UserAddress, error)
 	}
 	CustomerEventStore interface {
-		CreateIndexesIfNotExists()
+		ModelFields(prefix string) model.StringArray
 		Save(customemrEvent *account.CustomerEvent) (*account.CustomerEvent, error)
 		Get(id string) (*account.CustomerEvent, error)
 		Count() (int64, error)
 		GetEventsByUserID(userID string) ([]*account.CustomerEvent, error) // get list of customer event belongs to given id
 	}
 	StaffNotificationRecipientStore interface {
-		CreateIndexesIfNotExists()
 		Save(notificationRecipient *account.StaffNotificationRecipient) (*account.StaffNotificationRecipient, error)
 		Get(id string) (*account.StaffNotificationRecipient, error)
 	}
 	CustomerNoteStore interface {
-		CreateIndexesIfNotExists()
+		ModelFields(prefix string) model.StringArray
 		Save(note *account.CustomerNote) (*account.CustomerNote, error) // Save insert given customer note into database and returns it
 		Get(id string) (*account.CustomerNote, error)                   // Get find customer note with given id and returns it
 	}

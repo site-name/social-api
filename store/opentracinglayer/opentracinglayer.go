@@ -1239,47 +1239,16 @@ func (s *OpenTracingLayerAddressStore) Get(addressID string) (*account.Address, 
 	return result, err
 }
 
-func (s *OpenTracingLayerAddressStore) OrderBy() string {
+func (s *OpenTracingLayerAddressStore) Upsert(transaction SqlxExecutor, address *account.Address) (*account.Address, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.OrderBy")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result := s.AddressStore.OrderBy()
-	return result
-}
-
-func (s *OpenTracingLayerAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AddressStore.Save(transaction, address)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAddressStore) Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.Update")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AddressStore.Update(transaction, address)
+	result, err := s.AddressStore.Upsert(transaction, address)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -9012,19 +8981,6 @@ func (s *OpenTracingLayerUserAddressStore) FilterByOptions(options *account.User
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerUserAddressStore) OrderBy() string {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserAddressStore.OrderBy")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result := s.UserAddressStore.OrderBy()
-	return result
 }
 
 func (s *OpenTracingLayerUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {

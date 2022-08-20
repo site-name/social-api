@@ -14,6 +14,7 @@ import (
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/warehouse"
+	"github.com/sitename/sitename/store"
 )
 
 // GetDeliveryMethodInfo takes `deliveryMethod` is either *ShippingMethodData or *Warehouse
@@ -91,7 +92,7 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 	)
 	if len(checkoutAddressIDs) > 0 {
 		addresses, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
-			Id: squirrel.Eq{a.srv.Store.Address().TableName("Id"): checkoutAddressIDs},
+			Id: squirrel.Eq{store.AddressTableName + ".Id": checkoutAddressIDs},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {

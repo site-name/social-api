@@ -1,7 +1,10 @@
 package account
 
 import (
+	"database/sql"
+
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
@@ -10,22 +13,27 @@ type SqlCustomerEventStore struct {
 	store.Store
 }
 
-func NewSqlCustomerEventStore(s store.Store) store.CustomerEventStore {
-	cs := &SqlCustomerEventStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(account.CustomerEvent{}, store.CustomerEventTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Type").SetMaxSize(account.CUSTOMER_EVENT_TYPE_MAX_LENGTH)
-	}
-	return cs
+var customerModelFields = model.StringArray{
+	"Id",
+	"Date",
+	"Type",
+	"OrderID",
+	"UserID",
+	"Parameters",
 }
 
-func (cs *SqlCustomerEventStore) CreateIndexesIfNotExists() {
-	cs.CreateForeignKeyIfNotExists(store.CustomerEventTableName, "OrderID", store.OrderTableName, "Id", false)
-	cs.CreateForeignKeyIfNotExists(store.CustomerEventTableName, "UserID", store.UserTableName, "Id", true)
+func NewSqlCustomerEventStore(s store.Store) store.CustomerEventStore {
+	return &SqlCustomerEventStore{s}
+}
+
+func (cs *SqlCustomerEventStore) ModelFields(prefix string) model.StringArray {
+	if prefix == "" {
+		return customerModelFields
+	}
+
+	return customerModelFields.Map(func(_ int, item string) string {
+		return prefix + item
+	})
 }
 
 func (cs *SqlCustomerEventStore) Save(event *account.CustomerEvent) (*account.CustomerEvent, error) {
@@ -33,7 +41,9 @@ func (cs *SqlCustomerEventStore) Save(event *account.CustomerEvent) (*account.Cu
 	if err := event.IsValid(); err != nil {
 		return nil, err
 	}
-	if err := cs.GetMaster().Insert(event); err != nil {
+
+	query := "INSERT INTO " + store.CustomerEventTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
+	if _, err := cs.GetMasterX().NamedExec(query, event); err != nil {
 		return nil, errors.Wrapf(err, "failed to save CustomerEvent with Id=%s", event.Id)
 	}
 
@@ -41,16 +51,21 @@ func (cs *SqlCustomerEventStore) Save(event *account.CustomerEvent) (*account.Cu
 }
 
 func (cs *SqlCustomerEventStore) Get(id string) (*account.CustomerEvent, error) {
-	res, err := cs.GetReplica().Get(account.CustomerEvent{}, id)
+	var res account.CustomerEvent
+	err := cs.GetMasterX().Get(&res, "SELECT * FROM "+store.CustomerEventTableName+" WHERE Id = ?", id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.CustomerEventTableName, id)
+		}
 		return nil, errors.Wrapf(err, "failed to find CustomerEvent with Id=%s", id)
 	}
 
-	return res.(*account.CustomerEvent), nil
+	return &res, nil
 }
 
 func (cs *SqlCustomerEventStore) Count() (int64, error) {
-	count, err := cs.GetReplica().SelectInt("SELECT COUNT(Id) FROM " + store.CustomerEventTableName)
+	var count int64
+	err := cs.GetReplicaX().Select(&count, "SELECT COUNT(Id) FROM "+store.CustomerEventTableName)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count number of "+store.CustomerEventTableName)
 	}
@@ -60,7 +75,7 @@ func (cs *SqlCustomerEventStore) Count() (int64, error) {
 
 func (cs *SqlCustomerEventStore) GetEventsByUserID(userID string) ([]*account.CustomerEvent, error) {
 	var events []*account.CustomerEvent
-	_, err := cs.GetReplica().Select(&events, "SELECT * FROM "+store.CustomerEventTableName+" WHERE UserID = :userID", map[string]interface{}{"userID": userID})
+	err := cs.GetReplicaX().Select(&events, "SELECT * FROM "+store.CustomerEventTableName+" WHERE UserID = ?", userID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find customer events with userId=%s", userID)
 	}
