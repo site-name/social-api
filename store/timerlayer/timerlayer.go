@@ -37,6 +37,7 @@ import (
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type TimerLayer struct {
@@ -142,7 +143,6 @@ type TimerLayer struct {
 	UserStore                          store.UserStore
 	UserAccessTokenStore               store.UserAccessTokenStore
 	UserAddressStore                   store.UserAddressStore
-	UserTermOfServiceStore             store.UserTermOfServiceStore
 	VariantMediaStore                  store.VariantMediaStore
 	VoucherCategoryStore               store.VoucherCategoryStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
@@ -556,10 +556,6 @@ func (s *TimerLayer) UserAccessToken() store.UserAccessTokenStore {
 
 func (s *TimerLayer) UserAddress() store.UserAddressStore {
 	return s.UserAddressStore
-}
-
-func (s *TimerLayer) UserTermOfService() store.UserTermOfServiceStore {
-	return s.UserTermOfServiceStore
 }
 
 func (s *TimerLayer) VariantMedia() store.VariantMediaStore {
@@ -1114,11 +1110,6 @@ type TimerLayerUserAddressStore struct {
 	Root *TimerLayer
 }
 
-type TimerLayerUserTermOfServiceStore struct {
-	store.UserTermOfServiceStore
-	Root *TimerLayer
-}
-
 type TimerLayerVariantMediaStore struct {
 	store.VariantMediaStore
 	Root *TimerLayer
@@ -1232,7 +1223,7 @@ func (s *TimerLayerAddressStore) Get(addressID string) (*account.Address, error)
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) Upsert(transaction SqlxExecutor, address *account.Address) (*account.Address, error) {
+func (s *TimerLayerAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, error) {
 	start := timemodule.Now()
 
 	result, err := s.AddressStore.Upsert(transaction, address)
@@ -8192,54 +8183,6 @@ func (s *TimerLayerUserAddressStore) Save(userAddress *account.UserAddress) (*ac
 	return result, err
 }
 
-func (s *TimerLayerUserTermOfServiceStore) Delete(userID string, termsOfServiceId string) error {
-	start := timemodule.Now()
-
-	err := s.UserTermOfServiceStore.Delete(userID, termsOfServiceId)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserTermOfServiceStore.Delete", success, elapsed)
-	}
-	return err
-}
-
-func (s *TimerLayerUserTermOfServiceStore) GetByUser(userID string) (*account.UserTermsOfService, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserTermOfServiceStore.GetByUser(userID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserTermOfServiceStore.GetByUser", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserTermOfServiceStore) Save(userTermsOfService *account.UserTermsOfService) (*account.UserTermsOfService, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserTermOfServiceStore.Save(userTermsOfService)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserTermOfServiceStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerVoucherCategoryStore) Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error) {
 	start := timemodule.Now()
 
@@ -8962,7 +8905,6 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.UserStore = &TimerLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &TimerLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
 	newStore.UserAddressStore = &TimerLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
-	newStore.UserTermOfServiceStore = &TimerLayerUserTermOfServiceStore{UserTermOfServiceStore: childStore.UserTermOfService(), Root: &newStore}
 	newStore.VariantMediaStore = &TimerLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
 	newStore.VoucherCategoryStore = &TimerLayerVoucherCategoryStore{VoucherCategoryStore: childStore.VoucherCategory(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &TimerLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}

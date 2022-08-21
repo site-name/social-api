@@ -25,7 +25,7 @@ import (
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type migrationDirection string
@@ -230,7 +230,7 @@ func (ss *SqlStore) GetDbVersion(numerical bool) (string, error) {
 	return version, nil
 }
 
-func (ss *SqlStore) GetMasterX() store.SqlxExecutor {
+func (ss *SqlStore) GetMasterX() store_iface.SqlxExecutor {
 	return ss.masterX
 }
 
@@ -246,7 +246,7 @@ func (ss *SqlStore) SetMasterX(db *sql.DB) {
 // 	return ss.GetMasterX().DB.DB
 // }
 
-func (ss *SqlStore) GetSearchReplicaX() store.SqlxExecutor {
+func (ss *SqlStore) GetSearchReplicaX() store_iface.SqlxExecutor {
 	if len(ss.settings.DataSourceSearchReplicas) == 0 {
 		return ss.GetReplicaX()
 	}
@@ -255,7 +255,7 @@ func (ss *SqlStore) GetSearchReplicaX() store.SqlxExecutor {
 	return ss.searchReplicaXs[rrNum]
 }
 
-func (ss *SqlStore) GetReplicaX() store.SqlxExecutor {
+func (ss *SqlStore) GetReplicaX() store_iface.SqlxExecutor {
 	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
 		return ss.GetMasterX()
 	}

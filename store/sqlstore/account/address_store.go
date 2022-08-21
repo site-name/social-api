@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlAddressStore struct {
@@ -66,18 +67,20 @@ func (as *SqlAddressStore) ScanFields(addr account.Address) []interface{} {
 	}
 }
 
-func (as *SqlAddressStore) Upsert(transaction store.SqlxExecutor, address *account.Address) (*account.Address, error) {
-	if transaction == nil {
-		transaction = as.GetMasterX()
+func (as *SqlAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, error) {
+	var executor store_iface.SqlxExecutor = as.GetMasterX()
+	if transaction != nil {
+		executor = transaction
 	}
 
 	// to check is saving or updating
 	var isSaving = false
 	if !model.IsValidId(address.Id) {
 		address.Id = ""
-		address.PreSave()
 		isSaving = true
 	}
+
+	address.PreSave()
 
 	if err := address.IsValid(); err != nil {
 		return nil, err
@@ -90,7 +93,7 @@ func (as *SqlAddressStore) Upsert(transaction store.SqlxExecutor, address *accou
 	)
 	if isSaving {
 		query := "INSERT INTO " + store.AddressTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-		_, errorUpsert = transaction.NamedExec(query, address)
+		_, errorUpsert = executor.NamedExec(query, address)
 
 	} else {
 		query := "UPDATE " + store.AddressTableName + " SET " + as.
@@ -101,7 +104,7 @@ func (as *SqlAddressStore) Upsert(transaction store.SqlxExecutor, address *accou
 			Join(",") + "WHERE Id=:Id"
 
 		var res sql.Result
-		res, errorUpsert = transaction.NamedExec(query, address)
+		res, errorUpsert = executor.NamedExec(query, address)
 		if errorUpsert == nil {
 			rowsAffected, errCheckRowsAffected = res.RowsAffected()
 		}

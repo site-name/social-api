@@ -11,4 +11,3 @@ CREATE TABLE IF NOT EXISTS categorytranslations (
 CREATE INDEX idx_category_translations_name ON categorytranslations USING btree (name);
 
 CREATE INDEX idx_category_translations_name_lower_textpattern ON categorytranslations USING btree (lower((name)::text) text_pattern_ops);
-

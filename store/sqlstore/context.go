@@ -3,7 +3,7 @@ package sqlstore
 import (
 	"context"
 
-	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // storeContextKey is the base type for all context keys for the store.
@@ -33,7 +33,7 @@ func hasMaster(ctx context.Context) bool {
 }
 
 // DBXFromContext is a helper utility that returns the sqlx DB handle from a given context.
-func (ss *SqlStore) DBXFromContext(ctx context.Context) store.SqlxExecutor {
+func (ss *SqlStore) DBXFromContext(ctx context.Context) store_iface.SqlxExecutor {
 	if hasMaster(ctx) {
 		return ss.GetMasterX()
 	}

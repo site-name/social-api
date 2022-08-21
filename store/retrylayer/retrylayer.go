@@ -38,6 +38,7 @@ import (
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type RetryLayer struct {
@@ -142,7 +143,6 @@ type RetryLayer struct {
 	UserStore                          store.UserStore
 	UserAccessTokenStore               store.UserAccessTokenStore
 	UserAddressStore                   store.UserAddressStore
-	UserTermOfServiceStore             store.UserTermOfServiceStore
 	VariantMediaStore                  store.VariantMediaStore
 	VoucherCategoryStore               store.VoucherCategoryStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
@@ -556,10 +556,6 @@ func (s *RetryLayer) UserAccessToken() store.UserAccessTokenStore {
 
 func (s *RetryLayer) UserAddress() store.UserAddressStore {
 	return s.UserAddressStore
-}
-
-func (s *RetryLayer) UserTermOfService() store.UserTermOfServiceStore {
-	return s.UserTermOfServiceStore
 }
 
 func (s *RetryLayer) VariantMedia() store.VariantMediaStore {
@@ -1114,11 +1110,6 @@ type RetryLayerUserAddressStore struct {
 	Root *RetryLayer
 }
 
-type RetryLayerUserTermOfServiceStore struct {
-	store.UserTermOfServiceStore
-	Root *RetryLayer
-}
-
 type RetryLayerVariantMediaStore struct {
 	store.VariantMediaStore
 	Root *RetryLayer
@@ -1255,7 +1246,7 @@ func (s *RetryLayerAddressStore) Get(addressID string) (*account.Address, error)
 
 }
 
-func (s *RetryLayerAddressStore) Upsert(transaction SqlxExecutor, address *account.Address) (*account.Address, error) {
+func (s *RetryLayerAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, error) {
 
 	tries := 0
 	for {
@@ -9752,66 +9743,6 @@ func (s *RetryLayerUserAddressStore) Save(userAddress *account.UserAddress) (*ac
 
 }
 
-func (s *RetryLayerUserTermOfServiceStore) Delete(userID string, termsOfServiceId string) error {
-
-	tries := 0
-	for {
-		err := s.UserTermOfServiceStore.Delete(userID, termsOfServiceId)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserTermOfServiceStore) GetByUser(userID string) (*account.UserTermsOfService, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserTermOfServiceStore.GetByUser(userID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserTermOfServiceStore) Save(userTermsOfService *account.UserTermsOfService) (*account.UserTermsOfService, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserTermOfServiceStore.Save(userTermsOfService)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerVoucherCategoryStore) Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error) {
 
 	tries := 0
@@ -10681,7 +10612,6 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.UserStore = &RetryLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &RetryLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
 	newStore.UserAddressStore = &RetryLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
-	newStore.UserTermOfServiceStore = &RetryLayerUserTermOfServiceStore{UserTermOfServiceStore: childStore.UserTermOfService(), Root: &newStore}
 	newStore.VariantMediaStore = &RetryLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
 	newStore.VoucherCategoryStore = &RetryLayerVoucherCategoryStore{VoucherCategoryStore: childStore.VoucherCategory(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &RetryLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}

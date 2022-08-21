@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 func (a *ServiceAccount) AddressById(id string) (*account.Address, *model.AppError) {
@@ -40,7 +41,7 @@ func (a *ServiceAccount) AddressesByOption(option *account.AddressFilterOption) 
 }
 
 // UpsertAddress depends on given address's Id to decide update or insert it
-func (a *ServiceAccount) UpsertAddress(transaction store.SqlxTxExecutor, address *account.Address) (*account.Address, *model.AppError) {
+func (a *ServiceAccount) UpsertAddress(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, *model.AppError) {
 	_, err := a.srv.Store.Address().Upsert(transaction, address)
 
 	if err != nil {

@@ -1,1 +1,3 @@
-CREATE TABLE IF NOT EXISTS customernotes ();
+CREATE TABLE IF NOT EXISTS customernotes (
+  
+);

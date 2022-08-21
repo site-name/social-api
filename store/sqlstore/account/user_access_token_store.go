@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlUserAccessTokenStore struct {
@@ -69,7 +70,7 @@ func (s *SqlUserAccessTokenStore) Delete(tokenId string) error {
 
 }
 
-func (s *SqlUserAccessTokenStore) deleteSessionsAndTokensById(transaction store.SqlxTxExecutor, tokenId string) error {
+func (s *SqlUserAccessTokenStore) deleteSessionsAndTokensById(transaction store_iface.SqlxTxExecutor, tokenId string) error {
 	if _, err := transaction.Exec("DELETE FROM Sessions s USING UserAccessTokens o WHERE o.Token = s.Token AND o.Id = ?", tokenId); err != nil {
 		return errors.Wrapf(err, "failed to delete Sessions with UserAccessToken id=%s", tokenId)
 	}
@@ -77,7 +78,7 @@ func (s *SqlUserAccessTokenStore) deleteSessionsAndTokensById(transaction store.
 	return s.deleteTokensById(transaction, tokenId)
 }
 
-func (s *SqlUserAccessTokenStore) deleteTokensById(transaction store.SqlxTxExecutor, tokenId string) error {
+func (s *SqlUserAccessTokenStore) deleteTokensById(transaction store_iface.SqlxTxExecutor, tokenId string) error {
 	if _, err := transaction.Exec("DELETE FROM UserAccessTokens WHERE Id = ?", tokenId); err != nil {
 		return errors.Wrapf(err, "failed to delete UserAccessToken id=%s", tokenId)
 	}
@@ -103,7 +104,7 @@ func (s *SqlUserAccessTokenStore) DeleteAllForUser(userId string) error {
 	return nil
 }
 
-func (s *SqlUserAccessTokenStore) deleteSessionsandTokensByUser(transaction store.SqlxTxExecutor, userId string) error {
+func (s *SqlUserAccessTokenStore) deleteSessionsandTokensByUser(transaction store_iface.SqlxTxExecutor, userId string) error {
 	query := "DELETE FROM Sessions s USING UserAccessTokens o WHERE o.Token = s.Token AND o.UserId = ?"
 
 	if _, err := transaction.Exec(query, userId); err != nil {
@@ -113,7 +114,7 @@ func (s *SqlUserAccessTokenStore) deleteSessionsandTokensByUser(transaction stor
 	return s.deleteTokensByUser(transaction, userId)
 }
 
-func (s *SqlUserAccessTokenStore) deleteTokensByUser(transaction store.SqlxTxExecutor, userId string) error {
+func (s *SqlUserAccessTokenStore) deleteTokensByUser(transaction store_iface.SqlxTxExecutor, userId string) error {
 	if _, err := transaction.Exec("DELETE FROM UserAccessTokens WHERE UserId = ?", userId); err != nil {
 		return errors.Wrapf(err, "failed to delete UserAccessToken userId=%s", userId)
 	}
@@ -210,7 +211,7 @@ func (s *SqlUserAccessTokenStore) UpdateTokenDisable(tokenId string) error {
 	return nil
 }
 
-func (s *SqlUserAccessTokenStore) deleteSessionsAndDisableToken(transaction store.SqlxTxExecutor, tokenId string) error {
+func (s *SqlUserAccessTokenStore) deleteSessionsAndDisableToken(transaction store_iface.SqlxTxExecutor, tokenId string) error {
 	if _, err := transaction.Exec("DELETE FROM Sessions s USING UserAccessTokens o WHERE o.Token = s.Token AND o.Id = ?", tokenId); err != nil {
 		return errors.Wrapf(err, "failed to delete Sessions with UserAccessToken id=%s", tokenId)
 	}
@@ -218,7 +219,7 @@ func (s *SqlUserAccessTokenStore) deleteSessionsAndDisableToken(transaction stor
 	return s.updateTokenDisable(transaction, tokenId)
 }
 
-func (s *SqlUserAccessTokenStore) updateTokenDisable(transaction store.SqlxTxExecutor, tokenId string) error {
+func (s *SqlUserAccessTokenStore) updateTokenDisable(transaction store_iface.SqlxTxExecutor, tokenId string) error {
 	if _, err := transaction.Exec("UPDATE UserAccessTokens SET IsActive = FALSE WHERE Id = ?", tokenId); err != nil {
 		return errors.Wrapf(err, "failed to update UserAccessToken with id=%s", tokenId)
 	}

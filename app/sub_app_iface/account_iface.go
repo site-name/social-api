@@ -16,6 +16,7 @@ import (
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // AccountService contains methods for working with accounts
@@ -163,7 +164,7 @@ type AccountService interface {
 	// Trigger sending an account confirmation notification for the given user
 	SendAccountConfirmation(redirectUrl string, user account.User, manager interfaces.PluginManagerInterface, channelID string) *model.AppError
 	// UpsertAddress depends on given address's Id to decide update or insert it
-	UpsertAddress(transaction store.SqlxTxExecutor, address *account.Address) (*account.Address, *model.AppError)
+	UpsertAddress(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, *model.AppError)
 	// UserByOrderId returns an user who owns given order
 	UserByOrderId(orderID string) (*account.User, *model.AppError)
 	ActivateMfa(userID, token string) *model.AppError

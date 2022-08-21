@@ -13,22 +13,10 @@ type SqlAssignedPageAttributeValueStore struct {
 	store.Store
 }
 
-var (
-	assignedPageAttrValueDuplicateKeys = []string{"ValueID", "AssignmentID", "assignedpageattributevalues_valueid_assignmentid_key"}
-)
+var assignedPageAttrValueDuplicateKeys = []string{"ValueID", "AssignmentID", "assignedpageattributevalues_valueid_assignmentid_key"}
 
 func NewSqlAssignedPageAttributeValueStore(s store.Store) store.AssignedPageAttributeValueStore {
-	as := &SqlAssignedPageAttributeValueStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AssignedPageAttributeValue{}, store.AssignedPageAttributeValueTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ValueID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("AssignmentID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("ValueID", "AssignmentID")
-	}
-	return as
+	return &SqlAssignedPageAttributeValueStore{s}
 }
 
 func (as *SqlAssignedPageAttributeValueStore) ModelFields() []string {
@@ -47,11 +35,6 @@ func (as *SqlAssignedPageAttributeValueStore) ScanFields(attributeValue attribut
 		&attributeValue.AssignmentID,
 		&attributeValue.SortOrder,
 	}
-}
-
-func (as *SqlAssignedPageAttributeValueStore) CreateIndexesIfNotExists() {
-	as.CreateForeignKeyIfNotExists(store.AssignedPageAttributeValueTableName, "ValueID", store.AttributeValueTableName, "Id", true)
-	as.CreateForeignKeyIfNotExists(store.AssignedPageAttributeValueTableName, "AssignmentID", store.AssignedPageAttributeTableName, "Id", true)
 }
 
 func (as *SqlAssignedPageAttributeValueStore) Save(assignedPageAttrValue *attribute.AssignedPageAttributeValue) (*attribute.AssignedPageAttributeValue, error) {

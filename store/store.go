@@ -9,7 +9,6 @@ import (
 	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/jmoiron/sqlx"
 	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/graphql/gqlmodel"
@@ -37,34 +36,8 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/store/store_iface"
 )
-
-type Builder interface {
-	ToSql() (string, []interface{}, error)
-}
-
-// SqlxExecutor exposes sqlx operations. It is used to enable some internal store methods to
-// accept both transactions (*sqlxTxWrapper) and common db handlers (*sqlxDbWrapper).
-type SqlxExecutor interface {
-	Get(dest interface{}, query string, args ...interface{}) error
-	GetBuilder(dest interface{}, builder Builder) error
-	NamedExec(query string, arg interface{}) (sql.Result, error)
-	Exec(query string, args ...interface{}) (sql.Result, error)
-	ExecBuilder(builder Builder) (sql.Result, error)
-	ExecRaw(query string, args ...interface{}) (sql.Result, error)
-	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
-	QueryRowX(query string, args ...interface{}) *sqlx.Row
-	QueryX(query string, args ...interface{}) (*sqlx.Rows, error)
-	Select(dest interface{}, query string, args ...interface{}) error
-	SelectBuilder(dest interface{}, builder Builder) error
-	ExecNoTimeout(query string, args ...interface{}) (sql.Result, error)
-	Beginx() (SqlxTxExecutor, error)
-}
-
-type SqlxTxExecutor interface {
-	SqlxExecutor
-	driver.Tx
-}
 
 // Store is database gateway of the system
 type Store interface {
@@ -79,16 +52,16 @@ type Store interface {
 	CheckIntegrity() <-chan model.IntegrityCheckResult
 	DropAllTables()                                             // DropAllTables drop all tables in databases
 	GetDbVersion(numerical bool) (string, error)                // GetDbVersion returns version in use of database
-	GetMasterX() SqlxExecutor                                   // GetMaster get master datasource
-	GetReplicaX() SqlxExecutor                                  // GetMaster gets slave datasource
+	GetMasterX() store_iface.SqlxExecutor                       // GetMaster get master datasource
+	GetReplicaX() store_iface.SqlxExecutor                      // GetMaster gets slave datasource
 	GetQueryBuilder() squirrel.StatementBuilderType             // GetQueryBuilder create squirrel sql query builder
 	IsUniqueConstraintError(err error, indexName []string) bool //
 	MarkSystemRanUnitTests()                                    //
 	FinalizeTransaction(transaction driver.Tx)                  // FinalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
+	DBXFromContext(ctx context.Context) store_iface.SqlxExecutor
 
 	User() UserStore                                                   // account
 	Address() AddressStore                                             //
-	UserTermOfService() UserTermOfServiceStore                         //
 	UserAddress() UserAddressStore                                     //
 	CustomerEvent() CustomerEventStore                                 //
 	StaffNotificationRecipient() StaffNotificationRecipientStore       //
@@ -302,7 +275,6 @@ type (
 		CreateIndexesIfNotExists()
 	}
 	AssignedPageAttributeValueStore interface {
-		CreateIndexesIfNotExists()
 		ModelFields() []string
 		Save(assignedPageAttrValue *attribute.AssignedPageAttributeValue) (*attribute.AssignedPageAttributeValue, error)                                                 // Save insert given value into database then returns it with an error
 		Get(assignedPageAttrValueID string) (*attribute.AssignedPageAttributeValue, error)                                                                               // Get try finding an value with given id then returns it with an error
@@ -311,7 +283,7 @@ type (
 		UpdateInBulk(attributeValues []*attribute.AssignedPageAttributeValue) error                                                                                      // UpdateInBulk use transaction to update all given assigned page attribute values
 	}
 	AssignedPageAttributeStore interface {
-		CreateIndexesIfNotExists()
+		ModelFields(prefix string) model.StringArray
 		Save(assignedPageAttr *attribute.AssignedPageAttribute) (*attribute.AssignedPageAttribute, error)          // Save inserts given assigned page attribute into database and returns it with an error
 		Get(id string) (*attribute.AssignedPageAttribute, error)                                                   // Get returns an assigned page attribute with an error
 		GetByOption(option *attribute.AssignedPageAttributeFilterOption) (*attribute.AssignedPageAttribute, error) // GetByOption try to find an assigned page attribute with given option. If nothing found, creats new instance with that option and returns such value with an error
@@ -967,11 +939,9 @@ type ChannelStore interface {
 // app
 type (
 	AppTokenStore interface {
-		CreateIndexesIfNotExists()
 		Save(appToken *app.AppToken) (*app.AppToken, error)
 	}
 	AppStore interface {
-		CreateIndexesIfNotExists()
 		Save(app *app.App) (*app.App, error)
 	}
 )
@@ -1046,19 +1016,14 @@ type (
 	AddressStore interface {
 		ModelFields(prefix string) model.StringArray
 		ScanFields(addr account.Address) []interface{}
-		Upsert(transaction SqlxExecutor, address *account.Address) (*account.Address, error)
+		Upsert(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, error)
 		Get(addressID string) (*account.Address, error)                                 // Get returns an Address with given addressID is exist
 		DeleteAddresses(addressIDs []string) error                                      // DeleteAddress deletes given address and returns an error
 		FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) // FilterByOption finds and returns a list of address(es) filtered by given option
 	}
-	UserTermOfServiceStore interface {
-		GetByUser(userID string) (*account.UserTermsOfService, error)                             // GetByUser returns a term of service with given user id
-		Save(userTermsOfService *account.UserTermsOfService) (*account.UserTermsOfService, error) // Save inserts new user term of service to database
-		Delete(userID, termsOfServiceId string) error                                             // Delete deletes from database an usder term of service with given userId and term of service id
-	}
 	UserStore interface {
 		ClearCaches()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		Save(user *account.User) (*account.User, error)                               // Save takes an user struct and save into database
 		Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) // Update update given user
 		UpdateLastPictureUpdate(userID string) error
