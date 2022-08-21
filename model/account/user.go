@@ -188,10 +188,10 @@ type User struct {
 	IsActive                 bool      `json:"is_active"`
 	Note                     *string   `json:"note"`
 	JwtTokenKey              string    `json:"jwt_token_key"`
-	LastActivityAt           int64     `db:"-" json:"last_activity_at,omitempty"`
-	TermsOfServiceId         string    `db:"-" json:"terms_of_service_id,omitempty"`
-	TermsOfServiceCreateAt   int64     `db:"-" json:"terms_of_service_create_at,omitempty"`
-	DisableWelcomeEmail      bool      `db:"-" json:"disable_welcome_email"`
+	LastActivityAt           int64     `json:"last_activity_at,omitempty"`
+	TermsOfServiceId         string    `json:"terms_of_service_id,omitempty"`
+	TermsOfServiceCreateAt   int64     `json:"terms_of_service_create_at,omitempty"`
+	DisableWelcomeEmail      bool      `json:"disable_welcome_email"`
 	ModelMetadata
 }
 

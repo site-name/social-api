@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -19,13 +20,21 @@ func NewSqlAssignedPageAttributeValueStore(s store.Store) store.AssignedPageAttr
 	return &SqlAssignedPageAttributeValueStore{s}
 }
 
-func (as *SqlAssignedPageAttributeValueStore) ModelFields() []string {
-	return []string{
-		"AssignedPageAttributeValues.Id",
-		"AssignedPageAttributeValues.ValueID",
-		"AssignedPageAttributeValues.AssignmentID",
-		"AssignedPageAttributeValues.SortOrder",
+func (as *SqlAssignedPageAttributeValueStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"ValueID",
+		"AssignmentID",
+		"SortOrder",
 	}
+
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, item string) string {
+		return prefix + item
+	})
 }
 
 func (as *SqlAssignedPageAttributeValueStore) ScanFields(attributeValue attribute.AssignedPageAttributeValue) []interface{} {
@@ -43,7 +52,8 @@ func (as *SqlAssignedPageAttributeValueStore) Save(assignedPageAttrValue *attrib
 		return nil, err
 	}
 
-	if err := as.GetMaster().Insert(assignedPageAttrValue); err != nil {
+	query := "INSERT INTO " + store.AssignedPageAttributeValueTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	if _, err := as.GetMasterX().NamedExec(query, assignedPageAttrValue); err != nil {
 		if as.IsUniqueConstraintError(err, assignedPageAttrValueDuplicateKeys) {
 			return nil, store.NewErrInvalidInput(store.AssignedPageAttributeValueTableName, "ValueID/AssignmentID", assignedPageAttrValue.ValueID+"/"+assignedPageAttrValue.AssignmentID)
 		}
@@ -55,7 +65,8 @@ func (as *SqlAssignedPageAttributeValueStore) Save(assignedPageAttrValue *attrib
 
 func (as *SqlAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string) (*attribute.AssignedPageAttributeValue, error) {
 	var res attribute.AssignedPageAttributeValue
-	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AssignedPageAttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": assignedPageAttrValueID})
+
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedPageAttributeValueTableName+" WHERE Id = ?", assignedPageAttrValueID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AssignedPageAttributeValueTableName, assignedPageAttrValueID)
@@ -71,21 +82,13 @@ func (as *SqlAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, at
 	res := []*attribute.AssignedPageAttributeValue{}
 
 	for _, id := range attributeValueIDs {
-		newValue := &attribute.AssignedPageAttributeValue{
+		newValue, err := as.Save(&attribute.AssignedPageAttributeValue{
 			ValueID:      id,
 			AssignmentID: assignmentID,
-		}
-		newValue.PreSave()
-		if appErr := newValue.IsValid(); appErr != nil {
-			return nil, appErr
-		}
+		})
 
-		err := as.GetMaster().Insert(newValue)
 		if err != nil {
-			if as.IsUniqueConstraintError(err, assignedPageAttrValueDuplicateKeys) {
-				return nil, store.NewErrInvalidInput(store.AssignedPageAttributeValueTableName, "ValueID/AssignmentID", newValue.ValueID+"/"+newValue.AssignmentID)
-			}
-			return nil, errors.Wrapf(err, "failed to save assigned page attribute value with id=%s", newValue.Id)
+			return nil, err
 		}
 		// append to return value if success
 		res = append(res, newValue)
@@ -95,16 +98,20 @@ func (as *SqlAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, at
 }
 
 func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedPageAttributeValue, []*attribute.AttributeValue, error) {
-	rows, err := as.GetQueryBuilder().
-		Select(append(as.ModelFields(), as.AttributeValue().ModelFields()...)...).
+	query, args, err := as.GetQueryBuilder().
+		Select(append(as.ModelFields(store.AssignedPageAttributeValueTableName+"."), as.AttributeValue().ModelFields()...)...).
 		From(store.AssignedPageAttributeValueTableName).
 		InnerJoin(store.AttributeValueTableName + " ON (AttributeValues.Id = AssignedPageAttributeValues.ValueID)").
 		Where(squirrel.Eq{"AssignedPageAttributeValues.AssignmentID": assignmentID}).
-		RunWith(as.GetReplica()).
-		Query()
+		ToSql()
 
 	if err != nil {
-		return nil, nil, errors.Wrapf(err, "failed to find values with AssignmentID=%s", assignmentID)
+		return nil, nil, errors.Wrap(err, "SelectForSort_ToSql")
+	}
+
+	rows, err := as.GetReplicaX().QueryX(query, args...)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to find assignment attribute values with given assignment Id")
 	}
 
 	var (
@@ -134,13 +141,21 @@ func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string)
 
 func (as *SqlAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedPageAttributeValue) error {
 
+	query := "UPDATE " + store.AssignedPageAttributeValueTableName + " SET " + as.
+		ModelFields("").
+		Map(func(_ int, s string) string {
+			return s + "=:" + s
+		}).
+		Join(",") + " WHERE Id=:Id"
+
 	for _, value := range attributeValues {
 		// try validating if the value exist:
 		_, err := as.Get(value.Id)
 		if err != nil {
 			return errors.Wrapf(err, "failed to find value with id=%s", value.Id)
 		}
-		numUpdated, err := as.GetMaster().Update(value)
+
+		result, err := as.GetMasterX().NamedExec(query, value)
 		if err != nil {
 			// check if error is duplicate conflict error:
 			if as.IsUniqueConstraintError(err, assignedPageAttrValueDuplicateKeys) {
@@ -148,6 +163,8 @@ func (as *SqlAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*at
 			}
 			return errors.Wrapf(err, "failed to update value with id=%s", value.Id)
 		}
+
+		numUpdated, _ := result.RowsAffected()
 		if numUpdated > 1 {
 			return errors.Errorf("more than one value with id=%s were updated(%d)", value.Id, numUpdated)
 		}

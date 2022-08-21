@@ -1,9 +1,9 @@
 package account
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -42,7 +42,7 @@ func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface)
 	// note: we are providing field names explicitly here to maintain order of columns (needed when using raw queries)
 	us.usersQuery = us.
 		GetQueryBuilder().
-		Select(us.ModelFields()...).
+		Select(us.ModelFields("")...).
 		From(store.UserTableName)
 
 	return us
@@ -78,6 +78,10 @@ func (us *SqlUserStore) ModelFields(prefix string) model.StringArray {
 		"IsActive",
 		"Note",
 		"JwtTokenKey",
+		"LastActivityAt",
+		"TermsOfServiceId",
+		"TermsOfServiceCreateAt",
+		"DisableWelcomeEmail",
 		"Metadata",
 		"PrivateMetadata",
 	}
@@ -120,6 +124,10 @@ func (us *SqlUserStore) ScanFields(user account.User) []interface{} {
 		&user.IsActive,
 		&user.Note,
 		&user.JwtTokenKey,
+		&user.LastActivityAt,
+		&user.TermsOfServiceId,
+		&user.TermsOfServiceCreateAt,
+		&user.DisableWelcomeEmail,
 		&user.Metadata,
 		&user.PrivateMetadata,
 	}
@@ -295,7 +303,15 @@ func (us *SqlUserStore) Update(user *account.User, trustedUpdateData bool) (*acc
 		user.UpdateMentionKeysFromUsername(oldUser.Username)
 	}
 
-	count, err := us.GetMaster().Update(user)
+	query := "UPDATE " + store.UserTableName + " SET " +
+		us.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+	result, err := us.GetMasterX().NamedExec(query, user)
 	if err != nil {
 		if us.IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique"}) {
 			return nil, store.NewErrInvalidInput("User", "id", user.Id)
@@ -306,6 +322,7 @@ func (us *SqlUserStore) Update(user *account.User, trustedUpdateData bool) (*acc
 		return nil, errors.Wrapf(err, "failed to update User with userId=%s", user.Id)
 	}
 
+	count, _ := result.RowsAffected()
 	if count > 1 {
 		return nil, fmt.Errorf("multiple users were update: userId=%s, count=%d", user.Id, count)
 	}
@@ -447,16 +464,40 @@ func (us *SqlUserStore) Get(ctx context.Context, id string) (*account.User, erro
 	var user account.User
 	var props, notifyProps, timezone []byte
 	err = row.Scan(
-		&user.Id, &user.Email, &user.Username, &user.FirstName, &user.LastName,
-		&user.DefaultShippingAddressID, &user.DefaultBillingAddressID, &user.Password, &user.AuthData, &user.AuthService,
-		&user.EmailVerified, &user.Nickname, &user.Roles,
-		&props, &notifyProps, // non primitive types
-		&user.LastPasswordUpdate, &user.LastPictureUpdate, &user.FailedAttempts, &user.Locale,
+		&user.Id,
+		&user.Email,
+		&user.Username,
+		&user.FirstName,
+		&user.LastName,
+		&user.DefaultShippingAddressID,
+		&user.DefaultBillingAddressID,
+		&user.Password,
+		&user.AuthData,
+		&user.AuthService,
+		&user.EmailVerified,
+		&user.Nickname,
+		&user.Roles,
+		&props,       // non primitive types
+		&notifyProps, // non primitive types
+		&user.LastPasswordUpdate,
+		&user.LastPictureUpdate,
+		&user.FailedAttempts,
+		&user.Locale,
 		&timezone, // non primitive types
-		&user.MfaActive, &user.MfaSecret, &user.CreateAt, &user.UpdateAt, &user.DeleteAt,
-		&user.IsActive, &user.Note, &user.JwtTokenKey,
-		&user.LastActivityAt, &user.TermsOfServiceId, &user.TermsOfServiceCreateAt, &user.DisableWelcomeEmail,
-		&user.Metadata, &user.PrivateMetadata,
+		&user.MfaActive,
+		&user.MfaSecret,
+		&user.CreateAt,
+		&user.UpdateAt,
+		&user.DeleteAt,
+		&user.IsActive,
+		&user.Note,
+		&user.JwtTokenKey,
+		&user.LastActivityAt,
+		&user.TermsOfServiceId,
+		&user.TermsOfServiceCreateAt,
+		&user.DisableWelcomeEmail,
+		&user.Metadata,
+		&user.PrivateMetadata,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -464,13 +505,13 @@ func (us *SqlUserStore) Get(ctx context.Context, id string) (*account.User, erro
 		}
 		return nil, errors.Wrapf(err, "failed to get User with userId=%s", id)
 	}
-	if err = model.ModelFromJson(&user.Props, bytes.NewReader(props)); err != nil {
+	if err = json.Unmarshal(props, &user.Props); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal user props")
 	}
-	if err = model.ModelFromJson(&user.NotifyProps, bytes.NewReader(notifyProps)); err != nil {
+	if err = json.Unmarshal(notifyProps, &user.NotifyProps); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal user notify props")
 	}
-	if err = model.ModelFromJson(&user.Timezone, bytes.NewReader(timezone)); err != nil {
+	if err = json.Unmarshal(timezone, &user.Timezone); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal user timezone")
 	}
 

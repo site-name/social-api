@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -14,22 +15,22 @@ type SqlAttributePageStore struct {
 }
 
 func NewSqlAttributePageStore(s store.Store) store.AttributePageStore {
-	as := &SqlAttributePageStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AttributePage{}, store.AttributePageTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("AttributeID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("PageTypeID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("AttributeID", "PageTypeID")
-	}
-	return as
+	return &SqlAttributePageStore{s}
 }
 
-func (as *SqlAttributePageStore) CreateIndexesIfNotExists() {
-	as.CreateForeignKeyIfNotExists(store.AttributePageTableName, "AttributeID", store.AttributeTableName, "Id", true)
-	as.CreateForeignKeyIfNotExists(store.AttributePageTableName, "PageTypeID", "PageTypes", "Id", true)
+func (as *SqlAttributePageStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"AttributeID",
+		"PageTypeID",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (as *SqlAttributePageStore) Save(page *attribute.AttributePage) (*attribute.AttributePage, error) {
@@ -38,7 +39,9 @@ func (as *SqlAttributePageStore) Save(page *attribute.AttributePage) (*attribute
 		return nil, err
 	}
 
-	if err := as.GetMaster().Insert(page); err != nil {
+	query := "INSERT INTO " + store.AttributePageTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+
+	if _, err := as.GetMasterX().NamedExec(query, page); err != nil {
 		if as.IsUniqueConstraintError(err, []string{"AttributeID", "PageTypeID", strings.ToLower(store.AttributePageTableName) + "_attributeid_pagetypeid_key"}) {
 			return nil, store.NewErrInvalidInput(store.AttributePageTableName, "AttributeID/PageTypeID", page.AttributeID+"/"+page.PageTypeID)
 		}

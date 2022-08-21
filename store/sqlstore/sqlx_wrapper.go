@@ -183,7 +183,7 @@ func (w *sqlxDBWrapper) NamedQuery(query string, arg interface{}) (*sqlx.Rows, e
 	return w.DB.NamedQueryContext(ctx, query, arg)
 }
 
-func (w *sqlxDBWrapper) QueryRowX(query string, args ...interface{}) *sqlx.Row {
+func (w *sqlxDBWrapper) QueryRow(query string, args ...interface{}) *sqlx.Row {
 	query = w.DB.Rebind(query)
 	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
 	defer cancel()
@@ -197,7 +197,7 @@ func (w *sqlxDBWrapper) QueryRowX(query string, args ...interface{}) *sqlx.Row {
 	return w.DB.QueryRowxContext(ctx, query, args...)
 }
 
-func (w *sqlxDBWrapper) QueryX(query string, args ...interface{}) (*sqlx.Rows, error) {
+func (w *sqlxDBWrapper) Query(query string, args ...interface{}) (*sqlx.Rows, error) {
 	query = w.DB.Rebind(query)
 	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
 	defer cancel()
@@ -353,7 +353,7 @@ func (w *sqlxTxWrapper) NamedQuery(query string, arg interface{}) (*sqlx.Rows, e
 	return res.rows, res.err
 }
 
-func (w *sqlxTxWrapper) QueryRowX(query string, args ...interface{}) *sqlx.Row {
+func (w *sqlxTxWrapper) QueryRow(query string, args ...interface{}) *sqlx.Row {
 	query = w.Tx.Rebind(query)
 	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
 	defer cancel()
@@ -367,7 +367,7 @@ func (w *sqlxTxWrapper) QueryRowX(query string, args ...interface{}) *sqlx.Row {
 	return w.Tx.QueryRowxContext(ctx, query, args...)
 }
 
-func (w *sqlxTxWrapper) QueryX(query string, args ...interface{}) (*sqlx.Rows, error) {
+func (w *sqlxTxWrapper) Query(query string, args ...interface{}) (*sqlx.Rows, error) {
 	query = w.Tx.Rebind(query)
 	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
 	defer cancel()
