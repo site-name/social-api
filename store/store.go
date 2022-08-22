@@ -249,8 +249,7 @@ type FileInfoStore interface {
 // attribute
 type (
 	AttributeStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		Delete(ids ...string) (int64, error)
 		ScanFields(v attribute.Attribute) []interface{}
 		Upsert(attr *attribute.Attribute) (*attribute.Attribute, error)                       // Upsert inserts or updates given attribute then returns it
@@ -261,13 +260,12 @@ type (
 		CreateIndexesIfNotExists()
 	}
 	AttributeValueStore interface {
-		CreateIndexesIfNotExists()
 		ScanFields(attributeValue attribute.AttributeValue) []interface{}
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		Count(options *attribute.AttributeValueFilterOptions) (int64, error)
 		Delete(ids ...string) (int64, error)
 		Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error)
-		BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error)
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, error)
 		Get(attributeID string) (*attribute.AttributeValue, error)                                        // Get finds an attribute value with given id then returns it with an error
 		FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) // FilterByOptions finds and returns all matched attribute values based on given options
 	}
@@ -331,7 +329,6 @@ type (
 		FilterByOptions(options *attribute.AssignedProductAttributeFilterOption) ([]*attribute.AssignedProductAttribute, error)
 	}
 	AttributeProductStore interface {
-		CreateIndexesIfNotExists()
 		Save(attributeProduct *attribute.AttributeProduct) (*attribute.AttributeProduct, error)          // Save inserts given attribute product relationship into database then returns it and an error
 		Get(attributeProductID string) (*attribute.AttributeProduct, error)                              // Get finds an attributeProduct relationship and returns it with an error
 		GetByOption(option *attribute.AttributeProductFilterOption) (*attribute.AttributeProduct, error) // GetByOption returns an attributeProduct with given condition

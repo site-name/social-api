@@ -99,7 +99,7 @@ func (as *SqlAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, at
 
 func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedPageAttributeValue, []*attribute.AttributeValue, error) {
 	query, args, err := as.GetQueryBuilder().
-		Select(append(as.ModelFields(store.AssignedPageAttributeValueTableName+"."), as.AttributeValue().ModelFields()...)...).
+		Select(append(as.ModelFields(store.AssignedPageAttributeValueTableName+"."), as.AttributeValue().ModelFields(store.AttributeValueTableName+".")...)...).
 		From(store.AssignedPageAttributeValueTableName).
 		InnerJoin(store.AttributeValueTableName + " ON (AttributeValues.Id = AssignedPageAttributeValues.ValueID)").
 		Where(squirrel.Eq{"AssignedPageAttributeValues.AssignmentID": assignmentID}).

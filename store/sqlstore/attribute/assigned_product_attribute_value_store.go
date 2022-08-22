@@ -165,7 +165,7 @@ func (as *SqlAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []
 
 func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedProductAttributeValue, []*attribute.AttributeValue, error) {
 	query, args, err := as.GetQueryBuilder().
-		Select(append(as.ModelFields(store.AssignedProductAttributeValueTableName+"."), as.AttributeValue().ModelFields()...)...).
+		Select(append(as.ModelFields(store.AssignedProductAttributeValueTableName+"."), as.AttributeValue().ModelFields(store.AttributeValueTableName+".")...)...).
 		From(store.AssignedProductAttributeValueTableName).
 		InnerJoin(store.AttributeValueTableName + " ON (AssignedProductAttributeValues.Id = AttributeValues.ValueID)").
 		Where(squirrel.Eq{"AssignedProductAttributeValues.AssignmentID": assignmentID}).

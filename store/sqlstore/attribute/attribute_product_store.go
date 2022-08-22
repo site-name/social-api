@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -13,22 +14,20 @@ type SqlAttributeProductStore struct {
 }
 
 func NewSqlAttributeProductStore(s store.Store) store.AttributeProductStore {
-	as := &SqlAttributeProductStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AttributeProduct{}, store.AttributeProductTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("AttributeID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductTypeID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("AttributeID", "ProductTypeID")
-	}
-	return as
+	return &SqlAttributeProductStore{s}
 }
 
-func (as *SqlAttributeProductStore) CreateIndexesIfNotExists() {
-	as.CreateForeignKeyIfNotExists(store.AttributeProductTableName, "AttributeID", store.AttributeTableName, "Id", true)
-	as.CreateForeignKeyIfNotExists(store.AttributeProductTableName, "ProductTypeID", store.ProductTypeTableName, "Id", true)
+func (as *SqlAttributeProductStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id", "AttributeID", "ProductTypeID", "SortOrder",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (as *SqlAttributeProductStore) Save(attributeProduct *attribute.AttributeProduct) (*attribute.AttributeProduct, error) {
@@ -37,7 +36,9 @@ func (as *SqlAttributeProductStore) Save(attributeProduct *attribute.AttributePr
 		return nil, err
 	}
 
-	err := as.GetMaster().Insert(attributeProduct)
+	query := "INSERT INTO " + store.AttributeProductTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+
+	_, err := as.GetMasterX().NamedExec(query, attributeProduct)
 	if err != nil {
 		if as.IsUniqueConstraintError(err, []string{"attributeproducts_attributeid_producttypeid_key", "AttributeID", "ProductTypeID"}) {
 			return nil, store.NewErrInvalidInput(store.AttributeProductTableName, "AttributeID/ProductTypeID", attributeProduct.AttributeID+"/"+attributeProduct.ProductTypeID)
@@ -50,7 +51,8 @@ func (as *SqlAttributeProductStore) Save(attributeProduct *attribute.AttributePr
 
 func (as *SqlAttributeProductStore) Get(id string) (*attribute.AttributeProduct, error) {
 	var res attribute.AttributeProduct
-	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AttributeProductTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AttributeProductTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AttributeProductTableName, id)
@@ -80,7 +82,7 @@ func (as *SqlAttributeProductStore) GetByOption(option *attribute.AttributeProdu
 	}
 
 	var attributeProduct attribute.AttributeProduct
-	err = as.GetReplica().SelectOne(
+	err = as.GetReplicaX().Get(
 		&attributeProduct,
 		queryString,
 		args...,

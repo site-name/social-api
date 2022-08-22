@@ -122,7 +122,7 @@ func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string,
 
 func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedVariantAttributeValue, []*attribute.AttributeValue, error) {
 	query, args, err := as.GetQueryBuilder().
-		Select(append(as.ModelFields(store.AssignedVariantAttributeValueTableName+"."), as.AttributeValue().ModelFields()...)...).
+		Select(append(as.ModelFields(store.AssignedVariantAttributeValueTableName+"."), as.AttributeValue().ModelFields(store.AttributeValueTableName+".")...)...).
 		From(store.AssignedVariantAttributeValueTableName).
 		InnerJoin(store.AttributeValueTableName + " ON (AttributeValues.Id = AssignedVariantAttributeValues.ValueID)").
 		Where(squirrel.Eq{"AssignedVariantAttributeValues.AssignmentID": assignmentID}).
