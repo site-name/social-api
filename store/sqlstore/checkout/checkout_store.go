@@ -239,10 +239,10 @@ func (cs *SqlCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (
 	// }
 
 	var (
-		res      checkout.Checkout
-		aChannel channel.Channel
+		res        checkout.Checkout
+		aChannel   channel.Channel
+		scanFields = cs.ScanFields(res)
 	)
-	scanFields := cs.ScanFields(res)
 	if option.SelectRelatedChannel {
 		scanFields = append(scanFields, cs.Channel().ScanFields(aChannel)...)
 	}

@@ -175,8 +175,8 @@ func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID stri
 		attributeValues                []*attribute.AttributeValue
 		assignedProductAttributeValue  attribute.AssignedProductAttributeValue
 		attributeValue                 attribute.AttributeValue
+		scanFields                     = append(as.ScanFields(assignedProductAttributeValue), as.AttributeValue().ScanFields(attributeValue)...)
 	)
-	scanFields := append(as.ScanFields(assignedProductAttributeValue), as.AttributeValue().ScanFields(attributeValue)...)
 	for rows.Next() {
 		scanErr := rows.Scan(scanFields...)
 		if scanErr != nil {

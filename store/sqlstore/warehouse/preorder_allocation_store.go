@@ -125,8 +125,8 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *warehouse.Preorder
 		preorderAllocation warehouse.PreorderAllocation
 		orderLine          order.OrderLine
 		orDer              order.Order
+		scanFields         = ws.ScanFields(preorderAllocation)
 	)
-	scanFields := ws.ScanFields(preorderAllocation)
 	if options.SelectRelated_OrderLine {
 		scanFields = append(scanFields, ws.OrderLine().ScanFields(orderLine)...)
 	}

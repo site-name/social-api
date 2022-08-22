@@ -63,7 +63,8 @@ func (ps *SqlProductVariantChannelListingStore) ScanFields(listing product_and_d
 }
 
 // TableName returns either:
-//  "ProductVariantChannelListings" || "ProductVariantChannelListings." + withField
+//
+//	"ProductVariantChannelListings" || "ProductVariantChannelListings." + withField
 func (ps *SqlProductVariantChannelListingStore) TableName(withField string) string {
 	if withField == "" {
 		return "ProductVariantChannelListings"
@@ -114,6 +115,7 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction *gorp
 		runner = transaction
 	}
 
+	// NOTE: In the scan fields creation below, the order of fields must be identical to the order of select fiels
 	selectFields := ps.ModelFields()
 	if option.SelectRelatedChannel {
 		selectFields = append(selectFields, ps.Channel().ModelFields()...)
@@ -185,10 +187,10 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction *gorp
 		variantChannelListing     product_and_discount.ProductVariantChannelListing
 		availablePreorderQuantity int
 		preorderQuantityAllocated int
-		scanFields                = ps.ScanFields(variantChannelListing)
+		scanFields                = ps.ScanFields(variantChannelListing) // order of fields must be identical to select fields above
 	)
 	if option.SelectRelatedChannel {
-		scanFields = append(scanFields, ps.Channel().ScanFields(chanNel))
+		scanFields = append(scanFields, ps.Channel().ScanFields(chanNel)...)
 	}
 	if option.AnnotateAvailablePreorderQuantity {
 		scanFields = append(scanFields, &availablePreorderQuantity)

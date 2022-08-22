@@ -126,7 +126,6 @@ func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string,
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedVariantAttributeValue, []*attribute.AttributeValue, error) {
-
 	rows, err := as.GetQueryBuilder().
 		Select(append(as.ModelFields(), as.AttributeValue().ModelFields()...)...).
 		From(store.AssignedVariantAttributeValueTableName).

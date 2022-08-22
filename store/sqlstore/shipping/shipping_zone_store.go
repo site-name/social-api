@@ -149,10 +149,8 @@ func (s *SqlShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilte
 		shippingZone           shipping.ShippingZone
 		returningShippingZones shipping.ShippingZones
 		warehouseID            string
-
-		// shippingZonesMap is a map with keys are shipping zones's ids
-		shippingZonesMap = map[string]*shipping.ShippingZone{}
-		scanFields       = s.ScanFields(shippingZone)
+		shippingZonesMap       = map[string]*shipping.ShippingZone{} // shippingZonesMap is a map with keys are shipping zones's ids
+		scanFields             = s.ScanFields(shippingZone)
 	)
 
 	if option.SelectRelatedThroughData {

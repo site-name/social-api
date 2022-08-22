@@ -172,10 +172,10 @@ func (ws *SqlWareHouseStore) GetByOption(option *warehouse.WarehouseFilterOption
 	rowScanner := ws.commonQueryBuilder(option).RunWith(ws.GetReplica()).QueryRow()
 
 	var (
-		res     warehouse.WareHouse
-		address account.Address
+		res        warehouse.WareHouse
+		address    account.Address
+		scanFields = ws.ScanFields(res)
 	)
-	scanFields := ws.ScanFields(res)
 	if option.SelectRelatedAddress {
 		scanFields = append(scanFields, ws.Address().ScanFields(address)...)
 	}

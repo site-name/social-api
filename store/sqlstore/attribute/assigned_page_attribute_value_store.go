@@ -129,8 +129,8 @@ func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string)
 		attributeValues             []*attribute.AttributeValue
 		assignedPageAttributeValue  attribute.AssignedPageAttributeValue
 		attributeValue              attribute.AttributeValue
+		scanFields                  = append(as.ScanFields(assignedPageAttributeValue), as.AttributeValue().ScanFields(attributeValue)...)
 	)
-	scanFields := append(as.ScanFields(assignedPageAttributeValue), as.AttributeValue().ScanFields(attributeValue)...)
 
 	for rows.Next() {
 		err = rows.Scan(scanFields...)

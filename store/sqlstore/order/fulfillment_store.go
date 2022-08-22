@@ -198,10 +198,8 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction *gorp.Transaction, option
 		runner = transaction
 	}
 
-	query := fs.commonQueryBuild(option)
-
-	row := query.RunWith(runner).QueryRow()
 	var (
+		row         = fs.commonQueryBuild(option).RunWith(runner).QueryRow()
 		fulfillment order.Fulfillment
 		anOrder     order.Order
 		scanFields  = fs.ScanFields(fulfillment)
@@ -233,9 +231,7 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction *gorp.Transaction, opt
 		runner = transaction
 	}
 
-	query := fs.commonQueryBuild(option)
-
-	rows, err := query.RunWith(runner).Query()
+	rows, err := fs.commonQueryBuild(option).RunWith(runner).Query()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find fulfillments with given option")
 	}
