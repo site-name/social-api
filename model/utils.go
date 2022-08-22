@@ -139,7 +139,11 @@ func (sa StringArray) Remove(input string) StringArray {
 	return res
 }
 
-// Map takes a mapFunc, loops through current string slice and applies mapFunc for each item
+// Map loops through current string slice and applies mapFunc to each index-item pair
+//
+// E.g
+//
+//	StringArray{"a", "b", "c"}.Map(func(_ int, s string) string { return s + s })
 func (sa StringArray) Map(mapFunc func(index int, item string) string) StringArray {
 	res := make(StringArray, len(sa))
 

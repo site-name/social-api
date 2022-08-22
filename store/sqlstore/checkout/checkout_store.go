@@ -4,13 +4,13 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlCheckoutStore struct {
@@ -18,72 +18,43 @@ type SqlCheckoutStore struct {
 }
 
 func NewSqlCheckoutStore(sqlStore store.Store) store.CheckoutStore {
-	cs := &SqlCheckoutStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(checkout.Checkout{}, store.CheckoutTableName).SetKeys(false, "Token")
-		table.ColMap("Token").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("BillingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShippingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShippingMethodID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CollectionPointID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("DiscountName").SetMaxSize(checkout.CHECKOUT_DISCOUNT_NAME_MAX_LENGTH)
-		table.ColMap("TranslatedDiscountName").SetMaxSize(checkout.CHECKOUT_TRANSLATED_DISCOUNT_NAME_MAX_LENGTH)
-		table.ColMap("VoucherCode").SetMaxSize(checkout.CHECKOUT_VOUCHER_CODE_MAX_LENGTH)
-		table.ColMap("TrackingCode").SetMaxSize(checkout.CHECKOUT_TRACKING_CODE_MAX_LENGTH)
-		table.ColMap("Country").SetMaxSize(model.SINGLE_COUNTRY_CODE_MAX_LENGTH)
-	}
-
-	return cs
+	return &SqlCheckoutStore{sqlStore}
 }
 
-func (cs *SqlCheckoutStore) CreateIndexesIfNotExists() {
-	cs.CreateIndexIfNotExists("idx_checkouts_userid", store.CheckoutTableName, "UserID")
-	cs.CreateIndexIfNotExists("idx_checkouts_token", store.CheckoutTableName, "Token")
-	cs.CreateIndexIfNotExists("idx_checkouts_channelid", store.CheckoutTableName, "ChannelID")
-	cs.CreateIndexIfNotExists("idx_checkouts_billing_address_id", store.CheckoutTableName, "BillingAddressID")
-	cs.CreateIndexIfNotExists("idx_checkouts_shipping_address_id", store.CheckoutTableName, "ShippingAddressID")
-	cs.CreateIndexIfNotExists("idx_checkouts_shipping_method_id", store.CheckoutTableName, "ShippingMethodID")
-
-	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShopID", store.ShopTableName, "Id", true)
-	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "UserID", store.UserTableName, "Id", true)
-	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ChannelID", store.ChannelTableName, "Id", false)
-	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "BillingAddressID", store.AddressTableName, "Id", false)
-	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingAddressID", store.AddressTableName, "Id", false)
-	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "ShippingMethodID", store.ShippingMethodTableName, "Id", false)
-	cs.CreateForeignKeyIfNotExists(store.CheckoutTableName, "CollectionPointID", store.WarehouseTableName, "Id", false)
-}
-
-func (cs *SqlCheckoutStore) ModelFields() []string {
-	return []string{
-		"Checkouts.Token",
-		"Checkouts.CreateAt",
-		"Checkouts.UpdateAt",
-		"Checkouts.UserID",
-		"Checkouts.ShopID",
-		"Checkouts.Email",
-		"Checkouts.Quantity",
-		"Checkouts.ChannelID",
-		"Checkouts.BillingAddressID",
-		"Checkouts.ShippingAddressID",
-		"Checkouts.ShippingMethodID",
-		"Checkouts.CollectionPointID",
-		"Checkouts.Note",
-		"Checkouts.Currency",
-		"Checkouts.Country",
-		"Checkouts.DiscountAmount",
-		"Checkouts.DiscountName",
-		"Checkouts.TranslatedDiscountName",
-		"Checkouts.VoucherCode",
-		"Checkouts.RedirectURL",
-		"Checkouts.TrackingCode",
-		"Checkouts.LanguageCode",
-		"Checkouts.Metadata",
-		"Checkouts.PrivateMetadata",
+func (cs *SqlCheckoutStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Token",
+		"CreateAt",
+		"UpdateAt",
+		"UserID",
+		"ShopID",
+		"Email",
+		"Quantity",
+		"ChannelID",
+		"BillingAddressID",
+		"ShippingAddressID",
+		"ShippingMethodID",
+		"CollectionPointID",
+		"Note",
+		"Currency",
+		"Country",
+		"DiscountAmount",
+		"DiscountName",
+		"TranslatedDiscountName",
+		"VoucherCode",
+		"RedirectURL",
+		"TrackingCode",
+		"LanguageCode",
+		"Metadata",
+		"PrivateMetadata",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (cs *SqlCheckoutStore) ScanFields(checkOut checkout.Checkout) []interface{} {
@@ -136,7 +107,9 @@ func (cs *SqlCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Checkout
 		oldCheckout *checkout.Checkout
 	)
 	if isSaving {
-		err = cs.GetMaster().Insert(ckout)
+		query := "INSERT INTO " + store.CheckoutTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
+		_, err = cs.GetMasterX().NamedExec(query, ckout)
+
 	} else {
 		// validate if checkout exist
 		oldCheckout, err = cs.Get(ckout.Token)
@@ -144,13 +117,23 @@ func (cs *SqlCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Checkout
 			return nil, err
 		}
 
+		query := "UPDATE " + store.CheckoutTableName + " SET " + cs.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Token = :Token"
+
 		// set fields that CANNOT be changed
 		ckout.BillingAddressID = oldCheckout.BillingAddressID
 		ckout.ShippingAddressID = oldCheckout.ShippingAddressID
-		ckout.Token = oldCheckout.Token
 
 		// update checkout
-		numUpdated, err = cs.GetMaster().Update(ckout)
+		var result sql.Result
+		result, err = cs.GetMasterX().NamedExec(query, ckout)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -165,13 +148,11 @@ func (cs *SqlCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Checkout
 
 // Get finds a checkout with given token (checkouts use tokens(uuids) as primary keys)
 func (cs *SqlCheckoutStore) Get(token string) (*checkout.Checkout, error) {
-	var ckout *checkout.Checkout
-	err := cs.GetReplica().SelectOne(
+	var ckout checkout.Checkout
+	err := cs.GetReplicaX().Get(
 		&ckout,
-		`SELECT * FROM `+store.CheckoutTableName+` WHERE Token = :Token`,
-		map[string]interface{}{
-			"Token": token,
-		},
+		`SELECT * FROM `+store.CheckoutTableName+` WHERE Token = ?`,
+		token,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -180,7 +161,7 @@ func (cs *SqlCheckoutStore) Get(token string) (*checkout.Checkout, error) {
 		return nil, errors.Wrapf(err, "failed to find checkout with token=%s", token)
 	}
 
-	return ckout, nil
+	return &ckout, nil
 }
 
 type checkoutStatement string
@@ -205,9 +186,9 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *checkout.CheckoutFi
 	}
 
 	if statementType == slect {
-		selectFields := cs.ModelFields()
+		selectFields := cs.ModelFields(store.CheckoutTableName + ".")
 		if option.SelectRelatedChannel {
-			selectFields = append(selectFields, cs.Channel().ModelFields()...)
+			selectFields = append(selectFields, cs.Channel().ModelFields(store.ChannelTableName+".")...)
 		}
 
 		query := cs.GetQueryBuilder().
@@ -233,24 +214,22 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *checkout.CheckoutFi
 // GetByOption finds and returns 1 checkout based on given option
 func (cs *SqlCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error) {
 	option.Limit = 0 // no limit
-	// queryString, args, err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).ToSql()
-	// if err != nil {
-	// 	return nil, errors.Wrap(err, "GetbyOption_ToSql")
-	// }
 
 	var (
-		res      checkout.Checkout
-		aChannel channel.Channel
+		res        checkout.Checkout
+		aChannel   channel.Channel
+		scanFields = cs.ScanFields(res)
 	)
-	scanFields := cs.ScanFields(res)
 	if option.SelectRelatedChannel {
 		scanFields = append(scanFields, cs.Channel().ScanFields(aChannel)...)
 	}
 
-	err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).
-		RunWith(cs.GetReplica()).
-		QueryRow().
-		Scan(scanFields...)
+	query, args, err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOption_ToSql")
+	}
+
+	err = cs.GetReplicaX().QueryRowX(query, args...).Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.CheckoutTableName, "option")
@@ -267,9 +246,12 @@ func (cs *SqlCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (
 
 // FilterByOption finds and returns a list of checkout based on given option
 func (cs *SqlCheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error) {
-	rows, err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).
-		RunWith(cs.GetReplica()).
-		Query()
+	query, args, err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	rows, err := cs.GetReplicaX().QueryX(query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find checkouts with given options")
 	}
@@ -312,13 +294,11 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 		checkoutLines     checkout.CheckoutLines
 		productVariantIDs []string
 	)
-	_, err := cs.GetReplica().Select(
+	err := cs.GetReplicaX().Select(
 		&checkoutLines,
-		"SELECT * FROM "+store.CheckoutLineTableName+" WHERE CheckoutID = :CheckoutID ORDER BY :OrderBy",
-		map[string]interface{}{
-			"CheckoutID": ckout.Token,
-			"OrderBy":    store.TableOrderingMap[store.CheckoutLineTableName],
-		},
+		"SELECT * FROM "+store.CheckoutLineTableName+" WHERE CheckoutID = ? ORDER BY ?",
+		ckout.Token,
+		store.TableOrderingMap[store.CheckoutLineTableName],
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find checkout lines belong to checkout with token=%s", ckout.Token)
@@ -334,13 +314,11 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	)
 	// check if we can proceed:
 	if len(productVariantIDs) > 0 {
-		_, err = cs.GetReplica().Select(
+		err = cs.GetReplicaX().Select(
 			&productVariants,
-			"SELECT * FROM "+store.ProductVariantTableName+" WHERE Id IN :IDs ORDER BY :OrderBy",
-			map[string]interface{}{
-				"IDs":     productVariantIDs,
-				"OrderBy": store.TableOrderingMap[store.ProductVariantTableName],
-			},
+			"SELECT * FROM "+store.ProductVariantTableName+" WHERE Id IN ? ORDER BY ?",
+			productVariantIDs,
+			store.TableOrderingMap[store.ProductVariantTableName],
 		)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find product variants")
@@ -360,13 +338,11 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	)
 	// check if we can proceed:
 	if len(productIDs) > 0 {
-		_, err = cs.GetReplica().Select(
+		err = cs.GetReplicaX().Select(
 			&products,
-			"SELECT * FROM "+store.ProductTableName+" WHERE Id IN :IDs ORDER BY :OrderBy",
-			map[string]interface{}{
-				"IDs":     productIDs,
-				"OrderBy": store.TableOrderingMap[store.ProductTableName],
-			},
+			"SELECT * FROM "+store.ProductTableName+" WHERE Id IN ? ORDER BY ?",
+			productIDs,
+			store.TableOrderingMap[store.ProductTableName],
 		)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to finds products")
@@ -390,14 +366,14 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	if len(productIDs) > 0 {
 		query, args, _ := cs.GetQueryBuilder().
 			Select(cs.Collection().ModelFields()...).
-			From(store.ProductCollectionTableName+" C").
-			Column(squirrel.Alias(squirrel.Expr("PC.ProductID"), "PrefetchRelatedValProductID")). // extra collumn
-			InnerJoin(store.CollectionProductRelationTableName+" PC ON (PC.CollectionID = C.Id)").
-			Where("PC.ProductID IN ?", productIDs).
+			From(store.ProductCollectionTableName).
+			Column(squirrel.Alias(squirrel.Expr("ProductCollections.ProductID"), "PrefetchRelatedValProductID")). // extra collumn
+			InnerJoin(store.CollectionProductRelationTableName+" ON (ProductCollections.CollectionID = Collections.Id)").
+			Where("ProductCollections.ProductID IN ?", productIDs).
 			OrderBy(store.TableOrderingMap[store.ProductCollectionTableName]).
 			ToSql()
 
-		_, err = cs.GetReplica().Select(&collectionXs, query, args...)
+		err = cs.GetReplicaX().Select(&collectionXs, query, args...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find collections")
 		}
@@ -415,13 +391,11 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	)
 	// check if we can proceed:
 	if len(productVariantIDs) > 0 {
-		_, err = cs.GetReplica().Select(
+		err = cs.GetReplicaX().Select(
 			&productVariantChannelListings,
-			"SELECT * FROM "+store.ProductVariantChannelListingTableName+" WHERE VariantID IN :IDs ORDER BY :OrderBy",
-			map[string]interface{}{
-				"IDs":     productVariantIDs,
-				"OrderBy": store.TableOrderingMap[store.ProductVariantChannelListingTableName],
-			},
+			"SELECT * FROM "+store.ProductVariantChannelListingTableName+" WHERE VariantID IN ? ORDER BY ?",
+			productVariantIDs,
+			store.TableOrderingMap[store.ProductVariantChannelListingTableName],
 		)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find product variant channel listing")
@@ -436,13 +410,11 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	var channels []*channel.Channel
 	// check if we can proceed
 	if len(channelIDs) > 0 {
-		_, err = cs.GetReplica().Select(
+		err = cs.GetReplicaX().Select(
 			&channels,
-			"SELECT * FROM "+store.ChannelTableName+" WHERE Id in :IDs ORDER BY :OrderBy",
-			map[string]interface{}{
-				"IDs":     channelIDs,
-				"OrderBy": store.TableOrderingMap[store.ChannelTableName],
-			},
+			"SELECT * FROM "+store.ChannelTableName+" WHERE Id in ? ORDER BY ?",
+			channelIDs,
+			store.TableOrderingMap[store.ChannelTableName],
 		)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find channels")
@@ -457,13 +429,11 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	)
 	// check if we can proceed
 	if len(productTypeIDs) > 0 {
-		_, err = cs.GetReplica().Select(
+		err = cs.GetReplicaX().Select(
 			&productTypes,
-			"SELECT * FROM "+store.ProductTypeTableName+" WHERE Id IN :IDs ORDER BY :OrderBy",
-			map[string]interface{}{
-				"IDs":     productTypeIDs,
-				"OrderBy": store.TableOrderingMap[store.ProductTypeTableName],
-			},
+			"SELECT * FROM "+store.ProductTypeTableName+" WHERE Id IN ? ORDER BY ?",
+			productTypeIDs,
+			store.TableOrderingMap[store.ProductTypeTableName],
 		)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to finds product types")
@@ -516,13 +486,18 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 
 // DeleteCheckoutsByOption deletes checkout row(s) from database, filtered using given option.
 // It returns an error indicating if the operation was performed successfully.
-func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error {
-	var runner squirrel.BaseRunner = cs.GetMaster()
+func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) error {
+	var runner store_iface.SqlxExecutor = cs.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
 
-	_, err := cs.commonFilterQueryBuilder(option, delete).(squirrel.DeleteBuilder).RunWith(runner).Exec()
+	query, args, err := cs.commonFilterQueryBuilder(option, delete).(squirrel.DeleteBuilder).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "DeleteCheckoutsByOption_ToSql")
+	}
+
+	_, err = runner.Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete checkout(s) by given options")
 	}
@@ -540,7 +515,8 @@ func (cs *SqlCheckoutStore) CountCheckouts(options *checkout.CheckoutFilterOptio
 		return 0, errors.Wrap(err, "CountCheckouts_ToSql")
 	}
 
-	count, err := cs.GetReplica().SelectInt(queryString, args...)
+	var count int64
+	err = cs.GetReplicaX().Get(&count, queryString, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count number of checkouts")
 	}

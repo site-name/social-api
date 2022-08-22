@@ -350,3 +350,5 @@ const (
 )
 
 const PluginConfigurationTableName = "PluginConfigurations"
+
+const AuditTableName = "Audits" // audit

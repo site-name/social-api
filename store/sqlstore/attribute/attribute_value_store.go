@@ -91,7 +91,7 @@ func (as *SqlAttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribu
 
 		var result sql.Result
 		result, err = as.GetMasterX().NamedExec(query, av)
-		if err == nil {
+		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
 	}
@@ -251,14 +251,14 @@ func (as *SqlAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecu
 		} else {
 			query := "UPDATE " + store.AttributeValueTableName + " SET " + as.ModelFields("").
 				Map(func(_ int, s string) string {
-					return s + ":=" + s
+					return s + "=:" + s
 				}).
 				Join(",") + " WHERE Id=:Id"
 
 			var result sql.Result
 
 			result, err = executor.NamedExec(query, value)
-			if err == nil {
+			if err == nil && result != nil {
 				numUpdated, _ = result.RowsAffected()
 			}
 		}

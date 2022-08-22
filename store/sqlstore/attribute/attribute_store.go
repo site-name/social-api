@@ -102,7 +102,7 @@ func (as *SqlAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attri
 
 		var result sql.Result
 		result, err = as.GetMasterX().NamedExec(query, attr)
-		if err == nil {
+		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
 	}

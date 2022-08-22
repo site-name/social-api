@@ -1943,7 +1943,7 @@ func (s *TimerLayerAttributeProductStore) Save(attributeProduct *attribute.Attri
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+func (s *TimerLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeValueStore.BulkUpsert(transaction, values)

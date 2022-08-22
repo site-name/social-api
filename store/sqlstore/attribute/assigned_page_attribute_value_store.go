@@ -149,12 +149,6 @@ func (as *SqlAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*at
 		Join(",") + " WHERE Id=:Id"
 
 	for _, value := range attributeValues {
-		// try validating if the value exist:
-		_, err := as.Get(value.Id)
-		if err != nil {
-			return errors.Wrapf(err, "failed to find value with id=%s", value.Id)
-		}
-
 		result, err := as.GetMasterX().NamedExec(query, value)
 		if err != nil {
 			// check if error is duplicate conflict error:

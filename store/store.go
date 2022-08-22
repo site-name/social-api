@@ -257,7 +257,6 @@ type (
 		FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) // FilterbyOption returns a list of attributes by given option
 	}
 	AttributeTranslationStore interface {
-		CreateIndexesIfNotExists()
 	}
 	AttributeValueStore interface {
 		ScanFields(attributeValue attribute.AttributeValue) []interface{}
@@ -270,7 +269,6 @@ type (
 		FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) // FilterByOptions finds and returns all matched attribute values based on given options
 	}
 	AttributeValueTranslationStore interface {
-		CreateIndexesIfNotExists()
 	}
 	AssignedPageAttributeValueStore interface {
 		ModelFields(prefix string) model.StringArray
@@ -308,7 +306,7 @@ type (
 		FilterByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) // FilterByOption finds and returns a list of assigned variant attributes filtered by given options
 	}
 	AttributeVariantStore interface {
-		CreateIndexesIfNotExists()
+		ModelFields(prefix string) model.StringArray
 		Save(attributeVariant *attribute.AttributeVariant) (*attribute.AttributeVariant, error)
 		Get(attributeVariantID string) (*attribute.AttributeVariant, error)
 		GetByOption(option *attribute.AttributeVariantFilterOption) (*attribute.AttributeVariant, error) // GetByOption finds 1 attribute variant with given option.
@@ -887,13 +885,12 @@ type (
 // checkout
 type (
 	CheckoutLineStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(line checkout.CheckoutLine) []interface{}
 		Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error)          // Upsert checks whether to update or insert given checkout line then performs according operation
 		Get(id string) (*checkout.CheckoutLine, error)                                       // Get returns a checkout line with given id
 		CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error)       // CheckoutLinesByCheckoutID returns a list of checkout lines that belong to given checkout
-		DeleteLines(transaction *gorp.Transaction, checkoutLineIDs []string) error           // DeleteLines deletes all checkout lines with given uuids
+		DeleteLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) error  // DeleteLines deletes all checkout lines with given uuids
 		BulkUpdate(checkoutLines []*checkout.CheckoutLine) error                             // BulkUpdate receives a list of modified checkout lines, updates them in bulk.
 		BulkCreate(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, error) // BulkCreate takes a list of raw checkout lines, save them into database then returns them fully with an error
 		// CheckoutLinesByCheckoutWithPrefetch finds all checkout lines belong to given checkout
@@ -906,22 +903,20 @@ type (
 		CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, error) // CheckoutLinesByOption finds and returns checkout lines filtered using given option
 	}
 	CheckoutStore interface {
-		CreateIndexesIfNotExists()
-		Get(token string) (*checkout.Checkout, error)                                                             // Get finds a checkout with given token (checkouts use tokens(uuids) as primary keys)
-		Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error)                                              // Upsert depends on given checkout's Token property to decide to update or insert it
-		FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) // FetchCheckoutLinesAndPrefetchRelatedValue Fetch checkout lines as CheckoutLineInfo objects.
-		GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error)                            // GetByOption finds and returns 1 checkout based on given option
-		FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error)                       // FilterByOption finds and returns a list of checkout based on given option
-		DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error       // DeleteCheckoutsByOption deletes checkout row(s) from database, filtered using given option.  It returns an error indicating if the operation was performed successfully.
+		ModelFields(prefix string) model.StringArray
+		Get(token string) (*checkout.Checkout, error)                                                                // Get finds a checkout with given token (checkouts use tokens(uuids) as primary keys)
+		Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error)                                                 // Upsert depends on given checkout's Token property to decide to update or insert it
+		FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error)    // FetchCheckoutLinesAndPrefetchRelatedValue Fetch checkout lines as CheckoutLineInfo objects.
+		GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error)                               // GetByOption finds and returns 1 checkout based on given option
+		FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error)                          // FilterByOption finds and returns a list of checkout based on given option
+		DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) error // DeleteCheckoutsByOption deletes checkout row(s) from database, filtered using given option.  It returns an error indicating if the operation was performed successfully.
 		CountCheckouts(options *checkout.CheckoutFilterOption) (int64, error)
 	}
 )
 
 // channel
 type ChannelStore interface {
-	CreateIndexesIfNotExists()
-	ModelFields() []string
-	TableName(withField string) string
+	ModelFields(prefix string) model.StringArray
 	ScanFields(chanNel channel.Channel) []interface{}
 	Save(ch *channel.Channel) (*channel.Channel, error)
 	Get(id string) (*channel.Channel, error)                                        // Get returns channel by given id
@@ -950,7 +945,7 @@ type ClusterDiscoveryStore interface {
 }
 
 type AuditStore interface {
-	CreateIndexesIfNotExists()
+	ModelFields(prefix string) model.StringArray
 	Save(audit *audit.Audit) error
 	Get(userID string, offset int, limit int) (audit.Audits, error)
 	PermanentDeleteByUser(userID string) error

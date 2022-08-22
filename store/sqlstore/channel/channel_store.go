@@ -15,43 +15,26 @@ type SqlChannelStore struct {
 }
 
 func NewSqlChannelStore(sqlStore store.Store) store.ChannelStore {
-	cs := &SqlChannelStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(channel.Channel{}, cs.TableName("")).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(channel.CHANNEL_NAME_MAX_LENGTH)
-		table.ColMap("Slug").SetMaxSize(channel.CHANNEL_SLUG_MAX_LENGTH).SetUnique(true)
-		table.ColMap("DefaultCountry").SetMaxSize(model.SINGLE_COUNTRY_CODE_MAX_LENGTH)
-	}
-
-	return cs
+	return &SqlChannelStore{sqlStore}
 }
 
-func (cs *SqlChannelStore) TableName(withField string) string {
-	name := "Channels"
-	if withField != "" {
-		name += "." + withField
+func (cs *SqlChannelStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"ShopID",
+		"Name",
+		"IsActive",
+		"Slug",
+		"Currency",
+		"DefaultCountry",
+	}
+	if prefix == "" {
+		return res
 	}
 
-	return name
-}
-
-func (cs *SqlChannelStore) OrderBy() string {
-	return "Slug ASC"
-}
-
-func (cs *SqlChannelStore) ModelFields() []string {
-	return []string{
-		"Channels.Id",
-		"Channels.ShopID",
-		"Channels.Name",
-		"Channels.IsActive",
-		"Channels.Slug",
-		"Channels.Currency",
-		"Channels.DefaultCountry",
-	}
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (cs *SqlChannelStore) ScanFields(ch channel.Channel) []interface{} {
@@ -66,22 +49,14 @@ func (cs *SqlChannelStore) ScanFields(ch channel.Channel) []interface{} {
 	}
 }
 
-func (cs *SqlChannelStore) CreateIndexesIfNotExists() {
-	cs.CreateIndexIfNotExists("idx_channels_name", cs.TableName(""), "Name")
-	cs.CreateIndexIfNotExists("idx_channels_slug", cs.TableName(""), "Slug")
-	cs.CreateIndexIfNotExists("idx_channels_isactive", cs.TableName(""), "IsActive")
-	cs.CreateIndexIfNotExists("idx_channels_currency", cs.TableName(""), "Currency")
-
-	cs.CreateIndexIfNotExists("idx_channels_name_lower_textpattern", cs.TableName(""), "lower(Name) text_pattern_ops")
-}
-
 func (cs *SqlChannelStore) Save(ch *channel.Channel) (*channel.Channel, error) {
 	ch.PreSave()
 	if err := ch.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := cs.GetMaster().Insert(ch); err != nil {
+	query := "INSERT INTO " + store.ChannelTableName + "(" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
+	if _, err := cs.GetMasterX().NamedExec(query, ch); err != nil {
 		if cs.IsUniqueConstraintError(err, []string{"Slug", "channels_slug_key", "idx_channels_slug_unique"}) {
 			return nil, store.NewErrInvalidInput("Channel", "Slug", ch.Slug)
 		}
@@ -93,10 +68,11 @@ func (cs *SqlChannelStore) Save(ch *channel.Channel) (*channel.Channel, error) {
 
 func (cs *SqlChannelStore) Get(id string) (*channel.Channel, error) {
 	var channel channel.Channel
-	err := cs.GetReplica().SelectOne(&channel, "SELECT * FROM "+cs.TableName("")+" WHERE Id = :id", map[string]interface{}{"id": id})
+
+	err := cs.GetReplicaX().Get(&channel, "SELECT * FROM "+store.ChannelTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(cs.TableName(""), id)
+			return nil, store.NewErrNotFound(store.ChannelTableName, id)
 		}
 		return nil, errors.Wrapf(err, "Failed to get Channel with ChannelID=%s", id)
 	}
@@ -106,9 +82,9 @@ func (cs *SqlChannelStore) Get(id string) (*channel.Channel, error) {
 
 func (cs *SqlChannelStore) commonQueryBuilder(option *channel.ChannelFilterOption) (string, []interface{}, error) {
 	query := cs.GetQueryBuilder().
-		Select(cs.ModelFields()...).
-		From(cs.TableName("")).
-		OrderBy(cs.OrderBy())
+		Select(cs.ModelFields("")...).
+		From(store.ChannelTableName).
+		OrderBy(store.TableOrderingMap[store.ChannelTableName])
 
 	// parse options
 	if option.Id != nil {
@@ -141,10 +117,10 @@ func (cs *SqlChannelStore) GetbyOption(option *channel.ChannelFilterOption) (*ch
 	}
 
 	var res channel.Channel
-	err = cs.GetReplica().SelectOne(&res, queryString, args...)
+	err = cs.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(cs.TableName(""), "options")
+			return nil, store.NewErrNotFound(store.ChannelTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find channel by given options")
 	}
@@ -161,7 +137,7 @@ func (cs *SqlChannelStore) FilterByOption(option *channel.ChannelFilterOption) (
 	}
 
 	var res []*channel.Channel
-	_, err = cs.GetReplica().Select(&res, queryString, args...)
+	err = cs.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find channels with given option")
 	}

@@ -2132,7 +2132,7 @@ func (s *RetryLayerAttributeProductStore) Save(attributeProduct *attribute.Attri
 
 }
 
-func (s *RetryLayerAttributeValueStore) BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+func (s *RetryLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, error) {
 
 	tries := 0
 	for {

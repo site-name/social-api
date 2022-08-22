@@ -2035,7 +2035,7 @@ func (s *OpenTracingLayerAttributeProductStore) Save(attributeProduct *attribute
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeValueStore) BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+func (s *OpenTracingLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeValueStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
