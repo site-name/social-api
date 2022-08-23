@@ -174,8 +174,7 @@ func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeVal
 	}
 
 	var (
-		res attribute.AttributeValues
-
+		res            attribute.AttributeValues
 		attributeValue attribute.AttributeValue
 		attr           attribute.Attribute
 		scanFields     = as.ScanFields(attributeValue)

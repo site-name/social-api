@@ -302,8 +302,7 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 		res            []*product_and_discount.ProductVariant
 		variant        product_and_discount.ProductVariant
 		digitalContent product_and_discount.DigitalContent
-
-		scanFields = vs.ScanFields(variant)
+		scanFields     = vs.ScanFields(variant)
 	)
 	if option.SelectRelatedDigitalContent {
 		scanFields = append(scanFields, vs.DigitalContent().ScanFields(digitalContent)...)

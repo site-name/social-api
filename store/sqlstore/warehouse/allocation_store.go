@@ -236,8 +236,8 @@ func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, opti
 		orderLine              order.OrderLine
 		stock                  warehouse.Stock
 		stockAvailableQuantity int
+		scanFields                              = as.ScanFields(allocation)
 		queryer                squirrel.Queryer = as.GetReplica()
-		scanFields             []interface{}    = as.ScanFields(allocation)
 	)
 
 	// check if transaction is non-nil to promote it to be actual queryer:
