@@ -15,51 +15,57 @@ type SqlSaleProductVariantStore struct {
 }
 
 func NewSqlSaleProductVariantStore(s store.Store) store.SaleProductVariantStore {
-	ss := &SqlSaleProductVariantStore{s}
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.SaleProductVariant{}, store.SaleProductVariantTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("SaleID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductVariantID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("SaleID", "ProductVariantID")
-	}
-	return ss
+	return &SqlSaleProductVariantStore{s}
 }
 
-func (ss *SqlSaleProductVariantStore) CreateIndexesIfNotExists() {}
+func (s *SqlSaleProductVariantStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id", "SaleID", "ProductVariantID", "CreateAt",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
+}
 
 // Upsert inserts/updates given sale-product variant relation into database, then returns it
 func (ss *SqlSaleProductVariantStore) Upsert(relation *product_and_discount.SaleProductVariant) (*product_and_discount.SaleProductVariant, error) {
 	var isSaving bool
+
 	if !model.IsValidId(relation.Id) {
-		relation.PreSave()
+		relation.Id = ""
 		isSaving = true
 	}
-
+	relation.PreSave()
 	if err := relation.IsValid(); err != nil {
 		return nil, err
 	}
 
 	var (
-		numUpdated  int64
-		err         error
-		oldRelation product_and_discount.SaleProductVariant
+		numUpdated int64
+		err        error
 	)
 	if isSaving {
-		err = ss.GetMaster().Insert(relation)
+		query := "INSERT INTO " + store.SaleProductVariantTableName + " (" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
+		_, err = ss.GetMasterX().NamedExec(query, relation)
+
 	} else {
-		err = ss.GetReplica().SelectOne(&oldRelation, "SELECT * FROM "+store.SaleProductVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": relation.Id})
-		if err != nil {
-			if err == sql.ErrNoRows {
-				return nil, store.NewErrNotFound(store.SaleProductVariantTableName, relation.Id)
-			}
-			return nil, errors.Wrapf(err, "failed to find existing sale-product variant relation with id=%s", relation.Id)
+
+		query := "UPDATE " + store.SaleProductVariantTableName + " SET " + ss.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id = :Id"
+
+		var result sql.Result
+		result, err = ss.GetMasterX().NamedExec(query, relation)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
 		}
-
-		relation.CreateAt = oldRelation.CreateAt
-
-		numUpdated, err = ss.GetMaster().Update(relation)
 	}
 
 	if err != nil {
@@ -98,7 +104,7 @@ func (ss *SqlSaleProductVariantStore) FilterByOption(options *product_and_discou
 	}
 
 	var res []*product_and_discount.SaleProductVariant
-	_, err = ss.GetReplica().Select(&res, queryString, args...)
+	err = ss.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find sale-product variant relations with given options")
 	}

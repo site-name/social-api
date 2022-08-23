@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -13,28 +14,25 @@ type SqlDiscountSaleStore struct {
 }
 
 func NewSqlDiscountSaleStore(sqlStore store.Store) store.DiscountSaleStore {
-	ss := &SqlDiscountSaleStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.Sale{}, store.SaleTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.SALE_NAME_MAX_LENGTH)
-		table.ColMap("Type").SetMaxSize(10)
-	}
-	return ss
+	return &SqlDiscountSaleStore{sqlStore}
 }
 
-func (ss *SqlDiscountSaleStore) CreateIndexesIfNotExists() {
-	ss.CreateIndexIfNotExists("idx_sales_name", store.SaleTableName, "Name")
-	ss.CreateIndexIfNotExists("idx_sales_type", store.SaleTableName, "Type")
-	ss.CreateForeignKeyIfNotExists(store.SaleTableName, "ShopID", store.ShopTableName, "Id", false)
+func (s *SqlDiscountSaleStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Upsert bases on sale's Id to decide to update or insert given sale
 func (ss *SqlDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*product_and_discount.Sale, error) {
 	var saving bool
-	if sale.Id == "" {
+
+	if !model.IsValidId(sale.Id) {
 		saving = true
 		sale.PreSave()
 	} else {
@@ -48,18 +46,25 @@ func (ss *SqlDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*produc
 	var (
 		err           error
 		numberUpdated int64
-		oldSale       *product_and_discount.Sale
 	)
-	if saving {
-		err = ss.GetMaster().Insert(sale)
-	} else {
-		oldSale, err = ss.Get(sale.Id)
-		if err != nil {
-			return nil, err
-		}
-		sale.ShopID = oldSale.ShopID // shop id CANNOT be edited
 
-		numberUpdated, err = ss.GetMaster().Update(sale)
+	if saving {
+		query := "INSERT INTO " + store.SaleTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
+		_, err = ss.GetMasterX().NamedExec(query, sale)
+
+	} else {
+		query := "UPDATE " + store.SaleTableName + " SET " + ss.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id = :Id"
+
+		var result sql.Result
+		result, err = ss.GetMasterX().NamedExec(query, sale)
+		if err == nil && result != nil {
+			numberUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -75,13 +80,11 @@ func (ss *SqlDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*produc
 // Get finds and returns a sale with given saleID
 func (ss *SqlDiscountSaleStore) Get(saleID string) (*product_and_discount.Sale, error) {
 	var res product_and_discount.Sale
-	err := ss.GetReplica().SelectOne(
+	err := ss.GetReplicaX().Get(
 		&res,
-		"SELECT * FROM "+store.SaleTableName+" WHERE id = :ID ORDER BY :OrderBy",
-		map[string]interface{}{
-			"ID":      saleID,
-			"OrderBy": store.TableOrderingMap[store.SaleTableName],
-		},
+		"SELECT * FROM "+store.SaleTableName+" WHERE id = ? ORDER BY ?",
+		saleID,
+		store.TableOrderingMap[store.SaleTableName],
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -120,7 +123,7 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *product_and_discount
 	}
 
 	var sales []*product_and_discount.Sale
-	_, err = ss.GetReplica().Select(&sales, queryString, args...)
+	err = ss.GetReplicaX().Select(&sales, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find sales with given condition.")
 	}

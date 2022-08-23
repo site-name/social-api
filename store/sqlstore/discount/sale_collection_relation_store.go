@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -16,6 +17,19 @@ func NewSqlSaleCollectionRelationStore(s store.Store) store.SaleCollectionRelati
 	return &SqlSaleCollectionRelationStore{s}
 }
 
+func (s *SqlSaleCollectionRelationStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id", "SaleID", "CollectionID", "CreateAt",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
+}
+
 // Save insert given sale-collection relation into database
 func (ss *SqlSaleCollectionRelationStore) Save(relation *product_and_discount.SaleCollectionRelation) (*product_and_discount.SaleCollectionRelation, error) {
 	relation.PreSave()
@@ -23,7 +37,9 @@ func (ss *SqlSaleCollectionRelationStore) Save(relation *product_and_discount.Sa
 		return nil, err
 	}
 
-	if err := ss.GetMaster().Insert(relation); err != nil {
+	query := "INSERT INTO " + store.SaleCollectionRelationTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
+
+	if _, err := ss.GetMasterX().NamedExec(query, relation); err != nil {
 		if ss.IsUniqueConstraintError(err, []string{"SaleID", "CollectionID", "salecollections_saleid_collectionid_key"}) {
 			return nil, store.NewErrInvalidInput(store.SaleCollectionRelationTableName, "SaleID/CollectionID", "duplicate")
 		}
@@ -36,7 +52,8 @@ func (ss *SqlSaleCollectionRelationStore) Save(relation *product_and_discount.Sa
 // Get finds and returns a sale-collection relation with given id
 func (ss *SqlSaleCollectionRelationStore) Get(relationID string) (*product_and_discount.SaleCollectionRelation, error) {
 	var res product_and_discount.SaleCollectionRelation
-	err := ss.GetReplica().SelectOne(&res, "SELECT * FROM "+store.SaleCollectionRelationTableName+" WHERE Id = :ID", map[string]interface{}{"ID": relationID})
+
+	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.SaleCollectionRelationTableName+" WHERE Id = ?", relationID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.SaleCollectionRelationTableName, relationID)
@@ -72,7 +89,7 @@ func (ss *SqlSaleCollectionRelationStore) FilterByOption(option *product_and_dis
 	}
 
 	var res []*product_and_discount.SaleCollectionRelation
-	_, err = ss.GetReplica().Select(&res, queryString, args...)
+	err = ss.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find sale-collection relations with given option")
 	}

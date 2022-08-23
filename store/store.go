@@ -768,7 +768,6 @@ type (
 		BulkDelete(orderDiscountIDs []string) error                                                                                                    // BulkDelete perform bulk delete all given order discount ids
 	}
 	DiscountSaleTranslationStore interface {
-		CreateIndexesIfNotExists()
 	}
 	DiscountSaleChannelListingStore interface {
 		ModelFields(prefix string) model.StringArray
@@ -791,7 +790,6 @@ type (
 		GetByOption(option *product_and_discount.VoucherTranslationFilterOption) (*product_and_discount.VoucherTranslation, error)      // GetByOption finds and returns 1 voucher translation by given options
 	}
 	DiscountSaleStore interface {
-		CreateIndexesIfNotExists()
 		Upsert(sale *product_and_discount.Sale) (*product_and_discount.Sale, error)                              // Upsert bases on sale's Id to decide to update or insert given sale
 		Get(saleID string) (*product_and_discount.Sale, error)                                                   // Get finds and returns a sale with given saleID
 		FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) // FilterSalesByOption filter sales by option
@@ -813,8 +811,6 @@ type (
 		GetByOptions(options *product_and_discount.VoucherFilterOption) (*product_and_discount.Voucher, error)            // GetByOptions finds and returns 1 voucher filtered using given options
 	}
 	VoucherCategoryStore interface {
-		CreateIndexesIfNotExists()
-		TableName(withField string) string
 		Upsert(voucherCategory *product_and_discount.VoucherCategory) (*product_and_discount.VoucherCategory, error) // Upsert saves or updates given voucher category then returns it with an error
 		Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error)                                 // Get finds a voucher category with given id, then returns it with an error
 	}
@@ -842,7 +838,6 @@ type (
 		SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, error) // SaleCategoriesByOption returns a slice of sale-category relations with given option
 	}
 	SaleProductRelationStore interface {
-		CreateIndexesIfNotExists()
 		Save(relation *product_and_discount.SaleProductRelation) (*product_and_discount.SaleProductRelation, error)                             // Save inserts given sale-product relation into database then returns it
 		Get(relationID string) (*product_and_discount.SaleProductRelation, error)                                                               // Get finds and returns a sale-product relation with given id
 		SaleProductsByOption(option *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, error) // SaleProductsByOption returns a slice of sale-product relations, filtered by given option
@@ -856,7 +851,6 @@ type (
 		CreateIndexesIfNotExists()
 	}
 	SaleProductVariantStore interface {
-		CreateIndexesIfNotExists()
 		Upsert(relation *product_and_discount.SaleProductVariant) (*product_and_discount.SaleProductVariant, error)                      // Upsert inserts/updates given sale-product variant relation into database, then returns it
 		FilterByOption(options *product_and_discount.SaleProductVariantFilterOption) ([]*product_and_discount.SaleProductVariant, error) // FilterByOption finds and returns a list of sale-product variants filtered using given options
 	}
