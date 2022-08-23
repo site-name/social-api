@@ -2552,7 +2552,7 @@ func (s *RetryLayerCheckoutStore) CountCheckouts(options *checkout.CheckoutFilte
 
 }
 
-func (s *RetryLayerCheckoutStore) DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error {
+func (s *RetryLayerCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) error {
 
 	tries := 0
 	for {
@@ -2772,7 +2772,7 @@ func (s *RetryLayerCheckoutLineStore) CheckoutLinesByOption(option *checkout.Che
 
 }
 
-func (s *RetryLayerCheckoutLineStore) DeleteLines(transaction *gorp.Transaction, checkoutLineIDs []string) error {
+func (s *RetryLayerCheckoutLineStore) DeleteLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) error {
 
 	tries := 0
 	for {
@@ -5145,7 +5145,7 @@ func (s *RetryLayerOrderDiscountStore) Get(orderDiscountID string) (*product_and
 
 }
 
-func (s *RetryLayerOrderDiscountStore) Upsert(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+func (s *RetryLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
 
 	tries := 0
 	for {

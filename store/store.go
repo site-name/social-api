@@ -335,7 +335,6 @@ type (
 
 // compliance
 type ComplianceStore interface {
-	CreateIndexesIfNotExists()
 	Save(compliance *compliance.Compliance) (*compliance.Compliance, error)
 	Update(compliance *compliance.Compliance) (*compliance.Compliance, error)
 	Get(id string) (*compliance.Compliance, error)
@@ -763,18 +762,16 @@ type (
 // discount
 type (
 	OrderDiscountStore interface {
-		CreateIndexesIfNotExists()
-		Upsert(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) // Upsert depends on given order discount's Id property to decide to update/insert it
-		Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error)                                                              // Get finds and returns an order discount with given id
-		FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error)                 // FilterbyOption filters order discounts that satisfy given option, then returns them
-		BulkDelete(orderDiscountIDs []string) error                                                                                           // BulkDelete perform bulk delete all given order discount ids
+		Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) // Upsert depends on given order discount's Id property to decide to update/insert it
+		Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error)                                                                       // Get finds and returns an order discount with given id
+		FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error)                          // FilterbyOption filters order discounts that satisfy given option, then returns them
+		BulkDelete(orderDiscountIDs []string) error                                                                                                    // BulkDelete perform bulk delete all given order discount ids
 	}
 	DiscountSaleTranslationStore interface {
 		CreateIndexesIfNotExists()
 	}
 	DiscountSaleChannelListingStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		Save(saleChannelListing *product_and_discount.SaleChannelListing) (*product_and_discount.SaleChannelListing, error) // Save insert given instance into database then returns it
 		Get(saleChannelListingID string) (*product_and_discount.SaleChannelListing, error)                                  // Get finds and returns sale channel listing with given id
 		// SaleChannelListingsWithOption finds a list of sale channel listings plus foreign channel slugs
@@ -840,8 +837,6 @@ type (
 		FilterByOptions(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, error) // FilterByOptions finds and returns a slice of voucher customers by given options
 	}
 	SaleCategoryRelationStore interface {
-		CreateIndexesIfNotExists()
-		TableName(withField string) string
 		Save(relation *product_and_discount.SaleCategoryRelation) (*product_and_discount.SaleCategoryRelation, error)                               // Save inserts given sale-category relation into database
 		Get(relationID string) (*product_and_discount.SaleCategoryRelation, error)                                                                  // Get returns 1 sale-category relation with given id
 		SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, error) // SaleCategoriesByOption returns a slice of sale-category relations with given option
@@ -853,7 +848,6 @@ type (
 		SaleProductsByOption(option *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, error) // SaleProductsByOption returns a slice of sale-product relations, filtered by given option
 	}
 	SaleCollectionRelationStore interface {
-		CreateIndexesIfNotExists()
 		Save(relation *product_and_discount.SaleCollectionRelation) (*product_and_discount.SaleCollectionRelation, error)                       // Save insert given sale-collection relation into database
 		Get(relationID string) (*product_and_discount.SaleCollectionRelation, error)                                                            // Get finds and returns a sale-collection relation with given id
 		FilterByOption(option *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, error) // FilterByOption returns a list of collections filtered based on given option
@@ -871,12 +865,10 @@ type (
 // csv
 type (
 	CsvExportEventStore interface {
-		CreateIndexesIfNotExists()
 		Save(event *csv.ExportEvent) (*csv.ExportEvent, error)                           // Save inserts given export event into database then returns it
 		FilterByOption(options *csv.ExportEventFilterOption) ([]*csv.ExportEvent, error) // FilterByOption finds and returns a list of export events filtered using given option
 	}
 	CsvExportFileStore interface {
-		CreateIndexesIfNotExists()
 		Save(file *csv.ExportFile) (*csv.ExportFile, error) // Save inserts given export file into database then returns it
 		Get(id string) (*csv.ExportFile, error)             // Get finds and returns an export file found using given id
 	}
@@ -935,7 +927,6 @@ type (
 )
 
 type ClusterDiscoveryStore interface {
-	CreateIndexesIfNotExists()
 	Save(discovery *cluster.ClusterDiscovery) error
 	Delete(discovery *cluster.ClusterDiscovery) (bool, error)
 	Exists(discovery *cluster.ClusterDiscovery) (bool, error)

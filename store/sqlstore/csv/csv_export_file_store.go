@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/store"
 )
@@ -13,18 +14,24 @@ type SqlCsvExportFileStore struct {
 }
 
 func NewSqlCsvExportFileStore(s store.Store) store.CsvExportFileStore {
-	cs := &SqlCsvExportFileStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(csv.ExportFile{}, store.CsvExportFileTablename).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
-	}
-	return cs
+	return &SqlCsvExportFileStore{s}
 }
 
-func (cs *SqlCsvExportFileStore) CreateIndexesIfNotExists() {
-	cs.CreateForeignKeyIfNotExists(store.CsvExportFileTablename, "UserID", store.UserTableName, "Id", true)
+func (s *SqlCsvExportFileStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"UserID",
+		"ContentFile",
+		"CreateAt",
+		"UpdateAt",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Save inserts given csv export file into database then returns it
@@ -34,7 +41,9 @@ func (cs *SqlCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, er
 		return nil, err
 	}
 
-	if err := cs.GetMaster().Insert(file); err != nil {
+	query := "INSERT INTO " + store.CsvExportFileTablename + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
+
+	if _, err := cs.GetMasterX().NamedExec(query, file); err != nil {
 		return nil, errors.Wrapf(err, "failed to save ExportFile with Id=", file.Id)
 	}
 	return file, nil
@@ -43,7 +52,8 @@ func (cs *SqlCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, er
 // Get finds and returns an export file with given id
 func (cs *SqlCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
 	var res csv.ExportFile
-	err := cs.GetMaster().SelectOne(&res, "SELECT * FROM "+store.CsvExportFileTablename+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+
+	err := cs.GetMasterX().Get(&res, "SELECT * FROM "+store.CsvExportFileTablename+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.CsvExportFileTablename, id)

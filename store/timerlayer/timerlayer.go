@@ -2279,7 +2279,7 @@ func (s *TimerLayerCheckoutStore) CountCheckouts(options *checkout.CheckoutFilte
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error {
+func (s *TimerLayerCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) error {
 	start := timemodule.Now()
 
 	err := s.CheckoutStore.DeleteCheckoutsByOption(transaction, option)
@@ -2455,7 +2455,7 @@ func (s *TimerLayerCheckoutLineStore) CheckoutLinesByOption(option *checkout.Che
 	return result, err
 }
 
-func (s *TimerLayerCheckoutLineStore) DeleteLines(transaction *gorp.Transaction, checkoutLineIDs []string) error {
+func (s *TimerLayerCheckoutLineStore) DeleteLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) error {
 	start := timemodule.Now()
 
 	err := s.CheckoutLineStore.DeleteLines(transaction, checkoutLineIDs)
@@ -4408,7 +4408,7 @@ func (s *TimerLayerOrderDiscountStore) Get(orderDiscountID string) (*product_and
 	return result, err
 }
 
-func (s *TimerLayerOrderDiscountStore) Upsert(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+func (s *TimerLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderDiscountStore.Upsert(transaction, orderDiscount)

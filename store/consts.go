@@ -153,6 +153,10 @@ func init() {
 
 		OpenExchangeRateTableName:    "ToCurrency ASC", // external services
 		PluginConfigurationTableName: "",               // plugins
+
+		AuditTableName:            "",
+		ClusterDiscoveryTableName: "",
+		ComplianceTableName:       "",
 	}
 }
 
@@ -352,3 +356,7 @@ const (
 const PluginConfigurationTableName = "PluginConfigurations"
 
 const AuditTableName = "Audits" // audit
+
+const ClusterDiscoveryTableName = "ClusterDiscoveries"
+
+const ComplianceTableName = "Compliances"
