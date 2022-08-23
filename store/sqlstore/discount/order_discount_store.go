@@ -3,11 +3,11 @@ package discount
 import (
 	"database/sql"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlOrderDiscountStore struct {
@@ -15,41 +15,43 @@ type SqlOrderDiscountStore struct {
 }
 
 func NewSqlOrderDiscountStore(sqlStore store.Store) store.OrderDiscountStore {
-	ods := &SqlOrderDiscountStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.OrderDiscount{}, store.OrderDiscountTableName).SetKeys(false, "Id")
-		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Type").SetMaxSize(product_and_discount.ORDER_DISCOUNT_TYPE_MAX_LENGTH)
-		table.ColMap("ValueType").SetMaxSize(product_and_discount.ORDER_DISCOUNT_VALUE_TYPE_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.ORDER_DISCOUNT_NAME_MAX_LENGTH)
-		table.ColMap("TranslatedName").SetMaxSize(product_and_discount.ORDER_DISCOUNT_NAME_MAX_LENGTH)
-	}
-
-	return ods
+	return &SqlOrderDiscountStore{sqlStore}
 }
 
-func (ods *SqlOrderDiscountStore) CreateIndexesIfNotExists() {
-	ods.CreateIndexIfNotExists("idx_order_discounts_name", store.OrderDiscountTableName, "Name")
-	ods.CreateIndexIfNotExists("idx_order_discounts_translated_name", store.OrderDiscountTableName, "TranslatedName")
-	ods.CreateIndexIfNotExists("idx_order_discounts_name_lower_textpattern", store.OrderDiscountTableName, "lower(Name) text_pattern_ops")
-	ods.CreateIndexIfNotExists("idx_order_discounts_translated_name_lower_textpattern", store.OrderDiscountTableName, "lower(TranslatedName) text_pattern_ops")
-	ods.CreateForeignKeyIfNotExists(store.OrderDiscountTableName, "OrderID", store.OrderTableName, "Id", true)
+func (s *SqlOrderDiscountStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"OrderID",
+		"Type",
+		"ValueType",
+		"Value",
+		"AmountValue",
+		"Amount",
+		"Currency",
+		"Name",
+		"TranslatedName",
+		"Reason",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Upsert depends on given order discount's Id property to decide to update/insert it
-func (ods *SqlOrderDiscountStore) Upsert(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
-	var (
-		isSaving   bool
-		insertFunc func(list ...interface{}) error = ods.GetMaster().Insert
-		updateFunc func(list ...interface{}) (int64, error)
-	)
+func (ods *SqlOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+	var executor store_iface.SqlxExecutor = ods.GetMasterX()
 	if transaction != nil {
-		insertFunc = transaction.Insert
-		updateFunc = transaction.Update
+		executor = transaction
 	}
 
-	if orderDiscount.Id == "" {
+	var isSaving = false
+
+	if !model.IsValidId(orderDiscount.Id) {
+		orderDiscount.Id = ""
 		orderDiscount.PreSave()
 		isSaving = true
 	} else {
@@ -65,14 +67,22 @@ func (ods *SqlOrderDiscountStore) Upsert(transaction *gorp.Transaction, orderDis
 		numUpdated int64
 	)
 	if isSaving {
-		err = insertFunc(orderDiscount)
-	} else {
-		_, err = ods.Get(orderDiscount.Id)
-		if err != nil {
-			return nil, err
-		}
+		query := "INSERT INTO " + store.OrderDiscountTableName + "(" + ods.ModelFields("").Join(",") + ") VALUES (" + ods.ModelFields(":").Join(",") + ")"
+		_, err = executor.NamedExec(query, orderDiscount)
 
-		numUpdated, err = updateFunc(orderDiscount)
+	} else {
+		query := "UPDATE " + store.OrderDiscountTableName + " SET " + ods.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id = :Id"
+
+		var result sql.Result
+		result, err = executor.NamedExec(query, orderDiscount)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -89,7 +99,8 @@ func (ods *SqlOrderDiscountStore) Upsert(transaction *gorp.Transaction, orderDis
 // Get finds and returns an order discount with given id
 func (ods *SqlOrderDiscountStore) Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error) {
 	var res product_and_discount.OrderDiscount
-	err := ods.GetReplica().SelectOne(&res, "SELECT * FROM "+store.OrderDiscountTableName+" WHERE Id = :ID", map[string]interface{}{"ID": orderDiscountID})
+
+	err := ods.GetReplicaX().Get(&res, "SELECT * FROM "+store.OrderDiscountTableName+" WHERE Id = ?", orderDiscountID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.OrderDiscountTableName, orderDiscountID)
@@ -122,7 +133,7 @@ func (ods *SqlOrderDiscountStore) FilterbyOption(option *product_and_discount.Or
 	}
 
 	var res []*product_and_discount.OrderDiscount
-	_, err = ods.GetReplica().Select(&res, queryString, args...)
+	err = ods.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order discounts with given option")
 	}
@@ -132,13 +143,7 @@ func (ods *SqlOrderDiscountStore) FilterbyOption(option *product_and_discount.Or
 
 // BulkDelete perform bulk delete all given order discount ids
 func (ods *SqlOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
-	result, err := ods.GetQueryBuilder().
-		Delete("*").
-		From(store.OrderDiscountTableName).
-		Where(squirrel.Eq{"Id": orderDiscountIDs}).
-		RunWith(ods.GetMaster()).
-		Exec()
-
+	result, err := ods.GetMasterX().Exec("DELETE * FROM "+store.OrderDiscountTableName+" WHERE Id IN ?", orderDiscountIDs)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete order discounts by given ids")
 	}

@@ -988,26 +988,26 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord order.Order, manager
 
 // Modify stocks and allocations. Return list of unsaved FulfillmentLines.
 //
-//     Args:
-//         fulfillment (Fulfillment): Fulfillment to create lines
-//         warehouse_pk (str): Warehouse to fulfill order.
-//         lines_data (List[Dict]): List with information from which system
-//             create FulfillmentLines. Example:
-//                 [
-//                     {
-//                         "order_line": (OrderLine),
-//                         "quantity": (int),
-//                     },
-//                     ...
-//                 ]
-//         channel_slug (str): Channel for which fulfillment lines should be created.
+//	Args:
+//	    fulfillment (Fulfillment): Fulfillment to create lines
+//	    warehouse_pk (str): Warehouse to fulfill order.
+//	    lines_data (List[Dict]): List with information from which system
+//	        create FulfillmentLines. Example:
+//	            [
+//	                {
+//	                    "order_line": (OrderLine),
+//	                    "quantity": (int),
+//	                },
+//	                ...
+//	            ]
+//	    channel_slug (str): Channel for which fulfillment lines should be created.
 //
-//     Return:
-//         List[FulfillmentLine]: Unsaved fulfillmet lines created for this fulfillment
-//             based on information form `lines`
+//	Return:
+//	    List[FulfillmentLine]: Unsaved fulfillmet lines created for this fulfillment
+//	        based on information form `lines`
 //
-//     Raise:
-//         InsufficientStock: If system hasn't containt enough item in stock for any line.
+//	Raise:
+//	    InsufficientStock: If system hasn't containt enough item in stock for any line.
 func (a *ServiceOrder) createFulfillmentLines(fulfillment *order.Fulfillment, warehouseID string, lineDatas order.QuantityOrderLines, channelID string, manager interfaces.PluginManagerInterface, decreaseStock bool, allowStockTobeExceeded bool) ([]*order.FulfillmentLine, *exception.InsufficientStock, *model.AppError) {
 
 	var variantIDs = lineDatas.OrderLines().ProductVariantIDs()
@@ -1137,34 +1137,34 @@ func (a *ServiceOrder) createFulfillmentLines(fulfillment *order.Fulfillment, wa
 
 // Fulfill order.
 //
-//     Function create fulfillments with lines.
-//     Next updates Order based on created fulfillments.
+//	Function create fulfillments with lines.
+//	Next updates Order based on created fulfillments.
 //
-//     Args:
-//         requester (User): Requester who trigger this action.
-//         order (Order): Order to fulfill
-//         fulfillment_lines_for_warehouses (Dict): Dict with information from which
-//             system create fulfillments. Example:
-//                 {
-//                     (Warehouse.pk): [
-//                         {
-//                             "order_line": (OrderLine),
-//                             "quantity": (int),
-//                         },
-//                         ...
-//                     ]
-//                 }
-//         manager (PluginsManager): Base manager for handling plugins logic.
-//         notify_customer (bool): If `True` system send email about
-//             fulfillments to customer.
+//	Args:
+//	    requester (User): Requester who trigger this action.
+//	    order (Order): Order to fulfill
+//	    fulfillment_lines_for_warehouses (Dict): Dict with information from which
+//	        system create fulfillments. Example:
+//	            {
+//	                (Warehouse.pk): [
+//	                    {
+//	                        "order_line": (OrderLine),
+//	                        "quantity": (int),
+//	                    },
+//	                    ...
+//	                ]
+//	            }
+//	    manager (PluginsManager): Base manager for handling plugins logic.
+//	    notify_customer (bool): If `True` system send email about
+//	        fulfillments to customer.
 //
-//     Return:
-//         List[Fulfillment]: Fulfillmet with lines created for this order
-//             based on information form `fulfillment_lines_for_warehouses`
+//	Return:
+//	    List[Fulfillment]: Fulfillmet with lines created for this order
+//	        based on information form `fulfillment_lines_for_warehouses`
 //
 //
-//     Raise:
-//         InsufficientStock: If system hasn't containt enough item in stock for any line.
+//	Raise:
+//	    InsufficientStock: If system hasn't containt enough item in stock for any line.
 func (a *ServiceOrder) CreateFulfillments(user *account.User, _ interface{}, orDer *order.Order, fulfillmentLinesForWarehouses map[string][]*order.QuantityOrderLine, manager interfaces.PluginManagerInterface, notifyCustomer bool, approved bool, allowStockTobeExceeded bool) ([]*order.Fulfillment, *exception.InsufficientStock, *model.AppError) {
 	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
@@ -1548,7 +1548,7 @@ func (a *ServiceOrder) populateReplaceOrderFields(transaction *gorp.Transaction,
 
 	if len(originalOrderAddressIDs) > 0 {
 		addressesOfOriginalOrder, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
-			Id: squirrel.Eq{a.srv.Store.Address().TableName("Id"): originalOrderAddressIDs},
+			Id: squirrel.Eq{store.AddressTableName + ".Id": originalOrderAddressIDs},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -1975,7 +1975,6 @@ func (a *ServiceOrder) ProcessReplace(
 // NOTE: `payMent`, `amount` , `user` are optional.
 //
 // `refund` and `refundShippingCosts` default to false.
-//
 func (a *ServiceOrder) CreateFulfillmentsForReturnedProducts(
 	user *account.User,
 	_ interface{},
@@ -2199,7 +2198,6 @@ func (a *ServiceOrder) calculateRefundAmount(
 }
 
 // `requester` and `amount` can be nil
-//
 func (a *ServiceOrder) processRefund(
 	user *account.User,
 	_ interface{},

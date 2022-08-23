@@ -2,6 +2,7 @@ package account
 
 import (
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
@@ -11,36 +12,22 @@ type SqlUserAddressStore struct {
 }
 
 func NewSqlUserAddressStore(s store.Store) store.UserAddressStore {
-	uas := &SqlUserAddressStore{s}
+	return &SqlUserAddressStore{s}
+}
 
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(account.UserAddress{}, uas.TableName("")).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("AddressID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("UserID", "AddressID")
+func (s *SqlUserAddressStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"UserID",
+		"AddressID",
+	}
+	if prefix == "" {
+		return res
 	}
 
-	return uas
-}
-
-func (uas *SqlUserAddressStore) TableName(withField string) string {
-	name := "UserAddresses"
-	if withField != "" {
-		name += "." + withField
-	}
-
-	return name
-}
-
-func (uas *SqlUserAddressStore) OrderBy() string {
-	return ""
-}
-
-func (uas *SqlUserAddressStore) CreateIndexesIfNotExists() {
-	uas.CreateForeignKeyIfNotExists(uas.TableName(""), "UserID", store.UserTableName, "Id", true)
-	uas.CreateForeignKeyIfNotExists(uas.TableName(""), "AddressID", store.AddressTableName, "Id", true)
+	return res.Map(func(_ int, item string) string {
+		return prefix + item
+	})
 }
 
 func (uas *SqlUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {
@@ -49,7 +36,8 @@ func (uas *SqlUserAddressStore) Save(userAddress *account.UserAddress) (*account
 		return nil, err
 	}
 
-	if err := uas.GetMaster().Insert(userAddress); err != nil {
+	query := "INSERT INTO " + store.UserAddressTableName + " (" + uas.ModelFields("").Join(",") + ") VALUES (" + uas.ModelFields(":").Join(",") + ")"
+	if _, err := uas.GetMasterX().NamedExec(query, userAddress); err != nil {
 		if uas.IsUniqueConstraintError(err, []string{"UserID", "AddressID", "useraddresses_userid_addressid_key"}) {
 			return nil, store.NewErrInvalidInput("UserAddress", "UserID or AddressID", "duplicate")
 		}
@@ -60,12 +48,9 @@ func (uas *SqlUserAddressStore) Save(userAddress *account.UserAddress) (*account
 }
 
 func (uas *SqlUserAddressStore) DeleteForUser(userID, addressID string) error {
-	result, err := uas.GetMaster().Exec(
-		`DELETE FROM `+uas.TableName("")+` WHERE UserID = :UID AND AddressID = :AddrID`,
-		map[string]interface{}{
-			"UID":    userID,
-			"AddrID": addressID,
-		},
+	result, err := uas.GetMasterX().Exec(
+		`DELETE FROM `+store.UserAddressTableName+` WHERE UserID = ? AND AddressID = ?`,
+		userID, addressID,
 	)
 
 	if err != nil {
@@ -100,7 +85,7 @@ func (uas *SqlUserAddressStore) FilterByOptions(options *account.UserAddressFilt
 	}
 
 	var res []*account.UserAddress
-	_, err = uas.GetReplica().Select(&res, queryString, args...)
+	err = uas.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find user-address relations with given options")
 	}

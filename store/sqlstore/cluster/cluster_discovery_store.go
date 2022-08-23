@@ -14,20 +14,28 @@ type sqlClusterDiscoveryStore struct {
 }
 
 func NewSqlClusterDiscoveryStore(sqlStore store.Store) store.ClusterDiscoveryStore {
-	s := &sqlClusterDiscoveryStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(cluster.ClusterDiscovery{}, "ClusterDiscovery").SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Type").SetMaxSize(64)
-		table.ColMap("ClusterName").SetMaxSize(64)
-		table.ColMap("Hostname").SetMaxSize(512)
-	}
-
-	return s
+	return &sqlClusterDiscoveryStore{sqlStore}
 }
 
-func (*sqlClusterDiscoveryStore) CreateIndexesIfNotExists() {}
+func (s sqlClusterDiscoveryStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"Type",
+		"ClusterName",
+		"Hostname",
+		"GossipPort",
+		"Port",
+		"CreateAt",
+		"LastPingAt",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
+}
 
 func (s sqlClusterDiscoveryStore) Save(ClusterDiscovery *cluster.ClusterDiscovery) error {
 	ClusterDiscovery.PreSave()
@@ -35,7 +43,9 @@ func (s sqlClusterDiscoveryStore) Save(ClusterDiscovery *cluster.ClusterDiscover
 		return err
 	}
 
-	if err := s.GetMaster().Insert(ClusterDiscovery); err != nil {
+	query := "INSERT INTO " + store.ClusterDiscoveryTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+
+	if _, err := s.GetMasterX().NamedExec(query, ClusterDiscovery); err != nil {
 		return errors.Wrap(err, "failed to save ClusterDiscovery")
 	}
 	return nil
@@ -43,7 +53,7 @@ func (s sqlClusterDiscoveryStore) Save(ClusterDiscovery *cluster.ClusterDiscover
 
 func (s sqlClusterDiscoveryStore) Delete(ClusterDiscovery *cluster.ClusterDiscovery) (bool, error) {
 	query := s.GetQueryBuilder().
-		Delete("ClusterDiscovery").
+		Delete(store.ClusterDiscoveryTableName).
 		Where(sq.Eq{"Type": ClusterDiscovery.Type}).
 		Where(sq.Eq{"ClusterName": ClusterDiscovery.ClusterName}).
 		Where(sq.Eq{"Hostname": ClusterDiscovery.Hostname})
@@ -53,7 +63,8 @@ func (s sqlClusterDiscoveryStore) Delete(ClusterDiscovery *cluster.ClusterDiscov
 		return false, errors.Wrap(err, "cluster_discovery_tosql")
 	}
 
-	count, err := s.GetMaster().SelectInt(queryString, args...)
+	var count int64
+	err = s.GetMasterX().Get(&count, queryString, args...)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to delete ClusterDiscovery")
 	}
@@ -66,7 +77,7 @@ func (s sqlClusterDiscoveryStore) Delete(ClusterDiscovery *cluster.ClusterDiscov
 func (s sqlClusterDiscoveryStore) Exists(ClusterDiscovery *cluster.ClusterDiscovery) (bool, error) {
 	query := s.GetQueryBuilder().
 		Select("COUNT(*)").
-		From("ClusterDiscovery").
+		From(store.ClusterDiscoveryTableName).
 		Where(sq.Eq{"Type": ClusterDiscovery.Type}).
 		Where(sq.Eq{"ClusterName": ClusterDiscovery.ClusterName}).
 		Where(sq.Eq{"Hostname": ClusterDiscovery.Hostname})
@@ -76,7 +87,8 @@ func (s sqlClusterDiscoveryStore) Exists(ClusterDiscovery *cluster.ClusterDiscov
 		return false, errors.Wrap(err, "cluster_discovery_tosql")
 	}
 
-	count, err := s.GetMaster().SelectInt(queryString, args...)
+	var count int64
+	err = s.GetMasterX().Get(&count, queryString, args...)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to count ClusterDiscovery")
 	}
@@ -89,7 +101,7 @@ func (s sqlClusterDiscoveryStore) Exists(ClusterDiscovery *cluster.ClusterDiscov
 func (s sqlClusterDiscoveryStore) GetAll(ClusterDiscoveryType, clusterName string) ([]*cluster.ClusterDiscovery, error) {
 	query := s.GetQueryBuilder().
 		Select("*").
-		From("ClusterDiscovery").
+		From(store.ClusterDiscoveryTableName).
 		Where(sq.Eq{"Type": ClusterDiscoveryType}).
 		Where(sq.Eq{"ClusterName": clusterName}).
 		Where(sq.Gt{"LastPingAt": model.GetMillis() - cluster.CDS_OFFLINE_AFTER_MILLIS})
@@ -100,7 +112,7 @@ func (s sqlClusterDiscoveryStore) GetAll(ClusterDiscoveryType, clusterName strin
 	}
 
 	var list []*cluster.ClusterDiscovery
-	if _, err := s.GetMaster().Select(&list, queryString, args...); err != nil {
+	if err := s.GetMasterX().Select(&list, queryString, args...); err != nil {
 		return nil, errors.Wrapf(err, "failed to find ClusterDiscovery")
 	}
 	return list, nil
@@ -108,7 +120,7 @@ func (s sqlClusterDiscoveryStore) GetAll(ClusterDiscoveryType, clusterName strin
 
 func (s sqlClusterDiscoveryStore) SetLastPingAt(ClusterDiscovery *cluster.ClusterDiscovery) error {
 	query := s.GetQueryBuilder().
-		Update("ClusterDiscovery").
+		Update(store.ClusterDiscoveryTableName).
 		Set("LastPingAt", model.GetMillis()).
 		Where(sq.Eq{"Type": ClusterDiscovery.Type}).
 		Where(sq.Eq{"ClusterName": ClusterDiscovery.ClusterName}).
@@ -119,7 +131,7 @@ func (s sqlClusterDiscoveryStore) SetLastPingAt(ClusterDiscovery *cluster.Cluste
 		return errors.Wrap(err, "cluster_discovery_tosql")
 	}
 
-	if _, err := s.GetMaster().Exec(queryString, args...); err != nil {
+	if _, err := s.GetMasterX().Exec(queryString, args...); err != nil {
 		return errors.Wrap(err, "failed to update ClusterDiscovery")
 	}
 	return nil
@@ -127,7 +139,7 @@ func (s sqlClusterDiscoveryStore) SetLastPingAt(ClusterDiscovery *cluster.Cluste
 
 func (s sqlClusterDiscoveryStore) Cleanup() error {
 	query := s.GetQueryBuilder().
-		Delete("ClusterDiscovery").
+		Delete(store.ClusterDiscoveryTableName).
 		Where(sq.Lt{"LastPingAt": model.GetMillis() - cluster.CDS_OFFLINE_AFTER_MILLIS})
 
 	queryString, args, err := query.ToSql()
@@ -135,7 +147,7 @@ func (s sqlClusterDiscoveryStore) Cleanup() error {
 		return errors.Wrap(err, "cluster_discovery_tosql")
 	}
 
-	if _, err := s.GetMaster().Exec(queryString, args...); err != nil {
+	if _, err := s.GetMasterX().Exec(queryString, args...); err != nil {
 		return errors.Wrap(err, "failed to delete ClusterDiscoveries")
 	}
 	return nil

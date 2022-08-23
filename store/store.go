@@ -4,6 +4,7 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	"database/sql/driver"
 	timemodule "time"
 
@@ -35,35 +36,32 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // Store is database gateway of the system
 type Store interface {
-	Context() context.Context                                                                                          // Context gets context
-	Close()                                                                                                            // Close closes databases
-	LockToMaster()                                                                                                     // LockToMaster constraints all queries to be performed on master
-	UnlockFromMaster()                                                                                                 // UnlockFromMaster makes all datasources available
-	DropAllTables()                                                                                                    // DropAllTables drop all tables in databases
-	SetContext(context context.Context)                                                                                // set context
-	GetDbVersion(numerical bool) (string, error)                                                                       // GetDbVersion returns version in use of database
-	GetMaster() *gorp.DbMap                                                                                            // GetMaster get master datasource
-	GetReplica() *gorp.DbMap                                                                                           // GetMaster gets slave datasource
-	CommonMetaDataIndex(tableName string)                                                                              // CommonMetaDataIndex create indexes for tables that have fields `metadata` and `privatemetadata`
-	CommonSeoMaxLength(table *gorp.TableMap)                                                                           // CommonSeoMaxLength is common method for settings max lengths for tables's `seotitle` and `seodescription`
-	CreateIndexIfNotExists(indexName, tableName, columnName string) bool                                               // CreateIndexIfNotExists creates indexes for tables
-	GetAllConns() []*gorp.DbMap                                                                                        // GetAllConns returns all datasources available in use
-	GetQueryBuilder() squirrel.StatementBuilderType                                                                    // GetQueryBuilder create squirrel sql query builder
-	CreateFullTextIndexIfNotExists(indexName string, tableName string, columnName string) bool                         //
-	IsUniqueConstraintError(err error, indexName []string) bool                                                        //
-	DBFromContext(ctx context.Context) *gorp.DbMap                                                                     //
-	CreateForeignKeyIfNotExists(tableName, columnName, refTableName, refColumnName string, onDeleteCascade bool) error //
-	CreateFullTextFuncIndexIfNotExists(indexName string, tableName string, function string) bool                       //
-	MarkSystemRanUnitTests()                                                                                           //
-	FinalizeTransaction(transaction driver.Tx)                                                                         // FinalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
+	Context() context.Context           // Context gets context
+	SetContext(context context.Context) // set context
+	Close()                             // Close closes databases
+	LockToMaster()                      // LockToMaster constraints all queries to be performed on master
+	UnlockFromMaster()                  // UnlockFromMaster makes all datasources available
+	GetInternalReplicaDBs() []*sql.DB   // GetInternalReplicaDBs allows access to the raw replica DB handles for the multi-product architecture.
+	ReplicaLagTime() error
+	ReplicaLagAbs() error
+	CheckIntegrity() <-chan model.IntegrityCheckResult
+	DropAllTables()                                             // DropAllTables drop all tables in databases
+	GetDbVersion(numerical bool) (string, error)                // GetDbVersion returns version in use of database
+	GetMasterX() store_iface.SqlxExecutor                       // GetMaster get master datasource
+	GetReplicaX() store_iface.SqlxExecutor                      // GetMaster gets slave datasource
+	GetQueryBuilder() squirrel.StatementBuilderType             // GetQueryBuilder create squirrel sql query builder
+	IsUniqueConstraintError(err error, indexName []string) bool //
+	MarkSystemRanUnitTests()                                    //
+	FinalizeTransaction(transaction driver.Tx)                  // FinalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
+	DBXFromContext(ctx context.Context) store_iface.SqlxExecutor
 
 	User() UserStore                                                   // account
 	Address() AddressStore                                             //
-	UserTermOfService() UserTermOfServiceStore                         //
 	UserAddress() UserAddressStore                                     //
 	CustomerEvent() CustomerEventStore                                 //
 	StaffNotificationRecipient() StaffNotificationRecipientStore       //
@@ -251,8 +249,7 @@ type FileInfoStore interface {
 // attribute
 type (
 	AttributeStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		Delete(ids ...string) (int64, error)
 		ScanFields(v attribute.Attribute) []interface{}
 		Upsert(attr *attribute.Attribute) (*attribute.Attribute, error)                       // Upsert inserts or updates given attribute then returns it
@@ -260,25 +257,21 @@ type (
 		FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) // FilterbyOption returns a list of attributes by given option
 	}
 	AttributeTranslationStore interface {
-		CreateIndexesIfNotExists()
 	}
 	AttributeValueStore interface {
-		CreateIndexesIfNotExists()
 		ScanFields(attributeValue attribute.AttributeValue) []interface{}
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		Count(options *attribute.AttributeValueFilterOptions) (int64, error)
 		Delete(ids ...string) (int64, error)
 		Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error)
-		BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error)
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, error)
 		Get(attributeID string) (*attribute.AttributeValue, error)                                        // Get finds an attribute value with given id then returns it with an error
 		FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) // FilterByOptions finds and returns all matched attribute values based on given options
 	}
 	AttributeValueTranslationStore interface {
-		CreateIndexesIfNotExists()
 	}
 	AssignedPageAttributeValueStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		Save(assignedPageAttrValue *attribute.AssignedPageAttributeValue) (*attribute.AssignedPageAttributeValue, error)                                                 // Save insert given value into database then returns it with an error
 		Get(assignedPageAttrValueID string) (*attribute.AssignedPageAttributeValue, error)                                                                               // Get try finding an value with given id then returns it with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedPageAttributeValue, error)                                                     // SaveInBulk inserts multiple values into database then returns them with an error
@@ -286,20 +279,19 @@ type (
 		UpdateInBulk(attributeValues []*attribute.AssignedPageAttributeValue) error                                                                                      // UpdateInBulk use transaction to update all given assigned page attribute values
 	}
 	AssignedPageAttributeStore interface {
-		CreateIndexesIfNotExists()
+		ModelFields(prefix string) model.StringArray
 		Save(assignedPageAttr *attribute.AssignedPageAttribute) (*attribute.AssignedPageAttribute, error)          // Save inserts given assigned page attribute into database and returns it with an error
 		Get(id string) (*attribute.AssignedPageAttribute, error)                                                   // Get returns an assigned page attribute with an error
 		GetByOption(option *attribute.AssignedPageAttributeFilterOption) (*attribute.AssignedPageAttribute, error) // GetByOption try to find an assigned page attribute with given option. If nothing found, creats new instance with that option and returns such value with an error
 	}
 	AttributePageStore interface {
-		CreateIndexesIfNotExists()
+		ModelFields(prefix string) model.StringArray
 		Save(page *attribute.AttributePage) (*attribute.AttributePage, error)
 		Get(pageID string) (*attribute.AttributePage, error)
 		GetByOption(option *attribute.AttributePageFilterOption) (*attribute.AttributePage, error)
 	}
 	AssignedVariantAttributeValueStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(assignedVariantAttributeValue attribute.AssignedVariantAttributeValue) []interface{}
 		Save(assignedVariantAttrValue *attribute.AssignedVariantAttributeValue) (*attribute.AssignedVariantAttributeValue, error)                                              // Save inserts new value into database then returns it with an error
 		Get(assignedVariantAttrValueID string) (*attribute.AssignedVariantAttributeValue, error)                                                                               // Get try finding a value with given id then returns it with an error
@@ -308,21 +300,19 @@ type (
 		UpdateInBulk(attributeValues []*attribute.AssignedVariantAttributeValue) error                                                                                         // UpdateInBulk use transaction to update given values, then returns an error to indicate if the operation was successful or not
 	}
 	AssignedVariantAttributeStore interface {
-		CreateIndexesIfNotExists()
 		Save(assignedVariantAttribute *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, error)       // Save insert new instance into database then returns it with an error
 		Get(id string) (*attribute.AssignedVariantAttribute, error)                                                           // Get find assigned variant attribute from database then returns it with an error
 		GetWithOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, error)    // GetWithOption try finding an assigned variant attribute with given option. If nothing found, it creates instance with given option. Finally it returns expected value with an error
 		FilterByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) // FilterByOption finds and returns a list of assigned variant attributes filtered by given options
 	}
 	AttributeVariantStore interface {
-		CreateIndexesIfNotExists()
+		ModelFields(prefix string) model.StringArray
 		Save(attributeVariant *attribute.AttributeVariant) (*attribute.AttributeVariant, error)
 		Get(attributeVariantID string) (*attribute.AttributeVariant, error)
 		GetByOption(option *attribute.AttributeVariantFilterOption) (*attribute.AttributeVariant, error) // GetByOption finds 1 attribute variant with given option.
 	}
 	AssignedProductAttributeValueStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(assignedProductAttributeValue attribute.AssignedProductAttributeValue) []interface{}
 		Save(assignedProductAttrValue *attribute.AssignedProductAttributeValue) (*attribute.AssignedProductAttributeValue, error) // Save inserts given instance into database then returns it with an error
 		Get(assignedProductAttrValueID string) (*attribute.AssignedProductAttributeValue, error)                                  // Get try finding an instance with given id then returns the value with an error
@@ -331,14 +321,12 @@ type (
 		UpdateInBulk(attributeValues []*attribute.AssignedProductAttributeValue) error                                            // UpdateInBulk use transaction to update the given values. Returned error can be `*store.ErrInvalidInput` or `system error`
 	}
 	AssignedProductAttributeStore interface {
-		CreateIndexesIfNotExists()
 		Save(assignedProductAttribute *attribute.AssignedProductAttribute) (*attribute.AssignedProductAttribute, error)    // Save inserts new assgignedProductAttribute into database and returns it with an error
 		Get(id string) (*attribute.AssignedProductAttribute, error)                                                        // Get finds and returns an assignedProductAttribute with en error
 		GetWithOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, error) // GetWithOption try finding an `AssignedProductAttribute` with given `option`. If nothing found, it creates new instance then returns it with an error
 		FilterByOptions(options *attribute.AssignedProductAttributeFilterOption) ([]*attribute.AssignedProductAttribute, error)
 	}
 	AttributeProductStore interface {
-		CreateIndexesIfNotExists()
 		Save(attributeProduct *attribute.AttributeProduct) (*attribute.AttributeProduct, error)          // Save inserts given attribute product relationship into database then returns it and an error
 		Get(attributeProductID string) (*attribute.AttributeProduct, error)                              // Get finds an attributeProduct relationship and returns it with an error
 		GetByOption(option *attribute.AttributeProductFilterOption) (*attribute.AttributeProduct, error) // GetByOption returns an attributeProduct with given condition
@@ -347,7 +335,6 @@ type (
 
 // compliance
 type ComplianceStore interface {
-	CreateIndexesIfNotExists()
 	Save(compliance *compliance.Compliance) (*compliance.Compliance, error)
 	Update(compliance *compliance.Compliance) (*compliance.Compliance, error)
 	Get(id string) (*compliance.Compliance, error)
@@ -356,7 +343,7 @@ type ComplianceStore interface {
 	MessageExport(cursor compliance.MessageExportCursor, limit int) ([]*compliance.MessageExport, compliance.MessageExportCursor, error)
 }
 
-//plugin
+// plugin
 type PluginConfigurationStore interface {
 	CreateIndexesIfNotExists()
 	TableName(withField string) string
@@ -775,18 +762,16 @@ type (
 // discount
 type (
 	OrderDiscountStore interface {
-		CreateIndexesIfNotExists()
-		Upsert(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) // Upsert depends on given order discount's Id property to decide to update/insert it
-		Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error)                                                              // Get finds and returns an order discount with given id
-		FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error)                 // FilterbyOption filters order discounts that satisfy given option, then returns them
-		BulkDelete(orderDiscountIDs []string) error                                                                                           // BulkDelete perform bulk delete all given order discount ids
+		Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) // Upsert depends on given order discount's Id property to decide to update/insert it
+		Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error)                                                                       // Get finds and returns an order discount with given id
+		FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error)                          // FilterbyOption filters order discounts that satisfy given option, then returns them
+		BulkDelete(orderDiscountIDs []string) error                                                                                                    // BulkDelete perform bulk delete all given order discount ids
 	}
 	DiscountSaleTranslationStore interface {
 		CreateIndexesIfNotExists()
 	}
 	DiscountSaleChannelListingStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		Save(saleChannelListing *product_and_discount.SaleChannelListing) (*product_and_discount.SaleChannelListing, error) // Save insert given instance into database then returns it
 		Get(saleChannelListingID string) (*product_and_discount.SaleChannelListing, error)                                  // Get finds and returns sale channel listing with given id
 		// SaleChannelListingsWithOption finds a list of sale channel listings plus foreign channel slugs
@@ -852,8 +837,6 @@ type (
 		FilterByOptions(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, error) // FilterByOptions finds and returns a slice of voucher customers by given options
 	}
 	SaleCategoryRelationStore interface {
-		CreateIndexesIfNotExists()
-		TableName(withField string) string
 		Save(relation *product_and_discount.SaleCategoryRelation) (*product_and_discount.SaleCategoryRelation, error)                               // Save inserts given sale-category relation into database
 		Get(relationID string) (*product_and_discount.SaleCategoryRelation, error)                                                                  // Get returns 1 sale-category relation with given id
 		SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, error) // SaleCategoriesByOption returns a slice of sale-category relations with given option
@@ -865,7 +848,6 @@ type (
 		SaleProductsByOption(option *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, error) // SaleProductsByOption returns a slice of sale-product relations, filtered by given option
 	}
 	SaleCollectionRelationStore interface {
-		CreateIndexesIfNotExists()
 		Save(relation *product_and_discount.SaleCollectionRelation) (*product_and_discount.SaleCollectionRelation, error)                       // Save insert given sale-collection relation into database
 		Get(relationID string) (*product_and_discount.SaleCollectionRelation, error)                                                            // Get finds and returns a sale-collection relation with given id
 		FilterByOption(option *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, error) // FilterByOption returns a list of collections filtered based on given option
@@ -883,12 +865,10 @@ type (
 // csv
 type (
 	CsvExportEventStore interface {
-		CreateIndexesIfNotExists()
 		Save(event *csv.ExportEvent) (*csv.ExportEvent, error)                           // Save inserts given export event into database then returns it
 		FilterByOption(options *csv.ExportEventFilterOption) ([]*csv.ExportEvent, error) // FilterByOption finds and returns a list of export events filtered using given option
 	}
 	CsvExportFileStore interface {
-		CreateIndexesIfNotExists()
 		Save(file *csv.ExportFile) (*csv.ExportFile, error) // Save inserts given export file into database then returns it
 		Get(id string) (*csv.ExportFile, error)             // Get finds and returns an export file found using given id
 	}
@@ -897,13 +877,12 @@ type (
 // checkout
 type (
 	CheckoutLineStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(line checkout.CheckoutLine) []interface{}
 		Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error)          // Upsert checks whether to update or insert given checkout line then performs according operation
 		Get(id string) (*checkout.CheckoutLine, error)                                       // Get returns a checkout line with given id
 		CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error)       // CheckoutLinesByCheckoutID returns a list of checkout lines that belong to given checkout
-		DeleteLines(transaction *gorp.Transaction, checkoutLineIDs []string) error           // DeleteLines deletes all checkout lines with given uuids
+		DeleteLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) error  // DeleteLines deletes all checkout lines with given uuids
 		BulkUpdate(checkoutLines []*checkout.CheckoutLine) error                             // BulkUpdate receives a list of modified checkout lines, updates them in bulk.
 		BulkCreate(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, error) // BulkCreate takes a list of raw checkout lines, save them into database then returns them fully with an error
 		// CheckoutLinesByCheckoutWithPrefetch finds all checkout lines belong to given checkout
@@ -916,22 +895,20 @@ type (
 		CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, error) // CheckoutLinesByOption finds and returns checkout lines filtered using given option
 	}
 	CheckoutStore interface {
-		CreateIndexesIfNotExists()
-		Get(token string) (*checkout.Checkout, error)                                                             // Get finds a checkout with given token (checkouts use tokens(uuids) as primary keys)
-		Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error)                                              // Upsert depends on given checkout's Token property to decide to update or insert it
-		FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) // FetchCheckoutLinesAndPrefetchRelatedValue Fetch checkout lines as CheckoutLineInfo objects.
-		GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error)                            // GetByOption finds and returns 1 checkout based on given option
-		FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error)                       // FilterByOption finds and returns a list of checkout based on given option
-		DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error       // DeleteCheckoutsByOption deletes checkout row(s) from database, filtered using given option.  It returns an error indicating if the operation was performed successfully.
+		ModelFields(prefix string) model.StringArray
+		Get(token string) (*checkout.Checkout, error)                                                                // Get finds a checkout with given token (checkouts use tokens(uuids) as primary keys)
+		Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error)                                                 // Upsert depends on given checkout's Token property to decide to update or insert it
+		FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error)    // FetchCheckoutLinesAndPrefetchRelatedValue Fetch checkout lines as CheckoutLineInfo objects.
+		GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error)                               // GetByOption finds and returns 1 checkout based on given option
+		FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error)                          // FilterByOption finds and returns a list of checkout based on given option
+		DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) error // DeleteCheckoutsByOption deletes checkout row(s) from database, filtered using given option.  It returns an error indicating if the operation was performed successfully.
 		CountCheckouts(options *checkout.CheckoutFilterOption) (int64, error)
 	}
 )
 
 // channel
 type ChannelStore interface {
-	CreateIndexesIfNotExists()
-	ModelFields() []string
-	TableName(withField string) string
+	ModelFields(prefix string) model.StringArray
 	ScanFields(chanNel channel.Channel) []interface{}
 	Save(ch *channel.Channel) (*channel.Channel, error)
 	Get(id string) (*channel.Channel, error)                                        // Get returns channel by given id
@@ -942,17 +919,14 @@ type ChannelStore interface {
 // app
 type (
 	AppTokenStore interface {
-		CreateIndexesIfNotExists()
 		Save(appToken *app.AppToken) (*app.AppToken, error)
 	}
 	AppStore interface {
-		CreateIndexesIfNotExists()
 		Save(app *app.App) (*app.App, error)
 	}
 )
 
 type ClusterDiscoveryStore interface {
-	CreateIndexesIfNotExists()
 	Save(discovery *cluster.ClusterDiscovery) error
 	Delete(discovery *cluster.ClusterDiscovery) (bool, error)
 	Exists(discovery *cluster.ClusterDiscovery) (bool, error)
@@ -962,14 +936,13 @@ type ClusterDiscoveryStore interface {
 }
 
 type AuditStore interface {
-	CreateIndexesIfNotExists()
+	ModelFields(prefix string) model.StringArray
 	Save(audit *audit.Audit) error
 	Get(userID string, offset int, limit int) (audit.Audits, error)
 	PermanentDeleteByUser(userID string) error
 }
 
 type TermsOfServiceStore interface {
-	CreateIndexesIfNotExists()
 	Save(termsOfService *model.TermsOfService) (*model.TermsOfService, error)
 	GetLatest(allowFromCache bool) (*model.TermsOfService, error)
 	Get(id string, allowFromCache bool) (*model.TermsOfService, error)
@@ -1020,27 +993,16 @@ type StatusStore interface {
 // account stores
 type (
 	AddressStore interface {
-		ModelFields() model.StringArray
-		TableName(withField string) string
-		OrderBy() string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(addr account.Address) []interface{}
-		CreateIndexesIfNotExists()                                                                // CreateIndexesIfNotExists creates indexes for table if needed
-		Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error)   // Save saves address into database
-		Get(addressID string) (*account.Address, error)                                           // Get returns an Address with given addressID is exist
-		Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) // Update update given address and returns it
-		DeleteAddresses(addressIDs []string) error                                                // DeleteAddress deletes given address and returns an error
-		FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error)           // FilterByOption finds and returns a list of address(es) filtered by given option
-	}
-	UserTermOfServiceStore interface {
-		CreateIndexesIfNotExists()                                                                //
-		GetByUser(userID string) (*account.UserTermsOfService, error)                             // GetByUser returns a term of service with given user id
-		Save(userTermsOfService *account.UserTermsOfService) (*account.UserTermsOfService, error) // Save inserts new user term of service to database
-		Delete(userID, termsOfServiceId string) error                                             // Delete deletes from database an usder term of service with given userId and term of service id
+		Upsert(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, error)
+		Get(addressID string) (*account.Address, error)                                 // Get returns an Address with given addressID is exist
+		DeleteAddresses(addressIDs []string) error                                      // DeleteAddress deletes given address and returns an error
+		FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) // FilterByOption finds and returns a list of address(es) filtered by given option
 	}
 	UserStore interface {
 		ClearCaches()
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		Save(user *account.User) (*account.User, error)                               // Save takes an user struct and save into database
 		Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) // Update update given user
 		UpdateLastPictureUpdate(userID string) error
@@ -1086,13 +1048,8 @@ type (
 		GetProfiles(options *account.UserGetOptions) ([]*account.User, error)
 		GetUnreadCount(userID string) (int64, error)         // TODO: consider me
 		UserByOrderID(orderID string) (*account.User, error) // UserByOrderID finds and returns an user who whose order is given
-
-		// PromoteGuestToUser(userID string) error
-		// DemoteUserToGuest(userID string) (*account.User, error)
-		// DeactivateGuests() ([]string, error)
 	}
 	TokenStore interface {
-		CreateIndexesIfNotExists()
 		Save(recovery *model.Token) error
 		Delete(token string) error
 		GetByToken(token string) (*model.Token, error)
@@ -1101,7 +1058,6 @@ type (
 		GetAllTokensByType(tokenType string) ([]*model.Token, error)
 	}
 	UserAccessTokenStore interface {
-		CreateIndexesIfNotExists()
 		Save(token *account.UserAccessToken) (*account.UserAccessToken, error)
 		DeleteAllForUser(userID string) error
 		Delete(tokenID string) error
@@ -1114,28 +1070,24 @@ type (
 		UpdateTokenDisable(tokenID string) error
 	}
 	UserAddressStore interface {
-		CreateIndexesIfNotExists()
-		TableName(withField string) string
-		OrderBy() string
 		Save(userAddress *account.UserAddress) (*account.UserAddress, error)
 		DeleteForUser(userID string, addressID string) error // DeleteForUser delete the relationship between user & address
 		// FilterByOptions finds and returns a list of user-address relations with given options
 		FilterByOptions(options *account.UserAddressFilterOptions) ([]*account.UserAddress, error)
 	}
 	CustomerEventStore interface {
-		CreateIndexesIfNotExists()
+		ModelFields(prefix string) model.StringArray
 		Save(customemrEvent *account.CustomerEvent) (*account.CustomerEvent, error)
 		Get(id string) (*account.CustomerEvent, error)
 		Count() (int64, error)
 		GetEventsByUserID(userID string) ([]*account.CustomerEvent, error) // get list of customer event belongs to given id
 	}
 	StaffNotificationRecipientStore interface {
-		CreateIndexesIfNotExists()
 		Save(notificationRecipient *account.StaffNotificationRecipient) (*account.StaffNotificationRecipient, error)
 		Get(id string) (*account.StaffNotificationRecipient, error)
 	}
 	CustomerNoteStore interface {
-		CreateIndexesIfNotExists()
+		ModelFields(prefix string) model.StringArray
 		Save(note *account.CustomerNote) (*account.CustomerNote, error) // Save insert given customer note into database and returns it
 		Get(id string) (*account.CustomerNote, error)                   // Get find customer note with given id and returns it
 	}

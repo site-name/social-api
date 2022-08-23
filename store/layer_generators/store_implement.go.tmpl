@@ -50,12 +50,6 @@ func (store *SqlStore) setupTables() {
   }
 }
 
-// performs database indexing
-func (store *SqlStore) indexingTableFields() {
-  {{ range $index, $element := .SubStores }} store.stores.{{ $index | LowerFirstChar }}.CreateIndexesIfNotExists() {{ $index | OtherCallOtherThanCreateIndexesIfNotExists }}
-  {{ end }}
-}
-
 {{ range $index, $element := .SubStores }}
 func(ss *SqlStore) {{ $index }}() store.{{ $index }}Store {
   return ss.stores.{{ $index | LowerFirstChar }}

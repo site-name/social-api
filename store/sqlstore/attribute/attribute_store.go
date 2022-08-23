@@ -15,41 +15,34 @@ type SqlAttributeStore struct {
 }
 
 func NewSqlAttributeStore(s store.Store) store.AttributeStore {
-	as := &SqlAttributeStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.Attribute{}, store.AttributeTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Slug").SetMaxSize(attribute.ATTRIBUTE_SLUG_MAX_LENGTH).SetUnique(true)
-		table.ColMap("Name").SetMaxSize(attribute.ATTRIBUTE_NAME_MAX_LENGTH)
-		table.ColMap("Type").SetMaxSize(attribute.ATTRIBUTE_TYPE_MAX_LENGTH)
-		table.ColMap("InputType").SetMaxSize(attribute.ATTRIBUTE_INPUT_TYPE_MAX_LENGTH)
-		table.ColMap("EntityType").SetMaxSize(attribute.ATTRIBUTE_ENTITY_TYPE_MAX_LENGTH)
-		table.ColMap("Unit").SetMaxSize(attribute.ATTRIBUTE_UNIT_MAX_LENGTH)
-
-	}
-	return as
+	return &SqlAttributeStore{s}
 }
 
-func (as *SqlAttributeStore) ModelFields() []string {
-	return []string{
-		"Attributes.Id",
-		"Attributes.Slug",
-		"Attributes.Name",
-		"Attributes.Type",
-		"Attributes.InputType",
-		"Attributes.EntityType",
-		"Attributes.Unit",
-		"Attributes.ValueRequired",
-		"Attributes.IsVariantOnly",
-		"Attributes.VisibleInStoreFront",
-		"Attributes.FilterableInStorefront",
-		"Attributes.FilterableInDashboard",
-		"Attributes.StorefrontSearchPosition",
-		"Attributes.AvailableInGrid",
-		"Attributes.Metadata",
-		"Attributes.PrivateMetadata",
+func (as *SqlAttributeStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"Slug",
+		"Name",
+		"Type",
+		"InputType",
+		"EntityType",
+		"Unit",
+		"ValueRequired",
+		"IsVariantOnly",
+		"VisibleInStoreFront",
+		"FilterableInStorefront",
+		"FilterableInDashboard",
+		"StorefrontSearchPosition",
+		"AvailableInGrid",
+		"Metadata",
+		"PrivateMetadata",
 	}
+	if prefix == "" {
+		return res
+	}
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (as *SqlAttributeStore) ScanFields(v attribute.Attribute) []interface{} {
@@ -73,12 +66,6 @@ func (as *SqlAttributeStore) ScanFields(v attribute.Attribute) []interface{} {
 	}
 }
 
-func (as *SqlAttributeStore) CreateIndexesIfNotExists() {
-	as.CreateIndexIfNotExists("idx_attributes_name", store.AttributeTableName, "Name")
-	as.CreateIndexIfNotExists("idx_attributes_name_lower_textpattern", store.AttributeTableName, "lower(Name) text_pattern_ops")
-	as.CreateIndexIfNotExists("idx_attributes_slug", store.AttributeTableName, "Slug")
-}
-
 // Upsert inserts or updates given attribute then returns it
 func (as *SqlAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attribute, error) {
 	var isSaving bool
@@ -86,6 +73,13 @@ func (as *SqlAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attri
 	if !model.IsValidId(attr.Id) {
 		attr.Id = ""
 		isSaving = true
+		attr.PreSave()
+	} else {
+		attr.PreUpdate()
+	}
+
+	if err := attr.IsValid(); err != nil {
+		return nil, err
 	}
 
 	var (
@@ -94,19 +88,23 @@ func (as *SqlAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attri
 	)
 
 	if isSaving {
-		attr.PreSave()
-		if err := attr.IsValid(); err != nil {
-			return nil, err
-		}
+		query := "INSERT INTO " + store.AttributeTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+		_, err = as.GetMasterX().NamedExec(query, attr)
 
-		err = as.GetMaster().Insert(attr)
 	} else {
-		attr.PreUpdate()
-		if err := attr.IsValid(); err != nil {
-			return nil, err
-		}
 
-		numUpdated, err = as.GetMaster().Update(attr)
+		query := "UPDATE " + store.AttributeTableName + " SET " +
+			as.ModelFields("").
+				Map(func(_ int, s string) string {
+					return s + "=:" + s
+				}).
+				Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = as.GetMasterX().NamedExec(query, attr)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -126,7 +124,7 @@ func (as *SqlAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attri
 
 func (as *SqlAttributeStore) commonQueryBuilder(option *attribute.AttributeFilterOption) (string, []interface{}, error) {
 	query := as.GetQueryBuilder().
-		Select(as.ModelFields()...).
+		Select(as.ModelFields(store.AttributeTableName + ".")...). // SELECT Attributes.Id, Attributes.Slug, ...
 		From(store.AttributeTableName)
 
 	// parse options
@@ -216,7 +214,7 @@ func (as *SqlAttributeStore) GetByOption(option *attribute.AttributeFilterOption
 	}
 
 	var res attribute.Attribute
-	err = as.GetReplica().SelectOne(&res, queryString, args...)
+	err = as.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AttributeTableName, "options")
@@ -248,7 +246,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 	}
 
 	var attributes attribute.Attributes
-	_, err = as.GetReplica().Select(&attributes, queryString, args...)
+	err = as.GetReplicaX().Select(&attributes, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attributes with given option")
 	}
@@ -278,7 +276,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 }
 
 func (as *SqlAttributeStore) Delete(ids ...string) (int64, error) {
-	result, err := as.GetMaster().Exec("DELETE FROM "+store.AttributeTableName+" WHERE Id IN :IDs", map[string]interface{}{"IDs": ids})
+	result, err := as.GetMasterX().Exec("DELETE FROM "+store.AttributeTableName+" WHERE Id IN ?", ids)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to delete attributes")
 	}

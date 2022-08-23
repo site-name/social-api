@@ -41,7 +41,8 @@ const (
 )
 
 // ValidId constrains the set of valid plugin identifiers:
-//  ^[a-zA-Z0-9-_\.]+
+//
+//	^[a-zA-Z0-9-_\.]+
 var validId *regexp.Regexp = regexp.MustCompile(ValidIdRegex)
 
 // IsValidPluginId verifies that the plugin id has a minimum length of 3, maximum length of 190, and
@@ -138,14 +139,23 @@ func (sa StringArray) Remove(input string) StringArray {
 	return res
 }
 
-// Map takes a mapFunc, loops through current string slice and applies mapFunc for each item
+// Map loops through current string slice and applies mapFunc to each index-item pair
+//
+// E.g
+//
+//	StringArray{"a", "b", "c"}.Map(func(_ int, s string) string { return s + s })
 func (sa StringArray) Map(mapFunc func(index int, item string) string) StringArray {
-	res := StringArray{}
+	res := make(StringArray, len(sa))
+
 	for idx, item := range sa {
-		res = append(res, mapFunc(idx, item))
+		res[idx] = mapFunc(idx, item)
 	}
 
 	return res
+}
+
+func (sa StringArray) Join(sep string) string {
+	return strings.Join(sa, sep)
 }
 
 var translateFunc i18n.TranslateFunc
@@ -243,16 +253,18 @@ func NewAppError(where, id string, params map[string]interface{}, details string
 // common function for creating model.AppError type
 //
 // Example:
-// 	collection := &Collection{
-//		Id: "dsdsdre984jf8se990834",
-// 		Name: "Hello World",
-//	}
-// 	outer := CreateAppErrorForModel(
-//			"model.collection.is_valid.%s.app_error",
-//      "collection_id=",
-//      "Collection.IsValid",
-//  )
-//	return outer("name", &collection.Id)
+//
+//		collection := &Collection{
+//			Id: "dsdsdre984jf8se990834",
+//			Name: "Hello World",
+//		}
+//		outer := CreateAppErrorForModel(
+//				"model.collection.is_valid.%s.app_error",
+//	     "collection_id=",
+//	     "Collection.IsValid",
+//	 )
+//		return outer("name", &collection.Id)
+//
 // NOTE: This is applied for errors with status code "http.StatusBadRequest (400)" only
 func CreateAppErrorForModel(format, detailKey, where string) func(fieldName string, typeId *string) *AppError {
 	var id, details string
@@ -766,16 +778,16 @@ func ValidateStoreFrontUrl(config *Config, urlValue string) *AppError {
 	return nil
 }
 
-// {
-//	"blocks": [
-//		{
-//			"data": {
-//				"text": "There is life in outer space. This vibrant light speed yellow paint brings life to any surface. Goes on easy and dries at light speed."
-//			},
-//			"type": "paragraph"
-//		}
-//	]
-// }
+//	{
+//		"blocks": [
+//			{
+//				"data": {
+//					"text": "There is life in outer space. This vibrant light speed yellow paint brings life to any surface. Goes on easy and dries at light speed."
+//				},
+//				"type": "paragraph"
+//			}
+//		]
+//	}
 func DraftJSContentToRawText(content StringInterface, sep string) string {
 	if sep == "" {
 		sep = "/n"

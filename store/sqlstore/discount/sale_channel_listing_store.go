@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -13,29 +14,25 @@ type SqlSaleChannelListingStore struct {
 }
 
 func NewSqlDiscountSaleChannelListingStore(sqlStore store.Store) store.DiscountSaleChannelListingStore {
-	scls := &SqlSaleChannelListingStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.SaleChannelListing{}, store.SaleChannelListingTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH).SetNotNull(true)
-		table.ColMap("SaleID").SetMaxSize(store.UUID_MAX_LENGTH).SetNotNull(false)
-		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH).SetNotNull(true)
-
-		table.SetUniqueTogether("SaleID", "ChannelID")
-	}
-
-	return scls
+	return &SqlSaleChannelListingStore{sqlStore}
 }
 
-func (scls *SqlSaleChannelListingStore) ModelFields() []string {
-	return []string{
-		"SaleChannelListings.Id",
-		"SaleChannelListings.SaleID",
-		"SaleChannelListings.ChannelID",
-		"SaleChannelListings.DiscountValue",
-		"SaleChannelListings.Currency",
-		"SaleChannelListings.CreateAt",
+func (scls *SqlSaleChannelListingStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"SaleID",
+		"ChannelID",
+		"DiscountValue",
+		"Currency",
+		"CreateAt",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (scls *SqlSaleChannelListingStore) ScanFields(listing product_and_discount.SaleChannelListing) []interface{} {
@@ -49,11 +46,6 @@ func (scls *SqlSaleChannelListingStore) ScanFields(listing product_and_discount.
 	}
 }
 
-func (scls *SqlSaleChannelListingStore) CreateIndexesIfNotExists() {
-	scls.CreateForeignKeyIfNotExists(store.SaleChannelListingTableName, "SaleID", store.SaleTableName, "Id", true)
-	scls.CreateForeignKeyIfNotExists(store.SaleChannelListingTableName, "ChannelID", store.ChannelTableName, "Id", true)
-}
-
 // Save insert given instance into database then returns it
 func (scls *SqlSaleChannelListingStore) Save(saleChannelListing *product_and_discount.SaleChannelListing) (*product_and_discount.SaleChannelListing, error) {
 	saleChannelListing.PreSave()
@@ -61,7 +53,8 @@ func (scls *SqlSaleChannelListingStore) Save(saleChannelListing *product_and_dis
 		return nil, err
 	}
 
-	err := scls.GetMaster().Insert(saleChannelListing)
+	query := "INSERT INTO " + store.SaleChannelListingTableName + "(" + scls.ModelFields("").Join(",") + ") VALUES (" + scls.ModelFields(":").Join(",") + ")"
+	_, err := scls.GetMasterX().NamedExec(query, saleChannelListing)
 	if err != nil {
 		if scls.IsUniqueConstraintError(err, []string{"SaleID", "ChannelID", "salechannellistings_saleid_channelid_key"}) {
 			return nil, store.NewErrInvalidInput(store.SaleChannelListingTableName, "SaleID/ChannelID", "duplicate")
@@ -75,13 +68,12 @@ func (scls *SqlSaleChannelListingStore) Save(saleChannelListing *product_and_dis
 // Get finds and returns sale channel listing with given id
 func (scls *SqlSaleChannelListingStore) Get(saleChannelListingID string) (*product_and_discount.SaleChannelListing, error) {
 	var res product_and_discount.SaleChannelListing
-	err := scls.GetReplica().SelectOne(
+
+	err := scls.GetReplicaX().Get(
 		&res,
-		"SELECT * FROM "+store.SaleChannelListingTableName+" WHERE Id = :ID ORDER BY :OrderBy",
-		map[string]interface{}{
-			"ID":      saleChannelListingID,
-			"OrderBy": store.TableOrderingMap[store.SaleChannelListingTableName],
-		},
+		"SELECT * FROM "+store.SaleChannelListingTableName+" WHERE Id = ? ORDER BY ?",
+		saleChannelListingID,
+		store.TableOrderingMap[store.SaleChannelListingTableName],
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -103,7 +95,7 @@ func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *pr
 ) {
 
 	query := scls.GetQueryBuilder().
-		Select(scls.ModelFields()...).
+		Select(scls.ModelFields(store.SaleChannelListingTableName + ".")...).
 		Column("Channels.Slug AS ChannelSlug").
 		From(store.SaleChannelListingTableName).
 		InnerJoin(store.ChannelTableName + " ON (Channels.Id = SaleChannelListings.ChannelID)").
@@ -130,7 +122,7 @@ func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *pr
 		ChannelSlug string
 	}
 
-	_, err = scls.GetReplica().Select(&res, queryString, args...)
+	err = scls.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find sale channel listing with given option")
 	}

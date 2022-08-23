@@ -10,9 +10,10 @@ import (
 	"unicode"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/store/store_iface"
+	"github.com/sitename/sitename/store/storetest"
 )
 
 type StoreTestWrapper struct {
@@ -23,29 +24,12 @@ func NewStoreTestWrapper(orig *SqlStore) *StoreTestWrapper {
 	return &StoreTestWrapper{orig}
 }
 
-func (w *StoreTestWrapper) GetMaster() *gorp.DbMap {
-	return w.orig.GetMaster()
+func (w *StoreTestWrapper) GetMasterX() storetest.SqlXExecutor {
+	return w.orig.GetMasterX()
 }
-
-// func (w *StoreTestWrapper) GetMasterX() storetest.SqlXExecutor {
-// 	return w.orig.GetMasterX()
-// }
 
 func (w *StoreTestWrapper) DriverName() string {
 	return w.orig.DriverName()
-}
-
-// sqlxExecutor exposes sqlx operations. It is used to enable some internal store methods to
-// accept both transactions (*sqlxTxWrapper) and common db handlers (*sqlxDbWrapper).
-type sqlxExecutor interface {
-	Get(dest interface{}, query string, args ...interface{}) error
-	NamedExec(query string, arg interface{}) (sql.Result, error)
-	Exec(query string, args ...interface{}) (sql.Result, error)
-	ExecRaw(query string, args ...interface{}) (sql.Result, error)
-	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
-	QueryRowX(query string, args ...interface{}) *sqlx.Row
-	QueryX(query string, args ...interface{}) (*sqlx.Rows, error)
-	Select(dest interface{}, query string, args ...interface{}) error
 }
 
 // namedParamRegex is used to capture all named parameters and convert them
@@ -61,6 +45,8 @@ type sqlxDBWrapper struct {
 	trace        bool
 }
 
+var _ store_iface.SqlxExecutor = (*sqlxDBWrapper)(nil)
+
 func newSqlxDBWrapper(db *sqlx.DB, timeout time.Duration, trace bool) *sqlxDBWrapper {
 	return &sqlxDBWrapper{
 		DB:           db,
@@ -69,7 +55,38 @@ func newSqlxDBWrapper(db *sqlx.DB, timeout time.Duration, trace bool) *sqlxDBWra
 	}
 }
 
-func (w *sqlxDBWrapper) Beginx() (*sqlxTxWrapper, error) {
+func (w *sqlxTxWrapper) SelectBuilder(dest interface{}, builder store_iface.Builder) error {
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	return w.Select(dest, query, args...)
+}
+
+func (w *sqlxDBWrapper) Stats() sql.DBStats {
+	return w.DB.Stats()
+}
+
+func (w *sqlxDBWrapper) ExecBuilder(builder store_iface.Builder) (sql.Result, error) {
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	return w.Exec(query, args...)
+}
+
+func (w *sqlxDBWrapper) GetBuilder(dest interface{}, builder store_iface.Builder) error {
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	return w.Get(dest, query, args...)
+}
+
+func (w *sqlxDBWrapper) Beginx() (store_iface.SqlxTxExecutor, error) {
 	tx, err := w.DB.Beginx()
 	if err != nil {
 		return nil, err
@@ -214,12 +231,19 @@ type sqlxTxWrapper struct {
 	trace        bool
 }
 
+// checking
+var _ store_iface.SqlxExecutor = (*sqlxTxWrapper)(nil)
+
 func newSqlxTxWrapper(tx *sqlx.Tx, timeout time.Duration, trace bool) *sqlxTxWrapper {
 	return &sqlxTxWrapper{
 		Tx:           tx,
 		queryTimeout: timeout,
 		trace:        trace,
 	}
+}
+
+func (w *sqlxTxWrapper) Beginx() (store_iface.SqlxTxExecutor, error) {
+	return w, nil
 }
 
 func (w *sqlxTxWrapper) Get(dest interface{}, query string, args ...interface{}) error {
@@ -234,6 +258,18 @@ func (w *sqlxTxWrapper) Get(dest interface{}, query string, args ...interface{})
 	}
 
 	return w.Tx.GetContext(ctx, dest, query, args...)
+}
+
+func (w *sqlxTxWrapper) ExecNoTimeout(query string, args ...interface{}) (sql.Result, error) {
+	query = w.Tx.Rebind(query)
+
+	if w.trace {
+		defer func(then time.Time) {
+			printArgs(query, time.Since(then), args)
+		}(time.Now())
+	}
+
+	return w.Tx.ExecContext(context.Background(), query, args...)
 }
 
 func (w *sqlxTxWrapper) Exec(query string, args ...interface{}) (sql.Result, error) {
@@ -345,6 +381,15 @@ func (w *sqlxTxWrapper) QueryX(query string, args ...interface{}) (*sqlx.Rows, e
 	return w.Tx.QueryxContext(ctx, query, args)
 }
 
+func (w *sqlxTxWrapper) ExecBuilder(builder store_iface.Builder) (sql.Result, error) {
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	return w.Exec(query, args...)
+}
+
 func (w *sqlxTxWrapper) Select(dest interface{}, query string, args ...interface{}) error {
 	query = w.Tx.Rebind(query)
 	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
@@ -357,6 +402,24 @@ func (w *sqlxTxWrapper) Select(dest interface{}, query string, args ...interface
 	}
 
 	return w.Tx.SelectContext(ctx, dest, query, args...)
+}
+
+func (w *sqlxTxWrapper) GetBuilder(dest interface{}, builder store_iface.Builder) error {
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	return w.Get(dest, query, args...)
+}
+
+func (w *sqlxDBWrapper) SelectBuilder(dest interface{}, builder store_iface.Builder) error {
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	return w.Select(dest, query, args...)
 }
 
 func removeSpace(r rune) rune {

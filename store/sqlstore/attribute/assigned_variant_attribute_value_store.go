@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -13,35 +14,30 @@ type SqlAssignedVariantAttributeValueStore struct {
 	store.Store
 }
 
-var (
-	assignedVariantAttrValueDuplicateKeys = []string{
-		"ValueID",
-		"AssignmentID",
-		"assignedvariantattributevalues_valueid_assignmentid_key",
-	}
-)
-
-func NewSqlAssignedVariantAttributeValueStore(s store.Store) store.AssignedVariantAttributeValueStore {
-	as := &SqlAssignedVariantAttributeValueStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AssignedVariantAttributeValue{}, store.AssignedVariantAttributeValueTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ValueID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("AssignmentID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("ValueID", "AssignmentID")
-	}
-	return as
+var assignedVariantAttrValueDuplicateKeys = []string{
+	"ValueID",
+	"AssignmentID",
+	"assignedvariantattributevalues_valueid_assignmentid_key",
 }
 
-func (as *SqlAssignedVariantAttributeValueStore) ModelFields() []string {
-	return []string{
-		"AssignedVariantAttributeValues.Id",
-		"AssignedVariantAttributeValues.ValueID",
-		"AssignedVariantAttributeValues.AssignmentID",
-		"AssignedVariantAttributeValues.SortOrder",
+func NewSqlAssignedVariantAttributeValueStore(s store.Store) store.AssignedVariantAttributeValueStore {
+	return &SqlAssignedVariantAttributeValueStore{s}
+}
+
+func (as *SqlAssignedVariantAttributeValueStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"ValueID",
+		"AssignmentID",
+		"SortOrder",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) ScanFields(assignedVariantAttributeValue attribute.AssignedVariantAttributeValue) []interface{} {
@@ -53,18 +49,14 @@ func (as *SqlAssignedVariantAttributeValueStore) ScanFields(assignedVariantAttri
 	}
 }
 
-func (as *SqlAssignedVariantAttributeValueStore) CreateIndexesIfNotExists() {
-	as.CreateForeignKeyIfNotExists(store.AssignedVariantAttributeValueTableName, "ValueID", store.AttributeValueTableName, "Id", true)
-	as.CreateForeignKeyIfNotExists(store.AssignedVariantAttributeValueTableName, "AssignmentID", store.AssignedVariantAttributeTableName, "Id", true)
-}
-
 func (as *SqlAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *attribute.AssignedVariantAttributeValue) (*attribute.AssignedVariantAttributeValue, error) {
 	assignedVariantAttrValue.PreSave()
 	if err := assignedVariantAttrValue.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := as.GetMaster().Insert(assignedVariantAttrValue); err != nil {
+	query := "INSERT INTO " + store.AssignedVariantAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	if _, err := as.GetMasterX().NamedExec(query, assignedVariantAttrValue); err != nil {
 		if as.IsUniqueConstraintError(err, assignedVariantAttrValueDuplicateKeys) {
 			return nil, store.NewErrInvalidInput(store.AssignedVariantAttributeValueTableName, "ValueID/AssignmentID", assignedVariantAttrValue.ValueID+"/"+assignedVariantAttrValue.AssignmentID)
 		}
@@ -76,7 +68,8 @@ func (as *SqlAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *
 
 func (as *SqlAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*attribute.AssignedVariantAttributeValue, error) {
 	var res attribute.AssignedVariantAttributeValue
-	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AssignedVariantAttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": assignedVariantAttrValueID})
+
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedVariantAttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": assignedVariantAttrValueID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AssignedVariantAttributeValueTableName, assignedVariantAttrValueID)
@@ -88,7 +81,7 @@ func (as *SqlAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID 
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedVariantAttributeValue, error) {
-	tx, err := as.GetMaster().Begin()
+	tx, err := as.GetMasterX().Beginx()
 	if err != nil {
 		return nil, errors.Wrapf(err, "begin_transaction")
 	}
@@ -96,6 +89,8 @@ func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string,
 
 	// return value:
 	res := []*attribute.AssignedVariantAttributeValue{}
+
+	query := "INSERT INTO " + store.AssignedVariantAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 
 	for _, id := range attributeValueIDs {
 		newValue := &attribute.AssignedVariantAttributeValue{
@@ -107,7 +102,7 @@ func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string,
 			return nil, appErr
 		}
 
-		err = tx.Insert(newValue)
+		_, err = tx.NamedExec(query, newValue)
 		if err != nil {
 			if as.IsUniqueConstraintError(err, assignedVariantAttrValueDuplicateKeys) {
 				return nil, store.NewErrInvalidInput(store.AssignedVariantAttributeValueTableName, "ValueID/AssignmentID", newValue.ValueID+"/"+newValue.AssignmentID)
@@ -126,14 +121,18 @@ func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string,
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedVariantAttributeValue, []*attribute.AttributeValue, error) {
-	rows, err := as.GetQueryBuilder().
-		Select(append(as.ModelFields(), as.AttributeValue().ModelFields()...)...).
+	query, args, err := as.GetQueryBuilder().
+		Select(append(as.ModelFields(store.AssignedVariantAttributeValueTableName+"."), as.AttributeValue().ModelFields(store.AttributeValueTableName+".")...)...).
 		From(store.AssignedVariantAttributeValueTableName).
 		InnerJoin(store.AttributeValueTableName + " ON (AttributeValues.Id = AssignedVariantAttributeValues.ValueID)").
 		Where(squirrel.Eq{"AssignedVariantAttributeValues.AssignmentID": assignmentID}).
-		RunWith(as.GetReplica()).
-		Query()
+		ToSql()
 
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "SelectForSort_ToSql")
+	}
+
+	rows, err := as.GetReplicaX().QueryX(query, args...)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "failed to find values with AssignmentID=%s", assignmentID)
 	}
@@ -166,19 +165,27 @@ func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID stri
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedVariantAttributeValue) error {
-	tx, err := as.GetMaster().Begin()
+	tx, err := as.GetMasterX().Beginx()
 	if err != nil {
 		return errors.Wrapf(err, "begin_transaction")
 	}
 	defer store.FinalizeTransaction(tx)
 
+	query := "UPDATE " + store.AssignedVariantAttributeValueTableName + " SET " +
+		as.ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
 	for _, value := range attributeValues {
 		// try validating if the value exist:
-		_, err := tx.Get(attribute.AssignedVariantAttributeValue{}, value.Id)
+		_, err := as.Get(value.Id)
 		if err != nil {
-			return errors.Wrapf(err, "failed to find value with id=%s", value.Id)
+			return err
 		}
-		numUpdated, err := tx.Update(value)
+
+		result, err := tx.NamedExec(query, value)
 		if err != nil {
 			// check if error is duplicate conflict error:
 			if as.IsUniqueConstraintError(err, assignedVariantAttrValueDuplicateKeys) {
@@ -186,7 +193,7 @@ func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []
 			}
 			return errors.Wrapf(err, "failed to update value with id=%s", value.Id)
 		}
-		if numUpdated > 1 {
+		if numUpdated, _ := result.RowsAffected(); numUpdated > 1 {
 			return errors.Errorf("more than one value with id=%s were updated(%d)", value.Id, numUpdated)
 		}
 	}

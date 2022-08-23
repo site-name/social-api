@@ -13,22 +13,7 @@ type SqlSaleCollectionRelationStore struct {
 }
 
 func NewSqlSaleCollectionRelationStore(s store.Store) store.SaleCollectionRelationStore {
-	ss := &SqlSaleCollectionRelationStore{s}
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.SaleCollectionRelation{}, store.SaleCollectionRelationTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("SaleID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CollectionID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("SaleID", "CollectionID")
-	}
-
-	return ss
-}
-
-func (ss *SqlSaleCollectionRelationStore) CreateIndexesIfNotExists() {
-	ss.CreateForeignKeyIfNotExists(store.SaleCollectionRelationTableName, "SaleID", store.SaleTableName, "Id", false)
-	ss.CreateForeignKeyIfNotExists(store.SaleCollectionRelationTableName, "CollectionID", store.ProductCollectionTableName, "Id", false)
+	return &SqlSaleCollectionRelationStore{s}
 }
 
 // Save insert given sale-collection relation into database

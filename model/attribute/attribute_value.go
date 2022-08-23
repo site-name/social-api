@@ -7,8 +7,8 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store/store_iface"
 	"golang.org/x/text/language"
 )
 
@@ -43,7 +43,7 @@ type AttributeValueFilterOptions struct {
 	Extra                  squirrel.Sqlizer
 	SelectRelatedAttribute bool
 
-	Transaction     *gorp.Transaction
+	Transaction     store_iface.SqlxTxExecutor
 	OrderBy         string
 	SelectForUpdate bool // is true, add `FOR UPDATE` suffic to the end of sql query
 

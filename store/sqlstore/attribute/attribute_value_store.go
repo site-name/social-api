@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"strings"
 
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlAttributeValueStore struct {
@@ -16,37 +16,30 @@ type SqlAttributeValueStore struct {
 }
 
 func NewSqlAttributeValueStore(s store.Store) store.AttributeValueStore {
-	as := &SqlAttributeValueStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AttributeValue{}, store.AttributeValueTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("AttributeID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(attribute.ATTRIBUTE_VALUE_NAME_MAX_LENGTH)
-		table.ColMap("Slug").SetMaxSize(attribute.ATTRIBUTE_VALUE_SLUG_MAX_LENGTH)
-		table.ColMap("Value").SetMaxSize(attribute.ATTRIBUTE_VALUE_VALUE_MAX_LENGTH)
-		table.ColMap("ContentType").SetMaxSize(attribute.ATTRIBUTE_VALUE_CONTENT_TYPE_MAX_LENGTH)
-		table.ColMap("FileUrl").SetMaxSize(model.URL_LINK_MAX_LENGTH)
-
-		table.SetUniqueTogether("Slug", "AttributeID")
-	}
-	return as
+	return &SqlAttributeValueStore{s}
 }
 
-func (as *SqlAttributeValueStore) ModelFields() []string {
-	return []string{
-		"AttributeValues.Id",
-		"AttributeValues.Name",
-		"AttributeValues.Value",
-		"AttributeValues.Slug",
-		"AttributeValues.FileUrl",
-		"AttributeValues.ContentType",
-		"AttributeValues.AttributeID",
-		"AttributeValues.RichText",
-		"AttributeValues.Boolean",
-		"AttributeValues.Datetime",
-		"AttributeValues.SortOrder",
+func (as *SqlAttributeValueStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"Name",
+		"Value",
+		"Slug",
+		"FileUrl",
+		"ContentType",
+		"AttributeID",
+		"RichText",
+		"Boolean",
+		"Datetime",
+		"SortOrder",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (as *SqlAttributeValueStore) ScanFields(attributeValue attribute.AttributeValue) []interface{} {
@@ -65,20 +58,19 @@ func (as *SqlAttributeValueStore) ScanFields(attributeValue attribute.AttributeV
 	}
 }
 
-func (as *SqlAttributeValueStore) CreateIndexesIfNotExists() {
-	as.CreateIndexIfNotExists("idx_attributevalues_name", store.AttributeValueTableName, "Name")
-	as.CreateIndexIfNotExists("idx_attributevalues_slug", store.AttributeValueTableName, "Slug")
-	as.CreateIndexIfNotExists("idx_attributevalues_name_lower_textpattern", store.AttributeValueTableName, "lower(Name) text_pattern_ops")
-
-	as.CreateForeignKeyIfNotExists(store.AttributeValueTableName, "AttributeID", store.AttributeTableName, "Id", true)
-}
-
 func (as *SqlAttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error) {
 	var isSaving bool
 
 	if !model.IsValidId(av.Id) {
 		av.Id = ""
 		isSaving = true
+		av.PreSave()
+	} else {
+		av.PreUpdate()
+	}
+
+	if err := av.IsValid(); err != nil {
+		return nil, err
 	}
 
 	var (
@@ -86,20 +78,22 @@ func (as *SqlAttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribu
 		numUpdated int64
 	)
 	if isSaving {
-		av.PreSave()
-		if err := av.IsValid(); err != nil {
-			return nil, err
-		}
-
-		err = as.GetMaster().Insert(av)
+		query := "INSERT INTO " + store.AttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+		_, err = as.GetMasterX().NamedExec(query, av)
 
 	} else {
-		av.PreUpdate()
-		if err := av.IsValid(); err != nil {
-			return nil, err
-		}
+		query := "UPDATE " + store.AttributeValueTableName + " SET " +
+			as.ModelFields("").
+				Map(func(_ int, s string) string {
+					return s + "=:" + s
+				}).
+				Join(",") + " WHERE Id=:Id"
 
-		numUpdated, err = as.GetMaster().Update(av)
+		var result sql.Result
+		result, err = as.GetMasterX().NamedExec(query, av)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -118,7 +112,8 @@ func (as *SqlAttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribu
 
 func (as *SqlAttributeValueStore) Get(id string) (*attribute.AttributeValue, error) {
 	var res attribute.AttributeValue
-	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AttributeValueTableName, id)
@@ -131,14 +126,14 @@ func (as *SqlAttributeValueStore) Get(id string) (*attribute.AttributeValue, err
 
 // FilterByOptions finds and returns all matched attribute values based on given options
 func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) {
-	var executor gorp.SqlExecutor = as.GetReplica()
+	var executor store_iface.SqlxExecutor = as.GetReplicaX()
 	if options.Transaction != nil {
 		executor = options.Transaction
 	}
 
-	selectFields := as.ModelFields()
+	selectFields := as.ModelFields(store.AttributeValueTableName + ".")
 	if options.SelectRelatedAttribute {
-		selectFields = append(selectFields, as.Attribute().ModelFields()...)
+		selectFields = append(selectFields, as.Attribute().ModelFields(store.AttributeTableName+".")...)
 	}
 
 	query := as.GetQueryBuilder().
@@ -168,7 +163,12 @@ func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeVal
 		query = query.Where(options.Extra)
 	}
 
-	rows, err := query.RunWith(executor).Query()
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	rows, err := executor.QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attribute values")
 	}
@@ -206,8 +206,7 @@ func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeVal
 }
 
 func (as *SqlAttributeValueStore) Delete(ids ...string) (int64, error) {
-	res, err := as.GetMaster().Exec("DELETE FROM "+store.AttributeValueTableName+" WHERE Id IN :IDS",
-		map[string]interface{}{"IDS": ids})
+	res, err := as.GetMasterX().Exec("DELETE FROM "+store.AttributeValueTableName+" WHERE Id IN ?", ids)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to delete attribute values")
 	}
@@ -220,14 +219,13 @@ func (as *SqlAttributeValueStore) Delete(ids ...string) (int64, error) {
 	return numDeleted, nil
 }
 
-func (as *SqlAttributeValueStore) BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error) {
-	var executor gorp.SqlExecutor = as.GetMaster()
+func (as *SqlAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+	var executor store_iface.SqlxExecutor = as.GetMasterX()
 	if transaction != nil {
 		executor = transaction
 	}
 
 	for _, value := range values {
-
 		var (
 			isSaving   bool
 			err        error
@@ -237,22 +235,31 @@ func (as *SqlAttributeValueStore) BulkUpsert(transaction *gorp.Transaction, valu
 		if !model.IsValidId(value.Id) {
 			isSaving = true
 			value.Id = ""
+			value.PreSave()
+		} else {
+			value.PreUpdate()
+		}
+
+		if err := value.IsValid(); err != nil {
+			return nil, err
 		}
 
 		if isSaving {
-			value.PreSave()
-			if err := value.IsValid(); err != nil {
-				return nil, err
-			}
-
-			err = executor.Insert(value)
+			query := "INSERT INTO " + store.AttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+			_, err = executor.NamedExec(query, value)
 		} else {
-			value.PreUpdate()
-			if err := value.IsValid(); err != nil {
-				return nil, err
-			}
+			query := "UPDATE " + store.AttributeValueTableName + " SET " + as.ModelFields("").
+				Map(func(_ int, s string) string {
+					return s + "=:" + s
+				}).
+				Join(",") + " WHERE Id=:Id"
 
-			numUpdated, err = executor.Update(value)
+			var result sql.Result
+
+			result, err = executor.NamedExec(query, value)
+			if err == nil && result != nil {
+				numUpdated, _ = result.RowsAffected()
+			}
 		}
 
 		if err != nil {
@@ -289,7 +296,9 @@ func (as *SqlAttributeValueStore) Count(options *attribute.AttributeValueFilterO
 	if err != nil {
 		return 0, errors.Wrap(err, "AttributeValue.Count.ToSql")
 	}
-	count, err := as.GetReplica().SelectInt(queryStr, args...)
+
+	var count int64
+	err = as.GetReplicaX().Get(&count, queryStr, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count number of attribute value with given options")
 	}

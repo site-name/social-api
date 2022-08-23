@@ -49,9 +49,8 @@ func getOrphanedRecords(ss *SqlStore, cfg relationalCheckConfig) ([]model.Orphan
 	}
 
 	query, args, _ := main.ToSql()
-	_, err := ss.GetMaster().Select(&records, query, args...)
 
-	return records, err
+	return records, ss.GetMasterX().Select(&records, query, args...)
 }
 
 func checkParentChildIntegrity(ss *SqlStore, config relationalCheckConfig) model.IntegrityCheckResult {

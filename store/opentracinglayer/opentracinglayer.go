@@ -39,6 +39,7 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/services/tracing"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type OpenTracingLayer struct {
@@ -143,7 +144,6 @@ type OpenTracingLayer struct {
 	UserStore                          store.UserStore
 	UserAccessTokenStore               store.UserAccessTokenStore
 	UserAddressStore                   store.UserAddressStore
-	UserTermOfServiceStore             store.UserTermOfServiceStore
 	VariantMediaStore                  store.VariantMediaStore
 	VoucherCategoryStore               store.VoucherCategoryStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
@@ -557,10 +557,6 @@ func (s *OpenTracingLayer) UserAccessToken() store.UserAccessTokenStore {
 
 func (s *OpenTracingLayer) UserAddress() store.UserAddressStore {
 	return s.UserAddressStore
-}
-
-func (s *OpenTracingLayer) UserTermOfService() store.UserTermOfServiceStore {
-	return s.UserTermOfServiceStore
 }
 
 func (s *OpenTracingLayer) VariantMedia() store.VariantMediaStore {
@@ -1115,11 +1111,6 @@ type OpenTracingLayerUserAddressStore struct {
 	Root *OpenTracingLayer
 }
 
-type OpenTracingLayerUserTermOfServiceStore struct {
-	store.UserTermOfServiceStore
-	Root *OpenTracingLayer
-}
-
 type OpenTracingLayerVariantMediaStore struct {
 	store.VariantMediaStore
 	Root *OpenTracingLayer
@@ -1239,47 +1230,16 @@ func (s *OpenTracingLayerAddressStore) Get(addressID string) (*account.Address, 
 	return result, err
 }
 
-func (s *OpenTracingLayerAddressStore) OrderBy() string {
+func (s *OpenTracingLayerAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.OrderBy")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result := s.AddressStore.OrderBy()
-	return result
-}
-
-func (s *OpenTracingLayerAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AddressStore.Save(transaction, address)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerAddressStore) Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.Update")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AddressStore.Update(transaction, address)
+	result, err := s.AddressStore.Upsert(transaction, address)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -2075,7 +2035,7 @@ func (s *OpenTracingLayerAttributeProductStore) Save(attributeProduct *attribute
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeValueStore) BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+func (s *OpenTracingLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeValueStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
@@ -2453,7 +2413,7 @@ func (s *OpenTracingLayerCheckoutStore) CountCheckouts(options *checkout.Checkou
 	return result, err
 }
 
-func (s *OpenTracingLayerCheckoutStore) DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error {
+func (s *OpenTracingLayerCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.DeleteCheckoutsByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -2651,7 +2611,7 @@ func (s *OpenTracingLayerCheckoutLineStore) CheckoutLinesByOption(option *checko
 	return result, err
 }
 
-func (s *OpenTracingLayerCheckoutLineStore) DeleteLines(transaction *gorp.Transaction, checkoutLineIDs []string) error {
+func (s *OpenTracingLayerCheckoutLineStore) DeleteLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutLineStore.DeleteLines")
 	s.Root.Store.SetContext(newCtx)
@@ -4825,7 +4785,7 @@ func (s *OpenTracingLayerOrderDiscountStore) Get(orderDiscountID string) (*produ
 	return result, err
 }
 
-func (s *OpenTracingLayerOrderDiscountStore) Upsert(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+func (s *OpenTracingLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderDiscountStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
@@ -9014,19 +8974,6 @@ func (s *OpenTracingLayerUserAddressStore) FilterByOptions(options *account.User
 	return result, err
 }
 
-func (s *OpenTracingLayerUserAddressStore) OrderBy() string {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserAddressStore.OrderBy")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result := s.UserAddressStore.OrderBy()
-	return result
-}
-
 func (s *OpenTracingLayerUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserAddressStore.Save")
@@ -9037,60 +8984,6 @@ func (s *OpenTracingLayerUserAddressStore) Save(userAddress *account.UserAddress
 
 	defer span.Finish()
 	result, err := s.UserAddressStore.Save(userAddress)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerUserTermOfServiceStore) Delete(userID string, termsOfServiceId string) error {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserTermOfServiceStore.Delete")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	err := s.UserTermOfServiceStore.Delete(userID, termsOfServiceId)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
-}
-
-func (s *OpenTracingLayerUserTermOfServiceStore) GetByUser(userID string) (*account.UserTermsOfService, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserTermOfServiceStore.GetByUser")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.UserTermOfServiceStore.GetByUser(userID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerUserTermOfServiceStore) Save(userTermsOfService *account.UserTermsOfService) (*account.UserTermsOfService, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserTermOfServiceStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.UserTermOfServiceStore.Save(userTermsOfService)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -9894,7 +9787,6 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.UserStore = &OpenTracingLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &OpenTracingLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
 	newStore.UserAddressStore = &OpenTracingLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
-	newStore.UserTermOfServiceStore = &OpenTracingLayerUserTermOfServiceStore{UserTermOfServiceStore: childStore.UserTermOfService(), Root: &newStore}
 	newStore.VariantMediaStore = &OpenTracingLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
 	newStore.VoucherCategoryStore = &OpenTracingLayerVoucherCategoryStore{VoucherCategoryStore: childStore.VoucherCategory(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &OpenTracingLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}

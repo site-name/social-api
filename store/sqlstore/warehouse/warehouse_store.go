@@ -121,7 +121,7 @@ func (ws *SqlWareHouseStore) commonQueryBuilder(option *warehouse.WarehouseFilte
 
 	selectFields := ws.ModelFields()
 	if option.SelectRelatedAddress {
-		selectFields = append(selectFields, ws.Address().ModelFields()...)
+		selectFields = append(selectFields, ws.Address().ModelFields(store.AddressTableName+".")...)
 	}
 
 	query := ws.GetQueryBuilder().

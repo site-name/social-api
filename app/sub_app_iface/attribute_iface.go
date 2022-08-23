@@ -4,6 +4,7 @@
 package sub_app_iface
 
 import (
+	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 )
@@ -48,8 +49,10 @@ type AttributeService interface {
 	UpsertAttributeValue(attrValue *attribute.AttributeValue) (*attribute.AttributeValue, *model.AppError)
 	AttributeByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, *model.AppError)
 	AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError)
+	BulkUpsertAttributeValue(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, *model.AppError)
+	DeleteAttributeValues(ids ...string) (int64, *model.AppError)
 	DeleteAttributes(ids ...string) (int64, *model.AppError)
 	FilterAttributeValuesByOptions(option attribute.AttributeValueFilterOptions) (attribute.AttributeValues, *model.AppError)
+	GetVisibleToUserAttributes(session *model.Session) (attribute.Attributes, *model.AppError)
 	PerformReordering(values attribute.AttributeValues, operations map[string]*int) *model.AppError
-	DeleteAttributeValues(ids ...string) (int64, *model.AppError)
 }

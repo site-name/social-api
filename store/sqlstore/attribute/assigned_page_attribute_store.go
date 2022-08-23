@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -13,24 +14,20 @@ type SqlAssignedPageAttributeStore struct {
 }
 
 func NewSqlAssignedPageAttributeStore(s store.Store) store.AssignedPageAttributeStore {
-	as := &SqlAssignedPageAttributeStore{
+	return &SqlAssignedPageAttributeStore{
 		Store: s,
 	}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AssignedPageAttribute{}, store.AssignedPageAttributeTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("PageID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("AssignmentID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("PageID", "AssignmentID")
-	}
-	return as
 }
 
-func (as *SqlAssignedPageAttributeStore) CreateIndexesIfNotExists() {
-	as.CreateForeignKeyIfNotExists(store.AssignedPageAttributeTableName, "AssignmentID", store.AttributePageTableName, "Id", true)
-	as.CreateForeignKeyIfNotExists(store.AssignedPageAttributeTableName, "PageID", "Pages", "Id", true)
+func (as *SqlAssignedPageAttributeStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{"Id", "PageID", "AssignmentID"}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, item string) string {
+		return prefix + item
+	})
 }
 
 func (as *SqlAssignedPageAttributeStore) Save(pageAttr *attribute.AssignedPageAttribute) (*attribute.AssignedPageAttribute, error) {
@@ -39,7 +36,8 @@ func (as *SqlAssignedPageAttributeStore) Save(pageAttr *attribute.AssignedPageAt
 		return nil, err
 	}
 
-	if err := as.GetMaster().Insert(pageAttr); err != nil {
+	query := "INSERT INTO " + store.AssignedPageAttributeTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	if _, err := as.GetMasterX().NamedExec(query, pageAttr); err != nil {
 		if as.IsUniqueConstraintError(err, []string{"PageID", "AssignmentID", "assignedpageattributes_pageid_assignmentid_key"}) {
 			return nil, store.NewErrInvalidInput(store.AssignedPageAttributeTableName, "PageID/AssignmentID", pageAttr.PageID+"/"+pageAttr.AssignmentID)
 		}
@@ -51,7 +49,8 @@ func (as *SqlAssignedPageAttributeStore) Save(pageAttr *attribute.AssignedPageAt
 
 func (as *SqlAssignedPageAttributeStore) Get(id string) (*attribute.AssignedPageAttribute, error) {
 	var res attribute.AssignedPageAttribute
-	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AssignedPageAttributeTableName+" WHERE Id = :Id", map[string]interface{}{"Id": id})
+
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedPageAttributeTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AssignedPageAttributeTableName, id)
@@ -79,7 +78,8 @@ func (as *SqlAssignedPageAttributeStore) GetByOption(option *attribute.AssignedP
 	}
 
 	var res attribute.AssignedPageAttribute
-	err = as.GetReplica().SelectOne(
+
+	err = as.GetReplicaX().Get(
 		&res,
 		queryString,
 		args...,

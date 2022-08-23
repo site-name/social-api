@@ -85,34 +85,34 @@ type OrderService interface {
 	FilterOrdersByOptions(option *order.OrderFilterOption) ([]*order.Order, *model.AppError)
 	// Fulfill order.
 	//
-	//     Function create fulfillments with lines.
-	//     Next updates Order based on created fulfillments.
+	//	Function create fulfillments with lines.
+	//	Next updates Order based on created fulfillments.
 	//
-	//     Args:
-	//         requester (User): Requester who trigger this action.
-	//         order (Order): Order to fulfill
-	//         fulfillment_lines_for_warehouses (Dict): Dict with information from which
-	//             system create fulfillments. Example:
-	//                 {
-	//                     (Warehouse.pk): [
-	//                         {
-	//                             "order_line": (OrderLine),
-	//                             "quantity": (int),
-	//                         },
-	//                         ...
-	//                     ]
-	//                 }
-	//         manager (PluginsManager): Base manager for handling plugins logic.
-	//         notify_customer (bool): If `True` system send email about
-	//             fulfillments to customer.
+	//	Args:
+	//	    requester (User): Requester who trigger this action.
+	//	    order (Order): Order to fulfill
+	//	    fulfillment_lines_for_warehouses (Dict): Dict with information from which
+	//	        system create fulfillments. Example:
+	//	            {
+	//	                (Warehouse.pk): [
+	//	                    {
+	//	                        "order_line": (OrderLine),
+	//	                        "quantity": (int),
+	//	                    },
+	//	                    ...
+	//	                ]
+	//	            }
+	//	    manager (PluginsManager): Base manager for handling plugins logic.
+	//	    notify_customer (bool): If `True` system send email about
+	//	        fulfillments to customer.
 	//
-	//     Return:
-	//         List[Fulfillment]: Fulfillmet with lines created for this order
-	//             based on information form `fulfillment_lines_for_warehouses`
+	//	Return:
+	//	    List[Fulfillment]: Fulfillmet with lines created for this order
+	//	        based on information form `fulfillment_lines_for_warehouses`
 	//
 	//
-	//     Raise:
-	//         InsufficientStock: If system hasn't containt enough item in stock for any line.
+	//	Raise:
+	//	    InsufficientStock: If system hasn't containt enough item in stock for any line.
 	CreateFulfillments(user *account.User, _ interface{}, orDer *order.Order, fulfillmentLinesForWarehouses map[string][]*order.QuantityOrderLine, manager interfaces.PluginManagerInterface, notifyCustomer bool, approved bool, allowStockTobeExceeded bool) ([]*order.Fulfillment, *exception.InsufficientStock, *model.AppError)
 	// FulfillOrderLines Fulfill order line with given quantity
 	FulfillOrderLines(orderLineInfos []*order.OrderLineData, manager interfaces.PluginManagerInterface, allowStockTobeExceeded bool) (*exception.InsufficientStock, *model.AppError)
@@ -243,7 +243,6 @@ type OrderService interface {
 	// NOTE: `payMent`, `amount` , `user` are optional.
 	//
 	// `refund` and `refundShippingCosts` default to false.
-	//
 	CreateFulfillmentsForReturnedProducts(user *account.User, _ interface{}, ord order.Order, payMent *payment.Payment, orderLineDatas []*order.OrderLineData, fulfillmentLineDatas []*order.FulfillmentLineData, manager interfaces.PluginManagerInterface, refund bool, amount *decimal.Decimal, refundShippingCosts bool) (*order.Fulfillment, *order.Fulfillment, *order.Order, *payment.PaymentError, *model.AppError)
 	// ProcessReplace Create replace fulfillment and new draft order.
 	//

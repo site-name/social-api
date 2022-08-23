@@ -2,20 +2,16 @@ package storetest
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
-	"github.com/mattermost/gorp"
+	"github.com/jmoiron/sqlx"
 	"github.com/sitename/sitename/model"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/storetest/mocks"
 )
-
-type SqlStore interface {
-	GetMaster() *gorp.DbMap
-	DriverName() string
-}
 
 // Store can be used to provide mock stores for testing.
 type Store struct {
@@ -189,4 +185,20 @@ func (s *Store) AssertExpectations(t mock.TestingT) bool {
 		// &s.ProductNoticesStore,
 		// &s.SharedChannelStore,
 	)
+}
+
+type SqlStore interface {
+	GetMasterX() SqlXExecutor
+	DriverName() string
+}
+
+type SqlXExecutor interface {
+	Get(dest interface{}, query string, args ...interface{}) error
+	NamedExec(query string, arg interface{}) (sql.Result, error)
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	ExecRaw(query string, args ...interface{}) (sql.Result, error)
+	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
+	QueryRowX(query string, args ...interface{}) *sqlx.Row
+	QueryX(query string, args ...interface{}) (*sqlx.Rows, error)
+	Select(dest interface{}, query string, args ...interface{}) error
 }

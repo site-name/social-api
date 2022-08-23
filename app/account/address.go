@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 func (a *ServiceAccount) AddressById(id string) (*account.Address, *model.AppError) {
@@ -41,15 +41,8 @@ func (a *ServiceAccount) AddressesByOption(option *account.AddressFilterOption) 
 }
 
 // UpsertAddress depends on given address's Id to decide update or insert it
-func (a *ServiceAccount) UpsertAddress(transaction *gorp.Transaction, address *account.Address) (*account.Address, *model.AppError) {
-	var (
-		err error
-	)
-	if address.Id == "" {
-		address, err = a.srv.Store.Address().Save(transaction, address)
-	} else {
-		address, err = a.srv.Store.Address().Update(transaction, address)
-	}
+func (a *ServiceAccount) UpsertAddress(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, *model.AppError) {
+	_, err := a.srv.Store.Address().Upsert(transaction, address)
 
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -63,7 +56,7 @@ func (a *ServiceAccount) UpsertAddress(transaction *gorp.Transaction, address *a
 
 func (a *ServiceAccount) AddressesByUserId(userID string) ([]*account.Address, *model.AppError) {
 	return a.AddressesByOption(&account.AddressFilterOption{
-		UserID: squirrel.Eq{a.srv.Store.UserAddress().TableName("UserID"): userID},
+		UserID: squirrel.Eq{store.UserAddressTableName + ".UserID": userID},
 	})
 }
 

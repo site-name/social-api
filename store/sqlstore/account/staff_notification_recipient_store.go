@@ -1,6 +1,8 @@
 package account
 
 import (
+	"database/sql"
+
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -11,21 +13,25 @@ type SqlStaffNotificationRecipientStore struct {
 	store.Store
 }
 
-func NewSqlStaffNotificationRecipientStore(s store.Store) store.StaffNotificationRecipientStore {
-	ss := &SqlStaffNotificationRecipientStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(account.StaffNotificationRecipient{}, store.StaffNotificationRecipientTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("StaffEmail").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
-	}
-
-	return ss
+var staffNotificationRecipientModelFields = model.StringArray{
+	"Id",
+	"UserID",
+	"StaffEmail",
+	"Active",
 }
 
-func (ss *SqlStaffNotificationRecipientStore) CreateIndexesIfNotExists() {
-	ss.CreateForeignKeyIfNotExists(store.StaffNotificationRecipientTableName, "UserID", store.UserTableName, "Id", true)
+func (ss *SqlStaffNotificationRecipientStore) ModelFields(prefix string) model.StringArray {
+	if prefix == "" {
+		return staffNotificationRecipientModelFields
+	}
+
+	return staffNotificationRecipientModelFields.Map(func(_ int, item string) string {
+		return prefix + item
+	})
+}
+
+func NewSqlStaffNotificationRecipientStore(s store.Store) store.StaffNotificationRecipientStore {
+	return &SqlStaffNotificationRecipientStore{s}
 }
 
 func (ss *SqlStaffNotificationRecipientStore) Save(record *account.StaffNotificationRecipient) (*account.StaffNotificationRecipient, error) {
@@ -33,8 +39,8 @@ func (ss *SqlStaffNotificationRecipientStore) Save(record *account.StaffNotifica
 	if err := record.IsValid(); err != nil {
 		return nil, err
 	}
-
-	if err := ss.GetMaster().Insert(record); err != nil {
+	query := "INSERT INTO " + store.StaffNotificationRecipientTableName + " (" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
+	if _, err := ss.GetMasterX().NamedExec(query, record); err != nil {
 		return nil, errors.Wrapf(err, "failed to save StaffNotificationRecipient with Id=%s", record.Id)
 	}
 
@@ -42,10 +48,15 @@ func (ss *SqlStaffNotificationRecipientStore) Save(record *account.StaffNotifica
 }
 
 func (ss *SqlStaffNotificationRecipientStore) Get(id string) (*account.StaffNotificationRecipient, error) {
-	result, err := ss.GetReplica().Get(account.StaffNotificationRecipient{}, id)
+	var res account.StaffNotificationRecipient
+
+	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.StaffNotificationRecipientTableName+" WHERE Id = ?", id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.StaffNotificationRecipientTableName, id)
+		}
 		return nil, errors.Wrapf(err, "failed to find StaffNotificationRecipient with Id=%s", id)
 	}
 
-	return result.(*account.StaffNotificationRecipient), nil
+	return &res, nil
 }

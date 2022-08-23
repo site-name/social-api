@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -14,22 +15,20 @@ type SqlAttributeVariantStore struct {
 }
 
 func NewSqlAttributeVariantStore(s store.Store) store.AttributeVariantStore {
-	as := &SqlAttributeVariantStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AttributeVariant{}, store.AttributeVariantTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("AttributeID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductTypeID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("AttributeID", "ProductTypeID")
-	}
-	return as
+	return &SqlAttributeVariantStore{s}
 }
 
-func (as *SqlAttributeVariantStore) CreateIndexesIfNotExists() {
-	as.CreateForeignKeyIfNotExists(store.AttributeVariantTableName, "AttributeID", store.AttributeTableName, "Id", true)
-	as.CreateForeignKeyIfNotExists(store.AttributeVariantTableName, "ProductTypeID", store.ProductTypeTableName, "Id", true)
+func (as *SqlAttributeVariantStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id", "AttributeID", "ProductTypeID", "VariantSelection", "SortOrder",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (as *SqlAttributeVariantStore) Save(attributeVariant *attribute.AttributeVariant) (*attribute.AttributeVariant, error) {
@@ -38,7 +37,8 @@ func (as *SqlAttributeVariantStore) Save(attributeVariant *attribute.AttributeVa
 		return nil, err
 	}
 
-	if err := as.GetMaster().Insert(attributeVariant); err != nil {
+	query := "INSERT INTO " + store.AttributeVariantTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	if _, err := as.GetMasterX().NamedExec(query, attributeVariant); err != nil {
 		if as.IsUniqueConstraintError(err, []string{"AttributeID", "ProductTypeID", strings.ToLower(store.AttributeVariantTableName) + "_attributeid_producttypeid_key"}) {
 			return nil, store.NewErrInvalidInput(store.AttributeVariantTableName, "AttributeID/ProductTypeID", attributeVariant.AttributeID+"/"+attributeVariant.ProductTypeID)
 		}
@@ -50,7 +50,8 @@ func (as *SqlAttributeVariantStore) Save(attributeVariant *attribute.AttributeVa
 
 func (as *SqlAttributeVariantStore) Get(attributeVariantID string) (*attribute.AttributeVariant, error) {
 	var res attribute.AttributeVariant
-	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AttributeVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": attributeVariantID})
+
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AttributeVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": attributeVariantID})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AttributeVariantTableName, attributeVariantID)
@@ -84,7 +85,7 @@ func (as *SqlAttributeVariantStore) GetByOption(option *attribute.AttributeVaria
 	}
 	var res attribute.AttributeVariant
 
-	err = as.GetReplica().SelectOne(&res, queryString, args...)
+	err = as.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AttributeVariantTableName, "")

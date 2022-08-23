@@ -16,17 +16,16 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
-	"github.com/mattermost/gorp"
 	"github.com/mattermost/morph"
 	"github.com/mattermost/morph/drivers"
 	ps "github.com/mattermost/morph/drivers/postgres"
 	mbindata "github.com/mattermost/morph/sources/go_bindata"
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/db/migrations"
+	"github.com/sitename/sitename/db"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/seo"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type migrationDirection string
@@ -59,13 +58,13 @@ type SqlStore struct {
 	rrCounter int64
 	srCounter int64
 
-	master  *gorp.DbMap
+	// master  *gorp.DbMap
 	masterX *sqlxDBWrapper
 
-	Replicas  []*gorp.DbMap
+	// Replicas  []*gorp.DbMap
 	ReplicaXs []*sqlxDBWrapper
 
-	searchReplicas  []*gorp.DbMap
+	// searchReplicas  []*gorp.DbMap
 	searchReplicaXs []*sqlxDBWrapper
 
 	replicaLagHandles []*dbsql.DB
@@ -107,26 +106,6 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 
 	// set up tables before performing migrations:
 	store.setupTables()
-
-	// this call is actually do database migration work
-	err = store.GetMaster().CreateTablesIfNotExists()
-
-	if err != nil {
-		if IsDuplicate(err) {
-			slog.Warn("Duplicate key error occurred; assuming table already created and proceeding.", slog.Err(err))
-		} else {
-			slog.Fatal("Error creating database tables.", slog.Err(err))
-		}
-	}
-
-	err = upgradeDatabase(store, model.CurrentVersion)
-	if err != nil {
-		slog.Fatal("Failed to upgrade database.", slog.Err(err))
-	}
-
-	// perform database indexing
-	store.indexingTableFields()
-
 	return store
 }
 
@@ -186,27 +165,22 @@ func (ss *SqlStore) initConnection() {
 	dataSource := *ss.settings.DataSource
 
 	handle := setupConnection("master", dataSource, ss.settings)
-	ss.master = getDBMap(ss.settings, handle)
 	ss.masterX = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
 
 	if len(ss.settings.DataSourceReplicas) > 0 {
-		ss.Replicas = make([]*gorp.DbMap, len(ss.settings.DataSourceReplicas))
 		ss.ReplicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceReplicas))
 		for i, replica := range ss.settings.DataSourceReplicas {
 			handle := setupConnection(fmt.Sprintf("replica-%v", i), replica, ss.settings)
 
-			ss.Replicas[i] = getDBMap(ss.settings, handle)
 			ss.ReplicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
 		}
 	}
 
 	if len(ss.settings.DataSourceSearchReplicas) > 0 {
-		ss.searchReplicas = make([]*gorp.DbMap, len(ss.settings.DataSourceSearchReplicas))
 		ss.searchReplicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceSearchReplicas))
 		for i, replica := range ss.settings.DataSourceSearchReplicas {
 			handle := setupConnection(fmt.Sprintf("search-replica-%v", i), replica, ss.settings)
 
-			ss.searchReplicas[i] = getDBMap(ss.settings, handle)
 			ss.searchReplicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
 		}
 	}
@@ -222,28 +196,18 @@ func (ss *SqlStore) initConnection() {
 	}
 }
 
-func getDBMap(settings *model.SqlSettings, db *dbsql.DB) *gorp.DbMap {
-	connectionTimeout := time.Duration(*settings.QueryTimeout) * time.Second
-	dbMap := &gorp.DbMap{
-		Db:            db,
-		TypeConverter: siteNameConverter{},
-		Dialect:       gorp.PostgresDialect{},
-		QueryTimeout:  connectionTimeout,
-	}
-
-	if settings.Trace != nil && *settings.Trace {
-		dbMap.TraceOn("sql-trace:", &TraceOnAdapter{})
-	}
-	return dbMap
-}
-
 func (ss *SqlStore) DriverName() string {
 	return *ss.settings.DriverName
 }
 
 func (ss *SqlStore) GetCurrentSchemaVersion() string {
-	version, _ := ss.GetMaster().SelectStr("SELECT Value FROM Systems WHERE Name='Version'")
-	return version
+	var schemaVersion string
+	err := ss.GetMasterX().Get(&schemaVersion, "SELECT Value FROM Systems WHERE Name='Version'")
+	if err != nil {
+		slog.Error("failed to check current schema version", slog.Err(err))
+	}
+
+	return schemaVersion
 }
 
 // GetDbVersion returns the version of the database being used.
@@ -251,44 +215,38 @@ func (ss *SqlStore) GetCurrentSchemaVersion() string {
 // that can be parsed by callers.
 func (ss *SqlStore) GetDbVersion(numerical bool) (string, error) {
 	var sqlVersion string
-
 	if numerical {
 		sqlVersion = `SHOW server_version_num`
 	} else {
 		sqlVersion = `SHOW server_version`
 	}
 
-	version, err := ss.GetReplica().SelectStr(sqlVersion)
-	if err != nil {
+	var version string
+
+	if err := ss.GetReplicaX().Get(&version, sqlVersion); err != nil {
 		return "", err
 	}
 
 	return version, nil
 }
 
-func (ss *SqlStore) GetMaster() *gorp.DbMap {
-	return ss.master
-}
-
-func (ss *SqlStore) GetMasterX() *sqlxDBWrapper {
+func (ss *SqlStore) GetMasterX() store_iface.SqlxExecutor {
 	return ss.masterX
 }
 
 func (ss *SqlStore) SetMasterX(db *sql.DB) {
-	ss.masterX = newSqlxDBWrapper(sqlx.NewDb(db, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
+	ss.masterX = newSqlxDBWrapper(
+		sqlx.NewDb(db, ss.DriverName()),
+		time.Duration(*ss.settings.QueryTimeout)*time.Second,
+		*ss.settings.Trace,
+	)
 }
 
-func (ss *SqlStore) GetSearchReplica() *gorp.DbMap {
-	if len(ss.settings.DataSourceSearchReplicas) == 0 {
-		return ss.GetReplica()
-	}
+// func (ss *SqlStore) GetInternalMasterDB() *sql.DB {
+// 	return ss.GetMasterX().DB.DB
+// }
 
-	rrNum := atomic.AddInt64(&ss.srCounter, 1) % int64(len(ss.searchReplicas))
-	return ss.searchReplicas[rrNum]
-}
-
-func (ss *SqlStore) GetSearchReplicaX() *sqlxDBWrapper {
-
+func (ss *SqlStore) GetSearchReplicaX() store_iface.SqlxExecutor {
 	if len(ss.settings.DataSourceSearchReplicas) == 0 {
 		return ss.GetReplicaX()
 	}
@@ -297,25 +255,32 @@ func (ss *SqlStore) GetSearchReplicaX() *sqlxDBWrapper {
 	return ss.searchReplicaXs[rrNum]
 }
 
-// GetReplica try getting a slave datasource, if there is no slave or can only choose main source, it returns main datasource.
-func (ss *SqlStore) GetReplica() *gorp.DbMap {
-	// in case the system does not have slave data source, returns master data source instead
+func (ss *SqlStore) GetReplicaX() store_iface.SqlxExecutor {
 	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
-		return ss.GetMaster()
+		return ss.GetMasterX()
 	}
-
-	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.Replicas))
-	return ss.Replicas[rrNum]
+	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.ReplicaXs))
+	return ss.ReplicaXs[rrNum]
 }
 
-func (ss *SqlStore) GetReplicaX() *sqlxDBWrapper {
-	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.Replicas))
-	return ss.ReplicaXs[rrNum]
+func (ss *SqlStore) GetInternalReplicaDBs() []*sql.DB {
+	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
+		return []*sql.DB{
+			ss.masterX.DB.DB,
+		}
+	}
+
+	dbs := make([]*sql.DB, len(ss.ReplicaXs))
+	for i, rx := range ss.ReplicaXs {
+		dbs[i] = rx.DB.DB
+	}
+
+	return dbs
 }
 
 // returns number of connections to master database
 func (ss *SqlStore) TotalMasterDbConnections() int {
-	return ss.GetMaster().Db.Stats().OpenConnections
+	return ss.masterX.Stats().OpenConnections
 }
 
 // ReplicaLagAbs queries all the replica databases to get the absolute replica lag value
@@ -362,8 +327,8 @@ func (ss *SqlStore) TotalReadDbConnections() int {
 	}
 
 	count := 0
-	for _, db := range ss.Replicas {
-		count = count + db.Db.Stats().OpenConnections
+	for _, db := range ss.ReplicaXs {
+		count = count + db.Stats().OpenConnections
 	}
 
 	return count
@@ -376,8 +341,8 @@ func (ss *SqlStore) TotalSearchDbConnections() int {
 	}
 
 	count := 0
-	for _, db := range ss.searchReplicas {
-		count = count + db.Db.Stats().OpenConnections
+	for _, db := range ss.searchReplicaXs {
+		count = count + db.Stats().OpenConnections
 	}
 
 	return count
@@ -398,11 +363,8 @@ func (ss *SqlStore) MarkSystemRanUnitTests() {
 
 // checks if table does exist in database
 func (ss *SqlStore) DoesTableExist(tableName string) bool {
-	count, err := ss.GetMaster().SelectInt(
-		`SELECT count(relname) FROM pg_class WHERE relname=$1`,
-		strings.ToLower(tableName),
-	)
-
+	var count int64
+	err := ss.GetMasterX().Get(&count, `SELECT count(relname) FROM pg_class WHERE relname=$1`, strings.ToLower(tableName))
 	if err != nil {
 		slog.Fatal("Failed to check if table exists", slog.Err(err))
 	}
@@ -411,7 +373,9 @@ func (ss *SqlStore) DoesTableExist(tableName string) bool {
 }
 
 func (ss *SqlStore) DoesColumnExist(tableName string, columnName string) bool {
-	count, err := ss.GetMaster().SelectInt(
+	var count int64
+	err := ss.GetMasterX().Get(
+		&count,
 		`SELECT COUNT(0)
 			FROM   pg_attribute
 			WHERE  attrelid = $1::regclass
@@ -434,26 +398,13 @@ func (ss *SqlStore) DoesColumnExist(tableName string, columnName string) bool {
 
 func (ss *SqlStore) DoesTriggerExist(triggerName string) bool {
 	var count int64
-	err := ss.GetMasterX().Get(&count, `
-			SELECT
-				COUNT(0)
-			FROM
-				pg_trigger
-			WHERE
-				tgname = $1
-		`, triggerName)
+	err := ss.GetMasterX().Get(&count, `SELECT COUNT(0) FROM pg_trigger WHERE tgname = $1`, triggerName)
 
 	if err != nil {
 		slog.Fatal("Failed to check if trigger exists", slog.Err(err))
 	}
 
 	return count > 0
-}
-
-// IsVarchar returns true if the column type matches one of the varchar types
-// either in MySQL or PostgreSQL.
-func (ss *SqlStore) IsVarchar(columnType string) bool {
-	return columnType == "character varying"
 }
 
 func (ss *SqlStore) CreateColumnIfNotExists(tableName string, columnName string, mySqlColType string, postgresColType string, defaultValue string) bool {
@@ -480,87 +431,6 @@ func (ss *SqlStore) RemoveTableIfExists(tableName string) bool {
 	}
 
 	return true
-}
-
-func (ss *SqlStore) CreateUniqueIndexIfNotExists(indexName string, tableName string, columnName string) bool {
-	return ss.createIndexIfNotExists(indexName, tableName, []string{columnName}, IndexTypeDefault, true)
-}
-
-func (ss *SqlStore) CreateIndexIfNotExists(indexName string, tableName string, columnName string) bool {
-	return ss.createIndexIfNotExists(indexName, tableName, []string{columnName}, IndexTypeDefault, false)
-}
-
-func (ss *SqlStore) CreateCompositeIndexIfNotExists(indexName string, tableName string, columnNames []string) bool {
-	return ss.createIndexIfNotExists(indexName, tableName, columnNames, IndexTypeDefault, false)
-}
-
-func (ss *SqlStore) CreateUniqueCompositeIndexIfNotExists(indexName string, tableName string, columnNames []string) bool {
-	return ss.createIndexIfNotExists(indexName, tableName, columnNames, IndexTypeDefault, true)
-}
-
-func (ss *SqlStore) CreateFullTextIndexIfNotExists(indexName string, tableName string, columnName string) bool {
-	return ss.createIndexIfNotExists(indexName, tableName, []string{columnName}, IndexTypeFullText, false)
-}
-
-func (ss *SqlStore) CreateFullTextFuncIndexIfNotExists(indexName string, tableName string, function string) bool {
-	return ss.createIndexIfNotExists(indexName, tableName, []string{function}, IndexTypeFullTextFunc, false)
-}
-
-func (ss *SqlStore) createIndexIfNotExists(indexName string, tableName string, columnNames []string, indexType string, unique bool) bool {
-	uniqueStr := ""
-	if unique {
-		uniqueStr = "UNIQUE "
-	}
-
-	_, errExists := ss.GetMaster().SelectStr("SELECT $1::regclass", indexName)
-	// It should fail if the index does not exist
-	if errExists == nil {
-		return false
-	}
-
-	query := ""
-	if indexType == IndexTypeFullText {
-		if len(columnNames) != 1 {
-			slog.Fatal("Unable to create multi column full text index")
-		}
-		columnName := columnNames[0]
-		postgresColumnNames := convertMySQLFullTextColumnsToPostgres(columnName)
-		query = "CREATE INDEX " + indexName + " ON " + tableName + " USING gin(to_tsvector('english', " + postgresColumnNames + "))"
-	} else if indexType == IndexTypeFullTextFunc {
-		if len(columnNames) != 1 {
-			slog.Fatal("Unable to create multi column full text index")
-		}
-		columnName := columnNames[0]
-		query = "CREATE INDEX " + indexName + " ON " + tableName + " USING gin(to_tsvector('english', " + columnName + "))"
-	} else {
-		query = "CREATE " + uniqueStr + "INDEX " + indexName + " ON " + tableName + " (" + strings.Join(columnNames, ", ") + ")"
-	}
-
-	_, err := ss.GetMaster().Exec(query)
-	if err != nil {
-		slog.Fatal("Failed to create index", slog.Err(errExists), slog.Err(err))
-		time.Sleep(time.Second)
-	}
-
-	return true
-}
-
-// create foreign keys
-func (ss *SqlStore) CreateForeignKeyIfNotExists(tableName, columnName, refTableName, refColumnName string, onDeleteCascade bool) (err error) {
-	deleteClause := ""
-	if onDeleteCascade {
-		deleteClause = "ON DELETE CASCADE"
-	}
-	constraintName := "FK_" + tableName + "_" + refTableName
-	sQuery := `ALTER TABLE ` + tableName + ` ADD CONSTRAINT ` + constraintName + ` FOREIGN KEY (` + columnName + `) REFERENCES ` + refTableName + ` (` + refColumnName + `) ` + deleteClause + `;`
-	_, err = ss.GetMaster().Exec(sQuery)
-	if IsConstraintAlreadyExistsError(err) {
-		err = nil
-	}
-	if err != nil {
-		slog.Warn("Could not create foreign key: " + err.Error())
-	}
-	return
 }
 
 // check if given err is postgres's duplicate error
@@ -591,10 +461,10 @@ func (ss *SqlStore) IsUniqueConstraintError(err error, indexName []string) bool 
 }
 
 // Get all databases connections
-func (ss *SqlStore) GetAllConns() []*gorp.DbMap {
-	all := make([]*gorp.DbMap, len(ss.Replicas)+1)
-	copy(all, ss.Replicas)
-	all[len(ss.Replicas)] = ss.master
+func (ss *SqlStore) GetAllConns() []*sqlxDBWrapper {
+	all := make([]*sqlxDBWrapper, len(ss.ReplicaXs)+1)
+	copy(all, ss.ReplicaXs)
+	all[len(ss.ReplicaXs)] = ss.masterX
 	return all
 }
 
@@ -605,25 +475,25 @@ func (ss *SqlStore) RecycleDBConnections(d time.Duration) {
 	originalDuration := time.Duration(*ss.settings.ConnMaxLifetimeMilliseconds) * time.Millisecond
 	// Set the max lifetimes for all connections.
 	for _, conn := range ss.GetAllConns() {
-		conn.Db.SetConnMaxLifetime(d)
+		conn.SetConnMaxLifetime(d)
 	}
 	// Wait for that period with an additional 2 seconds of scheduling delay.
 	time.Sleep(d + 2*time.Second)
 	// Reset max lifetime back to original value.
 	for _, conn := range ss.GetAllConns() {
-		conn.Db.SetConnMaxLifetime(originalDuration)
+		conn.SetConnMaxLifetime(originalDuration)
 	}
 }
 
 // close all database connections
 func (ss *SqlStore) Close() {
-	ss.master.Db.Close()
-	for _, replica := range ss.Replicas {
-		replica.Db.Close()
+	ss.masterX.Close()
+	for _, replica := range ss.ReplicaXs {
+		replica.Close()
 	}
 
-	for _, replica := range ss.searchReplicas {
-		replica.Db.Close()
+	for _, replica := range ss.searchReplicaXs {
+		replica.Close()
 	}
 }
 
@@ -662,37 +532,40 @@ func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {
 }
 
 func (ss *SqlStore) migrate(direction migrationDirection) error {
-	var assetNamesForDriver []string
-	for _, assetName := range migrations.AssetNames() {
-		if strings.HasPrefix(assetName, ss.DriverName()) {
-			assetNamesForDriver = append(assetNamesForDriver, filepath.Base(assetName))
-		}
+	assets := db.Assets()
+
+	assetsList, err := assets.ReadDir(filepath.Join("migrations", ss.DriverName()))
+	if err != nil {
+		return err
+	}
+
+	assetNamesForDriver := make([]string, len(assetsList))
+	for i, entry := range assetsList {
+		assetNamesForDriver[i] = entry.Name()
 	}
 
 	src, err := mbindata.WithInstance(&mbindata.AssetSource{
 		Names: assetNamesForDriver,
 		AssetFunc: func(name string) ([]byte, error) {
-			return migrations.Asset(filepath.Join(ss.DriverName(), name))
+			return assets.ReadFile(filepath.Join("migrations", ss.DriverName(), name))
 		},
 	})
 	if err != nil {
 		return err
 	}
-	defer src.Close()
 
-	driver, err := ps.WithInstance(ss.GetMasterX().DB.DB, &ps.Config{
+	driver, err := ps.WithInstance(ss.masterX.DB.DB, &ps.Config{
 		Config: drivers.Config{
 			StatementTimeoutInSecs: *ss.settings.MigrationsStatementTimeoutSeconds,
 		},
 	})
-
 	if err != nil {
 		return err
 	}
 
 	opts := []morph.EngineOption{
 		morph.WithLogger(log.New(&morphWriter{}, "", log.Lshortfile)),
-		morph.WithLock("mm-lock-key"),
+		morph.WithLock("sn-lock-key"),
 	}
 	engine, err := morph.New(context.Background(), driver, src, opts...)
 	if err != nil {
@@ -759,22 +632,21 @@ func versionString(v int, driver string) string {
 	return strconv.Itoa(major) + "." + strconv.Itoa(minor)
 }
 
-// indexing metadata fields for models
-func (ss *SqlStore) CommonMetaDataIndex(tableName string) {
-	lowerTableName := strings.ToLower(tableName)
-	ss.CreateIndexIfNotExists("idx_"+lowerTableName+"_private_metadata", tableName, "PrivateMetadata")
-	ss.CreateIndexIfNotExists("idx_"+lowerTableName+"_metadata", tableName, "Metadata")
+func (ss *SqlStore) GetDBSchemaVersion() (int, error) {
+	var version int
+	if err := ss.GetMasterX().Get(&version, "SELECT Version FROM db_migrations ORDER BY Version DESC LIMIT 1"); err != nil {
+		return 0, errors.Wrap(err, "unable to select from db_migrations")
+	}
+	return version, nil
 }
 
-// common method, set max size for model's sep fields
-func (ss *SqlStore) CommonSeoMaxLength(table *gorp.TableMap) {
-	table.ColMap("SeoTitle").SetMaxSize(seo.SEO_TITLE_MAX_LENGTH)
-	table.ColMap("SeoDescription").SetMaxSize(seo.SEO_DESCRIPTION_MAX_LENGTH)
-}
+func (ss *SqlStore) GetAppliedMigrations() ([]model.AppliedMigration, error) {
+	migrations := []model.AppliedMigration{}
+	if err := ss.GetMasterX().Select(&migrations, "SELECT Version, Name FROM db_migrations ORDER BY Version DESC"); err != nil {
+		return nil, errors.Wrap(err, "unable to select from db_migrations")
+	}
 
-func (ss *SqlStore) appendMultipleStatementsFlag(dataSource string) (string, error) {
-
-	return dataSource, nil
+	return migrations, nil
 }
 
 // finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.

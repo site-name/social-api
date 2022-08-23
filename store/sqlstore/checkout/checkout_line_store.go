@@ -1,13 +1,16 @@
 package checkout
 
 import (
+	"database/sql"
+
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlCheckoutLineStore struct {
@@ -15,25 +18,24 @@ type SqlCheckoutLineStore struct {
 }
 
 func NewSqlCheckoutLineStore(sqlStore store.Store) store.CheckoutLineStore {
-	cls := &SqlCheckoutLineStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(checkout.CheckoutLine{}, store.CheckoutLineTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CheckoutID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("VariantID").SetMaxSize(store.UUID_MAX_LENGTH)
-	}
-	return cls
+	return &SqlCheckoutLineStore{sqlStore}
 }
 
-func (cls *SqlCheckoutLineStore) ModelFields() []string {
-	return []string{
-		"CheckoutLines.Id",
-		"CheckoutLines.CreateAt",
-		"CheckoutLines.CheckoutID",
-		"CheckoutLines.VariantID",
-		"CheckoutLines.Quantity",
+func (cls *SqlCheckoutLineStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"CreateAt",
+		"CheckoutID",
+		"VariantID",
+		"Quantity",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (cls *SqlCheckoutLineStore) ScanFields(line checkout.CheckoutLine) []interface{} {
@@ -46,19 +48,11 @@ func (cls *SqlCheckoutLineStore) ScanFields(line checkout.CheckoutLine) []interf
 	}
 }
 
-func (cls *SqlCheckoutLineStore) CreateIndexesIfNotExists() {
-	cls.CreateIndexIfNotExists("idx_checkoutlines_checkout_id", store.CheckoutLineTableName, "CheckoutID")
-	cls.CreateIndexIfNotExists("idx_checkoutlines_variant_id", store.CheckoutLineTableName, "VariantID")
-
-	// foreign keys:
-	cls.CreateForeignKeyIfNotExists(store.CheckoutLineTableName, "CheckoutID", store.CheckoutTableName, "Token", true)
-	cls.CreateForeignKeyIfNotExists(store.CheckoutLineTableName, "VariantID", store.ProductVariantTableName, "Id", true)
-}
-
 func (cls *SqlCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error) {
 	var isSave bool
 
-	if checkoutLine.Id == "" {
+	if !model.IsValidId(checkoutLine.Id) {
+		checkoutLine.Id = ""
 		isSave = true
 	}
 
@@ -72,10 +66,24 @@ func (cls *SqlCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*c
 		err        error
 	)
 	if isSave {
-		err = cls.GetMaster().Insert(checkoutLine)
+		query := "INSERT INTO " + store.CheckoutLineTableName + "(" + cls.ModelFields("").Join(",") + ") VALUES (" + cls.ModelFields(":").Join(",") + ")"
+		_, err = cls.GetMasterX().NamedExec(query, checkoutLine)
+
 	} else {
-		numUpdated, err = cls.GetMaster().Update(checkoutLine)
+		query := "UPDATE " + store.CheckoutLineTableName + " SET " + cls.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = cls.GetMasterX().NamedExec(query, checkoutLine)
+		if err == nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
+
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to upsert checkout line")
 	}
@@ -88,8 +96,12 @@ func (cls *SqlCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*c
 
 func (cls *SqlCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, error) {
 	var res checkout.CheckoutLine
-	err := cls.GetReplica().SelectOne(&res, "SELECT * FROM "+store.CheckoutLineTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+
+	err := cls.GetReplicaX().Get(&res, "SELECT * FROM "+store.CheckoutLineTableName+" WHERE Id = ?", id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.CheckoutLineTableName, id)
+		}
 		return nil, errors.Wrapf(err, "failed to to find checkout line with id=%s", id)
 	}
 
@@ -98,17 +110,14 @@ func (cls *SqlCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, error) 
 
 func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutToken string) ([]*checkout.CheckoutLine, error) {
 	var res []*checkout.CheckoutLine
-	_, err := cls.GetReplica().Select(
+
+	err := cls.GetReplicaX().Select(
 		&res,
-		`SELECT * FROM `+store.CheckoutLineTableName+` AS CkL 
-		INNER JOIN `+store.CheckoutTableName+` AS Ck ON (
-			Ck.Id = CkL.CheckoutID
-		)
-		WHERE (
-			CkL.CheckoutID = :CheckoutID
-		) 
-		ORDER BY Ck.CreateAt ASC`,
-		map[string]interface{}{"CheckoutID": checkoutToken},
+		`SELECT * FROM `+store.CheckoutLineTableName+`
+		INNER JOIN `+store.CheckoutTableName+` ON	Checkouts.Id = CheckoutLines.CheckoutID
+		WHERE	CheckoutLines.CheckoutID = ?
+		ORDER BY Checkouts.CreateAt ASC`,
+		checkoutToken,
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get checkout lines belong to checkout with id=%s", checkoutToken)
@@ -117,13 +126,13 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutToken string)
 	return res, nil
 }
 
-func (cls *SqlCheckoutLineStore) DeleteLines(transaction *gorp.Transaction, ids []string) error {
-	var executor squirrel.Execer = cls.GetMaster()
+func (cls *SqlCheckoutLineStore) DeleteLines(transaction store_iface.SqlxTxExecutor, ids []string) error {
+	var executor store_iface.SqlxExecutor = cls.GetMasterX()
 	if transaction != nil {
 		executor = transaction
 	}
 
-	result, err := executor.Exec("DELETE FROM "+store.CheckoutLineTableName+" WHERE Id IN :IDs", map[string]interface{}{"IDs": ids})
+	result, err := executor.Exec("DELETE FROM "+store.CheckoutLineTableName+" WHERE Id IN ?", ids)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete checkout lines")
 	}
@@ -137,24 +146,30 @@ func (cls *SqlCheckoutLineStore) DeleteLines(transaction *gorp.Transaction, ids 
 }
 
 func (cls *SqlCheckoutLineStore) BulkUpdate(lines []*checkout.CheckoutLine) error {
-	for _, line := range lines {
-		if line == nil || line.IsValid() != nil {
-			return store.NewErrInvalidInput(store.CheckoutLineTableName, "lines", "nil value")
-		}
-	}
-
-	tx, err := cls.GetMaster().Begin()
+	tx, err := cls.GetMasterX().Beginx()
 	if err != nil {
 		return errors.Wrap(err, "begin_transaction")
 	}
 	defer store.FinalizeTransaction(tx)
 
+	updateQuery := "UPDATE " + store.CheckoutLineTableName + " SET " + cls.
+		ModelFields("").
+		Map(func(_ int, s string) string {
+			return s + "=:" + s
+		}).
+		Join(",") + " WHERE Id=:Id"
+
 	for _, line := range lines {
-		numUpdated, err := tx.Update(line)
+		line.PreSave()
+		if err := line.IsValid(); err != nil {
+			return err
+		}
+
+		result, err := tx.NamedExec(updateQuery, line)
 		if err != nil {
 			return errors.Wrapf(err, "failed to update checkout line with id=%s", line.Id)
 		}
-		if numUpdated > 1 {
+		if numUpdated, _ := result.RowsAffected(); numUpdated > 1 {
 			return errors.Errorf("multiple checkout lines updated: %d instead of 1", numUpdated)
 		}
 	}
@@ -167,11 +182,13 @@ func (cls *SqlCheckoutLineStore) BulkUpdate(lines []*checkout.CheckoutLine) erro
 }
 
 func (cls *SqlCheckoutLineStore) BulkCreate(lines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, error) {
-	tx, err := cls.GetMaster().Begin()
+	tx, err := cls.GetMasterX().Beginx()
 	if err != nil {
 		return nil, errors.Wrap(err, "begin_transaction")
 	}
 	defer store.FinalizeTransaction(tx)
+
+	query := "INSERT INTO " + store.CheckoutLineTableName + "(" + cls.ModelFields("").Join(",") + ") VALUES (" + cls.ModelFields(":").Join(",") + ")"
 
 	for _, line := range lines {
 		if line != nil {
@@ -179,7 +196,8 @@ func (cls *SqlCheckoutLineStore) BulkCreate(lines []*checkout.CheckoutLine) ([]*
 			if appErr := line.IsValid(); appErr != nil {
 				return nil, appErr
 			}
-			err = tx.Insert(line)
+
+			_, err = tx.NamedExec(query, line)
 			if err != nil {
 				return nil, errors.Wrapf(err, "failed to save checkout line with id=%s", line.Id)
 			}
@@ -200,23 +218,27 @@ func (cls *SqlCheckoutLineStore) BulkCreate(lines []*checkout.CheckoutLine) ([]*
 // this borrows the idea from Django's prefetch_related() method
 func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutToken string) ([]*checkout.CheckoutLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
 	selectFields := append(
-		cls.ModelFields(),
+		cls.ModelFields(store.CheckoutLineTableName+"."),
 		append(
 			cls.ProductVariant().ModelFields(),
 			cls.Product().ModelFields()...,
 		)...,
 	)
 
-	rows, err := cls.
+	query, args, err := cls.
 		GetQueryBuilder().
 		Select(selectFields...).
 		From(store.CheckoutLineTableName).
 		InnerJoin(store.ProductVariantTableName + " ON CheckoutLines.VariantID = ProductVariants.Id").
 		InnerJoin(store.ProductTableName + " ON ProductVariants.ProductID = Products.Id").
 		Where(squirrel.Eq{"CheckoutLines.CheckoutID": checkoutToken}).
-		RunWith(cls.GetReplica()).
-		Query()
+		ToSql()
 
+	if err != nil {
+		return nil, nil, nil, errors.Wrap(err, "CheckoutLinesByCheckoutWithPrefetch_ToSql")
+	}
+
+	rows, err := cls.GetReplicaX().QueryX(query, args...)
 	if err != nil {
 		return nil, nil, nil, errors.Wrapf(err, "failed to find checkout lines and prefetch related values, with checkoutToken=%s", checkoutToken)
 	}
@@ -230,7 +252,10 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 		product         product_and_discount.Product
 		scanFields      = append(
 			cls.ScanFields(checkoutLine),
-			append(cls.ProductVariant().ScanFields(productVariant), cls.Product().ScanFields(product)...)...,
+			append(
+				cls.ProductVariant().ScanFields(productVariant),
+				cls.Product().ScanFields(product)...,
+			)...,
 		)
 	)
 
@@ -254,8 +279,7 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 
 // TotalWeightForCheckoutLines calculate total weight for given checkout lines
 func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []string) (*measurement.Weight, error) {
-
-	rows, err := cls.
+	query, args, err := cls.
 		GetQueryBuilder().
 		Select(
 			"CheckoutLines.Quantity",
@@ -271,9 +295,12 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 		InnerJoin(store.ProductTableName + " ON (Products.Id = ProductVariants.ProductID)").
 		InnerJoin(store.ProductTypeTableName + " ON (ProductTypes.Id = Products.ProductTypeID)").
 		Where(squirrel.Eq{"CheckoutLines.Id": checkoutLineIDs}).
-		RunWith(cls.GetReplica()).
-		Query()
+		ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "TotalWeightForCheckoutLines_ToSql")
+	}
 
+	rows, err := cls.GetReplicaX().QueryX(query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find values")
 	}
@@ -355,7 +382,7 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByOption(option *checkout.Checkout
 	}
 
 	var res []*checkout.CheckoutLine
-	_, err = cls.GetReplica().Select(&res, queryString, args...)
+	err = cls.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find checkout lines by given options")
 	}

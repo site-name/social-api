@@ -84,7 +84,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *payment.Payment, paym
 
 	if billingAddressID != "" || shippingAddressID != "" {
 		addresses, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
-			Id: squirrel.Eq{a.srv.Store.Address().TableName("Id"): []string{billingAddressID, shippingAddressID}},
+			Id: squirrel.Eq{store.AddressTableName + ".Id": []string{billingAddressID, shippingAddressID}},
 		})
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
@@ -555,7 +555,7 @@ func (a *ServicePayment) StoreCustomerId(userID string, gateway string, customer
 
 // prepareKeyForGatewayCustomerId just trims spaces, upper then concatenates ".customer_id" to given `gatewayName`.
 //
-//  strings.TrimSpace(strings.ToUpper(gatewayName)) + ".customer_id"
+//	strings.TrimSpace(strings.ToUpper(gatewayName)) + ".customer_id"
 func prepareKeyForGatewayCustomerId(gatewayName string) string {
 	return strings.TrimSpace(strings.ToUpper(gatewayName)) + ".customer_id"
 }

@@ -37,6 +37,7 @@ import (
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type TimerLayer struct {
@@ -142,7 +143,6 @@ type TimerLayer struct {
 	UserStore                          store.UserStore
 	UserAccessTokenStore               store.UserAccessTokenStore
 	UserAddressStore                   store.UserAddressStore
-	UserTermOfServiceStore             store.UserTermOfServiceStore
 	VariantMediaStore                  store.VariantMediaStore
 	VoucherCategoryStore               store.VoucherCategoryStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
@@ -556,10 +556,6 @@ func (s *TimerLayer) UserAccessToken() store.UserAccessTokenStore {
 
 func (s *TimerLayer) UserAddress() store.UserAddressStore {
 	return s.UserAddressStore
-}
-
-func (s *TimerLayer) UserTermOfService() store.UserTermOfServiceStore {
-	return s.UserTermOfServiceStore
 }
 
 func (s *TimerLayer) VariantMedia() store.VariantMediaStore {
@@ -1114,11 +1110,6 @@ type TimerLayerUserAddressStore struct {
 	Root *TimerLayer
 }
 
-type TimerLayerUserTermOfServiceStore struct {
-	store.UserTermOfServiceStore
-	Root *TimerLayer
-}
-
 type TimerLayerVariantMediaStore struct {
 	store.VariantMediaStore
 	Root *TimerLayer
@@ -1232,26 +1223,10 @@ func (s *TimerLayerAddressStore) Get(addressID string) (*account.Address, error)
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) OrderBy() string {
+func (s *TimerLayerAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, error) {
 	start := timemodule.Now()
 
-	result := s.AddressStore.OrderBy()
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if true {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.OrderBy", success, elapsed)
-	}
-	return result
-}
-
-func (s *TimerLayerAddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	start := timemodule.Now()
-
-	result, err := s.AddressStore.Save(transaction, address)
+	result, err := s.AddressStore.Upsert(transaction, address)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -1259,23 +1234,7 @@ func (s *TimerLayerAddressStore) Save(transaction *gorp.Transaction, address *ac
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerAddressStore) Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
-	start := timemodule.Now()
-
-	result, err := s.AddressStore.Update(transaction, address)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.Update", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -1984,7 +1943,7 @@ func (s *TimerLayerAttributeProductStore) Save(attributeProduct *attribute.Attri
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+func (s *TimerLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeValueStore.BulkUpsert(transaction, values)
@@ -2320,7 +2279,7 @@ func (s *TimerLayerCheckoutStore) CountCheckouts(options *checkout.CheckoutFilte
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error {
+func (s *TimerLayerCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) error {
 	start := timemodule.Now()
 
 	err := s.CheckoutStore.DeleteCheckoutsByOption(transaction, option)
@@ -2496,7 +2455,7 @@ func (s *TimerLayerCheckoutLineStore) CheckoutLinesByOption(option *checkout.Che
 	return result, err
 }
 
-func (s *TimerLayerCheckoutLineStore) DeleteLines(transaction *gorp.Transaction, checkoutLineIDs []string) error {
+func (s *TimerLayerCheckoutLineStore) DeleteLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) error {
 	start := timemodule.Now()
 
 	err := s.CheckoutLineStore.DeleteLines(transaction, checkoutLineIDs)
@@ -4449,7 +4408,7 @@ func (s *TimerLayerOrderDiscountStore) Get(orderDiscountID string) (*product_and
 	return result, err
 }
 
-func (s *TimerLayerOrderDiscountStore) Upsert(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+func (s *TimerLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderDiscountStore.Upsert(transaction, orderDiscount)
@@ -8208,22 +8167,6 @@ func (s *TimerLayerUserAddressStore) FilterByOptions(options *account.UserAddres
 	return result, err
 }
 
-func (s *TimerLayerUserAddressStore) OrderBy() string {
-	start := timemodule.Now()
-
-	result := s.UserAddressStore.OrderBy()
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if true {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.OrderBy", success, elapsed)
-	}
-	return result
-}
-
 func (s *TimerLayerUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {
 	start := timemodule.Now()
 
@@ -8236,54 +8179,6 @@ func (s *TimerLayerUserAddressStore) Save(userAddress *account.UserAddress) (*ac
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserTermOfServiceStore) Delete(userID string, termsOfServiceId string) error {
-	start := timemodule.Now()
-
-	err := s.UserTermOfServiceStore.Delete(userID, termsOfServiceId)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserTermOfServiceStore.Delete", success, elapsed)
-	}
-	return err
-}
-
-func (s *TimerLayerUserTermOfServiceStore) GetByUser(userID string) (*account.UserTermsOfService, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserTermOfServiceStore.GetByUser(userID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserTermOfServiceStore.GetByUser", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserTermOfServiceStore) Save(userTermsOfService *account.UserTermsOfService) (*account.UserTermsOfService, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserTermOfServiceStore.Save(userTermsOfService)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserTermOfServiceStore.Save", success, elapsed)
 	}
 	return result, err
 }
@@ -9010,7 +8905,6 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.UserStore = &TimerLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &TimerLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
 	newStore.UserAddressStore = &TimerLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
-	newStore.UserTermOfServiceStore = &TimerLayerUserTermOfServiceStore{UserTermOfServiceStore: childStore.UserTermOfService(), Root: &newStore}
 	newStore.VariantMediaStore = &TimerLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
 	newStore.VoucherCategoryStore = &TimerLayerVoucherCategoryStore{VoucherCategoryStore: childStore.VoucherCategory(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &TimerLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}

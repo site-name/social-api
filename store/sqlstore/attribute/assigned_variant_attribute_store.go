@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
@@ -14,30 +15,22 @@ type SqlAssignedVariantAttributeStore struct {
 }
 
 func NewSqlAssignedVariantAttributeStore(s store.Store) store.AssignedVariantAttributeStore {
-	as := &SqlAssignedVariantAttributeStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(attribute.AssignedVariantAttribute{}, store.AssignedVariantAttributeTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("VariantID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("AssignmentID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("VariantID", "AssignmentID")
-	}
-	return as
+	return &SqlAssignedVariantAttributeStore{s}
 }
 
-func (as *SqlAssignedVariantAttributeStore) ModelFields() []string {
-	return []string{
-		"AssignedVariantAttributes.Id",
-		"AssignedVariantAttributes.VariantID",
-		"AssignedVariantAttributes.AssignmentID",
+func (as *SqlAssignedVariantAttributeStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"VariantID",
+		"AssignmentID",
 	}
-}
+	if prefix == "" {
+		return res
+	}
 
-func (as *SqlAssignedVariantAttributeStore) CreateIndexesIfNotExists() {
-	as.CreateForeignKeyIfNotExists(store.AssignedVariantAttributeTableName, "VariantID", store.ProductVariantTableName, "Id", true)
-	as.CreateForeignKeyIfNotExists(store.AssignedVariantAttributeTableName, "AssignmentID", store.AttributeVariantTableName, "Id", true)
+	return res.Map(func(_ int, item string) string {
+		return prefix + item
+	})
 }
 
 func (as *SqlAssignedVariantAttributeStore) Save(variant *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, error) {
@@ -46,7 +39,8 @@ func (as *SqlAssignedVariantAttributeStore) Save(variant *attribute.AssignedVari
 		return nil, err
 	}
 
-	if err := as.GetMaster().Insert(variant); err != nil {
+	query := "INSERT INTO " + store.AssignedVariantAttributeTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	if _, err := as.GetMasterX().NamedExec(query, variant); err != nil {
 		if as.IsUniqueConstraintError(err, []string{"VariantID", "AssignmentID", strings.ToLower(store.AssignedVariantAttributeTableName) + "_variantid_assignmentid_key"}) {
 			return nil, store.NewErrInvalidInput(store.AssignedVariantAttributeTableName, "VariantID/AssignmentID", variant.VariantID+"/"+variant.AssignmentID)
 		}
@@ -58,7 +52,8 @@ func (as *SqlAssignedVariantAttributeStore) Save(variant *attribute.AssignedVari
 
 func (as *SqlAssignedVariantAttributeStore) Get(variantID string) (*attribute.AssignedVariantAttribute, error) {
 	var res attribute.AssignedVariantAttribute
-	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+store.AssignedVariantAttributeTableName+" WHERE Id = :ID", map[string]interface{}{"ID": variantID})
+
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedVariantAttributeTableName+" WHERE Id = ?", variantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.AssignedVariantAttributeTableName, variantID)
@@ -72,7 +67,7 @@ func (as *SqlAssignedVariantAttributeStore) Get(variantID string) (*attribute.As
 // builFilterQuery is common method for building filter queries
 func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *attribute.AssignedVariantAttributeFilterOption) (string, []interface{}, error) {
 	query := as.GetQueryBuilder().
-		Select(as.ModelFields()...).
+		Select(as.ModelFields(store.AssignedVariantAttributeTableName + ".")...).
 		From(store.AssignedVariantAttributeTableName)
 
 	// parse option
@@ -111,7 +106,7 @@ func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *attribute.Assi
 	}
 
 	var res attribute.AssignedVariantAttribute
-	err = as.GetReplica().SelectOne(
+	err = as.GetReplicaX().Get(
 		&res,
 		queryString,
 		args...,
@@ -135,7 +130,7 @@ func (as *SqlAssignedVariantAttributeStore) FilterByOption(option *attribute.Ass
 	}
 
 	var res []*attribute.AssignedVariantAttribute
-	_, err = as.GetReplica().Select(&res, queryString, args...)
+	err = as.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find assigned variant attributes by given option")
 	}
