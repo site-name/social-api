@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlFulfillmentStore struct {
@@ -16,41 +17,29 @@ type SqlFulfillmentStore struct {
 }
 
 func NewSqlFulfillmentStore(sqlStore store.Store) store.FulfillmentStore {
-	fs := &SqlFulfillmentStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(order.Fulfillment{}, store.FulfillmentTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Status").SetMaxSize(order.FULFILLMENT_STATUS_MAX_LENGTH)
-		table.ColMap("TrackingNumber").SetMaxSize(order.FULFILLMENT_TRACKING_NUMBER_MAX_LENGTH)
-	}
-
-	return fs
+	return &SqlFulfillmentStore{sqlStore}
 }
 
-func (fs *SqlFulfillmentStore) TableName(withField string) string {
-	name := "Fulfillments"
-	if withField != "" {
-		name += "." + withField
+func (fs *SqlFulfillmentStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"FulfillmentOrder",
+		"OrderID",
+		"Status",
+		"TrackingNumber",
+		"CreateAt",
+		"ShippingRefundAmount",
+		"TotalRefundAmount",
+		"Metadata",
+		"PrivateMetadata",
+	}
+	if prefix == "" {
+		return res
 	}
 
-	return name
-}
-
-func (fs *SqlFulfillmentStore) ModelFields() []string {
-	return []string{
-		"Fulfillments.Id",
-		"Fulfillments.FulfillmentOrder",
-		"Fulfillments.OrderID",
-		"Fulfillments.Status",
-		"Fulfillments.TrackingNumber",
-		"Fulfillments.CreateAt",
-		"Fulfillments.ShippingRefundAmount",
-		"Fulfillments.TotalRefundAmount",
-		"Fulfillments.Metadata",
-		"Fulfillments.PrivateMetadata",
-	}
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (fs *SqlFulfillmentStore) ScanFields(holder order.Fulfillment) []interface{} {
@@ -68,17 +57,11 @@ func (fs *SqlFulfillmentStore) ScanFields(holder order.Fulfillment) []interface{
 	}
 }
 
-func (fs *SqlFulfillmentStore) CreateIndexesIfNotExists() {
-	fs.CreateForeignKeyIfNotExists(store.FulfillmentTableName, "OrderID", store.OrderTableName, "id", true)
-	fs.CreateIndexIfNotExists("idx_fulfillments_status", store.FulfillmentTableName, "Status")
-	fs.CreateIndexIfNotExists("idx_fulfillments_tracking_number", store.FulfillmentTableName, "TrackingNumber")
-}
-
 // Upsert depends on given fulfillment's Id to decide update or insert it
-func (fs *SqlFulfillmentStore) Upsert(transaction *gorp.Transaction, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+func (fs *SqlFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
 	var (
 		isSaving bool
-		upsertor gorp.SqlExecutor = fs.GetMaster()
+		upsertor store_iface.SqlxExecutor = fs.GetMasterX()
 	)
 	if transaction != nil {
 		upsertor = transaction
@@ -96,14 +79,15 @@ func (fs *SqlFulfillmentStore) Upsert(transaction *gorp.Transaction, fulfillment
 	}
 
 	var (
-		err            error
-		numUpdated     int64
-		oldFulfillment *order.Fulfillment
+		err        error
+		numUpdated int64
 	)
 	if isSaving {
-		err = upsertor.Insert(fulfillment)
+		query := "INSERT INTO " + store.FulfillmentTableName + "(" + fs.ModelFields("").Join(",") + ") VALUES (" + fs.ModelFields(":").Join(",") + ")"
+		_, err = upsertor.NamedExec(query, fulfillment)
+
 	} else {
-		oldFulfillment, err = fs.Get(fulfillment.Id)
+		oldFulfillment, err := fs.Get(fulfillment.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -112,13 +96,23 @@ func (fs *SqlFulfillmentStore) Upsert(transaction *gorp.Transaction, fulfillment
 		fulfillment.OrderID = oldFulfillment.OrderID
 		fulfillment.CreateAt = oldFulfillment.CreateAt
 
-		numUpdated, err = upsertor.Update(fulfillment)
+		query := "UPDATE " + store.FulfillmentTableName + " SET " + fs.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = upsertor.NamedExec(query, fulfillment)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to upsert fulfillment with id=%s", fulfillment.Id)
 	}
-
 	if numUpdated > 1 {
 		return nil, errors.Errorf("multiple fulfillents were updated: %d instead of 1", numUpdated)
 	}
@@ -129,10 +123,10 @@ func (fs *SqlFulfillmentStore) Upsert(transaction *gorp.Transaction, fulfillment
 // Get fidns and returns a fulfillment with given id
 func (fs *SqlFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
 	var ffm order.Fulfillment
-	if err := fs.GetReplica().SelectOne(
+	if err := fs.GetReplicaX().Get(
 		&ffm,
-		"SELECT * FROM "+store.FulfillmentTableName+" WHERE Id = :id",
-		map[string]interface{}{"id": id},
+		"SELECT * FROM "+store.FulfillmentTableName+" WHERE Id = ?",
+		id,
 	); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.FulfillmentTableName, id)
@@ -145,9 +139,9 @@ func (fs *SqlFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
 
 func (fs *SqlFulfillmentStore) commonQueryBuild(option *order.FulfillmentFilterOption) squirrel.SelectBuilder {
 	// decide which fiedlds to select
-	selectFields := fs.ModelFields()
+	selectFields := fs.ModelFields(store.FulfillmentTableName + ".")
 	if option.SelectRelatedOrder {
-		selectFields = append(selectFields, fs.Order().ModelFields()...)
+		selectFields = append(selectFields, fs.Order().ModelFields(store.OrderTableName+".")...)
 	}
 
 	// build query:
@@ -169,6 +163,7 @@ func (fs *SqlFulfillmentStore) commonQueryBuild(option *order.FulfillmentFilterO
 	if option.FulfillmentLineID != nil {
 		// joinFunc can be either LeftJoin or InnerJoin
 		var joinFunc func(join string, rest ...interface{}) squirrel.SelectBuilder = query.InnerJoin
+
 		if equal, ok := option.FulfillmentLineID.(squirrel.Eq); ok && len(equal) > 0 {
 			for _, value := range equal {
 				if value == nil {
@@ -192,14 +187,13 @@ func (fs *SqlFulfillmentStore) commonQueryBuild(option *order.FulfillmentFilterO
 }
 
 // GetByOption returns 1 fulfillment, filtered by given option
-func (fs *SqlFulfillmentStore) GetByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
-	var runner squirrel.BaseRunner = fs.GetReplica()
+func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+	var runner store_iface.SqlxExecutor = fs.GetReplicaX()
 	if transaction != nil {
 		runner = transaction
 	}
 
 	var (
-		row         = fs.commonQueryBuild(option).RunWith(runner).QueryRow()
 		fulfillment order.Fulfillment
 		anOrder     order.Order
 		scanFields  = fs.ScanFields(fulfillment)
@@ -208,7 +202,12 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction *gorp.Transaction, option
 		scanFields = append(scanFields, fs.Order().ScanFields(anOrder)...)
 	}
 
-	err := row.Scan(scanFields...)
+	queryString, args, err := fs.commonQueryBuild(option).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOption_ToSql")
+	}
+
+	err = runner.QueryRowX(queryString, args...).Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.FulfillmentTableName, "option")
@@ -225,13 +224,18 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction *gorp.Transaction, option
 }
 
 // FilterByOption finds and returns a slice of fulfillments by given option
-func (fs *SqlFulfillmentStore) FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
-	var runner squirrel.BaseRunner = fs.GetReplica()
+func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
+	var runner store_iface.SqlxExecutor = fs.GetReplicaX()
 	if transaction != nil {
 		runner = transaction
 	}
 
-	rows, err := fs.commonQueryBuild(option).RunWith(runner).Query()
+	queryString, args, err := fs.commonQueryBuild(option).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	rows, err := runner.QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find fulfillments with given option")
 	}
@@ -265,16 +269,17 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction *gorp.Transaction, opt
 }
 
 // BulkDeleteFulfillments deletes given fulfillments
-func (fs *SqlFulfillmentStore) BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) error {
-	var exeFunc func(query string, args ...interface{}) (sql.Result, error) = fs.GetMaster().Exec
+func (fs *SqlFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments order.Fulfillments) error {
+	var exeFunc func(query string, args ...interface{}) (sql.Result, error) = fs.GetMasterX().Exec
 	if transaction != nil {
 		exeFunc = transaction.Exec
 	}
 
-	res, err := exeFunc("DELETE * FROM "+fs.TableName("")+" WHERE Id in :IDS", map[string]interface{}{"IDS": fulfillments.IDs()})
+	res, err := exeFunc("DELETE * FROM "+store.FulfillmentTableName+" WHERE Id in ?", fulfillments.IDs())
 	if err != nil {
 		return errors.Wrap(err, "failed to delete fulfillments")
 	}
+
 	numDeleted, _ := res.RowsAffected()
 	if int(numDeleted) != len(fulfillments) {
 		return fmt.Errorf("%d fulfillemts deleted instead of %d", numDeleted, len(fulfillments))

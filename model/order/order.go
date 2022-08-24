@@ -327,6 +327,7 @@ func (o *Order) commonPre() {
 	}
 }
 
+// NewToken generates an uuid and assign it to current order's Id
 func (o *Order) NewToken() {
 	o.Token = model.NewId()
 }

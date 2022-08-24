@@ -9,7 +9,6 @@ import (
 	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
@@ -359,18 +358,18 @@ type (
 	}
 	WishlistItemStore interface {
 		CreateIndexesIfNotExists()
-		GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItem, error)                                  // GetById returns a wishlist item wish given id
-		BulkUpsert(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) // Upsert inserts or updates given wishlist item then returns it
-		FilterByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, error)                     // FilterByOption finds and returns a slice of wishlist items filtered using given options
-		GetByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, error)                          // GetByOption finds and returns a wishlist item filtered by given option
-		DeleteItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, error)    // DeleteItemsByOption finds and deletes wishlist items that satisfy given filtering options and returns number of items deleted
+		GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItem, error)                                  // GetById returns a wishlist item wish given id
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) // Upsert inserts or updates given wishlist item then returns it
+		FilterByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, error)                              // FilterByOption finds and returns a slice of wishlist items filtered using given options
+		GetByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, error)                                   // GetByOption finds and returns a wishlist item filtered by given option
+		DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, error)    // DeleteItemsByOption finds and deletes wishlist items that satisfy given filtering options and returns number of items deleted
 	}
 	WishlistItemProductVariantStore interface {
 		CreateIndexesIfNotExists()
-		Save(wishlistVariant *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, error)                                    // Save inserts new wishlist product variant relation into database and returns it
-		BulkUpsert(transaction *gorp.Transaction, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) // BulkUpsert does bulk update/insert given relations
-		GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItemProductVariant, error)                                                // GetByID returns a wishlist item product variant with given id
-		DeleteRelation(relation *wishlist.WishlistItemProductVariant) (int64, error)                                                                // DeleteRelation deletes a product variant-wishlist item relation and counts numeber of relations left in database
+		Save(wishlistVariant *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, error)                                             // Save inserts new wishlist product variant relation into database and returns it
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) // BulkUpsert does bulk update/insert given relations
+		GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItemProductVariant, error)                                                // GetByID returns a wishlist item product variant with given id
+		DeleteRelation(relation *wishlist.WishlistItemProductVariant) (int64, error)                                                                         // DeleteRelation deletes a product variant-wishlist item relation and counts numeber of relations left in database
 	}
 )
 
@@ -394,24 +393,24 @@ type (
 		ScanFields(stock warehouse.Stock) []interface{}
 		ModelFields() []string
 		TableName(withField string) string
-		Get(stockID string) (*warehouse.Stock, error)                                                                                                          // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
-		FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
-		FilterVariantStocksForCountry(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
-		FilterProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
-		ChangeQuantity(stockID string, quantity int) error                                                                                                     // ChangeQuantity reduce or increase the quantity of given stock
-		FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error)                                        // FilterByOption finds and returns a slice of stocks that satisfy given option
-		BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error)                                                       // BulkUpsert performs upserts or inserts given stocks, then returns them
-		FilterForChannel(options *warehouse.StockFilterForChannelOption) (squirrel.Sqlizer, []*warehouse.Stock, error)                                         // FilterForChannel finds and returns stocks that satisfy given options
+		Get(stockID string) (*warehouse.Stock, error)                                                                                                                   // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
+		FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
+		FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
+		FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
+		ChangeQuantity(stockID string, quantity int) error                                                                                                              // ChangeQuantity reduce or increase the quantity of given stock
+		FilterByOption(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error)                                        // FilterByOption finds and returns a slice of stocks that satisfy given option
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*warehouse.Stock) ([]*warehouse.Stock, error)                                                       // BulkUpsert performs upserts or inserts given stocks, then returns them
+		FilterForChannel(options *warehouse.StockFilterForChannelOption) (squirrel.Sqlizer, []*warehouse.Stock, error)                                                  // FilterForChannel finds and returns stocks that satisfy given options
 	}
 	AllocationStore interface {
 		CreateIndexesIfNotExists()
 		TableName(withField string) string
 		OrderBy() string
-		BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error)          // BulkUpsert performs update, insert given allocations then returns them afterward
-		Get(allocationID string) (*warehouse.Allocation, error)                                                                  // Get find and returns allocation with given id
-		FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) // FilterbyOption finds and returns a list of allocations based on given option
-		BulkDelete(transaction *gorp.Transaction, allocationIDs []string) error                                                  // BulkDelete perform bulk deletes given allocations.
-		CountAvailableQuantityForStock(stock *warehouse.Stock) (int, error)                                                      // CountAvailableQuantityForStock counts and returns available quantity of given stock
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error)          // BulkUpsert performs update, insert given allocations then returns them afterward
+		Get(allocationID string) (*warehouse.Allocation, error)                                                                           // Get find and returns allocation with given id
+		FilterByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) // FilterbyOption finds and returns a list of allocations based on given option
+		BulkDelete(transaction store_iface.SqlxTxExecutor, allocationIDs []string) error                                                  // BulkDelete perform bulk deletes given allocations.
+		CountAvailableQuantityForStock(stock *warehouse.Stock) (int, error)                                                               // CountAvailableQuantityForStock counts and returns available quantity of given stock
 	}
 	WarehouseShippingZoneStore interface {
 		CreateIndexesIfNotExists()
@@ -422,10 +421,10 @@ type (
 		CreateIndexesIfNotExists()
 		ModelFields() []string
 		TableName(withField string) string
-		BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) // BulkCreate bulk inserts given preorderAllocations and returns them
+		BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) // BulkCreate bulk inserts given preorderAllocations and returns them
 		ScanFields(preorderAllocation warehouse.PreorderAllocation) []interface{}
 		FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) // FilterByOption finds and returns a list of preorder allocations filtered using given options
-		Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error                               // Delete deletes preorder-allocations by given ids
+		Delete(transaction store_iface.SqlxTxExecutor, preorderAllocationIDs ...string) error                      // Delete deletes preorder-allocations by given ids
 	}
 )
 
@@ -521,10 +520,10 @@ type (
 		ModelFields() []string
 		TableName(withField string) string
 		ScanFields(listing product_and_discount.ProductVariantChannelListing) []interface{}
-		Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error)                                           // Save insert given value into database then returns it with an error
-		Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error)                                                                                      // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
-		FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error)   // FilterbyOption finds and returns all product variant channel listings filterd using given option
-		BulkUpsert(transaction *gorp.Transaction, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) // BulkUpsert performs bulk upsert given product variant channel listings then returns them
+		Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error)                                                    // Save insert given value into database then returns it with an error
+		Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error)                                                                                               // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
+		FilterbyOption(transaction store_iface.SqlxTxExecutor, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error)   // FilterbyOption finds and returns all product variant channel listings filterd using given option
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) // BulkUpsert performs bulk upsert given product variant channel listings then returns them
 	}
 	ProductVariantTranslationStore interface {
 		CreateIndexesIfNotExists()
@@ -537,12 +536,12 @@ type (
 		ModelFields() []string
 		ScanFields(variant product_and_discount.ProductVariant) []interface{}
 		TableName(withField string) string
-		Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error)   // Save inserts product variant instance to database
-		Get(id string) (*product_and_discount.ProductVariant, error)                                                                      // Get returns a product variant with given id
-		GetWeight(productVariantID string) (*measurement.Weight, error)                                                                   // GetWeight returns weight of given product variant
-		GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error)                                                // GetByOrderLineID finds and returns a product variant by given orderLineID
-		FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error)           // FilterByOption finds and returns product variants based on given option
-		Update(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) // Update updates given product variant and returns it
+		Save(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error)   // Save inserts product variant instance to database
+		Get(id string) (*product_and_discount.ProductVariant, error)                                                                               // Get returns a product variant with given id
+		GetWeight(productVariantID string) (*measurement.Weight, error)                                                                            // GetWeight returns weight of given product variant
+		GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error)                                                         // GetByOrderLineID finds and returns a product variant by given orderLineID
+		FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error)                    // FilterByOption finds and returns product variants based on given option
+		Update(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) // Update updates given product variant and returns it
 	}
 	ProductChannelListingStore interface {
 		CreateIndexesIfNotExists()
@@ -605,20 +604,20 @@ type (
 	PaymentStore interface {
 		CreateIndexesIfNotExists()
 		ScanFields(payMent payment.Payment) []interface{}
-		Save(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error)                           // Save save payment instance into database
-		Get(transaction *gorp.Transaction, id string, lockForUpdate bool) (*payment.Payment, error)                       // Get returns a payment with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
-		Update(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error)                         // Update updates given payment and returns new updated payment
-		CancelActivePaymentsOfCheckout(checkoutToken string) error                                                        // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
-		FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error)                                   // FilterByOption finds and returns a list of payments that satisfy given option
-		UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) error // UpdatePaymentsOfCheckout updates payments of given checkout
+		Save(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error)                           // Save save payment instance into database
+		Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*payment.Payment, error)                       // Get returns a payment with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
+		Update(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error)                         // Update updates given payment and returns new updated payment
+		CancelActivePaymentsOfCheckout(checkoutToken string) error                                                                 // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
+		FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error)                                            // FilterByOption finds and returns a list of payments that satisfy given option
+		UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *payment.PaymentPatch) error // UpdatePaymentsOfCheckout updates payments of given checkout
 	}
 	PaymentTransactionStore interface {
 		CreateIndexesIfNotExists()
 		TableName(withField string) string
-		Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) // Save inserts new payment transaction into database
-		Get(id string) (*payment.PaymentTransaction, error)                                                                      // Get returns a payment transaction with given id
-		Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)                                     // Update updates given transaction and returns updated one
-		FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error)                      // FilterByOption finds and returns a list of transactions with given option
+		Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) // Save inserts new payment transaction into database
+		Get(id string) (*payment.PaymentTransaction, error)                                                                               // Get returns a payment transaction with given id
+		Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)                                              // Update updates given transaction and returns updated one
+		FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error)                               // FilterByOption finds and returns a list of transactions with given option
 	}
 )
 
@@ -638,51 +637,43 @@ type (
 // order
 type (
 	OrderLineStore interface {
-		CreateIndexesIfNotExists()
 		ScanFields(orderLine order.OrderLine) []interface{}
-		TableName(withField string) string
-		OrderBy() string
-		ModelFields() []string
-		Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
-		Get(id string) (*order.OrderLine, error)                                                             // Get returns a order line with id of given id
-		BulkDelete(orderLineIDs []string) error                                                              // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
-		FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error)                      // FilterbyOption finds and returns order lines by given option
-		BulkUpsert(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, error) // BulkUpsert performs upsert multiple order lines in once
+		ModelFields(prefix string) model.StringArray
+		Upsert(transaction store_iface.SqlxTxExecutor, orderLine *order.OrderLine) (*order.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
+		Get(id string) (*order.OrderLine, error)                                                                      // Get returns a order line with id of given id
+		BulkDelete(orderLineIDs []string) error                                                                       // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
+		FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error)                               // FilterbyOption finds and returns order lines by given option
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, orderLines []*order.OrderLine) ([]*order.OrderLine, error) // BulkUpsert performs upsert multiple order lines in once
 	}
 	OrderStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
-		TableName(withField string) string
-		OrderBy() string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(holder order.Order) []interface{}
-		Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error)   // Save insert an order into database and returns that order if success
-		Get(id string) (*order.Order, error)                                            // Get find order in database with given id
-		Update(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) // Update update order
-		FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error)         // FilterByOption returns a list of orders, filtered by given option
-		BulkUpsert(orders []*order.Order) ([]*order.Order, error)                       // BulkUpsert performs bulk upsert given orders
+		Save(transaction store_iface.SqlxTxExecutor, order *order.Order) (*order.Order, error)   // Save insert an order into database and returns that order if success
+		Get(id string) (*order.Order, error)                                                     // Get find order in database with given id
+		Update(transaction store_iface.SqlxTxExecutor, order *order.Order) (*order.Order, error) // Update update order
+		FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error)                  // FilterByOption returns a list of orders, filtered by given option
+		BulkUpsert(orders []*order.Order) ([]*order.Order, error)                                // BulkUpsert performs bulk upsert given orders
 	}
 	OrderEventStore interface {
-		CreateIndexesIfNotExists()
-		Save(transaction *gorp.Transaction, orderEvent *order.OrderEvent) (*order.OrderEvent, error) // Save inserts given order event into database then returns it
-		Get(orderEventID string) (*order.OrderEvent, error)                                          // Get finds order event with given id then returns it
+		Save(transaction store_iface.SqlxTxExecutor, orderEvent *order.OrderEvent) (*order.OrderEvent, error) // Save inserts given order event into database then returns it
+		Get(orderEventID string) (*order.OrderEvent, error)                                                   // Get finds order event with given id then returns it
 	}
 	FulfillmentLineStore interface {
-		CreateIndexesIfNotExists()
+		ModelFields(prefix string) model.StringArray
 		Save(fulfillmentLine *order.FulfillmentLine) (*order.FulfillmentLine, error)
 		Get(id string) (*order.FulfillmentLine, error)
-		FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error)                            // FilterbyOption finds and returns a list of fulfillment lines by given option
-		BulkUpsert(transaction *gorp.Transaction, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) // BulkUpsert upsert given fulfillment lines
-		DeleteFulfillmentLinesByOption(transaction *gorp.Transaction, option *order.FulfillmentLineFilterOption) error         // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
+		FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error)                                     // FilterbyOption finds and returns a list of fulfillment lines by given option
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) // BulkUpsert upsert given fulfillment lines
+		DeleteFulfillmentLinesByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentLineFilterOption) error         // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
 	}
 	FulfillmentStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(holder order.Fulfillment) []interface{}
-		Upsert(transaction *gorp.Transaction, fulfillment *order.Fulfillment) (*order.Fulfillment, error)                  // Upsert depends on given fulfillment's Id to decide update or insert it
-		Get(id string) (*order.Fulfillment, error)                                                                         // Get finds and return a fulfillment by given id
-		GetByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, error)      // GetByOption returns 1 fulfillment, filtered by given option
-		FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) // FilterByOption finds and returns a slice of fulfillments by given option
-		BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) error                       // BulkDeleteFulfillments deletes given fulfillments
+		Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *order.Fulfillment) (*order.Fulfillment, error)                  // Upsert depends on given fulfillment's Id to decide update or insert it
+		Get(id string) (*order.Fulfillment, error)                                                                                  // Get finds and return a fulfillment by given id
+		GetByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (*order.Fulfillment, error)      // GetByOption returns 1 fulfillment, filtered by given option
+		FilterByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) // FilterByOption finds and returns a slice of fulfillments by given option
+		BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments order.Fulfillments) error                       // BulkDeleteFulfillments deletes given fulfillments
 	}
 )
 

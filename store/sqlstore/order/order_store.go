@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlOrderStore struct {
@@ -16,103 +16,56 @@ type SqlOrderStore struct {
 }
 
 func NewSqlOrderStore(sqlStore store.Store) store.OrderStore {
-	os := &SqlOrderStore{sqlStore}
+	return &SqlOrderStore{sqlStore}
+}
 
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(order.Order{}, os.TableName("")).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("BillingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShippingAddressID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("OriginalID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShippingMethodID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CollectionPointID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CollectionPointName").SetMaxSize(order.ORDER_COLLECTION_POINT_NAME_MAX_LENGTH)
-		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("VoucherID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Status").SetMaxSize(order.ORDER_STATUS_MAX_LENGTH)
-		table.ColMap("TrackingClientID").SetMaxSize(order.ORDER_TRACKING_CLIENT_ID_MAX_LENGTH)
-		table.ColMap("Origin").SetMaxSize(order.ORDER_ORIGIN_MAX_LENGTH)
-		table.ColMap("ShippingMethodName").SetMaxSize(order.ORDER_SHIPPING_METHOD_NAME_MAX_LENGTH)
-		table.ColMap("Token").SetMaxSize(order.ORDER_TOKEN_MAX_LENGTH).SetUnique(true)
-		table.ColMap("CheckoutToken").SetMaxSize(order.ORDER_CHECKOUT_TOKEN_MAX_LENGTH)
-		table.ColMap("UserEmail").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
-		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH)
-		table.ColMap("Currency").SetMaxSize(model.URL_LINK_MAX_LENGTH)
+func (os *SqlOrderStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"CreateAt",
+		"Status",
+		"UserID",
+		"ShopID",
+		"LanguageCode",
+		"TrackingClientID",
+		"BillingAddressID",
+		"ShippingAddressID",
+		"UserEmail",
+		"OriginalID",
+		"Origin",
+		"Currency",
+		"ShippingMethodID",
+		"CollectionPointID",
+		"ShippingMethodName",
+		"CollectionPointName",
+		"ChannelID",
+		"ShippingPriceNetAmount",
+		"ShippingPriceGrossAmount",
+		"ShippingTaxRate",
+		"Token",
+		"CheckoutToken",
+		"TotalNetAmount",
+		"UnDiscountedTotalNetAmount",
+		"TotalGrossAmount",
+		"UnDiscountedTotalGrossAmount",
+		"TotalPaidAmount",
+		"VoucherID",
+		"DisplayGrossPrices",
+		"CustomerNote",
+		"WeightAmount",
+		"WeightUnit",
+		"Weight",
+		"RedirectUrl",
+		"Metadata",
+		"PrivateMetadata",
+	}
+	if prefix == "" {
+		return res
 	}
 
-	return os
-}
-
-func (os *SqlOrderStore) TableName(withField string) string {
-	name := "Orders"
-	if withField != "" {
-		name += "." + withField
-	}
-
-	return name
-}
-
-func (os *SqlOrderStore) OrderBy() string {
-	return "CreateAt DESC"
-}
-
-func (os *SqlOrderStore) CreateIndexesIfNotExists() {
-	os.CommonMetaDataIndex(os.TableName(""))
-	os.CreateIndexIfNotExists("idx_orders_user_email", os.TableName(""), "UserEmail")
-	os.CreateIndexIfNotExists("idx_orders_user_email_lower_textpattern", os.TableName(""), "lower(UserEmail) text_pattern_ops")
-	os.CreateForeignKeyIfNotExists(os.TableName(""), "UserID", store.UserTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(os.TableName(""), "BillingAddressID", store.AddressTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(os.TableName(""), "ShippingAddressID", store.AddressTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(os.TableName(""), "OriginalID", os.TableName(""), "Id", false)
-	os.CreateForeignKeyIfNotExists(os.TableName(""), "ShippingMethodID", store.ShippingMethodTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(os.TableName(""), "ChannelID", store.ChannelTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(os.TableName(""), "VoucherID", store.VoucherTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(os.TableName(""), "ShopID", store.ShopTableName, "Id", false)
-	os.CreateForeignKeyIfNotExists(os.TableName(""), "CollectionPointID", store.WarehouseTableName, "Id", false)
-}
-
-func (os *SqlOrderStore) ModelFields() []string {
-	return []string{
-		"Orders.Id",
-		"Orders.CreateAt",
-		"Orders.Status",
-		"Orders.UserID",
-		"Orders.ShopID",
-		"Orders.LanguageCode",
-		"Orders.TrackingClientID",
-		"Orders.BillingAddressID",
-		"Orders.ShippingAddressID",
-		"Orders.UserEmail",
-		"Orders.OriginalID",
-		"Orders.Origin",
-		"Orders.Currency",
-		"Orders.ShippingMethodID",
-		"Orders.CollectionPointID",
-		"Orders.ShippingMethodName",
-		"Orders.CollectionPointName",
-		"Orders.ChannelID",
-		"Orders.ShippingPriceNetAmount",
-		"Orders.ShippingPriceGrossAmount",
-		"Orders.ShippingTaxRate",
-		"Orders.Token",
-		"Orders.CheckoutToken",
-		"Orders.TotalNetAmount",
-		"Orders.UnDiscountedTotalNetAmount",
-		"Orders.TotalGrossAmount",
-		"Orders.UnDiscountedTotalGrossAmount",
-		"Orders.TotalPaidAmount",
-		"Orders.VoucherID",
-		"Orders.DisplayGrossPrices",
-		"Orders.CustomerNote",
-		"Orders.WeightAmount",
-		"Orders.WeightUnit",
-		"Orders.Weight",
-		"Orders.RedirectUrl",
-		"Orders.Metadata",
-		"Orders.PrivateMetadata",
-	}
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (os *SqlOrderStore) ScanFields(holder order.Order) []interface{} {
@@ -160,20 +113,21 @@ func (os *SqlOrderStore) ScanFields(holder order.Order) []interface{} {
 // BulkUpsert performs bulk upsert given orders
 func (os *SqlOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, error) {
 	var (
-		isSaving   bool
-		err        error
-		oldOrder   *order.Order
-		numUpdated int64
+		saveQuery   = "INSERT INTO " + store.OrderTableName + "(" + os.ModelFields("").Join(",") + ") VALUES (" + os.ModelFields(":").Join(",") + ")"
+		updateQuery = "UPDATE " + store.OrderTableName + " SET " +
+			os.ModelFields("").
+				Map(func(_ int, s string) string {
+					return s + "=:" + s
+				}).
+				Join(",") + " WHERE Id=:Id"
 	)
 
-	tx, err := os.GetMaster().Begin()
-	if err != nil {
-		return nil, errors.Wrap(err, "transaction_begin")
-	}
-	defer store.FinalizeTransaction(tx)
-
 	for _, ord := range orders {
-		isSaving = false // reset
+		var (
+			err        error
+			numUpdated int64
+			isSaving   bool
+		)
 
 		if ord.Id == "" {
 			isSaving = true
@@ -188,7 +142,7 @@ func (os *SqlOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, erro
 
 		if isSaving {
 			for {
-				err = tx.Insert(ord)
+				_, err = os.GetMasterX().NamedExec(saveQuery, ord)
 				if err != nil {
 					if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key"}) {
 						ord.NewToken()
@@ -198,9 +152,11 @@ func (os *SqlOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, erro
 				}
 				break
 			}
+
 		} else {
+			var oldOrder order.Order
 			// try finding if order exist
-			err = tx.SelectOne(&oldOrder, "SELECT * FROM "+os.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": ord.Id})
+			err = os.GetReplicaX().Get(&oldOrder, "SELECT * FROM "+store.OrderTableName+" WHERE Id = ?", ord.Id)
 			if err != nil {
 				if err == sql.ErrNoRows {
 					return nil, err
@@ -219,7 +175,11 @@ func (os *SqlOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, erro
 			ord.ShippingPriceNetAmount = oldOrder.ShippingPriceNetAmount
 			ord.ShippingPriceGrossAmount = oldOrder.ShippingPriceGrossAmount
 
-			numUpdated, err = tx.Update(ord)
+			var result sql.Result
+			result, err = os.GetMasterX().NamedExec(updateQuery, ord)
+			if err == nil && result != nil {
+				numUpdated, _ = result.RowsAffected()
+			}
 		}
 
 		if err != nil {
@@ -230,17 +190,13 @@ func (os *SqlOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, erro
 		}
 	}
 
-	if err := tx.Commit(); err != nil {
-		return nil, errors.Wrap(err, "transaction_commit")
-	}
-
 	return orders, nil
 }
 
-func (os *SqlOrderStore) Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) {
-	var insertFunc func(list ...interface{}) error = os.GetMaster().Insert
+func (os *SqlOrderStore) Save(transaction store_iface.SqlxTxExecutor, order *order.Order) (*order.Order, error) {
+	var executor store_iface.SqlxExecutor = os.GetMasterX()
 	if transaction != nil {
-		insertFunc = transaction.Insert
+		executor = transaction
 	}
 
 	order.PreSave()
@@ -248,8 +204,9 @@ func (os *SqlOrderStore) Save(transaction *gorp.Transaction, order *order.Order)
 		return nil, err
 	}
 
+	query := "INSERT INTO " + store.OrderTableName + "(" + os.ModelFields("").Join(",") + ") VALUES (" + os.ModelFields(":").Join(",") + ")"
 	for {
-		if err := insertFunc(order); err != nil {
+		if _, err := executor.NamedExec(query, order); err != nil {
 			if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key", "idx_orders_token_unique"}) {
 				order.NewToken()
 				continue
@@ -264,20 +221,20 @@ func (os *SqlOrderStore) Save(transaction *gorp.Transaction, order *order.Order)
 // Get finds and returns 1 order with given id
 func (os *SqlOrderStore) Get(id string) (*order.Order, error) {
 	var order order.Order
-	err := os.GetReplica().SelectOne(&order, "SELECT * FROM "+os.TableName("")+" WHERE Id = :id", map[string]interface{}{"id": id})
+	err := os.GetReplicaX().Get(&order, "SELECT * FROM "+store.OrderTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(os.TableName(""), id)
+			return nil, store.NewErrNotFound(store.OrderTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find order with Id=%s", id)
 	}
 	return &order, nil
 }
 
-func (os *SqlOrderStore) Update(transaction *gorp.Transaction, newOrder *order.Order) (*order.Order, error) {
-	var updateFunc func(list ...interface{}) (int64, error) = os.GetMaster().Update
+func (os *SqlOrderStore) Update(transaction store_iface.SqlxTxExecutor, newOrder *order.Order) (*order.Order, error) {
+	var executor store_iface.SqlxExecutor = os.GetMasterX()
 	if transaction != nil {
-		updateFunc = transaction.Update
+		executor = transaction
 	}
 
 	newOrder.PreUpdate()
@@ -285,14 +242,15 @@ func (os *SqlOrderStore) Update(transaction *gorp.Transaction, newOrder *order.O
 		return nil, err
 	}
 
-	oldOrderResult, err := os.GetMaster().Get(order.Order{}, newOrder.Id)
+	// check if order exist
+	var oldOrder order.Order
+	err := os.GetMasterX().Get(&oldOrder, newOrder.Id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get order with Id=%s", newOrder.Id)
 	}
 
 	// set all NOT editable fields for newOrder:
 	// NOTE: order's Token can be updated too
-	oldOrder := oldOrderResult.(*order.Order)
 	newOrder.CreateAt = oldOrder.CreateAt
 	newOrder.TrackingClientID = oldOrder.TrackingClientID
 	newOrder.BillingAddressID = oldOrder.BillingAddressID
@@ -302,16 +260,23 @@ func (os *SqlOrderStore) Update(transaction *gorp.Transaction, newOrder *order.O
 	newOrder.ShippingPriceNetAmount = oldOrder.ShippingPriceNetAmount
 	newOrder.ShippingPriceGrossAmount = oldOrder.ShippingPriceGrossAmount
 
-	numberOfUpdatedOrder, err := updateFunc(newOrder)
+	query := "UPDATE " + store.OrderTableName + " SET " + os.
+		ModelFields("").
+		Map(func(_ int, s string) string {
+			return s + "=:" + s
+		}).
+		Join(",") + " WHERE Id=:Id"
+
+	result, err := executor.NamedExec(query, newOrder)
 	if err != nil {
 		if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key", "idx_orders_token_unique"}) {
 			// this is user's intension to update token, he/she must be notified
-			return nil, store.NewErrInvalidInput(os.TableName(""), "token", newOrder.Token)
+			return nil, store.NewErrInvalidInput(store.OrderTableName, "token", newOrder.Token)
 		}
 		return nil, errors.Wrapf(err, "failed to update order with id=%s", newOrder.Id)
 	}
 
-	if numberOfUpdatedOrder > 1 {
+	if numberOfUpdatedOrder, _ := result.RowsAffected(); numberOfUpdatedOrder > 1 {
 		return nil, fmt.Errorf("multiple orders were updated: orderId=%s, count=%d", newOrder.Id, numberOfUpdatedOrder)
 	}
 
@@ -321,9 +286,9 @@ func (os *SqlOrderStore) Update(transaction *gorp.Transaction, newOrder *order.O
 // FilterByOption returns a list of orders, filtered by given option
 func (os *SqlOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
 	query := os.GetQueryBuilder().
-		Select(os.ModelFields()...).
-		From(os.TableName("")).
-		OrderBy(os.OrderBy())
+		Select(os.ModelFields(store.OrderTableName + ".")...).
+		From(store.OrderTableName).
+		OrderBy(store.TableOrderingMap[store.OrderTableName])
 
 	// parse options:
 	if option.Status != nil {
@@ -349,8 +314,8 @@ func (os *SqlOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*ord
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*order.Order
-	_, err = os.GetReplica().Select(&res, queryString, args...)
+	var res order.Orders
+	err = os.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find orders with given option")
 	}

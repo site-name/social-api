@@ -3,10 +3,11 @@ package order
 import (
 	"database/sql"
 
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlOrderEventStore struct {
@@ -14,27 +15,31 @@ type SqlOrderEventStore struct {
 }
 
 func NewSqlOrderEventStore(s store.Store) store.OrderEventStore {
-	oes := &SqlOrderEventStore{s}
+	return &SqlOrderEventStore{s}
+}
 
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(order.OrderEvent{}, store.OrderEventTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Type").SetMaxSize(order.ORDER_EVENT_TYPE_MAX_LENGTH)
+func (s *SqlOrderEventStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"CreateAt",
+		"Type",
+		"OrderID",
+		"Parameters",
+		"UserID",
 	}
-	return oes
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
-func (oes *SqlOrderEventStore) CreateIndexesIfNotExists() {
-	oes.CreateForeignKeyIfNotExists(store.OrderEventTableName, "OrderID", store.OrderTableName, "Id", true)
-	oes.CreateForeignKeyIfNotExists(store.OrderEventTableName, "UserID", store.UserTableName, "Id", false)
-}
-
-func (oes *SqlOrderEventStore) Save(transaction *gorp.Transaction, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
-	var insertFunc func(list ...interface{}) error = oes.GetMaster().Insert
+func (oes *SqlOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
+	var executor store_iface.SqlxExecutor = oes.GetMasterX()
 	if transaction != nil {
-		insertFunc = transaction.Insert
+		executor = transaction
 	}
 
 	orderEvent.PreSave()
@@ -42,7 +47,8 @@ func (oes *SqlOrderEventStore) Save(transaction *gorp.Transaction, orderEvent *o
 		return nil, err
 	}
 
-	if err := insertFunc(orderEvent); err != nil {
+	query := "INSERT INTO " + store.OrderEventTableName + "(" + oes.ModelFields("").Join(",") + ") VALUES (" + oes.ModelFields(":").Join(",") + ")"
+	if _, err := executor.NamedExec(query, orderEvent); err != nil {
 		return nil, errors.Wrapf(err, "failed to save order event with id=%s", orderEvent.Id)
 	}
 
@@ -51,7 +57,7 @@ func (oes *SqlOrderEventStore) Save(transaction *gorp.Transaction, orderEvent *o
 
 func (oes *SqlOrderEventStore) Get(orderEventID string) (*order.OrderEvent, error) {
 	var res order.OrderEvent
-	err := oes.GetReplica().SelectOne(&res, "SELECT * FROM "+store.OrderEventTableName+" WHERE Id = :ID", map[string]interface{}{"ID": orderEventID})
+	err := oes.GetReplicaX().Get(&res, "SELECT * FROM "+store.OrderEventTableName+" WHERE Id = ?", orderEventID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.OrderEventTableName, orderEventID)
