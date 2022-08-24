@@ -36,3 +36,38 @@ CREATE TABLE IF NOT EXISTS orders (
   metadata text,
   privatemetadata text
 );
+
+ALTER TABLE ONLY orders
+    ADD CONSTRAINT orders_token_key UNIQUE (token);
+
+CREATE INDEX idx_orders_metadata ON orders USING btree (metadata);
+
+CREATE INDEX idx_orders_private_metadata ON orders USING btree (privatemetadata);
+
+CREATE INDEX idx_orders_user_email ON orders USING btree (useremail);
+
+CREATE INDEX idx_orders_user_email_lower_textpattern ON orders USING btree (lower((useremail)::text) text_pattern_ops);
+
+ALTER TABLE ONLY orders
+    ADD CONSTRAINT fk_orders_addresses FOREIGN KEY (billingaddressid) REFERENCES addresses(id);
+
+ALTER TABLE ONLY orders
+    ADD CONSTRAINT fk_orders_channels FOREIGN KEY (channelid) REFERENCES channels(id);
+
+ALTER TABLE ONLY orders
+    ADD CONSTRAINT fk_orders_orders FOREIGN KEY (originalid) REFERENCES orders(id);
+
+ALTER TABLE ONLY orders
+    ADD CONSTRAINT fk_orders_shippingmethods FOREIGN KEY (shippingmethodid) REFERENCES shippingmethods(id);
+
+ALTER TABLE ONLY orders
+    ADD CONSTRAINT fk_orders_shops FOREIGN KEY (shopid) REFERENCES shops(id);
+
+ALTER TABLE ONLY orders
+    ADD CONSTRAINT fk_orders_users FOREIGN KEY (userid) REFERENCES users(id);
+
+ALTER TABLE ONLY orders
+    ADD CONSTRAINT fk_orders_vouchers FOREIGN KEY (voucherid) REFERENCES vouchers(id);
+
+ALTER TABLE ONLY orders
+    ADD CONSTRAINT fk_orders_warehouses FOREIGN KEY (collectionpointid) REFERENCES warehouses(id);
