@@ -178,7 +178,6 @@ type Store interface {
 // shop
 type (
 	ShopStaffStore interface {
-		CreateIndexesIfNotExists()
 		Save(shopStaff *shop.ShopStaffRelation) (*shop.ShopStaffRelation, error)             // Save inserts given shopStaff into database then returns it with an error
 		Get(shopStaffID string) (*shop.ShopStaffRelation, error)                             // Get finds a shop staff with given id then returns it with an error
 		FilterByShopAndStaff(shopID string, staffID string) (*shop.ShopStaffRelation, error) // FilterByShopAndStaff finds a relation ship with given shopId and staffId
@@ -212,7 +211,6 @@ type PluginStore interface {
 }
 
 type UploadSessionStore interface {
-	CreateIndexesIfNotExists()
 	Save(session *file.UploadSession) (*file.UploadSession, error)
 	Update(session *file.UploadSession) error
 	Get(id string) (*file.UploadSession, error)
@@ -222,8 +220,6 @@ type UploadSessionStore interface {
 
 // fileinfo
 type FileInfoStore interface {
-	CreateIndexesIfNotExists()
-	Save(info *file.FileInfo) (*file.FileInfo, error)
 	Upsert(info *file.FileInfo) (*file.FileInfo, error)
 	Get(id string) (*file.FileInfo, error)
 	GetFromMaster(id string) (*file.FileInfo, error)
@@ -713,12 +709,10 @@ type (
 // invoice
 type (
 	InvoiceEventStore interface {
-		CreateIndexesIfNotExists()
 		Upsert(invoiceEvent *invoice.InvoiceEvent) (*invoice.InvoiceEvent, error) // Upsert depends on given invoice event's Id to update/insert it
 		Get(invoiceEventID string) (*invoice.InvoiceEvent, error)                 // Get finds and returns 1 invoice event
 	}
 	InvoiceStore interface {
-		CreateIndexesIfNotExists()
 		Upsert(invoice *invoice.Invoice) (*invoice.Invoice, error) // Upsert depends on given invoice Id to update/insert it
 		Get(invoiceID string) (*invoice.Invoice, error)            // Get finds and returns 1 invoice
 	}
@@ -727,32 +721,26 @@ type (
 // giftcard related stores
 type (
 	GiftCardStore interface {
-		CreateIndexesIfNotExists()
-		BulkUpsert(transaction *gorp.Transaction, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error)           // BulkUpsert depends on given giftcards's Id properties then perform according operation
-		GetById(id string) (*giftcard.GiftCard, error)                                                                     // GetById returns a giftcard instance that has id of given id
-		FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) // FilterByOption finds giftcards wth option
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error)           // BulkUpsert depends on given giftcards's Id properties then perform according operation
+		GetById(id string) (*giftcard.GiftCard, error)                                                                              // GetById returns a giftcard instance that has id of given id
+		FilterByOption(transaction store_iface.SqlxTxExecutor, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) // FilterByOption finds giftcards wth option
 		// DeactivateOrderGiftcards update giftcards
 		// which have giftcard events with type == 'bought', parameters.order_id == given order id
 		// by setting their IsActive attribute to false
 		DeactivateOrderGiftcards(orderID string) ([]string, error)
 	}
 	GiftcardEventStore interface {
-		CreateIndexesIfNotExists()
-		Ordering() string
-		TableName(withField string) string
-		Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error)                                            // Save insdert given giftcard event into database then returns it
-		Get(id string) (*giftcard.GiftCardEvent, error)                                                                 // Get finds and returns a giftcard event found by given id
-		BulkUpsert(transaction *gorp.Transaction, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) // BulkUpsert upserts and returns given giftcard events
-		FilterByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, error)                 // FilterByOptions finds and returns a list of giftcard events with given options
+		Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error)                                                     // Save insdert given giftcard event into database then returns it
+		Get(id string) (*giftcard.GiftCardEvent, error)                                                                          // Get finds and returns a giftcard event found by given id
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) // BulkUpsert upserts and returns given giftcard events
+		FilterByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, error)                          // FilterByOptions finds and returns a list of giftcard events with given options
 	}
 	GiftCardOrderStore interface {
-		CreateIndexesIfNotExists()
-		Save(giftcardOrder *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, error)                                            // Save inserts new giftcard-order relation into database then returns it
-		Get(id string) (*giftcard.OrderGiftCard, error)                                                                         // Get returns giftcard-order relation table with given id
-		BulkUpsert(transaction *gorp.Transaction, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) // BulkUpsert upserts given order-giftcard relations and returns it
+		Save(giftcardOrder *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, error)                                                     // Save inserts new giftcard-order relation into database then returns it
+		Get(id string) (*giftcard.OrderGiftCard, error)                                                                                  // Get returns giftcard-order relation table with given id
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) // BulkUpsert upserts given order-giftcard relations and returns it
 	}
 	GiftCardCheckoutStore interface {
-		CreateIndexesIfNotExists()
 		Save(giftcardOrder *giftcard.GiftCardCheckout) (*giftcard.GiftCardCheckout, error) // Save inserts new giftcard-checkout relation into database then returns it
 		Get(id string) (*giftcard.GiftCardCheckout, error)                                 // Get returns giftcard-checkout relation table with given id
 		Delete(giftcardID string, checkoutID string) error                                 // Delete deletes a giftcard-checkout relation with given id
@@ -783,7 +771,6 @@ type (
 		)
 	}
 	VoucherTranslationStore interface {
-		CreateIndexesIfNotExists()
 		Save(translation *product_and_discount.VoucherTranslation) (*product_and_discount.VoucherTranslation, error)                    // Save inserts given translation into database and returns it
 		Get(id string) (*product_and_discount.VoucherTranslation, error)                                                                // Get finds and returns a voucher translation with given id
 		FilterByOption(option *product_and_discount.VoucherTranslationFilterOption) ([]*product_and_discount.VoucherTranslation, error) // FilterByOption returns a list of voucher translations filtered using given options
@@ -795,14 +782,12 @@ type (
 		FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) // FilterSalesByOption filter sales by option
 	}
 	VoucherChannelListingStore interface {
-		CreateIndexesIfNotExists()
 		Upsert(voucherChannelListing *product_and_discount.VoucherChannelListing) (*product_and_discount.VoucherChannelListing, error)        // upsert check given listing's Id to decide whether to create or update it. Then returns a listing with an error
 		Get(voucherChannelListingID string) (*product_and_discount.VoucherChannelListing, error)                                              // Get finds a listing with given id, then returns it with an error
 		FilterbyOption(option *product_and_discount.VoucherChannelListingFilterOption) ([]*product_and_discount.VoucherChannelListing, error) // FilterbyOption finds and returns a list of voucher channel listing relationship instances filtered by given option
 	}
 	DiscountVoucherStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(voucher product_and_discount.Voucher) []interface{}
 		Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error)                              // Upsert saves or updates given voucher then returns it with an error
 		Get(voucherID string) (*product_and_discount.Voucher, error)                                                      // Get finds a voucher with given id, then returns it with an error
@@ -815,18 +800,14 @@ type (
 		Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error)                                 // Get finds a voucher category with given id, then returns it with an error
 	}
 	VoucherCollectionStore interface {
-		CreateIndexesIfNotExists()
-		TableName(withField string) string
 		Upsert(voucherCollection *product_and_discount.VoucherCollection) (*product_and_discount.VoucherCollection, error) // Upsert saves or updates given voucher collection then returns it with an error
 		Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error)                                   // Get finds a voucher collection with given id, then returns it with an error
 	}
 	VoucherProductStore interface {
-		CreateIndexesIfNotExists()
 		Upsert(voucherProduct *product_and_discount.VoucherProduct) (*product_and_discount.VoucherProduct, error) // Upsert saves or updates given voucher product then returns it with an error
 		Get(voucherProductID string) (*product_and_discount.VoucherProduct, error)                                // Get finds a voucher product with given id, then returns it with an error
 	}
 	VoucherCustomerStore interface {
-		CreateIndexesIfNotExists()
 		Save(voucherCustomer *product_and_discount.VoucherCustomer) (*product_and_discount.VoucherCustomer, error)                  // Save inserts given voucher customer instance into database ands returns it
 		DeleteInBulk(options *product_and_discount.VoucherCustomerFilterOption) error                                               // DeleteInBulk deletes given voucher-customers with given id
 		GetByOption(options *product_and_discount.VoucherCustomerFilterOption) (*product_and_discount.VoucherCustomer, error)       // GetByOption finds and returns a voucher customer with given options
@@ -848,7 +829,6 @@ type (
 		FilterByOption(option *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, error) // FilterByOption returns a list of collections filtered based on given option
 	}
 	VoucherProductVariantStore interface {
-		CreateIndexesIfNotExists()
 	}
 	SaleProductVariantStore interface {
 		Upsert(relation *product_and_discount.SaleProductVariant) (*product_and_discount.SaleProductVariant, error)                      // Upsert inserts/updates given sale-product variant relation into database, then returns it
@@ -957,7 +937,6 @@ type PreferenceStore interface {
 }
 
 type JobStore interface {
-	CreateIndexesIfNotExists()
 	Save(job *model.Job) (*model.Job, error)
 	UpdateOptimistically(job *model.Job, currentStatus string) (bool, error)
 	UpdateStatus(id string, status string) (*model.Job, error)
@@ -1139,7 +1118,6 @@ type RoleStore interface {
 }
 
 type OpenExchangeRateStore interface {
-	CreateIndexesIfNotExists()
 	BulkUpsert(rates []*external_services.OpenExchangeRate) ([]*external_services.OpenExchangeRate, error) // BulkUpsert performs bulk update/insert to given exchange rates
 	GetAll() ([]*external_services.OpenExchangeRate, error)                                                // GetAll returns all exchange currency rates
 }

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -12,30 +13,25 @@ type SqlVoucherProductStore struct {
 	store.Store
 }
 
-var (
-	VoucherProductDuplicateList = []string{
-		"VoucherID", "ProductID", "voucherproducts_voucherid_productid_key",
-	}
-)
-
-func NewSqlVoucherProductStore(s store.Store) store.VoucherProductStore {
-	vps := &SqlVoucherProductStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.VoucherProduct{}, store.VoucherProductTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("VoucherID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("VoucherID", "ProductID")
-	}
-
-	return vps
+var VoucherProductDuplicateList = []string{
+	"VoucherID", "ProductID", "voucherproducts_voucherid_productid_key",
 }
 
-func (vps *SqlVoucherProductStore) CreateIndexesIfNotExists() {
-	vps.CreateForeignKeyIfNotExists(store.VoucherProductTableName, "VoucherID", store.VoucherTableName, "Id", true)
-	vps.CreateForeignKeyIfNotExists(store.VoucherProductTableName, "ProductID", store.ProductTableName, "Id", true)
+func NewSqlVoucherProductStore(s store.Store) store.VoucherProductStore {
+	return &SqlVoucherProductStore{s}
+}
+
+func (s *SqlVoucherProductStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id", "VoucherID", "ProductID",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Upsert saves or updates given voucher product then returns it with an error
@@ -54,9 +50,22 @@ func (vps *SqlVoucherProductStore) Upsert(voucherProduct *product_and_discount.V
 		numUpdated int64
 	)
 	if saving {
-		err = vps.GetMaster().Insert(voucherProduct)
+		query := "INSERT INTO " + store.VoucherProductTableName + "(" + vps.ModelFields("").Join(",") + ") VALUES (" + vps.ModelFields(":").Join(",") + ")"
+		_, err = vps.GetMasterX().NamedExec(query, voucherProduct)
+
 	} else {
-		numUpdated, err = vps.GetMaster().Update(voucherProduct)
+		query := "UPDATE " + store.VoucherProductTableName + " SET " + vps.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = vps.GetMasterX().NamedExec(query, voucherProduct)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -64,7 +73,9 @@ func (vps *SqlVoucherProductStore) Upsert(voucherProduct *product_and_discount.V
 			return nil, store.NewErrInvalidInput(store.VoucherProductTableName, "VoucherID/ProductID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to upsert voucher-product relation with id=%s", voucherProduct.Id)
-	} else if numUpdated > 1 {
+	}
+
+	if numUpdated > 1 {
 		return nil, errors.Errorf("multiple voucher-product relations updated: %d instead of 1", numUpdated)
 	}
 
@@ -74,7 +85,7 @@ func (vps *SqlVoucherProductStore) Upsert(voucherProduct *product_and_discount.V
 // Get finds a voucher product with given id, then returns it with an error
 func (vps *SqlVoucherProductStore) Get(voucherProductID string) (*product_and_discount.VoucherProduct, error) {
 	var res product_and_discount.VoucherProduct
-	err := vps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.VoucherProductTableName+" WHERE Id = :ID", map[string]interface{}{"ID": voucherProductID})
+	err := vps.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherProductTableName+" WHERE Id = ?", voucherProductID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherProductTableName, voucherProductID)

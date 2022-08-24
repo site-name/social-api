@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/invoice"
 	"github.com/sitename/sitename/store"
 )
@@ -13,20 +14,26 @@ type SqlInvoiceStore struct {
 }
 
 func NewSqlInvoiceStore(s store.Store) store.InvoiceStore {
-	is := &SqlInvoiceStore{s}
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(invoice.Invoice{}, store.InvoiceTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Number").SetMaxSize(invoice.INVOICE_NUMBER_MAX_LENGTH)
-		table.ColMap("ExternalUrl").SetMaxSize(invoice.INVOICE_EXTERNAL_URL_MAX_LENGTH)
-	}
-
-	return is
+	return &SqlInvoiceStore{s}
 }
 
-func (is *SqlInvoiceStore) CreateIndexesIfNotExists() {
-	is.CreateForeignKeyIfNotExists(store.InvoiceTableName, "OrderID", store.OrderTableName, "Id", false)
+func (s *SqlInvoiceStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"OrderID",
+		"Number",
+		"CreateAt",
+		"ExternalUrl",
+		"Metadata",
+		"PrivateMetadata",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Upsert depends on given inVoice's Id to decide update or delete it
@@ -43,19 +50,24 @@ func (is *SqlInvoiceStore) Upsert(inVoice *invoice.Invoice) (*invoice.Invoice, e
 	var (
 		err        error
 		numUpdated int64
-		oldInvoice *invoice.Invoice
 	)
 	if isSaving {
-		err = is.GetMaster().Insert(inVoice)
+		query := "INSERT INTO " + store.InvoiceTableName + "(" + is.ModelFields("").Join(",") + ") VALUES (" + is.ModelFields(":").Join(",") + ")"
+		_, err = is.GetMasterX().NamedExec(query, inVoice)
+
 	} else {
-		oldInvoice, err = is.Get(inVoice.Id)
-		if err != nil {
-			return nil, err
+		query := "UPDATE " + store.InvoiceEventTableName + " SET " + is.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id = :Id"
+
+		var result sql.Result
+		result, err = is.GetMasterX().NamedExec(query, inVoice)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
 		}
-
-		inVoice.CreateAt = oldInvoice.CreateAt
-
-		numUpdated, err = is.GetMaster().Update(inVoice)
 	}
 
 	if err != nil {
@@ -72,7 +84,7 @@ func (is *SqlInvoiceStore) Upsert(inVoice *invoice.Invoice) (*invoice.Invoice, e
 // Get finds and returns an invoice with given id
 func (is *SqlInvoiceStore) Get(invoiceID string) (*invoice.Invoice, error) {
 	var res invoice.Invoice
-	err := is.GetReplica().SelectOne(&res, "SELECT * FROM "+store.InvoiceTableName+" WHERE Id = :ID", map[string]interface{}{"ID": invoiceID})
+	err := is.GetReplicaX().Get(&res, "SELECT * FROM "+store.InvoiceTableName+" WHERE Id = ?", invoiceID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.InvoiceTableName, invoiceID)

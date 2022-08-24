@@ -13,36 +13,31 @@ type SqlVoucherChannelListingStore struct {
 	store.Store
 }
 
-var (
-	VoucherChannelListingDuplicateList = []string{
-		"VoucherID", "ChannelID", "voucherchannellistings_voucherid_channelid_key",
-	}
-)
-
-func NewSqlVoucherChannelListingStore(sqlStore store.Store) store.VoucherChannelListingStore {
-	vcls := &SqlVoucherChannelListingStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.VoucherChannelListing{}, store.VoucherChannelListingTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("VoucherID").SetMaxSize(store.UUID_MAX_LENGTH).SetNotNull(true)
-		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH).SetNotNull(true)
-		table.ColMap("Currency").SetMaxSize(model.CURRENCY_CODE_MAX_LENGTH)
-
-		table.SetUniqueTogether("VoucherID", "ChannelID")
-	}
-
-	return vcls
+var VoucherChannelListingDuplicateList = []string{
+	"VoucherID", "ChannelID", "voucherchannellistings_voucherid_channelid_key",
 }
 
-func (vcls *SqlVoucherChannelListingStore) CreateIndexesIfNotExists() {
-	vcls.CreateForeignKeyIfNotExists(store.VoucherChannelListingTableName, "VoucherID", store.VoucherTableName, "Id", true)
-	vcls.CreateForeignKeyIfNotExists(store.VoucherChannelListingTableName, "ChannelID", store.ChannelTableName, "Id", true)
+func (s *SqlVoucherChannelListingStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id", "CreateAt", "VoucherID", "ChannelID", "DiscountValue", "Currency", "MinSpentAmount",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
+}
+
+func NewSqlVoucherChannelListingStore(sqlStore store.Store) store.VoucherChannelListingStore {
+	return &SqlVoucherChannelListingStore{sqlStore}
 }
 
 // upsert check given listing's Id to decide whether to create or update it. Then returns a listing with an error
 func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *product_and_discount.VoucherChannelListing) (*product_and_discount.VoucherChannelListing, error) {
 	var saving bool
+
 	if voucherChannelListing.Id == "" {
 		saving = true
 		voucherChannelListing.PreSave()
@@ -54,15 +49,24 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *product
 
 	var err error
 	var numUpdated int64
+
 	if saving {
-		err = vcls.GetMaster().Insert(voucherChannelListing)
+		query := "INSERT INTO " + store.VoucherChannelListingTableName + "(" + vcls.ModelFields("").Join(",") + ") VALUES (" + vcls.ModelFields(":").Join(",") + ")"
+		_, err = vcls.GetMasterX().NamedExec(query, voucherChannelListing)
+
 	} else {
-		// validate if the listing does exist:
-		_, err = vcls.Get(voucherChannelListing.Id)
-		if err != nil {
-			return nil, err
+		query := "UPDATE " + store.VoucherChannelListingTableName + " SET " + vcls.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = vcls.GetMasterX().NamedExec(query, voucherChannelListing)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
 		}
-		numUpdated, err = vcls.GetMaster().Update(voucherChannelListing)
 	}
 
 	if err != nil {
@@ -82,7 +86,8 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *product
 // Get finds a listing with given id, then returns it with an error
 func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (*product_and_discount.VoucherChannelListing, error) {
 	var res product_and_discount.VoucherChannelListing
-	err := vcls.GetReplica().SelectOne(&res, "SELECT * FROM "+store.VoucherChannelListingTableName+" WHERE Id = :ID", map[string]interface{}{"ID": voucherChannelListingID})
+
+	err := vcls.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherChannelListingTableName+" WHERE Id = ?", voucherChannelListingID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherChannelListingTableName, voucherChannelListingID)
@@ -118,7 +123,7 @@ func (vcls *SqlVoucherChannelListingStore) FilterbyOption(option *product_and_di
 	}
 
 	var res []*product_and_discount.VoucherChannelListing
-	_, err = vcls.GetReplica().Select(&res, queryString, args...)
+	err = vcls.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find voucher channel listing relationship instances with given option")
 	}

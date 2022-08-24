@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/invoice"
 	"github.com/sitename/sitename/store"
 )
@@ -13,24 +14,26 @@ type SqlInvoiceEventStore struct {
 }
 
 func NewSqlInvoiceEventStore(sqlStore store.Store) store.InvoiceEventStore {
-	ies := &SqlInvoiceEventStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(invoice.InvoiceEvent{}, store.InvoiceEventTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("InvoiceID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Type").SetMaxSize(invoice.INVOICE_EVENT_TYPE_MAX_LENGTH)
-	}
-
-	return ies
+	return &SqlInvoiceEventStore{sqlStore}
 }
 
-func (ies *SqlInvoiceEventStore) CreateIndexesIfNotExists() {
-	ies.CreateForeignKeyIfNotExists(store.InvoiceEventTableName, "InvoiceID", store.InvoiceTableName, "Id", false)
-	ies.CreateForeignKeyIfNotExists(store.InvoiceEventTableName, "OrderID", store.OrderTableName, "Id", false)
-	ies.CreateForeignKeyIfNotExists(store.InvoiceEventTableName, "UserID", store.UserTableName, "Id", false)
+func (s *SqlInvoiceEventStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"CreateAt",
+		"Type",
+		"InvoiceID",
+		"OrderID",
+		"UserID",
+		"Parameters",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Upsert depends on given invoice event's Id to update/insert it
@@ -46,20 +49,33 @@ func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent *invoice.InvoiceEvent) (*in
 	}
 
 	var (
-		err             error
-		oldInvoiceEvent *invoice.InvoiceEvent
-		numUpdated      int64
+		err        error
+		numUpdated int64
 	)
 	if isSaing {
-		err = ies.GetMaster().Insert(invoiceEvent)
+		query := "INSERT INTO " + store.InvoiceEventTableName + "(" + ies.ModelFields("").Join(",") + ") VALUES (" + ies.ModelFields(":").Join(",") + ")"
+		_, err = ies.GetMasterX().NamedExec(query, invoiceEvent)
+
 	} else {
-		oldInvoiceEvent, err = ies.Get(invoiceEvent.Id)
+		oldEvent, err := ies.Get(invoiceEvent.Id)
 		if err != nil {
 			return nil, err
 		}
 
-		invoiceEvent.CreateAt = oldInvoiceEvent.CreateAt
-		numUpdated, err = ies.GetMaster().Update(invoiceEvent)
+		invoiceEvent.CreateAt = oldEvent.CreateAt
+
+		query := "UPDATE " + store.InvoiceEventTableName + " SET " + ies.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = ies.GetMasterX().NamedExec(query, invoiceEvent)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -76,7 +92,7 @@ func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent *invoice.InvoiceEvent) (*in
 // Get finds and returns 1 invoice event
 func (ies *SqlInvoiceEventStore) Get(invoiceEventID string) (*invoice.InvoiceEvent, error) {
 	var res invoice.InvoiceEvent
-	err := ies.GetReplica().SelectOne(&res, "SELECT * FROM "+store.InvoiceEventTableName+" WHERE Id = :ID", map[string]interface{}{"ID": invoiceEventID})
+	err := ies.GetReplicaX().Get(&res, "SELECT * FROM "+store.InvoiceEventTableName+" WHERE Id = ?", invoiceEventID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.InvoiceEventTableName, invoiceEventID)

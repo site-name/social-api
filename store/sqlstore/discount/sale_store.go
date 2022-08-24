@@ -18,7 +18,18 @@ func NewSqlDiscountSaleStore(sqlStore store.Store) store.DiscountSaleStore {
 }
 
 func (s *SqlDiscountSaleStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{}
+	res := model.StringArray{
+		"Id",
+		"ShopID",
+		"Name",
+		"Type",
+		"StartDate",
+		"EndDate",
+		"CreateAt",
+		"UpdateAt",
+		"Metadata",
+		"PrivateMetadata",
+	}
 	if prefix == "" {
 		return res
 	}

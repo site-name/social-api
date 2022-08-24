@@ -15,22 +15,20 @@ type SqlVoucherCustomerStore struct {
 }
 
 func NewSqlVoucherCustomerStore(sqlStore store.Store) store.VoucherCustomerStore {
-	vcs := &SqlVoucherCustomerStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.VoucherCustomer{}, store.VoucherCustomerTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("VoucherID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CustomerEmail").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
-
-		table.SetUniqueTogether("VoucherID", "CustomerEmail")
-	}
-
-	return vcs
+	return &SqlVoucherCustomerStore{sqlStore}
 }
 
-func (vcs *SqlVoucherCustomerStore) CreateIndexesIfNotExists() {
-	vcs.CreateForeignKeyIfNotExists(store.VoucherCustomerTableName, "VoucherID", store.VoucherTableName, "Id", true)
+func (s *SqlVoucherCustomerStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id", "VoucherID", "CustomerEmail",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Save inserts given voucher customer instance into database ands returns it
@@ -40,7 +38,9 @@ func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer *product_and_discount.V
 		return nil, err
 	}
 
-	if err := vcs.GetMaster().Insert(voucherCustomer); err != nil {
+	query := "INSERT INTO " + store.VoucherCustomerTableName + "(" + vcs.ModelFields("").Join(",") + ") VALUES (" + vcs.ModelFields(":").Join(",") + ")"
+
+	if _, err := vcs.GetMasterX().NamedExec(query, voucherCustomer); err != nil {
 		if vcs.IsUniqueConstraintError(err, []string{"VoucherID", "CustomerEmail", "vouchercustomers_voucherid_customeremail_key"}) {
 			return nil, store.NewErrInvalidInput(store.VoucherCustomerTableName, "VoucherID/CustomerEmail", "uniqe constraint")
 		}
@@ -77,7 +77,7 @@ func (vcs *SqlVoucherCustomerStore) GetByOption(options *product_and_discount.Vo
 	}
 
 	var res product_and_discount.VoucherCustomer
-	err = vcs.GetReplica().SelectOne(&res, queryString, args...)
+	err = vcs.GetMasterX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherCustomerTableName, "options")
@@ -96,7 +96,7 @@ func (vcs *SqlVoucherCustomerStore) FilterByOptions(options *product_and_discoun
 	}
 
 	var res []*product_and_discount.VoucherCustomer
-	_, err = vcs.GetReplica().Select(&res, queryString, args...)
+	err = vcs.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find voucher customers by options")
 	}
@@ -119,7 +119,12 @@ func (vcs *SqlVoucherCustomerStore) DeleteInBulk(options *product_and_discount.V
 		deleteQuery = deleteQuery.Where(options.CustomerEmail)
 	}
 
-	res, err := deleteQuery.RunWith(vcs.GetMaster()).Exec()
+	query, args, err := deleteQuery.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "DeleteInBulk_ToSql")
+	}
+
+	res, err := vcs.GetMasterX().Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete voucher-customer relations by given options")
 	}

@@ -11,15 +11,15 @@ import (
 )
 
 type VoucherChannelListing struct {
-	Id            string           `json:"id"`
-	CreateAt      int64            `json:"create_at"` // this field is for ordering
-	VoucherID     string           `json:"voucher_id"`
-	ChannelID     string           `json:"channel_id"`
-	DiscountValue *decimal.Decimal `json:"discount_value"`
-	Discount      *goprices.Money  `json:"discount,omitempty" db:"-"`
-	MinSpent      *goprices.Money  `json:"min_spent,omitempty" db:"-"`
-	Currency      string           `json:"currency"`
-	MinSpenAmount *decimal.Decimal `json:"min_spent_amount"`
+	Id             string           `json:"id"`
+	CreateAt       int64            `json:"create_at"` // this field is for ordering
+	VoucherID      string           `json:"voucher_id"`
+	ChannelID      string           `json:"channel_id"`
+	DiscountValue  *decimal.Decimal `json:"discount_value"`
+	Currency       string           `json:"currency"`
+	MinSpentAmount *decimal.Decimal `json:"min_spent_amount"`
+	Discount       *goprices.Money  `json:"discount,omitempty" db:"-"`
+	MinSpent       *goprices.Money  `json:"min_spent,omitempty" db:"-"`
 }
 
 // VoucherChannelListingFilterOption is mainly used to build sql queries to filter voucher channel listing relationship instances
@@ -45,9 +45,9 @@ func (v *VoucherChannelListing) commonPre() {
 		v.DiscountValue = &decimal.Zero
 	}
 	if v.MinSpent == nil {
-		v.MinSpenAmount = &v.MinSpent.Amount
+		v.MinSpentAmount = &v.MinSpent.Amount
 	} else {
-		v.MinSpenAmount = &decimal.Zero
+		v.MinSpentAmount = &decimal.Zero
 	}
 	if v.Currency != "" {
 		v.Currency = strings.ToUpper(v.Currency)
@@ -59,7 +59,7 @@ func (v *VoucherChannelListing) commonPre() {
 func (v *VoucherChannelListing) PopulateNonDbFields() {
 	v.MinSpent = &goprices.Money{
 		Currency: v.Currency,
-		Amount:   *v.MinSpenAmount,
+		Amount:   *v.MinSpentAmount,
 	}
 	v.Discount = &goprices.Money{
 		Amount:   *v.DiscountValue,

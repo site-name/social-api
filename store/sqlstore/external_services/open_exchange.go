@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/external_services"
 	"github.com/sitename/sitename/store"
 )
@@ -14,24 +13,12 @@ type SqlOpenExchangeRateStore struct {
 }
 
 func NewSqlOpenExchangeRateStore(s store.Store) store.OpenExchangeRateStore {
-	os := &SqlOpenExchangeRateStore{s}
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(external_services.OpenExchangeRate{}, store.OpenExchangeRateTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ToCurrency").SetMaxSize(model.CURRENCY_CODE_MAX_LENGTH).SetUnique(true)
-	}
-
-	return os
-}
-
-func (os *SqlOpenExchangeRateStore) CreateIndexesIfNotExists() {
-	os.CreateIndexIfNotExists("idx_openexchange_to_currency", store.OpenExchangeRateTableName, "ToCurrency")
+	return &SqlOpenExchangeRateStore{s}
 }
 
 // BulkUpsert performs bulk update/insert to given exchange rates
 func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenExchangeRate) ([]*external_services.OpenExchangeRate, error) {
-
-	transaction, err := os.GetMaster().Begin()
+	transaction, err := os.GetMasterX().Beginx()
 	if err != nil {
 		return nil, errors.Wrap(err, "transaction_begin")
 	}
@@ -39,23 +26,23 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenEx
 
 	var (
 		oldRate    external_services.OpenExchangeRate
-		isSaving   bool
 		numUpdated int64
 	)
 
 	for _, rate := range rates {
-		isSaving = false
+		isSaving := false
 		// try lookup:
-		err := transaction.SelectOne(
+		err := transaction.Get(
 			&oldRate,
-			"SELECT * FROM "+store.OpenExchangeRateTableName+" WHERE ToCurrency = :Currency FOR UPDATE",
-			map[string]interface{}{"Currency": rate.ToCurrency},
+			"SELECT * FROM "+store.OpenExchangeRateTableName+" WHERE ToCurrency = ? FOR UPDATE",
+			rate.ToCurrency,
 		)
 		if err != nil {
 			if err == sql.ErrNoRows { // does not exist
 				isSaving = true
+			} else {
+				return nil, errors.Wrapf(err, "failed to find exchange rate with ToCurrency=%s", rate.ToCurrency)
 			}
-			return nil, errors.Wrapf(err, "failed to find exchange rate with ToCurrency=%s", rate.ToCurrency)
 		}
 
 		if isSaving {
@@ -69,14 +56,23 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenEx
 		}
 
 		if isSaving {
-			err = transaction.Insert(rate)
+			query := "INSERT INTO " + store.OpenExchangeRateTableName + "(Id, ToCurrency, Rate) VALUES (:Id, :ToCurrency, :Rate)"
+			_, err = transaction.NamedExec(query, rate)
+
 		} else {
 			// check if rates are different then update
 			if !rate.Rate.Equal(*oldRate.Rate) {
 				rate.Id = oldRate.Id
-				numUpdated, err = transaction.Update(rate)
+
+				query := "UPDATE " + store.OpenExchangeRateTableName + " SET Id=:Id, ToCurrency=:ToCurrency, Rate=:Rate WHERE Id=:Id"
+				var result sql.Result
+				result, err = transaction.NamedExec(query, rate)
+				if err == nil && result != nil {
+					numUpdated, _ = result.RowsAffected()
+				}
 			}
 		}
+
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to upsert exchange rate with ToCurrency=%s", rate.ToCurrency)
 		}
@@ -95,13 +91,13 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenEx
 // GetAll returns all exchange currency rates
 func (os *SqlOpenExchangeRateStore) GetAll() ([]*external_services.OpenExchangeRate, error) {
 	var res []*external_services.OpenExchangeRate
-	if _, err := os.GetReplica().Select(
+	err := os.GetReplicaX().Select(
 		&res,
-		"SELECT * FROM "+store.OpenExchangeRateTableName+" ORDER BY :OrderBy",
-		map[string]interface{}{
-			"OrderBy": store.TableOrderingMap[store.OpenExchangeRateTableName],
-		},
-	); err != nil {
+		"SELECT * FROM "+store.OpenExchangeRateTableName+" ORDER BY ?",
+		store.TableOrderingMap[store.OpenExchangeRateTableName],
+	)
+
+	if err != nil {
 		return nil, errors.Wrap(err, "failed to get all exchange rates")
 	}
 

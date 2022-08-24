@@ -6,24 +6,24 @@ import (
 )
 
 // The different gift card event types
-type GiftCardEvents string
+type GiftcardEventType string
 
 const (
-	ISSUED              GiftCardEvents = "issued"
-	BOUGHT              GiftCardEvents = "bought"
-	UPDATED             GiftCardEvents = "updated"
-	ACTIVATED           GiftCardEvents = "activated"
-	DEACTIVATED         GiftCardEvents = "deactivated"
-	BALANCE_RESET       GiftCardEvents = "balance_reset"
-	EXPIRY_DATE_UPDATED GiftCardEvents = "expiry_date_updated"
-	TAG_UPDATED         GiftCardEvents = "tag_updated"
-	SENT_TO_CUSTOMER    GiftCardEvents = "sent_to_customer"
-	RESENT              GiftCardEvents = "resent"
-	NOTE_ADDED          GiftCardEvents = "note_added"
-	USED_IN_ORDER       GiftCardEvents = "used_in_order"
+	ISSUED              GiftcardEventType = "issued"
+	BOUGHT              GiftcardEventType = "bought"
+	UPDATED             GiftcardEventType = "updated"
+	ACTIVATED           GiftcardEventType = "activated"
+	DEACTIVATED         GiftcardEventType = "deactivated"
+	BALANCE_RESET       GiftcardEventType = "balance_reset"
+	EXPIRY_DATE_UPDATED GiftcardEventType = "expiry_date_updated"
+	TAG_UPDATED         GiftcardEventType = "tag_updated"
+	SENT_TO_CUSTOMER    GiftcardEventType = "sent_to_customer"
+	RESENT              GiftcardEventType = "resent"
+	NOTE_ADDED          GiftcardEventType = "note_added"
+	USED_IN_ORDER       GiftcardEventType = "used_in_order"
 )
 
-var GiftCardEventsString = map[GiftCardEvents]string{
+var GiftCardEventsString = map[GiftcardEventType]string{
 	ISSUED:              "The gift card was created be staff user or app.",
 	BOUGHT:              "The gift card was bought by customer.",
 	UPDATED:             "The gift card was updated.",
@@ -46,7 +46,7 @@ const (
 type GiftCardEvent struct {
 	Id         string                `json:"id"`
 	Date       int64                 `json:"date"` // not editable
-	Type       GiftCardEvents        `json:"type"`
+	Type       GiftcardEventType     `json:"type"`
 	Parameters model.StringInterface `json:"parameters"`  // default map[stirng]string{}
 	UserID     *string               `json:"user_id"`     // ON DELETE SET NULL
 	GiftcardID string                `json:"giftcard_id"` // ON DELETE CASCADE

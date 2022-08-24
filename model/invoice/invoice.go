@@ -2,7 +2,6 @@ package invoice
 
 import (
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/file"
 )
 
 // max lengths for Invoice
@@ -11,14 +10,12 @@ const (
 	INVOICE_EXTERNAL_URL_MAX_LENGTH = 2048
 )
 
-// TODO: considering add field Job to this model
 type Invoice struct {
-	Id          string        `json:"id"`
-	OrderID     *string       `json:"order_id"`
-	Number      string        `json:"number"`
-	CreateAt    int64         `json:"create_at"`
-	ExternalUrl string        `json:"external_url"`
-	InvoiceFile file.FileInfo `json:"invoice_file"`
+	Id          string  `json:"id"`
+	OrderID     *string `json:"order_id"`
+	Number      string  `json:"number"`
+	CreateAt    int64   `json:"create_at"`
+	ExternalUrl string  `json:"external_url"`
 	model.ModelMetadata
 }
 

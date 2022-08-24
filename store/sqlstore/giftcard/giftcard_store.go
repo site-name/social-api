@@ -4,13 +4,13 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlGiftCardStore struct {
@@ -18,44 +18,48 @@ type SqlGiftCardStore struct {
 }
 
 func NewSqlGiftCardStore(sqlStore store.Store) store.GiftCardStore {
-	gcs := &SqlGiftCardStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(giftcard.GiftCard{}, store.GiftcardTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CreatedByID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("UsedByID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CreatedByEmail").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
-		table.ColMap("UsedByEmail").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
-		table.ColMap("Tag").SetMaxSize(giftcard.GiftcardTagMaxLength)
-		table.ColMap("Code").SetMaxSize(giftcard.GiftcardCodeMaxLength).SetUnique(true)
-		table.ColMap("Currency").SetMaxSize(model.CURRENCY_CODE_MAX_LENGTH)
-	}
-
-	return gcs
+	return &SqlGiftCardStore{sqlStore}
 }
 
-func (gcs *SqlGiftCardStore) CreateIndexesIfNotExists() {
-	gcs.CommonMetaDataIndex(store.GiftcardTableName)
+func (s *SqlGiftCardStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"Code",
+		"CreatedByID",
+		"UsedByID",
+		"CreatedByEmail",
+		"UsedByEmail",
+		"CreateAt",
+		"StartDate",
+		"ExpiryDate",
+		"Tag",
+		"ProductID",
+		"LastUsedOn",
+		"IsActive",
+		"Currency",
+		"InitialBalanceAmount",
+		"CurrentBalanceAmount",
+		"Metadata",
+		"PrivateMetadata",
+	}
+	if prefix == "" {
+		return res
+	}
 
-	gcs.CreateIndexIfNotExists("idx_giftcards_tag", store.GiftcardTableName, "Tag")
-	gcs.CreateIndexIfNotExists("idx_giftcards_code", store.GiftcardTableName, "Code")
-	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "CreatedByID", store.UserTableName, "Id", false)
-	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "UsedByID", store.UserTableName, "Id", false)
-	gcs.CreateForeignKeyIfNotExists(store.GiftcardTableName, "ProductID", store.ProductTableName, "Id", false)
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // BulkUpsert depends on given giftcards's Id properties then perform according operation
-func (gcs *SqlGiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
-	var saving bool
-	var upsertSelector gorp.SqlExecutor = gcs.GetMaster()
+func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
+	var executor store_iface.SqlxExecutor = gcs.GetMasterX()
 	if transaction != nil {
-		upsertSelector = transaction
+		executor = transaction
 	}
 
 	for _, giftCard := range giftCards {
-		saving = false
+		saving := false
 
 		if giftCard.Id == "" {
 			giftCard.PreSave()
@@ -69,14 +73,17 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards
 		}
 
 		var (
-			err         error
-			oldGiftcard *giftcard.GiftCard
-			numUpdated  int64
+			err error
+
+			numUpdated int64
 		)
 		if saving {
-			err = upsertSelector.Insert(giftCard)
+			query := "INSERT INTO " + store.GiftcardTableName + "(" + gcs.ModelFields("").Join(",") + ") VALUES (" + gcs.ModelFields(":").Join(",") + ")"
+			_, err = executor.NamedExec(query, giftCard)
+
 		} else {
-			err = upsertSelector.SelectOne(&oldGiftcard, "SELECT * FROM "+store.GiftcardTableName+" WHERE Id = :ID", map[string]interface{}{"ID": giftCard.Id})
+			var oldGiftcard giftcard.GiftCard
+			err = executor.Get(&oldGiftcard, "SELECT * FROM "+store.GiftcardTableName+" WHERE Id = ?", giftCard.Id)
 			if err != nil {
 				if err == sql.ErrNoRows {
 					return nil, store.NewErrNotFound(store.GiftcardTableName, giftCard.Id)
@@ -87,7 +94,18 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards
 			giftCard.CreateAt = oldGiftcard.CreateAt
 			giftCard.Code = oldGiftcard.Code
 
-			numUpdated, err = upsertSelector.Update(giftCard)
+			query := "UPDATE " + store.GiftcardTableName + " SET " + gcs.
+				ModelFields("").
+				Map(func(_ int, s string) string {
+					return s + "=:" + s
+				}).
+				Join(",") + " WHERE Id=:Id"
+
+			var result sql.Result
+			result, err = executor.NamedExec(query, giftCard)
+			if err == nil && result != nil {
+				numUpdated, _ = result.RowsAffected()
+			}
 		}
 
 		if err != nil {
@@ -107,7 +125,7 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards
 
 func (gcs *SqlGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
 	var res giftcard.GiftCard
-	if err := gcs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.GiftcardTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id}); err != nil {
+	if err := gcs.GetReplicaX().Get(&res, "SELECT * FROM "+store.GiftcardTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.GiftcardTableName, id)
 		}
@@ -118,8 +136,8 @@ func (gcs *SqlGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
 }
 
 // FilterByOption finds giftcards wth option
-func (gs *SqlGiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
-	var selector gorp.SqlExecutor = gs.GetReplica()
+func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+	var selector store_iface.SqlxExecutor = gs.GetReplicaX()
 	if transaction != nil {
 		selector = transaction
 	}
@@ -170,7 +188,7 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction *gorp.Transaction, option
 	}
 
 	var giftcards []*giftcard.GiftCard
-	_, err = selector.Select(&giftcards, queryString, args...)
+	err = selector.Select(&giftcards, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds giftcards with code")
 	}
@@ -267,7 +285,7 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (order.Order
 	}
 
 	var res []*order.OrderLine
-	_, err = gs.GetReplica().Select(&res, queryString, args...)
+	err = gs.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order lines with given ids")
 	}
@@ -307,13 +325,13 @@ func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, 
 	}
 
 	var giftcards giftcard.Giftcards
-	_, err = gs.GetReplica().Select(&giftcards, query, args...)
+	err = gs.GetReplicaX().Select(&giftcards, query, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find giftcards with Parameters.order_id = %s", orderID)
 	}
 
 	giftcardIDs := giftcards.IDs()
-	res, err := gs.GetMaster().Exec("UPDATE "+store.GiftcardTableName+" SET IsActive = false WHERE Id IN :IDS", map[string]interface{}{"IDS": giftcardIDs})
+	res, err := gs.GetMasterX().Exec("UPDATE "+store.GiftcardTableName+" SET IsActive = false WHERE Id IN ?", giftcardIDs)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to update giftcards")
 	}

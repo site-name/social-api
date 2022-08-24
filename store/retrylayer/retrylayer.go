@@ -3893,26 +3893,6 @@ func (s *RetryLayerFileInfoStore) PermanentDeleteByUser(userID string) (int64, e
 
 }
 
-func (s *RetryLayerFileInfoStore) Save(info *file.FileInfo) (*file.FileInfo, error) {
-
-	tries := 0
-	for {
-		result, err := s.FileInfoStore.Save(info)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerFileInfoStore) SetContent(fileID string, content string) error {
 
 	tries := 0
@@ -4153,7 +4133,7 @@ func (s *RetryLayerFulfillmentLineStore) Save(fulfillmentLine *order.Fulfillment
 
 }
 
-func (s *RetryLayerGiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
+func (s *RetryLayerGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
 
 	tries := 0
 	for {
@@ -4193,7 +4173,7 @@ func (s *RetryLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]st
 
 }
 
-func (s *RetryLayerGiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+func (s *RetryLayerGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
 
 	tries := 0
 	for {
@@ -4293,7 +4273,7 @@ func (s *RetryLayerGiftCardCheckoutStore) Save(giftcardOrder *giftcard.GiftCardC
 
 }
 
-func (s *RetryLayerGiftCardOrderStore) BulkUpsert(transaction *gorp.Transaction, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
+func (s *RetryLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
 
 	tries := 0
 	for {
@@ -4353,7 +4333,7 @@ func (s *RetryLayerGiftCardOrderStore) Save(giftcardOrder *giftcard.OrderGiftCar
 
 }
 
-func (s *RetryLayerGiftcardEventStore) BulkUpsert(transaction *gorp.Transaction, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) {
+func (s *RetryLayerGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) {
 
 	tries := 0
 	for {
@@ -4410,12 +4390,6 @@ func (s *RetryLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, 
 			return result, err
 		}
 	}
-
-}
-
-func (s *RetryLayerGiftcardEventStore) Ordering() string {
-
-	return s.GiftcardEventStore.Ordering()
 
 }
 

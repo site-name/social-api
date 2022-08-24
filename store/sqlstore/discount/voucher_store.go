@@ -17,44 +17,39 @@ type SqlVoucherStore struct {
 }
 
 func NewSqlDiscountVoucherStore(sqlStore store.Store) store.DiscountVoucherStore {
-	vs := &SqlVoucherStore{sqlStore}
+	return &SqlVoucherStore{sqlStore}
 
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.Voucher{}, store.VoucherTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Type").SetMaxSize(product_and_discount.VOUCHER_TYPE_MAX_LENGTH)
-		table.ColMap("Code").SetMaxSize(product_and_discount.VOUCHER_CODE_MAX_LENGTH).SetUnique(true)
-		table.ColMap("Name").SetMaxSize(product_and_discount.VOUCHER_NAME_MAX_LENGTH)
-		table.ColMap("Countries").SetMaxSize(model.MULTIPLE_COUNTRIES_MAX_LENGTH)
-		table.ColMap("DiscountValueType").SetMaxSize(product_and_discount.VOUCHER_DISCOUNT_VALUE_TYPE_MAX_LENGTH)
-	}
-
-	return vs
 }
 
-func (vs *SqlVoucherStore) ModelFields() []string {
-	return []string{
-		"Vouchers.Id",
-		"Vouchers.ShopID",
-		"Vouchers.Type",
-		"Vouchers.Name",
-		"Vouchers.Code",
-		"Vouchers.UsageLimit",
-		"Vouchers.Used",
-		"Vouchers.StartDate",
-		"Vouchers.EndDate",
-		"Vouchers.ApplyOncePerOrder",
-		"Vouchers.ApplyOncePerCustomer",
-		"Vouchers.OnlyForStaff",
-		"Vouchers.DiscountValueType",
-		"Vouchers.Countries",
-		"Vouchers.MinCheckoutItemsQuantity",
-		"Vouchers.CreateAt",
-		"Vouchers.UpdateAt",
-		"Vouchers.Metadata",
-		"Vouchers.PrivateMetadata",
+func (vs *SqlVoucherStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"ShopID",
+		"Type",
+		"Name",
+		"Code",
+		"UsageLimit",
+		"Used",
+		"StartDate",
+		"EndDate",
+		"ApplyOncePerOrder",
+		"ApplyOncePerCustomer",
+		"OnlyForStaff",
+		"DiscountValueType",
+		"Countries",
+		"MinCheckoutItemsQuantity",
+		"CreateAt",
+		"UpdateAt",
+		"Metadata",
+		"PrivateMetadata",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (vs *SqlVoucherStore) ScanFields(voucher product_and_discount.Voucher) []interface{} {
@@ -81,11 +76,6 @@ func (vs *SqlVoucherStore) ScanFields(voucher product_and_discount.Voucher) []in
 	}
 }
 
-func (vs *SqlVoucherStore) CreateIndexesIfNotExists() {
-	vs.CreateIndexIfNotExists("idx_vouchers_code", store.VoucherTableName, "Code")
-	vs.CreateForeignKeyIfNotExists(store.VoucherTableName, "ShopID", store.ShopTableName, "Id", true)
-}
-
 // Upsert saves or updates given voucher then returns it with an error
 func (vs *SqlVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error) {
 	var saving bool
@@ -107,15 +97,29 @@ func (vs *SqlVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*produ
 	)
 
 	if saving {
-		err = vs.GetMaster().Insert(voucher)
+		query := "INSERT INTO " + store.VoucherTableName + "(" + vs.ModelFields("").Join(",") + ") VALUES (" + vs.ModelFields(":").Join(",") + ")"
+		_, err = vs.GetMasterX().NamedExec(query, voucher)
 	} else {
+
 		oldVoucher, err = vs.Get(voucher.Id)
 		if err != nil {
 			return nil, err
 		}
 
 		voucher.Used = oldVoucher.Used
-		numUpdated, err = vs.GetMaster().Update(voucher)
+
+		query := "UPDATE " + store.VoucherTableName + " SET " + vs.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = vs.GetMasterX().NamedExec(query, voucher)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -134,7 +138,7 @@ func (vs *SqlVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*produ
 // Get finds a voucher with given id, then returns it with an error
 func (vs *SqlVoucherStore) Get(voucherID string) (*product_and_discount.Voucher, error) {
 	var res product_and_discount.Voucher
-	err := vs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.VoucherTableName+" WHERE Id = :ID", map[string]interface{}{"ID": voucherID})
+	err := vs.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherTableName+" WHERE Id = ?", voucherID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherTableName, voucherID)
@@ -148,7 +152,7 @@ func (vs *SqlVoucherStore) Get(voucherID string) (*product_and_discount.Voucher,
 func (vs *SqlVoucherStore) commonQueryBuilder(option *product_and_discount.VoucherFilterOption) squirrel.SelectBuilder {
 	query := vs.
 		GetQueryBuilder().
-		Select(vs.ModelFields()...).
+		Select(vs.ModelFields(store.VoucherTableName + ".")...).
 		From(store.VoucherTableName).
 		OrderBy(store.TableOrderingMap[store.VoucherTableName])
 
@@ -193,7 +197,7 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.V
 	}
 
 	var vouchers []*product_and_discount.Voucher
-	_, err = vs.GetReplica().Select(&vouchers, queryString, args...)
+	err = vs.GetReplicaX().Select(&vouchers, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find vouchers based on given option")
 	}
@@ -209,7 +213,7 @@ func (vs *SqlVoucherStore) GetByOptions(options *product_and_discount.VoucherFil
 	}
 
 	var res product_and_discount.Voucher
-	err = vs.GetReplica().SelectOne(&res, queryString, args...)
+	err = vs.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherTableName, "options")
@@ -228,7 +232,7 @@ func (vs *SqlVoucherStore) ExpiredVouchers(date *time.Time) ([]*product_and_disc
 	beginOfDate := util.StartOfDay(*date)
 
 	var res []*product_and_discount.Voucher
-	_, err := vs.GetReplica().Select(&res, "SELECT * FROM "+store.VoucherTableName+" WHERE (Used >= UsageLimit OR EndDate < $1) AND StartDate < $2", beginOfDate, beginOfDate)
+	err := vs.GetReplicaX().Select(&res, "SELECT * FROM "+store.VoucherTableName+" WHERE (Used >= UsageLimit OR EndDate < $1) AND StartDate < $2", beginOfDate, beginOfDate)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find expired vouchers with given date")
 	}

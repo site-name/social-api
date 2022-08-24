@@ -3,11 +3,11 @@ package giftcard
 import (
 	"database/sql"
 
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlGiftCardOrderStore struct {
@@ -15,22 +15,18 @@ type SqlGiftCardOrderStore struct {
 }
 
 func NewSqlGiftCardOrderStore(s store.Store) store.GiftCardOrderStore {
-	gs := &SqlGiftCardOrderStore{s}
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(giftcard.OrderGiftCard{}, store.OrderGiftCardTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("GiftCardID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("GiftCardID", "OrderID")
-	}
-
-	return gs
+	return &SqlGiftCardOrderStore{s}
 }
 
-func (gs *SqlGiftCardOrderStore) CreateIndexesIfNotExists() {
-	gs.CreateForeignKeyIfNotExists(store.OrderGiftCardTableName, "GiftCardID", store.GiftcardTableName, "id", false)
-	gs.CreateForeignKeyIfNotExists(store.OrderGiftCardTableName, "OrderID", store.OrderTableName, "Id", false)
+func (s *SqlGiftCardOrderStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{"Id", "GiftCardID", "OrderID"}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (gs *SqlGiftCardOrderStore) Save(giftCardOrder *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, error) {
@@ -39,7 +35,8 @@ func (gs *SqlGiftCardOrderStore) Save(giftCardOrder *giftcard.OrderGiftCard) (*g
 		return nil, err
 	}
 
-	if err := gs.GetMaster().Insert(giftCardOrder); err != nil {
+	query := "INSERT INTO " + store.OrderGiftCardTableName + "(" + gs.ModelFields("").Join(",") + ") VALUES (" + gs.ModelFields(":").Join(",") + ")"
+	if _, err := gs.GetMasterX().NamedExec(query, giftCardOrder); err != nil {
 		if gs.IsUniqueConstraintError(err, []string{"GiftCardID", "OrderID", "ordergiftcards_giftcardid_orderid_key"}) {
 			return nil, store.NewErrInvalidInput(store.OrderGiftCardTableName, "GiftCardID/OrderID", giftCardOrder.GiftCardID+"/"+giftCardOrder.OrderID)
 		}
@@ -51,7 +48,7 @@ func (gs *SqlGiftCardOrderStore) Save(giftCardOrder *giftcard.OrderGiftCard) (*g
 
 func (gs *SqlGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error) {
 	var res giftcard.OrderGiftCard
-	err := gs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.OrderGiftCardTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	err := gs.GetReplicaX().Get(&res, "SELECT * FROM "+store.OrderGiftCardTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.OrderGiftCardTableName, id)
@@ -63,15 +60,14 @@ func (gs *SqlGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error)
 }
 
 // BulkUpsert upserts given order-giftcard relations and returns it
-func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction *gorp.Transaction, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
-	var upsertSelector gorp.SqlExecutor = gs.GetMaster()
+func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
+	var executor store_iface.SqlxExecutor = gs.GetMasterX()
 	if transaction != nil {
-		upsertSelector = transaction
+		executor = transaction
 	}
 
-	var isSaving bool
 	for _, relation := range orderGiftcards {
-		isSaving = false
+		isSaving := false
 
 		if !model.IsValidId(relation.Id) {
 			relation.PreSave()
@@ -87,17 +83,22 @@ func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction *gorp.Transaction, order
 			numUpdated int64
 		)
 		if isSaving {
-			err = upsertSelector.Insert(relation)
-		} else {
-			err = upsertSelector.SelectOne(&giftcard.OrderGiftCard{}, "SELECT * FROM "+store.OrderGiftCardTableName+" WHERE Id = :ID", map[string]interface{}{"ID": relation.Id})
-			if err != nil {
-				if err == sql.ErrNoRows {
-					return nil, store.NewErrNotFound(store.OrderGiftCardTableName, relation.Id)
-				}
-				return nil, errors.Wrapf(err, "failed to find an order-giftcard relation with Id=%s", relation.Id)
-			}
+			query := "INSERT INTO " + store.OrderGiftCardTableName + "(" + gs.ModelFields("").Join(",") + ") VALUES (" + gs.ModelFields(":").Join(",") + ")"
+			_, err = executor.NamedExec(query, relation)
 
-			numUpdated, err = upsertSelector.Update(relation)
+		} else {
+			query := "UPDATE " + store.OrderGiftCardTableName + " SET " + gs.
+				ModelFields("").
+				Map(func(_ int, s string) string {
+					return s + "=:" + s
+				}).
+				Join(",") + " WHERE Id=?"
+
+			var result sql.Result
+			result, err = executor.NamedExec(query, relation)
+			if err == nil && result != nil {
+				numUpdated, _ = result.RowsAffected()
+			}
 		}
 
 		if err != nil {

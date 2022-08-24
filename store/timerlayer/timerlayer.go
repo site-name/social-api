@@ -3384,22 +3384,6 @@ func (s *TimerLayerFileInfoStore) PermanentDeleteByUser(userID string) (int64, e
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) Save(info *file.FileInfo) (*file.FileInfo, error) {
-	start := timemodule.Now()
-
-	result, err := s.FileInfoStore.Save(info)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerFileInfoStore) SetContent(fileID string, content string) error {
 	start := timemodule.Now()
 
@@ -3592,7 +3576,7 @@ func (s *TimerLayerFulfillmentLineStore) Save(fulfillmentLine *order.Fulfillment
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
+func (s *TimerLayerGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardStore.BulkUpsert(transaction, giftCards...)
@@ -3624,7 +3608,7 @@ func (s *TimerLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]st
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+func (s *TimerLayerGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardStore.FilterByOption(transaction, option)
@@ -3704,7 +3688,7 @@ func (s *TimerLayerGiftCardCheckoutStore) Save(giftcardOrder *giftcard.GiftCardC
 	return result, err
 }
 
-func (s *TimerLayerGiftCardOrderStore) BulkUpsert(transaction *gorp.Transaction, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
+func (s *TimerLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardOrderStore.BulkUpsert(transaction, orderGiftcards...)
@@ -3752,7 +3736,7 @@ func (s *TimerLayerGiftCardOrderStore) Save(giftcardOrder *giftcard.OrderGiftCar
 	return result, err
 }
 
-func (s *TimerLayerGiftcardEventStore) BulkUpsert(transaction *gorp.Transaction, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) {
+func (s *TimerLayerGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftcardEventStore.BulkUpsert(transaction, events...)
@@ -3798,22 +3782,6 @@ func (s *TimerLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, 
 		s.Root.Metrics.ObserveStoreMethodDuration("GiftcardEventStore.Get", success, elapsed)
 	}
 	return result, err
-}
-
-func (s *TimerLayerGiftcardEventStore) Ordering() string {
-	start := timemodule.Now()
-
-	result := s.GiftcardEventStore.Ordering()
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if true {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("GiftcardEventStore.Ordering", success, elapsed)
-	}
-	return result
 }
 
 func (s *TimerLayerGiftcardEventStore) Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error) {

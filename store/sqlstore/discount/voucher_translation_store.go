@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -14,23 +15,24 @@ type SqlVoucherTranslationStore struct {
 }
 
 func NewSqlVoucherTranslationStore(sqlStore store.Store) store.VoucherTranslationStore {
-	vts := &SqlVoucherTranslationStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.VoucherTranslation{}, store.VoucherTranslationTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("VoucherID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.VOUCHER_NAME_MAX_LENGTH)
-		table.ColMap("LanguageCode").SetMaxSize(10)
-
-		table.SetUniqueTogether("LanguageCode", "VoucherID")
-	}
-
-	return vts
+	return &SqlVoucherTranslationStore{sqlStore}
 }
 
-func (vts *SqlVoucherTranslationStore) CreateIndexesIfNotExists() {
-	vts.CreateForeignKeyIfNotExists(store.VoucherTranslationTableName, "VoucherID", store.VoucherTableName, "Id", true)
+func (s *SqlVoucherTranslationStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"LanguageCode",
+		"Name",
+		"VoucherID",
+		"CreateAt",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Save inserts given translation into database and returns it
@@ -40,7 +42,8 @@ func (vts *SqlVoucherTranslationStore) Save(translation *product_and_discount.Vo
 		return nil, err
 	}
 
-	err := vts.GetMaster().Insert(translation)
+	query := "INSERT INTO " + store.VoucherTranslationTableName + "(" + vts.ModelFields("").Join(",") + ") VALUES (" + vts.ModelFields(":").Join(",") + ")"
+	_, err := vts.GetMasterX().NamedExec(query, translation)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to save voucher translation with id=%s", translation.Id)
 	}
@@ -51,7 +54,7 @@ func (vts *SqlVoucherTranslationStore) Save(translation *product_and_discount.Vo
 // Get finds and returns a voucher translation with given id
 func (vts *SqlVoucherTranslationStore) Get(id string) (*product_and_discount.VoucherTranslation, error) {
 	var res product_and_discount.VoucherTranslation
-	err := vts.GetReplica().SelectOne(&res, "SELECT * FROM "+store.VoucherTranslationTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	err := vts.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherTranslationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherTranslationTableName, id)
@@ -89,7 +92,7 @@ func (vts *SqlVoucherTranslationStore) FilterByOption(option *product_and_discou
 	}
 
 	var res []*product_and_discount.VoucherTranslation
-	_, err = vts.GetReplica().Select(&res, queryString, args...)
+	err = vts.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find voucher translations with given options")
 	}
@@ -107,7 +110,7 @@ func (vts *SqlVoucherTranslationStore) GetByOption(option *product_and_discount.
 	}
 
 	var res product_and_discount.VoucherTranslation
-	err = vts.GetReplica().SelectOne(&res, queryString, args...)
+	err = vts.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherTranslationTableName, "options")

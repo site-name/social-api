@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -13,32 +14,20 @@ type SqlVoucherCollectionStore struct {
 }
 
 func NewSqlVoucherCollectionStore(s store.Store) store.VoucherCollectionStore {
-	vcs := &SqlVoucherCollectionStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.VoucherCollection{}, store.VoucherCollectionTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("VoucherID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CollectionID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("VoucherID", "CollectionID")
-	}
-
-	return vcs
+	return &SqlVoucherCollectionStore{s}
 }
 
-func (vcs *SqlVoucherCollectionStore) TableName(withField string) string {
-	name := "VoucherCollections"
-	if withField != "" {
-		name += "." + withField
+func (s *SqlVoucherCollectionStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id", "VoucherID", "CollectionID",
+	}
+	if prefix == "" {
+		return res
 	}
 
-	return name
-}
-
-func (vcs *SqlVoucherCollectionStore) CreateIndexesIfNotExists() {
-	vcs.CreateForeignKeyIfNotExists(store.VoucherCollectionTableName, "VoucherID", store.VoucherTableName, "Id", true)
-	vcs.CreateForeignKeyIfNotExists(store.VoucherCollectionTableName, "CollectionID", store.ProductCollectionTableName, "Id", true)
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Upsert saves or updates given voucher collection then returns it with an error
@@ -48,6 +37,7 @@ func (vcs *SqlVoucherCollectionStore) Upsert(voucherCollection *product_and_disc
 		voucherCollection.PreSave()
 		saving = true
 	}
+
 	if err := voucherCollection.IsValid(); err != nil {
 		return nil, err
 	}
@@ -57,9 +47,22 @@ func (vcs *SqlVoucherCollectionStore) Upsert(voucherCollection *product_and_disc
 		numUpdated int64
 	)
 	if saving {
-		err = vcs.GetMaster().Insert(voucherCollection)
+		query := "INSERT INTO " + store.VoucherCollectionTableName + "(" + vcs.ModelFields("").Join(",") + ") VALUES (" + vcs.ModelFields(":").Join(",") + ")"
+		_, err = vcs.GetMasterX().NamedExec(query, voucherCollection)
+
 	} else {
-		numUpdated, err = vcs.GetMaster().Update(voucherCollection)
+		query := "UPDATE " + store.VoucherCollectionTableName + " SET " + vcs.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = vcs.GetMasterX().NamedExec(query, voucherCollection)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -67,7 +70,9 @@ func (vcs *SqlVoucherCollectionStore) Upsert(voucherCollection *product_and_disc
 			return nil, store.NewErrInvalidInput(store.VoucherCollectionTableName, "VoucherID/CollectionID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to upsert voucher-collection relation with id=%s", voucherCollection.Id)
-	} else if numUpdated > 1 {
+	}
+
+	if numUpdated > 1 {
 		return nil, errors.Errorf("multiple voucher-collection relations updated: %d instead of 1", numUpdated)
 	}
 
@@ -77,7 +82,7 @@ func (vcs *SqlVoucherCollectionStore) Upsert(voucherCollection *product_and_disc
 // Get finds a voucher collection with given id, then returns it with an error
 func (vcs *SqlVoucherCollectionStore) Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error) {
 	var res product_and_discount.VoucherCollection
-	err := vcs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.VoucherCollectionTableName+" WHERE Id = :ID", map[string]interface{}{"ID": voucherCollectionID})
+	err := vcs.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherCollectionTableName+" WHERE Id = ?", voucherCollectionID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherCollectionTableName, voucherCollectionID)

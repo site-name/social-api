@@ -3643,24 +3643,6 @@ func (s *OpenTracingLayerFileInfoStore) PermanentDeleteByUser(userID string) (in
 	return result, err
 }
 
-func (s *OpenTracingLayerFileInfoStore) Save(info *file.FileInfo) (*file.FileInfo, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.FileInfoStore.Save(info)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayerFileInfoStore) SetContent(fileID string, content string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.SetContent")
@@ -3877,7 +3859,7 @@ func (s *OpenTracingLayerFulfillmentLineStore) Save(fulfillmentLine *order.Fulfi
 	return result, err
 }
 
-func (s *OpenTracingLayerGiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
+func (s *OpenTracingLayerGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
@@ -3913,7 +3895,7 @@ func (s *OpenTracingLayerGiftCardStore) DeactivateOrderGiftcards(orderID string)
 	return result, err
 }
 
-func (s *OpenTracingLayerGiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+func (s *OpenTracingLayerGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -4003,7 +3985,7 @@ func (s *OpenTracingLayerGiftCardCheckoutStore) Save(giftcardOrder *giftcard.Gif
 	return result, err
 }
 
-func (s *OpenTracingLayerGiftCardOrderStore) BulkUpsert(transaction *gorp.Transaction, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
+func (s *OpenTracingLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardOrderStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
@@ -4057,7 +4039,7 @@ func (s *OpenTracingLayerGiftCardOrderStore) Save(giftcardOrder *giftcard.OrderG
 	return result, err
 }
 
-func (s *OpenTracingLayerGiftcardEventStore) BulkUpsert(transaction *gorp.Transaction, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) {
+func (s *OpenTracingLayerGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftcardEventStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
@@ -4109,19 +4091,6 @@ func (s *OpenTracingLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardE
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerGiftcardEventStore) Ordering() string {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftcardEventStore.Ordering")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result := s.GiftcardEventStore.Ordering()
-	return result
 }
 
 func (s *OpenTracingLayerGiftcardEventStore) Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error) {

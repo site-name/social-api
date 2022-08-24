@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/store"
 )
@@ -13,22 +14,27 @@ type SqlUploadSessionStore struct {
 }
 
 func NewSqlUploadSessionStore(sqlStore store.Store) store.UploadSessionStore {
-	s := &SqlUploadSessionStore{sqlStore}
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(file.UploadSession{}, store.UploadSessionTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Type").SetMaxSize(32)
-		table.ColMap("UserID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("FileName").SetMaxSize(256)
-		table.ColMap("Path").SetMaxSize(512)
-	}
-	return s
+	return &SqlUploadSessionStore{sqlStore}
 }
 
-func (us SqlUploadSessionStore) CreateIndexesIfNotExists() {
-	us.CreateIndexIfNotExists("idx_uploadsessions_user_id", store.UploadSessionTableName, "Type")
-	us.CreateIndexIfNotExists("idx_uploadsessions_create_at", store.UploadSessionTableName, "CreateAt")
-	us.CreateIndexIfNotExists("idx_uploadsessions_user_id", store.UploadSessionTableName, "UserID")
+func (s *SqlUploadSessionStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"Type",
+		"CreateAt",
+		"UserID",
+		"FileName",
+		"Path",
+		"FileSize",
+		"FileOffset",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (us *SqlUploadSessionStore) Save(session *file.UploadSession) (*file.UploadSession, error) {
@@ -36,7 +42,9 @@ func (us *SqlUploadSessionStore) Save(session *file.UploadSession) (*file.Upload
 	if err := session.IsValid(); err != nil {
 		return nil, err
 	}
-	if err := us.GetMaster().Insert(session); err != nil {
+
+	query := "INSERT INTO " + store.UploadSessionTableName + "(" + us.ModelFields("").Join(",") + ") VALUES (" + us.ModelFields(":").Join(",") + ")"
+	if _, err := us.GetMasterX().NamedExec(query, session); err != nil {
 		return nil, errors.Wrap(err, "SqlUploadSessionStore.Save: failed to insert")
 	}
 	return session, nil
@@ -44,12 +52,17 @@ func (us *SqlUploadSessionStore) Save(session *file.UploadSession) (*file.Upload
 
 func (us *SqlUploadSessionStore) Update(session *file.UploadSession) error {
 	if err := session.IsValid(); err != nil {
-		return errors.Wrap(err, "SqlUploadSessionStore.Update: validation failed")
+		return err
 	}
-	if _, err := us.GetMaster().Update(session); err != nil {
-		if err == sql.ErrNoRows {
-			return store.NewErrNotFound("UploadSession", session.Id)
-		}
+
+	query := "UPDATE " + store.UploadSessionTableName + " SET " + us.
+		ModelFields("").
+		Map(func(_ int, s string) string {
+			return s + "=:" + s
+		}).
+		Join(",") + " WHERE Id=:Id"
+
+	if _, err := us.GetMasterX().NamedExec(query, session); err != nil {
 		return errors.Wrapf(err, "SqlUploadSessionStore.Update: failed to update session with id=%s", session.Id)
 	}
 	return nil
@@ -57,9 +70,9 @@ func (us *SqlUploadSessionStore) Update(session *file.UploadSession) error {
 
 func (us SqlUploadSessionStore) Get(id string) (*file.UploadSession, error) {
 	var session *file.UploadSession
-	if err := us.GetReplica().SelectOne(&session, "SELECT * FROM "+store.UploadSessionTableName+" WHERE Id = :Id", map[string]interface{}{"Id": id}); err != nil {
+	if err := us.GetReplicaX().Get(&session, "SELECT * FROM "+store.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound("UploadSession", id)
+			return nil, store.NewErrNotFound(store.UploadSessionTableName, id)
 		}
 		return nil, errors.Wrapf(err, "SqlUploadSessionStore.Get: failed to select session with id=%s", id)
 	}
@@ -69,10 +82,10 @@ func (us SqlUploadSessionStore) Get(id string) (*file.UploadSession, error) {
 func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*file.UploadSession, error) {
 	var sessions []*file.UploadSession
 
-	if _, err := us.GetReplica().Select(
+	if err := us.GetReplicaX().Select(
 		&sessions,
-		"SELECT * FROM "+store.UploadSessionTableName+" WHERE UserId = :UserId ORDER BY CreateAt ASC",
-		map[string]interface{}{"UserId": userId},
+		"SELECT * FROM "+store.UploadSessionTableName+" WHERE UserId = ? ORDER BY CreateAt ASC",
+		userId,
 	); err != nil {
 		return nil, errors.Wrap(err, "failed to find upload session for user id="+userId)
 	}
@@ -80,8 +93,7 @@ func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*file.UploadSessio
 }
 
 func (us *SqlUploadSessionStore) Delete(id string) error {
-
-	if _, err := us.GetMaster().Exec("DELETE FROM "+store.UploadSessionTableName+" WHERE Id = :Id", map[string]interface{}{"Id": id}); err != nil {
+	if _, err := us.GetMasterX().Exec("DELETE FROM "+store.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
 		return errors.Wrap(err, "failed to delete upload session with id="+id)
 	}
 
