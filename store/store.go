@@ -689,20 +689,14 @@ type (
 // menu
 type (
 	MenuItemTranslationStore interface {
-		CreateIndexesIfNotExists()
 	}
 	MenuStore interface {
-		CreateIndexesIfNotExists()
-		Save(menu *menu.Menu) (*menu.Menu, error)  // Save insert given menu into database and returns it
-		GetById(id string) (*menu.Menu, error)     // GetById returns a menu with given id
-		GetByName(name string) (*menu.Menu, error) // GetByName returns a menu with given name
-		GetBySlug(slug string) (*menu.Menu, error) // GetBySlug returns a menu with given slug
+		Save(menu *menu.Menu) (*menu.Menu, error) // Save insert given menu into database and returns it
+		GetByOptions(options *menu.MenuFilterOptions) (*menu.Menu, error)
 	}
 	MenuItemStore interface {
-		CreateIndexesIfNotExists()
 		Save(menuItem *menu.MenuItem) (*menu.MenuItem, error) // Save insert given menu item into database and returns it
-		GetById(id string) (*menu.MenuItem, error)            // GetById returns a menu item with given id
-		GetByName(name string) (*menu.MenuItem, error)        // GetByName returns a menu item with given name
+		GetByOptions(options *menu.MenuItemFilterOptions) (*menu.MenuItem, error)
 	}
 )
 

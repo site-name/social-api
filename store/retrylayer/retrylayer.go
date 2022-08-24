@@ -4773,51 +4773,11 @@ func (s *RetryLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 
 }
 
-func (s *RetryLayerMenuStore) GetById(id string) (*menu.Menu, error) {
+func (s *RetryLayerMenuStore) GetByOptions(options *menu.MenuFilterOptions) (*menu.Menu, error) {
 
 	tries := 0
 	for {
-		result, err := s.MenuStore.GetById(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerMenuStore) GetByName(name string) (*menu.Menu, error) {
-
-	tries := 0
-	for {
-		result, err := s.MenuStore.GetByName(name)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerMenuStore) GetBySlug(slug string) (*menu.Menu, error) {
-
-	tries := 0
-	for {
-		result, err := s.MenuStore.GetBySlug(slug)
+		result, err := s.MenuStore.GetByOptions(options)
 		if err == nil {
 			return result, nil
 		}
@@ -4853,31 +4813,11 @@ func (s *RetryLayerMenuStore) Save(menu *menu.Menu) (*menu.Menu, error) {
 
 }
 
-func (s *RetryLayerMenuItemStore) GetById(id string) (*menu.MenuItem, error) {
+func (s *RetryLayerMenuItemStore) GetByOptions(options *menu.MenuItemFilterOptions) (*menu.MenuItem, error) {
 
 	tries := 0
 	for {
-		result, err := s.MenuItemStore.GetById(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerMenuItemStore) GetByName(name string) (*menu.MenuItem, error) {
-
-	tries := 0
-	for {
-		result, err := s.MenuItemStore.GetByName(name)
+		result, err := s.MenuItemStore.GetByOptions(options)
 		if err == nil {
 			return result, nil
 		}

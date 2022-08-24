@@ -4088,10 +4088,10 @@ func (s *TimerLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 	return result, err
 }
 
-func (s *TimerLayerMenuStore) GetById(id string) (*menu.Menu, error) {
+func (s *TimerLayerMenuStore) GetByOptions(options *menu.MenuFilterOptions) (*menu.Menu, error) {
 	start := timemodule.Now()
 
-	result, err := s.MenuStore.GetById(id)
+	result, err := s.MenuStore.GetByOptions(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4099,39 +4099,7 @@ func (s *TimerLayerMenuStore) GetById(id string) (*menu.Menu, error) {
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.GetById", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerMenuStore) GetByName(name string) (*menu.Menu, error) {
-	start := timemodule.Now()
-
-	result, err := s.MenuStore.GetByName(name)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.GetByName", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerMenuStore) GetBySlug(slug string) (*menu.Menu, error) {
-	start := timemodule.Now()
-
-	result, err := s.MenuStore.GetBySlug(slug)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.GetBySlug", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.GetByOptions", success, elapsed)
 	}
 	return result, err
 }
@@ -4152,10 +4120,10 @@ func (s *TimerLayerMenuStore) Save(menu *menu.Menu) (*menu.Menu, error) {
 	return result, err
 }
 
-func (s *TimerLayerMenuItemStore) GetById(id string) (*menu.MenuItem, error) {
+func (s *TimerLayerMenuItemStore) GetByOptions(options *menu.MenuItemFilterOptions) (*menu.MenuItem, error) {
 	start := timemodule.Now()
 
-	result, err := s.MenuItemStore.GetById(id)
+	result, err := s.MenuItemStore.GetByOptions(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4163,23 +4131,7 @@ func (s *TimerLayerMenuItemStore) GetById(id string) (*menu.MenuItem, error) {
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("MenuItemStore.GetById", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerMenuItemStore) GetByName(name string) (*menu.MenuItem, error) {
-	start := timemodule.Now()
-
-	result, err := s.MenuItemStore.GetByName(name)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("MenuItemStore.GetByName", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuItemStore.GetByOptions", success, elapsed)
 	}
 	return result, err
 }

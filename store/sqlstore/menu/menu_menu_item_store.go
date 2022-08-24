@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/store"
 )
@@ -13,28 +14,30 @@ type SqlMenuItemStore struct {
 }
 
 func NewSqlMenuItemStore(s store.Store) store.MenuItemStore {
-	is := &SqlMenuItemStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(menu.MenuItem{}, store.MenuItemTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("MenuID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ParentID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CategoryID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("PageID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CollectionID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(menu.MENU_ITEM_NAME_MAX_LENGTH)
-		table.ColMap("Url").SetMaxSize(menu.MENU_ITEM_URL_MAX_LENGTH)
-	}
-	return is
+	return &SqlMenuItemStore{s}
 }
 
-func (is *SqlMenuItemStore) CreateIndexesIfNotExists() {
-	is.CreateForeignKeyIfNotExists(store.MenuItemTableName, "MenuID", store.MenuTableName, "Id", true)
-	is.CreateForeignKeyIfNotExists(store.MenuItemTableName, "ParentID", store.MenuItemTableName, "Id", true)
-	is.CreateForeignKeyIfNotExists(store.MenuItemTableName, "CategoryID", store.ProductCategoryTableName, "Id", true)
-	is.CreateForeignKeyIfNotExists(store.MenuItemTableName, "CollectionID", store.ProductCollectionTableName, "Id", true)
-	is.CreateForeignKeyIfNotExists(store.MenuItemTableName, "PageID", store.PageTableName, "Id", true)
+func (s *SqlMenuItemStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"MenuID",
+		"Name",
+		"ParentID",
+		"Url",
+		"CategoryID",
+		"CollectionID",
+		"PageID",
+		"Metadata",
+		"PrivateMetadata",
+		"SortOrder",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (is *SqlMenuItemStore) Save(item *menu.MenuItem) (*menu.MenuItem, error) {
@@ -43,35 +46,43 @@ func (is *SqlMenuItemStore) Save(item *menu.MenuItem) (*menu.MenuItem, error) {
 		return nil, err
 	}
 
-	if err := is.GetMaster().Insert(item); err != nil {
+	query := "INSERT INTO " + store.MenuItemTableName + "(" + is.ModelFields("").Join(",") + ") VALUES (" + is.ModelFields(":").Join(",") + ")"
+	if _, err := is.GetMasterX().NamedExec(query, item); err != nil {
 		return nil, errors.Wrapf(err, "failed to save menu item with id=%s", item.Id)
 	}
 	return item, nil
 }
 
-func (is *SqlMenuItemStore) GetById(id string) (*menu.MenuItem, error) {
-	var res menu.MenuItem
-	err := is.GetReplica().SelectOne(&res, "SELECT * FROM "+store.MenuItemTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.MenuItemTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find menu item with id=%s", id)
+func (is *SqlMenuItemStore) GetByOptions(options *menu.MenuItemFilterOptions) (*menu.MenuItem, error) {
+	query := is.GetQueryBuilder().
+		Select("*").
+		From(store.MenuItemTableName)
+
+	// parse options
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+	if options.Name != nil {
+		query = query.Where(options.Name)
+	}
+	if options.MenuID != nil {
+		query = query.Where(options.MenuID)
 	}
 
-	return &res, nil
-}
-
-func (is *SqlMenuItemStore) GetByName(name string) (*menu.MenuItem, error) {
-	var menuItem *menu.MenuItem
-
-	err := is.GetReplica().SelectOne(&menuItem, "SELECT * FROM "+store.MenuItemTableName+" WHERE Name = :Name", map[string]interface{}{"Name": name})
+	queryString, args, err := query.ToSql()
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.MenuItemTableName, "name="+name)
-		}
-		return nil, errors.Wrapf(err, "failed to find menu item with name=%s", name)
+		return nil, errors.Wrap(err, "GetByOptions_ToSql")
 	}
 
-	return menuItem, nil
+	var menuItem menu.MenuItem
+
+	err = is.GetReplicaX().Get(&menuItem, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound(store.MenuItemTableName, "")
+		}
+		return nil, errors.Wrap(err, "failed to find menu item with given options")
+	}
+
+	return &menuItem, nil
 }

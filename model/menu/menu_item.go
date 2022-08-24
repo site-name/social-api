@@ -1,9 +1,9 @@
 package menu
 
 import (
-	"io"
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -24,6 +24,12 @@ type MenuItem struct {
 	PageID       *string `json:"page_id"`
 	model.ModelMetadata
 	model.Sortable
+}
+
+type MenuItemFilterOptions struct {
+	Id     squirrel.Sqlizer
+	Name   squirrel.Sqlizer
+	MenuID squirrel.Sqlizer
 }
 
 func (m *MenuItem) IsValid() *model.AppError {
@@ -69,14 +75,4 @@ func (m *MenuItem) PreSave() {
 
 func (m *MenuItem) PreUpdate() {
 	m.Name = model.SanitizeUnicode(m.Name)
-}
-
-func (m *MenuItem) ToJSON() string {
-	return model.ModelToJson(m)
-}
-
-func MenuItemFromJson(data io.Reader) *MenuItem {
-	var m MenuItem
-	model.ModelFromJson(&m, data)
-	return &m
 }

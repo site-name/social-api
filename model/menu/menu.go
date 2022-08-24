@@ -3,6 +3,7 @@ package menu
 import (
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/sitename/sitename/model"
 )
@@ -19,6 +20,12 @@ type Menu struct {
 	Slug     string `json:"slug"`
 	CreateAt int64  `json:"create_at"` // this field can be used for ordering
 	model.ModelMetadata
+}
+
+type MenuFilterOptions struct {
+	Id   squirrel.Sqlizer
+	Name squirrel.Sqlizer
+	Slug squirrel.Sqlizer
 }
 
 func (m *Menu) IsValid() *model.AppError {
