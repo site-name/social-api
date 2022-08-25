@@ -14,22 +14,23 @@ type SqlProductVariantTranslationStore struct {
 }
 
 func NewSqlProductVariantTranslationStore(s store.Store) store.ProductVariantTranslationStore {
-	pvts := &SqlProductVariantTranslationStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.ProductVariantTranslation{}, store.ProductVariantTranslationTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH)
-		table.ColMap("ProductVariantID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.PRODUCT_VARIANT_NAME_MAX_LENGTH)
-
-		table.SetUniqueTogether("LanguageCode", "ProductVariantID")
-	}
-	return pvts
+	return &SqlProductVariantTranslationStore{s}
 }
 
-func (ps *SqlProductVariantTranslationStore) CreateIndexesIfNotExists() {
-	ps.CreateForeignKeyIfNotExists(store.ProductVariantTranslationTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
+func (s *SqlProductVariantTranslationStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"LanguageCode",
+		"ProductVariantID",
+		"Name",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Upsert inserts or updates given translation then returns it
@@ -52,14 +53,22 @@ func (ps *SqlProductVariantTranslationStore) Upsert(translation *product_and_dis
 		numUpdated int64
 	)
 	if isSaving {
-		err = ps.GetMaster().Insert(translation)
-	} else {
-		_, err = ps.Get(translation.Id)
-		if err != nil {
-			return nil, err
-		}
+		query := "INSERT INTO " + store.ProductVariantTranslationTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+		_, err = ps.GetMasterX().NamedExec(query, translation)
 
-		numUpdated, err = ps.GetMaster().Update(translation)
+	} else {
+		query := "UPDATE " + store.ProductVariantTranslationTableName + " SET " + ps.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = ps.GetMasterX().NamedExec(query, translation)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -79,7 +88,7 @@ func (ps *SqlProductVariantTranslationStore) Upsert(translation *product_and_dis
 // Get finds and returns 1 product variant translation with given id
 func (ps *SqlProductVariantTranslationStore) Get(translationID string) (*product_and_discount.ProductVariantTranslation, error) {
 	var res product_and_discount.ProductVariantTranslation
-	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ProductVariantTranslationTableName+" WHERE Id = :ID", map[string]interface{}{"ID": translationID})
+	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.ProductVariantTranslationTableName+" WHERE Id = ?", translationID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductVariantTranslationTableName, translationID)
@@ -116,7 +125,7 @@ func (ps *SqlProductVariantTranslationStore) FilterByOption(option *product_and_
 	}
 
 	var res []*product_and_discount.ProductVariantTranslation
-	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	err = ps.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product variant translations with given options")
 	}

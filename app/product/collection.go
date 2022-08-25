@@ -55,8 +55,8 @@ func (a *ServiceProduct) PublishedCollections(channelSlug string, shopID string)
 	return a.CollectionsByOption(&product_and_discount.CollectionFilterOption{
 		ShopID: shopID,
 		ChannelListingPublicationDate: squirrel.Or{
-			squirrel.LtOrEq{store.ProductCollectionChannelListingTableName + ".PublicationDate": today},
-			squirrel.Eq{store.ProductCollectionChannelListingTableName + ".PublicationDate": nil},
+			squirrel.LtOrEq{store.CollectionChannelListingTableName + ".PublicationDate": today},
+			squirrel.Eq{store.CollectionChannelListingTableName + ".PublicationDate": nil},
 		},
 		ChannelListingIsPublished:     model.NewBool(true),
 		ChannelListingChannelSlug:     squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug},

@@ -26,7 +26,7 @@ func (a *ServiceProduct) GetDefaultDigitalContentSettings(aShop *shop.Shop) *sho
 // to check if url is still valid.
 func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *product_and_discount.DigitalContentUrl) (bool, *model.AppError) {
 	digitalContent, appErr := a.DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
-		Id: squirrel.Eq{store.ProductDigitalContentTableName + ".Id": contentURL.ContentID},
+		Id: squirrel.Eq{store.DigitalContentTableName + ".Id": contentURL.ContentID},
 	})
 	if appErr != nil {
 		return false, appErr

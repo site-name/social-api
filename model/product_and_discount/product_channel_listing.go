@@ -42,34 +42,6 @@ type ProductChannelListingFilterOption struct {
 	PrefetchChannel      bool // this tell store to prefetch channel instances also
 }
 
-type ProductChannelListings []*ProductChannelListing
-
-type WhichID uint8
-
-const (
-	Ids WhichID = iota
-	ChannelIDs
-	ProductIDs
-)
-
-func (p ProductChannelListings) GetIDs(whichID WhichID) []string {
-	var res []string
-	for _, item := range p {
-		if item != nil {
-			switch whichID {
-			case Ids:
-				res = append(res, item.Id)
-			case ProductIDs:
-				res = append(res, item.ProductID)
-			case ChannelIDs:
-				res = append(res, item.ChannelID)
-			}
-		}
-	}
-
-	return res
-}
-
 func (p *ProductChannelListing) IsAvailableForPurchase() bool {
 	return p.AvailableForPurchase != nil && (p.AvailableForPurchase).Before(util.StartOfDay(time.Now().UTC()))
 }
@@ -139,6 +111,32 @@ func (p *ProductChannelListing) DeepCopy() *ProductChannelListing {
 		res.Channel = p.Channel.DeepCopy()
 	}
 	return &res
+}
+
+type ProductChannelListings []*ProductChannelListing
+
+func (p ProductChannelListings) IDs() []string {
+	res := make([]string, len(p))
+	for idx, item := range p {
+		res[idx] = item.Id
+	}
+	return res
+}
+
+func (p ProductChannelListings) ChannelIDs() []string {
+	res := make([]string, len(p))
+	for idx, item := range p {
+		res[idx] = item.ChannelID
+	}
+	return res
+}
+
+func (p ProductChannelListings) ProductIDs() []string {
+	res := make([]string, len(p))
+	for idx, item := range p {
+		res[idx] = item.ProductID
+	}
+	return res
 }
 
 func (p ProductChannelListings) DeepCopy() ProductChannelListings {

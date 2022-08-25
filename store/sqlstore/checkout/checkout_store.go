@@ -365,12 +365,12 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	// check if we can proceed
 	if len(productIDs) > 0 {
 		query, args, _ := cs.GetQueryBuilder().
-			Select(cs.Collection().ModelFields()...).
-			From(store.ProductCollectionTableName).
+			Select(cs.Collection().ModelFields(store.CollectionTableName+".")...).
+			From(store.CollectionTableName).
 			Column(squirrel.Alias(squirrel.Expr("ProductCollections.ProductID"), "PrefetchRelatedValProductID")). // extra collumn
 			InnerJoin(store.CollectionProductRelationTableName+" ON (ProductCollections.CollectionID = Collections.Id)").
 			Where("ProductCollections.ProductID IN ?", productIDs).
-			OrderBy(store.TableOrderingMap[store.ProductCollectionTableName]).
+			OrderBy(store.TableOrderingMap[store.CollectionTableName]).
 			ToSql()
 
 		err = cs.GetReplicaX().Select(&collectionXs, query, args...)

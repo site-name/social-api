@@ -1,7 +1,6 @@
 package product
 
 import (
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -10,20 +9,5 @@ type SqlCollectionChannelListingStore struct {
 }
 
 func NewSqlCollectionChannelListingStore(s store.Store) store.CollectionChannelListingStore {
-	ccls := &SqlCollectionChannelListingStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.CollectionChannelListing{}, store.ProductCollectionChannelListingTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CollectionID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("CollectionID", "ChannelID")
-	}
-	return ccls
-}
-
-func (ps *SqlCollectionChannelListingStore) CreateIndexesIfNotExists() {
-	ps.CreateForeignKeyIfNotExists(store.ProductCollectionChannelListingTableName, "CollectionID", store.ProductCollectionTableName, "Id", true)
-	ps.CreateForeignKeyIfNotExists(store.ProductCollectionChannelListingTableName, "ChannelID", store.ChannelTableName, "Id", true)
+	return &SqlCollectionChannelListingStore{s}
 }

@@ -15,42 +15,30 @@ type SqlCollectionStore struct {
 }
 
 func NewSqlCollectionStore(s store.Store) store.CollectionStore {
-	cs := &SqlCollectionStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.Collection{}, store.ProductCollectionTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.COLLECTION_NAME_MAX_LENGTH)
-		table.ColMap("Slug").SetMaxSize(product_and_discount.COLLECTION_SLUG_MAX_LENGTH)
-		table.ColMap("BackgroundImage").SetMaxSize(model.URL_LINK_MAX_LENGTH)
-		table.ColMap("BackgroundImageAlt").SetMaxSize(product_and_discount.COLLECTION_BACKGROUND_ALT_MAX_LENGTH)
-
-		s.CommonSeoMaxLength(table)
-	}
-	return cs
+	return &SqlCollectionStore{s}
 }
 
-func (ps *SqlCollectionStore) CreateIndexesIfNotExists() {
-	ps.CreateIndexIfNotExists("idx_collections_name", store.ProductCollectionTableName, "Name")
-	ps.CreateIndexIfNotExists("idx_collections_name_lower_textpattern", store.ProductCollectionTableName, "lower(Name) text_pattern_ops")
-	ps.CreateForeignKeyIfNotExists(store.ProductCollectionTableName, "ShopID", store.ShopTableName, "Id", true)
-}
-
-func (ps *SqlCollectionStore) ModelFields() []string {
-	return []string{
-		"Collections.Id",
-		"Collections.ShopID",
-		"Collections.Name",
-		"Collections.Slug",
-		"Collections.BackgroundImage",
-		"Collections.BackgroundImageAlt",
-		"Collections.Description",
-		"Collections.Metadata",
-		"Collections.PrivateMetadata",
-		"Collections.SeoTitle",
-		"Collections.SeoDescription",
+func (ps *SqlCollectionStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"ShopID",
+		"Name",
+		"Slug",
+		"BackgroundImage",
+		"BackgroundImageAlt",
+		"Description",
+		"Metadata",
+		"PrivateMetadata",
+		"SeoTitle",
+		"SeoDescription",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (ps *SqlCollectionStore) ScanFields(col product_and_discount.Collection) []interface{} {
@@ -72,6 +60,7 @@ func (ps *SqlCollectionStore) ScanFields(col product_and_discount.Collection) []
 // Upsert depends on given collection's Id property to decide update or insert the collection
 func (cs *SqlCollectionStore) Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error) {
 	var isSaving bool
+
 	if collection.Id == "" {
 		isSaving = true
 		collection.PreSave()
@@ -88,14 +77,22 @@ func (cs *SqlCollectionStore) Upsert(collection *product_and_discount.Collection
 		numUpdated int64
 	)
 	if isSaving {
-		err = cs.GetMaster().Insert(collection)
-	} else {
-		_, err = cs.Get(collection.Id)
-		if err != nil {
-			return nil, err
-		}
+		query := "INSERT INTO " + store.CollectionTableName + "(" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
+		_, err = cs.GetMasterX().NamedExec(query, collection)
 
-		numUpdated, err = cs.GetMaster().Update(collection)
+	} else {
+		query := "UPDATE " + store.CollectionTableName + " SET " + cs.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = cs.GetMasterX().NamedExec(query, collection)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -111,10 +108,10 @@ func (cs *SqlCollectionStore) Upsert(collection *product_and_discount.Collection
 // Get finds and returns collection with given collectionID
 func (cs *SqlCollectionStore) Get(collectionID string) (*product_and_discount.Collection, error) {
 	var res product_and_discount.Collection
-	err := cs.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ProductCollectionTableName+" WHERE Id = :ID", map[string]interface{}{"ID": collectionID})
+	err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+store.CollectionTableName+" WHERE Id = ?", collectionID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductCollectionTableName, collectionID)
+			return nil, store.NewErrNotFound(store.CollectionTableName, collectionID)
 		}
 		return nil, errors.Wrapf(err, "failed to find collection with id=%s", collectionID)
 	}
@@ -128,18 +125,18 @@ func (cs *SqlCollectionStore) Get(collectionID string) (*product_and_discount.Co
 func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) {
 	var res []*product_and_discount.Collection
 
-	if option.SelectAll {
-		_, err := cs.GetReplica().Select(&res, "SELECT * FROM "+store.ProductCollectionTableName+" WHERE ShopID = :ShopID", map[string]interface{}{"ShopID": option.ShopID})
+	if option.SelectAll && model.IsValidId(option.ShopID) {
+		err := cs.GetReplicaX().Select(&res, "SELECT * FROM "+store.CollectionTableName+" WHERE ShopID = ?", option.ShopID)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to find collections with given option")
+			return nil, errors.Wrap(err, "failed to find collections of given shop")
 		}
 		return res, nil
 	}
 
 	query := cs.GetQueryBuilder().
-		Select(cs.ModelFields()...).
-		From(store.ProductCollectionTableName).
-		OrderBy(store.TableOrderingMap[store.ProductCollectionTableName])
+		Select(cs.ModelFields(store.CollectionTableName + ".")...).
+		From(store.CollectionTableName).
+		OrderBy(store.TableOrderingMap[store.CollectionTableName])
 
 	// parse options
 	if option.Id != nil {
@@ -173,22 +170,24 @@ func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.Collec
 	)
 	if option.ChannelListingPublicationDate != nil {
 		query = query.
-			InnerJoin(store.ProductCollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)").
+			InnerJoin(store.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)").
 			Where(option.ChannelListingPublicationDate)
 
 		joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
 	}
+
 	if option.ChannelListingIsPublished != nil {
 		if !joined_CollectionChannelListingTable {
-			query = query.InnerJoin(store.ProductCollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
+			query = query.InnerJoin(store.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
 
 			joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
 		}
 		query = query.Where(squirrel.Eq{"CollectionChannelListings.IsPublished": *option.ChannelListingIsPublished})
 	}
+
 	if option.ChannelListingChannelSlug != nil {
 		if !joined_CollectionChannelListingTable {
-			query = query.InnerJoin(store.ProductCollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
+			query = query.InnerJoin(store.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
 
 			joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
 		}
@@ -198,9 +197,10 @@ func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.Collec
 
 		joined_ChannelTable = true // indicate joined channel table
 	}
+
 	if option.ChannelListingChannelIsActive != nil {
 		if !joined_CollectionChannelListingTable {
-			query = query.InnerJoin(store.ProductCollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
+			query = query.InnerJoin(store.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
 
 			joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
 		}
@@ -216,9 +216,9 @@ func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.Collec
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	_, err = cs.GetReplica().Select(&res, queryString, args...)
+	err = cs.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find collections with given option")
+		return nil, errors.Wrap(err, "failed to find collections with given options")
 	}
 
 	return res, nil

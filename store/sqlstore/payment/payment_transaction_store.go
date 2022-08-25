@@ -4,11 +4,11 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlPaymentTransactionStore struct {
@@ -16,43 +16,40 @@ type SqlPaymentTransactionStore struct {
 }
 
 func NewSqlPaymentTransactionStore(s store.Store) store.PaymentTransactionStore {
-	ps := &SqlPaymentTransactionStore{s}
+	return &SqlPaymentTransactionStore{s}
+}
 
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(payment.PaymentTransaction{}, ps.TableName("")).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("PaymentID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Token").SetMaxSize(payment.MAX_LENGTH_PAYMENT_TOKEN)
-		table.ColMap("Kind").SetMaxSize(payment.TRANSACTION_KIND_MAX_LENGTH)
-		table.ColMap("Currency").SetMaxSize(model.CURRENCY_CODE_MAX_LENGTH)
-		table.ColMap("Error").SetMaxSize(payment.TRANSACTION_ERROR_MAX_LENGTH)
-		table.ColMap("CustomerID").SetMaxSize(payment.TRANSACTION_CUSTOMER_ID_MAX_LENGTH)
+func (s *SqlPaymentTransactionStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"CreateAt",
+		"PaymentID",
+		"Token",
+		"Kind",
+		"IsSuccess",
+		"ActionRequired",
+		"ActionRequiredData",
+		"Currency",
+		"Amount",
+		"Error",
+		"CustomerID",
+		"GatewayResponse",
+		"AlreadyProcessed",
 	}
-	return ps
-}
-
-func (ps *SqlPaymentTransactionStore) TableName(withField string) string {
-	name := "Transactions"
-	if withField != "" {
-		name += "." + withField
+	if prefix == "" {
+		return res
 	}
 
-	return name
-}
-
-func (ps *SqlPaymentTransactionStore) OrderBy() string {
-	return "CreateAt ASC"
-}
-
-func (ps *SqlPaymentTransactionStore) CreateIndexesIfNotExists() {
-	ps.CreateForeignKeyIfNotExists(ps.TableName(""), "PaymentID", store.PaymentTableName, "Id", false)
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Save insert given transaction into database then returns it
-func (ps *SqlPaymentTransactionStore) Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
-	var upsertor gorp.SqlExecutor = ps.GetMaster()
+func (ps *SqlPaymentTransactionStore) Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
-		upsertor = transaction
+		executor = transaction
 	}
 
 	paymentTransaction.PreSave()
@@ -60,7 +57,8 @@ func (ps *SqlPaymentTransactionStore) Save(transaction *gorp.Transaction, paymen
 		return nil, err
 	}
 
-	if err := upsertor.Insert(paymentTransaction); err != nil {
+	query := "INSERT INTO " + store.TransactionTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+	if _, err := executor.NamedExec(query, paymentTransaction); err != nil {
 		return nil, errors.Wrapf(err, "failed to save payment paymentTransaction with id=%s", paymentTransaction.Id)
 	}
 
@@ -74,20 +72,19 @@ func (ps *SqlPaymentTransactionStore) Update(transaction *payment.PaymentTransac
 		return nil, err
 	}
 
-	oldTran, err := ps.Get(transaction.Id)
-	if err != nil {
-		return nil, err
-	}
+	query := "UPDATE " + store.TransactionTableName + " SET " + ps.
+		ModelFields("").
+		Map(func(_ int, s string) string {
+			return s + "=:" + s
+		}).
+		Join(",") + " WHERE Id=:Id"
 
-	transaction.CreateAt = oldTran.CreateAt
-	transaction.PaymentID = oldTran.PaymentID
-
-	numUpdates, err := ps.GetMaster().Update(transaction)
+	result, err := ps.GetMasterX().NamedExec(query, transaction)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update transaction with id=%s", transaction.Id)
 	}
 
-	if numUpdates > 1 {
+	if numUpdates, _ := result.RowsAffected(); numUpdates > 1 {
 		return nil, errors.Errorf("multiple transactions updated: %d", numUpdates)
 	}
 
@@ -96,10 +93,10 @@ func (ps *SqlPaymentTransactionStore) Update(transaction *payment.PaymentTransac
 
 func (ps *SqlPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
 	var res payment.PaymentTransaction
-	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+ps.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.TransactionTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(ps.TableName(""), id)
+			return nil, store.NewErrNotFound(store.TransactionTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find payment transaction withh id=%s", id)
 	}
@@ -111,8 +108,8 @@ func (ps *SqlPaymentTransactionStore) Get(id string) (*payment.PaymentTransactio
 func (ps *SqlPaymentTransactionStore) FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) {
 	query := ps.GetQueryBuilder().
 		Select("*").
-		From(ps.TableName("")).
-		OrderBy(ps.OrderBy())
+		From(store.TransactionTableName).
+		OrderBy(store.TableOrderingMap[store.TransactionTableName])
 
 	// parse options:
 	if option.Id != nil {
@@ -137,7 +134,7 @@ func (ps *SqlPaymentTransactionStore) FilterByOption(option *payment.PaymentTran
 	}
 
 	var res []*payment.PaymentTransaction
-	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	err = ps.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find payment transactions based on given option")
 	}

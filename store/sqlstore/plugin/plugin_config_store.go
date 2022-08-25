@@ -17,35 +17,26 @@ type SqlPluginConfigurationStore struct {
 }
 
 func NewSqlPluginConfigurationStore(s store.Store) store.PluginConfigurationStore {
-	ps := &SqlPluginConfigurationStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(plugins.PluginConfiguration{}, ps.TableName("")).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ChannelID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(plugins.PLUGIN_CONFIGURATION_COMMON_MAX_LENGHT)
-		table.ColMap("Identifier").SetMaxSize(plugins.PLUGIN_CONFIGURATION_COMMON_MAX_LENGHT)
-		table.ColMap("Description").SetMaxSize(plugins.PLUGIN_CONFIGURATION_DESCRIPTION_MAX_LENGHT)
-
-		table.SetUniqueTogether("Identifier", "ChannelID")
-	}
-	return ps
+	return &SqlPluginConfigurationStore{s}
 }
 
-func (p *SqlPluginConfigurationStore) CreateIndexesIfNotExists() {
-	p.CreateIndexIfNotExists("idx_plugin_configurations_identifier", p.TableName(""), "Identifier")
-	p.CreateIndexIfNotExists("idx_plugin_configurations_name", p.TableName(""), "Name")
-	p.CreateIndexIfNotExists("idx_plugin_configurations_lower_textpattern_name", p.TableName(""), "lower(Name) text_pattern_ops")
-}
-
-func (p *SqlPluginConfigurationStore) TableName(withField string) string {
-	name := "PluginConfigurations"
-
-	if withField != "" {
-		return name + "." + withField
+func (s *SqlPluginConfigurationStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"Identifier",
+		"Name",
+		"ChannelID",
+		"Description",
+		"Active",
+		"Configuration",
+	}
+	if prefix == "" {
+		return res
 	}
 
-	return name
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Upsert inserts or updates given plugin configuration and returns it
@@ -68,19 +59,27 @@ func (p *SqlPluginConfigurationStore) Upsert(config *plugins.PluginConfiguration
 		numUpdated int64
 	)
 	if isSaving {
-		err = p.GetMaster().Insert(config)
-	} else {
-		_, err = p.Get(config.Id)
-		if err != nil {
-			return nil, err
-		}
+		query := "INSERT INTO " + store.PluginConfigurationTableName + "(" + p.ModelFields("").Join(",") + ") VALUES (" + p.ModelFields(":").Join(",") + ")"
+		_, err = p.GetMasterX().NamedExec(query, config)
 
-		numUpdated, err = p.GetMaster().Update(config)
+	} else {
+		query := "UPDATE " + store.PluginConfigurationTableName + " SET " + p.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = p.GetMasterX().NamedExec(query, config)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
 		if p.IsUniqueConstraintError(err, []string{"Identifier", "ChannelID", "pluginconfigurations_identifier_channelid_key"}) {
-			return nil, store.NewErrInvalidInput(p.TableName(""), "Identifier/ChannelID", "duplicate")
+			return nil, store.NewErrInvalidInput(store.PluginConfigurationTableName, "Identifier/ChannelID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to upsert plugin configuration with id=%s", config.Id)
 	}
@@ -94,10 +93,10 @@ func (p *SqlPluginConfigurationStore) Upsert(config *plugins.PluginConfiguration
 // Get finds a plugin configuration with given id then returns it
 func (p *SqlPluginConfigurationStore) Get(id string) (*plugins.PluginConfiguration, error) {
 	var res plugins.PluginConfiguration
-	err := p.GetReplica().SelectOne(&res, "SELECT * FROM "+p.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	err := p.GetReplicaX().Get(&res, "SELECT * FROM "+store.PluginConfigurationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(p.TableName(""), id)
+			return nil, store.NewErrNotFound(store.PluginConfigurationTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find plugon configuration with id=%s", id)
 	}
@@ -108,7 +107,7 @@ func (p *SqlPluginConfigurationStore) Get(id string) (*plugins.PluginConfigurati
 func (p *SqlPluginConfigurationStore) optionsParse(options *plugins.PluginConfigurationFilterOptions) (string, []interface{}, error) {
 	query := p.GetQueryBuilder().
 		Select("*").
-		From(p.TableName(""))
+		From(store.PluginConfigurationTableName)
 
 	// parse options
 	if options.Id != nil {
@@ -126,14 +125,13 @@ func (p *SqlPluginConfigurationStore) optionsParse(options *plugins.PluginConfig
 
 // FilterPluginConfigurations finds and returns a list of configs with given options then returns them
 func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options plugins.PluginConfigurationFilterOptions) ([]*plugins.PluginConfiguration, error) {
-
 	queryStr, args, err := p.optionsParse(&options)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterPluginConfigurations_ToSql")
 	}
 
 	var configs plugins.PluginConfigurations
-	_, err = p.GetReplica().Select(&configs, queryStr, args...)
+	err = p.GetReplicaX().Select(&configs, queryStr, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find plugin configurations with given options")
 	}
@@ -141,7 +139,7 @@ func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options plugins
 	// check if we need to prefetch
 	if options.PrefetchRelatedChannel && len(configs) != 0 {
 		channels, err := p.Channel().FilterByOption(&channel.ChannelFilterOption{
-			Id: squirrel.Eq{p.TableName("Id"): configs.ChannelIDs()},
+			Id: squirrel.Eq{store.PluginConfigurationTableName + ".Id": configs.ChannelIDs()},
 		})
 
 		if err != nil {
@@ -168,10 +166,10 @@ func (p *SqlPluginConfigurationStore) GetByOptions(options *plugins.PluginConfig
 	}
 
 	var res plugins.PluginConfiguration
-	err = p.GetReplica().SelectOne(&res, queryStr, args...)
+	err = p.GetReplicaX().Get(&res, queryStr, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(p.TableName(""), "options")
+			return nil, store.NewErrNotFound(store.PluginConfigurationTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find plugin configuration with given options")
 	}

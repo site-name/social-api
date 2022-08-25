@@ -4,12 +4,11 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlPaymentStore struct {
@@ -17,92 +16,56 @@ type SqlPaymentStore struct {
 }
 
 func NewSqlPaymentStore(s store.Store) store.PaymentStore {
-	ps := &SqlPaymentStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(payment.Payment{}, store.PaymentTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CheckoutID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("OrderID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("GateWay").SetMaxSize(payment.MAX_LENGTH_PAYMENT_GATEWAY)
-		table.ColMap("ChargeStatus").SetMaxSize(payment.MAX_LENGTH_PAYMENT_CHARGE_STATUS)
-		table.ColMap("Token").SetMaxSize(payment.MAX_LENGTH_PAYMENT_TOKEN)
-		table.ColMap("Currency").SetMaxSize(model.CURRENCY_CODE_MAX_LENGTH)
-		table.ColMap("BillingEmail").SetMaxSize(model.USER_EMAIL_MAX_LENGTH)
-		table.ColMap("BillingFirstName").SetMaxSize(payment.MAX_LENGTH_PAYMENT_COMMON_256)
-		table.ColMap("BillingLastName").SetMaxSize(payment.MAX_LENGTH_PAYMENT_COMMON_256)
-		table.ColMap("BillingCompanyName").SetMaxSize(payment.MAX_LENGTH_PAYMENT_COMMON_256)
-		table.ColMap("BillingAddress1").SetMaxSize(payment.MAX_LENGTH_PAYMENT_COMMON_256)
-		table.ColMap("BillingAddress2").SetMaxSize(payment.MAX_LENGTH_PAYMENT_COMMON_256)
-		table.ColMap("BillingCity").SetMaxSize(payment.MAX_LENGTH_PAYMENT_COMMON_256)
-		table.ColMap("BillingCityArea").SetMaxSize(account.ADDRESS_CITY_AREA_MAX_LENGTH)
-		table.ColMap("BillingPostalCode").SetMaxSize(account.ADDRESS_POSTAL_CODE_MAX_LENGTH)
-		table.ColMap("BillingCountryCode").SetMaxSize(model.SINGLE_COUNTRY_CODE_MAX_LENGTH)
-		table.ColMap("BillingCountryArea").SetMaxSize(payment.MAX_LENGTH_PAYMENT_COMMON_256)
-		table.ColMap("CcFirstDigits").SetMaxSize(payment.MAX_LENGTH_CC_FIRST_DIGITS)
-		table.ColMap("CcLastDigits").SetMaxSize(payment.MAX_LENGTH_CC_LAST_DIGITS)
-		table.ColMap("CcBrand").SetMaxSize(payment.MAX_LENGTH_CC_BRAND)
-		table.ColMap("PaymentMethodType").SetMaxSize(payment.MAX_LENGTH_PAYMENT_COMMON_256)
-		table.ColMap("CustomerIpAddress").SetMaxSize(model.IP_ADDRESS_MAX_LENGTH)
-		table.ColMap("ReturnUrl").SetMaxSize(model.URL_LINK_MAX_LENGTH)
-		table.ColMap("PspReference").SetMaxSize(payment.PAYMENT_PSP_REFERENCE_MAX_LENGTH)
-		table.ColMap("StorePaymentMethod").SetMaxSize(payment.PAYMENT_STORE_PAYMENT_METHOD_MAX_LENGTH)
-	}
-	return ps
+	return &SqlPaymentStore{s}
 }
 
-func (ps *SqlPaymentStore) CreateIndexesIfNotExists() {
-	ps.CommonMetaDataIndex(store.PaymentTableName)
-
-	ps.CreateIndexIfNotExists("idx_payments_order_id", store.PaymentTableName, "OrderID")
-	ps.CreateIndexIfNotExists("idx_payments_is_active", store.PaymentTableName, "IsActive")
-	ps.CreateIndexIfNotExists("idx_payments_charge_status", store.PaymentTableName, "ChargeStatus")
-	ps.CreateIndexIfNotExists("idx_payments_psp_reference", store.PaymentTableName, "PspReference")
-
-	ps.CreateForeignKeyIfNotExists(store.PaymentTableName, "OrderID", store.OrderTableName, "Id", false)
-	ps.CreateForeignKeyIfNotExists(store.PaymentTableName, "CheckoutID", store.CheckoutTableName, "Token", false)
-}
-
-func (ps *SqlPaymentStore) ModelFields() []string {
-	return []string{
-		"Payments.Id",
-		"Payments.GateWay",
-		"Payments.IsActive",
-		"Payments.ToConfirm",
-		"Payments.CreateAt",
-		"Payments.UpdateAt",
-		"Payments.ChargeStatus",
-		"Payments.Token",
-		"Payments.Total",
-		"Payments.CapturedAmount",
-		"Payments.Currency",
-		"Payments.CheckoutID",
-		"Payments.OrderID",
-		"Payments.BillingEmail",
-		"Payments.BillingFirstName",
-		"Payments.BillingLastName",
-		"Payments.BillingCompanyName",
-		"Payments.BillingAddress1",
-		"Payments.BillingAddress2",
-		"Payments.BillingCity",
-		"Payments.BillingCityArea",
-		"Payments.BillingPostalCode",
-		"Payments.BillingCountryCode",
-		"Payments.BillingCountryArea",
-		"Payments.CcFirstDigits",
-		"Payments.CcLastDigits",
-		"Payments.CcBrand",
-		"Payments.CcExpMonth",
-		"Payments.CcExpYear",
-		"Payments.PaymentMethodType",
-		"Payments.CustomerIpAddress",
-		"Payments.ExtraData",
-		"Payments.ReturnUrl",
-		"Payments.PspReference",
-		"Payments.StorePaymentMethod",
-		"Payments.Metadata",
-		"Payments.PrivateMetadata",
+func (ps *SqlPaymentStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"GateWay",
+		"IsActive",
+		"ToConfirm",
+		"CreateAt",
+		"UpdateAt",
+		"ChargeStatus",
+		"Token",
+		"Total",
+		"CapturedAmount",
+		"Currency",
+		"CheckoutID",
+		"OrderID",
+		"BillingEmail",
+		"BillingFirstName",
+		"BillingLastName",
+		"BillingCompanyName",
+		"BillingAddress1",
+		"BillingAddress2",
+		"BillingCity",
+		"BillingCityArea",
+		"BillingPostalCode",
+		"BillingCountryCode",
+		"BillingCountryArea",
+		"CcFirstDigits",
+		"CcLastDigits",
+		"CcBrand",
+		"CcExpMonth",
+		"CcExpYear",
+		"PaymentMethodType",
+		"CustomerIpAddress",
+		"ExtraData",
+		"ReturnUrl",
+		"PspReference",
+		"StorePaymentMethod",
+		"Metadata",
+		"PrivateMetadata",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (ps *SqlPaymentStore) ScanFields(payMent payment.Payment) []interface{} {
@@ -148,11 +111,10 @@ func (ps *SqlPaymentStore) ScanFields(payMent payment.Payment) []interface{} {
 }
 
 // Save inserts given payment into database then returns it
-func (ps *SqlPaymentStore) Save(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
-
-	var upsertor gorp.SqlExecutor = ps.GetMaster()
+func (ps *SqlPaymentStore) Save(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error) {
+	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
-		upsertor = transaction
+		executor = transaction
 	}
 
 	payment.PreSave()
@@ -160,7 +122,8 @@ func (ps *SqlPaymentStore) Save(transaction *gorp.Transaction, payment *payment.
 		return nil, err
 	}
 
-	if err := upsertor.Insert(payment); err != nil {
+	query := "INSERT INTO " + store.PaymentTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+	if _, err := executor.NamedExec(query, payment); err != nil {
 		return nil, errors.Wrapf(err, "failed to insert new payment with id=%s", payment.Id)
 	}
 
@@ -168,10 +131,10 @@ func (ps *SqlPaymentStore) Save(transaction *gorp.Transaction, payment *payment.
 }
 
 // Update updates given payment and returns the updated value
-func (ps *SqlPaymentStore) Update(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
-	var upsertor gorp.SqlExecutor = ps.GetMaster()
+func (ps *SqlPaymentStore) Update(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error) {
+	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
-		upsertor = transaction
+		executor = transaction
 	}
 
 	payment.PreUpdate()
@@ -179,20 +142,18 @@ func (ps *SqlPaymentStore) Update(transaction *gorp.Transaction, payment *paymen
 		return nil, err
 	}
 
-	oldPayment, err := ps.Get(transaction, payment.Id, false)
-	if err != nil {
-		return nil, err
-	}
+	query := "UPDATE " + store.PaymentTableName + " SET " + ps.
+		ModelFields("").
+		Map(func(_ int, s string) string {
+			return s + "=:" + s
+		}).
+		Join(",") + " WHERE Id=:Id"
 
-	payment.CreateAt = oldPayment.CreateAt
-	payment.OrderID = oldPayment.OrderID
-	payment.CheckoutID = oldPayment.CheckoutID
-
-	numUpdated, err := upsertor.Update(payment)
+	result, err := executor.NamedExec(query, payment)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update payment with PaymentId=%s", payment.Id)
 	}
-	if numUpdated > 1 {
+	if numUpdated, _ := result.RowsAffected(); numUpdated > 1 {
 		return nil, errors.Errorf("more than one payment updated: %d", numUpdated)
 	}
 
@@ -200,8 +161,8 @@ func (ps *SqlPaymentStore) Update(transaction *gorp.Transaction, payment *paymen
 }
 
 // Get finds and returns the payment with given id
-func (ps *SqlPaymentStore) Get(transaction *gorp.Transaction, id string, lockForUpdate bool) (*payment.Payment, error) {
-	var selector gorp.SqlExecutor = ps.GetReplica()
+func (ps *SqlPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*payment.Payment, error) {
+	var selector store_iface.SqlxExecutor = ps.GetReplicaX()
 	if transaction != nil {
 		selector = transaction
 	}
@@ -214,10 +175,10 @@ func (ps *SqlPaymentStore) Get(transaction *gorp.Transaction, id string, lockFor
 		forUpdateSql = " FOR UPDATE"
 	}
 
-	err := selector.SelectOne(
+	err := selector.Get(
 		&res,
-		"SELECT * FROM "+store.PaymentTableName+" WHERE Id = :ID"+forUpdateSql,
-		map[string]interface{}{"ID": id},
+		"SELECT * FROM "+store.PaymentTableName+" WHERE Id = ?"+forUpdateSql,
+		id,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -231,16 +192,7 @@ func (ps *SqlPaymentStore) Get(transaction *gorp.Transaction, id string, lockFor
 
 // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
 func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) error {
-	_, err := ps.GetQueryBuilder().
-		Update(store.PaymentTableName).
-		Set("IsActive", false).
-		Where(squirrel.And{
-			squirrel.Eq{"CheckoutID": checkoutID},
-			squirrel.Eq{"IsActive": true},
-		}).
-		RunWith(ps.GetMaster()).
-		Exec()
-
+	_, err := ps.GetMasterX().Exec("UPDATE "+store.PaymentTableName+" SET IsActive = false WHERE CheckoutID = ? AND IsActive = true", checkoutID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to deactivate payments that are active and belong to checkout with id=%s", checkoutID)
 	}
@@ -251,7 +203,7 @@ func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) err
 // FilterByOption finds and returns a list of payments that satisfy given option
 func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error) {
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields()...).
+		Select(ps.ModelFields(store.PaymentTableName + ".")...).
 		From(store.PaymentTableName).
 		OrderBy(store.TableOrderingMap[store.PaymentTableName])
 
@@ -297,7 +249,7 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 	}
 
 	var payments []*payment.Payment
-	_, err = ps.GetReplica().Select(&payments, queryString, args...)
+	err = ps.GetReplicaX().Select(&payments, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds payments with given option")
 	}
@@ -306,8 +258,8 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 }
 
 // UpdatePaymentsOfCheckout updates payments of given checkout
-func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) error {
-	var executor squirrel.BaseRunner = ps.GetMaster()
+func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *payment.PaymentPatch) error {
+	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -322,7 +274,12 @@ func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction *gorp.Transactio
 		query = query.Set("OrderID", option.OrderID)
 	}
 
-	_, err := query.RunWith(executor).Exec()
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "UpdatePaymentsOfCheckout_ToSql")
+	}
+
+	_, err = executor.Exec(queryString, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to update payments of given checkout and options")
 	}

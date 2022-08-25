@@ -197,7 +197,6 @@ type (
 
 // Plugin
 type PluginStore interface {
-	CreateIndexesIfNotExists()
 	SaveOrUpdate(keyVal *plugins.PluginKeyValue) (*plugins.PluginKeyValue, error)
 	CompareAndSet(keyVal *plugins.PluginKeyValue, oldValue []byte) (bool, error)
 	CompareAndDelete(keyVal *plugins.PluginKeyValue, oldValue []byte) (bool, error)
@@ -340,8 +339,6 @@ type ComplianceStore interface {
 
 // plugin
 type PluginConfigurationStore interface {
-	CreateIndexesIfNotExists()
-	TableName(withField string) string
 	GetByOptions(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, error)                // GetByOptions finds and returns 1 plugin configuration with given options
 	Upsert(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, error)                                    // Upsert inserts or updates given plugin configuration and returns it
 	Get(id string) (*plugins.PluginConfiguration, error)                                                                 // Get finds a plugin configuration with given id then returns it
@@ -475,21 +472,17 @@ type (
 // product
 type (
 	CollectionTranslationStore interface {
-		CreateIndexesIfNotExists()
 	}
 	CollectionChannelListingStore interface {
-		CreateIndexesIfNotExists()
 	}
 	CollectionStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error)                   // Upsert depends on given collection's Id property to decide update or insert the collection
 		Get(collectionID string) (*product_and_discount.Collection, error)                                              // Get finds and returns collection with given collectionID
 		FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) // FilterByOption finds and returns a list of collections satisfy the given option
 		ScanFields(col product_and_discount.Collection) []interface{}
 	}
 	CollectionProductStore interface {
-		CreateIndexesIfNotExists()
 		FilterByOptions(options *product_and_discount.CollectionProductFilterOptions) ([]*product_and_discount.CollectionProduct, error)
 	}
 	VariantMediaStore interface {
@@ -502,15 +495,11 @@ type (
 		FilterByOption(option *product_and_discount.ProductMediaFilterOption) ([]*product_and_discount.ProductMedia, error) // FilterByOption finds and returns a list of product medias with given id
 	}
 	DigitalContentUrlStore interface {
-		CreateIndexesIfNotExists()
 		Upsert(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) // Upsert inserts or updates given digital content url into database then returns it
 		Get(id string) (*product_and_discount.DigitalContentUrl, error)                                             // Get finds and returns a digital content url with given id
 	}
 	DigitalContentStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
-		TableName(withField string) string
-		OrderBy() string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(content product_and_discount.DigitalContent) []interface{}
 		Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error)                    // Save inserts given digital content into database then returns it
 		GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) // GetByOption finds and returns 1 digital content filtered using given option
@@ -526,7 +515,6 @@ type (
 		BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) // BulkUpsert performs bulk upsert given product variant channel listings then returns them
 	}
 	ProductVariantTranslationStore interface {
-		CreateIndexesIfNotExists()
 		Upsert(translation *product_and_discount.ProductVariantTranslation) (*product_and_discount.ProductVariantTranslation, error)                  // Upsert inserts or updates given translation then returns it
 		Get(translationID string) (*product_and_discount.ProductVariantTranslation, error)                                                            // Get finds and returns 1 product variant translation with given id
 		FilterByOption(option *product_and_discount.ProductVariantTranslationFilterOption) ([]*product_and_discount.ProductVariantTranslation, error) // FilterByOption finds and returns product variant translations filtered using given options
@@ -544,8 +532,7 @@ type (
 		Update(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) // Update updates given product variant and returns it
 	}
 	ProductChannelListingStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		BulkUpsert(listings []*product_and_discount.ProductChannelListing) ([]*product_and_discount.ProductChannelListing, error)             // BulkUpsert performs bulk upsert on given product channel listings
 		Get(channelListingID string) (*product_and_discount.ProductChannelListing, error)                                                     // Get try finding a product channel listing, then returns it with an error
 		FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
@@ -568,10 +555,8 @@ type (
 		Count(options *product_and_discount.ProductTypeFilterOption) (int64, error)
 	}
 	CategoryTranslationStore interface {
-		CreateIndexesIfNotExists()
 	}
 	CategoryStore interface {
-		CreateIndexesIfNotExists()
 		Upsert(category *product_and_discount.Category) (*product_and_discount.Category, error)                     // Upsert depends on given category's Id field to decide update or insert it
 		Get(categoryID string) (*product_and_discount.Category, error)                                              // Get finds and returns a category with given id
 		GetByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, error)      // GetByOption finds and returns 1 category satisfy given option
@@ -602,7 +587,6 @@ type (
 // payment
 type (
 	PaymentStore interface {
-		CreateIndexesIfNotExists()
 		ScanFields(payMent payment.Payment) []interface{}
 		Save(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error)                           // Save save payment instance into database
 		Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*payment.Payment, error)                       // Get returns a payment with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
@@ -612,8 +596,6 @@ type (
 		UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *payment.PaymentPatch) error // UpdatePaymentsOfCheckout updates payments of given checkout
 	}
 	PaymentTransactionStore interface {
-		CreateIndexesIfNotExists()
-		TableName(withField string) string
 		Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) // Save inserts new payment transaction into database
 		Get(id string) (*payment.PaymentTransaction, error)                                                                               // Get returns a payment transaction with given id
 		Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error)                                              // Update updates given transaction and returns updated one
@@ -624,13 +606,10 @@ type (
 // page
 type (
 	PageTypeStore interface {
-		CreateIndexesIfNotExists()
 	}
 	PageTranslationStore interface {
-		CreateIndexesIfNotExists()
 	}
 	PageStore interface {
-		CreateIndexesIfNotExists()
 	}
 )
 
@@ -908,8 +887,7 @@ type TermsOfServiceStore interface {
 }
 
 type PreferenceStore interface {
-	CreateIndexesIfNotExists()
-	Save(preferences *model.Preferences) error
+	Save(preferences model.Preferences) error
 	GetCategory(userID, category string) (model.Preferences, error)
 	Get(userID, category, name string) (*model.Preference, error)
 	GetAll(userID string) (model.Preferences, error)

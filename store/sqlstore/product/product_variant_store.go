@@ -290,7 +290,7 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 	}
 
 	if option.SelectRelatedDigitalContent {
-		query = query.InnerJoin(store.ProductDigitalContentTableName + " ON (ProductVariants.Id = DigitalContents.ProductVariantID)")
+		query = query.InnerJoin(store.DigitalContentTableName + " ON (ProductVariants.Id = DigitalContents.ProductVariantID)")
 	}
 
 	rows, err := query.RunWith(vs.GetReplica()).Query()

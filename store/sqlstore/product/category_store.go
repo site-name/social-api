@@ -14,52 +14,29 @@ type SqlCategoryStore struct {
 }
 
 func NewSqlCategoryStore(s store.Store) store.CategoryStore {
-	cs := &SqlCategoryStore{s}
+	return &SqlCategoryStore{s}
+}
 
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.Category{}, cs.TableName("")).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ParentID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.CATEGORY_NAME_MAX_LENGTH)
-		table.ColMap("Slug").SetMaxSize(product_and_discount.CATEGORY_SLUG_MAX_LENGTH).SetUnique(true)
-		table.ColMap("BackgroundImage").SetMaxSize(model.URL_LINK_MAX_LENGTH)
-		table.ColMap("BackgroundImageAlt").SetMaxSize(product_and_discount.COLLECTION_BACKGROUND_ALT_MAX_LENGTH)
-
-		s.CommonSeoMaxLength(table)
+func (cs *SqlCategoryStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"Name",
+		"Slug",
+		"Description",
+		"ParentID",
+		"BackgroundImage",
+		"BackgroundImageAlt",
+		"SeoTitle",
+		"Metadata",
+		"PrivateMetadata",
 	}
-	return cs
-}
-
-func (cs *SqlCategoryStore) CreateIndexesIfNotExists() {
-	cs.CreateForeignKeyIfNotExists(cs.TableName(""), "ParentID", cs.TableName(""), "Id", true)
-}
-
-func (cs *SqlCategoryStore) TableName(withField string) string {
-	name := "Categories"
-	if withField != "" {
-		name += "." + withField
+	if prefix == "" {
+		return res
 	}
 
-	return name
-}
-
-func (cs *SqlCategoryStore) OrderBy() string {
-	return ""
-}
-
-func (cs *SqlCategoryStore) ModelFields() []string {
-	return []string{
-		"Categories.Id",
-		"Categories.Name",
-		"Categories.Slug",
-		"Categories.Description",
-		"Categories.ParentID",
-		"Categories.BackgroundImage",
-		"Categories.BackgroundImageAlt",
-		"Categories.SeoTitle",
-		"Categories.Metadata",
-		"Categories.PrivateMetadata",
-	}
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (cs *SqlCategoryStore) ScanFields(cate product_and_discount.Category) []interface{} {
@@ -95,19 +72,27 @@ func (cs *SqlCategoryStore) Upsert(category *product_and_discount.Category) (*pr
 		err        error
 	)
 	if isSaving {
-		err = cs.GetMaster().Insert(category)
-	} else {
-		_, err = cs.Get(category.Id)
-		if err != nil {
-			return nil, err
-		}
+		query := "INSERT INTO " + store.CategoryTableName + "(" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
+		_, err = cs.GetMasterX().NamedExec(query, category)
 
-		numUpdated, err = cs.GetMaster().Update(category)
+	} else {
+		query := "UPDATE " + store.CategoryTableName + " SET " + cs.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = cs.GetMasterX().NamedExec(query, category)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 	if err != nil {
 		// this error may be caused by category slug duplicate
 		if cs.IsUniqueConstraintError(err, []string{"Slug", "categories_slug_key"}) {
-			return nil, store.NewErrInvalidInput(cs.TableName(""), "Slug", category.Slug)
+			return nil, store.NewErrInvalidInput(store.CategoryTableName, "Slug", category.Slug)
 		}
 		return nil, errors.Wrapf(err, "failed to upsert category with id=%s", category.Id)
 	}
@@ -121,10 +106,10 @@ func (cs *SqlCategoryStore) Upsert(category *product_and_discount.Category) (*pr
 // Get finds and returns a category with given id
 func (cs *SqlCategoryStore) Get(categoryID string) (*product_and_discount.Category, error) {
 	var res product_and_discount.Category
-	err := cs.GetReplica().SelectOne(&res, "SELECT * FROM "+cs.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": categoryID})
+	err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+store.CategoryTableName+" WHERE Id = ?", categoryID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(cs.TableName(""), categoryID)
+			return nil, store.NewErrNotFound(store.CategoryTableName, categoryID)
 		}
 		return nil, errors.Wrapf(err, "failed to find category with id=%s", categoryID)
 	}
@@ -134,9 +119,9 @@ func (cs *SqlCategoryStore) Get(categoryID string) (*product_and_discount.Catego
 
 func (cs *SqlCategoryStore) commonQueryBuilder(option *product_and_discount.CategoryFilterOption) (string, []interface{}, error) {
 	query := cs.GetQueryBuilder().
-		Select(cs.ModelFields()...).
-		From(cs.TableName("")).
-		OrderBy(cs.OrderBy())
+		Select(cs.ModelFields(store.CategoryTableName + ".")...).
+		From(store.CategoryTableName).
+		OrderBy(store.TableOrderingMap[store.CategoryTableName])
 
 	if option.LockForUpdate {
 		query = query.Suffix("FOR UPDATE")
@@ -184,7 +169,7 @@ func (cs *SqlCategoryStore) FilterByOption(option *product_and_discount.Category
 	}
 
 	var res []*product_and_discount.Category
-	_, err = cs.GetReplica().Select(&res, queryString, args...)
+	err = cs.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find categories with given option")
 	}
@@ -200,10 +185,10 @@ func (cs *SqlCategoryStore) GetByOption(option *product_and_discount.CategoryFil
 	}
 
 	var res product_and_discount.Category
-	err = cs.GetReplica().SelectOne(&res, queryString, args...)
+	err = cs.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(cs.TableName(""), "option")
+			return nil, store.NewErrNotFound(store.CategoryTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to find categories with given option")
 	}

@@ -202,7 +202,7 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 	// check if need prefetch related categories
 	if option.PrefetchRelatedCategory && len(productIDs) > 0 {
 		categories, err := ps.Category().FilterByOption(&product_and_discount.CategoryFilterOption{
-			Id: squirrel.Eq{store.ProductCategoryTableName + ".Id": products.CategoryIDs()},
+			Id: squirrel.Eq{store.CategoryTableName + ".Id": products.CategoryIDs()},
 		})
 		if err != nil {
 			return nil, err
@@ -500,9 +500,9 @@ func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*product
 //
 // 1) If requesting user is shop staff:
 //
-// 	+) if `channelSlug` is empty string: returns all products. refer to ./product_store_doc.md (line 241, CASE 2)
+//	+) if `channelSlug` is empty string: returns all products. refer to ./product_store_doc.md (line 241, CASE 2)
 //
-// 	+) if `channelSlug` is provided: refer to ./product_store_doc.md (line 241, CASE 1)
+//	+) if `channelSlug` is provided: refer to ./product_store_doc.md (line 241, CASE 1)
 //
 // 2) If requesting user is shop visitor: Refer to ./product_store_doc.md (line 241, case 3)
 func (ps *SqlProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) {

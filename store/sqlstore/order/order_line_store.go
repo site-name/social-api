@@ -220,7 +220,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 	if option.VariantDigitalContentID != nil {
 		query = query.
 			InnerJoin(store.ProductVariantTableName + " ON (Orderlines.VariantID = ProductVariants.Id)").
-			InnerJoin(store.ProductDigitalContentTableName + "  ON (ProductVariants.Id = DigitalContents.ProductVariantID)").
+			InnerJoin(store.DigitalContentTableName + "  ON (ProductVariants.Id = DigitalContents.ProductVariantID)").
 			Where(option.VariantDigitalContentID)
 		joined_ProductVariantTableName = true // indicate joined the table
 	}
@@ -272,7 +272,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		if option.PrefetchRelated.VariantDigitalContent && len(productVariants) > 0 {
 			err = ols.GetReplicaX().Select(
 				&digitalContents,
-				`SELECT * FROM `+store.ProductDigitalContentTableName+` WHERE ProductVariantID IN ?`,
+				`SELECT * FROM `+store.DigitalContentTableName+` WHERE ProductVariantID IN ?`,
 				productVariants.IDs(),
 			)
 			if err != nil {

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -13,21 +14,25 @@ type SqlDigitalContentUrlStore struct {
 }
 
 func NewSqlDigitalContentUrlStore(s store.Store) store.DigitalContentUrlStore {
-	dcs := &SqlDigitalContentUrlStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.DigitalContentUrl{}, store.ProductDigitalContentURLTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Token").SetMaxSize(product_and_discount.DIGITAL_CONTENT_URL_TOKEN_MAX_LENGTH).SetUnique(true)
-		table.ColMap("ContentID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("LineID").SetMaxSize(store.UUID_MAX_LENGTH).SetUnique(true)
-	}
-	return dcs
+	return &SqlDigitalContentUrlStore{s}
 }
 
-func (ps *SqlDigitalContentUrlStore) CreateIndexesIfNotExists() {
-	ps.CreateForeignKeyIfNotExists(store.ProductDigitalContentURLTableName, "ContentID", store.ProductDigitalContentTableName, "Id", true)
-	ps.CreateForeignKeyIfNotExists(store.ProductDigitalContentURLTableName, "LineID", store.OrderLineTableName, "Id", true)
+func (s *SqlDigitalContentUrlStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"Token",
+		"ContentID",
+		"CreateAt",
+		"DownloadNum",
+		"LineID",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Upsert inserts or updates given digital content url into database then returns it
@@ -44,22 +49,28 @@ func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *product_and_discount.Dig
 	}
 
 	var (
-		err           error
-		oldContentURL *product_and_discount.DigitalContentUrl
-		numUpdated    int64
+		err        error
+		numUpdated int64
 	)
 	for {
 		if isSaving {
-			err = ps.GetMaster().Insert(contentURL)
+			query := "INSERT INTO " + store.DigitalContentURLTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+			_, err = ps.GetMasterX().NamedExec(query, contentURL)
+
 		} else {
-			oldContentURL, err = ps.Get(contentURL.Id)
-			if err != nil {
-				return nil, err
+
+			query := "UPDATE " + store.DigitalContentURLTableName + " SET " + ps.
+				ModelFields("").
+				Map(func(_ int, s string) string {
+					return s + "=:" + s
+				}).
+				Join(",") + " WHERE Id=:Id"
+
+			var result sql.Result
+			result, err = ps.GetMasterX().NamedExec(query, contentURL)
+			if err == nil && result != nil {
+				numUpdated, _ = result.RowsAffected()
 			}
-
-			contentURL.CreateAt = oldContentURL.CreateAt
-
-			numUpdated, err = ps.GetMaster().Update(contentURL)
 		}
 
 		if err != nil {
@@ -68,7 +79,7 @@ func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *product_and_discount.Dig
 				continue
 			}
 			if ps.IsUniqueConstraintError(err, []string{"LineID", "digitalcontenturls_lineid_key"}) {
-				return nil, store.NewErrInvalidInput(store.ProductDigitalContentURLTableName, "LineID", contentURL.LineID)
+				return nil, store.NewErrInvalidInput(store.DigitalContentURLTableName, "LineID", contentURL.LineID)
 			}
 			return nil, errors.Wrapf(err, "failed to upsert content url with id=%s", contentURL.Id)
 		}
@@ -82,14 +93,15 @@ func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *product_and_discount.Dig
 
 // Get finds and returns a digital content url with given id
 func (ps *SqlDigitalContentUrlStore) Get(id string) (*product_and_discount.DigitalContentUrl, error) {
-	var res *product_and_discount.DigitalContentUrl
-	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ProductDigitalContentURLTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	var res product_and_discount.DigitalContentUrl
+
+	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.DigitalContentURLTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductDigitalContentURLTableName, id)
+			return nil, store.NewErrNotFound(store.DigitalContentURLTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find digital content url with id=%s", id)
 	}
 
-	return res, nil
+	return &res, nil
 }

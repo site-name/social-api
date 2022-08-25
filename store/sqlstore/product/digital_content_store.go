@@ -14,50 +14,30 @@ type SqlDigitalContentStore struct {
 }
 
 func NewSqlDigitalContentStore(s store.Store) store.DigitalContentStore {
-	dcs := &SqlDigitalContentStore{s}
+	return &SqlDigitalContentStore{s}
+}
 
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.DigitalContent{}, dcs.TableName("")).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductVariantID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ContentType").SetMaxSize(product_and_discount.DIGITAL_CONTENT_CONTENT_TYPE_MAX_LENGTH)
-		table.ColMap("ContentFile").SetMaxSize(model.URL_LINK_MAX_LENGTH)
+func (ds *SqlDigitalContentStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"ShopID",
+		"UseDefaultSettings",
+		"AutomaticFulfillment",
+		"ContentType",
+		"ProductVariantID",
+		"ContentFile",
+		"MaxDownloads",
+		"UrlValidDays",
+		"Metadata",
+		"PrivateMetadata",
 	}
-	return dcs
-}
-
-func (ds *SqlDigitalContentStore) CreateIndexesIfNotExists() {
-	ds.CreateForeignKeyIfNotExists(ds.TableName(""), "ProductVariantID", store.ProductVariantTableName, "Id", true)
-	ds.CreateForeignKeyIfNotExists(ds.TableName(""), "ShopID", store.ShopTableName, "Id", true)
-}
-
-func (ds *SqlDigitalContentStore) TableName(withField string) string {
-	name := "DigitalContents"
-	if withField != "" {
-		name += "." + withField
+	if prefix == "" {
+		return res
 	}
-	return name
-}
 
-func (ds *SqlDigitalContentStore) OrderBy() string {
-	return ""
-}
-
-func (ds *SqlDigitalContentStore) ModelFields() []string {
-	return []string{
-		"DigitalContents.Id",
-		"DigitalContents.ShopID",
-		"DigitalContents.UseDefaultSettings",
-		"DigitalContents.AutomaticFulfillment",
-		"DigitalContents.ContentType",
-		"DigitalContents.ProductVariantID",
-		"DigitalContents.ContentFile",
-		"DigitalContents.MaxDownloads",
-		"DigitalContents.UrlValidDays",
-		"DigitalContents.Metadata",
-		"DigitalContents.PrivateMetadata",
-	}
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (ds *SqlDigitalContentStore) ScanFields(content product_and_discount.DigitalContent) []interface{} {
@@ -83,7 +63,8 @@ func (ds *SqlDigitalContentStore) Save(content *product_and_discount.DigitalCont
 		return nil, err
 	}
 
-	err := ds.GetMaster().Insert(content)
+	query := "INSERT INTO " + store.DigitalContentTableName + "(" + ds.ModelFields("").Join(",") + ") VALUES (" + ds.ModelFields(":").Join(",") + ")"
+	_, err := ds.GetMasterX().NamedExec(query, content)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to save digital content with id=%s", content.Id)
 	}
@@ -94,8 +75,8 @@ func (ds *SqlDigitalContentStore) Save(content *product_and_discount.DigitalCont
 // GetByOption finds and returns 1 digital content filtered using given option
 func (ds *SqlDigitalContentStore) GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) {
 	query := ds.GetQueryBuilder().
-		Select(ds.ModelFields()...).
-		From(ds.TableName(""))
+		Select(ds.ModelFields(store.DigitalContentTableName + ".")...).
+		From(store.DigitalContentTableName)
 
 	// parse option
 	if option.Id != nil {
@@ -111,10 +92,10 @@ func (ds *SqlDigitalContentStore) GetByOption(option *product_and_discount.Digit
 	}
 
 	var res product_and_discount.DigitalContent
-	err = ds.GetReplica().SelectOne(&res, queryString, args...)
+	err = ds.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(ds.TableName(""), "option")
+			return nil, store.NewErrNotFound(store.DigitalContentTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to find digital content with given option")
 	}
