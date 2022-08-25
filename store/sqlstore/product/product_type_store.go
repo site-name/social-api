@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -14,32 +15,30 @@ type SqlProductTypeStore struct {
 }
 
 func NewSqlProductTypeStore(s store.Store) store.ProductTypeStore {
-	pts := &SqlProductTypeStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.ProductType{}, store.ProductTypeTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.PRODUCT_TYPE_NAME_MAX_LENGTH)
-		table.ColMap("Slug").SetMaxSize(product_and_discount.PRODUCT_TYPE_SLUG_MAX_LENGTH)
-		table.ColMap("Kind").SetMaxSize(product_and_discount.PRODUCT_TYPE_KIND_MAX_LENGTH)
-	}
-	return pts
+	return &SqlProductTypeStore{s}
 }
 
-func (ps *SqlProductTypeStore) ModelFields() []string {
-	return []string{
-		"ProductTypes.Id",
-		"ProductTypes.Name",
-		"ProductTypes.Slug",
-		"ProductTypes.Kind",
-		"ProductTypes.HasVariants",
-		"ProductTypes.IsShippingRequired",
-		"ProductTypes.IsDigital",
-		"ProductTypes.Weight",
-		"ProductTypes.WeightUnit",
-		"ProductTypes.Metadata",
-		"ProductTypes.PrivateMetadata",
+func (ps *SqlProductTypeStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"Name",
+		"Slug",
+		"Kind",
+		"HasVariants",
+		"IsShippingRequired",
+		"IsDigital",
+		"Weight",
+		"WeightUnit",
+		"Metadata",
+		"PrivateMetadata",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (ps *SqlProductTypeStore) ScanFields(productType product_and_discount.ProductType) []interface{} {
@@ -58,19 +57,14 @@ func (ps *SqlProductTypeStore) ScanFields(productType product_and_discount.Produ
 	}
 }
 
-func (ps *SqlProductTypeStore) CreateIndexesIfNotExists() {
-	ps.CreateIndexIfNotExists("idx_product_types_name", store.ProductTypeTableName, "Name")
-	ps.CreateIndexIfNotExists("idx_product_types_name_lower_textpattern", store.ProductTypeTableName, "lower(Name) text_pattern_ops")
-	ps.CreateIndexIfNotExists("idx_product_types_slug", store.ProductTypeTableName, "Slug")
-}
-
 func (ps *SqlProductTypeStore) Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error) {
 	productType.PreSave()
 	if err := productType.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := ps.GetMaster().Insert(productType); err != nil {
+	query := "INSERT INTO " + store.ProductTypeTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+	if _, err := ps.GetMasterX().NamedExec(query, productType); err != nil {
 		return nil, errors.Wrapf(err, "failed to save product type withh id=%s", productType.Id)
 	}
 
@@ -87,7 +81,7 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken s
 	*/
 
 	queryString, args, err := ps.GetQueryBuilder().
-		Select(ps.ModelFields()...).
+		Select(ps.ModelFields(store.ProductTypeTableName+".")...).
 		From(store.ProductTypeTableName).
 		InnerJoin(store.ProductTableName+" ON (ProductTypes.Id = Products.ProductTypeID)").
 		InnerJoin(store.ProductVariantTableName+" ON (ProductVariants.ProductID = Products.Id)").
@@ -102,7 +96,7 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken s
 
 	var productTypes []*product_and_discount.ProductType
 
-	_, err = ps.GetReplica().Select(&productTypes, queryString, args...)
+	err = ps.GetReplicaX().Select(&productTypes, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find product types related to checkout with token=%s", checkoutToken)
 	}
@@ -111,16 +105,14 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken s
 
 func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error) {
 	var productTypes []*product_and_discount.ProductType
-	_, err := pts.GetReplica().Select(
+	err := pts.GetReplicaX().Select(
 		&productTypes,
-		`SELECT * FROM `+store.ProductTypeTableName+` 
-		INNER JOIN `+store.ProductTableName+` ON (
-			ProductTypes.Id = Products.ProductTypeID
-		) 
-		WHERE Products.Id IN :IDs`,
-		map[string]interface{}{
-			"IDs": productIDs,
-		},
+		`SELECT `+
+			pts.ModelFields(store.ProductTypeTableName+".").Join(",")+
+			` FROM `+store.ProductTypeTableName+
+			` INNER JOIN `+store.ProductTableName+
+			` ON ProductTypes.Id = Products.ProductTypeID WHERE Products.Id IN ?`,
+		productIDs,
 	)
 
 	if err != nil {
@@ -133,7 +125,7 @@ func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([
 // ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant
 func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) (*product_and_discount.ProductType, error) {
 	query := pts.GetQueryBuilder().
-		Select(pts.ModelFields()...).
+		Select(pts.ModelFields(store.ProductTypeTableName+".")...).
 		From(store.ProductTypeTableName).
 		OrderBy(store.TableOrderingMap[store.ProductTypeTableName]).
 		InnerJoin(store.ProductTableName+" ON (Products.ProductTypeID = ProductTypes.Id)").
@@ -146,7 +138,7 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 	}
 
 	var res product_and_discount.ProductType
-	err = pts.GetReplica().SelectOne(&res, queryString, args...)
+	err = pts.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductTypeTableName, "variantID="+variantID)
@@ -159,7 +151,7 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 
 func (pts *SqlProductTypeStore) commonQueryBuilder(options *product_and_discount.ProductTypeFilterOption) squirrel.SelectBuilder {
 	query := pts.GetQueryBuilder().
-		Select(pts.ModelFields()...).
+		Select(pts.ModelFields(store.ProductTypeTableName + ".")...).
 		From(store.ProductTypeTableName).
 		OrderBy(store.TableOrderingMap[store.ProductTypeTableName])
 
@@ -192,7 +184,7 @@ func (pts *SqlProductTypeStore) GetByOption(options *product_and_discount.Produc
 	}
 
 	var res product_and_discount.ProductType
-	err = pts.GetReplica().SelectOne(&res, queryString, args...)
+	err = pts.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductTypeTableName, "options")
@@ -211,7 +203,7 @@ func (pts *SqlProductTypeStore) FilterbyOption(options *product_and_discount.Pro
 	}
 
 	var res []*product_and_discount.ProductType
-	_, err = pts.GetReplica().Select(&res, queryString, args...)
+	err = pts.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product types with given option")
 	}
@@ -229,7 +221,8 @@ func (pts *SqlProductTypeStore) Count(options *product_and_discount.ProductTypeF
 		return 0, errors.Wrap(err, "Count_ToSql")
 	}
 
-	count, err := pts.GetReplica().SelectInt(queryStr, args...)
+	var count int64
+	err = pts.GetReplicaX().Get(&count, queryStr, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count number of product types by options")
 	}

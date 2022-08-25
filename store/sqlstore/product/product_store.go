@@ -21,51 +21,37 @@ type SqlProductStore struct {
 }
 
 func NewSqlProductStore(s store.Store) store.ProductStore {
-	ps := &SqlProductStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.Product{}, store.ProductTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductTypeID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("DefaultVariantID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("CategoryID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.PRODUCT_NAME_MAX_LENGTH).SetUnique(true)
-		table.ColMap("Slug").SetMaxSize(product_and_discount.PRODUCT_SLUG_MAX_LENGTH).SetUnique(true)
-
-		s.CommonSeoMaxLength(table)
-	}
-	return ps
+	return &SqlProductStore{s}
 }
 
-func (ps *SqlProductStore) TableName(withField string) string {
-	name := "Products"
-	if withField != "" {
-		name += "." + withField
+func (ps *SqlProductStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"ProductTypeID",
+		"Name",
+		"Slug",
+		"Description",
+		"DescriptionPlainText",
+		"CategoryID",
+		"CreateAt",
+		"UpdateAt",
+		"ChargeTaxes",
+		"Weight",
+		"WeightUnit",
+		"DefaultVariantID",
+		"Rating",
+		"Metadata",
+		"PrivateMetadata",
+		"SeoTitle",
+		"SeoDescription",
 	}
-	return name
-}
+	if prefix == "" {
+		return res
+	}
 
-func (ps *SqlProductStore) ModelFields() []string {
-	return []string{
-		"Products.Id",
-		"Products.ProductTypeID",
-		"Products.Name",
-		"Products.Slug",
-		"Products.Description",
-		"Products.DescriptionPlainText",
-		"Products.CategoryID",
-		"Products.CreateAt",
-		"Products.UpdateAt",
-		"Products.ChargeTaxes",
-		"Products.Weight",
-		"Products.WeightUnit",
-		"Products.DefaultVariantID",
-		"Products.Rating",
-		"Products.Metadata",
-		"Products.PrivateMetadata",
-		"Products.SeoTitle",
-		"Products.SeoDescription",
-	}
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (ps *SqlProductStore) ScanFields(prd product_and_discount.Product) []interface{} {
@@ -91,37 +77,30 @@ func (ps *SqlProductStore) ScanFields(prd product_and_discount.Product) []interf
 	}
 }
 
-func (ps *SqlProductStore) CreateIndexesIfNotExists() {
-	ps.CreateIndexIfNotExists("idx_products_name", store.ProductTableName, "Name")
-	ps.CreateIndexIfNotExists("idx_products_slug", store.ProductTableName, "Slug")
-	ps.CreateIndexIfNotExists("idx_products_name_lower_textpattern", store.ProductTableName, "lower(Name) text_pattern_ops")
-
-	ps.CommonMetaDataIndex(store.ProductTableName)
-}
-
 // Save inserts given product into database then returns it
-func (ps *SqlProductStore) Save(prd *product_and_discount.Product) (*product_and_discount.Product, error) {
-	prd.PreSave()
-	if err := prd.IsValid(); err != nil {
+func (ps *SqlProductStore) Save(product *product_and_discount.Product) (*product_and_discount.Product, error) {
+	product.PreSave()
+	if err := product.IsValid(); err != nil {
 		return nil, err
 	}
 
-	if err := ps.GetMaster().Insert(prd); err != nil {
+	query := "INSERT INTO " + store.ProductTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+	if _, err := ps.GetMasterX().NamedExec(query, product); err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"Name", "products_name_key", "idx_products_name_unique"}) {
-			return nil, store.NewErrInvalidInput("Product", "name", prd.Name)
+			return nil, store.NewErrInvalidInput("Product", "name", product.Name)
 		}
 		if ps.IsUniqueConstraintError(err, []string{"Slug", "products_slug_key", "idx_products_slug_unique"}) {
-			return nil, store.NewErrInvalidInput("Product", "slug", prd.Slug)
+			return nil, store.NewErrInvalidInput("Product", "slug", product.Slug)
 		}
-		return nil, errors.Wrapf(err, "failed to save Product with productId=%s", prd.Id)
+		return nil, errors.Wrapf(err, "failed to save Product with productId=%s", product.Id)
 	}
 
-	return prd, nil
+	return product, nil
 }
 
 func (ps *SqlProductStore) commonQueryBuilder(option *product_and_discount.ProductFilterOption) (string, []interface{}, error) {
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields()...).
+		Select(ps.ModelFields(store.ProductTableName + ".")...).
 		From(store.ProductTableName).
 		OrderBy(store.TableOrderingMap[store.ProductTableName])
 
@@ -169,7 +148,7 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 	}
 
 	var products product_and_discount.Products
-	_, err = ps.GetReplica().Select(&products, queryString, args...)
+	err = ps.GetReplicaX().Select(&products, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products by given option")
 	}
@@ -283,7 +262,7 @@ func (ps *SqlProductStore) GetByOption(option *product_and_discount.ProductFilte
 	}
 
 	var res product_and_discount.Product
-	err = ps.GetReplica().SelectOne(&res, queryString, args...)
+	err = ps.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductTableName, "option")
@@ -357,8 +336,8 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*product_and
 		return nil, errors.Wrap(err, "FilterPublishedProducts_ToSql")
 	}
 
-	var res []*product_and_discount.Product
-	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	var res product_and_discount.Products
+	err = ps.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find published products with channel slug=%s", channelSlug)
 	}
@@ -396,7 +375,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 		Limit(1)
 
 	queryString, args, err := ps.GetQueryBuilder().
-		Select(ps.ModelFields()...).
+		Select(ps.ModelFields(store.ProductTableName + ".")...).
 		Column(squirrel.Alias(isPublishedColumnSelect, "IsPublished")).
 		Column(squirrel.Alias(publicationDateColumnSelect, "PublicationDate")).
 		From(store.ProductTableName).
@@ -421,7 +400,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 		PublicationDate *timemodule.Time
 	}
 
-	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	err = ps.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find not published product with channel slug=%s", channelSlug)
 	}
@@ -477,7 +456,7 @@ func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*product
 		Limit(1)
 
 	queryString, args, err := ps.GetQueryBuilder().
-		Select(ps.ModelFields()...).
+		Select(ps.ModelFields(store.ProductTableName + ".")...).
 		From(store.ProductTableName).
 		Where(productChannelListingQuery).
 		Where(productVariantQuery).
@@ -488,7 +467,7 @@ func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*product
 		return nil, errors.Wrap(err, "PublishedWithVariants_ToSql")
 	}
 	var res product_and_discount.Products
-	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	err = ps.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find published with variants product with channelSlug=%s", channelSlug)
 	}
@@ -513,7 +492,7 @@ func (ps *SqlProductStore) VisibleToUserProducts(channelSlug string, requesterIs
 	// check if requesting user has right to view products
 	if requesterIsStaff {
 		if channelSlug == "" {
-			_, err = ps.GetReplica().Select(&res, "SELECT * FROM "+store.ProductTableName)
+			err = ps.GetReplicaX().Select(&res, "SELECT * FROM "+store.ProductTableName)
 		} else {
 			channelQuery := ps.channelQuery(channelSlug, nil, store.ProductChannelListingTableName)
 			productChannelListingQuery := ps.
@@ -528,7 +507,7 @@ func (ps *SqlProductStore) VisibleToUserProducts(channelSlug string, requesterIs
 
 			productQueryString, args, er := ps.
 				GetQueryBuilder().
-				Select(ps.ModelFields()...).
+				Select(ps.ModelFields(store.ProductTableName + ".")...).
 				From(store.ProductTableName).
 				Where(productChannelListingQuery).
 				OrderBy(store.TableOrderingMap[store.ProductTableName]).
@@ -536,7 +515,7 @@ func (ps *SqlProductStore) VisibleToUserProducts(channelSlug string, requesterIs
 			if er != nil {
 				return nil, errors.Wrap(er, "VisibleToUserProducts_ToSql") // return immediately since this is system error
 			}
-			_, err = ps.GetReplica().Select(&res, productQueryString, args...)
+			err = ps.GetReplicaX().Select(&res, productQueryString, args...)
 		}
 	} else {
 		res, err = ps.PublishedWithVariants(channelSlug)
@@ -552,7 +531,7 @@ func (ps *SqlProductStore) VisibleToUserProducts(channelSlug string, requesterIs
 // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
 func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) {
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields()...).
+		Select(ps.ModelFields(store.ProductTableName + ".")...).
 		Distinct().
 		From(store.ProductTableName).
 		OrderBy(store.TableOrderingMap[store.ProductTableName])
@@ -574,8 +553,8 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 		return nil, errors.Wrap(err, "SelectForUpdateDiscountedPricesOfCatalogues_ToSql")
 	}
 
-	var products []*product_and_discount.Product
-	_, err = ps.GetReplica().Select(&products, queryString, args...)
+	var products product_and_discount.Products
+	err = ps.GetReplicaX().Select(&products, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products by given params")
 	}
@@ -586,7 +565,7 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
 func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *gqlmodel.ExportProductsInput) squirrel.SelectBuilder {
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields()...).
+		Select(ps.ModelFields(store.ProductTableName + ".")...).
 		From(store.ProductTableName).
 		OrderBy("Products.CreateAt ASC")
 
@@ -663,7 +642,7 @@ func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder) (product_
 	}
 
 	var products product_and_discount.Products
-	_, err = ps.GetReplica().Select(&products, queryString, args...)
+	err = ps.GetReplicaX().Select(&products, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products with given query and conditions")
 	}

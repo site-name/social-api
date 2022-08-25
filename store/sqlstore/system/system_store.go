@@ -21,18 +21,7 @@ type SqlSystemStore struct {
 }
 
 func NewSqlSystemStore(sqlStore store.Store) store.SystemStore {
-	s := &SqlSystemStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(model.System{}, "Systems").SetKeys(false, "Name")
-		table.ColMap("Name").SetMaxSize(64)
-		table.ColMap("Value").SetMaxSize(1024)
-	}
-
-	return s
-}
-
-func (s *SqlSystemStore) CreateIndexesIfNotExists() {
+	return &SqlSystemStore{sqlStore}
 }
 
 func (s *SqlSystemStore) Save(system *model.System) error {

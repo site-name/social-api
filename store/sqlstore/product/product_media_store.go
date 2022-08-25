@@ -14,28 +14,35 @@ type SqlProductMediaStore struct {
 }
 
 func NewSqlProductMediaStore(s store.Store) store.ProductMediaStore {
-	pms := &SqlProductMediaStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.ProductMedia{}, store.ProductMediaTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Image").SetMaxSize(model.URL_LINK_MAX_LENGTH)
-		table.ColMap("Ppoi").SetMaxSize(product_and_discount.PRODUCT_MEDIA_PPOI_MAX_LENGTH)
-		table.ColMap("Type").SetMaxSize(product_and_discount.PRODUCT_MEDIA_TYPE_MAX_LENGTH)
-		table.ColMap("ExternalUrl").SetMaxSize(product_and_discount.PRODUCT_MEDIA_EXTERNAL_URL_MAX_LENGTH)
-		table.ColMap("Alt").SetMaxSize(product_and_discount.PRODUCT_MEDIA_ALT_MAX_LENGTH)
-	}
-	return pms
+	return &SqlProductMediaStore{s}
 }
 
-func (ps *SqlProductMediaStore) CreateIndexesIfNotExists() {
-	ps.CreateForeignKeyIfNotExists(store.ProductMediaTableName, "ProductID", store.ProductTableName, "Id", true)
+func (s *SqlProductMediaStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"CreateAt",
+		"ProductID",
+		"Ppoi",
+		"Image",
+		"Alt",
+		"Type",
+		"ExternalUrl",
+		"OembedData",
+		"SortOrder",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Upsert depends on given media's Id property to decide insert or update it
 func (ps *SqlProductMediaStore) Upsert(media *product_and_discount.ProductMedia) (*product_and_discount.ProductMedia, error) {
 	var isSaving bool
+
 	if media.Id == "" {
 		media.PreSave()
 		isSaving = true
@@ -49,20 +56,25 @@ func (ps *SqlProductMediaStore) Upsert(media *product_and_discount.ProductMedia)
 
 	var (
 		err        error
-		oldMedia   *product_and_discount.ProductMedia
 		numUpdated int64
 	)
 	if isSaving {
-		err = ps.GetMaster().Insert(media)
+		query := "INSERT INTO " + store.ProductMediaTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+		_, err = ps.GetMasterX().NamedExec(query, media)
+
 	} else {
-		oldMedia, err = ps.Get(media.Id)
-		if err != nil {
-			return nil, err
+		query := "UPDATE " + store.ProductMediaTableName + " SET " + ps.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = ps.GetMasterX().NamedExec(query, media)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
 		}
-
-		media.CreateAt = oldMedia.CreateAt
-
-		numUpdated, err = ps.GetMaster().Update(media)
 	}
 
 	if err != nil {
@@ -78,12 +90,10 @@ func (ps *SqlProductMediaStore) Upsert(media *product_and_discount.ProductMedia)
 // Get finds and returns 1 product media with given id
 func (ps *SqlProductMediaStore) Get(id string) (*product_and_discount.ProductMedia, error) {
 	var res product_and_discount.ProductMedia
-	err := ps.GetReplica().SelectOne(
+	err := ps.GetReplicaX().Get(
 		&res,
-		"SELECT * FROM "+store.ProductMediaTableName+" WHERE Id = :ID",
-		map[string]interface{}{
-			"ID": id,
-		},
+		"SELECT * FROM "+store.ProductMediaTableName+" WHERE Id = ?",
+		id,
 	)
 
 	if err != nil {
@@ -120,7 +130,7 @@ func (ps *SqlProductMediaStore) FilterByOption(option *product_and_discount.Prod
 	}
 
 	var res []*product_and_discount.ProductMedia
-	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	err = ps.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product medias by given option")
 	}

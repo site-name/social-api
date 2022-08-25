@@ -47,7 +47,6 @@ func (s *Seo) PreSave() {
 
 // SeoTranslation represents translation for Seo
 type SeoTranslation struct {
-	Id             string  `json:"is"`
 	SeoTitle       *string `json:"seo_title"`
 	SeoDescription *string `json:"seo_description"`
 }
@@ -57,23 +56,18 @@ func (s *SeoTranslation) IsValid() *model.AppError {
 		"model.seo_translation.is_valid.%s.app_error",
 		"seo_translation_id=",
 		"SeoTranslation.IsValid")
-	if s.Id == "" {
-		return outer("id", nil)
-	}
+
 	if s.SeoTitle != nil && utf8.RuneCountInString(*s.SeoTitle) > SEO_TITLE_MAX_LENGTH {
-		return outer("seo_title", &s.Id)
+		return outer("seo_title", nil)
 	}
 	if s.SeoDescription != nil && utf8.RuneCountInString(*s.SeoDescription) > SEO_DESCRIPTION_MAX_LENGTH {
-		return outer("seo_description", &s.Id)
+		return outer("seo_description", nil)
 	}
 
 	return nil
 }
 
 func (s *SeoTranslation) PreSave() {
-	if s.Id == "" {
-		s.Id = model.NewId()
-	}
 	if s.SeoTitle != nil {
 		st := model.SanitizeUnicode(*s.SeoTitle)
 		s.SeoTitle = &st

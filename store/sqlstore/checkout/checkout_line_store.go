@@ -220,8 +220,8 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 	selectFields := append(
 		cls.ModelFields(store.CheckoutLineTableName+"."),
 		append(
-			cls.ProductVariant().ModelFields(),
-			cls.Product().ModelFields()...,
+			cls.ProductVariant().ModelFields(store.ProductVariantTableName+"."),
+			cls.Product().ModelFields(store.ProductTableName+".")...,
 		)...,
 	)
 

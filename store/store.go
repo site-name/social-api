@@ -486,10 +486,8 @@ type (
 		FilterByOptions(options *product_and_discount.CollectionProductFilterOptions) ([]*product_and_discount.CollectionProduct, error)
 	}
 	VariantMediaStore interface {
-		CreateIndexesIfNotExists()
 	}
 	ProductMediaStore interface {
-		CreateIndexesIfNotExists()
 		Upsert(media *product_and_discount.ProductMedia) (*product_and_discount.ProductMedia, error)                        // Upsert depends on given media's Id property to decide insert or update it
 		Get(id string) (*product_and_discount.ProductMedia, error)                                                          // Get finds and returns 1 product media with given id
 		FilterByOption(option *product_and_discount.ProductMediaFilterOption) ([]*product_and_discount.ProductMedia, error) // FilterByOption finds and returns a list of product medias with given id
@@ -505,9 +503,7 @@ type (
 		GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) // GetByOption finds and returns 1 digital content filtered using given option
 	}
 	ProductVariantChannelListingStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
-		TableName(withField string) string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(listing product_and_discount.ProductVariantChannelListing) []interface{}
 		Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error)                                                    // Save insert given value into database then returns it with an error
 		Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error)                                                                                               // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
@@ -520,10 +516,8 @@ type (
 		FilterByOption(option *product_and_discount.ProductVariantTranslationFilterOption) ([]*product_and_discount.ProductVariantTranslation, error) // FilterByOption finds and returns product variant translations filtered using given options
 	}
 	ProductVariantStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(variant product_and_discount.ProductVariant) []interface{}
-		TableName(withField string) string
 		Save(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error)   // Save inserts product variant instance to database
 		Get(id string) (*product_and_discount.ProductVariant, error)                                                                               // Get returns a product variant with given id
 		GetWeight(productVariantID string) (*measurement.Weight, error)                                                                            // GetWeight returns weight of given product variant
@@ -538,14 +532,12 @@ type (
 		FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
 	}
 	ProductTranslationStore interface {
-		CreateIndexesIfNotExists()
 		Upsert(translation *product_and_discount.ProductTranslation) (*product_and_discount.ProductTranslation, error)                  // Upsert inserts or update given translation
 		Get(translationID string) (*product_and_discount.ProductTranslation, error)                                                     // Get finds and returns a product translation by given id
 		FilterByOption(option *product_and_discount.ProductTranslationFilterOption) ([]*product_and_discount.ProductTranslation, error) // FilterByOption finds and returns product translations filtered using given options
 	}
 	ProductTypeStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		FilterbyOption(options *product_and_discount.ProductTypeFilterOption) ([]*product_and_discount.ProductType, error)
 		Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error)                // Save try inserting new product type into database then returns it
 		FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error)          // FilterProductTypesByCheckoutToken is used to check if a checkout requires shipping
@@ -563,9 +555,7 @@ type (
 		FilterByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, error) // FilterByOption finds and returns a list of categories satisfy given option
 	}
 	ProductStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
-		TableName(withField string) string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(prd product_and_discount.Product) []interface{}
 		Save(prd *product_and_discount.Product) (*product_and_discount.Product, error)
 		GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
@@ -917,7 +907,6 @@ type JobStore interface {
 }
 
 type StatusStore interface {
-	CreateIndexesIfNotExists()
 	SaveOrUpdate(status *account.Status) error
 	Get(userID string) (*account.Status, error)
 	GetByIds(userIds []string) ([]*account.Status, error)
@@ -1030,7 +1019,6 @@ type (
 )
 
 type SystemStore interface {
-	CreateIndexesIfNotExists()
 	Save(system *model.System) error
 	SaveOrUpdate(system *model.System) error
 	Update(system *model.System) error
@@ -1043,7 +1031,6 @@ type SystemStore interface {
 
 // session
 type SessionStore interface {
-	CreateIndexesIfNotExists()
 	Get(ctx context.Context, sessionIDOrToken string) (*model.Session, error)
 	Save(session *model.Session) (*model.Session, error)
 	GetSessions(userID string) ([]*model.Session, error)
@@ -1063,7 +1050,6 @@ type SessionStore interface {
 }
 
 type RoleStore interface {
-	CreateIndexesIfNotExists()
 	Save(role *model.Role) (*model.Role, error)
 	Get(roleID string) (*model.Role, error)
 	GetAll() ([]*model.Role, error)

@@ -8,7 +8,6 @@ import (
 	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/opentracing/opentracing-go/ext"
 	spanlog "github.com/opentracing/opentracing-go/log"
 	goprices "github.com/site-name/go-prices"
@@ -1248,7 +1247,7 @@ func (s *OpenTracingLayerAddressStore) Upsert(transaction store_iface.SqlxTxExec
 	return result, err
 }
 
-func (s *OpenTracingLayerAllocationStore) BulkDelete(transaction *gorp.Transaction, allocationIDs []string) error {
+func (s *OpenTracingLayerAllocationStore) BulkDelete(transaction store_iface.SqlxTxExecutor, allocationIDs []string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AllocationStore.BulkDelete")
 	s.Root.Store.SetContext(newCtx)
@@ -1266,7 +1265,7 @@ func (s *OpenTracingLayerAllocationStore) BulkDelete(transaction *gorp.Transacti
 	return err
 }
 
-func (s *OpenTracingLayerAllocationStore) BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
+func (s *OpenTracingLayerAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AllocationStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
@@ -1302,7 +1301,7 @@ func (s *OpenTracingLayerAllocationStore) CountAvailableQuantityForStock(stock *
 	return result, err
 }
 
-func (s *OpenTracingLayerAllocationStore) FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
+func (s *OpenTracingLayerAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AllocationStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -3169,19 +3168,6 @@ func (s *OpenTracingLayerDigitalContentStore) GetByOption(option *product_and_di
 	return result, err
 }
 
-func (s *OpenTracingLayerDigitalContentStore) OrderBy() string {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DigitalContentStore.OrderBy")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result := s.DigitalContentStore.OrderBy()
-	return result
-}
-
 func (s *OpenTracingLayerDigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DigitalContentStore.Save")
@@ -3679,7 +3665,7 @@ func (s *OpenTracingLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileI
 	return result, err
 }
 
-func (s *OpenTracingLayerFulfillmentStore) BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) error {
+func (s *OpenTracingLayerFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments order.Fulfillments) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentStore.BulkDeleteFulfillments")
 	s.Root.Store.SetContext(newCtx)
@@ -3697,7 +3683,7 @@ func (s *OpenTracingLayerFulfillmentStore) BulkDeleteFulfillments(transaction *g
 	return err
 }
 
-func (s *OpenTracingLayerFulfillmentStore) FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
+func (s *OpenTracingLayerFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -3733,7 +3719,7 @@ func (s *OpenTracingLayerFulfillmentStore) Get(id string) (*order.Fulfillment, e
 	return result, err
 }
 
-func (s *OpenTracingLayerFulfillmentStore) GetByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+func (s *OpenTracingLayerFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentStore.GetByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -3751,7 +3737,7 @@ func (s *OpenTracingLayerFulfillmentStore) GetByOption(transaction *gorp.Transac
 	return result, err
 }
 
-func (s *OpenTracingLayerFulfillmentStore) Upsert(transaction *gorp.Transaction, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+func (s *OpenTracingLayerFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
@@ -3769,7 +3755,7 @@ func (s *OpenTracingLayerFulfillmentStore) Upsert(transaction *gorp.Transaction,
 	return result, err
 }
 
-func (s *OpenTracingLayerFulfillmentLineStore) BulkUpsert(transaction *gorp.Transaction, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+func (s *OpenTracingLayerFulfillmentLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentLineStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
@@ -3787,7 +3773,7 @@ func (s *OpenTracingLayerFulfillmentLineStore) BulkUpsert(transaction *gorp.Tran
 	return result, err
 }
 
-func (s *OpenTracingLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *gorp.Transaction, option *order.FulfillmentLineFilterOption) error {
+func (s *OpenTracingLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentLineFilterOption) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FulfillmentLineStore.DeleteFulfillmentLinesByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -4597,20 +4583,7 @@ func (s *OpenTracingLayerOrderStore) Get(id string) (*order.Order, error) {
 	return result, err
 }
 
-func (s *OpenTracingLayerOrderStore) OrderBy() string {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderStore.OrderBy")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result := s.OrderStore.OrderBy()
-	return result
-}
-
-func (s *OpenTracingLayerOrderStore) Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) {
+func (s *OpenTracingLayerOrderStore) Save(transaction store_iface.SqlxTxExecutor, order *order.Order) (*order.Order, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -4628,7 +4601,7 @@ func (s *OpenTracingLayerOrderStore) Save(transaction *gorp.Transaction, order *
 	return result, err
 }
 
-func (s *OpenTracingLayerOrderStore) Update(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) {
+func (s *OpenTracingLayerOrderStore) Update(transaction store_iface.SqlxTxExecutor, order *order.Order) (*order.Order, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderStore.Update")
 	s.Root.Store.SetContext(newCtx)
@@ -4736,7 +4709,7 @@ func (s *OpenTracingLayerOrderEventStore) Get(orderEventID string) (*order.Order
 	return result, err
 }
 
-func (s *OpenTracingLayerOrderEventStore) Save(transaction *gorp.Transaction, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
+func (s *OpenTracingLayerOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderEventStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -4772,7 +4745,7 @@ func (s *OpenTracingLayerOrderLineStore) BulkDelete(orderLineIDs []string) error
 	return err
 }
 
-func (s *OpenTracingLayerOrderLineStore) BulkUpsert(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
+func (s *OpenTracingLayerOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
@@ -4826,20 +4799,7 @@ func (s *OpenTracingLayerOrderLineStore) Get(id string) (*order.OrderLine, error
 	return result, err
 }
 
-func (s *OpenTracingLayerOrderLineStore) OrderBy() string {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.OrderBy")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result := s.OrderLineStore.OrderBy()
-	return result
-}
-
-func (s *OpenTracingLayerOrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error) {
+func (s *OpenTracingLayerOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, orderLine *order.OrderLine) (*order.OrderLine, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderLineStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
@@ -4893,7 +4853,7 @@ func (s *OpenTracingLayerPaymentStore) FilterByOption(option *payment.PaymentFil
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentStore) Get(transaction *gorp.Transaction, id string, lockForUpdate bool) (*payment.Payment, error) {
+func (s *OpenTracingLayerPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*payment.Payment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -4911,7 +4871,7 @@ func (s *OpenTracingLayerPaymentStore) Get(transaction *gorp.Transaction, id str
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentStore) Save(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
+func (s *OpenTracingLayerPaymentStore) Save(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -4929,7 +4889,7 @@ func (s *OpenTracingLayerPaymentStore) Save(transaction *gorp.Transaction, payme
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentStore) Update(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
+func (s *OpenTracingLayerPaymentStore) Update(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.Update")
 	s.Root.Store.SetContext(newCtx)
@@ -4947,7 +4907,7 @@ func (s *OpenTracingLayerPaymentStore) Update(transaction *gorp.Transaction, pay
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentStore) UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) error {
+func (s *OpenTracingLayerPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *payment.PaymentPatch) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentStore.UpdatePaymentsOfCheckout")
 	s.Root.Store.SetContext(newCtx)
@@ -5001,7 +4961,7 @@ func (s *OpenTracingLayerPaymentTransactionStore) Get(id string) (*payment.Payme
 	return result, err
 }
 
-func (s *OpenTracingLayerPaymentTransactionStore) Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (s *OpenTracingLayerPaymentTransactionStore) Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PaymentTransactionStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -5428,7 +5388,7 @@ func (s *OpenTracingLayerPreferenceStore) PermanentDeleteByUser(userID string) e
 	return err
 }
 
-func (s *OpenTracingLayerPreferenceStore) Save(preferences *model.Preferences) error {
+func (s *OpenTracingLayerPreferenceStore) Save(preferences model.Preferences) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PreferenceStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -5446,7 +5406,7 @@ func (s *OpenTracingLayerPreferenceStore) Save(preferences *model.Preferences) e
 	return err
 }
 
-func (s *OpenTracingLayerPreorderAllocationStore) BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
+func (s *OpenTracingLayerPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PreorderAllocationStore.BulkCreate")
 	s.Root.Store.SetContext(newCtx)
@@ -5464,7 +5424,7 @@ func (s *OpenTracingLayerPreorderAllocationStore) BulkCreate(transaction *gorp.T
 	return result, err
 }
 
-func (s *OpenTracingLayerPreorderAllocationStore) Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error {
+func (s *OpenTracingLayerPreorderAllocationStore) Delete(transaction store_iface.SqlxTxExecutor, preorderAllocationIDs ...string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "PreorderAllocationStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -6039,7 +5999,7 @@ func (s *OpenTracingLayerProductVariantStore) GetWeight(productVariantID string)
 	return result, err
 }
 
-func (s *OpenTracingLayerProductVariantStore) Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (s *OpenTracingLayerProductVariantStore) Save(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -6057,7 +6017,7 @@ func (s *OpenTracingLayerProductVariantStore) Save(transaction *gorp.Transaction
 	return result, err
 }
 
-func (s *OpenTracingLayerProductVariantStore) Update(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (s *OpenTracingLayerProductVariantStore) Update(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantStore.Update")
 	s.Root.Store.SetContext(newCtx)
@@ -6075,7 +6035,7 @@ func (s *OpenTracingLayerProductVariantStore) Update(transaction *gorp.Transacti
 	return result, err
 }
 
-func (s *OpenTracingLayerProductVariantChannelListingStore) BulkUpsert(transaction *gorp.Transaction, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (s *OpenTracingLayerProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantChannelListingStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
@@ -6093,7 +6053,7 @@ func (s *OpenTracingLayerProductVariantChannelListingStore) BulkUpsert(transacti
 	return result, err
 }
 
-func (s *OpenTracingLayerProductVariantChannelListingStore) FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (s *OpenTracingLayerProductVariantChannelListingStore) FilterbyOption(transaction store_iface.SqlxTxExecutor, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantChannelListingStore.FilterbyOption")
 	s.Root.Store.SetContext(newCtx)
@@ -7330,7 +7290,7 @@ func (s *OpenTracingLayerStatusStore) UpdateLastActivityAt(userID string, lastAc
 	return err
 }
 
-func (s *OpenTracingLayerStockStore) BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
+func (s *OpenTracingLayerStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
@@ -7366,7 +7326,7 @@ func (s *OpenTracingLayerStockStore) ChangeQuantity(stockID string, quantity int
 	return err
 }
 
-func (s *OpenTracingLayerStockStore) FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -7402,7 +7362,7 @@ func (s *OpenTracingLayerStockStore) FilterForChannel(options *warehouse.StockFi
 	return result, resultVar1, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterForCountryAndChannel")
 	s.Root.Store.SetContext(newCtx)
@@ -7420,7 +7380,7 @@ func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(transaction *gor
 	return result, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterProductStocksForCountryAndChannel")
 	s.Root.Store.SetContext(newCtx)
@@ -7438,7 +7398,7 @@ func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(tra
 	return result, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterVariantStocksForCountry(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterVariantStocksForCountry")
 	s.Root.Store.SetContext(newCtx)
@@ -9411,7 +9371,7 @@ func (s *OpenTracingLayerWishlistStore) Upsert(wishList *wishlist.Wishlist) (*wi
 	return result, err
 }
 
-func (s *OpenTracingLayerWishlistItemStore) BulkUpsert(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
+func (s *OpenTracingLayerWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
@@ -9429,7 +9389,7 @@ func (s *OpenTracingLayerWishlistItemStore) BulkUpsert(transaction *gorp.Transac
 	return result, err
 }
 
-func (s *OpenTracingLayerWishlistItemStore) DeleteItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, error) {
+func (s *OpenTracingLayerWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.DeleteItemsByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -9465,7 +9425,7 @@ func (s *OpenTracingLayerWishlistItemStore) FilterByOption(option *wishlist.Wish
 	return result, err
 }
 
-func (s *OpenTracingLayerWishlistItemStore) GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItem, error) {
+func (s *OpenTracingLayerWishlistItemStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItem, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemStore.GetById")
 	s.Root.Store.SetContext(newCtx)
@@ -9501,7 +9461,7 @@ func (s *OpenTracingLayerWishlistItemStore) GetByOption(option *wishlist.Wishlis
 	return result, err
 }
 
-func (s *OpenTracingLayerWishlistItemProductVariantStore) BulkUpsert(transaction *gorp.Transaction, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
+func (s *OpenTracingLayerWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemProductVariantStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
@@ -9537,7 +9497,7 @@ func (s *OpenTracingLayerWishlistItemProductVariantStore) DeleteRelation(relatio
 	return result, err
 }
 
-func (s *OpenTracingLayerWishlistItemProductVariantStore) GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItemProductVariant, error) {
+func (s *OpenTracingLayerWishlistItemProductVariantStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItemProductVariant, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistItemProductVariantStore.GetById")
 	s.Root.Store.SetContext(newCtx)

@@ -4,11 +4,12 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlProductVariantStore struct {
@@ -16,39 +17,32 @@ type SqlProductVariantStore struct {
 }
 
 func NewSqlProductVariantStore(s store.Store) store.ProductVariantStore {
-	pvs := &SqlProductVariantStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.ProductVariant{}, store.ProductVariantTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Sku").SetMaxSize(product_and_discount.PRODUCT_VARIANT_SKU_MAX_LENGTH).SetUnique(true)
-		table.ColMap("Name").SetMaxSize(product_and_discount.PRODUCT_VARIANT_NAME_MAX_LENGTH)
-	}
-	return pvs
+	return &SqlProductVariantStore{s}
 }
 
-func (ps *SqlProductVariantStore) CreateIndexesIfNotExists() {
-	ps.CreateIndexIfNotExists("idx_product_variants_sku", store.ProductVariantTableName, "Sku")
-	ps.CreateForeignKeyIfNotExists(store.ProductVariantTableName, "ProductID", store.ProductTableName, "Id", true)
-}
-
-func (ps *SqlProductVariantStore) ModelFields() []string {
-	return []string{
-		"ProductVariants.Id",
-		"ProductVariants.Name",
-		"ProductVariants.ProductID",
-		"ProductVariants.Sku",
-		"ProductVariants.Weight",
-		"ProductVariants.WeightUnit",
-		"ProductVariants.TrackInventory",
-		"ProductVariants.IsPreOrder",
-		"ProductVariants.PreorderEndDate",
-		"ProductVariants.PreOrderGlobalThreshold",
-		"ProductVariants.SortOrder",
-		"ProductVariants.Metadata",
-		"ProductVariants.PrivateMetadata",
+func (ps *SqlProductVariantStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"Name",
+		"ProductID",
+		"Sku",
+		"Weight",
+		"WeightUnit",
+		"TrackInventory",
+		"IsPreOrder",
+		"PreorderEndDate",
+		"PreOrderGlobalThreshold",
+		"SortOrder",
+		"Metadata",
+		"PrivateMetadata",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (ps *SqlProductVariantStore) ScanFields(variant product_and_discount.ProductVariant) []interface{} {
@@ -69,17 +63,10 @@ func (ps *SqlProductVariantStore) ScanFields(variant product_and_discount.Produc
 	}
 }
 
-func (ps *SqlProductVariantStore) TableName(withField string) string {
-	if withField == "" {
-		return "ProductVariants"
-	}
-	return "ProductVariants." + withField
-}
-
-func (ps *SqlProductVariantStore) Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
-	var upsertor gorp.SqlExecutor = ps.GetMaster()
+func (ps *SqlProductVariantStore) Save(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
-		upsertor = transaction
+		executor = transaction
 	}
 
 	variant.PreSave()
@@ -87,7 +74,8 @@ func (ps *SqlProductVariantStore) Save(transaction *gorp.Transaction, variant *p
 		return nil, err
 	}
 
-	if err := upsertor.Insert(variant); err != nil {
+	query := "INSERT INTO " + store.ProductVariantTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+	if _, err := executor.NamedExec(query, variant); err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"Sku", "idx_productvariants_sku_unique", "productvariants_sku_key"}) {
 			return nil, store.NewErrInvalidInput(store.ProductVariantTableName, "Sku", variant.Sku)
 		}
@@ -98,33 +86,32 @@ func (ps *SqlProductVariantStore) Save(transaction *gorp.Transaction, variant *p
 }
 
 // Update updates given product variant and returns it
-func (ps *SqlProductVariantStore) Update(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (ps *SqlProductVariantStore) Update(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 	variant.PreUpdate()
 	if err := variant.IsValid(); err != nil {
 		return nil, err
 	}
 
-	var selectUpsertor gorp.SqlExecutor = ps.GetMaster()
+	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
-		selectUpsertor = transaction
+		executor = transaction
 	}
 
-	err := selectUpsertor.SelectOne(&product_and_discount.ProductVariant{}, "SELECT * FROM "+store.ProductVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": variant.Id})
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductVariantTableName, variant.Id)
-		}
-		return nil, errors.Wrapf(err, "failed to check if a product variant with id=%s does exist", variant.Id)
-	}
+	query := "UPDATE " + store.ProductVariantTableName + " SET " + ps.
+		ModelFields("").
+		Map(func(_ int, s string) string {
+			return s + "=:" + s
+		}).
+		Join(",") + " WHERE Id=:Id"
 
-	numUpdated, err := selectUpsertor.Update(variant)
+	result, err := executor.NamedExec(query, variant)
 	if err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"Sku", "idx_productvariants_sku_unique", "productvariants_sku_key"}) {
 			return nil, store.NewErrInvalidInput(store.ProductVariantTableName, "Sku", variant.Sku)
 		}
 		return nil, errors.Wrapf(err, "failed to update product variant with id=%s", variant.Id)
 	}
-	if numUpdated != 1 {
+	if numUpdated, _ := result.RowsAffected(); numUpdated > 1 {
 		return nil, errors.Errorf("%d product variant(s) were/was updated instead of 1", numUpdated)
 	}
 
@@ -133,10 +120,10 @@ func (ps *SqlProductVariantStore) Update(transaction *gorp.Transaction, variant 
 
 func (ps *SqlProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
 	var variant product_and_discount.ProductVariant
-	err := ps.GetReplica().SelectOne(
+	err := ps.GetReplicaX().Get(
 		&variant,
-		"SELECT * FROM "+store.ProductVariantTableName+" WHERE Id = :id",
-		map[string]interface{}{"id": id},
+		"SELECT * FROM "+store.ProductVariantTableName+" WHERE Id = ?",
+		id,
 	)
 
 	if err != nil {
@@ -151,7 +138,7 @@ func (ps *SqlProductVariantStore) Get(id string) (*product_and_discount.ProductV
 
 // GetWeight returns either given variant's weight or the accompany product's weight or product type of accompany product's weight
 func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measurement.Weight, error) {
-	rowScanner := ps.GetQueryBuilder().
+	queryString, args, err := ps.GetQueryBuilder().
 		Select(
 			"ProductVariants.Weight",
 			"ProductVariants.WeightUnit",
@@ -164,8 +151,11 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 		InnerJoin(store.ProductTableName + " ON Products.Id = ProductVariants.ProductID").
 		InnerJoin(store.ProductTypeTableName + " ON ProductTypes.Id = Products.ProductTypeID").
 		Where(squirrel.Eq{"ProductVariants.Id": productVariantID}).
-		RunWith(ps.GetReplica()).
-		QueryRow()
+		ToSql()
+
+	if err != nil {
+		return nil, errors.Wrap(err, "GetWeight_ToSql")
+	}
 
 	var (
 		variantWeightAmount *float32
@@ -177,14 +167,17 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 		productTypeWeightAmount *float32
 		productTypeWeightUnit   measurement.WeightUnit
 	)
-	err := rowScanner.Scan(
-		&variantWeightAmount,
-		&variantWeightUnit,
-		&productWeightAmount,
-		&productWeightUnit,
-		&productTypeWeightAmount,
-		&productTypeWeightUnit,
-	)
+	err = ps.
+		GetReplicaX().
+		QueryRowX(queryString, args...).
+		Scan(
+			&variantWeightAmount,
+			&variantWeightUnit,
+			&productWeightAmount,
+			&productWeightUnit,
+			&productTypeWeightAmount,
+			&productTypeWeightUnit,
+		)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductVariantTableName, productVariantID)
@@ -209,17 +202,13 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error) {
 	var res product_and_discount.ProductVariant
 
-	query, args, err := vs.GetQueryBuilder().
-		Select(vs.ModelFields()...).
-		From(store.ProductVariantTableName).
-		InnerJoin(store.OrderLineTableName + " ON (ProductVariants.Id = Orderlines.VariantID)").
-		Where(squirrel.Eq{"Orderlines.Id": orderLineID}).
-		ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "GetByOrderLineID_ToSql")
-	}
+	query := "SELECT " +
+		vs.ModelFields(store.ProductVariantTableName+".").Join(",") +
+		" FROM " + store.ProductVariantTableName +
+		" INNER JOIN " + store.OrderLineTableName +
+		" ON ProductVariants.Id = Orderlines.VariantID WHERE Orderlines.Id = ?"
 
-	err = vs.GetReplica().SelectOne(&res, query, args...)
+	err := vs.GetReplicaX().Get(&res, query, orderLineID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductVariantTableName, "orderLineID="+orderLineID)
@@ -232,9 +221,9 @@ func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*product
 
 // FilterByOption finds and returns product variants based on given option
 func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) {
-	selectFields := vs.ModelFields()
+	selectFields := vs.ModelFields(store.ProductVariantTableName + ".")
 	if option.SelectRelatedDigitalContent {
-		selectFields = append(selectFields, vs.DigitalContent().ModelFields()...)
+		selectFields = append(selectFields, vs.DigitalContent().ModelFields(store.DigitalContentTableName+".")...)
 	}
 
 	query := vs.GetQueryBuilder().
@@ -293,7 +282,12 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 		query = query.InnerJoin(store.DigitalContentTableName + " ON (ProductVariants.Id = DigitalContents.ProductVariantID)")
 	}
 
-	rows, err := query.RunWith(vs.GetReplica()).Query()
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	rows, err := vs.GetReplicaX().QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product variants by options")
 	}

@@ -376,7 +376,7 @@ func (th *SearchTestHelper) createFileInfo(creatorID, postID, name, content, ext
 		creationTime = createAt
 	}
 	fileInfoModel := th.createFileInfoModel(creatorID, postID, name, content, extension, mimeType, creationTime, size)
-	return th.Store.FileInfo().Save(fileInfoModel)
+	return th.Store.FileInfo().Upsert(fileInfoModel)
 }
 
 // func (th *SearchTestHelper) createReply(userID, message, hashtags string, parent *model.Post, createAt int64, pinned bool) (*model.Post, error) {

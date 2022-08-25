@@ -76,8 +76,8 @@ func (ps *SqlProductChannelListingStore) BulkUpsert(listings []*product_and_disc
 
 	for _, listing := range listings {
 		var (
-			isSaving   bool
-			numUpdated int64
+			isSaving   bool  = false
+			numUpdated int64 = 0
 		)
 
 		if listing.Id == "" {

@@ -9,7 +9,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/lib/pq"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/graphql/gqlmodel"
@@ -1266,7 +1265,7 @@ func (s *RetryLayerAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, 
 
 }
 
-func (s *RetryLayerAllocationStore) BulkDelete(transaction *gorp.Transaction, allocationIDs []string) error {
+func (s *RetryLayerAllocationStore) BulkDelete(transaction store_iface.SqlxTxExecutor, allocationIDs []string) error {
 
 	tries := 0
 	for {
@@ -1286,7 +1285,7 @@ func (s *RetryLayerAllocationStore) BulkDelete(transaction *gorp.Transaction, al
 
 }
 
-func (s *RetryLayerAllocationStore) BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
+func (s *RetryLayerAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
 
 	tries := 0
 	for {
@@ -1326,7 +1325,7 @@ func (s *RetryLayerAllocationStore) CountAvailableQuantityForStock(stock *wareho
 
 }
 
-func (s *RetryLayerAllocationStore) FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
+func (s *RetryLayerAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
 
 	tries := 0
 	for {
@@ -3392,12 +3391,6 @@ func (s *RetryLayerDigitalContentStore) GetByOption(option *product_and_discount
 
 }
 
-func (s *RetryLayerDigitalContentStore) OrderBy() string {
-
-	return s.DigitalContentStore.OrderBy()
-
-}
-
 func (s *RetryLayerDigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
 
 	tries := 0
@@ -3933,7 +3926,7 @@ func (s *RetryLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 
 }
 
-func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) error {
+func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments order.Fulfillments) error {
 
 	tries := 0
 	for {
@@ -3953,7 +3946,7 @@ func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(transaction *gorp.Tr
 
 }
 
-func (s *RetryLayerFulfillmentStore) FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
 
 	tries := 0
 	for {
@@ -3993,7 +3986,7 @@ func (s *RetryLayerFulfillmentStore) Get(id string) (*order.Fulfillment, error) 
 
 }
 
-func (s *RetryLayerFulfillmentStore) GetByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
 
 	tries := 0
 	for {
@@ -4013,7 +4006,7 @@ func (s *RetryLayerFulfillmentStore) GetByOption(transaction *gorp.Transaction, 
 
 }
 
-func (s *RetryLayerFulfillmentStore) Upsert(transaction *gorp.Transaction, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
 
 	tries := 0
 	for {
@@ -4033,7 +4026,7 @@ func (s *RetryLayerFulfillmentStore) Upsert(transaction *gorp.Transaction, fulfi
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) BulkUpsert(transaction *gorp.Transaction, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+func (s *RetryLayerFulfillmentLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
 
 	tries := 0
 	for {
@@ -4053,7 +4046,7 @@ func (s *RetryLayerFulfillmentLineStore) BulkUpsert(transaction *gorp.Transactio
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *gorp.Transaction, option *order.FulfillmentLineFilterOption) error {
+func (s *RetryLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentLineFilterOption) error {
 
 	tries := 0
 	for {
@@ -4953,13 +4946,7 @@ func (s *RetryLayerOrderStore) Get(id string) (*order.Order, error) {
 
 }
 
-func (s *RetryLayerOrderStore) OrderBy() string {
-
-	return s.OrderStore.OrderBy()
-
-}
-
-func (s *RetryLayerOrderStore) Save(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) {
+func (s *RetryLayerOrderStore) Save(transaction store_iface.SqlxTxExecutor, order *order.Order) (*order.Order, error) {
 
 	tries := 0
 	for {
@@ -4979,7 +4966,7 @@ func (s *RetryLayerOrderStore) Save(transaction *gorp.Transaction, order *order.
 
 }
 
-func (s *RetryLayerOrderStore) Update(transaction *gorp.Transaction, order *order.Order) (*order.Order, error) {
+func (s *RetryLayerOrderStore) Update(transaction store_iface.SqlxTxExecutor, order *order.Order) (*order.Order, error) {
 
 	tries := 0
 	for {
@@ -5099,7 +5086,7 @@ func (s *RetryLayerOrderEventStore) Get(orderEventID string) (*order.OrderEvent,
 
 }
 
-func (s *RetryLayerOrderEventStore) Save(transaction *gorp.Transaction, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
+func (s *RetryLayerOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
 
 	tries := 0
 	for {
@@ -5139,7 +5126,7 @@ func (s *RetryLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
 
 }
 
-func (s *RetryLayerOrderLineStore) BulkUpsert(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
 
 	tries := 0
 	for {
@@ -5199,13 +5186,7 @@ func (s *RetryLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 
 }
 
-func (s *RetryLayerOrderLineStore) OrderBy() string {
-
-	return s.OrderLineStore.OrderBy()
-
-}
-
-func (s *RetryLayerOrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, orderLine *order.OrderLine) (*order.OrderLine, error) {
 
 	tries := 0
 	for {
@@ -5265,7 +5246,7 @@ func (s *RetryLayerPaymentStore) FilterByOption(option *payment.PaymentFilterOpt
 
 }
 
-func (s *RetryLayerPaymentStore) Get(transaction *gorp.Transaction, id string, lockForUpdate bool) (*payment.Payment, error) {
+func (s *RetryLayerPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*payment.Payment, error) {
 
 	tries := 0
 	for {
@@ -5285,7 +5266,7 @@ func (s *RetryLayerPaymentStore) Get(transaction *gorp.Transaction, id string, l
 
 }
 
-func (s *RetryLayerPaymentStore) Save(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
+func (s *RetryLayerPaymentStore) Save(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error) {
 
 	tries := 0
 	for {
@@ -5305,7 +5286,7 @@ func (s *RetryLayerPaymentStore) Save(transaction *gorp.Transaction, payment *pa
 
 }
 
-func (s *RetryLayerPaymentStore) Update(transaction *gorp.Transaction, payment *payment.Payment) (*payment.Payment, error) {
+func (s *RetryLayerPaymentStore) Update(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error) {
 
 	tries := 0
 	for {
@@ -5325,7 +5306,7 @@ func (s *RetryLayerPaymentStore) Update(transaction *gorp.Transaction, payment *
 
 }
 
-func (s *RetryLayerPaymentStore) UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) error {
+func (s *RetryLayerPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *payment.PaymentPatch) error {
 
 	tries := 0
 	for {
@@ -5385,7 +5366,7 @@ func (s *RetryLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTran
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (s *RetryLayerPaymentTransactionStore) Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
 
 	tries := 0
 	for {
@@ -5851,7 +5832,7 @@ func (s *RetryLayerPreferenceStore) PermanentDeleteByUser(userID string) error {
 
 }
 
-func (s *RetryLayerPreferenceStore) Save(preferences *model.Preferences) error {
+func (s *RetryLayerPreferenceStore) Save(preferences model.Preferences) error {
 
 	tries := 0
 	for {
@@ -5871,7 +5852,7 @@ func (s *RetryLayerPreferenceStore) Save(preferences *model.Preferences) error {
 
 }
 
-func (s *RetryLayerPreorderAllocationStore) BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
+func (s *RetryLayerPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
 
 	tries := 0
 	for {
@@ -5891,7 +5872,7 @@ func (s *RetryLayerPreorderAllocationStore) BulkCreate(transaction *gorp.Transac
 
 }
 
-func (s *RetryLayerPreorderAllocationStore) Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error {
+func (s *RetryLayerPreorderAllocationStore) Delete(transaction store_iface.SqlxTxExecutor, preorderAllocationIDs ...string) error {
 
 	tries := 0
 	for {
@@ -6521,7 +6502,7 @@ func (s *RetryLayerProductVariantStore) GetWeight(productVariantID string) (*mea
 
 }
 
-func (s *RetryLayerProductVariantStore) Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (s *RetryLayerProductVariantStore) Save(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 
 	tries := 0
 	for {
@@ -6541,7 +6522,7 @@ func (s *RetryLayerProductVariantStore) Save(transaction *gorp.Transaction, vari
 
 }
 
-func (s *RetryLayerProductVariantStore) Update(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (s *RetryLayerProductVariantStore) Update(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 
 	tries := 0
 	for {
@@ -6561,7 +6542,7 @@ func (s *RetryLayerProductVariantStore) Update(transaction *gorp.Transaction, va
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) BulkUpsert(transaction *gorp.Transaction, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
 
 	tries := 0
 	for {
@@ -6581,7 +6562,7 @@ func (s *RetryLayerProductVariantChannelListingStore) BulkUpsert(transaction *go
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(transaction store_iface.SqlxTxExecutor, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
 
 	tries := 0
 	for {
@@ -7947,7 +7928,7 @@ func (s *RetryLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 
 }
 
-func (s *RetryLayerStockStore) BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
 
 	tries := 0
 	for {
@@ -7987,7 +7968,7 @@ func (s *RetryLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 
 }
 
-func (s *RetryLayerStockStore) FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 
 	tries := 0
 	for {
@@ -8027,7 +8008,7 @@ func (s *RetryLayerStockStore) FilterForChannel(options *warehouse.StockFilterFo
 
 }
 
-func (s *RetryLayerStockStore) FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 
 	tries := 0
 	for {
@@ -8047,7 +8028,7 @@ func (s *RetryLayerStockStore) FilterForCountryAndChannel(transaction *gorp.Tran
 
 }
 
-func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 
 	tries := 0
 	for {
@@ -8067,7 +8048,7 @@ func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(transacti
 
 }
 
-func (s *RetryLayerStockStore) FilterVariantStocksForCountry(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 
 	tries := 0
 	for {
@@ -10217,7 +10198,7 @@ func (s *RetryLayerWishlistStore) Upsert(wishList *wishlist.Wishlist) (*wishlist
 
 }
 
-func (s *RetryLayerWishlistItemStore) BulkUpsert(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
+func (s *RetryLayerWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
 
 	tries := 0
 	for {
@@ -10237,7 +10218,7 @@ func (s *RetryLayerWishlistItemStore) BulkUpsert(transaction *gorp.Transaction, 
 
 }
 
-func (s *RetryLayerWishlistItemStore) DeleteItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, error) {
+func (s *RetryLayerWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, error) {
 
 	tries := 0
 	for {
@@ -10277,7 +10258,7 @@ func (s *RetryLayerWishlistItemStore) FilterByOption(option *wishlist.WishlistIt
 
 }
 
-func (s *RetryLayerWishlistItemStore) GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItem, error) {
+func (s *RetryLayerWishlistItemStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItem, error) {
 
 	tries := 0
 	for {
@@ -10317,7 +10298,7 @@ func (s *RetryLayerWishlistItemStore) GetByOption(option *wishlist.WishlistItemF
 
 }
 
-func (s *RetryLayerWishlistItemProductVariantStore) BulkUpsert(transaction *gorp.Transaction, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
+func (s *RetryLayerWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
 
 	tries := 0
 	for {
@@ -10357,7 +10338,7 @@ func (s *RetryLayerWishlistItemProductVariantStore) DeleteRelation(relation *wis
 
 }
 
-func (s *RetryLayerWishlistItemProductVariantStore) GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItemProductVariant, error) {
+func (s *RetryLayerWishlistItemProductVariantStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItemProductVariant, error) {
 
 	tries := 0
 	for {

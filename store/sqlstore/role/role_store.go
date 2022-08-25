@@ -7,11 +7,11 @@ import (
 	"strings"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlRoleStore struct {
@@ -28,20 +28,8 @@ type channelRolesPermissions struct {
 }
 
 func NewSqlRoleStore(sqlStore store.Store) store.RoleStore {
-	s := &SqlRoleStore{sqlStore}
-
-	for _, db := range sqlStore.GetAllConns() {
-		table := db.AddTableWithName(model.Role{}, store.RoleTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(64).SetUnique(true)
-		table.ColMap("DisplayName").SetMaxSize(128)
-		table.ColMap("Description").SetMaxSize(1024)
-		table.ColMap("PermissionsStr") // NOTE: don's save Permissions slice
-	}
-	return s
+	return &SqlRoleStore{sqlStore}
 }
-
-func (s *SqlRoleStore) CreateIndexesIfNotExists() {}
 
 // Save can be used to both save and update roles
 func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
@@ -51,7 +39,7 @@ func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
 	}
 
 	if role.Id == "" { // this means create new Role
-		transaction, err := s.GetMaster().Begin()
+		transaction, err := s.GetMasterX().Beginx()
 		if err != nil {
 			return nil, errors.Wrap(err, "begin_transaction")
 		}
@@ -67,7 +55,7 @@ func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
 	}
 
 	role.PreUpdate()
-	if rowsChanged, err := s.GetMaster().Update(role); err != nil {
+	if rowsChanged, err := s.GetMasterX().Update(role); err != nil {
 		return nil, errors.Wrap(err, "failed to update Role")
 	} else if rowsChanged != 1 {
 		return nil, fmt.Errorf("invalid number of updated rows, expected 1 but got %d", rowsChanged)
@@ -77,7 +65,7 @@ func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
 	return role, nil
 }
 
-func (s *SqlRoleStore) createRole(role *model.Role, transaction *gorp.Transaction) (*model.Role, error) {
+func (s *SqlRoleStore) createRole(role *model.Role, transaction store_iface.SqlxTxExecutor) (*model.Role, error) {
 	role.PreSave()
 	if err := transaction.Insert(role); err != nil {
 		return nil, errors.Wrap(err, "failed to save Role")
@@ -89,7 +77,7 @@ func (s *SqlRoleStore) createRole(role *model.Role, transaction *gorp.Transactio
 
 func (s *SqlRoleStore) Get(roleId string) (*model.Role, error) {
 	var role model.Role
-	if err := s.GetReplica().SelectOne(&role, "SELECT * from Roles WHERE Id = :Id", map[string]interface{}{"Id": roleId}); err != nil {
+	if err := s.GetReplicaX().Get(&role, "SELECT * from Roles WHERE Id = ?", roleId); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.RoleTableName, roleId)
 		}
@@ -103,7 +91,7 @@ func (s *SqlRoleStore) Get(roleId string) (*model.Role, error) {
 func (s *SqlRoleStore) GetAll() ([]*model.Role, error) {
 	var dbRoles []*model.Role
 
-	if _, err := s.GetReplica().Select(&dbRoles, "SELECT * from Roles", map[string]interface{}{}); err != nil {
+	if err := s.GetReplicaX().Select(&dbRoles, "SELECT * from Roles"); err != nil {
 		return nil, errors.Wrap(err, "failed to find Roles")
 	}
 
@@ -116,7 +104,7 @@ func (s *SqlRoleStore) GetAll() ([]*model.Role, error) {
 
 func (s *SqlRoleStore) GetByName(ctx context.Context, name string) (*model.Role, error) {
 	var rolw model.Role
-	if err := s.DBFromContext(ctx).SelectOne(&rolw, "SELECT * from Roles WHERE Name = :Name", map[string]interface{}{"Name": name}); err != nil {
+	if err := s.DBXFromContext(ctx).Get(&rolw, "SELECT * from Roles WHERE Name = ?", name); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("Role", fmt.Sprintf("name=%s", name))
 		}
@@ -141,7 +129,7 @@ func (s *SqlRoleStore) GetByNames(names []string) ([]*model.Role, error) {
 		return nil, errors.Wrap(err, "role_tosql")
 	}
 
-	rows, err := s.GetReplica().Db.Query(queryString, args...)
+	rows, err := s.GetReplicaX().QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find Roles")
 	}
@@ -170,7 +158,7 @@ func (s *SqlRoleStore) GetByNames(names []string) ([]*model.Role, error) {
 func (s *SqlRoleStore) Delete(roleId string) (*model.Role, error) {
 	// Get the role.
 	var role model.Role
-	if err := s.GetReplica().SelectOne(&role, "SELECT * from Roles WHERE Id = :Id", map[string]interface{}{"Id": roleId}); err != nil {
+	if err := s.GetReplicaX().Get(&role, "SELECT * from Roles WHERE Id = ?", roleId); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("Role", roleId)
 		}
@@ -180,7 +168,7 @@ func (s *SqlRoleStore) Delete(roleId string) (*model.Role, error) {
 	role.PreUpdate()
 	role.DeleteAt = role.UpdateAt
 
-	if rowsChanged, err := s.GetMaster().Update(role); err != nil {
+	if rowsChanged, err := s.GetMasterX().Update(role); err != nil {
 		return nil, errors.Wrap(err, "failed to update Role")
 	} else if rowsChanged != 1 {
 		return nil, errors.Wrapf(err, "invalid number of updated rows, expected 1 but got %d", rowsChanged)
@@ -191,7 +179,7 @@ func (s *SqlRoleStore) Delete(roleId string) (*model.Role, error) {
 }
 
 func (s *SqlRoleStore) PermanentDeleteAll() error {
-	if _, err := s.GetMaster().Exec("DELETE FROM Roles"); err != nil {
+	if _, err := s.GetMasterX().Exec("DELETE FROM Roles"); err != nil {
 		return errors.Wrap(err, "failed to delete Roles")
 	}
 

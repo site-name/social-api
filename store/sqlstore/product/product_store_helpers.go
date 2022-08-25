@@ -429,7 +429,7 @@ func (ps *SqlProductStore) cleanProductAttributesFilterInput(filterValue valueLi
 	}
 
 	var attributeValues attribute.AttributeValues
-	_, err = ps.GetReplica().Select(&attributeValues, "SELECT * FROM "+store.AttributeValueTableName)
+	err = ps.GetReplicaX().Select(&attributeValues, "SELECT * FROM "+store.AttributeValueTableName)
 	if err != nil {
 		return errors.Wrap(err, "failed to find all attribute values")
 	}
@@ -728,14 +728,14 @@ func (ps *SqlProductStore) filterQuantity(query squirrel.SelectBuilder, quantity
 	}
 
 	var products product_and_discount.Products
-	_, err = ps.GetReplica().Select(&products, queryString, args...)
+	err = ps.GetReplicaX().Select(&products, queryString, args...)
 	if err != nil {
 		slog.Error("failed to find products", slog.Err(err))
 		return query
 	}
 
 	productVariantQuery := ps.GetQueryBuilder().
-		Select(ps.ProductVariant().ModelFields()...).
+		Select(ps.ProductVariant().ModelFields(store.ProductVariantTableName+".")...).
 		From(store.ProductVariantTableName).
 		Where("ProductVariants.ProductID IN ?", products.IDs())
 
@@ -771,7 +771,7 @@ func (ps *SqlProductStore) filterQuantity(query squirrel.SelectBuilder, quantity
 	}
 
 	var variants product_and_discount.ProductVariants
-	_, err = ps.GetReplica().Select(&variants, queryString, args...)
+	err = ps.GetReplicaX().Select(&variants, queryString, args...)
 	if err != nil {
 		slog.Error("failed to find product variants", slog.Err(err))
 		return query

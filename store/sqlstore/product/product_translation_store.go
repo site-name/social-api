@@ -14,28 +14,32 @@ type SqlProductTranslationStore struct {
 }
 
 func NewSqlProductTranslationStore(s store.Store) store.ProductTranslationStore {
-	pts := &SqlProductTranslationStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(product_and_discount.ProductTranslation{}, store.ProductTranslationTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(product_and_discount.PRODUCT_NAME_MAX_LENGTH).SetUnique(true)
-
-		table.SetUniqueTogether("LanguageCode", "ProductID")
-		s.CommonSeoMaxLength(table)
-	}
-	return pts
+	return &SqlProductTranslationStore{s}
 }
 
-func (ps *SqlProductTranslationStore) CreateIndexesIfNotExists() {
-	ps.CreateForeignKeyIfNotExists(store.ProductTranslationTableName, "ProductID", store.ProductTableName, "Id", true)
+func (s *SqlProductTranslationStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"LanguageCode",
+		"ProductID",
+		"Name",
+		"Description",
+		"SeoTitle",
+		"SeoDescription",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Upsert inserts or update given translation
 func (ps *SqlProductTranslationStore) Upsert(translation *product_and_discount.ProductTranslation) (*product_and_discount.ProductTranslation, error) {
 	var isSaving bool
+
 	if translation.Id == "" {
 		translation.PreSave()
 		isSaving = true
@@ -52,14 +56,22 @@ func (ps *SqlProductTranslationStore) Upsert(translation *product_and_discount.P
 		numUpdated int64
 	)
 	if isSaving {
-		err = ps.GetMaster().Insert()
-	} else {
-		_, err = ps.Get(translation.Id)
-		if err != nil {
-			return nil, err
-		}
+		query := "INSERT INTO " + store.ProductTranslationTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+		_, err = ps.GetMasterX().NamedExec(query, translation)
 
-		numUpdated, err = ps.GetMaster().Update(translation)
+	} else {
+		query := "UPDATE " + store.ProductTranslationTableName + " SET " + ps.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = ps.GetMasterX().NamedExec(query, translation)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -78,7 +90,7 @@ func (ps *SqlProductTranslationStore) Upsert(translation *product_and_discount.P
 // Get finds and returns a product translation by given id
 func (ps *SqlProductTranslationStore) Get(translationID string) (*product_and_discount.ProductTranslation, error) {
 	var res product_and_discount.ProductTranslation
-	err := ps.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ProductTranslationTableName+" WHERE Id = :ID", map[string]interface{}{"ID": translationID})
+	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.ProductTranslationTableName+" WHERE Id = ?", translationID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ProductTranslationTableName, translationID)
@@ -116,7 +128,7 @@ func (ps *SqlProductTranslationStore) FilterByOption(option *product_and_discoun
 	}
 
 	var res []*product_and_discount.ProductTranslation
-	_, err = ps.GetReplica().Select(&res, queryString, args...)
+	err = ps.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product translations with given options")
 	}
