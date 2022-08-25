@@ -175,6 +175,7 @@ func (s *SqlRoleStore) Delete(roleId string) (*model.Role, error) {
 	}
 
 	role.PopulatePermissionSlice()
+
 	return &role, nil
 }
 
