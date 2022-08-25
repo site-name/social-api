@@ -17,11 +17,11 @@ type WishlistItemProductVariantStore struct {
 }
 
 // BulkUpsert provides a mock function with given fields: transaction, relations
-func (_m *WishlistItemProductVariantStore) BulkUpsert(transaction *gorp.Transaction, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
+func (_m *WishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
 	ret := _m.Called(transaction, relations)
 
 	var r0 []*wishlist.WishlistItemProductVariant
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []*wishlist.WishlistItemProductVariant) []*wishlist.WishlistItemProductVariant); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, []*wishlist.WishlistItemProductVariant) []*wishlist.WishlistItemProductVariant); ok {
 		r0 = rf(transaction, relations)
 	} else {
 		if ret.Get(0) != nil {
@@ -30,7 +30,7 @@ func (_m *WishlistItemProductVariantStore) BulkUpsert(transaction *gorp.Transact
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, []*wishlist.WishlistItemProductVariant) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, []*wishlist.WishlistItemProductVariant) error); ok {
 		r1 = rf(transaction, relations)
 	} else {
 		r1 = ret.Error(1)
@@ -66,11 +66,11 @@ func (_m *WishlistItemProductVariantStore) DeleteRelation(relation *wishlist.Wis
 }
 
 // GetById provides a mock function with given fields: selector, id
-func (_m *WishlistItemProductVariantStore) GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItemProductVariant, error) {
+func (_m *WishlistItemProductVariantStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItemProductVariant, error) {
 	ret := _m.Called(selector, id)
 
 	var r0 *wishlist.WishlistItemProductVariant
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, string) *wishlist.WishlistItemProductVariant); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, string) *wishlist.WishlistItemProductVariant); ok {
 		r0 = rf(selector, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -79,7 +79,7 @@ func (_m *WishlistItemProductVariantStore) GetById(selector *gorp.Transaction, i
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, string) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, string) error); ok {
 		r1 = rf(selector, id)
 	} else {
 		r1 = ret.Error(1)

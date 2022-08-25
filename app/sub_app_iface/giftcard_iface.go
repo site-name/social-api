@@ -6,7 +6,6 @@ package sub_app_iface
 import (
 	"time"
 
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -14,6 +13,7 @@ import (
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/shop"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // GiftcardService contains methods for working with giftcards
@@ -23,7 +23,7 @@ type GiftcardService interface {
 	// AddGiftcardCodeToCheckout adds giftcard data to checkout by code. Raise InvalidPromoCode if gift card cannot be applied.
 	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, email, promoCode, currency string) (*giftcard.InvalidPromoCode, *model.AppError)
 	// BulkUpsertGiftcardEvents tells store to upsert given giftcard events into database then returns them
-	BulkUpsertGiftcardEvents(transaction *gorp.Transaction, events []*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, *model.AppError)
+	BulkUpsertGiftcardEvents(transaction store_iface.SqlxTxExecutor, events []*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, *model.AppError)
 	// CalculateExpiryDate calculate expiry date based on giftcard settings.
 	CalculateExpiryDate(shopSettings *shop.Shop) *time.Time
 	// CommonCreateGiftcardEvent is common method for creating giftcard events
@@ -37,11 +37,11 @@ type GiftcardService interface {
 	// GiftcardEventsByOptions returns a list of giftcard events filtered using given options
 	GiftcardEventsByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, *model.AppError)
 	// GiftcardsByOption finds a list of giftcards with given option
-	GiftcardsByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError)
+	GiftcardsByOption(transaction store_iface.SqlxTxExecutor, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError)
 	// GiftcardsCreate creates purchased gift cards
 	GiftcardsCreate(orDer *order.Order, giftcardLines order.OrderLines, quantities map[string]int, settings *shop.Shop, requestorUser *account.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*giftcard.GiftCard, *model.AppError)
 	// GiftcardsUsedInOrderEvent bulk creates giftcard events
-	GiftcardsUsedInOrderEvent(transaction *gorp.Transaction, balanceData giftcard.BalanceData, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError)
+	GiftcardsUsedInOrderEvent(transaction store_iface.SqlxTxExecutor, balanceData giftcard.BalanceData, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError)
 	// PromoCodeIsGiftCard checks whether there is giftcard with given code
 	PromoCodeIsGiftCard(code string) (bool, *model.AppError)
 	// RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
@@ -51,15 +51,15 @@ type GiftcardService interface {
 	// ToggleGiftcardStatus set status of given giftcard to inactive/active
 	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError
 	// UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
-	UpsertGiftcards(transaction *gorp.Transaction, giftcards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, *model.AppError)
+	UpsertGiftcards(transaction store_iface.SqlxTxExecutor, giftcards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, *model.AppError)
 	// UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
-	UpsertOrderGiftcardRelations(transaction *gorp.Transaction, orderGiftCards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, *model.AppError)
+	UpsertOrderGiftcardRelations(transaction store_iface.SqlxTxExecutor, orderGiftCards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, *model.AppError)
 	DeactivateOrderGiftcards(orderID string, user *account.User, _ interface{}) *model.AppError
 	FulfillGiftcardLines(giftcardLines order.OrderLines, requestorUser *account.User, _ interface{}, orDer *order.Order, manager interfaces.PluginManagerInterface) (interface{}, *model.AppError)
 	GetDefaultGiftcardPayload(giftCard giftcard.GiftCard) model.StringInterface
 	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)
 	GetNonShippableGiftcardLines(lines order.OrderLines) (order.OrderLines, *model.AppError)
-	GiftcardsBoughtEvent(transaction *gorp.Transaction, giftcards []*giftcard.GiftCard, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError)
+	GiftcardsBoughtEvent(transaction store_iface.SqlxTxExecutor, giftcards []*giftcard.GiftCard, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError)
 	GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError)
 	OrderHasGiftcardLines(orDer *order.Order) (bool, *model.AppError)
 	SendGiftcardsToCustomer(giftcards []*giftcard.GiftCard, userEmail string, requestorUser *account.User, _ interface{}, customerUser *account.User, manager interfaces.PluginManagerInterface, channelSlug string) *model.AppError

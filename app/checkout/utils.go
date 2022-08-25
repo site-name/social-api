@@ -159,7 +159,8 @@ func (a *ServiceCheckout) CalculateCheckoutQuantity(lineInfos []*checkout.Checko
 // If a variant is not placed in checkout, a new checkout line will be created.
 // If quantity is set to 0, checkout line will be deleted.
 // Otherwise, quantity will be added or replaced (if replace argument is True).
-//  skipStockCheck and replace are default to false
+//
+//	skipStockCheck and replace are default to false
 func (a *ServiceCheckout) AddVariantsToCheckout(checkOut *checkout.Checkout, variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*checkout.Checkout, *exception.InsufficientStock, *model.AppError) {
 	// validate input arguments:
 	var invlArgs string
@@ -527,7 +528,7 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.Check
 
 	go func() {
 		categories, appErr := a.srv.ProductService().CategoriesByOption(&product_and_discount.CategoryFilterOption{
-			VoucherID: squirrel.Eq{a.srv.Store.VoucherCategory().TableName("VoucherID"): voucher.Id},
+			VoucherID: squirrel.Eq{store.VoucherCategoryTableName + ".VoucherID": voucher.Id},
 		})
 		if appErr != nil {
 			setErr(appErr)

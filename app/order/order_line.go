@@ -5,15 +5,15 @@ import (
 	"sync"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // UpsertOrderLine depends on given orderLine's Id property to decide update order save it
-func (a *ServiceOrder) UpsertOrderLine(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, *model.AppError) {
+func (a *ServiceOrder) UpsertOrderLine(transaction store_iface.SqlxTxExecutor, orderLine *order.OrderLine) (*order.OrderLine, *model.AppError) {
 	orderLine, err := a.srv.Store.OrderLine().Upsert(transaction, orderLine)
 	if err != nil {
 		status := http.StatusInternalServerError
@@ -60,7 +60,7 @@ func (a *ServiceOrder) OrderLinesByOption(option *order.OrderLineFilterOption) (
 // AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
 func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.OrderLine, *model.AppError) {
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): orderID},
+		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": orderID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -155,7 +155,7 @@ func (a *ServiceOrder) OrderLineIsDigital(orderLine *order.OrderLine) (bool, *mo
 }
 
 // BulkUpsertOrderLines perform bulk upsert given order lines
-func (a *ServiceOrder) BulkUpsertOrderLines(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, *model.AppError) {
+func (a *ServiceOrder) BulkUpsertOrderLines(transaction store_iface.SqlxTxExecutor, orderLines []*order.OrderLine) ([]*order.OrderLine, *model.AppError) {
 	orderLines, err := a.srv.Store.OrderLine().BulkUpsert(transaction, orderLines)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

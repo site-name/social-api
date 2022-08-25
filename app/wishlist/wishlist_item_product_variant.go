@@ -3,14 +3,14 @@ package wishlist
 import (
 	"net/http"
 
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // BulkUpsertWishlistItemProductVariantRelations
-func (a *ServiceWishlist) BulkUpsertWishlistItemProductVariantRelations(transaction *gorp.Transaction, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, *model.AppError) {
+func (a *ServiceWishlist) BulkUpsertWishlistItemProductVariantRelations(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, *model.AppError) {
 	relations, err := a.srv.Store.WishlistItemProductVariant().BulkUpsert(transaction, relations)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

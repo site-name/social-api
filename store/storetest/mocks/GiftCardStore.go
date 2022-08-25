@@ -17,7 +17,7 @@ type GiftCardStore struct {
 }
 
 // BulkUpsert provides a mock function with given fields: transaction, giftCards
-func (_m *GiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
+func (_m *GiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
 	_va := make([]interface{}, len(giftCards))
 	for _i := range giftCards {
 		_va[_i] = giftCards[_i]
@@ -28,7 +28,7 @@ func (_m *GiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards ...
 	ret := _m.Called(_ca...)
 
 	var r0 []*giftcard.GiftCard
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, ...*giftcard.GiftCard) []*giftcard.GiftCard); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, ...*giftcard.GiftCard) []*giftcard.GiftCard); ok {
 		r0 = rf(transaction, giftCards...)
 	} else {
 		if ret.Get(0) != nil {
@@ -37,7 +37,7 @@ func (_m *GiftCardStore) BulkUpsert(transaction *gorp.Transaction, giftCards ...
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, ...*giftcard.GiftCard) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, ...*giftcard.GiftCard) error); ok {
 		r1 = rf(transaction, giftCards...)
 	} else {
 		r1 = ret.Error(1)
@@ -75,11 +75,11 @@ func (_m *GiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, err
 }
 
 // FilterByOption provides a mock function with given fields: transaction, option
-func (_m *GiftCardStore) FilterByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+func (_m *GiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
 	ret := _m.Called(transaction, option)
 
 	var r0 []*giftcard.GiftCard
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *giftcard.GiftCardFilterOption) []*giftcard.GiftCard); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *giftcard.GiftCardFilterOption) []*giftcard.GiftCard); ok {
 		r0 = rf(transaction, option)
 	} else {
 		if ret.Get(0) != nil {
@@ -88,7 +88,7 @@ func (_m *GiftCardStore) FilterByOption(transaction *gorp.Transaction, option *g
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *giftcard.GiftCardFilterOption) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *giftcard.GiftCardFilterOption) error); ok {
 		r1 = rf(transaction, option)
 	} else {
 		r1 = ret.Error(1)

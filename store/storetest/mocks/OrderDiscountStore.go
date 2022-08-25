@@ -82,11 +82,11 @@ func (_m *OrderDiscountStore) Get(orderDiscountID string) (*product_and_discount
 }
 
 // Upsert provides a mock function with given fields: transaction, orderDiscount
-func (_m *OrderDiscountStore) Upsert(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+func (_m *OrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
 	ret := _m.Called(transaction, orderDiscount)
 
 	var r0 *product_and_discount.OrderDiscount
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *product_and_discount.OrderDiscount) *product_and_discount.OrderDiscount); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *product_and_discount.OrderDiscount) *product_and_discount.OrderDiscount); ok {
 		r0 = rf(transaction, orderDiscount)
 	} else {
 		if ret.Get(0) != nil {
@@ -95,7 +95,7 @@ func (_m *OrderDiscountStore) Upsert(transaction *gorp.Transaction, orderDiscoun
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *product_and_discount.OrderDiscount) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *product_and_discount.OrderDiscount) error); ok {
 		r1 = rf(transaction, orderDiscount)
 	} else {
 		r1 = ret.Error(1)

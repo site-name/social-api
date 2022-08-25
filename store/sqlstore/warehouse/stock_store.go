@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlStockStore struct {
@@ -63,7 +64,7 @@ func (ss *SqlStockStore) CreateIndexesIfNotExists() {
 }
 
 // BulkUpsert performs upserts or inserts given stocks, then returns them
-func (ss *SqlStockStore) BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
+func (ss *SqlStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
 	var (
 		isSaving bool
 		executor gorp.SqlExecutor = ss.GetMaster()
@@ -226,7 +227,7 @@ func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChann
 }
 
 // FilterByOption finds and returns a slice of stocks that satisfy given option
-func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 	selectFields := ss.ModelFields()
 	if options.SelectRelatedWarehouse {
 		selectFields = append(selectFields, ss.Warehouse().ModelFields()...)
@@ -335,7 +336,7 @@ func (ss *SqlStockStore) FilterByOption(transaction *gorp.Transaction, options *
 }
 
 // FilterForCountryAndChannel finds and returns stocks with given options
-func (ss *SqlStockStore) FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	options.CountryCode = strings.ToUpper(options.CountryCode)
 
 	warehouseIDQuery := ss.warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug)
@@ -437,11 +438,11 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction *gorp.Transactio
 	return returningStocks, nil
 }
 
-func (ss *SqlStockStore) FilterVariantStocksForCountry(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (ss *SqlStockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	return ss.FilterForCountryAndChannel(transaction, options)
 }
 
-func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	return ss.FilterForCountryAndChannel(transaction, options)
 }
 

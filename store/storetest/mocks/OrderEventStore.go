@@ -45,11 +45,11 @@ func (_m *OrderEventStore) Get(orderEventID string) (*order.OrderEvent, error) {
 }
 
 // Save provides a mock function with given fields: transaction, orderEvent
-func (_m *OrderEventStore) Save(transaction *gorp.Transaction, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
+func (_m *OrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
 	ret := _m.Called(transaction, orderEvent)
 
 	var r0 *order.OrderEvent
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *order.OrderEvent) *order.OrderEvent); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *order.OrderEvent) *order.OrderEvent); ok {
 		r0 = rf(transaction, orderEvent)
 	} else {
 		if ret.Get(0) != nil {
@@ -58,7 +58,7 @@ func (_m *OrderEventStore) Save(transaction *gorp.Transaction, orderEvent *order
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *order.OrderEvent) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *order.OrderEvent) error); ok {
 		r1 = rf(transaction, orderEvent)
 	} else {
 		r1 = ret.Error(1)

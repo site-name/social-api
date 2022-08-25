@@ -219,7 +219,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *file.UploadSession, rd 
 	}
 
 	var storeErr error
-	if info, storeErr = a.srv.Store.FileInfo().Save(info); storeErr != nil {
+	if info, storeErr = a.srv.Store.FileInfo().Upsert(info); storeErr != nil {
 		if appErr, ok := storeErr.(*model.AppError); ok {
 			return nil, appErr
 		}

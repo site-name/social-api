@@ -3,11 +3,11 @@ package giftcard
 import (
 	"net/http"
 
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // CommonCreateGiftcardEvent is common method for creating giftcard events
@@ -37,7 +37,7 @@ func (s *ServiceGiftcard) GiftcardEventsByOptions(options *giftcard.GiftCardEven
 }
 
 // BulkUpsertGiftcardEvents tells store to upsert given giftcard events into database then returns them
-func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction *gorp.Transaction, events []*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction store_iface.SqlxTxExecutor, events []*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, *model.AppError) {
 	events, err := s.srv.Store.GiftcardEvent().BulkUpsert(transaction, events...)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -56,7 +56,7 @@ func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction *gorp.Transaction
 }
 
 // GiftcardsUsedInOrderEvent bulk creates giftcard events
-func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction *gorp.Transaction, balanceData giftcard.BalanceData, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction store_iface.SqlxTxExecutor, balanceData giftcard.BalanceData, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -82,7 +82,7 @@ func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction *gorp.Transactio
 	return s.BulkUpsertGiftcardEvents(transaction, events)
 }
 
-func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction *gorp.Transaction, giftcards []*giftcard.GiftCard, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction store_iface.SqlxTxExecutor, giftcards []*giftcard.GiftCard, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id

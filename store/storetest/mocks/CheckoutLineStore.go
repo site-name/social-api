@@ -150,11 +150,11 @@ func (_m *CheckoutLineStore) CreateIndexesIfNotExists() {
 }
 
 // DeleteLines provides a mock function with given fields: transaction, checkoutLineIDs
-func (_m *CheckoutLineStore) DeleteLines(transaction *gorp.Transaction, checkoutLineIDs []string) error {
+func (_m *CheckoutLineStore) DeleteLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) error {
 	ret := _m.Called(transaction, checkoutLineIDs)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []string) error); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, []string) error); ok {
 		r0 = rf(transaction, checkoutLineIDs)
 	} else {
 		r0 = ret.Error(0)

@@ -4,9 +4,9 @@
 package sub_app_iface
 
 import (
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // AttributeService contains methods for working with attributes
@@ -49,7 +49,7 @@ type AttributeService interface {
 	UpsertAttributeValue(attrValue *attribute.AttributeValue) (*attribute.AttributeValue, *model.AppError)
 	AttributeByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, *model.AppError)
 	AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError)
-	BulkUpsertAttributeValue(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, *model.AppError)
+	BulkUpsertAttributeValue(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, *model.AppError)
 	DeleteAttributeValues(ids ...string) (int64, *model.AppError)
 	DeleteAttributes(ids ...string) (int64, *model.AppError)
 	FilterAttributeValuesByOptions(option attribute.AttributeValueFilterOptions) (attribute.AttributeValues, *model.AppError)

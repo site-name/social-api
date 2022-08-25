@@ -3,14 +3,14 @@ package warehouse
 import (
 	"net/http"
 
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // BulkUpsertStocks updates or insderts given stock based on its Id property
-func (a *ServiceWarehouse) BulkUpsertStocks(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, *model.AppError) {
+func (a *ServiceWarehouse) BulkUpsertStocks(transaction store_iface.SqlxTxExecutor, stocks []*warehouse.Stock) ([]*warehouse.Stock, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().BulkUpsert(transaction, stocks)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -30,7 +30,7 @@ func (a *ServiceWarehouse) BulkUpsertStocks(transaction *gorp.Transaction, stock
 }
 
 // StocksByOption returns a list of stocks filtered using given options
-func (a *ServiceWarehouse) StocksByOption(transaction *gorp.Transaction, option *warehouse.StockFilterOption) (warehouse.Stocks, *model.AppError) {
+func (a *ServiceWarehouse) StocksByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.StockFilterOption) (warehouse.Stocks, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().FilterByOption(transaction, option)
 	var (
 		statusCode   int
@@ -53,7 +53,7 @@ func (a *ServiceWarehouse) StocksByOption(transaction *gorp.Transaction, option 
 // GetVariantStocksForCountry Return the stock information about the a stock for a given country.
 //
 // Note it will raise a 'Stock.DoesNotExist' exception if no such stock is found.
-func (a *ServiceWarehouse) GetVariantStocksForCountry(transaction *gorp.Transaction, countryCode string, channelSlug string, variantID string) ([]*warehouse.Stock, *model.AppError) {
+func (a *ServiceWarehouse) GetVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, countryCode string, channelSlug string, variantID string) ([]*warehouse.Stock, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().FilterVariantStocksForCountry(transaction, &warehouse.StockFilterForCountryAndChannel{
 		CountryCode:      countryCode,
 		ChannelSlug:      channelSlug,
@@ -78,7 +78,7 @@ func (a *ServiceWarehouse) GetVariantStocksForCountry(transaction *gorp.Transact
 }
 
 // GetProductStocksForCountryAndChannel
-func (a *ServiceWarehouse) GetProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError) {
+func (a *ServiceWarehouse) GetProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().FilterProductStocksForCountryAndChannel(transaction, options)
 	var (
 		statusCode   int
@@ -99,7 +99,7 @@ func (a *ServiceWarehouse) GetProductStocksForCountryAndChannel(transaction *gor
 }
 
 // FilterStocksForCountryAndChannel finds stocks by given options
-func (a *ServiceWarehouse) FilterStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError) {
+func (a *ServiceWarehouse) FilterStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().FilterForCountryAndChannel(transaction, options)
 	var (
 		statusCode   int

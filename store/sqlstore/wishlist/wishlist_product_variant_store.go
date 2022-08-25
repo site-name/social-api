@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlWishlistItemProductVariantStore struct {
@@ -50,7 +51,7 @@ func (w *SqlWishlistItemProductVariantStore) Save(item *wishlist.WishlistItemPro
 	}
 }
 
-func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction *gorp.Transaction, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
+func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
 	var (
 		isSaving   bool
 		insertFunc func(list ...interface{}) error          = w.GetMaster().Insert
@@ -101,7 +102,7 @@ func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction *gorp.Transa
 }
 
 // GetById finds and returns a product variant-wishlist item relation and returns it
-func (w *SqlWishlistItemProductVariantStore) GetById(transaction *gorp.Transaction, id string) (*wishlist.WishlistItemProductVariant, error) {
+func (w *SqlWishlistItemProductVariantStore) GetById(transaction store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItemProductVariant, error) {
 	var selector gorp.SqlExecutor = w.GetReplica()
 	if transaction != nil {
 		selector = transaction

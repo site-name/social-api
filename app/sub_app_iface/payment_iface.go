@@ -4,7 +4,6 @@
 package sub_app_iface
 
 import (
-	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
@@ -13,6 +12,7 @@ import (
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // PaymentService contains methods for working with payments
@@ -80,7 +80,7 @@ type PaymentService interface {
 	// `extraData`, `ckout`, `ord` can be nil
 	//
 	// `storePaymentMethod` default to payment.StorePaymentMethod.NONE
-	CreatePayment(transaction *gorp.Transaction, gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, checkOut *checkout.Checkout, orDer *order.Order, returnUrl string, externalReference string, storePaymentMethod payment.StorePaymentMethod, metadata model.StringMap) (*payment.Payment, *payment.PaymentError, *model.AppError)
+	CreatePayment(transaction store_iface.SqlxTxExecutor, gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, checkOut *checkout.Checkout, orDer *order.Order, returnUrl string, externalReference string, storePaymentMethod payment.StorePaymentMethod, metadata model.StringMap) (*payment.Payment, *payment.PaymentError, *model.AppError)
 	// CreatePaymentInformation Extract order information along with payment details.
 	//
 	// Returns information required to process payment and additional
@@ -102,7 +102,7 @@ type PaymentService interface {
 	// IsCurrencySupported Return true if the given gateway supports given currency.
 	IsCurrencySupported(currency string, gatewayID string, manager interfaces.PluginManagerInterface) bool
 	// PaymentByID returns a payment with given id
-	PaymentByID(transaction *gorp.Transaction, paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError)
+	PaymentByID(transaction store_iface.SqlxTxExecutor, paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError)
 	// PaymentCanVoid checks if given payment is: Active && not charged and authorized
 	PaymentCanVoid(payMent *payment.Payment) (bool, *model.AppError)
 	// PaymentRefundOrVoid
@@ -116,9 +116,9 @@ type PaymentService interface {
 	// UpdatePayment
 	UpdatePayment(payMent payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError
 	// UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
-	UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) *model.AppError
+	UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *payment.PaymentPatch) *model.AppError
 	// UpsertPayment updates or insert given payment, depends on the validity of its Id
-	UpsertPayment(transaction *gorp.Transaction, payMent *payment.Payment) (*payment.Payment, *model.AppError)
+	UpsertPayment(transaction store_iface.SqlxTxExecutor, payMent *payment.Payment) (*payment.Payment, *model.AppError)
 	// ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
 	ValidateGatewayResponse(response *payment.GatewayResponse) *payment.GatewayError
 	GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError)
@@ -132,7 +132,7 @@ type PaymentService interface {
 	ListPaymentSources(gateway string, customerID string, manager interfaces.PluginManagerInterface, channelID string) ([]*payment.CustomerSource, *model.AppError)
 	PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError)
 	PaymentIsAuthorized(paymentID string) (bool, *model.AppError)
-	SaveTransaction(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)
+	SaveTransaction(transaction store_iface.SqlxTxExecutor, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)
 	UpdatePaymentMethodDetails(payMent payment.Payment, paymentMethodInfo *payment.PaymentMethodInfo, changedFields []string)
 	UpdateTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)
 }

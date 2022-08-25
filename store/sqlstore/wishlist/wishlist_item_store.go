@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlWishlistItemStore struct {
@@ -35,7 +36,7 @@ func (ws *SqlWishlistItemStore) CreateIndexesIfNotExists() {
 }
 
 // BulkUpsert inserts or updates given wishlist items then returns it
-func (ws *SqlWishlistItemStore) BulkUpsert(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
+func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
 	var (
 		isSaving        bool
 		err             error
@@ -87,7 +88,7 @@ func (ws *SqlWishlistItemStore) BulkUpsert(transaction *gorp.Transaction, wishli
 }
 
 // GetById finds and returns a wishlist item by given id
-func (ws *SqlWishlistItemStore) GetById(transaction *gorp.Transaction, id string) (*wishlist.WishlistItem, error) {
+func (ws *SqlWishlistItemStore) GetById(transaction store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItem, error) {
 	var selectOneFunc func(holder interface{}, query string, args ...interface{}) error = ws.GetReplica().SelectOne
 	if transaction != nil {
 		selectOneFunc = transaction.SelectOne
@@ -158,7 +159,7 @@ func (ws *SqlWishlistItemStore) GetByOption(option *wishlist.WishlistItemFilterO
 }
 
 // DeleteItemsByOption finds and deletes wishlist items that satisfy given filtering options
-func (ws *SqlWishlistItemStore) DeleteItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, error) {
+func (ws *SqlWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, error) {
 	var runner squirrel.BaseRunner = ws.GetMaster()
 	if transaction != nil {
 		runner = transaction

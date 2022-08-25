@@ -1,6 +1,6 @@
 /*
-	NOTE: This package is initialized during server startup (modules/imports does that)
-	so the init() function get the chance to register a function to create `ServiceAccount`
+NOTE: This package is initialized during server startup (modules/imports does that)
+so the init() function get the chance to register a function to create `ServiceAccount`
 */
 package checkout
 
@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -23,6 +22,7 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type ServiceCheckout struct {
@@ -267,7 +267,7 @@ func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos []*checkout.Chec
 }
 
 // DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
-func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) *model.AppError {
+func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) *model.AppError {
 	err := s.srv.SqlStore.Checkout().DeleteCheckoutsByOption(transaction, option)
 	if err != nil {
 		return model.NewAppError("DeleteCheckoutsByOption", "app.checkout.error_deleting_checkouts_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)

@@ -3,15 +3,15 @@ package giftcard
 import (
 	"net/http"
 
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
-func (a *ServiceGiftcard) UpsertOrderGiftcardRelations(transaction *gorp.Transaction, orderGiftCards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, *model.AppError) {
+func (a *ServiceGiftcard) UpsertOrderGiftcardRelations(transaction store_iface.SqlxTxExecutor, orderGiftCards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, *model.AppError) {
 	orderGiftCards, err := a.srv.Store.GiftCardOrder().BulkUpsert(transaction, orderGiftCards...)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

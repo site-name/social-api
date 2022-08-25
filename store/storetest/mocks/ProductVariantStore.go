@@ -131,11 +131,11 @@ func (_m *ProductVariantStore) ModelFields() []string {
 }
 
 // Save provides a mock function with given fields: transaction, variant
-func (_m *ProductVariantStore) Save(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (_m *ProductVariantStore) Save(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 	ret := _m.Called(transaction, variant)
 
 	var r0 *product_and_discount.ProductVariant
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *product_and_discount.ProductVariant) *product_and_discount.ProductVariant); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *product_and_discount.ProductVariant) *product_and_discount.ProductVariant); ok {
 		r0 = rf(transaction, variant)
 	} else {
 		if ret.Get(0) != nil {
@@ -144,7 +144,7 @@ func (_m *ProductVariantStore) Save(transaction *gorp.Transaction, variant *prod
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *product_and_discount.ProductVariant) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *product_and_discount.ProductVariant) error); ok {
 		r1 = rf(transaction, variant)
 	} else {
 		r1 = ret.Error(1)
@@ -184,11 +184,11 @@ func (_m *ProductVariantStore) TableName(withField string) string {
 }
 
 // Update provides a mock function with given fields: transaction, variant
-func (_m *ProductVariantStore) Update(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (_m *ProductVariantStore) Update(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
 	ret := _m.Called(transaction, variant)
 
 	var r0 *product_and_discount.ProductVariant
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *product_and_discount.ProductVariant) *product_and_discount.ProductVariant); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *product_and_discount.ProductVariant) *product_and_discount.ProductVariant); ok {
 		r0 = rf(transaction, variant)
 	} else {
 		if ret.Get(0) != nil {
@@ -197,7 +197,7 @@ func (_m *ProductVariantStore) Update(transaction *gorp.Transaction, variant *pr
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *product_and_discount.ProductVariant) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *product_and_discount.ProductVariant) error); ok {
 		r1 = rf(transaction, variant)
 	} else {
 		r1 = ret.Error(1)

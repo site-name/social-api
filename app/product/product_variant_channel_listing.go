@@ -3,14 +3,14 @@ package product
 import (
 	"net/http"
 
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option
-func (a *ServiceProduct) ProductVariantChannelListingsByOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) (product_and_discount.ProductVariantChannelListings, *model.AppError) {
+func (a *ServiceProduct) ProductVariantChannelListingsByOption(transaction store_iface.SqlxTxExecutor, option *product_and_discount.ProductVariantChannelListingFilterOption) (product_and_discount.ProductVariantChannelListings, *model.AppError) {
 	listings, err := a.srv.Store.ProductVariantChannelListing().FilterbyOption(transaction, option)
 	var (
 		statusCode   int
@@ -31,7 +31,7 @@ func (a *ServiceProduct) ProductVariantChannelListingsByOption(transaction *gorp
 }
 
 // BulkUpsertProductVariantChannelListings tells store to bulk upserts given product variant channel listings
-func (s *ServiceProduct) BulkUpsertProductVariantChannelListings(transaction *gorp.Transaction, listings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, *model.AppError) {
+func (s *ServiceProduct) BulkUpsertProductVariantChannelListings(transaction store_iface.SqlxTxExecutor, listings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, *model.AppError) {
 	variantChannelListings, err := s.srv.Store.ProductVariantChannelListing().BulkUpsert(transaction, listings)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

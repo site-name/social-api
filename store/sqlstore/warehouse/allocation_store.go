@@ -4,11 +4,11 @@ import (
 	"database/sql"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlAllocationStore struct {
@@ -68,7 +68,7 @@ func (as *SqlAllocationStore) ScanFields(allocation warehouse.Allocation) []inte
 }
 
 // BulkUpsert performs update, insert given allocations then returns them afterward
-func (as *SqlAllocationStore) BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
+func (as *SqlAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
 
 	var isSaving bool
 	for _, allocation := range allocations {
@@ -160,7 +160,7 @@ GROUP BY
   "warehouse_stock"."quantity";
 */
 // FilterByOption finds and returns a list of allocation based on given option
-func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
+func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
 	// define fields to select:
 	selectFields := as.ModelFields()
 	if option.SelectedRelatedStock {
@@ -287,7 +287,7 @@ func (as *SqlAllocationStore) FilterByOption(transaction *gorp.Transaction, opti
 }
 
 // BulkDelete perform bulk deletes given allocations.
-func (as *SqlAllocationStore) BulkDelete(transaction *gorp.Transaction, allocationIDs []string) error {
+func (as *SqlAllocationStore) BulkDelete(transaction store_iface.SqlxTxExecutor, allocationIDs []string) error {
 	// decide which exec function to use:
 	var (
 		execFunc func(query string, args ...interface{}) (sql.Result, error) = as.GetMaster().Exec

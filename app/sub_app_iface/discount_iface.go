@@ -6,7 +6,6 @@ package sub_app_iface
 import (
 	"time"
 
-	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
@@ -15,6 +14,7 @@ import (
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/product_and_discount"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // DiscountService contains methods for working with discounts
@@ -101,7 +101,7 @@ type DiscountService interface {
 	// SaleProductsByOptions returns a slice of sale-product relations filtered using given options
 	SaleProductsByOptions(options *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, *model.AppError)
 	// UpsertOrderDiscount updates or inserts given order discount
-	UpsertOrderDiscount(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError)
+	UpsertOrderDiscount(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError)
 	// UpsertVoucher update or insert given voucher
 	UpsertVoucher(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, *model.AppError)
 	// ValidateMinSpent validates if the order cost at least a specific amount of money

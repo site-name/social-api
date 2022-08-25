@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // ProductVariantById finds product variant by given id
@@ -108,7 +108,7 @@ func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) (
 }
 
 // UpsertProductVariant tells store to upsert given product variant and returns it
-func (s *ServiceProduct) UpsertProductVariant(transaction *gorp.Transaction, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, *model.AppError) {
+func (s *ServiceProduct) UpsertProductVariant(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, *model.AppError) {
 	var (
 		upsertedVariant *product_and_discount.ProductVariant
 		err             error

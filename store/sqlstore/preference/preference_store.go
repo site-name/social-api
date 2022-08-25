@@ -5,7 +5,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	sq "github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
@@ -19,6 +18,23 @@ type SqlPreferenceStore struct {
 
 func NewSqlPreferenceStore(sqlStore store.Store) store.PreferenceStore {
 	return &SqlPreferenceStore{sqlStore}
+}
+
+func (s *SqlPreferenceStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"UserId",
+		"Category",
+		"Name",
+		"Value",
+	}
+
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (s SqlPreferenceStore) DeleteUnusedFeatures() {
@@ -82,8 +98,10 @@ func (s SqlPreferenceStore) save(transaction store_iface.SqlxTxExecutor, prefere
 	return nil
 }
 
-func (s SqlPreferenceStore) insert(transaction *gorp.Transaction, preference *model.Preference) error {
-	if err := transaction.Insert(preference); err != nil {
+func (s SqlPreferenceStore) insert(transaction store_iface.SqlxTxExecutor, preference *model.Preference) error {
+	query := "INSERT INTO " + store.PreferenceTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+
+	if _, err := transaction.NamedExec(query, preference); err != nil {
 		if s.IsUniqueConstraintError(err, []string{"UserId", "preferences_pkey"}) {
 			return store.NewErrInvalidInput("Preference", "<userId, category, name>", fmt.Sprintf("<%s, %s, %s>", preference.UserId, preference.Category, preference.Name))
 		}
@@ -93,8 +111,15 @@ func (s SqlPreferenceStore) insert(transaction *gorp.Transaction, preference *mo
 	return nil
 }
 
-func (s SqlPreferenceStore) update(transaction *gorp.Transaction, preference *model.Preference) error {
-	if _, err := transaction.Update(preference); err != nil {
+func (s SqlPreferenceStore) update(transaction store_iface.SqlxTxExecutor, preference *model.Preference) error {
+	query := "UPDATE " + store.PreferenceTableName + " SET " + s.
+		ModelFields("").
+		Map(func(_ int, s string) string {
+			return s + "=:" + s
+		}).
+		Join(",") + " WHERE UserId=:UserId"
+
+	if _, err := transaction.NamedExec(query, preference); err != nil {
 		return errors.Wrapf(err, "failed to update Preference with userId=%s, category=%s, name=%s", preference.UserId, preference.Category, preference.Name)
 	}
 

@@ -17,11 +17,11 @@ type FulfillmentLineStore struct {
 }
 
 // BulkUpsert provides a mock function with given fields: transaction, fulfillmentLines
-func (_m *FulfillmentLineStore) BulkUpsert(transaction *gorp.Transaction, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+func (_m *FulfillmentLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
 	ret := _m.Called(transaction, fulfillmentLines)
 
 	var r0 []*order.FulfillmentLine
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []*order.FulfillmentLine) []*order.FulfillmentLine); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, []*order.FulfillmentLine) []*order.FulfillmentLine); ok {
 		r0 = rf(transaction, fulfillmentLines)
 	} else {
 		if ret.Get(0) != nil {
@@ -30,7 +30,7 @@ func (_m *FulfillmentLineStore) BulkUpsert(transaction *gorp.Transaction, fulfil
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, []*order.FulfillmentLine) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, []*order.FulfillmentLine) error); ok {
 		r1 = rf(transaction, fulfillmentLines)
 	} else {
 		r1 = ret.Error(1)
@@ -45,11 +45,11 @@ func (_m *FulfillmentLineStore) CreateIndexesIfNotExists() {
 }
 
 // DeleteFulfillmentLinesByOption provides a mock function with given fields: transaction, option
-func (_m *FulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *gorp.Transaction, option *order.FulfillmentLineFilterOption) error {
+func (_m *FulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentLineFilterOption) error {
 	ret := _m.Called(transaction, option)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *order.FulfillmentLineFilterOption) error); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *order.FulfillmentLineFilterOption) error); ok {
 		r0 = rf(transaction, option)
 	} else {
 		r0 = ret.Error(0)

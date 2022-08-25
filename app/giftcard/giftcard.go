@@ -1,6 +1,6 @@
 /*
-	NOTE: This package is initialized during server startup (modules/imports does that)
-	so the init() function get the chance to register a function to create `ServiceAccount`
+NOTE: This package is initialized during server startup (modules/imports does that)
+so the init() function get the chance to register a function to create `ServiceAccount`
 */
 package giftcard
 
@@ -9,13 +9,13 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type ServiceGiftcard struct {
@@ -62,7 +62,7 @@ func (a *ServiceGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppErro
 }
 
 // GiftcardsByOption finds a list of giftcards with given option
-func (a *ServiceGiftcard) GiftcardsByOption(transaction *gorp.Transaction, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError) {
+func (a *ServiceGiftcard) GiftcardsByOption(transaction store_iface.SqlxTxExecutor, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError) {
 	giftcards, err := a.srv.Store.GiftCard().FilterByOption(transaction, option)
 	var (
 		statusCode int
@@ -83,7 +83,7 @@ func (a *ServiceGiftcard) GiftcardsByOption(transaction *gorp.Transaction, optio
 }
 
 // UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
-func (a *ServiceGiftcard) UpsertGiftcards(transaction *gorp.Transaction, giftcards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, *model.AppError) {
+func (a *ServiceGiftcard) UpsertGiftcards(transaction store_iface.SqlxTxExecutor, giftcards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, *model.AppError) {
 	giftcards, err := a.srv.Store.GiftCard().BulkUpsert(transaction, giftcards...)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

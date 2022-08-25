@@ -91,7 +91,7 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *order.Order, c
 	var orderProductIDs []string
 	if len(lines) == 0 {
 		orderLines, appErr := a.srv.OrderService().OrderLinesByOption(&order.OrderLineFilterOption{
-			OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): oder.Id},
+			OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": oder.Id},
 			PrefetchRelated: order.OrderLinePrefetchRelated{
 				VariantProduct: true, // this tells store to prefetch related product variants, products too
 			},

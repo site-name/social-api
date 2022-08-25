@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -28,6 +27,7 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // GetOrderCountry Return country to which order will be shipped
@@ -130,7 +130,7 @@ func (a *ServiceOrder) GetVoucherDiscountAssignedToOrder(ord *order.Order) (*pro
 // Recalculate all order discounts assigned to order.
 //
 // It returns the list of tuples which contains order discounts where the amount has been changed.
-func (a *ServiceOrder) RecalculateOrderDiscounts(transaction *gorp.Transaction, ord *order.Order) ([][2]*product_and_discount.OrderDiscount, *model.AppError) {
+func (a *ServiceOrder) RecalculateOrderDiscounts(transaction store_iface.SqlxTxExecutor, ord *order.Order) ([][2]*product_and_discount.OrderDiscount, *model.AppError) {
 	var changedOrderDiscounts [][2]*product_and_discount.OrderDiscount
 
 	orderDiscounts, appErr := a.srv.DiscountService().OrderDiscountsByOption(&product_and_discount.OrderDiscountFilterOption{
@@ -176,7 +176,7 @@ func (a *ServiceOrder) RecalculateOrderDiscounts(transaction *gorp.Transaction, 
 // update_voucher_discount argument set to False.
 //
 // NOTE: `kwargs` can be nil
-func (a *ServiceOrder) RecalculateOrder(transaction *gorp.Transaction, ord *order.Order, kwargs map[string]interface{}) *model.AppError {
+func (a *ServiceOrder) RecalculateOrder(transaction store_iface.SqlxTxExecutor, ord *order.Order, kwargs map[string]interface{}) *model.AppError {
 	appErr := a.RecalculateOrderPrices(transaction, ord, kwargs)
 	if appErr != nil {
 		return appErr
@@ -201,9 +201,9 @@ func (a *ServiceOrder) RecalculateOrder(transaction *gorp.Transaction, ord *orde
 }
 
 // ReCalculateOrderWeight
-func (a *ServiceOrder) ReCalculateOrderWeight(transaction *gorp.Transaction, ord *order.Order) *model.AppError {
+func (a *ServiceOrder) ReCalculateOrderWeight(transaction store_iface.SqlxTxExecutor, ord *order.Order) *model.AppError {
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
+		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return appErr
@@ -347,7 +347,7 @@ func (a *ServiceOrder) UpdateTaxesForOrderLines(lines order.OrderLines, ord orde
 // UpdateOrderPrices Update prices in order with given discounts and proper taxes.
 func (a *ServiceOrder) UpdateOrderPrices(ord order.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
 	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
+		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return appErr
@@ -450,7 +450,7 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher
 
 	go func() {
 		categories, appErr := a.srv.ProductService().CategoriesByOption(&product_and_discount.CategoryFilterOption{
-			VoucherID: squirrel.Eq{a.srv.Store.VoucherCategory().TableName("VoucherID"): voucher.Id},
+			VoucherID: squirrel.Eq{store.VoucherCategoryTableName + ".VoucherID": voucher.Id},
 		})
 		if appErr != nil {
 			setFirstAppErr(appErr)
@@ -518,7 +518,7 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines []*order.OrderLine, voucher
 						setAppError(appErr)
 					} else {
 						orderLineCategory, appErr := a.srv.ProductService().CategoryByOption(&product_and_discount.CategoryFilterOption{
-							ProductID: squirrel.Eq{a.srv.Store.Product().TableName("Id"): orderLineProduct.Id},
+							ProductID: squirrel.Eq{store.ProductTableName + ".Id": orderLineProduct.Id},
 						})
 						if appErr != nil {
 							setAppError(appErr)
@@ -603,7 +603,7 @@ func (a *ServiceOrder) GetVoucherDiscountForOrder(ord *order.Order) (result inte
 	}
 
 	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
+		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return
@@ -643,7 +643,7 @@ func (a *ServiceOrder) GetVoucherDiscountForOrder(ord *order.Order) (result inte
 
 func (a *ServiceOrder) calculateQuantityIncludingReturns(ord order.Order) (int, int, int, *model.AppError) {
 	orderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
+		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return 0, 0, 0, appErr
@@ -709,7 +709,7 @@ func (a *ServiceOrder) calculateQuantityIncludingReturns(ord order.Order) (int, 
 }
 
 // UpdateOrderStatus Update order status depending on fulfillments
-func (a *ServiceOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord order.Order) *model.AppError {
+func (a *ServiceOrder) UpdateOrderStatus(transaction store_iface.SqlxTxExecutor, ord order.Order) *model.AppError {
 
 	totalQuantity, quantityFulfilled, quantityReturned, appErr := a.calculateQuantityIncludingReturns(ord)
 	if appErr != nil {
@@ -746,22 +746,22 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction *gorp.Transaction, ord orde
 //
 // Returns an order line the variant was added to.
 func (s *ServiceOrder) AddVariantToOrder(orDer order.Order, variant product_and_discount.ProductVariant, quantity int, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, discounts []*product_and_discount.DiscountInfo, allocateStock bool) (*order.OrderLine, *exception.InsufficientStock, *model.AppError) {
-	transaction, err := s.srv.Store.GetMaster().Begin()
+	transaction, err := s.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, nil, model.NewAppError("AddVariantToOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer s.srv.Store.FinalizeTransaction(transaction)
 
 	chanNel, appErr := s.srv.ChannelService().ChannelByOption(&channel.ChannelFilterOption{
-		Id: squirrel.Eq{s.srv.Store.Channel().TableName("Id"): orDer.ChannelID},
+		Id: squirrel.Eq{store.ChannelTableName + ".Id": orDer.ChannelID},
 	})
 	if appErr != nil {
 		return nil, nil, appErr
 	}
 
 	orderLinesOfOrder, appErr := s.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID:   squirrel.Eq{s.srv.Store.OrderLine().TableName("OrderID"): orDer.Id},
-		VariantID: squirrel.Eq{s.srv.Store.OrderLine().TableName("VariantID"): variant.Id},
+		OrderID:   squirrel.Eq{store.OrderLineTableName + ".OrderID": orDer.Id},
+		VariantID: squirrel.Eq{store.OrderLineTableName + ".VariantID": variant.Id},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -798,8 +798,8 @@ func (s *ServiceOrder) AddVariantToOrder(orDer order.Order, variant product_and_
 		}
 
 		variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
-			VariantID: squirrel.Eq{s.srv.Store.ProductVariantChannelListing().TableName("VariantID"): variant.Id},
-			ChannelID: squirrel.Eq{s.srv.Store.ProductVariantChannelListing().TableName("ChannelID"): chanNel.Id},
+			VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variant.Id},
+			ChannelID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".ChannelID": chanNel.Id},
 		})
 		if appErr != nil {
 			return nil, nil, appErr // NOTE: does not care what type of error, just return
@@ -933,7 +933,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer order.Order, variant product_and_
 }
 
 // AddGiftcardsToOrder
-func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorp.Transaction, checkoutInfo checkout.CheckoutInfo, orDer *order.Order, totalPriceLeft *goprices.Money, user *account.User, _ interface{}) *model.AppError {
+func (s *ServiceOrder) AddGiftcardsToOrder(transaction store_iface.SqlxTxExecutor, checkoutInfo checkout.CheckoutInfo, orDer *order.Order, totalPriceLeft *goprices.Money, user *account.User, _ interface{}) *model.AppError {
 	var (
 		balanceData       = giftcard.BalanceData{}
 		usedByUser        = checkoutInfo.User
@@ -1032,7 +1032,7 @@ func (a *ServiceOrder) updateAllocationsForLine(lineInfo *order.OrderLineData, o
 // ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 //
 // NOTE: userID can be empty
-func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, userID string, _ interface{}, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*exception.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) ChangeOrderLineQuantity(transaction store_iface.SqlxTxExecutor, userID string, _ interface{}, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*exception.InsufficientStock, *model.AppError) {
 	orderLine := lineInfo.Line
 	// NOTE: this must be called
 	orderLine.PopulateNonDbFields()
@@ -1085,7 +1085,7 @@ func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorp.Transaction, us
 	return nil, nil
 }
 
-func (a *ServiceOrder) CreateOrderEvent(transaction *gorp.Transaction, orderLine *order.OrderLine, userID string, quantityDiff int) *model.AppError {
+func (a *ServiceOrder) CreateOrderEvent(transaction store_iface.SqlxTxExecutor, orderLine *order.OrderLine, userID string, quantityDiff int) *model.AppError {
 	var appErr *model.AppError
 
 	var savingUserID *string
@@ -1159,7 +1159,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interfaces.Pl
 	defaultWarehouse := warehouses[0]
 
 	orderLinesOfOrder, appError := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
+		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appError != nil {
 		return appError
@@ -1251,7 +1251,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interfaces.Pl
 // RestockFulfillmentLines Return fulfilled products to corresponding stocks.
 //
 // Return products to stocks and update order lines quantity fulfilled values.
-func (a *ServiceOrder) RestockFulfillmentLines(transaction *gorp.Transaction, fulfillment *order.Fulfillment, warehouse *warehouse.WareHouse) (appErr *model.AppError) {
+func (a *ServiceOrder) RestockFulfillmentLines(transaction store_iface.SqlxTxExecutor, fulfillment *order.Fulfillment, warehouse *warehouse.WareHouse) (appErr *model.AppError) {
 	fulfillmentLines, appErr := a.FulfillmentLinesByOption(&order.FulfillmentLineFilterOption{
 		FulfillmentID: squirrel.Eq{store.FulfillmentLineTableName + ".FulfillmentID": fulfillment.Id},
 	})
@@ -1368,7 +1368,7 @@ func (a *ServiceOrder) GetValidShippingMethodsForOrder(ord *order.Order) ([]*shi
 // UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices
 //
 // `reason`, `valueType` and `value` can be nil
-func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction *gorp.Transaction, ord *order.Order, orderDiscountToUpdate *product_and_discount.OrderDiscount, reason string, valueType string, value *decimal.Decimal) *model.AppError {
+func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *order.Order, orderDiscountToUpdate *product_and_discount.OrderDiscount, reason string, valueType string, value *decimal.Decimal) *model.AppError {
 	ord.PopulateNonDbFields() // NOTE: call this first
 
 	if value == nil {
@@ -1446,7 +1446,7 @@ func (a *ServiceOrder) GetProductsVoucherDiscountForOrder(ord *order.Order) (*go
 		} else {
 			if voucher.Type == product_and_discount.SPECIFIC_PRODUCT {
 				orderLinesOfOrder, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-					OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
+					OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
 				})
 				if appErr != nil {
 					return nil, appErr
@@ -1527,7 +1527,7 @@ func (a *ServiceOrder) GetOrderDiscounts(ord *order.Order) ([]*product_and_disco
 }
 
 // CreateOrderDiscountForOrder Add new order discount and update the prices
-func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction *gorp.Transaction, ord *order.Order, reason string, valueType string, value *decimal.Decimal) (*product_and_discount.OrderDiscount, *model.AppError) {
+func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *order.Order, reason string, valueType string, value *decimal.Decimal) (*product_and_discount.OrderDiscount, *model.AppError) {
 	ord.PopulateNonDbFields()
 
 	netTotal, err := a.ApplyDiscountToValue(value, valueType, ord.Currency, ord.Total.Net)
@@ -1567,7 +1567,7 @@ func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction *gorp.Transaction
 }
 
 // RemoveOrderDiscountFromOrder Remove the order discount from order and update the prices.
-func (a *ServiceOrder) RemoveOrderDiscountFromOrder(transaction *gorp.Transaction, ord *order.Order, orderDiscount *product_and_discount.OrderDiscount) *model.AppError {
+func (a *ServiceOrder) RemoveOrderDiscountFromOrder(transaction store_iface.SqlxTxExecutor, ord *order.Order, orderDiscount *product_and_discount.OrderDiscount) *model.AppError {
 	appErr := a.srv.DiscountService().BulkDeleteOrderDiscounts([]string{orderDiscount.Id})
 	if appErr != nil {
 		return appErr

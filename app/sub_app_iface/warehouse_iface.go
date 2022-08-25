@@ -4,7 +4,6 @@
 package sub_app_iface
 
 import (
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
@@ -13,6 +12,7 @@ import (
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/model/warehouse"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // WarehouseService contains methods for working with warehouses
@@ -29,21 +29,21 @@ type WarehouseService interface {
 	// AllocatePreOrders allocates pre-order variant for given `order_lines` in given channel
 	AllocatePreOrders(orderLinesInfo order.OrderLineDatas, channelSlug string) (*exception.InsufficientStock, *model.AppError)
 	// AllocationsByOption returns all warehouse allocations filtered based on given option
-	AllocationsByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, *model.AppError)
+	AllocationsByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, *model.AppError)
 	// ApplicableForClickAndCollectNoQuantityCheck return the queryset of a `Warehouse` which are applicable for click and collect.
 	// Note this method does not check stocks quantity for given `CheckoutLine`s.
 	// This method should be used only if stocks quantity will be checked in further
 	// validation steps, for instance in checkout completion.
 	ApplicableForClickAndCollectNoQuantityCheck(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, *model.AppError)
 	// BulkCreate tells store to insert given preorder allocations into database then returns them
-	BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, *model.AppError)
+	BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, *model.AppError)
 	// BulkDeleteAllocations performs bulk delete given allocations.
 	// If non-nil transaction is provided, perform bulk delete operation within it.
-	BulkDeleteAllocations(transaction *gorp.Transaction, allocationIDs []string) *model.AppError
+	BulkDeleteAllocations(transaction store_iface.SqlxTxExecutor, allocationIDs []string) *model.AppError
 	// BulkUpsertAllocations upserts or inserts given allocations into database then returns them
-	BulkUpsertAllocations(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, *model.AppError)
+	BulkUpsertAllocations(transaction store_iface.SqlxTxExecutor, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, *model.AppError)
 	// BulkUpsertStocks updates or insderts given stock based on its Id property
-	BulkUpsertStocks(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, *model.AppError)
+	BulkUpsertStocks(transaction store_iface.SqlxTxExecutor, stocks []*warehouse.Stock) ([]*warehouse.Stock, *model.AppError)
 	// CheckPreorderThresholdBulk Validate if there is enough preordered variants according to thresholds.
 	// :raises InsufficientStock: when there is not enough available items for a variant.
 	CheckPreorderThresholdBulk(variants product_and_discount.ProductVariants, quantities []int, channelSlug string) (*exception.InsufficientStock, *model.AppError)
@@ -87,11 +87,11 @@ type WarehouseService interface {
 	// DecreaseAllocations Decreate allocations for provided order lines.
 	DecreaseAllocations(lineInfos []*order.OrderLineData, manager interfaces.PluginManagerInterface) (*exception.InsufficientStock, *model.AppError)
 	// DeletePreorderAllocations tells store to delete given preorder allocations
-	DeletePreorderAllocations(transaction *gorp.Transaction, preorderAllocationIDs ...string) *model.AppError
+	DeletePreorderAllocations(transaction store_iface.SqlxTxExecutor, preorderAllocationIDs ...string) *model.AppError
 	// FilterStocksForChannel returns a slice of stocks that filtered using given options
 	FilterStocksForChannel(option *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, *model.AppError)
 	// FilterStocksForCountryAndChannel finds stocks by given options
-	FilterStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError)
+	FilterStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError)
 	// FindWarehousesForCountry returns a list of warehouses that are available in given country
 	FindWarehousesForCountry(countryCode string) ([]*warehouse.WareHouse, *model.AppError)
 	// GetOrderLinesWithPreOrder returns order lines with variants with preorder flag set to true
@@ -99,13 +99,13 @@ type WarehouseService interface {
 	// GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
 	GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData
 	// GetProductStocksForCountryAndChannel
-	GetProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError)
+	GetProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError)
 	// GetStockById takes options for filtering 1 stock
 	GetStockById(stockID string) (*warehouse.Stock, *model.AppError)
 	// GetVariantStocksForCountry Return the stock information about the a stock for a given country.
 	//
 	// Note it will raise a 'Stock.DoesNotExist' exception if no such stock is found.
-	GetVariantStocksForCountry(transaction *gorp.Transaction, countryCode string, channelSlug string, variantID string) ([]*warehouse.Stock, *model.AppError)
+	GetVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, countryCode string, channelSlug string, variantID string) ([]*warehouse.Stock, *model.AppError)
 	// IncreaseAllocations ncrease allocation for order lines with appropriate quantity
 	IncreaseAllocations(lineInfos order.OrderLineDatas, channelSlug string, manager interfaces.PluginManagerInterface) (*exception.InsufficientStock, *model.AppError)
 	// IncreaseStock Increse stock quantity for given `order_line` in a given warehouse.
@@ -127,7 +127,7 @@ type WarehouseService interface {
 	// StockIncreaseQuantity Return given quantity of product to a stock.
 	StockIncreaseQuantity(stockID string, quantity int) *model.AppError
 	// StocksByOption returns a list of stocks filtered using given options
-	StocksByOption(transaction *gorp.Transaction, option *warehouse.StockFilterOption) (warehouse.Stocks, *model.AppError)
+	StocksByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.StockFilterOption) (warehouse.Stocks, *model.AppError)
 	// Validate if there is stock available for given variant in given country.
 	//
 	// If so - returns None. If there is less stock then required raise InsufficientStock

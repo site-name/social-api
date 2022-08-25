@@ -1,7 +1,7 @@
 /*
-	Since Go does not support @decorator like in python and generic,
-	Then you are about to find this code file not elegant at all.
-	But that is fine.
+Since Go does not support @decorator like in python and generic,
+Then you are about to find this code file not elegant at all.
+But that is fine.
 */
 package payment
 
@@ -14,6 +14,7 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/store"
 )
 
 const (
@@ -415,7 +416,7 @@ func (a *ServicePayment) Confirm(
 	}
 
 	transactionsOfPayment, appErr := a.TransactionsByOption(&payment.PaymentTransactionFilterOpts{
-		Kind:      squirrel.Eq{a.srv.Store.PaymentTransaction().TableName("Kind"): payment.ACTION_TO_CONFIRM},
+		Kind:      squirrel.Eq{store.TransactionTableName + ".Kind": payment.ACTION_TO_CONFIRM},
 		IsSuccess: model.NewBool(true),
 	})
 	if appErr != nil {
@@ -499,8 +500,8 @@ func (a *ServicePayment) fetchGatewayResponse(paymentFunc interfaces.PaymentMeth
 
 func (a *ServicePayment) getPastTransactionToken(payMent *payment.Payment, kind string) (string, *payment.PaymentError, *model.AppError) {
 	transactions, appErr := a.TransactionsByOption(&payment.PaymentTransactionFilterOpts{
-		PaymentID: squirrel.Eq{a.srv.Store.PaymentTransaction().TableName("PaymentID"): payMent.Id},
-		Kind:      squirrel.Eq{a.srv.Store.PaymentTransaction().TableName("Kind"): kind},
+		PaymentID: squirrel.Eq{store.TransactionTableName + ".PaymentID": payMent.Id},
+		Kind:      squirrel.Eq{store.TransactionTableName + ".Kind": kind},
 		IsSuccess: model.NewBool(true),
 	})
 	if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {

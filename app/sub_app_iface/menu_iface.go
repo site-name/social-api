@@ -10,7 +10,5 @@ import (
 
 // MenuService contains methods for working with menus
 type MenuService interface {
-	MenuById(id string) (*menu.Menu, *model.AppError)
-	MenuByName(name string) (*menu.Menu, *model.AppError)
-	MenuBySlug(slug string) (*menu.Menu, *model.AppError)
+	MenuByOptions(options *menu.MenuFilterOptions) (*menu.Menu, *model.AppError)
 }

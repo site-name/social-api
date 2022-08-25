@@ -68,11 +68,11 @@ func (_m *PaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, 
 }
 
 // Save provides a mock function with given fields: transaction, paymentTransaction
-func (_m *PaymentTransactionStore) Save(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (_m *PaymentTransactionStore) Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
 	ret := _m.Called(transaction, paymentTransaction)
 
 	var r0 *payment.PaymentTransaction
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *payment.PaymentTransaction) *payment.PaymentTransaction); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *payment.PaymentTransaction) *payment.PaymentTransaction); ok {
 		r0 = rf(transaction, paymentTransaction)
 	} else {
 		if ret.Get(0) != nil {
@@ -81,7 +81,7 @@ func (_m *PaymentTransactionStore) Save(transaction *gorp.Transaction, paymentTr
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *payment.PaymentTransaction) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *payment.PaymentTransaction) error); ok {
 		r1 = rf(transaction, paymentTransaction)
 	} else {
 		r1 = ret.Error(1)

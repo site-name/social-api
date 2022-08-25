@@ -1,10 +1,12 @@
 /*
-	NOTE: This package is initialized during server startup (modules/imports does that)
-	so the init() function get the chance to register a function to create `ServiceAccount`
+NOTE: This package is initialized during server startup (modules/imports does that)
+so the init() function get the chance to register a function to create `ServiceAccount`
 */
 package menu
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
@@ -32,28 +34,15 @@ func init() {
 	})
 }
 
-func (a *ServiceMenu) MenuById(id string) (*menu.Menu, *model.AppError) {
-	mnu, err := a.srv.Store.Menu().GetById(id)
+func (s *ServiceMenu) MenuByOptions(options *menu.MenuFilterOptions) (*menu.Menu, *model.AppError) {
+	mnu, err := s.srv.Store.Menu().GetByOptions(options)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("MenuById", missingMenuErrId, err)
-	}
+		var statucCode int = http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statucCode = http.StatusNotFound
+		}
 
-	return mnu, nil
-}
-
-func (a *ServiceMenu) MenuByName(name string) (*menu.Menu, *model.AppError) {
-	mnu, err := a.srv.Store.Menu().GetByName(name)
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("MenuByName", missingMenuErrId, err)
-	}
-
-	return mnu, nil
-}
-
-func (a *ServiceMenu) MenuBySlug(slug string) (*menu.Menu, *model.AppError) {
-	mnu, err := a.srv.Store.Menu().GetBySlug(slug)
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("MenuBySlug", missingMenuErrId, err)
+		return nil, model.NewAppError("MenuByOptions", "app.menu.missing_menu.app_error", nil, err.Error(), statucCode)
 	}
 
 	return mnu, nil

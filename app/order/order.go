@@ -1,6 +1,6 @@
 /*
-	NOTE: This package is initialized during server startup (modules/imports does that)
-	so the init() function get the chance to register a function to create `ServiceAccount`
+NOTE: This package is initialized during server startup (modules/imports does that)
+so the init() function get the chance to register a function to create `ServiceAccount`
 */
 package order
 
@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -19,10 +18,11 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // UpsertOrder depends on given order's Id property to decide update/save it
-func (a *ServiceOrder) UpsertOrder(transaction *gorp.Transaction, ord *order.Order) (*order.Order, *model.AppError) {
+func (a *ServiceOrder) UpsertOrder(transaction store_iface.SqlxTxExecutor, ord *order.Order) (*order.Order, *model.AppError) {
 	var err error
 
 	if ord.Id == "" {
@@ -86,7 +86,7 @@ func (a *ServiceOrder) OrderById(id string) (*order.Order, *model.AppError) {
 // OrderShippingIsRequired returns a boolean value indicating that given order requires shipping or not
 func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): orderID},
+		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": orderID},
 	})
 	if appErr != nil {
 		return false, appErr
@@ -104,7 +104,7 @@ func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.App
 // OrderTotalQuantity return total quantity of given order
 func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): orderID},
+		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": orderID},
 	})
 	if appErr != nil {
 		return 0, appErr
@@ -119,7 +119,7 @@ func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError)
 }
 
 // UpdateOrderTotalPaid update given order's total paid amount
-func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorp.Transaction, orDer *order.Order) *model.AppError {
+func (a *ServiceOrder) UpdateOrderTotalPaid(transaction store_iface.SqlxTxExecutor, orDer *order.Order) *model.AppError {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
 		OrderID: orDer.Id,
 	})
@@ -179,7 +179,7 @@ func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
 func (a *ServiceOrder) OrderSubTotal(ord *order.Order) (*goprices.TaxedMoney, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID: squirrel.Eq{a.srv.Store.OrderLine().TableName("OrderID"): ord.Id},
+		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		appErr.Where = "OrderSubTotal"
@@ -322,7 +322,7 @@ func (a *ServiceOrder) CustomerEmail(ord *order.Order) (string, *model.AppError)
 func (a *ServiceOrder) AnAddressOfOrder(orderID string, whichAddressID account.WhichOrderAddressID) (*account.Address, *model.AppError) {
 	addresses, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
 		OrderID: &account.AddressFilterOrderOption{
-			Id: squirrel.Eq{a.srv.Store.Order().TableName("Id"): orderID},
+			Id: squirrel.Eq{store.OrderTableName + ".Id": orderID},
 			On: whichAddressID,
 		},
 	})

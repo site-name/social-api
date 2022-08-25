@@ -59,11 +59,11 @@ func (_m *PaymentStore) FilterByOption(option *payment.PaymentFilterOption) ([]*
 }
 
 // Get provides a mock function with given fields: transaction, id, lockForUpdate
-func (_m *PaymentStore) Get(transaction *gorp.Transaction, id string, lockForUpdate bool) (*payment.Payment, error) {
+func (_m *PaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*payment.Payment, error) {
 	ret := _m.Called(transaction, id, lockForUpdate)
 
 	var r0 *payment.Payment
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, string, bool) *payment.Payment); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, string, bool) *payment.Payment); ok {
 		r0 = rf(transaction, id, lockForUpdate)
 	} else {
 		if ret.Get(0) != nil {
@@ -72,7 +72,7 @@ func (_m *PaymentStore) Get(transaction *gorp.Transaction, id string, lockForUpd
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, string, bool) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, string, bool) error); ok {
 		r1 = rf(transaction, id, lockForUpdate)
 	} else {
 		r1 = ret.Error(1)
@@ -82,11 +82,11 @@ func (_m *PaymentStore) Get(transaction *gorp.Transaction, id string, lockForUpd
 }
 
 // Save provides a mock function with given fields: transaction, _a1
-func (_m *PaymentStore) Save(transaction *gorp.Transaction, _a1 *payment.Payment) (*payment.Payment, error) {
+func (_m *PaymentStore) Save(transaction store_iface.SqlxTxExecutor, _a1 *payment.Payment) (*payment.Payment, error) {
 	ret := _m.Called(transaction, _a1)
 
 	var r0 *payment.Payment
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *payment.Payment) *payment.Payment); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *payment.Payment) *payment.Payment); ok {
 		r0 = rf(transaction, _a1)
 	} else {
 		if ret.Get(0) != nil {
@@ -95,7 +95,7 @@ func (_m *PaymentStore) Save(transaction *gorp.Transaction, _a1 *payment.Payment
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *payment.Payment) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *payment.Payment) error); ok {
 		r1 = rf(transaction, _a1)
 	} else {
 		r1 = ret.Error(1)
@@ -121,11 +121,11 @@ func (_m *PaymentStore) ScanFields(payMent payment.Payment) []interface{} {
 }
 
 // Update provides a mock function with given fields: transaction, _a1
-func (_m *PaymentStore) Update(transaction *gorp.Transaction, _a1 *payment.Payment) (*payment.Payment, error) {
+func (_m *PaymentStore) Update(transaction store_iface.SqlxTxExecutor, _a1 *payment.Payment) (*payment.Payment, error) {
 	ret := _m.Called(transaction, _a1)
 
 	var r0 *payment.Payment
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *payment.Payment) *payment.Payment); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *payment.Payment) *payment.Payment); ok {
 		r0 = rf(transaction, _a1)
 	} else {
 		if ret.Get(0) != nil {
@@ -134,7 +134,7 @@ func (_m *PaymentStore) Update(transaction *gorp.Transaction, _a1 *payment.Payme
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *payment.Payment) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *payment.Payment) error); ok {
 		r1 = rf(transaction, _a1)
 	} else {
 		r1 = ret.Error(1)
@@ -144,11 +144,11 @@ func (_m *PaymentStore) Update(transaction *gorp.Transaction, _a1 *payment.Payme
 }
 
 // UpdatePaymentsOfCheckout provides a mock function with given fields: transaction, checkoutToken, option
-func (_m *PaymentStore) UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) error {
+func (_m *PaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *payment.PaymentPatch) error {
 	ret := _m.Called(transaction, checkoutToken, option)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, string, *payment.PaymentPatch) error); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, string, *payment.PaymentPatch) error); ok {
 		r0 = rf(transaction, checkoutToken, option)
 	} else {
 		r0 = ret.Error(0)

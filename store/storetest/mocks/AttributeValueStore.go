@@ -17,11 +17,11 @@ type AttributeValueStore struct {
 }
 
 // BulkUpsert provides a mock function with given fields: transaction, values
-func (_m *AttributeValueStore) BulkUpsert(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+func (_m *AttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, error) {
 	ret := _m.Called(transaction, values)
 
 	var r0 attribute.AttributeValues
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, attribute.AttributeValues) attribute.AttributeValues); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, attribute.AttributeValues) attribute.AttributeValues); ok {
 		r0 = rf(transaction, values)
 	} else {
 		if ret.Get(0) != nil {
@@ -30,7 +30,7 @@ func (_m *AttributeValueStore) BulkUpsert(transaction *gorp.Transaction, values 
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, attribute.AttributeValues) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, attribute.AttributeValues) error); ok {
 		r1 = rf(transaction, values)
 	} else {
 		r1 = ret.Error(1)

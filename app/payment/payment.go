@@ -1,13 +1,12 @@
 /*
-	NOTE: This package is initialized during server startup (modules/imports does that)
-	so the init() function get the chance to register a function to create `ServiceAccount`
+NOTE: This package is initialized during server startup (modules/imports does that)
+so the init() function get the chance to register a function to create `ServiceAccount`
 */
 package payment
 
 import (
 	"net/http"
 
-	"github.com/mattermost/gorp"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
@@ -15,6 +14,7 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // ServicePayment handle all logics related to payment
@@ -31,7 +31,7 @@ func init() {
 }
 
 // PaymentByID returns a payment with given id
-func (a *ServicePayment) PaymentByID(transaction *gorp.Transaction, paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError) {
+func (a *ServicePayment) PaymentByID(transaction store_iface.SqlxTxExecutor, paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError) {
 	payMent, err := a.srv.Store.Payment().Get(transaction, paymentID, lockForUpdate)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("PaymentByID", "app.payment.error_finding_payment_by_id.app_error", err)
@@ -139,7 +139,7 @@ func (a *ServicePayment) PaymentCanVoid(payMent *payment.Payment) (bool, *model.
 }
 
 // UpsertPayment updates or insert given payment, depends on the validity of its Id
-func (a *ServicePayment) UpsertPayment(transaction *gorp.Transaction, payMent *payment.Payment) (*payment.Payment, *model.AppError) {
+func (a *ServicePayment) UpsertPayment(transaction store_iface.SqlxTxExecutor, payMent *payment.Payment) (*payment.Payment, *model.AppError) {
 	var err error
 
 	if !model.IsValidId(payMent.Id) {
@@ -173,7 +173,7 @@ func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*paym
 }
 
 // UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
-func (s *ServicePayment) UpdatePaymentsOfCheckout(transaction *gorp.Transaction, checkoutToken string, option *payment.PaymentPatch) *model.AppError {
+func (s *ServicePayment) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *payment.PaymentPatch) *model.AppError {
 	err := s.srv.Store.Payment().UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
 	if err != nil {
 		return model.NewAppError("UpdatePaymentsOfCheckout", "app.payment.error_updating_payments_of_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)

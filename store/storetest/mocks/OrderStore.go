@@ -121,11 +121,11 @@ func (_m *OrderStore) OrderBy() string {
 }
 
 // Save provides a mock function with given fields: transaction, _a1
-func (_m *OrderStore) Save(transaction *gorp.Transaction, _a1 *order.Order) (*order.Order, error) {
+func (_m *OrderStore) Save(transaction store_iface.SqlxTxExecutor, _a1 *order.Order) (*order.Order, error) {
 	ret := _m.Called(transaction, _a1)
 
 	var r0 *order.Order
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *order.Order) *order.Order); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *order.Order) *order.Order); ok {
 		r0 = rf(transaction, _a1)
 	} else {
 		if ret.Get(0) != nil {
@@ -134,7 +134,7 @@ func (_m *OrderStore) Save(transaction *gorp.Transaction, _a1 *order.Order) (*or
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *order.Order) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *order.Order) error); ok {
 		r1 = rf(transaction, _a1)
 	} else {
 		r1 = ret.Error(1)
@@ -174,11 +174,11 @@ func (_m *OrderStore) TableName(withField string) string {
 }
 
 // Update provides a mock function with given fields: transaction, _a1
-func (_m *OrderStore) Update(transaction *gorp.Transaction, _a1 *order.Order) (*order.Order, error) {
+func (_m *OrderStore) Update(transaction store_iface.SqlxTxExecutor, _a1 *order.Order) (*order.Order, error) {
 	ret := _m.Called(transaction, _a1)
 
 	var r0 *order.Order
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *order.Order) *order.Order); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *order.Order) *order.Order); ok {
 		r0 = rf(transaction, _a1)
 	} else {
 		if ret.Get(0) != nil {
@@ -187,7 +187,7 @@ func (_m *OrderStore) Update(transaction *gorp.Transaction, _a1 *order.Order) (*
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *order.Order) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *order.Order) error); ok {
 		r1 = rf(transaction, _a1)
 	} else {
 		r1 = ret.Error(1)

@@ -4,10 +4,10 @@
 package sub_app_iface
 
 import (
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/wishlist"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // WishlistService contains methods for working with wishlists
@@ -19,13 +19,13 @@ type WishlistService interface {
 	// AddWishlistItemProductVariantRelation adds given wishlist item-product variant relation into database and returns it
 	AddWishlistItemProductVariantRelation(relation *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, *model.AppError)
 	// BulkUpsertWishlistItemProductVariantRelations
-	BulkUpsertWishlistItemProductVariantRelations(transaction *gorp.Transaction, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, *model.AppError)
+	BulkUpsertWishlistItemProductVariantRelations(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, *model.AppError)
 	// BulkUpsertWishlistItems updates or inserts given wishlist item into database then returns it
-	BulkUpsertWishlistItems(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, *model.AppError)
+	BulkUpsertWishlistItems(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, *model.AppError)
 	// DeleteWishlistItemProductVariantRelation deletes a wishlist item-product variant relation and returns a number of remaining relations in database
 	DeleteWishlistItemProductVariantRelation(relation *wishlist.WishlistItemProductVariant) (int64, *model.AppError)
 	// DeleteWishlistItemsByOption tell store to delete wishlist items that satisfy given option, then returns a number of items deleted
-	DeleteWishlistItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, *model.AppError)
+	DeleteWishlistItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, *model.AppError)
 	// GetAllVariants returns all product variants in child wishlist items of given wishlist
 	GetAllVariants(wishlistID string) ([]*product_and_discount.ProductVariant, *model.AppError)
 	// GetOrCreateWishlistItem insert or get wishlist items

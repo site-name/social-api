@@ -17,11 +17,11 @@ type PreorderAllocationStore struct {
 }
 
 // BulkCreate provides a mock function with given fields: transaction, preorderAllocations
-func (_m *PreorderAllocationStore) BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
+func (_m *PreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
 	ret := _m.Called(transaction, preorderAllocations)
 
 	var r0 []*warehouse.PreorderAllocation
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []*warehouse.PreorderAllocation) []*warehouse.PreorderAllocation); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, []*warehouse.PreorderAllocation) []*warehouse.PreorderAllocation); ok {
 		r0 = rf(transaction, preorderAllocations)
 	} else {
 		if ret.Get(0) != nil {
@@ -30,7 +30,7 @@ func (_m *PreorderAllocationStore) BulkCreate(transaction *gorp.Transaction, pre
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, []*warehouse.PreorderAllocation) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, []*warehouse.PreorderAllocation) error); ok {
 		r1 = rf(transaction, preorderAllocations)
 	} else {
 		r1 = ret.Error(1)
@@ -45,7 +45,7 @@ func (_m *PreorderAllocationStore) CreateIndexesIfNotExists() {
 }
 
 // Delete provides a mock function with given fields: transaction, preorderAllocationIDs
-func (_m *PreorderAllocationStore) Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error {
+func (_m *PreorderAllocationStore) Delete(transaction store_iface.SqlxTxExecutor, preorderAllocationIDs ...string) error {
 	_va := make([]interface{}, len(preorderAllocationIDs))
 	for _i := range preorderAllocationIDs {
 		_va[_i] = preorderAllocationIDs[_i]
@@ -56,7 +56,7 @@ func (_m *PreorderAllocationStore) Delete(transaction *gorp.Transaction, preorde
 	ret := _m.Called(_ca...)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, ...string) error); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, ...string) error); ok {
 		r0 = rf(transaction, preorderAllocationIDs...)
 	} else {
 		r0 = ret.Error(0)

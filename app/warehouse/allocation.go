@@ -3,14 +3,14 @@ package warehouse
 import (
 	"net/http"
 
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // AllocationsByOption returns all warehouse allocations filtered based on given option
-func (a *ServiceWarehouse) AllocationsByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, *model.AppError) {
+func (a *ServiceWarehouse) AllocationsByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, *model.AppError) {
 	allocations, err := a.srv.Store.Allocation().FilterByOption(transaction, option)
 	var (
 		statusCode   int
@@ -31,7 +31,7 @@ func (a *ServiceWarehouse) AllocationsByOption(transaction *gorp.Transaction, op
 }
 
 // BulkUpsertAllocations upserts or inserts given allocations into database then returns them
-func (a *ServiceWarehouse) BulkUpsertAllocations(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, *model.AppError) {
+func (a *ServiceWarehouse) BulkUpsertAllocations(transaction store_iface.SqlxTxExecutor, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, *model.AppError) {
 	allocations, err := a.srv.Store.Allocation().BulkUpsert(transaction, allocations)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -53,7 +53,7 @@ func (a *ServiceWarehouse) BulkUpsertAllocations(transaction *gorp.Transaction, 
 
 // BulkDeleteAllocations performs bulk delete given allocations.
 // If non-nil transaction is provided, perform bulk delete operation within it.
-func (a *ServiceWarehouse) BulkDeleteAllocations(transaction *gorp.Transaction, allocationIDs []string) *model.AppError {
+func (a *ServiceWarehouse) BulkDeleteAllocations(transaction store_iface.SqlxTxExecutor, allocationIDs []string) *model.AppError {
 	err := a.srv.Store.Allocation().BulkDelete(transaction, allocationIDs)
 	if err != nil {
 		return model.NewAppError("BulkDeleteAllocations", "app.warehouse.error_deleting_allocations.app_error", nil, err.Error(), http.StatusInternalServerError)

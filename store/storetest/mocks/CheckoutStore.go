@@ -43,11 +43,11 @@ func (_m *CheckoutStore) CreateIndexesIfNotExists() {
 }
 
 // DeleteCheckoutsByOption provides a mock function with given fields: transaction, option
-func (_m *CheckoutStore) DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) error {
+func (_m *CheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) error {
 	ret := _m.Called(transaction, option)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *checkout.CheckoutFilterOption) error); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *checkout.CheckoutFilterOption) error); ok {
 		r0 = rf(transaction, option)
 	} else {
 		r0 = ret.Error(0)

@@ -509,7 +509,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 // NOTE: the unused underscore param originally is `app`, but we are not gonna present the feature in early versions.
 func (s *ServiceCheckout) createOrder(checkoutInfo checkout.CheckoutInfo, orderData map[string]interface{}, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, siteSettings *shop.Shop) (*order.Order, *exception.InsufficientStock, *model.AppError) {
 	// create transaction
-	transaction, err := s.srv.Store.GetMaster().Begin()
+	transaction, err := s.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, nil, model.NewAppError("createOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

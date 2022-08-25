@@ -17,11 +17,11 @@ type ProductVariantChannelListingStore struct {
 }
 
 // BulkUpsert provides a mock function with given fields: transaction, variantChannelListings
-func (_m *ProductVariantChannelListingStore) BulkUpsert(transaction *gorp.Transaction, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (_m *ProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
 	ret := _m.Called(transaction, variantChannelListings)
 
 	var r0 []*product_and_discount.ProductVariantChannelListing
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []*product_and_discount.ProductVariantChannelListing) []*product_and_discount.ProductVariantChannelListing); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, []*product_and_discount.ProductVariantChannelListing) []*product_and_discount.ProductVariantChannelListing); ok {
 		r0 = rf(transaction, variantChannelListings)
 	} else {
 		if ret.Get(0) != nil {
@@ -30,7 +30,7 @@ func (_m *ProductVariantChannelListingStore) BulkUpsert(transaction *gorp.Transa
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, []*product_and_discount.ProductVariantChannelListing) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, []*product_and_discount.ProductVariantChannelListing) error); ok {
 		r1 = rf(transaction, variantChannelListings)
 	} else {
 		r1 = ret.Error(1)
@@ -45,11 +45,11 @@ func (_m *ProductVariantChannelListingStore) CreateIndexesIfNotExists() {
 }
 
 // FilterbyOption provides a mock function with given fields: transaction, option
-func (_m *ProductVariantChannelListingStore) FilterbyOption(transaction *gorp.Transaction, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (_m *ProductVariantChannelListingStore) FilterbyOption(transaction store_iface.SqlxTxExecutor, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
 	ret := _m.Called(transaction, option)
 
 	var r0 []*product_and_discount.ProductVariantChannelListing
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *product_and_discount.ProductVariantChannelListingFilterOption) []*product_and_discount.ProductVariantChannelListing); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *product_and_discount.ProductVariantChannelListingFilterOption) []*product_and_discount.ProductVariantChannelListing); ok {
 		r0 = rf(transaction, option)
 	} else {
 		if ret.Get(0) != nil {
@@ -58,7 +58,7 @@ func (_m *ProductVariantChannelListingStore) FilterbyOption(transaction *gorp.Tr
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *product_and_discount.ProductVariantChannelListingFilterOption) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *product_and_discount.ProductVariantChannelListingFilterOption) error); ok {
 		r1 = rf(transaction, option)
 	} else {
 		r1 = ret.Error(1)

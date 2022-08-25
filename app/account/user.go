@@ -186,7 +186,7 @@ func (a *ServiceAccount) CreateUser(c *request.Context, user *account.User) (*ac
 		Name:     user.Id,
 		Value:    "0",
 	}
-	if err := a.srv.Store.Preference().Save(&model.Preferences{pref}); err != nil {
+	if err := a.srv.Store.Preference().Save(model.Preferences{pref}); err != nil {
 		slog.Warn("Encountered error saving tutorial preference", slog.Err(err))
 	}
 
@@ -1263,40 +1263,6 @@ func (a *ServiceAccount) UpdateMfa(activate bool, userID, token string) *model.A
 			slog.Error("Failed to send mfa change email", slog.Err(err))
 		}
 	})
-
-	return nil
-}
-
-func (a *ServiceAccount) GetUserTermsOfService(userID string) (*account.UserTermsOfService, *model.AppError) {
-	u, err := a.srv.Store.UserTermOfService().GetByUser(userID)
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetUserTermsOfService", "app.account.user_term_of_service_missing.app_error", err)
-	}
-
-	return u, nil
-}
-
-func (a *ServiceAccount) SaveUserTermsOfService(userID, termsOfServiceId string, accepted bool) *model.AppError {
-	if accepted {
-		userTermsOfService := &account.UserTermsOfService{
-			UserId:           userID,
-			TermsOfServiceId: termsOfServiceId,
-		}
-
-		if _, err := a.srv.Store.UserTermOfService().Save(userTermsOfService); err != nil {
-			var appErr *model.AppError
-			switch {
-			case errors.As(err, &appErr):
-				return appErr
-			default:
-				return model.NewAppError("SaveUserTermsOfService", "app.user_terms_of_service.save.app_error", nil, err.Error(), http.StatusInternalServerError)
-			}
-		}
-	} else {
-		if err := a.srv.Store.UserTermOfService().Delete(userID, termsOfServiceId); err != nil {
-			return model.NewAppError("SaveUserTermsOfService", "app.user_terms_of_service.delete.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
-	}
 
 	return nil
 }

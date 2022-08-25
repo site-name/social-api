@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlPreorderAllocationStore struct {
@@ -55,7 +56,7 @@ func (ws *SqlPreorderAllocationStore) TableName(withField string) string {
 }
 
 // BulkCreate bulk inserts given preorderAllocations and returns them
-func (ws *SqlPreorderAllocationStore) BulkCreate(transaction *gorp.Transaction, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
+func (ws *SqlPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
 	var upsertor gorp.SqlExecutor = ws.GetMaster()
 	if transaction != nil {
 		upsertor = transaction
@@ -159,7 +160,7 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *warehouse.Preorder
 }
 
 // Delete deletes preorder-allocations by given ids
-func (ws *SqlPreorderAllocationStore) Delete(transaction *gorp.Transaction, preorderAllocationIDs ...string) error {
+func (ws *SqlPreorderAllocationStore) Delete(transaction store_iface.SqlxTxExecutor, preorderAllocationIDs ...string) error {
 	var runner squirrel.BaseRunner = ws.GetMaster()
 	if transaction != nil {
 		runner = transaction

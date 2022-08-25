@@ -4,15 +4,15 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // FulfillmentsByOption returns a list of fulfillments be given options
-func (a *ServiceOrder) FulfillmentsByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (order.Fulfillments, *model.AppError) {
+func (a *ServiceOrder) FulfillmentsByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (order.Fulfillments, *model.AppError) {
 	fulfillments, err := a.srv.Store.Fulfillment().FilterByOption(transaction, option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("FulfillmentsByOption", "app.order.error_finding_fulfillments_by_option.app_error", err)
@@ -22,7 +22,7 @@ func (a *ServiceOrder) FulfillmentsByOption(transaction *gorp.Transaction, optio
 }
 
 // UpsertFulfillment performs some actions then save given fulfillment
-func (a *ServiceOrder) UpsertFulfillment(transaction *gorp.Transaction, fulfillment *order.Fulfillment) (*order.Fulfillment, *model.AppError) {
+func (a *ServiceOrder) UpsertFulfillment(transaction store_iface.SqlxTxExecutor, fulfillment *order.Fulfillment) (*order.Fulfillment, *model.AppError) {
 	// Assign an auto incremented value as a fulfillment order.
 	if fulfillment.Id == "" {
 		fulfillmentsByOrder, appErr := a.FulfillmentsByOption(nil, &order.FulfillmentFilterOption{
@@ -61,7 +61,7 @@ func (a *ServiceOrder) UpsertFulfillment(transaction *gorp.Transaction, fulfillm
 }
 
 // FulfillmentByOption returns 1 fulfillment filtered using given options
-func (a *ServiceOrder) FulfillmentByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, *model.AppError) {
+func (a *ServiceOrder) FulfillmentByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (*order.Fulfillment, *model.AppError) {
 	fulfillment, err := a.srv.Store.Fulfillment().GetByOption(transaction, option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("FulfillmentByOption", "app.order.error_finding_fulfillment_by_option.app_error", err)
@@ -72,7 +72,7 @@ func (a *ServiceOrder) FulfillmentByOption(transaction *gorp.Transaction, option
 
 // GetOrCreateFulfillment take a filtering option, trys finding a fulfillment with given option.
 // If a fulfillment found, returns it. Otherwise, creates a new one then returns it.
-func (a *ServiceOrder) GetOrCreateFulfillment(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, *model.AppError) {
+func (a *ServiceOrder) GetOrCreateFulfillment(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (*order.Fulfillment, *model.AppError) {
 	fulfillmentByOption, appErr := a.FulfillmentByOption(transaction, option)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -132,7 +132,7 @@ func (a *ServiceOrder) GetOrCreateFulfillment(transaction *gorp.Transaction, opt
 }
 
 // BulkDeleteFulfillments tells store to delete fulfillments that satisfy given option
-func (a *ServiceOrder) BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) *model.AppError {
+func (a *ServiceOrder) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments order.Fulfillments) *model.AppError {
 	err := a.srv.Store.Fulfillment().BulkDeleteFulfillments(transaction, fulfillments)
 	if err != nil {
 		return model.NewAppError("BulkDeleteFulfillments", "app.order.error_deleting_fulfillments.app_error", nil, err.Error(), http.StatusInternalServerError)

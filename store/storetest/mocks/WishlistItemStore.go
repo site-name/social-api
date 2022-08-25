@@ -17,11 +17,11 @@ type WishlistItemStore struct {
 }
 
 // BulkUpsert provides a mock function with given fields: transaction, wishlistItems
-func (_m *WishlistItemStore) BulkUpsert(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
+func (_m *WishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
 	ret := _m.Called(transaction, wishlistItems)
 
 	var r0 wishlist.WishlistItems
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, wishlist.WishlistItems) wishlist.WishlistItems); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, wishlist.WishlistItems) wishlist.WishlistItems); ok {
 		r0 = rf(transaction, wishlistItems)
 	} else {
 		if ret.Get(0) != nil {
@@ -30,7 +30,7 @@ func (_m *WishlistItemStore) BulkUpsert(transaction *gorp.Transaction, wishlistI
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, wishlist.WishlistItems) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, wishlist.WishlistItems) error); ok {
 		r1 = rf(transaction, wishlistItems)
 	} else {
 		r1 = ret.Error(1)
@@ -45,18 +45,18 @@ func (_m *WishlistItemStore) CreateIndexesIfNotExists() {
 }
 
 // DeleteItemsByOption provides a mock function with given fields: transaction, option
-func (_m *WishlistItemStore) DeleteItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, error) {
+func (_m *WishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, error) {
 	ret := _m.Called(transaction, option)
 
 	var r0 int64
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *wishlist.WishlistItemFilterOption) int64); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *wishlist.WishlistItemFilterOption) int64); ok {
 		r0 = rf(transaction, option)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *wishlist.WishlistItemFilterOption) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *wishlist.WishlistItemFilterOption) error); ok {
 		r1 = rf(transaction, option)
 	} else {
 		r1 = ret.Error(1)
@@ -89,11 +89,11 @@ func (_m *WishlistItemStore) FilterByOption(option *wishlist.WishlistItemFilterO
 }
 
 // GetById provides a mock function with given fields: selector, id
-func (_m *WishlistItemStore) GetById(selector *gorp.Transaction, id string) (*wishlist.WishlistItem, error) {
+func (_m *WishlistItemStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItem, error) {
 	ret := _m.Called(selector, id)
 
 	var r0 *wishlist.WishlistItem
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, string) *wishlist.WishlistItem); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, string) *wishlist.WishlistItem); ok {
 		r0 = rf(selector, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -102,7 +102,7 @@ func (_m *WishlistItemStore) GetById(selector *gorp.Transaction, id string) (*wi
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, string) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, string) error); ok {
 		r1 = rf(selector, id)
 	} else {
 		r1 = ret.Error(1)

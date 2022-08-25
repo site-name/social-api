@@ -5,12 +5,12 @@ import (
 	"sort"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError) {
@@ -76,7 +76,7 @@ func (a *ServiceAttribute) UpsertAttributeValue(attrValue *attribute.AttributeVa
 	return attrValue, nil
 }
 
-func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction *gorp.Transaction, values attribute.AttributeValues) (attribute.AttributeValues, *model.AppError) {
+func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, *model.AppError) {
 	values, err := a.srv.Store.AttributeValue().BulkUpsert(transaction, values)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -124,7 +124,7 @@ func (s *ServiceAttribute) newReordering(values attribute.AttributeValues, opera
 	}
 }
 
-func (r *Reordering) orderedNodeMap(transaction *gorp.Transaction) (map[string]*int, *model.AppError) {
+func (r *Reordering) orderedNodeMap(transaction store_iface.SqlxTxExecutor) (map[string]*int, *model.AppError) {
 	if !r.runned { // check if runned or not
 		attributeValues, appErr := r.s.FilterAttributeValuesByOptions(attribute.AttributeValueFilterOptions{
 			Transaction:     transaction,
@@ -262,7 +262,7 @@ func (r *Reordering) addToSortValueIfInRange(valueToAdd int, start int, end int)
 	}
 }
 
-func (r *Reordering) commit(transaction *gorp.Transaction) *model.AppError {
+func (r *Reordering) commit(transaction store_iface.SqlxTxExecutor) *model.AppError {
 	// Do nothing if nothing was done
 	if len(r.OldSortMap) == 0 {
 		return nil
@@ -293,7 +293,7 @@ func (r *Reordering) commit(transaction *gorp.Transaction) *model.AppError {
 	return appErr
 }
 
-func (r *Reordering) Run(transaction *gorp.Transaction) *model.AppError {
+func (r *Reordering) Run(transaction store_iface.SqlxTxExecutor) *model.AppError {
 	for key, move := range r.Operations {
 		// skip operation if it was deleted in concurrence
 		orderedNodeMap, appErr := r.orderedNodeMap(transaction)
@@ -317,7 +317,7 @@ func (r *Reordering) Run(transaction *gorp.Transaction) *model.AppError {
 }
 
 func (s *ServiceAttribute) PerformReordering(values attribute.AttributeValues, operations map[string]*int) *model.AppError {
-	transaction, err := s.srv.Store.GetMaster().Begin()
+	transaction, err := s.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return model.NewAppError("PerformReordering", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

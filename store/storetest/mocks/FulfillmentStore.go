@@ -17,11 +17,11 @@ type FulfillmentStore struct {
 }
 
 // BulkDeleteFulfillments provides a mock function with given fields: transaction, fulfillments
-func (_m *FulfillmentStore) BulkDeleteFulfillments(transaction *gorp.Transaction, fulfillments order.Fulfillments) error {
+func (_m *FulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments order.Fulfillments) error {
 	ret := _m.Called(transaction, fulfillments)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, order.Fulfillments) error); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, order.Fulfillments) error); ok {
 		r0 = rf(transaction, fulfillments)
 	} else {
 		r0 = ret.Error(0)
@@ -36,11 +36,11 @@ func (_m *FulfillmentStore) CreateIndexesIfNotExists() {
 }
 
 // FilterByOption provides a mock function with given fields: transaction, option
-func (_m *FulfillmentStore) FilterByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
+func (_m *FulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
 	ret := _m.Called(transaction, option)
 
 	var r0 []*order.Fulfillment
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *order.FulfillmentFilterOption) []*order.Fulfillment); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *order.FulfillmentFilterOption) []*order.Fulfillment); ok {
 		r0 = rf(transaction, option)
 	} else {
 		if ret.Get(0) != nil {
@@ -49,7 +49,7 @@ func (_m *FulfillmentStore) FilterByOption(transaction *gorp.Transaction, option
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *order.FulfillmentFilterOption) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *order.FulfillmentFilterOption) error); ok {
 		r1 = rf(transaction, option)
 	} else {
 		r1 = ret.Error(1)
@@ -82,11 +82,11 @@ func (_m *FulfillmentStore) Get(id string) (*order.Fulfillment, error) {
 }
 
 // GetByOption provides a mock function with given fields: transaction, option
-func (_m *FulfillmentStore) GetByOption(transaction *gorp.Transaction, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+func (_m *FulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
 	ret := _m.Called(transaction, option)
 
 	var r0 *order.Fulfillment
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *order.FulfillmentFilterOption) *order.Fulfillment); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *order.FulfillmentFilterOption) *order.Fulfillment); ok {
 		r0 = rf(transaction, option)
 	} else {
 		if ret.Get(0) != nil {
@@ -95,7 +95,7 @@ func (_m *FulfillmentStore) GetByOption(transaction *gorp.Transaction, option *o
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *order.FulfillmentFilterOption) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *order.FulfillmentFilterOption) error); ok {
 		r1 = rf(transaction, option)
 	} else {
 		r1 = ret.Error(1)
@@ -137,11 +137,11 @@ func (_m *FulfillmentStore) ScanFields(holder order.Fulfillment) []interface{} {
 }
 
 // Upsert provides a mock function with given fields: transaction, fulfillment
-func (_m *FulfillmentStore) Upsert(transaction *gorp.Transaction, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+func (_m *FulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
 	ret := _m.Called(transaction, fulfillment)
 
 	var r0 *order.Fulfillment
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *order.Fulfillment) *order.Fulfillment); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *order.Fulfillment) *order.Fulfillment); ok {
 		r0 = rf(transaction, fulfillment)
 	} else {
 		if ret.Get(0) != nil {
@@ -150,7 +150,7 @@ func (_m *FulfillmentStore) Upsert(transaction *gorp.Transaction, fulfillment *o
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *order.Fulfillment) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *order.Fulfillment) error); ok {
 		r1 = rf(transaction, fulfillment)
 	} else {
 		r1 = ret.Error(1)

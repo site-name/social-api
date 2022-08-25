@@ -114,11 +114,11 @@ func (_m *AddressStore) OrderBy() string {
 }
 
 // Save provides a mock function with given fields: transaction, address
-func (_m *AddressStore) Save(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
+func (_m *AddressStore) Save(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, error) {
 	ret := _m.Called(transaction, address)
 
 	var r0 *account.Address
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *account.Address) *account.Address); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *account.Address) *account.Address); ok {
 		r0 = rf(transaction, address)
 	} else {
 		if ret.Get(0) != nil {
@@ -127,7 +127,7 @@ func (_m *AddressStore) Save(transaction *gorp.Transaction, address *account.Add
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *account.Address) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *account.Address) error); ok {
 		r1 = rf(transaction, address)
 	} else {
 		r1 = ret.Error(1)
@@ -167,11 +167,11 @@ func (_m *AddressStore) TableName(withField string) string {
 }
 
 // Update provides a mock function with given fields: transaction, address
-func (_m *AddressStore) Update(transaction *gorp.Transaction, address *account.Address) (*account.Address, error) {
+func (_m *AddressStore) Update(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, error) {
 	ret := _m.Called(transaction, address)
 
 	var r0 *account.Address
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *account.Address) *account.Address); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *account.Address) *account.Address); ok {
 		r0 = rf(transaction, address)
 	} else {
 		if ret.Get(0) != nil {
@@ -180,7 +180,7 @@ func (_m *AddressStore) Update(transaction *gorp.Transaction, address *account.A
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *account.Address) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *account.Address) error); ok {
 		r1 = rf(transaction, address)
 	} else {
 		r1 = ret.Error(1)

@@ -214,7 +214,6 @@ type AccountService interface {
 	GetUserByAuth(authData *string, authService string) (*account.User, *model.AppError)
 	GetUserByUsername(username string) (*account.User, *model.AppError)
 	GetUserStatusesByIds(userIDs []string) ([]*account.Status, *model.AppError)
-	GetUserTermsOfService(userID string) (*account.UserTermsOfService, *model.AppError)
 	GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError)
 	GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*account.User, *model.AppError)
 	GetUsersByUsernames(usernames []string, asAdmin bool) ([]*account.User, *model.AppError)
@@ -232,7 +231,6 @@ type AccountService interface {
 	RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError
 	SanitizeProfile(user *account.User, asAdmin bool)
 	SaveAndBroadcastStatus(status *account.Status)
-	SaveUserTermsOfService(userID, termsOfServiceId string, accepted bool) *model.AppError
 	SearchUserAccessTokens(term string) ([]*account.UserAccessToken, *model.AppError)
 	SearchUsers(props *account.UserSearch, options *account.UserSearchOptions) ([]*account.User, *model.AppError)
 	SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError

@@ -4,12 +4,12 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // WishlistItemsByOption returns a slice of wishlist items filtered using given option
@@ -32,7 +32,7 @@ func (a *ServiceWishlist) WishlistItemByOption(option *wishlist.WishlistItemFilt
 }
 
 // BulkUpsertWishlistItems updates or inserts given wishlist item into database then returns it
-func (a *ServiceWishlist) BulkUpsertWishlistItems(transaction *gorp.Transaction, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, *model.AppError) {
+func (a *ServiceWishlist) BulkUpsertWishlistItems(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, *model.AppError) {
 	wishlistItems, err := a.srv.Store.WishlistItem().BulkUpsert(transaction, wishlistItems)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -82,7 +82,7 @@ func (a *ServiceWishlist) GetOrCreateWishlistItem(wishlistItem *wishlist.Wishlis
 }
 
 // DeleteWishlistItemsByOption tell store to delete wishlist items that satisfy given option, then returns a number of items deleted
-func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction *gorp.Transaction, option *wishlist.WishlistItemFilterOption) (int64, *model.AppError) {
+func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, *model.AppError) {
 	numDeleted, err := a.srv.Store.WishlistItem().DeleteItemsByOption(transaction, option)
 	if err != nil {
 		return 0, model.NewAppError("DeleteWishlistItemsByOption", "app.wishlist.error_deleting_wishlist_items_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -93,7 +93,7 @@ func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction *gorp.Transact
 
 // MoveItemsBetweenWishlists moves items from given srcWishlist to given dstWishlist
 func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishlist, dstWishlist *wishlist.Wishlist) *model.AppError {
-	transaction, err := a.srv.Store.GetMaster().Begin()
+	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return model.NewAppError("MoveItemsBetweenWishlists", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

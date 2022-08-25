@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -19,6 +18,7 @@ import (
 	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // CreatePaymentInformation Extract order information along with payment details.
@@ -162,7 +162,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *payment.Payment, paym
 //
 // `storePaymentMethod` default to payment.StorePaymentMethod.NONE
 func (a *ServicePayment) CreatePayment(
-	transaction *gorp.Transaction,
+	transaction store_iface.SqlxTxExecutor,
 	gateway string,
 	total *decimal.Decimal,
 	currency string,
@@ -388,7 +388,7 @@ func (a *ServicePayment) ValidateGatewayResponse(response *payment.GatewayRespon
 // GatewayPostProcess
 func (a *ServicePayment) GatewayPostProcess(paymentTransaction payment.PaymentTransaction, payMent *payment.Payment) *model.AppError {
 	// create transaction
-	transaction, err := a.srv.Store.GetMaster().Begin()
+	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return model.NewAppError("GatewayPostProcess", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -614,7 +614,7 @@ func (a *ServicePayment) UpdatePaymentMethodDetails(payMent payment.Payment, pay
 
 func (a *ServicePayment) GetPaymentToken(payMent *payment.Payment) (string, *payment.PaymentError, *model.AppError) {
 	authTransactions, appErr := a.TransactionsByOption(&payment.PaymentTransactionFilterOpts{
-		Kind:      squirrel.Eq{a.srv.Store.PaymentTransaction().TableName("Kind"): payment.AUTH},
+		Kind:      squirrel.Eq{store.TransactionTableName + ".Kind": payment.AUTH},
 		IsSuccess: model.NewBool(true),
 	})
 	if appErr != nil {

@@ -17,11 +17,11 @@ type AllocationStore struct {
 }
 
 // BulkDelete provides a mock function with given fields: transaction, allocationIDs
-func (_m *AllocationStore) BulkDelete(transaction *gorp.Transaction, allocationIDs []string) error {
+func (_m *AllocationStore) BulkDelete(transaction store_iface.SqlxTxExecutor, allocationIDs []string) error {
 	ret := _m.Called(transaction, allocationIDs)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []string) error); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, []string) error); ok {
 		r0 = rf(transaction, allocationIDs)
 	} else {
 		r0 = ret.Error(0)
@@ -31,11 +31,11 @@ func (_m *AllocationStore) BulkDelete(transaction *gorp.Transaction, allocationI
 }
 
 // BulkUpsert provides a mock function with given fields: transaction, allocations
-func (_m *AllocationStore) BulkUpsert(transaction *gorp.Transaction, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
+func (_m *AllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
 	ret := _m.Called(transaction, allocations)
 
 	var r0 []*warehouse.Allocation
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []*warehouse.Allocation) []*warehouse.Allocation); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, []*warehouse.Allocation) []*warehouse.Allocation); ok {
 		r0 = rf(transaction, allocations)
 	} else {
 		if ret.Get(0) != nil {
@@ -44,7 +44,7 @@ func (_m *AllocationStore) BulkUpsert(transaction *gorp.Transaction, allocations
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, []*warehouse.Allocation) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, []*warehouse.Allocation) error); ok {
 		r1 = rf(transaction, allocations)
 	} else {
 		r1 = ret.Error(1)
@@ -80,11 +80,11 @@ func (_m *AllocationStore) CreateIndexesIfNotExists() {
 }
 
 // FilterByOption provides a mock function with given fields: transaction, option
-func (_m *AllocationStore) FilterByOption(transaction *gorp.Transaction, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
+func (_m *AllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
 	ret := _m.Called(transaction, option)
 
 	var r0 []*warehouse.Allocation
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *warehouse.AllocationFilterOption) []*warehouse.Allocation); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *warehouse.AllocationFilterOption) []*warehouse.Allocation); ok {
 		r0 = rf(transaction, option)
 	} else {
 		if ret.Get(0) != nil {
@@ -93,7 +93,7 @@ func (_m *AllocationStore) FilterByOption(transaction *gorp.Transaction, option 
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *warehouse.AllocationFilterOption) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *warehouse.AllocationFilterOption) error); ok {
 		r1 = rf(transaction, option)
 	} else {
 		r1 = ret.Error(1)

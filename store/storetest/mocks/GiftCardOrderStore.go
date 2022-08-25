@@ -17,7 +17,7 @@ type GiftCardOrderStore struct {
 }
 
 // BulkUpsert provides a mock function with given fields: transaction, orderGiftcards
-func (_m *GiftCardOrderStore) BulkUpsert(transaction *gorp.Transaction, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
+func (_m *GiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
 	_va := make([]interface{}, len(orderGiftcards))
 	for _i := range orderGiftcards {
 		_va[_i] = orderGiftcards[_i]
@@ -28,7 +28,7 @@ func (_m *GiftCardOrderStore) BulkUpsert(transaction *gorp.Transaction, orderGif
 	ret := _m.Called(_ca...)
 
 	var r0 []*giftcard.OrderGiftCard
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, ...*giftcard.OrderGiftCard) []*giftcard.OrderGiftCard); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, ...*giftcard.OrderGiftCard) []*giftcard.OrderGiftCard); ok {
 		r0 = rf(transaction, orderGiftcards...)
 	} else {
 		if ret.Get(0) != nil {
@@ -37,7 +37,7 @@ func (_m *GiftCardOrderStore) BulkUpsert(transaction *gorp.Transaction, orderGif
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, ...*giftcard.OrderGiftCard) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, ...*giftcard.OrderGiftCard) error); ok {
 		r1 = rf(transaction, orderGiftcards...)
 	} else {
 		r1 = ret.Error(1)

@@ -44,7 +44,7 @@ func (a *ServiceAccount) UpdatePreferences(userID string, preferences model.Pref
 		}
 	}
 
-	if err := a.srv.Store.Preference().Save(&preferences); err != nil {
+	if err := a.srv.Store.Preference().Save(preferences); err != nil {
 		var appErr *model.AppError
 		switch {
 		case errors.As(err, &appErr):

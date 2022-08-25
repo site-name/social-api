@@ -1,6 +1,7 @@
 package store_iface
 
 import (
+	"context"
 	"database/sql"
 	"database/sql/driver"
 
@@ -27,6 +28,8 @@ type SqlxExecutor interface {
 	SelectBuilder(dest interface{}, builder Builder) error
 	ExecNoTimeout(query string, args ...interface{}) (sql.Result, error)
 	Beginx() (SqlxTxExecutor, error)
+
+	Conn(ctx context.Context) (*sql.Conn, error)
 }
 
 type SqlxTxExecutor interface {

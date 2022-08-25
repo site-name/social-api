@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/exception"
@@ -18,6 +17,7 @@ import (
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type StockData struct {
@@ -34,7 +34,7 @@ type StockData struct {
 // for order line, until allocated all required quantity for the order line.
 // If there is less quantity in stocks then rise InsufficientStock exception.
 func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, countryCode string, channelSlug string, manager interfaces.PluginManagerInterface, additionalFilterLookup model.StringInterface) (*exception.InsufficientStock, *model.AppError) {
-	transaction, err := a.srv.Store.GetMaster().Begin()
+	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, model.NewAppError("AllocateStocks", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -229,7 +229,7 @@ func (a *ServiceWarehouse) createAllocations(lineInfo *order.OrderLineData, stoc
 // quantity for the order line. If there is less quantity in stocks then
 // raise an exception.
 func (a *ServiceWarehouse) DeallocateStock(orderLineDatas order.OrderLineDatas, manager interfaces.PluginManagerInterface) (*warehouse.AllocationError, *model.AppError) {
-	transaction, err := a.srv.Store.GetMaster().Begin()
+	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, model.NewAppError("DeallocateStock", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -343,7 +343,7 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas order.OrderLineDatas, 
 //
 // NOTE: allocate is default to false
 func (a *ServiceWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *warehouse.WareHouse, quantity int, allocate bool) *model.AppError {
-	transaction, err := a.srv.Store.GetMaster().Begin()
+	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return model.NewAppError("IncreaseStock", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -352,8 +352,8 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *
 	var stock *warehouse.Stock
 
 	stocks, appErr := a.StocksByOption(transaction, &warehouse.StockFilterOption{
-		ProductVariantID: squirrel.Eq{a.srv.Store.ProductVariant().TableName("Id"): *orderLine.VariantID},
-		WarehouseID:      squirrel.Eq{a.srv.Store.Warehouse().TableName("Id"): wareHouse.Id},
+		ProductVariantID: squirrel.Eq{store.ProductVariantTableName + ".Id": *orderLine.VariantID},
+		WarehouseID:      squirrel.Eq{store.WarehouseTableName + ".Id": wareHouse.Id},
 		LockForUpdate:    true,                 // FOR UPDATE
 		ForUpdateOf:      store.StockTableName, // FOR UPDATE Stocks
 	})
@@ -430,7 +430,7 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos order.OrderLineDatas, c
 	}
 
 	// start a transaction
-	transaction, err := a.srv.Store.GetMaster().Begin()
+	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, model.NewAppError("IncreaseAllocations", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -518,7 +518,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos order.OrderLineDatas, ma
 		return nil, model.NewAppError("DecreaseStock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineInfos"}, "", http.StatusBadRequest)
 	}
 
-	transaction, err := a.srv.Store.GetMaster().Begin()
+	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, model.NewAppError("DecreaseStock", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -631,7 +631,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos order.OrderLineDatas, ma
 }
 
 // decreaseStocksQuantity
-func (a *ServiceWarehouse) decreaseStocksQuantity(transaction *gorp.Transaction, orderLinesInfo order.OrderLineDatas, variantAndwarehouseToStock map[string]map[string]*warehouse.Stock, quantityAllocationForStocks map[string]int) (*exception.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) decreaseStocksQuantity(transaction store_iface.SqlxTxExecutor, orderLinesInfo order.OrderLineDatas, variantAndwarehouseToStock map[string]map[string]*warehouse.Stock, quantityAllocationForStocks map[string]int) (*exception.InsufficientStock, *model.AppError) {
 
 	var (
 		insufficientStocks []*exception.InsufficientStockData
@@ -701,7 +701,7 @@ func (a *ServiceWarehouse) GetOrderLinesWithTrackInventory(orderLineInfos []*ord
 
 // DeAllocateStockForOrder Remove all allocations for given order
 func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *order.Order, manager interfaces.PluginManagerInterface) *model.AppError {
-	transaction, err := a.srv.Store.GetMaster().Begin()
+	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return model.NewAppError("DeAllocateStockForOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -754,7 +754,7 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *order.Order, manager int
 // AllocatePreOrders allocates pre-order variant for given `order_lines` in given channel
 func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas, channelSlug string) (*exception.InsufficientStock, *model.AppError) {
 	// init transaction
-	transaction, err := s.srv.Store.GetMaster().Begin()
+	transaction, err := s.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, model.NewAppError("AllocatePreOrders", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -769,7 +769,7 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas
 
 	allVariantChannelListings, appErr := s.srv.ProductService().
 		ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
-			VariantID:            squirrel.Eq{s.srv.Store.ProductVariantChannelListing().TableName("VariantID"): variants.IDs()},
+			VariantID:            squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
 			SelectRelatedChannel: true,
 			SelectForUpdate:      true,
 			SelectForUpdateOf:    store.ProductVariantChannelListingTableName,
@@ -928,7 +928,7 @@ func (s *ServiceWarehouse) createPreorderAllocation(lineInfo *order.OrderLineDat
 // should be replaced by regular allocations.
 func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_and_discount.ProductVariant) (*exception.PreorderAllocationError, *model.AppError) {
 	// init transaction:
-	transaction, err := s.srv.Store.GetMaster().Begin()
+	transaction, err := s.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, model.NewAppError("DeactivatePreorderForVariant", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -940,7 +940,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 
 	variantChannelListings, appErr := s.srv.ProductService().
 		ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
-			VariantID: squirrel.Eq{s.srv.Store.ProductVariantChannelListing().TableName("VariantID"): productVariant.Id},
+			VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": productVariant.Id},
 		})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -1010,7 +1010,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 	// NOTE: call the same query as above
 	// the found result may difer the above since some row(s) may have been added during the period prior to this moment.
 	productVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
-		VariantID: squirrel.Eq{s.srv.Store.ProductVariantChannelListing().TableName("VariantID"): productVariant.Id},
+		VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": productVariant.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -1041,7 +1041,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 // no warehouse assigned to any shipping zone handles order's country.
 //
 // NOTE: `transaction` MUST NOT be nil, otherwise this method'd return error
-func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction *gorp.Transaction, preorderAllocation *warehouse.PreorderAllocation, productVariant *product_and_discount.ProductVariant) (*warehouse.Stock, *exception.PreorderAllocationError, *model.AppError) {
+func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface.SqlxTxExecutor, preorderAllocation *warehouse.PreorderAllocation, productVariant *product_and_discount.ProductVariant) (*warehouse.Stock, *exception.PreorderAllocationError, *model.AppError) {
 	if transaction == nil {
 		return nil, nil, model.NewAppError("getStockForPreorderAllocation", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "transaction"}, "", http.StatusBadRequest)
 	}
@@ -1113,8 +1113,8 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction *gorp.Trans
 	stocks, appErr := s.srv.WarehouseService().StocksByOption(transaction, &warehouse.StockFilterOption{
 		LockForUpdate:    true,
 		ForUpdateOf:      s.srv.Store.Stock().TableName(""),
-		WarehouseID:      squirrel.Eq{s.srv.Store.Warehouse().TableName("Id"): wareHouse.Id},
-		ProductVariantID: squirrel.Eq{s.srv.Store.ProductVariant().TableName("Id"): productVariant.Id},
+		WarehouseID:      squirrel.Eq{store.WarehouseTableName + ".Id": wareHouse.Id},
+		ProductVariantID: squirrel.Eq{store.ProductVariantTableName + ".Id": productVariant.Id},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

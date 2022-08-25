@@ -3,6 +3,7 @@ package sqlstore
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"regexp"
 	"strconv"
 	"strings"
@@ -55,17 +56,12 @@ func newSqlxDBWrapper(db *sqlx.DB, timeout time.Duration, trace bool) *sqlxDBWra
 	}
 }
 
-func (w *sqlxTxWrapper) SelectBuilder(dest interface{}, builder store_iface.Builder) error {
-	query, args, err := builder.ToSql()
-	if err != nil {
-		return err
-	}
-
-	return w.Select(dest, query, args...)
-}
-
 func (w *sqlxDBWrapper) Stats() sql.DBStats {
 	return w.DB.Stats()
+}
+
+func (w *sqlxDBWrapper) Conn(ctx context.Context) (*sql.Conn, error) {
+	return w.DB.Conn(ctx)
 }
 
 func (w *sqlxDBWrapper) ExecBuilder(builder store_iface.Builder) (sql.Result, error) {
@@ -420,6 +416,19 @@ func (w *sqlxDBWrapper) SelectBuilder(dest interface{}, builder store_iface.Buil
 	}
 
 	return w.Select(dest, query, args...)
+}
+
+func (w *sqlxTxWrapper) SelectBuilder(dest interface{}, builder store_iface.Builder) error {
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	return w.Select(dest, query, args...)
+}
+
+func (w *sqlxTxWrapper) Conn(ctx context.Context) (*sql.Conn, error) {
+	return nil, errors.New("sqlxTxWrapper has no conn")
 }
 
 func removeSpace(r rune) rune {

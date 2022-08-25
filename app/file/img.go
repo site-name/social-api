@@ -418,7 +418,7 @@ func (t *UploadFileTask) init(a *ServiceFile) {
 
 	t.pluginsEnvironment, _ = a.srv.PluginService().GetPluginsEnvironment()
 	t.writeFile = a.WriteFile
-	t.saveToDatabase = a.srv.Store.FileInfo().Save
+	t.saveToDatabase = a.srv.Store.FileInfo().Upsert
 }
 
 // UploadFileX uploads a single file as specified in t. It applies the upload
@@ -756,7 +756,7 @@ func (a *ServiceFile) DoUploadFileExpectModification(c *request.Context, now tim
 		return nil, data, err
 	}
 
-	if _, err := a.srv.Store.FileInfo().Save(info); err != nil {
+	if _, err := a.srv.Store.FileInfo().Upsert(info); err != nil {
 		var appErr *model.AppError
 		switch {
 		case errors.As(err, &appErr):
@@ -992,7 +992,7 @@ func (a *ServiceFile) CopyFileInfos(userID string, fileIDs []string) ([]string, 
 		fileInfo.CreateAt = now
 		fileInfo.UpdateAt = now
 
-		if _, err := a.srv.Store.FileInfo().Save(fileInfo); err != nil {
+		if _, err := a.srv.Store.FileInfo().Upsert(fileInfo); err != nil {
 			var appErr *model.AppError
 			switch {
 			case errors.As(err, &appErr):

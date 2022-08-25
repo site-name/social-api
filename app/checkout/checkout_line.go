@@ -3,11 +3,11 @@ package checkout
 import (
 	"net/http"
 
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*checkout.CheckoutLine, *model.AppError) {
@@ -19,7 +19,7 @@ func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]
 	return lines, nil
 }
 
-func (a *ServiceCheckout) DeleteCheckoutLines(transaction *gorp.Transaction, checkoutLineIDs []string) *model.AppError {
+func (a *ServiceCheckout) DeleteCheckoutLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) *model.AppError {
 	// validate id list
 	for _, id := range checkoutLineIDs {
 		if !model.IsValidId(id) {

@@ -1,10 +1,10 @@
 package types
 
 import (
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // RecalculateOrderPricesFunc
-type RecalculateOrderPricesFunc func(*gorp.Transaction, *order.Order, map[string]interface{}) *model.AppError
+type RecalculateOrderPricesFunc func(store_iface.SqlxTxExecutor, *order.Order, map[string]interface{}) *model.AppError

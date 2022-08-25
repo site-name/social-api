@@ -4,9 +4,10 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/payment"
+	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // TransactionsByOption returns a list of transactions filtered based on given option
@@ -31,7 +32,7 @@ func (a *ServicePayment) TransactionsByOption(option *payment.PaymentTransaction
 
 func (a *ServicePayment) GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError) {
 	transactions, appErr := a.TransactionsByOption(&payment.PaymentTransactionFilterOpts{
-		PaymentID: squirrel.Eq{a.srv.Store.PaymentTransaction().TableName("PaymentID"): paymentID},
+		PaymentID: squirrel.Eq{store.TransactionTableName + ".PaymentID": paymentID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -60,7 +61,7 @@ func (a *ServicePayment) GetLastPaymentTransaction(paymentID string) (*payment.P
 	return lastTran, nil
 }
 
-func (a *ServicePayment) SaveTransaction(transaction *gorp.Transaction, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) {
+func (a *ServicePayment) SaveTransaction(transaction store_iface.SqlxTxExecutor, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError) {
 	paymentTransaction, err := a.srv.Store.PaymentTransaction().Save(transaction, paymentTransaction)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

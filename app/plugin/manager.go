@@ -1603,8 +1603,8 @@ func (m *PluginManager) SavePluginConfiguration(pluginID, channelID string, clea
 
 			// try get or create plugin configuration
 			pluginConfig, appErr := m.Srv.PluginService().GetPluginConfiguration(&plugins.PluginConfigurationFilterOptions{
-				Identifier: squirrel.Eq{m.Srv.Store.PluginConfiguration().TableName("Identifier"): pluginID},
-				ChannelID:  squirrel.Eq{m.Srv.Store.PluginConfiguration().TableName("ChannelID"): channelID},
+				Identifier: squirrel.Eq{store.PluginConfigurationTableName + ".Identifier": pluginID},
+				ChannelID:  squirrel.Eq{store.PluginConfigurationTableName + ".ChannelID": channelID},
 			})
 			if appErr != nil {
 				if appErr.StatusCode == http.StatusInternalServerError {

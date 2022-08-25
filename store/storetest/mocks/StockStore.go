@@ -19,11 +19,11 @@ type StockStore struct {
 }
 
 // BulkUpsert provides a mock function with given fields: transaction, stocks
-func (_m *StockStore) BulkUpsert(transaction *gorp.Transaction, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
+func (_m *StockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
 	ret := _m.Called(transaction, stocks)
 
 	var r0 []*warehouse.Stock
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []*warehouse.Stock) []*warehouse.Stock); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, []*warehouse.Stock) []*warehouse.Stock); ok {
 		r0 = rf(transaction, stocks)
 	} else {
 		if ret.Get(0) != nil {
@@ -32,7 +32,7 @@ func (_m *StockStore) BulkUpsert(transaction *gorp.Transaction, stocks []*wareho
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, []*warehouse.Stock) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, []*warehouse.Stock) error); ok {
 		r1 = rf(transaction, stocks)
 	} else {
 		r1 = ret.Error(1)
@@ -61,11 +61,11 @@ func (_m *StockStore) CreateIndexesIfNotExists() {
 }
 
 // FilterByOption provides a mock function with given fields: transaction, options
-func (_m *StockStore) FilterByOption(transaction *gorp.Transaction, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (_m *StockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
 	ret := _m.Called(transaction, options)
 
 	var r0 []*warehouse.Stock
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *warehouse.StockFilterOption) []*warehouse.Stock); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *warehouse.StockFilterOption) []*warehouse.Stock); ok {
 		r0 = rf(transaction, options)
 	} else {
 		if ret.Get(0) != nil {
@@ -74,7 +74,7 @@ func (_m *StockStore) FilterByOption(transaction *gorp.Transaction, options *war
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *warehouse.StockFilterOption) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *warehouse.StockFilterOption) error); ok {
 		r1 = rf(transaction, options)
 	} else {
 		r1 = ret.Error(1)
@@ -116,11 +116,11 @@ func (_m *StockStore) FilterForChannel(options *warehouse.StockFilterForChannelO
 }
 
 // FilterForCountryAndChannel provides a mock function with given fields: transaction, options
-func (_m *StockStore) FilterForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (_m *StockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	ret := _m.Called(transaction, options)
 
 	var r0 []*warehouse.Stock
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *warehouse.StockFilterForCountryAndChannel) []*warehouse.Stock); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *warehouse.StockFilterForCountryAndChannel) []*warehouse.Stock); ok {
 		r0 = rf(transaction, options)
 	} else {
 		if ret.Get(0) != nil {
@@ -129,7 +129,7 @@ func (_m *StockStore) FilterForCountryAndChannel(transaction *gorp.Transaction, 
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *warehouse.StockFilterForCountryAndChannel) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *warehouse.StockFilterForCountryAndChannel) error); ok {
 		r1 = rf(transaction, options)
 	} else {
 		r1 = ret.Error(1)
@@ -139,11 +139,11 @@ func (_m *StockStore) FilterForCountryAndChannel(transaction *gorp.Transaction, 
 }
 
 // FilterProductStocksForCountryAndChannel provides a mock function with given fields: transaction, options
-func (_m *StockStore) FilterProductStocksForCountryAndChannel(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (_m *StockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	ret := _m.Called(transaction, options)
 
 	var r0 []*warehouse.Stock
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *warehouse.StockFilterForCountryAndChannel) []*warehouse.Stock); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *warehouse.StockFilterForCountryAndChannel) []*warehouse.Stock); ok {
 		r0 = rf(transaction, options)
 	} else {
 		if ret.Get(0) != nil {
@@ -152,7 +152,7 @@ func (_m *StockStore) FilterProductStocksForCountryAndChannel(transaction *gorp.
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *warehouse.StockFilterForCountryAndChannel) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *warehouse.StockFilterForCountryAndChannel) error); ok {
 		r1 = rf(transaction, options)
 	} else {
 		r1 = ret.Error(1)
@@ -162,11 +162,11 @@ func (_m *StockStore) FilterProductStocksForCountryAndChannel(transaction *gorp.
 }
 
 // FilterVariantStocksForCountry provides a mock function with given fields: transaction, options
-func (_m *StockStore) FilterVariantStocksForCountry(transaction *gorp.Transaction, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (_m *StockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
 	ret := _m.Called(transaction, options)
 
 	var r0 []*warehouse.Stock
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *warehouse.StockFilterForCountryAndChannel) []*warehouse.Stock); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *warehouse.StockFilterForCountryAndChannel) []*warehouse.Stock); ok {
 		r0 = rf(transaction, options)
 	} else {
 		if ret.Get(0) != nil {
@@ -175,7 +175,7 @@ func (_m *StockStore) FilterVariantStocksForCountry(transaction *gorp.Transactio
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *warehouse.StockFilterForCountryAndChannel) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *warehouse.StockFilterForCountryAndChannel) error); ok {
 		r1 = rf(transaction, options)
 	} else {
 		r1 = ret.Error(1)

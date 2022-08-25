@@ -3,10 +3,10 @@ package discount
 import (
 	"net/http"
 
-	"github.com/mattermost/gorp"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // OrderDiscountsByOption filters and returns order discounts with given option
@@ -20,7 +20,7 @@ func (a *ServiceDiscount) OrderDiscountsByOption(option *product_and_discount.Or
 }
 
 // UpsertOrderDiscount updates or inserts given order discount
-func (a *ServiceDiscount) UpsertOrderDiscount(transaction *gorp.Transaction, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError) {
+func (a *ServiceDiscount) UpsertOrderDiscount(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError) {
 	orderDiscount, err := a.srv.Store.OrderDiscount().Upsert(transaction, orderDiscount)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

@@ -4,7 +4,6 @@
 package sub_app_iface
 
 import (
-	"github.com/mattermost/gorp"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
@@ -21,6 +20,7 @@ import (
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // CheckoutService contains methods for working with checkouts
@@ -37,7 +37,8 @@ type CheckoutService interface {
 	// If a variant is not placed in checkout, a new checkout line will be created.
 	// If quantity is set to 0, checkout line will be deleted.
 	// Otherwise, quantity will be added or replaced (if replace argument is True).
-	//  skipStockCheck and replace are default to false
+	//
+	//	skipStockCheck and replace are default to false
 	AddVariantsToCheckout(checkOut *checkout.Checkout, variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*checkout.Checkout, *exception.InsufficientStock, *model.AppError)
 	// AddVoucherCodeToCheckout Add voucher data to checkout by code.
 	// Raise InvalidPromoCode() if voucher of given type cannot be applied.
@@ -101,7 +102,7 @@ type CheckoutService interface {
 	// CleanCheckoutShipping
 	CleanCheckoutShipping(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos) *model.AppError
 	// DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
-	DeleteCheckoutsByOption(transaction *gorp.Transaction, option *checkout.CheckoutFilterOption) *model.AppError
+	DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) *model.AppError
 	// FetchCheckoutInfo Fetch checkout as CheckoutInfo object
 	FetchCheckoutInfo(checkOut *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) (*checkout.CheckoutInfo, *model.AppError)
 	// FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
@@ -179,7 +180,7 @@ type CheckoutService interface {
 	CleanBillingAddress(checkoutInfo checkout.CheckoutInfo) *model.AppError
 	CleanCheckoutPayment(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, lastPayment *payment.Payment) (*payment.PaymentError, *model.AppError)
 	ClearDeliveryMethod(checkoutInfo checkout.CheckoutInfo) *model.AppError
-	DeleteCheckoutLines(transaction *gorp.Transaction, checkoutLineIDs []string) *model.AppError
+	DeleteCheckoutLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) *model.AppError
 	GetDiscountedLines(checkoutLineInfos []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher) ([]*checkout.CheckoutLineInfo, *model.AppError)
 	GetValidCollectionPointsForCheckoutInfo(shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, checkoutInfo *checkout.CheckoutInfo) ([]*warehouse.WareHouse, *model.AppError)
 	UpsertCheckoutLine(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, *model.AppError)

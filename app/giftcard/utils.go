@@ -121,7 +121,7 @@ func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *order.Order, order
 func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines order.OrderLines) (order.OrderLines, *model.AppError) {
 	giftcardLines := GetGiftcardLines(lines)
 	nonShippableLines, appErr := s.srv.OrderService().OrderLinesByOption(&order.OrderLineFilterOption{
-		Id:                 squirrel.Eq{s.srv.Store.OrderLine().TableName("Id"): giftcardLines.IDs()},
+		Id:                 squirrel.Eq{store.OrderLineTableName + ".Id": giftcardLines.IDs()},
 		IsShippingRequired: model.NewBool(true),
 	})
 
@@ -158,7 +158,7 @@ func (s *ServiceGiftcard) GiftcardsCreate(orDer *order.Order, giftcardLines orde
 
 	// refetch order lines with prefetching options
 	giftcardLines, appErr = s.srv.OrderService().OrderLinesByOption(&order.OrderLineFilterOption{
-		Id: squirrel.Eq{s.srv.Store.OrderLine().TableName("Id"): giftcardLines.IDs()},
+		Id: squirrel.Eq{store.OrderLineTableName + ".Id": giftcardLines.IDs()},
 		PrefetchRelated: order.OrderLinePrefetchRelated{
 			VariantProduct: true,
 		},
@@ -207,7 +207,7 @@ func (s *ServiceGiftcard) GiftcardsCreate(orDer *order.Order, giftcardLines orde
 	}
 
 	channelOfOrder, appErr := s.srv.ChannelService().ChannelByOption(&channel.ChannelFilterOption{
-		Id: squirrel.Eq{s.srv.Store.Channel().TableName("Id"): orDer.ChannelID},
+		Id: squirrel.Eq{store.ChannelTableName + ".Id": orDer.ChannelID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -299,7 +299,7 @@ func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *account
 
 func (s *ServiceGiftcard) OrderHasGiftcardLines(orDer *order.Order) (bool, *model.AppError) {
 	orderLines, appErr := s.srv.OrderService().OrderLinesByOption(&order.OrderLineFilterOption{
-		OrderID:    squirrel.Eq{s.srv.Store.OrderLine().TableName("OrderID"): orDer.Id},
+		OrderID:    squirrel.Eq{store.OrderLineTableName + ".OrderID": orDer.Id},
 		IsGiftcard: model.NewBool(true),
 	})
 	if appErr != nil {

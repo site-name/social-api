@@ -31,11 +31,11 @@ func (_m *OrderLineStore) BulkDelete(orderLineIDs []string) error {
 }
 
 // BulkUpsert provides a mock function with given fields: transaction, orderLines
-func (_m *OrderLineStore) BulkUpsert(transaction *gorp.Transaction, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
+func (_m *OrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
 	ret := _m.Called(transaction, orderLines)
 
 	var r0 []*order.OrderLine
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, []*order.OrderLine) []*order.OrderLine); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, []*order.OrderLine) []*order.OrderLine); ok {
 		r0 = rf(transaction, orderLines)
 	} else {
 		if ret.Get(0) != nil {
@@ -44,7 +44,7 @@ func (_m *OrderLineStore) BulkUpsert(transaction *gorp.Transaction, orderLines [
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, []*order.OrderLine) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, []*order.OrderLine) error); ok {
 		r1 = rf(transaction, orderLines)
 	} else {
 		r1 = ret.Error(1)
@@ -165,11 +165,11 @@ func (_m *OrderLineStore) TableName(withField string) string {
 }
 
 // Upsert provides a mock function with given fields: transaction, orderLine
-func (_m *OrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *order.OrderLine) (*order.OrderLine, error) {
+func (_m *OrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, orderLine *order.OrderLine) (*order.OrderLine, error) {
 	ret := _m.Called(transaction, orderLine)
 
 	var r0 *order.OrderLine
-	if rf, ok := ret.Get(0).(func(*gorp.Transaction, *order.OrderLine) *order.OrderLine); ok {
+	if rf, ok := ret.Get(0).(func(store_iface.SqlxTxExecutor, *order.OrderLine) *order.OrderLine); ok {
 		r0 = rf(transaction, orderLine)
 	} else {
 		if ret.Get(0) != nil {
@@ -178,7 +178,7 @@ func (_m *OrderLineStore) Upsert(transaction *gorp.Transaction, orderLine *order
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*gorp.Transaction, *order.OrderLine) error); ok {
+	if rf, ok := ret.Get(1).(func(store_iface.SqlxTxExecutor, *order.OrderLine) error); ok {
 		r1 = rf(transaction, orderLine)
 	} else {
 		r1 = ret.Error(1)

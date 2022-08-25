@@ -18,8 +18,8 @@ import (
 // getVariantPricesInChannelsDict
 func (a *ServiceProduct) getVariantPricesInChannelsDict(product product_and_discount.Product) (map[string][]*goprices.Money, *model.AppError) {
 	variantChannelListings, appErr := a.ProductVariantChannelListingsByOption(nil, &product_and_discount.ProductVariantChannelListingFilterOption{
-		VariantProductID: squirrel.Eq{a.srv.Store.ProductVariant().TableName("ProductID"): product.Id},
-		PriceAmount:      squirrel.NotEq{a.srv.Store.ProductVariantChannelListing().TableName("PriceAmount"): nil},
+		VariantProductID: squirrel.Eq{store.ProductVariantTableName + ".ProductID": product.Id},
+		PriceAmount:      squirrel.NotEq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
 	})
 	if appErr != nil {
 		return nil, appErr
