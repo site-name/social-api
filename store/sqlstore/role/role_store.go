@@ -14,6 +14,59 @@ import (
 	"github.com/sitename/sitename/store/store_iface"
 )
 
+type Role struct {
+	Id            string
+	Name          string
+	DisplayName   string
+	Description   string
+	CreateAt      int64
+	UpdateAt      int64
+	DeleteAt      int64
+	Permissions   string //
+	SchemeManaged bool
+	BuiltIn       bool
+}
+
+func NewRoleFromModel(role *model.Role) *Role {
+	permissionsMap := make(map[string]bool)
+	permissions := ""
+
+	for _, permission := range role.Permissions {
+		if !permissionsMap[permission] {
+			permissions += fmt.Sprintf(" %v", permission)
+			permissionsMap[permission] = true
+		}
+	}
+
+	return &Role{
+		Id:            role.Id,
+		Name:          role.Name,
+		DisplayName:   role.DisplayName,
+		Description:   role.Description,
+		CreateAt:      role.CreateAt,
+		UpdateAt:      role.UpdateAt,
+		DeleteAt:      role.DeleteAt,
+		Permissions:   permissions,
+		SchemeManaged: role.SchemeManaged,
+		BuiltIn:       role.BuiltIn,
+	}
+}
+
+func (role Role) ToModel() *model.Role {
+	return &model.Role{
+		Id:            role.Id,
+		Name:          role.Name,
+		DisplayName:   role.DisplayName,
+		Description:   role.Description,
+		CreateAt:      role.CreateAt,
+		UpdateAt:      role.UpdateAt,
+		DeleteAt:      role.DeleteAt,
+		Permissions:   strings.Fields(role.Permissions),
+		SchemeManaged: role.SchemeManaged,
+		BuiltIn:       role.BuiltIn,
+	}
+}
+
 type SqlRoleStore struct {
 	store.Store
 }
@@ -34,8 +87,8 @@ func NewSqlRoleStore(sqlStore store.Store) store.RoleStore {
 // Save can be used to both save and update roles
 func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
 	// Check the role is valid before proceeding.
-	if ok, field, errValue := role.IsValidWithoutId(); !ok {
-		return nil, store.NewErrInvalidInput("Role", field, fmt.Sprintf("%v", errValue))
+	if !role.IsValidWithoutId() {
+		return nil, store.NewErrInvalidInput("Role", "<any>", fmt.Sprintf("%v", role))
 	}
 
 	if role.Id == "" { // this means create new Role
@@ -54,29 +107,54 @@ func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
 		return createdRole, nil
 	}
 
-	role.PreUpdate()
-	if rowsChanged, err := s.GetMasterX().Update(role); err != nil {
+	dbRole := NewRoleFromModel(role)
+	dbRole.UpdateAt = model.GetMillis()
+
+	res, err := s.GetMasterX().NamedExec(`UPDATE Roles
+		SET UpdateAt=:UpdateAt, DeleteAt=:DeleteAt, CreateAt=:CreateAt,  Name=:Name, DisplayName=:DisplayName,
+		Description=:Description, Permissions=:Permissions, SchemeManaged=:SchemeManaged, BuiltIn=:BuiltIn
+		 WHERE Id=:Id`, &dbRole)
+
+	if err != nil {
 		return nil, errors.Wrap(err, "failed to update Role")
-	} else if rowsChanged != 1 {
+	}
+
+	rowsChanged, err := res.RowsAffected()
+	if err != nil {
+		return nil, errors.Wrap(err, "error while getting rows_affected")
+	}
+
+	if rowsChanged != 1 {
 		return nil, fmt.Errorf("invalid number of updated rows, expected 1 but got %d", rowsChanged)
 	}
 
-	role.PopulatePermissionSlice()
-	return role, nil
+	return dbRole.ToModel(), nil
 }
 
 func (s *SqlRoleStore) createRole(role *model.Role, transaction store_iface.SqlxTxExecutor) (*model.Role, error) {
-	role.PreSave()
-	if err := transaction.Insert(role); err != nil {
+	// Check the role is valid before proceeding.
+	if !role.IsValidWithoutId() {
+		return nil, store.NewErrInvalidInput("Role", "<any>", fmt.Sprintf("%v", role))
+	}
+
+	dbRole := NewRoleFromModel(role)
+
+	dbRole.Id = model.NewId()
+	dbRole.CreateAt = model.GetMillis()
+	dbRole.UpdateAt = dbRole.CreateAt
+
+	if _, err := transaction.NamedExec(`INSERT INTO Roles
+		(Id, Name, DisplayName, Description, Permissions, CreateAt, UpdateAt, DeleteAt, SchemeManaged, BuiltIn)
+		VALUES
+		(:Id, :Name, :DisplayName, :Description, :Permissions, :CreateAt, :UpdateAt, :DeleteAt, :SchemeManaged, :BuiltIn)`, dbRole); err != nil {
 		return nil, errors.Wrap(err, "failed to save Role")
 	}
 
-	role.PopulatePermissionSlice()
-	return role, nil
+	return dbRole.ToModel(), nil
 }
 
 func (s *SqlRoleStore) Get(roleId string) (*model.Role, error) {
-	var role model.Role
+	var role Role
 	if err := s.GetReplicaX().Get(&role, "SELECT * from Roles WHERE Id = ?", roleId); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.RoleTableName, roleId)
@@ -84,35 +162,33 @@ func (s *SqlRoleStore) Get(roleId string) (*model.Role, error) {
 		return nil, errors.Wrap(err, "failed to get Role")
 	}
 
-	role.PopulatePermissionSlice()
-	return &role, nil
+	return role.ToModel(), nil
 }
 
 func (s *SqlRoleStore) GetAll() ([]*model.Role, error) {
-	var dbRoles []*model.Role
+	dbRoles := []Role{}
 
 	if err := s.GetReplicaX().Select(&dbRoles, "SELECT * from Roles"); err != nil {
 		return nil, errors.Wrap(err, "failed to find Roles")
 	}
 
-	for _, role := range dbRoles {
-		role.Permissions = strings.Fields(role.PermissionsStr)
-		role.PermissionsStr = ""
+	roles := []*model.Role{}
+	for _, dbRole := range dbRoles {
+		roles = append(roles, dbRole.ToModel())
 	}
-	return dbRoles, nil
+	return roles, nil
 }
 
 func (s *SqlRoleStore) GetByName(ctx context.Context, name string) (*model.Role, error) {
-	var rolw model.Role
-	if err := s.DBXFromContext(ctx).Get(&rolw, "SELECT * from Roles WHERE Name = ?", name); err != nil {
+	dbRole := Role{}
+	if err := s.DBXFromContext(ctx).Get(&dbRole, "SELECT * from Roles WHERE Name = ?", name); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("Role", fmt.Sprintf("name=%s", name))
 		}
 		return nil, errors.Wrapf(err, "failed to find Roles with name=%s", name)
 	}
 
-	rolw.PopulatePermissionSlice()
-	return &rolw, nil
+	return dbRole.ToModel(), nil
 }
 
 func (s *SqlRoleStore) GetByNames(names []string) ([]*model.Role, error) {
@@ -121,7 +197,7 @@ func (s *SqlRoleStore) GetByNames(names []string) ([]*model.Role, error) {
 	}
 
 	query := s.GetQueryBuilder().
-		Select("Id, Name, DisplayName, Description, CreateAt, UpdateAt, DeleteAt, PermissionsStr, SchemeManaged, BuiltIn").
+		Select("Id, Name, DisplayName, Description, CreateAt, UpdateAt, DeleteAt, Permissions, SchemeManaged, BuiltIn").
 		From("Roles").
 		Where(sq.Eq{"Name": names})
 	queryString, args, err := query.ToSql()
@@ -134,19 +210,18 @@ func (s *SqlRoleStore) GetByNames(names []string) ([]*model.Role, error) {
 		return nil, errors.Wrap(err, "failed to find Roles")
 	}
 
-	var roles []*model.Role
+	roles := []*model.Role{}
 	defer rows.Close()
 	for rows.Next() {
-		var role model.Role
+		var role Role
 		err = rows.Scan(
 			&role.Id, &role.Name, &role.DisplayName, &role.Description,
-			&role.CreateAt, &role.UpdateAt, &role.DeleteAt, &role.PermissionsStr,
+			&role.CreateAt, &role.UpdateAt, &role.DeleteAt, &role.Permissions,
 			&role.SchemeManaged, &role.BuiltIn)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan values")
 		}
-		role.PopulatePermissionSlice()
-		roles = append(roles, &role)
+		roles = append(roles, role.ToModel())
 	}
 	if err = rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "unable to iterate over rows")
@@ -157,7 +232,7 @@ func (s *SqlRoleStore) GetByNames(names []string) ([]*model.Role, error) {
 
 func (s *SqlRoleStore) Delete(roleId string) (*model.Role, error) {
 	// Get the role.
-	var role model.Role
+	var role Role
 	if err := s.GetReplicaX().Get(&role, "SELECT * from Roles WHERE Id = ?", roleId); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("Role", roleId)
@@ -165,18 +240,29 @@ func (s *SqlRoleStore) Delete(roleId string) (*model.Role, error) {
 		return nil, errors.Wrapf(err, "failed to get Role with id=%s", roleId)
 	}
 
-	role.PreUpdate()
-	role.DeleteAt = role.UpdateAt
+	time := model.GetMillis()
+	role.DeleteAt = time
+	role.UpdateAt = time
 
-	if rowsChanged, err := s.GetMasterX().Update(role); err != nil {
+	res, err := s.GetMasterX().NamedExec(`UPDATE Roles
+		SET UpdateAt=:UpdateAt, DeleteAt=:DeleteAt, CreateAt=:CreateAt,  Name=:Name, DisplayName=:DisplayName,
+		Description=:Description, Permissions=:Permissions, SchemeManaged=:SchemeManaged, BuiltIn=:BuiltIn
+		 WHERE Id=:Id`, &role)
+
+	if err != nil {
 		return nil, errors.Wrap(err, "failed to update Role")
-	} else if rowsChanged != 1 {
-		return nil, errors.Wrapf(err, "invalid number of updated rows, expected 1 but got %d", rowsChanged)
 	}
 
-	role.PopulatePermissionSlice()
+	rowsChanged, err := res.RowsAffected()
+	if err != nil {
+		return nil, errors.Wrap(err, "error while getting rows_affected")
+	}
 
-	return &role, nil
+	if rowsChanged != 1 {
+		return nil, fmt.Errorf("invalid number of updated rows, expected 1 but got %d", rowsChanged)
+	}
+
+	return role.ToModel(), nil
 }
 
 func (s *SqlRoleStore) PermanentDeleteAll() error {

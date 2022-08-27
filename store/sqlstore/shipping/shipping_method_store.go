@@ -17,33 +17,31 @@ type SqlShippingMethodStore struct {
 }
 
 func NewSqlShippingMethodStore(s store.Store) store.ShippingMethodStore {
-	smls := &SqlShippingMethodStore{s}
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(shipping.ShippingMethod{}, store.ShippingMethodTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShippingZoneID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(shipping.SHIPPING_METHOD_NAME_MAX_LENGTH)
-		table.ColMap("Type").SetMaxSize(shipping.SHIPPING_METHOD_TYPE_MAX_LENGTH)
-		table.ColMap("WeightUnit").SetMaxSize(model.WEIGHT_UNIT_MAX_LENGTH)
-	}
-	return smls
+	return &SqlShippingMethodStore{s}
 }
 
-func (s *SqlShippingMethodStore) ModelFields() []string {
-	return []string{
-		"ShippingMethods.Id",
-		"ShippingMethods.Name",
-		"ShippingMethods.Type",
-		"ShippingMethods.ShippingZoneID",
-		"ShippingMethods.MinimumOrderWeight",
-		"ShippingMethods.MaximumOrderWeight",
-		"ShippingMethods.WeightUnit",
-		"ShippingMethods.MaximumDeliveryDays",
-		"ShippingMethods.MinimumDeliveryDays",
-		"ShippingMethods.Description",
-		"ShippingMethods.Metadata",
-		"ShippingMethods.PrivateMetadata",
+func (s *SqlShippingMethodStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"Name",
+		"Type",
+		"ShippingZoneID",
+		"MinimumOrderWeight",
+		"MaximumOrderWeight",
+		"WeightUnit",
+		"MaximumDeliveryDays",
+		"MinimumDeliveryDays",
+		"Description",
+		"Metadata",
+		"PrivateMetadata",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (s *SqlShippingMethodStore) ScanFields(shippingMethod shipping.ShippingMethod) []interface{} {
@@ -63,26 +61,6 @@ func (s *SqlShippingMethodStore) ScanFields(shippingMethod shipping.ShippingMeth
 	}
 }
 
-// TableName returns current store's table name. If non-empty `withField` is provided, it returns the field name of the store, in standard sql style
-//
-// E.g:
-//  TableName("Id") == "ShippingMethods.Id"
-//  TableName("") == "ShippingMethods"
-func (s *SqlShippingMethodStore) TableName(withField string) string {
-	if withField == "" {
-		return "ShippingMethods"
-	} else {
-		return "ShippingMethods." + withField
-	}
-}
-
-func (s *SqlShippingMethodStore) CreateIndexesIfNotExists() {
-	s.CreateIndexIfNotExists("idx_shipping_methods_name", store.ShippingMethodTableName, "Name")
-	s.CreateIndexIfNotExists("idx_shipping_methods_name_lower_textpattern", store.ShippingMethodTableName, "lower(Name) text_pattern_ops")
-
-	s.CreateForeignKeyIfNotExists(store.ShippingMethodTableName, "ShippingZoneID", store.ShippingZoneTableName, "Id", true)
-}
-
 // Upsert bases on given method's Id to decide update or insert it
 func (s *SqlShippingMethodStore) Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error) {
 	method.PreSave()
@@ -90,7 +68,8 @@ func (s *SqlShippingMethodStore) Upsert(method *shipping.ShippingMethod) (*shipp
 		return nil, err
 	}
 
-	err := s.GetMaster().Insert(method)
+	query := "INSERT INTO " + store.ShippingMethodTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+	_, err := s.GetMasterX().NamedExec(query, method)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to upsert shipping method with id=%s", method.Id)
 	}
@@ -101,7 +80,7 @@ func (s *SqlShippingMethodStore) Upsert(method *shipping.ShippingMethod) (*shipp
 // Get finds and returns a shipping method with given id
 func (s *SqlShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
 	var res shipping.ShippingMethod
-	err := s.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ShippingMethodTableName+" WHERE Id = :ID", map[string]interface{}{"ID": methodID})
+	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShippingMethodTableName+" WHERE Id = ?", methodID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ShippingMethodTableName, methodID)
@@ -120,8 +99,8 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 		NOTE: we also prefetch postal_code_rules, shipping zones for later use
 		please refer to saleor/shipping/models for details
 	*/
-	selectFields := append(s.ModelFields(), s.ShippingZone().ModelFields()...)
-	selectFields = append(selectFields, s.ShippingMethodPostalCodeRule().ModelFields()...)
+	selectFields := append(s.ModelFields(store.ShippingMethodTableName+"."), s.ShippingZone().ModelFields(store.ShippingZoneTableName+".")...)
+	selectFields = append(selectFields, s.ShippingMethodPostalCodeRule().ModelFields(store.ShippingMethodPostalCodeRuleTableName+".")...)
 
 	priceAmount, _ := price.Amount.Float64()
 
@@ -280,7 +259,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 
 	// use Select() here since it can inteprets map[string]interface{} value mapping
 	// Query() cannot understand.
-	_, err := s.GetReplica().Select(&holder, query, params)
+	err := s.GetReplicaX().Select(&holder, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds shipping methods for given conditions")
 	}
@@ -372,7 +351,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 // GetbyOption finds and returns a shipping method that satisfy given options
 func (ss *SqlShippingMethodStore) GetbyOption(options *shipping.ShippingMethodFilterOption) (*shipping.ShippingMethod, error) {
 	query := ss.GetQueryBuilder().
-		Select(ss.ModelFields()...).
+		Select(ss.ModelFields(store.ShippingMethodTableName + ".")...).
 		From(store.ShippingMethodTableName)
 
 	// parse options
@@ -401,7 +380,7 @@ func (ss *SqlShippingMethodStore) GetbyOption(options *shipping.ShippingMethodFi
 	}
 
 	var res shipping.ShippingMethod
-	err = ss.GetReplica().SelectOne(&res, queryString, args...)
+	err = ss.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ShippingMethodTableName, "options")

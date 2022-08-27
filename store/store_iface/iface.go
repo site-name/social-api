@@ -28,7 +28,6 @@ type SqlxExecutor interface {
 	SelectBuilder(dest interface{}, builder Builder) error
 	ExecNoTimeout(query string, args ...interface{}) (sql.Result, error)
 	Beginx() (SqlxTxExecutor, error)
-
 	Conn(ctx context.Context) (*sql.Conn, error)
 }
 
