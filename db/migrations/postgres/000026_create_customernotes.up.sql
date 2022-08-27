@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS customernotes (
-  id character varying(36),
+  id character varying(36) PRIMARY KEY,
 	userid character varying(36),
 	date bigint,
 	content text,
