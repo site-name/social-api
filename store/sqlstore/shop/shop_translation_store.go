@@ -14,23 +14,26 @@ type SqlShopTranslationStore struct {
 }
 
 func NewSqlShopTranslationStore(s store.Store) store.ShopTranslationStore {
-	sts := &SqlShopTranslationStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(shop.ShopTranslation{}, store.ShopTranslationTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("LanguageCode").SetMaxSize(model.LANGUAGE_CODE_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(shop.SHOP_TRANSLATION_NAME_MAX_LENGTH)
-		table.ColMap("Description").SetMaxSize(shop.SHOP_TRANSLATION_NAME_MAX_LENGTH)
-
-		table.SetUniqueTogether("LanguageCode", "ShopID")
-	}
-	return sts
+	return &SqlShopTranslationStore{s}
 }
 
-func (sts *SqlShopTranslationStore) CreateIndexesIfNotExists() {
-	sts.CreateForeignKeyIfNotExists(store.ShopTranslationTableName, "ShopID", store.ShopTableName, "Id", true)
+func (s *SqlShopTranslationStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"ShopID",
+		"LanguageCode",
+		"Name",
+		"Description",
+		"CreateAt",
+		"UpdateAt",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Upsert depends on translation's Id then decides to update or insert
@@ -48,20 +51,26 @@ func (sts *SqlShopTranslationStore) Upsert(translation *shop.ShopTranslation) (*
 	}
 
 	var (
-		err           error
-		numUpdated    int64
-		oldTraslation *shop.ShopTranslation
+		err        error
+		numUpdated int64
 	)
 	if saving {
-		err = sts.GetMaster().Insert(translation)
-	} else {
-		oldTraslation, err = sts.Get(translation.Id)
-		if err != nil {
-			return nil, err
-		}
-		translation.CreateAt = oldTraslation.CreateAt
+		query := "INSERT INTO " + store.ShopTranslationTableName + "(" + sts.ModelFields("").Join(",") + ") VALUES (" + sts.ModelFields(":").Join(",") + ")"
+		_, err = sts.GetMasterX().NamedExec(query, translation)
 
-		numUpdated, err = sts.GetMaster().Update(translation)
+	} else {
+		query := "UPDATE " + store.ShopTranslationTableName + " SET " + sts.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+		result, err = sts.GetMasterX().NamedExec(query, translation)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -81,7 +90,7 @@ func (sts *SqlShopTranslationStore) Upsert(translation *shop.ShopTranslation) (*
 // Get finds a shop translation with given id then return it with an error
 func (sts *SqlShopTranslationStore) Get(id string) (*shop.ShopTranslation, error) {
 	var res shop.ShopTranslation
-	err := sts.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ShopTranslationTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	err := sts.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShopTranslationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ShopTranslationTableName, id)

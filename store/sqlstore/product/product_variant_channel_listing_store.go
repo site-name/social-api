@@ -202,6 +202,10 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction store
 		res = append(res, variantChannelListing.DeepCopy())
 	}
 
+	if err := rows.Close(); err != nil {
+		return nil, errors.Wrap(err, "failed to close rows")
+	}
+
 	return res, nil
 }
 

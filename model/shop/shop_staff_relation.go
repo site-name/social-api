@@ -5,8 +5,8 @@ import "github.com/sitename/sitename/model"
 // ShopStaffRelation represents a relation between a shop and an staff user
 type ShopStaffRelation struct {
 	Id       string `json:"id"`
-	ShopID   string `json:"shop_id"`
-	StaffID  string `json:"staff_id"`
+	ShopID   string `json:"shop_id"`  // unique with staffID
+	StaffID  string `json:"staff_id"` //
 	CreateAt int64  `json:"create_at"`
 	EndAt    *int64 `json:"end_at"`
 }

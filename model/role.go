@@ -280,17 +280,16 @@ func init() {
 }
 
 type Role struct {
-	Id             string   `json:"id"`
-	Name           string   `json:"name"`
-	DisplayName    string   `json:"display_name"`
-	Description    string   `json:"description"`
-	CreateAt       int64    `json:"create_at"`
-	UpdateAt       int64    `json:"update_at"`
-	DeleteAt       int64    `json:"delete_at"`
-	Permissions    []string `json:"permissions" db:"-"`       // NOT save to database, populate by `PermissionsStr`
-	PermissionsStr string   `json:"permission_str,omitempty"` // save to database
-	SchemeManaged  bool     `json:"scheme_managed"`
-	BuiltIn        bool     `json:"built_in"`
+	Id            string   `json:"id"`
+	Name          string   `json:"name"`
+	DisplayName   string   `json:"display_name"`
+	Description   string   `json:"description"`
+	CreateAt      int64    `json:"create_at"`
+	UpdateAt      int64    `json:"update_at"`
+	DeleteAt      int64    `json:"delete_at"`
+	Permissions   []string `json:"permissions" db:"-"` // NOT save to database, populate by `PermissionsStr`
+	SchemeManaged bool     `json:"scheme_managed"`
+	BuiltIn       bool     `json:"built_in"`
 }
 
 type RolePatch struct {
@@ -309,19 +308,11 @@ func (r *Role) PreSave() {
 	}
 	r.CreateAt = GetMillis()
 	r.UpdateAt = r.CreateAt
-	r.PermissionsStr = strings.Join(r.Permissions, " ")
 }
 
 // PreUpdate set `UpdateAt` and `PermissionsStr`
 func (r *Role) PreUpdate() {
 	r.UpdateAt = GetMillis()
-	r.PermissionsStr = strings.Join(r.Permissions, " ")
-}
-
-// PopulatePermissionSlice populates role's Permissions slice
-func (r *Role) PopulatePermissionSlice() {
-	r.Permissions = strings.Fields(r.PermissionsStr)
-	r.PermissionsStr = ""
 }
 
 func (r *Role) ToJSON() string {
@@ -400,22 +391,21 @@ func (r *Role) IsValid() bool {
 		return false
 	}
 
-	ok, _, _ := r.IsValidWithoutId()
-	return ok
+	return r.IsValidWithoutId()
 }
 
 // IsValidWithoutId check if current role is valid without checking its Id
-func (r *Role) IsValidWithoutId() (bool, string, interface{}) {
+func (r *Role) IsValidWithoutId() bool {
 	if !IsValidRoleName(r.Name) {
-		return false, "Name", r.Name
+		return false
 	}
 
 	if r.DisplayName == "" || len(r.DisplayName) > RoleDisplayNameMaxLength {
-		return false, "DisplayName", r.DisplayName
+		return false
 	}
 
 	if len(r.Description) > RoleDescriptionMaxLength {
-		return false, "Description", r.Description
+		return false
 	}
 
 	// check checks if permissionId is included in perms
@@ -431,11 +421,11 @@ func (r *Role) IsValidWithoutId() (bool, string, interface{}) {
 	for _, permissionId := range r.Permissions {
 		permissionValidated := check(AllPermissions, permissionId) || check(DeprecatedPermissions, permissionId)
 		if !permissionValidated {
-			return false, "Permissions", r.Permissions
+			return false
 		}
 	}
 
-	return true, "nil", nil
+	return true
 }
 
 // CleanRoleNames iterates through given roleNames.

@@ -15,26 +15,26 @@ type SqlShippingZoneStore struct {
 }
 
 func NewSqlShippingZoneStore(s store.Store) store.ShippingZoneStore {
-	smls := &SqlShippingZoneStore{s}
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(shipping.ShippingZone{}, store.ShippingZoneTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("Name").SetMaxSize(shipping.SHIPPING_ZONE_NAME_MAX_LENGTH)
-		table.ColMap("Countries").SetMaxSize(model.MULTIPLE_COUNTRIES_MAX_LENGTH)
-	}
-	return smls
+	return &SqlShippingZoneStore{s}
 }
 
-func (s *SqlShippingZoneStore) ModelFields() []string {
-	return []string{
-		"ShippingZones.Id",
-		"ShippingZones.Name",
-		"ShippingZones.Countries",
-		"ShippingZones.Default",
-		"ShippingZones.Description",
-		"ShippingZones.Metadata",
-		"ShippingZones.PrivateMetadata",
+func (s *SqlShippingZoneStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"Name",
+		"Countries",
+		"Default",
+		"Description",
+		"Metadata",
+		"PrivateMetadata",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (s *SqlShippingZoneStore) ScanFields(shippingZone shipping.ShippingZone) []interface{} {
@@ -47,19 +47,6 @@ func (s *SqlShippingZoneStore) ScanFields(shippingZone shipping.ShippingZone) []
 		&shippingZone.Metadata,
 		&shippingZone.PrivateMetadata,
 	}
-}
-
-func (s *SqlShippingZoneStore) TableName(withField string) string {
-	if withField == "" {
-		return "ShippingZones"
-	} else {
-		return "ShippingZones." + withField
-	}
-}
-
-func (s *SqlShippingZoneStore) CreateIndexesIfNotExists() {
-	s.CreateIndexIfNotExists("idx_shipping_zone_name", store.ShippingZoneTableName, "Name")
-	s.CreateIndexIfNotExists("idx_shipping_zone_name_lower_textpattern", store.ShippingZoneTableName, "lower(Name) text_pattern_ops")
 }
 
 // Upsert depends on given shipping zone's Id to decide update or insert the zone
@@ -81,14 +68,23 @@ func (s *SqlShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone) (*shi
 		numUpdated int64
 	)
 	if isSaving {
-		err = s.GetMaster().Insert(shippingZone)
-	} else {
-		_, err = s.Get(shippingZone.Id)
-		if err != nil {
-			return nil, err
-		}
+		query := "INSERT INTO " + store.ShippingZoneTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+		_, err = s.GetMasterX().NamedExec(query, shippingZone)
 
-		numUpdated, err = s.GetMaster().Update(shippingZone)
+	} else {
+		query := "UPDATE " + store.ShippingZoneTableName + " SET " + s.
+			ModelFields("").
+			Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+
+		var result sql.Result
+
+		result, err = s.GetMasterX().NamedExec(query, shippingZone)
+		if err == nil && result != nil {
+			numUpdated, _ = result.RowsAffected()
+		}
 	}
 
 	if err != nil {
@@ -105,7 +101,7 @@ func (s *SqlShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone) (*shi
 // Get finds 1 shipping zone for given shippingZoneID
 func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*shipping.ShippingZone, error) {
 	var res shipping.ShippingZone
-	err := s.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ShippingZoneTableName+" WHERE Id = :ID", map[string]interface{}{"ID": shippingZoneID})
+	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShippingZoneTableName+" WHERE Id = ?", shippingZoneID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ShippingZoneTableName, shippingZoneID)
@@ -118,7 +114,7 @@ func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*shipping.ShippingZon
 
 // FilterByOption finds a list of shipping zones based on given option
 func (s *SqlShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) {
-	selectFields := s.ModelFields()
+	selectFields := s.ModelFields(store.ShippingZoneTableName + ".")
 	if option.SelectRelatedThroughData {
 		selectFields = append(selectFields, "WarehouseShippingZones.WarehouseID")
 	}
@@ -141,7 +137,11 @@ func (s *SqlShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilte
 			Where(option.WarehouseID)
 	}
 
-	rows, err := query.RunWith(s.GetReplica()).Query()
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+	rows, err := s.GetReplicaX().QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping zones with given options")
 	}

@@ -182,14 +182,12 @@ type (
 		FilterByShopAndStaff(shopID string, staffID string) (*shop.ShopStaffRelation, error) // FilterByShopAndStaff finds a relation ship with given shopId and staffId
 	}
 	ShopStore interface {
-		CreateIndexesIfNotExists()
 		Upsert(shop *shop.Shop) (*shop.Shop, error)                            // Upsert depends on shop's Id to decide to update/insert the given shop.
 		Get(shopID string) (*shop.Shop, error)                                 // Get finds a shop with given id and returns it
 		FilterByOptions(options *shop.ShopFilterOptions) ([]*shop.Shop, error) // FilterByOptions finds and returns shops with given options
 		GetByOptions(options *shop.ShopFilterOptions) (*shop.Shop, error)      // GetByOptions finds and returns 1 shop with given options
 	}
 	ShopTranslationStore interface {
-		CreateIndexesIfNotExists()
 		Upsert(translation *shop.ShopTranslation) (*shop.ShopTranslation, error) // Upsert depends on translation's Id then decides to update or insert
 		Get(id string) (*shop.ShopTranslation, error)                            // Get finds a shop translation with given id then return it with an error
 	}
@@ -428,42 +426,32 @@ type (
 // shipping
 type (
 	ShippingZoneStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(shippingZone shipping.ShippingZone) []interface{}
-		TableName(withField string) string
 		Upsert(shippingZone *shipping.ShippingZone) (*shipping.ShippingZone, error)                 // Upsert depends on given shipping zone's Id to decide update or insert the zone
 		Get(shippingZoneID string) (*shipping.ShippingZone, error)                                  // Get finds 1 shipping zone for given shippingZoneID
 		FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) // FilterByOption finds a list of shipping zones based on given option
 	}
 	ShippingMethodStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
-		TableName(withField string) string
+		ModelFields(prefix string) model.StringArray
 		Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error)                                                                                                   // Upsert bases on given method's Id to decide update or insert it
 		Get(methodID string) (*shipping.ShippingMethod, error)                                                                                                                      // Get finds and returns a shipping method with given id
 		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) // ApplicableShippingMethods finds all shipping methods with given conditions
 		GetbyOption(options *shipping.ShippingMethodFilterOption) (*shipping.ShippingMethod, error)                                                                                 // GetbyOption finds and returns a shipping method that satisfy given options
 	}
 	ShippingMethodPostalCodeRuleStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 	}
 	ShippingMethodChannelListingStore interface {
-		CreateIndexesIfNotExists()
-		TableName(withField string) string
 		Upsert(listing *shipping.ShippingMethodChannelListing) (*shipping.ShippingMethodChannelListing, error)                      // Upsert depends on given listing's Id to decide whether to save or update the listing
 		Get(listingID string) (*shipping.ShippingMethodChannelListing, error)                                                       // Get finds a shipping method channel listing with given listingID
 		FilterByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, error) // FilterByOption returns a list of shipping method channel listings based on given option. result sorted by creation time ASC
 	}
 	ShippingMethodTranslationStore interface {
-		CreateIndexesIfNotExists()
 	}
 	ShippingZoneChannelStore interface {
-		CreateIndexesIfNotExists()
 	}
 	ShippingMethodExcludedProductStore interface {
-		CreateIndexesIfNotExists()
 		Save(instance *shipping.ShippingMethodExcludedProduct) (*shipping.ShippingMethodExcludedProduct, error) // Save inserts given ShippingMethodExcludedProduct into database then returns it
 		Get(id string) (*shipping.ShippingMethodExcludedProduct, error)                                         // Get finds and returns a shipping method excluded product with given id then reutrns it
 	}

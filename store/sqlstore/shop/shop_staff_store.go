@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/store"
 )
@@ -14,22 +15,24 @@ type SqlShopStaffStore struct {
 }
 
 func NewSqlShopStaffStore(s store.Store) store.ShopStaffStore {
-	sss := &SqlShopStaffStore{s}
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(shop.ShopStaffRelation{}, store.ShopStaffTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShopID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("StaffID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("ShopID", "StaffID")
-	}
-
-	return sss
+	return &SqlShopStaffStore{s}
 }
 
-func (sss *SqlShopStaffStore) CreateIndexesIfNotExists() {
-	sss.CreateForeignKeyIfNotExists(store.ShopStaffTableName, "ShopID", store.ShopTableName, "Id", false)
-	sss.CreateForeignKeyIfNotExists(store.ShopStaffTableName, "StaffID", store.UserTableName, "Id", false)
+func (s *SqlShopStaffStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"ShopID",
+		"StaffID",
+		"CreateAt",
+		"EndAt",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Save inserts given shopStaff into database then returns it with an error
@@ -39,7 +42,8 @@ func (sss *SqlShopStaffStore) Save(shopStaff *shop.ShopStaffRelation) (*shop.Sho
 		return nil, err
 	}
 
-	if err := sss.GetMaster().Insert(shopStaff); err != nil {
+	query := "INSERT INTO " + store.ShopStaffTableName + "(" + sss.ModelFields("").Join(",") + ") VALUES (" + sss.ModelFields(":").Join(",") + ")"
+	if _, err := sss.GetMasterX().NamedExec(query, shopStaff); err != nil {
 		if sss.IsUniqueConstraintError(err, []string{"ShopID", "StaffID", "shopstaffs_shopid_staffid_key"}) {
 			return nil, store.NewErrInvalidInput(store.ShopStaffTableName, "ShopID/StaffID", "unique values")
 		}
@@ -52,7 +56,7 @@ func (sss *SqlShopStaffStore) Save(shopStaff *shop.ShopStaffRelation) (*shop.Sho
 // Get finds a shop staff with given id then returns it with an error
 func (sss *SqlShopStaffStore) Get(shopStaffID string) (*shop.ShopStaffRelation, error) {
 	var res shop.ShopStaffRelation
-	err := sss.GetReplica().SelectOne(&res, "SELECT * FROM "+store.ShopStaffTableName+" WHERE Id = :ID", map[string]interface{}{"ID": shopStaffID})
+	err := sss.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShopStaffTableName+" WHERE Id = ?", shopStaffID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ShopStaffTableName, shopStaffID)
@@ -65,17 +69,15 @@ func (sss *SqlShopStaffStore) Get(shopStaffID string) (*shop.ShopStaffRelation, 
 
 // FilterByShopAndStaff finds a relation ship with given shopId and staffId
 func (sss *SqlShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*shop.ShopStaffRelation, error) {
-	var result *shop.ShopStaffRelation
-	err := sss.GetReplica().SelectOne(
+	var result shop.ShopStaffRelation
+	err := sss.GetReplicaX().Get(
 		&result,
 		`SELECT * FROM `+store.ShopStaffTableName+`
 		WHERE (
-			ShopID = :ShopID AND StaffID = :StaffID
+			ShopID = ? AND StaffID = ?
 		)`,
-		map[string]interface{}{
-			"ShopID":  shopID,
-			"StaffID": staffID,
-		},
+		shopID,
+		staffID,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -84,5 +86,5 @@ func (sss *SqlShopStaffStore) FilterByShopAndStaff(shopID string, staffID string
 		return nil, errors.Wrapf(err, "failed to find shop-staff relation with ShopID=%s, StaffID=%s", shopID, staffID)
 	}
 
-	return result, nil
+	return &result, nil
 }
