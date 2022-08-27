@@ -7,10 +7,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	graphql1 "github.com/sitename/sitename/graphql/generated"
 	"github.com/sitename/sitename/graphql/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/menu"
+	"github.com/sitename/sitename/store"
 )
 
 func (r *menuResolver) Items(ctx context.Context, obj *gqlmodel.Menu) ([]*gqlmodel.MenuItem, error) {
@@ -86,19 +88,19 @@ func (r *mutationResolver) MenuItemMove(ctx context.Context, menu string, moves 
 }
 
 func (r *queryResolver) Menu(ctx context.Context, channel *string, id *string, name *string, slug *string) (*gqlmodel.Menu, error) {
-	var (
-		mnu    *menu.Menu
-		appErr *model.AppError
-	)
-
+	// parse options
+	menuFilterOptions := &menu.MenuFilterOptions{}
 	if id != nil && model.IsValidId(*id) {
-		mnu, appErr = r.Srv().MenuService().MenuById(*id)
-	} else if name != nil {
-		mnu, appErr = r.Srv().MenuService().MenuByName(*name)
-	} else if slug != nil {
-		mnu, appErr = r.Srv().MenuService().MenuBySlug(*slug)
+		menuFilterOptions.Id = squirrel.Eq{store.MenuTableName + ".Id": *id}
+	}
+	if name != nil && len(*name) > 0 {
+		menuFilterOptions.Name = squirrel.Eq{store.MenuTableName + ".Name": *name}
+	}
+	if slug != nil && len(*slug) > 0 {
+		menuFilterOptions.Slug = squirrel.Eq{store.MenuTableName + ".Slug": *slug}
 	}
 
+	mnu, appErr := r.Srv().MenuService().MenuByOptions(menuFilterOptions)
 	if appErr != nil {
 		return nil, appErr
 	}

@@ -121,7 +121,7 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 
 	if checkOut.ShippingMethodID != nil {
 		shippingMethod, appErr = a.srv.ShippingService().ShippingMethodByOption(&shipping.ShippingMethodFilterOption{
-			Id: squirrel.Eq{a.srv.Store.ShippingMethod().TableName("Id"): *checkOut.ShippingMethodID},
+			Id: squirrel.Eq{store.ShippingMethodTableName + ".Id": *checkOut.ShippingMethodID},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -140,13 +140,13 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 
 	if shippingMethod != nil {
 		shippingMethodChannelListingsFilterOption.ShippingMethodID = squirrel.Eq{
-			a.srv.Store.ShippingMethodChannelListing().TableName("ShippingMethodID"): shippingMethod.Id,
+			store.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethod.Id,
 		}
 	}
 
 	if chanNel != nil {
 		shippingMethodChannelListingsFilterOption.ChannelID = squirrel.Eq{
-			a.srv.Store.ShippingMethodChannelListing().TableName("ChannelID"): chanNel.Id,
+			store.ShippingMethodChannelListingTableName + ".ChannelID": chanNel.Id,
 		}
 	}
 
@@ -162,7 +162,7 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 	var collectionPoint *warehouse.WareHouse
 	if checkOut.CollectionPointID != nil {
 		collectionPoint, appErr = a.srv.WarehouseService().WarehouseByOption(&warehouse.WarehouseFilterOption{
-			Id:                   squirrel.Eq{a.srv.Store.Warehouse().TableName("Id"): *checkOut.CollectionPointID},
+			Id:                   squirrel.Eq{store.WarehouseTableName + ".Id": *checkOut.CollectionPointID},
 			SelectRelatedAddress: true,
 		})
 		if appErr != nil {
@@ -301,8 +301,8 @@ func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo checkout
 
 func (s *ServiceCheckout) updateChannelListings(methodInfo checkout.DeliveryMethodBaseInterface, checkoutInfo checkout.CheckoutInfo) *model.AppError {
 	shippingMethodChannelListings, appErr := s.srv.ShippingService().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
-		ShippingMethodID: squirrel.Eq{s.srv.Store.ShippingMethodChannelListing().TableName("ShippingMethodID"): methodInfo.GetDeliveryMethod().(*shipping.ShippingMethod).Id},
-		ChannelID:        squirrel.Eq{s.srv.Store.ShippingMethodChannelListing().TableName("ChannelID"): checkoutInfo.Channel.Id},
+		ShippingMethodID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ShippingMethodID": methodInfo.GetDeliveryMethod().(*shipping.ShippingMethod).Id},
+		ChannelID:        squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": checkoutInfo.Channel.Id},
 	})
 	if appErr != nil {
 		return appErr

@@ -2,8 +2,8 @@ package warehouse
 
 import (
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
@@ -15,29 +15,23 @@ type SqlPreorderAllocationStore struct {
 }
 
 func NewSqlPreorderAllocationStore(s store.Store) store.PreorderAllocationStore {
-	ps := &SqlPreorderAllocationStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(warehouse.PreorderAllocation{}, store.PreOrderAllocationTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("OrderLineID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductVariantChannelListingID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("OrderLineID", "ProductVariantChannelListingID")
-	}
-
-	return ps
+	return &SqlPreorderAllocationStore{s}
 }
 
-func (ws *SqlPreorderAllocationStore) CreateIndexesIfNotExists() {}
-
-func (ws *SqlPreorderAllocationStore) ModelFields() []string {
-	return []string{
-		"PreorderAllocations.Id",
-		"PreorderAllocations.OrderLineID",
-		"PreorderAllocations.Quantity",
-		"PreorderAllocations.ProductVariantChannelListingID",
+func (ws *SqlPreorderAllocationStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"OrderLineID",
+		"Quantity",
+		"ProductVariantChannelListingID",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 func (ws *SqlPreorderAllocationStore) ScanFields(preorderAllocation warehouse.PreorderAllocation) []interface{} {
 	return []interface{}{
@@ -48,20 +42,14 @@ func (ws *SqlPreorderAllocationStore) ScanFields(preorderAllocation warehouse.Pr
 	}
 }
 
-func (ws *SqlPreorderAllocationStore) TableName(withField string) string {
-	if withField == "" {
-		return "PreorderAllocations"
-	}
-	return "PreorderAllocations." + withField
-}
-
 // BulkCreate bulk inserts given preorderAllocations and returns them
 func (ws *SqlPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
-	var upsertor gorp.SqlExecutor = ws.GetMaster()
+	var upsertor store_iface.SqlxExecutor = ws.GetMasterX()
 	if transaction != nil {
 		upsertor = transaction
 	}
 
+	query := "INSERT INTO " + store.PreOrderAllocationTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
 	for _, allocation := range preorderAllocations {
 		allocation.PreSave()
 
@@ -69,7 +57,7 @@ func (ws *SqlPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxE
 			return nil, err
 		}
 
-		err := upsertor.Insert(allocation)
+		_, err := upsertor.NamedExec(query, allocation)
 		if err != nil {
 			if ws.IsUniqueConstraintError(err, []string{"OrderLineID", "ProductVariantChannelListingID", "preorderallocations_orderlineid_productvariantchannellistingid_key"}) {
 				return nil, store.NewErrInvalidInput(store.PreOrderAllocationTableName, "OrderLineID/ProductVariantChannelListingID", "duplicate")
@@ -83,13 +71,13 @@ func (ws *SqlPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxE
 
 // FilterByOption finds and returns a list of preorder allocations filtered using given options
 func (ws *SqlPreorderAllocationStore) FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) {
-	selectFields := ws.ModelFields()
+	selectFields := ws.ModelFields(store.PreOrderAllocationTableName + ".")
 
 	if options.SelectRelated_OrderLine {
-		selectFields = append(selectFields, ws.OrderLine().ModelFields()...)
+		selectFields = append(selectFields, ws.OrderLine().ModelFields(store.OrderLineTableName+".")...)
 	}
 	if options.SelectRelated_OrderLine_Order && options.SelectRelated_OrderLine {
-		selectFields = append(selectFields, ws.Order().ModelFields()...)
+		selectFields = append(selectFields, ws.Order().ModelFields(store.OrderTableName+".")...)
 	}
 
 	query := ws.GetQueryBuilder().Select(selectFields...).From(store.PreOrderAllocationTableName)
@@ -116,7 +104,12 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *warehouse.Preorder
 		query = query.InnerJoin(store.OrderTableName + " ON Orderlines.OrderID = Orders.Id")
 	}
 
-	rows, err := query.Where(andConditions).RunWith(ws.GetReplica()).Query()
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+	}
+
+	rows, err := ws.GetReplicaX().QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find preorder allocations with given options")
 	}
@@ -161,12 +154,12 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *warehouse.Preorder
 
 // Delete deletes preorder-allocations by given ids
 func (ws *SqlPreorderAllocationStore) Delete(transaction store_iface.SqlxTxExecutor, preorderAllocationIDs ...string) error {
-	var runner squirrel.BaseRunner = ws.GetMaster()
+	var runner store_iface.SqlxExecutor = ws.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
 
-	result, err := runner.Exec("DELETE FROM "+store.PreOrderAllocationTableName+" WHERE Id IN $1", preorderAllocationIDs)
+	result, err := runner.Exec("DELETE FROM "+store.PreOrderAllocationTableName+" WHERE Id IN ?", preorderAllocationIDs)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete preorder-allocations with given ids")
 	}

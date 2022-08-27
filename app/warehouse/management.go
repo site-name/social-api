@@ -131,7 +131,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, c
 		stockIDsOfAllocations := allocations.StockIDs()
 
 		stocks, appErr := a.StocksByOption(transaction, &warehouse.StockFilterOption{
-			Id: squirrel.Eq{a.srv.Store.Stock().TableName("Id"): stockIDsOfAllocations},
+			Id: squirrel.Eq{store.StockTableName + ".Id": stockIDsOfAllocations},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -555,8 +555,8 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos order.OrderLineDatas, ma
 	}
 
 	stocks, appErr := a.StocksByOption(transaction, &warehouse.StockFilterOption{
-		ProductVariantID:            squirrel.Eq{a.srv.Store.Stock().TableName("ProductVariantID"): variantIDs},
-		WarehouseID:                 squirrel.Eq{a.srv.Store.Stock().TableName("WarehouseID"): warehouseIDs},
+		ProductVariantID:            squirrel.Eq{store.StockTableName + ".ProductVariantID": variantIDs},
+		WarehouseID:                 squirrel.Eq{store.StockTableName + ".WarehouseID": warehouseIDs},
 		SelectRelatedProductVariant: true,
 		SelectRelatedWarehouse:      true,
 		LockForUpdate:               true,                 // add FOR UPDATE
@@ -607,7 +607,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos order.OrderLineDatas, ma
 
 	if updateStocks {
 		foundStocks, appErr := a.StocksByOption(nil, &warehouse.StockFilterOption{
-			Id:                       squirrel.Eq{a.srv.Store.Stock().TableName("Id"): stocks.IDs()},
+			Id:                       squirrel.Eq{store.StockTableName + ".Id": stocks.IDs()},
 			AnnotateAvailabeQuantity: true, // this tells store to populate AvailableQuantity fields of every returning stocks
 		})
 		if appErr != nil {
@@ -781,8 +781,8 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas
 	}
 
 	quantityAllocationList, appErr := s.PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{
-		ProductVariantChannelListingID: squirrel.Eq{s.srv.Store.PreorderAllocation().TableName("ProductVariantChannelListingID"): allVariantChannelListings.IDs()},
-		Quantity:                       squirrel.Gt{s.srv.Store.PreorderAllocation().TableName("Quantity"): 0},
+		ProductVariantChannelListingID: squirrel.Eq{store.PreOrderAllocationTableName + ".ProductVariantChannelListingID": allVariantChannelListings.IDs()},
+		Quantity:                       squirrel.Gt{store.PreOrderAllocationTableName + ".Quantity": 0},
 	})
 
 	var (
@@ -949,7 +949,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 	}
 
 	preorderAllocations, appErr := s.srv.WarehouseService().PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{
-		ProductVariantChannelListingID: squirrel.Eq{s.srv.Store.PreorderAllocation().TableName("ProductVariantChannelListingID"): variantChannelListings.IDs()},
+		ProductVariantChannelListingID: squirrel.Eq{store.PreOrderAllocationTableName + ".ProductVariantChannelListingID": variantChannelListings.IDs()},
 		SelectRelated_OrderLine:        true,
 		SelectRelated_OrderLine_Order:  true,
 	})
@@ -1053,7 +1053,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 		preorderAllocations, appErr := s.srv.WarehouseService().PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{
 			SelectRelated_OrderLine:       true,
 			SelectRelated_OrderLine_Order: true,
-			Id:                            squirrel.Eq{s.srv.Store.PreorderAllocation().TableName("Id"): preorderAllocation.Id},
+			Id:                            squirrel.Eq{store.PreOrderAllocationTableName + ".Id": preorderAllocation.Id},
 		})
 		if appErr != nil {
 			return nil, nil, appErr
@@ -1067,7 +1067,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 	if orDer.ShippingMethodID != nil {
 		orderShippingMethod, appErr := s.srv.ShippingService().ShippingMethodByOption(&shipping.ShippingMethodFilterOption{
 			Id: squirrel.Eq{
-				s.srv.Store.ShippingMethod().TableName("Id"): *orDer.ShippingMethodID,
+				store.ShippingMethodTableName + ".Id": *orDer.ShippingMethodID,
 			},
 		})
 		if appErr != nil {
@@ -1075,7 +1075,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 		}
 
 		warehouses, appErr := s.srv.WarehouseService().WarehousesByOption(&warehouse.WarehouseFilterOption{
-			ShippingZonesId: squirrel.Eq{s.srv.Store.ShippingZone().TableName("Id"): orderShippingMethod.ShippingZoneID},
+			ShippingZonesId: squirrel.Eq{store.ShippingZoneTableName + ".Id": orderShippingMethod.ShippingZoneID},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -1093,7 +1093,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 		}
 
 		warehouses, appErr := s.srv.WarehouseService().WarehousesByOption(&warehouse.WarehouseFilterOption{
-			ShippingZonesCountries: squirrel.Like{s.srv.Store.ShippingMethod().TableName("Countries"): orderCountry},
+			ShippingZonesCountries: squirrel.Like{store.ShippingMethodTableName + ".Countries": orderCountry},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -1112,7 +1112,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 
 	stocks, appErr := s.srv.WarehouseService().StocksByOption(transaction, &warehouse.StockFilterOption{
 		LockForUpdate:    true,
-		ForUpdateOf:      s.srv.Store.Stock().TableName(""),
+		ForUpdateOf:      store.StockTableName,
 		WarehouseID:      squirrel.Eq{store.WarehouseTableName + ".Id": wareHouse.Id},
 		ProductVariantID: squirrel.Eq{store.ProductVariantTableName + ".Id": productVariant.Id},
 	})

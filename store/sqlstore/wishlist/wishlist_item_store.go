@@ -3,8 +3,6 @@ package wishlist
 import (
 	"database/sql"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/wishlist"
@@ -17,39 +15,50 @@ type SqlWishlistItemStore struct {
 }
 
 func NewSqlWishlistItemStore(s store.Store) store.WishlistItemStore {
-	ws := &SqlWishlistItemStore{s}
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(wishlist.WishlistItem{}, store.WishlistItemTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("WishlistID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("WishlistID", "ProductID")
-	}
-	return ws
+	return &SqlWishlistItemStore{s}
 }
 
-func (ws *SqlWishlistItemStore) CreateIndexesIfNotExists() {
-	ws.CreateIndexIfNotExists("idx_wishlist_items", store.WishlistItemTableName, "CreateAt")
-	ws.CreateForeignKeyIfNotExists(store.WishlistItemTableName, "WishlistID", store.WishlistTableName, "Id", true)
-	ws.CreateForeignKeyIfNotExists(store.WishlistItemTableName, "ProductID", store.ProductVariantTableName, "Id", true)
+func (s *SqlWishlistItemStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"WishlistID",
+		"ProductID",
+		"CreateAt",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // BulkUpsert inserts or updates given wishlist items then returns it
 func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
 	var (
-		isSaving        bool
-		err             error
-		numUpdated      int64
-		oldWishlistItem *wishlist.WishlistItem
-		upsertor        gorp.SqlExecutor = ws.GetMaster()
+		upsertor store_iface.SqlxExecutor = ws.GetMasterX()
 	)
 	if transaction != nil {
 		upsertor = transaction
 	}
 
+	var (
+		saveQuery   = "INSERT INTO " + store.WishlistItemTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
+		updateQuery = "UPDATE " + store.WishlistItemTableName + " SET " + ws.
+				ModelFields("").
+				Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+	)
+
 	for _, wishlistItem := range wishlistItems {
-		isSaving = false // reset
+		var (
+			err        error
+			numUpdated int64
+			isSaving   bool // false
+		)
 
 		if !model.IsValidId(wishlistItem.Id) {
 			wishlistItem.PreSave()
@@ -61,16 +70,13 @@ func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecuto
 		}
 
 		if isSaving {
-			err = upsertor.Insert(wishlistItem)
+			_, err = upsertor.NamedExec(saveQuery, wishlistItem)
 		} else {
-			oldWishlistItem, err = ws.GetById(transaction, wishlistItem.Id)
-			if err != nil {
-				return nil, err
+			var result sql.Result
+			result, err = upsertor.NamedExec(updateQuery, wishlistItem)
+			if err == nil && result != nil {
+				numUpdated, _ = result.RowsAffected()
 			}
-
-			wishlistItem.CreateAt = oldWishlistItem.CreateAt
-
-			numUpdated, err = upsertor.Update(wishlistItem)
 		}
 
 		if err != nil {
@@ -89,13 +95,13 @@ func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecuto
 
 // GetById finds and returns a wishlist item by given id
 func (ws *SqlWishlistItemStore) GetById(transaction store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItem, error) {
-	var selectOneFunc func(holder interface{}, query string, args ...interface{}) error = ws.GetReplica().SelectOne
+	var executor store_iface.SqlxExecutor = ws.GetReplicaX()
 	if transaction != nil {
-		selectOneFunc = transaction.SelectOne
+		executor = transaction
 	}
 
 	var res wishlist.WishlistItem
-	if err := selectOneFunc(&res, "SELECT * FROM "+store.WishlistItemTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id}); err != nil {
+	if err := executor.Get(&res, "SELECT * FROM "+store.WishlistItemTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.WishlistItemTableName, id)
 		}
@@ -132,7 +138,7 @@ func (ws *SqlWishlistItemStore) FilterByOption(option *wishlist.WishlistItemFilt
 	}
 
 	var items []*wishlist.WishlistItem
-	if _, err := ws.GetReplica().Select(&items, queryString, args...); err != nil {
+	if err := ws.GetReplicaX().Select(&items, queryString, args...); err != nil {
 		return nil, errors.Wrapf(err, "failed to find wishlist items by given options")
 	} else {
 		return items, nil
@@ -147,7 +153,7 @@ func (ws *SqlWishlistItemStore) GetByOption(option *wishlist.WishlistItemFilterO
 	}
 
 	var res wishlist.WishlistItem
-	err = ws.GetReplica().SelectOne(&res, queryString, args...)
+	err = ws.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.WishlistItemTableName, "option")
@@ -160,7 +166,7 @@ func (ws *SqlWishlistItemStore) GetByOption(option *wishlist.WishlistItemFilterO
 
 // DeleteItemsByOption finds and deletes wishlist items that satisfy given filtering options
 func (ws *SqlWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, error) {
-	var runner squirrel.BaseRunner = ws.GetMaster()
+	var runner store_iface.SqlxExecutor = ws.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -178,7 +184,12 @@ func (ws *SqlWishlistItemStore) DeleteItemsByOption(transaction store_iface.Sqlx
 		query = query.Where(option.ProductID)
 	}
 
-	result, err := query.RunWith(runner).Exec()
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return 0, errors.Wrap(err, "DeleteItemsByOption_ToSql")
+	}
+
+	result, err := runner.Exec(queryString, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to delete wishlist item wiht given option")
 	}

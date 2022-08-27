@@ -1365,12 +1365,6 @@ func (s *RetryLayerAllocationStore) Get(allocationID string) (*warehouse.Allocat
 
 }
 
-func (s *RetryLayerAllocationStore) OrderBy() string {
-
-	return s.AllocationStore.OrderBy()
-
-}
-
 func (s *RetryLayerAppStore) Save(app *app.App) (*app.App, error) {
 
 	tries := 0
@@ -10123,26 +10117,6 @@ func (s *RetryLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *wareh
 	tries := 0
 	for {
 		result, err := s.WarehouseShippingZoneStore.Save(warehouseShippingZone)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerWishlistStore) GetById(id string) (*wishlist.Wishlist, error) {
-
-	tries := 0
-	for {
-		result, err := s.WishlistStore.GetById(id)
 		if err == nil {
 			return result, nil
 		}

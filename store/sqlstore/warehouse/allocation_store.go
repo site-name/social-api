@@ -3,8 +3,8 @@ package warehouse
 import (
 	"database/sql"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
@@ -16,45 +16,24 @@ type SqlAllocationStore struct {
 }
 
 func NewSqlAllocationStore(s store.Store) store.AllocationStore {
-	as := &SqlAllocationStore{s}
+	return &SqlAllocationStore{s}
+}
 
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(warehouse.Allocation{}, as.TableName("")).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("OrderLineID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("StockID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("OrderLineID", "StockID")
+func (as *SqlAllocationStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"CreateAt",
+		"OrderLineID",
+		"StockID",
+		"QuantityAllocated",
 	}
-	return as
-}
-
-func (as *SqlAllocationStore) CreateIndexesIfNotExists() {
-	as.CreateForeignKeyIfNotExists(as.TableName(""), "OrderLineID", store.StockTableName, "Id", true)
-	as.CreateForeignKeyIfNotExists(as.TableName(""), "StockID", store.OrderLineTableName, "Id", true)
-}
-
-func (as *SqlAllocationStore) TableName(withField string) string {
-	name := "Allocations"
-	if withField != "" {
-		name += "." + withField
+	if prefix == "" {
+		return res
 	}
 
-	return name
-}
-
-func (as *SqlAllocationStore) OrderBy() string {
-	return "CreateAt ASC"
-}
-
-func (as *SqlAllocationStore) ModelFields() []string {
-	return []string{
-		"Allocations.Id",
-		"Allocations.CreateAt",
-		"Allocations.OrderLineID",
-		"Allocations.StockID",
-		"Allocations.QuantityAllocated",
-	}
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 func (as *SqlAllocationStore) ScanFields(allocation warehouse.Allocation) []interface{} {
@@ -69,10 +48,23 @@ func (as *SqlAllocationStore) ScanFields(allocation warehouse.Allocation) []inte
 
 // BulkUpsert performs update, insert given allocations then returns them afterward
 func (as *SqlAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
+	var executor store_iface.SqlxExecutor = as.GetMasterX()
+	if transaction != nil {
+		executor = transaction
+	}
 
-	var isSaving bool
+	var (
+		saveQuery   = "INSERT INTO " + store.AllocationTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+		updateQuery = "UPDATE " + store.AllocationTableName + " SET " + as.
+				ModelFields("").
+				Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+	)
+
 	for _, allocation := range allocations {
-		isSaving = false
+		isSaving := false
 
 		if allocation.Id == "" {
 			allocation.PreSave()
@@ -86,30 +78,23 @@ func (as *SqlAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor,
 		}
 
 		var (
-			err           error
-			numUpdated    int64
-			oldAllocation warehouse.Allocation
+			err        error
+			numUpdated int64
 		)
 		if isSaving {
-			err = transaction.Insert(allocation)
+			_, err = executor.NamedExec(saveQuery, allocation)
+
 		} else {
-			err = transaction.SelectOne(&oldAllocation, "SELECT * FROM "+as.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": allocation.Id})
-			if err != nil {
-				if err == sql.ErrNoRows {
-					return nil, store.NewErrNotFound(as.TableName(""), allocation.Id)
-				}
-				return nil, errors.Wrapf(err, "failed to find allocation with id=%s", allocation.Id)
+			var result sql.Result
+			result, err = executor.NamedExec(updateQuery, allocation)
+			if err == nil && result != nil {
+				numUpdated, _ = result.RowsAffected()
 			}
-
-			allocation.CreateAt = oldAllocation.CreateAt
-
-			// update
-			numUpdated, err = transaction.Update(allocation)
 		}
 
 		if err != nil {
 			if as.IsUniqueConstraintError(err, []string{"OrderLineID", "StockID", "allocations_orderlineid_stockid_key"}) {
-				return nil, store.NewErrInvalidInput(as.TableName(""), "OrderLineID/StockID", "duplicate")
+				return nil, store.NewErrInvalidInput(store.AllocationTableName, "OrderLineID/StockID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to upsert allocation with id=%s", allocation.Id)
 		}
@@ -125,10 +110,10 @@ func (as *SqlAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor,
 // Get finds an allocation with given id then returns it with an error
 func (as *SqlAllocationStore) Get(id string) (*warehouse.Allocation, error) {
 	var res warehouse.Allocation
-	err := as.GetReplica().SelectOne(&res, "SELECT * FROM "+as.TableName("")+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AllocationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(as.TableName(""), id)
+			return nil, store.NewErrNotFound(store.AllocationTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find allocation with id=%s", id)
 	}
@@ -162,18 +147,18 @@ GROUP BY
 // FilterByOption finds and returns a list of allocation based on given option
 func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
 	// define fields to select:
-	selectFields := as.ModelFields()
+	selectFields := as.ModelFields(store.AllocationTableName + ".")
 	if option.SelectedRelatedStock {
-		selectFields = append(selectFields, as.Stock().ModelFields()...)
+		selectFields = append(selectFields, as.Stock().ModelFields(store.StockTableName+".")...)
 	}
 	if option.SelectRelatedOrderLine {
-		selectFields = append(selectFields, as.OrderLine().ModelFields()...)
+		selectFields = append(selectFields, as.OrderLine().ModelFields(store.OrderLineTableName+".")...)
 	}
 
 	query := as.GetQueryBuilder().
 		Select(selectFields...).
-		From(as.TableName("")).
-		OrderBy(as.OrderBy())
+		From(store.AllocationTableName).
+		OrderBy(store.TableOrderingMap[store.AllocationTableName])
 
 	var (
 		joined_OrderLines_tableName bool
@@ -185,7 +170,7 @@ func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecu
 		query.
 			Column(`Stocks.Quantity - COALESCE( SUM( T3.QuantityAllocated ), 0 ) AS StockAvailableQuantity`). // NOTE: `T3` alias of `Allocations`
 			InnerJoin("Stocks ON (Stocks.Id = Allocations.StockID)").
-			LeftJoin(as.TableName("")+" AS T3 ON (T3.StockID = Stocks.Id)").
+			LeftJoin(store.AllocationTableName+" AS T3 ON (T3.StockID = Stocks.Id)").
 			GroupBy("Allocations.Id", "Stocks.Quantity")
 
 		joined_Stock_table = true // indicate for later check
@@ -236,8 +221,8 @@ func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecu
 		orderLine              order.OrderLine
 		stock                  warehouse.Stock
 		stockAvailableQuantity int
-		scanFields                              = as.ScanFields(allocation)
-		queryer                squirrel.Queryer = as.GetReplica()
+		scanFields                                      = as.ScanFields(allocation)
+		queryer                store_iface.SqlxExecutor = as.GetReplicaX()
 	)
 
 	// check if transaction is non-nil to promote it to be actual queryer:
@@ -256,7 +241,7 @@ func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecu
 		scanFields = append(scanFields, &stockAvailableQuantity)
 	}
 
-	rows, err := queryer.Query(queryString, args...)
+	rows, err := queryer.QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find allocations with given option")
 	}
@@ -288,15 +273,14 @@ func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecu
 
 // BulkDelete perform bulk deletes given allocations.
 func (as *SqlAllocationStore) BulkDelete(transaction store_iface.SqlxTxExecutor, allocationIDs []string) error {
-	// decide which exec function to use:
 	var (
-		execFunc func(query string, args ...interface{}) (sql.Result, error) = as.GetMaster().Exec
+		executor store_iface.SqlxExecutor = as.GetMasterX()
 	)
 	if transaction != nil {
-		execFunc = transaction.Exec
+		executor = transaction
 	}
 
-	result, err := execFunc("DELETE FROM "+as.TableName("")+" WHERE Id IN $1", allocationIDs)
+	result, err := executor.Exec("DELETE FROM "+store.AllocationTableName+" WHERE Id IN ?", allocationIDs)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete allocations")
 	}
@@ -313,7 +297,9 @@ func (as *SqlAllocationStore) BulkDelete(transaction store_iface.SqlxTxExecutor,
 
 // CountAvailableQuantityForStock counts and returns available quantity of given stock
 func (as *SqlAllocationStore) CountAvailableQuantityForStock(stock *warehouse.Stock) (int, error) {
-	allocatedQuantity, err := as.GetReplica().SelectInt(
+	var count int
+	err := as.GetReplicaX().Get(
+		&count,
 		`SELECT COALESCE(
 			SUM (
 				Allocations.QuantityAllocated
@@ -321,14 +307,14 @@ func (as *SqlAllocationStore) CountAvailableQuantityForStock(stock *warehouse.St
 		)
 		FROM 
 			Allocations 
-		WHERE StockID = :StockID`,
-		map[string]interface{}{"StockID": stock.Id},
+		WHERE StockID = ?`,
+		stock.Id,
 	)
 	if err != nil {
 		return 0, errors.Wrapf(err, "failed to count allocated quantity of stock with id=%s", stock.Id)
 	}
 
-	if sub := stock.Quantity - int(allocatedQuantity); sub > 0 {
+	if sub := stock.Quantity - count; sub > 0 {
 		return sub, nil
 	}
 	return 0, nil

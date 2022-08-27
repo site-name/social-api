@@ -60,25 +60,24 @@ type Store struct {
 	mocks.InvoiceStore
 	mocks.MenuItemStore
 
-	ChannelStore           mocks.ChannelStore
-	UserStore              mocks.UserStore
-	AuditStore             mocks.AuditStore
-	ClusterDiscoveryStore  mocks.ClusterDiscoveryStore
-	ComplianceStore        mocks.ComplianceStore
-	SessionStore           mocks.SessionStore
-	SystemStore            mocks.SystemStore
-	PreferenceStore        mocks.PreferenceStore
-	TokenStore             mocks.TokenStore
-	StatusStore            mocks.StatusStore
-	FileInfoStore          mocks.FileInfoStore
-	UploadSessionStore     mocks.UploadSessionStore
-	JobStore               mocks.JobStore
-	UserAccessTokenStore   mocks.UserAccessTokenStore
-	PluginStore            mocks.PluginStore
-	RoleStore              mocks.RoleStore
-	TermsOfServiceStore    mocks.TermsOfServiceStore
-	UserTermOfServiceStore mocks.UserTermOfServiceStore
-	context                context.Context
+	ChannelStore          mocks.ChannelStore
+	UserStore             mocks.UserStore
+	AuditStore            mocks.AuditStore
+	ClusterDiscoveryStore mocks.ClusterDiscoveryStore
+	ComplianceStore       mocks.ComplianceStore
+	SessionStore          mocks.SessionStore
+	SystemStore           mocks.SystemStore
+	PreferenceStore       mocks.PreferenceStore
+	TokenStore            mocks.TokenStore
+	StatusStore           mocks.StatusStore
+	FileInfoStore         mocks.FileInfoStore
+	UploadSessionStore    mocks.UploadSessionStore
+	JobStore              mocks.JobStore
+	UserAccessTokenStore  mocks.UserAccessTokenStore
+	PluginStore           mocks.PluginStore
+	RoleStore             mocks.RoleStore
+	TermsOfServiceStore   mocks.TermsOfServiceStore
+	context               context.Context
 }
 
 func (s *Store) SetContext(context context.Context) { s.context = context }

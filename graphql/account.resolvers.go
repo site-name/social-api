@@ -309,7 +309,7 @@ func (r *mutationResolver) AccountUpdate(ctx context.Context, input gqlmodel.Acc
 	}
 
 	// create transaction:
-	transaction, err := r.Srv().Store.GetMaster().Begin()
+	transaction, err := r.Srv().Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, model.NewAppError("AccountUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

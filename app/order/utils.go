@@ -1151,7 +1151,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *order.Order, manager interfaces.Pl
 	}
 
 	warehouses, appError := a.srv.WarehouseService().WarehousesByOption(&warehouse.WarehouseFilterOption{
-		ShippingZonesCountries: squirrel.Like{a.srv.Store.ShippingZone().TableName("Countries"): countryCode},
+		ShippingZonesCountries: squirrel.Like{store.ShippingZoneTableName + ".Countries": countryCode},
 	})
 	if appError != nil {
 		return appError

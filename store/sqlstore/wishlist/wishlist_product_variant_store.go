@@ -3,7 +3,6 @@ package wishlist
 import (
 	"database/sql"
 
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/wishlist"
@@ -16,22 +15,22 @@ type SqlWishlistItemProductVariantStore struct {
 }
 
 func NewSqlWishlistItemProductVariantStore(s store.Store) store.WishlistItemProductVariantStore {
-	ws := &SqlWishlistItemProductVariantStore{s}
-
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(wishlist.WishlistItemProductVariant{}, store.WishlistItemProductVariantTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("WishlistItemID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductVariantID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("WishlistItemID", "ProductVariantID")
-	}
-	return ws
+	return &SqlWishlistItemProductVariantStore{s}
 }
 
-func (w *SqlWishlistItemProductVariantStore) CreateIndexesIfNotExists() {
-	w.CreateForeignKeyIfNotExists(store.WishlistItemProductVariantTableName, "WishlistItemID", store.WishlistItemTableName, "Id", true)
-	w.CreateForeignKeyIfNotExists(store.WishlistItemProductVariantTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
+func (s *SqlWishlistItemProductVariantStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"WishlistItemID",
+		"ProductVariantID",
+	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Save inserts given wishlist item-product variant relation into database and returns it
@@ -41,31 +40,38 @@ func (w *SqlWishlistItemProductVariantStore) Save(item *wishlist.WishlistItemPro
 		return nil, err
 	}
 
-	if err := w.GetMaster().Insert(item); err != nil {
+	query := "INSERT INTO " + store.WishlistItemProductVariantTableName + "(" + w.ModelFields("").Join(",") + ") VALUES (" + w.ModelFields(":").Join(",") + ")"
+	if _, err := w.GetMasterX().NamedExec(query, item); err != nil {
 		if w.IsUniqueConstraintError(err, []string{"WishlistItemID", "ProductVariantID", "wishlistitemproductvariants_wishlistitemid_productvariantid_key"}) {
 			return nil, store.NewErrInvalidInput(store.WishlistItemProductVariantTableName, "WishlistItemID/ProductVariantID", item.WishlistItemID+"/"+item.ProductVariantID)
 		}
 		return nil, errors.Wrapf(err, "failed to save wishlist product variant with id=%s", item.Id)
-	} else {
-		return item, nil
 	}
+
+	return item, nil
 }
 
 func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
 	var (
-		isSaving   bool
-		insertFunc func(list ...interface{}) error          = w.GetMaster().Insert
-		updateFunc func(list ...interface{}) (int64, error) = w.GetMaster().Update
-		err        error
-		numUpdated int64
+		executor    store_iface.SqlxExecutor = w.GetMasterX()
+		saveQuery                            = "INSERT INTO " + store.WishlistItemProductVariantTableName + "(" + w.ModelFields("").Join(",") + ") VALUES (" + w.ModelFields(":").Join(",") + ")"
+		updateQuery                          = "UPDATE " + store.WishlistItemProductVariantTableName + " SET " + w.
+				ModelFields("").
+				Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
 	)
 	if transaction != nil {
-		insertFunc = transaction.Insert
-		updateFunc = transaction.Update
+		executor = transaction
 	}
 
 	for _, relation := range relations {
-		isSaving = false // reset
+		var (
+			isSaving   bool // false
+			err        error
+			numUpdated int64
+		)
 
 		if !model.IsValidId(relation.Id) {
 			relation.PreSave()
@@ -77,14 +83,14 @@ func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.
 		}
 
 		if isSaving {
-			err = insertFunc(relation)
-		} else {
-			_, err = w.GetById(transaction, relation.Id)
-			if err != nil {
-				return nil, err
-			}
+			_, err = executor.NamedExec(saveQuery, relation)
 
-			numUpdated, err = updateFunc(relation)
+		} else {
+			var result sql.Result
+			result, err = executor.NamedExec(updateQuery, relation)
+			if err == nil && result != nil {
+				numUpdated, _ = result.RowsAffected()
+			}
 		}
 
 		if err != nil {
@@ -103,13 +109,13 @@ func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.
 
 // GetById finds and returns a product variant-wishlist item relation and returns it
 func (w *SqlWishlistItemProductVariantStore) GetById(transaction store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItemProductVariant, error) {
-	var selector gorp.SqlExecutor = w.GetReplica()
+	var selector store_iface.SqlxExecutor = w.GetReplicaX()
 	if transaction != nil {
 		selector = transaction
 	}
 
 	var res wishlist.WishlistItemProductVariant
-	if err := selector.SelectOne(&res, "SELECT * FROM "+store.WishlistItemProductVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id}); err != nil {
+	if err := selector.Get(&res, "SELECT * FROM "+store.WishlistItemProductVariantTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.WishlistItemProductVariantTableName, id)
 		}
@@ -120,12 +126,6 @@ func (w *SqlWishlistItemProductVariantStore) GetById(transaction store_iface.Sql
 
 // DeleteRelation deletes a product variant-wishlist item relation and counts numeber of relations left in database
 func (w *SqlWishlistItemProductVariantStore) DeleteRelation(relation *wishlist.WishlistItemProductVariant) (int64, error) {
-	transaction, err := w.GetMaster().Begin()
-	if err != nil {
-		return 0, errors.Wrap(err, "transaction_begin")
-	}
-	defer w.FinalizeTransaction(transaction)
-
 	query := w.GetQueryBuilder().
 		Delete(store.WishlistItemProductVariantTableName)
 	if model.IsValidId(relation.Id) {
@@ -143,7 +143,7 @@ func (w *SqlWishlistItemProductVariantStore) DeleteRelation(relation *wishlist.W
 		return 0, errors.Wrap(err, "DeleteRelation_ToSql")
 	}
 
-	result, err := transaction.Exec(queryString, args...)
+	result, err := w.GetMasterX().Exec(queryString, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to delete a wishlist item-product variant relation")
 	}
@@ -155,13 +155,10 @@ func (w *SqlWishlistItemProductVariantStore) DeleteRelation(relation *wishlist.W
 		return 0, errors.Errorf("multiple wishlist item-product variant relations were deleted: %d instead of 1", numDeleted)
 	}
 
-	numOfRelationsLeft, err := transaction.SelectInt("SELECT COUNT(Id) FROM " + store.WishlistItemProductVariantTableName)
+	var numOfRelationsLeft int64
+	err = w.GetMasterX().Get(&numOfRelationsLeft, "SELECT COUNT(Id) FROM "+store.WishlistItemProductVariantTableName)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count number of wishlist item-product variant left")
-	}
-
-	if err = transaction.Commit(); err != nil {
-		return 0, errors.Wrap(err, "transaction_commit")
 	}
 
 	return numOfRelationsLeft, nil

@@ -168,17 +168,20 @@ i18n-check: ## Exit on empty translation strings and translation source strings
 	$(GOBIN)/mmgotool i18n check-empty-src --portal-dir=""
 
 store-layers: ## Generate layers for the store
-	$(GOFLAGS)
 	$(GO) generate $(GOFLAGS) ./store
 
 migration-prereqs: ## Builds prerequisite packages for migrations
 	$(GO) get -modfile=go.tools.mod github.com/golang-migrate/migrate/v4/cmd/migrate
 
-new-migration: migration-prereqs ## Creates a new migration
-	@echo "Generating new migration for postgres"
-	$(GOBIN)/migrate create -ext sql -dir db/migrations/postgres -seq $(name)
+new-migration: ## Creates a new migration. Run with make new-migration name=<>
+	$(GO) install github.com/mattermost/morph/cmd/morph@master
+	@echo "Generating new migration for mysql"
+	$(GOBIN)/morph generate $(name) --driver mysql --dir db/migrations --sequence
 
-	@echo "When you are done writing your migration, run 'make migrations'"
+	@echo "Generating new migration for postgres"
+	$(GOBIN)/morph generate $(name) --driver postgres --dir db/migrations --sequence
+
+	@echo "When you are done writing your migration, run 'make migrations-bindata'"
 
 migrations-bindata: ## Generates bindata migrations
 	$(GO) get -d -modfile=go.tools.mod github.com/go-bindata/go-bindata/...
@@ -187,16 +190,12 @@ migrations-bindata: ## Generates bindata migrations
 	$(GO) generate $(GOFLAGS) ./db/migrations/
 
 filestore-mocks: ## Creates mock files.
-	$(GO) get -d -modfile=go.tools.mod github.com/vektra/mockery/...
-	$(GOBIN)/mockery -dir modules/filestore -all -output modules/filestore/mocks -note 'Regenerate this file using `make filestore-mocks`.'
+	$(GO) install github.com/vektra/mockery/v2/...@v2.10.4
+	$(GOBIN)/mockery --dir shared/filestore --all --output shared/filestore/mocks --note 'Regenerate this file using `make filestore-mocks`.'
 
 einterfaces-mocks: ## Creates mock files for einterfaces.
-	$(GO) get -modfile=go.tools.mod github.com/vektra/mockery/...
-	$(GOBIN)/mockery -dir einterfaces -all -output einterfaces/mocks -note 'Regenerate this file using `make einterfaces-mocks`.'
-
-searchengine-mocks: ## Creates mock files for searchengines.
-	$(GO) get -modfile=go.tools.mod github.com/vektra/mockery/...
-	$(GOBIN)/mockery -dir services/searchengine -all -output services/searchengine/mocks -note 'Regenerate this file using `make searchengine-mocks`.'
+	$(GO) install github.com/vektra/mockery/v2/...@v2.10.4
+	$(GOBIN)/mockery --dir einterfaces --all --output einterfaces/mocks --note 'Regenerate this file using `make einterfaces-mocks`.'
 
 gen-serialized: ## Generates serialization methods for hot structs
 	# This tool only works at a file level, not at a package level.
@@ -234,8 +233,8 @@ server:
 	$(GO) run cmd/sitename/main.go server
 
 store-mocks: ## Creates mock files.
-	$(GO) get -d -modfile=go.tools.mod github.com/vektra/mockery/...
-	$(GOBIN)/mockery -dir store -all -output store/storetest/mocks -note 'Regenerate this file using `make store-mocks`.'
+	$(GO) install github.com/vektra/mockery/v2/...@v2.10.4
+	$(GOBIN)/mockery --dir store --name ".*Store" --output store/storetest/mocks --note 'Regenerate this file using `make store-mocks`.'
 
 dataloaders:
 	$(GOBIN)/dataloaden OrdersByUserLoader string *github.com/sitename/sitename/graphql/gqlmodel.Order

@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/mattermost/gorp"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
@@ -18,28 +18,24 @@ type SqlStockStore struct {
 }
 
 func NewSqlStockStore(s store.Store) store.StockStore {
-	ss := &SqlStockStore{
-		Store: s,
-	}
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(warehouse.Stock{}, store.StockTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("WarehouseID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ProductVariantID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("WarehouseID", "ProductVariantID")
-	}
-	return ss
+	return &SqlStockStore{Store: s}
 }
 
-func (ss *SqlStockStore) ModelFields() []string {
-	return []string{
-		"Stocks.Id",
-		"Stocks.CreateAt",
-		"Stocks.WarehouseID",
-		"Stocks.ProductVariantID",
-		"Stocks.Quantity",
+func (ss *SqlStockStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"CreateAt",
+		"WarehouseID",
+		"ProductVariantID",
+		"Quantity",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 func (ss *SqlStockStore) ScanFields(stock warehouse.Stock) []interface{} {
 	return []interface{}{
@@ -51,30 +47,25 @@ func (ss *SqlStockStore) ScanFields(stock warehouse.Stock) []interface{} {
 	}
 }
 
-func (ss *SqlStockStore) TableName(withField string) string {
-	if withField == "" {
-		return "Stocks"
-	}
-	return "Stocks." + withField
-}
-
-func (ss *SqlStockStore) CreateIndexesIfNotExists() {
-	ss.CreateForeignKeyIfNotExists(store.StockTableName, "WarehouseID", store.WarehouseTableName, "Id", true)
-	ss.CreateForeignKeyIfNotExists(store.StockTableName, "ProductVariantID", store.ProductVariantTableName, "Id", true)
-}
-
 // BulkUpsert performs upserts or inserts given stocks, then returns them
 func (ss *SqlStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
-	var (
-		isSaving bool
-		executor gorp.SqlExecutor = ss.GetMaster()
-	)
+	var executor store_iface.SqlxExecutor = ss.GetMasterX()
 	if transaction != nil {
 		executor = transaction
 	}
 
+	var (
+		saveQuery   = "INSERT INTO " + store.StockTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
+		updateQuery = "UPDATE " + store.StockTableName + " SET " + ss.
+				ModelFields("").
+				Map(func(_ int, s string) string {
+				return s + "=:" + s
+			}).
+			Join(",") + " WHERE Id=:Id"
+	)
+
 	for _, stock := range stocks {
-		isSaving = false // reset
+		isSaving := false // reset
 
 		if stock.Id == "" {
 			isSaving = true
@@ -90,20 +81,16 @@ func (ss *SqlStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stoc
 		var (
 			err       error
 			numUpdate int64
-			oldStock  *warehouse.Stock
 		)
 		if isSaving {
-			err = executor.Insert(stock)
+			_, err = executor.NamedExec(saveQuery, stock)
+
 		} else {
-			// try finding a stock with id:
-			oldStock, err = ss.Get(stock.Id)
-			if err != nil {
-				return nil, err
+			var result sql.Result
+			result, err = executor.NamedExec(updateQuery, stock)
+			if err == nil && result != nil {
+				numUpdate, _ = result.RowsAffected()
 			}
-
-			stock.CreateAt = oldStock.CreateAt
-
-			numUpdate, err = executor.Update(stock)
 		}
 
 		if err != nil {
@@ -122,7 +109,7 @@ func (ss *SqlStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stoc
 
 func (ss *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
 	var res warehouse.Stock
-	if err := ss.GetReplica().SelectOne(&res, "SELECT * FROM "+store.StockTableName+" WHERE Id = :ID", map[string]interface{}{"ID": stockID}); err != nil {
+	if err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.StockTableName+" WHERE Id = ?", stockID); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.StockTableName, stockID)
 		}
@@ -161,10 +148,10 @@ func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChann
 		Limit(1).
 		Suffix(")")
 
-	selectFields := ss.ModelFields()
+	selectFields := ss.ModelFields(store.StockTableName + ".")
 	// check if we need select related data:
 	if options.SelectRelatedProductVariant {
-		selectFields = append(selectFields, ss.ProductVariant().ModelFields()...)
+		selectFields = append(selectFields, ss.ProductVariant().ModelFields(store.ProductVariantTableName+".")...)
 	}
 
 	query := ss.GetQueryBuilder().
@@ -191,7 +178,12 @@ func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChann
 		return query, nil, nil
 	}
 
-	rows, err := query.RunWith(ss.GetReplica()).Query()
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "FilterForChannel_ToSql")
+	}
+
+	rows, err := ss.GetReplicaX().QueryX(queryString, args...)
 
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to find stocks with given channel slug")
@@ -228,12 +220,12 @@ func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChann
 
 // FilterByOption finds and returns a slice of stocks that satisfy given option
 func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
-	selectFields := ss.ModelFields()
+	selectFields := ss.ModelFields(store.StockTableName + ".")
 	if options.SelectRelatedWarehouse {
-		selectFields = append(selectFields, ss.Warehouse().ModelFields()...)
+		selectFields = append(selectFields, ss.Warehouse().ModelFields(store.WarehouseTableName+".")...)
 	}
 	if options.SelectRelatedProductVariant {
-		selectFields = append(selectFields, ss.ProductVariant().ModelFields()...)
+		selectFields = append(selectFields, ss.ProductVariant().ModelFields(store.ProductVariantTableName+".")...)
 	}
 
 	query := ss.GetQueryBuilder().
@@ -287,7 +279,7 @@ func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, 
 		stock             warehouse.Stock
 		variant           product_and_discount.ProductVariant
 		wareHouse         warehouse.WareHouse
-		queryer           squirrel.Queryer = ss.GetReplica()
+		queryer           store_iface.SqlxExecutor = ss.GetReplicaX()
 		availableQuantity int
 		scanFields        = ss.ScanFields(stock)
 	)
@@ -305,7 +297,7 @@ func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, 
 		scanFields = append(scanFields, &availableQuantity)
 	}
 
-	rows, err := queryer.Query(queryString, args...)
+	rows, err := queryer.QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks by given options")
 	}
@@ -342,9 +334,9 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.Sqlx
 	warehouseIDQuery := ss.warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug)
 
 	// remember the order when scan
-	selectFields := ss.ModelFields()
-	selectFields = append(selectFields, ss.Warehouse().ModelFields()...)
-	selectFields = append(selectFields, ss.ProductVariant().ModelFields()...)
+	selectFields := ss.ModelFields(store.StockTableName + ".")
+	selectFields = append(selectFields, ss.Warehouse().ModelFields(store.WarehouseTableName+".")...)
+	selectFields = append(selectFields, ss.ProductVariant().ModelFields(store.ProductVariantTableName+".")...)
 
 	query := ss.GetQueryBuilder().
 		Select(selectFields...).
@@ -396,7 +388,7 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.Sqlx
 		stock             warehouse.Stock
 		wareHouse         warehouse.WareHouse
 		productVariant    product_and_discount.ProductVariant
-		queryer           squirrel.Queryer = ss.GetReplica()
+		queryer           store_iface.SqlxExecutor = ss.GetReplicaX()
 		availableQuantity int
 		scanFields        = ss.ScanFields(stock)
 	)
@@ -412,7 +404,7 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.Sqlx
 		scanFields = append(scanFields, &availableQuantity)
 	}
 
-	rows, err := queryer.Query(queryString, args...)
+	rows, err := queryer.QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks with given options")
 	}
@@ -469,7 +461,7 @@ func (ss *SqlStockStore) warehouseIdSelectQuery(countryCode string, channelSlug 
 
 // ChangeQuantity reduce or increase the quantity of given stock
 func (ss *SqlStockStore) ChangeQuantity(stockID string, quantity int) error {
-	_, err := ss.GetMaster().Exec("UPDATE Stocks SET Quantity = Quantity + $1 WHERE Id = $2", quantity, stockID)
+	_, err := ss.GetMasterX().Exec("UPDATE Stocks SET Quantity = Quantity + ? WHERE Id = ?", quantity, stockID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to change stock quantity for stock with id=%s", stockID)
 	}

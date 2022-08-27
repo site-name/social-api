@@ -1318,22 +1318,6 @@ func (s *TimerLayerAllocationStore) Get(allocationID string) (*warehouse.Allocat
 	return result, err
 }
 
-func (s *TimerLayerAllocationStore) OrderBy() string {
-	start := timemodule.Now()
-
-	result := s.AllocationStore.OrderBy()
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if true {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AllocationStore.OrderBy", success, elapsed)
-	}
-	return result
-}
-
 func (s *TimerLayerAppStore) Save(app *app.App) (*app.App, error) {
 	start := timemodule.Now()
 
@@ -8450,22 +8434,6 @@ func (s *TimerLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *wareh
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseShippingZoneStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerWishlistStore) GetById(id string) (*wishlist.Wishlist, error) {
-	start := timemodule.Now()
-
-	result, err := s.WishlistStore.GetById(id)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WishlistStore.GetById", success, elapsed)
 	}
 	return result, err
 }

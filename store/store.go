@@ -346,13 +346,10 @@ type PluginConfigurationStore interface {
 // wishlist
 type (
 	WishlistStore interface {
-		CreateIndexesIfNotExists()
-		GetById(id string) (*wishlist.Wishlist, error)                                 // GetById returns a wishlist with given id
 		Upsert(wishList *wishlist.Wishlist) (*wishlist.Wishlist, error)                // Upsert inserts or update given wishlist and returns it
 		GetByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, error) // GetByOption finds and returns a slice of wishlists by given option
 	}
 	WishlistItemStore interface {
-		CreateIndexesIfNotExists()
 		GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItem, error)                                  // GetById returns a wishlist item wish given id
 		BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) // Upsert inserts or updates given wishlist item then returns it
 		FilterByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, error)                              // FilterByOption finds and returns a slice of wishlist items filtered using given options
@@ -360,7 +357,6 @@ type (
 		DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, error)    // DeleteItemsByOption finds and deletes wishlist items that satisfy given filtering options and returns number of items deleted
 	}
 	WishlistItemProductVariantStore interface {
-		CreateIndexesIfNotExists()
 		Save(wishlistVariant *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, error)                                             // Save inserts new wishlist product variant relation into database and returns it
 		BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) // BulkUpsert does bulk update/insert given relations
 		GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItemProductVariant, error)                                                // GetByID returns a wishlist item product variant with given id
@@ -371,10 +367,8 @@ type (
 // warehouse
 type (
 	WarehouseStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		ScanFields(wh warehouse.WareHouse) []interface{}
-		TableName(withField string) string
 		Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error)                      // Save inserts given warehouse into database then returns it.
 		Get(id string) (*warehouse.WareHouse, error)                                            // Get try findings warehouse with given id, returns it. returned error could be wither (nil, *ErrNotFound, error)
 		FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) // FilterByOprion returns a slice of warehouses with given option
@@ -384,10 +378,8 @@ type (
 		ApplicableForClickAndCollect(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error)
 	}
 	StockStore interface {
-		CreateIndexesIfNotExists()
 		ScanFields(stock warehouse.Stock) []interface{}
-		ModelFields() []string
-		TableName(withField string) string
+		ModelFields(prefix string) model.StringArray
 		Get(stockID string) (*warehouse.Stock, error)                                                                                                                   // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
 		FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
 		FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
@@ -398,9 +390,6 @@ type (
 		FilterForChannel(options *warehouse.StockFilterForChannelOption) (squirrel.Sqlizer, []*warehouse.Stock, error)                                                  // FilterForChannel finds and returns stocks that satisfy given options
 	}
 	AllocationStore interface {
-		CreateIndexesIfNotExists()
-		TableName(withField string) string
-		OrderBy() string
 		BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error)          // BulkUpsert performs update, insert given allocations then returns them afterward
 		Get(allocationID string) (*warehouse.Allocation, error)                                                                           // Get find and returns allocation with given id
 		FilterByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) // FilterbyOption finds and returns a list of allocations based on given option
@@ -408,14 +397,11 @@ type (
 		CountAvailableQuantityForStock(stock *warehouse.Stock) (int, error)                                                               // CountAvailableQuantityForStock counts and returns available quantity of given stock
 	}
 	WarehouseShippingZoneStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
+		ModelFields(prefix string) model.StringArray
 		Save(warehouseShippingZone *warehouse.WarehouseShippingZone) (*warehouse.WarehouseShippingZone, error) // Save inserts given warehouse-shipping zone relation into database
 	}
 	PreorderAllocationStore interface {
-		CreateIndexesIfNotExists()
-		ModelFields() []string
-		TableName(withField string) string
+		ModelFields(prefix string) model.StringArray
 		BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) // BulkCreate bulk inserts given preorderAllocations and returns them
 		ScanFields(preorderAllocation warehouse.PreorderAllocation) []interface{}
 		FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) // FilterByOption finds and returns a list of preorder allocations filtered using given options

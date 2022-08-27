@@ -250,8 +250,8 @@ func (m *PluginManager) CalculateOrderShipping(orDer order.Order) (*goprices.Tax
 	}
 
 	shippingMethodChannelListings, appErr := m.Srv.ShippingService().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
-		ShippingMethodID: squirrel.Eq{m.Srv.Store.ShippingMethodChannelListing().TableName("ShippingMethodID"): orDer.ShippingMethodID},
-		ChannelID:        squirrel.Eq{m.Srv.Store.ShippingMethodChannelListing().TableName("ChannelID"): orDer.ChannelID},
+		ShippingMethodID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ShippingMethodID": orDer.ShippingMethodID},
+		ChannelID:        squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": orDer.ChannelID},
 	})
 	if appErr != nil {
 		return nil, appErr

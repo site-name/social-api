@@ -15,6 +15,7 @@ import (
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 // BaseCheckoutShippingPrice
@@ -57,8 +58,8 @@ func (s *ServiceCheckout) CalculatePriceForShippingMethod(checkoutInfo *checkout
 	}
 
 	shippingMethodChannelListingsOfShippingMethod, appErr := s.srv.ShippingService().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
-		ShippingMethodID: squirrel.Eq{s.srv.Store.ShippingMethodChannelListing().TableName("ShippingMethodID"): shippingMethod.Id},
-		ChannelID:        squirrel.Eq{s.srv.Store.ShippingMethodChannelListing().TableName("ChannelID"): checkoutInfo.Checkout.ChannelID},
+		ShippingMethodID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethod.Id},
+		ChannelID:        squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": checkoutInfo.Checkout.ChannelID},
 	})
 	if appErr != nil {
 		return nil, appErr

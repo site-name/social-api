@@ -1337,19 +1337,6 @@ func (s *OpenTracingLayerAllocationStore) Get(allocationID string) (*warehouse.A
 	return result, err
 }
 
-func (s *OpenTracingLayerAllocationStore) OrderBy() string {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AllocationStore.OrderBy")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result := s.AllocationStore.OrderBy()
-	return result
-}
-
 func (s *OpenTracingLayerAppStore) Save(app *app.App) (*app.App, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AppStore.Save")
@@ -9309,24 +9296,6 @@ func (s *OpenTracingLayerWarehouseShippingZoneStore) Save(warehouseShippingZone 
 
 	defer span.Finish()
 	result, err := s.WarehouseShippingZoneStore.Save(warehouseShippingZone)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerWishlistStore) GetById(id string) (*wishlist.Wishlist, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WishlistStore.GetById")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.WishlistStore.GetById(id)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

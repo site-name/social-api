@@ -2,6 +2,7 @@ package warehouse
 
 import (
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 )
@@ -11,30 +12,22 @@ type SqlWarehouseShippingZoneStore struct {
 }
 
 func NewSqlWarehouseShippingZoneStore(s store.Store) store.WarehouseShippingZoneStore {
-	ws := &SqlWarehouseShippingZoneStore{s}
-	for _, db := range s.GetAllConns() {
-		table := db.AddTableWithName(warehouse.WarehouseShippingZone{}, store.WarehouseShippingZoneTableName).SetKeys(false, "Id")
-		table.ColMap("Id").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("WarehouseID").SetMaxSize(store.UUID_MAX_LENGTH)
-		table.ColMap("ShippingZoneID").SetMaxSize(store.UUID_MAX_LENGTH)
-
-		table.SetUniqueTogether("WarehouseID", "ShippingZoneID")
-	}
-
-	return ws
+	return &SqlWarehouseShippingZoneStore{s}
 }
 
-func (ws *SqlWarehouseShippingZoneStore) CreateIndexesIfNotExists() {
-	ws.CreateForeignKeyIfNotExists(store.WarehouseShippingZoneTableName, "WarehouseID", store.WarehouseTableName, "Id", false)
-	ws.CreateForeignKeyIfNotExists(store.WarehouseShippingZoneTableName, "ShippingZoneID", store.ShippingZoneTableName, "Id", false)
-}
-
-func (ws *SqlWarehouseShippingZoneStore) ModelFields() []string {
-	return []string{
-		"WarehouseShippingZones.Id",
-		"WarehouseShippingZones.WarehouseID",
-		"WarehouseShippingZones.ShippingZoneID",
+func (ws *SqlWarehouseShippingZoneStore) ModelFields(prefix string) model.StringArray {
+	res := model.StringArray{
+		"Id",
+		"WarehouseID",
+		"ShippingZoneID",
 	}
+	if prefix == "" {
+		return res
+	}
+
+	return res.Map(func(_ int, s string) string {
+		return prefix + s
+	})
 }
 
 // Save inserts given warehouse-shipping zone relation into database
@@ -44,7 +37,8 @@ func (ws *SqlWarehouseShippingZoneStore) Save(warehouseShippingZone *warehouse.W
 		return nil, err
 	}
 
-	err := ws.GetMaster().Insert(warehouseShippingZone)
+	query := "INSERT INTO " + store.WarehouseShippingZoneTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
+	_, err := ws.GetMasterX().NamedExec(query, warehouseShippingZone)
 	if err != nil {
 		if ws.IsUniqueConstraintError(err, []string{"WarehouseID", "ShippingZoneID", "warehouseshippingzones_warehouseid_shippingzoneid_key"}) {
 			return nil, store.NewErrInvalidInput(store.WarehouseShippingZoneTableName, "WarehouseID/ShippingZoneID", "duplicate")
@@ -54,8 +48,3 @@ func (ws *SqlWarehouseShippingZoneStore) Save(warehouseShippingZone *warehouse.W
 
 	return warehouseShippingZone, nil
 }
-
-// FilterByOption finds and returns warehouse-shiping zone relations filtered using given option
-// func (ws *SqlWarehouseShippingZoneStore) FilterByOption(option *warehouse.WarehouseShippingZoneFilterOption) ([]*warehouse.WarehouseShippingZone, error) {
-
-// }
