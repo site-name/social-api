@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
@@ -12,8 +13,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 
-	// "github.com/sitename/sitename/modules/config"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store/sqlstore"
 	"github.com/spf13/cobra"
@@ -136,7 +135,7 @@ func initDbCmdF(command *cobra.Command, _ []string) error {
 	defer file.Close()
 
 	var config *model.Config
-	err = json.JSON.NewDecoder(file).Decode(&config)
+	err = json.NewDecoder(file).Decode(&config)
 	if err != nil {
 		return fmt.Errorf("unable to decode custom defaults configuration: %w", err)
 	}

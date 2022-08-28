@@ -1,6 +1,7 @@
 package account
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"sort"
@@ -10,7 +11,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/crypto/bcrypt"
@@ -361,7 +361,7 @@ func (u *User) IsValid() *model.AppError {
 		return outer("locale", &u.Id)
 	}
 	if len(u.Timezone) > 0 {
-		if tzJson, err := json.JSON.Marshal(u.Timezone); err != nil {
+		if tzJson, err := json.Marshal(u.Timezone); err != nil {
 			return model.NewAppError("User.IsValid", "model.user.is_valid.marshal.app_error", nil, err.Error(), http.StatusInternalServerError)
 		} else if utf8.RuneCount(tzJson) > USER_TIMEZONE_MAX_RUNES {
 			return outer("timezone_limit", &u.Id)

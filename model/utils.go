@@ -3,6 +3,7 @@ package model
 import (
 	"crypto/rand"
 	"encoding/base32"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -20,7 +21,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/modules/i18n"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -280,7 +280,7 @@ func CreateAppErrorForModel(format, detailKey, where string) func(fieldName stri
 
 // Encodes database models to json string format
 func ModelToJson(model interface{}) string {
-	bytes, err := json.JSON.Marshal(&model)
+	bytes, err := json.Marshal(&model)
 	if err != nil {
 		return ""
 	}
@@ -291,7 +291,7 @@ func ModelToJson(model interface{}) string {
 //
 // If decoding process encounter error, model will be nil
 func ModelFromJson(model interface{}, data io.Reader) error {
-	return json.JSON.NewDecoder(data).Decode(&model)
+	return json.NewDecoder(data).Decode(&model)
 }
 
 func (a *AppError) ToJSON() string {
@@ -307,7 +307,7 @@ func AppErrorFromJSon(data io.Reader) *AppError {
 		str = string(bytes)
 	}
 
-	decoder := json.JSON.NewDecoder(strings.NewReader(str))
+	decoder := json.NewDecoder(strings.NewReader(str))
 	var er AppError
 	err = decoder.Decode(&er)
 	if err != nil {
@@ -523,7 +523,7 @@ func MapBoolToJson(objmap map[string]bool) string {
 
 // MapFromJson will decode the key/value pair map
 func MapFromJson(data io.Reader) map[string]string {
-	decoder := json.JSON.NewDecoder(data)
+	decoder := json.NewDecoder(data)
 
 	var objmap map[string]string
 	if err := decoder.Decode(&objmap); err != nil {
@@ -538,7 +538,7 @@ func ArrayToJson(objmap []string) string {
 }
 
 func ArrayFromJson(data io.Reader) []string {
-	decoder := json.JSON.NewDecoder(data)
+	decoder := json.NewDecoder(data)
 
 	var objmap []string
 	if err := decoder.Decode(&objmap); err != nil {

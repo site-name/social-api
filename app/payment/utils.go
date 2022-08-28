@@ -2,6 +2,7 @@ package payment
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -15,7 +16,6 @@ import (
 	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/model/payment"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
@@ -374,7 +374,7 @@ func (a *ServicePayment) ValidateGatewayResponse(response *payment.GatewayRespon
 	}
 
 	// checks if response's RawResponse is json encodable
-	_, err := json.JSON.Marshal(response.RawResponse)
+	_, err := json.Marshal(response.RawResponse)
 	if err != nil {
 		return &payment.GatewayError{
 			Where:   "ValidateGatewayResponse",

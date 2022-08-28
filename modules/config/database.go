@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"database/sql"
+	"encoding/json"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -12,7 +13,6 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -129,8 +129,11 @@ func initializeConfigurationsTable(db *sqlx.DB) error {
 // parseDSN splits up a connection string into a driver name and data source name.
 //
 // For example:
+//
 //	mysql://mmuser:mostest@localhost:5432/mattermost_test
+//
 // returns
+//
 //	driverName = mysql
 //	dataSourceName = mmuser:mostest@localhost:5432/mattermost_test
 //
@@ -239,7 +242,7 @@ func (ds *DatabaseStore) Load() ([]byte, error) {
 		configWithDB := model.Config{}
 		configWithDB.SqlSettings.DriverName = model.NewString(ds.driverName)
 		configWithDB.SqlSettings.DataSource = model.NewString(ds.dataSourceName)
-		return json.JSON.Marshal(configWithDB)
+		return json.Marshal(configWithDB)
 	}
 
 	return configurationData, nil

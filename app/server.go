@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"hash/maphash"
 	"html/template"
@@ -39,7 +40,6 @@ import (
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/jobs/active_users"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/migrations"
 	"github.com/sitename/sitename/modules/plugin"
@@ -790,7 +790,7 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 			return
 		}
 		// process data
-		err = json.JSON.NewDecoder(response.Body).Decode(&responseValue)
+		err = json.NewDecoder(response.Body).Decode(&responseValue)
 		if err != nil {
 			s.Log.Error("Error parsing currency exchange response body", slog.Err(err))
 			return

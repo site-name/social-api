@@ -1,12 +1,12 @@
 package scalars
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 )
 
 func MarshalJSONString(v model.StringInterface) graphql.Marshaler {
@@ -16,7 +16,7 @@ func MarshalJSONString(v model.StringInterface) graphql.Marshaler {
 			return
 		}
 
-		data, err := json.JSON.Marshal(v)
+		data, err := json.Marshal(v)
 		if err != nil {
 			w.Write([]byte(""))
 			return
@@ -30,7 +30,7 @@ func UnmarshalJSONString(v interface{}) (model.StringInterface, error) {
 	switch value := v.(type) {
 	case string:
 		var res model.StringInterface
-		err := json.JSON.Unmarshal([]byte(value), &res)
+		err := json.Unmarshal([]byte(value), &res)
 		if err != nil {
 			return nil, err
 		}

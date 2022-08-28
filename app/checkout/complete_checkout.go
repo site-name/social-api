@@ -1,6 +1,7 @@
 package checkout
 
 import (
+	"encoding/json"
 	"net/http"
 	"sync"
 	"time"
@@ -18,7 +19,6 @@ import (
 	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/model/shop"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
@@ -551,14 +551,14 @@ func (s *ServiceCheckout) createOrder(checkoutInfo checkout.CheckoutInfo, orderD
 		NOTE: we can easily convert a map[string]interface{} to Order{} since:
 		the map's keys are exactly match json tags of order struct's fields
 	*/
-	serializedOrderData, err := json.JSON.Marshal(orderData)
+	serializedOrderData, err := json.Marshal(orderData)
 	if err != nil {
 		return nil, nil, model.NewAppError("createOrder", app.ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	// define new order to create
 	var newOrder order.Order
-	err = json.JSON.Unmarshal(serializedOrderData, &newOrder)
+	err = json.Unmarshal(serializedOrderData, &newOrder)
 	if err != nil {
 		return nil, nil, model.NewAppError("createOrder", app.ErrorUnMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
 	}

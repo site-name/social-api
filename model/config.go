@@ -2,6 +2,7 @@ package model
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"io"
 	"math"
 	"net"
@@ -17,7 +18,6 @@ import (
 	"github.com/mattermost/ldap"
 
 	"github.com/sitename/sitename/modules/filestore"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -2873,20 +2873,21 @@ const ConfigAccessTagAnySysConsoleRead = "*_read"
 // environment with ExperimentalSettings.RestrictedSystemAdmin set to true.
 //
 // Example:
-//  type HairSettings struct {
-//      // Colour is writeable with either PERMISSION_SYSCONSOLE_WRITE_REPORTING or PERMISSION_SYSCONSOLE_WRITE_USER_MANAGEMENT_GROUPS.
-//      // It is readable by PERMISSION_SYSCONSOLE_READ_REPORTING and PERMISSION_SYSCONSOLE_READ_USER_MANAGEMENT_GROUPS permissions.
-//      // PERMISSION_MANAGE_SYSTEM grants read and write access.
-//      Colour string `access:"reporting,user_management_groups"`
+//
+//	type HairSettings struct {
+//	    // Colour is writeable with either PERMISSION_SYSCONSOLE_WRITE_REPORTING or PERMISSION_SYSCONSOLE_WRITE_USER_MANAGEMENT_GROUPS.
+//	    // It is readable by PERMISSION_SYSCONSOLE_READ_REPORTING and PERMISSION_SYSCONSOLE_READ_USER_MANAGEMENT_GROUPS permissions.
+//	    // PERMISSION_MANAGE_SYSTEM grants read and write access.
+//	    Colour string `access:"reporting,user_management_groups"`
 //
 //
-//      // Length is only readable and writable via PERMISSION_MANAGE_SYSTEM.
-//      Length string
+//	    // Length is only readable and writable via PERMISSION_MANAGE_SYSTEM.
+//	    Length string
 //
-//      // Product is only writeable by PERMISSION_MANAGE_SYSTEM if ExperimentalSettings.RestrictSystemAdmin is false.
-//      // PERMISSION_MANAGE_SYSTEM can always read the value.
-//      Product bool `access:write_restrictable`
-//  }
+//	    // Product is only writeable by PERMISSION_MANAGE_SYSTEM if ExperimentalSettings.RestrictSystemAdmin is false.
+//	    // PERMISSION_MANAGE_SYSTEM can always read the value.
+//	    Product bool `access:write_restrictable`
+//	}
 type Config struct {
 	ServiceSettings           ServiceSettings
 	ClientRequirements        ClientRequirements
@@ -2931,7 +2932,7 @@ type Config struct {
 
 func (o *Config) Clone() *Config {
 	var ret Config
-	if err := json.JSON.Unmarshal([]byte(o.ToJSON()), &ret); err != nil {
+	if err := json.Unmarshal([]byte(o.ToJSON()), &ret); err != nil {
 		panic(err)
 	}
 	return &ret
@@ -2967,7 +2968,7 @@ func (o *Config) GetSSOService(service string) *SSOSettings {
 
 func ConfigFromJson(data io.Reader) *Config {
 	var o *Config
-	json.JSON.NewDecoder(data).Decode(&o)
+	json.NewDecoder(data).Decode(&o)
 	return o
 }
 

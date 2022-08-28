@@ -1,12 +1,11 @@
 package model
 
 import (
+	"encoding/json"
 	"net/http"
 	"regexp"
 	"strings"
 	"unicode/utf8"
-
-	"github.com/sitename/sitename/modules/json"
 )
 
 const (
@@ -104,7 +103,7 @@ func (o *Preference) PreUpdate() {
 			}
 		}
 
-		if b, err := json.JSON.Marshal(props); err == nil {
+		if b, err := json.Marshal(props); err == nil {
 			o.Value = string(b)
 		}
 	}

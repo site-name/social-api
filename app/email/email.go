@@ -1,6 +1,7 @@
 package email
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -9,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/i18n"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/templates"
 )
@@ -404,7 +404,7 @@ func (es *Service) CreateVerifyEmailToken(userID string, newEmail string) (*mode
 		newEmail,
 	}
 
-	jsonData, err := json.JSON.Marshal(tokenExtra)
+	jsonData, err := json.Marshal(tokenExtra)
 	if err != nil {
 		return nil, errors.Wrap(CreateEmailTokenError, err.Error())
 	}
@@ -435,7 +435,7 @@ func (es *Service) InvalidateVerifyEmailTokensForUser(userID string) *model.AppE
 			Email  string
 		}{}
 
-		if err := json.JSON.Unmarshal([]byte(token.Extra), &tokenExtra); err != nil {
+		if err := json.Unmarshal([]byte(token.Extra), &tokenExtra); err != nil {
 			appErr = model.NewAppError("InvalidateVerifyEmailTokensForUser", "api.user.invalidate_verify_email_tokens_parse.error", nil, err.Error(), http.StatusInternalServerError)
 			continue
 		}

@@ -1,13 +1,13 @@
 package config
 
 import (
+	"encoding/json"
 	"reflect"
 	"sync"
 
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/util/jsonutils"
 )
 
@@ -248,7 +248,7 @@ func (s *Store) Load() error {
 
 	loadedCfg := &model.Config{}
 	if len(configBytes) != 0 {
-		if err = json.JSON.Unmarshal(configBytes, &loadedCfg); err != nil {
+		if err = json.Unmarshal(configBytes, &loadedCfg); err != nil {
 			return jsonutils.HumanizeJSONError(err, configBytes)
 		}
 	}

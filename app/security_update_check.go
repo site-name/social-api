@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -11,7 +12,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/i18n"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -86,7 +86,7 @@ func (s *Server) DoSecurityUpdateCheck() {
 		defer res.Body.Close()
 
 		var bulletins model.SecurityBulletins
-		if jsonErr := json.JSON.NewDecoder(res.Body).Decode(&bulletins); jsonErr != nil {
+		if jsonErr := json.NewDecoder(res.Body).Decode(&bulletins); jsonErr != nil {
 			slog.Error("failed to decode JSON", slog.Err(jsonErr))
 			return
 		}

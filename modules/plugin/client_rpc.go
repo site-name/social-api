@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -23,7 +24,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/plugins"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -339,7 +339,7 @@ func (s *apiRPCServer) LoadPluginConfiguration(args *Z_LoadPluginConfigurationAr
 			return err
 		}
 	}
-	b, err := json.JSON.Marshal(config)
+	b, err := json.Marshal(config)
 	if err != nil {
 		return err
 	}

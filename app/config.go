@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -16,7 +17,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/config"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
@@ -117,7 +117,7 @@ func (s *Server) ensurePostActionCookieSecret() error {
 
 	value, err := s.Store.System().GetByName(model.SystemPostActionCookieSecretKey)
 	if err == nil {
-		if err := json.JSON.Unmarshal([]byte(value.Value), &secret); err != nil {
+		if err := json.Unmarshal([]byte(value.Value), &secret); err != nil {
 			return err
 		}
 	}
@@ -135,7 +135,7 @@ func (s *Server) ensurePostActionCookieSecret() error {
 		system := &model.System{
 			Name: model.SystemPostActionCookieSecretKey,
 		}
-		v, err := json.JSON.Marshal(newSecret)
+		v, err := json.Marshal(newSecret)
 		if err != nil {
 			return err
 		}
@@ -156,7 +156,7 @@ func (s *Server) ensurePostActionCookieSecret() error {
 			return err
 		}
 
-		if err := json.JSON.Unmarshal([]byte(value.Value), &secret); err != nil {
+		if err := json.Unmarshal([]byte(value.Value), &secret); err != nil {
 			return err
 		}
 	}
@@ -211,7 +211,7 @@ func (s *Server) ensureAsymmetricSigningKey() error {
 
 	value, err := s.Store.System().GetByName(model.SystemAsymmetricSigningKeyKey)
 	if err == nil {
-		if err := json.JSON.Unmarshal([]byte(value.Value), &key); err != nil {
+		if err := json.Unmarshal([]byte(value.Value), &key); err != nil {
 			return err
 		}
 	}
@@ -233,7 +233,7 @@ func (s *Server) ensureAsymmetricSigningKey() error {
 		system := &model.System{
 			Name: model.SystemAsymmetricSigningKeyKey,
 		}
-		v, err := json.JSON.Marshal(newKey)
+		v, err := json.Marshal(newKey)
 		if err != nil {
 			return err
 		}
@@ -254,7 +254,7 @@ func (s *Server) ensureAsymmetricSigningKey() error {
 			return err
 		}
 
-		if err := json.JSON.Unmarshal([]byte(value.Value), &key); err != nil {
+		if err := json.Unmarshal([]byte(value.Value), &key); err != nil {
 			return err
 		}
 	}
@@ -459,7 +459,7 @@ func (s *Server) regenerateClientConfig() {
 		limitedClientConfig["AsymmetricSigningPublicKey"] = base64.StdEncoding.EncodeToString(der)
 	}
 
-	clientConfigJSON, _ := json.JSON.Marshal(clientConfig)
+	clientConfigJSON, _ := json.Marshal(clientConfig)
 	s.clientConfig.Store(clientConfig)
 	s.limitedClientConfig.Store(limitedClientConfig)
 	s.clientConfigHash.Store(fmt.Sprintf("%x", md5.Sum(clientConfigJSON)))

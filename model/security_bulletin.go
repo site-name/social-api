@@ -1,8 +1,6 @@
 package model
 
-import (
-	"github.com/sitename/sitename/modules/json"
-)
+import "encoding/json"
 
 type SecurityBulletin struct {
 	Id               string `json:"id"`
@@ -16,7 +14,7 @@ func (sb *SecurityBulletin) ToJSON() string {
 }
 
 func (sb *SecurityBulletins) ToJSON() string {
-	b, err := json.JSON.Marshal(sb)
+	b, err := json.Marshal(sb)
 	if err != nil {
 		return "[]"
 	}

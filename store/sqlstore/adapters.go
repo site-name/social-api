@@ -1,6 +1,7 @@
 package sqlstore
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -10,14 +11,14 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/i18n"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 )
 
 // siteNameConverter make tables able to have fields with custom types
 //
 // Example:
-//  map[string]string, []string, map[string]interface{}, ...
+//
+//	map[string]string, []string, map[string]interface{}, ...
 type siteNameConverter struct{}
 
 func (me siteNameConverter) ToDb(val interface{}) (interface{}, error) {
@@ -37,7 +38,7 @@ func (me siteNameConverter) ToDb(val interface{}) (interface{}, error) {
 	case JSONSerializable:
 		return t.ToJSON(), nil
 	case *opengraph.OpenGraph:
-		return json.JSON.Marshal(t)
+		return json.Marshal(t)
 	}
 
 	return val, nil
@@ -52,7 +53,7 @@ func (me siteNameConverter) FromDb(target interface{}) (gorp.CustomScanner, bool
 				return errors.New(i18n.T("store.sql.convert_string_map"))
 			}
 			b := []byte(*s)
-			return json.JSON.Unmarshal(b, target)
+			return json.Unmarshal(b, target)
 		}
 		return gorp.CustomScanner{Holder: new(string), Target: target, Binder: binder}, true
 	case *model.StringArray, *[]string:
@@ -62,7 +63,7 @@ func (me siteNameConverter) FromDb(target interface{}) (gorp.CustomScanner, bool
 				return errors.New(i18n.T("store.sql.convert_string_array"))
 			}
 			b := []byte(*s)
-			return json.JSON.Unmarshal(b, target)
+			return json.Unmarshal(b, target)
 		}
 		return gorp.CustomScanner{Holder: new(string), Target: target, Binder: binder}, true
 	case *model.StringInterface, *map[string]interface{}:
@@ -72,7 +73,7 @@ func (me siteNameConverter) FromDb(target interface{}) (gorp.CustomScanner, bool
 				return errors.New(i18n.T("store.sql.convert_string_interface"))
 			}
 			b := []byte(*s)
-			return json.JSON.Unmarshal(b, target)
+			return json.Unmarshal(b, target)
 		}
 		return gorp.CustomScanner{Holder: new(string), Target: target, Binder: binder}, true
 	}

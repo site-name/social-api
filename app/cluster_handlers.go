@@ -2,19 +2,19 @@ package app
 
 import (
 	"bytes"
+	"encoding/json"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/plugins"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
 )
 
 func (s *Server) clusterInstallPluginHandler(msg *cluster.ClusterMessage) {
 	var data plugins.PluginEventData
-	if err := json.JSON.Unmarshal(msg.Data, &data); err != nil {
+	if err := json.Unmarshal(msg.Data, &data); err != nil {
 		slog.Warn("Failed to decode from JSON", slog.Err(err))
 	}
 	s.PluginService().InstallPluginFromData(data)
@@ -22,7 +22,7 @@ func (s *Server) clusterInstallPluginHandler(msg *cluster.ClusterMessage) {
 
 func (s *Server) clusterRemovePluginHandler(msg *cluster.ClusterMessage) {
 	var data plugins.PluginEventData
-	if err := json.JSON.Unmarshal(msg.Data, &data); err != nil {
+	if err := json.Unmarshal(msg.Data, &data); err != nil {
 		slog.Warn("Failed to decode from JSON", slog.Err(err))
 	}
 	s.PluginService().RemovePluginFromData(data)
@@ -79,7 +79,7 @@ func (s *Server) registerClusterHandlers() {
 
 func (s *Server) clusterBusyStateChgHandler(msg *cluster.ClusterMessage) {
 	var sbs model.ServerBusyState
-	if jsonErr := json.JSON.Unmarshal(msg.Data, &sbs); jsonErr != nil {
+	if jsonErr := json.Unmarshal(msg.Data, &sbs); jsonErr != nil {
 		slog.Warn("Failed to decode server busy state from JSON", slog.Err(jsonErr))
 	}
 	s.serverBusyStateChanged(&sbs)

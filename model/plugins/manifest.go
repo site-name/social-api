@@ -1,6 +1,7 @@
 package plugins
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -11,7 +12,6 @@ import (
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 	"gopkg.in/yaml.v2"
 )
 
@@ -102,42 +102,41 @@ type PluginSettingsSchema struct {
 //
 // Example plugin.json:
 //
-//
-//    {
-//      "id": "com.mycompany.myplugin",
-//      "name": "My Plugin",
-//      "description": "This is my plugin",
-//      "homepage_url": "https://example.com",
-//      "support_url": "https://example.com/support",
-//      "release_notes_url": "https://example.com/releases/v0.0.1",
-//      "icon_path": "assets/logo.svg",
-//      "version": "0.1.0",
-//      "min_server_version": "5.6.0",
-//      "server": {
-//        "executables": {
-//          "linux-amd64": "server/dist/plugin-linux-amd64",
-//          "darwin-amd64": "server/dist/plugin-darwin-amd64",
-//          "windows-amd64": "server/dist/plugin-windows-amd64.exe"
-//        }
-//      },
-//      "webapp": {
-//          "bundle_path": "webapp/dist/main.js"
-//      },
-//      "settings_schema": {
-//        "header": "Some header text",
-//        "footer": "Some footer text",
-//        "settings": [{
-//          "key": "someKey",
-//          "display_name": "Enable Extra Feature",
-//          "type": "bool",
-//          "help_text": "When true, an extra feature will be enabled!",
-//          "default": "false"
-//        }]
-//      },
-//      "props": {
-//        "someKey": "someData"
-//      }
-//    }
+//	{
+//	  "id": "com.mycompany.myplugin",
+//	  "name": "My Plugin",
+//	  "description": "This is my plugin",
+//	  "homepage_url": "https://example.com",
+//	  "support_url": "https://example.com/support",
+//	  "release_notes_url": "https://example.com/releases/v0.0.1",
+//	  "icon_path": "assets/logo.svg",
+//	  "version": "0.1.0",
+//	  "min_server_version": "5.6.0",
+//	  "server": {
+//	    "executables": {
+//	      "linux-amd64": "server/dist/plugin-linux-amd64",
+//	      "darwin-amd64": "server/dist/plugin-darwin-amd64",
+//	      "windows-amd64": "server/dist/plugin-windows-amd64.exe"
+//	    }
+//	  },
+//	  "webapp": {
+//	      "bundle_path": "webapp/dist/main.js"
+//	  },
+//	  "settings_schema": {
+//	    "header": "Some header text",
+//	    "footer": "Some footer text",
+//	    "settings": [{
+//	      "key": "someKey",
+//	      "display_name": "Enable Extra Feature",
+//	      "type": "bool",
+//	      "help_text": "When true, an extra feature will be enabled!",
+//	      "default": "false"
+//	    }]
+//	  },
+//	  "props": {
+//	    "someKey": "someData"
+//	  }
+//	}
 type Manifest struct {
 	// The id is a globally unique identifier that represents your plugin. Ids must be at least
 	// 3 characters, at most 190 characters and must match ^[a-zA-Z0-9-_\.]+$.
@@ -234,14 +233,14 @@ func (ms *ManifestServer) MarshalJSON() ([]byte, error) {
 		ms.AllExecutables["windows-amd64"] = ms.Executables.WindowsAmd64
 	}
 
-	return json.JSON.Marshal((*auxManifestServer)(ms))
+	return json.Marshal((*auxManifestServer)(ms))
 }
 
 func (ms *ManifestServer) UnmarshalJSON(data []byte) error {
 	type auxManifestServer ManifestServer
 
 	aux := (*auxManifestServer)(ms)
-	if err := json.JSON.Unmarshal(data, aux); err != nil {
+	if err := json.Unmarshal(data, aux); err != nil {
 		return err
 	}
 

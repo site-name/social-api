@@ -5,6 +5,7 @@ package graphql
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -14,7 +15,6 @@ import (
 	"github.com/sitename/sitename/model"
 	accountModel "github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/shop"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web/shared"
@@ -283,7 +283,7 @@ func (r *mutationResolver) ConfirmEmailChange(ctx context.Context, channel *stri
 	}
 
 	var payload model.RequestEmailChangeTokenExtra
-	err := json.JSON.Unmarshal([]byte(tkn.Extra), &payload)
+	err := json.Unmarshal([]byte(tkn.Extra), &payload)
 	if err != nil {
 		return nil, model.NewAppError("ConfirmEmailChange", app.ErrorUnMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
 	}

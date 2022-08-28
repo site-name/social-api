@@ -1,16 +1,16 @@
 package app
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/store"
 )
 
 // SaveToken makes new Token and inserts it into database
 func (s *Server) SaveToken(tokenType string, extraData interface{}) (*model.Token, *model.AppError) {
-	data, err := json.JSON.Marshal(extraData)
+	data, err := json.Marshal(extraData)
 	if err != nil {
 		return nil, model.NewAppError("SaveToken", ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
 	}

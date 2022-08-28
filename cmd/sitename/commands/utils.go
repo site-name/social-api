@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 	"reflect"
@@ -9,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/spf13/cobra"
 )
@@ -134,7 +134,7 @@ func loadCustomDefaults() (*model.Config, error) {
 	defer file.Close()
 
 	var customDefaults *model.Config
-	err = json.JSON.NewDecoder(file).Decode(&customDefaults)
+	err = json.NewDecoder(file).Decode(&customDefaults)
 	if err != nil {
 		return nil, fmt.Errorf("unable to decode custom defaults configuration: %w", err)
 	}

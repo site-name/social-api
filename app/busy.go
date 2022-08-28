@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -9,7 +10,6 @@ import (
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/cluster"
-	"github.com/sitename/sitename/modules/json"
 )
 
 const (
@@ -113,7 +113,7 @@ func (b *Busy) notifyServerBusyChange(sbs *model.ServerBusyState) {
 	if b.cluster == nil {
 		return
 	}
-	buf, _ := json.JSON.Marshal(sbs)
+	buf, _ := json.Marshal(sbs)
 	msg := &cluster.ClusterMessage{
 		Event:            cluster.ClusterEventBusyStateChanged,
 		SendType:         cluster.ClusterSendReliable,
@@ -149,7 +149,7 @@ func (b *Busy) ToJSON() ([]byte, error) {
 		ExpiresTS: b.expires.UTC().Format(TimestampFormat),
 	}
 
-	sbsJSON, err := json.JSON.Marshal(sbs)
+	sbsJSON, err := json.Marshal(sbs)
 	if err != nil {
 		return []byte{}, fmt.Errorf("failed to encode server busy state to JSON: %w", err)
 	}

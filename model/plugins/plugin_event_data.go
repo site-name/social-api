@@ -1,8 +1,6 @@
 package plugins
 
-import (
-	"github.com/sitename/sitename/modules/json"
-)
+import "encoding/json"
 
 // PluginEventData used to notify peers about plugin changes.
 type PluginEventData struct {
@@ -10,6 +8,6 @@ type PluginEventData struct {
 }
 
 func (p *PluginEventData) ToJSON() []byte {
-	res, _ := json.JSON.Marshal(p)
+	res, _ := json.Marshal(p)
 	return res
 }

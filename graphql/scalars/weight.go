@@ -1,13 +1,13 @@
 package scalars
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/sitename/sitename/modules/measurement"
 )
 
@@ -46,7 +46,7 @@ func UnmarshalWeightScalar(v interface{}) (*measurement.Weight, error) {
 			err = errors.New("both 'amount' and 'unit' must be provided")
 		}
 	case string:
-		err = json.JSON.Unmarshal([]byte(strings.ToLower(v)), &weight)
+		err = json.Unmarshal([]byte(strings.ToLower(v)), &weight)
 
 	default:
 		err = fmt.Errorf("value of type %T is not supported", v)

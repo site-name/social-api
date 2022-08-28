@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/model/plugins"
-	"github.com/sitename/sitename/modules/json"
 	"github.com/stretchr/testify/require"
 )
 
@@ -58,7 +58,7 @@ type ClusterMock struct {
 
 func (c *ClusterMock) SendClusterMessage(msg *cluster.ClusterMessage) {
 	var sbs model.ServerBusyState
-	json.JSON.Unmarshal(msg.Data, &sbs)
+	json.Unmarshal(msg.Data, &sbs)
 	c.Busy.ClusterEventChanged(&sbs)
 }
 
