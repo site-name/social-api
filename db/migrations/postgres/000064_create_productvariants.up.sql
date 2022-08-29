@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS productvariants (
   preorderenddate bigint,
   preorderglobalthreshold integer,
   sortorder integer,
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 ALTER TABLE ONLY productvariants

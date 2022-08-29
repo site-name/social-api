@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS menuitems (
   categoryid character varying(36),
   collectionid character varying(36),
   pageid character varying(36),
-  metadata text,
-  privatemetadata text,
+  metadata jsonb,
+  privatemetadata jsonb,
   sortorder integer
 );
 

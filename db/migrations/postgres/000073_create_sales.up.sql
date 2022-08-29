@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS sales (
   enddate bigint,
   createat bigint,
   updateat bigint,
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 CREATE INDEX idx_sales_name ON sales USING btree (name);

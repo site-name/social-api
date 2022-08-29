@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS attributes (
   filterableindashboard boolean,
   storefrontsearchposition integer,
   availableingrid boolean,
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 ALTER TABLE ONLY attributes

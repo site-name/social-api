@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS invoices (
   createat bigint,
   externalurl character varying(2048),
   invoicefile text,
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 ALTER TABLE ONLY invoices

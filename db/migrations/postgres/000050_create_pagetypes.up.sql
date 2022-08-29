@@ -2,8 +2,8 @@ CREATE TABLE IF NOT EXISTS pagetypes (
   id character varying(36) NOT NULL PRIMARY KEY,
   name character varying(250),
   slug character varying(255),
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 ALTER TABLE ONLY pagetypes

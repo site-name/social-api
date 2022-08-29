@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS checkouts (
   redirecturl text,
   trackingcode character varying(255),
   languagecode text,
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 CREATE INDEX idx_checkouts_billing_address_id ON checkouts USING btree (billingaddressid);

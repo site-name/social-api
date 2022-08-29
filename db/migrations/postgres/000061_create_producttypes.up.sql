@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS producttypes (
   isdigital boolean,
   weight real,
   weightunit text,
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 CREATE INDEX idx_product_types_name ON producttypes USING btree (name);

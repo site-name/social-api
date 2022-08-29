@@ -34,8 +34,8 @@ CREATE TABLE IF NOT EXISTS payments (
   returnurl character varying(200),
   pspreference character varying(512),
   storepaymentmethod character varying(11),
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 CREATE INDEX idx_payments_charge_status ON payments USING btree (chargestatus);

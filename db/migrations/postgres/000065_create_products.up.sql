@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS products (
   weightunit text,
   defaultvariantid character varying(36),
   rating real,
-  metadata text,
-  privatemetadata text,
+  metadata jsonb,
+  privatemetadata jsonb,
   seotitle character varying(70),
   seodescription character varying(300)
 );

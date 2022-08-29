@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS collections (
   backgroundimage character varying(200),
   backgroundimagealt character varying(128),
   description text,
-  metadata text,
-  privatemetadata text,
+  metadata jsonb,
+  privatemetadata jsonb,
   seotitle character varying(70),
   seodescription character varying(300)
 );

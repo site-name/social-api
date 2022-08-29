@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS giftcards (
   currency character varying(3),
   initialbalanceamount double precision,
   currentbalanceamount double precision,
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 ALTER TABLE ONLY giftcards

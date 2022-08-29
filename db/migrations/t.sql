@@ -225,8 +225,8 @@ CREATE TABLE public.attributes (
     filterableindashboard boolean,
     storefrontsearchposition integer,
     availableingrid boolean,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -328,8 +328,8 @@ CREATE TABLE public.categories (
     backgroundimagealt character varying(128),
     seotitle character varying(70),
     seodescription character varying(300),
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -411,8 +411,8 @@ CREATE TABLE public.checkouts (
     redirecturl text,
     trackingcode character varying(255),
     languagecode text,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -464,8 +464,8 @@ CREATE TABLE public.collections (
     backgroundimage character varying(200),
     backgroundimagealt character varying(128),
     description text,
-    metadata text,
-    privatemetadata text,
+    metadata jsonb,
+    privatemetadata jsonb,
     seotitle character varying(70),
     seodescription character varying(300)
 );
@@ -581,8 +581,8 @@ CREATE TABLE public.digitalcontents (
     contentfile character varying(200),
     maxdownloads integer,
     urlvaliddays integer,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -692,8 +692,8 @@ CREATE TABLE public.fulfillments (
     createat bigint,
     shippingrefundamount double precision,
     totalrefundamount double precision,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -749,8 +749,8 @@ CREATE TABLE public.giftcards (
     currency character varying(3),
     initialbalanceamount double precision,
     currentbalanceamount double precision,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -784,8 +784,8 @@ CREATE TABLE public.invoices (
     createat bigint,
     externalurl character varying(2048),
     invoicefile text,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -823,8 +823,8 @@ CREATE TABLE public.menuitems (
     categoryid character varying(36),
     collectionid character varying(36),
     pageid character varying(36),
-    metadata text,
-    privatemetadata text,
+    metadata jsonb,
+    privatemetadata jsonb,
     sortorder integer
 );
 
@@ -854,8 +854,8 @@ CREATE TABLE public.menus (
     name character varying(250),
     slug character varying(255),
     createat bigint,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -1001,8 +1001,8 @@ CREATE TABLE public.orders (
     weightamount real,
     weightunit text,
     redirecturl text,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -1019,8 +1019,8 @@ CREATE TABLE public.pages (
     pagetypeid character varying(36),
     content text,
     createat bigint,
-    metadata text,
-    privatemetadata text,
+    metadata jsonb,
+    privatemetadata jsonb,
     publicationdate timestamp with time zone,
     ispublished boolean,
     seotitle character varying(70),
@@ -1055,8 +1055,8 @@ CREATE TABLE public.pagetypes (
     id character varying(36) NOT NULL,
     name character varying(250),
     slug character varying(255),
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -1102,8 +1102,8 @@ CREATE TABLE public.payments (
     returnurl character varying(200),
     pspreference character varying(512),
     storepaymentmethod character varying(11),
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -1240,8 +1240,8 @@ CREATE TABLE public.products (
     weightunit text,
     defaultvariantid character varying(36),
     rating real,
-    metadata text,
-    privatemetadata text,
+    metadata jsonb,
+    privatemetadata jsonb,
     seotitle character varying(70),
     seodescription character varying(300)
 );
@@ -1280,8 +1280,8 @@ CREATE TABLE public.producttypes (
     isdigital boolean,
     weight real,
     weightunit text,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -1321,8 +1321,8 @@ CREATE TABLE public.productvariants (
     preorderenddate bigint,
     preorderglobalthreshold integer,
     sortorder integer,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -1447,8 +1447,8 @@ CREATE TABLE public.sales (
     enddate bigint,
     createat bigint,
     updateat bigint,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -1550,8 +1550,8 @@ CREATE TABLE public.shippingmethods (
     maximumdeliverydays integer,
     minimumdeliverydays integer,
     description text,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -1596,8 +1596,8 @@ CREATE TABLE public.shippingzones (
     "default" boolean,
     description text,
     createat bigint,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -1857,8 +1857,8 @@ CREATE TABLE public.users (
     isactive boolean,
     note text,
     jwttokenkey text,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -1996,8 +1996,8 @@ CREATE TABLE public.vouchers (
     mincheckoutitemsquantity integer,
     createat bigint,
     updateat bigint,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 
@@ -2030,8 +2030,8 @@ CREATE TABLE public.warehouses (
     email character varying(128),
     clickandcollectoption character varying(30),
     isprivate boolean,
-    metadata text,
-    privatemetadata text
+    metadata jsonb,
+    privatemetadata jsonb
 );
 
 

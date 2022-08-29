@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS fulfillments (
   createat bigint,
   shippingrefundamount double precision,
   totalrefundamount double precision,
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 CREATE INDEX idx_fulfillments_status ON fulfillments USING btree (status);

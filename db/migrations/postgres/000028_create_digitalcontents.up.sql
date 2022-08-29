@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS digitalcontents (
   contentfile character varying(200),
   maxdownloads integer,
   urlvaliddays integer,
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 ALTER TABLE ONLY digitalcontents

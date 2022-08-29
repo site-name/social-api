@@ -3,8 +3,8 @@ CREATE TABLE IF NOT EXISTS menus (
   name character varying(250),
   slug character varying(255),
   createat bigint,
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 ALTER TABLE ONLY menus

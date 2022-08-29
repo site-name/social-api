@@ -33,8 +33,8 @@ CREATE TABLE IF NOT EXISTS orders (
   weightamount real,
   weightunit text,
   redirecturl text,
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 ALTER TABLE ONLY orders

@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS categories (
   backgroundimagealt character varying(128),
   seotitle character varying(70),
   seodescription character varying(300),
-  metadata text,
-  privatemetadata text
+  metadata jsonb,
+  privatemetadata jsonb
 );
 
 ALTER TABLE ONLY categories
