@@ -51,15 +51,15 @@ func (r *mutationResolver) TokenCreate(ctx context.Context, input gqlmodel.Token
 		r.Srv().AccountService().AttachSessionCookies(embedCtx.AppContext, embedCtx.GetHttpResponse(), embedCtx.GetRequest())
 	}
 
-	userTermOfService, err := r.Srv().AccountService().GetUserTermsOfService(user.Id)
-	if err != nil {
-		return nil, err
-	}
+	// userTermOfService, err := r.Srv().AccountService().GetUserTermsOfService(user.Id)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	if userTermOfService != nil {
-		user.TermsOfServiceId = userTermOfService.TermsOfServiceId
-		user.TermsOfServiceCreateAt = userTermOfService.CreateAt
-	}
+	// if userTermOfService != nil {
+	// 	user.TermsOfServiceId = userTermOfService.TermsOfServiceId
+	// 	user.TermsOfServiceCreateAt = userTermOfService.CreateAt
+	// }
 
 	user.Sanitize(map[string]bool{})
 

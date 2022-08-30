@@ -11,10 +11,6 @@ ALTER TABLE ONLY assignedproductattributevalues
 ALTER TABLE ONLY assignedproductattributevalues
     ADD CONSTRAINT fk_assignedproductattributevalues_assignedproductattributes FOREIGN KEY (assignmentid) REFERENCES assignedproductattributes(id) ON DELETE CASCADE;
 
---
--- Name: assignedproductattributevalues fk_assignedproductattributevalues_attributevalues; Type: FK CONSTRAINT; Schema:  Owner: minh
---
-
 ALTER TABLE ONLY assignedproductattributevalues
     ADD CONSTRAINT fk_assignedproductattributevalues_attributevalues FOREIGN KEY (valueid) REFERENCES attributevalues(id) ON DELETE CASCADE;
 

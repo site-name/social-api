@@ -10,4 +10,4 @@ CREATE TABLE IF NOT EXISTS jobs (
   data jsonb
 );
 
-CREATE INDEX idx_jobs_type ON public.jobs USING btree (type);
+CREATE INDEX idx_jobs_type ON jobs USING btree (type);

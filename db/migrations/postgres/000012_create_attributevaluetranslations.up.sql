@@ -6,9 +6,9 @@ CREATE TABLE IF NOT EXISTS attributevaluetranslations (
   richtext text
 );
 
-ALTER TABLE ONLY public.attributevaluetranslations
+ALTER TABLE ONLY attributevaluetranslations
     ADD CONSTRAINT attributevaluetranslations_languagecode_attributevalueid_key UNIQUE (languagecode, attributevalueid);
 
-CREATE INDEX IF NOT EXISTS idx_attribute_value_translations_name ON public.attributevaluetranslations USING btree (name);
+CREATE INDEX IF NOT EXISTS idx_attribute_value_translations_name ON attributevaluetranslations USING btree (name);
 
-CREATE INDEX IF NOT EXISTS idx_attribute_value_translations_name_lower_textpattern ON public.attributevaluetranslations USING btree (lower((name)::text) text_pattern_ops);
+CREATE INDEX IF NOT EXISTS idx_attribute_value_translations_name_lower_textpattern ON attributevaluetranslations USING btree (lower((name)::text) text_pattern_ops);

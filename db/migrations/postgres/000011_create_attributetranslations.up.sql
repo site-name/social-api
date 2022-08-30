@@ -5,10 +5,10 @@ CREATE TABLE IF NOT EXISTS attributetranslations (
   name character varying(100)
 );
 
-ALTER TABLE ONLY public.attributetranslations
+ALTER TABLE ONLY attributetranslations
     ADD CONSTRAINT attributetranslations_languagecode_attributeid_key UNIQUE (languagecode, attributeid);
 
-CREATE INDEX IF NOT EXISTS idx_attributetranslations_name ON public.attributetranslations USING btree (name);
+CREATE INDEX IF NOT EXISTS idx_attributetranslations_name ON attributetranslations USING btree (name);
 
-CREATE INDEX IF NOT EXISTS idx_attributetranslations_name_lower_textpattern ON public.attributetranslations USING btree (lower((name)::text) text_pattern_ops);
+CREATE INDEX IF NOT EXISTS idx_attributetranslations_name_lower_textpattern ON attributetranslations USING btree (lower((name)::text) text_pattern_ops);
 

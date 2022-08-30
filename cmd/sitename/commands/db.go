@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/channel"
 
+	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store/sqlstore"
 	"github.com/spf13/cobra"
@@ -21,13 +23,6 @@ import (
 var DbCmd = &cobra.Command{
 	Use:   "db",
 	Short: "Commands related to the database",
-}
-
-var PopulateDbCmd = &cobra.Command{
-	Use:     "populate",
-	Short:   "Popularize database with fake data",
-	RunE:    populateDbCmdF,
-	Example: ` sitename db populate --type [channel, all]`,
 }
 
 var InitDbCmd = &cobra.Command{
@@ -44,15 +39,26 @@ This command should be run using a database configuration DSN.`,
 	RunE: initDbCmdF,
 }
 
-func init() {
-	PopulateDbCmd.Flags().StringP("type", "t", "all", "specify which table to populate")
-	PopulateDbCmd.Flags().IntP("amount", "a", 5, "specify which table to populate")
+var DBVersionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Returns the recent applied version number",
+	RunE:  dbVersionCmdF,
+}
 
+var MigrateCmd = &cobra.Command{
+	Use:   "migrate",
+	Short: "Migrate the database if there are any unapplied migrations",
+	Long:  "Run the missing migrations from the migrations table.",
+	RunE:  migrateCmdF,
+}
+
+func init() {
 	InitDbCmd.Flags().StringP("config", "c", "modules/config/config.json", "path to config.json file.")
 
 	DbCmd.AddCommand(
 		InitDbCmd,
-		PopulateDbCmd,
+		DBVersionCmd,
+		MigrateCmd,
 	)
 
 	RootCmd.AddCommand(
@@ -144,6 +150,55 @@ func initDbCmdF(command *cobra.Command, _ []string) error {
 	defer sqlStore.Close()
 
 	fmt.Println("Database store correctly initialized")
+
+	return nil
+}
+
+func dbVersionCmdF(command *cobra.Command, args []string) error {
+	cfgDSN := getConfigDSN(command, config.GetEnvironment())
+	cfgStore, err := config.NewStoreFromDSN(cfgDSN, true, nil, true)
+	if err != nil {
+		return errors.Wrap(err, "failed to load configuration")
+	}
+	config := cfgStore.Get()
+
+	store := sqlstore.New(config.SqlSettings, nil)
+	defer store.Close()
+
+	allFlags, _ := command.Flags().GetBool("all")
+	if allFlags {
+		applied, err2 := store.GetAppliedMigrations()
+		if err2 != nil {
+			return errors.Wrap(err2, "failed to get applied migrations")
+		}
+		for _, migration := range applied {
+			CommandPrettyPrintln(fmt.Sprintf("Version: %d, Name: %s", migration.Version, migration.Name))
+		}
+		return nil
+	}
+
+	v, err := store.GetDBSchemaVersion()
+	if err != nil {
+		return errors.Wrap(err, "failed to get schema version")
+	}
+
+	CommandPrettyPrintln("Current database schema version is: " + strconv.Itoa(v))
+
+	return nil
+}
+
+func migrateCmdF(command *cobra.Command, args []string) error {
+	cfgDSN := getConfigDSN(command, config.GetEnvironment())
+	cfgStore, err := config.NewStoreFromDSN(cfgDSN, true, nil, true)
+	if err != nil {
+		return errors.Wrap(err, "failed to load configuration")
+	}
+	config := cfgStore.Get()
+
+	store := sqlstore.New(config.SqlSettings, nil)
+	defer store.Close()
+
+	CommandPrettyPrintln("Database successfully migrated")
 
 	return nil
 }

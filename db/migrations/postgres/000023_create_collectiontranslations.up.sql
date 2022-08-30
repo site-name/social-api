@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS collectiontranslations (
   seodescription character varying(300)
 );
 
-ALTER TABLE ONLY public.collectiontranslations
+ALTER TABLE ONLY collectiontranslations
     ADD CONSTRAINT collectiontranslations_languagecode_collectionid_key UNIQUE (languagecode, collectionid);
 
-ALTER TABLE ONLY public.collectiontranslations
-    ADD CONSTRAINT fk_collectiontranslations_collections FOREIGN KEY (collectionid) REFERENCES public.collections(id) ON DELETE CASCADE;
+ALTER TABLE ONLY collectiontranslations
+    ADD CONSTRAINT fk_collectiontranslations_collections FOREIGN KEY (collectionid) REFERENCES collections(id) ON DELETE CASCADE;
 

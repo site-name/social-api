@@ -5,5 +5,5 @@ CREATE TABLE IF NOT EXISTS preorderallocations (
   productvariantchannellistingid character varying(36)
 );
 
-ALTER TABLE ONLY public.preorderallocations
+ALTER TABLE ONLY preorderallocations
     ADD CONSTRAINT preorderallocations_orderlineid_productvariantchannellistin_key UNIQUE (orderlineid, productvariantchannellistingid);

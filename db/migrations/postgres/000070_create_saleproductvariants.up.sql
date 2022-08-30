@@ -5,5 +5,5 @@ CREATE TABLE IF NOT EXISTS saleproductvariants (
   createat bigint
 );
 
-ALTER TABLE ONLY public.saleproductvariants
+ALTER TABLE ONLY saleproductvariants
     ADD CONSTRAINT saleproductvariants_saleid_productvariantid_key UNIQUE (saleid, productvariantid);

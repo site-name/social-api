@@ -8,11 +8,11 @@ id character varying(36) NOT NULL PRIMARY KEY,
   seodescription character varying(300)
 );
 
-ALTER TABLE ONLY public.producttranslations
+ALTER TABLE ONLY producttranslations
     ADD CONSTRAINT producttranslations_languagecode_productid_key UNIQUE (languagecode, productid);
 
-ALTER TABLE ONLY public.producttranslations
+ALTER TABLE ONLY producttranslations
     ADD CONSTRAINT producttranslations_name_key UNIQUE (name);
 
-ALTER TABLE ONLY public.producttranslations
-    ADD CONSTRAINT fk_producttranslations_products FOREIGN KEY (productid) REFERENCES public.products(id) ON DELETE CASCADE;
+ALTER TABLE ONLY producttranslations
+    ADD CONSTRAINT fk_producttranslations_products FOREIGN KEY (productid) REFERENCES products(id) ON DELETE CASCADE;

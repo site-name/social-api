@@ -10,7 +10,7 @@ ALTER TABLE ONLY allocations
 ADD CONSTRAINT allocations_orderlineid_stockid_key UNIQUE (orderlineid, stockid);
 
 ALTER TABLE ONLY allocations
-ADD CONSTRAINT fk_allocations_orderlines FOREIGN KEY (stockid) REFERENCES orderlines(id) ON DELETE CASCADE;
+ADD CONSTRAINT fk_allocations_orderlines FOREIGN KEY (orderlineid) REFERENCES orderlines(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY allocations
-    ADD CONSTRAINT fk_allocations_stocks FOREIGN KEY (orderlineid) REFERENCES stocks(id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_allocations_stocks FOREIGN KEY (stockid) REFERENCES stocks(id) ON DELETE CASCADE;
