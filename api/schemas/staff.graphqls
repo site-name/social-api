@@ -1,0 +1,101 @@
+extend type Mutation {
+  staffNotificationRecipientCreate(input: StaffNotificationRecipientInput!): StaffNotificationRecipientCreate
+  staffNotificationRecipientUpdate(id: ID!, input: StaffNotificationRecipientInput!): StaffNotificationRecipientUpdate
+  staffNotificationRecipientDelete(id: ID!): StaffNotificationRecipientDelete
+  staffCreate(input: StaffCreateInput!): StaffCreate
+  staffUpdate(id: ID!, input: StaffUpdateInput!): StaffUpdate
+  staffDelete(id: ID!): StaffDelete
+  staffBulkDelete(ids: [ID]!): StaffBulkDelete
+}
+
+extend type Query {
+  staffUsers(filter: StaffUserInput, sortBy: UserSortingInput, before: String, after: String, first: Int, last: Int): UserCountableConnection
+}
+
+input StaffNotificationRecipientInput {
+  user: ID
+  email: String
+  active: Boolean
+}
+
+type StaffNotificationRecipientCreate {
+  errors: [ShopError!]!
+  staffNotificationRecipient: StaffNotificationRecipient
+}
+
+type StaffNotificationRecipient implements Node {
+  user: User
+  active: Boolean
+  id: ID!
+  email: String
+}
+
+type StaffNotificationRecipientUpdate {
+  errors: [ShopError!]!
+  staffNotificationRecipient: StaffNotificationRecipient
+}
+
+type StaffNotificationRecipientDelete {
+  errors: [ShopError!]!
+  staffNotificationRecipient: StaffNotificationRecipient
+}
+
+input StaffCreateInput {
+  firstName: String
+  lastName: String
+  email: String
+  isActive: Boolean
+  note: String
+  addGroups: [ID!]
+  redirectUrl: String
+}
+
+type StaffCreate {
+  errors: [StaffError!]!
+  user: User
+}
+
+type StaffError {
+  field: String
+  message: String
+  code: AccountErrorCode!
+  addressType: AddressTypeEnum
+  permissions: [PermissionEnum!]
+  groups: [ID!]
+  users: [ID!]
+}
+
+input StaffUpdateInput {
+  firstName: String
+  lastName: String
+  email: String
+  isActive: Boolean
+  note: String
+  addGroups: [ID!]
+  removeGroups: [ID!]
+}
+
+type StaffUpdate {
+  errors: [StaffError!]!
+  user: User
+}
+
+type StaffDelete {
+  errors: [StaffError!]!
+  user: User
+}
+
+type StaffBulkDelete {
+  count: Int!
+  errors: [StaffError!]!
+}
+
+input StaffUserInput {
+  status: StaffMemberStatus
+  search: String
+}
+
+enum StaffMemberStatus {
+  ACTIVE
+  DEACTIVATED
+}

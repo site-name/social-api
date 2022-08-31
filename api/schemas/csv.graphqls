@@ -1,0 +1,127 @@
+extend type Mutation {
+  exportProducts(input: ExportProductsInput!): ExportProducts # @hasPermissions(permissions: [MANAGE_PRODUCTS])
+}
+
+extend type Query {
+  exportFile(id: ID!): ExportFile @hasPermissions(permissions: [MANAGE_PRODUCTS])
+  exportFiles(filter: ExportFileFilterInput, sortBy: ExportFileSortingInput, before: String, after: String, first: Int, last: Int): ExportFileCountableConnection @hasPermissions(permissions: [MANAGE_PRODUCTS])
+}
+
+input ExportProductsInput {
+  scope: ExportScope!
+  filter: ProductFilterInput
+  ids: [ID!]
+  exportInfo: ExportInfoInput
+  fileType: FileTypesEnum!
+}
+
+enum ExportScope {
+  ALL
+  IDS
+  FILTER
+}
+
+type ExportProducts {
+  exportFile: ExportFile
+  # errors: [ExportError!]!
+}
+
+type ExportFile implements Node & Job {
+  id: ID!
+  user: User
+  # app: App
+  status: JobStatusEnum!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  message: String
+  url: String
+  events: [ExportEvent!]
+}
+
+input ExportFileFilterInput {
+  createdAt: DateTimeRangeInput
+  updatedAt: DateTimeRangeInput
+  status: JobStatusEnum
+  user: String
+  # app: String
+}
+
+input ExportFileSortingInput {
+  direction: OrderDirection!
+  field: ExportFileSortField!
+}
+
+type ExportFileCountableConnection {
+  pageInfo: PageInfo!
+  edges: [ExportFileCountableEdge!]!
+  totalCount: Int
+}
+
+enum FileTypesEnum {
+  CSV
+  XLSX
+}
+
+# type ExportError {
+#   field: String
+#   message: String
+#   code: ExportErrorCode!
+# }
+
+# enum ExportErrorCode {
+#   GRAPHQL_ERROR
+#   INVALID
+#   NOT_FOUND
+#   REQUIRED
+# }
+
+type ExportEvent implements Node {
+  id: ID!
+  date: DateTime!
+  type: ExportEventsEnum!
+  user: User
+  # app: App
+  message: String!
+}
+
+enum ExportEventsEnum {
+  EXPORT_PENDING
+  EXPORT_SUCCESS
+  EXPORT_FAILED
+  EXPORT_DELETED
+  EXPORTED_FILE_SENT
+  EXPORT_FAILED_INFO_SENT
+}
+
+enum ExportFileSortField {
+  STATUS
+  CREATED_AT
+  UPDATED_AT
+}
+
+type ExportFileCountableEdge {
+  node: ExportFile!
+  cursor: String!
+}
+
+input ExportInfoInput {
+  attributes: [ID!]
+  warehouses: [ID!]
+  channels: [ID!]
+  fields: [ProductFieldEnum!]
+}
+
+enum ProductFieldEnum {
+  NAME
+  DESCRIPTION
+  PRODUCT_TYPE
+  CATEGORY
+  PRODUCT_WEIGHT
+  COLLECTIONS
+  CHARGE_TAXES
+  PRODUCT_MEDIA
+  VARIANT_ID
+  VARIANT_SKU
+  VARIANT_WEIGHT
+  VARIANT_MEDIA
+}

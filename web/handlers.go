@@ -42,7 +42,7 @@ func GetHandlerName(h func(*shared.Context, http.ResponseWriter, *http.Request))
 // public handler used for testing or static routes
 func (w *Web) NewHandler(h func(*shared.Context, http.ResponseWriter, *http.Request)) http.Handler {
 	return &Handler{
-		App:            w.app,
+		Srv:            w.srv,
 		HandleFunc:     h,
 		RequireSession: false,
 		TrustRequester: false,
@@ -56,10 +56,10 @@ func (w *Web) NewHandler(h func(*shared.Context, http.ResponseWriter, *http.Requ
 func (w *Web) NewStaticHandler(h func(*shared.Context, http.ResponseWriter, *http.Request)) http.Handler {
 	// Determine the CSP SHA directive needed for subpath support, if any. This value is fixed
 	// on server start and intentionally requires a restart to take effect.
-	subpath, _ := util.GetSubpathFromConfig(w.app.Config())
+	subpath, _ := util.GetSubpathFromConfig(w.srv.Config())
 
 	return &Handler{
-		App:             w.app,
+		Srv:             w.srv,
 		HandleFunc:      h,
 		HandlerName:     GetHandlerName(h),
 		RequireSession:  false,
@@ -71,7 +71,7 @@ func (w *Web) NewStaticHandler(h func(*shared.Context, http.ResponseWriter, *htt
 }
 
 type Handler struct {
-	App                       app.AppIface
+	Srv                       *app.Server
 	HandleFunc                func(*shared.Context, http.ResponseWriter, *http.Request)
 	HandlerName               string
 	RequireSession            bool
@@ -89,9 +89,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w = newWrappedWriter(w)
 
 	var (
-		now        = time.Now()
-		requestID  = model.NewId()
-		statusCode string
+		now         = time.Now()
+		requestID   = model.NewId()
+		statusCode  string
+		appInstance = app.New(app.ServerConnector(h.Srv))
 	)
 
 	defer func() {
@@ -109,7 +110,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	c := &shared.Context{
 		AppContext: new(request.Context),
-		App:        h.App,
+		App:        appInstance,
 	}
 
 	t, _ := i18n.GetTranslationsAndLocaleFromRequest(r)
@@ -119,8 +120,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.AppContext.SetUserAgent(r.UserAgent())
 	c.AppContext.SetAcceptLanguage(r.Header.Get("Accept-Language"))
 	c.AppContext.SetPath(r.URL.Path)
-	c.SetRequest(r)
-	c.SetHttpResponseWriter(w)
 	c.Logger = c.App.Log()
 
 	// check if open tracing is enabled
@@ -365,7 +364,7 @@ func (h *Handler) checkCSRFToken(c *shared.Context, r *http.Request, token strin
 // be granted.
 func (w *Web) ApiSessionRequired(h func(*shared.Context, http.ResponseWriter, *http.Request)) http.Handler {
 	handler := &Handler{
-		App:            w.app,
+		Srv:            w.srv,
 		HandleFunc:     h,
 		HandlerName:    GetHandlerName(h),
 		RequireSession: true,
@@ -374,7 +373,7 @@ func (w *Web) ApiSessionRequired(h func(*shared.Context, http.ResponseWriter, *h
 		IsStatic:       false,
 		IsLocal:        false,
 	}
-	if *w.app.Config().ServiceSettings.WebserverMode == "gzip" {
+	if *w.srv.Config().ServiceSettings.WebserverMode == "gzip" {
 		return gziphandler.GzipHandler(handler)
 	}
 	return handler

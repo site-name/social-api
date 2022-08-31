@@ -87,9 +87,9 @@ func runServer(configStore *config.Store, interruptChan chan os.Signal) error {
 		}
 	}()
 
-	a := app.New(app.ServerConnector(server))
+	// a := app.New(app.ServerConnector(server))
 	// api.Init(a, server.RootRouter)
-	web.New(a)
+	web.New(server)
 
 	serverErr := server.Start()
 	if serverErr != nil {

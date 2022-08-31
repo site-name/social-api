@@ -75,7 +75,10 @@ require (
 	github.com/graph-gophers/dataloader v5.0.0+incompatible
 )
 
-require github.com/mattermost/xml-roundtrip-validator v0.1.0 // indirect
+require (
+	github.com/graph-gophers/graphql-go v1.4.0 // indirect
+	github.com/mattermost/xml-roundtrip-validator v0.1.0 // indirect
+)
 
 require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect

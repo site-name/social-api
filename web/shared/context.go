@@ -18,15 +18,15 @@ import (
 )
 
 type Context struct {
-	App           app.AppIface
-	AppContext    *request.Context
-	Logger        *slog.Logger
-	Params        *Params
-	Err           *model.AppError
-	siteURLHeader string
-
-	request *http.Request
-	writer  http.ResponseWriter
+	App        app.AppIface
+	AppContext *request.Context
+	Logger     *slog.Logger
+	Params     *Params
+	Err        *model.AppError
+	// This is used to track the graphQL query that's being executed,
+	// so that we can monitor the timings in Grafana.
+	GraphQLOperationName string
+	siteURLHeader        string
 }
 
 // LogAuditRec logs an audit record using default LevelAPI.
@@ -473,24 +473,4 @@ func (c *Context) RequireInvoiceId() *Context {
 
 func (c *Context) GetRemoteID(r *http.Request) string {
 	return r.Header.Get(model.HEADER_REMOTECLUSTER_ID)
-}
-
-// SetRequest set http request for context
-func (c *Context) SetRequest(r *http.Request) {
-	c.request = r
-}
-
-// GetRequest returns current context's http request
-func (c *Context) GetRequest() *http.Request {
-	return c.request
-}
-
-// SetHttpResponseWriter set http response writer for context
-func (c *Context) SetHttpResponseWriter(w http.ResponseWriter) {
-	c.writer = w
-}
-
-// GetHttpResponse returns current context's http response writer
-func (c *Context) GetHttpResponse() http.ResponseWriter {
-	return c.writer
 }

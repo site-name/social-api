@@ -1,0 +1,204 @@
+extend type Mutation {
+  checkoutAddPromoCode(promoCode: String!, token: UUID): CheckoutAddPromoCode
+  checkoutBillingAddressUpdate(billingAddress: AddressInput!, token: UUID): CheckoutBillingAddressUpdate
+  checkoutComplete(paymentData: JSONString, redirectUrl: String, storeSource: Boolean = false, token: UUID): CheckoutComplete
+  checkoutCreate(input: CheckoutCreateInput!): CheckoutCreate
+  checkoutCustomerAttach(customerId: ID, token: UUID): CheckoutCustomerAttach
+  checkoutCustomerDetach(token: UUID): CheckoutCustomerDetach
+  checkoutEmailUpdate(email: String!, token: UUID): CheckoutEmailUpdate
+  checkoutRemovePromoCode(promoCode: String!, token: UUID): CheckoutRemovePromoCode
+  checkoutPaymentCreate(input: PaymentInput!, token: UUID): CheckoutPaymentCreate
+  checkoutShippingAddressUpdate(shippingAddress: AddressInput!, token: UUID): CheckoutShippingAddressUpdate
+  # checkoutShippingMethodUpdate(shippingMethodId: ID!, token: UUID): CheckoutShippingMethodUpdate
+  checkoutDeliveryMethodUpdate(deliveryMethodId: ID, token: UUID): CheckoutDeliveryMethodUpdate
+  checkoutLanguageCodeUpdate(languageCode: LanguageCodeEnum!, token: UUID): CheckoutLanguageCodeUpdate
+}
+
+extend type Query {
+  checkout(token: UUID): Checkout
+  checkouts(channel: String, before: String, after: String, first: Int, last: Int): CheckoutCountableConnection
+}
+
+type CheckoutDeliveryMethodUpdate {
+  checkout: Checkout
+  errors: [CheckoutError!]!
+}
+
+type Checkout implements Node & ObjectWithMetadata {
+  created: DateTime!
+  lastChange: DateTime!
+  user: User
+  channel: Channel!
+  billingAddress: Address
+  shippingAddress: Address
+  note: String!
+  discount: Money
+  discountName: String
+  translatedDiscountName: String
+  voucherCode: String
+  giftCards: [GiftCard]
+  id: ID!
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  availableShippingMethods: [ShippingMethod]!
+  availableCollectionPoints: [Warehouse!]!
+  availablePaymentGateways: [PaymentGateway!]!
+  email: String!
+  isShippingRequired: Boolean!
+  quantity: Int!
+  lines: [CheckoutLine]
+  shippingPrice: TaxedMoney
+  # shippingMethod: ShippingMethod
+  deliveryMethod: DeliveryMethod
+  subtotalPrice: TaxedMoney
+  token: UUID!
+  totalPrice: TaxedMoney
+  languageCode: LanguageCodeEnum!
+}
+
+type CheckoutAddPromoCode {
+  checkout: Checkout
+  errors: [CheckoutError!]!
+}
+
+type CheckoutBillingAddressUpdate {
+  checkout: Checkout
+  errors: [CheckoutError!]!
+}
+
+type CheckoutComplete {
+  order: Order
+  confirmationNeeded: Boolean!
+  confirmationData: JSONString
+  errors: [CheckoutError!]!
+}
+
+input CheckoutCreateInput {
+  channel: String
+  lines: [CheckoutLineInput]!
+  email: String
+  shippingAddress: AddressInput
+  billingAddress: AddressInput
+  languageCode: LanguageCodeEnum
+}
+
+type CheckoutCreate {
+  # created: Boolean
+  errors: [CheckoutError!]!
+  checkout: Checkout
+}
+
+type CheckoutCustomerAttach {
+  checkout: Checkout
+  errors: [CheckoutError!]!
+}
+
+type CheckoutCustomerDetach {
+  checkout: Checkout
+  errors: [CheckoutError!]!
+}
+
+type CheckoutEmailUpdate {
+  checkout: Checkout
+  errors: [CheckoutError!]!
+}
+
+type CheckoutRemovePromoCode {
+  checkout: Checkout
+  errors: [CheckoutError!]!
+}
+
+type CheckoutPaymentCreate {
+  checkout: Checkout
+  payment: Payment
+  errors: [PaymentError!]!
+}
+
+input PaymentInput {
+  gateway: String!
+  token: String
+  amount: PositiveDecimal
+  returnUrl: String
+  storePaymentMethod: StorePaymentMethodEnum = none
+  metadata: [MetadataInput!]
+}
+
+enum StorePaymentMethodEnum {
+  ON_SESSION
+  OFF_SESSION
+  NONE
+}
+
+type CheckoutShippingAddressUpdate {
+  checkout: Checkout
+  errors: [CheckoutError!]!
+}
+
+type CheckoutShippingMethodUpdate {
+  checkout: Checkout
+  errors: [CheckoutError!]!
+}
+
+type CheckoutLanguageCodeUpdate {
+  checkout: Checkout
+  errors: [CheckoutError!]!
+}
+
+type CheckoutCountableConnection {
+  pageInfo: PageInfo!
+  edges: [CheckoutCountableEdge!]!
+  totalCount: Int
+}
+
+type CheckoutCountableEdge {
+  node: Checkout!
+  cursor: String!
+}
+
+type PaymentGateway {
+  name: String!
+  id: ID!
+  config: [GatewayConfigLine!]!
+  currencies: [String]!
+}
+
+type CheckoutError {
+  field: String
+  message: String
+  code: CheckoutErrorCode!
+  variants: [ID!]
+  addressType: AddressTypeEnum
+}
+
+enum CheckoutErrorCode {
+  BILLING_ADDRESS_NOT_SET
+  CHECKOUT_NOT_FULLY_PAID
+  GRAPHQL_ERROR
+  PRODUCT_NOT_PUBLISHED
+  PRODUCT_UNAVAILABLE_FOR_PURCHASE
+  INSUFFICIENT_STOCK
+  INVALID
+  INVALID_SHIPPING_METHOD
+  NOT_FOUND
+  PAYMENT_ERROR
+  QUANTITY_GREATER_THAN_LIMIT
+  REQUIRED
+  SHIPPING_ADDRESS_NOT_SET
+  SHIPPING_METHOD_NOT_APPLICABLE
+  DELIVERY_METHOD_NOT_APPLICABLE
+  SHIPPING_METHOD_NOT_SET
+  SHIPPING_NOT_REQUIRED
+  TAX_ERROR
+  UNIQUE
+  VOUCHER_NOT_APPLICABLE
+  GIFT_CARD_NOT_APPLICABLE
+  ZERO_QUANTITY
+  MISSING_CHANNEL_SLUG
+  CHANNEL_INACTIVE
+  UNAVAILABLE_VARIANT_IN_CHANNEL
+}
+
+type GatewayConfigLine {
+  field: String!
+  value: String
+}

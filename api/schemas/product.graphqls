@@ -1,0 +1,300 @@
+extend type Mutation {
+  productAttributeAssign(operations: [ProductAttributeAssignInput]!, productTypeId: ID!): ProductAttributeAssign
+  productAttributeUnassign(attributeIds: [ID]!, productTypeId: ID!): ProductAttributeUnassign
+  productCreate(input: ProductCreateInput!): ProductCreate
+  productDelete(id: ID!): ProductDelete
+  productBulkDelete(ids: [ID]!): ProductBulkDelete
+  productUpdate(id: ID!, input: ProductInput!): ProductUpdate
+  productTranslate(id: ID!, input: TranslationInput!, languageCode: LanguageCodeEnum!): ProductTranslate
+  productChannelListingUpdate(id: ID!, input: ProductChannelListingUpdateInput!): ProductChannelListingUpdate
+  productReorderAttributeValues(attributeId: ID!, moves: [ReorderInput]!, productId: ID!): ProductReorderAttributeValues
+}
+
+extend type Query {
+  product(id: ID, slug: String, channel: String): Product
+  products(filter: ProductFilterInput, sortBy: ProductOrder, channel: String, before: String, after: String, first: Int, last: Int): ProductCountableConnection
+}
+
+input ProductChannelListingUpdateInput {
+  updateChannels: [ProductChannelListingAddInput!]
+  removeChannels: [ID!]
+}
+
+type ProductChannelListingUpdate {
+  product: Product
+  errors: [ProductChannelListingError!]!
+}
+
+type ProductReorderAttributeValues {
+  product: Product
+  errors: [ProductError!]!
+}
+
+input ProductChannelListingAddInput {
+  channelId: ID!
+  isPublished: Boolean
+  publicationDate: Date
+  visibleInListings: Boolean
+  isAvailableForPurchase: Boolean
+  availableForPurchaseDate: Date
+  addVariants: [ID!]
+  removeVariants: [ID!]
+}
+
+type Product implements Node & ObjectWithMetadata {
+  id: ID!
+  seoTitle: String
+  seoDescription: String
+  name: String!
+  description: JSONString
+  productType: ProductType!
+  slug: String!
+  category: Category
+  updatedAt: DateTime
+  chargeTaxes: Boolean!
+  weight: Weight
+  defaultVariant: ProductVariant
+  rating: Float
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  channel: String
+  thumbnail(size: Int): Image
+  pricing(address: AddressInput): ProductPricingInfo
+  isAvailable(address: AddressInput): Boolean
+  taxType: TaxType
+  attributes(_: PlaceHolder): [SelectedAttribute!]! # attributes: [SelectedAttribute!]!
+  channelListings: [ProductChannelListing!]
+  mediaById(id: ID): ProductMedia
+  variants: [ProductVariant]
+  media: [ProductMedia!]
+  collections: [Collection]
+  translation(languageCode: LanguageCodeEnum!): ProductTranslation
+  availableForPurchase(_: PlaceHolder): Date # availableForPurchase: Date
+  isAvailableForPurchase(_: PlaceHolder): Boolean # isAvailableForPurchase: Boolean
+}
+
+type ProductPricingInfo {
+  onSale: Boolean
+  discount: TaxedMoney
+  discountLocalCurrency: TaxedMoney
+  priceRange: TaxedMoneyRange
+  priceRangeUndiscounted: TaxedMoneyRange
+  priceRangeLocalCurrency: TaxedMoneyRange
+}
+
+type ProductChannelListing implements Node {
+  id: ID!
+  publicationDate: Date
+  isPublished: Boolean!
+  channel: Channel!
+  visibleInListings: Boolean!
+  availableForPurchase: Date
+  discountedPrice: Money
+  purchaseCost: MoneyRange
+  margin: Margin
+  isAvailableForPurchase: Boolean
+  pricing(address: AddressInput): ProductPricingInfo
+}
+
+type ProductTranslation implements Node {
+  id: ID!
+  seoTitle: String
+  seoDescription: String
+  name: String
+  description: JSONString
+  language: LanguageDisplay!
+}
+
+type Margin {
+  start: Int
+  stop: Int
+}
+
+input ProductAttributeAssignInput {
+  id: ID!
+  type: ProductAttributeType!
+}
+
+type ProductAttributeAssign {
+  productType: ProductType
+  errors: [ProductError!]!
+}
+
+type ProductAttributeUnassign {
+  productType: ProductType
+  errors: [ProductError!]!
+}
+
+input ProductCreateInput {
+  attributes: [AttributeValueInput!]
+  category: ID
+  chargeTaxes: Boolean
+  collections: [ID!]
+  description: JSONString
+  name: String
+  slug: String
+  taxCode: String
+  seo: SeoInput
+  weight: WeightScalar
+  rating: Float
+  productType: ID!
+}
+
+type ProductCreate {
+  errors: [ProductError!]!
+  product: Product
+}
+
+type ProductDelete {
+  errors: [ProductError!]!
+  product: Product
+}
+
+type ProductBulkDelete {
+  count: Int!
+  errors: [ProductError!]!
+}
+
+input ProductInput {
+  attributes: [AttributeValueInput!]
+  category: ID
+  chargeTaxes: Boolean
+  collections: [ID!]
+  description: JSONString
+  name: String
+  slug: String
+  taxCode: String
+  seo: SeoInput
+  weight: WeightScalar
+  rating: Float
+}
+
+type ProductUpdate {
+  errors: [ProductError!]!
+  product: Product
+}
+
+input TranslationInput {
+  seoTitle: String
+  seoDescription: String
+  name: String
+  description: JSONString
+}
+
+type ProductTranslate {
+  errors: [TranslationError!]!
+  product: Product
+}
+
+input ProductFilterInput {
+  isPublished: Boolean
+  collections: [ID]
+  categories: [ID]
+  hasCategory: Boolean
+  attributes: [AttributeInput]
+  stockAvailability: StockAvailability
+  stocks: ProductStockFilterInput
+  search: String
+  metadata: [MetadataInput]
+  price: PriceRangeInput
+  minimalPrice: PriceRangeInput
+  productTypes: [ID]
+  giftCard: Boolean
+  ids: [ID]
+  hasPreorderedVariants: Boolean
+  channel: String
+}
+
+input ProductOrder {
+  direction: OrderDirection!
+  channel: String
+  attributeId: ID
+  field: ProductOrderField
+}
+
+type ProductCountableConnection {
+  pageInfo: PageInfo!
+  edges: [ProductCountableEdge!]!
+  totalCount: Int
+}
+
+enum ProductAttributeType {
+  PRODUCT
+  VARIANT
+}
+
+type ProductError {
+  field: String
+  message: String
+  code: ProductErrorCode!
+  attributes: [ID!]
+  values: [ID!]
+}
+
+enum ProductErrorCode {
+  ALREADY_EXISTS
+  ATTRIBUTE_ALREADY_ASSIGNED
+  ATTRIBUTE_CANNOT_BE_ASSIGNED
+  ATTRIBUTE_VARIANTS_DISABLED
+  DUPLICATED_INPUT_ITEM
+  GRAPHQL_ERROR
+  INVALID
+  PRODUCT_WITHOUT_CATEGORY
+  NOT_PRODUCTS_IMAGE
+  NOT_PRODUCTS_VARIANT
+  NOT_FOUND
+  REQUIRED
+  UNIQUE
+  VARIANT_NO_DIGITAL_CONTENT
+  CANNOT_MANAGE_PRODUCT_WITHOUT_VARIANT
+  PRODUCT_NOT_ASSIGNED_TO_CHANNEL
+  UNSUPPORTED_MEDIA_PROVIDER
+}
+
+input SeoInput {
+  title: String
+  description: String
+}
+
+input ProductStockFilterInput {
+  warehouseIds: [ID!]
+  quantity: IntRangeInput
+}
+
+input PriceInput {
+  currency: String!
+  amount: PositiveDecimal!
+}
+
+input PriceRangeInput {
+  gte: Float
+  lte: Float
+}
+
+enum ProductOrderField {
+  NAME
+  RANK
+  PRICE
+  MINIMAL_PRICE
+  DATE
+  TYPE
+  PUBLISHED
+  PUBLICATION_DATE
+  COLLECTION
+  RATING
+}
+
+type ProductCountableEdge {
+  node: Product!
+  cursor: String!
+}
+
+enum ProductMediaType {
+  IMAGE
+  VIDEO
+}
+
+enum StockAvailability {
+  IN_STOCK
+  OUT_OF_STOCK
+}

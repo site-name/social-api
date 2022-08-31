@@ -16,24 +16,23 @@ import (
 )
 
 type Web struct {
-	app        app.AppIface
+	srv        *app.Server
 	MainRouter *mux.Router
 }
 
 // New initializes web routes and returns web instance
-func New(a app.AppIface) *Web {
+func New(srv *app.Server) *Web {
 	slog.Debug("Initializing web routes")
 
 	web := &Web{
-		app:        a,
-		MainRouter: a.Srv().RootRouter,
+		srv:        srv,
+		MainRouter: srv.Router,
 	}
 
 	// web.InitOAuth()
 	// web.InitWebhooks()
 	// web.InitSaml()
 
-	web.InitGraphql() // must go before static routes
 	web.InitStatic()
 
 	return web

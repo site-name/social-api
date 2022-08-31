@@ -230,9 +230,6 @@ const (
 	OPENID_SETTINGS_DEFAULT_SCOPE      = "profile openid email"
 
 	LOCAL_MODE_SOCKET_PATH = "/var/tmp/sitename_local.socket"
-
-	GRAPHQL_API_PLAYGROUND_PATH = "/playground"
-	GRAPHQL_API_PATH            = "/api/graphql"
 )
 
 func GetDefaultAppCustomURLSchemes() []string {
@@ -366,8 +363,6 @@ type ServiceSettings struct {
 	OpenExchangeRecuringDurationHours                 *int    `access:"experimental_features"`
 	EnablePermalinkPreviews                           *bool   `access:"site_posts"`
 	EnableInlineLatex                                 *bool   `access:"site_posts"`
-	GraphqlPlaygroundPath                             *string
-	GraphqlApiPath                                    *string
 
 	DEPRECATED_DO_NOT_USE_ImageProxyType              *string `json:"ImageProxyType" mapstructure:"ImageProxyType"`                           // Deprecated: do not use
 	DEPRECATED_DO_NOT_USE_ImageProxyURL               *string `json:"ImageProxyURL" mapstructure:"ImageProxyURL"`                             // Deprecated: do not use
@@ -838,12 +833,6 @@ func (s *ServiceSettings) SetDefaults(isUpdate bool) {
 	}
 	if s.OpenExhcnageApiEndPoint == nil {
 		s.OpenExhcnageApiEndPoint = NewString("http://openexchangerates.org/api/latest.json")
-	}
-	if s.GraphqlPlaygroundPath == nil {
-		s.GraphqlPlaygroundPath = NewString(GRAPHQL_API_PLAYGROUND_PATH)
-	}
-	if s.GraphqlApiPath == nil {
-		s.GraphqlApiPath = NewString(GRAPHQL_API_PATH)
 	}
 }
 

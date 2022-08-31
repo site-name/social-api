@@ -1,0 +1,96 @@
+extend type Mutation {
+  categoryCreate(input: CategoryInput!, parent: ID): CategoryCreate
+  categoryDelete(id: ID!): CategoryDelete
+  categoryBulkDelete(ids: [ID]!): CategoryBulkDelete
+  categoryUpdate(id: ID!, input: CategoryInput!): CategoryUpdate
+  categoryTranslate(id: ID!, input: TranslationInput!, languageCode: LanguageCodeEnum!): CategoryTranslate
+}
+
+extend type Query {
+  categories(filter: CategoryFilterInput, sortBy: CategorySortingInput, level: Int, before: String, after: String, first: Int, last: Int): CategoryCountableConnection
+  category(id: ID, slug: String): Category
+}
+
+type Category implements Node & ObjectWithMetadata {
+  id: ID!
+  seoTitle: String
+  seoDescription: String
+  name: String!
+  description: JSONString
+  slug: String!
+  parent: Category
+  level: Int!
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  ancestors(before: String, after: String, first: Int, last: Int): CategoryCountableConnection
+  products(channel: String, before: String, after: String, first: Int, last: Int): ProductCountableConnection
+  children(before: String, after: String, first: Int, last: Int): CategoryCountableConnection
+  backgroundImage(size: Int): Image
+  translation(languageCode: LanguageCodeEnum!): CategoryTranslation
+}
+
+input CategoryInput {
+  description: JSONString
+  name: String
+  slug: String
+  seo: SeoInput
+  backgroundImage: Upload
+  backgroundImageAlt: String
+}
+
+type CategoryCreate {
+  errors: [ProductError!]!
+  category: Category
+}
+
+type CategoryDelete {
+  errors: [ProductError!]!
+  category: Category
+}
+
+type CategoryBulkDelete {
+  count: Int!
+  errors: [ProductError!]!
+}
+
+type CategoryUpdate {
+  errors: [ProductError!]!
+  category: Category
+}
+
+type CategoryTranslate {
+  errors: [TranslationError!]!
+  category: Category
+}
+
+input CategoryFilterInput {
+  search: String
+  metadata: [MetadataInput]
+  ids: [ID]
+}
+
+input CategorySortingInput {
+  direction: OrderDirection!
+  channel: String
+  field: CategorySortField!
+}
+
+type CategoryCountableConnection {
+  pageInfo: PageInfo!
+  edges: [CategoryCountableEdge!]!
+  totalCount: Int
+}
+
+type CategoryTranslation implements Node {
+  id: ID!
+  seoTitle: String
+  seoDescription: String
+  name: String
+  description: JSONString
+  language: LanguageDisplay!
+}
+
+type CategoryCountableEdge {
+  node: Category!
+  cursor: String!
+}

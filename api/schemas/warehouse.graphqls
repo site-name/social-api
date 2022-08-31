@@ -1,0 +1,142 @@
+extend type Query {
+  warehouse(id: ID!): Warehouse
+  warehouses(filter: WarehouseFilterInput, sortBy: WarehouseSortingInput, before: String, after: String, first: Int, last: Int): WarehouseCountableConnection
+  stock(id: ID!): Stock
+  stocks(filter: StockFilterInput, before: String, after: String, first: Int, last: Int): StockCountableConnection
+}
+
+extend type Mutation {
+  createWarehouse(input: WarehouseCreateInput!): WarehouseCreate
+  updateWarehouse(id: ID!, input: WarehouseUpdateInput!): WarehouseUpdate
+  deleteWarehouse(id: ID!): WarehouseDelete
+  assignWarehouseShippingZone(id: ID!, shippingZoneIds: [ID!]!): WarehouseShippingZoneAssign
+  unassignWarehouseShippingZone(id: ID!, shippingZoneIds: [ID!]!): WarehouseShippingZoneUnassign
+}
+
+input WarehouseCreateInput {
+  slug: String
+  companyName: String
+  email: String
+  name: String!
+  address: AddressInput!
+  shippingZones: [ID]
+}
+
+type Stock implements Node {
+  warehouse: Warehouse!
+  productVariant: ProductVariant!
+  quantity: Int!
+  id: ID!
+  quantityAllocated: Int!
+}
+
+input StockFilterInput {
+  quantity: Float
+  search: String
+}
+
+type WarehouseCreate {
+  errors: [WarehouseError!]!
+  warehouse: Warehouse
+}
+
+type WarehouseError {
+  field: String
+  message: String
+  code: WarehouseErrorCode!
+}
+
+enum WarehouseErrorCode {
+  ALREADY_EXISTS
+  GRAPHQL_ERROR
+  INVALID
+  NOT_FOUND
+  REQUIRED
+  UNIQUE
+}
+
+type WarehouseUpdate {
+  errors: [WarehouseError!]!
+  warehouse: Warehouse
+}
+
+type Warehouse implements Node & ObjectWithMetadata {
+  id: ID!
+  name: String!
+  slug: String!
+  shippingZones(before: String, after: String, first: Int, last: Int): ShippingZoneCountableConnection!
+  address: Address!
+  email: String!
+  isPrivate: Boolean!
+  privateMetadata: [MetadataItem]!
+  metadata: [MetadataItem]!
+  clickAndCollectOption: WarehouseClickAndCollectOptionEnum!
+}
+
+enum WarehouseClickAndCollectOptionEnum {
+  DISABLED
+  LOCAL
+  ALL
+}
+
+enum WarehouseSortField {
+  NAME
+}
+
+type WarehouseCountableConnection {
+  pageInfo: PageInfo!
+  edges: [WarehouseCountableEdge!]!
+  totalCount: Int
+}
+
+type WarehouseCountableEdge {
+  node: Warehouse!
+  cursor: String!
+}
+
+input WarehouseFilterInput {
+  clickAndCollectOption: WarehouseClickAndCollectOptionEnum
+  search: String
+  ids: [ID]
+  isPrivate: Boolean
+}
+
+input WarehouseSortingInput {
+  direction: OrderDirection!
+  field: WarehouseSortField!
+}
+
+input WarehouseUpdateInput {
+  slug: String
+  email: String
+  name: String
+  address: AddressInput
+  clickAndCollectOption: WarehouseClickAndCollectOptionEnum
+  isPrivate: Boolean
+}
+
+type WarehouseDelete {
+  errors: [WarehouseError!]!
+  warehouse: Warehouse
+}
+
+type WarehouseShippingZoneAssign {
+  errors: [WarehouseError!]!
+  warehouse: Warehouse
+}
+
+type WarehouseShippingZoneUnassign {
+  errors: [WarehouseError!]!
+  warehouse: Warehouse
+}
+
+type StockCountableConnection {
+  pageInfo: PageInfo!
+  edges: [StockCountableEdge!]!
+  totalCount: Int
+}
+
+type StockCountableEdge {
+  node: Stock!
+  cursor: String!
+}
