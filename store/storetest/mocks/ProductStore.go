@@ -5,7 +5,7 @@
 package mocks
 
 import (
-	gqlmodel "github.com/sitename/sitename/graphql/gqlmodel"
+	gqlmodel "github.com/sitename/sitename/api/gqlmodel"
 	mock "github.com/stretchr/testify/mock"
 
 	model "github.com/sitename/sitename/model"

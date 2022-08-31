@@ -1,11 +1,11 @@
 # Where are all the schema files located? globs are supported eg  src/**/*.graphqls
 schema:
-  - graphql/schemas/*.graphqls
+  - api/schemas/*.graphqls
 
 # Where should the generated server code go?
-exec:
-  filename: graphql/generated/GRAPHQL_GENERATED.go
-  package: generated
+# exec:
+#   filename: graphql/generated/GRAPHQL_GENERATED.go
+#   package: generated
 
 # Uncomment to enable federation
 # federation:
@@ -14,20 +14,20 @@ exec:
 
 # Where should any generated models go?
 model:
-  filename: graphql/gqlmodel/GRAPHQL_MODELS_GEN.go
+  filename: api/gqlmodel/GRAPHQL_MODELS_GEN.go
   package: gqlmodel
 
 # Where should the resolver implementations go?
-resolver:
-  layout: follow-schema
-  dir: graphql
-  package: graphql
+# resolver:
+#   layout: follow-schema
+#   dir: graphql
+#   package: graphql
 
 # Optional: turn on use `gqlgen:"fieldName"` tags in your models
 # struct_tag: json
 
 # Optional: turn on to use []Thing instead of []*Thing
-omit_slice_element_pointers: false
+omit_slice_element_pointers: true
 
 # Optional: set to speed up generation time by not performing a final validation pass.
 # skip_validation: true
@@ -35,7 +35,7 @@ omit_slice_element_pointers: false
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
-  - "github.com/sitename/sitename/graphql/gqlmodel"
+  - "github.com/sitename/sitename/api/gqlmodel"
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -58,22 +58,22 @@ models:
   # custom scalars
   UUID:
     model:
-      - github.com/sitename/sitename/graphql/scalars.UUID
+      - github.com/sitename/sitename/api/scalars.UUID
   Date:
     model:
-      - github.com/sitename/sitename/graphql/scalars.Date
+      - github.com/sitename/sitename/api/scalars.Date
   DateTime:
     model:
-      - github.com/sitename/sitename/graphql/scalars.DateTime
+      - github.com/sitename/sitename/api/scalars.DateTime
   PositiveDecimal:
     model:
-      - github.com/sitename/sitename/graphql/scalars.PositiveDecimal
+      - github.com/sitename/sitename/api/scalars.PositiveDecimal
   WeightScalar:
     model:
-      - github.com/sitename/sitename/graphql/scalars.WeightScalar
+      - github.com/sitename/sitename/api/scalars.WeightScalar
   PlaceHolder:
     model:
-      - github.com/sitename/sitename/graphql/scalars.PlaceHolder
+      - github.com/sitename/sitename/api/scalars.PlaceHolder
   JSONString:
     model:
-      - github.com/sitename/sitename/graphql/scalars.JSONString
+      - github.com/sitename/sitename/api/scalars.JSONString

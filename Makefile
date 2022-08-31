@@ -210,8 +210,8 @@ gen-serialized: ## Generates serialization methods for hot structs
 	$(GOBIN)/msgp -file=./model/account/user.go -tests=false -o=./model/account/user_serial_gen.go
 
 gqlgen:
-	$(GO) get -d -modfile=go.tools.mod github.com/99designs/gqlgen@v0.13.0
-	$(GO) get -d -modfile=go.tools.mod github.com/vektah/gqlparser/v2@v2.1.0
+	$(GO) install github.com/99designs/gqlgen@v0.17.9
+# $(GO) get -d -modfile=go.tools.mod github.com/vektah/gqlparser/v2@v2.1.0
 
 	$(GOBIN)/gqlgen
 	@echo Gqlgen has done generating.

@@ -11,7 +11,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/graphql/gqlmodel"
+	"github.com/sitename/sitename/api/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
