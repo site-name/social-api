@@ -2,6 +2,6 @@ package api
 
 import "github.com/sitename/sitename/app"
 
-type resolver struct {
+type Resolver struct {
 	srv *app.Server
 }

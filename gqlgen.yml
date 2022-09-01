@@ -18,10 +18,10 @@ model:
   package: gqlmodel
 
 # Where should the resolver implementations go?
-# resolver:
-#   layout: follow-schema
-#   dir: graphql
-#   package: graphql
+resolver:
+  layout: follow-schema
+  dir: api
+  package: api
 
 # Optional: turn on use `gqlgen:"fieldName"` tags in your models
 # struct_tag: json

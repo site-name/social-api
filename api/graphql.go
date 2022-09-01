@@ -20,27 +20,11 @@ type graphQLInput struct {
 	Variables     map[string]any `json:"variables"`
 }
 
-const schema = `
-type schema {
-	query: Query
-}
-
-type Query {
-	address(id: String!): Address
-}
-
-type Address {
-	id: 				String!
-	firstName: 	String!
-	lastName: 	String!
-}
-`
-
 func (api *API) InitGraphql() error {
-	// schemaString, err := constructSchema()
-	// if err != nil {
-	// 	return err
-	// }
+	schemaString, err := constructSchema()
+	if err != nil {
+		return err
+	}
 
 	opts := []graphql.SchemaOpt{
 		graphql.UseFieldResolvers(),
@@ -50,8 +34,7 @@ func (api *API) InitGraphql() error {
 		graphql.DisableIntrospection(),
 	}
 
-	var err error
-	api.schema, err = graphql.ParseSchema(schema, &resolver{srv: api.srv}, opts...)
+	api.schema, err = graphql.ParseSchema(schemaString, &Resolver{srv: api.srv}, opts...)
 	if err != nil {
 		return errors.Wrap(err, "failed to parse graphql schema")
 	}

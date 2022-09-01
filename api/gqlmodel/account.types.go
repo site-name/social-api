@@ -1,9 +1,6 @@
 package gqlmodel
 
 import (
-	"context"
-
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 )
 
@@ -25,8 +22,4 @@ func SystemAddressToGraphqlAddress(address *account.Address) *Address {
 		// IsDefaultShippingAddress: nil,
 		// IsDefaultBillingAddress:  nil,
 	}
-}
-
-func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
-	return model.NewBool(true), nil
 }
