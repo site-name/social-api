@@ -10,10 +10,19 @@ import (
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) Translations(ctx context.Context, kind gqlmodel.TranslatableKinds, before *string, after *string, first *int, last *int) (*gqlmodel.TranslatableItemConnection, error) {
+func (r *Resolver) Translations(ctx context.Context, args struct {
+	kind   gqlmodel.TranslatableKinds
+	before *string
+	after  *string
+	first  *int
+	last   *int
+}) (*gqlmodel.TranslatableItemConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Translation(ctx context.Context, id string, kind gqlmodel.TranslatableKinds) (gqlmodel.TranslatableItem, error) {
+func (r *Resolver) Translation(ctx context.Context, args struct {
+	id   string
+	kind gqlmodel.TranslatableKinds
+}) (gqlmodel.TranslatableItem, error) {
 	panic(fmt.Errorf("not implemented"))
 }
