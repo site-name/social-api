@@ -10,11 +10,11 @@ import (
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) ShopDomainUpdate(ctx context.Context, input *gqlmodel.SiteDomainInput) (*gqlmodel.ShopDomainUpdate, error) {
+func (r *Resolver) ShopDomainUpdate(ctx context.Context, args struct{ input *gqlmodel.SiteDomainInput }) (*gqlmodel.ShopDomainUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ShopSettingsUpdate(ctx context.Context, input gqlmodel.ShopSettingsInput) (*gqlmodel.ShopSettingsUpdate, error) {
+func (r *Resolver) ShopSettingsUpdate(ctx context.Context, args struct{ input gqlmodel.ShopSettingsInput }) (*gqlmodel.ShopSettingsUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -22,11 +22,14 @@ func (r *Resolver) ShopFetchTaxRates(ctx context.Context) (*gqlmodel.ShopFetchTa
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ShopSettingsTranslate(ctx context.Context, input gqlmodel.ShopSettingsTranslationInput, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.ShopSettingsTranslate, error) {
+func (r *Resolver) ShopSettingsTranslate(ctx context.Context, args struct {
+	input        gqlmodel.ShopSettingsTranslationInput
+	languageCode gqlmodel.LanguageCodeEnum
+}) (*gqlmodel.ShopSettingsTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ShopAddressUpdate(ctx context.Context, input *gqlmodel.AddressInput) (*gqlmodel.ShopAddressUpdate, error) {
+func (r *Resolver) ShopAddressUpdate(ctx context.Context, args struct{ input *gqlmodel.AddressInput }) (*gqlmodel.ShopAddressUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
