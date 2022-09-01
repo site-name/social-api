@@ -11,18 +11,35 @@ import (
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) CheckoutLineDelete(ctx context.Context, checkoutID *string, lineID *string, token *uuid.UUID) (*gqlmodel.CheckoutLineDelete, error) {
+func (r *Resolver) CheckoutLineDelete(ctx context.Context, args struct {
+	checkoutID *string
+	lineID     *string
+	token      *uuid.UUID
+}) (*gqlmodel.CheckoutLineDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) CheckoutLinesAdd(ctx context.Context, checkoutID *string, lines []*gqlmodel.CheckoutLineInput, token *uuid.UUID) (*gqlmodel.CheckoutLinesAdd, error) {
+func (r *Resolver) CheckoutLinesAdd(ctx context.Context, args struct {
+	checkoutID *string
+	lines      []*gqlmodel.CheckoutLineInput
+	token      *uuid.UUID
+}) (*gqlmodel.CheckoutLinesAdd, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) CheckoutLinesUpdate(ctx context.Context, checkoutID *string, lines []*gqlmodel.CheckoutLineInput, token *uuid.UUID) (*gqlmodel.CheckoutLinesUpdate, error) {
+func (r *Resolver) CheckoutLinesUpdate(ctx context.Context, args struct {
+	checkoutID *string
+	lines      []*gqlmodel.CheckoutLineInput
+	token      *uuid.UUID
+}) (*gqlmodel.CheckoutLinesUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) CheckoutLines(ctx context.Context, before *string, after *string, first *int, last *int) (*gqlmodel.CheckoutLineCountableConnection, error) {
+func (r *Resolver) CheckoutLines(ctx context.Context, args struct {
+	before *string
+	after  *string
+	first  *int
+	last   *int
+}) (*gqlmodel.CheckoutLineCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

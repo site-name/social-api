@@ -10,22 +10,30 @@ import (
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) ProductMediaCreate(ctx context.Context, input gqlmodel.ProductMediaCreateInput) (*gqlmodel.ProductMediaCreate, error) {
+func (r *Resolver) ProductMediaCreate(ctx context.Context, args struct {
+	input gqlmodel.ProductMediaCreateInput
+}) (*gqlmodel.ProductMediaCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductMediaDelete(ctx context.Context, id string) (*gqlmodel.ProductMediaDelete, error) {
+func (r *Resolver) ProductMediaDelete(ctx context.Context, args struct{ id string }) (*gqlmodel.ProductMediaDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductMediaBulkDelete(ctx context.Context, ids []*string) (*gqlmodel.ProductMediaBulkDelete, error) {
+func (r *Resolver) ProductMediaBulkDelete(ctx context.Context, args struct{ ids []*string }) (*gqlmodel.ProductMediaBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductMediaReorder(ctx context.Context, mediaIds []*string, productID string) (*gqlmodel.ProductMediaReorder, error) {
+func (r *Resolver) ProductMediaReorder(ctx context.Context, args struct {
+	mediaIds  []*string
+	productID string
+}) (*gqlmodel.ProductMediaReorder, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductMediaUpdate(ctx context.Context, id string, input gqlmodel.ProductMediaUpdateInput) (*gqlmodel.ProductMediaUpdate, error) {
+func (r *Resolver) ProductMediaUpdate(ctx context.Context, args struct {
+	id    string
+	input gqlmodel.ProductMediaUpdateInput
+}) (*gqlmodel.ProductMediaUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }

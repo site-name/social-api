@@ -10,30 +10,43 @@ import (
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) PageTypeCreate(ctx context.Context, input gqlmodel.PageTypeCreateInput) (*gqlmodel.PageTypeCreate, error) {
+func (r *Resolver) PageTypeCreate(ctx context.Context, args struct{ input gqlmodel.PageTypeCreateInput }) (*gqlmodel.PageTypeCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageTypeUpdate(ctx context.Context, id *string, input gqlmodel.PageTypeUpdateInput) (*gqlmodel.PageTypeUpdate, error) {
+func (r *Resolver) PageTypeUpdate(ctx context.Context, args struct {
+	id    *string
+	input gqlmodel.PageTypeUpdateInput
+}) (*gqlmodel.PageTypeUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageTypeDelete(ctx context.Context, id string) (*gqlmodel.PageTypeDelete, error) {
+func (r *Resolver) PageTypeDelete(ctx context.Context, args struct{ id string }) (*gqlmodel.PageTypeDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageTypeBulkDelete(ctx context.Context, ids []string) (*gqlmodel.PageTypeBulkDelete, error) {
+func (r *Resolver) PageTypeBulkDelete(ctx context.Context, args struct{ ids []string }) (*gqlmodel.PageTypeBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageTypeReorderAttributes(ctx context.Context, moves []gqlmodel.ReorderInput, pageTypeID string) (*gqlmodel.PageTypeReorderAttributes, error) {
+func (r *Resolver) PageTypeReorderAttributes(ctx context.Context, args struct {
+	moves      []gqlmodel.ReorderInput
+	pageTypeID string
+}) (*gqlmodel.PageTypeReorderAttributes, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageType(ctx context.Context, id string) (*gqlmodel.PageType, error) {
+func (r *Resolver) PageType(ctx context.Context, args struct{ id string }) (*gqlmodel.PageType, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageTypes(ctx context.Context, sortBy *gqlmodel.PageTypeSortingInput, filter *gqlmodel.PageTypeFilterInput, before *string, after *string, first *int, last *int) (*gqlmodel.PageTypeCountableConnection, error) {
+func (r *Resolver) PageTypes(ctx context.Context, args struct {
+	sortBy *gqlmodel.PageTypeSortingInput
+	filter *gqlmodel.PageTypeFilterInput
+	before *string
+	after  *string
+	first  *int
+	last   *int
+}) (*gqlmodel.PageTypeCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

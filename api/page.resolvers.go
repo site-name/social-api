@@ -10,35 +10,51 @@ import (
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) PageCreate(ctx context.Context, input gqlmodel.PageCreateInput) (*gqlmodel.PageCreate, error) {
+func (r *Resolver) PageCreate(ctx context.Context, args struct{ input gqlmodel.PageCreateInput }) (*gqlmodel.PageCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageDelete(ctx context.Context, id string) (*gqlmodel.PageDelete, error) {
+func (r *Resolver) PageDelete(ctx context.Context, args struct{ id string }) (*gqlmodel.PageDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageBulkDelete(ctx context.Context, ids []*string) (*gqlmodel.PageBulkDelete, error) {
+func (r *Resolver) PageBulkDelete(ctx context.Context, args struct{ ids []*string }) (*gqlmodel.PageBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageBulkPublish(ctx context.Context, ids []*string, isPublished bool) (*gqlmodel.PageBulkPublish, error) {
+func (r *Resolver) PageBulkPublish(ctx context.Context, args struct {
+	ids         []*string
+	isPublished bool
+}) (*gqlmodel.PageBulkPublish, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageUpdate(ctx context.Context, id string, input gqlmodel.PageInput) (*gqlmodel.PageUpdate, error) {
+func (r *Resolver) PageUpdate(ctx context.Context, args struct {
+	id    string
+	input gqlmodel.PageInput
+}) (*gqlmodel.PageUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageTranslate(ctx context.Context, id string, input gqlmodel.PageTranslationInput, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.PageTranslate, error) {
+func (r *Resolver) PageTranslate(ctx context.Context, args struct {
+	id           string
+	input        gqlmodel.PageTranslationInput
+	languageCode gqlmodel.LanguageCodeEnum
+}) (*gqlmodel.PageTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageAttributeAssign(ctx context.Context, attributeIds []string, pageTypeID string) (*gqlmodel.PageAttributeAssign, error) {
+func (r *Resolver) PageAttributeAssign(ctx context.Context, args struct {
+	attributeIds []string
+	pageTypeID   string
+}) (*gqlmodel.PageAttributeAssign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageAttributeUnassign(ctx context.Context, attributeIds []string, pageTypeID string) (*gqlmodel.PageAttributeUnassign, error) {
+func (r *Resolver) PageAttributeUnassign(ctx context.Context, args struct {
+	attributeIds []string
+	pageTypeID   string
+}) (*gqlmodel.PageAttributeUnassign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

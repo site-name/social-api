@@ -10,27 +10,36 @@ import (
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) ProductAttributeAssign(ctx context.Context, operations []*gqlmodel.ProductAttributeAssignInput, productTypeID string) (*gqlmodel.ProductAttributeAssign, error) {
+func (r *Resolver) ProductAttributeAssign(ctx context.Context, args struct {
+	operations    []*gqlmodel.ProductAttributeAssignInput
+	productTypeID string
+}) (*gqlmodel.ProductAttributeAssign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductAttributeUnassign(ctx context.Context, attributeIds []*string, productTypeID string) (*gqlmodel.ProductAttributeUnassign, error) {
+func (r *Resolver) ProductAttributeUnassign(ctx context.Context, args struct {
+	attributeIds  []*string
+	productTypeID string
+}) (*gqlmodel.ProductAttributeUnassign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductCreate(ctx context.Context, input gqlmodel.ProductCreateInput) (*gqlmodel.ProductCreate, error) {
+func (r *Resolver) ProductCreate(ctx context.Context, args struct{ input gqlmodel.ProductCreateInput }) (*gqlmodel.ProductCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductDelete(ctx context.Context, id string) (*gqlmodel.ProductDelete, error) {
+func (r *Resolver) ProductDelete(ctx context.Context, args struct{ id string }) (*gqlmodel.ProductDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductBulkDelete(ctx context.Context, ids []*string) (*gqlmodel.ProductBulkDelete, error) {
+func (r *Resolver) ProductBulkDelete(ctx context.Context, args struct{ ids []*string }) (*gqlmodel.ProductBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductUpdate(ctx context.Context, id string, input gqlmodel.ProductInput) (*gqlmodel.ProductUpdate, error) {
+func (r *Resolver) ProductUpdate(ctx context.Context, args struct {
+	id    string
+	input gqlmodel.ProductInput
+}) (*gqlmodel.ProductUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

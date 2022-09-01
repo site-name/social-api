@@ -10,30 +10,44 @@ import (
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) ProductTypeCreate(ctx context.Context, input gqlmodel.ProductTypeInput) (*gqlmodel.ProductTypeCreate, error) {
+func (r *Resolver) ProductTypeCreate(ctx context.Context, args struct{ input gqlmodel.ProductTypeInput }) (*gqlmodel.ProductTypeCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductTypeDelete(ctx context.Context, id string) (*gqlmodel.ProductTypeDelete, error) {
+func (r *Resolver) ProductTypeDelete(ctx context.Context, args struct{ id string }) (*gqlmodel.ProductTypeDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductTypeBulkDelete(ctx context.Context, ids []*string) (*gqlmodel.ProductTypeBulkDelete, error) {
+func (r *Resolver) ProductTypeBulkDelete(ctx context.Context, args struct{ ids []*string }) (*gqlmodel.ProductTypeBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductTypeUpdate(ctx context.Context, id string, input gqlmodel.ProductTypeInput) (*gqlmodel.ProductTypeUpdate, error) {
+func (r *Resolver) ProductTypeUpdate(ctx context.Context, args struct {
+	id    string
+	input gqlmodel.ProductTypeInput
+}) (*gqlmodel.ProductTypeUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductTypeReorderAttributes(ctx context.Context, moves []*gqlmodel.ReorderInput, productTypeID string, typeArg gqlmodel.ProductAttributeType) (*gqlmodel.ProductTypeReorderAttributes, error) {
+func (r *Resolver) ProductTypeReorderAttributes(ctx context.Context, args struct {
+	moves         []*gqlmodel.ReorderInput
+	productTypeID string
+	typeArg       gqlmodel.ProductAttributeType
+}) (*gqlmodel.ProductTypeReorderAttributes, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductType(ctx context.Context, id string) (*gqlmodel.ProductType, error) {
+func (r *Resolver) ProductType(ctx context.Context, args struct{ id string }) (*gqlmodel.ProductType, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductTypes(ctx context.Context, filter *gqlmodel.ProductTypeFilterInput, sortBy *gqlmodel.ProductTypeSortingInput, before *string, after *string, first *int, last *int) (*gqlmodel.ProductTypeCountableConnection, error) {
+func (r *Resolver) ProductTypes(ctx context.Context, args struct {
+	filter *gqlmodel.ProductTypeFilterInput
+	sortBy *gqlmodel.ProductTypeSortingInput
+	before *string
+	after  *string
+	first  *int
+	last   *int
+}) (*gqlmodel.ProductTypeCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
