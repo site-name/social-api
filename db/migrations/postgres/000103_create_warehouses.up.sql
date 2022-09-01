@@ -16,6 +16,3 @@ ALTER TABLE ONLY warehouses
 CREATE INDEX idx_warehouses_email ON warehouses USING btree (email);
 
 CREATE INDEX idx_warehouses_email_lower_textpattern ON warehouses USING btree (lower((email)::text) text_pattern_ops);
-
-ALTER TABLE ONLY warehouses
-    ADD CONSTRAINT fk_warehouses_addresses FOREIGN KEY (addressid) REFERENCES addresses(id);

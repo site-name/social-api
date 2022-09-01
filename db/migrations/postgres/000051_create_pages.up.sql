@@ -26,6 +26,3 @@ CREATE INDEX idx_pages_title ON pages USING btree (title);
 
 CREATE INDEX idx_pages_title_lower_textpattern ON pages USING btree (lower((title)::text) text_pattern_ops);
 
-ALTER TABLE ONLY pages
-    ADD CONSTRAINT fk_pages_pagetypes FOREIGN KEY (pagetypeid) REFERENCES pagetypes(id) ON DELETE CASCADE;
-

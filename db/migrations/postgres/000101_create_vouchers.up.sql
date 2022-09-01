@@ -24,6 +24,3 @@ ALTER TABLE ONLY vouchers
     ADD CONSTRAINT vouchers_code_key UNIQUE (code);
 
 CREATE INDEX idx_vouchers_code ON vouchers USING btree (code);
-
-ALTER TABLE ONLY vouchers
-    ADD CONSTRAINT fk_vouchers_shops FOREIGN KEY (shopid) REFERENCES shops(id) ON DELETE CASCADE;

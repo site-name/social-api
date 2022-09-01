@@ -63,6 +63,3 @@ CREATE INDEX idx_users_nickname_lower_textpattern ON users USING btree (lower((n
 CREATE INDEX idx_users_private_metadata ON users USING btree (privatemetadata);
 
 CREATE INDEX idx_users_username_lower_textpattern ON users USING btree (lower((username)::text) text_pattern_ops);
-
-ALTER TABLE ONLY users
-    ADD CONSTRAINT fk_users_addresses FOREIGN KEY (defaultshippingaddressid) REFERENCES addresses(id);

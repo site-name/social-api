@@ -29,9 +29,3 @@ CREATE INDEX idx_giftcards_metadata ON giftcards USING btree (metadata);
 CREATE INDEX idx_giftcards_private_metadata ON giftcards USING btree (privatemetadata);
 
 CREATE INDEX idx_giftcards_tag ON giftcards USING btree (tag);
-
-ALTER TABLE ONLY giftcards
-    ADD CONSTRAINT fk_giftcards_products FOREIGN KEY (productid) REFERENCES products(id);
-
-ALTER TABLE ONLY giftcards
-    ADD CONSTRAINT fk_giftcards_users FOREIGN KEY (createdbyid) REFERENCES users(id);

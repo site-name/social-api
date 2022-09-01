@@ -100,17 +100,17 @@ type Address struct {
 	ID                       string          `json:"id"`
 	FirstName                string          `json:"firstName"`
 	LastName                 string          `json:"lastName"`
-	CompanyName              string          `json:"companyName"`
-	StreetAddress1           string          `json:"streetAddress1"`
-	StreetAddress2           string          `json:"streetAddress2"`
-	City                     string          `json:"city"`
-	CityArea                 string          `json:"cityArea"`
-	PostalCode               string          `json:"postalCode"`
-	Country                  *CountryDisplay `json:"country"`
-	CountryArea              string          `json:"countryArea"`
-	Phone                    *string         `json:"phone"`
-	IsDefaultShippingAddress *bool           `json:"isDefaultShippingAddress"`
-	IsDefaultBillingAddress  *bool           `json:"isDefaultBillingAddress"`
+	// CompanyName              string          `json:"companyName"`
+	// StreetAddress1           string          `json:"streetAddress1"`
+	// StreetAddress2           string          `json:"streetAddress2"`
+	// City                     string          `json:"city"`
+	// CityArea                 string          `json:"cityArea"`
+	// PostalCode               string          `json:"postalCode"`
+	// Country                  *CountryDisplay `json:"country"`
+	// CountryArea              string          `json:"countryArea"`
+	// Phone                    *string         `json:"phone"`
+	// IsDefaultShippingAddress *bool           `json:"isDefaultShippingAddress"`
+	// IsDefaultBillingAddress  *bool           `json:"isDefaultBillingAddress"`
 }
 
 func (Address) IsNode() {}

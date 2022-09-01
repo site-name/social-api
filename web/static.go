@@ -14,7 +14,6 @@ import (
 	"github.com/sitename/sitename/modules/templates"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/modules/util/fileutils"
-	"github.com/sitename/sitename/web/shared"
 )
 
 var robotsTxt = []byte("User-agent: *\nDisallow: /\n")
@@ -56,7 +55,7 @@ func (w *Web) InitStatic() {
 	}
 }
 
-func root(c *shared.Context, w http.ResponseWriter, r *http.Request) {
+func root(c *Context, w http.ResponseWriter, r *http.Request) {
 	if !CheckClientCompatibility(r.UserAgent()) {
 		w.Header().Set("Cache-Control", "no-store")
 		data := renderUnsupportedBrowser(c.AppContext, r)

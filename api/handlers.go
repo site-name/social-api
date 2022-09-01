@@ -5,10 +5,9 @@ import (
 
 	"github.com/mattermost/gziphandler"
 	"github.com/sitename/sitename/web"
-	"github.com/sitename/sitename/web/shared"
 )
 
-type Context = shared.Context
+type Context = web.Context
 
 type handlerFunc func(*Context, http.ResponseWriter, *http.Request)
 

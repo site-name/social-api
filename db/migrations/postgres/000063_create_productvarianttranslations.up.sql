@@ -7,6 +7,3 @@ CREATE TABLE IF NOT EXISTS productvarianttranslations (
 
 ALTER TABLE ONLY productvarianttranslations
     ADD CONSTRAINT productvarianttranslations_languagecode_productvariantid_key UNIQUE (languagecode, productvariantid);
-
-ALTER TABLE ONLY productvarianttranslations
-    ADD CONSTRAINT fk_productvarianttranslations_productvariants FOREIGN KEY (productvariantid) REFERENCES productvariants(id) ON DELETE CASCADE;

@@ -6,9 +6,3 @@ CREATE TABLE IF NOT EXISTS wishlistitemproductvariants (
 
 ALTER TABLE ONLY wishlistitemproductvariants
     ADD CONSTRAINT wishlistitemproductvariants_wishlistitemid_productvariantid_key UNIQUE (wishlistitemid, productvariantid);
-
-ALTER TABLE ONLY wishlistitemproductvariants
-    ADD CONSTRAINT fk_wishlistitemproductvariants_productvariants FOREIGN KEY (productvariantid) REFERENCES productvariants(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY wishlistitemproductvariants
-    ADD CONSTRAINT fk_wishlistitemproductvariants_wishlistitems FOREIGN KEY (wishlistitemid) REFERENCES wishlistitems(id) ON DELETE CASCADE;

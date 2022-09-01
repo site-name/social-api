@@ -116,3 +116,5 @@ go.*.orig
 config.override.mk
 
 /study
+
+/graphql

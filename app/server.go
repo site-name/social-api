@@ -209,11 +209,9 @@ type Server struct {
 
 // NewServer create new system server
 func NewServer(options ...Option) (*Server, error) {
-	rootRouter := mux.NewRouter()
-
 	s := &Server{
 		goroutineExitSignal: make(chan struct{}, 1),
-		RootRouter:          rootRouter,
+		RootRouter:          mux.NewRouter(),
 		hashSeed:            maphash.MakeSeed(),
 	}
 

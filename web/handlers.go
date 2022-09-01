@@ -25,11 +25,10 @@ import (
 	"github.com/sitename/sitename/modules/util/api"
 	"github.com/sitename/sitename/services/tracing"
 	"github.com/sitename/sitename/store/opentracinglayer"
-	"github.com/sitename/sitename/web/shared"
 )
 
 // GetHandlerName returns name of the given argument
-func GetHandlerName(h func(*shared.Context, http.ResponseWriter, *http.Request)) string {
+func GetHandlerName(h func(*Context, http.ResponseWriter, *http.Request)) string {
 	handlerName := runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
 	pos := strings.LastIndex(handlerName, ".")
 	if pos != -1 && len(handlerName) > pos {
@@ -40,7 +39,7 @@ func GetHandlerName(h func(*shared.Context, http.ResponseWriter, *http.Request))
 }
 
 // public handler used for testing or static routes
-func (w *Web) NewHandler(h func(*shared.Context, http.ResponseWriter, *http.Request)) http.Handler {
+func (w *Web) NewHandler(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
 	return &Handler{
 		Srv:            w.srv,
 		HandleFunc:     h,
@@ -53,7 +52,7 @@ func (w *Web) NewHandler(h func(*shared.Context, http.ResponseWriter, *http.Requ
 	}
 }
 
-func (w *Web) NewStaticHandler(h func(*shared.Context, http.ResponseWriter, *http.Request)) http.Handler {
+func (w *Web) NewStaticHandler(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
 	// Determine the CSP SHA directive needed for subpath support, if any. This value is fixed
 	// on server start and intentionally requires a restart to take effect.
 	subpath, _ := util.GetSubpathFromConfig(w.srv.Config())
@@ -72,7 +71,7 @@ func (w *Web) NewStaticHandler(h func(*shared.Context, http.ResponseWriter, *htt
 
 type Handler struct {
 	Srv                       *app.Server
-	HandleFunc                func(*shared.Context, http.ResponseWriter, *http.Request)
+	HandleFunc                func(*Context, http.ResponseWriter, *http.Request)
 	HandlerName               string
 	RequireSession            bool
 	RequireCloudKey           bool
@@ -108,7 +107,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		slog.Debug("Received HTTP request", responseLogFields...)
 	}()
 
-	c := &shared.Context{
+	c := &Context{
 		AppContext: new(request.Context),
 		App:        appInstance,
 	}
@@ -315,7 +314,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // checkCSRFToken performs a CSRF check on the provided request with the given CSRF token. Returns whether or not
 // a CSRF check occurred and whether or not it succeeded.
-func (h *Handler) checkCSRFToken(c *shared.Context, r *http.Request, token string, tokenLocation app.TokenLocation, session *model.Session) (checked bool, passed bool) {
+func (h *Handler) checkCSRFToken(c *Context, r *http.Request, token string, tokenLocation app.TokenLocation, session *model.Session) (checked bool, passed bool) {
 	csrfCheckNeeded := session != nil && c.Err == nil && tokenLocation == app.TokenLocationCookie && !h.TrustRequester && r.Method != "GET"
 	csrfCheckPassed := false
 
@@ -362,7 +361,7 @@ func (h *Handler) checkCSRFToken(c *shared.Context, r *http.Request, token strin
 
 // ApiSessionRequired provides a handler for API endpoints which require the user to be logged in in order for access to
 // be granted.
-func (w *Web) ApiSessionRequired(h func(*shared.Context, http.ResponseWriter, *http.Request)) http.Handler {
+func (w *Web) ApiSessionRequired(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
 	handler := &Handler{
 		Srv:            w.srv,
 		HandleFunc:     h,

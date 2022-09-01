@@ -32,7 +32,6 @@ func New(srv *app.Server) *Web {
 	// web.InitOAuth()
 	// web.InitWebhooks()
 	// web.InitSaml()
-
 	web.InitStatic()
 
 	return web

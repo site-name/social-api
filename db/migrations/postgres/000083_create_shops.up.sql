@@ -34,12 +34,3 @@ CREATE INDEX idx_shops_description_lower_textpattern ON shops USING btree (lower
 CREATE INDEX idx_shops_name ON shops USING btree (name);
 
 CREATE INDEX idx_shops_name_lower_textpattern ON shops USING btree (lower((name)::text) text_pattern_ops);
-
-ALTER TABLE ONLY shops
-    ADD CONSTRAINT fk_shops_addresses FOREIGN KEY (addressid) REFERENCES addresses(id);
-
-ALTER TABLE ONLY shops
-    ADD CONSTRAINT fk_shops_menus FOREIGN KEY (topmenuid) REFERENCES menus(id);
-
-ALTER TABLE ONLY shops
-    ADD CONSTRAINT fk_shops_users FOREIGN KEY (ownerid) REFERENCES users(id) ON DELETE CASCADE;

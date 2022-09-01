@@ -8,9 +8,3 @@ CREATE TABLE IF NOT EXISTS stocks (
 
 ALTER TABLE ONLY stocks
     ADD CONSTRAINT stocks_warehouseid_productvariantid_key UNIQUE (warehouseid, productvariantid);
-
-ALTER TABLE ONLY stocks
-    ADD CONSTRAINT fk_stocks_productvariants FOREIGN KEY (productvariantid) REFERENCES productvariants(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY stocks
-    ADD CONSTRAINT fk_stocks_warehouses FOREIGN KEY (warehouseid) REFERENCES warehouses(id) ON DELETE CASCADE;

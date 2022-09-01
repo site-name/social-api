@@ -29,6 +29,8 @@ func constructSchema() (string, error) {
 		if err != nil {
 			return "", errors.Wrap(err, "failed to build up schema files")
 		}
+
+		builder.Write([]byte{'\n'})
 	}
 
 	return builder.String(), nil

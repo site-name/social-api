@@ -15,6 +15,3 @@ CREATE INDEX idx_fulfillments_status ON fulfillments USING btree (status);
 
 CREATE INDEX idx_fulfillments_tracking_number ON fulfillments USING btree (trackingnumber);
 
-ALTER TABLE ONLY fulfillments
-    ADD CONSTRAINT fk_fulfillments_orders FOREIGN KEY (orderid) REFERENCES orders(id) ON DELETE CASCADE;
-

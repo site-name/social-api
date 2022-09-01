@@ -10,7 +10,7 @@ import (
 	"syscall"
 
 	"github.com/pkg/errors"
-	// "github.com/sitename/sitename/api"
+	"github.com/sitename/sitename/api"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
@@ -87,8 +87,11 @@ func runServer(configStore *config.Store, interruptChan chan os.Signal) error {
 		}
 	}()
 
-	// a := app.New(app.ServerConnector(server))
-	// api.Init(a, server.RootRouter)
+	_, err = api.Init(server)
+	if err != nil {
+		slog.Error(err.Error())
+		return err
+	}
 	web.New(server)
 
 	serverErr := server.Start()

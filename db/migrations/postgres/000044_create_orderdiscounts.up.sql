@@ -18,6 +18,3 @@ CREATE INDEX idx_order_discounts_translated_name ON orderdiscounts USING btree (
 CREATE INDEX idx_order_discounts_name_lower_textpattern ON orderdiscounts USING btree (lower((name)::text) text_pattern_ops);
 
 CREATE INDEX idx_order_discounts_translated_name_lower_textpattern ON orderdiscounts USING btree (lower((translatedname)::text) text_pattern_ops);
-
-ALTER TABLE ONLY orderdiscounts
-    ADD CONSTRAINT fk_orderdiscounts_orders FOREIGN KEY (orderid) REFERENCES orders(id) ON DELETE CASCADE;

@@ -13,6 +13,3 @@ ALTER TABLE ONLY producttranslations
 
 ALTER TABLE ONLY producttranslations
     ADD CONSTRAINT producttranslations_name_key UNIQUE (name);
-
-ALTER TABLE ONLY producttranslations
-    ADD CONSTRAINT fk_producttranslations_products FOREIGN KEY (productid) REFERENCES products(id) ON DELETE CASCADE;

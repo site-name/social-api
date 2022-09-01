@@ -7,31 +7,40 @@ import (
 
 	"github.com/graph-gophers/graphql-go"
 	gqlerrors "github.com/graph-gophers/graphql-go/errors"
+	"github.com/pkg/errors"
+	"github.com/sitename/sitename/api/shared"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/web/shared"
+	"github.com/sitename/sitename/web"
 )
-
-// Unique type to hold our context.
-type ctxKey int
-
-const (
-	webCtx            ctxKey = 0
-	rolesLoaderCtx    ctxKey = 1
-	channelsLoaderCtx ctxKey = 2
-	teamsLoaderCtx    ctxKey = 3
-	usersLoaderCtx    ctxKey = 4
-)
-
-type resolver struct{}
 
 type graphQLInput struct {
-	Query         string                 `json:"query"`
-	OperationName string                 `json:"operationName"`
-	Variables     map[string]interface{} `json:"variables"`
+	Query         string         `json:"query"`
+	OperationName string         `json:"operationName"`
+	Variables     map[string]any `json:"variables"`
 }
 
+const schema = `
+type schema {
+	query: Query
+}
+
+type Query {
+	address(id: String!): Address
+}
+
+type Address {
+	id: 				String!
+	firstName: 	String!
+	lastName: 	String!
+}
+`
+
 func (api *API) InitGraphql() error {
+	// schemaString, err := constructSchema()
+	// if err != nil {
+	// 	return err
+	// }
 
 	opts := []graphql.SchemaOpt{
 		graphql.UseFieldResolvers(),
@@ -41,22 +50,18 @@ func (api *API) InitGraphql() error {
 		graphql.DisableIntrospection(),
 	}
 
-	schemaStr, err := constructSchema()
+	var err error
+	api.schema, err = graphql.ParseSchema(schema, &resolver{srv: api.srv}, opts...)
 	if err != nil {
-		return err
-	}
-
-	api.schema, err = graphql.ParseSchema(schemaStr, &resolver{}, opts...)
-	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to parse graphql schema")
 	}
 
 	api.Router.Handle("/graphql", api.APIHandlerTrustRequester(graphiQL)).Methods(http.MethodGet)
-	api.Router.Handle("/graphql", api.APISessionRequired(api.graphql)).Methods(http.MethodPost)
+	api.Router.Handle("/graphql", api.APIHandler(api.graphql)).Methods(http.MethodPost)
 	return nil
 }
 
-func (api *API) graphql(c *shared.Context, w http.ResponseWriter, r *http.Request) {
+func (api *API) graphql(c *web.Context, w http.ResponseWriter, r *http.Request) {
 	var response *graphql.Response
 	defer func() {
 		if response != nil {
@@ -88,7 +93,7 @@ func (api *API) graphql(c *shared.Context, w http.ResponseWriter, r *http.Reques
 
 	// Populate the context with required info.
 	reqCtx := r.Context()
-	reqCtx = context.WithValue(reqCtx, webCtx, c)
+	reqCtx = context.WithValue(reqCtx, shared.WebCtx, c)
 
 	response = api.schema.Exec(reqCtx, params.Query, params.OperationName, params.Variables)
 
@@ -108,7 +113,7 @@ func (api *API) graphql(c *shared.Context, w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func graphiQL(c *shared.Context, w http.ResponseWriter, r *http.Request) {
+func graphiQL(c *web.Context, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.Write(graphiqlPage)
 }

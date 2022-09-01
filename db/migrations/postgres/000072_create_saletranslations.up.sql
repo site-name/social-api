@@ -11,6 +11,3 @@ ALTER TABLE ONLY saletranslations
 CREATE INDEX idx_sale_translations_language_code ON saletranslations USING btree (languagecode);
 
 CREATE INDEX idx_sale_translations_name ON saletranslations USING btree (name);
-
-ALTER TABLE ONLY saletranslations
-    ADD CONSTRAINT fk_saletranslations_sales FOREIGN KEY (saleid) REFERENCES sales(id) ON DELETE CASCADE;

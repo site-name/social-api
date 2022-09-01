@@ -9,9 +9,3 @@ ALTER TABLE ONLY wishlistitems
     ADD CONSTRAINT wishlistitems_wishlistid_productid_key UNIQUE (wishlistid, productid);
 
 CREATE INDEX idx_wishlist_items ON wishlistitems USING btree (createat);
-
-ALTER TABLE ONLY wishlistitems
-    ADD CONSTRAINT fk_wishlistitems_productvariants FOREIGN KEY (productid) REFERENCES productvariants(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY wishlistitems
-    ADD CONSTRAINT fk_wishlistitems_wishlists FOREIGN KEY (wishlistid) REFERENCES wishlists(id) ON DELETE CASCADE;

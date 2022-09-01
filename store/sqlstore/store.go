@@ -14,12 +14,13 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	"github.com/mattermost/morph"
 	"github.com/mattermost/morph/drivers"
 	ps "github.com/mattermost/morph/drivers/postgres"
-	mbindata "github.com/mattermost/morph/sources/go_bindata"
+	mbindata "github.com/mattermost/morph/sources/embedded"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/db"
 	"github.com/sitename/sitename/einterfaces"
@@ -530,6 +531,60 @@ func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {
 	go CheckRelationalIntegrity(ss, results)
 	return results
 }
+
+// func (ss *SqlStore) migrate(direction migrationDirection) error {
+// 	assets := db.Assets()
+
+// 	assetsList, err := assets.ReadDir(filepath.Join("migrations", ss.DriverName()))
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	driver, err := postgres.WithInstance(ss.masterX.DB.DB, &postgres.Config{})
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	var assetNamesForDriver []string
+// 	for _, entry := range assetsList {
+// 		assetNamesForDriver = append(assetNamesForDriver, entry.Name())
+// 	}
+
+// 	source := bindata.Resource(assetNamesForDriver, func(name string) ([]byte, error) {
+// 		return assets.ReadFile(filepath.Join("migrations", ss.DriverName(), name))
+// 	})
+
+// 	sourceDriver, err := bindata.WithInstance(source)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	migrations, err := migrate.NewWithInstance(
+// 		"go-bindata",
+// 		sourceDriver,
+// 		ss.DriverName(),
+// 		driver,
+// 	)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer migrations.Close()
+
+// 	switch direction {
+// 	case migrationsDirectionUp:
+// 		err = migrations.Up()
+// 	case migrationsDirectionDown:
+// 		err = migrations.Down()
+// 	default:
+// 		return fmt.Errorf("un supported migration direction %s", direction)
+// 	}
+
+// 	if err != nil && err != migrate.ErrNoChange && !errors.Is(err, os.ErrNotExist) {
+// 		return err
+// 	}
+
+// 	return nil
+// }
 
 func (ss *SqlStore) migrate(direction migrationDirection) error {
 	assets := db.Assets()
