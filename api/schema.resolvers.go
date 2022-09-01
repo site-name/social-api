@@ -12,34 +12,34 @@ import (
 )
 
 func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
-	mediaID   string
-	variantID string
+	MediaID   string
+	VariantID string
 }) (*gqlmodel.VariantMediaAssign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) VariantMediaUnassign(ctx context.Context, args struct {
-	mediaID   string
-	variantID string
+	MediaID   string
+	VariantID string
 }) (*gqlmodel.VariantMediaUnassign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AssignNavigation(ctx context.Context, args struct {
-	menu           *string
-	navigationType gqlmodel.NavigationType
+	Menu           *string
+	NavigationType gqlmodel.NavigationType
 }) (*gqlmodel.AssignNavigation, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) FileUpload(ctx context.Context, args struct{ file graphql.Upload }) (*gqlmodel.FileUpload, error) {
+func (r *Resolver) FileUpload(ctx context.Context, args struct{ File graphql.Upload }) (*gqlmodel.FileUpload, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ExternalNotificationTrigger(ctx context.Context, args struct {
-	channel  string
-	input    gqlmodel.ExternalNotificationTriggerInput
-	pluginID *string
+	Channel  string
+	Input    gqlmodel.ExternalNotificationTriggerInput
+	PluginID *string
 }) (*gqlmodel.ExternalNotificationTrigger, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -56,10 +56,10 @@ func (r *Resolver) ReportProductSales(ctx context.Context, args struct {
 }
 
 func (r *Resolver) HomepageEvents(ctx context.Context, args struct {
-	before *string
-	after  *string
-	first  *int
-	last   *int
+	Before *string
+	After  *string
+	First  *int
+	Last   *int
 }) (*gqlmodel.OrderEventCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

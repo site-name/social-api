@@ -11,18 +11,18 @@ import (
 )
 
 func (r *Resolver) Translations(ctx context.Context, args struct {
-	kind   gqlmodel.TranslatableKinds
-	before *string
-	after  *string
-	first  *int
-	last   *int
+	Kind   gqlmodel.TranslatableKinds
+	Before *string
+	After  *string
+	First  *int
+	Last   *int
 }) (*gqlmodel.TranslatableItemConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Translation(ctx context.Context, args struct {
-	id   string
-	kind gqlmodel.TranslatableKinds
+	Id   string
+	Kind gqlmodel.TranslatableKinds
 }) (gqlmodel.TranslatableItem, error) {
 	panic(fmt.Errorf("not implemented"))
 }
