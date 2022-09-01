@@ -11,50 +11,50 @@ import (
 )
 
 func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
-	input  gqlmodel.CategoryInput
-	parent *string
+	Input  gqlmodel.CategoryInput
+	Parent *string
 }) (*gqlmodel.CategoryCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) CategoryDelete(ctx context.Context, args struct{ id string }) (*gqlmodel.CategoryDelete, error) {
+func (r *Resolver) CategoryDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.CategoryDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) CategoryBulkDelete(ctx context.Context, args struct{ ids []*string }) (*gqlmodel.CategoryBulkDelete, error) {
+func (r *Resolver) CategoryBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.CategoryBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) CategoryUpdate(ctx context.Context, args struct {
-	id    string
-	input gqlmodel.CategoryInput
+	Id    string
+	Input gqlmodel.CategoryInput
 }) (*gqlmodel.CategoryUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) CategoryTranslate(ctx context.Context, args struct {
-	id           string
-	input        gqlmodel.TranslationInput
-	languageCode gqlmodel.LanguageCodeEnum
+	Id           string
+	Input        gqlmodel.TranslationInput
+	LanguageCode gqlmodel.LanguageCodeEnum
 }) (*gqlmodel.CategoryTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Categories(ctx context.Context, args struct {
-	filter *gqlmodel.CategoryFilterInput
-	sortBy *gqlmodel.CategorySortingInput
-	level  *int
-	before *string
-	after  *string
-	first  *int
-	last   *int
+	Filter *gqlmodel.CategoryFilterInput
+	SortBy *gqlmodel.CategorySortingInput
+	Level  *int
+	Before *string
+	After  *string
+	First  *int
+	Last   *int
 }) (*gqlmodel.CategoryCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Category(ctx context.Context, args struct {
-	id   *string
-	slug *string
+	Id   *string
+	Slug *string
 }) (*gqlmodel.Category, error) {
 	panic(fmt.Errorf("not implemented"))
 }

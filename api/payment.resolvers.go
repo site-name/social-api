@@ -13,41 +13,41 @@ import (
 )
 
 func (r *Resolver) PaymentCapture(ctx context.Context, args struct {
-	amount    *decimal.Decimal
-	paymentID string
+	Amount    *decimal.Decimal
+	PaymentID string
 }) (*gqlmodel.PaymentCapture, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) PaymentRefund(ctx context.Context, args struct {
-	amount    *decimal.Decimal
-	paymentID string
+	Amount    *decimal.Decimal
+	PaymentID string
 }) (*gqlmodel.PaymentRefund, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PaymentVoid(ctx context.Context, args struct{ paymentID string }) (*gqlmodel.PaymentVoid, error) {
+func (r *Resolver) PaymentVoid(ctx context.Context, args struct{ PaymentID string }) (*gqlmodel.PaymentVoid, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) PaymentInitialize(ctx context.Context, args struct {
-	channel     *string
-	gateway     string
-	paymentData model.StringInterface
+	Channel     *string
+	Gateway     string
+	PaymentData model.StringInterface
 }) (*gqlmodel.PaymentInitialize, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Payment(ctx context.Context, args struct{ id string }) (*gqlmodel.Payment, error) {
+func (r *Resolver) Payment(ctx context.Context, args struct{ Id string }) (*gqlmodel.Payment, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Payments(ctx context.Context, args struct {
-	filter *gqlmodel.PaymentFilterInput
-	before *string
-	after  *string
-	first  *int
-	last   *int
+	Filter *gqlmodel.PaymentFilterInput
+	Before *string
+	After  *string
+	First  *int
+	Last   *int
 }) (*gqlmodel.PaymentCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
