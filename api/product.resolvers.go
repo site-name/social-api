@@ -43,22 +43,45 @@ func (r *Resolver) ProductUpdate(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductTranslate(ctx context.Context, id string, input gqlmodel.TranslationInput, languageCode gqlmodel.LanguageCodeEnum) (*gqlmodel.ProductTranslate, error) {
+func (r *Resolver) ProductTranslate(ctx context.Context, args struct {
+	id           string
+	input        gqlmodel.TranslationInput
+	languageCode gqlmodel.LanguageCodeEnum
+}) (*gqlmodel.ProductTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductChannelListingUpdate(ctx context.Context, id string, input gqlmodel.ProductChannelListingUpdateInput) (*gqlmodel.ProductChannelListingUpdate, error) {
+func (r *Resolver) ProductChannelListingUpdate(ctx context.Context, args struct {
+	id    string
+	input gqlmodel.ProductChannelListingUpdateInput
+}) (*gqlmodel.ProductChannelListingUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductReorderAttributeValues(ctx context.Context, attributeID string, moves []*gqlmodel.ReorderInput, productID string) (*gqlmodel.ProductReorderAttributeValues, error) {
+func (r *Resolver) ProductReorderAttributeValues(ctx context.Context, args struct {
+	attributeID string
+	moves       []*gqlmodel.ReorderInput
+	productID   string
+}) (*gqlmodel.ProductReorderAttributeValues, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Product(ctx context.Context, id *string, slug *string, channel *string) (*gqlmodel.Product, error) {
+func (r *Resolver) Product(ctx context.Context, args struct {
+	id      *string
+	slug    *string
+	channel *string
+}) (*gqlmodel.Product, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Products(ctx context.Context, filter *gqlmodel.ProductFilterInput, sortBy *gqlmodel.ProductOrder, channel *string, before *string, after *string, first *int, last *int) (*gqlmodel.ProductCountableConnection, error) {
+func (r *Resolver) Products(ctx context.Context, args struct {
+	filter  *gqlmodel.ProductFilterInput
+	sortBy  *gqlmodel.ProductOrder
+	channel *string
+	before  *string
+	after   *string
+	first   *int
+	last    *int
+}) (*gqlmodel.ProductCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

@@ -10,38 +10,60 @@ import (
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) CreateWarehouse(ctx context.Context, input gqlmodel.WarehouseCreateInput) (*gqlmodel.WarehouseCreate, error) {
+func (r *Resolver) CreateWarehouse(ctx context.Context, args struct{ input gqlmodel.WarehouseCreateInput }) (*gqlmodel.WarehouseCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) UpdateWarehouse(ctx context.Context, id string, input gqlmodel.WarehouseUpdateInput) (*gqlmodel.WarehouseUpdate, error) {
+func (r *Resolver) UpdateWarehouse(ctx context.Context, args struct {
+	id    string
+	input gqlmodel.WarehouseUpdateInput
+}) (*gqlmodel.WarehouseUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) DeleteWarehouse(ctx context.Context, id string) (*gqlmodel.WarehouseDelete, error) {
+func (r *Resolver) DeleteWarehouse(ctx context.Context, args struct{ id string }) (*gqlmodel.WarehouseDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AssignWarehouseShippingZone(ctx context.Context, id string, shippingZoneIds []string) (*gqlmodel.WarehouseShippingZoneAssign, error) {
+func (r *Resolver) AssignWarehouseShippingZone(ctx context.Context, args struct {
+	id              string
+	shippingZoneIds []string
+}) (*gqlmodel.WarehouseShippingZoneAssign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) UnassignWarehouseShippingZone(ctx context.Context, id string, shippingZoneIds []string) (*gqlmodel.WarehouseShippingZoneUnassign, error) {
+func (r *Resolver) UnassignWarehouseShippingZone(ctx context.Context, args struct {
+	id              string
+	shippingZoneIds []string
+}) (*gqlmodel.WarehouseShippingZoneUnassign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Warehouse(ctx context.Context, id string) (*gqlmodel.Warehouse, error) {
+func (r *Resolver) Warehouse(ctx context.Context, args struct{ id string }) (*gqlmodel.Warehouse, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Warehouses(ctx context.Context, filter *gqlmodel.WarehouseFilterInput, sortBy *gqlmodel.WarehouseSortingInput, before *string, after *string, first *int, last *int) (*gqlmodel.WarehouseCountableConnection, error) {
+func (r *Resolver) Warehouses(ctx context.Context, args struct {
+	filter *gqlmodel.WarehouseFilterInput
+	sortBy *gqlmodel.WarehouseSortingInput
+	before *string
+	after  *string
+	first  *int
+	last   *int
+}) (*gqlmodel.WarehouseCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Stock(ctx context.Context, id string) (*gqlmodel.Stock, error) {
+func (r *Resolver) Stock(ctx context.Context, args struct{ id string }) (*gqlmodel.Stock, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Stocks(ctx context.Context, filter *gqlmodel.StockFilterInput, before *string, after *string, first *int, last *int) (*gqlmodel.StockCountableConnection, error) {
+func (r *Resolver) Stocks(ctx context.Context, args struct {
+	filter *gqlmodel.StockFilterInput
+	before *string
+	after  *string
+	first  *int
+	last   *int
+}) (*gqlmodel.StockCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

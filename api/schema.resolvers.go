@@ -11,31 +11,56 @@ import (
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) VariantMediaAssign(ctx context.Context, mediaID string, variantID string) (*gqlmodel.VariantMediaAssign, error) {
+func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
+	mediaID   string
+	variantID string
+}) (*gqlmodel.VariantMediaAssign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) VariantMediaUnassign(ctx context.Context, mediaID string, variantID string) (*gqlmodel.VariantMediaUnassign, error) {
+func (r *Resolver) VariantMediaUnassign(ctx context.Context, args struct {
+	mediaID   string
+	variantID string
+}) (*gqlmodel.VariantMediaUnassign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AssignNavigation(ctx context.Context, menu *string, navigationType gqlmodel.NavigationType) (*gqlmodel.AssignNavigation, error) {
+func (r *Resolver) AssignNavigation(ctx context.Context, args struct {
+	menu           *string
+	navigationType gqlmodel.NavigationType
+}) (*gqlmodel.AssignNavigation, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) FileUpload(ctx context.Context, file graphql.Upload) (*gqlmodel.FileUpload, error) {
+func (r *Resolver) FileUpload(ctx context.Context, args struct{ file graphql.Upload }) (*gqlmodel.FileUpload, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ExternalNotificationTrigger(ctx context.Context, channel string, input gqlmodel.ExternalNotificationTriggerInput, pluginID *string) (*gqlmodel.ExternalNotificationTrigger, error) {
+func (r *Resolver) ExternalNotificationTrigger(ctx context.Context, args struct {
+	channel  string
+	input    gqlmodel.ExternalNotificationTriggerInput
+	pluginID *string
+}) (*gqlmodel.ExternalNotificationTrigger, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ReportProductSales(ctx context.Context, period gqlmodel.ReportingPeriod, channel string, before *string, after *string, first *int, last *int) (*gqlmodel.ProductVariantCountableConnection, error) {
+func (r *Resolver) ReportProductSales(ctx context.Context, args struct {
+	period  gqlmodel.ReportingPeriod
+	channel string
+	before  *string
+	after   *string
+	first   *int
+	last    *int
+}) (*gqlmodel.ProductVariantCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) HomepageEvents(ctx context.Context, before *string, after *string, first *int, last *int) (*gqlmodel.OrderEventCountableConnection, error) {
+func (r *Resolver) HomepageEvents(ctx context.Context, args struct {
+	before *string
+	after  *string
+	first  *int
+	last   *int
+}) (*gqlmodel.OrderEventCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
