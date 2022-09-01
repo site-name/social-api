@@ -45,12 +45,12 @@ func (r *Resolver) ExternalNotificationTrigger(ctx context.Context, args struct 
 }
 
 func (r *Resolver) ReportProductSales(ctx context.Context, args struct {
-	period  gqlmodel.ReportingPeriod
-	channel string
-	before  *string
-	after   *string
-	first   *int
-	last    *int
+	Period  gqlmodel.ReportingPeriod
+	Channel string
+	Before  *string
+	After   *string
+	First   *int
+	Last    *int
 }) (*gqlmodel.ProductVariantCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
