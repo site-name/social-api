@@ -10,57 +10,57 @@ import (
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) AppCreate(ctx context.Context, args struct{ input gqlmodel.AppInput }) (*gqlmodel.AppCreate, error) {
+func (r *Resolver) AppCreate(ctx context.Context, args struct{ Input gqlmodel.AppInput }) (*gqlmodel.AppCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AppUpdate(ctx context.Context, args struct {
-	id    string
-	input gqlmodel.AppInput
+	Id    string
+	Input gqlmodel.AppInput
 }) (*gqlmodel.AppUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AppDelete(ctx context.Context, args struct{ id string }) (*gqlmodel.AppDelete, error) {
+func (r *Resolver) AppDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.AppDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AppTokenCreate(ctx context.Context, args struct{ input gqlmodel.AppTokenInput }) (*gqlmodel.AppTokenCreate, error) {
+func (r *Resolver) AppTokenCreate(ctx context.Context, args struct{ Input gqlmodel.AppTokenInput }) (*gqlmodel.AppTokenCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AppTokenDelete(ctx context.Context, args struct{ id string }) (*gqlmodel.AppTokenDelete, error) {
+func (r *Resolver) AppTokenDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.AppTokenDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AppTokenVerify(ctx context.Context, args struct{ token string }) (*gqlmodel.AppTokenVerify, error) {
+func (r *Resolver) AppTokenVerify(ctx context.Context, args struct{ Token string }) (*gqlmodel.AppTokenVerify, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AppInstall(ctx context.Context, args struct{ input gqlmodel.AppInstallInput }) (*gqlmodel.AppInstall, error) {
+func (r *Resolver) AppInstall(ctx context.Context, args struct{ Input gqlmodel.AppInstallInput }) (*gqlmodel.AppInstall, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AppRetryInstall(ctx context.Context, args struct {
-	activateAfterInstallation *bool
-	id                        string
+	ActivateAfterInstallation *bool
+	Id                        string
 }) (*gqlmodel.AppRetryInstall, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AppDeleteFailedInstallation(ctx context.Context, args struct{ id string }) (*gqlmodel.AppDeleteFailedInstallation, error) {
+func (r *Resolver) AppDeleteFailedInstallation(ctx context.Context, args struct{ Id string }) (*gqlmodel.AppDeleteFailedInstallation, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AppFetchManifest(ctx context.Context, args struct{ manifestURL string }) (*gqlmodel.AppFetchManifest, error) {
+func (r *Resolver) AppFetchManifest(ctx context.Context, args struct{ ManifestURL string }) (*gqlmodel.AppFetchManifest, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AppActivate(ctx context.Context, args struct{ id string }) (*gqlmodel.AppActivate, error) {
+func (r *Resolver) AppActivate(ctx context.Context, args struct{ Id string }) (*gqlmodel.AppActivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AppDeactivate(ctx context.Context, args struct{ id string }) (*gqlmodel.AppDeactivate, error) {
+func (r *Resolver) AppDeactivate(ctx context.Context, args struct{ Id string }) (*gqlmodel.AppDeactivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -69,30 +69,30 @@ func (r *Resolver) AppsInstallations(ctx context.Context) ([]gqlmodel.AppInstall
 }
 
 func (r *Resolver) Apps(ctx context.Context, args struct {
-	filter *gqlmodel.AppFilterInput
-	sortBy *gqlmodel.AppSortingInput
-	before *string
-	after  *string
-	first  *int
-	last   *int
+	Filter *gqlmodel.AppFilterInput
+	SortBy *gqlmodel.AppSortingInput
+	Before *string
+	After  *string
+	First  *int
+	Last   *int
 }) (*gqlmodel.AppCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) App(ctx context.Context, args struct{ id *string }) (*gqlmodel.App, error) {
+func (r *Resolver) App(ctx context.Context, args struct{ Id *string }) (*gqlmodel.App, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AppExtensions(ctx context.Context, args struct {
-	filter *gqlmodel.AppExtensionFilterInput
-	before *string
-	after  *string
-	first  *int
-	last   *int
+	Filter *gqlmodel.AppExtensionFilterInput
+	Before *string
+	After  *string
+	First  *int
+	Last   *int
 }) (*gqlmodel.AppExtensionCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AppExtension(ctx context.Context, args struct{ id string }) (*gqlmodel.AppExtension, error) {
+func (r *Resolver) AppExtension(ctx context.Context, args struct{ Id string }) (*gqlmodel.AppExtension, error) {
 	panic(fmt.Errorf("not implemented"))
 }

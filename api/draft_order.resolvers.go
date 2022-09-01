@@ -10,27 +10,27 @@ import (
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ id string }) (*gqlmodel.DraftOrderComplete, error) {
+func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id string }) (*gqlmodel.DraftOrderComplete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) DraftOrderCreate(ctx context.Context, args struct {
-	input gqlmodel.DraftOrderCreateInput
+	Input gqlmodel.DraftOrderCreateInput
 }) (*gqlmodel.DraftOrderCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) DraftOrderDelete(ctx context.Context, args struct{ id string }) (*gqlmodel.DraftOrderDelete, error) {
+func (r *Resolver) DraftOrderDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.DraftOrderDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) DraftOrderBulkDelete(ctx context.Context, args struct{ ids []*string }) (*gqlmodel.DraftOrderBulkDelete, error) {
+func (r *Resolver) DraftOrderBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.DraftOrderBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) DraftOrderUpdate(ctx context.Context, args struct {
-	id    string
-	input gqlmodel.DraftOrderInput
+	Id    string
+	Input gqlmodel.DraftOrderInput
 }) (*gqlmodel.DraftOrderUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }

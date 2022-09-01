@@ -11,38 +11,38 @@ import (
 )
 
 func (r *Resolver) DigitalContentCreate(ctx context.Context, args struct {
-	input     gqlmodel.DigitalContentUploadInput
-	variantID string
+	Input     gqlmodel.DigitalContentUploadInput
+	VariantID string
 }) (*gqlmodel.DigitalContentCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) DigitalContentDelete(ctx context.Context, args struct{ variantID string }) (*gqlmodel.DigitalContentDelete, error) {
+func (r *Resolver) DigitalContentDelete(ctx context.Context, args struct{ VariantID string }) (*gqlmodel.DigitalContentDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) DigitalContentUpdate(ctx context.Context, args struct {
-	input     gqlmodel.DigitalContentInput
-	variantID string
+	Input     gqlmodel.DigitalContentInput
+	VariantID string
 }) (*gqlmodel.DigitalContentUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) DigitalContentURLCreate(ctx context.Context, args struct {
-	input gqlmodel.DigitalContentURLCreateInput
+	Input gqlmodel.DigitalContentURLCreateInput
 }) (*gqlmodel.DigitalContentURLCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) DigitalContent(ctx context.Context, args struct{ id string }) (*gqlmodel.DigitalContent, error) {
+func (r *Resolver) DigitalContent(ctx context.Context, args struct{ Id string }) (*gqlmodel.DigitalContent, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) DigitalContents(ctx context.Context, args struct {
-	before *string
-	after  *string
-	first  *int
-	last   *int
+	Before *string
+	After  *string
+	First  *int
+	Last   *int
 }) (*gqlmodel.DigitalContentCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

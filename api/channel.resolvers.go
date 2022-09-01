@@ -10,33 +10,33 @@ import (
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ input gqlmodel.ChannelCreateInput }) (*gqlmodel.ChannelCreate, error) {
+func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input gqlmodel.ChannelCreateInput }) (*gqlmodel.ChannelCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
-	id    string
-	input gqlmodel.ChannelUpdateInput
+	Id    string
+	Input gqlmodel.ChannelUpdateInput
 }) (*gqlmodel.ChannelUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ChannelDelete(ctx context.Context, args struct {
-	id    string
-	input *gqlmodel.ChannelDeleteInput
+	Id    string
+	Input *gqlmodel.ChannelDeleteInput
 }) (*gqlmodel.ChannelDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ChannelActivate(ctx context.Context, args struct{ id string }) (*gqlmodel.ChannelActivate, error) {
+func (r *Resolver) ChannelActivate(ctx context.Context, args struct{ Id string }) (*gqlmodel.ChannelActivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ChannelDeactivate(ctx context.Context, args struct{ id string }) (*gqlmodel.ChannelDeactivate, error) {
+func (r *Resolver) ChannelDeactivate(ctx context.Context, args struct{ Id string }) (*gqlmodel.ChannelDeactivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Channel(ctx context.Context, args struct{ id *string }) (*gqlmodel.Channel, error) {
+func (r *Resolver) Channel(ctx context.Context, args struct{ Id *string }) (*gqlmodel.Channel, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
