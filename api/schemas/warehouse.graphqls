@@ -1,16 +1,16 @@
 extend type Query {
-  warehouse(id: ID!): Warehouse
+  warehouse(id: String!): Warehouse
   warehouses(filter: WarehouseFilterInput, sortBy: WarehouseSortingInput, before: String, after: String, first: Int, last: Int): WarehouseCountableConnection
-  stock(id: ID!): Stock
+  stock(id: String!): Stock
   stocks(filter: StockFilterInput, before: String, after: String, first: Int, last: Int): StockCountableConnection
 }
 
 extend type Mutation {
   createWarehouse(input: WarehouseCreateInput!): WarehouseCreate
-  updateWarehouse(id: ID!, input: WarehouseUpdateInput!): WarehouseUpdate
-  deleteWarehouse(id: ID!): WarehouseDelete
-  assignWarehouseShippingZone(id: ID!, shippingZoneIds: [ID!]!): WarehouseShippingZoneAssign
-  unassignWarehouseShippingZone(id: ID!, shippingZoneIds: [ID!]!): WarehouseShippingZoneUnassign
+  updateWarehouse(id: String!, input: WarehouseUpdateInput!): WarehouseUpdate
+  deleteWarehouse(id: String!): WarehouseDelete
+  assignWarehouseShippingZone(id: String!, shippingZoneIds: [String!]!): WarehouseShippingZoneAssign
+  unassignWarehouseShippingZone(id: String!, shippingZoneIds: [String!]!): WarehouseShippingZoneUnassign
 }
 
 input WarehouseCreateInput {
@@ -19,14 +19,14 @@ input WarehouseCreateInput {
   email: String
   name: String!
   address: AddressInput!
-  shippingZones: [ID]
+  shippingZones: [String]
 }
 
 type Stock implements Node {
   warehouse: Warehouse!
   productVariant: ProductVariant!
   quantity: Int!
-  id: ID!
+  id: String!
   quantityAllocated: Int!
 }
 
@@ -61,7 +61,7 @@ type WarehouseUpdate {
 }
 
 type Warehouse implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   name: String!
   slug: String!
   shippingZones(before: String, after: String, first: Int, last: Int): ShippingZoneCountableConnection!
@@ -97,7 +97,7 @@ type WarehouseCountableEdge {
 input WarehouseFilterInput {
   clickAndCollectOption: WarehouseClickAndCollectOptionEnum
   search: String
-  ids: [ID]
+  ids: [String]
   isPrivate: Boolean
 }
 

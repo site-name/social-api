@@ -2,7 +2,9 @@ package model
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base32"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,6 +13,9 @@ import (
 	"net/http"
 	"net/mail"
 	"net/url"
+	"os"
+	"path"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
@@ -19,9 +24,11 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/util/fileutils"
 )
 
 const (
@@ -114,9 +121,6 @@ func (s StringInterface) Pop(key string, defaultValue ...interface{}) interface{
 	return v
 }
 
-type StringArray []string
-type StringSet []string
-
 func NewBool(b bool) *bool                          { return &b }
 func NewInt(n int) *int                             { return &n }
 func NewUint(n uint) *uint                          { return &n }
@@ -127,37 +131,6 @@ func NewFloat64(n float64) *float64                 { return &n }
 func NewString(s string) *string                    { return &s }
 func NewDecimal(d decimal.Decimal) *decimal.Decimal { return &d }
 
-// Remove removes input from the array
-func (sa StringArray) Remove(input string) StringArray {
-	res := StringArray{}
-	for _, item := range sa {
-		if item != input {
-			res = append(res, item)
-		}
-	}
-
-	return res
-}
-
-// Map loops through current string slice and applies mapFunc to each index-item pair
-//
-// E.g
-//
-//	StringArray{"a", "b", "c"}.Map(func(_ int, s string) string { return s + s })
-func (sa StringArray) Map(mapFunc func(index int, item string) string) StringArray {
-	res := make(StringArray, len(sa))
-
-	for idx, item := range sa {
-		res[idx] = mapFunc(idx, item)
-	}
-
-	return res
-}
-
-func (sa StringArray) Join(sep string) string {
-	return strings.Join(sa, sep)
-}
-
 var translateFunc i18n.TranslateFunc
 var translateFuncOnce sync.Once
 
@@ -166,29 +139,6 @@ func AppErrorInit(t i18n.TranslateFunc) {
 	translateFuncOnce.Do(func() {
 		translateFunc = t
 	})
-}
-
-// check if array of strings contains given input
-func (sa StringArray) Contains(input string) bool {
-	for index := range sa {
-		if sa[index] == input {
-			return true
-		}
-	}
-
-	return false
-}
-
-// Equals checks if two arrays of strings have same length and contains the same elements at each index
-func (sa StringArray) Equals(input StringArray) bool {
-	return reflect.DeepEqual(sa, input)
-}
-
-// StringInterfaceFromJson decodes input data in to a map with keys are strings and values are interface{}
-func StringInterfaceFromJson(data io.Reader) map[string]interface{} {
-	var objMap map[string]interface{}
-	ModelFromJson(&objMap, data)
-	return objMap
 }
 
 // GetMillis is a convenience method to get milliseconds since epoch, utc time
@@ -452,21 +402,6 @@ func filterBlocklist(r rune) rune {
 	return r
 }
 
-// UniqueStrings returns a unique subset of the string slice provided.
-func UniqueStrings(input []string) []string {
-	u := make([]string, 0, len(input))
-	m := make(map[string]bool)
-
-	for _, val := range input {
-		if _, ok := m[val]; !ok {
-			m[val] = true
-			u = append(u, val)
-		}
-	}
-
-	return u
-}
-
 // IsValidAlphaNum checks if s contains only ASCII characters
 func IsValidAlphaNum(s string) bool {
 	validAlphaNum := regexp.MustCompile(`^[a-z0-9]+([a-z\-0-9]+|(__)?)[a-z0-9]+$`)
@@ -488,14 +423,6 @@ func IsValidAlphaNumHyphenUnderscore(s string, withFormat bool) bool {
 
 	validSimpleAlphaNumHyphenUnderscore := regexp.MustCompile(`^[a-zA-Z0-9\-_]+$`)
 	return validSimpleAlphaNumHyphenUnderscore.MatchString(s)
-}
-
-func AsStringBoolMap(list []string) map[string]bool {
-	listMap := map[string]bool{}
-	for _, p := range list {
-		listMap[p] = true
-	}
-	return listMap
 }
 
 // NewRandomString returns a random string of the given length.
@@ -741,7 +668,7 @@ func MakeStringMapForModelSlice(slice interface{}, keyFunc func(interface{}) str
 	valueOf := reflect.ValueOf(slice)
 
 	// validate if given `slice` is a slice
-	if reflect.TypeOf(slice).Kind() != reflect.Slice {
+	if valueOf.Kind() != reflect.Slice || valueOf.Kind() != reflect.Array {
 		panic("given 'slice' variable is not a slice")
 	}
 	if keyFunc == nil {
@@ -829,4 +756,170 @@ func DraftJSContentToRawText(content StringInterface, sep string) string {
 	}
 
 	return strings.Join(paragraphs, sep)
+}
+
+// getSubpathScript renders the inline script that defines window.publicPath to change how webpack loads assets.
+func getSubpathScript(subpath string) string {
+	if subpath == "" {
+		subpath = "/"
+	}
+
+	newPath := path.Join(subpath, "static") + "/"
+
+	return fmt.Sprintf("window.publicPath='%s'", newPath)
+}
+
+// GetSubpathScriptHash computes the script-src addition required for the subpath script to bypass CSP protections.
+func GetSubpathScriptHash(subpath string) string {
+	// No hash is required for the default subpath.
+	if subpath == "" || subpath == "/" {
+		return ""
+	}
+
+	scriptHash := sha256.Sum256([]byte(getSubpathScript(subpath)))
+
+	return fmt.Sprintf(" 'sha256-%s'", base64.StdEncoding.EncodeToString(scriptHash[:]))
+}
+
+// UpdateAssetsSubpathInDir rewrites assets in the given directory to assume the application is
+// hosted at the given subpath instead of at the root. No changes are written unless necessary.
+func UpdateAssetsSubpathInDir(subpath, directory string) error {
+	if subpath == "" {
+		subpath = "/"
+	}
+
+	staticDir, found := fileutils.FindDir(directory)
+	if !found {
+		return errors.New("failed to find client dir")
+	}
+
+	staticDir, err := filepath.EvalSymlinks(staticDir)
+	if err != nil {
+		return errors.Wrapf(err, "failed to resolve symlinks to %s", staticDir)
+	}
+
+	rootHTMLPath := filepath.Join(staticDir, "root.html")
+	oldRootHTML, err := ioutil.ReadFile(rootHTMLPath)
+	if err != nil {
+		return errors.Wrap(err, "failed to open root.html")
+	}
+
+	oldSubpath := "/"
+
+	// Determine if a previous subpath had already been rewritten into the assets.
+	reWebpackPublicPathScript := regexp.MustCompile("window.publicPath='([^']+/)static/'")
+	alreadyRewritten := false
+	if matches := reWebpackPublicPathScript.FindStringSubmatch(string(oldRootHTML)); matches != nil {
+		oldSubpath = matches[1]
+		alreadyRewritten = true
+	}
+
+	pathToReplace := path.Join(oldSubpath, "static") + "/"
+	newPath := path.Join(subpath, "static") + "/"
+
+	slog.Debug("Rewriting static assets", slog.String("from_subpath", oldSubpath), slog.String("to_subpath", subpath))
+
+	newRootHTML := string(oldRootHTML)
+
+	reCSP := regexp.MustCompile(`<meta http-equiv="Content-Security-Policy" content="script-src 'self' cdn.rudderlabs.com/ js.stripe.com/v3([^"]*)">`)
+	if results := reCSP.FindAllString(newRootHTML, -1); len(results) == 0 {
+		return fmt.Errorf("failed to find 'Content-Security-Policy' meta tag to rewrite")
+	}
+
+	newRootHTML = reCSP.ReplaceAllLiteralString(newRootHTML, fmt.Sprintf(
+		`<meta http-equiv="Content-Security-Policy" content="script-src 'self' cdn.rudderlabs.com/ js.stripe.com/v3%s">`,
+		GetSubpathScriptHash(subpath),
+	))
+
+	// Rewrite the root.html references to `/static/*` to include the given subpath.
+	// This potentially includes a previously injected inline script that needs to
+	// be updated (and isn't covered by the cases above).
+	newRootHTML = strings.Replace(newRootHTML, pathToReplace, newPath, -1)
+
+	if alreadyRewritten && subpath == "/" {
+		// Remove the injected script since no longer required. Note that the rewrite above
+		// will have affected the script, so look for the new subpath, not the old one.
+		oldScript := getSubpathScript(subpath)
+		newRootHTML = strings.Replace(newRootHTML, fmt.Sprintf("</style><script>%s</script>", oldScript), "</style>", 1)
+
+	} else if !alreadyRewritten && subpath != "/" {
+		// Otherwise, inject the script to define `window.publicPath`.
+		script := getSubpathScript(subpath)
+		newRootHTML = strings.Replace(newRootHTML, "</style>", fmt.Sprintf("</style><script>%s</script>", script), 1)
+	}
+
+	// Write out the updated root.html.
+	if err = ioutil.WriteFile(rootHTMLPath, []byte(newRootHTML), 0); err != nil {
+		return errors.Wrapf(err, "failed to update root.html with subpath %s", subpath)
+	}
+
+	// Rewrite the manifest.json and *.css references to `/static/*` (or a previously rewritten subpath).
+	err = filepath.Walk(staticDir, func(walkPath string, info os.FileInfo, err error) error {
+		if filepath.Base(walkPath) == "manifest.json" || filepath.Ext(walkPath) == ".css" {
+			old, err := ioutil.ReadFile(walkPath)
+			if err != nil {
+				return errors.Wrapf(err, "failed to open %s", walkPath)
+			}
+			new := strings.Replace(string(old), pathToReplace, newPath, -1)
+			if err = ioutil.WriteFile(walkPath, []byte(new), 0); err != nil {
+				return errors.Wrapf(err, "failed to update %s with subpath %s", walkPath, subpath)
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return errors.Wrapf(err, "error walking %s", staticDir)
+	}
+
+	return nil
+}
+
+// UpdateAssetsSubpath rewrites assets in the /client directory to assume the application is hosted
+// at the given subpath instead of at the root. No changes are written unless necessary.
+func UpdateAssetsSubpath(subpath string) error {
+	return UpdateAssetsSubpathInDir(subpath, CLIENT_DIR)
+}
+
+// UpdateAssetsSubpathFromConfig uses UpdateAssetsSubpath and any path defined in the SiteURL.
+func UpdateAssetsSubpathFromConfig(config *Config) error {
+	// Don't rewrite in development environments, since webpack in developer mode constantly
+	// updates the assets and must be configured separately.
+	if BuildNumber == "dev" {
+		slog.Debug("Skipping update to assets subpath since dev build")
+		return nil
+	}
+
+	// Similarly, don't rewrite during a CI build, when the assets may not even be present.
+	if os.Getenv("IS_CI") == "true" {
+		slog.Debug("Skipping update to assets subpath since CI build")
+		return nil
+	}
+
+	subpath, err := GetSubpathFromConfig(config)
+	if err != nil {
+		return err
+	}
+
+	return UpdateAssetsSubpath(subpath)
+}
+
+// GetSubpathFromConfig returns subpath from given config's ServiceSettings.SiteURL
+func GetSubpathFromConfig(config *Config) (string, error) {
+	if config == nil {
+		return "", errors.New("no config provided")
+	} else if config.ServiceSettings.SiteURL == nil {
+		return "/", nil
+	}
+
+	u, err := url.Parse(*config.ServiceSettings.SiteURL)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to parse SiteURL from config")
+	}
+
+	if u.Path == "" {
+		return "/", nil
+	}
+
+	return path.Clean(u.Path), nil
 }

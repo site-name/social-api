@@ -239,7 +239,7 @@ func (s *Reordering) processMoveOperation(pk string, move *int) {
 	s.cachedOrderedNodeMap[pk] = &newSortOrder
 
 	// Reorder the pk list
-	s.OrderedPKs = util.RemoveStringFromSlice(pk, s.OrderedPKs)
+	s.OrderedPKs = util.RemoveItemsFromSlice(s.OrderedPKs, pk)
 	s.OrderedPKs = append( // <=> list.insert() in python3
 		s.OrderedPKs[0:targetPos],
 		append(

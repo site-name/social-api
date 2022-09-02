@@ -1,18 +1,18 @@
 extend type Mutation {
   pageTypeCreate(input: PageTypeCreateInput!): PageTypeCreate
-  pageTypeUpdate(id: ID, input: PageTypeUpdateInput!): PageTypeUpdate
-  pageTypeDelete(id: ID!): PageTypeDelete
-  pageTypeBulkDelete(ids: [ID!]!): PageTypeBulkDelete
-  pageTypeReorderAttributes(moves: [ReorderInput!]!, pageTypeId: ID!): PageTypeReorderAttributes
+  pageTypeUpdate(id: String, input: PageTypeUpdateInput!): PageTypeUpdate
+  pageTypeDelete(id: String!): PageTypeDelete
+  pageTypeBulkDelete(ids: [String!]!): PageTypeBulkDelete
+  pageTypeReorderAttributes(moves: [ReorderInput!]!, pageTypeId: String!): PageTypeReorderAttributes
 }
 
 extend type Query {
-  pageType(id: ID!): PageType
+  pageType(id: String!): PageType
   pageTypes(sortBy: PageTypeSortingInput, filter: PageTypeFilterInput, before: String, after: String, first: Int, last: Int): PageTypeCountableConnection
 }
 
 type PageType implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   name: String!
   slug: String!
   privateMetadata: [MetadataItem]!
@@ -25,7 +25,7 @@ type PageType implements Node & ObjectWithMetadata {
 input PageTypeCreateInput {
   name: String
   slug: String
-  addAttributes: [ID!]
+  addAttributes: [String!]
 }
 
 type PageTypeCreate {
@@ -36,8 +36,8 @@ type PageTypeCreate {
 input PageTypeUpdateInput {
   name: String
   slug: String
-  addAttributes: [ID!]
-  removeAttributes: [ID!]
+  addAttributes: [String!]
+  removeAttributes: [String!]
 }
 
 type PageTypeUpdate {

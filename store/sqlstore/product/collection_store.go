@@ -18,8 +18,8 @@ func NewSqlCollectionStore(s store.Store) store.CollectionStore {
 	return &SqlCollectionStore{s}
 }
 
-func (ps *SqlCollectionStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (ps *SqlCollectionStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ShopID",
 		"Name",

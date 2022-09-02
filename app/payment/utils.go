@@ -482,7 +482,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction payment.PaymentTr
 		return appErr
 	}
 
-	if util.StringInSlice("captured_amount", changedFields) && payMent.OrderID != nil {
+	if util.ItemInSlice("captured_amount", changedFields) && payMent.OrderID != nil {
 		orDer, appErr := a.srv.OrderService().OrderById(*payMent.OrderID)
 		if appErr != nil {
 			return appErr

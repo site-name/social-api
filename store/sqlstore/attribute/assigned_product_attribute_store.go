@@ -19,8 +19,8 @@ func NewSqlAssignedProductAttributeStore(s store.Store) store.AssignedProductAtt
 	return &SqlAssignedProductAttributeStore{s}
 }
 
-func (as *SqlAssignedProductAttributeStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{"Id", "ProductID", "AssignmentID"}
+func (as *SqlAssignedProductAttributeStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{"Id", "ProductID", "AssignmentID"}
 	if prefix == "" {
 		return res
 	}

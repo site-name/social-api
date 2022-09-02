@@ -88,15 +88,15 @@ func (_m *OrderStore) Get(id string) (*order.Order, error) {
 }
 
 // ModelFields provides a mock function with given fields: prefix
-func (_m *OrderStore) ModelFields(prefix string) model.StringArray {
+func (_m *OrderStore) ModelFields(prefix string) model.AnyArray[string] {
 	ret := _m.Called(prefix)
 
-	var r0 model.StringArray
-	if rf, ok := ret.Get(0).(func(string) model.StringArray); ok {
+	var r0 model.AnyArray[string]
+	if rf, ok := ret.Get(0).(func(string) model.AnyArray[string]); ok {
 		r0 = rf(prefix)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(model.StringArray)
+			r0 = ret.Get(0).(model.AnyArray[string])
 		}
 	}
 

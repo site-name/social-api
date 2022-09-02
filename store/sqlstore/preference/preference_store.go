@@ -20,8 +20,8 @@ func NewSqlPreferenceStore(sqlStore store.Store) store.PreferenceStore {
 	return &SqlPreferenceStore{sqlStore}
 }
 
-func (s *SqlPreferenceStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlPreferenceStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"UserId",
 		"Category",
 		"Name",

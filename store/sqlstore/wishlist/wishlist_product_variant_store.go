@@ -18,8 +18,8 @@ func NewSqlWishlistItemProductVariantStore(s store.Store) store.WishlistItemProd
 	return &SqlWishlistItemProductVariantStore{s}
 }
 
-func (s *SqlWishlistItemProductVariantStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlWishlistItemProductVariantStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"WishlistItemID",
 		"ProductVariantID",

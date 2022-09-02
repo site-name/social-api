@@ -20,8 +20,8 @@ func NewSqlShippingMethodStore(s store.Store) store.ShippingMethodStore {
 	return &SqlShippingMethodStore{s}
 }
 
-func (s *SqlShippingMethodStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlShippingMethodStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Name",
 		"Type",

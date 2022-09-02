@@ -13,8 +13,8 @@ func NewSqlShippingMethodPostalCodeRuleStore(s store.Store) store.ShippingMethod
 	return &SqlShippingMethodPostalCodeRuleStore{s}
 }
 
-func (s *SqlShippingMethodPostalCodeRuleStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlShippingMethodPostalCodeRuleStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ShippingMethodID",
 		"Start",

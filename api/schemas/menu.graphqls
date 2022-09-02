@@ -1,25 +1,25 @@
 extend type Mutation {
   menuCreate(input: MenuCreateInput!): MenuCreate
-  menuDelete(id: ID!): MenuDelete
-  menuBulkDelete(ids: [ID]!): MenuBulkDelete
-  menuUpdate(id: ID!, input: MenuInput!): MenuUpdate
+  menuDelete(id: String!): MenuDelete
+  menuBulkDelete(ids: [String]!): MenuBulkDelete
+  menuUpdate(id: String!, input: MenuInput!): MenuUpdate
   menuItemCreate(input: MenuItemCreateInput!): MenuItemCreate
-  menuItemDelete(id: ID!): MenuItemDelete
-  menuItemBulkDelete(ids: [ID]!): MenuItemBulkDelete
-  menuItemUpdate(id: ID!, input: MenuItemInput!): MenuItemUpdate
-  menuItemTranslate(id: ID!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): MenuItemTranslate
-  menuItemMove(menu: ID!, moves: [MenuItemMoveInput]!): MenuItemMove
+  menuItemDelete(id: String!): MenuItemDelete
+  menuItemBulkDelete(ids: [String]!): MenuItemBulkDelete
+  menuItemUpdate(id: String!, input: MenuItemInput!): MenuItemUpdate
+  menuItemTranslate(id: String!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): MenuItemTranslate
+  menuItemMove(menu: String!, moves: [MenuItemMoveInput]!): MenuItemMove
 }
 
 extend type Query {
-  menu(channel: String, id: ID, name: String, slug: String): Menu
+  menu(channel: String, id: String, name: String, slug: String): Menu
   menus(channel: String, sortBy: MenuSortingInput, filter: MenuFilterInput, before: String, after: String, first: Int, last: Int): MenuCountableConnection
-  menuItem(id: ID!, channel: String): MenuItem
+  menuItem(id: String!, channel: String): MenuItem
   menuItems(channel: String, sortBy: MenuItemSortingInput, filter: MenuItemFilterInput, before: String, after: String, first: Int, last: Int): MenuItemCountableConnection
 }
 
 type Menu implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   name: String!
   slug: String!
   privateMetadata: [MetadataItem]!
@@ -28,7 +28,7 @@ type Menu implements Node & ObjectWithMetadata {
 }
 
 type MenuItem implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   name: String!
   menu: Menu!
   parent: MenuItem
@@ -95,11 +95,11 @@ type MenuUpdate {
 input MenuItemCreateInput {
   name: String!
   url: String
-  category: ID
-  collection: ID
-  page: ID
-  menu: ID!
-  parent: ID
+  category: String
+  collection: String
+  page: String
+  menu: String!
+  parent: String
 }
 
 type MenuItemCreate {
@@ -120,9 +120,9 @@ type MenuItemBulkDelete {
 input MenuItemInput {
   name: String
   url: String
-  category: ID
-  collection: ID
-  page: ID
+  category: String
+  collection: String
+  page: String
 }
 
 type MenuItemUpdate {
@@ -136,8 +136,8 @@ type MenuItemTranslate {
 }
 
 input MenuItemMoveInput {
-  itemId: ID!
-  parentId: ID
+  itemId: String!
+  parentId: String
   sortOrder: Int
 }
 
@@ -169,7 +169,7 @@ type MenuCountableEdge {
 }
 
 type MenuItemTranslation implements Node {
-  id: ID!
+  id: String!
   name: String!
   language: LanguageDisplay!
 }

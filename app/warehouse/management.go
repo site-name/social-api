@@ -463,7 +463,7 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos order.OrderLineDatas, c
 
 	for _, lineInfo := range lineInfos {
 		// lineInfo.quantity resembles amount to add, sum it with already allocated.
-		lineInfo.Quantity += util.SumOfIntSlice(allocationQuantityMap[lineInfo.Line.Id])
+		lineInfo.Quantity += util.SumOfSlice(allocationQuantityMap[lineInfo.Line.Id]...)
 	}
 
 	if len(allocationIDsToDelete) > 0 {

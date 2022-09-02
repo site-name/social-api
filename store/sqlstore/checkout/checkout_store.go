@@ -21,8 +21,8 @@ func NewSqlCheckoutStore(sqlStore store.Store) store.CheckoutStore {
 	return &SqlCheckoutStore{sqlStore}
 }
 
-func (cs *SqlCheckoutStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (cs *SqlCheckoutStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Token",
 		"CreateAt",
 		"UpdateAt",

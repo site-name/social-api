@@ -14,8 +14,8 @@ type SqlComplianceStore struct {
 	store.Store
 }
 
-func (s *SqlComplianceStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlComplianceStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"CreateAt",
 		"UserId",

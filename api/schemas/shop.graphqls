@@ -104,7 +104,7 @@ type ShopError {
 }
 
 type ShopTranslation implements Node {
-  id: ID!
+  id: String!
   headerText: String!
   description: String!
   language: LanguageDisplay!

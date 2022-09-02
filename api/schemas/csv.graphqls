@@ -3,14 +3,14 @@ extend type Mutation {
 }
 
 extend type Query {
-  exportFile(id: ID!): ExportFile @hasPermissions(permissions: [MANAGE_PRODUCTS])
+  exportFile(id: String!): ExportFile @hasPermissions(permissions: [MANAGE_PRODUCTS])
   exportFiles(filter: ExportFileFilterInput, sortBy: ExportFileSortingInput, before: String, after: String, first: Int, last: Int): ExportFileCountableConnection @hasPermissions(permissions: [MANAGE_PRODUCTS])
 }
 
 input ExportProductsInput {
   scope: ExportScope!
   filter: ProductFilterInput
-  ids: [ID!]
+  ids: [String!]
   exportInfo: ExportInfoInput
   fileType: FileTypesEnum!
 }
@@ -27,7 +27,7 @@ type ExportProducts {
 }
 
 type ExportFile implements Node & Job {
-  id: ID!
+  id: String!
   user: User
   # app: App
   status: JobStatusEnum!
@@ -76,7 +76,7 @@ enum FileTypesEnum {
 # }
 
 type ExportEvent implements Node {
-  id: ID!
+  id: String!
   date: DateTime!
   type: ExportEventsEnum!
   user: User
@@ -105,9 +105,9 @@ type ExportFileCountableEdge {
 }
 
 input ExportInfoInput {
-  attributes: [ID!]
-  warehouses: [ID!]
-  channels: [ID!]
+  attributes: [String!]
+  warehouses: [String!]
+  channels: [String!]
   fields: [ProductFieldEnum!]
 }
 

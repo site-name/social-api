@@ -13,7 +13,7 @@ type SqlCustomerNoteStore struct {
 	store.Store
 }
 
-var customerNoteModelFields = model.StringArray{
+var customerNoteModelFields = model.AnyArray[string]{
 	"Id",
 	"UserID",
 	"Date",
@@ -26,7 +26,7 @@ func NewSqlCustomerNoteStore(s store.Store) store.CustomerNoteStore {
 	return &SqlCustomerNoteStore{s}
 }
 
-func (cs *SqlCustomerNoteStore) ModelFields(prefix string) model.StringArray {
+func (cs *SqlCustomerNoteStore) ModelFields(prefix string) model.AnyArray[string] {
 	if prefix == "" {
 		return customerNoteModelFields
 	}

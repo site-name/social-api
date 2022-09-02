@@ -1,18 +1,18 @@
 extend type Mutation {
   channelCreate(input: ChannelCreateInput!): ChannelCreate
-  channelUpdate(id: ID!, input: ChannelUpdateInput!): ChannelUpdate
-  channelDelete(id: ID!, input: ChannelDeleteInput): ChannelDelete
-  channelActivate(id: ID!): ChannelActivate
-  channelDeactivate(id: ID!): ChannelDeactivate
+  channelUpdate(id: String!, input: ChannelUpdateInput!): ChannelUpdate
+  channelDelete(id: String!, input: ChannelDeleteInput): ChannelDelete
+  channelActivate(id: String!): ChannelActivate
+  channelDeactivate(id: String!): ChannelDeactivate
 }
 
 extend type Query {
-  channel(id: ID): Channel
+  channel(id: String): Channel
   channels: [Channel!]
 }
 
 type Channel implements Node {
-  id: ID!
+  id: String!
   name: String!
   isActive: Boolean!
   slug: String!
@@ -27,7 +27,7 @@ input ChannelCreateInput {
   slug: String!
   currencyCode: String!
   defaultCountry: CountryCode!
-  addShippingZones: [ID!]
+  addShippingZones: [String!]
 }
 
 type ChannelCreate {
@@ -40,8 +40,8 @@ input ChannelUpdateInput {
   name: String
   slug: String
   defaultCountry: CountryCode
-  addShippingZones: [ID!]
-  removeShippingZones: [ID!]
+  addShippingZones: [String!]
+  removeShippingZones: [String!]
 }
 
 type ChannelUpdate {
@@ -50,7 +50,7 @@ type ChannelUpdate {
 }
 
 input ChannelDeleteInput {
-  channelId: ID!
+  channelId: String!
 }
 
 type ChannelDelete {
@@ -72,7 +72,7 @@ type ChannelError {
   field: String
   message: String
   code: ChannelErrorCode!
-  shippingZones: [ID!]
+  shippingZones: [String!]
 }
 
 enum ChannelErrorCode {

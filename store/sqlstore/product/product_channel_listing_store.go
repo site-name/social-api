@@ -19,8 +19,8 @@ func NewSqlProductChannelListingStore(s store.Store) store.ProductChannelListing
 	return &SqlProductChannelListingStore{s}
 }
 
-func (ps *SqlProductChannelListingStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (ps *SqlProductChannelListingStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ProductID",
 		"ChannelID",

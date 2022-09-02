@@ -23,8 +23,8 @@ func NewSqlSessionStore(sqlStore store.Store) store.SessionStore {
 	return &SqlSessionStore{sqlStore}
 }
 
-func (s *SqlSessionStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlSessionStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Token",
 		"CreateAt",

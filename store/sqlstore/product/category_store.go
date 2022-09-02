@@ -17,8 +17,8 @@ func NewSqlCategoryStore(s store.Store) store.CategoryStore {
 	return &SqlCategoryStore{s}
 }
 
-func (cs *SqlCategoryStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (cs *SqlCategoryStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Name",
 		"Slug",

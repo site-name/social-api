@@ -40,5 +40,5 @@ func GetSuggestionInputsSplitByMultiple(term string, splitStrs []string) []strin
 	for _, splitStr := range splitStrs {
 		suggestionList = append(suggestionList, GetSuggestionInputsSplitBy(term, splitStr)...)
 	}
-	return util.RemoveDuplicatesFromStringArray(suggestionList)
+	return util.Dedup(suggestionList)
 }

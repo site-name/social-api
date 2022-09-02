@@ -18,8 +18,8 @@ func NewSqlOrderEventStore(s store.Store) store.OrderEventStore {
 	return &SqlOrderEventStore{s}
 }
 
-func (s *SqlOrderEventStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlOrderEventStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"CreateAt",
 		"Type",

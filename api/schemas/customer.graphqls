@@ -1,8 +1,8 @@
 extend type Mutation {
   customerCreate(input: UserCreateInput!): CustomerCreate
-  customerUpdate(id: ID!, input: CustomerInput!): CustomerUpdate
-  customerDelete(id: ID!): CustomerDelete
-  customerBulkDelete(ids: [ID]!): CustomerBulkDelete
+  customerUpdate(id: String!, input: CustomerInput!): CustomerUpdate
+  customerDelete(id: String!): CustomerDelete
+  customerBulkDelete(ids: [String]!): CustomerBulkDelete
 }
 
 extend type Query {

@@ -18,8 +18,8 @@ func NewSqlVoucherCustomerStore(sqlStore store.Store) store.VoucherCustomerStore
 	return &SqlVoucherCustomerStore{sqlStore}
 }
 
-func (s *SqlVoucherCustomerStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlVoucherCustomerStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id", "VoucherID", "CustomerEmail",
 	}
 	if prefix == "" {

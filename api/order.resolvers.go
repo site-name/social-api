@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/api/gqlmodel"
 )
@@ -163,6 +162,6 @@ func (r *Resolver) OrdersTotal(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) OrderByToken(ctx context.Context, args struct{ Token uuid.UUID }) (*gqlmodel.Order, error) {
+func (r *Resolver) OrderByToken(ctx context.Context, args struct{ Token string }) (*gqlmodel.Order, error) {
 	panic(fmt.Errorf("not implemented"))
 }

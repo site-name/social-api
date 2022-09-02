@@ -138,7 +138,7 @@ func (s *LocalCacheUserStore) Get(ctx context.Context, id string) (*account.User
 func (s *LocalCacheUserStore) GetMany(ctx context.Context, ids []string) ([]*account.User, error) {
 	var cachedUsers []*account.User
 	var notCachedUserIds []string
-	uniqIDs := util.RemoveDuplicatesFromStringArray(ids)
+	uniqIDs := util.Dedup(ids)
 
 	fromMaster := false
 	for _, id := range uniqIDs {

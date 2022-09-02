@@ -2,13 +2,13 @@ package util
 
 import (
 	"bytes"
-	"encoding/base64"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
 	"reflect"
 	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -49,49 +49,54 @@ func OptionalBoolOf(b bool) OptionalBool {
 	return OptionalBoolFalse
 }
 
-// Max max of ints
-func Max(nums ...int) int {
-	if len(nums) == 0 {
-		return 0
-	}
-	if len(nums) == 1 {
-		return nums[0]
+type Ordered interface {
+	uint8 |
+		int |
+		uint |
+		int8 |
+		int16 |
+		int32 |
+		int64 |
+		uint16 |
+		uint32 |
+		uint64 |
+		float32 |
+		float64 |
+		string
+}
+
+// Max accepts any number of arguments of any type and returns max value
+func Max[T Ordered](a ...T) T {
+	if len(a) == 0 {
+		var res T
+		return res
 	}
 
-	max := nums[0]
-	for _, num := range nums[1:] {
-		if num > max {
-			max = num
+	res := a[0]
+	for i := range a {
+		if a[i] > res {
+			res = a[i]
 		}
 	}
 
-	return max
+	return res
 }
 
-// Min returns min of ints
-func Min(nums ...int) int {
-	if len(nums) == 0 {
-		return 0
-	}
-	if len(nums) == 1 {
-		return nums[0]
+// Min accepts any number of arguments of any type and returns min value
+func Min[T Ordered](a ...T) T {
+	if len(a) == 0 {
+		var res T
+		return res
 	}
 
-	min := nums[0]
-	for _, num := range nums[1:] {
-		if num < min {
-			min = num
+	res := a[0]
+	for i := range a {
+		if a[i] < res {
+			res = a[i]
 		}
 	}
 
-	return min
-}
-
-func UintMin(a, b uint) uint {
-	if a > b {
-		return b
-	}
-	return a
+	return res
 }
 
 // IsEmptyString checks if the provided string is empty
@@ -135,128 +140,88 @@ func NormalizeEOL(input []byte) []byte {
 	return tmp[:pos]
 }
 
-// MergeInto merges pairs of values into a "dict"
-func MergeInto(dict map[string]interface{}, values ...interface{}) (map[string]interface{}, error) {
-	for i := 0; i < len(values); i++ {
-		switch key := values[i].(type) {
-		case string:
-			i++
-			if i == len(values) {
-				return nil, errors.New("specify the key for non array values")
-			}
-			dict[key] = values[i]
-		case map[string]interface{}:
-			m := values[i].(map[string]interface{})
-			for i, v := range m {
-				dict[i] = v
-			}
-		default:
-			return nil, errors.New("dict values must be maps")
-		}
-	}
-
-	return dict, nil
-}
-
-// check if given string a resides in given slice
-func StringInSlice(a string, slice []string) bool {
+// ItemInSlice checks if given item a resides in given slice
+func ItemInSlice[T Ordered](item T, slice []T) bool {
 	for _, b := range slice {
-		if b == a {
+		if b == item {
 			return true
 		}
 	}
 	return false
 }
 
-// check if given int a resides in given slice
-func IntInSlice(a int, slice []int) bool {
-	for _, b := range slice {
-		if b == a {
-			return true
+// RemoveItemsFromSlice removes all occurrences of items from slice
+func RemoveItemsFromSlice[T Ordered](slice []T, items ...T) []T {
+	res := make([]T, 0, cap(slice))
+
+	for _, item := range slice {
+		if !ItemInSlice(item, items) {
+			res = append(res, item)
 		}
 	}
-	return false
-}
 
-// RemoveStringFromSlice removes the first occurrence of a from slice.
-func RemoveStringFromSlice(a string, slice []string) []string {
-	res := []string{}
-
-	for _, str := range slice {
-		if str != a {
-			res = append(res, str)
-		}
-	}
 	return res
 }
 
-// RemoveStringsFromSlice removes all occurrences of strings from slice.
-func RemoveStringsFromSlice(slice []string, strings ...string) []string {
-	newSlice := []string{}
+// SlicesIntersection returns a slice of common items of both given slices
+func SlicesIntersection[T Ordered](slice1, slice2 []T) []T {
+	meetMap := map[T]bool{}
+	res := []T{}
 
-	for _, item := range slice {
-		if !StringInSlice(item, strings) {
-			newSlice = append(newSlice, item)
+	for _, value := range slice1 {
+		meetMap[value] = true
+	}
+
+	for _, value := range slice2 {
+		if meetMap[value] {
+			res = append(res, value)
 		}
 	}
 
-	return newSlice
+	return res
 }
 
-// returns array of strings contains only common items between two arrays
-func StringArrayIntersection(arr1, arr2 []string) []string {
-	arrMap := map[string]bool{}
-	result := []string{}
-
-	for _, value := range arr1 {
-		arrMap[value] = true
+// Dedup return a slice of unique elements of any type
+func Dedup[T Ordered](slice []T) []T {
+	if len(slice) == 0 {
+		return slice
 	}
 
-	for _, value := range arr2 {
-		if arrMap[value] {
-			result = append(result, value)
+	sort.Slice(slice, func(i, j int) bool {
+		return slice[i] < slice[j]
+	})
+
+	j := 0
+	for i := 1; i < len(slice); i++ {
+		if slice[j] == slice[i] {
+			continue
 		}
+		j++
+		// preserve the original data
+		// in[i], in[j] = in[j], in[i]
+		// only set what is required
+		slice[j] = slice[i]
 	}
 
-	return result
+	return slice[:j+1]
 }
 
-// filter out items that appear multiple times and keep only one
-func RemoveDuplicatesFromStringArray(arr []string) []string {
-	result := make([]string, 0, len(arr))
-	seen := make(map[string]bool)
+// SumOfSlice returns sum of item in given array
+func SumOfSlice[T Ordered](slice ...T) T {
+	if len(slice) == 0 {
+		var res T
+		return res
+	}
 
-	for _, item := range arr {
-		if !seen[item] {
-			result = append(result, item)
-			seen[item] = true
+	sum := slice[0]
+	for i := range slice {
+		if i == 0 {
+			continue
 		}
+
+		sum += slice[i]
 	}
 
-	return result
-}
-
-func StringSliceDiff(a, b []string) []string {
-	m := make(map[string]bool)
-	result := []string{}
-
-	for _, item := range b {
-		m[item] = true
-	}
-
-	for _, item := range a {
-		if !m[item] {
-			result = append(result, item)
-		}
-	}
-	return result
-}
-
-func SumOfIntSlice(slice []int) int {
-	var sum = 0
-	for _, item := range slice {
-		sum += item
-	}
 	return sum
 }
 
@@ -362,40 +327,10 @@ func AppendQueryParamsToURL(baseURL string, params map[string]string) string {
 // GetFunctionName returns a string name of given function
 //
 // E.g
-//  func hello() {}
-//  name := GetFunctionName(hello)
-//  fmt.Println(name) == "hello"
+//
+//	func hello() {}
+//	name := GetFunctionName(hello)
+//	fmt.Println(name) == "hello"
 func GetFunctionName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
-}
-
-func Base64Encode(s string) string {
-	return base64.StdEncoding.EncodeToString([]byte(s))
-}
-
-func Base64Decode(s string) string {
-	res, _ := base64.StdEncoding.DecodeString(s)
-	return string(res)
-}
-
-// StringSliceToStringPointerSlice convert []string => []*string
-func StringSliceToStringPointerSlice(s []string) []*string {
-	res := make([]*string, len(s))
-
-	for i := range s {
-		res[i] = &s[i]
-	}
-
-	return res
-}
-
-func StringPointerSliceToStringSlice(s []*string) []string {
-	res := []string{}
-	for _, item := range s {
-		if item != nil {
-			res = append(res, *item)
-		}
-	}
-
-	return res
 }

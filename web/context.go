@@ -14,7 +14,6 @@ import (
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/modules/util"
 )
 
 type Context struct {
@@ -128,7 +127,7 @@ func (c *Context) MfaRequired() {
 	}
 
 	// Special case to let user get themself
-	subpath, _ := util.GetSubpathFromConfig(c.App.Config())
+	subpath, _ := model.GetSubpathFromConfig(c.App.Config())
 	if c.AppContext.Path() == path.Join(subpath, "/api/v4/users/me") {
 		return
 	}
@@ -168,7 +167,7 @@ func (c *Context) ExtendSessionExpiryIfNeeded(w http.ResponseWriter, r *http.Req
 
 // RemoveSessionCookie deletes cookie from subpath route
 func (c *Context) RemoveSessionCookie(w http.ResponseWriter, r *http.Request) {
-	subpath, _ := util.GetSubpathFromConfig(c.App.Config())
+	subpath, _ := model.GetSubpathFromConfig(c.App.Config())
 
 	cookie := &http.Cookie{
 		Name:     model.SESSION_COOKIE_TOKEN,

@@ -17,8 +17,8 @@ var VoucherChannelListingDuplicateList = []string{
 	"VoucherID", "ChannelID", "voucherchannellistings_voucherid_channelid_key",
 }
 
-func (s *SqlVoucherChannelListingStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlVoucherChannelListingStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id", "CreateAt", "VoucherID", "ChannelID", "DiscountValue", "Currency", "MinSpentAmount",
 	}
 	if prefix == "" {

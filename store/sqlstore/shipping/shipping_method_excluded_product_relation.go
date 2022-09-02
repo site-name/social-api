@@ -17,8 +17,8 @@ func NewSqlShippingMethodExcludedProductStore(s store.Store) store.ShippingMetho
 	return &SqlShippingMethodExcludedProductStore{s}
 }
 
-func (s *SqlShippingMethodExcludedProductStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlShippingMethodExcludedProductStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ShippingMethodID",
 		"ProductID",

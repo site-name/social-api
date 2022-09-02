@@ -18,8 +18,8 @@ func NewSqlAttributeVariantStore(s store.Store) store.AttributeVariantStore {
 	return &SqlAttributeVariantStore{s}
 }
 
-func (as *SqlAttributeVariantStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (as *SqlAttributeVariantStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id", "AttributeID", "ProductTypeID", "VariantSelection", "SortOrder",
 	}
 	if prefix == "" {

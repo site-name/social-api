@@ -18,8 +18,8 @@ func NewSqlAttributePageStore(s store.Store) store.AttributePageStore {
 	return &SqlAttributePageStore{s}
 }
 
-func (as *SqlAttributePageStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (as *SqlAttributePageStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"AttributeID",
 		"PageTypeID",

@@ -20,8 +20,8 @@ func NewSqlStatusStore(sqlStore store.Store) store.StatusStore {
 	return &SqlStatusStore{sqlStore}
 }
 
-func (s *SqlStatusStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlStatusStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"UserId",
 		"Status",
 		"Manual",

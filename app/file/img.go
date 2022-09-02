@@ -110,7 +110,7 @@ import (
 
 // 	channel, errCh := a.srv.Store.Channel().Get(post.ChannelId, true)
 // 	// There's a weird bug that rarely happens where a post ends up with duplicate Filenames so remove those
-// 	filenames := util.RemoveDuplicatesFromStringArray(post.Filenames)
+// 	filenames := util.Dedup(post.Filenames)
 // 	if errCh != nil {
 // 		slog.Error(
 // 			"Unable to get channel when migrating post to use FileInfos",

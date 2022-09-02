@@ -21,8 +21,8 @@ func NewSqlOrderLineStore(sqlStore store.Store) store.OrderLineStore {
 	return &SqlOrderLineStore{sqlStore}
 }
 
-func (ols *SqlOrderLineStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (ols *SqlOrderLineStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"CreateAt",
 		"OrderID",

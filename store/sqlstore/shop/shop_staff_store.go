@@ -18,8 +18,8 @@ func NewSqlShopStaffStore(s store.Store) store.ShopStaffStore {
 	return &SqlShopStaffStore{s}
 }
 
-func (s *SqlShopStaffStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlShopStaffStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ShopID",
 		"StaffID",

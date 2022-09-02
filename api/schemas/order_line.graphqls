@@ -1,16 +1,16 @@
 extend type Mutation {
-  orderLinesCreate(id: ID!, input: [OrderLineCreateInput]!): OrderLinesCreate
-  orderLineDelete(id: ID!): OrderLineDelete
-  orderLineUpdate(id: ID!, input: OrderLineInput!): OrderLineUpdate
-  orderDiscountAdd(input: OrderDiscountCommonInput!, orderId: ID!): OrderDiscountAdd
-  orderDiscountUpdate(discountId: ID!, input: OrderDiscountCommonInput!): OrderDiscountUpdate
-  orderDiscountDelete(discountId: ID!): OrderDiscountDelete
-  orderLineDiscountUpdate(input: OrderDiscountCommonInput!, orderLineId: ID!): OrderLineDiscountUpdate
-  orderLineDiscountRemove(orderLineId: ID!): OrderLineDiscountRemove
+  orderLinesCreate(id: String!, input: [OrderLineCreateInput]!): OrderLinesCreate
+  orderLineDelete(id: String!): OrderLineDelete
+  orderLineUpdate(id: String!, input: OrderLineInput!): OrderLineUpdate
+  orderDiscountAdd(input: OrderDiscountCommonInput!, orderId: String!): OrderDiscountAdd
+  orderDiscountUpdate(discountId: String!, input: OrderDiscountCommonInput!): OrderDiscountUpdate
+  orderDiscountDelete(discountId: String!): OrderDiscountDelete
+  orderLineDiscountUpdate(input: OrderDiscountCommonInput!, orderLineId: String!): OrderLineDiscountUpdate
+  orderLineDiscountRemove(orderLineId: String!): OrderLineDiscountRemove
 }
 
 type OrderLine implements Node {
-  id: ID!
+  id: String!
   productName: String!
   variantName: String!
   productSku: String
@@ -37,7 +37,7 @@ type OrderLine implements Node {
 
 input OrderLineCreateInput {
   quantity: Int!
-  variantId: ID!
+  variantId: String!
 }
 
 type OrderLinesCreate {
@@ -96,7 +96,7 @@ type OrderLineDiscountRemove {
 }
 
 type Allocation implements Node {
-  id: ID!
+  id: String!
   quantity: Int!
   warehouse: Warehouse!
 }

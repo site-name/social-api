@@ -61,7 +61,7 @@ func (s ShippingZones) RelativeWarehouseIDsFlat(keepDuplicates bool) []string {
 	if keepDuplicates {
 		return res
 	}
-	return util.RemoveDuplicatesFromStringArray(res)
+	return util.Dedup(res)
 }
 
 func (s *ShippingZone) String() string {

@@ -17,8 +17,8 @@ func NewSqlWishlistStore(s store.Store) store.WishlistStore {
 	return &SqlWishlistStore{s}
 }
 
-func (s *SqlWishlistStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlWishlistStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Token",
 		"UserID",

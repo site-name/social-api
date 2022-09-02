@@ -2,6 +2,7 @@ package account
 
 import (
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 )
 
 // max length values
@@ -78,7 +79,8 @@ func (ce *CustomerEvent) IsValid() *model.AppError {
 	if ce.OrderID != nil && !model.IsValidId(*ce.OrderID) {
 		return outer("order_id", &ce.Id)
 	}
-	if len(ce.Type) > CUSTOMER_EVENT_TYPE_MAX_LENGTH || !model.StringArray(CustomerEventTypes).Contains(ce.Type) {
+	if len(ce.Type) > CUSTOMER_EVENT_TYPE_MAX_LENGTH ||
+		!util.ItemInSlice(ce.Type, CustomerEventTypes) {
 		return outer("type", &ce.Id)
 	}
 

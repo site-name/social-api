@@ -48,8 +48,8 @@ func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface)
 	return us
 }
 
-func (us *SqlUserStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (us *SqlUserStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Email",
 		"Username",

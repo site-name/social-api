@@ -1,16 +1,16 @@
 extend type Mutation {
-  checkoutLineDelete(checkoutId: ID, lineId: ID, token: UUID): CheckoutLineDelete
-  checkoutLinesAdd(checkoutId: ID, lines: [CheckoutLineInput]!, token: UUID): CheckoutLinesAdd
-  checkoutLinesUpdate(checkoutId: ID, lines: [CheckoutLineInput]!, token: UUID): CheckoutLinesUpdate
+  checkoutLineDelete(checkoutId: String, lineId: String, token: String): CheckoutLineDelete
+  checkoutLinesAdd(checkoutId: String, lines: [CheckoutLineInput]!, token: String): CheckoutLinesAdd
+  checkoutLinesUpdate(checkoutId: String, lines: [CheckoutLineInput]!, token: String): CheckoutLinesUpdate
 }
 
 extend type Query {
-  # checkoutLine(id: ID): CheckoutLine
+  # checkoutLine(id: String): CheckoutLine
   checkoutLines(before: String, after: String, first: Int, last: Int): CheckoutLineCountableConnection
 }
 
 type CheckoutLine implements Node {
-  id: ID!
+  id: String!
   variant: ProductVariant!
   quantity: Int!
   totalPrice: TaxedMoney
@@ -24,7 +24,7 @@ type CheckoutLineDelete {
 
 input CheckoutLineInput {
   quantity: Int!
-  variantId: ID!
+  variantId: String!
 }
 
 type CheckoutLinesAdd {

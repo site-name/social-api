@@ -17,8 +17,8 @@ func NewSqlVoucherCategoryStore(s store.Store) store.VoucherCategoryStore {
 	return &SqlVoucherCategoryStore{s}
 }
 
-func (s *SqlVoucherCategoryStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlVoucherCategoryStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id", "VoucherID", "CategoryID", "CreateAt",
 	}
 	if prefix == "" {

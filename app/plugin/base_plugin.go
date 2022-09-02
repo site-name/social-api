@@ -386,7 +386,7 @@ func (b *BasePlugin) GetPaymentGateways(currency string, checkOut *checkout.Chec
 		currencies = []string{}
 	}
 
-	if currency != "" && !util.StringInSlice(currency, currencies) {
+	if currency != "" && !util.ItemInSlice(currency, currencies) {
 		return []*payment.PaymentGateway{}, nil
 	}
 
@@ -424,10 +424,10 @@ func (b *BasePlugin) UpdateConfigurationStructure(config []model.StringInterface
 	for key := range configStructure {
 		desiredConfigKeys = append(desiredConfigKeys, key)
 	}
-	desiredConfigKeys = util.RemoveDuplicatesFromStringArray(desiredConfigKeys)
+	desiredConfigKeys = util.Dedup(desiredConfigKeys)
 
 	for _, configField := range config {
-		if name, ok := configField["name"]; ok && !util.StringInSlice(name.(string), desiredConfigKeys) {
+		if name, ok := configField["name"]; ok && !util.ItemInSlice(name.(string), desiredConfigKeys) {
 			continue
 		}
 
@@ -438,11 +438,11 @@ func (b *BasePlugin) UpdateConfigurationStructure(config []model.StringInterface
 	for _, cfg := range updatedConfiguration {
 		configuredKeys = append(configuredKeys, cfg["name"].(string)) // name should exist
 	}
-	configuredKeys = util.RemoveDuplicatesFromStringArray(configuredKeys)
+	configuredKeys = util.Dedup(configuredKeys)
 
 	missingKeys := []string{}
 	for _, value := range desiredConfigKeys {
-		if !util.StringInSlice(value, configuredKeys) {
+		if !util.ItemInSlice(value, configuredKeys) {
 			missingKeys = append(missingKeys, value)
 		}
 	}
@@ -457,7 +457,7 @@ func (b *BasePlugin) UpdateConfigurationStructure(config []model.StringInterface
 
 	updatedValues := []model.StringInterface{}
 	for _, item := range b.Manifest.DefaultConfiguration {
-		if util.StringInSlice(item["name"].(string), missingKeys) {
+		if util.ItemInSlice(item["name"].(string), missingKeys) {
 			updatedValues = append(updatedValues, item.DeepCopy())
 		}
 	}
@@ -571,7 +571,7 @@ func (b *BasePlugin) UpdateConfigItems(configurationToUpdate []model.StringInter
 	for _, cField := range currentConfig {
 		currentConfigKeys = append(currentConfigKeys, cField["name"].(string))
 	}
-	currentConfigKeys = util.RemoveDuplicatesFromStringArray(currentConfigKeys)
+	currentConfigKeys = util.Dedup(currentConfigKeys)
 
 	configurationToUpdateDict := make(model.StringInterface)
 	configurationToUpdateDictKeys := []string{}
@@ -580,10 +580,10 @@ func (b *BasePlugin) UpdateConfigItems(configurationToUpdate []model.StringInter
 		configurationToUpdateDict[item["name"].(string)] = item["value"]
 		configurationToUpdateDictKeys = append(configurationToUpdateDictKeys, item["name"].(string))
 	}
-	configurationToUpdateDictKeys = util.RemoveDuplicatesFromStringArray(configurationToUpdateDictKeys)
+	configurationToUpdateDictKeys = util.Dedup(configurationToUpdateDictKeys)
 
 	for _, item := range configurationToUpdateDictKeys {
-		if !util.StringInSlice(item, currentConfigKeys) {
+		if !util.ItemInSlice(item, currentConfigKeys) {
 			if val, ok := configStructure[item]; !ok || val == nil {
 				continue
 			}

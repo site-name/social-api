@@ -20,8 +20,8 @@ func NewSqlAssignedPageAttributeValueStore(s store.Store) store.AssignedPageAttr
 	return &SqlAssignedPageAttributeValueStore{s}
 }
 
-func (as *SqlAssignedPageAttributeValueStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (as *SqlAssignedPageAttributeValueStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ValueID",
 		"AssignmentID",

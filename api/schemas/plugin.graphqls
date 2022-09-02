@@ -1,14 +1,14 @@
 extend type Mutation {
-  pluginUpdate(channelId: ID, id: ID!, input: PluginUpdateInput!): PluginUpdate
+  pluginUpdate(channelId: String, id: String!, input: PluginUpdateInput!): PluginUpdate
 }
 
 extend type Query {
-  plugin(id: ID!): Plugin
+  plugin(id: String!): Plugin
   plugins(filter: PluginFilterInput, sortBy: PluginSortingInput, before: String, after: String, first: Int, last: Int): PluginCountableConnection
 }
 
 type Plugin {
-  id: ID!
+  id: String!
   name: String!
   description: String!
   globalConfiguration: PluginConfiguration
@@ -63,7 +63,7 @@ input PluginSortingInput {
 
 input PluginStatusInChannelsInput {
   active: Boolean!
-  channels: [ID!]!
+  channels: [String!]!
 }
 
 type PluginCountableConnection {

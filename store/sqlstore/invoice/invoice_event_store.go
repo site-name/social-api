@@ -17,8 +17,8 @@ func NewSqlInvoiceEventStore(sqlStore store.Store) store.InvoiceEventStore {
 	return &SqlInvoiceEventStore{sqlStore}
 }
 
-func (s *SqlInvoiceEventStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlInvoiceEventStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"CreateAt",
 		"Type",

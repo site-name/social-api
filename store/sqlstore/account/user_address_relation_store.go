@@ -15,8 +15,8 @@ func NewSqlUserAddressStore(s store.Store) store.UserAddressStore {
 	return &SqlUserAddressStore{s}
 }
 
-func (s *SqlUserAddressStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlUserAddressStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"UserID",
 		"AddressID",

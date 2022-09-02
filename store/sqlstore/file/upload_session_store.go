@@ -17,8 +17,8 @@ func NewSqlUploadSessionStore(sqlStore store.Store) store.UploadSessionStore {
 	return &SqlUploadSessionStore{sqlStore}
 }
 
-func (s *SqlUploadSessionStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlUploadSessionStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Type",
 		"CreateAt",

@@ -10,8 +10,6 @@ type PageInfo {
   endCursor: String
 }
 
-scalar PlaceHolder
-
 enum AreaUnitsEnum {
   SQ_CM
   SQ_M
@@ -27,11 +25,11 @@ type AssignNavigation {
 }
 
 input AttributeValueInput {
-  id: ID
+  id: String
   values: [String!]
   file: String
   contentType: String
-  references: [ID!]
+  references: [String!]
   richText: JSONString
   boolean: Boolean
   date: Date
@@ -173,7 +171,7 @@ enum CountryCode {
   HU
   IS
   IN
-  ID
+  String
   IR
   IQ
   IE
@@ -779,7 +777,7 @@ enum LanguageCodeEnum {
   HY
   HY_AM
   IA
-  ID
+  String
   ID_ID
   IG
   IG_NG
@@ -1213,9 +1211,9 @@ type MoneyRange {
 }
 
 type Mutation {
-  variantMediaAssign(mediaId: ID!, variantId: ID!): VariantMediaAssign
-  variantMediaUnassign(mediaId: ID!, variantId: ID!): VariantMediaUnassign
-  assignNavigation(menu: ID, navigationType: NavigationType!): AssignNavigation
+  variantMediaAssign(mediaId: String!, variantId: String!): VariantMediaAssign
+  variantMediaUnassign(mediaId: String!, variantId: String!): VariantMediaUnassign
+  assignNavigation(menu: String, navigationType: NavigationType!): AssignNavigation
   fileUpload(file: Upload!): FileUpload
   externalNotificationTrigger(channel: String!, input: ExternalNotificationTriggerInput!, pluginId: String): ExternalNotificationTrigger
 }
@@ -1226,7 +1224,7 @@ enum NavigationType {
 }
 
 interface Node {
-  id: ID!
+  id: String!
 }
 
 type OrderEventCountableConnection {
@@ -1243,7 +1241,7 @@ type OrderEventCountableEdge {
 scalar PositiveDecimal
 
 # type ProductImage {
-#   id: ID!
+#   id: String!
 #   alt: String
 #   sortOrder: Int
 #   url(size: Int): String!
@@ -1276,8 +1274,6 @@ type TaxedMoneyRange {
   start: TaxedMoney
   stop: TaxedMoney
 }
-
-scalar UUID
 
 scalar Upload
 
@@ -1352,7 +1348,7 @@ type ExternalNotificationTrigger {
 }
 
 input ExternalNotificationTriggerInput {
-  ids: [ID]!
+  ids: [String]!
   extraPayload: JSONString
   externalEventType: String!
 }

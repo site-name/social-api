@@ -18,8 +18,8 @@ func NewSqlPreorderAllocationStore(s store.Store) store.PreorderAllocationStore 
 	return &SqlPreorderAllocationStore{s}
 }
 
-func (ws *SqlPreorderAllocationStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (ws *SqlPreorderAllocationStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"OrderLineID",
 		"Quantity",

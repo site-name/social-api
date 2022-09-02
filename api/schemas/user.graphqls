@@ -2,16 +2,16 @@ extend type Mutation {
   login(input: LoginInput!): LoginResponse!
   userAvatarUpdate(image: Upload!): UserAvatarUpdate
   userAvatarDelete: UserAvatarDelete
-  userBulkSetActive(ids: [ID]!, isActive: Boolean!): UserBulkSetActive
+  userBulkSetActive(ids: [String]!, isActive: Boolean!): UserBulkSetActive
 }
 
 extend type Query {
   me: User
-  user(id: ID, email: String): User
+  user(id: String, email: String): User
 }
 
 type User implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   lastLogin: DateTime
   email: String!
   firstName: String!
@@ -25,10 +25,10 @@ type User implements Node & ObjectWithMetadata {
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   addresses: [Address]
-  checkoutTokens(channel: String): [UUID!]
+  checkoutTokens(channel: String): [String!]
   giftCards(page: Int, perPage: Int, order: OrderDirection): GiftCardCountableConnection # giftCards(before: String, after: String, first: Int, last: Int): GiftCardCountableConnection
   orders(page: Int, perPage: Int, order: OrderDirection): OrderCountableConnection # orders(before: String, after: String, first: Int, last: Int): OrderCountableConnection
-  userPermissions(_: PlaceHolder): [UserPermission] # userPermissions: [UserPermission]
+  userPermissions: [UserPermission]
   permissionGroups: [Group]
   editableGroups: [Group]
   avatar(size: Int): Image
@@ -41,7 +41,7 @@ type User implements Node & ObjectWithMetadata {
 type UserPermission {
   code: PermissionEnum!
   name: String!
-  sourcePermissionGroups(userId: ID!): [Group!]
+  sourcePermissionGroups(userId: String!): [Group!]
 }
 
 type Image {
@@ -93,7 +93,7 @@ type UserBulkSetActive {
 }
 
 type CustomerEvent implements Node {
-  id: ID!
+  id: String!
   date: DateTime
   type: CustomerEventsEnum
   user: User @authenticated(hi: true)

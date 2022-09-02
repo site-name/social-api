@@ -17,8 +17,8 @@ func NewSqlMenuStore(sqlStore store.Store) store.MenuStore {
 	return &SqlMenuStore{sqlStore}
 }
 
-func (s *SqlMenuStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlMenuStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Name",
 		"Slug",

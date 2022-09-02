@@ -1,18 +1,18 @@
 extend type Mutation {
-  giftCardActivate(id: ID!): GiftCardActivate
+  giftCardActivate(id: String!): GiftCardActivate
   giftCardCreate(input: GiftCardCreateInput!): GiftCardCreate
-  giftCardDelete(id: ID!): GiftCardDelete
-  giftCardDeactivate(id: ID!): GiftCardDeactivate
-  giftCardUpdate(id: ID!, input: GiftCardUpdateInput!): GiftCardUpdate
+  giftCardDelete(id: String!): GiftCardDelete
+  giftCardDeactivate(id: String!): GiftCardDeactivate
+  giftCardUpdate(id: String!, input: GiftCardUpdateInput!): GiftCardUpdate
   giftCardResend(input: GiftCardResendInput!): GiftCardResend
-  giftCardAddNote(id: ID!, input: GiftCardAddNoteInput!): GiftCardAddNote
-  giftCardBulkDelete(ids: [ID]!): GiftCardBulkDelete
-  giftCardBulkActivate(ids: [ID]!): GiftCardBulkActivate
-  giftCardBulkDeactivate(ids: [ID]!): GiftCardBulkDeactivate
+  giftCardAddNote(id: String!, input: GiftCardAddNoteInput!): GiftCardAddNote
+  giftCardBulkDelete(ids: [String]!): GiftCardBulkDelete
+  giftCardBulkActivate(ids: [String]!): GiftCardBulkActivate
+  giftCardBulkDeactivate(ids: [String]!): GiftCardBulkDeactivate
 }
 
 extend type Query {
-  giftCard(id: ID!): GiftCard
+  giftCard(id: String!): GiftCard
   giftCardSettings: GiftCardSettings!
   giftCards(sortBy: GiftCardSortingInput, filter: GiftCardFilterInput, before: String, after: String, first: Int, last: Int): GiftCardCountableConnection
   giftCardCurrencies: [String!]!
@@ -27,7 +27,7 @@ type GiftCard implements Node & ObjectWithMetadata {
   lastUsedOn: DateTime
   initialBalance: Money
   currentBalance: Money
-  id: ID!
+  id: String!
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   displayCode: String!
@@ -139,14 +139,14 @@ type GiftCardBulkDelete {
 }
 
 type GiftCardEvent implements Node {
-  id: ID!
+  id: String!
   date: DateTime
   type: GiftCardEventsEnum
   user: User
   app: App
   message: String
   email: String
-  orderId: ID
+  orderId: String
   orderNumber: String
   tag: String
   oldTag: String
@@ -181,8 +181,8 @@ input GiftCardFilterInput {
   isActive: Boolean
   tag: String
   tags: [String]
-  products: [ID]
-  usedBy: [ID]
+  products: [String]
+  usedBy: [String]
   currency: String
   currentBalance: PriceRangeInput
   initialBalance: PriceRangeInput
@@ -194,7 +194,7 @@ type GiftCardResend {
 }
 
 input GiftCardResendInput {
-  id: ID!
+  id: String!
   email: String
   channel: String!
 }

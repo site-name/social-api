@@ -18,8 +18,8 @@ func NewSqlGiftCardOrderStore(s store.Store) store.GiftCardOrderStore {
 	return &SqlGiftCardOrderStore{s}
 }
 
-func (s *SqlGiftCardOrderStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{"Id", "GiftCardID", "OrderID"}
+func (s *SqlGiftCardOrderStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{"Id", "GiftCardID", "OrderID"}
 	if prefix == "" {
 		return res
 	}

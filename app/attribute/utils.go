@@ -15,7 +15,7 @@ import (
 )
 
 // AssociateAttributeValuesToInstance Assign given attribute values to a product or variant.
-// Note: be award this function invokes the ``set`` method on the instance's
+// Note: be award this function invokes the “set“ method on the instance's
 // attribute association. Meaning any values already assigned or concurrently
 // assigned will be overridden by this call.
 //
@@ -106,10 +106,10 @@ func (a *ServiceAttribute) validateAttributeOwnsValues(attributeID string, value
 		return appErr
 	}
 	attributeActualValueIDs := attribute.AttributeValues(attributeValues).IDs()
-	foundAssociatedIDs := util.StringArrayIntersection(attributeActualValueIDs, valueIDs)
+	foundAssociatedIDs := util.SlicesIntersection(attributeActualValueIDs, valueIDs)
 
 	for _, associatedID := range foundAssociatedIDs {
-		if !util.StringInSlice(associatedID, valueIDs) {
+		if !util.ItemInSlice(associatedID, valueIDs) {
 			return model.NewAppError("validateAttributeOwnsValues", "app.attribute.attribute_missing_some_values", nil, "", http.StatusNotFound)
 		}
 	}
@@ -124,9 +124,10 @@ func (a *ServiceAttribute) validateAttributeOwnsValues(attributeID string, value
 // `instance` must be either `*product.Product` or `*product.ProductVariant` or `*page.Page`
 //
 // returned interface{} is either:
-//  +) *AssignedProductAttribute
-//  +) *AssignedVariantAttribute
-//  +) *AssignedPageAttribute
+//
+//	+) *AssignedProductAttribute
+//	+) *AssignedVariantAttribute
+//	+) *AssignedPageAttribute
 func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, attributeID string) (interface{}, *model.AppError) {
 	switch v := instance.(type) {
 	case *product_and_discount.Product:
@@ -180,11 +181,11 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 //
 // (instance - assignment) must be provided by pair like this:
 //
-//  +) *Product        - *AssignedProductAttribute
+//	+) *Product        - *AssignedProductAttribute
 //
-//  +) *ProductVariant - *AssignedVariantAttribute
+//	+) *ProductVariant - *AssignedVariantAttribute
 //
-//  +) *Page           - *AssignedPageAttribute
+//	+) *Page           - *AssignedPageAttribute
 func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, assignment interface{}, valueIDs []string) *model.AppError {
 
 	if instance == nil || assignment == nil || len(valueIDs) == 0 {

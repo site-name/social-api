@@ -629,7 +629,7 @@ func (s auditSession) IsNil() bool {
 // 	ID           string
 // 	ChannelID    string
 // 	TeamID       string
-// 	TriggerWords model.StringArray
+// 	TriggerWords model.AnyArray
 // 	TriggerWhen  int
 // 	DisplayName  string
 // 	Description  string

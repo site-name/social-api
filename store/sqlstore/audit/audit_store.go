@@ -17,8 +17,8 @@ func NewSqlAuditStore(sqlStore store.Store) store.AuditStore {
 	return &SqlAuditStore{sqlStore}
 }
 
-func (s SqlAuditStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s SqlAuditStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"CreateAt",
 		"UserId",

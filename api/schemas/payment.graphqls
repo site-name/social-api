@@ -1,17 +1,17 @@
 extend type Mutation {
-  paymentCapture(amount: PositiveDecimal, paymentId: ID!): PaymentCapture
-  paymentRefund(amount: PositiveDecimal, paymentId: ID!): PaymentRefund
-  paymentVoid(paymentId: ID!): PaymentVoid
+  paymentCapture(amount: PositiveDecimal, paymentId: String!): PaymentCapture
+  paymentRefund(amount: PositiveDecimal, paymentId: String!): PaymentRefund
+  paymentVoid(paymentId: String!): PaymentVoid
   paymentInitialize(channel: String, gateway: String!, paymentData: JSONString): PaymentInitialize
 }
 
 extend type Query {
-  payment(id: ID!): Payment
+  payment(id: String!): Payment
   payments(filter: PaymentFilterInput, before: String, after: String, first: Int, last: Int): PaymentCountableConnection
 }
 
 type Payment implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   gateway: String!
   isActive: Boolean!
   created: DateTime!
@@ -62,7 +62,7 @@ type PaymentInitialize {
 }
 
 input PaymentFilterInput {
-  checkouts: [ID]
+  checkouts: [String]
 }
 
 type PaymentCountableConnection {
@@ -116,7 +116,7 @@ type PaymentCountableEdge {
 }
 
 type Transaction implements Node {
-  id: ID!
+  id: String!
   created: DateTime!
   payment: Payment!
   token: String!

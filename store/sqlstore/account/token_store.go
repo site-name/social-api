@@ -18,8 +18,8 @@ func NewSqlTokenStore(sqlStore store.Store) store.TokenStore {
 	return &SqlTokenStore{sqlStore}
 }
 
-func (s *SqlTokenStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlTokenStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Token",
 		"CreateAt",
 		"Type",

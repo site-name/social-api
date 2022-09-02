@@ -17,8 +17,8 @@ func NewSqlDiscountSaleStore(sqlStore store.Store) store.DiscountSaleStore {
 	return &SqlDiscountSaleStore{sqlStore}
 }
 
-func (s *SqlDiscountSaleStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlDiscountSaleStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ShopID",
 		"Name",

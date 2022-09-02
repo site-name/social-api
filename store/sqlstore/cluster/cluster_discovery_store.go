@@ -17,8 +17,8 @@ func NewSqlClusterDiscoveryStore(sqlStore store.Store) store.ClusterDiscoverySto
 	return &sqlClusterDiscoveryStore{sqlStore}
 }
 
-func (s sqlClusterDiscoveryStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s sqlClusterDiscoveryStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Type",
 		"ClusterName",

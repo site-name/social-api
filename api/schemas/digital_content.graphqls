@@ -1,12 +1,12 @@
 extend type Mutation {
-  digitalContentCreate(input: DigitalContentUploadInput!, variantId: ID!): DigitalContentCreate
-  digitalContentDelete(variantId: ID!): DigitalContentDelete
-  digitalContentUpdate(input: DigitalContentInput!, variantId: ID!): DigitalContentUpdate
+  digitalContentCreate(input: DigitalContentUploadInput!, variantId: String!): DigitalContentCreate
+  digitalContentDelete(variantId: String!): DigitalContentDelete
+  digitalContentUpdate(input: DigitalContentInput!, variantId: String!): DigitalContentUpdate
   digitalContentUrlCreate(input: DigitalContentUrlCreateInput!): DigitalContentUrlCreate
 }
 
 extend type Query {
-  digitalContent(id: ID!): DigitalContent
+  digitalContent(id: String!): DigitalContent
   digitalContents(before: String, after: String, first: Int, last: Int): DigitalContentCountableConnection
 }
 
@@ -17,7 +17,7 @@ type DigitalContent implements Node & ObjectWithMetadata {
   maxDownloads: Int
   urlValidDays: Int
   urls: [DigitalContentUrl]
-  id: ID!
+  id: String!
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   productVariant: ProductVariant!
@@ -56,7 +56,7 @@ type DigitalContentUpdate {
 }
 
 input DigitalContentUrlCreateInput {
-  content: ID!
+  content: String!
 }
 
 type DigitalContentUrlCreate {
@@ -79,7 +79,7 @@ type DigitalContentUrl implements Node {
   content: DigitalContent!
   created: DateTime!
   downloadNum: Int!
-  id: ID!
+  id: String!
   url: String
-  token: UUID!
+  token: String!
 }

@@ -1,22 +1,22 @@
 extend type Mutation {
-  collectionAddProducts(collectionId: ID!, products: [ID]!): CollectionAddProducts
+  collectionAddProducts(collectionId: String!, products: [String]!): CollectionAddProducts
   collectionCreate(input: CollectionCreateInput!): CollectionCreate
-  collectionDelete(id: ID!): CollectionDelete
-  collectionReorderProducts(collectionId: ID!, moves: [MoveProductInput]!): CollectionReorderProducts
-  collectionBulkDelete(ids: [ID]!): CollectionBulkDelete
-  collectionRemoveProducts(collectionId: ID!, products: [ID]!): CollectionRemoveProducts
-  collectionUpdate(id: ID!, input: CollectionInput!): CollectionUpdate
-  collectionTranslate(id: ID!, input: TranslationInput!, languageCode: LanguageCodeEnum!): CollectionTranslate
-  collectionChannelListingUpdate(id: ID!, input: CollectionChannelListingUpdateInput!): CollectionChannelListingUpdate
+  collectionDelete(id: String!): CollectionDelete
+  collectionReorderProducts(collectionId: String!, moves: [MoveProductInput]!): CollectionReorderProducts
+  collectionBulkDelete(ids: [String]!): CollectionBulkDelete
+  collectionRemoveProducts(collectionId: String!, products: [String]!): CollectionRemoveProducts
+  collectionUpdate(id: String!, input: CollectionInput!): CollectionUpdate
+  collectionTranslate(id: String!, input: TranslationInput!, languageCode: LanguageCodeEnum!): CollectionTranslate
+  collectionChannelListingUpdate(id: String!, input: CollectionChannelListingUpdateInput!): CollectionChannelListingUpdate
 }
 
 extend type Query {
-  collection(id: ID, slug: String, channel: String): Collection
+  collection(id: String, slug: String, channel: String): Collection
   collections(filter: CollectionFilterInput, sortBy: CollectionSortingInput, channel: String, before: String, after: String, first: Int, last: Int): CollectionCountableConnection
 }
 
 type Collection implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   seoTitle: String
   seoDescription: String
   name: String!
@@ -45,7 +45,7 @@ input CollectionCreateInput {
   backgroundImageAlt: String
   seo: SeoInput
   publicationDate: Date
-  products: [ID]
+  products: [String]
 }
 
 type CollectionCreate {
@@ -59,7 +59,7 @@ type CollectionDelete {
 }
 
 input MoveProductInput {
-  productId: ID!
+  productId: String!
   sortOrder: Int
 }
 
@@ -101,7 +101,7 @@ type CollectionTranslate {
 
 input CollectionChannelListingUpdateInput {
   addChannels: [PublishableChannelListingInput!]
-  removeChannels: [ID!]
+  removeChannels: [String!]
 }
 
 type CollectionChannelListingUpdate {
@@ -113,7 +113,7 @@ input CollectionFilterInput {
   published: CollectionPublished
   search: String
   metadata: [MetadataInput]
-  ids: [ID]
+  ids: [String]
   channel: String
 }
 
@@ -142,7 +142,7 @@ type CollectionCountableConnection {
 }
 
 type CollectionTranslation implements Node {
-  id: ID!
+  id: String!
   seoTitle: String
   seoDescription: String
   name: String
@@ -151,7 +151,7 @@ type CollectionTranslation implements Node {
 }
 
 type CollectionChannelListing implements Node {
-  id: ID!
+  id: String!
   publicationDate: Date
   isPublished: Boolean!
   channel: Channel!
@@ -160,7 +160,7 @@ type CollectionChannelListing implements Node {
 type CollectionError {
   field: String
   message: String
-  products: [ID!]
+  products: [String!]
   code: CollectionErrorCode!
 }
 
@@ -175,7 +175,7 @@ enum CollectionErrorCode {
 }
 
 input PublishableChannelListingInput {
-  channelId: ID!
+  channelId: String!
   isPublished: Boolean
   publicationDate: Date
 }
@@ -184,9 +184,9 @@ type CollectionChannelListingError {
   field: String
   message: String
   code: ProductErrorCode!
-  attributes: [ID!]
-  values: [ID!]
-  channels: [ID!]
+  attributes: [String!]
+  values: [String!]
+  channels: [String!]
 }
 
 type CollectionCountableEdge {

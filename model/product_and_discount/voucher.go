@@ -22,7 +22,7 @@ const (
 	PERCENTAGE = "percentage"
 )
 
-var SALE_TYPES = model.StringArray([]string{FIXED, PERCENTAGE})
+var SALE_TYPES = model.AnyArray[string]{FIXED, PERCENTAGE}
 
 // max length values for some fields of voucher
 const (
@@ -92,7 +92,7 @@ func (v *Voucher) IsValid() *model.AppError {
 	if !model.IsValidId(v.ShopID) {
 		return outer("shop_id", &v.Id)
 	}
-	if len(v.Type) > VOUCHER_TYPE_MAX_LENGTH || !model.StringArray([]string{SHIPPING, ENTIRE_ORDER, SPECIFIC_PRODUCT}).Contains(v.Type) {
+	if len(v.Type) > VOUCHER_TYPE_MAX_LENGTH || !(model.AnyArray[string]{SHIPPING, ENTIRE_ORDER, SPECIFIC_PRODUCT}).Contains(v.Type) {
 		return outer("type", &v.Id)
 	}
 	if v.Name != nil && len(*v.Name) > VOUCHER_NAME_MAX_LENGTH {

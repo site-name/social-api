@@ -15,8 +15,8 @@ func NewSqlCollectionProductStore(s store.Store) store.CollectionProductStore {
 	return &SqlCollectionProductStore{s}
 }
 
-func (ps *SqlCollectionProductStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (ps *SqlCollectionProductStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"CollectionID",
 		"ProductID",

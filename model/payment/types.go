@@ -166,7 +166,7 @@ type CustomerSource struct {
 type PaymentGateway struct {
 	Id         string
 	Name       string
-	Currencies model.StringArray
+	Currencies model.AnyArray[string]
 	Config     []model.StringInterface
 }
 

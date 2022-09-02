@@ -434,7 +434,7 @@ func NewServer(options ...Option) (*Server, error) {
 
 	s.regenerateClientConfig()
 
-	subPath, err := util.GetSubpathFromConfig(s.Config())
+	subPath, err := model.GetSubpathFromConfig(s.Config())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse SiteURL subpath")
 	}

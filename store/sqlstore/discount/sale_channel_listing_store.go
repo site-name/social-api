@@ -17,8 +17,8 @@ func NewSqlDiscountSaleChannelListingStore(sqlStore store.Store) store.DiscountS
 	return &SqlSaleChannelListingStore{sqlStore}
 }
 
-func (scls *SqlSaleChannelListingStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (scls *SqlSaleChannelListingStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"SaleID",
 		"ChannelID",

@@ -1,8 +1,8 @@
 extend type Mutation {
-  deleteMetadata(id: ID!, keys: [String!]!): DeleteMetadata
-  deletePrivateMetadata(id: ID!, keys: [String!]!): DeletePrivateMetadata
-  updateMetadata(id: ID!, input: [MetadataInput!]!): UpdateMetadata
-  updatePrivateMetadata(id: ID!, input: [MetadataInput!]!): UpdatePrivateMetadata
+  deleteMetadata(id: String!, keys: [String!]!): DeleteMetadata
+  deletePrivateMetadata(id: String!, keys: [String!]!): DeletePrivateMetadata
+  updateMetadata(id: String!, input: [MetadataInput!]!): UpdateMetadata
+  updatePrivateMetadata(id: String!, input: [MetadataInput!]!): UpdatePrivateMetadata
 }
 
 type DeleteMetadata {

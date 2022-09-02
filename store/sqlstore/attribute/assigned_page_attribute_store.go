@@ -19,8 +19,8 @@ func NewSqlAssignedPageAttributeStore(s store.Store) store.AssignedPageAttribute
 	}
 }
 
-func (as *SqlAssignedPageAttributeStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{"Id", "PageID", "AssignmentID"}
+func (as *SqlAssignedPageAttributeStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{"Id", "PageID", "AssignmentID"}
 	if prefix == "" {
 		return res
 	}

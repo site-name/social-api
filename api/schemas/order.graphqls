@@ -1,42 +1,41 @@
 extend type Mutation {
   orderSettingsUpdate(input: OrderSettingsUpdateInput!): OrderSettingsUpdate
   giftCardSettingsUpdate(input: GiftCardSettingsUpdateInput!): GiftCardSettingsUpdate
-  orderAddNote(order: ID!, input: OrderAddNoteInput!): OrderAddNote
-  orderCancel(id: ID!): OrderCancel
-  orderCapture(amount: PositiveDecimal!, id: ID!): OrderCapture
-  orderConfirm(id: ID!): OrderConfirm
-  orderFulfill(input: OrderFulfillInput!, order: ID): OrderFulfill
-  orderFulfillmentCancel(id: ID!, input: FulfillmentCancelInput): FulfillmentCancel
-  orderFulfillmentApprove(allowStockToBeExceeded: Boolean = false, id: ID!, notifyCustomer: Boolean!): FulfillmentApprove
-  orderFulfillmentUpdateTracking(id: ID!, input: FulfillmentUpdateTrackingInput!): FulfillmentUpdateTracking
-  orderFulfillmentRefundProducts(input: OrderRefundProductsInput!, order: ID!): FulfillmentRefundProducts
-  orderFulfillmentReturnProducts(input: OrderReturnProductsInput!, order: ID!): FulfillmentReturnProducts
-  orderMarkAsPaid(id: ID!, transactionReference: String): OrderMarkAsPaid
-  orderRefund(amount: PositiveDecimal!, id: ID!): OrderRefund
-  orderUpdate(id: ID!, input: OrderUpdateInput!): OrderUpdate
-  orderUpdateShipping(order: ID!, input: OrderUpdateShippingInput!): OrderUpdateShipping
-  orderVoid(id: ID!): OrderVoid
-  orderBulkCancel(ids: [ID]!): OrderBulkCancel
+  orderAddNote(order: String!, input: OrderAddNoteInput!): OrderAddNote
+  orderCancel(id: String!): OrderCancel
+  orderCapture(amount: PositiveDecimal!, id: String!): OrderCapture
+  orderConfirm(id: String!): OrderConfirm
+  orderFulfill(input: OrderFulfillInput!, order: String): OrderFulfill
+  orderFulfillmentCancel(id: String!, input: FulfillmentCancelInput): FulfillmentCancel
+  orderFulfillmentApprove(allowStockToBeExceeded: Boolean = false, id: String!, notifyCustomer: Boolean!): FulfillmentApprove
+  orderFulfillmentUpdateTracking(id: String!, input: FulfillmentUpdateTrackingInput!): FulfillmentUpdateTracking
+  orderFulfillmentRefundProducts(input: OrderRefundProductsInput!, order: String!): FulfillmentRefundProducts
+  orderFulfillmentReturnProducts(input: OrderReturnProductsInput!, order: String!): FulfillmentReturnProducts
+  orderMarkAsPaid(id: String!, transactionReference: String): OrderMarkAsPaid
+  orderRefund(amount: PositiveDecimal!, id: String!): OrderRefund
+  orderUpdate(id: String!, input: OrderUpdateInput!): OrderUpdate
+  orderUpdateShipping(order: String!, input: OrderUpdateShippingInput!): OrderUpdateShipping
+  orderVoid(id: String!): OrderVoid
+  orderBulkCancel(ids: [String]!): OrderBulkCancel
 }
 
 extend type Query {
   orderSettings: OrderSettings
-  order(id: ID!): Order
+  order(id: String!): Order
   orders(sortBy: OrderSortingInput, filter: OrderFilterInput, channel: String, before: String, after: String, first: Int, last: Int): OrderCountableConnection
   draftOrders(sortBy: OrderSortingInput, filter: OrderDraftFilterInput, before: String, after: String, first: Int, last: Int): OrderCountableConnection
   ordersTotal(period: ReportingPeriod, channel: String): TaxedMoney
-  orderByToken(token: UUID!): Order
+  orderByToken(token: String!): Order
 }
 
 type Order implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   created: DateTime!
   status: OrderStatus!
   user: User
   trackingClientId: String!
   billingAddress: Address
   shippingAddress: Address
-  # shippingMethod: ShippingMethod
   shippingMethodName: String
   collectionPointName: String
   channel: Channel!
@@ -44,40 +43,40 @@ type Order implements Node & ObjectWithMetadata {
   shippingTaxRate: Float!
   token: String!
   voucher: Voucher
-  giftCards(_: PlaceHolder): [GiftCard]
+  giftCards: [GiftCard]
   displayGrossPrices: Boolean!
   customerNote: String!
   weight: Weight
   redirectUrl: String
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
-  fulfillments(_: PlaceHolder): [Fulfillment]! # fulfillments: [Fulfillment]!
-  lines(_: PlaceHolder): [OrderLine]! # lines: [OrderLine]!
-  actions(_: PlaceHolder): [OrderAction]! # actions: [OrderAction]!
-  availableShippingMethods(_: PlaceHolder): [ShippingMethod] # availableShippingMethods: [ShippingMethod]
+  fulfillments: [Fulfillment]!
+  lines: [OrderLine]!
+  actions: [OrderAction]!
+  availableShippingMethods: [ShippingMethod]
   availableCollectionPoints: [Warehouse!]!
-  invoices(_: PlaceHolder): [Invoice] # invoices: [Invoice]
+  invoices: [Invoice]
   number: String
-  original: ID
+  original: String
   origin: OrderOriginEnum!
   isPaid: Boolean!
-  paymentStatus(_: PlaceHolder): PaymentChargeStatusEnum! # paymentStatus: PaymentChargeStatusEnum!
-  paymentStatusDisplay(_: PlaceHolder): String! # paymentStatusDisplay: String!
-  payments(_: PlaceHolder): [Payment] # payments: [Payment]
+  paymentStatus: PaymentChargeStatusEnum!
+  paymentStatusDisplay: String!
+  payments: [Payment]
   total: TaxedMoney!
   undiscountedTotal: TaxedMoney!
-  subtotal(_: PlaceHolder): TaxedMoney! # subtotal: TaxedMoney!
-  statusDisplay(_: PlaceHolder): String # statusDisplay: String
-  canFinalize(_: PlaceHolder): Boolean! # canFinalize: Boolean! 
-  totalAuthorized(_: PlaceHolder): Money! # totalAuthorized: Money!
-  totalCaptured(_: PlaceHolder): Money! # totalCaptured: Money!
-  events(_: PlaceHolder): [OrderEvent] # events: [OrderEvent]
+  subtotal: TaxedMoney!
+  statusDisplay: String
+  canFinalize: Boolean! 
+  totalAuthorized: Money!
+  totalCaptured: Money!
+  events: [OrderEvent]
   totalBalance: Money!
   userEmail: String
-  isShippingRequired(_: PlaceHolder): Boolean! # isShippingRequired: Boolean!
+  isShippingRequired: Boolean!
   deliveryMethod: DeliveryMethod
   languageCodeEnum: LanguageCodeEnum!
-  discounts(_: PlaceHolder): [OrderDiscount!] # discounts: [OrderDiscount!]
+  discounts: [OrderDiscount!]
 }
 
 union DeliveryMethod = Warehouse | ShippingMethod
@@ -130,7 +129,7 @@ type OrderFulfill {
 }
 
 input FulfillmentCancelInput {
-  warehouseId: ID
+  warehouseId: String
 }
 
 type FulfillmentCancel {
@@ -190,7 +189,7 @@ type OrderRefund {
 }
 
 input OrderUpdateShippingInput {
-  shippingMethod: ID
+  shippingMethod: String
 }
 
 type OrderUpdateShipping {
@@ -225,7 +224,7 @@ input OrderFilterInput {
   created: DateRangeInput
   search: String
   metadata: [MetadataInput]
-  channels: [ID]
+  channels: [String]
 }
 
 type OrderCountableConnection {
@@ -239,7 +238,7 @@ input OrderDraftFilterInput {
   created: DateRangeInput
   search: String
   metadata: [MetadataInput]
-  channels: [ID]
+  channels: [String]
 }
 
 enum OrderStatus {
@@ -254,7 +253,7 @@ enum OrderStatus {
 }
 
 type Fulfillment implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   fulfillmentOrder: Int!
   status: FulfillmentStatus!
   trackingNumber: String!
@@ -290,7 +289,7 @@ enum OrderSettingsErrorCode {
 }
 
 type OrderEvent implements Node {
-  id: ID!
+  id: String!
   date: DateTime
   type: OrderEventsEnum
   user: User
@@ -318,9 +317,9 @@ type OrderError {
   field: String
   message: String
   code: OrderErrorCode!
-  warehouse: ID
-  orderLine: ID
-  variants: [ID!]
+  warehouse: String
+  orderLine: String
+  variants: [String!]
   addressType: AddressTypeEnum
 }
 
@@ -359,33 +358,33 @@ enum OrderErrorCode {
 }
 
 input OrderFulfillLineInput {
-  orderLineId: ID
+  orderLineId: String
   stocks: [OrderFulfillStockInput!]!
 }
 
 input OrderFulfillStockInput {
   quantity: Int!
-  warehouse: ID!
+  warehouse: String!
 }
 
 input OrderRefundLineInput {
-  orderLineId: ID!
+  orderLineId: String!
   quantity: Int!
 }
 
 input OrderRefundFulfillmentLineInput {
-  fulfillmentLineId: ID!
+  fulfillmentLineId: String!
   quantity: Int!
 }
 
 input OrderReturnLineInput {
-  orderLineId: ID!
+  orderLineId: String!
   quantity: Int!
   replace: Boolean = false
 }
 
 input OrderReturnFulfillmentLineInput {
-  fulfillmentLineId: ID!
+  fulfillmentLineId: String!
   quantity: Int!
   replace: Boolean = false
 }
@@ -491,7 +490,7 @@ type OrderEventDiscountObject {
 }
 
 type FulfillmentLine implements Node {
-  id: ID!
+  id: String!
   quantity: Int!
   orderLine: OrderLine
 }
@@ -507,7 +506,7 @@ enum FulfillmentStatus {
 }
 
 type OrderDiscount implements Node {
-  id: ID!
+  id: String!
   type: OrderDiscountType!
   valueType: DiscountValueTypeEnum!
   value: PositiveDecimal!

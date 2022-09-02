@@ -19,8 +19,8 @@ func NewSqlAllocationStore(s store.Store) store.AllocationStore {
 	return &SqlAllocationStore{s}
 }
 
-func (as *SqlAllocationStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (as *SqlAllocationStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"CreateAt",
 		"OrderLineID",

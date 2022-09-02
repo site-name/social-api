@@ -174,7 +174,7 @@ func (s *Server) servePluginRequest(w http.ResponseWriter, r *http.Request, hand
 
 	params := mux.Vars(r)
 
-	subpath, _ := util.GetSubpathFromConfig(s.Config())
+	subpath, _ := model.GetSubpathFromConfig(s.Config())
 
 	newQuery := r.URL.Query()
 	newQuery.Del("access_token")

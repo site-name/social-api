@@ -1,21 +1,21 @@
 extend type Mutation {
-  checkoutAddPromoCode(promoCode: String!, token: UUID): CheckoutAddPromoCode
-  checkoutBillingAddressUpdate(billingAddress: AddressInput!, token: UUID): CheckoutBillingAddressUpdate
-  checkoutComplete(paymentData: JSONString, redirectUrl: String, storeSource: Boolean = false, token: UUID): CheckoutComplete
+  checkoutAddPromoCode(promoCode: String!, token: String): CheckoutAddPromoCode
+  checkoutBillingAddressUpdate(billingAddress: AddressInput!, token: String): CheckoutBillingAddressUpdate
+  checkoutComplete(paymentData: JSONString, redirectUrl: String, storeSource: Boolean = false, token: String): CheckoutComplete
   checkoutCreate(input: CheckoutCreateInput!): CheckoutCreate
-  checkoutCustomerAttach(customerId: ID, token: UUID): CheckoutCustomerAttach
-  checkoutCustomerDetach(token: UUID): CheckoutCustomerDetach
-  checkoutEmailUpdate(email: String!, token: UUID): CheckoutEmailUpdate
-  checkoutRemovePromoCode(promoCode: String!, token: UUID): CheckoutRemovePromoCode
-  checkoutPaymentCreate(input: PaymentInput!, token: UUID): CheckoutPaymentCreate
-  checkoutShippingAddressUpdate(shippingAddress: AddressInput!, token: UUID): CheckoutShippingAddressUpdate
-  # checkoutShippingMethodUpdate(shippingMethodId: ID!, token: UUID): CheckoutShippingMethodUpdate
-  checkoutDeliveryMethodUpdate(deliveryMethodId: ID, token: UUID): CheckoutDeliveryMethodUpdate
-  checkoutLanguageCodeUpdate(languageCode: LanguageCodeEnum!, token: UUID): CheckoutLanguageCodeUpdate
+  checkoutCustomerAttach(customerId: String, token: String): CheckoutCustomerAttach
+  checkoutCustomerDetach(token: String): CheckoutCustomerDetach
+  checkoutEmailUpdate(email: String!, token: String): CheckoutEmailUpdate
+  checkoutRemovePromoCode(promoCode: String!, token: String): CheckoutRemovePromoCode
+  checkoutPaymentCreate(input: PaymentInput!, token: String): CheckoutPaymentCreate
+  checkoutShippingAddressUpdate(shippingAddress: AddressInput!, token: String): CheckoutShippingAddressUpdate
+  # checkoutShippingMethodUpdate(shippingMethodId: String!, token: String): CheckoutShippingMethodUpdate
+  checkoutDeliveryMethodUpdate(deliveryMethodId: String, token: String): CheckoutDeliveryMethodUpdate
+  checkoutLanguageCodeUpdate(languageCode: LanguageCodeEnum!, token: String): CheckoutLanguageCodeUpdate
 }
 
 extend type Query {
-  checkout(token: UUID): Checkout
+  checkout(token: String): Checkout
   checkouts(channel: String, before: String, after: String, first: Int, last: Int): CheckoutCountableConnection
 }
 
@@ -37,7 +37,7 @@ type Checkout implements Node & ObjectWithMetadata {
   translatedDiscountName: String
   voucherCode: String
   giftCards: [GiftCard]
-  id: ID!
+  id: String!
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   availableShippingMethods: [ShippingMethod]!
@@ -51,7 +51,7 @@ type Checkout implements Node & ObjectWithMetadata {
   # shippingMethod: ShippingMethod
   deliveryMethod: DeliveryMethod
   subtotalPrice: TaxedMoney
-  token: UUID!
+  token: String!
   totalPrice: TaxedMoney
   languageCode: LanguageCodeEnum!
 }
@@ -157,7 +157,7 @@ type CheckoutCountableEdge {
 
 type PaymentGateway {
   name: String!
-  id: ID!
+  id: String!
   config: [GatewayConfigLine!]!
   currencies: [String]!
 }
@@ -166,7 +166,7 @@ type CheckoutError {
   field: String
   message: String
   code: CheckoutErrorCode!
-  variants: [ID!]
+  variants: [String!]
   addressType: AddressTypeEnum
 }
 

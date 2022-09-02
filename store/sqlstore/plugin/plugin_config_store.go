@@ -20,8 +20,8 @@ func NewSqlPluginConfigurationStore(s store.Store) store.PluginConfigurationStor
 	return &SqlPluginConfigurationStore{s}
 }
 
-func (s *SqlPluginConfigurationStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlPluginConfigurationStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Identifier",
 		"Name",

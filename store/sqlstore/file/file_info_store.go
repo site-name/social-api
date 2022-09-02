@@ -15,11 +15,11 @@ import (
 type SqlFileInfoStore struct {
 	store.Store
 	metrics     einterfaces.MetricsInterface
-	queryFields model.StringArray
+	queryFields model.AnyArray[string]
 }
 
-func (fs *SqlFileInfoStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (fs *SqlFileInfoStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"CreatorId",
 		"ParentID",
@@ -57,7 +57,7 @@ func NewSqlFileInfoStore(sqlStore store.Store, metrics einterfaces.MetricsInterf
 		metrics: metrics,
 	}
 
-	s.queryFields = model.StringArray{
+	s.queryFields = model.AnyArray[string]{
 		"FileInfos.Id",
 		"FileInfos.CreatorId",
 		"FileInfos.ParentID",

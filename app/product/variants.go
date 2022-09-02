@@ -25,7 +25,7 @@ func (a *ServiceProduct) GenerateAndSetVariantName(variant *product_and_discount
 func (a *ServiceProduct) GetVariantSelectionAttributes(attributes []*attribute.Attribute) []*attribute.Attribute {
 
 	for i, attr := range attributes {
-		if !util.StringInSlice(attr.InputType, attribute.ALLOWED_IN_VARIANT_SELECTION) || attr.Type != attribute.PRODUCT_TYPE {
+		if !util.ItemInSlice(attr.InputType, attribute.ALLOWED_IN_VARIANT_SELECTION) || attr.Type != attribute.PRODUCT_TYPE {
 			attributes = append(attributes[:i], attributes[i+1:]...)
 		}
 	}

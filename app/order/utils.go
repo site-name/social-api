@@ -674,7 +674,7 @@ func (a *ServiceOrder) calculateQuantityIncludingReturns(ord order.Order) (int, 
 		fulfillmentMap         = map[string]*order.Fulfillment{}
 	)
 	for _, fulfillment := range fulfillmentsOfOrder {
-		if util.StringInSlice(string(fulfillment.Status), []string{
+		if util.ItemInSlice(string(fulfillment.Status), []string{
 			string(order.FULFILLMENT_RETURNED),
 			string(order.FULFILLMENT_REFUNDED_AND_RETURNED),
 			string(order.FULFILLMENT_REPLACED),

@@ -17,8 +17,8 @@ func NewSqlSaleCollectionRelationStore(s store.Store) store.SaleCollectionRelati
 	return &SqlSaleCollectionRelationStore{s}
 }
 
-func (s *SqlSaleCollectionRelationStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlSaleCollectionRelationStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id", "SaleID", "CollectionID", "CreateAt",
 	}
 	if prefix == "" {

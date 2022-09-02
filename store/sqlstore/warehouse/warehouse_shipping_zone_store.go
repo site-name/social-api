@@ -15,8 +15,8 @@ func NewSqlWarehouseShippingZoneStore(s store.Store) store.WarehouseShippingZone
 	return &SqlWarehouseShippingZoneStore{s}
 }
 
-func (ws *SqlWarehouseShippingZoneStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (ws *SqlWarehouseShippingZoneStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"WarehouseID",
 		"ShippingZoneID",

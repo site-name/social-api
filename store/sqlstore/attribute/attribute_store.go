@@ -18,8 +18,8 @@ func NewSqlAttributeStore(s store.Store) store.AttributeStore {
 	return &SqlAttributeStore{s}
 }
 
-func (as *SqlAttributeStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (as *SqlAttributeStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Slug",
 		"Name",

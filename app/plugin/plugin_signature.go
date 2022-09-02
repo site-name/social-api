@@ -42,7 +42,7 @@ func (a *ServicePlugin) AddPublicKey(name string, key io.Reader) *model.AppError
 	}
 
 	a.srv.UpdateConfig(func(cfg *model.Config) {
-		if !util.StringInSlice(name, cfg.PluginSettings.SignaturePublicKeyFiles) {
+		if !util.ItemInSlice(name, cfg.PluginSettings.SignaturePublicKeyFiles) {
 			cfg.PluginSettings.SignaturePublicKeyFiles = append(cfg.PluginSettings.SignaturePublicKeyFiles, name)
 		}
 	})
@@ -61,7 +61,7 @@ func (a *ServicePlugin) DeletePublicKey(name string) *model.AppError {
 	}
 
 	a.srv.UpdateConfig(func(cfg *model.Config) {
-		cfg.PluginSettings.SignaturePublicKeyFiles = util.RemoveStringFromSlice(filename, cfg.PluginSettings.SignaturePublicKeyFiles)
+		cfg.PluginSettings.SignaturePublicKeyFiles = util.RemoveItemsFromSlice(cfg.PluginSettings.SignaturePublicKeyFiles, filename)
 	})
 
 	return nil

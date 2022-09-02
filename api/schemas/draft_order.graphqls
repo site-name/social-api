@@ -1,10 +1,10 @@
 extend type Mutation {
-  draftOrderComplete(id: ID!): DraftOrderComplete
+  draftOrderComplete(id: String!): DraftOrderComplete
   draftOrderCreate(input: DraftOrderCreateInput!): DraftOrderCreate
-  draftOrderDelete(id: ID!): DraftOrderDelete
-  draftOrderBulkDelete(ids: [ID]!): DraftOrderBulkDelete
-  # draftOrderLinesBulkDelete(ids: [ID]!): DraftOrderLinesBulkDelete
-  draftOrderUpdate(id: ID!, input: DraftOrderInput!): DraftOrderUpdate
+  draftOrderDelete(id: String!): DraftOrderDelete
+  draftOrderBulkDelete(ids: [String]!): DraftOrderBulkDelete
+  # draftOrderLinesBulkDelete(ids: [String]!): DraftOrderLinesBulkDelete
+  draftOrderUpdate(id: String!, input: DraftOrderInput!): DraftOrderUpdate
 }
 
 type DraftOrderComplete {
@@ -14,14 +14,14 @@ type DraftOrderComplete {
 
 input DraftOrderCreateInput {
   billingAddress: AddressInput
-  user: ID
+  user: String
   userEmail: String
   discount: PositiveDecimal
   shippingAddress: AddressInput
-  shippingMethod: ID
-  voucher: ID
+  shippingMethod: String
+  voucher: String
   customerNote: String
-  channelId: ID
+  channelId: String
   redirectUrl: String
   lines: [OrderLineCreateInput]
 }
@@ -48,14 +48,14 @@ type DraftOrderLinesBulkDelete {
 
 input DraftOrderInput {
   billingAddress: AddressInput
-  user: ID
+  user: String
   userEmail: String
   discount: PositiveDecimal
   shippingAddress: AddressInput
-  shippingMethod: ID
-  voucher: ID
+  shippingMethod: String
+  voucher: String
   customerNote: String
-  channelId: ID
+  channelId: String
   redirectUrl: String
 }
 

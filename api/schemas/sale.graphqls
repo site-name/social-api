@@ -1,21 +1,21 @@
 extend type Mutation {
   saleCreate(input: SaleInput!): SaleCreate
-  saleDelete(id: ID!): SaleDelete
-  saleBulkDelete(ids: [ID]!): SaleBulkDelete
-  saleUpdate(id: ID!, input: SaleInput!): SaleUpdate
-  saleCataloguesAdd(id: ID!, input: CatalogueInput!): SaleAddCatalogues
-  saleCataloguesRemove(id: ID!, input: CatalogueInput!): SaleRemoveCatalogues
-  saleTranslate(id: ID!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): SaleTranslate
-  saleChannelListingUpdate(id: ID!, input: SaleChannelListingInput!): SaleChannelListingUpdate
+  saleDelete(id: String!): SaleDelete
+  saleBulkDelete(ids: [String]!): SaleBulkDelete
+  saleUpdate(id: String!, input: SaleInput!): SaleUpdate
+  saleCataloguesAdd(id: String!, input: CatalogueInput!): SaleAddCatalogues
+  saleCataloguesRemove(id: String!, input: CatalogueInput!): SaleRemoveCatalogues
+  saleTranslate(id: String!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): SaleTranslate
+  saleChannelListingUpdate(id: String!, input: SaleChannelListingInput!): SaleChannelListingUpdate
 }
 
 extend type Query {
-  sale(id: ID!, channel: String): Sale
+  sale(id: String!, channel: String): Sale
   sales(filter: SaleFilterInput, sortBy: SaleSortingInput, query: String, channel: String, before: String, after: String, first: Int, last: Int): SaleCountableConnection
 }
 
 type Sale implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   name: String!
   type: SaleType!
   startDate: DateTime!
@@ -36,10 +36,10 @@ input SaleInput {
   name: String
   type: DiscountValueTypeEnum
   value: PositiveDecimal
-  products: [ID]
-  variants: [ID]
-  categories: [ID]
-  collections: [ID]
+  products: [String]
+  variants: [String]
+  categories: [String]
+  collections: [String]
   startDate: DateTime
   endDate: DateTime
 }
@@ -65,9 +65,9 @@ type SaleUpdate {
 }
 
 input CatalogueInput {
-  products: [ID]
-  categories: [ID]
-  collections: [ID]
+  products: [String]
+  categories: [String]
+  collections: [String]
 }
 
 type SaleAddCatalogues {
@@ -87,7 +87,7 @@ type SaleTranslate {
 
 input SaleChannelListingInput {
   addChannels: [SaleChannelListingAddInput!]
-  removeChannels: [ID!]
+  removeChannels: [String!]
 }
 
 type SaleChannelListingUpdate {
@@ -134,13 +134,13 @@ enum SaleType {
 }
 
 type SaleTranslation implements Node {
-  id: ID!
+  id: String!
   name: String
   language: LanguageDisplay!
 }
 
 type SaleChannelListing implements Node {
-  id: ID!
+  id: String!
   channel: Channel!
   discountValue: Float!
   currency: String!
@@ -152,6 +152,6 @@ enum DiscountValueTypeEnum {
 }
 
 input SaleChannelListingAddInput {
-  channelId: ID!
+  channelId: String!
   discountValue: PositiveDecimal!
 }

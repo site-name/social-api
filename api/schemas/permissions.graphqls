@@ -1,12 +1,12 @@
 extend type Mutation {
   permissionGroupCreate(input: PermissionGroupCreateInput!): PermissionGroupCreate
-  permissionGroupUpdate(id: ID!, input: PermissionGroupUpdateInput!): PermissionGroupUpdate
-  permissionGroupDelete(id: ID!): PermissionGroupDelete
+  permissionGroupUpdate(id: String!, input: PermissionGroupUpdateInput!): PermissionGroupUpdate
+  permissionGroupDelete(id: String!): PermissionGroupDelete
 }
 
 extend type Query {
   permissionGroups(filter: PermissionGroupFilterInput, sortBy: PermissionGroupSortingInput, before: String, after: String, first: Int, last: Int): GroupCountableConnection
-  permissionGroup(id: ID!): Group
+  permissionGroup(id: String!): Group
 }
 
 type Permission {
@@ -38,7 +38,7 @@ enum PermissionEnum {
 
 input PermissionGroupCreateInput {
   addPermissions: [PermissionEnum!]
-  addUsers: [ID!]
+  addUsers: [String!]
   name: String!
 }
 
@@ -49,10 +49,10 @@ type PermissionGroupCreate {
 
 input PermissionGroupUpdateInput {
   addPermissions: [PermissionEnum!]
-  addUsers: [ID!]
+  addUsers: [String!]
   name: String
   removePermissions: [PermissionEnum!]
-  removeUsers: [ID!]
+  removeUsers: [String!]
 }
 
 type PermissionGroupUpdate {
@@ -81,7 +81,7 @@ type GroupCountableConnection {
 }
 
 type Group implements Node {
-  id: ID!
+  id: String!
   name: String!
   permissions: [Permission]
   users: [User]
@@ -93,7 +93,7 @@ type PermissionGroupError {
   message: String
   code: PermissionGroupErrorCode!
   permissions: [PermissionEnum!]
-  users: [ID!]
+  users: [String!]
 }
 
 enum PermissionGroupErrorCode {

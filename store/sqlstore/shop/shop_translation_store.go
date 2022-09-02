@@ -17,8 +17,8 @@ func NewSqlShopTranslationStore(s store.Store) store.ShopTranslationStore {
 	return &SqlShopTranslationStore{s}
 }
 
-func (s *SqlShopTranslationStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlShopTranslationStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ShopID",
 		"LanguageCode",

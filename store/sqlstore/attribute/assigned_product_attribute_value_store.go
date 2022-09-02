@@ -24,8 +24,8 @@ func NewSqlAssignedProductAttributeValueStore(s store.Store) store.AssignedProdu
 	return &SqlAssignedProductAttributeValueStore{s}
 }
 
-func (as *SqlAssignedProductAttributeValueStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (as *SqlAssignedProductAttributeValueStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ValueID",
 		"AssignmentID",

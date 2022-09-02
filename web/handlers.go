@@ -55,7 +55,7 @@ func (w *Web) NewHandler(h func(*Context, http.ResponseWriter, *http.Request)) h
 func (w *Web) NewStaticHandler(h func(*Context, http.ResponseWriter, *http.Request)) http.Handler {
 	// Determine the CSP SHA directive needed for subpath support, if any. This value is fixed
 	// on server start and intentionally requires a restart to take effect.
-	subpath, _ := util.GetSubpathFromConfig(w.srv.Config())
+	subpath, _ := model.GetSubpathFromConfig(w.srv.Config())
 
 	return &Handler{
 		Srv:             w.srv,
@@ -65,7 +65,7 @@ func (w *Web) NewStaticHandler(h func(*Context, http.ResponseWriter, *http.Reque
 		TrustRequester:  false,
 		RequireMfa:      false,
 		IsStatic:        true,
-		cspShaDirective: util.GetSubpathScriptHash(subpath),
+		cspShaDirective: model.GetSubpathScriptHash(subpath),
 	}
 }
 
@@ -157,7 +157,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// do not get cut off.
 	r.Body = http.MaxBytesReader(w, r.Body, *c.App.Config().FileSettings.MaxFileSize+bytes.MinRead)
 
-	subpath, _ := util.GetSubpathFromConfig(c.App.Config())
+	subpath, _ := model.GetSubpathFromConfig(c.App.Config())
 	c.SetSiteURLHeader(app.GetProtocol(r) + "://" + r.Host + subpath)
 
 	w.Header().Set(model.HeaderRequestId, c.AppContext.RequestId())

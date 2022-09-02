@@ -75,7 +75,7 @@ func Handle404(config configservice.ConfigService, w http.ResponseWriter, r *htt
 
 // IsApiCall checks if given request's url's path is prefixed with "api"
 func IsApiCall(config configservice.ConfigService, r *http.Request) bool {
-	subpath, _ := util.GetSubpathFromConfig(config.Config())
+	subpath, _ := model.GetSubpathFromConfig(config.Config())
 
 	return strings.HasPrefix(r.URL.Path, path.Join(subpath, "api")+"/")
 }

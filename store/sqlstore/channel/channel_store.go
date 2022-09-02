@@ -18,8 +18,8 @@ func NewSqlChannelStore(sqlStore store.Store) store.ChannelStore {
 	return &SqlChannelStore{sqlStore}
 }
 
-func (cs *SqlChannelStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (cs *SqlChannelStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ShopID",
 		"Name",

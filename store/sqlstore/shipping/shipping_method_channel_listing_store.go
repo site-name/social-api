@@ -17,8 +17,8 @@ func NewSqlShippingMethodChannelListingStore(s store.Store) store.ShippingMethod
 	return &SqlShippingMethodChannelListingStore{s}
 }
 
-func (s *SqlShippingMethodChannelListingStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlShippingMethodChannelListingStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ShippingMethodID",
 		"ChannelID",

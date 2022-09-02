@@ -17,8 +17,8 @@ func NewSqlProductMediaStore(s store.Store) store.ProductMediaStore {
 	return &SqlProductMediaStore{s}
 }
 
-func (s *SqlProductMediaStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlProductMediaStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"CreateAt",
 		"ProductID",

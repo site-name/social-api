@@ -24,8 +24,8 @@ func NewSqlAssignedVariantAttributeValueStore(s store.Store) store.AssignedVaria
 	return &SqlAssignedVariantAttributeValueStore{s}
 }
 
-func (as *SqlAssignedVariantAttributeValueStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (as *SqlAssignedVariantAttributeValueStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ValueID",
 		"AssignmentID",

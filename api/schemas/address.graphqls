@@ -1,17 +1,17 @@
 extend type Mutation {
-  addressCreate(input: AddressInput!, userId: ID!): AddressCreate
-  addressUpdate(id: ID!, input: AddressInput!): AddressUpdate
-  addressDelete(id: ID!): AddressDelete
-  addressSetDefault(addressId: ID!, type: AddressTypeEnum!, userId: ID!): AddressSetDefault
+  addressCreate(input: AddressInput!, userId: String!): AddressCreate
+  addressUpdate(id: String!, input: AddressInput!): AddressUpdate
+  addressDelete(id: String!): AddressDelete
+  addressSetDefault(addressId: String!, type: AddressTypeEnum!, userId: String!): AddressSetDefault
 }
 
 extend type Query {
   addressValidationRules(countryCode: CountryCode!, countryArea: String, city: String, cityArea: String): AddressValidationData
-  address(id: ID!): Address
+  address(id: String!): Address
 }
 
 type Address implements Node {
-  id: ID!
+  id: String!
   firstName: String!
   lastName: String!
   companyName: String!

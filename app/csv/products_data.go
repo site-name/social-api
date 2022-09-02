@@ -19,9 +19,9 @@ import (
 // csv writer and list of attribute and warehouse headers.
 func (a *ServiceCsv) GetProductsData(products product_and_discount.Products, exportFields []string, attributeIDs []string, warehouseIDs []string, channelIDs []string) {
 	var (
-		exportVariantID     = util.StringInSlice("variants__id", exportFields)
+		exportVariantID     = util.ItemInSlice("variants__id", exportFields)
 		productFields       = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["fields"].Values()
-		productExportFields = util.StringArrayIntersection(exportFields, productFields)
+		productExportFields = util.SlicesIntersection(exportFields, productFields)
 	)
 
 	if !exportVariantID {
@@ -36,7 +36,7 @@ func (a *ServiceCsv) GetProductsData(products product_and_discount.Products, exp
 func (s *ServiceCsv) getProductsRelationsData(products product_and_discount.Products, exportFields, attributeIDs, channelIDs []string) map[string]model.StringMap {
 	var (
 		manyToManyFields = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["product_many_to_many"].Values()
-		relationFields   = util.StringArrayIntersection(exportFields, manyToManyFields)
+		relationFields   = util.SlicesIntersection(exportFields, manyToManyFields)
 	)
 
 	if len(relationFields) > 0 || len(attributeIDs) > 0 || len(channelIDs) > 0 {
@@ -127,7 +127,7 @@ func (s *ServiceCsv) handleAttributeData(pk string, data model.StringInterface, 
 		DateTime:   data.Pop(attributeFields["date_time"], nil),
 	}
 
-	if len(attributeIDs) > 0 && util.StringInSlice(attributePK, attributeIDs) {
+	if len(attributeIDs) > 0 && util.ItemInSlice(attributePK, attributeIDs) {
 		resultData = s.addAttributeInfoToData(pk, attributeData, attributeOwner, resultData)
 	}
 

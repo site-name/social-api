@@ -21,8 +21,8 @@ func NewSqlCheckoutLineStore(sqlStore store.Store) store.CheckoutLineStore {
 	return &SqlCheckoutLineStore{sqlStore}
 }
 
-func (cls *SqlCheckoutLineStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (cls *SqlCheckoutLineStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"CreateAt",
 		"CheckoutID",

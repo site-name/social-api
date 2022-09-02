@@ -1,28 +1,28 @@
 extend type Mutation {
   appCreate(input: AppInput!): AppCreate
-  appUpdate(id: ID!, input: AppInput!): AppUpdate
-  appDelete(id: ID!): AppDelete
+  appUpdate(id: String!, input: AppInput!): AppUpdate
+  appDelete(id: String!): AppDelete
   appTokenCreate(input: AppTokenInput!): AppTokenCreate
-  appTokenDelete(id: ID!): AppTokenDelete
+  appTokenDelete(id: String!): AppTokenDelete
   appTokenVerify(token: String!): AppTokenVerify
   appInstall(input: AppInstallInput!): AppInstall
-  appRetryInstall(activateAfterInstallation: Boolean = true, id: ID!): AppRetryInstall
-  appDeleteFailedInstallation(id: ID!): AppDeleteFailedInstallation
+  appRetryInstall(activateAfterInstallation: Boolean = true, id: String!): AppRetryInstall
+  appDeleteFailedInstallation(id: String!): AppDeleteFailedInstallation
   appFetchManifest(manifestUrl: String!): AppFetchManifest
-  appActivate(id: ID!): AppActivate
-  appDeactivate(id: ID!): AppDeactivate
+  appActivate(id: String!): AppActivate
+  appDeactivate(id: String!): AppDeactivate
 }
 
 extend type Query {
   appsInstallations: [AppInstallation!]!
   apps(filter: AppFilterInput, sortBy: AppSortingInput, before: String, after: String, first: Int, last: Int): AppCountableConnection
-  app(id: ID): App
+  app(id: String): App
   appExtensions(filter: AppExtensionFilterInput, before: String, after: String, first: Int, last: Int): AppExtensionCountableConnection
-  appExtension(id: ID!): AppExtension
+  appExtension(id: String!): AppExtension
 }
 
 type App implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   name: String
   created: DateTime
   isActive: Boolean
@@ -45,7 +45,7 @@ type App implements Node & ObjectWithMetadata {
 }
 
 type AppExtension implements Node {
-  id: ID!
+  id: String!
   app: App!
   label: String!
   url: String!
@@ -114,7 +114,7 @@ type AppUpdate {
 
 input AppTokenInput {
   name: String
-  app: ID!
+  app: String!
 }
 
 type AppTokenCreate {
@@ -166,7 +166,7 @@ type AppDeactivate {
 type AppInstallation implements Node & Job {
   appName: String!
   manifestUrl: String!
-  id: ID!
+  id: String!
   status: JobStatusEnum!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -236,7 +236,7 @@ enum AppErrorCode {
 type AppToken implements Node {
   name: String
   authToken: String
-  id: ID!
+  id: String!
 }
 
 input AppInstallInput {

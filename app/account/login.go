@@ -17,7 +17,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -264,7 +263,7 @@ func (a *ServiceAccount) AttachSessionCookies(c *request.Context, w http.Respons
 
 	maxAge := *a.srv.Config().ServiceSettings.SessionLengthWebInDays * 60 * 60 * 24
 	domain := a.srv.GetCookieDomain()
-	subpath, _ := util.GetSubpathFromConfig(a.srv.Config())
+	subpath, _ := model.GetSubpathFromConfig(a.srv.Config())
 
 	expiresAt := time.Unix(model.GetMillis()/1000+int64(maxAge), 0)
 	sessionCookie := &http.Cookie{

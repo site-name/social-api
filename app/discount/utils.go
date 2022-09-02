@@ -72,11 +72,11 @@ func (a *ServiceDiscount) RemoveVoucherUsageByCustomer(voucher *product_and_disc
 // GetProductDiscountOnSale Return discount value if product is on sale or raise NotApplicable
 func (a *ServiceDiscount) GetProductDiscountOnSale(product product_and_discount.Product, productCollectionIDs []string, discountInfo *product_and_discount.DiscountInfo, channeL channel.Channel, variantID string) (types.DiscountCalculator, *model.AppError) {
 	// this checks whether the given product is on sale
-	isProductOnSale := util.StringInSlice(product.Id, discountInfo.ProductIDs) ||
-		(product.CategoryID != nil && util.StringInSlice(*product.CategoryID, discountInfo.CategoryIDs)) ||
-		len(util.StringArrayIntersection(productCollectionIDs, discountInfo.CollectionIDs)) > 0
+	isProductOnSale := util.ItemInSlice(product.Id, discountInfo.ProductIDs) ||
+		(product.CategoryID != nil && util.ItemInSlice(*product.CategoryID, discountInfo.CategoryIDs)) ||
+		len(util.SlicesIntersection(productCollectionIDs, discountInfo.CollectionIDs)) > 0
 
-	isVariantOnSale := model.IsValidId(variantID) && util.StringInSlice(variantID, discountInfo.VariantsIDs)
+	isVariantOnSale := model.IsValidId(variantID) && util.ItemInSlice(variantID, discountInfo.VariantsIDs)
 
 	if isProductOnSale || isVariantOnSale {
 		switch t := discountInfo.Sale.(type) {
@@ -365,7 +365,7 @@ func (a *ServiceDiscount) FetchCategories(saleIDs []string) (map[string][]string
 
 	var subCategoriesMap = map[string][]string{}
 	for saleID, categoryIDs := range categoryMap {
-		subCategoriesMap[saleID] = util.StringArrayIntersection(categoryIDs, categorizedCategories.IDs())
+		subCategoriesMap[saleID] = util.SlicesIntersection(categoryIDs, categorizedCategories.IDs())
 	}
 
 	return subCategoriesMap, nil
@@ -597,7 +597,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance product_and_discount.Sale)
 			mut.Lock()
 			defer mut.Unlock()
 
-			if err != nil && appError == nil && util.IntInSlice(err.StatusCode, setWhenCode) {
+			if err != nil && appError == nil && util.ItemInSlice(err.StatusCode, setWhenCode) {
 				appError = err
 			}
 		}

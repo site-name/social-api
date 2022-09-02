@@ -149,7 +149,7 @@ func (p *Payment) CanRefund() bool {
 		PARTIALLY_REFUNDED,
 	}
 
-	return *p.IsActive && util.StringInSlice(p.ChargeStatus, canRefundChargeStatuses)
+	return *p.IsActive && util.ItemInSlice(p.ChargeStatus, canRefundChargeStatuses)
 }
 
 // CanConfirm checks if current payment is active && not charged
@@ -163,11 +163,11 @@ func (p *Payment) IsManual() bool {
 }
 
 /*
-  GetTotal returns:
-  	&goprices.Money{
-			Amount:   p.Total,
-			Currency: p.Currency,
-		}
+	  GetTotal returns:
+	  	&goprices.Money{
+				Amount:   p.Total,
+				Currency: p.Currency,
+			}
 */
 func (p *Payment) GetTotal() *goprices.Money {
 	return &goprices.Money{
@@ -177,11 +177,12 @@ func (p *Payment) GetTotal() *goprices.Money {
 }
 
 /*
-	GetCapturedAmount returns:
-		&goprices.Money{
-			Amount:   p.CapturedAmount,
-			Currency: p.Currency,
-		}
+GetCapturedAmount returns:
+
+	&goprices.Money{
+		Amount:   p.CapturedAmount,
+		Currency: p.Currency,
+	}
 */
 func (p *Payment) GetCapturedAmount() *goprices.Money {
 	return &goprices.Money{

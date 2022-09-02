@@ -1,26 +1,26 @@
 extend type Mutation {
-  productVariantReorder(moves: [ReorderInput]!, productId: ID!): ProductVariantReorder
+  productVariantReorder(moves: [ReorderInput]!, productId: String!): ProductVariantReorder
   productVariantCreate(input: ProductVariantCreateInput!): ProductVariantCreate
-  productVariantDelete(id: ID!): ProductVariantDelete
-  productVariantBulkCreate(product: ID!, variants: [ProductVariantBulkCreateInput]!): ProductVariantBulkCreate
-  productVariantBulkDelete(ids: [ID]!): ProductVariantBulkDelete
-  productVariantStocksCreate(stocks: [StockInput!]!, variantId: ID!): ProductVariantStocksCreate
-  productVariantStocksDelete(variantId: ID!, warehouseIds: [ID!]): ProductVariantStocksDelete
-  productVariantStocksUpdate(stocks: [StockInput!]!, variantId: ID!): ProductVariantStocksUpdate
-  productVariantUpdate(id: ID!, input: ProductVariantInput!): ProductVariantUpdate
-  productVariantSetDefault(productId: ID!, variantId: ID!): ProductVariantSetDefault
-  productVariantTranslate(id: ID!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): ProductVariantTranslate
-  productVariantChannelListingUpdate(id: ID!, input: [ProductVariantChannelListingAddInput!]!): ProductVariantChannelListingUpdate
-  productVariantReorderAttributeValues(attributeId: ID!, moves: [ReorderInput]!, variantId: ID!): ProductVariantReorderAttributeValues
+  productVariantDelete(id: String!): ProductVariantDelete
+  productVariantBulkCreate(product: String!, variants: [ProductVariantBulkCreateInput]!): ProductVariantBulkCreate
+  productVariantBulkDelete(ids: [String]!): ProductVariantBulkDelete
+  productVariantStocksCreate(stocks: [StockInput!]!, variantId: String!): ProductVariantStocksCreate
+  productVariantStocksDelete(variantId: String!, warehouseIds: [String!]): ProductVariantStocksDelete
+  productVariantStocksUpdate(stocks: [StockInput!]!, variantId: String!): ProductVariantStocksUpdate
+  productVariantUpdate(id: String!, input: ProductVariantInput!): ProductVariantUpdate
+  productVariantSetDefault(productId: String!, variantId: String!): ProductVariantSetDefault
+  productVariantTranslate(id: String!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): ProductVariantTranslate
+  productVariantChannelListingUpdate(id: String!, input: [ProductVariantChannelListingAddInput!]!): ProductVariantChannelListingUpdate
+  productVariantReorderAttributeValues(attributeId: String!, moves: [ReorderInput]!, variantId: String!): ProductVariantReorderAttributeValues
 }
 
 extend type Query {
-  productVariant(id: ID, sku: String, channel: String): ProductVariant
-  productVariants(ids: [ID], channel: String, filter: ProductVariantFilterInput, before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
+  productVariant(id: String, sku: String, channel: String): ProductVariant
+  productVariants(ids: [String], channel: String, filter: ProductVariantFilterInput, before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
 }
 
 type ProductVariant implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   name: String!
   sku: String
   product: Product!
@@ -52,7 +52,7 @@ input ProductVariantCreateInput {
   sku: String
   trackInventory: Boolean
   weight: WeightScalar
-  product: ID!
+  product: String!
   stocks: [StockInput!]
 }
 
@@ -86,7 +86,7 @@ type ProductVariantStocksCreate {
 }
 
 input StockInput {
-  warehouse: ID!
+  warehouse: String!
   quantity: Int!
 }
 
@@ -142,7 +142,7 @@ type ProductVariantTranslate {
 }
 
 input ProductVariantChannelListingAddInput {
-  channelId: ID!
+  channelId: String!
   price: PositiveDecimal!
   costPrice: PositiveDecimal
 }
@@ -170,7 +170,7 @@ type ProductVariantCountableConnection {
 }
 
 type ProductVariantChannelListing implements Node {
-  id: ID!
+  id: String!
   channel: Channel!
   price: Money
   costPrice: Money
@@ -193,13 +193,13 @@ enum VariantAttributeScope {
 }
 
 type ProductVariantTranslation implements Node {
-  id: ID!
+  id: String!
   name: String!
   language: LanguageDisplay!
 }
 
 input BulkAttributeValueInput {
-  id: ID
+  id: String
   values: [String!]
   boolean: Boolean
 }
@@ -208,8 +208,8 @@ type BulkStockError {
   field: String
   message: String
   code: ProductErrorCode!
-  attributes: [ID!]
-  values: [ID!]
+  attributes: [String!]
+  values: [String!]
   index: Int
 }
 
@@ -217,10 +217,10 @@ type ProductChannelListingError {
   field: String
   message: String
   code: ProductErrorCode!
-  attributes: [ID!]
-  values: [ID!]
-  channels: [ID!]
-  variants: [ID!]
+  attributes: [String!]
+  values: [String!]
+  channels: [String!]
+  variants: [String!]
 }
 
 type ProductVariantCountableEdge {
@@ -238,9 +238,9 @@ type BulkProductError {
   field: String
   message: String
   code: ProductErrorCode!
-  attributes: [ID!]
-  values: [ID!]
+  attributes: [String!]
+  values: [String!]
   index: Int
-  warehouses: [ID!]
-  channels: [ID!]
+  warehouses: [String!]
+  channels: [String!]
 }

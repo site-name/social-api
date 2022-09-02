@@ -15,8 +15,8 @@ type SqlTermsOfServiceStore struct {
 	metrics einterfaces.MetricsInterface
 }
 
-func (s *SqlTermsOfServiceStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlTermsOfServiceStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"CreateAt",
 		"UserID",

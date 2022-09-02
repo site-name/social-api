@@ -18,8 +18,8 @@ func NewSqlProductTypeStore(s store.Store) store.ProductTypeStore {
 	return &SqlProductTypeStore{s}
 }
 
-func (ps *SqlProductTypeStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (ps *SqlProductTypeStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Name",
 		"Slug",

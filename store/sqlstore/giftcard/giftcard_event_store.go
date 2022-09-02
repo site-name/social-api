@@ -18,8 +18,8 @@ func NewSqlGiftcardEventStore(s store.Store) store.GiftcardEventStore {
 	return &SqlGiftcardEventStore{s}
 }
 
-func (s *SqlGiftcardEventStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlGiftcardEventStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Date",
 		"Type",

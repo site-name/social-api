@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 )
 
 func RenderWebAppError(config *model.Config, w http.ResponseWriter, r *http.Request, err *model.AppError, s crypto.Signer) {
@@ -24,7 +23,7 @@ func RenderWebAppError(config *model.Config, w http.ResponseWriter, r *http.Requ
 func RenderWebError(config *model.Config, w http.ResponseWriter, r *http.Request, status int, params url.Values, s crypto.Signer) {
 	queryString := params.Encode()
 
-	subpath, _ := util.GetSubpathFromConfig(config)
+	subpath, _ := model.GetSubpathFromConfig(config)
 
 	h := crypto.SHA256
 	sum := h.New()

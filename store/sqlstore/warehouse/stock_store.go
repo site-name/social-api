@@ -21,8 +21,8 @@ func NewSqlStockStore(s store.Store) store.StockStore {
 	return &SqlStockStore{Store: s}
 }
 
-func (ss *SqlStockStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (ss *SqlStockStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"CreateAt",
 		"WarehouseID",

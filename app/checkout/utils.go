@@ -594,8 +594,8 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.Check
 				}
 			}
 
-			if util.StringInSlice(lineInfo.Product.Id, discountedProductIDs) ||
-				(lineInfo.Product.CategoryID != nil && util.StringInSlice(*lineInfo.Product.CategoryID, discountedCategoryIDs)) ||
+			if util.ItemInSlice(lineInfo.Product.Id, discountedProductIDs) ||
+				(lineInfo.Product.CategoryID != nil && util.ItemInSlice(*lineInfo.Product.CategoryID, discountedCategoryIDs)) ||
 				lineInfoCollections_have_common_with_discountedCollections {
 				discountedLines = append(discountedLines, lineInfo)
 			}
@@ -1012,7 +1012,7 @@ func (a *ServiceCheckout) ValidateVariantsInCheckoutLines(lines []*checkout.Chec
 	}
 
 	if len(notAvailableVariantIDs) > 0 {
-		notAvailableVariantIDs = util.RemoveDuplicatesFromStringArray(notAvailableVariantIDs)
+		notAvailableVariantIDs = util.Dedup(notAvailableVariantIDs)
 		// return error indicate there are some product variants that have no channel listing or channel listing price is null
 		return model.NewAppError("ValidateVariantsInCheckoutLines", "app.checkout.cannot_add_lines_with_unavailable_variants.app_error", map[string]interface{}{"variants": strings.Join(notAvailableVariantIDs, ", ")}, "", http.StatusNotAcceptable)
 	}

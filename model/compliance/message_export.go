@@ -26,7 +26,7 @@ type MessageExport struct {
 	PostRootId     *string
 	PostProps      *string
 	PostOriginalId *string
-	PostFileIds    model.StringArray
+	PostFileIds    model.AnyArray[string]
 }
 
 type MessageExportCursor struct {

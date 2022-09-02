@@ -1,14 +1,14 @@
 extend type Mutation {
-  invoiceRequest(number: String, orderId: ID!): InvoiceRequest
-  invoiceRequestDelete(id: ID!): InvoiceRequestDelete
-  invoiceCreate(input: InvoiceCreateInput!, orderId: ID!): InvoiceCreate
-  invoiceDelete(id: ID!): InvoiceDelete
-  invoiceUpdate(id: ID!, input: UpdateInvoiceInput!): InvoiceUpdate
-  invoiceSendNotification(id: ID!): InvoiceSendNotification
+  invoiceRequest(number: String, orderId: String!): InvoiceRequest
+  invoiceRequestDelete(id: String!): InvoiceRequestDelete
+  invoiceCreate(input: InvoiceCreateInput!, orderId: String!): InvoiceCreate
+  invoiceDelete(id: String!): InvoiceDelete
+  invoiceUpdate(id: String!, input: UpdateInvoiceInput!): InvoiceUpdate
+  invoiceSendNotification(id: String!): InvoiceSendNotification
 }
 
 type Invoice implements ObjectWithMetadata & Job & Node {
-  id: ID!
+  id: String!
   metadata: [MetadataItem]!
   status: JobStatusEnum!
   number: String

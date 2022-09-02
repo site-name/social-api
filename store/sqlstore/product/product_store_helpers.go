@@ -236,10 +236,10 @@ type safeMap struct {
 }
 
 func (m *safeMap) write(key string, value []string) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	m.m[key] = append(m.m[key], value...)
+	if m.mu.TryLock() {
+		m.m[key] = append(m.m[key], value...)
+		m.mu.Unlock()
+	}
 }
 
 func (ps *SqlProductStore) filterAttributes(query squirrel.SelectBuilder, attributes []*gqlmodel.AttributeInput) squirrel.SelectBuilder {
@@ -270,7 +270,7 @@ func (ps *SqlProductStore) filterAttributes(query squirrel.SelectBuilder, attrib
 		} else if input.Date != nil {
 			date_range_list = append(date_range_list, timeRange{input.Slug, *input.Date})
 		} else if input.DateTime != nil {
-			date_time_range_list = append(date_time_range_list, timeRange{input.Slug, gqlmodel.DateRangeInput(*input.DateTime)})
+			date_time_range_list = append(date_time_range_list, timeRange{input.Slug, gqlmodel.DateRangeInput(*input.Date)})
 		} else if input.Boolean != nil {
 			boolean_list = append(boolean_list, booleanRange{input.Slug, *input.Boolean})
 		}
@@ -280,15 +280,15 @@ func (ps *SqlProductStore) filterAttributes(query squirrel.SelectBuilder, attrib
 		m: map[string][]string{},
 	}
 	var wg sync.WaitGroup
-	var funcErr error
-	var mu sync.Mutex
+	var interError error
+	var errorSyncGuard sync.Mutex
 
 	syncSetErr := func(err error) {
-		mu.Lock()
-		defer mu.Unlock()
-
-		if err != nil && funcErr == nil {
-			funcErr = err
+		if errorSyncGuard.TryLock() {
+			if err != nil && interError == nil {
+				interError = err
+			}
+			errorSyncGuard.Unlock()
 		}
 	}
 
@@ -300,7 +300,6 @@ func (ps *SqlProductStore) filterAttributes(query squirrel.SelectBuilder, attrib
 			syncSetErr(err)
 			wg.Done()
 		}()
-
 	}
 
 	if len(value_range_list) > 0 {
@@ -345,8 +344,8 @@ func (ps *SqlProductStore) filterAttributes(query squirrel.SelectBuilder, attrib
 
 	wg.Wait()
 
-	if funcErr != nil {
-		slog.Error("Filter product attributes error", slog.Err(funcErr))
+	if interError != nil {
+		slog.Error("Filter product attributes error", slog.Err(interError))
 		return query
 	}
 

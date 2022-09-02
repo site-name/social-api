@@ -90,10 +90,10 @@ func (j *Job) IsValid() *AppError {
 	if j.CreateAt == 0 {
 		return outer("create_at", &j.Id)
 	}
-	if !StringArray(ALL_JOB_TYPES).Contains(j.Type) {
+	if !AnyArray[string](ALL_JOB_TYPES).Contains(j.Type) {
 		return outer("type", &j.Id)
 	}
-	if !StringArray(ALL_JOB_STATUSES).Contains(j.Status) {
+	if !AnyArray[string](ALL_JOB_STATUSES).Contains(j.Status) {
 		return outer("status", &j.Id)
 	}
 

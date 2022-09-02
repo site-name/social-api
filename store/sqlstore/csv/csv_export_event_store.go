@@ -15,8 +15,8 @@ func NewSqlCsvExportEventStore(sqlStore store.Store) store.CsvExportEventStore {
 	return &SqlCsvExportEventStore{sqlStore}
 }
 
-func (s *SqlCsvExportEventStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlCsvExportEventStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Date",
 		"Type",

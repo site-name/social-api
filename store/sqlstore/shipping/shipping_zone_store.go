@@ -18,8 +18,8 @@ func NewSqlShippingZoneStore(s store.Store) store.ShippingZoneStore {
 	return &SqlShippingZoneStore{s}
 }
 
-func (s *SqlShippingZoneStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlShippingZoneStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Name",
 		"Countries",

@@ -17,8 +17,8 @@ func NewSqlCsvExportFileStore(s store.Store) store.CsvExportFileStore {
 	return &SqlCsvExportFileStore{s}
 }
 
-func (s *SqlCsvExportFileStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlCsvExportFileStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"UserID",
 		"ContentFile",

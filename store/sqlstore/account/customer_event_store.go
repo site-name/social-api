@@ -13,7 +13,7 @@ type SqlCustomerEventStore struct {
 	store.Store
 }
 
-var customerModelFields = model.StringArray{
+var customerModelFields = model.AnyArray[string]{
 	"Id",
 	"Date",
 	"Type",
@@ -26,7 +26,7 @@ func NewSqlCustomerEventStore(s store.Store) store.CustomerEventStore {
 	return &SqlCustomerEventStore{s}
 }
 
-func (cs *SqlCustomerEventStore) ModelFields(prefix string) model.StringArray {
+func (cs *SqlCustomerEventStore) ModelFields(prefix string) model.AnyArray[string] {
 	if prefix == "" {
 		return customerModelFields
 	}

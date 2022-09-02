@@ -1,23 +1,23 @@
 extend type Mutation {
-  productAttributeAssign(operations: [ProductAttributeAssignInput]!, productTypeId: ID!): ProductAttributeAssign
-  productAttributeUnassign(attributeIds: [ID]!, productTypeId: ID!): ProductAttributeUnassign
+  productAttributeAssign(operations: [ProductAttributeAssignInput]!, productTypeId: String!): ProductAttributeAssign
+  productAttributeUnassign(attributeIds: [String]!, productTypeId: String!): ProductAttributeUnassign
   productCreate(input: ProductCreateInput!): ProductCreate
-  productDelete(id: ID!): ProductDelete
-  productBulkDelete(ids: [ID]!): ProductBulkDelete
-  productUpdate(id: ID!, input: ProductInput!): ProductUpdate
-  productTranslate(id: ID!, input: TranslationInput!, languageCode: LanguageCodeEnum!): ProductTranslate
-  productChannelListingUpdate(id: ID!, input: ProductChannelListingUpdateInput!): ProductChannelListingUpdate
-  productReorderAttributeValues(attributeId: ID!, moves: [ReorderInput]!, productId: ID!): ProductReorderAttributeValues
+  productDelete(id: String!): ProductDelete
+  productBulkDelete(ids: [String]!): ProductBulkDelete
+  productUpdate(id: String!, input: ProductInput!): ProductUpdate
+  productTranslate(id: String!, input: TranslationInput!, languageCode: LanguageCodeEnum!): ProductTranslate
+  productChannelListingUpdate(id: String!, input: ProductChannelListingUpdateInput!): ProductChannelListingUpdate
+  productReorderAttributeValues(attributeId: String!, moves: [ReorderInput]!, productId: String!): ProductReorderAttributeValues
 }
 
 extend type Query {
-  product(id: ID, slug: String, channel: String): Product
+  product(id: String, slug: String, channel: String): Product
   products(filter: ProductFilterInput, sortBy: ProductOrder, channel: String, before: String, after: String, first: Int, last: Int): ProductCountableConnection
 }
 
 input ProductChannelListingUpdateInput {
   updateChannels: [ProductChannelListingAddInput!]
-  removeChannels: [ID!]
+  removeChannels: [String!]
 }
 
 type ProductChannelListingUpdate {
@@ -31,22 +31,22 @@ type ProductReorderAttributeValues {
 }
 
 input ProductChannelListingAddInput {
-  channelId: ID!
+  channelId: String!
   isPublished: Boolean
   publicationDate: Date
   visibleInListings: Boolean
   isAvailableForPurchase: Boolean
   availableForPurchaseDate: Date
-  addVariants: [ID!]
-  removeVariants: [ID!]
+  addVariants: [String!]
+  removeVariants: [String!]
 }
 
 type Product implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   seoTitle: String
   seoDescription: String
   name: String!
-  description: JSONString
+  description: JSONString!
   productType: ProductType!
   slug: String!
   category: Category
@@ -62,15 +62,15 @@ type Product implements Node & ObjectWithMetadata {
   pricing(address: AddressInput): ProductPricingInfo
   isAvailable(address: AddressInput): Boolean
   taxType: TaxType
-  attributes(_: PlaceHolder): [SelectedAttribute!]! # attributes: [SelectedAttribute!]!
+  attributes: [SelectedAttribute!]!
   channelListings: [ProductChannelListing!]
-  mediaById(id: ID): ProductMedia
+  mediaById(id: String): ProductMedia
   variants: [ProductVariant]
   media: [ProductMedia!]
   collections: [Collection]
   translation(languageCode: LanguageCodeEnum!): ProductTranslation
-  availableForPurchase(_: PlaceHolder): Date # availableForPurchase: Date
-  isAvailableForPurchase(_: PlaceHolder): Boolean # isAvailableForPurchase: Boolean
+  availableForPurchase: Date
+  isAvailableForPurchase: Boolean
 }
 
 type ProductPricingInfo {
@@ -83,7 +83,7 @@ type ProductPricingInfo {
 }
 
 type ProductChannelListing implements Node {
-  id: ID!
+  id: String!
   publicationDate: Date
   isPublished: Boolean!
   channel: Channel!
@@ -97,7 +97,7 @@ type ProductChannelListing implements Node {
 }
 
 type ProductTranslation implements Node {
-  id: ID!
+  id: String!
   seoTitle: String
   seoDescription: String
   name: String
@@ -111,7 +111,7 @@ type Margin {
 }
 
 input ProductAttributeAssignInput {
-  id: ID!
+  id: String!
   type: ProductAttributeType!
 }
 
@@ -127,9 +127,9 @@ type ProductAttributeUnassign {
 
 input ProductCreateInput {
   attributes: [AttributeValueInput!]
-  category: ID
+  category: String
   chargeTaxes: Boolean
-  collections: [ID!]
+  collections: [String!]
   description: JSONString
   name: String
   slug: String
@@ -137,7 +137,7 @@ input ProductCreateInput {
   seo: SeoInput
   weight: WeightScalar
   rating: Float
-  productType: ID!
+  productType: String!
 }
 
 type ProductCreate {
@@ -157,9 +157,9 @@ type ProductBulkDelete {
 
 input ProductInput {
   attributes: [AttributeValueInput!]
-  category: ID
+  category: String
   chargeTaxes: Boolean
-  collections: [ID!]
+  collections: [String!]
   description: JSONString
   name: String
   slug: String
@@ -188,8 +188,8 @@ type ProductTranslate {
 
 input ProductFilterInput {
   isPublished: Boolean
-  collections: [ID]
-  categories: [ID]
+  collections: [String]
+  categories: [String]
   hasCategory: Boolean
   attributes: [AttributeInput]
   stockAvailability: StockAvailability
@@ -198,9 +198,9 @@ input ProductFilterInput {
   metadata: [MetadataInput]
   price: PriceRangeInput
   minimalPrice: PriceRangeInput
-  productTypes: [ID]
+  productTypes: [String]
   giftCard: Boolean
-  ids: [ID]
+  ids: [String]
   hasPreorderedVariants: Boolean
   channel: String
 }
@@ -208,7 +208,7 @@ input ProductFilterInput {
 input ProductOrder {
   direction: OrderDirection!
   channel: String
-  attributeId: ID
+  attributeId: String
   field: ProductOrderField
 }
 
@@ -227,8 +227,8 @@ type ProductError {
   field: String
   message: String
   code: ProductErrorCode!
-  attributes: [ID!]
-  values: [ID!]
+  attributes: [String!]
+  values: [String!]
 }
 
 enum ProductErrorCode {
@@ -257,7 +257,7 @@ input SeoInput {
 }
 
 input ProductStockFilterInput {
-  warehouseIds: [ID!]
+  warehouseIds: [String!]
   quantity: IntRangeInput
 }
 

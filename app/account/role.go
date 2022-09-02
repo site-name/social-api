@@ -154,17 +154,17 @@ func (a *ServiceAccount) UpdateRole(role *model.Role) (*model.Role, *model.AppEr
 	// }
 
 	// builtInRolesMinusChannelRoles := append(
-	// 	util.RemoveStringsFromSlice(model.BuiltInSchemeManagedRoleIDs, builtInChannelRoles...),
+	// 	util.RemoveItemsFromSlice(model.BuiltInSchemeManagedRoleIDs, builtInChannelRoles...),
 	// 	model.NewSystemRoleIDs...,
 	// )
 
-	// if util.StringInSlice(savedRole.Name, builtInRolesMinusChannelRoles) {
+	// if util.ItemInSlice(savedRole.Name, builtInRolesMinusChannelRoles) {
 	// 	return savedRole, nil
 	// }
 
 	// var roleRetrievalFunc func() ([]*model.Role, *model.AppError)
 
-	// if util.StringInSlice(savedRole.Name, builtInChannelRoles) {
+	// if util.ItemInSlice(savedRole.Name, builtInChannelRoles) {
 	// 	roleRetrievalFunc = func() ([]*model.Role, *model.AppError) {
 	// 		roles, nErr := a.srv.Store.Role().AllChannelSchemeRoles()
 	// 		if nErr != nil {

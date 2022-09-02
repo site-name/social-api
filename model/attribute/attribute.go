@@ -48,10 +48,10 @@ const (
 )
 
 var (
-	ALLOWED_IN_VARIANT_SELECTION = model.StringArray{DROPDOWN, BOOLEAN, SWATCH, NUMERIC}
-	TYPES_WITH_CHOICES           = model.StringArray{DROPDOWN, MULTISELECT, SWATCH}
-	TYPES_WITH_UNIQUE_VALUES     = model.StringArray{FILE, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME} // list of the translatable attributes, excluding attributes with choices.
-	TRANSLATABLE_ATTRIBUTES      = model.StringArray{RICH_TEXT}
+	ALLOWED_IN_VARIANT_SELECTION = model.AnyArray[string]{DROPDOWN, BOOLEAN, SWATCH, NUMERIC}
+	TYPES_WITH_CHOICES           = model.AnyArray[string]{DROPDOWN, MULTISELECT, SWATCH}
+	TYPES_WITH_UNIQUE_VALUES     = model.AnyArray[string]{FILE, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME} // list of the translatable attributes, excluding attributes with choices.
+	TRANSLATABLE_ATTRIBUTES      = model.AnyArray[string]{RICH_TEXT}
 )
 var AttributeInputTypeStrings = map[string]string{
 	DROPDOWN:    "Dropdown",

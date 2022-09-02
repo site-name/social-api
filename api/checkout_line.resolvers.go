@@ -7,14 +7,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) CheckoutLineDelete(ctx context.Context, args struct {
 	CheckoutID *string
 	LineID     *string
-	Token      *uuid.UUID
+	Token      *string
 }) (*gqlmodel.CheckoutLineDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -22,7 +21,7 @@ func (r *Resolver) CheckoutLineDelete(ctx context.Context, args struct {
 func (r *Resolver) CheckoutLinesAdd(ctx context.Context, args struct {
 	CheckoutID *string
 	Lines      []*gqlmodel.CheckoutLineInput
-	Token      *uuid.UUID
+	Token      *string
 }) (*gqlmodel.CheckoutLinesAdd, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -30,7 +29,7 @@ func (r *Resolver) CheckoutLinesAdd(ctx context.Context, args struct {
 func (r *Resolver) CheckoutLinesUpdate(ctx context.Context, args struct {
 	CheckoutID *string
 	Lines      []*gqlmodel.CheckoutLineInput
-	Token      *uuid.UUID
+	Token      *string
 }) (*gqlmodel.CheckoutLinesUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }

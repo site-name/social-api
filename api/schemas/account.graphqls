@@ -1,8 +1,8 @@
 extend type Mutation {
   accountAddressCreate(input: AddressInput!, type: AddressTypeEnum): AccountAddressCreate
-  accountAddressUpdate(id: ID!, input: AddressInput!): AccountAddressUpdate
-  accountAddressDelete(id: ID!): AccountAddressDelete
-  accountSetDefaultAddress(id: ID!, type: AddressTypeEnum!): AccountSetDefaultAddress
+  accountAddressUpdate(id: String!, input: AddressInput!): AccountAddressUpdate
+  accountAddressDelete(id: String!): AccountAddressDelete
+  accountSetDefaultAddress(id: String!, type: AddressTypeEnum!): AccountSetDefaultAddress
   accountRegister(input: AccountRegisterInput!): AccountRegister
   accountUpdate(input: AccountInput!): AccountUpdate
   accountRequestDeletion(channel: String, redirectUrl: String!): AccountRequestDeletion

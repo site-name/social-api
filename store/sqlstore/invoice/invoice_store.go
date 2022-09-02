@@ -17,8 +17,8 @@ func NewSqlInvoiceStore(s store.Store) store.InvoiceStore {
 	return &SqlInvoiceStore{s}
 }
 
-func (s *SqlInvoiceStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlInvoiceStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"OrderID",
 		"Number",

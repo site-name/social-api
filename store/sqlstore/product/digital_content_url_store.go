@@ -17,8 +17,8 @@ func NewSqlDigitalContentUrlStore(s store.Store) store.DigitalContentUrlStore {
 	return &SqlDigitalContentUrlStore{s}
 }
 
-func (s *SqlDigitalContentUrlStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlDigitalContentUrlStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Token",
 		"ContentID",

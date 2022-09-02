@@ -1,18 +1,18 @@
 extend type Mutation {
   productTypeCreate(input: ProductTypeInput!): ProductTypeCreate
-  productTypeDelete(id: ID!): ProductTypeDelete
-  productTypeBulkDelete(ids: [ID]!): ProductTypeBulkDelete
-  productTypeUpdate(id: ID!, input: ProductTypeInput!): ProductTypeUpdate
-  productTypeReorderAttributes(moves: [ReorderInput]!, productTypeId: ID!, type: ProductAttributeType!): ProductTypeReorderAttributes
+  productTypeDelete(id: String!): ProductTypeDelete
+  productTypeBulkDelete(ids: [String]!): ProductTypeBulkDelete
+  productTypeUpdate(id: String!, input: ProductTypeInput!): ProductTypeUpdate
+  productTypeReorderAttributes(moves: [ReorderInput]!, productTypeId: String!, type: ProductAttributeType!): ProductTypeReorderAttributes
 }
 
 extend type Query {
-  productType(id: ID!): ProductType
+  productType(id: String!): ProductType
   productTypes(filter: ProductTypeFilterInput, sortBy: ProductTypeSortingInput, before: String, after: String, first: Int, last: Int): ProductTypeCountableConnection
 }
 
 type ProductType implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   name: String!
   slug: String!
   hasVariants: Boolean!
@@ -33,8 +33,8 @@ input ProductTypeInput {
   slug: String
   kind: ProductTypeKindEnum
   hasVariants: Boolean
-  productAttributes: [ID]
-  variantAttributes: [ID]
+  productAttributes: [String]
+  variantAttributes: [String]
   isShippingRequired: Boolean
   isDigital: Boolean
   weight: WeightScalar
@@ -67,7 +67,7 @@ type ProductTypeUpdate {
 }
 
 input ReorderInput {
-  id: ID!
+  id: String!
   sortOrder: Int
 }
 
@@ -87,7 +87,7 @@ input ProductTypeFilterInput {
   productType: ProductTypeEnum
   metadata: [MetadataInput]
   kind: ProductTypeKindEnum
-  ids: [ID]
+  ids: [String]
 }
 
 enum ProductTypeSortField {

@@ -17,8 +17,8 @@ func NewSqlGiftCardCheckoutStore(s store.Store) store.GiftCardCheckoutStore {
 	return &SqlGiftCardCheckoutStore{s}
 }
 
-func (s *SqlGiftCardCheckoutStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{"Id", "GiftcardID", "CheckoutID"}
+func (s *SqlGiftCardCheckoutStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{"Id", "GiftcardID", "CheckoutID"}
 	if prefix == "" {
 		return res
 	}

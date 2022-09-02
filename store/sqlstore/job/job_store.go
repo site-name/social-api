@@ -18,8 +18,8 @@ func NewSqlJobStore(sqlStore store.Store) store.JobStore {
 	return &SqlJobStore{sqlStore}
 }
 
-func (s *SqlJobStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlJobStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"Type",
 		"Priority",

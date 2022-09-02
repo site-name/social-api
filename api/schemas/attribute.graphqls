@@ -1,24 +1,24 @@
 extend type Mutation {
   attributeCreate(input: AttributeCreateInput!): AttributeCreate
-  attributeDelete(id: ID!): AttributeDelete
-  attributeUpdate(id: ID!, input: AttributeUpdateInput!): AttributeUpdate
-  attributeTranslate(id: ID!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): AttributeTranslate
-  attributeBulkDelete(ids: [ID]!): AttributeBulkDelete
-  attributeValueBulkDelete(ids: [ID]!): AttributeValueBulkDelete
-  attributeValueCreate(attributeID: ID!, input: AttributeValueCreateInput!): AttributeValueCreate
-  attributeValueDelete(id: ID!): AttributeValueDelete
-  attributeValueUpdate(id: ID!, input: AttributeValueUpdateInput!): AttributeValueUpdate
-  attributeValueTranslate(id: ID!, input: AttributeValueTranslationInput!, languageCode: LanguageCodeEnum!): AttributeValueTranslate
-  attributeReorderValues(attributeId: ID!, moves: [ReorderInput]!): AttributeReorderValues
+  attributeDelete(id: String!): AttributeDelete
+  attributeUpdate(id: String!, input: AttributeUpdateInput!): AttributeUpdate
+  attributeTranslate(id: String!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): AttributeTranslate
+  attributeBulkDelete(ids: [String]!): AttributeBulkDelete
+  attributeValueBulkDelete(ids: [String]!): AttributeValueBulkDelete
+  attributeValueCreate(attributeID: String!, input: AttributeValueCreateInput!): AttributeValueCreate
+  attributeValueDelete(id: String!): AttributeValueDelete
+  attributeValueUpdate(id: String!, input: AttributeValueUpdateInput!): AttributeValueUpdate
+  attributeValueTranslate(id: String!, input: AttributeValueTranslationInput!, languageCode: LanguageCodeEnum!): AttributeValueTranslate
+  attributeReorderValues(attributeId: String!, moves: [ReorderInput]!): AttributeReorderValues
 }
 
 extend type Query {
   attributes(filter: AttributeFilterInput, sortBy: AttributeSortingInput, chanelSlug: String, before: String, after: String, first: Int, last: Int): AttributeCountableConnection
-  attribute(id: ID, slug: String): Attribute
+  attribute(id: String, slug: String): Attribute
 }
 
 type Attribute implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   productTypes(before: String, after: String, first: Int, last: Int): ProductTypeCountableConnection!
   productVariantTypes(before: String, after: String, first: Int, last: Int): ProductTypeCountableConnection!
   privateMetadata: [MetadataItem]!
@@ -101,7 +101,7 @@ input AttributeUpdateInput {
   name: String
   slug: String
   unit: MeasurementUnitsEnum
-  removeValues: [ID]
+  removeValues: [String]
   addValues: [AttributeValueUpdateInput]
   valueRequired: Boolean
   isVariantOnly: Boolean
@@ -198,10 +198,10 @@ input AttributeFilterInput {
   availableInGrid: Boolean
   metadata: [MetadataInput]
   search: String
-  ids: [ID]
+  ids: [String]
   type: AttributeTypeEnum
-  inCollection: ID
-  inCategory: ID
+  inCollection: String
+  inCategory: String
   channel: String
 }
 
@@ -256,7 +256,7 @@ enum AttributeInputTypeEnum {
 }
 
 type AttributeTranslation implements Node {
-  id: ID!
+  id: String!
   name: String!
   language: LanguageDisplay!
 }
@@ -267,13 +267,13 @@ enum AttributeTypeEnum {
 }
 
 type AttributeValue implements Node {
-  id: ID!
+  id: String!
   name: String
   slug: String
   value: String
   translation(languageCode: LanguageCodeEnum!): AttributeValueTranslation
   inputType: AttributeInputTypeEnum
-  reference: ID
+  reference: String
   file: File
   richText: JSONString
   boolean: Boolean
@@ -282,7 +282,7 @@ type AttributeValue implements Node {
 }
 
 type AttributeValueTranslation implements Node {
-  id: ID!
+  id: String!
   name: String!
   richText: JSONString
   language: LanguageDisplay!

@@ -2,7 +2,7 @@ input WebhookCreateInput {
   name: String
   targetUrl: String
   events: [WebhookEventTypeEnum]
-  app: ID
+  app: String
   isActive: Boolean
   secretKey: String
 }
@@ -131,7 +131,7 @@ input WebhookUpdateInput {
   name: String
   targetUrl: String
   events: [WebhookEventTypeEnum]
-  app: ID
+  app: String
   isActive: Boolean
   secretKey: String
 }
@@ -141,7 +141,7 @@ type Webhook implements Node {
   targetUrl: String!
   isActive: Boolean!
   secretKey: String
-  id: ID!
+  id: String!
   events: [WebhookEvent!]!
   app: App!
 }
@@ -152,13 +152,13 @@ type WebhookEvent {
 }
 
 extend type Query {
-  webhook(id: ID!): Webhook
+  webhook(id: String!): Webhook
   webhookEvents: [WebhookEvent]
   webhookSamplePayload(eventType: WebhookSampleEventTypeEnum!): JSONString
 }
 
 extend type Mutation {
   webhookCreate(input: WebhookCreateInput!): WebhookCreate
-  webhookDelete(id: ID!): WebhookDelete
-  webhookUpdate(id: ID!, input: WebhookUpdateInput!): WebhookUpdate
+  webhookDelete(id: String!): WebhookDelete
+  webhookUpdate(id: String!, input: WebhookUpdateInput!): WebhookUpdate
 }

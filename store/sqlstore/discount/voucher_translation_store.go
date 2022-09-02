@@ -18,8 +18,8 @@ func NewSqlVoucherTranslationStore(sqlStore store.Store) store.VoucherTranslatio
 	return &SqlVoucherTranslationStore{sqlStore}
 }
 
-func (s *SqlVoucherTranslationStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (s *SqlVoucherTranslationStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"LanguageCode",
 		"Name",

@@ -17,8 +17,8 @@ func NewSqlDigitalContentStore(s store.Store) store.DigitalContentStore {
 	return &SqlDigitalContentStore{s}
 }
 
-func (ds *SqlDigitalContentStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (ds *SqlDigitalContentStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ShopID",
 		"UseDefaultSettings",

@@ -1,6 +1,6 @@
 extend type Mutation {
   translations(kind: TranslatableKinds!, before: String, after: String, first: Int, last: Int): TranslatableItemConnection
-  translation(id: ID!, kind: TranslatableKinds!): TranslatableItem
+  translation(id: String!, kind: TranslatableKinds!): TranslatableItem
 }
 
 enum TranslatableKinds {
@@ -31,7 +31,7 @@ type TranslatableItemEdge {
 union TranslatableItem = ProductTranslatableContent | CollectionTranslatableContent | CategoryTranslatableContent | AttributeTranslatableContent | AttributeValueTranslatableContent | ProductVariantTranslatableContent | PageTranslatableContent | ShippingMethodTranslatableContent | SaleTranslatableContent | VoucherTranslatableContent | MenuItemTranslatableContent
 
 type ProductTranslatableContent implements Node {
-  id: ID!
+  id: String!
   seoTitle: String
   seoDescription: String
   name: String!
@@ -41,7 +41,7 @@ type ProductTranslatableContent implements Node {
 }
 
 type CollectionTranslatableContent implements Node {
-  id: ID!
+  id: String!
   seoTitle: String
   seoDescription: String
   name: String!
@@ -51,7 +51,7 @@ type CollectionTranslatableContent implements Node {
 }
 
 type CategoryTranslatableContent implements Node {
-  id: ID!
+  id: String!
   seoTitle: String
   seoDescription: String
   name: String!
@@ -61,14 +61,14 @@ type CategoryTranslatableContent implements Node {
 }
 
 type AttributeTranslatableContent implements Node {
-  id: ID!
+  id: String!
   name: String!
   translation(languageCode: LanguageCodeEnum!): AttributeTranslation
   # attribute: Attribute
 }
 
 type AttributeValueTranslatableContent implements Node {
-  id: ID!
+  id: String!
   name: String!
   richText: JSONString
   translation(languageCode: LanguageCodeEnum!): AttributeValueTranslation
@@ -76,7 +76,7 @@ type AttributeValueTranslatableContent implements Node {
 }
 
 type ProductVariantTranslatableContent implements Node {
-  id: ID!
+  id: String!
   name: String!
   translation(languageCode: LanguageCodeEnum!): ProductVariantTranslation
   # productVariant: ProductVariant
@@ -84,7 +84,7 @@ type ProductVariantTranslatableContent implements Node {
 }
 
 type PageTranslatableContent implements Node {
-  id: ID!
+  id: String!
   seoTitle: String
   seoDescription: String
   title: String!
@@ -94,7 +94,7 @@ type PageTranslatableContent implements Node {
 }
 
 type ShippingMethodTranslatableContent implements Node {
-  id: ID!
+  id: String!
   name: String!
   description: JSONString
   translation(languageCode: LanguageCodeEnum!): ShippingMethodTranslation
@@ -102,21 +102,21 @@ type ShippingMethodTranslatableContent implements Node {
 }
 
 type SaleTranslatableContent implements Node {
-  id: ID!
+  id: String!
   name: String!
   translation(languageCode: LanguageCodeEnum!): SaleTranslation
   # sale: Sale
 }
 
 type VoucherTranslatableContent implements Node {
-  id: ID!
+  id: String!
   name: String
   translation(languageCode: LanguageCodeEnum!): VoucherTranslation
   # voucher: Voucher
 }
 
 type MenuItemTranslatableContent implements Node {
-  id: ID!
+  id: String!
   name: String!
   translation(languageCode: LanguageCodeEnum!): MenuItemTranslation
   # menuItem: MenuItem

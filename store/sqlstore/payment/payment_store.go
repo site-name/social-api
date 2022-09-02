@@ -19,8 +19,8 @@ func NewSqlPaymentStore(s store.Store) store.PaymentStore {
 	return &SqlPaymentStore{s}
 }
 
-func (ps *SqlPaymentStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (ps *SqlPaymentStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"GateWay",
 		"IsActive",

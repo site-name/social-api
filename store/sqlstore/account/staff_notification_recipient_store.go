@@ -13,14 +13,14 @@ type SqlStaffNotificationRecipientStore struct {
 	store.Store
 }
 
-var staffNotificationRecipientModelFields = model.StringArray{
+var staffNotificationRecipientModelFields = model.AnyArray[string]{
 	"Id",
 	"UserID",
 	"StaffEmail",
 	"Active",
 }
 
-func (ss *SqlStaffNotificationRecipientStore) ModelFields(prefix string) model.StringArray {
+func (ss *SqlStaffNotificationRecipientStore) ModelFields(prefix string) model.AnyArray[string] {
 	if prefix == "" {
 		return staffNotificationRecipientModelFields
 	}

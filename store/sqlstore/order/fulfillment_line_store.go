@@ -20,8 +20,8 @@ func NewSqlFulfillmentLineStore(s store.Store) store.FulfillmentLineStore {
 	return &SqlFulfillmentLineStore{s}
 }
 
-func (fls *SqlFulfillmentLineStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (fls *SqlFulfillmentLineStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"OrderLineID",
 		"FulfillmentID",

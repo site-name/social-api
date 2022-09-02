@@ -1,21 +1,21 @@
 extend type Mutation {
   voucherCreate(input: VoucherInput!): VoucherCreate
-  voucherDelete(id: ID!): VoucherDelete
-  voucherBulkDelete(ids: [ID]!): VoucherBulkDelete
-  voucherUpdate(id: ID!, input: VoucherInput!): VoucherUpdate
-  voucherCataloguesAdd(id: ID!, input: CatalogueInput!): VoucherAddCatalogues
-  voucherCataloguesRemove(id: ID!, input: CatalogueInput!): VoucherRemoveCatalogues
-  voucherTranslate(id: ID!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): VoucherTranslate
-  voucherChannelListingUpdate(id: ID!, input: VoucherChannelListingInput!): VoucherChannelListingUpdate
+  voucherDelete(id: String!): VoucherDelete
+  voucherBulkDelete(ids: [String]!): VoucherBulkDelete
+  voucherUpdate(id: String!, input: VoucherInput!): VoucherUpdate
+  voucherCataloguesAdd(id: String!, input: CatalogueInput!): VoucherAddCatalogues
+  voucherCataloguesRemove(id: String!, input: CatalogueInput!): VoucherRemoveCatalogues
+  voucherTranslate(id: String!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): VoucherTranslate
+  voucherChannelListingUpdate(id: String!, input: VoucherChannelListingInput!): VoucherChannelListingUpdate
 }
 
 extend type Query {
-  voucher(id: ID!, channel: String): Voucher
+  voucher(id: String!, channel: String): Voucher
   vouchers(filter: VoucherFilterInput, sortBy: VoucherSortingInput, query: String, channel: String, before: String, after: String, first: Int, last: Int): VoucherCountableConnection
 }
 
 type Voucher implements Node & ObjectWithMetadata {
-  id: ID!
+  id: String!
   name: String
   type: VoucherTypeEnum!
   code: String!
@@ -48,10 +48,10 @@ input VoucherInput {
   startDate: DateTime
   endDate: DateTime
   discountValueType: DiscountValueTypeEnum
-  products: [ID]
-  variants: [ID]
-  collections: [ID]
-  categories: [ID]
+  products: [String]
+  variants: [String]
+  collections: [String]
+  categories: [String]
   minCheckoutItemsQuantity: Int
   countries: [String]
   applyOncePerOrder: Boolean
@@ -96,7 +96,7 @@ type VoucherTranslate {
 
 input VoucherChannelListingInput {
   addChannels: [VoucherChannelListingAddInput!]
-  removeChannels: [ID!]
+  removeChannels: [String!]
 }
 
 type VoucherChannelListingUpdate {
@@ -147,13 +147,13 @@ enum VoucherTypeEnum {
 }
 
 type VoucherTranslation implements Node {
-  id: ID!
+  id: String!
   name: String
   language: LanguageDisplay!
 }
 
 type VoucherChannelListing implements Node {
-  id: ID!
+  id: String!
   channel: Channel!
   discountValue: Float!
   currency: String!
@@ -163,9 +163,9 @@ type VoucherChannelListing implements Node {
 type DiscountError {
   field: String
   message: String
-  products: [ID!]
+  products: [String!]
   code: DiscountErrorCode!
-  channels: [ID!]
+  channels: [String!]
 }
 
 enum DiscountErrorCode {
@@ -180,7 +180,7 @@ enum DiscountErrorCode {
 }
 
 input VoucherChannelListingAddInput {
-  channelId: ID!
+  channelId: String!
   discountValue: PositiveDecimal
   minAmountSpent: PositiveDecimal
 }

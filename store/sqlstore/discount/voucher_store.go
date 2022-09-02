@@ -21,8 +21,8 @@ func NewSqlDiscountVoucherStore(sqlStore store.Store) store.DiscountVoucherStore
 
 }
 
-func (vs *SqlVoucherStore) ModelFields(prefix string) model.StringArray {
-	res := model.StringArray{
+func (vs *SqlVoucherStore) ModelFields(prefix string) model.AnyArray[string] {
+	res := model.AnyArray[string]{
 		"Id",
 		"ShopID",
 		"Type",
