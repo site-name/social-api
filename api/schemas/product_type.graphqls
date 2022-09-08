@@ -23,8 +23,8 @@ type ProductType implements Node & ObjectWithMetadata {
   metadata: [MetadataItem]!
   kind: ProductTypeKindEnum!
   taxType: TaxType
-  variantAttributes(variantSelection: VariantAttributeScope): [Attribute]
-  productAttributes: [Attribute]
+  variantAttributes: [Attribute]!
+  productAttributes: [Attribute]!
   availableAttributes(filter: AttributeFilterInput, before: String, after: String, first: Int, last: Int): AttributeCountableConnection
 }
 

@@ -2,7 +2,7 @@ package shared
 
 import (
 	"context"
-	"errors"
+	"fmt"
 )
 
 // Unique type to hold our context.
@@ -16,11 +16,18 @@ const (
 	UsersLoaderCtx    CTXKey = 4
 )
 
-// GetContextValue
-func GetContextValue[T any](ctx context.Context, key CTXKey) (*T, error) {
-	c, ok := ctx.Value(key).(*T)
+// GetContextValue extracts according value of given key in given `ctx` and returns the value.
+func GetContextValue[T any](ctx context.Context, key CTXKey) (T, error) {
+	value := ctx.Value(key)
+	if value == nil {
+		var res T
+		return res, fmt.Errorf("given context doesn't store given key")
+	}
+
+	c, ok := value.(T)
 	if !ok {
-		return nil, errors.New("no value found in context")
+		var res T
+		return res, fmt.Errorf("found value has unexpected type: %T", value)
 	}
 
 	return c, nil

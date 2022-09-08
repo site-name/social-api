@@ -114,24 +114,23 @@ func (a *ServiceAccount) ClearSessionCacheForUserSkipClusterSend(userID string) 
 }
 
 func (a *ServiceAccount) GetSession(token string) (*model.Session, *model.AppError) {
-	metrics := a.metrics
-
 	var session = a.sessionPool.Get().(*model.Session)
 
 	var err *model.AppError
 	if err := a.sessionCache.Get(token, session); err == nil {
-		if metrics != nil {
-			metrics.IncrementMemCacheHitCounterSession()
+		if a.metrics != nil {
+			a.metrics.IncrementMemCacheHitCounterSession()
 		}
 	} else {
-		if metrics != nil {
-			metrics.IncrementMemCacheMissCounterSession()
+		if a.metrics != nil {
+			a.metrics.IncrementMemCacheMissCounterSession()
 		}
 	}
 
 	if session.Id == "" {
 		var nErr error
-		if session, nErr = a.srv.Store.Session().Get(sqlstore.WithMaster(context.Background()), token); nErr == nil {
+		session, nErr = a.srv.Store.Session().Get(sqlstore.WithMaster(context.Background()), token)
+		if nErr == nil {
 			if session != nil {
 				if session.Token != token {
 					return nil, model.NewAppError("GetSession", "api.context.invalid_token.error", map[string]interface{}{"Token": token, "Error": ""}, "session token is different from the one in DB", http.StatusUnauthorized)
@@ -149,8 +148,11 @@ func (a *ServiceAccount) GetSession(token string) (*model.Session, *model.AppErr
 	if session == nil || session.Id == "" {
 		session, err = a.createSessionForUserAccessToken(token)
 		if err != nil {
-			detailedError := ""
-			statusCode := http.StatusUnauthorized
+			var (
+				detailedError string
+				statusCode    = http.StatusUnauthorized
+			)
+
 			if err.Id != "app.user_access_token.invalid_or_missing" {
 				detailedError = err.Error()
 				statusCode = err.StatusCode
@@ -166,7 +168,8 @@ func (a *ServiceAccount) GetSession(token string) (*model.Session, *model.AppErr
 	}
 
 	if *a.srv.Config().ServiceSettings.SessionIdleTimeoutInMinutes > 0 &&
-		!session.IsOAuth && !session.IsMobileApp() &&
+		!session.IsOAuth &&
+		!session.IsMobileApp() &&
 		session.Props[model.SESSION_PROP_TYPE] != model.SESSION_TYPE_USER_ACCESS_TOKEN &&
 		!*a.srv.Config().ServiceSettings.ExtendSessionLengthWithActivity {
 
@@ -577,18 +580,3 @@ func (a *ServiceAccount) GetCloudSession(token string) (*model.Session, *model.A
 
 	return nil, model.NewAppError("GetCloudSession", "api.context.invalid_token.error", map[string]interface{}{"Token": token, "Error": ""}, "The provided token is invalid", http.StatusUnauthorized)
 }
-
-// func (a *ServiceAccount) GetRemoteClusterSession(token string, remoteId string) (*model.Session, *model.AppError) {
-// 	rc, appErr := a.GetRemoteCluster(remoteId)
-// 	if appErr == nil && rc.Token == token {
-// 		// Need a bare-bones session object for later checks
-// 		session := &model.Session{
-// 			Token:   token,
-// 			IsOAuth: false,
-// 		}
-
-// 		session.AddProp(model.SESSION_PROP_TYPE, model.SESSION_TYPE_REMOTECLUSTER_TOKEN)
-// 		return session, nil
-// 	}
-// 	return nil, model.NewAppError("GetRemoteClusterSession", "api.context.invalid_token.error", map[string]interface{}{"Token": token, "Error": ""}, "The provided token is invalid", http.StatusUnauthorized)
-// }

@@ -11,8 +11,8 @@ import (
 //go:embed schemas
 var assets embed.FS
 
+// constructSchema constructs schema from *.graphql files
 func constructSchema() (string, error) {
-	// construct schema from *.graphql files
 	entries, err := assets.ReadDir("schemas")
 	if err != nil {
 		return "", errors.Wrap(err, "failed to read schema dir")
@@ -30,7 +30,7 @@ func constructSchema() (string, error) {
 			return "", errors.Wrap(err, "failed to build up schema files")
 		}
 
-		builder.Write([]byte{'\n'})
+		builder.WriteByte('\n')
 	}
 
 	return builder.String(), nil

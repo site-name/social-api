@@ -18,7 +18,7 @@ import (
 
 type Context struct {
 	App        app.AppIface
-	AppContext *request.Context
+	AppContext *request.Context // AppContext holds information of an http request. It is created when an http request is made
 	Logger     *slog.Logger
 	Params     *Params
 	Err        *model.AppError

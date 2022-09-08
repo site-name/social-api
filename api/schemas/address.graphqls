@@ -10,7 +10,7 @@ extend type Query {
   address(id: String!): Address
 }
 
-type Address implements Node {
+type Address {
   id: String!
   firstName: String!
   lastName: String!

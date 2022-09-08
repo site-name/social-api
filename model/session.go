@@ -143,11 +143,7 @@ func (s *Session) Sanitize() {
 	s.Token = ""
 }
 
-// IsExpired checks if:
-//
-// 1) session's ExpiresAt <= 0 => false
-//
-// 2) time.Now() > session's ExpiresAt => true
+// IsExpired checks if GetMillis() > s.ExpiresAt
 func (s *Session) IsExpired() bool {
 	if s.ExpiresAt <= 0 {
 		return false
@@ -161,8 +157,9 @@ func (s *Session) IsExpired() bool {
 }
 
 // Deprecated: SetExpireInDays is deprecated and should not be used.
-//             Use (*App).SetSessionExpireInDays instead which handles the
-//			   cases where the new ExpiresAt is not relative to CreateAt.
+//
+//	            Use (*App).SetSessionExpireInDays instead which handles the
+//				   cases where the new ExpiresAt is not relative to CreateAt.
 func (s *Session) SetExpireInDays(days int) {
 	if s.CreateAt == 0 {
 		s.ExpiresAt = GetMillis() + (1000 * 60 * 60 * 24 * int64(days))
@@ -173,7 +170,6 @@ func (s *Session) SetExpireInDays(days int) {
 
 // AddProp adds given value to session's Props with key of given key
 func (s *Session) AddProp(key string, value string) {
-
 	if s.Props == nil {
 		s.Props = make(map[string]string)
 	}
@@ -181,21 +177,15 @@ func (s *Session) AddProp(key string, value string) {
 	s.Props[key] = value
 }
 
+// IsMobileApp check if current session has non-empty `DeviceId` field or IsMobile()
 func (s *Session) IsMobileApp() bool {
 	return s.DeviceId != "" || s.IsMobile()
 }
 
+// IsMobile checks if the Props field has an item is ("isMobile": "true")
 func (s *Session) IsMobile() bool {
 	val, ok := s.Props[USER_AUTH_SERVICE_IS_MOBILE]
-	if !ok {
-		return false
-	}
-	isMobile, err := strconv.ParseBool(val)
-	if err != nil {
-		slog.Debug("Error parsing boolean property from Session", slog.Err(err))
-		return false
-	}
-	return isMobile
+	return ok && strings.EqualFold(val, "true")
 }
 
 func (s *Session) IsSaml() bool {

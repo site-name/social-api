@@ -18,9 +18,6 @@ const (
 	TokenLocationNotFound TokenLocation = iota
 	TokenLocationHeader
 	TokenLocationCookie
-	TokenLocationQueryString
-	TokenLocationCloudHeader
-	TokenLocationRemoteClusterHeader
 )
 
 // String implements fmt Stringer interface
@@ -32,12 +29,6 @@ func (tl TokenLocation) String() string {
 		return "Header"
 	case TokenLocationCookie:
 		return "Cookie"
-	case TokenLocationQueryString:
-		return "QueryString"
-	case TokenLocationCloudHeader:
-		return "CloudHeader"
-	case TokenLocationRemoteClusterHeader:
-		return "RemoteClusterHeader"
 	default:
 		return "Unknown"
 	}
@@ -61,19 +52,6 @@ func ParseAuthTokenFromRequest(r *http.Request) (string, TokenLocation) {
 	if len(authHeader) > 5 && strings.ToLower(authHeader[0:5]) == model.HEADER_TOKEN {
 		// OAuth token
 		return authHeader[6:], TokenLocationHeader
-	}
-
-	// Attempt to parse token out of the query string
-	if token := r.URL.Query().Get("access_token"); token != "" {
-		return token, TokenLocationQueryString
-	}
-
-	if token := r.Header.Get(model.HEADER_CLOUD_TOKEN); token != "" {
-		return token, TokenLocationCloudHeader
-	}
-
-	if token := r.Header.Get(model.HEADER_REMOTECLUSTER_TOKEN); token != "" {
-		return token, TokenLocationRemoteClusterHeader
 	}
 
 	return "", TokenLocationNotFound

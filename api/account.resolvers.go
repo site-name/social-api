@@ -8,13 +8,20 @@ import (
 	"fmt"
 
 	"github.com/sitename/sitename/api/gqlmodel"
+	"github.com/sitename/sitename/api/shared"
+	"github.com/sitename/sitename/web"
 )
 
 func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
-	Input   gqlmodel.AddressInput
-	TypeArg *gqlmodel.AddressTypeEnum
+	Input gqlmodel.AddressInput
+	Type  *gqlmodel.AddressTypeEnum
 }) (*gqlmodel.AccountAddressCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+
+	embedContext, err := shared.GetContextValue[*web.Context](ctx, shared.WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
 }
 
 func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
@@ -29,8 +36,8 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 }
 
 func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
-	Id      string
-	TypeArg gqlmodel.AddressTypeEnum
+	Id   string
+	Type gqlmodel.AddressTypeEnum
 }) (*gqlmodel.AccountSetDefaultAddress, error) {
 	panic(fmt.Errorf("not implemented"))
 }

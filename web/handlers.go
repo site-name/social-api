@@ -88,10 +88,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w = newWrappedWriter(w)
 
 	var (
-		now         = time.Now()
-		requestID   = model.NewId()
-		statusCode  string
-		appInstance = app.New(app.ServerConnector(h.Srv))
+		now        = time.Now()
+		requestID  = model.NewId()
+		statusCode string
 	)
 
 	defer func() {
@@ -109,7 +108,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	c := &Context{
 		AppContext: new(request.Context),
-		App:        appInstance,
+		App:        app.New(app.ServerConnector(h.Srv)),
 	}
 
 	t, _ := i18n.GetTranslationsAndLocaleFromRequest(r)
@@ -167,11 +166,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Strict-Transport-Security", fmt.Sprintf("max-age=%d", *c.App.Config().ServiceSettings.TLSStrictTransportMaxAge))
 	}
 
-	var cloudCSP string
-	if true {
-		cloudCSP = " js.stripe.com/v3"
-	}
-
 	if h.IsStatic {
 		// Instruct the browser not to display us in an iframe unless is the same origin for anti-clickjacking
 		w.Header().Set("X-Frame-Options", "SAMEORIGIN")
@@ -191,7 +185,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// Set content security policy. This is also specified in the root.html of the webapp in a meta tag.
 		w.Header().Set("Content-Security-Policy", fmt.Sprintf(
 			"frame-ancestors 'self'; script-src 'self' cdn.rudderlabs.com%s%s%s",
-			cloudCSP,
+			"",
 			h.cspShaDirective,
 			devCSP,
 		))
@@ -206,7 +200,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	token, tokenLocation := app.ParseAuthTokenFromRequest(r)
 
-	if token != "" && tokenLocation != app.TokenLocationCloudHeader && tokenLocation != app.TokenLocationRemoteClusterHeader {
+	if token != "" {
 		session, err := c.App.Srv().AccountService().GetSession(token)
 		defer c.App.Srv().AccountService().ReturnSessionToPool(session)
 
@@ -218,8 +212,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				c.RemoveSessionCookie(w, r)
 				c.Err = model.NewAppError("ServeHTTP", "api.context.session_expired.app_error", nil, "token="+token, http.StatusUnauthorized)
 			}
-		} else if !session.IsOAuth && tokenLocation == app.TokenLocationQueryString {
-			c.Err = model.NewAppError("ServeHTTP", "api.context.token_provided.app_error", nil, "token="+token, http.StatusUnauthorized)
 		} else {
 			c.AppContext.SetSession(session)
 		}
@@ -230,15 +222,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		h.checkCSRFToken(c, r, token, tokenLocation, session)
-	} else if token != "" && tokenLocation == app.TokenLocationCloudHeader {
-		// Check to see if this provided token matches our CWS Token
-		session, err := c.App.Srv().AccountService().GetCloudSession(token)
-		if err != nil {
-			c.Logger.Warn("Invalid SWS token", slog.Err(err))
-			c.Err = err
-		} else {
-			c.AppContext.SetSession(session)
-		}
 	}
 
 	c.Logger = c.App.Log().With(
@@ -288,7 +271,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if IsApiCall(c.App, r) ||
-			// IsWebhookCall(c.App, r) || IsOAuthApiCall(c.App, r) ||
+			// IsWebhookCall(c.App, r) ||
+			// IsOAuthApiCall(c.App, r) ||
 			r.Header.Get("X-Mobile-App") != "" {
 			w.WriteHeader(c.Err.StatusCode)
 			w.Write([]byte(c.Err.ToJSON()))
