@@ -3,15 +3,13 @@ package util
 import (
 	"fmt"
 	"testing"
-
-	"github.com/ttacon/libphonenumber"
 )
 
-func TestIsValidPhoneNumber(t *testing.T) {
-	num, err := libphonenumber.Parse("354575050", "")
-	if err != nil {
-		t.Fatal(err)
+func TestValidatePhoneNumber(t *testing.T) {
+	number, ok := ValidatePhoneNumber("+84354575050", "US")
+	if !ok {
+		t.Fatal("invalid")
 	}
 
-	fmt.Println(num)
+	fmt.Println(number)
 }

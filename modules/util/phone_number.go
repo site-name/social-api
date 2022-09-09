@@ -6,12 +6,13 @@ import (
 	"github.com/ttacon/libphonenumber"
 )
 
-// IsValidPhoneNumber checks if given number and country code make a valid international phone number.
+// ValidatePhoneNumber checks if given number and country code make a valid international phone number.
 //
 // E.g
-//  IsValidPhoneNumber("354575050", "VN") => true
-//  IsValidPhoneNumber("0354575050", "VN") => false
-func IsValidPhoneNumber(number, countryCode string) (string, bool) {
+//
+//	ValidatePhoneNumber("354575050", "VN") => true
+//	ValidatePhoneNumber("0354575050", "VN") => false
+func ValidatePhoneNumber(number, countryCode string) (string, bool) {
 	num, err := libphonenumber.Parse(number, countryCode)
 	if err != nil {
 		return "", false

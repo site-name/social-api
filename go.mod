@@ -45,13 +45,13 @@ require (
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/minio/minio-go/v7 v7.0.36
-	github.com/nyaruka/phonenumbers v1.1.1
 	github.com/oov/psd v0.0.0-20220121172623-5db5eafcecbb
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.13.0
 	github.com/rs/cors v1.8.2
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
+	github.com/samber/lo v1.28.0
 	github.com/site-name/decimal v1.3.0
 	github.com/site-name/go-prices v1.4.0
 	github.com/spf13/cobra v1.5.0
@@ -167,7 +167,6 @@ require (
 	github.com/richardlehane/msoleps v1.0.3 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/russellhaering/goxmldsig v1.2.0 // indirect
-	github.com/samber/lo v1.28.0 // indirect
 	github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect

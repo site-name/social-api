@@ -175,7 +175,7 @@ func (a *Address) IsValid() *model.AppError {
 	if utf8.RuneCountInString(a.Phone) > ADDRESS_PHONE_MAX_LENGTH {
 		return outer("phone", &a.Id)
 	}
-	if str, ok := util.IsValidPhoneNumber(a.Phone, a.Country); !ok {
+	if str, ok := util.ValidatePhoneNumber(a.Phone, a.Country); !ok {
 		return outer("phone", &a.Id)
 	} else {
 		a.Phone = str

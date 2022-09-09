@@ -8,7 +8,6 @@ import (
 	"github.com/graph-gophers/graphql-go"
 	gqlerrors "github.com/graph-gophers/graphql-go/errors"
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/api/shared"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/web"
@@ -76,7 +75,7 @@ func (api *API) graphql(c *web.Context, w http.ResponseWriter, r *http.Request) 
 
 	// Populate the context with required info.
 	reqCtx := r.Context()
-	reqCtx = context.WithValue(reqCtx, shared.WebCtx, c)
+	reqCtx = context.WithValue(reqCtx, WebCtx, c)
 
 	response = api.schema.Exec(reqCtx, params.Query, params.OperationName, params.Variables)
 

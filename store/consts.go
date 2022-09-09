@@ -1,7 +1,6 @@
 package store
 
 const (
-	UUID_MAX_LENGTH                     = 36 // github.com/google/uuid UUID length
 	ChannelExistsError                  = "store.sql_channel.save_channel.exists.app_error"
 	UserSearchOptionNamesOnly           = "names_only"
 	UserSearchOptionNamesOnlyNoFullName = "names_only_no_full_name"

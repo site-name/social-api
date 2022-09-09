@@ -9,7 +9,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	modelAudit "github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/i18n"
@@ -20,8 +19,8 @@ type Context struct {
 	App        app.AppIface
 	AppContext *request.Context // AppContext holds information of an http request. It is created when an http request is made
 	Logger     *slog.Logger
-	Params     *Params
-	Err        *model.AppError
+	// Params     *Params
+	Err *model.AppError
 	// This is used to track the graphQL query that's being executed,
 	// so that we can monitor the timings in Grafana.
 	GraphQLOperationName string
@@ -281,194 +280,194 @@ func (c *Context) GetSiteURLHeader() string {
 // 2) If c.Params.UserId == "me" => c.Params.UserId = session.UserId
 //
 // 3) If c.Params.UserId is not valid => set invalid params
-func (c *Context) RequireUserId() *Context {
-	if c.Err != nil {
-		return c
-	}
+// func (c *Context) RequireUserId() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if c.Params.UserId == account.ME {
-		c.Params.UserId = c.AppContext.Session().UserId
-	}
+// 	if c.Params.UserId == account.ME {
+// 		c.Params.UserId = c.AppContext.Session().UserId
+// 	}
 
-	if !model.IsValidId(c.Params.UserId) {
-		c.SetInvalidUrlParam("user_id")
-	}
-	return c
-}
+// 	if !model.IsValidId(c.Params.UserId) {
+// 		c.SetInvalidUrlParam("user_id")
+// 	}
+// 	return c
+// }
 
-// RequireTokenId make sure the TokenId is valid in c's Params
-func (c *Context) RequireTokenId() *Context {
-	if c.Err != nil {
-		return c
-	}
+// // RequireTokenId make sure the TokenId is valid in c's Params
+// func (c *Context) RequireTokenId() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if !model.IsValidId(c.Params.TokenId) {
-		c.SetInvalidUrlParam("token_id")
-	}
-	return c
-}
+// 	if !model.IsValidId(c.Params.TokenId) {
+// 		c.SetInvalidUrlParam("token_id")
+// 	}
+// 	return c
+// }
 
-func (c *Context) RequireTimestamp() *Context {
-	if c.Err != nil {
-		return c
-	}
+// func (c *Context) RequireTimestamp() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if c.Params.Timestamp == 0 {
-		c.SetInvalidUrlParam("timestamp")
-	}
-	return c
-}
+// 	if c.Params.Timestamp == 0 {
+// 		c.SetInvalidUrlParam("timestamp")
+// 	}
+// 	return c
+// }
 
-func (c *Context) RequireUsername() *Context {
-	if c.Err != nil {
-		return c
-	}
+// func (c *Context) RequireUsername() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if !model.IsValidUsername(c.Params.Username) {
-		c.SetInvalidParam("username")
-	}
+// 	if !model.IsValidUsername(c.Params.Username) {
+// 		c.SetInvalidParam("username")
+// 	}
 
-	return c
-}
+// 	return c
+// }
 
-func (c *Context) RequirePolicyId() *Context {
-	if c.Err != nil {
-		return c
-	}
+// func (c *Context) RequirePolicyId() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if !model.IsValidId(c.Params.PolicyId) {
-		c.SetInvalidUrlParam("policy_id")
-	}
-	return c
-}
+// 	if !model.IsValidId(c.Params.PolicyId) {
+// 		c.SetInvalidUrlParam("policy_id")
+// 	}
+// 	return c
+// }
 
-func (c *Context) RequireFileId() *Context {
-	if c.Err != nil {
-		return c
-	}
+// func (c *Context) RequireFileId() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if !model.IsValidId(c.Params.FileId) {
-		c.SetInvalidUrlParam("file_id")
-	}
+// 	if !model.IsValidId(c.Params.FileId) {
+// 		c.SetInvalidUrlParam("file_id")
+// 	}
 
-	return c
-}
+// 	return c
+// }
 
-// RequireUploadId checks if Params's UploadId is set and valid
-func (c *Context) RequireUploadId() *Context {
-	if c.Err != nil {
-		return c
-	}
+// // RequireUploadId checks if Params's UploadId is set and valid
+// func (c *Context) RequireUploadId() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if !model.IsValidId(c.Params.UploadId) {
-		c.SetInvalidUrlParam("upload_id")
-	}
+// 	if !model.IsValidId(c.Params.UploadId) {
+// 		c.SetInvalidUrlParam("upload_id")
+// 	}
 
-	return c
-}
+// 	return c
+// }
 
-func (c *Context) RequireFilename() *Context {
-	if c.Err != nil {
-		return c
-	}
+// func (c *Context) RequireFilename() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if c.Params.Filename == "" {
-		c.SetInvalidUrlParam("filename")
-	}
+// 	if c.Params.Filename == "" {
+// 		c.SetInvalidUrlParam("filename")
+// 	}
 
-	return c
-}
+// 	return c
+// }
 
-func (c *Context) RequireReportId() *Context {
-	if c.Err != nil {
-		return c
-	}
+// func (c *Context) RequireReportId() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if !model.IsValidId(c.Params.ReportId) {
-		c.SetInvalidUrlParam("report_id")
-	}
-	return c
-}
+// 	if !model.IsValidId(c.Params.ReportId) {
+// 		c.SetInvalidUrlParam("report_id")
+// 	}
+// 	return c
+// }
 
-func (c *Context) SanitizeEmail() *Context {
-	if c.Err != nil {
-		return c
-	}
-	c.Params.Email = strings.ToLower(c.Params.Email)
-	if !model.IsValidEmail(c.Params.Email) {
-		c.SetInvalidUrlParam("email")
-	}
+// func (c *Context) SanitizeEmail() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
+// 	c.Params.Email = strings.ToLower(c.Params.Email)
+// 	if !model.IsValidEmail(c.Params.Email) {
+// 		c.SetInvalidUrlParam("email")
+// 	}
 
-	return c
-}
+// 	return c
+// }
 
-func (c *Context) RequireJobId() *Context {
-	if c.Err != nil {
-		return c
-	}
+// func (c *Context) RequireJobId() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if !model.IsValidId(c.Params.JobId) {
-		c.SetInvalidUrlParam("job_id")
-	}
-	return c
-}
+// 	if !model.IsValidId(c.Params.JobId) {
+// 		c.SetInvalidUrlParam("job_id")
+// 	}
+// 	return c
+// }
 
-func (c *Context) RequireJobType() *Context {
-	if c.Err != nil {
-		return c
-	}
+// func (c *Context) RequireJobType() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if c.Params.JobType == "" || len(c.Params.JobType) > 32 {
-		c.SetInvalidUrlParam("job_type")
-	}
-	return c
-}
+// 	if c.Params.JobType == "" || len(c.Params.JobType) > 32 {
+// 		c.SetInvalidUrlParam("job_type")
+// 	}
+// 	return c
+// }
 
-func (c *Context) RequireRoleId() *Context {
-	if c.Err != nil {
-		return c
-	}
+// func (c *Context) RequireRoleId() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if !model.IsValidId(c.Params.RoleId) {
-		c.SetInvalidUrlParam("role_id")
-	}
-	return c
-}
+// 	if !model.IsValidId(c.Params.RoleId) {
+// 		c.SetInvalidUrlParam("role_id")
+// 	}
+// 	return c
+// }
 
-func (c *Context) RequireSchemeId() *Context {
-	if c.Err != nil {
-		return c
-	}
+// func (c *Context) RequireSchemeId() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if !model.IsValidId(c.Params.SchemeId) {
-		c.SetInvalidUrlParam("scheme_id")
-	}
-	return c
-}
+// 	if !model.IsValidId(c.Params.SchemeId) {
+// 		c.SetInvalidUrlParam("scheme_id")
+// 	}
+// 	return c
+// }
 
-func (c *Context) RequireRoleName() *Context {
-	if c.Err != nil {
-		return c
-	}
+// func (c *Context) RequireRoleName() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if !model.IsValidRoleName(c.Params.RoleName) {
-		c.SetInvalidUrlParam("role_name")
-	}
+// 	if !model.IsValidRoleName(c.Params.RoleName) {
+// 		c.SetInvalidUrlParam("role_name")
+// 	}
 
-	return c
-}
+// 	return c
+// }
 
-func (c *Context) RequireInvoiceId() *Context {
-	if c.Err != nil {
-		return c
-	}
+// func (c *Context) RequireInvoiceId() *Context {
+// 	if c.Err != nil {
+// 		return c
+// 	}
 
-	if len(c.Params.InvoiceId) != 27 {
-		c.SetInvalidUrlParam("invoice_id")
-	}
+// 	if len(c.Params.InvoiceId) != 27 {
+// 		c.SetInvalidUrlParam("invoice_id")
+// 	}
 
-	return c
-}
+// 	return c
+// }
 
 func (c *Context) GetRemoteID(r *http.Request) string {
 	return r.Header.Get(model.HEADER_REMOTECLUSTER_ID)
