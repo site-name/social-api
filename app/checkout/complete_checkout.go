@@ -419,7 +419,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 	taxedTotal.Net = newTaxedTotalNet
 
 	zeroTaxedMoney, _ := util.ZeroTaxedMoney(checkOut.Currency)
-	if less, err := taxedTotal.LessThan(zeroTaxedMoney); less && err == nil {
+	if taxedTotal.LessThan(zeroTaxedMoney) {
 		taxedTotal = zeroTaxedMoney
 	}
 

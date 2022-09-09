@@ -157,11 +157,7 @@ func (a *ServiceDiscount) CalculateDiscountedPrice(product product_and_discount.
 				return nil, model.NewAppError("CalculateDiscountedPrice", "app.discount.calculate_discount_error.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}
 			discountedPrice := discountedIface.(*goprices.Money)
-			less, err := discountedPrice.LessThan(price)
-			if err != nil {
-				return nil, model.NewAppError("CalculateDiscountedPrice", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusBadRequest)
-			}
-			if less {
+			if discountedPrice.LessThan(price) {
 				price = discountedPrice
 			}
 		}

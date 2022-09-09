@@ -99,7 +99,7 @@ func (a *ServiceCheckout) BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shipp
 	total, _ = total.Sub(discount)
 
 	zeroTaxedMoney, _ := util.ZeroTaxedMoney(currency)
-	if lessThanOrEqual, _ := zeroTaxedMoney.LessThanOrEqual(total); lessThanOrEqual {
+	if zeroTaxedMoney.LessThanOrEqual(total) {
 		return total, nil
 	}
 

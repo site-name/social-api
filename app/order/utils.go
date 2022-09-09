@@ -986,7 +986,7 @@ func (s *ServiceOrder) UpdateGiftcardBalance(giftCard *giftcard.GiftCard, totalP
 	giftCard.PopulateNonDbFields() // NOTE: this call is important
 
 	previousBalance := giftCard.CurrentBalance
-	if less, err := totalPriceLeft.LessThan(giftCard.CurrentBalance); less && err == nil {
+	if totalPriceLeft.LessThan(giftCard.CurrentBalance) {
 		giftCard.CurrentBalance, _ = giftCard.CurrentBalance.Sub(totalPriceLeft)
 		totalPriceLeft, _ = util.ZeroMoney(totalPriceLeft.Currency)
 	} else {
@@ -1506,7 +1506,7 @@ func (a *ServiceOrder) GetTotalOrderDiscount(ord *order.Order) (*goprices.Money,
 		}
 	}
 
-	if less, err := totalOrderDiscount.LessThan(ord.UnDiscountedTotalGross); less && err == nil {
+	if totalOrderDiscount.LessThan(ord.UnDiscountedTotalGross) {
 		return totalOrderDiscount, nil
 	}
 

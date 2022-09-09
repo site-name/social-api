@@ -3,6 +3,7 @@ package product_and_discount
 import (
 	"sort"
 
+	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 )
 
@@ -40,18 +41,16 @@ type CostsData struct {
 }
 
 func NewCostsData(costs []*goprices.Money, margins []float64) *CostsData {
-	// sorting:
+	costs = lo.Filter(costs, func(v *goprices.Money, _ int) bool { return v != nil })
 	sort.Slice(costs, func(i, j int) bool {
-		less, err := costs[i].LessThan(costs[j])
-		return less && err == nil
+		return costs[i].LessThan(costs[j])
 	})
 	sort.Float64s(margins)
 
-	c := &CostsData{
+	return &CostsData{
 		costs:   costs,
 		margins: margins,
 	}
-	return c
 }
 
 func (c *CostsData) Costs() []*goprices.Money {

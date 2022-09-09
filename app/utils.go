@@ -117,7 +117,8 @@ func (a *Server) ToLocalCurrency(price interface{}, currency string) (interface{
 // get_rate parameter is a callable taking single argument (target currency)
 // that returns proper conversion rate
 //
-// `base` must be either *Money, *MoneyRange, *TaxedMoney, *TaxedMoneyRange. `conversionrate` can be nil
+// `base` must be either *Money, *MoneyRange, *TaxedMoney, *TaxedMoneyRange.
+// `conversionrate` can be nil
 //
 // NOTE: `base` and `toCurrency` must be validated before given to me.
 func (a *Server) ExchangeCurrency(base interface{}, toCurrency string, conversionRate *decimal.Decimal) (interface{}, *model.AppError) {
@@ -125,7 +126,8 @@ func (a *Server) ExchangeCurrency(base interface{}, toCurrency string, conversio
 
 	impl, ok := base.(goprices.Currencyable)
 	if ok {
-		if impl.MyCurrency() != model.DEFAULT_CURRENCY && !strings.EqualFold(toCurrency, model.DEFAULT_CURRENCY) {
+		if !strings.EqualFold(impl.MyCurrency(), model.DEFAULT_CURRENCY) &&
+			!strings.EqualFold(toCurrency, model.DEFAULT_CURRENCY) {
 			base, appErr = a.ExchangeCurrency(base, model.DEFAULT_CURRENCY, conversionRate)
 			if appErr != nil {
 				return nil, appErr
@@ -171,7 +173,7 @@ func (a *Server) ExchangeCurrency(base interface{}, toCurrency string, conversio
 		if appErr != nil {
 			return nil, appErr
 		}
-		res, _ := goprices.NewMoneyRange(newNet.(*goprices.Money), newGross.(*goprices.Money))
+		res, _ := goprices.NewTaxedMoney(newNet.(*goprices.Money), newGross.(*goprices.Money))
 		return res, nil
 
 	case *goprices.TaxedMoneyRange:
@@ -183,7 +185,7 @@ func (a *Server) ExchangeCurrency(base interface{}, toCurrency string, conversio
 		if appErr != nil {
 			return nil, appErr
 		}
-		res, _ := goprices.NewMoneyRange(newStart.(*goprices.Money), newStop.(*goprices.Money))
+		res, _ := goprices.NewTaxedMoneyRange(newStart.(*goprices.TaxedMoney), newStop.(*goprices.TaxedMoney))
 		return res, nil
 
 	default:

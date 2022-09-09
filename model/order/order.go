@@ -83,7 +83,7 @@ type Order struct {
 	ShippingMethodName           *string                `json:"shipping_method_name"`        // NUL, NOT editable
 	CollectionPointName          *string                `json:"collection_point_name"`       // NUL, NOTE editable
 	ChannelID                    string                 `json:"channel_id"`                  //
-	ShippingPriceNetAmount       *decimal.Decimal       `json:"shipping_price_net_amount"`   // NOT editable
+	ShippingPriceNetAmount       *decimal.Decimal       `json:"shipping_price_net_amount"`   // NOT editable, default Zero
 	ShippingPriceNet             *goprices.Money        `json:"shipping_price_net" db:"-"`   //
 	ShippingPriceGrossAmount     *decimal.Decimal       `json:"shipping_price_gross_amount"` // NOT editable
 	ShippingPriceGross           *goprices.Money        `json:"shipping_price_gross" db:"-"`
@@ -104,13 +104,15 @@ type Order struct {
 	TotalPaidAmount              *decimal.Decimal       `json:"total_paid_amount"`
 	TotalPaid                    *goprices.Money        `json:"total_paid" db:"-"`
 	VoucherID                    *string                `json:"voucher_id"`
-	DisplayGrossPrices           *bool                  `json:"display_gross_prices"`
+	DisplayGrossPrices           *bool                  `json:"display_gross_prices"` // default *true
 	CustomerNote                 string                 `json:"customer_note"`
 	WeightAmount                 float32                `json:"weight_amount"`
 	WeightUnit                   measurement.WeightUnit `json:"weight_unit"`   // default 'kg'
 	Weight                       *measurement.Weight    `json:"weight" db:"-"` // default 0
 	RedirectUrl                  *string                `json:"redirect_url"`
 	model.ModelMetadata
+
+	populatedNonDBFields bool `json:"-" db:"-"`
 }
 
 // OrderFilterOption is used to buils sql queries for filtering orders
@@ -124,6 +126,13 @@ type OrderFilterOption struct {
 
 // PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.
 func (o *Order) PopulateNonDbFields() {
+	if o.populatedNonDBFields {
+		return
+	}
+	defer func() {
+		o.populatedNonDBFields = true
+	}()
+
 	// errors can be ignored since orders's Currencies were checked before saving into database
 	o.ShippingPriceNet = &goprices.Money{
 		Amount:   *o.ShippingPriceNetAmount,
@@ -154,13 +163,12 @@ func (o *Order) PopulateNonDbFields() {
 		Amount:   *o.UnDiscountedTotalGrossAmount,
 		Currency: o.Currency,
 	}
-	o.Total, _ = goprices.NewTaxedMoney(o.TotalNet, o.TotalGross)
-	o.UnDiscountedTotal, _ = goprices.NewTaxedMoney(o.UnDiscountedTotalNet, o.UnDiscountedTotalGross)
+	o.Total, _ = goprices.NewTaxedMoney(o.TotalNet, o.TotalGross)                                     // ignore error since arguments are trusted
+	o.UnDiscountedTotal, _ = goprices.NewTaxedMoney(o.UnDiscountedTotalNet, o.UnDiscountedTotalGross) // ignore error since arguments are trusted
 	o.TotalPaid = &goprices.Money{
 		Amount:   *o.TotalPaidAmount,
 		Currency: o.Currency,
 	}
-
 	o.Weight = &measurement.Weight{
 		Amount: o.WeightAmount,
 		Unit:   o.WeightUnit,
@@ -276,7 +284,7 @@ func (o *Order) commonPre() {
 	if o.ShippingPriceGross != nil {
 		o.ShippingPriceGrossAmount = &o.ShippingPriceGross.Amount
 	} else {
-		o.ShippingPriceGrossAmount = &o.ShippingPriceGross.Amount
+		o.ShippingPriceGrossAmount = &decimal.Zero
 	}
 
 	if o.TotalNet != nil {
@@ -334,12 +342,17 @@ func (o *Order) NewToken() {
 
 // IsFullyPaid checks current order's total paid is greater than its total gross
 func (o *Order) IsFullyPaid() bool {
-	ok, _ := o.Total.Gross.LessThanOrEqual(o.TotalPaid)
-	return ok
+	if !o.populatedNonDBFields {
+		o.PopulateNonDbFields()
+	}
+	return o.Total.Gross.LessThanOrEqual(o.TotalPaid)
 }
 
 // IsPartlyPaid checks if order has `TotalPaidAmount` > 0
 func (o *Order) IsPartlyPaid() bool {
+	if !o.populatedNonDBFields {
+		o.PopulateNonDbFields()
+	}
 	return o.TotalPaidAmount != nil && decimal.Zero.LessThan(*o.TotalPaidAmount)
 }
 
@@ -360,7 +373,9 @@ func (o *Order) IsOpen() bool {
 
 // TotalCaptured returns current order's TotalPaid money
 func (o *Order) TotalCaptured() *goprices.Money {
-	o.PopulateNonDbFields()
+	if !o.populatedNonDBFields {
+		o.PopulateNonDbFields()
+	}
 	return o.TotalPaid
 }
 
@@ -371,7 +386,9 @@ func (o *Order) TotalBalance() (*goprices.Money, error) {
 
 // GetTotalWeight returns current order's Weight
 func (o *Order) GetTotalWeight() *measurement.Weight {
-	o.PopulateNonDbFields()
+	if !o.populatedNonDBFields {
+		o.PopulateNonDbFields()
+	}
 	return o.Weight
 }
 

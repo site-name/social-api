@@ -685,7 +685,7 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginM
 			return appErr
 		}
 		if voucher.Type != product_and_discount.SHIPPING {
-			if less, err := checkoutSubTotal.Gross.LessThan(discount); less && err == nil {
+			if checkoutSubTotal.Gross.LessThan(discount) {
 				checkOut.Discount = checkoutSubTotal.Gross
 			} else {
 				checkOut.Discount = discount
@@ -986,7 +986,7 @@ func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface,
 	checkoutTotal = sub
 
 	zeroTaxedMoney, _ := util.ZeroTaxedMoney(checkOut.Currency)
-	if less, err := checkoutTotal.LessThan(zeroTaxedMoney); less && err == nil {
+	if checkoutTotal.LessThan(zeroTaxedMoney) {
 		checkoutTotal = zeroTaxedMoney
 	}
 

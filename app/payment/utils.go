@@ -652,7 +652,7 @@ func PriceFromMinorUnit(value string, currency string) (*decimal.Decimal, error)
 		return nil, err
 	}
 
-	numberPlaces := decimal.NewFromInt32(10).Pow(decimal.NewFromInt32(-precision))
+	numberPlaces := decimal.NewFromInt(10).Pow(decimal.NewFromInt(int64(-precision)))
 
 	return model.NewDecimal(deci.Mul(numberPlaces)), nil
 }

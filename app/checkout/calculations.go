@@ -71,7 +71,7 @@ func (s *ServiceCheckout) CalculateCheckoutTotalWithGiftcards(manager interfaces
 	}
 
 	zeroTaxedMoney, _ := util.ZeroTaxedMoney(total.Currency)
-	if less, err := zeroTaxedMoney.LessThan(total); less && err == nil {
+	if zeroTaxedMoney.LessThan(total) {
 		return total, nil
 	}
 

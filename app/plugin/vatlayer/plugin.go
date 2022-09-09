@@ -114,7 +114,7 @@ func init() {
 	}, manifest)
 }
 
-// previousValue must be either: *Decimal, *TaxedMoney, *TaxedMoneyRange
+// previousValue must be either *TaxedMoney or *TaxedMoneyRange
 func (vp *VatlayerPlugin) skipPlugin(previousValue interface{}) bool {
 	if !vp.Active || vp.config.AccessKey == "" {
 		return true
@@ -123,24 +123,10 @@ func (vp *VatlayerPlugin) skipPlugin(previousValue interface{}) bool {
 	// The previous plugin already calculated taxes so we can skip our logic
 	switch t := previousValue.(type) {
 	case *goprices.TaxedMoneyRange:
-		equal1, err1 := t.Start.Net.Equal(t.Start.Gross)
-		equal2, err2 := t.Stop.Net.Equal(t.Stop.Gross)
-
-		return err1 == nil && err2 == nil && !equal1 && !equal2
-
-	case goprices.TaxedMoneyRange:
-		equal1, err1 := t.Start.Net.Equal(t.Start.Gross)
-		equal2, err2 := t.Stop.Net.Equal(t.Stop.Gross)
-
-		return err1 == nil && err2 == nil && !equal1 && !equal2
+		return !t.Start.Net.Equal(t.Start.Gross) && !t.Stop.Net.Equal(t.Stop.Gross)
 
 	case *goprices.TaxedMoney:
-		equal, err := t.Net.Equal(t.Gross)
-		return err == nil && !equal
-
-	case goprices.TaxedMoney:
-		equal, err := t.Net.Equal(t.Gross)
-		return err == nil && !equal
+		return t.Net.Equal(t.Gross)
 
 	default:
 		return false
@@ -198,7 +184,7 @@ func (vp *VatlayerPlugin) getTaxesForCountry(country string) {
 	if country == "" {
 		originCountryCode := vp.config.OriginCountry
 		if originCountryCode == "" {
-
+			panic("not implemented")
 		}
 	}
 }

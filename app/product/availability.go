@@ -26,11 +26,7 @@ func getTotalDiscountFromRange(undiscounted *goprices.TaxedMoneyRange, discounte
 // Subtract two prices and return their total discount, if any.
 // Otherwise, it returns None.
 func getTotalDiscount(unDiscounted *goprices.TaxedMoney, discounted *goprices.TaxedMoney) (*goprices.TaxedMoney, error) {
-	less, err := discounted.LessThan(unDiscounted)
-	if err != nil {
-		return nil, err
-	}
-	if less {
+	if discounted.LessThan(unDiscounted) {
 		return unDiscounted.Sub(discounted)
 	}
 
@@ -49,14 +45,15 @@ type aStructType struct {
 // NOTE: `discounted`, `unDiscounted` both can be either *MoneyRange or *TaxedMoneyRange
 func (a *ServiceProduct) getProductPriceRange(discounted interface{}, unDiscounted interface{}, localCurrency string) (*aStructType, *model.AppError) {
 
-	// validate `discounted` and `unDiscounted` and `localCurrency`
-	// are provided valid and have same currencies
+	// validate `discounted` and `unDiscounted` and `localCurrency` are valid and have same currencies
 	errorArguments := []string{}
+
 	switch discounted.(type) {
 	case *goprices.MoneyRange, *goprices.TaxedMoneyRange:
 	default:
 		errorArguments = append(errorArguments, "discounted")
 	}
+
 	switch unDiscounted.(type) {
 	case *goprices.MoneyRange, *goprices.TaxedMoneyRange:
 	default:
@@ -104,13 +101,13 @@ func (a *ServiceProduct) getProductPriceRange(discounted interface{}, unDiscount
 			switch t := priceRangeLocal.(type) {
 			case *goprices.MoneyRange:
 				unDiscountedLocalValue := unDiscountedLocal.(*goprices.MoneyRange)
-				if less, err := t.Start.LessThan(unDiscountedLocalValue.Start); err == nil && less {
+				if t.Start.LessThan(unDiscountedLocalValue.Start) {
 					discountLocalCurrency, _ = unDiscountedLocalValue.Start.Sub(t.Start)
 				}
 
 			case *goprices.TaxedMoneyRange:
 				unDiscountedLocalValue := unDiscountedLocal.(*goprices.TaxedMoneyRange)
-				if less, err := t.Start.LessThan(unDiscountedLocalValue.Start); err == nil && less {
+				if t.Start.LessThan(unDiscountedLocalValue.Start) {
 					discountLocalCurrency, _ = unDiscountedLocalValue.Start.Sub(t.Start)
 				}
 			}

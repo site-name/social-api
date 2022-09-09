@@ -68,7 +68,7 @@ func (a *ServiceDiscount) GetVoucherDiscount(voucher *product_and_discount.Vouch
 
 // GetDiscountAmountFor checks given voucher's `DiscountValueType` and returns according discount calculator function
 //
-//  price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
+//	price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
 //
 // NOTE: the returning interface's type should be identical to given price's type
 func (a *ServiceDiscount) GetDiscountAmountFor(voucher *product_and_discount.Voucher, price interface{}, channelID string) (interface{}, *model.AppError) {
@@ -104,7 +104,7 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher *product_and_discount.Vou
 
 	case *goprices.MoneyRange:
 		zeroMoneyRange, _ := util.ZeroMoneyRange(priceType.Currency)
-		if less, err := afterDiscount.(*goprices.MoneyRange).LessThan(zeroMoneyRange); less && err == nil {
+		if afterDiscount.(*goprices.MoneyRange).LessThan(zeroMoneyRange) {
 			return priceType, nil
 		}
 
@@ -113,7 +113,7 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher *product_and_discount.Vou
 
 	case *goprices.TaxedMoney:
 		zeroTaxedMoney, _ := util.ZeroTaxedMoney(priceType.Currency)
-		if less, err := afterDiscount.(*goprices.TaxedMoney).LessThan(zeroTaxedMoney); less && err == nil {
+		if afterDiscount.(*goprices.TaxedMoney).LessThan(zeroTaxedMoney) {
 			return priceType, nil
 		}
 
@@ -122,7 +122,7 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher *product_and_discount.Vou
 
 	case *goprices.TaxedMoneyRange:
 		zeroTaxedMoneyRange, _ := util.ZeroTaxedMoneyRange(priceType.Currency)
-		if less, err := afterDiscount.(*goprices.TaxedMoneyRange).LessThan(zeroTaxedMoneyRange); less && err == nil {
+		if afterDiscount.(*goprices.TaxedMoneyRange).LessThan(zeroTaxedMoneyRange) {
 			return priceType, nil
 		}
 
@@ -165,7 +165,7 @@ func (a *ServiceDiscount) ValidateMinSpent(voucher *product_and_discount.Voucher
 	voucherChannelListing.PopulateNonDbFields()
 
 	if voucherChannelListing.MinSpent != nil {
-		if less, err := money.LessThan(voucherChannelListing.MinSpent); less && err == nil {
+		if money.LessThan(voucherChannelListing.MinSpent) {
 			notApplicableErr = &product_and_discount.NotApplicable{
 				Message: "This offer is only valid for orders over " + voucherChannelListing.MinSpent.Amount.String(),
 			}

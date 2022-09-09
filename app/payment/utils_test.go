@@ -16,15 +16,3 @@ func Test_PriceFromMinorUnit(t *testing.T) {
 
 	fmt.Println(res == nil)
 }
-
-// func Test_PriceToMinorUnit(t *testing.T) {
-// 	decimal := model.NewDecimal(decimal.NewFromFloat(12.34))
-// 	currency := "USD"
-
-// 	res, err := PriceToMinorUnit(decimal, currency)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	fmt.Println(res)
-// }
