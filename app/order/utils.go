@@ -952,7 +952,6 @@ func (s *ServiceOrder) AddGiftcardsToOrder(transaction store_iface.SqlxTxExecuto
 		}
 	}
 
-	// zeroMoney, _ := util.ZeroMoney(totalPriceLeft.Currency)
 	for _, giftCard := range giftcards {
 		if totalPriceLeft.Amount.GreaterThan(decimal.Zero) {
 			orderGiftcards = append(orderGiftcards, &giftcard.OrderGiftCard{
@@ -1540,13 +1539,12 @@ func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction store_iface.SqlxT
 	}
 
 	sub, _ := ord.Total.Sub(grossTotal.(*goprices.Money))
-	newAmount := sub.Gross
 
 	newOrderDiscount, appErr := a.srv.DiscountService().UpsertOrderDiscount(transaction, &product_and_discount.OrderDiscount{
 		ValueType: valueType,
 		Value:     value,
 		Reason:    &reason,
-		Amount:    newAmount,
+		Amount:    sub.Gross,
 	})
 	if appErr != nil {
 		return nil, appErr

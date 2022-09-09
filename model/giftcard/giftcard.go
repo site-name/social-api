@@ -53,6 +53,8 @@ type GiftCard struct {
 	CurrentBalanceAmount *decimal.Decimal `json:"current_balance_amount"` // default 0
 	CurrentBalance       *goprices.Money  `json:"current_balance,omitempty" db:"-"`
 	model.ModelMetadata
+
+	populatedNonDBFields bool `json:"-" db:"_"`
 }
 
 // GiftCardFilterOption is used to buil sql queries
@@ -88,6 +90,11 @@ func (gc *GiftCard) DisplayCode() string {
 
 // PopulateNonDbFields populates money fields for giftcard
 func (gc *GiftCard) PopulateNonDbFields() {
+	if gc.populatedNonDBFields {
+		return
+	}
+	defer func() { gc.populatedNonDBFields = true }()
+
 	if gc.InitialBalanceAmount == nil {
 		gc.InitialBalanceAmount = &decimal.Zero
 	}
