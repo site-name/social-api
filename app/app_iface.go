@@ -74,9 +74,9 @@ type AppIface interface {
 	DoAdvancedPermissionsMigration()
 	// UpdateConfig updates config
 	UpdateConfig(f func(*model.Config))
-	// func (a *App) Cloud() einterfaces.CloudInterface {
-	// 	return a.srv.Cloud
-	// }
+	//	func (a *App) Cloud() einterfaces.CloudInterface {
+	//		return a.srv.Cloud
+	//	}
 	HTTPService() httpservice.HTTPService
 	// metrics for app
 	Metrics() einterfaces.MetricsInterface

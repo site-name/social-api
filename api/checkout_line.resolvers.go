@@ -6,31 +6,29 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) CheckoutLineDelete(ctx context.Context, args struct {
 	CheckoutID *string
 	LineID     *string
 	Token      *string
-}) (*gqlmodel.CheckoutLineDelete, error) {
+}) (*CheckoutLineDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) CheckoutLinesAdd(ctx context.Context, args struct {
 	CheckoutID *string
-	Lines      []*gqlmodel.CheckoutLineInput
+	Lines      []*CheckoutLineInput
 	Token      *string
-}) (*gqlmodel.CheckoutLinesAdd, error) {
+}) (*CheckoutLinesAdd, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) CheckoutLinesUpdate(ctx context.Context, args struct {
 	CheckoutID *string
-	Lines      []*gqlmodel.CheckoutLineInput
+	Lines      []*CheckoutLineInput
 	Token      *string
-}) (*gqlmodel.CheckoutLinesUpdate, error) {
+}) (*CheckoutLinesUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -39,6 +37,6 @@ func (r *Resolver) CheckoutLines(ctx context.Context, args struct {
 	After  *string
 	First  *int
 	Last   *int
-}) (*gqlmodel.CheckoutLineCountableConnection, error) {
+}) (*CheckoutLineCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

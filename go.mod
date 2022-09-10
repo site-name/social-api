@@ -43,6 +43,7 @@ require (
 	github.com/mattermost/logr/v2 v2.0.15
 	github.com/mattermost/morph v1.0.4
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
+	github.com/mattermost/squirrel v0.2.0
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/minio/minio-go/v7 v7.0.36
 	github.com/oov/psd v0.0.0-20220121172623-5db5eafcecbb
@@ -163,6 +164,7 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
+	github.com/reflog/struct2interface v0.6.1 // indirect
 	github.com/richardlehane/mscfb v1.0.3 // indirect
 	github.com/richardlehane/msoleps v1.0.3 // indirect
 	github.com/rs/xid v1.4.0 // indirect

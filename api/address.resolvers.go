@@ -6,45 +6,43 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) AddressCreate(ctx context.Context, args struct {
-	Input  gqlmodel.AddressInput
+	Input  AddressInput
 	UserID string
-}) (*gqlmodel.AddressCreate, error) {
+}) (*AddressCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.AddressInput
-}) (*gqlmodel.AddressUpdate, error) {
+	Input AddressInput
+}) (*AddressUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.AddressDelete, error) {
+func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) (*AddressDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AddressSetDefault(ctx context.Context, args struct {
 	AddressID string
-	TypeArg   gqlmodel.AddressTypeEnum
+	TypeArg   AddressTypeEnum
 	UserID    string
-}) (*gqlmodel.AddressSetDefault, error) {
+}) (*AddressSetDefault, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
-	CountryCode gqlmodel.CountryCode
+	CountryCode CountryCode
 	CountryArea *string
 	City        *string
 	CityArea    *string
-}) (*gqlmodel.AddressValidationData, error) {
+}) (*AddressValidationData, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Address(ctx context.Context, args struct{ Id string }) (*gqlmodel.Address, error) {
+func (r *Resolver) Address(ctx context.Context, args struct{ Id string }) (*Address, error) {
 	panic(fmt.Errorf("not implemented"))
 }

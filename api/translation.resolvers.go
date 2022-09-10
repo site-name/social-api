@@ -6,23 +6,21 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) Translations(ctx context.Context, args struct {
-	Kind   gqlmodel.TranslatableKinds
+	Kind   TranslatableKinds
 	Before *string
 	After  *string
 	First  *int
 	Last   *int
-}) (*gqlmodel.TranslatableItemConnection, error) {
+}) (*TranslatableItemConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Translation(ctx context.Context, args struct {
 	Id   string
-	Kind gqlmodel.TranslatableKinds
-}) (gqlmodel.TranslatableItem, error) {
+	Kind TranslatableKinds
+}) (TranslatableItem, error) {
 	panic(fmt.Errorf("not implemented"))
 }

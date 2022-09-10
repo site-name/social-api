@@ -6,53 +6,51 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) OrderLinesCreate(ctx context.Context, args struct {
 	Id    string
-	Input []*gqlmodel.OrderLineCreateInput
-}) (*gqlmodel.OrderLinesCreate, error) {
+	Input []*OrderLineCreateInput
+}) (*OrderLinesCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) OrderLineDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.OrderLineDelete, error) {
+func (r *Resolver) OrderLineDelete(ctx context.Context, args struct{ Id string }) (*OrderLineDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) OrderLineUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.OrderLineInput
-}) (*gqlmodel.OrderLineUpdate, error) {
+	Input OrderLineInput
+}) (*OrderLineUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) OrderDiscountAdd(ctx context.Context, args struct {
-	Input   gqlmodel.OrderDiscountCommonInput
+	Input   OrderDiscountCommonInput
 	OrderID string
-}) (*gqlmodel.OrderDiscountAdd, error) {
+}) (*OrderDiscountAdd, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) OrderDiscountUpdate(ctx context.Context, args struct {
 	DiscountID string
-	Input      gqlmodel.OrderDiscountCommonInput
-}) (*gqlmodel.OrderDiscountUpdate, error) {
+	Input      OrderDiscountCommonInput
+}) (*OrderDiscountUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) OrderDiscountDelete(ctx context.Context, args struct{ DiscountID string }) (*gqlmodel.OrderDiscountDelete, error) {
+func (r *Resolver) OrderDiscountDelete(ctx context.Context, args struct{ DiscountID string }) (*OrderDiscountDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) OrderLineDiscountUpdate(ctx context.Context, args struct {
-	Input       gqlmodel.OrderDiscountCommonInput
+	Input       OrderDiscountCommonInput
 	OrderLineID string
-}) (*gqlmodel.OrderLineDiscountUpdate, error) {
+}) (*OrderLineDiscountUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) OrderLineDiscountRemove(ctx context.Context, args struct{ OrderLineID string }) (*gqlmodel.OrderLineDiscountRemove, error) {
+func (r *Resolver) OrderLineDiscountRemove(ctx context.Context, args struct{ OrderLineID string }) (*OrderLineDiscountRemove, error) {
 	panic(fmt.Errorf("not implemented"))
 }

@@ -138,6 +138,7 @@ type WarehouseService interface {
 	// :raises InsufficientStock: when there is not enough items in stock for a variant
 	CheckStockQuantityBulk(variants product_and_discount.ProductVariants, countryCode string, quantities []int, channelSlug string, additionalFilterLookup model.StringInterface, existingLines []*checkout.CheckoutLineInfo, replace bool) (*exception.InsufficientStock, *model.AppError)
 	// ValidateWarehouseCount
+	//
 	//	Every ShippingZone can be assigned to only one warehouse.
 	//
 	// If not there would be issue with automatically selecting stock for operation.

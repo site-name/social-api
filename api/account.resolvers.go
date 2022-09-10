@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/api/gqlmodel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -20,9 +19,9 @@ import (
 )
 
 func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
-	Input gqlmodel.AddressInput
-	Type  *gqlmodel.AddressTypeEnum
-}) (*gqlmodel.AccountAddressCreate, error) {
+	Input AddressInput
+	Type  *AddressTypeEnum
+}) (*AccountAddressCreate, error) {
 
 	// get embeded context in current request
 	embedContext, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -110,9 +109,9 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 		}
 	}
 
-	return &gqlmodel.AccountAddressCreate{
-		Address: gqlmodel.SystemAddressToGraphqlAddress(savedAddress),
-		User: &gqlmodel.User{
+	return &AccountAddressCreate{
+		Address: SystemAddressToGraphqlAddress(savedAddress),
+		User: &User{
 			ID: embedContext.AppContext.Session().UserId,
 		},
 	}, nil
@@ -120,8 +119,8 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 
 func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.AddressInput
-}) (*gqlmodel.AccountAddressUpdate, error) {
+	Input AddressInput
+}) (*AccountAddressUpdate, error) {
 
 	// get embeded context
 	embededContext, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -210,40 +209,40 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	return &gqlmodel.AccountAddressUpdate{
-		Address: gqlmodel.SystemAddressToGraphqlAddress(savedAddress),
-		User: &gqlmodel.User{
+	return &AccountAddressUpdate{
+		Address: SystemAddressToGraphqlAddress(savedAddress),
+		User: &User{
 			ID: embededContext.AppContext.Session().UserId,
 		},
 	}, nil
 }
 
-func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.AccountAddressDelete, error) {
+func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id string }) (*AccountAddressDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 	Id   string
-	Type gqlmodel.AddressTypeEnum
-}) (*gqlmodel.AccountSetDefaultAddress, error) {
+	Type AddressTypeEnum
+}) (*AccountSetDefaultAddress, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AccountRegister(ctx context.Context, args struct{ Input gqlmodel.AccountRegisterInput }) (*gqlmodel.AccountRegister, error) {
+func (r *Resolver) AccountRegister(ctx context.Context, args struct{ Input AccountRegisterInput }) (*AccountRegister, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input gqlmodel.AccountInput }) (*gqlmodel.AccountUpdate, error) {
+func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input AccountInput }) (*AccountUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AccountRequestDeletion(ctx context.Context, args struct {
 	Channel     *string
 	RedirectURL string
-}) (*gqlmodel.AccountRequestDeletion, error) {
+}) (*AccountRequestDeletion, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AccountDelete(ctx context.Context, args struct{ Token string }) (*gqlmodel.AccountDelete, error) {
+func (r *Resolver) AccountDelete(ctx context.Context, args struct{ Token string }) (*AccountDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }

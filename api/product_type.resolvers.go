@@ -6,48 +6,46 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) ProductTypeCreate(ctx context.Context, args struct{ Input gqlmodel.ProductTypeInput }) (*gqlmodel.ProductTypeCreate, error) {
+func (r *Resolver) ProductTypeCreate(ctx context.Context, args struct{ Input ProductTypeInput }) (*ProductTypeCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductTypeDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.ProductTypeDelete, error) {
+func (r *Resolver) ProductTypeDelete(ctx context.Context, args struct{ Id string }) (*ProductTypeDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductTypeBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.ProductTypeBulkDelete, error) {
+func (r *Resolver) ProductTypeBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*ProductTypeBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductTypeUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.ProductTypeInput
-}) (*gqlmodel.ProductTypeUpdate, error) {
+	Input ProductTypeInput
+}) (*ProductTypeUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductTypeReorderAttributes(ctx context.Context, args struct {
-	Moves         []*gqlmodel.ReorderInput
+	Moves         []*ReorderInput
 	ProductTypeID string
-	TypeArg       gqlmodel.ProductAttributeType
-}) (*gqlmodel.ProductTypeReorderAttributes, error) {
+	TypeArg       ProductAttributeType
+}) (*ProductTypeReorderAttributes, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductType(ctx context.Context, args struct{ Id string }) (*gqlmodel.ProductType, error) {
+func (r *Resolver) ProductType(ctx context.Context, args struct{ Id string }) (*ProductType, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductTypes(ctx context.Context, args struct {
-	Filter *gqlmodel.ProductTypeFilterInput
-	SortBy *gqlmodel.ProductTypeSortingInput
+	Filter *ProductTypeFilterInput
+	SortBy *ProductTypeSortingInput
 	Before *string
 	After  *string
 	First  *int
 	Last   *int
-}) (*gqlmodel.ProductTypeCountableConnection, error) {
+}) (*ProductTypeCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

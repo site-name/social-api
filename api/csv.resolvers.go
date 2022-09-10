@@ -6,25 +6,23 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) ExportProducts(ctx context.Context, args struct{ Input gqlmodel.ExportProductsInput }) (*gqlmodel.ExportProducts, error) {
+func (r *Resolver) ExportProducts(ctx context.Context, args struct{ Input ExportProductsInput }) (*ExportProducts, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ExportFile(ctx context.Context, args struct{ Id string }) (*gqlmodel.ExportFile, error) {
+func (r *Resolver) ExportFile(ctx context.Context, args struct{ Id string }) (*ExportFile, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ExportFiles(ctx context.Context, args struct {
-	Filter *gqlmodel.ExportFileFilterInput
-	SortBy *gqlmodel.ExportFileSortingInput
+	Filter *ExportFileFilterInput
+	SortBy *ExportFileSortingInput
 	Before *string
 	After  *string
 	First  *int
 	Last   *int
-}) (*gqlmodel.ExportFileCountableConnection, error) {
+}) (*ExportFileCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

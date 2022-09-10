@@ -6,38 +6,36 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) PermissionGroupCreate(ctx context.Context, args struct {
-	Input gqlmodel.PermissionGroupCreateInput
-}) (*gqlmodel.PermissionGroupCreate, error) {
+	Input PermissionGroupCreateInput
+}) (*PermissionGroupCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) PermissionGroupUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.PermissionGroupUpdateInput
-}) (*gqlmodel.PermissionGroupUpdate, error) {
+	Input PermissionGroupUpdateInput
+}) (*PermissionGroupUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PermissionGroupDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.PermissionGroupDelete, error) {
+func (r *Resolver) PermissionGroupDelete(ctx context.Context, args struct{ Id string }) (*PermissionGroupDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) PermissionGroups(ctx context.Context, args struct {
-	Filter *gqlmodel.PermissionGroupFilterInput
-	SortBy *gqlmodel.PermissionGroupSortingInput
+	Filter *PermissionGroupFilterInput
+	SortBy *PermissionGroupSortingInput
 	Before *string
 	After  *string
 	First  *int
 	Last   *int
-}) (*gqlmodel.GroupCountableConnection, error) {
+}) (*GroupCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PermissionGroup(ctx context.Context, args struct{ Id string }) (*gqlmodel.Group, error) {
+func (r *Resolver) PermissionGroup(ctx context.Context, args struct{ Id string }) (*Group, error) {
 	panic(fmt.Errorf("not implemented"))
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/api/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -5906,7 +5905,7 @@ func (s *RetryLayerPreorderAllocationStore) FilterByOption(options *warehouse.Pr
 
 }
 
-func (s *RetryLayerProductStore) AdvancedFilterQueryBuilder(input *gqlmodel.ExportProductsInput) squirrel.SelectBuilder {
+func (s *RetryLayerProductStore) AdvancedFilterQueryBuilder(input *csv.ExportProductsFilterOptions) squirrel.SelectBuilder {
 
 	return s.ProductStore.AdvancedFilterQueryBuilder(input)
 

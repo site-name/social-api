@@ -6,47 +6,45 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) PageTypeCreate(ctx context.Context, args struct{ Input gqlmodel.PageTypeCreateInput }) (*gqlmodel.PageTypeCreate, error) {
+func (r *Resolver) PageTypeCreate(ctx context.Context, args struct{ Input PageTypeCreateInput }) (*PageTypeCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) PageTypeUpdate(ctx context.Context, args struct {
 	Id    *string
-	Input gqlmodel.PageTypeUpdateInput
-}) (*gqlmodel.PageTypeUpdate, error) {
+	Input PageTypeUpdateInput
+}) (*PageTypeUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageTypeDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.PageTypeDelete, error) {
+func (r *Resolver) PageTypeDelete(ctx context.Context, args struct{ Id string }) (*PageTypeDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageTypeBulkDelete(ctx context.Context, args struct{ Ids []string }) (*gqlmodel.PageTypeBulkDelete, error) {
+func (r *Resolver) PageTypeBulkDelete(ctx context.Context, args struct{ Ids []string }) (*PageTypeBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) PageTypeReorderAttributes(ctx context.Context, args struct {
-	Moves      []gqlmodel.ReorderInput
+	Moves      []ReorderInput
 	PageTypeID string
-}) (*gqlmodel.PageTypeReorderAttributes, error) {
+}) (*PageTypeReorderAttributes, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageType(ctx context.Context, args struct{ Id string }) (*gqlmodel.PageType, error) {
+func (r *Resolver) PageType(ctx context.Context, args struct{ Id string }) (*PageType, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) PageTypes(ctx context.Context, args struct {
-	SortBy *gqlmodel.PageTypeSortingInput
-	Filter *gqlmodel.PageTypeFilterInput
+	SortBy *PageTypeSortingInput
+	Filter *PageTypeFilterInput
 	Before *string
 	After  *string
 	First  *int
 	Last   *int
-}) (*gqlmodel.PageTypeCountableConnection, error) {
+}) (*PageTypeCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

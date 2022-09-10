@@ -6,55 +6,53 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
-	Input  gqlmodel.CategoryInput
+	Input  CategoryInput
 	Parent *string
-}) (*gqlmodel.CategoryCreate, error) {
+}) (*CategoryCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) CategoryDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.CategoryDelete, error) {
+func (r *Resolver) CategoryDelete(ctx context.Context, args struct{ Id string }) (*CategoryDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) CategoryBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.CategoryBulkDelete, error) {
+func (r *Resolver) CategoryBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*CategoryBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) CategoryUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.CategoryInput
-}) (*gqlmodel.CategoryUpdate, error) {
+	Input CategoryInput
+}) (*CategoryUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) CategoryTranslate(ctx context.Context, args struct {
 	Id           string
-	Input        gqlmodel.TranslationInput
-	LanguageCode gqlmodel.LanguageCodeEnum
-}) (*gqlmodel.CategoryTranslate, error) {
+	Input        TranslationInput
+	LanguageCode LanguageCodeEnum
+}) (*CategoryTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Categories(ctx context.Context, args struct {
-	Filter *gqlmodel.CategoryFilterInput
-	SortBy *gqlmodel.CategorySortingInput
+	Filter *CategoryFilterInput
+	SortBy *CategorySortingInput
 	Level  *int
 	Before *string
 	After  *string
 	First  *int
 	Last   *int
-}) (*gqlmodel.CategoryCountableConnection, error) {
+}) (*CategoryCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Category(ctx context.Context, args struct {
 	Id   *string
 	Slug *string
-}) (*gqlmodel.Category, error) {
+}) (*Category, error) {
 	panic(fmt.Errorf("not implemented"))
 }

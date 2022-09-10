@@ -10,7 +10,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/api/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -543,7 +542,7 @@ type (
 		PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error)                                                                      // PublishedWithVariants finds and returns products.
 		VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error)                                               // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
 		SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
-		AdvancedFilterQueryBuilder(input *gqlmodel.ExportProductsInput) squirrel.SelectBuilder                                                                  // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
+		AdvancedFilterQueryBuilder(input *csv.ExportProductsFilterOptions) squirrel.SelectBuilder                                                               // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
 		FilterByQuery(query squirrel.SelectBuilder) (product_and_discount.Products, error)                                                                      // FilterByQuery finds and returns products with given query, limit, createdAtGt
 	}
 )

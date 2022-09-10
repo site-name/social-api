@@ -6,72 +6,70 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) GiftCardActivate(ctx context.Context, args struct{ Id string }) (*gqlmodel.GiftCardActivate, error) {
+func (r *Resolver) GiftCardActivate(ctx context.Context, args struct{ Id string }) (*GiftCardActivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) GiftCardCreate(ctx context.Context, args struct{ Input gqlmodel.GiftCardCreateInput }) (*gqlmodel.GiftCardCreate, error) {
+func (r *Resolver) GiftCardCreate(ctx context.Context, args struct{ Input GiftCardCreateInput }) (*GiftCardCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) GiftCardDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.GiftCardDelete, error) {
+func (r *Resolver) GiftCardDelete(ctx context.Context, args struct{ Id string }) (*GiftCardDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) GiftCardDeactivate(ctx context.Context, args struct{ Id string }) (*gqlmodel.GiftCardDeactivate, error) {
+func (r *Resolver) GiftCardDeactivate(ctx context.Context, args struct{ Id string }) (*GiftCardDeactivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) GiftCardUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.GiftCardUpdateInput
-}) (*gqlmodel.GiftCardUpdate, error) {
+	Input GiftCardUpdateInput
+}) (*GiftCardUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) GiftCardResend(ctx context.Context, args struct{ Input gqlmodel.GiftCardResendInput }) (*gqlmodel.GiftCardResend, error) {
+func (r *Resolver) GiftCardResend(ctx context.Context, args struct{ Input GiftCardResendInput }) (*GiftCardResend, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) GiftCardAddNote(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.GiftCardAddNoteInput
-}) (*gqlmodel.GiftCardAddNote, error) {
+	Input GiftCardAddNoteInput
+}) (*GiftCardAddNote, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) GiftCardBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.GiftCardBulkDelete, error) {
+func (r *Resolver) GiftCardBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*GiftCardBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) GiftCardBulkActivate(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.GiftCardBulkActivate, error) {
+func (r *Resolver) GiftCardBulkActivate(ctx context.Context, args struct{ Ids []*string }) (*GiftCardBulkActivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.GiftCardBulkDeactivate, error) {
+func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids []*string }) (*GiftCardBulkDeactivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) GiftCard(ctx context.Context, args struct{ Id string }) (*gqlmodel.GiftCard, error) {
+func (r *Resolver) GiftCard(ctx context.Context, args struct{ Id string }) (*GiftCard, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) GiftCardSettings(ctx context.Context) (*gqlmodel.GiftCardSettings, error) {
+func (r *Resolver) GiftCardSettings(ctx context.Context) (*GiftCardSettings, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) GiftCards(ctx context.Context, args struct {
-	SortBy *gqlmodel.GiftCardSortingInput
-	Filter *gqlmodel.GiftCardFilterInput
+	SortBy *GiftCardSortingInput
+	Filter *GiftCardFilterInput
 	Before *string
 	After  *string
 	First  *int
 	Last   *int
-}) (*gqlmodel.GiftCardCountableConnection, error) {
+}) (*GiftCardCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

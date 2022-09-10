@@ -6,29 +6,27 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) PluginUpdate(ctx context.Context, args struct {
 	ChannelID *string
 	Id        string
-	Input     gqlmodel.PluginUpdateInput
-}) (*gqlmodel.PluginUpdate, error) {
+	Input     PluginUpdateInput
+}) (*PluginUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Plugin(ctx context.Context, args struct{ Id string }) (*gqlmodel.Plugin, error) {
+func (r *Resolver) Plugin(ctx context.Context, args struct{ Id string }) (*Plugin, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Plugins(ctx context.Context, args struct {
-	Filter *gqlmodel.PluginFilterInput
-	SortBy *gqlmodel.PluginSortingInput
+	Filter *PluginFilterInput
+	SortBy *PluginSortingInput
 	Before *string
 	After  *string
 	First  *int
 	Last   *int
-}) (*gqlmodel.PluginCountableConnection, error) {
+}) (*PluginCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

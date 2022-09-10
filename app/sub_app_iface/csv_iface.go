@@ -4,8 +4,7 @@
 package sub_app_iface
 
 import (
-	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/api/gqlmodel"
+	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -22,17 +21,27 @@ type CsvService interface {
 	// ExportFileById returns an export file found by given id
 	ExportFileById(id string) (*csv.ExportFile, *model.AppError)
 	// ExportProducts is called by product export job, taks needed arguments then exports products
-	ExportProducts(input *gqlmodel.ExportProductsInput, delimeter string) *model.AppError
+	ExportProducts(input *csv.ExportProductsFilterOptions, delimeter string) *model.AppError
 	// Get export fields, all headers and headers mapping.
 	// Based on export_info returns exported fields, fields to headers mapping and
 	// all headers.
 	// Headers contains product, variant, attribute and warehouse headers.
-	GetExportFieldsAndHeadersInfo(exportInfo gqlmodel.ExportInfoInput) ([]string, []string, []string, *model.AppError)
+	GetExportFieldsAndHeadersInfo(exportInfo struct {
+		Attributes []string
+		Warehouses []string
+		Channels   []string
+		Fields     []string
+	}) ([]string, []string, []string, *model.AppError)
 	// Get headers for exported attributes.
 	// Headers are build from slug and contains information if it's a product or variant
 	// attribute. Respectively for product: "slug-value (product attribute)"
 	// and for variant: "slug-value (variant attribute)".
-	GetAttributeHeaders(exportInfo gqlmodel.ExportInfoInput) ([]string, *model.AppError)
+	GetAttributeHeaders(exportInfo struct {
+		Attributes []string
+		Warehouses []string
+		Channels   []string
+		Fields     []string
+	}) ([]string, *model.AppError)
 	// Get headers for exported channels.
 	//
 	// Headers are build from slug and exported field.
@@ -41,10 +50,20 @@ type CsvService interface {
 	// - currency code data header: "slug-value (channel currency code)"
 	// - published data header: "slug-value (channel visible)"
 	// - publication date data header: "slug-value (channel publication date)"
-	GetChannelsHeaders(exportInfo gqlmodel.ExportInfoInput) ([]string, *model.AppError)
+	GetChannelsHeaders(exportInfo struct {
+		Attributes []string
+		Warehouses []string
+		Channels   []string
+		Fields     []string
+	}) ([]string, *model.AppError)
 	// Get headers for exported warehouses.
 	// Headers are build from slug. Example: "slug-value (warehouse quantity)"
-	GetWarehousesHeaders(exportInfo gqlmodel.ExportInfoInput) ([]string, *model.AppError)
+	GetWarehousesHeaders(exportInfo struct {
+		Attributes []string
+		Warehouses []string
+		Channels   []string
+		Fields     []string
+	}) ([]string, *model.AppError)
 	// GetDefaultExportPayload returns a map for mapping
 	GetDefaultExportPayload(exportFile csv.ExportFile) (map[string]interface{}, *model.AppError)
 	// GetProductsData Create data list of products and their variants with fields values.
@@ -52,5 +71,10 @@ type CsvService interface {
 	// It return list with product and variant data which can be used as import to
 	// csv writer and list of attribute and warehouse headers.
 	GetProductsData(products product_and_discount.Products, exportFields []string, attributeIDs []string, warehouseIDs []string, channelIDs []string)
-	ExportProductsInBatches(productQuery squirrel.SelectBuilder, exportInfo gqlmodel.ExportInfoInput, exportFields []string, headers []string, delimiter string, fileType string) *model.AppError
+	ExportProductsInBatches(productQuery squirrel.SelectBuilder, exportInfo struct {
+		Attributes []string
+		Warehouses []string
+		Channels   []string
+		Fields     []string
+	}, exportFields []string, headers []string, delimiter string, fileType string) *model.AppError
 }

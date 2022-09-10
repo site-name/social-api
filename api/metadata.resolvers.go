@@ -6,34 +6,32 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) DeleteMetadata(ctx context.Context, args struct {
 	Id   string
 	Keys []string
-}) (*gqlmodel.DeleteMetadata, error) {
+}) (*DeleteMetadata, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) DeletePrivateMetadata(ctx context.Context, args struct {
 	Id   string
 	Keys []string
-}) (*gqlmodel.DeletePrivateMetadata, error) {
+}) (*DeletePrivateMetadata, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) UpdateMetadata(ctx context.Context, args struct {
 	Id    string
-	Input []gqlmodel.MetadataInput
-}) (*gqlmodel.UpdateMetadata, error) {
+	Input []MetadataInput
+}) (*UpdateMetadata, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) UpdatePrivateMetadata(ctx context.Context, args struct {
 	Id    string
-	Input []gqlmodel.MetadataInput
-}) (*gqlmodel.UpdatePrivateMetadata, error) {
+	Input []MetadataInput
+}) (*UpdatePrivateMetadata, error) {
 	panic(fmt.Errorf("not implemented"))
 }

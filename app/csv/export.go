@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/api/gqlmodel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
@@ -17,7 +17,7 @@ var (
 )
 
 // ExportProducts is called by product export job, taks needed arguments then exports products
-func (s *ServiceCsv) ExportProducts(input *gqlmodel.ExportProductsInput, delimeter string) *model.AppError {
+func (s *ServiceCsv) ExportProducts(input *csv.ExportProductsFilterOptions, delimeter string) *model.AppError {
 	// if delimeter == "" {
 	// 	delimeter = ";"
 	// }
@@ -31,10 +31,15 @@ func (s *ServiceCsv) ExportProducts(input *gqlmodel.ExportProductsInput, delimet
 
 	// getFileName("product", strings.ToLower(string(input.FileType)))
 
-	panic("not implt")
+	panic("not implemented")
 }
 
-func (s *ServiceCsv) ExportProductsInBatches(productQuery squirrel.SelectBuilder, exportInfo gqlmodel.ExportInfoInput, exportFields []string, headers []string, delimiter string, fileType string) *model.AppError {
+func (s *ServiceCsv) ExportProductsInBatches(productQuery squirrel.SelectBuilder, exportInfo struct {
+	Attributes []string
+	Warehouses []string
+	Channels   []string
+	Fields     []string
+}, exportFields []string, headers []string, delimiter string, fileType string) *model.AppError {
 	var createAtGt int64 = 0
 
 	for {

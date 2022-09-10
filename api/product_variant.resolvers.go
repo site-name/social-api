@@ -6,93 +6,91 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) ProductVariantReorder(ctx context.Context, args struct {
-	Moves     []*gqlmodel.ReorderInput
+	Moves     []*ReorderInput
 	ProductID string
-}) (*gqlmodel.ProductVariantReorder, error) {
+}) (*ProductVariantReorder, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductVariantCreate(ctx context.Context, args struct {
-	Input gqlmodel.ProductVariantCreateInput
-}) (*gqlmodel.ProductVariantCreate, error) {
+	Input ProductVariantCreateInput
+}) (*ProductVariantCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductVariantDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.ProductVariantDelete, error) {
+func (r *Resolver) ProductVariantDelete(ctx context.Context, args struct{ Id string }) (*ProductVariantDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductVariantBulkCreate(ctx context.Context, args struct {
 	Product  string
-	Variants []*gqlmodel.ProductVariantBulkCreateInput
-}) (*gqlmodel.ProductVariantBulkCreate, error) {
+	Variants []*ProductVariantBulkCreateInput
+}) (*ProductVariantBulkCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductVariantBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.ProductVariantBulkDelete, error) {
+func (r *Resolver) ProductVariantBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*ProductVariantBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductVariantStocksCreate(ctx context.Context, args struct {
-	Stocks    []gqlmodel.StockInput
+	Stocks    []StockInput
 	VariantID string
-}) (*gqlmodel.ProductVariantStocksCreate, error) {
+}) (*ProductVariantStocksCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductVariantStocksDelete(ctx context.Context, args struct {
 	VariantID    string
 	WarehouseIds []string
-}) (*gqlmodel.ProductVariantStocksDelete, error) {
+}) (*ProductVariantStocksDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductVariantStocksUpdate(ctx context.Context, args struct {
-	Stocks    []gqlmodel.StockInput
+	Stocks    []StockInput
 	VariantID string
-}) (*gqlmodel.ProductVariantStocksUpdate, error) {
+}) (*ProductVariantStocksUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductVariantUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.ProductVariantInput
-}) (*gqlmodel.ProductVariantUpdate, error) {
+	Input ProductVariantInput
+}) (*ProductVariantUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductVariantSetDefault(ctx context.Context, args struct {
 	ProductID string
 	VariantID string
-}) (*gqlmodel.ProductVariantSetDefault, error) {
+}) (*ProductVariantSetDefault, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductVariantTranslate(ctx context.Context, args struct {
 	Id           string
-	Input        gqlmodel.NameTranslationInput
-	LanguageCode gqlmodel.LanguageCodeEnum
-}) (*gqlmodel.ProductVariantTranslate, error) {
+	Input        NameTranslationInput
+	LanguageCode LanguageCodeEnum
+}) (*ProductVariantTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductVariantChannelListingUpdate(ctx context.Context, args struct {
 	Id    string
-	Input []gqlmodel.ProductVariantChannelListingAddInput
-}) (*gqlmodel.ProductVariantChannelListingUpdate, error) {
+	Input []ProductVariantChannelListingAddInput
+}) (*ProductVariantChannelListingUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductVariantReorderAttributeValues(ctx context.Context, args struct {
 	AttributeID string
-	Moves       []*gqlmodel.ReorderInput
+	Moves       []*ReorderInput
 	VariantID   string
-}) (*gqlmodel.ProductVariantReorderAttributeValues, error) {
+}) (*ProductVariantReorderAttributeValues, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -100,18 +98,18 @@ func (r *Resolver) ProductVariant(ctx context.Context, args struct {
 	Id      *string
 	Sku     *string
 	Channel *string
-}) (*gqlmodel.ProductVariant, error) {
+}) (*ProductVariant, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductVariants(ctx context.Context, args struct {
 	Ids     []*string
 	Channel *string
-	Filter  *gqlmodel.ProductVariantFilterInput
+	Filter  *ProductVariantFilterInput
 	Before  *string
 	After   *string
 	First   *int
 	Last    *int
-}) (*gqlmodel.ProductVariantCountableConnection, error) {
+}) (*ProductVariantCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

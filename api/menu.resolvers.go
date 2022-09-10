@@ -6,60 +6,58 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) MenuCreate(ctx context.Context, args struct{ Input gqlmodel.MenuCreateInput }) (*gqlmodel.MenuCreate, error) {
+func (r *Resolver) MenuCreate(ctx context.Context, args struct{ Input MenuCreateInput }) (*MenuCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) MenuDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.MenuDelete, error) {
+func (r *Resolver) MenuDelete(ctx context.Context, args struct{ Id string }) (*MenuDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) MenuBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.MenuBulkDelete, error) {
+func (r *Resolver) MenuBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*MenuBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) MenuUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.MenuInput
-}) (*gqlmodel.MenuUpdate, error) {
+	Input MenuInput
+}) (*MenuUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) MenuItemCreate(ctx context.Context, args struct{ Input gqlmodel.MenuItemCreateInput }) (*gqlmodel.MenuItemCreate, error) {
+func (r *Resolver) MenuItemCreate(ctx context.Context, args struct{ Input MenuItemCreateInput }) (*MenuItemCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) MenuItemDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.MenuItemDelete, error) {
+func (r *Resolver) MenuItemDelete(ctx context.Context, args struct{ Id string }) (*MenuItemDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) MenuItemBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.MenuItemBulkDelete, error) {
+func (r *Resolver) MenuItemBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*MenuItemBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) MenuItemUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.MenuItemInput
-}) (*gqlmodel.MenuItemUpdate, error) {
+	Input MenuItemInput
+}) (*MenuItemUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) MenuItemTranslate(ctx context.Context, args struct {
 	Id           string
-	Input        gqlmodel.NameTranslationInput
-	LanguageCode gqlmodel.LanguageCodeEnum
-}) (*gqlmodel.MenuItemTranslate, error) {
+	Input        NameTranslationInput
+	LanguageCode LanguageCodeEnum
+}) (*MenuItemTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) MenuItemMove(ctx context.Context, args struct {
 	Menu  string
-	Moves []*gqlmodel.MenuItemMoveInput
-}) (*gqlmodel.MenuItemMove, error) {
+	Moves []*MenuItemMoveInput
+}) (*MenuItemMove, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -68,37 +66,37 @@ func (r *Resolver) Menu(ctx context.Context, args struct {
 	Id      *string
 	Name    *string
 	Slug    *string
-}) (*gqlmodel.Menu, error) {
+}) (*Menu, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Menus(ctx context.Context, args struct {
 	Channel *string
-	SortBy  *gqlmodel.MenuSortingInput
-	Filter  *gqlmodel.MenuFilterInput
+	SortBy  *MenuSortingInput
+	Filter  *MenuFilterInput
 	Before  *string
 	After   *string
 	First   *int
 	Last    *int
-}) (*gqlmodel.MenuCountableConnection, error) {
+}) (*MenuCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) MenuItem(ctx context.Context, args struct {
 	Id      string
 	Channel *string
-}) (*gqlmodel.MenuItem, error) {
+}) (*MenuItem, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) MenuItems(ctx context.Context, args struct {
 	Channel *string
-	SortBy  *gqlmodel.MenuItemSortingInput
-	Filter  *gqlmodel.MenuItemFilterInput
+	SortBy  *MenuItemSortingInput
+	Filter  *MenuItemFilterInput
 	Before  *string
 	After   *string
 	First   *int
 	Last    *int
-}) (*gqlmodel.MenuItemCountableConnection, error) {
+}) (*MenuItemCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

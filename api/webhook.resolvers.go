@@ -7,35 +7,34 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sitename/sitename/api/gqlmodel"
 	"github.com/sitename/sitename/model"
 )
 
-func (r *Resolver) WebhookCreate(ctx context.Context, args struct{ Input gqlmodel.WebhookCreateInput }) (*gqlmodel.WebhookCreate, error) {
+func (r *Resolver) WebhookCreate(ctx context.Context, args struct{ Input WebhookCreateInput }) (*WebhookCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) WebhookDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.WebhookDelete, error) {
+func (r *Resolver) WebhookDelete(ctx context.Context, args struct{ Id string }) (*WebhookDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) WebhookUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.WebhookUpdateInput
-}) (*gqlmodel.WebhookUpdate, error) {
+	Input WebhookUpdateInput
+}) (*WebhookUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Webhook(ctx context.Context, args struct{ Id string }) (*gqlmodel.Webhook, error) {
+func (r *Resolver) Webhook(ctx context.Context, args struct{ Id string }) (*Webhook, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) WebhookEvents(ctx context.Context) ([]*gqlmodel.WebhookEvent, error) {
+func (r *Resolver) WebhookEvents(ctx context.Context) ([]*WebhookEvent, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) WebhookSamplePayload(ctx context.Context, args struct {
-	EventType gqlmodel.WebhookSampleEventTypeEnum
+	EventType WebhookSampleEventTypeEnum
 }) (model.StringInterface, error) {
 	panic(fmt.Errorf("not implemented"))
 }

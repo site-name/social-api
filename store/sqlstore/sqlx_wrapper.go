@@ -14,24 +14,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store/store_iface"
-	"github.com/sitename/sitename/store/storetest"
 )
-
-type StoreTestWrapper struct {
-	orig *SqlStore
-}
-
-func NewStoreTestWrapper(orig *SqlStore) *StoreTestWrapper {
-	return &StoreTestWrapper{orig}
-}
-
-func (w *StoreTestWrapper) GetMasterX() storetest.SqlXExecutor {
-	return w.orig.GetMasterX()
-}
-
-func (w *StoreTestWrapper) DriverName() string {
-	return w.orig.DriverName()
-}
 
 // namedParamRegex is used to capture all named parameters and convert them
 // to lowercase. This is necessary to be able to use a single query for both

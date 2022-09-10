@@ -6,35 +6,33 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) DigitalContentCreate(ctx context.Context, args struct {
-	Input     gqlmodel.DigitalContentUploadInput
+	Input     DigitalContentUploadInput
 	VariantID string
-}) (*gqlmodel.DigitalContentCreate, error) {
+}) (*DigitalContentCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) DigitalContentDelete(ctx context.Context, args struct{ VariantID string }) (*gqlmodel.DigitalContentDelete, error) {
+func (r *Resolver) DigitalContentDelete(ctx context.Context, args struct{ VariantID string }) (*DigitalContentDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) DigitalContentUpdate(ctx context.Context, args struct {
-	Input     gqlmodel.DigitalContentInput
+	Input     DigitalContentInput
 	VariantID string
-}) (*gqlmodel.DigitalContentUpdate, error) {
+}) (*DigitalContentUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) DigitalContentURLCreate(ctx context.Context, args struct {
-	Input gqlmodel.DigitalContentURLCreateInput
-}) (*gqlmodel.DigitalContentURLCreate, error) {
+	Input DigitalContentURLCreateInput
+}) (*DigitalContentURLCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) DigitalContent(ctx context.Context, args struct{ Id string }) (*gqlmodel.DigitalContent, error) {
+func (r *Resolver) DigitalContent(ctx context.Context, args struct{ Id string }) (*DigitalContent, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -43,6 +41,6 @@ func (r *Resolver) DigitalContents(ctx context.Context, args struct {
 	After  *string
 	First  *int
 	Last   *int
-}) (*gqlmodel.DigitalContentCountableConnection, error) {
+}) (*DigitalContentCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

@@ -6,89 +6,87 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) AttributeCreate(ctx context.Context, args struct{ Input gqlmodel.AttributeCreateInput }) (*gqlmodel.AttributeCreate, error) {
+func (r *Resolver) AttributeCreate(ctx context.Context, args struct{ Input AttributeCreateInput }) (*AttributeCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AttributeDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.AttributeDelete, error) {
+func (r *Resolver) AttributeDelete(ctx context.Context, args struct{ Id string }) (*AttributeDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.AttributeUpdateInput
-}) (*gqlmodel.AttributeUpdate, error) {
+	Input AttributeUpdateInput
+}) (*AttributeUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AttributeTranslate(ctx context.Context, args struct {
 	Id           string
-	Input        gqlmodel.NameTranslationInput
-	LanguageCode gqlmodel.LanguageCodeEnum
-}) (*gqlmodel.AttributeTranslate, error) {
+	Input        NameTranslationInput
+	LanguageCode LanguageCodeEnum
+}) (*AttributeTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.AttributeBulkDelete, error) {
+func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*AttributeBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AttributeValueBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.AttributeValueBulkDelete, error) {
+func (r *Resolver) AttributeValueBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*AttributeValueBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 	AttributeID string
-	Input       gqlmodel.AttributeValueCreateInput
-}) (*gqlmodel.AttributeValueCreate, error) {
+	Input       AttributeValueCreateInput
+}) (*AttributeValueCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AttributeValueDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.AttributeValueDelete, error) {
+func (r *Resolver) AttributeValueDelete(ctx context.Context, args struct{ Id string }) (*AttributeValueDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AttributeValueUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.AttributeValueUpdateInput
-}) (*gqlmodel.AttributeValueUpdate, error) {
+	Input AttributeValueUpdateInput
+}) (*AttributeValueUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AttributeValueTranslate(ctx context.Context, args struct {
 	Id           string
-	Input        gqlmodel.AttributeValueTranslationInput
-	LanguageCode gqlmodel.LanguageCodeEnum
-}) (*gqlmodel.AttributeValueTranslate, error) {
+	Input        AttributeValueTranslationInput
+	LanguageCode LanguageCodeEnum
+}) (*AttributeValueTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 	AttributeID string
-	Moves       []*gqlmodel.ReorderInput
-}) (*gqlmodel.AttributeReorderValues, error) {
+	Moves       []*ReorderInput
+}) (*AttributeReorderValues, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Attributes(ctx context.Context, args struct {
-	Filter     *gqlmodel.AttributeFilterInput
-	SortBy     *gqlmodel.AttributeSortingInput
+	Filter     *AttributeFilterInput
+	SortBy     *AttributeSortingInput
 	ChanelSlug *string
 	Before     *string
 	After      *string
 	First      *int
 	Last       *int
-}) (*gqlmodel.AttributeCountableConnection, error) {
+}) (*AttributeCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Attribute(ctx context.Context, args struct {
 	Id   *string
 	Slug *string
-}) (*gqlmodel.Attribute, error) {
+}) (*Attribute, error) {
 	panic(fmt.Errorf("not implemented"))
 }

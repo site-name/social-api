@@ -8,50 +8,49 @@ import (
 	"fmt"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
 	MediaID   string
 	VariantID string
-}) (*gqlmodel.VariantMediaAssign, error) {
+}) (*VariantMediaAssign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) VariantMediaUnassign(ctx context.Context, args struct {
 	MediaID   string
 	VariantID string
-}) (*gqlmodel.VariantMediaUnassign, error) {
+}) (*VariantMediaUnassign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) AssignNavigation(ctx context.Context, args struct {
 	Menu           *string
-	NavigationType gqlmodel.NavigationType
-}) (*gqlmodel.AssignNavigation, error) {
+	NavigationType NavigationType
+}) (*AssignNavigation, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) FileUpload(ctx context.Context, args struct{ File graphql.Upload }) (*gqlmodel.FileUpload, error) {
+func (r *Resolver) FileUpload(ctx context.Context, args struct{ File graphql.Upload }) (*FileUpload, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ExternalNotificationTrigger(ctx context.Context, args struct {
 	Channel  string
-	Input    gqlmodel.ExternalNotificationTriggerInput
+	Input    ExternalNotificationTriggerInput
 	PluginID *string
-}) (*gqlmodel.ExternalNotificationTrigger, error) {
+}) (*ExternalNotificationTrigger, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ReportProductSales(ctx context.Context, args struct {
-	Period  gqlmodel.ReportingPeriod
+	Period  ReportingPeriod
 	Channel string
 	Before  *string
 	After   *string
 	First   *int
 	Last    *int
-}) (*gqlmodel.ProductVariantCountableConnection, error) {
+}) (*ProductVariantCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -60,10 +59,10 @@ func (r *Resolver) HomepageEvents(ctx context.Context, args struct {
 	After  *string
 	First  *int
 	Last   *int
-}) (*gqlmodel.OrderEventCountableConnection, error) {
+}) (*OrderEventCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) TaxTypes(ctx context.Context) ([]*gqlmodel.TaxType, error) {
+func (r *Resolver) TaxTypes(ctx context.Context) ([]*TaxType, error) {
 	panic(fmt.Errorf("not implemented"))
 }

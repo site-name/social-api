@@ -37,7 +37,7 @@ type DiscountService interface {
 	DecreaseVoucherUsage(voucher *product_and_discount.Voucher) *model.AppError
 	// ExpiredSales returns sales that are expired by date. If date is nil, default to UTC now
 	//
-	//  end_date <= date && start_date <= date
+	//	end_date <= date && start_date <= date
 	ExpiredSales(date *time.Time) ([]*product_and_discount.Sale, *model.AppError)
 	// ExpiredVouchers returns vouchers that are expired before given date (beginning of the day). If date is nil, use today instead
 	ExpiredVouchers(date *time.Time) ([]*product_and_discount.Voucher, *model.AppError)
@@ -68,7 +68,7 @@ type DiscountService interface {
 	GeneratePromoCode() string
 	// GetDiscountAmountFor checks given voucher's `DiscountValueType` and returns according discount calculator function
 	//
-	//  price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
+	//	price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
 	//
 	// NOTE: the returning interface's type should be identical to given price's type
 	GetDiscountAmountFor(voucher *product_and_discount.Voucher, price interface{}, channelID string) (interface{}, *model.AppError)

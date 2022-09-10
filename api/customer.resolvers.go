@@ -6,36 +6,34 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) CustomerCreate(ctx context.Context, args struct{ Input gqlmodel.UserCreateInput }) (*gqlmodel.CustomerCreate, error) {
+func (r *Resolver) CustomerCreate(ctx context.Context, args struct{ Input UserCreateInput }) (*CustomerCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) CustomerUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.CustomerInput
-}) (*gqlmodel.CustomerUpdate, error) {
+	Input CustomerInput
+}) (*CustomerUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) CustomerDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.CustomerDelete, error) {
+func (r *Resolver) CustomerDelete(ctx context.Context, args struct{ Id string }) (*CustomerDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) CustomerBulkDelete(ctx context.Context, args struct{ Ids []string }) (*gqlmodel.CustomerBulkDelete, error) {
+func (r *Resolver) CustomerBulkDelete(ctx context.Context, args struct{ Ids []string }) (*CustomerBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Customers(ctx context.Context, args struct {
-	Filter *gqlmodel.CustomerFilterInput
-	SortBy *gqlmodel.UserSortingInput
+	Filter *CustomerFilterInput
+	SortBy *UserSortingInput
 	Before *string
 	After  *string
 	First  *int
 	Last   *int
-}) (*gqlmodel.UserCountableConnection, error) {
+}) (*UserCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

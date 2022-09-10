@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/api/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/channel"
@@ -18,7 +17,14 @@ import (
 // Based on export_info returns exported fields, fields to headers mapping and
 // all headers.
 // Headers contains product, variant, attribute and warehouse headers.
-func (a *ServiceCsv) GetExportFieldsAndHeadersInfo(exportInfo gqlmodel.ExportInfoInput) ([]string, []string, []string, *model.AppError) {
+func (a *ServiceCsv) GetExportFieldsAndHeadersInfo(
+	exportInfo struct {
+		Attributes []string
+		Warehouses []string
+		Channels   []string
+		Fields     []string
+	},
+) ([]string, []string, []string, *model.AppError) {
 	exportFields, fileHeaders := GetProductExportFieldsAndHeaders(exportInfo)
 	attributeHeaders, appErr := a.GetAttributeHeaders(exportInfo)
 	if appErr != nil {
@@ -50,7 +56,12 @@ func (a *ServiceCsv) GetExportFieldsAndHeadersInfo(exportInfo gqlmodel.ExportInf
 // Headers are build from slug and contains information if it's a product or variant
 // attribute. Respectively for product: "slug-value (product attribute)"
 // and for variant: "slug-value (variant attribute)".
-func (a *ServiceCsv) GetAttributeHeaders(exportInfo gqlmodel.ExportInfoInput) ([]string, *model.AppError) {
+func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
+	Attributes []string
+	Warehouses []string
+	Channels   []string
+	Fields     []string
+}) ([]string, *model.AppError) {
 	if len(exportInfo.Attributes) == 0 {
 		return []string{}, nil
 	}
@@ -126,7 +137,12 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo gqlmodel.ExportInfoInput) ([
 
 // Get headers for exported warehouses.
 // Headers are build from slug. Example: "slug-value (warehouse quantity)"
-func (a *ServiceCsv) GetWarehousesHeaders(exportInfo gqlmodel.ExportInfoInput) ([]string, *model.AppError) {
+func (a *ServiceCsv) GetWarehousesHeaders(exportInfo struct {
+	Attributes []string
+	Warehouses []string
+	Channels   []string
+	Fields     []string
+}) ([]string, *model.AppError) {
 	if len(exportInfo.Warehouses) == 0 {
 		return []string{}, nil
 	}
@@ -154,7 +170,12 @@ func (a *ServiceCsv) GetWarehousesHeaders(exportInfo gqlmodel.ExportInfoInput) (
 // - currency code data header: "slug-value (channel currency code)"
 // - published data header: "slug-value (channel visible)"
 // - publication date data header: "slug-value (channel publication date)"
-func (a *ServiceCsv) GetChannelsHeaders(exportInfo gqlmodel.ExportInfoInput) ([]string, *model.AppError) {
+func (a *ServiceCsv) GetChannelsHeaders(exportInfo struct {
+	Attributes []string
+	Warehouses []string
+	Channels   []string
+	Fields     []string
+}) ([]string, *model.AppError) {
 	if len(exportInfo.Channels) == 0 {
 		return []string{}, nil
 	}
@@ -189,7 +210,12 @@ func (a *ServiceCsv) GetChannelsHeaders(exportInfo gqlmodel.ExportInfoInput) ([]
 // Get export fields from export info and prepare headers mapping.
 // Based on given fields headers from export info, export fields set and
 // headers mapping is prepared.
-func GetProductExportFieldsAndHeaders(exportInfo gqlmodel.ExportInfoInput) ([]string, []string) {
+func GetProductExportFieldsAndHeaders(exportInfo struct {
+	Attributes []string
+	Warehouses []string
+	Channels   []string
+	Fields     []string
+}) ([]string, []string) {
 	var (
 		exportFields = []string{"id"}
 		fileHeaders  = []string{"id"}

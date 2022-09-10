@@ -6,39 +6,37 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 	Number  *string
 	OrderID string
-}) (*gqlmodel.InvoiceRequest, error) {
+}) (*InvoiceRequest, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) InvoiceRequestDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.InvoiceRequestDelete, error) {
+func (r *Resolver) InvoiceRequestDelete(ctx context.Context, args struct{ Id string }) (*InvoiceRequestDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
-	Input   gqlmodel.InvoiceCreateInput
+	Input   InvoiceCreateInput
 	OrderID string
-}) (*gqlmodel.InvoiceCreate, error) {
+}) (*InvoiceCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) InvoiceDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.InvoiceDelete, error) {
+func (r *Resolver) InvoiceDelete(ctx context.Context, args struct{ Id string }) (*InvoiceDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.UpdateInvoiceInput
-}) (*gqlmodel.InvoiceUpdate, error) {
+	Input UpdateInvoiceInput
+}) (*InvoiceUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) InvoiceSendNotification(ctx context.Context, args struct{ Id string }) (*gqlmodel.InvoiceSendNotification, error) {
+func (r *Resolver) InvoiceSendNotification(ctx context.Context, args struct{ Id string }) (*InvoiceSendNotification, error) {
 	panic(fmt.Errorf("not implemented"))
 }

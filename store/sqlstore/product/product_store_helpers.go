@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
+	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/api/gqlmodel"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/model/product_and_discount"
@@ -119,7 +121,13 @@ func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPub
 	)
 }
 
-func (ps *SqlProductStore) filterVariantPrice(query squirrel.SelectBuilder, priceRange gqlmodel.PriceRangeInput, channelID interface{}) squirrel.SelectBuilder {
+func (ps *SqlProductStore) filterVariantPrice(
+	query squirrel.SelectBuilder,
+	priceRange struct {
+		Gte *float64
+		Lte *float64
+	}, channelID interface{},
+) squirrel.SelectBuilder {
 	channelQuery := ps.GetQueryBuilder().
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
@@ -158,7 +166,14 @@ func (ps *SqlProductStore) filterVariantPrice(query squirrel.SelectBuilder, pric
 	return query.Where(productVariantQuery)
 }
 
-func (ps *SqlProductStore) filterMinimalPrice(query squirrel.SelectBuilder, priceRange gqlmodel.PriceRangeInput, channelID interface{}) squirrel.SelectBuilder {
+func (ps *SqlProductStore) filterMinimalPrice(
+	query squirrel.SelectBuilder,
+	priceRange struct {
+		Gte *float64
+		Lte *float64
+	},
+	channelID interface{},
+) squirrel.SelectBuilder {
 	channelQuery := ps.GetQueryBuilder().
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
@@ -199,11 +214,17 @@ type (
 	}
 	valueRange struct {
 		Slug  string
-		Range gqlmodel.IntRangeInput
+		Range struct {
+			Gte *int32
+			Lte *int32
+		}
 	}
 	timeRange struct {
 		Slug string
-		Date gqlmodel.DateRangeInput
+		Date struct {
+			Gte *time.Time
+			Lte *time.Time
+		}
 	}
 
 	valueList      []value
@@ -242,13 +263,31 @@ func (m *safeMap) write(key string, value []string) {
 	}
 }
 
-func (ps *SqlProductStore) filterAttributes(query squirrel.SelectBuilder, attributes []*gqlmodel.AttributeInput) squirrel.SelectBuilder {
-	nonNilAttributes := []gqlmodel.AttributeInput{}
-	for _, attr := range attributes {
-		if attr != nil {
-			nonNilAttributes = append(nonNilAttributes, *attr)
-		}
+type attributeFilterInput struct {
+	Slug        string
+	Values      []*string
+	ValuesRange *struct {
+		Gte *int32
+		Lte *int32
 	}
+	DateTime *struct {
+		Gte *timemodule.Time
+		Lte *timemodule.Time
+	}
+	Date *struct {
+		Gte *timemodule.Time
+		Lte *timemodule.Time
+	}
+	Boolean *bool
+}
+
+func (ps *SqlProductStore) filterAttributes(
+	query squirrel.SelectBuilder,
+	attributes []*attributeFilterInput,
+) squirrel.SelectBuilder {
+
+	// filter out nil values
+	nonNilAttributes := lo.Filter(attributes, func(v *attributeFilterInput, _ int) bool { return v != nil })
 
 	if len(nonNilAttributes) == 0 {
 		return query
@@ -270,7 +309,7 @@ func (ps *SqlProductStore) filterAttributes(query squirrel.SelectBuilder, attrib
 		} else if input.Date != nil {
 			date_range_list = append(date_range_list, timeRange{input.Slug, *input.Date})
 		} else if input.DateTime != nil {
-			date_time_range_list = append(date_time_range_list, timeRange{input.Slug, gqlmodel.DateRangeInput(*input.Date)})
+			date_time_range_list = append(date_time_range_list, timeRange{input.Slug, *input.Date})
 		} else if input.Boolean != nil {
 			boolean_list = append(boolean_list, booleanRange{input.Slug, *input.Boolean})
 		}
@@ -628,7 +667,7 @@ func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue 
 	return nil
 }
 
-func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder, value gqlmodel.StockAvailability, channelID interface{}) squirrel.SelectBuilder {
+func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder, value string, channelID interface{}) squirrel.SelectBuilder {
 	var (
 		validValue = true
 		prefix     string
@@ -638,10 +677,11 @@ func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder,
 		channelID_ = channelID.(string)
 	}
 
-	switch value {
-	case gqlmodel.StockAvailabilityInStock:
+	switch strings.ToLower(value) {
+	case "in_stock":
 		prefix = "EXISTS ("
-	case gqlmodel.StockAvailabilityOutOfStock:
+
+	case "out_of_stock":
 		prefix = "NOT EXISTS ("
 
 	default:
@@ -699,7 +739,16 @@ func (ps *SqlProductStore) filterProductTypes(query squirrel.SelectBuilder, valu
 	return query.Where("Products.ProductTypeID IN ?", ids)
 }
 
-func (ps *SqlProductStore) filterStocks(query squirrel.SelectBuilder, value gqlmodel.ProductStockFilterInput) squirrel.SelectBuilder {
+func (ps *SqlProductStore) filterStocks(
+	query squirrel.SelectBuilder,
+	value struct {
+		WarehouseIds []string
+		Quantity     *struct {
+			Gte *int32
+			Lte *int32
+		}
+	},
+) squirrel.SelectBuilder {
 	if len(value.WarehouseIds) > 0 && value.Quantity == nil {
 		return query.
 			InnerJoin(store.ProductVariantTableName+" ON ProductVariants.ProductID = Products.Id").
@@ -719,7 +768,15 @@ func (ps *SqlProductStore) filterStocks(query squirrel.SelectBuilder, value gqlm
 	return query
 }
 
-func (ps *SqlProductStore) filterQuantity(query squirrel.SelectBuilder, quantity gqlmodel.IntRangeInput, warehouseIDs []string) squirrel.SelectBuilder {
+func (ps *SqlProductStore) filterQuantity(
+	query squirrel.SelectBuilder,
+	quantity struct {
+		Gte *int32
+		Lte *int32
+	},
+	warehouseIDs []string,
+) squirrel.SelectBuilder {
+
 	queryString, args, err := query.ToSql()
 	if err != nil {
 		slog.Error("failed to build query string for products", slog.Err(err))

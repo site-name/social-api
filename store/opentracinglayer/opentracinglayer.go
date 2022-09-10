@@ -11,7 +11,6 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	spanlog "github.com/opentracing/opentracing-go/log"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/api/gqlmodel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/model/app"
@@ -5447,7 +5446,7 @@ func (s *OpenTracingLayerPreorderAllocationStore) FilterByOption(options *wareho
 	return result, err
 }
 
-func (s *OpenTracingLayerProductStore) AdvancedFilterQueryBuilder(input *gqlmodel.ExportProductsInput) squirrel.SelectBuilder {
+func (s *OpenTracingLayerProductStore) AdvancedFilterQueryBuilder(input *csv.ExportProductsFilterOptions) squirrel.SelectBuilder {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.AdvancedFilterQueryBuilder")
 	s.Root.Store.SetContext(newCtx)

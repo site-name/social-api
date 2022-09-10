@@ -8,25 +8,24 @@ import (
 	"fmt"
 
 	"github.com/site-name/decimal"
-	"github.com/sitename/sitename/api/gqlmodel"
 	"github.com/sitename/sitename/model"
 )
 
 func (r *Resolver) PaymentCapture(ctx context.Context, args struct {
 	Amount    *decimal.Decimal
 	PaymentID string
-}) (*gqlmodel.PaymentCapture, error) {
+}) (*PaymentCapture, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) PaymentRefund(ctx context.Context, args struct {
 	Amount    *decimal.Decimal
 	PaymentID string
-}) (*gqlmodel.PaymentRefund, error) {
+}) (*PaymentRefund, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PaymentVoid(ctx context.Context, args struct{ PaymentID string }) (*gqlmodel.PaymentVoid, error) {
+func (r *Resolver) PaymentVoid(ctx context.Context, args struct{ PaymentID string }) (*PaymentVoid, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -34,20 +33,20 @@ func (r *Resolver) PaymentInitialize(ctx context.Context, args struct {
 	Channel     *string
 	Gateway     string
 	PaymentData model.StringInterface
-}) (*gqlmodel.PaymentInitialize, error) {
+}) (*PaymentInitialize, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Payment(ctx context.Context, args struct{ Id string }) (*gqlmodel.Payment, error) {
+func (r *Resolver) Payment(ctx context.Context, args struct{ Id string }) (*Payment, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Payments(ctx context.Context, args struct {
-	Filter *gqlmodel.PaymentFilterInput
+	Filter *PaymentFilterInput
 	Before *string
 	After  *string
 	First  *int
 	Last   *int
-}) (*gqlmodel.PaymentCountableConnection, error) {
+}) (*PaymentCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

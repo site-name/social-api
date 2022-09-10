@@ -9,7 +9,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/api/gqlmodel"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
@@ -4982,7 +4981,7 @@ func (s *TimerLayerPreorderAllocationStore) FilterByOption(options *warehouse.Pr
 	return result, err
 }
 
-func (s *TimerLayerProductStore) AdvancedFilterQueryBuilder(input *gqlmodel.ExportProductsInput) squirrel.SelectBuilder {
+func (s *TimerLayerProductStore) AdvancedFilterQueryBuilder(input *csv.ExportProductsFilterOptions) squirrel.SelectBuilder {
 	start := timemodule.Now()
 
 	result := s.ProductStore.AdvancedFilterQueryBuilder(input)

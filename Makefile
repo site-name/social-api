@@ -132,7 +132,7 @@ ifeq ($(RUN_SERVER_IN_BACKGROUND),true)
 endif
 
 app-layers: ## Extract interface from App struct
-	$(GO) get -modfile=go.tools.mod github.com/reflog/struct2interface
+	$(GO) install github.com/reflog/struct2interface@v0.6.1
 	$(GOBIN)/struct2interface -f "app" -o "app/app_iface.go" -p "app" -s "App" -i "AppIface" -t ./app/layer_generators/app_iface.go.tmpl
 	$(GO) run ./app/layer_generators -in ./app/app_iface.go -out ./app/opentracing/opentracing_layer.go -template ./app/layer_generators/opentracing_layer.go.tmpl
 	$(GOBIN)/struct2interface -f "app/checkout" -o "app/sub_app_iface/checkout_iface.go" -p "checkout" -s "ServiceCheckout" -i "CheckoutService" -t ./app/layer_generators/checkout_iface.go.tmpl

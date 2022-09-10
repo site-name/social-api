@@ -6,74 +6,72 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) VoucherCreate(ctx context.Context, args struct{ Input gqlmodel.VoucherInput }) (*gqlmodel.VoucherCreate, error) {
+func (r *Resolver) VoucherCreate(ctx context.Context, args struct{ Input VoucherInput }) (*VoucherCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) VoucherDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.VoucherDelete, error) {
+func (r *Resolver) VoucherDelete(ctx context.Context, args struct{ Id string }) (*VoucherDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) VoucherBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.VoucherBulkDelete, error) {
+func (r *Resolver) VoucherBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*VoucherBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) VoucherUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.VoucherInput
-}) (*gqlmodel.VoucherUpdate, error) {
+	Input VoucherInput
+}) (*VoucherUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) VoucherCataloguesAdd(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.CatalogueInput
-}) (*gqlmodel.VoucherAddCatalogues, error) {
+	Input CatalogueInput
+}) (*VoucherAddCatalogues, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) VoucherCataloguesRemove(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.CatalogueInput
-}) (*gqlmodel.VoucherRemoveCatalogues, error) {
+	Input CatalogueInput
+}) (*VoucherRemoveCatalogues, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) VoucherTranslate(ctx context.Context, args struct {
 	Id           string
-	Input        gqlmodel.NameTranslationInput
-	languageCode gqlmodel.LanguageCodeEnum
-}) (*gqlmodel.VoucherTranslate, error) {
+	Input        NameTranslationInput
+	languageCode LanguageCodeEnum
+}) (*VoucherTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) VoucherChannelListingUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.VoucherChannelListingInput
-}) (*gqlmodel.VoucherChannelListingUpdate, error) {
+	Input VoucherChannelListingInput
+}) (*VoucherChannelListingUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Voucher(ctx context.Context, args struct {
 	Id      string
 	Channel *string
-}) (*gqlmodel.Voucher, error) {
+}) (*Voucher, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Vouchers(ctx context.Context, args struct {
-	Filter  *gqlmodel.VoucherFilterInput
-	SortBy  *gqlmodel.VoucherSortingInput
+	Filter  *VoucherFilterInput
+	SortBy  *VoucherSortingInput
 	Query   *string
 	Channel *string
 	Before  *string
 	After   *string
 	First   *int
 	Last    *int
-}) (*gqlmodel.VoucherCountableConnection, error) {
+}) (*VoucherCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

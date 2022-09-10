@@ -7,9 +7,10 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/api/gqlmodel"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/attribute"
+	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
@@ -563,16 +564,16 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 }
 
 // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
-func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *gqlmodel.ExportProductsInput) squirrel.SelectBuilder {
+func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *csv.ExportProductsFilterOptions) squirrel.SelectBuilder {
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields(store.ProductTableName + ".")...).
 		From(store.ProductTableName).
 		OrderBy("Products.CreateAt ASC")
 
-	if input.Scope == gqlmodel.ExportScopeAll {
+	if strings.EqualFold(input.Scope, "all") {
 		return query
 	}
-	if input.Scope == gqlmodel.ExportScopeIDS {
+	if strings.EqualFold(input.Scope, "ids") {
 		return query.Where("Products.Id IN ?", input.Ids)
 	}
 
@@ -608,7 +609,37 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *gqlmodel.ExportProd
 		query = ps.filterMinimalPrice(query, *options.MinimalPrice, channelID)
 	}
 	if len(options.Attributes) > 0 {
-		query = ps.filterAttributes(query, options.Attributes)
+		arg := lo.Map(
+			options.Attributes,
+			func(v *struct {
+				Slug        string
+				Values      []*string
+				ValuesRange *struct {
+					Gte *int32
+					Lte *int32
+				}
+				DateTime *struct {
+					Gte *timemodule.Time
+					Lte *timemodule.Time
+				}
+				Date *struct {
+					Gte *timemodule.Time
+					Lte *timemodule.Time
+				}
+				Boolean *bool
+			}, _ int) *attributeFilterInput {
+
+				return &attributeFilterInput{
+					Slug:        v.Slug,
+					Values:      v.Values,
+					ValuesRange: v.ValuesRange,
+					DateTime:    v.DateTime,
+					Date:        v.Date,
+					Boolean:     v.Boolean,
+				}
+			})
+
+		query = ps.filterAttributes(query, arg)
 	}
 	if options.StockAvailability != nil {
 		query = ps.filterStockAvailability(query, *options.StockAvailability, channelID)

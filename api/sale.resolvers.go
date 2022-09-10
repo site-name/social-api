@@ -6,74 +6,72 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
-func (r *Resolver) SaleCreate(ctx context.Context, args struct{ Input gqlmodel.SaleInput }) (*gqlmodel.SaleCreate, error) {
+func (r *Resolver) SaleCreate(ctx context.Context, args struct{ Input SaleInput }) (*SaleCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.SaleDelete, error) {
+func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*SaleDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) SaleBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.SaleBulkDelete, error) {
+func (r *Resolver) SaleBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*SaleBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) SaleUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.SaleInput
-}) (*gqlmodel.SaleUpdate, error) {
+	Input SaleInput
+}) (*SaleUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) SaleCataloguesAdd(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.CatalogueInput
-}) (*gqlmodel.SaleAddCatalogues, error) {
+	Input CatalogueInput
+}) (*SaleAddCatalogues, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) SaleCataloguesRemove(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.CatalogueInput
-}) (*gqlmodel.SaleRemoveCatalogues, error) {
+	Input CatalogueInput
+}) (*SaleRemoveCatalogues, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) SaleTranslate(ctx context.Context, args struct {
 	Id           string
-	Input        gqlmodel.NameTranslationInput
-	LanguageCode gqlmodel.LanguageCodeEnum
-}) (*gqlmodel.SaleTranslate, error) {
+	Input        NameTranslationInput
+	LanguageCode LanguageCodeEnum
+}) (*SaleTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) SaleChannelListingUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.SaleChannelListingInput
-}) (*gqlmodel.SaleChannelListingUpdate, error) {
+	Input SaleChannelListingInput
+}) (*SaleChannelListingUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Sale(ctx context.Context, args struct {
 	Id      string
 	Channel *string
-}) (*gqlmodel.Sale, error) {
+}) (*Sale, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Sales(ctx context.Context, args struct {
-	Filter  *gqlmodel.SaleFilterInput
-	SortBy  *gqlmodel.SaleSortingInput
+	Filter  *SaleFilterInput
+	SortBy  *SaleSortingInput
 	Query   *string
 	Channel *string
 	Before  *string
 	After   *string
 	First   *int
 	Last    *int
-}) (*gqlmodel.SaleCountableConnection, error) {
+}) (*SaleCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

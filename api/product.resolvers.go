@@ -6,63 +6,61 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/api/gqlmodel"
 )
 
 func (r *Resolver) ProductAttributeAssign(ctx context.Context, args struct {
-	Operations    []*gqlmodel.ProductAttributeAssignInput
+	Operations    []*ProductAttributeAssignInput
 	ProductTypeID string
-}) (*gqlmodel.ProductAttributeAssign, error) {
+}) (*ProductAttributeAssign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductAttributeUnassign(ctx context.Context, args struct {
 	AttributeIds  []*string
 	ProductTypeID string
-}) (*gqlmodel.ProductAttributeUnassign, error) {
+}) (*ProductAttributeUnassign, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductCreate(ctx context.Context, args struct{ Input gqlmodel.ProductCreateInput }) (*gqlmodel.ProductCreate, error) {
+func (r *Resolver) ProductCreate(ctx context.Context, args struct{ Input ProductCreateInput }) (*ProductCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductDelete(ctx context.Context, args struct{ Id string }) (*gqlmodel.ProductDelete, error) {
+func (r *Resolver) ProductDelete(ctx context.Context, args struct{ Id string }) (*ProductDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*gqlmodel.ProductBulkDelete, error) {
+func (r *Resolver) ProductBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*ProductBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.ProductInput
-}) (*gqlmodel.ProductUpdate, error) {
+	Input ProductInput
+}) (*ProductUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductTranslate(ctx context.Context, args struct {
 	Id           string
-	Input        gqlmodel.TranslationInput
-	LanguageCode gqlmodel.LanguageCodeEnum
-}) (*gqlmodel.ProductTranslate, error) {
+	Input        TranslationInput
+	LanguageCode LanguageCodeEnum
+}) (*ProductTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductChannelListingUpdate(ctx context.Context, args struct {
 	Id    string
-	Input gqlmodel.ProductChannelListingUpdateInput
-}) (*gqlmodel.ProductChannelListingUpdate, error) {
+	Input ProductChannelListingUpdateInput
+}) (*ProductChannelListingUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductReorderAttributeValues(ctx context.Context, args struct {
 	AttributeID string
-	Moves       []*gqlmodel.ReorderInput
+	Moves       []*ReorderInput
 	ProductID   string
-}) (*gqlmodel.ProductReorderAttributeValues, error) {
+}) (*ProductReorderAttributeValues, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -70,18 +68,18 @@ func (r *Resolver) Product(ctx context.Context, args struct {
 	Id      *string
 	Slug    *string
 	Channel *string
-}) (*gqlmodel.Product, error) {
+}) (*Product, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) Products(ctx context.Context, args struct {
-	Filter  *gqlmodel.ProductFilterInput
-	SortBy  *gqlmodel.ProductOrder
+	Filter  *ProductFilterInput
+	SortBy  *ProductOrder
 	Channel *string
 	Before  *string
 	After   *string
 	First   *int
 	Last    *int
-}) (*gqlmodel.ProductCountableConnection, error) {
+}) (*ProductCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
