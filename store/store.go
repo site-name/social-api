@@ -472,8 +472,9 @@ type (
 	DigitalContentStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
 		ScanFields(content product_and_discount.DigitalContent) []interface{}
-		Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error)                    // Save inserts given digital content into database then returns it
-		GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) // GetByOption finds and returns 1 digital content filtered using given option
+		Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error)                         // Save inserts given digital content into database then returns it
+		GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error)      // GetByOption finds and returns 1 digital content filtered using given option
+		FilterByOption(option *product_and_discount.DigitalContenetFilterOption) ([]*product_and_discount.DigitalContent, error) //
 	}
 	ProductVariantChannelListingStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
