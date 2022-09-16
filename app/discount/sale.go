@@ -24,9 +24,9 @@ func (a *ServiceDiscount) GetSaleDiscount(sale *product_and_discount.Sale, saleC
 			Amount:   *saleChannelListing.DiscountValue,
 			Currency: saleChannelListing.Currency,
 		}
-		return Decorator(discountAmount), nil
+		return a.Decorator(discountAmount), nil
 	}
-	return Decorator(saleChannelListing.DiscountValue), nil
+	return a.Decorator(saleChannelListing.DiscountValue), nil
 }
 
 // FilterSalesByOption should be used to filter active or expired sales
@@ -42,7 +42,7 @@ func (a *ServiceDiscount) FilterSalesByOption(option *product_and_discount.SaleF
 
 // ActiveSales finds active sales by given date. If date is nil then set date to UTC now
 //
-//  (end_date == NULL || end_date >= date) && start_date <= date
+//	(end_date == NULL || end_date >= date) && start_date <= date
 func (a *ServiceDiscount) ActiveSales(date *time.Time) (product_and_discount.Sales, *model.AppError) {
 	if date == nil {
 		date = util.NewTime(time.Now().UTC())
@@ -65,7 +65,7 @@ func (a *ServiceDiscount) ActiveSales(date *time.Time) (product_and_discount.Sal
 
 // ExpiredSales returns sales that are expired by date. If date is nil, default to UTC now
 //
-//  end_date <= date && start_date <= date
+//	end_date <= date && start_date <= date
 func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*product_and_discount.Sale, *model.AppError) {
 	if date == nil {
 		date = util.NewTime(time.Now().UTC())

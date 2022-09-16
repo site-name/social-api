@@ -56,14 +56,14 @@ func (a *ServiceDiscount) GetVoucherDiscount(voucher *product_and_discount.Vouch
 	firstListing := voucherChannelListings[0]
 
 	if voucher.DiscountValueType == product_and_discount.FIXED {
-		return Decorator(&goprices.Money{
+		return a.Decorator(&goprices.Money{
 			Amount:   *firstListing.DiscountValue,
 			Currency: firstListing.Currency,
 		}), nil
 	}
 
 	// otherwise DiscountValueType is 'percentage'
-	return Decorator(firstListing.DiscountValue), nil
+	return a.Decorator(firstListing.DiscountValue), nil
 }
 
 // GetDiscountAmountFor checks given voucher's `DiscountValueType` and returns according discount calculator function
@@ -88,7 +88,7 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher *product_and_discount.Vou
 		return nil, appErr
 	}
 
-	afterDiscount, err := discountCalculator(price) // pass in 1 argument here mean calling fixed discount calculator
+	afterDiscount, err := discountCalculator(price, nil) // pass in 1 argument here mean calling fixed discount calculator
 	if err != nil {
 		// this error maybe caused by user. But we tomporarily set status code to 500
 		return nil, model.NewAppError("GetDiscountAmountFor", "app.discount.error_calculating_discount.app_error", nil, err.Error(), http.StatusInternalServerError)

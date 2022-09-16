@@ -1,45 +1,72 @@
 package api
 
 import (
+	"context"
+	"strings"
+
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/model/account"
+	"github.com/sitename/sitename/web"
 )
 
 type Address struct {
-	ID             string  `json:"id"`
-	FirstName      string  `json:"firstName"`
-	LastName       string  `json:"lastName"`
-	CompanyName    string  `json:"companyName"`
-	StreetAddress1 string  `json:"streetAddress1"`
-	StreetAddress2 string  `json:"streetAddress2"`
-	City           string  `json:"city"`
-	CityArea       string  `json:"cityArea"`
-	PostalCode     string  `json:"postalCode"`
-	CountryArea    string  `json:"countryArea"`
-	Phone          *string `json:"phone"`
-	// IsDefaultShippingAddress *bool          `json:"isDefaultShippingAddress"`
-	// IsDefaultBillingAddress  *bool          `json:"isDefaultBillingAddress"`
-	// Country                  CountryDisplay `json:"country"`
+	Address account.Address
 }
 
 func (Address) IsNode() {}
 
 // SystemAddressToGraphqlAddress convert single database address to single graphql address
 func SystemAddressToGraphqlAddress(address *account.Address) *Address {
+	if address == nil {
+		return new(Address)
+	}
 	return &Address{
-		ID:             address.Id,
-		FirstName:      address.FirstName,
-		LastName:       address.LastName,
-		CompanyName:    address.CompanyName,
-		StreetAddress1: address.StreetAddress1,
-		StreetAddress2: address.StreetAddress2,
-		City:           address.City,
-		CityArea:       address.CityArea,
-		PostalCode:     address.PostalCode,
-		CountryArea:    address.CountryArea,
-		Phone:          &address.Phone,
+		Address: *address,
 	}
 }
 
-// func (a *Address) Country(ctx context.Context) (*CountryDisplay, error) {
-// 	embedContext, err := shared.GetContextValue[*web.Context](ctx, shared.WebCtx)
-// }
+func (a *Address) Country(ctx context.Context) (*CountryDisplay, error) {
+	return &CountryDisplay{
+		Code:    a.Address.Country,
+		Country: model.Countries[strings.ToUpper(a.Address.Country)],
+		Vat:     nil,
+	}, nil
+}
+
+func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
+	embedContext, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	// get current user
+	user, appErr := embedContext.App.Srv().AccountService().UserById(ctx, embedContext.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == a.Address.Id {
+		return model.NewBool(true), nil
+	}
+
+	return model.NewBool(false), nil
+}
+
+func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
+	embedContext, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	// get current user
+	user, appErr := embedContext.App.Srv().AccountService().UserById(ctx, embedContext.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == a.Address.Id {
+		return model.NewBool(true), nil
+	}
+
+	return model.NewBool(false), nil
+}

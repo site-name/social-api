@@ -218,14 +218,91 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 }
 
 func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id string }) (*AccountAddressDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+	// get embed context
+	embedContext, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("AccountAddressDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
+	}
+
+	// check if current user has this address
+	_, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&account.UserAddressFilterOptions{
+		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": embedContext.AppContext.Session().UserId},
+		AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusNotFound {
+			// user does not own this address
+			return nil, model.NewAppError("AccountAddressDelete", ErrorUnauthorized, nil, "you are not authorized to delete this address", http.StatusUnauthorized)
+		}
+		// system error
+		return nil, appErr
+	}
+
+	// delete user-address relation, keep address
+	appErr = embedContext.App.Srv().AccountService().DeleteUserAddressRelation(embedContext.AppContext.Session().UserId, args.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &AccountAddressDelete{true}, nil
 }
 
 func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 	Id   string
 	Type AddressTypeEnum
 }) (*AccountSetDefaultAddress, error) {
-	panic(fmt.Errorf("not implemented"))
+
+	embedContext, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	// validate arguments
+	invalidArguments := []string{}
+	if !model.IsValidId(args.Id) {
+		invalidArguments = append(invalidArguments, "Id")
+	}
+	if !args.Type.IsValid() {
+		invalidArguments = append(invalidArguments, "Type")
+	}
+
+	if len(invalidArguments) > 0 {
+		return nil, model.NewAppError("AccountSetDefaultAddress", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": strings.Join(invalidArguments, ", ")}, "invalid argument(s) provided", http.StatusBadRequest)
+	}
+
+	// check if current user own this address
+	_, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&account.UserAddressFilterOptions{
+		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": embedContext.AppContext.Session().UserId},
+		AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
+	})
+	if appErr != nil {
+		if appErr.StatusCode == http.StatusNotFound {
+			// user does not own this address
+			return nil, model.NewAppError("AccountSetDefaultAddress", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+		}
+		return nil, appErr
+	}
+
+	// perform change user default address
+	appErr = embedContext.App.Srv().AccountService().ChangeUserDefaultAddress(
+		account.User{Id: embedContext.AppContext.Session().UserId},
+		account.Address{Id: args.Id},
+		strings.ToLower(args.Type.String()),
+		nil,
+	)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &AccountSetDefaultAddress{
+		User: &User{
+			ID: embedContext.AppContext.Session().UserId,
+		},
+	}, nil
 }
 
 func (r *Resolver) AccountRegister(ctx context.Context, args struct{ Input AccountRegisterInput }) (*AccountRegister, error) {

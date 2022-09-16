@@ -152,7 +152,7 @@ func (a *ServiceDiscount) CalculateDiscountedPrice(product product_and_discount.
 		}
 
 		for _, discountFunc := range discountCalFuncs {
-			discountedIface, err := discountFunc(price)
+			discountedIface, err := discountFunc(price, nil)
 			if err != nil {
 				return nil, model.NewAppError("CalculateDiscountedPrice", "app.discount.calculate_discount_error.app_error", nil, err.Error(), http.StatusInternalServerError)
 			}

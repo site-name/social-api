@@ -10,7 +10,6 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/discount"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/exception"
@@ -1420,12 +1419,12 @@ func (a *ServiceOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType st
 
 	var discountCalculator types.DiscountCalculator
 	if valueType == product_and_discount.FIXED {
-		discountCalculator = discount.Decorator(money)
+		discountCalculator = a.srv.DiscountService().Decorator(money)
 	} else {
-		discountCalculator = discount.Decorator(value)
+		discountCalculator = a.srv.DiscountService().Decorator(value)
 	}
 
-	return discountCalculator(priceToDiscount)
+	return discountCalculator(priceToDiscount, nil)
 }
 
 // GetProductsVoucherDiscountForOrder Calculate products discount value for a voucher, depending on its type.
