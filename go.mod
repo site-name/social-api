@@ -41,7 +41,6 @@ require (
 	github.com/mattermost/logr/v2 v2.0.15
 	github.com/mattermost/morph v1.0.4
 	github.com/mattermost/rsc v0.0.0-20160330161541-bbaefb05eaa0
-	github.com/mattermost/squirrel v0.2.0
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/minio/minio-go/v7 v7.0.36
 	github.com/oov/psd v0.0.0-20220121172623-5db5eafcecbb

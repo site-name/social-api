@@ -32,12 +32,19 @@ func (s *ServiceCsv) ExportProducts(input *model.ExportProductsFilterOptions, de
 	panic("not implemented")
 }
 
-func (s *ServiceCsv) ExportProductsInBatches(productQuery squirrel.SelectBuilder, exportInfo struct {
-	Attributes []string
-	Warehouses []string
-	Channels   []string
-	Fields     []string
-}, exportFields []string, headers []string, delimiter string, fileType string) *model.AppError {
+func (s *ServiceCsv) ExportProductsInBatches(
+	productQuery squirrel.SelectBuilder,
+	ExportInfo struct {
+		Attributes []string
+		Warehouses []string
+		Channels   []string
+		Fields     []string
+	},
+	exportFields []string,
+	headers []string,
+	delimiter string,
+	fileType string,
+) *model.AppError {
 	var createAtGt int64 = 0
 
 	for {
@@ -69,7 +76,7 @@ func (s *ServiceCsv) ExportProductsInBatches(productQuery squirrel.SelectBuilder
 			break
 		}
 
-		s.GetProductsData(products, exportFields, exportInfo.Attributes, exportInfo.Warehouses, exportInfo.Channels)
+		s.GetProductsData(products, exportFields, ExportInfo.Attributes, ExportInfo.Warehouses, ExportInfo.Channels)
 	}
 
 	panic("not implt")
