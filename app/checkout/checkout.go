@@ -16,9 +16,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/giftcard"
-	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -38,7 +35,7 @@ func init() {
 }
 
 // CheckoutByOption returns a checkout filtered by given option
-func (a *ServiceCheckout) CheckoutByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, *model.AppError) {
+func (a *ServiceCheckout) CheckoutByOption(option *model.CheckoutFilterOption) (*model.Checkout, *model.AppError) {
 	chekout, err := a.srv.Store.Checkout().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -52,7 +49,7 @@ func (a *ServiceCheckout) CheckoutByOption(option *checkout.CheckoutFilterOption
 }
 
 // CheckoutsByOption returns a list of checkouts, filtered by given option
-func (a *ServiceCheckout) CheckoutsByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, *model.AppError) {
+func (a *ServiceCheckout) CheckoutsByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, *model.AppError) {
 	checkouts, err := a.srv.Store.Checkout().FilterByOption(option)
 	var (
 		statusCode int
@@ -73,7 +70,7 @@ func (a *ServiceCheckout) CheckoutsByOption(option *checkout.CheckoutFilterOptio
 }
 
 // GetCustomerEmail returns checkout's user's email
-func (a *ServiceCheckout) GetCustomerEmail(ckout *checkout.Checkout) (string, *model.AppError) {
+func (a *ServiceCheckout) GetCustomerEmail(ckout *model.Checkout) (string, *model.AppError) {
 	if ckout.UserID != nil {
 		user, appErr := a.srv.AccountService().UserById(context.Background(), *ckout.UserID)
 		if appErr != nil {
@@ -115,7 +112,7 @@ func (a *ServiceCheckout) CheckoutShippingRequired(checkoutToken string) (bool, 
 	return false, nil
 }
 
-func (a *ServiceCheckout) CheckoutSetCountry(ckout *checkout.Checkout, newCountryCode string) *model.AppError {
+func (a *ServiceCheckout) CheckoutSetCountry(ckout *model.Checkout, newCountryCode string) *model.AppError {
 	// no need to validate country code here, since checkout.IsValid() does that
 	ckout.Country = strings.ToUpper(strings.TrimSpace(newCountryCode))
 	_, appErr := a.UpsertCheckout(ckout)
@@ -123,7 +120,7 @@ func (a *ServiceCheckout) CheckoutSetCountry(ckout *checkout.Checkout, newCountr
 }
 
 // UpsertCheckout saves/updates given checkout
-func (a *ServiceCheckout) UpsertCheckout(ckout *checkout.Checkout) (*checkout.Checkout, *model.AppError) {
+func (a *ServiceCheckout) UpsertCheckout(ckout *model.Checkout) (*model.Checkout, *model.AppError) {
 	ckout, err := a.srv.Store.Checkout().Upsert(ckout)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -143,7 +140,7 @@ func (a *ServiceCheckout) UpsertCheckout(ckout *checkout.Checkout) (*checkout.Ch
 	return ckout, nil
 }
 
-func (a *ServiceCheckout) CheckoutCountry(ckout *checkout.Checkout) (string, *model.AppError) {
+func (a *ServiceCheckout) CheckoutCountry(ckout *model.Checkout) (string, *model.AppError) {
 	addressID := ckout.ShippingAddressID
 	if addressID == nil {
 		addressID = ckout.BillingAddressID
@@ -177,8 +174,8 @@ func (a *ServiceCheckout) CheckoutCountry(ckout *checkout.Checkout) (string, *mo
 }
 
 // CheckoutTotalGiftCardsBalance Return the total balance of the gift cards assigned to the checkout
-func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkOut *checkout.Checkout) (*goprices.Money, *model.AppError) {
-	giftcards, appErr := a.srv.GiftcardService().GiftcardsByOption(nil, &giftcard.GiftCardFilterOption{
+func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkOut *model.Checkout) (*goprices.Money, *model.AppError) {
+	giftcards, appErr := a.srv.GiftcardService().GiftcardsByOption(nil, &model.GiftCardFilterOption{
 		CheckoutToken: squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": checkOut.Token},
 		ExpiryDate: squirrel.Or{
 			squirrel.Eq{store.GiftcardTableName + ".ExpiryDate": nil},
@@ -203,7 +200,7 @@ func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkOut *checkout.Check
 	}, nil
 }
 
-func (a *ServiceCheckout) CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError) {
+func (a *ServiceCheckout) CheckoutLineWithVariant(checkout *model.Checkout, productVariantID string) (*model.CheckoutLine, *model.AppError) {
 	checkoutLines, appErr := a.CheckoutLinesByCheckoutToken(checkout.Token)
 	if appErr != nil {
 		// in case checkout has no checkout lines:
@@ -223,8 +220,8 @@ func (a *ServiceCheckout) CheckoutLineWithVariant(checkout *checkout.Checkout, p
 }
 
 // CheckoutLastActivePayment returns the most recent payment made for given checkout
-func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *checkout.Checkout) (*payment.Payment, *model.AppError) {
-	payments, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
+func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *model.Checkout) (*model.Payment, *model.AppError) {
+	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		CheckoutToken: checkout.Token,
 	})
 	if appErr != nil {
@@ -235,7 +232,7 @@ func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *checkout.Checkout)
 	}
 
 	// find latest payment by comparing their creation time
-	var latestPayment payment.Payment
+	var latestPayment model.Payment
 	for _, payMent := range payments {
 		if *payMent.IsActive && (latestPayment.Id == "" || latestPayment.CreateAt < payMent.CreateAt) {
 			latestPayment = *payMent
@@ -246,7 +243,7 @@ func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *checkout.Checkout)
 }
 
 // CheckoutTotalWeight calculate total weight for given checkout lines (these lines belong to a single checkout)
-func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos []*checkout.CheckoutLineInfo) (*measurement.Weight, *model.AppError) {
+func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos []*model.CheckoutLineInfo) (*measurement.Weight, *model.AppError) {
 	checkoutLineIDs := []string{}
 	for _, lineInfo := range checkoutLineInfos {
 		if !model.IsValidId(lineInfo.Line.Id) {
@@ -267,7 +264,7 @@ func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos []*checkout.Chec
 }
 
 // DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
-func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) *model.AppError {
+func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *model.CheckoutFilterOption) *model.AppError {
 	err := s.srv.SqlStore.Checkout().DeleteCheckoutsByOption(transaction, option)
 	if err != nil {
 		return model.NewAppError("DeleteCheckoutsByOption", "app.checkout.error_deleting_checkouts_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)

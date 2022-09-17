@@ -7,8 +7,6 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -17,7 +15,7 @@ import (
 //
 // It return list with product and variant data which can be used as import to
 // csv writer and list of attribute and warehouse headers.
-func (a *ServiceCsv) GetProductsData(products product_and_discount.Products, exportFields []string, attributeIDs []string, warehouseIDs []string, channelIDs []string) {
+func (a *ServiceCsv) GetProductsData(products model.Products, exportFields []string, attributeIDs []string, warehouseIDs []string, channelIDs []string) {
 	var (
 		exportVariantID     = util.ItemInSlice("variants__id", exportFields)
 		productFields       = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["fields"].Values()
@@ -33,7 +31,7 @@ func (a *ServiceCsv) GetProductsData(products product_and_discount.Products, exp
 // If any many to many fields are in export_fields or some attribute_ids exists then
 // dict with product relations fields is returned.
 // Otherwise it returns empty dict.
-func (s *ServiceCsv) getProductsRelationsData(products product_and_discount.Products, exportFields, attributeIDs, channelIDs []string) map[string]model.StringMap {
+func (s *ServiceCsv) getProductsRelationsData(products model.Products, exportFields, attributeIDs, channelIDs []string) map[string]model.StringMap {
 	var (
 		manyToManyFields = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["product_many_to_many"].Values()
 		relationFields   = util.SlicesIntersection(exportFields, manyToManyFields)
@@ -46,7 +44,7 @@ func (s *ServiceCsv) getProductsRelationsData(products product_and_discount.Prod
 	return map[string]model.StringMap{}
 }
 
-func (s *ServiceCsv) prepareProductsRelationsData(products product_and_discount.Products, fields, attributeIDs, channelIDs []string) map[string]model.StringMap {
+func (s *ServiceCsv) prepareProductsRelationsData(products model.Products, fields, attributeIDs, channelIDs []string) map[string]model.StringMap {
 	var (
 		channelFields = ProductExportFields.PRODUCT_CHANNEL_LISTING_FIELDS.DeepCopy()
 		resultData    = map[string]map[string][]string{}
@@ -92,7 +90,7 @@ func (s *ServiceCsv) prepareProductsRelationsData(products product_and_discount.
 	panic("not implt")
 }
 
-func (s *ServiceCsv) getVariantsRelationsData(products product_and_discount.Products, exportFields, attributeIDs, warehouseIDs, channelIDs []string) {
+func (s *ServiceCsv) getVariantsRelationsData(products model.Products, exportFields, attributeIDs, warehouseIDs, channelIDs []string) {
 
 }
 
@@ -154,13 +152,13 @@ func (s *ServiceCsv) prepareAttributeValue(attributeData AttributeData) string {
 		return ""
 	}
 
-	inputType, ok := attributeData.InputType.(string)
+	inputType, ok := attributeData.InputType.(model.AttributeInputType)
 	if !ok {
 		return ""
 	}
 
 	switch inputType {
-	case attribute.FILE:
+	case model.FILE_:
 		if attributeData.FileUrl != nil {
 			str, ok := attributeData.FileUrl.(string)
 			if ok && str != "" {
@@ -171,36 +169,36 @@ func (s *ServiceCsv) prepareAttributeValue(attributeData AttributeData) string {
 		}
 		return ""
 
-	case attribute.REFERENCE:
+	case model.REFERENCE:
 		if attributeData.ValueSlug != nil && attributeData.EntityType != nil {
 			return fmt.Sprintf("%v_%s", attributeData.EntityType, strings.Split(attributeData.ValueSlug.(string), "_")[1])
 		}
 		return ""
 
-	case attribute.NUMERIC:
+	case model.NUMERIC:
 		value := fmt.Sprintf("%v", attributeData.ValueName)
 		if attributeData.Unit != nil {
 			value += fmt.Sprintf(" %v", attributeData.Unit)
 		}
 		return value
 
-	case attribute.RICH_TEXT:
+	case model.RICH_TEXT:
 		slog.Warn("this case is not implemented yet")
 		return ""
 
-	case attribute.BOOLEAN:
+	case model.BOOLEAN:
 		if attributeData.Boolean != nil {
 			return strconv.FormatBool(attributeData.Boolean.(bool))
 		}
 		return "false"
 
-	case attribute.DATE:
+	case model.DATE:
 		return ""
 
-	case attribute.DATE_TIME:
+	case model.DATE_TIME:
 		return ""
 
-	case attribute.SWATCH:
+	case model.SWATCH:
 		if attributeData.FileUrl != nil {
 			str, ok := attributeData.FileUrl.(string)
 			if ok && str != "" {

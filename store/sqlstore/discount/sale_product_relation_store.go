@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -31,7 +30,7 @@ func (s *SqlSaleProductRelationStore) ModelFields(prefix string) model.AnyArray[
 }
 
 // Save inserts given sale-product relation into database then returns it
-func (ss *SqlSaleProductRelationStore) Save(relation *product_and_discount.SaleProductRelation) (*product_and_discount.SaleProductRelation, error) {
+func (ss *SqlSaleProductRelationStore) Save(relation *model.SaleProductRelation) (*model.SaleProductRelation, error) {
 	relation.PreSave()
 	if err := relation.IsValid(); err != nil {
 		return nil, err
@@ -50,8 +49,8 @@ func (ss *SqlSaleProductRelationStore) Save(relation *product_and_discount.SaleP
 }
 
 // Get finds and returns a sale-product relation with given id
-func (ss *SqlSaleProductRelationStore) Get(relationID string) (*product_and_discount.SaleProductRelation, error) {
-	var res product_and_discount.SaleProductRelation
+func (ss *SqlSaleProductRelationStore) Get(relationID string) (*model.SaleProductRelation, error) {
+	var res model.SaleProductRelation
 
 	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.SaleProductRelationTableName+" WHERE Id = ?", relationID)
 	if err != nil {
@@ -65,7 +64,7 @@ func (ss *SqlSaleProductRelationStore) Get(relationID string) (*product_and_disc
 }
 
 // SaleProductsByOption returns a slice of sale-product relations, filtered by given option
-func (ss *SqlSaleProductRelationStore) SaleProductsByOption(option *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, error) {
+func (ss *SqlSaleProductRelationStore) SaleProductsByOption(option *model.SaleProductRelationFilterOption) ([]*model.SaleProductRelation, error) {
 	query := ss.GetQueryBuilder().
 		Select("*").
 		From(store.SaleProductRelationTableName).
@@ -86,7 +85,7 @@ func (ss *SqlSaleProductRelationStore) SaleProductsByOption(option *product_and_
 		return nil, errors.Wrap(err, "SaleProductsByOption_ToSql")
 	}
 
-	var res []*product_and_discount.SaleProductRelation
+	var res []*model.SaleProductRelation
 	err = ss.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find sale-product relations with given option")

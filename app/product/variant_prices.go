@@ -9,15 +9,13 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
 // getVariantPricesInChannelsDict
-func (a *ServiceProduct) getVariantPricesInChannelsDict(product product_and_discount.Product) (map[string][]*goprices.Money, *model.AppError) {
-	variantChannelListings, appErr := a.ProductVariantChannelListingsByOption(nil, &product_and_discount.ProductVariantChannelListingFilterOption{
+func (a *ServiceProduct) getVariantPricesInChannelsDict(product model.Product) (map[string][]*goprices.Money, *model.AppError) {
+	variantChannelListings, appErr := a.ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
 		VariantProductID: squirrel.Eq{store.ProductVariantTableName + ".ProductID": product.Id},
 		PriceAmount:      squirrel.NotEq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
 	})
@@ -36,10 +34,10 @@ func (a *ServiceProduct) getVariantPricesInChannelsDict(product product_and_disc
 
 func (a *ServiceProduct) getProductDiscountedPrice(
 	variantPrices []*goprices.Money,
-	product product_and_discount.Product,
-	collections []*product_and_discount.Collection,
-	discounts []*product_and_discount.DiscountInfo,
-	chanNel channel.Channel,
+	product model.Product,
+	collections []*model.Collection,
+	discounts []*model.DiscountInfo,
+	chanNel model.Channel,
 
 ) (*goprices.Money, *model.AppError) {
 
@@ -78,7 +76,7 @@ func (a *ServiceProduct) getProductDiscountedPrice(
 // UpdateProductDiscountedPrice
 //
 // NOTE: `discounts` can be nil
-func (a *ServiceProduct) UpdateProductDiscountedPrice(product product_and_discount.Product, discounts []*product_and_discount.DiscountInfo) *model.AppError {
+func (a *ServiceProduct) UpdateProductDiscountedPrice(product model.Product, discounts []*model.DiscountInfo) *model.AppError {
 
 	var functionAppError *model.AppError
 	if len(discounts) == 0 {
@@ -89,9 +87,9 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(product product_and_discou
 	}
 
 	var (
-		collectionsContainProduct   []*product_and_discount.Collection
+		collectionsContainProduct   []*model.Collection
 		variantPricesInChannelsDict map[string][]*goprices.Money
-		productChannelListings      []*product_and_discount.ProductChannelListing
+		productChannelListings      []*model.ProductChannelListing
 		wg                          sync.WaitGroup
 		mut                         sync.Mutex
 	)
@@ -137,7 +135,7 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(product product_and_discou
 		defer wg.Done()
 		defer mut.Unlock()
 
-		res, appErr := a.ProductChannelListingsByOption(&product_and_discount.ProductChannelListingFilterOption{
+		res, appErr := a.ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
 			ProductID:       squirrel.Eq{store.ProductChannelListingTableName + ".ProductID": product.Id},
 			PrefetchChannel: true, // this will populate `Channel` fields of every product channel listings
 		})
@@ -157,7 +155,7 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(product product_and_discou
 		return functionAppError
 	}
 
-	var productChannelListingsToUpdate []*product_and_discount.ProductChannelListing
+	var productChannelListingsToUpdate []*model.ProductChannelListing
 
 	for _, listing := range productChannelListings {
 		listing.PopulateNonDbFields() // this call is crutial
@@ -198,7 +196,7 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(product product_and_discou
 }
 
 // UpdateProductsDiscountedPrices
-func (a *ServiceProduct) UpdateProductsDiscountedPrices(products []*product_and_discount.Product, discounts []*product_and_discount.DiscountInfo) *model.AppError {
+func (a *ServiceProduct) UpdateProductsDiscountedPrices(products []*model.Product, discounts []*model.DiscountInfo) *model.AppError {
 
 	var (
 		appError *model.AppError
@@ -224,7 +222,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPrices(products []*product_and_
 	}
 
 	for _, product := range products {
-		go func(prd *product_and_discount.Product) {
+		go func(prd *model.Product) {
 			defer wg.Done()
 			syncSetAppError(a.UpdateProductDiscountedPrice(*prd, discounts))
 
@@ -262,9 +260,9 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(productIDs [
 func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount interface{}) *model.AppError {
 	// validate discount is validly provided:
 	var (
-		productFilterOption    product_and_discount.ProductFilterOption
-		categoryFilterOption   product_and_discount.CategoryFilterOption
-		collectionFilterOption product_and_discount.CollectionFilterOption
+		productFilterOption    model.ProductFilterOption
+		categoryFilterOption   model.CategoryFilterOption
+		collectionFilterOption model.CollectionFilterOption
 		appError               *model.AppError
 		wg                     sync.WaitGroup
 		mut                    sync.Mutex
@@ -279,11 +277,11 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount inter
 	}
 
 	switch t := discount.(type) {
-	case *product_and_discount.Sale:
+	case *model.Sale:
 		productFilterOption.SaleID = squirrel.Eq{store.SaleProductRelationTableName + ".SaleID": t.Id}
 		categoryFilterOption.SaleID = squirrel.Eq{store.SaleCategoryRelationTableName + ".SaleID": t.Id}
 		collectionFilterOption.SaleID = squirrel.Eq{store.SaleCollectionRelationTableName + ".SaleID": t.Id}
-	case *product_and_discount.Voucher:
+	case *model.Voucher:
 		productFilterOption.VoucherID = squirrel.Eq{store.VoucherProductTableName + ".VoucherID": t.Id}
 		categoryFilterOption.VoucherID = squirrel.Eq{store.VoucherCategoryTableName + ".VoucherID": t.Id}
 		collectionFilterOption.VoucherID = squirrel.Eq{store.VoucherCollectionTableName + ".VoucherID": t.Id}
@@ -310,7 +308,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount inter
 			syncSetAppError(appErr)
 			return
 		}
-		productIDs = product_and_discount.Products(products).IDs()
+		productIDs = model.Products(products).IDs()
 	}()
 
 	go func() {
@@ -323,7 +321,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount inter
 			syncSetAppError(appErr)
 			return
 		}
-		categoryIDs = product_and_discount.Categories(categories).IDs()
+		categoryIDs = model.Categories(categories).IDs()
 	}()
 
 	go func() {
@@ -335,7 +333,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount inter
 			syncSetAppError(appErr)
 			return
 		}
-		collectionIDs = product_and_discount.Collections(collections).IDs()
+		collectionIDs = model.Collections(collections).IDs()
 	}()
 
 	wg.Wait()

@@ -10,10 +10,6 @@ import (
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
@@ -21,32 +17,34 @@ import (
 type DiscountService interface {
 	// ActiveSales finds active sales by given date. If date is nil then set date to UTC now
 	//
-	//  (end_date == NULL || end_date >= date) && start_date <= date
-	ActiveSales(date *time.Time) (product_and_discount.Sales, *model.AppError)
+	//	(end_date == NULL || end_date >= date) && start_date <= date
+	ActiveSales(date *time.Time) (model.Sales, *model.AppError)
 	// AddVoucherUsageByCustomer adds an usage for given voucher, by given customer
-	AddVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) (*product_and_discount.NotApplicable, *model.AppError)
+	AddVoucherUsageByCustomer(voucher *model.Voucher, customerEmail string) (*model.NotApplicable, *model.AppError)
 	// BulkDeleteOrderDiscounts performs bulk delete given order discounts
 	BulkDeleteOrderDiscounts(orderDiscountIDs []string) *model.AppError
 	// CalculateDiscountedPrice Return minimum product's price of all prices with discounts applied
 	//
 	// `discounts` is optional
-	CalculateDiscountedPrice(product product_and_discount.Product, price *goprices.Money, collections []*product_and_discount.Collection, discounts []*product_and_discount.DiscountInfo, channeL channel.Channel, variantID string) (*goprices.Money, *model.AppError)
+	CalculateDiscountedPrice(product model.Product, price *goprices.Money, collections []*model.Collection, discounts []*model.DiscountInfo, channeL model.Channel, variantID string) (*goprices.Money, *model.AppError)
 	// CreateNewVoucherCustomer tells store to insert new voucher customer into database, then returns it
-	CreateNewVoucherCustomer(voucherID string, customerEmail string) (*product_and_discount.VoucherCustomer, *model.AppError)
+	CreateNewVoucherCustomer(voucherID string, customerEmail string) (*model.VoucherCustomer, *model.AppError)
+	// Decorator returns a function to calculate discount
+	Decorator(preValue any) types.DiscountCalculator
 	// DecreaseVoucherUsage decreases voucher's uses by 1
-	DecreaseVoucherUsage(voucher *product_and_discount.Voucher) *model.AppError
+	DecreaseVoucherUsage(voucher *model.Voucher) *model.AppError
 	// ExpiredSales returns sales that are expired by date. If date is nil, default to UTC now
 	//
 	//	end_date <= date && start_date <= date
-	ExpiredSales(date *time.Time) ([]*product_and_discount.Sale, *model.AppError)
+	ExpiredSales(date *time.Time) ([]*model.Sale, *model.AppError)
 	// ExpiredVouchers returns vouchers that are expired before given date (beginning of the day). If date is nil, use today instead
-	ExpiredVouchers(date *time.Time) ([]*product_and_discount.Voucher, *model.AppError)
+	ExpiredVouchers(date *time.Time) ([]*model.Voucher, *model.AppError)
 	// FetchActiveDiscounts returns discounts that are activated
-	FetchActiveDiscounts() ([]*product_and_discount.DiscountInfo, *model.AppError)
+	FetchActiveDiscounts() ([]*model.DiscountInfo, *model.AppError)
 	// FetchCatalogueInfo may return a map with keys are ["categories", "collections", "products", "variants"].
 	//
 	// values are slices of uuid strings
-	FetchCatalogueInfo(instance product_and_discount.Sale) (map[string][]string, *model.AppError)
+	FetchCatalogueInfo(instance model.Sale) (map[string][]string, *model.AppError)
 	// FetchCategories returns a map with keys are sale ids, values are slices of category ids
 	FetchCategories(saleIDs []string) (map[string][]string, *model.AppError)
 	// FetchCollections returns a map with keys are sale ids, values are slices of UNIQUE collection ids
@@ -54,16 +52,16 @@ type DiscountService interface {
 	// FetchProducts returns a map with keys are sale ids, values are slices of UNIQUE product ids
 	FetchProducts(saleIDs []string) (map[string][]string, *model.AppError)
 	// FetchSaleChannelListings returns a map with keys are sale ids, values are maps with keys are channel slugs
-	FetchSaleChannelListings(saleIDs []string) (map[string]map[string]*product_and_discount.SaleChannelListing, *model.AppError)
+	FetchSaleChannelListings(saleIDs []string) (map[string]map[string]*model.SaleChannelListing, *model.AppError)
 	// FetchVariants returns a map with keys are sale ids and values are slice of UNIQUE product variant ids
 	FetchVariants(salePKs []string) (map[string][]string, *model.AppError)
 	// FilterActiveVouchers returns a list of vouchers that are active.
 	//
 	// `channelSlug` is optional (can be empty). pass this argument if you want to find active vouchers in specific channel
-	FilterActiveVouchers(date time.Time, channelSlug string) ([]*product_and_discount.Voucher, *model.AppError)
+	FilterActiveVouchers(date time.Time, channelSlug string) ([]*model.Voucher, *model.AppError)
 	// FilterSalesByOption should be used to filter active or expired sales
 	// refer: saleor/discount/models.SaleQueryset for details
-	FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, *model.AppError)
+	FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, *model.AppError)
 	// GeneratePromoCode randomly generate promo code
 	GeneratePromoCode() string
 	// GetDiscountAmountFor checks given voucher's `DiscountValueType` and returns according discount calculator function
@@ -71,64 +69,63 @@ type DiscountService interface {
 	//	price.(type) == *Money || *MoneyRange || *TaxedMoney || *TaxedMoneyRange
 	//
 	// NOTE: the returning interface's type should be identical to given price's type
-	GetDiscountAmountFor(voucher *product_and_discount.Voucher, price interface{}, channelID string) (interface{}, *model.AppError)
+	GetDiscountAmountFor(voucher *model.Voucher, price interface{}, channelID string) (interface{}, *model.AppError)
 	// GetProductDiscountOnSale Return discount value if product is on sale or raise NotApplicable
-	GetProductDiscountOnSale(product product_and_discount.Product, productCollectionIDs []string, discountInfo *product_and_discount.DiscountInfo, channeL channel.Channel, variantID string) (types.DiscountCalculator, *model.AppError)
+	GetProductDiscountOnSale(product model.Product, productCollectionIDs []string, discountInfo *model.DiscountInfo, channeL model.Channel, variantID string) (types.DiscountCalculator, *model.AppError)
 	// GetProductDiscounts Return discount values for all discounts applicable to a product.
-	GetProductDiscounts(product product_and_discount.Product, collections []*product_and_discount.Collection, discountInfos []*product_and_discount.DiscountInfo, channeL channel.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError)
+	GetProductDiscounts(product model.Product, collections []*model.Collection, discountInfos []*model.DiscountInfo, channeL model.Channel, variantID string) ([]types.DiscountCalculator, *model.AppError)
 	// GetProductsVoucherDiscount Calculate discount value for a voucher of product or category type
-	GetProductsVoucherDiscount(voucher *product_and_discount.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError)
+	GetProductsVoucherDiscount(voucher *model.Voucher, prices []*goprices.Money, channelID string) (*goprices.Money, *model.AppError)
 	// GetVoucherDiscount
-	GetVoucherDiscount(voucher *product_and_discount.Voucher, channelID string) (types.DiscountCalculator, *model.AppError)
+	GetVoucherDiscount(voucher *model.Voucher, channelID string) (types.DiscountCalculator, *model.AppError)
 	// GetVoucherTranslationByOption returns a voucher translation by given options
-	GetVoucherTranslationByOption(option *product_and_discount.VoucherTranslationFilterOption) (*product_and_discount.VoucherTranslation, *model.AppError)
+	GetVoucherTranslationByOption(option *model.VoucherTranslationFilterOption) (*model.VoucherTranslation, *model.AppError)
 	// IncreaseVoucherUsage increase voucher's uses by 1
-	IncreaseVoucherUsage(voucher *product_and_discount.Voucher) *model.AppError
+	IncreaseVoucherUsage(voucher *model.Voucher) *model.AppError
 	// IsValidPromoCode checks if given code is valid giftcard code or voucher code
 	IsValidPromoCode(code string) bool
 	// OrderDiscountsByOption filters and returns order discounts with given option
-	OrderDiscountsByOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, *model.AppError)
+	OrderDiscountsByOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, *model.AppError)
 	// PromoCodeIsVoucher checks if given code is belong to a voucher
 	PromoCodeIsVoucher(code string) (bool, *model.AppError)
 	// RemoveVoucherUsageByCustomer deletes voucher customers for given voucher
-	RemoveVoucherUsageByCustomer(voucher *product_and_discount.Voucher, customerEmail string) *model.AppError
+	RemoveVoucherUsageByCustomer(voucher *model.Voucher, customerEmail string) *model.AppError
 	// SaleCategoriesByOption returns sale-category relations with an app error
-	SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, *model.AppError)
+	SaleCategoriesByOption(option *model.SaleCategoryRelationFilterOption) ([]*model.SaleCategoryRelation, *model.AppError)
 	// SaleCollectionsByOptions returns a slice of sale-collection relations filtered using given options
-	SaleCollectionsByOptions(options *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, *model.AppError)
+	SaleCollectionsByOptions(options *model.SaleCollectionRelationFilterOption) ([]*model.SaleCollectionRelation, *model.AppError)
 	// SaleProductVariantsByOptions returns a list of sale-product variant relations filtered using given options
-	SaleProductVariantsByOptions(options *product_and_discount.SaleProductVariantFilterOption) ([]*product_and_discount.SaleProductVariant, *model.AppError)
+	SaleProductVariantsByOptions(options *model.SaleProductVariantFilterOption) ([]*model.SaleProductVariant, *model.AppError)
 	// SaleProductsByOptions returns a slice of sale-product relations filtered using given options
-	SaleProductsByOptions(options *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, *model.AppError)
+	SaleProductsByOptions(options *model.SaleProductRelationFilterOption) ([]*model.SaleProductRelation, *model.AppError)
 	// UpsertOrderDiscount updates or inserts given order discount
-	UpsertOrderDiscount(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, *model.AppError)
+	UpsertOrderDiscount(transaction store_iface.SqlxTxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, *model.AppError)
 	// UpsertVoucher update or insert given voucher
-	UpsertVoucher(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, *model.AppError)
+	UpsertVoucher(voucher *model.Voucher) (*model.Voucher, *model.AppError)
 	// ValidateMinSpent validates if the order cost at least a specific amount of money
-	ValidateMinSpent(voucher *product_and_discount.Voucher, value *goprices.TaxedMoney, channelID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)
+	ValidateMinSpent(voucher *model.Voucher, value *goprices.TaxedMoney, channelID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
 	// ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
-	ValidateOncePerCustomer(voucher *product_and_discount.Voucher, customerEmail string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)
+	ValidateOncePerCustomer(voucher *model.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
 	// ValidateVoucherForCheckout validates given voucher
-	ValidateVoucherForCheckout(manager interfaces.PluginManagerInterface, voucher *product_and_discount.Voucher, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*product_and_discount.NotApplicable, *model.AppError)
+	ValidateVoucherForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (*model.NotApplicable, *model.AppError)
 	// ValidateVoucherOnlyForStaff validate if voucher is only for staff
-	ValidateVoucherOnlyForStaff(voucher *product_and_discount.Voucher, customerID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)
+	ValidateVoucherOnlyForStaff(voucher *model.Voucher, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
 	// VoucherById finds and returns a voucher with given id
-	VoucherById(voucherID string) (*product_and_discount.Voucher, *model.AppError)
+	VoucherById(voucherID string) (*model.Voucher, *model.AppError)
 	// VoucherByOption returns 1 voucher filtered using given options
-	VoucherByOption(options *product_and_discount.VoucherFilterOption) (*product_and_discount.Voucher, *model.AppError)
+	VoucherByOption(options *model.VoucherFilterOption) (*model.Voucher, *model.AppError)
 	// VoucherChannelListingsByOption finds voucher channel listings based on given options
-	VoucherChannelListingsByOption(option *product_and_discount.VoucherChannelListingFilterOption) ([]*product_and_discount.VoucherChannelListing, *model.AppError)
+	VoucherChannelListingsByOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, *model.AppError)
 	// VoucherCustomerByOptions finds a voucher customer relation and returns it with an error
-	VoucherCustomerByOptions(options *product_and_discount.VoucherCustomerFilterOption) (*product_and_discount.VoucherCustomer, *model.AppError)
+	VoucherCustomerByOptions(options *model.VoucherCustomerFilterOption) (*model.VoucherCustomer, *model.AppError)
 	// VoucherCustomersByOption returns a slice of voucher customers filtered using given options
-	VoucherCustomersByOption(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, *model.AppError)
+	VoucherCustomersByOption(options *model.VoucherCustomerFilterOption) ([]*model.VoucherCustomer, *model.AppError)
 	// VoucherTranslationsByOption returns a list of voucher translations filtered using given option
-	VoucherTranslationsByOption(option *product_and_discount.VoucherTranslationFilterOption) ([]*product_and_discount.VoucherTranslation, *model.AppError)
+	VoucherTranslationsByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, *model.AppError)
 	// VouchersByOption finds all vouchers with given option then returns them
-	VouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, *model.AppError)
-	FetchDiscounts(date time.Time) ([]*product_and_discount.DiscountInfo, *model.AppError)
-	GetSaleDiscount(sale *product_and_discount.Sale, saleChannelListing *product_and_discount.SaleChannelListing) (types.DiscountCalculator, *model.AppError)
-	ValidateVoucher(voucher *product_and_discount.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)
-	ValidateVoucherInOrder(ord *order.Order) (notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)
-	Decorator(preValue any) types.DiscountCalculator 
+	VouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, *model.AppError)
+	FetchDiscounts(date time.Time) ([]*model.DiscountInfo, *model.AppError)
+	GetSaleDiscount(sale *model.Sale, saleChannelListing *model.SaleChannelListing) (types.DiscountCalculator, *model.AppError)
+	ValidateVoucher(voucher *model.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
+	ValidateVoucherInOrder(ord *model.Order) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
 }

@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -35,7 +34,7 @@ func (s *SqlWishlistItemStore) ModelFields(prefix string) model.AnyArray[string]
 }
 
 // BulkUpsert inserts or updates given wishlist items then returns it
-func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
+func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, error) {
 	var (
 		upsertor store_iface.SqlxExecutor = ws.GetMasterX()
 	)
@@ -94,13 +93,13 @@ func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecuto
 }
 
 // GetById finds and returns a wishlist item by given id
-func (ws *SqlWishlistItemStore) GetById(transaction store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItem, error) {
+func (ws *SqlWishlistItemStore) GetById(transaction store_iface.SqlxTxExecutor, id string) (*model.WishlistItem, error) {
 	var executor store_iface.SqlxExecutor = ws.GetReplicaX()
 	if transaction != nil {
 		executor = transaction
 	}
 
-	var res wishlist.WishlistItem
+	var res model.WishlistItem
 	if err := executor.Get(&res, "SELECT * FROM "+store.WishlistItemTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.WishlistItemTableName, id)
@@ -111,7 +110,7 @@ func (ws *SqlWishlistItemStore) GetById(transaction store_iface.SqlxTxExecutor, 
 	}
 }
 
-func (ws *SqlWishlistItemStore) commonQueryBuilder(option *wishlist.WishlistItemFilterOption) (string, []interface{}, error) {
+func (ws *SqlWishlistItemStore) commonQueryBuilder(option *model.WishlistItemFilterOption) (string, []interface{}, error) {
 	query := ws.GetQueryBuilder().
 		Select("*").
 		From(store.WishlistItemTableName)
@@ -131,13 +130,13 @@ func (ws *SqlWishlistItemStore) commonQueryBuilder(option *wishlist.WishlistItem
 }
 
 // FilterByOption finds and returns a slice of wishlist items filtered using given options
-func (ws *SqlWishlistItemStore) FilterByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, error) {
+func (ws *SqlWishlistItemStore) FilterByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, error) {
 	queryString, args, err := ws.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var items []*wishlist.WishlistItem
+	var items []*model.WishlistItem
 	if err := ws.GetReplicaX().Select(&items, queryString, args...); err != nil {
 		return nil, errors.Wrapf(err, "failed to find wishlist items by given options")
 	} else {
@@ -146,13 +145,13 @@ func (ws *SqlWishlistItemStore) FilterByOption(option *wishlist.WishlistItemFilt
 }
 
 // GetByOption finds and returns a wishlist item filtered by given option
-func (ws *SqlWishlistItemStore) GetByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, error) {
+func (ws *SqlWishlistItemStore) GetByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, error) {
 	queryString, args, err := ws.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	var res wishlist.WishlistItem
+	var res model.WishlistItem
 	err = ws.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -165,7 +164,7 @@ func (ws *SqlWishlistItemStore) GetByOption(option *wishlist.WishlistItemFilterO
 }
 
 // DeleteItemsByOption finds and deletes wishlist items that satisfy given filtering options
-func (ws *SqlWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, error) {
+func (ws *SqlWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *model.WishlistItemFilterOption) (int64, error) {
 	var runner store_iface.SqlxExecutor = ws.GetMasterX()
 	if transaction != nil {
 		runner = transaction

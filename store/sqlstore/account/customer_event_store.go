@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
 
@@ -36,7 +35,7 @@ func (cs *SqlCustomerEventStore) ModelFields(prefix string) model.AnyArray[strin
 	})
 }
 
-func (cs *SqlCustomerEventStore) Save(event *account.CustomerEvent) (*account.CustomerEvent, error) {
+func (cs *SqlCustomerEventStore) Save(event *model.CustomerEvent) (*model.CustomerEvent, error) {
 	event.PreSave()
 	if err := event.IsValid(); err != nil {
 		return nil, err
@@ -50,8 +49,8 @@ func (cs *SqlCustomerEventStore) Save(event *account.CustomerEvent) (*account.Cu
 	return event, nil
 }
 
-func (cs *SqlCustomerEventStore) Get(id string) (*account.CustomerEvent, error) {
-	var res account.CustomerEvent
+func (cs *SqlCustomerEventStore) Get(id string) (*model.CustomerEvent, error) {
+	var res model.CustomerEvent
 	err := cs.GetMasterX().Get(&res, "SELECT * FROM "+store.CustomerEventTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -73,8 +72,8 @@ func (cs *SqlCustomerEventStore) Count() (int64, error) {
 	return count, nil
 }
 
-func (cs *SqlCustomerEventStore) GetEventsByUserID(userID string) ([]*account.CustomerEvent, error) {
-	var events []*account.CustomerEvent
+func (cs *SqlCustomerEventStore) GetEventsByUserID(userID string) ([]*model.CustomerEvent, error) {
+	var events []*model.CustomerEvent
 	err := cs.GetReplicaX().Select(&events, "SELECT * FROM "+store.CustomerEventTableName+" WHERE UserID = ?", userID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find customer events with userId=%s", userID)

@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 )
 
 type SearchEngineInterface interface {
@@ -21,9 +20,9 @@ type SearchEngineInterface interface {
 	IsAutocompletionEnabled() bool
 	IsIndexingSync() bool
 	// DeleteUserPosts(userID string) *model.AppError
-	IndexUser(user *account.User, teamsIds, channelsIds []string) *model.AppError
+	IndexUser(user *model.User, teamsIds, channelsIds []string) *model.AppError
 	// DeleteFile(fileID string) *model.AppError
-	DeleteUser(user *account.User) *model.AppError
+	DeleteUser(user *model.User) *model.AppError
 	// DeletePostFiles(postID string) *model.AppError
 	// DeleteUserFiles(userID string) *model.AppError
 	// DeleteFilesBatch(endTime, limit int64) *model.AppError

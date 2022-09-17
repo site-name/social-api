@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -37,7 +36,7 @@ func (s *SqlUserAccessTokenStore) ModelFields(prefix string) model.AnyArray[stri
 	})
 }
 
-func (s *SqlUserAccessTokenStore) Save(token *account.UserAccessToken) (*account.UserAccessToken, error) {
+func (s *SqlUserAccessTokenStore) Save(token *model.UserAccessToken) (*model.UserAccessToken, error) {
 	token.PreSave()
 
 	if err := token.IsValid(); err != nil {
@@ -122,8 +121,8 @@ func (s *SqlUserAccessTokenStore) deleteTokensByUser(transaction store_iface.Sql
 	return nil
 }
 
-func (s *SqlUserAccessTokenStore) Get(tokenId string) (*account.UserAccessToken, error) {
-	var token account.UserAccessToken
+func (s *SqlUserAccessTokenStore) Get(tokenId string) (*model.UserAccessToken, error) {
+	var token model.UserAccessToken
 
 	if err := s.GetReplicaX().Get(&token, "SELECT * FROM UserAccessTokens WHERE Id = ?", tokenId); err != nil {
 		if err == sql.ErrNoRows {
@@ -135,8 +134,8 @@ func (s *SqlUserAccessTokenStore) Get(tokenId string) (*account.UserAccessToken,
 	return &token, nil
 }
 
-func (s *SqlUserAccessTokenStore) GetAll(offset, limit int) ([]*account.UserAccessToken, error) {
-	tokens := []*account.UserAccessToken{}
+func (s *SqlUserAccessTokenStore) GetAll(offset, limit int) ([]*model.UserAccessToken, error) {
+	tokens := []*model.UserAccessToken{}
 
 	if err := s.GetReplicaX().Select(&tokens, "SELECT * FROM UserAccessTokens LIMIT ? OFFSET ?", limit, offset); err != nil {
 		return nil, errors.Wrap(err, "failed to find UserAccessTokens")
@@ -145,8 +144,8 @@ func (s *SqlUserAccessTokenStore) GetAll(offset, limit int) ([]*account.UserAcce
 	return tokens, nil
 }
 
-func (s *SqlUserAccessTokenStore) GetByToken(tokenString string) (*account.UserAccessToken, error) {
-	var token account.UserAccessToken
+func (s *SqlUserAccessTokenStore) GetByToken(tokenString string) (*model.UserAccessToken, error) {
+	var token model.UserAccessToken
 
 	if err := s.GetReplicaX().Get(&token, "SELECT * FROM UserAccessTokens WHERE Token = ?", token); err != nil {
 		if err == sql.ErrNoRows {
@@ -158,8 +157,8 @@ func (s *SqlUserAccessTokenStore) GetByToken(tokenString string) (*account.UserA
 	return &token, nil
 }
 
-func (s *SqlUserAccessTokenStore) GetByUser(userId string, offset, limit int) ([]*account.UserAccessToken, error) {
-	tokens := []*account.UserAccessToken{}
+func (s *SqlUserAccessTokenStore) GetByUser(userId string, offset, limit int) ([]*model.UserAccessToken, error) {
+	tokens := []*model.UserAccessToken{}
 
 	if err := s.GetReplicaX().Select(&tokens, "SELECT * FROM UserAccessTokens WHERE UserId = ? LIMIT ? OFFSET ?", userId, limit, offset); err != nil {
 		return nil, errors.Wrapf(err, "failed to find UserAccessTokens with userId=%s", userId)
@@ -168,9 +167,9 @@ func (s *SqlUserAccessTokenStore) GetByUser(userId string, offset, limit int) ([
 	return tokens, nil
 }
 
-func (s *SqlUserAccessTokenStore) Search(term string) ([]*account.UserAccessToken, error) {
+func (s *SqlUserAccessTokenStore) Search(term string) ([]*model.UserAccessToken, error) {
 	term = store.SanitizeSearchTerm(term, "\\")
-	tokens := []*account.UserAccessToken{}
+	tokens := []*model.UserAccessToken{}
 	params := []interface{}{term, term, term}
 	query := `
 		SELECT

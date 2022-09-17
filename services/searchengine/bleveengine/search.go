@@ -9,7 +9,6 @@ import (
 	// "github.com/blevesearch/bleve/search/query"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	// "github.com/sitename/sitename/modules/slog"
 )
 
@@ -349,7 +348,7 @@ const DeleteFilesBatchSize = 500
 // 	return nil
 // }
 
-func (b *BleveEngine) IndexUser(user *account.User, teamsIds, channelsIds []string) *model.AppError {
+func (b *BleveEngine) IndexUser(user *model.User, teamsIds, channelsIds []string) *model.AppError {
 	b.Mutex.RLock()
 	defer b.Mutex.RUnlock()
 
@@ -498,7 +497,7 @@ func (b *BleveEngine) IndexUser(user *account.User, teamsIds, channelsIds []stri
 // 	return usersIds, nil
 // }
 
-func (b *BleveEngine) DeleteUser(user *account.User) *model.AppError {
+func (b *BleveEngine) DeleteUser(user *model.User) *model.AppError {
 	b.Mutex.RLock()
 	defer b.Mutex.RUnlock()
 

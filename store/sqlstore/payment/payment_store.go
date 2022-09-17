@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -68,7 +67,7 @@ func (ps *SqlPaymentStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (ps *SqlPaymentStore) ScanFields(payMent payment.Payment) []interface{} {
+func (ps *SqlPaymentStore) ScanFields(payMent model.Payment) []interface{} {
 	return []interface{}{
 		&payMent.Id,
 		&payMent.GateWay,
@@ -111,7 +110,7 @@ func (ps *SqlPaymentStore) ScanFields(payMent payment.Payment) []interface{} {
 }
 
 // Save inserts given payment into database then returns it
-func (ps *SqlPaymentStore) Save(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error) {
+func (ps *SqlPaymentStore) Save(transaction store_iface.SqlxTxExecutor, payment *model.Payment) (*model.Payment, error) {
 	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -131,7 +130,7 @@ func (ps *SqlPaymentStore) Save(transaction store_iface.SqlxTxExecutor, payment 
 }
 
 // Update updates given payment and returns the updated value
-func (ps *SqlPaymentStore) Update(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error) {
+func (ps *SqlPaymentStore) Update(transaction store_iface.SqlxTxExecutor, payment *model.Payment) (*model.Payment, error) {
 	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -161,14 +160,14 @@ func (ps *SqlPaymentStore) Update(transaction store_iface.SqlxTxExecutor, paymen
 }
 
 // Get finds and returns the payment with given id
-func (ps *SqlPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*payment.Payment, error) {
+func (ps *SqlPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*model.Payment, error) {
 	var selector store_iface.SqlxExecutor = ps.GetReplicaX()
 	if transaction != nil {
 		selector = transaction
 	}
 
 	var (
-		res          payment.Payment
+		res          model.Payment
 		forUpdateSql string
 	)
 	if lockForUpdate {
@@ -201,7 +200,7 @@ func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) err
 }
 
 // FilterByOption finds and returns a list of payments that satisfy given option
-func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error) {
+func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error) {
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields(store.PaymentTableName + ".")...).
 		From(store.PaymentTableName).
@@ -248,7 +247,7 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	var payments []*payment.Payment
+	var payments []*model.Payment
 	err = ps.GetReplicaX().Select(&payments, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds payments with given option")
@@ -258,7 +257,7 @@ func (ps *SqlPaymentStore) FilterByOption(option *payment.PaymentFilterOption) (
 }
 
 // UpdatePaymentsOfCheckout updates payments of given checkout
-func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *payment.PaymentPatch) error {
+func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *model.PaymentPatch) error {
 	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
 		executor = transaction

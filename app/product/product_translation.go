@@ -4,11 +4,10 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 // ProductTranslationsByOption returns a list of product translations
-func (s *ServiceProduct) ProductTranslationsByOption(option *product_and_discount.ProductTranslationFilterOption) ([]*product_and_discount.ProductTranslation, *model.AppError) {
+func (s *ServiceProduct) ProductTranslationsByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, *model.AppError) {
 	translations, err := s.srv.Store.ProductTranslation().FilterByOption(option)
 	var (
 		errMessage string

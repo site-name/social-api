@@ -14,7 +14,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
@@ -95,7 +94,7 @@ func (awsm *AwsMeter) GetUserCategoryUsage(dimensions []string, startTime time.T
 
 		switch dimension {
 		case model.AwsMeteringDimensionUsageHrs:
-			userCount, err = awsm.store.User().AnalyticsActiveCountForPeriod(model.GetMillisForTime(startTime), model.GetMillisForTime(endTime), account.UserCountOptions{})
+			userCount, err = awsm.store.User().AnalyticsActiveCountForPeriod(model.GetMillisForTime(startTime), model.GetMillisForTime(endTime), model.UserCountOptions{})
 			if err != nil {
 				slog.Warn("Failed to obtain usage data", slog.String("dimension", dimension), slog.String("start", startTime.String()), slog.Int64("count", userCount), slog.Err(err))
 				continue

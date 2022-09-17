@@ -6,9 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -61,7 +58,7 @@ func (ols *SqlOrderLineStore) ModelFields(prefix string) model.AnyArray[string] 
 	})
 }
 
-func (ols *SqlOrderLineStore) ScanFields(orderLine order.OrderLine) []interface{} {
+func (ols *SqlOrderLineStore) ScanFields(orderLine model.OrderLine) []interface{} {
 	return []interface{}{
 		&orderLine.Id,
 		&orderLine.CreateAt,
@@ -95,7 +92,7 @@ func (ols *SqlOrderLineStore) ScanFields(orderLine order.OrderLine) []interface{
 }
 
 // Upsert depends on given orderLine's Id to decide to update or save it
-func (ols *SqlOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, orderLine *order.OrderLine) (*order.OrderLine, error) {
+func (ols *SqlOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, orderLine *model.OrderLine) (*model.OrderLine, error) {
 	var upsertor store_iface.SqlxExecutor = ols.GetMasterX()
 	if transaction != nil {
 		upsertor = transaction
@@ -148,7 +145,7 @@ func (ols *SqlOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, ord
 }
 
 // BulkUpsert performs upsert multiple order lines in once
-func (ols *SqlOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
+func (ols *SqlOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
 	for _, orderLine := range orderLines {
 		_, err := ols.Upsert(transaction, orderLine)
 		if err != nil {
@@ -159,8 +156,8 @@ func (ols *SqlOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor,
 	return orderLines, nil
 }
 
-func (ols *SqlOrderLineStore) Get(id string) (*order.OrderLine, error) {
-	var odl order.OrderLine
+func (ols *SqlOrderLineStore) Get(id string) (*model.OrderLine, error) {
+	var odl model.OrderLine
 	err := ols.GetReplicaX().Get(&odl, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -192,7 +189,7 @@ func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
 //  2. option.VariantDigitalContentID != nil:
 //     +) find all order lines that satisfy given option
 //     +) if above operation founds order lines, prefetch the product variants, digital products that are related to found order lines
-func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) {
+func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) ([]*model.OrderLine, error) {
 	query := ols.GetQueryBuilder().
 		Select(ols.ModelFields(store.OrderLineTableName + ".")...).
 		From(store.OrderLineTableName).
@@ -239,12 +236,12 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 	}
 
 	var (
-		orderLines       order.OrderLines
-		productVariants  product_and_discount.ProductVariants
-		digitalContents  []*product_and_discount.DigitalContent
-		products         []*product_and_discount.Product
-		allocations      warehouse.Allocations
-		allocationStocks warehouse.Stocks
+		orderLines       model.OrderLines
+		productVariants  model.ProductVariants
+		digitalContents  []*model.DigitalContent
+		products         []*model.Product
+		allocations      model.Allocations
+		allocationStocks model.Stocks
 	)
 	err = ols.GetReplicaX().Select(&orderLines, queryString, args...)
 	if err != nil {
@@ -323,7 +320,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 	if len(productVariants) > 0 {
 
 		// digitalContentsMap has keys are product variant ids
-		var digitalContentsMap = map[string]*product_and_discount.DigitalContent{}
+		var digitalContentsMap = map[string]*model.DigitalContent{}
 		if len(digitalContents) > 0 {
 			for _, digitalContent := range digitalContents {
 				digitalContentsMap[digitalContent.ProductVariantID] = digitalContent
@@ -331,7 +328,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		}
 
 		// productsMap has keys are product ids
-		var productsMap = map[string]*product_and_discount.Product{}
+		var productsMap = map[string]*model.Product{}
 		if len(products) > 0 {
 			for _, product := range products {
 				productsMap[product.Id] = product
@@ -339,7 +336,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		}
 
 		// productVariantsMap has keys are product variant ids
-		var productVariantsMap = map[string]*product_and_discount.ProductVariant{}
+		var productVariantsMap = map[string]*model.ProductVariant{}
 		for _, variant := range productVariants {
 			productVariantsMap[variant.Id] = variant
 
@@ -360,7 +357,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 
 	if len(allocations) > 0 {
 		// allocationStocksMap has keys are stock ids
-		var allocationStocksMap = map[string]*warehouse.Stock{}
+		var allocationStocksMap = map[string]*model.Stock{}
 		if len(allocationStocks) > 0 {
 			for _, stock := range allocationStocks {
 				allocationStocksMap[stock.Id] = stock
@@ -368,7 +365,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption
 		}
 
 		// allocationsMap has keys are order line ids
-		var allocationsMap = map[string][]*order.ReplicateWarehouseAllocation{}
+		var allocationsMap = map[string][]*model.ReplicateWarehouseAllocation{}
 		for _, allocation := range allocations {
 
 			replicateAllocation := allocation.ToReplicateAllocation()

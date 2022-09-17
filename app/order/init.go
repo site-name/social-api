@@ -10,8 +10,6 @@ import (
 	"github.com/sitename/sitename/app/order/types"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
@@ -37,14 +35,14 @@ type ServiceOrder struct {
 
 // UpdateVoucherDiscount Recalculate order discount amount based on order voucher
 func (a *ServiceOrder) UpdateVoucherDiscount(fun types.RecalculateOrderPricesFunc) types.RecalculateOrderPricesFunc {
-	return func(transaction store_iface.SqlxTxExecutor, ord *order.Order, kwargs map[string]interface{}) *model.AppError {
+	return func(transaction store_iface.SqlxTxExecutor, ord *model.Order, kwargs map[string]interface{}) *model.AppError {
 		if kwargs == nil {
 			kwargs = make(map[string]interface{})
 		}
 
 		var (
 			discount          interface{}
-			notApplicableErr  *product_and_discount.NotApplicable
+			notApplicableErr  *model.NotApplicable
 			appErr            *model.AppError
 			calculateDiscount bool
 		)
@@ -74,11 +72,11 @@ func (a *ServiceOrder) UpdateVoucherDiscount(fun types.RecalculateOrderPricesFun
 	}
 }
 
-func (a *ServiceOrder) decoratedFunc(transaction store_iface.SqlxTxExecutor, ord *order.Order, kwargs map[string]interface{}) *model.AppError {
+func (a *ServiceOrder) decoratedFunc(transaction store_iface.SqlxTxExecutor, ord *model.Order, kwargs map[string]interface{}) *model.AppError {
 	ord.PopulateNonDbFields() // NOTE: must call this func before doing money calculations
 
 	// avoid using prefetched order lines
-	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
 		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {

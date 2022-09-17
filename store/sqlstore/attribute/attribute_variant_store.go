@@ -6,7 +6,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
 
@@ -31,7 +30,7 @@ func (as *SqlAttributeVariantStore) ModelFields(prefix string) model.AnyArray[st
 	})
 }
 
-func (as *SqlAttributeVariantStore) Save(attributeVariant *attribute.AttributeVariant) (*attribute.AttributeVariant, error) {
+func (as *SqlAttributeVariantStore) Save(attributeVariant *model.AttributeVariant) (*model.AttributeVariant, error) {
 	attributeVariant.PreSave()
 	if err := attributeVariant.IsValid(); err != nil {
 		return nil, err
@@ -48,8 +47,8 @@ func (as *SqlAttributeVariantStore) Save(attributeVariant *attribute.AttributeVa
 	return attributeVariant, nil
 }
 
-func (as *SqlAttributeVariantStore) Get(attributeVariantID string) (*attribute.AttributeVariant, error) {
-	var res attribute.AttributeVariant
+func (as *SqlAttributeVariantStore) Get(attributeVariantID string) (*model.AttributeVariant, error) {
+	var res model.AttributeVariant
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AttributeVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": attributeVariantID})
 	if err != nil {
@@ -62,7 +61,7 @@ func (as *SqlAttributeVariantStore) Get(attributeVariantID string) (*attribute.A
 	return &res, nil
 }
 
-func (as *SqlAttributeVariantStore) GetByOption(option *attribute.AttributeVariantFilterOption) (*attribute.AttributeVariant, error) {
+func (as *SqlAttributeVariantStore) GetByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, error) {
 	query := as.GetQueryBuilder().Select("*").From(store.AttributeVariantTableName)
 
 	// parse option
@@ -83,7 +82,7 @@ func (as *SqlAttributeVariantStore) GetByOption(option *attribute.AttributeVaria
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
-	var res attribute.AttributeVariant
+	var res model.AttributeVariant
 
 	err = as.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {

@@ -46,18 +46,18 @@ type NameID struct {
 	Value           string `xml:",chardata"`
 }
 
-type AttributeValue struct {
+type AttributeValue_ struct {
 	Type   string `xml:"http://www.w3.org/2001/XMLSchema-instance type,attr"`
 	Value  string `xml:",chardata"`
 	NameID *NameID
 }
 
-type Attribute struct {
+type Attribute_ struct {
 	XMLName      xml.Name
-	FriendlyName string           `xml:",attr"`
-	Name         string           `xml:",attr"`
-	NameFormat   string           `xml:",attr"`
-	Values       []AttributeValue `xml:"AttributeValue"`
+	FriendlyName string            `xml:",attr"`
+	Name         string            `xml:",attr"`
+	NameFormat   string            `xml:",attr"`
+	Values       []AttributeValue_ `xml:"AttributeValue"`
 }
 
 type Endpoint struct {

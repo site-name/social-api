@@ -5,7 +5,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/store"
 )
 
@@ -36,7 +35,7 @@ func (s SqlAuditStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (s *SqlAuditStore) Save(audit *audit.Audit) error {
+func (s *SqlAuditStore) Save(audit *model.Audit) error {
 	audit.PreSave()
 	if err := audit.IsValid(); err != nil {
 		return err
@@ -49,7 +48,7 @@ func (s *SqlAuditStore) Save(audit *audit.Audit) error {
 	return nil
 }
 
-func (s *SqlAuditStore) Get(userId string, offset int, limit int) (audit.Audits, error) {
+func (s *SqlAuditStore) Get(userId string, offset int, limit int) (model.Audits, error) {
 	if limit > 1000 {
 		return nil, store.NewErrOutOfBounds(limit)
 	}
@@ -70,7 +69,7 @@ func (s *SqlAuditStore) Get(userId string, offset int, limit int) (audit.Audits,
 		return nil, errors.Wrap(err, "audits_tosql")
 	}
 
-	var audits audit.Audits
+	var audits model.Audits
 	if err := s.GetReplicaX().Select(&audits, queryString, args...); err != nil {
 		return nil, errors.Wrapf(err, "failed to get Audit list for userId=%s", userId)
 	}

@@ -6,10 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/shipping"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 )
 
@@ -42,7 +38,7 @@ func (ws *SqlWareHouseStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (ws *SqlWareHouseStore) ScanFields(wareHouse warehouse.WareHouse) []interface{} {
+func (ws *SqlWareHouseStore) ScanFields(wareHouse model.WareHouse) []interface{} {
 	return []interface{}{
 		&wareHouse.Id,
 		&wareHouse.Name,
@@ -56,7 +52,7 @@ func (ws *SqlWareHouseStore) ScanFields(wareHouse warehouse.WareHouse) []interfa
 	}
 }
 
-func (ws *SqlWareHouseStore) Save(wh *warehouse.WareHouse) (*warehouse.WareHouse, error) {
+func (ws *SqlWareHouseStore) Save(wh *model.WareHouse) (*model.WareHouse, error) {
 	wh.PreSave()
 	if err := wh.IsValid(); err != nil {
 		return nil, err
@@ -73,8 +69,8 @@ func (ws *SqlWareHouseStore) Save(wh *warehouse.WareHouse) (*warehouse.WareHouse
 	return wh, nil
 }
 
-func (ws *SqlWareHouseStore) Get(id string) (*warehouse.WareHouse, error) {
-	var res warehouse.WareHouse
+func (ws *SqlWareHouseStore) Get(id string) (*model.WareHouse, error) {
+	var res model.WareHouse
 	err := ws.GetReplicaX().Get(
 		&res,
 		"SELECT * FROM "+store.WarehouseTableName+" WHERE Id = ?",
@@ -90,7 +86,7 @@ func (ws *SqlWareHouseStore) Get(id string) (*warehouse.WareHouse, error) {
 	return &res, nil
 }
 
-func (ws *SqlWareHouseStore) commonQueryBuilder(option *warehouse.WarehouseFilterOption) squirrel.SelectBuilder {
+func (ws *SqlWareHouseStore) commonQueryBuilder(option *model.WarehouseFilterOption) squirrel.SelectBuilder {
 	if option == nil {
 		return ws.GetQueryBuilder().
 			Select(ws.ModelFields(store.WarehouseTableName + ".")...).
@@ -147,14 +143,14 @@ func (ws *SqlWareHouseStore) commonQueryBuilder(option *warehouse.WarehouseFilte
 }
 
 // GetByOption finds and returns a warehouse filtered given option
-func (ws *SqlWareHouseStore) GetByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, error) {
+func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*model.WareHouse, error) {
 	query, args, err := ws.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 	var (
-		res        warehouse.WareHouse
-		address    account.Address
+		res        model.WareHouse
+		address    model.Address
 		scanFields = ws.ScanFields(res)
 	)
 	if option.SelectRelatedAddress {
@@ -193,7 +189,7 @@ func (ws *SqlWareHouseStore) GetByOption(option *warehouse.WarehouseFilterOption
 			return nil, errors.Wrap(err, "failed to find shipping zones related to returning warehouse")
 		}
 		var (
-			shippingZone shipping.ShippingZone
+			shippingZone model.ShippingZone
 			scanFields   = ws.ShippingZone().ScanFields(shippingZone)
 		)
 
@@ -215,7 +211,7 @@ func (ws *SqlWareHouseStore) GetByOption(option *warehouse.WarehouseFilterOption
 }
 
 // FilterByOprion returns a slice of warehouses with given option
-func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) {
+func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) {
 	query, args, err := wh.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
@@ -226,10 +222,10 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 	}
 
 	var (
-		returningWarehouses warehouse.Warehouses
-		warehousesMap       = map[string]*warehouse.WareHouse{} // keys are warehouse IDs
-		wareHouse           warehouse.WareHouse
-		address             account.Address
+		returningWarehouses model.Warehouses
+		warehousesMap       = map[string]*model.WareHouse{} // keys are warehouse IDs
+		wareHouse           model.WareHouse
+		address             model.Address
 		scanFields          = wh.ScanFields(wareHouse)
 	)
 	if option.SelectRelatedAddress {
@@ -273,7 +269,7 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 			return nil, errors.Wrap(err, "failed to find shipping zones of warehouses")
 		}
 		var (
-			shippingZone shipping.ShippingZone
+			shippingZone model.ShippingZone
 			warehouseID  string
 			scanFields   = append(wh.ShippingZone().ScanFields(shippingZone), &warehouseID)
 		)
@@ -298,8 +294,8 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *warehouse.WarehouseFilterOpt
 }
 
 // WarehouseByStockID returns 1 warehouse by given stock id
-func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*warehouse.WareHouse, error) {
-	var res warehouse.WareHouse
+func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, error) {
+	var res model.WareHouse
 	err := ws.GetReplicaX().Get(
 		&res,
 		`SELECT `+ws.ModelFields(store.WarehouseTableName+".").Join(",")+`
@@ -320,8 +316,8 @@ func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*warehouse.Ware
 	return &res, nil
 }
 
-func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error) {
-	stocks, err := ws.Stock().FilterByOption(nil, &warehouse.StockFilterOption{
+func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
+	stocks, err := ws.Stock().FilterByOption(nil, &model.StockFilterOption{
 		ProductVariantID:            squirrel.Eq{store.StockTableName + ".ProductVariantID": checkoutLines.VariantIDs()},
 		SelectRelatedProductVariant: true,
 	})
@@ -333,10 +329,10 @@ func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkou
 	return ws.forCountryLinesAndStocks(checkoutLines, stocks, country)
 }
 
-func (ws *SqlWareHouseStore) ApplicableForClickAndCollect(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error) {
+func (ws *SqlWareHouseStore) ApplicableForClickAndCollect(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
 	panic("not implemented")
 }
 
-func (ws *SqlWareHouseStore) forCountryLinesAndStocks(checkoutLines checkout.CheckoutLines, stocks warehouse.Stocks, country string) (warehouse.Warehouses, error) {
+func (ws *SqlWareHouseStore) forCountryLinesAndStocks(checkoutLines model.CheckoutLines, stocks model.Stocks, country string) (model.Warehouses, error) {
 	panic("not implemented")
 }

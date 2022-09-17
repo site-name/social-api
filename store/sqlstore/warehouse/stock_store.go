@@ -7,8 +7,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -37,7 +35,7 @@ func (ss *SqlStockStore) ModelFields(prefix string) model.AnyArray[string] {
 		return prefix + s
 	})
 }
-func (ss *SqlStockStore) ScanFields(stock warehouse.Stock) []interface{} {
+func (ss *SqlStockStore) ScanFields(stock model.Stock) []interface{} {
 	return []interface{}{
 		&stock.Id,
 		&stock.CreateAt,
@@ -48,7 +46,7 @@ func (ss *SqlStockStore) ScanFields(stock warehouse.Stock) []interface{} {
 }
 
 // BulkUpsert performs upserts or inserts given stocks, then returns them
-func (ss *SqlStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
+func (ss *SqlStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*model.Stock) ([]*model.Stock, error) {
 	var executor store_iface.SqlxExecutor = ss.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -107,8 +105,8 @@ func (ss *SqlStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stoc
 	return stocks, nil
 }
 
-func (ss *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
-	var res warehouse.Stock
+func (ss *SqlStockStore) Get(stockID string) (*model.Stock, error) {
+	var res model.Stock
 	if err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.StockTableName+" WHERE Id = ?", stockID); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.StockTableName, stockID)
@@ -120,7 +118,7 @@ func (ss *SqlStockStore) Get(stockID string) (*warehouse.Stock, error) {
 }
 
 // FilterForChannel finds and returns stocks that satisfy given options
-func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) (squirrel.Sqlizer, []*warehouse.Stock, error) {
+func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error) {
 	channelQuery := ss.GetQueryBuilder().
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
@@ -190,9 +188,9 @@ func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChann
 	}
 
 	var (
-		returningStocks []*warehouse.Stock
-		stock           warehouse.Stock
-		productVariant  product_and_discount.ProductVariant
+		returningStocks []*model.Stock
+		stock           model.Stock
+		productVariant  model.ProductVariant
 		scanFields      = ss.ScanFields(stock)
 	)
 	if options.SelectRelatedProductVariant {
@@ -219,7 +217,7 @@ func (ss *SqlStockStore) FilterForChannel(options *warehouse.StockFilterForChann
 }
 
 // FilterByOption finds and returns a slice of stocks that satisfy given option
-func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *model.StockFilterOption) ([]*model.Stock, error) {
 	selectFields := ss.ModelFields(store.StockTableName + ".")
 	if options.SelectRelatedWarehouse {
 		selectFields = append(selectFields, ss.Warehouse().ModelFields(store.WarehouseTableName+".")...)
@@ -275,10 +273,10 @@ func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, 
 	}
 
 	var (
-		returningStocks   []*warehouse.Stock
-		stock             warehouse.Stock
-		variant           product_and_discount.ProductVariant
-		wareHouse         warehouse.WareHouse
+		returningStocks   []*model.Stock
+		stock             model.Stock
+		variant           model.ProductVariant
+		wareHouse         model.WareHouse
 		queryer           store_iface.SqlxExecutor = ss.GetReplicaX()
 		availableQuantity int
 		scanFields        = ss.ScanFields(stock)
@@ -328,7 +326,7 @@ func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, 
 }
 
 // FilterForCountryAndChannel finds and returns stocks with given options
-func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	options.CountryCode = strings.ToUpper(options.CountryCode)
 
 	warehouseIDQuery := ss.warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug)
@@ -384,10 +382,10 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.Sqlx
 	}
 
 	var (
-		returningStocks   []*warehouse.Stock
-		stock             warehouse.Stock
-		wareHouse         warehouse.WareHouse
-		productVariant    product_and_discount.ProductVariant
+		returningStocks   []*model.Stock
+		stock             model.Stock
+		wareHouse         model.WareHouse
+		productVariant    model.ProductVariant
 		queryer           store_iface.SqlxExecutor = ss.GetReplicaX()
 		availableQuantity int
 		scanFields        = ss.ScanFields(stock)
@@ -430,11 +428,11 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.Sqlx
 	return returningStocks, nil
 }
 
-func (ss *SqlStockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (ss *SqlStockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	return ss.FilterForCountryAndChannel(transaction, options)
 }
 
-func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	return ss.FilterForCountryAndChannel(transaction, options)
 }
 

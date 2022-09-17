@@ -4,14 +4,12 @@ import (
 	"context"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/csv"
 )
 
 // GetDefaultExportPayload returns a map for mapping
-func (a *ServiceCsv) GetDefaultExportPayload(exportFile csv.ExportFile) (map[string]interface{}, *model.AppError) {
+func (a *ServiceCsv) GetDefaultExportPayload(exportFile model.ExportFile) (map[string]interface{}, *model.AppError) {
 	var (
-		user   *account.User
+		user   *model.User
 		appErr *model.AppError
 	)
 

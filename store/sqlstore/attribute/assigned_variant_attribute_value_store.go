@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
 
@@ -40,7 +39,7 @@ func (as *SqlAssignedVariantAttributeValueStore) ModelFields(prefix string) mode
 	})
 }
 
-func (as *SqlAssignedVariantAttributeValueStore) ScanFields(assignedVariantAttributeValue attribute.AssignedVariantAttributeValue) []interface{} {
+func (as *SqlAssignedVariantAttributeValueStore) ScanFields(assignedVariantAttributeValue model.AssignedVariantAttributeValue) []interface{} {
 	return []interface{}{
 		&assignedVariantAttributeValue.Id,
 		&assignedVariantAttributeValue.ValueID,
@@ -49,7 +48,7 @@ func (as *SqlAssignedVariantAttributeValueStore) ScanFields(assignedVariantAttri
 	}
 }
 
-func (as *SqlAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *attribute.AssignedVariantAttributeValue) (*attribute.AssignedVariantAttributeValue, error) {
+func (as *SqlAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error) {
 	assignedVariantAttrValue.PreSave()
 	if err := assignedVariantAttrValue.IsValid(); err != nil {
 		return nil, err
@@ -66,8 +65,8 @@ func (as *SqlAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *
 	return assignedVariantAttrValue, nil
 }
 
-func (as *SqlAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*attribute.AssignedVariantAttributeValue, error) {
-	var res attribute.AssignedVariantAttributeValue
+func (as *SqlAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*model.AssignedVariantAttributeValue, error) {
+	var res model.AssignedVariantAttributeValue
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedVariantAttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": assignedVariantAttrValueID})
 	if err != nil {
@@ -80,7 +79,7 @@ func (as *SqlAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID 
 	return &res, nil
 }
 
-func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedVariantAttributeValue, error) {
+func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedVariantAttributeValue, error) {
 	tx, err := as.GetMasterX().Beginx()
 	if err != nil {
 		return nil, errors.Wrapf(err, "begin_transaction")
@@ -88,12 +87,12 @@ func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string,
 	defer store.FinalizeTransaction(tx)
 
 	// return value:
-	res := []*attribute.AssignedVariantAttributeValue{}
+	res := []*model.AssignedVariantAttributeValue{}
 
 	query := "INSERT INTO " + store.AssignedVariantAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 
 	for _, id := range attributeValueIDs {
-		newValue := &attribute.AssignedVariantAttributeValue{
+		newValue := &model.AssignedVariantAttributeValue{
 			ValueID:      id,
 			AssignmentID: assignmentID,
 		}
@@ -120,7 +119,7 @@ func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string,
 	return res, nil
 }
 
-func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedVariantAttributeValue, []*attribute.AttributeValue, error) {
+func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedVariantAttributeValue, []*model.AttributeValue, error) {
 	query, args, err := as.GetQueryBuilder().
 		Select(append(as.ModelFields(store.AssignedVariantAttributeValueTableName+"."), as.AttributeValue().ModelFields(store.AttributeValueTableName+".")...)...).
 		From(store.AssignedVariantAttributeValueTableName).
@@ -137,10 +136,10 @@ func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID stri
 		return nil, nil, errors.Wrapf(err, "failed to find values with AssignmentID=%s", assignmentID)
 	}
 	var (
-		assignedVariantAttributeValues []*attribute.AssignedVariantAttributeValue
-		attributeValues                []*attribute.AttributeValue
-		assignedVariantAttributeValue  attribute.AssignedVariantAttributeValue
-		attributeValue                 attribute.AttributeValue
+		assignedVariantAttributeValues []*model.AssignedVariantAttributeValue
+		attributeValues                []*model.AttributeValue
+		assignedVariantAttributeValue  model.AssignedVariantAttributeValue
+		attributeValue                 model.AttributeValue
 		scanFields                     = append(as.ScanFields(assignedVariantAttributeValue), as.AttributeValue().ScanFields(attributeValue)...)
 	)
 	for rows.Next() {
@@ -164,7 +163,7 @@ func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID stri
 	return assignedVariantAttributeValues, attributeValues, nil
 }
 
-func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedVariantAttributeValue) error {
+func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedVariantAttributeValue) error {
 	tx, err := as.GetMasterX().Beginx()
 	if err != nil {
 		return errors.Wrapf(err, "begin_transaction")

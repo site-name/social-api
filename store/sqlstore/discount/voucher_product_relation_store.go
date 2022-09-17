@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -35,7 +34,7 @@ func (s *SqlVoucherProductStore) ModelFields(prefix string) model.AnyArray[strin
 }
 
 // Upsert saves or updates given voucher product then returns it with an error
-func (vps *SqlVoucherProductStore) Upsert(voucherProduct *product_and_discount.VoucherProduct) (*product_and_discount.VoucherProduct, error) {
+func (vps *SqlVoucherProductStore) Upsert(voucherProduct *model.VoucherProduct) (*model.VoucherProduct, error) {
 	var saving bool
 	if voucherProduct.Id == "" {
 		voucherProduct.PreSave()
@@ -83,8 +82,8 @@ func (vps *SqlVoucherProductStore) Upsert(voucherProduct *product_and_discount.V
 }
 
 // Get finds a voucher product with given id, then returns it with an error
-func (vps *SqlVoucherProductStore) Get(voucherProductID string) (*product_and_discount.VoucherProduct, error) {
-	var res product_and_discount.VoucherProduct
+func (vps *SqlVoucherProductStore) Get(voucherProductID string) (*model.VoucherProduct, error) {
+	var res model.VoucherProduct
 	err := vps.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherProductTableName+" WHERE Id = ?", voucherProductID)
 	if err != nil {
 		if err == sql.ErrNoRows {

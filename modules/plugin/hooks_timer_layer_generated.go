@@ -9,9 +9,7 @@ import (
 	timePkg "time"
 
 	"github.com/sitename/sitename/einterfaces"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/file"
-	"github.com/sitename/sitename/model/plugins"
+	"github.com/sitename/sitename/model"
 )
 
 type hooksTimerLayer struct {
@@ -61,33 +59,33 @@ func (hooks *hooksTimerLayer) ServeHTTP(c *Context, w http.ResponseWriter, r *ht
 	hooks.recordTime(startTime, "ServeHTTP", true)
 }
 
-func (hooks *hooksTimerLayer) UserHasBeenCreated(c *Context, user *account.User) {
+func (hooks *hooksTimerLayer) UserHasBeenCreated(c *Context, user *model.User) {
 	startTime := timePkg.Now()
 	hooks.hooksImpl.UserHasBeenCreated(c, user)
 	hooks.recordTime(startTime, "UserHasBeenCreated", true)
 }
 
-func (hooks *hooksTimerLayer) UserWillLogIn(c *Context, user *account.User) string {
+func (hooks *hooksTimerLayer) UserWillLogIn(c *Context, user *model.User) string {
 	startTime := timePkg.Now()
 	_returnsA := hooks.hooksImpl.UserWillLogIn(c, user)
 	hooks.recordTime(startTime, "UserWillLogIn", true)
 	return _returnsA
 }
 
-func (hooks *hooksTimerLayer) UserHasLoggedIn(c *Context, user *account.User) {
+func (hooks *hooksTimerLayer) UserHasLoggedIn(c *Context, user *model.User) {
 	startTime := timePkg.Now()
 	hooks.hooksImpl.UserHasLoggedIn(c, user)
 	hooks.recordTime(startTime, "UserHasLoggedIn", true)
 }
 
-func (hooks *hooksTimerLayer) FileWillBeUploaded(c *Context, info *file.FileInfo, file io.Reader, output io.Writer) (*file.FileInfo, string) {
+func (hooks *hooksTimerLayer) FileWillBeUploaded(c *Context, info *model.FileInfo, file io.Reader, output io.Writer) (*model.FileInfo, string) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := hooks.hooksImpl.FileWillBeUploaded(c, info, file, output)
 	hooks.recordTime(startTime, "FileWillBeUploaded", true)
 	return _returnsA, _returnsB
 }
 
-func (hooks *hooksTimerLayer) OnPluginClusterEvent(c *Context, ev plugins.PluginClusterEvent) {
+func (hooks *hooksTimerLayer) OnPluginClusterEvent(c *Context, ev model.PluginClusterEvent) {
 	startTime := timePkg.Now()
 	hooks.hooksImpl.OnPluginClusterEvent(c, ev)
 	hooks.recordTime(startTime, "OnPluginClusterEvent", true)

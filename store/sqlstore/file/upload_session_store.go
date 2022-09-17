@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/store"
 )
 
@@ -37,7 +36,7 @@ func (s *SqlUploadSessionStore) ModelFields(prefix string) model.AnyArray[string
 	})
 }
 
-func (us *SqlUploadSessionStore) Save(session *file.UploadSession) (*file.UploadSession, error) {
+func (us *SqlUploadSessionStore) Save(session *model.UploadSession) (*model.UploadSession, error) {
 	session.PreSave()
 	if err := session.IsValid(); err != nil {
 		return nil, err
@@ -50,7 +49,7 @@ func (us *SqlUploadSessionStore) Save(session *file.UploadSession) (*file.Upload
 	return session, nil
 }
 
-func (us *SqlUploadSessionStore) Update(session *file.UploadSession) error {
+func (us *SqlUploadSessionStore) Update(session *model.UploadSession) error {
 	if err := session.IsValid(); err != nil {
 		return err
 	}
@@ -68,8 +67,8 @@ func (us *SqlUploadSessionStore) Update(session *file.UploadSession) error {
 	return nil
 }
 
-func (us SqlUploadSessionStore) Get(id string) (*file.UploadSession, error) {
-	var session *file.UploadSession
+func (us SqlUploadSessionStore) Get(id string) (*model.UploadSession, error) {
+	var session *model.UploadSession
 	if err := us.GetReplicaX().Get(&session, "SELECT * FROM "+store.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.UploadSessionTableName, id)
@@ -79,8 +78,8 @@ func (us SqlUploadSessionStore) Get(id string) (*file.UploadSession, error) {
 	return session, nil
 }
 
-func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*file.UploadSession, error) {
-	var sessions []*file.UploadSession
+func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*model.UploadSession, error) {
+	var sessions []*model.UploadSession
 
 	if err := us.GetReplicaX().Select(
 		&sessions,

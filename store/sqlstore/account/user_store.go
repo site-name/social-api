@@ -11,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -94,7 +93,7 @@ func (us *SqlUserStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (us *SqlUserStore) ScanFields(user account.User) []interface{} {
+func (us *SqlUserStore) ScanFields(user model.User) []interface{} {
 	return []interface{}{
 		&user.Id,
 		&user.Email,
@@ -237,7 +236,7 @@ func (us *SqlUserStore) GetEtagForAllProfiles() string {
 	return fmt.Sprintf("%v.%v", model.CurrentVersion, updateAt)
 }
 
-func (us *SqlUserStore) Save(user *account.User) (*account.User, error) {
+func (us *SqlUserStore) Save(user *model.User) (*model.User, error) {
 	user.PreSave()
 	if err := user.IsValid(); err != nil {
 		return nil, err
@@ -258,12 +257,12 @@ func (us *SqlUserStore) Save(user *account.User) (*account.User, error) {
 }
 
 // Update updates user
-func (us *SqlUserStore) Update(user *account.User, trustedUpdateData bool) (*account.UserUpdate, error) {
+func (us *SqlUserStore) Update(user *model.User, trustedUpdateData bool) (*model.UserUpdate, error) {
 	user.PreUpdate()
 	if err := user.IsValid(); err != nil {
 		return nil, err
 	}
-	var oldUser account.User
+	var oldUser model.User
 
 	err := us.GetMasterX().Get(&oldUser, "SELECT * FROM "+store.UserTableName+" WHERE Id = ?", user.Id)
 	if err != nil {
@@ -329,7 +328,7 @@ func (us *SqlUserStore) Update(user *account.User, trustedUpdateData bool) (*acc
 
 	user.Sanitize(map[string]bool{})
 	oldUser.Sanitize(map[string]bool{})
-	return &account.UserUpdate{New: user, Old: &oldUser}, nil
+	return &model.UserUpdate{New: user, Old: &oldUser}, nil
 }
 
 func (us *SqlUserStore) UpdateLastPictureUpdate(userId string) error {
@@ -436,14 +435,14 @@ func (us *SqlUserStore) UpdateMfaActive(userId string, active bool) error {
 }
 
 // GetMany returns a list of users for the provided list of ids
-func (us *SqlUserStore) GetMany(ctx context.Context, ids []string) ([]*account.User, error) {
+func (us *SqlUserStore) GetMany(ctx context.Context, ids []string) ([]*model.User, error) {
 	query := us.usersQuery.Where(squirrel.Eq{"Id": ids})
 	queryString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "users_get_many_tosql")
 	}
 
-	var users []*account.User
+	var users []*model.User
 	if err := us.DBXFromContext(ctx).Select(&users, queryString, args...); err != nil {
 		return nil, errors.Wrap(err, "users_get_many_select")
 	}
@@ -453,7 +452,7 @@ func (us *SqlUserStore) GetMany(ctx context.Context, ids []string) ([]*account.U
 
 // Get returns single user that has Id matches given id.
 // If an user with given id does not exist, return nil with according error
-func (us *SqlUserStore) Get(ctx context.Context, id string) (*account.User, error) {
+func (us *SqlUserStore) Get(ctx context.Context, id string) (*model.User, error) {
 	query := us.usersQuery.Where("Id = ?", id)
 	queryString, args, err := query.ToSql()
 	if err != nil {
@@ -461,7 +460,7 @@ func (us *SqlUserStore) Get(ctx context.Context, id string) (*account.User, erro
 	}
 	row := us.DBXFromContext(ctx).QueryRowX(queryString, args...)
 
-	var user account.User
+	var user model.User
 	var props, notifyProps, timezone []byte
 	err = row.Scan(
 		&user.Id,
@@ -519,7 +518,7 @@ func (us *SqlUserStore) Get(ctx context.Context, id string) (*account.User, erro
 }
 
 // GetAll fetches all users from database and returns to the caller
-func (us *SqlUserStore) GetAll() ([]*account.User, error) {
+func (us *SqlUserStore) GetAll() ([]*model.User, error) {
 	query := us.usersQuery.OrderBy("Username ASC")
 
 	queryString, args, err := query.ToSql()
@@ -527,7 +526,7 @@ func (us *SqlUserStore) GetAll() ([]*account.User, error) {
 		return nil, errors.Wrap(err, "get_all_users_tosql")
 	}
 
-	var data []*account.User
+	var data []*model.User
 	if err := us.GetReplicaX().Select(&data, queryString, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to find Users")
 	}
@@ -536,7 +535,7 @@ func (us *SqlUserStore) GetAll() ([]*account.User, error) {
 }
 
 // GetAllAfter get users that have id less than given id
-func (us *SqlUserStore) GetAllAfter(limit int, afterId string) ([]*account.User, error) {
+func (us *SqlUserStore) GetAllAfter(limit int, afterId string) ([]*model.User, error) {
 	query := us.usersQuery.Where("Id > ?", afterId).OrderBy("Id ASC").Limit(uint64(limit))
 
 	queryString, args, err := query.ToSql()
@@ -544,7 +543,7 @@ func (us *SqlUserStore) GetAllAfter(limit int, afterId string) ([]*account.User,
 		return nil, errors.Wrap(err, "get_all_after_tosql")
 	}
 
-	var users []*account.User
+	var users []*model.User
 	if err := us.GetReplicaX().Select(&users, queryString, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to find Users")
 	}
@@ -552,11 +551,11 @@ func (us *SqlUserStore) GetAllAfter(limit int, afterId string) ([]*account.User,
 	return users, nil
 }
 
-func (us *SqlUserStore) GetProfiles(options *account.UserGetOptions) ([]*account.User, error) {
+func (us *SqlUserStore) GetProfiles(options *model.UserGetOptions) ([]*model.User, error) {
 	panic("not implemented")
 }
 
-func (us *SqlUserStore) GetProfilesByUsernames(usernames []string) ([]*account.User, error) {
+func (us *SqlUserStore) GetProfilesByUsernames(usernames []string) ([]*model.User, error) {
 	query := us.usersQuery.Where(squirrel.Eq{"Username": usernames}).OrderBy("u.Username ASC")
 
 	queryString, args, err := query.ToSql()
@@ -564,7 +563,7 @@ func (us *SqlUserStore) GetProfilesByUsernames(usernames []string) ([]*account.U
 		return nil, errors.Wrap(err, "get_profiles_by_usernames")
 	}
 
-	var users []*account.User
+	var users []*model.User
 	if err := us.GetReplicaX().Select(&users, queryString, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to find Users")
 	}
@@ -572,12 +571,12 @@ func (us *SqlUserStore) GetProfilesByUsernames(usernames []string) ([]*account.U
 	return users, nil
 }
 
-func (us *SqlUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*account.User, error) {
+func (us *SqlUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
 	if options == nil {
 		options = new(store.UserGetByIdsOpts)
 	}
 
-	users := []*account.User{}
+	users := []*model.User{}
 	query := us.usersQuery.Where(squirrel.Eq{"u.Id": userIds}).OrderBy("u.Username ASC")
 
 	if options.Since > 0 {
@@ -597,19 +596,19 @@ func (us *SqlUserStore) GetProfileByIds(ctx context.Context, userIds []string, o
 	return users, nil
 }
 
-func (us *SqlUserStore) GetSystemAdminProfiles() (map[string]*account.User, error) {
+func (us *SqlUserStore) GetSystemAdminProfiles() (map[string]*model.User, error) {
 	query := us.usersQuery.Where("Roles LIKE ?", "%system_admin%").OrderBy("u.Username ASC")
 	queryString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "get_system_admin_profiles_tosql")
 	}
 
-	var users []*account.User
+	var users []*model.User
 	if err := us.GetReplicaX().Select(&users, queryString, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to find Users")
 	}
 
-	userMap := make(map[string]*account.User)
+	userMap := make(map[string]*model.User)
 	for _, u := range users {
 		u.Sanitize(map[string]bool{})
 		userMap[u.Id] = u
@@ -618,14 +617,14 @@ func (us *SqlUserStore) GetSystemAdminProfiles() (map[string]*account.User, erro
 	return userMap, nil
 }
 
-func (us *SqlUserStore) GetByEmail(email string) (*account.User, error) {
+func (us *SqlUserStore) GetByEmail(email string) (*model.User, error) {
 	query := us.usersQuery.Where("Email = lower(?)", email)
 	queryString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "get_by_email_tosql")
 	}
 
-	var user account.User
+	var user model.User
 	if err := us.GetReplicaX().Get(&user, queryString, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("User", fmt.Sprintf("email=%s", email))
@@ -637,7 +636,7 @@ func (us *SqlUserStore) GetByEmail(email string) (*account.User, error) {
 	return &user, nil
 }
 
-func (us *SqlUserStore) GetByAuth(authData *string, authService string) (*account.User, error) {
+func (us *SqlUserStore) GetByAuth(authData *string, authService string) (*model.User, error) {
 	if authData == nil || *authData == "" {
 		return nil, store.NewErrInvalidInput("User", "<authData>", "empty or nil")
 	}
@@ -650,7 +649,7 @@ func (us *SqlUserStore) GetByAuth(authData *string, authService string) (*accoun
 		return nil, errors.Wrap(err, "get_by_auth_tosql")
 	}
 
-	var user account.User
+	var user model.User
 	if err := us.GetReplicaX().Get(&user, queryString, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("User", fmt.Sprintf("authData=%s, authService=%s", *authData, authService))
@@ -661,7 +660,7 @@ func (us *SqlUserStore) GetByAuth(authData *string, authService string) (*accoun
 	return &user, nil
 }
 
-func (us *SqlUserStore) GetAllUsingAuthService(authService string) ([]*account.User, error) {
+func (us *SqlUserStore) GetAllUsingAuthService(authService string) ([]*model.User, error) {
 	query := us.
 		usersQuery.
 		Where("u.AuthService = ?", authService).
@@ -671,7 +670,7 @@ func (us *SqlUserStore) GetAllUsingAuthService(authService string) ([]*account.U
 		return nil, errors.Wrap(err, "get_all_using_auth_service_tosql")
 	}
 
-	var users []*account.User
+	var users []*model.User
 	if err := us.GetReplicaX().Select(&users, queryString, args...); err != nil {
 		return nil, errors.Wrapf(err, "failed to find Users with authService=%s", authService)
 	}
@@ -679,7 +678,7 @@ func (us *SqlUserStore) GetAllUsingAuthService(authService string) ([]*account.U
 	return users, nil
 }
 
-func (us *SqlUserStore) GetAllNotInAuthService(authServices []string) ([]*account.User, error) {
+func (us *SqlUserStore) GetAllNotInAuthService(authServices []string) ([]*model.User, error) {
 	query := us.
 		usersQuery.
 		Where(squirrel.NotEq{"u.AuthService": authServices}).
@@ -690,7 +689,7 @@ func (us *SqlUserStore) GetAllNotInAuthService(authServices []string) ([]*accoun
 		return nil, errors.Wrap(err, "get_all_not_in_auth_service_tosql")
 	}
 
-	var users []*account.User
+	var users []*model.User
 	if err := us.GetReplicaX().Select(&users, queryString, args...); err != nil {
 		return nil, errors.Wrapf(err, "failed to find Users with authService in %v", authServices)
 	}
@@ -698,7 +697,7 @@ func (us *SqlUserStore) GetAllNotInAuthService(authServices []string) ([]*accoun
 	return users, nil
 }
 
-func (us *SqlUserStore) GetByUsername(username string) (*account.User, error) {
+func (us *SqlUserStore) GetByUsername(username string) (*model.User, error) {
 	query := us.usersQuery.Where("u.Username = lower(?)", username)
 
 	queryString, args, err := query.ToSql()
@@ -706,7 +705,7 @@ func (us *SqlUserStore) GetByUsername(username string) (*account.User, error) {
 		return nil, errors.Wrap(err, "get_by_username_tosql")
 	}
 
-	var user account.User
+	var user model.User
 	if err := us.GetReplicaX().Get(&user, queryString, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.Wrap(store.NewErrNotFound("User", fmt.Sprintf("username=%s", username)), "failed to find User")
@@ -718,7 +717,7 @@ func (us *SqlUserStore) GetByUsername(username string) (*account.User, error) {
 	return &user, nil
 }
 
-func (us *SqlUserStore) GetForLogin(loginId string, allowSignInWithUsername, allowSignInWithEmail bool) (*account.User, error) {
+func (us *SqlUserStore) GetForLogin(loginId string, allowSignInWithUsername, allowSignInWithEmail bool) (*model.User, error) {
 	query := us.usersQuery
 	if allowSignInWithUsername && allowSignInWithEmail {
 		query = query.Where("Username = lower(?) OR Email = lower(?)", loginId, loginId)
@@ -735,7 +734,7 @@ func (us *SqlUserStore) GetForLogin(loginId string, allowSignInWithUsername, all
 		return nil, errors.Wrap(err, "get_for_login_tosql")
 	}
 
-	users := []*account.User{}
+	users := []*model.User{}
 	if err := us.GetReplicaX().Select(&users, queryString, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to find Users")
 	}
@@ -781,7 +780,7 @@ func applyViewRestrictionsFilter(query squirrel.SelectBuilder, distinct bool) sq
 	return query
 }
 
-func (us *SqlUserStore) Count(options account.UserCountOptions) (int64, error) {
+func (us *SqlUserStore) Count(options model.UserCountOptions) (int64, error) {
 	query := us.GetQueryBuilder().Select("COUNT(DISTINCT u.Id)").From(store.UserTableName + " AS u")
 
 	if !options.IncludeDeleted {
@@ -804,7 +803,7 @@ func (us *SqlUserStore) Count(options account.UserCountOptions) (int64, error) {
 	return count, nil
 }
 
-func (us *SqlUserStore) AnalyticsActiveCount(timePeriod int64, options account.UserCountOptions) (int64, error) {
+func (us *SqlUserStore) AnalyticsActiveCount(timePeriod int64, options model.UserCountOptions) (int64, error) {
 	time := model.GetMillis() - timePeriod
 	query := us.GetQueryBuilder().Select("COUNT(*)").From("Status AS s").Where("LastActivityAt > :Time", map[string]interface{}{"Time": time})
 
@@ -825,7 +824,7 @@ func (us *SqlUserStore) AnalyticsActiveCount(timePeriod int64, options account.U
 	return v, nil
 }
 
-func (us *SqlUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options account.UserCountOptions) (int64, error) {
+func (us *SqlUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error) {
 	query := us.GetQueryBuilder().Select("COUNT(*)").From("Status AS s").Where("LastActivityAt > :StartTime AND LastActivityAt <= :EndTime", map[string]interface{}{"StartTime": startTime, "EndTime": endTime})
 	if !options.IncludeDeleted {
 		query = query.LeftJoin("Users ON s.UserId = Users.Id").Where("Users.DeleteAt = 0")
@@ -886,7 +885,7 @@ func generateSearchQuery(query squirrel.SelectBuilder, terms []string, fields []
 	return query
 }
 
-func (us *SqlUserStore) Search(term string, options *account.UserSearchOptions) ([]*account.User, error) {
+func (us *SqlUserStore) Search(term string, options *model.UserSearchOptions) ([]*model.User, error) {
 	query := us.usersQuery.
 		OrderBy("Username ASC").
 		Limit(uint64(options.Limit))
@@ -902,7 +901,7 @@ func applyRoleFilter(query squirrel.SelectBuilder, role string) squirrel.SelectB
 	return query.Where("u.Roles LIKE LOWER(?)", roleParam)
 }
 
-func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string, options *account.UserSearchOptions) ([]*account.User, error) {
+func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string, options *model.UserSearchOptions) ([]*model.User, error) {
 	term = store.SanitizeSearchTerm(term, "*")
 
 	var searchType []string
@@ -936,7 +935,7 @@ func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string,
 		return nil, errors.Wrap(err, "perform_search_tosql")
 	}
 
-	var users []*account.User
+	var users []*model.User
 	if err := us.GetReplicaX().Select(&users, queryString, args...); err != nil {
 		return nil, errors.Wrapf(err, "failed to find Users with term=%s and searchType=%v", term, searchType)
 	}
@@ -996,7 +995,7 @@ func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
 		}
 		defer store.FinalizeTransaction(transaction)
 
-		var users []*account.User
+		var users []*model.User
 		if err := transaction.Select(&users, "SELECT * FROM Users WHERE Id > :Id ORDER BY Id LIMIT 1000", map[string]interface{}{"Id": lastUserId}); err != nil {
 			return errors.Wrapf(err, "failed to find Users with id > %s", lastUserId)
 		}
@@ -1044,7 +1043,7 @@ func (us *SqlUserStore) InferSystemInstallDate() (int64, error) {
 	return createAt, nil
 }
 
-func (us *SqlUserStore) GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*account.UserForIndexing, error) {
+func (us *SqlUserStore) GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*model.UserForIndexing, error) {
 
 	panic("not implemented")
 }
@@ -1053,7 +1052,7 @@ func (us *SqlUserStore) PromoteGuestToUser(userId string) error {
 	panic("not implemented")
 }
 
-func (us *SqlUserStore) DemoteUserToGuest(userID string) (*account.User, error) {
+func (us *SqlUserStore) DemoteUserToGuest(userID string) (*model.User, error) {
 	panic("not implemented")
 
 }
@@ -1063,13 +1062,13 @@ func (us *SqlUserStore) GetKnownUsers(userId string) ([]string, error) {
 
 }
 
-func (us *SqlUserStore) GetAllProfiles(options *account.UserGetOptions) ([]*account.User, error) {
+func (us *SqlUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
 	panic("not implemented")
 }
 
 // UserByOrderID finds and returns an user who whose order is given
-func (us *SqlUserStore) UserByOrderID(orderID string) (*account.User, error) {
-	var res account.User
+func (us *SqlUserStore) UserByOrderID(orderID string) (*model.User, error) {
+	var res model.User
 	err := us.GetReplicaX().Get(
 		&res,
 		"SELECT * FROM "+store.UserTableName+" WHERE Id = (SELECT UserID FROM Orders WHERE Id = :OrderID)",

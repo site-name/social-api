@@ -5,13 +5,10 @@ import (
 
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/payment"
-	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 // CleanCheckoutShipping
-func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos) *model.AppError {
+func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos) *model.AppError {
 	requireShipping, appErr := a.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
 	if appErr != nil {
 		return appErr
@@ -40,7 +37,7 @@ func (a *ServiceCheckout) CleanCheckoutShipping(checkoutInfo checkout.CheckoutIn
 	return nil
 }
 
-func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo checkout.CheckoutInfo) *model.AppError {
+func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo model.CheckoutInfo) *model.AppError {
 	if checkoutInfo.BillingAddress == nil {
 		return model.NewAppError("CleanBillingAddress", "app.discount.billing_address_not_set.app_error", nil, "", http.StatusNotImplemented)
 	}
@@ -48,7 +45,7 @@ func (a *ServiceCheckout) CleanBillingAddress(checkoutInfo checkout.CheckoutInfo
 	return nil
 }
 
-func (a *ServiceCheckout) CleanCheckoutPayment(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, lastPayment *payment.Payment) (*payment.PaymentError, *model.AppError) {
+func (a *ServiceCheckout) CleanCheckoutPayment(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model.AppError) {
 	if appErr := a.CleanBillingAddress(checkoutInfo); appErr != nil {
 		return nil, appErr
 	}

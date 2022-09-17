@@ -7,8 +7,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/store"
 )
 
@@ -40,7 +38,7 @@ func (s *SqlPluginConfigurationStore) ModelFields(prefix string) model.AnyArray[
 }
 
 // Upsert inserts or updates given plugin configuration and returns it
-func (p *SqlPluginConfigurationStore) Upsert(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, error) {
+func (p *SqlPluginConfigurationStore) Upsert(config *model.PluginConfiguration) (*model.PluginConfiguration, error) {
 	var isSaving bool
 
 	if config.Id == "" {
@@ -91,8 +89,8 @@ func (p *SqlPluginConfigurationStore) Upsert(config *plugins.PluginConfiguration
 }
 
 // Get finds a plugin configuration with given id then returns it
-func (p *SqlPluginConfigurationStore) Get(id string) (*plugins.PluginConfiguration, error) {
-	var res plugins.PluginConfiguration
+func (p *SqlPluginConfigurationStore) Get(id string) (*model.PluginConfiguration, error) {
+	var res model.PluginConfiguration
 	err := p.GetReplicaX().Get(&res, "SELECT * FROM "+store.PluginConfigurationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -104,7 +102,7 @@ func (p *SqlPluginConfigurationStore) Get(id string) (*plugins.PluginConfigurati
 	return &res, nil
 }
 
-func (p *SqlPluginConfigurationStore) optionsParse(options *plugins.PluginConfigurationFilterOptions) (string, []interface{}, error) {
+func (p *SqlPluginConfigurationStore) optionsParse(options *model.PluginConfigurationFilterOptions) (string, []interface{}, error) {
 	query := p.GetQueryBuilder().
 		Select("*").
 		From(store.PluginConfigurationTableName)
@@ -124,13 +122,13 @@ func (p *SqlPluginConfigurationStore) optionsParse(options *plugins.PluginConfig
 }
 
 // FilterPluginConfigurations finds and returns a list of configs with given options then returns them
-func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options plugins.PluginConfigurationFilterOptions) ([]*plugins.PluginConfiguration, error) {
+func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options model.PluginConfigurationFilterOptions) ([]*model.PluginConfiguration, error) {
 	queryStr, args, err := p.optionsParse(&options)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterPluginConfigurations_ToSql")
 	}
 
-	var configs plugins.PluginConfigurations
+	var configs model.PluginConfigurations
 	err = p.GetReplicaX().Select(&configs, queryStr, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find plugin configurations with given options")
@@ -138,7 +136,7 @@ func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options plugins
 
 	// check if we need to prefetch
 	if options.PrefetchRelatedChannel && len(configs) != 0 {
-		channels, err := p.Channel().FilterByOption(&channel.ChannelFilterOption{
+		channels, err := p.Channel().FilterByOption(&model.ChannelFilterOption{
 			Id: squirrel.Eq{store.PluginConfigurationTableName + ".Id": configs.ChannelIDs()},
 		})
 
@@ -159,13 +157,13 @@ func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options plugins
 }
 
 // GetByOptions finds and returns 1 plugin configuration with given options
-func (p *SqlPluginConfigurationStore) GetByOptions(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, error) {
+func (p *SqlPluginConfigurationStore) GetByOptions(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, error) {
 	queryStr, args, err := p.optionsParse(options)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOptions_ToSql")
 	}
 
-	var res plugins.PluginConfiguration
+	var res model.PluginConfiguration
 	err = p.GetReplicaX().Get(&res, queryStr, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {

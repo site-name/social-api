@@ -7,14 +7,13 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
-func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError) {
-	attrValues, err := a.srv.Store.AttributeValue().FilterByOptions(attribute.AttributeValueFilterOptions{
+func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) ([]*model.AttributeValue, *model.AppError) {
+	attrValues, err := a.srv.Store.AttributeValue().FilterByOptions(model.AttributeValueFilterOptions{
 		AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": attributeID},
 	})
 	var (
@@ -36,7 +35,7 @@ func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) ([]*at
 	return attrValues, nil
 }
 
-func (s *ServiceAttribute) FilterAttributeValuesByOptions(option attribute.AttributeValueFilterOptions) (attribute.AttributeValues, *model.AppError) {
+func (s *ServiceAttribute) FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model.AppError) {
 	values, err := s.srv.Store.AttributeValue().FilterByOptions(option)
 
 	var (
@@ -58,7 +57,7 @@ func (s *ServiceAttribute) FilterAttributeValuesByOptions(option attribute.Attri
 }
 
 // UpsertAttributeValue insderts or updates given attribute value then returns it
-func (a *ServiceAttribute) UpsertAttributeValue(attrValue *attribute.AttributeValue) (*attribute.AttributeValue, *model.AppError) {
+func (a *ServiceAttribute) UpsertAttributeValue(attrValue *model.AttributeValue) (*model.AttributeValue, *model.AppError) {
 	attrValue, err := a.srv.Store.AttributeValue().Upsert(attrValue)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -76,7 +75,7 @@ func (a *ServiceAttribute) UpsertAttributeValue(attrValue *attribute.AttributeVa
 	return attrValue, nil
 }
 
-func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, *model.AppError) {
+func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction store_iface.SqlxTxExecutor, values model.AttributeValues) (model.AttributeValues, *model.AppError) {
 	values, err := a.srv.Store.AttributeValue().BulkUpsert(transaction, values)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -95,7 +94,7 @@ func (a *ServiceAttribute) BulkUpsertAttributeValue(transaction store_iface.Sqlx
 }
 
 type Reordering struct {
-	Values     attribute.AttributeValues
+	Values     model.AttributeValues
 	Operations map[string]*int
 	Field      string
 
@@ -105,7 +104,7 @@ type Reordering struct {
 	OldSortMap map[string]*int
 
 	cachedOrderedNodeMap  map[string]*int
-	cachedAttributeValues attribute.AttributeValues
+	cachedAttributeValues model.AttributeValues
 
 	// Will contain the list of keys kept
 	// in correct order in accordance to their sort order
@@ -115,7 +114,7 @@ type Reordering struct {
 	runned bool // to make sure that the method `orderedNodeMap` only run once
 }
 
-func (s *ServiceAttribute) newReordering(values attribute.AttributeValues, operations map[string]*int, field string) *Reordering {
+func (s *ServiceAttribute) newReordering(values model.AttributeValues, operations map[string]*int, field string) *Reordering {
 	return &Reordering{
 		Values:     values,
 		Operations: operations,
@@ -126,7 +125,7 @@ func (s *ServiceAttribute) newReordering(values attribute.AttributeValues, opera
 
 func (r *Reordering) orderedNodeMap(transaction store_iface.SqlxTxExecutor) (map[string]*int, *model.AppError) {
 	if !r.runned { // check if runned or not
-		attributeValues, appErr := r.s.FilterAttributeValuesByOptions(attribute.AttributeValueFilterOptions{
+		attributeValues, appErr := r.s.FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
 			Transaction:     transaction,
 			OrderBy:         store.AttributeValueTableName + ".Id ASC, " + store.AttributeValueTableName + ".SortOrder ASC NULLS LAST",
 			Id:              squirrel.Eq{store.AttributeValueTableName + ".Id": r.Values.IDs()},
@@ -268,7 +267,7 @@ func (r *Reordering) commit(transaction store_iface.SqlxTxExecutor) *model.AppEr
 		return nil
 	}
 
-	var attributeValuesMap = make(map[string]*attribute.AttributeValue)
+	var attributeValuesMap = make(map[string]*model.AttributeValue)
 	for _, item := range r.cachedAttributeValues {
 		attributeValuesMap[item.Id] = item
 	}
@@ -316,7 +315,7 @@ func (r *Reordering) Run(transaction store_iface.SqlxTxExecutor) *model.AppError
 	return nil
 }
 
-func (s *ServiceAttribute) PerformReordering(values attribute.AttributeValues, operations map[string]*int) *model.AppError {
+func (s *ServiceAttribute) PerformReordering(values model.AttributeValues, operations map[string]*int) *model.AppError {
 	transaction, err := s.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return model.NewAppError("PerformReordering", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)

@@ -8,59 +8,54 @@ import (
 
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/giftcard"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
 // GiftcardService contains methods for working with giftcards
 type GiftcardService interface {
 	// ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
-	ActiveGiftcards(date time.Time) ([]*giftcard.GiftCard, *model.AppError)
+	ActiveGiftcards(date time.Time) ([]*model.GiftCard, *model.AppError)
 	// AddGiftcardCodeToCheckout adds giftcard data to checkout by code. Raise InvalidPromoCode if gift card cannot be applied.
-	AddGiftcardCodeToCheckout(ckout *checkout.Checkout, email, promoCode, currency string) (*giftcard.InvalidPromoCode, *model.AppError)
+	AddGiftcardCodeToCheckout(ckout *model.Checkout, email, promoCode, currency string) (*model.InvalidPromoCode, *model.AppError)
 	// BulkUpsertGiftcardEvents tells store to upsert given giftcard events into database then returns them
-	BulkUpsertGiftcardEvents(transaction store_iface.SqlxTxExecutor, events []*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, *model.AppError)
+	BulkUpsertGiftcardEvents(transaction store_iface.SqlxTxExecutor, events []*model.GiftCardEvent) ([]*model.GiftCardEvent, *model.AppError)
 	// CalculateExpiryDate calculate expiry date based on giftcard settings.
-	CalculateExpiryDate(shopSettings *shop.Shop) *time.Time
+	CalculateExpiryDate(shopSettings *model.Shop) *time.Time
 	// CommonCreateGiftcardEvent is common method for creating giftcard events
-	CommonCreateGiftcardEvent(giftcardID, userID string, parameters model.StringMap, Type string) (*giftcard.GiftCardEvent, *model.AppError)
+	CommonCreateGiftcardEvent(giftcardID, userID string, parameters model.StringMap, Type string) (*model.GiftCardEvent, *model.AppError)
 	// CreateGiftCardCheckout create a new giftcard-checkout relation and returns it
-	CreateGiftCardCheckout(giftcardID string, checkoutToken string) (*giftcard.GiftCardCheckout, *model.AppError)
+	CreateGiftCardCheckout(giftcardID string, checkoutToken string) (*model.GiftCardCheckout, *model.AppError)
 	// DeleteGiftCardCheckout drops a giftcard-checkout relation
 	DeleteGiftCardCheckout(giftcardID string, checkoutToken string) *model.AppError
 	// FulfillNonShippableGiftcards
-	FulfillNonShippableGiftcards(orDer *order.Order, orderLines order.OrderLines, siteSettings *shop.Shop, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*giftcard.GiftCard, *model.AppError)
+	FulfillNonShippableGiftcards(orDer *model.Order, orderLines model.OrderLines, siteSettings *model.Shop, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.AppError)
 	// GiftcardEventsByOptions returns a list of giftcard events filtered using given options
-	GiftcardEventsByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, *model.AppError)
+	GiftcardEventsByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, *model.AppError)
 	// GiftcardsByOption finds a list of giftcards with given option
-	GiftcardsByOption(transaction store_iface.SqlxTxExecutor, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, *model.AppError)
+	GiftcardsByOption(transaction store_iface.SqlxTxExecutor, option *model.GiftCardFilterOption) ([]*model.GiftCard, *model.AppError)
 	// GiftcardsCreate creates purchased gift cards
-	GiftcardsCreate(orDer *order.Order, giftcardLines order.OrderLines, quantities map[string]int, settings *shop.Shop, requestorUser *account.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*giftcard.GiftCard, *model.AppError)
+	GiftcardsCreate(orDer *model.Order, giftcardLines model.OrderLines, quantities map[string]int, settings *model.Shop, requestorUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.AppError)
 	// GiftcardsUsedInOrderEvent bulk creates giftcard events
-	GiftcardsUsedInOrderEvent(transaction store_iface.SqlxTxExecutor, balanceData giftcard.BalanceData, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError)
+	GiftcardsUsedInOrderEvent(transaction store_iface.SqlxTxExecutor, balanceData model.BalanceData, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError)
 	// PromoCodeIsGiftCard checks whether there is giftcard with given code
 	PromoCodeIsGiftCard(code string) (bool, *model.AppError)
 	// RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
-	RemoveGiftcardCodeFromCheckout(ckout *checkout.Checkout, giftcardCode string) *model.AppError
+	RemoveGiftcardCodeFromCheckout(ckout *model.Checkout, giftcardCode string) *model.AppError
 	// SendGiftcardNotification Trigger sending a gift card notification for the given recipient
-	SendGiftcardNotification(requesterUser *account.User, _ interface{}, customerUser *account.User, email string, giftCard giftcard.GiftCard, manager interfaces.PluginManagerInterface, channelID string, resending bool) *model.AppError
+	SendGiftcardNotification(requesterUser *model.User, _ interface{}, customerUser *model.User, email string, giftCard model.GiftCard, manager interfaces.PluginManagerInterface, channelID string, resending bool) *model.AppError
 	// ToggleGiftcardStatus set status of given giftcard to inactive/active
-	ToggleGiftcardStatus(giftCard *giftcard.GiftCard) *model.AppError
+	ToggleGiftcardStatus(giftCard *model.GiftCard) *model.AppError
 	// UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
-	UpsertGiftcards(transaction store_iface.SqlxTxExecutor, giftcards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, *model.AppError)
+	UpsertGiftcards(transaction store_iface.SqlxTxExecutor, giftcards ...*model.GiftCard) ([]*model.GiftCard, *model.AppError)
 	// UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
-	UpsertOrderGiftcardRelations(transaction store_iface.SqlxTxExecutor, orderGiftCards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, *model.AppError)
-	DeactivateOrderGiftcards(orderID string, user *account.User, _ interface{}) *model.AppError
-	FulfillGiftcardLines(giftcardLines order.OrderLines, requestorUser *account.User, _ interface{}, orDer *order.Order, manager interfaces.PluginManagerInterface) (interface{}, *model.AppError)
-	GetDefaultGiftcardPayload(giftCard giftcard.GiftCard) model.StringInterface
-	GetGiftCard(id string) (*giftcard.GiftCard, *model.AppError)
-	GetNonShippableGiftcardLines(lines order.OrderLines) (order.OrderLines, *model.AppError)
-	GiftcardsBoughtEvent(transaction store_iface.SqlxTxExecutor, giftcards []*giftcard.GiftCard, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError)
-	GiftcardsByCheckout(checkoutToken string) ([]*giftcard.GiftCard, *model.AppError)
-	OrderHasGiftcardLines(orDer *order.Order) (bool, *model.AppError)
-	SendGiftcardsToCustomer(giftcards []*giftcard.GiftCard, userEmail string, requestorUser *account.User, _ interface{}, customerUser *account.User, manager interfaces.PluginManagerInterface, channelSlug string) *model.AppError
+	UpsertOrderGiftcardRelations(transaction store_iface.SqlxTxExecutor, orderGiftCards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, *model.AppError)
+	DeactivateOrderGiftcards(orderID string, user *model.User, _ interface{}) *model.AppError
+	FulfillGiftcardLines(giftcardLines model.OrderLines, requestorUser *model.User, _ interface{}, orDer *model.Order, manager interfaces.PluginManagerInterface) (interface{}, *model.AppError)
+	GetDefaultGiftcardPayload(giftCard model.GiftCard) model.StringInterface
+	GetGiftCard(id string) (*model.GiftCard, *model.AppError)
+	GetNonShippableGiftcardLines(lines model.OrderLines) (model.OrderLines, *model.AppError)
+	GiftcardsBoughtEvent(transaction store_iface.SqlxTxExecutor, giftcards []*model.GiftCard, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError)
+	GiftcardsByCheckout(checkoutToken string) ([]*model.GiftCard, *model.AppError)
+	OrderHasGiftcardLines(orDer *model.Order) (bool, *model.AppError)
+	SendGiftcardsToCustomer(giftcards []*model.GiftCard, userEmail string, requestorUser *model.User, _ interface{}, customerUser *model.User, manager interfaces.PluginManagerInterface, channelSlug string) *model.AppError
 }

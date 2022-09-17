@@ -3,12 +3,9 @@
 
 package sub_app_iface
 
-import (
-	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/menu"
-)
+import "github.com/sitename/sitename/model"
 
 // MenuService contains methods for working with menus
 type MenuService interface {
-	MenuByOptions(options *menu.MenuFilterOptions) (*menu.Menu, *model.AppError)
+	MenuByOptions(options *model.MenuFilterOptions) (*model.Menu, *model.AppError)
 }

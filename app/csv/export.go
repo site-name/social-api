@@ -7,8 +7,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/csv"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -17,7 +15,7 @@ var (
 )
 
 // ExportProducts is called by product export job, taks needed arguments then exports products
-func (s *ServiceCsv) ExportProducts(input *csv.ExportProductsFilterOptions, delimeter string) *model.AppError {
+func (s *ServiceCsv) ExportProducts(input *model.ExportProductsFilterOptions, delimeter string) *model.AppError {
 	// if delimeter == "" {
 	// 	delimeter = ";"
 	// }
@@ -55,7 +53,7 @@ func (s *ServiceCsv) ExportProductsInBatches(productQuery squirrel.SelectBuilder
 		// reset for later loop(s)
 		createAtGt = prds[len(prds)-1].CreateAt
 
-		products, appErr := s.srv.ProductService().ProductsByOption(&product_and_discount.ProductFilterOption{
+		products, appErr := s.srv.ProductService().ProductsByOption(&model.ProductFilterOption{
 			Id:                                       squirrel.Eq{store.ProductTableName + ".Id": prds.IDs()},
 			PrefetchRelatedAssignedProductAttributes: true,
 			PrefetchRelatedVariants:                  true,

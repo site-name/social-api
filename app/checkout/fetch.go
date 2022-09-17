@@ -8,29 +8,23 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/shipping"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 )
 
 // GetDeliveryMethodInfo takes `deliveryMethod` is either *ShippingMethodData or *Warehouse
-func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, address *account.Address) (checkout.DeliveryMethodBaseInterface, *model.AppError) {
+func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, address *model.Address) (model.DeliveryMethodBaseInterface, *model.AppError) {
 	if deliveryMethod == nil {
-		return &checkout.DeliveryMethodBase{}, nil
+		return &model.DeliveryMethodBase{}, nil
 	}
 
 	switch t := deliveryMethod.(type) {
-	case *shipping.ShippingMethod:
-		return &checkout.ShippingMethodInfo{
+	case *model.ShippingMethod:
+		return &model.ShippingMethodInfo{
 			DeliveryMethod:  *t,
 			ShippingAddress: address,
 		}, nil
 
-	case *warehouse.WareHouse:
+	case *model.WareHouse:
 		var (
 			addr   = t.Address
 			appErr *model.AppError
@@ -41,7 +35,7 @@ func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, addr
 				return nil, appErr
 			}
 		}
-		return &checkout.CollectionPointInfo{
+		return &model.CollectionPointInfo{
 			DeliveryMethod:  *t,
 			ShippingAddress: addr,
 		}, nil
@@ -53,7 +47,7 @@ func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, addr
 
 // FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
 // It prefetch some related value also
-func (a *ServiceCheckout) FetchCheckoutLines(checkOut *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError) {
+func (a *ServiceCheckout) FetchCheckoutLines(checkOut *model.Checkout) ([]*model.CheckoutLineInfo, *model.AppError) {
 	checkoutLineInfos, err := a.srv.Store.Checkout().FetchCheckoutLinesAndPrefetchRelatedValue(checkOut)
 	if err != nil {
 		return nil, model.NewAppError("FetchCheckoutLines", "app.checkout.error_collecting_checkout_line_infos.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -63,13 +57,13 @@ func (a *ServiceCheckout) FetchCheckoutLines(checkOut *checkout.Checkout) ([]*ch
 }
 
 // FetchCheckoutInfo Fetch checkout as CheckoutInfo object
-func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) (*checkout.CheckoutInfo, *model.AppError) {
+func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *model.Checkout, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) (*model.CheckoutInfo, *model.AppError) {
 	// validate arguments:
 	if checkOut == nil {
 		return nil, model.NewAppError("FetchCheckoutInfo", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkOut"}, "", http.StatusBadRequest)
 	}
 
-	chanNel, appErr := a.srv.ChannelService().ChannelByOption(&channel.ChannelFilterOption{
+	chanNel, appErr := a.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
 		Id: squirrel.Eq{store.ChannelTableName + ".Id": checkOut.ChannelID},
 	})
 	if appErr != nil {
@@ -87,11 +81,11 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 	}
 
 	var (
-		billingAddress  *account.Address
-		shippingAddress *account.Address
+		billingAddress  *model.Address
+		shippingAddress *model.Address
 	)
 	if len(checkoutAddressIDs) > 0 {
-		addresses, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
+		addresses, appErr := a.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
 			Id: squirrel.Eq{store.AddressTableName + ".Id": checkoutAddressIDs},
 		})
 		if appErr != nil {
@@ -117,10 +111,10 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 		}
 	}
 
-	var shippingMethod *shipping.ShippingMethod
+	var shippingMethod *model.ShippingMethod
 
 	if checkOut.ShippingMethodID != nil {
-		shippingMethod, appErr = a.srv.ShippingService().ShippingMethodByOption(&shipping.ShippingMethodFilterOption{
+		shippingMethod, appErr = a.srv.ShippingService().ShippingMethodByOption(&model.ShippingMethodFilterOption{
 			Id: squirrel.Eq{store.ShippingMethodTableName + ".Id": *checkOut.ShippingMethodID},
 		})
 		if appErr != nil {
@@ -132,11 +126,11 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 	}
 
 	var (
-		shippingMethodChannelListing *shipping.ShippingMethodChannelListing
+		shippingMethodChannelListing *model.ShippingMethodChannelListing
 	)
 
 	// build shipping method channel listings filter option:
-	var shippingMethodChannelListingsFilterOption = new(shipping.ShippingMethodChannelListingFilterOption)
+	var shippingMethodChannelListingsFilterOption = new(model.ShippingMethodChannelListingFilterOption)
 
 	if shippingMethod != nil {
 		shippingMethodChannelListingsFilterOption.ShippingMethodID = squirrel.Eq{
@@ -159,9 +153,9 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 	}
 	shippingMethodChannelListing = shippingMethodChannelListings[0]
 
-	var collectionPoint *warehouse.WareHouse
+	var collectionPoint *model.WareHouse
 	if checkOut.CollectionPointID != nil {
-		collectionPoint, appErr = a.srv.WarehouseService().WarehouseByOption(&warehouse.WarehouseFilterOption{
+		collectionPoint, appErr = a.srv.WarehouseService().WarehouseByOption(&model.WarehouseFilterOption{
 			Id:                   squirrel.Eq{store.WarehouseTableName + ".Id": *checkOut.CollectionPointID},
 			SelectRelatedAddress: true,
 		})
@@ -182,7 +176,7 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 		return nil, appErr
 	}
 
-	var user *account.User
+	var user *model.User
 	if checkOut.UserID != nil {
 		user, appErr = a.srv.AccountService().UserById(context.Background(), *checkOut.UserID)
 		if appErr != nil {
@@ -192,7 +186,7 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 		}
 	}
 
-	checkoutInfo := checkout.CheckoutInfo{
+	checkoutInfo := model.CheckoutInfo{
 		Checkout:                      *checkOut,
 		User:                          user,
 		Channel:                       *chanNel,
@@ -221,7 +215,7 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *checkout.Checkout, lines [
 
 // UpdateCheckoutInfoShippingAddress updates given `checkoutInfo` by setting given `address` as its ShippingAddress.
 // then updates its ValidShippingMethods
-func (a *ServiceCheckout) UpdateCheckoutInfoShippingAddress(checkoutInfo checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError {
+func (a *ServiceCheckout) UpdateCheckoutInfoShippingAddress(checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError {
 	checkoutInfo.ShippingAddress = address
 	validMethods, appErr := a.GetValidShippingMethodListForCheckoutInfo(checkoutInfo, address, lines, discounts, manager)
 	if appErr != nil {
@@ -235,7 +229,7 @@ func (a *ServiceCheckout) UpdateCheckoutInfoShippingAddress(checkoutInfo checkou
 }
 
 // GetValidShippingMethodListForCheckoutInfo
-func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) ([]*shipping.ShippingMethod, *model.AppError) {
+func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo model.CheckoutInfo, shippingAddress *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) ([]*model.ShippingMethod, *model.AppError) {
 	var countryCode string
 	if shippingAddress != nil {
 		countryCode = shippingAddress.Country
@@ -255,7 +249,7 @@ func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo
 	return a.GetValidShippingMethodsForCheckout(checkoutInfo, lines, subTotal, countryCode)
 }
 
-func (s *ServiceCheckout) GetValidCollectionPointsForCheckoutInfo(shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, checkoutInfo *checkout.CheckoutInfo) ([]*warehouse.WareHouse, *model.AppError) {
+func (s *ServiceCheckout) GetValidCollectionPointsForCheckoutInfo(shippingAddress *model.Address, lines []*model.CheckoutLineInfo, checkoutInfo *model.CheckoutInfo) ([]*model.WareHouse, *model.AppError) {
 	var countryCode string
 
 	if shippingAddress != nil {
@@ -270,11 +264,11 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckoutInfo(shippingAddres
 // UpdateCheckoutInfoDeliveryMethod set CheckoutInfo's ShippingMethod to given shippingMethod
 // and set new value for checkoutInfo's ShippingMethodChannelListings
 // deliveryMethod must be either *ShippingMethod or *Warehouse or nil
-func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo checkout.CheckoutInfo, deliveryMethod interface{}) *model.AppError {
+func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo model.CheckoutInfo, deliveryMethod interface{}) *model.AppError {
 	// validate `deliveryMethod` is valid:
 	if deliveryMethod != nil {
 		switch deliveryMethod.(type) {
-		case *warehouse.WareHouse, *shipping.ShippingMethod:
+		case *model.WareHouse, *model.ShippingMethod:
 		default:
 			return model.NewAppError("UpdateCheckoutInfoDeliveryMethod", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "deliveryMethod"}, "", http.StatusBadRequest)
 		}
@@ -289,7 +283,7 @@ func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo checkout
 
 	err := checkoutInfo.DeliveryMethodInfo.UpdateChannelListings(&checkoutInfo)
 	// if error is non-nil, this means we need another method that can access database Store
-	if err != nil && err == checkout.ErrorNotUsable {
+	if err != nil && err == model.ErrorNotUsable {
 		appErr = a.updateChannelListings(checkoutInfo.DeliveryMethodInfo, checkoutInfo)
 		if appErr != nil {
 			return appErr
@@ -299,9 +293,9 @@ func (a *ServiceCheckout) UpdateCheckoutInfoDeliveryMethod(checkoutInfo checkout
 	return nil
 }
 
-func (s *ServiceCheckout) updateChannelListings(methodInfo checkout.DeliveryMethodBaseInterface, checkoutInfo checkout.CheckoutInfo) *model.AppError {
-	shippingMethodChannelListings, appErr := s.srv.ShippingService().ShippingMethodChannelListingsByOption(&shipping.ShippingMethodChannelListingFilterOption{
-		ShippingMethodID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ShippingMethodID": methodInfo.GetDeliveryMethod().(*shipping.ShippingMethod).Id},
+func (s *ServiceCheckout) updateChannelListings(methodInfo model.DeliveryMethodBaseInterface, checkoutInfo model.CheckoutInfo) *model.AppError {
+	shippingMethodChannelListings, appErr := s.srv.ShippingService().ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
+		ShippingMethodID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ShippingMethodID": methodInfo.GetDeliveryMethod().(*model.ShippingMethod).Id},
 		ChannelID:        squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": checkoutInfo.Channel.Id},
 	})
 	if appErr != nil {

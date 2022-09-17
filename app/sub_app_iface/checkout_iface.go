@@ -7,18 +7,7 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
-	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/giftcard"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/payment"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/shipping"
-	"github.com/sitename/sitename/model/shop"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -27,11 +16,11 @@ import (
 type CheckoutService interface {
 	// AddPromoCodeToCheckout Add gift card or voucher data to checkout.
 	// Raise InvalidPromoCode if promo code does not match to any voucher or gift card.
-	AddPromoCodeToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, promoCode string, discounts []*product_and_discount.DiscountInfo) (*giftcard.InvalidPromoCode, *model.AppError)
+	AddPromoCodeToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, promoCode string, discounts []*model.DiscountInfo) (*model.InvalidPromoCode, *model.AppError)
 	// AddVariantToCheckout adds a product variant to checkout
 	//
 	// `quantity` default to 1, `replace` default to false, `checkQuantity` default to true
-	AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity int, replace bool, checkQuantity bool) (*checkout.Checkout, *exception.InsufficientStock, *model.AppError)
+	AddVariantToCheckout(checkoutInfo *model.CheckoutInfo, variant *model.ProductVariant, quantity int, replace bool, checkQuantity bool) (*model.Checkout, *model.InsufficientStock, *model.AppError)
 	// AddVariantsToCheckout Add variants to checkout.
 	//
 	// If a variant is not placed in checkout, a new checkout line will be created.
@@ -39,150 +28,150 @@ type CheckoutService interface {
 	// Otherwise, quantity will be added or replaced (if replace argument is True).
 	//
 	//	skipStockCheck and replace are default to false
-	AddVariantsToCheckout(checkOut *checkout.Checkout, variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*checkout.Checkout, *exception.InsufficientStock, *model.AppError)
+	AddVariantsToCheckout(checkOut *model.Checkout, variants []*model.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*model.Checkout, *model.InsufficientStock, *model.AppError)
 	// AddVoucherCodeToCheckout Add voucher data to checkout by code.
 	// Raise InvalidPromoCode() if voucher of given type cannot be applied.
-	AddVoucherCodeToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, voucherCode string, discounts []*product_and_discount.DiscountInfo) (*giftcard.InvalidPromoCode, *model.AppError)
+	AddVoucherCodeToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, voucherCode string, discounts []*model.DiscountInfo) (*model.InvalidPromoCode, *model.AppError)
 	// AddVoucherToCheckout Add voucher data to checkout.
 	// Raise NotApplicable if voucher of given type cannot be applied.
-	AddVoucherToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher, discounts []*product_and_discount.DiscountInfo) (*product_and_discount.NotApplicable, *model.AppError)
+	AddVoucherToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, voucher *model.Voucher, discounts []*model.DiscountInfo) (*model.NotApplicable, *model.AppError)
 	// BaseCheckoutLineTotal Return the total price of this line
 	//
 	// `discounts` can be nil
-	BaseCheckoutLineTotal(checkoutLineInfo *checkout.CheckoutLineInfo, channel *channel.Channel, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
+	BaseCheckoutLineTotal(checkoutLineInfo *model.CheckoutLineInfo, channel *model.Channel, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// BaseCheckoutLineUnitPrice divide given totalLinePrice to given quantity and returns the result
 	BaseCheckoutLineUnitPrice(totalLinePrice *goprices.TaxedMoney, quantity int) (*goprices.TaxedMoney, *model.AppError)
 	// BaseCheckoutShippingPrice
-	BaseCheckoutShippingPrice(checkoutInfo *checkout.CheckoutInfo, lines checkout.CheckoutLineInfos) (*goprices.TaxedMoney, *model.AppError)
+	BaseCheckoutShippingPrice(checkoutInfo *model.CheckoutInfo, lines model.CheckoutLineInfos) (*goprices.TaxedMoney, *model.AppError)
 	// BaseCheckoutTotal returns the total cost of the checkout
 	//
 	// NOTE: discount must be either Money, TaxedMoney, *Money, *TaxedMoney
 	BaseCheckoutTotal(subTotal *goprices.TaxedMoney, shippingPrice *goprices.TaxedMoney, discount interface{}, currency string) (*goprices.TaxedMoney, *model.AppError)
 	// CalculateCheckoutTotalWithGiftcards
-	CalculateCheckoutTotalWithGiftcards(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
+	CalculateCheckoutTotalWithGiftcards(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// CalculatePriceForShippingMethod Return checkout shipping price
-	CalculatePriceForShippingMethod(checkoutInfo *checkout.CheckoutInfo, shippingMethodInfo *checkout.ShippingMethodInfo, lines checkout.CheckoutLineInfos) (*goprices.TaxedMoney, *model.AppError)
+	CalculatePriceForShippingMethod(checkoutInfo *model.CheckoutInfo, shippingMethodInfo *model.ShippingMethodInfo, lines model.CheckoutLineInfos) (*goprices.TaxedMoney, *model.AppError)
 	// CancelActivePayments set all active payments belong to given checkout
-	CancelActivePayments(checkOut *checkout.Checkout) *model.AppError
+	CancelActivePayments(checkOut *model.Checkout) *model.AppError
 	// CheckVariantInStock
-	CheckVariantInStock(checkOut *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *exception.InsufficientStock, *model.AppError)
+	CheckVariantInStock(checkOut *model.Checkout, variant *model.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *model.CheckoutLine, *model.InsufficientStock, *model.AppError)
 	// CheckoutByOption returns a checkout filtered by given option
-	CheckoutByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, *model.AppError)
+	CheckoutByOption(option *model.CheckoutFilterOption) (*model.Checkout, *model.AppError)
 	// CheckoutLastActivePayment returns the most recent payment made for given checkout
-	CheckoutLastActivePayment(checkout *checkout.Checkout) (*payment.Payment, *model.AppError)
+	CheckoutLastActivePayment(checkout *model.Checkout) (*model.Payment, *model.AppError)
 	// CheckoutLineTotal Return the total price of provided line, taxes included.
 	//
 	// It takes in account all plugins.
-	CheckoutLineTotal(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, checkoutLineInfo *checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
+	CheckoutLineTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, checkoutLineInfo *model.CheckoutLineInfo, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// CheckoutLinesByOption returns a list of checkout lines filtered using given option
-	CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, *model.AppError)
+	CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, *model.AppError)
 	// CheckoutShippingPrice Return checkout shipping price.
 	//
 	// It takes in account all plugins.
-	CheckoutShippingPrice(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
+	CheckoutShippingPrice(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// CheckoutShippingRequired checks if given checkout require shipping
 	CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError)
 	// CheckoutSubTotal Return the total cost of all the checkout lines, taxes included.
 	//
 	// It takes in account all plugins.
-	CheckoutSubTotal(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
+	CheckoutSubTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// CheckoutTotal Return the total cost of the checkout.
 	//
 	// Total is a cost of all lines and shipping fees, minus checkout discounts,
 	// taxes included.
 	//
 	// It takes in account all plugins.
-	CheckoutTotal(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
+	CheckoutTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// CheckoutTotalGiftCardsBalance Return the total balance of the gift cards assigned to the checkout
-	CheckoutTotalGiftCardsBalance(checkOut *checkout.Checkout) (*goprices.Money, *model.AppError)
+	CheckoutTotalGiftCardsBalance(checkOut *model.Checkout) (*goprices.Money, *model.AppError)
 	// CheckoutTotalWeight calculate total weight for given checkout lines (these lines belong to a single checkout)
-	CheckoutTotalWeight(checkoutLineInfos []*checkout.CheckoutLineInfo) (*measurement.Weight, *model.AppError)
+	CheckoutTotalWeight(checkoutLineInfos []*model.CheckoutLineInfo) (*measurement.Weight, *model.AppError)
 	// CheckoutsByOption returns a list of checkouts, filtered by given option
-	CheckoutsByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, *model.AppError)
+	CheckoutsByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, *model.AppError)
 	// CleanCheckoutShipping
-	CleanCheckoutShipping(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos) *model.AppError
+	CleanCheckoutShipping(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos) *model.AppError
 	// DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
-	DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) *model.AppError
+	DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *model.CheckoutFilterOption) *model.AppError
 	// FetchCheckoutInfo Fetch checkout as CheckoutInfo object
-	FetchCheckoutInfo(checkOut *checkout.Checkout, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) (*checkout.CheckoutInfo, *model.AppError)
+	FetchCheckoutInfo(checkOut *model.Checkout, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) (*model.CheckoutInfo, *model.AppError)
 	// FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
 	// It prefetch some related value also
-	FetchCheckoutLines(checkOut *checkout.Checkout) ([]*checkout.CheckoutLineInfo, *model.AppError)
+	FetchCheckoutLines(checkOut *model.Checkout) ([]*model.CheckoutLineInfo, *model.AppError)
 	// GetCustomerEmail returns checkout's user's email
-	GetCustomerEmail(ckout *checkout.Checkout) (string, *model.AppError)
+	GetCustomerEmail(ckout *model.Checkout) (string, *model.AppError)
 	// GetDeliveryMethodInfo takes `deliveryMethod` is either *ShippingMethodData or *Warehouse
-	GetDeliveryMethodInfo(deliveryMethod interface{}, address *account.Address) (checkout.DeliveryMethodBaseInterface, *model.AppError)
+	GetDeliveryMethodInfo(deliveryMethod interface{}, address *model.Address) (model.DeliveryMethodBaseInterface, *model.AppError)
 	// GetPricesOfDiscountedSpecificProduct Get prices of variants belonging to the discounted specific products.
 	// Specific products are products, collections and categories.
 	// Product must be assigned directly to the discounted category, assigning
 	// product to child category won't work.
-	GetPricesOfDiscountedSpecificProduct(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher, discounts []*product_and_discount.DiscountInfo) ([]*goprices.Money, *model.AppError)
+	GetPricesOfDiscountedSpecificProduct(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, voucher *model.Voucher, discounts []*model.DiscountInfo) ([]*goprices.Money, *model.AppError)
 	// GetValidCollectionPointsForCheckout Return a collection of `Warehouse`s that can be used as a collection point.
 	// Note that `quantity_check=False` should be used, when stocks quantity will
 	// be validated in further steps (checkout completion) in order to raise
 	// 'InsufficientProductStock' error instead of 'InvalidShippingError'.
-	GetValidCollectionPointsForCheckout(lines checkout.CheckoutLineInfos, countryCode string, quantityCheck bool) ([]*warehouse.WareHouse, *model.AppError)
+	GetValidCollectionPointsForCheckout(lines model.CheckoutLineInfos, countryCode string, quantityCheck bool) ([]*model.WareHouse, *model.AppError)
 	// GetValidShippingMethodListForCheckoutInfo
-	GetValidShippingMethodListForCheckoutInfo(checkoutInfo checkout.CheckoutInfo, shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) ([]*shipping.ShippingMethod, *model.AppError)
+	GetValidShippingMethodListForCheckoutInfo(checkoutInfo model.CheckoutInfo, shippingAddress *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) ([]*model.ShippingMethod, *model.AppError)
 	// GetValidShippingMethodsForCheckout finds all valid shipping methods for given checkout
-	GetValidShippingMethodsForCheckout(checkoutInfo checkout.CheckoutInfo, lineInfos []*checkout.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) ([]*shipping.ShippingMethod, *model.AppError)
+	GetValidShippingMethodsForCheckout(checkoutInfo model.CheckoutInfo, lineInfos []*model.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) ([]*model.ShippingMethod, *model.AppError)
 	// GetVoucherDiscountForCheckout Calculate discount value depending on voucher and discount types.
 	// Raise NotApplicable if voucher of given type cannot be applied.
-	GetVoucherDiscountForCheckout(manager interfaces.PluginManagerInterface, voucher *product_and_discount.Voucher, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *product_and_discount.NotApplicable, *model.AppError)
+	GetVoucherDiscountForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.Money, *model.NotApplicable, *model.AppError)
 	// GetVoucherForCheckout returns voucher with voucher code saved in checkout if active or None
 	//
 	// `withLock` default to false
-	GetVoucherForCheckout(checkoutInfo checkout.CheckoutInfo, withLock bool) (*product_and_discount.Voucher, *model.AppError)
+	GetVoucherForCheckout(checkoutInfo model.CheckoutInfo, withLock bool) (*model.Voucher, *model.AppError)
 	// IsFullyPaid Check if provided payment methods cover the checkout's total amount.
 	// Note that these payments may not be captured or charged at all.
-	IsFullyPaid(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (bool, *model.AppError)
+	IsFullyPaid(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (bool, *model.AppError)
 	// Logic required to finalize the checkout and convert it to order.
 	// Should be used with transaction_with_commit_on_errors, as there is a possibility
 	// for thread race.
 	// :raises ValidationError
 	//
 	// NOTE: Make sure user is authenticated before calling this method.
-	CompleteCheckout(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, paymentData map[string]interface{}, storeSource bool, discounts []*product_and_discount.DiscountInfo, user *account.User, _ interface{}, siteSettings *shop.Shop, trackingCode string, redirectURL string) (*order.Order, bool, model.StringMap, *payment.PaymentError, *model.AppError)
+	CompleteCheckout(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, paymentData map[string]interface{}, storeSource bool, discounts []*model.DiscountInfo, user *model.User, _ interface{}, siteSettings *model.Shop, trackingCode string, redirectURL string) (*model.Order, bool, model.StringMap, *model.PaymentError, *model.AppError)
 	// RecalculateCheckoutDiscount Recalculate `checkout.discount` based on the voucher.
 	// Will clear both voucher and discount if the discount is no longer applicable.
-	RecalculateCheckoutDiscount(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) *model.AppError
+	RecalculateCheckoutDiscount(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) *model.AppError
 	// ReleaseVoucherUsage
 	ReleaseVoucherUsage(orderData map[string]interface{}) *model.AppError
 	// RemovePromoCodeFromCheckout Remove gift card or voucher data from checkout.
-	RemovePromoCodeFromCheckout(checkoutInfo checkout.CheckoutInfo, promoCode string) *model.AppError
+	RemovePromoCodeFromCheckout(checkoutInfo model.CheckoutInfo, promoCode string) *model.AppError
 	// RemoveVoucherCodeFromCheckout Remove voucher data from checkout by code.
-	RemoveVoucherCodeFromCheckout(checkoutInfo checkout.CheckoutInfo, voucherCode string) *model.AppError
+	RemoveVoucherCodeFromCheckout(checkoutInfo model.CheckoutInfo, voucherCode string) *model.AppError
 	// RemoveVoucherFromCheckout removes voucher data from checkout
-	RemoveVoucherFromCheckout(checkOut *checkout.Checkout) *model.AppError
+	RemoveVoucherFromCheckout(checkOut *model.Checkout) *model.AppError
 	// Save shipping address in checkout if changed.
 	//
 	// Remove previously saved address if not connected to any user.
-	ChangeShippingAddressInCheckout(checkoutInfo checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
+	ChangeShippingAddressInCheckout(checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
 	// UpdateCheckoutInfoDeliveryMethod set CheckoutInfo's ShippingMethod to given shippingMethod
 	// and set new value for checkoutInfo's ShippingMethodChannelListings
 	// deliveryMethod must be either *ShippingMethod or *Warehouse or nil
-	UpdateCheckoutInfoDeliveryMethod(checkoutInfo checkout.CheckoutInfo, deliveryMethod interface{}) *model.AppError
+	UpdateCheckoutInfoDeliveryMethod(checkoutInfo model.CheckoutInfo, deliveryMethod interface{}) *model.AppError
 	// UpdateCheckoutInfoShippingAddress updates given `checkoutInfo` by setting given `address` as its ShippingAddress.
 	// then updates its ValidShippingMethods
-	UpdateCheckoutInfoShippingAddress(checkoutInfo checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
+	UpdateCheckoutInfoShippingAddress(checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
 	// UpsertCheckout saves/updates given checkout
-	UpsertCheckout(ckout *checkout.Checkout) (*checkout.Checkout, *model.AppError)
-	BaseOrderLineTotal(orderLine *order.OrderLine) (*goprices.TaxedMoney, *model.AppError)
+	UpsertCheckout(ckout *model.Checkout) (*model.Checkout, *model.AppError)
+	BaseOrderLineTotal(orderLine *model.OrderLine) (*goprices.TaxedMoney, *model.AppError)
 	BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Decimal, *model.AppError)
-	BulkCreateCheckoutLines(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, *model.AppError)
-	BulkUpdateCheckoutLines(checkoutLines []*checkout.CheckoutLine) *model.AppError
-	CalculateCheckoutQuantity(lineInfos []*checkout.CheckoutLineInfo) (int, *model.AppError)
-	ChangeBillingAddressInCheckout(checkOut *checkout.Checkout, address *account.Address) *model.AppError
-	CheckoutCountry(ckout *checkout.Checkout) (string, *model.AppError)
-	CheckoutLineWithVariant(checkout *checkout.Checkout, productVariantID string) (*checkout.CheckoutLine, *model.AppError)
-	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*checkout.CheckoutLine, *model.AppError)
-	CheckoutSetCountry(ckout *checkout.Checkout, newCountryCode string) *model.AppError
-	CleanBillingAddress(checkoutInfo checkout.CheckoutInfo) *model.AppError
-	CleanCheckoutPayment(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, lastPayment *payment.Payment) (*payment.PaymentError, *model.AppError)
-	ClearDeliveryMethod(checkoutInfo checkout.CheckoutInfo) *model.AppError
+	BulkCreateCheckoutLines(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, *model.AppError)
+	BulkUpdateCheckoutLines(checkoutLines []*model.CheckoutLine) *model.AppError
+	CalculateCheckoutQuantity(lineInfos []*model.CheckoutLineInfo) (int, *model.AppError)
+	ChangeBillingAddressInCheckout(checkOut *model.Checkout, address *model.Address) *model.AppError
+	CheckoutCountry(ckout *model.Checkout) (string, *model.AppError)
+	CheckoutLineWithVariant(checkout *model.Checkout, productVariantID string) (*model.CheckoutLine, *model.AppError)
+	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model.AppError)
+	CheckoutSetCountry(ckout *model.Checkout, newCountryCode string) *model.AppError
+	CleanBillingAddress(checkoutInfo model.CheckoutInfo) *model.AppError
+	CleanCheckoutPayment(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model.AppError)
+	ClearDeliveryMethod(checkoutInfo model.CheckoutInfo) *model.AppError
 	DeleteCheckoutLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) *model.AppError
-	GetDiscountedLines(checkoutLineInfos []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher) ([]*checkout.CheckoutLineInfo, *model.AppError)
-	GetValidCollectionPointsForCheckoutInfo(shippingAddress *account.Address, lines []*checkout.CheckoutLineInfo, checkoutInfo *checkout.CheckoutInfo) ([]*warehouse.WareHouse, *model.AppError)
-	UpsertCheckoutLine(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, *model.AppError)
-	ValidateVariantsInCheckoutLines(lines []*checkout.CheckoutLineInfo) *model.AppError
+	GetDiscountedLines(checkoutLineInfos []*model.CheckoutLineInfo, voucher *model.Voucher) ([]*model.CheckoutLineInfo, *model.AppError)
+	GetValidCollectionPointsForCheckoutInfo(shippingAddress *model.Address, lines []*model.CheckoutLineInfo, checkoutInfo *model.CheckoutInfo) ([]*model.WareHouse, *model.AppError)
+	UpsertCheckoutLine(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, *model.AppError)
+	ValidateVariantsInCheckoutLines(lines []*model.CheckoutLineInfo) *model.AppError
 }

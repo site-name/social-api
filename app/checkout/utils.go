@@ -11,22 +11,14 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
-	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/giftcard"
-	"github.com/sitename/sitename/model/payment"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/shipping"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
 // CheckVariantInStock
-func (a *ServiceCheckout) CheckVariantInStock(checkOut *checkout.Checkout, variant *product_and_discount.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *checkout.CheckoutLine, *exception.InsufficientStock, *model.AppError) {
+func (a *ServiceCheckout) CheckVariantInStock(checkOut *model.Checkout, variant *model.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *model.CheckoutLine, *model.InsufficientStock, *model.AppError) {
 	// quantity param is default to 1
 
 	checkoutLines, appErr := a.CheckoutLinesByCheckoutToken(checkOut.Token)
@@ -35,9 +27,9 @@ func (a *ServiceCheckout) CheckVariantInStock(checkOut *checkout.Checkout, varia
 	}
 
 	var (
-		lineWithVariant *checkout.CheckoutLine = nil      // checkoutLine that has variantID of given `variantID`
-		lineQuantity    int                    = 0        // quantity of lineWithVariant checkout line
-		newQuantity     int                    = quantity //
+		lineWithVariant *model.CheckoutLine = nil      // checkoutLine that has variantID of given `variantID`
+		lineQuantity    int                 = 0        // quantity of lineWithVariant checkout line
+		newQuantity     int                 = quantity //
 	)
 	if !replace {
 		newQuantity = quantity + lineQuantity
@@ -79,7 +71,7 @@ func (a *ServiceCheckout) CheckVariantInStock(checkOut *checkout.Checkout, varia
 // AddVariantToCheckout adds a product variant to checkout
 //
 // `quantity` default to 1, `replace` default to false, `checkQuantity` default to true
-func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutInfo, variant *product_and_discount.ProductVariant, quantity int, replace bool, checkQuantity bool) (*checkout.Checkout, *exception.InsufficientStock, *model.AppError) {
+func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *model.CheckoutInfo, variant *model.ProductVariant, quantity int, replace bool, checkQuantity bool) (*model.Checkout, *model.InsufficientStock, *model.AppError) {
 	// validate arguments
 	var invalidArgs string
 	if checkoutInfo == nil {
@@ -93,7 +85,7 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 	}
 
 	checkOut := checkoutInfo.Checkout
-	productChannelListings, appErr := a.srv.ProductService().ProductChannelListingsByOption(&product_and_discount.ProductChannelListingFilterOption{
+	productChannelListings, appErr := a.srv.ProductService().ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
 		ChannelID: squirrel.Eq{store.ProductChannelListingTableName + ".ChannelID": checkOut.ChannelID},
 		ProductID: squirrel.Eq{store.ProductChannelListingTableName + ".ProductID": variant.ProductID},
 	})
@@ -111,7 +103,7 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 	}
 
 	if line == nil {
-		checkoutLines, appErr := a.CheckoutLinesByOption(&checkout.CheckoutLineFilterOption{
+		checkoutLines, appErr := a.CheckoutLinesByOption(&model.CheckoutLineFilterOption{
 			CheckoutID: squirrel.Eq{store.CheckoutLineTableName + ".CheckoutID": checkOut.Token},
 			VariantID:  squirrel.Eq{store.CheckoutLineTableName + ".VariantID": variant.Id},
 		})
@@ -128,7 +120,7 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 			}
 		}
 	} else if line == nil {
-		if _, appErr = a.UpsertCheckoutLine(&checkout.CheckoutLine{
+		if _, appErr = a.UpsertCheckoutLine(&model.CheckoutLine{
 			CheckoutID: checkoutInfo.Checkout.Token,
 			VariantID:  variant.Id,
 			Quantity:   newQuantity,
@@ -145,7 +137,7 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *checkout.CheckoutIn
 	return &checkoutInfo.Checkout, nil, nil
 }
 
-func (a *ServiceCheckout) CalculateCheckoutQuantity(lineInfos []*checkout.CheckoutLineInfo) (int, *model.AppError) {
+func (a *ServiceCheckout) CalculateCheckoutQuantity(lineInfos []*model.CheckoutLineInfo) (int, *model.AppError) {
 	var sum int
 	for _, info := range lineInfos {
 		sum += info.Line.Quantity
@@ -161,7 +153,7 @@ func (a *ServiceCheckout) CalculateCheckoutQuantity(lineInfos []*checkout.Checko
 // Otherwise, quantity will be added or replaced (if replace argument is True).
 //
 //	skipStockCheck and replace are default to false
-func (a *ServiceCheckout) AddVariantsToCheckout(checkOut *checkout.Checkout, variants []*product_and_discount.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*checkout.Checkout, *exception.InsufficientStock, *model.AppError) {
+func (a *ServiceCheckout) AddVariantsToCheckout(checkOut *model.Checkout, variants []*model.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*model.Checkout, *model.InsufficientStock, *model.AppError) {
 	// validate input arguments:
 	var invlArgs string
 	if checkOut == nil {
@@ -194,7 +186,7 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkOut *checkout.Checkout, var
 		productIDs[i] = variant.ProductID
 	}
 	channelListings, appErr := a.srv.ProductService().
-		ProductChannelListingsByOption(&product_and_discount.ProductChannelListingFilterOption{
+		ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
 			ChannelID: squirrel.Eq{store.ProductChannelListingTableName + ".ChannelID": checkOut.ChannelID},
 			ProductID: squirrel.Eq{store.ProductChannelListingTableName + ".ProductID": productIDs},
 		})
@@ -202,7 +194,7 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkOut *checkout.Checkout, var
 		return nil, nil, appErr
 	}
 
-	listingMap := make(map[string]*product_and_discount.ProductChannelListing)
+	listingMap := make(map[string]*model.ProductChannelListing)
 	for _, listing := range channelListings {
 		listingMap[listing.ProductID] = listing
 	}
@@ -218,14 +210,14 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkOut *checkout.Checkout, var
 		return nil, nil, appErr
 	}
 
-	variantIDsInLines := make(map[string]*checkout.CheckoutLine)
+	variantIDsInLines := make(map[string]*model.CheckoutLine)
 	for _, line := range linesOfCheckout {
 		variantIDsInLines[line.VariantID] = line
 	}
 
 	var (
-		toCreateCheckoutLines   = []*checkout.CheckoutLine{}
-		toUpdateCheckoutLines   = []*checkout.CheckoutLine{}
+		toCreateCheckoutLines   = []*model.CheckoutLine{}
+		toUpdateCheckoutLines   = []*model.CheckoutLine{}
 		toDeleteCheckoutLineIDs = []string{}
 	)
 	// use Min() since two slices may not have same length
@@ -245,7 +237,7 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkOut *checkout.Checkout, var
 				toDeleteCheckoutLineIDs = append(toDeleteCheckoutLineIDs, checkoutLine.Id)
 			}
 		} else if quantity > 0 {
-			toCreateCheckoutLines = append(toCreateCheckoutLines, &checkout.CheckoutLine{
+			toCreateCheckoutLines = append(toCreateCheckoutLines, &model.CheckoutLine{
 				CheckoutID: checkOut.Token,
 				VariantID:  variant.Id,
 				Quantity:   quantity,
@@ -276,7 +268,7 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkOut *checkout.Checkout, var
 }
 
 // checkNewCheckoutAddress Check if and address in checkout has changed and if to remove old one
-func (a *ServiceCheckout) checkNewCheckoutAddress(checkOut *checkout.Checkout, address *account.Address, addressType string) (bool, bool, *model.AppError) {
+func (a *ServiceCheckout) checkNewCheckoutAddress(checkOut *model.Checkout, address *model.Address, addressType string) (bool, bool, *model.AppError) {
 	// validate if non-nill checkout was provided
 	var invalidArguments string
 	if checkOut == nil {
@@ -287,7 +279,7 @@ func (a *ServiceCheckout) checkNewCheckoutAddress(checkOut *checkout.Checkout, a
 	}
 
 	oldAddressId := checkOut.ShippingAddressID
-	if addressType == account.ADDRESS_TYPE_BILLING {
+	if addressType == model.ADDRESS_TYPE_BILLING {
 		oldAddressId = checkOut.BillingAddressID
 	}
 
@@ -322,8 +314,8 @@ func (a *ServiceCheckout) checkNewCheckoutAddress(checkOut *checkout.Checkout, a
 	}
 }
 
-func (a *ServiceCheckout) ChangeBillingAddressInCheckout(checkOut *checkout.Checkout, address *account.Address) *model.AppError {
-	changed, remove, appErr := a.checkNewCheckoutAddress(checkOut, address, account.ADDRESS_TYPE_BILLING)
+func (a *ServiceCheckout) ChangeBillingAddressInCheckout(checkOut *model.Checkout, address *model.Address) *model.AppError {
+	changed, remove, appErr := a.checkNewCheckoutAddress(checkOut, address, model.ADDRESS_TYPE_BILLING)
 	if appErr != nil {
 		return appErr
 	}
@@ -348,9 +340,9 @@ func (a *ServiceCheckout) ChangeBillingAddressInCheckout(checkOut *checkout.Chec
 // Save shipping address in checkout if changed.
 //
 // Remove previously saved address if not connected to any user.
-func (a *ServiceCheckout) ChangeShippingAddressInCheckout(checkoutInfo checkout.CheckoutInfo, address *account.Address, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError {
+func (a *ServiceCheckout) ChangeShippingAddressInCheckout(checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError {
 	checkOut := checkoutInfo.Checkout
-	changed, remove, appErr := a.checkNewCheckoutAddress(&checkOut, address, account.ADDRESS_TYPE_SHIPPING)
+	changed, remove, appErr := a.checkNewCheckoutAddress(&checkOut, address, model.ADDRESS_TYPE_SHIPPING)
 	if appErr != nil {
 		return appErr
 	}
@@ -378,23 +370,23 @@ func (a *ServiceCheckout) ChangeShippingAddressInCheckout(checkoutInfo checkout.
 }
 
 // getShippingVoucherDiscountForCheckout Calculate discount value for a voucher of shipping type
-func (s *ServiceCheckout) getShippingVoucherDiscountForCheckout(manager interfaces.PluginManagerInterface, voucher *product_and_discount.Voucher, checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *product_and_discount.NotApplicable, *model.AppError) {
+func (s *ServiceCheckout) getShippingVoucherDiscountForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo) (*goprices.Money, *model.NotApplicable, *model.AppError) {
 	shippingRequired, appErr := s.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
 	if appErr != nil {
 		return nil, nil, appErr
 	}
 	if !shippingRequired {
-		return nil, product_and_discount.NewNotApplicable("getShippingVoucherDiscountForCheckout", "Your order does not require shipping.", nil, 0), nil
+		return nil, model.NewNotApplicable("getShippingVoucherDiscountForCheckout", "Your order does not require shipping.", nil, 0), nil
 	}
 
 	if checkoutInfo.DeliveryMethodInfo.GetDeliveryMethod() == nil {
-		return nil, product_and_discount.NewNotApplicable("getShippingVoucherDiscountForCheckout", "Please select a delivery method first.", nil, 0), nil
+		return nil, model.NewNotApplicable("getShippingVoucherDiscountForCheckout", "Please select a delivery method first.", nil, 0), nil
 	}
 
 	// check if voucher is limited to specified countries
 	if address != nil {
 		if voucher.Countries != "" && !strings.Contains(voucher.Countries, address.Country) {
-			return nil, product_and_discount.NewNotApplicable("getShippingVoucherDiscountForCheckout", "This offer is not valid in your country.", nil, 0), nil
+			return nil, model.NewNotApplicable("getShippingVoucherDiscountForCheckout", "This offer is not valid in your country.", nil, 0), nil
 		}
 	}
 
@@ -408,10 +400,10 @@ func (s *ServiceCheckout) getShippingVoucherDiscountForCheckout(manager interfac
 }
 
 // getProductsVoucherDiscount Calculate products discount value for a voucher, depending on its type
-func (s *ServiceCheckout) getProductsVoucherDiscount(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *product_and_discount.NotApplicable, *model.AppError) {
+func (s *ServiceCheckout) getProductsVoucherDiscount(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, voucher *model.Voucher, discounts []*model.DiscountInfo) (*goprices.Money, *model.NotApplicable, *model.AppError) {
 	var prices []*goprices.Money
 
-	if voucher.Type == product_and_discount.SPECIFIC_PRODUCT {
+	if voucher.Type == model.SPECIFIC_PRODUCT {
 		moneys, appErr := s.GetPricesOfDiscountedSpecificProduct(manager, checkoutInfo, lines, voucher, discounts)
 		if appErr != nil {
 			return nil, nil, appErr
@@ -420,7 +412,7 @@ func (s *ServiceCheckout) getProductsVoucherDiscount(manager interfaces.PluginMa
 	}
 
 	if prices == nil || len(prices) == 0 {
-		return nil, product_and_discount.NewNotApplicable("getProductsVoucherDiscount", "This offer is only valid for selected items.", nil, 0), nil
+		return nil, model.NewNotApplicable("getProductsVoucherDiscount", "This offer is only valid for selected items.", nil, 0), nil
 	}
 
 	money, appErr := s.srv.DiscountService().GetProductsVoucherDiscount(voucher, prices, checkoutInfo.Channel.Id)
@@ -431,7 +423,7 @@ func (s *ServiceCheckout) getProductsVoucherDiscount(manager interfaces.PluginMa
 // Specific products are products, collections and categories.
 // Product must be assigned directly to the discounted category, assigning
 // product to child category won't work.
-func (s *ServiceCheckout) GetPricesOfDiscountedSpecificProduct(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher, discounts []*product_and_discount.DiscountInfo) ([]*goprices.Money, *model.AppError) {
+func (s *ServiceCheckout) GetPricesOfDiscountedSpecificProduct(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, voucher *model.Voucher, discounts []*model.DiscountInfo) ([]*goprices.Money, *model.AppError) {
 	var linePrices []*goprices.Money
 
 	discountedLines, appErr := s.GetDiscountedLines(lines, voucher)
@@ -444,7 +436,7 @@ func (s *ServiceCheckout) GetPricesOfDiscountedSpecificProduct(manager interface
 		addresses = checkoutInfo.BillingAddress
 	}
 	if discounts == nil {
-		discounts = []*product_and_discount.DiscountInfo{}
+		discounts = []*model.DiscountInfo{}
 	}
 
 	for _, lineInfo := range discountedLines {
@@ -467,12 +459,12 @@ func (s *ServiceCheckout) GetPricesOfDiscountedSpecificProduct(manager interface
 
 // GetVoucherDiscountForCheckout Calculate discount value depending on voucher and discount types.
 // Raise NotApplicable if voucher of given type cannot be applied.
-func (s *ServiceCheckout) GetVoucherDiscountForCheckout(manager interfaces.PluginManagerInterface, voucher *product_and_discount.Voucher, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.Money, *product_and_discount.NotApplicable, *model.AppError) {
+func (s *ServiceCheckout) GetVoucherDiscountForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.Money, *model.NotApplicable, *model.AppError) {
 	notApplicable, appErr := s.srv.DiscountService().ValidateVoucherForCheckout(manager, voucher, checkoutInfo, lines, discounts)
 	if notApplicable != nil || appErr != nil {
 		return nil, notApplicable, appErr
 	}
-	if voucher.Type == product_and_discount.ENTIRE_ORDER {
+	if voucher.Type == model.ENTIRE_ORDER {
 		checkoutSubTotal, appErr := s.CheckoutSubTotal(manager, checkoutInfo, lines, address, discounts)
 		if appErr != nil {
 			return nil, nil, appErr
@@ -483,10 +475,10 @@ func (s *ServiceCheckout) GetVoucherDiscountForCheckout(manager interfaces.Plugi
 		}
 		return money.(*goprices.Money), nil, nil
 	}
-	if voucher.Type == product_and_discount.SHIPPING {
+	if voucher.Type == model.SHIPPING {
 		return s.getShippingVoucherDiscountForCheckout(manager, voucher, checkoutInfo, lines, address, discounts)
 	}
-	if voucher.Type == product_and_discount.SPECIFIC_PRODUCT {
+	if voucher.Type == model.SPECIFIC_PRODUCT {
 		return s.getProductsVoucherDiscount(manager, checkoutInfo, lines, voucher, discounts)
 	}
 
@@ -494,11 +486,11 @@ func (s *ServiceCheckout) GetVoucherDiscountForCheckout(manager interfaces.Plugi
 	return nil, nil, model.NewAppError("GetVoucherDiscountForCheckout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "voucher.Type"}, "", http.StatusBadRequest)
 }
 
-func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher) ([]*checkout.CheckoutLineInfo, *model.AppError) {
+func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*model.CheckoutLineInfo, voucher *model.Voucher) ([]*model.CheckoutLineInfo, *model.AppError) {
 	var (
-		discountedProducts    []*product_and_discount.Product
-		discountedCategories  []*product_and_discount.Category
-		discountedCollections []*product_and_discount.Collection
+		discountedProducts    []*model.Product
+		discountedCategories  []*model.Category
+		discountedCollections []*model.Collection
 		appError              *model.AppError
 		mut                   sync.Mutex
 		wg                    sync.WaitGroup
@@ -527,7 +519,7 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.Check
 	}()
 
 	go func() {
-		categories, appErr := a.srv.ProductService().CategoriesByOption(&product_and_discount.CategoryFilterOption{
+		categories, appErr := a.srv.ProductService().CategoriesByOption(&model.CategoryFilterOption{
 			VoucherID: squirrel.Eq{store.VoucherCategoryTableName + ".VoucherID": voucher.Id},
 		})
 		if appErr != nil {
@@ -582,7 +574,7 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.Check
 		}
 	}
 
-	var discountedLines []*checkout.CheckoutLineInfo
+	var discountedLines []*model.CheckoutLineInfo
 	if len(discountedProductIDs) > 0 || len(discountedCategoryIDs) > 0 || len(discountedCollectionIDs) > 0 {
 		for _, lineInfo := range checkoutLineInfos {
 
@@ -611,11 +603,11 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*checkout.Check
 // GetVoucherForCheckout returns voucher with voucher code saved in checkout if active or None
 //
 // `withLock` default to false
-func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo checkout.CheckoutInfo, withLock bool) (*product_and_discount.Voucher, *model.AppError) {
+func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo model.CheckoutInfo, withLock bool) (*model.Voucher, *model.AppError) {
 	now := util.NewTime(time.Now().UTC()) // NOTE: not sure to use UTC or system time
 	checKout := checkoutInfo.Checkout
 
-	voucherFilterOption := &product_and_discount.VoucherFilterOption{
+	voucherFilterOption := &model.VoucherFilterOption{
 		UsageLimit: squirrel.Or{
 			squirrel.Eq{store.VoucherTableName + ".UsageLimit": nil},
 			squirrel.Gt{store.VoucherTableName + ".UsageLimit": store.VoucherTableName + ".Used"},
@@ -656,7 +648,7 @@ func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo checkout.CheckoutIn
 
 // RecalculateCheckoutDiscount Recalculate `checkout.discount` based on the voucher.
 // Will clear both voucher and discount if the discount is no longer applicable.
-func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) *model.AppError {
+func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) *model.AppError {
 	checkOut := checkoutInfo.Checkout
 	voucher, appErr := s.GetVoucherForCheckout(checkoutInfo, false)
 	if appErr != nil {
@@ -684,7 +676,7 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginM
 		if appErr != nil {
 			return appErr
 		}
-		if voucher.Type != product_and_discount.SHIPPING {
+		if voucher.Type != model.SHIPPING {
 			if checkoutSubTotal.Gross.LessThan(discount) {
 				checkOut.Discount = checkoutSubTotal.Gross
 			} else {
@@ -697,7 +689,7 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginM
 
 		// check if the owner of this checkout has ther primary language:
 		if checkoutInfo.User != nil && model.Languages[checkoutInfo.User.Locale] != "" {
-			voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&product_and_discount.VoucherTranslationFilterOption{
+			voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&model.VoucherTranslationFilterOption{
 				LanguageCode: squirrel.Eq{store.VoucherTranslationTableName + ".LanguageCode": checkoutInfo.User.Locale},
 				VoucherID:    squirrel.Eq{store.VoucherTranslationTableName + ".VoucherID": voucher.Id},
 			})
@@ -727,7 +719,7 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginM
 
 // AddPromoCodeToCheckout Add gift card or voucher data to checkout.
 // Raise InvalidPromoCode if promo code does not match to any voucher or gift card.
-func (s *ServiceCheckout) AddPromoCodeToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, promoCode string, discounts []*product_and_discount.DiscountInfo) (*giftcard.InvalidPromoCode, *model.AppError) {
+func (s *ServiceCheckout) AddPromoCodeToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, promoCode string, discounts []*model.DiscountInfo) (*model.InvalidPromoCode, *model.AppError) {
 	codeIsVoucher, appErr := s.srv.DiscountService().PromoCodeIsVoucher(promoCode)
 	if appErr != nil {
 		return nil, appErr
@@ -746,18 +738,18 @@ func (s *ServiceCheckout) AddPromoCodeToCheckout(manager interfaces.PluginManage
 		return s.srv.GiftcardService().AddGiftcardCodeToCheckout(&checkoutInfo.Checkout, checkoutInfo.GetCustomerEmail(), promoCode, checkoutInfo.Channel.Currency)
 	}
 
-	return giftcard.NewInvalidPromoCode("AddPromoCodeToCheckout", "Promo code is invalid"), nil
+	return model.NewInvalidPromoCode("AddPromoCodeToCheckout", "Promo code is invalid"), nil
 }
 
 // AddVoucherCodeToCheckout Add voucher data to checkout by code.
 // Raise InvalidPromoCode() if voucher of given type cannot be applied.
-func (s *ServiceCheckout) AddVoucherCodeToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, voucherCode string, discounts []*product_and_discount.DiscountInfo) (*giftcard.InvalidPromoCode, *model.AppError) {
+func (s *ServiceCheckout) AddVoucherCodeToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, voucherCode string, discounts []*model.DiscountInfo) (*model.InvalidPromoCode, *model.AppError) {
 	vouchers, appErr := s.srv.DiscountService().FilterActiveVouchers(time.Now().UTC(), checkoutInfo.Channel.Slug)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
 		}
-		return &giftcard.InvalidPromoCode{}, nil
+		return &model.InvalidPromoCode{}, nil
 	}
 
 	for _, voucher := range vouchers {
@@ -767,17 +759,17 @@ func (s *ServiceCheckout) AddVoucherCodeToCheckout(manager interfaces.PluginMana
 				return nil, appErr
 			}
 			if notAplicable != nil {
-				return nil, model.NewAppError("AddVoucherCodeToCheckout", "app.checkout.voucher_not_applicabale_to_checkout.app_error", map[string]interface{}{"code": exception.VOUCHER_NOT_APPLICABLE}, "", http.StatusNotAcceptable)
+				return nil, model.NewAppError("AddVoucherCodeToCheckout", "app.model.voucher_not_applicabale_to_checkout.app_error", map[string]interface{}{"code": model.VOUCHER_NOT_APPLICABLE}, "", http.StatusNotAcceptable)
 			}
 		}
 	}
 
-	return &giftcard.InvalidPromoCode{}, nil
+	return &model.InvalidPromoCode{}, nil
 }
 
 // AddVoucherToCheckout Add voucher data to checkout.
 // Raise NotApplicable if voucher of given type cannot be applied.
-func (s *ServiceCheckout) AddVoucherToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, voucher *product_and_discount.Voucher, discounts []*product_and_discount.DiscountInfo) (*product_and_discount.NotApplicable, *model.AppError) {
+func (s *ServiceCheckout) AddVoucherToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, voucher *model.Voucher, discounts []*model.DiscountInfo) (*model.NotApplicable, *model.AppError) {
 	checkout := checkoutInfo.Checkout
 
 	address := checkoutInfo.ShippingAddress
@@ -792,7 +784,7 @@ func (s *ServiceCheckout) AddVoucherToCheckout(manager interfaces.PluginManagerI
 	checkout.DiscountName = voucher.Name
 
 	if user := checkoutInfo.User; user != nil && model.Languages[user.Locale] != "" {
-		voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&product_and_discount.VoucherTranslationFilterOption{
+		voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&model.VoucherTranslationFilterOption{
 			LanguageCode: squirrel.Eq{store.VoucherTranslationTableName + ".LanguageCode": user.Locale},
 		})
 		if appErr != nil {
@@ -811,7 +803,7 @@ func (s *ServiceCheckout) AddVoucherToCheckout(manager interfaces.PluginManagerI
 }
 
 // RemovePromoCodeFromCheckout Remove gift card or voucher data from checkout.
-func (a *ServiceCheckout) RemovePromoCodeFromCheckout(checkoutInfo checkout.CheckoutInfo, promoCode string) *model.AppError {
+func (a *ServiceCheckout) RemovePromoCodeFromCheckout(checkoutInfo model.CheckoutInfo, promoCode string) *model.AppError {
 	// check if promoCode is voucher:
 	promoCodeIsVoucher, appErr := a.srv.DiscountService().PromoCodeIsVoucher(promoCode)
 	if appErr != nil { // this error is system error
@@ -834,7 +826,7 @@ func (a *ServiceCheckout) RemovePromoCodeFromCheckout(checkoutInfo checkout.Chec
 }
 
 // RemoveVoucherCodeFromCheckout Remove voucher data from checkout by code.
-func (a *ServiceCheckout) RemoveVoucherCodeFromCheckout(checkoutInfo checkout.CheckoutInfo, voucherCode string) *model.AppError {
+func (a *ServiceCheckout) RemoveVoucherCodeFromCheckout(checkoutInfo model.CheckoutInfo, voucherCode string) *model.AppError {
 	existingVoucher, appErr := a.GetVoucherForCheckout(checkoutInfo, false)
 	if appErr != nil {
 		return appErr
@@ -847,7 +839,7 @@ func (a *ServiceCheckout) RemoveVoucherCodeFromCheckout(checkoutInfo checkout.Ch
 }
 
 // RemoveVoucherFromCheckout removes voucher data from checkout
-func (a *ServiceCheckout) RemoveVoucherFromCheckout(checkOut *checkout.Checkout) *model.AppError {
+func (a *ServiceCheckout) RemoveVoucherFromCheckout(checkOut *model.Checkout) *model.AppError {
 	if checkOut == nil {
 		return nil
 	}
@@ -863,7 +855,7 @@ func (a *ServiceCheckout) RemoveVoucherFromCheckout(checkOut *checkout.Checkout)
 }
 
 // GetValidShippingMethodsForCheckout finds all valid shipping methods for given checkout
-func (a *ServiceCheckout) GetValidShippingMethodsForCheckout(checkoutInfo checkout.CheckoutInfo, lineInfos []*checkout.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) ([]*shipping.ShippingMethod, *model.AppError) {
+func (a *ServiceCheckout) GetValidShippingMethodsForCheckout(checkoutInfo model.CheckoutInfo, lineInfos []*model.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) ([]*model.ShippingMethod, *model.AppError) {
 	var productIDs []string
 	for _, line := range lineInfos {
 		productIDs = append(productIDs, line.Product.Id)
@@ -893,30 +885,30 @@ func (a *ServiceCheckout) GetValidShippingMethodsForCheckout(checkoutInfo checko
 // Note that `quantity_check=False` should be used, when stocks quantity will
 // be validated in further steps (checkout completion) in order to raise
 // 'InsufficientProductStock' error instead of 'InvalidShippingError'.
-func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines checkout.CheckoutLineInfos, countryCode string, quantityCheck bool) ([]*warehouse.WareHouse, *model.AppError) {
+func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines model.CheckoutLineInfos, countryCode string, quantityCheck bool) ([]*model.WareHouse, *model.AppError) {
 	linesRequireShipping, appErr := s.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
 	if appErr != nil {
 		return nil, appErr
 	}
 	if !linesRequireShipping {
-		return warehouse.Warehouses{}, nil
+		return model.Warehouses{}, nil
 	}
 
 	if model.Countries[strings.ToUpper(countryCode)] == "" {
-		return warehouse.Warehouses{}, nil
+		return model.Warehouses{}, nil
 	}
-	checkoutLines, appErr := s.CheckoutLinesByOption(&checkout.CheckoutLineFilterOption{
+	checkoutLines, appErr := s.CheckoutLinesByOption(&model.CheckoutLineFilterOption{
 		Id: squirrel.Eq{store.CheckoutLineTableName + ".Id": lines.CheckoutLines().IDs()},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
 		}
-		return warehouse.Warehouses{}, nil
+		return model.Warehouses{}, nil
 	}
 
 	var (
-		warehouses warehouse.Warehouses
+		warehouses model.Warehouses
 		err        error
 	)
 	if quantityCheck {
@@ -932,7 +924,7 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines checkout.Che
 	return warehouses, nil
 }
 
-func (a *ServiceCheckout) ClearDeliveryMethod(checkoutInfo checkout.CheckoutInfo) *model.AppError {
+func (a *ServiceCheckout) ClearDeliveryMethod(checkoutInfo model.CheckoutInfo) *model.AppError {
 	checkOut := checkoutInfo.Checkout
 	checkOut.CollectionPointID = nil
 	checkOut.ShippingMethodID = nil
@@ -948,9 +940,9 @@ func (a *ServiceCheckout) ClearDeliveryMethod(checkoutInfo checkout.CheckoutInfo
 
 // IsFullyPaid Check if provided payment methods cover the checkout's total amount.
 // Note that these payments may not be captured or charged at all.
-func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (bool, *model.AppError) {
+func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (bool, *model.AppError) {
 	checkOut := checkoutInfo.Checkout
-	payments, appErr := s.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
+	payments, appErr := s.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		CheckoutToken: checkOut.Token,
 		IsActive:      model.NewBool(true),
 	})
@@ -994,7 +986,7 @@ func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface,
 }
 
 // CancelActivePayments set all active payments belong to given checkout
-func (a *ServiceCheckout) CancelActivePayments(checkOut *checkout.Checkout) *model.AppError {
+func (a *ServiceCheckout) CancelActivePayments(checkOut *model.Checkout) *model.AppError {
 	err := a.srv.Store.Payment().CancelActivePaymentsOfCheckout(checkOut.Token)
 	if err != nil {
 		return model.NewAppError("CancelActivePayments", "app.checkout.cancel_payments_of_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -1003,7 +995,7 @@ func (a *ServiceCheckout) CancelActivePayments(checkOut *checkout.Checkout) *mod
 	return nil
 }
 
-func (a *ServiceCheckout) ValidateVariantsInCheckoutLines(lines []*checkout.CheckoutLineInfo) *model.AppError {
+func (a *ServiceCheckout) ValidateVariantsInCheckoutLines(lines []*model.CheckoutLineInfo) *model.AppError {
 	var notAvailableVariantIDs []string
 	for _, line := range lines {
 		if line.ChannelListing.Price == nil {
@@ -1018,4 +1010,9 @@ func (a *ServiceCheckout) ValidateVariantsInCheckoutLines(lines []*checkout.Chec
 	}
 
 	return nil
+}
+
+// prepareInsufficientStockCheckoutValidationAppError
+func prepareInsufficientStockCheckoutValidationAppError(where string, err *model.InsufficientStock) *model.AppError {
+	return model.NewAppError(where, "app.checkout.insufficient_stock.app_error", map[string]interface{}{"variants": err.VariantIDs()}, "", http.StatusNotAcceptable)
 }

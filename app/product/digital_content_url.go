@@ -4,12 +4,11 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
 // UpsertDigitalContentURL create a digital content url then returns it
-func (a *ServiceProduct) UpsertDigitalContentURL(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, *model.AppError) {
+func (a *ServiceProduct) UpsertDigitalContentURL(contentURL *model.DigitalContentUrl) (*model.DigitalContentUrl, *model.AppError) {
 	contentURL, err := a.srv.Store.DigitalContentUrl().Upsert(contentURL)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

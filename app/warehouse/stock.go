@@ -4,13 +4,12 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
 // BulkUpsertStocks updates or insderts given stock based on its Id property
-func (a *ServiceWarehouse) BulkUpsertStocks(transaction store_iface.SqlxTxExecutor, stocks []*warehouse.Stock) ([]*warehouse.Stock, *model.AppError) {
+func (a *ServiceWarehouse) BulkUpsertStocks(transaction store_iface.SqlxTxExecutor, stocks []*model.Stock) ([]*model.Stock, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().BulkUpsert(transaction, stocks)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -30,7 +29,7 @@ func (a *ServiceWarehouse) BulkUpsertStocks(transaction store_iface.SqlxTxExecut
 }
 
 // StocksByOption returns a list of stocks filtered using given options
-func (a *ServiceWarehouse) StocksByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.StockFilterOption) (warehouse.Stocks, *model.AppError) {
+func (a *ServiceWarehouse) StocksByOption(transaction store_iface.SqlxTxExecutor, option *model.StockFilterOption) (model.Stocks, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().FilterByOption(transaction, option)
 	var (
 		statusCode   int
@@ -53,8 +52,8 @@ func (a *ServiceWarehouse) StocksByOption(transaction store_iface.SqlxTxExecutor
 // GetVariantStocksForCountry Return the stock information about the a stock for a given country.
 //
 // Note it will raise a 'Stock.DoesNotExist' exception if no such stock is found.
-func (a *ServiceWarehouse) GetVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, countryCode string, channelSlug string, variantID string) ([]*warehouse.Stock, *model.AppError) {
-	stocks, err := a.srv.Store.Stock().FilterVariantStocksForCountry(transaction, &warehouse.StockFilterForCountryAndChannel{
+func (a *ServiceWarehouse) GetVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, countryCode string, channelSlug string, variantID string) ([]*model.Stock, *model.AppError) {
+	stocks, err := a.srv.Store.Stock().FilterVariantStocksForCountry(transaction, &model.StockFilterForCountryAndChannel{
 		CountryCode:      countryCode,
 		ChannelSlug:      channelSlug,
 		ProductVariantID: variantID,
@@ -78,7 +77,7 @@ func (a *ServiceWarehouse) GetVariantStocksForCountry(transaction store_iface.Sq
 }
 
 // GetProductStocksForCountryAndChannel
-func (a *ServiceWarehouse) GetProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError) {
+func (a *ServiceWarehouse) GetProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().FilterProductStocksForCountryAndChannel(transaction, options)
 	var (
 		statusCode   int
@@ -99,7 +98,7 @@ func (a *ServiceWarehouse) GetProductStocksForCountryAndChannel(transaction stor
 }
 
 // FilterStocksForCountryAndChannel finds stocks by given options
-func (a *ServiceWarehouse) FilterStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, *model.AppError) {
+func (a *ServiceWarehouse) FilterStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().FilterForCountryAndChannel(transaction, options)
 	var (
 		statusCode   int
@@ -120,7 +119,7 @@ func (a *ServiceWarehouse) FilterStocksForCountryAndChannel(transaction store_if
 }
 
 // GetStockById takes options for filtering 1 stock
-func (a *ServiceWarehouse) GetStockById(stockID string) (*warehouse.Stock, *model.AppError) {
+func (a *ServiceWarehouse) GetStockById(stockID string) (*model.Stock, *model.AppError) {
 	stock, err := a.srv.Store.Stock().Get(stockID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -134,7 +133,7 @@ func (a *ServiceWarehouse) GetStockById(stockID string) (*warehouse.Stock, *mode
 }
 
 // FilterStocksForChannel returns a slice of stocks that filtered using given options
-func (a *ServiceWarehouse) FilterStocksForChannel(option *warehouse.StockFilterForChannelOption) ([]*warehouse.Stock, *model.AppError) {
+func (a *ServiceWarehouse) FilterStocksForChannel(option *model.StockFilterForChannelOption) ([]*model.Stock, *model.AppError) {
 	_, stocks, err := a.srv.Store.Stock().FilterForChannel(option)
 	var (
 		statusCode   int

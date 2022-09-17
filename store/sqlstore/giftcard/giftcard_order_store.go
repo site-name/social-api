@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -29,7 +28,7 @@ func (s *SqlGiftCardOrderStore) ModelFields(prefix string) model.AnyArray[string
 	})
 }
 
-func (gs *SqlGiftCardOrderStore) Save(giftCardOrder *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, error) {
+func (gs *SqlGiftCardOrderStore) Save(giftCardOrder *model.OrderGiftCard) (*model.OrderGiftCard, error) {
 	giftCardOrder.PreSave()
 	if err := giftCardOrder.IsValid(); err != nil {
 		return nil, err
@@ -46,8 +45,8 @@ func (gs *SqlGiftCardOrderStore) Save(giftCardOrder *giftcard.OrderGiftCard) (*g
 	return giftCardOrder, nil
 }
 
-func (gs *SqlGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error) {
-	var res giftcard.OrderGiftCard
+func (gs *SqlGiftCardOrderStore) Get(id string) (*model.OrderGiftCard, error) {
+	var res model.OrderGiftCard
 	err := gs.GetReplicaX().Get(&res, "SELECT * FROM "+store.OrderGiftCardTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -60,7 +59,7 @@ func (gs *SqlGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error)
 }
 
 // BulkUpsert upserts given order-giftcard relations and returns it
-func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
+func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
 	var executor store_iface.SqlxExecutor = gs.GetMasterX()
 	if transaction != nil {
 		executor = transaction

@@ -4,10 +4,9 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/plugins"
 )
 
-func (a *ServicePlugin) GetPluginStatus(id string) (*plugins.PluginStatus, *model.AppError) {
+func (a *ServicePlugin) GetPluginStatus(id string) (*model.PluginStatus, *model.AppError) {
 	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
 	if appErr != nil {
 		return nil, appErr
@@ -33,7 +32,7 @@ func (a *ServicePlugin) GetPluginStatus(id string) (*plugins.PluginStatus, *mode
 }
 
 // GetPluginStatuses returns the status for plugins installed on this server.
-func (a *ServicePlugin) GetPluginStatuses() (plugins.PluginStatuses, *model.AppError) {
+func (a *ServicePlugin) GetPluginStatuses() (model.PluginStatuses, *model.AppError) {
 	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
 	if appErr != nil {
 		return nil, appErr
@@ -57,7 +56,7 @@ func (a *ServicePlugin) GetPluginStatuses() (plugins.PluginStatuses, *model.AppE
 }
 
 // GetClusterPluginStatuses returns the status for plugins installed anywhere in the cluster.
-func (a *ServicePlugin) GetClusterPluginStatuses() (plugins.PluginStatuses, *model.AppError) {
+func (a *ServicePlugin) GetClusterPluginStatuses() (model.PluginStatuses, *model.AppError) {
 	pluginStatuses, err := a.GetPluginStatuses()
 	if err != nil {
 		return nil, err

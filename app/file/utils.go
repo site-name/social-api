@@ -7,7 +7,7 @@ import (
 	"io"
 
 	"github.com/sitename/sitename/app/imaging"
-	"github.com/sitename/sitename/model/file"
+	"github.com/sitename/sitename/model"
 )
 
 func checkImageResolutionLimit(w, h int, maxRes int64) error {
@@ -32,7 +32,7 @@ func CheckImageLimits(imageData io.Reader, maxRes int64) error {
 	return checkImageResolutionLimit(w, h, maxRes)
 }
 
-func (a *ServiceFile) GeneratePublicLink(siteURL string, info *file.FileInfo) string {
+func (a *ServiceFile) GeneratePublicLink(siteURL string, info *model.FileInfo) string {
 	hash := GeneratePublicLinkHash(info.Id, *a.srv.Config().FileSettings.PublicLinkSalt)
 	return fmt.Sprintf("%s/files/%v/public?h=%s", siteURL, info.Id, hash)
 }

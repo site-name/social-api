@@ -4,11 +4,10 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shipping"
 )
 
 // ShippingMethodChannelListingsByOption returns a list of shipping method channel listings by given option
-func (a *ServiceShipping) ShippingMethodChannelListingsByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, *model.AppError) {
+func (a *ServiceShipping) ShippingMethodChannelListingsByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, *model.AppError) {
 	listings, err := a.srv.Store.ShippingMethodChannelListing().FilterByOption(option)
 	var (
 		statusCode int

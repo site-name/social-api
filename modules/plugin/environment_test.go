@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/sitename/sitename/model/plugins"
+	"github.com/sitename/sitename/model"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,9 +21,9 @@ func TestAvaliablePlugins(t *testing.T) {
 		pluginDir: dir,
 	}
 
-	t.Run("Should be able to load available plugins", func(t *testing.T) {
-		bundle1 := plugins.BundleInfo{
-			Manifest: &plugins.Manifest{
+	t.Run("Should be able to load available model", func(t *testing.T) {
+		bundle1 := model.BundleInfo{
+			Manifest: &model.Manifest{
 				Id:      "someid",
 				Version: "1",
 			},
@@ -42,7 +42,7 @@ func TestAvaliablePlugins(t *testing.T) {
 		require.Len(t, bundles, 1)
 	})
 
-	t.Run("Should not be able to load plugins without a valid manifest file", func(t *testing.T) {
+	t.Run("Should not be able to load model without a valid manifest file", func(t *testing.T) {
 		err := os.Mkdir(filepath.Join(dir, "plugin2"), 0700)
 		require.NoError(t, err)
 		defer os.RemoveAll(filepath.Join(dir, "plugin2"))
@@ -56,7 +56,7 @@ func TestAvaliablePlugins(t *testing.T) {
 		require.Len(t, bundles, 0)
 	})
 
-	t.Run("Should not be able to load plugins without a manifest file", func(t *testing.T) {
+	t.Run("Should not be able to load model without a manifest file", func(t *testing.T) {
 		err := os.Mkdir(filepath.Join(dir, "plugin3"), 0700)
 		require.NoError(t, err)
 		defer os.RemoveAll(filepath.Join(dir, "plugin3"))

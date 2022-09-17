@@ -15,9 +15,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/file"
-	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -27,11 +24,11 @@ type PluginAPI struct {
 	app      app.AppIface
 	ctx      *request.Context
 	logger   slog.Sugar
-	manifest *plugins.Manifest
+	manifest *model.Manifest
 }
 
 // NewPluginAPI creates and returns a new PlginAPI
-func NewPluginAPI(a app.AppIface, c *request.Context, manifest *plugins.Manifest) *PluginAPI {
+func NewPluginAPI(a app.AppIface, c *request.Context, manifest *model.Manifest) *PluginAPI {
 	return &PluginAPI{
 		id:       manifest.Id,
 		manifest: manifest,
@@ -123,7 +120,7 @@ func (api *PluginAPI) GetSystemInstallDate() (int64, *model.AppError) {
 	return api.app.GetSystemInstallDate()
 }
 
-func (api *PluginAPI) CreateUser(user *account.User) (*account.User, *model.AppError) {
+func (api *PluginAPI) CreateUser(user *model.User) (*model.User, *model.AppError) {
 	return api.app.Srv().AccountService().CreateUser(api.ctx, user)
 }
 
@@ -136,23 +133,23 @@ func (api *PluginAPI) DeleteUser(userID string) *model.AppError {
 	return err
 }
 
-func (api *PluginAPI) GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError) {
+func (api *PluginAPI) GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError) {
 	return api.app.Srv().AccountService().GetUsers(options)
 }
 
-func (api *PluginAPI) GetUser(userID string) (*account.User, *model.AppError) {
+func (api *PluginAPI) GetUser(userID string) (*model.User, *model.AppError) {
 	return api.app.Srv().AccountService().UserById(context.Background(), userID)
 }
 
-func (api *PluginAPI) GetUserByEmail(email string) (*account.User, *model.AppError) {
+func (api *PluginAPI) GetUserByEmail(email string) (*model.User, *model.AppError) {
 	return api.app.Srv().AccountService().UserByEmail(email)
 }
 
-func (api *PluginAPI) GetUserByUsername(name string) (*account.User, *model.AppError) {
+func (api *PluginAPI) GetUserByUsername(name string) (*model.User, *model.AppError) {
 	return api.app.Srv().AccountService().GetUserByUsername(name)
 }
 
-func (api *PluginAPI) GetUsersByUsernames(usernames []string) ([]*account.User, *model.AppError) {
+func (api *PluginAPI) GetUsersByUsernames(usernames []string) ([]*model.User, *model.AppError) {
 	return api.app.Srv().AccountService().GetUsersByUsernames(usernames, true)
 }
 
@@ -168,7 +165,7 @@ func (api *PluginAPI) DeletePreferencesForUser(userID string, preferences []mode
 	return api.app.Srv().AccountService().DeletePreferences(userID, preferences)
 }
 
-func (api *PluginAPI) CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError) {
+func (api *PluginAPI) CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model.AppError) {
 	return api.app.Srv().AccountService().CreateUserAccessToken(token)
 }
 
@@ -181,7 +178,7 @@ func (api *PluginAPI) RevokeUserAccessToken(tokenID string) *model.AppError {
 	return api.app.Srv().AccountService().RevokeUserAccessToken(accessToken)
 }
 
-func (api *PluginAPI) UpdateUser(user *account.User) (*account.User, *model.AppError) {
+func (api *PluginAPI) UpdateUser(user *model.User) (*model.User, *model.AppError) {
 	return api.app.Srv().AccountService().UpdateUser(user, true)
 }
 
@@ -189,11 +186,11 @@ func (api *PluginAPI) UpdateUserActive(userID string, active bool) *model.AppErr
 	return api.app.Srv().AccountService().UpdateUserActive(api.ctx, userID, active)
 }
 
-func (api *PluginAPI) GetUserStatus(userID string) (*account.Status, *model.AppError) {
+func (api *PluginAPI) GetUserStatus(userID string) (*model.Status, *model.AppError) {
 	return api.app.Srv().AccountService().GetStatus(userID)
 }
 
-func (api *PluginAPI) GetUserStatusesByIds(userIDs []string) ([]*account.Status, *model.AppError) {
+func (api *PluginAPI) GetUserStatusesByIds(userIDs []string) ([]*model.Status, *model.AppError) {
 	return api.app.Srv().AccountService().GetUserStatusesByIds(userIDs)
 }
 
@@ -219,8 +216,8 @@ func (api *PluginAPI) GetLDAPUserAttributes(userID string, attributes []string) 
 	return map[string]string{}, nil
 }
 
-func (api *PluginAPI) SearchUsers(search *account.UserSearch) ([]*account.User, *model.AppError) {
-	pluginSearchUsersOptions := &account.UserSearchOptions{
+func (api *PluginAPI) SearchUsers(search *model.UserSearch) ([]*model.User, *model.AppError) {
+	pluginSearchUsersOptions := &model.UserSearchOptions{
 		IsAdmin:       true,
 		AllowInactive: search.AllowInactive,
 		Limit:         search.Limit,
@@ -251,11 +248,11 @@ func (api *PluginAPI) CopyFileInfos(userID string, fileIDs []string) ([]string, 
 	return api.app.Srv().FileService().CopyFileInfos(userID, fileIDs)
 }
 
-func (api *PluginAPI) GetFileInfo(fileID string) (*file.FileInfo, *model.AppError) {
+func (api *PluginAPI) GetFileInfo(fileID string) (*model.FileInfo, *model.AppError) {
 	return api.app.Srv().FileService().GetFileInfo(fileID)
 }
 
-func (api *PluginAPI) GetFileInfos(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, *model.AppError) {
+func (api *PluginAPI) GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError) {
 	return api.app.Srv().FileService().GetFileInfos(page, perPage, opt)
 }
 
@@ -288,12 +285,12 @@ func (api *PluginAPI) GetFile(fileID string) ([]byte, *model.AppError) {
 // 	return api.app.Srv().FileService().UploadFile(api.ctx, data, channelID, filename)
 // }
 
-func (api *PluginAPI) GetPlugins() ([]*plugins.Manifest, *model.AppError) {
+func (api *PluginAPI) GetPlugins() ([]*model.Manifest, *model.AppError) {
 	plgs, err := api.app.Srv().PluginService().GetPlugins()
 	if err != nil {
 		return nil, err
 	}
-	var manifests []*plugins.Manifest
+	var manifests []*model.Manifest
 	for _, manifest := range plgs.Active {
 		manifests = append(manifests, &manifest.Manifest)
 	}
@@ -315,11 +312,11 @@ func (api *PluginAPI) RemovePlugin(id string) *model.AppError {
 	return api.app.Srv().PluginService().RemovePlugin(id)
 }
 
-func (api *PluginAPI) GetPluginStatus(id string) (*plugins.PluginStatus, *model.AppError) {
+func (api *PluginAPI) GetPluginStatus(id string) (*model.PluginStatus, *model.AppError) {
 	return api.app.Srv().PluginService().GetPluginStatus(id)
 }
 
-func (api *PluginAPI) InstallPlugin(file io.Reader, replace bool) (*plugins.Manifest, *model.AppError) {
+func (api *PluginAPI) InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model.AppError) {
 	if !*api.app.Srv().Config().PluginSettings.Enable || !*api.app.Srv().Config().PluginSettings.EnableUploads {
 		return nil, model.NewAppError("installPlugin", "app.plugin.upload_disabled.app_error", nil, "", http.StatusNotImplemented)
 	}
@@ -333,7 +330,7 @@ func (api *PluginAPI) InstallPlugin(file io.Reader, replace bool) (*plugins.Mani
 }
 
 // KV Store Section
-func (api *PluginAPI) KVSetWithOptions(key string, value []byte, options plugins.PluginKVSetOptions) (bool, *model.AppError) {
+func (api *PluginAPI) KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model.AppError) {
 	return api.app.Srv().PluginService().SetPluginKeyWithOptions(api.id, key, value, options)
 }
 
@@ -441,11 +438,11 @@ func (api *PluginAPI) SendMail(to, subject, htmlBody string) *model.AppError {
 	return nil
 }
 
-func (api *PluginAPI) UpdateUserStatus(userID, status string) (*account.Status, *model.AppError) {
+func (api *PluginAPI) UpdateUserStatus(userID, status string) (*model.Status, *model.AppError) {
 	switch status {
-	case account.STATUS_ONLINE:
+	case model.STATUS_ONLINE:
 		api.app.Srv().AccountService().SetStatusOnline(userID, true)
-	case account.STATUS_OFFLINE:
+	case model.STATUS_OFFLINE:
 		api.app.Srv().AccountService().SetStatusOffline(userID, true)
 	// case account.STATUS_AWAY:
 	// 	api.app.Srv().AccountService().SetStatusAwayIfNeeded(userID, true)

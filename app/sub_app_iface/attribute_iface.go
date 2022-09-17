@@ -5,20 +5,19 @@ package sub_app_iface
 
 import (
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
 // AttributeService contains methods for working with attributes
 type AttributeService interface {
 	// AssignedPageAttributeByOption returns 1 assigned page attribute
-	AssignedPageAttributeByOption(option *attribute.AssignedPageAttributeFilterOption) (*attribute.AssignedPageAttribute, *model.AppError)
+	AssignedPageAttributeByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model.AppError)
 	// AssignedProductAttributeByOption returns an assigned product attribute filtered using given option
-	AssignedProductAttributeByOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, *model.AppError)
+	AssignedProductAttributeByOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, *model.AppError)
 	// AssignedVariantAttributeByOption returns an assigned variant attribute filtered by given option
-	AssignedVariantAttributeByOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, *model.AppError)
+	AssignedVariantAttributeByOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, *model.AppError)
 	// AssignedVariantAttributesByOption returns a list of assigned variant attributes filtered by given options
-	AssignedVariantAttributesByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error)
+	AssignedVariantAttributesByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, error)
 	// AssociateAttributeValuesToInstance Assign given attribute values to a product or variant.
 	// Note: be award this function invokes the “set“ method on the instance's
 	// attribute association. Meaning any values already assigned or concurrently
@@ -28,31 +27,31 @@ type AttributeService interface {
 	// `attributeID` must be ID of processing `Attribute`
 	//
 	// Returned interface{} must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
-	AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values []*attribute.AttributeValue) (interface{}, *model.AppError)
+	AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values []*model.AttributeValue) (interface{}, *model.AppError)
 	// AttributePageByOption returns an attribute page filtered using given option
-	AttributePageByOption(option *attribute.AttributePageFilterOption) (*attribute.AttributePage, *model.AppError)
+	AttributePageByOption(option *model.AttributePageFilterOption) (*model.AttributePage, *model.AppError)
 	// AttributeProductByOption returns an attribute product filtered using given option
-	AttributeProductByOption(option *attribute.AttributeProductFilterOption) (*attribute.AttributeProduct, *model.AppError)
+	AttributeProductByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, *model.AppError)
 	// AttributeVariantByOption returns an attribute variant filtered using given option
-	AttributeVariantByOption(option *attribute.AttributeVariantFilterOption) (*attribute.AttributeVariant, *model.AppError)
+	AttributeVariantByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, *model.AppError)
 	// AttributesByOption returns a list of attributes filtered using given options
-	AttributesByOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, *model.AppError)
+	AttributesByOption(option *model.AttributeFilterOption) ([]*model.Attribute, *model.AppError)
 	// GetOrCreateAssignedPageAttribute gets or create an assigned page attribute, then returns it
-	GetOrCreateAssignedPageAttribute(assignedPageAttribute *attribute.AssignedPageAttribute) (*attribute.AssignedPageAttribute, *model.AppError)
+	GetOrCreateAssignedPageAttribute(assignedPageAttribute *model.AssignedPageAttribute) (*model.AssignedPageAttribute, *model.AppError)
 	// GetOrCreateAssignedProductAttribute get or create new instance from the given, then returns it
-	GetOrCreateAssignedProductAttribute(assignedProductAttribute *attribute.AssignedProductAttribute) (*attribute.AssignedProductAttribute, *model.AppError)
+	GetOrCreateAssignedProductAttribute(assignedProductAttribute *model.AssignedProductAttribute) (*model.AssignedProductAttribute, *model.AppError)
 	// GetOrCreateAssignedVariantAttribute get or create new assigned variant attribute with given option then returns it
-	GetOrCreateAssignedVariantAttribute(assignedVariantAttr *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, *model.AppError)
+	GetOrCreateAssignedVariantAttribute(assignedVariantAttr *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, *model.AppError)
 	// UpsertAttribute inserts or updates given attribute and returns it
-	UpsertAttribute(attr *attribute.Attribute) (*attribute.Attribute, *model.AppError)
+	UpsertAttribute(attr *model.Attribute) (*model.Attribute, *model.AppError)
 	// UpsertAttributeValue insderts or updates given attribute value then returns it
-	UpsertAttributeValue(attrValue *attribute.AttributeValue) (*attribute.AttributeValue, *model.AppError)
-	AttributeByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, *model.AppError)
-	AttributeValuesOfAttribute(attributeID string) ([]*attribute.AttributeValue, *model.AppError)
-	BulkUpsertAttributeValue(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, *model.AppError)
+	UpsertAttributeValue(attrValue *model.AttributeValue) (*model.AttributeValue, *model.AppError)
+	AttributeByOption(option *model.AttributeFilterOption) (*model.Attribute, *model.AppError)
+	AttributeValuesOfAttribute(attributeID string) ([]*model.AttributeValue, *model.AppError)
+	BulkUpsertAttributeValue(transaction store_iface.SqlxTxExecutor, values model.AttributeValues) (model.AttributeValues, *model.AppError)
 	DeleteAttributeValues(ids ...string) (int64, *model.AppError)
 	DeleteAttributes(ids ...string) (int64, *model.AppError)
-	FilterAttributeValuesByOptions(option attribute.AttributeValueFilterOptions) (attribute.AttributeValues, *model.AppError)
-	GetVisibleToUserAttributes(session *model.Session) (attribute.Attributes, *model.AppError)
-	PerformReordering(values attribute.AttributeValues, operations map[string]*int) *model.AppError
+	FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model.AppError)
+	GetVisibleToUserAttributes(session *model.Session) (model.Attributes, *model.AppError)
+	PerformReordering(values model.AttributeValues, operations map[string]*int) *model.AppError
 }

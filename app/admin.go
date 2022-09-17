@@ -7,7 +7,6 @@ import (
 	"runtime/debug"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -126,8 +125,8 @@ func (a *App) GetLogsSkipSend(page, perPage int) ([]string, *model.AppError) {
 	return a.Srv().GetLogsSkipSend(page, perPage)
 }
 
-func (a *App) GetClusterStatus() []*cluster.ClusterInfo {
-	infos := make([]*cluster.ClusterInfo, 0)
+func (a *App) GetClusterStatus() []*model.ClusterInfo {
+	infos := make([]*model.ClusterInfo, 0)
 
 	if a.Cluster() != nil {
 		infos = a.Cluster().GetClusterInfos()
@@ -141,9 +140,9 @@ func (s *Server) InvalidateAllCaches() *model.AppError {
 	s.InvalidateAllCachesSkipSend()
 
 	if s.Cluster != nil {
-		msg := &cluster.ClusterMessage{
-			Event:            cluster.ClusterEventInvalidateAllCaches,
-			SendType:         cluster.ClusterSendReliable,
+		msg := &model.ClusterMessage{
+			Event:            model.ClusterEventInvalidateAllCaches,
+			SendType:         model.ClusterSendReliable,
 			WaitForAllToSend: true,
 		}
 

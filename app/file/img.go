@@ -21,7 +21,6 @@ import (
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
@@ -320,7 +319,7 @@ import (
 // 	return info, nil
 // }
 
-func (a *ServiceFile) DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, *model.AppError) {
+func (a *ServiceFile) DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, *model.AppError) {
 	info, _, err := a.DoUploadFileExpectModification(c, now, rawTeamId, rawChannelId, rawUserId, rawFilename, data)
 	return info, err
 }
@@ -374,7 +373,7 @@ type UploadFileTask struct {
 	limit        int64
 	limitedInput io.Reader
 	teeInput     io.Reader
-	fileinfo     *file.FileInfo
+	fileinfo     *model.FileInfo
 	maxFileSize  int64
 	maxImageRes  int64
 
@@ -383,7 +382,7 @@ type UploadFileTask struct {
 	imageOrientation int
 
 	writeFile      func(io.Reader, string) (int64, *model.AppError)
-	saveToDatabase func(*file.FileInfo) (*file.FileInfo, error)
+	saveToDatabase func(*model.FileInfo) (*model.FileInfo, error)
 
 	imgDecoder         *imaging.Decoder
 	imgEncoder         *imaging.Encoder
@@ -404,7 +403,7 @@ func (t *UploadFileTask) init(a *ServiceFile) {
 		t.buf.Grow(maxUploadInitialBufferSize)
 	}
 
-	t.fileinfo = file.NewInfo(filepath.Base(t.Name))
+	t.fileinfo = model.NewInfo(filepath.Base(t.Name))
 	t.fileinfo.Id = model.NewId()
 	t.fileinfo.CreatorId = t.UserId
 	t.fileinfo.CreateAt = t.Timestamp.UnixNano() / int64(time.Millisecond)
@@ -426,7 +425,7 @@ func (t *UploadFileTask) init(a *ServiceFile) {
 // returns a filled-out FileInfo and an optional error. A plugin may reject the
 // upload, returning a rejection error. In this case FileInfo would have
 // contained the last "good" FileInfo before the execution of that plugin.
-func (a *ServiceFile) UploadFileX(c *request.Context, channelID, name string, input io.Reader /* after are optional arguments */, userID *string, timestamp *time.Time, contentLength *int64, clientID *string, raw *bool) (*file.FileInfo, *model.AppError) {
+func (a *ServiceFile) UploadFileX(c *request.Context, channelID, name string, input io.Reader /* after are optional arguments */, userID *string, timestamp *time.Time, contentLength *int64, clientID *string, raw *bool) (*model.FileInfo, *model.AppError) {
 
 	t := &UploadFileTask{
 		// ChannelId:   filepath.Base(channelID),
@@ -689,13 +688,13 @@ func (t *UploadFileTask) newAppError(id string, httpStatus int, extra ...interfa
 	return model.NewAppError("uploadFileTask", id, params, "", httpStatus)
 }
 
-func (a *ServiceFile) DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, []byte, *model.AppError) {
+func (a *ServiceFile) DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, []byte, *model.AppError) {
 	filename := filepath.Base(rawFilename)
 	teamID := filepath.Base(rawTeamId)
 	channelID := filepath.Base(rawChannelId)
 	userID := filepath.Base(rawUserId)
 
-	info, err := file.GetInfoForBytes(filename, bytes.NewReader(data), len(data))
+	info, err := model.GetInfoForBytes(filename, bytes.NewReader(data), len(data))
 	if err != nil {
 		err.StatusCode = http.StatusBadRequest
 		return nil, data, err
@@ -860,7 +859,7 @@ func (a *ServiceFile) generatePreviewImage(img image.Image, previewPath string) 
 
 // generateMiniPreview updates mini preview if needed
 // will save fileinfo with the preview added
-func (a *ServiceFile) generateMiniPreview(fi *file.FileInfo) {
+func (a *ServiceFile) generateMiniPreview(fi *model.FileInfo) {
 	if fi.IsImage() && fi.MiniPreview == nil {
 		file, appErr := a.FileReader(fi.Path)
 		if appErr != nil {
@@ -906,12 +905,12 @@ func (a *ServiceFile) generateMiniPreview(fi *file.FileInfo) {
 	}
 }
 
-func (a *ServiceFile) generateMiniPreviewForInfos(fileInfos []*file.FileInfo) {
+func (a *ServiceFile) generateMiniPreviewForInfos(fileInfos []*model.FileInfo) {
 	wg := new(sync.WaitGroup)
 	wg.Add(len(fileInfos))
 
 	for _, fileInfo := range fileInfos {
-		go func(fi *file.FileInfo) {
+		go func(fi *model.FileInfo) {
 			defer wg.Done()
 			a.generateMiniPreview(fi)
 		}(fileInfo)
@@ -920,7 +919,7 @@ func (a *ServiceFile) generateMiniPreviewForInfos(fileInfos []*file.FileInfo) {
 }
 
 // GetFileInfo get fileInfo object from database with given fileID, populates its "MiniPreview" and returns it.
-func (a *ServiceFile) GetFileInfos(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, *model.AppError) {
+func (a *ServiceFile) GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError) {
 	fileInfos, err := a.srv.Store.FileInfo().GetWithOptions(&page, &perPage, opt)
 	if err != nil {
 		var invErr *store.ErrInvalidInput
@@ -940,7 +939,7 @@ func (a *ServiceFile) GetFileInfos(page, perPage int, opt *file.GetFileInfosOpti
 	return fileInfos, nil
 }
 
-func (a *ServiceFile) GetFileInfo(fileID string) (*file.FileInfo, *model.AppError) {
+func (a *ServiceFile) GetFileInfo(fileID string) (*model.FileInfo, *model.AppError) {
 	fileInfo, err := a.srv.Store.FileInfo().Get(fileID)
 	if err != nil {
 		var nfErr *store.ErrNotFound

@@ -15,8 +15,6 @@ import (
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/cluster"
-	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
@@ -40,7 +38,7 @@ const (
 	installPluginLocallyAlways
 )
 
-func (a *ServicePlugin) InstallPluginFromData(data plugins.PluginEventData) {
+func (a *ServicePlugin) InstallPluginFromData(data model.PluginEventData) {
 	slog.Debug("Installing plugin as per cluster message", slog.String("plugin_id", data.Id))
 
 	pluginSignaturePathMap, appErr := a.getPluginsFromFolder()
@@ -87,7 +85,7 @@ func (a *ServicePlugin) InstallPluginFromData(data plugins.PluginEventData) {
 	}
 }
 
-func (a *ServicePlugin) installPluginLocally(pluginFile, signature io.ReadSeeker, installationStrategy pluginInstallationStrategy) (*plugins.Manifest, *model.AppError) {
+func (a *ServicePlugin) installPluginLocally(pluginFile, signature io.ReadSeeker, installationStrategy pluginInstallationStrategy) (*model.Manifest, *model.AppError) {
 	_, appErr := a.GetPluginsEnvironment()
 	if appErr == nil {
 		return nil, appErr
@@ -119,7 +117,7 @@ func (a *ServicePlugin) installPluginLocally(pluginFile, signature io.ReadSeeker
 	return manifest, nil
 }
 
-func (s *ServicePlugin) RemovePluginFromData(data plugins.PluginEventData) {
+func (s *ServicePlugin) RemovePluginFromData(data model.PluginEventData) {
 	slog.Debug("Removing plugin as per cluster message", slog.String("plugin_id", data.Id))
 
 	if err := s.removePluginLocally(data.Id); err != nil {
@@ -131,7 +129,7 @@ func (s *ServicePlugin) RemovePluginFromData(data plugins.PluginEventData) {
 	}
 }
 
-func extractPlugin(pluginFile io.ReadSeeker, extractDir string) (*plugins.Manifest, string, *model.AppError) {
+func extractPlugin(pluginFile io.ReadSeeker, extractDir string) (*model.Manifest, string, *model.AppError) {
 	pluginFile.Seek(0, 0)
 	if err := extractTarGz(pluginFile, extractDir); err != nil {
 		return nil, "", model.NewAppError("extractPlugin", "app.plugin.extract.app_error", nil, err.Error(), http.StatusBadRequest)
@@ -146,7 +144,7 @@ func extractPlugin(pluginFile io.ReadSeeker, extractDir string) (*plugins.Manife
 		extractDir = filepath.Join(extractDir, dir[0].Name())
 	}
 
-	manifest, _, err := plugins.FindManifest(extractDir)
+	manifest, _, err := model.FindManifest(extractDir)
 	if err != nil {
 		return nil, "", model.NewAppError("extractPlugin", "app.plugin.manifest.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
@@ -158,7 +156,7 @@ func extractPlugin(pluginFile io.ReadSeeker, extractDir string) (*plugins.Manife
 	return manifest, extractDir, nil
 }
 
-func (s *ServicePlugin) installExtractedPlugin(manifest *plugins.Manifest, fromPluginDir string, installationStrategy pluginInstallationStrategy) (*plugins.Manifest, *model.AppError) {
+func (s *ServicePlugin) installExtractedPlugin(manifest *model.Manifest, fromPluginDir string, installationStrategy pluginInstallationStrategy) (*model.Manifest, *model.AppError) {
 	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
 	if appErr != nil {
 		return nil, appErr
@@ -170,7 +168,7 @@ func (s *ServicePlugin) installExtractedPlugin(manifest *plugins.Manifest, fromP
 	}
 
 	// Check for plugins installed with the same ID.
-	var existingManifest *plugins.Manifest
+	var existingManifest *model.Manifest
 	for _, bundle := range bundles {
 		if bundle.Manifest != nil && bundle.Manifest.Id == manifest.Id {
 			existingManifest = bundle.Manifest
@@ -335,7 +333,7 @@ func (s *ServicePlugin) removePluginLocally(id string) *model.AppError {
 		return model.NewAppError("removePlugin", "app.plugin.deactivate.app_error", nil, err.Error(), http.StatusBadRequest)
 	}
 
-	var manifest *plugins.Manifest
+	var manifest *model.Manifest
 	var pluginPath string
 	for _, p := range plgs {
 		if p.Manifest != nil && p.Manifest.Id == id {
@@ -388,8 +386,8 @@ func (s *ServicePlugin) RemovePlugin(id string) *model.AppError {
 	}
 
 	s.notifyClusterPluginEvent(
-		cluster.ClusterEventRemovePlugin,
-		plugins.PluginEventData{
+		model.ClusterEventRemovePlugin,
+		model.PluginEventData{
 			Id: id,
 		},
 	)
@@ -417,7 +415,7 @@ func (s *ServicePlugin) removeSignature(pluginID string) *model.AppError {
 	return nil
 }
 
-func (s *ServicePlugin) InstallMarketplacePlugin(request *plugins.InstallMarketplacePluginRequest) (*plugins.Manifest, *model.AppError) {
+func (s *ServicePlugin) InstallMarketplacePlugin(request *model.InstallMarketplacePluginRequest) (*model.Manifest, *model.AppError) {
 	var pluginFile, signatureFile io.ReadSeeker
 
 	prepackagedPlugin, appErr := s.getPrepackagedPlugin(request.Id, request.Version)
@@ -437,7 +435,7 @@ func (s *ServicePlugin) InstallMarketplacePlugin(request *plugins.InstallMarketp
 	}
 
 	if *s.srv.Config().PluginSettings.EnableRemoteMarketplace && pluginFile == nil {
-		var plugin *plugins.BaseMarketplacePlugin
+		var plugin *model.BaseMarketplacePlugin
 		plugin, appErr = s.getRemoteMarketplacePlugin(request.Id, request.Version)
 		if appErr != nil {
 			return nil, appErr
@@ -470,11 +468,11 @@ func (s *ServicePlugin) InstallMarketplacePlugin(request *plugins.InstallMarketp
 	return manifest, nil
 }
 
-func (a *ServicePlugin) InstallPluginWithSignature(pluginFile, signature io.ReadSeeker) (*plugins.Manifest, *model.AppError) {
+func (a *ServicePlugin) InstallPluginWithSignature(pluginFile, signature io.ReadSeeker) (*model.Manifest, *model.AppError) {
 	return a.installPlugin(pluginFile, signature, installPluginLocallyAlways)
 }
 
-func (a *ServicePlugin) InstallPlugin(pluginFile io.ReadSeeker, replace bool) (*plugins.Manifest, *model.AppError) {
+func (a *ServicePlugin) InstallPlugin(pluginFile io.ReadSeeker, replace bool) (*model.Manifest, *model.AppError) {
 	installationStrategy := installPluginLocallyOnlyIfNew
 	if replace {
 		installationStrategy = installPluginLocallyAlways
@@ -483,7 +481,7 @@ func (a *ServicePlugin) InstallPlugin(pluginFile io.ReadSeeker, replace bool) (*
 	return a.installPlugin(pluginFile, nil, installationStrategy)
 }
 
-func (s *ServicePlugin) installPlugin(pluginFile, signature io.ReadSeeker, installationStrategy pluginInstallationStrategy) (*plugins.Manifest, *model.AppError) {
+func (s *ServicePlugin) installPlugin(pluginFile, signature io.ReadSeeker, installationStrategy pluginInstallationStrategy) (*model.Manifest, *model.AppError) {
 	manifest, appErr := s.installPluginLocally(pluginFile, signature, installationStrategy)
 	if appErr != nil {
 		return nil, appErr
@@ -503,8 +501,8 @@ func (s *ServicePlugin) installPlugin(pluginFile, signature io.ReadSeeker, insta
 	}
 
 	s.notifyClusterPluginEvent(
-		cluster.ClusterEventInstallPlugin,
-		plugins.PluginEventData{
+		model.ClusterEventInstallPlugin,
+		model.PluginEventData{
 			Id: manifest.Id,
 		},
 	)

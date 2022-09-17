@@ -8,9 +8,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/shipping"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 )
 
@@ -27,7 +24,7 @@ func init() {
 }
 
 // WarehouseByOption returns a list of warehouses based on given option
-func (a *ServiceWarehouse) WarehousesByOption(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, *model.AppError) {
+func (a *ServiceWarehouse) WarehousesByOption(option *model.WarehouseFilterOption) ([]*model.WareHouse, *model.AppError) {
 	warehouses, err := a.srv.Store.Warehouse().FilterByOprion(option)
 	var (
 		statusCode   int
@@ -48,7 +45,7 @@ func (a *ServiceWarehouse) WarehousesByOption(option *warehouse.WarehouseFilterO
 }
 
 // WarehouseByOption returns a warehouse filtered using given option
-func (s *ServiceWarehouse) WarehouseByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, *model.AppError) {
+func (s *ServiceWarehouse) WarehouseByOption(option *model.WarehouseFilterOption) (*model.WareHouse, *model.AppError) {
 	warehouse, err := s.srv.Store.Warehouse().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -62,7 +59,7 @@ func (s *ServiceWarehouse) WarehouseByOption(option *warehouse.WarehouseFilterOp
 }
 
 // WarehouseByStockID returns a warehouse that owns the given stock
-func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*warehouse.WareHouse, *model.AppError) {
+func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*model.WareHouse, *model.AppError) {
 	warehouse, err := a.srv.Store.Warehouse().WarehouseByStockID(stockID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -77,7 +74,7 @@ func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*warehouse.WareHo
 
 // WarehouseCountries returns countries of given warehouse
 func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *model.AppError) {
-	shippingZonesOfWarehouse, appErr := a.srv.ShippingService().ShippingZonesByOption(&shipping.ShippingZoneFilterOption{
+	shippingZonesOfWarehouse, appErr := a.srv.ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
 		WarehouseID: squirrel.Eq{store.ShippingZoneTableName + ".WarehouseID": warehouseID},
 	})
 	if appErr != nil {
@@ -104,10 +101,10 @@ func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *mo
 }
 
 // FindWarehousesForCountry returns a list of warehouses that are available in given country
-func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode string) ([]*warehouse.WareHouse, *model.AppError) {
+func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode string) ([]*model.WareHouse, *model.AppError) {
 	countryCode = strings.ToUpper(countryCode)
 
-	return a.WarehousesByOption(&warehouse.WarehouseFilterOption{
+	return a.WarehousesByOption(&model.WarehouseFilterOption{
 		ShippingZonesCountries: squirrel.Like{store.ShippingZoneTableName + ".Countries": countryCode},
 		SelectRelatedAddress:   true,
 		PrefetchShippingZones:  true,
@@ -118,7 +115,7 @@ func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode string) ([]*ware
 // Note this method does not check stocks quantity for given `CheckoutLine`s.
 // This method should be used only if stocks quantity will be checked in further
 // validation steps, for instance in checkout completion.
-func (s *ServiceWarehouse) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, *model.AppError) {
+func (s *ServiceWarehouse) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, *model.AppError) {
 	// stocks, appErr := s.StocksByOption(nil, &warehouse.StockFilterOption{
 	// 	SelectRelatedProductVariant: true,
 	// 	ProductVariantID:            squirrel.Eq{s.srv.Store.Stock().TableName("ProductVariantID"): checkoutLines.VariantIDs()},

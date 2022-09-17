@@ -10,9 +10,6 @@ import (
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/file"
-	"github.com/sitename/sitename/model/plugins"
 )
 
 type apiTimerLayer struct {
@@ -98,7 +95,7 @@ func (api *apiTimerLayer) GetSystemInstallDate() (int64, *model.AppError) {
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) CreateUser(user *account.User) (*account.User, *model.AppError) {
+func (api *apiTimerLayer) CreateUser(user *model.User) (*model.User, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.CreateUser(user)
 	api.recordTime(startTime, "CreateUser", _returnsB == nil)
@@ -112,35 +109,35 @@ func (api *apiTimerLayer) DeleteUser(userID string) *model.AppError {
 	return _returnsA
 }
 
-func (api *apiTimerLayer) GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError) {
+func (api *apiTimerLayer) GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.GetUsers(options)
 	api.recordTime(startTime, "GetUsers", _returnsB == nil)
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) GetUser(userID string) (*account.User, *model.AppError) {
+func (api *apiTimerLayer) GetUser(userID string) (*model.User, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.GetUser(userID)
 	api.recordTime(startTime, "GetUser", _returnsB == nil)
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) GetUserByEmail(email string) (*account.User, *model.AppError) {
+func (api *apiTimerLayer) GetUserByEmail(email string) (*model.User, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.GetUserByEmail(email)
 	api.recordTime(startTime, "GetUserByEmail", _returnsB == nil)
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) GetUserByUsername(name string) (*account.User, *model.AppError) {
+func (api *apiTimerLayer) GetUserByUsername(name string) (*model.User, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.GetUserByUsername(name)
 	api.recordTime(startTime, "GetUserByUsername", _returnsB == nil)
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) GetUsersByUsernames(usernames []string) ([]*account.User, *model.AppError) {
+func (api *apiTimerLayer) GetUsersByUsernames(usernames []string) ([]*model.User, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.GetUsersByUsernames(usernames)
 	api.recordTime(startTime, "GetUsersByUsernames", _returnsB == nil)
@@ -168,7 +165,7 @@ func (api *apiTimerLayer) DeletePreferencesForUser(userID string, preferences []
 	return _returnsA
 }
 
-func (api *apiTimerLayer) CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError) {
+func (api *apiTimerLayer) CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.CreateUserAccessToken(token)
 	api.recordTime(startTime, "CreateUserAccessToken", _returnsB == nil)
@@ -182,28 +179,28 @@ func (api *apiTimerLayer) RevokeUserAccessToken(tokenID string) *model.AppError 
 	return _returnsA
 }
 
-func (api *apiTimerLayer) UpdateUser(user *account.User) (*account.User, *model.AppError) {
+func (api *apiTimerLayer) UpdateUser(user *model.User) (*model.User, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.UpdateUser(user)
 	api.recordTime(startTime, "UpdateUser", _returnsB == nil)
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) GetUserStatus(userID string) (*account.Status, *model.AppError) {
+func (api *apiTimerLayer) GetUserStatus(userID string) (*model.Status, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.GetUserStatus(userID)
 	api.recordTime(startTime, "GetUserStatus", _returnsB == nil)
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) GetUserStatusesByIds(userIds []string) ([]*account.Status, *model.AppError) {
+func (api *apiTimerLayer) GetUserStatusesByIds(userIds []string) ([]*model.Status, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.GetUserStatusesByIds(userIds)
 	api.recordTime(startTime, "GetUserStatusesByIds", _returnsB == nil)
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) UpdateUserStatus(userID, status string) (*account.Status, *model.AppError) {
+func (api *apiTimerLayer) UpdateUserStatus(userID, status string) (*model.Status, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.UpdateUserStatus(userID, status)
 	api.recordTime(startTime, "UpdateUserStatus", _returnsB == nil)
@@ -224,7 +221,7 @@ func (api *apiTimerLayer) GetLDAPUserAttributes(userID string, attributes []stri
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) SearchUsers(search *account.UserSearch) ([]*account.User, *model.AppError) {
+func (api *apiTimerLayer) SearchUsers(search *model.UserSearch) ([]*model.User, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.SearchUsers(search)
 	api.recordTime(startTime, "SearchUsers", _returnsB == nil)
@@ -252,14 +249,14 @@ func (api *apiTimerLayer) CopyFileInfos(userID string, fileIds []string) ([]stri
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) GetFileInfo(fileId string) (*file.FileInfo, *model.AppError) {
+func (api *apiTimerLayer) GetFileInfo(fileId string) (*model.FileInfo, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.GetFileInfo(fileId)
 	api.recordTime(startTime, "GetFileInfo", _returnsB == nil)
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) GetFileInfos(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, *model.AppError) {
+func (api *apiTimerLayer) GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.GetFileInfos(page, perPage, opt)
 	api.recordTime(startTime, "GetFileInfos", _returnsB == nil)
@@ -287,7 +284,7 @@ func (api *apiTimerLayer) ReadFile(path string) ([]byte, *model.AppError) {
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) GetPlugins() ([]*plugins.Manifest, *model.AppError) {
+func (api *apiTimerLayer) GetPlugins() ([]*model.Manifest, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.GetPlugins()
 	api.recordTime(startTime, "GetPlugins", _returnsB == nil)
@@ -315,14 +312,14 @@ func (api *apiTimerLayer) RemovePlugin(id string) *model.AppError {
 	return _returnsA
 }
 
-func (api *apiTimerLayer) GetPluginStatus(id string) (*plugins.PluginStatus, *model.AppError) {
+func (api *apiTimerLayer) GetPluginStatus(id string) (*model.PluginStatus, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.GetPluginStatus(id)
 	api.recordTime(startTime, "GetPluginStatus", _returnsB == nil)
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) InstallPlugin(file io.Reader, replace bool) (*plugins.Manifest, *model.AppError) {
+func (api *apiTimerLayer) InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.InstallPlugin(file, replace)
 	api.recordTime(startTime, "InstallPlugin", _returnsB == nil)
@@ -350,7 +347,7 @@ func (api *apiTimerLayer) KVCompareAndDelete(key string, oldValue []byte) (bool,
 	return _returnsA, _returnsB
 }
 
-func (api *apiTimerLayer) KVSetWithOptions(key string, value []byte, options plugins.PluginKVSetOptions) (bool, *model.AppError) {
+func (api *apiTimerLayer) KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model.AppError) {
 	startTime := timePkg.Now()
 	_returnsA, _returnsB := api.apiImpl.KVSetWithOptions(key, value, options)
 	api.recordTime(startTime, "KVSetWithOptions", _returnsB == nil)

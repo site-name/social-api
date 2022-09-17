@@ -9,8 +9,6 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/sqlstore"
@@ -83,9 +81,9 @@ func (a *ServiceAccount) ClearSessionCacheForUser(userID string) {
 	a.ClearSessionCacheForUserSkipClusterSend(userID)
 
 	if a.cluster != nil {
-		msg := &cluster.ClusterMessage{
-			Event:    cluster.ClusterEventClearSessionCacheForUser,
-			SendType: cluster.ClusterSendReliable,
+		msg := &model.ClusterMessage{
+			Event:    model.ClusterEventClearSessionCacheForUser,
+			SendType: model.ClusterSendReliable,
 			Data:     []byte(userID),
 		}
 		a.cluster.SendClusterMessage(msg)
@@ -380,7 +378,7 @@ func (a *ServiceAccount) GetSessionLengthInMillis(session *model.Session) int64 
 	return int64(days * 24 * 60 * 60 * 1000)
 }
 
-func (a *ServiceAccount) CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError) {
+func (a *ServiceAccount) CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model.AppError) {
 	user, appErr := a.UserById(context.Background(), token.UserId)
 	if appErr != nil {
 		return nil, appErr
@@ -411,7 +409,7 @@ func (a *ServiceAccount) CreateUserAccessToken(token *account.UserAccessToken) (
 	return token, nil
 }
 
-func (a *ServiceAccount) RevokeUserAccessToken(token *account.UserAccessToken) *model.AppError {
+func (a *ServiceAccount) RevokeUserAccessToken(token *model.UserAccessToken) *model.AppError {
 	var session *model.Session
 	session, _ = a.srv.Store.Session().Get(context.Background(), token.Token)
 
@@ -426,7 +424,7 @@ func (a *ServiceAccount) RevokeUserAccessToken(token *account.UserAccessToken) *
 	return a.RevokeSession(session)
 }
 
-func (a *ServiceAccount) DisableUserAccessToken(token *account.UserAccessToken) *model.AppError {
+func (a *ServiceAccount) DisableUserAccessToken(token *model.UserAccessToken) *model.AppError {
 	var session *model.Session
 	session, _ = a.srv.Store.Session().Get(context.Background(), token.Token)
 
@@ -441,7 +439,7 @@ func (a *ServiceAccount) DisableUserAccessToken(token *account.UserAccessToken) 
 	return a.RevokeSession(session)
 }
 
-func (a *ServiceAccount) EnableUserAccessToken(token *account.UserAccessToken) *model.AppError {
+func (a *ServiceAccount) EnableUserAccessToken(token *model.UserAccessToken) *model.AppError {
 	var session *model.Session
 	session, _ = a.srv.Store.Session().Get(context.Background(), token.Token)
 
@@ -457,7 +455,7 @@ func (a *ServiceAccount) EnableUserAccessToken(token *account.UserAccessToken) *
 	return nil
 }
 
-func (a *ServiceAccount) GetUserAccessTokens(page, perPage int) ([]*account.UserAccessToken, *model.AppError) {
+func (a *ServiceAccount) GetUserAccessTokens(page, perPage int) ([]*model.UserAccessToken, *model.AppError) {
 	tokens, err := a.srv.Store.UserAccessToken().GetAll(page*perPage, perPage)
 	if err != nil {
 		return nil, model.NewAppError("GetUserAccessTokens", "app.user_access_token.get_all.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -470,7 +468,7 @@ func (a *ServiceAccount) GetUserAccessTokens(page, perPage int) ([]*account.User
 	return tokens, nil
 }
 
-func (a *ServiceAccount) GetUserAccessTokensForUser(userID string, page, perPage int) ([]*account.UserAccessToken, *model.AppError) {
+func (a *ServiceAccount) GetUserAccessTokensForUser(userID string, page, perPage int) ([]*model.UserAccessToken, *model.AppError) {
 	tokens, err := a.srv.Store.UserAccessToken().GetByUser(userID, page*perPage, perPage)
 	if err != nil {
 		return nil, model.NewAppError("GetUserAccessTokensForUser", "app.user_access_token.get_by_user.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -482,7 +480,7 @@ func (a *ServiceAccount) GetUserAccessTokensForUser(userID string, page, perPage
 	return tokens, nil
 }
 
-func (a *ServiceAccount) GetUserAccessToken(tokenID string, sanitize bool) (*account.UserAccessToken, *model.AppError) {
+func (a *ServiceAccount) GetUserAccessToken(tokenID string, sanitize bool) (*model.UserAccessToken, *model.AppError) {
 	token, err := a.srv.Store.UserAccessToken().Get(tokenID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GetUserAccessToken", "app.user.accesstoken_missing.app_error", err)
@@ -494,7 +492,7 @@ func (a *ServiceAccount) GetUserAccessToken(tokenID string, sanitize bool) (*acc
 	return token, nil
 }
 
-func (a *ServiceAccount) SearchUserAccessTokens(term string) ([]*account.UserAccessToken, *model.AppError) {
+func (a *ServiceAccount) SearchUserAccessTokens(term string) ([]*model.UserAccessToken, *model.AppError) {
 	tokens, err := a.srv.Store.UserAccessToken().Search(term)
 	if err != nil {
 		return nil, model.NewAppError("SearchUserAccessTokens", "app.user_access_token.search.app_error", nil, err.Error(), http.StatusInternalServerError)

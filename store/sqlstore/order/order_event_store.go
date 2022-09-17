@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -36,7 +35,7 @@ func (s *SqlOrderEventStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (oes *SqlOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
+func (oes *SqlOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
 	var executor store_iface.SqlxExecutor = oes.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -55,8 +54,8 @@ func (oes *SqlOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orde
 	return orderEvent, nil
 }
 
-func (oes *SqlOrderEventStore) Get(orderEventID string) (*order.OrderEvent, error) {
-	var res order.OrderEvent
+func (oes *SqlOrderEventStore) Get(orderEventID string) (*model.OrderEvent, error) {
+	var res model.OrderEvent
 	err := oes.GetReplicaX().Get(&res, "SELECT * FROM "+store.OrderEventTableName+" WHERE Id = ?", orderEventID)
 	if err != nil {
 		if err == sql.ErrNoRows {

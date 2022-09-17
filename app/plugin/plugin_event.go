@@ -1,15 +1,14 @@
 package plugin
 
 import (
-	"github.com/sitename/sitename/model/cluster"
-	"github.com/sitename/sitename/model/plugins"
+	"github.com/sitename/sitename/model"
 )
 
-func (s *ServicePlugin) notifyClusterPluginEvent(event cluster.ClusterEvent, data plugins.PluginEventData) {
+func (s *ServicePlugin) notifyClusterPluginEvent(event model.ClusterEvent, data model.PluginEventData) {
 	if s.srv.Cluster != nil {
-		s.srv.Cluster.SendClusterMessage(&cluster.ClusterMessage{
+		s.srv.Cluster.SendClusterMessage(&model.ClusterMessage{
 			Event:            event,
-			SendType:         cluster.ClusterSendReliable,
+			SendType:         model.ClusterSendReliable,
 			WaitForAllToSend: true,
 			Data:             data.ToJSON(),
 		})

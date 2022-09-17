@@ -15,7 +15,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
@@ -41,7 +40,7 @@ func (a *ServiceAccount) CheckForClientSideCert(r *http.Request) (string, string
 }
 
 // AuthenticateUserForLogin
-func (a *ServiceAccount) AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *account.User, err *model.AppError) {
+func (a *ServiceAccount) AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *model.User, err *model.AppError) {
 	// Do statistics
 	defer func() {
 		if a.metrics != nil {
@@ -130,7 +129,7 @@ func (a *ServiceAccount) AuthenticateUserForLogin(c *request.Context, id, loginI
 }
 
 // GetUserForLogin
-func (a *ServiceAccount) GetUserForLogin(id, loginId string) (*account.User, *model.AppError) {
+func (a *ServiceAccount) GetUserForLogin(id, loginId string) (*model.User, *model.AppError) {
 	enableUsername := *a.srv.Config().EmailSettings.EnableSignInWithUsername
 	enableEmail := *a.srv.Config().EmailSettings.EnableSignInWithEmail
 
@@ -167,7 +166,7 @@ func (a *ServiceAccount) GetUserForLogin(id, loginId string) (*account.User, *mo
 	return nil, model.NewAppError("GetUserForLogin", "store.sql_user.get_for_login.app_error", nil, "", http.StatusBadRequest)
 }
 
-func (a *ServiceAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *account.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError {
+func (a *ServiceAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *http.Request, user *model.User, deviceID string, isMobile, isOAuthUser, isSaml bool) *model.AppError {
 	// TODO: implement more if plugins enabled
 	// if pluginsEnvironment := a.GetPluginsEnvironment(); pluginsEnvironment != nil {
 	// 	var rejectionReason string

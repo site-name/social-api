@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/store"
 )
 
@@ -38,7 +37,7 @@ func (s *SqlShippingMethodChannelListingStore) ModelFields(prefix string) model.
 }
 
 // Upsert depends on given listing's Id to decide whether to save or update the listing
-func (s *SqlShippingMethodChannelListingStore) Upsert(listing *shipping.ShippingMethodChannelListing) (*shipping.ShippingMethodChannelListing, error) {
+func (s *SqlShippingMethodChannelListingStore) Upsert(listing *model.ShippingMethodChannelListing) (*model.ShippingMethodChannelListing, error) {
 	var isSaving bool
 	if listing.Id == "" {
 		isSaving = true
@@ -90,8 +89,8 @@ func (s *SqlShippingMethodChannelListingStore) Upsert(listing *shipping.Shipping
 }
 
 // Get finds a shipping method channel listing with given listingID
-func (s *SqlShippingMethodChannelListingStore) Get(listingID string) (*shipping.ShippingMethodChannelListing, error) {
-	var res shipping.ShippingMethodChannelListing
+func (s *SqlShippingMethodChannelListingStore) Get(listingID string) (*model.ShippingMethodChannelListing, error) {
+	var res model.ShippingMethodChannelListing
 	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShippingMethodChannelListingTableName+" WHERE Id = ?", listingID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -105,7 +104,7 @@ func (s *SqlShippingMethodChannelListingStore) Get(listingID string) (*shipping.
 }
 
 // FilterByOption returns a list of shipping method channel listings based on given option. result sorted by creation time ASC
-func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, error) {
+func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error) {
 	query := s.GetQueryBuilder().
 		Select("*").
 		From(store.ShippingMethodChannelListingTableName).
@@ -124,7 +123,7 @@ func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *shipping.S
 		return nil, errors.Wrap(err, "FilterByOption_tosql")
 	}
 
-	var res []*shipping.ShippingMethodChannelListing
+	var res []*model.ShippingMethodChannelListing
 	err = s.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping method channel listings by option")

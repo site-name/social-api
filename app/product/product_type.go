@@ -4,11 +4,10 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
-func (a *ServiceProduct) ProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, *model.AppError) {
+func (a *ServiceProduct) ProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, *model.AppError) {
 	productTypes, err := a.srv.Store.ProductType().FilterProductTypesByCheckoutToken(checkoutToken)
 	var (
 		statusCode int
@@ -30,7 +29,7 @@ func (a *ServiceProduct) ProductTypesByCheckoutToken(checkoutToken string) ([]*p
 }
 
 // ProductTypesByProductIDs returns all product types that belong to given products
-func (a *ServiceProduct) ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, *model.AppError) {
+func (a *ServiceProduct) ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, *model.AppError) {
 	productTypes, err := a.srv.Store.ProductType().ProductTypesByProductIDs(productIDs)
 
 	var (
@@ -52,7 +51,7 @@ func (a *ServiceProduct) ProductTypesByProductIDs(productIDs []string) ([]*produ
 }
 
 // ProductTypeByOption returns a product type with given option
-func (s *ServiceProduct) ProductTypeByOption(options *product_and_discount.ProductTypeFilterOption) (*product_and_discount.ProductType, *model.AppError) {
+func (s *ServiceProduct) ProductTypeByOption(options *model.ProductTypeFilterOption) (*model.ProductType, *model.AppError) {
 	productType, err := s.srv.Store.ProductType().GetByOption(options)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -66,7 +65,7 @@ func (s *ServiceProduct) ProductTypeByOption(options *product_and_discount.Produ
 	return productType, nil
 }
 
-func (s *ServiceProduct) ProductTypesByOptions(options *product_and_discount.ProductTypeFilterOption) ([]*product_and_discount.ProductType, *model.AppError) {
+func (s *ServiceProduct) ProductTypesByOptions(options *model.ProductTypeFilterOption) ([]*model.ProductType, *model.AppError) {
 	prdTypes, err := s.srv.Store.ProductType().FilterbyOption(options)
 	var (
 		statusCode int
@@ -87,9 +86,9 @@ func (s *ServiceProduct) ProductTypesByOptions(options *product_and_discount.Pro
 	return prdTypes, nil
 }
 
-func (s *ServiceProduct) CountProductTypesByOptions(options *product_and_discount.ProductTypeFilterOption) (int64, *model.AppError) {
+func (s *ServiceProduct) CountProductTypesByOptions(options *model.ProductTypeFilterOption) (int64, *model.AppError) {
 	if options == nil {
-		options = &product_and_discount.ProductTypeFilterOption{}
+		options = &model.ProductTypeFilterOption{}
 	}
 	count, err := s.srv.Store.ProductType().Count(options)
 	if err != nil {

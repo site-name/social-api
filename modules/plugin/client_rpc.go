@@ -22,8 +22,6 @@ import (
 	"github.com/hashicorp/go-plugin"
 	"github.com/lib/pq"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/file"
-	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -530,17 +528,17 @@ func init() {
 
 type Z_FileWillBeUploadedArgs struct {
 	A                     *Context
-	B                     *file.FileInfo
+	B                     *model.FileInfo
 	UploadedFileStream    uint32
 	ReplacementFileStream uint32
 }
 
 type Z_FileWillBeUploadedReturns struct {
-	A *file.FileInfo
+	A *model.FileInfo
 	B string
 }
 
-func (g *hooksRPCClient) FileWillBeUploaded(c *Context, info *file.FileInfo, file io.Reader, output io.Writer) (*file.FileInfo, string) {
+func (g *hooksRPCClient) FileWillBeUploaded(c *Context, info *model.FileInfo, file io.Reader, output io.Writer) (*model.FileInfo, string) {
 	if !g.implemented[FileWillBeUploadedID] {
 		return info, ""
 	}
@@ -568,7 +566,7 @@ func (g *hooksRPCClient) FileWillBeUploaded(c *Context, info *file.FileInfo, fil
 		}
 		defer replacementFileConnection.Close()
 		if _, err := io.Copy(output, replacementFileConnection); err != nil {
-			g.log.Error("Error reading replacement file.", slog.Err(err))
+			g.log.Error("Error reading replacement model.", slog.Err(err))
 		}
 	}()
 
@@ -603,7 +601,7 @@ func (s *hooksRPCServer) FileWillBeUploaded(args *Z_FileWillBeUploadedArgs, retu
 	returnFileWriter := replacementFileConnection
 
 	if hook, ok := s.impl.(interface {
-		FileWillBeUploaded(c *Context, info *file.FileInfo, file io.Reader, output io.Writer) (*file.FileInfo, string)
+		FileWillBeUploaded(c *Context, info *model.FileInfo, file io.Reader, output io.Writer) (*model.FileInfo, string)
 	}); ok {
 		returns.A, returns.B = hook.FileWillBeUploaded(args.A, args.B, fileReader, returnFileWriter)
 	} else {
@@ -614,7 +612,7 @@ func (s *hooksRPCServer) FileWillBeUploaded(args *Z_FileWillBeUploadedArgs, retu
 
 // MessageWillBePosted is in this file because of the difficulty of identifying which fields need special behaviour.
 // The special behaviour needed is decoding the returned post into the original one to avoid the unintentional removal
-// of fields by older plugins.
+// of fields by older model.
 // func init() {
 // 	hookNameToId["MessageWillBePosted"] = MessageWillBePostedID
 // }
@@ -739,11 +737,11 @@ type Z_InstallPluginArgs struct {
 }
 
 type Z_InstallPluginReturns struct {
-	A *plugins.Manifest
+	A *model.Manifest
 	B *model.AppError
 }
 
-func (g *apiRPCClient) InstallPlugin(file io.Reader, replace bool) (*plugins.Manifest, *model.AppError) {
+func (g *apiRPCClient) InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model.AppError) {
 	pluginStreamID := g.muxBroker.NextId()
 
 	go func() {
@@ -767,7 +765,7 @@ func (g *apiRPCClient) InstallPlugin(file io.Reader, replace bool) (*plugins.Man
 
 func (s *apiRPCServer) InstallPlugin(args *Z_InstallPluginArgs, returns *Z_InstallPluginReturns) error {
 	hook, ok := s.impl.(interface {
-		InstallPlugin(file io.Reader, replace bool) (*plugins.Manifest, *model.AppError)
+		InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model.AppError)
 	})
 	if !ok {
 		return encodableError(fmt.Errorf("API InstallPlugin called but not implemented"))

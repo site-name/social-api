@@ -11,10 +11,6 @@ import (
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	modelAudit "github.com/sitename/sitename/model/audit"
-	"github.com/sitename/sitename/model/cluster"
-	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
@@ -36,7 +32,7 @@ type AppIface interface {
 	// DoPermissionsMigrations execute all the permissions migrations need by the current version.
 	DoPermissionsMigrations() error
 	// GetComplianceReports returns compliances along with an app error
-	GetComplianceReports(page, perPage int) (compliance.Compliances, *model.AppError)
+	GetComplianceReports(page, perPage int) (model.Compliances, *model.AppError)
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.
 	GetConfigFile(name string) ([]byte, error)
 	// GetEnvironmentConfig returns a map of configuration keys whose values have been overridden by an environment variable.
@@ -65,7 +61,7 @@ type AppIface interface {
 	// ResetPermissionsSystem reset permission system
 	ResetPermissionsSystem() *model.AppError
 	// SaveComplianceReport
-	SaveComplianceReport(job *compliance.Compliance) (*compliance.Compliance, *model.AppError)
+	SaveComplianceReport(job *model.Compliance) (*model.Compliance, *model.AppError)
 	// SaveConfig replaces the active configuration, optionally notifying cluster peers.
 	SaveConfig(newCfg *model.Config, sendConfigChangeClusterMessage bool) (*model.Config, *model.Config, *model.AppError)
 	// Srv returns system server
@@ -92,12 +88,12 @@ type AppIface interface {
 	DoSystemConsoleRolesCreationMigration()
 	EnvironmentConfig(filter func(reflect.StructField) bool) map[string]interface{}
 	ExportPermissions(w io.Writer) error
-	GetAudits(userID string, limit int) (modelAudit.Audits, *model.AppError)
-	GetAuditsPage(userID string, page int, perPage int) (modelAudit.Audits, *model.AppError)
+	GetAudits(userID string, limit int) (model.Audits, *model.AppError)
+	GetAuditsPage(userID string, page int, perPage int) (model.Audits, *model.AppError)
 	GetClusterId() string
-	GetClusterStatus() []*cluster.ClusterInfo
-	GetComplianceFile(job *compliance.Compliance) ([]byte, *model.AppError)
-	GetComplianceReport(reportID string) (*compliance.Compliance, *model.AppError)
+	GetClusterStatus() []*model.ClusterInfo
+	GetComplianceFile(job *model.Compliance) ([]byte, *model.AppError)
+	GetComplianceReport(reportID string) (*model.Compliance, *model.AppError)
 	GetLogs(page, perPage int) ([]string, *model.AppError)
 	GetLogsSkipSend(page, perPage int) ([]string, *model.AppError)
 	GetOpenGraphMetadata(requestURL string) ([]byte, error)
@@ -112,7 +108,7 @@ type AppIface interface {
 	Ldap() einterfaces.LdapInterface
 	LimitedClientConfig() map[string]string
 	NewClusterDiscoveryService() *ClusterDiscoveryService
-	NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError
+	NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User, forceAck bool, isBot bool) *model.AppError
 	OriginChecker() func(*http.Request) bool
 	PostActionCookieSecret() []byte
 	ReloadConfig() error

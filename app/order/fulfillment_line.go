@@ -4,12 +4,11 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
 // FulfillmentLinesByOption returns all fulfillment lines by option
-func (a *ServiceOrder) FulfillmentLinesByOption(option *order.FulfillmentLineFilterOption) (order.FulfillmentLines, *model.AppError) {
+func (a *ServiceOrder) FulfillmentLinesByOption(option *model.FulfillmentLineFilterOption) (model.FulfillmentLines, *model.AppError) {
 	fulfillmentLines, err := a.srv.Store.FulfillmentLine().FilterbyOption(option)
 	var (
 		statusCode int
@@ -30,7 +29,7 @@ func (a *ServiceOrder) FulfillmentLinesByOption(option *order.FulfillmentLineFil
 }
 
 // BulkUpsertFulfillmentLines performs bulk upsert given fulfillment lines and returns them
-func (a *ServiceOrder) BulkUpsertFulfillmentLines(transaction store_iface.SqlxTxExecutor, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, *model.AppError) {
+func (a *ServiceOrder) BulkUpsertFulfillmentLines(transaction store_iface.SqlxTxExecutor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, *model.AppError) {
 	fulfillmentLines, err := a.srv.Store.FulfillmentLine().BulkUpsert(transaction, fulfillmentLines)
 	if err != nil {
 		return nil, model.NewAppError("BulkUpsertFulfillmentLines", "app.order.error_bulk_creating_fulfillment_lines.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -40,7 +39,7 @@ func (a *ServiceOrder) BulkUpsertFulfillmentLines(transaction store_iface.SqlxTx
 }
 
 // DeleteFulfillmentLinesByOption tells store to delete fulfillment lines filtered by given option
-func (a *ServiceOrder) DeleteFulfillmentLinesByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentLineFilterOption) *model.AppError {
+func (a *ServiceOrder) DeleteFulfillmentLinesByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentLineFilterOption) *model.AppError {
 	err := a.srv.Store.FulfillmentLine().DeleteFulfillmentLinesByOption(transaction, option)
 	if err != nil {
 		return model.NewAppError("DeleteFulfillmentLinesByOption", "app.order.error_deleting_fulfillment_lines_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)

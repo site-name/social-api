@@ -6,18 +6,16 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/modules/util"
 )
 
 // GetLastpayment compares all payments's CreatAt properties, then returns the most recent payment
-func (a *ServicePayment) GetLastpayment(payments []*payment.Payment) *payment.Payment {
+func (a *ServicePayment) GetLastpayment(payments []*model.Payment) *model.Payment {
 	if len(payments) == 0 {
 		return nil
 	}
 
-	var latestPayment *payment.Payment
+	var latestPayment *model.Payment
 	for _, payMent := range payments {
 		if latestPayment == nil || (latestPayment != nil && payMent.CreateAt > latestPayment.CreateAt) {
 			latestPayment = payMent
@@ -27,7 +25,7 @@ func (a *ServicePayment) GetLastpayment(payments []*payment.Payment) *payment.Pa
 	return latestPayment
 }
 
-func (a *ServicePayment) GetTotalAuthorized(payments []*payment.Payment, fallbackCurrency string) (*goprices.Money, *model.AppError) {
+func (a *ServicePayment) GetTotalAuthorized(payments []*model.Payment, fallbackCurrency string) (*goprices.Money, *model.AppError) {
 	zeroMoney, err := util.ZeroMoney(fallbackCurrency)
 	if err != nil {
 		return nil, model.NewAppError("GetTotalAuthorized", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)
@@ -47,7 +45,7 @@ func (a *ServicePayment) GetTotalAuthorized(payments []*payment.Payment, fallbac
 }
 
 // GetSubTotal adds up all Total prices of given order lines
-func (a *ServicePayment) GetSubTotal(orderLines []*order.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model.AppError) {
+func (a *ServicePayment) GetSubTotal(orderLines []*model.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model.AppError) {
 	total, err := util.ZeroTaxedMoney(fallbackCurrency)
 	if err != nil {
 		return nil, model.NewAppError("GetSubTotal", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fallbackCurrency"}, err.Error(), http.StatusBadRequest)

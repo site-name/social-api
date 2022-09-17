@@ -6,15 +6,13 @@ import (
 	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
 // ProductVariantById finds product variant by given id
-func (a *ServiceProduct) ProductVariantById(id string) (*product_and_discount.ProductVariant, *model.AppError) {
+func (a *ServiceProduct) ProductVariantById(id string) (*model.ProductVariant, *model.AppError) {
 	variant, err := a.srv.Store.ProductVariant().Get(id)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ProductVariantbyId", "app.product.product_variant_missing.app_error", err)
@@ -25,12 +23,12 @@ func (a *ServiceProduct) ProductVariantById(id string) (*product_and_discount.Pr
 
 // ProductVariantGetPrice returns price
 func (a *ServiceProduct) ProductVariantGetPrice(
-	productVariant *product_and_discount.ProductVariant,
-	product product_and_discount.Product,
-	collections []*product_and_discount.Collection,
-	channel channel.Channel,
-	channelListing *product_and_discount.ProductVariantChannelListing,
-	discounts []*product_and_discount.DiscountInfo, // optional
+	productVariant *model.ProductVariant,
+	product model.Product,
+	collections []*model.Collection,
+	channel model.Channel,
+	channelListing *model.ProductVariantChannelListing,
+	discounts []*model.DiscountInfo, // optional
 ) (*goprices.Money, *model.AppError) {
 	return a.srv.DiscountService().CalculateDiscountedPrice(product, channelListing.Price, collections, discounts, channel, productVariant.Id)
 }
@@ -46,7 +44,7 @@ func (a *ServiceProduct) ProductVariantIsDigital(productVariantID string) (bool,
 }
 
 // ProductVariantByOrderLineID returns a product variant by given order line id
-func (a *ServiceProduct) ProductVariantByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, *model.AppError) {
+func (a *ServiceProduct) ProductVariantByOrderLineID(orderLineID string) (*model.ProductVariant, *model.AppError) {
 	productVariant, err := a.srv.Store.ProductVariant().GetByOrderLineID(orderLineID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ProductVariantByOrderLineID", "app.product.error_finding_product_variant_by_order_line_id.app_error", err)
@@ -56,7 +54,7 @@ func (a *ServiceProduct) ProductVariantByOrderLineID(orderLineID string) (*produ
 }
 
 // ProductVariantsByOption returns a list of product variants satisfy given option
-func (a *ServiceProduct) ProductVariantsByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, *model.AppError) {
+func (a *ServiceProduct) ProductVariantsByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, *model.AppError) {
 	productVariants, err := a.srv.Store.ProductVariant().FilterByOption(option)
 	var (
 		statusCode int
@@ -89,13 +87,13 @@ func (a *ServiceProduct) ProductVariantGetWeight(productVariantID string) (*meas
 // DisplayProduct return display text for given product variant
 //
 // `translated` default to false
-func (a *ServiceProduct) DisplayProduct(productVariant *product_and_discount.ProductVariant, translated bool) (stringm *model.AppError) {
+func (a *ServiceProduct) DisplayProduct(productVariant *model.ProductVariant, translated bool) (stringm *model.AppError) {
 	panic("not implt")
 }
 
 // ProductVariantsAvailableInChannel returns product variants based on given channel slug
-func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) ([]*product_and_discount.ProductVariant, *model.AppError) {
-	productVariants, appErr := a.ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
+func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) ([]*model.ProductVariant, *model.AppError) {
+	productVariants, appErr := a.ProductVariantsByOption(&model.ProductVariantFilterOption{
 		ProductVariantChannelListingPriceAmount: squirrel.NotEq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
 		ProductVariantChannelListingChannelSlug: squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug},
 	})
@@ -108,9 +106,9 @@ func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) (
 }
 
 // UpsertProductVariant tells store to upsert given product variant and returns it
-func (s *ServiceProduct) UpsertProductVariant(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, *model.AppError) {
+func (s *ServiceProduct) UpsertProductVariant(transaction store_iface.SqlxTxExecutor, variant *model.ProductVariant) (*model.ProductVariant, *model.AppError) {
 	var (
-		upsertedVariant *product_and_discount.ProductVariant
+		upsertedVariant *model.ProductVariant
 		err             error
 	)
 	if !model.IsValidId(variant.Id) {

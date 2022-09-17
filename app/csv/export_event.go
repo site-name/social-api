@@ -4,11 +4,10 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/csv"
 )
 
 // CommonCreateExportEvent tells store to insert given export event into database then returns the inserted export event
-func (s *ServiceCsv) CommonCreateExportEvent(exportEvent *csv.ExportEvent) (*csv.ExportEvent, *model.AppError) {
+func (s *ServiceCsv) CommonCreateExportEvent(exportEvent *model.ExportEvent) (*model.ExportEvent, *model.AppError) {
 	newExportEvent, err := s.srv.Store.CsvExportEvent().Save(exportEvent)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -21,7 +20,7 @@ func (s *ServiceCsv) CommonCreateExportEvent(exportEvent *csv.ExportEvent) (*csv
 }
 
 // ExportEventsByOption returns a list of export events filtered using given options
-func (s *ServiceCsv) ExportEventsByOption(options *csv.ExportEventFilterOption) ([]*csv.ExportEvent, *model.AppError) {
+func (s *ServiceCsv) ExportEventsByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, *model.AppError) {
 	events, err := s.srv.Store.CsvExportEvent().FilterByOption(options)
 	var (
 		statusCode   int
@@ -37,7 +36,7 @@ func (s *ServiceCsv) ExportEventsByOption(options *csv.ExportEventFilterOption) 
 	}
 
 	if statusCode != 0 {
-		return nil, model.NewAppError("ExportEventsByOption", "app.csv.error_finding_export_events_by_options.app_error", nil, errorMessage, statusCode)
+		return nil, model.NewAppError("ExportEventsByOption", "app.model.error_finding_export_events_by_options.app_error", nil, errorMessage, statusCode)
 	}
 
 	return events, nil

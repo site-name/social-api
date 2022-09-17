@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/store"
 )
 
@@ -35,7 +34,7 @@ func (s *SqlCsvExportFileStore) ModelFields(prefix string) model.AnyArray[string
 }
 
 // Save inserts given csv export file into database then returns it
-func (cs *SqlCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, error) {
+func (cs *SqlCsvExportFileStore) Save(file *model.ExportFile) (*model.ExportFile, error) {
 	file.PreSave()
 	if err := file.IsValid(); err != nil {
 		return nil, err
@@ -50,8 +49,8 @@ func (cs *SqlCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, er
 }
 
 // Get finds and returns an export file with given id
-func (cs *SqlCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
-	var res csv.ExportFile
+func (cs *SqlCsvExportFileStore) Get(id string) (*model.ExportFile, error) {
+	var res model.ExportFile
 
 	err := cs.GetMasterX().Get(&res, "SELECT * FROM "+store.CsvExportFileTablename+" WHERE Id = ?", id)
 	if err != nil {

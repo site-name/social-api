@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -37,7 +36,7 @@ func (s *SqlProductTranslationStore) ModelFields(prefix string) model.AnyArray[s
 }
 
 // Upsert inserts or update given translation
-func (ps *SqlProductTranslationStore) Upsert(translation *product_and_discount.ProductTranslation) (*product_and_discount.ProductTranslation, error) {
+func (ps *SqlProductTranslationStore) Upsert(translation *model.ProductTranslation) (*model.ProductTranslation, error) {
 	var isSaving bool
 
 	if translation.Id == "" {
@@ -88,8 +87,8 @@ func (ps *SqlProductTranslationStore) Upsert(translation *product_and_discount.P
 }
 
 // Get finds and returns a product translation by given id
-func (ps *SqlProductTranslationStore) Get(translationID string) (*product_and_discount.ProductTranslation, error) {
-	var res product_and_discount.ProductTranslation
+func (ps *SqlProductTranslationStore) Get(translationID string) (*model.ProductTranslation, error) {
+	var res model.ProductTranslation
 	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.ProductTranslationTableName+" WHERE Id = ?", translationID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -102,7 +101,7 @@ func (ps *SqlProductTranslationStore) Get(translationID string) (*product_and_di
 }
 
 // FilterByOption finds and returns product translations filtered using given options
-func (ps *SqlProductTranslationStore) FilterByOption(option *product_and_discount.ProductTranslationFilterOption) ([]*product_and_discount.ProductTranslation, error) {
+func (ps *SqlProductTranslationStore) FilterByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, error) {
 	query := ps.GetQueryBuilder().
 		Select("*").
 		From(store.ProductTranslationTableName).
@@ -127,7 +126,7 @@ func (ps *SqlProductTranslationStore) FilterByOption(option *product_and_discoun
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*product_and_discount.ProductTranslation
+	var res []*model.ProductTranslation
 	err = ps.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product translations with given options")

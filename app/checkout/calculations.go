@@ -7,18 +7,15 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 )
 
 // CheckoutShippingPrice Return checkout shipping price.
 //
 // It takes in account all plugins.
-func (s *ServiceCheckout) CheckoutShippingPrice(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) CheckoutShippingPrice(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
 	if discounts == nil {
-		discounts = []*product_and_discount.DiscountInfo{}
+		discounts = []*model.DiscountInfo{}
 	}
 	calculatedCheckoutShipping, appErr := manager.CalculateCheckoutShipping(checkoutInfo, lines, address, discounts)
 	if appErr != nil {
@@ -36,9 +33,9 @@ func (s *ServiceCheckout) CheckoutShippingPrice(manager interfaces.PluginManager
 // CheckoutSubTotal Return the total cost of all the checkout lines, taxes included.
 //
 // It takes in account all plugins.
-func (s *ServiceCheckout) CheckoutSubTotal(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) CheckoutSubTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
 	if discounts == nil {
-		discounts = []*product_and_discount.DiscountInfo{}
+		discounts = []*model.DiscountInfo{}
 	}
 	calculatedCheckoutSubTotal, appErr := manager.CalculateCheckoutSubTotal(checkoutInfo, lines, address, discounts)
 	if appErr != nil {
@@ -54,7 +51,7 @@ func (s *ServiceCheckout) CheckoutSubTotal(manager interfaces.PluginManagerInter
 }
 
 // CalculateCheckoutTotalWithGiftcards
-func (s *ServiceCheckout) CalculateCheckoutTotalWithGiftcards(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) CalculateCheckoutTotalWithGiftcards(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
 	checkoutTotal, appErr := s.CheckoutTotal(manager, checkoutInfo, lines, address, discounts)
 	if appErr != nil {
 		return nil, appErr
@@ -84,9 +81,9 @@ func (s *ServiceCheckout) CalculateCheckoutTotalWithGiftcards(manager interfaces
 // taxes included.
 //
 // It takes in account all plugins.
-func (s *ServiceCheckout) CheckoutTotal(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, address *account.Address, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) CheckoutTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
 	if discounts == nil {
-		discounts = []*product_and_discount.DiscountInfo{}
+		discounts = []*model.DiscountInfo{}
 	}
 	calculatedCheckoutTotal, appErr := manager.CalculateCheckoutTotal(checkoutInfo, lines, address, discounts)
 	if appErr != nil {
@@ -104,14 +101,14 @@ func (s *ServiceCheckout) CheckoutTotal(manager interfaces.PluginManagerInterfac
 // CheckoutLineTotal Return the total price of provided line, taxes included.
 //
 // It takes in account all plugins.
-func (s *ServiceCheckout) CheckoutLineTotal(manager interfaces.PluginManagerInterface, checkoutInfo checkout.CheckoutInfo, lines []*checkout.CheckoutLineInfo, checkoutLineInfo *checkout.CheckoutLineInfo, discounts []*product_and_discount.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
+func (s *ServiceCheckout) CheckoutLineTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, checkoutLineInfo *model.CheckoutLineInfo, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
 	address := checkoutInfo.ShippingAddress
 	if address == nil {
 		address = checkoutInfo.BillingAddress
 	}
 
 	if discounts == nil {
-		discounts = []*product_and_discount.DiscountInfo{}
+		discounts = []*model.DiscountInfo{}
 	}
 
 	calculatedLineTotal, appErr := manager.CalculateCheckoutLineTotal(checkoutInfo, lines, *checkoutLineInfo, address, discounts)

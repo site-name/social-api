@@ -3,16 +3,13 @@
 
 package sub_app_iface
 
-import (
-	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shop"
-)
+import "github.com/sitename/sitename/model"
 
 // ShopService contains methods for working with shops
 type ShopService interface {
 	// ShopById finds shop by given id
-	ShopById(shopID string) (*shop.Shop, *model.AppError)
+	ShopById(shopID string) (*model.Shop, *model.AppError)
 	// ShopStaffRelationByShopIDAndStaffID finds if there is a relationship betwwen given user and given shop
-	ShopStaffRelationByShopIDAndStaffID(shopID string, staffID string) (*shop.ShopStaffRelation, *model.AppError)
-	ShopByOptions(options *shop.ShopFilterOptions) (*shop.Shop, *model.AppError)
+	ShopStaffRelationByShopIDAndStaffID(shopID string, staffID string) (*model.ShopStaffRelation, *model.AppError)
+	ShopByOptions(options *model.ShopFilterOptions) (*model.Shop, *model.AppError)
 }

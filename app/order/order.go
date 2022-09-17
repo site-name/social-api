@@ -13,16 +13,13 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
 // UpsertOrder depends on given order's Id property to decide update/save it
-func (a *ServiceOrder) UpsertOrder(transaction store_iface.SqlxTxExecutor, ord *order.Order) (*order.Order, *model.AppError) {
+func (a *ServiceOrder) UpsertOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order) (*model.Order, *model.AppError) {
 	var err error
 
 	if ord.Id == "" {
@@ -46,7 +43,7 @@ func (a *ServiceOrder) UpsertOrder(transaction store_iface.SqlxTxExecutor, ord *
 }
 
 // BulkUpsertOrders performs bulk upsert given orders
-func (a *ServiceOrder) BulkUpsertOrders(orders []*order.Order) ([]*order.Order, *model.AppError) {
+func (a *ServiceOrder) BulkUpsertOrders(orders []*model.Order) ([]*model.Order, *model.AppError) {
 	orders, err := a.srv.Store.Order().BulkUpsert(orders)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok { // error caused by IsValid()
@@ -64,7 +61,7 @@ func (a *ServiceOrder) BulkUpsertOrders(orders []*order.Order) ([]*order.Order, 
 }
 
 // FilterOrdersByOptions is common method for filtering orders by given option
-func (a *ServiceOrder) FilterOrdersByOptions(option *order.OrderFilterOption) ([]*order.Order, *model.AppError) {
+func (a *ServiceOrder) FilterOrdersByOptions(option *model.OrderFilterOption) ([]*model.Order, *model.AppError) {
 	orders, err := a.srv.Store.Order().FilterByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("FilterOrdersbyOption", "app.order.error_finding_orders_by_option.app_error", err)
@@ -74,7 +71,7 @@ func (a *ServiceOrder) FilterOrdersByOptions(option *order.OrderFilterOption) ([
 }
 
 // OrderById retuns an order with given id
-func (a *ServiceOrder) OrderById(id string) (*order.Order, *model.AppError) {
+func (a *ServiceOrder) OrderById(id string) (*model.Order, *model.AppError) {
 	order, err := a.srv.Store.Order().Get(id)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("OrderById", "app.order.order_missing.app_error", err)
@@ -85,7 +82,7 @@ func (a *ServiceOrder) OrderById(id string) (*order.Order, *model.AppError) {
 
 // OrderShippingIsRequired returns a boolean value indicating that given order requires shipping or not
 func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
-	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+	lines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
 		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": orderID},
 	})
 	if appErr != nil {
@@ -103,7 +100,7 @@ func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.App
 
 // OrderTotalQuantity return total quantity of given order
 func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError) {
-	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+	lines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
 		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": orderID},
 	})
 	if appErr != nil {
@@ -119,8 +116,8 @@ func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError)
 }
 
 // UpdateOrderTotalPaid update given order's total paid amount
-func (a *ServiceOrder) UpdateOrderTotalPaid(transaction store_iface.SqlxTxExecutor, orDer *order.Order) *model.AppError {
-	payments, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
+func (a *ServiceOrder) UpdateOrderTotalPaid(transaction store_iface.SqlxTxExecutor, orDer *model.Order) *model.AppError {
+	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		OrderID: orDer.Id,
 	})
 	if appErr != nil {
@@ -146,10 +143,10 @@ func (a *ServiceOrder) UpdateOrderTotalPaid(transaction store_iface.SqlxTxExecut
 
 // OrderIsPreAuthorized checks if order is pre-authorized
 func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
-	payments, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
+	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		OrderID:                    orderID,
 		IsActive:                   model.NewBool(true),
-		TransactionsKind:           squirrel.Eq{store.TransactionTableName + ".Kind": payment.AUTH},
+		TransactionsKind:           squirrel.Eq{store.TransactionTableName + ".Kind": model.AUTH},
 		TransactionsActionRequired: model.NewBool(false),
 		TransactionsIsSuccess:      model.NewBool(true),
 	})
@@ -162,10 +159,10 @@ func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppErr
 
 // OrderIsCaptured checks if given order is captured
 func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
-	payments, appErr := a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
+	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		OrderID:                    orderID,
 		IsActive:                   model.NewBool(true),
-		TransactionsKind:           squirrel.Eq{store.TransactionTableName + ".Kind": payment.CAPTURE},
+		TransactionsKind:           squirrel.Eq{store.TransactionTableName + ".Kind": model.CAPTURE},
 		TransactionsActionRequired: model.NewBool(false),
 		TransactionsIsSuccess:      model.NewBool(true),
 	})
@@ -177,8 +174,8 @@ func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 }
 
 // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
-func (a *ServiceOrder) OrderSubTotal(ord *order.Order) (*goprices.TaxedMoney, *model.AppError) {
-	lines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+func (a *ServiceOrder) OrderSubTotal(ord *model.Order) (*goprices.TaxedMoney, *model.AppError) {
+	lines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
 		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
@@ -190,15 +187,15 @@ func (a *ServiceOrder) OrderSubTotal(ord *order.Order) (*goprices.TaxedMoney, *m
 }
 
 // OrderCanCalcel checks if given order can be canceled
-func (a *ServiceOrder) OrderCanCancel(ord *order.Order) (bool, *model.AppError) {
-	fulfillments, err := a.FulfillmentsByOption(nil, &order.FulfillmentFilterOption{
+func (a *ServiceOrder) OrderCanCancel(ord *model.Order) (bool, *model.AppError) {
+	fulfillments, err := a.FulfillmentsByOption(nil, &model.FulfillmentFilterOption{
 		OrderID: squirrel.Eq{store.FulfillmentTableName + ".OrderID": ord.Id},
 		Status: squirrel.NotEq{store.FulfillmentTableName + ".Status": []string{
-			string(order.FULFILLMENT_CANCELED),
-			string(order.FULFILLMENT_REFUNDED),
-			string(order.FULFILLMENT_RETURNED),
-			string(order.FULFILLMENT_REFUNDED_AND_RETURNED),
-			string(order.FULFILLMENT_REPLACED),
+			string(model.FULFILLMENT_CANCELED),
+			string(model.FULFILLMENT_REFUNDED),
+			string(model.FULFILLMENT_RETURNED),
+			string(model.FULFILLMENT_REFUNDED_AND_RETURNED),
+			string(model.FULFILLMENT_REPLACED),
 		}},
 	})
 
@@ -207,11 +204,11 @@ func (a *ServiceOrder) OrderCanCancel(ord *order.Order) (bool, *model.AppError) 
 		return false, model.NewAppError("OrderCanCancel", "app.order.fulfillments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return len(fulfillments) == 0 && ord.Status != order.CANCELED && ord.Status != order.STATUS_DRAFT, nil
+	return len(fulfillments) == 0 && ord.Status != model.CANCELED && ord.Status != model.STATUS_DRAFT, nil
 }
 
 // OrderCanCapture
-func (a *ServiceOrder) OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderCanCapture(ord *model.Order, payment *model.Payment) (bool, *model.AppError) {
 	var err *model.AppError
 
 	if payment == nil {
@@ -226,12 +223,12 @@ func (a *ServiceOrder) OrderCanCapture(ord *order.Order, payment *payment.Paymen
 	}
 
 	return payment.CanCapture() &&
-		ord.Status != order.STATUS_DRAFT &&
-		ord.Status != order.CANCELED, nil
+		ord.Status != model.STATUS_DRAFT &&
+		ord.Status != model.CANCELED, nil
 }
 
 // OrderCanVoid
-func (a *ServiceOrder) OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderCanVoid(ord *model.Order, payment *model.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
 	if payment == nil {
 		payment, appErr = a.srv.PaymentService().GetLastOrderPayment(ord.Id)
@@ -249,7 +246,7 @@ func (a *ServiceOrder) OrderCanVoid(ord *order.Order, payment *payment.Payment) 
 }
 
 // OrderCanRefund checks if order can refund
-func (a *ServiceOrder) OrderCanRefund(ord *order.Order, payment *payment.Payment) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderCanRefund(ord *model.Order, payment *model.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
 	if payment == nil {
 		payment, appErr = a.srv.PaymentService().GetLastOrderPayment(ord.Id)
@@ -271,10 +268,10 @@ func (a *ServiceOrder) OrderCanRefund(ord *order.Order, payment *payment.Payment
 }
 
 // CanMarkOrderAsPaid checks if given order can be marked as paid.
-func (a *ServiceOrder) CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError) {
+func (a *ServiceOrder) CanMarkOrderAsPaid(ord *model.Order, payments []*model.Payment) (bool, *model.AppError) {
 	var appErr *model.AppError
 	if len(payments) == 0 {
-		payments, appErr = a.srv.PaymentService().PaymentsByOption(&payment.PaymentFilterOption{
+		payments, appErr = a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 			OrderID: ord.Id,
 		})
 	}
@@ -287,7 +284,7 @@ func (a *ServiceOrder) CanMarkOrderAsPaid(ord *order.Order, payments []*payment.
 }
 
 // OrderTotalAuthorized returns order's total authorized amount
-func (a *ServiceOrder) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError) {
+func (a *ServiceOrder) OrderTotalAuthorized(ord *model.Order) (*goprices.Money, *model.AppError) {
 	lastPayment, appErr := a.srv.PaymentService().GetLastOrderPayment(ord.Id)
 	if appErr != nil {
 		return nil, appErr
@@ -301,7 +298,7 @@ func (a *ServiceOrder) OrderTotalAuthorized(ord *order.Order) (*goprices.Money, 
 }
 
 // CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
-func (a *ServiceOrder) CustomerEmail(ord *order.Order) (string, *model.AppError) {
+func (a *ServiceOrder) CustomerEmail(ord *model.Order) (string, *model.AppError) {
 	if ord.UserID != nil {
 		user, appErr := a.srv.AccountService().UserById(context.Background(), *ord.UserID)
 		if appErr != nil {
@@ -319,9 +316,9 @@ func (a *ServiceOrder) CustomerEmail(ord *order.Order) (string, *model.AppError)
 }
 
 // AnAddressOfOrder returns shipping address of given order if presents
-func (a *ServiceOrder) AnAddressOfOrder(orderID string, whichAddressID account.WhichOrderAddressID) (*account.Address, *model.AppError) {
-	addresses, appErr := a.srv.AccountService().AddressesByOption(&account.AddressFilterOption{
-		OrderID: &account.AddressFilterOrderOption{
+func (a *ServiceOrder) AnAddressOfOrder(orderID string, whichAddressID model.WhichOrderAddressID) (*model.Address, *model.AppError) {
+	addresses, appErr := a.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
+		OrderID: &model.AddressFilterOrderOption{
 			Id: squirrel.Eq{store.OrderTableName + ".Id": orderID},
 			On: whichAddressID,
 		},

@@ -4,11 +4,10 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 // ProductMediasByOption returns a list of product medias that satisfy given option
-func (a *ServiceProduct) ProductMediasByOption(option *product_and_discount.ProductMediaFilterOption) ([]*product_and_discount.ProductMedia, *model.AppError) {
+func (a *ServiceProduct) ProductMediasByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, *model.AppError) {
 	productMedias, err := a.srv.Store.ProductMedia().FilterByOption(option)
 	var (
 		errMsg     string

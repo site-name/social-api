@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
 
@@ -30,7 +29,7 @@ func (as *SqlAssignedPageAttributeStore) ModelFields(prefix string) model.AnyArr
 	})
 }
 
-func (as *SqlAssignedPageAttributeStore) Save(pageAttr *attribute.AssignedPageAttribute) (*attribute.AssignedPageAttribute, error) {
+func (as *SqlAssignedPageAttributeStore) Save(pageAttr *model.AssignedPageAttribute) (*model.AssignedPageAttribute, error) {
 	pageAttr.PreSave()
 	if err := pageAttr.IsValid(); err != nil {
 		return nil, err
@@ -47,8 +46,8 @@ func (as *SqlAssignedPageAttributeStore) Save(pageAttr *attribute.AssignedPageAt
 	return pageAttr, nil
 }
 
-func (as *SqlAssignedPageAttributeStore) Get(id string) (*attribute.AssignedPageAttribute, error) {
-	var res attribute.AssignedPageAttribute
+func (as *SqlAssignedPageAttributeStore) Get(id string) (*model.AssignedPageAttribute, error) {
+	var res model.AssignedPageAttribute
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedPageAttributeTableName+" WHERE Id = ?", id)
 	if err != nil {
@@ -61,7 +60,7 @@ func (as *SqlAssignedPageAttributeStore) Get(id string) (*attribute.AssignedPage
 	return &res, nil
 }
 
-func (as *SqlAssignedPageAttributeStore) GetByOption(option *attribute.AssignedPageAttributeFilterOption) (*attribute.AssignedPageAttribute, error) {
+func (as *SqlAssignedPageAttributeStore) GetByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, error) {
 	query := as.GetQueryBuilder().Select("*").From(store.AssignedPageAttributeTableName)
 
 	// parse option
@@ -77,7 +76,7 @@ func (as *SqlAssignedPageAttributeStore) GetByOption(option *attribute.AssignedP
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	var res attribute.AssignedPageAttribute
+	var res model.AssignedPageAttribute
 
 	err = as.GetReplicaX().Get(
 		&res,

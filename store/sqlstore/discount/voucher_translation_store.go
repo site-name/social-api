@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -36,7 +35,7 @@ func (s *SqlVoucherTranslationStore) ModelFields(prefix string) model.AnyArray[s
 }
 
 // Save inserts given translation into database and returns it
-func (vts *SqlVoucherTranslationStore) Save(translation *product_and_discount.VoucherTranslation) (*product_and_discount.VoucherTranslation, error) {
+func (vts *SqlVoucherTranslationStore) Save(translation *model.VoucherTranslation) (*model.VoucherTranslation, error) {
 	translation.PreSave()
 	if err := translation.IsValid(); err != nil {
 		return nil, err
@@ -52,8 +51,8 @@ func (vts *SqlVoucherTranslationStore) Save(translation *product_and_discount.Vo
 }
 
 // Get finds and returns a voucher translation with given id
-func (vts *SqlVoucherTranslationStore) Get(id string) (*product_and_discount.VoucherTranslation, error) {
-	var res product_and_discount.VoucherTranslation
+func (vts *SqlVoucherTranslationStore) Get(id string) (*model.VoucherTranslation, error) {
+	var res model.VoucherTranslation
 	err := vts.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherTranslationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -65,7 +64,7 @@ func (vts *SqlVoucherTranslationStore) Get(id string) (*product_and_discount.Vou
 	return &res, nil
 }
 
-func (vts *SqlVoucherTranslationStore) commonQueryBuilder(option *product_and_discount.VoucherTranslationFilterOption) squirrel.SelectBuilder {
+func (vts *SqlVoucherTranslationStore) commonQueryBuilder(option *model.VoucherTranslationFilterOption) squirrel.SelectBuilder {
 	query := vts.GetQueryBuilder().Select("*").From(store.VoucherTranslationTableName)
 
 	// parse option
@@ -83,7 +82,7 @@ func (vts *SqlVoucherTranslationStore) commonQueryBuilder(option *product_and_di
 }
 
 // FilterByOption returns a list of voucher translations filtered using given options
-func (vts *SqlVoucherTranslationStore) FilterByOption(option *product_and_discount.VoucherTranslationFilterOption) ([]*product_and_discount.VoucherTranslation, error) {
+func (vts *SqlVoucherTranslationStore) FilterByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, error) {
 	query := vts.commonQueryBuilder(option)
 
 	queryString, args, err := query.ToSql()
@@ -91,7 +90,7 @@ func (vts *SqlVoucherTranslationStore) FilterByOption(option *product_and_discou
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*product_and_discount.VoucherTranslation
+	var res []*model.VoucherTranslation
 	err = vts.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find voucher translations with given options")
@@ -101,7 +100,7 @@ func (vts *SqlVoucherTranslationStore) FilterByOption(option *product_and_discou
 }
 
 // GetByOption finds and returns 1 voucher translation by given options
-func (vts *SqlVoucherTranslationStore) GetByOption(option *product_and_discount.VoucherTranslationFilterOption) (*product_and_discount.VoucherTranslation, error) {
+func (vts *SqlVoucherTranslationStore) GetByOption(option *model.VoucherTranslationFilterOption) (*model.VoucherTranslation, error) {
 	query := vts.commonQueryBuilder(option)
 
 	queryString, args, err := query.ToSql()
@@ -109,7 +108,7 @@ func (vts *SqlVoucherTranslationStore) GetByOption(option *product_and_discount.
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	var res product_and_discount.VoucherTranslation
+	var res model.VoucherTranslation
 	err = vts.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {

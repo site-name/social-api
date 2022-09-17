@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
 )
 
@@ -34,7 +33,7 @@ func (s *SqlWishlistStore) ModelFields(prefix string) model.AnyArray[string] {
 }
 
 // Upsert inserts or update given wishlist and returns it
-func (ws *SqlWishlistStore) Upsert(wishList *wishlist.Wishlist) (*wishlist.Wishlist, error) {
+func (ws *SqlWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishlist, error) {
 	var isSaving bool
 	if !model.IsValidId(wishList.Id) {
 		wishList.PreSave()
@@ -93,7 +92,7 @@ func (ws *SqlWishlistStore) Upsert(wishList *wishlist.Wishlist) (*wishlist.Wishl
 }
 
 // GetByOption finds and returns a slice of wishlists by given option
-func (ws *SqlWishlistStore) GetByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, error) {
+func (ws *SqlWishlistStore) GetByOption(option *model.WishlistFilterOption) (*model.Wishlist, error) {
 	query := ws.GetQueryBuilder().
 		Select("*").
 		From(store.WishlistItemTableName)
@@ -113,7 +112,7 @@ func (ws *SqlWishlistStore) GetByOption(option *wishlist.WishlistFilterOption) (
 	if err != nil {
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
-	var res wishlist.Wishlist
+	var res model.Wishlist
 	err = ws.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {

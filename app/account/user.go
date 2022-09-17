@@ -17,8 +17,6 @@ import (
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/mfa"
 	"github.com/sitename/sitename/modules/plugin"
@@ -40,16 +38,16 @@ type tokenExtra struct {
 	Email  string
 }
 
-func (a *ServiceAccount) UserById(ctx context.Context, userID string) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UserById(ctx context.Context, userID string) (*model.User, *model.AppError) {
 	user, err := a.srv.Store.User().Get(ctx, userID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("UserById", "app.account.missing_user.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("UserById", "app.model.missing_user.app_error", err)
 	}
 
 	return user, nil
 }
 
-func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID, addressType string) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID, addressType string) (*model.User, *model.AppError) {
 	// check if address is owned by user
 	addresses, appErr := a.AddressesByUserId(userID)
 	if appErr != nil {
@@ -64,7 +62,7 @@ func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID, addressType st
 	}
 
 	if !addressBelongToUser {
-		return nil, model.NewAppError("UserSetDefaultAddress", "app.account.user_not_own_address.app_error", nil, "", http.StatusForbidden)
+		return nil, model.NewAppError("UserSetDefaultAddress", "app.model.user_not_own_address.app_error", nil, "", http.StatusForbidden)
 	}
 
 	// get user with given id
@@ -74,9 +72,9 @@ func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID, addressType st
 	}
 
 	// set new address accordingly
-	if addressType == account.ADDRESS_TYPE_BILLING {
+	if addressType == model.ADDRESS_TYPE_BILLING {
 		user.DefaultBillingAddressID = &addressID
-	} else if addressType == account.ADDRESS_TYPE_SHIPPING {
+	} else if addressType == model.ADDRESS_TYPE_SHIPPING {
 		user.DefaultShippingAddressID = &addressID
 	}
 
@@ -88,7 +86,7 @@ func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID, addressType st
 		} else if errInput, ok := (err).(*store.ErrInvalidInput); ok {
 			return nil, model.NewAppError(
 				"UserSetDefaultAddress",
-				"app.account.invalid_input.app_error",
+				"app.model.invalid_input.app_error",
 				map[string]interface{}{
 					"field": errInput.Field,
 					"value": errInput.Value,
@@ -98,7 +96,7 @@ func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID, addressType st
 		} else {
 			return nil, model.NewAppError(
 				"UserSetDefaultAddress",
-				"app.account.update_error.app_error",
+				"app.model.update_error.app_error",
 				nil, "",
 				http.StatusInternalServerError,
 			)
@@ -108,20 +106,20 @@ func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID, addressType st
 	return userUpdate.New, nil
 }
 
-func (a *ServiceAccount) UserByEmail(email string) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UserByEmail(email string) (*model.User, *model.AppError) {
 	user, err := a.srv.Store.User().GetByEmail(email)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
 		}
-		return nil, model.NewAppError("UserByEmail", "app.account.error_finding_user_by_email.app_error", nil, err.Error(), statusCode)
+		return nil, model.NewAppError("UserByEmail", "app.model.error_finding_user_by_email.app_error", nil, err.Error(), statusCode)
 	}
 
 	return user, nil
 }
 
-func (a *ServiceAccount) CreateUserFromSignup(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError) {
+func (a *ServiceAccount) CreateUserFromSignup(c *request.Context, user *model.User, redirect string) (*model.User, *model.AppError) {
 	if err := a.IsUserSignUpAllowed(); err != nil {
 		return nil, err
 	}
@@ -150,7 +148,7 @@ func (a *ServiceAccount) CreateUserFromSignup(c *request.Context, user *account.
 	return ruser, nil
 }
 
-func (a *ServiceAccount) CreateUser(c *request.Context, user *account.User) (*account.User, *model.AppError) {
+func (a *ServiceAccount) CreateUser(c *request.Context, user *model.User) (*model.User, *model.AppError) {
 	user.Roles = model.SystemUserRoleId
 
 	if !user.IsLDAPUser() && !user.IsSAMLUser() && user.IsGuest() && !CheckUserDomain(user, *a.srv.Config().GuestAccountsSettings.RestrictCreationToDomains) {
@@ -159,7 +157,7 @@ func (a *ServiceAccount) CreateUser(c *request.Context, user *account.User) (*ac
 
 	// Below is a special case where the first user in the entire
 	// system is granted the system_admin role
-	count, err := a.srv.Store.User().Count(account.UserCountOptions{IncludeDeleted: true})
+	count, err := a.srv.Store.User().Count(model.UserCountOptions{IncludeDeleted: true})
 	if err != nil {
 		return nil, model.NewAppError("createUserOrGuest", "app.user.get_total_users_count.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -209,7 +207,7 @@ func (a *ServiceAccount) CreateUser(c *request.Context, user *account.User) (*ac
 	return user, nil
 }
 
-func (a *ServiceAccount) createUser(user *account.User) (*account.User, *model.AppError) {
+func (a *ServiceAccount) createUser(user *model.User) (*model.User, *model.AppError) {
 	user.MakeNonNil()
 
 	if err := a.isPasswordValid(user.Password); user.AuthService == "" && err != nil {
@@ -249,7 +247,7 @@ func (a *ServiceAccount) createUser(user *account.User) (*account.User, *model.A
 	return ruser, nil
 }
 
-func (a *ServiceAccount) CreateUserWithToken(c *request.Context, user *account.User, token *model.Token) (*account.User, *model.AppError) {
+func (a *ServiceAccount) CreateUserWithToken(c *request.Context, user *model.User, token *model.Token) (*model.User, *model.AppError) {
 	if err := a.IsUserSignUpAllowed(); err != nil {
 		return nil, err
 	}
@@ -280,7 +278,7 @@ func (a *ServiceAccount) CreateUserWithToken(c *request.Context, user *account.U
 	return ruser, nil
 }
 
-func (a *ServiceAccount) CreateUserAsAdmin(c *request.Context, user *account.User, redirect string) (*account.User, *model.AppError) {
+func (a *ServiceAccount) CreateUserAsAdmin(c *request.Context, user *model.User, redirect string) (*model.User, *model.AppError) {
 	ruser, err := a.CreateUser(c, user)
 	if err != nil {
 		return nil, err
@@ -375,10 +373,10 @@ func (a *ServiceAccount) VerifyUserEmail(userID, email string) *model.AppError {
 	return nil
 }
 
-func (a *ServiceAccount) GetUserByUsername(username string) (*account.User, *model.AppError) {
+func (a *ServiceAccount) GetUserByUsername(username string) (*model.User, *model.AppError) {
 	result, err := a.srv.Store.User().GetByUsername(username)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetUserByUsername", "app.account.user_by_username.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("GetUserByUsername", "app.model.user_by_username.app_error", err)
 	}
 	return result, nil
 }
@@ -389,7 +387,7 @@ func (a *ServiceAccount) IsFirstUserAccount() bool {
 		return false
 	}
 	if cachedSessions == 0 {
-		count, err := a.srv.Store.User().Count(account.UserCountOptions{IncludeDeleted: true})
+		count, err := a.srv.Store.User().Count(model.UserCountOptions{IncludeDeleted: true})
 		if err != nil {
 			slog.Debug("There was an error fetching if first usder account", slog.Err(err))
 			return false
@@ -413,7 +411,7 @@ func (a *ServiceAccount) IsUsernameTaken(name string) bool {
 	return true
 }
 
-func (a *ServiceAccount) GetUserByAuth(authData *string, authService string) (*account.User, *model.AppError) {
+func (a *ServiceAccount) GetUserByAuth(authData *string, authService string) (*model.User, *model.AppError) {
 	user, err := a.srv.Store.User().GetByAuth(authData, authService)
 	if err != nil {
 		var invErr *store.ErrInvalidInput
@@ -431,7 +429,7 @@ func (a *ServiceAccount) GetUserByAuth(authData *string, authService string) (*a
 	return user, nil
 }
 
-func (a *ServiceAccount) GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError) {
+func (a *ServiceAccount) GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError) {
 	users, err := a.srv.Store.User().GetAllProfiles(options)
 	if err != nil {
 		return nil, model.NewAppError("GetUsers", "app.user.get_profiles.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -508,7 +506,7 @@ func (a *ServiceAccount) DeactivateMfa(userID string) *model.AppError {
 	return nil
 }
 
-func (a *ServiceAccount) GetProfileImage(user *account.User) ([]byte, bool, *model.AppError) {
+func (a *ServiceAccount) GetProfileImage(user *model.User) ([]byte, bool, *model.AppError) {
 	if *a.srv.Config().FileSettings.DriverName == "" {
 		img, appErr := a.GetDefaultProfileImage(user)
 		if appErr != nil {
@@ -536,11 +534,11 @@ func (a *ServiceAccount) GetProfileImage(user *account.User) ([]byte, bool, *mod
 	return data, false, nil
 }
 
-func (a *ServiceAccount) GetDefaultProfileImage(user *account.User) ([]byte, *model.AppError) {
+func (a *ServiceAccount) GetDefaultProfileImage(user *model.User) ([]byte, *model.AppError) {
 	return CreateProfileImage(user.Username, user.Id, *a.srv.Config().FileSettings.InitialFont)
 }
 
-func (a *ServiceAccount) SetDefaultProfileImage(user *account.User) *model.AppError {
+func (a *ServiceAccount) SetDefaultProfileImage(user *model.User) *model.AppError {
 	img, appErr := a.GetDefaultProfileImage(user)
 	if appErr != nil {
 		return appErr
@@ -573,7 +571,7 @@ func (a *ServiceAccount) SetDefaultProfileImage(user *account.User) *model.AppEr
 	return nil
 }
 
-func (a *ServiceAccount) SanitizeProfile(user *account.User, asAdmin bool) {
+func (a *ServiceAccount) SanitizeProfile(user *model.User, asAdmin bool) {
 	options := a.GetSanitizeOptions(asAdmin)
 	user.SanitizeProfile(options)
 }
@@ -599,7 +597,7 @@ func (a *ServiceAccount) SetProfileImage(userID string, imageData *multipart.Fil
 
 func (a *ServiceAccount) SetProfileImageFromMultiPartFile(userID string, f multipart.File) *model.AppError {
 	if limitErr := fileApp.CheckImageLimits(f, *a.srv.Config().FileSettings.MaxImageResolution); limitErr != nil {
-		return model.NewAppError("SetProfileImage", "app.account.upload_profile_image.check_image_limits.app_error", nil, "", http.StatusBadRequest)
+		return model.NewAppError("SetProfileImage", "app.model.upload_profile_image.check_image_limits.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	return a.SetProfileImageFromFile(userID, f)
@@ -659,7 +657,7 @@ func (a *ServiceAccount) userDeactivated(c *request.Context, userID string) *mod
 	return nil
 }
 
-func (a *ServiceAccount) UpdateActive(c *request.Context, user *account.User, active bool) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UpdateActive(c *request.Context, user *model.User, active bool) (*model.User, *model.AppError) {
 	user.UpdateAt = model.GetMillis()
 	if active {
 		user.DeleteAt = 0
@@ -705,7 +703,7 @@ func (a *ServiceAccount) UpdateHashedPasswordByUserId(userID, newHashedPassword 
 	return a.UpdateHashedPassword(user, newHashedPassword)
 }
 
-func (a *ServiceAccount) UpdateHashedPassword(user *account.User, newHashedPassword string) *model.AppError {
+func (a *ServiceAccount) UpdateHashedPassword(user *model.User, newHashedPassword string) *model.AppError {
 	if err := a.srv.Store.User().UpdatePassword(user.Id, newHashedPassword); err != nil {
 		return model.NewAppError("UpdatePassword", "api.user.update_password.failed.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -715,7 +713,7 @@ func (a *ServiceAccount) UpdateHashedPassword(user *account.User, newHashedPassw
 	return nil
 }
 
-func (a *ServiceAccount) UpdateUserRolesWithUser(user *account.User, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UpdateUserRolesWithUser(user *model.User, newRoles string, sendWebSocketEvent bool) (*model.User, *model.AppError) {
 	if err := a.CheckRolesExist(strings.Fields(newRoles)); err != nil {
 		return nil, err
 	}
@@ -748,7 +746,7 @@ func (a *ServiceAccount) UpdateUserRolesWithUser(user *account.User, newRoles st
 			return nil, model.NewAppError("UpdateUserRoles", "app.user.update.finding.app_error", nil, result.NErr.Error(), http.StatusInternalServerError)
 		}
 	}
-	ruser := result.Data.(*account.UserUpdate).New
+	ruser := result.Data.(*model.UserUpdate).New
 
 	if result := <-schan; result.NErr != nil {
 		// soft error since the user roles were still updated
@@ -773,7 +771,7 @@ func (a *ServiceAccount) PermanentDeleteAllUsers(c *request.Context) *model.AppE
 	return nil
 }
 
-func (a *ServiceAccount) UpdateUser(user *account.User, sendNotifications bool) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UpdateUser(user *model.User, sendNotifications bool) (*model.User, *model.AppError) {
 	prev, err := a.srv.Store.User().Get(context.Background(), user.Id)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("UpdateUser", MissingAccountError, err)
@@ -851,7 +849,7 @@ func (a *ServiceAccount) UpdateUser(user *account.User, sendNotifications bool) 
 	return userUpdate.New, nil
 }
 
-func (a *ServiceAccount) SendEmailVerification(user *account.User, newEmail, redirect string) *model.AppError {
+func (a *ServiceAccount) SendEmailVerification(user *model.User, newEmail, redirect string) *model.AppError {
 	token, err := a.srv.EmailService.CreateVerifyEmailToken(user.Id, newEmail)
 	if err != nil {
 		switch {
@@ -876,9 +874,9 @@ func (a *ServiceAccount) SendEmailVerification(user *account.User, newEmail, red
 	return nil
 }
 
-func (a *ServiceAccount) GetStatus(userID string) (*account.Status, *model.AppError) {
+func (a *ServiceAccount) GetStatus(userID string) (*model.Status, *model.AppError) {
 	if !*a.srv.Config().ServiceSettings.EnableUserStatuses {
-		return &account.Status{}, nil
+		return &model.Status{}, nil
 	}
 
 	status := a.GetStatusFromCache(userID)
@@ -900,10 +898,10 @@ func (a *ServiceAccount) GetStatus(userID string) (*account.Status, *model.AppEr
 	return status, nil
 }
 
-func (a *ServiceAccount) GetStatusFromCache(userID string) *account.Status {
-	var status *account.Status
+func (a *ServiceAccount) GetStatusFromCache(userID string) *model.Status {
+	var status *model.Status
 	if err := a.srv.StatusCache.Get(userID, &status); err == nil {
-		statusCopy := &account.Status{}
+		statusCopy := &model.Status{}
 		*statusCopy = *status
 		return statusCopy
 	}
@@ -911,7 +909,7 @@ func (a *ServiceAccount) GetStatusFromCache(userID string) *account.Status {
 	return nil
 }
 
-func (a *ServiceAccount) SearchUsers(props *account.UserSearch, options *account.UserSearchOptions) ([]*account.User, *model.AppError) {
+func (a *ServiceAccount) SearchUsers(props *model.UserSearch, options *model.UserSearchOptions) ([]*model.User, *model.AppError) {
 	term := strings.TrimSpace(props.Term)
 
 	users, err := a.srv.Store.User().Search(term, options)
@@ -926,7 +924,7 @@ func (a *ServiceAccount) SearchUsers(props *account.UserSearch, options *account
 	return users, nil
 }
 
-func (a *ServiceAccount) PermanentDeleteUser(c *request.Context, user *account.User) *model.AppError {
+func (a *ServiceAccount) PermanentDeleteUser(c *request.Context, user *model.User) *model.AppError {
 	slog.Warn("Attempting to permanently delete account", slog.String("user_id", user.Id), slog.String("user_email", user.Email))
 	if user.IsInRole(model.SystemAdminRoleId) {
 		slog.Warn("You are deleting a user that is a system administrator.  You may need to set another account as the system administrator using the command line tools.", slog.String("user_email", user.Email))
@@ -1012,7 +1010,7 @@ func (a *ServiceAccount) UpdatePasswordAsUser(userID, currentPassword, newPasswo
 	return a.UpdatePasswordSendEmail(user, newPassword, T("api.user.update_password.menu"))
 }
 
-func (a *ServiceAccount) UpdatePassword(user *account.User, newPassword string) *model.AppError {
+func (a *ServiceAccount) UpdatePassword(user *model.User, newPassword string) *model.AppError {
 	if err := a.isPasswordValid(newPassword); err != nil {
 		return err
 	}
@@ -1027,7 +1025,7 @@ func (a *ServiceAccount) UpdatePassword(user *account.User, newPassword string) 
 	return nil
 }
 
-func (a *ServiceAccount) UpdatePasswordSendEmail(user *account.User, newPassword, method string) *model.AppError {
+func (a *ServiceAccount) UpdatePasswordSendEmail(user *model.User, newPassword, method string) *model.AppError {
 	if err := a.UpdatePassword(user, newPassword); err != nil {
 		return err
 	}
@@ -1102,7 +1100,7 @@ func (a *ServiceAccount) ResetPasswordFromToken(userSuppliedTokenString, newPass
 	return nil
 }
 
-func (a *ServiceAccount) sanitizeProfiles(users []*account.User, asAdmin bool) []*account.User {
+func (a *ServiceAccount) sanitizeProfiles(users []*model.User, asAdmin bool) []*model.User {
 	for _, u := range users {
 		a.SanitizeProfile(u, asAdmin)
 	}
@@ -1110,7 +1108,7 @@ func (a *ServiceAccount) sanitizeProfiles(users []*account.User, asAdmin bool) [
 	return users
 }
 
-func (a *ServiceAccount) GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*account.User, *model.AppError) {
+func (a *ServiceAccount) GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*model.User, *model.AppError) {
 	users, err := a.srv.Store.User().GetProfileByIds(context.Background(), userIDs, options, true)
 	if err != nil {
 		return nil, model.NewAppError("GetUsersByIds", "app.user.get_profiles.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -1119,7 +1117,7 @@ func (a *ServiceAccount) GetUsersByIds(userIDs []string, options *store.UserGetB
 	return a.sanitizeProfiles(users, options.IsAdmin), nil
 }
 
-func (a *ServiceAccount) GetUsersByUsernames(usernames []string, asAdmin bool) ([]*account.User, *model.AppError) {
+func (a *ServiceAccount) GetUsersByUsernames(usernames []string, asAdmin bool) ([]*model.User, *model.AppError) {
 	users, err := a.srv.Store.User().GetProfilesByUsernames(usernames)
 	if err != nil {
 		return nil, model.NewAppError("GetUsersByUsernames", "app.user.get_profiles.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -1127,29 +1125,29 @@ func (a *ServiceAccount) GetUsersByUsernames(usernames []string, asAdmin bool) (
 	return a.sanitizeProfiles(users, asAdmin), nil
 }
 
-func (a *ServiceAccount) GetTotalUsersStats() (*account.UsersStats, *model.AppError) {
-	count, err := a.srv.Store.User().Count(account.UserCountOptions{})
+func (a *ServiceAccount) GetTotalUsersStats() (*model.UsersStats, *model.AppError) {
+	count, err := a.srv.Store.User().Count(model.UserCountOptions{})
 	if err != nil {
 		return nil, model.NewAppError("GetTotalUsersStats", "app.user.get_total_users_count.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	stats := &account.UsersStats{
+	stats := &model.UsersStats{
 		TotalUsersCount: count,
 	}
 	return stats, nil
 }
 
-func (a *ServiceAccount) GetFilteredUsersStats(options *account.UserCountOptions) (*account.UsersStats, *model.AppError) {
+func (a *ServiceAccount) GetFilteredUsersStats(options *model.UserCountOptions) (*model.UsersStats, *model.AppError) {
 	count, err := a.srv.Store.User().Count(*options)
 	if err != nil {
 		return nil, model.NewAppError("GetFilteredUsersStats", "app.user.get_total_users_count.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	stats := &account.UsersStats{
+	stats := &model.UsersStats{
 		TotalUsersCount: count,
 	}
 	return stats, nil
 }
 
-func (a *ServiceAccount) UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*model.User, *model.AppError) {
 	user, err := a.UserById(context.Background(), userID)
 	if err != nil {
 		err.StatusCode = http.StatusBadRequest
@@ -1189,7 +1187,7 @@ func (a *ServiceAccount) CreatePasswordRecoveryToken(userID, eMail string) (*mod
 	})
 }
 
-func (a *ServiceAccount) CheckProviderAttributes(user *account.User, patch *account.UserPatch) string {
+func (a *ServiceAccount) CheckProviderAttributes(user *model.User, patch *model.UserPatch) string {
 	tryingToChange := func(userValue, patchValue *string) bool {
 		return patchValue != nil && *patchValue != *userValue
 	}
@@ -1217,7 +1215,7 @@ func (a *ServiceAccount) CheckProviderAttributes(user *account.User, patch *acco
 	return conflictField
 }
 
-func (a *ServiceAccount) UpdateUserAsUser(user *account.User, asAdmin bool) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UpdateUserAsUser(user *model.User, asAdmin bool) (*model.User, *model.AppError) {
 	updatedUser, err := a.UpdateUser(user, true)
 	if err != nil {
 		return nil, err
@@ -1226,7 +1224,7 @@ func (a *ServiceAccount) UpdateUserAsUser(user *account.User, asAdmin bool) (*ac
 	return updatedUser, nil
 }
 
-func (a *ServiceAccount) UpdateUserAuth(userID string, userAuth *account.UserAuth) (*account.UserAuth, *model.AppError) {
+func (a *ServiceAccount) UpdateUserAuth(userID string, userAuth *model.UserAuth) (*model.UserAuth, *model.AppError) {
 	userAuth.Password = ""
 	if _, err := a.srv.Store.User().UpdateAuthData(userID, userAuth.AuthService, userAuth.AuthData, "", false); err != nil {
 		var invErr *store.ErrInvalidInput
@@ -1281,10 +1279,10 @@ func (a *ServiceAccount) UpdateUserActive(c *request.Context, userID string, act
 }
 
 // UserByOrderId returns an user who owns given order
-func (a *ServiceAccount) UserByOrderId(orderID string) (*account.User, *model.AppError) {
+func (a *ServiceAccount) UserByOrderId(orderID string) (*model.User, *model.AppError) {
 	user, err := a.srv.Store.User().UserByOrderID(orderID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("UserByOrderId", "app.account.error_finding_user_by_order_id.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("UserByOrderId", "app.model.error_finding_user_by_order_id.app_error", err)
 	}
 
 	return user, nil
@@ -1296,9 +1294,9 @@ func (us *ServiceAccount) InvalidateCacheForUser(userID string) {
 	us.srv.Store.User().InvalidateProfileCacheForUser(userID)
 
 	if us.srv.Cluster != nil {
-		msg := &cluster.ClusterMessage{
-			Event:    cluster.ClusterEventInvalidateCacheForUser,
-			SendType: cluster.ClusterSendBestEffort,
+		msg := &model.ClusterMessage{
+			Event:    model.ClusterEventInvalidateCacheForUser,
+			SendType: model.ClusterSendBestEffort,
 			Data:     []byte(userID),
 		}
 		us.srv.Cluster.SendClusterMessage(msg)

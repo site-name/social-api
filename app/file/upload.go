@@ -8,7 +8,6 @@ import (
 
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
@@ -16,7 +15,7 @@ import (
 const minFirstPartSize = 5 * 1024 * 1024 // 5MB
 const IncompleteUploadSuffix = ".tmp"
 
-func (a *ServiceFile) GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError) {
+func (a *ServiceFile) GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *model.AppError) {
 	uss, err := a.srv.Store.UploadSession().GetForUser(userID)
 	var (
 		statusCode int
@@ -36,7 +35,7 @@ func (a *ServiceFile) GetUploadSessionsForUser(userID string) ([]*file.UploadSes
 	return uss, nil
 }
 
-func (a *ServiceFile) GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError) {
+func (a *ServiceFile) GetUploadSession(uploadId string) (*model.UploadSession, *model.AppError) {
 	us, err := a.srv.Store.UploadSession().Get(uploadId)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -50,7 +49,7 @@ func (a *ServiceFile) GetUploadSession(uploadId string) (*file.UploadSession, *m
 	return us, nil
 }
 
-// func (a *ServiceFile) CreateUploadSession(us *file.UploadSession) (*file.UploadSession, *model.AppError) {
+// func (a *ServiceFile) CreateUploadSession(us *model.UploadSession) (*model.UploadSession, *model.AppError) {
 // 	if us.FileSize > *a.srv.Config().FileSettings.MaxFileSize {
 // 		return nil, model.NewAppError(
 // 			"CreateUploadSession",
@@ -62,16 +61,16 @@ func (a *ServiceFile) GetUploadSession(uploadId string) (*file.UploadSession, *m
 // 	us.FileOffset = 0
 // 	now := time.Now()
 // 	us.CreateAt = model.GetMillisForTime(now)
-// 	if us.Type == file.UploadTypeAttachment {
+// 	if us.Type == model.UploadTypeAttachment {
 // 		us.Path = now.Format("20060102") + "/teams/noteam/channels/" + us.ChannelId + "/users/" + us.UserID + "/" + us.Id + "/" + filepath.Base(us.FileName)
-// 	} else if us.Type == file.UploadTypeImport {
+// 	} else if us.Type == model.UploadTypeImport {
 // 		us.Path = filepath.Clean(*a.srv.Config().ImportSettings.Directory) + "/" + us.Id + "_" + filepath.Base(us.FileName)
 // 	}
 // 	if err := us.IsValid(); err != nil {
 // 		return nil, err
 // 	}
 
-// 	if us.Type == file.UploadTypeAttachment {
+// 	if us.Type == model.UploadTypeAttachment {
 // 		channel, err := a.GetChannel(us.ChannelId)
 // 		if err != nil {
 // 			return nil, model.NewAppError("CreateUploadSession", "app.upload.create.incorrect_channel_id.app_error",
@@ -91,7 +90,7 @@ func (a *ServiceFile) GetUploadSession(uploadId string) (*file.UploadSession, *m
 // 	return us, nil
 // }
 
-func (a *ServiceFile) UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError) {
+func (a *ServiceFile) UploadData(c *request.Context, us *model.UploadSession, rd io.Reader) (*model.FileInfo, *model.AppError) {
 	// prevent more than one caller to upload data at the same time for a given upload session.
 	// This is to avoid possible inconsistencies.
 	a.uploadLockMapMut.Lock()
@@ -120,7 +119,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *file.UploadSession, rd 
 	}
 
 	uploadPath := us.Path
-	if us.Type == file.UploadTypeImport {
+	if us.Type == model.UploadTypeImport {
 		uploadPath += IncompleteUploadSuffix
 	}
 
@@ -170,7 +169,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *file.UploadSession, rd 
 		return nil, model.NewAppError("UploadData", "app.upload.upload_data.read_file.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	info, err := file.GetInfoForBytes(us.FileName, f, int(us.FileSize))
+	info, err := model.GetInfoForBytes(us.FileName, f, int(us.FileSize))
 	f.Close()
 	if err != nil {
 		return nil, err
@@ -212,7 +211,7 @@ func (a *ServiceFile) UploadData(c *request.Context, us *file.UploadSession, rd 
 		a.HandleImages([]string{info.PreviewPath}, []string{info.ThumbnailPath}, [][]byte{imgData})
 	}
 
-	if us.Type == file.UploadTypeImport {
+	if us.Type == model.UploadTypeImport {
 		if err := a.MoveFile(uploadPath, us.Path); err != nil {
 			return nil, model.NewAppError("UploadData", "app.upload.upload_data.move_file.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}

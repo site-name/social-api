@@ -3,7 +3,6 @@ package csv
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/csv"
 	"github.com/sitename/sitename/store"
 )
 
@@ -34,7 +33,7 @@ func (s *SqlCsvExportEventStore) ModelFields(prefix string) model.AnyArray[strin
 }
 
 // Save inserts given export event into database then returns it
-func (cs *SqlCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
+func (cs *SqlCsvExportEventStore) Save(event *model.ExportEvent) (*model.ExportEvent, error) {
 	event.PreSave()
 	if err := event.IsValid(); err != nil {
 		return nil, err
@@ -50,7 +49,7 @@ func (cs *SqlCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent
 }
 
 // FilterByOption finds and returns a list of export events filtered using given option
-func (cs *SqlCsvExportEventStore) FilterByOption(options *csv.ExportEventFilterOption) ([]*csv.ExportEvent, error) {
+func (cs *SqlCsvExportEventStore) FilterByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, error) {
 	query := cs.GetQueryBuilder().
 		Select("*").
 		From(store.CsvExportEventTablename).
@@ -72,7 +71,7 @@ func (cs *SqlCsvExportEventStore) FilterByOption(options *csv.ExportEventFilterO
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*csv.ExportEvent
+	var res []*model.ExportEvent
 	err = cs.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find export events based on given options")

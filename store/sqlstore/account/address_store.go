@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
@@ -48,7 +47,7 @@ func (as *SqlAddressStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (as *SqlAddressStore) ScanFields(addr account.Address) []interface{} {
+func (as *SqlAddressStore) ScanFields(addr model.Address) []interface{} {
 	return []interface{}{
 		&addr.Id,
 		&addr.FirstName,
@@ -67,7 +66,7 @@ func (as *SqlAddressStore) ScanFields(addr account.Address) []interface{} {
 	}
 }
 
-func (as *SqlAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, error) {
+func (as *SqlAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, address *model.Address) (*model.Address, error) {
 	var executor store_iface.SqlxExecutor = as.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -125,8 +124,8 @@ func (as *SqlAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, addres
 	return address, nil
 }
 
-func (as *SqlAddressStore) Get(addressID string) (*account.Address, error) {
-	var res account.Address
+func (as *SqlAddressStore) Get(addressID string) (*model.Address, error) {
+	var res model.Address
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AddressTableName+" WHERE Id = ?", addressID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -139,7 +138,7 @@ func (as *SqlAddressStore) Get(addressID string) (*account.Address, error) {
 }
 
 // FilterByOption finds and returns a list of address(es) filtered by given option
-func (as *SqlAddressStore) FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) {
+func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
 	query := as.GetQueryBuilder().
 		Select(as.ModelFields(store.AddressTableName + ".")...).
 		From(store.AddressTableName).
@@ -169,7 +168,7 @@ func (as *SqlAddressStore) FilterByOption(option *account.AddressFilterOption) (
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
-	var res []*account.Address
+	var res []*model.Address
 	err = as.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find addresses based on given option")

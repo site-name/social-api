@@ -5,12 +5,11 @@ import (
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/store"
 )
 
 // UpsertPluginConfiguration updates/inserts given configuration into database then returns it
-func (s *ServicePlugin) UpsertPluginConfiguration(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, *model.AppError) {
+func (s *ServicePlugin) UpsertPluginConfiguration(config *model.PluginConfiguration) (*model.PluginConfiguration, *model.AppError) {
 	config, err := s.srv.Store.PluginConfiguration().Upsert(config)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -28,7 +27,7 @@ func (s *ServicePlugin) UpsertPluginConfiguration(config *plugins.PluginConfigur
 }
 
 // FilterPluginConfigurations returns a list of plugin configurations filtered using given options
-func (s *ServicePlugin) FilterPluginConfigurations(options *plugins.PluginConfigurationFilterOptions) (plugins.PluginConfigurations, *model.AppError) {
+func (s *ServicePlugin) FilterPluginConfigurations(options *model.PluginConfigurationFilterOptions) (model.PluginConfigurations, *model.AppError) {
 	if options == nil {
 		return nil, model.NewAppError("FilterPluginConfigurations", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "options"}, "", http.StatusBadRequest)
 	}
@@ -42,7 +41,7 @@ func (s *ServicePlugin) FilterPluginConfigurations(options *plugins.PluginConfig
 }
 
 // GetPluginConfiguration finds and returns a plugin configuration based on given options
-func (s *ServicePlugin) GetPluginConfiguration(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, *model.AppError) {
+func (s *ServicePlugin) GetPluginConfiguration(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, *model.AppError) {
 	config, err := s.srv.Store.PluginConfiguration().GetByOptions(options)
 	if err != nil {
 		statusCode := http.StatusInternalServerError

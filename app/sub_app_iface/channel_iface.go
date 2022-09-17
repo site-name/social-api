@@ -3,21 +3,18 @@
 
 package sub_app_iface
 
-import (
-	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
-)
+import "github.com/sitename/sitename/model"
 
 // ChannelService contains methods for working with channels
 type ChannelService interface {
 	// ChannelByOption returns a channel that satisfies given options
-	ChannelByOption(option *channel.ChannelFilterOption) (*channel.Channel, *model.AppError)
+	ChannelByOption(option *model.ChannelFilterOption) (*model.Channel, *model.AppError)
 	// ChannelsByOption returns a list of channels by given options
-	ChannelsByOption(option *channel.ChannelFilterOption) (channel.Channels, *model.AppError)
+	ChannelsByOption(option *model.ChannelFilterOption) (model.Channels, *model.AppError)
 	// CleanChannel
-	CleanChannel(channelID *string) (*channel.Channel, *model.AppError)
+	CleanChannel(channelID *string) (*model.Channel, *model.AppError)
 	// ValidateChannel check if a channel with given slug is active
-	ValidateChannel(channelID string) (*channel.Channel, *model.AppError)
-	GetDefaultChannel() (*channel.Channel, *model.AppError)
+	ValidateChannel(channelID string) (*model.Channel, *model.AppError)
+	GetDefaultChannel() (*model.Channel, *model.AppError)
 	GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError)
 }

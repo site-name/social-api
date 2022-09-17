@@ -5,8 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -36,7 +34,7 @@ func (as *SqlAllocationStore) ModelFields(prefix string) model.AnyArray[string] 
 	})
 }
 
-func (as *SqlAllocationStore) ScanFields(allocation warehouse.Allocation) []interface{} {
+func (as *SqlAllocationStore) ScanFields(allocation model.Allocation) []interface{} {
 	return []interface{}{
 		&allocation.Id,
 		&allocation.CreateAt,
@@ -47,7 +45,7 @@ func (as *SqlAllocationStore) ScanFields(allocation warehouse.Allocation) []inte
 }
 
 // BulkUpsert performs update, insert given allocations then returns them afterward
-func (as *SqlAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
+func (as *SqlAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*model.Allocation) ([]*model.Allocation, error) {
 	var executor store_iface.SqlxExecutor = as.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -108,8 +106,8 @@ func (as *SqlAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor,
 }
 
 // Get finds an allocation with given id then returns it with an error
-func (as *SqlAllocationStore) Get(id string) (*warehouse.Allocation, error) {
-	var res warehouse.Allocation
+func (as *SqlAllocationStore) Get(id string) (*model.Allocation, error) {
+	var res model.Allocation
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AllocationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -145,7 +143,7 @@ GROUP BY
   "warehouse_stock"."quantity";
 */
 // FilterByOption finds and returns a list of allocation based on given option
-func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
+func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.AllocationFilterOption) ([]*model.Allocation, error) {
 	// define fields to select:
 	selectFields := as.ModelFields(store.AllocationTableName + ".")
 	if option.SelectedRelatedStock {
@@ -216,10 +214,10 @@ func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecu
 	}
 
 	var (
-		returnAllocations      []*warehouse.Allocation
-		allocation             warehouse.Allocation
-		orderLine              order.OrderLine
-		stock                  warehouse.Stock
+		returnAllocations      []*model.Allocation
+		allocation             model.Allocation
+		orderLine              model.OrderLine
+		stock                  model.Stock
 		stockAvailableQuantity int
 		scanFields                                      = as.ScanFields(allocation)
 		queryer                store_iface.SqlxExecutor = as.GetReplicaX()
@@ -296,7 +294,7 @@ func (as *SqlAllocationStore) BulkDelete(transaction store_iface.SqlxTxExecutor,
 }
 
 // CountAvailableQuantityForStock counts and returns available quantity of given stock
-func (as *SqlAllocationStore) CountAvailableQuantityForStock(stock *warehouse.Stock) (int, error) {
+func (as *SqlAllocationStore) CountAvailableQuantityForStock(stock *model.Stock) (int, error) {
 	var count int
 	err := as.GetReplicaX().Get(
 		&count,

@@ -6,7 +6,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
@@ -14,7 +13,7 @@ import (
 // CollectionsByOption returns all collections that satisfy given option.
 //
 // NOTE: `ShopID` is required.
-func (a *ServiceProduct) CollectionsByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, *model.AppError) {
+func (a *ServiceProduct) CollectionsByOption(option *model.CollectionFilterOption) ([]*model.Collection, *model.AppError) {
 	collections, err := a.srv.Store.Collection().FilterByOption(option)
 	var (
 		statusCode int
@@ -35,24 +34,24 @@ func (a *ServiceProduct) CollectionsByOption(option *product_and_discount.Collec
 }
 
 // CollectionsByVoucherID finds all collections that have relationships with given voucher
-func (a *ServiceProduct) CollectionsByVoucherID(voucherID string) ([]*product_and_discount.Collection, *model.AppError) {
-	return a.CollectionsByOption(&product_and_discount.CollectionFilterOption{
+func (a *ServiceProduct) CollectionsByVoucherID(voucherID string) ([]*model.Collection, *model.AppError) {
+	return a.CollectionsByOption(&model.CollectionFilterOption{
 		VoucherID: squirrel.Eq{store.VoucherCollectionTableName + ".VoucherID": voucherID},
 	})
 }
 
 // CollectionsByProductID finds and returns all collections related to given product
-func (a *ServiceProduct) CollectionsByProductID(productID string) ([]*product_and_discount.Collection, *model.AppError) {
-	return a.CollectionsByOption(&product_and_discount.CollectionFilterOption{
+func (a *ServiceProduct) CollectionsByProductID(productID string) ([]*model.Collection, *model.AppError) {
+	return a.CollectionsByOption(&model.CollectionFilterOption{
 		ProductID: squirrel.Eq{store.CollectionProductRelationTableName + ".ProductID": productID},
 	})
 }
 
 // PublishedCollections returns all published collections
-func (a *ServiceProduct) PublishedCollections(channelSlug string, shopID string) ([]*product_and_discount.Collection, *model.AppError) {
+func (a *ServiceProduct) PublishedCollections(channelSlug string, shopID string) ([]*model.Collection, *model.AppError) {
 	today := util.StartOfDay(time.Now().UTC())
 
-	return a.CollectionsByOption(&product_and_discount.CollectionFilterOption{
+	return a.CollectionsByOption(&model.CollectionFilterOption{
 		ShopID: shopID,
 		ChannelListingPublicationDate: squirrel.Or{
 			squirrel.LtOrEq{store.CollectionChannelListingTableName + ".PublicationDate": today},
@@ -65,7 +64,7 @@ func (a *ServiceProduct) PublishedCollections(channelSlug string, shopID string)
 }
 
 // VisibleCollectionsToUser returns all collections that belong to given shop and can be viewed by given user
-func (a *ServiceProduct) VisibleCollectionsToUser(userID string, shopID string, channelSlug string) ([]*product_and_discount.Collection, *model.AppError) {
+func (a *ServiceProduct) VisibleCollectionsToUser(userID string, shopID string, channelSlug string) ([]*model.Collection, *model.AppError) {
 	// check if shop and user has relationship (shop-staff)
 	_, appErr := a.srv.ShopService().ShopStaffRelationByShopIDAndStaffID(shopID, userID)
 	if appErr != nil {
@@ -76,13 +75,13 @@ func (a *ServiceProduct) VisibleCollectionsToUser(userID string, shopID string, 
 	}
 
 	if channelSlug != "" {
-		return a.CollectionsByOption(&product_and_discount.CollectionFilterOption{
+		return a.CollectionsByOption(&model.CollectionFilterOption{
 			ShopID:                    shopID,
 			ChannelListingChannelSlug: squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug},
 		})
 	}
 
-	return a.CollectionsByOption(&product_and_discount.CollectionFilterOption{
+	return a.CollectionsByOption(&model.CollectionFilterOption{
 		ShopID:    shopID,
 		SelectAll: true,
 	})

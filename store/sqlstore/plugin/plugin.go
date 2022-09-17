@@ -8,7 +8,6 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/store"
 )
 
@@ -24,7 +23,7 @@ func NewSqlPluginStore(s store.Store) store.PluginStore {
 	return &SqlPluginStore{s}
 }
 
-func (ps *SqlPluginStore) SaveOrUpdate(kv *plugins.PluginKeyValue) (*plugins.PluginKeyValue, error) {
+func (ps *SqlPluginStore) SaveOrUpdate(kv *model.PluginKeyValue) (*model.PluginKeyValue, error) {
 	if err := kv.IsValid(); err != nil {
 		return nil, err
 	}
@@ -59,7 +58,7 @@ func (ps *SqlPluginStore) SaveOrUpdate(kv *plugins.PluginKeyValue) (*plugins.Plu
 	return kv, nil
 }
 
-func (ps *SqlPluginStore) CompareAndSet(kv *plugins.PluginKeyValue, oldValue []byte) (bool, error) {
+func (ps *SqlPluginStore) CompareAndSet(kv *model.PluginKeyValue, oldValue []byte) (bool, error) {
 	if err := kv.IsValid(); err != nil {
 		return false, err
 	}
@@ -144,7 +143,7 @@ func (ps *SqlPluginStore) CompareAndSet(kv *plugins.PluginKeyValue, oldValue []b
 	return true, nil
 }
 
-func (ps SqlPluginStore) CompareAndDelete(kv *plugins.PluginKeyValue, oldValue []byte) (bool, error) {
+func (ps SqlPluginStore) CompareAndDelete(kv *model.PluginKeyValue, oldValue []byte) (bool, error) {
 	if err := kv.IsValid(); err != nil {
 		return false, err
 	}
@@ -183,12 +182,12 @@ func (ps SqlPluginStore) CompareAndDelete(kv *plugins.PluginKeyValue, oldValue [
 	return true, nil
 }
 
-func (ps SqlPluginStore) SetWithOptions(pluginId string, key string, value []byte, opt plugins.PluginKVSetOptions) (bool, error) {
+func (ps SqlPluginStore) SetWithOptions(pluginId string, key string, value []byte, opt model.PluginKVSetOptions) (bool, error) {
 	if err := opt.IsValid(); err != nil {
 		return false, err
 	}
 
-	kv, err := plugins.NewPluginKeyValueFromOptions(pluginId, key, value, opt)
+	kv, err := model.NewPluginKeyValueFromOptions(pluginId, key, value, opt)
 	if err != nil {
 		return false, err
 	}
@@ -205,7 +204,7 @@ func (ps SqlPluginStore) SetWithOptions(pluginId string, key string, value []byt
 	return savedKv != nil, nil
 }
 
-func (ps SqlPluginStore) Get(pluginId, key string) (*plugins.PluginKeyValue, error) {
+func (ps SqlPluginStore) Get(pluginId, key string) (*model.PluginKeyValue, error) {
 	currentTime := model.GetMillis()
 	query := ps.GetQueryBuilder().Select("PluginId, PKey, PValue, ExpireAt").
 		From("PluginKeyValueStore").
@@ -218,7 +217,7 @@ func (ps SqlPluginStore) Get(pluginId, key string) (*plugins.PluginKeyValue, err
 	}
 
 	row := ps.GetReplicaX().QueryRowX(queryString, args...)
-	var kv plugins.PluginKeyValue
+	var kv model.PluginKeyValue
 	if err := row.Scan(&kv.PluginId, &kv.Key, &kv.Value, &kv.ExpireAt); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("PluginKeyValue", fmt.Sprintf("pluginId=%s, key=%s", pluginId, key))

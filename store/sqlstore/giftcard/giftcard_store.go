@@ -6,9 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/giftcard"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -52,7 +49,7 @@ func (s *SqlGiftCardStore) ModelFields(prefix string) model.AnyArray[string] {
 }
 
 // BulkUpsert depends on given giftcards's Id properties then perform according operation
-func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
+func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
 	var executor store_iface.SqlxExecutor = gcs.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -82,7 +79,7 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, 
 			_, err = executor.NamedExec(query, giftCard)
 
 		} else {
-			var oldGiftcard giftcard.GiftCard
+			var oldGiftcard model.GiftCard
 			err = executor.Get(&oldGiftcard, "SELECT * FROM "+store.GiftcardTableName+" WHERE Id = ?", giftCard.Id)
 			if err != nil {
 				if err == sql.ErrNoRows {
@@ -123,8 +120,8 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, 
 	return giftCards, nil
 }
 
-func (gcs *SqlGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
-	var res giftcard.GiftCard
+func (gcs *SqlGiftCardStore) GetById(id string) (*model.GiftCard, error) {
+	var res model.GiftCard
 	if err := gcs.GetReplicaX().Get(&res, "SELECT * FROM "+store.GiftcardTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.GiftcardTableName, id)
@@ -136,7 +133,7 @@ func (gcs *SqlGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
 }
 
 // FilterByOption finds giftcards wth option
-func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
 	var selector store_iface.SqlxExecutor = gs.GetReplicaX()
 	if transaction != nil {
 		selector = transaction
@@ -187,7 +184,7 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecuto
 		return nil, errors.Wrap(err, "query_toSql")
 	}
 
-	var giftcards []*giftcard.GiftCard
+	var giftcards []*model.GiftCard
 	err = selector.Select(&giftcards, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds giftcards with code")
@@ -197,7 +194,7 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecuto
 }
 
 // GetGiftcardLines returns a list of order lines
-func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (order.OrderLines, error) {
+func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.OrderLines, error) {
 	/*
 	   -- sample query for demonstration (Produced with django)
 
@@ -254,7 +251,7 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (order.Order
 	productTypeQuery := gs.GetQueryBuilder().
 		Select(`(1) AS "a"`).
 		From(store.ProductTypeTableName).
-		Where("ProductTypes.Kind = ?", product_and_discount.GIFT_CARD).
+		Where("ProductTypes.Kind = ?", model.GIFT_CARD).
 		Where("ProductTypes.Id = Products.ProductTypeID").
 		Limit(1)
 
@@ -284,7 +281,7 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (order.Order
 		return nil, errors.Wrap(err, "GetGiftcardLines_ToSql")
 	}
 
-	var res []*order.OrderLine
+	var res []*model.OrderLine
 	err = gs.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order lines with given ids")
@@ -315,7 +312,7 @@ func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, 
 			)`,
 			map[string]interface{}{
 				"OrderID": orderID,
-				"Type":    giftcard.BOUGHT,
+				"Type":    model.BOUGHT,
 			},
 		).
 		ToSql()
@@ -324,7 +321,7 @@ func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, 
 		return nil, errors.Wrap(err, "DeactivateOrderGiftcards_ToSql")
 	}
 
-	var giftcards giftcard.Giftcards
+	var giftcards model.Giftcards
 	err = gs.GetReplicaX().Select(&giftcards, query, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find giftcards with Parameters.order_id = %s", orderID)

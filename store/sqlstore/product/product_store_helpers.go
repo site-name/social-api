@@ -13,9 +13,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -451,7 +448,7 @@ func (ps *SqlProductStore) filterProductsByAttributesValues(query squirrel.Selec
 }
 
 func (ps *SqlProductStore) cleanProductAttributesFilterInput(filterValue valueList, queries *safeMap) error {
-	attributes, err := ps.Attribute().FilterbyOption(&attribute.AttributeFilterOption{})
+	attributes, err := ps.Attribute().FilterbyOption(&model.AttributeFilterOption{})
 	if err != nil {
 		return errors.Wrap(err, "failed to find all attributes")
 	}
@@ -466,7 +463,7 @@ func (ps *SqlProductStore) cleanProductAttributesFilterInput(filterValue valueLi
 		attributesPkSlugMap[attr.Id] = attr.Slug
 	}
 
-	var attributeValues attribute.AttributeValues
+	var attributeValues model.AttributeValues
 	err = ps.GetReplicaX().Select(&attributeValues, "SELECT * FROM "+store.AttributeValueTableName)
 	if err != nil {
 		return errors.Wrap(err, "failed to find all attribute values")
@@ -503,12 +500,12 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.AttributeTableName).
-		Where(squirrel.Eq{store.AttributeTableName + ".InputType": attribute.NUMERIC}).
+		Where(squirrel.Eq{store.AttributeTableName + ".InputType": model.NUMERIC}).
 		Where("Attributes.Id = AttributeValues.AttributeID").
 		Suffix(")").
 		Limit(1)
 
-	attributeValues, err := ps.AttributeValue().FilterByOptions(attribute.AttributeValueFilterOptions{
+	attributeValues, err := ps.AttributeValue().FilterByOptions(model.AttributeValueFilterOptions{
 		SelectRelatedAttribute: true,
 		Extra:                  attributeQuery,
 	})
@@ -566,7 +563,7 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 }
 
 func (ps *SqlProductStore) cleanProductAttributesDateTimeRangeFilterInput(filterRange timeRangeList, queries *safeMap, isDate bool) error {
-	attributes, err := ps.Attribute().FilterbyOption(&attribute.AttributeFilterOption{
+	attributes, err := ps.Attribute().FilterbyOption(&model.AttributeFilterOption{
 		Slug:                           squirrel.Eq{store.AttributeTableName + ".Slug": filterRange.Slugs()},
 		PrefetchRelatedAttributeValues: true,
 	})
@@ -627,10 +624,10 @@ func (ps *SqlProductStore) cleanProductAttributesDateTimeRangeFilterInput(filter
 }
 
 func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue booleanList, queries *safeMap) error {
-	attributes, err := ps.Attribute().FilterbyOption(&attribute.AttributeFilterOption{
+	attributes, err := ps.Attribute().FilterbyOption(&model.AttributeFilterOption{
 		PrefetchRelatedAttributeValues: true,
 		Slug:                           squirrel.Eq{store.AttributeTableName + ".Slug": filterValue.Slugs()},
-		InputType:                      squirrel.Eq{store.AttributeTableName + ".InputType": attribute.BOOLEAN},
+		InputType:                      squirrel.Eq{store.AttributeTableName + ".InputType": model.BOOLEAN},
 	})
 	if err != nil {
 		return err
@@ -692,7 +689,7 @@ func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder,
 		return query
 	}
 
-	channelQuery, _, _ := ps.Stock().FilterForChannel(&warehouse.StockFilterForChannelOption{
+	channelQuery, _, _ := ps.Stock().FilterForChannel(&model.StockFilterForChannelOption{
 		ChannelID:       channelID_,
 		ReturnQueryOnly: true,
 	})
@@ -783,7 +780,7 @@ func (ps *SqlProductStore) filterQuantity(
 		return query
 	}
 
-	var products product_and_discount.Products
+	var products model.Products
 	err = ps.GetReplicaX().Select(&products, queryString, args...)
 	if err != nil {
 		slog.Error("failed to find products", slog.Err(err))
@@ -826,7 +823,7 @@ func (ps *SqlProductStore) filterQuantity(
 		return query
 	}
 
-	var variants product_and_discount.ProductVariants
+	var variants model.ProductVariants
 	err = ps.GetReplicaX().Select(&variants, queryString, args...)
 	if err != nil {
 		slog.Error("failed to find product variants", slog.Err(err))
@@ -842,7 +839,7 @@ func (ps *SqlProductStore) filterGiftCard(query squirrel.SelectBuilder, value bo
 	productTypeFilter := ps.GetQueryBuilder().
 		Select(`(1) AS "a"`).
 		From(store.ProductTypeTableName).
-		Where("ProductTypes.Kind = ?", product_and_discount.GIFT_CARD).
+		Where("ProductTypes.Kind = ?", model.GIFT_CARD).
 		Where("ProductTypes.Id = Products.ProductTypeID").
 		Limit(1).
 		Suffix(")")

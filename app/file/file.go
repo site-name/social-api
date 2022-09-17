@@ -1,6 +1,6 @@
 /*
-	NOTE: This package is initialized during server startup (modules/imports does that)
-	so the init() function get the chance to register a function to create `ServiceAccount`
+NOTE: This package is initialized during server startup (modules/imports does that)
+so the init() function get the chance to register a function to create `ServiceAccount`
 */
 package file
 
@@ -17,7 +17,6 @@ import (
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/services/docextractor"
@@ -138,7 +137,7 @@ func (a *ServiceFile) CheckMandatoryS3Fields(settings *model.FileSettings) *mode
 	return nil
 }
 
-//  convert filebackend connection error to system's standard app error
+// convert filebackend connection error to system's standard app error
 func connectionTestErrorToAppError(connTestErr error) *model.AppError {
 	switch err := connTestErr.(type) {
 	case *filestore.S3FileBackendAuthError:
@@ -319,7 +318,7 @@ func (a *ServiceFile) RemoveDirectory(path string) *model.AppError {
 	return nil
 }
 
-func (a *ServiceFile) ExtractContentFromFileInfo(fileInfo *file.FileInfo) error {
+func (a *ServiceFile) ExtractContentFromFileInfo(fileInfo *model.FileInfo) error {
 	file, aerr := a.FileReader(fileInfo.Path)
 	if aerr != nil {
 		return errors.Wrap(aerr, "failed to open file for extract file content")

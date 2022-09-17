@@ -3,7 +3,6 @@ package account
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
 
@@ -30,7 +29,7 @@ func (s *SqlUserAddressStore) ModelFields(prefix string) model.AnyArray[string] 
 	})
 }
 
-func (uas *SqlUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {
+func (uas *SqlUserAddressStore) Save(userAddress *model.UserAddress) (*model.UserAddress, error) {
 	userAddress.PreSave()
 	if err := userAddress.IsValid(); err != nil {
 		return nil, err
@@ -66,7 +65,7 @@ func (uas *SqlUserAddressStore) DeleteForUser(userID, addressID string) error {
 }
 
 // FilterByOptions finds and returns a list of user-address relations with given options
-func (uas *SqlUserAddressStore) FilterByOptions(options *account.UserAddressFilterOptions) ([]*account.UserAddress, error) {
+func (uas *SqlUserAddressStore) FilterByOptions(options *model.UserAddressFilterOptions) ([]*model.UserAddress, error) {
 	query := uas.GetQueryBuilder().Select("*").From(store.UserAddressTableName)
 
 	if options.Id != nil {
@@ -84,7 +83,7 @@ func (uas *SqlUserAddressStore) FilterByOptions(options *account.UserAddressFilt
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	var res []*account.UserAddress
+	var res []*model.UserAddress
 	err = uas.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find user-address relations with given options")

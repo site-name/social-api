@@ -10,7 +10,6 @@ import (
 	"github.com/sitename/sitename/app/imaging"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/modules/filestore"
 )
 
@@ -27,7 +26,7 @@ type FileService interface {
 	// FileSize checks size of given path
 	FileSize(path string) (int64, *model.AppError)
 	// GetFileInfo get fileInfo object from database with given fileID, populates its "MiniPreview" and returns it.
-	GetFileInfos(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, *model.AppError)
+	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError)
 	// ImageDecoder retutns image encoder
 	ImageDecoder() *imaging.Decoder
 	// ImageEncoder returns image encoder
@@ -48,23 +47,23 @@ type FileService interface {
 	// returns a filled-out FileInfo and an optional error. A plugin may reject the
 	// upload, returning a rejection error. In this case FileInfo would have
 	// contained the last "good" FileInfo before the execution of that plugin.
-	UploadFileX(c *request.Context, channelID, name string, input io.Reader, userID *string, timestamp *time.Time, contentLength *int64, clientID *string, raw *bool) (*file.FileInfo, *model.AppError)
+	UploadFileX(c *request.Context, channelID, name string, input io.Reader, userID *string, timestamp *time.Time, contentLength *int64, clientID *string, raw *bool) (*model.FileInfo, *model.AppError)
 	AppendFile(fr io.Reader, path string) (int64, *model.AppError)
 	CheckMandatoryS3Fields(settings *model.FileSettings) *model.AppError
 	CopyFileInfos(userID string, fileIDs []string) ([]string, *model.AppError)
-	DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, *model.AppError)
-	DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*file.FileInfo, []byte, *model.AppError)
+	DoUploadFile(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, *model.AppError)
+	DoUploadFileExpectModification(c *request.Context, now time.Time, rawTeamId string, rawChannelId string, rawUserId string, rawFilename string, data []byte) (*model.FileInfo, []byte, *model.AppError)
 	DownloadFromURL(downloadURL string) ([]byte, error)
-	ExtractContentFromFileInfo(fileInfo *file.FileInfo) error
-	GeneratePublicLink(siteURL string, info *file.FileInfo) string
+	ExtractContentFromFileInfo(fileInfo *model.FileInfo) error
+	GeneratePublicLink(siteURL string, info *model.FileInfo) string
 	GetFile(fileID string) ([]byte, *model.AppError)
-	GetFileInfo(fileID string) (*file.FileInfo, *model.AppError)
-	GetUploadSession(uploadId string) (*file.UploadSession, *model.AppError)
-	GetUploadSessionsForUser(userID string) ([]*file.UploadSession, *model.AppError)
+	GetFileInfo(fileID string) (*model.FileInfo, *model.AppError)
+	GetUploadSession(uploadId string) (*model.UploadSession, *model.AppError)
+	GetUploadSessionsForUser(userID string) ([]*model.UploadSession, *model.AppError)
 	HandleImages(previewPathList []string, thumbnailPathList []string, fileData [][]byte)
 	ListDirectory(path string) ([]string, *model.AppError)
 	RemoveDirectory(path string) *model.AppError
 	RemoveFile(path string) *model.AppError
-	UploadData(c *request.Context, us *file.UploadSession, rd io.Reader) (*file.FileInfo, *model.AppError)
+	UploadData(c *request.Context, us *model.UploadSession, rd io.Reader) (*model.FileInfo, *model.AppError)
 	WriteFile(fr io.Reader, path string) (int64, *model.AppError)
 }

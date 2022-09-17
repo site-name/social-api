@@ -12,28 +12,6 @@ import (
 	"github.com/pkg/errors"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/app"
-	"github.com/sitename/sitename/model/attribute"
-	"github.com/sitename/sitename/model/audit"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/cluster"
-	"github.com/sitename/sitename/model/compliance"
-	"github.com/sitename/sitename/model/csv"
-	"github.com/sitename/sitename/model/external_services"
-	"github.com/sitename/sitename/model/file"
-	"github.com/sitename/sitename/model/giftcard"
-	"github.com/sitename/sitename/model/invoice"
-	"github.com/sitename/sitename/model/menu"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/payment"
-	"github.com/sitename/sitename/model/plugins"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/shipping"
-	"github.com/sitename/sitename/model/shop"
-	"github.com/sitename/sitename/model/warehouse"
-	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
@@ -1204,7 +1182,7 @@ func (s *RetryLayerAddressStore) DeleteAddresses(addressIDs []string) error {
 
 }
 
-func (s *RetryLayerAddressStore) FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) {
+func (s *RetryLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
 
 	tries := 0
 	for {
@@ -1224,7 +1202,7 @@ func (s *RetryLayerAddressStore) FilterByOption(option *account.AddressFilterOpt
 
 }
 
-func (s *RetryLayerAddressStore) Get(addressID string) (*account.Address, error) {
+func (s *RetryLayerAddressStore) Get(addressID string) (*model.Address, error) {
 
 	tries := 0
 	for {
@@ -1244,7 +1222,7 @@ func (s *RetryLayerAddressStore) Get(addressID string) (*account.Address, error)
 
 }
 
-func (s *RetryLayerAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, error) {
+func (s *RetryLayerAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, address *model.Address) (*model.Address, error) {
 
 	tries := 0
 	for {
@@ -1284,7 +1262,7 @@ func (s *RetryLayerAllocationStore) BulkDelete(transaction store_iface.SqlxTxExe
 
 }
 
-func (s *RetryLayerAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
+func (s *RetryLayerAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*model.Allocation) ([]*model.Allocation, error) {
 
 	tries := 0
 	for {
@@ -1304,7 +1282,7 @@ func (s *RetryLayerAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExe
 
 }
 
-func (s *RetryLayerAllocationStore) CountAvailableQuantityForStock(stock *warehouse.Stock) (int, error) {
+func (s *RetryLayerAllocationStore) CountAvailableQuantityForStock(stock *model.Stock) (int, error) {
 
 	tries := 0
 	for {
@@ -1324,7 +1302,7 @@ func (s *RetryLayerAllocationStore) CountAvailableQuantityForStock(stock *wareho
 
 }
 
-func (s *RetryLayerAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
+func (s *RetryLayerAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.AllocationFilterOption) ([]*model.Allocation, error) {
 
 	tries := 0
 	for {
@@ -1344,7 +1322,7 @@ func (s *RetryLayerAllocationStore) FilterByOption(transaction store_iface.SqlxT
 
 }
 
-func (s *RetryLayerAllocationStore) Get(allocationID string) (*warehouse.Allocation, error) {
+func (s *RetryLayerAllocationStore) Get(allocationID string) (*model.Allocation, error) {
 
 	tries := 0
 	for {
@@ -1364,7 +1342,7 @@ func (s *RetryLayerAllocationStore) Get(allocationID string) (*warehouse.Allocat
 
 }
 
-func (s *RetryLayerAppStore) Save(app *app.App) (*app.App, error) {
+func (s *RetryLayerAppStore) Save(app *model.App) (*model.App, error) {
 
 	tries := 0
 	for {
@@ -1384,7 +1362,7 @@ func (s *RetryLayerAppStore) Save(app *app.App) (*app.App, error) {
 
 }
 
-func (s *RetryLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, error) {
+func (s *RetryLayerAppTokenStore) Save(appToken *model.AppToken) (*model.AppToken, error) {
 
 	tries := 0
 	for {
@@ -1404,7 +1382,7 @@ func (s *RetryLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, e
 
 }
 
-func (s *RetryLayerAssignedPageAttributeStore) Get(id string) (*attribute.AssignedPageAttribute, error) {
+func (s *RetryLayerAssignedPageAttributeStore) Get(id string) (*model.AssignedPageAttribute, error) {
 
 	tries := 0
 	for {
@@ -1424,7 +1402,7 @@ func (s *RetryLayerAssignedPageAttributeStore) Get(id string) (*attribute.Assign
 
 }
 
-func (s *RetryLayerAssignedPageAttributeStore) GetByOption(option *attribute.AssignedPageAttributeFilterOption) (*attribute.AssignedPageAttribute, error) {
+func (s *RetryLayerAssignedPageAttributeStore) GetByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, error) {
 
 	tries := 0
 	for {
@@ -1444,7 +1422,7 @@ func (s *RetryLayerAssignedPageAttributeStore) GetByOption(option *attribute.Ass
 
 }
 
-func (s *RetryLayerAssignedPageAttributeStore) Save(assignedPageAttr *attribute.AssignedPageAttribute) (*attribute.AssignedPageAttribute, error) {
+func (s *RetryLayerAssignedPageAttributeStore) Save(assignedPageAttr *model.AssignedPageAttribute) (*model.AssignedPageAttribute, error) {
 
 	tries := 0
 	for {
@@ -1464,7 +1442,7 @@ func (s *RetryLayerAssignedPageAttributeStore) Save(assignedPageAttr *attribute.
 
 }
 
-func (s *RetryLayerAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string) (*attribute.AssignedPageAttributeValue, error) {
+func (s *RetryLayerAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string) (*model.AssignedPageAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1484,7 +1462,7 @@ func (s *RetryLayerAssignedPageAttributeValueStore) Get(assignedPageAttrValueID 
 
 }
 
-func (s *RetryLayerAssignedPageAttributeValueStore) Save(assignedPageAttrValue *attribute.AssignedPageAttributeValue) (*attribute.AssignedPageAttributeValue, error) {
+func (s *RetryLayerAssignedPageAttributeValueStore) Save(assignedPageAttrValue *model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1504,7 +1482,7 @@ func (s *RetryLayerAssignedPageAttributeValueStore) Save(assignedPageAttrValue *
 
 }
 
-func (s *RetryLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedPageAttributeValue, error) {
+func (s *RetryLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedPageAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1524,7 +1502,7 @@ func (s *RetryLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID stri
 
 }
 
-func (s *RetryLayerAssignedPageAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedPageAttributeValue, []*attribute.AttributeValue, error) {
+func (s *RetryLayerAssignedPageAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedPageAttributeValue, []*model.AttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1544,7 +1522,7 @@ func (s *RetryLayerAssignedPageAttributeValueStore) SelectForSort(assignmentID s
 
 }
 
-func (s *RetryLayerAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedPageAttributeValue) error {
+func (s *RetryLayerAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedPageAttributeValue) error {
 
 	tries := 0
 	for {
@@ -1564,7 +1542,7 @@ func (s *RetryLayerAssignedPageAttributeValueStore) UpdateInBulk(attributeValues
 
 }
 
-func (s *RetryLayerAssignedProductAttributeStore) FilterByOptions(options *attribute.AssignedProductAttributeFilterOption) ([]*attribute.AssignedProductAttribute, error) {
+func (s *RetryLayerAssignedProductAttributeStore) FilterByOptions(options *model.AssignedProductAttributeFilterOption) ([]*model.AssignedProductAttribute, error) {
 
 	tries := 0
 	for {
@@ -1584,7 +1562,7 @@ func (s *RetryLayerAssignedProductAttributeStore) FilterByOptions(options *attri
 
 }
 
-func (s *RetryLayerAssignedProductAttributeStore) Get(id string) (*attribute.AssignedProductAttribute, error) {
+func (s *RetryLayerAssignedProductAttributeStore) Get(id string) (*model.AssignedProductAttribute, error) {
 
 	tries := 0
 	for {
@@ -1604,7 +1582,7 @@ func (s *RetryLayerAssignedProductAttributeStore) Get(id string) (*attribute.Ass
 
 }
 
-func (s *RetryLayerAssignedProductAttributeStore) GetWithOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, error) {
+func (s *RetryLayerAssignedProductAttributeStore) GetWithOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
 
 	tries := 0
 	for {
@@ -1624,7 +1602,7 @@ func (s *RetryLayerAssignedProductAttributeStore) GetWithOption(option *attribut
 
 }
 
-func (s *RetryLayerAssignedProductAttributeStore) Save(assignedProductAttribute *attribute.AssignedProductAttribute) (*attribute.AssignedProductAttribute, error) {
+func (s *RetryLayerAssignedProductAttributeStore) Save(assignedProductAttribute *model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
 
 	tries := 0
 	for {
@@ -1644,7 +1622,7 @@ func (s *RetryLayerAssignedProductAttributeStore) Save(assignedProductAttribute 
 
 }
 
-func (s *RetryLayerAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*attribute.AssignedProductAttributeValue, error) {
+func (s *RetryLayerAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1664,7 +1642,7 @@ func (s *RetryLayerAssignedProductAttributeValueStore) Get(assignedProductAttrVa
 
 }
 
-func (s *RetryLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValue *attribute.AssignedProductAttributeValue) (*attribute.AssignedProductAttributeValue, error) {
+func (s *RetryLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValue *model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1684,7 +1662,7 @@ func (s *RetryLayerAssignedProductAttributeValueStore) Save(assignedProductAttrV
 
 }
 
-func (s *RetryLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedProductAttributeValue, error) {
+func (s *RetryLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedProductAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1704,7 +1682,7 @@ func (s *RetryLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID s
 
 }
 
-func (s *RetryLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedProductAttributeValue, []*attribute.AttributeValue, error) {
+func (s *RetryLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedProductAttributeValue, []*model.AttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1724,7 +1702,7 @@ func (s *RetryLayerAssignedProductAttributeValueStore) SelectForSort(assignmentI
 
 }
 
-func (s *RetryLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedProductAttributeValue) error {
+func (s *RetryLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedProductAttributeValue) error {
 
 	tries := 0
 	for {
@@ -1744,7 +1722,7 @@ func (s *RetryLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeVal
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeStore) FilterByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) {
+func (s *RetryLayerAssignedVariantAttributeStore) FilterByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, error) {
 
 	tries := 0
 	for {
@@ -1764,7 +1742,7 @@ func (s *RetryLayerAssignedVariantAttributeStore) FilterByOption(option *attribu
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeStore) Get(id string) (*attribute.AssignedVariantAttribute, error) {
+func (s *RetryLayerAssignedVariantAttributeStore) Get(id string) (*model.AssignedVariantAttribute, error) {
 
 	tries := 0
 	for {
@@ -1784,7 +1762,7 @@ func (s *RetryLayerAssignedVariantAttributeStore) Get(id string) (*attribute.Ass
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeStore) GetWithOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, error) {
+func (s *RetryLayerAssignedVariantAttributeStore) GetWithOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error) {
 
 	tries := 0
 	for {
@@ -1804,7 +1782,7 @@ func (s *RetryLayerAssignedVariantAttributeStore) GetWithOption(option *attribut
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, error) {
+func (s *RetryLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error) {
 
 	tries := 0
 	for {
@@ -1824,7 +1802,7 @@ func (s *RetryLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute 
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*attribute.AssignedVariantAttributeValue, error) {
+func (s *RetryLayerAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*model.AssignedVariantAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1844,7 +1822,7 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) Get(assignedVariantAttrVa
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *attribute.AssignedVariantAttributeValue) (*attribute.AssignedVariantAttributeValue, error) {
+func (s *RetryLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1864,7 +1842,7 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrV
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedVariantAttributeValue, error) {
+func (s *RetryLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedVariantAttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1884,7 +1862,7 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID s
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedVariantAttributeValue, []*attribute.AttributeValue, error) {
+func (s *RetryLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedVariantAttributeValue, []*model.AttributeValue, error) {
 
 	tries := 0
 	for {
@@ -1904,7 +1882,7 @@ func (s *RetryLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentI
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedVariantAttributeValue) error {
+func (s *RetryLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedVariantAttributeValue) error {
 
 	tries := 0
 	for {
@@ -1944,7 +1922,7 @@ func (s *RetryLayerAttributeStore) Delete(ids ...string) (int64, error) {
 
 }
 
-func (s *RetryLayerAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) {
+func (s *RetryLayerAttributeStore) FilterbyOption(option *model.AttributeFilterOption) (model.Attributes, error) {
 
 	tries := 0
 	for {
@@ -1964,7 +1942,7 @@ func (s *RetryLayerAttributeStore) FilterbyOption(option *attribute.AttributeFil
 
 }
 
-func (s *RetryLayerAttributeStore) GetByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, error) {
+func (s *RetryLayerAttributeStore) GetByOption(option *model.AttributeFilterOption) (*model.Attribute, error) {
 
 	tries := 0
 	for {
@@ -1984,7 +1962,7 @@ func (s *RetryLayerAttributeStore) GetByOption(option *attribute.AttributeFilter
 
 }
 
-func (s *RetryLayerAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attribute, error) {
+func (s *RetryLayerAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, error) {
 
 	tries := 0
 	for {
@@ -2004,7 +1982,7 @@ func (s *RetryLayerAttributeStore) Upsert(attr *attribute.Attribute) (*attribute
 
 }
 
-func (s *RetryLayerAttributePageStore) Get(pageID string) (*attribute.AttributePage, error) {
+func (s *RetryLayerAttributePageStore) Get(pageID string) (*model.AttributePage, error) {
 
 	tries := 0
 	for {
@@ -2024,7 +2002,7 @@ func (s *RetryLayerAttributePageStore) Get(pageID string) (*attribute.AttributeP
 
 }
 
-func (s *RetryLayerAttributePageStore) GetByOption(option *attribute.AttributePageFilterOption) (*attribute.AttributePage, error) {
+func (s *RetryLayerAttributePageStore) GetByOption(option *model.AttributePageFilterOption) (*model.AttributePage, error) {
 
 	tries := 0
 	for {
@@ -2044,7 +2022,7 @@ func (s *RetryLayerAttributePageStore) GetByOption(option *attribute.AttributePa
 
 }
 
-func (s *RetryLayerAttributePageStore) Save(page *attribute.AttributePage) (*attribute.AttributePage, error) {
+func (s *RetryLayerAttributePageStore) Save(page *model.AttributePage) (*model.AttributePage, error) {
 
 	tries := 0
 	for {
@@ -2064,7 +2042,7 @@ func (s *RetryLayerAttributePageStore) Save(page *attribute.AttributePage) (*att
 
 }
 
-func (s *RetryLayerAttributeProductStore) Get(attributeProductID string) (*attribute.AttributeProduct, error) {
+func (s *RetryLayerAttributeProductStore) Get(attributeProductID string) (*model.AttributeProduct, error) {
 
 	tries := 0
 	for {
@@ -2084,7 +2062,7 @@ func (s *RetryLayerAttributeProductStore) Get(attributeProductID string) (*attri
 
 }
 
-func (s *RetryLayerAttributeProductStore) GetByOption(option *attribute.AttributeProductFilterOption) (*attribute.AttributeProduct, error) {
+func (s *RetryLayerAttributeProductStore) GetByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, error) {
 
 	tries := 0
 	for {
@@ -2104,7 +2082,7 @@ func (s *RetryLayerAttributeProductStore) GetByOption(option *attribute.Attribut
 
 }
 
-func (s *RetryLayerAttributeProductStore) Save(attributeProduct *attribute.AttributeProduct) (*attribute.AttributeProduct, error) {
+func (s *RetryLayerAttributeProductStore) Save(attributeProduct *model.AttributeProduct) (*model.AttributeProduct, error) {
 
 	tries := 0
 	for {
@@ -2124,7 +2102,7 @@ func (s *RetryLayerAttributeProductStore) Save(attributeProduct *attribute.Attri
 
 }
 
-func (s *RetryLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+func (s *RetryLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values model.AttributeValues) (model.AttributeValues, error) {
 
 	tries := 0
 	for {
@@ -2144,7 +2122,7 @@ func (s *RetryLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxT
 
 }
 
-func (s *RetryLayerAttributeValueStore) Count(options *attribute.AttributeValueFilterOptions) (int64, error) {
+func (s *RetryLayerAttributeValueStore) Count(options *model.AttributeValueFilterOptions) (int64, error) {
 
 	tries := 0
 	for {
@@ -2184,7 +2162,7 @@ func (s *RetryLayerAttributeValueStore) Delete(ids ...string) (int64, error) {
 
 }
 
-func (s *RetryLayerAttributeValueStore) FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) {
+func (s *RetryLayerAttributeValueStore) FilterByOptions(options model.AttributeValueFilterOptions) (model.AttributeValues, error) {
 
 	tries := 0
 	for {
@@ -2204,7 +2182,7 @@ func (s *RetryLayerAttributeValueStore) FilterByOptions(options attribute.Attrib
 
 }
 
-func (s *RetryLayerAttributeValueStore) Get(attributeID string) (*attribute.AttributeValue, error) {
+func (s *RetryLayerAttributeValueStore) Get(attributeID string) (*model.AttributeValue, error) {
 
 	tries := 0
 	for {
@@ -2224,7 +2202,7 @@ func (s *RetryLayerAttributeValueStore) Get(attributeID string) (*attribute.Attr
 
 }
 
-func (s *RetryLayerAttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error) {
+func (s *RetryLayerAttributeValueStore) Upsert(av *model.AttributeValue) (*model.AttributeValue, error) {
 
 	tries := 0
 	for {
@@ -2244,7 +2222,7 @@ func (s *RetryLayerAttributeValueStore) Upsert(av *attribute.AttributeValue) (*a
 
 }
 
-func (s *RetryLayerAttributeVariantStore) Get(attributeVariantID string) (*attribute.AttributeVariant, error) {
+func (s *RetryLayerAttributeVariantStore) Get(attributeVariantID string) (*model.AttributeVariant, error) {
 
 	tries := 0
 	for {
@@ -2264,7 +2242,7 @@ func (s *RetryLayerAttributeVariantStore) Get(attributeVariantID string) (*attri
 
 }
 
-func (s *RetryLayerAttributeVariantStore) GetByOption(option *attribute.AttributeVariantFilterOption) (*attribute.AttributeVariant, error) {
+func (s *RetryLayerAttributeVariantStore) GetByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, error) {
 
 	tries := 0
 	for {
@@ -2284,7 +2262,7 @@ func (s *RetryLayerAttributeVariantStore) GetByOption(option *attribute.Attribut
 
 }
 
-func (s *RetryLayerAttributeVariantStore) Save(attributeVariant *attribute.AttributeVariant) (*attribute.AttributeVariant, error) {
+func (s *RetryLayerAttributeVariantStore) Save(attributeVariant *model.AttributeVariant) (*model.AttributeVariant, error) {
 
 	tries := 0
 	for {
@@ -2304,7 +2282,7 @@ func (s *RetryLayerAttributeVariantStore) Save(attributeVariant *attribute.Attri
 
 }
 
-func (s *RetryLayerAuditStore) Get(userID string, offset int, limit int) (audit.Audits, error) {
+func (s *RetryLayerAuditStore) Get(userID string, offset int, limit int) (model.Audits, error) {
 
 	tries := 0
 	for {
@@ -2344,7 +2322,7 @@ func (s *RetryLayerAuditStore) PermanentDeleteByUser(userID string) error {
 
 }
 
-func (s *RetryLayerAuditStore) Save(audit *audit.Audit) error {
+func (s *RetryLayerAuditStore) Save(audit *model.Audit) error {
 
 	tries := 0
 	for {
@@ -2364,7 +2342,7 @@ func (s *RetryLayerAuditStore) Save(audit *audit.Audit) error {
 
 }
 
-func (s *RetryLayerCategoryStore) FilterByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, error) {
+func (s *RetryLayerCategoryStore) FilterByOption(option *model.CategoryFilterOption) ([]*model.Category, error) {
 
 	tries := 0
 	for {
@@ -2384,7 +2362,7 @@ func (s *RetryLayerCategoryStore) FilterByOption(option *product_and_discount.Ca
 
 }
 
-func (s *RetryLayerCategoryStore) Get(categoryID string) (*product_and_discount.Category, error) {
+func (s *RetryLayerCategoryStore) Get(categoryID string) (*model.Category, error) {
 
 	tries := 0
 	for {
@@ -2404,7 +2382,7 @@ func (s *RetryLayerCategoryStore) Get(categoryID string) (*product_and_discount.
 
 }
 
-func (s *RetryLayerCategoryStore) GetByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, error) {
+func (s *RetryLayerCategoryStore) GetByOption(option *model.CategoryFilterOption) (*model.Category, error) {
 
 	tries := 0
 	for {
@@ -2424,7 +2402,7 @@ func (s *RetryLayerCategoryStore) GetByOption(option *product_and_discount.Categ
 
 }
 
-func (s *RetryLayerCategoryStore) Upsert(category *product_and_discount.Category) (*product_and_discount.Category, error) {
+func (s *RetryLayerCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
 
 	tries := 0
 	for {
@@ -2444,7 +2422,7 @@ func (s *RetryLayerCategoryStore) Upsert(category *product_and_discount.Category
 
 }
 
-func (s *RetryLayerChannelStore) FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) {
+func (s *RetryLayerChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) {
 
 	tries := 0
 	for {
@@ -2464,7 +2442,7 @@ func (s *RetryLayerChannelStore) FilterByOption(option *channel.ChannelFilterOpt
 
 }
 
-func (s *RetryLayerChannelStore) Get(id string) (*channel.Channel, error) {
+func (s *RetryLayerChannelStore) Get(id string) (*model.Channel, error) {
 
 	tries := 0
 	for {
@@ -2484,7 +2462,7 @@ func (s *RetryLayerChannelStore) Get(id string) (*channel.Channel, error) {
 
 }
 
-func (s *RetryLayerChannelStore) GetbyOption(option *channel.ChannelFilterOption) (*channel.Channel, error) {
+func (s *RetryLayerChannelStore) GetbyOption(option *model.ChannelFilterOption) (*model.Channel, error) {
 
 	tries := 0
 	for {
@@ -2504,7 +2482,7 @@ func (s *RetryLayerChannelStore) GetbyOption(option *channel.ChannelFilterOption
 
 }
 
-func (s *RetryLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, error) {
+func (s *RetryLayerChannelStore) Save(ch *model.Channel) (*model.Channel, error) {
 
 	tries := 0
 	for {
@@ -2524,7 +2502,7 @@ func (s *RetryLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, er
 
 }
 
-func (s *RetryLayerCheckoutStore) CountCheckouts(options *checkout.CheckoutFilterOption) (int64, error) {
+func (s *RetryLayerCheckoutStore) CountCheckouts(options *model.CheckoutFilterOption) (int64, error) {
 
 	tries := 0
 	for {
@@ -2544,7 +2522,7 @@ func (s *RetryLayerCheckoutStore) CountCheckouts(options *checkout.CheckoutFilte
 
 }
 
-func (s *RetryLayerCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) error {
+func (s *RetryLayerCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *model.CheckoutFilterOption) error {
 
 	tries := 0
 	for {
@@ -2564,7 +2542,7 @@ func (s *RetryLayerCheckoutStore) DeleteCheckoutsByOption(transaction store_ifac
 
 }
 
-func (s *RetryLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) {
+func (s *RetryLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *model.Checkout) ([]*model.CheckoutLineInfo, error) {
 
 	tries := 0
 	for {
@@ -2584,7 +2562,7 @@ func (s *RetryLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckou
 
 }
 
-func (s *RetryLayerCheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error) {
+func (s *RetryLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, error) {
 
 	tries := 0
 	for {
@@ -2604,7 +2582,7 @@ func (s *RetryLayerCheckoutStore) FilterByOption(option *checkout.CheckoutFilter
 
 }
 
-func (s *RetryLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) {
+func (s *RetryLayerCheckoutStore) Get(token string) (*model.Checkout, error) {
 
 	tries := 0
 	for {
@@ -2624,7 +2602,7 @@ func (s *RetryLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) 
 
 }
 
-func (s *RetryLayerCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error) {
+func (s *RetryLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error) {
 
 	tries := 0
 	for {
@@ -2644,7 +2622,7 @@ func (s *RetryLayerCheckoutStore) GetByOption(option *checkout.CheckoutFilterOpt
 
 }
 
-func (s *RetryLayerCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error) {
+func (s *RetryLayerCheckoutStore) Upsert(ckout *model.Checkout) (*model.Checkout, error) {
 
 	tries := 0
 	for {
@@ -2664,7 +2642,7 @@ func (s *RetryLayerCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Ch
 
 }
 
-func (s *RetryLayerCheckoutLineStore) BulkCreate(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, error) {
+func (s *RetryLayerCheckoutLineStore) BulkCreate(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, error) {
 
 	tries := 0
 	for {
@@ -2684,7 +2662,7 @@ func (s *RetryLayerCheckoutLineStore) BulkCreate(checkoutLines []*checkout.Check
 
 }
 
-func (s *RetryLayerCheckoutLineStore) BulkUpdate(checkoutLines []*checkout.CheckoutLine) error {
+func (s *RetryLayerCheckoutLineStore) BulkUpdate(checkoutLines []*model.CheckoutLine) error {
 
 	tries := 0
 	for {
@@ -2704,7 +2682,7 @@ func (s *RetryLayerCheckoutLineStore) BulkUpdate(checkoutLines []*checkout.Check
 
 }
 
-func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error) {
+func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID string) ([]*model.CheckoutLine, error) {
 
 	tries := 0
 	for {
@@ -2724,7 +2702,7 @@ func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID strin
 
 }
 
-func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*checkout.CheckoutLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
+func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*model.CheckoutLine, []*model.ProductVariant, []*model.Product, error) {
 
 	tries := 0
 	for {
@@ -2744,7 +2722,7 @@ func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checko
 
 }
 
-func (s *RetryLayerCheckoutLineStore) CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, error) {
+func (s *RetryLayerCheckoutLineStore) CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, error) {
 
 	tries := 0
 	for {
@@ -2784,7 +2762,7 @@ func (s *RetryLayerCheckoutLineStore) DeleteLines(transaction store_iface.SqlxTx
 
 }
 
-func (s *RetryLayerCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, error) {
+func (s *RetryLayerCheckoutLineStore) Get(id string) (*model.CheckoutLine, error) {
 
 	tries := 0
 	for {
@@ -2824,7 +2802,7 @@ func (s *RetryLayerCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineID
 
 }
 
-func (s *RetryLayerCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error) {
+func (s *RetryLayerCheckoutLineStore) Upsert(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, error) {
 
 	tries := 0
 	for {
@@ -2864,7 +2842,7 @@ func (s *RetryLayerClusterDiscoveryStore) Cleanup() error {
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) Delete(discovery *cluster.ClusterDiscovery) (bool, error) {
+func (s *RetryLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscovery) (bool, error) {
 
 	tries := 0
 	for {
@@ -2884,7 +2862,7 @@ func (s *RetryLayerClusterDiscoveryStore) Delete(discovery *cluster.ClusterDisco
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) Exists(discovery *cluster.ClusterDiscovery) (bool, error) {
+func (s *RetryLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscovery) (bool, error) {
 
 	tries := 0
 	for {
@@ -2904,7 +2882,7 @@ func (s *RetryLayerClusterDiscoveryStore) Exists(discovery *cluster.ClusterDisco
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*cluster.ClusterDiscovery, error) {
+func (s *RetryLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*model.ClusterDiscovery, error) {
 
 	tries := 0
 	for {
@@ -2924,7 +2902,7 @@ func (s *RetryLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterNa
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) Save(discovery *cluster.ClusterDiscovery) error {
+func (s *RetryLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery) error {
 
 	tries := 0
 	for {
@@ -2944,7 +2922,7 @@ func (s *RetryLayerClusterDiscoveryStore) Save(discovery *cluster.ClusterDiscove
 
 }
 
-func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster.ClusterDiscovery) error {
+func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.ClusterDiscovery) error {
 
 	tries := 0
 	for {
@@ -2964,7 +2942,7 @@ func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster.Clust
 
 }
 
-func (s *RetryLayerCollectionStore) FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) {
+func (s *RetryLayerCollectionStore) FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) {
 
 	tries := 0
 	for {
@@ -2984,7 +2962,7 @@ func (s *RetryLayerCollectionStore) FilterByOption(option *product_and_discount.
 
 }
 
-func (s *RetryLayerCollectionStore) Get(collectionID string) (*product_and_discount.Collection, error) {
+func (s *RetryLayerCollectionStore) Get(collectionID string) (*model.Collection, error) {
 
 	tries := 0
 	for {
@@ -3004,7 +2982,7 @@ func (s *RetryLayerCollectionStore) Get(collectionID string) (*product_and_disco
 
 }
 
-func (s *RetryLayerCollectionStore) Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error) {
+func (s *RetryLayerCollectionStore) Upsert(collection *model.Collection) (*model.Collection, error) {
 
 	tries := 0
 	for {
@@ -3024,7 +3002,7 @@ func (s *RetryLayerCollectionStore) Upsert(collection *product_and_discount.Coll
 
 }
 
-func (s *RetryLayerCollectionProductStore) FilterByOptions(options *product_and_discount.CollectionProductFilterOptions) ([]*product_and_discount.CollectionProduct, error) {
+func (s *RetryLayerCollectionProductStore) FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error) {
 
 	tries := 0
 	for {
@@ -3044,11 +3022,11 @@ func (s *RetryLayerCollectionProductStore) FilterByOptions(options *product_and_
 
 }
 
-func (s *RetryLayerComplianceStore) ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
+func (s *RetryLayerComplianceStore) ComplianceExport(model *model.Compliance, cursor model.ComplianceExportCursor, limit int) ([]*model.CompliancePost, model.ComplianceExportCursor, error) {
 
 	tries := 0
 	for {
-		result, resultVar1, err := s.ComplianceStore.ComplianceExport(compliance, cursor, limit)
+		result, resultVar1, err := s.ComplianceStore.ComplianceExport(model, cursor, limit)
 		if err == nil {
 			return result, resultVar1, nil
 		}
@@ -3064,7 +3042,7 @@ func (s *RetryLayerComplianceStore) ComplianceExport(compliance *compliance.Comp
 
 }
 
-func (s *RetryLayerComplianceStore) Get(id string) (*compliance.Compliance, error) {
+func (s *RetryLayerComplianceStore) Get(id string) (*model.Compliance, error) {
 
 	tries := 0
 	for {
@@ -3084,7 +3062,7 @@ func (s *RetryLayerComplianceStore) Get(id string) (*compliance.Compliance, erro
 
 }
 
-func (s *RetryLayerComplianceStore) GetAll(offset int, limit int) (compliance.Compliances, error) {
+func (s *RetryLayerComplianceStore) GetAll(offset int, limit int) (model.Compliances, error) {
 
 	tries := 0
 	for {
@@ -3104,7 +3082,7 @@ func (s *RetryLayerComplianceStore) GetAll(offset int, limit int) (compliance.Co
 
 }
 
-func (s *RetryLayerComplianceStore) MessageExport(cursor compliance.MessageExportCursor, limit int) ([]*compliance.MessageExport, compliance.MessageExportCursor, error) {
+func (s *RetryLayerComplianceStore) MessageExport(cursor model.MessageExportCursor, limit int) ([]*model.MessageExport, model.MessageExportCursor, error) {
 
 	tries := 0
 	for {
@@ -3124,11 +3102,11 @@ func (s *RetryLayerComplianceStore) MessageExport(cursor compliance.MessageExpor
 
 }
 
-func (s *RetryLayerComplianceStore) Save(compliance *compliance.Compliance) (*compliance.Compliance, error) {
+func (s *RetryLayerComplianceStore) Save(model *model.Compliance) (*model.Compliance, error) {
 
 	tries := 0
 	for {
-		result, err := s.ComplianceStore.Save(compliance)
+		result, err := s.ComplianceStore.Save(model)
 		if err == nil {
 			return result, nil
 		}
@@ -3144,11 +3122,11 @@ func (s *RetryLayerComplianceStore) Save(compliance *compliance.Compliance) (*co
 
 }
 
-func (s *RetryLayerComplianceStore) Update(compliance *compliance.Compliance) (*compliance.Compliance, error) {
+func (s *RetryLayerComplianceStore) Update(model *model.Compliance) (*model.Compliance, error) {
 
 	tries := 0
 	for {
-		result, err := s.ComplianceStore.Update(compliance)
+		result, err := s.ComplianceStore.Update(model)
 		if err == nil {
 			return result, nil
 		}
@@ -3164,7 +3142,7 @@ func (s *RetryLayerComplianceStore) Update(compliance *compliance.Compliance) (*
 
 }
 
-func (s *RetryLayerCsvExportEventStore) FilterByOption(options *csv.ExportEventFilterOption) ([]*csv.ExportEvent, error) {
+func (s *RetryLayerCsvExportEventStore) FilterByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, error) {
 
 	tries := 0
 	for {
@@ -3184,7 +3162,7 @@ func (s *RetryLayerCsvExportEventStore) FilterByOption(options *csv.ExportEventF
 
 }
 
-func (s *RetryLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
+func (s *RetryLayerCsvExportEventStore) Save(event *model.ExportEvent) (*model.ExportEvent, error) {
 
 	tries := 0
 	for {
@@ -3204,7 +3182,7 @@ func (s *RetryLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.Expor
 
 }
 
-func (s *RetryLayerCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
+func (s *RetryLayerCsvExportFileStore) Get(id string) (*model.ExportFile, error) {
 
 	tries := 0
 	for {
@@ -3224,7 +3202,7 @@ func (s *RetryLayerCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
 
 }
 
-func (s *RetryLayerCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, error) {
+func (s *RetryLayerCsvExportFileStore) Save(file *model.ExportFile) (*model.ExportFile, error) {
 
 	tries := 0
 	for {
@@ -3264,7 +3242,7 @@ func (s *RetryLayerCustomerEventStore) Count() (int64, error) {
 
 }
 
-func (s *RetryLayerCustomerEventStore) Get(id string) (*account.CustomerEvent, error) {
+func (s *RetryLayerCustomerEventStore) Get(id string) (*model.CustomerEvent, error) {
 
 	tries := 0
 	for {
@@ -3284,7 +3262,7 @@ func (s *RetryLayerCustomerEventStore) Get(id string) (*account.CustomerEvent, e
 
 }
 
-func (s *RetryLayerCustomerEventStore) GetEventsByUserID(userID string) ([]*account.CustomerEvent, error) {
+func (s *RetryLayerCustomerEventStore) GetEventsByUserID(userID string) ([]*model.CustomerEvent, error) {
 
 	tries := 0
 	for {
@@ -3304,7 +3282,7 @@ func (s *RetryLayerCustomerEventStore) GetEventsByUserID(userID string) ([]*acco
 
 }
 
-func (s *RetryLayerCustomerEventStore) Save(customemrEvent *account.CustomerEvent) (*account.CustomerEvent, error) {
+func (s *RetryLayerCustomerEventStore) Save(customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error) {
 
 	tries := 0
 	for {
@@ -3324,7 +3302,7 @@ func (s *RetryLayerCustomerEventStore) Save(customemrEvent *account.CustomerEven
 
 }
 
-func (s *RetryLayerCustomerNoteStore) Get(id string) (*account.CustomerNote, error) {
+func (s *RetryLayerCustomerNoteStore) Get(id string) (*model.CustomerNote, error) {
 
 	tries := 0
 	for {
@@ -3344,7 +3322,7 @@ func (s *RetryLayerCustomerNoteStore) Get(id string) (*account.CustomerNote, err
 
 }
 
-func (s *RetryLayerCustomerNoteStore) Save(note *account.CustomerNote) (*account.CustomerNote, error) {
+func (s *RetryLayerCustomerNoteStore) Save(note *model.CustomerNote) (*model.CustomerNote, error) {
 
 	tries := 0
 	for {
@@ -3364,7 +3342,27 @@ func (s *RetryLayerCustomerNoteStore) Save(note *account.CustomerNote) (*account
 
 }
 
-func (s *RetryLayerDigitalContentStore) GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) {
+func (s *RetryLayerDigitalContentStore) FilterByOption(option *model.DigitalContenetFilterOption) ([]*model.DigitalContent, error) {
+
+	tries := 0
+	for {
+		result, err := s.DigitalContentStore.FilterByOption(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerDigitalContentStore) GetByOption(option *model.DigitalContenetFilterOption) (*model.DigitalContent, error) {
 
 	tries := 0
 	for {
@@ -3384,7 +3382,7 @@ func (s *RetryLayerDigitalContentStore) GetByOption(option *product_and_discount
 
 }
 
-func (s *RetryLayerDigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
+func (s *RetryLayerDigitalContentStore) Save(content *model.DigitalContent) (*model.DigitalContent, error) {
 
 	tries := 0
 	for {
@@ -3404,7 +3402,7 @@ func (s *RetryLayerDigitalContentStore) Save(content *product_and_discount.Digit
 
 }
 
-func (s *RetryLayerDigitalContentUrlStore) Get(id string) (*product_and_discount.DigitalContentUrl, error) {
+func (s *RetryLayerDigitalContentUrlStore) Get(id string) (*model.DigitalContentUrl, error) {
 
 	tries := 0
 	for {
@@ -3424,7 +3422,7 @@ func (s *RetryLayerDigitalContentUrlStore) Get(id string) (*product_and_discount
 
 }
 
-func (s *RetryLayerDigitalContentUrlStore) Upsert(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) {
+func (s *RetryLayerDigitalContentUrlStore) Upsert(contentURL *model.DigitalContentUrl) (*model.DigitalContentUrl, error) {
 
 	tries := 0
 	for {
@@ -3444,7 +3442,7 @@ func (s *RetryLayerDigitalContentUrlStore) Upsert(contentURL *product_and_discou
 
 }
 
-func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
+func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
 
 	tries := 0
 	for {
@@ -3464,7 +3462,7 @@ func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option *product_and_di
 
 }
 
-func (s *RetryLayerDiscountSaleStore) Get(saleID string) (*product_and_discount.Sale, error) {
+func (s *RetryLayerDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 
 	tries := 0
 	for {
@@ -3484,7 +3482,7 @@ func (s *RetryLayerDiscountSaleStore) Get(saleID string) (*product_and_discount.
 
 }
 
-func (s *RetryLayerDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*product_and_discount.Sale, error) {
+func (s *RetryLayerDiscountSaleStore) Upsert(sale *model.Sale) (*model.Sale, error) {
 
 	tries := 0
 	for {
@@ -3504,7 +3502,7 @@ func (s *RetryLayerDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*
 
 }
 
-func (s *RetryLayerDiscountSaleChannelListingStore) Get(saleChannelListingID string) (*product_and_discount.SaleChannelListing, error) {
+func (s *RetryLayerDiscountSaleChannelListingStore) Get(saleChannelListingID string) (*model.SaleChannelListing, error) {
 
 	tries := 0
 	for {
@@ -3524,8 +3522,8 @@ func (s *RetryLayerDiscountSaleChannelListingStore) Get(saleChannelListingID str
 
 }
 
-func (s *RetryLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *product_and_discount.SaleChannelListingFilterOption) ([]*struct {
-	product_and_discount.SaleChannelListing
+func (s *RetryLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*struct {
+	model.SaleChannelListing
 	ChannelSlug string
 }, error) {
 
@@ -3547,7 +3545,7 @@ func (s *RetryLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOptio
 
 }
 
-func (s *RetryLayerDiscountSaleChannelListingStore) Save(saleChannelListing *product_and_discount.SaleChannelListing) (*product_and_discount.SaleChannelListing, error) {
+func (s *RetryLayerDiscountSaleChannelListingStore) Save(saleChannelListing *model.SaleChannelListing) (*model.SaleChannelListing, error) {
 
 	tries := 0
 	for {
@@ -3567,7 +3565,7 @@ func (s *RetryLayerDiscountSaleChannelListingStore) Save(saleChannelListing *pro
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*product_and_discount.Voucher, error) {
+func (s *RetryLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error) {
 
 	tries := 0
 	for {
@@ -3587,7 +3585,7 @@ func (s *RetryLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) 
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) {
+func (s *RetryLayerDiscountVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, error) {
 
 	tries := 0
 	for {
@@ -3607,7 +3605,7 @@ func (s *RetryLayerDiscountVoucherStore) FilterVouchersByOption(option *product_
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) Get(voucherID string) (*product_and_discount.Voucher, error) {
+func (s *RetryLayerDiscountVoucherStore) Get(voucherID string) (*model.Voucher, error) {
 
 	tries := 0
 	for {
@@ -3627,7 +3625,7 @@ func (s *RetryLayerDiscountVoucherStore) Get(voucherID string) (*product_and_dis
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) GetByOptions(options *product_and_discount.VoucherFilterOption) (*product_and_discount.Voucher, error) {
+func (s *RetryLayerDiscountVoucherStore) GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error) {
 
 	tries := 0
 	for {
@@ -3647,7 +3645,7 @@ func (s *RetryLayerDiscountVoucherStore) GetByOptions(options *product_and_disco
 
 }
 
-func (s *RetryLayerDiscountVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error) {
+func (s *RetryLayerDiscountVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error) {
 
 	tries := 0
 	for {
@@ -3693,7 +3691,7 @@ func (s *RetryLayerFileInfoStore) CountAll() (int64, error) {
 
 }
 
-func (s *RetryLayerFileInfoStore) Get(id string) (*file.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -3713,7 +3711,7 @@ func (s *RetryLayerFileInfoStore) Get(id string) (*file.FileInfo, error) {
 
 }
 
-func (s *RetryLayerFileInfoStore) GetByIds(ids []string) ([]*file.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -3733,7 +3731,7 @@ func (s *RetryLayerFileInfoStore) GetByIds(ids []string) ([]*file.FileInfo, erro
 
 }
 
-func (s *RetryLayerFileInfoStore) GetByPath(path string) (*file.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -3753,7 +3751,7 @@ func (s *RetryLayerFileInfoStore) GetByPath(path string) (*file.FileInfo, error)
 
 }
 
-func (s *RetryLayerFileInfoStore) GetForUser(userID string) ([]*file.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetForUser(userID string) ([]*model.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -3773,7 +3771,7 @@ func (s *RetryLayerFileInfoStore) GetForUser(userID string) ([]*file.FileInfo, e
 
 }
 
-func (s *RetryLayerFileInfoStore) GetFromMaster(id string) (*file.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetFromMaster(id string) (*model.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -3793,7 +3791,7 @@ func (s *RetryLayerFileInfoStore) GetFromMaster(id string) (*file.FileInfo, erro
 
 }
 
-func (s *RetryLayerFileInfoStore) GetWithOptions(page *int, perPage *int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetWithOptions(page *int, perPage *int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -3899,7 +3897,7 @@ func (s *RetryLayerFileInfoStore) SetContent(fileID string, content string) erro
 
 }
 
-func (s *RetryLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -3919,7 +3917,7 @@ func (s *RetryLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 
 }
 
-func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments order.Fulfillments) error {
+func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments model.Fulfillments) error {
 
 	tries := 0
 	for {
@@ -3939,7 +3937,7 @@ func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(transaction store_if
 
 }
 
-func (s *RetryLayerFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
 
 	tries := 0
 	for {
@@ -3959,7 +3957,7 @@ func (s *RetryLayerFulfillmentStore) FilterByOption(transaction store_iface.Sqlx
 
 }
 
-func (s *RetryLayerFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) Get(id string) (*model.Fulfillment, error) {
 
 	tries := 0
 	for {
@@ -3979,7 +3977,7 @@ func (s *RetryLayerFulfillmentStore) Get(id string) (*order.Fulfillment, error) 
 
 }
 
-func (s *RetryLayerFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
 
 	tries := 0
 	for {
@@ -3999,7 +3997,7 @@ func (s *RetryLayerFulfillmentStore) GetByOption(transaction store_iface.SqlxTxE
 
 }
 
-func (s *RetryLayerFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
 
 	tries := 0
 	for {
@@ -4019,7 +4017,7 @@ func (s *RetryLayerFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecut
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+func (s *RetryLayerFulfillmentLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
 
 	tries := 0
 	for {
@@ -4039,7 +4037,7 @@ func (s *RetryLayerFulfillmentLineStore) BulkUpsert(transaction store_iface.Sqlx
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentLineFilterOption) error {
+func (s *RetryLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentLineFilterOption) error {
 
 	tries := 0
 	for {
@@ -4059,7 +4057,7 @@ func (s *RetryLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transact
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) {
+func (s *RetryLayerFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLineFilterOption) ([]*model.FulfillmentLine, error) {
 
 	tries := 0
 	for {
@@ -4079,7 +4077,7 @@ func (s *RetryLayerFulfillmentLineStore) FilterbyOption(option *order.Fulfillmen
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, error) {
+func (s *RetryLayerFulfillmentLineStore) Get(id string) (*model.FulfillmentLine, error) {
 
 	tries := 0
 	for {
@@ -4099,7 +4097,7 @@ func (s *RetryLayerFulfillmentLineStore) Get(id string) (*order.FulfillmentLine,
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) Save(fulfillmentLine *order.FulfillmentLine) (*order.FulfillmentLine, error) {
+func (s *RetryLayerFulfillmentLineStore) Save(fulfillmentLine *model.FulfillmentLine) (*model.FulfillmentLine, error) {
 
 	tries := 0
 	for {
@@ -4119,7 +4117,7 @@ func (s *RetryLayerFulfillmentLineStore) Save(fulfillmentLine *order.Fulfillment
 
 }
 
-func (s *RetryLayerGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
+func (s *RetryLayerGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
 
 	tries := 0
 	for {
@@ -4159,7 +4157,7 @@ func (s *RetryLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]st
 
 }
 
-func (s *RetryLayerGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+func (s *RetryLayerGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
 
 	tries := 0
 	for {
@@ -4179,7 +4177,7 @@ func (s *RetryLayerGiftCardStore) FilterByOption(transaction store_iface.SqlxTxE
 
 }
 
-func (s *RetryLayerGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
+func (s *RetryLayerGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 
 	tries := 0
 	for {
@@ -4219,7 +4217,7 @@ func (s *RetryLayerGiftCardCheckoutStore) Delete(giftcardID string, checkoutID s
 
 }
 
-func (s *RetryLayerGiftCardCheckoutStore) Get(id string) (*giftcard.GiftCardCheckout, error) {
+func (s *RetryLayerGiftCardCheckoutStore) Get(id string) (*model.GiftCardCheckout, error) {
 
 	tries := 0
 	for {
@@ -4239,7 +4237,7 @@ func (s *RetryLayerGiftCardCheckoutStore) Get(id string) (*giftcard.GiftCardChec
 
 }
 
-func (s *RetryLayerGiftCardCheckoutStore) Save(giftcardOrder *giftcard.GiftCardCheckout) (*giftcard.GiftCardCheckout, error) {
+func (s *RetryLayerGiftCardCheckoutStore) Save(giftcardOrder *model.GiftCardCheckout) (*model.GiftCardCheckout, error) {
 
 	tries := 0
 	for {
@@ -4259,7 +4257,7 @@ func (s *RetryLayerGiftCardCheckoutStore) Save(giftcardOrder *giftcard.GiftCardC
 
 }
 
-func (s *RetryLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
+func (s *RetryLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
 
 	tries := 0
 	for {
@@ -4279,7 +4277,7 @@ func (s *RetryLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTx
 
 }
 
-func (s *RetryLayerGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error) {
+func (s *RetryLayerGiftCardOrderStore) Get(id string) (*model.OrderGiftCard, error) {
 
 	tries := 0
 	for {
@@ -4299,7 +4297,7 @@ func (s *RetryLayerGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, 
 
 }
 
-func (s *RetryLayerGiftCardOrderStore) Save(giftcardOrder *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, error) {
+func (s *RetryLayerGiftCardOrderStore) Save(giftcardOrder *model.OrderGiftCard) (*model.OrderGiftCard, error) {
 
 	tries := 0
 	for {
@@ -4319,7 +4317,7 @@ func (s *RetryLayerGiftCardOrderStore) Save(giftcardOrder *giftcard.OrderGiftCar
 
 }
 
-func (s *RetryLayerGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) {
+func (s *RetryLayerGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
 
 	tries := 0
 	for {
@@ -4339,7 +4337,7 @@ func (s *RetryLayerGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTx
 
 }
 
-func (s *RetryLayerGiftcardEventStore) FilterByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, error) {
+func (s *RetryLayerGiftcardEventStore) FilterByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, error) {
 
 	tries := 0
 	for {
@@ -4359,7 +4357,7 @@ func (s *RetryLayerGiftcardEventStore) FilterByOptions(options *giftcard.GiftCar
 
 }
 
-func (s *RetryLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, error) {
+func (s *RetryLayerGiftcardEventStore) Get(id string) (*model.GiftCardEvent, error) {
 
 	tries := 0
 	for {
@@ -4379,7 +4377,7 @@ func (s *RetryLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, 
 
 }
 
-func (s *RetryLayerGiftcardEventStore) Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error) {
+func (s *RetryLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.GiftCardEvent, error) {
 
 	tries := 0
 	for {
@@ -4399,7 +4397,7 @@ func (s *RetryLayerGiftcardEventStore) Save(event *giftcard.GiftCardEvent) (*gif
 
 }
 
-func (s *RetryLayerInvoiceStore) Get(invoiceID string) (*invoice.Invoice, error) {
+func (s *RetryLayerInvoiceStore) Get(invoiceID string) (*model.Invoice, error) {
 
 	tries := 0
 	for {
@@ -4419,7 +4417,7 @@ func (s *RetryLayerInvoiceStore) Get(invoiceID string) (*invoice.Invoice, error)
 
 }
 
-func (s *RetryLayerInvoiceStore) Upsert(invoice *invoice.Invoice) (*invoice.Invoice, error) {
+func (s *RetryLayerInvoiceStore) Upsert(invoice *model.Invoice) (*model.Invoice, error) {
 
 	tries := 0
 	for {
@@ -4439,7 +4437,7 @@ func (s *RetryLayerInvoiceStore) Upsert(invoice *invoice.Invoice) (*invoice.Invo
 
 }
 
-func (s *RetryLayerInvoiceEventStore) Get(invoiceEventID string) (*invoice.InvoiceEvent, error) {
+func (s *RetryLayerInvoiceEventStore) Get(invoiceEventID string) (*model.InvoiceEvent, error) {
 
 	tries := 0
 	for {
@@ -4459,7 +4457,7 @@ func (s *RetryLayerInvoiceEventStore) Get(invoiceEventID string) (*invoice.Invoi
 
 }
 
-func (s *RetryLayerInvoiceEventStore) Upsert(invoiceEvent *invoice.InvoiceEvent) (*invoice.InvoiceEvent, error) {
+func (s *RetryLayerInvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (*model.InvoiceEvent, error) {
 
 	tries := 0
 	for {
@@ -4759,7 +4757,7 @@ func (s *RetryLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 
 }
 
-func (s *RetryLayerMenuStore) GetByOptions(options *menu.MenuFilterOptions) (*menu.Menu, error) {
+func (s *RetryLayerMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error) {
 
 	tries := 0
 	for {
@@ -4779,7 +4777,7 @@ func (s *RetryLayerMenuStore) GetByOptions(options *menu.MenuFilterOptions) (*me
 
 }
 
-func (s *RetryLayerMenuStore) Save(menu *menu.Menu) (*menu.Menu, error) {
+func (s *RetryLayerMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
 
 	tries := 0
 	for {
@@ -4799,7 +4797,7 @@ func (s *RetryLayerMenuStore) Save(menu *menu.Menu) (*menu.Menu, error) {
 
 }
 
-func (s *RetryLayerMenuItemStore) GetByOptions(options *menu.MenuItemFilterOptions) (*menu.MenuItem, error) {
+func (s *RetryLayerMenuItemStore) GetByOptions(options *model.MenuItemFilterOptions) (*model.MenuItem, error) {
 
 	tries := 0
 	for {
@@ -4819,7 +4817,7 @@ func (s *RetryLayerMenuItemStore) GetByOptions(options *menu.MenuItemFilterOptio
 
 }
 
-func (s *RetryLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem, error) {
+func (s *RetryLayerMenuItemStore) Save(menuItem *model.MenuItem) (*model.MenuItem, error) {
 
 	tries := 0
 	for {
@@ -4839,7 +4837,7 @@ func (s *RetryLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem,
 
 }
 
-func (s *RetryLayerOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenExchangeRate) ([]*external_services.OpenExchangeRate, error) {
+func (s *RetryLayerOpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) ([]*model.OpenExchangeRate, error) {
 
 	tries := 0
 	for {
@@ -4859,7 +4857,7 @@ func (s *RetryLayerOpenExchangeRateStore) BulkUpsert(rates []*external_services.
 
 }
 
-func (s *RetryLayerOpenExchangeRateStore) GetAll() ([]*external_services.OpenExchangeRate, error) {
+func (s *RetryLayerOpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, error) {
 
 	tries := 0
 	for {
@@ -4879,7 +4877,7 @@ func (s *RetryLayerOpenExchangeRateStore) GetAll() ([]*external_services.OpenExc
 
 }
 
-func (s *RetryLayerOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, error) {
+func (s *RetryLayerOrderStore) BulkUpsert(orders []*model.Order) ([]*model.Order, error) {
 
 	tries := 0
 	for {
@@ -4899,7 +4897,7 @@ func (s *RetryLayerOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order
 
 }
 
-func (s *RetryLayerOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
+func (s *RetryLayerOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
 
 	tries := 0
 	for {
@@ -4919,7 +4917,7 @@ func (s *RetryLayerOrderStore) FilterByOption(option *order.OrderFilterOption) (
 
 }
 
-func (s *RetryLayerOrderStore) Get(id string) (*order.Order, error) {
+func (s *RetryLayerOrderStore) Get(id string) (*model.Order, error) {
 
 	tries := 0
 	for {
@@ -4939,7 +4937,7 @@ func (s *RetryLayerOrderStore) Get(id string) (*order.Order, error) {
 
 }
 
-func (s *RetryLayerOrderStore) Save(transaction store_iface.SqlxTxExecutor, order *order.Order) (*order.Order, error) {
+func (s *RetryLayerOrderStore) Save(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error) {
 
 	tries := 0
 	for {
@@ -4959,7 +4957,7 @@ func (s *RetryLayerOrderStore) Save(transaction store_iface.SqlxTxExecutor, orde
 
 }
 
-func (s *RetryLayerOrderStore) Update(transaction store_iface.SqlxTxExecutor, order *order.Order) (*order.Order, error) {
+func (s *RetryLayerOrderStore) Update(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error) {
 
 	tries := 0
 	for {
@@ -4999,7 +4997,7 @@ func (s *RetryLayerOrderDiscountStore) BulkDelete(orderDiscountIDs []string) err
 
 }
 
-func (s *RetryLayerOrderDiscountStore) FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error) {
+func (s *RetryLayerOrderDiscountStore) FilterbyOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, error) {
 
 	tries := 0
 	for {
@@ -5019,7 +5017,7 @@ func (s *RetryLayerOrderDiscountStore) FilterbyOption(option *product_and_discou
 
 }
 
-func (s *RetryLayerOrderDiscountStore) Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error) {
+func (s *RetryLayerOrderDiscountStore) Get(orderDiscountID string) (*model.OrderDiscount, error) {
 
 	tries := 0
 	for {
@@ -5039,7 +5037,7 @@ func (s *RetryLayerOrderDiscountStore) Get(orderDiscountID string) (*product_and
 
 }
 
-func (s *RetryLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+func (s *RetryLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
 
 	tries := 0
 	for {
@@ -5059,7 +5057,7 @@ func (s *RetryLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExec
 
 }
 
-func (s *RetryLayerOrderEventStore) Get(orderEventID string) (*order.OrderEvent, error) {
+func (s *RetryLayerOrderEventStore) Get(orderEventID string) (*model.OrderEvent, error) {
 
 	tries := 0
 	for {
@@ -5079,7 +5077,7 @@ func (s *RetryLayerOrderEventStore) Get(orderEventID string) (*order.OrderEvent,
 
 }
 
-func (s *RetryLayerOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
+func (s *RetryLayerOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
 
 	tries := 0
 	for {
@@ -5119,7 +5117,7 @@ func (s *RetryLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
 
 }
 
-func (s *RetryLayerOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
 
 	tries := 0
 	for {
@@ -5139,7 +5137,7 @@ func (s *RetryLayerOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExec
 
 }
 
-func (s *RetryLayerOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) ([]*model.OrderLine, error) {
 
 	tries := 0
 	for {
@@ -5159,7 +5157,7 @@ func (s *RetryLayerOrderLineStore) FilterbyOption(option *order.OrderLineFilterO
 
 }
 
-func (s *RetryLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) Get(id string) (*model.OrderLine, error) {
 
 	tries := 0
 	for {
@@ -5179,7 +5177,7 @@ func (s *RetryLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 
 }
 
-func (s *RetryLayerOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, orderLine *order.OrderLine) (*order.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, orderLine *model.OrderLine) (*model.OrderLine, error) {
 
 	tries := 0
 	for {
@@ -5219,7 +5217,7 @@ func (s *RetryLayerPaymentStore) CancelActivePaymentsOfCheckout(checkoutToken st
 
 }
 
-func (s *RetryLayerPaymentStore) FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error) {
+func (s *RetryLayerPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error) {
 
 	tries := 0
 	for {
@@ -5239,7 +5237,7 @@ func (s *RetryLayerPaymentStore) FilterByOption(option *payment.PaymentFilterOpt
 
 }
 
-func (s *RetryLayerPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*payment.Payment, error) {
+func (s *RetryLayerPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*model.Payment, error) {
 
 	tries := 0
 	for {
@@ -5259,11 +5257,11 @@ func (s *RetryLayerPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id 
 
 }
 
-func (s *RetryLayerPaymentStore) Save(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error) {
+func (s *RetryLayerPaymentStore) Save(transaction store_iface.SqlxTxExecutor, model *model.Payment) (*model.Payment, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentStore.Save(transaction, payment)
+		result, err := s.PaymentStore.Save(transaction, model)
 		if err == nil {
 			return result, nil
 		}
@@ -5279,11 +5277,11 @@ func (s *RetryLayerPaymentStore) Save(transaction store_iface.SqlxTxExecutor, pa
 
 }
 
-func (s *RetryLayerPaymentStore) Update(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error) {
+func (s *RetryLayerPaymentStore) Update(transaction store_iface.SqlxTxExecutor, model *model.Payment) (*model.Payment, error) {
 
 	tries := 0
 	for {
-		result, err := s.PaymentStore.Update(transaction, payment)
+		result, err := s.PaymentStore.Update(transaction, model)
 		if err == nil {
 			return result, nil
 		}
@@ -5299,7 +5297,7 @@ func (s *RetryLayerPaymentStore) Update(transaction store_iface.SqlxTxExecutor, 
 
 }
 
-func (s *RetryLayerPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *payment.PaymentPatch) error {
+func (s *RetryLayerPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *model.PaymentPatch) error {
 
 	tries := 0
 	for {
@@ -5319,7 +5317,7 @@ func (s *RetryLayerPaymentStore) UpdatePaymentsOfCheckout(transaction store_ifac
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) {
+func (s *RetryLayerPaymentTransactionStore) FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
 
 	tries := 0
 	for {
@@ -5339,7 +5337,7 @@ func (s *RetryLayerPaymentTransactionStore) FilterByOption(option *payment.Payme
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
+func (s *RetryLayerPaymentTransactionStore) Get(id string) (*model.PaymentTransaction, error) {
 
 	tries := 0
 	for {
@@ -5359,7 +5357,7 @@ func (s *RetryLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTran
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (s *RetryLayerPaymentTransactionStore) Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
 
 	tries := 0
 	for {
@@ -5379,7 +5377,7 @@ func (s *RetryLayerPaymentTransactionStore) Save(transaction store_iface.SqlxTxE
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (s *RetryLayerPaymentTransactionStore) Update(transaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
 
 	tries := 0
 	for {
@@ -5399,7 +5397,7 @@ func (s *RetryLayerPaymentTransactionStore) Update(transaction *payment.PaymentT
 
 }
 
-func (s *RetryLayerPluginStore) CompareAndDelete(keyVal *plugins.PluginKeyValue, oldValue []byte) (bool, error) {
+func (s *RetryLayerPluginStore) CompareAndDelete(keyVal *model.PluginKeyValue, oldValue []byte) (bool, error) {
 
 	tries := 0
 	for {
@@ -5419,7 +5417,7 @@ func (s *RetryLayerPluginStore) CompareAndDelete(keyVal *plugins.PluginKeyValue,
 
 }
 
-func (s *RetryLayerPluginStore) CompareAndSet(keyVal *plugins.PluginKeyValue, oldValue []byte) (bool, error) {
+func (s *RetryLayerPluginStore) CompareAndSet(keyVal *model.PluginKeyValue, oldValue []byte) (bool, error) {
 
 	tries := 0
 	for {
@@ -5499,7 +5497,7 @@ func (s *RetryLayerPluginStore) DeleteAllForPlugin(PluginID string) error {
 
 }
 
-func (s *RetryLayerPluginStore) Get(pluginID string, key string) (*plugins.PluginKeyValue, error) {
+func (s *RetryLayerPluginStore) Get(pluginID string, key string) (*model.PluginKeyValue, error) {
 
 	tries := 0
 	for {
@@ -5539,7 +5537,7 @@ func (s *RetryLayerPluginStore) List(pluginID string, page int, perPage int) ([]
 
 }
 
-func (s *RetryLayerPluginStore) SaveOrUpdate(keyVal *plugins.PluginKeyValue) (*plugins.PluginKeyValue, error) {
+func (s *RetryLayerPluginStore) SaveOrUpdate(keyVal *model.PluginKeyValue) (*model.PluginKeyValue, error) {
 
 	tries := 0
 	for {
@@ -5559,7 +5557,7 @@ func (s *RetryLayerPluginStore) SaveOrUpdate(keyVal *plugins.PluginKeyValue) (*p
 
 }
 
-func (s *RetryLayerPluginStore) SetWithOptions(pluginID string, key string, value []byte, options plugins.PluginKVSetOptions) (bool, error) {
+func (s *RetryLayerPluginStore) SetWithOptions(pluginID string, key string, value []byte, options model.PluginKVSetOptions) (bool, error) {
 
 	tries := 0
 	for {
@@ -5579,7 +5577,7 @@ func (s *RetryLayerPluginStore) SetWithOptions(pluginID string, key string, valu
 
 }
 
-func (s *RetryLayerPluginConfigurationStore) FilterPluginConfigurations(options plugins.PluginConfigurationFilterOptions) ([]*plugins.PluginConfiguration, error) {
+func (s *RetryLayerPluginConfigurationStore) FilterPluginConfigurations(options model.PluginConfigurationFilterOptions) ([]*model.PluginConfiguration, error) {
 
 	tries := 0
 	for {
@@ -5599,7 +5597,7 @@ func (s *RetryLayerPluginConfigurationStore) FilterPluginConfigurations(options 
 
 }
 
-func (s *RetryLayerPluginConfigurationStore) Get(id string) (*plugins.PluginConfiguration, error) {
+func (s *RetryLayerPluginConfigurationStore) Get(id string) (*model.PluginConfiguration, error) {
 
 	tries := 0
 	for {
@@ -5619,7 +5617,7 @@ func (s *RetryLayerPluginConfigurationStore) Get(id string) (*plugins.PluginConf
 
 }
 
-func (s *RetryLayerPluginConfigurationStore) GetByOptions(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, error) {
+func (s *RetryLayerPluginConfigurationStore) GetByOptions(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, error) {
 
 	tries := 0
 	for {
@@ -5639,7 +5637,7 @@ func (s *RetryLayerPluginConfigurationStore) GetByOptions(options *plugins.Plugi
 
 }
 
-func (s *RetryLayerPluginConfigurationStore) Upsert(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, error) {
+func (s *RetryLayerPluginConfigurationStore) Upsert(config *model.PluginConfiguration) (*model.PluginConfiguration, error) {
 
 	tries := 0
 	for {
@@ -5845,7 +5843,7 @@ func (s *RetryLayerPreferenceStore) Save(preferences model.Preferences) error {
 
 }
 
-func (s *RetryLayerPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
+func (s *RetryLayerPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
 
 	tries := 0
 	for {
@@ -5885,7 +5883,7 @@ func (s *RetryLayerPreorderAllocationStore) Delete(transaction store_iface.SqlxT
 
 }
 
-func (s *RetryLayerPreorderAllocationStore) FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) {
+func (s *RetryLayerPreorderAllocationStore) FilterByOption(options *model.PreorderAllocationFilterOption) ([]*model.PreorderAllocation, error) {
 
 	tries := 0
 	for {
@@ -5905,13 +5903,13 @@ func (s *RetryLayerPreorderAllocationStore) FilterByOption(options *warehouse.Pr
 
 }
 
-func (s *RetryLayerProductStore) AdvancedFilterQueryBuilder(input *csv.ExportProductsFilterOptions) squirrel.SelectBuilder {
+func (s *RetryLayerProductStore) AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder {
 
 	return s.ProductStore.AdvancedFilterQueryBuilder(input)
 
 }
 
-func (s *RetryLayerProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
+func (s *RetryLayerProductStore) FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) {
 
 	tries := 0
 	for {
@@ -5931,7 +5929,7 @@ func (s *RetryLayerProductStore) FilterByOption(option *product_and_discount.Pro
 
 }
 
-func (s *RetryLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (product_and_discount.Products, error) {
+func (s *RetryLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Products, error) {
 
 	tries := 0
 	for {
@@ -5951,7 +5949,7 @@ func (s *RetryLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (pr
 
 }
 
-func (s *RetryLayerProductStore) GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error) {
+func (s *RetryLayerProductStore) GetByOption(option *model.ProductFilterOption) (*model.Product, error) {
 
 	tries := 0
 	for {
@@ -5972,7 +5970,7 @@ func (s *RetryLayerProductStore) GetByOption(option *product_and_discount.Produc
 }
 
 func (s *RetryLayerProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
-	product_and_discount.Product
+	model.Product
 	IsPublished     bool
 	PublicationDate *timemodule.Time
 }, error) {
@@ -5995,7 +5993,7 @@ func (s *RetryLayerProductStore) NotPublishedProducts(channelSlug string) ([]*st
 
 }
 
-func (s *RetryLayerProductStore) PublishedProducts(channelSlug string) ([]*product_and_discount.Product, error) {
+func (s *RetryLayerProductStore) PublishedProducts(channelSlug string) ([]*model.Product, error) {
 
 	tries := 0
 	for {
@@ -6015,7 +6013,7 @@ func (s *RetryLayerProductStore) PublishedProducts(channelSlug string) ([]*produ
 
 }
 
-func (s *RetryLayerProductStore) PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error) {
+func (s *RetryLayerProductStore) PublishedWithVariants(channelSlug string) ([]*model.Product, error) {
 
 	tries := 0
 	for {
@@ -6035,7 +6033,7 @@ func (s *RetryLayerProductStore) PublishedWithVariants(channelSlug string) ([]*p
 
 }
 
-func (s *RetryLayerProductStore) Save(prd *product_and_discount.Product) (*product_and_discount.Product, error) {
+func (s *RetryLayerProductStore) Save(prd *model.Product) (*model.Product, error) {
 
 	tries := 0
 	for {
@@ -6055,7 +6053,7 @@ func (s *RetryLayerProductStore) Save(prd *product_and_discount.Product) (*produ
 
 }
 
-func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) {
+func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*model.Product, error) {
 
 	tries := 0
 	for {
@@ -6075,7 +6073,7 @@ func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(pro
 
 }
 
-func (s *RetryLayerProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) {
+func (s *RetryLayerProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*model.Product, error) {
 
 	tries := 0
 	for {
@@ -6095,7 +6093,7 @@ func (s *RetryLayerProductStore) VisibleToUserProducts(channelSlug string, reque
 
 }
 
-func (s *RetryLayerProductChannelListingStore) BulkUpsert(listings []*product_and_discount.ProductChannelListing) ([]*product_and_discount.ProductChannelListing, error) {
+func (s *RetryLayerProductChannelListingStore) BulkUpsert(listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
 
 	tries := 0
 	for {
@@ -6115,7 +6113,7 @@ func (s *RetryLayerProductChannelListingStore) BulkUpsert(listings []*product_an
 
 }
 
-func (s *RetryLayerProductChannelListingStore) FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) {
+func (s *RetryLayerProductChannelListingStore) FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error) {
 
 	tries := 0
 	for {
@@ -6135,7 +6133,7 @@ func (s *RetryLayerProductChannelListingStore) FilterByOption(option *product_an
 
 }
 
-func (s *RetryLayerProductChannelListingStore) Get(channelListingID string) (*product_and_discount.ProductChannelListing, error) {
+func (s *RetryLayerProductChannelListingStore) Get(channelListingID string) (*model.ProductChannelListing, error) {
 
 	tries := 0
 	for {
@@ -6155,7 +6153,7 @@ func (s *RetryLayerProductChannelListingStore) Get(channelListingID string) (*pr
 
 }
 
-func (s *RetryLayerProductMediaStore) FilterByOption(option *product_and_discount.ProductMediaFilterOption) ([]*product_and_discount.ProductMedia, error) {
+func (s *RetryLayerProductMediaStore) FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error) {
 
 	tries := 0
 	for {
@@ -6175,7 +6173,7 @@ func (s *RetryLayerProductMediaStore) FilterByOption(option *product_and_discoun
 
 }
 
-func (s *RetryLayerProductMediaStore) Get(id string) (*product_and_discount.ProductMedia, error) {
+func (s *RetryLayerProductMediaStore) Get(id string) (*model.ProductMedia, error) {
 
 	tries := 0
 	for {
@@ -6195,7 +6193,7 @@ func (s *RetryLayerProductMediaStore) Get(id string) (*product_and_discount.Prod
 
 }
 
-func (s *RetryLayerProductMediaStore) Upsert(media *product_and_discount.ProductMedia) (*product_and_discount.ProductMedia, error) {
+func (s *RetryLayerProductMediaStore) Upsert(media *model.ProductMedia) (*model.ProductMedia, error) {
 
 	tries := 0
 	for {
@@ -6215,7 +6213,7 @@ func (s *RetryLayerProductMediaStore) Upsert(media *product_and_discount.Product
 
 }
 
-func (s *RetryLayerProductTranslationStore) FilterByOption(option *product_and_discount.ProductTranslationFilterOption) ([]*product_and_discount.ProductTranslation, error) {
+func (s *RetryLayerProductTranslationStore) FilterByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, error) {
 
 	tries := 0
 	for {
@@ -6235,7 +6233,7 @@ func (s *RetryLayerProductTranslationStore) FilterByOption(option *product_and_d
 
 }
 
-func (s *RetryLayerProductTranslationStore) Get(translationID string) (*product_and_discount.ProductTranslation, error) {
+func (s *RetryLayerProductTranslationStore) Get(translationID string) (*model.ProductTranslation, error) {
 
 	tries := 0
 	for {
@@ -6255,7 +6253,7 @@ func (s *RetryLayerProductTranslationStore) Get(translationID string) (*product_
 
 }
 
-func (s *RetryLayerProductTranslationStore) Upsert(translation *product_and_discount.ProductTranslation) (*product_and_discount.ProductTranslation, error) {
+func (s *RetryLayerProductTranslationStore) Upsert(translation *model.ProductTranslation) (*model.ProductTranslation, error) {
 
 	tries := 0
 	for {
@@ -6275,7 +6273,7 @@ func (s *RetryLayerProductTranslationStore) Upsert(translation *product_and_disc
 
 }
 
-func (s *RetryLayerProductTypeStore) Count(options *product_and_discount.ProductTypeFilterOption) (int64, error) {
+func (s *RetryLayerProductTypeStore) Count(options *model.ProductTypeFilterOption) (int64, error) {
 
 	tries := 0
 	for {
@@ -6295,7 +6293,7 @@ func (s *RetryLayerProductTypeStore) Count(options *product_and_discount.Product
 
 }
 
-func (s *RetryLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error) {
+func (s *RetryLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, error) {
 
 	tries := 0
 	for {
@@ -6315,7 +6313,7 @@ func (s *RetryLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutT
 
 }
 
-func (s *RetryLayerProductTypeStore) FilterbyOption(options *product_and_discount.ProductTypeFilterOption) ([]*product_and_discount.ProductType, error) {
+func (s *RetryLayerProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error) {
 
 	tries := 0
 	for {
@@ -6335,7 +6333,7 @@ func (s *RetryLayerProductTypeStore) FilterbyOption(options *product_and_discoun
 
 }
 
-func (s *RetryLayerProductTypeStore) GetByOption(options *product_and_discount.ProductTypeFilterOption) (*product_and_discount.ProductType, error) {
+func (s *RetryLayerProductTypeStore) GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error) {
 
 	tries := 0
 	for {
@@ -6355,7 +6353,7 @@ func (s *RetryLayerProductTypeStore) GetByOption(options *product_and_discount.P
 
 }
 
-func (s *RetryLayerProductTypeStore) ProductTypeByProductVariantID(variantID string) (*product_and_discount.ProductType, error) {
+func (s *RetryLayerProductTypeStore) ProductTypeByProductVariantID(variantID string) (*model.ProductType, error) {
 
 	tries := 0
 	for {
@@ -6375,7 +6373,7 @@ func (s *RetryLayerProductTypeStore) ProductTypeByProductVariantID(variantID str
 
 }
 
-func (s *RetryLayerProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error) {
+func (s *RetryLayerProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error) {
 
 	tries := 0
 	for {
@@ -6395,7 +6393,7 @@ func (s *RetryLayerProductTypeStore) ProductTypesByProductIDs(productIDs []strin
 
 }
 
-func (s *RetryLayerProductTypeStore) Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error) {
+func (s *RetryLayerProductTypeStore) Save(productType *model.ProductType) (*model.ProductType, error) {
 
 	tries := 0
 	for {
@@ -6415,7 +6413,7 @@ func (s *RetryLayerProductTypeStore) Save(productType *product_and_discount.Prod
 
 }
 
-func (s *RetryLayerProductVariantStore) FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) {
+func (s *RetryLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
 
 	tries := 0
 	for {
@@ -6435,7 +6433,7 @@ func (s *RetryLayerProductVariantStore) FilterByOption(option *product_and_disco
 
 }
 
-func (s *RetryLayerProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
+func (s *RetryLayerProductVariantStore) Get(id string) (*model.ProductVariant, error) {
 
 	tries := 0
 	for {
@@ -6455,7 +6453,7 @@ func (s *RetryLayerProductVariantStore) Get(id string) (*product_and_discount.Pr
 
 }
 
-func (s *RetryLayerProductVariantStore) GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error) {
+func (s *RetryLayerProductVariantStore) GetByOrderLineID(orderLineID string) (*model.ProductVariant, error) {
 
 	tries := 0
 	for {
@@ -6495,7 +6493,7 @@ func (s *RetryLayerProductVariantStore) GetWeight(productVariantID string) (*mea
 
 }
 
-func (s *RetryLayerProductVariantStore) Save(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (s *RetryLayerProductVariantStore) Save(transaction store_iface.SqlxTxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
 
 	tries := 0
 	for {
@@ -6515,7 +6513,7 @@ func (s *RetryLayerProductVariantStore) Save(transaction store_iface.SqlxTxExecu
 
 }
 
-func (s *RetryLayerProductVariantStore) Update(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (s *RetryLayerProductVariantStore) Update(transaction store_iface.SqlxTxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
 
 	tries := 0
 	for {
@@ -6535,7 +6533,7 @@ func (s *RetryLayerProductVariantStore) Update(transaction store_iface.SqlxTxExe
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
 
 	tries := 0
 	for {
@@ -6555,7 +6553,7 @@ func (s *RetryLayerProductVariantChannelListingStore) BulkUpsert(transaction sto
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(transaction store_iface.SqlxTxExecutor, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(transaction store_iface.SqlxTxExecutor, option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
 
 	tries := 0
 	for {
@@ -6575,7 +6573,7 @@ func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(transaction
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantChannelListingStore) Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error) {
 
 	tries := 0
 	for {
@@ -6595,7 +6593,7 @@ func (s *RetryLayerProductVariantChannelListingStore) Get(variantChannelListingI
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantChannelListingStore) Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error) {
 
 	tries := 0
 	for {
@@ -6615,7 +6613,7 @@ func (s *RetryLayerProductVariantChannelListingStore) Save(variantChannelListing
 
 }
 
-func (s *RetryLayerProductVariantTranslationStore) FilterByOption(option *product_and_discount.ProductVariantTranslationFilterOption) ([]*product_and_discount.ProductVariantTranslation, error) {
+func (s *RetryLayerProductVariantTranslationStore) FilterByOption(option *model.ProductVariantTranslationFilterOption) ([]*model.ProductVariantTranslation, error) {
 
 	tries := 0
 	for {
@@ -6635,7 +6633,7 @@ func (s *RetryLayerProductVariantTranslationStore) FilterByOption(option *produc
 
 }
 
-func (s *RetryLayerProductVariantTranslationStore) Get(translationID string) (*product_and_discount.ProductVariantTranslation, error) {
+func (s *RetryLayerProductVariantTranslationStore) Get(translationID string) (*model.ProductVariantTranslation, error) {
 
 	tries := 0
 	for {
@@ -6655,7 +6653,7 @@ func (s *RetryLayerProductVariantTranslationStore) Get(translationID string) (*p
 
 }
 
-func (s *RetryLayerProductVariantTranslationStore) Upsert(translation *product_and_discount.ProductVariantTranslation) (*product_and_discount.ProductVariantTranslation, error) {
+func (s *RetryLayerProductVariantTranslationStore) Upsert(translation *model.ProductVariantTranslation) (*model.ProductVariantTranslation, error) {
 
 	tries := 0
 	for {
@@ -6815,7 +6813,7 @@ func (s *RetryLayerRoleStore) Save(role *model.Role) (*model.Role, error) {
 
 }
 
-func (s *RetryLayerSaleCategoryRelationStore) Get(relationID string) (*product_and_discount.SaleCategoryRelation, error) {
+func (s *RetryLayerSaleCategoryRelationStore) Get(relationID string) (*model.SaleCategoryRelation, error) {
 
 	tries := 0
 	for {
@@ -6835,7 +6833,7 @@ func (s *RetryLayerSaleCategoryRelationStore) Get(relationID string) (*product_a
 
 }
 
-func (s *RetryLayerSaleCategoryRelationStore) SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, error) {
+func (s *RetryLayerSaleCategoryRelationStore) SaleCategoriesByOption(option *model.SaleCategoryRelationFilterOption) ([]*model.SaleCategoryRelation, error) {
 
 	tries := 0
 	for {
@@ -6855,7 +6853,7 @@ func (s *RetryLayerSaleCategoryRelationStore) SaleCategoriesByOption(option *pro
 
 }
 
-func (s *RetryLayerSaleCategoryRelationStore) Save(relation *product_and_discount.SaleCategoryRelation) (*product_and_discount.SaleCategoryRelation, error) {
+func (s *RetryLayerSaleCategoryRelationStore) Save(relation *model.SaleCategoryRelation) (*model.SaleCategoryRelation, error) {
 
 	tries := 0
 	for {
@@ -6875,7 +6873,7 @@ func (s *RetryLayerSaleCategoryRelationStore) Save(relation *product_and_discoun
 
 }
 
-func (s *RetryLayerSaleCollectionRelationStore) FilterByOption(option *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, error) {
+func (s *RetryLayerSaleCollectionRelationStore) FilterByOption(option *model.SaleCollectionRelationFilterOption) ([]*model.SaleCollectionRelation, error) {
 
 	tries := 0
 	for {
@@ -6895,7 +6893,7 @@ func (s *RetryLayerSaleCollectionRelationStore) FilterByOption(option *product_a
 
 }
 
-func (s *RetryLayerSaleCollectionRelationStore) Get(relationID string) (*product_and_discount.SaleCollectionRelation, error) {
+func (s *RetryLayerSaleCollectionRelationStore) Get(relationID string) (*model.SaleCollectionRelation, error) {
 
 	tries := 0
 	for {
@@ -6915,7 +6913,7 @@ func (s *RetryLayerSaleCollectionRelationStore) Get(relationID string) (*product
 
 }
 
-func (s *RetryLayerSaleCollectionRelationStore) Save(relation *product_and_discount.SaleCollectionRelation) (*product_and_discount.SaleCollectionRelation, error) {
+func (s *RetryLayerSaleCollectionRelationStore) Save(relation *model.SaleCollectionRelation) (*model.SaleCollectionRelation, error) {
 
 	tries := 0
 	for {
@@ -6935,7 +6933,7 @@ func (s *RetryLayerSaleCollectionRelationStore) Save(relation *product_and_disco
 
 }
 
-func (s *RetryLayerSaleProductRelationStore) Get(relationID string) (*product_and_discount.SaleProductRelation, error) {
+func (s *RetryLayerSaleProductRelationStore) Get(relationID string) (*model.SaleProductRelation, error) {
 
 	tries := 0
 	for {
@@ -6955,7 +6953,7 @@ func (s *RetryLayerSaleProductRelationStore) Get(relationID string) (*product_an
 
 }
 
-func (s *RetryLayerSaleProductRelationStore) SaleProductsByOption(option *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, error) {
+func (s *RetryLayerSaleProductRelationStore) SaleProductsByOption(option *model.SaleProductRelationFilterOption) ([]*model.SaleProductRelation, error) {
 
 	tries := 0
 	for {
@@ -6975,7 +6973,7 @@ func (s *RetryLayerSaleProductRelationStore) SaleProductsByOption(option *produc
 
 }
 
-func (s *RetryLayerSaleProductRelationStore) Save(relation *product_and_discount.SaleProductRelation) (*product_and_discount.SaleProductRelation, error) {
+func (s *RetryLayerSaleProductRelationStore) Save(relation *model.SaleProductRelation) (*model.SaleProductRelation, error) {
 
 	tries := 0
 	for {
@@ -6995,7 +6993,7 @@ func (s *RetryLayerSaleProductRelationStore) Save(relation *product_and_discount
 
 }
 
-func (s *RetryLayerSaleProductVariantStore) FilterByOption(options *product_and_discount.SaleProductVariantFilterOption) ([]*product_and_discount.SaleProductVariant, error) {
+func (s *RetryLayerSaleProductVariantStore) FilterByOption(options *model.SaleProductVariantFilterOption) ([]*model.SaleProductVariant, error) {
 
 	tries := 0
 	for {
@@ -7015,7 +7013,7 @@ func (s *RetryLayerSaleProductVariantStore) FilterByOption(options *product_and_
 
 }
 
-func (s *RetryLayerSaleProductVariantStore) Upsert(relation *product_and_discount.SaleProductVariant) (*product_and_discount.SaleProductVariant, error) {
+func (s *RetryLayerSaleProductVariantStore) Upsert(relation *model.SaleProductVariant) (*model.SaleProductVariant, error) {
 
 	tries := 0
 	for {
@@ -7341,7 +7339,7 @@ func (s *RetryLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 
 }
 
-func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*model.ShippingMethod, error) {
 
 	tries := 0
 	for {
@@ -7361,7 +7359,7 @@ func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprice
 
 }
 
-func (s *RetryLayerShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) Get(methodID string) (*model.ShippingMethod, error) {
 
 	tries := 0
 	for {
@@ -7381,7 +7379,7 @@ func (s *RetryLayerShippingMethodStore) Get(methodID string) (*shipping.Shipping
 
 }
 
-func (s *RetryLayerShippingMethodStore) GetbyOption(options *shipping.ShippingMethodFilterOption) (*shipping.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
 
 	tries := 0
 	for {
@@ -7401,7 +7399,7 @@ func (s *RetryLayerShippingMethodStore) GetbyOption(options *shipping.ShippingMe
 
 }
 
-func (s *RetryLayerShippingMethodStore) Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) Upsert(method *model.ShippingMethod) (*model.ShippingMethod, error) {
 
 	tries := 0
 	for {
@@ -7421,7 +7419,7 @@ func (s *RetryLayerShippingMethodStore) Upsert(method *shipping.ShippingMethod) 
 
 }
 
-func (s *RetryLayerShippingMethodChannelListingStore) FilterByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, error) {
+func (s *RetryLayerShippingMethodChannelListingStore) FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error) {
 
 	tries := 0
 	for {
@@ -7441,7 +7439,7 @@ func (s *RetryLayerShippingMethodChannelListingStore) FilterByOption(option *shi
 
 }
 
-func (s *RetryLayerShippingMethodChannelListingStore) Get(listingID string) (*shipping.ShippingMethodChannelListing, error) {
+func (s *RetryLayerShippingMethodChannelListingStore) Get(listingID string) (*model.ShippingMethodChannelListing, error) {
 
 	tries := 0
 	for {
@@ -7461,7 +7459,7 @@ func (s *RetryLayerShippingMethodChannelListingStore) Get(listingID string) (*sh
 
 }
 
-func (s *RetryLayerShippingMethodChannelListingStore) Upsert(listing *shipping.ShippingMethodChannelListing) (*shipping.ShippingMethodChannelListing, error) {
+func (s *RetryLayerShippingMethodChannelListingStore) Upsert(listing *model.ShippingMethodChannelListing) (*model.ShippingMethodChannelListing, error) {
 
 	tries := 0
 	for {
@@ -7481,7 +7479,7 @@ func (s *RetryLayerShippingMethodChannelListingStore) Upsert(listing *shipping.S
 
 }
 
-func (s *RetryLayerShippingMethodExcludedProductStore) Get(id string) (*shipping.ShippingMethodExcludedProduct, error) {
+func (s *RetryLayerShippingMethodExcludedProductStore) Get(id string) (*model.ShippingMethodExcludedProduct, error) {
 
 	tries := 0
 	for {
@@ -7501,7 +7499,7 @@ func (s *RetryLayerShippingMethodExcludedProductStore) Get(id string) (*shipping
 
 }
 
-func (s *RetryLayerShippingMethodExcludedProductStore) Save(instance *shipping.ShippingMethodExcludedProduct) (*shipping.ShippingMethodExcludedProduct, error) {
+func (s *RetryLayerShippingMethodExcludedProductStore) Save(instance *model.ShippingMethodExcludedProduct) (*model.ShippingMethodExcludedProduct, error) {
 
 	tries := 0
 	for {
@@ -7521,7 +7519,7 @@ func (s *RetryLayerShippingMethodExcludedProductStore) Save(instance *shipping.S
 
 }
 
-func (s *RetryLayerShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) {
+func (s *RetryLayerShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error) {
 
 	tries := 0
 	for {
@@ -7541,7 +7539,7 @@ func (s *RetryLayerShippingZoneStore) FilterByOption(option *shipping.ShippingZo
 
 }
 
-func (s *RetryLayerShippingZoneStore) Get(shippingZoneID string) (*shipping.ShippingZone, error) {
+func (s *RetryLayerShippingZoneStore) Get(shippingZoneID string) (*model.ShippingZone, error) {
 
 	tries := 0
 	for {
@@ -7561,7 +7559,7 @@ func (s *RetryLayerShippingZoneStore) Get(shippingZoneID string) (*shipping.Ship
 
 }
 
-func (s *RetryLayerShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone) (*shipping.ShippingZone, error) {
+func (s *RetryLayerShippingZoneStore) Upsert(shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
 
 	tries := 0
 	for {
@@ -7581,7 +7579,7 @@ func (s *RetryLayerShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone
 
 }
 
-func (s *RetryLayerShopStore) FilterByOptions(options *shop.ShopFilterOptions) ([]*shop.Shop, error) {
+func (s *RetryLayerShopStore) FilterByOptions(options *model.ShopFilterOptions) ([]*model.Shop, error) {
 
 	tries := 0
 	for {
@@ -7601,7 +7599,7 @@ func (s *RetryLayerShopStore) FilterByOptions(options *shop.ShopFilterOptions) (
 
 }
 
-func (s *RetryLayerShopStore) Get(shopID string) (*shop.Shop, error) {
+func (s *RetryLayerShopStore) Get(shopID string) (*model.Shop, error) {
 
 	tries := 0
 	for {
@@ -7621,7 +7619,7 @@ func (s *RetryLayerShopStore) Get(shopID string) (*shop.Shop, error) {
 
 }
 
-func (s *RetryLayerShopStore) GetByOptions(options *shop.ShopFilterOptions) (*shop.Shop, error) {
+func (s *RetryLayerShopStore) GetByOptions(options *model.ShopFilterOptions) (*model.Shop, error) {
 
 	tries := 0
 	for {
@@ -7641,7 +7639,7 @@ func (s *RetryLayerShopStore) GetByOptions(options *shop.ShopFilterOptions) (*sh
 
 }
 
-func (s *RetryLayerShopStore) Upsert(shop *shop.Shop) (*shop.Shop, error) {
+func (s *RetryLayerShopStore) Upsert(shop *model.Shop) (*model.Shop, error) {
 
 	tries := 0
 	for {
@@ -7661,7 +7659,7 @@ func (s *RetryLayerShopStore) Upsert(shop *shop.Shop) (*shop.Shop, error) {
 
 }
 
-func (s *RetryLayerShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*shop.ShopStaffRelation, error) {
+func (s *RetryLayerShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*model.ShopStaffRelation, error) {
 
 	tries := 0
 	for {
@@ -7681,7 +7679,7 @@ func (s *RetryLayerShopStaffStore) FilterByShopAndStaff(shopID string, staffID s
 
 }
 
-func (s *RetryLayerShopStaffStore) Get(shopStaffID string) (*shop.ShopStaffRelation, error) {
+func (s *RetryLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaffRelation, error) {
 
 	tries := 0
 	for {
@@ -7701,7 +7699,7 @@ func (s *RetryLayerShopStaffStore) Get(shopStaffID string) (*shop.ShopStaffRelat
 
 }
 
-func (s *RetryLayerShopStaffStore) Save(shopStaff *shop.ShopStaffRelation) (*shop.ShopStaffRelation, error) {
+func (s *RetryLayerShopStaffStore) Save(shopStaff *model.ShopStaffRelation) (*model.ShopStaffRelation, error) {
 
 	tries := 0
 	for {
@@ -7721,7 +7719,7 @@ func (s *RetryLayerShopStaffStore) Save(shopStaff *shop.ShopStaffRelation) (*sho
 
 }
 
-func (s *RetryLayerShopTranslationStore) Get(id string) (*shop.ShopTranslation, error) {
+func (s *RetryLayerShopTranslationStore) Get(id string) (*model.ShopTranslation, error) {
 
 	tries := 0
 	for {
@@ -7741,7 +7739,7 @@ func (s *RetryLayerShopTranslationStore) Get(id string) (*shop.ShopTranslation, 
 
 }
 
-func (s *RetryLayerShopTranslationStore) Upsert(translation *shop.ShopTranslation) (*shop.ShopTranslation, error) {
+func (s *RetryLayerShopTranslationStore) Upsert(translation *model.ShopTranslation) (*model.ShopTranslation, error) {
 
 	tries := 0
 	for {
@@ -7761,7 +7759,7 @@ func (s *RetryLayerShopTranslationStore) Upsert(translation *shop.ShopTranslatio
 
 }
 
-func (s *RetryLayerStaffNotificationRecipientStore) Get(id string) (*account.StaffNotificationRecipient, error) {
+func (s *RetryLayerStaffNotificationRecipientStore) Get(id string) (*model.StaffNotificationRecipient, error) {
 
 	tries := 0
 	for {
@@ -7781,7 +7779,7 @@ func (s *RetryLayerStaffNotificationRecipientStore) Get(id string) (*account.Sta
 
 }
 
-func (s *RetryLayerStaffNotificationRecipientStore) Save(notificationRecipient *account.StaffNotificationRecipient) (*account.StaffNotificationRecipient, error) {
+func (s *RetryLayerStaffNotificationRecipientStore) Save(notificationRecipient *model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error) {
 
 	tries := 0
 	for {
@@ -7801,7 +7799,7 @@ func (s *RetryLayerStaffNotificationRecipientStore) Save(notificationRecipient *
 
 }
 
-func (s *RetryLayerStatusStore) Get(userID string) (*account.Status, error) {
+func (s *RetryLayerStatusStore) Get(userID string) (*model.Status, error) {
 
 	tries := 0
 	for {
@@ -7821,7 +7819,7 @@ func (s *RetryLayerStatusStore) Get(userID string) (*account.Status, error) {
 
 }
 
-func (s *RetryLayerStatusStore) GetByIds(userIds []string) ([]*account.Status, error) {
+func (s *RetryLayerStatusStore) GetByIds(userIds []string) ([]*model.Status, error) {
 
 	tries := 0
 	for {
@@ -7881,7 +7879,7 @@ func (s *RetryLayerStatusStore) ResetAll() error {
 
 }
 
-func (s *RetryLayerStatusStore) SaveOrUpdate(status *account.Status) error {
+func (s *RetryLayerStatusStore) SaveOrUpdate(status *model.Status) error {
 
 	tries := 0
 	for {
@@ -7921,7 +7919,7 @@ func (s *RetryLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 
 }
 
-func (s *RetryLayerStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*model.Stock) ([]*model.Stock, error) {
 
 	tries := 0
 	for {
@@ -7961,7 +7959,7 @@ func (s *RetryLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 
 }
 
-func (s *RetryLayerStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *model.StockFilterOption) ([]*model.Stock, error) {
 
 	tries := 0
 	for {
@@ -7981,7 +7979,7 @@ func (s *RetryLayerStockStore) FilterByOption(transaction store_iface.SqlxTxExec
 
 }
 
-func (s *RetryLayerStockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) (squirrel.Sqlizer, []*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error) {
 
 	tries := 0
 	for {
@@ -8001,7 +7999,7 @@ func (s *RetryLayerStockStore) FilterForChannel(options *warehouse.StockFilterFo
 
 }
 
-func (s *RetryLayerStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 
 	tries := 0
 	for {
@@ -8021,7 +8019,7 @@ func (s *RetryLayerStockStore) FilterForCountryAndChannel(transaction store_ifac
 
 }
 
-func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 
 	tries := 0
 	for {
@@ -8041,7 +8039,7 @@ func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(transacti
 
 }
 
-func (s *RetryLayerStockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 
 	tries := 0
 	for {
@@ -8061,7 +8059,7 @@ func (s *RetryLayerStockStore) FilterVariantStocksForCountry(transaction store_i
 
 }
 
-func (s *RetryLayerStockStore) Get(stockID string) (*warehouse.Stock, error) {
+func (s *RetryLayerStockStore) Get(stockID string) (*model.Stock, error) {
 
 	tries := 0
 	for {
@@ -8427,7 +8425,7 @@ func (s *RetryLayerUploadSessionStore) Delete(id string) error {
 
 }
 
-func (s *RetryLayerUploadSessionStore) Get(id string) (*file.UploadSession, error) {
+func (s *RetryLayerUploadSessionStore) Get(id string) (*model.UploadSession, error) {
 
 	tries := 0
 	for {
@@ -8447,7 +8445,7 @@ func (s *RetryLayerUploadSessionStore) Get(id string) (*file.UploadSession, erro
 
 }
 
-func (s *RetryLayerUploadSessionStore) GetForUser(userID string) ([]*file.UploadSession, error) {
+func (s *RetryLayerUploadSessionStore) GetForUser(userID string) ([]*model.UploadSession, error) {
 
 	tries := 0
 	for {
@@ -8467,7 +8465,7 @@ func (s *RetryLayerUploadSessionStore) GetForUser(userID string) ([]*file.Upload
 
 }
 
-func (s *RetryLayerUploadSessionStore) Save(session *file.UploadSession) (*file.UploadSession, error) {
+func (s *RetryLayerUploadSessionStore) Save(session *model.UploadSession) (*model.UploadSession, error) {
 
 	tries := 0
 	for {
@@ -8487,7 +8485,7 @@ func (s *RetryLayerUploadSessionStore) Save(session *file.UploadSession) (*file.
 
 }
 
-func (s *RetryLayerUploadSessionStore) Update(session *file.UploadSession) error {
+func (s *RetryLayerUploadSessionStore) Update(session *model.UploadSession) error {
 
 	tries := 0
 	for {
@@ -8507,7 +8505,7 @@ func (s *RetryLayerUploadSessionStore) Update(session *file.UploadSession) error
 
 }
 
-func (s *RetryLayerUserStore) AnalyticsActiveCount(time int64, options account.UserCountOptions) (int64, error) {
+func (s *RetryLayerUserStore) AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error) {
 
 	tries := 0
 	for {
@@ -8527,7 +8525,7 @@ func (s *RetryLayerUserStore) AnalyticsActiveCount(time int64, options account.U
 
 }
 
-func (s *RetryLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options account.UserCountOptions) (int64, error) {
+func (s *RetryLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error) {
 
 	tries := 0
 	for {
@@ -8653,7 +8651,7 @@ func (s *RetryLayerUserStore) ClearCaches() {
 
 }
 
-func (s *RetryLayerUserStore) Count(options account.UserCountOptions) (int64, error) {
+func (s *RetryLayerUserStore) Count(options model.UserCountOptions) (int64, error) {
 
 	tries := 0
 	for {
@@ -8673,7 +8671,7 @@ func (s *RetryLayerUserStore) Count(options account.UserCountOptions) (int64, er
 
 }
 
-func (s *RetryLayerUserStore) Get(ctx context.Context, id string) (*account.User, error) {
+func (s *RetryLayerUserStore) Get(ctx context.Context, id string) (*model.User, error) {
 
 	tries := 0
 	for {
@@ -8693,7 +8691,7 @@ func (s *RetryLayerUserStore) Get(ctx context.Context, id string) (*account.User
 
 }
 
-func (s *RetryLayerUserStore) GetAll() ([]*account.User, error) {
+func (s *RetryLayerUserStore) GetAll() ([]*model.User, error) {
 
 	tries := 0
 	for {
@@ -8713,7 +8711,7 @@ func (s *RetryLayerUserStore) GetAll() ([]*account.User, error) {
 
 }
 
-func (s *RetryLayerUserStore) GetAllAfter(limit int, afterID string) ([]*account.User, error) {
+func (s *RetryLayerUserStore) GetAllAfter(limit int, afterID string) ([]*model.User, error) {
 
 	tries := 0
 	for {
@@ -8733,7 +8731,7 @@ func (s *RetryLayerUserStore) GetAllAfter(limit int, afterID string) ([]*account
 
 }
 
-func (s *RetryLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*account.User, error) {
+func (s *RetryLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*model.User, error) {
 
 	tries := 0
 	for {
@@ -8753,7 +8751,7 @@ func (s *RetryLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*
 
 }
 
-func (s *RetryLayerUserStore) GetAllProfiles(options *account.UserGetOptions) ([]*account.User, error) {
+func (s *RetryLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
 
 	tries := 0
 	for {
@@ -8773,7 +8771,7 @@ func (s *RetryLayerUserStore) GetAllProfiles(options *account.UserGetOptions) ([
 
 }
 
-func (s *RetryLayerUserStore) GetAllUsingAuthService(authService string) ([]*account.User, error) {
+func (s *RetryLayerUserStore) GetAllUsingAuthService(authService string) ([]*model.User, error) {
 
 	tries := 0
 	for {
@@ -8793,7 +8791,7 @@ func (s *RetryLayerUserStore) GetAllUsingAuthService(authService string) ([]*acc
 
 }
 
-func (s *RetryLayerUserStore) GetByAuth(authData *string, authService string) (*account.User, error) {
+func (s *RetryLayerUserStore) GetByAuth(authData *string, authService string) (*model.User, error) {
 
 	tries := 0
 	for {
@@ -8813,7 +8811,7 @@ func (s *RetryLayerUserStore) GetByAuth(authData *string, authService string) (*
 
 }
 
-func (s *RetryLayerUserStore) GetByEmail(email string) (*account.User, error) {
+func (s *RetryLayerUserStore) GetByEmail(email string) (*model.User, error) {
 
 	tries := 0
 	for {
@@ -8833,7 +8831,7 @@ func (s *RetryLayerUserStore) GetByEmail(email string) (*account.User, error) {
 
 }
 
-func (s *RetryLayerUserStore) GetByUsername(username string) (*account.User, error) {
+func (s *RetryLayerUserStore) GetByUsername(username string) (*model.User, error) {
 
 	tries := 0
 	for {
@@ -8865,7 +8863,7 @@ func (s *RetryLayerUserStore) GetEtagForProfiles(teamID string) string {
 
 }
 
-func (s *RetryLayerUserStore) GetForLogin(loginID string, allowSignInWithUsername bool, allowSignInWithEmail bool) (*account.User, error) {
+func (s *RetryLayerUserStore) GetForLogin(loginID string, allowSignInWithUsername bool, allowSignInWithEmail bool) (*model.User, error) {
 
 	tries := 0
 	for {
@@ -8905,7 +8903,7 @@ func (s *RetryLayerUserStore) GetKnownUsers(userID string) ([]string, error) {
 
 }
 
-func (s *RetryLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*account.User, error) {
+func (s *RetryLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*model.User, error) {
 
 	tries := 0
 	for {
@@ -8925,7 +8923,7 @@ func (s *RetryLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*acc
 
 }
 
-func (s *RetryLayerUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*account.User, error) {
+func (s *RetryLayerUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
 
 	tries := 0
 	for {
@@ -8945,7 +8943,7 @@ func (s *RetryLayerUserStore) GetProfileByIds(ctx context.Context, userIds []str
 
 }
 
-func (s *RetryLayerUserStore) GetProfiles(options *account.UserGetOptions) ([]*account.User, error) {
+func (s *RetryLayerUserStore) GetProfiles(options *model.UserGetOptions) ([]*model.User, error) {
 
 	tries := 0
 	for {
@@ -8965,7 +8963,7 @@ func (s *RetryLayerUserStore) GetProfiles(options *account.UserGetOptions) ([]*a
 
 }
 
-func (s *RetryLayerUserStore) GetProfilesByUsernames(usernames []string) ([]*account.User, error) {
+func (s *RetryLayerUserStore) GetProfilesByUsernames(usernames []string) ([]*model.User, error) {
 
 	tries := 0
 	for {
@@ -8985,7 +8983,7 @@ func (s *RetryLayerUserStore) GetProfilesByUsernames(usernames []string) ([]*acc
 
 }
 
-func (s *RetryLayerUserStore) GetSystemAdminProfiles() (map[string]*account.User, error) {
+func (s *RetryLayerUserStore) GetSystemAdminProfiles() (map[string]*model.User, error) {
 
 	tries := 0
 	for {
@@ -9025,7 +9023,7 @@ func (s *RetryLayerUserStore) GetUnreadCount(userID string) (int64, error) {
 
 }
 
-func (s *RetryLayerUserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*account.UserForIndexing, error) {
+func (s *RetryLayerUserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*model.UserForIndexing, error) {
 
 	tries := 0
 	for {
@@ -9131,7 +9129,7 @@ func (s *RetryLayerUserStore) ResetLastPictureUpdate(userID string) error {
 
 }
 
-func (s *RetryLayerUserStore) Save(user *account.User) (*account.User, error) {
+func (s *RetryLayerUserStore) Save(user *model.User) (*model.User, error) {
 
 	tries := 0
 	for {
@@ -9151,7 +9149,7 @@ func (s *RetryLayerUserStore) Save(user *account.User) (*account.User, error) {
 
 }
 
-func (s *RetryLayerUserStore) Search(term string, options *account.UserSearchOptions) ([]*account.User, error) {
+func (s *RetryLayerUserStore) Search(term string, options *model.UserSearchOptions) ([]*model.User, error) {
 
 	tries := 0
 	for {
@@ -9171,7 +9169,7 @@ func (s *RetryLayerUserStore) Search(term string, options *account.UserSearchOpt
 
 }
 
-func (s *RetryLayerUserStore) Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) {
+func (s *RetryLayerUserStore) Update(user *model.User, allowRoleUpdate bool) (*model.UserUpdate, error) {
 
 	tries := 0
 	for {
@@ -9331,7 +9329,7 @@ func (s *RetryLayerUserStore) UpdateUpdateAt(userID string) (int64, error) {
 
 }
 
-func (s *RetryLayerUserStore) UserByOrderID(orderID string) (*account.User, error) {
+func (s *RetryLayerUserStore) UserByOrderID(orderID string) (*model.User, error) {
 
 	tries := 0
 	for {
@@ -9411,7 +9409,7 @@ func (s *RetryLayerUserAccessTokenStore) DeleteAllForUser(userID string) error {
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) Get(tokenID string) (*account.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) Get(tokenID string) (*model.UserAccessToken, error) {
 
 	tries := 0
 	for {
@@ -9431,7 +9429,7 @@ func (s *RetryLayerUserAccessTokenStore) Get(tokenID string) (*account.UserAcces
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*account.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*model.UserAccessToken, error) {
 
 	tries := 0
 	for {
@@ -9451,7 +9449,7 @@ func (s *RetryLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*accou
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) GetByToken(tokenString string) (*account.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) GetByToken(tokenString string) (*model.UserAccessToken, error) {
 
 	tries := 0
 	for {
@@ -9471,7 +9469,7 @@ func (s *RetryLayerUserAccessTokenStore) GetByToken(tokenString string) (*accoun
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) GetByUser(userID string, page int, perPage int) ([]*account.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) GetByUser(userID string, page int, perPage int) ([]*model.UserAccessToken, error) {
 
 	tries := 0
 	for {
@@ -9491,7 +9489,7 @@ func (s *RetryLayerUserAccessTokenStore) GetByUser(userID string, page int, perP
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) Save(token *account.UserAccessToken) (*account.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) Save(token *model.UserAccessToken) (*model.UserAccessToken, error) {
 
 	tries := 0
 	for {
@@ -9511,7 +9509,7 @@ func (s *RetryLayerUserAccessTokenStore) Save(token *account.UserAccessToken) (*
 
 }
 
-func (s *RetryLayerUserAccessTokenStore) Search(term string) ([]*account.UserAccessToken, error) {
+func (s *RetryLayerUserAccessTokenStore) Search(term string) ([]*model.UserAccessToken, error) {
 
 	tries := 0
 	for {
@@ -9591,7 +9589,7 @@ func (s *RetryLayerUserAddressStore) DeleteForUser(userID string, addressID stri
 
 }
 
-func (s *RetryLayerUserAddressStore) FilterByOptions(options *account.UserAddressFilterOptions) ([]*account.UserAddress, error) {
+func (s *RetryLayerUserAddressStore) FilterByOptions(options *model.UserAddressFilterOptions) ([]*model.UserAddress, error) {
 
 	tries := 0
 	for {
@@ -9611,7 +9609,7 @@ func (s *RetryLayerUserAddressStore) FilterByOptions(options *account.UserAddres
 
 }
 
-func (s *RetryLayerUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {
+func (s *RetryLayerUserAddressStore) Save(userAddress *model.UserAddress) (*model.UserAddress, error) {
 
 	tries := 0
 	for {
@@ -9631,7 +9629,7 @@ func (s *RetryLayerUserAddressStore) Save(userAddress *account.UserAddress) (*ac
 
 }
 
-func (s *RetryLayerVoucherCategoryStore) Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error) {
+func (s *RetryLayerVoucherCategoryStore) Get(voucherCategoryID string) (*model.VoucherCategory, error) {
 
 	tries := 0
 	for {
@@ -9651,7 +9649,7 @@ func (s *RetryLayerVoucherCategoryStore) Get(voucherCategoryID string) (*product
 
 }
 
-func (s *RetryLayerVoucherCategoryStore) Upsert(voucherCategory *product_and_discount.VoucherCategory) (*product_and_discount.VoucherCategory, error) {
+func (s *RetryLayerVoucherCategoryStore) Upsert(voucherCategory *model.VoucherCategory) (*model.VoucherCategory, error) {
 
 	tries := 0
 	for {
@@ -9671,7 +9669,7 @@ func (s *RetryLayerVoucherCategoryStore) Upsert(voucherCategory *product_and_dis
 
 }
 
-func (s *RetryLayerVoucherChannelListingStore) FilterbyOption(option *product_and_discount.VoucherChannelListingFilterOption) ([]*product_and_discount.VoucherChannelListing, error) {
+func (s *RetryLayerVoucherChannelListingStore) FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) {
 
 	tries := 0
 	for {
@@ -9691,7 +9689,7 @@ func (s *RetryLayerVoucherChannelListingStore) FilterbyOption(option *product_an
 
 }
 
-func (s *RetryLayerVoucherChannelListingStore) Get(voucherChannelListingID string) (*product_and_discount.VoucherChannelListing, error) {
+func (s *RetryLayerVoucherChannelListingStore) Get(voucherChannelListingID string) (*model.VoucherChannelListing, error) {
 
 	tries := 0
 	for {
@@ -9711,7 +9709,7 @@ func (s *RetryLayerVoucherChannelListingStore) Get(voucherChannelListingID strin
 
 }
 
-func (s *RetryLayerVoucherChannelListingStore) Upsert(voucherChannelListing *product_and_discount.VoucherChannelListing) (*product_and_discount.VoucherChannelListing, error) {
+func (s *RetryLayerVoucherChannelListingStore) Upsert(voucherChannelListing *model.VoucherChannelListing) (*model.VoucherChannelListing, error) {
 
 	tries := 0
 	for {
@@ -9731,7 +9729,7 @@ func (s *RetryLayerVoucherChannelListingStore) Upsert(voucherChannelListing *pro
 
 }
 
-func (s *RetryLayerVoucherCollectionStore) Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error) {
+func (s *RetryLayerVoucherCollectionStore) Get(voucherCollectionID string) (*model.VoucherCollection, error) {
 
 	tries := 0
 	for {
@@ -9751,7 +9749,7 @@ func (s *RetryLayerVoucherCollectionStore) Get(voucherCollectionID string) (*pro
 
 }
 
-func (s *RetryLayerVoucherCollectionStore) Upsert(voucherCollection *product_and_discount.VoucherCollection) (*product_and_discount.VoucherCollection, error) {
+func (s *RetryLayerVoucherCollectionStore) Upsert(voucherCollection *model.VoucherCollection) (*model.VoucherCollection, error) {
 
 	tries := 0
 	for {
@@ -9771,7 +9769,7 @@ func (s *RetryLayerVoucherCollectionStore) Upsert(voucherCollection *product_and
 
 }
 
-func (s *RetryLayerVoucherCustomerStore) DeleteInBulk(options *product_and_discount.VoucherCustomerFilterOption) error {
+func (s *RetryLayerVoucherCustomerStore) DeleteInBulk(options *model.VoucherCustomerFilterOption) error {
 
 	tries := 0
 	for {
@@ -9791,7 +9789,7 @@ func (s *RetryLayerVoucherCustomerStore) DeleteInBulk(options *product_and_disco
 
 }
 
-func (s *RetryLayerVoucherCustomerStore) FilterByOptions(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, error) {
+func (s *RetryLayerVoucherCustomerStore) FilterByOptions(options *model.VoucherCustomerFilterOption) ([]*model.VoucherCustomer, error) {
 
 	tries := 0
 	for {
@@ -9811,7 +9809,7 @@ func (s *RetryLayerVoucherCustomerStore) FilterByOptions(options *product_and_di
 
 }
 
-func (s *RetryLayerVoucherCustomerStore) GetByOption(options *product_and_discount.VoucherCustomerFilterOption) (*product_and_discount.VoucherCustomer, error) {
+func (s *RetryLayerVoucherCustomerStore) GetByOption(options *model.VoucherCustomerFilterOption) (*model.VoucherCustomer, error) {
 
 	tries := 0
 	for {
@@ -9831,7 +9829,7 @@ func (s *RetryLayerVoucherCustomerStore) GetByOption(options *product_and_discou
 
 }
 
-func (s *RetryLayerVoucherCustomerStore) Save(voucherCustomer *product_and_discount.VoucherCustomer) (*product_and_discount.VoucherCustomer, error) {
+func (s *RetryLayerVoucherCustomerStore) Save(voucherCustomer *model.VoucherCustomer) (*model.VoucherCustomer, error) {
 
 	tries := 0
 	for {
@@ -9851,7 +9849,7 @@ func (s *RetryLayerVoucherCustomerStore) Save(voucherCustomer *product_and_disco
 
 }
 
-func (s *RetryLayerVoucherProductStore) Get(voucherProductID string) (*product_and_discount.VoucherProduct, error) {
+func (s *RetryLayerVoucherProductStore) Get(voucherProductID string) (*model.VoucherProduct, error) {
 
 	tries := 0
 	for {
@@ -9871,7 +9869,7 @@ func (s *RetryLayerVoucherProductStore) Get(voucherProductID string) (*product_a
 
 }
 
-func (s *RetryLayerVoucherProductStore) Upsert(voucherProduct *product_and_discount.VoucherProduct) (*product_and_discount.VoucherProduct, error) {
+func (s *RetryLayerVoucherProductStore) Upsert(voucherProduct *model.VoucherProduct) (*model.VoucherProduct, error) {
 
 	tries := 0
 	for {
@@ -9891,7 +9889,7 @@ func (s *RetryLayerVoucherProductStore) Upsert(voucherProduct *product_and_disco
 
 }
 
-func (s *RetryLayerVoucherTranslationStore) FilterByOption(option *product_and_discount.VoucherTranslationFilterOption) ([]*product_and_discount.VoucherTranslation, error) {
+func (s *RetryLayerVoucherTranslationStore) FilterByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, error) {
 
 	tries := 0
 	for {
@@ -9911,7 +9909,7 @@ func (s *RetryLayerVoucherTranslationStore) FilterByOption(option *product_and_d
 
 }
 
-func (s *RetryLayerVoucherTranslationStore) Get(id string) (*product_and_discount.VoucherTranslation, error) {
+func (s *RetryLayerVoucherTranslationStore) Get(id string) (*model.VoucherTranslation, error) {
 
 	tries := 0
 	for {
@@ -9931,7 +9929,7 @@ func (s *RetryLayerVoucherTranslationStore) Get(id string) (*product_and_discoun
 
 }
 
-func (s *RetryLayerVoucherTranslationStore) GetByOption(option *product_and_discount.VoucherTranslationFilterOption) (*product_and_discount.VoucherTranslation, error) {
+func (s *RetryLayerVoucherTranslationStore) GetByOption(option *model.VoucherTranslationFilterOption) (*model.VoucherTranslation, error) {
 
 	tries := 0
 	for {
@@ -9951,7 +9949,7 @@ func (s *RetryLayerVoucherTranslationStore) GetByOption(option *product_and_disc
 
 }
 
-func (s *RetryLayerVoucherTranslationStore) Save(translation *product_and_discount.VoucherTranslation) (*product_and_discount.VoucherTranslation, error) {
+func (s *RetryLayerVoucherTranslationStore) Save(translation *model.VoucherTranslation) (*model.VoucherTranslation, error) {
 
 	tries := 0
 	for {
@@ -9971,7 +9969,7 @@ func (s *RetryLayerVoucherTranslationStore) Save(translation *product_and_discou
 
 }
 
-func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollect(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error) {
+func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollect(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
 
 	tries := 0
 	for {
@@ -9991,7 +9989,7 @@ func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollect(checkoutLines ch
 
 }
 
-func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error) {
+func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
 
 	tries := 0
 	for {
@@ -10011,7 +10009,7 @@ func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(c
 
 }
 
-func (s *RetryLayerWarehouseStore) FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) {
 
 	tries := 0
 	for {
@@ -10031,7 +10029,7 @@ func (s *RetryLayerWarehouseStore) FilterByOprion(option *warehouse.WarehouseFil
 
 }
 
-func (s *RetryLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) Get(id string) (*model.WareHouse, error) {
 
 	tries := 0
 	for {
@@ -10051,7 +10049,7 @@ func (s *RetryLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) 
 
 }
 
-func (s *RetryLayerWarehouseStore) GetByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) GetByOption(option *model.WarehouseFilterOption) (*model.WareHouse, error) {
 
 	tries := 0
 	for {
@@ -10071,11 +10069,11 @@ func (s *RetryLayerWarehouseStore) GetByOption(option *warehouse.WarehouseFilter
 
 }
 
-func (s *RetryLayerWarehouseStore) Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) Save(model *model.WareHouse) (*model.WareHouse, error) {
 
 	tries := 0
 	for {
-		result, err := s.WarehouseStore.Save(warehouse)
+		result, err := s.WarehouseStore.Save(model)
 		if err == nil {
 			return result, nil
 		}
@@ -10091,7 +10089,7 @@ func (s *RetryLayerWarehouseStore) Save(warehouse *warehouse.WareHouse) (*wareho
 
 }
 
-func (s *RetryLayerWarehouseStore) WarehouseByStockID(stockID string) (*warehouse.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, error) {
 
 	tries := 0
 	for {
@@ -10111,7 +10109,7 @@ func (s *RetryLayerWarehouseStore) WarehouseByStockID(stockID string) (*warehous
 
 }
 
-func (s *RetryLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *warehouse.WarehouseShippingZone) (*warehouse.WarehouseShippingZone, error) {
+func (s *RetryLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *model.WarehouseShippingZone) (*model.WarehouseShippingZone, error) {
 
 	tries := 0
 	for {
@@ -10131,7 +10129,7 @@ func (s *RetryLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *wareh
 
 }
 
-func (s *RetryLayerWishlistStore) GetByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, error) {
+func (s *RetryLayerWishlistStore) GetByOption(option *model.WishlistFilterOption) (*model.Wishlist, error) {
 
 	tries := 0
 	for {
@@ -10151,7 +10149,7 @@ func (s *RetryLayerWishlistStore) GetByOption(option *wishlist.WishlistFilterOpt
 
 }
 
-func (s *RetryLayerWishlistStore) Upsert(wishList *wishlist.Wishlist) (*wishlist.Wishlist, error) {
+func (s *RetryLayerWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishlist, error) {
 
 	tries := 0
 	for {
@@ -10171,7 +10169,7 @@ func (s *RetryLayerWishlistStore) Upsert(wishList *wishlist.Wishlist) (*wishlist
 
 }
 
-func (s *RetryLayerWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
+func (s *RetryLayerWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, error) {
 
 	tries := 0
 	for {
@@ -10191,7 +10189,7 @@ func (s *RetryLayerWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxE
 
 }
 
-func (s *RetryLayerWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, error) {
+func (s *RetryLayerWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *model.WishlistItemFilterOption) (int64, error) {
 
 	tries := 0
 	for {
@@ -10211,7 +10209,7 @@ func (s *RetryLayerWishlistItemStore) DeleteItemsByOption(transaction store_ifac
 
 }
 
-func (s *RetryLayerWishlistItemStore) FilterByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, error) {
+func (s *RetryLayerWishlistItemStore) FilterByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, error) {
 
 	tries := 0
 	for {
@@ -10231,7 +10229,7 @@ func (s *RetryLayerWishlistItemStore) FilterByOption(option *wishlist.WishlistIt
 
 }
 
-func (s *RetryLayerWishlistItemStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItem, error) {
+func (s *RetryLayerWishlistItemStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*model.WishlistItem, error) {
 
 	tries := 0
 	for {
@@ -10251,7 +10249,7 @@ func (s *RetryLayerWishlistItemStore) GetById(selector store_iface.SqlxTxExecuto
 
 }
 
-func (s *RetryLayerWishlistItemStore) GetByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, error) {
+func (s *RetryLayerWishlistItemStore) GetByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, error) {
 
 	tries := 0
 	for {
@@ -10271,7 +10269,7 @@ func (s *RetryLayerWishlistItemStore) GetByOption(option *wishlist.WishlistItemF
 
 }
 
-func (s *RetryLayerWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
+func (s *RetryLayerWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
 
 	tries := 0
 	for {
@@ -10291,7 +10289,7 @@ func (s *RetryLayerWishlistItemProductVariantStore) BulkUpsert(transaction store
 
 }
 
-func (s *RetryLayerWishlistItemProductVariantStore) DeleteRelation(relation *wishlist.WishlistItemProductVariant) (int64, error) {
+func (s *RetryLayerWishlistItemProductVariantStore) DeleteRelation(relation *model.WishlistItemProductVariant) (int64, error) {
 
 	tries := 0
 	for {
@@ -10311,7 +10309,7 @@ func (s *RetryLayerWishlistItemProductVariantStore) DeleteRelation(relation *wis
 
 }
 
-func (s *RetryLayerWishlistItemProductVariantStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItemProductVariant, error) {
+func (s *RetryLayerWishlistItemProductVariantStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*model.WishlistItemProductVariant, error) {
 
 	tries := 0
 	for {
@@ -10331,7 +10329,7 @@ func (s *RetryLayerWishlistItemProductVariantStore) GetById(selector store_iface
 
 }
 
-func (s *RetryLayerWishlistItemProductVariantStore) Save(wishlistVariant *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, error) {
+func (s *RetryLayerWishlistItemProductVariantStore) Save(wishlistVariant *model.WishlistItemProductVariant) (*model.WishlistItemProductVariant, error) {
 
 	tries := 0
 	for {

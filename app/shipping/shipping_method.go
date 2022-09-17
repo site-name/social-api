@@ -6,15 +6,12 @@ import (
 	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 )
 
 // ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
-func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.Checkout, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError) {
+func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(ckout *model.Checkout, channelID string, price *goprices.Money, countryCode string, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError) {
 	if ckout.ShippingAddressID == nil || !model.IsValidId(*ckout.ShippingAddressID) {
 		return nil, nil
 	}
@@ -75,7 +72,7 @@ func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(ckout *checkout.C
 }
 
 // ApplicableShippingMethodsForOrder finds all applicable shippingmethods for given order, based on other arguments passed in
-func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *order.Order, channelID string, price *goprices.Money, countryCode string, lines []*checkout.CheckoutLineInfo) ([]*shipping.ShippingMethod, *model.AppError) {
+func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *model.Order, channelID string, price *goprices.Money, countryCode string, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError) {
 	if oder.ShippingAddressID == nil || !model.IsValidId(*oder.ShippingAddressID) {
 		return nil, nil
 	}
@@ -90,9 +87,9 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *order.Order, c
 
 	var orderProductIDs []string
 	if len(lines) == 0 {
-		orderLines, appErr := a.srv.OrderService().OrderLinesByOption(&order.OrderLineFilterOption{
+		orderLines, appErr := a.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
 			OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": oder.Id},
-			PrefetchRelated: order.OrderLinePrefetchRelated{
+			PrefetchRelated: model.OrderLinePrefetchRelated{
 				VariantProduct: true, // this tells store to prefetch related product variants, products too
 			},
 		})
@@ -127,7 +124,7 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *order.Order, c
 }
 
 // ShippingMethodByOption returns a shipping method with given options
-func (s *ServiceShipping) ShippingMethodByOption(option *shipping.ShippingMethodFilterOption) (*shipping.ShippingMethod, *model.AppError) {
+func (s *ServiceShipping) ShippingMethodByOption(option *model.ShippingMethodFilterOption) (*model.ShippingMethod, *model.AppError) {
 	method, err := s.srv.Store.ShippingMethod().GetbyOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ShippingMethodByOption", "app.shipping.error_finding_shipping_method_by_option.app_error", err)

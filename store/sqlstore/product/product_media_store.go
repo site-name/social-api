@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -40,7 +39,7 @@ func (s *SqlProductMediaStore) ModelFields(prefix string) model.AnyArray[string]
 }
 
 // Upsert depends on given media's Id property to decide insert or update it
-func (ps *SqlProductMediaStore) Upsert(media *product_and_discount.ProductMedia) (*product_and_discount.ProductMedia, error) {
+func (ps *SqlProductMediaStore) Upsert(media *model.ProductMedia) (*model.ProductMedia, error) {
 	var isSaving bool
 
 	if media.Id == "" {
@@ -88,8 +87,8 @@ func (ps *SqlProductMediaStore) Upsert(media *product_and_discount.ProductMedia)
 }
 
 // Get finds and returns 1 product media with given id
-func (ps *SqlProductMediaStore) Get(id string) (*product_and_discount.ProductMedia, error) {
-	var res product_and_discount.ProductMedia
+func (ps *SqlProductMediaStore) Get(id string) (*model.ProductMedia, error) {
+	var res model.ProductMedia
 	err := ps.GetReplicaX().Get(
 		&res,
 		"SELECT * FROM "+store.ProductMediaTableName+" WHERE Id = ?",
@@ -107,7 +106,7 @@ func (ps *SqlProductMediaStore) Get(id string) (*product_and_discount.ProductMed
 }
 
 // FilterByOption finds and returns a list of product medias with given id
-func (ps *SqlProductMediaStore) FilterByOption(option *product_and_discount.ProductMediaFilterOption) ([]*product_and_discount.ProductMedia, error) {
+func (ps *SqlProductMediaStore) FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error) {
 	query := ps.GetQueryBuilder().
 		Select("*").
 		From(store.ProductMediaTableName).
@@ -129,7 +128,7 @@ func (ps *SqlProductMediaStore) FilterByOption(option *product_and_discount.Prod
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*product_and_discount.ProductMedia
+	var res []*model.ProductMedia
 	err = ps.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product medias by given option")

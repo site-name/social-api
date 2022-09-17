@@ -6,7 +6,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -42,7 +41,7 @@ func (as *SqlAttributeValueStore) ModelFields(prefix string) model.AnyArray[stri
 	})
 }
 
-func (as *SqlAttributeValueStore) ScanFields(attributeValue attribute.AttributeValue) []interface{} {
+func (as *SqlAttributeValueStore) ScanFields(attributeValue model.AttributeValue) []interface{} {
 	return []interface{}{
 		&attributeValue.Id,
 		&attributeValue.Name,
@@ -58,7 +57,7 @@ func (as *SqlAttributeValueStore) ScanFields(attributeValue attribute.AttributeV
 	}
 }
 
-func (as *SqlAttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error) {
+func (as *SqlAttributeValueStore) Upsert(av *model.AttributeValue) (*model.AttributeValue, error) {
 	var isSaving bool
 
 	if !model.IsValidId(av.Id) {
@@ -110,8 +109,8 @@ func (as *SqlAttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribu
 	return av, nil
 }
 
-func (as *SqlAttributeValueStore) Get(id string) (*attribute.AttributeValue, error) {
-	var res attribute.AttributeValue
+func (as *SqlAttributeValueStore) Get(id string) (*model.AttributeValue, error) {
+	var res model.AttributeValue
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
@@ -125,7 +124,7 @@ func (as *SqlAttributeValueStore) Get(id string) (*attribute.AttributeValue, err
 }
 
 // FilterByOptions finds and returns all matched attribute values based on given options
-func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) {
+func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFilterOptions) (model.AttributeValues, error) {
 	var executor store_iface.SqlxExecutor = as.GetReplicaX()
 	if options.Transaction != nil {
 		executor = options.Transaction
@@ -174,9 +173,9 @@ func (as *SqlAttributeValueStore) FilterByOptions(options attribute.AttributeVal
 	}
 
 	var (
-		res            attribute.AttributeValues
-		attributeValue attribute.AttributeValue
-		attr           attribute.Attribute
+		res            model.AttributeValues
+		attributeValue model.AttributeValue
+		attr           model.Attribute
 		scanFields     = as.ScanFields(attributeValue)
 	)
 	if options.SelectRelatedAttribute {
@@ -219,7 +218,7 @@ func (as *SqlAttributeValueStore) Delete(ids ...string) (int64, error) {
 	return numDeleted, nil
 }
 
-func (as *SqlAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+func (as *SqlAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values model.AttributeValues) (model.AttributeValues, error) {
 	var executor store_iface.SqlxExecutor = as.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -277,7 +276,7 @@ func (as *SqlAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecu
 	return values, nil
 }
 
-func (as *SqlAttributeValueStore) Count(options *attribute.AttributeValueFilterOptions) (int64, error) {
+func (as *SqlAttributeValueStore) Count(options *model.AttributeValueFilterOptions) (int64, error) {
 	query := as.GetQueryBuilder().
 		Select("COUNT (*)").
 		From(store.AttributeValueTableName)

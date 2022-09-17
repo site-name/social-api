@@ -3,7 +3,6 @@ package product
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -30,7 +29,7 @@ func (ps *SqlCollectionProductStore) ModelFields(prefix string) model.AnyArray[s
 	})
 }
 
-func (ps *SqlCollectionProductStore) ScanFields(rel product_and_discount.CollectionProduct) []interface{} {
+func (ps *SqlCollectionProductStore) ScanFields(rel model.CollectionProduct) []interface{} {
 	return []interface{}{
 		&rel.Id,
 		&rel.CollectionID,
@@ -38,7 +37,7 @@ func (ps *SqlCollectionProductStore) ScanFields(rel product_and_discount.Collect
 	}
 }
 
-func (ps *SqlCollectionProductStore) FilterByOptions(options *product_and_discount.CollectionProductFilterOptions) ([]*product_and_discount.CollectionProduct, error) {
+func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error) {
 	selectFields := ps.ModelFields(store.CollectionProductRelationTableName + ".")
 	if options.SelectRelatedCollection {
 		selectFields = append(selectFields, ps.Collection().ModelFields(store.CollectionTableName+".")...)
@@ -59,9 +58,9 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *product_and_discou
 	}
 
 	var (
-		res               []*product_and_discount.CollectionProduct
-		collectionProduct product_and_discount.CollectionProduct
-		collection        product_and_discount.Collection
+		res               []*model.CollectionProduct
+		collectionProduct model.CollectionProduct
+		collection        model.Collection
 		scanFields        = ps.ScanFields(collectionProduct)
 	)
 	if options.SelectRelatedCollection {

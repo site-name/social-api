@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -41,7 +40,7 @@ func (ps *SqlCollectionStore) ModelFields(prefix string) model.AnyArray[string] 
 	})
 }
 
-func (ps *SqlCollectionStore) ScanFields(col product_and_discount.Collection) []interface{} {
+func (ps *SqlCollectionStore) ScanFields(col model.Collection) []interface{} {
 	return []interface{}{
 		&col.Id,
 		&col.ShopID,
@@ -58,7 +57,7 @@ func (ps *SqlCollectionStore) ScanFields(col product_and_discount.Collection) []
 }
 
 // Upsert depends on given collection's Id property to decide update or insert the collection
-func (cs *SqlCollectionStore) Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error) {
+func (cs *SqlCollectionStore) Upsert(collection *model.Collection) (*model.Collection, error) {
 	var isSaving bool
 
 	if collection.Id == "" {
@@ -106,8 +105,8 @@ func (cs *SqlCollectionStore) Upsert(collection *product_and_discount.Collection
 }
 
 // Get finds and returns collection with given collectionID
-func (cs *SqlCollectionStore) Get(collectionID string) (*product_and_discount.Collection, error) {
-	var res product_and_discount.Collection
+func (cs *SqlCollectionStore) Get(collectionID string) (*model.Collection, error) {
+	var res model.Collection
 	err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+store.CollectionTableName+" WHERE Id = ?", collectionID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -122,8 +121,8 @@ func (cs *SqlCollectionStore) Get(collectionID string) (*product_and_discount.Co
 // FilterByOption finds and returns a list of collections satisfy the given option.
 //
 // NOTE: make sure to provide `ShopID` before calling me.
-func (cs *SqlCollectionStore) FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) {
-	var res []*product_and_discount.Collection
+func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) {
+	var res []*model.Collection
 
 	if option.SelectAll && model.IsValidId(option.ShopID) {
 		err := cs.GetReplicaX().Select(&res, "SELECT * FROM "+store.CollectionTableName+" WHERE ShopID = ?", option.ShopID)

@@ -4,9 +4,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/file"
-	"github.com/sitename/sitename/model/plugins"
+	"github.com/sitename/sitename/model"
 )
 
 // These assignments are part of the wire protocol used to trigger hook events in plugins.
@@ -94,18 +92,18 @@ type Hooks interface {
 	// UserHasBeenCreated is invoked after a user was created.
 	//
 	// Minimum server version: 5.10
-	UserHasBeenCreated(c *Context, user *account.User)
+	UserHasBeenCreated(c *Context, user *model.User)
 
 	// UserWillLogIn before the login of the user is returned. Returning a non empty string will reject the login event.
 	// If you don't need to reject the login event, see UserHasLoggedIn
 	//
 	// Minimum server version: 5.2
-	UserWillLogIn(c *Context, user *account.User) string
+	UserWillLogIn(c *Context, user *model.User) string
 
 	// UserHasLoggedIn is invoked after a user has logged in.
 	//
 	// Minimum server version: 5.2
-	UserHasLoggedIn(c *Context, user *account.User)
+	UserHasLoggedIn(c *Context, user *model.User)
 
 	// MessageWillBePosted is invoked when a message is posted by a user before it is committed
 	// to the database. If you also want to act on edited posts, see MessageWillBeUpdated.
@@ -192,7 +190,7 @@ type Hooks interface {
 	// FileInfo.Size will be automatically set properly if you modify the file.
 	//
 	// Minimum server version: 5.2
-	FileWillBeUploaded(c *Context, info *file.FileInfo, file io.Reader, output io.Writer) (*file.FileInfo, string)
+	FileWillBeUploaded(c *Context, info *model.FileInfo, file io.Reader, output io.Writer) (*model.FileInfo, string)
 
 	// ReactionHasBeenAdded is invoked after the reaction has been committed to the database.
 	//
@@ -217,5 +215,5 @@ type Hooks interface {
 	// This hook receives events sent by a call to PublishPluginClusterEvent.
 	//
 	// Minimum server version: 5.36
-	OnPluginClusterEvent(c *Context, ev plugins.PluginClusterEvent)
+	OnPluginClusterEvent(c *Context, ev model.PluginClusterEvent)
 }

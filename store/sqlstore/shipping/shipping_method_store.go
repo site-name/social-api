@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 )
@@ -44,7 +43,7 @@ func (s *SqlShippingMethodStore) ModelFields(prefix string) model.AnyArray[strin
 	})
 }
 
-func (s *SqlShippingMethodStore) ScanFields(shippingMethod shipping.ShippingMethod) []interface{} {
+func (s *SqlShippingMethodStore) ScanFields(shippingMethod model.ShippingMethod) []interface{} {
 	return []interface{}{
 		&shippingMethod.Id,
 		&shippingMethod.Name,
@@ -62,7 +61,7 @@ func (s *SqlShippingMethodStore) ScanFields(shippingMethod shipping.ShippingMeth
 }
 
 // Upsert bases on given method's Id to decide update or insert it
-func (s *SqlShippingMethodStore) Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error) {
+func (s *SqlShippingMethodStore) Upsert(method *model.ShippingMethod) (*model.ShippingMethod, error) {
 	method.PreSave()
 	if err := method.IsValid(); err != nil {
 		return nil, err
@@ -78,8 +77,8 @@ func (s *SqlShippingMethodStore) Upsert(method *shipping.ShippingMethod) (*shipp
 }
 
 // Get finds and returns a shipping method with given id
-func (s *SqlShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
-	var res shipping.ShippingMethod
+func (s *SqlShippingMethodStore) Get(methodID string) (*model.ShippingMethod, error) {
+	var res model.ShippingMethod
 	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShippingMethodTableName+" WHERE Id = ?", methodID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -94,7 +93,7 @@ func (s *SqlShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod,
 // ApplicableShippingMethods finds all shipping method for given checkout
 //
 // sql queries here are borrowed. Please check the file shipping_method_store.md
-func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
+func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*model.ShippingMethod, error) {
 	/*
 		NOTE: we also prefetch postal_code_rules, shipping zones for later use
 		please refer to saleor/shipping/models for details
@@ -112,8 +111,8 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 		"MaximumOrderPriceAmount": priceAmount,
 		"MinimumOrderWeight":      weight.Amount,
 		"MaximumOrderWeight":      weight.Amount,
-		"WeightBasedShippingType": shipping.WEIGHT_BASED,
-		"PriceBasedShipType":      shipping.PRICE_BASED,
+		"WeightBasedShippingType": model.WEIGHT_BASED,
+		"PriceBasedShipType":      model.PRICE_BASED,
 	}
 
 	// check if productIDs is provided:
@@ -265,7 +264,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 	}
 
 	var (
-		shippingMethods []*shipping.ShippingMethod
+		shippingMethods []*model.ShippingMethod
 
 		// since each model instance has got a unique UUID, so 1 meetMap is ok.
 		//
@@ -277,11 +276,11 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 	for _, item := range holder {
 		// check if item is not nil
 		if item != nil {
-			var shippingMethod *shipping.ShippingMethod
+			var shippingMethod *model.ShippingMethod
 
 			// check if this method is already parsed
 			if _, exist := meetMap[item.MethodID]; !exist {
-				shippingMethod = &shipping.ShippingMethod{
+				shippingMethod = &model.ShippingMethod{
 					Id:                  item.MethodID,
 					Name:                item.MethodName,
 					Type:                item.Type,
@@ -293,8 +292,8 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 					MinimumDeliveryDays: item.MinimumDeliveryDays,
 					Description:         item.MethodDescription,
 					ModelMetadata: model.ModelMetadata{
-						Metadata:        item.MethodMetadata,
-						PrivateMetadata: item.MethodPrivateMetadata,
+						Metadata:        model.StringMAP(item.MethodMetadata),
+						PrivateMetadata: model.StringMAP(item.MethodPrivateMetadata),
 					},
 				}
 
@@ -309,15 +308,15 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 			if _, exist := meetMap[item.ShippingZoneId]; !exist && shippingMethod != nil {
 				shippingMethod.ShippingZones = append(
 					shippingMethod.ShippingZones,
-					&shipping.ShippingZone{
+					&model.ShippingZone{
 						Id:          item.ShippingZoneId,
 						Name:        item.ShippingZoneName,
 						Countries:   item.Countries,
 						Default:     item.Default,
 						Description: item.Description,
 						ModelMetadata: model.ModelMetadata{
-							Metadata:        item.ShippingZoneMetadata,
-							PrivateMetadata: item.ShippingZonePrivateMetadata,
+							Metadata:        model.StringMAP(item.ShippingZoneMetadata),
+							PrivateMetadata: model.StringMAP(item.ShippingZonePrivateMetadata),
 						},
 					},
 				)
@@ -330,7 +329,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 			if _, exist := meetMap[item.PostalCodeId]; !exist && shippingMethod != nil {
 				shippingMethod.ShippingMethodPostalCodeRules = append(
 					shippingMethod.ShippingMethodPostalCodeRules,
-					&shipping.ShippingMethodPostalCodeRule{
+					&model.ShippingMethodPostalCodeRule{
 						Id:               item.PostalCodeId,
 						ShippingMethodID: item.ShippingMethodID,
 						Start:            item.Start,
@@ -349,7 +348,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 }
 
 // GetbyOption finds and returns a shipping method that satisfy given options
-func (ss *SqlShippingMethodStore) GetbyOption(options *shipping.ShippingMethodFilterOption) (*shipping.ShippingMethod, error) {
+func (ss *SqlShippingMethodStore) GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
 	query := ss.GetQueryBuilder().
 		Select(ss.ModelFields(store.ShippingMethodTableName + ".")...).
 		From(store.ShippingMethodTableName)
@@ -379,7 +378,7 @@ func (ss *SqlShippingMethodStore) GetbyOption(options *shipping.ShippingMethodFi
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
 
-	var res shipping.ShippingMethod
+	var res model.ShippingMethod
 	err = ss.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {

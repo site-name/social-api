@@ -7,9 +7,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 )
 
@@ -68,8 +65,8 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 
 	var (
 		appError      *model.AppError
-		attributes_01 []*attribute.Attribute
-		attributes_02 []*attribute.Attribute
+		attributes_01 []*model.Attribute
+		attributes_02 []*model.Attribute
 
 		wg  sync.WaitGroup
 		mut sync.Mutex
@@ -89,7 +86,7 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 	go func() {
 		defer wg.Done()
 
-		attributes, appErr := a.srv.AttributeService().AttributesByOption(&attribute.AttributeFilterOption{
+		attributes, appErr := a.srv.AttributeService().AttributesByOption(&model.AttributeFilterOption{
 			Distinct:     true,
 			Id:           squirrel.Eq{store.AttributeTableName + ".Id": exportInfo.Attributes},
 			ProductTypes: squirrel.NotEq{store.AttributeProductTableName + ".ProductTypeID": nil},
@@ -104,7 +101,7 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 	go func() {
 		defer wg.Done()
 
-		attributes, appErr := a.srv.AttributeService().AttributesByOption(&attribute.AttributeFilterOption{
+		attributes, appErr := a.srv.AttributeService().AttributesByOption(&model.AttributeFilterOption{
 			Distinct:            true,
 			Id:                  squirrel.Eq{store.AttributeTableName + ".Id": exportInfo.Attributes},
 			ProductVariantTypes: squirrel.NotEq{store.AttributeVariantTableName + ".ProductTypeID": nil},
@@ -147,7 +144,7 @@ func (a *ServiceCsv) GetWarehousesHeaders(exportInfo struct {
 		return []string{}, nil
 	}
 
-	warehouses, appErr := a.srv.WarehouseService().WarehousesByOption(&warehouse.WarehouseFilterOption{
+	warehouses, appErr := a.srv.WarehouseService().WarehousesByOption(&model.WarehouseFilterOption{
 		Id: squirrel.Eq{store.WarehouseTableName + ".Id": exportInfo.Warehouses},
 	})
 	if appErr != nil {
@@ -180,7 +177,7 @@ func (a *ServiceCsv) GetChannelsHeaders(exportInfo struct {
 		return []string{}, nil
 	}
 
-	channels, appErr := a.srv.ChannelService().ChannelsByOption(&channel.ChannelFilterOption{
+	channels, appErr := a.srv.ChannelService().ChannelsByOption(&model.ChannelFilterOption{
 		Id: squirrel.Eq{store.ChannelTableName + ".Id": exportInfo.Channels},
 	})
 	if appErr != nil {

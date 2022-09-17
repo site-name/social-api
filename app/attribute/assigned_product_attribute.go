@@ -5,12 +5,11 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
 
 // AssignedProductAttributeByOption returns an assigned product attribute filtered using given option
-func (a *ServiceAttribute) AssignedProductAttributeByOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, *model.AppError) {
+func (a *ServiceAttribute) AssignedProductAttributeByOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, *model.AppError) {
 	assignedProductAttr, err := a.srv.Store.AssignedProductAttribute().GetWithOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("AssignedProductAttributeByOption", "app.attribute.error_finding_assigned_product_attribute_by_option", err)
@@ -20,9 +19,9 @@ func (a *ServiceAttribute) AssignedProductAttributeByOption(option *attribute.As
 }
 
 // GetOrCreateAssignedProductAttribute get or create new instance from the given, then returns it
-func (a *ServiceAttribute) GetOrCreateAssignedProductAttribute(assignedProductAttribute *attribute.AssignedProductAttribute) (*attribute.AssignedProductAttribute, *model.AppError) {
+func (a *ServiceAttribute) GetOrCreateAssignedProductAttribute(assignedProductAttribute *model.AssignedProductAttribute) (*model.AssignedProductAttribute, *model.AppError) {
 	// try get first:
-	option := new(attribute.AssignedProductAttributeFilterOption)
+	option := new(model.AssignedProductAttributeFilterOption)
 	if assignedProductAttribute.ProductID != "" {
 		option.ProductID = squirrel.Eq{store.AssignedProductAttributeTableName + ".ProductID": assignedProductAttribute.ProductID}
 	}

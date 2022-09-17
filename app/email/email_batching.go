@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -98,7 +97,7 @@ func (job *EmailBatchingJob) Start() {
 	}
 }
 
-func (job *EmailBatchingJob) Add(user *account.User) bool {
+func (job *EmailBatchingJob) Add(user *model.User) bool {
 	notification := &batchedNotification{
 		userID: user.Id,
 	}

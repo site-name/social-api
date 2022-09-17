@@ -12,7 +12,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
 
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
@@ -83,7 +82,7 @@ func populateChannel(a *app.App, cmd *cobra.Command, args []string, amount int) 
 
 	for i := 0; i < amount; i++ {
 		active := i%2 == 0
-		channel := &channel.Channel{
+		channel := &model.Channel{
 			Name:     fmt.Sprintf("This is first channel #%d name", i+1),
 			IsActive: active,
 			Currency: Currencies[rand.Intn(len(Currencies))],

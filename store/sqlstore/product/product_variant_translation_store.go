@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -34,7 +33,7 @@ func (s *SqlProductVariantTranslationStore) ModelFields(prefix string) model.Any
 }
 
 // Upsert inserts or updates given translation then returns it
-func (ps *SqlProductVariantTranslationStore) Upsert(translation *product_and_discount.ProductVariantTranslation) (*product_and_discount.ProductVariantTranslation, error) {
+func (ps *SqlProductVariantTranslationStore) Upsert(translation *model.ProductVariantTranslation) (*model.ProductVariantTranslation, error) {
 	var isSaving bool
 
 	if !model.IsValidId(translation.Id) {
@@ -86,8 +85,8 @@ func (ps *SqlProductVariantTranslationStore) Upsert(translation *product_and_dis
 }
 
 // Get finds and returns 1 product variant translation with given id
-func (ps *SqlProductVariantTranslationStore) Get(translationID string) (*product_and_discount.ProductVariantTranslation, error) {
-	var res product_and_discount.ProductVariantTranslation
+func (ps *SqlProductVariantTranslationStore) Get(translationID string) (*model.ProductVariantTranslation, error) {
+	var res model.ProductVariantTranslation
 	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.ProductVariantTranslationTableName+" WHERE Id = ?", translationID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -100,7 +99,7 @@ func (ps *SqlProductVariantTranslationStore) Get(translationID string) (*product
 }
 
 // FilterByOption finds and returns product variant translations filtered using given options
-func (ps *SqlProductVariantTranslationStore) FilterByOption(option *product_and_discount.ProductVariantTranslationFilterOption) ([]*product_and_discount.ProductVariantTranslation, error) {
+func (ps *SqlProductVariantTranslationStore) FilterByOption(option *model.ProductVariantTranslationFilterOption) ([]*model.ProductVariantTranslation, error) {
 	query := ps.GetQueryBuilder().
 		Select("*").
 		From(store.ProductVariantTranslationTableName)
@@ -124,7 +123,7 @@ func (ps *SqlProductVariantTranslationStore) FilterByOption(option *product_and_
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*product_and_discount.ProductVariantTranslation
+	var res []*model.ProductVariantTranslation
 	err = ps.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product variant translations with given options")

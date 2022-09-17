@@ -5,12 +5,11 @@ import (
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/checkout"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
-func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*checkout.CheckoutLine, *model.AppError) {
+func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model.AppError) {
 	lines, err := a.srv.Store.CheckoutLine().CheckoutLinesByCheckoutID(checkoutToken)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("CheckoutLinesByCheckoutID", "app.checkout.checkout_lines_by_checkout.app_error", err)
@@ -35,7 +34,7 @@ func (a *ServiceCheckout) DeleteCheckoutLines(transaction store_iface.SqlxTxExec
 	return nil
 }
 
-func (a *ServiceCheckout) UpsertCheckoutLine(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, *model.AppError) {
+func (a *ServiceCheckout) UpsertCheckoutLine(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, *model.AppError) {
 	checkoutLine, err := a.srv.SqlStore.CheckoutLine().Upsert(checkoutLine)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -47,7 +46,7 @@ func (a *ServiceCheckout) UpsertCheckoutLine(checkoutLine *checkout.CheckoutLine
 	return checkoutLine, nil
 }
 
-func (a *ServiceCheckout) BulkCreateCheckoutLines(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, *model.AppError) {
+func (a *ServiceCheckout) BulkCreateCheckoutLines(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, *model.AppError) {
 	checkoutLines, err := a.srv.Store.CheckoutLine().BulkCreate(checkoutLines)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -63,7 +62,7 @@ func (a *ServiceCheckout) BulkCreateCheckoutLines(checkoutLines []*checkout.Chec
 	return checkoutLines, nil
 }
 
-func (a *ServiceCheckout) BulkUpdateCheckoutLines(checkoutLines []*checkout.CheckoutLine) *model.AppError {
+func (a *ServiceCheckout) BulkUpdateCheckoutLines(checkoutLines []*model.CheckoutLine) *model.AppError {
 	err := a.srv.Store.CheckoutLine().BulkUpdate(checkoutLines)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -80,7 +79,7 @@ func (a *ServiceCheckout) BulkUpdateCheckoutLines(checkoutLines []*checkout.Chec
 }
 
 // CheckoutLinesByOption returns a list of checkout lines filtered using given option
-func (s *ServiceCheckout) CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, *model.AppError) {
+func (s *ServiceCheckout) CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, *model.AppError) {
 	checkoutLines, err := s.srv.Store.CheckoutLine().CheckoutLinesByOption(option)
 	var (
 		statusCode int

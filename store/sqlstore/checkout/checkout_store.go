@@ -6,9 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -57,7 +54,7 @@ func (cs *SqlCheckoutStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (cs *SqlCheckoutStore) ScanFields(checkOut checkout.Checkout) []interface{} {
+func (cs *SqlCheckoutStore) ScanFields(checkOut model.Checkout) []interface{} {
 	return []interface{}{
 		&checkOut.Token,
 		&checkOut.CreateAt,
@@ -87,7 +84,7 @@ func (cs *SqlCheckoutStore) ScanFields(checkOut checkout.Checkout) []interface{}
 }
 
 // Upsert depends on given checkout's Token property to decide to update or insert it
-func (cs *SqlCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error) {
+func (cs *SqlCheckoutStore) Upsert(ckout *model.Checkout) (*model.Checkout, error) {
 	var isSaving bool
 
 	if ckout.Token == "" {
@@ -104,7 +101,7 @@ func (cs *SqlCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Checkout
 	var (
 		err         error
 		numUpdated  int64
-		oldCheckout *checkout.Checkout
+		oldCheckout *model.Checkout
 	)
 	if isSaving {
 		query := "INSERT INTO " + store.CheckoutTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
@@ -147,8 +144,8 @@ func (cs *SqlCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Checkout
 }
 
 // Get finds a checkout with given token (checkouts use tokens(uuids) as primary keys)
-func (cs *SqlCheckoutStore) Get(token string) (*checkout.Checkout, error) {
-	var ckout checkout.Checkout
+func (cs *SqlCheckoutStore) Get(token string) (*model.Checkout, error) {
+	var ckout model.Checkout
 	err := cs.GetReplicaX().Get(
 		&ckout,
 		`SELECT * FROM `+store.CheckoutTableName+` WHERE Token = ?`,
@@ -172,7 +169,7 @@ const (
 )
 
 // commonFilterQueryBuilder is common function, used to build checkout(s) filter queries.
-func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *checkout.CheckoutFilterOption, statementType checkoutStatement) interface{} {
+func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *model.CheckoutFilterOption, statementType checkoutStatement) interface{} {
 	andCondition := squirrel.And{}
 	// parse option
 	if option.Token != nil {
@@ -212,12 +209,12 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *checkout.CheckoutFi
 }
 
 // GetByOption finds and returns 1 checkout based on given option
-func (cs *SqlCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error) {
+func (cs *SqlCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error) {
 	option.Limit = 0 // no limit
 
 	var (
-		res        checkout.Checkout
-		aChannel   channel.Channel
+		res        model.Checkout
+		aChannel   model.Channel
 		scanFields = cs.ScanFields(res)
 	)
 	if option.SelectRelatedChannel {
@@ -245,7 +242,7 @@ func (cs *SqlCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (
 }
 
 // FilterByOption finds and returns a list of checkout based on given option
-func (cs *SqlCheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error) {
+func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, error) {
 	query, args, err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
@@ -257,9 +254,9 @@ func (cs *SqlCheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption
 	}
 
 	var (
-		res        []*checkout.Checkout
-		checkOut   checkout.Checkout
-		aChannel   channel.Channel
+		res        []*model.Checkout
+		checkOut   model.Checkout
+		aChannel   model.Channel
 		scanFields = cs.ScanFields(checkOut)
 	)
 	if option.SelectRelatedChannel {
@@ -286,12 +283,12 @@ func (cs *SqlCheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption
 }
 
 // FetchCheckoutLinesAndPrefetchRelatedValue Fetch checkout lines as CheckoutLineInfo objects.
-func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) {
+func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *model.Checkout) ([]*model.CheckoutLineInfo, error) {
 	// please refer to file checkout_store_sql.md for details
 
 	// fetch checkout lines:
 	var (
-		checkoutLines     checkout.CheckoutLines
+		checkoutLines     model.CheckoutLines
 		productVariantIDs []string
 	)
 	err := cs.GetReplicaX().Select(
@@ -307,10 +304,10 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 
 	// fetch product variants
 	var (
-		productVariants []*product_and_discount.ProductVariant
+		productVariants []*model.ProductVariant
 		productIDs      []string
 		// productVariantMap has keys are product variant ids
-		productVariantMap = map[string]*product_and_discount.ProductVariant{}
+		productVariantMap = map[string]*model.ProductVariant{}
 	)
 	// check if we can proceed:
 	if len(productVariantIDs) > 0 {
@@ -331,10 +328,10 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 
 	// fetch products
 	var (
-		products       []*product_and_discount.Product
+		products       []*model.Product
 		productTypeIDs []string
 		// productMap has keys are product ids
-		productMap = map[string]*product_and_discount.Product{}
+		productMap = map[string]*model.Product{}
 	)
 	// check if we can proceed:
 	if len(productIDs) > 0 {
@@ -356,11 +353,11 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	// fetch product collections
 	var (
 		collectionXs []*struct {
-			product_and_discount.Collection
+			model.Collection
 			PrefetchRelatedValProductID string
 		}
 		// collectionsByProducts has keys are product ids
-		collectionsByProducts = map[string][]*product_and_discount.Collection{}
+		collectionsByProducts = map[string][]*model.Collection{}
 	)
 	// check if we can proceed
 	if len(productIDs) > 0 {
@@ -384,10 +381,10 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 
 	// fetch product variant channel listing
 	var (
-		productVariantChannelListings []*product_and_discount.ProductVariantChannelListing
+		productVariantChannelListings []*model.ProductVariantChannelListing
 		channelIDs                    []string
 		// productVariantChannelListingsByProductVariant has keys are product variant ids
-		productVariantChannelListingsByProductVariant = map[string][]*product_and_discount.ProductVariantChannelListing{}
+		productVariantChannelListingsByProductVariant = map[string][]*model.ProductVariantChannelListing{}
 	)
 	// check if we can proceed:
 	if len(productVariantIDs) > 0 {
@@ -407,7 +404,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 	}
 
 	// fetch channels
-	var channels []*channel.Channel
+	var channels []*model.Channel
 	// check if we can proceed
 	if len(channelIDs) > 0 {
 		err = cs.GetReplicaX().Select(
@@ -423,9 +420,9 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 
 	// fetch product types
 	var (
-		productTypes []*product_and_discount.ProductType
+		productTypes []*model.ProductType
 		// productTypeMap has keys are product type ids
-		productTypeMap = map[string]*product_and_discount.ProductType{}
+		productTypeMap = map[string]*model.ProductType{}
 	)
 	// check if we can proceed
 	if len(productTypeIDs) > 0 {
@@ -443,13 +440,13 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 		}
 	}
 
-	var checkoutLineInfos []*checkout.CheckoutLineInfo
+	var checkoutLineInfos []*model.CheckoutLineInfo
 
 	for _, checkoutLine := range checkoutLines {
 		productVariant := productVariantMap[checkoutLine.VariantID]
 
 		if productVariant != nil {
-			var variantChannelListing *product_and_discount.ProductVariantChannelListing
+			var variantChannelListing *model.ProductVariantChannelListing
 			for _, listing := range productVariantChannelListingsByProductVariant[productVariant.Id] {
 				if listing.ChannelID == ckout.ChannelID {
 					variantChannelListing = listing
@@ -468,7 +465,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 				collections := collectionsByProducts[product.Id]
 
 				if productType != nil && collections != nil {
-					checkoutLineInfos = append(checkoutLineInfos, &checkout.CheckoutLineInfo{
+					checkoutLineInfos = append(checkoutLineInfos, &model.CheckoutLineInfo{
 						Line:           *checkoutLine,
 						Variant:        *productVariant,
 						ChannelListing: *variantChannelListing,
@@ -486,7 +483,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *che
 
 // DeleteCheckoutsByOption deletes checkout row(s) from database, filtered using given option.
 // It returns an error indicating if the operation was performed successfully.
-func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) error {
+func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *model.CheckoutFilterOption) error {
 	var runner store_iface.SqlxExecutor = cs.GetMasterX()
 	if transaction != nil {
 		runner = transaction
@@ -505,7 +502,7 @@ func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.Sqlx
 	return nil
 }
 
-func (cs *SqlCheckoutStore) CountCheckouts(options *checkout.CheckoutFilterOption) (int64, error) {
+func (cs *SqlCheckoutStore) CountCheckouts(options *model.CheckoutFilterOption) (int64, error) {
 	options.Limit = 0 // no limit
 
 	query := cs.commonFilterQueryBuilder(options, slect).(squirrel.SelectBuilder)

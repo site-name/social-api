@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -35,7 +34,7 @@ func NewSqlVoucherChannelListingStore(sqlStore store.Store) store.VoucherChannel
 }
 
 // upsert check given listing's Id to decide whether to create or update it. Then returns a listing with an error
-func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *product_and_discount.VoucherChannelListing) (*product_and_discount.VoucherChannelListing, error) {
+func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *model.VoucherChannelListing) (*model.VoucherChannelListing, error) {
 	var saving bool
 
 	if voucherChannelListing.Id == "" {
@@ -84,8 +83,8 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *product
 }
 
 // Get finds a listing with given id, then returns it with an error
-func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (*product_and_discount.VoucherChannelListing, error) {
-	var res product_and_discount.VoucherChannelListing
+func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (*model.VoucherChannelListing, error) {
+	var res model.VoucherChannelListing
 
 	err := vcls.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherChannelListingTableName+" WHERE Id = ?", voucherChannelListingID)
 	if err != nil {
@@ -100,7 +99,7 @@ func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (
 }
 
 // FilterbyOption finds and returns a list of voucher channel listing relationship instances filtered by given option
-func (vcls *SqlVoucherChannelListingStore) FilterbyOption(option *product_and_discount.VoucherChannelListingFilterOption) ([]*product_and_discount.VoucherChannelListing, error) {
+func (vcls *SqlVoucherChannelListingStore) FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) {
 	query := vcls.GetQueryBuilder().
 		Select("*").
 		From(store.VoucherChannelListingTableName).
@@ -122,7 +121,7 @@ func (vcls *SqlVoucherChannelListingStore) FilterbyOption(option *product_and_di
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	var res []*product_and_discount.VoucherChannelListing
+	var res []*model.VoucherChannelListing
 	err = vcls.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find voucher channel listing relationship instances with given option")

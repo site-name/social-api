@@ -5,8 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -39,7 +37,7 @@ func (ps *SqlProductVariantChannelListingStore) ModelFields(prefix string) model
 	})
 }
 
-func (ps *SqlProductVariantChannelListingStore) ScanFields(listing product_and_discount.ProductVariantChannelListing) []interface{} {
+func (ps *SqlProductVariantChannelListingStore) ScanFields(listing model.ProductVariantChannelListing) []interface{} {
 	return []interface{}{
 		&listing.Id,
 		&listing.VariantID,
@@ -53,7 +51,7 @@ func (ps *SqlProductVariantChannelListingStore) ScanFields(listing product_and_d
 }
 
 // Save insert given value into database then returns it with an error
-func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error) {
+func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error) {
 	variantChannelListing.PreSave()
 	if err := variantChannelListing.IsValid(); err != nil {
 		return nil, err
@@ -72,8 +70,8 @@ func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *prod
 }
 
 // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
-func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error) {
-	var res product_and_discount.ProductVariantChannelListing
+func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error) {
+	var res model.ProductVariantChannelListing
 
 	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.ProductVariantChannelListingTableName+" WHERE Id = ?", variantChannelListingID)
 	if err != nil {
@@ -87,7 +85,7 @@ func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID stri
 }
 
 // FilterbyOption finds and returns all product variant channel listings filterd using given option
-func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction store_iface.SqlxTxExecutor, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction store_iface.SqlxTxExecutor, option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
 	var runner store_iface.SqlxExecutor = ps.GetReplicaX()
 	if transaction != nil {
 		runner = transaction
@@ -165,9 +163,9 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction store
 	}
 
 	var (
-		res                       []*product_and_discount.ProductVariantChannelListing
-		chanNel                   channel.Channel
-		variantChannelListing     product_and_discount.ProductVariantChannelListing
+		res                       []*model.ProductVariantChannelListing
+		chanNel                   model.Channel
+		variantChannelListing     model.ProductVariantChannelListing
 		availablePreorderQuantity int
 		preorderQuantityAllocated int
 		scanFields                = ps.ScanFields(variantChannelListing) // order of fields must be identical to select fields above
@@ -210,7 +208,7 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction store
 }
 
 // BulkUpsert performs bulk upsert given product variant channel listings then returns them
-func (ps *SqlProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (ps *SqlProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
 	var (
 		executor    store_iface.SqlxExecutor = ps.GetMasterX()
 		saveQuery                            = "INSERT INTO " + store.ProductVariantChannelListingTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"

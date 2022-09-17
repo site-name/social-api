@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
 
@@ -40,7 +39,7 @@ func (as *SqlAssignedProductAttributeValueStore) ModelFields(prefix string) mode
 	})
 }
 
-func (as *SqlAssignedProductAttributeValueStore) ScanFields(assignedProductAttributeValue attribute.AssignedProductAttributeValue) []interface{} {
+func (as *SqlAssignedProductAttributeValueStore) ScanFields(assignedProductAttributeValue model.AssignedProductAttributeValue) []interface{} {
 	return []interface{}{
 		&assignedProductAttributeValue.Id,
 		&assignedProductAttributeValue.ValueID,
@@ -49,7 +48,7 @@ func (as *SqlAssignedProductAttributeValueStore) ScanFields(assignedProductAttri
 	}
 }
 
-func (as *SqlAssignedProductAttributeValueStore) Save(assignedProductAttrValue *attribute.AssignedProductAttributeValue) (*attribute.AssignedProductAttributeValue, error) {
+func (as *SqlAssignedProductAttributeValueStore) Save(assignedProductAttrValue *model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
 	assignedProductAttrValue.PreSave()
 	if err := assignedProductAttrValue.IsValid(); err != nil {
 		return nil, err
@@ -67,8 +66,8 @@ func (as *SqlAssignedProductAttributeValueStore) Save(assignedProductAttrValue *
 	return assignedProductAttrValue, nil
 }
 
-func (as *SqlAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*attribute.AssignedProductAttributeValue, error) {
-	var res attribute.AssignedProductAttributeValue
+func (as *SqlAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error) {
+	var res model.AssignedProductAttributeValue
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedProductAttributeValueTableName+" WHERE Id = ?", assignedProductAttrValueID)
 	if err != nil {
@@ -81,7 +80,7 @@ func (as *SqlAssignedProductAttributeValueStore) Get(assignedProductAttrValueID 
 	return &res, nil
 }
 
-func (as *SqlAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedProductAttributeValue, error) {
+func (as *SqlAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedProductAttributeValue, error) {
 	tx, err := as.GetMasterX().Beginx()
 	if err != nil {
 		return nil, errors.Wrapf(err, "begin_transaction")
@@ -89,12 +88,12 @@ func (as *SqlAssignedProductAttributeValueStore) SaveInBulk(assignmentID string,
 	defer store.FinalizeTransaction(tx)
 
 	// return value:
-	res := []*attribute.AssignedProductAttributeValue{}
+	res := []*model.AssignedProductAttributeValue{}
 
 	insertQuery := "INSERT INTO " + store.AssignedProductAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 
 	for _, id := range attributeValueIDs {
-		newValue := &attribute.AssignedProductAttributeValue{
+		newValue := &model.AssignedProductAttributeValue{
 			ValueID:      id,
 			AssignmentID: assignmentID,
 		}
@@ -122,7 +121,7 @@ func (as *SqlAssignedProductAttributeValueStore) SaveInBulk(assignmentID string,
 	return res, nil
 }
 
-func (as *SqlAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedProductAttributeValue) error {
+func (as *SqlAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedProductAttributeValue) error {
 	tx, err := as.GetMasterX().Beginx()
 	if err != nil {
 		return errors.Wrapf(err, "begin_transaction")
@@ -163,7 +162,7 @@ func (as *SqlAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []
 	return nil
 }
 
-func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedProductAttributeValue, []*attribute.AttributeValue, error) {
+func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedProductAttributeValue, []*model.AttributeValue, error) {
 	query, args, err := as.GetQueryBuilder().
 		Select(append(as.ModelFields(store.AssignedProductAttributeValueTableName+"."), as.AttributeValue().ModelFields(store.AttributeValueTableName+".")...)...).
 		From(store.AssignedProductAttributeValueTableName).
@@ -181,10 +180,10 @@ func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID stri
 	}
 
 	var (
-		assignedProductAttributeValues []*attribute.AssignedProductAttributeValue
-		attributeValues                []*attribute.AttributeValue
-		assignedProductAttributeValue  attribute.AssignedProductAttributeValue
-		attributeValue                 attribute.AttributeValue
+		assignedProductAttributeValues []*model.AssignedProductAttributeValue
+		attributeValues                []*model.AttributeValue
+		assignedProductAttributeValue  model.AssignedProductAttributeValue
+		attributeValue                 model.AttributeValue
 		scanFields                     = append(as.ScanFields(assignedProductAttributeValue), as.AttributeValue().ScanFields(attributeValue)...)
 	)
 

@@ -7,7 +7,6 @@ import (
 	"os/user"
 
 	"github.com/sitename/sitename/model"
-	modelAudit "github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
@@ -28,7 +27,7 @@ var (
 	LevelCLI     = slog.LvlAuditCLI
 )
 
-func (a *App) GetAudits(userID string, limit int) (modelAudit.Audits, *model.AppError) {
+func (a *App) GetAudits(userID string, limit int) (model.Audits, *model.AppError) {
 	audits, err := a.Srv().Store.Audit().Get(userID, 0, limit)
 	if err != nil {
 		var outErr *store.ErrOutOfBounds
@@ -42,7 +41,7 @@ func (a *App) GetAudits(userID string, limit int) (modelAudit.Audits, *model.App
 	return audits, nil
 }
 
-func (a *App) GetAuditsPage(userID string, page int, perPage int) (modelAudit.Audits, *model.AppError) {
+func (a *App) GetAuditsPage(userID string, page int, perPage int) (model.Audits, *model.AppError) {
 	audits, err := a.Srv().Store.Audit().Get(userID, page*perPage, perPage)
 	if err != nil {
 		var outErr *store.ErrOutOfBounds
@@ -96,7 +95,7 @@ func (a *App) MakeAuditRecord(event string, initialStatus string) *audit.Record 
 		IPAddress: "",
 		Meta:      audit.Meta{audit.KeyClusterID: a.GetClusterId()},
 	}
-	rec.AddMetaTypeConverter(modelAudit.AuditModelTypeConv)
+	rec.AddMetaTypeConverter(model.AuditModelTypeConv)
 
 	return rec
 }

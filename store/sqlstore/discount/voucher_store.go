@@ -7,7 +7,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
@@ -52,7 +51,7 @@ func (vs *SqlVoucherStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (vs *SqlVoucherStore) ScanFields(voucher product_and_discount.Voucher) []interface{} {
+func (vs *SqlVoucherStore) ScanFields(voucher model.Voucher) []interface{} {
 	return []interface{}{
 		&voucher.Id,
 		&voucher.ShopID,
@@ -77,7 +76,7 @@ func (vs *SqlVoucherStore) ScanFields(voucher product_and_discount.Voucher) []in
 }
 
 // Upsert saves or updates given voucher then returns it with an error
-func (vs *SqlVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error) {
+func (vs *SqlVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error) {
 	var saving bool
 
 	if voucher.Id == "" {
@@ -91,7 +90,7 @@ func (vs *SqlVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*produ
 	}
 
 	var (
-		oldVoucher *product_and_discount.Voucher
+		oldVoucher *model.Voucher
 		err        error
 		numUpdated int64
 	)
@@ -136,8 +135,8 @@ func (vs *SqlVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*produ
 }
 
 // Get finds a voucher with given id, then returns it with an error
-func (vs *SqlVoucherStore) Get(voucherID string) (*product_and_discount.Voucher, error) {
-	var res product_and_discount.Voucher
+func (vs *SqlVoucherStore) Get(voucherID string) (*model.Voucher, error) {
+	var res model.Voucher
 	err := vs.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherTableName+" WHERE Id = ?", voucherID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -149,7 +148,7 @@ func (vs *SqlVoucherStore) Get(voucherID string) (*product_and_discount.Voucher,
 	return &res, nil
 }
 
-func (vs *SqlVoucherStore) commonQueryBuilder(option *product_and_discount.VoucherFilterOption) squirrel.SelectBuilder {
+func (vs *SqlVoucherStore) commonQueryBuilder(option *model.VoucherFilterOption) squirrel.SelectBuilder {
 	query := vs.
 		GetQueryBuilder().
 		Select(vs.ModelFields(store.VoucherTableName + ".")...).
@@ -190,13 +189,13 @@ func (vs *SqlVoucherStore) commonQueryBuilder(option *product_and_discount.Vouch
 }
 
 // FilterVouchersByOption finds vouchers bases on given option.
-func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) {
+func (vs *SqlVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, error) {
 	queryString, args, err := vs.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterVouchersByOption_tosql")
 	}
 
-	var vouchers []*product_and_discount.Voucher
+	var vouchers []*model.Voucher
 	err = vs.GetReplicaX().Select(&vouchers, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find vouchers based on given option")
@@ -206,13 +205,13 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *product_and_discount.V
 }
 
 // GetByOptions finds and returns 1 voucher filtered using given options
-func (vs *SqlVoucherStore) GetByOptions(options *product_and_discount.VoucherFilterOption) (*product_and_discount.Voucher, error) {
+func (vs *SqlVoucherStore) GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error) {
 	queryString, args, err := vs.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOptions_tosql")
 	}
 
-	var res product_and_discount.Voucher
+	var res model.Voucher
 	err = vs.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -225,13 +224,13 @@ func (vs *SqlVoucherStore) GetByOptions(options *product_and_discount.VoucherFil
 }
 
 // ExpiredVouchers finds and returns vouchers that are expired before given date
-func (vs *SqlVoucherStore) ExpiredVouchers(date *time.Time) ([]*product_and_discount.Voucher, error) {
+func (vs *SqlVoucherStore) ExpiredVouchers(date *time.Time) ([]*model.Voucher, error) {
 	if date == nil {
 		date = util.NewTime(time.Now())
 	}
 	beginOfDate := util.StartOfDay(*date)
 
-	var res []*product_and_discount.Voucher
+	var res []*model.Voucher
 	err := vs.GetReplicaX().Select(&res, "SELECT * FROM "+store.VoucherTableName+" WHERE (Used >= UsageLimit OR EndDate < $1) AND StartDate < $2", beginOfDate, beginOfDate)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find expired vouchers with given date")

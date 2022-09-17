@@ -7,7 +7,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -42,7 +41,7 @@ func (fs *SqlFulfillmentStore) ModelFields(prefix string) model.AnyArray[string]
 	})
 }
 
-func (fs *SqlFulfillmentStore) ScanFields(holder order.Fulfillment) []interface{} {
+func (fs *SqlFulfillmentStore) ScanFields(holder model.Fulfillment) []interface{} {
 	return []interface{}{
 		&holder.Id,
 		&holder.FulfillmentOrder,
@@ -58,7 +57,7 @@ func (fs *SqlFulfillmentStore) ScanFields(holder order.Fulfillment) []interface{
 }
 
 // Upsert depends on given fulfillment's Id to decide update or insert it
-func (fs *SqlFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+func (fs *SqlFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
 	var (
 		isSaving bool
 		upsertor store_iface.SqlxExecutor = fs.GetMasterX()
@@ -121,8 +120,8 @@ func (fs *SqlFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fu
 }
 
 // Get fidns and returns a fulfillment with given id
-func (fs *SqlFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
-	var ffm order.Fulfillment
+func (fs *SqlFulfillmentStore) Get(id string) (*model.Fulfillment, error) {
+	var ffm model.Fulfillment
 	if err := fs.GetReplicaX().Get(
 		&ffm,
 		"SELECT * FROM "+store.FulfillmentTableName+" WHERE Id = ?",
@@ -137,7 +136,7 @@ func (fs *SqlFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
 	return &ffm, nil
 }
 
-func (fs *SqlFulfillmentStore) commonQueryBuild(option *order.FulfillmentFilterOption) squirrel.SelectBuilder {
+func (fs *SqlFulfillmentStore) commonQueryBuild(option *model.FulfillmentFilterOption) squirrel.SelectBuilder {
 	// decide which fiedlds to select
 	selectFields := fs.ModelFields(store.FulfillmentTableName + ".")
 	if option.SelectRelatedOrder {
@@ -187,15 +186,15 @@ func (fs *SqlFulfillmentStore) commonQueryBuild(option *order.FulfillmentFilterO
 }
 
 // GetByOption returns 1 fulfillment, filtered by given option
-func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
 	var runner store_iface.SqlxExecutor = fs.GetReplicaX()
 	if transaction != nil {
 		runner = transaction
 	}
 
 	var (
-		fulfillment order.Fulfillment
-		anOrder     order.Order
+		fulfillment model.Fulfillment
+		anOrder     model.Order
 		scanFields  = fs.ScanFields(fulfillment)
 	)
 	if option.SelectRelatedOrder {
@@ -224,7 +223,7 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecuto
 }
 
 // FilterByOption finds and returns a slice of fulfillments by given option
-func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
+func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
 	var runner store_iface.SqlxExecutor = fs.GetReplicaX()
 	if transaction != nil {
 		runner = transaction
@@ -240,9 +239,9 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExec
 		return nil, errors.Wrap(err, "failed to find fulfillments with given option")
 	}
 	var (
-		res         []*order.Fulfillment
-		fulfillment order.Fulfillment
-		orDer       order.Order
+		res         []*model.Fulfillment
+		fulfillment model.Fulfillment
+		orDer       model.Order
 		scanFields  = fs.ScanFields(fulfillment)
 	)
 	if option.SelectRelatedOrder {
@@ -269,7 +268,7 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExec
 }
 
 // BulkDeleteFulfillments deletes given fulfillments
-func (fs *SqlFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments order.Fulfillments) error {
+func (fs *SqlFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments model.Fulfillments) error {
 	var exeFunc func(query string, args ...interface{}) (sql.Result, error) = fs.GetMasterX().Exec
 	if transaction != nil {
 		exeFunc = transaction.Exec

@@ -6,9 +6,6 @@ import (
 
 	plugin "github.com/hashicorp/go-plugin"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/file"
-	"github.com/sitename/sitename/model/plugins"
 )
 
 type PluginIface interface {
@@ -126,7 +123,7 @@ type API interface {
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	CreateUser(user *account.User) (*account.User, *model.AppError)
+	CreateUser(user *model.User) (*model.User, *model.AppError)
 
 	// DeleteUser deletes a user.
 	//
@@ -138,38 +135,38 @@ type API interface {
 	//
 	// @tag User
 	// Minimum server version: 5.10
-	GetUsers(options *account.UserGetOptions) ([]*account.User, *model.AppError)
+	GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError)
 
 	// GetUser gets a user.
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	GetUser(userID string) (*account.User, *model.AppError)
+	GetUser(userID string) (*model.User, *model.AppError)
 
 	// GetUserByEmail gets a user by their email address.
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	GetUserByEmail(email string) (*account.User, *model.AppError)
+	GetUserByEmail(email string) (*model.User, *model.AppError)
 
 	// GetUserByUsername gets a user by their username.
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	GetUserByUsername(name string) (*account.User, *model.AppError)
+	GetUserByUsername(name string) (*model.User, *model.AppError)
 
 	// GetUsersByUsernames gets users by their usernames.
 	//
 	// @tag User
 	// Minimum server version: 5.6
-	GetUsersByUsernames(usernames []string) ([]*account.User, *model.AppError)
+	GetUsersByUsernames(usernames []string) ([]*model.User, *model.AppError)
 
 	// GetUsersInTeam gets users in team.
 	//
 	// @tag User
 	// @tag Team
 	// Minimum server version: 5.6
-	// GetUsersInTeam(teamID string, page int, perPage int) ([]*account.User, *model.AppError)
+	// GetUsersInTeam(teamID string, page int, perPage int) ([]*model.User, *model.AppError)
 
 	// GetPreferencesForUser gets a user's preferences.
 	//
@@ -194,7 +191,7 @@ type API interface {
 
 	// CreateUserAccessToken creates a new access token.
 	// @tag User
-	CreateUserAccessToken(token *account.UserAccessToken) (*account.UserAccessToken, *model.AppError)
+	CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model.AppError)
 
 	// RevokeUserAccessToken revokes an existing access token.
 	// @tag User
@@ -246,26 +243,26 @@ type API interface {
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	UpdateUser(user *account.User) (*account.User, *model.AppError)
+	UpdateUser(user *model.User) (*model.User, *model.AppError)
 
 	// GetUserStatus will get a user's status.
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	GetUserStatus(userID string) (*account.Status, *model.AppError)
+	GetUserStatus(userID string) (*model.Status, *model.AppError)
 
 	// GetUserStatusesByIds will return a list of user statuses based on the provided slice of user IDs.
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	GetUserStatusesByIds(userIds []string) ([]*account.Status, *model.AppError)
+	GetUserStatusesByIds(userIds []string) ([]*model.Status, *model.AppError)
 
 	// UpdateUserStatus will set a user's status until the user, or another integration/plugin, sets it back to online.
 	// The status parameter can be: "online", "away", "dnd", or "offline".
 	//
 	// @tag User
 	// Minimum server version: 5.2
-	UpdateUserStatus(userID, status string) (*account.Status, *model.AppError)
+	UpdateUserStatus(userID, status string) (*model.Status, *model.AppError)
 
 	// SetUserStatusTimedDND will set a user's status to dnd for given time until the user,
 	// or another integration/plugin, sets it back to online.
@@ -285,7 +282,7 @@ type API interface {
 	// @tag User
 	// @tag Channel
 	// Minimum server version: 5.6
-	// GetUsersInChannel(channelID, sortBy string, page, perPage int) ([]*account.User, *model.AppError)
+	// GetUsersInChannel(channelID, sortBy string, page, perPage int) ([]*model.User, *model.AppError)
 
 	// GetLDAPUserAttributes will return LDAP attributes for a user.
 	// The attributes parameter should be a list of attributes to pull.
@@ -510,7 +507,7 @@ type API interface {
 	//
 	// @tag User
 	// Minimum server version: 5.6
-	SearchUsers(search *account.UserSearch) ([]*account.User, *model.AppError)
+	SearchUsers(search *model.UserSearch) ([]*model.User, *model.AppError)
 
 	// SearchPostsInTeam returns a list of posts in a specific team that match the given params.
 	//
@@ -599,7 +596,7 @@ type API interface {
 	//
 	// @tag Group
 	// Minimum server version: 5.35
-	// GetGroupMemberUsers(groupID string, page, perPage int) ([]*account.User, *model.AppError)
+	// GetGroupMemberUsers(groupID string, page, perPage int) ([]*model.User, *model.AppError)
 
 	// GetGroupsBySource gets a list of all groups for the given source.
 	//
@@ -771,13 +768,13 @@ type API interface {
 	//
 	// @tag File
 	// Minimum server version: 5.3
-	GetFileInfo(fileId string) (*file.FileInfo, *model.AppError)
+	GetFileInfo(fileId string) (*model.FileInfo, *model.AppError)
 
 	// GetFileInfos gets File Infos with options
 	//
 	// @tag File
 	// Minimum server version: 5.22
-	GetFileInfos(page, perPage int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, *model.AppError)
+	GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError)
 
 	// GetFile gets content of a file by it's ID
 	//
@@ -808,7 +805,7 @@ type API interface {
 	// @tag File
 	// @tag Channel
 	// Minimum server version: 5.6
-	// UploadFile(data []byte, channelId string, filename string) (*file.FileInfo, *model.AppError)
+	// UploadFile(data []byte, channelId string, filename string) (*model.FileInfo, *model.AppError)
 
 	// OpenInteractiveDialog will open an interactive dialog on a user's client that
 	// generated the trigger ID. Used with interactive message buttons, menus
@@ -819,11 +816,11 @@ type API interface {
 
 	// Plugin Section
 
-	// GetPlugins will return a list of plugin manifests for currently active plugins.
+	// GetPlugins will return a list of plugin manifests for currently active plugin.
 	//
 	// @tag Plugin
 	// Minimum server version: 5.6
-	GetPlugins() ([]*plugins.Manifest, *model.AppError)
+	GetPlugins() ([]*model.Manifest, *model.AppError)
 
 	// EnablePlugin will enable an plugin installed.
 	//
@@ -847,14 +844,14 @@ type API interface {
 	//
 	// @tag Plugin
 	// Minimum server version: 5.6
-	GetPluginStatus(id string) (*plugins.PluginStatus, *model.AppError)
+	GetPluginStatus(id string) (*model.PluginStatus, *model.AppError)
 
-	// InstallPlugin will upload another plugin with tar.gz file.
+	// InstallPlugin will upload another plugin with tar.gz model.
 	// Previous version will be replaced on replace true.
 	//
 	// @tag Plugin
 	// Minimum server version: 5.18
-	InstallPlugin(file io.Reader, replace bool) (*plugins.Manifest, *model.AppError)
+	InstallPlugin(file io.Reader, replace bool) (*model.Manifest, *model.AppError)
 
 	// KV Store Section
 
@@ -890,7 +887,7 @@ type API interface {
 	// Returns (true, nil) if the value was set
 	//
 	// Minimum server version: 5.20
-	KVSetWithOptions(key string, value []byte, options plugins.PluginKVSetOptions) (bool, *model.AppError)
+	KVSetWithOptions(key string, value []byte, options model.PluginKVSetOptions) (bool, *model.AppError)
 
 	// KVSet stores a key-value pair with an expiry time, unique per plugin.
 	//
@@ -950,7 +947,7 @@ type API interface {
 	// Minimum server version: 5.3
 	// HasPermissionToChannel(userID, channelId string, permission *model.Permission) bool
 
-	// LogDebug writes a log message to the Mattermost server log file.
+	// LogDebug writes a log message to the Mattermost server log model.
 	// Appropriate context such as the plugin name will already be added as fields so plugins
 	// do not need to add that info.
 	//
@@ -958,7 +955,7 @@ type API interface {
 	// Minimum server version: 5.2
 	LogDebug(msg string, keyValuePairs ...interface{})
 
-	// LogInfo writes a log message to the Mattermost server log file.
+	// LogInfo writes a log message to the Mattermost server log model.
 	// Appropriate context such as the plugin name will already be added as fields so plugins
 	// do not need to add that info.
 	//
@@ -966,7 +963,7 @@ type API interface {
 	// Minimum server version: 5.2
 	LogInfo(msg string, keyValuePairs ...interface{})
 
-	// LogError writes a log message to the Mattermost server log file.
+	// LogError writes a log message to the Mattermost server log model.
 	// Appropriate context such as the plugin name will already be added as fields so plugins
 	// do not need to add that info.
 	//
@@ -974,7 +971,7 @@ type API interface {
 	// Minimum server version: 5.2
 	LogError(msg string, keyValuePairs ...interface{})
 
-	// LogWarn writes a log message to the Mattermost server log file.
+	// LogWarn writes a log message to the Mattermost server log model.
 	// Appropriate context such as the plugin name will already be added as fields so plugins
 	// do not need to add that info.
 	//

@@ -33,8 +33,6 @@ import (
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/external_services"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/i18n"
@@ -306,7 +304,7 @@ func NewServer(options ...Option) (*Server, error) {
 	var err error
 
 	if s.StatusCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
-		Size:           account.STATUS_CACHE_SIZE,
+		Size:           model.STATUS_CACHE_SIZE,
 		Striped:        true,
 		StripedBuckets: util.Max(runtime.NumCPU()-1, 1),
 	}); err != nil {
@@ -794,9 +792,9 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 			return
 		}
 
-		exchangeRateInstances := []*external_services.OpenExchangeRate{}
+		exchangeRateInstances := []*model.OpenExchangeRate{}
 		for currency, rate := range responseValue.Rates {
-			exchangeRate := &external_services.OpenExchangeRate{
+			exchangeRate := &model.OpenExchangeRate{
 				ToCurrency: currency,
 				Rate:       model.NewDecimal(decimal.NewFromFloat(rate)),
 			}
@@ -817,7 +815,7 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 	model.CreateRecurringTask("Collect and set currency exchange rates", fetchFun, time.Duration(recuringHours)*time.Hour)
 }
 
-func (s *Server) upsertCurrencyExchangeRates(newRates []*external_services.OpenExchangeRate) error {
+func (s *Server) upsertCurrencyExchangeRates(newRates []*model.OpenExchangeRate) error {
 	_, err := s.Store.OpenExchangeRate().BulkUpsert(newRates)
 	if err != nil {
 		return err

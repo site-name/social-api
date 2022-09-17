@@ -3,7 +3,6 @@ package warehouse
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 )
 
@@ -31,7 +30,7 @@ func (ws *SqlWarehouseShippingZoneStore) ModelFields(prefix string) model.AnyArr
 }
 
 // Save inserts given warehouse-shipping zone relation into database
-func (ws *SqlWarehouseShippingZoneStore) Save(warehouseShippingZone *warehouse.WarehouseShippingZone) (*warehouse.WarehouseShippingZone, error) {
+func (ws *SqlWarehouseShippingZoneStore) Save(warehouseShippingZone *model.WarehouseShippingZone) (*model.WarehouseShippingZone, error) {
 	warehouseShippingZone.PreSave()
 	if err := warehouseShippingZone.IsValid(); err != nil {
 		return nil, err

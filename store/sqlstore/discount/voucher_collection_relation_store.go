@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -31,7 +30,7 @@ func (s *SqlVoucherCollectionStore) ModelFields(prefix string) model.AnyArray[st
 }
 
 // Upsert saves or updates given voucher collection then returns it with an error
-func (vcs *SqlVoucherCollectionStore) Upsert(voucherCollection *product_and_discount.VoucherCollection) (*product_and_discount.VoucherCollection, error) {
+func (vcs *SqlVoucherCollectionStore) Upsert(voucherCollection *model.VoucherCollection) (*model.VoucherCollection, error) {
 	var saving bool
 	if voucherCollection.Id == "" {
 		voucherCollection.PreSave()
@@ -80,8 +79,8 @@ func (vcs *SqlVoucherCollectionStore) Upsert(voucherCollection *product_and_disc
 }
 
 // Get finds a voucher collection with given id, then returns it with an error
-func (vcs *SqlVoucherCollectionStore) Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error) {
-	var res product_and_discount.VoucherCollection
+func (vcs *SqlVoucherCollectionStore) Get(voucherCollectionID string) (*model.VoucherCollection, error) {
+	var res model.VoucherCollection
 	err := vcs.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherCollectionTableName+" WHERE Id = ?", voucherCollectionID)
 	if err != nil {
 		if err == sql.ErrNoRows {

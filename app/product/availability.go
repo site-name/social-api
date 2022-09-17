@@ -8,8 +8,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -122,12 +120,12 @@ func (a *ServiceProduct) getProductPriceRange(discounted interface{}, unDiscount
 
 // GetVariantPrice
 func (a *ServiceProduct) GetVariantPrice(
-	variant product_and_discount.ProductVariant,
-	variantChannelListing product_and_discount.ProductVariantChannelListing,
-	product product_and_discount.Product,
-	collections []*product_and_discount.Collection,
-	discounts []*product_and_discount.DiscountInfo,
-	chanNel channel.Channel,
+	variant model.ProductVariant,
+	variantChannelListing model.ProductVariantChannelListing,
+	product model.Product,
+	collections []*model.Collection,
+	discounts []*model.DiscountInfo,
+	chanNel model.Channel,
 
 ) (*goprices.Money, *model.AppError) {
 
@@ -144,12 +142,12 @@ func (a *ServiceProduct) GetVariantPrice(
 }
 
 func (a *ServiceProduct) GetProductPriceRange(
-	product product_and_discount.Product,
-	variants product_and_discount.ProductVariants,
-	variantsChannelListing []*product_and_discount.ProductVariantChannelListing,
-	collections []*product_and_discount.Collection,
-	discounts []*product_and_discount.DiscountInfo,
-	chanNel channel.Channel,
+	product model.Product,
+	variants model.ProductVariants,
+	variantsChannelListing []*model.ProductVariantChannelListing,
+	collections []*model.Collection,
+	discounts []*model.DiscountInfo,
+	chanNel model.Channel,
 
 ) (*goprices.MoneyRange, *model.AppError) {
 
@@ -157,7 +155,7 @@ func (a *ServiceProduct) GetProductPriceRange(
 	var currency string
 
 	if len(variants) > 0 {
-		variantChannelListingsMap := map[string]*product_and_discount.ProductVariantChannelListing{}
+		variantChannelListingsMap := map[string]*model.ProductVariantChannelListing{}
 		for i, listing := range variantsChannelListing {
 			if listing != nil {
 				variantChannelListingsMap[listing.VariantID] = listing
@@ -207,18 +205,18 @@ func (a *ServiceProduct) GetProductPriceRange(
 }
 
 func (a *ServiceProduct) GetProductAvailability(
-	product product_and_discount.Product,
-	productChannelListing *product_and_discount.ProductChannelListing,
-	variants []*product_and_discount.ProductVariant,
-	variantsChannelListing []*product_and_discount.ProductVariantChannelListing,
-	collections []*product_and_discount.Collection,
-	discounts []*product_and_discount.DiscountInfo,
-	chanNel channel.Channel,
+	product model.Product,
+	productChannelListing *model.ProductChannelListing,
+	variants []*model.ProductVariant,
+	variantsChannelListing []*model.ProductVariantChannelListing,
+	collections []*model.Collection,
+	discounts []*model.DiscountInfo,
+	chanNel model.Channel,
 	manager interfaces.PluginManagerInterface,
 	countryCode string, // can be empty
 	localCurrency string, // can be empty
 
-) (*product_and_discount.ProductAvailability, *model.AppError) {
+) (*model.ProductAvailability, *model.AppError) {
 
 	if countryCode == "" {
 		countryCode = model.DEFAULT_COUNTRY
@@ -249,7 +247,7 @@ func (a *ServiceProduct) GetProductAvailability(
 	}
 
 	var undiscounted *goprices.TaxedMoneyRange
-	undiscountedNetRange, appErr := a.GetProductPriceRange(product, variants, variantsChannelListing, collections, []*product_and_discount.DiscountInfo{}, chanNel)
+	undiscountedNetRange, appErr := a.GetProductPriceRange(product, variants, variantsChannelListing, collections, []*model.DiscountInfo{}, chanNel)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -291,7 +289,7 @@ func (a *ServiceProduct) GetProductAvailability(
 
 	isOnSale := productChannelListing != nil && productChannelListing.IsVisible() && discount != nil
 
-	return &product_and_discount.ProductAvailability{
+	return &model.ProductAvailability{
 		OnSale:                  isOnSale,
 		PriceRange:              discounted,
 		PriceRangeUnDiscounted:  undiscounted,
@@ -302,18 +300,18 @@ func (a *ServiceProduct) GetProductAvailability(
 }
 
 func (a *ServiceProduct) GetVariantAvailability(
-	variant product_and_discount.ProductVariant,
-	variantChannelListing product_and_discount.ProductVariantChannelListing,
-	product product_and_discount.Product,
-	productChannelListing *product_and_discount.ProductChannelListing,
-	collections []*product_and_discount.Collection,
-	discounts []*product_and_discount.DiscountInfo,
-	chanNel channel.Channel,
+	variant model.ProductVariant,
+	variantChannelListing model.ProductVariantChannelListing,
+	product model.Product,
+	productChannelListing *model.ProductChannelListing,
+	collections []*model.Collection,
+	discounts []*model.DiscountInfo,
+	chanNel model.Channel,
 	plugins interfaces.PluginManagerInterface,
 	country string, // can be empty
 	localCurrency string, // can be empty
 
-) (*product_and_discount.VariantAvailability, *model.AppError) {
+) (*model.VariantAvailability, *model.AppError) {
 
 	variarntPrice, appErr := a.GetVariantPrice(variant, variantChannelListing, product, collections, discounts, chanNel)
 	if appErr != nil {
@@ -325,7 +323,7 @@ func (a *ServiceProduct) GetVariantAvailability(
 		return nil, appErr
 	}
 
-	variarntPrice, appErr = a.GetVariantPrice(variant, variantChannelListing, product, collections, []*product_and_discount.DiscountInfo{}, chanNel)
+	variarntPrice, appErr = a.GetVariantPrice(variant, variantChannelListing, product, collections, []*model.DiscountInfo{}, chanNel)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -360,7 +358,7 @@ func (a *ServiceProduct) GetVariantAvailability(
 
 	isOnSale := (productChannelListing != nil && productChannelListing.IsVisible()) && discount != nil
 
-	return &product_and_discount.VariantAvailability{
+	return &model.VariantAvailability{
 		OnSale:                isOnSale,
 		Price:                 *discounted,
 		PriceUnDiscounted:     *undiscounted,

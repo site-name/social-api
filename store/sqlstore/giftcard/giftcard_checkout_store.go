@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/store"
 )
 
@@ -28,7 +27,7 @@ func (s *SqlGiftCardCheckoutStore) ModelFields(prefix string) model.AnyArray[str
 	})
 }
 
-func (gs *SqlGiftCardCheckoutStore) Save(giftcardCheckout *giftcard.GiftCardCheckout) (*giftcard.GiftCardCheckout, error) {
+func (gs *SqlGiftCardCheckoutStore) Save(giftcardCheckout *model.GiftCardCheckout) (*model.GiftCardCheckout, error) {
 	giftcardCheckout.PreSave()
 	if err := giftcardCheckout.IsValid(); err != nil {
 		return nil, err
@@ -45,8 +44,8 @@ func (gs *SqlGiftCardCheckoutStore) Save(giftcardCheckout *giftcard.GiftCardChec
 	return giftcardCheckout, nil
 }
 
-func (gs *SqlGiftCardCheckoutStore) Get(id string) (*giftcard.GiftCardCheckout, error) {
-	var res giftcard.GiftCardCheckout
+func (gs *SqlGiftCardCheckoutStore) Get(id string) (*model.GiftCardCheckout, error) {
+	var res model.GiftCardCheckout
 	err := gs.GetReplicaX().Get(&res, "SELECT * FROM "+store.GiftcardCheckoutTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {

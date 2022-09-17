@@ -5,12 +5,11 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
 
 // AssignedPageAttributeByOption returns 1 assigned page attribute
-func (a *ServiceAttribute) AssignedPageAttributeByOption(option *attribute.AssignedPageAttributeFilterOption) (*attribute.AssignedPageAttribute, *model.AppError) {
+func (a *ServiceAttribute) AssignedPageAttributeByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model.AppError) {
 	assignedPageAttr, err := a.srv.Store.AssignedPageAttribute().GetByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("AssignedPageAttributeByOption", "app.attribute.error_finding_assigned_page_attribute_by_option.app_error", err)
@@ -20,8 +19,8 @@ func (a *ServiceAttribute) AssignedPageAttributeByOption(option *attribute.Assig
 }
 
 // GetOrCreateAssignedPageAttribute gets or create an assigned page attribute, then returns it
-func (a *ServiceAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribute *attribute.AssignedPageAttribute) (*attribute.AssignedPageAttribute, *model.AppError) {
-	option := new(attribute.AssignedPageAttributeFilterOption)
+func (a *ServiceAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribute *model.AssignedPageAttribute) (*model.AssignedPageAttribute, *model.AppError) {
+	option := new(model.AssignedPageAttributeFilterOption)
 	if assignedPageAttribute.PageID != "" {
 		option.PageID = squirrel.Eq{store.AssignedPageAttributeTableName + ".PageID": assignedPageAttribute.PageID}
 	}

@@ -4,11 +4,10 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 // SaleProductVariantsByOptions returns a list of sale-product variant relations filtered using given options
-func (s *ServiceDiscount) SaleProductVariantsByOptions(options *product_and_discount.SaleProductVariantFilterOption) ([]*product_and_discount.SaleProductVariant, *model.AppError) {
+func (s *ServiceDiscount) SaleProductVariantsByOptions(options *model.SaleProductVariantFilterOption) ([]*model.SaleProductVariant, *model.AppError) {
 	saleProductVariants, err := s.srv.Store.SaleProductVariant().FilterByOption(options)
 	var (
 		statusCode int

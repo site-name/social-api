@@ -3,13 +3,10 @@ package giftcard
 import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/giftcard"
-	"github.com/sitename/sitename/model/plugins"
 )
 
 // SendGiftcardNotification Trigger sending a gift card notification for the given recipient
-func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *account.User, _ interface{}, customerUser *account.User, email string, giftCard giftcard.GiftCard, manager interfaces.PluginManagerInterface, channelID string, resending bool) *model.AppError {
+func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ interface{}, customerUser *model.User, email string, giftCard model.GiftCard, manager interfaces.PluginManagerInterface, channelID string, resending bool) *model.AppError {
 	var (
 		userPayload interface{}
 		userID      *string
@@ -35,11 +32,11 @@ func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *account.User, 
 		"site_name":         shop.Name,
 	}
 
-	_, appErr = manager.Notify(plugins.SEND_GIFT_CARD, payload, channelID, "")
+	_, appErr = manager.Notify(model.SEND_GIFT_CARD, payload, channelID, "")
 	return appErr
 }
 
-func (s *ServiceGiftcard) GetDefaultGiftcardPayload(giftCard giftcard.GiftCard) model.StringInterface {
+func (s *ServiceGiftcard) GetDefaultGiftcardPayload(giftCard model.GiftCard) model.StringInterface {
 	return model.StringInterface{
 		"id":       giftCard.Id,
 		"code":     giftCard.Code,

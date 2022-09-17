@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
 
@@ -30,7 +29,7 @@ func (as *SqlAttributeProductStore) ModelFields(prefix string) model.AnyArray[st
 	})
 }
 
-func (as *SqlAttributeProductStore) Save(attributeProduct *attribute.AttributeProduct) (*attribute.AttributeProduct, error) {
+func (as *SqlAttributeProductStore) Save(attributeProduct *model.AttributeProduct) (*model.AttributeProduct, error) {
 	attributeProduct.PreSave()
 	if err := attributeProduct.IsValid(); err != nil {
 		return nil, err
@@ -49,8 +48,8 @@ func (as *SqlAttributeProductStore) Save(attributeProduct *attribute.AttributePr
 	return attributeProduct, nil
 }
 
-func (as *SqlAttributeProductStore) Get(id string) (*attribute.AttributeProduct, error) {
-	var res attribute.AttributeProduct
+func (as *SqlAttributeProductStore) Get(id string) (*model.AttributeProduct, error) {
+	var res model.AttributeProduct
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AttributeProductTableName+" WHERE Id = ?", id)
 	if err != nil {
@@ -63,7 +62,7 @@ func (as *SqlAttributeProductStore) Get(id string) (*attribute.AttributeProduct,
 	return &res, nil
 }
 
-func (as *SqlAttributeProductStore) GetByOption(option *attribute.AttributeProductFilterOption) (*attribute.AttributeProduct, error) {
+func (as *SqlAttributeProductStore) GetByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, error) {
 	query := as.GetQueryBuilder().
 		Select("*").
 		From(store.AttributeProductTableName)
@@ -81,7 +80,7 @@ func (as *SqlAttributeProductStore) GetByOption(option *attribute.AttributeProdu
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	var attributeProduct attribute.AttributeProduct
+	var attributeProduct model.AttributeProduct
 	err = as.GetReplicaX().Get(
 		&attributeProduct,
 		queryString,

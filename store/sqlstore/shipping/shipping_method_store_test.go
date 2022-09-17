@@ -9,7 +9,6 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/stretchr/testify/require"
 )
@@ -75,8 +74,8 @@ func ApplicableShippingMethods(price *goprices.Money, channelID string, weight *
 		"MaximumOrderPriceAmount": priceAmount,
 		"MinimumOrderWeight":      weight.Amount,
 		"MaximumOrderWeight":      weight.Amount,
-		"WeightBasedShippingType": shipping.WEIGHT_BASED,
-		"PriceBasedShipType":      shipping.PRICE_BASED,
+		"WeightBasedShippingType": model.WEIGHT_BASED,
+		"PriceBasedShipType":      model.PRICE_BASED,
 	}
 
 	// check if productIDs is provided:

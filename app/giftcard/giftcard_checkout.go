@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/store"
 )
 
@@ -22,8 +21,8 @@ func (s *ServiceGiftcard) DeleteGiftCardCheckout(giftcardID string, checkoutToke
 }
 
 // CreateGiftCardCheckout create a new giftcard-checkout relation and returns it
-func (a *ServiceGiftcard) CreateGiftCardCheckout(giftcardID string, checkoutToken string) (*giftcard.GiftCardCheckout, *model.AppError) {
-	giftCardCheckout, err := a.srv.Store.GiftCardCheckout().Save(&giftcard.GiftCardCheckout{
+func (a *ServiceGiftcard) CreateGiftCardCheckout(giftcardID string, checkoutToken string) (*model.GiftCardCheckout, *model.AppError) {
+	giftCardCheckout, err := a.srv.Store.GiftCardCheckout().Save(&model.GiftCardCheckout{
 		GiftcardID: giftcardID,
 		CheckoutID: checkoutToken,
 	})

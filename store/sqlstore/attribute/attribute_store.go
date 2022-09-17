@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
 
@@ -45,7 +44,7 @@ func (as *SqlAttributeStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (as *SqlAttributeStore) ScanFields(v attribute.Attribute) []interface{} {
+func (as *SqlAttributeStore) ScanFields(v model.Attribute) []interface{} {
 	return []interface{}{
 		&v.Id,
 		&v.Slug,
@@ -67,7 +66,7 @@ func (as *SqlAttributeStore) ScanFields(v attribute.Attribute) []interface{} {
 }
 
 // Upsert inserts or updates given attribute then returns it
-func (as *SqlAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attribute, error) {
+func (as *SqlAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, error) {
 	var isSaving bool
 
 	if !model.IsValidId(attr.Id) {
@@ -122,7 +121,7 @@ func (as *SqlAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attri
 	return attr, nil
 }
 
-func (as *SqlAttributeStore) commonQueryBuilder(option *attribute.AttributeFilterOption) (string, []interface{}, error) {
+func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOption) (string, []interface{}, error) {
 	query := as.GetQueryBuilder().
 		Select(as.ModelFields(store.AttributeTableName + ".")...). // SELECT Attributes.Id, Attributes.Slug, ...
 		From(store.AttributeTableName)
@@ -207,13 +206,13 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *attribute.AttributeFilte
 	return query.ToSql()
 }
 
-func (as *SqlAttributeStore) GetByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, error) {
+func (as *SqlAttributeStore) GetByOption(option *model.AttributeFilterOption) (*model.Attribute, error) {
 	queryString, args, err := as.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	var res attribute.Attribute
+	var res model.Attribute
 	err = as.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -224,7 +223,7 @@ func (as *SqlAttributeStore) GetByOption(option *attribute.AttributeFilterOption
 
 	// check if we need to prefetch related attribute values of found attributes
 	if option.PrefetchRelatedAttributeValues {
-		attributeValues, err := as.AttributeValue().FilterByOptions(attribute.AttributeValueFilterOptions{
+		attributeValues, err := as.AttributeValue().FilterByOptions(model.AttributeValueFilterOptions{
 			AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": res.Id},
 		})
 		if err != nil {
@@ -238,14 +237,14 @@ func (as *SqlAttributeStore) GetByOption(option *attribute.AttributeFilterOption
 }
 
 // FilterbyOption returns a list of attributes by given option
-func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) {
+func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption) (model.Attributes, error) {
 
 	queryString, args, err := as.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	var attributes attribute.Attributes
+	var attributes model.Attributes
 	err = as.GetReplicaX().Select(&attributes, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attributes with given option")
@@ -253,7 +252,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 
 	// check if we need to prefetch related attribute values of found attributes
 	if option.PrefetchRelatedAttributeValues && len(attributes) > 0 {
-		attributeValues, err := as.AttributeValue().FilterByOptions(attribute.AttributeValueFilterOptions{
+		attributeValues, err := as.AttributeValue().FilterByOptions(model.AttributeValueFilterOptions{
 			AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": attributes.IDs()},
 		})
 		if err != nil {
@@ -261,7 +260,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *attribute.AttributeFilterOpt
 		}
 
 		// attributesMap has keys are attribute ids
-		var attributesMap = map[string]*attribute.Attribute{}
+		var attributesMap = map[string]*model.Attribute{}
 
 		for _, attr := range attributes {
 			attributesMap[attr.Id] = attr

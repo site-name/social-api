@@ -5,13 +5,12 @@ import (
 
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/invoice"
 	"github.com/sitename/sitename/store"
 )
 
 // UpsertInvoiceEvent is shortcut for creating invoice events
-func (a *ServiceInvoice) UpsertInvoiceEvent(option *invoice.InvoiceEventOption) (*invoice.InvoiceEvent, *model.AppError) {
-	invoiceEvent := new(invoice.InvoiceEvent)
+func (a *ServiceInvoice) UpsertInvoiceEvent(option *model.InvoiceEventOption) (*model.InvoiceEvent, *model.AppError) {
+	invoiceEvent := new(model.InvoiceEvent)
 
 	invoiceEvent.Type = option.Type
 	if option.UserID != nil {

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model/external_services"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
 
@@ -17,7 +17,7 @@ func NewSqlOpenExchangeRateStore(s store.Store) store.OpenExchangeRateStore {
 }
 
 // BulkUpsert performs bulk update/insert to given exchange rates
-func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenExchangeRate) ([]*external_services.OpenExchangeRate, error) {
+func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) ([]*model.OpenExchangeRate, error) {
 	transaction, err := os.GetMasterX().Beginx()
 	if err != nil {
 		return nil, errors.Wrap(err, "transaction_begin")
@@ -25,7 +25,7 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenEx
 	defer store.FinalizeTransaction(transaction)
 
 	var (
-		oldRate    external_services.OpenExchangeRate
+		oldRate    model.OpenExchangeRate
 		numUpdated int64
 	)
 
@@ -89,8 +89,8 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenEx
 }
 
 // GetAll returns all exchange currency rates
-func (os *SqlOpenExchangeRateStore) GetAll() ([]*external_services.OpenExchangeRate, error) {
-	var res []*external_services.OpenExchangeRate
+func (os *SqlOpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, error) {
+	var res []*model.OpenExchangeRate
 	err := os.GetReplicaX().Select(
 		&res,
 		"SELECT * FROM "+store.OpenExchangeRateTableName+" ORDER BY ?",

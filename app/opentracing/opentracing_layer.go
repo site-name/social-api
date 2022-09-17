@@ -12,10 +12,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	modelAudit "github.com/sitename/sitename/model/audit"
-	"github.com/sitename/sitename/model/cluster"
-	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/timezones"
@@ -303,7 +299,7 @@ func (a *OpenTracingAppLayer) ExportPermissions(w io.Writer) error {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) GetAudits(userID string, limit int) (modelAudit.Audits, *model.AppError) {
+func (a *OpenTracingAppLayer) GetAudits(userID string, limit int) (model.Audits, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetAudits")
 
@@ -325,7 +321,7 @@ func (a *OpenTracingAppLayer) GetAudits(userID string, limit int) (modelAudit.Au
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetAuditsPage(userID string, page int, perPage int) (modelAudit.Audits, *model.AppError) {
+func (a *OpenTracingAppLayer) GetAuditsPage(userID string, page int, perPage int) (model.Audits, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetAuditsPage")
 
@@ -364,7 +360,7 @@ func (a *OpenTracingAppLayer) GetClusterId() string {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) GetClusterStatus() []*cluster.ClusterInfo {
+func (a *OpenTracingAppLayer) GetClusterStatus() []*model.ClusterInfo {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetClusterStatus")
 
@@ -381,7 +377,7 @@ func (a *OpenTracingAppLayer) GetClusterStatus() []*cluster.ClusterInfo {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) GetComplianceFile(job *compliance.Compliance) ([]byte, *model.AppError) {
+func (a *OpenTracingAppLayer) GetComplianceFile(job *model.Compliance) ([]byte, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetComplianceFile")
 
@@ -403,7 +399,7 @@ func (a *OpenTracingAppLayer) GetComplianceFile(job *compliance.Compliance) ([]b
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetComplianceReport(reportID string) (*compliance.Compliance, *model.AppError) {
+func (a *OpenTracingAppLayer) GetComplianceReport(reportID string) (*model.Compliance, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetComplianceReport")
 
@@ -425,7 +421,7 @@ func (a *OpenTracingAppLayer) GetComplianceReport(reportID string) (*compliance.
 	return resultVar0, resultVar1
 }
 
-func (a *OpenTracingAppLayer) GetComplianceReports(page int, perPage int) (compliance.Compliances, *model.AppError) {
+func (a *OpenTracingAppLayer) GetComplianceReports(page int, perPage int) (model.Compliances, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.GetComplianceReports")
 
@@ -824,7 +820,7 @@ func (a *OpenTracingAppLayer) NewClusterDiscoveryService() *app.ClusterDiscovery
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError {
+func (a *OpenTracingAppLayer) NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User, forceAck bool, isBot bool) *model.AppError {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.NotifyAndSetWarnMetricAck")
 
@@ -954,7 +950,7 @@ func (a *OpenTracingAppLayer) ResetPermissionsSystem() *model.AppError {
 	return resultVar0
 }
 
-func (a *OpenTracingAppLayer) SaveComplianceReport(job *compliance.Compliance) (*compliance.Compliance, *model.AppError) {
+func (a *OpenTracingAppLayer) SaveComplianceReport(job *model.Compliance) (*model.Compliance, *model.AppError) {
 	origCtx := a.ctx
 	span, newCtx := tracing.StartSpanWithParentByContext(a.ctx, "app.SaveComplianceReport")
 

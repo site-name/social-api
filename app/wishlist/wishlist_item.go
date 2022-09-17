@@ -6,33 +6,31 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
 // WishlistItemsByOption returns a slice of wishlist items filtered using given option
-func (a *ServiceWishlist) WishlistItemsByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, *model.AppError) {
+func (a *ServiceWishlist) WishlistItemsByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, *model.AppError) {
 	items, err := a.srv.Store.WishlistItem().FilterByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("WishlistItemsByOption", "app.wishlist.error_finding_wishlist_items_by_option.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("WishlistItemsByOption", "app.model.error_finding_wishlist_items_by_option.app_error", err)
 	}
 	return items, nil
 }
 
 // WishlistItemByOption returns 1 wishlist item filtered using given option
-func (a *ServiceWishlist) WishlistItemByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, *model.AppError) {
+func (a *ServiceWishlist) WishlistItemByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, *model.AppError) {
 	item, err := a.srv.Store.WishlistItem().GetByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("WishlistItemByOption", "app.wishlist.error_finding_wishlist_item_by_option.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("WishlistItemByOption", "app.model.error_finding_wishlist_item_by_option.app_error", err)
 	}
 
 	return item, nil
 }
 
 // BulkUpsertWishlistItems updates or inserts given wishlist item into database then returns it
-func (a *ServiceWishlist) BulkUpsertWishlistItems(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, *model.AppError) {
+func (a *ServiceWishlist) BulkUpsertWishlistItems(transaction store_iface.SqlxTxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, *model.AppError) {
 	wishlistItems, err := a.srv.Store.WishlistItem().BulkUpsert(transaction, wishlistItems)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -45,15 +43,15 @@ func (a *ServiceWishlist) BulkUpsertWishlistItems(transaction store_iface.SqlxTx
 			statusCode = http.StatusNotFound
 		}
 
-		return nil, model.NewAppError("BulkUpsertWishlistItems", "app.wishlist.error_upserting_wishlist_item.app_error", nil, err.Error(), statusCode)
+		return nil, model.NewAppError("BulkUpsertWishlistItems", "app.model.error_upserting_wishlist_item.app_error", nil, err.Error(), statusCode)
 	}
 
 	return wishlistItems, nil
 }
 
 // GetOrCreateWishlistItem insert or get wishlist items
-func (a *ServiceWishlist) GetOrCreateWishlistItem(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, *model.AppError) {
-	option := &wishlist.WishlistItemFilterOption{}
+func (a *ServiceWishlist) GetOrCreateWishlistItem(wishlistItem *model.WishlistItem) (*model.WishlistItem, *model.AppError) {
+	option := &model.WishlistItemFilterOption{}
 
 	if model.IsValidId(wishlistItem.Id) {
 		option.Id = squirrel.Eq{store.WishlistItemTableName + ".Id": wishlistItem.Id}
@@ -71,7 +69,7 @@ func (a *ServiceWishlist) GetOrCreateWishlistItem(wishlistItem *wishlist.Wishlis
 			return nil, appErr
 		}
 		// this means wishlist item not found, we need to create a new one
-		items, appErr := a.BulkUpsertWishlistItems(nil, wishlist.WishlistItems{wishlistItem})
+		items, appErr := a.BulkUpsertWishlistItems(nil, model.WishlistItems{wishlistItem})
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -82,7 +80,7 @@ func (a *ServiceWishlist) GetOrCreateWishlistItem(wishlistItem *wishlist.Wishlis
 }
 
 // DeleteWishlistItemsByOption tell store to delete wishlist items that satisfy given option, then returns a number of items deleted
-func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, *model.AppError) {
+func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction store_iface.SqlxTxExecutor, option *model.WishlistItemFilterOption) (int64, *model.AppError) {
 	numDeleted, err := a.srv.Store.WishlistItem().DeleteItemsByOption(transaction, option)
 	if err != nil {
 		return 0, model.NewAppError("DeleteWishlistItemsByOption", "app.wishlist.error_deleting_wishlist_items_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -92,14 +90,14 @@ func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction store_iface.Sq
 }
 
 // MoveItemsBetweenWishlists moves items from given srcWishlist to given dstWishlist
-func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishlist, dstWishlist *wishlist.Wishlist) *model.AppError {
+func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *model.Wishlist, dstWishlist *model.Wishlist) *model.AppError {
 	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return model.NewAppError("MoveItemsBetweenWishlists", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	itemsFromBothWishlists, appErr := a.WishlistItemsByOption(&wishlist.WishlistItemFilterOption{
+	itemsFromBothWishlists, appErr := a.WishlistItemsByOption(&model.WishlistItemFilterOption{
 		WishlistID: squirrel.Eq{store.WishlistItemTableName + ".WishlistID": []string{srcWishlist.Id, dstWishlist.Id}},
 	})
 	if appErr != nil {
@@ -111,9 +109,9 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishli
 
 	// categorize which item belongs to which wishlist
 	var (
-		itemsOfSourceWishlist              wishlist.WishlistItems
-		destinationWishlistMap             = map[string]*wishlist.WishlistItem{}                 // destinationWishlistMap is a map with keys are product ids of destination wishlist's items
-		productVariantsOfSourceWishlistMap = map[string][]*wishlist.WishlistItemProductVariant{} // productVariantsOfSourceWishlistMap has keys are source wishlist items's ids
+		itemsOfSourceWishlist              model.WishlistItems
+		destinationWishlistMap             = map[string]*model.WishlistItem{}                 // destinationWishlistMap is a map with keys are product ids of destination wishlist's items
+		productVariantsOfSourceWishlistMap = map[string][]*model.WishlistItemProductVariant{} // productVariantsOfSourceWishlistMap has keys are source wishlist items's ids
 	)
 
 	for _, item := range itemsFromBothWishlists {
@@ -126,18 +124,18 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishli
 
 	// this function will not execute if not triggered
 	populate_productVariantsOfSourceWishlistMap := func() *model.AppError {
-		productVariantsOfSourceWishlist, appErr := a.srv.ProductService().ProductVariantsByOption(&product_and_discount.ProductVariantFilterOption{
+		productVariantsOfSourceWishlist, appErr := a.srv.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
 			WishlistItemID: squirrel.Eq{store.WishlistItemProductVariantTableName + ".WishlistItemID": itemsOfSourceWishlist.IDs()},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
 				return appErr
 			}
-			productVariantsOfSourceWishlist = []*product_and_discount.ProductVariant{}
+			productVariantsOfSourceWishlist = []*model.ProductVariant{}
 		}
 
 		for _, item := range itemsOfSourceWishlist {
-			productVariantsOfSourceWishlistMap[item.Id] = []*wishlist.WishlistItemProductVariant{}
+			productVariantsOfSourceWishlistMap[item.Id] = []*model.WishlistItemProductVariant{}
 
 			for index, variant := range productVariantsOfSourceWishlist {
 				if variant.ProductID == item.ProductID {
@@ -145,7 +143,7 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishli
 					productVariantsOfSourceWishlistMap[item.Id] = append(
 						productVariantsOfSourceWishlistMap[item.Id],
 
-						&wishlist.WishlistItemProductVariant{
+						&model.WishlistItemProductVariant{
 							WishlistItemID:   item.Id,
 							ProductVariantID: variant.Id,
 						},
@@ -178,7 +176,7 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishli
 				return appErr
 			}
 
-			_, appErr = a.DeleteWishlistItemsByOption(transaction, &wishlist.WishlistItemFilterOption{
+			_, appErr = a.DeleteWishlistItemsByOption(transaction, &model.WishlistItemFilterOption{
 				Id: squirrel.Eq{store.WishlistItemTableName + ".Id": srcItem.Id},
 			})
 			if appErr != nil {
@@ -188,7 +186,7 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishli
 			// This wishlist srcItem contains a new product.
 			// It can be reassigned to the destination wishlist.
 			srcItem.WishlistID = dstWishlist.Id
-			_, appErr = a.BulkUpsertWishlistItems(transaction, wishlist.WishlistItems{srcItem})
+			_, appErr = a.BulkUpsertWishlistItems(transaction, model.WishlistItems{srcItem})
 			if appErr != nil {
 				return appErr
 			}

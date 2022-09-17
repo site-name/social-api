@@ -4,19 +4,17 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
 // CommonCreateGiftcardEvent is common method for creating giftcard events
-func (s *ServiceGiftcard) CommonCreateGiftcardEvent(giftcardID, userID string, parameters model.StringMap, Type string) (*giftcard.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) CommonCreateGiftcardEvent(giftcardID, userID string, parameters model.StringMap, Type string) (*model.GiftCardEvent, *model.AppError) {
 	panic("not implemented")
 }
 
 // GiftcardEventsByOptions returns a list of giftcard events filtered using given options
-func (s *ServiceGiftcard) GiftcardEventsByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardEventsByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, *model.AppError) {
 	events, err := s.srv.Store.GiftcardEvent().FilterByOptions(options)
 	var (
 		statusCode int
@@ -37,7 +35,7 @@ func (s *ServiceGiftcard) GiftcardEventsByOptions(options *giftcard.GiftCardEven
 }
 
 // BulkUpsertGiftcardEvents tells store to upsert given giftcard events into database then returns them
-func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction store_iface.SqlxTxExecutor, events []*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction store_iface.SqlxTxExecutor, events []*model.GiftCardEvent) ([]*model.GiftCardEvent, *model.AppError) {
 	events, err := s.srv.Store.GiftcardEvent().BulkUpsert(transaction, events...)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -56,18 +54,18 @@ func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction store_iface.SqlxT
 }
 
 // GiftcardsUsedInOrderEvent bulk creates giftcard events
-func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction store_iface.SqlxTxExecutor, balanceData giftcard.BalanceData, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction store_iface.SqlxTxExecutor, balanceData model.BalanceData, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
 	}
 
-	var events []*giftcard.GiftCardEvent
+	var events []*model.GiftCardEvent
 	for _, item := range balanceData {
-		events = append(events, &giftcard.GiftCardEvent{
+		events = append(events, &model.GiftCardEvent{
 			GiftcardID: item.Giftcard.Id,
 			UserID:     userID,
-			Type:       giftcard.USED_IN_ORDER,
+			Type:       model.USED_IN_ORDER,
 			Parameters: model.StringInterface{
 				"order_id": orderID,
 				"balance": model.StringInterface{
@@ -82,18 +80,18 @@ func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction store_iface.Sqlx
 	return s.BulkUpsertGiftcardEvents(transaction, events)
 }
 
-func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction store_iface.SqlxTxExecutor, giftcards []*giftcard.GiftCard, orderID string, user *account.User, _ interface{}) ([]*giftcard.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction store_iface.SqlxTxExecutor, giftcards []*model.GiftCard, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
 	}
 
-	events := []*giftcard.GiftCardEvent{}
+	events := []*model.GiftCardEvent{}
 	for _, giftCard := range giftcards {
-		events = append(events, &giftcard.GiftCardEvent{
+		events = append(events, &model.GiftCardEvent{
 			GiftcardID: giftCard.Id,
 			UserID:     userID,
-			Type:       giftcard.BOUGHT,
+			Type:       model.BOUGHT,
 			Parameters: model.StringInterface{
 				"order_id":    orderID,
 				"expiry_date": giftCard.ExpiryDate,

@@ -1,6 +1,6 @@
 /*
-	NOTE: This package is initialized during server startup (modules/imports does that)
-	so the init() function get the chance to register a function to create `ServiceAccount`
+NOTE: This package is initialized during server startup (modules/imports does that)
+so the init() function get the chance to register a function to create `ServiceAccount`
 */
 package shop
 
@@ -10,7 +10,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/store"
 )
 
@@ -27,7 +26,7 @@ func init() {
 }
 
 // ShopById finds shop by given id
-func (a *ServiceShop) ShopById(shopID string) (*shop.Shop, *model.AppError) {
+func (a *ServiceShop) ShopById(shopID string) (*model.Shop, *model.AppError) {
 	shop, err := a.srv.Store.Shop().Get(shopID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ShopById", "app.shop.error_finding_shop_by_id.app_error", err)
@@ -36,7 +35,7 @@ func (a *ServiceShop) ShopById(shopID string) (*shop.Shop, *model.AppError) {
 	return shop, nil
 }
 
-func (a *ServiceShop) ShopByOptions(options *shop.ShopFilterOptions) (*shop.Shop, *model.AppError) {
+func (a *ServiceShop) ShopByOptions(options *model.ShopFilterOptions) (*model.Shop, *model.AppError) {
 	shop, err := a.srv.Store.Shop().GetByOptions(options)
 	if err != nil {
 		statusCode := http.StatusInternalServerError

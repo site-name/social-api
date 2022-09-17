@@ -3,7 +3,6 @@ package active_users
 import (
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/store"
 )
@@ -17,7 +16,7 @@ func MakeWorker(jobServer *jobs.JobServer, store store.Store, getMetrics func() 
 		return *cfg.MetricsSettings.Enable
 	}
 	execute := func(job *model.Job) error {
-		count, err := store.User().Count(account.UserCountOptions{IncludeDeleted: false})
+		count, err := store.User().Count(model.UserCountOptions{IncludeDeleted: false})
 		if err != nil {
 			return err
 		}

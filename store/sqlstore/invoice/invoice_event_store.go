@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/invoice"
 	"github.com/sitename/sitename/store"
 )
 
@@ -37,7 +36,7 @@ func (s *SqlInvoiceEventStore) ModelFields(prefix string) model.AnyArray[string]
 }
 
 // Upsert depends on given invoice event's Id to update/insert it
-func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent *invoice.InvoiceEvent) (*invoice.InvoiceEvent, error) {
+func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (*model.InvoiceEvent, error) {
 	var isSaing bool
 	if invoiceEvent.Id == "" {
 		invoiceEvent.PreSave()
@@ -90,8 +89,8 @@ func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent *invoice.InvoiceEvent) (*in
 }
 
 // Get finds and returns 1 invoice event
-func (ies *SqlInvoiceEventStore) Get(invoiceEventID string) (*invoice.InvoiceEvent, error) {
-	var res invoice.InvoiceEvent
+func (ies *SqlInvoiceEventStore) Get(invoiceEventID string) (*model.InvoiceEvent, error) {
+	var res model.InvoiceEvent
 	err := ies.GetReplicaX().Get(&res, "SELECT * FROM "+store.InvoiceEventTableName+" WHERE Id = ?", invoiceEventID)
 	if err != nil {
 		if err == sql.ErrNoRows {

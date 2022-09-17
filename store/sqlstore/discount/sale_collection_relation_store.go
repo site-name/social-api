@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -31,7 +30,7 @@ func (s *SqlSaleCollectionRelationStore) ModelFields(prefix string) model.AnyArr
 }
 
 // Save insert given sale-collection relation into database
-func (ss *SqlSaleCollectionRelationStore) Save(relation *product_and_discount.SaleCollectionRelation) (*product_and_discount.SaleCollectionRelation, error) {
+func (ss *SqlSaleCollectionRelationStore) Save(relation *model.SaleCollectionRelation) (*model.SaleCollectionRelation, error) {
 	relation.PreSave()
 	if err := relation.IsValid(); err != nil {
 		return nil, err
@@ -50,8 +49,8 @@ func (ss *SqlSaleCollectionRelationStore) Save(relation *product_and_discount.Sa
 }
 
 // Get finds and returns a sale-collection relation with given id
-func (ss *SqlSaleCollectionRelationStore) Get(relationID string) (*product_and_discount.SaleCollectionRelation, error) {
-	var res product_and_discount.SaleCollectionRelation
+func (ss *SqlSaleCollectionRelationStore) Get(relationID string) (*model.SaleCollectionRelation, error) {
+	var res model.SaleCollectionRelation
 
 	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.SaleCollectionRelationTableName+" WHERE Id = ?", relationID)
 	if err != nil {
@@ -65,7 +64,7 @@ func (ss *SqlSaleCollectionRelationStore) Get(relationID string) (*product_and_d
 }
 
 // FilterByOption returns a list of collections filtered based on given option
-func (ss *SqlSaleCollectionRelationStore) FilterByOption(option *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, error) {
+func (ss *SqlSaleCollectionRelationStore) FilterByOption(option *model.SaleCollectionRelationFilterOption) ([]*model.SaleCollectionRelation, error) {
 	query := ss.GetQueryBuilder().
 		Select("*").
 		From(store.SaleCollectionRelationTableName).
@@ -88,7 +87,7 @@ func (ss *SqlSaleCollectionRelationStore) FilterByOption(option *product_and_dis
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*product_and_discount.SaleCollectionRelation
+	var res []*model.SaleCollectionRelation
 	err = ss.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find sale-collection relations with given option")

@@ -9,8 +9,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
@@ -19,10 +17,10 @@ import (
 //
 // NOTE: `startDate` must be UTC time
 func (a *ServiceProduct) CalculateRevenueForVariant(
-	variant *product_and_discount.ProductVariant,
+	variant *model.ProductVariant,
 	startDate *time.Time,
-	orderLines []*order.OrderLine,
-	ordersDict map[string]*order.Order,
+	orderLines []*model.OrderLine,
+	ordersDict map[string]*model.Order,
 	currencyCode string,
 
 ) (*goprices.TaxedMoney, *model.AppError) {
@@ -57,15 +55,15 @@ func (a *ServiceProduct) DeleteCategories(categoryIDs []string, manager interfac
 }
 
 // CollectCategoriesTreeProducts Collect products from all levels in category tree.
-func (a *ServiceProduct) CollectCategoriesTreeProducts(category *product_and_discount.Category) ([]*product_and_discount.Product, *model.AppError) {
+func (a *ServiceProduct) CollectCategoriesTreeProducts(category *model.Category) ([]*model.Product, *model.AppError) {
 	panic("not implemented")
 }
 
 // GetProductsIDsWithoutVariants Return list of product's ids without variants
-func (a *ServiceProduct) GetProductsIDsWithoutVariants(productList []*product_and_discount.Product) ([]string, *model.AppError) {
-	productIDs := product_and_discount.Products(productList).IDs()
+func (a *ServiceProduct) GetProductsIDsWithoutVariants(productList []*model.Product) ([]string, *model.AppError) {
+	productIDs := model.Products(productList).IDs()
 
-	productsWithNoVariant, appErr := a.ProductsByOption(&product_and_discount.ProductFilterOption{
+	productsWithNoVariant, appErr := a.ProductsByOption(&model.ProductFilterOption{
 		Id:               squirrel.Eq{store.ProductTableName + ".Id": productIDs},
 		ProductVariantID: squirrel.Eq{store.ProductVariantTableName + ".Id": nil},
 	})
@@ -73,5 +71,5 @@ func (a *ServiceProduct) GetProductsIDsWithoutVariants(productList []*product_an
 		return nil, appErr
 	}
 
-	return product_and_discount.Products(productsWithNoVariant).IDs(), nil
+	return model.Products(productsWithNoVariant).IDs(), nil
 }

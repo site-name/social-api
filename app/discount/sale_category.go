@@ -4,11 +4,10 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 // SaleCategoriesByOption returns sale-category relations with an app error
-func (s *ServiceDiscount) SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, *model.AppError) {
+func (s *ServiceDiscount) SaleCategoriesByOption(option *model.SaleCategoryRelationFilterOption) ([]*model.SaleCategoryRelation, *model.AppError) {
 	saleCategoryRelations, err := s.srv.Store.SaleCategoryRelation().SaleCategoriesByOption(option)
 	var (
 		statusCode int

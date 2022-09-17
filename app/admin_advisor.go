@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/slog"
@@ -267,7 +266,7 @@ func (a *App) getWarnMetricStatusAndDisplayTextsForId(warnMetricId string, T i18
 // 	return nil
 // }
 
-func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.User, forceAck bool, isBot bool) *model.AppError {
+func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender *model.User, forceAck bool, isBot bool) *model.AppError {
 	if warnMetric, ok := model.WarnMetricsTable[warnMetricId]; ok {
 		data, nErr := a.Srv().Store.System().GetByName(warnMetric.Id)
 		if nErr == nil && data != nil && data.Value == model.WarnMetricStatusAck {
@@ -287,7 +286,7 @@ func (a *App) NotifyAndSetWarnMetricAck(warnMetricId string, sender *account.Use
 			data.Props["ContactEmailValue"] = sender.Email
 
 			//same definition as the active users count metric displayed in the SystemConsole Analytics section
-			registeredUsersCount, cerr := a.Srv().Store.User().Count(account.UserCountOptions{})
+			registeredUsersCount, cerr := a.Srv().Store.User().Count(model.UserCountOptions{})
 			if cerr != nil {
 				slog.Warn("Error retrieving the number of registered users", slog.Err(cerr))
 			} else {

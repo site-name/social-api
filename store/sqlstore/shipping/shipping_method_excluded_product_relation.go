@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/store"
 )
 
@@ -33,7 +32,7 @@ func (s *SqlShippingMethodExcludedProductStore) ModelFields(prefix string) model
 }
 
 // Save inserts given ShippingMethodExcludedProduct into database then returns it
-func (ss *SqlShippingMethodExcludedProductStore) Save(instance *shipping.ShippingMethodExcludedProduct) (*shipping.ShippingMethodExcludedProduct, error) {
+func (ss *SqlShippingMethodExcludedProductStore) Save(instance *model.ShippingMethodExcludedProduct) (*model.ShippingMethodExcludedProduct, error) {
 	instance.PreSave()
 	if err := instance.IsValid(); err != nil {
 		return nil, err
@@ -52,8 +51,8 @@ func (ss *SqlShippingMethodExcludedProductStore) Save(instance *shipping.Shippin
 }
 
 // Get finds and returns a shipping method excluded product with given id then reutrns it
-func (ss *SqlShippingMethodExcludedProductStore) Get(id string) (*shipping.ShippingMethodExcludedProduct, error) {
-	var res shipping.ShippingMethodExcludedProduct
+func (ss *SqlShippingMethodExcludedProductStore) Get(id string) (*model.ShippingMethodExcludedProduct, error) {
+	var res model.ShippingMethodExcludedProduct
 	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShippingMethodExcludedProductTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {

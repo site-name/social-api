@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -36,7 +35,7 @@ func (s *SqlDigitalContentUrlStore) ModelFields(prefix string) model.AnyArray[st
 }
 
 // Upsert inserts or updates given digital content url into database then returns it
-func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) {
+func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *model.DigitalContentUrl) (*model.DigitalContentUrl, error) {
 
 	var isSaving bool
 	if contentURL.Id == "" {
@@ -92,8 +91,8 @@ func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *product_and_discount.Dig
 }
 
 // Get finds and returns a digital content url with given id
-func (ps *SqlDigitalContentUrlStore) Get(id string) (*product_and_discount.DigitalContentUrl, error) {
-	var res product_and_discount.DigitalContentUrl
+func (ps *SqlDigitalContentUrlStore) Get(id string) (*model.DigitalContentUrl, error) {
+	var res model.DigitalContentUrl
 
 	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.DigitalContentURLTableName+" WHERE Id = ?", id)
 	if err != nil {

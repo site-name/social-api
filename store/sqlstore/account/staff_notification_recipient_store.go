@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
 
@@ -34,7 +33,7 @@ func NewSqlStaffNotificationRecipientStore(s store.Store) store.StaffNotificatio
 	return &SqlStaffNotificationRecipientStore{s}
 }
 
-func (ss *SqlStaffNotificationRecipientStore) Save(record *account.StaffNotificationRecipient) (*account.StaffNotificationRecipient, error) {
+func (ss *SqlStaffNotificationRecipientStore) Save(record *model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error) {
 	record.PreSave()
 	if err := record.IsValid(); err != nil {
 		return nil, err
@@ -47,8 +46,8 @@ func (ss *SqlStaffNotificationRecipientStore) Save(record *account.StaffNotifica
 	return record, nil
 }
 
-func (ss *SqlStaffNotificationRecipientStore) Get(id string) (*account.StaffNotificationRecipient, error) {
-	var res account.StaffNotificationRecipient
+func (ss *SqlStaffNotificationRecipientStore) Get(id string) (*model.StaffNotificationRecipient, error) {
+	var res model.StaffNotificationRecipient
 
 	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.StaffNotificationRecipientTableName+" WHERE Id = ?", id)
 	if err != nil {

@@ -7,9 +7,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
-	"github.com/sitename/sitename/model/page"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
@@ -23,16 +20,16 @@ import (
 // `attributeID` must be ID of processing `Attribute`
 //
 // Returned interface{} must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
-func (a *ServiceAttribute) AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values []*attribute.AttributeValue) (interface{}, *model.AppError) {
+func (a *ServiceAttribute) AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values []*model.AttributeValue) (interface{}, *model.AppError) {
 
 	// validate if valid `instance` was provided
 	switch instance.(type) {
-	case *product_and_discount.Product, *product_and_discount.ProductVariant, *page.Page:
+	case *model.Product, *model.ProductVariant, *model.Page:
 	default:
 		return nil, model.NewAppError("AssociateAttributeValuesToInstance", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "instance"}, "", http.StatusBadRequest)
 	}
 
-	valueIDs := attribute.AttributeValues(values).IDs()
+	valueIDs := model.AttributeValues(values).IDs()
 
 	// Ensure the values are actually form the given attribute:
 	if appErr := a.validateAttributeOwnsValues(attributeID, valueIDs); appErr != nil {
@@ -47,7 +44,7 @@ func (a *ServiceAttribute) AssociateAttributeValuesToInstance(instance interface
 
 	// save in bulk value relationships:
 	switch v := assignment.(type) {
-	case *attribute.AssignedProductAttribute:
+	case *model.AssignedProductAttribute:
 		_, err := a.srv.Store.AssignedProductAttributeValue().SaveInBulk(v.Id, valueIDs)
 		if err != nil {
 			if appErr, ok := err.(*model.AppError); ok {
@@ -60,7 +57,7 @@ func (a *ServiceAttribute) AssociateAttributeValuesToInstance(instance interface
 			return nil, model.NewAppError("AssociateAttributeValuesToInstance", "app.attribute.error_creating_assigned_product_attribute_values.app_error", nil, err.Error(), statusCode)
 		}
 
-	case *attribute.AssignedVariantAttribute:
+	case *model.AssignedVariantAttribute:
 		_, err := a.srv.Store.AssignedVariantAttributeValue().SaveInBulk(v.Id, valueIDs)
 		if err != nil {
 			if appErr, ok := err.(*model.AppError); ok {
@@ -73,7 +70,7 @@ func (a *ServiceAttribute) AssociateAttributeValuesToInstance(instance interface
 			return nil, model.NewAppError("AssociateAttributeValuesToInstance", "app.attribute.error_creating_assigned_variants_attribute_values.app_error", nil, err.Error(), statusCode)
 		}
 
-	case *attribute.AssignedPageAttribute:
+	case *model.AssignedPageAttribute:
 		_, err := a.srv.Store.AssignedPageAttributeValue().SaveInBulk(v.Id, valueIDs)
 		if err != nil {
 			if appErr, ok := err.(*model.AppError); ok {
@@ -105,7 +102,7 @@ func (a *ServiceAttribute) validateAttributeOwnsValues(attributeID string, value
 	if appErr != nil {
 		return appErr
 	}
-	attributeActualValueIDs := attribute.AttributeValues(attributeValues).IDs()
+	attributeActualValueIDs := model.AttributeValues(attributeValues).IDs()
 	foundAssociatedIDs := util.SlicesIntersection(attributeActualValueIDs, valueIDs)
 
 	for _, associatedID := range foundAssociatedIDs {
@@ -121,7 +118,7 @@ func (a *ServiceAttribute) validateAttributeOwnsValues(attributeID string, value
 //
 // NOTE:
 //
-// `instance` must be either `*product.Product` or `*product.ProductVariant` or `*page.Page`
+// `instance` must be either `*product.Product` or `*product.ProductVariant` or `*model.Page`
 //
 // returned interface{} is either:
 //
@@ -130,8 +127,8 @@ func (a *ServiceAttribute) validateAttributeOwnsValues(attributeID string, value
 //	+) *AssignedPageAttribute
 func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, attributeID string) (interface{}, *model.AppError) {
 	switch v := instance.(type) {
-	case *product_and_discount.Product:
-		attributeProduct, appErr := a.AttributeProductByOption(&attribute.AttributeProductFilterOption{
+	case *model.Product:
+		attributeProduct, appErr := a.AttributeProductByOption(&model.AttributeProductFilterOption{
 			ProductTypeID: squirrel.Eq{store.AttributeProductTableName + ".ProductTypeID": v.ProductTypeID},
 			AttributeID:   squirrel.Eq{store.AttributeProductTableName + ".AttributeID": attributeID},
 		})
@@ -139,13 +136,13 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 			return nil, appErr
 		}
 
-		return a.GetOrCreateAssignedProductAttribute(&attribute.AssignedProductAttribute{
+		return a.GetOrCreateAssignedProductAttribute(&model.AssignedProductAttribute{
 			ProductID:    v.Id,
 			AssignmentID: attributeProduct.Id,
 		})
 
-	case *product_and_discount.ProductVariant:
-		attrVariant, appErr := a.AttributeVariantByOption(&attribute.AttributeVariantFilterOption{
+	case *model.ProductVariant:
+		attrVariant, appErr := a.AttributeVariantByOption(&model.AttributeVariantFilterOption{
 			ProductTypeID: squirrel.Eq{store.AttributeVariantTableName + ".ProductTypeID": v.ProductID},
 			AttributeID:   squirrel.Eq{store.AttributeVariantTableName + ".AttributeID": attributeID},
 		})
@@ -153,13 +150,13 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 			return nil, appErr
 		}
 
-		return a.GetOrCreateAssignedVariantAttribute(&attribute.AssignedVariantAttribute{
+		return a.GetOrCreateAssignedVariantAttribute(&model.AssignedVariantAttribute{
 			VariantID:    v.Id,
 			AssignmentID: attrVariant.Id,
 		})
 
-	case *page.Page:
-		attributePage, appErr := a.AttributePageByOption(&attribute.AttributePageFilterOption{
+	case *model.Page:
+		attributePage, appErr := a.AttributePageByOption(&model.AttributePageFilterOption{
 			AttributeID: squirrel.Eq{store.AttributePageTableName + ".AttributeID": attributeID},
 			PageTypeID:  squirrel.Eq{store.AttributePageTableName + ".PageTypeID": v.PageTypeID},
 		})
@@ -167,7 +164,7 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 			return nil, appErr
 		}
 
-		return a.GetOrCreateAssignedPageAttribute(&attribute.AssignedPageAttribute{
+		return a.GetOrCreateAssignedPageAttribute(&model.AssignedPageAttribute{
 			PageID:       v.Id,
 			AssignmentID: attributePage.Id,
 		})
@@ -193,8 +190,8 @@ func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, ass
 	}
 
 	switch instance.(type) {
-	case *product_and_discount.Product:
-		if assignmentValue, ok := assignment.(*attribute.AssignedProductAttribute); !ok {
+	case *model.Product:
+		if assignmentValue, ok := assignment.(*model.AssignedProductAttribute); !ok {
 			assignedProductAttrValues, attrValues, err := a.srv.Store.AssignedProductAttributeValue().SelectForSort(assignmentValue.Id)
 			// err can be *store.ErrNotFound or system error
 			if err != nil {
@@ -215,8 +212,8 @@ func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, ass
 		// other types are not accepted and returns an error:
 		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment"}, "", http.StatusBadRequest)
 
-	case *product_and_discount.ProductVariant:
-		if assignmentValue, ok := assignment.(*attribute.AssignedVariantAttribute); ok {
+	case *model.ProductVariant:
+		if assignmentValue, ok := assignment.(*model.AssignedVariantAttribute); ok {
 			assignedVariantAttrValues, attrValues, err := a.srv.Store.AssignedVariantAttributeValue().SelectForSort(assignmentValue.Id)
 			// err can be *store.ErrNotFound or system error
 			if err != nil {
@@ -237,8 +234,8 @@ func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, ass
 		// other types are not accepted and returns an error:
 		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment"}, "", http.StatusBadRequest)
 
-	case *page.Page:
-		if assignmentValue, ok := assignment.(*attribute.AssignedPageAttribute); ok {
+	case *model.Page:
+		if assignmentValue, ok := assignment.(*model.AssignedPageAttribute); ok {
 			assignedPageAttrValues, attrValues, err := a.srv.Store.AssignedPageAttributeValue().SelectForSort(assignmentValue.Id)
 			// err can be *store.ErrNotFound or system error
 			if err != nil {

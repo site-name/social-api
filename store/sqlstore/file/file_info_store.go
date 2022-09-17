@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/store"
 )
 
@@ -82,7 +81,7 @@ func NewSqlFileInfoStore(sqlStore store.Store, metrics einterfaces.MetricsInterf
 	return s
 }
 
-func (fs *SqlFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, error) {
+func (fs *SqlFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
 	var isSaving bool
 
 	if !model.IsValidId(info.Id) {
@@ -129,16 +128,16 @@ func (fs *SqlFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, error) 
 	return info, nil
 }
 
-func (fs *SqlFileInfoStore) GetByIds(ids []string) ([]*file.FileInfo, error) {
-	var infos []*file.FileInfo
+func (fs *SqlFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
+	var infos []*model.FileInfo
 	if err := fs.GetReplicaX().Select(&infos, "SELECT "+fs.queryFields.Join(",")+" FROM "+store.FileInfoTableName+" WHERE Id IN ? AND DeleteAt = 0 ORDER BY CreateAt DESC", ids); err != nil {
 		return nil, errors.Wrap(err, "failed to find FileInfos")
 	}
 	return infos, nil
 }
 
-func (fs *SqlFileInfoStore) get(id string, fromMaster bool) (*file.FileInfo, error) {
-	info := &file.FileInfo{}
+func (fs *SqlFileInfoStore) get(id string, fromMaster bool) (*model.FileInfo, error) {
+	info := &model.FileInfo{}
 
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).
@@ -164,17 +163,17 @@ func (fs *SqlFileInfoStore) get(id string, fromMaster bool) (*file.FileInfo, err
 	return info, nil
 }
 
-func (fs *SqlFileInfoStore) Get(id string) (*file.FileInfo, error) {
+func (fs *SqlFileInfoStore) Get(id string) (*model.FileInfo, error) {
 	return fs.get(id, false)
 }
 
-func (fs *SqlFileInfoStore) GetFromMaster(id string) (*file.FileInfo, error) {
+func (fs *SqlFileInfoStore) GetFromMaster(id string) (*model.FileInfo, error) {
 	return fs.get(id, true)
 }
 
 // GetWithOptions finds and returns fileinfos with given options.
 // Leave page, perPage nil to get all result.
-func (fs *SqlFileInfoStore) GetWithOptions(page, perPage *int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
+func (fs *SqlFileInfoStore) GetWithOptions(page, perPage *int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
 	if perPage != nil && *perPage < 0 {
 		return nil, store.NewErrLimitExceeded("perPage", *perPage, "value used in pagination while getting FileInfos")
 	} else if page != nil && *page < 0 {
@@ -185,7 +184,7 @@ func (fs *SqlFileInfoStore) GetWithOptions(page, perPage *int, opt *file.GetFile
 	}
 
 	if opt == nil {
-		opt = &file.GetFileInfosOptions{}
+		opt = &model.GetFileInfosOptions{}
 	}
 
 	query := fs.GetQueryBuilder().
@@ -208,7 +207,7 @@ func (fs *SqlFileInfoStore) GetWithOptions(page, perPage *int, opt *file.GetFile
 	}
 
 	if opt.SortBy == "" {
-		opt.SortBy = file.FILEINFO_SORT_BY_CREATED
+		opt.SortBy = model.FILEINFO_SORT_BY_CREATED
 	}
 	sortDirection := "ASC"
 	if opt.SortDescending {
@@ -216,9 +215,9 @@ func (fs *SqlFileInfoStore) GetWithOptions(page, perPage *int, opt *file.GetFile
 	}
 
 	switch opt.SortBy {
-	case file.FILEINFO_SORT_BY_CREATED:
+	case model.FILEINFO_SORT_BY_CREATED:
 		query = query.OrderBy("FileInfos.CreateAt " + sortDirection)
-	case file.FILEINFO_SORT_BY_SIZE:
+	case model.FILEINFO_SORT_BY_SIZE:
 		query = query.OrderBy("FileInfos.Size " + sortDirection)
 	default:
 		return nil, store.NewErrInvalidInput("FileInfos", "<sortOption>", opt.SortBy)
@@ -234,15 +233,15 @@ func (fs *SqlFileInfoStore) GetWithOptions(page, perPage *int, opt *file.GetFile
 	if err != nil {
 		return nil, errors.Wrap(err, "file_info_tosql")
 	}
-	var infos []*file.FileInfo
+	var infos []*model.FileInfo
 	if err := fs.GetReplicaX().Select(&infos, queryString, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to find FileInfos")
 	}
 	return infos, nil
 }
 
-func (fs *SqlFileInfoStore) GetByPath(path string) (*file.FileInfo, error) {
-	var info file.FileInfo
+func (fs *SqlFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
+	var info model.FileInfo
 
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).
@@ -269,8 +268,8 @@ func (fs *SqlFileInfoStore) GetByPath(path string) (*file.FileInfo, error) {
 func (fs *SqlFileInfoStore) InvalidateFileInfosForPostCache(postId string, deleted bool) {
 }
 
-func (fs *SqlFileInfoStore) GetForUser(userId string) ([]*file.FileInfo, error) {
-	var infos []*file.FileInfo
+func (fs *SqlFileInfoStore) GetForUser(userId string) ([]*model.FileInfo, error) {
+	var infos []*model.FileInfo
 
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).

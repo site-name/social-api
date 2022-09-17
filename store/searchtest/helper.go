@@ -7,16 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/file"
 	"github.com/sitename/sitename/store"
 )
 
 type SearchTestHelper struct {
 	Store           store.Store
-	User            *account.User
-	User2           *account.User
-	UserAnotherTeam *account.User
+	User            *model.User
+	User2           *model.User
+	UserAnotherTeam *model.User
 	// Team               *model.Team
 	// AnotherTeam        *model.Team
 	// ChannelBasic       *model.Channel
@@ -163,8 +161,8 @@ func (th *SearchTestHelper) makeEmail() string {
 	return "success_" + model.NewId() + "@simulator.amazon.com"
 }
 
-func (th *SearchTestHelper) createUser(username, nickname, firstName, lastName string) (*account.User, error) {
-	return th.Store.User().Save(&account.User{
+func (th *SearchTestHelper) createUser(username, nickname, firstName, lastName string) (*model.User, error) {
+	return th.Store.User().Save(&model.User{
 		Username:  username,
 		Password:  username,
 		Nickname:  nickname,
@@ -174,8 +172,8 @@ func (th *SearchTestHelper) createUser(username, nickname, firstName, lastName s
 	})
 }
 
-func (th *SearchTestHelper) createGuest(username, nickname, firstName, lastName string) (*account.User, error) {
-	return th.Store.User().Save(&account.User{
+func (th *SearchTestHelper) createGuest(username, nickname, firstName, lastName string) (*model.User, error) {
+	return th.Store.User().Save(&model.User{
 		Username:  username,
 		Password:  username,
 		Nickname:  nickname,
@@ -186,7 +184,7 @@ func (th *SearchTestHelper) createGuest(username, nickname, firstName, lastName 
 	})
 }
 
-func (th *SearchTestHelper) deleteUser(user *account.User) error {
+func (th *SearchTestHelper) deleteUser(user *model.User) error {
 	return th.Store.User().PermanentDelete(user.Id)
 }
 
@@ -354,8 +352,8 @@ func (th *SearchTestHelper) cleanAllUsers() error {
 // 	return th.Store.Post().Save(postModel)
 // }
 
-func (th *SearchTestHelper) createFileInfoModel(creatorID, postID, name, content, extension, mimeType string, createAt, size int64) *file.FileInfo {
-	return &file.FileInfo{
+func (th *SearchTestHelper) createFileInfoModel(creatorID, postID, name, content, extension, mimeType string, createAt, size int64) *model.FileInfo {
+	return &model.FileInfo{
 		CreatorId: creatorID,
 		// PostId:    postID,
 		CreateAt:  createAt,
@@ -370,7 +368,7 @@ func (th *SearchTestHelper) createFileInfoModel(creatorID, postID, name, content
 	}
 }
 
-func (th *SearchTestHelper) createFileInfo(creatorID, postID, name, content, extension, mimeType string, createAt, size int64) (*file.FileInfo, error) {
+func (th *SearchTestHelper) createFileInfo(creatorID, postID, name, content, extension, mimeType string, createAt, size int64) (*model.FileInfo, error) {
 	var creationTime int64 = 1000000
 	if createAt > 0 {
 		creationTime = createAt
@@ -427,7 +425,7 @@ func (th *SearchTestHelper) deleteUserFileInfos(userID string) error {
 // 	return nil
 // }
 
-func (th *SearchTestHelper) assertUsersMatchInAnyOrder(t *testing.T, expected, actual []*account.User) {
+func (th *SearchTestHelper) assertUsersMatchInAnyOrder(t *testing.T, expected, actual []*model.User) {
 	expectedUsernames := make([]string, 0, len(expected))
 	for _, user := range expected {
 		user.Sanitize(map[string]bool{})
@@ -454,7 +452,7 @@ func (th *SearchTestHelper) assertUsersMatchInAnyOrder(t *testing.T, expected, a
 // 	assert.Contains(t, postIDS, postID, "Did not find expected post in search results.")
 // }
 
-func (th *SearchTestHelper) checkFileInfoInSearchResults(t *testing.T, fileID string, searchResults map[string]*file.FileInfo) {
+func (th *SearchTestHelper) checkFileInfoInSearchResults(t *testing.T, fileID string, searchResults map[string]*model.FileInfo) {
 	t.Helper()
 	fileIDS := make([]string, len(searchResults))
 	for ID := range searchResults {

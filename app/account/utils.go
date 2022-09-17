@@ -18,7 +18,6 @@ import (
 	"github.com/golang/freetype/truetype"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/util/fileutils"
 	"github.com/sitename/sitename/store"
 )
@@ -83,7 +82,7 @@ func CheckEmailDomain(email string, domains string) bool {
 }
 
 // CheckUserDomain checks that a user's email domain matches a list of space-delimited domains as a string.
-func CheckUserDomain(user *account.User, domains string) bool {
+func CheckUserDomain(user *model.User, domains string) bool {
 	return CheckEmailDomain(user.Email, domains)
 }
 
@@ -156,7 +155,7 @@ func CreateProfileImage(username string, userID string, initialFont string) ([]b
 }
 
 // StoreUserAddress Add address to user address book and set as default one.
-func (s *ServiceAccount) StoreUserAddress(user *account.User, address account.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError {
+func (s *ServiceAccount) StoreUserAddress(user *model.User, address model.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError {
 	address_, appErr := manager.ChangeUserAddress(address, addressType, user)
 	if appErr != nil {
 		return appErr
@@ -182,7 +181,7 @@ func (s *ServiceAccount) StoreUserAddress(user *account.User, address account.Ad
 		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{store.AddressTableName + ".Country": address_.Country})
 	}
 
-	addresses, appErr := s.AddressesByOption(&account.AddressFilterOption{
+	addresses, appErr := s.AddressesByOption(&model.AddressFilterOption{
 		UserID: squirrel.Eq{store.UserAddressTableName + ".UserID": user.Id},
 		Other:  addressFilterOptions,
 	})
@@ -201,7 +200,7 @@ func (s *ServiceAccount) StoreUserAddress(user *account.User, address account.Ad
 			return appErr
 		}
 
-		_, appErr = s.AddUserAddress(&account.UserAddress{
+		_, appErr = s.AddUserAddress(&model.UserAddress{
 			UserID:    user.Id,
 			AddressID: address_.Id,
 		})
@@ -213,11 +212,11 @@ func (s *ServiceAccount) StoreUserAddress(user *account.User, address account.Ad
 		address_ = addresses[0]
 	}
 
-	if addressType == account.ADDRESS_TYPE_BILLING {
+	if addressType == model.ADDRESS_TYPE_BILLING {
 		if user.DefaultBillingAddressID == nil {
 			appErr = s.SetUserDefaultBillingAddress(user, address_.Id)
 		}
-	} else if addressType == account.ADDRESS_TYPE_SHIPPING {
+	} else if addressType == model.ADDRESS_TYPE_SHIPPING {
 		if user.DefaultShippingAddressID == nil {
 			appErr = s.SetUserDefaultShippingAddress(user, address_.Id)
 		}
@@ -227,29 +226,29 @@ func (s *ServiceAccount) StoreUserAddress(user *account.User, address account.Ad
 }
 
 // SetUserDefaultBillingAddress sets default billing address for given user
-func (s *ServiceAccount) SetUserDefaultBillingAddress(user *account.User, defaultBillingAddressID string) *model.AppError {
+func (s *ServiceAccount) SetUserDefaultBillingAddress(user *model.User, defaultBillingAddressID string) *model.AppError {
 	user.DefaultBillingAddressID = &defaultBillingAddressID
 	_, appErr := s.UpdateUser(user, false)
 	return appErr
 }
 
 // SetUserDefaultShippingAddress sets default shipping address for given user
-func (s *ServiceAccount) SetUserDefaultShippingAddress(user *account.User, defaultShippingAddressID string) *model.AppError {
+func (s *ServiceAccount) SetUserDefaultShippingAddress(user *model.User, defaultShippingAddressID string) *model.AppError {
 	user.DefaultShippingAddressID = &defaultShippingAddressID
 	_, appErr := s.UpdateUser(user, false)
 	return appErr
 }
 
 // ChangeUserDefaultAddress set default address for given user
-func (s *ServiceAccount) ChangeUserDefaultAddress(user account.User, address account.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError {
+func (s *ServiceAccount) ChangeUserDefaultAddress(user model.User, address model.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError {
 	address_, appErr := manager.ChangeUserAddress(address, addressType, &user)
 	if appErr != nil {
 		return appErr
 	}
 
-	if addressType == account.ADDRESS_TYPE_BILLING {
+	if addressType == model.ADDRESS_TYPE_BILLING {
 		if user.DefaultBillingAddressID != nil {
-			_, appErr := s.AddUserAddress(&account.UserAddress{
+			_, appErr := s.AddUserAddress(&model.UserAddress{
 				UserID:    user.Id,
 				AddressID: *user.DefaultBillingAddressID,
 			})
@@ -262,9 +261,9 @@ func (s *ServiceAccount) ChangeUserDefaultAddress(user account.User, address acc
 		if appErr != nil {
 			return appErr
 		}
-	} else if addressType == account.ADDRESS_TYPE_SHIPPING {
+	} else if addressType == model.ADDRESS_TYPE_SHIPPING {
 		if user.DefaultShippingAddressID != nil {
-			_, appErr := s.AddUserAddress(&account.UserAddress{
+			_, appErr := s.AddUserAddress(&model.UserAddress{
 				UserID:    user.Id,
 				AddressID: *user.DefaultShippingAddressID,
 			})

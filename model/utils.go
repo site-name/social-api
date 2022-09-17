@@ -21,7 +21,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -51,22 +50,6 @@ const (
 //
 //	^[a-zA-Z0-9-_\.]+
 var validId *regexp.Regexp = regexp.MustCompile(ValidIdRegex)
-
-// IsValidPluginId verifies that the plugin id has a minimum length of 3, maximum length of 190, and
-// contains only alphanumeric characters, dashes, underscores and periods.
-//
-// These constraints are necessary since the plugin id is used as part of a filesystem path.
-func IsValidPluginId(id string) bool {
-	if utf8.RuneCountInString(id) < MinIdLength {
-		return false
-	}
-
-	if utf8.RuneCountInString(id) > MaxIdLength {
-		return false
-	}
-
-	return validId.MatchString(id)
-}
 
 // IsSamlFile checks if filename is a SAML file.
 func IsSamlFile(saml *SamlSettings, filename string) bool {

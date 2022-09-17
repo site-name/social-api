@@ -4,12 +4,10 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/order"
 )
 
-func (a *ServiceAccount) CommonCustomerCreateEvent(userID *string, orderID *string, eventType string, params model.StringInterface) (*account.CustomerEvent, *model.AppError) {
-	event := &account.CustomerEvent{
+func (a *ServiceAccount) CommonCustomerCreateEvent(userID *string, orderID *string, eventType string, params model.StringInterface) (*model.CustomerEvent, *model.AppError) {
+	event := &model.CustomerEvent{
 		Type:       eventType,
 		Parameters: params,
 		OrderID:    orderID,
@@ -28,10 +26,10 @@ func (a *ServiceAccount) CommonCustomerCreateEvent(userID *string, orderID *stri
 }
 
 // CustomerPlacedOrderEvent creates an customer event, if given user is not valid, it returns immediately.
-func (s *ServiceAccount) CustomerPlacedOrderEvent(user *account.User, orDer order.Order) (*account.CustomerEvent, *model.AppError) {
+func (s *ServiceAccount) CustomerPlacedOrderEvent(user *model.User, orDer model.Order) (*model.CustomerEvent, *model.AppError) {
 	if user == nil || !model.IsValidId(user.Id) {
 		return nil, nil
 	}
 
-	return s.CommonCustomerCreateEvent(&user.Id, &orDer.Id, account.PLACED_ORDER, nil)
+	return s.CommonCustomerCreateEvent(&user.Id, &orDer.Id, model.PLACED_ORDER, nil)
 }

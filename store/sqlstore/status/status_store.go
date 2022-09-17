@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
 
@@ -36,7 +35,7 @@ func (s *SqlStatusStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (s SqlStatusStore) SaveOrUpdate(status *account.Status) error {
+func (s SqlStatusStore) SaveOrUpdate(status *model.Status) error {
 	var (
 		saveQuery   = "INSERT INTO Status (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
 		updateQuery = "UPDATE Status SET " + s.
@@ -47,7 +46,7 @@ func (s SqlStatusStore) SaveOrUpdate(status *account.Status) error {
 			Join(",") + " WHERE Id=:Id"
 	)
 
-	if err := s.GetReplicaX().Get(&account.Status{}, "SELECT * FROM Status WHERE UserId = :UserId", map[string]interface{}{"UserId": status.UserId}); err == nil {
+	if err := s.GetReplicaX().Get(&model.Status{}, "SELECT * FROM Status WHERE UserId = :UserId", map[string]interface{}{"UserId": status.UserId}); err == nil {
 		if _, err := s.GetMasterX().NamedExec(updateQuery, status); err != nil {
 			return errors.Wrap(err, "failed to update Status")
 		}
@@ -61,8 +60,8 @@ func (s SqlStatusStore) SaveOrUpdate(status *account.Status) error {
 	return nil
 }
 
-func (s *SqlStatusStore) Get(userId string) (*account.Status, error) {
-	var status account.Status
+func (s *SqlStatusStore) Get(userId string) (*model.Status, error) {
+	var status model.Status
 
 	if err := s.GetReplicaX().Get(&status, `SELECT	* FROM Status WHERE UserId = ?`, userId); err != nil {
 		if err == sql.ErrNoRows {
@@ -73,15 +72,15 @@ func (s *SqlStatusStore) Get(userId string) (*account.Status, error) {
 	return &status, nil
 }
 
-func (s *SqlStatusStore) GetByIds(userIds []string) ([]*account.Status, error) {
+func (s *SqlStatusStore) GetByIds(userIds []string) ([]*model.Status, error) {
 	rows, err := s.GetReplicaX().QueryX("SELECT UserId, Status, Manual, LastActivityAt FROM Status WHERE UserId IN ?", userIds)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find Statuses")
 	}
-	var statuses []*account.Status
+	var statuses []*model.Status
 	defer rows.Close()
 	for rows.Next() {
-		var status account.Status
+		var status model.Status
 		if err = rows.Scan(&status.UserId, &status.Status, &status.Manual, &status.LastActivityAt); err != nil {
 			return nil, errors.Wrap(err, "unable to scan from rows")
 		}
@@ -95,7 +94,7 @@ func (s *SqlStatusStore) GetByIds(userIds []string) ([]*account.Status, error) {
 }
 
 func (s *SqlStatusStore) ResetAll() error {
-	if _, err := s.GetMasterX().Exec("UPDATE Status SET Status = ? WHERE Manual = false", account.STATUS_OFFLINE); err != nil {
+	if _, err := s.GetMasterX().Exec("UPDATE Status SET Status = ? WHERE Manual = false", model.STATUS_OFFLINE); err != nil {
 		return errors.Wrap(err, "failed to update Statuses")
 	}
 	return nil

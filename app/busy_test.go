@@ -7,8 +7,6 @@ import (
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/cluster"
-	"github.com/sitename/sitename/model/plugins"
 	"github.com/stretchr/testify/require"
 )
 
@@ -56,13 +54,13 @@ type ClusterMock struct {
 	Busy *Busy
 }
 
-func (c *ClusterMock) SendClusterMessage(msg *cluster.ClusterMessage) {
+func (c *ClusterMock) SendClusterMessage(msg *model.ClusterMessage) {
 	var sbs model.ServerBusyState
 	json.Unmarshal(msg.Data, &sbs)
 	c.Busy.ClusterEventChanged(&sbs)
 }
 
-func (c *ClusterMock) SendClusterMessageToNode(nodeID string, msg *cluster.ClusterMessage) error {
+func (c *ClusterMock) SendClusterMessageToNode(nodeID string, msg *model.ClusterMessage) error {
 	return nil
 }
 
@@ -89,16 +87,16 @@ func compareBusyState(t *testing.T, busy1 *Busy, busy2 *Busy) bool {
 
 func (c *ClusterMock) StartInterNodeCommunication() {}
 func (c *ClusterMock) StopInterNodeCommunication()  {}
-func (c *ClusterMock) RegisterClusterMessageHandler(event cluster.ClusterEvent, crm einterfaces.ClusterMessageHandler) {
+func (c *ClusterMock) RegisterClusterMessageHandler(event model.ClusterEvent, crm einterfaces.ClusterMessageHandler) {
 }
-func (c *ClusterMock) GetClusterId() string                                         { return "cluster_mock" }
-func (c *ClusterMock) IsLeader() bool                                               { return false }
-func (c *ClusterMock) GetMyClusterInfo() *cluster.ClusterInfo                       { return nil }
-func (c *ClusterMock) GetClusterInfos() []*cluster.ClusterInfo                      { return nil }
-func (c *ClusterMock) NotifyMsg(buf []byte)                                         {}
-func (c *ClusterMock) GetClusterStats() ([]*cluster.ClusterStats, *model.AppError)  { return nil, nil }
-func (c *ClusterMock) GetLogs(page, perPage int) ([]string, *model.AppError)        { return nil, nil }
-func (c *ClusterMock) GetPluginStatuses() (plugins.PluginStatuses, *model.AppError) { return nil, nil }
+func (c *ClusterMock) GetClusterId() string                                       { return "cluster_mock" }
+func (c *ClusterMock) IsLeader() bool                                             { return false }
+func (c *ClusterMock) GetMyClusterInfo() *model.ClusterInfo                       { return nil }
+func (c *ClusterMock) GetClusterInfos() []*model.ClusterInfo                      { return nil }
+func (c *ClusterMock) NotifyMsg(buf []byte)                                       {}
+func (c *ClusterMock) GetClusterStats() ([]*model.ClusterStats, *model.AppError)  { return nil, nil }
+func (c *ClusterMock) GetLogs(page, perPage int) ([]string, *model.AppError)      { return nil, nil }
+func (c *ClusterMock) GetPluginStatuses() (model.PluginStatuses, *model.AppError) { return nil, nil }
 func (c *ClusterMock) ConfigChanged(previousConfig *model.Config, newConfig *model.Config, sendToOtherServer bool) *model.AppError {
 	return nil
 }

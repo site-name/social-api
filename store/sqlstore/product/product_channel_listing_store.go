@@ -6,8 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -41,7 +39,7 @@ func (ps *SqlProductChannelListingStore) ModelFields(prefix string) model.AnyArr
 	})
 }
 
-func (ps *SqlProductChannelListingStore) ScanFields(prd product_and_discount.ProductChannelListing) []interface{} {
+func (ps *SqlProductChannelListingStore) ScanFields(prd model.ProductChannelListing) []interface{} {
 	return []interface{}{
 		&prd.Id,
 		&prd.ProductID,
@@ -57,7 +55,7 @@ func (ps *SqlProductChannelListingStore) ScanFields(prd product_and_discount.Pro
 }
 
 // BulkUpsert performs bulk upsert on given product channel listings
-func (ps *SqlProductChannelListingStore) BulkUpsert(listings []*product_and_discount.ProductChannelListing) ([]*product_and_discount.ProductChannelListing, error) {
+func (ps *SqlProductChannelListingStore) BulkUpsert(listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
 	transaction, err := ps.GetMasterX().Beginx()
 	if err != nil {
 		return nil, errors.Wrap(err, "transaction_begin")
@@ -120,8 +118,8 @@ func (ps *SqlProductChannelListingStore) BulkUpsert(listings []*product_and_disc
 	return listings, nil
 }
 
-func (ps *SqlProductChannelListingStore) Get(listingID string) (*product_and_discount.ProductChannelListing, error) {
-	var res product_and_discount.ProductChannelListing
+func (ps *SqlProductChannelListingStore) Get(listingID string) (*model.ProductChannelListing, error) {
+	var res model.ProductChannelListing
 
 	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.ProductChannelListingTableName+" WHERE Id = ?", listingID)
 	if err != nil {
@@ -135,7 +133,7 @@ func (ps *SqlProductChannelListingStore) Get(listingID string) (*product_and_dis
 }
 
 // FilterByOption finds and returns all ProductChannelListings filtered by given option
-func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) {
+func (ps *SqlProductChannelListingStore) FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error) {
 	query := ps.
 		GetQueryBuilder().
 		Select(ps.ModelFields(store.ProductChannelListingTableName + ".")...).
@@ -182,7 +180,7 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_disc
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var listings product_and_discount.ProductChannelListings
+	var listings model.ProductChannelListings
 	if err = ps.GetReplicaX().Select(&listings, sqlString, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to find product channel listings with given option")
 	}
@@ -192,7 +190,7 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *product_and_disc
 
 		channelIDs := listings.ChannelIDs()
 		if len(channelIDs) > 0 {
-			channels, err := ps.Channel().FilterByOption(&channel.ChannelFilterOption{
+			channels, err := ps.Channel().FilterByOption(&model.ChannelFilterOption{
 				Id: squirrel.Eq{store.ChannelTableName + ".Id": channelIDs},
 			})
 			if err != nil {

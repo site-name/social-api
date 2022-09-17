@@ -8,81 +8,71 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/order/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
-	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/giftcard"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/payment"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/shipping"
-	"github.com/sitename/sitename/model/shop"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
 // OrderService contains methods for working with orders
 type OrderService interface {
 	// AddGiftcardsToOrder
-	AddGiftcardsToOrder(transaction store_iface.SqlxTxExecutor, checkoutInfo checkout.CheckoutInfo, orDer *order.Order, totalPriceLeft *goprices.Money, user *account.User, _ interface{}) *model.AppError
+	AddGiftcardsToOrder(transaction store_iface.SqlxTxExecutor, checkoutInfo model.CheckoutInfo, orDer *model.Order, totalPriceLeft *goprices.Money, user *model.User, _ interface{}) *model.AppError
 	// AddVariantToOrder Add total_quantity of variant to order.
 	//
 	// Returns an order line the variant was added to.
-	AddVariantToOrder(orDer order.Order, variant product_and_discount.ProductVariant, quantity int, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, discounts []*product_and_discount.DiscountInfo, allocateStock bool) (*order.OrderLine, *exception.InsufficientStock, *model.AppError)
+	AddVariantToOrder(orDer model.Order, variant model.ProductVariant, quantity int, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, discounts []*model.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model.AppError)
 	// AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
-	AllDigitalOrderLinesOfOrder(orderID string) ([]*order.OrderLine, *model.AppError)
+	AllDigitalOrderLinesOfOrder(orderID string) ([]*model.OrderLine, *model.AppError)
 	// AnAddressOfOrder returns shipping address of given order if presents
-	AnAddressOfOrder(orderID string, whichAddressID account.WhichOrderAddressID) (*account.Address, *model.AppError)
+	AnAddressOfOrder(orderID string, whichAddressID model.WhichOrderAddressID) (*model.Address, *model.AppError)
 	// ApplyDiscountToValue Calculate the price based on the provided values
 	ApplyDiscountToValue(value *decimal.Decimal, valueType string, currency string, priceToDiscount interface{}) (interface{}, error)
 	// AutomaticallyFulfillDigitalLines
 	// Fulfill all digital lines which have enabled automatic fulfillment setting. Send confirmation email afterward.
-	AutomaticallyFulfillDigitalLines(ord order.Order, manager interfaces.PluginManagerInterface) (*exception.InsufficientStock, *model.AppError)
+	AutomaticallyFulfillDigitalLines(ord model.Order, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError)
 	// BulkDeleteFulfillments tells store to delete fulfillments that satisfy given option
-	BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments order.Fulfillments) *model.AppError
+	BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments model.Fulfillments) *model.AppError
 	// BulkUpsertFulfillmentLines performs bulk upsert given fulfillment lines and returns them
-	BulkUpsertFulfillmentLines(transaction store_iface.SqlxTxExecutor, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, *model.AppError)
+	BulkUpsertFulfillmentLines(transaction store_iface.SqlxTxExecutor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, *model.AppError)
 	// BulkUpsertOrderLines perform bulk upsert given order lines
-	BulkUpsertOrderLines(transaction store_iface.SqlxTxExecutor, orderLines []*order.OrderLine) ([]*order.OrderLine, *model.AppError)
+	BulkUpsertOrderLines(transaction store_iface.SqlxTxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, *model.AppError)
 	// BulkUpsertOrders performs bulk upsert given orders
-	BulkUpsertOrders(orders []*order.Order) ([]*order.Order, *model.AppError)
+	BulkUpsertOrders(orders []*model.Order) ([]*model.Order, *model.AppError)
 	// Calculate discount value depending on voucher and discount types.
 	//
 	// Raise NotApplicable if voucher of given type cannot be applied.
-	GetVoucherDiscountForOrder(ord *order.Order) (result interface{}, notApplicableErr *product_and_discount.NotApplicable, appErr *model.AppError)
+	GetVoucherDiscountForOrder(ord *model.Order) (result interface{}, notApplicableErr *model.NotApplicable, appErr *model.AppError)
 	// CanMarkOrderAsPaid checks if given order can be marked as paid.
-	CanMarkOrderAsPaid(ord *order.Order, payments []*payment.Payment) (bool, *model.AppError)
+	CanMarkOrderAsPaid(ord *model.Order, payments []*model.Payment) (bool, *model.AppError)
 	// CancelFulfillment Return products to corresponding stocks.
-	CancelFulfillment(fulfillment order.Fulfillment, user *account.User, _ interface{}, warehouse *warehouse.WareHouse, manager interfaces.PluginManagerInterface) (*order.Fulfillment, *model.AppError)
+	CancelFulfillment(fulfillment model.Fulfillment, user *model.User, _ interface{}, warehouse *model.WareHouse, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model.AppError)
 	// CancelOrder Release allocation of unfulfilled order items.
-	CancelOrder(orDer *order.Order, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface) *model.AppError
+	CancelOrder(orDer *model.Order, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) *model.AppError
 	// CancelWaitingFulfillment cancels fulfillments which is in waiting for approval state.
-	CancelWaitingFulfillment(fulfillment order.Fulfillment, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface) *model.AppError
+	CancelWaitingFulfillment(fulfillment model.Fulfillment, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) *model.AppError
 	// ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 	//
 	// NOTE: userID can be empty
-	ChangeOrderLineQuantity(transaction store_iface.SqlxTxExecutor, userID string, _ interface{}, lineInfo *order.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*exception.InsufficientStock, *model.AppError)
+	ChangeOrderLineQuantity(transaction store_iface.SqlxTxExecutor, userID string, _ interface{}, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model.InsufficientStock, *model.AppError)
 	// CleanMarkOrderAsPaid Check if an order can be marked as paid.
-	CleanMarkOrderAsPaid(ord *order.Order) (*payment.PaymentError, *model.AppError)
+	CleanMarkOrderAsPaid(ord *model.Order) (*model.PaymentError, *model.AppError)
 	// CommonCreateOrderEvent is common method for creating desired order event instance
-	CommonCreateOrderEvent(transaction store_iface.SqlxTxExecutor, option *order.OrderEventOption) (*order.OrderEvent, *model.AppError)
+	CommonCreateOrderEvent(transaction store_iface.SqlxTxExecutor, option *model.OrderEventOption) (*model.OrderEvent, *model.AppError)
 	// CreateGiftcardsWhenApprovingFulfillment
-	CreateGiftcardsWhenApprovingFulfillment(orDer *order.Order, linesData []*order.OrderLineData, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, settings *shop.Shop) *model.AppError
+	CreateGiftcardsWhenApprovingFulfillment(orDer *model.Order, linesData []*model.OrderLineData, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, settings *model.Shop) *model.AppError
 	// CreateOrderDiscountForOrder Add new order discount and update the prices
-	CreateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *order.Order, reason string, valueType string, value *decimal.Decimal) (*product_and_discount.OrderDiscount, *model.AppError)
+	CreateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order, reason string, valueType string, value *decimal.Decimal) (*model.OrderDiscount, *model.AppError)
 	// CreateReplaceOrder Create draft order with lines to replace
-	CreateReplaceOrder(user *account.User, _ interface{}, originalOrder order.Order, orderLinesToReplace []*order.OrderLineData, fulfillmentLinesToReplace []*order.FulfillmentLineData) (*order.Order, *model.AppError)
+	CreateReplaceOrder(user *model.User, _ interface{}, originalOrder model.Order, orderLinesToReplace []*model.OrderLineData, fulfillmentLinesToReplace []*model.FulfillmentLineData) (*model.Order, *model.AppError)
 	// CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
-	CustomerEmail(ord *order.Order) (string, *model.AppError)
+	CustomerEmail(ord *model.Order) (string, *model.AppError)
 	// DeleteFulfillmentLinesByOption tells store to delete fulfillment lines filtered by given option
-	DeleteFulfillmentLinesByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentLineFilterOption) *model.AppError
+	DeleteFulfillmentLinesByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentLineFilterOption) *model.AppError
 	// DeleteOrderLine Delete an order line from an order.
-	DeleteOrderLine(lineInfo *order.OrderLineData, manager interfaces.PluginManagerInterface) (*exception.InsufficientStock, *model.AppError)
+	DeleteOrderLine(lineInfo *model.OrderLineData, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError)
 	// DeleteOrderLines perform bulk delete given order lines
 	DeleteOrderLines(orderLineIDs []string) *model.AppError
 	// FilterOrdersByOptions is common method for filtering orders by given option
-	FilterOrdersByOptions(option *order.OrderFilterOption) ([]*order.Order, *model.AppError)
+	FilterOrdersByOptions(option *model.OrderFilterOption) ([]*model.Order, *model.AppError)
 	// Fulfill order.
 	//
 	//	Function create fulfillments with lines.
@@ -113,103 +103,103 @@ type OrderService interface {
 	//
 	//	Raise:
 	//	    InsufficientStock: If system hasn't containt enough item in stock for any line.
-	CreateFulfillments(user *account.User, _ interface{}, orDer *order.Order, fulfillmentLinesForWarehouses map[string][]*order.QuantityOrderLine, manager interfaces.PluginManagerInterface, notifyCustomer bool, approved bool, allowStockTobeExceeded bool) ([]*order.Fulfillment, *exception.InsufficientStock, *model.AppError)
+	CreateFulfillments(user *model.User, _ interface{}, orDer *model.Order, fulfillmentLinesForWarehouses map[string][]*model.QuantityOrderLine, manager interfaces.PluginManagerInterface, notifyCustomer bool, approved bool, allowStockTobeExceeded bool) ([]*model.Fulfillment, *model.InsufficientStock, *model.AppError)
 	// FulfillOrderLines Fulfill order line with given quantity
-	FulfillOrderLines(orderLineInfos []*order.OrderLineData, manager interfaces.PluginManagerInterface, allowStockTobeExceeded bool) (*exception.InsufficientStock, *model.AppError)
+	FulfillOrderLines(orderLineInfos []*model.OrderLineData, manager interfaces.PluginManagerInterface, allowStockTobeExceeded bool) (*model.InsufficientStock, *model.AppError)
 	// FulfillmentByOption returns 1 fulfillment filtered using given options
-	FulfillmentByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (*order.Fulfillment, *model.AppError)
+	FulfillmentByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, *model.AppError)
 	// FulfillmentLinesByOption returns all fulfillment lines by option
-	FulfillmentLinesByOption(option *order.FulfillmentLineFilterOption) (order.FulfillmentLines, *model.AppError)
+	FulfillmentLinesByOption(option *model.FulfillmentLineFilterOption) (model.FulfillmentLines, *model.AppError)
 	// FulfillmentTrackingUpdated
-	FulfillmentTrackingUpdated(fulfillment *order.Fulfillment, user *account.User, _ interface{}, trackingNumber string, manager interfaces.PluginManagerInterface) *model.AppError
+	FulfillmentTrackingUpdated(fulfillment *model.Fulfillment, user *model.User, _ interface{}, trackingNumber string, manager interfaces.PluginManagerInterface) *model.AppError
 	// FulfillmentsByOption returns a list of fulfillments be given options
-	FulfillmentsByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (order.Fulfillments, *model.AppError)
+	FulfillmentsByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (model.Fulfillments, *model.AppError)
 	// Get prices of variants belonging to the discounted specific products.
 	//
 	// Specific products are products, collections and categories.
 	// Product must be assigned directly to the discounted category, assigning
 	// product to child category won't work
-	GetPricesOfDiscountedSpecificProduct(orderLines []*order.OrderLine, voucher *product_and_discount.Voucher) ([]*goprices.Money, *model.AppError)
+	GetPricesOfDiscountedSpecificProduct(orderLines []*model.OrderLine, voucher *model.Voucher) ([]*goprices.Money, *model.AppError)
 	// GetDiscountedLines returns a list of discounted order lines, filterd from given orderLines
-	GetDiscountedLines(orderLines []*order.OrderLine, voucher *product_and_discount.Voucher) ([]*order.OrderLine, *model.AppError)
+	GetDiscountedLines(orderLines []*model.OrderLine, voucher *model.Voucher) ([]*model.OrderLine, *model.AppError)
 	// GetOrCreateFulfillment take a filtering option, trys finding a fulfillment with given option.
 	// If a fulfillment found, returns it. Otherwise, creates a new one then returns it.
-	GetOrCreateFulfillment(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (*order.Fulfillment, *model.AppError)
+	GetOrCreateFulfillment(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, *model.AppError)
 	// GetOrderCountry Return country to which order will be shipped
-	GetOrderCountry(ord *order.Order) (string, *model.AppError)
+	GetOrderCountry(ord *model.Order) (string, *model.AppError)
 	// GetOrderDiscounts Return all discounts applied to the order by staff user
-	GetOrderDiscounts(ord *order.Order) ([]*product_and_discount.OrderDiscount, *model.AppError)
+	GetOrderDiscounts(ord *model.Order) ([]*model.OrderDiscount, *model.AppError)
 	// GetProductsVoucherDiscountForOrder Calculate products discount value for a voucher, depending on its type.
-	GetProductsVoucherDiscountForOrder(ord *order.Order) (*goprices.Money, *model.AppError)
+	GetProductsVoucherDiscountForOrder(ord *model.Order) (*goprices.Money, *model.AppError)
 	// GetTotalOrderDiscount Return total order discount assigned to the order
-	GetTotalOrderDiscount(ord *order.Order) (*goprices.Money, *model.AppError)
+	GetTotalOrderDiscount(ord *model.Order) (*goprices.Money, *model.AppError)
 	// GetValidShippingMethodsForOrder returns a list of valid shipping methods for given order
-	GetValidShippingMethodsForOrder(ord *order.Order) ([]*shipping.ShippingMethod, *model.AppError)
+	GetValidShippingMethodsForOrder(ord *model.Order) ([]*model.ShippingMethod, *model.AppError)
 	// HandleFullyPaidOrder
 	//
 	// user can be nil
-	HandleFullyPaidOrder(manager interfaces.PluginManagerInterface, orDer order.Order, user *account.User, _ interface{}) (*exception.InsufficientStock, *model.AppError)
+	HandleFullyPaidOrder(manager interfaces.PluginManagerInterface, orDer model.Order, user *model.User, _ interface{}) (*model.InsufficientStock, *model.AppError)
 	// Mark order as paid.
 	//
 	// Allows to create a payment for an order without actually performing any
 	// payment by the gateway.
 	//
 	// externalReference can be empty
-	MarkOrderAsPaid(orDer order.Order, requestUser *account.User, _ interface{}, manager interfaces.PluginManagerInterface, externalReference string) (*payment.PaymentError, *model.AppError)
+	MarkOrderAsPaid(orDer model.Order, requestUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface, externalReference string) (*model.PaymentError, *model.AppError)
 	// OrderAuthorized
-	OrderAuthorized(ord order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent payment.Payment, manager interfaces.PluginManagerInterface) *model.AppError
+	OrderAuthorized(ord model.Order, user *model.User, _ interface{}, amount *decimal.Decimal, payMent model.Payment, manager interfaces.PluginManagerInterface) *model.AppError
 	// OrderAwaitsFulfillmentApproval
-	OrderAwaitsFulfillmentApproval(fulfillments []*order.Fulfillment, user *account.User, _ interface{}, fulfillmentLines order.FulfillmentLines, manager interfaces.PluginManagerInterface, notifyCustomer bool) *model.AppError
+	OrderAwaitsFulfillmentApproval(fulfillments []*model.Fulfillment, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines, manager interfaces.PluginManagerInterface, notifyCustomer bool) *model.AppError
 	// OrderById retuns an order with given id
-	OrderById(id string) (*order.Order, *model.AppError)
+	OrderById(id string) (*model.Order, *model.AppError)
 	// OrderCanCalcel checks if given order can be canceled
-	OrderCanCancel(ord *order.Order) (bool, *model.AppError)
+	OrderCanCancel(ord *model.Order) (bool, *model.AppError)
 	// OrderCanCapture
-	OrderCanCapture(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)
+	OrderCanCapture(ord *model.Order, payment *model.Payment) (bool, *model.AppError)
 	// OrderCanRefund checks if order can refund
-	OrderCanRefund(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)
+	OrderCanRefund(ord *model.Order, payment *model.Payment) (bool, *model.AppError)
 	// OrderCanVoid
-	OrderCanVoid(ord *order.Order, payment *payment.Payment) (bool, *model.AppError)
+	OrderCanVoid(ord *model.Order, payment *model.Payment) (bool, *model.AppError)
 	// OrderCaptured
-	OrderCaptured(ord order.Order, user *account.User, _ interface{}, amount *decimal.Decimal, payMent payment.Payment, manager interfaces.PluginManagerInterface) (*exception.InsufficientStock, *model.AppError)
+	OrderCaptured(ord model.Order, user *model.User, _ interface{}, amount *decimal.Decimal, payMent model.Payment, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError)
 	// OrderConfirmed Trigger event, plugin hooks and optionally confirmation email.
-	OrderConfirmed(ord order.Order, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, sendConfirmationEmail bool) *model.AppError
+	OrderConfirmed(ord model.Order, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, sendConfirmationEmail bool) *model.AppError
 	// OrderCreated. `fromDraft` is default to false
-	OrderCreated(ord order.Order, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, fromDraft bool) (*exception.InsufficientStock, *model.AppError)
+	OrderCreated(ord model.Order, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, fromDraft bool) (*model.InsufficientStock, *model.AppError)
 	// OrderFulfilled
-	OrderFulfilled(fulfillments []*order.Fulfillment, user *account.User, _ interface{}, fulfillmentLines []*order.FulfillmentLine, manager interfaces.PluginManagerInterface, notifyCustomer bool) *model.AppError
+	OrderFulfilled(fulfillments []*model.Fulfillment, user *model.User, _ interface{}, fulfillmentLines []*model.FulfillmentLine, manager interfaces.PluginManagerInterface, notifyCustomer bool) *model.AppError
 	// OrderIsCaptured checks if given order is captured
 	OrderIsCaptured(orderID string) (bool, *model.AppError)
 	// OrderIsPreAuthorized checks if order is pre-authorized
 	OrderIsPreAuthorized(orderID string) (bool, *model.AppError)
 	// OrderLineById returns an order line byt given orderLineID
-	OrderLineById(orderLineID string) (*order.OrderLine, *model.AppError)
+	OrderLineById(orderLineID string) (*model.OrderLine, *model.AppError)
 	// OrderLineIsDigital Check if a variant is digital and contains digital content.
-	OrderLineIsDigital(orderLine *order.OrderLine) (bool, *model.AppError)
+	OrderLineIsDigital(orderLine *model.OrderLine) (bool, *model.AppError)
 	// OrderLineNeedsAutomaticFulfillment Check if given line is digital and should be automatically fulfilled.
 	//
 	// NOTE: before calling this, caller can attach related data into `orderLine` so this function does not have to call the database
-	OrderLineNeedsAutomaticFulfillment(orderLine *order.OrderLine, shopDigitalSettings *shop.ShopDefaultDigitalContentSettings) (bool, *model.AppError)
+	OrderLineNeedsAutomaticFulfillment(orderLine *model.OrderLine, shopDigitalSettings *model.ShopDefaultDigitalContentSettings) (bool, *model.AppError)
 	// OrderLinesByOption returns a list of order lines by given option
-	OrderLinesByOption(option *order.OrderLineFilterOption) (order.OrderLines, *model.AppError)
+	OrderLinesByOption(option *model.OrderLineFilterOption) (model.OrderLines, *model.AppError)
 	// OrderNeedsAutomaticFulfillment checks if given order has digital products which shoul be automatically fulfilled.
-	OrderNeedsAutomaticFulfillment(ord order.Order) (bool, *model.AppError)
+	OrderNeedsAutomaticFulfillment(ord model.Order) (bool, *model.AppError)
 	// OrderRefunded
-	OrderRefunded(ord order.Order, user *account.User, _ interface{}, amount decimal.Decimal, payMent payment.Payment, manager interfaces.PluginManagerInterface) *model.AppError
+	OrderRefunded(ord model.Order, user *model.User, _ interface{}, amount decimal.Decimal, payMent model.Payment, manager interfaces.PluginManagerInterface) *model.AppError
 	// OrderReturned
-	OrderReturned(transaction store_iface.SqlxTxExecutor, ord order.Order, user *account.User, _ interface{}, returnedLines []*order.QuantityOrderLine) *model.AppError
+	OrderReturned(transaction store_iface.SqlxTxExecutor, ord model.Order, user *model.User, _ interface{}, returnedLines []*model.QuantityOrderLine) *model.AppError
 	// OrderShippingIsRequired returns a boolean value indicating that given order requires shipping or not
 	OrderShippingIsRequired(orderID string) (bool, *model.AppError)
 	// OrderShippingUpdated
-	OrderShippingUpdated(ord order.Order, manager interfaces.PluginManagerInterface) *model.AppError
+	OrderShippingUpdated(ord model.Order, manager interfaces.PluginManagerInterface) *model.AppError
 	// OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
-	OrderSubTotal(ord *order.Order) (*goprices.TaxedMoney, *model.AppError)
+	OrderSubTotal(ord *model.Order) (*goprices.TaxedMoney, *model.AppError)
 	// OrderTotalAuthorized returns order's total authorized amount
-	OrderTotalAuthorized(ord *order.Order) (*goprices.Money, *model.AppError)
+	OrderTotalAuthorized(ord *model.Order) (*goprices.Money, *model.AppError)
 	// OrderTotalQuantity return total quantity of given order
 	OrderTotalQuantity(orderID string) (int, *model.AppError)
 	// OrderVoided
-	OrderVoided(ord order.Order, user *account.User, _ interface{}, payMent *payment.Payment, manager interfaces.PluginManagerInterface) *model.AppError
+	OrderVoided(ord model.Order, user *model.User, _ interface{}, payMent *model.Payment, manager interfaces.PluginManagerInterface) *model.AppError
 	// Proceed with all steps required for refunding products.
 	//
 	// Calculate refunds for products based on the order's lines and fulfillment
@@ -218,7 +208,7 @@ type OrderService interface {
 	// unfulfilled lines will be deallocated.
 	//
 	// NOTE: `refundShippingCosts` default to false
-	CreateRefundFulfillment(requester *account.User, _ interface{}, ord order.Order, payMent payment.Payment, orderLinesToRefund []*order.OrderLineData, fulfillmentLinesToRefund []*order.FulfillmentLineData, manager interfaces.PluginManagerInterface, amount *decimal.Decimal, refundShippingCosts bool) (interface{}, *payment.PaymentError, *model.AppError)
+	CreateRefundFulfillment(requester *model.User, _ interface{}, ord model.Order, payMent model.Payment, orderLinesToRefund []*model.OrderLineData, fulfillmentLinesToRefund []*model.FulfillmentLineData, manager interfaces.PluginManagerInterface, amount *decimal.Decimal, refundShippingCosts bool) (interface{}, *model.PaymentError, *model.AppError)
 	// Process the request for replacing or returning the products.
 	//
 	// Process the refund when the refund is set to True. The amount of refund will be
@@ -243,18 +233,18 @@ type OrderService interface {
 	// NOTE: `payMent`, `amount` , `user` are optional.
 	//
 	// `refund` and `refundShippingCosts` default to false.
-	CreateFulfillmentsForReturnedProducts(user *account.User, _ interface{}, ord order.Order, payMent *payment.Payment, orderLineDatas []*order.OrderLineData, fulfillmentLineDatas []*order.FulfillmentLineData, manager interfaces.PluginManagerInterface, refund bool, amount *decimal.Decimal, refundShippingCosts bool) (*order.Fulfillment, *order.Fulfillment, *order.Order, *payment.PaymentError, *model.AppError)
+	CreateFulfillmentsForReturnedProducts(user *model.User, _ interface{}, ord model.Order, payMent *model.Payment, orderLineDatas []*model.OrderLineData, fulfillmentLineDatas []*model.FulfillmentLineData, manager interfaces.PluginManagerInterface, refund bool, amount *decimal.Decimal, refundShippingCosts bool) (*model.Fulfillment, *model.Fulfillment, *model.Order, *model.PaymentError, *model.AppError)
 	// ProcessReplace Create replace fulfillment and new draft order.
 	//
 	// Move all requested lines to fulfillment with status replaced. Based on original
 	// order create the draft order with all user details, and requested lines.
-	ProcessReplace(requester *account.User, ord order.Order, orderLineDatas []*order.OrderLineData, fulfillmentLineDatas []*order.FulfillmentLineData, manager interfaces.PluginManagerInterface) (*order.Fulfillment, *order.Order, *model.AppError)
+	ProcessReplace(requester *model.User, ord model.Order, orderLineDatas []*model.OrderLineData, fulfillmentLineDatas []*model.FulfillmentLineData, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model.Order, *model.AppError)
 	// ReCalculateOrderWeight
-	ReCalculateOrderWeight(transaction store_iface.SqlxTxExecutor, ord *order.Order) *model.AppError
+	ReCalculateOrderWeight(transaction store_iface.SqlxTxExecutor, ord *model.Order) *model.AppError
 	// Recalculate all order discounts assigned to order.
 	//
 	// It returns the list of tuples which contains order discounts where the amount has been changed.
-	RecalculateOrderDiscounts(transaction store_iface.SqlxTxExecutor, ord *order.Order) ([][2]*product_and_discount.OrderDiscount, *model.AppError)
+	RecalculateOrderDiscounts(transaction store_iface.SqlxTxExecutor, ord *model.Order) ([][2]*model.OrderDiscount, *model.AppError)
 	// Recalculate and assign total price of order.
 	//
 	// Total price is a sum of items in order and order shipping price minus
@@ -264,74 +254,74 @@ type OrderService interface {
 	// update_voucher_discount argument set to False.
 	//
 	// NOTE: `kwargs` can be nil
-	RecalculateOrder(transaction store_iface.SqlxTxExecutor, ord *order.Order, kwargs map[string]interface{}) *model.AppError
+	RecalculateOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order, kwargs map[string]interface{}) *model.AppError
 	// RemoveDiscountFromOrderLine Drop discount applied to order line. Restore undiscounted price
-	RemoveDiscountFromOrderLine(orderLine order.OrderLine, ord order.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
+	RemoveDiscountFromOrderLine(orderLine model.OrderLine, ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	// RemoveOrderDiscountFromOrder Remove the order discount from order and update the prices.
-	RemoveOrderDiscountFromOrder(transaction store_iface.SqlxTxExecutor, ord *order.Order, orderDiscount *product_and_discount.OrderDiscount) *model.AppError
+	RemoveOrderDiscountFromOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order, orderDiscount *model.OrderDiscount) *model.AppError
 	// RestockFulfillmentLines Return fulfilled products to corresponding stocks.
 	//
 	// Return products to stocks and update order lines quantity fulfilled values.
-	RestockFulfillmentLines(transaction store_iface.SqlxTxExecutor, fulfillment *order.Fulfillment, warehouse *warehouse.WareHouse) (appErr *model.AppError)
+	RestockFulfillmentLines(transaction store_iface.SqlxTxExecutor, fulfillment *model.Fulfillment, warehouse *model.WareHouse) (appErr *model.AppError)
 	// RestockOrderLines Return ordered products to corresponding stocks
-	RestockOrderLines(ord *order.Order, manager interfaces.PluginManagerInterface) *model.AppError
+	RestockOrderLines(ord *model.Order, manager interfaces.PluginManagerInterface) *model.AppError
 	// SendFulfillmentConfirmationToCustomer
 	//
 	// NOTE: user can be nil
-	SendFulfillmentConfirmationToCustomer(orDer *order.Order, fulfillment *order.Fulfillment, user *account.User, _, manager interfaces.PluginManagerInterface) *model.AppError
+	SendFulfillmentConfirmationToCustomer(orDer *model.Order, fulfillment *model.Fulfillment, user *model.User, _, manager interfaces.PluginManagerInterface) *model.AppError
 	// SendOrderConfirmation sends notification with order confirmation
-	SendOrderConfirmation(orDer *order.Order, redirectURL string, manager interfaces.PluginManagerInterface) *model.AppError
+	SendOrderConfirmation(orDer *model.Order, redirectURL string, manager interfaces.PluginManagerInterface) *model.AppError
 	// SendOrderConfirmed Send email which tells customer that order has been confirmed
-	SendOrderConfirmed(orDer order.Order, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface)
+	SendOrderConfirmed(orDer model.Order, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface)
 	// SendPaymentConfirmation sends notification with the payment confirmation
-	SendPaymentConfirmation(orDer order.Order, manager interfaces.PluginManagerInterface) *model.AppError
+	SendPaymentConfirmation(orDer model.Order, manager interfaces.PluginManagerInterface) *model.AppError
 	// SetGiftcardUser Set user when the gift card is used for the first time.
-	SetGiftcardUser(giftCard *giftcard.GiftCard, usedByUser *account.User, usedByEmail string)
+	SetGiftcardUser(giftCard *model.GiftCard, usedByUser *model.User, usedByEmail string)
 	// UpdateDiscountForOrderLine Update discount fields for order line. Apply discount to the price
 	//
 	// `reason`, `valueType` can be empty. `value` can be nil
-	UpdateDiscountForOrderLine(orderLine order.OrderLine, ord order.Order, reason string, valueType string, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
+	UpdateDiscountForOrderLine(orderLine model.OrderLine, ord model.Order, reason string, valueType string, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	// UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices
 	//
 	// `reason`, `valueType` and `value` can be nil
-	UpdateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *order.Order, orderDiscountToUpdate *product_and_discount.OrderDiscount, reason string, valueType string, value *decimal.Decimal) *model.AppError
+	UpdateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType string, value *decimal.Decimal) *model.AppError
 	// UpdateOrderPrices Update prices in order with given discounts and proper taxes.
-	UpdateOrderPrices(ord order.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
+	UpdateOrderPrices(ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	// UpdateOrderStatus Update order status depending on fulfillments
-	UpdateOrderStatus(transaction store_iface.SqlxTxExecutor, ord order.Order) *model.AppError
+	UpdateOrderStatus(transaction store_iface.SqlxTxExecutor, ord model.Order) *model.AppError
 	// UpdateOrderTotalPaid update given order's total paid amount
-	UpdateOrderTotalPaid(transaction store_iface.SqlxTxExecutor, orDer *order.Order) *model.AppError
+	UpdateOrderTotalPaid(transaction store_iface.SqlxTxExecutor, orDer *model.Order) *model.AppError
 	// UpdateVoucherDiscount Recalculate order discount amount based on order voucher
 	UpdateVoucherDiscount(fun types.RecalculateOrderPricesFunc) types.RecalculateOrderPricesFunc
 	// UpsertFulfillment performs some actions then save given fulfillment
-	UpsertFulfillment(transaction store_iface.SqlxTxExecutor, fulfillment *order.Fulfillment) (*order.Fulfillment, *model.AppError)
+	UpsertFulfillment(transaction store_iface.SqlxTxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, *model.AppError)
 	// UpsertOrder depends on given order's Id property to decide update/save it
-	UpsertOrder(transaction store_iface.SqlxTxExecutor, ord *order.Order) (*order.Order, *model.AppError)
+	UpsertOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order) (*model.Order, *model.AppError)
 	// UpsertOrderLine depends on given orderLine's Id property to decide update order save it
-	UpsertOrderLine(transaction store_iface.SqlxTxExecutor, orderLine *order.OrderLine) (*order.OrderLine, *model.AppError)
-	ApproveFulfillment(fulfillment *order.Fulfillment, user *account.User, _ interface{}, manager interfaces.PluginManagerInterface, settings *shop.Shop, notifyCustomer bool, allowStockTobeExceeded bool) (*order.Fulfillment, *exception.InsufficientStock, *model.AppError)
-	CreateOrderEvent(transaction store_iface.SqlxTxExecutor, orderLine *order.OrderLine, userID string, quantityDiff int) *model.AppError
-	CreateReturnFulfillment(requester *account.User, ord order.Order, orderLineDatas []*order.OrderLineData, fulfillmentLineDatas []*order.FulfillmentLineData, totalRefundAmount *decimal.Decimal, shippingRefundAmount *decimal.Decimal, manager interfaces.PluginManagerInterface) (*order.Fulfillment, *model.AppError)
-	DraftOrderCreatedFromReplaceEvent(transaction store_iface.SqlxTxExecutor, draftOrder order.Order, originalOrder order.Order, user *account.User, _ interface{}, lines []*order.QuantityOrderLine) (*order.OrderEvent, *model.AppError)
-	FulfillmentAwaitsApprovalEvent(transaction store_iface.SqlxTxExecutor, orDer *order.Order, user *account.User, _ interface{}, fulfillmentLines order.FulfillmentLines) (*order.OrderEvent, *model.AppError)
-	FulfillmentCanceledEvent(transaction store_iface.SqlxTxExecutor, orDer *order.Order, user *account.User, _ interface{}, fulfillment *order.Fulfillment) (*order.OrderEvent, *model.AppError)
-	FulfillmentFulfilledItemsEvent(transaction store_iface.SqlxTxExecutor, orDer *order.Order, user *account.User, _ interface{}, fulfillmentLines order.FulfillmentLines) (*order.OrderEvent, *model.AppError)
-	FulfillmentReplacedEvent(transaction store_iface.SqlxTxExecutor, orDer order.Order, user *account.User, _ interface{}, replacedLines []*order.QuantityOrderLine) (*order.OrderEvent, *model.AppError)
-	FulfillmentTrackingUpdatedEvent(orDer *order.Order, user *account.User, _ interface{}, trackingNumber string, fulfillment *order.Fulfillment) (*order.OrderEvent, *model.AppError)
-	GetVoucherDiscountAssignedToOrder(ord *order.Order) (*product_and_discount.OrderDiscount, *model.AppError)
-	MatchOrdersWithNewUser(user *account.User) *model.AppError
-	OrderConfirmedEvent(orDer order.Order, user *account.User, _ interface{}) (*order.OrderEvent, *model.AppError)
-	OrderCreatedEvent(orDer order.Order, user *account.User, _ interface{}, fromDraft bool) (*order.OrderEvent, *model.AppError)
-	OrderDiscountAutomaticallyUpdatedEvent(transaction store_iface.SqlxTxExecutor, ord *order.Order, orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) (*order.OrderEvent, *model.AppError)
-	OrderDiscountEvent(transaction store_iface.SqlxTxExecutor, eventType order.OrderEvents, ord *order.Order, user *account.User, orderDiscount *product_and_discount.OrderDiscount, oldOrderDiscount *product_and_discount.OrderDiscount) (*order.OrderEvent, *model.AppError)
-	OrderDiscountsAutomaticallyUpdatedEvent(transaction store_iface.SqlxTxExecutor, ord *order.Order, changedOrderDiscounts [][2]*product_and_discount.OrderDiscount) *model.AppError
-	OrderLineDiscountEvent(eventType order.OrderEvents, ord *order.Order, user *account.User, line *order.OrderLine, lineBeforeUpdate *order.OrderLine) (*order.OrderEvent, *model.AppError)
-	OrderManuallyMarkedAsPaidEvent(transaction store_iface.SqlxTxExecutor, orDer order.Order, user *account.User, _ interface{}, transactionReference string) (*order.OrderEvent, *model.AppError)
-	OrderReplacementCreated(transaction store_iface.SqlxTxExecutor, originalOrder order.Order, replaceOrder *order.Order, user *account.User, _ interface{}) (*order.OrderEvent, *model.AppError)
-	SendOrderCancelledConfirmation(orDer *order.Order, user *account.User, _, manager interfaces.PluginManagerInterface) *model.AppError
-	SendOrderRefundedConfirmation(orDer order.Order, user *account.User, _ interface{}, amount decimal.Decimal, currency string, manager interfaces.PluginManagerInterface) *model.AppError
-	SumOrderTotals(orders []*order.Order, currencyCode string) (*goprices.TaxedMoney, *model.AppError)
-	UpdateGiftcardBalance(giftCard *giftcard.GiftCard, totalPriceLeft *goprices.Money) giftcard.BalanceObject
-	UpdateTaxesForOrderLine(line order.OrderLine, ord order.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
-	UpdateTaxesForOrderLines(lines order.OrderLines, ord order.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model.AppError
+	UpsertOrderLine(transaction store_iface.SqlxTxExecutor, orderLine *model.OrderLine) (*model.OrderLine, *model.AppError)
+	ApproveFulfillment(fulfillment *model.Fulfillment, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, settings *model.Shop, notifyCustomer bool, allowStockTobeExceeded bool) (*model.Fulfillment, *model.InsufficientStock, *model.AppError)
+	CreateOrderEvent(transaction store_iface.SqlxTxExecutor, orderLine *model.OrderLine, userID string, quantityDiff int) *model.AppError
+	CreateReturnFulfillment(requester *model.User, ord model.Order, orderLineDatas []*model.OrderLineData, fulfillmentLineDatas []*model.FulfillmentLineData, totalRefundAmount *decimal.Decimal, shippingRefundAmount *decimal.Decimal, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model.AppError)
+	DraftOrderCreatedFromReplaceEvent(transaction store_iface.SqlxTxExecutor, draftOrder model.Order, originalOrder model.Order, user *model.User, _ interface{}, lines []*model.QuantityOrderLine) (*model.OrderEvent, *model.AppError)
+	FulfillmentAwaitsApprovalEvent(transaction store_iface.SqlxTxExecutor, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model.AppError)
+	FulfillmentCanceledEvent(transaction store_iface.SqlxTxExecutor, orDer *model.Order, user *model.User, _ interface{}, fulfillment *model.Fulfillment) (*model.OrderEvent, *model.AppError)
+	FulfillmentFulfilledItemsEvent(transaction store_iface.SqlxTxExecutor, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model.AppError)
+	FulfillmentReplacedEvent(transaction store_iface.SqlxTxExecutor, orDer model.Order, user *model.User, _ interface{}, replacedLines []*model.QuantityOrderLine) (*model.OrderEvent, *model.AppError)
+	FulfillmentTrackingUpdatedEvent(orDer *model.Order, user *model.User, _ interface{}, trackingNumber string, fulfillment *model.Fulfillment) (*model.OrderEvent, *model.AppError)
+	GetVoucherDiscountAssignedToOrder(ord *model.Order) (*model.OrderDiscount, *model.AppError)
+	MatchOrdersWithNewUser(user *model.User) *model.AppError
+	OrderConfirmedEvent(orDer model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model.AppError)
+	OrderCreatedEvent(orDer model.Order, user *model.User, _ interface{}, fromDraft bool) (*model.OrderEvent, *model.AppError)
+	OrderDiscountAutomaticallyUpdatedEvent(transaction store_iface.SqlxTxExecutor, ord *model.Order, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError)
+	OrderDiscountEvent(transaction store_iface.SqlxTxExecutor, eventType model.OrderEvents, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError)
+	OrderDiscountsAutomaticallyUpdatedEvent(transaction store_iface.SqlxTxExecutor, ord *model.Order, changedOrderDiscounts [][2]*model.OrderDiscount) *model.AppError
+	OrderLineDiscountEvent(eventType model.OrderEvents, ord *model.Order, user *model.User, line *model.OrderLine, lineBeforeUpdate *model.OrderLine) (*model.OrderEvent, *model.AppError)
+	OrderManuallyMarkedAsPaidEvent(transaction store_iface.SqlxTxExecutor, orDer model.Order, user *model.User, _ interface{}, transactionReference string) (*model.OrderEvent, *model.AppError)
+	OrderReplacementCreated(transaction store_iface.SqlxTxExecutor, originalOrder model.Order, replaceOrder *model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model.AppError)
+	SendOrderCancelledConfirmation(orDer *model.Order, user *model.User, _, manager interfaces.PluginManagerInterface) *model.AppError
+	SendOrderRefundedConfirmation(orDer model.Order, user *model.User, _ interface{}, amount decimal.Decimal, currency string, manager interfaces.PluginManagerInterface) *model.AppError
+	SumOrderTotals(orders []*model.Order, currencyCode string) (*goprices.TaxedMoney, *model.AppError)
+	UpdateGiftcardBalance(giftCard *model.GiftCard, totalPriceLeft *goprices.Money) model.BalanceObject
+	UpdateTaxesForOrderLine(line model.OrderLine, ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
+	UpdateTaxesForOrderLines(lines model.OrderLines, ord model.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model.AppError
 }

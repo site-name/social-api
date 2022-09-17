@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -34,7 +33,7 @@ func (s *SqlWishlistItemProductVariantStore) ModelFields(prefix string) model.An
 }
 
 // Save inserts given wishlist item-product variant relation into database and returns it
-func (w *SqlWishlistItemProductVariantStore) Save(item *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, error) {
+func (w *SqlWishlistItemProductVariantStore) Save(item *model.WishlistItemProductVariant) (*model.WishlistItemProductVariant, error) {
 	item.PreSave()
 	if err := item.IsValid(); err != nil {
 		return nil, err
@@ -51,7 +50,7 @@ func (w *SqlWishlistItemProductVariantStore) Save(item *wishlist.WishlistItemPro
 	return item, nil
 }
 
-func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
+func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
 	var (
 		executor    store_iface.SqlxExecutor = w.GetMasterX()
 		saveQuery                            = "INSERT INTO " + store.WishlistItemProductVariantTableName + "(" + w.ModelFields("").Join(",") + ") VALUES (" + w.ModelFields(":").Join(",") + ")"
@@ -108,13 +107,13 @@ func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.
 }
 
 // GetById finds and returns a product variant-wishlist item relation and returns it
-func (w *SqlWishlistItemProductVariantStore) GetById(transaction store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItemProductVariant, error) {
+func (w *SqlWishlistItemProductVariantStore) GetById(transaction store_iface.SqlxTxExecutor, id string) (*model.WishlistItemProductVariant, error) {
 	var selector store_iface.SqlxExecutor = w.GetReplicaX()
 	if transaction != nil {
 		selector = transaction
 	}
 
-	var res wishlist.WishlistItemProductVariant
+	var res model.WishlistItemProductVariant
 	if err := selector.Get(&res, "SELECT * FROM "+store.WishlistItemProductVariantTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.WishlistItemProductVariantTableName, id)
@@ -125,7 +124,7 @@ func (w *SqlWishlistItemProductVariantStore) GetById(transaction store_iface.Sql
 }
 
 // DeleteRelation deletes a product variant-wishlist item relation and counts numeber of relations left in database
-func (w *SqlWishlistItemProductVariantStore) DeleteRelation(relation *wishlist.WishlistItemProductVariant) (int64, error) {
+func (w *SqlWishlistItemProductVariantStore) DeleteRelation(relation *model.WishlistItemProductVariant) (int64, error) {
 	query := w.GetQueryBuilder().
 		Delete(store.WishlistItemProductVariantTableName)
 	if model.IsValidId(relation.Id) {

@@ -4,29 +4,21 @@ import (
 	"regexp"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/shipping"
 )
 
 type checkPostalCodeFunc func(code string, start string, end string) bool
 
 var (
-	ukPostalCodePattern    *regexp.Regexp                 // ukPostalCodePattern to check againts United Kingdom postal codes
-	irishPostalCodePattern *regexp.Regexp                 // irishPostalCodePattern to check againts ireland postal codes
-	countryFuncMap         map[string]checkPostalCodeFunc // countryFuncMap contains some country codes and special functions for handle postal codes of them
-)
-
-func init() {
-	ukPostalCodePattern = regexp.MustCompile(`^([A-Z]{1,2})([0-9]+)([A-Z]?) ?([0-9][A-Z]{2})$`)
-	irishPostalCodePattern = regexp.MustCompile(`([\dA-Z]{3}) ?([\dA-Z]{4})`)
-	countryFuncMap = map[string]checkPostalCodeFunc{
+	ukPostalCodePattern    = regexp.MustCompile(`^([A-Z]{1,2})([0-9]+)([A-Z]?) ?([0-9][A-Z]{2})$`) // ukPostalCodePattern to check againts United Kingdom postal codes
+	irishPostalCodePattern = regexp.MustCompile(`([\dA-Z]{3}) ?([\dA-Z]{4})`)                      // irishPostalCodePattern to check againts ireland postal codes
+	countryFuncMap         = map[string]checkPostalCodeFunc{
 		"GB": CheckUkPostalCode,    // United Kingdom
 		"IM": CheckUkPostalCode,    // Isle of Man
 		"GG": CheckUkPostalCode,    // Guernsey
 		"JE": CheckUkPostalCode,    // Jersey
 		"IE": CheckIRishPostalCode, // Ireland
-	}
-}
+	} // countryFuncMap contains some country codes and special functions for handle postal codes of them
+)
 
 func GroupValues(pattern *regexp.Regexp, values ...string) {
 	panic("not implt")
@@ -73,8 +65,8 @@ func CheckPostalCodeInRange(countryCode string, postalCode string, start string,
 	return fun(postalCode, start, end)
 }
 
-func CheckShippingMethodForPostalCode(customerShippingAddress *account.Address, method *shipping.ShippingMethod) map[*shipping.ShippingMethodPostalCodeRule]bool {
-	result := map[*shipping.ShippingMethodPostalCodeRule]bool{}
+func CheckShippingMethodForPostalCode(customerShippingAddress *model.Address, method *model.ShippingMethod) map[*model.ShippingMethodPostalCodeRule]bool {
+	result := map[*model.ShippingMethodPostalCodeRule]bool{}
 
 	for _, rule := range method.ShippingMethodPostalCodeRules {
 		result[rule] = CheckPostalCodeInRange(customerShippingAddress.Country, customerShippingAddress.PostalCode, rule.Start, rule.End)
@@ -84,7 +76,7 @@ func CheckShippingMethodForPostalCode(customerShippingAddress *account.Address, 
 }
 
 // IsShippingMethodApplicableForPostalCode Return if shipping method is applicable with the postal code rules.
-func IsShippingMethodApplicableForPostalCode(customerShippingAddress *account.Address, shippingMethod *shipping.ShippingMethod) bool {
+func IsShippingMethodApplicableForPostalCode(customerShippingAddress *model.Address, shippingMethod *model.ShippingMethod) bool {
 	result := CheckShippingMethodForPostalCode(customerShippingAddress, shippingMethod)
 
 	resultLength := len(result)
@@ -101,9 +93,9 @@ func IsShippingMethodApplicableForPostalCode(customerShippingAddress *account.Ad
 
 	for key, value := range result {
 		switch key.InclusionType {
-		case shipping.INCLUDE:
+		case model.INCLUDE:
 			numberOfInclude++
-		case shipping.EXCLUDE:
+		case model.EXCLUDE:
 			numberOfExclude++
 		}
 
@@ -117,7 +109,7 @@ func IsShippingMethodApplicableForPostalCode(customerShippingAddress *account.Ad
 }
 
 // FilterShippingMethodsByPostalCodeRules Filter shipping methods for given address by postal code rules.
-func (a *ServiceShipping) FilterShippingMethodsByPostalCodeRules(shippingMethods []*shipping.ShippingMethod, shippingAddressID string) ([]*shipping.ShippingMethod, *model.AppError) {
+func (a *ServiceShipping) FilterShippingMethodsByPostalCodeRules(shippingMethods []*model.ShippingMethod, shippingAddressID string) ([]*model.ShippingMethod, *model.AppError) {
 	shippingAddress, appErr := a.srv.AccountService().AddressById(shippingAddressID)
 	if appErr != nil {
 		return nil, appErr

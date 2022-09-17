@@ -10,12 +10,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/store"
-)
-
-const (
-	missingMenuErrId = "app.menu.missing_menu.app_error"
 )
 
 type ServiceMenu struct {
@@ -34,7 +29,7 @@ func init() {
 	})
 }
 
-func (s *ServiceMenu) MenuByOptions(options *menu.MenuFilterOptions) (*menu.Menu, *model.AppError) {
+func (s *ServiceMenu) MenuByOptions(options *model.MenuFilterOptions) (*model.Menu, *model.AppError) {
 	mnu, err := s.srv.Store.Menu().GetByOptions(options)
 	if err != nil {
 		var statucCode int = http.StatusInternalServerError

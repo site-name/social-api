@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
@@ -45,7 +44,7 @@ func (ps *SqlProductVariantStore) ModelFields(prefix string) model.AnyArray[stri
 	})
 }
 
-func (ps *SqlProductVariantStore) ScanFields(variant product_and_discount.ProductVariant) []interface{} {
+func (ps *SqlProductVariantStore) ScanFields(variant model.ProductVariant) []interface{} {
 	return []interface{}{
 		&variant.Id,
 		&variant.Name,
@@ -63,7 +62,7 @@ func (ps *SqlProductVariantStore) ScanFields(variant product_and_discount.Produc
 	}
 }
 
-func (ps *SqlProductVariantStore) Save(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (ps *SqlProductVariantStore) Save(transaction store_iface.SqlxTxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
 	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -86,7 +85,7 @@ func (ps *SqlProductVariantStore) Save(transaction store_iface.SqlxTxExecutor, v
 }
 
 // Update updates given product variant and returns it
-func (ps *SqlProductVariantStore) Update(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (ps *SqlProductVariantStore) Update(transaction store_iface.SqlxTxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
 	variant.PreUpdate()
 	if err := variant.IsValid(); err != nil {
 		return nil, err
@@ -118,8 +117,8 @@ func (ps *SqlProductVariantStore) Update(transaction store_iface.SqlxTxExecutor,
 	return variant, nil
 }
 
-func (ps *SqlProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
-	var variant product_and_discount.ProductVariant
+func (ps *SqlProductVariantStore) Get(id string) (*model.ProductVariant, error) {
+	var variant model.ProductVariant
 	err := ps.GetReplicaX().Get(
 		&variant,
 		"SELECT * FROM "+store.ProductVariantTableName+" WHERE Id = ?",
@@ -199,8 +198,8 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 }
 
 // GetByOrderLineID finds and returns a product variant by given orderLineID
-func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error) {
-	var res product_and_discount.ProductVariant
+func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*model.ProductVariant, error) {
+	var res model.ProductVariant
 
 	query := "SELECT " +
 		vs.ModelFields(store.ProductVariantTableName+".").Join(",") +
@@ -220,7 +219,7 @@ func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*product
 }
 
 // FilterByOption finds and returns product variants based on given option
-func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) {
+func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
 	selectFields := vs.ModelFields(store.ProductVariantTableName + ".")
 	if option.SelectRelatedDigitalContent {
 		selectFields = append(selectFields, vs.DigitalContent().ModelFields(store.DigitalContentTableName+".")...)
@@ -293,9 +292,9 @@ func (vs *SqlProductVariantStore) FilterByOption(option *product_and_discount.Pr
 	}
 
 	var (
-		res            []*product_and_discount.ProductVariant
-		variant        product_and_discount.ProductVariant
-		digitalContent product_and_discount.DigitalContent
+		res            []*model.ProductVariant
+		variant        model.ProductVariant
+		digitalContent model.DigitalContent
 		scanFields     = vs.ScanFields(variant)
 	)
 	if option.SelectRelatedDigitalContent {

@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -40,7 +39,7 @@ func (ds *SqlDigitalContentStore) ModelFields(prefix string) model.AnyArray[stri
 	})
 }
 
-func (ds *SqlDigitalContentStore) ScanFields(content product_and_discount.DigitalContent) []interface{} {
+func (ds *SqlDigitalContentStore) ScanFields(content model.DigitalContent) []interface{} {
 	return []interface{}{
 		&content.Id,
 		&content.ShopID,
@@ -57,7 +56,7 @@ func (ds *SqlDigitalContentStore) ScanFields(content product_and_discount.Digita
 }
 
 // Save inserts given digital content into database then returns it
-func (ds *SqlDigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
+func (ds *SqlDigitalContentStore) Save(content *model.DigitalContent) (*model.DigitalContent, error) {
 	content.PreSave()
 	if err := content.IsValid(); err != nil {
 		return nil, err
@@ -72,7 +71,7 @@ func (ds *SqlDigitalContentStore) Save(content *product_and_discount.DigitalCont
 	return content, nil
 }
 
-func (ds *SqlDigitalContentStore) commonQueryBuilder(option *product_and_discount.DigitalContenetFilterOption) (string, []interface{}, error) {
+func (ds *SqlDigitalContentStore) commonQueryBuilder(option *model.DigitalContenetFilterOption) (string, []interface{}, error) {
 	query := ds.GetQueryBuilder().
 		Select(ds.ModelFields(store.DigitalContentTableName + ".")...).
 		From(store.DigitalContentTableName)
@@ -89,13 +88,13 @@ func (ds *SqlDigitalContentStore) commonQueryBuilder(option *product_and_discoun
 }
 
 // GetByOption finds and returns 1 digital content filtered using given option
-func (ds *SqlDigitalContentStore) GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) {
+func (ds *SqlDigitalContentStore) GetByOption(option *model.DigitalContenetFilterOption) (*model.DigitalContent, error) {
 	queryString, args, err := ds.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
 
-	var res product_and_discount.DigitalContent
+	var res model.DigitalContent
 	err = ds.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -107,13 +106,13 @@ func (ds *SqlDigitalContentStore) GetByOption(option *product_and_discount.Digit
 	return &res, nil
 }
 
-func (ds *SqlDigitalContentStore) FilterByOption(option *product_and_discount.DigitalContenetFilterOption) ([]*product_and_discount.DigitalContent, error) {
+func (ds *SqlDigitalContentStore) FilterByOption(option *model.DigitalContenetFilterOption) ([]*model.DigitalContent, error) {
 	queryString, args, err := ds.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*product_and_discount.DigitalContent
+	var res []*model.DigitalContent
 	err = ds.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find digital contents with given options")

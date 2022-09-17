@@ -10,7 +10,6 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/modules/plugin"
 )
 
@@ -28,16 +27,16 @@ type PluginService interface {
 	// Notifies cluster peers through config change.
 	EnablePlugin(id string) *model.AppError
 	// FilterPluginConfigurations returns a list of plugin configurations filtered using given options
-	FilterPluginConfigurations(options *plugins.PluginConfigurationFilterOptions) (plugins.PluginConfigurations, *model.AppError)
+	FilterPluginConfigurations(options *model.PluginConfigurationFilterOptions) (model.PluginConfigurations, *model.AppError)
 	// GetClusterPluginStatuses returns the status for plugins installed anywhere in the cluster.
-	GetClusterPluginStatuses() (plugins.PluginStatuses, *model.AppError)
+	GetClusterPluginStatuses() (model.PluginStatuses, *model.AppError)
 	// GetMarketplacePlugins returns a list of plugins from the marketplace-server,
 	// and plugins that are installed locally.
-	GetMarketplacePlugins(filter *plugins.MarketplacePluginFilter) ([]*plugins.MarketplacePlugin, *model.AppError)
+	GetMarketplacePlugins(filter *model.MarketplacePluginFilter) ([]*model.MarketplacePlugin, *model.AppError)
 	// GetPluginConfiguration finds and returns a plugin configuration based on given options
-	GetPluginConfiguration(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, *model.AppError)
+	GetPluginConfiguration(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, *model.AppError)
 	// GetPluginStatuses returns the status for plugins installed on this server.
-	GetPluginStatuses() (plugins.PluginStatuses, *model.AppError)
+	GetPluginStatuses() (model.PluginStatuses, *model.AppError)
 	// GetPluginsEnvironment returns the plugin environment for use if plugins are enabled and
 	// initialized.
 	//
@@ -53,30 +52,30 @@ type PluginService interface {
 	// and plugin system are enabled in settings.
 	SyncPluginsActiveState()
 	// UpsertPluginConfiguration updates/inserts given configuration into database then returns it
-	UpsertPluginConfiguration(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, *model.AppError)
+	UpsertPluginConfiguration(config *model.PluginConfiguration) (*model.PluginConfiguration, *model.AppError)
 	CompareAndDeletePluginKey(pluginID string, key string, oldValue []byte) (bool, *model.AppError)
 	CompareAndSetPluginKey(pluginID string, key string, oldValue, newValue []byte) (bool, *model.AppError)
 	DeleteAllExpiredPluginKeys() *model.AppError
 	DeleteAllKeysForPlugin(pluginID string) *model.AppError
 	DeletePluginKey(pluginID string, key string) *model.AppError
-	GetActivePluginManifests() ([]*plugins.Manifest, *model.AppError)
+	GetActivePluginManifests() ([]*model.Manifest, *model.AppError)
 	GetPluginKey(pluginID string, key string) ([]byte, *model.AppError)
 	GetPluginPublicKeyFiles() ([]string, *model.AppError)
-	GetPluginStatus(id string) (*plugins.PluginStatus, *model.AppError)
-	GetPlugins() (*plugins.PluginsResponse, *model.AppError)
+	GetPluginStatus(id string) (*model.PluginStatus, *model.AppError)
+	GetPlugins() (*model.PluginsResponse, *model.AppError)
 	GetPublicKey(name string) ([]byte, *model.AppError)
 	InitPlugins(c *request.Context, pluginDir, webappPluginDir string)
-	InstallMarketplacePlugin(request *plugins.InstallMarketplacePluginRequest) (*plugins.Manifest, *model.AppError)
-	InstallPlugin(pluginFile io.ReadSeeker, replace bool) (*plugins.Manifest, *model.AppError)
-	InstallPluginFromData(data plugins.PluginEventData)
-	InstallPluginWithSignature(pluginFile, signature io.ReadSeeker) (*plugins.Manifest, *model.AppError)
+	InstallMarketplacePlugin(request *model.InstallMarketplacePluginRequest) (*model.Manifest, *model.AppError)
+	InstallPlugin(pluginFile io.ReadSeeker, replace bool) (*model.Manifest, *model.AppError)
+	InstallPluginFromData(data model.PluginEventData)
+	InstallPluginWithSignature(pluginFile, signature io.ReadSeeker) (*model.Manifest, *model.AppError)
 	ListPluginKeys(pluginID string, page, perPage int) ([]string, *model.AppError)
 	RemovePlugin(id string) *model.AppError
-	RemovePluginFromData(data plugins.PluginEventData)
+	RemovePluginFromData(data model.PluginEventData)
 	ServeInterPluginRequest(w http.ResponseWriter, r *http.Request, sourcePluginId, destinationPluginId string)
 	SetPluginKey(pluginID string, key string, value []byte) *model.AppError
 	SetPluginKeyWithExpiry(pluginID string, key string, value []byte, expireInSeconds int64) *model.AppError
-	SetPluginKeyWithOptions(pluginID string, key string, value []byte, options plugins.PluginKVSetOptions) (bool, *model.AppError)
+	SetPluginKeyWithOptions(pluginID string, key string, value []byte, options model.PluginKVSetOptions) (bool, *model.AppError)
 	SetPluginsEnvironment(pluginsEnvironment *plugin.Environment)
 	ShutDownPlugins()
 	VerifyPlugin(plugin, signature io.ReadSeeker) *model.AppError

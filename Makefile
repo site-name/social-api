@@ -183,11 +183,11 @@ new-migration: ## Creates a new migration. Run with make new-migration name=<>
 
 	@echo "When you are done writing your migration, run 'make migrations-bindata'"
 
-migrations-bindata: ## Generates bindata migrations
-	$(GO) get -d -modfile=go.tools.mod github.com/go-bindata/go-bindata/...
+# migrations-bindata: ## Generates bindata migrations
+# 	$(GO) get -d -modfile=go.tools.mod github.com/go-bindata/go-bindata/...
 
-	@echo Generating bindata for migrations
-	$(GO) generate $(GOFLAGS) ./db/migrations/
+# 	@echo Generating bindata for migrations
+# 	$(GO) generate $(GOFLAGS) ./db/migrations/
 
 filestore-mocks: ## Creates mock files.
 	$(GO) install github.com/vektra/mockery/v2/...@v2.10.4
@@ -205,9 +205,9 @@ gen-serialized: ## Generates serialization methods for hot structs
 	# identifiers will be resolved. An alternative to remove the warnings
 	# would be to temporarily move all the structs to the same file,
 	# but that involves a lot of manual work.
-	$(GO) get -d -modfile=go.tools.mod github.com/tinylib/msgp
+	$(GO) install github.com/tinylib/msgp
 	$(GOBIN)/msgp -file=./model/session.go -tests=false -o=./model/session_serial_gen.go
-	$(GOBIN)/msgp -file=./model/account/user.go -tests=false -o=./model/account/user_serial_gen.go
+	$(GOBIN)/msgp -file=./model/account.user.go -tests=false -o=./model/account.user_serial_gen.go
 
 gqlgen:
 	$(GO) install github.com/99designs/gqlgen@v0.17.9
@@ -236,9 +236,11 @@ store-mocks: ## Creates mock files.
 	$(GO) install github.com/vektra/mockery/v2/...@v2.10.4
 	$(GOBIN)/mockery --dir store --name ".*Store" --output store/storetest/mocks --note 'Regenerate this file using `make store-mocks`.'
 
-# dataloaders:
-# 	$(GOBIN)/dataloaden OrdersByUserLoader string *github.com/sitename/sitename/graphql/gqlmodel.Order
-
 migrate:
 	$(GO) get -d -modfile=go.tools.mod github.com/golang-migrate/migrate/v4@v4.15.2 github.com/lib/pq
 	$(GOBIN)/migrate -path db/migrations/postgres -database postgres://minh:anhyeuem98@localhost/sitename_test up 2
+
+searchengine-mocks: ## Creates mock files for searchengines.
+	$(GO) install github.com/vektra/mockery/v2/...@v2.10.4
+	$(GOBIN)/mockery --dir services/searchengine --all --output services/searchengine/mocks --note 'Regenerate this file using `make searchengine-mocks`.'
+

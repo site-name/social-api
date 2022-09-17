@@ -4,11 +4,10 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 // SaleProductsByOptions returns a slice of sale-product relations filtered using given options
-func (s *ServiceDiscount) SaleProductsByOptions(options *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, *model.AppError) {
+func (s *ServiceDiscount) SaleProductsByOptions(options *model.SaleProductRelationFilterOption) ([]*model.SaleProductRelation, *model.AppError) {
 	saleProducts, err := s.srv.Store.SaleProductRelation().SaleProductsByOption(options)
 	var (
 		statusCode int

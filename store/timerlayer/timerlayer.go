@@ -11,28 +11,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/app"
-	"github.com/sitename/sitename/model/attribute"
-	"github.com/sitename/sitename/model/audit"
-	"github.com/sitename/sitename/model/channel"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/cluster"
-	"github.com/sitename/sitename/model/compliance"
-	"github.com/sitename/sitename/model/csv"
-	"github.com/sitename/sitename/model/external_services"
-	"github.com/sitename/sitename/model/file"
-	"github.com/sitename/sitename/model/giftcard"
-	"github.com/sitename/sitename/model/invoice"
-	"github.com/sitename/sitename/model/menu"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/payment"
-	"github.com/sitename/sitename/model/plugins"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/shipping"
-	"github.com/sitename/sitename/model/shop"
-	"github.com/sitename/sitename/model/warehouse"
-	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
@@ -1189,7 +1167,7 @@ func (s *TimerLayerAddressStore) DeleteAddresses(addressIDs []string) error {
 	return err
 }
 
-func (s *TimerLayerAddressStore) FilterByOption(option *account.AddressFilterOption) ([]*account.Address, error) {
+func (s *TimerLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
 	start := timemodule.Now()
 
 	result, err := s.AddressStore.FilterByOption(option)
@@ -1205,7 +1183,7 @@ func (s *TimerLayerAddressStore) FilterByOption(option *account.AddressFilterOpt
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) Get(addressID string) (*account.Address, error) {
+func (s *TimerLayerAddressStore) Get(addressID string) (*model.Address, error) {
 	start := timemodule.Now()
 
 	result, err := s.AddressStore.Get(addressID)
@@ -1221,7 +1199,7 @@ func (s *TimerLayerAddressStore) Get(addressID string) (*account.Address, error)
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, address *account.Address) (*account.Address, error) {
+func (s *TimerLayerAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, address *model.Address) (*model.Address, error) {
 	start := timemodule.Now()
 
 	result, err := s.AddressStore.Upsert(transaction, address)
@@ -1253,7 +1231,7 @@ func (s *TimerLayerAllocationStore) BulkDelete(transaction store_iface.SqlxTxExe
 	return err
 }
 
-func (s *TimerLayerAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*warehouse.Allocation) ([]*warehouse.Allocation, error) {
+func (s *TimerLayerAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*model.Allocation) ([]*model.Allocation, error) {
 	start := timemodule.Now()
 
 	result, err := s.AllocationStore.BulkUpsert(transaction, allocations)
@@ -1269,7 +1247,7 @@ func (s *TimerLayerAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExe
 	return result, err
 }
 
-func (s *TimerLayerAllocationStore) CountAvailableQuantityForStock(stock *warehouse.Stock) (int, error) {
+func (s *TimerLayerAllocationStore) CountAvailableQuantityForStock(stock *model.Stock) (int, error) {
 	start := timemodule.Now()
 
 	result, err := s.AllocationStore.CountAvailableQuantityForStock(stock)
@@ -1285,7 +1263,7 @@ func (s *TimerLayerAllocationStore) CountAvailableQuantityForStock(stock *wareho
 	return result, err
 }
 
-func (s *TimerLayerAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *warehouse.AllocationFilterOption) ([]*warehouse.Allocation, error) {
+func (s *TimerLayerAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.AllocationFilterOption) ([]*model.Allocation, error) {
 	start := timemodule.Now()
 
 	result, err := s.AllocationStore.FilterByOption(transaction, option)
@@ -1301,7 +1279,7 @@ func (s *TimerLayerAllocationStore) FilterByOption(transaction store_iface.SqlxT
 	return result, err
 }
 
-func (s *TimerLayerAllocationStore) Get(allocationID string) (*warehouse.Allocation, error) {
+func (s *TimerLayerAllocationStore) Get(allocationID string) (*model.Allocation, error) {
 	start := timemodule.Now()
 
 	result, err := s.AllocationStore.Get(allocationID)
@@ -1317,7 +1295,7 @@ func (s *TimerLayerAllocationStore) Get(allocationID string) (*warehouse.Allocat
 	return result, err
 }
 
-func (s *TimerLayerAppStore) Save(app *app.App) (*app.App, error) {
+func (s *TimerLayerAppStore) Save(app *model.App) (*model.App, error) {
 	start := timemodule.Now()
 
 	result, err := s.AppStore.Save(app)
@@ -1333,7 +1311,7 @@ func (s *TimerLayerAppStore) Save(app *app.App) (*app.App, error) {
 	return result, err
 }
 
-func (s *TimerLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, error) {
+func (s *TimerLayerAppTokenStore) Save(appToken *model.AppToken) (*model.AppToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.AppTokenStore.Save(appToken)
@@ -1349,7 +1327,7 @@ func (s *TimerLayerAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, e
 	return result, err
 }
 
-func (s *TimerLayerAssignedPageAttributeStore) Get(id string) (*attribute.AssignedPageAttribute, error) {
+func (s *TimerLayerAssignedPageAttributeStore) Get(id string) (*model.AssignedPageAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedPageAttributeStore.Get(id)
@@ -1365,7 +1343,7 @@ func (s *TimerLayerAssignedPageAttributeStore) Get(id string) (*attribute.Assign
 	return result, err
 }
 
-func (s *TimerLayerAssignedPageAttributeStore) GetByOption(option *attribute.AssignedPageAttributeFilterOption) (*attribute.AssignedPageAttribute, error) {
+func (s *TimerLayerAssignedPageAttributeStore) GetByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedPageAttributeStore.GetByOption(option)
@@ -1381,7 +1359,7 @@ func (s *TimerLayerAssignedPageAttributeStore) GetByOption(option *attribute.Ass
 	return result, err
 }
 
-func (s *TimerLayerAssignedPageAttributeStore) Save(assignedPageAttr *attribute.AssignedPageAttribute) (*attribute.AssignedPageAttribute, error) {
+func (s *TimerLayerAssignedPageAttributeStore) Save(assignedPageAttr *model.AssignedPageAttribute) (*model.AssignedPageAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedPageAttributeStore.Save(assignedPageAttr)
@@ -1397,7 +1375,7 @@ func (s *TimerLayerAssignedPageAttributeStore) Save(assignedPageAttr *attribute.
 	return result, err
 }
 
-func (s *TimerLayerAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string) (*attribute.AssignedPageAttributeValue, error) {
+func (s *TimerLayerAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string) (*model.AssignedPageAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedPageAttributeValueStore.Get(assignedPageAttrValueID)
@@ -1413,7 +1391,7 @@ func (s *TimerLayerAssignedPageAttributeValueStore) Get(assignedPageAttrValueID 
 	return result, err
 }
 
-func (s *TimerLayerAssignedPageAttributeValueStore) Save(assignedPageAttrValue *attribute.AssignedPageAttributeValue) (*attribute.AssignedPageAttributeValue, error) {
+func (s *TimerLayerAssignedPageAttributeValueStore) Save(assignedPageAttrValue *model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedPageAttributeValueStore.Save(assignedPageAttrValue)
@@ -1429,7 +1407,7 @@ func (s *TimerLayerAssignedPageAttributeValueStore) Save(assignedPageAttrValue *
 	return result, err
 }
 
-func (s *TimerLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedPageAttributeValue, error) {
+func (s *TimerLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedPageAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedPageAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
@@ -1445,7 +1423,7 @@ func (s *TimerLayerAssignedPageAttributeValueStore) SaveInBulk(assignmentID stri
 	return result, err
 }
 
-func (s *TimerLayerAssignedPageAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedPageAttributeValue, []*attribute.AttributeValue, error) {
+func (s *TimerLayerAssignedPageAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedPageAttributeValue, []*model.AttributeValue, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.AssignedPageAttributeValueStore.SelectForSort(assignmentID)
@@ -1461,7 +1439,7 @@ func (s *TimerLayerAssignedPageAttributeValueStore) SelectForSort(assignmentID s
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedPageAttributeValue) error {
+func (s *TimerLayerAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedPageAttributeValue) error {
 	start := timemodule.Now()
 
 	err := s.AssignedPageAttributeValueStore.UpdateInBulk(attributeValues)
@@ -1477,7 +1455,7 @@ func (s *TimerLayerAssignedPageAttributeValueStore) UpdateInBulk(attributeValues
 	return err
 }
 
-func (s *TimerLayerAssignedProductAttributeStore) FilterByOptions(options *attribute.AssignedProductAttributeFilterOption) ([]*attribute.AssignedProductAttribute, error) {
+func (s *TimerLayerAssignedProductAttributeStore) FilterByOptions(options *model.AssignedProductAttributeFilterOption) ([]*model.AssignedProductAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeStore.FilterByOptions(options)
@@ -1493,7 +1471,7 @@ func (s *TimerLayerAssignedProductAttributeStore) FilterByOptions(options *attri
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeStore) Get(id string) (*attribute.AssignedProductAttribute, error) {
+func (s *TimerLayerAssignedProductAttributeStore) Get(id string) (*model.AssignedProductAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeStore.Get(id)
@@ -1509,7 +1487,7 @@ func (s *TimerLayerAssignedProductAttributeStore) Get(id string) (*attribute.Ass
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeStore) GetWithOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, error) {
+func (s *TimerLayerAssignedProductAttributeStore) GetWithOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeStore.GetWithOption(option)
@@ -1525,7 +1503,7 @@ func (s *TimerLayerAssignedProductAttributeStore) GetWithOption(option *attribut
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeStore) Save(assignedProductAttribute *attribute.AssignedProductAttribute) (*attribute.AssignedProductAttribute, error) {
+func (s *TimerLayerAssignedProductAttributeStore) Save(assignedProductAttribute *model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeStore.Save(assignedProductAttribute)
@@ -1541,7 +1519,7 @@ func (s *TimerLayerAssignedProductAttributeStore) Save(assignedProductAttribute 
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*attribute.AssignedProductAttributeValue, error) {
+func (s *TimerLayerAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeValueStore.Get(assignedProductAttrValueID)
@@ -1557,7 +1535,7 @@ func (s *TimerLayerAssignedProductAttributeValueStore) Get(assignedProductAttrVa
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValue *attribute.AssignedProductAttributeValue) (*attribute.AssignedProductAttributeValue, error) {
+func (s *TimerLayerAssignedProductAttributeValueStore) Save(assignedProductAttrValue *model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeValueStore.Save(assignedProductAttrValue)
@@ -1573,7 +1551,7 @@ func (s *TimerLayerAssignedProductAttributeValueStore) Save(assignedProductAttrV
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedProductAttributeValue, error) {
+func (s *TimerLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedProductAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedProductAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
@@ -1589,7 +1567,7 @@ func (s *TimerLayerAssignedProductAttributeValueStore) SaveInBulk(assignmentID s
 	return result, err
 }
 
-func (s *TimerLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedProductAttributeValue, []*attribute.AttributeValue, error) {
+func (s *TimerLayerAssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedProductAttributeValue, []*model.AttributeValue, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.AssignedProductAttributeValueStore.SelectForSort(assignmentID)
@@ -1605,7 +1583,7 @@ func (s *TimerLayerAssignedProductAttributeValueStore) SelectForSort(assignmentI
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedProductAttributeValue) error {
+func (s *TimerLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedProductAttributeValue) error {
 	start := timemodule.Now()
 
 	err := s.AssignedProductAttributeValueStore.UpdateInBulk(attributeValues)
@@ -1621,7 +1599,7 @@ func (s *TimerLayerAssignedProductAttributeValueStore) UpdateInBulk(attributeVal
 	return err
 }
 
-func (s *TimerLayerAssignedVariantAttributeStore) FilterByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) {
+func (s *TimerLayerAssignedVariantAttributeStore) FilterByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeStore.FilterByOption(option)
@@ -1637,7 +1615,7 @@ func (s *TimerLayerAssignedVariantAttributeStore) FilterByOption(option *attribu
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeStore) Get(id string) (*attribute.AssignedVariantAttribute, error) {
+func (s *TimerLayerAssignedVariantAttributeStore) Get(id string) (*model.AssignedVariantAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeStore.Get(id)
@@ -1653,7 +1631,7 @@ func (s *TimerLayerAssignedVariantAttributeStore) Get(id string) (*attribute.Ass
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeStore) GetWithOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, error) {
+func (s *TimerLayerAssignedVariantAttributeStore) GetWithOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeStore.GetWithOption(option)
@@ -1669,7 +1647,7 @@ func (s *TimerLayerAssignedVariantAttributeStore) GetWithOption(option *attribut
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, error) {
+func (s *TimerLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeStore.Save(assignedVariantAttribute)
@@ -1685,7 +1663,7 @@ func (s *TimerLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute 
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*attribute.AssignedVariantAttributeValue, error) {
+func (s *TimerLayerAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*model.AssignedVariantAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeValueStore.Get(assignedVariantAttrValueID)
@@ -1701,7 +1679,7 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) Get(assignedVariantAttrVa
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *attribute.AssignedVariantAttributeValue) (*attribute.AssignedVariantAttributeValue, error) {
+func (s *TimerLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeValueStore.Save(assignedVariantAttrValue)
@@ -1717,7 +1695,7 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) Save(assignedVariantAttrV
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedVariantAttributeValue, error) {
+func (s *TimerLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedVariantAttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AssignedVariantAttributeValueStore.SaveInBulk(assignmentID, attributeValueIDs)
@@ -1733,7 +1711,7 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) SaveInBulk(assignmentID s
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedVariantAttributeValue, []*attribute.AttributeValue, error) {
+func (s *TimerLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedVariantAttributeValue, []*model.AttributeValue, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.AssignedVariantAttributeValueStore.SelectForSort(assignmentID)
@@ -1749,7 +1727,7 @@ func (s *TimerLayerAssignedVariantAttributeValueStore) SelectForSort(assignmentI
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedVariantAttributeValue) error {
+func (s *TimerLayerAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedVariantAttributeValue) error {
 	start := timemodule.Now()
 
 	err := s.AssignedVariantAttributeValueStore.UpdateInBulk(attributeValues)
@@ -1781,7 +1759,7 @@ func (s *TimerLayerAttributeStore) Delete(ids ...string) (int64, error) {
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) FilterbyOption(option *attribute.AttributeFilterOption) (attribute.Attributes, error) {
+func (s *TimerLayerAttributeStore) FilterbyOption(option *model.AttributeFilterOption) (model.Attributes, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeStore.FilterbyOption(option)
@@ -1797,7 +1775,7 @@ func (s *TimerLayerAttributeStore) FilterbyOption(option *attribute.AttributeFil
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) GetByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, error) {
+func (s *TimerLayerAttributeStore) GetByOption(option *model.AttributeFilterOption) (*model.Attribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeStore.GetByOption(option)
@@ -1813,7 +1791,7 @@ func (s *TimerLayerAttributeStore) GetByOption(option *attribute.AttributeFilter
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) Upsert(attr *attribute.Attribute) (*attribute.Attribute, error) {
+func (s *TimerLayerAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeStore.Upsert(attr)
@@ -1829,7 +1807,7 @@ func (s *TimerLayerAttributeStore) Upsert(attr *attribute.Attribute) (*attribute
 	return result, err
 }
 
-func (s *TimerLayerAttributePageStore) Get(pageID string) (*attribute.AttributePage, error) {
+func (s *TimerLayerAttributePageStore) Get(pageID string) (*model.AttributePage, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributePageStore.Get(pageID)
@@ -1845,7 +1823,7 @@ func (s *TimerLayerAttributePageStore) Get(pageID string) (*attribute.AttributeP
 	return result, err
 }
 
-func (s *TimerLayerAttributePageStore) GetByOption(option *attribute.AttributePageFilterOption) (*attribute.AttributePage, error) {
+func (s *TimerLayerAttributePageStore) GetByOption(option *model.AttributePageFilterOption) (*model.AttributePage, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributePageStore.GetByOption(option)
@@ -1861,7 +1839,7 @@ func (s *TimerLayerAttributePageStore) GetByOption(option *attribute.AttributePa
 	return result, err
 }
 
-func (s *TimerLayerAttributePageStore) Save(page *attribute.AttributePage) (*attribute.AttributePage, error) {
+func (s *TimerLayerAttributePageStore) Save(page *model.AttributePage) (*model.AttributePage, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributePageStore.Save(page)
@@ -1877,7 +1855,7 @@ func (s *TimerLayerAttributePageStore) Save(page *attribute.AttributePage) (*att
 	return result, err
 }
 
-func (s *TimerLayerAttributeProductStore) Get(attributeProductID string) (*attribute.AttributeProduct, error) {
+func (s *TimerLayerAttributeProductStore) Get(attributeProductID string) (*model.AttributeProduct, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeProductStore.Get(attributeProductID)
@@ -1893,7 +1871,7 @@ func (s *TimerLayerAttributeProductStore) Get(attributeProductID string) (*attri
 	return result, err
 }
 
-func (s *TimerLayerAttributeProductStore) GetByOption(option *attribute.AttributeProductFilterOption) (*attribute.AttributeProduct, error) {
+func (s *TimerLayerAttributeProductStore) GetByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeProductStore.GetByOption(option)
@@ -1909,7 +1887,7 @@ func (s *TimerLayerAttributeProductStore) GetByOption(option *attribute.Attribut
 	return result, err
 }
 
-func (s *TimerLayerAttributeProductStore) Save(attributeProduct *attribute.AttributeProduct) (*attribute.AttributeProduct, error) {
+func (s *TimerLayerAttributeProductStore) Save(attributeProduct *model.AttributeProduct) (*model.AttributeProduct, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeProductStore.Save(attributeProduct)
@@ -1925,7 +1903,7 @@ func (s *TimerLayerAttributeProductStore) Save(attributeProduct *attribute.Attri
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values attribute.AttributeValues) (attribute.AttributeValues, error) {
+func (s *TimerLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values model.AttributeValues) (model.AttributeValues, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeValueStore.BulkUpsert(transaction, values)
@@ -1941,7 +1919,7 @@ func (s *TimerLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxT
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) Count(options *attribute.AttributeValueFilterOptions) (int64, error) {
+func (s *TimerLayerAttributeValueStore) Count(options *model.AttributeValueFilterOptions) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeValueStore.Count(options)
@@ -1973,7 +1951,7 @@ func (s *TimerLayerAttributeValueStore) Delete(ids ...string) (int64, error) {
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) FilterByOptions(options attribute.AttributeValueFilterOptions) (attribute.AttributeValues, error) {
+func (s *TimerLayerAttributeValueStore) FilterByOptions(options model.AttributeValueFilterOptions) (model.AttributeValues, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeValueStore.FilterByOptions(options)
@@ -1989,7 +1967,7 @@ func (s *TimerLayerAttributeValueStore) FilterByOptions(options attribute.Attrib
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) Get(attributeID string) (*attribute.AttributeValue, error) {
+func (s *TimerLayerAttributeValueStore) Get(attributeID string) (*model.AttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeValueStore.Get(attributeID)
@@ -2005,7 +1983,7 @@ func (s *TimerLayerAttributeValueStore) Get(attributeID string) (*attribute.Attr
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) Upsert(av *attribute.AttributeValue) (*attribute.AttributeValue, error) {
+func (s *TimerLayerAttributeValueStore) Upsert(av *model.AttributeValue) (*model.AttributeValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeValueStore.Upsert(av)
@@ -2021,7 +1999,7 @@ func (s *TimerLayerAttributeValueStore) Upsert(av *attribute.AttributeValue) (*a
 	return result, err
 }
 
-func (s *TimerLayerAttributeVariantStore) Get(attributeVariantID string) (*attribute.AttributeVariant, error) {
+func (s *TimerLayerAttributeVariantStore) Get(attributeVariantID string) (*model.AttributeVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeVariantStore.Get(attributeVariantID)
@@ -2037,7 +2015,7 @@ func (s *TimerLayerAttributeVariantStore) Get(attributeVariantID string) (*attri
 	return result, err
 }
 
-func (s *TimerLayerAttributeVariantStore) GetByOption(option *attribute.AttributeVariantFilterOption) (*attribute.AttributeVariant, error) {
+func (s *TimerLayerAttributeVariantStore) GetByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeVariantStore.GetByOption(option)
@@ -2053,7 +2031,7 @@ func (s *TimerLayerAttributeVariantStore) GetByOption(option *attribute.Attribut
 	return result, err
 }
 
-func (s *TimerLayerAttributeVariantStore) Save(attributeVariant *attribute.AttributeVariant) (*attribute.AttributeVariant, error) {
+func (s *TimerLayerAttributeVariantStore) Save(attributeVariant *model.AttributeVariant) (*model.AttributeVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeVariantStore.Save(attributeVariant)
@@ -2069,7 +2047,7 @@ func (s *TimerLayerAttributeVariantStore) Save(attributeVariant *attribute.Attri
 	return result, err
 }
 
-func (s *TimerLayerAuditStore) Get(userID string, offset int, limit int) (audit.Audits, error) {
+func (s *TimerLayerAuditStore) Get(userID string, offset int, limit int) (model.Audits, error) {
 	start := timemodule.Now()
 
 	result, err := s.AuditStore.Get(userID, offset, limit)
@@ -2101,7 +2079,7 @@ func (s *TimerLayerAuditStore) PermanentDeleteByUser(userID string) error {
 	return err
 }
 
-func (s *TimerLayerAuditStore) Save(audit *audit.Audit) error {
+func (s *TimerLayerAuditStore) Save(audit *model.Audit) error {
 	start := timemodule.Now()
 
 	err := s.AuditStore.Save(audit)
@@ -2117,7 +2095,7 @@ func (s *TimerLayerAuditStore) Save(audit *audit.Audit) error {
 	return err
 }
 
-func (s *TimerLayerCategoryStore) FilterByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, error) {
+func (s *TimerLayerCategoryStore) FilterByOption(option *model.CategoryFilterOption) ([]*model.Category, error) {
 	start := timemodule.Now()
 
 	result, err := s.CategoryStore.FilterByOption(option)
@@ -2133,7 +2111,7 @@ func (s *TimerLayerCategoryStore) FilterByOption(option *product_and_discount.Ca
 	return result, err
 }
 
-func (s *TimerLayerCategoryStore) Get(categoryID string) (*product_and_discount.Category, error) {
+func (s *TimerLayerCategoryStore) Get(categoryID string) (*model.Category, error) {
 	start := timemodule.Now()
 
 	result, err := s.CategoryStore.Get(categoryID)
@@ -2149,7 +2127,7 @@ func (s *TimerLayerCategoryStore) Get(categoryID string) (*product_and_discount.
 	return result, err
 }
 
-func (s *TimerLayerCategoryStore) GetByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, error) {
+func (s *TimerLayerCategoryStore) GetByOption(option *model.CategoryFilterOption) (*model.Category, error) {
 	start := timemodule.Now()
 
 	result, err := s.CategoryStore.GetByOption(option)
@@ -2165,7 +2143,7 @@ func (s *TimerLayerCategoryStore) GetByOption(option *product_and_discount.Categ
 	return result, err
 }
 
-func (s *TimerLayerCategoryStore) Upsert(category *product_and_discount.Category) (*product_and_discount.Category, error) {
+func (s *TimerLayerCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
 	start := timemodule.Now()
 
 	result, err := s.CategoryStore.Upsert(category)
@@ -2181,7 +2159,7 @@ func (s *TimerLayerCategoryStore) Upsert(category *product_and_discount.Category
 	return result, err
 }
 
-func (s *TimerLayerChannelStore) FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) {
+func (s *TimerLayerChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) {
 	start := timemodule.Now()
 
 	result, err := s.ChannelStore.FilterByOption(option)
@@ -2197,7 +2175,7 @@ func (s *TimerLayerChannelStore) FilterByOption(option *channel.ChannelFilterOpt
 	return result, err
 }
 
-func (s *TimerLayerChannelStore) Get(id string) (*channel.Channel, error) {
+func (s *TimerLayerChannelStore) Get(id string) (*model.Channel, error) {
 	start := timemodule.Now()
 
 	result, err := s.ChannelStore.Get(id)
@@ -2213,7 +2191,7 @@ func (s *TimerLayerChannelStore) Get(id string) (*channel.Channel, error) {
 	return result, err
 }
 
-func (s *TimerLayerChannelStore) GetbyOption(option *channel.ChannelFilterOption) (*channel.Channel, error) {
+func (s *TimerLayerChannelStore) GetbyOption(option *model.ChannelFilterOption) (*model.Channel, error) {
 	start := timemodule.Now()
 
 	result, err := s.ChannelStore.GetbyOption(option)
@@ -2229,7 +2207,7 @@ func (s *TimerLayerChannelStore) GetbyOption(option *channel.ChannelFilterOption
 	return result, err
 }
 
-func (s *TimerLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, error) {
+func (s *TimerLayerChannelStore) Save(ch *model.Channel) (*model.Channel, error) {
 	start := timemodule.Now()
 
 	result, err := s.ChannelStore.Save(ch)
@@ -2245,7 +2223,7 @@ func (s *TimerLayerChannelStore) Save(ch *channel.Channel) (*channel.Channel, er
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) CountCheckouts(options *checkout.CheckoutFilterOption) (int64, error) {
+func (s *TimerLayerCheckoutStore) CountCheckouts(options *model.CheckoutFilterOption) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutStore.CountCheckouts(options)
@@ -2261,7 +2239,7 @@ func (s *TimerLayerCheckoutStore) CountCheckouts(options *checkout.CheckoutFilte
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *checkout.CheckoutFilterOption) error {
+func (s *TimerLayerCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *model.CheckoutFilterOption) error {
 	start := timemodule.Now()
 
 	err := s.CheckoutStore.DeleteCheckoutsByOption(transaction, option)
@@ -2277,7 +2255,7 @@ func (s *TimerLayerCheckoutStore) DeleteCheckoutsByOption(transaction store_ifac
 	return err
 }
 
-func (s *TimerLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *checkout.Checkout) ([]*checkout.CheckoutLineInfo, error) {
+func (s *TimerLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *model.Checkout) ([]*model.CheckoutLineInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutStore.FetchCheckoutLinesAndPrefetchRelatedValue(ckout)
@@ -2293,7 +2271,7 @@ func (s *TimerLayerCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckou
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) FilterByOption(option *checkout.CheckoutFilterOption) ([]*checkout.Checkout, error) {
+func (s *TimerLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutStore.FilterByOption(option)
@@ -2309,7 +2287,7 @@ func (s *TimerLayerCheckoutStore) FilterByOption(option *checkout.CheckoutFilter
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) {
+func (s *TimerLayerCheckoutStore) Get(token string) (*model.Checkout, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutStore.Get(token)
@@ -2325,7 +2303,7 @@ func (s *TimerLayerCheckoutStore) Get(token string) (*checkout.Checkout, error) 
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) GetByOption(option *checkout.CheckoutFilterOption) (*checkout.Checkout, error) {
+func (s *TimerLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutStore.GetByOption(option)
@@ -2341,7 +2319,7 @@ func (s *TimerLayerCheckoutStore) GetByOption(option *checkout.CheckoutFilterOpt
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Checkout, error) {
+func (s *TimerLayerCheckoutStore) Upsert(ckout *model.Checkout) (*model.Checkout, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutStore.Upsert(ckout)
@@ -2357,7 +2335,7 @@ func (s *TimerLayerCheckoutStore) Upsert(ckout *checkout.Checkout) (*checkout.Ch
 	return result, err
 }
 
-func (s *TimerLayerCheckoutLineStore) BulkCreate(checkoutLines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, error) {
+func (s *TimerLayerCheckoutLineStore) BulkCreate(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutLineStore.BulkCreate(checkoutLines)
@@ -2373,7 +2351,7 @@ func (s *TimerLayerCheckoutLineStore) BulkCreate(checkoutLines []*checkout.Check
 	return result, err
 }
 
-func (s *TimerLayerCheckoutLineStore) BulkUpdate(checkoutLines []*checkout.CheckoutLine) error {
+func (s *TimerLayerCheckoutLineStore) BulkUpdate(checkoutLines []*model.CheckoutLine) error {
 	start := timemodule.Now()
 
 	err := s.CheckoutLineStore.BulkUpdate(checkoutLines)
@@ -2389,7 +2367,7 @@ func (s *TimerLayerCheckoutLineStore) BulkUpdate(checkoutLines []*checkout.Check
 	return err
 }
 
-func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID string) ([]*checkout.CheckoutLine, error) {
+func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID string) ([]*model.CheckoutLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutLineStore.CheckoutLinesByCheckoutID(checkoutID)
@@ -2405,7 +2383,7 @@ func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID strin
 	return result, err
 }
 
-func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*checkout.CheckoutLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
+func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*model.CheckoutLine, []*model.ProductVariant, []*model.Product, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, resultVar2, err := s.CheckoutLineStore.CheckoutLinesByCheckoutWithPrefetch(checkoutID)
@@ -2421,7 +2399,7 @@ func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checko
 	return result, resultVar1, resultVar2, err
 }
 
-func (s *TimerLayerCheckoutLineStore) CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, error) {
+func (s *TimerLayerCheckoutLineStore) CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutLineStore.CheckoutLinesByOption(option)
@@ -2453,7 +2431,7 @@ func (s *TimerLayerCheckoutLineStore) DeleteLines(transaction store_iface.SqlxTx
 	return err
 }
 
-func (s *TimerLayerCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, error) {
+func (s *TimerLayerCheckoutLineStore) Get(id string) (*model.CheckoutLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutLineStore.Get(id)
@@ -2485,7 +2463,7 @@ func (s *TimerLayerCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineID
 	return result, err
 }
 
-func (s *TimerLayerCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error) {
+func (s *TimerLayerCheckoutLineStore) Upsert(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutLineStore.Upsert(checkoutLine)
@@ -2517,7 +2495,7 @@ func (s *TimerLayerClusterDiscoveryStore) Cleanup() error {
 	return err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) Delete(discovery *cluster.ClusterDiscovery) (bool, error) {
+func (s *TimerLayerClusterDiscoveryStore) Delete(discovery *model.ClusterDiscovery) (bool, error) {
 	start := timemodule.Now()
 
 	result, err := s.ClusterDiscoveryStore.Delete(discovery)
@@ -2533,7 +2511,7 @@ func (s *TimerLayerClusterDiscoveryStore) Delete(discovery *cluster.ClusterDisco
 	return result, err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) Exists(discovery *cluster.ClusterDiscovery) (bool, error) {
+func (s *TimerLayerClusterDiscoveryStore) Exists(discovery *model.ClusterDiscovery) (bool, error) {
 	start := timemodule.Now()
 
 	result, err := s.ClusterDiscoveryStore.Exists(discovery)
@@ -2549,7 +2527,7 @@ func (s *TimerLayerClusterDiscoveryStore) Exists(discovery *cluster.ClusterDisco
 	return result, err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*cluster.ClusterDiscovery, error) {
+func (s *TimerLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterName string) ([]*model.ClusterDiscovery, error) {
 	start := timemodule.Now()
 
 	result, err := s.ClusterDiscoveryStore.GetAll(discoveryType, clusterName)
@@ -2565,7 +2543,7 @@ func (s *TimerLayerClusterDiscoveryStore) GetAll(discoveryType string, clusterNa
 	return result, err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) Save(discovery *cluster.ClusterDiscovery) error {
+func (s *TimerLayerClusterDiscoveryStore) Save(discovery *model.ClusterDiscovery) error {
 	start := timemodule.Now()
 
 	err := s.ClusterDiscoveryStore.Save(discovery)
@@ -2581,7 +2559,7 @@ func (s *TimerLayerClusterDiscoveryStore) Save(discovery *cluster.ClusterDiscove
 	return err
 }
 
-func (s *TimerLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster.ClusterDiscovery) error {
+func (s *TimerLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.ClusterDiscovery) error {
 	start := timemodule.Now()
 
 	err := s.ClusterDiscoveryStore.SetLastPingAt(discovery)
@@ -2597,7 +2575,7 @@ func (s *TimerLayerClusterDiscoveryStore) SetLastPingAt(discovery *cluster.Clust
 	return err
 }
 
-func (s *TimerLayerCollectionStore) FilterByOption(option *product_and_discount.CollectionFilterOption) ([]*product_and_discount.Collection, error) {
+func (s *TimerLayerCollectionStore) FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) {
 	start := timemodule.Now()
 
 	result, err := s.CollectionStore.FilterByOption(option)
@@ -2613,7 +2591,7 @@ func (s *TimerLayerCollectionStore) FilterByOption(option *product_and_discount.
 	return result, err
 }
 
-func (s *TimerLayerCollectionStore) Get(collectionID string) (*product_and_discount.Collection, error) {
+func (s *TimerLayerCollectionStore) Get(collectionID string) (*model.Collection, error) {
 	start := timemodule.Now()
 
 	result, err := s.CollectionStore.Get(collectionID)
@@ -2629,7 +2607,7 @@ func (s *TimerLayerCollectionStore) Get(collectionID string) (*product_and_disco
 	return result, err
 }
 
-func (s *TimerLayerCollectionStore) Upsert(collection *product_and_discount.Collection) (*product_and_discount.Collection, error) {
+func (s *TimerLayerCollectionStore) Upsert(collection *model.Collection) (*model.Collection, error) {
 	start := timemodule.Now()
 
 	result, err := s.CollectionStore.Upsert(collection)
@@ -2645,7 +2623,7 @@ func (s *TimerLayerCollectionStore) Upsert(collection *product_and_discount.Coll
 	return result, err
 }
 
-func (s *TimerLayerCollectionProductStore) FilterByOptions(options *product_and_discount.CollectionProductFilterOptions) ([]*product_and_discount.CollectionProduct, error) {
+func (s *TimerLayerCollectionProductStore) FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error) {
 	start := timemodule.Now()
 
 	result, err := s.CollectionProductStore.FilterByOptions(options)
@@ -2661,10 +2639,10 @@ func (s *TimerLayerCollectionProductStore) FilterByOptions(options *product_and_
 	return result, err
 }
 
-func (s *TimerLayerComplianceStore) ComplianceExport(compliance *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
+func (s *TimerLayerComplianceStore) ComplianceExport(model *model.Compliance, cursor model.ComplianceExportCursor, limit int) ([]*model.CompliancePost, model.ComplianceExportCursor, error) {
 	start := timemodule.Now()
 
-	result, resultVar1, err := s.ComplianceStore.ComplianceExport(compliance, cursor, limit)
+	result, resultVar1, err := s.ComplianceStore.ComplianceExport(model, cursor, limit)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2677,7 +2655,7 @@ func (s *TimerLayerComplianceStore) ComplianceExport(compliance *compliance.Comp
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerComplianceStore) Get(id string) (*compliance.Compliance, error) {
+func (s *TimerLayerComplianceStore) Get(id string) (*model.Compliance, error) {
 	start := timemodule.Now()
 
 	result, err := s.ComplianceStore.Get(id)
@@ -2693,7 +2671,7 @@ func (s *TimerLayerComplianceStore) Get(id string) (*compliance.Compliance, erro
 	return result, err
 }
 
-func (s *TimerLayerComplianceStore) GetAll(offset int, limit int) (compliance.Compliances, error) {
+func (s *TimerLayerComplianceStore) GetAll(offset int, limit int) (model.Compliances, error) {
 	start := timemodule.Now()
 
 	result, err := s.ComplianceStore.GetAll(offset, limit)
@@ -2709,7 +2687,7 @@ func (s *TimerLayerComplianceStore) GetAll(offset int, limit int) (compliance.Co
 	return result, err
 }
 
-func (s *TimerLayerComplianceStore) MessageExport(cursor compliance.MessageExportCursor, limit int) ([]*compliance.MessageExport, compliance.MessageExportCursor, error) {
+func (s *TimerLayerComplianceStore) MessageExport(cursor model.MessageExportCursor, limit int) ([]*model.MessageExport, model.MessageExportCursor, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.ComplianceStore.MessageExport(cursor, limit)
@@ -2725,10 +2703,10 @@ func (s *TimerLayerComplianceStore) MessageExport(cursor compliance.MessageExpor
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerComplianceStore) Save(compliance *compliance.Compliance) (*compliance.Compliance, error) {
+func (s *TimerLayerComplianceStore) Save(model *model.Compliance) (*model.Compliance, error) {
 	start := timemodule.Now()
 
-	result, err := s.ComplianceStore.Save(compliance)
+	result, err := s.ComplianceStore.Save(model)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2741,10 +2719,10 @@ func (s *TimerLayerComplianceStore) Save(compliance *compliance.Compliance) (*co
 	return result, err
 }
 
-func (s *TimerLayerComplianceStore) Update(compliance *compliance.Compliance) (*compliance.Compliance, error) {
+func (s *TimerLayerComplianceStore) Update(model *model.Compliance) (*model.Compliance, error) {
 	start := timemodule.Now()
 
-	result, err := s.ComplianceStore.Update(compliance)
+	result, err := s.ComplianceStore.Update(model)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2757,7 +2735,7 @@ func (s *TimerLayerComplianceStore) Update(compliance *compliance.Compliance) (*
 	return result, err
 }
 
-func (s *TimerLayerCsvExportEventStore) FilterByOption(options *csv.ExportEventFilterOption) ([]*csv.ExportEvent, error) {
+func (s *TimerLayerCsvExportEventStore) FilterByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.CsvExportEventStore.FilterByOption(options)
@@ -2773,7 +2751,7 @@ func (s *TimerLayerCsvExportEventStore) FilterByOption(options *csv.ExportEventF
 	return result, err
 }
 
-func (s *TimerLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.ExportEvent, error) {
+func (s *TimerLayerCsvExportEventStore) Save(event *model.ExportEvent) (*model.ExportEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.CsvExportEventStore.Save(event)
@@ -2789,7 +2767,7 @@ func (s *TimerLayerCsvExportEventStore) Save(event *csv.ExportEvent) (*csv.Expor
 	return result, err
 }
 
-func (s *TimerLayerCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
+func (s *TimerLayerCsvExportFileStore) Get(id string) (*model.ExportFile, error) {
 	start := timemodule.Now()
 
 	result, err := s.CsvExportFileStore.Get(id)
@@ -2805,7 +2783,7 @@ func (s *TimerLayerCsvExportFileStore) Get(id string) (*csv.ExportFile, error) {
 	return result, err
 }
 
-func (s *TimerLayerCsvExportFileStore) Save(file *csv.ExportFile) (*csv.ExportFile, error) {
+func (s *TimerLayerCsvExportFileStore) Save(file *model.ExportFile) (*model.ExportFile, error) {
 	start := timemodule.Now()
 
 	result, err := s.CsvExportFileStore.Save(file)
@@ -2837,7 +2815,7 @@ func (s *TimerLayerCustomerEventStore) Count() (int64, error) {
 	return result, err
 }
 
-func (s *TimerLayerCustomerEventStore) Get(id string) (*account.CustomerEvent, error) {
+func (s *TimerLayerCustomerEventStore) Get(id string) (*model.CustomerEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.CustomerEventStore.Get(id)
@@ -2853,7 +2831,7 @@ func (s *TimerLayerCustomerEventStore) Get(id string) (*account.CustomerEvent, e
 	return result, err
 }
 
-func (s *TimerLayerCustomerEventStore) GetEventsByUserID(userID string) ([]*account.CustomerEvent, error) {
+func (s *TimerLayerCustomerEventStore) GetEventsByUserID(userID string) ([]*model.CustomerEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.CustomerEventStore.GetEventsByUserID(userID)
@@ -2869,7 +2847,7 @@ func (s *TimerLayerCustomerEventStore) GetEventsByUserID(userID string) ([]*acco
 	return result, err
 }
 
-func (s *TimerLayerCustomerEventStore) Save(customemrEvent *account.CustomerEvent) (*account.CustomerEvent, error) {
+func (s *TimerLayerCustomerEventStore) Save(customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.CustomerEventStore.Save(customemrEvent)
@@ -2885,7 +2863,7 @@ func (s *TimerLayerCustomerEventStore) Save(customemrEvent *account.CustomerEven
 	return result, err
 }
 
-func (s *TimerLayerCustomerNoteStore) Get(id string) (*account.CustomerNote, error) {
+func (s *TimerLayerCustomerNoteStore) Get(id string) (*model.CustomerNote, error) {
 	start := timemodule.Now()
 
 	result, err := s.CustomerNoteStore.Get(id)
@@ -2901,7 +2879,7 @@ func (s *TimerLayerCustomerNoteStore) Get(id string) (*account.CustomerNote, err
 	return result, err
 }
 
-func (s *TimerLayerCustomerNoteStore) Save(note *account.CustomerNote) (*account.CustomerNote, error) {
+func (s *TimerLayerCustomerNoteStore) Save(note *model.CustomerNote) (*model.CustomerNote, error) {
 	start := timemodule.Now()
 
 	result, err := s.CustomerNoteStore.Save(note)
@@ -2917,7 +2895,23 @@ func (s *TimerLayerCustomerNoteStore) Save(note *account.CustomerNote) (*account
 	return result, err
 }
 
-func (s *TimerLayerDigitalContentStore) GetByOption(option *product_and_discount.DigitalContenetFilterOption) (*product_and_discount.DigitalContent, error) {
+func (s *TimerLayerDigitalContentStore) FilterByOption(option *model.DigitalContenetFilterOption) ([]*model.DigitalContent, error) {
+	start := timemodule.Now()
+
+	result, err := s.DigitalContentStore.FilterByOption(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentStore.FilterByOption", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerDigitalContentStore) GetByOption(option *model.DigitalContenetFilterOption) (*model.DigitalContent, error) {
 	start := timemodule.Now()
 
 	result, err := s.DigitalContentStore.GetByOption(option)
@@ -2933,7 +2927,7 @@ func (s *TimerLayerDigitalContentStore) GetByOption(option *product_and_discount
 	return result, err
 }
 
-func (s *TimerLayerDigitalContentStore) Save(content *product_and_discount.DigitalContent) (*product_and_discount.DigitalContent, error) {
+func (s *TimerLayerDigitalContentStore) Save(content *model.DigitalContent) (*model.DigitalContent, error) {
 	start := timemodule.Now()
 
 	result, err := s.DigitalContentStore.Save(content)
@@ -2949,7 +2943,7 @@ func (s *TimerLayerDigitalContentStore) Save(content *product_and_discount.Digit
 	return result, err
 }
 
-func (s *TimerLayerDigitalContentUrlStore) Get(id string) (*product_and_discount.DigitalContentUrl, error) {
+func (s *TimerLayerDigitalContentUrlStore) Get(id string) (*model.DigitalContentUrl, error) {
 	start := timemodule.Now()
 
 	result, err := s.DigitalContentUrlStore.Get(id)
@@ -2965,7 +2959,7 @@ func (s *TimerLayerDigitalContentUrlStore) Get(id string) (*product_and_discount
 	return result, err
 }
 
-func (s *TimerLayerDigitalContentUrlStore) Upsert(contentURL *product_and_discount.DigitalContentUrl) (*product_and_discount.DigitalContentUrl, error) {
+func (s *TimerLayerDigitalContentUrlStore) Upsert(contentURL *model.DigitalContentUrl) (*model.DigitalContentUrl, error) {
 	start := timemodule.Now()
 
 	result, err := s.DigitalContentUrlStore.Upsert(contentURL)
@@ -2981,7 +2975,7 @@ func (s *TimerLayerDigitalContentUrlStore) Upsert(contentURL *product_and_discou
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
+func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountSaleStore.FilterSalesByOption(option)
@@ -2997,7 +2991,7 @@ func (s *TimerLayerDiscountSaleStore) FilterSalesByOption(option *product_and_di
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleStore) Get(saleID string) (*product_and_discount.Sale, error) {
+func (s *TimerLayerDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountSaleStore.Get(saleID)
@@ -3013,7 +3007,7 @@ func (s *TimerLayerDiscountSaleStore) Get(saleID string) (*product_and_discount.
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*product_and_discount.Sale, error) {
+func (s *TimerLayerDiscountSaleStore) Upsert(sale *model.Sale) (*model.Sale, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountSaleStore.Upsert(sale)
@@ -3029,7 +3023,7 @@ func (s *TimerLayerDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleChannelListingStore) Get(saleChannelListingID string) (*product_and_discount.SaleChannelListing, error) {
+func (s *TimerLayerDiscountSaleChannelListingStore) Get(saleChannelListingID string) (*model.SaleChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountSaleChannelListingStore.Get(saleChannelListingID)
@@ -3045,8 +3039,8 @@ func (s *TimerLayerDiscountSaleChannelListingStore) Get(saleChannelListingID str
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *product_and_discount.SaleChannelListingFilterOption) ([]*struct {
-	product_and_discount.SaleChannelListing
+func (s *TimerLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*struct {
+	model.SaleChannelListing
 	ChannelSlug string
 }, error) {
 	start := timemodule.Now()
@@ -3064,7 +3058,7 @@ func (s *TimerLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOptio
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleChannelListingStore) Save(saleChannelListing *product_and_discount.SaleChannelListing) (*product_and_discount.SaleChannelListing, error) {
+func (s *TimerLayerDiscountSaleChannelListingStore) Save(saleChannelListing *model.SaleChannelListing) (*model.SaleChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountSaleChannelListingStore.Save(saleChannelListing)
@@ -3080,7 +3074,7 @@ func (s *TimerLayerDiscountSaleChannelListingStore) Save(saleChannelListing *pro
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*product_and_discount.Voucher, error) {
+func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) ([]*model.Voucher, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountVoucherStore.ExpiredVouchers(date)
@@ -3096,7 +3090,7 @@ func (s *TimerLayerDiscountVoucherStore) ExpiredVouchers(date *timemodule.Time) 
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) FilterVouchersByOption(option *product_and_discount.VoucherFilterOption) ([]*product_and_discount.Voucher, error) {
+func (s *TimerLayerDiscountVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountVoucherStore.FilterVouchersByOption(option)
@@ -3112,7 +3106,7 @@ func (s *TimerLayerDiscountVoucherStore) FilterVouchersByOption(option *product_
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) Get(voucherID string) (*product_and_discount.Voucher, error) {
+func (s *TimerLayerDiscountVoucherStore) Get(voucherID string) (*model.Voucher, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountVoucherStore.Get(voucherID)
@@ -3128,7 +3122,7 @@ func (s *TimerLayerDiscountVoucherStore) Get(voucherID string) (*product_and_dis
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) GetByOptions(options *product_and_discount.VoucherFilterOption) (*product_and_discount.Voucher, error) {
+func (s *TimerLayerDiscountVoucherStore) GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountVoucherStore.GetByOptions(options)
@@ -3144,7 +3138,7 @@ func (s *TimerLayerDiscountVoucherStore) GetByOptions(options *product_and_disco
 	return result, err
 }
 
-func (s *TimerLayerDiscountVoucherStore) Upsert(voucher *product_and_discount.Voucher) (*product_and_discount.Voucher, error) {
+func (s *TimerLayerDiscountVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountVoucherStore.Upsert(voucher)
@@ -3191,7 +3185,7 @@ func (s *TimerLayerFileInfoStore) CountAll() (int64, error) {
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) Get(id string) (*file.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.Get(id)
@@ -3207,7 +3201,7 @@ func (s *TimerLayerFileInfoStore) Get(id string) (*file.FileInfo, error) {
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetByIds(ids []string) ([]*file.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.GetByIds(ids)
@@ -3223,7 +3217,7 @@ func (s *TimerLayerFileInfoStore) GetByIds(ids []string) ([]*file.FileInfo, erro
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetByPath(path string) (*file.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.GetByPath(path)
@@ -3239,7 +3233,7 @@ func (s *TimerLayerFileInfoStore) GetByPath(path string) (*file.FileInfo, error)
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetForUser(userID string) ([]*file.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetForUser(userID string) ([]*model.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.GetForUser(userID)
@@ -3255,7 +3249,7 @@ func (s *TimerLayerFileInfoStore) GetForUser(userID string) ([]*file.FileInfo, e
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetFromMaster(id string) (*file.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetFromMaster(id string) (*model.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.GetFromMaster(id)
@@ -3271,7 +3265,7 @@ func (s *TimerLayerFileInfoStore) GetFromMaster(id string) (*file.FileInfo, erro
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetWithOptions(page *int, perPage *int, opt *file.GetFileInfosOptions) ([]*file.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetWithOptions(page *int, perPage *int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.GetWithOptions(page, perPage, opt)
@@ -3366,7 +3360,7 @@ func (s *TimerLayerFileInfoStore) SetContent(fileID string, content string) erro
 	return err
 }
 
-func (s *TimerLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.Upsert(info)
@@ -3382,7 +3376,7 @@ func (s *TimerLayerFileInfoStore) Upsert(info *file.FileInfo) (*file.FileInfo, e
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments order.Fulfillments) error {
+func (s *TimerLayerFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments model.Fulfillments) error {
 	start := timemodule.Now()
 
 	err := s.FulfillmentStore.BulkDeleteFulfillments(transaction, fulfillments)
@@ -3398,7 +3392,7 @@ func (s *TimerLayerFulfillmentStore) BulkDeleteFulfillments(transaction store_if
 	return err
 }
 
-func (s *TimerLayerFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) ([]*order.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
 	start := timemodule.Now()
 
 	result, err := s.FulfillmentStore.FilterByOption(transaction, option)
@@ -3414,7 +3408,7 @@ func (s *TimerLayerFulfillmentStore) FilterByOption(transaction store_iface.Sqlx
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) Get(id string) (*order.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) Get(id string) (*model.Fulfillment, error) {
 	start := timemodule.Now()
 
 	result, err := s.FulfillmentStore.Get(id)
@@ -3430,7 +3424,7 @@ func (s *TimerLayerFulfillmentStore) Get(id string) (*order.Fulfillment, error) 
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentFilterOption) (*order.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
 	start := timemodule.Now()
 
 	result, err := s.FulfillmentStore.GetByOption(transaction, option)
@@ -3446,7 +3440,7 @@ func (s *TimerLayerFulfillmentStore) GetByOption(transaction store_iface.SqlxTxE
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *order.Fulfillment) (*order.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
 	start := timemodule.Now()
 
 	result, err := s.FulfillmentStore.Upsert(transaction, fulfillment)
@@ -3462,7 +3456,7 @@ func (s *TimerLayerFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecut
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, fulfillmentLines []*order.FulfillmentLine) ([]*order.FulfillmentLine, error) {
+func (s *TimerLayerFulfillmentLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.FulfillmentLineStore.BulkUpsert(transaction, fulfillmentLines)
@@ -3478,7 +3472,7 @@ func (s *TimerLayerFulfillmentLineStore) BulkUpsert(transaction store_iface.Sqlx
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction store_iface.SqlxTxExecutor, option *order.FulfillmentLineFilterOption) error {
+func (s *TimerLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentLineFilterOption) error {
 	start := timemodule.Now()
 
 	err := s.FulfillmentLineStore.DeleteFulfillmentLinesByOption(transaction, option)
@@ -3494,7 +3488,7 @@ func (s *TimerLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transact
 	return err
 }
 
-func (s *TimerLayerFulfillmentLineStore) FilterbyOption(option *order.FulfillmentLineFilterOption) ([]*order.FulfillmentLine, error) {
+func (s *TimerLayerFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLineFilterOption) ([]*model.FulfillmentLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.FulfillmentLineStore.FilterbyOption(option)
@@ -3510,7 +3504,7 @@ func (s *TimerLayerFulfillmentLineStore) FilterbyOption(option *order.Fulfillmen
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentLineStore) Get(id string) (*order.FulfillmentLine, error) {
+func (s *TimerLayerFulfillmentLineStore) Get(id string) (*model.FulfillmentLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.FulfillmentLineStore.Get(id)
@@ -3526,7 +3520,7 @@ func (s *TimerLayerFulfillmentLineStore) Get(id string) (*order.FulfillmentLine,
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentLineStore) Save(fulfillmentLine *order.FulfillmentLine) (*order.FulfillmentLine, error) {
+func (s *TimerLayerFulfillmentLineStore) Save(fulfillmentLine *model.FulfillmentLine) (*model.FulfillmentLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.FulfillmentLineStore.Save(fulfillmentLine)
@@ -3542,7 +3536,7 @@ func (s *TimerLayerFulfillmentLineStore) Save(fulfillmentLine *order.Fulfillment
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*giftcard.GiftCard) ([]*giftcard.GiftCard, error) {
+func (s *TimerLayerGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardStore.BulkUpsert(transaction, giftCards...)
@@ -3574,7 +3568,7 @@ func (s *TimerLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]st
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *giftcard.GiftCardFilterOption) ([]*giftcard.GiftCard, error) {
+func (s *TimerLayerGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardStore.FilterByOption(transaction, option)
@@ -3590,7 +3584,7 @@ func (s *TimerLayerGiftCardStore) FilterByOption(transaction store_iface.SqlxTxE
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) GetById(id string) (*giftcard.GiftCard, error) {
+func (s *TimerLayerGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardStore.GetById(id)
@@ -3622,7 +3616,7 @@ func (s *TimerLayerGiftCardCheckoutStore) Delete(giftcardID string, checkoutID s
 	return err
 }
 
-func (s *TimerLayerGiftCardCheckoutStore) Get(id string) (*giftcard.GiftCardCheckout, error) {
+func (s *TimerLayerGiftCardCheckoutStore) Get(id string) (*model.GiftCardCheckout, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardCheckoutStore.Get(id)
@@ -3638,7 +3632,7 @@ func (s *TimerLayerGiftCardCheckoutStore) Get(id string) (*giftcard.GiftCardChec
 	return result, err
 }
 
-func (s *TimerLayerGiftCardCheckoutStore) Save(giftcardOrder *giftcard.GiftCardCheckout) (*giftcard.GiftCardCheckout, error) {
+func (s *TimerLayerGiftCardCheckoutStore) Save(giftcardOrder *model.GiftCardCheckout) (*model.GiftCardCheckout, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardCheckoutStore.Save(giftcardOrder)
@@ -3654,7 +3648,7 @@ func (s *TimerLayerGiftCardCheckoutStore) Save(giftcardOrder *giftcard.GiftCardC
 	return result, err
 }
 
-func (s *TimerLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*giftcard.OrderGiftCard) ([]*giftcard.OrderGiftCard, error) {
+func (s *TimerLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardOrderStore.BulkUpsert(transaction, orderGiftcards...)
@@ -3670,7 +3664,7 @@ func (s *TimerLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTx
 	return result, err
 }
 
-func (s *TimerLayerGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, error) {
+func (s *TimerLayerGiftCardOrderStore) Get(id string) (*model.OrderGiftCard, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardOrderStore.Get(id)
@@ -3686,7 +3680,7 @@ func (s *TimerLayerGiftCardOrderStore) Get(id string) (*giftcard.OrderGiftCard, 
 	return result, err
 }
 
-func (s *TimerLayerGiftCardOrderStore) Save(giftcardOrder *giftcard.OrderGiftCard) (*giftcard.OrderGiftCard, error) {
+func (s *TimerLayerGiftCardOrderStore) Save(giftcardOrder *model.OrderGiftCard) (*model.OrderGiftCard, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardOrderStore.Save(giftcardOrder)
@@ -3702,7 +3696,7 @@ func (s *TimerLayerGiftCardOrderStore) Save(giftcardOrder *giftcard.OrderGiftCar
 	return result, err
 }
 
-func (s *TimerLayerGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) {
+func (s *TimerLayerGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftcardEventStore.BulkUpsert(transaction, events...)
@@ -3718,7 +3712,7 @@ func (s *TimerLayerGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTx
 	return result, err
 }
 
-func (s *TimerLayerGiftcardEventStore) FilterByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, error) {
+func (s *TimerLayerGiftcardEventStore) FilterByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftcardEventStore.FilterByOptions(options)
@@ -3734,7 +3728,7 @@ func (s *TimerLayerGiftcardEventStore) FilterByOptions(options *giftcard.GiftCar
 	return result, err
 }
 
-func (s *TimerLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, error) {
+func (s *TimerLayerGiftcardEventStore) Get(id string) (*model.GiftCardEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftcardEventStore.Get(id)
@@ -3750,7 +3744,7 @@ func (s *TimerLayerGiftcardEventStore) Get(id string) (*giftcard.GiftCardEvent, 
 	return result, err
 }
 
-func (s *TimerLayerGiftcardEventStore) Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error) {
+func (s *TimerLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.GiftCardEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftcardEventStore.Save(event)
@@ -3766,7 +3760,7 @@ func (s *TimerLayerGiftcardEventStore) Save(event *giftcard.GiftCardEvent) (*gif
 	return result, err
 }
 
-func (s *TimerLayerInvoiceStore) Get(invoiceID string) (*invoice.Invoice, error) {
+func (s *TimerLayerInvoiceStore) Get(invoiceID string) (*model.Invoice, error) {
 	start := timemodule.Now()
 
 	result, err := s.InvoiceStore.Get(invoiceID)
@@ -3782,7 +3776,7 @@ func (s *TimerLayerInvoiceStore) Get(invoiceID string) (*invoice.Invoice, error)
 	return result, err
 }
 
-func (s *TimerLayerInvoiceStore) Upsert(invoice *invoice.Invoice) (*invoice.Invoice, error) {
+func (s *TimerLayerInvoiceStore) Upsert(invoice *model.Invoice) (*model.Invoice, error) {
 	start := timemodule.Now()
 
 	result, err := s.InvoiceStore.Upsert(invoice)
@@ -3798,7 +3792,7 @@ func (s *TimerLayerInvoiceStore) Upsert(invoice *invoice.Invoice) (*invoice.Invo
 	return result, err
 }
 
-func (s *TimerLayerInvoiceEventStore) Get(invoiceEventID string) (*invoice.InvoiceEvent, error) {
+func (s *TimerLayerInvoiceEventStore) Get(invoiceEventID string) (*model.InvoiceEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.InvoiceEventStore.Get(invoiceEventID)
@@ -3814,7 +3808,7 @@ func (s *TimerLayerInvoiceEventStore) Get(invoiceEventID string) (*invoice.Invoi
 	return result, err
 }
 
-func (s *TimerLayerInvoiceEventStore) Upsert(invoiceEvent *invoice.InvoiceEvent) (*invoice.InvoiceEvent, error) {
+func (s *TimerLayerInvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (*model.InvoiceEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.InvoiceEventStore.Upsert(invoiceEvent)
@@ -4054,7 +4048,7 @@ func (s *TimerLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 	return result, err
 }
 
-func (s *TimerLayerMenuStore) GetByOptions(options *menu.MenuFilterOptions) (*menu.Menu, error) {
+func (s *TimerLayerMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error) {
 	start := timemodule.Now()
 
 	result, err := s.MenuStore.GetByOptions(options)
@@ -4070,7 +4064,7 @@ func (s *TimerLayerMenuStore) GetByOptions(options *menu.MenuFilterOptions) (*me
 	return result, err
 }
 
-func (s *TimerLayerMenuStore) Save(menu *menu.Menu) (*menu.Menu, error) {
+func (s *TimerLayerMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
 	start := timemodule.Now()
 
 	result, err := s.MenuStore.Save(menu)
@@ -4086,7 +4080,7 @@ func (s *TimerLayerMenuStore) Save(menu *menu.Menu) (*menu.Menu, error) {
 	return result, err
 }
 
-func (s *TimerLayerMenuItemStore) GetByOptions(options *menu.MenuItemFilterOptions) (*menu.MenuItem, error) {
+func (s *TimerLayerMenuItemStore) GetByOptions(options *model.MenuItemFilterOptions) (*model.MenuItem, error) {
 	start := timemodule.Now()
 
 	result, err := s.MenuItemStore.GetByOptions(options)
@@ -4102,7 +4096,7 @@ func (s *TimerLayerMenuItemStore) GetByOptions(options *menu.MenuItemFilterOptio
 	return result, err
 }
 
-func (s *TimerLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem, error) {
+func (s *TimerLayerMenuItemStore) Save(menuItem *model.MenuItem) (*model.MenuItem, error) {
 	start := timemodule.Now()
 
 	result, err := s.MenuItemStore.Save(menuItem)
@@ -4118,7 +4112,7 @@ func (s *TimerLayerMenuItemStore) Save(menuItem *menu.MenuItem) (*menu.MenuItem,
 	return result, err
 }
 
-func (s *TimerLayerOpenExchangeRateStore) BulkUpsert(rates []*external_services.OpenExchangeRate) ([]*external_services.OpenExchangeRate, error) {
+func (s *TimerLayerOpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) ([]*model.OpenExchangeRate, error) {
 	start := timemodule.Now()
 
 	result, err := s.OpenExchangeRateStore.BulkUpsert(rates)
@@ -4134,7 +4128,7 @@ func (s *TimerLayerOpenExchangeRateStore) BulkUpsert(rates []*external_services.
 	return result, err
 }
 
-func (s *TimerLayerOpenExchangeRateStore) GetAll() ([]*external_services.OpenExchangeRate, error) {
+func (s *TimerLayerOpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, error) {
 	start := timemodule.Now()
 
 	result, err := s.OpenExchangeRateStore.GetAll()
@@ -4150,7 +4144,7 @@ func (s *TimerLayerOpenExchangeRateStore) GetAll() ([]*external_services.OpenExc
 	return result, err
 }
 
-func (s *TimerLayerOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, error) {
+func (s *TimerLayerOrderStore) BulkUpsert(orders []*model.Order) ([]*model.Order, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderStore.BulkUpsert(orders)
@@ -4166,7 +4160,7 @@ func (s *TimerLayerOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order
 	return result, err
 }
 
-func (s *TimerLayerOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
+func (s *TimerLayerOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderStore.FilterByOption(option)
@@ -4182,7 +4176,7 @@ func (s *TimerLayerOrderStore) FilterByOption(option *order.OrderFilterOption) (
 	return result, err
 }
 
-func (s *TimerLayerOrderStore) Get(id string) (*order.Order, error) {
+func (s *TimerLayerOrderStore) Get(id string) (*model.Order, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderStore.Get(id)
@@ -4198,7 +4192,7 @@ func (s *TimerLayerOrderStore) Get(id string) (*order.Order, error) {
 	return result, err
 }
 
-func (s *TimerLayerOrderStore) Save(transaction store_iface.SqlxTxExecutor, order *order.Order) (*order.Order, error) {
+func (s *TimerLayerOrderStore) Save(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderStore.Save(transaction, order)
@@ -4214,7 +4208,7 @@ func (s *TimerLayerOrderStore) Save(transaction store_iface.SqlxTxExecutor, orde
 	return result, err
 }
 
-func (s *TimerLayerOrderStore) Update(transaction store_iface.SqlxTxExecutor, order *order.Order) (*order.Order, error) {
+func (s *TimerLayerOrderStore) Update(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderStore.Update(transaction, order)
@@ -4246,7 +4240,7 @@ func (s *TimerLayerOrderDiscountStore) BulkDelete(orderDiscountIDs []string) err
 	return err
 }
 
-func (s *TimerLayerOrderDiscountStore) FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error) {
+func (s *TimerLayerOrderDiscountStore) FilterbyOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderDiscountStore.FilterbyOption(option)
@@ -4262,7 +4256,7 @@ func (s *TimerLayerOrderDiscountStore) FilterbyOption(option *product_and_discou
 	return result, err
 }
 
-func (s *TimerLayerOrderDiscountStore) Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error) {
+func (s *TimerLayerOrderDiscountStore) Get(orderDiscountID string) (*model.OrderDiscount, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderDiscountStore.Get(orderDiscountID)
@@ -4278,7 +4272,7 @@ func (s *TimerLayerOrderDiscountStore) Get(orderDiscountID string) (*product_and
 	return result, err
 }
 
-func (s *TimerLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+func (s *TimerLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderDiscountStore.Upsert(transaction, orderDiscount)
@@ -4294,7 +4288,7 @@ func (s *TimerLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExec
 	return result, err
 }
 
-func (s *TimerLayerOrderEventStore) Get(orderEventID string) (*order.OrderEvent, error) {
+func (s *TimerLayerOrderEventStore) Get(orderEventID string) (*model.OrderEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderEventStore.Get(orderEventID)
@@ -4310,7 +4304,7 @@ func (s *TimerLayerOrderEventStore) Get(orderEventID string) (*order.OrderEvent,
 	return result, err
 }
 
-func (s *TimerLayerOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orderEvent *order.OrderEvent) (*order.OrderEvent, error) {
+func (s *TimerLayerOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderEventStore.Save(transaction, orderEvent)
@@ -4342,7 +4336,7 @@ func (s *TimerLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
 	return err
 }
 
-func (s *TimerLayerOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderLines []*order.OrderLine) ([]*order.OrderLine, error) {
+func (s *TimerLayerOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderLineStore.BulkUpsert(transaction, orderLines)
@@ -4358,7 +4352,7 @@ func (s *TimerLayerOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExec
 	return result, err
 }
 
-func (s *TimerLayerOrderLineStore) FilterbyOption(option *order.OrderLineFilterOption) ([]*order.OrderLine, error) {
+func (s *TimerLayerOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) ([]*model.OrderLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderLineStore.FilterbyOption(option)
@@ -4374,7 +4368,7 @@ func (s *TimerLayerOrderLineStore) FilterbyOption(option *order.OrderLineFilterO
 	return result, err
 }
 
-func (s *TimerLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
+func (s *TimerLayerOrderLineStore) Get(id string) (*model.OrderLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderLineStore.Get(id)
@@ -4390,7 +4384,7 @@ func (s *TimerLayerOrderLineStore) Get(id string) (*order.OrderLine, error) {
 	return result, err
 }
 
-func (s *TimerLayerOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, orderLine *order.OrderLine) (*order.OrderLine, error) {
+func (s *TimerLayerOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, orderLine *model.OrderLine) (*model.OrderLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderLineStore.Upsert(transaction, orderLine)
@@ -4422,7 +4416,7 @@ func (s *TimerLayerPaymentStore) CancelActivePaymentsOfCheckout(checkoutToken st
 	return err
 }
 
-func (s *TimerLayerPaymentStore) FilterByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, error) {
+func (s *TimerLayerPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error) {
 	start := timemodule.Now()
 
 	result, err := s.PaymentStore.FilterByOption(option)
@@ -4438,7 +4432,7 @@ func (s *TimerLayerPaymentStore) FilterByOption(option *payment.PaymentFilterOpt
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*payment.Payment, error) {
+func (s *TimerLayerPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*model.Payment, error) {
 	start := timemodule.Now()
 
 	result, err := s.PaymentStore.Get(transaction, id, lockForUpdate)
@@ -4454,10 +4448,10 @@ func (s *TimerLayerPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id 
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Save(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error) {
+func (s *TimerLayerPaymentStore) Save(transaction store_iface.SqlxTxExecutor, model *model.Payment) (*model.Payment, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentStore.Save(transaction, payment)
+	result, err := s.PaymentStore.Save(transaction, model)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4470,10 +4464,10 @@ func (s *TimerLayerPaymentStore) Save(transaction store_iface.SqlxTxExecutor, pa
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Update(transaction store_iface.SqlxTxExecutor, payment *payment.Payment) (*payment.Payment, error) {
+func (s *TimerLayerPaymentStore) Update(transaction store_iface.SqlxTxExecutor, model *model.Payment) (*model.Payment, error) {
 	start := timemodule.Now()
 
-	result, err := s.PaymentStore.Update(transaction, payment)
+	result, err := s.PaymentStore.Update(transaction, model)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4486,7 +4480,7 @@ func (s *TimerLayerPaymentStore) Update(transaction store_iface.SqlxTxExecutor, 
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *payment.PaymentPatch) error {
+func (s *TimerLayerPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *model.PaymentPatch) error {
 	start := timemodule.Now()
 
 	err := s.PaymentStore.UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
@@ -4502,7 +4496,7 @@ func (s *TimerLayerPaymentStore) UpdatePaymentsOfCheckout(transaction store_ifac
 	return err
 }
 
-func (s *TimerLayerPaymentTransactionStore) FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) {
+func (s *TimerLayerPaymentTransactionStore) FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
 	start := timemodule.Now()
 
 	result, err := s.PaymentTransactionStore.FilterByOption(option)
@@ -4518,7 +4512,7 @@ func (s *TimerLayerPaymentTransactionStore) FilterByOption(option *payment.Payme
 	return result, err
 }
 
-func (s *TimerLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
+func (s *TimerLayerPaymentTransactionStore) Get(id string) (*model.PaymentTransaction, error) {
 	start := timemodule.Now()
 
 	result, err := s.PaymentTransactionStore.Get(id)
@@ -4534,7 +4528,7 @@ func (s *TimerLayerPaymentTransactionStore) Get(id string) (*payment.PaymentTran
 	return result, err
 }
 
-func (s *TimerLayerPaymentTransactionStore) Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (s *TimerLayerPaymentTransactionStore) Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
 	start := timemodule.Now()
 
 	result, err := s.PaymentTransactionStore.Save(transaction, paymentTransaction)
@@ -4550,7 +4544,7 @@ func (s *TimerLayerPaymentTransactionStore) Save(transaction store_iface.SqlxTxE
 	return result, err
 }
 
-func (s *TimerLayerPaymentTransactionStore) Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (s *TimerLayerPaymentTransactionStore) Update(transaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
 	start := timemodule.Now()
 
 	result, err := s.PaymentTransactionStore.Update(transaction)
@@ -4566,7 +4560,7 @@ func (s *TimerLayerPaymentTransactionStore) Update(transaction *payment.PaymentT
 	return result, err
 }
 
-func (s *TimerLayerPluginStore) CompareAndDelete(keyVal *plugins.PluginKeyValue, oldValue []byte) (bool, error) {
+func (s *TimerLayerPluginStore) CompareAndDelete(keyVal *model.PluginKeyValue, oldValue []byte) (bool, error) {
 	start := timemodule.Now()
 
 	result, err := s.PluginStore.CompareAndDelete(keyVal, oldValue)
@@ -4582,7 +4576,7 @@ func (s *TimerLayerPluginStore) CompareAndDelete(keyVal *plugins.PluginKeyValue,
 	return result, err
 }
 
-func (s *TimerLayerPluginStore) CompareAndSet(keyVal *plugins.PluginKeyValue, oldValue []byte) (bool, error) {
+func (s *TimerLayerPluginStore) CompareAndSet(keyVal *model.PluginKeyValue, oldValue []byte) (bool, error) {
 	start := timemodule.Now()
 
 	result, err := s.PluginStore.CompareAndSet(keyVal, oldValue)
@@ -4646,7 +4640,7 @@ func (s *TimerLayerPluginStore) DeleteAllForPlugin(PluginID string) error {
 	return err
 }
 
-func (s *TimerLayerPluginStore) Get(pluginID string, key string) (*plugins.PluginKeyValue, error) {
+func (s *TimerLayerPluginStore) Get(pluginID string, key string) (*model.PluginKeyValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.PluginStore.Get(pluginID, key)
@@ -4678,7 +4672,7 @@ func (s *TimerLayerPluginStore) List(pluginID string, page int, perPage int) ([]
 	return result, err
 }
 
-func (s *TimerLayerPluginStore) SaveOrUpdate(keyVal *plugins.PluginKeyValue) (*plugins.PluginKeyValue, error) {
+func (s *TimerLayerPluginStore) SaveOrUpdate(keyVal *model.PluginKeyValue) (*model.PluginKeyValue, error) {
 	start := timemodule.Now()
 
 	result, err := s.PluginStore.SaveOrUpdate(keyVal)
@@ -4694,7 +4688,7 @@ func (s *TimerLayerPluginStore) SaveOrUpdate(keyVal *plugins.PluginKeyValue) (*p
 	return result, err
 }
 
-func (s *TimerLayerPluginStore) SetWithOptions(pluginID string, key string, value []byte, options plugins.PluginKVSetOptions) (bool, error) {
+func (s *TimerLayerPluginStore) SetWithOptions(pluginID string, key string, value []byte, options model.PluginKVSetOptions) (bool, error) {
 	start := timemodule.Now()
 
 	result, err := s.PluginStore.SetWithOptions(pluginID, key, value, options)
@@ -4710,7 +4704,7 @@ func (s *TimerLayerPluginStore) SetWithOptions(pluginID string, key string, valu
 	return result, err
 }
 
-func (s *TimerLayerPluginConfigurationStore) FilterPluginConfigurations(options plugins.PluginConfigurationFilterOptions) ([]*plugins.PluginConfiguration, error) {
+func (s *TimerLayerPluginConfigurationStore) FilterPluginConfigurations(options model.PluginConfigurationFilterOptions) ([]*model.PluginConfiguration, error) {
 	start := timemodule.Now()
 
 	result, err := s.PluginConfigurationStore.FilterPluginConfigurations(options)
@@ -4726,7 +4720,7 @@ func (s *TimerLayerPluginConfigurationStore) FilterPluginConfigurations(options 
 	return result, err
 }
 
-func (s *TimerLayerPluginConfigurationStore) Get(id string) (*plugins.PluginConfiguration, error) {
+func (s *TimerLayerPluginConfigurationStore) Get(id string) (*model.PluginConfiguration, error) {
 	start := timemodule.Now()
 
 	result, err := s.PluginConfigurationStore.Get(id)
@@ -4742,7 +4736,7 @@ func (s *TimerLayerPluginConfigurationStore) Get(id string) (*plugins.PluginConf
 	return result, err
 }
 
-func (s *TimerLayerPluginConfigurationStore) GetByOptions(options *plugins.PluginConfigurationFilterOptions) (*plugins.PluginConfiguration, error) {
+func (s *TimerLayerPluginConfigurationStore) GetByOptions(options *model.PluginConfigurationFilterOptions) (*model.PluginConfiguration, error) {
 	start := timemodule.Now()
 
 	result, err := s.PluginConfigurationStore.GetByOptions(options)
@@ -4758,7 +4752,7 @@ func (s *TimerLayerPluginConfigurationStore) GetByOptions(options *plugins.Plugi
 	return result, err
 }
 
-func (s *TimerLayerPluginConfigurationStore) Upsert(config *plugins.PluginConfiguration) (*plugins.PluginConfiguration, error) {
+func (s *TimerLayerPluginConfigurationStore) Upsert(config *model.PluginConfiguration) (*model.PluginConfiguration, error) {
 	start := timemodule.Now()
 
 	result, err := s.PluginConfigurationStore.Upsert(config)
@@ -4933,7 +4927,7 @@ func (s *TimerLayerPreferenceStore) Save(preferences model.Preferences) error {
 	return err
 }
 
-func (s *TimerLayerPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
+func (s *TimerLayerPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
 	start := timemodule.Now()
 
 	result, err := s.PreorderAllocationStore.BulkCreate(transaction, preorderAllocations)
@@ -4965,7 +4959,7 @@ func (s *TimerLayerPreorderAllocationStore) Delete(transaction store_iface.SqlxT
 	return err
 }
 
-func (s *TimerLayerPreorderAllocationStore) FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) {
+func (s *TimerLayerPreorderAllocationStore) FilterByOption(options *model.PreorderAllocationFilterOption) ([]*model.PreorderAllocation, error) {
 	start := timemodule.Now()
 
 	result, err := s.PreorderAllocationStore.FilterByOption(options)
@@ -4981,7 +4975,7 @@ func (s *TimerLayerPreorderAllocationStore) FilterByOption(options *warehouse.Pr
 	return result, err
 }
 
-func (s *TimerLayerProductStore) AdvancedFilterQueryBuilder(input *csv.ExportProductsFilterOptions) squirrel.SelectBuilder {
+func (s *TimerLayerProductStore) AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder {
 	start := timemodule.Now()
 
 	result := s.ProductStore.AdvancedFilterQueryBuilder(input)
@@ -4997,7 +4991,7 @@ func (s *TimerLayerProductStore) AdvancedFilterQueryBuilder(input *csv.ExportPro
 	return result
 }
 
-func (s *TimerLayerProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
+func (s *TimerLayerProductStore) FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.FilterByOption(option)
@@ -5013,7 +5007,7 @@ func (s *TimerLayerProductStore) FilterByOption(option *product_and_discount.Pro
 	return result, err
 }
 
-func (s *TimerLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (product_and_discount.Products, error) {
+func (s *TimerLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Products, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.FilterByQuery(query)
@@ -5029,7 +5023,7 @@ func (s *TimerLayerProductStore) FilterByQuery(query squirrel.SelectBuilder) (pr
 	return result, err
 }
 
-func (s *TimerLayerProductStore) GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error) {
+func (s *TimerLayerProductStore) GetByOption(option *model.ProductFilterOption) (*model.Product, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.GetByOption(option)
@@ -5046,7 +5040,7 @@ func (s *TimerLayerProductStore) GetByOption(option *product_and_discount.Produc
 }
 
 func (s *TimerLayerProductStore) NotPublishedProducts(channelSlug string) ([]*struct {
-	product_and_discount.Product
+	model.Product
 	IsPublished     bool
 	PublicationDate *timemodule.Time
 }, error) {
@@ -5065,7 +5059,7 @@ func (s *TimerLayerProductStore) NotPublishedProducts(channelSlug string) ([]*st
 	return result, err
 }
 
-func (s *TimerLayerProductStore) PublishedProducts(channelSlug string) ([]*product_and_discount.Product, error) {
+func (s *TimerLayerProductStore) PublishedProducts(channelSlug string) ([]*model.Product, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.PublishedProducts(channelSlug)
@@ -5081,7 +5075,7 @@ func (s *TimerLayerProductStore) PublishedProducts(channelSlug string) ([]*produ
 	return result, err
 }
 
-func (s *TimerLayerProductStore) PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error) {
+func (s *TimerLayerProductStore) PublishedWithVariants(channelSlug string) ([]*model.Product, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.PublishedWithVariants(channelSlug)
@@ -5097,7 +5091,7 @@ func (s *TimerLayerProductStore) PublishedWithVariants(channelSlug string) ([]*p
 	return result, err
 }
 
-func (s *TimerLayerProductStore) Save(prd *product_and_discount.Product) (*product_and_discount.Product, error) {
+func (s *TimerLayerProductStore) Save(prd *model.Product) (*model.Product, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.Save(prd)
@@ -5113,7 +5107,7 @@ func (s *TimerLayerProductStore) Save(prd *product_and_discount.Product) (*produ
 	return result, err
 }
 
-func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) {
+func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*model.Product, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs)
@@ -5129,7 +5123,7 @@ func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(pro
 	return result, err
 }
 
-func (s *TimerLayerProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) {
+func (s *TimerLayerProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*model.Product, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductStore.VisibleToUserProducts(channelSlug, requesterIsStaff)
@@ -5145,7 +5139,7 @@ func (s *TimerLayerProductStore) VisibleToUserProducts(channelSlug string, reque
 	return result, err
 }
 
-func (s *TimerLayerProductChannelListingStore) BulkUpsert(listings []*product_and_discount.ProductChannelListing) ([]*product_and_discount.ProductChannelListing, error) {
+func (s *TimerLayerProductChannelListingStore) BulkUpsert(listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductChannelListingStore.BulkUpsert(listings)
@@ -5161,7 +5155,7 @@ func (s *TimerLayerProductChannelListingStore) BulkUpsert(listings []*product_an
 	return result, err
 }
 
-func (s *TimerLayerProductChannelListingStore) FilterByOption(option *product_and_discount.ProductChannelListingFilterOption) ([]*product_and_discount.ProductChannelListing, error) {
+func (s *TimerLayerProductChannelListingStore) FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductChannelListingStore.FilterByOption(option)
@@ -5177,7 +5171,7 @@ func (s *TimerLayerProductChannelListingStore) FilterByOption(option *product_an
 	return result, err
 }
 
-func (s *TimerLayerProductChannelListingStore) Get(channelListingID string) (*product_and_discount.ProductChannelListing, error) {
+func (s *TimerLayerProductChannelListingStore) Get(channelListingID string) (*model.ProductChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductChannelListingStore.Get(channelListingID)
@@ -5193,7 +5187,7 @@ func (s *TimerLayerProductChannelListingStore) Get(channelListingID string) (*pr
 	return result, err
 }
 
-func (s *TimerLayerProductMediaStore) FilterByOption(option *product_and_discount.ProductMediaFilterOption) ([]*product_and_discount.ProductMedia, error) {
+func (s *TimerLayerProductMediaStore) FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductMediaStore.FilterByOption(option)
@@ -5209,7 +5203,7 @@ func (s *TimerLayerProductMediaStore) FilterByOption(option *product_and_discoun
 	return result, err
 }
 
-func (s *TimerLayerProductMediaStore) Get(id string) (*product_and_discount.ProductMedia, error) {
+func (s *TimerLayerProductMediaStore) Get(id string) (*model.ProductMedia, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductMediaStore.Get(id)
@@ -5225,7 +5219,7 @@ func (s *TimerLayerProductMediaStore) Get(id string) (*product_and_discount.Prod
 	return result, err
 }
 
-func (s *TimerLayerProductMediaStore) Upsert(media *product_and_discount.ProductMedia) (*product_and_discount.ProductMedia, error) {
+func (s *TimerLayerProductMediaStore) Upsert(media *model.ProductMedia) (*model.ProductMedia, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductMediaStore.Upsert(media)
@@ -5241,7 +5235,7 @@ func (s *TimerLayerProductMediaStore) Upsert(media *product_and_discount.Product
 	return result, err
 }
 
-func (s *TimerLayerProductTranslationStore) FilterByOption(option *product_and_discount.ProductTranslationFilterOption) ([]*product_and_discount.ProductTranslation, error) {
+func (s *TimerLayerProductTranslationStore) FilterByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductTranslationStore.FilterByOption(option)
@@ -5257,7 +5251,7 @@ func (s *TimerLayerProductTranslationStore) FilterByOption(option *product_and_d
 	return result, err
 }
 
-func (s *TimerLayerProductTranslationStore) Get(translationID string) (*product_and_discount.ProductTranslation, error) {
+func (s *TimerLayerProductTranslationStore) Get(translationID string) (*model.ProductTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductTranslationStore.Get(translationID)
@@ -5273,7 +5267,7 @@ func (s *TimerLayerProductTranslationStore) Get(translationID string) (*product_
 	return result, err
 }
 
-func (s *TimerLayerProductTranslationStore) Upsert(translation *product_and_discount.ProductTranslation) (*product_and_discount.ProductTranslation, error) {
+func (s *TimerLayerProductTranslationStore) Upsert(translation *model.ProductTranslation) (*model.ProductTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductTranslationStore.Upsert(translation)
@@ -5289,7 +5283,7 @@ func (s *TimerLayerProductTranslationStore) Upsert(translation *product_and_disc
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) Count(options *product_and_discount.ProductTypeFilterOption) (int64, error) {
+func (s *TimerLayerProductTypeStore) Count(options *model.ProductTypeFilterOption) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductTypeStore.Count(options)
@@ -5305,7 +5299,7 @@ func (s *TimerLayerProductTypeStore) Count(options *product_and_discount.Product
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error) {
+func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductTypeStore.FilterProductTypesByCheckoutToken(checkoutToken)
@@ -5321,7 +5315,7 @@ func (s *TimerLayerProductTypeStore) FilterProductTypesByCheckoutToken(checkoutT
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) FilterbyOption(options *product_and_discount.ProductTypeFilterOption) ([]*product_and_discount.ProductType, error) {
+func (s *TimerLayerProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductTypeStore.FilterbyOption(options)
@@ -5337,7 +5331,7 @@ func (s *TimerLayerProductTypeStore) FilterbyOption(options *product_and_discoun
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) GetByOption(options *product_and_discount.ProductTypeFilterOption) (*product_and_discount.ProductType, error) {
+func (s *TimerLayerProductTypeStore) GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductTypeStore.GetByOption(options)
@@ -5353,7 +5347,7 @@ func (s *TimerLayerProductTypeStore) GetByOption(options *product_and_discount.P
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) ProductTypeByProductVariantID(variantID string) (*product_and_discount.ProductType, error) {
+func (s *TimerLayerProductTypeStore) ProductTypeByProductVariantID(variantID string) (*model.ProductType, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductTypeStore.ProductTypeByProductVariantID(variantID)
@@ -5369,7 +5363,7 @@ func (s *TimerLayerProductTypeStore) ProductTypeByProductVariantID(variantID str
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error) {
+func (s *TimerLayerProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductTypeStore.ProductTypesByProductIDs(productIDs)
@@ -5385,7 +5379,7 @@ func (s *TimerLayerProductTypeStore) ProductTypesByProductIDs(productIDs []strin
 	return result, err
 }
 
-func (s *TimerLayerProductTypeStore) Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error) {
+func (s *TimerLayerProductTypeStore) Save(productType *model.ProductType) (*model.ProductType, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductTypeStore.Save(productType)
@@ -5401,7 +5395,7 @@ func (s *TimerLayerProductTypeStore) Save(productType *product_and_discount.Prod
 	return result, err
 }
 
-func (s *TimerLayerProductVariantStore) FilterByOption(option *product_and_discount.ProductVariantFilterOption) ([]*product_and_discount.ProductVariant, error) {
+func (s *TimerLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantStore.FilterByOption(option)
@@ -5417,7 +5411,7 @@ func (s *TimerLayerProductVariantStore) FilterByOption(option *product_and_disco
 	return result, err
 }
 
-func (s *TimerLayerProductVariantStore) Get(id string) (*product_and_discount.ProductVariant, error) {
+func (s *TimerLayerProductVariantStore) Get(id string) (*model.ProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantStore.Get(id)
@@ -5433,7 +5427,7 @@ func (s *TimerLayerProductVariantStore) Get(id string) (*product_and_discount.Pr
 	return result, err
 }
 
-func (s *TimerLayerProductVariantStore) GetByOrderLineID(orderLineID string) (*product_and_discount.ProductVariant, error) {
+func (s *TimerLayerProductVariantStore) GetByOrderLineID(orderLineID string) (*model.ProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantStore.GetByOrderLineID(orderLineID)
@@ -5465,7 +5459,7 @@ func (s *TimerLayerProductVariantStore) GetWeight(productVariantID string) (*mea
 	return result, err
 }
 
-func (s *TimerLayerProductVariantStore) Save(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (s *TimerLayerProductVariantStore) Save(transaction store_iface.SqlxTxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantStore.Save(transaction, variant)
@@ -5481,7 +5475,7 @@ func (s *TimerLayerProductVariantStore) Save(transaction store_iface.SqlxTxExecu
 	return result, err
 }
 
-func (s *TimerLayerProductVariantStore) Update(transaction store_iface.SqlxTxExecutor, variant *product_and_discount.ProductVariant) (*product_and_discount.ProductVariant, error) {
+func (s *TimerLayerProductVariantStore) Update(transaction store_iface.SqlxTxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantStore.Update(transaction, variant)
@@ -5497,7 +5491,7 @@ func (s *TimerLayerProductVariantStore) Update(transaction store_iface.SqlxTxExe
 	return result, err
 }
 
-func (s *TimerLayerProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*product_and_discount.ProductVariantChannelListing) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (s *TimerLayerProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantChannelListingStore.BulkUpsert(transaction, variantChannelListings)
@@ -5513,7 +5507,7 @@ func (s *TimerLayerProductVariantChannelListingStore) BulkUpsert(transaction sto
 	return result, err
 }
 
-func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(transaction store_iface.SqlxTxExecutor, option *product_and_discount.ProductVariantChannelListingFilterOption) ([]*product_and_discount.ProductVariantChannelListing, error) {
+func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(transaction store_iface.SqlxTxExecutor, option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantChannelListingStore.FilterbyOption(transaction, option)
@@ -5529,7 +5523,7 @@ func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(transaction
 	return result, err
 }
 
-func (s *TimerLayerProductVariantChannelListingStore) Get(variantChannelListingID string) (*product_and_discount.ProductVariantChannelListing, error) {
+func (s *TimerLayerProductVariantChannelListingStore) Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantChannelListingStore.Get(variantChannelListingID)
@@ -5545,7 +5539,7 @@ func (s *TimerLayerProductVariantChannelListingStore) Get(variantChannelListingI
 	return result, err
 }
 
-func (s *TimerLayerProductVariantChannelListingStore) Save(variantChannelListing *product_and_discount.ProductVariantChannelListing) (*product_and_discount.ProductVariantChannelListing, error) {
+func (s *TimerLayerProductVariantChannelListingStore) Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantChannelListingStore.Save(variantChannelListing)
@@ -5561,7 +5555,7 @@ func (s *TimerLayerProductVariantChannelListingStore) Save(variantChannelListing
 	return result, err
 }
 
-func (s *TimerLayerProductVariantTranslationStore) FilterByOption(option *product_and_discount.ProductVariantTranslationFilterOption) ([]*product_and_discount.ProductVariantTranslation, error) {
+func (s *TimerLayerProductVariantTranslationStore) FilterByOption(option *model.ProductVariantTranslationFilterOption) ([]*model.ProductVariantTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantTranslationStore.FilterByOption(option)
@@ -5577,7 +5571,7 @@ func (s *TimerLayerProductVariantTranslationStore) FilterByOption(option *produc
 	return result, err
 }
 
-func (s *TimerLayerProductVariantTranslationStore) Get(translationID string) (*product_and_discount.ProductVariantTranslation, error) {
+func (s *TimerLayerProductVariantTranslationStore) Get(translationID string) (*model.ProductVariantTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantTranslationStore.Get(translationID)
@@ -5593,7 +5587,7 @@ func (s *TimerLayerProductVariantTranslationStore) Get(translationID string) (*p
 	return result, err
 }
 
-func (s *TimerLayerProductVariantTranslationStore) Upsert(translation *product_and_discount.ProductVariantTranslation) (*product_and_discount.ProductVariantTranslation, error) {
+func (s *TimerLayerProductVariantTranslationStore) Upsert(translation *model.ProductVariantTranslation) (*model.ProductVariantTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantTranslationStore.Upsert(translation)
@@ -5721,7 +5715,7 @@ func (s *TimerLayerRoleStore) Save(role *model.Role) (*model.Role, error) {
 	return result, err
 }
 
-func (s *TimerLayerSaleCategoryRelationStore) Get(relationID string) (*product_and_discount.SaleCategoryRelation, error) {
+func (s *TimerLayerSaleCategoryRelationStore) Get(relationID string) (*model.SaleCategoryRelation, error) {
 	start := timemodule.Now()
 
 	result, err := s.SaleCategoryRelationStore.Get(relationID)
@@ -5737,7 +5731,7 @@ func (s *TimerLayerSaleCategoryRelationStore) Get(relationID string) (*product_a
 	return result, err
 }
 
-func (s *TimerLayerSaleCategoryRelationStore) SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, error) {
+func (s *TimerLayerSaleCategoryRelationStore) SaleCategoriesByOption(option *model.SaleCategoryRelationFilterOption) ([]*model.SaleCategoryRelation, error) {
 	start := timemodule.Now()
 
 	result, err := s.SaleCategoryRelationStore.SaleCategoriesByOption(option)
@@ -5753,7 +5747,7 @@ func (s *TimerLayerSaleCategoryRelationStore) SaleCategoriesByOption(option *pro
 	return result, err
 }
 
-func (s *TimerLayerSaleCategoryRelationStore) Save(relation *product_and_discount.SaleCategoryRelation) (*product_and_discount.SaleCategoryRelation, error) {
+func (s *TimerLayerSaleCategoryRelationStore) Save(relation *model.SaleCategoryRelation) (*model.SaleCategoryRelation, error) {
 	start := timemodule.Now()
 
 	result, err := s.SaleCategoryRelationStore.Save(relation)
@@ -5769,7 +5763,7 @@ func (s *TimerLayerSaleCategoryRelationStore) Save(relation *product_and_discoun
 	return result, err
 }
 
-func (s *TimerLayerSaleCollectionRelationStore) FilterByOption(option *product_and_discount.SaleCollectionRelationFilterOption) ([]*product_and_discount.SaleCollectionRelation, error) {
+func (s *TimerLayerSaleCollectionRelationStore) FilterByOption(option *model.SaleCollectionRelationFilterOption) ([]*model.SaleCollectionRelation, error) {
 	start := timemodule.Now()
 
 	result, err := s.SaleCollectionRelationStore.FilterByOption(option)
@@ -5785,7 +5779,7 @@ func (s *TimerLayerSaleCollectionRelationStore) FilterByOption(option *product_a
 	return result, err
 }
 
-func (s *TimerLayerSaleCollectionRelationStore) Get(relationID string) (*product_and_discount.SaleCollectionRelation, error) {
+func (s *TimerLayerSaleCollectionRelationStore) Get(relationID string) (*model.SaleCollectionRelation, error) {
 	start := timemodule.Now()
 
 	result, err := s.SaleCollectionRelationStore.Get(relationID)
@@ -5801,7 +5795,7 @@ func (s *TimerLayerSaleCollectionRelationStore) Get(relationID string) (*product
 	return result, err
 }
 
-func (s *TimerLayerSaleCollectionRelationStore) Save(relation *product_and_discount.SaleCollectionRelation) (*product_and_discount.SaleCollectionRelation, error) {
+func (s *TimerLayerSaleCollectionRelationStore) Save(relation *model.SaleCollectionRelation) (*model.SaleCollectionRelation, error) {
 	start := timemodule.Now()
 
 	result, err := s.SaleCollectionRelationStore.Save(relation)
@@ -5817,7 +5811,7 @@ func (s *TimerLayerSaleCollectionRelationStore) Save(relation *product_and_disco
 	return result, err
 }
 
-func (s *TimerLayerSaleProductRelationStore) Get(relationID string) (*product_and_discount.SaleProductRelation, error) {
+func (s *TimerLayerSaleProductRelationStore) Get(relationID string) (*model.SaleProductRelation, error) {
 	start := timemodule.Now()
 
 	result, err := s.SaleProductRelationStore.Get(relationID)
@@ -5833,7 +5827,7 @@ func (s *TimerLayerSaleProductRelationStore) Get(relationID string) (*product_an
 	return result, err
 }
 
-func (s *TimerLayerSaleProductRelationStore) SaleProductsByOption(option *product_and_discount.SaleProductRelationFilterOption) ([]*product_and_discount.SaleProductRelation, error) {
+func (s *TimerLayerSaleProductRelationStore) SaleProductsByOption(option *model.SaleProductRelationFilterOption) ([]*model.SaleProductRelation, error) {
 	start := timemodule.Now()
 
 	result, err := s.SaleProductRelationStore.SaleProductsByOption(option)
@@ -5849,7 +5843,7 @@ func (s *TimerLayerSaleProductRelationStore) SaleProductsByOption(option *produc
 	return result, err
 }
 
-func (s *TimerLayerSaleProductRelationStore) Save(relation *product_and_discount.SaleProductRelation) (*product_and_discount.SaleProductRelation, error) {
+func (s *TimerLayerSaleProductRelationStore) Save(relation *model.SaleProductRelation) (*model.SaleProductRelation, error) {
 	start := timemodule.Now()
 
 	result, err := s.SaleProductRelationStore.Save(relation)
@@ -5865,7 +5859,7 @@ func (s *TimerLayerSaleProductRelationStore) Save(relation *product_and_discount
 	return result, err
 }
 
-func (s *TimerLayerSaleProductVariantStore) FilterByOption(options *product_and_discount.SaleProductVariantFilterOption) ([]*product_and_discount.SaleProductVariant, error) {
+func (s *TimerLayerSaleProductVariantStore) FilterByOption(options *model.SaleProductVariantFilterOption) ([]*model.SaleProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.SaleProductVariantStore.FilterByOption(options)
@@ -5881,7 +5875,7 @@ func (s *TimerLayerSaleProductVariantStore) FilterByOption(options *product_and_
 	return result, err
 }
 
-func (s *TimerLayerSaleProductVariantStore) Upsert(relation *product_and_discount.SaleProductVariant) (*product_and_discount.SaleProductVariant, error) {
+func (s *TimerLayerSaleProductVariantStore) Upsert(relation *model.SaleProductVariant) (*model.SaleProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.SaleProductVariantStore.Upsert(relation)
@@ -6152,7 +6146,7 @@ func (s *TimerLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*shipping.ShippingMethod, error) {
+func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*model.ShippingMethod, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
@@ -6168,7 +6162,7 @@ func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprice
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) Get(methodID string) (*shipping.ShippingMethod, error) {
+func (s *TimerLayerShippingMethodStore) Get(methodID string) (*model.ShippingMethod, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodStore.Get(methodID)
@@ -6184,7 +6178,7 @@ func (s *TimerLayerShippingMethodStore) Get(methodID string) (*shipping.Shipping
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) GetbyOption(options *shipping.ShippingMethodFilterOption) (*shipping.ShippingMethod, error) {
+func (s *TimerLayerShippingMethodStore) GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodStore.GetbyOption(options)
@@ -6200,7 +6194,7 @@ func (s *TimerLayerShippingMethodStore) GetbyOption(options *shipping.ShippingMe
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) Upsert(method *shipping.ShippingMethod) (*shipping.ShippingMethod, error) {
+func (s *TimerLayerShippingMethodStore) Upsert(method *model.ShippingMethod) (*model.ShippingMethod, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodStore.Upsert(method)
@@ -6216,7 +6210,7 @@ func (s *TimerLayerShippingMethodStore) Upsert(method *shipping.ShippingMethod) 
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodChannelListingStore) FilterByOption(option *shipping.ShippingMethodChannelListingFilterOption) ([]*shipping.ShippingMethodChannelListing, error) {
+func (s *TimerLayerShippingMethodChannelListingStore) FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodChannelListingStore.FilterByOption(option)
@@ -6232,7 +6226,7 @@ func (s *TimerLayerShippingMethodChannelListingStore) FilterByOption(option *shi
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodChannelListingStore) Get(listingID string) (*shipping.ShippingMethodChannelListing, error) {
+func (s *TimerLayerShippingMethodChannelListingStore) Get(listingID string) (*model.ShippingMethodChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodChannelListingStore.Get(listingID)
@@ -6248,7 +6242,7 @@ func (s *TimerLayerShippingMethodChannelListingStore) Get(listingID string) (*sh
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodChannelListingStore) Upsert(listing *shipping.ShippingMethodChannelListing) (*shipping.ShippingMethodChannelListing, error) {
+func (s *TimerLayerShippingMethodChannelListingStore) Upsert(listing *model.ShippingMethodChannelListing) (*model.ShippingMethodChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodChannelListingStore.Upsert(listing)
@@ -6264,7 +6258,7 @@ func (s *TimerLayerShippingMethodChannelListingStore) Upsert(listing *shipping.S
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodExcludedProductStore) Get(id string) (*shipping.ShippingMethodExcludedProduct, error) {
+func (s *TimerLayerShippingMethodExcludedProductStore) Get(id string) (*model.ShippingMethodExcludedProduct, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodExcludedProductStore.Get(id)
@@ -6280,7 +6274,7 @@ func (s *TimerLayerShippingMethodExcludedProductStore) Get(id string) (*shipping
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodExcludedProductStore) Save(instance *shipping.ShippingMethodExcludedProduct) (*shipping.ShippingMethodExcludedProduct, error) {
+func (s *TimerLayerShippingMethodExcludedProductStore) Save(instance *model.ShippingMethodExcludedProduct) (*model.ShippingMethodExcludedProduct, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodExcludedProductStore.Save(instance)
@@ -6296,7 +6290,7 @@ func (s *TimerLayerShippingMethodExcludedProductStore) Save(instance *shipping.S
 	return result, err
 }
 
-func (s *TimerLayerShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) {
+func (s *TimerLayerShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingZoneStore.FilterByOption(option)
@@ -6312,7 +6306,7 @@ func (s *TimerLayerShippingZoneStore) FilterByOption(option *shipping.ShippingZo
 	return result, err
 }
 
-func (s *TimerLayerShippingZoneStore) Get(shippingZoneID string) (*shipping.ShippingZone, error) {
+func (s *TimerLayerShippingZoneStore) Get(shippingZoneID string) (*model.ShippingZone, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingZoneStore.Get(shippingZoneID)
@@ -6328,7 +6322,7 @@ func (s *TimerLayerShippingZoneStore) Get(shippingZoneID string) (*shipping.Ship
 	return result, err
 }
 
-func (s *TimerLayerShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone) (*shipping.ShippingZone, error) {
+func (s *TimerLayerShippingZoneStore) Upsert(shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingZoneStore.Upsert(shippingZone)
@@ -6344,7 +6338,7 @@ func (s *TimerLayerShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone
 	return result, err
 }
 
-func (s *TimerLayerShopStore) FilterByOptions(options *shop.ShopFilterOptions) ([]*shop.Shop, error) {
+func (s *TimerLayerShopStore) FilterByOptions(options *model.ShopFilterOptions) ([]*model.Shop, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStore.FilterByOptions(options)
@@ -6360,7 +6354,7 @@ func (s *TimerLayerShopStore) FilterByOptions(options *shop.ShopFilterOptions) (
 	return result, err
 }
 
-func (s *TimerLayerShopStore) Get(shopID string) (*shop.Shop, error) {
+func (s *TimerLayerShopStore) Get(shopID string) (*model.Shop, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStore.Get(shopID)
@@ -6376,7 +6370,7 @@ func (s *TimerLayerShopStore) Get(shopID string) (*shop.Shop, error) {
 	return result, err
 }
 
-func (s *TimerLayerShopStore) GetByOptions(options *shop.ShopFilterOptions) (*shop.Shop, error) {
+func (s *TimerLayerShopStore) GetByOptions(options *model.ShopFilterOptions) (*model.Shop, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStore.GetByOptions(options)
@@ -6392,7 +6386,7 @@ func (s *TimerLayerShopStore) GetByOptions(options *shop.ShopFilterOptions) (*sh
 	return result, err
 }
 
-func (s *TimerLayerShopStore) Upsert(shop *shop.Shop) (*shop.Shop, error) {
+func (s *TimerLayerShopStore) Upsert(shop *model.Shop) (*model.Shop, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStore.Upsert(shop)
@@ -6408,7 +6402,7 @@ func (s *TimerLayerShopStore) Upsert(shop *shop.Shop) (*shop.Shop, error) {
 	return result, err
 }
 
-func (s *TimerLayerShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*shop.ShopStaffRelation, error) {
+func (s *TimerLayerShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*model.ShopStaffRelation, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStaffStore.FilterByShopAndStaff(shopID, staffID)
@@ -6424,7 +6418,7 @@ func (s *TimerLayerShopStaffStore) FilterByShopAndStaff(shopID string, staffID s
 	return result, err
 }
 
-func (s *TimerLayerShopStaffStore) Get(shopStaffID string) (*shop.ShopStaffRelation, error) {
+func (s *TimerLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaffRelation, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStaffStore.Get(shopStaffID)
@@ -6440,7 +6434,7 @@ func (s *TimerLayerShopStaffStore) Get(shopStaffID string) (*shop.ShopStaffRelat
 	return result, err
 }
 
-func (s *TimerLayerShopStaffStore) Save(shopStaff *shop.ShopStaffRelation) (*shop.ShopStaffRelation, error) {
+func (s *TimerLayerShopStaffStore) Save(shopStaff *model.ShopStaffRelation) (*model.ShopStaffRelation, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStaffStore.Save(shopStaff)
@@ -6456,7 +6450,7 @@ func (s *TimerLayerShopStaffStore) Save(shopStaff *shop.ShopStaffRelation) (*sho
 	return result, err
 }
 
-func (s *TimerLayerShopTranslationStore) Get(id string) (*shop.ShopTranslation, error) {
+func (s *TimerLayerShopTranslationStore) Get(id string) (*model.ShopTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopTranslationStore.Get(id)
@@ -6472,7 +6466,7 @@ func (s *TimerLayerShopTranslationStore) Get(id string) (*shop.ShopTranslation, 
 	return result, err
 }
 
-func (s *TimerLayerShopTranslationStore) Upsert(translation *shop.ShopTranslation) (*shop.ShopTranslation, error) {
+func (s *TimerLayerShopTranslationStore) Upsert(translation *model.ShopTranslation) (*model.ShopTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopTranslationStore.Upsert(translation)
@@ -6488,7 +6482,7 @@ func (s *TimerLayerShopTranslationStore) Upsert(translation *shop.ShopTranslatio
 	return result, err
 }
 
-func (s *TimerLayerStaffNotificationRecipientStore) Get(id string) (*account.StaffNotificationRecipient, error) {
+func (s *TimerLayerStaffNotificationRecipientStore) Get(id string) (*model.StaffNotificationRecipient, error) {
 	start := timemodule.Now()
 
 	result, err := s.StaffNotificationRecipientStore.Get(id)
@@ -6504,7 +6498,7 @@ func (s *TimerLayerStaffNotificationRecipientStore) Get(id string) (*account.Sta
 	return result, err
 }
 
-func (s *TimerLayerStaffNotificationRecipientStore) Save(notificationRecipient *account.StaffNotificationRecipient) (*account.StaffNotificationRecipient, error) {
+func (s *TimerLayerStaffNotificationRecipientStore) Save(notificationRecipient *model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error) {
 	start := timemodule.Now()
 
 	result, err := s.StaffNotificationRecipientStore.Save(notificationRecipient)
@@ -6520,7 +6514,7 @@ func (s *TimerLayerStaffNotificationRecipientStore) Save(notificationRecipient *
 	return result, err
 }
 
-func (s *TimerLayerStatusStore) Get(userID string) (*account.Status, error) {
+func (s *TimerLayerStatusStore) Get(userID string) (*model.Status, error) {
 	start := timemodule.Now()
 
 	result, err := s.StatusStore.Get(userID)
@@ -6536,7 +6530,7 @@ func (s *TimerLayerStatusStore) Get(userID string) (*account.Status, error) {
 	return result, err
 }
 
-func (s *TimerLayerStatusStore) GetByIds(userIds []string) ([]*account.Status, error) {
+func (s *TimerLayerStatusStore) GetByIds(userIds []string) ([]*model.Status, error) {
 	start := timemodule.Now()
 
 	result, err := s.StatusStore.GetByIds(userIds)
@@ -6584,7 +6578,7 @@ func (s *TimerLayerStatusStore) ResetAll() error {
 	return err
 }
 
-func (s *TimerLayerStatusStore) SaveOrUpdate(status *account.Status) error {
+func (s *TimerLayerStatusStore) SaveOrUpdate(status *model.Status) error {
 	start := timemodule.Now()
 
 	err := s.StatusStore.SaveOrUpdate(status)
@@ -6616,7 +6610,7 @@ func (s *TimerLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 	return err
 }
 
-func (s *TimerLayerStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*warehouse.Stock) ([]*warehouse.Stock, error) {
+func (s *TimerLayerStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*model.Stock) ([]*model.Stock, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.BulkUpsert(transaction, stocks)
@@ -6648,7 +6642,7 @@ func (s *TimerLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 	return err
 }
 
-func (s *TimerLayerStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterOption) ([]*warehouse.Stock, error) {
+func (s *TimerLayerStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *model.StockFilterOption) ([]*model.Stock, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterByOption(transaction, options)
@@ -6664,7 +6658,7 @@ func (s *TimerLayerStockStore) FilterByOption(transaction store_iface.SqlxTxExec
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterForChannel(options *warehouse.StockFilterForChannelOption) (squirrel.Sqlizer, []*warehouse.Stock, error) {
+func (s *TimerLayerStockStore) FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error) {
 	start := timemodule.Now()
 
 	result, resultVar1, err := s.StockStore.FilterForChannel(options)
@@ -6680,7 +6674,7 @@ func (s *TimerLayerStockStore) FilterForChannel(options *warehouse.StockFilterFo
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *TimerLayerStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterForCountryAndChannel(transaction, options)
@@ -6696,7 +6690,7 @@ func (s *TimerLayerStockStore) FilterForCountryAndChannel(transaction store_ifac
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(transaction, options)
@@ -6712,7 +6706,7 @@ func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(transacti
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *warehouse.StockFilterForCountryAndChannel) ([]*warehouse.Stock, error) {
+func (s *TimerLayerStockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.FilterVariantStocksForCountry(transaction, options)
@@ -6728,7 +6722,7 @@ func (s *TimerLayerStockStore) FilterVariantStocksForCountry(transaction store_i
 	return result, err
 }
 
-func (s *TimerLayerStockStore) Get(stockID string) (*warehouse.Stock, error) {
+func (s *TimerLayerStockStore) Get(stockID string) (*model.Stock, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.Get(stockID)
@@ -7031,7 +7025,7 @@ func (s *TimerLayerUploadSessionStore) Delete(id string) error {
 	return err
 }
 
-func (s *TimerLayerUploadSessionStore) Get(id string) (*file.UploadSession, error) {
+func (s *TimerLayerUploadSessionStore) Get(id string) (*model.UploadSession, error) {
 	start := timemodule.Now()
 
 	result, err := s.UploadSessionStore.Get(id)
@@ -7047,7 +7041,7 @@ func (s *TimerLayerUploadSessionStore) Get(id string) (*file.UploadSession, erro
 	return result, err
 }
 
-func (s *TimerLayerUploadSessionStore) GetForUser(userID string) ([]*file.UploadSession, error) {
+func (s *TimerLayerUploadSessionStore) GetForUser(userID string) ([]*model.UploadSession, error) {
 	start := timemodule.Now()
 
 	result, err := s.UploadSessionStore.GetForUser(userID)
@@ -7063,7 +7057,7 @@ func (s *TimerLayerUploadSessionStore) GetForUser(userID string) ([]*file.Upload
 	return result, err
 }
 
-func (s *TimerLayerUploadSessionStore) Save(session *file.UploadSession) (*file.UploadSession, error) {
+func (s *TimerLayerUploadSessionStore) Save(session *model.UploadSession) (*model.UploadSession, error) {
 	start := timemodule.Now()
 
 	result, err := s.UploadSessionStore.Save(session)
@@ -7079,7 +7073,7 @@ func (s *TimerLayerUploadSessionStore) Save(session *file.UploadSession) (*file.
 	return result, err
 }
 
-func (s *TimerLayerUploadSessionStore) Update(session *file.UploadSession) error {
+func (s *TimerLayerUploadSessionStore) Update(session *model.UploadSession) error {
 	start := timemodule.Now()
 
 	err := s.UploadSessionStore.Update(session)
@@ -7095,7 +7089,7 @@ func (s *TimerLayerUploadSessionStore) Update(session *file.UploadSession) error
 	return err
 }
 
-func (s *TimerLayerUserStore) AnalyticsActiveCount(time int64, options account.UserCountOptions) (int64, error) {
+func (s *TimerLayerUserStore) AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.AnalyticsActiveCount(time, options)
@@ -7111,7 +7105,7 @@ func (s *TimerLayerUserStore) AnalyticsActiveCount(time int64, options account.U
 	return result, err
 }
 
-func (s *TimerLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options account.UserCountOptions) (int64, error) {
+func (s *TimerLayerUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime int64, options model.UserCountOptions) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.AnalyticsActiveCountForPeriod(startTime, endTime, options)
@@ -7222,7 +7216,7 @@ func (s *TimerLayerUserStore) ClearCaches() {
 	}
 }
 
-func (s *TimerLayerUserStore) Count(options account.UserCountOptions) (int64, error) {
+func (s *TimerLayerUserStore) Count(options model.UserCountOptions) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Count(options)
@@ -7238,7 +7232,7 @@ func (s *TimerLayerUserStore) Count(options account.UserCountOptions) (int64, er
 	return result, err
 }
 
-func (s *TimerLayerUserStore) Get(ctx context.Context, id string) (*account.User, error) {
+func (s *TimerLayerUserStore) Get(ctx context.Context, id string) (*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Get(ctx, id)
@@ -7254,7 +7248,7 @@ func (s *TimerLayerUserStore) Get(ctx context.Context, id string) (*account.User
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetAll() ([]*account.User, error) {
+func (s *TimerLayerUserStore) GetAll() ([]*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetAll()
@@ -7270,7 +7264,7 @@ func (s *TimerLayerUserStore) GetAll() ([]*account.User, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetAllAfter(limit int, afterID string) ([]*account.User, error) {
+func (s *TimerLayerUserStore) GetAllAfter(limit int, afterID string) ([]*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetAllAfter(limit, afterID)
@@ -7286,7 +7280,7 @@ func (s *TimerLayerUserStore) GetAllAfter(limit int, afterID string) ([]*account
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*account.User, error) {
+func (s *TimerLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetAllNotInAuthService(authServices)
@@ -7302,7 +7296,7 @@ func (s *TimerLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetAllProfiles(options *account.UserGetOptions) ([]*account.User, error) {
+func (s *TimerLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetAllProfiles(options)
@@ -7318,7 +7312,7 @@ func (s *TimerLayerUserStore) GetAllProfiles(options *account.UserGetOptions) ([
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetAllUsingAuthService(authService string) ([]*account.User, error) {
+func (s *TimerLayerUserStore) GetAllUsingAuthService(authService string) ([]*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetAllUsingAuthService(authService)
@@ -7334,7 +7328,7 @@ func (s *TimerLayerUserStore) GetAllUsingAuthService(authService string) ([]*acc
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetByAuth(authData *string, authService string) (*account.User, error) {
+func (s *TimerLayerUserStore) GetByAuth(authData *string, authService string) (*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetByAuth(authData, authService)
@@ -7350,7 +7344,7 @@ func (s *TimerLayerUserStore) GetByAuth(authData *string, authService string) (*
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetByEmail(email string) (*account.User, error) {
+func (s *TimerLayerUserStore) GetByEmail(email string) (*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetByEmail(email)
@@ -7366,7 +7360,7 @@ func (s *TimerLayerUserStore) GetByEmail(email string) (*account.User, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetByUsername(username string) (*account.User, error) {
+func (s *TimerLayerUserStore) GetByUsername(username string) (*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetByUsername(username)
@@ -7414,7 +7408,7 @@ func (s *TimerLayerUserStore) GetEtagForProfiles(teamID string) string {
 	return result
 }
 
-func (s *TimerLayerUserStore) GetForLogin(loginID string, allowSignInWithUsername bool, allowSignInWithEmail bool) (*account.User, error) {
+func (s *TimerLayerUserStore) GetForLogin(loginID string, allowSignInWithUsername bool, allowSignInWithEmail bool) (*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetForLogin(loginID, allowSignInWithUsername, allowSignInWithEmail)
@@ -7446,7 +7440,7 @@ func (s *TimerLayerUserStore) GetKnownUsers(userID string) ([]string, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*account.User, error) {
+func (s *TimerLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetMany(ctx, ids)
@@ -7462,7 +7456,7 @@ func (s *TimerLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*acc
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*account.User, error) {
+func (s *TimerLayerUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetProfileByIds(ctx, userIds, options, allowFromCache)
@@ -7478,7 +7472,7 @@ func (s *TimerLayerUserStore) GetProfileByIds(ctx context.Context, userIds []str
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetProfiles(options *account.UserGetOptions) ([]*account.User, error) {
+func (s *TimerLayerUserStore) GetProfiles(options *model.UserGetOptions) ([]*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetProfiles(options)
@@ -7494,7 +7488,7 @@ func (s *TimerLayerUserStore) GetProfiles(options *account.UserGetOptions) ([]*a
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetProfilesByUsernames(usernames []string) ([]*account.User, error) {
+func (s *TimerLayerUserStore) GetProfilesByUsernames(usernames []string) ([]*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetProfilesByUsernames(usernames)
@@ -7510,7 +7504,7 @@ func (s *TimerLayerUserStore) GetProfilesByUsernames(usernames []string) ([]*acc
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetSystemAdminProfiles() (map[string]*account.User, error) {
+func (s *TimerLayerUserStore) GetSystemAdminProfiles() (map[string]*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetSystemAdminProfiles()
@@ -7542,7 +7536,7 @@ func (s *TimerLayerUserStore) GetUnreadCount(userID string) (int64, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*account.UserForIndexing, error) {
+func (s *TimerLayerUserStore) GetUsersBatchForIndexing(startTime int64, endTime int64, limit int) ([]*model.UserForIndexing, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.GetUsersBatchForIndexing(startTime, endTime, limit)
@@ -7637,7 +7631,7 @@ func (s *TimerLayerUserStore) ResetLastPictureUpdate(userID string) error {
 	return err
 }
 
-func (s *TimerLayerUserStore) Save(user *account.User) (*account.User, error) {
+func (s *TimerLayerUserStore) Save(user *model.User) (*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Save(user)
@@ -7653,7 +7647,7 @@ func (s *TimerLayerUserStore) Save(user *account.User) (*account.User, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) Search(term string, options *account.UserSearchOptions) ([]*account.User, error) {
+func (s *TimerLayerUserStore) Search(term string, options *model.UserSearchOptions) ([]*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Search(term, options)
@@ -7669,7 +7663,7 @@ func (s *TimerLayerUserStore) Search(term string, options *account.UserSearchOpt
 	return result, err
 }
 
-func (s *TimerLayerUserStore) Update(user *account.User, allowRoleUpdate bool) (*account.UserUpdate, error) {
+func (s *TimerLayerUserStore) Update(user *model.User, allowRoleUpdate bool) (*model.UserUpdate, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.Update(user, allowRoleUpdate)
@@ -7797,7 +7791,7 @@ func (s *TimerLayerUserStore) UpdateUpdateAt(userID string) (int64, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) UserByOrderID(orderID string) (*account.User, error) {
+func (s *TimerLayerUserStore) UserByOrderID(orderID string) (*model.User, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserStore.UserByOrderID(orderID)
@@ -7861,7 +7855,7 @@ func (s *TimerLayerUserAccessTokenStore) DeleteAllForUser(userID string) error {
 	return err
 }
 
-func (s *TimerLayerUserAccessTokenStore) Get(tokenID string) (*account.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) Get(tokenID string) (*model.UserAccessToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.Get(tokenID)
@@ -7877,7 +7871,7 @@ func (s *TimerLayerUserAccessTokenStore) Get(tokenID string) (*account.UserAcces
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*account.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*model.UserAccessToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.GetAll(offset, limit)
@@ -7893,7 +7887,7 @@ func (s *TimerLayerUserAccessTokenStore) GetAll(offset int, limit int) ([]*accou
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) GetByToken(tokenString string) (*account.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) GetByToken(tokenString string) (*model.UserAccessToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.GetByToken(tokenString)
@@ -7909,7 +7903,7 @@ func (s *TimerLayerUserAccessTokenStore) GetByToken(tokenString string) (*accoun
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) GetByUser(userID string, page int, perPage int) ([]*account.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) GetByUser(userID string, page int, perPage int) ([]*model.UserAccessToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.GetByUser(userID, page, perPage)
@@ -7925,7 +7919,7 @@ func (s *TimerLayerUserAccessTokenStore) GetByUser(userID string, page int, perP
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) Save(token *account.UserAccessToken) (*account.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) Save(token *model.UserAccessToken) (*model.UserAccessToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.Save(token)
@@ -7941,7 +7935,7 @@ func (s *TimerLayerUserAccessTokenStore) Save(token *account.UserAccessToken) (*
 	return result, err
 }
 
-func (s *TimerLayerUserAccessTokenStore) Search(term string) ([]*account.UserAccessToken, error) {
+func (s *TimerLayerUserAccessTokenStore) Search(term string) ([]*model.UserAccessToken, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAccessTokenStore.Search(term)
@@ -8005,7 +7999,7 @@ func (s *TimerLayerUserAddressStore) DeleteForUser(userID string, addressID stri
 	return err
 }
 
-func (s *TimerLayerUserAddressStore) FilterByOptions(options *account.UserAddressFilterOptions) ([]*account.UserAddress, error) {
+func (s *TimerLayerUserAddressStore) FilterByOptions(options *model.UserAddressFilterOptions) ([]*model.UserAddress, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAddressStore.FilterByOptions(options)
@@ -8021,7 +8015,7 @@ func (s *TimerLayerUserAddressStore) FilterByOptions(options *account.UserAddres
 	return result, err
 }
 
-func (s *TimerLayerUserAddressStore) Save(userAddress *account.UserAddress) (*account.UserAddress, error) {
+func (s *TimerLayerUserAddressStore) Save(userAddress *model.UserAddress) (*model.UserAddress, error) {
 	start := timemodule.Now()
 
 	result, err := s.UserAddressStore.Save(userAddress)
@@ -8037,7 +8031,7 @@ func (s *TimerLayerUserAddressStore) Save(userAddress *account.UserAddress) (*ac
 	return result, err
 }
 
-func (s *TimerLayerVoucherCategoryStore) Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error) {
+func (s *TimerLayerVoucherCategoryStore) Get(voucherCategoryID string) (*model.VoucherCategory, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherCategoryStore.Get(voucherCategoryID)
@@ -8053,7 +8047,7 @@ func (s *TimerLayerVoucherCategoryStore) Get(voucherCategoryID string) (*product
 	return result, err
 }
 
-func (s *TimerLayerVoucherCategoryStore) Upsert(voucherCategory *product_and_discount.VoucherCategory) (*product_and_discount.VoucherCategory, error) {
+func (s *TimerLayerVoucherCategoryStore) Upsert(voucherCategory *model.VoucherCategory) (*model.VoucherCategory, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherCategoryStore.Upsert(voucherCategory)
@@ -8069,7 +8063,7 @@ func (s *TimerLayerVoucherCategoryStore) Upsert(voucherCategory *product_and_dis
 	return result, err
 }
 
-func (s *TimerLayerVoucherChannelListingStore) FilterbyOption(option *product_and_discount.VoucherChannelListingFilterOption) ([]*product_and_discount.VoucherChannelListing, error) {
+func (s *TimerLayerVoucherChannelListingStore) FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherChannelListingStore.FilterbyOption(option)
@@ -8085,7 +8079,7 @@ func (s *TimerLayerVoucherChannelListingStore) FilterbyOption(option *product_an
 	return result, err
 }
 
-func (s *TimerLayerVoucherChannelListingStore) Get(voucherChannelListingID string) (*product_and_discount.VoucherChannelListing, error) {
+func (s *TimerLayerVoucherChannelListingStore) Get(voucherChannelListingID string) (*model.VoucherChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherChannelListingStore.Get(voucherChannelListingID)
@@ -8101,7 +8095,7 @@ func (s *TimerLayerVoucherChannelListingStore) Get(voucherChannelListingID strin
 	return result, err
 }
 
-func (s *TimerLayerVoucherChannelListingStore) Upsert(voucherChannelListing *product_and_discount.VoucherChannelListing) (*product_and_discount.VoucherChannelListing, error) {
+func (s *TimerLayerVoucherChannelListingStore) Upsert(voucherChannelListing *model.VoucherChannelListing) (*model.VoucherChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherChannelListingStore.Upsert(voucherChannelListing)
@@ -8117,7 +8111,7 @@ func (s *TimerLayerVoucherChannelListingStore) Upsert(voucherChannelListing *pro
 	return result, err
 }
 
-func (s *TimerLayerVoucherCollectionStore) Get(voucherCollectionID string) (*product_and_discount.VoucherCollection, error) {
+func (s *TimerLayerVoucherCollectionStore) Get(voucherCollectionID string) (*model.VoucherCollection, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherCollectionStore.Get(voucherCollectionID)
@@ -8133,7 +8127,7 @@ func (s *TimerLayerVoucherCollectionStore) Get(voucherCollectionID string) (*pro
 	return result, err
 }
 
-func (s *TimerLayerVoucherCollectionStore) Upsert(voucherCollection *product_and_discount.VoucherCollection) (*product_and_discount.VoucherCollection, error) {
+func (s *TimerLayerVoucherCollectionStore) Upsert(voucherCollection *model.VoucherCollection) (*model.VoucherCollection, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherCollectionStore.Upsert(voucherCollection)
@@ -8149,7 +8143,7 @@ func (s *TimerLayerVoucherCollectionStore) Upsert(voucherCollection *product_and
 	return result, err
 }
 
-func (s *TimerLayerVoucherCustomerStore) DeleteInBulk(options *product_and_discount.VoucherCustomerFilterOption) error {
+func (s *TimerLayerVoucherCustomerStore) DeleteInBulk(options *model.VoucherCustomerFilterOption) error {
 	start := timemodule.Now()
 
 	err := s.VoucherCustomerStore.DeleteInBulk(options)
@@ -8165,7 +8159,7 @@ func (s *TimerLayerVoucherCustomerStore) DeleteInBulk(options *product_and_disco
 	return err
 }
 
-func (s *TimerLayerVoucherCustomerStore) FilterByOptions(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, error) {
+func (s *TimerLayerVoucherCustomerStore) FilterByOptions(options *model.VoucherCustomerFilterOption) ([]*model.VoucherCustomer, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherCustomerStore.FilterByOptions(options)
@@ -8181,7 +8175,7 @@ func (s *TimerLayerVoucherCustomerStore) FilterByOptions(options *product_and_di
 	return result, err
 }
 
-func (s *TimerLayerVoucherCustomerStore) GetByOption(options *product_and_discount.VoucherCustomerFilterOption) (*product_and_discount.VoucherCustomer, error) {
+func (s *TimerLayerVoucherCustomerStore) GetByOption(options *model.VoucherCustomerFilterOption) (*model.VoucherCustomer, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherCustomerStore.GetByOption(options)
@@ -8197,7 +8191,7 @@ func (s *TimerLayerVoucherCustomerStore) GetByOption(options *product_and_discou
 	return result, err
 }
 
-func (s *TimerLayerVoucherCustomerStore) Save(voucherCustomer *product_and_discount.VoucherCustomer) (*product_and_discount.VoucherCustomer, error) {
+func (s *TimerLayerVoucherCustomerStore) Save(voucherCustomer *model.VoucherCustomer) (*model.VoucherCustomer, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherCustomerStore.Save(voucherCustomer)
@@ -8213,7 +8207,7 @@ func (s *TimerLayerVoucherCustomerStore) Save(voucherCustomer *product_and_disco
 	return result, err
 }
 
-func (s *TimerLayerVoucherProductStore) Get(voucherProductID string) (*product_and_discount.VoucherProduct, error) {
+func (s *TimerLayerVoucherProductStore) Get(voucherProductID string) (*model.VoucherProduct, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherProductStore.Get(voucherProductID)
@@ -8229,7 +8223,7 @@ func (s *TimerLayerVoucherProductStore) Get(voucherProductID string) (*product_a
 	return result, err
 }
 
-func (s *TimerLayerVoucherProductStore) Upsert(voucherProduct *product_and_discount.VoucherProduct) (*product_and_discount.VoucherProduct, error) {
+func (s *TimerLayerVoucherProductStore) Upsert(voucherProduct *model.VoucherProduct) (*model.VoucherProduct, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherProductStore.Upsert(voucherProduct)
@@ -8245,7 +8239,7 @@ func (s *TimerLayerVoucherProductStore) Upsert(voucherProduct *product_and_disco
 	return result, err
 }
 
-func (s *TimerLayerVoucherTranslationStore) FilterByOption(option *product_and_discount.VoucherTranslationFilterOption) ([]*product_and_discount.VoucherTranslation, error) {
+func (s *TimerLayerVoucherTranslationStore) FilterByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherTranslationStore.FilterByOption(option)
@@ -8261,7 +8255,7 @@ func (s *TimerLayerVoucherTranslationStore) FilterByOption(option *product_and_d
 	return result, err
 }
 
-func (s *TimerLayerVoucherTranslationStore) Get(id string) (*product_and_discount.VoucherTranslation, error) {
+func (s *TimerLayerVoucherTranslationStore) Get(id string) (*model.VoucherTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherTranslationStore.Get(id)
@@ -8277,7 +8271,7 @@ func (s *TimerLayerVoucherTranslationStore) Get(id string) (*product_and_discoun
 	return result, err
 }
 
-func (s *TimerLayerVoucherTranslationStore) GetByOption(option *product_and_discount.VoucherTranslationFilterOption) (*product_and_discount.VoucherTranslation, error) {
+func (s *TimerLayerVoucherTranslationStore) GetByOption(option *model.VoucherTranslationFilterOption) (*model.VoucherTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherTranslationStore.GetByOption(option)
@@ -8293,7 +8287,7 @@ func (s *TimerLayerVoucherTranslationStore) GetByOption(option *product_and_disc
 	return result, err
 }
 
-func (s *TimerLayerVoucherTranslationStore) Save(translation *product_and_discount.VoucherTranslation) (*product_and_discount.VoucherTranslation, error) {
+func (s *TimerLayerVoucherTranslationStore) Save(translation *model.VoucherTranslation) (*model.VoucherTranslation, error) {
 	start := timemodule.Now()
 
 	result, err := s.VoucherTranslationStore.Save(translation)
@@ -8309,7 +8303,7 @@ func (s *TimerLayerVoucherTranslationStore) Save(translation *product_and_discou
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollect(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error) {
+func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollect(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.ApplicableForClickAndCollect(checkoutLines, country)
@@ -8325,7 +8319,7 @@ func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollect(checkoutLines ch
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines checkout.CheckoutLines, country string) (warehouse.Warehouses, error) {
+func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.ApplicableForClickAndCollectNoQuantityCheck(checkoutLines, country)
@@ -8341,7 +8335,7 @@ func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(c
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) FilterByOprion(option *warehouse.WarehouseFilterOption) ([]*warehouse.WareHouse, error) {
+func (s *TimerLayerWarehouseStore) FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.FilterByOprion(option)
@@ -8357,7 +8351,7 @@ func (s *TimerLayerWarehouseStore) FilterByOprion(option *warehouse.WarehouseFil
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) {
+func (s *TimerLayerWarehouseStore) Get(id string) (*model.WareHouse, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.Get(id)
@@ -8373,7 +8367,7 @@ func (s *TimerLayerWarehouseStore) Get(id string) (*warehouse.WareHouse, error) 
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) GetByOption(option *warehouse.WarehouseFilterOption) (*warehouse.WareHouse, error) {
+func (s *TimerLayerWarehouseStore) GetByOption(option *model.WarehouseFilterOption) (*model.WareHouse, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.GetByOption(option)
@@ -8389,10 +8383,10 @@ func (s *TimerLayerWarehouseStore) GetByOption(option *warehouse.WarehouseFilter
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) Save(warehouse *warehouse.WareHouse) (*warehouse.WareHouse, error) {
+func (s *TimerLayerWarehouseStore) Save(model *model.WareHouse) (*model.WareHouse, error) {
 	start := timemodule.Now()
 
-	result, err := s.WarehouseStore.Save(warehouse)
+	result, err := s.WarehouseStore.Save(model)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -8405,7 +8399,7 @@ func (s *TimerLayerWarehouseStore) Save(warehouse *warehouse.WareHouse) (*wareho
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) WarehouseByStockID(stockID string) (*warehouse.WareHouse, error) {
+func (s *TimerLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.WarehouseByStockID(stockID)
@@ -8421,7 +8415,7 @@ func (s *TimerLayerWarehouseStore) WarehouseByStockID(stockID string) (*warehous
 	return result, err
 }
 
-func (s *TimerLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *warehouse.WarehouseShippingZone) (*warehouse.WarehouseShippingZone, error) {
+func (s *TimerLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *model.WarehouseShippingZone) (*model.WarehouseShippingZone, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseShippingZoneStore.Save(warehouseShippingZone)
@@ -8437,7 +8431,7 @@ func (s *TimerLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *wareh
 	return result, err
 }
 
-func (s *TimerLayerWishlistStore) GetByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, error) {
+func (s *TimerLayerWishlistStore) GetByOption(option *model.WishlistFilterOption) (*model.Wishlist, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistStore.GetByOption(option)
@@ -8453,7 +8447,7 @@ func (s *TimerLayerWishlistStore) GetByOption(option *wishlist.WishlistFilterOpt
 	return result, err
 }
 
-func (s *TimerLayerWishlistStore) Upsert(wishList *wishlist.Wishlist) (*wishlist.Wishlist, error) {
+func (s *TimerLayerWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishlist, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistStore.Upsert(wishList)
@@ -8469,7 +8463,7 @@ func (s *TimerLayerWishlistStore) Upsert(wishList *wishlist.Wishlist) (*wishlist
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, error) {
+func (s *TimerLayerWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemStore.BulkUpsert(transaction, wishlistItems)
@@ -8485,7 +8479,7 @@ func (s *TimerLayerWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxE
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, error) {
+func (s *TimerLayerWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *model.WishlistItemFilterOption) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemStore.DeleteItemsByOption(transaction, option)
@@ -8501,7 +8495,7 @@ func (s *TimerLayerWishlistItemStore) DeleteItemsByOption(transaction store_ifac
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) FilterByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, error) {
+func (s *TimerLayerWishlistItemStore) FilterByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemStore.FilterByOption(option)
@@ -8517,7 +8511,7 @@ func (s *TimerLayerWishlistItemStore) FilterByOption(option *wishlist.WishlistIt
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItem, error) {
+func (s *TimerLayerWishlistItemStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*model.WishlistItem, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemStore.GetById(selector, id)
@@ -8533,7 +8527,7 @@ func (s *TimerLayerWishlistItemStore) GetById(selector store_iface.SqlxTxExecuto
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) GetByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, error) {
+func (s *TimerLayerWishlistItemStore) GetByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemStore.GetByOption(option)
@@ -8549,7 +8543,7 @@ func (s *TimerLayerWishlistItemStore) GetByOption(option *wishlist.WishlistItemF
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, error) {
+func (s *TimerLayerWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemProductVariantStore.BulkUpsert(transaction, relations)
@@ -8565,7 +8559,7 @@ func (s *TimerLayerWishlistItemProductVariantStore) BulkUpsert(transaction store
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemProductVariantStore) DeleteRelation(relation *wishlist.WishlistItemProductVariant) (int64, error) {
+func (s *TimerLayerWishlistItemProductVariantStore) DeleteRelation(relation *model.WishlistItemProductVariant) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemProductVariantStore.DeleteRelation(relation)
@@ -8581,7 +8575,7 @@ func (s *TimerLayerWishlistItemProductVariantStore) DeleteRelation(relation *wis
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemProductVariantStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*wishlist.WishlistItemProductVariant, error) {
+func (s *TimerLayerWishlistItemProductVariantStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*model.WishlistItemProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemProductVariantStore.GetById(selector, id)
@@ -8597,7 +8591,7 @@ func (s *TimerLayerWishlistItemProductVariantStore) GetById(selector store_iface
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemProductVariantStore) Save(wishlistVariant *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, error) {
+func (s *TimerLayerWishlistItemProductVariantStore) Save(wishlistVariant *model.WishlistItemProductVariant) (*model.WishlistItemProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemProductVariantStore.Save(wishlistVariant)

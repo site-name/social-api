@@ -6,7 +6,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/order"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -68,7 +67,7 @@ func (os *SqlOrderStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (os *SqlOrderStore) ScanFields(holder order.Order) []interface{} {
+func (os *SqlOrderStore) ScanFields(holder model.Order) []interface{} {
 	return []interface{}{
 		&holder.Id,
 		&holder.CreateAt,
@@ -111,7 +110,7 @@ func (os *SqlOrderStore) ScanFields(holder order.Order) []interface{} {
 }
 
 // BulkUpsert performs bulk upsert given orders
-func (os *SqlOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, error) {
+func (os *SqlOrderStore) BulkUpsert(orders []*model.Order) ([]*model.Order, error) {
 	var (
 		saveQuery   = "INSERT INTO " + store.OrderTableName + "(" + os.ModelFields("").Join(",") + ") VALUES (" + os.ModelFields(":").Join(",") + ")"
 		updateQuery = "UPDATE " + store.OrderTableName + " SET " +
@@ -154,7 +153,7 @@ func (os *SqlOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, erro
 			}
 
 		} else {
-			var oldOrder order.Order
+			var oldOrder model.Order
 			// try finding if order exist
 			err = os.GetReplicaX().Get(&oldOrder, "SELECT * FROM "+store.OrderTableName+" WHERE Id = ?", ord.Id)
 			if err != nil {
@@ -193,7 +192,7 @@ func (os *SqlOrderStore) BulkUpsert(orders []*order.Order) ([]*order.Order, erro
 	return orders, nil
 }
 
-func (os *SqlOrderStore) Save(transaction store_iface.SqlxTxExecutor, order *order.Order) (*order.Order, error) {
+func (os *SqlOrderStore) Save(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error) {
 	var executor store_iface.SqlxExecutor = os.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -219,8 +218,8 @@ func (os *SqlOrderStore) Save(transaction store_iface.SqlxTxExecutor, order *ord
 }
 
 // Get finds and returns 1 order with given id
-func (os *SqlOrderStore) Get(id string) (*order.Order, error) {
-	var order order.Order
+func (os *SqlOrderStore) Get(id string) (*model.Order, error) {
+	var order model.Order
 	err := os.GetReplicaX().Get(&order, "SELECT * FROM "+store.OrderTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -231,7 +230,7 @@ func (os *SqlOrderStore) Get(id string) (*order.Order, error) {
 	return &order, nil
 }
 
-func (os *SqlOrderStore) Update(transaction store_iface.SqlxTxExecutor, newOrder *order.Order) (*order.Order, error) {
+func (os *SqlOrderStore) Update(transaction store_iface.SqlxTxExecutor, newOrder *model.Order) (*model.Order, error) {
 	var executor store_iface.SqlxExecutor = os.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -243,7 +242,7 @@ func (os *SqlOrderStore) Update(transaction store_iface.SqlxTxExecutor, newOrder
 	}
 
 	// check if order exist
-	var oldOrder order.Order
+	var oldOrder model.Order
 	err := os.GetMasterX().Get(&oldOrder, newOrder.Id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get order with Id=%s", newOrder.Id)
@@ -284,7 +283,7 @@ func (os *SqlOrderStore) Update(transaction store_iface.SqlxTxExecutor, newOrder
 }
 
 // FilterByOption returns a list of orders, filtered by given option
-func (os *SqlOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*order.Order, error) {
+func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
 	query := os.GetQueryBuilder().
 		Select(os.ModelFields(store.OrderTableName + ".")...).
 		From(store.OrderTableName).
@@ -314,7 +313,7 @@ func (os *SqlOrderStore) FilterByOption(option *order.OrderFilterOption) ([]*ord
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res order.Orders
+	var res model.Orders
 	err = os.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find orders with given option")

@@ -4,8 +4,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -33,7 +31,7 @@ func (ws *SqlPreorderAllocationStore) ModelFields(prefix string) model.AnyArray[
 		return prefix + s
 	})
 }
-func (ws *SqlPreorderAllocationStore) ScanFields(preorderAllocation warehouse.PreorderAllocation) []interface{} {
+func (ws *SqlPreorderAllocationStore) ScanFields(preorderAllocation model.PreorderAllocation) []interface{} {
 	return []interface{}{
 		&preorderAllocation.Id,
 		&preorderAllocation.OrderLineID,
@@ -43,7 +41,7 @@ func (ws *SqlPreorderAllocationStore) ScanFields(preorderAllocation warehouse.Pr
 }
 
 // BulkCreate bulk inserts given preorderAllocations and returns them
-func (ws *SqlPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, error) {
+func (ws *SqlPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
 	var upsertor store_iface.SqlxExecutor = ws.GetMasterX()
 	if transaction != nil {
 		upsertor = transaction
@@ -70,7 +68,7 @@ func (ws *SqlPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxE
 }
 
 // FilterByOption finds and returns a list of preorder allocations filtered using given options
-func (ws *SqlPreorderAllocationStore) FilterByOption(options *warehouse.PreorderAllocationFilterOption) ([]*warehouse.PreorderAllocation, error) {
+func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllocationFilterOption) ([]*model.PreorderAllocation, error) {
 	selectFields := ws.ModelFields(store.PreOrderAllocationTableName + ".")
 
 	if options.SelectRelated_OrderLine {
@@ -115,10 +113,10 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *warehouse.Preorder
 	}
 
 	var (
-		res                []*warehouse.PreorderAllocation
-		preorderAllocation warehouse.PreorderAllocation
-		orderLine          order.OrderLine
-		orDer              order.Order
+		res                []*model.PreorderAllocation
+		preorderAllocation model.PreorderAllocation
+		orderLine          model.OrderLine
+		orDer              model.Order
 		scanFields         = ws.ScanFields(preorderAllocation)
 	)
 	if options.SelectRelated_OrderLine {

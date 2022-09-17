@@ -8,13 +8,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
-	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/shipping"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
@@ -33,7 +27,7 @@ type StockData struct {
 // Iterate by stocks and allocate as many items as needed or available in stock
 // for order line, until allocated all required quantity for the order line.
 // If there is less quantity in stocks then rise InsufficientStock exception.
-func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, countryCode string, channelSlug string, manager interfaces.PluginManagerInterface, additionalFilterLookup model.StringInterface) (*exception.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, countryCode string, channelSlug string, manager interfaces.PluginManagerInterface, additionalFilterLookup model.StringInterface) (*model.InsufficientStock, *model.AppError) {
 	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, model.NewAppError("AllocateStocks", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
@@ -46,7 +40,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, c
 		return nil, nil
 	}
 
-	stockFilterOption := &warehouse.StockFilterForCountryAndChannel{
+	stockFilterOption := &model.StockFilterForCountryAndChannel{
 		CountryCode:            countryCode,
 		ChannelSlug:            channelSlug,
 		ProductVariantIDFilter: squirrel.Eq{store.StockTableName + ".ProductVariantID": orderLineInfos.Variants().IDs()},
@@ -70,8 +64,8 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, c
 		}
 	}
 
-	quantityAllocationList, appErr := a.AllocationsByOption(nil, &warehouse.AllocationFilterOption{
-		StockID:           squirrel.Eq{store.AllocationTableName + ".StockID": warehouse.Stocks(stocks).IDs()},
+	quantityAllocationList, appErr := a.AllocationsByOption(nil, &model.AllocationFilterOption{
+		StockID:           squirrel.Eq{store.AllocationTableName + ".StockID": model.Stocks(stocks).IDs()},
 		QuantityAllocated: squirrel.Gt{store.AllocationTableName + ".QuantityAllocated": 0},
 	})
 	if appErr != nil {
@@ -99,9 +93,9 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, c
 	}
 
 	var (
-		insufficientStock []*exception.InsufficientStockData
-		allocations       warehouse.Allocations
-		allocationItems   warehouse.Allocations
+		insufficientStock []*model.InsufficientStockData
+		allocations       model.Allocations
+		allocationItems   model.Allocations
 	)
 
 	for _, lineInfo := range orderLineInfos {
@@ -116,11 +110,11 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, c
 	}
 
 	if len(insufficientStock) > 0 {
-		return &exception.InsufficientStock{Items: insufficientStock}, nil
+		return &model.InsufficientStock{Items: insufficientStock}, nil
 	}
 
 	// outOfStocks is a list of stocks that are have no item left
-	var outOfStocks []*warehouse.Stock
+	var outOfStocks []*model.Stock
 
 	if len(allocations) > 0 {
 		allocations, appErr = a.BulkUpsertAllocations(transaction, allocations)
@@ -130,19 +124,19 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, c
 
 		stockIDsOfAllocations := allocations.StockIDs()
 
-		stocks, appErr := a.StocksByOption(transaction, &warehouse.StockFilterOption{
+		stocks, appErr := a.StocksByOption(transaction, &model.StockFilterOption{
 			Id: squirrel.Eq{store.StockTableName + ".Id": stockIDsOfAllocations},
 		})
 		if appErr != nil {
 			return nil, appErr
 		}
 		// stockMap has keys are stock ids
-		var stockMap = map[string]*warehouse.Stock{}
+		var stockMap = map[string]*model.Stock{}
 		for _, stock := range stocks {
 			stockMap[stock.Id] = stock
 		}
 
-		allocationsOfStocks, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
+		allocationsOfStocks, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
 			StockID: squirrel.Eq{store.AllocationTableName + ".StockID": stockIDsOfAllocations},
 		})
 		if appErr != nil {
@@ -183,10 +177,10 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos order.OrderLineDatas, c
 	return nil, nil
 }
 
-func (a *ServiceWarehouse) createAllocations(lineInfo *order.OrderLineData, stocks []*StockData, quantityAllocationForStocks map[string]int, insufficientStock []*exception.InsufficientStockData) ([]*exception.InsufficientStockData, []*warehouse.Allocation) {
+func (a *ServiceWarehouse) createAllocations(lineInfo *model.OrderLineData, stocks []*StockData, quantityAllocationForStocks map[string]int, insufficientStock []*model.InsufficientStockData) ([]*model.InsufficientStockData, []*model.Allocation) {
 	quantity := lineInfo.Quantity
 	quantityAllocated := 0
-	allocations := []*warehouse.Allocation{}
+	allocations := []*model.Allocation{}
 
 	for _, stockData := range stocks {
 		quantityAllocatedInStock := quantityAllocationForStocks[stockData.Pk]
@@ -198,7 +192,7 @@ func (a *ServiceWarehouse) createAllocations(lineInfo *order.OrderLineData, stoc
 		)
 
 		if quantityToAllocate > 0 {
-			allocations = append(allocations, &warehouse.Allocation{
+			allocations = append(allocations, &model.Allocation{
 				OrderLineID:       lineInfo.Line.Id,
 				StockID:           stockData.Pk,
 				QuantityAllocated: quantityToAllocate,
@@ -212,13 +206,13 @@ func (a *ServiceWarehouse) createAllocations(lineInfo *order.OrderLineData, stoc
 	}
 
 	if quantityAllocated != quantity {
-		insufficientStock = append(insufficientStock, &exception.InsufficientStockData{
+		insufficientStock = append(insufficientStock, &model.InsufficientStockData{
 			Variant:   *lineInfo.Variant,
 			OrderLine: &lineInfo.Line,
 		})
 	}
 
-	return insufficientStock, []*warehouse.Allocation{}
+	return insufficientStock, []*model.Allocation{}
 }
 
 // DeallocateStock Deallocate stocks for given `order_lines`.
@@ -228,14 +222,14 @@ func (a *ServiceWarehouse) createAllocations(lineInfo *order.OrderLineData, stoc
 // as needed of available in stock for order line, until deallocated all required
 // quantity for the order line. If there is less quantity in stocks then
 // raise an exception.
-func (a *ServiceWarehouse) DeallocateStock(orderLineDatas order.OrderLineDatas, manager interfaces.PluginManagerInterface) (*warehouse.AllocationError, *model.AppError) {
+func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, manager interfaces.PluginManagerInterface) (*model.AllocationError, *model.AppError) {
 	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, model.NewAppError("DeallocateStock", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	linesAllocations, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
+	linesAllocations, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
 		OrderLineID:          squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLineDatas.OrderLines().IDs()},
 		LockForUpdate:        true,
 		ForUpdateOf:          store.AllocationTableName + ", " + store.StockTableName,
@@ -249,14 +243,14 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas order.OrderLineDatas, 
 	}
 
 	// lineToAllocations has keys are order line ids
-	var lineToAllocations = map[string][]*warehouse.Allocation{}
+	var lineToAllocations = map[string][]*model.Allocation{}
 	for _, allocation := range linesAllocations {
 		lineToAllocations[allocation.OrderLineID] = append(lineToAllocations[allocation.OrderLineID], allocation)
 	}
 
 	var (
-		allocationsToUpdate warehouse.Allocations
-		notDeallocatedLines order.OrderLines
+		allocationsToUpdate model.Allocations
+		notDeallocatedLines model.OrderLines
 	)
 	for _, lineInfo := range orderLineDatas {
 		var (
@@ -288,10 +282,10 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas order.OrderLineDatas, 
 	}
 
 	if len(notDeallocatedLines) > 0 {
-		return &warehouse.AllocationError{OrderLines: notDeallocatedLines}, nil
+		return &model.AllocationError{OrderLines: notDeallocatedLines}, nil
 	}
 
-	allocationsBeforeUpdate, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
+	allocationsBeforeUpdate, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
 		Id:                             squirrel.Eq{store.AllocationTableName + ".Id": allocationsToUpdate.IDs()},
 		SelectedRelatedStock:           true, // this tells store to attach `Stock` to each of returning allocations
 		AnnotateStockAvailableQuantity: true, // this tells store to populate `StockAvailableQuantity` fields of returning allocations.
@@ -342,16 +336,16 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas order.OrderLineDatas, 
 // create a new allocation for this order line in this stock.
 //
 // NOTE: allocate is default to false
-func (a *ServiceWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *warehouse.WareHouse, quantity int, allocate bool) *model.AppError {
+func (a *ServiceWarehouse) IncreaseStock(orderLine *model.OrderLine, wareHouse *model.WareHouse, quantity int, allocate bool) *model.AppError {
 	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return model.NewAppError("IncreaseStock", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	var stock *warehouse.Stock
+	var stock *model.Stock
 
-	stocks, appErr := a.StocksByOption(transaction, &warehouse.StockFilterOption{
+	stocks, appErr := a.StocksByOption(transaction, &model.StockFilterOption{
 		ProductVariantID: squirrel.Eq{store.ProductVariantTableName + ".Id": *orderLine.VariantID},
 		WarehouseID:      squirrel.Eq{store.WarehouseTableName + ".Id": wareHouse.Id},
 		LockForUpdate:    true,                 // FOR UPDATE
@@ -373,21 +367,21 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *
 			return model.NewAppError("IncreaseStock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLine"}, "orderLine must has VariantID property not nil", http.StatusBadRequest)
 		}
 
-		stock = &warehouse.Stock{
+		stock = &model.Stock{
 			WarehouseID:      wareHouse.Id,
 			ProductVariantID: *orderLine.VariantID, // validated above
 			Quantity:         quantity,
 		}
 	}
-	_, appErr = a.BulkUpsertStocks(transaction, []*warehouse.Stock{stock})
+	_, appErr = a.BulkUpsertStocks(transaction, []*model.Stock{stock})
 	if appErr != nil {
 		return appErr
 	}
 
 	if allocate && stock != nil {
-		var allocation *warehouse.Allocation
+		var allocation *model.Allocation
 
-		allocations, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
+		allocations, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
 			OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLine.Id},
 			StockID:     squirrel.Eq{store.AllocationTableName + ".StockID": stock.Id},
 		})
@@ -402,14 +396,14 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *
 		if allocation != nil {
 			allocation.QuantityAllocated += quantity
 		} else {
-			allocation = &warehouse.Allocation{
+			allocation = &model.Allocation{
 				OrderLineID:       orderLine.Id,
 				StockID:           stock.Id,
 				QuantityAllocated: quantity,
 			}
 		}
 
-		_, appErr = a.BulkUpsertAllocations(transaction, []*warehouse.Allocation{allocation})
+		_, appErr = a.BulkUpsertAllocations(transaction, []*model.Allocation{allocation})
 		if appErr != nil {
 			return appErr
 		}
@@ -423,7 +417,7 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *order.OrderLine, wareHouse *
 }
 
 // IncreaseAllocations ncrease allocation for order lines with appropriate quantity
-func (a *ServiceWarehouse) IncreaseAllocations(lineInfos order.OrderLineDatas, channelSlug string, manager interfaces.PluginManagerInterface) (*exception.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) IncreaseAllocations(lineInfos model.OrderLineDatas, channelSlug string, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError) {
 	// validate lineInfos is not nil nor empty
 	if len(lineInfos) == 0 {
 		return nil, model.NewAppError("IncreaseAllocations", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "lineInfos"}, "", http.StatusBadRequest)
@@ -436,7 +430,7 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos order.OrderLineDatas, c
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	allocations, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
+	allocations, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
 		OrderLineID:            squirrel.Eq{store.AllocationTableName + ".OrderLineID": lineInfos.OrderLines().IDs()},
 		LockForUpdate:          true,
 		ForUpdateOf:            fmt.Sprintf("%s, %s", store.AllocationTableName, store.StockTableName),
@@ -450,7 +444,7 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos order.OrderLineDatas, c
 	// evaluate allocations query to trigger select_for_update lock
 
 	var (
-		allocationIDsToDelete = warehouse.Allocations(allocations).IDs()
+		allocationIDsToDelete = model.Allocations(allocations).IDs()
 
 		// keys are IDs of order lines.
 		// Values are lists of allocated quantities of allocations
@@ -474,7 +468,7 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos order.OrderLineDatas, c
 	}
 
 	// find address of order of orderLine
-	address, appErr := a.srv.OrderService().AnAddressOfOrder(lineInfos[0].Line.OrderID, account.ShippingAddressID)
+	address, appErr := a.srv.OrderService().AnAddressOfOrder(lineInfos[0].Line.OrderID, model.ShippingAddressID)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -491,7 +485,7 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos order.OrderLineDatas, c
 }
 
 // DecreaseAllocations Decreate allocations for provided order lines.
-func (a *ServiceWarehouse) DecreaseAllocations(lineInfos []*order.OrderLineData, manager interfaces.PluginManagerInterface) (*exception.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) DecreaseAllocations(lineInfos []*model.OrderLineData, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError) {
 	trackedOrderLines := a.GetOrderLinesWithTrackInventory(lineInfos)
 	if len(trackedOrderLines) == 0 {
 		return nil, nil
@@ -512,7 +506,7 @@ func (a *ServiceWarehouse) DecreaseAllocations(lineInfos []*order.OrderLineData,
 // If allow_stock_to_be_exceeded flag is True then quantity could be < 0.
 //
 // updateStocks default to true
-func (a *ServiceWarehouse) DecreaseStock(orderLineInfos order.OrderLineDatas, manager interfaces.PluginManagerInterface, updateStocks bool, allowStockTobeExceeded bool) (*exception.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, manager interfaces.PluginManagerInterface, updateStocks bool, allowStockTobeExceeded bool) (*model.InsufficientStock, *model.AppError) {
 	// validate orderLineInfos is not nil nor empty
 	if len(orderLineInfos) == 0 {
 		return nil, model.NewAppError("DecreaseStock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderLineInfos"}, "", http.StatusBadRequest)
@@ -534,7 +528,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos order.OrderLineDatas, ma
 		return nil, appErr
 	}
 	if allocationErr != nil {
-		allocations, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
+		allocations, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
 			OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": allocationErr.OrderLines.IDs()},
 		})
 		if appErr != nil {
@@ -554,7 +548,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos order.OrderLineDatas, ma
 		}
 	}
 
-	stocks, appErr := a.StocksByOption(transaction, &warehouse.StockFilterOption{
+	stocks, appErr := a.StocksByOption(transaction, &model.StockFilterOption{
 		ProductVariantID:            squirrel.Eq{store.StockTableName + ".ProductVariantID": variantIDs},
 		WarehouseID:                 squirrel.Eq{store.StockTableName + ".WarehouseID": warehouseIDs},
 		SelectRelatedProductVariant: true,
@@ -571,12 +565,12 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos order.OrderLineDatas, ma
 
 	// variantAndWarehouseToStock has keys are product variant ids
 	// values are map with keys are warehouse ids
-	var variantAndWarehouseToStock = map[string]map[string]*warehouse.Stock{}
+	var variantAndWarehouseToStock = map[string]map[string]*model.Stock{}
 	for _, stock := range stocks {
 		variantAndWarehouseToStock[stock.ProductVariantID][stock.WarehouseID] = stock
 	}
 
-	quantityAllocationList, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
+	quantityAllocationList, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
 		StockID:           squirrel.Eq{store.AllocationTableName + ".StockID": stocks.IDs()},
 		QuantityAllocated: squirrel.Gt{store.AllocationTableName + ".QuantityAllocated": 0},
 	})
@@ -606,7 +600,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos order.OrderLineDatas, ma
 	}
 
 	if updateStocks {
-		foundStocks, appErr := a.StocksByOption(nil, &warehouse.StockFilterOption{
+		foundStocks, appErr := a.StocksByOption(nil, &model.StockFilterOption{
 			Id:                       squirrel.Eq{store.StockTableName + ".Id": stocks.IDs()},
 			AnnotateAvailabeQuantity: true, // this tells store to populate AvailableQuantity fields of every returning stocks
 		})
@@ -631,11 +625,11 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos order.OrderLineDatas, ma
 }
 
 // decreaseStocksQuantity
-func (a *ServiceWarehouse) decreaseStocksQuantity(transaction store_iface.SqlxTxExecutor, orderLinesInfo order.OrderLineDatas, variantAndwarehouseToStock map[string]map[string]*warehouse.Stock, quantityAllocationForStocks map[string]int) (*exception.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) decreaseStocksQuantity(transaction store_iface.SqlxTxExecutor, orderLinesInfo model.OrderLineDatas, variantAndwarehouseToStock map[string]map[string]*model.Stock, quantityAllocationForStocks map[string]int) (*model.InsufficientStock, *model.AppError) {
 
 	var (
-		insufficientStocks []*exception.InsufficientStockData
-		stocksToUpdate     []*warehouse.Stock
+		insufficientStocks []*model.InsufficientStockData
+		stocksToUpdate     []*model.Stock
 	)
 
 	for _, lineInfo := range orderLinesInfo {
@@ -644,7 +638,7 @@ func (a *ServiceWarehouse) decreaseStocksQuantity(transaction store_iface.SqlxTx
 			continue
 		}
 
-		var stock *warehouse.Stock
+		var stock *model.Stock
 		stockMap, ok := variantAndwarehouseToStock[variant.Id]
 		if ok && stockMap != nil {
 			if lineInfo.WarehouseID != nil {
@@ -653,7 +647,7 @@ func (a *ServiceWarehouse) decreaseStocksQuantity(transaction store_iface.SqlxTx
 		}
 
 		if stock == nil {
-			insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
+			insufficientStocks = append(insufficientStocks, &model.InsufficientStockData{
 				Variant:     *variant, // variant nil case is checked
 				OrderLine:   &lineInfo.Line,
 				WarehouseID: lineInfo.WarehouseID,
@@ -663,7 +657,7 @@ func (a *ServiceWarehouse) decreaseStocksQuantity(transaction store_iface.SqlxTx
 
 		quantityAllocated := quantityAllocationForStocks[stock.Id] // stock == nil already continued the loop
 		if (stock.Quantity - quantityAllocated) < lineInfo.Quantity {
-			insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
+			insufficientStocks = append(insufficientStocks, &model.InsufficientStockData{
 				Variant:     *variant, // nil case checked
 				OrderLine:   &lineInfo.Line,
 				WarehouseID: lineInfo.WarehouseID,
@@ -676,7 +670,7 @@ func (a *ServiceWarehouse) decreaseStocksQuantity(transaction store_iface.SqlxTx
 	}
 
 	if len(insufficientStocks) > 0 {
-		return &exception.InsufficientStock{
+		return &model.InsufficientStock{
 			Items: insufficientStocks,
 		}, nil
 	}
@@ -687,8 +681,8 @@ func (a *ServiceWarehouse) decreaseStocksQuantity(transaction store_iface.SqlxTx
 }
 
 // GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
-func (a *ServiceWarehouse) GetOrderLinesWithTrackInventory(orderLineInfos []*order.OrderLineData) []*order.OrderLineData {
-	var res []*order.OrderLineData
+func (a *ServiceWarehouse) GetOrderLinesWithTrackInventory(orderLineInfos []*model.OrderLineData) []*model.OrderLineData {
+	var res []*model.OrderLineData
 
 	for _, lineInfo := range orderLineInfos {
 		if lineInfo.Variant == nil || !*lineInfo.Variant.TrackInventory {
@@ -700,14 +694,14 @@ func (a *ServiceWarehouse) GetOrderLinesWithTrackInventory(orderLineInfos []*ord
 }
 
 // DeAllocateStockForOrder Remove all allocations for given order
-func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *order.Order, manager interfaces.PluginManagerInterface) *model.AppError {
+func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *model.Order, manager interfaces.PluginManagerInterface) *model.AppError {
 	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return model.NewAppError("DeAllocateStockForOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	allocations, appErr := a.AllocationsByOption(transaction, &warehouse.AllocationFilterOption{
+	allocations, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
 		QuantityAllocated:              squirrel.Gt{store.AllocationTableName + ".QuantityAllocated": 0},
 		OrderLineOrderID:               squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
 		AnnotateStockAvailableQuantity: true, // this tells store to populate StockAvailableQuantity fields of returning allocations
@@ -720,7 +714,7 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *order.Order, manager int
 		return nil
 	}
 
-	allocationsToHandleAfterCommit := []*warehouse.Allocation{}
+	allocationsToHandleAfterCommit := []*model.Allocation{}
 
 	for _, allocation := range allocations {
 
@@ -752,7 +746,7 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *order.Order, manager int
 }
 
 // AllocatePreOrders allocates pre-order variant for given `order_lines` in given channel
-func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas, channelSlug string) (*exception.InsufficientStock, *model.AppError) {
+func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo model.OrderLineDatas, channelSlug string) (*model.InsufficientStock, *model.AppError) {
 	// init transaction
 	transaction, err := s.srv.Store.GetMasterX().Beginx()
 	if err != nil {
@@ -768,7 +762,7 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas
 	variants := orderLinesInfoWithPreOrder.Variants()
 
 	allVariantChannelListings, appErr := s.srv.ProductService().
-		ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
+		ProductVariantChannelListingsByOption(transaction, &model.ProductVariantChannelListingFilterOption{
 			VariantID:            squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
 			SelectRelatedChannel: true,
 			SelectForUpdate:      true,
@@ -780,7 +774,7 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas
 		}
 	}
 
-	quantityAllocationList, appErr := s.PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{
+	quantityAllocationList, appErr := s.PreOrderAllocationsByOptions(&model.PreorderAllocationFilterOption{
 		ProductVariantChannelListingID: squirrel.Eq{store.PreOrderAllocationTableName + ".ProductVariantChannelListingID": allVariantChannelListings.IDs()},
 		Quantity:                       squirrel.Gt{store.PreOrderAllocationTableName + ".Quantity": 0},
 	})
@@ -810,8 +804,8 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas
 	}
 
 	var (
-		insufficientStocks []*exception.InsufficientStockData
-		allocations        []*warehouse.PreorderAllocation
+		insufficientStocks []*model.InsufficientStockData
+		allocations        []*model.PreorderAllocation
 	)
 
 	for _, lineInfo := range orderLinesInfo {
@@ -838,7 +832,7 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas
 	}
 
 	if len(insufficientStocks) > 0 {
-		return exception.NewInsufficientStock(insufficientStocks), nil
+		return model.NewInsufficientStock(insufficientStocks), nil
 	}
 
 	if len(allocations) > 0 {
@@ -857,8 +851,8 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo order.OrderLineDatas
 }
 
 // GetOrderLinesWithPreOrder returns order lines with variants with preorder flag set to true
-func (s *ServiceWarehouse) GetOrderLinesWithPreOrder(orderLinesInfo order.OrderLineDatas) order.OrderLineDatas {
-	res := order.OrderLineDatas{}
+func (s *ServiceWarehouse) GetOrderLinesWithPreOrder(orderLinesInfo model.OrderLineDatas) model.OrderLineDatas {
+	res := model.OrderLineDatas{}
 
 	for _, lineInfo := range orderLinesInfo {
 		if lineInfo.Variant != nil && lineInfo.Variant.IsPreorderActive() {
@@ -876,7 +870,7 @@ type variantChannelDataType struct {
 }
 
 // createPreorderAllocation
-func (s *ServiceWarehouse) createPreorderAllocation(lineInfo *order.OrderLineData, variantChannelData *variantChannelDataType, variantGlobalAllocation int, quantityAllocationForChannel map[string]int) (*warehouse.PreorderAllocation, *exception.InsufficientStockData, *model.AppError) {
+func (s *ServiceWarehouse) createPreorderAllocation(lineInfo *model.OrderLineData, variantChannelData *variantChannelDataType, variantGlobalAllocation int, quantityAllocationForChannel map[string]int) (*model.PreorderAllocation, *model.InsufficientStockData, *model.AppError) {
 	// validate valid arguments are provided:
 	var invalidParams []string
 	if variantChannelData == nil {
@@ -899,7 +893,7 @@ func (s *ServiceWarehouse) createPreorderAllocation(lineInfo *order.OrderLineDat
 	if channelQuantityThreshold != nil {
 		channelAvailability := *channelQuantityThreshold - quantityAllocationForChannel[channelListingID]
 		if quantity > channelAvailability {
-			return nil, &exception.InsufficientStockData{
+			return nil, &model.InsufficientStockData{
 				Variant:           *variant,
 				AvailableQuantity: &channelAvailability,
 			}, nil
@@ -909,14 +903,14 @@ func (s *ServiceWarehouse) createPreorderAllocation(lineInfo *order.OrderLineDat
 	if variant.PreOrderGlobalThreshold != nil {
 		globalAvailability := *variant.PreOrderGlobalThreshold - variantGlobalAllocation
 		if quantity > globalAvailability {
-			return nil, &exception.InsufficientStockData{
+			return nil, &model.InsufficientStockData{
 				Variant:           *variant,
 				AvailableQuantity: &globalAvailability,
 			}, nil
 		}
 	}
 
-	return &warehouse.PreorderAllocation{
+	return &model.PreorderAllocation{
 		OrderLineID:                    lineInfo.Line.Id,
 		ProductVariantChannelListingID: channelListingID,
 		Quantity:                       quantity,
@@ -926,7 +920,7 @@ func (s *ServiceWarehouse) createPreorderAllocation(lineInfo *order.OrderLineDat
 // DeactivatePreorderForVariant Complete preorder for product variant.
 // All preorder settings should be cleared and all preorder allocations
 // should be replaced by regular allocations.
-func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_and_discount.ProductVariant) (*exception.PreorderAllocationError, *model.AppError) {
+func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *model.ProductVariant) (*model.PreorderAllocationError, *model.AppError) {
 	// init transaction:
 	transaction, err := s.srv.Store.GetMasterX().Beginx()
 	if err != nil {
@@ -939,7 +933,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 	}
 
 	variantChannelListings, appErr := s.srv.ProductService().
-		ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
+		ProductVariantChannelListingsByOption(transaction, &model.ProductVariantChannelListingFilterOption{
 			VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": productVariant.Id},
 		})
 	if appErr != nil {
@@ -948,7 +942,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 		}
 	}
 
-	preorderAllocations, appErr := s.srv.WarehouseService().PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{
+	preorderAllocations, appErr := s.srv.WarehouseService().PreOrderAllocationsByOptions(&model.PreorderAllocationFilterOption{
 		ProductVariantChannelListingID: squirrel.Eq{store.PreOrderAllocationTableName + ".ProductVariantChannelListingID": variantChannelListings.IDs()},
 		SelectRelated_OrderLine:        true,
 		SelectRelated_OrderLine_Order:  true,
@@ -960,8 +954,8 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 	}
 
 	var (
-		allocationsToCreate []*warehouse.Allocation
-		stocksToCreate      []*warehouse.Stock
+		allocationsToCreate []*model.Allocation
+		stocksToCreate      []*model.Stock
 	)
 	for _, preorderAllocation := range preorderAllocations {
 		stock, preorderAllocationErr, appErr := s.getStockForPreorderAllocation(transaction, preorderAllocation, productVariant)
@@ -971,7 +965,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 		if !model.IsValidId(stock.Id) {
 			stocksToCreate = append(stocksToCreate, stock)
 		}
-		allocationsToCreate = append(allocationsToCreate, &warehouse.Allocation{
+		allocationsToCreate = append(allocationsToCreate, &model.Allocation{
 			OrderLineID:       preorderAllocation.OrderLineID,
 			StockID:           stock.Id,
 			QuantityAllocated: preorderAllocation.Quantity,
@@ -1009,7 +1003,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 
 	// NOTE: call the same query as above
 	// the found result may difer the above since some row(s) may have been added during the period prior to this moment.
-	productVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &product_and_discount.ProductVariantChannelListingFilterOption{
+	productVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &model.ProductVariantChannelListingFilterOption{
 		VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": productVariant.Id},
 	})
 	if appErr != nil {
@@ -1041,16 +1035,16 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *product_
 // no warehouse assigned to any shipping zone handles order's country.
 //
 // NOTE: `transaction` MUST NOT be nil, otherwise this method'd return error
-func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface.SqlxTxExecutor, preorderAllocation *warehouse.PreorderAllocation, productVariant *product_and_discount.ProductVariant) (*warehouse.Stock, *exception.PreorderAllocationError, *model.AppError) {
+func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface.SqlxTxExecutor, preorderAllocation *model.PreorderAllocation, productVariant *model.ProductVariant) (*model.Stock, *model.PreorderAllocationError, *model.AppError) {
 	if transaction == nil {
 		return nil, nil, model.NewAppError("getStockForPreorderAllocation", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "transaction"}, "", http.StatusBadRequest)
 	}
 
-	var orDer *order.Order
+	var orDer *model.Order
 	if preorderAllocation.OrderLine != nil && preorderAllocation.OrderLine.Order != nil {
 		orDer = preorderAllocation.OrderLine.Order
 	} else {
-		preorderAllocations, appErr := s.srv.WarehouseService().PreOrderAllocationsByOptions(&warehouse.PreorderAllocationFilterOption{
+		preorderAllocations, appErr := s.srv.WarehouseService().PreOrderAllocationsByOptions(&model.PreorderAllocationFilterOption{
 			SelectRelated_OrderLine:       true,
 			SelectRelated_OrderLine_Order: true,
 			Id:                            squirrel.Eq{store.PreOrderAllocationTableName + ".Id": preorderAllocation.Id},
@@ -1062,10 +1056,10 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 		orDer = preorderAllocation.OrderLine.Order
 	}
 
-	var wareHouse *warehouse.WareHouse
+	var wareHouse *model.WareHouse
 
 	if orDer.ShippingMethodID != nil {
-		orderShippingMethod, appErr := s.srv.ShippingService().ShippingMethodByOption(&shipping.ShippingMethodFilterOption{
+		orderShippingMethod, appErr := s.srv.ShippingService().ShippingMethodByOption(&model.ShippingMethodFilterOption{
 			Id: squirrel.Eq{
 				store.ShippingMethodTableName + ".Id": *orDer.ShippingMethodID,
 			},
@@ -1074,7 +1068,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 			return nil, nil, appErr
 		}
 
-		warehouses, appErr := s.srv.WarehouseService().WarehousesByOption(&warehouse.WarehouseFilterOption{
+		warehouses, appErr := s.srv.WarehouseService().WarehousesByOption(&model.WarehouseFilterOption{
 			ShippingZonesId: squirrel.Eq{store.ShippingZoneTableName + ".Id": orderShippingMethod.ShippingZoneID},
 		})
 		if appErr != nil {
@@ -1092,7 +1086,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 			return nil, nil, appErr
 		}
 
-		warehouses, appErr := s.srv.WarehouseService().WarehousesByOption(&warehouse.WarehouseFilterOption{
+		warehouses, appErr := s.srv.WarehouseService().WarehousesByOption(&model.WarehouseFilterOption{
 			ShippingZonesCountries: squirrel.Like{store.ShippingMethodTableName + ".Countries": orderCountry},
 		})
 		if appErr != nil {
@@ -1107,10 +1101,10 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 	}
 
 	if wareHouse == nil {
-		return nil, exception.NewPreorderAllocationError(preorderAllocation.OrderLine), nil
+		return nil, model.NewPreorderAllocationError(preorderAllocation.OrderLine), nil
 	}
 
-	stocks, appErr := s.srv.WarehouseService().StocksByOption(transaction, &warehouse.StockFilterOption{
+	stocks, appErr := s.srv.WarehouseService().StocksByOption(transaction, &model.StockFilterOption{
 		LockForUpdate:    true,
 		ForUpdateOf:      store.StockTableName,
 		WarehouseID:      squirrel.Eq{store.WarehouseTableName + ".Id": wareHouse.Id},
@@ -1126,7 +1120,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 		return stocks[0], nil, nil
 	}
 
-	return &warehouse.Stock{
+	return &model.Stock{
 		WarehouseID:      wareHouse.Id,
 		ProductVariantID: productVariant.Id,
 		Quantity:         0,

@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/store"
 )
 
@@ -56,7 +55,7 @@ func (s *SqlShopStore) ModelFields(prefix string) model.AnyArray[string] {
 }
 
 // Upsert depends on shop's Id to decide to update/insert the given shop.
-func (ss *SqlShopStore) Upsert(shopInstance *shop.Shop) (*shop.Shop, error) {
+func (ss *SqlShopStore) Upsert(shopInstance *model.Shop) (*model.Shop, error) {
 	var saving bool
 	if shopInstance.Id == "" {
 		saving = true
@@ -104,8 +103,8 @@ func (ss *SqlShopStore) Upsert(shopInstance *shop.Shop) (*shop.Shop, error) {
 }
 
 // Get finds a shop with given id and returns it
-func (ss *SqlShopStore) Get(shopID string) (*shop.Shop, error) {
-	var res shop.Shop
+func (ss *SqlShopStore) Get(shopID string) (*model.Shop, error) {
+	var res model.Shop
 	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShopTableName+" WHERE Id = ?", shopID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -117,7 +116,7 @@ func (ss *SqlShopStore) Get(shopID string) (*shop.Shop, error) {
 	return &res, nil
 }
 
-func (ss *SqlShopStore) commonQueryBuilder(options *shop.ShopFilterOptions) (string, []interface{}, error) {
+func (ss *SqlShopStore) commonQueryBuilder(options *model.ShopFilterOptions) (string, []interface{}, error) {
 	query := ss.GetQueryBuilder().Select("*").From(store.ShopTableName)
 
 	if options.Id != nil {
@@ -134,8 +133,8 @@ func (ss *SqlShopStore) commonQueryBuilder(options *shop.ShopFilterOptions) (str
 }
 
 // FilterByOptions finds and returns shops with given options
-func (ss *SqlShopStore) FilterByOptions(options *shop.ShopFilterOptions) ([]*shop.Shop, error) {
-	var res []*shop.Shop
+func (ss *SqlShopStore) FilterByOptions(options *model.ShopFilterOptions) ([]*model.Shop, error) {
+	var res []*model.Shop
 
 	queryString, args, err := ss.commonQueryBuilder(options)
 	if err != nil {
@@ -151,13 +150,13 @@ func (ss *SqlShopStore) FilterByOptions(options *shop.ShopFilterOptions) ([]*sho
 }
 
 // GetByOptions finds and returns 1 shop with given options
-func (ss *SqlShopStore) GetByOptions(options *shop.ShopFilterOptions) (*shop.Shop, error) {
+func (ss *SqlShopStore) GetByOptions(options *model.ShopFilterOptions) (*model.Shop, error) {
 	queryString, args, err := ss.commonQueryBuilder(options)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	var res shop.Shop
+	var res model.Shop
 	err = ss.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {

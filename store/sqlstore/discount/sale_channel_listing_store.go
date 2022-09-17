@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -35,7 +34,7 @@ func (scls *SqlSaleChannelListingStore) ModelFields(prefix string) model.AnyArra
 	})
 }
 
-func (scls *SqlSaleChannelListingStore) ScanFields(listing product_and_discount.SaleChannelListing) []interface{} {
+func (scls *SqlSaleChannelListingStore) ScanFields(listing model.SaleChannelListing) []interface{} {
 	return []interface{}{
 		&listing.Id,
 		&listing.SaleID,
@@ -47,7 +46,7 @@ func (scls *SqlSaleChannelListingStore) ScanFields(listing product_and_discount.
 }
 
 // Save insert given instance into database then returns it
-func (scls *SqlSaleChannelListingStore) Save(saleChannelListing *product_and_discount.SaleChannelListing) (*product_and_discount.SaleChannelListing, error) {
+func (scls *SqlSaleChannelListingStore) Save(saleChannelListing *model.SaleChannelListing) (*model.SaleChannelListing, error) {
 	saleChannelListing.PreSave()
 	if err := saleChannelListing.IsValid(); err != nil {
 		return nil, err
@@ -66,8 +65,8 @@ func (scls *SqlSaleChannelListingStore) Save(saleChannelListing *product_and_dis
 }
 
 // Get finds and returns sale channel listing with given id
-func (scls *SqlSaleChannelListingStore) Get(saleChannelListingID string) (*product_and_discount.SaleChannelListing, error) {
-	var res product_and_discount.SaleChannelListing
+func (scls *SqlSaleChannelListingStore) Get(saleChannelListingID string) (*model.SaleChannelListing, error) {
+	var res model.SaleChannelListing
 
 	err := scls.GetReplicaX().Get(
 		&res,
@@ -86,9 +85,9 @@ func (scls *SqlSaleChannelListingStore) Get(saleChannelListingID string) (*produ
 }
 
 // SaleChannelListingsWithOption finds a list of sale channel listings plus foreign channel slugs
-func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *product_and_discount.SaleChannelListingFilterOption) (
+func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) (
 	[]*struct {
-		product_and_discount.SaleChannelListing
+		model.SaleChannelListing
 		ChannelSlug string
 	},
 	error,
@@ -118,7 +117,7 @@ func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *pr
 	}
 
 	var res []*struct {
-		product_and_discount.SaleChannelListing
+		model.SaleChannelListing
 		ChannelSlug string
 	}
 

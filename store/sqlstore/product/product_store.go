@@ -9,10 +9,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
-	"github.com/sitename/sitename/model/csv"
-	"github.com/sitename/sitename/model/file"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
@@ -55,7 +51,7 @@ func (ps *SqlProductStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (ps *SqlProductStore) ScanFields(prd product_and_discount.Product) []interface{} {
+func (ps *SqlProductStore) ScanFields(prd model.Product) []interface{} {
 	return []interface{}{
 		&prd.Id,
 		&prd.ProductTypeID,
@@ -79,7 +75,7 @@ func (ps *SqlProductStore) ScanFields(prd product_and_discount.Product) []interf
 }
 
 // Save inserts given product into database then returns it
-func (ps *SqlProductStore) Save(product *product_and_discount.Product) (*product_and_discount.Product, error) {
+func (ps *SqlProductStore) Save(product *model.Product) (*model.Product, error) {
 	product.PreSave()
 	if err := product.IsValid(); err != nil {
 		return nil, err
@@ -99,7 +95,7 @@ func (ps *SqlProductStore) Save(product *product_and_discount.Product) (*product
 	return product, nil
 }
 
-func (ps *SqlProductStore) commonQueryBuilder(option *product_and_discount.ProductFilterOption) (string, []interface{}, error) {
+func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption) (string, []interface{}, error) {
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields(store.ProductTableName + ".")...).
 		From(store.ProductTableName).
@@ -142,13 +138,13 @@ func (ps *SqlProductStore) commonQueryBuilder(option *product_and_discount.Produ
 }
 
 // FilterByOption finds and returns all products that satisfy given option
-func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, error) {
+func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) {
 	queryString, args, err := ps.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var products product_and_discount.Products
+	var products model.Products
 	err = ps.GetReplicaX().Select(&products, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products by given option")
@@ -156,7 +152,7 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 
 	var (
 		productIDs  = products.IDs()
-		productsMap = map[string]*product_and_discount.Product{} // productsMap has keys are product ids
+		productsMap = map[string]*model.Product{} // productsMap has keys are product ids
 	)
 	for _, product := range products {
 		productsMap[product.Id] = product
@@ -164,7 +160,7 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 
 	// check if need prefetch related assigned product attribute
 	if option.PrefetchRelatedAssignedProductAttributes && len(productIDs) > 0 {
-		assignedAttributes, err := ps.AssignedProductAttribute().FilterByOptions(&attribute.AssignedProductAttributeFilterOption{
+		assignedAttributes, err := ps.AssignedProductAttribute().FilterByOptions(&model.AssignedProductAttributeFilterOption{
 			ProductID: squirrel.Eq{store.AssignedProductAttributeTableName + ".ProductID": productIDs},
 		})
 		if err != nil {
@@ -181,14 +177,14 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 
 	// check if need prefetch related categories
 	if option.PrefetchRelatedCategory && len(productIDs) > 0 {
-		categories, err := ps.Category().FilterByOption(&product_and_discount.CategoryFilterOption{
+		categories, err := ps.Category().FilterByOption(&model.CategoryFilterOption{
 			Id: squirrel.Eq{store.CategoryTableName + ".Id": products.CategoryIDs()},
 		})
 		if err != nil {
 			return nil, err
 		}
 
-		var categoriesMap = map[string]*product_and_discount.Category{}
+		var categoriesMap = map[string]*model.Category{}
 		for _, cate := range categories {
 			categoriesMap[cate.Id] = cate
 		}
@@ -202,7 +198,7 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 
 	// check if need prefetch related collections
 	if option.PrefetchRelatedCollections && len(productIDs) > 0 {
-		collectionProducts, err := ps.CollectionProduct().FilterByOptions(&product_and_discount.CollectionProductFilterOptions{
+		collectionProducts, err := ps.CollectionProduct().FilterByOptions(&model.CollectionProductFilterOptions{
 			ProductID:               squirrel.Eq{store.CollectionProductRelationTableName + ".ProductID": productIDs},
 			SelectRelatedCollection: true,
 		})
@@ -225,7 +221,7 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 			return nil, err
 		}
 
-		var productTypesMap = map[string]*product_and_discount.ProductType{}
+		var productTypesMap = map[string]*model.ProductType{}
 		for _, prdType := range productTypes {
 			productTypesMap[prdType.Id] = prdType
 		}
@@ -237,7 +233,7 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 
 	// check if we need to prefetch related file infos
 	if option.PrefetchRelatedMedia && len(productIDs) > 0 {
-		fileInfos, err := ps.FileInfo().GetWithOptions(nil, nil, &file.GetFileInfosOptions{
+		fileInfos, err := ps.FileInfo().GetWithOptions(nil, nil, &model.GetFileInfosOptions{
 			ParentID: productIDs,
 		})
 		if err != nil {
@@ -256,13 +252,13 @@ func (ps *SqlProductStore) FilterByOption(option *product_and_discount.ProductFi
 }
 
 // GetByOption finds and returns 1 product that satisfies given option
-func (ps *SqlProductStore) GetByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, error) {
+func (ps *SqlProductStore) GetByOption(option *model.ProductFilterOption) (*model.Product, error) {
 	queryString, args, err := ps.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	var res product_and_discount.Product
+	var res model.Product
 	err = ps.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -302,7 +298,7 @@ func (ps *SqlProductStore) channelQuery(channelSlug string, isActive *bool, comp
 // FilterPublishedProducts finds and returns products that belong to given channel slug and are published
 //
 // refer to ./product_store_doc.md (line 1)
-func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*product_and_discount.Product, error) {
+func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*model.Product, error) {
 
 	channelQuery := ps.channelQuery(channelSlug, model.NewBool(true), store.ProductChannelListingTableName)
 
@@ -337,7 +333,7 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*product_and
 		return nil, errors.Wrap(err, "FilterPublishedProducts_ToSql")
 	}
 
-	var res product_and_discount.Products
+	var res model.Products
 	err = ps.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find published products with channel slug=%s", channelSlug)
@@ -351,7 +347,7 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*product_and
 // refer to ./product_store_doc.md (line 45)
 func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 	[]*struct {
-		product_and_discount.Product
+		model.Product
 		IsPublished     bool
 		PublicationDate *timemodule.Time
 	},
@@ -396,7 +392,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 	}
 
 	var res []*struct {
-		product_and_discount.Product
+		model.Product
 		IsPublished     bool
 		PublicationDate *timemodule.Time
 	}
@@ -412,7 +408,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 // PublishedWithVariants finds and returns products.
 //
 // refer to ./product_store_doc.md (line 157)
-func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*product_and_discount.Product, error) {
+func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*model.Product, error) {
 
 	channelQuery := ps.channelQuery(channelSlug, model.NewBool(true), store.ProductChannelListingTableName)
 	today := util.StartOfDay(timemodule.Now().UTC())
@@ -467,7 +463,7 @@ func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*product
 	if err != nil {
 		return nil, errors.Wrap(err, "PublishedWithVariants_ToSql")
 	}
-	var res product_and_discount.Products
+	var res model.Products
 	err = ps.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find published with variants product with channelSlug=%s", channelSlug)
@@ -485,9 +481,9 @@ func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*product
 //	+) if `channelSlug` is provided: refer to ./product_store_doc.md (line 241, CASE 1)
 //
 // 2) If requesting user is shop visitor: Refer to ./product_store_doc.md (line 241, case 3)
-func (ps *SqlProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*product_and_discount.Product, error) {
+func (ps *SqlProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*model.Product, error) {
 	var (
-		res product_and_discount.Products
+		res model.Products
 		err error
 	)
 	// check if requesting user has right to view products
@@ -530,7 +526,7 @@ func (ps *SqlProductStore) VisibleToUserProducts(channelSlug string, requesterIs
 }
 
 // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
-func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*product_and_discount.Product, error) {
+func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*model.Product, error) {
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields(store.ProductTableName + ".")...).
 		Distinct().
@@ -554,7 +550,7 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 		return nil, errors.Wrap(err, "SelectForUpdateDiscountedPricesOfCatalogues_ToSql")
 	}
 
-	var products product_and_discount.Products
+	var products model.Products
 	err = ps.GetReplicaX().Select(&products, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products by given params")
@@ -564,7 +560,7 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 }
 
 // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
-func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *csv.ExportProductsFilterOptions) squirrel.SelectBuilder {
+func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder {
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields(store.ProductTableName + ".")...).
 		From(store.ProductTableName).
@@ -666,13 +662,13 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *csv.ExportProductsF
 }
 
 // FilterByQuery finds and returns products with given query, limit, createdAtGt
-func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder) (product_and_discount.Products, error) {
+func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Products, error) {
 	queryString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByQuery_ToSql")
 	}
 
-	var products product_and_discount.Products
+	var products model.Products
 	err = ps.GetReplicaX().Select(&products, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products with given query and conditions")

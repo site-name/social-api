@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
@@ -23,7 +22,7 @@ func (a *ServicePlugin) SetPluginKey(pluginID string, key string, value []byte) 
 }
 
 func (a *ServicePlugin) SetPluginKeyWithExpiry(pluginID string, key string, value []byte, expireInSeconds int64) *model.AppError {
-	options := plugins.PluginKVSetOptions{
+	options := model.PluginKVSetOptions{
 		ExpireInSeconds: expireInSeconds,
 	}
 	_, err := a.SetPluginKeyWithOptions(pluginID, key, value, options)
@@ -31,14 +30,14 @@ func (a *ServicePlugin) SetPluginKeyWithExpiry(pluginID string, key string, valu
 }
 
 func (a *ServicePlugin) CompareAndSetPluginKey(pluginID string, key string, oldValue, newValue []byte) (bool, *model.AppError) {
-	options := plugins.PluginKVSetOptions{
+	options := model.PluginKVSetOptions{
 		Atomic:   true,
 		OldValue: oldValue,
 	}
 	return a.SetPluginKeyWithOptions(pluginID, key, newValue, options)
 }
 
-func (a *ServicePlugin) SetPluginKeyWithOptions(pluginID string, key string, value []byte, options plugins.PluginKVSetOptions) (bool, *model.AppError) {
+func (a *ServicePlugin) SetPluginKeyWithOptions(pluginID string, key string, value []byte, options model.PluginKVSetOptions) (bool, *model.AppError) {
 	if err := options.IsValid(); err != nil {
 		slog.Debug("Failed to set plugin key value with options", slog.String("plugin_id", pluginID), slog.String("key", key), slog.Err(err))
 		return false, err
@@ -65,7 +64,7 @@ func (a *ServicePlugin) SetPluginKeyWithOptions(pluginID string, key string, val
 }
 
 func (a *ServicePlugin) CompareAndDeletePluginKey(pluginID string, key string, oldValue []byte) (bool, *model.AppError) {
-	kv := &plugins.PluginKeyValue{
+	kv := &model.PluginKeyValue{
 		PluginId: pluginID,
 		Key:      key,
 	}

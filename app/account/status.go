@@ -2,57 +2,55 @@ package account
 
 import (
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
 
-func (a *ServiceAccount) AddStatusCacheSkipClusterSend(status *account.Status) {
+func (a *ServiceAccount) AddStatusCacheSkipClusterSend(status *model.Status) {
 	a.srv.StatusCache.Set(status.UserId, status)
 }
 
-func (a *ServiceAccount) AddStatusCache(status *account.Status) {
+func (a *ServiceAccount) AddStatusCache(status *model.Status) {
 	a.AddStatusCacheSkipClusterSend(status)
 
 	if a.cluster != nil {
-		msg := &cluster.ClusterMessage{
-			Event:    cluster.ClusterEventUpdateStatus,
-			SendType: cluster.ClusterSendBestEffort,
+		msg := &model.ClusterMessage{
+			Event:    model.ClusterEventUpdateStatus,
+			SendType: model.ClusterSendBestEffort,
 			Data:     []byte(status.ToClusterJson()),
 		}
 		a.cluster.SendClusterMessage(msg)
 	}
 }
 
-func (a *ServiceAccount) StatusByID(statusID string) (*account.Status, *model.AppError) {
+func (a *ServiceAccount) StatusByID(statusID string) (*model.Status, *model.AppError) {
 	status, err := a.srv.Store.Status().Get(statusID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("StatusByID", "app.account.status_missing.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("StatusByID", "app.model.status_missing.app_error", err)
 	}
 
 	return status, nil
 }
 
-func (a *ServiceAccount) StatusesByIDs(statusIDs []string) ([]*account.Status, *model.AppError) {
+func (a *ServiceAccount) StatusesByIDs(statusIDs []string) ([]*model.Status, *model.AppError) {
 	statuses, err := a.srv.Store.Status().GetByIds(statusIDs)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("StatusesByIDs", "app.account.statuses_missing.app_error", err)
+		return nil, store.AppErrorFromDatabaseLookupError("StatusesByIDs", "app.model.statuses_missing.app_error", err)
 	}
 
 	return statuses, nil
 }
 
-func (a *ServiceAccount) GetUserStatusesByIds(userIDs []string) ([]*account.Status, *model.AppError) {
+func (a *ServiceAccount) GetUserStatusesByIds(userIDs []string) ([]*model.Status, *model.AppError) {
 	if !*a.srv.Config().ServiceSettings.EnableUserStatuses {
-		return []*account.Status{}, nil
+		return []*model.Status{}, nil
 	}
 
-	var statusMap []*account.Status
+	var statusMap []*model.Status
 
 	missingUserIds := []string{}
 	for _, userID := range userIDs {
-		var status *account.Status
+		var status *model.Status
 		if err := a.srv.StatusCache.Get(userID, &status); err == nil {
 			statusMap = append(statusMap, status)
 			if a.metrics != nil {
@@ -94,7 +92,7 @@ func (a *ServiceAccount) GetUserStatusesByIds(userIDs []string) ([]*account.Stat
 	}
 
 	for _, userID := range missingUserIds {
-		statusMap = append(statusMap, &account.Status{UserId: userID, Status: account.STATUS_OFFLINE})
+		statusMap = append(statusMap, &model.Status{UserId: userID, Status: model.STATUS_OFFLINE})
 	}
 
 	return statusMap, nil
@@ -107,21 +105,21 @@ func (a *ServiceAccount) SetStatusOnline(userID string, manual bool) {
 
 	broadcast := false
 
-	var oldStatus string = account.STATUS_OFFLINE
+	var oldStatus string = model.STATUS_OFFLINE
 	var oldTime int64
 	var oldManual bool
-	var status *account.Status
+	var status *model.Status
 	var err *model.AppError
 
 	if status, err = a.GetStatus(userID); err != nil {
-		status = &account.Status{UserId: userID, Status: account.STATUS_ONLINE, Manual: false, LastActivityAt: model.GetMillis()}
+		status = &model.Status{UserId: userID, Status: model.STATUS_ONLINE, Manual: false, LastActivityAt: model.GetMillis()}
 		broadcast = true
 	} else {
 		if status.Manual && !manual {
 			return // manually set status always overrides non-manual one
 		}
 
-		if status.Status != account.STATUS_ONLINE {
+		if status.Status != model.STATUS_ONLINE {
 			broadcast = true
 		}
 
@@ -129,7 +127,7 @@ func (a *ServiceAccount) SetStatusOnline(userID string, manual bool) {
 		oldTime = status.LastActivityAt
 		oldManual = status.Manual
 
-		status.Status = account.STATUS_ONLINE
+		status.Status = model.STATUS_ONLINE
 		status.Manual = false // for "online" there's no manual setting
 		status.LastActivityAt = model.GetMillis()
 	}
@@ -138,7 +136,7 @@ func (a *ServiceAccount) SetStatusOnline(userID string, manual bool) {
 
 	// Only update the database if the status has changed, the status has been manually set,
 	// or enough time has passed since the previous action
-	if status.Status != oldStatus || status.Manual != oldManual || status.LastActivityAt-oldTime > account.STATUS_MIN_UPDATE_TIME {
+	if status.Status != oldStatus || status.Manual != oldManual || status.LastActivityAt-oldTime > model.STATUS_MIN_UPDATE_TIME {
 		if broadcast {
 			if err := a.srv.Store.Status().SaveOrUpdate(status); err != nil {
 				slog.Warn("Failed to save status", slog.String("user_id", userID), slog.Err(err), slog.String("user_id", userID))
@@ -165,12 +163,12 @@ func (a *ServiceAccount) SetStatusOffline(userID string, manual bool) {
 		return // manually set status always overrides non-manual one
 	}
 
-	status = &account.Status{UserId: userID, Status: account.STATUS_OFFLINE, Manual: manual, LastActivityAt: model.GetMillis()}
+	status = &model.Status{UserId: userID, Status: model.STATUS_OFFLINE, Manual: manual, LastActivityAt: model.GetMillis()}
 
 	a.SaveAndBroadcastStatus(status)
 }
 
-func (a *ServiceAccount) SaveAndBroadcastStatus(status *account.Status) {
+func (a *ServiceAccount) SaveAndBroadcastStatus(status *model.Status) {
 	a.AddStatusCache(status)
 
 	if err := a.srv.Store.Status().SaveOrUpdate(status); err != nil {
@@ -180,7 +178,7 @@ func (a *ServiceAccount) SaveAndBroadcastStatus(status *account.Status) {
 	a.BroadcastStatus(status)
 }
 
-func (a *ServiceAccount) BroadcastStatus(status *account.Status) {
+func (a *ServiceAccount) BroadcastStatus(status *model.Status) {
 	if a.srv.Busy.IsBusy() {
 		// this is considered a non-critical service and will be disabled when server busy.
 		return

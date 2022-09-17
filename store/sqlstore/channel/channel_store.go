@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/store"
 )
 
@@ -37,7 +36,7 @@ func (cs *SqlChannelStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (cs *SqlChannelStore) ScanFields(ch channel.Channel) []interface{} {
+func (cs *SqlChannelStore) ScanFields(ch model.Channel) []interface{} {
 	return []interface{}{
 		&ch.Id,
 		&ch.ShopID,
@@ -49,7 +48,7 @@ func (cs *SqlChannelStore) ScanFields(ch channel.Channel) []interface{} {
 	}
 }
 
-func (cs *SqlChannelStore) Save(ch *channel.Channel) (*channel.Channel, error) {
+func (cs *SqlChannelStore) Save(ch *model.Channel) (*model.Channel, error) {
 	ch.PreSave()
 	if err := ch.IsValid(); err != nil {
 		return nil, err
@@ -66,8 +65,8 @@ func (cs *SqlChannelStore) Save(ch *channel.Channel) (*channel.Channel, error) {
 	return ch, nil
 }
 
-func (cs *SqlChannelStore) Get(id string) (*channel.Channel, error) {
-	var channel channel.Channel
+func (cs *SqlChannelStore) Get(id string) (*model.Channel, error) {
+	var channel model.Channel
 
 	err := cs.GetReplicaX().Get(&channel, "SELECT * FROM "+store.ChannelTableName+" WHERE Id = ?", id)
 	if err != nil {
@@ -80,7 +79,7 @@ func (cs *SqlChannelStore) Get(id string) (*channel.Channel, error) {
 	return &channel, nil
 }
 
-func (cs *SqlChannelStore) commonQueryBuilder(option *channel.ChannelFilterOption) (string, []interface{}, error) {
+func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption) (string, []interface{}, error) {
 	query := cs.GetQueryBuilder().
 		Select(cs.ModelFields("")...).
 		From(store.ChannelTableName).
@@ -110,13 +109,13 @@ func (cs *SqlChannelStore) commonQueryBuilder(option *channel.ChannelFilterOptio
 }
 
 // GetbyOption finds and returns 1 channel filtered using given options
-func (cs *SqlChannelStore) GetbyOption(option *channel.ChannelFilterOption) (*channel.Channel, error) {
+func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*model.Channel, error) {
 	queryString, args, err := cs.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
 
-	var res channel.Channel
+	var res model.Channel
 	err = cs.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -129,14 +128,14 @@ func (cs *SqlChannelStore) GetbyOption(option *channel.ChannelFilterOption) (*ch
 }
 
 // FilterByOption returns a list of channels with given option
-func (cs *SqlChannelStore) FilterByOption(option *channel.ChannelFilterOption) ([]*channel.Channel, error) {
+func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) {
 
 	queryString, args, err := cs.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*channel.Channel
+	var res []*model.Channel
 	err = cs.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find channels with given option")

@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shipping"
 	"github.com/sitename/sitename/store"
 )
 
@@ -37,7 +36,7 @@ func (s *SqlShippingZoneStore) ModelFields(prefix string) model.AnyArray[string]
 	})
 }
 
-func (s *SqlShippingZoneStore) ScanFields(shippingZone shipping.ShippingZone) []interface{} {
+func (s *SqlShippingZoneStore) ScanFields(shippingZone model.ShippingZone) []interface{} {
 	return []interface{}{
 		&shippingZone.Id,
 		&shippingZone.Name,
@@ -50,7 +49,7 @@ func (s *SqlShippingZoneStore) ScanFields(shippingZone shipping.ShippingZone) []
 }
 
 // Upsert depends on given shipping zone's Id to decide update or insert the zone
-func (s *SqlShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone) (*shipping.ShippingZone, error) {
+func (s *SqlShippingZoneStore) Upsert(shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
 	var isSaving bool
 	if shippingZone.Id == "" {
 		isSaving = true
@@ -99,8 +98,8 @@ func (s *SqlShippingZoneStore) Upsert(shippingZone *shipping.ShippingZone) (*shi
 }
 
 // Get finds 1 shipping zone for given shippingZoneID
-func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*shipping.ShippingZone, error) {
-	var res shipping.ShippingZone
+func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*model.ShippingZone, error) {
+	var res model.ShippingZone
 	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShippingZoneTableName+" WHERE Id = ?", shippingZoneID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -113,7 +112,7 @@ func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*shipping.ShippingZon
 }
 
 // FilterByOption finds a list of shipping zones based on given option
-func (s *SqlShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, error) {
+func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error) {
 	selectFields := s.ModelFields(store.ShippingZoneTableName + ".")
 	if option.SelectRelatedThroughData {
 		selectFields = append(selectFields, "WarehouseShippingZones.WarehouseID")
@@ -146,10 +145,10 @@ func (s *SqlShippingZoneStore) FilterByOption(option *shipping.ShippingZoneFilte
 		return nil, errors.Wrap(err, "failed to find shipping zones with given options")
 	}
 	var (
-		shippingZone           shipping.ShippingZone
-		returningShippingZones shipping.ShippingZones
+		shippingZone           model.ShippingZone
+		returningShippingZones model.ShippingZones
 		warehouseID            string
-		shippingZonesMap       = map[string]*shipping.ShippingZone{} // shippingZonesMap is a map with keys are shipping zones's ids
+		shippingZonesMap       = map[string]*model.ShippingZone{} // shippingZonesMap is a map with keys are shipping zones's ids
 		scanFields             = s.ScanFields(shippingZone)
 	)
 

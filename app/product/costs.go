@@ -8,12 +8,11 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 )
 
 func GetProductCostsData(
-	variantChannelListings []*product_and_discount.ProductVariantChannelListing,
+	variantChannelListings []*model.ProductVariantChannelListing,
 	hasVariants bool,
 	currency string,
 
@@ -41,7 +40,7 @@ func GetProductCostsData(
 	return purchaseCostsRange, margins, nil
 }
 
-func GetCostDataFromVariantChannelListing(variantChannelListings []*product_and_discount.ProductVariantChannelListing) *product_and_discount.CostsData {
+func GetCostDataFromVariantChannelListing(variantChannelListings []*model.ProductVariantChannelListing) *model.CostsData {
 
 	var (
 		costs   []*goprices.Money
@@ -53,10 +52,10 @@ func GetCostDataFromVariantChannelListing(variantChannelListings []*product_and_
 		margins = append(margins, costsData.Margins()...)
 	}
 
-	return product_and_discount.NewCostsData(costs, margins)
+	return model.NewCostsData(costs, margins)
 }
 
-func GetvariantCostsData(variantChannelListing *product_and_discount.ProductVariantChannelListing) *product_and_discount.CostsData {
+func GetvariantCostsData(variantChannelListing *model.ProductVariantChannelListing) *model.CostsData {
 	var (
 		costs   []*goprices.Money
 		margins []float64
@@ -66,10 +65,10 @@ func GetvariantCostsData(variantChannelListing *product_and_discount.ProductVari
 		margins = append(margins, *margin)
 	}
 
-	return product_and_discount.NewCostsData(costs, margins)
+	return model.NewCostsData(costs, margins)
 }
 
-func GetCostPrice(variantChannelListing *product_and_discount.ProductVariantChannelListing) *goprices.Money {
+func GetCostPrice(variantChannelListing *model.ProductVariantChannelListing) *goprices.Money {
 	variantChannelListing.PopulateNonDbFields()
 
 	if variantChannelListing.CostPrice == nil {
@@ -82,7 +81,7 @@ func GetCostPrice(variantChannelListing *product_and_discount.ProductVariantChan
 	return variantChannelListing.CostPrice
 }
 
-func GetMarginForVariantChannelListing(variantChannelListing *product_and_discount.ProductVariantChannelListing) *float64 {
+func GetMarginForVariantChannelListing(variantChannelListing *model.ProductVariantChannelListing) *float64 {
 	variantChannelListing.PopulateNonDbFields()
 
 	if variantChannelListing.CostPrice == nil || variantChannelListing.Price == nil {

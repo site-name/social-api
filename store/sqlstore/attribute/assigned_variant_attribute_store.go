@@ -6,7 +6,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
 
@@ -33,7 +32,7 @@ func (as *SqlAssignedVariantAttributeStore) ModelFields(prefix string) model.Any
 	})
 }
 
-func (as *SqlAssignedVariantAttributeStore) Save(variant *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, error) {
+func (as *SqlAssignedVariantAttributeStore) Save(variant *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error) {
 	variant.PreSave()
 	if err := variant.IsValid(); err != nil {
 		return nil, err
@@ -50,8 +49,8 @@ func (as *SqlAssignedVariantAttributeStore) Save(variant *attribute.AssignedVari
 	return variant, nil
 }
 
-func (as *SqlAssignedVariantAttributeStore) Get(variantID string) (*attribute.AssignedVariantAttribute, error) {
-	var res attribute.AssignedVariantAttribute
+func (as *SqlAssignedVariantAttributeStore) Get(variantID string) (*model.AssignedVariantAttribute, error) {
+	var res model.AssignedVariantAttribute
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedVariantAttributeTableName+" WHERE Id = ?", variantID)
 	if err != nil {
@@ -65,7 +64,7 @@ func (as *SqlAssignedVariantAttributeStore) Get(variantID string) (*attribute.As
 }
 
 // builFilterQuery is common method for building filter queries
-func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *attribute.AssignedVariantAttributeFilterOption) (string, []interface{}, error) {
+func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *model.AssignedVariantAttributeFilterOption) (string, []interface{}, error) {
 	query := as.GetQueryBuilder().
 		Select(as.ModelFields(store.AssignedVariantAttributeTableName + ".")...).
 		From(store.AssignedVariantAttributeTableName)
@@ -99,13 +98,13 @@ func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *attribute.As
 }
 
 // GetWithOption finds and returns 1 assigned variant attribute with given option
-func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, error) {
+func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, error) {
 	queryString, args, err := as.builFilterQuery(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetWithOption_ToSql")
 	}
 
-	var res attribute.AssignedVariantAttribute
+	var res model.AssignedVariantAttribute
 	err = as.GetReplicaX().Get(
 		&res,
 		queryString,
@@ -122,14 +121,14 @@ func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *attribute.Assi
 }
 
 // FilterByOption finds and returns a list of assigned variant attributes filtered by given options
-func (as *SqlAssignedVariantAttributeStore) FilterByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) {
+func (as *SqlAssignedVariantAttributeStore) FilterByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, error) {
 
 	queryString, args, err := as.builFilterQuery(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*attribute.AssignedVariantAttribute
+	var res []*model.AssignedVariantAttribute
 	err = as.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find assigned variant attributes by given option")

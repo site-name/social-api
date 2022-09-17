@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/einterfaces"
-	"github.com/sitename/sitename/model/cluster"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/services/cache"
 	"github.com/sitename/sitename/store"
@@ -82,7 +82,7 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 		Size:                   UserProfileByIDCacheSize,
 		Name:                   "UserProfileByIds",
 		DefaultExpiry:          UserProfileByIDSec * time.Second,
-		InvalidateClusterEvent: cluster.ClusterEventInvalidateCacheForProfileByIds,
+		InvalidateClusterEvent: model.ClusterEventInvalidateCacheForProfileByIds,
 		Striped:                true,
 		StripedBuckets:         util.Max(runtime.NumCPU()-1, 1),
 	}); err != nil {
@@ -96,7 +96,7 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 	}
 
 	if cluster_ != nil {
-		cluster_.RegisterClusterMessageHandler(cluster.ClusterEventInvalidateCacheForProfileByIds, localCacheStore.user.handleClusterInvalidateScheme)
+		cluster_.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForProfileByIds, localCacheStore.user.handleClusterInvalidateScheme)
 	}
 
 	return
@@ -114,9 +114,9 @@ func (s LocalCacheStore) DropAllTables() {
 func (s *LocalCacheStore) doInvalidateCacheCluster(cache cache.Cache, key string) {
 	cache.Remove(key)
 	if s.cluster != nil {
-		msg := &cluster.ClusterMessage{
+		msg := &model.ClusterMessage{
 			Event:    cache.GetInvalidateClusterEvent(),
-			SendType: cluster.ClusterSendBestEffort,
+			SendType: model.ClusterSendBestEffort,
 			Data:     []byte(key),
 		}
 		s.cluster.SendClusterMessage(msg)
@@ -144,9 +144,9 @@ func (s *LocalCacheStore) doStandardReadCache(cache cache.Cache, key string, val
 func (s *LocalCacheStore) doClearCacheCluster(cache cache.Cache) {
 	cache.Purge()
 	if s.cluster != nil {
-		msg := &cluster.ClusterMessage{
+		msg := &model.ClusterMessage{
 			Event:    cache.GetInvalidateClusterEvent(),
-			SendType: cluster.ClusterSendBestEffort,
+			SendType: model.ClusterSendBestEffort,
 			Data:     clearCacheMessageData,
 		}
 		s.cluster.SendClusterMessage(msg)

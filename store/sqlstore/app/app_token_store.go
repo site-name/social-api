@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/sitename/sitename/model/app"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
 
@@ -16,6 +16,6 @@ func NewSqlAppTokenStore(sqlStore store.Store) store.AppTokenStore {
 
 }
 
-func (as *SqlAppTokenStore) Save(appToken *app.AppToken) (*app.AppToken, error) {
+func (as *SqlAppTokenStore) Save(appToken *model.AppToken) (*model.AppToken, error) {
 	panic("not implemented")
 }

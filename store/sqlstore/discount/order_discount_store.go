@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -42,7 +41,7 @@ func (s *SqlOrderDiscountStore) ModelFields(prefix string) model.AnyArray[string
 }
 
 // Upsert depends on given order discount's Id property to decide to update/insert it
-func (ods *SqlOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *product_and_discount.OrderDiscount) (*product_and_discount.OrderDiscount, error) {
+func (ods *SqlOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
 	var executor store_iface.SqlxExecutor = ods.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -97,8 +96,8 @@ func (ods *SqlOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor,
 }
 
 // Get finds and returns an order discount with given id
-func (ods *SqlOrderDiscountStore) Get(orderDiscountID string) (*product_and_discount.OrderDiscount, error) {
-	var res product_and_discount.OrderDiscount
+func (ods *SqlOrderDiscountStore) Get(orderDiscountID string) (*model.OrderDiscount, error) {
+	var res model.OrderDiscount
 
 	err := ods.GetReplicaX().Get(&res, "SELECT * FROM "+store.OrderDiscountTableName+" WHERE Id = ?", orderDiscountID)
 	if err != nil {
@@ -112,7 +111,7 @@ func (ods *SqlOrderDiscountStore) Get(orderDiscountID string) (*product_and_disc
 }
 
 // FilterbyOption filters order discounts that satisfy given option, then returns them
-func (ods *SqlOrderDiscountStore) FilterbyOption(option *product_and_discount.OrderDiscountFilterOption) ([]*product_and_discount.OrderDiscount, error) {
+func (ods *SqlOrderDiscountStore) FilterbyOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, error) {
 	query := ods.GetQueryBuilder().
 		Select("*").
 		From(store.OrderDiscountTableName)
@@ -132,7 +131,7 @@ func (ods *SqlOrderDiscountStore) FilterbyOption(option *product_and_discount.Or
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*product_and_discount.OrderDiscount
+	var res []*model.OrderDiscount
 	err = ods.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order discounts with given option")

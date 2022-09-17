@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -32,7 +31,7 @@ func (s *SqlVoucherCustomerStore) ModelFields(prefix string) model.AnyArray[stri
 }
 
 // Save inserts given voucher customer instance into database ands returns it
-func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer *product_and_discount.VoucherCustomer) (*product_and_discount.VoucherCustomer, error) {
+func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer *model.VoucherCustomer) (*model.VoucherCustomer, error) {
 	voucherCustomer.PreSave()
 	if err := voucherCustomer.IsValid(); err != nil {
 		return nil, err
@@ -50,7 +49,7 @@ func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer *product_and_discount.V
 	return voucherCustomer, nil
 }
 
-func (vcs *SqlVoucherCustomerStore) commonQueryBuilder(options *product_and_discount.VoucherCustomerFilterOption) squirrel.SelectBuilder {
+func (vcs *SqlVoucherCustomerStore) commonQueryBuilder(options *model.VoucherCustomerFilterOption) squirrel.SelectBuilder {
 	query := vcs.GetQueryBuilder().Select("*").
 		From(store.VoucherCustomerTableName).
 		OrderBy(store.TableOrderingMap[store.VoucherCustomerTableName])
@@ -70,13 +69,13 @@ func (vcs *SqlVoucherCustomerStore) commonQueryBuilder(options *product_and_disc
 }
 
 // GetByOption finds and returns a voucher customer with given options
-func (vcs *SqlVoucherCustomerStore) GetByOption(options *product_and_discount.VoucherCustomerFilterOption) (*product_and_discount.VoucherCustomer, error) {
+func (vcs *SqlVoucherCustomerStore) GetByOption(options *model.VoucherCustomerFilterOption) (*model.VoucherCustomer, error) {
 	queryString, args, err := vcs.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	var res product_and_discount.VoucherCustomer
+	var res model.VoucherCustomer
 	err = vcs.GetMasterX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -89,13 +88,13 @@ func (vcs *SqlVoucherCustomerStore) GetByOption(options *product_and_discount.Vo
 }
 
 // FilterByOptions finds and returns a slice of voucher customers by given options
-func (vcs *SqlVoucherCustomerStore) FilterByOptions(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, error) {
+func (vcs *SqlVoucherCustomerStore) FilterByOptions(options *model.VoucherCustomerFilterOption) ([]*model.VoucherCustomer, error) {
 	queryString, args, err := vcs.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*product_and_discount.VoucherCustomer
+	var res []*model.VoucherCustomer
 	err = vcs.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find voucher customers by options")
@@ -105,7 +104,7 @@ func (vcs *SqlVoucherCustomerStore) FilterByOptions(options *product_and_discoun
 }
 
 // DeleteInBulk deletes given voucher-customers with given id
-func (vcs *SqlVoucherCustomerStore) DeleteInBulk(options *product_and_discount.VoucherCustomerFilterOption) error {
+func (vcs *SqlVoucherCustomerStore) DeleteInBulk(options *model.VoucherCustomerFilterOption) error {
 	deleteQuery := vcs.GetQueryBuilder().Delete(store.VoucherCustomerTableName)
 
 	// parse options

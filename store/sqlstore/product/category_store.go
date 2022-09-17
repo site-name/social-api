@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -39,7 +38,7 @@ func (cs *SqlCategoryStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (cs *SqlCategoryStore) ScanFields(cate product_and_discount.Category) []interface{} {
+func (cs *SqlCategoryStore) ScanFields(cate model.Category) []interface{} {
 	return []interface{}{
 		&cate.Id,
 		&cate.Name,
@@ -55,7 +54,7 @@ func (cs *SqlCategoryStore) ScanFields(cate product_and_discount.Category) []int
 }
 
 // Upsert depends on given category's Id field to decide update or insert it
-func (cs *SqlCategoryStore) Upsert(category *product_and_discount.Category) (*product_and_discount.Category, error) {
+func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
 	var isSaving bool
 	if category.Id == "" {
 		category.PreSave()
@@ -104,8 +103,8 @@ func (cs *SqlCategoryStore) Upsert(category *product_and_discount.Category) (*pr
 }
 
 // Get finds and returns a category with given id
-func (cs *SqlCategoryStore) Get(categoryID string) (*product_and_discount.Category, error) {
-	var res product_and_discount.Category
+func (cs *SqlCategoryStore) Get(categoryID string) (*model.Category, error) {
+	var res model.Category
 	err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+store.CategoryTableName+" WHERE Id = ?", categoryID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -117,7 +116,7 @@ func (cs *SqlCategoryStore) Get(categoryID string) (*product_and_discount.Catego
 	return &res, nil
 }
 
-func (cs *SqlCategoryStore) commonQueryBuilder(option *product_and_discount.CategoryFilterOption) (string, []interface{}, error) {
+func (cs *SqlCategoryStore) commonQueryBuilder(option *model.CategoryFilterOption) (string, []interface{}, error) {
 	query := cs.GetQueryBuilder().
 		Select(cs.ModelFields(store.CategoryTableName + ".")...).
 		From(store.CategoryTableName).
@@ -162,13 +161,13 @@ func (cs *SqlCategoryStore) commonQueryBuilder(option *product_and_discount.Cate
 }
 
 // FilterByOption finds and returns a list of categories satisfy given option
-func (cs *SqlCategoryStore) FilterByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, error) {
+func (cs *SqlCategoryStore) FilterByOption(option *model.CategoryFilterOption) ([]*model.Category, error) {
 	queryString, args, err := cs.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*product_and_discount.Category
+	var res []*model.Category
 	err = cs.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find categories with given option")
@@ -178,13 +177,13 @@ func (cs *SqlCategoryStore) FilterByOption(option *product_and_discount.Category
 }
 
 // GetByOption finds and returns 1 category satisfy given option
-func (cs *SqlCategoryStore) GetByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, error) {
+func (cs *SqlCategoryStore) GetByOption(option *model.CategoryFilterOption) (*model.Category, error) {
 	queryString, args, err := cs.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	var res product_and_discount.Category
+	var res model.Category
 	err = cs.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {

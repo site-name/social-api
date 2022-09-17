@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/menu"
 	"github.com/sitename/sitename/store"
 )
 
@@ -35,7 +34,7 @@ func (s *SqlMenuStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (ms *SqlMenuStore) Save(mnu *menu.Menu) (*menu.Menu, error) {
+func (ms *SqlMenuStore) Save(mnu *model.Menu) (*model.Menu, error) {
 	mnu.PreSave()
 	if err := mnu.IsValid(); err != nil {
 		return nil, err
@@ -56,7 +55,7 @@ func (ms *SqlMenuStore) Save(mnu *menu.Menu) (*menu.Menu, error) {
 	return mnu, nil
 }
 
-func (ms *SqlMenuStore) GetByOptions(options *menu.MenuFilterOptions) (*menu.Menu, error) {
+func (ms *SqlMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error) {
 	query := ms.GetQueryBuilder().
 		Select("*").
 		From(store.MenuTableName)
@@ -76,7 +75,7 @@ func (ms *SqlMenuStore) GetByOptions(options *menu.MenuFilterOptions) (*menu.Men
 		return nil, errors.Wrap(err, "GetByOptions_ToSql")
 	}
 
-	var res menu.Menu
+	var res model.Menu
 	err = ms.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {

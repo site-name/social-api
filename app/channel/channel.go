@@ -1,6 +1,6 @@
 /*
-	NOTE: This package is initialized during server startup (modules/imports does that)
-	so the init() function get the chance to register a function to create `ServiceAccount`
+NOTE: This package is initialized during server startup (modules/imports does that)
+so the init() function get the chance to register a function to create `ServiceAccount`
 */
 package channel
 
@@ -11,7 +11,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/channel"
 	"github.com/sitename/sitename/store"
 )
 
@@ -28,7 +27,7 @@ func init() {
 }
 
 // ChannelByOption returns a channel that satisfies given options
-func (s *ServiceChannel) ChannelByOption(option *channel.ChannelFilterOption) (*channel.Channel, *model.AppError) {
+func (s *ServiceChannel) ChannelByOption(option *model.ChannelFilterOption) (*model.Channel, *model.AppError) {
 	foundChannel, err := s.srv.Store.Channel().GetbyOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -42,8 +41,8 @@ func (s *ServiceChannel) ChannelByOption(option *channel.ChannelFilterOption) (*
 }
 
 // ValidateChannel check if a channel with given slug is active
-func (a *ServiceChannel) ValidateChannel(channelID string) (*channel.Channel, *model.AppError) {
-	channel, appErr := a.ChannelByOption(&channel.ChannelFilterOption{
+func (a *ServiceChannel) ValidateChannel(channelID string) (*model.Channel, *model.AppError) {
+	channel, appErr := a.ChannelByOption(&model.ChannelFilterOption{
 		Id: squirrel.Eq{store.ChannelTableName + ".Id": channelID},
 	})
 	if appErr != nil {
@@ -59,16 +58,16 @@ func (a *ServiceChannel) ValidateChannel(channelID string) (*channel.Channel, *m
 }
 
 // CleanChannel
-func (a *ServiceChannel) CleanChannel(channelID *string) (*channel.Channel, *model.AppError) {
+func (a *ServiceChannel) CleanChannel(channelID *string) (*model.Channel, *model.AppError) {
 	var (
-		needChannel *channel.Channel
+		needChannel *model.Channel
 		appErr      *model.AppError
 	)
 
 	if channelID != nil && *channelID != "" {
 		needChannel, appErr = a.ValidateChannel(*channelID)
 	} else {
-		needChannel, appErr = a.ChannelByOption(&channel.ChannelFilterOption{
+		needChannel, appErr = a.ChannelByOption(&model.ChannelFilterOption{
 			IsActive: model.NewBool(true),
 		})
 	}
@@ -81,7 +80,7 @@ func (a *ServiceChannel) CleanChannel(channelID *string) (*channel.Channel, *mod
 }
 
 // ChannelsByOption returns a list of channels by given options
-func (a *ServiceChannel) ChannelsByOption(option *channel.ChannelFilterOption) (channel.Channels, *model.AppError) {
+func (a *ServiceChannel) ChannelsByOption(option *model.ChannelFilterOption) (model.Channels, *model.AppError) {
 	channels, err := a.srv.Store.Channel().FilterByOption(option)
 	var (
 		statusCode int

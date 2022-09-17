@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/sitename/sitename/model/app"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
 
@@ -13,6 +13,6 @@ func NewSqlAppStore(sqlStore store.Store) store.AppStore {
 	return &SqlAppStore{sqlStore}
 }
 
-func (as *SqlAppStore) Save(app *app.App) (*app.App, error) {
+func (as *SqlAppStore) Save(app *model.App) (*model.App, error) {
 	panic("not implemented") // NOTE: fixme
 }

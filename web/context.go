@@ -9,7 +9,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
-	modelAudit "github.com/sitename/sitename/model/audit"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
@@ -62,13 +61,13 @@ func (c *Context) MakeAuditRecord(event string, initialStatus string) *audit.Rec
 		IPAddress: c.AppContext.IpAddress(),
 		Meta:      audit.Meta{audit.KeyClusterID: c.App.GetClusterId()},
 	}
-	rec.AddMetaTypeConverter(modelAudit.AuditModelTypeConv)
+	rec.AddMetaTypeConverter(model.AuditModelTypeConv)
 
 	return rec
 }
 
 func (c *Context) LogAudit(extraInfo string) {
-	audit := &modelAudit.Audit{UserId: c.AppContext.Session().UserId, IpAddress: c.AppContext.IpAddress(), Action: c.AppContext.Path(), ExtraInfo: extraInfo, SessionId: c.AppContext.Session().Id}
+	audit := &model.Audit{UserId: c.AppContext.Session().UserId, IpAddress: c.AppContext.IpAddress(), Action: c.AppContext.Path(), ExtraInfo: extraInfo, SessionId: c.AppContext.Session().Id}
 	if err := c.App.Srv().Store.Audit().Save(audit); err != nil {
 		appErr := model.NewAppError("LogAudit", "app.audit.save.saving.app_error", nil, err.Error(), http.StatusInternalServerError)
 		c.LogErrorByCode(appErr)
@@ -80,7 +79,7 @@ func (c *Context) LogAuditWithUserId(userId, extraInfo string) {
 		extraInfo = strings.TrimSpace(extraInfo + " session_user=" + c.AppContext.Session().UserId)
 	}
 
-	audit := &modelAudit.Audit{UserId: userId, IpAddress: c.AppContext.IpAddress(), Action: c.AppContext.Path(), ExtraInfo: extraInfo, SessionId: c.AppContext.Session().Id}
+	audit := &model.Audit{UserId: userId, IpAddress: c.AppContext.IpAddress(), Action: c.AppContext.Path(), ExtraInfo: extraInfo, SessionId: c.AppContext.Session().Id}
 	if err := c.App.Srv().Store.Audit().Save(audit); err != nil {
 		appErr := model.NewAppError("LogAuditWithUserId", "app.audit.save.saving.app_error", nil, err.Error(), http.StatusInternalServerError)
 		c.LogErrorByCode(appErr)

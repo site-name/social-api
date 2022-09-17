@@ -8,7 +8,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/external_services"
 	"github.com/sitename/sitename/modules/plugin"
 )
 
@@ -212,9 +211,9 @@ func (a *Server) GetConversionRate(fromCurrency string, toCurrency string) (*dec
 
 	var rate decimal.Decimal
 	// try get rate from the cache first, if not found, find in database
-	rateInterface, exist := a.ExchangeRateMap.Load(rateCurrency)
+	value, exist := a.ExchangeRateMap.Load(rateCurrency)
 	if exist {
-		rate = *(rateInterface.(*external_services.OpenExchangeRate).Rate)
+		rate = *(value.(*model.OpenExchangeRate).Rate)
 	} else {
 		exchangeRatesFromDatabase, err := a.Store.OpenExchangeRate().GetAll()
 		if err != nil {

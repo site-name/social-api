@@ -4,13 +4,12 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
 // PreOrderAllocationsByOptions returns a list of preorder allocations filtered using given options
-func (s *ServiceWarehouse) PreOrderAllocationsByOptions(options *warehouse.PreorderAllocationFilterOption) (warehouse.PreorderAllocations, *model.AppError) {
+func (s *ServiceWarehouse) PreOrderAllocationsByOptions(options *model.PreorderAllocationFilterOption) (model.PreorderAllocations, *model.AppError) {
 	allocations, err := s.srv.Store.PreorderAllocation().FilterByOption(options)
 	var (
 		statusCode int
@@ -40,7 +39,7 @@ func (s *ServiceWarehouse) DeletePreorderAllocations(transaction store_iface.Sql
 }
 
 // BulkCreate tells store to insert given preorder allocations into database then returns them
-func (s *ServiceWarehouse) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*warehouse.PreorderAllocation) ([]*warehouse.PreorderAllocation, *model.AppError) {
+func (s *ServiceWarehouse) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, *model.AppError) {
 	allocations, err := s.srv.Store.PreorderAllocation().BulkCreate(transaction, preorderAllocations)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

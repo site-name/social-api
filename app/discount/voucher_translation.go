@@ -4,12 +4,11 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
 // VoucherTranslationsByOption returns a list of voucher translations filtered using given option
-func (s *ServiceDiscount) VoucherTranslationsByOption(option *product_and_discount.VoucherTranslationFilterOption) ([]*product_and_discount.VoucherTranslation, *model.AppError) {
+func (s *ServiceDiscount) VoucherTranslationsByOption(option *model.VoucherTranslationFilterOption) ([]*model.VoucherTranslation, *model.AppError) {
 	translations, err := s.srv.Store.VoucherTranslation().FilterByOption(option)
 	var (
 		statusCode int
@@ -30,7 +29,7 @@ func (s *ServiceDiscount) VoucherTranslationsByOption(option *product_and_discou
 }
 
 // GetVoucherTranslationByOption returns a voucher translation by given options
-func (s *ServiceDiscount) GetVoucherTranslationByOption(option *product_and_discount.VoucherTranslationFilterOption) (*product_and_discount.VoucherTranslation, *model.AppError) {
+func (s *ServiceDiscount) GetVoucherTranslationByOption(option *model.VoucherTranslationFilterOption) (*model.VoucherTranslation, *model.AppError) {
 	translation, err := s.srv.Store.VoucherTranslation().GetByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("GetVoucherTranslationByOption", "app.discount.error_finding_voucher_translation_by_option.app_error", err)

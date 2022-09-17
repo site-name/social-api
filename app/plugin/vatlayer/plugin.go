@@ -9,9 +9,6 @@ import (
 	"github.com/sitename/sitename/app/plugin"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 var (
@@ -134,7 +131,7 @@ func (vp *VatlayerPlugin) skipPlugin(previousValue interface{}) bool {
 }
 
 // previousValue must be either TaxedMoneyRange or TaxedMoney
-func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo checkout.CheckoutInfo, lines checkout.CheckoutLineInfos, address *account.Address, discounts []*product_and_discount.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model.AppError) {
+func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos, address *model.Address, discounts []*model.DiscountInfo, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model.AppError) {
 	if vp.skipPlugin(previousValue) {
 		return &previousValue, nil
 	}

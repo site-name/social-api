@@ -3,17 +3,15 @@ package product
 import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
 // GenerateAndSetVariantName Generate ProductVariant's name based on its attributes
-func (a *ServiceProduct) GenerateAndSetVariantName(variant *product_and_discount.ProductVariant, sku string) *model.AppError {
-	_, _ = a.srv.AttributeService().AssignedVariantAttributesByOption(&attribute.AssignedVariantAttributeFilterOption{
-		AssignmentAttributeInputType: squirrel.Eq{store.AttributeTableName + ".InputType": attribute.ALLOWED_IN_VARIANT_SELECTION},
-		AssignmentAttributeType:      squirrel.Eq{store.AttributeTableName + ".Type": attribute.PRODUCT_TYPE},
+func (a *ServiceProduct) GenerateAndSetVariantName(variant *model.ProductVariant, sku string) *model.AppError {
+	_, _ = a.srv.AttributeService().AssignedVariantAttributesByOption(&model.AssignedVariantAttributeFilterOption{
+		AssignmentAttributeInputType: squirrel.Eq{store.AttributeTableName + ".InputType": model.ALLOWED_IN_VARIANT_SELECTION},
+		AssignmentAttributeType:      squirrel.Eq{store.AttributeTableName + ".Type": model.PRODUCT_TYPE},
 	})
 	panic("not implt")
 }
@@ -22,10 +20,10 @@ func (a *ServiceProduct) GenerateAndSetVariantName(variant *product_and_discount
 //
 // Attribute must be product attribute and attribute input type must be
 // in ALLOWED_IN_VARIANT_SELECTION list.
-func (a *ServiceProduct) GetVariantSelectionAttributes(attributes []*attribute.Attribute) []*attribute.Attribute {
+func (a *ServiceProduct) GetVariantSelectionAttributes(attributes []*model.Attribute) []*model.Attribute {
 
 	for i, attr := range attributes {
-		if !util.ItemInSlice(attr.InputType, attribute.ALLOWED_IN_VARIANT_SELECTION) || attr.Type != attribute.PRODUCT_TYPE {
+		if !util.ItemInSlice(attr.InputType, model.ALLOWED_IN_VARIANT_SELECTION) || attr.Type != model.PRODUCT_TYPE {
 			attributes = append(attributes[:i], attributes[i+1:]...)
 		}
 	}

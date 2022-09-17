@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/services/searchengine/bleveengine"
@@ -209,7 +208,7 @@ func (worker *BleveIndexerWorker) DoJob(job *model.Job) {
 	// }
 
 	// Same possible fail as above can happen when counting users
-	if count, err := worker.jobServer.Store.User().Count(account.UserCountOptions{}); err != nil {
+	if count, err := worker.jobServer.Store.User().Count(model.UserCountOptions{}); err != nil {
 		slog.Warn("Worker: Failed to fetch total user count for job. An estimated value will be used for progress reporting.", slog.String("workername", worker.name), slog.String("job_id", job.Id), slog.Err(err))
 		progress.TotalUsersCount = EstimatedUserCount
 	} else {
@@ -532,7 +531,7 @@ func (worker *BleveIndexerWorker) IndexBatch(progress IndexingProgress) (Indexin
 func (worker *BleveIndexerWorker) IndexUsersBatch(progress IndexingProgress) (IndexingProgress, *model.AppError) {
 	endTime := progress.LastEntityTime + int64(*worker.jobServer.Config().BleveSettings.BulkIndexingTimeWindowSeconds*1000)
 
-	var users []*account.UserForIndexing
+	var users []*model.UserForIndexing
 
 	tries := 0
 	for users == nil {
@@ -583,7 +582,7 @@ func (worker *BleveIndexerWorker) IndexUsersBatch(progress IndexingProgress) (In
 	return progress, nil
 }
 
-func (worker *BleveIndexerWorker) BulkIndexUsers(users []*account.UserForIndexing, progress IndexingProgress) (int64, *model.AppError) {
+func (worker *BleveIndexerWorker) BulkIndexUsers(users []*model.UserForIndexing, progress IndexingProgress) (int64, *model.AppError) {
 	lastCreateAt := int64(0)
 	batch := worker.engine.UserIndex.NewBatch()
 

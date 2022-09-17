@@ -4,13 +4,12 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
 // CreateNewVoucherCustomer tells store to insert new voucher customer into database, then returns it
-func (a *ServiceDiscount) CreateNewVoucherCustomer(voucherID string, customerEmail string) (*product_and_discount.VoucherCustomer, *model.AppError) {
-	voucher, err := a.srv.Store.VoucherCustomer().Save(&product_and_discount.VoucherCustomer{
+func (a *ServiceDiscount) CreateNewVoucherCustomer(voucherID string, customerEmail string) (*model.VoucherCustomer, *model.AppError) {
+	voucher, err := a.srv.Store.VoucherCustomer().Save(&model.VoucherCustomer{
 		CustomerEmail: customerEmail,
 		VoucherID:     voucherID,
 	})
@@ -25,7 +24,7 @@ func (a *ServiceDiscount) CreateNewVoucherCustomer(voucherID string, customerEma
 }
 
 // VoucherCustomerByOptions finds a voucher customer relation and returns it with an error
-func (a *ServiceDiscount) VoucherCustomerByOptions(options *product_and_discount.VoucherCustomerFilterOption) (*product_and_discount.VoucherCustomer, *model.AppError) {
+func (a *ServiceDiscount) VoucherCustomerByOptions(options *model.VoucherCustomerFilterOption) (*model.VoucherCustomer, *model.AppError) {
 	voucherCustomer, err := a.srv.Store.VoucherCustomer().GetByOption(options)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("VoucherCustomerByOptions", "app.discount.voucher_customer_missing.app_error", err)
@@ -35,7 +34,7 @@ func (a *ServiceDiscount) VoucherCustomerByOptions(options *product_and_discount
 }
 
 // VoucherCustomersByOption returns a slice of voucher customers filtered using given options
-func (s *ServiceDiscount) VoucherCustomersByOption(options *product_and_discount.VoucherCustomerFilterOption) ([]*product_and_discount.VoucherCustomer, *model.AppError) {
+func (s *ServiceDiscount) VoucherCustomersByOption(options *model.VoucherCustomerFilterOption) ([]*model.VoucherCustomer, *model.AppError) {
 	voucherCustomers, err := s.srv.Store.VoucherCustomer().FilterByOptions(options)
 	var (
 		statusCode int

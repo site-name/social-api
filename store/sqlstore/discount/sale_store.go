@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -40,7 +39,7 @@ func (s *SqlDiscountSaleStore) ModelFields(prefix string) model.AnyArray[string]
 }
 
 // Upsert bases on sale's Id to decide to update or insert given sale
-func (ss *SqlDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*product_and_discount.Sale, error) {
+func (ss *SqlDiscountSaleStore) Upsert(sale *model.Sale) (*model.Sale, error) {
 	var saving bool
 
 	if !model.IsValidId(sale.Id) {
@@ -89,8 +88,8 @@ func (ss *SqlDiscountSaleStore) Upsert(sale *product_and_discount.Sale) (*produc
 }
 
 // Get finds and returns a sale with given saleID
-func (ss *SqlDiscountSaleStore) Get(saleID string) (*product_and_discount.Sale, error) {
-	var res product_and_discount.Sale
+func (ss *SqlDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
+	var res model.Sale
 	err := ss.GetReplicaX().Get(
 		&res,
 		"SELECT * FROM "+store.SaleTableName+" WHERE id = ? ORDER BY ?",
@@ -108,7 +107,7 @@ func (ss *SqlDiscountSaleStore) Get(saleID string) (*product_and_discount.Sale, 
 }
 
 // FilterSalesByOption filter sales by option
-func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *product_and_discount.SaleFilterOption) ([]*product_and_discount.Sale, error) {
+func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
 	query := ss.
 		GetQueryBuilder().
 		Select("*").
@@ -133,7 +132,7 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *product_and_discount
 		return nil, errors.Wrap(err, "FilterSalesByOption_ToSql")
 	}
 
-	var sales []*product_and_discount.Sale
+	var sales []*model.Sale
 	err = ss.GetReplicaX().Select(&sales, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find sales with given condition.")

@@ -7,7 +7,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
 
@@ -30,7 +29,7 @@ func (as *SqlAssignedProductAttributeStore) ModelFields(prefix string) model.Any
 	})
 }
 
-func (as *SqlAssignedProductAttributeStore) Save(newInstance *attribute.AssignedProductAttribute) (*attribute.AssignedProductAttribute, error) {
+func (as *SqlAssignedProductAttributeStore) Save(newInstance *model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
 	newInstance.PreSave()
 	if err := newInstance.IsValid(); err != nil {
 		return nil, err
@@ -49,8 +48,8 @@ func (as *SqlAssignedProductAttributeStore) Save(newInstance *attribute.Assigned
 	return newInstance, nil
 }
 
-func (as *SqlAssignedProductAttributeStore) Get(id string) (*attribute.AssignedProductAttribute, error) {
-	var res attribute.AssignedProductAttribute
+func (as *SqlAssignedProductAttributeStore) Get(id string) (*model.AssignedProductAttribute, error) {
+	var res model.AssignedProductAttribute
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedProductAttributeTableName+" WHERE Id = ?", id)
 	if err != nil {
@@ -63,7 +62,7 @@ func (as *SqlAssignedProductAttributeStore) Get(id string) (*attribute.AssignedP
 	return &res, nil
 }
 
-func (as *SqlAssignedProductAttributeStore) commonQueryBuilder(options *attribute.AssignedProductAttributeFilterOption) squirrel.SelectBuilder {
+func (as *SqlAssignedProductAttributeStore) commonQueryBuilder(options *model.AssignedProductAttributeFilterOption) squirrel.SelectBuilder {
 	query := as.GetQueryBuilder().Select("*").From(store.AssignedProductAttributeTableName)
 
 	// parse option
@@ -77,13 +76,13 @@ func (as *SqlAssignedProductAttributeStore) commonQueryBuilder(options *attribut
 	return query
 }
 
-func (as *SqlAssignedProductAttributeStore) GetWithOption(option *attribute.AssignedProductAttributeFilterOption) (*attribute.AssignedProductAttribute, error) {
+func (as *SqlAssignedProductAttributeStore) GetWithOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, error) {
 	queryString, args, err := as.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetWithOption_ToSql")
 	}
 
-	var res attribute.AssignedProductAttribute
+	var res model.AssignedProductAttribute
 	err = as.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -95,13 +94,13 @@ func (as *SqlAssignedProductAttributeStore) GetWithOption(option *attribute.Assi
 	return &res, nil
 }
 
-func (as *SqlAssignedProductAttributeStore) FilterByOptions(options *attribute.AssignedProductAttributeFilterOption) ([]*attribute.AssignedProductAttribute, error) {
+func (as *SqlAssignedProductAttributeStore) FilterByOptions(options *model.AssignedProductAttributeFilterOption) ([]*model.AssignedProductAttribute, error) {
 	queryString, args, err := as.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetWithOption_ToSql")
 	}
 
-	var res []*attribute.AssignedProductAttribute
+	var res []*model.AssignedProductAttribute
 	err = as.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find assigned product attributes with given options")

@@ -10,7 +10,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/audit"
 	"github.com/spf13/cobra"
 )
@@ -142,13 +141,13 @@ var SearchUserCmd = &cobra.Command{
 }
 
 func init() {
-	// UserCreateCmd.Flags().String("username", "", "Required. Username for the new user account.")
-	// UserCreateCmd.Flags().String("email", "", "Required. The email address for the new user account.")
-	// UserCreateCmd.Flags().String("password", "", "Required. The password for the new user account.")
-	// UserCreateCmd.Flags().String("nickname", "", "Optional. The nickname for the new user account.")
-	// UserCreateCmd.Flags().String("firstname", "", "Optional. The first name for the new user account.")
-	// UserCreateCmd.Flags().String("lastname", "", "Optional. The last name for the new user account.")
-	// UserCreateCmd.Flags().String("locale", "", "Optional. The locale (ex: en, fr) for the new user account.")
+	// UserCreateCmd.Flags().String("username", "", "Required. Username for the new user model.")
+	// UserCreateCmd.Flags().String("email", "", "Required. The email address for the new user model.")
+	// UserCreateCmd.Flags().String("password", "", "Required. The password for the new user model.")
+	// UserCreateCmd.Flags().String("nickname", "", "Optional. The nickname for the new user model.")
+	// UserCreateCmd.Flags().String("firstname", "", "Optional. The first name for the new user model.")
+	// UserCreateCmd.Flags().String("lastname", "", "Optional. The last name for the new user model.")
+	// UserCreateCmd.Flags().String("locale", "", "Optional. The locale (ex: en, fr) for the new user model.")
 	// UserCreateCmd.Flags().Bool("system_admin", false, "Optional. If supplied, the new user will be a system administrator. Defaults to false.")
 
 	DeleteUserCmd.Flags().Bool("confirm", false, "Confirm you really want to delete the user and a DB backup has been performed.")
@@ -290,7 +289,7 @@ func userCreateCmdF(command *cobra.Command, args []string) error {
 		return errors.New("passwords do not match")
 	}
 
-	user := &account.User{
+	user := &model.User{
 		Username:  username,
 		Email:     email,
 		Password:  password,
@@ -395,7 +394,7 @@ func changeUsersActiveStatus(a *app.App, userArgs []string, active bool) {
 	}
 }
 
-func changeUserActiveStatus(a *app.App, user *account.User, userArg string, activate bool) error {
+func changeUserActiveStatus(a *app.App, user *model.User, userArg string, activate bool) error {
 	if user == nil {
 		return fmt.Errorf("Can't find user '%v'", userArg)
 	}
@@ -723,7 +722,7 @@ func resetUserPasswordCmdF(command *cobra.Command, args []string) error {
 	}
 	password := args[1]
 
-	if err := a.Srv().Store.User().UpdatePassword(user.Id, account.HashPassword(password)); err != nil {
+	if err := a.Srv().Store.User().UpdatePassword(user.Id, model.HashPassword(password)); err != nil {
 		return err
 	}
 

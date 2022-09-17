@@ -12,7 +12,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
@@ -47,7 +46,7 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	// TODO: consider adding validation for specific country
 
 	// construct address
-	address := &account.Address{}
+	address := &model.Address{}
 	if args.Input.FirstName != nil {
 		address.FirstName = *args.Input.FirstName
 	}
@@ -87,7 +86,7 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	}
 
 	// add user-address relation
-	_, appErr = embedContext.App.Srv().AccountService().AddUserAddress(&account.UserAddress{
+	_, appErr = embedContext.App.Srv().AccountService().AddUserAddress(&model.UserAddress{
 		UserID:    embedContext.AppContext.Session().UserId,
 		AddressID: savedAddress.Id,
 	})
@@ -97,7 +96,7 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 
 	if args.Type != nil && args.Type.IsValid() {
 		appErr = embedContext.App.Srv().AccountService().ChangeUserDefaultAddress(
-			account.User{
+			model.User{
 				Id: embedContext.AppContext.Session().UserId,
 			},
 			*savedAddress,
@@ -134,7 +133,7 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	}
 
 	// check if current user has this address
-	_, appErr := embededContext.App.Srv().AccountService().FilterUserAddressRelations(&account.UserAddressFilterOptions{
+	_, appErr := embededContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
 		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": embededContext.AppContext.Session().UserId},
 		AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
 	})
@@ -229,7 +228,7 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 	}
 
 	// check if current user has this address
-	_, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&account.UserAddressFilterOptions{
+	_, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
 		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": embedContext.AppContext.Session().UserId},
 		AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
 	})
@@ -275,7 +274,7 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 	}
 
 	// check if current user own this address
-	_, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&account.UserAddressFilterOptions{
+	_, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
 		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": embedContext.AppContext.Session().UserId},
 		AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
 	})
@@ -289,8 +288,8 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 
 	// perform change user default address
 	appErr = embedContext.App.Srv().AccountService().ChangeUserDefaultAddress(
-		account.User{Id: embedContext.AppContext.Session().UserId},
-		account.Address{Id: args.Id},
+		model.User{Id: embedContext.AppContext.Session().UserId},
+		model.Address{Id: args.Id},
 		strings.ToLower(args.Type.String()),
 		nil,
 	)

@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/store"
 )
 
@@ -36,7 +35,7 @@ func (cs *SqlCustomerNoteStore) ModelFields(prefix string) model.AnyArray[string
 	})
 }
 
-func (cs *SqlCustomerNoteStore) Save(note *account.CustomerNote) (*account.CustomerNote, error) {
+func (cs *SqlCustomerNoteStore) Save(note *model.CustomerNote) (*model.CustomerNote, error) {
 	note.PreSave()
 	if err := note.IsValid(); err != nil {
 		return nil, err
@@ -50,8 +49,8 @@ func (cs *SqlCustomerNoteStore) Save(note *account.CustomerNote) (*account.Custo
 	return note, nil
 }
 
-func (cs *SqlCustomerNoteStore) Get(id string) (*account.CustomerNote, error) {
-	var res account.CustomerNote
+func (cs *SqlCustomerNoteStore) Get(id string) (*model.CustomerNote, error) {
+	var res model.CustomerNote
 
 	if err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+store.CustomerNoteTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {

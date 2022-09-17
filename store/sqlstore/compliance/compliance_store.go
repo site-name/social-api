@@ -6,7 +6,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/compliance"
 	"github.com/sitename/sitename/store"
 )
 
@@ -41,7 +40,7 @@ func NewSqlComplianceStore(s store.Store) store.ComplianceStore {
 	return &SqlComplianceStore{s}
 }
 
-func (s *SqlComplianceStore) Save(compliance *compliance.Compliance) (*compliance.Compliance, error) {
+func (s *SqlComplianceStore) Save(compliance *model.Compliance) (*model.Compliance, error) {
 	compliance.PreSave()
 	if err := compliance.IsValid(); err != nil {
 		return nil, err
@@ -55,7 +54,7 @@ func (s *SqlComplianceStore) Save(compliance *compliance.Compliance) (*complianc
 	return compliance, nil
 }
 
-func (s *SqlComplianceStore) Update(compliance *compliance.Compliance) (*compliance.Compliance, error) {
+func (s *SqlComplianceStore) Update(compliance *model.Compliance) (*model.Compliance, error) {
 	compliance.PreSave()
 	if err := compliance.IsValid(); err != nil {
 		return nil, err
@@ -74,18 +73,18 @@ func (s *SqlComplianceStore) Update(compliance *compliance.Compliance) (*complia
 	return compliance, nil
 }
 
-func (s *SqlComplianceStore) GetAll(offset, limit int) (compliance.Compliances, error) {
+func (s *SqlComplianceStore) GetAll(offset, limit int) (model.Compliances, error) {
 	query := "SELECT * FROM Compliances ORDER BY CreateAt DESC LIMIT ? OFFSET ?"
 
-	var compliances compliance.Compliances
+	var compliances model.Compliances
 	if err := s.GetReplicaX().Select(&compliances, query, limit, offset); err != nil {
 		return nil, errors.Wrap(err, "failed to find all Compliances")
 	}
 	return compliances, nil
 }
 
-func (s *SqlComplianceStore) Get(id string) (*compliance.Compliance, error) {
-	var res compliance.Compliance
+func (s *SqlComplianceStore) Get(id string) (*model.Compliance, error) {
+	var res model.Compliance
 
 	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+store.ComplianceTableName+" WHERE Id = ?", id)
 	if err != nil {
@@ -97,7 +96,7 @@ func (s *SqlComplianceStore) Get(id string) (*compliance.Compliance, error) {
 	return &res, nil
 }
 
-func (s *SqlComplianceStore) ComplianceExport(job *compliance.Compliance, cursor compliance.ComplianceExportCursor, limit int) ([]*compliance.CompliancePost, compliance.ComplianceExportCursor, error) {
+func (s *SqlComplianceStore) ComplianceExport(job *model.Compliance, cursor model.ComplianceExportCursor, limit int) ([]*model.CompliancePost, model.ComplianceExportCursor, error) {
 	keywordQuery := ""
 	var argsKeywords []interface{}
 	keywords := strings.Fields(strings.TrimSpace(strings.ToLower(strings.Replace(job.Keywords, ",", " ", -1))))
@@ -130,7 +129,7 @@ func (s *SqlComplianceStore) ComplianceExport(job *compliance.Compliance, cursor
 	// The idea is to first iterate over the channel posts, and then when we run out of those,
 	// start iterating over the direct message posts.
 
-	channelPosts := []*compliance.CompliancePost{}
+	channelPosts := []*model.CompliancePost{}
 	channelsQuery := ""
 	var argsChannelsQuery []interface{}
 	if !cursor.ChannelsQueryCompleted {
@@ -195,7 +194,7 @@ func (s *SqlComplianceStore) ComplianceExport(job *compliance.Compliance, cursor
 		}
 	}
 
-	directMessagePosts := []*compliance.CompliancePost{}
+	directMessagePosts := []*model.CompliancePost{}
 	directMessagesQuery := ""
 	var argsDirectMessagesQuery []interface{}
 	if !cursor.DirectMessagesQueryCompleted && len(channelPosts) < limit {
@@ -263,6 +262,6 @@ func (s *SqlComplianceStore) ComplianceExport(job *compliance.Compliance, cursor
 	return append(channelPosts, directMessagePosts...), cursor, nil
 }
 
-func (s *SqlComplianceStore) MessageExport(cursor compliance.MessageExportCursor, limit int) ([]*compliance.MessageExport, compliance.MessageExportCursor, error) {
+func (s *SqlComplianceStore) MessageExport(cursor model.MessageExportCursor, limit int) ([]*model.MessageExport, model.MessageExportCursor, error) {
 	panic("not implemented")
 }

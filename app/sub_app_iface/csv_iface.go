@@ -6,22 +6,20 @@ package sub_app_iface
 import (
 	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/csv"
-	"github.com/sitename/sitename/model/product_and_discount"
 )
 
 // CsvService contains methods for working with csv
 type CsvService interface {
 	// CommonCreateExportEvent tells store to insert given export event into database then returns the inserted export event
-	CommonCreateExportEvent(exportEvent *csv.ExportEvent) (*csv.ExportEvent, *model.AppError)
+	CommonCreateExportEvent(exportEvent *model.ExportEvent) (*model.ExportEvent, *model.AppError)
 	// CreateExportFile inserts given export file into database then returns it
-	CreateExportFile(file *csv.ExportFile) (*csv.ExportFile, *model.AppError)
+	CreateExportFile(file *model.ExportFile) (*model.ExportFile, *model.AppError)
 	// ExportEventsByOption returns a list of export events filtered using given options
-	ExportEventsByOption(options *csv.ExportEventFilterOption) ([]*csv.ExportEvent, *model.AppError)
+	ExportEventsByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, *model.AppError)
 	// ExportFileById returns an export file found by given id
-	ExportFileById(id string) (*csv.ExportFile, *model.AppError)
+	ExportFileById(id string) (*model.ExportFile, *model.AppError)
 	// ExportProducts is called by product export job, taks needed arguments then exports products
-	ExportProducts(input *csv.ExportProductsFilterOptions, delimeter string) *model.AppError
+	ExportProducts(input *model.ExportProductsFilterOptions, delimeter string) *model.AppError
 	// Get export fields, all headers and headers mapping.
 	// Based on export_info returns exported fields, fields to headers mapping and
 	// all headers.
@@ -65,12 +63,12 @@ type CsvService interface {
 		Fields     []string
 	}) ([]string, *model.AppError)
 	// GetDefaultExportPayload returns a map for mapping
-	GetDefaultExportPayload(exportFile csv.ExportFile) (map[string]interface{}, *model.AppError)
+	GetDefaultExportPayload(exportFile model.ExportFile) (map[string]interface{}, *model.AppError)
 	// GetProductsData Create data list of products and their variants with fields values.
 	//
 	// It return list with product and variant data which can be used as import to
 	// csv writer and list of attribute and warehouse headers.
-	GetProductsData(products product_and_discount.Products, exportFields []string, attributeIDs []string, warehouseIDs []string, channelIDs []string)
+	GetProductsData(products model.Products, exportFields []string, attributeIDs []string, warehouseIDs []string, channelIDs []string)
 	ExportProductsInBatches(productQuery squirrel.SelectBuilder, exportInfo struct {
 		Attributes []string
 		Warehouses []string

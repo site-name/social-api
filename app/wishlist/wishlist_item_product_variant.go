@@ -4,13 +4,12 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
 // BulkUpsertWishlistItemProductVariantRelations
-func (a *ServiceWishlist) BulkUpsertWishlistItemProductVariantRelations(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, *model.AppError) {
+func (a *ServiceWishlist) BulkUpsertWishlistItemProductVariantRelations(transaction store_iface.SqlxTxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, *model.AppError) {
 	relations, err := a.srv.Store.WishlistItemProductVariant().BulkUpsert(transaction, relations)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -30,7 +29,7 @@ func (a *ServiceWishlist) BulkUpsertWishlistItemProductVariantRelations(transact
 }
 
 // AddWishlistItemProductVariantRelation adds given wishlist item-product variant relation into database and returns it
-func (a *ServiceWishlist) AddWishlistItemProductVariantRelation(relation *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, *model.AppError) {
+func (a *ServiceWishlist) AddWishlistItemProductVariantRelation(relation *model.WishlistItemProductVariant) (*model.WishlistItemProductVariant, *model.AppError) {
 	relation, err := a.srv.Store.WishlistItemProductVariant().Save(relation)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -48,7 +47,7 @@ func (a *ServiceWishlist) AddWishlistItemProductVariantRelation(relation *wishli
 }
 
 // DeleteWishlistItemProductVariantRelation deletes a wishlist item-product variant relation and returns a number of remaining relations in database
-func (a *ServiceWishlist) DeleteWishlistItemProductVariantRelation(relation *wishlist.WishlistItemProductVariant) (int64, *model.AppError) {
+func (a *ServiceWishlist) DeleteWishlistItemProductVariantRelation(relation *model.WishlistItemProductVariant) (int64, *model.AppError) {
 	numberOfRelationsLeft, err := a.srv.Store.WishlistItemProductVariant().DeleteRelation(relation)
 	if err != nil {
 		return 0, model.NewAppError("DeleteWishlistItemProductVariantRelation", "app.wishlist.error_deleting_wishlist_item_product_variant_relation.app_error", nil, err.Error(), http.StatusInternalServerError)

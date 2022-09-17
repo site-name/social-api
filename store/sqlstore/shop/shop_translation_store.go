@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/store"
 )
 
@@ -37,7 +36,7 @@ func (s *SqlShopTranslationStore) ModelFields(prefix string) model.AnyArray[stri
 }
 
 // Upsert depends on translation's Id then decides to update or insert
-func (sts *SqlShopTranslationStore) Upsert(translation *shop.ShopTranslation) (*shop.ShopTranslation, error) {
+func (sts *SqlShopTranslationStore) Upsert(translation *model.ShopTranslation) (*model.ShopTranslation, error) {
 	var saving bool
 	if translation.Id == "" {
 		translation.PreSave()
@@ -88,8 +87,8 @@ func (sts *SqlShopTranslationStore) Upsert(translation *shop.ShopTranslation) (*
 }
 
 // Get finds a shop translation with given id then return it with an error
-func (sts *SqlShopTranslationStore) Get(id string) (*shop.ShopTranslation, error) {
-	var res shop.ShopTranslation
+func (sts *SqlShopTranslationStore) Get(id string) (*model.ShopTranslation, error) {
+	var res model.ShopTranslation
 	err := sts.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShopTranslationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {

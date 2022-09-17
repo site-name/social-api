@@ -5,12 +5,11 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
 
 // AssignedVariantAttributeByOption returns an assigned variant attribute filtered by given option
-func (a *ServiceAttribute) AssignedVariantAttributeByOption(option *attribute.AssignedVariantAttributeFilterOption) (*attribute.AssignedVariantAttribute, *model.AppError) {
+func (a *ServiceAttribute) AssignedVariantAttributeByOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, *model.AppError) {
 	assignedVariantAttr, err := a.srv.Store.AssignedVariantAttribute().GetWithOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("AssignedVariantAttributeByOption", "app.attribute.error_finding_assigned_variant_attribute_by_option.app_error", err)
@@ -20,8 +19,8 @@ func (a *ServiceAttribute) AssignedVariantAttributeByOption(option *attribute.As
 }
 
 // GetOrCreateAssignedVariantAttribute get or create new assigned variant attribute with given option then returns it
-func (a *ServiceAttribute) GetOrCreateAssignedVariantAttribute(assignedVariantAttr *attribute.AssignedVariantAttribute) (*attribute.AssignedVariantAttribute, *model.AppError) {
-	option := new(attribute.AssignedVariantAttributeFilterOption)
+func (a *ServiceAttribute) GetOrCreateAssignedVariantAttribute(assignedVariantAttr *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, *model.AppError) {
+	option := new(model.AssignedVariantAttributeFilterOption)
 	if assignedVariantAttr.VariantID != "" {
 		option.VariantID = squirrel.Eq{store.AssignedVariantAttributeTableName + ".VariantID": assignedVariantAttr.VariantID}
 	}
@@ -55,7 +54,7 @@ func (a *ServiceAttribute) GetOrCreateAssignedVariantAttribute(assignedVariantAt
 }
 
 // AssignedVariantAttributesByOption returns a list of assigned variant attributes filtered by given options
-func (a *ServiceAttribute) AssignedVariantAttributesByOption(option *attribute.AssignedVariantAttributeFilterOption) ([]*attribute.AssignedVariantAttribute, error) {
+func (a *ServiceAttribute) AssignedVariantAttributesByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, error) {
 	assignedVariantAttrs, err := a.srv.Store.AssignedVariantAttribute().FilterByOption(option)
 
 	var (

@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -31,7 +30,7 @@ func (s *SqlVoucherCategoryStore) ModelFields(prefix string) model.AnyArray[stri
 }
 
 // Upsert saves or updates given voucher category then returns it with an error
-func (vcs *SqlVoucherCategoryStore) Upsert(voucherCategory *product_and_discount.VoucherCategory) (*product_and_discount.VoucherCategory, error) {
+func (vcs *SqlVoucherCategoryStore) Upsert(voucherCategory *model.VoucherCategory) (*model.VoucherCategory, error) {
 	var saving bool
 	if !model.IsValidId(voucherCategory.Id) {
 		voucherCategory.Id = ""
@@ -78,8 +77,8 @@ func (vcs *SqlVoucherCategoryStore) Upsert(voucherCategory *product_and_discount
 }
 
 // Get finds a voucher category with given id, then returns it with an error
-func (vcs *SqlVoucherCategoryStore) Get(voucherCategoryID string) (*product_and_discount.VoucherCategory, error) {
-	var res product_and_discount.VoucherCategory
+func (vcs *SqlVoucherCategoryStore) Get(voucherCategoryID string) (*model.VoucherCategory, error) {
+	var res model.VoucherCategory
 	err := vcs.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherCategoryTableName+" WHERE Id = ?", voucherCategoryID)
 	if err != nil {
 		if err == sql.ErrNoRows {

@@ -5,8 +5,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/cluster"
+	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/sqlstore"
@@ -19,7 +18,7 @@ type LocalCacheUserStore struct {
 	userProfileByIdsInvalidations map[string]bool
 }
 
-func (s *LocalCacheUserStore) handleClusterInvalidateScheme(msg *cluster.ClusterMessage) {
+func (s *LocalCacheUserStore) handleClusterInvalidateScheme(msg *model.ClusterMessage) {
 	if bytes.Equal(msg.Data, clearCacheMessageData) {
 		s.rootStore.userProfileByIdsCache.Purge()
 	} else {
@@ -49,7 +48,7 @@ func (s *LocalCacheUserStore) InvalidateProfileCacheForUser(userId string) {
 	}
 }
 
-func (s *LocalCacheUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*account.User, error) {
+func (s *LocalCacheUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
 	if !allowFromCache {
 		return s.UserStore.GetProfileByIds(ctx, userIds, options, false)
 	}
@@ -58,12 +57,12 @@ func (s *LocalCacheUserStore) GetProfileByIds(ctx context.Context, userIds []str
 		options = &store.UserGetByIdsOpts{}
 	}
 
-	users := []*account.User{}
+	users := []*model.User{}
 	remainingUserIds := make([]string, 0)
 
 	fromMaster := false
 	for _, userId := range userIds {
-		var cacheItem *account.User
+		var cacheItem *model.User
 		if err := s.rootStore.doStandardReadCache(s.rootStore.userProfileByIdsCache, userId, &cacheItem); err == nil {
 			if options.Since == 0 || cacheItem.UpdateAt > options.Since {
 				users = append(users, cacheItem)
@@ -102,8 +101,8 @@ func (s *LocalCacheUserStore) GetProfileByIds(ctx context.Context, userIds []str
 // It checks if the user entry is present in the cache, returning the entry from cache
 // if it is present. Otherwise, it fetches the entry from the store and stores it in the
 // cache.
-func (s *LocalCacheUserStore) Get(ctx context.Context, id string) (*account.User, error) {
-	var cacheItem *account.User
+func (s *LocalCacheUserStore) Get(ctx context.Context, id string) (*model.User, error) {
+	var cacheItem *model.User
 	if err := s.rootStore.doStandardReadCache(s.rootStore.userProfileByIdsCache, id, &cacheItem); err == nil {
 		if s.rootStore.metrics != nil {
 			s.rootStore.metrics.AddMemCacheHitCounter("Profile By Id", float64(1))
@@ -135,14 +134,14 @@ func (s *LocalCacheUserStore) Get(ctx context.Context, id string) (*account.User
 // It checks if the user entries are present in the cache, returning the entries from cache
 // if it is present. Otherwise, it fetches the entries from the store and stores it in the
 // cache.
-func (s *LocalCacheUserStore) GetMany(ctx context.Context, ids []string) ([]*account.User, error) {
-	var cachedUsers []*account.User
+func (s *LocalCacheUserStore) GetMany(ctx context.Context, ids []string) ([]*model.User, error) {
+	var cachedUsers []*model.User
 	var notCachedUserIds []string
 	uniqIDs := util.Dedup(ids)
 
 	fromMaster := false
 	for _, id := range uniqIDs {
-		var cachedUser *account.User
+		var cachedUser *model.User
 		if err := s.rootStore.doStandardReadCache(s.rootStore.userProfileByIdsCache, id, &cachedUser); err == nil {
 			if s.rootStore.metrics != nil {
 				s.rootStore.metrics.AddMemCacheHitCounter("Profile By Id", float64(1))

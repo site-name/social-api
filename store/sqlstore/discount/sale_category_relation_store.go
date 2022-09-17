@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -31,7 +30,7 @@ func (s *SqlSaleCategoryRelationStore) ModelFields(prefix string) model.AnyArray
 }
 
 // Save inserts given sale-category relation into database
-func (ss *SqlSaleCategoryRelationStore) Save(relation *product_and_discount.SaleCategoryRelation) (*product_and_discount.SaleCategoryRelation, error) {
+func (ss *SqlSaleCategoryRelationStore) Save(relation *model.SaleCategoryRelation) (*model.SaleCategoryRelation, error) {
 	relation.PreSave()
 	if err := relation.IsValid(); err != nil {
 		return nil, err
@@ -50,8 +49,8 @@ func (ss *SqlSaleCategoryRelationStore) Save(relation *product_and_discount.Sale
 }
 
 // Get returns 1 sale-category relation with given id
-func (ss *SqlSaleCategoryRelationStore) Get(relationID string) (*product_and_discount.SaleCategoryRelation, error) {
-	var res product_and_discount.SaleCategoryRelation
+func (ss *SqlSaleCategoryRelationStore) Get(relationID string) (*model.SaleCategoryRelation, error) {
+	var res model.SaleCategoryRelation
 
 	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.SaleCategoryRelationTableName+" WHERE Id = ?", relationID)
 	if err != nil {
@@ -65,7 +64,7 @@ func (ss *SqlSaleCategoryRelationStore) Get(relationID string) (*product_and_dis
 }
 
 // SaleCategoriesByOption returns a slice of sale-category relations with given option
-func (ss *SqlSaleCategoryRelationStore) SaleCategoriesByOption(option *product_and_discount.SaleCategoryRelationFilterOption) ([]*product_and_discount.SaleCategoryRelation, error) {
+func (ss *SqlSaleCategoryRelationStore) SaleCategoriesByOption(option *model.SaleCategoryRelationFilterOption) ([]*model.SaleCategoryRelation, error) {
 	query := ss.GetQueryBuilder().
 		Select("*").
 		From(store.SaleCategoryRelationTableName).
@@ -87,7 +86,7 @@ func (ss *SqlSaleCategoryRelationStore) SaleCategoriesByOption(option *product_a
 		return nil, errors.Wrap(err, "SaleCategoriesByOption_ToSql")
 	}
 
-	var res []*product_and_discount.SaleCategoryRelation
+	var res []*model.SaleCategoryRelation
 	err = ss.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find sale-category relations with given option")

@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/cluster"
 )
 
 const (
@@ -34,15 +33,15 @@ func (s *Server) Publish(message *model.WebSocketEvent) {
 	s.PublishSkipClusterSend(message)
 
 	if s.Cluster != nil {
-		cm := &cluster.ClusterMessage{
-			Event:    cluster.ClusterEventPublish,
-			SendType: cluster.ClusterSendBestEffort,
+		cm := &model.ClusterMessage{
+			Event:    model.ClusterEventPublish,
+			SendType: model.ClusterSendBestEffort,
 			Data:     message.ToJSON(),
 		}
 
 		switch message.EventType() {
 		case model.WebsocketEventPosted, model.WebsocketEventPostEdited, model.WebsocketEventDirectAdded, model.WebsocketEventGroupAdded, model.WebsocketEventAddedToTeam:
-			cm.SendType = cluster.ClusterSendReliable
+			cm.SendType = model.ClusterSendReliable
 		default:
 		}
 

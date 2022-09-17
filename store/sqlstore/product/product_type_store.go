@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -41,7 +40,7 @@ func (ps *SqlProductTypeStore) ModelFields(prefix string) model.AnyArray[string]
 	})
 }
 
-func (ps *SqlProductTypeStore) ScanFields(productType product_and_discount.ProductType) []interface{} {
+func (ps *SqlProductTypeStore) ScanFields(productType model.ProductType) []interface{} {
 	return []interface{}{
 		&productType.Id,
 		&productType.Name,
@@ -57,7 +56,7 @@ func (ps *SqlProductTypeStore) ScanFields(productType product_and_discount.Produ
 	}
 }
 
-func (ps *SqlProductTypeStore) Save(productType *product_and_discount.ProductType) (*product_and_discount.ProductType, error) {
+func (ps *SqlProductTypeStore) Save(productType *model.ProductType) (*model.ProductType, error) {
 	productType.PreSave()
 	if err := productType.IsValid(); err != nil {
 		return nil, err
@@ -71,7 +70,7 @@ func (ps *SqlProductTypeStore) Save(productType *product_and_discount.ProductTyp
 	return productType, nil
 }
 
-func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*product_and_discount.ProductType, error) {
+func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, error) {
 	/*
 					checkout
 					|      |
@@ -94,7 +93,7 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken s
 		return nil, errors.Wrap(err, "FilterProductTypesByCheckoutToken_ToSql")
 	}
 
-	var productTypes []*product_and_discount.ProductType
+	var productTypes []*model.ProductType
 
 	err = ps.GetReplicaX().Select(&productTypes, queryString, args...)
 	if err != nil {
@@ -103,8 +102,8 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken s
 	return productTypes, nil
 }
 
-func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*product_and_discount.ProductType, error) {
-	var productTypes []*product_and_discount.ProductType
+func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error) {
+	var productTypes []*model.ProductType
 	err := pts.GetReplicaX().Select(
 		&productTypes,
 		`SELECT `+
@@ -123,7 +122,7 @@ func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([
 }
 
 // ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant
-func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) (*product_and_discount.ProductType, error) {
+func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) (*model.ProductType, error) {
 	query := pts.GetQueryBuilder().
 		Select(pts.ModelFields(store.ProductTypeTableName+".")...).
 		From(store.ProductTypeTableName).
@@ -137,7 +136,7 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 		return nil, errors.Wrap(err, "ProductTypeByProductVariantID_ToSql")
 	}
 
-	var res product_and_discount.ProductType
+	var res model.ProductType
 	err = pts.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -149,7 +148,7 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 	return &res, nil
 }
 
-func (pts *SqlProductTypeStore) commonQueryBuilder(options *product_and_discount.ProductTypeFilterOption) squirrel.SelectBuilder {
+func (pts *SqlProductTypeStore) commonQueryBuilder(options *model.ProductTypeFilterOption) squirrel.SelectBuilder {
 	query := pts.GetQueryBuilder().
 		Select(pts.ModelFields(store.ProductTypeTableName + ".")...).
 		From(store.ProductTypeTableName).
@@ -177,13 +176,13 @@ func (pts *SqlProductTypeStore) commonQueryBuilder(options *product_and_discount
 }
 
 // GetByOption finds and returns a product type with given options
-func (pts *SqlProductTypeStore) GetByOption(options *product_and_discount.ProductTypeFilterOption) (*product_and_discount.ProductType, error) {
+func (pts *SqlProductTypeStore) GetByOption(options *model.ProductTypeFilterOption) (*model.ProductType, error) {
 	queryString, args, err := pts.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	var res product_and_discount.ProductType
+	var res model.ProductType
 	err = pts.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -196,13 +195,13 @@ func (pts *SqlProductTypeStore) GetByOption(options *product_and_discount.Produc
 }
 
 // FilterbyOption finds and returns a slice of product types filtered using given options
-func (pts *SqlProductTypeStore) FilterbyOption(options *product_and_discount.ProductTypeFilterOption) ([]*product_and_discount.ProductType, error) {
+func (pts *SqlProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error) {
 	queryString, args, err := pts.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	var res []*product_and_discount.ProductType
+	var res []*model.ProductType
 	err = pts.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product types with given option")
@@ -211,7 +210,7 @@ func (pts *SqlProductTypeStore) FilterbyOption(options *product_and_discount.Pro
 	return res, nil
 }
 
-func (pts *SqlProductTypeStore) Count(options *product_and_discount.ProductTypeFilterOption) (int64, error) {
+func (pts *SqlProductTypeStore) Count(options *model.ProductTypeFilterOption) (int64, error) {
 	options.Limit = 0 // unset limit
 
 	query := pts.commonQueryBuilder(options)

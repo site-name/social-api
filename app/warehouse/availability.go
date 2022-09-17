@@ -4,17 +4,13 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/exception"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/warehouse"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
 // getAvailableQuantity get all stocks quantity (both in stocks and their allocations) not exported
-func (a *ServiceWarehouse) getAvailableQuantity(stocks warehouse.Stocks) (int, *model.AppError) {
+func (a *ServiceWarehouse) getAvailableQuantity(stocks model.Stocks) (int, *model.AppError) {
 	if len(stocks) == 0 {
 		return 0, nil
 	}
@@ -34,14 +30,14 @@ func (a *ServiceWarehouse) getAvailableQuantity(stocks warehouse.Stocks) (int, *
 		}
 	}
 
-	allocations, appErr := a.AllocationsByOption(nil, &warehouse.AllocationFilterOption{
+	allocations, appErr := a.AllocationsByOption(nil, &model.AllocationFilterOption{
 		StockID: squirrel.Eq{store.AllocationTableName + ".StockID": stockIDs},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return 0, appErr
 		}
-		allocations = []*warehouse.Allocation{}
+		allocations = []*model.Allocation{}
 	}
 
 	var quantityAllocated int
@@ -55,13 +51,13 @@ func (a *ServiceWarehouse) getAvailableQuantity(stocks warehouse.Stocks) (int, *
 // CheckStockAndPreorderQuantity Validate if there is stock/preorder available for given variant.
 // :raises InsufficientStock: when there is not enough items in stock for a variant
 // or there is not enough available preorder items for a variant.
-func (s *ServiceWarehouse) CheckStockAndPreorderQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*exception.InsufficientStock, *model.AppError) {
+func (s *ServiceWarehouse) CheckStockAndPreorderQuantity(variant *model.ProductVariant, countryCode string, channelSlug string, quantity int) (*model.InsufficientStock, *model.AppError) {
 	var (
-		insufficientStockErr *exception.InsufficientStock
+		insufficientStockErr *model.InsufficientStock
 		appErr               *model.AppError
 	)
 	if variant.IsPreorderActive() {
-		insufficientStockErr, appErr = s.CheckPreorderThresholdBulk([]*product_and_discount.ProductVariant{variant}, []int{quantity}, channelSlug)
+		insufficientStockErr, appErr = s.CheckPreorderThresholdBulk([]*model.ProductVariant{variant}, []int{quantity}, channelSlug)
 	} else {
 		insufficientStockErr, appErr = s.CheckStockQuantity(variant, countryCode, channelSlug, quantity)
 	}
@@ -73,19 +69,19 @@ func (s *ServiceWarehouse) CheckStockAndPreorderQuantity(variant *product_and_di
 //
 // If so - returns None. If there is less stock then required raise InsufficientStock
 // exception.
-func (a *ServiceWarehouse) CheckStockQuantity(variant *product_and_discount.ProductVariant, countryCode string, channelSlug string, quantity int) (*exception.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) CheckStockQuantity(variant *model.ProductVariant, countryCode string, channelSlug string, quantity int) (*model.InsufficientStock, *model.AppError) {
 	if *variant.TrackInventory {
 		stocks, appErr := a.GetVariantStocksForCountry(nil, countryCode, channelSlug, variant.Id)
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
 				return nil, appErr
 			}
-			stocks = []*warehouse.Stock{} // in case stocks is nil
+			stocks = []*model.Stock{} // in case stocks is nil
 		}
 
 		if len(stocks) == 0 {
-			return &exception.InsufficientStock{
-				Items: []*exception.InsufficientStockData{
+			return &model.InsufficientStock{
+				Items: []*model.InsufficientStockData{
 					{Variant: *variant},
 				},
 			}, nil
@@ -96,8 +92,8 @@ func (a *ServiceWarehouse) CheckStockQuantity(variant *product_and_discount.Prod
 			return nil, appErr
 		}
 		if quantity > availableQuantity {
-			return &exception.InsufficientStock{
-				Items: []*exception.InsufficientStockData{
+			return &model.InsufficientStock{
+				Items: []*model.InsufficientStockData{
 					{Variant: *variant},
 				},
 			}, nil
@@ -112,11 +108,11 @@ func (a *ServiceWarehouse) CheckStockQuantity(variant *product_and_discount.Prod
 // or there is not enough available preorder items for a variant.
 //
 // `additionalFilterBoolup`, `existingLines` can be nil, replace default to false
-func (s *ServiceWarehouse) CheckStockAndPreorderQuantityBulk(variants []*product_and_discount.ProductVariant, countryCode string, quantities []int, channelSlug string, additionalFilterBoolup model.StringInterface, existingLines []*checkout.CheckoutLineInfo, replace bool) (*exception.InsufficientStock, *model.AppError) {
+func (s *ServiceWarehouse) CheckStockAndPreorderQuantityBulk(variants []*model.ProductVariant, countryCode string, quantities []int, channelSlug string, additionalFilterBoolup model.StringInterface, existingLines []*model.CheckoutLineInfo, replace bool) (*model.InsufficientStock, *model.AppError) {
 	stockVariants, stockQuantities, preorderVariants, preorderQuantities := s.splitLinesForTrackableAndPreorder(variants, quantities)
 
 	var (
-		insufficientStockErr *exception.InsufficientStock
+		insufficientStockErr *model.InsufficientStock
 		appErr               *model.AppError
 	)
 	if len(stockVariants) > 0 {
@@ -131,11 +127,11 @@ func (s *ServiceWarehouse) CheckStockAndPreorderQuantityBulk(variants []*product
 }
 
 // splitLinesForTrackableAndPreorder Return variants and quantities splitted by "is_preorder_active
-func (s *ServiceWarehouse) splitLinesForTrackableAndPreorder(variants []*product_and_discount.ProductVariant, quantities []int) ([]*product_and_discount.ProductVariant, []int, []*product_and_discount.ProductVariant, []int) {
+func (s *ServiceWarehouse) splitLinesForTrackableAndPreorder(variants []*model.ProductVariant, quantities []int) ([]*model.ProductVariant, []int, []*model.ProductVariant, []int) {
 	var (
-		preorderVariants   []*product_and_discount.ProductVariant
+		preorderVariants   []*model.ProductVariant
 		preorderQuantities []int
-		stockVariants      []*product_and_discount.ProductVariant
+		stockVariants      []*model.ProductVariant
 		stockQuantities    []int
 	)
 
@@ -159,19 +155,19 @@ func (s *ServiceWarehouse) splitLinesForTrackableAndPreorder(variants []*product
 //
 // :raises InsufficientStock: when there is not enough items in stock for a variant
 func (a *ServiceWarehouse) CheckStockQuantityBulk(
-	variants product_and_discount.ProductVariants,
+	variants model.ProductVariants,
 	countryCode string,
 	quantities []int,
 	channelSlug string,
 	additionalFilterLookup model.StringInterface, // can be nil, if non-nil then it must be map[string]interface{}{"warehouse_id": <an UUID string>}
-	existingLines []*checkout.CheckoutLineInfo, // can be nil
+	existingLines []*model.CheckoutLineInfo, // can be nil
 	replace bool, // default false
-) (*exception.InsufficientStock, *model.AppError) {
+) (*model.InsufficientStock, *model.AppError) {
 
 	variants = variants.FilterNils()
 
 	// build a filter option
-	allVariantStockFilterOption := &warehouse.StockFilterForCountryAndChannel{
+	allVariantStockFilterOption := &model.StockFilterForCountryAndChannel{
 		CountryCode:              countryCode,
 		ChannelSlug:              channelSlug,
 		ProductVariantIDFilter:   squirrel.Eq{store.StockTableName + ".ProductVariantID": variants.IDs()},
@@ -192,7 +188,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	}
 
 	// variantStocks has keys of product variant ids
-	var variantStocks = map[string][]*warehouse.Stock{}
+	var variantStocks = map[string][]*model.Stock{}
 	for _, stock := range allVariantStocks {
 		if stock != nil {
 			variantStocks[stock.ProductVariantID] = append(variantStocks[stock.ProductVariantID], stock)
@@ -202,7 +198,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	var (
 		// keys are product variant ids, values are order line quantities
 		variantsQuantities = map[string]int{}
-		insufficientStocks = []*exception.InsufficientStockData{}
+		insufficientStocks = []*model.InsufficientStockData{}
 	)
 
 	for _, lineInfo := range existingLines {
@@ -221,7 +217,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 
 		stocks, exists := variantStocks[variant.Id]
 		if !exists {
-			stocks = []*warehouse.Stock{}
+			stocks = []*model.Stock{}
 		}
 
 		var availableQuantity int = 0
@@ -231,12 +227,12 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 
 		if quantity > 0 {
 			if len(stocks) == 0 {
-				insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
+				insufficientStocks = append(insufficientStocks, &model.InsufficientStockData{
 					Variant:           *variant,
 					AvailableQuantity: &availableQuantity,
 				})
 			} else if *variant.TrackInventory && quantity > availableQuantity {
-				insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
+				insufficientStocks = append(insufficientStocks, &model.InsufficientStockData{
 					Variant:           *variant,
 					AvailableQuantity: &availableQuantity,
 				})
@@ -245,7 +241,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	}
 
 	if len(insufficientStocks) > 0 {
-		return &exception.InsufficientStock{
+		return &model.InsufficientStock{
 			Items: insufficientStocks,
 		}, nil
 	}
@@ -260,8 +256,8 @@ type structObject struct {
 
 // CheckPreorderThresholdBulk Validate if there is enough preordered variants according to thresholds.
 // :raises InsufficientStock: when there is not enough available items for a variant.
-func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants product_and_discount.ProductVariants, quantities []int, channelSlug string) (*exception.InsufficientStock, *model.AppError) {
-	allVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(nil, &product_and_discount.ProductVariantChannelListingFilterOption{
+func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants model.ProductVariants, quantities []int, channelSlug string) (*model.InsufficientStock, *model.AppError) {
+	allVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
 		VariantID:                         squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
 		SelectRelatedChannel:              true,
 		AnnotatePreorderQuantityAllocated: true,
@@ -275,7 +271,7 @@ func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants product_and_disco
 		// variantsChannelAvailability has keys are product variant ids
 		variantsChannelAvailability = map[string]structObject{}
 		// variantChannels has keys are product variant ids
-		variantChannels = map[string][]*product_and_discount.ProductVariantChannelListing{}
+		variantChannels = map[string][]*model.ProductVariantChannelListing{}
 		// variantsGlobalAllocations has keys are product variant ids
 		variantsGlobalAllocations = map[string]int{}
 	)
@@ -299,7 +295,7 @@ func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants product_and_disco
 		}
 	}
 
-	var insufficientStocks []*exception.InsufficientStockData
+	var insufficientStocks []*model.InsufficientStockData
 	for i := 0; i < util.Min(len(variants), len(quantities)); i++ {
 		var (
 			variant  = variants[i]
@@ -308,7 +304,7 @@ func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants product_and_disco
 
 		if variantsChannelAvailability[variant.Id].PreorderQuantityThreshold != nil {
 			if quantity > variantsChannelAvailability[variant.Id].AvailablePreorderQuantity {
-				insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
+				insufficientStocks = append(insufficientStocks, &model.InsufficientStockData{
 					Variant:           *variant,
 					AvailableQuantity: variantsChannelAvailability[variant.Id].PreorderQuantityThreshold,
 				})
@@ -318,7 +314,7 @@ func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants product_and_disco
 		if variant.PreOrderGlobalThreshold != nil {
 			globalQuantity := *variant.PreOrderGlobalThreshold - variantsGlobalAllocations[variant.Id]
 			if quantity > globalQuantity {
-				insufficientStocks = append(insufficientStocks, &exception.InsufficientStockData{
+				insufficientStocks = append(insufficientStocks, &model.InsufficientStockData{
 					Variant:           *variant,
 					AvailableQuantity: &globalQuantity,
 				})
@@ -327,7 +323,7 @@ func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants product_and_disco
 	}
 
 	if len(insufficientStocks) > 0 {
-		return exception.NewInsufficientStock(insufficientStocks), nil
+		return model.NewInsufficientStock(insufficientStocks), nil
 	}
 
 	return nil, nil

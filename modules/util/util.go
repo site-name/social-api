@@ -62,7 +62,7 @@ type Ordered interface {
 		uint64 |
 		float32 |
 		float64 |
-		string
+		~string
 }
 
 // Max accepts any number of arguments of any type and returns max value

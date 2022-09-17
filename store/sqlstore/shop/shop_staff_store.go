@@ -6,7 +6,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/store"
 )
 
@@ -36,7 +35,7 @@ func (s *SqlShopStaffStore) ModelFields(prefix string) model.AnyArray[string] {
 }
 
 // Save inserts given shopStaff into database then returns it with an error
-func (sss *SqlShopStaffStore) Save(shopStaff *shop.ShopStaffRelation) (*shop.ShopStaffRelation, error) {
+func (sss *SqlShopStaffStore) Save(shopStaff *model.ShopStaffRelation) (*model.ShopStaffRelation, error) {
 	shopStaff.PreSave()
 	if err := shopStaff.IsValid(); err != nil {
 		return nil, err
@@ -54,8 +53,8 @@ func (sss *SqlShopStaffStore) Save(shopStaff *shop.ShopStaffRelation) (*shop.Sho
 }
 
 // Get finds a shop staff with given id then returns it with an error
-func (sss *SqlShopStaffStore) Get(shopStaffID string) (*shop.ShopStaffRelation, error) {
-	var res shop.ShopStaffRelation
+func (sss *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaffRelation, error) {
+	var res model.ShopStaffRelation
 	err := sss.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShopStaffTableName+" WHERE Id = ?", shopStaffID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -68,8 +67,8 @@ func (sss *SqlShopStaffStore) Get(shopStaffID string) (*shop.ShopStaffRelation, 
 }
 
 // FilterByShopAndStaff finds a relation ship with given shopId and staffId
-func (sss *SqlShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*shop.ShopStaffRelation, error) {
-	var result shop.ShopStaffRelation
+func (sss *SqlShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*model.ShopStaffRelation, error) {
+	var result model.ShopStaffRelation
 	err := sss.GetReplicaX().Get(
 		&result,
 		`SELECT * FROM `+store.ShopStaffTableName+`

@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/invoice"
 	"github.com/sitename/sitename/store"
 )
 
@@ -37,7 +36,7 @@ func (s *SqlInvoiceStore) ModelFields(prefix string) model.AnyArray[string] {
 }
 
 // Upsert depends on given inVoice's Id to decide update or delete it
-func (is *SqlInvoiceStore) Upsert(inVoice *invoice.Invoice) (*invoice.Invoice, error) {
+func (is *SqlInvoiceStore) Upsert(inVoice *model.Invoice) (*model.Invoice, error) {
 	var isSaving bool
 	if inVoice.Id == "" {
 		isSaving = true
@@ -82,8 +81,8 @@ func (is *SqlInvoiceStore) Upsert(inVoice *invoice.Invoice) (*invoice.Invoice, e
 }
 
 // Get finds and returns an invoice with given id
-func (is *SqlInvoiceStore) Get(invoiceID string) (*invoice.Invoice, error) {
-	var res invoice.Invoice
+func (is *SqlInvoiceStore) Get(invoiceID string) (*model.Invoice, error) {
+	var res model.Invoice
 	err := is.GetReplicaX().Get(&res, "SELECT * FROM "+store.InvoiceTableName+" WHERE Id = ?", invoiceID)
 	if err != nil {
 		if err == sql.ErrNoRows {

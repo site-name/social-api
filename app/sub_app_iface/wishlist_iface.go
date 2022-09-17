@@ -5,45 +5,43 @@ package sub_app_iface
 
 import (
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/wishlist"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
 // WishlistService contains methods for working with wishlists
 type WishlistService interface {
 	// AddProduct add or create a wishlist item that belongs to given wishlist and contains given product
-	AddProduct(wishlistID string, productID string) (*wishlist.WishlistItem, *model.AppError)
+	AddProduct(wishlistID string, productID string) (*model.WishlistItem, *model.AppError)
 	// AddProductVariant add given product variant into given wishlist
-	AddProductVariant(wishlistID string, productVariant *product_and_discount.ProductVariant) (*wishlist.WishlistItem, *model.AppError)
+	AddProductVariant(wishlistID string, productVariant *model.ProductVariant) (*model.WishlistItem, *model.AppError)
 	// AddWishlistItemProductVariantRelation adds given wishlist item-product variant relation into database and returns it
-	AddWishlistItemProductVariantRelation(relation *wishlist.WishlistItemProductVariant) (*wishlist.WishlistItemProductVariant, *model.AppError)
+	AddWishlistItemProductVariantRelation(relation *model.WishlistItemProductVariant) (*model.WishlistItemProductVariant, *model.AppError)
 	// BulkUpsertWishlistItemProductVariantRelations
-	BulkUpsertWishlistItemProductVariantRelations(transaction store_iface.SqlxTxExecutor, relations []*wishlist.WishlistItemProductVariant) ([]*wishlist.WishlistItemProductVariant, *model.AppError)
+	BulkUpsertWishlistItemProductVariantRelations(transaction store_iface.SqlxTxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, *model.AppError)
 	// BulkUpsertWishlistItems updates or inserts given wishlist item into database then returns it
-	BulkUpsertWishlistItems(transaction store_iface.SqlxTxExecutor, wishlistItems wishlist.WishlistItems) (wishlist.WishlistItems, *model.AppError)
+	BulkUpsertWishlistItems(transaction store_iface.SqlxTxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, *model.AppError)
 	// DeleteWishlistItemProductVariantRelation deletes a wishlist item-product variant relation and returns a number of remaining relations in database
-	DeleteWishlistItemProductVariantRelation(relation *wishlist.WishlistItemProductVariant) (int64, *model.AppError)
+	DeleteWishlistItemProductVariantRelation(relation *model.WishlistItemProductVariant) (int64, *model.AppError)
 	// DeleteWishlistItemsByOption tell store to delete wishlist items that satisfy given option, then returns a number of items deleted
-	DeleteWishlistItemsByOption(transaction store_iface.SqlxTxExecutor, option *wishlist.WishlistItemFilterOption) (int64, *model.AppError)
+	DeleteWishlistItemsByOption(transaction store_iface.SqlxTxExecutor, option *model.WishlistItemFilterOption) (int64, *model.AppError)
 	// GetAllVariants returns all product variants in child wishlist items of given wishlist
-	GetAllVariants(wishlistID string) ([]*product_and_discount.ProductVariant, *model.AppError)
+	GetAllVariants(wishlistID string) ([]*model.ProductVariant, *model.AppError)
 	// GetOrCreateWishlistItem insert or get wishlist items
-	GetOrCreateWishlistItem(wishlistItem *wishlist.WishlistItem) (*wishlist.WishlistItem, *model.AppError)
+	GetOrCreateWishlistItem(wishlistItem *model.WishlistItem) (*model.WishlistItem, *model.AppError)
 	// MoveItemsBetweenWishlists moves items from given srcWishlist to given dstWishlist
-	MoveItemsBetweenWishlists(srcWishlist *wishlist.Wishlist, dstWishlist *wishlist.Wishlist) *model.AppError
+	MoveItemsBetweenWishlists(srcWishlist *model.Wishlist, dstWishlist *model.Wishlist) *model.AppError
 	// RemoveProduct removes a wishlist item of given wishlist that have ProductID property is given productID
 	RemoveProduct(wishlistID string, productID string) *model.AppError
 	// RemoveProductVariant remove a wishlist item from given wishlist
-	RemoveProductVariant(wishlistID string, productVariant *product_and_discount.ProductVariant) *model.AppError
+	RemoveProductVariant(wishlistID string, productVariant *model.ProductVariant) *model.AppError
 	// SetUser assigns given user to given wishlist
-	SetUserForWishlist(wishList *wishlist.Wishlist, userID string) *model.AppError
+	SetUserForWishlist(wishList *model.Wishlist, userID string) *model.AppError
 	// UpsertWishlist inserts a new wishlist instance into database with given userID
-	UpsertWishlist(wishList *wishlist.Wishlist) (*wishlist.Wishlist, *model.AppError)
+	UpsertWishlist(wishList *model.Wishlist) (*model.Wishlist, *model.AppError)
 	// WishlistByOption returns 1 wishlist filtered by given option
-	WishlistByOption(option *wishlist.WishlistFilterOption) (*wishlist.Wishlist, *model.AppError)
+	WishlistByOption(option *model.WishlistFilterOption) (*model.Wishlist, *model.AppError)
 	// WishlistItemByOption returns 1 wishlist item filtered using given option
-	WishlistItemByOption(option *wishlist.WishlistItemFilterOption) (*wishlist.WishlistItem, *model.AppError)
+	WishlistItemByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, *model.AppError)
 	// WishlistItemsByOption returns a slice of wishlist items filtered using given option
-	WishlistItemsByOption(option *wishlist.WishlistItemFilterOption) ([]*wishlist.WishlistItem, *model.AppError)
+	WishlistItemsByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, *model.AppError)
 }

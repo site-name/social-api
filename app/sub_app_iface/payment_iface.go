@@ -8,10 +8,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
@@ -25,7 +21,7 @@ type PaymentService interface {
 	//
 	// @paymentPostProcess
 	// Confirm confirms payment
-	Confirm(payMent payment.Payment, manager interfaces.PluginManagerInterface, channelID string, additionalData map[string]interface{}) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
+	Confirm(payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, additionalData map[string]interface{}) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -33,7 +29,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	Authorize(payMent payment.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
+	Authorize(payMent model.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -41,7 +37,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	Capture(payMent payment.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal, customerID *string, storeSource bool) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
+	Capture(payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal, customerID *string, storeSource bool) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -49,7 +45,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	ProcessPayment(payMent payment.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool, additionalData map[string]interface{}) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
+	ProcessPayment(payMent model.Payment, token string, manager interfaces.PluginManagerInterface, channelID string, customerID *string, storeSource bool, additionalData map[string]interface{}) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -57,7 +53,7 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	Refund(payMent payment.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
+	Refund(payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string, amount *decimal.Decimal) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
 	// @requireActivePayment
 	//
 	// @withLockedPayment
@@ -65,11 +61,11 @@ type PaymentService interface {
 	// @raisePaymentError
 	//
 	// @paymentPostProcess
-	Void(payMent payment.Payment, manager interfaces.PluginManagerInterface, channelID string) (*payment.PaymentTransaction, *payment.PaymentError, *model.AppError)
+	Void(payMent model.Payment, manager interfaces.PluginManagerInterface, channelID string) (*model.PaymentTransaction, *model.PaymentError, *model.AppError)
 	// CleanAuthorize Check if payment can be authorized
-	CleanAuthorize(payMent *payment.Payment) *payment.PaymentError
+	CleanAuthorize(payMent *model.Payment) *model.PaymentError
 	// CleanCapture Check if payment can be captured.
-	CleanCapture(pm *payment.Payment, amount decimal.Decimal) *payment.PaymentError
+	CleanCapture(pm *model.Payment, amount decimal.Decimal) *model.PaymentError
 	// CreatePayment Create a payment instance.
 	//
 	// This method is responsible for creating payment instances that works for
@@ -79,60 +75,60 @@ type PaymentService interface {
 	//
 	// `extraData`, `ckout`, `ord` can be nil
 	//
-	// `storePaymentMethod` default to payment.StorePaymentMethod.NONE
-	CreatePayment(transaction store_iface.SqlxTxExecutor, gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, checkOut *checkout.Checkout, orDer *order.Order, returnUrl string, externalReference string, storePaymentMethod payment.StorePaymentMethod, metadata model.StringMap) (*payment.Payment, *payment.PaymentError, *model.AppError)
+	// `storePaymentMethod` default to model.StorePaymentMethod.NONE
+	CreatePayment(transaction store_iface.SqlxTxExecutor, gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, checkOut *model.Checkout, orDer *model.Order, returnUrl string, externalReference string, storePaymentMethod model.StorePaymentMethod, metadata model.StringMap) (*model.Payment, *model.PaymentError, *model.AppError)
 	// CreatePaymentInformation Extract order information along with payment details.
 	//
 	// Returns information required to process payment and additional
 	// billing/shipping addresses for optional fraud-prevention mechanisms.
-	CreatePaymentInformation(payMent *payment.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]interface{}) (*payment.PaymentData, *model.AppError)
+	CreatePaymentInformation(payMent *model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]interface{}) (*model.PaymentData, *model.AppError)
 	// CreateTransaction reate a transaction based on transaction kind and gateway response.
-	CreateTransaction(paymentID string, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string, isSuccess bool) (*payment.PaymentTransaction, *model.AppError)
+	CreateTransaction(paymentID string, kind string, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string, isSuccess bool) (*model.PaymentTransaction, *model.AppError)
 	// FetchCustomerId Retrieve users customer_id stored for desired gateway.
 	// returning string could be "" or long string
-	FetchCustomerId(user *account.User, gateway string) (string, *model.AppError)
+	FetchCustomerId(user *model.User, gateway string) (string, *model.AppError)
 	// GatewayPostProcess
-	GatewayPostProcess(paymentTransaction payment.PaymentTransaction, payMent *payment.Payment) *model.AppError
+	GatewayPostProcess(paymentTransaction model.PaymentTransaction, payMent *model.Payment) *model.AppError
 	// GetAllPaymentsByCheckout returns all payments that belong to given checkout
-	GetAllPaymentsByCheckout(checkoutToken string) ([]*payment.Payment, *model.AppError)
+	GetAllPaymentsByCheckout(checkoutToken string) ([]*model.Payment, *model.AppError)
 	// GetLastpayment compares all payments's CreatAt properties, then returns the most recent payment
-	GetLastpayment(payments []*payment.Payment) *payment.Payment
+	GetLastpayment(payments []*model.Payment) *model.Payment
 	// GetSubTotal adds up all Total prices of given order lines
-	GetSubTotal(orderLines []*order.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model.AppError)
+	GetSubTotal(orderLines []*model.OrderLine, fallbackCurrency string) (*goprices.TaxedMoney, *model.AppError)
 	// IsCurrencySupported Return true if the given gateway supports given currency.
 	IsCurrencySupported(currency string, gatewayID string, manager interfaces.PluginManagerInterface) bool
 	// PaymentByID returns a payment with given id
-	PaymentByID(transaction store_iface.SqlxTxExecutor, paymentID string, lockForUpdate bool) (*payment.Payment, *model.AppError)
+	PaymentByID(transaction store_iface.SqlxTxExecutor, paymentID string, lockForUpdate bool) (*model.Payment, *model.AppError)
 	// PaymentCanVoid checks if given payment is: Active && not charged and authorized
-	PaymentCanVoid(payMent *payment.Payment) (bool, *model.AppError)
+	PaymentCanVoid(payMent *model.Payment) (bool, *model.AppError)
 	// PaymentRefundOrVoid
-	PaymentRefundOrVoid(payMent *payment.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*payment.PaymentError, *model.AppError)
+	PaymentRefundOrVoid(payMent *model.Payment, manager interfaces.PluginManagerInterface, channelSlug string) (*model.PaymentError, *model.AppError)
 	// PaymentsByOption returns all payments that satisfy given option
-	PaymentsByOption(option *payment.PaymentFilterOption) ([]*payment.Payment, *model.AppError)
+	PaymentsByOption(option *model.PaymentFilterOption) ([]*model.Payment, *model.AppError)
 	// StoreCustomerId stores new value into given user's PrivateMetadata
 	StoreCustomerId(userID string, gateway string, customerID string) *model.AppError
 	// TransactionsByOption returns a list of transactions filtered based on given option
-	TransactionsByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, *model.AppError)
+	TransactionsByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, *model.AppError)
 	// UpdatePayment
-	UpdatePayment(payMent payment.Payment, gatewayResponse *payment.GatewayResponse) *model.AppError
+	UpdatePayment(payMent model.Payment, gatewayResponse *model.GatewayResponse) *model.AppError
 	// UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
-	UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *payment.PaymentPatch) *model.AppError
+	UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *model.PaymentPatch) *model.AppError
 	// UpsertPayment updates or insert given payment, depends on the validity of its Id
-	UpsertPayment(transaction store_iface.SqlxTxExecutor, payMent *payment.Payment) (*payment.Payment, *model.AppError)
+	UpsertPayment(transaction store_iface.SqlxTxExecutor, payMent *model.Payment) (*model.Payment, *model.AppError)
 	// ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
-	ValidateGatewayResponse(response *payment.GatewayResponse) *payment.GatewayError
-	GetAllPaymentTransactions(paymentID string) ([]*payment.PaymentTransaction, *model.AppError)
-	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *payment.GatewayResponse) (*payment.PaymentTransaction, *model.AppError)
-	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *payment.PaymentData, actionRequired bool, gatewayResponse *payment.GatewayResponse, errorMsg string) (*payment.PaymentTransaction, *model.AppError)
-	GetLastOrderPayment(orderID string) (*payment.Payment, *model.AppError)
-	GetLastPaymentTransaction(paymentID string) (*payment.PaymentTransaction, *model.AppError)
-	GetPaymentToken(payMent *payment.Payment) (string, *payment.PaymentError, *model.AppError)
-	GetTotalAuthorized(payments []*payment.Payment, fallbackCurrency string) (*goprices.Money, *model.AppError)
-	ListGateways(manager interfaces.PluginManagerInterface, channelID string) []*payment.PaymentGateway
-	ListPaymentSources(gateway string, customerID string, manager interfaces.PluginManagerInterface, channelID string) ([]*payment.CustomerSource, *model.AppError)
-	PaymentGetAuthorizedAmount(pm *payment.Payment) (*goprices.Money, *model.AppError)
+	ValidateGatewayResponse(response *model.GatewayResponse) *model.GatewayError
+	GetAllPaymentTransactions(paymentID string) ([]*model.PaymentTransaction, *model.AppError)
+	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *model.GatewayResponse) (*model.PaymentTransaction, *model.AppError)
+	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model.AppError)
+	GetLastOrderPayment(orderID string) (*model.Payment, *model.AppError)
+	GetLastPaymentTransaction(paymentID string) (*model.PaymentTransaction, *model.AppError)
+	GetPaymentToken(payMent *model.Payment) (string, *model.PaymentError, *model.AppError)
+	GetTotalAuthorized(payments []*model.Payment, fallbackCurrency string) (*goprices.Money, *model.AppError)
+	ListGateways(manager interfaces.PluginManagerInterface, channelID string) []*model.PaymentGateway
+	ListPaymentSources(gateway string, customerID string, manager interfaces.PluginManagerInterface, channelID string) ([]*model.CustomerSource, *model.AppError)
+	PaymentGetAuthorizedAmount(pm *model.Payment) (*goprices.Money, *model.AppError)
 	PaymentIsAuthorized(paymentID string) (bool, *model.AppError)
-	SaveTransaction(transaction store_iface.SqlxTxExecutor, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)
-	UpdatePaymentMethodDetails(payMent payment.Payment, paymentMethodInfo *payment.PaymentMethodInfo, changedFields []string)
-	UpdateTransaction(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, *model.AppError)
+	SaveTransaction(transaction store_iface.SqlxTxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model.AppError)
+	UpdatePaymentMethodDetails(payMent model.Payment, paymentMethodInfo *model.PaymentMethodInfo, changedFields []string)
+	UpdateTransaction(transaction *model.PaymentTransaction) (*model.PaymentTransaction, *model.AppError)
 }

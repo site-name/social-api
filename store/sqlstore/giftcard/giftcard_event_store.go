@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/giftcard"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -37,7 +36,7 @@ func (s *SqlGiftcardEventStore) ModelFields(prefix string) model.AnyArray[string
 }
 
 // BulkUpsert upserts and returns given giftcard events
-func (gs *SqlGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, events ...*giftcard.GiftCardEvent) ([]*giftcard.GiftCardEvent, error) {
+func (gs *SqlGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
 	var executor store_iface.SqlxExecutor = gs.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -65,7 +64,7 @@ func (gs *SqlGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTxExecut
 
 		} else {
 			// check if an event exist:
-			var oldEvent giftcard.GiftCardEvent
+			var oldEvent model.GiftCardEvent
 			err = executor.Get(&oldEvent, "SELECT * FROM "+store.GiftcardEventTableName+" WHERE Id = ?", event.Id)
 			if err != nil {
 				if err == sql.ErrNoRows {
@@ -102,7 +101,7 @@ func (gs *SqlGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTxExecut
 	return events, nil
 }
 
-func (gs *SqlGiftcardEventStore) Save(event *giftcard.GiftCardEvent) (*giftcard.GiftCardEvent, error) {
+func (gs *SqlGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.GiftCardEvent, error) {
 	event.PreSave()
 	if err := event.IsValid(); err != nil {
 		return nil, err
@@ -118,8 +117,8 @@ func (gs *SqlGiftcardEventStore) Save(event *giftcard.GiftCardEvent) (*giftcard.
 	return event, nil
 }
 
-func (gs *SqlGiftcardEventStore) Get(eventId string) (*giftcard.GiftCardEvent, error) {
-	var res giftcard.GiftCardEvent
+func (gs *SqlGiftcardEventStore) Get(eventId string) (*model.GiftCardEvent, error) {
+	var res model.GiftCardEvent
 	err := gs.GetReplicaX().Get(&res, "SELECT * FROM "+store.GiftcardEventTableName+" WHERE Id = ?", eventId)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -132,7 +131,7 @@ func (gs *SqlGiftcardEventStore) Get(eventId string) (*giftcard.GiftCardEvent, e
 }
 
 // FilterByOptions finds and returns a list of giftcard events with given options
-func (gs *SqlGiftcardEventStore) FilterByOptions(options *giftcard.GiftCardEventFilterOption) ([]*giftcard.GiftCardEvent, error) {
+func (gs *SqlGiftcardEventStore) FilterByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, error) {
 	query := gs.GetQueryBuilder().
 		Select("*").
 		From(store.GiftcardEventTableName).
@@ -154,7 +153,7 @@ func (gs *SqlGiftcardEventStore) FilterByOptions(options *giftcard.GiftCardEvent
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	var res []*giftcard.GiftCardEvent
+	var res []*model.GiftCardEvent
 	err = gs.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find giftcard events with given options")

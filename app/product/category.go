@@ -4,12 +4,11 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
 // CategoriesByOption returns all categories that satisfy given option
-func (a *ServiceProduct) CategoriesByOption(option *product_and_discount.CategoryFilterOption) ([]*product_and_discount.Category, *model.AppError) {
+func (a *ServiceProduct) CategoriesByOption(option *model.CategoryFilterOption) ([]*model.Category, *model.AppError) {
 	categories, err := a.srv.Store.Category().FilterByOption(option)
 	var (
 		statusCode int
@@ -30,7 +29,7 @@ func (a *ServiceProduct) CategoriesByOption(option *product_and_discount.Categor
 }
 
 // CategoryByOption returns 1 category that satisfies given option
-func (a *ServiceProduct) CategoryByOption(option *product_and_discount.CategoryFilterOption) (*product_and_discount.Category, *model.AppError) {
+func (a *ServiceProduct) CategoryByOption(option *model.CategoryFilterOption) (*model.Category, *model.AppError) {
 	category, err := a.srv.Store.Category().GetByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("CategoryByOption", "app.product.error_finding_category_by_option.app_error", err)

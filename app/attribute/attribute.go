@@ -1,6 +1,6 @@
 /*
-	NOTE: This package is initialized during server startup (modules/imports does that)
-	so the init() function get the chance to register a function to create `ServiceAccount`
+NOTE: This package is initialized during server startup (modules/imports does that)
+so the init() function get the chance to register a function to create `ServiceAccount`
 */
 package attribute
 
@@ -10,7 +10,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
 
@@ -26,7 +25,7 @@ func init() {
 	})
 }
 
-func (a *ServiceAttribute) AttributeByOption(option *attribute.AttributeFilterOption) (*attribute.Attribute, *model.AppError) {
+func (a *ServiceAttribute) AttributeByOption(option *model.AttributeFilterOption) (*model.Attribute, *model.AppError) {
 	attr, err := a.srv.Store.Attribute().GetByOption(option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -41,7 +40,7 @@ func (a *ServiceAttribute) AttributeByOption(option *attribute.AttributeFilterOp
 }
 
 // AttributesByOption returns a list of attributes filtered using given options
-func (a *ServiceAttribute) AttributesByOption(option *attribute.AttributeFilterOption) ([]*attribute.Attribute, *model.AppError) {
+func (a *ServiceAttribute) AttributesByOption(option *model.AttributeFilterOption) ([]*model.Attribute, *model.AppError) {
 	attributes, err := a.srv.Store.Attribute().FilterbyOption(option)
 
 	var (
@@ -63,7 +62,7 @@ func (a *ServiceAttribute) AttributesByOption(option *attribute.AttributeFilterO
 }
 
 // UpsertAttribute inserts or updates given attribute and returns it
-func (s *ServiceAttribute) UpsertAttribute(attr *attribute.Attribute) (*attribute.Attribute, *model.AppError) {
+func (s *ServiceAttribute) UpsertAttribute(attr *model.Attribute) (*model.Attribute, *model.AppError) {
 	attr, err := s.srv.Store.Attribute().Upsert(attr)
 
 	if err != nil {
@@ -91,12 +90,12 @@ func (s *ServiceAttribute) DeleteAttributes(ids ...string) (int64, *model.AppErr
 	return numDeleted, nil
 }
 
-func (s *ServiceAttribute) GetVisibleToUserAttributes(session *model.Session) (attribute.Attributes, *model.AppError) {
+func (s *ServiceAttribute) GetVisibleToUserAttributes(session *model.Session) (model.Attributes, *model.AppError) {
 	if s.srv.AccountService().SessionHasPermissionToAny(session, model.PermissionManagePageTypesAndAttributes, model.PermissionManageProductTypesAndAttributes) {
-		return s.AttributesByOption(&attribute.AttributeFilterOption{})
+		return s.AttributesByOption(&model.AttributeFilterOption{})
 	}
 
-	return s.AttributesByOption(&attribute.AttributeFilterOption{
+	return s.AttributesByOption(&model.AttributeFilterOption{
 		VisibleInStoreFront: model.NewBool(true),
 	})
 }

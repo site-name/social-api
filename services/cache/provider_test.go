@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sitename/sitename/model/cluster"
+	"github.com/sitename/sitename/model"
 	"github.com/stretchr/testify/require"
 )
 
@@ -54,7 +54,7 @@ func TestNewCache(t *testing.T) {
 
 		size := 1
 		expiry := 1 * time.Second
-		event := cluster.ClusterEvent("clusterEvent")
+		event := model.ClusterEvent("clusterEvent")
 		c, err := p.NewCache(&CacheOptions{
 			Size:                   size,
 			Name:                   "name",
@@ -137,7 +137,7 @@ func TestNewCache_Striped(t *testing.T) {
 
 		size := 1
 		expiry := 1 * time.Second
-		event := cluster.ClusterEvent("clusterEvent")
+		event := model.ClusterEvent("clusterEvent")
 		c, err := p.NewCache(&CacheOptions{
 			Size:                   size,
 			Name:                   "name",

@@ -6,8 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/checkout"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
@@ -38,7 +36,7 @@ func (cls *SqlCheckoutLineStore) ModelFields(prefix string) model.AnyArray[strin
 	})
 }
 
-func (cls *SqlCheckoutLineStore) ScanFields(line checkout.CheckoutLine) []interface{} {
+func (cls *SqlCheckoutLineStore) ScanFields(line model.CheckoutLine) []interface{} {
 	return []interface{}{
 		&line.Id,
 		&line.CreateAt,
@@ -48,7 +46,7 @@ func (cls *SqlCheckoutLineStore) ScanFields(line checkout.CheckoutLine) []interf
 	}
 }
 
-func (cls *SqlCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*checkout.CheckoutLine, error) {
+func (cls *SqlCheckoutLineStore) Upsert(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, error) {
 	var isSave bool
 
 	if !model.IsValidId(checkoutLine.Id) {
@@ -94,8 +92,8 @@ func (cls *SqlCheckoutLineStore) Upsert(checkoutLine *checkout.CheckoutLine) (*c
 	return checkoutLine, nil
 }
 
-func (cls *SqlCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, error) {
-	var res checkout.CheckoutLine
+func (cls *SqlCheckoutLineStore) Get(id string) (*model.CheckoutLine, error) {
+	var res model.CheckoutLine
 
 	err := cls.GetReplicaX().Get(&res, "SELECT * FROM "+store.CheckoutLineTableName+" WHERE Id = ?", id)
 	if err != nil {
@@ -108,8 +106,8 @@ func (cls *SqlCheckoutLineStore) Get(id string) (*checkout.CheckoutLine, error) 
 	return &res, nil
 }
 
-func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutToken string) ([]*checkout.CheckoutLine, error) {
-	var res []*checkout.CheckoutLine
+func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutToken string) ([]*model.CheckoutLine, error) {
+	var res []*model.CheckoutLine
 
 	err := cls.GetReplicaX().Select(
 		&res,
@@ -145,7 +143,7 @@ func (cls *SqlCheckoutLineStore) DeleteLines(transaction store_iface.SqlxTxExecu
 	return nil
 }
 
-func (cls *SqlCheckoutLineStore) BulkUpdate(lines []*checkout.CheckoutLine) error {
+func (cls *SqlCheckoutLineStore) BulkUpdate(lines []*model.CheckoutLine) error {
 	tx, err := cls.GetMasterX().Beginx()
 	if err != nil {
 		return errors.Wrap(err, "begin_transaction")
@@ -181,7 +179,7 @@ func (cls *SqlCheckoutLineStore) BulkUpdate(lines []*checkout.CheckoutLine) erro
 	return nil
 }
 
-func (cls *SqlCheckoutLineStore) BulkCreate(lines []*checkout.CheckoutLine) ([]*checkout.CheckoutLine, error) {
+func (cls *SqlCheckoutLineStore) BulkCreate(lines []*model.CheckoutLine) ([]*model.CheckoutLine, error) {
 	tx, err := cls.GetMasterX().Beginx()
 	if err != nil {
 		return nil, errors.Wrap(err, "begin_transaction")
@@ -216,7 +214,7 @@ func (cls *SqlCheckoutLineStore) BulkCreate(lines []*checkout.CheckoutLine) ([]*
 // and prefetch all related product variants, products
 //
 // this borrows the idea from Django's prefetch_related() method
-func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutToken string) ([]*checkout.CheckoutLine, []*product_and_discount.ProductVariant, []*product_and_discount.Product, error) {
+func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutToken string) ([]*model.CheckoutLine, []*model.ProductVariant, []*model.Product, error) {
 	selectFields := append(
 		cls.ModelFields(store.CheckoutLineTableName+"."),
 		append(
@@ -244,12 +242,12 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 	}
 
 	var (
-		checkoutLines   []*checkout.CheckoutLine
-		productVariants []*product_and_discount.ProductVariant
-		products        []*product_and_discount.Product
-		checkoutLine    checkout.CheckoutLine
-		productVariant  product_and_discount.ProductVariant
-		product         product_and_discount.Product
+		checkoutLines   []*model.CheckoutLine
+		productVariants []*model.ProductVariant
+		products        []*model.Product
+		checkoutLine    model.CheckoutLine
+		productVariant  model.ProductVariant
+		product         model.Product
 		scanFields      = append(
 			cls.ScanFields(checkoutLine),
 			append(
@@ -359,7 +357,7 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 }
 
 // CheckoutLinesByOption finds and returns checkout lines filtered using given option
-func (cls *SqlCheckoutLineStore) CheckoutLinesByOption(option *checkout.CheckoutLineFilterOption) ([]*checkout.CheckoutLine, error) {
+func (cls *SqlCheckoutLineStore) CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, error) {
 	query := cls.GetQueryBuilder().
 		Select("*").
 		From(store.CheckoutLineTableName).
@@ -381,7 +379,7 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByOption(option *checkout.Checkout
 		return nil, errors.Wrap(err, "CheckoutLinesByOption_ToSql")
 	}
 
-	var res []*checkout.CheckoutLine
+	var res []*model.CheckoutLine
 	err = cls.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find checkout lines by given options")

@@ -6,14 +6,12 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/order"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
 // UpsertOrderLine depends on given orderLine's Id property to decide update order save it
-func (a *ServiceOrder) UpsertOrderLine(transaction store_iface.SqlxTxExecutor, orderLine *order.OrderLine) (*order.OrderLine, *model.AppError) {
+func (a *ServiceOrder) UpsertOrderLine(transaction store_iface.SqlxTxExecutor, orderLine *model.OrderLine) (*model.OrderLine, *model.AppError) {
 	orderLine, err := a.srv.Store.OrderLine().Upsert(transaction, orderLine)
 	if err != nil {
 		status := http.StatusInternalServerError
@@ -37,7 +35,7 @@ func (a *ServiceOrder) DeleteOrderLines(orderLineIDs []string) *model.AppError {
 }
 
 // OrderLinesByOption returns a list of order lines by given option
-func (a *ServiceOrder) OrderLinesByOption(option *order.OrderLineFilterOption) (order.OrderLines, *model.AppError) {
+func (a *ServiceOrder) OrderLinesByOption(option *model.OrderLineFilterOption) (model.OrderLines, *model.AppError) {
 	orderLines, err := a.srv.Store.OrderLine().FilterbyOption(option)
 	var (
 		statusCode int
@@ -58,8 +56,8 @@ func (a *ServiceOrder) OrderLinesByOption(option *order.OrderLineFilterOption) (
 }
 
 // AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
-func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.OrderLine, *model.AppError) {
-	orderLines, appErr := a.OrderLinesByOption(&order.OrderLineFilterOption{
+func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*model.OrderLine, *model.AppError) {
+	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
 		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": orderID},
 	})
 	if appErr != nil {
@@ -67,7 +65,7 @@ func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.Ord
 	}
 
 	var (
-		digitalOrderLines []*order.OrderLine
+		digitalOrderLines []*model.OrderLine
 		appError          *model.AppError
 		mut               sync.Mutex
 		wg                sync.WaitGroup
@@ -84,7 +82,7 @@ func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.Ord
 	wg.Add(len(orderLines))
 
 	for _, orderLine := range orderLines {
-		go func(anOrderLine *order.OrderLine) {
+		go func(anOrderLine *model.OrderLine) {
 			orderLineIsDigital, appErr := a.OrderLineIsDigital(anOrderLine)
 			if appErr != nil {
 				setAppError(appErr)
@@ -112,7 +110,7 @@ func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*order.Ord
 }
 
 // OrderLineById returns an order line byt given orderLineID
-func (a *ServiceOrder) OrderLineById(orderLineID string) (*order.OrderLine, *model.AppError) {
+func (a *ServiceOrder) OrderLineById(orderLineID string) (*model.OrderLine, *model.AppError) {
 	orderLine, err := a.srv.Store.OrderLine().Get(orderLineID)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("OrderLineById", "app.order.missing_order_line.app_error", err)
@@ -122,7 +120,7 @@ func (a *ServiceOrder) OrderLineById(orderLineID string) (*order.OrderLine, *mod
 }
 
 // OrderLineIsDigital Check if a variant is digital and contains digital content.
-func (a *ServiceOrder) OrderLineIsDigital(orderLine *order.OrderLine) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderLineIsDigital(orderLine *model.OrderLine) (bool, *model.AppError) {
 	if orderLine.VariantID == nil {
 		return false, nil
 	}
@@ -136,7 +134,7 @@ func (a *ServiceOrder) OrderLineIsDigital(orderLine *order.OrderLine) (bool, *mo
 	var orderLineProductVariantHasDigitalContent bool
 
 	// check if there is a digital content accompanies order line's product variant:
-	digitalContent, appErr := a.srv.ProductService().DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
+	digitalContent, appErr := a.srv.ProductService().DigitalContentbyOption(&model.DigitalContenetFilterOption{
 		ProductVariantID: squirrel.Eq{store.DigitalContentTableName + ".ProductVariantID": *orderLine.VariantID},
 	})
 	if appErr != nil {
@@ -155,7 +153,7 @@ func (a *ServiceOrder) OrderLineIsDigital(orderLine *order.OrderLine) (bool, *mo
 }
 
 // BulkUpsertOrderLines perform bulk upsert given order lines
-func (a *ServiceOrder) BulkUpsertOrderLines(transaction store_iface.SqlxTxExecutor, orderLines []*order.OrderLine) ([]*order.OrderLine, *model.AppError) {
+func (a *ServiceOrder) BulkUpsertOrderLines(transaction store_iface.SqlxTxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, *model.AppError) {
 	orderLines, err := a.srv.Store.OrderLine().BulkUpsert(transaction, orderLines)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

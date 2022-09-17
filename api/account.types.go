@@ -5,18 +5,17 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
 	"github.com/sitename/sitename/web"
 )
 
 type Address struct {
-	Address account.Address
+	Address model.Address
 }
 
 func (Address) IsNode() {}
 
 // SystemAddressToGraphqlAddress convert single database address to single graphql address
-func SystemAddressToGraphqlAddress(address *account.Address) *Address {
+func SystemAddressToGraphqlAddress(address *model.Address) *Address {
 	if address == nil {
 		return new(Address)
 	}

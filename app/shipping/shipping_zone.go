@@ -4,11 +4,10 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/shipping"
 )
 
 // ShippingZonesByOption returns all shipping zones that satisfy given options
-func (a *ServiceShipping) ShippingZonesByOption(option *shipping.ShippingZoneFilterOption) ([]*shipping.ShippingZone, *model.AppError) {
+func (a *ServiceShipping) ShippingZonesByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, *model.AppError) {
 	shippingZones, err := a.srv.Store.ShippingZone().FilterByOption(option)
 
 	var (

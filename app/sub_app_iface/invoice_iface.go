@@ -6,15 +6,13 @@ package sub_app_iface
 import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/invoice"
 )
 
 // InvoiceService contains methods for working with invoices
 type InvoiceService interface {
 	// SendInvoice Send an invoice to user of related order with URL to download it
-	SendInvoice(inVoice invoice.Invoice, staffUser *account.User, _ interface{}, manager interfaces.PluginManagerInterface) *model.AppError
+	SendInvoice(inVoice model.Invoice, staffUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) *model.AppError
 	// UpsertInvoiceEvent is shortcut for creating invoice events
-	UpsertInvoiceEvent(option *invoice.InvoiceEventOption) (*invoice.InvoiceEvent, *model.AppError)
-	UpdateInvoice(inVoice *invoice.Invoice, number *string, url *string)
+	UpsertInvoiceEvent(option *model.InvoiceEventOption) (*model.InvoiceEvent, *model.AppError)
+	UpdateInvoice(inVoice *model.Invoice, number *string, url *string)
 }

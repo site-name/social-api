@@ -5,7 +5,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/cluster"
 	"github.com/sitename/sitename/store"
 )
 
@@ -37,7 +36,7 @@ func (s sqlClusterDiscoveryStore) ModelFields(prefix string) model.AnyArray[stri
 	})
 }
 
-func (s sqlClusterDiscoveryStore) Save(ClusterDiscovery *cluster.ClusterDiscovery) error {
+func (s sqlClusterDiscoveryStore) Save(ClusterDiscovery *model.ClusterDiscovery) error {
 	ClusterDiscovery.PreSave()
 	if err := ClusterDiscovery.IsValid(); err != nil {
 		return err
@@ -51,7 +50,7 @@ func (s sqlClusterDiscoveryStore) Save(ClusterDiscovery *cluster.ClusterDiscover
 	return nil
 }
 
-func (s sqlClusterDiscoveryStore) Delete(ClusterDiscovery *cluster.ClusterDiscovery) (bool, error) {
+func (s sqlClusterDiscoveryStore) Delete(ClusterDiscovery *model.ClusterDiscovery) (bool, error) {
 	query := s.GetQueryBuilder().
 		Delete(store.ClusterDiscoveryTableName).
 		Where(sq.Eq{"Type": ClusterDiscovery.Type}).
@@ -74,7 +73,7 @@ func (s sqlClusterDiscoveryStore) Delete(ClusterDiscovery *cluster.ClusterDiscov
 	return true, nil
 }
 
-func (s sqlClusterDiscoveryStore) Exists(ClusterDiscovery *cluster.ClusterDiscovery) (bool, error) {
+func (s sqlClusterDiscoveryStore) Exists(ClusterDiscovery *model.ClusterDiscovery) (bool, error) {
 	query := s.GetQueryBuilder().
 		Select("COUNT(*)").
 		From(store.ClusterDiscoveryTableName).
@@ -98,27 +97,27 @@ func (s sqlClusterDiscoveryStore) Exists(ClusterDiscovery *cluster.ClusterDiscov
 	return true, nil
 }
 
-func (s sqlClusterDiscoveryStore) GetAll(ClusterDiscoveryType, clusterName string) ([]*cluster.ClusterDiscovery, error) {
+func (s sqlClusterDiscoveryStore) GetAll(ClusterDiscoveryType, clusterName string) ([]*model.ClusterDiscovery, error) {
 	query := s.GetQueryBuilder().
 		Select("*").
 		From(store.ClusterDiscoveryTableName).
 		Where(sq.Eq{"Type": ClusterDiscoveryType}).
 		Where(sq.Eq{"ClusterName": clusterName}).
-		Where(sq.Gt{"LastPingAt": model.GetMillis() - cluster.CDS_OFFLINE_AFTER_MILLIS})
+		Where(sq.Gt{"LastPingAt": model.GetMillis() - model.CDS_OFFLINE_AFTER_MILLIS})
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "cluster_discovery_tosql")
 	}
 
-	var list []*cluster.ClusterDiscovery
+	var list []*model.ClusterDiscovery
 	if err := s.GetMasterX().Select(&list, queryString, args...); err != nil {
 		return nil, errors.Wrapf(err, "failed to find ClusterDiscovery")
 	}
 	return list, nil
 }
 
-func (s sqlClusterDiscoveryStore) SetLastPingAt(ClusterDiscovery *cluster.ClusterDiscovery) error {
+func (s sqlClusterDiscoveryStore) SetLastPingAt(ClusterDiscovery *model.ClusterDiscovery) error {
 	query := s.GetQueryBuilder().
 		Update(store.ClusterDiscoveryTableName).
 		Set("LastPingAt", model.GetMillis()).
@@ -140,7 +139,7 @@ func (s sqlClusterDiscoveryStore) SetLastPingAt(ClusterDiscovery *cluster.Cluste
 func (s sqlClusterDiscoveryStore) Cleanup() error {
 	query := s.GetQueryBuilder().
 		Delete(store.ClusterDiscoveryTableName).
-		Where(sq.Lt{"LastPingAt": model.GetMillis() - cluster.CDS_OFFLINE_AFTER_MILLIS})
+		Where(sq.Lt{"LastPingAt": model.GetMillis() - model.CDS_OFFLINE_AFTER_MILLIS})
 
 	queryString, args, err := query.ToSql()
 	if err != nil {

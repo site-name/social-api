@@ -7,7 +7,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/product_and_discount"
 	"github.com/sitename/sitename/store"
 )
 
@@ -24,14 +23,14 @@ func init() {
 }
 
 // ProductById returns 1 product by given id
-func (a *ServiceProduct) ProductById(productID string) (*product_and_discount.Product, *model.AppError) {
-	return a.ProductByOption(&product_and_discount.ProductFilterOption{
+func (a *ServiceProduct) ProductById(productID string) (*model.Product, *model.AppError) {
+	return a.ProductByOption(&model.ProductFilterOption{
 		Id: squirrel.Eq{store.ProductTableName + ".Id": productID},
 	})
 }
 
 // ProductsByOption returns a list of products that satisfy given option
-func (a *ServiceProduct) ProductsByOption(option *product_and_discount.ProductFilterOption) ([]*product_and_discount.Product, *model.AppError) {
+func (a *ServiceProduct) ProductsByOption(option *model.ProductFilterOption) ([]*model.Product, *model.AppError) {
 	products, err := a.srv.Store.Product().FilterByOption(option)
 	var (
 		statusCode int
@@ -52,7 +51,7 @@ func (a *ServiceProduct) ProductsByOption(option *product_and_discount.ProductFi
 }
 
 // ProductByOption returns 1 product that satisfy given option
-func (a *ServiceProduct) ProductByOption(option *product_and_discount.ProductFilterOption) (*product_and_discount.Product, *model.AppError) {
+func (a *ServiceProduct) ProductByOption(option *model.ProductFilterOption) (*model.Product, *model.AppError) {
 	product, err := a.srv.Store.Product().GetByOption(option)
 	if err != nil {
 		return nil, store.AppErrorFromDatabaseLookupError("ProductByOption", "app.error_finding_product_by_option.app_error", err)
@@ -62,8 +61,8 @@ func (a *ServiceProduct) ProductByOption(option *product_and_discount.ProductFil
 }
 
 // ProductsByVoucherID finds all products that have relationships with given voucher
-func (a *ServiceProduct) ProductsByVoucherID(voucherID string) ([]*product_and_discount.Product, *model.AppError) {
-	products, appErr := a.ProductsByOption(&product_and_discount.ProductFilterOption{
+func (a *ServiceProduct) ProductsByVoucherID(voucherID string) ([]*model.Product, *model.AppError) {
+	products, appErr := a.ProductsByOption(&model.ProductFilterOption{
 		VoucherID: squirrel.Eq{store.VoucherProductTableName + ".VoucherID": voucherID},
 	})
 	if appErr != nil {
@@ -90,10 +89,10 @@ func (a *ServiceProduct) ProductsRequireShipping(productIDs []string) (bool, *mo
 }
 
 // ProductGetFirstImage returns first media of given product
-func (a *ServiceProduct) ProductGetFirstImage(productID string) (*product_and_discount.ProductMedia, *model.AppError) {
-	productMedias, appErr := a.ProductMediasByOption(&product_and_discount.ProductMediaFilterOption{
+func (a *ServiceProduct) ProductGetFirstImage(productID string) (*model.ProductMedia, *model.AppError) {
+	productMedias, appErr := a.ProductMediasByOption(&model.ProductMediaFilterOption{
 		ProductID: squirrel.Eq{store.ProductMediaTableName + ".ProductID": productID},
-		Type:      squirrel.Eq{store.ProductMediaTableName + ".Type": product_and_discount.IMAGE},
+		Type:      squirrel.Eq{store.ProductMediaTableName + ".Type": model.IMAGE},
 	})
 	if appErr != nil {
 		return nil, appErr

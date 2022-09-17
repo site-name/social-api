@@ -5,15 +5,12 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/account"
-	"github.com/sitename/sitename/model/product_and_discount"
-	"github.com/sitename/sitename/model/shop"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
-func (a *ServiceProduct) GetDefaultDigitalContentSettings(aShop *shop.Shop) *shop.ShopDefaultDigitalContentSettings {
-	return &shop.ShopDefaultDigitalContentSettings{
+func (a *ServiceProduct) GetDefaultDigitalContentSettings(aShop *model.Shop) *model.ShopDefaultDigitalContentSettings {
+	return &model.ShopDefaultDigitalContentSettings{
 		AutomaticFulfillmentDigitalProducts: aShop.AutomaticFulfillmentDigitalProducts,
 		DefaultDigitalMaxDownloads:          aShop.DefaultDigitalMaxDownloads,
 		DefaultDigitalUrlValidDays:          aShop.DefaultDigitalUrlValidDays,
@@ -24,8 +21,8 @@ func (a *ServiceProduct) GetDefaultDigitalContentSettings(aShop *shop.Shop) *sho
 //
 // It takes default settings or digital product's settings
 // to check if url is still valid.
-func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *product_and_discount.DigitalContentUrl) (bool, *model.AppError) {
-	digitalContent, appErr := a.DigitalContentbyOption(&product_and_discount.DigitalContenetFilterOption{
+func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *model.DigitalContentUrl) (bool, *model.AppError) {
+	digitalContent, appErr := a.DigitalContentbyOption(&model.DigitalContenetFilterOption{
 		Id: squirrel.Eq{store.DigitalContentTableName + ".Id": contentURL.ContentID},
 	})
 	if appErr != nil {
@@ -66,7 +63,7 @@ func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *product_and_discou
 	return true, nil
 }
 
-func (a *ServiceProduct) IncrementDownloadCount(contentURL *product_and_discount.DigitalContentUrl) *model.AppError {
+func (a *ServiceProduct) IncrementDownloadCount(contentURL *model.DigitalContentUrl) *model.AppError {
 	contentURL.DownloadNum++
 	_, appErr := a.UpsertDigitalContentURL(contentURL)
 	if appErr != nil {
@@ -87,7 +84,7 @@ func (a *ServiceProduct) IncrementDownloadCount(contentURL *product_and_discount
 			_, appErr = a.srv.AccountService().CommonCustomerCreateEvent(
 				&userByOrderId.Id,
 				&orderLine.OrderID,
-				account.DIGITAL_LINK_DOWNLOADED,
+				model.DIGITAL_LINK_DOWNLOADED,
 				map[string]interface{}{"order_line_pk": orderLine.Id},
 			)
 			if appErr != nil {

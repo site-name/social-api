@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/payment"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -46,7 +45,7 @@ func (s *SqlPaymentTransactionStore) ModelFields(prefix string) model.AnyArray[s
 }
 
 // Save insert given transaction into database then returns it
-func (ps *SqlPaymentTransactionStore) Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (ps *SqlPaymentTransactionStore) Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
 	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -66,7 +65,7 @@ func (ps *SqlPaymentTransactionStore) Save(transaction store_iface.SqlxTxExecuto
 }
 
 // Update updates given transaction then return it
-func (ps *SqlPaymentTransactionStore) Update(transaction *payment.PaymentTransaction) (*payment.PaymentTransaction, error) {
+func (ps *SqlPaymentTransactionStore) Update(transaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
 	transaction.PreUpdate()
 	if err := transaction.IsValid(); err != nil {
 		return nil, err
@@ -91,8 +90,8 @@ func (ps *SqlPaymentTransactionStore) Update(transaction *payment.PaymentTransac
 	return transaction, nil
 }
 
-func (ps *SqlPaymentTransactionStore) Get(id string) (*payment.PaymentTransaction, error) {
-	var res payment.PaymentTransaction
+func (ps *SqlPaymentTransactionStore) Get(id string) (*model.PaymentTransaction, error) {
+	var res model.PaymentTransaction
 	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.TransactionTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -105,7 +104,7 @@ func (ps *SqlPaymentTransactionStore) Get(id string) (*payment.PaymentTransactio
 }
 
 // FilterByOption finds and returns a list of transactions with given option
-func (ps *SqlPaymentTransactionStore) FilterByOption(option *payment.PaymentTransactionFilterOpts) ([]*payment.PaymentTransaction, error) {
+func (ps *SqlPaymentTransactionStore) FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
 	query := ps.GetQueryBuilder().
 		Select("*").
 		From(store.TransactionTableName).
@@ -133,7 +132,7 @@ func (ps *SqlPaymentTransactionStore) FilterByOption(option *payment.PaymentTran
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*payment.PaymentTransaction
+	var res []*model.PaymentTransaction
 	err = ps.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find payment transactions based on given option")

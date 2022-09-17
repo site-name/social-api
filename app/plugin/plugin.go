@@ -1,6 +1,6 @@
 /*
-	NOTE: This package is initialized during server startup (modules/imports does that)
-	so the init() function get the chance to register a function to create `ServiceAccount`
+NOTE: This package is initialized during server startup (modules/imports does that)
+so the init() function get the chance to register a function to create `ServiceAccount`
 */
 package plugin
 
@@ -25,7 +25,6 @@ import (
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/plugins"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
@@ -97,8 +96,8 @@ func (s *ServicePlugin) SyncPluginsActiveState() {
 		}
 
 		// Determine which plugins need to be activated or deactivated.
-		disabledPlugins := []*plugins.BundleInfo{}
-		enabledPlugins := []*plugins.BundleInfo{}
+		disabledPlugins := []*model.BundleInfo{}
+		enabledPlugins := []*model.BundleInfo{}
 
 		for _, plugin := range availablePlugins {
 			pluginID := plugin.Manifest.Id
@@ -127,7 +126,7 @@ func (s *ServicePlugin) SyncPluginsActiveState() {
 		// Deactivate any plugins that have been disabled.
 		for _, plugin := range disabledPlugins {
 			wg.Add(1)
-			go func(plugin *plugins.BundleInfo) {
+			go func(plugin *model.BundleInfo) {
 				defer wg.Done()
 
 				pluginsEnvironment.Deactivate(plugin.Manifest.Id)
@@ -142,7 +141,7 @@ func (s *ServicePlugin) SyncPluginsActiveState() {
 		// Activate any plugins that have been enabled
 		for _, plugin := range enabledPlugins {
 			wg.Add(1)
-			go func(plugin *plugins.BundleInfo) {
+			go func(plugin *model.BundleInfo) {
 				defer wg.Done()
 
 				updatedManifest, activated, err := pluginsEnvironment.Activate(plugin.Manifest.Id)
@@ -191,7 +190,7 @@ func (s *ServicePlugin) InitPlugins(c *request.Context, pluginDir, webappPluginD
 		return
 	}
 
-	newApiFunc := func(manifest *plugins.Manifest) plugin.API {
+	newApiFunc := func(manifest *model.Manifest) plugin.API {
 		return NewPluginAPI(app.New(app.ServerConnector(s.srv)), c, manifest)
 	}
 
@@ -337,7 +336,7 @@ func (s *ServicePlugin) ShutDownPlugins() {
 	}
 }
 
-func (a *ServicePlugin) GetActivePluginManifests() ([]*plugins.Manifest, *model.AppError) {
+func (a *ServicePlugin) GetActivePluginManifests() ([]*model.Manifest, *model.AppError) {
 	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
 	if appErr != nil {
 		return nil, appErr
@@ -345,7 +344,7 @@ func (a *ServicePlugin) GetActivePluginManifests() ([]*plugins.Manifest, *model.
 
 	plgs := pluginsEnvironment.Active()
 
-	manifests := make([]*plugins.Manifest, len(plgs))
+	manifests := make([]*model.Manifest, len(plgs))
 	for i, plugin := range plgs {
 		manifests[i] = plugin.Manifest
 	}
@@ -369,7 +368,7 @@ func (s *ServicePlugin) EnablePlugin(id string) *model.AppError {
 
 	id = strings.ToLower(id)
 
-	var manifest *plugins.Manifest
+	var manifest *model.Manifest
 	for _, p := range availablePlugins {
 		if p.Manifest.Id == id {
 			manifest = p.Manifest
@@ -411,7 +410,7 @@ func (s *ServicePlugin) DisablePlugin(id string) *model.AppError {
 
 	id = strings.ToLower(id)
 
-	var manifest *plugins.Manifest
+	var manifest *model.Manifest
 	for _, p := range availablePlugins {
 		if p.Manifest.Id == id {
 			manifest = p.Manifest
@@ -438,7 +437,7 @@ func (s *ServicePlugin) DisablePlugin(id string) *model.AppError {
 
 // plugin section
 
-func (a *ServicePlugin) GetPlugins() (*plugins.PluginsResponse, *model.AppError) {
+func (a *ServicePlugin) GetPlugins() (*model.PluginsResponse, *model.AppError) {
 	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
 	if appErr == nil {
 		return nil, appErr
@@ -448,13 +447,13 @@ func (a *ServicePlugin) GetPlugins() (*plugins.PluginsResponse, *model.AppError)
 	if err != nil {
 		return nil, model.NewAppError("GetPlugins", "app.plugin.get_plugins.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	resp := &plugins.PluginsResponse{Active: []*plugins.PluginInfo{}, Inactive: []*plugins.PluginInfo{}}
+	resp := &model.PluginsResponse{Active: []*model.PluginInfo{}, Inactive: []*model.PluginInfo{}}
 	for _, plugin := range availablePlugins {
 		if plugin.Manifest == nil {
 			continue
 		}
 
-		info := &plugins.PluginInfo{
+		info := &model.PluginInfo{
 			Manifest: *plugin.Manifest,
 		}
 
@@ -470,8 +469,8 @@ func (a *ServicePlugin) GetPlugins() (*plugins.PluginsResponse, *model.AppError)
 
 // GetMarketplacePlugins returns a list of plugins from the marketplace-server,
 // and plugins that are installed locally.
-func (a *ServicePlugin) GetMarketplacePlugins(filter *plugins.MarketplacePluginFilter) ([]*plugins.MarketplacePlugin, *model.AppError) {
-	plgs := map[string]*plugins.MarketplacePlugin{}
+func (a *ServicePlugin) GetMarketplacePlugins(filter *model.MarketplacePluginFilter) ([]*model.MarketplacePlugin, *model.AppError) {
+	plgs := map[string]*model.MarketplacePlugin{}
 
 	if *a.srv.Config().PluginSettings.EnableRemoteMarketplace && !filter.LocalOnly {
 		p, appErr := a.getRemotePlugins()
@@ -500,7 +499,7 @@ func (a *ServicePlugin) GetMarketplacePlugins(filter *plugins.MarketplacePluginF
 	}
 
 	// Filter plugins.
-	var result []*plugins.MarketplacePlugin
+	var result []*model.MarketplacePlugin
 	for _, p := range plgs {
 		if pluginMatchesFilter(p.Manifest, filter.Filter) {
 			result = append(result, p)
@@ -533,7 +532,7 @@ func (s *ServicePlugin) getPrepackagedPlugin(pluginID, version string) (*plugin.
 }
 
 // getRemoteMarketplacePlugin returns plugin from marketplace-server.
-func (s *ServicePlugin) getRemoteMarketplacePlugin(pluginID, version string) (*plugins.BaseMarketplacePlugin, *model.AppError) {
+func (s *ServicePlugin) getRemoteMarketplacePlugin(pluginID, version string) (*model.BaseMarketplacePlugin, *model.AppError) {
 	marketplaceClient, err := marketplace.NewClient(
 		*s.srv.Config().PluginSettings.MarketplaceUrl,
 		s.srv.HTTPService,
@@ -554,8 +553,8 @@ func (s *ServicePlugin) getRemoteMarketplacePlugin(pluginID, version string) (*p
 	return plugin, nil
 }
 
-func (a *ServicePlugin) getRemotePlugins() (map[string]*plugins.MarketplacePlugin, *model.AppError) {
-	result := map[string]*plugins.MarketplacePlugin{}
+func (a *ServicePlugin) getRemotePlugins() (map[string]*model.MarketplacePlugin, *model.AppError) {
+	result := map[string]*model.MarketplacePlugin{}
 
 	_, appErr := a.GetPluginsEnvironment()
 	if appErr != nil {
@@ -584,14 +583,14 @@ func (a *ServicePlugin) getRemotePlugins() (map[string]*plugins.MarketplacePlugi
 			continue
 		}
 
-		result[p.Manifest.Id] = &plugins.MarketplacePlugin{BaseMarketplacePlugin: p}
+		result[p.Manifest.Id] = &model.MarketplacePlugin{BaseMarketplacePlugin: p}
 	}
 
 	return result, nil
 }
 
 // mergePrepackagedPlugins merges pre-packaged plugins to remote marketplace plugins list.
-func (a *ServicePlugin) mergePrepackagedPlugins(remoteMarketplacePlugins map[string]*plugins.MarketplacePlugin) *model.AppError {
+func (a *ServicePlugin) mergePrepackagedPlugins(remoteMarketplacePlugins map[string]*model.MarketplacePlugin) *model.AppError {
 	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
 	if appErr != nil {
 		return appErr
@@ -602,8 +601,8 @@ func (a *ServicePlugin) mergePrepackagedPlugins(remoteMarketplacePlugins map[str
 			continue
 		}
 
-		prepackagedMarketplace := &plugins.MarketplacePlugin{
-			BaseMarketplacePlugin: &plugins.BaseMarketplacePlugin{
+		prepackagedMarketplace := &model.MarketplacePlugin{
+			BaseMarketplacePlugin: &model.BaseMarketplacePlugin{
 				HomepageURL:     prepackaged.Manifest.HomepageURL,
 				IconData:        prepackaged.IconData,
 				ReleaseNotesURL: prepackaged.Manifest.ReleaseNotesURL,
@@ -638,7 +637,7 @@ func (a *ServicePlugin) mergePrepackagedPlugins(remoteMarketplacePlugins map[str
 }
 
 // mergeLocalPlugins merges locally installed plugins to remote marketplace plugins list.
-func (a *ServicePlugin) mergeLocalPlugins(remoteMarketplacePlugins map[string]*plugins.MarketplacePlugin) *model.AppError {
+func (a *ServicePlugin) mergeLocalPlugins(remoteMarketplacePlugins map[string]*model.MarketplacePlugin) *model.AppError {
 	pluginsEnvironment, appErr := a.GetPluginsEnvironment()
 	if appErr != nil {
 		return appErr
@@ -668,17 +667,17 @@ func (a *ServicePlugin) mergeLocalPlugins(remoteMarketplacePlugins map[string]*p
 			}
 		}
 
-		var labels []plugins.MarketplaceLabel
+		var labels []model.MarketplaceLabel
 		if *a.srv.Config().PluginSettings.EnableRemoteMarketplace {
 			// Labels should not (yet) be localized as the labels sent by the Marketplace are not (yet) localizable.
-			labels = append(labels, plugins.MarketplaceLabel{
+			labels = append(labels, model.MarketplaceLabel{
 				Name:        "Local",
 				Description: "This plugin is not listed in the marketplace",
 			})
 		}
 
-		remoteMarketplacePlugins[plugin.Manifest.Id] = &plugins.MarketplacePlugin{
-			BaseMarketplacePlugin: &plugins.BaseMarketplacePlugin{
+		remoteMarketplacePlugins[plugin.Manifest.Id] = &model.MarketplacePlugin{
+			BaseMarketplacePlugin: &model.BaseMarketplacePlugin{
 				HomepageURL:     plugin.Manifest.HomepageURL,
 				IconData:        iconData,
 				ReleaseNotesURL: plugin.Manifest.ReleaseNotesURL,
@@ -692,8 +691,8 @@ func (a *ServicePlugin) mergeLocalPlugins(remoteMarketplacePlugins map[string]*p
 	return nil
 }
 
-func (s *ServicePlugin) getBaseMarketplaceFilter() *plugins.MarketplacePluginFilter {
-	filter := &plugins.MarketplacePluginFilter{
+func (s *ServicePlugin) getBaseMarketplaceFilter() *model.MarketplacePluginFilter {
+	filter := &model.MarketplacePluginFilter{
 		ServerVersion:     model.CurrentVersion,
 		EnterprisePlugins: true,
 		Cloud:             true,
@@ -708,7 +707,7 @@ func (s *ServicePlugin) getBaseMarketplaceFilter() *plugins.MarketplacePluginFil
 	return filter
 }
 
-func pluginMatchesFilter(manifest *plugins.Manifest, filter string) bool {
+func pluginMatchesFilter(manifest *model.Manifest, filter string) bool {
 	filter = strings.TrimSpace(strings.ToLower(filter))
 
 	if filter == "" {
@@ -737,7 +736,7 @@ func pluginMatchesFilter(manifest *plugins.Manifest, filter string) bool {
 // it will notify all connected websocket clients (across all peers) to trigger the (re-)installation.
 // There is a small chance that this never occurs, because the last server to finish installing dies before it can announce.
 // There is also a chance that multiple servers notify, but the webapp handles this idempotently.
-func (s *ServicePlugin) notifyPluginEnabled(manifest *plugins.Manifest) error {
+func (s *ServicePlugin) notifyPluginEnabled(manifest *model.Manifest) error {
 	pluginsEnvironment, appErr := s.GetPluginsEnvironment()
 	if appErr != nil {
 		return appErr
@@ -746,7 +745,7 @@ func (s *ServicePlugin) notifyPluginEnabled(manifest *plugins.Manifest) error {
 		return nil
 	}
 
-	var statuses plugins.PluginStatuses
+	var statuses model.PluginStatuses
 
 	if s.srv.Cluster != nil {
 		var err *model.AppError
@@ -957,7 +956,7 @@ func (s *ServicePlugin) installFeatureFlagPlugins() {
 				}
 			}
 
-			_, err := s.InstallMarketplacePlugin(&plugins.InstallMarketplacePluginRequest{
+			_, err := s.InstallMarketplacePlugin(&model.InstallMarketplacePluginRequest{
 				Id:      pluginID,
 				Version: version,
 			})

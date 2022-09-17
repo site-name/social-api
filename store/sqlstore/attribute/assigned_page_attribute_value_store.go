@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/model/attribute"
 	"github.com/sitename/sitename/store"
 )
 
@@ -37,7 +36,7 @@ func (as *SqlAssignedPageAttributeValueStore) ModelFields(prefix string) model.A
 	})
 }
 
-func (as *SqlAssignedPageAttributeValueStore) ScanFields(attributeValue attribute.AssignedPageAttributeValue) []interface{} {
+func (as *SqlAssignedPageAttributeValueStore) ScanFields(attributeValue model.AssignedPageAttributeValue) []interface{} {
 	return []interface{}{
 		&attributeValue.Id,
 		&attributeValue.ValueID,
@@ -46,7 +45,7 @@ func (as *SqlAssignedPageAttributeValueStore) ScanFields(attributeValue attribut
 	}
 }
 
-func (as *SqlAssignedPageAttributeValueStore) Save(assignedPageAttrValue *attribute.AssignedPageAttributeValue) (*attribute.AssignedPageAttributeValue, error) {
+func (as *SqlAssignedPageAttributeValueStore) Save(assignedPageAttrValue *model.AssignedPageAttributeValue) (*model.AssignedPageAttributeValue, error) {
 	assignedPageAttrValue.PreSave()
 	if err := assignedPageAttrValue.IsValid(); err != nil {
 		return nil, err
@@ -63,8 +62,8 @@ func (as *SqlAssignedPageAttributeValueStore) Save(assignedPageAttrValue *attrib
 	return assignedPageAttrValue, nil
 }
 
-func (as *SqlAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string) (*attribute.AssignedPageAttributeValue, error) {
-	var res attribute.AssignedPageAttributeValue
+func (as *SqlAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string) (*model.AssignedPageAttributeValue, error) {
+	var res model.AssignedPageAttributeValue
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedPageAttributeValueTableName+" WHERE Id = ?", assignedPageAttrValueID)
 	if err != nil {
@@ -77,12 +76,12 @@ func (as *SqlAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string
 	return &res, nil
 }
 
-func (as *SqlAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*attribute.AssignedPageAttributeValue, error) {
+func (as *SqlAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedPageAttributeValue, error) {
 	// return value:
-	res := []*attribute.AssignedPageAttributeValue{}
+	res := []*model.AssignedPageAttributeValue{}
 
 	for _, id := range attributeValueIDs {
-		newValue, err := as.Save(&attribute.AssignedPageAttributeValue{
+		newValue, err := as.Save(&model.AssignedPageAttributeValue{
 			ValueID:      id,
 			AssignmentID: assignmentID,
 		})
@@ -97,7 +96,7 @@ func (as *SqlAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, at
 	return res, nil
 }
 
-func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string) ([]*attribute.AssignedPageAttributeValue, []*attribute.AttributeValue, error) {
+func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedPageAttributeValue, []*model.AttributeValue, error) {
 	query, args, err := as.GetQueryBuilder().
 		Select(append(as.ModelFields(store.AssignedPageAttributeValueTableName+"."), as.AttributeValue().ModelFields(store.AttributeValueTableName+".")...)...).
 		From(store.AssignedPageAttributeValueTableName).
@@ -115,10 +114,10 @@ func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string)
 	}
 
 	var (
-		assignedPageAttributeValues []*attribute.AssignedPageAttributeValue
-		attributeValues             []*attribute.AttributeValue
-		assignedPageAttributeValue  attribute.AssignedPageAttributeValue
-		attributeValue              attribute.AttributeValue
+		assignedPageAttributeValues []*model.AssignedPageAttributeValue
+		attributeValues             []*model.AttributeValue
+		assignedPageAttributeValue  model.AssignedPageAttributeValue
+		attributeValue              model.AttributeValue
 		scanFields                  = append(as.ScanFields(assignedPageAttributeValue), as.AttributeValue().ScanFields(attributeValue)...)
 	)
 
@@ -139,7 +138,7 @@ func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string)
 	return assignedPageAttributeValues, attributeValues, nil
 }
 
-func (as *SqlAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*attribute.AssignedPageAttributeValue) error {
+func (as *SqlAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedPageAttributeValue) error {
 
 	query := "UPDATE " + store.AssignedPageAttributeValueTableName + " SET " + as.
 		ModelFields("").
