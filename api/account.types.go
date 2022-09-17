@@ -9,7 +9,7 @@ import (
 )
 
 type Address struct {
-	Address model.Address
+	model.Address
 }
 
 func (Address) IsNode() {}

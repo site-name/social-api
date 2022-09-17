@@ -22,10 +22,6 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-const (
-	ErrorTermsOfServiceNoRowsFound = "app.terms_of_service.get.no_rows.app_error"
-)
-
 // Configs return system's configurations
 func (s *Server) Config() *model.Config {
 	return s.ConfigStore.Get()
