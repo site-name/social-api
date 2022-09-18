@@ -16,7 +16,7 @@ func (r *Resolver) SaleDelete(ctx context.Context, args struct{ Id string }) (*S
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) SaleBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*SaleBulkDelete, error) {
+func (r *Resolver) SaleBulkDelete(ctx context.Context, args struct{ Ids []string }) (*SaleBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

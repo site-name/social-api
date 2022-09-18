@@ -3,9 +3,9 @@ extend type Mutation {
   productVariantCreate(input: ProductVariantCreateInput!): ProductVariantCreate
   productVariantDelete(id: String!): ProductVariantDelete
   productVariantBulkCreate(product: String!, variants: [ProductVariantBulkCreateInput]!): ProductVariantBulkCreate
-  productVariantBulkDelete(ids: [String]!): ProductVariantBulkDelete
+  productVariantBulkDelete(ids: [String!]!): ProductVariantBulkDelete
   productVariantStocksCreate(stocks: [StockInput!]!, variantId: String!): ProductVariantStocksCreate
-  productVariantStocksDelete(variantId: String!, warehouseIds: [String!]): ProductVariantStocksDelete
+  productVariantStocksDelete(variantId: String!, warehouseIds: [String!]!): ProductVariantStocksDelete
   productVariantStocksUpdate(stocks: [StockInput!]!, variantId: String!): ProductVariantStocksUpdate
   productVariantUpdate(id: String!, input: ProductVariantInput!): ProductVariantUpdate
   productVariantSetDefault(productId: String!, variantId: String!): ProductVariantSetDefault
@@ -16,10 +16,10 @@ extend type Mutation {
 
 extend type Query {
   productVariant(id: String, sku: String, channel: String): ProductVariant
-  productVariants(ids: [String], channel: String, filter: ProductVariantFilterInput, before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
+  productVariants(ids: [String!]!, channel: String, filter: ProductVariantFilterInput, before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
 }
 
-type ProductVariant implements Node & ObjectWithMetadata {
+type ProductVariant  {
   id: String!
   name: String!
   sku: String
@@ -159,7 +159,7 @@ type ProductVariantReorderAttributeValues {
 
 input ProductVariantFilterInput {
   search: String
-  sku: [String]
+  sku: [String!]!
   metadata: [MetadataInput]
 }
 
@@ -169,7 +169,7 @@ type ProductVariantCountableConnection {
   totalCount: Int
 }
 
-type ProductVariantChannelListing implements Node {
+type ProductVariantChannelListing  {
   id: String!
   channel: Channel!
   price: Money
@@ -192,7 +192,7 @@ enum VariantAttributeScope {
   NOT_VARIANT_SELECTION
 }
 
-type ProductVariantTranslation implements Node {
+type ProductVariantTranslation  {
   id: String!
   name: String!
   language: LanguageDisplay!
@@ -200,7 +200,7 @@ type ProductVariantTranslation implements Node {
 
 input BulkAttributeValueInput {
   id: String
-  values: [String!]
+  values: [String!]!
   boolean: Boolean
 }
 
@@ -208,8 +208,8 @@ type BulkStockError {
   field: String
   message: String
   code: ProductErrorCode!
-  attributes: [String!]
-  values: [String!]
+  attributes: [String!]!
+  values: [String!]!
   index: Int
 }
 
@@ -217,10 +217,10 @@ type ProductChannelListingError {
   field: String
   message: String
   code: ProductErrorCode!
-  attributes: [String!]
-  values: [String!]
-  channels: [String!]
-  variants: [String!]
+  attributes: [String!]!
+  values: [String!]!
+  channels: [String!]!
+  variants: [String!]!
 }
 
 type ProductVariantCountableEdge {
@@ -238,9 +238,9 @@ type BulkProductError {
   field: String
   message: String
   code: ProductErrorCode!
-  attributes: [String!]
-  values: [String!]
+  attributes: [String!]!
+  values: [String!]!
   index: Int
-  warehouses: [String!]
-  channels: [String!]
+  warehouses: [String!]!
+  channels: [String!]!
 }

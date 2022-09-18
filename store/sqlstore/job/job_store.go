@@ -2,9 +2,11 @@ package job
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -41,12 +43,30 @@ func (s *SqlJobStore) ModelFields(prefix string) model.AnyArray[string] {
 
 func (jss *SqlJobStore) Save(job *model.Job) (*model.Job, error) {
 	job.PreSave()
-	if err := job.IsValid(); err != nil {
-		return nil, err
+	appErr := job.IsValid()
+	if appErr != nil {
+		return nil, appErr
 	}
 
-	query := "INSERT INTO " + store.JobTableName + "(" + jss.ModelFields("").Join(",") + ") VALUES (" + jss.ModelFields(":").Join(",") + ")"
-	if _, err := jss.GetMasterX().NamedExec(query, job); err != nil {
+	var jsonData []byte
+	var err error
+	if job.Data != nil {
+		jsonData, err = json.Marshal(job.Data)
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "Save_marshalling")
+	}
+
+	query, args, err := jss.GetQueryBuilder().
+		Insert(store.JobTableName).
+		Columns(jss.ModelFields("")...).
+		Values(job.Id, job.Type, job.Priority, job.CreateAt, job.StartAt, job.LastActivityAt, job.Status, job.Progress, jsonData).
+		ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "Save_ToSql")
+	}
+
+	if _, err := jss.GetMasterX().Exec(query, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to save Job")
 	}
 	return job, nil
@@ -128,15 +148,36 @@ func (jss *SqlJobStore) UpdateStatusOptimistically(id string, currentStatus stri
 }
 
 func (jss *SqlJobStore) Get(id string) (*model.Job, error) {
-	var status model.Job
-	if err := jss.GetReplicaX().Get(&status, "SELECT * FROM "+store.JobTableName+" WHERE Id = ?", id); err != nil {
+	var job = model.Job{
+		Data: map[string]string{},
+	}
+
+	var row = jss.GetReplicaX().QueryRowX("SELECT * FROM "+store.JobTableName+" WHERE Id = ?", id)
+	var jobData []byte
+
+	var err = row.Scan(
+		&job.Id,
+		&job.Type,
+		&job.Priority,
+		&job.CreateAt,
+		&job.StartAt,
+		&job.LastActivityAt,
+		&job.Status,
+		&job.Progress,
+		&jobData,
+	)
+	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("Job", id)
 		}
 		return nil, errors.Wrapf(err, "failed to get Job with id=%s", id)
 	}
 
-	return &status, nil
+	err = json.Unmarshal(jobData, &job.Data)
+	if err != nil {
+		return nil, errors.Wrap(err, "Get_UnMarshalling")
+	}
+	return &job, nil
 }
 
 func (jss *SqlJobStore) GetAllPage(offset int, limit int) ([]*model.Job, error) {
@@ -188,7 +229,18 @@ func (jss *SqlJobStore) GetNewestJobByStatusAndType(status string, jobType strin
 // order by creation time
 func (jss *SqlJobStore) GetNewestJobByStatusesAndType(statuses []string, jobType string) (*model.Job, error) {
 	var job model.Job
-	if err := jss.GetReplicaX().Get(&job, "SELECT * FROM "+store.JobTableName+" WHERE Status IN ? AND Type = ? LIMIT 1 ORDER BY CreateAt DESC", statuses, jobType); err != nil {
+	queryString, args, err := jss.GetQueryBuilder().
+		Select("*").
+		From(store.JobTableName).
+		Where(squirrel.Eq{"Status": statuses, "Type": jobType}).
+		Limit(1).
+		OrderBy("CreateAt DESC").
+		ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetNewestJobByStatusesAndType_ToSql")
+	}
+
+	if err := jss.GetReplicaX().Get(&job, queryString, args...); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("Job", fmt.Sprintf("<status, type>=<%s, %s>", strings.Join(statuses, ","), jobType))
 		}

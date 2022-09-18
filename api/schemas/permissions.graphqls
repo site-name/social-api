@@ -38,7 +38,7 @@ enum PermissionEnum {
 
 input PermissionGroupCreateInput {
   addPermissions: [PermissionEnum!]
-  addUsers: [String!]
+  addUsers: [String!]!
   name: String!
 }
 
@@ -49,10 +49,10 @@ type PermissionGroupCreate {
 
 input PermissionGroupUpdateInput {
   addPermissions: [PermissionEnum!]
-  addUsers: [String!]
+  addUsers: [String!]!
   name: String
   removePermissions: [PermissionEnum!]
-  removeUsers: [String!]
+  removeUsers: [String!]!
 }
 
 type PermissionGroupUpdate {
@@ -80,7 +80,7 @@ type GroupCountableConnection {
   totalCount: Int
 }
 
-type Group implements Node {
+type Group  {
   id: String!
   name: String!
   permissions: [Permission]
@@ -93,7 +93,7 @@ type PermissionGroupError {
   message: String
   code: PermissionGroupErrorCode!
   permissions: [PermissionEnum!]
-  users: [String!]
+  users: [String!]!
 }
 
 enum PermissionGroupErrorCode {

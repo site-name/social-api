@@ -44,7 +44,7 @@ type RefreshToken {
 type VerifyToken {
   user: User
   isValid: Boolean!
-  payload: GenericScalar
+  payload: JSONString!
   # errors: [AccountError!]!
 }
 

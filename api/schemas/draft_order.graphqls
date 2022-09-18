@@ -2,8 +2,8 @@ extend type Mutation {
   draftOrderComplete(id: String!): DraftOrderComplete
   draftOrderCreate(input: DraftOrderCreateInput!): DraftOrderCreate
   draftOrderDelete(id: String!): DraftOrderDelete
-  draftOrderBulkDelete(ids: [String]!): DraftOrderBulkDelete
-  # draftOrderLinesBulkDelete(ids: [String]!): DraftOrderLinesBulkDelete
+  draftOrderBulkDelete(ids: [String!]!): DraftOrderBulkDelete
+  # draftOrderLinesBulkDelete(ids: [String!]!): DraftOrderLinesBulkDelete
   draftOrderUpdate(id: String!, input: DraftOrderInput!): DraftOrderUpdate
 }
 

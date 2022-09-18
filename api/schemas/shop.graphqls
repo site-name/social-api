@@ -24,7 +24,7 @@ type Shop {
   languages: [LanguageDisplay]!
   name: String!
   permissions: [Permission]!
-  phonePrefixes: [String]!
+  phonePrefixes: [String!]!
   headerText: String
   includeTaxesInPrices: Boolean!
   fulfillmentAutoApprove: Boolean!
@@ -103,7 +103,7 @@ type ShopError {
   code: ShopErrorCode!
 }
 
-type ShopTranslation implements Node {
+type ShopTranslation  {
   id: String!
   headerText: String!
   description: String!

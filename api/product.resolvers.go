@@ -16,7 +16,7 @@ func (r *Resolver) ProductAttributeAssign(ctx context.Context, args struct {
 }
 
 func (r *Resolver) ProductAttributeUnassign(ctx context.Context, args struct {
-	AttributeIds  []*string
+	AttributeIds  []string
 	ProductTypeID string
 }) (*ProductAttributeUnassign, error) {
 	panic(fmt.Errorf("not implemented"))
@@ -30,7 +30,7 @@ func (r *Resolver) ProductDelete(ctx context.Context, args struct{ Id string }) 
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*ProductBulkDelete, error) {
+func (r *Resolver) ProductBulkDelete(ctx context.Context, args struct{ Ids []string }) (*ProductBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

@@ -1,8 +1,8 @@
 extend type Mutation {
   productMediaCreate(input: ProductMediaCreateInput!): ProductMediaCreate
   productMediaDelete(id: String!): ProductMediaDelete
-  productMediaBulkDelete(ids: [String]!): ProductMediaBulkDelete
-  productMediaReorder(mediaIds: [String]!, productId: String!): ProductMediaReorder
+  productMediaBulkDelete(ids: [String!]!): ProductMediaBulkDelete
+  productMediaReorder(mediaIds: [String!]!, productId: String!): ProductMediaReorder
   productMediaUpdate(id: String!, input: ProductMediaUpdateInput!): ProductMediaUpdate
 }
 
@@ -13,7 +13,7 @@ input ProductMediaCreateInput {
   mediaUrl: String
 }
 
-type ProductMedia implements Node {
+type ProductMedia  {
   id: String!
   sortOrder: Int
   alt: String!

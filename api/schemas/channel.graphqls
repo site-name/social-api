@@ -11,7 +11,7 @@ extend type Query {
   channels: [Channel!]
 }
 
-type Channel implements Node {
+type Channel  {
   id: String!
   name: String!
   isActive: Boolean!
@@ -27,7 +27,7 @@ input ChannelCreateInput {
   slug: String!
   currencyCode: String!
   defaultCountry: CountryCode!
-  addShippingZones: [String!]
+  addShippingZones: [String!]!
 }
 
 type ChannelCreate {
@@ -40,8 +40,8 @@ input ChannelUpdateInput {
   name: String
   slug: String
   defaultCountry: CountryCode
-  addShippingZones: [String!]
-  removeShippingZones: [String!]
+  addShippingZones: [String!]!
+  removeShippingZones: [String!]!
 }
 
 type ChannelUpdate {
@@ -72,7 +72,7 @@ type ChannelError {
   field: String
   message: String
   code: ChannelErrorCode!
-  shippingZones: [String!]
+  shippingZones: [String!]!
 }
 
 enum ChannelErrorCode {

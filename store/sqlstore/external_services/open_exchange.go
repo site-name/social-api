@@ -56,17 +56,15 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) 
 		}
 
 		if isSaving {
-			query := "INSERT INTO " + store.OpenExchangeRateTableName + "(Id, ToCurrency, Rate) VALUES (:Id, :ToCurrency, :Rate)"
-			_, err = transaction.NamedExec(query, rate)
+			_, err = transaction.NamedExec("INSERT INTO "+store.OpenExchangeRateTableName+"(Id, ToCurrency, Rate) VALUES (:Id, :ToCurrency, :Rate)", rate)
 
 		} else {
 			// check if rates are different then update
 			if !rate.Rate.Equal(*oldRate.Rate) {
 				rate.Id = oldRate.Id
 
-				query := "UPDATE " + store.OpenExchangeRateTableName + " SET Id=:Id, ToCurrency=:ToCurrency, Rate=:Rate WHERE Id=:Id"
 				var result sql.Result
-				result, err = transaction.NamedExec(query, rate)
+				result, err = transaction.NamedExec("UPDATE "+store.OpenExchangeRateTableName+" SET Id=:Id, ToCurrency=:ToCurrency, Rate=:Rate WHERE Id=:Id", rate)
 				if err == nil && result != nil {
 					numUpdated, _ = result.RowsAffected()
 				}

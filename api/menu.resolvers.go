@@ -16,7 +16,7 @@ func (r *Resolver) MenuDelete(ctx context.Context, args struct{ Id string }) (*M
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) MenuBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*MenuBulkDelete, error) {
+func (r *Resolver) MenuBulkDelete(ctx context.Context, args struct{ Ids []string }) (*MenuBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -35,7 +35,7 @@ func (r *Resolver) MenuItemDelete(ctx context.Context, args struct{ Id string })
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) MenuItemBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*MenuItemBulkDelete, error) {
+func (r *Resolver) MenuItemBulkDelete(ctx context.Context, args struct{ Ids []string }) (*MenuItemBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

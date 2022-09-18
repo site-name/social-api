@@ -1,7 +1,7 @@
 extend type Mutation {
   voucherCreate(input: VoucherInput!): VoucherCreate
   voucherDelete(id: String!): VoucherDelete
-  voucherBulkDelete(ids: [String]!): VoucherBulkDelete
+  voucherBulkDelete(ids: [String!]!): VoucherBulkDelete
   voucherUpdate(id: String!, input: VoucherInput!): VoucherUpdate
   voucherCataloguesAdd(id: String!, input: CatalogueInput!): VoucherAddCatalogues
   voucherCataloguesRemove(id: String!, input: CatalogueInput!): VoucherRemoveCatalogues
@@ -14,7 +14,7 @@ extend type Query {
   vouchers(filter: VoucherFilterInput, sortBy: VoucherSortingInput, query: String, channel: String, before: String, after: String, first: Int, last: Int): VoucherCountableConnection
 }
 
-type Voucher implements Node & ObjectWithMetadata {
+type Voucher  {
   id: String!
   name: String
   type: VoucherTypeEnum!
@@ -48,12 +48,12 @@ input VoucherInput {
   startDate: DateTime
   endDate: DateTime
   discountValueType: DiscountValueTypeEnum
-  products: [String]
-  variants: [String]
-  collections: [String]
-  categories: [String]
+  products: [String!]!
+  variants: [String!]!
+  collections: [String!]!
+  categories: [String!]!
   minCheckoutItemsQuantity: Int
-  countries: [String]
+  countries: [String!]!
   applyOncePerOrder: Boolean
   applyOncePerCustomer: Boolean
   usageLimit: Int
@@ -96,7 +96,7 @@ type VoucherTranslate {
 
 input VoucherChannelListingInput {
   addChannels: [VoucherChannelListingAddInput!]
-  removeChannels: [String!]
+  removeChannels: [String!]!
 }
 
 type VoucherChannelListingUpdate {
@@ -146,13 +146,13 @@ enum VoucherTypeEnum {
   SPECIFIC_PRODUCT
 }
 
-type VoucherTranslation implements Node {
+type VoucherTranslation  {
   id: String!
   name: String
   language: LanguageDisplay!
 }
 
-type VoucherChannelListing implements Node {
+type VoucherChannelListing  {
   id: String!
   channel: Channel!
   discountValue: Float!
@@ -163,9 +163,9 @@ type VoucherChannelListing implements Node {
 type DiscountError {
   field: String
   message: String
-  products: [String!]
+  products: [String!]!
   code: DiscountErrorCode!
-  channels: [String!]
+  channels: [String!]!
 }
 
 enum DiscountErrorCode {

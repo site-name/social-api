@@ -19,10 +19,10 @@ input WarehouseCreateInput {
   email: String
   name: String!
   address: AddressInput!
-  shippingZones: [String]
+  shippingZones: [String!]!
 }
 
-type Stock implements Node {
+type Stock  {
   warehouse: Warehouse!
   productVariant: ProductVariant!
   quantity: Int!
@@ -60,7 +60,7 @@ type WarehouseUpdate {
   warehouse: Warehouse
 }
 
-type Warehouse implements Node & ObjectWithMetadata {
+type Warehouse  {
   id: String!
   name: String!
   slug: String!
@@ -97,7 +97,7 @@ type WarehouseCountableEdge {
 input WarehouseFilterInput {
   clickAndCollectOption: WarehouseClickAndCollectOptionEnum
   search: String
-  ids: [String]
+  ids: [String!]!
   isPrivate: Boolean
 }
 

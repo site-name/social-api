@@ -9,7 +9,7 @@ extend type Query {
   checkoutLines(before: String, after: String, first: Int, last: Int): CheckoutLineCountableConnection
 }
 
-type CheckoutLine implements Node {
+type CheckoutLine  {
   id: String!
   variant: ProductVariant!
   quantity: Int!

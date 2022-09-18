@@ -31,11 +31,11 @@ func (r *Resolver) AttributeTranslate(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*AttributeBulkDelete, error) {
+func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []string }) (*AttributeBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) AttributeValueBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*AttributeValueBulkDelete, error) {
+func (r *Resolver) AttributeValueBulkDelete(ctx context.Context, args struct{ Ids []string }) (*AttributeValueBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

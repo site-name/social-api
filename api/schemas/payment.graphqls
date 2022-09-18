@@ -10,7 +10,7 @@ extend type Query {
   payments(filter: PaymentFilterInput, before: String, after: String, first: Int, last: Int): PaymentCountableConnection
 }
 
-type Payment implements Node & ObjectWithMetadata {
+type Payment  {
   id: String!
   gateway: String!
   isActive: Boolean!
@@ -62,7 +62,7 @@ type PaymentInitialize {
 }
 
 input PaymentFilterInput {
-  checkouts: [String]
+  checkouts: [String!]!
 }
 
 type PaymentCountableConnection {
@@ -115,7 +115,7 @@ type PaymentCountableEdge {
   cursor: String!
 }
 
-type Transaction implements Node {
+type Transaction  {
   id: String!
   created: DateTime!
   payment: Payment!

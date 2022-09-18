@@ -1,7 +1,7 @@
 extend type Mutation {
   saleCreate(input: SaleInput!): SaleCreate
   saleDelete(id: String!): SaleDelete
-  saleBulkDelete(ids: [String]!): SaleBulkDelete
+  saleBulkDelete(ids: [String!]!): SaleBulkDelete
   saleUpdate(id: String!, input: SaleInput!): SaleUpdate
   saleCataloguesAdd(id: String!, input: CatalogueInput!): SaleAddCatalogues
   saleCataloguesRemove(id: String!, input: CatalogueInput!): SaleRemoveCatalogues
@@ -14,7 +14,7 @@ extend type Query {
   sales(filter: SaleFilterInput, sortBy: SaleSortingInput, query: String, channel: String, before: String, after: String, first: Int, last: Int): SaleCountableConnection
 }
 
-type Sale implements Node & ObjectWithMetadata {
+type Sale  {
   id: String!
   name: String!
   type: SaleType!
@@ -36,10 +36,10 @@ input SaleInput {
   name: String
   type: DiscountValueTypeEnum
   value: PositiveDecimal
-  products: [String]
-  variants: [String]
-  categories: [String]
-  collections: [String]
+  products: [String!]!
+  variants: [String!]!
+  categories: [String!]!
+  collections: [String!]!
   startDate: DateTime
   endDate: DateTime
 }
@@ -65,9 +65,9 @@ type SaleUpdate {
 }
 
 input CatalogueInput {
-  products: [String]
-  categories: [String]
-  collections: [String]
+  products: [String!]!
+  categories: [String!]!
+  collections: [String!]!
 }
 
 type SaleAddCatalogues {
@@ -87,7 +87,7 @@ type SaleTranslate {
 
 input SaleChannelListingInput {
   addChannels: [SaleChannelListingAddInput!]
-  removeChannels: [String!]
+  removeChannels: [String!]!
 }
 
 type SaleChannelListingUpdate {
@@ -133,13 +133,13 @@ enum SaleType {
   PERCENTAGE
 }
 
-type SaleTranslation implements Node {
+type SaleTranslation  {
   id: String!
   name: String
   language: LanguageDisplay!
 }
 
-type SaleChannelListing implements Node {
+type SaleChannelListing  {
   id: String!
   channel: Channel!
   discountValue: Float!

@@ -23,7 +23,7 @@ func (r *Resolver) UserAvatarDelete(ctx context.Context) (*UserAvatarDelete, err
 }
 
 func (r *Resolver) UserBulkSetActive(ctx context.Context, args struct {
-	Ids      []*string
+	Ids      []string
 	IsActive bool
 }) (*UserBulkSetActive, error) {
 	panic(fmt.Errorf("not implemented"))

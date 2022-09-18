@@ -1,7 +1,7 @@
 extend type Mutation {
   categoryCreate(input: CategoryInput!, parent: String): CategoryCreate
   categoryDelete(id: String!): CategoryDelete
-  categoryBulkDelete(ids: [String]!): CategoryBulkDelete
+  categoryBulkDelete(ids: [String!]!): CategoryBulkDelete
   categoryUpdate(id: String!, input: CategoryInput!): CategoryUpdate
   categoryTranslate(id: String!, input: TranslationInput!, languageCode: LanguageCodeEnum!): CategoryTranslate
 }
@@ -11,7 +11,7 @@ extend type Query {
   category(id: String, slug: String): Category
 }
 
-type Category implements Node & ObjectWithMetadata {
+type Category  {
   id: String!
   seoTitle: String
   seoDescription: String
@@ -66,7 +66,7 @@ type CategoryTranslate {
 input CategoryFilterInput {
   search: String
   metadata: [MetadataInput]
-  ids: [String]
+  ids: [String!]!
 }
 
 input CategorySortingInput {
@@ -81,7 +81,7 @@ type CategoryCountableConnection {
   totalCount: Int
 }
 
-type CategoryTranslation implements Node {
+type CategoryTranslation  {
   id: String!
   seoTitle: String
   seoDescription: String

@@ -610,7 +610,8 @@ func (s *Server) initJobs() {
 	// s.Jobs.RegisterJobType(
 	// 	model.JobTypeResendInvitationEmail,
 	// 	resend_invitation_email.MakeWorker(s.Jobs, New(ServerConnector(s), s.Store, s.telemetryService),
-	// 	nil,
+	// 		nil,
+	// 	),
 	// )
 }
 

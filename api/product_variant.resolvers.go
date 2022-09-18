@@ -32,7 +32,7 @@ func (r *Resolver) ProductVariantBulkCreate(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductVariantBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*ProductVariantBulkDelete, error) {
+func (r *Resolver) ProductVariantBulkDelete(ctx context.Context, args struct{ Ids []string }) (*ProductVariantBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -103,7 +103,7 @@ func (r *Resolver) ProductVariant(ctx context.Context, args struct {
 }
 
 func (r *Resolver) ProductVariants(ctx context.Context, args struct {
-	Ids     []*string
+	Ids     []string
 	Channel *string
 	Filter  *ProductVariantFilterInput
 	Before  *string

@@ -16,7 +16,7 @@ func (r *Resolver) VoucherDelete(ctx context.Context, args struct{ Id string }) 
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) VoucherBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*VoucherBulkDelete, error) {
+func (r *Resolver) VoucherBulkDelete(ctx context.Context, args struct{ Ids []string }) (*VoucherBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -44,7 +44,7 @@ func (r *Resolver) VoucherCataloguesRemove(ctx context.Context, args struct {
 func (r *Resolver) VoucherTranslate(ctx context.Context, args struct {
 	Id           string
 	Input        NameTranslationInput
-	languageCode LanguageCodeEnum
+	LanguageCode LanguageCodeEnum
 }) (*VoucherTranslate, error) {
 	panic(fmt.Errorf("not implemented"))
 }

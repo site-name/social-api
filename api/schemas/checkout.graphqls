@@ -1,7 +1,7 @@
 extend type Mutation {
   checkoutAddPromoCode(promoCode: String!, token: String): CheckoutAddPromoCode
   checkoutBillingAddressUpdate(billingAddress: AddressInput!, token: String): CheckoutBillingAddressUpdate
-  checkoutComplete(paymentData: JSONString, redirectUrl: String, storeSource: Boolean = false, token: String): CheckoutComplete
+  checkoutComplete(paymentData: JSONString, redirectUrl: String, storeSource: Boolean, token: String): CheckoutComplete
   checkoutCreate(input: CheckoutCreateInput!): CheckoutCreate
   checkoutCustomerAttach(customerId: String, token: String): CheckoutCustomerAttach
   checkoutCustomerDetach(token: String): CheckoutCustomerDetach
@@ -24,7 +24,7 @@ type CheckoutDeliveryMethodUpdate {
   errors: [CheckoutError!]!
 }
 
-type Checkout implements Node & ObjectWithMetadata {
+type Checkout  {
   created: DateTime!
   lastChange: DateTime!
   user: User
@@ -119,7 +119,7 @@ input PaymentInput {
   token: String
   amount: PositiveDecimal
   returnUrl: String
-  storePaymentMethod: StorePaymentMethodEnum = none
+  storePaymentMethod: StorePaymentMethodEnum
   metadata: [MetadataInput!]
 }
 
@@ -159,14 +159,14 @@ type PaymentGateway {
   name: String!
   id: String!
   config: [GatewayConfigLine!]!
-  currencies: [String]!
+  currencies: [String!]!
 }
 
 type CheckoutError {
   field: String
   message: String
   code: CheckoutErrorCode!
-  variants: [String!]
+  variants: [String!]!
   addressType: AddressTypeEnum
 }
 

@@ -1,3 +1,15 @@
+extend type Query {
+  webhook(id: String!): Webhook
+  webhookEvents: [WebhookEvent]
+  webhookSamplePayload(eventType: WebhookSampleEventTypeEnum!): JSONString!
+}
+
+extend type Mutation {
+  webhookCreate(input: WebhookCreateInput!): WebhookCreate
+  webhookDelete(id: String!): WebhookDelete
+  webhookUpdate(id: String!, input: WebhookUpdateInput!): WebhookUpdate
+}
+
 input WebhookCreateInput {
   name: String
   targetUrl: String
@@ -136,7 +148,7 @@ input WebhookUpdateInput {
   secretKey: String
 }
 
-type Webhook implements Node {
+type Webhook  {
   name: String!
   targetUrl: String!
   isActive: Boolean!
@@ -149,16 +161,4 @@ type Webhook implements Node {
 type WebhookEvent {
   eventType: WebhookEventTypeEnum!
   name: String!
-}
-
-extend type Query {
-  webhook(id: String!): Webhook
-  webhookEvents: [WebhookEvent]
-  webhookSamplePayload(eventType: WebhookSampleEventTypeEnum!): JSONString
-}
-
-extend type Mutation {
-  webhookCreate(input: WebhookCreateInput!): WebhookCreate
-  webhookDelete(id: String!): WebhookDelete
-  webhookUpdate(id: String!, input: WebhookUpdateInput!): WebhookUpdate
 }

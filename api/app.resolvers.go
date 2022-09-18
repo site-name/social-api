@@ -40,7 +40,7 @@ func (r *Resolver) AppInstall(ctx context.Context, args struct{ Input AppInstall
 }
 
 func (r *Resolver) AppRetryInstall(ctx context.Context, args struct {
-	ActivateAfterInstallation *bool
+	ActivateAfterInstallation bool
 	Id                        string
 }) (*AppRetryInstall, error) {
 	panic(fmt.Errorf("not implemented"))

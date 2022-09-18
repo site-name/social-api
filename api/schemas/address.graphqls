@@ -22,7 +22,7 @@ type Address {
   postalCode: String!
   country: CountryDisplay!
   countryArea: String!
-  phone: String
+  phone: String!
   isDefaultShippingAddress: Boolean
   isDefaultBillingAddress: Boolean
 }
@@ -74,9 +74,9 @@ type AddressValidationData {
   countryName: String
   addressFormat: String
   addressLatinFormat: String
-  allowedFields: [String]
-  requiredFields: [String]
-  upperFields: [String]
+  allowedFields: [String!]!
+  requiredFields: [String!]!
+  upperFields: [String!]!
   countryAreaType: String
   countryAreaChoices: [ChoiceValue]
   cityType: String
@@ -84,8 +84,8 @@ type AddressValidationData {
   cityAreaType: String
   cityAreaChoices: [ChoiceValue]
   postalCodeType: String
-  postalCodeMatchers: [String]
-  postalCodeExamples: [String]
+  postalCodeMatchers: [String!]!
+  postalCodeExamples: [String!]!
   postalCodePrefix: String
 }
 

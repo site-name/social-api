@@ -3,9 +3,9 @@ schema:
   - api/schemas/*.graphqls
 
 # Where should the generated server code go?
-# exec:
-#   filename: graphql/generated/GRAPHQL_GENERATED.go
-#   package: generated
+exec:
+  filename: study/generated/GRAPHQL_GENERATED.go
+  package: generated
 
 # Uncomment to enable federation
 # federation:
@@ -14,14 +14,14 @@ schema:
 
 # Where should any generated models go?
 model:
-  filename: api/gqlmodel/GRAPHQL_MODELS_GEN.go
-  package: gqlmodel
+  filename: api/GRAPHQL_MODELS_GEN.go
+  package: api
 
 # Where should the resolver implementations go?
 resolver:
   layout: follow-schema
-  dir: api
-  package: api
+  dir: study/resolvers
+  package: resolvers
 
 # Optional: turn on use `gqlgen:"fieldName"` tags in your models
 # struct_tag: json
@@ -54,3 +54,15 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  Date:
+    model:
+      - github.com/sitename/sitename/api.Date
+  DateTime:
+      model:
+        - github.com/sitename/sitename/api.DateTime
+  PositiveDecimal:
+      model:
+        - github.com/sitename/sitename/api.PositiveDecimal
+  JSONString:
+      model:
+        - github.com/sitename/sitename/api.JSONString

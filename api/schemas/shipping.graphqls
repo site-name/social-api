@@ -2,14 +2,14 @@ extend type Mutation {
   shippingMethodChannelListingUpdate(id: String!, input: ShippingMethodChannelListingInput!): ShippingMethodChannelListingUpdate
   shippingPriceCreate(input: ShippingPriceInput!): ShippingPriceCreate
   shippingPriceDelete(id: String!): ShippingPriceDelete
-  shippingPriceBulkDelete(ids: [String]!): ShippingPriceBulkDelete
+  shippingPriceBulkDelete(ids: [String!]!): ShippingPriceBulkDelete
   shippingPriceUpdate(id: String!, input: ShippingPriceInput!): ShippingPriceUpdate
   shippingPriceTranslate(id: String!, input: ShippingPriceTranslationInput!, languageCode: LanguageCodeEnum!): ShippingPriceTranslate
   shippingPriceExcludeProducts(id: String!, input: ShippingPriceExcludeProductsInput!): ShippingPriceExcludeProducts
-  shippingPriceRemoveProductFromExclude(id: String!, products: [String]!): ShippingPriceRemoveProductFromExclude
+  shippingPriceRemoveProductFromExclude(id: String!, products: [String!]!): ShippingPriceRemoveProductFromExclude
   shippingZoneCreate(input: ShippingZoneCreateInput!): ShippingZoneCreate
   shippingZoneDelete(id: String!): ShippingZoneDelete
-  shippingZoneBulkDelete(ids: [String]!): ShippingZoneBulkDelete
+  shippingZoneBulkDelete(ids: [String!]!): ShippingZoneBulkDelete
   shippingZoneUpdate(id: String!, input: ShippingZoneUpdateInput!): ShippingZoneUpdate
 }
 
@@ -20,7 +20,7 @@ extend type Query {
 
 input ShippingMethodChannelListingInput {
   addChannels: [ShippingMethodChannelListingAddInput!]
-  removeChannels: [String!]
+  removeChannels: [String!]!
 }
 
 type ShippingMethodChannelListingUpdate {
@@ -38,7 +38,7 @@ input ShippingPriceInput {
   type: ShippingMethodTypeEnum
   shippingZone: String
   addPostalCodeRules: [ShippingPostalCodeRulesCreateInputRange!]
-  deletePostalCodeRules: [String!]
+  deletePostalCodeRules: [String!]!
   inclusionType: PostalCodeRuleInclusionTypeEnum
 }
 
@@ -76,7 +76,7 @@ type ShippingPriceTranslate {
 }
 
 input ShippingPriceExcludeProductsInput {
-  products: [String]!
+  products: [String!]!
 }
 
 type ShippingPriceExcludeProducts {
@@ -92,10 +92,10 @@ type ShippingPriceRemoveProductFromExclude {
 input ShippingZoneCreateInput {
   name: String
   description: String
-  countries: [String]
+  countries: [String!]!
   default: Boolean
-  addWarehouses: [String]
-  addChannels: [String!]
+  addWarehouses: [String!]!
+  addChannels: [String!]!
 }
 
 type ShippingZoneCreate {
@@ -116,12 +116,12 @@ type ShippingZoneBulkDelete {
 input ShippingZoneUpdateInput {
   name: String
   description: String
-  countries: [String]
+  countries: [String!]!
   default: Boolean
-  addWarehouses: [String]
-  addChannels: [String!]
-  removeWarehouses: [String]
-  removeChannels: [String!]
+  addWarehouses: [String!]!
+  addChannels: [String!]!
+  removeWarehouses: [String!]!
+  removeChannels: [String!]!
 }
 
 type ShippingZoneUpdate {
@@ -129,7 +129,7 @@ type ShippingZoneUpdate {
   shippingZone: ShippingZone
 }
 
-type ShippingZone implements Node & ObjectWithMetadata {
+type ShippingZone  {
   id: String!
   name: String!
   default: Boolean!
@@ -145,7 +145,7 @@ type ShippingZone implements Node & ObjectWithMetadata {
 
 input ShippingZoneFilterInput {
   search: String
-  channels: [String]
+  channels: [String!]!
 }
 
 type ShippingZoneCountableConnection {
@@ -161,7 +161,7 @@ input ShippingMethodChannelListingAddInput {
   maximumOrderPrice: PositiveDecimal
 }
 
-type ShippingMethod implements Node & ObjectWithMetadata {
+type ShippingMethod  {
   id: String!
   name: String!
   description: JSONString
@@ -185,8 +185,8 @@ type ShippingError {
   field: String
   message: String
   code: ShippingErrorCode!
-  warehouses: [String!]
-  channels: [String!]
+  warehouses: [String!]!
+  channels: [String!]!
 }
 
 enum ShippingErrorCode {
@@ -220,14 +220,14 @@ type ShippingZoneCountableEdge {
   cursor: String!
 }
 
-type ShippingMethodTranslation implements Node {
+type ShippingMethodTranslation  {
   id: String!
   name: String
   description: JSONString
   language: LanguageDisplay!
 }
 
-type ShippingMethodChannelListing implements Node {
+type ShippingMethodChannelListing  {
   id: String!
   channel: Channel!
   minimumOrderPrice: Money
@@ -235,7 +235,7 @@ type ShippingMethodChannelListing implements Node {
   price: Money
 }
 
-type ShippingMethodPostalCodeRule implements Node {
+type ShippingMethodPostalCodeRule  {
   start: String
   end: String
   inclusionType: PostalCodeRuleInclusionTypeEnum

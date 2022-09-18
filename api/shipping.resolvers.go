@@ -23,7 +23,7 @@ func (r *Resolver) ShippingPriceDelete(ctx context.Context, args struct{ Id stri
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ShippingPriceBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*ShippingPriceBulkDelete, error) {
+func (r *Resolver) ShippingPriceBulkDelete(ctx context.Context, args struct{ Ids []string }) (*ShippingPriceBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -51,7 +51,7 @@ func (r *Resolver) ShippingPriceExcludeProducts(ctx context.Context, args struct
 
 func (r *Resolver) ShippingPriceRemoveProductFromExclude(ctx context.Context, args struct {
 	Id       string
-	Products []*string
+	Products []string
 }) (*ShippingPriceRemoveProductFromExclude, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -66,7 +66,7 @@ func (r *Resolver) ShippingZoneDelete(ctx context.Context, args struct{ Id strin
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ShippingZoneBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*ShippingZoneBulkDelete, error) {
+func (r *Resolver) ShippingZoneBulkDelete(ctx context.Context, args struct{ Ids []string }) (*ShippingZoneBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

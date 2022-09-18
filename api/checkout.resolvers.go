@@ -70,7 +70,7 @@ func (r *Resolver) CheckoutPaymentCreate(ctx context.Context, args struct {
 }
 
 func (r *Resolver) CheckoutShippingAddressUpdate(ctx context.Context, args struct {
-	shippingAddress AddressInput
+	ShippingAddress AddressInput
 	Token           *string
 }) (*CheckoutShippingAddressUpdate, error) {
 	panic(fmt.Errorf("not implemented"))

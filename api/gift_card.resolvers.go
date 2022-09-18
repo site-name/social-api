@@ -42,15 +42,15 @@ func (r *Resolver) GiftCardAddNote(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) GiftCardBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*GiftCardBulkDelete, error) {
+func (r *Resolver) GiftCardBulkDelete(ctx context.Context, args struct{ Ids []string }) (*GiftCardBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) GiftCardBulkActivate(ctx context.Context, args struct{ Ids []*string }) (*GiftCardBulkActivate, error) {
+func (r *Resolver) GiftCardBulkActivate(ctx context.Context, args struct{ Ids []string }) (*GiftCardBulkActivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids []*string }) (*GiftCardBulkDeactivate, error) {
+func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids []string }) (*GiftCardBulkDeactivate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

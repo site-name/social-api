@@ -10,7 +10,7 @@ extend type Query {
   digitalContents(before: String, after: String, first: Int, last: Int): DigitalContentCountableConnection
 }
 
-type DigitalContent implements Node & ObjectWithMetadata {
+type DigitalContent  {
   useDefaultSettings: Boolean!
   automaticFulfillment: Boolean!
   contentFile: String!
@@ -75,7 +75,7 @@ type DigitalContentCountableEdge {
   cursor: String!
 }
 
-type DigitalContentUrl implements Node {
+type DigitalContentUrl  {
   content: DigitalContent!
   created: DateTime!
   downloadNum: Int!

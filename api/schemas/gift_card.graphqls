@@ -6,9 +6,9 @@ extend type Mutation {
   giftCardUpdate(id: String!, input: GiftCardUpdateInput!): GiftCardUpdate
   giftCardResend(input: GiftCardResendInput!): GiftCardResend
   giftCardAddNote(id: String!, input: GiftCardAddNoteInput!): GiftCardAddNote
-  giftCardBulkDelete(ids: [String]!): GiftCardBulkDelete
-  giftCardBulkActivate(ids: [String]!): GiftCardBulkActivate
-  giftCardBulkDeactivate(ids: [String]!): GiftCardBulkDeactivate
+  giftCardBulkDelete(ids: [String!]!): GiftCardBulkDelete
+  giftCardBulkActivate(ids: [String!]!): GiftCardBulkActivate
+  giftCardBulkDeactivate(ids: [String!]!): GiftCardBulkDeactivate
 }
 
 extend type Query {
@@ -18,7 +18,7 @@ extend type Query {
   giftCardCurrencies: [String!]!
 }
 
-type GiftCard implements Node & ObjectWithMetadata {
+type GiftCard  {
   code: String!
   isActive: Boolean!
   expiryDate: Date
@@ -138,7 +138,7 @@ type GiftCardBulkDelete {
   errors: [GiftCardError!]!
 }
 
-type GiftCardEvent implements Node {
+type GiftCardEvent  {
   id: String!
   date: DateTime
   type: GiftCardEventsEnum
@@ -180,9 +180,9 @@ enum GiftCardEventsEnum {
 input GiftCardFilterInput {
   isActive: Boolean
   tag: String
-  tags: [String]
-  products: [String]
-  usedBy: [String]
+  tags: [String!]!
+  products: [String!]!
+  usedBy: [String!]!
   currency: String
   currentBalance: PriceRangeInput
   initialBalance: PriceRangeInput

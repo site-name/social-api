@@ -1,8 +1,8 @@
 extend type Mutation {
   pageCreate(input: PageCreateInput!): PageCreate
   pageDelete(id: String!): PageDelete
-  pageBulkDelete(ids: [String]!): PageBulkDelete
-  pageBulkPublish(ids: [String]!, isPublished: Boolean!): PageBulkPublish
+  pageBulkDelete(ids: [String!]!): PageBulkDelete
+  pageBulkPublish(ids: [String!]!, isPublished: Boolean!): PageBulkPublish
   pageUpdate(id: String!, input: PageInput!): PageUpdate
   pageTranslate(id: String!, input: PageTranslationInput!, languageCode: LanguageCodeEnum!): PageTranslate
   pageAttributeAssign(attributeIds: [String!]!, pageTypeId: String!): PageAttributeAssign
@@ -15,7 +15,7 @@ extend type Query {
   pages(sortBy: PageSortingInput, filter: PageFilterInput, before: String, after: String, first: Int, last: Int): PageCountableConnection
 }
 
-type Page implements Node & ObjectWithMetadata {
+type Page  {
   id: String!
   seoTitle: String
   seoDescription: String
@@ -113,8 +113,8 @@ input PageSortingInput {
 input PageFilterInput {
   search: String
   metadata: [MetadataInput]
-  pageTypes: [String]
-  ids: [String]
+  pageTypes: [String!]!
+  ids: [String!]!
 }
 
 type PageCountableConnection {
@@ -132,8 +132,8 @@ type PageError {
   field: String
   message: String
   code: PageErrorCode!
-  attributes: [String!]
-  values: [String!]
+  attributes: [String!]!
+  values: [String!]!
 }
 
 enum PageErrorCode {
@@ -154,7 +154,7 @@ enum PageSortField {
   PUBLICATION_DATE
 }
 
-type PageTranslation implements Node {
+type PageTranslation  {
   id: String!
   seoTitle: String
   seoDescription: String

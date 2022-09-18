@@ -10,7 +10,7 @@ extend type Query {
 input ExportProductsInput {
   scope: ExportScope!
   filter: ProductFilterInput
-  ids: [String!]
+  ids: [String!]!
   exportInfo: ExportInfoInput
   fileType: FileTypesEnum!
 }
@@ -26,7 +26,7 @@ type ExportProducts {
   # errors: [ExportError!]!
 }
 
-type ExportFile implements Node & Job {
+type ExportFile  {
   id: String!
   user: User
   # app: App
@@ -75,7 +75,7 @@ enum FileTypesEnum {
 #   REQUIRED
 # }
 
-type ExportEvent implements Node {
+type ExportEvent  {
   id: String!
   date: DateTime!
   type: ExportEventsEnum!
@@ -105,9 +105,9 @@ type ExportFileCountableEdge {
 }
 
 input ExportInfoInput {
-  attributes: [String!]
-  warehouses: [String!]
-  channels: [String!]
+  attributes: [String!]!
+  warehouses: [String!]!
+  channels: [String!]!
   fields: [ProductFieldEnum!]
 }
 

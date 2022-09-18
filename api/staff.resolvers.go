@@ -40,7 +40,7 @@ func (r *Resolver) StaffDelete(ctx context.Context, args struct{ Id string }) (*
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) StaffBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*StaffBulkDelete, error) {
+func (r *Resolver) StaffBulkDelete(ctx context.Context, args struct{ Ids []string }) (*StaffBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

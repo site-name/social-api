@@ -9,7 +9,7 @@ extend type Mutation {
   orderLineDiscountRemove(orderLineId: String!): OrderLineDiscountRemove
 }
 
-type OrderLine implements Node {
+type OrderLine  {
   id: String!
   productName: String!
   variantName: String!
@@ -95,7 +95,7 @@ type OrderLineDiscountRemove {
   errors: [OrderError!]!
 }
 
-type Allocation implements Node {
+type Allocation  {
   id: String!
   quantity: Int!
   warehouse: Warehouse!

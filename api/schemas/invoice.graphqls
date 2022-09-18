@@ -7,7 +7,7 @@ extend type Mutation {
   invoiceSendNotification(id: String!): InvoiceSendNotification
 }
 
-type Invoice implements ObjectWithMetadata & Job & Node {
+type Invoice {
   id: String!
   metadata: [MetadataItem]!
   status: JobStatusEnum!

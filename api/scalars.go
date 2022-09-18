@@ -1,8 +1,10 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"reflect"
 	"time"
 
@@ -32,8 +34,33 @@ func (j *JSONString) UnmarshalGraphQL(input interface{}) error {
 	return nil
 }
 
-// PositiveDecimal implements JSONString custom graphql scalar type
+// UnmarshalGQL for gqlgen compartible
+func (j *JSONString) UnmarshalGQL(v any) error {
+	return j.UnmarshalGraphQL(v)
+}
+
+// MarshalGQL for gqlgen compartible
+func (j *JSONString) MarshalGQL(w io.Writer) {
+	data, err := json.Marshal(j)
+	if err != nil {
+		w.Write([]byte{'{', '}'})
+		return
+	}
+	w.Write(data)
+}
+
+// PositiveDecimal implements custom graphql scalar type
 type PositiveDecimal decimal.Decimal
+
+// UnmarshalGQL for gqlgen compartible
+func (j *PositiveDecimal) UnmarshalGQL(v any) error {
+	return j.UnmarshalGraphQL(v)
+}
+
+// MarshalGQL for gqlgen compartible
+func (j *PositiveDecimal) MarshalGQL(w io.Writer) {
+	w.Write([]byte(decimal.Decimal(*j).String()))
+}
 
 func (PositiveDecimal) ImplementsGraphQLType(name string) bool {
 	return name == "PositiveDecimal"
@@ -54,6 +81,9 @@ func (j *PositiveDecimal) UnmarshalGraphQL(input interface{}) error {
 	switch value.Kind() {
 	case reflect.String:
 		deci, err = decimal.NewFromString(value.String())
+
+	case reflect.Uint, reflect.Uint16, reflect.Uint8, reflect.Uint32, reflect.Uint64:
+		deci = decimal.NewFromInt(int64(value.Uint()))
 
 	case reflect.Int,
 		reflect.Int16,
@@ -88,13 +118,23 @@ type Date struct {
 	DateTime
 }
 
+func (Date) ImplementsGraphQLType(name string) bool {
+	return name == "Date"
+}
+
 // DateTime implementes custom graphql scalar DateTime
 type DateTime struct {
 	time.Time
 }
 
-func (Date) ImplementsGraphQLType(name string) bool {
-	return name == "Date"
+// UnmarshalGQL for gqlgen compartible
+func (j *DateTime) UnmarshalGQL(v any) error {
+	return j.UnmarshalGraphQL(v)
+}
+
+// MarshalGQL for gqlgen compartible
+func (j *DateTime) MarshalGQL(w io.Writer) {
+	w.Write([]byte(j.Format(time.RFC3339)))
 }
 
 func (DateTime) ImplementsGraphQLType(name string) bool {
@@ -129,4 +169,38 @@ func (j *Date) UnmarshalGraphQL(input interface{}) error {
 	j.Time = util.StartOfDay(j.Time)
 
 	return nil
+}
+
+type TranslatableItem any
+
+func IsValidTranslatableItem(v TranslatableItem) bool {
+	switch v.(type) {
+	case PageTranslatableContent,
+		SaleTranslatableContent,
+		VoucherTranslatableContent,
+		ProductTranslatableContent,
+		CategoryTranslatableContent,
+		AttributeTranslatableContent,
+		CollectionTranslatableContent,
+		AttributeValueTranslatableContent,
+		ProductVariantTranslatableContent,
+		ShippingMethodTranslatableContent,
+		MenuItemTranslatableContent:
+		return true
+
+	default:
+		return false
+	}
+}
+
+type DeliveryMethod any
+
+func IsValidDeliveryMethod(v DeliveryMethod) bool {
+	switch v.(type) {
+	case Warehouse, ShippingMethod:
+		return true
+
+	default:
+		return false
+	}
 }

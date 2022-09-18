@@ -28,7 +28,7 @@ func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) 
 
 func (r *Resolver) AddressSetDefault(ctx context.Context, args struct {
 	AddressID string
-	TypeArg   AddressTypeEnum
+	Type      AddressTypeEnum
 	UserID    string
 }) (*AddressSetDefault, error) {
 	panic(fmt.Errorf("not implemented"))

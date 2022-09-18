@@ -26,10 +26,10 @@ type AssignNavigation {
 
 input AttributeValueInput {
   id: String
-  values: [String!]
+  values: [String!]!
   file: String
   contentType: String
-  references: [String!]
+  references: [String!]!
   richText: JSONString
   boolean: Boolean
   date: Date
@@ -356,8 +356,6 @@ type FileUpload {
   uploadedFile: File
   errors: [UploadError!]!
 }
-
-scalar GenericScalar
 
 input IntRangeInput {
   gte: Int
@@ -1348,7 +1346,7 @@ type ExternalNotificationTrigger {
 }
 
 input ExternalNotificationTriggerInput {
-  ids: [String]!
+  ids: [String!]!
   extraPayload: JSONString
   externalEventType: String!
 }

@@ -3,8 +3,8 @@ extend type Mutation {
   attributeDelete(id: String!): AttributeDelete
   attributeUpdate(id: String!, input: AttributeUpdateInput!): AttributeUpdate
   attributeTranslate(id: String!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): AttributeTranslate
-  attributeBulkDelete(ids: [String]!): AttributeBulkDelete
-  attributeValueBulkDelete(ids: [String]!): AttributeValueBulkDelete
+  attributeBulkDelete(ids: [String!]!): AttributeBulkDelete
+  attributeValueBulkDelete(ids: [String!]!): AttributeValueBulkDelete
   attributeValueCreate(attributeID: String!, input: AttributeValueCreateInput!): AttributeValueCreate
   attributeValueDelete(id: String!): AttributeValueDelete
   attributeValueUpdate(id: String!, input: AttributeValueUpdateInput!): AttributeValueUpdate
@@ -17,7 +17,7 @@ extend type Query {
   attribute(id: String, slug: String): Attribute
 }
 
-type Attribute implements Node & ObjectWithMetadata {
+type Attribute  {
   id: String!
   productTypes(before: String, after: String, first: Int, last: Int): ProductTypeCountableConnection!
   productVariantTypes(before: String, after: String, first: Int, last: Int): ProductTypeCountableConnection!
@@ -101,7 +101,7 @@ input AttributeUpdateInput {
   name: String
   slug: String
   unit: MeasurementUnitsEnum
-  removeValues: [String]
+  removeValues: [String!]!
   addValues: [AttributeValueUpdateInput]
   valueRequired: Boolean
   isVariantOnly: Boolean
@@ -198,7 +198,7 @@ input AttributeFilterInput {
   availableInGrid: Boolean
   metadata: [MetadataInput]
   search: String
-  ids: [String]
+  ids: [String!]!
   type: AttributeTypeEnum
   inCollection: String
   inCategory: String
@@ -235,7 +235,7 @@ type AttributeCountableEdge {
 
 input AttributeInput {
   slug: String!
-  values: [String]
+  values: [String!]!
   valuesRange: IntRangeInput
   dateTime: DateTimeRangeInput
   date: DateRangeInput
@@ -255,7 +255,7 @@ enum AttributeInputTypeEnum {
   DATE_TIME
 }
 
-type AttributeTranslation implements Node {
+type AttributeTranslation  {
   id: String!
   name: String!
   language: LanguageDisplay!
@@ -266,7 +266,7 @@ enum AttributeTypeEnum {
   PAGE_TYPE
 }
 
-type AttributeValue implements Node {
+type AttributeValue  {
   id: String!
   name: String
   slug: String
@@ -281,7 +281,7 @@ type AttributeValue implements Node {
   dateTime: DateTime
 }
 
-type AttributeValueTranslation implements Node {
+type AttributeValueTranslation  {
   id: String!
   name: String!
   richText: JSONString

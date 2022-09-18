@@ -7,12 +7,12 @@ extend type Mutation {
 
 type DeleteMetadata {
   errors: [MetadataError!]!
-  item: ObjectWithMetadata
+  item: ObjectWithMetadata!
 }
 
 type DeletePrivateMetadata {
   errors: [MetadataError!]!
-  item: ObjectWithMetadata
+  item: ObjectWithMetadata!
 }
 
 input MetadataInput {
@@ -22,12 +22,12 @@ input MetadataInput {
 
 type UpdateMetadata {
   errors: [MetadataError!]!
-  item: ObjectWithMetadata
+  item: ObjectWithMetadata!
 }
 
 type UpdatePrivateMetadata {
   errors: [MetadataError!]!
-  item: ObjectWithMetadata
+  item: ObjectWithMetadata!
 }
 
 type MetadataError {

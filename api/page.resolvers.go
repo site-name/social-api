@@ -16,12 +16,12 @@ func (r *Resolver) PageDelete(ctx context.Context, args struct{ Id string }) (*P
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) PageBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*PageBulkDelete, error) {
+func (r *Resolver) PageBulkDelete(ctx context.Context, args struct{ Ids []string }) (*PageBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) PageBulkPublish(ctx context.Context, args struct {
-	Ids         []*string
+	Ids         []string
 	IsPublished bool
 }) (*PageBulkPublish, error) {
 	panic(fmt.Errorf("not implemented"))
@@ -64,7 +64,10 @@ func (r *Resolver) PageReorderAttributeValues(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Page(ctx context.Context, id *string, slug *string) (*Page, error) {
+func (r *Resolver) Page(ctx context.Context, args struct {
+	Id   *string
+	Slug *string
+}) (*Page, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

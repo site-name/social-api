@@ -18,12 +18,12 @@ func (r *Resolver) ProductMediaDelete(ctx context.Context, args struct{ Id strin
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductMediaBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*ProductMediaBulkDelete, error) {
+func (r *Resolver) ProductMediaBulkDelete(ctx context.Context, args struct{ Ids []string }) (*ProductMediaBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) ProductMediaReorder(ctx context.Context, args struct {
-	MediaIds  []*string
+	MediaIds  []string
 	ProductID string
 }) (*ProductMediaReorder, error) {
 	panic(fmt.Errorf("not implemented"))

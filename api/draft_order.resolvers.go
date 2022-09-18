@@ -22,7 +22,7 @@ func (r *Resolver) DraftOrderDelete(ctx context.Context, args struct{ Id string 
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) DraftOrderBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*DraftOrderBulkDelete, error) {
+func (r *Resolver) DraftOrderBulkDelete(ctx context.Context, args struct{ Ids []string }) (*DraftOrderBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

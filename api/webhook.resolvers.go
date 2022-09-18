@@ -6,8 +6,6 @@ package api
 import (
 	"context"
 	"fmt"
-
-	"github.com/sitename/sitename/model"
 )
 
 func (r *Resolver) WebhookCreate(ctx context.Context, args struct{ Input WebhookCreateInput }) (*WebhookCreate, error) {
@@ -35,6 +33,6 @@ func (r *Resolver) WebhookEvents(ctx context.Context) ([]*WebhookEvent, error) {
 
 func (r *Resolver) WebhookSamplePayload(ctx context.Context, args struct {
 	EventType WebhookSampleEventTypeEnum
-}) (model.StringInterface, error) {
+}) (JSONString, error) {
 	panic(fmt.Errorf("not implemented"))
 }

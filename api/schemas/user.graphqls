@@ -2,7 +2,7 @@ extend type Mutation {
   login(input: LoginInput!): LoginResponse!
   userAvatarUpdate(image: Upload!): UserAvatarUpdate
   userAvatarDelete: UserAvatarDelete
-  userBulkSetActive(ids: [String]!, isActive: Boolean!): UserBulkSetActive
+  userBulkSetActive(ids: [String!]!, isActive: Boolean!): UserBulkSetActive
 }
 
 extend type Query {
@@ -11,7 +11,7 @@ extend type Query {
 }
 
 
-type User implements Node & ObjectWithMetadata {
+type User  {
   id: String!
   lastLogin: DateTime
   email: String!
@@ -93,7 +93,7 @@ type UserBulkSetActive {
   errors: [AccountError!]!
 }
 
-type CustomerEvent implements Node {
+type CustomerEvent  {
   id: String!
   date: DateTime
   type: CustomerEventsEnum

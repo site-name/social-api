@@ -11,7 +11,7 @@ extend type Query {
   pageTypes(sortBy: PageTypeSortingInput, filter: PageTypeFilterInput, before: String, after: String, first: Int, last: Int): PageTypeCountableConnection
 }
 
-type PageType implements Node & ObjectWithMetadata {
+type PageType  {
   id: String!
   name: String!
   slug: String!
@@ -25,7 +25,7 @@ type PageType implements Node & ObjectWithMetadata {
 input PageTypeCreateInput {
   name: String
   slug: String
-  addAttributes: [String!]
+  addAttributes: [String!]!
 }
 
 type PageTypeCreate {
@@ -36,8 +36,8 @@ type PageTypeCreate {
 input PageTypeUpdateInput {
   name: String
   slug: String
-  addAttributes: [String!]
-  removeAttributes: [String!]
+  addAttributes: [String!]!
+  removeAttributes: [String!]!
 }
 
 type PageTypeUpdate {

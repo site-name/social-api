@@ -6,7 +6,7 @@ extend type Mutation {
   appTokenDelete(id: String!): AppTokenDelete
   appTokenVerify(token: String!): AppTokenVerify
   appInstall(input: AppInstallInput!): AppInstall
-  appRetryInstall(activateAfterInstallation: Boolean = true, id: String!): AppRetryInstall
+  appRetryInstall(activateAfterInstallation: Boolean!, id: String!): AppRetryInstall
   appDeleteFailedInstallation(id: String!): AppDeleteFailedInstallation
   appFetchManifest(manifestUrl: String!): AppFetchManifest
   appActivate(id: String!): AppActivate
@@ -21,7 +21,7 @@ extend type Query {
   appExtension(id: String!): AppExtension
 }
 
-type App implements Node & ObjectWithMetadata {
+type App {
   id: String!
   name: String
   created: DateTime
@@ -44,7 +44,7 @@ type App implements Node & ObjectWithMetadata {
   extensions: [AppExtension!]!
 }
 
-type AppExtension implements Node {
+type AppExtension {
   id: String!
   app: App!
   label: String!
@@ -163,7 +163,7 @@ type AppDeactivate {
   app: App
 }
 
-type AppInstallation implements Node & Job {
+type AppInstallation  {
   appName: String!
   manifestUrl: String!
   id: String!
@@ -233,7 +233,7 @@ enum AppErrorCode {
   OUT_OF_SCOPE_PERMISSION
 }
 
-type AppToken implements Node {
+type AppToken  {
   name: String
   authToken: String
   id: String!
@@ -242,7 +242,7 @@ type AppToken implements Node {
 input AppInstallInput {
   appName: String
   manifestUrl: String
-  activateAfterInstallation: Boolean = true
+  activateAfterInstallation: Boolean
   permissions: [PermissionEnum]
 }
 

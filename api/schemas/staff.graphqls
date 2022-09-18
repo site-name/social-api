@@ -5,7 +5,7 @@ extend type Mutation {
   staffCreate(input: StaffCreateInput!): StaffCreate
   staffUpdate(id: String!, input: StaffUpdateInput!): StaffUpdate
   staffDelete(id: String!): StaffDelete
-  staffBulkDelete(ids: [String]!): StaffBulkDelete
+  staffBulkDelete(ids: [String!]!): StaffBulkDelete
 }
 
 extend type Query {
@@ -23,7 +23,7 @@ type StaffNotificationRecipientCreate {
   staffNotificationRecipient: StaffNotificationRecipient
 }
 
-type StaffNotificationRecipient implements Node {
+type StaffNotificationRecipient  {
   user: User
   active: Boolean
   id: String!
@@ -46,7 +46,7 @@ input StaffCreateInput {
   email: String
   isActive: Boolean
   note: String
-  addGroups: [String!]
+  addGroups: [String!]!
   redirectUrl: String
 }
 
@@ -61,8 +61,8 @@ type StaffError {
   code: AccountErrorCode!
   addressType: AddressTypeEnum
   permissions: [PermissionEnum!]
-  groups: [String!]
-  users: [String!]
+  groups: [String!]!
+  users: [String!]!
 }
 
 input StaffUpdateInput {
@@ -71,8 +71,8 @@ input StaffUpdateInput {
   email: String
   isActive: Boolean
   note: String
-  addGroups: [String!]
-  removeGroups: [String!]
+  addGroups: [String!]!
+  removeGroups: [String!]!
 }
 
 type StaffUpdate {

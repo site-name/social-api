@@ -1,11 +1,11 @@
-type Wishlist implements Node {
+type Wishlist  {
   id: String!
   token: String!
   createAt: DateTime!
   items: [WishlistItem]!
 }
 
-type WishlistItem implements Node {
+type WishlistItem  {
   id: String!
   product: Product!
   createAt: DateTime!

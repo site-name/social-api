@@ -119,7 +119,7 @@ func (r *Resolver) OrderVoid(ctx context.Context, args struct{ Id string }) (*Or
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) OrderBulkCancel(ctx context.Context, args struct{ Ids []*string }) (*OrderBulkCancel, error) {
+func (r *Resolver) OrderBulkCancel(ctx context.Context, args struct{ Ids []string }) (*OrderBulkCancel, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

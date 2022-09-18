@@ -19,7 +19,7 @@ func (r *Resolver) CategoryDelete(ctx context.Context, args struct{ Id string })
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) CategoryBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*CategoryBulkDelete, error) {
+func (r *Resolver) CategoryBulkDelete(ctx context.Context, args struct{ Ids []string }) (*CategoryBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

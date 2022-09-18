@@ -16,7 +16,7 @@ func (r *Resolver) ProductTypeDelete(ctx context.Context, args struct{ Id string
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ProductTypeBulkDelete(ctx context.Context, args struct{ Ids []*string }) (*ProductTypeBulkDelete, error) {
+func (r *Resolver) ProductTypeBulkDelete(ctx context.Context, args struct{ Ids []string }) (*ProductTypeBulkDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -30,7 +30,7 @@ func (r *Resolver) ProductTypeUpdate(ctx context.Context, args struct {
 func (r *Resolver) ProductTypeReorderAttributes(ctx context.Context, args struct {
 	Moves         []*ReorderInput
 	ProductTypeID string
-	TypeArg       ProductAttributeType
+	Type          ProductAttributeType
 }) (*ProductTypeReorderAttributes, error) {
 	panic(fmt.Errorf("not implemented"))
 }
