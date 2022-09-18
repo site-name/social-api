@@ -3,7 +3,7 @@ package app
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"path"
 	"path/filepath"
@@ -112,11 +112,11 @@ func (s *Server) servePluginRequest(w http.ResponseWriter, r *http.Request, hand
 			sentToken := ""
 
 			if r.Header.Get(model.HEADER_CSRF_TOKEN) == "" {
-				bodyBytes, _ := ioutil.ReadAll(r.Body)
-				r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+				bodyBytes, _ := io.ReadAll(r.Body)
+				r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 				r.ParseForm()
 				sentToken = r.FormValue("csrf")
-				r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+				r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 			} else {
 				sentToken = r.Header.Get(model.HEADER_CSRF_TOKEN)
 			}

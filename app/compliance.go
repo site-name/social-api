@@ -1,8 +1,8 @@
 package app
 
 import (
-	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
@@ -68,7 +68,7 @@ func (a *App) GetComplianceReport(reportID string) (*model.Compliance, *model.Ap
 }
 
 func (a *App) GetComplianceFile(job *model.Compliance) ([]byte, *model.AppError) {
-	f, err := ioutil.ReadFile(*a.Config().ComplianceSettings.Directory + "compliance/" + job.JobName() + ".zip")
+	f, err := os.ReadFile(*a.Config().ComplianceSettings.Directory + "compliance/" + job.JobName() + ".zip")
 	if err != nil {
 		return nil, model.NewAppError("readFile", "api.file.read_file.reading_local.app_error", nil, err.Error(), http.StatusNotImplemented)
 	}

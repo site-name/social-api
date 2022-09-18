@@ -2,7 +2,7 @@ package app
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -105,7 +105,7 @@ func (s *Server) DoSecurityUpdateCheck() {
 						return
 					}
 
-					body, err := ioutil.ReadAll(resBody.Body)
+					body, err := io.ReadAll(resBody.Body)
 					resBody.Body.Close()
 					if err != nil || resBody.StatusCode != 200 {
 						slog.Error("Failed to read security bulletin details")
