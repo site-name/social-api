@@ -640,8 +640,8 @@ func (s *ServiceCheckout) createOrder(checkoutInfo model.CheckoutInfo, orderData
 	}
 
 	if *siteSettings.AutomaticallyFulfillNonShippableGiftcard {
-		_, appErr = s.srv.GiftcardService().FulfillNonShippableGiftcards(createdNewOrder, orderLines, siteSettings, user, nil, manager)
-		if appErr != nil {
+		_, insufficientStockErr, appErr = s.srv.GiftcardService().FulfillNonShippableGiftcards(createdNewOrder, orderLines, siteSettings, user, nil, manager)
+		if insufficientStockErr != nil || appErr != nil {
 			return nil, nil, appErr
 		}
 	}

@@ -4,7 +4,7 @@
 package sub_app_iface
 
 import (
-	"github.com/mattermost/squirrel"
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
