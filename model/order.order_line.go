@@ -70,17 +70,33 @@ type OrderLine struct {
 	UnDiscountedTotalPrice            *goprices.TaxedMoney `json:"undiscounted_total_price" db:"-"`
 	TaxRate                           *decimal.Decimal     `json:"tax_rate"` // decimal places: 4
 
-	ProductVariant *ProductVariant `json:"-" db:"-"` // for storing value returned by prefetching
-	Order          *Order          `json:"-" db:"-"` // related data, get popularized in some calls to database
-	allocations    []*ReplicateWarehouseAllocation
+	productVariant *ProductVariant `json:"-" db:"-"` // for storing value returned by prefetching
+	order          *Order          `json:"-" db:"-"` // related data, get popularized in some calls to database
+	allocations    Allocations
 }
 
-func (o *OrderLine) SetAllocations(allocations []*ReplicateWarehouseAllocation) {
+func (o *OrderLine) SetAllocations(allocations Allocations) {
 	o.allocations = allocations
 }
 
-func (o *OrderLine) GetAllocations() []*ReplicateWarehouseAllocation {
+func (o *OrderLine) GetAllocations() Allocations {
 	return o.allocations
+}
+
+func (o *OrderLine) SetOrder(order *Order) {
+	o.order = order
+}
+
+func (o *OrderLine) GetOrder() *Order {
+	return o.order
+}
+
+func (o *OrderLine) GetProductVariant() *ProductVariant {
+	return o.productVariant
+}
+
+func (o *OrderLine) SetProductVariant(variant *ProductVariant) {
+	o.productVariant = variant
 }
 
 // OrderLinePrefetchRelated
@@ -330,20 +346,16 @@ func (o *OrderLine) QuantityUnFulfilled() int {
 func (o *OrderLine) DeepCopy() *OrderLine {
 	orderLine := *o
 
-	if o.ProductVariant != nil {
-		orderLine.ProductVariant = o.ProductVariant.DeepCopy()
+	if o.productVariant != nil {
+		orderLine.productVariant = o.productVariant.DeepCopy()
 	}
-	if o.Order != nil {
-		orderLine.Order = o.Order.DeepCopy()
+	if o.order != nil {
+		orderLine.order = o.order.DeepCopy()
 	}
-
-	copiedAllocations := []*ReplicateWarehouseAllocation{}
 
 	for _, allo := range o.GetAllocations() {
-		copiedAllocations = append(copiedAllocations, allo.DeepCopy())
+		o.allocations = append(o.allocations, allo.DeepCopy())
 	}
-
-	o.SetAllocations(copiedAllocations)
 
 	return &orderLine
 }

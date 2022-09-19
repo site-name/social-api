@@ -206,7 +206,7 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLine
 			// join related product variants to order lines
 			for _, orderLine := range orderLines {
 				if variantID := orderLine.VariantID; variantID != nil && productVariantsMap[*variantID] != nil {
-					orderLine.ProductVariant = productVariantsMap[*variantID]
+					orderLine.SetProductVariant(productVariantsMap[*variantID])
 				}
 			}
 		}

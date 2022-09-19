@@ -4,7 +4,7 @@
 package sub_app_iface
 
 import (
-	"github.com/Masterminds/squirrel"
+	"github.com/mattermost/squirrel"
 	"github.com/sitename/sitename/model"
 )
 
@@ -68,18 +68,13 @@ type CsvService interface {
 	//
 	// It return list with product and variant data which can be used as import to
 	// csv writer and list of attribute and warehouse headers.
-	GetProductsData(products model.Products, exportFields []string, attributeIDs []string, warehouseIDs []string, channelIDs []string)
-	ExportProductsInBatches(
-		productQuery squirrel.SelectBuilder,
-		ExportInfo struct {
-			Attributes []string
-			Warehouses []string
-			Channels   []string
-			Fields     []string
-		},
-		exportFields []string,
-		headers []string,
-		delimiter string,
-		fileType string,
-	) *model.AppError
+	//
+	// TODO: consider improving me
+	GetProductsData(products model.Products, exportFields []string, attributeIDs []string, warehouseIDs []string, channelIDs []string) []model.StringInterface
+	ExportProductsInBatches(productQuery squirrel.SelectBuilder, ExportInfo struct {
+		Attributes []string
+		Warehouses []string
+		Channels   []string
+		Fields     []string
+	}, exportFields []string, headers []string, delimiter string, fileType string) *model.AppError
 }

@@ -46,11 +46,11 @@ func (a *ServiceOrder) GetOrderCountry(ord *model.Order) (string, *model.AppErro
 //
 // NOTE: before calling this, caller can attach related data into `orderLine` so this function does not have to call the database
 func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *model.OrderLine, shopDigitalSettings *model.ShopDefaultDigitalContentSettings) (bool, *model.AppError) {
-	if orderLine.VariantID == nil || orderLine.ProductVariant == nil {
+	if orderLine.VariantID == nil || orderLine.GetProductVariant() == nil {
 		return false, nil
 	}
 
-	digitalContent := orderLine.ProductVariant.DigitalContent
+	digitalContent := orderLine.GetProductVariant().DigitalContent
 	var appErr *model.AppError
 
 	if digitalContent == nil {
@@ -264,7 +264,7 @@ func (a *ServiceOrder) ReCalculateOrderWeight(transaction store_iface.SqlxTxExec
 }
 
 func (a *ServiceOrder) UpdateTaxesForOrderLine(line model.OrderLine, ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
-	variant := line.ProductVariant
+	variant := line.GetProductVariant()
 	if variant == nil {
 		var appErr *model.AppError
 		variant, appErr = a.srv.ProductService().ProductVariantById(*line.ProductVariantID)

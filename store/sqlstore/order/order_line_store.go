@@ -235,14 +235,8 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 		return nil, errors.Wrap(err, "OrderLineByOption_ToSql_1")
 	}
 
-	var (
-		orderLines       model.OrderLines
-		productVariants  model.ProductVariants
-		digitalContents  []*model.DigitalContent
-		products         []*model.Product
-		allocations      model.Allocations
-		allocationStocks model.Stocks
-	)
+	var orderLines model.OrderLines
+
 	err = ols.GetReplicaX().Select(&orderLines, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order lines with given option")
@@ -251,137 +245,151 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 	// check if prefetching is needed and order lines have been found to proceed
 	if (option.PrefetchRelated.VariantDigitalContent ||
 		option.PrefetchRelated.VariantProduct ||
-		option.PrefetchRelated.AllocationsStock) && len(orderLines) > 0 {
+		option.PrefetchRelated.AllocationsStock ||
+		option.PrefetchRelated.VariantStocks) && len(orderLines) > 0 {
+
+		var (
+			productVariants model.ProductVariants
+			digitalContents []*model.DigitalContent
+			products        model.Products
+			allocations     model.Allocations
+			stocks          model.Stocks
+		)
 
 		// prefetch product variants
 		if option.PrefetchRelated.VariantDigitalContent {
-			err = ols.GetReplicaX().Select(
-				&productVariants,
-				`SELECT * FROM `+store.ProductVariantTableName+` WHERE Id IN ?`,
-				orderLines.ProductVariantIDs(),
-			)
+			productVariants, err = ols.
+				ProductVariant().
+				FilterByOption(&model.ProductVariantFilterOption{
+					Id: squirrel.Eq{store.ProductVariantTableName + ".Id": orderLines.ProductVariantIDs()},
+				})
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to find product variants with given IDs")
+				return nil, err
 			}
 		}
 
 		// prefetch digital contents or products
 		if option.PrefetchRelated.VariantDigitalContent && len(productVariants) > 0 {
-			err = ols.GetReplicaX().Select(
-				&digitalContents,
-				`SELECT * FROM `+store.DigitalContentTableName+` WHERE ProductVariantID IN ?`,
-				productVariants.IDs(),
-			)
+			digitalContents, err = ols.
+				DigitalContent().
+				FilterByOption(&model.DigitalContenetFilterOption{
+					ProductVariantID: squirrel.Eq{store.DigitalContentTableName + ".ProductVariantID": productVariants.IDs()},
+				})
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to find digital contents with given product variant IDs")
+				return nil, err
 			}
 		}
 
 		// prefetch related product
 		if option.PrefetchRelated.VariantProduct && len(productVariants) > 0 {
-			err = ols.GetReplicaX().Select(
-				&products,
-				`SELECT * FROM `+store.ProductTableName+` WHERE Id IN ?`,
-				productVariants.ProductIDs(),
-			)
+			products, err = ols.
+				Product().
+				FilterByOption(&model.ProductFilterOption{
+					Id: squirrel.Eq{store.ProductTableName + ".Id": productVariants.ProductIDs()},
+				})
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to find products with given product variant IDs")
+				return nil, err
 			}
 		}
 
 		// prefetch related allocations of order lines
 		if option.PrefetchRelated.AllocationsStock && len(orderLines) > 0 {
-			err = ols.GetReplicaX().Select(
-				&allocations,
-				("SELECT * FROM " + store.AllocationTableName + " WHERE Allocations.OrderLineID IN ?"),
-				orderLines.IDs(),
-			)
+			allocations, err = ols.
+				Allocation().
+				FilterByOption(nil, &model.AllocationFilterOption{
+					OrderLineID: squirrel.Eq{store.AllocationTableName + ":OrderLineID": orderLines.IDs()},
+				})
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to find allocations with order line IDs")
+				return nil, err
 			}
 		}
 
 		// prefetch related stocks of allocations of order lines
-		if option.PrefetchRelated.AllocationsStock && len(allocations) > 0 {
-			err = ols.GetReplicaX().Select(
-				&allocationStocks,
-				("SELECT * FROM " + store.StockTableName + " WHERE Stocks.Id IN ?"),
-				allocations.StockIDs(),
-			)
+		if (option.PrefetchRelated.AllocationsStock && len(allocations) > 0) ||
+			(option.PrefetchRelated.VariantStocks && len(productVariants) > 0) {
+			stocksFilterOpts := new(model.StockFilterOption)
+
+			if option.PrefetchRelated.AllocationsStock {
+				stocksFilterOpts.Id = squirrel.Eq{store.StockTableName + ".Id": allocations.IDs()}
+
+			} else if option.PrefetchRelated.VariantStocks {
+				stocksFilterOpts.ProductVariantID = squirrel.Eq{store.StockTableName + ".ProductVariantID": productVariants.IDs()}
+			}
+
+			stocks, err = ols.Stock().FilterByOption(nil, stocksFilterOpts)
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to find stocks with IDs")
+				return nil, err
 			}
 		}
-	}
 
-	// joining prefetched data.
-	// if productVariants is not empty,
-	// this means we have prefetch-related data
-	if len(productVariants) > 0 {
+		// joining prefetched data.
+		// if productVariants is not empty,
+		// this means we have prefetch-related data
+		if len(productVariants) > 0 {
 
-		// digitalContentsMap has keys are product variant ids
-		var digitalContentsMap = map[string]*model.DigitalContent{}
-		if len(digitalContents) > 0 {
+			var stocksMap = map[string]model.Stocks{} // keys are product variant ids
+			for _, st := range stocks {
+				stocksMap[st.ProductVariantID] = append(stocksMap[st.ProductVariantID], st)
+			}
+
+			// digitalContentsMap has keys are product variant ids
+			var digitalContentsMap = map[string]*model.DigitalContent{}
 			for _, digitalContent := range digitalContents {
 				digitalContentsMap[digitalContent.ProductVariantID] = digitalContent
 			}
-		}
 
-		// productsMap has keys are product ids
-		var productsMap = map[string]*model.Product{}
-		if len(products) > 0 {
+			// productsMap has keys are product ids
+			var productsMap = map[string]*model.Product{}
 			for _, product := range products {
 				productsMap[product.Id] = product
 			}
-		}
 
-		// productVariantsMap has keys are product variant ids
-		var productVariantsMap = map[string]*model.ProductVariant{}
-		for _, variant := range productVariants {
-			productVariantsMap[variant.Id] = variant
+			// productVariantsMap has keys are product variant ids
+			var productVariantsMap = map[string]*model.ProductVariant{}
+			for _, variant := range productVariants {
+				productVariantsMap[variant.Id] = variant
 
-			if dgt := digitalContentsMap[variant.Id]; dgt != nil {
-				variant.DigitalContent = dgt
+				if dgt := digitalContentsMap[variant.Id]; dgt != nil {
+					variant.DigitalContent = dgt
+				}
+				if prd := productsMap[variant.ProductID]; prd != nil {
+					variant.Product = prd
+				}
+				if stocks, ok := stocksMap[variant.Id]; ok && len(stocks) > 0 {
+					variant.SetStocks(stocks)
+				}
 			}
-
-			if prd := productsMap[variant.ProductID]; prd != nil {
-				variant.Product = prd
-			}
-		}
-		for _, line := range orderLines {
-			if line.VariantID != nil && productVariantsMap[*line.VariantID] != nil {
-				line.ProductVariant = productVariantsMap[*line.VariantID]
-			}
-		}
-	}
-
-	if len(allocations) > 0 {
-		// allocationStocksMap has keys are stock ids
-		var allocationStocksMap = map[string]*model.Stock{}
-		if len(allocationStocks) > 0 {
-			for _, stock := range allocationStocks {
-				allocationStocksMap[stock.Id] = stock
+			for _, line := range orderLines {
+				if line.VariantID != nil && productVariantsMap[*line.VariantID] != nil {
+					line.SetProductVariant(productVariantsMap[*line.VariantID])
+				}
 			}
 		}
 
-		// allocationsMap has keys are order line ids
-		var allocationsMap = map[string][]*model.ReplicateWarehouseAllocation{}
-		for _, allocation := range allocations {
-
-			replicateAllocation := allocation.ToReplicateAllocation()
-
-			if stock := allocationStocksMap[replicateAllocation.StockID]; stock != nil {
-				replicateAllocation.SetStock(stock.ToReplicateStock())
+		if len(allocations) > 0 {
+			// stocksMap has keys are stock ids
+			var stocksMap = map[string]*model.Stock{}
+			for _, stock := range stocks {
+				stocksMap[stock.Id] = stock
 			}
 
-			allocationsMap[allocation.OrderLineID] = append(allocationsMap[allocation.OrderLineID], replicateAllocation)
-		}
-		for _, orderLine := range orderLines {
-			if alls := allocationsMap[orderLine.Id]; alls != nil {
-				orderLine.SetAllocations(alls)
+			// allocationsMap has keys are order line ids
+			var allocationsMap = map[string]model.Allocations{}
+			for _, allocation := range allocations {
+				if stock := stocksMap[allocation.StockID]; stock != nil {
+					allocation.Stock = stock
+				}
+
+				allocationsMap[allocation.OrderLineID] = append(allocationsMap[allocation.OrderLineID], allocation)
+			}
+			for _, orderLine := range orderLines {
+				if alls := allocationsMap[orderLine.Id]; alls != nil {
+					orderLine.SetAllocations(alls)
+				}
 			}
 		}
-	}
+
+	} // end prefetch related
 
 	return orderLines, nil
 }

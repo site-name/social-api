@@ -28,7 +28,7 @@ type GiftcardService interface {
 	// DeleteGiftCardCheckout drops a giftcard-checkout relation
 	DeleteGiftCardCheckout(giftcardID string, checkoutToken string) *model.AppError
 	// FulfillNonShippableGiftcards
-	FulfillNonShippableGiftcards(orDer *model.Order, orderLines model.OrderLines, siteSettings *model.Shop, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.AppError)
+	FulfillNonShippableGiftcards(orDer *model.Order, orderLines model.OrderLines, siteSettings *model.Shop, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model.AppError)
 	// GiftcardEventsByOptions returns a list of giftcard events filtered using given options
 	GiftcardEventsByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, *model.AppError)
 	// GiftcardsByOption finds a list of giftcards with given option
@@ -50,7 +50,7 @@ type GiftcardService interface {
 	// UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
 	UpsertOrderGiftcardRelations(transaction store_iface.SqlxTxExecutor, orderGiftCards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, *model.AppError)
 	DeactivateOrderGiftcards(orderID string, user *model.User, _ interface{}) *model.AppError
-	FulfillGiftcardLines(giftcardLines model.OrderLines, requestorUser *model.User, _ interface{}, orDer *model.Order, manager interfaces.PluginManagerInterface) (interface{}, *model.AppError)
+	FulfillGiftcardLines(giftcardLines model.OrderLines, requestorUser *model.User, _ interface{}, order *model.Order, manager interfaces.PluginManagerInterface) ([]*model.Fulfillment, *model.InsufficientStock, *model.AppError)
 	GetDefaultGiftcardPayload(giftCard model.GiftCard) model.StringInterface
 	GetGiftCard(id string) (*model.GiftCard, *model.AppError)
 	GetNonShippableGiftcardLines(lines model.OrderLines) (model.OrderLines, *model.AppError)

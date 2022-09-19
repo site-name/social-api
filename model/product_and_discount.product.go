@@ -115,11 +115,12 @@ func (p *Product) WeightString() string {
 	return fmt.Sprintf("%f %s", *p.Weight, u)
 }
 
+// Flat returns a slice of map[string]interface{} items
+// each item has keys are values, values of values of attributes of app/csv.ProductExportFields
 func (ps Products) Flat() []StringInterface {
 	var res = []StringInterface{}
 
 	for _, prd := range ps {
-
 		maxLength := util.Max(
 			len(prd.Collections),
 			len(prd.Medias),
@@ -132,7 +133,7 @@ func (ps Products) Flat() []StringInterface {
 			productTypeName string
 		)
 
-		if prd.CategoryID != nil && prd.Category != nil {
+		if prd.Category != nil {
 			categorySlug = prd.Category.Slug
 		}
 		if prd.ProductType != nil {
@@ -143,8 +144,8 @@ func (ps Products) Flat() []StringInterface {
 			data := StringInterface{
 				"id":                 prd.Id,
 				"name":               prd.Name,
-				"description_as_str": prd.DescriptionPlainText,
-				"category_slug":      categorySlug,
+				"description_as_str": prd.Description,
+				"category__slug":     categorySlug,
 				"product_type__name": productTypeName,
 				"charge_taxes":       *prd.ChargeTaxes,
 				"product_weight":     prd.WeightString(),
@@ -153,15 +154,12 @@ func (ps Products) Flat() []StringInterface {
 			if i < len(prd.Collections) {
 				data["collections__slug"] = prd.Collections[i].Slug
 			}
-
 			if i < len(prd.Medias) {
 				data["media__image"] = prd.Medias[i].Path
 			}
-
 			if i < len(prd.AssignedProductAttributes) {
-
+				panic("not implemented")
 			}
-
 			if i < len(prd.ProductVariants) {
 				data["variant_weight"] = prd.ProductVariants[i].WeightString()
 				data["variants__id"] = prd.ProductVariants[i].Id

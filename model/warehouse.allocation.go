@@ -59,22 +59,13 @@ func (a Allocations) StockIDs() []string {
 	return res
 }
 
-func (a *Allocation) ToReplicateAllocation() *ReplicateWarehouseAllocation {
-	if a == nil {
-		return nil
-	}
-	return &ReplicateWarehouseAllocation{
-		Id:                a.Id,
-		CreateAt:          a.CreateAt,
-		OrderLineID:       a.OrderLineID,
-		StockID:           a.StockID,
-		QuantityAllocated: a.QuantityAllocated,
-	}
+func (a Allocations) Len() int {
+	return len(a)
 }
 
 func (a *Allocation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"allocation.is_valid.%s.app_error",
+		"model.allocation.is_valid.%s.app_error",
 		"allocation_id=",
 		"Allocation.isValid",
 	)

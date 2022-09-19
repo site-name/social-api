@@ -54,3 +54,28 @@ func (sa AnyArray[T]) Join(sep string) string {
 
 	return builder.String()
 }
+
+// AddNoDup adds given items into current slice, also makes sure there is no duplicate
+// E.g:
+//
+//	[1, 2, 3, 4].AddNoDup(3, 4, 5, 6) => [1, 2, 3, 4, 5, 6]
+func (a AnyArray[T]) AddNoDup(items ...T) AnyArray[T] {
+	meetMap := map[T]struct{}{}
+
+	res := make(AnyArray[T], 0, cap(a)+cap(items))
+	for _, item := range a {
+		if _, ok := meetMap[item]; !ok {
+			res = append(res, item)
+			meetMap[item] = struct{}{}
+		}
+	}
+
+	for _, item := range items {
+		if _, ok := meetMap[item]; !ok {
+			res = append(res, item)
+			meetMap[item] = struct{}{}
+		}
+	}
+
+	return res
+}

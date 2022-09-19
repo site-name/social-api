@@ -99,7 +99,7 @@ func (s StringInterface) Get(key string, defaultValue ...interface{}) interface{
 //
 // Also delete the key-value from the map if found
 func (s StringInterface) Pop(key string, defaultValue ...interface{}) interface{} {
-	v := s.Get(key)
+	v := s.Get(key, defaultValue...)
 	delete(s, key)
 	return v
 }

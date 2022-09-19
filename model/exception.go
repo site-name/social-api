@@ -1,9 +1,5 @@
 package model
 
-import (
-	"strings"
-)
-
 type CheckoutErrorCode string
 
 // checkout error codes
@@ -75,21 +71,17 @@ func (i *InsufficientStock) VariantIDs() []string {
 }
 
 func (i *InsufficientStock) Error() string {
-	var builder strings.Builder
-
-	builder.WriteString("Insufficient stock for ")
+	var res string
 	for idx, item := range i.Items {
-		builder.WriteString(item.Variant.String())
-		if idx == 0 {
+		if idx < len(i.Items)-1 {
+			res += item.Variant.String() + ", "
 			continue
 		}
-		if idx == len(i.Items)-1 {
-			break
-		}
-		builder.WriteString(", ")
+
+		res += item.Variant.String()
 	}
 
-	return builder.String()
+	return res
 }
 
 type PreorderAllocationError struct {

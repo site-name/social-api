@@ -663,7 +663,7 @@ func (s *ServiceOrder) ApproveFulfillment(fulfillment *model.Fulfillment, user *
 		linesToFulfill = append(linesToFulfill, &model.OrderLineData{
 			Line:        *line.OrderLine,
 			Quantity:    line.Quantity,
-			Variant:     line.OrderLine.ProductVariant, //
+			Variant:     line.OrderLine.GetProductVariant(), //
 			WarehouseID: warehouseID,
 		})
 	}
@@ -909,7 +909,7 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord model.Order, manager
 			continue
 		}
 
-		if orderLine.ProductVariant != nil { // ProductVariant is available to use, prefetch option is enabled above
+		if orderLine.GetProductVariant() != nil { // ProductVariant is available to use, prefetch option is enabled above
 			_, appErr = a.srv.ProductService().UpsertDigitalContentURL(&model.DigitalContentUrl{
 				LineID: &orderLine.Id,
 			})
@@ -939,7 +939,7 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord model.Order, manager
 		orderLineDatas = append(orderLineDatas, &model.OrderLineData{
 			Line:        *orderLine,
 			Quantity:    orderLine.Quantity,
-			Variant:     orderLine.ProductVariant,
+			Variant:     orderLine.GetProductVariant(),
 			WarehouseID: &stock.WarehouseID,
 		})
 	}

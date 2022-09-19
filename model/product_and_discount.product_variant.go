@@ -32,6 +32,7 @@ type ProductVariant struct {
 
 	DigitalContent *DigitalContent `json:"-" db:"-"` // for storing value returned by prefetching
 	Product        *Product        `json:"-" db:"-"`
+	stocks         Stocks          `json:"-" db:"-"`
 }
 
 // ProductVariantFilterOption is used to build sql queries
@@ -81,6 +82,14 @@ func (p ProductVariants) DeepCopy() ProductVariants {
 	return res
 }
 
+func (s *ProductVariant) SetStocks(stk Stocks) {
+	s.stocks = stk
+}
+
+func (p *ProductVariant) GetStocks() Stocks {
+	return p.stocks
+}
+
 // FilterNils returns new ProductVariants contains all non-nil items from current ProductVariants
 func (p ProductVariants) FilterNils() ProductVariants {
 	var res ProductVariants
@@ -116,7 +125,7 @@ func (p ProductVariants) ProductIDs() []string {
 
 func (p *ProductVariant) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"product_variant.is_valid.%s.app_error",
+		"model.product_variant.is_valid.%s.app_error",
 		"product_variant_id=",
 		"ProductVariant.IsValid",
 	)
@@ -201,6 +210,9 @@ func (p *ProductVariant) DeepCopy() *ProductVariant {
 	if p.DigitalContent != nil {
 		res.DigitalContent = p.DigitalContent.DeepCopy()
 	}
+	if p.stocks != nil {
+		res.stocks = p.stocks.DeepCopy()
+	}
 
 	return &res
 }
@@ -245,7 +257,7 @@ func (p *ProductVariantTranslation) PreUpdate() {
 
 func (p *ProductVariantTranslation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"product_variant_translation.is_valid.%s.app_error",
+		"model.product_variant_translation.is_valid.%s.app_error",
 		"product_variant_translation_id=",
 		"ProductVariantTranslation.IsValid",
 	)

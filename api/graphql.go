@@ -30,7 +30,7 @@ func (api *API) InitGraphql() error {
 		graphql.Logger(slog.NewGraphQLLogger(api.srv.Log)),
 		graphql.MaxParallelism(200),
 		graphql.MaxDepth(4),
-		graphql.DisableIntrospection(),
+		// graphql.DisableIntrospection(),
 	}
 
 	api.schema, err = graphql.ParseSchema(schemaString, &Resolver{srv: api.srv}, opts...)
@@ -39,7 +39,7 @@ func (api *API) InitGraphql() error {
 	}
 
 	api.Router.Handle("/graphql", api.APIHandlerTrustRequester(graphiQL)).Methods(http.MethodGet)
-	api.Router.Handle("/graphql", api.APISessionRequired(api.graphql)).Methods(http.MethodPost)
+	api.Router.Handle("/graphql", api.APIHandlerTrustRequester(api.graphql)).Methods(http.MethodPost)
 	return nil
 }
 
@@ -59,6 +59,7 @@ func (api *API) graphql(c *web.Context, w http.ResponseWriter, r *http.Request) 
 	r.Body = http.MaxBytesReader(w, r.Body, 102400)
 
 	var params graphQLInput
+
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		err2 := gqlerrors.Errorf("invalid request body: %v", err)
 		response = &graphql.Response{Errors: []*gqlerrors.QueryError{err2}}

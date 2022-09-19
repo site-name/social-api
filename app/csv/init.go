@@ -13,6 +13,7 @@ type Fields struct {
 	VARIANT_CHANNEL_LISTING_FIELDS model.StringMap
 }
 
+// Data structure with fields for product export
 var ProductExportFields = &Fields{
 	HEADERS_TO_FIELDS_MAPPING: map[string]model.StringMap{
 		"fields": {

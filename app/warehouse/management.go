@@ -1041,36 +1041,45 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 	}
 
 	var orDer *model.Order
-	if preorderAllocation.OrderLine != nil && preorderAllocation.OrderLine.Order != nil {
-		orDer = preorderAllocation.OrderLine.Order
+	if preorderAllocation != nil &&
+		preorderAllocation.OrderLine != nil &&
+		preorderAllocation.OrderLine.GetOrder() != nil {
+		orDer = preorderAllocation.OrderLine.GetOrder()
+
 	} else {
-		preorderAllocations, appErr := s.srv.WarehouseService().PreOrderAllocationsByOptions(&model.PreorderAllocationFilterOption{
-			SelectRelated_OrderLine:       true,
-			SelectRelated_OrderLine_Order: true,
-			Id:                            squirrel.Eq{store.PreOrderAllocationTableName + ".Id": preorderAllocation.Id},
-		})
+		preorderAllocations, appErr := s.srv.
+			WarehouseService().
+			PreOrderAllocationsByOptions(&model.PreorderAllocationFilterOption{
+				SelectRelated_OrderLine:       true,
+				SelectRelated_OrderLine_Order: true,
+				Id:                            squirrel.Eq{store.PreOrderAllocationTableName + ".Id": preorderAllocation.Id},
+			})
 		if appErr != nil {
 			return nil, nil, appErr
 		}
 		preorderAllocation = preorderAllocations[0]
-		orDer = preorderAllocation.OrderLine.Order
+		orDer = preorderAllocation.OrderLine.GetOrder()
 	}
 
 	var wareHouse *model.WareHouse
 
 	if orDer.ShippingMethodID != nil {
-		orderShippingMethod, appErr := s.srv.ShippingService().ShippingMethodByOption(&model.ShippingMethodFilterOption{
-			Id: squirrel.Eq{
-				store.ShippingMethodTableName + ".Id": *orDer.ShippingMethodID,
-			},
-		})
+		orderShippingMethod, appErr := s.srv.
+			ShippingService().
+			ShippingMethodByOption(&model.ShippingMethodFilterOption{
+				Id: squirrel.Eq{
+					store.ShippingMethodTableName + ".Id": *orDer.ShippingMethodID,
+				},
+			})
 		if appErr != nil {
 			return nil, nil, appErr
 		}
 
-		warehouses, appErr := s.srv.WarehouseService().WarehousesByOption(&model.WarehouseFilterOption{
-			ShippingZonesId: squirrel.Eq{store.ShippingZoneTableName + ".Id": orderShippingMethod.ShippingZoneID},
-		})
+		warehouses, appErr := s.srv.
+			WarehouseService().
+			WarehousesByOption(&model.WarehouseFilterOption{
+				ShippingZonesId: squirrel.Eq{store.ShippingZoneTableName + ".Id": orderShippingMethod.ShippingZoneID},
+			})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
 				return nil, nil, appErr
@@ -1086,9 +1095,11 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 			return nil, nil, appErr
 		}
 
-		warehouses, appErr := s.srv.WarehouseService().WarehousesByOption(&model.WarehouseFilterOption{
-			ShippingZonesCountries: squirrel.Like{store.ShippingMethodTableName + ".Countries": orderCountry},
-		})
+		warehouses, appErr := s.srv.
+			WarehouseService().
+			WarehousesByOption(&model.WarehouseFilterOption{
+				ShippingZonesCountries: squirrel.Like{store.ShippingMethodTableName + ".Countries": orderCountry},
+			})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
 				return nil, nil, appErr

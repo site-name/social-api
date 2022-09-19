@@ -5,7 +5,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
@@ -15,7 +17,9 @@ import (
 //
 // It return list with product and variant data which can be used as import to
 // csv writer and list of attribute and warehouse headers.
-func (a *ServiceCsv) GetProductsData(products model.Products, exportFields []string, attributeIDs []string, warehouseIDs []string, channelIDs []string) {
+//
+// TODO: consider improving me
+func (a *ServiceCsv) GetProductsData(products model.Products, exportFields []string, attributeIDs []string, warehouseIDs []string, channelIDs []string) []model.StringInterface {
 	var (
 		exportVariantID     = util.ItemInSlice("variants__id", exportFields)
 		productFields       = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["fields"].Values()
@@ -25,12 +29,55 @@ func (a *ServiceCsv) GetProductsData(products model.Products, exportFields []str
 	if !exportVariantID {
 		productExportFields = append(productExportFields, "variants__id")
 	}
+
+	productsRelationsData := a.getProductsRelationsData(products, exportFields, attributeIDs, channelIDs)
+	variantsRelationsData := a.getVariantsRelationsData(products, exportFields, attributeIDs, warehouseIDs, channelIDs)
+
+	res := []model.StringInterface{}
+
+	for _, productData := range products.Flat() {
+		var pk = productData["id"].(string)
+		var variantPK string
+
+		if exportVariantID {
+			variantPK = productData.Get("variants__id", "").(string)
+		} else {
+			variantPK = productData.Pop("variants__id", "").(string)
+		}
+
+		productRelationsData := productsRelationsData[pk]
+		if productRelationsData == nil {
+			productRelationsData = model.StringMap{}
+		}
+
+		variantRelationsData := variantsRelationsData[variantPK]
+		if variantRelationsData == nil {
+			variantRelationsData = model.StringMap{}
+		}
+
+		if exportVariantID {
+			productData["variants__id"] = variantPK
+		}
+
+		data := model.StringInterface{}
+		data.Merge(productData)
+		for k, v := range productRelationsData {
+			data[k] = v
+		}
+		for k, v := range variantRelationsData {
+			data[k] = v
+		}
+
+		res = append(res, data)
+	}
+
+	return res
 }
 
 // Get data about product relations fields.
 // If any many to many fields are in export_fields or some attribute_ids exists then
 // dict with product relations fields is returned.
-// Otherwise it returns empty dict.
+// Otherwise it returns empty di`ct.
 func (s *ServiceCsv) getProductsRelationsData(products model.Products, exportFields, attributeIDs, channelIDs []string) map[string]model.StringMap {
 	var (
 		manyToManyFields = ProductExportFields.HEADERS_TO_FIELDS_MAPPING["product_many_to_many"].Values()
@@ -44,24 +91,24 @@ func (s *ServiceCsv) getProductsRelationsData(products model.Products, exportFie
 	return map[string]model.StringMap{}
 }
 
-func (s *ServiceCsv) prepareProductsRelationsData(products model.Products, fields, attributeIDs, channelIDs []string) map[string]model.StringMap {
+func (s *ServiceCsv) prepareProductsRelationsData(products model.Products, fields model.AnyArray[string], attributeIDs, channelIDs []string) map[string]model.StringMap {
 	var (
 		channelFields = ProductExportFields.PRODUCT_CHANNEL_LISTING_FIELDS.DeepCopy()
-		resultData    = map[string]map[string][]string{}
+		resultData    = map[string]map[string][]any{}
 	)
 
 	fields = append(fields, "id")
 	if len(attributeIDs) > 0 {
-		fields = append(fields, ProductExportFields.PRODUCT_ATTRIBUTE_FIELDS.Values()...)
+		fields = fields.AddNoDup(ProductExportFields.PRODUCT_ATTRIBUTE_FIELDS.Values()...)
 	}
 	if len(channelIDs) > 0 {
-		fields = append(fields, channelFields.Values()...)
+		fields = fields.AddNoDup(channelFields.Values()...)
 	}
 
-	// var (
-	// 	channelPkLookup   = channelFields.Pop("channel_pk")
-	// 	channelSlugLookup = channelFields.Pop("slug")
-	// )
+	var (
+		channelPkLookup   = channelFields.Pop("channel_pk")
+		channelSlugLookup = channelFields.Pop("slug")
+	)
 
 	for _, data := range products.Flat() {
 		var (
@@ -84,38 +131,147 @@ func (s *ServiceCsv) prepareProductsRelationsData(products model.Products, field
 			)
 		}
 
-		s.handleAttributeData(pk, data, attributeIDs, resultData, ProductExportFields.PRODUCT_ATTRIBUTE_FIELDS, "product attribute")
+		resultData, data = s.handleAttributeData(pk, data, attributeIDs, resultData, ProductExportFields.PRODUCT_ATTRIBUTE_FIELDS, "product attribute")
+		resultData, data = s.handleChannelData(pk, data, channelIDs, resultData, channelPkLookup, channelSlugLookup, channelFields)
 	}
 
-	panic("not implt")
+	result := map[string]model.StringMap{}
+	for pk, data := range resultData {
+		result[pk] = model.StringMap{}
+
+		for header, values := range data {
+			var str string
+
+			for idx, value := range values {
+				if idx < len(values)-1 {
+					str += fmt.Sprintf("%v, ", value)
+					continue
+				}
+				str += fmt.Sprintf("%v", value)
+			}
+
+			result[pk][header] = str
+		}
+	}
+
+	return result
 }
 
-func (s *ServiceCsv) getVariantsRelationsData(products model.Products, exportFields, attributeIDs, warehouseIDs, channelIDs []string) {
+func (s *ServiceCsv) getVariantsRelationsData(products model.Products, exportFields, attributeIDs, warehouseIDs, channelIDs []string) map[string]model.StringMap {
+	manyToManyFields := ProductExportFields.HEADERS_TO_FIELDS_MAPPING["variant_many_to_many"].Values()
+	relationsFields := util.SlicesIntersection(exportFields, manyToManyFields)
 
+	if len(relationsFields) > 0 || len(attributeIDs) > 0 || len(channelIDs) > 0 {
+		return s.prepareVariantsRelationsData(products, relationsFields, attributeIDs, warehouseIDs, channelIDs)
+	}
+
+	return map[string]model.StringMap{}
+}
+
+func (s *ServiceCsv) prepareVariantsRelationsData(products model.Products, fields model.AnyArray[string], attributeIDs, warehouseIDs, channelIDs []string) map[string]model.StringMap {
+	fields = append(fields, "variants__id")
+
+	var channelFields = ProductExportFields.VARIANT_CHANNEL_LISTING_FIELDS.DeepCopy()
+
+	if len(attributeIDs) > 0 {
+		fields = fields.AddNoDup(ProductExportFields.VARIANT_ATTRIBUTE_FIELDS.Values()...)
+	}
+	if len(warehouseIDs) > 0 {
+		fields = fields.AddNoDup(ProductExportFields.WAREHOUSE_FIELDS.Values()...)
+	}
+	if len(channelIDs) > 0 {
+		fields = fields.AddNoDup(channelFields.Values()...)
+	}
+
+	var (
+		resultData        = map[string]map[string][]any{}
+		channelPKLookup   = channelFields.Pop("channel_pk")
+		channelSlugLookup = channelFields.Pop("slug")
+	)
+
+	for _, data := range products.Flat() {
+		pk := data.Get("variants__id").(string)
+		image := data.Pop("variants__media__image", nil)
+
+		if image != nil {
+			resultData[pk]["variants__media__image"] = append(resultData[pk]["variants__media__image"], filepath.Join(*s.srv.Config().ServiceSettings.SiteURL, image.(string)))
+		}
+
+		resultData, data = s.handleAttributeData(pk, data, attributeIDs, resultData, ProductExportFields.VARIANT_ATTRIBUTE_FIELDS, "variant attribute")
+		resultData, data = s.handleChannelData(pk, data, channelIDs, resultData, channelPKLookup, channelSlugLookup, channelFields)
+		resultData, data = s.handleWarehouseData(pk, data, warehouseIDs, resultData, ProductExportFields.WAREHOUSE_FIELDS)
+	}
+
+	result := map[string]model.StringMap{}
+	for pk, data := range resultData {
+		result[pk] = model.StringMap{}
+
+		for header, values := range data {
+			var str string
+
+			for idx, item := range values {
+				if idx < len(values)-1 {
+					str += fmt.Sprintf("%v, ", item)
+					continue
+				}
+				str += fmt.Sprintf("%v", item)
+			}
+
+			result[pk][header] = str
+		}
+	}
+
+	return result
+}
+
+func (s *ServiceCsv) handleWarehouseData(pk string, data model.StringInterface, warehouseIDs []string, resultData map[string]map[string][]any, warehouseFields model.StringMap) (map[string]map[string][]any, model.StringInterface) {
+	warehousePK := data.Pop(warehouseFields["warehouse_pk"], "").(string)
+	warehouseData := model.StringInterface{
+		"slug": data.Pop(warehouseFields["slug"], nil),
+		"qty":  data.Pop(warehouseFields["quantity"], nil),
+	}
+
+	if len(warehouseIDs) > 0 && util.ItemInSlice(warehousePK, warehouseIDs) {
+		resultData = s.addWarehouseInfoToData(pk, warehouseData, resultData)
+	}
+
+	return resultData, data
+}
+
+func (s *ServiceCsv) addWarehouseInfoToData(pk string, warehouseData model.StringInterface, resultData map[string]map[string][]any) map[string]map[string][]any {
+	slug, ok := warehouseData["slug"]
+	if ok && slug != nil {
+		warehouseQtyHeader := fmt.Sprintf("%v (warehouse quantity)", slug)
+		if _, ok := resultData[pk][warehouseQtyHeader]; !ok {
+			resultData[pk][warehouseQtyHeader] = []any{warehouseData["qty"]}
+		}
+	}
+
+	return resultData
 }
 
 type AttributeData struct {
 	Slug       interface{}
-	InputType  interface{}
+	InputType  model.AttributeInputType
 	EntityType interface{}
 	Unit       interface{}
-	ValueSlug  interface{}
-	ValueName  interface{}
-	Value      interface{}
-	FileUrl    interface{}
+	ValueSlug  string
+	ValueName  string
+	Value      string
+	FileUrl    string
 	RichText   interface{}
-	Boolean    interface{}
-	DateTime   interface{}
+	Boolean    *bool
+	DateTime   time.Time
 }
 
-func (s *ServiceCsv) handleAttributeData(pk string, data model.StringInterface, attributeIDs []string, resultData map[string]map[string][]string, attributeFields model.StringMap, attributeOwner string) (map[string]map[string][]string, model.StringInterface) {
+func (s *ServiceCsv) handleAttributeData(pk string, data model.StringInterface, attributeIDs []string, resultData map[string]map[string][]any, attributeFields model.StringMap, attributeOwner string) (map[string]map[string][]any, model.StringInterface) {
 	attributePK := data.Pop(attributeFields["attribute_pk"], "").(string)
 
 	attributeData := AttributeData{
 		Slug:       data.Pop(attributeFields["slug"], nil),
 		InputType:  data.Pop(attributeFields["input_type"], nil),
 		FileUrl:    data.Pop(attributeFields["file_url"], nil),
-		ValueSlug:  data.Pop(attributeFields["value_slug"], nil),
+		ValueSlug:  data.Pop(attributeFields["value_slug"], ""),
 		ValueName:  data.Pop(attributeFields["value_name"], nil),
 		Value:      data.Pop(attributeFields["value"], nil),
 		EntityType: data.Pop(attributeFields["entity_type"], nil),
@@ -132,7 +288,24 @@ func (s *ServiceCsv) handleAttributeData(pk string, data model.StringInterface, 
 	return resultData, data
 }
 
-func (s *ServiceCsv) addAttributeInfoToData(pk string, attributeData AttributeData, attributeOwner string, resultData map[string]map[string][]string) map[string]map[string][]string {
+func (s *ServiceCsv) handleChannelData(pk string, data model.StringInterface, channelIDs []string, resultData map[string]map[string][]any, pkLookup, slugLookup string, fields model.StringMap) (map[string]map[string][]any, model.StringInterface) {
+	channelPK := data.Pop(pkLookup, "").(string)
+	channelData := model.StringInterface{
+		"slug": data.Pop(slugLookup, nil),
+	}
+
+	for field, lookup := range fields {
+		channelData[field] = data.Pop(lookup, nil)
+	}
+
+	if len(channelIDs) > 0 && util.ItemInSlice(channelPK, channelIDs) {
+		resultData = s.addChannelInfoToData(pk, channelData, resultData, lo.Keys(fields))
+	}
+
+	return resultData, data
+}
+
+func (s *ServiceCsv) addAttributeInfoToData(pk string, attributeData AttributeData, attributeOwner string, resultData map[string]map[string][]any) map[string]map[string][]any {
 	if attributeData.Slug == nil {
 		return resultData
 	}
@@ -148,30 +321,17 @@ func (s *ServiceCsv) addAttributeInfoToData(pk string, attributeData AttributeDa
 }
 
 func (s *ServiceCsv) prepareAttributeValue(attributeData AttributeData) string {
-	if attributeData.InputType == nil {
-		return ""
-	}
 
-	inputType, ok := attributeData.InputType.(model.AttributeInputType)
-	if !ok {
-		return ""
-	}
-
-	switch inputType {
+	switch attributeData.InputType {
 	case model.FILE_:
-		if attributeData.FileUrl != nil {
-			str, ok := attributeData.FileUrl.(string)
-			if ok && str != "" {
-				return filepath.Join(*s.srv.Config().ServiceSettings.SiteURL, str)
-			}
-
-			return ""
+		if attributeData.FileUrl != "" {
+			return filepath.Join(*s.srv.Config().ServiceSettings.SiteURL, attributeData.FileUrl)
 		}
 		return ""
 
 	case model.REFERENCE:
-		if attributeData.ValueSlug != nil && attributeData.EntityType != nil {
-			return fmt.Sprintf("%v_%s", attributeData.EntityType, strings.Split(attributeData.ValueSlug.(string), "_")[1])
+		if attributeData.ValueSlug != "" {
+			return fmt.Sprintf("%v_%s", attributeData.EntityType, strings.Split(attributeData.ValueSlug, "_")[1])
 		}
 		return ""
 
@@ -188,42 +348,43 @@ func (s *ServiceCsv) prepareAttributeValue(attributeData AttributeData) string {
 
 	case model.BOOLEAN:
 		if attributeData.Boolean != nil {
-			return strconv.FormatBool(attributeData.Boolean.(bool))
+			return strconv.FormatBool(*attributeData.Boolean)
 		}
-		return "false"
+		return ""
 
 	case model.DATE:
-		return ""
+		return attributeData.DateTime.Format("2006-01-02")
 
 	case model.DATE_TIME:
-		return ""
+		return attributeData.DateTime.Format("2006-01-02 15:04:05")
 
 	case model.SWATCH:
-		if attributeData.FileUrl != nil {
-			str, ok := attributeData.FileUrl.(string)
-			if ok && str != "" {
-				return filepath.Join(*s.srv.Config().ServiceSettings.SiteURL, str)
-			}
-
-			return attributeData.Value.(string)
+		if attributeData.FileUrl != "" {
+			return filepath.Join(*s.srv.Config().ServiceSettings.SiteURL, attributeData.FileUrl)
 		}
-		return attributeData.Value.(string)
+		return attributeData.Value
 
 	default:
-		if attributeData.ValueName != nil {
-			str, ok := attributeData.ValueName.(string)
-			if ok && str != "" {
-				return str
-			}
+		if attributeData.ValueName != "" {
+			return attributeData.ValueName
+		} else if attributeData.ValueSlug != "" {
+			return attributeData.ValueSlug
 		}
-
-		if attributeData.ValueSlug != nil {
-			str, ok := attributeData.ValueSlug.(string)
-			if ok && str != "" {
-				return str
-			}
-		}
-
 		return ""
 	}
+}
+
+func (s *ServiceCsv) addChannelInfoToData(pk string, channelData model.StringInterface, resultData map[string]map[string][]any, fields []string) map[string]map[string][]any {
+	slug, ok := channelData["slug"]
+	if ok && slug != nil {
+		for _, field := range fields {
+			header := fmt.Sprintf("%v (channel %s)", slug, strings.ReplaceAll(field, "_", " "))
+
+			if _, ok := resultData[header]; !ok {
+				resultData[pk][header] = append(resultData[pk][header], channelData[field])
+			}
+		}
+	}
+
+	return resultData
 }

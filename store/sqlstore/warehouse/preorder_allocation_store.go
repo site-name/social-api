@@ -134,7 +134,7 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllo
 
 		// join data.
 		if options.SelectRelated_OrderLine_Order && options.SelectRelated_OrderLine {
-			orderLine.Order = orDer.DeepCopy()
+			orderLine.SetOrder(orDer.DeepCopy())
 		}
 		if options.SelectRelated_OrderLine {
 			preorderAllocation.OrderLine = orderLine.DeepCopy()

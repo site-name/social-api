@@ -92,22 +92,20 @@ func (s Stocks) IDs() []string {
 	return res
 }
 
-func (s *Stock) ToReplicateStock() *ReplicateWarehouseStock {
-	if s == nil {
-		return nil
+func (s Stocks) DeepCopy() Stocks {
+	res := make(Stocks, 0, cap(s))
+	for _, item := range s {
+		if item != nil {
+			res = append(res, item.DeepCopy())
+		}
 	}
-	return &ReplicateWarehouseStock{
-		Id:               s.Id,
-		CreateAt:         s.CreateAt,
-		WarehouseID:      s.WarehouseID,
-		ProductVariantID: s.ProductVariantID,
-		Quantity:         s.Quantity,
-	}
+
+	return res
 }
 
 func (s *Stock) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"stock.is_valid.%s.app_error",
+		"model.stock.is_valid.%s.app_error",
 		"stock_id=",
 		"Stock.IsValid",
 	)
