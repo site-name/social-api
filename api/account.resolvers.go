@@ -287,12 +287,15 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 	}
 
 	// perform change user default address
-	appErr = embedContext.App.Srv().AccountService().ChangeUserDefaultAddress(
-		model.User{Id: embedContext.AppContext.Session().UserId},
-		model.Address{Id: args.Id},
-		strings.ToLower(args.Type.String()),
-		nil,
-	)
+	appErr = embedContext.App.
+		Srv().
+		AccountService().
+		ChangeUserDefaultAddress(
+			model.User{Id: embedContext.AppContext.Session().UserId},
+			model.Address{Id: args.Id},
+			strings.ToLower(args.Type.String()),
+			nil,
+		)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -305,6 +308,7 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 }
 
 func (r *Resolver) AccountRegister(ctx context.Context, args struct{ Input AccountRegisterInput }) (*AccountRegister, error) {
+	// this request does not require user to be authenticated
 	panic(fmt.Errorf("not implemented"))
 }
 

@@ -13,7 +13,6 @@ func NewSqlAppTokenStore(sqlStore store.Store) store.AppTokenStore {
 	return &SqlAppTokenStore{
 		Store: sqlStore,
 	}
-
 }
 
 func (as *SqlAppTokenStore) Save(appToken *model.AppToken) (*model.AppToken, error) {

@@ -251,17 +251,17 @@ func (s *ServiceCsv) addWarehouseInfoToData(pk string, warehouseData model.Strin
 }
 
 type AttributeData struct {
-	Slug       interface{}
-	InputType  model.AttributeInputType
-	EntityType interface{}
-	Unit       interface{}
-	ValueSlug  string
-	ValueName  string
-	Value      string
-	FileUrl    string
-	RichText   interface{}
-	Boolean    *bool
-	DateTime   time.Time
+	Slug       any
+	InputType  any
+	EntityType any
+	Unit       any
+	ValueSlug  any
+	ValueName  any
+	Value      any
+	FileUrl    any
+	RichText   any
+	Boolean    any
+	DateTime   any
 }
 
 func (s *ServiceCsv) handleAttributeData(pk string, data model.StringInterface, attributeIDs []string, resultData map[string]map[string][]any, attributeFields model.StringMap, attributeOwner string) (map[string]map[string][]any, model.StringInterface) {
@@ -322,16 +322,27 @@ func (s *ServiceCsv) addAttributeInfoToData(pk string, attributeData AttributeDa
 
 func (s *ServiceCsv) prepareAttributeValue(attributeData AttributeData) string {
 
-	switch attributeData.InputType {
+	t, ok := attributeData.InputType.(model.AttributeInputType)
+	if !ok {
+		return ""
+	}
+
+	switch t {
 	case model.FILE_:
-		if attributeData.FileUrl != "" {
-			return filepath.Join(*s.srv.Config().ServiceSettings.SiteURL, attributeData.FileUrl)
+		if url := attributeData.FileUrl; url != nil {
+			if strURL, ok := url.(string); ok {
+				return filepath.Join(*s.srv.Config().ServiceSettings.SiteURL, strURL)
+			}
+			return ""
 		}
 		return ""
 
 	case model.REFERENCE:
-		if attributeData.ValueSlug != "" {
-			return fmt.Sprintf("%v_%s", attributeData.EntityType, strings.Split(attributeData.ValueSlug, "_")[1])
+		if slug := attributeData.ValueSlug; slug != nil {
+			if strSlug, ok := slug.(string); ok {
+				return fmt.Sprintf("%v_%s", attributeData.EntityType, strings.Split(strSlug, "_")[1])
+			}
+			return ""
 		}
 		return ""
 
@@ -348,30 +359,46 @@ func (s *ServiceCsv) prepareAttributeValue(attributeData AttributeData) string {
 
 	case model.BOOLEAN:
 		if attributeData.Boolean != nil {
-			return strconv.FormatBool(*attributeData.Boolean)
+			if b, ok := attributeData.Boolean.(bool); ok {
+				return strconv.FormatBool(b)
+			}
+			return ""
 		}
 		return ""
 
 	case model.DATE:
-		return attributeData.DateTime.Format("2006-01-02")
+		if tim, ok := attributeData.DateTime.(time.Time); ok {
+			return tim.Format("2006-01-02")
+		}
+		return ""
 
 	case model.DATE_TIME:
-		return attributeData.DateTime.Format("2006-01-02 15:04:05")
+		if tim, ok := attributeData.DateTime.(time.Time); ok {
+			return tim.Format("2006-01-02 15:04:05")
+		}
+		return ""
 
 	case model.SWATCH:
-		if attributeData.FileUrl != "" {
-			return filepath.Join(*s.srv.Config().ServiceSettings.SiteURL, attributeData.FileUrl)
+		if attributeData.FileUrl != nil {
+			if strURL, ok := attributeData.FileUrl.(string); ok {
+				return filepath.Join(*s.srv.Config().ServiceSettings.SiteURL, strURL)
+			}
+			return ""
 		}
-		return attributeData.Value
+		if attributeData.Value != nil {
+			return fmt.Sprintf("%v", attributeData.Value)
+		}
 
 	default:
-		if attributeData.ValueName != "" {
-			return attributeData.ValueName
-		} else if attributeData.ValueSlug != "" {
-			return attributeData.ValueSlug
+		if attributeData.ValueName != nil {
+			return fmt.Sprintf("%v", attributeData.ValueName)
+		} else if attributeData.ValueSlug != nil {
+			return fmt.Sprintf("%v", attributeData.ValueSlug)
 		}
 		return ""
 	}
+
+	return ""
 }
 
 func (s *ServiceCsv) addChannelInfoToData(pk string, channelData model.StringInterface, resultData map[string]map[string][]any, fields []string) map[string]map[string][]any {

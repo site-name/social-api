@@ -712,6 +712,14 @@ func (s StringMAP) DeepCopy() StringMAP {
 	return res
 }
 
+func (s StringMAP) Merge(other StringMAP) StringMAP {
+	for key, value := range other {
+		s[key] = value
+	}
+
+	return s
+}
+
 // Common abstract model for other models to inherit from
 type ModelMetadata struct {
 	Metadata        StringMAP `json:"metadata"`

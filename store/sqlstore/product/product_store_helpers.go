@@ -18,20 +18,16 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-func (ps *SqlProductStore) filterCategories(query squirrel.SelectBuilder, categoryIDs []*string) squirrel.SelectBuilder {
-	ids := stringPointerSliceToStringSlice(categoryIDs)
-
-	if len(ids) == 0 {
+func (ps *SqlProductStore) filterCategories(query squirrel.SelectBuilder, categoryIDs []string) squirrel.SelectBuilder {
+	if len(categoryIDs) == 0 {
 		return query
 	}
 
 	panic("not implemented")
 }
 
-func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, collectionIDs []*string) squirrel.SelectBuilder {
-	ids := stringPointerSliceToStringSlice(collectionIDs)
-
-	if len(ids) == 0 {
+func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, collectionIDs []string) squirrel.SelectBuilder {
+	if len(collectionIDs) == 0 {
 		return query
 	}
 
@@ -47,7 +43,7 @@ func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, colle
 				)
 			LIMIT 1
 		)`,
-		ids,
+		collectionIDs,
 	)
 }
 
@@ -262,7 +258,7 @@ func (m *safeMap) write(key string, value []string) {
 
 type attributeFilterInput struct {
 	Slug        string
-	Values      []*string
+	Values      []string
 	ValuesRange *struct {
 		Gte *int32
 		Lte *int32
@@ -300,7 +296,7 @@ func (ps *SqlProductStore) filterAttributes(
 
 	for _, input := range nonNilAttributes {
 		if len(input.Values) > 0 {
-			value_list = append(value_list, value{input.Slug, stringPointerSliceToStringSlice(input.Values)})
+			value_list = append(value_list, value{input.Slug, input.Values})
 		} else if input.ValuesRange != nil {
 			value_range_list = append(value_range_list, valueRange{input.Slug, *input.ValuesRange})
 		} else if input.Date != nil {
@@ -726,14 +722,12 @@ func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder,
 	return query.Where(productVariantSelect)
 }
 
-func (ps *SqlProductStore) filterProductTypes(query squirrel.SelectBuilder, value []*string) squirrel.SelectBuilder {
-	ids := stringPointerSliceToStringSlice(value)
-
-	if len(ids) == 0 {
+func (ps *SqlProductStore) filterProductTypes(query squirrel.SelectBuilder, value []string) squirrel.SelectBuilder {
+	if len(value) == 0 {
 		return query
 	}
 
-	return query.Where("Products.ProductTypeID IN ?", ids)
+	return query.Where("Products.ProductTypeID IN ?", value)
 }
 
 func (ps *SqlProductStore) filterStocks(
@@ -851,13 +845,12 @@ func (ps *SqlProductStore) filterGiftCard(query squirrel.SelectBuilder, value bo
 	return query.Where(productTypeFilter.Prefix("NOT EXISTS ("))
 }
 
-func (ps *SqlProductStore) filterProductIDs(query squirrel.SelectBuilder, productIDs []*string) squirrel.SelectBuilder {
-	ids := stringPointerSliceToStringSlice(productIDs)
-	if len(ids) == 0 {
+func (ps *SqlProductStore) filterProductIDs(query squirrel.SelectBuilder, productIDs []string) squirrel.SelectBuilder {
+	if len(productIDs) == 0 {
 		return query
 	}
 
-	return query.Where("Products.Id IN ?", ids)
+	return query.Where("Products.Id IN ?", productIDs)
 }
 
 func (ps *SqlProductStore) filterHasPreorderedVariants(query squirrel.SelectBuilder, value bool) squirrel.SelectBuilder {

@@ -609,7 +609,7 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProduct
 			options.Attributes,
 			func(v *struct {
 				Slug        string
-				Values      []*string
+				Values      []string
 				ValuesRange *struct {
 					Gte *int32
 					Lte *int32

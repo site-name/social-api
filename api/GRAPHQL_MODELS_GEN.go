@@ -4,8 +4,6 @@ package api
 
 import (
 	"fmt"
-	"io"
-	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
 )
@@ -4282,35 +4280,33 @@ type UploadError struct {
 }
 
 type User struct {
-	ID                     string                       `json:"id"`
-	LastLogin              *DateTime                    `json:"lastLogin"`
-	Email                  string                       `json:"email"`
-	FirstName              string                       `json:"firstName"`
-	LastName               string                       `json:"lastName"`
-	UserName               string                       `json:"userName"`
-	IsActive               bool                         `json:"isActive"`
-	Note                   *string                      `json:"note"`
-	DateJoined             DateTime                     `json:"dateJoined"`
-	DefaultShippingAddress *Address                     `json:"defaultShippingAddress"`
-	DefaultBillingAddress  *Address                     `json:"defaultBillingAddress"`
-	PrivateMetadata        []*MetadataItem              `json:"privateMetadata"`
-	Metadata               []*MetadataItem              `json:"metadata"`
-	Addresses              []*Address                   `json:"addresses"`
-	CheckoutTokens         []string                     `json:"checkoutTokens"`
-	GiftCards              *GiftCardCountableConnection `json:"giftCards"`
-	Orders                 *OrderCountableConnection    `json:"orders"`
-	UserPermissions        []*UserPermission            `json:"userPermissions"`
-	PermissionGroups       []*Group                     `json:"permissionGroups"`
-	EditableGroups         []*Group                     `json:"editableGroups"`
-	Avatar                 *Image                       `json:"avatar"`
-	Events                 []*CustomerEvent             `json:"events"`
-	StoredPaymentSources   []*PaymentSource             `json:"storedPaymentSources"`
-	LanguageCode           LanguageCodeEnum             `json:"languageCode"`
-	Wishlist               *Wishlist                    `json:"wishlist"`
+	ID                       string           `json:"id"`
+	LastLogin                *DateTime        `json:"lastLogin"`
+	Email                    string           `json:"email"`
+	FirstName                string           `json:"firstName"`
+	LastName                 string           `json:"lastName"`
+	UserName                 string           `json:"userName"`
+	IsActive                 bool             `json:"isActive"`
+	DateJoined               DateTime         `json:"dateJoined"`
+	PrivateMetadata          []*MetadataItem  `json:"privateMetadata"`
+	Metadata                 []*MetadataItem  `json:"metadata"`
+	LanguageCode             LanguageCodeEnum `json:"languageCode"`
+	DefaultShippingAddressID *string          `json:"defaultShippingAddressID"`
+	DefaultBillingAddressID  *string          `json:"defaultBillingAddressID"`
+	// DefaultShippingAddress *Address         `json:"defaultShippingAddress"`
+	// DefaultBillingAddress  *Address         `json:"defaultBillingAddress"`
+	// StoredPaymentSources   []*PaymentSource             `json:"storedPaymentSources"`
+	// Avatar                 *Image                       `json:"avatar"`
+	// Orders                 *OrderCountableConnection    `json:"orders"`
+	// Events                 []*CustomerEvent             `json:"events"`
+	// Note                   *string                      `json:"note"`
+	// EditableGroups         []*Group                     `json:"editableGroups"`
+	// PermissionGroups       []*Group                     `json:"permissionGroups"`
+	// UserPermissions        []*UserPermission            `json:"userPermissions"`
+	// GiftCards              *GiftCardCountableConnection `json:"giftCards"`
+	// CheckoutTokens         []string                     `json:"checkoutTokens"`
+	// Addresses              []*Address                   `json:"addresses"`
 }
-
-func (User) IsNode()               {}
-func (User) IsObjectWithMetadata() {}
 
 type UserAvatarDelete struct {
 	User   *User           `json:"user"`
@@ -4752,41 +4748,6 @@ const (
 	AccountErrorCodeMissingChannelSlug          AccountErrorCode = "MISSING_CHANNEL_SLUG"
 )
 
-var AllAccountErrorCode = []AccountErrorCode{
-	AccountErrorCodeActivateOwnAccount,
-	AccountErrorCodeActivateSuperuserAccount,
-	AccountErrorCodeDuplicatedInputItem,
-	AccountErrorCodeDeactivateOwnAccount,
-	AccountErrorCodeDeactivateSuperuserAccount,
-	AccountErrorCodeDeleteNonStaffUser,
-	AccountErrorCodeDeleteOwnAccount,
-	AccountErrorCodeDeleteStaffAccount,
-	AccountErrorCodeDeleteSuperuserAccount,
-	AccountErrorCodeGraphqlError,
-	AccountErrorCodeInactive,
-	AccountErrorCodeInvalid,
-	AccountErrorCodeInvalidPassword,
-	AccountErrorCodeLeftNotManageablePermission,
-	AccountErrorCodeInvalidCredentials,
-	AccountErrorCodeNotFound,
-	AccountErrorCodeOutOfScopeUser,
-	AccountErrorCodeOutOfScopeGroup,
-	AccountErrorCodeOutOfScopePermission,
-	AccountErrorCodePasswordEntirelyNumeric,
-	AccountErrorCodePasswordTooCommon,
-	AccountErrorCodePasswordTooShort,
-	AccountErrorCodePasswordTooSimilar,
-	AccountErrorCodeRequired,
-	AccountErrorCodeUnique,
-	AccountErrorCodeJwtSignatureExpired,
-	AccountErrorCodeJwtInvalidToken,
-	AccountErrorCodeJwtDecodeError,
-	AccountErrorCodeJwtMissingToken,
-	AccountErrorCodeJwtInvalidCsrfToken,
-	AccountErrorCodeChannelInactive,
-	AccountErrorCodeMissingChannelSlug,
-}
-
 func (e AccountErrorCode) IsValid() bool {
 	switch e {
 	case AccountErrorCodeActivateOwnAccount, AccountErrorCodeActivateSuperuserAccount, AccountErrorCodeDuplicatedInputItem, AccountErrorCodeDeactivateOwnAccount, AccountErrorCodeDeactivateSuperuserAccount, AccountErrorCodeDeleteNonStaffUser, AccountErrorCodeDeleteOwnAccount, AccountErrorCodeDeleteStaffAccount, AccountErrorCodeDeleteSuperuserAccount, AccountErrorCodeGraphqlError, AccountErrorCodeInactive, AccountErrorCodeInvalid, AccountErrorCodeInvalidPassword, AccountErrorCodeLeftNotManageablePermission, AccountErrorCodeInvalidCredentials, AccountErrorCodeNotFound, AccountErrorCodeOutOfScopeUser, AccountErrorCodeOutOfScopeGroup, AccountErrorCodeOutOfScopePermission, AccountErrorCodePasswordEntirelyNumeric, AccountErrorCodePasswordTooCommon, AccountErrorCodePasswordTooShort, AccountErrorCodePasswordTooSimilar, AccountErrorCodeRequired, AccountErrorCodeUnique, AccountErrorCodeJwtSignatureExpired, AccountErrorCodeJwtInvalidToken, AccountErrorCodeJwtDecodeError, AccountErrorCodeJwtMissingToken, AccountErrorCodeJwtInvalidCsrfToken, AccountErrorCodeChannelInactive, AccountErrorCodeMissingChannelSlug:
@@ -4799,7 +4760,7 @@ func (e AccountErrorCode) String() string {
 	return string(e)
 }
 
-func (e *AccountErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *AccountErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -4812,21 +4773,12 @@ func (e *AccountErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e AccountErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type AddressTypeEnum string
 
 const (
 	AddressTypeEnumBilling  AddressTypeEnum = "BILLING"
 	AddressTypeEnumShipping AddressTypeEnum = "SHIPPING"
 )
-
-var AllAddressTypeEnum = []AddressTypeEnum{
-	AddressTypeEnumBilling,
-	AddressTypeEnumShipping,
-}
 
 func (e AddressTypeEnum) IsValid() bool {
 	switch e {
@@ -4840,7 +4792,7 @@ func (e AddressTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *AddressTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *AddressTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -4851,10 +4803,6 @@ func (e *AddressTypeEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid AddressTypeEnum", str)
 	}
 	return nil
-}
-
-func (e AddressTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type AppErrorCode string
@@ -4875,22 +4823,6 @@ const (
 	AppErrorCodeOutOfScopePermission   AppErrorCode = "OUT_OF_SCOPE_PERMISSION"
 )
 
-var AllAppErrorCode = []AppErrorCode{
-	AppErrorCodeForbidden,
-	AppErrorCodeGraphqlError,
-	AppErrorCodeInvalid,
-	AppErrorCodeInvalidStatus,
-	AppErrorCodeInvalidPermission,
-	AppErrorCodeInvalidURLFormat,
-	AppErrorCodeInvalidManifestFormat,
-	AppErrorCodeManifestURLCantConnect,
-	AppErrorCodeNotFound,
-	AppErrorCodeRequired,
-	AppErrorCodeUnique,
-	AppErrorCodeOutOfScopeApp,
-	AppErrorCodeOutOfScopePermission,
-}
-
 func (e AppErrorCode) IsValid() bool {
 	switch e {
 	case AppErrorCodeForbidden, AppErrorCodeGraphqlError, AppErrorCodeInvalid, AppErrorCodeInvalidStatus, AppErrorCodeInvalidPermission, AppErrorCodeInvalidURLFormat, AppErrorCodeInvalidManifestFormat, AppErrorCodeManifestURLCantConnect, AppErrorCodeNotFound, AppErrorCodeRequired, AppErrorCodeUnique, AppErrorCodeOutOfScopeApp, AppErrorCodeOutOfScopePermission:
@@ -4903,7 +4835,7 @@ func (e AppErrorCode) String() string {
 	return string(e)
 }
 
-func (e *AppErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *AppErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -4916,21 +4848,12 @@ func (e *AppErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e AppErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type AppExtensionTargetEnum string
 
 const (
 	AppExtensionTargetEnumMoreActions AppExtensionTargetEnum = "MORE_ACTIONS"
 	AppExtensionTargetEnumCreate      AppExtensionTargetEnum = "CREATE"
 )
-
-var AllAppExtensionTargetEnum = []AppExtensionTargetEnum{
-	AppExtensionTargetEnumMoreActions,
-	AppExtensionTargetEnumCreate,
-}
 
 func (e AppExtensionTargetEnum) IsValid() bool {
 	switch e {
@@ -4944,7 +4867,7 @@ func (e AppExtensionTargetEnum) String() string {
 	return string(e)
 }
 
-func (e *AppExtensionTargetEnum) UnmarshalGQL(v interface{}) error {
+func (e *AppExtensionTargetEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -4957,21 +4880,12 @@ func (e *AppExtensionTargetEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e AppExtensionTargetEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type AppExtensionTypeEnum string
 
 const (
 	AppExtensionTypeEnumOverview AppExtensionTypeEnum = "OVERVIEW"
 	AppExtensionTypeEnumDetails  AppExtensionTypeEnum = "DETAILS"
 )
-
-var AllAppExtensionTypeEnum = []AppExtensionTypeEnum{
-	AppExtensionTypeEnumOverview,
-	AppExtensionTypeEnumDetails,
-}
 
 func (e AppExtensionTypeEnum) IsValid() bool {
 	switch e {
@@ -4985,7 +4899,7 @@ func (e AppExtensionTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *AppExtensionTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *AppExtensionTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -4998,19 +4912,11 @@ func (e *AppExtensionTypeEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e AppExtensionTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type AppExtensionViewEnum string
 
 const (
 	AppExtensionViewEnumProduct AppExtensionViewEnum = "PRODUCT"
 )
-
-var AllAppExtensionViewEnum = []AppExtensionViewEnum{
-	AppExtensionViewEnumProduct,
-}
 
 func (e AppExtensionViewEnum) IsValid() bool {
 	switch e {
@@ -5024,7 +4930,7 @@ func (e AppExtensionViewEnum) String() string {
 	return string(e)
 }
 
-func (e *AppExtensionViewEnum) UnmarshalGQL(v interface{}) error {
+func (e *AppExtensionViewEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5037,21 +4943,12 @@ func (e *AppExtensionViewEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e AppExtensionViewEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type AppSortField string
 
 const (
 	AppSortFieldName         AppSortField = "NAME"
 	AppSortFieldCreationDate AppSortField = "CREATION_DATE"
 )
-
-var AllAppSortField = []AppSortField{
-	AppSortFieldName,
-	AppSortFieldCreationDate,
-}
 
 func (e AppSortField) IsValid() bool {
 	switch e {
@@ -5065,7 +4962,7 @@ func (e AppSortField) String() string {
 	return string(e)
 }
 
-func (e *AppSortField) UnmarshalGQL(v interface{}) error {
+func (e *AppSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5078,21 +4975,12 @@ func (e *AppSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e AppSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type AppTypeEnum string
 
 const (
 	AppTypeEnumLocal      AppTypeEnum = "LOCAL"
 	AppTypeEnumThirdparty AppTypeEnum = "THIRDPARTY"
 )
-
-var AllAppTypeEnum = []AppTypeEnum{
-	AppTypeEnumLocal,
-	AppTypeEnumThirdparty,
-}
 
 func (e AppTypeEnum) IsValid() bool {
 	switch e {
@@ -5106,7 +4994,7 @@ func (e AppTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *AppTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *AppTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5117,10 +5005,6 @@ func (e *AppTypeEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid AppTypeEnum", str)
 	}
 	return nil
-}
-
-func (e AppTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type AreaUnitsEnum string
@@ -5134,15 +5018,6 @@ const (
 	AreaUnitsEnumSqInch AreaUnitsEnum = "SQ_INCH"
 )
 
-var AllAreaUnitsEnum = []AreaUnitsEnum{
-	AreaUnitsEnumSqCm,
-	AreaUnitsEnumSqM,
-	AreaUnitsEnumSqKm,
-	AreaUnitsEnumSqFt,
-	AreaUnitsEnumSqYd,
-	AreaUnitsEnumSqInch,
-}
-
 func (e AreaUnitsEnum) IsValid() bool {
 	switch e {
 	case AreaUnitsEnumSqCm, AreaUnitsEnumSqM, AreaUnitsEnumSqKm, AreaUnitsEnumSqFt, AreaUnitsEnumSqYd, AreaUnitsEnumSqInch:
@@ -5155,7 +5030,7 @@ func (e AreaUnitsEnum) String() string {
 	return string(e)
 }
 
-func (e *AreaUnitsEnum) UnmarshalGQL(v interface{}) error {
+func (e *AreaUnitsEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5168,21 +5043,12 @@ func (e *AreaUnitsEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e AreaUnitsEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type AttributeChoicesSortField string
 
 const (
 	AttributeChoicesSortFieldName AttributeChoicesSortField = "NAME"
 	AttributeChoicesSortFieldSlug AttributeChoicesSortField = "SLUG"
 )
-
-var AllAttributeChoicesSortField = []AttributeChoicesSortField{
-	AttributeChoicesSortFieldName,
-	AttributeChoicesSortFieldSlug,
-}
 
 func (e AttributeChoicesSortField) IsValid() bool {
 	switch e {
@@ -5196,7 +5062,7 @@ func (e AttributeChoicesSortField) String() string {
 	return string(e)
 }
 
-func (e *AttributeChoicesSortField) UnmarshalGQL(v interface{}) error {
+func (e *AttributeChoicesSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5209,21 +5075,12 @@ func (e *AttributeChoicesSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e AttributeChoicesSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type AttributeEntityTypeEnum string
 
 const (
 	AttributeEntityTypeEnumPage    AttributeEntityTypeEnum = "PAGE"
 	AttributeEntityTypeEnumProduct AttributeEntityTypeEnum = "PRODUCT"
 )
-
-var AllAttributeEntityTypeEnum = []AttributeEntityTypeEnum{
-	AttributeEntityTypeEnumPage,
-	AttributeEntityTypeEnumProduct,
-}
 
 func (e AttributeEntityTypeEnum) IsValid() bool {
 	switch e {
@@ -5237,7 +5094,7 @@ func (e AttributeEntityTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *AttributeEntityTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *AttributeEntityTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5248,10 +5105,6 @@ func (e *AttributeEntityTypeEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid AttributeEntityTypeEnum", str)
 	}
 	return nil
-}
-
-func (e AttributeEntityTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type AttributeErrorCode string
@@ -5265,15 +5118,6 @@ const (
 	AttributeErrorCodeUnique        AttributeErrorCode = "UNIQUE"
 )
 
-var AllAttributeErrorCode = []AttributeErrorCode{
-	AttributeErrorCodeAlreadyExists,
-	AttributeErrorCodeGraphqlError,
-	AttributeErrorCodeInvalid,
-	AttributeErrorCodeNotFound,
-	AttributeErrorCodeRequired,
-	AttributeErrorCodeUnique,
-}
-
 func (e AttributeErrorCode) IsValid() bool {
 	switch e {
 	case AttributeErrorCodeAlreadyExists, AttributeErrorCodeGraphqlError, AttributeErrorCodeInvalid, AttributeErrorCodeNotFound, AttributeErrorCodeRequired, AttributeErrorCodeUnique:
@@ -5286,7 +5130,7 @@ func (e AttributeErrorCode) String() string {
 	return string(e)
 }
 
-func (e *AttributeErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *AttributeErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5297,10 +5141,6 @@ func (e *AttributeErrorCode) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid AttributeErrorCode", str)
 	}
 	return nil
-}
-
-func (e AttributeErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type AttributeInputTypeEnum string
@@ -5318,19 +5158,6 @@ const (
 	AttributeInputTypeEnumDateTime    AttributeInputTypeEnum = "DATE_TIME"
 )
 
-var AllAttributeInputTypeEnum = []AttributeInputTypeEnum{
-	AttributeInputTypeEnumDropdown,
-	AttributeInputTypeEnumMultiselect,
-	AttributeInputTypeEnumFile,
-	AttributeInputTypeEnumReference,
-	AttributeInputTypeEnumNumeric,
-	AttributeInputTypeEnumRichText,
-	AttributeInputTypeEnumSwatch,
-	AttributeInputTypeEnumBoolean,
-	AttributeInputTypeEnumDate,
-	AttributeInputTypeEnumDateTime,
-}
-
 func (e AttributeInputTypeEnum) IsValid() bool {
 	switch e {
 	case AttributeInputTypeEnumDropdown, AttributeInputTypeEnumMultiselect, AttributeInputTypeEnumFile, AttributeInputTypeEnumReference, AttributeInputTypeEnumNumeric, AttributeInputTypeEnumRichText, AttributeInputTypeEnumSwatch, AttributeInputTypeEnumBoolean, AttributeInputTypeEnumDate, AttributeInputTypeEnumDateTime:
@@ -5343,7 +5170,7 @@ func (e AttributeInputTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *AttributeInputTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *AttributeInputTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5354,10 +5181,6 @@ func (e *AttributeInputTypeEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid AttributeInputTypeEnum", str)
 	}
 	return nil
-}
-
-func (e AttributeInputTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type AttributeSortField string
@@ -5374,18 +5197,6 @@ const (
 	AttributeSortFieldAvailableInGrid          AttributeSortField = "AVAILABLE_IN_GRID"
 )
 
-var AllAttributeSortField = []AttributeSortField{
-	AttributeSortFieldName,
-	AttributeSortFieldSlug,
-	AttributeSortFieldValueRequired,
-	AttributeSortFieldIsVariantOnly,
-	AttributeSortFieldVisibleInStorefront,
-	AttributeSortFieldFilterableInStorefront,
-	AttributeSortFieldFilterableInDashboard,
-	AttributeSortFieldStorefrontSearchPosition,
-	AttributeSortFieldAvailableInGrid,
-}
-
 func (e AttributeSortField) IsValid() bool {
 	switch e {
 	case AttributeSortFieldName, AttributeSortFieldSlug, AttributeSortFieldValueRequired, AttributeSortFieldIsVariantOnly, AttributeSortFieldVisibleInStorefront, AttributeSortFieldFilterableInStorefront, AttributeSortFieldFilterableInDashboard, AttributeSortFieldStorefrontSearchPosition, AttributeSortFieldAvailableInGrid:
@@ -5398,7 +5209,7 @@ func (e AttributeSortField) String() string {
 	return string(e)
 }
 
-func (e *AttributeSortField) UnmarshalGQL(v interface{}) error {
+func (e *AttributeSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5411,21 +5222,12 @@ func (e *AttributeSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e AttributeSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type AttributeTypeEnum string
 
 const (
 	AttributeTypeEnumProductType AttributeTypeEnum = "PRODUCT_TYPE"
 	AttributeTypeEnumPageType    AttributeTypeEnum = "PAGE_TYPE"
 )
-
-var AllAttributeTypeEnum = []AttributeTypeEnum{
-	AttributeTypeEnumProductType,
-	AttributeTypeEnumPageType,
-}
 
 func (e AttributeTypeEnum) IsValid() bool {
 	switch e {
@@ -5439,7 +5241,7 @@ func (e AttributeTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *AttributeTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *AttributeTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5452,10 +5254,6 @@ func (e *AttributeTypeEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e AttributeTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type CategorySortField string
 
 const (
@@ -5463,12 +5261,6 @@ const (
 	CategorySortFieldProductCount     CategorySortField = "PRODUCT_COUNT"
 	CategorySortFieldSubcategoryCount CategorySortField = "SUBCATEGORY_COUNT"
 )
-
-var AllCategorySortField = []CategorySortField{
-	CategorySortFieldName,
-	CategorySortFieldProductCount,
-	CategorySortFieldSubcategoryCount,
-}
 
 func (e CategorySortField) IsValid() bool {
 	switch e {
@@ -5482,7 +5274,7 @@ func (e CategorySortField) String() string {
 	return string(e)
 }
 
-func (e *CategorySortField) UnmarshalGQL(v interface{}) error {
+func (e *CategorySortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5493,10 +5285,6 @@ func (e *CategorySortField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid CategorySortField", str)
 	}
 	return nil
-}
-
-func (e CategorySortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type ChannelErrorCode string
@@ -5513,18 +5301,6 @@ const (
 	ChannelErrorCodeDuplicatedInputItem           ChannelErrorCode = "DUPLICATED_INPUT_ITEM"
 )
 
-var AllChannelErrorCode = []ChannelErrorCode{
-	ChannelErrorCodeAlreadyExists,
-	ChannelErrorCodeGraphqlError,
-	ChannelErrorCodeInvalid,
-	ChannelErrorCodeNotFound,
-	ChannelErrorCodeRequired,
-	ChannelErrorCodeUnique,
-	ChannelErrorCodeChannelsCurrencyMustBeTheSame,
-	ChannelErrorCodeChannelWithOrders,
-	ChannelErrorCodeDuplicatedInputItem,
-}
-
 func (e ChannelErrorCode) IsValid() bool {
 	switch e {
 	case ChannelErrorCodeAlreadyExists, ChannelErrorCodeGraphqlError, ChannelErrorCodeInvalid, ChannelErrorCodeNotFound, ChannelErrorCodeRequired, ChannelErrorCodeUnique, ChannelErrorCodeChannelsCurrencyMustBeTheSame, ChannelErrorCodeChannelWithOrders, ChannelErrorCodeDuplicatedInputItem:
@@ -5537,7 +5313,7 @@ func (e ChannelErrorCode) String() string {
 	return string(e)
 }
 
-func (e *ChannelErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *ChannelErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5548,10 +5324,6 @@ func (e *ChannelErrorCode) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid ChannelErrorCode", str)
 	}
 	return nil
-}
-
-func (e ChannelErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type CheckoutErrorCode string
@@ -5584,34 +5356,6 @@ const (
 	CheckoutErrorCodeUnavailableVariantInChannel   CheckoutErrorCode = "UNAVAILABLE_VARIANT_IN_CHANNEL"
 )
 
-var AllCheckoutErrorCode = []CheckoutErrorCode{
-	CheckoutErrorCodeBillingAddressNotSet,
-	CheckoutErrorCodeCheckoutNotFullyPaid,
-	CheckoutErrorCodeGraphqlError,
-	CheckoutErrorCodeProductNotPublished,
-	CheckoutErrorCodeProductUnavailableForPurchase,
-	CheckoutErrorCodeInsufficientStock,
-	CheckoutErrorCodeInvalid,
-	CheckoutErrorCodeInvalidShippingMethod,
-	CheckoutErrorCodeNotFound,
-	CheckoutErrorCodePaymentError,
-	CheckoutErrorCodeQuantityGreaterThanLimit,
-	CheckoutErrorCodeRequired,
-	CheckoutErrorCodeShippingAddressNotSet,
-	CheckoutErrorCodeShippingMethodNotApplicable,
-	CheckoutErrorCodeDeliveryMethodNotApplicable,
-	CheckoutErrorCodeShippingMethodNotSet,
-	CheckoutErrorCodeShippingNotRequired,
-	CheckoutErrorCodeTaxError,
-	CheckoutErrorCodeUnique,
-	CheckoutErrorCodeVoucherNotApplicable,
-	CheckoutErrorCodeGiftCardNotApplicable,
-	CheckoutErrorCodeZeroQuantity,
-	CheckoutErrorCodeMissingChannelSlug,
-	CheckoutErrorCodeChannelInactive,
-	CheckoutErrorCodeUnavailableVariantInChannel,
-}
-
 func (e CheckoutErrorCode) IsValid() bool {
 	switch e {
 	case CheckoutErrorCodeBillingAddressNotSet, CheckoutErrorCodeCheckoutNotFullyPaid, CheckoutErrorCodeGraphqlError, CheckoutErrorCodeProductNotPublished, CheckoutErrorCodeProductUnavailableForPurchase, CheckoutErrorCodeInsufficientStock, CheckoutErrorCodeInvalid, CheckoutErrorCodeInvalidShippingMethod, CheckoutErrorCodeNotFound, CheckoutErrorCodePaymentError, CheckoutErrorCodeQuantityGreaterThanLimit, CheckoutErrorCodeRequired, CheckoutErrorCodeShippingAddressNotSet, CheckoutErrorCodeShippingMethodNotApplicable, CheckoutErrorCodeDeliveryMethodNotApplicable, CheckoutErrorCodeShippingMethodNotSet, CheckoutErrorCodeShippingNotRequired, CheckoutErrorCodeTaxError, CheckoutErrorCodeUnique, CheckoutErrorCodeVoucherNotApplicable, CheckoutErrorCodeGiftCardNotApplicable, CheckoutErrorCodeZeroQuantity, CheckoutErrorCodeMissingChannelSlug, CheckoutErrorCodeChannelInactive, CheckoutErrorCodeUnavailableVariantInChannel:
@@ -5624,7 +5368,7 @@ func (e CheckoutErrorCode) String() string {
 	return string(e)
 }
 
-func (e *CheckoutErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *CheckoutErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5635,10 +5379,6 @@ func (e *CheckoutErrorCode) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid CheckoutErrorCode", str)
 	}
 	return nil
-}
-
-func (e CheckoutErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type CollectionErrorCode string
@@ -5653,16 +5393,6 @@ const (
 	CollectionErrorCodeCannotManageProductWithoutVariant CollectionErrorCode = "CANNOT_MANAGE_PRODUCT_WITHOUT_VARIANT"
 )
 
-var AllCollectionErrorCode = []CollectionErrorCode{
-	CollectionErrorCodeDuplicatedInputItem,
-	CollectionErrorCodeGraphqlError,
-	CollectionErrorCodeInvalid,
-	CollectionErrorCodeNotFound,
-	CollectionErrorCodeRequired,
-	CollectionErrorCodeUnique,
-	CollectionErrorCodeCannotManageProductWithoutVariant,
-}
-
 func (e CollectionErrorCode) IsValid() bool {
 	switch e {
 	case CollectionErrorCodeDuplicatedInputItem, CollectionErrorCodeGraphqlError, CollectionErrorCodeInvalid, CollectionErrorCodeNotFound, CollectionErrorCodeRequired, CollectionErrorCodeUnique, CollectionErrorCodeCannotManageProductWithoutVariant:
@@ -5675,7 +5405,7 @@ func (e CollectionErrorCode) String() string {
 	return string(e)
 }
 
-func (e *CollectionErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *CollectionErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5688,21 +5418,12 @@ func (e *CollectionErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e CollectionErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type CollectionPublished string
 
 const (
 	CollectionPublishedPublished CollectionPublished = "PUBLISHED"
 	CollectionPublishedHidden    CollectionPublished = "HIDDEN"
 )
-
-var AllCollectionPublished = []CollectionPublished{
-	CollectionPublishedPublished,
-	CollectionPublishedHidden,
-}
 
 func (e CollectionPublished) IsValid() bool {
 	switch e {
@@ -5716,7 +5437,7 @@ func (e CollectionPublished) String() string {
 	return string(e)
 }
 
-func (e *CollectionPublished) UnmarshalGQL(v interface{}) error {
+func (e *CollectionPublished) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5729,10 +5450,6 @@ func (e *CollectionPublished) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e CollectionPublished) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type CollectionSortField string
 
 const (
@@ -5741,13 +5458,6 @@ const (
 	CollectionSortFieldProductCount    CollectionSortField = "PRODUCT_COUNT"
 	CollectionSortFieldPublicationDate CollectionSortField = "PUBLICATION_DATE"
 )
-
-var AllCollectionSortField = []CollectionSortField{
-	CollectionSortFieldName,
-	CollectionSortFieldAvailability,
-	CollectionSortFieldProductCount,
-	CollectionSortFieldPublicationDate,
-}
 
 func (e CollectionSortField) IsValid() bool {
 	switch e {
@@ -5761,7 +5471,7 @@ func (e CollectionSortField) String() string {
 	return string(e)
 }
 
-func (e *CollectionSortField) UnmarshalGQL(v interface{}) error {
+func (e *CollectionSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5772,10 +5482,6 @@ func (e *CollectionSortField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid CollectionSortField", str)
 	}
 	return nil
-}
-
-func (e CollectionSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type ConfigurationTypeFieldEnum string
@@ -5790,16 +5496,6 @@ const (
 	ConfigurationTypeFieldEnumOutput          ConfigurationTypeFieldEnum = "OUTPUT"
 )
 
-var AllConfigurationTypeFieldEnum = []ConfigurationTypeFieldEnum{
-	ConfigurationTypeFieldEnumString,
-	ConfigurationTypeFieldEnumMultiline,
-	ConfigurationTypeFieldEnumBoolean,
-	ConfigurationTypeFieldEnumSecret,
-	ConfigurationTypeFieldEnumPassword,
-	ConfigurationTypeFieldEnumSecretmultiline,
-	ConfigurationTypeFieldEnumOutput,
-}
-
 func (e ConfigurationTypeFieldEnum) IsValid() bool {
 	switch e {
 	case ConfigurationTypeFieldEnumString, ConfigurationTypeFieldEnumMultiline, ConfigurationTypeFieldEnumBoolean, ConfigurationTypeFieldEnumSecret, ConfigurationTypeFieldEnumPassword, ConfigurationTypeFieldEnumSecretmultiline, ConfigurationTypeFieldEnumOutput:
@@ -5812,7 +5508,7 @@ func (e ConfigurationTypeFieldEnum) String() string {
 	return string(e)
 }
 
-func (e *ConfigurationTypeFieldEnum) UnmarshalGQL(v interface{}) error {
+func (e *ConfigurationTypeFieldEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -5823,10 +5519,6 @@ func (e *ConfigurationTypeFieldEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid ConfigurationTypeFieldEnum", str)
 	}
 	return nil
-}
-
-func (e ConfigurationTypeFieldEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type CountryCode string
@@ -6084,259 +5776,6 @@ const (
 	CountryCodeZw     CountryCode = "ZW"
 )
 
-var AllCountryCode = []CountryCode{
-	CountryCodeAf,
-	CountryCodeAx,
-	CountryCodeAl,
-	CountryCodeDz,
-	CountryCodeAs,
-	CountryCodeAd,
-	CountryCodeAo,
-	CountryCodeAi,
-	CountryCodeAq,
-	CountryCodeAg,
-	CountryCodeAr,
-	CountryCodeAm,
-	CountryCodeAw,
-	CountryCodeAu,
-	CountryCodeAt,
-	CountryCodeAz,
-	CountryCodeBs,
-	CountryCodeBh,
-	CountryCodeBd,
-	CountryCodeBb,
-	CountryCodeBy,
-	CountryCodeBe,
-	CountryCodeBz,
-	CountryCodeBj,
-	CountryCodeBm,
-	CountryCodeBt,
-	CountryCodeBo,
-	CountryCodeBq,
-	CountryCodeBa,
-	CountryCodeBw,
-	CountryCodeBv,
-	CountryCodeBr,
-	CountryCodeIo,
-	CountryCodeBn,
-	CountryCodeBg,
-	CountryCodeBf,
-	CountryCodeBi,
-	CountryCodeCv,
-	CountryCodeKh,
-	CountryCodeCm,
-	CountryCodeCa,
-	CountryCodeKy,
-	CountryCodeCf,
-	CountryCodeTd,
-	CountryCodeCl,
-	CountryCodeCn,
-	CountryCodeCx,
-	CountryCodeCc,
-	CountryCodeCo,
-	CountryCodeKm,
-	CountryCodeCg,
-	CountryCodeCd,
-	CountryCodeCk,
-	CountryCodeCr,
-	CountryCodeCi,
-	CountryCodeHr,
-	CountryCodeCu,
-	CountryCodeCw,
-	CountryCodeCy,
-	CountryCodeCz,
-	CountryCodeDk,
-	CountryCodeDj,
-	CountryCodeDm,
-	CountryCodeDo,
-	CountryCodeEc,
-	CountryCodeEg,
-	CountryCodeSv,
-	CountryCodeGq,
-	CountryCodeEr,
-	CountryCodeEe,
-	CountryCodeSz,
-	CountryCodeEt,
-	CountryCodeEu,
-	CountryCodeFk,
-	CountryCodeFo,
-	CountryCodeFj,
-	CountryCodeFi,
-	CountryCodeFr,
-	CountryCodeGf,
-	CountryCodePf,
-	CountryCodeTf,
-	CountryCodeGa,
-	CountryCodeGm,
-	CountryCodeGe,
-	CountryCodeDe,
-	CountryCodeGh,
-	CountryCodeGi,
-	CountryCodeGr,
-	CountryCodeGl,
-	CountryCodeGd,
-	CountryCodeGp,
-	CountryCodeGu,
-	CountryCodeGt,
-	CountryCodeGg,
-	CountryCodeGn,
-	CountryCodeGw,
-	CountryCodeGy,
-	CountryCodeHt,
-	CountryCodeHm,
-	CountryCodeVa,
-	CountryCodeHn,
-	CountryCodeHk,
-	CountryCodeHu,
-	CountryCodeIs,
-	CountryCodeIn,
-	CountryCodeString,
-	CountryCodeIr,
-	CountryCodeIq,
-	CountryCodeIe,
-	CountryCodeIm,
-	CountryCodeIl,
-	CountryCodeIt,
-	CountryCodeJm,
-	CountryCodeJp,
-	CountryCodeJe,
-	CountryCodeJo,
-	CountryCodeKz,
-	CountryCodeKe,
-	CountryCodeKi,
-	CountryCodeKw,
-	CountryCodeKg,
-	CountryCodeLa,
-	CountryCodeLv,
-	CountryCodeLb,
-	CountryCodeLs,
-	CountryCodeLr,
-	CountryCodeLy,
-	CountryCodeLi,
-	CountryCodeLt,
-	CountryCodeLu,
-	CountryCodeMo,
-	CountryCodeMg,
-	CountryCodeMw,
-	CountryCodeMy,
-	CountryCodeMv,
-	CountryCodeMl,
-	CountryCodeMt,
-	CountryCodeMh,
-	CountryCodeMq,
-	CountryCodeMr,
-	CountryCodeMu,
-	CountryCodeYt,
-	CountryCodeMx,
-	CountryCodeFm,
-	CountryCodeMd,
-	CountryCodeMc,
-	CountryCodeMn,
-	CountryCodeMe,
-	CountryCodeMs,
-	CountryCodeMa,
-	CountryCodeMz,
-	CountryCodeMm,
-	CountryCodeNa,
-	CountryCodeNr,
-	CountryCodeNp,
-	CountryCodeNl,
-	CountryCodeNc,
-	CountryCodeNz,
-	CountryCodeNi,
-	CountryCodeNe,
-	CountryCodeNg,
-	CountryCodeNu,
-	CountryCodeNf,
-	CountryCodeKp,
-	CountryCodeMk,
-	CountryCodeMp,
-	CountryCodeNo,
-	CountryCodeOm,
-	CountryCodePk,
-	CountryCodePw,
-	CountryCodePs,
-	CountryCodePa,
-	CountryCodePg,
-	CountryCodePy,
-	CountryCodePe,
-	CountryCodePh,
-	CountryCodePn,
-	CountryCodePl,
-	CountryCodePt,
-	CountryCodePr,
-	CountryCodeQa,
-	CountryCodeRe,
-	CountryCodeRo,
-	CountryCodeRu,
-	CountryCodeRw,
-	CountryCodeBl,
-	CountryCodeSh,
-	CountryCodeKn,
-	CountryCodeLc,
-	CountryCodeMf,
-	CountryCodePm,
-	CountryCodeVc,
-	CountryCodeWs,
-	CountryCodeSm,
-	CountryCodeSt,
-	CountryCodeSa,
-	CountryCodeSn,
-	CountryCodeRs,
-	CountryCodeSc,
-	CountryCodeSl,
-	CountryCodeSg,
-	CountryCodeSx,
-	CountryCodeSk,
-	CountryCodeSi,
-	CountryCodeSb,
-	CountryCodeSo,
-	CountryCodeZa,
-	CountryCodeGs,
-	CountryCodeKr,
-	CountryCodeSs,
-	CountryCodeEs,
-	CountryCodeLk,
-	CountryCodeSd,
-	CountryCodeSr,
-	CountryCodeSj,
-	CountryCodeSe,
-	CountryCodeCh,
-	CountryCodeSy,
-	CountryCodeTw,
-	CountryCodeTj,
-	CountryCodeTz,
-	CountryCodeTh,
-	CountryCodeTl,
-	CountryCodeTg,
-	CountryCodeTk,
-	CountryCodeTo,
-	CountryCodeTt,
-	CountryCodeTn,
-	CountryCodeTr,
-	CountryCodeTm,
-	CountryCodeTc,
-	CountryCodeTv,
-	CountryCodeUg,
-	CountryCodeUa,
-	CountryCodeAe,
-	CountryCodeGb,
-	CountryCodeUm,
-	CountryCodeUs,
-	CountryCodeUy,
-	CountryCodeUz,
-	CountryCodeVu,
-	CountryCodeVe,
-	CountryCodeVn,
-	CountryCodeVg,
-	CountryCodeVi,
-	CountryCodeWf,
-	CountryCodeEh,
-	CountryCodeYe,
-	CountryCodeZm,
-	CountryCodeZw,
-}
-
 func (e CountryCode) IsValid() bool {
 	switch e {
 	case CountryCodeAf, CountryCodeAx, CountryCodeAl, CountryCodeDz, CountryCodeAs, CountryCodeAd, CountryCodeAo, CountryCodeAi, CountryCodeAq, CountryCodeAg, CountryCodeAr, CountryCodeAm, CountryCodeAw, CountryCodeAu, CountryCodeAt, CountryCodeAz, CountryCodeBs, CountryCodeBh, CountryCodeBd, CountryCodeBb, CountryCodeBy, CountryCodeBe, CountryCodeBz, CountryCodeBj, CountryCodeBm, CountryCodeBt, CountryCodeBo, CountryCodeBq, CountryCodeBa, CountryCodeBw, CountryCodeBv, CountryCodeBr, CountryCodeIo, CountryCodeBn, CountryCodeBg, CountryCodeBf, CountryCodeBi, CountryCodeCv, CountryCodeKh, CountryCodeCm, CountryCodeCa, CountryCodeKy, CountryCodeCf, CountryCodeTd, CountryCodeCl, CountryCodeCn, CountryCodeCx, CountryCodeCc, CountryCodeCo, CountryCodeKm, CountryCodeCg, CountryCodeCd, CountryCodeCk, CountryCodeCr, CountryCodeCi, CountryCodeHr, CountryCodeCu, CountryCodeCw, CountryCodeCy, CountryCodeCz, CountryCodeDk, CountryCodeDj, CountryCodeDm, CountryCodeDo, CountryCodeEc, CountryCodeEg, CountryCodeSv, CountryCodeGq, CountryCodeEr, CountryCodeEe, CountryCodeSz, CountryCodeEt, CountryCodeEu, CountryCodeFk, CountryCodeFo, CountryCodeFj, CountryCodeFi, CountryCodeFr, CountryCodeGf, CountryCodePf, CountryCodeTf, CountryCodeGa, CountryCodeGm, CountryCodeGe, CountryCodeDe, CountryCodeGh, CountryCodeGi, CountryCodeGr, CountryCodeGl, CountryCodeGd, CountryCodeGp, CountryCodeGu, CountryCodeGt, CountryCodeGg, CountryCodeGn, CountryCodeGw, CountryCodeGy, CountryCodeHt, CountryCodeHm, CountryCodeVa, CountryCodeHn, CountryCodeHk, CountryCodeHu, CountryCodeIs, CountryCodeIn, CountryCodeString, CountryCodeIr, CountryCodeIq, CountryCodeIe, CountryCodeIm, CountryCodeIl, CountryCodeIt, CountryCodeJm, CountryCodeJp, CountryCodeJe, CountryCodeJo, CountryCodeKz, CountryCodeKe, CountryCodeKi, CountryCodeKw, CountryCodeKg, CountryCodeLa, CountryCodeLv, CountryCodeLb, CountryCodeLs, CountryCodeLr, CountryCodeLy, CountryCodeLi, CountryCodeLt, CountryCodeLu, CountryCodeMo, CountryCodeMg, CountryCodeMw, CountryCodeMy, CountryCodeMv, CountryCodeMl, CountryCodeMt, CountryCodeMh, CountryCodeMq, CountryCodeMr, CountryCodeMu, CountryCodeYt, CountryCodeMx, CountryCodeFm, CountryCodeMd, CountryCodeMc, CountryCodeMn, CountryCodeMe, CountryCodeMs, CountryCodeMa, CountryCodeMz, CountryCodeMm, CountryCodeNa, CountryCodeNr, CountryCodeNp, CountryCodeNl, CountryCodeNc, CountryCodeNz, CountryCodeNi, CountryCodeNe, CountryCodeNg, CountryCodeNu, CountryCodeNf, CountryCodeKp, CountryCodeMk, CountryCodeMp, CountryCodeNo, CountryCodeOm, CountryCodePk, CountryCodePw, CountryCodePs, CountryCodePa, CountryCodePg, CountryCodePy, CountryCodePe, CountryCodePh, CountryCodePn, CountryCodePl, CountryCodePt, CountryCodePr, CountryCodeQa, CountryCodeRe, CountryCodeRo, CountryCodeRu, CountryCodeRw, CountryCodeBl, CountryCodeSh, CountryCodeKn, CountryCodeLc, CountryCodeMf, CountryCodePm, CountryCodeVc, CountryCodeWs, CountryCodeSm, CountryCodeSt, CountryCodeSa, CountryCodeSn, CountryCodeRs, CountryCodeSc, CountryCodeSl, CountryCodeSg, CountryCodeSx, CountryCodeSk, CountryCodeSi, CountryCodeSb, CountryCodeSo, CountryCodeZa, CountryCodeGs, CountryCodeKr, CountryCodeSs, CountryCodeEs, CountryCodeLk, CountryCodeSd, CountryCodeSr, CountryCodeSj, CountryCodeSe, CountryCodeCh, CountryCodeSy, CountryCodeTw, CountryCodeTj, CountryCodeTz, CountryCodeTh, CountryCodeTl, CountryCodeTg, CountryCodeTk, CountryCodeTo, CountryCodeTt, CountryCodeTn, CountryCodeTr, CountryCodeTm, CountryCodeTc, CountryCodeTv, CountryCodeUg, CountryCodeUa, CountryCodeAe, CountryCodeGb, CountryCodeUm, CountryCodeUs, CountryCodeUy, CountryCodeUz, CountryCodeVu, CountryCodeVe, CountryCodeVn, CountryCodeVg, CountryCodeVi, CountryCodeWf, CountryCodeEh, CountryCodeYe, CountryCodeZm, CountryCodeZw:
@@ -6349,7 +5788,7 @@ func (e CountryCode) String() string {
 	return string(e)
 }
 
-func (e *CountryCode) UnmarshalGQL(v interface{}) error {
+func (e *CountryCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6360,10 +5799,6 @@ func (e *CountryCode) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid CountryCode", str)
 	}
 	return nil
-}
-
-func (e CountryCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type CustomerEventsEnum string
@@ -6384,22 +5819,6 @@ const (
 	CustomerEventsEnumNoteAdded             CustomerEventsEnum = "NOTE_ADDED"
 )
 
-var AllCustomerEventsEnum = []CustomerEventsEnum{
-	CustomerEventsEnumAccountCreated,
-	CustomerEventsEnumPasswordResetLinkSent,
-	CustomerEventsEnumPasswordReset,
-	CustomerEventsEnumEmailChangedRequest,
-	CustomerEventsEnumPasswordChanged,
-	CustomerEventsEnumEmailChanged,
-	CustomerEventsEnumPlacedOrder,
-	CustomerEventsEnumNoteAddedToOrder,
-	CustomerEventsEnumDigitalLinkDownloaded,
-	CustomerEventsEnumCustomerDeleted,
-	CustomerEventsEnumNameAssigned,
-	CustomerEventsEnumEmailAssigned,
-	CustomerEventsEnumNoteAdded,
-}
-
 func (e CustomerEventsEnum) IsValid() bool {
 	switch e {
 	case CustomerEventsEnumAccountCreated, CustomerEventsEnumPasswordResetLinkSent, CustomerEventsEnumPasswordReset, CustomerEventsEnumEmailChangedRequest, CustomerEventsEnumPasswordChanged, CustomerEventsEnumEmailChanged, CustomerEventsEnumPlacedOrder, CustomerEventsEnumNoteAddedToOrder, CustomerEventsEnumDigitalLinkDownloaded, CustomerEventsEnumCustomerDeleted, CustomerEventsEnumNameAssigned, CustomerEventsEnumEmailAssigned, CustomerEventsEnumNoteAdded:
@@ -6412,7 +5831,7 @@ func (e CustomerEventsEnum) String() string {
 	return string(e)
 }
 
-func (e *CustomerEventsEnum) UnmarshalGQL(v interface{}) error {
+func (e *CustomerEventsEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6423,10 +5842,6 @@ func (e *CustomerEventsEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid CustomerEventsEnum", str)
 	}
 	return nil
-}
-
-func (e CustomerEventsEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type DiscountErrorCode string
@@ -6442,17 +5857,6 @@ const (
 	DiscountErrorCodeDuplicatedInputItem               DiscountErrorCode = "DUPLICATED_INPUT_ITEM"
 )
 
-var AllDiscountErrorCode = []DiscountErrorCode{
-	DiscountErrorCodeAlreadyExists,
-	DiscountErrorCodeGraphqlError,
-	DiscountErrorCodeInvalid,
-	DiscountErrorCodeNotFound,
-	DiscountErrorCodeRequired,
-	DiscountErrorCodeUnique,
-	DiscountErrorCodeCannotManageProductWithoutVariant,
-	DiscountErrorCodeDuplicatedInputItem,
-}
-
 func (e DiscountErrorCode) IsValid() bool {
 	switch e {
 	case DiscountErrorCodeAlreadyExists, DiscountErrorCodeGraphqlError, DiscountErrorCodeInvalid, DiscountErrorCodeNotFound, DiscountErrorCodeRequired, DiscountErrorCodeUnique, DiscountErrorCodeCannotManageProductWithoutVariant, DiscountErrorCodeDuplicatedInputItem:
@@ -6465,7 +5869,7 @@ func (e DiscountErrorCode) String() string {
 	return string(e)
 }
 
-func (e *DiscountErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *DiscountErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6478,10 +5882,6 @@ func (e *DiscountErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e DiscountErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type DiscountStatusEnum string
 
 const (
@@ -6489,12 +5889,6 @@ const (
 	DiscountStatusEnumExpired   DiscountStatusEnum = "EXPIRED"
 	DiscountStatusEnumScheduled DiscountStatusEnum = "SCHEDULED"
 )
-
-var AllDiscountStatusEnum = []DiscountStatusEnum{
-	DiscountStatusEnumActive,
-	DiscountStatusEnumExpired,
-	DiscountStatusEnumScheduled,
-}
 
 func (e DiscountStatusEnum) IsValid() bool {
 	switch e {
@@ -6508,7 +5902,7 @@ func (e DiscountStatusEnum) String() string {
 	return string(e)
 }
 
-func (e *DiscountStatusEnum) UnmarshalGQL(v interface{}) error {
+func (e *DiscountStatusEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6521,21 +5915,12 @@ func (e *DiscountStatusEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e DiscountStatusEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type DiscountValueTypeEnum string
 
 const (
 	DiscountValueTypeEnumFixed      DiscountValueTypeEnum = "FIXED"
 	DiscountValueTypeEnumPercentage DiscountValueTypeEnum = "PERCENTAGE"
 )
-
-var AllDiscountValueTypeEnum = []DiscountValueTypeEnum{
-	DiscountValueTypeEnumFixed,
-	DiscountValueTypeEnumPercentage,
-}
 
 func (e DiscountValueTypeEnum) IsValid() bool {
 	switch e {
@@ -6549,7 +5934,7 @@ func (e DiscountValueTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *DiscountValueTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *DiscountValueTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6560,10 +5945,6 @@ func (e *DiscountValueTypeEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid DiscountValueTypeEnum", str)
 	}
 	return nil
-}
-
-func (e DiscountValueTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type DistanceUnitsEnum string
@@ -6577,15 +5958,6 @@ const (
 	DistanceUnitsEnumInch DistanceUnitsEnum = "INCH"
 )
 
-var AllDistanceUnitsEnum = []DistanceUnitsEnum{
-	DistanceUnitsEnumCm,
-	DistanceUnitsEnumM,
-	DistanceUnitsEnumKm,
-	DistanceUnitsEnumFt,
-	DistanceUnitsEnumYd,
-	DistanceUnitsEnumInch,
-}
-
 func (e DistanceUnitsEnum) IsValid() bool {
 	switch e {
 	case DistanceUnitsEnumCm, DistanceUnitsEnumM, DistanceUnitsEnumKm, DistanceUnitsEnumFt, DistanceUnitsEnumYd, DistanceUnitsEnumInch:
@@ -6598,7 +5970,7 @@ func (e DistanceUnitsEnum) String() string {
 	return string(e)
 }
 
-func (e *DistanceUnitsEnum) UnmarshalGQL(v interface{}) error {
+func (e *DistanceUnitsEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6609,10 +5981,6 @@ func (e *DistanceUnitsEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid DistanceUnitsEnum", str)
 	}
 	return nil
-}
-
-func (e DistanceUnitsEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type ExportEventsEnum string
@@ -6626,15 +5994,6 @@ const (
 	ExportEventsEnumExportFailedInfoSent ExportEventsEnum = "EXPORT_FAILED_INFO_SENT"
 )
 
-var AllExportEventsEnum = []ExportEventsEnum{
-	ExportEventsEnumExportPending,
-	ExportEventsEnumExportSuccess,
-	ExportEventsEnumExportFailed,
-	ExportEventsEnumExportDeleted,
-	ExportEventsEnumExportedFileSent,
-	ExportEventsEnumExportFailedInfoSent,
-}
-
 func (e ExportEventsEnum) IsValid() bool {
 	switch e {
 	case ExportEventsEnumExportPending, ExportEventsEnumExportSuccess, ExportEventsEnumExportFailed, ExportEventsEnumExportDeleted, ExportEventsEnumExportedFileSent, ExportEventsEnumExportFailedInfoSent:
@@ -6647,7 +6006,7 @@ func (e ExportEventsEnum) String() string {
 	return string(e)
 }
 
-func (e *ExportEventsEnum) UnmarshalGQL(v interface{}) error {
+func (e *ExportEventsEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6660,10 +6019,6 @@ func (e *ExportEventsEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e ExportEventsEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type ExportFileSortField string
 
 const (
@@ -6671,12 +6026,6 @@ const (
 	ExportFileSortFieldCreatedAt ExportFileSortField = "CREATED_AT"
 	ExportFileSortFieldUpdatedAt ExportFileSortField = "UPDATED_AT"
 )
-
-var AllExportFileSortField = []ExportFileSortField{
-	ExportFileSortFieldStatus,
-	ExportFileSortFieldCreatedAt,
-	ExportFileSortFieldUpdatedAt,
-}
 
 func (e ExportFileSortField) IsValid() bool {
 	switch e {
@@ -6690,7 +6039,7 @@ func (e ExportFileSortField) String() string {
 	return string(e)
 }
 
-func (e *ExportFileSortField) UnmarshalGQL(v interface{}) error {
+func (e *ExportFileSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6703,10 +6052,6 @@ func (e *ExportFileSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e ExportFileSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type ExportScope string
 
 const (
@@ -6714,12 +6059,6 @@ const (
 	ExportScopeIDS    ExportScope = "IDS"
 	ExportScopeFilter ExportScope = "FILTER"
 )
-
-var AllExportScope = []ExportScope{
-	ExportScopeAll,
-	ExportScopeIDS,
-	ExportScopeFilter,
-}
 
 func (e ExportScope) IsValid() bool {
 	switch e {
@@ -6733,7 +6072,7 @@ func (e ExportScope) String() string {
 	return string(e)
 }
 
-func (e *ExportScope) UnmarshalGQL(v interface{}) error {
+func (e *ExportScope) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6746,10 +6085,6 @@ func (e *ExportScope) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e ExportScope) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type ExternalNotificationErrorCodes string
 
 const (
@@ -6758,13 +6093,6 @@ const (
 	ExternalNotificationErrorCodesNotFound         ExternalNotificationErrorCodes = "NOT_FOUND"
 	ExternalNotificationErrorCodesChannelInactive  ExternalNotificationErrorCodes = "CHANNEL_INACTIVE"
 )
-
-var AllExternalNotificationErrorCodes = []ExternalNotificationErrorCodes{
-	ExternalNotificationErrorCodesRequired,
-	ExternalNotificationErrorCodesInvalidModelType,
-	ExternalNotificationErrorCodesNotFound,
-	ExternalNotificationErrorCodesChannelInactive,
-}
 
 func (e ExternalNotificationErrorCodes) IsValid() bool {
 	switch e {
@@ -6778,7 +6106,7 @@ func (e ExternalNotificationErrorCodes) String() string {
 	return string(e)
 }
 
-func (e *ExternalNotificationErrorCodes) UnmarshalGQL(v interface{}) error {
+func (e *ExternalNotificationErrorCodes) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6791,21 +6119,12 @@ func (e *ExternalNotificationErrorCodes) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e ExternalNotificationErrorCodes) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type FileTypesEnum string
 
 const (
 	FileTypesEnumCSV  FileTypesEnum = "CSV"
 	FileTypesEnumXlsx FileTypesEnum = "XLSX"
 )
-
-var AllFileTypesEnum = []FileTypesEnum{
-	FileTypesEnumCSV,
-	FileTypesEnumXlsx,
-}
 
 func (e FileTypesEnum) IsValid() bool {
 	switch e {
@@ -6819,7 +6138,7 @@ func (e FileTypesEnum) String() string {
 	return string(e)
 }
 
-func (e *FileTypesEnum) UnmarshalGQL(v interface{}) error {
+func (e *FileTypesEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6830,10 +6149,6 @@ func (e *FileTypesEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid FileTypesEnum", str)
 	}
 	return nil
-}
-
-func (e FileTypesEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type FulfillmentStatus string
@@ -6848,16 +6163,6 @@ const (
 	FulfillmentStatusWaitingForApproval  FulfillmentStatus = "WAITING_FOR_APPROVAL"
 )
 
-var AllFulfillmentStatus = []FulfillmentStatus{
-	FulfillmentStatusFulfilled,
-	FulfillmentStatusRefunded,
-	FulfillmentStatusReturned,
-	FulfillmentStatusReplaced,
-	FulfillmentStatusRefundedAndReturned,
-	FulfillmentStatusCanceled,
-	FulfillmentStatusWaitingForApproval,
-}
-
 func (e FulfillmentStatus) IsValid() bool {
 	switch e {
 	case FulfillmentStatusFulfilled, FulfillmentStatusRefunded, FulfillmentStatusReturned, FulfillmentStatusReplaced, FulfillmentStatusRefundedAndReturned, FulfillmentStatusCanceled, FulfillmentStatusWaitingForApproval:
@@ -6870,7 +6175,7 @@ func (e FulfillmentStatus) String() string {
 	return string(e)
 }
 
-func (e *FulfillmentStatus) UnmarshalGQL(v interface{}) error {
+func (e *FulfillmentStatus) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6881,10 +6186,6 @@ func (e *FulfillmentStatus) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid FulfillmentStatus", str)
 	}
 	return nil
-}
-
-func (e FulfillmentStatus) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type GiftCardErrorCode string
@@ -6898,15 +6199,6 @@ const (
 	GiftCardErrorCodeUnique        GiftCardErrorCode = "UNIQUE"
 )
 
-var AllGiftCardErrorCode = []GiftCardErrorCode{
-	GiftCardErrorCodeAlreadyExists,
-	GiftCardErrorCodeGraphqlError,
-	GiftCardErrorCodeInvalid,
-	GiftCardErrorCodeNotFound,
-	GiftCardErrorCodeRequired,
-	GiftCardErrorCodeUnique,
-}
-
 func (e GiftCardErrorCode) IsValid() bool {
 	switch e {
 	case GiftCardErrorCodeAlreadyExists, GiftCardErrorCodeGraphqlError, GiftCardErrorCodeInvalid, GiftCardErrorCodeNotFound, GiftCardErrorCodeRequired, GiftCardErrorCodeUnique:
@@ -6919,7 +6211,7 @@ func (e GiftCardErrorCode) String() string {
 	return string(e)
 }
 
-func (e *GiftCardErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *GiftCardErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6930,10 +6222,6 @@ func (e *GiftCardErrorCode) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid GiftCardErrorCode", str)
 	}
 	return nil
-}
-
-func (e GiftCardErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type GiftCardEventsEnum string
@@ -6953,21 +6241,6 @@ const (
 	GiftCardEventsEnumUsedInOrder       GiftCardEventsEnum = "USED_IN_ORDER"
 )
 
-var AllGiftCardEventsEnum = []GiftCardEventsEnum{
-	GiftCardEventsEnumIssued,
-	GiftCardEventsEnumBought,
-	GiftCardEventsEnumUpdated,
-	GiftCardEventsEnumActivated,
-	GiftCardEventsEnumDeactivated,
-	GiftCardEventsEnumBalanceReset,
-	GiftCardEventsEnumExpiryDateUpdated,
-	GiftCardEventsEnumTagUpdated,
-	GiftCardEventsEnumSentToCustomer,
-	GiftCardEventsEnumResent,
-	GiftCardEventsEnumNoteAdded,
-	GiftCardEventsEnumUsedInOrder,
-}
-
 func (e GiftCardEventsEnum) IsValid() bool {
 	switch e {
 	case GiftCardEventsEnumIssued, GiftCardEventsEnumBought, GiftCardEventsEnumUpdated, GiftCardEventsEnumActivated, GiftCardEventsEnumDeactivated, GiftCardEventsEnumBalanceReset, GiftCardEventsEnumExpiryDateUpdated, GiftCardEventsEnumTagUpdated, GiftCardEventsEnumSentToCustomer, GiftCardEventsEnumResent, GiftCardEventsEnumNoteAdded, GiftCardEventsEnumUsedInOrder:
@@ -6980,7 +6253,7 @@ func (e GiftCardEventsEnum) String() string {
 	return string(e)
 }
 
-func (e *GiftCardEventsEnum) UnmarshalGQL(v interface{}) error {
+func (e *GiftCardEventsEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -6993,10 +6266,6 @@ func (e *GiftCardEventsEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e GiftCardEventsEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type GiftCardSettingsErrorCode string
 
 const (
@@ -7004,12 +6273,6 @@ const (
 	GiftCardSettingsErrorCodeRequired     GiftCardSettingsErrorCode = "REQUIRED"
 	GiftCardSettingsErrorCodeGraphqlError GiftCardSettingsErrorCode = "GRAPHQL_ERROR"
 )
-
-var AllGiftCardSettingsErrorCode = []GiftCardSettingsErrorCode{
-	GiftCardSettingsErrorCodeInvalid,
-	GiftCardSettingsErrorCodeRequired,
-	GiftCardSettingsErrorCodeGraphqlError,
-}
 
 func (e GiftCardSettingsErrorCode) IsValid() bool {
 	switch e {
@@ -7023,7 +6286,7 @@ func (e GiftCardSettingsErrorCode) String() string {
 	return string(e)
 }
 
-func (e *GiftCardSettingsErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *GiftCardSettingsErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -7036,21 +6299,12 @@ func (e *GiftCardSettingsErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e GiftCardSettingsErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type GiftCardSettingsExpiryTypeEnum string
 
 const (
 	GiftCardSettingsExpiryTypeEnumNeverExpire  GiftCardSettingsExpiryTypeEnum = "NEVER_EXPIRE"
 	GiftCardSettingsExpiryTypeEnumExpiryPeriod GiftCardSettingsExpiryTypeEnum = "EXPIRY_PERIOD"
 )
-
-var AllGiftCardSettingsExpiryTypeEnum = []GiftCardSettingsExpiryTypeEnum{
-	GiftCardSettingsExpiryTypeEnumNeverExpire,
-	GiftCardSettingsExpiryTypeEnumExpiryPeriod,
-}
 
 func (e GiftCardSettingsExpiryTypeEnum) IsValid() bool {
 	switch e {
@@ -7064,7 +6318,7 @@ func (e GiftCardSettingsExpiryTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *GiftCardSettingsExpiryTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *GiftCardSettingsExpiryTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -7077,10 +6331,6 @@ func (e *GiftCardSettingsExpiryTypeEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e GiftCardSettingsExpiryTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type GiftCardSortField string
 
 const (
@@ -7089,13 +6339,6 @@ const (
 	GiftCardSortFieldUsedBy         GiftCardSortField = "USED_BY"
 	GiftCardSortFieldCurrentBalance GiftCardSortField = "CURRENT_BALANCE"
 )
-
-var AllGiftCardSortField = []GiftCardSortField{
-	GiftCardSortFieldTag,
-	GiftCardSortFieldProduct,
-	GiftCardSortFieldUsedBy,
-	GiftCardSortFieldCurrentBalance,
-}
 
 func (e GiftCardSortField) IsValid() bool {
 	switch e {
@@ -7109,7 +6352,7 @@ func (e GiftCardSortField) String() string {
 	return string(e)
 }
 
-func (e *GiftCardSortField) UnmarshalGQL(v interface{}) error {
+func (e *GiftCardSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -7120,10 +6363,6 @@ func (e *GiftCardSortField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid GiftCardSortField", str)
 	}
 	return nil
-}
-
-func (e GiftCardSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type InvoiceErrorCode string
@@ -7138,16 +6377,6 @@ const (
 	InvoiceErrorCodeInvalidStatus InvoiceErrorCode = "INVALID_STATUS"
 )
 
-var AllInvoiceErrorCode = []InvoiceErrorCode{
-	InvoiceErrorCodeRequired,
-	InvoiceErrorCodeNotReady,
-	InvoiceErrorCodeURLNotSet,
-	InvoiceErrorCodeEmailNotSet,
-	InvoiceErrorCodeNumberNotSet,
-	InvoiceErrorCodeNotFound,
-	InvoiceErrorCodeInvalidStatus,
-}
-
 func (e InvoiceErrorCode) IsValid() bool {
 	switch e {
 	case InvoiceErrorCodeRequired, InvoiceErrorCodeNotReady, InvoiceErrorCodeURLNotSet, InvoiceErrorCodeEmailNotSet, InvoiceErrorCodeNumberNotSet, InvoiceErrorCodeNotFound, InvoiceErrorCodeInvalidStatus:
@@ -7160,7 +6389,7 @@ func (e InvoiceErrorCode) String() string {
 	return string(e)
 }
 
-func (e *InvoiceErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *InvoiceErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -7173,10 +6402,6 @@ func (e *InvoiceErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e InvoiceErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type JobStatusEnum string
 
 const (
@@ -7185,13 +6410,6 @@ const (
 	JobStatusEnumFailed  JobStatusEnum = "FAILED"
 	JobStatusEnumDeleted JobStatusEnum = "DELETED"
 )
-
-var AllJobStatusEnum = []JobStatusEnum{
-	JobStatusEnumPending,
-	JobStatusEnumSuccess,
-	JobStatusEnumFailed,
-	JobStatusEnumDeleted,
-}
 
 func (e JobStatusEnum) IsValid() bool {
 	switch e {
@@ -7205,7 +6423,7 @@ func (e JobStatusEnum) String() string {
 	return string(e)
 }
 
-func (e *JobStatusEnum) UnmarshalGQL(v interface{}) error {
+func (e *JobStatusEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -7216,10 +6434,6 @@ func (e *JobStatusEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid JobStatusEnum", str)
 	}
 	return nil
-}
-
-func (e JobStatusEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type LanguageCodeEnum string
@@ -8006,788 +7220,6 @@ const (
 	LanguageCodeEnumZuZa         LanguageCodeEnum = "ZU_ZA"
 )
 
-var AllLanguageCodeEnum = []LanguageCodeEnum{
-	LanguageCodeEnumAf,
-	LanguageCodeEnumAfNa,
-	LanguageCodeEnumAfZa,
-	LanguageCodeEnumAgq,
-	LanguageCodeEnumAgqCm,
-	LanguageCodeEnumAk,
-	LanguageCodeEnumAkGh,
-	LanguageCodeEnumAm,
-	LanguageCodeEnumAmEt,
-	LanguageCodeEnumAr,
-	LanguageCodeEnumArAe,
-	LanguageCodeEnumArBh,
-	LanguageCodeEnumArDj,
-	LanguageCodeEnumArDz,
-	LanguageCodeEnumArEg,
-	LanguageCodeEnumArEh,
-	LanguageCodeEnumArEr,
-	LanguageCodeEnumArIl,
-	LanguageCodeEnumArIq,
-	LanguageCodeEnumArJo,
-	LanguageCodeEnumArKm,
-	LanguageCodeEnumArKw,
-	LanguageCodeEnumArLb,
-	LanguageCodeEnumArLy,
-	LanguageCodeEnumArMa,
-	LanguageCodeEnumArMr,
-	LanguageCodeEnumArOm,
-	LanguageCodeEnumArPs,
-	LanguageCodeEnumArQa,
-	LanguageCodeEnumArSa,
-	LanguageCodeEnumArSd,
-	LanguageCodeEnumArSo,
-	LanguageCodeEnumArSs,
-	LanguageCodeEnumArSy,
-	LanguageCodeEnumArTd,
-	LanguageCodeEnumArTn,
-	LanguageCodeEnumArYe,
-	LanguageCodeEnumAs,
-	LanguageCodeEnumAsIn,
-	LanguageCodeEnumAsa,
-	LanguageCodeEnumAsaTz,
-	LanguageCodeEnumAst,
-	LanguageCodeEnumAstEs,
-	LanguageCodeEnumAz,
-	LanguageCodeEnumAzCyrl,
-	LanguageCodeEnumAzCyrlAz,
-	LanguageCodeEnumAzLatn,
-	LanguageCodeEnumAzLatnAz,
-	LanguageCodeEnumBas,
-	LanguageCodeEnumBasCm,
-	LanguageCodeEnumBe,
-	LanguageCodeEnumBeBy,
-	LanguageCodeEnumBem,
-	LanguageCodeEnumBemZm,
-	LanguageCodeEnumBez,
-	LanguageCodeEnumBezTz,
-	LanguageCodeEnumBg,
-	LanguageCodeEnumBgBg,
-	LanguageCodeEnumBm,
-	LanguageCodeEnumBmMl,
-	LanguageCodeEnumBn,
-	LanguageCodeEnumBnBd,
-	LanguageCodeEnumBnIn,
-	LanguageCodeEnumBo,
-	LanguageCodeEnumBoCn,
-	LanguageCodeEnumBoIn,
-	LanguageCodeEnumBr,
-	LanguageCodeEnumBrFr,
-	LanguageCodeEnumBrx,
-	LanguageCodeEnumBrxIn,
-	LanguageCodeEnumBs,
-	LanguageCodeEnumBsCyrl,
-	LanguageCodeEnumBsCyrlBa,
-	LanguageCodeEnumBsLatn,
-	LanguageCodeEnumBsLatnBa,
-	LanguageCodeEnumCa,
-	LanguageCodeEnumCaAd,
-	LanguageCodeEnumCaEs,
-	LanguageCodeEnumCaEsValencia,
-	LanguageCodeEnumCaFr,
-	LanguageCodeEnumCaIt,
-	LanguageCodeEnumCcp,
-	LanguageCodeEnumCcpBd,
-	LanguageCodeEnumCcpIn,
-	LanguageCodeEnumCe,
-	LanguageCodeEnumCeRu,
-	LanguageCodeEnumCeb,
-	LanguageCodeEnumCebPh,
-	LanguageCodeEnumCgg,
-	LanguageCodeEnumCggUg,
-	LanguageCodeEnumChr,
-	LanguageCodeEnumChrUs,
-	LanguageCodeEnumCkb,
-	LanguageCodeEnumCkbIq,
-	LanguageCodeEnumCkbIr,
-	LanguageCodeEnumCs,
-	LanguageCodeEnumCsCz,
-	LanguageCodeEnumCu,
-	LanguageCodeEnumCuRu,
-	LanguageCodeEnumCy,
-	LanguageCodeEnumCyGb,
-	LanguageCodeEnumDa,
-	LanguageCodeEnumDaDk,
-	LanguageCodeEnumDaGl,
-	LanguageCodeEnumDav,
-	LanguageCodeEnumDavKe,
-	LanguageCodeEnumDe,
-	LanguageCodeEnumDeAt,
-	LanguageCodeEnumDeBe,
-	LanguageCodeEnumDeCh,
-	LanguageCodeEnumDeDe,
-	LanguageCodeEnumDeIt,
-	LanguageCodeEnumDeLi,
-	LanguageCodeEnumDeLu,
-	LanguageCodeEnumDje,
-	LanguageCodeEnumDjeNe,
-	LanguageCodeEnumDsb,
-	LanguageCodeEnumDsbDe,
-	LanguageCodeEnumDua,
-	LanguageCodeEnumDuaCm,
-	LanguageCodeEnumDyo,
-	LanguageCodeEnumDyoSn,
-	LanguageCodeEnumDz,
-	LanguageCodeEnumDzBt,
-	LanguageCodeEnumEbu,
-	LanguageCodeEnumEbuKe,
-	LanguageCodeEnumEe,
-	LanguageCodeEnumEeGh,
-	LanguageCodeEnumEeTg,
-	LanguageCodeEnumEl,
-	LanguageCodeEnumElCy,
-	LanguageCodeEnumElGr,
-	LanguageCodeEnumEn,
-	LanguageCodeEnumEnAe,
-	LanguageCodeEnumEnAg,
-	LanguageCodeEnumEnAi,
-	LanguageCodeEnumEnAs,
-	LanguageCodeEnumEnAt,
-	LanguageCodeEnumEnAu,
-	LanguageCodeEnumEnBb,
-	LanguageCodeEnumEnBe,
-	LanguageCodeEnumEnBi,
-	LanguageCodeEnumEnBm,
-	LanguageCodeEnumEnBs,
-	LanguageCodeEnumEnBw,
-	LanguageCodeEnumEnBz,
-	LanguageCodeEnumEnCa,
-	LanguageCodeEnumEnCc,
-	LanguageCodeEnumEnCh,
-	LanguageCodeEnumEnCk,
-	LanguageCodeEnumEnCm,
-	LanguageCodeEnumEnCx,
-	LanguageCodeEnumEnCy,
-	LanguageCodeEnumEnDe,
-	LanguageCodeEnumEnDg,
-	LanguageCodeEnumEnDk,
-	LanguageCodeEnumEnDm,
-	LanguageCodeEnumEnEr,
-	LanguageCodeEnumEnFi,
-	LanguageCodeEnumEnFj,
-	LanguageCodeEnumEnFk,
-	LanguageCodeEnumEnFm,
-	LanguageCodeEnumEnGb,
-	LanguageCodeEnumEnGd,
-	LanguageCodeEnumEnGg,
-	LanguageCodeEnumEnGh,
-	LanguageCodeEnumEnGi,
-	LanguageCodeEnumEnGm,
-	LanguageCodeEnumEnGu,
-	LanguageCodeEnumEnGy,
-	LanguageCodeEnumEnHk,
-	LanguageCodeEnumEnIe,
-	LanguageCodeEnumEnIl,
-	LanguageCodeEnumEnIm,
-	LanguageCodeEnumEnIn,
-	LanguageCodeEnumEnIo,
-	LanguageCodeEnumEnJe,
-	LanguageCodeEnumEnJm,
-	LanguageCodeEnumEnKe,
-	LanguageCodeEnumEnKi,
-	LanguageCodeEnumEnKn,
-	LanguageCodeEnumEnKy,
-	LanguageCodeEnumEnLc,
-	LanguageCodeEnumEnLr,
-	LanguageCodeEnumEnLs,
-	LanguageCodeEnumEnMg,
-	LanguageCodeEnumEnMh,
-	LanguageCodeEnumEnMo,
-	LanguageCodeEnumEnMp,
-	LanguageCodeEnumEnMs,
-	LanguageCodeEnumEnMt,
-	LanguageCodeEnumEnMu,
-	LanguageCodeEnumEnMw,
-	LanguageCodeEnumEnMy,
-	LanguageCodeEnumEnNa,
-	LanguageCodeEnumEnNf,
-	LanguageCodeEnumEnNg,
-	LanguageCodeEnumEnNl,
-	LanguageCodeEnumEnNr,
-	LanguageCodeEnumEnNu,
-	LanguageCodeEnumEnNz,
-	LanguageCodeEnumEnPg,
-	LanguageCodeEnumEnPh,
-	LanguageCodeEnumEnPk,
-	LanguageCodeEnumEnPn,
-	LanguageCodeEnumEnPr,
-	LanguageCodeEnumEnPw,
-	LanguageCodeEnumEnRw,
-	LanguageCodeEnumEnSb,
-	LanguageCodeEnumEnSc,
-	LanguageCodeEnumEnSd,
-	LanguageCodeEnumEnSe,
-	LanguageCodeEnumEnSg,
-	LanguageCodeEnumEnSh,
-	LanguageCodeEnumEnSi,
-	LanguageCodeEnumEnSl,
-	LanguageCodeEnumEnSs,
-	LanguageCodeEnumEnSx,
-	LanguageCodeEnumEnSz,
-	LanguageCodeEnumEnTc,
-	LanguageCodeEnumEnTk,
-	LanguageCodeEnumEnTo,
-	LanguageCodeEnumEnTt,
-	LanguageCodeEnumEnTv,
-	LanguageCodeEnumEnTz,
-	LanguageCodeEnumEnUg,
-	LanguageCodeEnumEnUm,
-	LanguageCodeEnumEnUs,
-	LanguageCodeEnumEnVc,
-	LanguageCodeEnumEnVg,
-	LanguageCodeEnumEnVi,
-	LanguageCodeEnumEnVu,
-	LanguageCodeEnumEnWs,
-	LanguageCodeEnumEnZa,
-	LanguageCodeEnumEnZm,
-	LanguageCodeEnumEnZw,
-	LanguageCodeEnumEo,
-	LanguageCodeEnumEs,
-	LanguageCodeEnumEsAr,
-	LanguageCodeEnumEsBo,
-	LanguageCodeEnumEsBr,
-	LanguageCodeEnumEsBz,
-	LanguageCodeEnumEsCl,
-	LanguageCodeEnumEsCo,
-	LanguageCodeEnumEsCr,
-	LanguageCodeEnumEsCu,
-	LanguageCodeEnumEsDo,
-	LanguageCodeEnumEsEa,
-	LanguageCodeEnumEsEc,
-	LanguageCodeEnumEsEs,
-	LanguageCodeEnumEsGq,
-	LanguageCodeEnumEsGt,
-	LanguageCodeEnumEsHn,
-	LanguageCodeEnumEsIc,
-	LanguageCodeEnumEsMx,
-	LanguageCodeEnumEsNi,
-	LanguageCodeEnumEsPa,
-	LanguageCodeEnumEsPe,
-	LanguageCodeEnumEsPh,
-	LanguageCodeEnumEsPr,
-	LanguageCodeEnumEsPy,
-	LanguageCodeEnumEsSv,
-	LanguageCodeEnumEsUs,
-	LanguageCodeEnumEsUy,
-	LanguageCodeEnumEsVe,
-	LanguageCodeEnumEt,
-	LanguageCodeEnumEtEe,
-	LanguageCodeEnumEu,
-	LanguageCodeEnumEuEs,
-	LanguageCodeEnumEwo,
-	LanguageCodeEnumEwoCm,
-	LanguageCodeEnumFa,
-	LanguageCodeEnumFaAf,
-	LanguageCodeEnumFaIr,
-	LanguageCodeEnumFf,
-	LanguageCodeEnumFfAdlm,
-	LanguageCodeEnumFfAdlmBf,
-	LanguageCodeEnumFfAdlmCm,
-	LanguageCodeEnumFfAdlmGh,
-	LanguageCodeEnumFfAdlmGm,
-	LanguageCodeEnumFfAdlmGn,
-	LanguageCodeEnumFfAdlmGw,
-	LanguageCodeEnumFfAdlmLr,
-	LanguageCodeEnumFfAdlmMr,
-	LanguageCodeEnumFfAdlmNe,
-	LanguageCodeEnumFfAdlmNg,
-	LanguageCodeEnumFfAdlmSl,
-	LanguageCodeEnumFfAdlmSn,
-	LanguageCodeEnumFfLatn,
-	LanguageCodeEnumFfLatnBf,
-	LanguageCodeEnumFfLatnCm,
-	LanguageCodeEnumFfLatnGh,
-	LanguageCodeEnumFfLatnGm,
-	LanguageCodeEnumFfLatnGn,
-	LanguageCodeEnumFfLatnGw,
-	LanguageCodeEnumFfLatnLr,
-	LanguageCodeEnumFfLatnMr,
-	LanguageCodeEnumFfLatnNe,
-	LanguageCodeEnumFfLatnNg,
-	LanguageCodeEnumFfLatnSl,
-	LanguageCodeEnumFfLatnSn,
-	LanguageCodeEnumFi,
-	LanguageCodeEnumFiFi,
-	LanguageCodeEnumFil,
-	LanguageCodeEnumFilPh,
-	LanguageCodeEnumFo,
-	LanguageCodeEnumFoDk,
-	LanguageCodeEnumFoFo,
-	LanguageCodeEnumFr,
-	LanguageCodeEnumFrBe,
-	LanguageCodeEnumFrBf,
-	LanguageCodeEnumFrBi,
-	LanguageCodeEnumFrBj,
-	LanguageCodeEnumFrBl,
-	LanguageCodeEnumFrCa,
-	LanguageCodeEnumFrCd,
-	LanguageCodeEnumFrCf,
-	LanguageCodeEnumFrCg,
-	LanguageCodeEnumFrCh,
-	LanguageCodeEnumFrCi,
-	LanguageCodeEnumFrCm,
-	LanguageCodeEnumFrDj,
-	LanguageCodeEnumFrDz,
-	LanguageCodeEnumFrFr,
-	LanguageCodeEnumFrGa,
-	LanguageCodeEnumFrGf,
-	LanguageCodeEnumFrGn,
-	LanguageCodeEnumFrGp,
-	LanguageCodeEnumFrGq,
-	LanguageCodeEnumFrHt,
-	LanguageCodeEnumFrKm,
-	LanguageCodeEnumFrLu,
-	LanguageCodeEnumFrMa,
-	LanguageCodeEnumFrMc,
-	LanguageCodeEnumFrMf,
-	LanguageCodeEnumFrMg,
-	LanguageCodeEnumFrMl,
-	LanguageCodeEnumFrMq,
-	LanguageCodeEnumFrMr,
-	LanguageCodeEnumFrMu,
-	LanguageCodeEnumFrNc,
-	LanguageCodeEnumFrNe,
-	LanguageCodeEnumFrPf,
-	LanguageCodeEnumFrPm,
-	LanguageCodeEnumFrRe,
-	LanguageCodeEnumFrRw,
-	LanguageCodeEnumFrSc,
-	LanguageCodeEnumFrSn,
-	LanguageCodeEnumFrSy,
-	LanguageCodeEnumFrTd,
-	LanguageCodeEnumFrTg,
-	LanguageCodeEnumFrTn,
-	LanguageCodeEnumFrVu,
-	LanguageCodeEnumFrWf,
-	LanguageCodeEnumFrYt,
-	LanguageCodeEnumFur,
-	LanguageCodeEnumFurIt,
-	LanguageCodeEnumFy,
-	LanguageCodeEnumFyNl,
-	LanguageCodeEnumGa,
-	LanguageCodeEnumGaGb,
-	LanguageCodeEnumGaIe,
-	LanguageCodeEnumGd,
-	LanguageCodeEnumGdGb,
-	LanguageCodeEnumGl,
-	LanguageCodeEnumGlEs,
-	LanguageCodeEnumGsw,
-	LanguageCodeEnumGswCh,
-	LanguageCodeEnumGswFr,
-	LanguageCodeEnumGswLi,
-	LanguageCodeEnumGu,
-	LanguageCodeEnumGuIn,
-	LanguageCodeEnumGuz,
-	LanguageCodeEnumGuzKe,
-	LanguageCodeEnumGv,
-	LanguageCodeEnumGvIm,
-	LanguageCodeEnumHa,
-	LanguageCodeEnumHaGh,
-	LanguageCodeEnumHaNe,
-	LanguageCodeEnumHaNg,
-	LanguageCodeEnumHaw,
-	LanguageCodeEnumHawUs,
-	LanguageCodeEnumHe,
-	LanguageCodeEnumHeIl,
-	LanguageCodeEnumHi,
-	LanguageCodeEnumHiIn,
-	LanguageCodeEnumHr,
-	LanguageCodeEnumHrBa,
-	LanguageCodeEnumHrHr,
-	LanguageCodeEnumHsb,
-	LanguageCodeEnumHsbDe,
-	LanguageCodeEnumHu,
-	LanguageCodeEnumHuHu,
-	LanguageCodeEnumHy,
-	LanguageCodeEnumHyAm,
-	LanguageCodeEnumIa,
-	LanguageCodeEnumString,
-	LanguageCodeEnumIDID,
-	LanguageCodeEnumIg,
-	LanguageCodeEnumIgNg,
-	LanguageCodeEnumIi,
-	LanguageCodeEnumIiCn,
-	LanguageCodeEnumIs,
-	LanguageCodeEnumIsIs,
-	LanguageCodeEnumIt,
-	LanguageCodeEnumItCh,
-	LanguageCodeEnumItIt,
-	LanguageCodeEnumItSm,
-	LanguageCodeEnumItVa,
-	LanguageCodeEnumJa,
-	LanguageCodeEnumJaJp,
-	LanguageCodeEnumJgo,
-	LanguageCodeEnumJgoCm,
-	LanguageCodeEnumJmc,
-	LanguageCodeEnumJmcTz,
-	LanguageCodeEnumJv,
-	LanguageCodeEnumJvID,
-	LanguageCodeEnumKa,
-	LanguageCodeEnumKaGe,
-	LanguageCodeEnumKab,
-	LanguageCodeEnumKabDz,
-	LanguageCodeEnumKam,
-	LanguageCodeEnumKamKe,
-	LanguageCodeEnumKde,
-	LanguageCodeEnumKdeTz,
-	LanguageCodeEnumKea,
-	LanguageCodeEnumKeaCv,
-	LanguageCodeEnumKhq,
-	LanguageCodeEnumKhqMl,
-	LanguageCodeEnumKi,
-	LanguageCodeEnumKiKe,
-	LanguageCodeEnumKk,
-	LanguageCodeEnumKkKz,
-	LanguageCodeEnumKkj,
-	LanguageCodeEnumKkjCm,
-	LanguageCodeEnumKl,
-	LanguageCodeEnumKlGl,
-	LanguageCodeEnumKln,
-	LanguageCodeEnumKlnKe,
-	LanguageCodeEnumKm,
-	LanguageCodeEnumKmKh,
-	LanguageCodeEnumKn,
-	LanguageCodeEnumKnIn,
-	LanguageCodeEnumKo,
-	LanguageCodeEnumKoKp,
-	LanguageCodeEnumKoKr,
-	LanguageCodeEnumKok,
-	LanguageCodeEnumKokIn,
-	LanguageCodeEnumKs,
-	LanguageCodeEnumKsArab,
-	LanguageCodeEnumKsArabIn,
-	LanguageCodeEnumKsb,
-	LanguageCodeEnumKsbTz,
-	LanguageCodeEnumKsf,
-	LanguageCodeEnumKsfCm,
-	LanguageCodeEnumKsh,
-	LanguageCodeEnumKshDe,
-	LanguageCodeEnumKu,
-	LanguageCodeEnumKuTr,
-	LanguageCodeEnumKw,
-	LanguageCodeEnumKwGb,
-	LanguageCodeEnumKy,
-	LanguageCodeEnumKyKg,
-	LanguageCodeEnumLag,
-	LanguageCodeEnumLagTz,
-	LanguageCodeEnumLb,
-	LanguageCodeEnumLbLu,
-	LanguageCodeEnumLg,
-	LanguageCodeEnumLgUg,
-	LanguageCodeEnumLkt,
-	LanguageCodeEnumLktUs,
-	LanguageCodeEnumLn,
-	LanguageCodeEnumLnAo,
-	LanguageCodeEnumLnCd,
-	LanguageCodeEnumLnCf,
-	LanguageCodeEnumLnCg,
-	LanguageCodeEnumLo,
-	LanguageCodeEnumLoLa,
-	LanguageCodeEnumLrc,
-	LanguageCodeEnumLrcIq,
-	LanguageCodeEnumLrcIr,
-	LanguageCodeEnumLt,
-	LanguageCodeEnumLtLt,
-	LanguageCodeEnumLu,
-	LanguageCodeEnumLuCd,
-	LanguageCodeEnumLuo,
-	LanguageCodeEnumLuoKe,
-	LanguageCodeEnumLuy,
-	LanguageCodeEnumLuyKe,
-	LanguageCodeEnumLv,
-	LanguageCodeEnumLvLv,
-	LanguageCodeEnumMai,
-	LanguageCodeEnumMaiIn,
-	LanguageCodeEnumMas,
-	LanguageCodeEnumMasKe,
-	LanguageCodeEnumMasTz,
-	LanguageCodeEnumMer,
-	LanguageCodeEnumMerKe,
-	LanguageCodeEnumMfe,
-	LanguageCodeEnumMfeMu,
-	LanguageCodeEnumMg,
-	LanguageCodeEnumMgMg,
-	LanguageCodeEnumMgh,
-	LanguageCodeEnumMghMz,
-	LanguageCodeEnumMgo,
-	LanguageCodeEnumMgoCm,
-	LanguageCodeEnumMi,
-	LanguageCodeEnumMiNz,
-	LanguageCodeEnumMk,
-	LanguageCodeEnumMkMk,
-	LanguageCodeEnumMl,
-	LanguageCodeEnumMlIn,
-	LanguageCodeEnumMn,
-	LanguageCodeEnumMnMn,
-	LanguageCodeEnumMni,
-	LanguageCodeEnumMniBeng,
-	LanguageCodeEnumMniBengIn,
-	LanguageCodeEnumMr,
-	LanguageCodeEnumMrIn,
-	LanguageCodeEnumMs,
-	LanguageCodeEnumMsBn,
-	LanguageCodeEnumMsID,
-	LanguageCodeEnumMsMy,
-	LanguageCodeEnumMsSg,
-	LanguageCodeEnumMt,
-	LanguageCodeEnumMtMt,
-	LanguageCodeEnumMua,
-	LanguageCodeEnumMuaCm,
-	LanguageCodeEnumMy,
-	LanguageCodeEnumMyMm,
-	LanguageCodeEnumMzn,
-	LanguageCodeEnumMznIr,
-	LanguageCodeEnumNaq,
-	LanguageCodeEnumNaqNa,
-	LanguageCodeEnumNb,
-	LanguageCodeEnumNbNo,
-	LanguageCodeEnumNbSj,
-	LanguageCodeEnumNd,
-	LanguageCodeEnumNdZw,
-	LanguageCodeEnumNds,
-	LanguageCodeEnumNdsDe,
-	LanguageCodeEnumNdsNl,
-	LanguageCodeEnumNe,
-	LanguageCodeEnumNeIn,
-	LanguageCodeEnumNeNp,
-	LanguageCodeEnumNl,
-	LanguageCodeEnumNlAw,
-	LanguageCodeEnumNlBe,
-	LanguageCodeEnumNlBq,
-	LanguageCodeEnumNlCw,
-	LanguageCodeEnumNlNl,
-	LanguageCodeEnumNlSr,
-	LanguageCodeEnumNlSx,
-	LanguageCodeEnumNmg,
-	LanguageCodeEnumNmgCm,
-	LanguageCodeEnumNn,
-	LanguageCodeEnumNnNo,
-	LanguageCodeEnumNnh,
-	LanguageCodeEnumNnhCm,
-	LanguageCodeEnumNus,
-	LanguageCodeEnumNusSs,
-	LanguageCodeEnumNyn,
-	LanguageCodeEnumNynUg,
-	LanguageCodeEnumOm,
-	LanguageCodeEnumOmEt,
-	LanguageCodeEnumOmKe,
-	LanguageCodeEnumOr,
-	LanguageCodeEnumOrIn,
-	LanguageCodeEnumOs,
-	LanguageCodeEnumOsGe,
-	LanguageCodeEnumOsRu,
-	LanguageCodeEnumPa,
-	LanguageCodeEnumPaArab,
-	LanguageCodeEnumPaArabPk,
-	LanguageCodeEnumPaGuru,
-	LanguageCodeEnumPaGuruIn,
-	LanguageCodeEnumPcm,
-	LanguageCodeEnumPcmNg,
-	LanguageCodeEnumPl,
-	LanguageCodeEnumPlPl,
-	LanguageCodeEnumPrg,
-	LanguageCodeEnumPs,
-	LanguageCodeEnumPsAf,
-	LanguageCodeEnumPsPk,
-	LanguageCodeEnumPt,
-	LanguageCodeEnumPtAo,
-	LanguageCodeEnumPtBr,
-	LanguageCodeEnumPtCh,
-	LanguageCodeEnumPtCv,
-	LanguageCodeEnumPtGq,
-	LanguageCodeEnumPtGw,
-	LanguageCodeEnumPtLu,
-	LanguageCodeEnumPtMo,
-	LanguageCodeEnumPtMz,
-	LanguageCodeEnumPtPt,
-	LanguageCodeEnumPtSt,
-	LanguageCodeEnumPtTl,
-	LanguageCodeEnumQu,
-	LanguageCodeEnumQuBo,
-	LanguageCodeEnumQuEc,
-	LanguageCodeEnumQuPe,
-	LanguageCodeEnumRm,
-	LanguageCodeEnumRmCh,
-	LanguageCodeEnumRn,
-	LanguageCodeEnumRnBi,
-	LanguageCodeEnumRo,
-	LanguageCodeEnumRoMd,
-	LanguageCodeEnumRoRo,
-	LanguageCodeEnumRof,
-	LanguageCodeEnumRofTz,
-	LanguageCodeEnumRu,
-	LanguageCodeEnumRuBy,
-	LanguageCodeEnumRuKg,
-	LanguageCodeEnumRuKz,
-	LanguageCodeEnumRuMd,
-	LanguageCodeEnumRuRu,
-	LanguageCodeEnumRuUa,
-	LanguageCodeEnumRw,
-	LanguageCodeEnumRwRw,
-	LanguageCodeEnumRwk,
-	LanguageCodeEnumRwkTz,
-	LanguageCodeEnumSah,
-	LanguageCodeEnumSahRu,
-	LanguageCodeEnumSaq,
-	LanguageCodeEnumSaqKe,
-	LanguageCodeEnumSat,
-	LanguageCodeEnumSatOlck,
-	LanguageCodeEnumSatOlckIn,
-	LanguageCodeEnumSbp,
-	LanguageCodeEnumSbpTz,
-	LanguageCodeEnumSd,
-	LanguageCodeEnumSdArab,
-	LanguageCodeEnumSdArabPk,
-	LanguageCodeEnumSdDeva,
-	LanguageCodeEnumSdDevaIn,
-	LanguageCodeEnumSe,
-	LanguageCodeEnumSeFi,
-	LanguageCodeEnumSeNo,
-	LanguageCodeEnumSeSe,
-	LanguageCodeEnumSeh,
-	LanguageCodeEnumSehMz,
-	LanguageCodeEnumSes,
-	LanguageCodeEnumSesMl,
-	LanguageCodeEnumSg,
-	LanguageCodeEnumSgCf,
-	LanguageCodeEnumShi,
-	LanguageCodeEnumShiLatn,
-	LanguageCodeEnumShiLatnMa,
-	LanguageCodeEnumShiTfng,
-	LanguageCodeEnumShiTfngMa,
-	LanguageCodeEnumSi,
-	LanguageCodeEnumSiLk,
-	LanguageCodeEnumSk,
-	LanguageCodeEnumSkSk,
-	LanguageCodeEnumSl,
-	LanguageCodeEnumSlSi,
-	LanguageCodeEnumSmn,
-	LanguageCodeEnumSmnFi,
-	LanguageCodeEnumSn,
-	LanguageCodeEnumSnZw,
-	LanguageCodeEnumSo,
-	LanguageCodeEnumSoDj,
-	LanguageCodeEnumSoEt,
-	LanguageCodeEnumSoKe,
-	LanguageCodeEnumSoSo,
-	LanguageCodeEnumSq,
-	LanguageCodeEnumSqAl,
-	LanguageCodeEnumSqMk,
-	LanguageCodeEnumSqXk,
-	LanguageCodeEnumSr,
-	LanguageCodeEnumSrCyrl,
-	LanguageCodeEnumSrCyrlBa,
-	LanguageCodeEnumSrCyrlMe,
-	LanguageCodeEnumSrCyrlRs,
-	LanguageCodeEnumSrCyrlXk,
-	LanguageCodeEnumSrLatn,
-	LanguageCodeEnumSrLatnBa,
-	LanguageCodeEnumSrLatnMe,
-	LanguageCodeEnumSrLatnRs,
-	LanguageCodeEnumSrLatnXk,
-	LanguageCodeEnumSu,
-	LanguageCodeEnumSuLatn,
-	LanguageCodeEnumSuLatnID,
-	LanguageCodeEnumSv,
-	LanguageCodeEnumSvAx,
-	LanguageCodeEnumSvFi,
-	LanguageCodeEnumSvSe,
-	LanguageCodeEnumSw,
-	LanguageCodeEnumSwCd,
-	LanguageCodeEnumSwKe,
-	LanguageCodeEnumSwTz,
-	LanguageCodeEnumSwUg,
-	LanguageCodeEnumTa,
-	LanguageCodeEnumTaIn,
-	LanguageCodeEnumTaLk,
-	LanguageCodeEnumTaMy,
-	LanguageCodeEnumTaSg,
-	LanguageCodeEnumTe,
-	LanguageCodeEnumTeIn,
-	LanguageCodeEnumTeo,
-	LanguageCodeEnumTeoKe,
-	LanguageCodeEnumTeoUg,
-	LanguageCodeEnumTg,
-	LanguageCodeEnumTgTj,
-	LanguageCodeEnumTh,
-	LanguageCodeEnumThTh,
-	LanguageCodeEnumTi,
-	LanguageCodeEnumTiEr,
-	LanguageCodeEnumTiEt,
-	LanguageCodeEnumTk,
-	LanguageCodeEnumTkTm,
-	LanguageCodeEnumTo,
-	LanguageCodeEnumToTo,
-	LanguageCodeEnumTr,
-	LanguageCodeEnumTrCy,
-	LanguageCodeEnumTrTr,
-	LanguageCodeEnumTt,
-	LanguageCodeEnumTtRu,
-	LanguageCodeEnumTwq,
-	LanguageCodeEnumTwqNe,
-	LanguageCodeEnumTzm,
-	LanguageCodeEnumTzmMa,
-	LanguageCodeEnumUg,
-	LanguageCodeEnumUgCn,
-	LanguageCodeEnumUk,
-	LanguageCodeEnumUkUa,
-	LanguageCodeEnumUr,
-	LanguageCodeEnumUrIn,
-	LanguageCodeEnumUrPk,
-	LanguageCodeEnumUz,
-	LanguageCodeEnumUzArab,
-	LanguageCodeEnumUzArabAf,
-	LanguageCodeEnumUzCyrl,
-	LanguageCodeEnumUzCyrlUz,
-	LanguageCodeEnumUzLatn,
-	LanguageCodeEnumUzLatnUz,
-	LanguageCodeEnumVai,
-	LanguageCodeEnumVaiLatn,
-	LanguageCodeEnumVaiLatnLr,
-	LanguageCodeEnumVaiVaii,
-	LanguageCodeEnumVaiVaiiLr,
-	LanguageCodeEnumVi,
-	LanguageCodeEnumViVn,
-	LanguageCodeEnumVo,
-	LanguageCodeEnumVun,
-	LanguageCodeEnumVunTz,
-	LanguageCodeEnumWae,
-	LanguageCodeEnumWaeCh,
-	LanguageCodeEnumWo,
-	LanguageCodeEnumWoSn,
-	LanguageCodeEnumXh,
-	LanguageCodeEnumXhZa,
-	LanguageCodeEnumXog,
-	LanguageCodeEnumXogUg,
-	LanguageCodeEnumYav,
-	LanguageCodeEnumYavCm,
-	LanguageCodeEnumYi,
-	LanguageCodeEnumYo,
-	LanguageCodeEnumYoBj,
-	LanguageCodeEnumYoNg,
-	LanguageCodeEnumYue,
-	LanguageCodeEnumYueHans,
-	LanguageCodeEnumYueHansCn,
-	LanguageCodeEnumYueHant,
-	LanguageCodeEnumYueHantHk,
-	LanguageCodeEnumZgh,
-	LanguageCodeEnumZghMa,
-	LanguageCodeEnumZh,
-	LanguageCodeEnumZhHans,
-	LanguageCodeEnumZhHansCn,
-	LanguageCodeEnumZhHansHk,
-	LanguageCodeEnumZhHansMo,
-	LanguageCodeEnumZhHansSg,
-	LanguageCodeEnumZhHant,
-	LanguageCodeEnumZhHantHk,
-	LanguageCodeEnumZhHantMo,
-	LanguageCodeEnumZhHantTw,
-	LanguageCodeEnumZu,
-	LanguageCodeEnumZuZa,
-}
-
 func (e LanguageCodeEnum) IsValid() bool {
 	switch e {
 	case LanguageCodeEnumAf, LanguageCodeEnumAfNa, LanguageCodeEnumAfZa, LanguageCodeEnumAgq, LanguageCodeEnumAgqCm, LanguageCodeEnumAk, LanguageCodeEnumAkGh, LanguageCodeEnumAm, LanguageCodeEnumAmEt, LanguageCodeEnumAr, LanguageCodeEnumArAe, LanguageCodeEnumArBh, LanguageCodeEnumArDj, LanguageCodeEnumArDz, LanguageCodeEnumArEg, LanguageCodeEnumArEh, LanguageCodeEnumArEr, LanguageCodeEnumArIl, LanguageCodeEnumArIq, LanguageCodeEnumArJo, LanguageCodeEnumArKm, LanguageCodeEnumArKw, LanguageCodeEnumArLb, LanguageCodeEnumArLy, LanguageCodeEnumArMa, LanguageCodeEnumArMr, LanguageCodeEnumArOm, LanguageCodeEnumArPs, LanguageCodeEnumArQa, LanguageCodeEnumArSa, LanguageCodeEnumArSd, LanguageCodeEnumArSo, LanguageCodeEnumArSs, LanguageCodeEnumArSy, LanguageCodeEnumArTd, LanguageCodeEnumArTn, LanguageCodeEnumArYe, LanguageCodeEnumAs, LanguageCodeEnumAsIn, LanguageCodeEnumAsa, LanguageCodeEnumAsaTz, LanguageCodeEnumAst, LanguageCodeEnumAstEs, LanguageCodeEnumAz, LanguageCodeEnumAzCyrl, LanguageCodeEnumAzCyrlAz, LanguageCodeEnumAzLatn, LanguageCodeEnumAzLatnAz, LanguageCodeEnumBas, LanguageCodeEnumBasCm, LanguageCodeEnumBe, LanguageCodeEnumBeBy, LanguageCodeEnumBem, LanguageCodeEnumBemZm, LanguageCodeEnumBez, LanguageCodeEnumBezTz, LanguageCodeEnumBg, LanguageCodeEnumBgBg, LanguageCodeEnumBm, LanguageCodeEnumBmMl, LanguageCodeEnumBn, LanguageCodeEnumBnBd, LanguageCodeEnumBnIn, LanguageCodeEnumBo, LanguageCodeEnumBoCn, LanguageCodeEnumBoIn, LanguageCodeEnumBr, LanguageCodeEnumBrFr, LanguageCodeEnumBrx, LanguageCodeEnumBrxIn, LanguageCodeEnumBs, LanguageCodeEnumBsCyrl, LanguageCodeEnumBsCyrlBa, LanguageCodeEnumBsLatn, LanguageCodeEnumBsLatnBa, LanguageCodeEnumCa, LanguageCodeEnumCaAd, LanguageCodeEnumCaEs, LanguageCodeEnumCaEsValencia, LanguageCodeEnumCaFr, LanguageCodeEnumCaIt, LanguageCodeEnumCcp, LanguageCodeEnumCcpBd, LanguageCodeEnumCcpIn, LanguageCodeEnumCe, LanguageCodeEnumCeRu, LanguageCodeEnumCeb, LanguageCodeEnumCebPh, LanguageCodeEnumCgg, LanguageCodeEnumCggUg, LanguageCodeEnumChr, LanguageCodeEnumChrUs, LanguageCodeEnumCkb, LanguageCodeEnumCkbIq, LanguageCodeEnumCkbIr, LanguageCodeEnumCs, LanguageCodeEnumCsCz, LanguageCodeEnumCu, LanguageCodeEnumCuRu, LanguageCodeEnumCy, LanguageCodeEnumCyGb, LanguageCodeEnumDa, LanguageCodeEnumDaDk, LanguageCodeEnumDaGl, LanguageCodeEnumDav, LanguageCodeEnumDavKe, LanguageCodeEnumDe, LanguageCodeEnumDeAt, LanguageCodeEnumDeBe, LanguageCodeEnumDeCh, LanguageCodeEnumDeDe, LanguageCodeEnumDeIt, LanguageCodeEnumDeLi, LanguageCodeEnumDeLu, LanguageCodeEnumDje, LanguageCodeEnumDjeNe, LanguageCodeEnumDsb, LanguageCodeEnumDsbDe, LanguageCodeEnumDua, LanguageCodeEnumDuaCm, LanguageCodeEnumDyo, LanguageCodeEnumDyoSn, LanguageCodeEnumDz, LanguageCodeEnumDzBt, LanguageCodeEnumEbu, LanguageCodeEnumEbuKe, LanguageCodeEnumEe, LanguageCodeEnumEeGh, LanguageCodeEnumEeTg, LanguageCodeEnumEl, LanguageCodeEnumElCy, LanguageCodeEnumElGr, LanguageCodeEnumEn, LanguageCodeEnumEnAe, LanguageCodeEnumEnAg, LanguageCodeEnumEnAi, LanguageCodeEnumEnAs, LanguageCodeEnumEnAt, LanguageCodeEnumEnAu, LanguageCodeEnumEnBb, LanguageCodeEnumEnBe, LanguageCodeEnumEnBi, LanguageCodeEnumEnBm, LanguageCodeEnumEnBs, LanguageCodeEnumEnBw, LanguageCodeEnumEnBz, LanguageCodeEnumEnCa, LanguageCodeEnumEnCc, LanguageCodeEnumEnCh, LanguageCodeEnumEnCk, LanguageCodeEnumEnCm, LanguageCodeEnumEnCx, LanguageCodeEnumEnCy, LanguageCodeEnumEnDe, LanguageCodeEnumEnDg, LanguageCodeEnumEnDk, LanguageCodeEnumEnDm, LanguageCodeEnumEnEr, LanguageCodeEnumEnFi, LanguageCodeEnumEnFj, LanguageCodeEnumEnFk, LanguageCodeEnumEnFm, LanguageCodeEnumEnGb, LanguageCodeEnumEnGd, LanguageCodeEnumEnGg, LanguageCodeEnumEnGh, LanguageCodeEnumEnGi, LanguageCodeEnumEnGm, LanguageCodeEnumEnGu, LanguageCodeEnumEnGy, LanguageCodeEnumEnHk, LanguageCodeEnumEnIe, LanguageCodeEnumEnIl, LanguageCodeEnumEnIm, LanguageCodeEnumEnIn, LanguageCodeEnumEnIo, LanguageCodeEnumEnJe, LanguageCodeEnumEnJm, LanguageCodeEnumEnKe, LanguageCodeEnumEnKi, LanguageCodeEnumEnKn, LanguageCodeEnumEnKy, LanguageCodeEnumEnLc, LanguageCodeEnumEnLr, LanguageCodeEnumEnLs, LanguageCodeEnumEnMg, LanguageCodeEnumEnMh, LanguageCodeEnumEnMo, LanguageCodeEnumEnMp, LanguageCodeEnumEnMs, LanguageCodeEnumEnMt, LanguageCodeEnumEnMu, LanguageCodeEnumEnMw, LanguageCodeEnumEnMy, LanguageCodeEnumEnNa, LanguageCodeEnumEnNf, LanguageCodeEnumEnNg, LanguageCodeEnumEnNl, LanguageCodeEnumEnNr, LanguageCodeEnumEnNu, LanguageCodeEnumEnNz, LanguageCodeEnumEnPg, LanguageCodeEnumEnPh, LanguageCodeEnumEnPk, LanguageCodeEnumEnPn, LanguageCodeEnumEnPr, LanguageCodeEnumEnPw, LanguageCodeEnumEnRw, LanguageCodeEnumEnSb, LanguageCodeEnumEnSc, LanguageCodeEnumEnSd, LanguageCodeEnumEnSe, LanguageCodeEnumEnSg, LanguageCodeEnumEnSh, LanguageCodeEnumEnSi, LanguageCodeEnumEnSl, LanguageCodeEnumEnSs, LanguageCodeEnumEnSx, LanguageCodeEnumEnSz, LanguageCodeEnumEnTc, LanguageCodeEnumEnTk, LanguageCodeEnumEnTo, LanguageCodeEnumEnTt, LanguageCodeEnumEnTv, LanguageCodeEnumEnTz, LanguageCodeEnumEnUg, LanguageCodeEnumEnUm, LanguageCodeEnumEnUs, LanguageCodeEnumEnVc, LanguageCodeEnumEnVg, LanguageCodeEnumEnVi, LanguageCodeEnumEnVu, LanguageCodeEnumEnWs, LanguageCodeEnumEnZa, LanguageCodeEnumEnZm, LanguageCodeEnumEnZw, LanguageCodeEnumEo, LanguageCodeEnumEs, LanguageCodeEnumEsAr, LanguageCodeEnumEsBo, LanguageCodeEnumEsBr, LanguageCodeEnumEsBz, LanguageCodeEnumEsCl, LanguageCodeEnumEsCo, LanguageCodeEnumEsCr, LanguageCodeEnumEsCu, LanguageCodeEnumEsDo, LanguageCodeEnumEsEa, LanguageCodeEnumEsEc, LanguageCodeEnumEsEs, LanguageCodeEnumEsGq, LanguageCodeEnumEsGt, LanguageCodeEnumEsHn, LanguageCodeEnumEsIc, LanguageCodeEnumEsMx, LanguageCodeEnumEsNi, LanguageCodeEnumEsPa, LanguageCodeEnumEsPe, LanguageCodeEnumEsPh, LanguageCodeEnumEsPr, LanguageCodeEnumEsPy, LanguageCodeEnumEsSv, LanguageCodeEnumEsUs, LanguageCodeEnumEsUy, LanguageCodeEnumEsVe, LanguageCodeEnumEt, LanguageCodeEnumEtEe, LanguageCodeEnumEu, LanguageCodeEnumEuEs, LanguageCodeEnumEwo, LanguageCodeEnumEwoCm, LanguageCodeEnumFa, LanguageCodeEnumFaAf, LanguageCodeEnumFaIr, LanguageCodeEnumFf, LanguageCodeEnumFfAdlm, LanguageCodeEnumFfAdlmBf, LanguageCodeEnumFfAdlmCm, LanguageCodeEnumFfAdlmGh, LanguageCodeEnumFfAdlmGm, LanguageCodeEnumFfAdlmGn, LanguageCodeEnumFfAdlmGw, LanguageCodeEnumFfAdlmLr, LanguageCodeEnumFfAdlmMr, LanguageCodeEnumFfAdlmNe, LanguageCodeEnumFfAdlmNg, LanguageCodeEnumFfAdlmSl, LanguageCodeEnumFfAdlmSn, LanguageCodeEnumFfLatn, LanguageCodeEnumFfLatnBf, LanguageCodeEnumFfLatnCm, LanguageCodeEnumFfLatnGh, LanguageCodeEnumFfLatnGm, LanguageCodeEnumFfLatnGn, LanguageCodeEnumFfLatnGw, LanguageCodeEnumFfLatnLr, LanguageCodeEnumFfLatnMr, LanguageCodeEnumFfLatnNe, LanguageCodeEnumFfLatnNg, LanguageCodeEnumFfLatnSl, LanguageCodeEnumFfLatnSn, LanguageCodeEnumFi, LanguageCodeEnumFiFi, LanguageCodeEnumFil, LanguageCodeEnumFilPh, LanguageCodeEnumFo, LanguageCodeEnumFoDk, LanguageCodeEnumFoFo, LanguageCodeEnumFr, LanguageCodeEnumFrBe, LanguageCodeEnumFrBf, LanguageCodeEnumFrBi, LanguageCodeEnumFrBj, LanguageCodeEnumFrBl, LanguageCodeEnumFrCa, LanguageCodeEnumFrCd, LanguageCodeEnumFrCf, LanguageCodeEnumFrCg, LanguageCodeEnumFrCh, LanguageCodeEnumFrCi, LanguageCodeEnumFrCm, LanguageCodeEnumFrDj, LanguageCodeEnumFrDz, LanguageCodeEnumFrFr, LanguageCodeEnumFrGa, LanguageCodeEnumFrGf, LanguageCodeEnumFrGn, LanguageCodeEnumFrGp, LanguageCodeEnumFrGq, LanguageCodeEnumFrHt, LanguageCodeEnumFrKm, LanguageCodeEnumFrLu, LanguageCodeEnumFrMa, LanguageCodeEnumFrMc, LanguageCodeEnumFrMf, LanguageCodeEnumFrMg, LanguageCodeEnumFrMl, LanguageCodeEnumFrMq, LanguageCodeEnumFrMr, LanguageCodeEnumFrMu, LanguageCodeEnumFrNc, LanguageCodeEnumFrNe, LanguageCodeEnumFrPf, LanguageCodeEnumFrPm, LanguageCodeEnumFrRe, LanguageCodeEnumFrRw, LanguageCodeEnumFrSc, LanguageCodeEnumFrSn, LanguageCodeEnumFrSy, LanguageCodeEnumFrTd, LanguageCodeEnumFrTg, LanguageCodeEnumFrTn, LanguageCodeEnumFrVu, LanguageCodeEnumFrWf, LanguageCodeEnumFrYt, LanguageCodeEnumFur, LanguageCodeEnumFurIt, LanguageCodeEnumFy, LanguageCodeEnumFyNl, LanguageCodeEnumGa, LanguageCodeEnumGaGb, LanguageCodeEnumGaIe, LanguageCodeEnumGd, LanguageCodeEnumGdGb, LanguageCodeEnumGl, LanguageCodeEnumGlEs, LanguageCodeEnumGsw, LanguageCodeEnumGswCh, LanguageCodeEnumGswFr, LanguageCodeEnumGswLi, LanguageCodeEnumGu, LanguageCodeEnumGuIn, LanguageCodeEnumGuz, LanguageCodeEnumGuzKe, LanguageCodeEnumGv, LanguageCodeEnumGvIm, LanguageCodeEnumHa, LanguageCodeEnumHaGh, LanguageCodeEnumHaNe, LanguageCodeEnumHaNg, LanguageCodeEnumHaw, LanguageCodeEnumHawUs, LanguageCodeEnumHe, LanguageCodeEnumHeIl, LanguageCodeEnumHi, LanguageCodeEnumHiIn, LanguageCodeEnumHr, LanguageCodeEnumHrBa, LanguageCodeEnumHrHr, LanguageCodeEnumHsb, LanguageCodeEnumHsbDe, LanguageCodeEnumHu, LanguageCodeEnumHuHu, LanguageCodeEnumHy, LanguageCodeEnumHyAm, LanguageCodeEnumIa, LanguageCodeEnumString, LanguageCodeEnumIDID, LanguageCodeEnumIg, LanguageCodeEnumIgNg, LanguageCodeEnumIi, LanguageCodeEnumIiCn, LanguageCodeEnumIs, LanguageCodeEnumIsIs, LanguageCodeEnumIt, LanguageCodeEnumItCh, LanguageCodeEnumItIt, LanguageCodeEnumItSm, LanguageCodeEnumItVa, LanguageCodeEnumJa, LanguageCodeEnumJaJp, LanguageCodeEnumJgo, LanguageCodeEnumJgoCm, LanguageCodeEnumJmc, LanguageCodeEnumJmcTz, LanguageCodeEnumJv, LanguageCodeEnumJvID, LanguageCodeEnumKa, LanguageCodeEnumKaGe, LanguageCodeEnumKab, LanguageCodeEnumKabDz, LanguageCodeEnumKam, LanguageCodeEnumKamKe, LanguageCodeEnumKde, LanguageCodeEnumKdeTz, LanguageCodeEnumKea, LanguageCodeEnumKeaCv, LanguageCodeEnumKhq, LanguageCodeEnumKhqMl, LanguageCodeEnumKi, LanguageCodeEnumKiKe, LanguageCodeEnumKk, LanguageCodeEnumKkKz, LanguageCodeEnumKkj, LanguageCodeEnumKkjCm, LanguageCodeEnumKl, LanguageCodeEnumKlGl, LanguageCodeEnumKln, LanguageCodeEnumKlnKe, LanguageCodeEnumKm, LanguageCodeEnumKmKh, LanguageCodeEnumKn, LanguageCodeEnumKnIn, LanguageCodeEnumKo, LanguageCodeEnumKoKp, LanguageCodeEnumKoKr, LanguageCodeEnumKok, LanguageCodeEnumKokIn, LanguageCodeEnumKs, LanguageCodeEnumKsArab, LanguageCodeEnumKsArabIn, LanguageCodeEnumKsb, LanguageCodeEnumKsbTz, LanguageCodeEnumKsf, LanguageCodeEnumKsfCm, LanguageCodeEnumKsh, LanguageCodeEnumKshDe, LanguageCodeEnumKu, LanguageCodeEnumKuTr, LanguageCodeEnumKw, LanguageCodeEnumKwGb, LanguageCodeEnumKy, LanguageCodeEnumKyKg, LanguageCodeEnumLag, LanguageCodeEnumLagTz, LanguageCodeEnumLb, LanguageCodeEnumLbLu, LanguageCodeEnumLg, LanguageCodeEnumLgUg, LanguageCodeEnumLkt, LanguageCodeEnumLktUs, LanguageCodeEnumLn, LanguageCodeEnumLnAo, LanguageCodeEnumLnCd, LanguageCodeEnumLnCf, LanguageCodeEnumLnCg, LanguageCodeEnumLo, LanguageCodeEnumLoLa, LanguageCodeEnumLrc, LanguageCodeEnumLrcIq, LanguageCodeEnumLrcIr, LanguageCodeEnumLt, LanguageCodeEnumLtLt, LanguageCodeEnumLu, LanguageCodeEnumLuCd, LanguageCodeEnumLuo, LanguageCodeEnumLuoKe, LanguageCodeEnumLuy, LanguageCodeEnumLuyKe, LanguageCodeEnumLv, LanguageCodeEnumLvLv, LanguageCodeEnumMai, LanguageCodeEnumMaiIn, LanguageCodeEnumMas, LanguageCodeEnumMasKe, LanguageCodeEnumMasTz, LanguageCodeEnumMer, LanguageCodeEnumMerKe, LanguageCodeEnumMfe, LanguageCodeEnumMfeMu, LanguageCodeEnumMg, LanguageCodeEnumMgMg, LanguageCodeEnumMgh, LanguageCodeEnumMghMz, LanguageCodeEnumMgo, LanguageCodeEnumMgoCm, LanguageCodeEnumMi, LanguageCodeEnumMiNz, LanguageCodeEnumMk, LanguageCodeEnumMkMk, LanguageCodeEnumMl, LanguageCodeEnumMlIn, LanguageCodeEnumMn, LanguageCodeEnumMnMn, LanguageCodeEnumMni, LanguageCodeEnumMniBeng, LanguageCodeEnumMniBengIn, LanguageCodeEnumMr, LanguageCodeEnumMrIn, LanguageCodeEnumMs, LanguageCodeEnumMsBn, LanguageCodeEnumMsID, LanguageCodeEnumMsMy, LanguageCodeEnumMsSg, LanguageCodeEnumMt, LanguageCodeEnumMtMt, LanguageCodeEnumMua, LanguageCodeEnumMuaCm, LanguageCodeEnumMy, LanguageCodeEnumMyMm, LanguageCodeEnumMzn, LanguageCodeEnumMznIr, LanguageCodeEnumNaq, LanguageCodeEnumNaqNa, LanguageCodeEnumNb, LanguageCodeEnumNbNo, LanguageCodeEnumNbSj, LanguageCodeEnumNd, LanguageCodeEnumNdZw, LanguageCodeEnumNds, LanguageCodeEnumNdsDe, LanguageCodeEnumNdsNl, LanguageCodeEnumNe, LanguageCodeEnumNeIn, LanguageCodeEnumNeNp, LanguageCodeEnumNl, LanguageCodeEnumNlAw, LanguageCodeEnumNlBe, LanguageCodeEnumNlBq, LanguageCodeEnumNlCw, LanguageCodeEnumNlNl, LanguageCodeEnumNlSr, LanguageCodeEnumNlSx, LanguageCodeEnumNmg, LanguageCodeEnumNmgCm, LanguageCodeEnumNn, LanguageCodeEnumNnNo, LanguageCodeEnumNnh, LanguageCodeEnumNnhCm, LanguageCodeEnumNus, LanguageCodeEnumNusSs, LanguageCodeEnumNyn, LanguageCodeEnumNynUg, LanguageCodeEnumOm, LanguageCodeEnumOmEt, LanguageCodeEnumOmKe, LanguageCodeEnumOr, LanguageCodeEnumOrIn, LanguageCodeEnumOs, LanguageCodeEnumOsGe, LanguageCodeEnumOsRu, LanguageCodeEnumPa, LanguageCodeEnumPaArab, LanguageCodeEnumPaArabPk, LanguageCodeEnumPaGuru, LanguageCodeEnumPaGuruIn, LanguageCodeEnumPcm, LanguageCodeEnumPcmNg, LanguageCodeEnumPl, LanguageCodeEnumPlPl, LanguageCodeEnumPrg, LanguageCodeEnumPs, LanguageCodeEnumPsAf, LanguageCodeEnumPsPk, LanguageCodeEnumPt, LanguageCodeEnumPtAo, LanguageCodeEnumPtBr, LanguageCodeEnumPtCh, LanguageCodeEnumPtCv, LanguageCodeEnumPtGq, LanguageCodeEnumPtGw, LanguageCodeEnumPtLu, LanguageCodeEnumPtMo, LanguageCodeEnumPtMz, LanguageCodeEnumPtPt, LanguageCodeEnumPtSt, LanguageCodeEnumPtTl, LanguageCodeEnumQu, LanguageCodeEnumQuBo, LanguageCodeEnumQuEc, LanguageCodeEnumQuPe, LanguageCodeEnumRm, LanguageCodeEnumRmCh, LanguageCodeEnumRn, LanguageCodeEnumRnBi, LanguageCodeEnumRo, LanguageCodeEnumRoMd, LanguageCodeEnumRoRo, LanguageCodeEnumRof, LanguageCodeEnumRofTz, LanguageCodeEnumRu, LanguageCodeEnumRuBy, LanguageCodeEnumRuKg, LanguageCodeEnumRuKz, LanguageCodeEnumRuMd, LanguageCodeEnumRuRu, LanguageCodeEnumRuUa, LanguageCodeEnumRw, LanguageCodeEnumRwRw, LanguageCodeEnumRwk, LanguageCodeEnumRwkTz, LanguageCodeEnumSah, LanguageCodeEnumSahRu, LanguageCodeEnumSaq, LanguageCodeEnumSaqKe, LanguageCodeEnumSat, LanguageCodeEnumSatOlck, LanguageCodeEnumSatOlckIn, LanguageCodeEnumSbp, LanguageCodeEnumSbpTz, LanguageCodeEnumSd, LanguageCodeEnumSdArab, LanguageCodeEnumSdArabPk, LanguageCodeEnumSdDeva, LanguageCodeEnumSdDevaIn, LanguageCodeEnumSe, LanguageCodeEnumSeFi, LanguageCodeEnumSeNo, LanguageCodeEnumSeSe, LanguageCodeEnumSeh, LanguageCodeEnumSehMz, LanguageCodeEnumSes, LanguageCodeEnumSesMl, LanguageCodeEnumSg, LanguageCodeEnumSgCf, LanguageCodeEnumShi, LanguageCodeEnumShiLatn, LanguageCodeEnumShiLatnMa, LanguageCodeEnumShiTfng, LanguageCodeEnumShiTfngMa, LanguageCodeEnumSi, LanguageCodeEnumSiLk, LanguageCodeEnumSk, LanguageCodeEnumSkSk, LanguageCodeEnumSl, LanguageCodeEnumSlSi, LanguageCodeEnumSmn, LanguageCodeEnumSmnFi, LanguageCodeEnumSn, LanguageCodeEnumSnZw, LanguageCodeEnumSo, LanguageCodeEnumSoDj, LanguageCodeEnumSoEt, LanguageCodeEnumSoKe, LanguageCodeEnumSoSo, LanguageCodeEnumSq, LanguageCodeEnumSqAl, LanguageCodeEnumSqMk, LanguageCodeEnumSqXk, LanguageCodeEnumSr, LanguageCodeEnumSrCyrl, LanguageCodeEnumSrCyrlBa, LanguageCodeEnumSrCyrlMe, LanguageCodeEnumSrCyrlRs, LanguageCodeEnumSrCyrlXk, LanguageCodeEnumSrLatn, LanguageCodeEnumSrLatnBa, LanguageCodeEnumSrLatnMe, LanguageCodeEnumSrLatnRs, LanguageCodeEnumSrLatnXk, LanguageCodeEnumSu, LanguageCodeEnumSuLatn, LanguageCodeEnumSuLatnID, LanguageCodeEnumSv, LanguageCodeEnumSvAx, LanguageCodeEnumSvFi, LanguageCodeEnumSvSe, LanguageCodeEnumSw, LanguageCodeEnumSwCd, LanguageCodeEnumSwKe, LanguageCodeEnumSwTz, LanguageCodeEnumSwUg, LanguageCodeEnumTa, LanguageCodeEnumTaIn, LanguageCodeEnumTaLk, LanguageCodeEnumTaMy, LanguageCodeEnumTaSg, LanguageCodeEnumTe, LanguageCodeEnumTeIn, LanguageCodeEnumTeo, LanguageCodeEnumTeoKe, LanguageCodeEnumTeoUg, LanguageCodeEnumTg, LanguageCodeEnumTgTj, LanguageCodeEnumTh, LanguageCodeEnumThTh, LanguageCodeEnumTi, LanguageCodeEnumTiEr, LanguageCodeEnumTiEt, LanguageCodeEnumTk, LanguageCodeEnumTkTm, LanguageCodeEnumTo, LanguageCodeEnumToTo, LanguageCodeEnumTr, LanguageCodeEnumTrCy, LanguageCodeEnumTrTr, LanguageCodeEnumTt, LanguageCodeEnumTtRu, LanguageCodeEnumTwq, LanguageCodeEnumTwqNe, LanguageCodeEnumTzm, LanguageCodeEnumTzmMa, LanguageCodeEnumUg, LanguageCodeEnumUgCn, LanguageCodeEnumUk, LanguageCodeEnumUkUa, LanguageCodeEnumUr, LanguageCodeEnumUrIn, LanguageCodeEnumUrPk, LanguageCodeEnumUz, LanguageCodeEnumUzArab, LanguageCodeEnumUzArabAf, LanguageCodeEnumUzCyrl, LanguageCodeEnumUzCyrlUz, LanguageCodeEnumUzLatn, LanguageCodeEnumUzLatnUz, LanguageCodeEnumVai, LanguageCodeEnumVaiLatn, LanguageCodeEnumVaiLatnLr, LanguageCodeEnumVaiVaii, LanguageCodeEnumVaiVaiiLr, LanguageCodeEnumVi, LanguageCodeEnumViVn, LanguageCodeEnumVo, LanguageCodeEnumVun, LanguageCodeEnumVunTz, LanguageCodeEnumWae, LanguageCodeEnumWaeCh, LanguageCodeEnumWo, LanguageCodeEnumWoSn, LanguageCodeEnumXh, LanguageCodeEnumXhZa, LanguageCodeEnumXog, LanguageCodeEnumXogUg, LanguageCodeEnumYav, LanguageCodeEnumYavCm, LanguageCodeEnumYi, LanguageCodeEnumYo, LanguageCodeEnumYoBj, LanguageCodeEnumYoNg, LanguageCodeEnumYue, LanguageCodeEnumYueHans, LanguageCodeEnumYueHansCn, LanguageCodeEnumYueHant, LanguageCodeEnumYueHantHk, LanguageCodeEnumZgh, LanguageCodeEnumZghMa, LanguageCodeEnumZh, LanguageCodeEnumZhHans, LanguageCodeEnumZhHansCn, LanguageCodeEnumZhHansHk, LanguageCodeEnumZhHansMo, LanguageCodeEnumZhHansSg, LanguageCodeEnumZhHant, LanguageCodeEnumZhHantHk, LanguageCodeEnumZhHantMo, LanguageCodeEnumZhHantTw, LanguageCodeEnumZu, LanguageCodeEnumZuZa:
@@ -8800,7 +7232,7 @@ func (e LanguageCodeEnum) String() string {
 	return string(e)
 }
 
-func (e *LanguageCodeEnum) UnmarshalGQL(v interface{}) error {
+func (e *LanguageCodeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -8813,10 +7245,6 @@ func (e *LanguageCodeEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e LanguageCodeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type LoginErrorCode string
 
 const (
@@ -8826,14 +7254,6 @@ const (
 	LoginErrorCodeRequired     LoginErrorCode = "REQUIRED"
 	LoginErrorCodeUnique       LoginErrorCode = "UNIQUE"
 )
-
-var AllLoginErrorCode = []LoginErrorCode{
-	LoginErrorCodeGraphqlError,
-	LoginErrorCodeInvalid,
-	LoginErrorCodeNotFound,
-	LoginErrorCodeRequired,
-	LoginErrorCodeUnique,
-}
 
 func (e LoginErrorCode) IsValid() bool {
 	switch e {
@@ -8847,7 +7267,7 @@ func (e LoginErrorCode) String() string {
 	return string(e)
 }
 
-func (e *LoginErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *LoginErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -8858,10 +7278,6 @@ func (e *LoginErrorCode) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid LoginErrorCode", str)
 	}
 	return nil
-}
-
-func (e LoginErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type MeasurementUnitsEnum string
@@ -8899,39 +7315,6 @@ const (
 	MeasurementUnitsEnumTonne           MeasurementUnitsEnum = "TONNE"
 )
 
-var AllMeasurementUnitsEnum = []MeasurementUnitsEnum{
-	MeasurementUnitsEnumCm,
-	MeasurementUnitsEnumM,
-	MeasurementUnitsEnumKm,
-	MeasurementUnitsEnumFt,
-	MeasurementUnitsEnumYd,
-	MeasurementUnitsEnumInch,
-	MeasurementUnitsEnumSqCm,
-	MeasurementUnitsEnumSqM,
-	MeasurementUnitsEnumSqKm,
-	MeasurementUnitsEnumSqFt,
-	MeasurementUnitsEnumSqYd,
-	MeasurementUnitsEnumSqInch,
-	MeasurementUnitsEnumCubicMillimeter,
-	MeasurementUnitsEnumCubicCentimeter,
-	MeasurementUnitsEnumCubicDecimeter,
-	MeasurementUnitsEnumCubicMeter,
-	MeasurementUnitsEnumLiter,
-	MeasurementUnitsEnumCubicFoot,
-	MeasurementUnitsEnumCubicInch,
-	MeasurementUnitsEnumCubicYard,
-	MeasurementUnitsEnumQt,
-	MeasurementUnitsEnumPint,
-	MeasurementUnitsEnumFlOz,
-	MeasurementUnitsEnumAcreIn,
-	MeasurementUnitsEnumAcreFt,
-	MeasurementUnitsEnumG,
-	MeasurementUnitsEnumLb,
-	MeasurementUnitsEnumOz,
-	MeasurementUnitsEnumKg,
-	MeasurementUnitsEnumTonne,
-}
-
 func (e MeasurementUnitsEnum) IsValid() bool {
 	switch e {
 	case MeasurementUnitsEnumCm, MeasurementUnitsEnumM, MeasurementUnitsEnumKm, MeasurementUnitsEnumFt, MeasurementUnitsEnumYd, MeasurementUnitsEnumInch, MeasurementUnitsEnumSqCm, MeasurementUnitsEnumSqM, MeasurementUnitsEnumSqKm, MeasurementUnitsEnumSqFt, MeasurementUnitsEnumSqYd, MeasurementUnitsEnumSqInch, MeasurementUnitsEnumCubicMillimeter, MeasurementUnitsEnumCubicCentimeter, MeasurementUnitsEnumCubicDecimeter, MeasurementUnitsEnumCubicMeter, MeasurementUnitsEnumLiter, MeasurementUnitsEnumCubicFoot, MeasurementUnitsEnumCubicInch, MeasurementUnitsEnumCubicYard, MeasurementUnitsEnumQt, MeasurementUnitsEnumPint, MeasurementUnitsEnumFlOz, MeasurementUnitsEnumAcreIn, MeasurementUnitsEnumAcreFt, MeasurementUnitsEnumG, MeasurementUnitsEnumLb, MeasurementUnitsEnumOz, MeasurementUnitsEnumKg, MeasurementUnitsEnumTonne:
@@ -8944,7 +7327,7 @@ func (e MeasurementUnitsEnum) String() string {
 	return string(e)
 }
 
-func (e *MeasurementUnitsEnum) UnmarshalGQL(v interface{}) error {
+func (e *MeasurementUnitsEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -8955,10 +7338,6 @@ func (e *MeasurementUnitsEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid MeasurementUnitsEnum", str)
 	}
 	return nil
-}
-
-func (e MeasurementUnitsEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type MenuErrorCode string
@@ -8975,18 +7354,6 @@ const (
 	MenuErrorCodeUnique             MenuErrorCode = "UNIQUE"
 )
 
-var AllMenuErrorCode = []MenuErrorCode{
-	MenuErrorCodeCannotAssignNode,
-	MenuErrorCodeGraphqlError,
-	MenuErrorCodeInvalid,
-	MenuErrorCodeInvalidMenuItem,
-	MenuErrorCodeNoMenuItemProvided,
-	MenuErrorCodeNotFound,
-	MenuErrorCodeRequired,
-	MenuErrorCodeTooManyMenuItems,
-	MenuErrorCodeUnique,
-}
-
 func (e MenuErrorCode) IsValid() bool {
 	switch e {
 	case MenuErrorCodeCannotAssignNode, MenuErrorCodeGraphqlError, MenuErrorCodeInvalid, MenuErrorCodeInvalidMenuItem, MenuErrorCodeNoMenuItemProvided, MenuErrorCodeNotFound, MenuErrorCodeRequired, MenuErrorCodeTooManyMenuItems, MenuErrorCodeUnique:
@@ -8999,7 +7366,7 @@ func (e MenuErrorCode) String() string {
 	return string(e)
 }
 
-func (e *MenuErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *MenuErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9012,19 +7379,11 @@ func (e *MenuErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e MenuErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type MenuItemsSortField string
 
 const (
 	MenuItemsSortFieldName MenuItemsSortField = "NAME"
 )
-
-var AllMenuItemsSortField = []MenuItemsSortField{
-	MenuItemsSortFieldName,
-}
 
 func (e MenuItemsSortField) IsValid() bool {
 	switch e {
@@ -9038,7 +7397,7 @@ func (e MenuItemsSortField) String() string {
 	return string(e)
 }
 
-func (e *MenuItemsSortField) UnmarshalGQL(v interface{}) error {
+func (e *MenuItemsSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9051,21 +7410,12 @@ func (e *MenuItemsSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e MenuItemsSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type MenuSortField string
 
 const (
 	MenuSortFieldName       MenuSortField = "NAME"
 	MenuSortFieldItemsCount MenuSortField = "ITEMS_COUNT"
 )
-
-var AllMenuSortField = []MenuSortField{
-	MenuSortFieldName,
-	MenuSortFieldItemsCount,
-}
 
 func (e MenuSortField) IsValid() bool {
 	switch e {
@@ -9079,7 +7429,7 @@ func (e MenuSortField) String() string {
 	return string(e)
 }
 
-func (e *MenuSortField) UnmarshalGQL(v interface{}) error {
+func (e *MenuSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9092,10 +7442,6 @@ func (e *MenuSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e MenuSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type MetadataErrorCode string
 
 const (
@@ -9104,13 +7450,6 @@ const (
 	MetadataErrorCodeNotFound     MetadataErrorCode = "NOT_FOUND"
 	MetadataErrorCodeRequired     MetadataErrorCode = "REQUIRED"
 )
-
-var AllMetadataErrorCode = []MetadataErrorCode{
-	MetadataErrorCodeGraphqlError,
-	MetadataErrorCodeInvalid,
-	MetadataErrorCodeNotFound,
-	MetadataErrorCodeRequired,
-}
 
 func (e MetadataErrorCode) IsValid() bool {
 	switch e {
@@ -9124,7 +7463,7 @@ func (e MetadataErrorCode) String() string {
 	return string(e)
 }
 
-func (e *MetadataErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *MetadataErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9137,21 +7476,12 @@ func (e *MetadataErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e MetadataErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type NavigationType string
 
 const (
 	NavigationTypeMain      NavigationType = "MAIN"
 	NavigationTypeSecondary NavigationType = "SECONDARY"
 )
-
-var AllNavigationType = []NavigationType{
-	NavigationTypeMain,
-	NavigationTypeSecondary,
-}
 
 func (e NavigationType) IsValid() bool {
 	switch e {
@@ -9165,7 +7495,7 @@ func (e NavigationType) String() string {
 	return string(e)
 }
 
-func (e *NavigationType) UnmarshalGQL(v interface{}) error {
+func (e *NavigationType) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9178,10 +7508,6 @@ func (e *NavigationType) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e NavigationType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type OrderAction string
 
 const (
@@ -9190,13 +7516,6 @@ const (
 	OrderActionRefund     OrderAction = "REFUND"
 	OrderActionVoid       OrderAction = "VOID"
 )
-
-var AllOrderAction = []OrderAction{
-	OrderActionCapture,
-	OrderActionMarkAsPaid,
-	OrderActionRefund,
-	OrderActionVoid,
-}
 
 func (e OrderAction) IsValid() bool {
 	switch e {
@@ -9210,7 +7529,7 @@ func (e OrderAction) String() string {
 	return string(e)
 }
 
-func (e *OrderAction) UnmarshalGQL(v interface{}) error {
+func (e *OrderAction) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9223,21 +7542,12 @@ func (e *OrderAction) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e OrderAction) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type OrderDirection string
 
 const (
 	OrderDirectionAsc  OrderDirection = "ASC"
 	OrderDirectionDesc OrderDirection = "DESC"
 )
-
-var AllOrderDirection = []OrderDirection{
-	OrderDirectionAsc,
-	OrderDirectionDesc,
-}
 
 func (e OrderDirection) IsValid() bool {
 	switch e {
@@ -9251,7 +7561,7 @@ func (e OrderDirection) String() string {
 	return string(e)
 }
 
-func (e *OrderDirection) UnmarshalGQL(v interface{}) error {
+func (e *OrderDirection) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9264,21 +7574,12 @@ func (e *OrderDirection) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e OrderDirection) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type OrderDiscountType string
 
 const (
 	OrderDiscountTypeVoucher OrderDiscountType = "VOUCHER"
 	OrderDiscountTypeManual  OrderDiscountType = "MANUAL"
 )
-
-var AllOrderDiscountType = []OrderDiscountType{
-	OrderDiscountTypeVoucher,
-	OrderDiscountTypeManual,
-}
 
 func (e OrderDiscountType) IsValid() bool {
 	switch e {
@@ -9292,7 +7593,7 @@ func (e OrderDiscountType) String() string {
 	return string(e)
 }
 
-func (e *OrderDiscountType) UnmarshalGQL(v interface{}) error {
+func (e *OrderDiscountType) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9303,10 +7604,6 @@ func (e *OrderDiscountType) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid OrderDiscountType", str)
 	}
 	return nil
-}
-
-func (e OrderDiscountType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type OrderErrorCode string
@@ -9345,40 +7642,6 @@ const (
 	OrderErrorCodeChannelInactive               OrderErrorCode = "CHANNEL_INACTIVE"
 )
 
-var AllOrderErrorCode = []OrderErrorCode{
-	OrderErrorCodeBillingAddressNotSet,
-	OrderErrorCodeCannotCancelFulfillment,
-	OrderErrorCodeCannotCancelOrder,
-	OrderErrorCodeCannotDelete,
-	OrderErrorCodeCannotDiscount,
-	OrderErrorCodeCannotRefund,
-	OrderErrorCodeCannotFulfillUnpaidOrder,
-	OrderErrorCodeCaptureInactivePayment,
-	OrderErrorCodeGiftCardLine,
-	OrderErrorCodeNotEditable,
-	OrderErrorCodeFulfillOrderLine,
-	OrderErrorCodeGraphqlError,
-	OrderErrorCodeInvalid,
-	OrderErrorCodeProductNotPublished,
-	OrderErrorCodeProductUnavailableForPurchase,
-	OrderErrorCodeNotFound,
-	OrderErrorCodeOrderNoShippingAddress,
-	OrderErrorCodePaymentError,
-	OrderErrorCodePaymentMissing,
-	OrderErrorCodeRequired,
-	OrderErrorCodeShippingMethodNotApplicable,
-	OrderErrorCodeShippingMethodRequired,
-	OrderErrorCodeTaxError,
-	OrderErrorCodeUnique,
-	OrderErrorCodeVoidInactivePayment,
-	OrderErrorCodeZeroQuantity,
-	OrderErrorCodeInvalidQuantity,
-	OrderErrorCodeInsufficientStock,
-	OrderErrorCodeDuplicatedInputItem,
-	OrderErrorCodeNotAvailableInChannel,
-	OrderErrorCodeChannelInactive,
-}
-
 func (e OrderErrorCode) IsValid() bool {
 	switch e {
 	case OrderErrorCodeBillingAddressNotSet, OrderErrorCodeCannotCancelFulfillment, OrderErrorCodeCannotCancelOrder, OrderErrorCodeCannotDelete, OrderErrorCodeCannotDiscount, OrderErrorCodeCannotRefund, OrderErrorCodeCannotFulfillUnpaidOrder, OrderErrorCodeCaptureInactivePayment, OrderErrorCodeGiftCardLine, OrderErrorCodeNotEditable, OrderErrorCodeFulfillOrderLine, OrderErrorCodeGraphqlError, OrderErrorCodeInvalid, OrderErrorCodeProductNotPublished, OrderErrorCodeProductUnavailableForPurchase, OrderErrorCodeNotFound, OrderErrorCodeOrderNoShippingAddress, OrderErrorCodePaymentError, OrderErrorCodePaymentMissing, OrderErrorCodeRequired, OrderErrorCodeShippingMethodNotApplicable, OrderErrorCodeShippingMethodRequired, OrderErrorCodeTaxError, OrderErrorCodeUnique, OrderErrorCodeVoidInactivePayment, OrderErrorCodeZeroQuantity, OrderErrorCodeInvalidQuantity, OrderErrorCodeInsufficientStock, OrderErrorCodeDuplicatedInputItem, OrderErrorCodeNotAvailableInChannel, OrderErrorCodeChannelInactive:
@@ -9391,7 +7654,7 @@ func (e OrderErrorCode) String() string {
 	return string(e)
 }
 
-func (e *OrderErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *OrderErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9402,10 +7665,6 @@ func (e *OrderErrorCode) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid OrderErrorCode", str)
 	}
 	return nil
-}
-
-func (e OrderErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type OrderEventsEmailsEnum string
@@ -9422,18 +7681,6 @@ const (
 	OrderEventsEmailsEnumDigitalLinks            OrderEventsEmailsEnum = "DIGITAL_LINKS"
 )
 
-var AllOrderEventsEmailsEnum = []OrderEventsEmailsEnum{
-	OrderEventsEmailsEnumPaymentConfirmation,
-	OrderEventsEmailsEnumConfirmed,
-	OrderEventsEmailsEnumShippingConfirmation,
-	OrderEventsEmailsEnumTrackingUpdated,
-	OrderEventsEmailsEnumOrderConfirmation,
-	OrderEventsEmailsEnumOrderCancel,
-	OrderEventsEmailsEnumOrderRefund,
-	OrderEventsEmailsEnumFulfillmentConfirmation,
-	OrderEventsEmailsEnumDigitalLinks,
-}
-
 func (e OrderEventsEmailsEnum) IsValid() bool {
 	switch e {
 	case OrderEventsEmailsEnumPaymentConfirmation, OrderEventsEmailsEnumConfirmed, OrderEventsEmailsEnumShippingConfirmation, OrderEventsEmailsEnumTrackingUpdated, OrderEventsEmailsEnumOrderConfirmation, OrderEventsEmailsEnumOrderCancel, OrderEventsEmailsEnumOrderRefund, OrderEventsEmailsEnumFulfillmentConfirmation, OrderEventsEmailsEnumDigitalLinks:
@@ -9446,7 +7693,7 @@ func (e OrderEventsEmailsEnum) String() string {
 	return string(e)
 }
 
-func (e *OrderEventsEmailsEnum) UnmarshalGQL(v interface{}) error {
+func (e *OrderEventsEmailsEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9457,10 +7704,6 @@ func (e *OrderEventsEmailsEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid OrderEventsEmailsEnum", str)
 	}
 	return nil
-}
-
-func (e OrderEventsEmailsEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type OrderEventsEnum string
@@ -9508,49 +7751,6 @@ const (
 	OrderEventsEnumOther                             OrderEventsEnum = "OTHER"
 )
 
-var AllOrderEventsEnum = []OrderEventsEnum{
-	OrderEventsEnumDraftCreated,
-	OrderEventsEnumDraftCreatedFromReplace,
-	OrderEventsEnumAddedProducts,
-	OrderEventsEnumRemovedProducts,
-	OrderEventsEnumPlaced,
-	OrderEventsEnumPlacedFromDraft,
-	OrderEventsEnumOversoldItems,
-	OrderEventsEnumCanceled,
-	OrderEventsEnumOrderMarkedAsPaid,
-	OrderEventsEnumOrderFullyPaid,
-	OrderEventsEnumOrderReplacementCreated,
-	OrderEventsEnumOrderDiscountAdded,
-	OrderEventsEnumOrderDiscountAutomaticallyUpdated,
-	OrderEventsEnumOrderDiscountUpdated,
-	OrderEventsEnumOrderDiscountDeleted,
-	OrderEventsEnumOrderLineDiscountUpdated,
-	OrderEventsEnumOrderLineDiscountRemoved,
-	OrderEventsEnumUpdatedAddress,
-	OrderEventsEnumEmailSent,
-	OrderEventsEnumConfirmed,
-	OrderEventsEnumPaymentAuthorized,
-	OrderEventsEnumPaymentCaptured,
-	OrderEventsEnumExternalServiceNotification,
-	OrderEventsEnumPaymentRefunded,
-	OrderEventsEnumPaymentVoided,
-	OrderEventsEnumPaymentFailed,
-	OrderEventsEnumInvoiceRequested,
-	OrderEventsEnumInvoiceGenerated,
-	OrderEventsEnumInvoiceUpdated,
-	OrderEventsEnumInvoiceSent,
-	OrderEventsEnumFulfillmentCanceled,
-	OrderEventsEnumFulfillmentRestockedItems,
-	OrderEventsEnumFulfillmentFulfilledItems,
-	OrderEventsEnumFulfillmentRefunded,
-	OrderEventsEnumFulfillmentReturned,
-	OrderEventsEnumFulfillmentReplaced,
-	OrderEventsEnumFulfillmentAwaitsApproval,
-	OrderEventsEnumTrackingUpdated,
-	OrderEventsEnumNoteAdded,
-	OrderEventsEnumOther,
-}
-
 func (e OrderEventsEnum) IsValid() bool {
 	switch e {
 	case OrderEventsEnumDraftCreated, OrderEventsEnumDraftCreatedFromReplace, OrderEventsEnumAddedProducts, OrderEventsEnumRemovedProducts, OrderEventsEnumPlaced, OrderEventsEnumPlacedFromDraft, OrderEventsEnumOversoldItems, OrderEventsEnumCanceled, OrderEventsEnumOrderMarkedAsPaid, OrderEventsEnumOrderFullyPaid, OrderEventsEnumOrderReplacementCreated, OrderEventsEnumOrderDiscountAdded, OrderEventsEnumOrderDiscountAutomaticallyUpdated, OrderEventsEnumOrderDiscountUpdated, OrderEventsEnumOrderDiscountDeleted, OrderEventsEnumOrderLineDiscountUpdated, OrderEventsEnumOrderLineDiscountRemoved, OrderEventsEnumUpdatedAddress, OrderEventsEnumEmailSent, OrderEventsEnumConfirmed, OrderEventsEnumPaymentAuthorized, OrderEventsEnumPaymentCaptured, OrderEventsEnumExternalServiceNotification, OrderEventsEnumPaymentRefunded, OrderEventsEnumPaymentVoided, OrderEventsEnumPaymentFailed, OrderEventsEnumInvoiceRequested, OrderEventsEnumInvoiceGenerated, OrderEventsEnumInvoiceUpdated, OrderEventsEnumInvoiceSent, OrderEventsEnumFulfillmentCanceled, OrderEventsEnumFulfillmentRestockedItems, OrderEventsEnumFulfillmentFulfilledItems, OrderEventsEnumFulfillmentRefunded, OrderEventsEnumFulfillmentReturned, OrderEventsEnumFulfillmentReplaced, OrderEventsEnumFulfillmentAwaitsApproval, OrderEventsEnumTrackingUpdated, OrderEventsEnumNoteAdded, OrderEventsEnumOther:
@@ -9563,7 +7763,7 @@ func (e OrderEventsEnum) String() string {
 	return string(e)
 }
 
-func (e *OrderEventsEnum) UnmarshalGQL(v interface{}) error {
+func (e *OrderEventsEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9576,10 +7776,6 @@ func (e *OrderEventsEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e OrderEventsEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type OrderOriginEnum string
 
 const (
@@ -9587,12 +7783,6 @@ const (
 	OrderOriginEnumDraft    OrderOriginEnum = "DRAFT"
 	OrderOriginEnumReissue  OrderOriginEnum = "REISSUE"
 )
-
-var AllOrderOriginEnum = []OrderOriginEnum{
-	OrderOriginEnumCheckout,
-	OrderOriginEnumDraft,
-	OrderOriginEnumReissue,
-}
 
 func (e OrderOriginEnum) IsValid() bool {
 	switch e {
@@ -9606,7 +7796,7 @@ func (e OrderOriginEnum) String() string {
 	return string(e)
 }
 
-func (e *OrderOriginEnum) UnmarshalGQL(v interface{}) error {
+func (e *OrderOriginEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9619,19 +7809,11 @@ func (e *OrderOriginEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e OrderOriginEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type OrderSettingsErrorCode string
 
 const (
 	OrderSettingsErrorCodeInvalid OrderSettingsErrorCode = "INVALID"
 )
-
-var AllOrderSettingsErrorCode = []OrderSettingsErrorCode{
-	OrderSettingsErrorCodeInvalid,
-}
 
 func (e OrderSettingsErrorCode) IsValid() bool {
 	switch e {
@@ -9645,7 +7827,7 @@ func (e OrderSettingsErrorCode) String() string {
 	return string(e)
 }
 
-func (e *OrderSettingsErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *OrderSettingsErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9658,10 +7840,6 @@ func (e *OrderSettingsErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e OrderSettingsErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type OrderSortField string
 
 const (
@@ -9671,14 +7849,6 @@ const (
 	OrderSortFieldPayment           OrderSortField = "PAYMENT"
 	OrderSortFieldFulfillmentStatus OrderSortField = "FULFILLMENT_STATUS"
 )
-
-var AllOrderSortField = []OrderSortField{
-	OrderSortFieldNumber,
-	OrderSortFieldCreationDate,
-	OrderSortFieldCustomer,
-	OrderSortFieldPayment,
-	OrderSortFieldFulfillmentStatus,
-}
 
 func (e OrderSortField) IsValid() bool {
 	switch e {
@@ -9692,7 +7862,7 @@ func (e OrderSortField) String() string {
 	return string(e)
 }
 
-func (e *OrderSortField) UnmarshalGQL(v interface{}) error {
+func (e *OrderSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9703,10 +7873,6 @@ func (e *OrderSortField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid OrderSortField", str)
 	}
 	return nil
-}
-
-func (e OrderSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type OrderStatus string
@@ -9722,17 +7888,6 @@ const (
 	OrderStatusCanceled           OrderStatus = "CANCELED"
 )
 
-var AllOrderStatus = []OrderStatus{
-	OrderStatusDraft,
-	OrderStatusUnconfirmed,
-	OrderStatusUnfulfilled,
-	OrderStatusPartiallyFulfilled,
-	OrderStatusPartiallyReturned,
-	OrderStatusReturned,
-	OrderStatusFulfilled,
-	OrderStatusCanceled,
-}
-
 func (e OrderStatus) IsValid() bool {
 	switch e {
 	case OrderStatusDraft, OrderStatusUnconfirmed, OrderStatusUnfulfilled, OrderStatusPartiallyFulfilled, OrderStatusPartiallyReturned, OrderStatusReturned, OrderStatusFulfilled, OrderStatusCanceled:
@@ -9745,7 +7900,7 @@ func (e OrderStatus) String() string {
 	return string(e)
 }
 
-func (e *OrderStatus) UnmarshalGQL(v interface{}) error {
+func (e *OrderStatus) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9756,10 +7911,6 @@ func (e *OrderStatus) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid OrderStatus", str)
 	}
 	return nil
-}
-
-func (e OrderStatus) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type OrderStatusFilter string
@@ -9774,16 +7925,6 @@ const (
 	OrderStatusFilterCanceled           OrderStatusFilter = "CANCELED"
 )
 
-var AllOrderStatusFilter = []OrderStatusFilter{
-	OrderStatusFilterReadyToFulfill,
-	OrderStatusFilterReadyToCapture,
-	OrderStatusFilterUnfulfilled,
-	OrderStatusFilterUnconfirmed,
-	OrderStatusFilterPartiallyFulfilled,
-	OrderStatusFilterFulfilled,
-	OrderStatusFilterCanceled,
-}
-
 func (e OrderStatusFilter) IsValid() bool {
 	switch e {
 	case OrderStatusFilterReadyToFulfill, OrderStatusFilterReadyToCapture, OrderStatusFilterUnfulfilled, OrderStatusFilterUnconfirmed, OrderStatusFilterPartiallyFulfilled, OrderStatusFilterFulfilled, OrderStatusFilterCanceled:
@@ -9796,7 +7937,7 @@ func (e OrderStatusFilter) String() string {
 	return string(e)
 }
 
-func (e *OrderStatusFilter) UnmarshalGQL(v interface{}) error {
+func (e *OrderStatusFilter) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9807,10 +7948,6 @@ func (e *OrderStatusFilter) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid OrderStatusFilter", str)
 	}
 	return nil
-}
-
-func (e OrderStatusFilter) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type PageErrorCode string
@@ -9825,16 +7962,6 @@ const (
 	PageErrorCodeAttributeAlreadyAssigned PageErrorCode = "ATTRIBUTE_ALREADY_ASSIGNED"
 )
 
-var AllPageErrorCode = []PageErrorCode{
-	PageErrorCodeGraphqlError,
-	PageErrorCodeInvalid,
-	PageErrorCodeNotFound,
-	PageErrorCodeRequired,
-	PageErrorCodeUnique,
-	PageErrorCodeDuplicatedInputItem,
-	PageErrorCodeAttributeAlreadyAssigned,
-}
-
 func (e PageErrorCode) IsValid() bool {
 	switch e {
 	case PageErrorCodeGraphqlError, PageErrorCodeInvalid, PageErrorCodeNotFound, PageErrorCodeRequired, PageErrorCodeUnique, PageErrorCodeDuplicatedInputItem, PageErrorCodeAttributeAlreadyAssigned:
@@ -9847,7 +7974,7 @@ func (e PageErrorCode) String() string {
 	return string(e)
 }
 
-func (e *PageErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *PageErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9860,10 +7987,6 @@ func (e *PageErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e PageErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type PageSortField string
 
 const (
@@ -9873,14 +7996,6 @@ const (
 	PageSortFieldCreationDate    PageSortField = "CREATION_DATE"
 	PageSortFieldPublicationDate PageSortField = "PUBLICATION_DATE"
 )
-
-var AllPageSortField = []PageSortField{
-	PageSortFieldTitle,
-	PageSortFieldSlug,
-	PageSortFieldVisibility,
-	PageSortFieldCreationDate,
-	PageSortFieldPublicationDate,
-}
 
 func (e PageSortField) IsValid() bool {
 	switch e {
@@ -9894,7 +8009,7 @@ func (e PageSortField) String() string {
 	return string(e)
 }
 
-func (e *PageSortField) UnmarshalGQL(v interface{}) error {
+func (e *PageSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9907,21 +8022,12 @@ func (e *PageSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e PageSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type PageTypeSortField string
 
 const (
 	PageTypeSortFieldName PageTypeSortField = "NAME"
 	PageTypeSortFieldSlug PageTypeSortField = "SLUG"
 )
-
-var AllPageTypeSortField = []PageTypeSortField{
-	PageTypeSortFieldName,
-	PageTypeSortFieldSlug,
-}
 
 func (e PageTypeSortField) IsValid() bool {
 	switch e {
@@ -9935,7 +8041,7 @@ func (e PageTypeSortField) String() string {
 	return string(e)
 }
 
-func (e *PageTypeSortField) UnmarshalGQL(v interface{}) error {
+func (e *PageTypeSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9946,10 +8052,6 @@ func (e *PageTypeSortField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid PageTypeSortField", str)
 	}
 	return nil
-}
-
-func (e PageTypeSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type PaymentChargeStatusEnum string
@@ -9965,17 +8067,6 @@ const (
 	PaymentChargeStatusEnumCancelled         PaymentChargeStatusEnum = "CANCELLED"
 )
 
-var AllPaymentChargeStatusEnum = []PaymentChargeStatusEnum{
-	PaymentChargeStatusEnumNotCharged,
-	PaymentChargeStatusEnumPending,
-	PaymentChargeStatusEnumPartiallyCharged,
-	PaymentChargeStatusEnumFullyCharged,
-	PaymentChargeStatusEnumPartiallyRefunded,
-	PaymentChargeStatusEnumFullyRefunded,
-	PaymentChargeStatusEnumRefused,
-	PaymentChargeStatusEnumCancelled,
-}
-
 func (e PaymentChargeStatusEnum) IsValid() bool {
 	switch e {
 	case PaymentChargeStatusEnumNotCharged, PaymentChargeStatusEnumPending, PaymentChargeStatusEnumPartiallyCharged, PaymentChargeStatusEnumFullyCharged, PaymentChargeStatusEnumPartiallyRefunded, PaymentChargeStatusEnumFullyRefunded, PaymentChargeStatusEnumRefused, PaymentChargeStatusEnumCancelled:
@@ -9988,7 +8079,7 @@ func (e PaymentChargeStatusEnum) String() string {
 	return string(e)
 }
 
-func (e *PaymentChargeStatusEnum) UnmarshalGQL(v interface{}) error {
+func (e *PaymentChargeStatusEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -9999,10 +8090,6 @@ func (e *PaymentChargeStatusEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid PaymentChargeStatusEnum", str)
 	}
 	return nil
-}
-
-func (e PaymentChargeStatusEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type PaymentErrorCode string
@@ -10023,22 +8110,6 @@ const (
 	PaymentErrorCodeChannelInactive          PaymentErrorCode = "CHANNEL_INACTIVE"
 )
 
-var AllPaymentErrorCode = []PaymentErrorCode{
-	PaymentErrorCodeBillingAddressNotSet,
-	PaymentErrorCodeGraphqlError,
-	PaymentErrorCodeInvalid,
-	PaymentErrorCodeNotFound,
-	PaymentErrorCodeRequired,
-	PaymentErrorCodeUnique,
-	PaymentErrorCodePartialPaymentNotAllowed,
-	PaymentErrorCodeShippingAddressNotSet,
-	PaymentErrorCodeInvalidShippingMethod,
-	PaymentErrorCodeShippingMethodNotSet,
-	PaymentErrorCodePaymentError,
-	PaymentErrorCodeNotSupportedGateway,
-	PaymentErrorCodeChannelInactive,
-}
-
 func (e PaymentErrorCode) IsValid() bool {
 	switch e {
 	case PaymentErrorCodeBillingAddressNotSet, PaymentErrorCodeGraphqlError, PaymentErrorCodeInvalid, PaymentErrorCodeNotFound, PaymentErrorCodeRequired, PaymentErrorCodeUnique, PaymentErrorCodePartialPaymentNotAllowed, PaymentErrorCodeShippingAddressNotSet, PaymentErrorCodeInvalidShippingMethod, PaymentErrorCodeShippingMethodNotSet, PaymentErrorCodePaymentError, PaymentErrorCodeNotSupportedGateway, PaymentErrorCodeChannelInactive:
@@ -10051,7 +8122,7 @@ func (e PaymentErrorCode) String() string {
 	return string(e)
 }
 
-func (e *PaymentErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *PaymentErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10062,10 +8133,6 @@ func (e *PaymentErrorCode) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid PaymentErrorCode", str)
 	}
 	return nil
-}
-
-func (e PaymentErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type PermissionEnum string
@@ -10092,28 +8159,6 @@ const (
 	PermissionEnumManageCheckouts                 PermissionEnum = "MANAGE_CHECKOUTS"
 )
 
-var AllPermissionEnum = []PermissionEnum{
-	PermissionEnumManageUsers,
-	PermissionEnumManageStaff,
-	PermissionEnumImpersonateUser,
-	PermissionEnumManageApps,
-	PermissionEnumManageChannels,
-	PermissionEnumManageDiscounts,
-	PermissionEnumManagePlugins,
-	PermissionEnumManageGiftCard,
-	PermissionEnumManageMenus,
-	PermissionEnumManageOrders,
-	PermissionEnumManagePages,
-	PermissionEnumManagePageTypesAndAttributes,
-	PermissionEnumHandlePayments,
-	PermissionEnumManageProducts,
-	PermissionEnumManageProductTypesAndAttributes,
-	PermissionEnumManageShipping,
-	PermissionEnumManageSettings,
-	PermissionEnumManageTranslations,
-	PermissionEnumManageCheckouts,
-}
-
 func (e PermissionEnum) IsValid() bool {
 	switch e {
 	case PermissionEnumManageUsers, PermissionEnumManageStaff, PermissionEnumImpersonateUser, PermissionEnumManageApps, PermissionEnumManageChannels, PermissionEnumManageDiscounts, PermissionEnumManagePlugins, PermissionEnumManageGiftCard, PermissionEnumManageMenus, PermissionEnumManageOrders, PermissionEnumManagePages, PermissionEnumManagePageTypesAndAttributes, PermissionEnumHandlePayments, PermissionEnumManageProducts, PermissionEnumManageProductTypesAndAttributes, PermissionEnumManageShipping, PermissionEnumManageSettings, PermissionEnumManageTranslations, PermissionEnumManageCheckouts:
@@ -10126,7 +8171,7 @@ func (e PermissionEnum) String() string {
 	return string(e)
 }
 
-func (e *PermissionEnum) UnmarshalGQL(v interface{}) error {
+func (e *PermissionEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10137,10 +8182,6 @@ func (e *PermissionEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid PermissionEnum", str)
 	}
 	return nil
-}
-
-func (e PermissionEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type PermissionGroupErrorCode string
@@ -10156,17 +8197,6 @@ const (
 	PermissionGroupErrorCodeUnique                      PermissionGroupErrorCode = "UNIQUE"
 )
 
-var AllPermissionGroupErrorCode = []PermissionGroupErrorCode{
-	PermissionGroupErrorCodeAssignNonStaffMember,
-	PermissionGroupErrorCodeDuplicatedInputItem,
-	PermissionGroupErrorCodeCannotRemoveFromLastGroup,
-	PermissionGroupErrorCodeLeftNotManageablePermission,
-	PermissionGroupErrorCodeOutOfScopePermission,
-	PermissionGroupErrorCodeOutOfScopeUser,
-	PermissionGroupErrorCodeRequired,
-	PermissionGroupErrorCodeUnique,
-}
-
 func (e PermissionGroupErrorCode) IsValid() bool {
 	switch e {
 	case PermissionGroupErrorCodeAssignNonStaffMember, PermissionGroupErrorCodeDuplicatedInputItem, PermissionGroupErrorCodeCannotRemoveFromLastGroup, PermissionGroupErrorCodeLeftNotManageablePermission, PermissionGroupErrorCodeOutOfScopePermission, PermissionGroupErrorCodeOutOfScopeUser, PermissionGroupErrorCodeRequired, PermissionGroupErrorCodeUnique:
@@ -10179,7 +8209,7 @@ func (e PermissionGroupErrorCode) String() string {
 	return string(e)
 }
 
-func (e *PermissionGroupErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *PermissionGroupErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10192,19 +8222,11 @@ func (e *PermissionGroupErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e PermissionGroupErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type PermissionGroupSortField string
 
 const (
 	PermissionGroupSortFieldName PermissionGroupSortField = "NAME"
 )
-
-var AllPermissionGroupSortField = []PermissionGroupSortField{
-	PermissionGroupSortFieldName,
-}
 
 func (e PermissionGroupSortField) IsValid() bool {
 	switch e {
@@ -10218,7 +8240,7 @@ func (e PermissionGroupSortField) String() string {
 	return string(e)
 }
 
-func (e *PermissionGroupSortField) UnmarshalGQL(v interface{}) error {
+func (e *PermissionGroupSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10231,21 +8253,12 @@ func (e *PermissionGroupSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e PermissionGroupSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type PluginConfigurationType string
 
 const (
 	PluginConfigurationTypePerChannel PluginConfigurationType = "PER_CHANNEL"
 	PluginConfigurationTypeGlobal     PluginConfigurationType = "GLOBAL"
 )
-
-var AllPluginConfigurationType = []PluginConfigurationType{
-	PluginConfigurationTypePerChannel,
-	PluginConfigurationTypeGlobal,
-}
 
 func (e PluginConfigurationType) IsValid() bool {
 	switch e {
@@ -10259,7 +8272,7 @@ func (e PluginConfigurationType) String() string {
 	return string(e)
 }
 
-func (e *PluginConfigurationType) UnmarshalGQL(v interface{}) error {
+func (e *PluginConfigurationType) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10270,10 +8283,6 @@ func (e *PluginConfigurationType) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid PluginConfigurationType", str)
 	}
 	return nil
-}
-
-func (e PluginConfigurationType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type PluginErrorCode string
@@ -10287,15 +8296,6 @@ const (
 	PluginErrorCodeUnique              PluginErrorCode = "UNIQUE"
 )
 
-var AllPluginErrorCode = []PluginErrorCode{
-	PluginErrorCodeGraphqlError,
-	PluginErrorCodeInvalid,
-	PluginErrorCodePluginMisconfigured,
-	PluginErrorCodeNotFound,
-	PluginErrorCodeRequired,
-	PluginErrorCodeUnique,
-}
-
 func (e PluginErrorCode) IsValid() bool {
 	switch e {
 	case PluginErrorCodeGraphqlError, PluginErrorCodeInvalid, PluginErrorCodePluginMisconfigured, PluginErrorCodeNotFound, PluginErrorCodeRequired, PluginErrorCodeUnique:
@@ -10308,7 +8308,7 @@ func (e PluginErrorCode) String() string {
 	return string(e)
 }
 
-func (e *PluginErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *PluginErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10321,21 +8321,12 @@ func (e *PluginErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e PluginErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type PluginSortField string
 
 const (
 	PluginSortFieldName     PluginSortField = "NAME"
 	PluginSortFieldIsActive PluginSortField = "IS_ACTIVE"
 )
-
-var AllPluginSortField = []PluginSortField{
-	PluginSortFieldName,
-	PluginSortFieldIsActive,
-}
 
 func (e PluginSortField) IsValid() bool {
 	switch e {
@@ -10349,7 +8340,7 @@ func (e PluginSortField) String() string {
 	return string(e)
 }
 
-func (e *PluginSortField) UnmarshalGQL(v interface{}) error {
+func (e *PluginSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10362,21 +8353,12 @@ func (e *PluginSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e PluginSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type PostalCodeRuleInclusionTypeEnum string
 
 const (
 	PostalCodeRuleInclusionTypeEnumInclude PostalCodeRuleInclusionTypeEnum = "INCLUDE"
 	PostalCodeRuleInclusionTypeEnumExclude PostalCodeRuleInclusionTypeEnum = "EXCLUDE"
 )
-
-var AllPostalCodeRuleInclusionTypeEnum = []PostalCodeRuleInclusionTypeEnum{
-	PostalCodeRuleInclusionTypeEnumInclude,
-	PostalCodeRuleInclusionTypeEnumExclude,
-}
 
 func (e PostalCodeRuleInclusionTypeEnum) IsValid() bool {
 	switch e {
@@ -10390,7 +8372,7 @@ func (e PostalCodeRuleInclusionTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *PostalCodeRuleInclusionTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *PostalCodeRuleInclusionTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10403,21 +8385,12 @@ func (e *PostalCodeRuleInclusionTypeEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e PostalCodeRuleInclusionTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type ProductAttributeType string
 
 const (
 	ProductAttributeTypeProduct ProductAttributeType = "PRODUCT"
 	ProductAttributeTypeVariant ProductAttributeType = "VARIANT"
 )
-
-var AllProductAttributeType = []ProductAttributeType{
-	ProductAttributeTypeProduct,
-	ProductAttributeTypeVariant,
-}
 
 func (e ProductAttributeType) IsValid() bool {
 	switch e {
@@ -10431,7 +8404,7 @@ func (e ProductAttributeType) String() string {
 	return string(e)
 }
 
-func (e *ProductAttributeType) UnmarshalGQL(v interface{}) error {
+func (e *ProductAttributeType) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10442,10 +8415,6 @@ func (e *ProductAttributeType) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid ProductAttributeType", str)
 	}
 	return nil
-}
-
-func (e ProductAttributeType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type ProductErrorCode string
@@ -10470,26 +8439,6 @@ const (
 	ProductErrorCodeUnsupportedMediaProvider          ProductErrorCode = "UNSUPPORTED_MEDIA_PROVIDER"
 )
 
-var AllProductErrorCode = []ProductErrorCode{
-	ProductErrorCodeAlreadyExists,
-	ProductErrorCodeAttributeAlreadyAssigned,
-	ProductErrorCodeAttributeCannotBeAssigned,
-	ProductErrorCodeAttributeVariantsDisabled,
-	ProductErrorCodeDuplicatedInputItem,
-	ProductErrorCodeGraphqlError,
-	ProductErrorCodeInvalid,
-	ProductErrorCodeProductWithoutCategory,
-	ProductErrorCodeNotProductsImage,
-	ProductErrorCodeNotProductsVariant,
-	ProductErrorCodeNotFound,
-	ProductErrorCodeRequired,
-	ProductErrorCodeUnique,
-	ProductErrorCodeVariantNoDigitalContent,
-	ProductErrorCodeCannotManageProductWithoutVariant,
-	ProductErrorCodeProductNotAssignedToChannel,
-	ProductErrorCodeUnsupportedMediaProvider,
-}
-
 func (e ProductErrorCode) IsValid() bool {
 	switch e {
 	case ProductErrorCodeAlreadyExists, ProductErrorCodeAttributeAlreadyAssigned, ProductErrorCodeAttributeCannotBeAssigned, ProductErrorCodeAttributeVariantsDisabled, ProductErrorCodeDuplicatedInputItem, ProductErrorCodeGraphqlError, ProductErrorCodeInvalid, ProductErrorCodeProductWithoutCategory, ProductErrorCodeNotProductsImage, ProductErrorCodeNotProductsVariant, ProductErrorCodeNotFound, ProductErrorCodeRequired, ProductErrorCodeUnique, ProductErrorCodeVariantNoDigitalContent, ProductErrorCodeCannotManageProductWithoutVariant, ProductErrorCodeProductNotAssignedToChannel, ProductErrorCodeUnsupportedMediaProvider:
@@ -10502,7 +8451,7 @@ func (e ProductErrorCode) String() string {
 	return string(e)
 }
 
-func (e *ProductErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *ProductErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10513,10 +8462,6 @@ func (e *ProductErrorCode) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid ProductErrorCode", str)
 	}
 	return nil
-}
-
-func (e ProductErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type ProductFieldEnum string
@@ -10536,21 +8481,6 @@ const (
 	ProductFieldEnumVariantMedia  ProductFieldEnum = "VARIANT_MEDIA"
 )
 
-var AllProductFieldEnum = []ProductFieldEnum{
-	ProductFieldEnumName,
-	ProductFieldEnumDescription,
-	ProductFieldEnumProductType,
-	ProductFieldEnumCategory,
-	ProductFieldEnumProductWeight,
-	ProductFieldEnumCollections,
-	ProductFieldEnumChargeTaxes,
-	ProductFieldEnumProductMedia,
-	ProductFieldEnumVariantID,
-	ProductFieldEnumVariantSku,
-	ProductFieldEnumVariantWeight,
-	ProductFieldEnumVariantMedia,
-}
-
 func (e ProductFieldEnum) IsValid() bool {
 	switch e {
 	case ProductFieldEnumName, ProductFieldEnumDescription, ProductFieldEnumProductType, ProductFieldEnumCategory, ProductFieldEnumProductWeight, ProductFieldEnumCollections, ProductFieldEnumChargeTaxes, ProductFieldEnumProductMedia, ProductFieldEnumVariantID, ProductFieldEnumVariantSku, ProductFieldEnumVariantWeight, ProductFieldEnumVariantMedia:
@@ -10563,7 +8493,7 @@ func (e ProductFieldEnum) String() string {
 	return string(e)
 }
 
-func (e *ProductFieldEnum) UnmarshalGQL(v interface{}) error {
+func (e *ProductFieldEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10576,21 +8506,12 @@ func (e *ProductFieldEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e ProductFieldEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type ProductMediaType string
 
 const (
 	ProductMediaTypeImage ProductMediaType = "IMAGE"
 	ProductMediaTypeVideo ProductMediaType = "VIDEO"
 )
-
-var AllProductMediaType = []ProductMediaType{
-	ProductMediaTypeImage,
-	ProductMediaTypeVideo,
-}
 
 func (e ProductMediaType) IsValid() bool {
 	switch e {
@@ -10604,7 +8525,7 @@ func (e ProductMediaType) String() string {
 	return string(e)
 }
 
-func (e *ProductMediaType) UnmarshalGQL(v interface{}) error {
+func (e *ProductMediaType) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10615,10 +8536,6 @@ func (e *ProductMediaType) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid ProductMediaType", str)
 	}
 	return nil
-}
-
-func (e ProductMediaType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type ProductOrderField string
@@ -10636,19 +8553,6 @@ const (
 	ProductOrderFieldRating          ProductOrderField = "RATING"
 )
 
-var AllProductOrderField = []ProductOrderField{
-	ProductOrderFieldName,
-	ProductOrderFieldRank,
-	ProductOrderFieldPrice,
-	ProductOrderFieldMinimalPrice,
-	ProductOrderFieldDate,
-	ProductOrderFieldType,
-	ProductOrderFieldPublished,
-	ProductOrderFieldPublicationDate,
-	ProductOrderFieldCollection,
-	ProductOrderFieldRating,
-}
-
 func (e ProductOrderField) IsValid() bool {
 	switch e {
 	case ProductOrderFieldName, ProductOrderFieldRank, ProductOrderFieldPrice, ProductOrderFieldMinimalPrice, ProductOrderFieldDate, ProductOrderFieldType, ProductOrderFieldPublished, ProductOrderFieldPublicationDate, ProductOrderFieldCollection, ProductOrderFieldRating:
@@ -10661,7 +8565,7 @@ func (e ProductOrderField) String() string {
 	return string(e)
 }
 
-func (e *ProductOrderField) UnmarshalGQL(v interface{}) error {
+func (e *ProductOrderField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10674,21 +8578,12 @@ func (e *ProductOrderField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e ProductOrderField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type ProductTypeConfigurable string
 
 const (
 	ProductTypeConfigurableConfigurable ProductTypeConfigurable = "CONFIGURABLE"
 	ProductTypeConfigurableSimple       ProductTypeConfigurable = "SIMPLE"
 )
-
-var AllProductTypeConfigurable = []ProductTypeConfigurable{
-	ProductTypeConfigurableConfigurable,
-	ProductTypeConfigurableSimple,
-}
 
 func (e ProductTypeConfigurable) IsValid() bool {
 	switch e {
@@ -10702,7 +8597,7 @@ func (e ProductTypeConfigurable) String() string {
 	return string(e)
 }
 
-func (e *ProductTypeConfigurable) UnmarshalGQL(v interface{}) error {
+func (e *ProductTypeConfigurable) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10715,21 +8610,12 @@ func (e *ProductTypeConfigurable) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e ProductTypeConfigurable) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type ProductTypeEnum string
 
 const (
 	ProductTypeEnumDigital   ProductTypeEnum = "DIGITAL"
 	ProductTypeEnumShippable ProductTypeEnum = "SHIPPABLE"
 )
-
-var AllProductTypeEnum = []ProductTypeEnum{
-	ProductTypeEnumDigital,
-	ProductTypeEnumShippable,
-}
 
 func (e ProductTypeEnum) IsValid() bool {
 	switch e {
@@ -10743,7 +8629,7 @@ func (e ProductTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *ProductTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *ProductTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10756,21 +8642,12 @@ func (e *ProductTypeEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e ProductTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type ProductTypeKindEnum string
 
 const (
 	ProductTypeKindEnumNormal   ProductTypeKindEnum = "NORMAL"
 	ProductTypeKindEnumGiftCard ProductTypeKindEnum = "GIFT_CARD"
 )
-
-var AllProductTypeKindEnum = []ProductTypeKindEnum{
-	ProductTypeKindEnumNormal,
-	ProductTypeKindEnumGiftCard,
-}
 
 func (e ProductTypeKindEnum) IsValid() bool {
 	switch e {
@@ -10784,7 +8661,7 @@ func (e ProductTypeKindEnum) String() string {
 	return string(e)
 }
 
-func (e *ProductTypeKindEnum) UnmarshalGQL(v interface{}) error {
+func (e *ProductTypeKindEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10797,10 +8674,6 @@ func (e *ProductTypeKindEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e ProductTypeKindEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type ProductTypeSortField string
 
 const (
@@ -10808,12 +8681,6 @@ const (
 	ProductTypeSortFieldDigital          ProductTypeSortField = "DIGITAL"
 	ProductTypeSortFieldShippingRequired ProductTypeSortField = "SHIPPING_REQUIRED"
 )
-
-var AllProductTypeSortField = []ProductTypeSortField{
-	ProductTypeSortFieldName,
-	ProductTypeSortFieldDigital,
-	ProductTypeSortFieldShippingRequired,
-}
 
 func (e ProductTypeSortField) IsValid() bool {
 	switch e {
@@ -10827,7 +8694,7 @@ func (e ProductTypeSortField) String() string {
 	return string(e)
 }
 
-func (e *ProductTypeSortField) UnmarshalGQL(v interface{}) error {
+func (e *ProductTypeSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10840,21 +8707,12 @@ func (e *ProductTypeSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e ProductTypeSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type ReportingPeriod string
 
 const (
 	ReportingPeriodToday     ReportingPeriod = "TODAY"
 	ReportingPeriodThisMonth ReportingPeriod = "THIS_MONTH"
 )
-
-var AllReportingPeriod = []ReportingPeriod{
-	ReportingPeriodToday,
-	ReportingPeriodThisMonth,
-}
 
 func (e ReportingPeriod) IsValid() bool {
 	switch e {
@@ -10868,7 +8726,7 @@ func (e ReportingPeriod) String() string {
 	return string(e)
 }
 
-func (e *ReportingPeriod) UnmarshalGQL(v interface{}) error {
+func (e *ReportingPeriod) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10881,10 +8739,6 @@ func (e *ReportingPeriod) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e ReportingPeriod) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type SaleSortField string
 
 const (
@@ -10894,14 +8748,6 @@ const (
 	SaleSortFieldValue     SaleSortField = "VALUE"
 	SaleSortFieldType      SaleSortField = "TYPE"
 )
-
-var AllSaleSortField = []SaleSortField{
-	SaleSortFieldName,
-	SaleSortFieldStartDate,
-	SaleSortFieldEndDate,
-	SaleSortFieldValue,
-	SaleSortFieldType,
-}
 
 func (e SaleSortField) IsValid() bool {
 	switch e {
@@ -10915,7 +8761,7 @@ func (e SaleSortField) String() string {
 	return string(e)
 }
 
-func (e *SaleSortField) UnmarshalGQL(v interface{}) error {
+func (e *SaleSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10928,21 +8774,12 @@ func (e *SaleSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e SaleSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type SaleType string
 
 const (
 	SaleTypeFixed      SaleType = "FIXED"
 	SaleTypePercentage SaleType = "PERCENTAGE"
 )
-
-var AllSaleType = []SaleType{
-	SaleTypeFixed,
-	SaleTypePercentage,
-}
 
 func (e SaleType) IsValid() bool {
 	switch e {
@@ -10956,7 +8793,7 @@ func (e SaleType) String() string {
 	return string(e)
 }
 
-func (e *SaleType) UnmarshalGQL(v interface{}) error {
+func (e *SaleType) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -10967,10 +8804,6 @@ func (e *SaleType) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid SaleType", str)
 	}
 	return nil
-}
-
-func (e SaleType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type ShippingErrorCode string
@@ -10986,17 +8819,6 @@ const (
 	ShippingErrorCodeDuplicatedInputItem ShippingErrorCode = "DUPLICATED_INPUT_ITEM"
 )
 
-var AllShippingErrorCode = []ShippingErrorCode{
-	ShippingErrorCodeAlreadyExists,
-	ShippingErrorCodeGraphqlError,
-	ShippingErrorCodeInvalid,
-	ShippingErrorCodeMaxLessThanMin,
-	ShippingErrorCodeNotFound,
-	ShippingErrorCodeRequired,
-	ShippingErrorCodeUnique,
-	ShippingErrorCodeDuplicatedInputItem,
-}
-
 func (e ShippingErrorCode) IsValid() bool {
 	switch e {
 	case ShippingErrorCodeAlreadyExists, ShippingErrorCodeGraphqlError, ShippingErrorCodeInvalid, ShippingErrorCodeMaxLessThanMin, ShippingErrorCodeNotFound, ShippingErrorCodeRequired, ShippingErrorCodeUnique, ShippingErrorCodeDuplicatedInputItem:
@@ -11009,7 +8831,7 @@ func (e ShippingErrorCode) String() string {
 	return string(e)
 }
 
-func (e *ShippingErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *ShippingErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11022,21 +8844,12 @@ func (e *ShippingErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e ShippingErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type ShippingMethodTypeEnum string
 
 const (
 	ShippingMethodTypeEnumPrice  ShippingMethodTypeEnum = "PRICE"
 	ShippingMethodTypeEnumWeight ShippingMethodTypeEnum = "WEIGHT"
 )
-
-var AllShippingMethodTypeEnum = []ShippingMethodTypeEnum{
-	ShippingMethodTypeEnumPrice,
-	ShippingMethodTypeEnumWeight,
-}
 
 func (e ShippingMethodTypeEnum) IsValid() bool {
 	switch e {
@@ -11050,7 +8863,7 @@ func (e ShippingMethodTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *ShippingMethodTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *ShippingMethodTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11061,10 +8874,6 @@ func (e *ShippingMethodTypeEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid ShippingMethodTypeEnum", str)
 	}
 	return nil
-}
-
-func (e ShippingMethodTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type ShopErrorCode string
@@ -11079,16 +8888,6 @@ const (
 	ShopErrorCodeUnique              ShopErrorCode = "UNIQUE"
 )
 
-var AllShopErrorCode = []ShopErrorCode{
-	ShopErrorCodeAlreadyExists,
-	ShopErrorCodeCannotFetchTaxRates,
-	ShopErrorCodeGraphqlError,
-	ShopErrorCodeInvalid,
-	ShopErrorCodeNotFound,
-	ShopErrorCodeRequired,
-	ShopErrorCodeUnique,
-}
-
 func (e ShopErrorCode) IsValid() bool {
 	switch e {
 	case ShopErrorCodeAlreadyExists, ShopErrorCodeCannotFetchTaxRates, ShopErrorCodeGraphqlError, ShopErrorCodeInvalid, ShopErrorCodeNotFound, ShopErrorCodeRequired, ShopErrorCodeUnique:
@@ -11101,7 +8900,7 @@ func (e ShopErrorCode) String() string {
 	return string(e)
 }
 
-func (e *ShopErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *ShopErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11114,21 +8913,12 @@ func (e *ShopErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e ShopErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type StaffMemberStatus string
 
 const (
 	StaffMemberStatusActive      StaffMemberStatus = "ACTIVE"
 	StaffMemberStatusDeactivated StaffMemberStatus = "DEACTIVATED"
 )
-
-var AllStaffMemberStatus = []StaffMemberStatus{
-	StaffMemberStatusActive,
-	StaffMemberStatusDeactivated,
-}
 
 func (e StaffMemberStatus) IsValid() bool {
 	switch e {
@@ -11142,7 +8932,7 @@ func (e StaffMemberStatus) String() string {
 	return string(e)
 }
 
-func (e *StaffMemberStatus) UnmarshalGQL(v interface{}) error {
+func (e *StaffMemberStatus) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11155,21 +8945,12 @@ func (e *StaffMemberStatus) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e StaffMemberStatus) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type StockAvailability string
 
 const (
 	StockAvailabilityInStock    StockAvailability = "IN_STOCK"
 	StockAvailabilityOutOfStock StockAvailability = "OUT_OF_STOCK"
 )
-
-var AllStockAvailability = []StockAvailability{
-	StockAvailabilityInStock,
-	StockAvailabilityOutOfStock,
-}
 
 func (e StockAvailability) IsValid() bool {
 	switch e {
@@ -11183,7 +8964,7 @@ func (e StockAvailability) String() string {
 	return string(e)
 }
 
-func (e *StockAvailability) UnmarshalGQL(v interface{}) error {
+func (e *StockAvailability) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11194,10 +8975,6 @@ func (e *StockAvailability) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid StockAvailability", str)
 	}
 	return nil
-}
-
-func (e StockAvailability) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type StockErrorCode string
@@ -11211,15 +8988,6 @@ const (
 	StockErrorCodeUnique        StockErrorCode = "UNIQUE"
 )
 
-var AllStockErrorCode = []StockErrorCode{
-	StockErrorCodeAlreadyExists,
-	StockErrorCodeGraphqlError,
-	StockErrorCodeInvalid,
-	StockErrorCodeNotFound,
-	StockErrorCodeRequired,
-	StockErrorCodeUnique,
-}
-
 func (e StockErrorCode) IsValid() bool {
 	switch e {
 	case StockErrorCodeAlreadyExists, StockErrorCodeGraphqlError, StockErrorCodeInvalid, StockErrorCodeNotFound, StockErrorCodeRequired, StockErrorCodeUnique:
@@ -11232,7 +9000,7 @@ func (e StockErrorCode) String() string {
 	return string(e)
 }
 
-func (e *StockErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *StockErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11245,10 +9013,6 @@ func (e *StockErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e StockErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type StorePaymentMethodEnum string
 
 const (
@@ -11256,12 +9020,6 @@ const (
 	StorePaymentMethodEnumOffSession StorePaymentMethodEnum = "OFF_SESSION"
 	StorePaymentMethodEnumNone       StorePaymentMethodEnum = "NONE"
 )
-
-var AllStorePaymentMethodEnum = []StorePaymentMethodEnum{
-	StorePaymentMethodEnumOnSession,
-	StorePaymentMethodEnumOffSession,
-	StorePaymentMethodEnumNone,
-}
 
 func (e StorePaymentMethodEnum) IsValid() bool {
 	switch e {
@@ -11275,7 +9033,7 @@ func (e StorePaymentMethodEnum) String() string {
 	return string(e)
 }
 
-func (e *StorePaymentMethodEnum) UnmarshalGQL(v interface{}) error {
+func (e *StorePaymentMethodEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11288,10 +9046,6 @@ func (e *StorePaymentMethodEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e StorePaymentMethodEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type TimePeriodTypeEnum string
 
 const (
@@ -11300,13 +9054,6 @@ const (
 	TimePeriodTypeEnumMonth TimePeriodTypeEnum = "MONTH"
 	TimePeriodTypeEnumYear  TimePeriodTypeEnum = "YEAR"
 )
-
-var AllTimePeriodTypeEnum = []TimePeriodTypeEnum{
-	TimePeriodTypeEnumDay,
-	TimePeriodTypeEnumWeek,
-	TimePeriodTypeEnumMonth,
-	TimePeriodTypeEnumYear,
-}
 
 func (e TimePeriodTypeEnum) IsValid() bool {
 	switch e {
@@ -11320,7 +9067,7 @@ func (e TimePeriodTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *TimePeriodTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *TimePeriodTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11331,10 +9078,6 @@ func (e *TimePeriodTypeEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid TimePeriodTypeEnum", str)
 	}
 	return nil
-}
-
-func (e TimePeriodTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type TransactionKind string
@@ -11352,19 +9095,6 @@ const (
 	TransactionKindCancel          TransactionKind = "CANCEL"
 )
 
-var AllTransactionKind = []TransactionKind{
-	TransactionKindExternal,
-	TransactionKindAuth,
-	TransactionKindPending,
-	TransactionKindActionToConfirm,
-	TransactionKindRefund,
-	TransactionKindRefundOngoing,
-	TransactionKindCapture,
-	TransactionKindVoid,
-	TransactionKindConfirm,
-	TransactionKindCancel,
-}
-
 func (e TransactionKind) IsValid() bool {
 	switch e {
 	case TransactionKindExternal, TransactionKindAuth, TransactionKindPending, TransactionKindActionToConfirm, TransactionKindRefund, TransactionKindRefundOngoing, TransactionKindCapture, TransactionKindVoid, TransactionKindConfirm, TransactionKindCancel:
@@ -11377,7 +9107,7 @@ func (e TransactionKind) String() string {
 	return string(e)
 }
 
-func (e *TransactionKind) UnmarshalGQL(v interface{}) error {
+func (e *TransactionKind) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11388,10 +9118,6 @@ func (e *TransactionKind) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid TransactionKind", str)
 	}
 	return nil
-}
-
-func (e TransactionKind) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type TranslatableKinds string
@@ -11410,20 +9136,6 @@ const (
 	TranslatableKindsVoucher        TranslatableKinds = "VOUCHER"
 )
 
-var AllTranslatableKinds = []TranslatableKinds{
-	TranslatableKindsAttribute,
-	TranslatableKindsAttributeValue,
-	TranslatableKindsCategory,
-	TranslatableKindsCollection,
-	TranslatableKindsMenuItem,
-	TranslatableKindsPage,
-	TranslatableKindsProduct,
-	TranslatableKindsSale,
-	TranslatableKindsShippingMethod,
-	TranslatableKindsVariant,
-	TranslatableKindsVoucher,
-}
-
 func (e TranslatableKinds) IsValid() bool {
 	switch e {
 	case TranslatableKindsAttribute, TranslatableKindsAttributeValue, TranslatableKindsCategory, TranslatableKindsCollection, TranslatableKindsMenuItem, TranslatableKindsPage, TranslatableKindsProduct, TranslatableKindsSale, TranslatableKindsShippingMethod, TranslatableKindsVariant, TranslatableKindsVoucher:
@@ -11436,7 +9148,7 @@ func (e TranslatableKinds) String() string {
 	return string(e)
 }
 
-func (e *TranslatableKinds) UnmarshalGQL(v interface{}) error {
+func (e *TranslatableKinds) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11449,10 +9161,6 @@ func (e *TranslatableKinds) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e TranslatableKinds) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type TranslationErrorCode string
 
 const (
@@ -11460,12 +9168,6 @@ const (
 	TranslationErrorCodeNotFound     TranslationErrorCode = "NOT_FOUND"
 	TranslationErrorCodeRequired     TranslationErrorCode = "REQUIRED"
 )
-
-var AllTranslationErrorCode = []TranslationErrorCode{
-	TranslationErrorCodeGraphqlError,
-	TranslationErrorCodeNotFound,
-	TranslationErrorCodeRequired,
-}
 
 func (e TranslationErrorCode) IsValid() bool {
 	switch e {
@@ -11479,7 +9181,7 @@ func (e TranslationErrorCode) String() string {
 	return string(e)
 }
 
-func (e *TranslationErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *TranslationErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11492,19 +9194,11 @@ func (e *TranslationErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e TranslationErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type UploadErrorCode string
 
 const (
 	UploadErrorCodeGraphqlError UploadErrorCode = "GRAPHQL_ERROR"
 )
-
-var AllUploadErrorCode = []UploadErrorCode{
-	UploadErrorCodeGraphqlError,
-}
 
 func (e UploadErrorCode) IsValid() bool {
 	switch e {
@@ -11518,7 +9212,7 @@ func (e UploadErrorCode) String() string {
 	return string(e)
 }
 
-func (e *UploadErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *UploadErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11531,10 +9225,6 @@ func (e *UploadErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e UploadErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type UserSortField string
 
 const (
@@ -11543,13 +9233,6 @@ const (
 	UserSortFieldEmail      UserSortField = "EMAIL"
 	UserSortFieldOrderCount UserSortField = "ORDER_COUNT"
 )
-
-var AllUserSortField = []UserSortField{
-	UserSortFieldFirstName,
-	UserSortFieldLastName,
-	UserSortFieldEmail,
-	UserSortFieldOrderCount,
-}
 
 func (e UserSortField) IsValid() bool {
 	switch e {
@@ -11563,7 +9246,7 @@ func (e UserSortField) String() string {
 	return string(e)
 }
 
-func (e *UserSortField) UnmarshalGQL(v interface{}) error {
+func (e *UserSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11576,10 +9259,6 @@ func (e *UserSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e UserSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type VariantAttributeScope string
 
 const (
@@ -11587,12 +9266,6 @@ const (
 	VariantAttributeScopeVariantSelection    VariantAttributeScope = "VARIANT_SELECTION"
 	VariantAttributeScopeNotVariantSelection VariantAttributeScope = "NOT_VARIANT_SELECTION"
 )
-
-var AllVariantAttributeScope = []VariantAttributeScope{
-	VariantAttributeScopeAll,
-	VariantAttributeScopeVariantSelection,
-	VariantAttributeScopeNotVariantSelection,
-}
 
 func (e VariantAttributeScope) IsValid() bool {
 	switch e {
@@ -11606,7 +9279,7 @@ func (e VariantAttributeScope) String() string {
 	return string(e)
 }
 
-func (e *VariantAttributeScope) UnmarshalGQL(v interface{}) error {
+func (e *VariantAttributeScope) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11617,10 +9290,6 @@ func (e *VariantAttributeScope) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid VariantAttributeScope", str)
 	}
 	return nil
-}
-
-func (e VariantAttributeScope) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type VolumeUnitsEnum string
@@ -11641,22 +9310,6 @@ const (
 	VolumeUnitsEnumAcreFt          VolumeUnitsEnum = "ACRE_FT"
 )
 
-var AllVolumeUnitsEnum = []VolumeUnitsEnum{
-	VolumeUnitsEnumCubicMillimeter,
-	VolumeUnitsEnumCubicCentimeter,
-	VolumeUnitsEnumCubicDecimeter,
-	VolumeUnitsEnumCubicMeter,
-	VolumeUnitsEnumLiter,
-	VolumeUnitsEnumCubicFoot,
-	VolumeUnitsEnumCubicInch,
-	VolumeUnitsEnumCubicYard,
-	VolumeUnitsEnumQt,
-	VolumeUnitsEnumPint,
-	VolumeUnitsEnumFlOz,
-	VolumeUnitsEnumAcreIn,
-	VolumeUnitsEnumAcreFt,
-}
-
 func (e VolumeUnitsEnum) IsValid() bool {
 	switch e {
 	case VolumeUnitsEnumCubicMillimeter, VolumeUnitsEnumCubicCentimeter, VolumeUnitsEnumCubicDecimeter, VolumeUnitsEnumCubicMeter, VolumeUnitsEnumLiter, VolumeUnitsEnumCubicFoot, VolumeUnitsEnumCubicInch, VolumeUnitsEnumCubicYard, VolumeUnitsEnumQt, VolumeUnitsEnumPint, VolumeUnitsEnumFlOz, VolumeUnitsEnumAcreIn, VolumeUnitsEnumAcreFt:
@@ -11669,7 +9322,7 @@ func (e VolumeUnitsEnum) String() string {
 	return string(e)
 }
 
-func (e *VolumeUnitsEnum) UnmarshalGQL(v interface{}) error {
+func (e *VolumeUnitsEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11682,10 +9335,6 @@ func (e *VolumeUnitsEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e VolumeUnitsEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type VoucherDiscountType string
 
 const (
@@ -11693,12 +9342,6 @@ const (
 	VoucherDiscountTypePercentage VoucherDiscountType = "PERCENTAGE"
 	VoucherDiscountTypeShipping   VoucherDiscountType = "SHIPPING"
 )
-
-var AllVoucherDiscountType = []VoucherDiscountType{
-	VoucherDiscountTypeFixed,
-	VoucherDiscountTypePercentage,
-	VoucherDiscountTypeShipping,
-}
 
 func (e VoucherDiscountType) IsValid() bool {
 	switch e {
@@ -11712,7 +9355,7 @@ func (e VoucherDiscountType) String() string {
 	return string(e)
 }
 
-func (e *VoucherDiscountType) UnmarshalGQL(v interface{}) error {
+func (e *VoucherDiscountType) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11723,10 +9366,6 @@ func (e *VoucherDiscountType) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid VoucherDiscountType", str)
 	}
 	return nil
-}
-
-func (e VoucherDiscountType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type VoucherSortField string
@@ -11741,16 +9380,6 @@ const (
 	VoucherSortFieldMinimumSpentAmount VoucherSortField = "MINIMUM_SPENT_AMOUNT"
 )
 
-var AllVoucherSortField = []VoucherSortField{
-	VoucherSortFieldCode,
-	VoucherSortFieldStartDate,
-	VoucherSortFieldEndDate,
-	VoucherSortFieldValue,
-	VoucherSortFieldType,
-	VoucherSortFieldUsageLimit,
-	VoucherSortFieldMinimumSpentAmount,
-}
-
 func (e VoucherSortField) IsValid() bool {
 	switch e {
 	case VoucherSortFieldCode, VoucherSortFieldStartDate, VoucherSortFieldEndDate, VoucherSortFieldValue, VoucherSortFieldType, VoucherSortFieldUsageLimit, VoucherSortFieldMinimumSpentAmount:
@@ -11763,7 +9392,7 @@ func (e VoucherSortField) String() string {
 	return string(e)
 }
 
-func (e *VoucherSortField) UnmarshalGQL(v interface{}) error {
+func (e *VoucherSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11776,10 +9405,6 @@ func (e *VoucherSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e VoucherSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type VoucherTypeEnum string
 
 const (
@@ -11787,12 +9412,6 @@ const (
 	VoucherTypeEnumEntireOrder     VoucherTypeEnum = "ENTIRE_ORDER"
 	VoucherTypeEnumSpecificProduct VoucherTypeEnum = "SPECIFIC_PRODUCT"
 )
-
-var AllVoucherTypeEnum = []VoucherTypeEnum{
-	VoucherTypeEnumShipping,
-	VoucherTypeEnumEntireOrder,
-	VoucherTypeEnumSpecificProduct,
-}
 
 func (e VoucherTypeEnum) IsValid() bool {
 	switch e {
@@ -11806,7 +9425,7 @@ func (e VoucherTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *VoucherTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *VoucherTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11819,10 +9438,6 @@ func (e *VoucherTypeEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e VoucherTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type WarehouseClickAndCollectOptionEnum string
 
 const (
@@ -11830,12 +9445,6 @@ const (
 	WarehouseClickAndCollectOptionEnumLocal    WarehouseClickAndCollectOptionEnum = "LOCAL"
 	WarehouseClickAndCollectOptionEnumAll      WarehouseClickAndCollectOptionEnum = "ALL"
 )
-
-var AllWarehouseClickAndCollectOptionEnum = []WarehouseClickAndCollectOptionEnum{
-	WarehouseClickAndCollectOptionEnumDisabled,
-	WarehouseClickAndCollectOptionEnumLocal,
-	WarehouseClickAndCollectOptionEnumAll,
-}
 
 func (e WarehouseClickAndCollectOptionEnum) IsValid() bool {
 	switch e {
@@ -11849,7 +9458,7 @@ func (e WarehouseClickAndCollectOptionEnum) String() string {
 	return string(e)
 }
 
-func (e *WarehouseClickAndCollectOptionEnum) UnmarshalGQL(v interface{}) error {
+func (e *WarehouseClickAndCollectOptionEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11860,10 +9469,6 @@ func (e *WarehouseClickAndCollectOptionEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid WarehouseClickAndCollectOptionEnum", str)
 	}
 	return nil
-}
-
-func (e WarehouseClickAndCollectOptionEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type WarehouseErrorCode string
@@ -11877,15 +9482,6 @@ const (
 	WarehouseErrorCodeUnique        WarehouseErrorCode = "UNIQUE"
 )
 
-var AllWarehouseErrorCode = []WarehouseErrorCode{
-	WarehouseErrorCodeAlreadyExists,
-	WarehouseErrorCodeGraphqlError,
-	WarehouseErrorCodeInvalid,
-	WarehouseErrorCodeNotFound,
-	WarehouseErrorCodeRequired,
-	WarehouseErrorCodeUnique,
-}
-
 func (e WarehouseErrorCode) IsValid() bool {
 	switch e {
 	case WarehouseErrorCodeAlreadyExists, WarehouseErrorCodeGraphqlError, WarehouseErrorCodeInvalid, WarehouseErrorCodeNotFound, WarehouseErrorCodeRequired, WarehouseErrorCodeUnique:
@@ -11898,7 +9494,7 @@ func (e WarehouseErrorCode) String() string {
 	return string(e)
 }
 
-func (e *WarehouseErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *WarehouseErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11911,19 +9507,11 @@ func (e *WarehouseErrorCode) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e WarehouseErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type WarehouseSortField string
 
 const (
 	WarehouseSortFieldName WarehouseSortField = "NAME"
 )
-
-var AllWarehouseSortField = []WarehouseSortField{
-	WarehouseSortFieldName,
-}
 
 func (e WarehouseSortField) IsValid() bool {
 	switch e {
@@ -11937,7 +9525,7 @@ func (e WarehouseSortField) String() string {
 	return string(e)
 }
 
-func (e *WarehouseSortField) UnmarshalGQL(v interface{}) error {
+func (e *WarehouseSortField) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11950,10 +9538,6 @@ func (e *WarehouseSortField) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e WarehouseSortField) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type WebhookErrorCode string
 
 const (
@@ -11963,14 +9547,6 @@ const (
 	WebhookErrorCodeRequired     WebhookErrorCode = "REQUIRED"
 	WebhookErrorCodeUnique       WebhookErrorCode = "UNIQUE"
 )
-
-var AllWebhookErrorCode = []WebhookErrorCode{
-	WebhookErrorCodeGraphqlError,
-	WebhookErrorCodeInvalid,
-	WebhookErrorCodeNotFound,
-	WebhookErrorCodeRequired,
-	WebhookErrorCodeUnique,
-}
 
 func (e WebhookErrorCode) IsValid() bool {
 	switch e {
@@ -11984,7 +9560,7 @@ func (e WebhookErrorCode) String() string {
 	return string(e)
 }
 
-func (e *WebhookErrorCode) UnmarshalGQL(v interface{}) error {
+func (e *WebhookErrorCode) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -11995,10 +9571,6 @@ func (e *WebhookErrorCode) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid WebhookErrorCode", str)
 	}
 	return nil
-}
-
-func (e WebhookErrorCode) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type WebhookEventTypeEnum string
@@ -12049,52 +9621,6 @@ const (
 	WebhookEventTypeEnumTranslationUpdated        WebhookEventTypeEnum = "TRANSLATION_UPDATED"
 )
 
-var AllWebhookEventTypeEnum = []WebhookEventTypeEnum{
-	WebhookEventTypeEnumAnyEvents,
-	WebhookEventTypeEnumOrderCreated,
-	WebhookEventTypeEnumOrderConfirmed,
-	WebhookEventTypeEnumOrderFullyPaid,
-	WebhookEventTypeEnumOrderUpdated,
-	WebhookEventTypeEnumOrderCancelled,
-	WebhookEventTypeEnumOrderFulfilled,
-	WebhookEventTypeEnumDraftOrderCreated,
-	WebhookEventTypeEnumDraftOrderUpdated,
-	WebhookEventTypeEnumDraftOrderDeleted,
-	WebhookEventTypeEnumSaleCreated,
-	WebhookEventTypeEnumSaleUpdated,
-	WebhookEventTypeEnumSaleDeleted,
-	WebhookEventTypeEnumInvoiceRequested,
-	WebhookEventTypeEnumInvoiceDeleted,
-	WebhookEventTypeEnumInvoiceSent,
-	WebhookEventTypeEnumCustomerCreated,
-	WebhookEventTypeEnumCustomerUpdated,
-	WebhookEventTypeEnumProductCreated,
-	WebhookEventTypeEnumProductUpdated,
-	WebhookEventTypeEnumProductDeleted,
-	WebhookEventTypeEnumProductVariantCreated,
-	WebhookEventTypeEnumProductVariantUpdated,
-	WebhookEventTypeEnumProductVariantDeleted,
-	WebhookEventTypeEnumProductVariantOutOfStock,
-	WebhookEventTypeEnumProductVariantBackInStock,
-	WebhookEventTypeEnumCheckoutCreated,
-	WebhookEventTypeEnumCheckoutUpdated,
-	WebhookEventTypeEnumFulfillmentCreated,
-	WebhookEventTypeEnumFulfillmentCanceled,
-	WebhookEventTypeEnumNotifyUser,
-	WebhookEventTypeEnumPageCreated,
-	WebhookEventTypeEnumPageUpdated,
-	WebhookEventTypeEnumPageDeleted,
-	WebhookEventTypeEnumPaymentAuthorize,
-	WebhookEventTypeEnumPaymentCapture,
-	WebhookEventTypeEnumPaymentConfirm,
-	WebhookEventTypeEnumPaymentListGateways,
-	WebhookEventTypeEnumPaymentProcess,
-	WebhookEventTypeEnumPaymentRefund,
-	WebhookEventTypeEnumPaymentVoid,
-	WebhookEventTypeEnumTranslationCreated,
-	WebhookEventTypeEnumTranslationUpdated,
-}
-
 func (e WebhookEventTypeEnum) IsValid() bool {
 	switch e {
 	case WebhookEventTypeEnumAnyEvents, WebhookEventTypeEnumOrderCreated, WebhookEventTypeEnumOrderConfirmed, WebhookEventTypeEnumOrderFullyPaid, WebhookEventTypeEnumOrderUpdated, WebhookEventTypeEnumOrderCancelled, WebhookEventTypeEnumOrderFulfilled, WebhookEventTypeEnumDraftOrderCreated, WebhookEventTypeEnumDraftOrderUpdated, WebhookEventTypeEnumDraftOrderDeleted, WebhookEventTypeEnumSaleCreated, WebhookEventTypeEnumSaleUpdated, WebhookEventTypeEnumSaleDeleted, WebhookEventTypeEnumInvoiceRequested, WebhookEventTypeEnumInvoiceDeleted, WebhookEventTypeEnumInvoiceSent, WebhookEventTypeEnumCustomerCreated, WebhookEventTypeEnumCustomerUpdated, WebhookEventTypeEnumProductCreated, WebhookEventTypeEnumProductUpdated, WebhookEventTypeEnumProductDeleted, WebhookEventTypeEnumProductVariantCreated, WebhookEventTypeEnumProductVariantUpdated, WebhookEventTypeEnumProductVariantDeleted, WebhookEventTypeEnumProductVariantOutOfStock, WebhookEventTypeEnumProductVariantBackInStock, WebhookEventTypeEnumCheckoutCreated, WebhookEventTypeEnumCheckoutUpdated, WebhookEventTypeEnumFulfillmentCreated, WebhookEventTypeEnumFulfillmentCanceled, WebhookEventTypeEnumNotifyUser, WebhookEventTypeEnumPageCreated, WebhookEventTypeEnumPageUpdated, WebhookEventTypeEnumPageDeleted, WebhookEventTypeEnumPaymentAuthorize, WebhookEventTypeEnumPaymentCapture, WebhookEventTypeEnumPaymentConfirm, WebhookEventTypeEnumPaymentListGateways, WebhookEventTypeEnumPaymentProcess, WebhookEventTypeEnumPaymentRefund, WebhookEventTypeEnumPaymentVoid, WebhookEventTypeEnumTranslationCreated, WebhookEventTypeEnumTranslationUpdated:
@@ -12107,7 +9633,7 @@ func (e WebhookEventTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *WebhookEventTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *WebhookEventTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -12118,10 +9644,6 @@ func (e *WebhookEventTypeEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid WebhookEventTypeEnum", str)
 	}
 	return nil
-}
-
-func (e WebhookEventTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type WebhookSampleEventTypeEnum string
@@ -12171,51 +9693,6 @@ const (
 	WebhookSampleEventTypeEnumTranslationUpdated        WebhookSampleEventTypeEnum = "TRANSLATION_UPDATED"
 )
 
-var AllWebhookSampleEventTypeEnum = []WebhookSampleEventTypeEnum{
-	WebhookSampleEventTypeEnumOrderCreated,
-	WebhookSampleEventTypeEnumOrderConfirmed,
-	WebhookSampleEventTypeEnumOrderFullyPaid,
-	WebhookSampleEventTypeEnumOrderUpdated,
-	WebhookSampleEventTypeEnumOrderCancelled,
-	WebhookSampleEventTypeEnumOrderFulfilled,
-	WebhookSampleEventTypeEnumDraftOrderCreated,
-	WebhookSampleEventTypeEnumDraftOrderUpdated,
-	WebhookSampleEventTypeEnumDraftOrderDeleted,
-	WebhookSampleEventTypeEnumSaleCreated,
-	WebhookSampleEventTypeEnumSaleUpdated,
-	WebhookSampleEventTypeEnumSaleDeleted,
-	WebhookSampleEventTypeEnumInvoiceRequested,
-	WebhookSampleEventTypeEnumInvoiceDeleted,
-	WebhookSampleEventTypeEnumInvoiceSent,
-	WebhookSampleEventTypeEnumCustomerCreated,
-	WebhookSampleEventTypeEnumCustomerUpdated,
-	WebhookSampleEventTypeEnumProductCreated,
-	WebhookSampleEventTypeEnumProductUpdated,
-	WebhookSampleEventTypeEnumProductDeleted,
-	WebhookSampleEventTypeEnumProductVariantCreated,
-	WebhookSampleEventTypeEnumProductVariantUpdated,
-	WebhookSampleEventTypeEnumProductVariantDeleted,
-	WebhookSampleEventTypeEnumProductVariantOutOfStock,
-	WebhookSampleEventTypeEnumProductVariantBackInStock,
-	WebhookSampleEventTypeEnumCheckoutCreated,
-	WebhookSampleEventTypeEnumCheckoutUpdated,
-	WebhookSampleEventTypeEnumFulfillmentCreated,
-	WebhookSampleEventTypeEnumFulfillmentCanceled,
-	WebhookSampleEventTypeEnumNotifyUser,
-	WebhookSampleEventTypeEnumPageCreated,
-	WebhookSampleEventTypeEnumPageUpdated,
-	WebhookSampleEventTypeEnumPageDeleted,
-	WebhookSampleEventTypeEnumPaymentAuthorize,
-	WebhookSampleEventTypeEnumPaymentCapture,
-	WebhookSampleEventTypeEnumPaymentConfirm,
-	WebhookSampleEventTypeEnumPaymentListGateways,
-	WebhookSampleEventTypeEnumPaymentProcess,
-	WebhookSampleEventTypeEnumPaymentRefund,
-	WebhookSampleEventTypeEnumPaymentVoid,
-	WebhookSampleEventTypeEnumTranslationCreated,
-	WebhookSampleEventTypeEnumTranslationUpdated,
-}
-
 func (e WebhookSampleEventTypeEnum) IsValid() bool {
 	switch e {
 	case WebhookSampleEventTypeEnumOrderCreated, WebhookSampleEventTypeEnumOrderConfirmed, WebhookSampleEventTypeEnumOrderFullyPaid, WebhookSampleEventTypeEnumOrderUpdated, WebhookSampleEventTypeEnumOrderCancelled, WebhookSampleEventTypeEnumOrderFulfilled, WebhookSampleEventTypeEnumDraftOrderCreated, WebhookSampleEventTypeEnumDraftOrderUpdated, WebhookSampleEventTypeEnumDraftOrderDeleted, WebhookSampleEventTypeEnumSaleCreated, WebhookSampleEventTypeEnumSaleUpdated, WebhookSampleEventTypeEnumSaleDeleted, WebhookSampleEventTypeEnumInvoiceRequested, WebhookSampleEventTypeEnumInvoiceDeleted, WebhookSampleEventTypeEnumInvoiceSent, WebhookSampleEventTypeEnumCustomerCreated, WebhookSampleEventTypeEnumCustomerUpdated, WebhookSampleEventTypeEnumProductCreated, WebhookSampleEventTypeEnumProductUpdated, WebhookSampleEventTypeEnumProductDeleted, WebhookSampleEventTypeEnumProductVariantCreated, WebhookSampleEventTypeEnumProductVariantUpdated, WebhookSampleEventTypeEnumProductVariantDeleted, WebhookSampleEventTypeEnumProductVariantOutOfStock, WebhookSampleEventTypeEnumProductVariantBackInStock, WebhookSampleEventTypeEnumCheckoutCreated, WebhookSampleEventTypeEnumCheckoutUpdated, WebhookSampleEventTypeEnumFulfillmentCreated, WebhookSampleEventTypeEnumFulfillmentCanceled, WebhookSampleEventTypeEnumNotifyUser, WebhookSampleEventTypeEnumPageCreated, WebhookSampleEventTypeEnumPageUpdated, WebhookSampleEventTypeEnumPageDeleted, WebhookSampleEventTypeEnumPaymentAuthorize, WebhookSampleEventTypeEnumPaymentCapture, WebhookSampleEventTypeEnumPaymentConfirm, WebhookSampleEventTypeEnumPaymentListGateways, WebhookSampleEventTypeEnumPaymentProcess, WebhookSampleEventTypeEnumPaymentRefund, WebhookSampleEventTypeEnumPaymentVoid, WebhookSampleEventTypeEnumTranslationCreated, WebhookSampleEventTypeEnumTranslationUpdated:
@@ -12228,7 +9705,7 @@ func (e WebhookSampleEventTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *WebhookSampleEventTypeEnum) UnmarshalGQL(v interface{}) error {
+func (e *WebhookSampleEventTypeEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -12241,10 +9718,6 @@ func (e *WebhookSampleEventTypeEnum) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (e WebhookSampleEventTypeEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type WeightUnitsEnum string
 
 const (
@@ -12254,14 +9727,6 @@ const (
 	WeightUnitsEnumKg    WeightUnitsEnum = "KG"
 	WeightUnitsEnumTonne WeightUnitsEnum = "TONNE"
 )
-
-var AllWeightUnitsEnum = []WeightUnitsEnum{
-	WeightUnitsEnumG,
-	WeightUnitsEnumLb,
-	WeightUnitsEnumOz,
-	WeightUnitsEnumKg,
-	WeightUnitsEnumTonne,
-}
 
 func (e WeightUnitsEnum) IsValid() bool {
 	switch e {
@@ -12275,7 +9740,7 @@ func (e WeightUnitsEnum) String() string {
 	return string(e)
 }
 
-func (e *WeightUnitsEnum) UnmarshalGQL(v interface{}) error {
+func (e *WeightUnitsEnum) UnmarshalGraphQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -12286,8 +9751,4 @@ func (e *WeightUnitsEnum) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("%s is not a valid WeightUnitsEnum", str)
 	}
 	return nil
-}
-
-func (e WeightUnitsEnum) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
 }

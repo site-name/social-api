@@ -6,12 +6,12 @@ type ExportProductsFilterOptions struct {
 	Scope  string // all or ids or filter
 	Filter *struct {
 		IsPublished *bool
-		Collections []*string
-		Categories  []*string
+		Collections []string
+		Categories  []string
 		HasCategory *bool
 		Attributes  []*struct {
 			Slug        string
-			Values      []*string
+			Values      []string
 			ValuesRange *struct {
 				Gte *int32
 				Lte *int32
@@ -47,9 +47,9 @@ type ExportProductsFilterOptions struct {
 			Gte *float64
 			Lte *float64
 		}
-		ProductTypes          []*string
+		ProductTypes          []string
 		GiftCard              *bool
-		Ids                   []*string
+		Ids                   []string
 		HasPreorderedVariants *bool
 		Channel               *string
 	}

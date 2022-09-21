@@ -1044,7 +1044,6 @@ func (us *SqlUserStore) InferSystemInstallDate() (int64, error) {
 }
 
 func (us *SqlUserStore) GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*model.UserForIndexing, error) {
-
 	panic("not implemented")
 }
 
@@ -1054,12 +1053,10 @@ func (us *SqlUserStore) PromoteGuestToUser(userId string) error {
 
 func (us *SqlUserStore) DemoteUserToGuest(userID string) (*model.User, error) {
 	panic("not implemented")
-
 }
 
 func (us *SqlUserStore) GetKnownUsers(userId string) ([]string, error) {
 	panic("not implemented")
-
 }
 
 func (us *SqlUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*model.User, error) {
@@ -1071,7 +1068,7 @@ func (us *SqlUserStore) UserByOrderID(orderID string) (*model.User, error) {
 	var res model.User
 	err := us.GetReplicaX().Get(
 		&res,
-		"SELECT * FROM "+store.UserTableName+" WHERE Id = (SELECT UserID FROM Orders WHERE Id = :OrderID)",
+		"SELECT * FROM "+store.UserTableName+" WHERE Id = (SELECT UserID FROM Orders WHERE Id = ?)",
 		orderID,
 	)
 

@@ -10,8 +10,7 @@ extend type Query {
   user(id: String, email: String): User
 }
 
-
-type User  {
+type User {
   id: String!
   lastLogin: DateTime
   email: String!
@@ -26,17 +25,17 @@ type User  {
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   addresses: [Address]
-  checkoutTokens(channel: String): [String!]! # [] => []!
+  checkoutTokens(channel: String): [String!]!
   giftCards(before: String, after: String, first: Int, last: Int): GiftCardCountableConnection # giftCards(before: String, after: String, first: Int, last: Int): GiftCardCountableConnection
   orders(before: String, after: String, first: Int, last: Int): OrderCountableConnection # orders(before: String, after: String, first: Int, last: Int): OrderCountableConnection
-  userPermissions: [UserPermission]! # [] => []!
-  permissionGroups: [Group]! # [] => []!
-  editableGroups: [Group]! # [] => []!
+  userPermissions: [UserPermission]!
+  permissionGroups: [Group]!
+  editableGroups: [Group]!
   avatar(size: Int): Image
-  events: [CustomerEvent]! #[] => []!
-  storedPaymentSources(channel: String): [PaymentSource]! #[] => []!
+  events: [CustomerEvent]!
+  storedPaymentSources(channel: String): [PaymentSource]!
   languageCode: LanguageCodeEnum!
-  wishlist: Wishlist
+  # wishlist: Wishlist
 }
 
 type UserPermission {
