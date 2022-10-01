@@ -21,8 +21,6 @@ type GiftcardService interface {
 	BulkUpsertGiftcardEvents(transaction store_iface.SqlxTxExecutor, events []*model.GiftCardEvent) ([]*model.GiftCardEvent, *model.AppError)
 	// CalculateExpiryDate calculate expiry date based on giftcard settings.
 	CalculateExpiryDate(shopSettings *model.Shop) *time.Time
-	// CommonCreateGiftcardEvent is common method for creating giftcard events
-	CommonCreateGiftcardEvent(giftcardID, userID string, parameters model.StringMap, Type string) (*model.GiftCardEvent, *model.AppError)
 	// CreateGiftCardCheckout create a new giftcard-checkout relation and returns it
 	CreateGiftCardCheckout(giftcardID string, checkoutToken string) (*model.GiftCardCheckout, *model.AppError)
 	// DeleteGiftCardCheckout drops a giftcard-checkout relation

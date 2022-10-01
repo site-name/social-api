@@ -78,6 +78,8 @@ func (api *API) graphql(c *web.Context, w http.ResponseWriter, r *http.Request) 
 	reqCtx := r.Context()
 	reqCtx = context.WithValue(reqCtx, WebCtx, c)
 
+	reqCtx = context.WithValue(reqCtx, DataLoaderCtx, dataloaders)
+
 	response = api.schema.Exec(reqCtx, params.Query, params.OperationName, params.Variables)
 
 	if len(response.Errors) > 0 {

@@ -8,11 +8,6 @@ import (
 	"github.com/sitename/sitename/store/store_iface"
 )
 
-// CommonCreateGiftcardEvent is common method for creating giftcard events
-func (s *ServiceGiftcard) CommonCreateGiftcardEvent(giftcardID, userID string, parameters model.StringMap, Type string) (*model.GiftCardEvent, *model.AppError) {
-	panic("not implemented")
-}
-
 // GiftcardEventsByOptions returns a list of giftcard events filtered using given options
 func (s *ServiceGiftcard) GiftcardEventsByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, *model.AppError) {
 	events, err := s.srv.Store.GiftcardEvent().FilterByOptions(options)
