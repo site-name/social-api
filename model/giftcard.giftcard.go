@@ -53,7 +53,7 @@ type GiftCard struct {
 	CurrentBalance       *goprices.Money  `json:"current_balance,omitempty" db:"-"`
 	ModelMetadata
 
-	populatedNonDBFields bool `json:"-" db:"_"`
+	populatedNonDBFields bool `json:"-" db:"-"`
 }
 
 // GiftCardFilterOption is used to buil sql queries
@@ -84,6 +84,9 @@ func (g Giftcards) IDs() []string {
 }
 
 func (gc *GiftCard) DisplayCode() string {
+	if len(gc.Code) <= 4 {
+		return gc.Code
+	}
 	return "****" + gc.Code[len(gc.Code)-4:]
 }
 

@@ -4,8 +4,11 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
+	"github.com/graph-gophers/dataloader/v7"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -27,7 +30,6 @@ func (a *Address) Country(ctx context.Context) (*CountryDisplay, error) {
 	return &CountryDisplay{
 		Code:    a.Address.Country,
 		Country: model.Countries[strings.ToUpper(a.Address.Country)],
-		Vat:     nil,
 	}, nil
 }
 
@@ -89,18 +91,8 @@ func SystemUserToGraphqlUser(u *model.User) *User {
 		res.LastLogin = &DateTime{util.TimeFromMillis(u.LastActivityAt)}
 	}
 
-	for key, value := range u.Metadata {
-		res.Metadata = append(res.Metadata, &MetadataItem{
-			Key:   key,
-			Value: value,
-		})
-	}
-	for key, value := range u.PrivateMetadata {
-		res.PrivateMetadata = append(res.PrivateMetadata, &MetadataItem{
-			Key:   key,
-			Value: value,
-		})
-	}
+	res.Metadata = MetadataToSlice[string](u.Metadata)
+	res.PrivateMetadata = MetadataToSlice[string](u.PrivateMetadata)
 
 	return res
 }
@@ -179,4 +171,68 @@ func (u *User) UserPermissions(ctx context.Context) ([]*UserPermission, error) {
 
 func (u *User) Avatar(ctx context.Context) (*Image, error) {
 	panic("not implemented")
+}
+
+func graphqlAddressesLoader(ctx context.Context, keys []string) []*dataloader.Result[*Address] {
+	var (
+		res       []*dataloader.Result[*Address]
+		addresses []*model.Address
+		appErr    *model.AppError
+	)
+
+	var webCtx, err = GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errLabel
+	}
+
+	addresses, appErr = webCtx.App.Srv().AccountService().AddressesByOption(&model.AddressFilterOption{
+		Id: squirrel.Eq{store.AddressTableName + ".Id": keys},
+	})
+	if appErr != nil {
+		err = appErr
+		goto errLabel
+	}
+
+	for _, addr := range addresses {
+		if addr != nil {
+			res = append(res, &dataloader.Result[*Address]{Data: &Address{*addr}})
+		}
+	}
+	return res
+
+errLabel:
+	for range keys {
+		res = append(res, &dataloader.Result[*Address]{Error: err})
+	}
+	return res
+}
+
+func graphqlUsersLoader(ctx context.Context, keys []string) []*dataloader.Result[*User] {
+	var (
+		res    []*dataloader.Result[*User]
+		users  []*model.User
+		appErr *model.AppError
+	)
+
+	var webCtx, err = GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	users, appErr = webCtx.App.Srv().AccountService().GetUsersByIds(keys, &store.UserGetByIdsOpts{})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, user := range users {
+		res = append(res, &dataloader.Result[*User]{Data: SystemUserToGraphqlUser(user)})
+	}
+	return res
+
+errorLabel:
+	for range keys {
+		res = append(res, &dataloader.Result[*User]{Error: err})
+	}
+	return res
 }

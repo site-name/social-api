@@ -8,6 +8,7 @@ import (
 	"github.com/graph-gophers/graphql-go"
 	gqlerrors "github.com/graph-gophers/graphql-go/errors"
 	"github.com/pkg/errors"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/web"
@@ -17,6 +18,10 @@ type graphQLInput struct {
 	Query         string         `json:"query"`
 	OperationName string         `json:"operationName"`
 	Variables     map[string]any `json:"variables"`
+}
+
+type Resolver struct {
+	srv *app.Server
 }
 
 func (api *API) InitGraphql() error {

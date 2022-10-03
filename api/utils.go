@@ -65,3 +65,20 @@ func GetContextValue[T any](ctx context.Context, key CTXKey) (T, error) {
 
 	return c, nil
 }
+
+func MetadataToSlice[T any](m map[string]T) []*MetadataItem {
+	res := []*MetadataItem{}
+
+	if len(m) == 0 {
+		return res
+	}
+
+	for key, value := range m {
+		res = append(res, &MetadataItem{
+			Key:   key,
+			Value: fmt.Sprintf("%v", value),
+		})
+	}
+
+	return res
+}
