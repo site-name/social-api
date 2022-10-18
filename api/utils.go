@@ -82,3 +82,10 @@ func MetadataToSlice[T any](m map[string]T) []*MetadataItem {
 
 	return res
 }
+
+type GraphqlFilter struct {
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
+}

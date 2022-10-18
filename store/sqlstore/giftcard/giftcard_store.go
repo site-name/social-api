@@ -152,6 +152,9 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecuto
 	if option.CreatedByID != nil {
 		query = query.Where(option.CreatedByID)
 	}
+	if option.UsedByID != nil {
+		query = query.Where(option.UsedByID)
+	}
 	if option.Code != nil {
 		query = query.Where(option.Code)
 	}

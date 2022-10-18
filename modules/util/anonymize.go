@@ -4,9 +4,18 @@ import (
 	"strings"
 )
 
+// ObfuscateEmail hides away most of an email, prior to @ and returns the result
+//
+// E.g:
+//
+//	ObfuscateEmail("helloYou@gmail.com") == "h...@gmail.com"
 func ObfuscateEmail(email string) string {
-	splitString := strings.Split(email, "@")
-	return splitString[0][:1] + "...@" + splitString[1]
+	if !strings.Contains(email, "@") {
+		return ObfuscateString(email, false)
+	}
+
+	split := strings.SplitN(email, "@", 2)
+	return split[0][:1] + "...@" + split[1]
 }
 
 func ObfuscateString(value string, isPhone bool) string {

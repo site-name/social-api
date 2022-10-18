@@ -145,11 +145,11 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 	panic("not implemented")
 }
 
-func (u *User) GiftCards(ctx context.Context) (*GiftCardCountableConnection, error) {
+func (u *User) GiftCards(ctx context.Context, args GraphqlFilter) (*GiftCardCountableConnection, error) {
 	panic("not implemented")
 }
 
-func (u *User) Orders(ctx context.Context) (*OrderCountableConnection, error) {
+func (u *User) Orders(ctx context.Context, args GraphqlFilter) (*OrderCountableConnection, error) {
 	panic("not implemented")
 }
 
