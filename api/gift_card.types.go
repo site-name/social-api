@@ -3,14 +3,120 @@ package api
 import (
 	"context"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
+
+func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCardEvent {
+	if evt == nil {
+		return nil
+	}
+
+	res := new(GiftCardEvent)
+	res.ID = evt.Id
+	if evt.Date != 0 {
+		res.Date = &DateTime{util.TimeFromMillis(evt.Date)}
+	}
+	typ := GiftCardEventsEnum(strings.ToUpper(string(evt.Type)))
+	res.Type = &typ
+
+	msg, ok := evt.Parameters["message"]
+	if str, strOk := msg.(string); ok && strOk {
+		res.Message = &str
+	}
+
+	email, ok := evt.Parameters["email"]
+	if str, strOk := email.(string); ok && strOk {
+		res.Email = &str
+	}
+
+	orderID, ok := evt.Parameters["order_id"]
+	if str, strOk := orderID.(string); ok && strOk {
+		res.OrderID = &str
+		res.OrderNumber = &str
+	}
+
+	tag, ok := evt.Parameters["tag"]
+	if str, strOk := tag.(string); ok && strOk {
+		res.Tag = &str
+	}
+
+	oldTag, ok := evt.Parameters["old_tag"]
+	if str, strOk := oldTag.(string); ok && strOk {
+		res.OldTag = &str
+	}
+
+	balance, ok := evt.Parameters["balance"]
+	if ok && balance != nil {
+		balanceMap, ok1 := balance.(map[string]any)
+		if ok1 {
+			currency, ok2 := balanceMap["currency"]
+			if ok2 {
+				strCurrency := currency.(string)
+
+				for index, field := range []string{"initial_balance", "old_initial_balance", "current_balance", "old_current_balance"} {
+					amount, ok3 := balanceMap[field]
+
+					if ok3 && amount != nil {
+
+						var floatValue float64
+
+						switch t := amount.(type) {
+						case int:
+							floatValue = float64(t)
+						case float64:
+							floatValue = t
+						case decimal.Decimal:
+							floatValue, _ = t.Float64()
+						case *decimal.Decimal:
+							floatValue, _ = t.Float64()
+						}
+
+						res.Balance = new(GiftCardEventBalance)
+						switch index {
+						case 0:
+							res.Balance.InitialBalance = &Money{strCurrency, floatValue}
+						case 1:
+							res.Balance.OldInitialBalance = &Money{strCurrency, floatValue}
+						case 2:
+							res.Balance.CurrentBalance = &Money{strCurrency, floatValue}
+						case 4:
+							res.Balance.OldCurrentBalance = &Money{strCurrency, floatValue}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	for _, key := range []string{"expiry_date", "old_expiry_date"} {
+		expiryDate, ok := evt.Parameters[key]
+
+		if ok && expiryDate != nil {
+			switch t := expiryDate.(type) {
+			case string:
+				tim, err := time.Parse("2006-01-02", t)
+				if err == nil {
+					res.ExpiryDate = &Date{DateTime{tim}}
+				}
+			case time.Time:
+				res.ExpiryDate = &Date{DateTime{util.StartOfDay(t)}}
+			case *time.Time:
+				res.ExpiryDate = &Date{DateTime{util.StartOfDay(*t)}}
+			}
+		}
+	}
+
+	return res
+}
 
 func SystemGiftcardToGraphqlGiftcard(gc *model.GiftCard) *GiftCard {
 	res := new(GiftCard)
@@ -27,6 +133,7 @@ func SystemGiftcardToGraphqlGiftcard(gc *model.GiftCard) *GiftCard {
 	res.code = gc.Code
 	res.usedByID = gc.UsedByID
 	res.createdByID = gc.CreatedByID
+	res.productID = gc.ProductID
 
 	if gc.ExpiryDate != nil {
 		res.ExpiryDate = &Date{
@@ -56,6 +163,32 @@ func SystemGiftcardToGraphqlGiftcard(gc *model.GiftCard) *GiftCard {
 	res.PrivateMetadata = MetadataToSlice(gc.PrivateMetadata)
 
 	return res
+}
+
+func (g *GiftCard) Product(ctx context.Context) (*Product, error) {
+	if g.productID == nil {
+		return nil, nil
+	}
+
+	return dataloaders.productsByIDs.Load(ctx, *g.productID)()
+}
+
+func (g *GiftCard) Events(ctx context.Context) ([]*GiftCardEvent, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	// check if current user has permission to manage this giftcard
+	if embedCtx.App.Srv().
+		AccountService().
+		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageGiftcard) {
+
+		// dataloaders.giftcardEventsByGiftcardIDs.Load()()
+		panic("not implemented")
+	}
+
+	return nil, model.NewAppError("giftcard.Events", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 }
 
 func (g *GiftCard) CreatedByEmail(ctx context.Context) (*string, error) {
@@ -240,6 +373,10 @@ func (g *GiftCard) Code(ctx context.Context) (string, error) {
 	return resolveCode(user)
 }
 
+func (g *GiftCard) BoughtInChannel(ctx context.Context) {
+	panic("not implemented")
+}
+
 func graphqlGiftcardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[*GiftCard] {
 	var (
 		res       []*dataloader.Result[*GiftCard]
@@ -270,6 +407,40 @@ func graphqlGiftcardsByUserLoader(ctx context.Context, userIDs []string) []*data
 errorLabel:
 	for range userIDs {
 		res = append(res, &dataloader.Result[*GiftCard]{Error: err})
+	}
+	return res
+}
+
+func graphqlGiftcardEventsByGiftcardIDsLoader(ctx context.Context, giftcardIDs []string) []*dataloader.Result[*GiftCardEvent] {
+	var (
+		res    []*dataloader.Result[*GiftCardEvent]
+		appErr *model.AppError
+		events []*model.GiftCardEvent
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	events, appErr = embedCtx.App.Srv().
+		GiftcardService().
+		GiftcardEventsByOptions(&model.GiftCardEventFilterOption{
+			GiftcardID: squirrel.Eq{store.GiftcardTableName + ".GiftcardID": giftcardIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, evt := range events {
+		res = append(res, &dataloader.Result[*GiftCardEvent]{Data: SystemGiftcardEventToGraphqlGiftcardEvent(evt)})
+	}
+	return res
+
+errorLabel:
+	for range giftcardIDs {
+		res = append(res, &dataloader.Result[*GiftCardEvent]{Error: err})
 	}
 	return res
 }

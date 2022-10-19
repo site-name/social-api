@@ -147,6 +147,9 @@ func (gs *SqlGiftcardEventStore) FilterByOptions(options *model.GiftCardEventFil
 	if options.Parameters != nil {
 		query = query.Where(options.Parameters)
 	}
+	if options.GiftcardID != nil {
+		query = query.Where(options.GiftcardID)
+	}
 
 	queryString, args, err := query.ToSql()
 	if err != nil {

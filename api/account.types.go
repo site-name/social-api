@@ -19,7 +19,7 @@ type Address struct {
 // SystemAddressToGraphqlAddress convert single database address to single graphql address
 func SystemAddressToGraphqlAddress(address *model.Address) *Address {
 	if address == nil {
-		return new(Address)
+		return nil
 	}
 	return &Address{
 		Address: *address,
@@ -91,8 +91,8 @@ func SystemUserToGraphqlUser(u *model.User) *User {
 		res.LastLogin = &DateTime{util.TimeFromMillis(u.LastActivityAt)}
 	}
 
-	res.Metadata = MetadataToSlice[string](u.Metadata)
-	res.PrivateMetadata = MetadataToSlice[string](u.PrivateMetadata)
+	res.Metadata = MetadataToSlice(u.Metadata)
+	res.PrivateMetadata = MetadataToSlice(u.PrivateMetadata)
 
 	return res
 }

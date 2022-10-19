@@ -1625,11 +1625,12 @@ type GiftCard struct {
 	Metadata        []*MetadataItem `json:"metadata"`
 	DisplayCode     string          `json:"displayCode"`
 
-	createdByEmail *string `json:"-"`
-	usedByEmail    *string `json:"-"`
-	code           string  `json:"-"`
-	usedByID       *string `json:"-"`
-	createdByID    *string `json:"-"`
+	createdByEmail *string
+	usedByEmail    *string
+	code           string
+	usedByID       *string
+	createdByID    *string
+	productID      *string
 
 	// Code            string           `json:"code"`
 	// CreatedByEmail  *string          `json:"createdByEmail"`
@@ -1718,11 +1719,11 @@ type GiftCardError struct {
 }
 
 type GiftCardEvent struct {
-	ID            string                `json:"id"`
-	Date          *DateTime             `json:"date"`
-	Type          *GiftCardEventsEnum   `json:"type"`
-	User          *User                 `json:"user"`
-	App           *App                  `json:"app"`
+	ID   string              `json:"id"`
+	Date *DateTime           `json:"date"`
+	Type *GiftCardEventsEnum `json:"type"`
+	// User          *User                 `json:"user"`
+	// App           *App                  `json:"app"`
 	Message       *string               `json:"message"`
 	Email         *string               `json:"email"`
 	OrderID       *string               `json:"orderId"`

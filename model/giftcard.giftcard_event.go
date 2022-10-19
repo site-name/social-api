@@ -43,12 +43,14 @@ const (
 )
 
 type GiftCardEvent struct {
-	Id         string            `json:"id"`
-	Date       int64             `json:"date"` // not editable
-	Type       GiftcardEventType `json:"type"`
-	Parameters StringInterface   `json:"parameters"`  // default map[stirng]string{}
-	UserID     *string           `json:"user_id"`     // ON DELETE SET NULL
-	GiftcardID string            `json:"giftcard_id"` // ON DELETE CASCADE
+	Id   string            `json:"id"`
+	Date int64             `json:"date"` // not editable
+	Type GiftcardEventType `json:"type"`
+
+	// if "expiry_date" presents, should be has format of "2006-01-02" or of type time.Time
+	Parameters StringInterface `json:"parameters"`  // default map[stirng]string{}
+	UserID     *string         `json:"user_id"`     // ON DELETE SET NULL
+	GiftcardID string          `json:"giftcard_id"` // ON DELETE CASCADE
 }
 
 // GiftCardEventFilterOption is used for building squirrel queries.
@@ -56,6 +58,7 @@ type GiftCardEventFilterOption struct {
 	Id         squirrel.Sqlizer
 	Type       squirrel.Sqlizer
 	Parameters squirrel.Sqlizer
+	GiftcardID squirrel.Sqlizer
 }
 
 func (g *GiftCardEvent) IsValid() *AppError {
