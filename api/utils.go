@@ -21,7 +21,6 @@ type CTXKey int
 
 const (
 	WebCtx CTXKey = iota
-	DataLoaderCtx
 )
 
 // constructSchema constructs schema from *.graphql files

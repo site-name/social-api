@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -54,6 +55,12 @@ type CustomerEvent struct {
 	OrderID    *string         `json:"order_id"`
 	UserID     *string         `json:"user_id"`
 	Parameters StringInterface `json:"parameters"`
+}
+
+// CustomerEventFilterOptions used to filter customerEvent(s)
+type CustomerEventFilterOptions struct {
+	Id     squirrel.Sqlizer
+	UserID squirrel.Sqlizer
 }
 
 func (c *CustomerEvent) ToJSON() string {

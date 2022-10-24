@@ -1201,15 +1201,19 @@ type CustomerDelete struct {
 }
 
 type CustomerEvent struct {
-	ID        string              `json:"id"`
-	Date      *DateTime           `json:"date"`
-	Type      *CustomerEventsEnum `json:"type"`
-	User      *User               `json:"user"`
-	App       *App                `json:"app"`
-	Message   *string             `json:"message"`
-	Count     *int32              `json:"count"`
-	Order     *Order              `json:"order"`
-	OrderLine *OrderLine          `json:"orderLine"`
+	ID      string              `json:"id"`
+	Date    *DateTime           `json:"date"`
+	Type    *CustomerEventsEnum `json:"type"`
+	Message *string             `json:"message"`
+	Count   *int32              `json:"count"`
+
+	userID      *string
+	orderID     *string
+	orderLineID *string
+	// User      *User               `json:"user"`
+	// App       *App                `json:"app"`
+	// Order     *Order              `json:"order"`
+	// OrderLine *OrderLine          `json:"orderLine"`
 }
 
 func (CustomerEvent) IsNode() {}

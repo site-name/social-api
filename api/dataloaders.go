@@ -13,8 +13,9 @@ type Dataloaders struct {
 	giftcardEventsByGiftcardIDs *dataloader.Loader[string, *GiftCardEvent]
 
 	// account
-	addressesByIDs *dataloader.Loader[string, *Address]
-	usersByIDs     *dataloader.Loader[string, *User]
+	addressesByIDs          *dataloader.Loader[string, *Address]
+	usersByIDs              *dataloader.Loader[string, *User]
+	customerEventsByUserIDs *dataloader.Loader[string, []*CustomerEvent]
 
 	// product
 	productsByIDs *dataloader.Loader[string, *Product]
@@ -24,8 +25,10 @@ var dataloaders *Dataloaders
 
 func init() {
 	dataloaders = &Dataloaders{
-		addressesByIDs: dataloader.NewBatchedLoader(graphqlAddressesLoader, dataloader.WithBatchCapacity[string, *Address](200)),
-		usersByIDs:     dataloader.NewBatchedLoader(graphqlUsersLoader, dataloader.WithBatchCapacity[string, *User](200)),
+		// account
+		addressesByIDs:          dataloader.NewBatchedLoader(graphqlAddressesLoader, dataloader.WithBatchCapacity[string, *Address](200)),
+		usersByIDs:              dataloader.NewBatchedLoader(graphqlUsersLoader, dataloader.WithBatchCapacity[string, *User](200)),
+		customerEventsByUserIDs: dataloader.NewBatchedLoader(graphqlCustomerEventsByUserLoader, dataloader.WithBatchCapacity[string, []*CustomerEvent](200)),
 
 		// product
 		productsByIDs: dataloader.NewBatchedLoader(graphqlProductsByIDsLoader, dataloader.WithBatchCapacity[string, *Product](200)),

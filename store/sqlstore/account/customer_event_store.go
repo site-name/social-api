@@ -72,12 +72,30 @@ func (cs *SqlCustomerEventStore) Count() (int64, error) {
 	return count, nil
 }
 
-func (cs *SqlCustomerEventStore) GetEventsByUserID(userID string) ([]*model.CustomerEvent, error) {
-	var events []*model.CustomerEvent
-	err := cs.GetReplicaX().Select(&events, "SELECT * FROM "+store.CustomerEventTableName+" WHERE UserID = ?", userID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find customer events with userId=%s", userID)
+func (cs *SqlCustomerEventStore) FilterByOptions(options *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, error) {
+	if options == nil {
+		options = new(model.CustomerEventFilterOptions)
 	}
 
-	return events, nil
+	query := cs.GetQueryBuilder().Select("*").From(store.CustomerEventTableName)
+
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+	if options.UserID != nil {
+		query = query.Where(options.UserID)
+	}
+
+	str, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.CustomerEvent
+	err = cs.GetReplicaX().Select(&res, str, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find customer events by given options")
+	}
+
+	return res, nil
 }

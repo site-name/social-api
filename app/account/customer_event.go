@@ -1,15 +1,15 @@
 package account
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 )
 
-// CustomerEventsByUser returns customer events belong to given user
-func (a *ServiceAccount) CustomerEventsByUser(userID string) ([]*model.CustomerEvent, *model.AppError) {
-	events, err := a.srv.Store.CustomerEvent().GetEventsByUserID(userID)
+func (a *ServiceAccount) CustomerEventsByOptions(option *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, *model.AppError) {
+	events, err := a.srv.Store.CustomerEvent().FilterByOptions(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("CustomerEventsByUser", "app.account.customer_event_missing", err)
+		return nil, model.NewAppError("CustomerEventsByOptions", "app.customer_event.filter_by_opions.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return events, nil

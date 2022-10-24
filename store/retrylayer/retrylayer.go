@@ -3242,11 +3242,11 @@ func (s *RetryLayerCustomerEventStore) Count() (int64, error) {
 
 }
 
-func (s *RetryLayerCustomerEventStore) Get(id string) (*model.CustomerEvent, error) {
+func (s *RetryLayerCustomerEventStore) FilterByOptions(options *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, error) {
 
 	tries := 0
 	for {
-		result, err := s.CustomerEventStore.Get(id)
+		result, err := s.CustomerEventStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}
@@ -3262,11 +3262,11 @@ func (s *RetryLayerCustomerEventStore) Get(id string) (*model.CustomerEvent, err
 
 }
 
-func (s *RetryLayerCustomerEventStore) GetEventsByUserID(userID string) ([]*model.CustomerEvent, error) {
+func (s *RetryLayerCustomerEventStore) Get(id string) (*model.CustomerEvent, error) {
 
 	tries := 0
 	for {
-		result, err := s.CustomerEventStore.GetEventsByUserID(userID)
+		result, err := s.CustomerEventStore.Get(id)
 		if err == nil {
 			return result, nil
 		}

@@ -72,8 +72,12 @@ func Max[T Ordered](a ...T) T {
 		return res
 	}
 
+	if len(a) == 1 {
+		return a[0]
+	}
+
 	res := a[0]
-	for i := range a {
+	for i := range a[1:] {
 		if a[i] > res {
 			res = a[i]
 		}
@@ -89,8 +93,12 @@ func Min[T Ordered](a ...T) T {
 		return res
 	}
 
+	if len(a) == 1 {
+		return a[0]
+	}
+
 	res := a[0]
-	for i := range a {
+	for i := range a[1:] {
 		if a[i] < res {
 			res = a[i]
 		}
@@ -154,8 +162,8 @@ func ItemInSlice[T Ordered](item T, slice []T) bool {
 func RemoveItemsFromSlice[T Ordered](slice []T, items ...T) []T {
 	res := make([]T, 0, cap(slice))
 
-	for _, item := range slice {
-		if !ItemInSlice(item, items) {
+	for _, item := range items {
+		if !ItemInSlice(item, slice) {
 			res = append(res, item)
 		}
 	}
@@ -165,15 +173,15 @@ func RemoveItemsFromSlice[T Ordered](slice []T, items ...T) []T {
 
 // SlicesIntersection returns a slice of common items of both given slices
 func SlicesIntersection[T Ordered](slice1, slice2 []T) []T {
-	meetMap := map[T]bool{}
+	meetMap := map[T]struct{}{}
 	res := []T{}
 
 	for _, value := range slice1 {
-		meetMap[value] = true
+		meetMap[value] = struct{}{}
 	}
 
 	for _, value := range slice2 {
-		if meetMap[value] {
+		if _, ok := meetMap[value]; ok {
 			res = append(res, value)
 		}
 	}
@@ -214,11 +222,7 @@ func SumOfSlice[T Ordered](slice ...T) T {
 	}
 
 	sum := slice[0]
-	for i := range slice {
-		if i == 0 {
-			continue
-		}
-
+	for i := range slice[1:] {
 		sum += slice[i]
 	}
 

@@ -79,8 +79,7 @@ type AccountService interface {
 	CreateRole(role *model.Role) (*model.Role, *model.AppError)
 	// CreateSession try saving given session to the database. If success then add that session to cache.
 	CreateSession(session *model.Session) (*model.Session, *model.AppError)
-	// CustomerEventsByUser returns customer events belong to given user
-	CustomerEventsByUser(userID string) ([]*model.CustomerEvent, *model.AppError)
+	CustomerEventsByOptions(option *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, *model.AppError)
 	// CustomerPlacedOrderEvent creates an customer event, if given user is not valid, it returns immediately.
 	CustomerPlacedOrderEvent(user *model.User, orDer model.Order) (*model.CustomerEvent, *model.AppError)
 	// DeleteUserAddressRelation deletes 1 user-address relation from database

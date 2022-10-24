@@ -957,7 +957,7 @@ type (
 		Save(customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error)
 		Get(id string) (*model.CustomerEvent, error)
 		Count() (int64, error)
-		GetEventsByUserID(userID string) ([]*model.CustomerEvent, error) // get list of customer event belongs to given id
+		FilterByOptions(options *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, error)
 	}
 	StaffNotificationRecipientStore interface {
 		Save(notificationRecipient *model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error)

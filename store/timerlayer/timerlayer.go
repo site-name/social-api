@@ -2815,6 +2815,22 @@ func (s *TimerLayerCustomerEventStore) Count() (int64, error) {
 	return result, err
 }
 
+func (s *TimerLayerCustomerEventStore) FilterByOptions(options *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, error) {
+	start := timemodule.Now()
+
+	result, err := s.CustomerEventStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CustomerEventStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerCustomerEventStore) Get(id string) (*model.CustomerEvent, error) {
 	start := timemodule.Now()
 
@@ -2827,22 +2843,6 @@ func (s *TimerLayerCustomerEventStore) Get(id string) (*model.CustomerEvent, err
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("CustomerEventStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerCustomerEventStore) GetEventsByUserID(userID string) ([]*model.CustomerEvent, error) {
-	start := timemodule.Now()
-
-	result, err := s.CustomerEventStore.GetEventsByUserID(userID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CustomerEventStore.GetEventsByUserID", success, elapsed)
 	}
 	return result, err
 }
