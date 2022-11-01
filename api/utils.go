@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	goprices "github.com/site-name/go-prices"
 )
 
 //go:embed schemas
@@ -80,6 +81,46 @@ func MetadataToSlice[T any](m map[string]T) []*MetadataItem {
 	}
 
 	return res
+}
+
+func SystemMoneyToGraphqlMoney(money *goprices.Money) *Money {
+	if money == nil {
+		return nil
+	}
+
+	res := &Money{
+		Currency: money.Currency,
+	}
+	res.Amount, _ = money.Amount.Float64()
+
+	return res
+}
+
+func SystemTaxedMoneyToGraphqlTaxedMoney(money *goprices.TaxedMoney) *TaxedMoney {
+	if money == nil {
+		return nil
+	}
+
+	res := &TaxedMoney{
+		Currency: money.Currency,
+		Gross:    SystemMoneyToGraphqlMoney(money.Gross),
+		Net:      SystemMoneyToGraphqlMoney(money.Net),
+	}
+	tax, _ := money.Tax()
+	res.Tax = SystemMoneyToGraphqlMoney(tax)
+
+	return res
+}
+
+func SystemMoneyRangeToGraphqlMoneyRange(money *goprices.MoneyRange) *MoneyRange {
+	if money == nil {
+		return nil
+	}
+
+	return &MoneyRange{
+		Start: SystemMoneyToGraphqlMoney(money.Start),
+		Stop:  SystemMoneyToGraphqlMoney(money.Stop),
+	}
 }
 
 type GraphqlFilter struct {

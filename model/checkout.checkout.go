@@ -52,10 +52,11 @@ type Checkout struct {
 
 // CheckoutFilterOption is used for bulding sql queries
 type CheckoutFilterOption struct {
-	Token     squirrel.Sqlizer
-	UserID    squirrel.Sqlizer
-	ChannelID squirrel.Sqlizer
-	Extra     squirrel.Sqlizer
+	Token           squirrel.Sqlizer
+	UserID          squirrel.Sqlizer
+	ChannelID       squirrel.Sqlizer
+	Extra           squirrel.Sqlizer
+	ChannelIsActive *bool
 
 	SelectRelatedChannel bool
 	Limit                int

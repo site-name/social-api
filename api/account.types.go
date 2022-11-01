@@ -25,9 +25,7 @@ func SystemAddressToGraphqlAddress(address *model.Address) *Address {
 	if address == nil {
 		return nil
 	}
-	return &Address{
-		Address: *address,
-	}
+	return &Address{*address}
 }
 
 func (a *Address) Country(ctx context.Context) (*CountryDisplay, error) {
@@ -112,6 +110,10 @@ errLabel:
 // -------------------------- User ------------------------------
 
 func SystemUserToGraphqlUser(u *model.User) *User {
+	if u == nil {
+		return nil
+	}
+
 	res := &User{
 		ID:                       u.Id,
 		Email:                    u.Email,
@@ -190,7 +192,21 @@ func (u *User) CheckoutTokens(ctx context.Context) ([]string, error) {
 }
 
 func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	addresses, appErr := embedCtx.App.Srv().AccountService().AddressesByUserId(u.ID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	res := make([]*Address, len(addresses), cap(addresses))
+	for idx := range addresses {
+		res[idx] = SystemAddressToGraphqlAddress(addresses[idx])
+	}
+	return res, nil
 }
 
 func (u *User) GiftCards(ctx context.Context, args GraphqlFilter) (*GiftCardCountableConnection, error) {

@@ -20,12 +20,6 @@ const (
 	ORDER_LINE_UNIT_DISCOUNT_TYPE_MAX_LENGTH = 10
 )
 
-// valid values for order line's unit discount type
-const (
-	FIXED_      = "fixed"
-	PERCENTAGE_ = "percentage"
-)
-
 var UnitDiscountTypeStrings = map[string]string{
 	FIXED:      "fixed",
 	PERCENTAGE: "%",

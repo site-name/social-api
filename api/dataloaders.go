@@ -4,6 +4,8 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 )
 
+const batchCapacity = 200
+
 // dataloadersMap contains dataloaders for system
 //
 // This variable gets populated during package initialization (init() function)
@@ -18,7 +20,8 @@ type Dataloaders struct {
 	customerEventsByUserIDs *dataloader.Loader[string, []*CustomerEvent]
 
 	// product
-	productsByIDs *dataloader.Loader[string, *Product]
+	productsByIDs        *dataloader.Loader[string, *Product]
+	productVariantsByIDs *dataloader.Loader[string, *ProductVariant]
 }
 
 var dataloaders *Dataloaders
@@ -26,15 +29,16 @@ var dataloaders *Dataloaders
 func init() {
 	dataloaders = &Dataloaders{
 		// account
-		addressesByIDs:          dataloader.NewBatchedLoader(graphqlAddressesLoader, dataloader.WithBatchCapacity[string, *Address](200)),
-		usersByIDs:              dataloader.NewBatchedLoader(graphqlUsersLoader, dataloader.WithBatchCapacity[string, *User](200)),
-		customerEventsByUserIDs: dataloader.NewBatchedLoader(graphqlCustomerEventsByUserLoader, dataloader.WithBatchCapacity[string, []*CustomerEvent](200)),
+		addressesByIDs:          dataloader.NewBatchedLoader(graphqlAddressesLoader, dataloader.WithBatchCapacity[string, *Address](batchCapacity)),
+		usersByIDs:              dataloader.NewBatchedLoader(graphqlUsersLoader, dataloader.WithBatchCapacity[string, *User](batchCapacity)),
+		customerEventsByUserIDs: dataloader.NewBatchedLoader(graphqlCustomerEventsByUserLoader, dataloader.WithBatchCapacity[string, []*CustomerEvent](batchCapacity)),
 
 		// product
-		productsByIDs: dataloader.NewBatchedLoader(graphqlProductsByIDsLoader, dataloader.WithBatchCapacity[string, *Product](200)),
+		productsByIDs:        dataloader.NewBatchedLoader(graphqlProductsByIDsLoader, dataloader.WithBatchCapacity[string, *Product](batchCapacity)),
+		productVariantsByIDs: dataloader.NewBatchedLoader(graphqlProductVariantsByIDsLoader, dataloader.WithBatchCapacity[string, *ProductVariant](batchCapacity)),
 
 		// giftcard
-		giftcardEventsByGiftcardIDs: dataloader.NewBatchedLoader(graphqlGiftcardEventsByGiftcardIDsLoader, dataloader.WithBatchCapacity[string, *GiftCardEvent](200)),
-		giftcardsByUser:             dataloader.NewBatchedLoader(graphqlGiftcardsByUserLoader, dataloader.WithBatchCapacity[string, *GiftCard](200)),
+		giftcardEventsByGiftcardIDs: dataloader.NewBatchedLoader(graphqlGiftcardEventsByGiftcardIDsLoader, dataloader.WithBatchCapacity[string, *GiftCardEvent](batchCapacity)),
+		giftcardsByUser:             dataloader.NewBatchedLoader(graphqlGiftcardsByUserLoader, dataloader.WithBatchCapacity[string, *GiftCard](batchCapacity)),
 	}
 }

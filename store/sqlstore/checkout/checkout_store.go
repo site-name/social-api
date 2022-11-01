@@ -182,6 +182,10 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *model.CheckoutFilte
 		andCondition = append(andCondition, option.ChannelID)
 	}
 
+	if option.ChannelIsActive != nil {
+		andCondition = append(andCondition, squirrel.Expr("Channels.IsActive = ?", *option.ChannelIsActive))
+	}
+
 	if statementType == slect {
 		selectFields := cs.ModelFields(store.CheckoutTableName + ".")
 		if option.SelectRelatedChannel {
@@ -194,7 +198,7 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *model.CheckoutFilte
 			Where(andCondition).
 			OrderBy(store.TableOrderingMap[store.CheckoutTableName])
 
-		if option.SelectRelatedChannel {
+		if option.SelectRelatedChannel || option.ChannelIsActive != nil {
 			query = query.InnerJoin(store.ChannelTableName + " ON Checkouts.ChannelID = Channels.Id")
 		}
 

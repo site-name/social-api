@@ -2425,19 +2425,21 @@ type OrderLine struct {
 	QuantityFulfilled     int32                  `json:"quantityFulfilled"`
 	UnitDiscountReason    *string                `json:"unitDiscountReason"`
 	TaxRate               float64                `json:"taxRate"`
-	DigitalContentURL     *DigitalContentURL     `json:"digitalContentUrl"`
 	Thumbnail             *Image                 `json:"thumbnail"`
 	UnitPrice             *TaxedMoney            `json:"unitPrice"`
 	UndiscountedUnitPrice *TaxedMoney            `json:"undiscountedUnitPrice"`
 	UnitDiscount          *Money                 `json:"unitDiscount"`
 	UnitDiscountValue     PositiveDecimal        `json:"unitDiscountValue"`
 	TotalPrice            *TaxedMoney            `json:"totalPrice"`
-	Variant               *ProductVariant        `json:"variant"`
 	TranslatedProductName string                 `json:"translatedProductName"`
 	TranslatedVariantName string                 `json:"translatedVariantName"`
-	Allocations           []*Allocation          `json:"allocations"`
 	QuantityToFulfill     int32                  `json:"quantityToFulfill"`
 	UnitDiscountType      *DiscountValueTypeEnum `json:"unitDiscountType"`
+
+	variantID *string
+	// Allocations           []*Allocation          `json:"allocations"`
+	// DigitalContentURL     *DigitalContentURL     `json:"digitalContentUrl"`
+	// Variant               *ProductVariant        `json:"variant"`
 }
 
 func (OrderLine) IsNode() {}
