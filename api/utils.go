@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	"github.com/pkg/errors"
 	goprices "github.com/site-name/go-prices"
@@ -33,6 +34,9 @@ func constructSchema() (string, error) {
 
 	var builder strings.Builder
 	for _, entry := range entries {
+		if entry.IsDir() || !(strings.HasSuffix(entry.Name(), ".graphql") || strings.HasSuffix(entry.Name(), ".graphqls")) {
+			continue
+		}
 		data, err := assets.ReadFile(filepath.Join("schemas", entry.Name()))
 		if err != nil {
 			return "", errors.Wrapf(err, "failed to read schema file: %s", filepath.Join("schemas", entry.Name()))
@@ -57,13 +61,13 @@ func GetContextValue[T any](ctx context.Context, key CTXKey) (T, error) {
 		return res, fmt.Errorf("context doesn't store given key")
 	}
 
-	c, ok := value.(T)
+	cast, ok := value.(T)
 	if !ok {
 		var res T
 		return res, fmt.Errorf("found value has unexpected type: %T", value)
 	}
 
-	return c, nil
+	return cast, nil
 }
 
 func MetadataToSlice[T any](m map[string]T) []*MetadataItem {
@@ -121,6 +125,22 @@ func SystemMoneyRangeToGraphqlMoneyRange(money *goprices.MoneyRange) *MoneyRange
 		Start: SystemMoneyToGraphqlMoney(money.Start),
 		Stop:  SystemMoneyToGraphqlMoney(money.Stop),
 	}
+}
+
+func SystemLanguageToGraphqlLanguageCodeEnum(code string) LanguageCodeEnum {
+	res := LanguageCodeEnum(strings.Map(func(r rune) rune {
+		if r == rune('-') {
+			return rune('_')
+		}
+
+		return unicode.ToUpper(r)
+	}, code))
+
+	if !res.IsValid() {
+		return LanguageCodeEnumEn
+	}
+
+	return res
 }
 
 type GraphqlFilter struct {

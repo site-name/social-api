@@ -4,8 +4,11 @@ import (
 	"context"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/web"
 )
 
 // --------------------------- Order line -----------------------------
@@ -54,6 +57,35 @@ func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
 }
 
 func graphqlOrderLinesByIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*OrderLine] {
-	panic("not implemented")
+	var (
+		res        []*dataloader.Result[*OrderLine]
+		appErr     *model.AppError
+		orderLines []*model.OrderLine
+	)
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
 
+	orderLines, appErr = embedCtx.App.
+		Srv().
+		OrderService().
+		OrderLinesByOption(&model.OrderLineFilterOption{
+			Id: squirrel.Eq{store.OrderLineTableName + ".Id": orderLineIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, orderLine := range orderLines {
+		res = append(res, &dataloader.Result[*OrderLine]{Data: SystemOrderLineToGraphqlOrderLine(orderLine)})
+	}
+	return res
+
+errorLabel:
+	for range orderLineIDs {
+		res = append(res, &dataloader.Result[*OrderLine]{Error: err})
+	}
+	return res
 }

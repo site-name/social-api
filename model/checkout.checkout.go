@@ -126,8 +126,10 @@ func (c *Checkout) IsValid() *AppError {
 	return nil
 }
 
+// PopulateNonDbFields populates fields that are not saved to database.
+// But are made of other fields belong to this struct.
 func (c *Checkout) PopulateNonDbFields() {
-	if c.DiscountAmount != nil {
+	if c.DiscountAmount != nil && c.Currency != "" {
 		c.Discount = &goprices.Money{
 			Amount:   *c.DiscountAmount,
 			Currency: c.Currency,

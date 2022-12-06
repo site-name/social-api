@@ -119,6 +119,10 @@ func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCa
 }
 
 func SystemGiftcardToGraphqlGiftcard(gc *model.GiftCard) *GiftCard {
+	if gc == nil {
+		return nil
+	}
+
 	res := new(GiftCard)
 
 	gc.PopulateNonDbFields()
@@ -389,7 +393,9 @@ func graphqlGiftcardsByUserLoader(ctx context.Context, userIDs []string) []*data
 		goto errorLabel
 	}
 
-	giftcards, appErr = embedCtx.App.Srv().
+	giftcards, appErr = embedCtx.
+		App.
+		Srv().
 		GiftcardService().
 		GiftcardsByOption(nil, &model.GiftCardFilterOption{
 			UsedByID: squirrel.Eq{store.GiftcardTableName + ".UsedByID": userIDs},

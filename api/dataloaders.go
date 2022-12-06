@@ -22,6 +22,13 @@ type Dataloaders struct {
 	// product
 	productsByIDs        *dataloader.Loader[string, *Product]
 	productVariantsByIDs *dataloader.Loader[string, *ProductVariant]
+
+	// order
+	orderLinesByIDs *dataloader.Loader[string, *OrderLine]
+
+	// checkout
+	checkoutsByUserIDs              *dataloader.Loader[string, []*Checkout]
+	checkoutsByUserIDsAndChannelIDs *dataloader.Loader[string, []*Checkout]
 }
 
 var dataloaders *Dataloaders
@@ -40,5 +47,12 @@ func init() {
 		// giftcard
 		giftcardEventsByGiftcardIDs: dataloader.NewBatchedLoader(graphqlGiftcardEventsByGiftcardIDsLoader, dataloader.WithBatchCapacity[string, *GiftCardEvent](batchCapacity)),
 		giftcardsByUser:             dataloader.NewBatchedLoader(graphqlGiftcardsByUserLoader, dataloader.WithBatchCapacity[string, *GiftCard](batchCapacity)),
+
+		// order
+		orderLinesByIDs: dataloader.NewBatchedLoader(graphqlOrderLinesByIdLoader, dataloader.WithBatchCapacity[string, *OrderLine](batchCapacity)),
+
+		// checkout
+		checkoutsByUserIDs:              dataloader.NewBatchedLoader(graphqlCheckoutByUserLoader, dataloader.WithBatchCapacity[string, []*Checkout](batchCapacity)),
+		checkoutsByUserIDsAndChannelIDs: dataloader.NewBatchedLoader(graphqlCheckoutsByUserAndChannelLoader, dataloader.WithBatchCapacity[string, []*Checkout](batchCapacity)),
 	}
 }

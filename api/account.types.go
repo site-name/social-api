@@ -124,6 +124,7 @@ func SystemUserToGraphqlUser(u *model.User) *User {
 		LanguageCode:             LanguageCodeEnum(strings.ToUpper(strings.Join(strings.Split(u.Locale, "-"), "_"))),
 		DefaultShippingAddressID: u.DefaultShippingAddressID,
 		DefaultBillingAddressID:  u.DefaultBillingAddressID,
+		note:                     u.Note,
 	}
 
 	res.DateJoined = DateTime{util.TimeFromMillis(u.CreateAt)}
@@ -187,7 +188,25 @@ func (u *User) StoredPaymentSources(ctx context.Context) ([]*PaymentSource, erro
 	return nil, model.NewAppError("account.StoredPaymentSources", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 }
 
-func (u *User) CheckoutTokens(ctx context.Context) ([]string, error) {
+func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel string }) ([]string, error) {
+	// resolveCheckoutTokens := func(checkouts []*Checkout) []string {
+	// 	var res []string
+	// 	if len(checkouts) == 0 {
+	// 		return res
+	// 	}
+
+	// 	for _, ckout := range checkouts {
+	// 		if ckout != nil {
+	// 			res = append(res, ckout.Token)
+	// 		}
+	// 	}
+
+	// 	return res
+	// }
+
+	// if args.Channel == "" {
+	// 	// dataloaders
+	// }
 	panic("not implemented")
 }
 
@@ -197,7 +216,11 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 		return nil, err
 	}
 
-	addresses, appErr := embedCtx.App.Srv().AccountService().AddressesByUserId(u.ID)
+	addresses, appErr := embedCtx.
+		App.
+		Srv().
+		AccountService().
+		AddressesByUserId(u.ID)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -210,15 +233,51 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 }
 
 func (u *User) GiftCards(ctx context.Context, args GraphqlFilter) (*GiftCardCountableConnection, error) {
+	// dataloaders.giftcardsByUser.Load(ctx, u.ID)()
 	panic("not implemented")
 }
 
 func (u *User) Orders(ctx context.Context, args GraphqlFilter) (*OrderCountableConnection, error) {
+	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// resolveOrders := func(orders []*Order) {
+
+	// }
 	panic("not implemented")
 }
 
 func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !embedCtx.App.Srv().
+		AccountService().
+		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageUsers, model.PermissionManageStaff) {
+		return nil, model.NewAppError("user.Events", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	}
 	return dataloaders.customerEventsByUserIDs.Load(ctx, u.ID)()
+}
+
+func (u *User) Note(ctx context.Context) (string, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return "", err
+	}
+
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageUsers, model.PermissionManageStaff) {
+		return "", model.NewAppError("user.Note", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	}
+
+	if u.note != nil {
+		return *u.note, nil
+	}
+
+	return "", nil
 }
 
 func (u *User) EditableGroups(ctx context.Context) ([]*Group, error) {
@@ -399,5 +458,9 @@ func (c *CustomerEvent) User(ctx context.Context) (*User, error) {
 }
 
 func (c *CustomerEvent) OrderLine(ctx context.Context) (*OrderLine, error) {
-	panic("not implemented")
+	if c.orderLineID != nil {
+		return dataloaders.orderLinesByIDs.Load(ctx, *c.orderLineID)()
+	}
+
+	return nil, nil
 }

@@ -157,9 +157,6 @@ type App struct {
 	Extensions       []*AppExtension `json:"extensions"`
 }
 
-func (App) IsNode()               {}
-func (App) IsObjectWithMetadata() {}
-
 type AppActivate struct {
 	Errors []*AppError `json:"errors"`
 	App    *App        `json:"app"`
@@ -356,9 +353,6 @@ type Attribute struct {
 	StorefrontSearchPosition int32                              `json:"storefrontSearchPosition"`
 	WithChoices              bool                               `json:"withChoices"`
 }
-
-func (Attribute) IsNode()               {}
-func (Attribute) IsObjectWithMetadata() {}
 
 type AttributeBulkDelete struct {
 	Count  int32             `json:"count"`
@@ -653,9 +647,6 @@ type Category struct {
 	Translation     *CategoryTranslation         `json:"translation"`
 }
 
-func (Category) IsNode()               {}
-func (Category) IsObjectWithMetadata() {}
-
 type CategoryBulkDelete struct {
 	Count  int32           `json:"count"`
 	Errors []*ProductError `json:"errors"`
@@ -801,40 +792,6 @@ type ChannelUpdateInput struct {
 	AddShippingZones    []string     `json:"addShippingZones"`
 	RemoveShippingZones []string     `json:"removeShippingZones"`
 }
-
-type Checkout struct {
-	Created                   DateTime          `json:"created"`
-	LastChange                DateTime          `json:"lastChange"`
-	User                      *User             `json:"user"`
-	Channel                   *Channel          `json:"channel"`
-	BillingAddress            *Address          `json:"billingAddress"`
-	ShippingAddress           *Address          `json:"shippingAddress"`
-	Note                      string            `json:"note"`
-	Discount                  *Money            `json:"discount"`
-	DiscountName              *string           `json:"discountName"`
-	TranslatedDiscountName    *string           `json:"translatedDiscountName"`
-	VoucherCode               *string           `json:"voucherCode"`
-	GiftCards                 []*GiftCard       `json:"giftCards"`
-	ID                        string            `json:"id"`
-	PrivateMetadata           []*MetadataItem   `json:"privateMetadata"`
-	Metadata                  []*MetadataItem   `json:"metadata"`
-	AvailableShippingMethods  []*ShippingMethod `json:"availableShippingMethods"`
-	AvailableCollectionPoints []*Warehouse      `json:"availableCollectionPoints"`
-	AvailablePaymentGateways  []*PaymentGateway `json:"availablePaymentGateways"`
-	Email                     string            `json:"email"`
-	IsShippingRequired        bool              `json:"isShippingRequired"`
-	Quantity                  int32             `json:"quantity"`
-	Lines                     []*CheckoutLine   `json:"lines"`
-	ShippingPrice             *TaxedMoney       `json:"shippingPrice"`
-	DeliveryMethod            DeliveryMethod    `json:"deliveryMethod"`
-	SubtotalPrice             *TaxedMoney       `json:"subtotalPrice"`
-	Token                     string            `json:"token"`
-	TotalPrice                *TaxedMoney       `json:"totalPrice"`
-	LanguageCode              LanguageCodeEnum  `json:"languageCode"`
-}
-
-func (Checkout) IsNode()               {}
-func (Checkout) IsObjectWithMetadata() {}
 
 type CheckoutAddPromoCode struct {
 	Checkout *Checkout        `json:"checkout"`
@@ -993,9 +950,6 @@ type Collection struct {
 	Translation     *CollectionTranslation      `json:"translation"`
 	ChannelListings []*CollectionChannelListing `json:"channelListings"`
 }
-
-func (Collection) IsNode()               {}
-func (Collection) IsObjectWithMetadata() {}
 
 type CollectionAddProducts struct {
 	Collection *Collection        `json:"collection"`
@@ -1284,9 +1238,6 @@ type DigitalContent struct {
 	ProductVariant       *ProductVariant      `json:"productVariant"`
 }
 
-func (DigitalContent) IsNode()               {}
-func (DigitalContent) IsObjectWithMetadata() {}
-
 type DigitalContentCountableConnection struct {
 	PageInfo   *PageInfo                      `json:"pageInfo"`
 	Edges      []*DigitalContentCountableEdge `json:"edges"`
@@ -1558,9 +1509,6 @@ type Fulfillment struct {
 	StatusDisplay    *string            `json:"statusDisplay"`
 	Warehouse        *Warehouse         `json:"warehouse"`
 }
-
-func (Fulfillment) IsNode()               {}
-func (Fulfillment) IsObjectWithMetadata() {}
 
 type FulfillmentApprove struct {
 	Fulfillment *Fulfillment  `json:"fulfillment"`
@@ -1853,10 +1801,6 @@ type Invoice struct {
 	URL             *string         `json:"url"`
 }
 
-func (Invoice) IsObjectWithMetadata() {}
-func (Invoice) IsJob()                {}
-func (Invoice) IsNode()               {}
-
 type InvoiceCreate struct {
 	Errors  []*InvoiceError `json:"errors"`
 	Invoice *Invoice        `json:"invoice"`
@@ -1967,9 +1911,6 @@ type Menu struct {
 	Items           []*MenuItem     `json:"items"`
 }
 
-func (Menu) IsNode()               {}
-func (Menu) IsObjectWithMetadata() {}
-
 type MenuBulkDelete struct {
 	Count  int32        `json:"count"`
 	Errors []*MenuError `json:"errors"`
@@ -2034,9 +1975,6 @@ type MenuItem struct {
 	URL             *string              `json:"url"`
 	Translation     *MenuItemTranslation `json:"translation"`
 }
-
-func (MenuItem) IsNode()               {}
-func (MenuItem) IsObjectWithMetadata() {}
 
 type MenuItemBulkDelete struct {
 	Count  int32        `json:"count"`
@@ -2230,9 +2168,6 @@ type Order struct {
 	LanguageCodeEnum          LanguageCodeEnum        `json:"languageCodeEnum"`
 	Discounts                 []*OrderDiscount        `json:"discounts"`
 }
-
-func (Order) IsNode()               {}
-func (Order) IsObjectWithMetadata() {}
 
 type OrderAddNote struct {
 	Order  *Order        `json:"order"`
@@ -2598,9 +2533,6 @@ type Page struct {
 	Attributes      []*SelectedAttribute `json:"attributes"`
 }
 
-func (Page) IsNode()               {}
-func (Page) IsObjectWithMetadata() {}
-
 type PageAttributeAssign struct {
 	PageType *PageType    `json:"pageType"`
 	Errors   []*PageError `json:"errors"`
@@ -2741,9 +2673,6 @@ type PageType struct {
 	HasPages            *bool                         `json:"hasPages"`
 }
 
-func (PageType) IsNode()               {}
-func (PageType) IsObjectWithMetadata() {}
-
 type PageTypeBulkDelete struct {
 	Count  int32        `json:"count"`
 	Errors []*PageError `json:"errors"`
@@ -2833,9 +2762,6 @@ type Payment struct {
 	AvailableRefundAmount  *Money                  `json:"availableRefundAmount"`
 	CreditCard             *CreditCard             `json:"creditCard"`
 }
-
-func (Payment) IsNode()               {}
-func (Payment) IsObjectWithMetadata() {}
 
 type PaymentCapture struct {
 	Payment *Payment        `json:"payment"`
@@ -3056,9 +2982,6 @@ type Product struct {
 	AvailableForPurchase   *Date                    `json:"availableForPurchase"`
 	IsAvailableForPurchase *bool                    `json:"isAvailableForPurchase"`
 }
-
-func (Product) IsNode()               {}
-func (Product) IsObjectWithMetadata() {}
 
 type ProductAttributeAssign struct {
 	ProductType *ProductType    `json:"productType"`
@@ -3326,9 +3249,6 @@ type ProductType struct {
 	AvailableAttributes *AttributeCountableConnection `json:"availableAttributes"`
 }
 
-func (ProductType) IsNode()               {}
-func (ProductType) IsObjectWithMetadata() {}
-
 type ProductTypeBulkDelete struct {
 	Count  int32           `json:"count"`
 	Errors []*ProductError `json:"errors"`
@@ -3419,9 +3339,6 @@ type ProductVariant struct {
 	Stocks            []*Stock                        `json:"stocks"`
 	QuantityAvailable int32                           `json:"quantityAvailable"`
 }
-
-func (ProductVariant) IsNode()               {}
-func (ProductVariant) IsObjectWithMetadata() {}
 
 type ProductVariantBulkCreate struct {
 	Count           int32               `json:"count"`
@@ -3612,9 +3529,6 @@ type Sale struct {
 	Currency        *string                            `json:"currency"`
 }
 
-func (Sale) IsNode()               {}
-func (Sale) IsObjectWithMetadata() {}
-
 type SaleAddCatalogues struct {
 	Sale   *Sale            `json:"sale"`
 	Errors []*DiscountError `json:"errors"`
@@ -3773,10 +3687,6 @@ type ShippingMethod struct {
 	ExcludedProducts    *ProductCountableConnection     `json:"excludedProducts"`
 }
 
-func (ShippingMethod) IsDeliveryMethod()     {}
-func (ShippingMethod) IsNode()               {}
-func (ShippingMethod) IsObjectWithMetadata() {}
-
 type ShippingMethodChannelListing struct {
 	ID                string   `json:"id"`
 	Channel           *Channel `json:"channel"`
@@ -3911,9 +3821,6 @@ type ShippingZone struct {
 	Channels        []*Channel        `json:"channels"`
 	Description     *string           `json:"description"`
 }
-
-func (ShippingZone) IsNode()               {}
-func (ShippingZone) IsObjectWithMetadata() {}
 
 type ShippingZoneBulkDelete struct {
 	Count  int32            `json:"count"`
@@ -4304,6 +4211,7 @@ type User struct {
 	LanguageCode             LanguageCodeEnum `json:"languageCode"`
 	DefaultShippingAddressID *string          `json:"defaultShippingAddressID"`
 	DefaultBillingAddressID  *string          `json:"defaultBillingAddressID"`
+	note                     *string
 	// DefaultShippingAddress *Address         `json:"defaultShippingAddress"`
 	// DefaultBillingAddress  *Address         `json:"defaultBillingAddress"`
 	// StoredPaymentSources   []*PaymentSource             `json:"storedPaymentSources"`
@@ -4428,9 +4336,6 @@ type Voucher struct {
 	MinSpent                 *Money                             `json:"minSpent"`
 	ChannelListings          []*VoucherChannelListing           `json:"channelListings"`
 }
-
-func (Voucher) IsNode()               {}
-func (Voucher) IsObjectWithMetadata() {}
 
 type VoucherAddCatalogues struct {
 	Voucher *Voucher         `json:"voucher"`
@@ -4566,10 +4471,6 @@ type Warehouse struct {
 	Metadata              []*MetadataItem                    `json:"metadata"`
 	ClickAndCollectOption WarehouseClickAndCollectOptionEnum `json:"clickAndCollectOption"`
 }
-
-func (Warehouse) IsDeliveryMethod()     {}
-func (Warehouse) IsNode()               {}
-func (Warehouse) IsObjectWithMetadata() {}
 
 type WarehouseCountableConnection struct {
 	PageInfo   *PageInfo                 `json:"pageInfo"`
