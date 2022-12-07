@@ -40,6 +40,13 @@ type ProductVariant  {
   digitalContent: DigitalContent
   stocks(address: AddressInput, countryCode: CountryCode): [Stock]
   quantityAvailable(address: AddressInput, countryCode: CountryCode): Int!
+  preorder: PreorderData
+}
+
+type PreorderData {
+  globalThreshold: Int
+  globalSoldUnits: Int!
+  endDate: DateTime
 }
 
 type ProductVariantReorder {

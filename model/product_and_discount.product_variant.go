@@ -37,8 +37,9 @@ type ProductVariant struct {
 
 // ProductVariantFilterOption is used to build sql queries
 type ProductVariantFilterOption struct {
-	Id   squirrel.Sqlizer
-	Name squirrel.Sqlizer
+	Id        squirrel.Sqlizer
+	Name      squirrel.Sqlizer
+	ProductID squirrel.Sqlizer
 
 	WishlistItemID squirrel.Sqlizer // INNER JOIN WishlistItemProductVariants ON (...) WHERE WishlistItemProductVariants.WishlistItemID ...
 	WishlistID     squirrel.Sqlizer // INNER JOIN WishlistItemProductVariants ON (...) INNER JOIN WishlistItems ON (...) WHERE WishlistItems.WishlistID ...

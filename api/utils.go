@@ -143,6 +143,16 @@ func SystemLanguageToGraphqlLanguageCodeEnum(code string) LanguageCodeEnum {
 	return res
 }
 
+func SystemWeightUnitToGrahpqlWeightUnit(code string) WeightUnitsEnum {
+	res := WeightUnitsEnum(strings.ToUpper(code))
+
+	if !res.IsValid() {
+		return WeightUnitsEnumKg
+	}
+
+	return res
+}
+
 type GraphqlFilter struct {
 	Before *string
 	After  *string

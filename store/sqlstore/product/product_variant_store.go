@@ -240,6 +240,9 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 	if option.Name != nil {
 		query = query.Where(option.Name)
 	}
+	if option.ProductID != nil {
+		query = query.Where(option.ProductID)
+	}
 
 	var joinedProductVariantChannelListingTable bool
 

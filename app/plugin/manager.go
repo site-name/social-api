@@ -67,7 +67,7 @@ func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManage
 			channelID = existingConfig.ChannelID
 		}
 
-		plugin := pluginInitObj.NewPluginFunc(&NewPluginConfig{
+		plugin := pluginInitObj.NewPluginFunc(&PluginConfig{
 			Manager:       manager,
 			Configuration: pluginConfig,
 			Active:        active,

@@ -1,7 +1,6 @@
 package interfaces
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/site-name/decimal"
@@ -42,7 +41,7 @@ type AType struct {
 }
 
 type BasePluginInterface interface {
-	fmt.Stringer
+	String() string
 	// Check if given plugin_id matches with the PLUGIN_ID of this plugin
 	CheckPluginId(pluginID string) bool
 	// Handle authentication request responsible for obtaining access tokens.

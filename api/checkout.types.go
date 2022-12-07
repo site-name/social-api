@@ -135,9 +135,13 @@ func (c *Checkout) GiftCards(ctx context.Context) ([]*GiftCard, error) {
 		return nil, err
 	}
 
-	giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(nil, &model.GiftCardFilterOption{
-		CheckoutToken: squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": c.Token},
-	})
+	giftcards, appErr := embedCtx.
+		App.
+		Srv().
+		GiftcardService().
+		GiftcardsByOption(nil, &model.GiftCardFilterOption{
+			CheckoutToken: squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": c.Token},
+		})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -165,7 +169,7 @@ func (c *Checkout) AvailablePaymentGateways(ctx context.Context) ([]*PaymentGate
 }
 
 func (c *Checkout) Lines(ctx context.Context) ([]*CheckoutLine, error) {
-	panic("not implemented")
+	return dataloaders.checkoutLinesByCheckoutTokens.Load(ctx, c.Token)()
 }
 
 func (c *Checkout) DeliveryMethod(ctx context.Context) (any, error) {

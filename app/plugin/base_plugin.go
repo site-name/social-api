@@ -12,19 +12,20 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-var (
-	_ interfaces.BasePluginInterface = (*BasePlugin)(nil)
-)
-
 const ErrorPluginbMethodNotImplemented = "app.plugin.method_not_implemented.app_error"
 
-type NewPluginConfig struct {
+// PluginConfig contains configurations to initialize a new plugin
+type PluginConfig struct {
 	Active        bool
 	ChannelID     string
 	Configuration interfaces.PluginConfigurationType
 	Manager       *PluginManager
 }
 
+// type check
+var _ interfaces.BasePluginInterface = (*BasePlugin)(nil)
+
+// every newly added plugins must inherit from this one
 type BasePlugin struct {
 	Manifest *interfaces.PluginManifest
 
@@ -34,7 +35,7 @@ type BasePlugin struct {
 	Manager       *PluginManager
 }
 
-func NewBasePlugin(cfg *NewPluginConfig) *BasePlugin {
+func NewBasePlugin(cfg *PluginConfig) *BasePlugin {
 	manifest := &interfaces.PluginManifest{
 		ConfigStructure:         make(map[string]model.StringInterface),
 		ConfigurationPerChannel: true,
@@ -411,34 +412,40 @@ func (b *BasePlugin) UpdateConfigurationStructure(config []model.StringInterface
 		configStructure = make(map[string]model.StringInterface)
 	}
 
-	desiredConfigKeys := []string{}
+	desiredConfigKeysMap := map[string]struct{}{}
 	for key := range configStructure {
-		desiredConfigKeys = append(desiredConfigKeys, key)
+		if _, exist := desiredConfigKeysMap[key]; !exist {
+			desiredConfigKeysMap[key] = struct{}{}
+		}
 	}
-	desiredConfigKeys = util.Dedup(desiredConfigKeys)
 
 	for _, configField := range config {
-		if name, ok := configField["name"]; ok && !util.ItemInSlice(name.(string), desiredConfigKeys) {
-			continue
+		if name, ok := configField["name"]; ok {
+			if _, exist := desiredConfigKeysMap[name.(string)]; !exist {
+				continue
+			}
 		}
 
 		updatedConfiguration = append(updatedConfiguration, configField.DeepCopy())
 	}
 
-	configuredKeys := []string{}
+	configuredKeysMap := map[string]struct{}{}
 	for _, cfg := range updatedConfiguration {
-		configuredKeys = append(configuredKeys, cfg["name"].(string)) // name should exist
-	}
-	configuredKeys = util.Dedup(configuredKeys)
+		strName := cfg["name"].(string) // name should exist
 
-	missingKeys := []string{}
-	for _, value := range desiredConfigKeys {
-		if !util.ItemInSlice(value, configuredKeys) {
-			missingKeys = append(missingKeys, value)
+		if _, exist := configuredKeysMap[strName]; !exist {
+			configuredKeysMap[strName] = struct{}{}
 		}
 	}
 
-	if len(missingKeys) == 0 {
+	missingKeysMap := map[string]struct{}{} // items reside in desiredConfigKeys but not in configuredKeys
+	for key := range desiredConfigKeysMap {
+		if _, exist := configuredKeysMap[key]; !exist {
+			missingKeysMap[key] = struct{}{}
+		}
+	}
+
+	if len(missingKeysMap) == 0 {
 		return updatedConfiguration, nil
 	}
 
@@ -446,15 +453,10 @@ func (b *BasePlugin) UpdateConfigurationStructure(config []model.StringInterface
 		return updatedConfiguration, nil
 	}
 
-	updatedValues := []model.StringInterface{}
 	for _, item := range b.Manifest.DefaultConfiguration {
-		if util.ItemInSlice(item["name"].(string), missingKeys) {
-			updatedValues = append(updatedValues, item.DeepCopy())
+		if _, exist := missingKeysMap[item["name"].(string)]; exist {
+			updatedConfiguration = append(updatedConfiguration, item.DeepCopy())
 		}
-	}
-
-	if len(updatedValues) > 0 {
-		updatedConfiguration = append(updatedConfiguration, updatedValues...)
 	}
 
 	return updatedConfiguration, nil

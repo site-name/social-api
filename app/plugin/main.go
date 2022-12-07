@@ -6,13 +6,13 @@ import (
 )
 
 type pluginInitObjType struct {
-	NewPluginFunc func(cfg *NewPluginConfig) interfaces.BasePluginInterface
+	NewPluginFunc func(cfg *PluginConfig) interfaces.BasePluginInterface
 	Manifest      *interfaces.PluginManifest
 }
 
 var pluginInitObjects []pluginInitObjType
 
-func RegisterVatlayerPlugin(f func(cfg *NewPluginConfig) interfaces.BasePluginInterface, manifest *interfaces.PluginManifest) {
+func RegisterVatlayerPlugin(f func(cfg *PluginConfig) interfaces.BasePluginInterface, manifest *interfaces.PluginManifest) {
 	if f != nil && manifest != nil {
 		pluginInitObjects = append(pluginInitObjects, pluginInitObjType{
 			NewPluginFunc: f,

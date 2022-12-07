@@ -11,44 +11,43 @@ import (
 	"github.com/sitename/sitename/model"
 )
 
-var (
-	_ interfaces.BasePluginInterface = (*VatlayerPlugin)(nil)
+var manifest = &interfaces.PluginManifest{
+	PluginID:           "sitename.taxes.vatlayer",
+	PluginName:         "Vatlayer",
+	MetaCodeKey:        "vatlayer.code",
+	MetaDescriptionKey: "vatlayer.description",
+	DefaultConfiguration: []model.StringInterface{
+		{"name": "Access key", "value": nil},
+		{"name": "origin_country", "value": nil},
+		{"name": "countries_to_calculate_taxes_from_origin", "value": nil},
+		{"name": "excluded_countries", "value": nil},
+	},
+	ConfigStructure: map[string]model.StringInterface{
+		"origin_country": {
+			"type":      interfaces.STRING,
+			"help_text": "Country code in ISO format, required to calculate taxes for countries from `Countries for which taxes will be calculated from origin country`.",
+			"label":     "Origin country",
+		},
+		"countries_to_calculate_taxes_from_origin": {
+			"type":      interfaces.STRING,
+			"help_text": "List of destination countries (separated by comma), in ISO format which will use origin country to calculate taxes.",
+			"label":     "Countries for which taxes will be calculated from origin country",
+		},
+		"excluded_countries": {
+			"type":      interfaces.STRING,
+			"help_text": "List of countries (separated by comma), in ISO format for which no VAT should be added.",
+			"label":     "Countries for which no VAT will be added.",
+		},
+		"Access key": {
+			"type":      interfaces.PASSWORD,
+			"help_text": "Required to authenticate to Vatlayer API.",
+			"label":     "Access key",
+		},
+	},
+}
 
-	manifest = &interfaces.PluginManifest{
-		PluginID:           "sitename.taxes.vatlayer",
-		PluginName:         "Vatlayer",
-		MetaCodeKey:        "vatlayer.code",
-		MetaDescriptionKey: "vatlayer.description",
-		DefaultConfiguration: []model.StringInterface{
-			{"name": "Access key", "value": nil},
-			{"name": "origin_country", "value": nil},
-			{"name": "countries_to_calculate_taxes_from_origin", "value": nil},
-			{"name": "excluded_countries", "value": nil},
-		},
-		ConfigStructure: map[string]model.StringInterface{
-			"origin_country": {
-				"type":      interfaces.STRING,
-				"help_text": "Country code in ISO format, required to calculate taxes for countries from `Countries for which taxes will be calculated from origin country`.",
-				"label":     "Origin country",
-			},
-			"countries_to_calculate_taxes_from_origin": {
-				"type":      interfaces.STRING,
-				"help_text": "List of destination countries (separated by comma), in ISO format which will use origin country to calculate taxes.",
-				"label":     "Countries for which taxes will be calculated from origin country",
-			},
-			"excluded_countries": {
-				"type":      interfaces.STRING,
-				"help_text": "List of countries (separated by comma), in ISO format for which no VAT should be added.",
-				"label":     "Countries for which no VAT will be added.",
-			},
-			"Access key": {
-				"type":      interfaces.PASSWORD,
-				"help_text": "Required to authenticate to Vatlayer API.",
-				"label":     "Access key",
-			},
-		},
-	}
-)
+// type check
+var _ interfaces.BasePluginInterface = (*VatlayerPlugin)(nil)
 
 type VatlayerPlugin struct {
 	*plugin.BasePlugin
@@ -58,19 +57,19 @@ type VatlayerPlugin struct {
 }
 
 func init() {
-	plugin.RegisterVatlayerPlugin(func(cfg *plugin.NewPluginConfig) interfaces.BasePluginInterface {
+	plugin.RegisterVatlayerPlugin(func(cfg *plugin.PluginConfig) interfaces.BasePluginInterface {
 
 		basePlg := plugin.NewBasePlugin(cfg)
 
 		// override base plugin's manifest
 		basePlg.Manifest = manifest
 
-		vp := &VatlayerPlugin{
+		vatPlugin := &VatlayerPlugin{
 			BasePlugin: basePlg,
 		}
 
 		var configuration = map[string]interface{}{}
-		for _, item := range vp.Configuration {
+		for _, item := range vatPlugin.Configuration {
 			configuration[item["name"].(string)] = item["value"]
 		}
 		var originCountry = configuration["origin_country"].(string)
@@ -98,15 +97,15 @@ func init() {
 			}
 		}
 
-		vp.config = VatlayerConfiguration{
+		vatPlugin.config = VatlayerConfiguration{
 			AccessKey:           configuration["Access key"].(string),
 			OriginCountry:       originCountry,
 			ExcludedCountries:   splitExcludedCountries,
 			CountriesFromOrigin: splitCountriesFromOrigin,
 		}
 
-		vp.cachedTaxes = make(model.StringInterface)
-		return vp
+		vatPlugin.cachedTaxes = make(model.StringInterface)
+		return vatPlugin
 
 	}, manifest)
 }

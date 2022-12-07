@@ -868,16 +868,6 @@ type CheckoutLanguageCodeUpdate struct {
 	Errors   []*CheckoutError `json:"errors"`
 }
 
-type CheckoutLine struct {
-	ID               string          `json:"id"`
-	Variant          *ProductVariant `json:"variant"`
-	Quantity         int32           `json:"quantity"`
-	TotalPrice       *TaxedMoney     `json:"totalPrice"`
-	RequiresShipping *bool           `json:"requiresShipping"`
-}
-
-func (CheckoutLine) IsNode() {}
-
 type CheckoutLineCountableConnection struct {
 	PageInfo   *PageInfo                    `json:"pageInfo"`
 	Edges      []*CheckoutLineCountableEdge `json:"edges"`
@@ -3317,33 +3307,16 @@ type ProductUpdate struct {
 	Product *Product        `json:"product"`
 }
 
-type ProductVariant struct {
-	ID                string                          `json:"id"`
-	Name              string                          `json:"name"`
-	Sku               *string                         `json:"sku"`
-	Product           *Product                        `json:"product"`
-	TrackInventory    bool                            `json:"trackInventory"`
-	Weight            *Weight                         `json:"weight"`
-	PrivateMetadata   []*MetadataItem                 `json:"privateMetadata"`
-	Metadata          []*MetadataItem                 `json:"metadata"`
-	Channel           *string                         `json:"channel"`
-	ChannelListings   []*ProductVariantChannelListing `json:"channelListings"`
-	Pricing           *VariantPricingInfo             `json:"pricing"`
-	Attributes        []*SelectedAttribute            `json:"attributes"`
-	Margin            *int32                          `json:"margin"`
-	QuantityOrdered   *int32                          `json:"quantityOrdered"`
-	Revenue           *TaxedMoney                     `json:"revenue"`
-	Media             []*ProductMedia                 `json:"media"`
-	Translation       *ProductVariantTranslation      `json:"translation"`
-	DigitalContent    *DigitalContent                 `json:"digitalContent"`
-	Stocks            []*Stock                        `json:"stocks"`
-	QuantityAvailable int32                           `json:"quantityAvailable"`
-}
-
 type ProductVariantBulkCreate struct {
 	Count           int32               `json:"count"`
 	ProductVariants []*ProductVariant   `json:"productVariants"`
 	Errors          []*BulkProductError `json:"errors"`
+}
+
+type PreorderData struct {
+	GlobalThreshold *int32
+	GlobalSoldUnits int32
+	EndDate         *DateTime
 }
 
 type ProductVariantBulkCreateInput struct {
