@@ -189,24 +189,6 @@ func (u *User) StoredPaymentSources(ctx context.Context) ([]*PaymentSource, erro
 }
 
 func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel string }) ([]string, error) {
-	// resolveCheckoutTokens := func(checkouts []*Checkout) []string {
-	// 	var res []string
-	// 	if len(checkouts) == 0 {
-	// 		return res
-	// 	}
-
-	// 	for _, ckout := range checkouts {
-	// 		if ckout != nil {
-	// 			res = append(res, ckout.Token)
-	// 		}
-	// 	}
-
-	// 	return res
-	// }
-
-	// if args.Channel == "" {
-	// 	// dataloaders
-	// }
 	panic("not implemented")
 }
 
@@ -232,20 +214,11 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 	return res, nil
 }
 
-func (u *User) GiftCards(ctx context.Context, args GraphqlFilter) (*GiftCardCountableConnection, error) {
-	// dataloaders.giftcardsByUser.Load(ctx, u.ID)()
+func (u *User) GiftCards(ctx context.Context, args GraphqlPaginationOptions) (*GiftCardCountableConnection, error) {
 	panic("not implemented")
 }
 
-func (u *User) Orders(ctx context.Context, args GraphqlFilter) (*OrderCountableConnection, error) {
-	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// resolveOrders := func(orders []*Order) {
-
-	// }
+func (u *User) Orders(ctx context.Context, args GraphqlPaginationOptions) (*OrderCountableConnection, error) {
 	panic("not implemented")
 }
 

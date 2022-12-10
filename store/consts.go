@@ -88,7 +88,7 @@ func init() {
 		BaseAssignedAttributeTableName:         "",                                       // attribute
 		AttributeTableName:                     "StorefrontSearchPosition ASC, Slug ASC", //
 		AttributeTranslationTableName:          "",                                       //
-		AttributeValueTableName:                "",                                       //
+		AttributeValueTableName:                "SortOrder ASC",                          //
 		AttributeValueTranslationTableName:     "",                                       //
 		AssignedPageAttributeValueTableName:    "",                                       //
 		AssignedPageAttributeTableName:         "",                                       //

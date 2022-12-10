@@ -52,7 +52,7 @@ func SystemProductVariantToGraphqlProductVariant(variant *model.ProductVariant) 
 		QuantityOrdered: model.NewInt32(0), // ??
 	}
 	if variant.Weight != nil {
-		res.Weight = &Weight{SystemWeightUnitToGrahpqlWeightUnit(string(variant.WeightUnit)), float64(*variant.Weight)}
+		res.Weight = &Weight{WeightUnitsEnum(variant.WeightUnit), float64(*variant.Weight)}
 	}
 
 	return res

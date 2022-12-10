@@ -86,7 +86,9 @@ func (c *Checkout) User(ctx context.Context) (*User, error) {
 	}
 
 	if (c.userID != nil && embedCtx.AppContext.Session().UserId == *c.userID) ||
-		embedCtx.App.Srv().
+		embedCtx.
+			App.
+			Srv().
 			AccountService().
 			SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageUsers) {
 
@@ -277,6 +279,42 @@ func graphqlCheckoutByUserLoader(ctx context.Context, userIDs []string) []*datal
 errorLabel:
 	for range userIDs {
 		res = append(res, &dataloader.Result[[]*Checkout]{Error: err})
+	}
+	return res
+}
+
+func graphqlCheckoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[*Checkout] {
+	var (
+		res       []*dataloader.Result[*Checkout]
+		appErr    *model.AppError
+		checkouts []*model.Checkout
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	checkouts, appErr = embedCtx.
+		App.
+		Srv().
+		CheckoutService().
+		CheckoutsByOption(&model.CheckoutFilterOption{
+			Token: squirrel.Eq{store.CheckoutTableName + ".Token": tokens},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, checkout := range checkouts {
+		res = append(res, &dataloader.Result[*Checkout]{Data: SystemCheckoutToGraphqlCheckout(checkout)})
+	}
+	return res
+
+errorLabel:
+	for range tokens {
+		res = append(res, &dataloader.Result[*Checkout]{Error: err})
 	}
 	return res
 }

@@ -46,7 +46,7 @@ type AttributeValueFilterOptions struct {
 	OrderBy         string
 	SelectForUpdate bool // is true, add `FOR UPDATE` suffic to the end of sql query
 
-	Limit uint64
+	Limit int
 }
 
 type AttributeValues []*AttributeValue

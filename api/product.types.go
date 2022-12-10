@@ -10,12 +10,50 @@ import (
 	"github.com/sitename/sitename/web"
 )
 
+type Product struct {
+	ID             string     `json:"id"`
+	SeoTitle       *string    `json:"seoTitle"`
+	SeoDescription *string    `json:"seoDescription"`
+	Name           string     `json:"name"`
+	Description    JSONString `json:"description"`
+	Slug           string     `json:"slug"`
+	UpdatedAt      *DateTime  `json:"updatedAt"`
+	ChargeTaxes    bool       `json:"chargeTaxes"`
+	Weight         *Weight    `json:"weight"`
+	// DefaultVariant         *ProductVariant          `json:"defaultVariant"`
+	// ProductType            *ProductType             `json:"productType"`
+	// Category               *Category                `json:"category"`
+	Rating                 *float64                 `json:"rating"`
+	PrivateMetadata        []*MetadataItem          `json:"privateMetadata"`
+	Metadata               []*MetadataItem          `json:"metadata"`
+	Channel                *string                  `json:"channel"`
+	Thumbnail              *Image                   `json:"thumbnail"`
+	Pricing                *ProductPricingInfo      `json:"pricing"`
+	IsAvailable            *bool                    `json:"isAvailable"`
+	TaxType                *TaxType                 `json:"taxType"`
+	Attributes             []*SelectedAttribute     `json:"attributes"`
+	ChannelListings        []*ProductChannelListing `json:"channelListings"`
+	MediaByID              *ProductMedia            `json:"mediaById"`
+	Variants               []*ProductVariant        `json:"variants"`
+	Media                  []*ProductMedia          `json:"media"`
+	Collections            []*Collection            `json:"collections"`
+	Translation            *ProductTranslation      `json:"translation"`
+	AvailableForPurchase   *Date                    `json:"availableForPurchase"`
+	IsAvailableForPurchase *bool                    `json:"isAvailableForPurchase"`
+}
+
 func SystemProductToGraphqlProduct(prd *model.Product) *Product {
 	if prd == nil {
 		return nil
 	}
 
+	res := &Product{
+		ID: prd.Id,
+	}
+
 	panic("not implemented")
+
+	return res
 }
 
 func graphqlProductsByIDsLoader(ctx context.Context, ids []string) []*dataloader.Result[*Product] {
@@ -52,3 +90,8 @@ errorLabel:
 	}
 	return res
 }
+
+// func graphqlProductTypeByProductIDLoader(ctx context.Context, productIDs []string) []*dataloader.Result[[]*ProductType] {
+// 	a, b := dataloaders.productsByIDs.LoadMany(ctx, productIDs)()
+
+// }

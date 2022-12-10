@@ -36,16 +36,16 @@ type AttributeInputType string
 
 // choices for attribute's input type
 const (
-	DROPDOWN    AttributeInputType = "dropdown"
-	MULTISELECT AttributeInputType = "multiselect"
-	FILE_       AttributeInputType = "file"
-	REFERENCE   AttributeInputType = "reference"
-	NUMERIC     AttributeInputType = "numeric"
-	RICH_TEXT   AttributeInputType = "rich_text"
-	SWATCH      AttributeInputType = "swatch"
-	BOOLEAN     AttributeInputType = "boolean"
-	DATE        AttributeInputType = "date"
-	DATE_TIME   AttributeInputType = "date_time"
+	DROPDOWN    AttributeInputType = "dropdown"    //
+	MULTISELECT AttributeInputType = "multiselect" //
+	FILE_       AttributeInputType = "file"        //
+	REFERENCE   AttributeInputType = "reference"   //
+	NUMERIC     AttributeInputType = "numeric"     //
+	RICH_TEXT   AttributeInputType = "rich_text"   //
+	SWATCH      AttributeInputType = "swatch"      //
+	BOOLEAN     AttributeInputType = "boolean"     //
+	DATE        AttributeInputType = "date"        //
+	DATE_TIME   AttributeInputType = "date_time"   //
 )
 
 var (
@@ -54,26 +54,26 @@ var (
 	TYPES_WITH_UNIQUE_VALUES     = AnyArray[AttributeInputType]{FILE_, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME} // list of the translatable attributes, excluding attributes with choices.
 	TRANSLATABLE_ATTRIBUTES      = AnyArray[AttributeInputType]{RICH_TEXT}
 )
-var AttributeInputTypeStrings = map[AttributeInputType]string{
-	DROPDOWN:    "Dropdown",
-	MULTISELECT: "Multi Select",
-	FILE_:       "File",
-	REFERENCE:   "Reference",
-	NUMERIC:     "Numeric",
-	RICH_TEXT:   "Rich Text",
-	BOOLEAN:     "Boolean",
-	DATE:        "Date",
-	DATE_TIME:   "Date Time",
+var attributeInputTypeStrings = map[AttributeInputType]bool{
+	DROPDOWN:    true,
+	MULTISELECT: true,
+	FILE_:       true,
+	REFERENCE:   true,
+	NUMERIC:     true,
+	RICH_TEXT:   true,
+	BOOLEAN:     true,
+	DATE:        true,
+	DATE_TIME:   true,
 }
 
-var AttributeTypeStrings = map[string]string{
-	PRODUCT_TYPE: "Product type",
-	PAGE_TYPE:    "Page type",
+var attributeTypeStrings = map[string]bool{
+	PRODUCT_TYPE: true,
+	PAGE_TYPE:    true,
 }
 
-var AttributeEntityTypeStrings = map[string]string{
-	PAGE:    "Page",
-	PRODUCT: "Product",
+var attributeEntityTypeStrings = map[string]bool{
+	PAGE:    true,
+	PRODUCT: true,
 }
 
 // Attribute
@@ -136,14 +136,14 @@ func (a *Attribute) IsValid() *AppError {
 	if len(a.Slug) > ATTRIBUTE_SLUG_MAX_LENGTH {
 		return outer("slug", &a.Id)
 	}
-	if len(a.Type) > ATTRIBUTE_TYPE_MAX_LENGTH || AttributeTypeStrings[a.Type] == "" {
+	if len(a.Type) > ATTRIBUTE_TYPE_MAX_LENGTH || !attributeTypeStrings[a.Type] {
 		return outer("type", &a.Id)
 	}
-	if len(a.InputType) > ATTRIBUTE_TYPE_MAX_LENGTH || AttributeInputTypeStrings[a.InputType] == "" {
+	if len(a.InputType) > ATTRIBUTE_TYPE_MAX_LENGTH || !attributeInputTypeStrings[a.InputType] {
 		return outer("input_type", &a.Id)
 	}
 	if (a.EntityType != nil && len(*a.EntityType) > ATTRIBUTE_ENTITY_TYPE_MAX_LENGTH) ||
-		(a.EntityType != nil && AttributeEntityTypeStrings[*a.EntityType] == "") {
+		(a.EntityType != nil && !attributeEntityTypeStrings[*a.EntityType]) {
 		return outer("entity_type", &a.Id)
 	}
 	if (a.Unit != nil && len(*a.Unit) > ATTRIBUTE_UNIT_MAX_LENGTH) ||

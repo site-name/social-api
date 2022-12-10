@@ -3,9 +3,9 @@
 package api
 
 import (
-	"fmt"
-
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/measurement"
 )
 
 type AccountAddressCreate struct {
@@ -132,8 +132,6 @@ type Allocation struct {
 	Warehouse *Warehouse `json:"warehouse"`
 }
 
-func (Allocation) IsNode() {}
-
 type App struct {
 	ID               string          `json:"id"`
 	Name             *string         `json:"name"`
@@ -213,8 +211,6 @@ type AppExtension struct {
 	AccessToken *string                `json:"accessToken"`
 }
 
-func (AppExtension) IsNode() {}
-
 type AppExtensionCountableConnection struct {
 	PageInfo   *PageInfo                    `json:"pageInfo"`
 	Edges      []*AppExtensionCountableEdge `json:"edges"`
@@ -270,9 +266,6 @@ type AppInstallation struct {
 	Message     *string       `json:"message"`
 }
 
-func (AppInstallation) IsNode() {}
-func (AppInstallation) IsJob()  {}
-
 type AppManifestExtension struct {
 	Permissions []*Permission          `json:"permissions"`
 	Label       string                 `json:"label"`
@@ -297,8 +290,6 @@ type AppToken struct {
 	AuthToken *string `json:"authToken"`
 	ID        string  `json:"id"`
 }
-
-func (AppToken) IsNode() {}
 
 type AppTokenCreate struct {
 	AuthToken *string     `json:"authToken"`
@@ -329,29 +320,6 @@ type AppUpdate struct {
 type AssignNavigation struct {
 	Menu   *Menu        `json:"menu"`
 	Errors []*MenuError `json:"errors"`
-}
-
-type Attribute struct {
-	ID                       string                             `json:"id"`
-	ProductTypes             *ProductTypeCountableConnection    `json:"productTypes"`
-	ProductVariantTypes      *ProductTypeCountableConnection    `json:"productVariantTypes"`
-	PrivateMetadata          []*MetadataItem                    `json:"privateMetadata"`
-	Metadata                 []*MetadataItem                    `json:"metadata"`
-	InputType                *AttributeInputTypeEnum            `json:"inputType"`
-	EntityType               *AttributeEntityTypeEnum           `json:"entityType"`
-	Name                     *string                            `json:"name"`
-	Slug                     *string                            `json:"slug"`
-	Type                     *AttributeTypeEnum                 `json:"type"`
-	Unit                     *MeasurementUnitsEnum              `json:"unit"`
-	Choices                  *AttributeValueCountableConnection `json:"choices"`
-	ValueRequired            bool                               `json:"valueRequired"`
-	VisibleInStorefront      bool                               `json:"visibleInStorefront"`
-	FilterableInStorefront   bool                               `json:"filterableInStorefront"`
-	FilterableInDashboard    bool                               `json:"filterableInDashboard"`
-	AvailableInGrid          bool                               `json:"availableInGrid"`
-	Translation              *AttributeTranslation              `json:"translation"`
-	StorefrontSearchPosition int32                              `json:"storefrontSearchPosition"`
-	WithChoices              bool                               `json:"withChoices"`
 }
 
 type AttributeBulkDelete struct {
@@ -449,9 +417,6 @@ type AttributeTranslatableContent struct {
 	Translation *AttributeTranslation `json:"translation"`
 }
 
-func (AttributeTranslatableContent) IsTranslatableItem() {}
-func (AttributeTranslatableContent) IsNode()             {}
-
 type AttributeTranslate struct {
 	Errors    []*TranslationError `json:"errors"`
 	Attribute *Attribute          `json:"attribute"`
@@ -462,8 +427,6 @@ type AttributeTranslation struct {
 	Name     string           `json:"name"`
 	Language *LanguageDisplay `json:"language"`
 }
-
-func (AttributeTranslation) IsNode() {}
 
 type AttributeUpdate struct {
 	Attribute *Attribute        `json:"attribute"`
@@ -484,23 +447,6 @@ type AttributeUpdateInput struct {
 	StorefrontSearchPosition *int32                       `json:"storefrontSearchPosition"`
 	AvailableInGrid          *bool                        `json:"availableInGrid"`
 }
-
-type AttributeValue struct {
-	ID          string                     `json:"id"`
-	Name        *string                    `json:"name"`
-	Slug        *string                    `json:"slug"`
-	Value       *string                    `json:"value"`
-	Translation *AttributeValueTranslation `json:"translation"`
-	InputType   *AttributeInputTypeEnum    `json:"inputType"`
-	Reference   *string                    `json:"reference"`
-	File        *File                      `json:"file"`
-	RichText    JSONString                 `json:"richText"`
-	Boolean     *bool                      `json:"boolean"`
-	Date        *Date                      `json:"date"`
-	DateTime    *DateTime                  `json:"dateTime"`
-}
-
-func (AttributeValue) IsNode() {}
 
 type AttributeValueBulkDelete struct {
 	Count  int32             `json:"count"`
@@ -561,9 +507,6 @@ type AttributeValueTranslatableContent struct {
 	Translation *AttributeValueTranslation `json:"translation"`
 }
 
-func (AttributeValueTranslatableContent) IsTranslatableItem() {}
-func (AttributeValueTranslatableContent) IsNode()             {}
-
 type AttributeValueTranslate struct {
 	Errors         []*TranslationError `json:"errors"`
 	AttributeValue *AttributeValue     `json:"attributeValue"`
@@ -575,8 +518,6 @@ type AttributeValueTranslation struct {
 	RichText JSONString       `json:"richText"`
 	Language *LanguageDisplay `json:"language"`
 }
-
-func (AttributeValueTranslation) IsNode() {}
 
 type AttributeValueTranslationInput struct {
 	Name     *string    `json:"name"`
@@ -703,9 +644,6 @@ type CategoryTranslatableContent struct {
 	Translation    *CategoryTranslation `json:"translation"`
 }
 
-func (CategoryTranslatableContent) IsTranslatableItem() {}
-func (CategoryTranslatableContent) IsNode()             {}
-
 type CategoryTranslate struct {
 	Errors   []*TranslationError `json:"errors"`
 	Category *Category           `json:"category"`
@@ -719,8 +657,6 @@ type CategoryTranslation struct {
 	Description    JSONString       `json:"description"`
 	Language       *LanguageDisplay `json:"language"`
 }
-
-func (CategoryTranslation) IsNode() {}
 
 type CategoryUpdate struct {
 	Errors   []*ProductError `json:"errors"`
@@ -736,8 +672,6 @@ type Channel struct {
 	HasOrders      bool            `json:"hasOrders"`
 	DefaultCountry *CountryDisplay `json:"defaultCountry"`
 }
-
-func (Channel) IsNode() {}
 
 type ChannelActivate struct {
 	Channel *Channel        `json:"channel"`
@@ -958,8 +892,6 @@ type CollectionChannelListing struct {
 	Channel         *Channel `json:"channel"`
 }
 
-func (CollectionChannelListing) IsNode() {}
-
 type CollectionChannelListingError struct {
 	Field      *string          `json:"field"`
 	Message    *string          `json:"message"`
@@ -1063,9 +995,6 @@ type CollectionTranslatableContent struct {
 	Translation    *CollectionTranslation `json:"translation"`
 }
 
-func (CollectionTranslatableContent) IsTranslatableItem() {}
-func (CollectionTranslatableContent) IsNode()             {}
-
 type CollectionTranslate struct {
 	Errors     []*TranslationError `json:"errors"`
 	Collection *Collection         `json:"collection"`
@@ -1079,8 +1008,6 @@ type CollectionTranslation struct {
 	Description    JSONString       `json:"description"`
 	Language       *LanguageDisplay `json:"language"`
 }
-
-func (CollectionTranslation) IsNode() {}
 
 type CollectionUpdate struct {
 	Errors     []*CollectionError `json:"errors"`
@@ -1159,8 +1086,6 @@ type CustomerEvent struct {
 	// Order     *Order              `json:"order"`
 	// OrderLine *OrderLine          `json:"orderLine"`
 }
-
-func (CustomerEvent) IsNode() {}
 
 type CustomerFilterInput struct {
 	DateJoined     *DateRangeInput  `json:"dateJoined"`
@@ -1280,8 +1205,6 @@ type DigitalContentURL struct {
 	Token       string          `json:"token"`
 }
 
-func (DigitalContentURL) IsNode() {}
-
 type DigitalContentURLCreate struct {
 	Errors            []*ProductError    `json:"errors"`
 	DigitalContentURL *DigitalContentURL `json:"digitalContentUrl"`
@@ -1370,8 +1293,6 @@ type ExportEvent struct {
 	Message string           `json:"message"`
 }
 
-func (ExportEvent) IsNode() {}
-
 type ExportFile struct {
 	ID        string         `json:"id"`
 	User      *User          `json:"user"`
@@ -1382,9 +1303,6 @@ type ExportFile struct {
 	URL       *string        `json:"url"`
 	Events    []*ExportEvent `json:"events"`
 }
-
-func (ExportFile) IsNode() {}
-func (ExportFile) IsJob()  {}
 
 type ExportFileCountableConnection struct {
 	PageInfo   *PageInfo                  `json:"pageInfo"`
@@ -1521,8 +1439,6 @@ type FulfillmentLine struct {
 	Quantity  int32      `json:"quantity"`
 	OrderLine *OrderLine `json:"orderLine"`
 }
-
-func (FulfillmentLine) IsNode() {}
 
 type FulfillmentRefundProducts struct {
 	Fulfillment *Fulfillment  `json:"fulfillment"`
@@ -1677,8 +1593,6 @@ type GiftCardEvent struct {
 	OldExpiryDate *Date                 `json:"oldExpiryDate"`
 }
 
-func (GiftCardEvent) IsNode() {}
-
 type GiftCardEventBalance struct {
 	InitialBalance    *Money `json:"initialBalance"`
 	CurrentBalance    *Money `json:"currentBalance"`
@@ -1754,8 +1668,6 @@ type Group struct {
 	Users         []*User       `json:"users"`
 	UserCanManage bool          `json:"userCanManage"`
 }
-
-func (Group) IsNode() {}
 
 type GroupCountableConnection struct {
 	PageInfo   *PageInfo             `json:"pageInfo"`
@@ -2037,9 +1949,6 @@ type MenuItemTranslatableContent struct {
 	Translation *MenuItemTranslation `json:"translation"`
 }
 
-func (MenuItemTranslatableContent) IsTranslatableItem() {}
-func (MenuItemTranslatableContent) IsNode()             {}
-
 type MenuItemTranslate struct {
 	Errors   []*TranslationError `json:"errors"`
 	MenuItem *MenuItem           `json:"menuItem"`
@@ -2050,8 +1959,6 @@ type MenuItemTranslation struct {
 	Name     string           `json:"name"`
 	Language *LanguageDisplay `json:"language"`
 }
-
-func (MenuItemTranslation) IsNode() {}
 
 type MenuItemUpdate struct {
 	Errors   []*MenuError `json:"errors"`
@@ -2211,8 +2118,6 @@ type OrderDiscount struct {
 	Amount         *Money                `json:"amount"`
 }
 
-func (OrderDiscount) IsNode() {}
-
 type OrderDiscountAdd struct {
 	Order  *Order        `json:"order"`
 	Errors []*OrderError `json:"errors"`
@@ -2276,8 +2181,6 @@ type OrderEvent struct {
 	RelatedOrder          *Order                       `json:"relatedOrder"`
 	Discount              *OrderEventDiscountObject    `json:"discount"`
 }
-
-func (OrderEvent) IsNode() {}
 
 type OrderEventCountableConnection struct {
 	PageInfo   *PageInfo                  `json:"pageInfo"`
@@ -2366,8 +2269,6 @@ type OrderLine struct {
 	// DigitalContentURL     *DigitalContentURL     `json:"digitalContentUrl"`
 	// Variant               *ProductVariant        `json:"variant"`
 }
-
-func (OrderLine) IsNode() {}
 
 type OrderLineCreateInput struct {
 	Quantity  int32  `json:"quantity"`
@@ -2626,9 +2527,6 @@ type PageTranslatableContent struct {
 	Translation    *PageTranslation `json:"translation"`
 }
 
-func (PageTranslatableContent) IsTranslatableItem() {}
-func (PageTranslatableContent) IsNode()             {}
-
 type PageTranslate struct {
 	Errors []*TranslationError      `json:"errors"`
 	Page   *PageTranslatableContent `json:"page"`
@@ -2642,8 +2540,6 @@ type PageTranslation struct {
 	Content        JSONString       `json:"content"`
 	Language       *LanguageDisplay `json:"language"`
 }
-
-func (PageTranslation) IsNode() {}
 
 type PageTranslationInput struct {
 	SeoTitle       *string    `json:"seoTitle"`
@@ -2941,38 +2837,6 @@ type PriceRangeInput struct {
 	Lte *float64 `json:"lte"`
 }
 
-type Product struct {
-	ID                     string                   `json:"id"`
-	SeoTitle               *string                  `json:"seoTitle"`
-	SeoDescription         *string                  `json:"seoDescription"`
-	Name                   string                   `json:"name"`
-	Description            JSONString               `json:"description"`
-	ProductType            *ProductType             `json:"productType"`
-	Slug                   string                   `json:"slug"`
-	Category               *Category                `json:"category"`
-	UpdatedAt              *DateTime                `json:"updatedAt"`
-	ChargeTaxes            bool                     `json:"chargeTaxes"`
-	Weight                 *Weight                  `json:"weight"`
-	DefaultVariant         *ProductVariant          `json:"defaultVariant"`
-	Rating                 *float64                 `json:"rating"`
-	PrivateMetadata        []*MetadataItem          `json:"privateMetadata"`
-	Metadata               []*MetadataItem          `json:"metadata"`
-	Channel                *string                  `json:"channel"`
-	Thumbnail              *Image                   `json:"thumbnail"`
-	Pricing                *ProductPricingInfo      `json:"pricing"`
-	IsAvailable            *bool                    `json:"isAvailable"`
-	TaxType                *TaxType                 `json:"taxType"`
-	Attributes             []*SelectedAttribute     `json:"attributes"`
-	ChannelListings        []*ProductChannelListing `json:"channelListings"`
-	MediaByID              *ProductMedia            `json:"mediaById"`
-	Variants               []*ProductVariant        `json:"variants"`
-	Media                  []*ProductMedia          `json:"media"`
-	Collections            []*Collection            `json:"collections"`
-	Translation            *ProductTranslation      `json:"translation"`
-	AvailableForPurchase   *Date                    `json:"availableForPurchase"`
-	IsAvailableForPurchase *bool                    `json:"isAvailableForPurchase"`
-}
-
 type ProductAttributeAssign struct {
 	ProductType *ProductType    `json:"productType"`
 	Errors      []*ProductError `json:"errors"`
@@ -3006,8 +2870,6 @@ type ProductChannelListing struct {
 	IsAvailableForPurchase *bool               `json:"isAvailableForPurchase"`
 	Pricing                *ProductPricingInfo `json:"pricing"`
 }
-
-func (ProductChannelListing) IsNode() {}
 
 type ProductChannelListingAddInput struct {
 	ChannelID                string   `json:"channelId"`
@@ -3126,8 +2988,6 @@ type ProductMedia struct {
 	URL        string           `json:"url"`
 }
 
-func (ProductMedia) IsNode() {}
-
 type ProductMediaBulkDelete struct {
 	Count  int32           `json:"count"`
 	Errors []*ProductError `json:"errors"`
@@ -3203,9 +3063,6 @@ type ProductTranslatableContent struct {
 	Translation    *ProductTranslation `json:"translation"`
 }
 
-func (ProductTranslatableContent) IsTranslatableItem() {}
-func (ProductTranslatableContent) IsNode()             {}
-
 type ProductTranslate struct {
 	Errors  []*TranslationError `json:"errors"`
 	Product *Product            `json:"product"`
@@ -3219,8 +3076,6 @@ type ProductTranslation struct {
 	Description    JSONString       `json:"description"`
 	Language       *LanguageDisplay `json:"language"`
 }
-
-func (ProductTranslation) IsNode() {}
 
 type ProductType struct {
 	ID                  string                        `json:"id"`
@@ -3341,8 +3196,6 @@ type ProductVariantChannelListing struct {
 	Margin    *int32   `json:"margin"`
 }
 
-func (ProductVariantChannelListing) IsNode() {}
-
 type ProductVariantChannelListingAddInput struct {
 	ChannelID string           `json:"channelId"`
 	Price     PositiveDecimal  `json:"price"`
@@ -3434,9 +3287,6 @@ type ProductVariantTranslatableContent struct {
 	AttributeValues []*AttributeValueTranslatableContent `json:"attributeValues"`
 }
 
-func (ProductVariantTranslatableContent) IsTranslatableItem() {}
-func (ProductVariantTranslatableContent) IsNode()             {}
-
 type ProductVariantTranslate struct {
 	Errors         []*TranslationError `json:"errors"`
 	ProductVariant *ProductVariant     `json:"productVariant"`
@@ -3447,8 +3297,6 @@ type ProductVariantTranslation struct {
 	Name     string           `json:"name"`
 	Language *LanguageDisplay `json:"language"`
 }
-
-func (ProductVariantTranslation) IsNode() {}
 
 type ProductVariantUpdate struct {
 	Errors         []*ProductError `json:"errors"`
@@ -3518,8 +3366,6 @@ type SaleChannelListing struct {
 	DiscountValue float64  `json:"discountValue"`
 	Currency      string   `json:"currency"`
 }
-
-func (SaleChannelListing) IsNode() {}
 
 type SaleChannelListingAddInput struct {
 	ChannelID     string          `json:"channelId"`
@@ -3594,9 +3440,6 @@ type SaleTranslatableContent struct {
 	Translation *SaleTranslation `json:"translation"`
 }
 
-func (SaleTranslatableContent) IsTranslatableItem() {}
-func (SaleTranslatableContent) IsNode()             {}
-
 type SaleTranslate struct {
 	Errors []*TranslationError `json:"errors"`
 	Sale   *Sale               `json:"sale"`
@@ -3607,8 +3450,6 @@ type SaleTranslation struct {
 	Name     *string          `json:"name"`
 	Language *LanguageDisplay `json:"language"`
 }
-
-func (SaleTranslation) IsNode() {}
 
 type SaleUpdate struct {
 	Errors []*DiscountError `json:"errors"`
@@ -3668,8 +3509,6 @@ type ShippingMethodChannelListing struct {
 	Price             *Money   `json:"price"`
 }
 
-func (ShippingMethodChannelListing) IsNode() {}
-
 type ShippingMethodChannelListingAddInput struct {
 	ChannelID         string           `json:"channelId"`
 	Price             *PositiveDecimal `json:"price"`
@@ -3694,8 +3533,6 @@ type ShippingMethodPostalCodeRule struct {
 	ID            string                           `json:"id"`
 }
 
-func (ShippingMethodPostalCodeRule) IsNode() {}
-
 type ShippingMethodTranslatableContent struct {
 	ID          string                     `json:"id"`
 	Name        string                     `json:"name"`
@@ -3703,17 +3540,12 @@ type ShippingMethodTranslatableContent struct {
 	Translation *ShippingMethodTranslation `json:"translation"`
 }
 
-func (ShippingMethodTranslatableContent) IsTranslatableItem() {}
-func (ShippingMethodTranslatableContent) IsNode()             {}
-
 type ShippingMethodTranslation struct {
 	ID          string           `json:"id"`
 	Name        *string          `json:"name"`
 	Description JSONString       `json:"description"`
 	Language    *LanguageDisplay `json:"language"`
 }
-
-func (ShippingMethodTranslation) IsNode() {}
 
 type ShippingPostalCodeRulesCreateInputRange struct {
 	Start string  `json:"start"`
@@ -3946,8 +3778,6 @@ type ShopTranslation struct {
 	Language    *LanguageDisplay `json:"language"`
 }
 
-func (ShopTranslation) IsNode() {}
-
 type SiteDomainInput struct {
 	Domain *string `json:"domain"`
 	Name   *string `json:"name"`
@@ -3994,8 +3824,6 @@ type StaffNotificationRecipient struct {
 	ID     string  `json:"id"`
 	Email  *string `json:"email"`
 }
-
-func (StaffNotificationRecipient) IsNode() {}
 
 type StaffNotificationRecipientCreate struct {
 	Errors                     []*ShopError                `json:"errors"`
@@ -4045,8 +3873,6 @@ type Stock struct {
 	ID                string          `json:"id"`
 	QuantityAllocated int32           `json:"quantityAllocated"`
 }
-
-func (Stock) IsNode() {}
 
 type StockCountableConnection struct {
 	PageInfo   *PageInfo             `json:"pageInfo"`
@@ -4122,8 +3948,6 @@ type Transaction struct {
 	GatewayResponse JSONString      `json:"gatewayResponse"`
 	Amount          *Money          `json:"amount"`
 }
-
-func (Transaction) IsNode() {}
 
 type TranslatableItemConnection struct {
 	PageInfo   *PageInfo               `json:"pageInfo"`
@@ -4328,8 +4152,6 @@ type VoucherChannelListing struct {
 	MinSpent      *Money   `json:"minSpent"`
 }
 
-func (VoucherChannelListing) IsNode() {}
-
 type VoucherChannelListingAddInput struct {
 	ChannelID      string           `json:"channelId"`
 	DiscountValue  *PositiveDecimal `json:"discountValue"`
@@ -4411,9 +4233,6 @@ type VoucherTranslatableContent struct {
 	Translation *VoucherTranslation `json:"translation"`
 }
 
-func (VoucherTranslatableContent) IsTranslatableItem() {}
-func (VoucherTranslatableContent) IsNode()             {}
-
 type VoucherTranslate struct {
 	Errors  []*TranslationError `json:"errors"`
 	Voucher *Voucher            `json:"voucher"`
@@ -4424,8 +4243,6 @@ type VoucherTranslation struct {
 	Name     *string          `json:"name"`
 	Language *LanguageDisplay `json:"language"`
 }
-
-func (VoucherTranslation) IsNode() {}
 
 type VoucherUpdate struct {
 	Errors  []*DiscountError `json:"errors"`
@@ -4527,8 +4344,6 @@ type Webhook struct {
 	App       *App            `json:"app"`
 }
 
-func (Webhook) IsNode() {}
-
 type WebhookCreate struct {
 	Errors  []*WebhookError `json:"errors"`
 	Webhook *Webhook        `json:"webhook"`
@@ -4585,16 +4400,12 @@ type Wishlist struct {
 	Items    []*WishlistItem `json:"items"`
 }
 
-func (Wishlist) IsNode() {}
-
 type WishlistItem struct {
 	ID       string            `json:"id"`
 	Product  *Product          `json:"product"`
 	CreateAt DateTime          `json:"createAt"`
 	Variants []*ProductVariant `json:"variants"`
 }
-
-func (WishlistItem) IsNode() {}
 
 type AccountErrorCode string
 
@@ -4645,24 +4456,11 @@ func (e AccountErrorCode) String() string {
 	return string(e)
 }
 
-func (e *AccountErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AccountErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AccountErrorCode", str)
-	}
-	return nil
-}
-
 type AddressTypeEnum string
 
 const (
-	AddressTypeEnumBilling  AddressTypeEnum = "BILLING"
-	AddressTypeEnumShipping AddressTypeEnum = "SHIPPING"
+	AddressTypeEnumBilling  AddressTypeEnum = model.ADDRESS_TYPE_BILLING
+	AddressTypeEnumShipping AddressTypeEnum = model.ADDRESS_TYPE_SHIPPING
 )
 
 func (e AddressTypeEnum) IsValid() bool {
@@ -4675,19 +4473,6 @@ func (e AddressTypeEnum) IsValid() bool {
 
 func (e AddressTypeEnum) String() string {
 	return string(e)
-}
-
-func (e *AddressTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AddressTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AddressTypeEnum", str)
-	}
-	return nil
 }
 
 type AppErrorCode string
@@ -4720,19 +4505,6 @@ func (e AppErrorCode) String() string {
 	return string(e)
 }
 
-func (e *AppErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AppErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AppErrorCode", str)
-	}
-	return nil
-}
-
 type AppExtensionTargetEnum string
 
 const (
@@ -4750,19 +4522,6 @@ func (e AppExtensionTargetEnum) IsValid() bool {
 
 func (e AppExtensionTargetEnum) String() string {
 	return string(e)
-}
-
-func (e *AppExtensionTargetEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AppExtensionTargetEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AppExtensionTargetEnum", str)
-	}
-	return nil
 }
 
 type AppExtensionTypeEnum string
@@ -4784,19 +4543,6 @@ func (e AppExtensionTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *AppExtensionTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AppExtensionTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AppExtensionTypeEnum", str)
-	}
-	return nil
-}
-
 type AppExtensionViewEnum string
 
 const (
@@ -4813,19 +4559,6 @@ func (e AppExtensionViewEnum) IsValid() bool {
 
 func (e AppExtensionViewEnum) String() string {
 	return string(e)
-}
-
-func (e *AppExtensionViewEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AppExtensionViewEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AppExtensionViewEnum", str)
-	}
-	return nil
 }
 
 type AppSortField string
@@ -4847,19 +4580,6 @@ func (e AppSortField) String() string {
 	return string(e)
 }
 
-func (e *AppSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AppSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AppSortField", str)
-	}
-	return nil
-}
-
 type AppTypeEnum string
 
 const (
@@ -4879,28 +4599,16 @@ func (e AppTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *AppTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AppTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AppTypeEnum", str)
-	}
-	return nil
-}
-
 type AreaUnitsEnum string
 
 const (
-	AreaUnitsEnumSqCm   AreaUnitsEnum = "SQ_CM"
-	AreaUnitsEnumSqM    AreaUnitsEnum = "SQ_M"
-	AreaUnitsEnumSqKm   AreaUnitsEnum = "SQ_KM"
-	AreaUnitsEnumSqFt   AreaUnitsEnum = "SQ_FT"
-	AreaUnitsEnumSqYd   AreaUnitsEnum = "SQ_YD"
-	AreaUnitsEnumSqInch AreaUnitsEnum = "SQ_INCH"
+	AreaUnitsEnumSqCm   AreaUnitsEnum = measurement.SQ_CM
+	AreaUnitsEnumSqM    AreaUnitsEnum = measurement.SQ_M
+	AreaUnitsEnumSqKm   AreaUnitsEnum = measurement.SQ_KM
+	AreaUnitsEnumSqFt   AreaUnitsEnum = measurement.SQ_FT
+	AreaUnitsEnumSqYd   AreaUnitsEnum = measurement.SQ_YD
+	AreaUnitsEnumSqInch AreaUnitsEnum = measurement.SQ_INCH
+	// a = measurement.SQ_CM
 )
 
 func (e AreaUnitsEnum) IsValid() bool {
@@ -4913,19 +4621,6 @@ func (e AreaUnitsEnum) IsValid() bool {
 
 func (e AreaUnitsEnum) String() string {
 	return string(e)
-}
-
-func (e *AreaUnitsEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AreaUnitsEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AreaUnitsEnum", str)
-	}
-	return nil
 }
 
 type AttributeChoicesSortField string
@@ -4947,24 +4642,11 @@ func (e AttributeChoicesSortField) String() string {
 	return string(e)
 }
 
-func (e *AttributeChoicesSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AttributeChoicesSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AttributeChoicesSortField", str)
-	}
-	return nil
-}
-
 type AttributeEntityTypeEnum string
 
 const (
-	AttributeEntityTypeEnumPage    AttributeEntityTypeEnum = "PAGE"
-	AttributeEntityTypeEnumProduct AttributeEntityTypeEnum = "PRODUCT"
+	AttributeEntityTypeEnumPage    AttributeEntityTypeEnum = model.PAGE
+	AttributeEntityTypeEnumProduct AttributeEntityTypeEnum = model.PRODUCT
 )
 
 func (e AttributeEntityTypeEnum) IsValid() bool {
@@ -4979,28 +4661,15 @@ func (e AttributeEntityTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *AttributeEntityTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AttributeEntityTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AttributeEntityTypeEnum", str)
-	}
-	return nil
-}
-
 type AttributeErrorCode string
 
 const (
-	AttributeErrorCodeAlreadyExists AttributeErrorCode = "ALREADY_EXISTS"
-	AttributeErrorCodeGraphqlError  AttributeErrorCode = "GRAPHQL_ERROR"
-	AttributeErrorCodeInvalid       AttributeErrorCode = "INVALID"
-	AttributeErrorCodeNotFound      AttributeErrorCode = "NOT_FOUND"
-	AttributeErrorCodeRequired      AttributeErrorCode = "REQUIRED"
-	AttributeErrorCodeUnique        AttributeErrorCode = "UNIQUE"
+	AttributeErrorCodeAlreadyExists AttributeErrorCode = AttributeErrorCode(model.ALREADY_EXISTS)
+	AttributeErrorCodeGraphqlError  AttributeErrorCode = AttributeErrorCode(model.GRAPHQL_ERROR)
+	AttributeErrorCodeInvalid       AttributeErrorCode = AttributeErrorCode(model.INVALID)
+	AttributeErrorCodeNotFound      AttributeErrorCode = AttributeErrorCode(model.NOT_FOUND)
+	AttributeErrorCodeRequired      AttributeErrorCode = AttributeErrorCode(model.REQUIRED)
+	AttributeErrorCodeUnique        AttributeErrorCode = AttributeErrorCode(model.UNIQUE)
 )
 
 func (e AttributeErrorCode) IsValid() bool {
@@ -5015,32 +4684,19 @@ func (e AttributeErrorCode) String() string {
 	return string(e)
 }
 
-func (e *AttributeErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AttributeErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AttributeErrorCode", str)
-	}
-	return nil
-}
-
 type AttributeInputTypeEnum string
 
 const (
-	AttributeInputTypeEnumDropdown    AttributeInputTypeEnum = "DROPDOWN"
-	AttributeInputTypeEnumMultiselect AttributeInputTypeEnum = "MULTISELECT"
-	AttributeInputTypeEnumFile        AttributeInputTypeEnum = "FILE"
-	AttributeInputTypeEnumReference   AttributeInputTypeEnum = "REFERENCE"
-	AttributeInputTypeEnumNumeric     AttributeInputTypeEnum = "NUMERIC"
-	AttributeInputTypeEnumRichText    AttributeInputTypeEnum = "RICH_TEXT"
-	AttributeInputTypeEnumSwatch      AttributeInputTypeEnum = "SWATCH"
-	AttributeInputTypeEnumBoolean     AttributeInputTypeEnum = "BOOLEAN"
-	AttributeInputTypeEnumDate        AttributeInputTypeEnum = "DATE"
-	AttributeInputTypeEnumDateTime    AttributeInputTypeEnum = "DATE_TIME"
+	AttributeInputTypeEnumDropdown    AttributeInputTypeEnum = AttributeInputTypeEnum(model.DROPDOWN)
+	AttributeInputTypeEnumMultiselect AttributeInputTypeEnum = AttributeInputTypeEnum(model.MULTISELECT)
+	AttributeInputTypeEnumFile        AttributeInputTypeEnum = AttributeInputTypeEnum(model.FILE)
+	AttributeInputTypeEnumReference   AttributeInputTypeEnum = AttributeInputTypeEnum(model.REFERENCE)
+	AttributeInputTypeEnumNumeric     AttributeInputTypeEnum = AttributeInputTypeEnum(model.NUMERIC)
+	AttributeInputTypeEnumRichText    AttributeInputTypeEnum = AttributeInputTypeEnum(model.RICH_TEXT)
+	AttributeInputTypeEnumSwatch      AttributeInputTypeEnum = AttributeInputTypeEnum(model.SWATCH)
+	AttributeInputTypeEnumBoolean     AttributeInputTypeEnum = AttributeInputTypeEnum(model.BOOLEAN)
+	AttributeInputTypeEnumDate        AttributeInputTypeEnum = AttributeInputTypeEnum(model.DATE)
+	AttributeInputTypeEnumDateTime    AttributeInputTypeEnum = AttributeInputTypeEnum(model.DATE_TIME)
 )
 
 func (e AttributeInputTypeEnum) IsValid() bool {
@@ -5053,19 +4709,6 @@ func (e AttributeInputTypeEnum) IsValid() bool {
 
 func (e AttributeInputTypeEnum) String() string {
 	return string(e)
-}
-
-func (e *AttributeInputTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AttributeInputTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AttributeInputTypeEnum", str)
-	}
-	return nil
 }
 
 type AttributeSortField string
@@ -5094,24 +4737,11 @@ func (e AttributeSortField) String() string {
 	return string(e)
 }
 
-func (e *AttributeSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AttributeSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AttributeSortField", str)
-	}
-	return nil
-}
-
 type AttributeTypeEnum string
 
 const (
-	AttributeTypeEnumProductType AttributeTypeEnum = "PRODUCT_TYPE"
-	AttributeTypeEnumPageType    AttributeTypeEnum = "PAGE_TYPE"
+	AttributeTypeEnumProductType AttributeTypeEnum = model.PRODUCT_TYPE
+	AttributeTypeEnumPageType    AttributeTypeEnum = model.PAGE_TYPE
 )
 
 func (e AttributeTypeEnum) IsValid() bool {
@@ -5124,19 +4754,6 @@ func (e AttributeTypeEnum) IsValid() bool {
 
 func (e AttributeTypeEnum) String() string {
 	return string(e)
-}
-
-func (e *AttributeTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = AttributeTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid AttributeTypeEnum", str)
-	}
-	return nil
 }
 
 type CategorySortField string
@@ -5157,19 +4774,6 @@ func (e CategorySortField) IsValid() bool {
 
 func (e CategorySortField) String() string {
 	return string(e)
-}
-
-func (e *CategorySortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = CategorySortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid CategorySortField", str)
-	}
-	return nil
 }
 
 type ChannelErrorCode string
@@ -5196,19 +4800,6 @@ func (e ChannelErrorCode) IsValid() bool {
 
 func (e ChannelErrorCode) String() string {
 	return string(e)
-}
-
-func (e *ChannelErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ChannelErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ChannelErrorCode", str)
-	}
-	return nil
 }
 
 type CheckoutErrorCode string
@@ -5253,19 +4844,6 @@ func (e CheckoutErrorCode) String() string {
 	return string(e)
 }
 
-func (e *CheckoutErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = CheckoutErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid CheckoutErrorCode", str)
-	}
-	return nil
-}
-
 type CollectionErrorCode string
 
 const (
@@ -5290,19 +4868,6 @@ func (e CollectionErrorCode) String() string {
 	return string(e)
 }
 
-func (e *CollectionErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = CollectionErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid CollectionErrorCode", str)
-	}
-	return nil
-}
-
 type CollectionPublished string
 
 const (
@@ -5320,19 +4885,6 @@ func (e CollectionPublished) IsValid() bool {
 
 func (e CollectionPublished) String() string {
 	return string(e)
-}
-
-func (e *CollectionPublished) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = CollectionPublished(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid CollectionPublished", str)
-	}
-	return nil
 }
 
 type CollectionSortField string
@@ -5354,19 +4906,6 @@ func (e CollectionSortField) IsValid() bool {
 
 func (e CollectionSortField) String() string {
 	return string(e)
-}
-
-func (e *CollectionSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = CollectionSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid CollectionSortField", str)
-	}
-	return nil
 }
 
 type ConfigurationTypeFieldEnum string
@@ -5391,19 +4930,6 @@ func (e ConfigurationTypeFieldEnum) IsValid() bool {
 
 func (e ConfigurationTypeFieldEnum) String() string {
 	return string(e)
-}
-
-func (e *ConfigurationTypeFieldEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ConfigurationTypeFieldEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ConfigurationTypeFieldEnum", str)
-	}
-	return nil
 }
 
 type CountryCode string
@@ -5673,19 +5199,6 @@ func (e CountryCode) String() string {
 	return string(e)
 }
 
-func (e *CountryCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = CountryCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid CountryCode", str)
-	}
-	return nil
-}
-
 type CustomerEventsEnum string
 
 const (
@@ -5716,19 +5229,6 @@ func (e CustomerEventsEnum) String() string {
 	return string(e)
 }
 
-func (e *CustomerEventsEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = CustomerEventsEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid CustomerEventsEnum", str)
-	}
-	return nil
-}
-
 type DiscountErrorCode string
 
 const (
@@ -5754,19 +5254,6 @@ func (e DiscountErrorCode) String() string {
 	return string(e)
 }
 
-func (e *DiscountErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = DiscountErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid DiscountErrorCode", str)
-	}
-	return nil
-}
-
 type DiscountStatusEnum string
 
 const (
@@ -5787,24 +5274,11 @@ func (e DiscountStatusEnum) String() string {
 	return string(e)
 }
 
-func (e *DiscountStatusEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = DiscountStatusEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid DiscountStatusEnum", str)
-	}
-	return nil
-}
-
 type DiscountValueTypeEnum string
 
 const (
-	DiscountValueTypeEnumFixed      DiscountValueTypeEnum = "FIXED"
-	DiscountValueTypeEnumPercentage DiscountValueTypeEnum = "PERCENTAGE"
+	DiscountValueTypeEnumFixed      DiscountValueTypeEnum = model.FIXED
+	DiscountValueTypeEnumPercentage DiscountValueTypeEnum = model.PERCENTAGE
 )
 
 func (e DiscountValueTypeEnum) IsValid() bool {
@@ -5819,28 +5293,15 @@ func (e DiscountValueTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *DiscountValueTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = DiscountValueTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid DiscountValueTypeEnum", str)
-	}
-	return nil
-}
-
 type DistanceUnitsEnum string
 
 const (
-	DistanceUnitsEnumCm   DistanceUnitsEnum = "CM"
-	DistanceUnitsEnumM    DistanceUnitsEnum = "M"
-	DistanceUnitsEnumKm   DistanceUnitsEnum = "KM"
-	DistanceUnitsEnumFt   DistanceUnitsEnum = "FT"
-	DistanceUnitsEnumYd   DistanceUnitsEnum = "YD"
-	DistanceUnitsEnumInch DistanceUnitsEnum = "INCH"
+	DistanceUnitsEnumCm   DistanceUnitsEnum = DistanceUnitsEnum(measurement.CM)
+	DistanceUnitsEnumM    DistanceUnitsEnum = DistanceUnitsEnum(measurement.M)
+	DistanceUnitsEnumKm   DistanceUnitsEnum = DistanceUnitsEnum(measurement.KM)
+	DistanceUnitsEnumFt   DistanceUnitsEnum = DistanceUnitsEnum(measurement.FT)
+	DistanceUnitsEnumYd   DistanceUnitsEnum = DistanceUnitsEnum(measurement.YD)
+	DistanceUnitsEnumInch DistanceUnitsEnum = DistanceUnitsEnum(measurement.INCH)
 )
 
 func (e DistanceUnitsEnum) IsValid() bool {
@@ -5855,28 +5316,15 @@ func (e DistanceUnitsEnum) String() string {
 	return string(e)
 }
 
-func (e *DistanceUnitsEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = DistanceUnitsEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid DistanceUnitsEnum", str)
-	}
-	return nil
-}
-
 type ExportEventsEnum string
 
 const (
-	ExportEventsEnumExportPending        ExportEventsEnum = "EXPORT_PENDING"
-	ExportEventsEnumExportSuccess        ExportEventsEnum = "EXPORT_SUCCESS"
-	ExportEventsEnumExportFailed         ExportEventsEnum = "EXPORT_FAILED"
-	ExportEventsEnumExportDeleted        ExportEventsEnum = "EXPORT_DELETED"
-	ExportEventsEnumExportedFileSent     ExportEventsEnum = "EXPORTED_FILE_SENT"
-	ExportEventsEnumExportFailedInfoSent ExportEventsEnum = "EXPORT_FAILED_INFO_SENT"
+	ExportEventsEnumExportPending        ExportEventsEnum = model.EXPORT_PENDING
+	ExportEventsEnumExportSuccess        ExportEventsEnum = model.EXPORT_SUCCESS
+	ExportEventsEnumExportFailed         ExportEventsEnum = model.EXPORT_FAILED
+	ExportEventsEnumExportDeleted        ExportEventsEnum = model.EXPORT_DELETED
+	ExportEventsEnumExportedFileSent     ExportEventsEnum = model.EXPORTED_FILE_SENT
+	ExportEventsEnumExportFailedInfoSent ExportEventsEnum = model.EXPORT_FAILED_INFO_SENT
 )
 
 func (e ExportEventsEnum) IsValid() bool {
@@ -5889,19 +5337,6 @@ func (e ExportEventsEnum) IsValid() bool {
 
 func (e ExportEventsEnum) String() string {
 	return string(e)
-}
-
-func (e *ExportEventsEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ExportEventsEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ExportEventsEnum", str)
-	}
-	return nil
 }
 
 type ExportFileSortField string
@@ -5924,19 +5359,6 @@ func (e ExportFileSortField) String() string {
 	return string(e)
 }
 
-func (e *ExportFileSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ExportFileSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ExportFileSortField", str)
-	}
-	return nil
-}
-
 type ExportScope string
 
 const (
@@ -5955,19 +5377,6 @@ func (e ExportScope) IsValid() bool {
 
 func (e ExportScope) String() string {
 	return string(e)
-}
-
-func (e *ExportScope) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ExportScope(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ExportScope", str)
-	}
-	return nil
 }
 
 type ExternalNotificationErrorCodes string
@@ -5991,24 +5400,11 @@ func (e ExternalNotificationErrorCodes) String() string {
 	return string(e)
 }
 
-func (e *ExternalNotificationErrorCodes) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ExternalNotificationErrorCodes(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ExternalNotificationErrorCodes", str)
-	}
-	return nil
-}
-
 type FileTypesEnum string
 
 const (
-	FileTypesEnumCSV  FileTypesEnum = "CSV"
-	FileTypesEnumXlsx FileTypesEnum = "XLSX"
+	FileTypesEnumCSV  FileTypesEnum = "csv"
+	FileTypesEnumXlsx FileTypesEnum = "xlsx"
 )
 
 func (e FileTypesEnum) IsValid() bool {
@@ -6023,29 +5419,16 @@ func (e FileTypesEnum) String() string {
 	return string(e)
 }
 
-func (e *FileTypesEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = FileTypesEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid FileTypesEnum", str)
-	}
-	return nil
-}
-
 type FulfillmentStatus string
 
 const (
-	FulfillmentStatusFulfilled           FulfillmentStatus = "FULFILLED"
-	FulfillmentStatusRefunded            FulfillmentStatus = "REFUNDED"
-	FulfillmentStatusReturned            FulfillmentStatus = "RETURNED"
-	FulfillmentStatusReplaced            FulfillmentStatus = "REPLACED"
-	FulfillmentStatusRefundedAndReturned FulfillmentStatus = "REFUNDED_AND_RETURNED"
-	FulfillmentStatusCanceled            FulfillmentStatus = "CANCELED"
-	FulfillmentStatusWaitingForApproval  FulfillmentStatus = "WAITING_FOR_APPROVAL"
+	FulfillmentStatusFulfilled           FulfillmentStatus = FulfillmentStatus(model.FULFILLMENT_FULFILLED)
+	FulfillmentStatusRefunded            FulfillmentStatus = FulfillmentStatus(model.FULFILLMENT_REFUNDED)
+	FulfillmentStatusReturned            FulfillmentStatus = FulfillmentStatus(model.FULFILLMENT_RETURNED)
+	FulfillmentStatusReplaced            FulfillmentStatus = FulfillmentStatus(model.FULFILLMENT_REPLACED)
+	FulfillmentStatusRefundedAndReturned FulfillmentStatus = FulfillmentStatus(model.FULFILLMENT_REFUNDED_AND_RETURNED)
+	FulfillmentStatusCanceled            FulfillmentStatus = FulfillmentStatus(model.FULFILLMENT_CANCELED)
+	FulfillmentStatusWaitingForApproval  FulfillmentStatus = FulfillmentStatus(model.FULFILLMENT_WAITING_FOR_APPROVAL)
 )
 
 func (e FulfillmentStatus) IsValid() bool {
@@ -6058,19 +5441,6 @@ func (e FulfillmentStatus) IsValid() bool {
 
 func (e FulfillmentStatus) String() string {
 	return string(e)
-}
-
-func (e *FulfillmentStatus) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = FulfillmentStatus(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid FulfillmentStatus", str)
-	}
-	return nil
 }
 
 type GiftCardErrorCode string
@@ -6096,34 +5466,21 @@ func (e GiftCardErrorCode) String() string {
 	return string(e)
 }
 
-func (e *GiftCardErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = GiftCardErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid GiftCardErrorCode", str)
-	}
-	return nil
-}
-
 type GiftCardEventsEnum string
 
 const (
-	GiftCardEventsEnumIssued            GiftCardEventsEnum = "ISSUED"
-	GiftCardEventsEnumBought            GiftCardEventsEnum = "BOUGHT"
-	GiftCardEventsEnumUpdated           GiftCardEventsEnum = "UPDATED"
-	GiftCardEventsEnumActivated         GiftCardEventsEnum = "ACTIVATED"
-	GiftCardEventsEnumDeactivated       GiftCardEventsEnum = "DEACTIVATED"
-	GiftCardEventsEnumBalanceReset      GiftCardEventsEnum = "BALANCE_RESET"
-	GiftCardEventsEnumExpiryDateUpdated GiftCardEventsEnum = "EXPIRY_DATE_UPDATED"
-	GiftCardEventsEnumTagUpdated        GiftCardEventsEnum = "TAG_UPDATED"
-	GiftCardEventsEnumSentToCustomer    GiftCardEventsEnum = "SENT_TO_CUSTOMER"
-	GiftCardEventsEnumResent            GiftCardEventsEnum = "RESENT"
-	GiftCardEventsEnumNoteAdded         GiftCardEventsEnum = "NOTE_ADDED"
-	GiftCardEventsEnumUsedInOrder       GiftCardEventsEnum = "USED_IN_ORDER"
+	GiftCardEventsEnumIssued            GiftCardEventsEnum = GiftCardEventsEnum(model.ISSUED)
+	GiftCardEventsEnumBought            GiftCardEventsEnum = GiftCardEventsEnum(model.BOUGHT)
+	GiftCardEventsEnumUpdated           GiftCardEventsEnum = GiftCardEventsEnum(model.UPDATED)
+	GiftCardEventsEnumActivated         GiftCardEventsEnum = GiftCardEventsEnum(model.ACTIVATED)
+	GiftCardEventsEnumDeactivated       GiftCardEventsEnum = GiftCardEventsEnum(model.DEACTIVATED)
+	GiftCardEventsEnumBalanceReset      GiftCardEventsEnum = GiftCardEventsEnum(model.BALANCE_RESET)
+	GiftCardEventsEnumExpiryDateUpdated GiftCardEventsEnum = GiftCardEventsEnum(model.EXPIRY_DATE_UPDATED)
+	GiftCardEventsEnumTagUpdated        GiftCardEventsEnum = GiftCardEventsEnum(model.TAG_UPDATED)
+	GiftCardEventsEnumSentToCustomer    GiftCardEventsEnum = GiftCardEventsEnum(model.SENT_TO_CUSTOMER)
+	GiftCardEventsEnumResent            GiftCardEventsEnum = GiftCardEventsEnum(model.RESENT)
+	GiftCardEventsEnumNoteAdded         GiftCardEventsEnum = GiftCardEventsEnum(model.NOTE_ADDED)
+	GiftCardEventsEnumUsedInOrder       GiftCardEventsEnum = GiftCardEventsEnum(model.USED_IN_ORDER)
 )
 
 func (e GiftCardEventsEnum) IsValid() bool {
@@ -6136,19 +5493,6 @@ func (e GiftCardEventsEnum) IsValid() bool {
 
 func (e GiftCardEventsEnum) String() string {
 	return string(e)
-}
-
-func (e *GiftCardEventsEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = GiftCardEventsEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid GiftCardEventsEnum", str)
-	}
-	return nil
 }
 
 type GiftCardSettingsErrorCode string
@@ -6171,24 +5515,11 @@ func (e GiftCardSettingsErrorCode) String() string {
 	return string(e)
 }
 
-func (e *GiftCardSettingsErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = GiftCardSettingsErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid GiftCardSettingsErrorCode", str)
-	}
-	return nil
-}
-
 type GiftCardSettingsExpiryTypeEnum string
 
 const (
-	GiftCardSettingsExpiryTypeEnumNeverExpire  GiftCardSettingsExpiryTypeEnum = "NEVER_EXPIRE"
-	GiftCardSettingsExpiryTypeEnumExpiryPeriod GiftCardSettingsExpiryTypeEnum = "EXPIRY_PERIOD"
+	GiftCardSettingsExpiryTypeEnumNeverExpire  GiftCardSettingsExpiryTypeEnum = GiftCardSettingsExpiryTypeEnum(model.NEVER_EXPIRE)
+	GiftCardSettingsExpiryTypeEnumExpiryPeriod GiftCardSettingsExpiryTypeEnum = GiftCardSettingsExpiryTypeEnum(model.EXPIRY_PERIOD)
 )
 
 func (e GiftCardSettingsExpiryTypeEnum) IsValid() bool {
@@ -6201,19 +5532,6 @@ func (e GiftCardSettingsExpiryTypeEnum) IsValid() bool {
 
 func (e GiftCardSettingsExpiryTypeEnum) String() string {
 	return string(e)
-}
-
-func (e *GiftCardSettingsExpiryTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = GiftCardSettingsExpiryTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid GiftCardSettingsExpiryTypeEnum", str)
-	}
-	return nil
 }
 
 type GiftCardSortField string
@@ -6235,19 +5553,6 @@ func (e GiftCardSortField) IsValid() bool {
 
 func (e GiftCardSortField) String() string {
 	return string(e)
-}
-
-func (e *GiftCardSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = GiftCardSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid GiftCardSortField", str)
-	}
-	return nil
 }
 
 type InvoiceErrorCode string
@@ -6274,19 +5579,6 @@ func (e InvoiceErrorCode) String() string {
 	return string(e)
 }
 
-func (e *InvoiceErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = InvoiceErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid InvoiceErrorCode", str)
-	}
-	return nil
-}
-
 type JobStatusEnum string
 
 const (
@@ -6306,19 +5598,6 @@ func (e JobStatusEnum) IsValid() bool {
 
 func (e JobStatusEnum) String() string {
 	return string(e)
-}
-
-func (e *JobStatusEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = JobStatusEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid JobStatusEnum", str)
-	}
-	return nil
 }
 
 type LanguageCodeEnum string
@@ -7117,19 +6396,6 @@ func (e LanguageCodeEnum) String() string {
 	return string(e)
 }
 
-func (e *LanguageCodeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = LanguageCodeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid LanguageCodeEnum", str)
-	}
-	return nil
-}
-
 type LoginErrorCode string
 
 const (
@@ -7152,52 +6418,39 @@ func (e LoginErrorCode) String() string {
 	return string(e)
 }
 
-func (e *LoginErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = LoginErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid LoginErrorCode", str)
-	}
-	return nil
-}
-
 type MeasurementUnitsEnum string
 
 const (
-	MeasurementUnitsEnumCm              MeasurementUnitsEnum = "CM"
-	MeasurementUnitsEnumM               MeasurementUnitsEnum = "M"
-	MeasurementUnitsEnumKm              MeasurementUnitsEnum = "KM"
-	MeasurementUnitsEnumFt              MeasurementUnitsEnum = "FT"
-	MeasurementUnitsEnumYd              MeasurementUnitsEnum = "YD"
-	MeasurementUnitsEnumInch            MeasurementUnitsEnum = "INCH"
-	MeasurementUnitsEnumSqCm            MeasurementUnitsEnum = "SQ_CM"
-	MeasurementUnitsEnumSqM             MeasurementUnitsEnum = "SQ_M"
-	MeasurementUnitsEnumSqKm            MeasurementUnitsEnum = "SQ_KM"
-	MeasurementUnitsEnumSqFt            MeasurementUnitsEnum = "SQ_FT"
-	MeasurementUnitsEnumSqYd            MeasurementUnitsEnum = "SQ_YD"
-	MeasurementUnitsEnumSqInch          MeasurementUnitsEnum = "SQ_INCH"
-	MeasurementUnitsEnumCubicMillimeter MeasurementUnitsEnum = "CUBIC_MILLIMETER"
-	MeasurementUnitsEnumCubicCentimeter MeasurementUnitsEnum = "CUBIC_CENTIMETER"
-	MeasurementUnitsEnumCubicDecimeter  MeasurementUnitsEnum = "CUBIC_DECIMETER"
-	MeasurementUnitsEnumCubicMeter      MeasurementUnitsEnum = "CUBIC_METER"
-	MeasurementUnitsEnumLiter           MeasurementUnitsEnum = "LITER"
-	MeasurementUnitsEnumCubicFoot       MeasurementUnitsEnum = "CUBIC_FOOT"
-	MeasurementUnitsEnumCubicInch       MeasurementUnitsEnum = "CUBIC_INCH"
-	MeasurementUnitsEnumCubicYard       MeasurementUnitsEnum = "CUBIC_YARD"
-	MeasurementUnitsEnumQt              MeasurementUnitsEnum = "QT"
-	MeasurementUnitsEnumPint            MeasurementUnitsEnum = "PINT"
-	MeasurementUnitsEnumFlOz            MeasurementUnitsEnum = "FL_OZ"
-	MeasurementUnitsEnumAcreIn          MeasurementUnitsEnum = "ACRE_IN"
-	MeasurementUnitsEnumAcreFt          MeasurementUnitsEnum = "ACRE_FT"
-	MeasurementUnitsEnumG               MeasurementUnitsEnum = "G"
-	MeasurementUnitsEnumLb              MeasurementUnitsEnum = "LB"
-	MeasurementUnitsEnumOz              MeasurementUnitsEnum = "OZ"
-	MeasurementUnitsEnumKg              MeasurementUnitsEnum = "KG"
-	MeasurementUnitsEnumTonne           MeasurementUnitsEnum = "TONNE"
+	MeasurementUnitsEnumCm              MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.CM)
+	MeasurementUnitsEnumM               MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.M)
+	MeasurementUnitsEnumKm              MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.KM)
+	MeasurementUnitsEnumFt              MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.FT)
+	MeasurementUnitsEnumYd              MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.YD)
+	MeasurementUnitsEnumInch            MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.INCH)
+	MeasurementUnitsEnumSqCm            MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.SQ_CM)
+	MeasurementUnitsEnumSqM             MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.SQ_M)
+	MeasurementUnitsEnumSqKm            MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.SQ_KM)
+	MeasurementUnitsEnumSqFt            MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.SQ_FT)
+	MeasurementUnitsEnumSqYd            MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.SQ_YD)
+	MeasurementUnitsEnumSqInch          MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.SQ_INCH)
+	MeasurementUnitsEnumCubicMillimeter MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.CUBIC_MILLIMETER)
+	MeasurementUnitsEnumCubicCentimeter MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.CUBIC_CENTIMETER)
+	MeasurementUnitsEnumCubicDecimeter  MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.CUBIC_DECIMETER)
+	MeasurementUnitsEnumCubicMeter      MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.CUBIC_METER)
+	MeasurementUnitsEnumLiter           MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.LITER)
+	MeasurementUnitsEnumCubicFoot       MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.CUBIC_FOOT)
+	MeasurementUnitsEnumCubicInch       MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.CUBIC_INCH)
+	MeasurementUnitsEnumCubicYard       MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.CUBIC_YARD)
+	MeasurementUnitsEnumQt              MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.QT)
+	MeasurementUnitsEnumPint            MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.PINT)
+	MeasurementUnitsEnumFlOz            MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.FL_OZ)
+	MeasurementUnitsEnumAcreIn          MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.ACRE_IN)
+	MeasurementUnitsEnumAcreFt          MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.ACRE_FT)
+	MeasurementUnitsEnumG               MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.G)
+	MeasurementUnitsEnumLb              MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.LB)
+	MeasurementUnitsEnumOz              MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.OZ)
+	MeasurementUnitsEnumKg              MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.KG)
+	MeasurementUnitsEnumTonne           MeasurementUnitsEnum = MeasurementUnitsEnum(measurement.TONNE)
 )
 
 func (e MeasurementUnitsEnum) IsValid() bool {
@@ -7210,19 +6463,6 @@ func (e MeasurementUnitsEnum) IsValid() bool {
 
 func (e MeasurementUnitsEnum) String() string {
 	return string(e)
-}
-
-func (e *MeasurementUnitsEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = MeasurementUnitsEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid MeasurementUnitsEnum", str)
-	}
-	return nil
 }
 
 type MenuErrorCode string
@@ -7251,19 +6491,6 @@ func (e MenuErrorCode) String() string {
 	return string(e)
 }
 
-func (e *MenuErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = MenuErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid MenuErrorCode", str)
-	}
-	return nil
-}
-
 type MenuItemsSortField string
 
 const (
@@ -7280,19 +6507,6 @@ func (e MenuItemsSortField) IsValid() bool {
 
 func (e MenuItemsSortField) String() string {
 	return string(e)
-}
-
-func (e *MenuItemsSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = MenuItemsSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid MenuItemsSortField", str)
-	}
-	return nil
 }
 
 type MenuSortField string
@@ -7312,19 +6526,6 @@ func (e MenuSortField) IsValid() bool {
 
 func (e MenuSortField) String() string {
 	return string(e)
-}
-
-func (e *MenuSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = MenuSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid MenuSortField", str)
-	}
-	return nil
 }
 
 type MetadataErrorCode string
@@ -7348,19 +6549,6 @@ func (e MetadataErrorCode) String() string {
 	return string(e)
 }
 
-func (e *MetadataErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = MetadataErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid MetadataErrorCode", str)
-	}
-	return nil
-}
-
 type NavigationType string
 
 const (
@@ -7378,19 +6566,6 @@ func (e NavigationType) IsValid() bool {
 
 func (e NavigationType) String() string {
 	return string(e)
-}
-
-func (e *NavigationType) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = NavigationType(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid NavigationType", str)
-	}
-	return nil
 }
 
 type OrderAction string
@@ -7414,19 +6589,6 @@ func (e OrderAction) String() string {
 	return string(e)
 }
 
-func (e *OrderAction) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = OrderAction(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid OrderAction", str)
-	}
-	return nil
-}
-
 type OrderDirection string
 
 const (
@@ -7446,24 +6608,11 @@ func (e OrderDirection) String() string {
 	return string(e)
 }
 
-func (e *OrderDirection) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = OrderDirection(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid OrderDirection", str)
-	}
-	return nil
-}
-
 type OrderDiscountType string
 
 const (
-	OrderDiscountTypeVoucher OrderDiscountType = "VOUCHER"
-	OrderDiscountTypeManual  OrderDiscountType = "MANUAL"
+	OrderDiscountTypeVoucher OrderDiscountType = OrderDiscountType(model.VOUCHER)
+	OrderDiscountTypeManual  OrderDiscountType = OrderDiscountType(model.MANUAL)
 )
 
 func (e OrderDiscountType) IsValid() bool {
@@ -7476,19 +6625,6 @@ func (e OrderDiscountType) IsValid() bool {
 
 func (e OrderDiscountType) String() string {
 	return string(e)
-}
-
-func (e *OrderDiscountType) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = OrderDiscountType(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid OrderDiscountType", str)
-	}
-	return nil
 }
 
 type OrderErrorCode string
@@ -7539,19 +6675,6 @@ func (e OrderErrorCode) String() string {
 	return string(e)
 }
 
-func (e *OrderErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = OrderErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid OrderErrorCode", str)
-	}
-	return nil
-}
-
 type OrderEventsEmailsEnum string
 
 const (
@@ -7576,19 +6699,6 @@ func (e OrderEventsEmailsEnum) IsValid() bool {
 
 func (e OrderEventsEmailsEnum) String() string {
 	return string(e)
-}
-
-func (e *OrderEventsEmailsEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = OrderEventsEmailsEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid OrderEventsEmailsEnum", str)
-	}
-	return nil
 }
 
 type OrderEventsEnum string
@@ -7648,19 +6758,6 @@ func (e OrderEventsEnum) String() string {
 	return string(e)
 }
 
-func (e *OrderEventsEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = OrderEventsEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid OrderEventsEnum", str)
-	}
-	return nil
-}
-
 type OrderOriginEnum string
 
 const (
@@ -7681,19 +6778,6 @@ func (e OrderOriginEnum) String() string {
 	return string(e)
 }
 
-func (e *OrderOriginEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = OrderOriginEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid OrderOriginEnum", str)
-	}
-	return nil
-}
-
 type OrderSettingsErrorCode string
 
 const (
@@ -7710,19 +6794,6 @@ func (e OrderSettingsErrorCode) IsValid() bool {
 
 func (e OrderSettingsErrorCode) String() string {
 	return string(e)
-}
-
-func (e *OrderSettingsErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = OrderSettingsErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid OrderSettingsErrorCode", str)
-	}
-	return nil
 }
 
 type OrderSortField string
@@ -7747,30 +6818,17 @@ func (e OrderSortField) String() string {
 	return string(e)
 }
 
-func (e *OrderSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = OrderSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid OrderSortField", str)
-	}
-	return nil
-}
-
 type OrderStatus string
 
 const (
-	OrderStatusDraft              OrderStatus = "DRAFT"
-	OrderStatusUnconfirmed        OrderStatus = "UNCONFIRMED"
-	OrderStatusUnfulfilled        OrderStatus = "UNFULFILLED"
-	OrderStatusPartiallyFulfilled OrderStatus = "PARTIALLY_FULFILLED"
-	OrderStatusPartiallyReturned  OrderStatus = "PARTIALLY_RETURNED"
-	OrderStatusReturned           OrderStatus = "RETURNED"
-	OrderStatusFulfilled          OrderStatus = "FULFILLED"
-	OrderStatusCanceled           OrderStatus = "CANCELED"
+	OrderStatusDraft              OrderStatus = OrderStatus(model.STATUS_DRAFT)
+	OrderStatusUnconfirmed        OrderStatus = OrderStatus(model.UNCONFIRMED)
+	OrderStatusUnfulfilled        OrderStatus = OrderStatus(model.UNFULFILLED)
+	OrderStatusPartiallyFulfilled OrderStatus = OrderStatus(model.PARTIALLY_FULFILLED)
+	OrderStatusPartiallyReturned  OrderStatus = OrderStatus(model.PARTIALLY_RETURNED)
+	OrderStatusReturned           OrderStatus = OrderStatus(model.RETURNED)
+	OrderStatusFulfilled          OrderStatus = OrderStatus(model.FULFILLED)
+	OrderStatusCanceled           OrderStatus = OrderStatus(model.CANCELED)
 )
 
 func (e OrderStatus) IsValid() bool {
@@ -7783,19 +6841,6 @@ func (e OrderStatus) IsValid() bool {
 
 func (e OrderStatus) String() string {
 	return string(e)
-}
-
-func (e *OrderStatus) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = OrderStatus(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid OrderStatus", str)
-	}
-	return nil
 }
 
 type OrderStatusFilter string
@@ -7822,19 +6867,6 @@ func (e OrderStatusFilter) String() string {
 	return string(e)
 }
 
-func (e *OrderStatusFilter) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = OrderStatusFilter(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid OrderStatusFilter", str)
-	}
-	return nil
-}
-
 type PageErrorCode string
 
 const (
@@ -7859,19 +6891,6 @@ func (e PageErrorCode) String() string {
 	return string(e)
 }
 
-func (e *PageErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = PageErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid PageErrorCode", str)
-	}
-	return nil
-}
-
 type PageSortField string
 
 const (
@@ -7894,19 +6913,6 @@ func (e PageSortField) String() string {
 	return string(e)
 }
 
-func (e *PageSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = PageSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid PageSortField", str)
-	}
-	return nil
-}
-
 type PageTypeSortField string
 
 const (
@@ -7926,30 +6932,17 @@ func (e PageTypeSortField) String() string {
 	return string(e)
 }
 
-func (e *PageTypeSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = PageTypeSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid PageTypeSortField", str)
-	}
-	return nil
-}
-
 type PaymentChargeStatusEnum string
 
 const (
-	PaymentChargeStatusEnumNotCharged        PaymentChargeStatusEnum = "NOT_CHARGED"
-	PaymentChargeStatusEnumPending           PaymentChargeStatusEnum = "PENDING"
-	PaymentChargeStatusEnumPartiallyCharged  PaymentChargeStatusEnum = "PARTIALLY_CHARGED"
-	PaymentChargeStatusEnumFullyCharged      PaymentChargeStatusEnum = "FULLY_CHARGED"
-	PaymentChargeStatusEnumPartiallyRefunded PaymentChargeStatusEnum = "PARTIALLY_REFUNDED"
-	PaymentChargeStatusEnumFullyRefunded     PaymentChargeStatusEnum = "FULLY_REFUNDED"
-	PaymentChargeStatusEnumRefused           PaymentChargeStatusEnum = "REFUSED"
-	PaymentChargeStatusEnumCancelled         PaymentChargeStatusEnum = "CANCELLED"
+	PaymentChargeStatusEnumNotCharged        PaymentChargeStatusEnum = PaymentChargeStatusEnum(model.NOT_CHARGED)
+	PaymentChargeStatusEnumPending           PaymentChargeStatusEnum = PaymentChargeStatusEnum(model.PENDING)
+	PaymentChargeStatusEnumPartiallyCharged  PaymentChargeStatusEnum = PaymentChargeStatusEnum(model.PARTIALLY_CHARGED)
+	PaymentChargeStatusEnumFullyCharged      PaymentChargeStatusEnum = PaymentChargeStatusEnum(model.FULLY_CHARGED)
+	PaymentChargeStatusEnumPartiallyRefunded PaymentChargeStatusEnum = PaymentChargeStatusEnum(model.PARTIALLY_REFUNDED)
+	PaymentChargeStatusEnumFullyRefunded     PaymentChargeStatusEnum = PaymentChargeStatusEnum(model.FULLY_REFUNDED)
+	PaymentChargeStatusEnumRefused           PaymentChargeStatusEnum = PaymentChargeStatusEnum(model.REFUSED)
+	PaymentChargeStatusEnumCancelled         PaymentChargeStatusEnum = PaymentChargeStatusEnum(model.CANCELLED)
 )
 
 func (e PaymentChargeStatusEnum) IsValid() bool {
@@ -7962,19 +6955,6 @@ func (e PaymentChargeStatusEnum) IsValid() bool {
 
 func (e PaymentChargeStatusEnum) String() string {
 	return string(e)
-}
-
-func (e *PaymentChargeStatusEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = PaymentChargeStatusEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid PaymentChargeStatusEnum", str)
-	}
-	return nil
 }
 
 type PaymentErrorCode string
@@ -8005,19 +6985,6 @@ func (e PaymentErrorCode) IsValid() bool {
 
 func (e PaymentErrorCode) String() string {
 	return string(e)
-}
-
-func (e *PaymentErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = PaymentErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid PaymentErrorCode", str)
-	}
-	return nil
 }
 
 type PermissionEnum string
@@ -8056,19 +7023,6 @@ func (e PermissionEnum) String() string {
 	return string(e)
 }
 
-func (e *PermissionEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = PermissionEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid PermissionEnum", str)
-	}
-	return nil
-}
-
 type PermissionGroupErrorCode string
 
 const (
@@ -8094,19 +7048,6 @@ func (e PermissionGroupErrorCode) String() string {
 	return string(e)
 }
 
-func (e *PermissionGroupErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = PermissionGroupErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid PermissionGroupErrorCode", str)
-	}
-	return nil
-}
-
 type PermissionGroupSortField string
 
 const (
@@ -8123,19 +7064,6 @@ func (e PermissionGroupSortField) IsValid() bool {
 
 func (e PermissionGroupSortField) String() string {
 	return string(e)
-}
-
-func (e *PermissionGroupSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = PermissionGroupSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid PermissionGroupSortField", str)
-	}
-	return nil
 }
 
 type PluginConfigurationType string
@@ -8155,19 +7083,6 @@ func (e PluginConfigurationType) IsValid() bool {
 
 func (e PluginConfigurationType) String() string {
 	return string(e)
-}
-
-func (e *PluginConfigurationType) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = PluginConfigurationType(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid PluginConfigurationType", str)
-	}
-	return nil
 }
 
 type PluginErrorCode string
@@ -8193,19 +7108,6 @@ func (e PluginErrorCode) String() string {
 	return string(e)
 }
 
-func (e *PluginErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = PluginErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid PluginErrorCode", str)
-	}
-	return nil
-}
-
 type PluginSortField string
 
 const (
@@ -8223,19 +7125,6 @@ func (e PluginSortField) IsValid() bool {
 
 func (e PluginSortField) String() string {
 	return string(e)
-}
-
-func (e *PluginSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = PluginSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid PluginSortField", str)
-	}
-	return nil
 }
 
 type PostalCodeRuleInclusionTypeEnum string
@@ -8257,19 +7146,6 @@ func (e PostalCodeRuleInclusionTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *PostalCodeRuleInclusionTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = PostalCodeRuleInclusionTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid PostalCodeRuleInclusionTypeEnum", str)
-	}
-	return nil
-}
-
 type ProductAttributeType string
 
 const (
@@ -8287,19 +7163,6 @@ func (e ProductAttributeType) IsValid() bool {
 
 func (e ProductAttributeType) String() string {
 	return string(e)
-}
-
-func (e *ProductAttributeType) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ProductAttributeType(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ProductAttributeType", str)
-	}
-	return nil
 }
 
 type ProductErrorCode string
@@ -8336,19 +7199,6 @@ func (e ProductErrorCode) String() string {
 	return string(e)
 }
 
-func (e *ProductErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ProductErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ProductErrorCode", str)
-	}
-	return nil
-}
-
 type ProductFieldEnum string
 
 const (
@@ -8378,24 +7228,11 @@ func (e ProductFieldEnum) String() string {
 	return string(e)
 }
 
-func (e *ProductFieldEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ProductFieldEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ProductFieldEnum", str)
-	}
-	return nil
-}
-
 type ProductMediaType string
 
 const (
-	ProductMediaTypeImage ProductMediaType = "IMAGE"
-	ProductMediaTypeVideo ProductMediaType = "VIDEO"
+	ProductMediaTypeImage ProductMediaType = model.IMAGE
+	ProductMediaTypeVideo ProductMediaType = model.VIDEO
 )
 
 func (e ProductMediaType) IsValid() bool {
@@ -8408,19 +7245,6 @@ func (e ProductMediaType) IsValid() bool {
 
 func (e ProductMediaType) String() string {
 	return string(e)
-}
-
-func (e *ProductMediaType) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ProductMediaType(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ProductMediaType", str)
-	}
-	return nil
 }
 
 type ProductOrderField string
@@ -8450,19 +7274,6 @@ func (e ProductOrderField) String() string {
 	return string(e)
 }
 
-func (e *ProductOrderField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ProductOrderField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ProductOrderField", str)
-	}
-	return nil
-}
-
 type ProductTypeConfigurable string
 
 const (
@@ -8480,19 +7291,6 @@ func (e ProductTypeConfigurable) IsValid() bool {
 
 func (e ProductTypeConfigurable) String() string {
 	return string(e)
-}
-
-func (e *ProductTypeConfigurable) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ProductTypeConfigurable(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ProductTypeConfigurable", str)
-	}
-	return nil
 }
 
 type ProductTypeEnum string
@@ -8514,24 +7312,11 @@ func (e ProductTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *ProductTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ProductTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ProductTypeEnum", str)
-	}
-	return nil
-}
-
 type ProductTypeKindEnum string
 
 const (
-	ProductTypeKindEnumNormal   ProductTypeKindEnum = "NORMAL"
-	ProductTypeKindEnumGiftCard ProductTypeKindEnum = "GIFT_CARD"
+	ProductTypeKindEnumNormal   ProductTypeKindEnum = ProductTypeKindEnum(model.NORMAL)
+	ProductTypeKindEnumGiftCard ProductTypeKindEnum = ProductTypeKindEnum(model.GIFT_CARD)
 )
 
 func (e ProductTypeKindEnum) IsValid() bool {
@@ -8544,19 +7329,6 @@ func (e ProductTypeKindEnum) IsValid() bool {
 
 func (e ProductTypeKindEnum) String() string {
 	return string(e)
-}
-
-func (e *ProductTypeKindEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ProductTypeKindEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ProductTypeKindEnum", str)
-	}
-	return nil
 }
 
 type ProductTypeSortField string
@@ -8579,19 +7351,6 @@ func (e ProductTypeSortField) String() string {
 	return string(e)
 }
 
-func (e *ProductTypeSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ProductTypeSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ProductTypeSortField", str)
-	}
-	return nil
-}
-
 type ReportingPeriod string
 
 const (
@@ -8609,19 +7368,6 @@ func (e ReportingPeriod) IsValid() bool {
 
 func (e ReportingPeriod) String() string {
 	return string(e)
-}
-
-func (e *ReportingPeriod) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ReportingPeriod(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ReportingPeriod", str)
-	}
-	return nil
 }
 
 type SaleSortField string
@@ -8646,24 +7392,11 @@ func (e SaleSortField) String() string {
 	return string(e)
 }
 
-func (e *SaleSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = SaleSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid SaleSortField", str)
-	}
-	return nil
-}
-
 type SaleType string
 
 const (
-	SaleTypeFixed      SaleType = "FIXED"
-	SaleTypePercentage SaleType = "PERCENTAGE"
+	SaleTypeFixed      SaleType = model.FIXED
+	SaleTypePercentage SaleType = model.PERCENTAGE
 )
 
 func (e SaleType) IsValid() bool {
@@ -8676,19 +7409,6 @@ func (e SaleType) IsValid() bool {
 
 func (e SaleType) String() string {
 	return string(e)
-}
-
-func (e *SaleType) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = SaleType(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid SaleType", str)
-	}
-	return nil
 }
 
 type ShippingErrorCode string
@@ -8716,24 +7436,11 @@ func (e ShippingErrorCode) String() string {
 	return string(e)
 }
 
-func (e *ShippingErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ShippingErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ShippingErrorCode", str)
-	}
-	return nil
-}
-
 type ShippingMethodTypeEnum string
 
 const (
-	ShippingMethodTypeEnumPrice  ShippingMethodTypeEnum = "PRICE"
-	ShippingMethodTypeEnumWeight ShippingMethodTypeEnum = "WEIGHT"
+	ShippingMethodTypeEnumPrice  ShippingMethodTypeEnum = model.PRICE_BASED
+	ShippingMethodTypeEnumWeight ShippingMethodTypeEnum = model.WEIGHT_BASED
 )
 
 func (e ShippingMethodTypeEnum) IsValid() bool {
@@ -8746,19 +7453,6 @@ func (e ShippingMethodTypeEnum) IsValid() bool {
 
 func (e ShippingMethodTypeEnum) String() string {
 	return string(e)
-}
-
-func (e *ShippingMethodTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ShippingMethodTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ShippingMethodTypeEnum", str)
-	}
-	return nil
 }
 
 type ShopErrorCode string
@@ -8785,24 +7479,11 @@ func (e ShopErrorCode) String() string {
 	return string(e)
 }
 
-func (e *ShopErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ShopErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ShopErrorCode", str)
-	}
-	return nil
-}
-
 type StaffMemberStatus string
 
 const (
-	StaffMemberStatusActive      StaffMemberStatus = "ACTIVE"
-	StaffMemberStatusDeactivated StaffMemberStatus = "DEACTIVATED"
+	StaffMemberStatusActive      StaffMemberStatus = StaffMemberStatus(model.ACTIVATED)
+	StaffMemberStatusDeactivated StaffMemberStatus = StaffMemberStatus(model.DEACTIVATED)
 )
 
 func (e StaffMemberStatus) IsValid() bool {
@@ -8815,19 +7496,6 @@ func (e StaffMemberStatus) IsValid() bool {
 
 func (e StaffMemberStatus) String() string {
 	return string(e)
-}
-
-func (e *StaffMemberStatus) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = StaffMemberStatus(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid StaffMemberStatus", str)
-	}
-	return nil
 }
 
 type StockAvailability string
@@ -8847,19 +7515,6 @@ func (e StockAvailability) IsValid() bool {
 
 func (e StockAvailability) String() string {
 	return string(e)
-}
-
-func (e *StockAvailability) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = StockAvailability(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid StockAvailability", str)
-	}
-	return nil
 }
 
 type StockErrorCode string
@@ -8885,19 +7540,6 @@ func (e StockErrorCode) String() string {
 	return string(e)
 }
 
-func (e *StockErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = StockErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid StockErrorCode", str)
-	}
-	return nil
-}
-
 type StorePaymentMethodEnum string
 
 const (
@@ -8918,26 +7560,13 @@ func (e StorePaymentMethodEnum) String() string {
 	return string(e)
 }
 
-func (e *StorePaymentMethodEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = StorePaymentMethodEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid StorePaymentMethodEnum", str)
-	}
-	return nil
-}
-
 type TimePeriodTypeEnum string
 
 const (
-	TimePeriodTypeEnumDay   TimePeriodTypeEnum = "DAY"
-	TimePeriodTypeEnumWeek  TimePeriodTypeEnum = "WEEK"
-	TimePeriodTypeEnumMonth TimePeriodTypeEnum = "MONTH"
-	TimePeriodTypeEnumYear  TimePeriodTypeEnum = "YEAR"
+	TimePeriodTypeEnumDay   TimePeriodTypeEnum = TimePeriodTypeEnum(model.DAY)
+	TimePeriodTypeEnumWeek  TimePeriodTypeEnum = TimePeriodTypeEnum(model.WEEK)
+	TimePeriodTypeEnumMonth TimePeriodTypeEnum = TimePeriodTypeEnum(model.MONTH)
+	TimePeriodTypeEnumYear  TimePeriodTypeEnum = TimePeriodTypeEnum(model.YEAR)
 )
 
 func (e TimePeriodTypeEnum) IsValid() bool {
@@ -8952,32 +7581,19 @@ func (e TimePeriodTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *TimePeriodTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = TimePeriodTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid TimePeriodTypeEnum", str)
-	}
-	return nil
-}
-
 type TransactionKind string
 
 const (
-	TransactionKindExternal        TransactionKind = "EXTERNAL"
-	TransactionKindAuth            TransactionKind = "AUTH"
-	TransactionKindPending         TransactionKind = "PENDING"
-	TransactionKindActionToConfirm TransactionKind = "ACTION_TO_CONFIRM"
-	TransactionKindRefund          TransactionKind = "REFUND"
-	TransactionKindRefundOngoing   TransactionKind = "REFUND_ONGOING"
-	TransactionKindCapture         TransactionKind = "CAPTURE"
-	TransactionKindVoid            TransactionKind = "VOID"
-	TransactionKindConfirm         TransactionKind = "CONFIRM"
-	TransactionKindCancel          TransactionKind = "CANCEL"
+	TransactionKindExternal        TransactionKind = model.EXTERNAL
+	TransactionKindAuth            TransactionKind = model.AUTH
+	TransactionKindPending         TransactionKind = model.PENDING
+	TransactionKindActionToConfirm TransactionKind = model.ACTION_TO_CONFIRM
+	TransactionKindRefund          TransactionKind = model.REFUND
+	TransactionKindRefundOngoing   TransactionKind = model.REFUND_ONGOING
+	TransactionKindCapture         TransactionKind = model.CAPTURE
+	TransactionKindVoid            TransactionKind = model.VOID
+	TransactionKindConfirm         TransactionKind = model.CONFIRM
+	TransactionKindCancel          TransactionKind = model.CANCEL
 )
 
 func (e TransactionKind) IsValid() bool {
@@ -8990,19 +7606,6 @@ func (e TransactionKind) IsValid() bool {
 
 func (e TransactionKind) String() string {
 	return string(e)
-}
-
-func (e *TransactionKind) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = TransactionKind(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid TransactionKind", str)
-	}
-	return nil
 }
 
 type TranslatableKinds string
@@ -9033,19 +7636,6 @@ func (e TranslatableKinds) String() string {
 	return string(e)
 }
 
-func (e *TranslatableKinds) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = TranslatableKinds(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid TranslatableKinds", str)
-	}
-	return nil
-}
-
 type TranslationErrorCode string
 
 const (
@@ -9066,19 +7656,6 @@ func (e TranslationErrorCode) String() string {
 	return string(e)
 }
 
-func (e *TranslationErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = TranslationErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid TranslationErrorCode", str)
-	}
-	return nil
-}
-
 type UploadErrorCode string
 
 const (
@@ -9095,19 +7672,6 @@ func (e UploadErrorCode) IsValid() bool {
 
 func (e UploadErrorCode) String() string {
 	return string(e)
-}
-
-func (e *UploadErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = UploadErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid UploadErrorCode", str)
-	}
-	return nil
 }
 
 type UserSortField string
@@ -9131,19 +7695,6 @@ func (e UserSortField) String() string {
 	return string(e)
 }
 
-func (e *UserSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = UserSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid UserSortField", str)
-	}
-	return nil
-}
-
 type VariantAttributeScope string
 
 const (
@@ -9164,35 +7715,22 @@ func (e VariantAttributeScope) String() string {
 	return string(e)
 }
 
-func (e *VariantAttributeScope) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = VariantAttributeScope(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid VariantAttributeScope", str)
-	}
-	return nil
-}
-
 type VolumeUnitsEnum string
 
 const (
-	VolumeUnitsEnumCubicMillimeter VolumeUnitsEnum = "CUBIC_MILLIMETER"
-	VolumeUnitsEnumCubicCentimeter VolumeUnitsEnum = "CUBIC_CENTIMETER"
-	VolumeUnitsEnumCubicDecimeter  VolumeUnitsEnum = "CUBIC_DECIMETER"
-	VolumeUnitsEnumCubicMeter      VolumeUnitsEnum = "CUBIC_METER"
-	VolumeUnitsEnumLiter           VolumeUnitsEnum = "LITER"
-	VolumeUnitsEnumCubicFoot       VolumeUnitsEnum = "CUBIC_FOOT"
-	VolumeUnitsEnumCubicInch       VolumeUnitsEnum = "CUBIC_INCH"
-	VolumeUnitsEnumCubicYard       VolumeUnitsEnum = "CUBIC_YARD"
-	VolumeUnitsEnumQt              VolumeUnitsEnum = "QT"
-	VolumeUnitsEnumPint            VolumeUnitsEnum = "PINT"
-	VolumeUnitsEnumFlOz            VolumeUnitsEnum = "FL_OZ"
-	VolumeUnitsEnumAcreIn          VolumeUnitsEnum = "ACRE_IN"
-	VolumeUnitsEnumAcreFt          VolumeUnitsEnum = "ACRE_FT"
+	VolumeUnitsEnumCubicMillimeter VolumeUnitsEnum = measurement.CUBIC_MILLIMETER
+	VolumeUnitsEnumCubicCentimeter VolumeUnitsEnum = measurement.CUBIC_CENTIMETER
+	VolumeUnitsEnumCubicDecimeter  VolumeUnitsEnum = measurement.CUBIC_DECIMETER
+	VolumeUnitsEnumCubicMeter      VolumeUnitsEnum = measurement.CUBIC_METER
+	VolumeUnitsEnumLiter           VolumeUnitsEnum = measurement.LITER
+	VolumeUnitsEnumCubicFoot       VolumeUnitsEnum = measurement.CUBIC_FOOT
+	VolumeUnitsEnumCubicInch       VolumeUnitsEnum = measurement.CUBIC_INCH
+	VolumeUnitsEnumCubicYard       VolumeUnitsEnum = measurement.CUBIC_YARD
+	VolumeUnitsEnumQt              VolumeUnitsEnum = measurement.QT
+	VolumeUnitsEnumPint            VolumeUnitsEnum = measurement.PINT
+	VolumeUnitsEnumFlOz            VolumeUnitsEnum = measurement.FL_OZ
+	VolumeUnitsEnumAcreIn          VolumeUnitsEnum = measurement.ACRE_IN
+	VolumeUnitsEnumAcreFt          VolumeUnitsEnum = measurement.ACRE_FT
 )
 
 func (e VolumeUnitsEnum) IsValid() bool {
@@ -9207,25 +7745,12 @@ func (e VolumeUnitsEnum) String() string {
 	return string(e)
 }
 
-func (e *VolumeUnitsEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = VolumeUnitsEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid VolumeUnitsEnum", str)
-	}
-	return nil
-}
-
 type VoucherDiscountType string
 
 const (
-	VoucherDiscountTypeFixed      VoucherDiscountType = "FIXED"
-	VoucherDiscountTypePercentage VoucherDiscountType = "PERCENTAGE"
-	VoucherDiscountTypeShipping   VoucherDiscountType = "SHIPPING"
+	VoucherDiscountTypeFixed      VoucherDiscountType = model.FIXED
+	VoucherDiscountTypePercentage VoucherDiscountType = model.PERCENTAGE
+	VoucherDiscountTypeShipping   VoucherDiscountType = model.SHIPPING
 )
 
 func (e VoucherDiscountType) IsValid() bool {
@@ -9238,19 +7763,6 @@ func (e VoucherDiscountType) IsValid() bool {
 
 func (e VoucherDiscountType) String() string {
 	return string(e)
-}
-
-func (e *VoucherDiscountType) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = VoucherDiscountType(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid VoucherDiscountType", str)
-	}
-	return nil
 }
 
 type VoucherSortField string
@@ -9277,25 +7789,12 @@ func (e VoucherSortField) String() string {
 	return string(e)
 }
 
-func (e *VoucherSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = VoucherSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid VoucherSortField", str)
-	}
-	return nil
-}
-
 type VoucherTypeEnum string
 
 const (
-	VoucherTypeEnumShipping        VoucherTypeEnum = "SHIPPING"
-	VoucherTypeEnumEntireOrder     VoucherTypeEnum = "ENTIRE_ORDER"
-	VoucherTypeEnumSpecificProduct VoucherTypeEnum = "SPECIFIC_PRODUCT"
+	VoucherTypeEnumShipping        VoucherTypeEnum = model.SHIPPING
+	VoucherTypeEnumEntireOrder     VoucherTypeEnum = model.ENTIRE_ORDER
+	VoucherTypeEnumSpecificProduct VoucherTypeEnum = model.SPECIFIC_PRODUCT
 )
 
 func (e VoucherTypeEnum) IsValid() bool {
@@ -9310,25 +7809,12 @@ func (e VoucherTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *VoucherTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = VoucherTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid VoucherTypeEnum", str)
-	}
-	return nil
-}
-
 type WarehouseClickAndCollectOptionEnum string
 
 const (
-	WarehouseClickAndCollectOptionEnumDisabled WarehouseClickAndCollectOptionEnum = "DISABLED"
-	WarehouseClickAndCollectOptionEnumLocal    WarehouseClickAndCollectOptionEnum = "LOCAL"
-	WarehouseClickAndCollectOptionEnumAll      WarehouseClickAndCollectOptionEnum = "ALL"
+	WarehouseClickAndCollectOptionEnumDisabled WarehouseClickAndCollectOptionEnum = WarehouseClickAndCollectOptionEnum(model.DISABLED)
+	WarehouseClickAndCollectOptionEnumLocal    WarehouseClickAndCollectOptionEnum = WarehouseClickAndCollectOptionEnum(model.LOCAL_STOCK)
+	WarehouseClickAndCollectOptionEnumAll      WarehouseClickAndCollectOptionEnum = WarehouseClickAndCollectOptionEnum(model.ALL_WAREHOUSES)
 )
 
 func (e WarehouseClickAndCollectOptionEnum) IsValid() bool {
@@ -9341,19 +7827,6 @@ func (e WarehouseClickAndCollectOptionEnum) IsValid() bool {
 
 func (e WarehouseClickAndCollectOptionEnum) String() string {
 	return string(e)
-}
-
-func (e *WarehouseClickAndCollectOptionEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = WarehouseClickAndCollectOptionEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid WarehouseClickAndCollectOptionEnum", str)
-	}
-	return nil
 }
 
 type WarehouseErrorCode string
@@ -9379,19 +7852,6 @@ func (e WarehouseErrorCode) String() string {
 	return string(e)
 }
 
-func (e *WarehouseErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = WarehouseErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid WarehouseErrorCode", str)
-	}
-	return nil
-}
-
 type WarehouseSortField string
 
 const (
@@ -9408,19 +7868,6 @@ func (e WarehouseSortField) IsValid() bool {
 
 func (e WarehouseSortField) String() string {
 	return string(e)
-}
-
-func (e *WarehouseSortField) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = WarehouseSortField(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid WarehouseSortField", str)
-	}
-	return nil
 }
 
 type WebhookErrorCode string
@@ -9443,19 +7890,6 @@ func (e WebhookErrorCode) IsValid() bool {
 
 func (e WebhookErrorCode) String() string {
 	return string(e)
-}
-
-func (e *WebhookErrorCode) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = WebhookErrorCode(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid WebhookErrorCode", str)
-	}
-	return nil
 }
 
 type WebhookEventTypeEnum string
@@ -9518,19 +7952,6 @@ func (e WebhookEventTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *WebhookEventTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = WebhookEventTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid WebhookEventTypeEnum", str)
-	}
-	return nil
-}
-
 type WebhookSampleEventTypeEnum string
 
 const (
@@ -9590,27 +8011,14 @@ func (e WebhookSampleEventTypeEnum) String() string {
 	return string(e)
 }
 
-func (e *WebhookSampleEventTypeEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = WebhookSampleEventTypeEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid WebhookSampleEventTypeEnum", str)
-	}
-	return nil
-}
-
 type WeightUnitsEnum string
 
 const (
-	WeightUnitsEnumG     WeightUnitsEnum = "G"
-	WeightUnitsEnumLb    WeightUnitsEnum = "LB"
-	WeightUnitsEnumOz    WeightUnitsEnum = "OZ"
-	WeightUnitsEnumKg    WeightUnitsEnum = "KG"
-	WeightUnitsEnumTonne WeightUnitsEnum = "TONNE"
+	WeightUnitsEnumG     WeightUnitsEnum = WeightUnitsEnum(measurement.G)
+	WeightUnitsEnumLb    WeightUnitsEnum = WeightUnitsEnum(measurement.LB)
+	WeightUnitsEnumOz    WeightUnitsEnum = WeightUnitsEnum(measurement.OZ)
+	WeightUnitsEnumKg    WeightUnitsEnum = WeightUnitsEnum(measurement.KG)
+	WeightUnitsEnumTonne WeightUnitsEnum = WeightUnitsEnum(measurement.TONNE)
 )
 
 func (e WeightUnitsEnum) IsValid() bool {
@@ -9623,17 +8031,4 @@ func (e WeightUnitsEnum) IsValid() bool {
 
 func (e WeightUnitsEnum) String() string {
 	return string(e)
-}
-
-func (e *WeightUnitsEnum) UnmarshalGraphQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = WeightUnitsEnum(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid WeightUnitsEnum", str)
-	}
-	return nil
 }

@@ -30,6 +30,9 @@ type Dataloaders struct {
 	checkoutsByUserIDs              *dataloader.Loader[string, []*Checkout]
 	checkoutsByUserIDsAndChannelIDs *dataloader.Loader[string, []*Checkout]
 	checkoutLinesByCheckoutTokens   *dataloader.Loader[string, []*CheckoutLine]
+
+	// attribute
+	attributesByIDs *dataloader.Loader[string, *Attribute]
 }
 
 var dataloaders *Dataloaders
@@ -56,5 +59,8 @@ func init() {
 		checkoutsByUserIDs:              dataloader.NewBatchedLoader(graphqlCheckoutByUserLoader, dataloader.WithBatchCapacity[string, []*Checkout](batchCapacity)),
 		checkoutsByUserIDsAndChannelIDs: dataloader.NewBatchedLoader(graphqlCheckoutsByUserAndChannelLoader, dataloader.WithBatchCapacity[string, []*Checkout](batchCapacity)),
 		checkoutLinesByCheckoutTokens:   dataloader.NewBatchedLoader(graphqlCheckoutLinesByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, []*CheckoutLine](batchCapacity)),
+
+		// attribute
+		attributesByIDs: dataloader.NewBatchedLoader(graphqlAttributesByAttributeIDLoader, dataloader.WithBatchCapacity[string, *Attribute](batchCapacity)),
 	}
 }
