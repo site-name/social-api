@@ -95,3 +95,14 @@ errorLabel:
 // 	a, b := dataloaders.productsByIDs.LoadMany(ctx, productIDs)()
 
 // }
+
+func SystemProductTypeTpGraphqlProductType(prd *model.ProductType) *ProductType {
+	if prd == nil {
+		return nil
+	}
+
+	res := &ProductType{}
+	panic("not implemented")
+
+	return res
+}

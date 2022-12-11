@@ -22,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/site-name/decimal"
@@ -905,4 +906,115 @@ func GetSubpathFromConfig(config *Config) (string, error) {
 	}
 
 	return path.Clean(u.Path), nil
+}
+
+// ordering in "ASC" | "DESC" order
+type OrderDirection string
+
+const (
+	DESC OrderDirection = "DESC"
+	ASC  OrderDirection = "ASC"
+)
+
+func (o *OrderDirection) validate() {
+	if *o != DESC && *o != ASC {
+		*o = ASC
+	}
+}
+
+type PaginationOptions struct {
+	OrderBy string // You want to sort result by which field
+	//  1 2 3 4 5 7 8 9 10
+	//   here |
+	Before any
+	//  1 2 3 4 5 7 8 9 10
+	//      | here
+	After   any
+	First   *int32
+	Last    *int32
+	Order   OrderDirection // if not provided, will default to "asc"
+	Operand any            // for example you want to find customers that have more than 5 orders. So 5 would be this
+}
+
+func (p *PaginationOptions) GetOrderByExpression() string {
+	return p.OrderBy + " " + string(p.Order)
+}
+
+func (g *PaginationOptions) HasPreviousPage() bool {
+	return (g.First != nil && g.After != nil) || (g.Last != nil && g.Before != nil)
+}
+
+const paginationError = "api.graphql.pagination_params.invalid.app_error"
+
+func (p *PaginationOptions) validate() *AppError {
+	if p.First != nil && p.Last != nil {
+		return NewAppError("Pagination.validate", paginationError, map[string]interface{}{"Fields": "Last, First"}, "You must provide either First or Last, not both", http.StatusBadRequest)
+	}
+	if p.First != nil && p.Before != nil {
+		return NewAppError("Pagination.validate", paginationError, map[string]interface{}{"Fields": "First, Before"}, "First and Before can't go together", http.StatusBadRequest)
+	}
+	if p.Last != nil && p.After != nil {
+		return NewAppError("Pagination.validate", paginationError, map[string]interface{}{"Fields": "Last, After"}, "Last and After can't go together", http.StatusBadRequest)
+	}
+	if (p.Before != nil || p.After != nil) && p.OrderBy == "" {
+		return NewAppError("Pagination.validate", paginationError, map[string]interface{}{"Fields": "OrderBy"}, "OrderBY must be provided", http.StatusBadRequest)
+	}
+
+	p.Order.validate()
+
+	return nil
+}
+
+// -1 means no limit
+func (p *PaginationOptions) Limit() int32 {
+	// NOTE: add one here is a trick to help determine if there is next page
+	switch {
+	case p.First != nil:
+		return *p.First + 1
+	case p.Last != nil:
+		return *p.Last + 1
+
+	default:
+		return -1
+	}
+}
+
+// ConstructSqlizer does:
+//
+// 1) check if arguments are provided properly
+//
+// 2) decodes given before or after cursor
+//
+// 3) construct a squirrel expression based on given key
+func (g *PaginationOptions) ConstructSqlizer() (squirrel.Sqlizer, *AppError) {
+	if err := g.validate(); err != nil {
+		return nil, err
+	}
+
+	switch {
+	case g.After != nil:
+		if g.Order == ASC {
+			// 1 2 3 4 5 6 (ASC)
+			//     | *     (AFTER)
+			return squirrel.Gt{g.OrderBy: g.Operand}, nil
+		}
+
+		// 6 5 4 3 2 1 (DESC)
+		//       | *   (AFTER)
+		return squirrel.Lt{g.OrderBy: g.Operand}, nil
+
+	case g.Before != nil:
+		if g.Order == ASC {
+			// 1 2 3 4 5 6 (ASC)
+			//   * |       (BEFORE)
+			return squirrel.Lt{g.OrderBy: g.Operand}, nil
+		}
+
+		// 6 5 4 3 2 1 (DESC)
+		//     * |     (BEFORE)
+		return squirrel.Gt{g.OrderBy: g.Operand}, nil
+
+	default:
+		return squirrel.Expr(""), nil
+	}
 }

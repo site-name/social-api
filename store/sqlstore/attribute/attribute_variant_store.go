@@ -2,7 +2,6 @@ package attribute
 
 import (
 	"database/sql"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
@@ -38,7 +37,7 @@ func (as *SqlAttributeVariantStore) Save(attributeVariant *model.AttributeVarian
 
 	query := "INSERT INTO " + store.AttributeVariantTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 	if _, err := as.GetMasterX().NamedExec(query, attributeVariant); err != nil {
-		if as.IsUniqueConstraintError(err, []string{"AttributeID", "ProductTypeID", strings.ToLower(store.AttributeVariantTableName) + "_attributeid_producttypeid_key"}) {
+		if as.IsUniqueConstraintError(err, []string{"AttributeID", "ProductTypeID", "attributevariants_attributeid_producttypeid_key"}) {
 			return nil, store.NewErrInvalidInput(store.AttributeVariantTableName, "AttributeID/ProductTypeID", attributeVariant.AttributeID+"/"+attributeVariant.ProductTypeID)
 		}
 		return nil, errors.Wrapf(err, "failed to save attribute variant with id=%s", attributeVariant.Id)

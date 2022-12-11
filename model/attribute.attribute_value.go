@@ -39,28 +39,29 @@ type AttributeValueFilterOptions struct {
 	Id          squirrel.Sqlizer
 	AttributeID squirrel.Sqlizer
 
-	Extra                  squirrel.Sqlizer
+	Extra squirrel.Sqlizer
+
 	SelectRelatedAttribute bool
 
-	Transaction     store_iface.SqlxTxExecutor
-	OrderBy         string
-	SelectForUpdate bool // is true, add `FOR UPDATE` suffic to the end of sql query
+	Transaction     store_iface.SqlxTxExecutor // if provided, this will be responsible for perform queries
+	SelectForUpdate bool                       // is true, add `FOR UPDATE` suffic to the end of sql query
 
-	Limit int
+	Ordering string
+	PaginationOptions
 }
 
 type AttributeValues []*AttributeValue
 
 func (a AttributeValues) IDs() []string {
-	var res []string
-	meetMap := map[string]bool{}
-	for _, item := range a {
+	var res = make([]string, len(a))
+
+	meetMap := map[string]struct{}{}
+	for idx, item := range a {
 		if _, met := meetMap[item.Id]; !met {
-			res = append(res, item.Id)
-			meetMap[item.Id] = true
+			res[idx] = item.Id
+			meetMap[item.Id] = struct{}{}
 		}
 	}
-
 	return res
 }
 

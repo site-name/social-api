@@ -170,7 +170,7 @@ func (g *GraphqlPaginationOptions) isValid() *model.AppError {
 	if strings.TrimSpace(g.OrderBy) == "" {
 		return model.NewAppError("GraphqlPaginationOptions.IsValid", GraphqlPaginationError, map[string]interface{}{"Fields": "OrderBy"}, "You must provide order by", http.StatusBadRequest)
 	}
-	if (g.First == nil && g.Last == nil) || (g.First != nil && g.Last != nil) {
+	if g.First != nil && g.Last != nil {
 		return model.NewAppError("GraphqlPaginationOptions.IsValid", GraphqlPaginationError, map[string]interface{}{"Fields": "Last, First"}, "You must provide either First or Last, not both", http.StatusBadRequest)
 	}
 	if g.First != nil && g.Before != nil {
@@ -246,28 +246,6 @@ func (g *GraphqlPaginationOptions) ConstructSqlizer() (squirrel.Sqlizer, error) 
 	default:
 		return squirrel.Expr(""), nil
 	}
-
-	// if g.After != nil {
-	// 	if g.OrderDirection == OrderDirectionAsc {
-	// 		// 1 2 3 4 5 6 (ASC)
-	// 		//     | *     (AFTER)
-	// 		return squirrel.Gt{g.OrderBy: cmp}, nil
-	// 	}
-
-	// 	// 6 5 4 3 2 1 (DESC)
-	// 	//       | *   (AFTER)
-	// 	return squirrel.Lt{g.OrderBy: cmp}, nil
-	// }
-
-	// if g.OrderDirection == OrderDirectionAsc {
-	// 	// 1 2 3 4 5 6 (ASC)
-	// 	//   * |       (BEFORE)
-	// 	return squirrel.Lt{g.OrderBy: cmp}, nil
-	// }
-
-	// // 6 5 4 3 2 1 (DESC)
-	// //     * |     (BEFORE)
-	// return squirrel.Gt{g.OrderBy: cmp}, nil
 }
 
 // If -1, means no limit

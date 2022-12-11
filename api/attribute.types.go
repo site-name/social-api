@@ -218,53 +218,47 @@ func (a *Attribute) Choices(
 		return nil, err
 	}
 
-	// construct filter options
-	filterOpts := &model.AttributeValueFilterOptions{}
-
-	paginationOpts := &GraphqlPaginationOptions{
-		Before:         args.Before,
-		After:          args.After,
-		First:          args.First,
-		Last:           args.Last,
-		OrderDirection: OrderDirectionAsc,
-		OrderBy:        "Slug",
+	// parse operand
+	var operandString string
+	switch {
+	case args.Before != nil:
+		operandString = *args.Before
+	case args.After != nil:
+		operandString = *args.After
 	}
 
-	// parse sort
-	if args.SortBy != nil {
-		switch args.SortBy.Field {
-		case AttributeChoicesSortFieldName:
-			filterOpts.OrderBy = "Name " + string(args.SortBy.Direction)
-			paginationOpts.OrderBy = "Name"
-
-		case AttributeChoicesSortFieldSlug:
-			filterOpts.OrderBy = "Slug " + string(args.SortBy.Direction)
-
-		default:
-			return nil, model.NewAppError("Attribute.Choices", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "SortBy.Field"}, "Name or Slug only", http.StatusBadRequest)
-		}
-
-		paginationOpts.OrderDirection = args.SortBy.Direction
-	}
-
-	filterOpts.Extra, err = paginationOpts.ConstructSqlizer()
+	operand, err := base64.StdEncoding.DecodeString(operandString)
 	if err != nil {
 		return nil, err
 	}
 
-	limit := paginationOpts.Limit()
-	if limit > 0 {
-		filterOpts.Limit = int(limit) + 1 // NOTE: this trick is to know if there is a next page
+	// construct filter options
+	filterOpts := &model.AttributeValueFilterOptions{
+		PaginationOptions: model.PaginationOptions{
+			Before:  args.Before,
+			After:   args.After,
+			First:   args.First,
+			Last:    args.Last,
+			Operand: operand,
+		},
+	}
+
+	if args.SortBy != nil {
+		filterOpts.Order = args.SortBy.Direction
+
+		var field = "Slug"
+		if args.SortBy.Field == AttributeChoicesSortFieldName {
+			field = "Name"
+		}
+
+		filterOpts.OrderBy = field
 	}
 
 	// parse filter
 	if args.Filter != nil && args.Filter.Search != nil {
-		filterOpts.Extra = squirrel.And{
-			filterOpts.Extra,
-			squirrel.Or{
-				squirrel.ILike{store.AttributeValueTableName + ".Name": *args.Filter.Search},
-				squirrel.ILike{store.AttributeValueTableName + ".Slug": *args.Filter.Search},
-			},
+		filterOpts.Extra = squirrel.Or{
+			squirrel.ILike{store.AttributeValueTableName + ".Name": *args.Filter.Search},
+			squirrel.ILike{store.AttributeValueTableName + ".Slug": *args.Filter.Search},
 		}
 	}
 
@@ -284,7 +278,7 @@ func (a *Attribute) Choices(
 		return nil, model.NewAppError("Attribute.Choices", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	hasNextPage := len(attributeValues) == filterOpts.Limit
+	hasNextPage := len(attributeValues) == int(filterOpts.Limit())
 
 	edgesLength := len(attributeValues)
 	if hasNextPage {
@@ -294,7 +288,7 @@ func (a *Attribute) Choices(
 	// construct return value
 	res := &AttributeValueCountableConnection{
 		PageInfo: &PageInfo{
-			HasPreviousPage: paginationOpts.HasPreviousPage(),
+			HasPreviousPage: filterOpts.HasPreviousPage(),
 			HasNextPage:     hasNextPage,
 		},
 		TotalCount: model.NewInt32(int32(totalValues)), // NOT sure this can scale well
@@ -303,23 +297,22 @@ func (a *Attribute) Choices(
 
 	for index := 0; index < edgesLength; index++ {
 
-		var value = attributeValues[index]
 		var cursor string
-		switch paginationOpts.OrderBy {
+		switch filterOpts.OrderBy {
 		case "Name":
-			cursor = base64.StdEncoding.EncodeToString([]byte(value.Name))
+			cursor = base64.StdEncoding.EncodeToString([]byte(attributeValues[index].Name))
 		case "Slug":
-			cursor = base64.StdEncoding.EncodeToString([]byte(value.Slug))
+			cursor = base64.StdEncoding.EncodeToString([]byte(attributeValues[index].Slug))
 		}
 
 		res.Edges[index] = &AttributeValueCountableEdge{
-			Node:   SystemAttributeValueToGraphqlAttributeValue(value),
+			Node:   SystemAttributeValueToGraphqlAttributeValue(attributeValues[index]),
 			Cursor: cursor,
 		}
 	}
 
 	res.PageInfo.StartCursor = &res.Edges[0].Cursor
-	res.PageInfo.EndCursor = &res.Edges[len(res.Edges)-1].Cursor
+	res.PageInfo.EndCursor = &res.Edges[edgesLength-1].Cursor
 
 	return res, nil
 }
@@ -333,7 +326,73 @@ func (a *Attribute) ProductTypes(
 		Last   *int32
 	},
 ) (*ProductTypeCountableConnection, error) {
-	panic("not implemented")
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	var operandStr string
+	switch {
+	case args.Before != nil:
+		operandStr = *args.Before
+	case args.After != nil:
+		operandStr = *args.After
+	}
+	operand, err := base64.StdEncoding.DecodeString(operandStr)
+	if err != nil {
+		return nil, err
+	}
+
+	filterOpts := &model.ProductTypeFilterOption{
+		AttributeProducts_AttributeID: squirrel.Eq{store.AttributeProductTableName + ".AttributeID": a.ID},
+		PaginationOptions: model.PaginationOptions{
+			Before:  args.Before,
+			After:   args.After,
+			First:   args.First,
+			Last:    args.Last,
+			OrderBy: "Slug",
+			Order:   model.ASC,
+			Operand: operand,
+		},
+	}
+
+	productTypes, appErr := embedCtx.App.Srv().ProductService().ProductTypesByOptions(filterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	totalProductTypes, err := embedCtx.App.Srv().Store.ProductType().Count(filterOpts)
+	if err != nil {
+		return nil, model.NewAppError("Attribute.ProductTypes", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	hasNextPage := len(productTypes) == int(filterOpts.Limit())
+	edgesLength := len(productTypes)
+	if hasNextPage {
+		edgesLength--
+	}
+
+	res := &ProductTypeCountableConnection{
+		TotalCount: model.NewInt32(int32(totalProductTypes)),
+		Edges:      make([]*ProductTypeCountableEdge, edgesLength),
+	}
+
+	for i := 0; i < edgesLength; i++ {
+		res.Edges[i] = &ProductTypeCountableEdge{
+			Node:   SystemProductTypeTpGraphqlProductType(productTypes[i]),
+			Cursor: base64.StdEncoding.EncodeToString([]byte(productTypes[i].Slug)),
+		}
+	}
+
+	res.PageInfo = &PageInfo{
+		HasNextPage:     hasNextPage,
+		HasPreviousPage: filterOpts.HasPreviousPage(),
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[edgesLength-1].Cursor,
+	}
+
+	return res, nil
 }
 
 func (a *Attribute) ProductVariantTypes(
@@ -345,7 +404,75 @@ func (a *Attribute) ProductVariantTypes(
 		Last   *int32
 	},
 ) (*ProductTypeCountableConnection, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	var operandStr string
+	switch {
+	case args.Before != nil:
+		operandStr = *args.Before
+	case args.After != nil:
+		operandStr = *args.After
+	}
+
+	operand, err := base64.StdEncoding.DecodeString(operandStr)
+	if err != nil {
+		return nil, err
+	}
+
+	filterOpts := &model.ProductTypeFilterOption{
+		AttributeVariants_AttributeID: squirrel.Eq{store.AttributeVariantTableName + ".AttributeID": a.ID},
+		PaginationOptions: model.PaginationOptions{
+			Before:  args.Before,
+			After:   args.After,
+			First:   args.First,
+			Last:    args.Last,
+			Operand: operand,
+			OrderBy: "Slug",
+			Order:   model.ASC,
+		},
+	}
+
+	productTypes, appErr := embedCtx.App.Srv().
+		ProductService().
+		ProductTypesByOptions(filterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	totalProductTypes, err := embedCtx.App.Srv().Store.ProductType().Count(filterOpts)
+	if err != nil {
+		return nil, model.NewAppError("Attribute.ProductVariantTypes", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	hasNextPage := len(productTypes) == int(filterOpts.Limit())
+	edgesLength := len(productTypes)
+	if hasNextPage {
+		edgesLength--
+	}
+
+	res := &ProductTypeCountableConnection{
+		TotalCount: model.NewInt32(int32(totalProductTypes)),
+		Edges:      make([]*ProductTypeCountableEdge, edgesLength),
+	}
+
+	for i := 0; i < edgesLength; i++ {
+		res.Edges[i] = &ProductTypeCountableEdge{
+			Node:   SystemProductTypeTpGraphqlProductType(productTypes[i]),
+			Cursor: base64.StdEncoding.EncodeToString([]byte(productTypes[i].Slug)),
+		}
+	}
+
+	res.PageInfo = &PageInfo{
+		HasNextPage:     hasNextPage,
+		HasPreviousPage: filterOpts.HasPreviousPage(),
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[edgesLength-1].Cursor,
+	}
+
+	return res, nil
 }
 
 // If return error is nil, meaning current user can perform action.

@@ -6589,24 +6589,24 @@ func (e OrderAction) String() string {
 	return string(e)
 }
 
-type OrderDirection string
+type OrderDirection = model.OrderDirection
 
 const (
-	OrderDirectionAsc  OrderDirection = "ASC"
-	OrderDirectionDesc OrderDirection = "DESC"
+	OrderDirectionAsc  OrderDirection = model.ASC
+	OrderDirectionDesc OrderDirection = model.DESC
 )
 
-func (e OrderDirection) IsValid() bool {
-	switch e {
-	case OrderDirectionAsc, OrderDirectionDesc:
-		return true
-	}
-	return false
-}
+// func (e OrderDirection) IsValid() bool {
+// 	switch e {
+// 	case OrderDirectionAsc, OrderDirectionDesc:
+// 		return true
+// 	}
+// 	return false
+// }
 
-func (e OrderDirection) String() string {
-	return string(e)
-}
+// func (e OrderDirection) String() string {
+// 	return string(e)
+// }
 
 type OrderDiscountType string
 

@@ -151,25 +151,24 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 func (pts *SqlProductTypeStore) commonQueryBuilder(options *model.ProductTypeFilterOption) squirrel.SelectBuilder {
 	query := pts.GetQueryBuilder().
 		Select(pts.ModelFields(store.ProductTypeTableName + ".")...).
-		From(store.ProductTypeTableName).
-		OrderBy(store.TableOrderingMap[store.ProductTypeTableName])
+		From(store.ProductTypeTableName)
 
-	// parse options
-	if options.Limit > 0 {
-		query = query.Limit(uint64(options.Limit))
-	}
 	if options.Id != nil {
 		query = query.Where(options.Id)
 	}
 	if options.Name != nil {
 		query = query.Where(options.Name)
 	}
-	if options.AttributeID != nil {
+	if options.AttributeProducts_AttributeID != nil {
 		query = query.InnerJoin(store.AttributeProductTableName + " ON AttributeProducts.ProductTypeID = ProductTypes.Id").
-			Where(options.AttributeID)
+			Where(options.AttributeProducts_AttributeID)
+	}
+	if options.AttributeVariants_AttributeID != nil {
+		query = query.InnerJoin(store.AttributeVariantTableName + " ON AttributeVariants.ProductTypeID = ProductTypes.Id").
+			Where(options.AttributeVariants_AttributeID)
 	}
 	if options.Extra != nil {
-		query = query.Where(options.Extra)
+		return query.Where(options.Extra)
 	}
 
 	return query
@@ -196,7 +195,22 @@ func (pts *SqlProductTypeStore) GetByOption(options *model.ProductTypeFilterOpti
 
 // FilterbyOption finds and returns a slice of product types filtered using given options
 func (pts *SqlProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error) {
-	queryString, args, err := pts.commonQueryBuilder(options).ToSql()
+	paginateOpts, appErr := options.ConstructSqlizer()
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	query := pts.commonQueryBuilder(options).Where(paginateOpts)
+	if limit := options.Limit(); limit > 0 {
+		query = query.Limit(uint64(limit))
+	}
+	if options.OrderBy != "" {
+		query = query.OrderBy(options.GetOrderByExpression())
+	} else {
+		query = query.OrderBy(store.TableOrderingMap[store.ProductTypeTableName])
+	}
+
+	queryString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
@@ -211,7 +225,8 @@ func (pts *SqlProductTypeStore) FilterbyOption(options *model.ProductTypeFilterO
 }
 
 func (pts *SqlProductTypeStore) Count(options *model.ProductTypeFilterOption) (int64, error) {
-	options.Limit = 0 // unset limit
+	// reset
+	options.PaginationOptions = model.PaginationOptions{}
 
 	query := pts.commonQueryBuilder(options)
 

@@ -56,10 +56,11 @@ type ProductTypeFilterOption struct {
 	Id   squirrel.Sqlizer
 	Name squirrel.Sqlizer
 
-	AttributeID squirrel.Sqlizer // INNER JOIN AttributeProducts ON (...) WHERE AttributeProducts.AttributeID ...
+	AttributeProducts_AttributeID squirrel.Sqlizer // INNER JOIN AttributeProducts ON (...) WHERE AttributeProducts.AttributeID ...
+	AttributeVariants_AttributeID squirrel.Sqlizer // INNER JOIN AttributeVariants ON (...) WHERE AttributeVariants.AttributeID ...
+	Extra                         squirrel.Sqlizer
 
-	Limit int
-	Extra squirrel.Sqlizer
+	PaginationOptions
 }
 
 func (p *ProductType) String() string {

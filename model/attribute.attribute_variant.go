@@ -1,8 +1,6 @@
 package model
 
 import (
-	"io"
-
 	"github.com/Masterminds/squirrel"
 )
 
@@ -46,12 +44,6 @@ func (a *AttributeVariant) IsValid() *AppError {
 
 func (a *AttributeVariant) ToJSON() string {
 	return ModelToJson(a)
-}
-
-func AttributeVariantFromJson(data io.Reader) *AttributeVariant {
-	var a AttributeVariant
-	ModelFromJson(&a, data)
-	return &a
 }
 
 func (a *AttributeVariant) PreSave() {

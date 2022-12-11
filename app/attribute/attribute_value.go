@@ -127,9 +127,14 @@ func (r *Reordering) orderedNodeMap(transaction store_iface.SqlxTxExecutor) (map
 	if !r.runned { // check if runned or not
 		attributeValues, appErr := r.s.FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
 			Transaction:     transaction,
-			OrderBy:         store.AttributeValueTableName + ".Id ASC, " + store.AttributeValueTableName + ".SortOrder ASC NULLS LAST",
+			Ordering:        store.AttributeValueTableName + ".SortOrder ASC NULLS LAST",
 			Id:              squirrel.Eq{store.AttributeValueTableName + ".Id": r.Values.IDs()},
 			SelectForUpdate: true,
+
+			PaginationOptions: model.PaginationOptions{
+				OrderBy: store.AttributeValueTableName + ".Id",
+				Order:   model.ASC,
+			},
 		})
 		if appErr != nil {
 			return nil, appErr
