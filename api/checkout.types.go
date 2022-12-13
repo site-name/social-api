@@ -120,7 +120,7 @@ func (c *Checkout) BillingAddress(ctx context.Context) (*Address, error) {
 		return nil, nil
 	}
 
-	return dataloaders.addressesByIDs.Load(ctx, *c.billingAddressID)()
+	return dataloaders.AddressByIdLoader.Load(ctx, *c.billingAddressID)()
 }
 
 func (c *Checkout) ShippingAddress(ctx context.Context) (*Address, error) {
@@ -128,7 +128,7 @@ func (c *Checkout) ShippingAddress(ctx context.Context) (*Address, error) {
 		return nil, nil
 	}
 
-	return dataloaders.addressesByIDs.Load(ctx, *c.shippingAddressID)()
+	return dataloaders.AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
 }
 
 func (c *Checkout) GiftCards(ctx context.Context) ([]*GiftCard, error) {
@@ -283,7 +283,7 @@ errorLabel:
 	return res
 }
 
-func graphqlCheckoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[*Checkout] {
+func checkoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[*Checkout] {
 	var (
 		res       []*dataloader.Result[*Checkout]
 		appErr    *model.AppError

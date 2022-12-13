@@ -73,7 +73,7 @@ func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 	return model.NewBool(false), nil
 }
 
-func graphqlAddressesLoader(ctx context.Context, keys []string) []*dataloader.Result[*Address] {
+func addressByIdLoader(ctx context.Context, keys []string) []*dataloader.Result[*Address] {
 	var (
 		res       []*dataloader.Result[*Address]
 		addresses []*model.Address
@@ -233,7 +233,7 @@ func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
 		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageUsers, model.PermissionManageStaff) {
 		return nil, model.NewAppError("user.Events", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}
-	return dataloaders.customerEventsByUserIDs.Load(ctx, u.ID)()
+	return dataloaders.CustomerEventsByUserLoader.Load(ctx, u.ID)()
 }
 
 func (u *User) Note(ctx context.Context) (string, error) {
@@ -269,7 +269,7 @@ func (u *User) Avatar(ctx context.Context) (*Image, error) {
 	panic("not implemented")
 }
 
-func graphqlUsersLoader(ctx context.Context, keys []string) []*dataloader.Result[*User] {
+func userByUserIdLoader(ctx context.Context, keys []string) []*dataloader.Result[*User] {
 	var (
 		res    []*dataloader.Result[*User]
 		users  []*model.User
@@ -281,7 +281,11 @@ func graphqlUsersLoader(ctx context.Context, keys []string) []*dataloader.Result
 		goto errorLabel
 	}
 
-	users, appErr = webCtx.App.Srv().AccountService().GetUsersByIds(keys, &store.UserGetByIdsOpts{})
+	users, appErr = webCtx.
+		App.
+		Srv().
+		AccountService().
+		GetUsersByIds(keys, &store.UserGetByIdsOpts{})
 	if appErr != nil {
 		err = appErr
 		goto errorLabel
@@ -357,7 +361,7 @@ func SystemCustomerEventToGraphqlCustomerEvent(event *model.CustomerEvent) *Cust
 	return res
 }
 
-func graphqlCustomerEventsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*CustomerEvent] {
+func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*CustomerEvent] {
 	var (
 		res            []*dataloader.Result[[]*CustomerEvent]
 		customerEvents []*model.CustomerEvent

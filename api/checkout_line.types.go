@@ -14,6 +14,9 @@ type CheckoutLine struct {
 	ID       string `json:"id"`
 	Quantity int32  `json:"quantity"`
 
+	variantID  string
+	checkoutID string
+
 	// RequiresShipping *bool           `json:"requiresShipping"`
 	// TotalPrice       *TaxedMoney     `json:"totalPrice"`
 	// Variant          *ProductVariant `json:"variant"`
@@ -25,21 +28,27 @@ func SystemCheckoutLineToGraphqlCheckoutLine(line *model.CheckoutLine) *Checkout
 	}
 
 	res := &CheckoutLine{
-		ID:       line.Id,
-		Quantity: int32(line.Quantity),
+		ID:         line.Id,
+		Quantity:   int32(line.Quantity),
+		variantID:  line.VariantID,
+		checkoutID: line.CheckoutID,
 	}
 	return res
 }
 
-func (line *CheckoutLine) Variant(ctx context.Context) *ProductVariant {
+func (line *CheckoutLine) Variant(ctx context.Context) (*ProductVariant, error) {
+	return dataloaders.ProductVariantByIdLoader.Load(ctx, line.variantID)()
+}
+
+func (line *CheckoutLine) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
+	// checkout, err := dataloaders.CheckoutByTokenLoader.Load(ctx, line.checkoutID)()
+	// if err != nil {
+	// 	return nil, err
+	// }
 	panic("not implemented")
 }
 
-func (line *CheckoutLine) TotalPrice(ctx context.Context) *TaxedMoney {
-	panic("not implemented")
-}
-
-func (line *CheckoutLine) RequiresShipping(ctx context.Context) *bool {
+func (line *CheckoutLine) RequiresShipping(ctx context.Context) (*bool, error) {
 	panic("not implemented")
 }
 
@@ -62,7 +71,7 @@ func graphqlCheckoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []str
 	checkoutLines, appErr = embedCtx.App.Srv().
 		CheckoutService().
 		CheckoutLinesByOption(&model.CheckoutLineFilterOption{
-			CheckoutID: squirrel.Eq{store.CheckoutLineTableName + ".": tokens},
+			CheckoutID: squirrel.Eq{store.CheckoutLineTableName + ".CheckoutID": tokens},
 		})
 	if appErr != nil {
 		err = appErr

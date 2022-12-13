@@ -58,7 +58,7 @@ func SystemProductVariantToGraphqlProductVariant(variant *model.ProductVariant) 
 	return res
 }
 
-func graphqlProductVariantsByIDsLoader(ctx context.Context, ids []string) []*dataloader.Result[*ProductVariant] {
+func productVariantByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*ProductVariant] {
 	if len(ids) == 0 {
 		return []*dataloader.Result[*ProductVariant]{}
 	}

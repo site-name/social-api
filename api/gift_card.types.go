@@ -228,7 +228,7 @@ func (g *GiftCard) CreatedByEmail(ctx context.Context) (*string, error) {
 		return resolveCreatedByEmail(nil), nil
 	}
 
-	user, err := dataloaders.usersByIDs.Load(ctx, *g.createdByID)()
+	user, err := dataloaders.UserByUserIdLoader.Load(ctx, *g.createdByID)()
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +269,7 @@ func (g *GiftCard) UsedByEmail(ctx context.Context) (*string, error) {
 		return resolveUsedByEmail(nil), nil
 	}
 
-	user, err := dataloaders.usersByIDs.Load(ctx, *g.usedByID)()
+	user, err := dataloaders.UserByUserIdLoader.Load(ctx, *g.usedByID)()
 	if err != nil {
 		return nil, err
 	}
@@ -300,7 +300,7 @@ func (g *GiftCard) UsedBy(ctx context.Context) (*User, error) {
 		return resolveUsedBy(nil)
 	}
 
-	user, err := dataloaders.usersByIDs.Load(ctx, *g.usedByID)()
+	user, err := dataloaders.UserByUserIdLoader.Load(ctx, *g.usedByID)()
 	if err != nil {
 		return nil, err
 	}
@@ -340,7 +340,7 @@ func (g *GiftCard) CreatedBy(ctx context.Context) (*User, error) {
 		return resolveCreatedBy(nil)
 	}
 
-	user, err := dataloaders.usersByIDs.Load(ctx, *g.createdByID)()
+	user, err := dataloaders.UserByUserIdLoader.Load(ctx, *g.createdByID)()
 	if err != nil {
 		return nil, err
 	}
@@ -369,7 +369,7 @@ func (g *GiftCard) Code(ctx context.Context) (string, error) {
 		return resolveCode(nil)
 	}
 
-	user, err := dataloaders.usersByIDs.Load(ctx, *g.usedByID)()
+	user, err := dataloaders.UserByUserIdLoader.Load(ctx, *g.usedByID)()
 	if err != nil {
 		return "", err
 	}

@@ -90,7 +90,7 @@ func (a *AttributeValue) InputType(ctx context.Context) (*AttributeInputTypeEnum
 		return nil, model.NewAppError("AttributeValue.InputType", ErrorUnauthorized, nil, "You are not allowed to see this", http.StatusUnauthorized)
 	}
 
-	attr, err := dataloaders.attributesByIDs.Load(ctx, a.attributeID)()
+	attr, err := dataloaders.AttributesByAttributeIdLoader.Load(ctx, a.attributeID)()
 	if err != nil {
 		return nil, err
 	}
@@ -287,10 +287,6 @@ func (a *Attribute) Choices(
 
 	// construct return value
 	res := &AttributeValueCountableConnection{
-		PageInfo: &PageInfo{
-			HasPreviousPage: filterOpts.HasPreviousPage(),
-			HasNextPage:     hasNextPage,
-		},
 		TotalCount: model.NewInt32(int32(totalValues)), // NOT sure this can scale well
 		Edges:      make([]*AttributeValueCountableEdge, edgesLength),
 	}
@@ -311,8 +307,12 @@ func (a *Attribute) Choices(
 		}
 	}
 
-	res.PageInfo.StartCursor = &res.Edges[0].Cursor
-	res.PageInfo.EndCursor = &res.Edges[edgesLength-1].Cursor
+	res.PageInfo = &PageInfo{
+		HasPreviousPage: filterOpts.HasPreviousPage(),
+		HasNextPage:     hasNextPage,
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[edgesLength-1].Cursor,
+	}
 
 	return res, nil
 }
@@ -543,7 +543,7 @@ func (a *Attribute) Translation(ctx context.Context) (*AttributeTranslation, err
 	panic("not implemented")
 }
 
-func graphqlAttributesByAttributeIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*Attribute] {
+func attributesByAttributeIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*Attribute] {
 	var (
 		res        []*dataloader.Result[*Attribute]
 		appErr     *model.AppError
@@ -554,7 +554,9 @@ func graphqlAttributesByAttributeIDLoader(ctx context.Context, ids []string) []*
 		goto errorLabel
 	}
 
-	attributes, appErr = embedCtx.App.Srv().
+	attributes, appErr = embedCtx.
+		App.
+		Srv().
 		AttributeService().
 		AttributesByOption(&model.AttributeFilterOption{
 			Id: squirrel.Eq{store.AttributeTableName + ".Id": ids},
@@ -574,4 +576,12 @@ errorLabel:
 		res = append(res, &dataloader.Result[*Attribute]{Error: err})
 	}
 	return res
+}
+
+func attributeValuesByAttributeIdLoader(ctx context.Context, attributeIDs []string) []*dataloader.Result[[]*AttributeValue] {
+	panic("not implemented")
+}
+
+func attributeValueByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*AttributeValue] {
+	panic("not implemented")
 }

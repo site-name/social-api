@@ -2,6 +2,7 @@ package model
 
 import (
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
@@ -15,14 +16,14 @@ const (
 )
 
 type Sale struct {
-	Id        string `json:"id"`
-	ShopID    string `json:"shop_id"` // shop which owns this sale
-	Name      string `json:"name"`
-	Type      string `json:"type"` // DEFAULT `fixed`
-	StartDate int64  `json:"start_date"`
-	EndDate   *int64 `json:"end_date"`
-	CreateAt  int64  `json:"create_at"`
-	UpdateAt  int64  `json:"update_at"`
+	Id        string     `json:"id"`
+	ShopID    string     `json:"shop_id"` // shop which owns this sale
+	Name      string     `json:"name"`
+	Type      string     `json:"type"` // DEFAULT `fixed`
+	StartDate time.Time  `json:"start_date"`
+	EndDate   *time.Time `json:"end_date"`
+	CreateAt  int64      `json:"create_at"`
+	UpdateAt  int64      `json:"update_at"`
 	ModelMetadata
 }
 
@@ -68,8 +69,11 @@ func (s *Sale) IsValid() *AppError {
 	if len(s.Type) > SALE_TYPE_MAX_LENGTH || !SALE_TYPES.Contains(s.Type) {
 		return outer("type", &s.Id)
 	}
-	if s.StartDate == 0 {
+	if s.StartDate.IsZero() {
 		return outer("start_date", &s.Id)
+	}
+	if s.EndDate != nil && s.EndDate.IsZero() {
+		return outer("end_date", &s.Id)
 	}
 	if s.CreateAt == 0 {
 		return outer("create_at", &s.Id)
@@ -88,8 +92,8 @@ func (s *Sale) PreSave() {
 	s.CreateAt = GetMillis()
 	s.UpdateAt = s.CreateAt
 
-	if s.StartDate == 0 {
-		s.StartDate = GetMillis()
+	if s.StartDate.IsZero() {
+		s.StartDate = time.Now()
 	}
 	s.commonPre()
 }
