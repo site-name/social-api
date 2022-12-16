@@ -29,9 +29,11 @@ type Checkout struct {
 	Quantity               int32            `json:"quantity"`
 	Token                  string           `json:"token"`
 	LanguageCode           LanguageCodeEnum `json:"languageCode"`
-	shippingAddressID      *string
-	billingAddressID       *string
-	userID                 *string
+
+	shippingAddressID *string
+	billingAddressID  *string
+	userID            *string
+	channelID         string
 
 	// ShippingPrice          *TaxedMoney      `json:"shippingPrice"`
 	// SubtotalPrice          *TaxedMoney      `json:"subtotalPrice"`
@@ -75,6 +77,7 @@ func SystemCheckoutToGraphqlCheckout(ckout *model.Checkout) *Checkout {
 		shippingAddressID: ckout.ShippingAddressID,
 		billingAddressID:  ckout.BillingAddressID,
 		userID:            ckout.UserID,
+		channelID:         ckout.ChannelID,
 	}
 	return res
 }

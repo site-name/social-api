@@ -489,7 +489,10 @@ func (a *Attribute) currentUserHasPermissionToAccess(ctx context.Context) error 
 		permToCheck = model.PermissionManagePages
 	}
 
-	if !embedCtx.App.Srv().AccountService().
+	if !embedCtx.
+		App.
+		Srv().
+		AccountService().
 		SessionHasPermissionTo(embedCtx.AppContext.Session(), permToCheck) {
 		return model.NewAppError("Attribute.currentUserHasPermissionToAccess", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}
@@ -579,9 +582,78 @@ errorLabel:
 }
 
 func attributeValuesByAttributeIdLoader(ctx context.Context, attributeIDs []string) []*dataloader.Result[[]*AttributeValue] {
-	panic("not implemented")
+	var (
+		res             []*dataloader.Result[[]*AttributeValue]
+		appErr          *model.AppError
+		attributeValues model.AttributeValues
+
+		// keys are attribute ids
+		attributeValuesMap = map[string][]*AttributeValue{}
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	attributeValues, appErr = embedCtx.App.
+		Srv().
+		AttributeService().
+		FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
+			AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": attributeIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, value := range attributeValues {
+		attributeValuesMap[value.AttributeID] = append(attributeValuesMap[value.AttributeID], SystemAttributeValueToGraphqlAttributeValue(value))
+	}
+
+	for _, id := range attributeIDs {
+		res = append(res, &dataloader.Result[[]*AttributeValue]{Data: attributeValuesMap[id]})
+	}
+	return res
+
+errorLabel:
+	for range attributeIDs {
+		res = append(res, &dataloader.Result[[]*AttributeValue]{Error: err})
+	}
+	return res
 }
 
 func attributeValueByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*AttributeValue] {
-	panic("not implemented")
+	var (
+		res             []*dataloader.Result[*AttributeValue]
+		appErr          *model.AppError
+		attributeValues model.AttributeValues
+	)
+
+	embedCts, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	attributeValues, appErr = embedCts.App.
+		Srv().
+		AttributeService().
+		FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
+			Id: squirrel.Eq{store.AttributeValueTableName + ".Id": ids},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, attr := range attributeValues {
+		res = append(res, &dataloader.Result[*AttributeValue]{Data: SystemAttributeValueToGraphqlAttributeValue(attr)})
+	}
+	return res
+
+errorLabel:
+	for range ids {
+		res = append(res, &dataloader.Result[*AttributeValue]{Error: err})
+	}
+	return res
 }

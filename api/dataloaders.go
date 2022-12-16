@@ -31,6 +31,7 @@ type apiDataloaders struct {
 	checkoutsByUserIDsAndChannelIDs *dataloader.Loader[string, []*Checkout]
 	checkoutLinesByCheckoutTokens   *dataloader.Loader[string, []*CheckoutLine]
 	CheckoutByTokenLoader           *dataloader.Loader[string, *Checkout]
+	CheckoutLineByIdLoader          *dataloader.Loader[string, *CheckoutLine]
 
 	// attribute
 	AttributesByAttributeIdLoader      *dataloader.Loader[string, *Attribute]
@@ -73,6 +74,8 @@ func init() {
 		checkoutsByUserIDsAndChannelIDs: dataloader.NewBatchedLoader(graphqlCheckoutsByUserAndChannelLoader, dataloader.WithBatchCapacity[string, []*Checkout](batchCapacity)),
 		checkoutLinesByCheckoutTokens:   dataloader.NewBatchedLoader(graphqlCheckoutLinesByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, []*CheckoutLine](batchCapacity)),
 		CheckoutByTokenLoader:           dataloader.NewBatchedLoader(checkoutByTokenLoader, dataloader.WithBatchCapacity[string, *Checkout](batchCapacity)),
+		CheckoutLineByIdLoader:          dataloader.NewBatchedLoader(checkoutLineByIdLoader, dataloader.WithBatchCapacity[string, *CheckoutLine](batchCapacity)),
+
 		// attribute
 		AttributesByAttributeIdLoader:      dataloader.NewBatchedLoader(attributesByAttributeIdLoader, dataloader.WithBatchCapacity[string, *Attribute](batchCapacity)),
 		AttributeValuesByAttributeIdLoader: dataloader.NewBatchedLoader(attributeValuesByAttributeIdLoader, dataloader.WithBatchCapacity[string, []*AttributeValue](batchCapacity)),

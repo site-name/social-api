@@ -97,3 +97,7 @@ errorLabel:
 	}
 	return res
 }
+
+func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*CheckoutLine] {
+	panic("not implemented")
+}
