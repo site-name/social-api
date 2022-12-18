@@ -24,7 +24,8 @@ type apiDataloaders struct {
 	ProductVariantByIdLoader *dataloader.Loader[string, *ProductVariant]
 
 	// order
-	orderLinesByIDs *dataloader.Loader[string, *OrderLine]
+	OrderLineByIdLoader *dataloader.Loader[string, *OrderLine]
+	OrderByIdLoader     *dataloader.Loader[string, *Order]
 
 	// checkout
 	checkoutsByUserIDs              *dataloader.Loader[string, []*Checkout]
@@ -42,7 +43,7 @@ type apiDataloaders struct {
 	ChannelByIdLoader              *dataloader.Loader[string, *Channel]
 	ChannelBySlugLoader            *dataloader.Loader[string, *Channel]
 	ChannelByCheckoutLineIDLoader  *dataloader.Loader[string, *Channel]
-	ChannelByOrderLineIdLoader     *dataloader.Loader[string, []*Channel]
+	ChannelByOrderLineIdLoader     *dataloader.Loader[string, *Channel]
 	ChannelWithHasOrdersByIdLoader *dataloader.Loader[string, *Channel]
 
 	// shipping
@@ -67,7 +68,8 @@ func init() {
 		giftcardsByUser:             dataloader.NewBatchedLoader(graphqlGiftcardsByUserLoader, dataloader.WithBatchCapacity[string, *GiftCard](batchCapacity)),
 
 		// order
-		orderLinesByIDs: dataloader.NewBatchedLoader(graphqlOrderLinesByIdLoader, dataloader.WithBatchCapacity[string, *OrderLine](batchCapacity)),
+		OrderLineByIdLoader: dataloader.NewBatchedLoader(orderLineByIdLoader, dataloader.WithBatchCapacity[string, *OrderLine](batchCapacity)),
+		OrderByIdLoader:     dataloader.NewBatchedLoader(orderByIdLoader, dataloader.WithBatchCapacity[string, *Order](batchCapacity)),
 
 		// checkout
 		checkoutsByUserIDs:              dataloader.NewBatchedLoader(graphqlCheckoutByUserLoader, dataloader.WithBatchCapacity[string, []*Checkout](batchCapacity)),
@@ -85,7 +87,7 @@ func init() {
 		ChannelByIdLoader:              dataloader.NewBatchedLoader(channelByIdLoader, dataloader.WithBatchCapacity[string, *Channel](batchCapacity)),
 		ChannelBySlugLoader:            dataloader.NewBatchedLoader(channelBySlugLoader, dataloader.WithBatchCapacity[string, *Channel](batchCapacity)),
 		ChannelByCheckoutLineIDLoader:  dataloader.NewBatchedLoader(channelByCheckoutLineIDLoader, dataloader.WithBatchCapacity[string, *Channel](batchCapacity)),
-		ChannelByOrderLineIdLoader:     dataloader.NewBatchedLoader(channelByOrderLineIdLoader, dataloader.WithBatchCapacity[string, []*Channel](batchCapacity)),
+		ChannelByOrderLineIdLoader:     dataloader.NewBatchedLoader(channelByOrderLineIdLoader, dataloader.WithBatchCapacity[string, *Channel](batchCapacity)),
 		ChannelWithHasOrdersByIdLoader: dataloader.NewBatchedLoader(channelWithHasOrdersByIdLoader, dataloader.WithBatchCapacity[string, *Channel](batchCapacity)),
 
 		// shipping

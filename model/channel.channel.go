@@ -33,6 +33,8 @@ type ChannelFilterOption struct {
 	IsActive *bool
 	Slug     squirrel.Sqlizer
 	Currency squirrel.Sqlizer
+
+	Extra squirrel.Sqlizer
 }
 
 type Channels []*Channel

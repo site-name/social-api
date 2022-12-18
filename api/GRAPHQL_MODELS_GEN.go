@@ -2005,57 +2005,6 @@ type NameTranslationInput struct {
 	Name *string `json:"name"`
 }
 
-type Order struct {
-	ID                        string                  `json:"id"`
-	Created                   DateTime                `json:"created"`
-	Status                    OrderStatus             `json:"status"`
-	User                      *User                   `json:"user"`
-	TrackingClientID          string                  `json:"trackingClientId"`
-	BillingAddress            *Address                `json:"billingAddress"`
-	ShippingAddress           *Address                `json:"shippingAddress"`
-	ShippingMethodName        *string                 `json:"shippingMethodName"`
-	CollectionPointName       *string                 `json:"collectionPointName"`
-	Channel                   *Channel                `json:"channel"`
-	ShippingPrice             *TaxedMoney             `json:"shippingPrice"`
-	ShippingTaxRate           float64                 `json:"shippingTaxRate"`
-	Token                     string                  `json:"token"`
-	Voucher                   *Voucher                `json:"voucher"`
-	GiftCards                 []*GiftCard             `json:"giftCards"`
-	DisplayGrossPrices        bool                    `json:"displayGrossPrices"`
-	CustomerNote              string                  `json:"customerNote"`
-	Weight                    *Weight                 `json:"weight"`
-	RedirectURL               *string                 `json:"redirectUrl"`
-	PrivateMetadata           []*MetadataItem         `json:"privateMetadata"`
-	Metadata                  []*MetadataItem         `json:"metadata"`
-	Fulfillments              []*Fulfillment          `json:"fulfillments"`
-	Lines                     []*OrderLine            `json:"lines"`
-	Actions                   []*OrderAction          `json:"actions"`
-	AvailableShippingMethods  []*ShippingMethod       `json:"availableShippingMethods"`
-	AvailableCollectionPoints []*Warehouse            `json:"availableCollectionPoints"`
-	Invoices                  []*Invoice              `json:"invoices"`
-	Number                    *string                 `json:"number"`
-	Original                  *string                 `json:"original"`
-	Origin                    OrderOriginEnum         `json:"origin"`
-	IsPaid                    bool                    `json:"isPaid"`
-	PaymentStatus             PaymentChargeStatusEnum `json:"paymentStatus"`
-	PaymentStatusDisplay      string                  `json:"paymentStatusDisplay"`
-	Payments                  []*Payment              `json:"payments"`
-	Total                     *TaxedMoney             `json:"total"`
-	UndiscountedTotal         *TaxedMoney             `json:"undiscountedTotal"`
-	Subtotal                  *TaxedMoney             `json:"subtotal"`
-	StatusDisplay             *string                 `json:"statusDisplay"`
-	CanFinalize               bool                    `json:"canFinalize"`
-	TotalAuthorized           *Money                  `json:"totalAuthorized"`
-	TotalCaptured             *Money                  `json:"totalCaptured"`
-	Events                    []*OrderEvent           `json:"events"`
-	TotalBalance              *Money                  `json:"totalBalance"`
-	UserEmail                 *string                 `json:"userEmail"`
-	IsShippingRequired        bool                    `json:"isShippingRequired"`
-	DeliveryMethod            DeliveryMethod          `json:"deliveryMethod"`
-	LanguageCodeEnum          LanguageCodeEnum        `json:"languageCodeEnum"`
-	Discounts                 []*OrderDiscount        `json:"discounts"`
-}
-
 type OrderAddNote struct {
 	Order  *Order        `json:"order"`
 	Event  *OrderEvent   `json:"event"`
@@ -2230,34 +2179,6 @@ type OrderFulfillLineInput struct {
 type OrderFulfillStockInput struct {
 	Quantity  int32  `json:"quantity"`
 	Warehouse string `json:"warehouse"`
-}
-
-type OrderLine struct {
-	ID                    string                 `json:"id"`
-	ProductName           string                 `json:"productName"`
-	VariantName           string                 `json:"variantName"`
-	ProductSku            *string                `json:"productSku"`
-	ProductVariantID      *string                `json:"ProductVariantId"`
-	IsShippingRequired    bool                   `json:"isShippingRequired"`
-	Quantity              int32                  `json:"quantity"`
-	QuantityFulfilled     int32                  `json:"quantityFulfilled"`
-	UnitDiscountReason    *string                `json:"unitDiscountReason"`
-	TaxRate               float64                `json:"taxRate"`
-	Thumbnail             *Image                 `json:"thumbnail"`
-	UnitPrice             *TaxedMoney            `json:"unitPrice"`
-	UndiscountedUnitPrice *TaxedMoney            `json:"undiscountedUnitPrice"`
-	UnitDiscount          *Money                 `json:"unitDiscount"`
-	UnitDiscountValue     PositiveDecimal        `json:"unitDiscountValue"`
-	TotalPrice            *TaxedMoney            `json:"totalPrice"`
-	TranslatedProductName string                 `json:"translatedProductName"`
-	TranslatedVariantName string                 `json:"translatedVariantName"`
-	QuantityToFulfill     int32                  `json:"quantityToFulfill"`
-	UnitDiscountType      *DiscountValueTypeEnum `json:"unitDiscountType"`
-
-	variantID *string
-	// Allocations           []*Allocation          `json:"allocations"`
-	// DigitalContentURL     *DigitalContentURL     `json:"digitalContentUrl"`
-	// Variant               *ProductVariant        `json:"variant"`
 }
 
 type OrderLineCreateInput struct {

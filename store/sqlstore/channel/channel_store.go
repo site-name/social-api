@@ -104,6 +104,9 @@ func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption)
 	if option.Currency != nil {
 		query = query.Where(option.Currency)
 	}
+	if option.Extra != nil {
+		query = query.Where(option.Extra)
+	}
 
 	return query.ToSql()
 }

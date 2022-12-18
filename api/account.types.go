@@ -436,7 +436,7 @@ func (c *CustomerEvent) User(ctx context.Context) (*User, error) {
 
 func (c *CustomerEvent) OrderLine(ctx context.Context) (*OrderLine, error) {
 	if c.orderLineID != nil {
-		return dataloaders.orderLinesByIDs.Load(ctx, *c.orderLineID)()
+		return dataloaders.OrderLineByIdLoader.Load(ctx, *c.orderLineID)()
 	}
 
 	return nil, nil

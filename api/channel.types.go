@@ -24,6 +24,16 @@ type Channel struct {
 }
 
 func (c *Channel) HasOrders(ctx context.Context) (*bool, error) {
+	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// // check if current user has channel management
+	// if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageChannels) {
+	// 	return nil, model.NewAppError("Channel.HasOrders", ErrorUnauthorized, nil, "you are not allowed to perform this", http.StatusUnauthorized)
+	// }
+
 	panic("not implemented")
 }
 
@@ -152,16 +162,91 @@ func channelByCheckoutLineIDLoader(ctx context.Context, checkoutLineIDs []string
 	})
 
 errorLabel:
-	for _, err := range errs {
-		res = append(res, &dataloader.Result[*Channel]{Error: err})
+	for range checkoutLineIDs {
+		res = append(res, &dataloader.Result[*Channel]{Error: errs[0]})
 	}
 	return res
 }
 
-func channelByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[[]*Channel] {
-	panic("not implemented")
+func channelByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*Channel] {
+	var (
+		res        []*dataloader.Result[*Channel]
+		orderIDs   []string
+		orders     []*Order
+		channelIDs []string
+		channels   []*Channel
+	)
+
+	// find order lines
+	orderLines, errs := dataloaders.OrderLineByIdLoader.LoadMany(ctx, orderLineIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		goto errorLabel
+	}
+
+	orderIDs = lo.Map(orderLines, func(item *OrderLine, _ int) string { return item.orderID })
+
+	// find orders
+	orders, errs = dataloaders.OrderByIdLoader.LoadMany(ctx, orderIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		goto errorLabel
+	}
+
+	// find channels
+	channelIDs = lo.Map(orders, func(o *Order, _ int) string { return o.channelID })
+	channels, errs = dataloaders.ChannelByIdLoader.LoadMany(ctx, channelIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		goto errorLabel
+	}
+
+	return lo.Map(channels, func(i *Channel, _ int) *dataloader.Result[*Channel] {
+		return &dataloader.Result[*Channel]{Data: i}
+	})
+
+errorLabel:
+	for range orderLineIDs {
+		res = append(res, &dataloader.Result[*Channel]{Error: errs[0]})
+	}
+	return res
 }
 
-func channelWithHasOrdersByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*Channel] {
-	panic("not implemented")
+func channelWithHasOrdersByIdLoader(ctx context.Context, channelIDs []string) []*dataloader.Result[*Channel] {
+	var (
+		res      []*dataloader.Result[*Channel]
+		channels model.Channels
+		appErr   *model.AppError
+	)
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	// find all channels that have orders
+	channels, appErr = embedCtx.App.
+		Srv().
+		ChannelService().
+		ChannelsByOption(&model.ChannelFilterOption{
+			Extra: squirrel.Expr(`EXISTS (
+	SELECT 
+		(1) AS "a"
+	FROM 
+		Orders
+	WHERE
+		Orders.ChannelID = Channels.Id
+	LIMIT 1
+)`)})
+
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	return lo.Map(channels, func(c *model.Channel, _ int) *dataloader.Result[*Channel] {
+		return &dataloader.Result[*Channel]{Data: SystemChannelToGraphqlChannel(c)}
+	})
+
+errorLabel:
+	for range channelIDs {
+		res = append(res, &dataloader.Result[*Channel]{Error: err})
+	}
+	return res
 }

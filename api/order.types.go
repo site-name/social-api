@@ -13,6 +13,35 @@ import (
 
 // --------------------------- Order line -----------------------------
 
+type OrderLine struct {
+	ID                    string                 `json:"id"`
+	ProductName           string                 `json:"productName"`
+	VariantName           string                 `json:"variantName"`
+	ProductSku            *string                `json:"productSku"`
+	ProductVariantID      *string                `json:"ProductVariantId"`
+	IsShippingRequired    bool                   `json:"isShippingRequired"`
+	Quantity              int32                  `json:"quantity"`
+	QuantityFulfilled     int32                  `json:"quantityFulfilled"`
+	UnitDiscountReason    *string                `json:"unitDiscountReason"`
+	TaxRate               float64                `json:"taxRate"`
+	Thumbnail             *Image                 `json:"thumbnail"`
+	UnitPrice             *TaxedMoney            `json:"unitPrice"`
+	UndiscountedUnitPrice *TaxedMoney            `json:"undiscountedUnitPrice"`
+	UnitDiscount          *Money                 `json:"unitDiscount"`
+	UnitDiscountValue     PositiveDecimal        `json:"unitDiscountValue"`
+	TotalPrice            *TaxedMoney            `json:"totalPrice"`
+	TranslatedProductName string                 `json:"translatedProductName"`
+	TranslatedVariantName string                 `json:"translatedVariantName"`
+	QuantityToFulfill     int32                  `json:"quantityToFulfill"`
+	UnitDiscountType      *DiscountValueTypeEnum `json:"unitDiscountType"`
+
+	variantID *string
+	orderID   string
+	// Allocations           []*Allocation          `json:"allocations"`
+	// DigitalContentURL     *DigitalContentURL     `json:"digitalContentUrl"`
+	// Variant               *ProductVariant        `json:"variant"`
+}
+
 func SystemOrderLineToGraphqlOrderLine(line *model.OrderLine) *OrderLine {
 	if line == nil {
 		return nil
@@ -36,7 +65,9 @@ func SystemOrderLineToGraphqlOrderLine(line *model.OrderLine) *OrderLine {
 		UnitDiscountValue:     PositiveDecimal(*line.UnitDiscountValue),
 		TotalPrice:            SystemTaxedMoneyToGraphqlTaxedMoney(line.TotalPrice),
 		QuantityToFulfill:     int32(line.QuantityUnFulfilled()),
-		variantID:             line.VariantID,
+
+		variantID: line.VariantID,
+		orderID:   line.OrderID,
 	}
 	discountType := DiscountValueTypeEnum(strings.ToUpper(line.UnitDiscountType))
 	res.UnitDiscountType = &discountType
@@ -56,7 +87,7 @@ func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
 	panic("not implemented")
 }
 
-func graphqlOrderLinesByIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*OrderLine] {
+func orderLineByIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*OrderLine] {
 	var (
 		res        []*dataloader.Result[*OrderLine]
 		appErr     *model.AppError
@@ -88,4 +119,78 @@ errorLabel:
 		res = append(res, &dataloader.Result[*OrderLine]{Error: err})
 	}
 	return res
+}
+
+// ------------------------------- ORDER
+
+type Order struct {
+	ID                   string                  `json:"id"`
+	Created              DateTime                `json:"created"`
+	Status               OrderStatus             `json:"status"`
+	User                 *User                   `json:"user"`
+	TrackingClientID     string                  `json:"trackingClientId"`
+	ShippingMethodName   *string                 `json:"shippingMethodName"`
+	CollectionPointName  *string                 `json:"collectionPointName"`
+	ShippingPrice        *TaxedMoney             `json:"shippingPrice"`
+	ShippingTaxRate      float64                 `json:"shippingTaxRate"`
+	Token                string                  `json:"token"`
+	DisplayGrossPrices   bool                    `json:"displayGrossPrices"`
+	CustomerNote         string                  `json:"customerNote"`
+	Weight               *Weight                 `json:"weight"`
+	RedirectURL          *string                 `json:"redirectUrl"`
+	PrivateMetadata      []*MetadataItem         `json:"privateMetadata"`
+	Metadata             []*MetadataItem         `json:"metadata"`
+	Number               *string                 `json:"number"`
+	Original             *string                 `json:"original"`
+	Origin               OrderOriginEnum         `json:"origin"`
+	IsPaid               bool                    `json:"isPaid"`
+	PaymentStatus        PaymentChargeStatusEnum `json:"paymentStatus"`
+	PaymentStatusDisplay string                  `json:"paymentStatusDisplay"`
+	Total                *TaxedMoney             `json:"total"`
+	UndiscountedTotal    *TaxedMoney             `json:"undiscountedTotal"`
+	Subtotal             *TaxedMoney             `json:"subtotal"`
+	StatusDisplay        *string                 `json:"statusDisplay"`
+	CanFinalize          bool                    `json:"canFinalize"`
+	TotalAuthorized      *Money                  `json:"totalAuthorized"`
+	TotalCaptured        *Money                  `json:"totalCaptured"`
+	TotalBalance         *Money                  `json:"totalBalance"`
+	UserEmail            *string                 `json:"userEmail"`
+	IsShippingRequired   bool                    `json:"isShippingRequired"`
+	LanguageCodeEnum     LanguageCodeEnum        `json:"languageCodeEnum"`
+
+	channelID string
+
+	// BillingAddress            *Address                `json:"billingAddress"`
+	// ShippingAddress           *Address                `json:"shippingAddress"`
+	// Channel                   *Channel                `json:"channel"`
+	// Voucher                   *Voucher                `json:"voucher"`
+	// GiftCards                 []*GiftCard             `json:"giftCards"`
+	// Fulfillments              []*Fulfillment          `json:"fulfillments"`
+	// Lines                     []*OrderLine            `json:"lines"`
+	// Actions                   []*OrderAction          `json:"actions"`
+	// AvailableShippingMethods  []*ShippingMethod       `json:"availableShippingMethods"`
+	// AvailableCollectionPoints []*Warehouse            `json:"availableCollectionPoints"`
+	// Invoices                  []*Invoice              `json:"invoices"`
+	// Payments                  []*Payment              `json:"payments"`
+	// Events                    []*OrderEvent           `json:"events"`
+	// DeliveryMethod            DeliveryMethod          `json:"deliveryMethod"`
+	// Discounts                 []*OrderDiscount        `json:"discounts"`
+}
+
+func SystemOrderToGraphqlOrder(o *model.Order) *Order {
+	if o == nil {
+		return nil
+	}
+
+	res := &Order{
+		ID: o.Id,
+
+		channelID: o.ChannelID,
+	}
+	panic("not implemented")
+	return res
+}
+
+func orderByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*Order] {
+	panic("not implemented")
 }
