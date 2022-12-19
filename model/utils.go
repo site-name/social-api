@@ -28,6 +28,7 @@ import (
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/modules/util/fileutils"
 )
 
@@ -670,6 +671,14 @@ func MakeStringMapForModelSlice(slice interface{}, keyFunc func(interface{}) str
 		res[keyFunc(itemIface)] = valueFunc(itemIface)
 	}
 
+	return res
+}
+
+func MakeMapFromModelSlice[T any, K util.Ordered](slice []T, keyFunc func(T) K) map[K]T {
+	res := map[K]T{}
+	for _, item := range slice {
+		res[keyFunc(item)] = item
+	}
 	return res
 }
 

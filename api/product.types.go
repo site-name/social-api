@@ -102,3 +102,22 @@ func SystemProductTypeTpGraphqlProductType(prd *model.ProductType) *ProductType 
 
 	return res
 }
+
+func productByVariantIdLoader(ctx context.Context, variantIDS []string) []*dataloader.Result[*Product] {
+	panic("not implemented")
+}
+
+func productTypeByVariantIdLoader(ctx context.Context, variantIDS []string) []*dataloader.Result[*ProductType] {
+	panic("not implemented")
+}
+
+func collectionsByVariantIdLoader(ctx context.Context, variantIDS []string) []*dataloader.Result[[]*Collection] {
+	panic("not implemented")
+}
+
+// variantIDChannelIDPairs are slice of uuid_uuid pairs.
+// first uuid parts are product variant ids
+// second parts are channel ids
+func variantChannelListingByVariantIdAndChannelIdLoader(ctx context.Context, variantIDChannelIDPairs []string) []*dataloader.Result[*ProductVariantChannelListing] {
+	panic("not implemented")
+}

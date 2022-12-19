@@ -20,8 +20,12 @@ type apiDataloaders struct {
 	CustomerEventsByUserLoader *dataloader.Loader[string, []*CustomerEvent]
 
 	// product
-	productsByIDs            *dataloader.Loader[string, *Product]
-	ProductVariantByIdLoader *dataloader.Loader[string, *ProductVariant]
+	productsByIDs                                      *dataloader.Loader[string, *Product]
+	ProductVariantByIdLoader                           *dataloader.Loader[string, *ProductVariant]
+	ProductByVariantIdLoader                           *dataloader.Loader[string, *Product]
+	ProductTypeByVariantIdLoader                       *dataloader.Loader[string, *ProductType]
+	CollectionsByVariantIdLoader                       *dataloader.Loader[string, []*Collection]
+	VariantChannelListingByVariantIdAndChannelIdLoader *dataloader.Loader[string, *ProductVariantChannelListing]
 
 	// order
 	OrderLineByIdLoader *dataloader.Loader[string, *OrderLine]
@@ -60,8 +64,12 @@ func init() {
 		CustomerEventsByUserLoader: dataloader.NewBatchedLoader(customerEventsByUserLoader, dataloader.WithBatchCapacity[string, []*CustomerEvent](batchCapacity)),
 
 		// product
-		productsByIDs:            dataloader.NewBatchedLoader(graphqlProductsByIDsLoader, dataloader.WithBatchCapacity[string, *Product](batchCapacity)),
-		ProductVariantByIdLoader: dataloader.NewBatchedLoader(productVariantByIdLoader, dataloader.WithBatchCapacity[string, *ProductVariant](batchCapacity)),
+		productsByIDs:                                      dataloader.NewBatchedLoader(graphqlProductsByIDsLoader, dataloader.WithBatchCapacity[string, *Product](batchCapacity)),
+		ProductVariantByIdLoader:                           dataloader.NewBatchedLoader(productVariantByIdLoader, dataloader.WithBatchCapacity[string, *ProductVariant](batchCapacity)),
+		ProductByVariantIdLoader:                           dataloader.NewBatchedLoader(productByVariantIdLoader, dataloader.WithBatchCapacity[string, *Product](batchCapacity)),
+		ProductTypeByVariantIdLoader:                       dataloader.NewBatchedLoader(productTypeByVariantIdLoader, dataloader.WithBatchCapacity[string, *ProductType](batchCapacity)),
+		CollectionsByVariantIdLoader:                       dataloader.NewBatchedLoader(collectionsByVariantIdLoader, dataloader.WithBatchCapacity[string, []*Collection](batchCapacity)),
+		VariantChannelListingByVariantIdAndChannelIdLoader: dataloader.NewBatchedLoader(variantChannelListingByVariantIdAndChannelIdLoader, dataloader.WithBatchCapacity[string, *ProductVariantChannelListing](batchCapacity)),
 
 		// giftcard
 		giftcardEventsByGiftcardIDs: dataloader.NewBatchedLoader(graphqlGiftcardEventsByGiftcardIDsLoader, dataloader.WithBatchCapacity[string, *GiftCardEvent](batchCapacity)),
