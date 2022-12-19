@@ -28,11 +28,11 @@ type apiDataloaders struct {
 	OrderByIdLoader     *dataloader.Loader[string, *Order]
 
 	// checkout
-	checkoutsByUserIDs              *dataloader.Loader[string, []*Checkout]
-	checkoutsByUserIDsAndChannelIDs *dataloader.Loader[string, []*Checkout]
-	checkoutLinesByCheckoutTokens   *dataloader.Loader[string, []*CheckoutLine]
-	CheckoutByTokenLoader           *dataloader.Loader[string, *Checkout]
-	CheckoutLineByIdLoader          *dataloader.Loader[string, *CheckoutLine]
+	CheckoutByUserLoader               *dataloader.Loader[string, []*Checkout]
+	CheckoutByUserAndChannelLoader     *dataloader.Loader[string, []*Checkout]
+	CheckoutLinesByCheckoutTokenLoader *dataloader.Loader[string, []*CheckoutLine]
+	CheckoutByTokenLoader              *dataloader.Loader[string, *Checkout]
+	CheckoutLineByIdLoader             *dataloader.Loader[string, *CheckoutLine]
 
 	// attribute
 	AttributesByAttributeIdLoader      *dataloader.Loader[string, *Attribute]
@@ -72,11 +72,11 @@ func init() {
 		OrderByIdLoader:     dataloader.NewBatchedLoader(orderByIdLoader, dataloader.WithBatchCapacity[string, *Order](batchCapacity)),
 
 		// checkout
-		checkoutsByUserIDs:              dataloader.NewBatchedLoader(graphqlCheckoutByUserLoader, dataloader.WithBatchCapacity[string, []*Checkout](batchCapacity)),
-		checkoutsByUserIDsAndChannelIDs: dataloader.NewBatchedLoader(graphqlCheckoutsByUserAndChannelLoader, dataloader.WithBatchCapacity[string, []*Checkout](batchCapacity)),
-		checkoutLinesByCheckoutTokens:   dataloader.NewBatchedLoader(graphqlCheckoutLinesByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, []*CheckoutLine](batchCapacity)),
-		CheckoutByTokenLoader:           dataloader.NewBatchedLoader(checkoutByTokenLoader, dataloader.WithBatchCapacity[string, *Checkout](batchCapacity)),
-		CheckoutLineByIdLoader:          dataloader.NewBatchedLoader(checkoutLineByIdLoader, dataloader.WithBatchCapacity[string, *CheckoutLine](batchCapacity)),
+		CheckoutByUserLoader:               dataloader.NewBatchedLoader(CheckoutByUserLoader, dataloader.WithBatchCapacity[string, []*Checkout](batchCapacity)),
+		CheckoutByUserAndChannelLoader:     dataloader.NewBatchedLoader(checkoutByUserAndChannelLoader, dataloader.WithBatchCapacity[string, []*Checkout](batchCapacity)),
+		CheckoutLinesByCheckoutTokenLoader: dataloader.NewBatchedLoader(checkoutLinesByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, []*CheckoutLine](batchCapacity)),
+		CheckoutByTokenLoader:              dataloader.NewBatchedLoader(checkoutByTokenLoader, dataloader.WithBatchCapacity[string, *Checkout](batchCapacity)),
+		CheckoutLineByIdLoader:             dataloader.NewBatchedLoader(checkoutLineByIdLoader, dataloader.WithBatchCapacity[string, *CheckoutLine](batchCapacity)),
 
 		// attribute
 		AttributesByAttributeIdLoader:      dataloader.NewBatchedLoader(attributesByAttributeIdLoader, dataloader.WithBatchCapacity[string, *Attribute](batchCapacity)),

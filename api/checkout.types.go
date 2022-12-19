@@ -174,7 +174,7 @@ func (c *Checkout) AvailablePaymentGateways(ctx context.Context) ([]*PaymentGate
 }
 
 func (c *Checkout) Lines(ctx context.Context) ([]*CheckoutLine, error) {
-	return dataloaders.checkoutLinesByCheckoutTokens.Load(ctx, c.Token)()
+	return dataloaders.CheckoutLinesByCheckoutTokenLoader.Load(ctx, c.Token)()
 }
 
 func (c *Checkout) DeliveryMethod(ctx context.Context) (any, error) {
@@ -184,7 +184,7 @@ func (c *Checkout) DeliveryMethod(ctx context.Context) (any, error) {
 // NOTE:
 // keys are strings that have format uuid__uuid.
 // The first uuid part is userID, send is channelID
-func graphqlCheckoutsByUserAndChannelLoader(ctx context.Context, keys []string) []*dataloader.Result[[]*Checkout] {
+func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*dataloader.Result[[]*Checkout] {
 	var (
 		appErr     *model.AppError
 		res        []*dataloader.Result[[]*Checkout]
@@ -242,7 +242,7 @@ errorLabel:
 	return res
 }
 
-func graphqlCheckoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*Checkout] {
+func CheckoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*Checkout] {
 	var (
 		appErr       *model.AppError
 		checkouts    []*model.Checkout

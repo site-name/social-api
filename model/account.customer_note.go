@@ -1,9 +1,5 @@
 package model
 
-import (
-	"io"
-)
-
 type CustomerNote struct {
 	Id         string  `json:"id"`
 	UserID     *string `json:"user_id"`
@@ -15,12 +11,6 @@ type CustomerNote struct {
 
 func (c *CustomerNote) ToJSON() string {
 	return ModelToJson(c)
-}
-
-func CustomerNoteFromJson(data io.Reader) *CustomerNote {
-	var cn CustomerNote
-	ModelFromJson(&cn, data)
-	return &cn
 }
 
 func (c *CustomerNote) IsValid() *AppError {

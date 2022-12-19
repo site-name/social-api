@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -21,20 +22,26 @@ type Channel struct {
 	DefaultCountry *CountryDisplay `json:"defaultCountry"`
 
 	// HasOrders      bool            `json:"hasOrders"`
+	hasOrders bool
 }
 
 func (c *Channel) HasOrders(ctx context.Context) (*bool, error) {
-	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
 
-	// // check if current user has channel management
-	// if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageChannels) {
-	// 	return nil, model.NewAppError("Channel.HasOrders", ErrorUnauthorized, nil, "you are not allowed to perform this", http.StatusUnauthorized)
-	// }
+	// check if current user has channel management
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageChannels) {
+		return nil, model.NewAppError("Channel.HasOrders", ErrorUnauthorized, nil, "you are not allowed to perform this", http.StatusUnauthorized)
+	}
 
-	panic("not implemented")
+	channel, err := dataloaders.ChannelWithHasOrdersByIdLoader.Load(ctx, c.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return model.NewBool(channel.hasOrders), nil
 }
 
 func SystemChannelToGraphqlChannel(ch *model.Channel) *Channel {
@@ -52,6 +59,7 @@ func SystemChannelToGraphqlChannel(ch *model.Channel) *Channel {
 			Code:    ch.DefaultCountry,
 			Country: model.Countries[strings.ToUpper(ch.DefaultCountry)],
 		},
+		hasOrders: ch.GetHasOrders(),
 	}
 }
 
@@ -225,15 +233,8 @@ func channelWithHasOrdersByIdLoader(ctx context.Context, channelIDs []string) []
 		Srv().
 		ChannelService().
 		ChannelsByOption(&model.ChannelFilterOption{
-			Extra: squirrel.Expr(`EXISTS (
-	SELECT 
-		(1) AS "a"
-	FROM 
-		Orders
-	WHERE
-		Orders.ChannelID = Channels.Id
-	LIMIT 1
-)`)})
+			AnnotateHasOrders: true,
+		})
 
 	if appErr != nil {
 		err = appErr

@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
@@ -82,8 +83,7 @@ func (cs *SqlChannelStore) Get(id string) (*model.Channel, error) {
 func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption) (string, []interface{}, error) {
 	query := cs.GetQueryBuilder().
 		Select(cs.ModelFields("")...).
-		From(store.ChannelTableName).
-		OrderBy(store.TableOrderingMap[store.ChannelTableName])
+		From(store.ChannelTableName)
 
 	// parse options
 	if option.Id != nil {
@@ -107,6 +107,9 @@ func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption)
 	if option.Extra != nil {
 		query = query.Where(option.Extra)
 	}
+	if option.AnnotateHasOrders {
+		query = query.Column(`EXISTS ( SELECT (1) AS "a" FROM Orders WHERE Orders.ChannelID = Channels.Id LIMIT 1 ) AS HasOrders`)
+	}
 
 	return query.ToSql()
 }
@@ -118,7 +121,10 @@ func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*mode
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
 
-	var res model.Channel
+	var res struct {
+		model.Channel
+		HasOrders bool
+	}
 	err = cs.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -127,22 +133,36 @@ func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*mode
 		return nil, errors.Wrap(err, "failed to find channel by given options")
 	}
 
-	return &res, nil
+	ch := res.Channel
+	ch.SetHasOrders(res.HasOrders)
+
+	return &ch, nil
 }
 
 // FilterByOption returns a list of channels with given option
 func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) {
-
 	queryString, args, err := cs.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*model.Channel
+	var res []*struct {
+		model.Channel
+		HasOrders bool
+	}
 	err = cs.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find channels with given option")
 	}
 
-	return res, nil
+	return lo.Map(res, func(item *struct {
+		model.Channel
+		HasOrders bool
+	}, _ int) *model.Channel {
+
+		ch := item.Channel
+		ch.SetHasOrders(item.HasOrders)
+		return &ch
+
+	}), nil
 }

@@ -52,7 +52,7 @@ func (line *CheckoutLine) RequiresShipping(ctx context.Context) (*bool, error) {
 	panic("not implemented")
 }
 
-func graphqlCheckoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[[]*CheckoutLine] {
+func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[[]*CheckoutLine] {
 	var (
 		res           []*dataloader.Result[[]*CheckoutLine]
 		appErr        *model.AppError
@@ -99,5 +99,39 @@ errorLabel:
 }
 
 func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*CheckoutLine] {
-	panic("not implemented")
+	var (
+		res             = make([]*dataloader.Result[*CheckoutLine], len(ids))
+		checkoutLines   model.CheckoutLines
+		appErr          *model.AppError
+		checkoutLineMap = map[string]*CheckoutLine{}
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	checkoutLines, appErr = embedCtx.App.Srv().
+		CheckoutService().
+		CheckoutLinesByOption(&model.CheckoutLineFilterOption{
+			Id: squirrel.Eq{store.CheckoutLineTableName + ".Id": ids},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, line := range checkoutLines {
+		checkoutLineMap[line.Id] = SystemCheckoutLineToGraphqlCheckoutLine(line)
+	}
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[*CheckoutLine]{Data: checkoutLineMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range ids {
+		res[idx] = &dataloader.Result[*CheckoutLine]{Error: err}
+	}
+	return res
 }

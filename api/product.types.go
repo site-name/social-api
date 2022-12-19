@@ -11,18 +11,15 @@ import (
 )
 
 type Product struct {
-	ID             string     `json:"id"`
-	SeoTitle       *string    `json:"seoTitle"`
-	SeoDescription *string    `json:"seoDescription"`
-	Name           string     `json:"name"`
-	Description    JSONString `json:"description"`
-	Slug           string     `json:"slug"`
-	UpdatedAt      *DateTime  `json:"updatedAt"`
-	ChargeTaxes    bool       `json:"chargeTaxes"`
-	Weight         *Weight    `json:"weight"`
-	// DefaultVariant         *ProductVariant          `json:"defaultVariant"`
-	// ProductType            *ProductType             `json:"productType"`
-	// Category               *Category                `json:"category"`
+	ID                     string                   `json:"id"`
+	SeoTitle               *string                  `json:"seoTitle"`
+	SeoDescription         *string                  `json:"seoDescription"`
+	Name                   string                   `json:"name"`
+	Description            JSONString               `json:"description"`
+	Slug                   string                   `json:"slug"`
+	UpdatedAt              *DateTime                `json:"updatedAt"`
+	ChargeTaxes            bool                     `json:"chargeTaxes"`
+	Weight                 *Weight                  `json:"weight"`
 	Rating                 *float64                 `json:"rating"`
 	PrivateMetadata        []*MetadataItem          `json:"privateMetadata"`
 	Metadata               []*MetadataItem          `json:"metadata"`
@@ -40,6 +37,10 @@ type Product struct {
 	Translation            *ProductTranslation      `json:"translation"`
 	AvailableForPurchase   *Date                    `json:"availableForPurchase"`
 	IsAvailableForPurchase *bool                    `json:"isAvailableForPurchase"`
+
+	// DefaultVariant         *ProductVariant          `json:"defaultVariant"`
+	// ProductType            *ProductType             `json:"productType"`
+	// Category               *Category                `json:"category"`
 }
 
 func SystemProductToGraphqlProduct(prd *model.Product) *Product {
@@ -90,11 +91,6 @@ errorLabel:
 	}
 	return res
 }
-
-// func graphqlProductTypeByProductIDLoader(ctx context.Context, productIDs []string) []*dataloader.Result[[]*ProductType] {
-// 	a, b := dataloaders.productsByIDs.LoadMany(ctx, productIDs)()
-
-// }
 
 func SystemProductTypeTpGraphqlProductType(prd *model.ProductType) *ProductType {
 	if prd == nil {

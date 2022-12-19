@@ -1,8 +1,6 @@
 package model
 
-import (
-	"io"
-)
+import "io"
 
 const (
 	STATUS_OUT_OF_OFFICE   = "ooo"
@@ -47,12 +45,6 @@ func StatusListToJson(u []*Status) string {
 	}
 
 	return ModelToJson(uCopy)
-}
-
-func StatusListFromJson(data io.Reader) []*Status {
-	var statuses []*Status
-	ModelFromJson(&statuses, data)
-	return statuses
 }
 
 func StatusMapToInterfaceMap(statusMap map[string]*Status) map[string]interface{} {

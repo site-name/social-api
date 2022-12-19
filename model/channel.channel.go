@@ -23,6 +23,16 @@ type Channel struct {
 	Slug           string `json:"slug"`            // unique
 	Currency       string `json:"currency"`        //
 	DefaultCountry string `json:"default_country"` // default "US"
+
+	hasOrders bool `db:"-"`
+}
+
+func (c *Channel) GetHasOrders() bool {
+	return c.hasOrders
+}
+
+func (c *Channel) SetHasOrders(b bool) {
+	c.hasOrders = b
 }
 
 // ChannelFilterOption is used for building sql queries
@@ -33,6 +43,8 @@ type ChannelFilterOption struct {
 	IsActive *bool
 	Slug     squirrel.Sqlizer
 	Currency squirrel.Sqlizer
+
+	AnnotateHasOrders bool // to check if there are at least 1 order associated to this channel
 
 	Extra squirrel.Sqlizer
 }
