@@ -35,6 +35,16 @@ type DiscountInfo struct {
 	VariantsIDs     []string
 }
 
+func (d *DiscountInfo) IsSaleValid() bool {
+	switch d.Sale.(type) {
+	case *Sale, *Voucher, Sale, Voucher:
+		return true
+
+	default:
+		return false
+	}
+}
+
 type CostsData struct {
 	costs   []*goprices.Money
 	margins []float64

@@ -51,7 +51,12 @@ func (line *CheckoutLine) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
 }
 
 func (line *CheckoutLine) RequiresShipping(ctx context.Context) (*bool, error) {
-	panic("not implemented")
+	productType, err := dataloaders.ProductTypeByVariantIdLoader.Load(ctx, line.variantID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return model.NewBool(productType.IsShippingRequired), nil
 }
 
 func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[[]*CheckoutLine] {
@@ -147,7 +152,7 @@ type CheckoutLineInfo struct {
 	Collections    []*Collection
 }
 
-func CheckoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[[]*CheckoutLineInfo] {
+func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[[]*CheckoutLineInfo] {
 	var (
 		res []*dataloader.Result[[]*CheckoutLineInfo]
 
@@ -183,9 +188,7 @@ func CheckoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 
 	for _, lines := range checkoutLines {
 		for _, line := range lines {
-			if line != nil {
-				variantIDS = append(variantIDS, line.variantID)
-			}
+			variantIDS = append(variantIDS, line.variantID)
 		}
 	}
 
@@ -216,8 +219,7 @@ func CheckoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 	}
 
 	for i := 0; i < util.Min(len(channelIDS), len(checkoutLines)); i++ {
-		lines := checkoutLines[i]
-		for _, line := range lines {
+		for _, line := range checkoutLines[i] {
 			variantIDChannelIDPairs = append(variantIDChannelIDPairs, line.variantID+"__"+channelIDS[i])
 		}
 	}
@@ -248,16 +250,11 @@ func CheckoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 	}
 
 	for i := 0; i < util.Min(len(checkouts), len(checkoutLines)); i++ {
-		var (
-			checkout = checkouts[i]
-			lines    = checkoutLines[i]
-		)
-
-		for _, line := range lines {
-			linesInfoMap[checkout.Token] = append(linesInfoMap[checkout.Token], &CheckoutLineInfo{
+		for _, line := range checkoutLines[i] {
+			linesInfoMap[checkouts[i].Token] = append(linesInfoMap[checkouts[i].Token], &CheckoutLineInfo{
 				Line:           *line,
 				Variant:        *variantsMap[line.variantID],
-				ChannelListing: *channelListingsMap[line.variantID+"__"+checkout.channelID],
+				ChannelListing: *channelListingsMap[line.variantID+"__"+checkouts[i].channelID],
 				Product:        *productsMap[line.variantID],
 				ProductType:    *productTypesMap[line.variantID],
 				Collections:    collectionsMap[line.variantID],

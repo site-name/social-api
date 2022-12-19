@@ -33,7 +33,11 @@ func (a *ServiceDiscount) GetSaleDiscount(sale *model.Sale, saleChannelListing *
 func (a *ServiceDiscount) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, *model.AppError) {
 	sales, err := a.srv.Store.DiscountSale().FilterSalesByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("FilterSalesByOption", "app.discount.filter_sales_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("ServiceDiscount.FilterSalesByOption", "app.discount.filter_sales_by_options.app_error", nil, err.Error(), statusCode)
 	}
 
 	return sales, nil
@@ -56,7 +60,11 @@ func (a *ServiceDiscount) ActiveSales(date *time.Time) (model.Sales, *model.AppE
 			StartDate: squirrel.LtOrEq{store.SaleTableName + ".StartDate": *date},
 		})
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ActiveSales", "app.discount.active_sales_by_date.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("ServiceDiscount.ActiveSales", "app.discount.active_sales_by_date.app_error", nil, err.Error(), statusCode)
 	}
 
 	return activeSalesByDate, nil
@@ -77,7 +85,11 @@ func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model.A
 		})
 
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ExpiredSales", "app.discount.expired_sales_by_date.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("ServiceDiscount.ExpiredSales", "app.discount.expired_sales_by_date.app_error", nil, err.Error(), statusCode)
 	}
 
 	return expiredSalesByDate, nil

@@ -26,7 +26,6 @@ type Checkout struct {
 	PrivateMetadata        []*MetadataItem  `json:"privateMetadata"`
 	Metadata               []*MetadataItem  `json:"metadata"`
 	Email                  string           `json:"email"`
-	Quantity               int32            `json:"quantity"`
 	Token                  string           `json:"token"`
 	LanguageCode           LanguageCodeEnum `json:"languageCode"`
 
@@ -35,6 +34,7 @@ type Checkout struct {
 	userID            *string
 	channelID         string
 
+	// Quantity               int32            `json:"quantity"`
 	// ShippingPrice          *TaxedMoney      `json:"shippingPrice"`
 	// SubtotalPrice          *TaxedMoney      `json:"subtotalPrice"`
 	// TotalPrice             *TaxedMoney      `json:"totalPrice"``
@@ -70,7 +70,6 @@ func SystemCheckoutToGraphqlCheckout(ckout *model.Checkout) *Checkout {
 		PrivateMetadata:        MetadataToSlice(ckout.PrivateMetadata),
 		Metadata:               MetadataToSlice(ckout.Metadata),
 		Email:                  ckout.Email,
-		Quantity:               int32(ckout.Quantity),
 		Token:                  ckout.Token,
 		LanguageCode:           SystemLanguageToGraphqlLanguageCodeEnum(ckout.LanguageCode),
 
@@ -108,6 +107,20 @@ func (c *Checkout) User(ctx context.Context) (*User, error) {
 	}
 
 	return nil, model.NewAppError("checkout.User", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+}
+
+func (c *Checkout) Quantity(ctx context.Context) (int32, error) {
+	lines, err := dataloaders.CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	if err != nil {
+		return 0, err
+	}
+
+	var sum int32
+	for _, line := range lines {
+		sum += line.Line.Quantity
+	}
+
+	return sum, nil
 }
 
 func (c *Checkout) IsShippingRequired(ctx context.Context) (bool, error) {
