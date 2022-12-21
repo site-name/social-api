@@ -187,6 +187,7 @@ func (d *DeliveryMethodBase) UpdateChannelListings(checkoutInfo *CheckoutInfo) e
 func (d *DeliveryMethodBase) GetDeliveryMethod() interface{} {
 	return d.DeliveryMethod
 }
+
 func (d *DeliveryMethodBase) GetShippingAddress() *Address {
 	return d.ShippingAddress
 }

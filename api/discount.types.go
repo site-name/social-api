@@ -10,18 +10,9 @@ import (
 	"github.com/sitename/sitename/web"
 )
 
-type DiscountInfo struct {
-	Sale            any // either *Sale || *Voucher
-	ChannelListings map[string]*SaleChannelListing
-	ProductIDs      []string
-	CategoryIDs     []string
-	CollectionIDs   []string
-	VariantsIDs     []string
-}
-
-func discountsByDateTimeLoader(ctx context.Context, dateTimes []*time.Time) []*dataloader.Result[[]*DiscountInfo] {
+func discountsByDateTimeLoader(ctx context.Context, dateTimes []*time.Time) []*dataloader.Result[[]*model.DiscountInfo] {
 	var (
-		res             = make([]*dataloader.Result[[]*DiscountInfo], len(dateTimes))
+		res             = make([]*dataloader.Result[[]*model.DiscountInfo], len(dateTimes))
 		appErr          *model.AppError
 		salesMap        = map[*time.Time]model.Sales{}
 		saleIDS         []string
@@ -85,21 +76,28 @@ func discountsByDateTimeLoader(ctx context.Context, dateTimes []*time.Time) []*d
 		goto errorLabel
 	}
 
-	// for i, datetime := range dateTimes {
-	// 	items := make([]*DiscountInfo, len(salesMap[datetime]))
+	for i, datetime := range dateTimes {
+		items := make([]*model.DiscountInfo, len(salesMap[datetime]))
 
-	// 	for idx, sale := range salesMap[datetime] {
-	// 		items[idx] = &DiscountInfo{
-	// 			Sale: sale,
-	// 			ChannelListings: channelListings[sale.Id],
-	// 		}
-	// 	}
-	// }
-	panic("not implemented")
+		for idx, sale := range salesMap[datetime] {
+			items[idx] = &model.DiscountInfo{
+				Sale:            sale,
+				ChannelListings: channelListings[sale.Id],
+				CategoryIDs:     categories[sale.Id],
+				CollectionIDs:   collections[sale.Id],
+				ProductIDs:      products[sale.Id],
+				VariantsIDs:     variants[sale.Id],
+			}
+		}
+
+		res[i] = &dataloader.Result[[]*model.DiscountInfo]{Data: items}
+	}
+
+	return res
 
 errorLabel:
 	for i := range dateTimes {
-		res[i] = &dataloader.Result[[]*DiscountInfo]{Error: err}
+		res[i] = &dataloader.Result[[]*model.DiscountInfo]{Error: err}
 	}
 	return res
 }

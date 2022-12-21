@@ -11,7 +11,7 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-// GetDeliveryMethodInfo takes `deliveryMethod` is either *ShippingMethodData or *Warehouse
+// GetDeliveryMethodInfo takes `deliveryMethod` is either *model.ShippingMethod or *model.Warehouse
 func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, address *model.Address) (model.DeliveryMethodBaseInterface, *model.AppError) {
 	if deliveryMethod == nil {
 		return &model.DeliveryMethodBase{}, nil
@@ -25,19 +25,17 @@ func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, addr
 		}, nil
 
 	case *model.WareHouse:
-		var (
-			addr   = t.Address
-			appErr *model.AppError
-		)
-		if addr == nil && t.AddressID != nil {
-			addr, appErr = s.srv.AccountService().AddressById(*t.AddressID)
+		if t.Address == nil && t.AddressID != nil {
+			var appErr *model.AppError
+
+			t.Address, appErr = s.srv.AccountService().AddressById(*t.AddressID)
 			if appErr != nil {
 				return nil, appErr
 			}
 		}
 		return &model.CollectionPointInfo{
 			DeliveryMethod:  *t,
-			ShippingAddress: addr,
+			ShippingAddress: t.Address,
 		}, nil
 
 	default:

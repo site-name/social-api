@@ -26,4 +26,6 @@ type ShippingService interface {
 	ShippingMethodChannelListingsByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, *model.AppError)
 	// ShippingZonesByOption returns all shipping zones that satisfy given options
 	ShippingZonesByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, *model.AppError)
+	// ShippingMethodsByOptions finds and returns all shipping methods that satisfy given fiter options
+	ShippingMethodsByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, *model.AppError)
 }

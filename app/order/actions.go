@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
@@ -130,7 +131,7 @@ func (a *ServiceOrder) HandleFullyPaidOrder(manager interfaces.PluginManagerInte
 	}
 
 	// TODO: implement me
-	panic("not implemented")
+	// panic("not implemented")
 
 	_, appErr = manager.OrderFullyPaid(orDer)
 	if appErr != nil {
@@ -1701,13 +1702,9 @@ func (a *ServiceOrder) moveLinesToReturnFulfillment(
 	if appErr != nil {
 		return nil, appErr
 	}
-	fulfillmentLinesAlreadyRefundedMap := model.MakeStringMapForModelSlice(
-		fulfillmentLinesAlreadyRefunded,
-		func(i interface{}) string {
-			return i.(*model.FulfillmentLine).Id
-		},
-		nil,
-	)
+	fulfillmentLinesAlreadyRefundedMap := lo.SliceToMap(fulfillmentLinesAlreadyRefunded, func(f *model.FulfillmentLine) (string, *model.FulfillmentLine) {
+		return f.Id, f
+	})
 
 	var (
 		refundedFulfillmentLinesToReturn []*model.FulfillmentLineData
@@ -1830,13 +1827,9 @@ func (a *ServiceOrder) CreateReturnFulfillment(
 		return nil, appErr
 	}
 
-	orderLinesByIDsMap := model.MakeStringMapForModelSlice(
-		orderLinesByIDs,
-		func(i interface{}) string {
-			return i.(*model.OrderLine).Id
-		},
-		nil,
-	)
+	orderLinesByIDsMap := lo.SliceToMap(orderLinesByIDs, func(o *model.OrderLine) (string, *model.OrderLine) {
+		return o.Id, o
+	})
 
 	for _, orderLineData := range orderLineDatas {
 		returnedLines[orderLineData.Line.Id] = &model.QuantityOrderLine{
@@ -1846,8 +1839,7 @@ func (a *ServiceOrder) CreateReturnFulfillment(
 	}
 
 	for _, fulfillmentLineData := range fulfillmentLineDatas {
-		if ifaceType := orderLinesByIDsMap[fulfillmentLineData.Line.OrderLineID]; ifaceType != nil {
-			orderLine := ifaceType.(*model.OrderLine)
+		if orderLine := orderLinesByIDsMap[fulfillmentLineData.Line.OrderLineID]; orderLine != nil {
 			returnedLine := returnedLines[orderLine.Id]
 
 			if returnedLine != nil {
@@ -2141,30 +2133,18 @@ func (a *ServiceOrder) calculateRefundAmount(
 		return nil, appErr
 	}
 
-	orderLinesMap := model.MakeStringMapForModelSlice(
-		orderLines,
-		func(i interface{}) string {
-			return i.(*model.OrderLine).Id
-		},
-		nil,
-	)
-	fulfillmentsMap := model.MakeStringMapForModelSlice(
-		fulfillments,
-		func(i interface{}) string {
-			return i.(*model.Fulfillment).Id
-		},
-		nil,
-	)
+	orderLinesMap := lo.SliceToMap(orderLines, func(o *model.OrderLine) (string, *model.OrderLine) { return o.Id, o })
+
+	fulfillmentsMap := lo.SliceToMap(fulfillments, func(f *model.Fulfillment) (string, *model.Fulfillment) { return f.Id, f })
 
 	for _, lineData := range returnFulfillmentLineDatas {
 		// skip lines which were already refunded
-		ifaceType := fulfillmentsMap[lineData.Line.FulfillmentID]
-		if ifaceType != nil && ifaceType.(*model.Fulfillment).Status == model.FULFILLMENT_REFUNDED {
+		fulfillment := fulfillmentsMap[lineData.Line.FulfillmentID]
+		if fulfillment != nil && fulfillment.Status == model.FULFILLMENT_REFUNDED {
 			continue
 		}
 
-		if ifaceType = orderLinesMap[lineData.Line.OrderLineID]; ifaceType != nil {
-			orderLine := ifaceType.(*model.OrderLine)
+		if orderLine := orderLinesMap[lineData.Line.OrderLineID]; orderLine != nil {
 			if unitPriceGrossAmount := orderLine.UnitPriceGrossAmount; unitPriceGrossAmount != nil {
 				refundAmount = refundAmount.Add(
 					unitPriceGrossAmount.Mul(decimal.NewFromInt32(int32(lineData.Quantity))),

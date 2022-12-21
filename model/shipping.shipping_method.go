@@ -39,7 +39,7 @@ type ShippingMethod struct {
 	MaxOrderWeight      *measurement.Weight    `json:"max_order_weight" db:"-"`
 	MaximumDeliveryDays *uint                  `json:"maximum_delivery_days"`
 	MinimumDeliveryDays *uint                  `json:"minimum_delivery_days"`
-	Description         *StringInterface       `json:"description"`
+	Description         StringInterface        `json:"description"`
 	ModelMetadata
 
 	ShippingZones                 []*ShippingZone                 `json:"-" db:"-"` // this field is used for holding prefetched related instances

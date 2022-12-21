@@ -16,7 +16,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
 	"regexp"
 	"strings"
 	"sync"
@@ -28,7 +27,6 @@ import (
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/modules/util/fileutils"
 )
 
@@ -621,65 +619,6 @@ func CleanUsername(uname string) string {
 	}
 
 	return s
-}
-
-// MakeStringMapForModelSlice works like this:
-//
-//	type Person {
-//		Id string
-//		Name string
-//	}
-//
-//	var people = []Person {
-//		{"one", "Minh Son"},
-//		{"two", "Dung"},
-//	}
-//
-//	MakeStringMapForModelSlice(
-//		people,
-//		func(i interface{}) string {
-//			return i.(Person).Id
-//		},
-//		nil
-//	)
-//	// returns:
-//	map[string]interface{
-//		"one": Person{Id: "one", Name: "Minh Son"},
-//		"two": Person{Id: "two", Name: "Dung"},
-//	}
-//
-// NOTE: `slice` and `keyFunc` are required. `valueFunc` can be nil
-func MakeStringMapForModelSlice(slice interface{}, keyFunc func(interface{}) string, valueFunc func(interface{}) interface{}) map[string]interface{} {
-	valueOf := reflect.ValueOf(slice)
-
-	// validate if given `slice` is a slice
-	if valueOf.Kind() != reflect.Slice || valueOf.Kind() != reflect.Array {
-		panic("given 'slice' variable is not a slice")
-	}
-	if keyFunc == nil {
-		panic("'keyFunc' cannot be nil")
-	}
-	if valueFunc == nil {
-		valueFunc = func(i interface{}) interface{} {
-			return i
-		}
-	}
-
-	res := make(map[string]interface{})
-	for i := 0; i < valueOf.Len(); i++ {
-		itemIface := valueOf.Index(i).Interface()
-		res[keyFunc(itemIface)] = valueFunc(itemIface)
-	}
-
-	return res
-}
-
-func MakeMapFromModelSlice[T any, K util.Ordered](slice []T, keyFunc func(T) K) map[K]T {
-	res := map[K]T{}
-	for _, item := range slice {
-		res[keyFunc(item)] = item
-	}
-	return res
 }
 
 // ValidateStoreFrontUrl is common function for validating urls in user's inputs

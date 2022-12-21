@@ -99,7 +99,7 @@ type CheckoutService interface {
 	FetchCheckoutLines(checkOut *model.Checkout) ([]*model.CheckoutLineInfo, *model.AppError)
 	// GetCustomerEmail returns checkout's user's email
 	GetCustomerEmail(ckout *model.Checkout) (string, *model.AppError)
-	// GetDeliveryMethodInfo takes `deliveryMethod` is either *ShippingMethodData or *Warehouse
+	// GetDeliveryMethodInfo takes `deliveryMethod` is either *model.ShippingMethod or *model.Warehouse
 	GetDeliveryMethodInfo(deliveryMethod interface{}, address *model.Address) (model.DeliveryMethodBaseInterface, *model.AppError)
 	// GetPricesOfDiscountedSpecificProduct Get prices of variants belonging to the discounted specific products.
 	// Specific products are products, collections and categories.

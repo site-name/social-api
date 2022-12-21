@@ -3392,26 +3392,6 @@ type ShippingError struct {
 	Channels   []string          `json:"channels"`
 }
 
-type ShippingMethod struct {
-	ID                  string                          `json:"id"`
-	Name                string                          `json:"name"`
-	Description         JSONString                      `json:"description"`
-	MinimumOrderWeight  *Weight                         `json:"minimumOrderWeight"`
-	MaximumOrderWeight  *Weight                         `json:"maximumOrderWeight"`
-	MaximumDeliveryDays *int32                          `json:"maximumDeliveryDays"`
-	MinimumDeliveryDays *int32                          `json:"minimumDeliveryDays"`
-	PrivateMetadata     []*MetadataItem                 `json:"privateMetadata"`
-	Metadata            []*MetadataItem                 `json:"metadata"`
-	Type                *ShippingMethodTypeEnum         `json:"type"`
-	Translation         *ShippingMethodTranslation      `json:"translation"`
-	ChannelListings     []*ShippingMethodChannelListing `json:"channelListings"`
-	Price               *Money                          `json:"price"`
-	MaximumOrderPrice   *Money                          `json:"maximumOrderPrice"`
-	MinimumOrderPrice   *Money                          `json:"minimumOrderPrice"`
-	PostalCodeRules     []*ShippingMethodPostalCodeRule `json:"postalCodeRules"`
-	ExcludedProducts    *ProductCountableConnection     `json:"excludedProducts"`
-}
-
 type ShippingMethodChannelListing struct {
 	ID                string   `json:"id"`
 	Channel           *Channel `json:"channel"`

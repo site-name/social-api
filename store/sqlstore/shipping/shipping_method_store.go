@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -136,7 +137,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 		params["ExcludedProductIDs"] = productIDs
 	}
 
-	query := `SELECT ` + strings.Join(selectFields, ", ") + `,
+	query := `SELECT ` + strings.Join(selectFields, ",") + `,
 	(
 		SELECT
 			ShippingMethodChannelListings.PriceAmount
@@ -235,7 +236,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 		WeightUnit            measurement.WeightUnit
 		MaximumDeliveryDays   *uint
 		MinimumDeliveryDays   *uint
-		MethodDescription     *model.StringInterface
+		MethodDescription     model.StringInterface
 		MethodMetadata        model.StringMap
 		MethodPrivateMetadata model.StringMap
 
@@ -347,8 +348,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 	return shippingMethods, nil
 }
 
-// GetbyOption finds and returns a shipping method that satisfy given options
-func (ss *SqlShippingMethodStore) GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
+func (ss *SqlShippingMethodStore) commonQueryBuilder(options *model.ShippingMethodFilterOption) squirrel.SelectBuilder {
 	query := ss.GetQueryBuilder().
 		Select(ss.ModelFields(store.ShippingMethodTableName + ".")...).
 		From(store.ShippingMethodTableName)
@@ -373,7 +373,12 @@ func (ss *SqlShippingMethodStore) GetbyOption(options *model.ShippingMethodFilte
 		query = query.Where(options.ChannelListingsChannelSlug)
 	}
 
-	queryString, args, err := query.ToSql()
+	return query
+}
+
+// GetbyOption finds and returns a shipping method that satisfy given options
+func (ss *SqlShippingMethodStore) GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error) {
+	queryString, args, err := ss.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
@@ -388,4 +393,19 @@ func (ss *SqlShippingMethodStore) GetbyOption(options *model.ShippingMethodFilte
 	}
 
 	return &res, nil
+}
+
+func (ss *SqlShippingMethodStore) FilterByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, error) {
+	queryString, args, err := ss.commonQueryBuilder(options).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetbyOption_ToSql")
+	}
+
+	var res []*model.ShippingMethod
+	err = ss.GetReplicaX().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find shipping methods with given options.")
+	}
+
+	return res, nil
 }

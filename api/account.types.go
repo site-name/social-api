@@ -8,6 +8,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -73,11 +74,12 @@ func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 	return model.NewBool(false), nil
 }
 
-func addressByIdLoader(ctx context.Context, keys []string) []*dataloader.Result[*Address] {
+func addressByIdLoader_systemResult(ctx context.Context, ids []string) []*dataloader.Result[*model.Address] {
 	var (
-		res       []*dataloader.Result[*Address]
-		addresses []*model.Address
-		appErr    *model.AppError
+		res        = make([]*dataloader.Result[*model.Address], len(ids))
+		addresses  []*model.Address
+		addressMap = map[string]*model.Address{}
+		appErr     *model.AppError
 	)
 
 	var webCtx, err = GetContextValue[*web.Context](ctx, WebCtx)
@@ -85,26 +87,42 @@ func addressByIdLoader(ctx context.Context, keys []string) []*dataloader.Result[
 		goto errLabel
 	}
 
-	addresses, appErr = webCtx.App.Srv().AccountService().AddressesByOption(&model.AddressFilterOption{
-		Id: squirrel.Eq{store.AddressTableName + ".Id": keys},
-	})
+	addresses, appErr = webCtx.App.
+		Srv().
+		AccountService().
+		AddressesByOption(&model.AddressFilterOption{
+			Id: squirrel.Eq{store.AddressTableName + ".Id": ids},
+		})
 	if appErr != nil {
 		err = appErr
 		goto errLabel
 	}
 
-	for _, addr := range addresses {
-		if addr != nil {
-			res = append(res, &dataloader.Result[*Address]{Data: &Address{*addr}})
-		}
+	addressMap = lo.SliceToMap(addresses, func(a *model.Address) (string, *model.Address) {
+		return a.Id, a
+	})
+
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[*model.Address]{Data: addressMap[id]}
 	}
 	return res
 
 errLabel:
-	for range keys {
-		res = append(res, &dataloader.Result[*Address]{Error: err})
+	for idx := range ids {
+		res[idx] = &dataloader.Result[*model.Address]{Error: err}
 	}
 	return res
+}
+
+func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*Address] {
+	results := addressByIdLoader_systemResult(ctx, ids)
+
+	return lo.Map(results, func(r *dataloader.Result[*model.Address], _ int) *dataloader.Result[*Address] {
+		return &dataloader.Result[*Address]{
+			Data:  SystemAddressToGraphqlAddress(r.Data),
+			Error: r.Error,
+		}
+	})
 }
 
 // -------------------------- User ------------------------------
@@ -269,11 +287,23 @@ func (u *User) Avatar(ctx context.Context) (*Image, error) {
 	panic("not implemented")
 }
 
-func userByUserIdLoader(ctx context.Context, keys []string) []*dataloader.Result[*User] {
+func userByUserIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*User] {
+	results := userByUserIdLoader_systemResult(ctx, ids)
+
+	return lo.Map(results, func(r *dataloader.Result[*model.User], _ int) *dataloader.Result[*User] {
+		return &dataloader.Result[*User]{
+			Data:  SystemUserToGraphqlUser(r.Data),
+			Error: r.Error,
+		}
+	})
+}
+
+func userByUserIdLoader_systemResult(ctx context.Context, ids []string) []*dataloader.Result[*model.User] {
 	var (
-		res    []*dataloader.Result[*User]
-		users  []*model.User
-		appErr *model.AppError
+		res     = make([]*dataloader.Result[*model.User], len(ids))
+		users   []*model.User
+		userMap = map[string]*model.User{} // keys are user ids
+		appErr  *model.AppError
 	)
 
 	var webCtx, err = GetContextValue[*web.Context](ctx, WebCtx)
@@ -285,20 +315,24 @@ func userByUserIdLoader(ctx context.Context, keys []string) []*dataloader.Result
 		App.
 		Srv().
 		AccountService().
-		GetUsersByIds(keys, &store.UserGetByIdsOpts{})
+		GetUsersByIds(ids, &store.UserGetByIdsOpts{})
 	if appErr != nil {
 		err = appErr
 		goto errorLabel
 	}
 
-	for _, user := range users {
-		res = append(res, &dataloader.Result[*User]{Data: SystemUserToGraphqlUser(user)})
+	userMap = lo.SliceToMap(users, func(u *model.User) (string, *model.User) {
+		return u.Id, u
+	})
+
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[*model.User]{Data: userMap[id]}
 	}
 	return res
 
 errorLabel:
-	for range keys {
-		res = append(res, &dataloader.Result[*User]{Error: err})
+	for idx := range ids {
+		res[idx] = &dataloader.Result[*model.User]{Error: err}
 	}
 	return res
 }

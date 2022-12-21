@@ -7,7 +7,9 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
@@ -31,6 +33,8 @@ type Checkout struct {
 
 	shippingAddressID *string
 	billingAddressID  *string
+	shippingMethodID  *string
+	collectionPointID *string
 	userID            *string
 	channelID         string
 
@@ -75,6 +79,8 @@ func SystemCheckoutToGraphqlCheckout(ckout *model.Checkout) *Checkout {
 
 		shippingAddressID: ckout.ShippingAddressID,
 		billingAddressID:  ckout.BillingAddressID,
+		shippingMethodID:  ckout.ShippingMethodID,
+		collectionPointID: ckout.CollectionPointID,
 		userID:            ckout.UserID,
 		channelID:         ckout.ChannelID,
 	}
@@ -164,14 +170,7 @@ func (c *Checkout) GiftCards(ctx context.Context) ([]*GiftCard, error) {
 		return nil, appErr
 	}
 
-	res := []*GiftCard{}
-	for _, gc := range giftcards {
-		if gc != nil {
-			res = append(res, SystemGiftcardToGraphqlGiftcard(gc))
-		}
-	}
-
-	return res, nil
+	return lo.Map(giftcards, func(g *model.GiftCard, _ int) *GiftCard { return SystemGiftcardToGraphqlGiftcard(g) }), nil
 }
 
 func (c *Checkout) AvailableShippingMethods(ctx context.Context) ([]*ShippingMethod, error) {
@@ -200,12 +199,12 @@ func (c *Checkout) DeliveryMethod(ctx context.Context) (any, error) {
 func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*dataloader.Result[[]*Checkout] {
 	var (
 		appErr     *model.AppError
-		res        []*dataloader.Result[[]*Checkout]
-		userIDs    model.AnyArray[string]
-		channelIDs model.AnyArray[string]
+		res        = make([]*dataloader.Result[[]*Checkout], len(keys))
+		userIDs    []string
+		channelIDs []string
 		checkouts  []*model.Checkout
-		// checkoutsMap has keys are each items of given param keys
-		checkoutsMap = map[string][]*Checkout{}
+
+		checkoutsMap = map[string][]*Checkout{} // checkoutsMap has keys are each items of given param keys
 	)
 
 	for _, item := range keys {
@@ -243,14 +242,14 @@ func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*datal
 		}
 	}
 
-	for _, key := range keys {
-		res = append(res, &dataloader.Result[[]*Checkout]{Data: checkoutsMap[key]})
+	for idx, key := range keys {
+		res[idx] = &dataloader.Result[[]*Checkout]{Data: checkoutsMap[key]}
 	}
 	return res
 
 errorLabel:
-	for range keys {
-		res = append(res, &dataloader.Result[[]*Checkout]{Error: err})
+	for idx := range keys {
+		res[idx] = &dataloader.Result[[]*Checkout]{Error: err}
 	}
 	return res
 }
@@ -259,7 +258,7 @@ func CheckoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.R
 	var (
 		appErr       *model.AppError
 		checkouts    []*model.Checkout
-		res          []*dataloader.Result[[]*Checkout]
+		res          = make([]*dataloader.Result[[]*Checkout], len(userIDs))
 		checkoutsMap = map[string][]*Checkout{} // keys are user ids
 	)
 
@@ -287,23 +286,35 @@ func CheckoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.R
 		}
 	}
 
-	for _, key := range userIDs {
-		res = append(res, &dataloader.Result[[]*Checkout]{Data: checkoutsMap[key]})
+	for idx, key := range userIDs {
+		res[idx] = &dataloader.Result[[]*Checkout]{Data: checkoutsMap[key]}
 	}
 	return res
 
 errorLabel:
-	for range userIDs {
-		res = append(res, &dataloader.Result[[]*Checkout]{Error: err})
+	for idx := range userIDs {
+		res[idx] = &dataloader.Result[[]*Checkout]{Error: err}
 	}
 	return res
 }
 
 func checkoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[*Checkout] {
+	results := checkoutByTokenLoader_systemResult(ctx, tokens)
+
+	return lo.Map(results, func(r *dataloader.Result[*model.Checkout], _ int) *dataloader.Result[*Checkout] {
+		return &dataloader.Result[*Checkout]{
+			Data:  SystemCheckoutToGraphqlCheckout(r.Data),
+			Error: r.Error,
+		}
+	})
+}
+
+func checkoutByTokenLoader_systemResult(ctx context.Context, tokens []string) []*dataloader.Result[*model.Checkout] {
 	var (
-		res       []*dataloader.Result[*Checkout]
-		appErr    *model.AppError
-		checkouts []*model.Checkout
+		res         = make([]*dataloader.Result[*model.Checkout], len(tokens))
+		appErr      *model.AppError
+		checkouts   []*model.Checkout
+		checkoutMap = map[string]*model.Checkout{}
 	)
 
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -323,14 +334,186 @@ func checkoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.R
 		goto errorLabel
 	}
 
-	for _, checkout := range checkouts {
-		res = append(res, &dataloader.Result[*Checkout]{Data: SystemCheckoutToGraphqlCheckout(checkout)})
+	checkoutMap = lo.SliceToMap(checkouts, func(c *model.Checkout) (string, *model.Checkout) {
+		return c.Token, c
+	})
+
+	for idx, token := range tokens {
+		res[idx] = &dataloader.Result[*model.Checkout]{Data: checkoutMap[token]}
 	}
 	return res
 
 errorLabel:
-	for range tokens {
-		res = append(res, &dataloader.Result[*Checkout]{Error: err})
+	for idx := range tokens {
+		res[idx] = &dataloader.Result[*model.Checkout]{Error: err}
+	}
+	return res
+}
+
+func CheckoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[*model.CheckoutInfo] {
+	var (
+		res        = make([]*dataloader.Result[*model.CheckoutInfo], len(tokens))
+		channelIDs []string
+		channels   []*model.Channel
+
+		checkoutAddressIDs []string // shipping, billing address ids of checkouts
+		checkoutUserIDs    []string // user ids of checkouts
+		shippingMethodIDs  []string // shipping method ids of checkouts
+		collectionPointIDs []string //
+		addresses          []*model.Address
+		users              []*model.User
+		shippingMethods    []*model.ShippingMethod
+		collectionPoints   []*model.WareHouse
+		checkouts          []*model.Checkout
+
+		shippingMethodIDChannelIDPairs []string // slice of shippingMethodID__channelID
+		shippingMethodChannelListings  []*model.ShippingMethodChannelListing
+
+		addressMap                      = map[string]*model.Address{}
+		userMap                         = map[string]*model.User{}
+		shippingMethodMap               = map[string]*model.ShippingMethod{}
+		shippingMethodChannelListingMap = map[string]*model.ShippingMethodChannelListing{}
+		collectionPointMap              = map[string]*model.WareHouse{}
+
+		deliveryMethod any // must be either *model.ShippingMethod or *model.WareHouse
+		errs           []error
+
+		checkoutInfoMap = map[string]*model.CheckoutInfo{} // keys are checkout tokens
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		errs = []error{err}
+		goto errorLabel
+	}
+
+	checkouts, errs = dataloaders.CheckoutByTokenLoader_SystemResult.LoadMany(ctx, tokens)()
+	if len(errs) > 0 && errs[0] != nil {
+		goto errorLabel
+	}
+
+	for _, checkout := range checkouts {
+		if bilAddr := checkout.BillingAddressID; bilAddr != nil {
+			checkoutAddressIDs = append(checkoutAddressIDs, *bilAddr)
+		}
+		if shipAddr := checkout.ShippingAddressID; shipAddr != nil {
+			checkoutAddressIDs = append(checkoutAddressIDs, *shipAddr)
+		}
+		if userID := checkout.UserID; userID != nil {
+			checkoutUserIDs = append(checkoutUserIDs, *userID)
+		}
+		if shipMethodID := checkout.ShippingMethodID; shipMethodID != nil {
+			shippingMethodIDs = append(shippingMethodIDs, *shipMethodID)
+		}
+		if collectID := checkout.CollectionPointID; collectID != nil {
+			collectionPointIDs = append(collectionPointIDs, *collectID)
+		}
+
+		channelIDs = append(channelIDs, checkout.ChannelID)
+	}
+
+	channels, errs = dataloaders.ChannelByIdLoader_SystemResult.LoadMany(ctx, channelIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		goto errorLabel
+	}
+
+	// find addresses of checkouts:
+	addresses, errs = dataloaders.AddressByIdLoader_SystemResult.LoadMany(ctx, checkoutAddressIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		goto errorLabel
+	}
+	addressMap = lo.SliceToMap(addresses, func(a *model.Address) (string, *model.Address) { return a.Id, a })
+
+	// find owners of checkouts
+	users, errs = dataloaders.UserByUserIdLoader_SystemResult.LoadMany(ctx, checkoutUserIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		goto errorLabel
+	}
+	userMap = lo.SliceToMap(users, func(u *model.User) (string, *model.User) { return u.Id, u })
+
+	// find shipping methods of checkouts
+	shippingMethods, errs = dataloaders.ShippingMethodByIdLoader_SystemResult.LoadMany(ctx, shippingMethodIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		goto errorLabel
+	}
+	shippingMethodMap = lo.SliceToMap(shippingMethods, func(s *model.ShippingMethod) (string, *model.ShippingMethod) { return s.Id, s })
+
+	for i := 0; i < util.Min(len(checkouts), len(channels)); i++ {
+		if checkouts[i].ShippingMethodID != nil {
+			shippingMethodIDChannelIDPairs = append(shippingMethodIDChannelIDPairs, *checkouts[i].ShippingMethodID+"__"+channels[i].Id)
+		}
+	}
+
+	// find shipping mehod channel listings of checkouts
+	shippingMethodChannelListings, errs = dataloaders.ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader_SystemResult.LoadMany(ctx, shippingMethodIDChannelIDPairs)()
+	if len(errs) > 0 && errs[0] != nil {
+		goto errorLabel
+	}
+	shippingMethodChannelListingMap = lo.SliceToMap(shippingMethodChannelListings, func(s *model.ShippingMethodChannelListing) (string, *model.ShippingMethodChannelListing) {
+		return s.ShippingMethodID + s.ChannelID, s
+	})
+
+	// find collection points of checkouts
+	collectionPoints, errs = dataloaders.WarehouseByIdLoader_SystemResult.LoadMany(ctx, collectionPointIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		goto errorLabel
+	}
+	collectionPointMap = lo.SliceToMap(collectionPoints, func(s *model.WareHouse) (string, *model.WareHouse) { return s.Id, s })
+
+	for i := 0; i < util.Min(len(tokens), len(checkouts), len(channels)); i++ {
+		var (
+			checkout                 = checkouts[i]
+			channel                  = channels[i]
+			token                    = tokens[i]
+			user                     *model.User
+			billingAddress           *model.Address
+			shippingAddress          *model.Address
+			shipMethodChannelListing *model.ShippingMethodChannelListing
+		)
+
+		if checkout.UserID != nil {
+			user = userMap[*checkout.UserID]
+		}
+		if checkout.BillingAddressID != nil {
+			billingAddress = addressMap[*checkout.BillingAddressID]
+		}
+		if checkout.ShippingAddressID != nil {
+			shippingAddress = addressMap[*checkout.ShippingAddressID]
+		}
+
+		if checkout.ShippingMethodID != nil {
+			deliveryMethod = shippingMethodMap[*checkout.ShippingMethodID]
+			shipMethodChannelListing = shippingMethodChannelListingMap[*checkout.ShippingMethodID+channel.Id]
+		}
+		if deliveryMethod == nil && checkout.CollectionPointID != nil {
+			deliveryMethod = collectionPointMap[*checkout.CollectionPointID]
+		}
+
+		deliveryMethodInfo, appErr := embedCtx.App.Srv().CheckoutService().GetDeliveryMethodInfo(deliveryMethod, shippingAddress)
+		if appErr != nil {
+			errs = []error{appErr}
+			goto errorLabel
+		}
+
+		checkoutInfoMap[token] = &model.CheckoutInfo{
+			Checkout:                      *checkout,
+			User:                          user,
+			Channel:                       *channel,
+			BillingAddress:                billingAddress,
+			ShippingAddress:               shippingAddress,
+			DeliveryMethodInfo:            deliveryMethodInfo,
+			ShippingMethodChannelListings: shipMethodChannelListing,
+		}
+	}
+
+	for idx, token := range tokens {
+		res[idx] = &dataloader.Result[*model.CheckoutInfo]{Data: checkoutInfoMap[token]}
+	}
+	return res
+
+errorLabel:
+	for i := range tokens {
+		res[i] = &dataloader.Result[*model.CheckoutInfo]{Error: errs[0]}
 	}
 	return res
 }

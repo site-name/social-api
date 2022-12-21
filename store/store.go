@@ -401,6 +401,7 @@ type (
 		Get(methodID string) (*model.ShippingMethod, error)                                                                                                                      // Get finds and returns a model method with given id
 		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*model.ShippingMethod, error) // ApplicableShippingMethods finds all model methods with given conditions
 		GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error)                                                                                    // GetbyOption finds and returns a model method that satisfy given options
+		FilterByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, error)
 	}
 	ShippingMethodPostalCodeRuleStore interface {
 		ModelFields(prefix string) model.AnyArray[string]

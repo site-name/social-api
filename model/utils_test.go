@@ -87,34 +87,6 @@ func checkNowhereNil(t *testing.T, name string, value interface{}) bool {
 	}
 }
 
-func Test_MakeStringMapForModelSlice(t *testing.T) {
-	type Person struct {
-		Id   int
-		Name string
-	}
-	people := []*Person{
-		{1, "Le Son"},
-		{2, "Huy Hoang"},
-		{3, "Anh Dung"},
-	}
-
-	// res := MakeStringMapForModelSlice(
-	// 	people, func(i interface{}) string {
-	// 		return fmt.Sprintf("%d", i.(*Person).Id)
-	// 	},
-	// 	nil,
-	// )
-
-	t.Run("hello", func(tt *testing.T) {
-		MakeStringMapForModelSlice(
-			people, func(i interface{}) string {
-				return fmt.Sprintf("%d", i.(*Person).Id)
-			},
-			nil,
-		)
-	})
-}
-
 func TestDraftJSContentToRawText(t *testing.T) {
 	data := StringInterface{
 		"blocks": []StringInterface{

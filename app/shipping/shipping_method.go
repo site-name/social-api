@@ -127,8 +127,21 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *model.Order, c
 func (s *ServiceShipping) ShippingMethodByOption(option *model.ShippingMethodFilterOption) (*model.ShippingMethod, *model.AppError) {
 	method, err := s.srv.Store.ShippingMethod().GetbyOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ShippingMethodByOption", "app.shipping.error_finding_shipping_method_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("ServiceShipping.ShippingMethodByOption", "app.shipping.error_finding_shipping_method_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return method, nil
+}
+
+// ShippingMethodsByOptions finds and returns all shipping methods that satisfy given fiter options
+func (s *ServiceShipping) ShippingMethodsByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, *model.AppError) {
+	methods, err := s.srv.Store.ShippingMethod().FilterByOptions(options)
+	if err != nil {
+		return nil, model.NewAppError("ShippingMethodsByOptions", "app.shipping.error_finding_shipping_methods.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return methods, nil
 }

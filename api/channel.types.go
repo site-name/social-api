@@ -63,11 +63,12 @@ func SystemChannelToGraphqlChannel(ch *model.Channel) *Channel {
 	}
 }
 
-func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*Channel] {
+func channelByIdLoader_systemResult(ctx context.Context, ids []string) []*dataloader.Result[*model.Channel] {
 	var (
-		res      []*dataloader.Result[*Channel]
-		appErr   *model.AppError
-		channels model.Channels
+		res        = make([]*dataloader.Result[*model.Channel], len(ids))
+		appErr     *model.AppError
+		channels   model.Channels
+		channelMap = map[string]*model.Channel{} // keys are channel ids
 	)
 
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -86,16 +87,29 @@ func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 		goto errorLabel
 	}
 
-	for _, channel := range channels {
-		res = append(res, &dataloader.Result[*Channel]{Data: SystemChannelToGraphqlChannel(channel)})
+	channelMap = lo.SliceToMap(channels, func(c *model.Channel) (string, *model.Channel) { return c.Id, c })
+
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[*model.Channel]{Data: channelMap[id]}
 	}
 	return res
 
 errorLabel:
-	for range ids {
-		res = append(res, &dataloader.Result[*Channel]{Error: err})
+	for idx := range ids {
+		res[idx] = &dataloader.Result[*model.Channel]{Error: err}
 	}
 	return res
+}
+
+func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*Channel] {
+	results := channelByIdLoader_systemResult(ctx, ids)
+
+	return lo.Map(results, func(r *dataloader.Result[*model.Channel], _ int) *dataloader.Result[*Channel] {
+		return &dataloader.Result[*Channel]{
+			Data:  SystemChannelToGraphqlChannel(r.Data),
+			Error: r.Error,
+		}
+	})
 }
 
 func channelBySlugLoader(ctx context.Context, slugs []string) []*dataloader.Result[*Channel] {
