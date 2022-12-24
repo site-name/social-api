@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -218,7 +219,15 @@ func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFi
 }
 
 func (as *SqlAttributeValueStore) Delete(ids ...string) (int64, error) {
-	res, err := as.GetMasterX().Exec("DELETE FROM "+store.AttributeValueTableName+" WHERE Id IN ?", ids)
+	query, args, err := as.GetQueryBuilder().
+		Delete("*").
+		From(store.AttributeValueTableName).
+		Where(squirrel.Eq{store.AttributeValueTableName + ".Id": ids}).
+		ToSql()
+	if err != nil {
+		return 0, errors.Wrap(err, "Delete_ToSql")
+	}
+	res, err := as.GetMasterX().Exec(query, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to delete attribute values")
 	}

@@ -174,7 +174,12 @@ func (g *GiftCard) Product(ctx context.Context) (*Product, error) {
 		return nil, nil
 	}
 
-	return dataloaders.productsByIDs.Load(ctx, *g.productID)()
+	product, err := dataloaders.ProductByIdLoader.Load(ctx, *g.productID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemProductToGraphqlProduct(product), nil
 }
 
 func (g *GiftCard) Events(ctx context.Context) ([]*GiftCardEvent, error) {
@@ -201,8 +206,8 @@ func (g *GiftCard) CreatedByEmail(ctx context.Context) (*string, error) {
 		return nil, err
 	}
 
-	resolveCreatedByEmail := func(u *User) *string {
-		if (u != nil && u.ID == embedCtx.AppContext.Session().UserId) ||
+	resolveCreatedByEmail := func(u *model.User) *string {
+		if (u != nil && u.Id == embedCtx.AppContext.Session().UserId) ||
 			embedCtx.App.Srv().
 				AccountService().
 				HasPermissionTo(embedCtx.AppContext.Session().UserId, model.PermissionManageGiftcard) {
@@ -242,8 +247,8 @@ func (g *GiftCard) UsedByEmail(ctx context.Context) (*string, error) {
 		return nil, err
 	}
 
-	resolveUsedByEmail := func(u *User) *string {
-		if (u != nil && u.ID == embedCtx.AppContext.Session().UserId) ||
+	resolveUsedByEmail := func(u *model.User) *string {
+		if (u != nil && u.Id == embedCtx.AppContext.Session().UserId) ||
 			embedCtx.App.Srv().
 				AccountService().
 				HasPermissionTo(embedCtx.AppContext.Session().UserId, model.PermissionManageGiftcard) {
@@ -283,12 +288,15 @@ func (g *GiftCard) UsedBy(ctx context.Context) (*User, error) {
 		return nil, err
 	}
 
-	resolveUsedBy := func(u *User) (*User, *model.AppError) {
-		if (u != nil && u.ID == embedCtx.AppContext.Session().UserId) ||
-			embedCtx.App.Srv().AccountService().
+	resolveUsedBy := func(u *model.User) (*User, *model.AppError) {
+		if (u != nil && u.Id == embedCtx.AppContext.Session().UserId) ||
+			embedCtx.
+				App.
+				Srv().
+				AccountService().
 				SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageUsers) {
 			if u != nil {
-				return u, nil
+				return SystemUserToGraphqlUser(u), nil
 			}
 			return nil, nil
 		}
@@ -314,18 +322,19 @@ func (g *GiftCard) CreatedBy(ctx context.Context) (*User, error) {
 		return nil, err
 	}
 
-	resolveCreatedBy := func(u *User) (*User, error) {
-		if (u != nil && u.ID == embedCtx.AppContext.Session().UserId) ||
+	resolveCreatedBy := func(u *model.User) (*User, error) {
+		if (u != nil && u.Id == embedCtx.AppContext.Session().UserId) ||
 			embedCtx.App.Srv().
 				AccountService().
 				HasPermissionTo(embedCtx.AppContext.Session().UserId, model.PermissionManageUsers) {
 
 			if u != nil {
-				return u, nil
+				return SystemUserToGraphqlUser(u), nil
 			}
 
 			user, appErr := embedCtx.App.Srv().
-				AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+				AccountService().
+				UserById(ctx, embedCtx.AppContext.Session().UserId)
 			if appErr != nil {
 				return nil, appErr
 			}
@@ -354,11 +363,11 @@ func (g *GiftCard) Code(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	resolveCode := func(u *User) (string, *model.AppError) {
+	resolveCode := func(u *model.User) (string, *model.AppError) {
 		if (g.usedByEmail == nil && embedCtx.App.Srv().
 			AccountService().
 			SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageGiftcard)) ||
-			(u != nil && u.ID == embedCtx.AppContext.Session().UserId) {
+			(u != nil && u.Id == embedCtx.AppContext.Session().UserId) {
 			return g.code, nil
 		}
 

@@ -254,11 +254,11 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 	// check if we need prefetch related shipping zones:
 	if option.PrefetchShippingZones && len(returningWarehouses) > 0 {
 		query, args, err = wh.GetQueryBuilder().
-			Select(wh.ShippingZone().ModelFields(store.ShippingZoneTableName+".")...).
+			Select(wh.ShippingZone().ModelFields(store.ShippingZoneTableName + ".")...).
 			Column(squirrel.Alias(squirrel.Expr("WarehouseShippingZones.WarehouseID"), "PrefetchRelatedWarehouseID")). // <- this column selection helps determine which shipping zone is related to which warehouse
 			From(store.ShippingZoneTableName).
-			InnerJoin(store.WarehouseShippingZoneTableName+" ON (ShippingZones.Id = WarehouseShippingZones.ShippingZoneID)").
-			Where("WarehouseShippingZones.WarehouseID IN ?", returningWarehouses.IDs()).
+			InnerJoin(store.WarehouseShippingZoneTableName + " ON (ShippingZones.Id = WarehouseShippingZones.ShippingZoneID)").
+			Where(squirrel.Eq{"WarehouseShippingZones.WarehouseID": returningWarehouses.IDs()}).
 			ToSql()
 		if err != nil {
 			return nil, errors.Wrap(err, "FilerByOption_ToSql")

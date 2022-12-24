@@ -534,15 +534,15 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 		OrderBy(store.TableOrderingMap[store.ProductTableName])
 
 	if len(productIDs) > 0 {
-		query = query.Where("Products.Id IN ?", productIDs)
+		query = query.Where(squirrel.Eq{"Products.Id": productIDs})
 	}
 	if len(categoryIDs) > 0 {
-		query = query.Where("OR Products.CategoryID IN ?", categoryIDs)
+		query = query.Where(squirrel.Eq{"Products.CategoryID": categoryIDs})
 	}
 	if len(collectionIDs) > 0 {
 		query = query.
-			LeftJoin(store.CollectionProductRelationTableName+" ON (Products.Id = ProductCollections.ProductID)").
-			Where("OR ProductCollections.CollectionID IN ?", collectionIDs)
+			LeftJoin(store.CollectionProductRelationTableName + " ON (Products.Id = ProductCollections.ProductID)").
+			Where(squirrel.Eq{"ProductCollections.CollectionID": collectionIDs})
 	}
 
 	queryString, args, err := query.ToSql()
@@ -570,7 +570,7 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProduct
 		return query
 	}
 	if strings.EqualFold(input.Scope, "ids") {
-		return query.Where("Products.Id IN ?", input.Ids)
+		return query.Where(squirrel.Eq{"Products.Id": input.Ids})
 	}
 
 	var options = input.Filter

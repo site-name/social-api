@@ -157,7 +157,11 @@ func (ws *SqlPreorderAllocationStore) Delete(transaction store_iface.SqlxTxExecu
 		runner = transaction
 	}
 
-	result, err := runner.Exec("DELETE FROM "+store.PreOrderAllocationTableName+" WHERE Id IN ?", preorderAllocationIDs)
+	query, args, err := ws.GetQueryBuilder().Delete(store.PreOrderAllocationTableName).Where(squirrel.Eq{"Id": preorderAllocationIDs}).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "Delete_ToSql")
+	}
+	result, err := runner.Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete preorder-allocations with given ids")
 	}

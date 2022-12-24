@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -326,7 +327,6 @@ func (a *Attribute) ProductTypes(
 		Last   *int32
 	},
 ) (*ProductTypeCountableConnection, error) {
-
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
@@ -357,12 +357,15 @@ func (a *Attribute) ProductTypes(
 		},
 	}
 
-	productTypes, appErr := embedCtx.App.Srv().ProductService().ProductTypesByOptions(filterOpts)
+	productTypes, appErr := embedCtx.App.Srv().
+		ProductService().
+		ProductTypesByOptions(filterOpts)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	totalProductTypes, err := embedCtx.App.Srv().Store.ProductType().Count(filterOpts)
+	totalProductTypes, err := embedCtx.App.Srv().
+		Store.ProductType().Count(filterOpts)
 	if err != nil {
 		return nil, model.NewAppError("Attribute.ProductTypes", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -548,9 +551,10 @@ func (a *Attribute) Translation(ctx context.Context) (*AttributeTranslation, err
 
 func attributesByAttributeIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*Attribute] {
 	var (
-		res        []*dataloader.Result[*Attribute]
-		appErr     *model.AppError
-		attributes model.Attributes
+		res          = make([]*dataloader.Result[*Attribute], len(ids))
+		appErr       *model.AppError
+		attributes   model.Attributes
+		attributeMap = map[string]*Attribute{} // keys are attribute ids
 	)
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
@@ -569,21 +573,25 @@ func attributesByAttributeIdLoader(ctx context.Context, ids []string) []*dataloa
 		goto errorLabel
 	}
 
-	for _, attr := range attributes {
-		res = append(res, &dataloader.Result[*Attribute]{Data: SystemAttributeToGraphqlAttribute(attr)})
+	attributeMap = lo.SliceToMap(attributes, func(a *model.Attribute) (string, *Attribute) {
+		return a.Id, SystemAttributeToGraphqlAttribute(a)
+	})
+
+	for idx, attrID := range ids {
+		res[idx] = &dataloader.Result[*Attribute]{Data: attributeMap[attrID]}
 	}
 	return res
 
 errorLabel:
-	for range ids {
-		res = append(res, &dataloader.Result[*Attribute]{Error: err})
+	for idx := range ids {
+		res[idx] = &dataloader.Result[*Attribute]{Error: err}
 	}
 	return res
 }
 
 func attributeValuesByAttributeIdLoader(ctx context.Context, attributeIDs []string) []*dataloader.Result[[]*AttributeValue] {
 	var (
-		res             []*dataloader.Result[[]*AttributeValue]
+		res             = make([]*dataloader.Result[[]*AttributeValue], len(attributeIDs))
 		appErr          *model.AppError
 		attributeValues model.AttributeValues
 
@@ -611,23 +619,24 @@ func attributeValuesByAttributeIdLoader(ctx context.Context, attributeIDs []stri
 		attributeValuesMap[value.AttributeID] = append(attributeValuesMap[value.AttributeID], SystemAttributeValueToGraphqlAttributeValue(value))
 	}
 
-	for _, id := range attributeIDs {
-		res = append(res, &dataloader.Result[[]*AttributeValue]{Data: attributeValuesMap[id]})
+	for idx, id := range attributeIDs {
+		res[idx] = &dataloader.Result[[]*AttributeValue]{Data: attributeValuesMap[id]}
 	}
 	return res
 
 errorLabel:
-	for range attributeIDs {
-		res = append(res, &dataloader.Result[[]*AttributeValue]{Error: err})
+	for idx := range attributeIDs {
+		res[idx] = &dataloader.Result[[]*AttributeValue]{Error: err}
 	}
 	return res
 }
 
 func attributeValueByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*AttributeValue] {
 	var (
-		res             []*dataloader.Result[*AttributeValue]
-		appErr          *model.AppError
-		attributeValues model.AttributeValues
+		res               = make([]*dataloader.Result[*AttributeValue], len(ids))
+		appErr            *model.AppError
+		attributeValues   model.AttributeValues
+		attributeValueMap = map[string]*AttributeValue{} // keys are attribute value ids
 	)
 
 	embedCts, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -646,14 +655,18 @@ func attributeValueByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 		goto errorLabel
 	}
 
-	for _, attr := range attributeValues {
-		res = append(res, &dataloader.Result[*AttributeValue]{Data: SystemAttributeValueToGraphqlAttributeValue(attr)})
+	attributeValueMap = lo.SliceToMap(attributeValues, func(a *model.AttributeValue) (string, *AttributeValue) {
+		return a.Id, SystemAttributeValueToGraphqlAttributeValue(a)
+	})
+
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[*AttributeValue]{Data: attributeValueMap[id]}
 	}
 	return res
 
 errorLabel:
-	for range ids {
-		res = append(res, &dataloader.Result[*AttributeValue]{Error: err})
+	for idx := range ids {
+		res[idx] = &dataloader.Result[*AttributeValue]{Error: err}
 	}
 	return res
 }

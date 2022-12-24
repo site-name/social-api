@@ -3,6 +3,7 @@ package attribute
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -74,7 +75,11 @@ func (as *SqlAttributeVariantStore) GetByOption(option *model.AttributeVariantFi
 		query = query.Where(option.ProductTypeID)
 	}
 	if len(option.ProductIDs) > 0 {
-		query = query.Where("AttributeID IN (SELECT AttributeID FROM ? WHERE Id IN ?)", store.ProductTableName, option.ProductIDs)
+		subQuery := as.GetQueryBuilder().
+			Select("AttributeID").
+			From(store.ProductTableName).
+			Where(squirrel.Eq{store.ProductTableName + ".Id": option.ProductIDs})
+		query = query.Where(squirrel.Expr("AttributeID IN ?", subQuery))
 	}
 
 	queryString, args, err := query.ToSql()

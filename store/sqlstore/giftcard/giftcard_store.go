@@ -275,7 +275,7 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 	orderLineQuery := gs.GetQueryBuilder().
 		Select("*").
 		From(store.OrderLineTableName).
-		Where("Orderlines.Id IN ?", orderLineIDs).
+		Where(squirrel.Eq{"Orderlines.Id": orderLineIDs}).
 		Where(squirrel.Expr("EXISTS(?)", productVariantQuery)).
 		OrderBy(store.TableOrderingMap[store.OrderLineTableName])
 
@@ -307,16 +307,14 @@ func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, 
 				FROM
 					GiftcardEvents
 				WHERE (
-					GiftcardEvents.Parameters -> 'order_id' = :OrderID
-					AND GiftcardEvents.Type = :Type
+					GiftcardEvents.Parameters -> 'order_id' = ?
+					AND GiftcardEvents.Type = ?
 					AND GiftcardEvents.GiftcardID = GiftCards.Id
 				)
 				LIMIT 1
 			)`,
-			map[string]interface{}{
-				"OrderID": orderID,
-				"Type":    model.BOUGHT,
-			},
+			orderID,
+			model.BOUGHT,
 		).
 		ToSql()
 
@@ -331,7 +329,12 @@ func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, 
 	}
 
 	giftcardIDs := giftcards.IDs()
-	res, err := gs.GetMasterX().Exec("UPDATE "+store.GiftcardTableName+" SET IsActive = false WHERE Id IN ?", giftcardIDs)
+	query, args, _ = gs.GetQueryBuilder().
+		Update(store.GiftcardTableName).
+		Set("IsActive", false).
+		Where(squirrel.Eq{"Id": giftcardIDs}).
+		ToSql()
+	res, err := gs.GetMasterX().Exec(query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to update giftcards")
 	}

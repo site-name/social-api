@@ -104,16 +104,18 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken s
 
 func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([]*model.ProductType, error) {
 	var productTypes []*model.ProductType
-	err := pts.GetReplicaX().Select(
-		&productTypes,
-		`SELECT `+
-			pts.ModelFields(store.ProductTypeTableName+".").Join(",")+
-			` FROM `+store.ProductTypeTableName+
-			` INNER JOIN `+store.ProductTableName+
-			` ON ProductTypes.Id = Products.ProductTypeID WHERE Products.Id IN ?`,
-		productIDs,
-	)
+	queryString, args, err := pts.
+		GetQueryBuilder().
+		Select(pts.ModelFields(store.ProductTypeTableName + ".")...).
+		From(store.ProductTypeTableName).
+		InnerJoin(store.ProductTableName + " ON ProductTypes.Id = Products.ProductTypeID").
+		Where(squirrel.Eq{store.ProductTableName + ".Id": productIDs}).
+		ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "ProductTypesByProductIDs_ToSql")
+	}
 
+	err = pts.GetReplicaX().Select(&productTypes, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product types with given product ids")
 	}

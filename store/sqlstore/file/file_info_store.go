@@ -130,7 +130,16 @@ func (fs *SqlFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error
 
 func (fs *SqlFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
 	var infos []*model.FileInfo
-	if err := fs.GetReplicaX().Select(&infos, "SELECT "+fs.queryFields.Join(",")+" FROM "+store.FileInfoTableName+" WHERE Id IN ? AND DeleteAt = 0 ORDER BY CreateAt DESC", ids); err != nil {
+	query, args, err := fs.GetQueryBuilder().
+		Select(fs.queryFields...).From(store.FileInfoTableName).
+		Where(squirrel.Eq{"Id": ids}).
+		Where("DeleteAt = 0").
+		OrderBy("CreateAt DESC").
+		ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByIds_ToSql")
+	}
+	if err := fs.GetReplicaX().Select(&infos, query, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to find FileInfos")
 	}
 	return infos, nil
@@ -203,7 +212,7 @@ func (fs *SqlFileInfoStore) GetWithOptions(page, perPage *int, opt *model.GetFil
 		query = query.Where("FileInfos.DeleteAt = 0")
 	}
 	if len(opt.ParentID) > 0 {
-		query = query.Where("FileInfos.ParentID IN ?", opt.ParentID)
+		query = query.Where(squirrel.Eq{"FileInfos.ParentID": opt.ParentID})
 	}
 
 	if opt.SortBy == "" {

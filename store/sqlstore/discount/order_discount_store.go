@@ -3,6 +3,7 @@ package discount
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -142,7 +143,8 @@ func (ods *SqlOrderDiscountStore) FilterbyOption(option *model.OrderDiscountFilt
 
 // BulkDelete perform bulk delete all given order discount ids
 func (ods *SqlOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
-	result, err := ods.GetMasterX().Exec("DELETE * FROM "+store.OrderDiscountTableName+" WHERE Id IN ?", orderDiscountIDs)
+	query, args, _ := ods.GetQueryBuilder().Delete("*").From(store.OrderDiscountTableName).Where(squirrel.Eq{"Id": orderDiscountIDs}).ToSql()
+	result, err := ods.GetMasterX().Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete order discounts by given ids")
 	}

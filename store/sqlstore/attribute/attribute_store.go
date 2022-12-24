@@ -275,7 +275,16 @@ func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption)
 }
 
 func (as *SqlAttributeStore) Delete(ids ...string) (int64, error) {
-	result, err := as.GetMasterX().Exec("DELETE FROM "+store.AttributeTableName+" WHERE Id IN ?", ids)
+	query, args, err := as.GetQueryBuilder().
+		Delete("*").
+		From(store.AttributeTableName).
+		Where(squirrel.Eq{store.AttributeTableName + ".Id": ids}).
+		ToSql()
+	if err != nil {
+		return 0, errors.Wrap(err, "SqlAttributeStore.Delete_ToSql")
+	}
+
+	result, err := as.GetMasterX().Exec(query, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to delete attributes")
 	}

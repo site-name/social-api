@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
@@ -73,21 +74,15 @@ func (s *SqlStatusStore) Get(userId string) (*model.Status, error) {
 }
 
 func (s *SqlStatusStore) GetByIds(userIds []string) ([]*model.Status, error) {
-	rows, err := s.GetReplicaX().QueryX("SELECT UserId, Status, Manual, LastActivityAt FROM Status WHERE UserId IN ?", userIds)
+	query, args, err := s.GetQueryBuilder().Select("*").From(store.StatusTableName).Where(squirrel.Eq{"UserId": userIds}).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByIds_ToSql")
+	}
+
+	var statuses []*model.Status
+	err = s.GetReplicaX().Select(&statuses, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find Statuses")
-	}
-	var statuses []*model.Status
-	defer rows.Close()
-	for rows.Next() {
-		var status model.Status
-		if err = rows.Scan(&status.UserId, &status.Status, &status.Manual, &status.LastActivityAt); err != nil {
-			return nil, errors.Wrap(err, "unable to scan from rows")
-		}
-		statuses = append(statuses, &status)
-	}
-	if err = rows.Err(); err != nil {
-		return nil, errors.Wrap(err, "failed while iterating over rows")
 	}
 
 	return statuses, nil

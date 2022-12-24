@@ -178,7 +178,15 @@ func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]
 }
 
 func (as *SqlAddressStore) DeleteAddresses(addressIDs []string) error {
-	result, err := as.GetMasterX().Exec("DELETE FROM "+store.AddressTableName+" WHERE Id IN ?", addressIDs)
+	query, args, err := as.GetQueryBuilder().
+		Delete("*").
+		From(store.AddressTableName).
+		Where(squirrel.Eq{store.AddressTableName + ".Id": addressIDs}).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "DeleteAddresses_ToSql")
+	}
+
+	result, err := as.GetMasterX().Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete addresses")
 	}

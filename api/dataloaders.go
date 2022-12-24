@@ -18,18 +18,19 @@ type apiDataloaders struct {
 	giftcardEventsByGiftcardIDs *dataloader.Loader[string, *GiftCardEvent]
 
 	// account
-	AddressByIdLoader               *dataloader.Loader[string, *Address]
-	AddressByIdLoader_SystemResult  *dataloader.Loader[string, *model.Address] // same as above, but returns *model.Addresses instead
-	UserByUserIdLoader              *dataloader.Loader[string, *User]
-	UserByUserIdLoader_SystemResult *dataloader.Loader[string, *model.User] // same as above
-	CustomerEventsByUserLoader      *dataloader.Loader[string, []*CustomerEvent]
+	AddressByIdLoader *dataloader.Loader[string, *model.Address]
+	// AddressByIdLoader_SystemResult  *dataloader.Loader[string, *model.Address] // same as above, but returns *model.Addresses instead
+	UserByUserIdLoader *dataloader.Loader[string, *model.User]
+	// UserByUserIdLoader_SystemResult *dataloader.Loader[string, *model.User] // same as above
+	CustomerEventsByUserLoader *dataloader.Loader[string, []*model.CustomerEvent]
 
 	// product
-	productsByIDs                                      *dataloader.Loader[string, *Product]
-	ProductVariantByIdLoader                           *dataloader.Loader[string, *ProductVariant]
-	ProductByVariantIdLoader                           *dataloader.Loader[string, *Product]
-	ProductTypeByVariantIdLoader                       *dataloader.Loader[string, *ProductType]
+	ProductByIdLoader                                  *dataloader.Loader[string, *model.Product]
+	ProductVariantByIdLoader                           *dataloader.Loader[string, *model.ProductVariant]
+	ProductByVariantIdLoader                           *dataloader.Loader[string, *model.Product]
+	ProductTypeByVariantIdLoader                       *dataloader.Loader[string, *model.ProductType]
 	CollectionsByVariantIdLoader                       *dataloader.Loader[string, []*Collection]
+	ProductTypeByProductIdLoader                       *dataloader.Loader[string, *model.ProductType]
 	VariantChannelListingByVariantIdAndChannelIdLoader *dataloader.Loader[string, *ProductVariantChannelListing]
 
 	// order
@@ -44,7 +45,7 @@ type apiDataloaders struct {
 	CheckoutByTokenLoader_SystemResult *dataloader.Loader[string, *model.Checkout] // same as above
 
 	CheckoutLineByIdLoader                 *dataloader.Loader[string, *CheckoutLine]
-	CheckoutLinesInfoByCheckoutTokenLoader *dataloader.Loader[string, []*CheckoutLineInfo]
+	CheckoutLinesInfoByCheckoutTokenLoader *dataloader.Loader[string, []*model.CheckoutLineInfo]
 
 	// attribute
 	AttributesByAttributeIdLoader      *dataloader.Loader[string, *Attribute]
@@ -79,18 +80,17 @@ var dataloaders *apiDataloaders
 func init() {
 	dataloaders = &apiDataloaders{
 		// account
-		AddressByIdLoader:               dataloader.NewBatchedLoader(addressByIdLoader, dataloader.WithBatchCapacity[string, *Address](batchCapacity)),
-		AddressByIdLoader_SystemResult:  dataloader.NewBatchedLoader(addressByIdLoader_systemResult, dataloader.WithBatchCapacity[string, *model.Address](batchCapacity)),
-		UserByUserIdLoader:              dataloader.NewBatchedLoader(userByUserIdLoader, dataloader.WithBatchCapacity[string, *User](batchCapacity)),
-		UserByUserIdLoader_SystemResult: dataloader.NewBatchedLoader(userByUserIdLoader_systemResult, dataloader.WithBatchCapacity[string, *model.User](batchCapacity)),
-		CustomerEventsByUserLoader:      dataloader.NewBatchedLoader(customerEventsByUserLoader, dataloader.WithBatchCapacity[string, []*CustomerEvent](batchCapacity)),
+		AddressByIdLoader:          dataloader.NewBatchedLoader(addressByIdLoader, dataloader.WithBatchCapacity[string, *model.Address](batchCapacity)),
+		UserByUserIdLoader:         dataloader.NewBatchedLoader(userByUserIdLoader, dataloader.WithBatchCapacity[string, *model.User](batchCapacity)),
+		CustomerEventsByUserLoader: dataloader.NewBatchedLoader(customerEventsByUserLoader, dataloader.WithBatchCapacity[string, []*model.CustomerEvent](batchCapacity)),
 
 		// product
-		productsByIDs:                                      dataloader.NewBatchedLoader(graphqlProductsByIDsLoader, dataloader.WithBatchCapacity[string, *Product](batchCapacity)),
-		ProductVariantByIdLoader:                           dataloader.NewBatchedLoader(productVariantByIdLoader, dataloader.WithBatchCapacity[string, *ProductVariant](batchCapacity)),
-		ProductByVariantIdLoader:                           dataloader.NewBatchedLoader(productByVariantIdLoader, dataloader.WithBatchCapacity[string, *Product](batchCapacity)),
-		ProductTypeByVariantIdLoader:                       dataloader.NewBatchedLoader(productTypeByVariantIdLoader, dataloader.WithBatchCapacity[string, *ProductType](batchCapacity)),
+		ProductByIdLoader:                                  dataloader.NewBatchedLoader(productByIdLoader, dataloader.WithBatchCapacity[string, *model.Product](batchCapacity)),
+		ProductVariantByIdLoader:                           dataloader.NewBatchedLoader(productVariantByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductVariant](batchCapacity)),
+		ProductByVariantIdLoader:                           dataloader.NewBatchedLoader(productByVariantIdLoader, dataloader.WithBatchCapacity[string, *model.Product](batchCapacity)),
+		ProductTypeByVariantIdLoader:                       dataloader.NewBatchedLoader(productTypeByVariantIdLoader, dataloader.WithBatchCapacity[string, *model.ProductType](batchCapacity)),
 		CollectionsByVariantIdLoader:                       dataloader.NewBatchedLoader(collectionsByVariantIdLoader, dataloader.WithBatchCapacity[string, []*Collection](batchCapacity)),
+		ProductTypeByProductIdLoader:                       dataloader.NewBatchedLoader(productTypeByProductIdLoader, dataloader.WithBatchCapacity[string, *model.ProductType](batchCapacity)),
 		VariantChannelListingByVariantIdAndChannelIdLoader: dataloader.NewBatchedLoader(variantChannelListingByVariantIdAndChannelIdLoader, dataloader.WithBatchCapacity[string, *ProductVariantChannelListing](batchCapacity)),
 
 		// giftcard
@@ -108,7 +108,7 @@ func init() {
 		CheckoutByTokenLoader:                  dataloader.NewBatchedLoader(checkoutByTokenLoader, dataloader.WithBatchCapacity[string, *Checkout](batchCapacity)),
 		CheckoutByTokenLoader_SystemResult:     dataloader.NewBatchedLoader(checkoutByTokenLoader_systemResult, dataloader.WithBatchCapacity[string, *model.Checkout](batchCapacity)),
 		CheckoutLineByIdLoader:                 dataloader.NewBatchedLoader(checkoutLineByIdLoader, dataloader.WithBatchCapacity[string, *CheckoutLine](batchCapacity)),
-		CheckoutLinesInfoByCheckoutTokenLoader: dataloader.NewBatchedLoader(checkoutLinesInfoByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, []*CheckoutLineInfo](batchCapacity)),
+		CheckoutLinesInfoByCheckoutTokenLoader: dataloader.NewBatchedLoader(checkoutLinesInfoByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, []*model.CheckoutLineInfo](batchCapacity)),
 
 		// attribute
 		AttributesByAttributeIdLoader:      dataloader.NewBatchedLoader(attributesByAttributeIdLoader, dataloader.WithBatchCapacity[string, *Attribute](batchCapacity)),

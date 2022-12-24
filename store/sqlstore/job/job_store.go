@@ -190,7 +190,17 @@ func (jss *SqlJobStore) GetAllPage(offset int, limit int) ([]*model.Job, error) 
 
 func (jss *SqlJobStore) GetAllByTypesPage(jobTypes []string, offset int, limit int) ([]*model.Job, error) {
 	var jobs []*model.Job
-	if err := jss.GetReplicaX().Select(&jobs, "SELECT * FROM "+store.JobTableName+" WHERE Type IN ? LIMIT ? OFFSET ? ORDER BY CreateAt DESC", jobTypes, uint64(limit), uint64(offset)); err != nil {
+	query, args, err := jss.GetQueryBuilder().
+		Select("*").
+		From(store.JobTableName).
+		Where(squirrel.Eq{"Type": jobTypes}).
+		Offset(uint64(offset)).
+		Limit(uint64(limit)).
+		OrderBy("CreateAt DESC").ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetAllByTypesPage_ToSql")
+	}
+	if err := jss.GetReplicaX().Select(&jobs, query, args...); err != nil {
 		return nil, errors.Wrapf(err, "failed to find Jobs with types")
 	}
 	return jobs, nil

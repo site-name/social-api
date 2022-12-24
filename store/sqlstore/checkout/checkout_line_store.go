@@ -130,7 +130,14 @@ func (cls *SqlCheckoutLineStore) DeleteLines(transaction store_iface.SqlxTxExecu
 		executor = transaction
 	}
 
-	result, err := executor.Exec("DELETE FROM "+store.CheckoutLineTableName+" WHERE Id IN ?", ids)
+	query, args, err := cls.GetQueryBuilder().Delete("*").
+		From(store.CheckoutLineTableName).
+		Where(squirrel.Eq{store.CheckoutLineTableName + ".Id": ids}).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "DeleteLines_ToSql")
+	}
+	result, err := executor.Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete checkout lines")
 	}

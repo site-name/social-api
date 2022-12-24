@@ -177,7 +177,8 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLine
 	// check if we need to prefetch related order lines.
 	if orderLineIDs := fulfillmentLines.OrderLineIDs(); option.PrefetchRelatedOrderLine && len(orderLineIDs) > 0 {
 		var orderLines model.OrderLines
-		err = fls.GetReplicaX().Select(&orderLines, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id IN ?", orderLineIDs)
+		queryString, args, _ = fls.GetQueryBuilder().Select("*").From(store.OrderLineTableName).Where(squirrel.Eq{"Id": orderLineIDs}).ToSql()
+		err = fls.GetReplicaX().Select(&orderLines, queryString, args...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to prefetch related order lines of fulfillment lines")
 		}
@@ -192,7 +193,8 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLine
 		// This code goes inside related order lines prefetch block, since this prefetching is possible IF and ONLY IF related order lines prefetching is required.
 		if productVariantIDs := orderLines.ProductVariantIDs(); option.PrefetchRelatedOrderLine_ProductVariant && len(productVariantIDs) > 0 {
 			var productVariants model.ProductVariants
-			err = fls.GetReplicaX().Select(&productVariants, "SELECT * FROM "+store.ProductVariantTableName+" WHERE Id IN ?", productVariantIDs)
+			queryString, args, _ := fls.GetQueryBuilder().Select("*").From(store.ProductVariantTableName).Where(squirrel.Eq{"Id": productVariantIDs}).ToSql()
+			err = fls.GetReplicaX().Select(&productVariants, queryString, args...)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to prefetch related product variants of related order lines of fulfillment lines")
 			}

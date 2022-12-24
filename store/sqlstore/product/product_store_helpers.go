@@ -31,20 +31,18 @@ func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, colle
 		return query
 	}
 
-	return query.Where(`
-		EXISTS (
-			SELECT
-				(1) AS "a"
-			FROM `+store.CollectionProductRelationTableName+`
-			WHERE
-				(
-					ProductCollections.CollectionID IN ?
-					AND ProductCollections.ProductID = Products.Id
-				)
-			LIMIT 1
-		)`,
-		collectionIDs,
-	)
+	condition := ps.GetQueryBuilder().
+		Select(`(1) as "a"`).
+		Prefix("EXISTS (").
+		Suffix(")").
+		From(store.CollectionProductRelationTableName).
+		Where(squirrel.And{
+			squirrel.Eq{"ProductCollections.CollectionID": collectionIDs},
+			squirrel.Expr("ProductCollections.ProductID = Products.Id"),
+		}).
+		Limit(1)
+
+	return query.Where(condition)
 }
 
 func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPublished bool, channelID interface{}) squirrel.SelectBuilder {
@@ -393,7 +391,7 @@ func (ps *SqlProductStore) filterProductsByAttributesValues(query squirrel.Selec
 			Select(`(1) AS "a"`).
 			Prefix("EXISTS (").
 			From(store.AssignedProductAttributeValueTableName).
-			Where("AssignedProductAttributeValues.ValueID IN ?", values).
+			Where(squirrel.Eq{"AssignedProductAttributeValues.ValueID": values}).
 			Where("AssignedProductAttributeValues.AssignmentID = AssignedProductAttributes.Id").
 			Limit(1).
 			Suffix(")")
@@ -413,7 +411,7 @@ func (ps *SqlProductStore) filterProductsByAttributesValues(query squirrel.Selec
 			Select(`(1) AS "a"`).
 			From(store.AssignedVariantAttributeValueTableName).
 			Prefix("EXISTS (").
-			Where("AssignedVariantAttributeValues.ValueID IN ?", values).
+			Where(squirrel.Eq{"AssignedVariantAttributeValues.ValueID": values}).
 			Where("AssignedVariantAttributeValues.AssignmentID = AssignedVariantAttributes.Id").
 			Limit(1).
 			Suffix(")")
@@ -727,7 +725,7 @@ func (ps *SqlProductStore) filterProductTypes(query squirrel.SelectBuilder, valu
 		return query
 	}
 
-	return query.Where("Products.ProductTypeID IN ?", value)
+	return query.Where(squirrel.Eq{"Products.ProductTypeID": value})
 }
 
 func (ps *SqlProductStore) filterStocks(
@@ -742,9 +740,9 @@ func (ps *SqlProductStore) filterStocks(
 ) squirrel.SelectBuilder {
 	if len(value.WarehouseIds) > 0 && value.Quantity == nil {
 		return query.
-			InnerJoin(store.ProductVariantTableName+" ON ProductVariants.ProductID = Products.Id").
-			InnerJoin(store.StockTableName+" ON Stocks.ProductVariantID = ProductVariants.Id").
-			Where("Stocks.WarehouseID IN ?", value.WarehouseIds).
+			InnerJoin(store.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
+			InnerJoin(store.StockTableName + " ON Stocks.ProductVariantID = ProductVariants.Id").
+			Where(squirrel.Eq{"Stocks.WarehouseID": value.WarehouseIds}).
 			Distinct()
 	}
 
@@ -782,17 +780,17 @@ func (ps *SqlProductStore) filterQuantity(
 	}
 
 	productVariantQuery := ps.GetQueryBuilder().
-		Select(ps.ProductVariant().ModelFields(store.ProductVariantTableName+".")...).
+		Select(ps.ProductVariant().ModelFields(store.ProductVariantTableName + ".")...).
 		From(store.ProductVariantTableName).
-		Where("ProductVariants.ProductID IN ?", products.IDs())
+		Where(squirrel.Eq{"ProductVariants.ProductID": products.IDs()})
 
 	if len(warehouseIDs) > 0 {
+		warehouseIDIfaces := []interface{}{warehouseIDs}
+
 		productVariantQuery = productVariantQuery.
 			Column(`SUM (Stocks.Quantity) FILTER (
-				WHERE (
-					Stocks.WarehouseID IN ?
-				)
-			) AS TotalQuantity`, warehouseIDs)
+				WHERE	Stocks.WarehouseID IN (`+squirrel.Placeholders(len(warehouseIDs))+`)
+			) AS TotalQuantity`, warehouseIDIfaces...)
 
 	} else {
 		productVariantQuery = productVariantQuery.
@@ -825,8 +823,8 @@ func (ps *SqlProductStore) filterQuantity(
 	}
 
 	return query.
-		InnerJoin(store.ProductVariantTableName+" ON ProductVariants.ProductID = Products.Id").
-		Where("ProductVariants.Id IN ?", variants.IDs())
+		InnerJoin(store.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
+		Where(squirrel.Eq{"ProductVariants.Id": variants.IDs()})
 }
 
 func (ps *SqlProductStore) filterGiftCard(query squirrel.SelectBuilder, value bool) squirrel.SelectBuilder {
@@ -850,7 +848,7 @@ func (ps *SqlProductStore) filterProductIDs(query squirrel.SelectBuilder, produc
 		return query
 	}
 
-	return query.Where("Products.Id IN ?", productIDs)
+	return query.Where(squirrel.Eq{"Products.Id": productIDs})
 }
 
 func (ps *SqlProductStore) filterHasPreorderedVariants(query squirrel.SelectBuilder, value bool) squirrel.SelectBuilder {

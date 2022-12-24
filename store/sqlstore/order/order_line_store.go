@@ -171,7 +171,11 @@ func (ols *SqlOrderLineStore) Get(id string) (*model.OrderLine, error) {
 
 // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
 func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
-	_, err := ols.GetMasterX().Exec("DELETE FROM "+store.OrderLineTableName+" WHERE Id IN ?", orderLineIDs)
+	query, args, err := ols.GetQueryBuilder().Delete("*").From(store.OrderLineTableName).Where(squirrel.Eq{"Id": orderLineIDs}).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "BulkDelete_ToSql")
+	}
+	_, err = ols.GetMasterX().Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete order lines with given ids")
 	}

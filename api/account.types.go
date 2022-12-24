@@ -74,7 +74,7 @@ func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 	return model.NewBool(false), nil
 }
 
-func addressByIdLoader_systemResult(ctx context.Context, ids []string) []*dataloader.Result[*model.Address] {
+func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Address] {
 	var (
 		res        = make([]*dataloader.Result[*model.Address], len(ids))
 		addresses  []*model.Address
@@ -98,9 +98,7 @@ func addressByIdLoader_systemResult(ctx context.Context, ids []string) []*datalo
 		goto errLabel
 	}
 
-	addressMap = lo.SliceToMap(addresses, func(a *model.Address) (string, *model.Address) {
-		return a.Id, a
-	})
+	addressMap = lo.SliceToMap(addresses, func(a *model.Address) (string, *model.Address) { return a.Id, a })
 
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.Address]{Data: addressMap[id]}
@@ -112,17 +110,6 @@ errLabel:
 		res[idx] = &dataloader.Result[*model.Address]{Error: err}
 	}
 	return res
-}
-
-func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*Address] {
-	results := addressByIdLoader_systemResult(ctx, ids)
-
-	return lo.Map(results, func(r *dataloader.Result[*model.Address], _ int) *dataloader.Result[*Address] {
-		return &dataloader.Result[*Address]{
-			Data:  SystemAddressToGraphqlAddress(r.Data),
-			Error: r.Error,
-		}
-	})
 }
 
 // -------------------------- User ------------------------------
@@ -232,11 +219,25 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 	return res, nil
 }
 
-func (u *User) GiftCards(ctx context.Context, args GraphqlPaginationOptions) (*GiftCardCountableConnection, error) {
+func (u *User) GiftCards(ctx context.Context, args struct {
+	Before         *string
+	After          *string
+	First          *int32
+	Last           *int32
+	OrderBy        string
+	OrderDirection OrderDirection
+}) (*GiftCardCountableConnection, error) {
 	panic("not implemented")
 }
 
-func (u *User) Orders(ctx context.Context, args GraphqlPaginationOptions) (*OrderCountableConnection, error) {
+func (u *User) Orders(ctx context.Context, args struct {
+	Before         *string
+	After          *string
+	First          *int32
+	Last           *int32
+	OrderBy        string
+	OrderDirection OrderDirection
+}) (*OrderCountableConnection, error) {
 	panic("not implemented")
 }
 
@@ -251,7 +252,13 @@ func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
 		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageUsers, model.PermissionManageStaff) {
 		return nil, model.NewAppError("user.Events", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}
-	return dataloaders.CustomerEventsByUserLoader.Load(ctx, u.ID)()
+
+	results, err := dataloaders.CustomerEventsByUserLoader.Load(ctx, u.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(results, SystemCustomerEventToGraphqlCustomerEvent), nil
 }
 
 func (u *User) Note(ctx context.Context) (string, error) {
@@ -287,18 +294,7 @@ func (u *User) Avatar(ctx context.Context) (*Image, error) {
 	panic("not implemented")
 }
 
-func userByUserIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*User] {
-	results := userByUserIdLoader_systemResult(ctx, ids)
-
-	return lo.Map(results, func(r *dataloader.Result[*model.User], _ int) *dataloader.Result[*User] {
-		return &dataloader.Result[*User]{
-			Data:  SystemUserToGraphqlUser(r.Data),
-			Error: r.Error,
-		}
-	})
-}
-
-func userByUserIdLoader_systemResult(ctx context.Context, ids []string) []*dataloader.Result[*model.User] {
+func userByUserIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.User] {
 	var (
 		res     = make([]*dataloader.Result[*model.User], len(ids))
 		users   []*model.User
@@ -395,13 +391,12 @@ func SystemCustomerEventToGraphqlCustomerEvent(event *model.CustomerEvent) *Cust
 	return res
 }
 
-func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*CustomerEvent] {
+func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.CustomerEvent] {
 	var (
-		res            []*dataloader.Result[[]*CustomerEvent]
-		customerEvents []*model.CustomerEvent
-		appErr         *model.AppError
-		// keys are user ids
-		customerEventsMap = map[string][]*CustomerEvent{}
+		res               = make([]*dataloader.Result[[]*model.CustomerEvent], len(userIDs))
+		customerEvents    []*model.CustomerEvent
+		appErr            *model.AppError
+		customerEventsMap = map[string][]*model.CustomerEvent{} // keys are user ids
 	)
 
 	var webCtx, err = GetContextValue[*web.Context](ctx, WebCtx)
@@ -423,18 +418,18 @@ func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*datalo
 
 	for _, event := range customerEvents {
 		if event.UserID != nil {
-			customerEventsMap[*event.UserID] = append(customerEventsMap[*event.UserID], SystemCustomerEventToGraphqlCustomerEvent(event))
+			customerEventsMap[*event.UserID] = append(customerEventsMap[*event.UserID], event)
 		}
 	}
 
-	for _, id := range userIDs {
-		res = append(res, &dataloader.Result[[]*CustomerEvent]{Data: customerEventsMap[id]})
+	for idx, id := range userIDs {
+		res[idx] = &dataloader.Result[[]*model.CustomerEvent]{Data: customerEventsMap[id]}
 	}
 	return res
 
 errorLabel:
-	for range userIDs {
-		res = append(res, &dataloader.Result[[]*CustomerEvent]{Error: err})
+	for idx := range userIDs {
+		res[idx] = &dataloader.Result[[]*model.CustomerEvent]{Error: err}
 	}
 	return res
 }

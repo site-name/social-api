@@ -123,7 +123,7 @@ func (c *Checkout) Quantity(ctx context.Context) (int32, error) {
 
 	var sum int32
 	for _, line := range lines {
-		sum += line.Line.Quantity
+		sum += int32(line.Line.Quantity)
 	}
 
 	return sum, nil
@@ -142,7 +142,12 @@ func (c *Checkout) BillingAddress(ctx context.Context) (*Address, error) {
 		return nil, nil
 	}
 
-	return dataloaders.AddressByIdLoader.Load(ctx, *c.billingAddressID)()
+	addr, err := dataloaders.AddressByIdLoader.Load(ctx, *c.billingAddressID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemAddressToGraphqlAddress(addr), nil
 }
 
 func (c *Checkout) ShippingAddress(ctx context.Context) (*Address, error) {
@@ -150,7 +155,12 @@ func (c *Checkout) ShippingAddress(ctx context.Context) (*Address, error) {
 		return nil, nil
 	}
 
-	return dataloaders.AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
+	address, err := dataloaders.AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemAddressToGraphqlAddress(address), nil
 }
 
 func (c *Checkout) GiftCards(ctx context.Context) ([]*GiftCard, error) {
@@ -418,14 +428,14 @@ func CheckoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 	}
 
 	// find addresses of checkouts:
-	addresses, errs = dataloaders.AddressByIdLoader_SystemResult.LoadMany(ctx, checkoutAddressIDs)()
+	addresses, errs = dataloaders.AddressByIdLoader.LoadMany(ctx, checkoutAddressIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 	addressMap = lo.SliceToMap(addresses, func(a *model.Address) (string, *model.Address) { return a.Id, a })
 
 	// find owners of checkouts
-	users, errs = dataloaders.UserByUserIdLoader_SystemResult.LoadMany(ctx, checkoutUserIDs)()
+	users, errs = dataloaders.UserByUserIdLoader.LoadMany(ctx, checkoutUserIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -489,7 +499,11 @@ func CheckoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 			deliveryMethod = collectionPointMap[*checkout.CollectionPointID]
 		}
 
-		deliveryMethodInfo, appErr := embedCtx.App.Srv().CheckoutService().GetDeliveryMethodInfo(deliveryMethod, shippingAddress)
+		deliveryMethodInfo, appErr := embedCtx.
+			App.
+			Srv().
+			CheckoutService().
+			GetDeliveryMethodInfo(deliveryMethod, shippingAddress)
 		if appErr != nil {
 			errs = []error{appErr}
 			goto errorLabel

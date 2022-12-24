@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
@@ -58,15 +59,12 @@ func SystemProductVariantToGraphqlProductVariant(variant *model.ProductVariant) 
 	return res
 }
 
-func productVariantByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*ProductVariant] {
-	if len(ids) == 0 {
-		return []*dataloader.Result[*ProductVariant]{}
-	}
-
+func productVariantByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.ProductVariant] {
 	var (
-		productVariants model.ProductVariants
-		appErr          *model.AppError
-		res             []*dataloader.Result[*ProductVariant]
+		productVariants   model.ProductVariants
+		appErr            *model.AppError
+		res               = make([]*dataloader.Result[*model.ProductVariant], len(ids))
+		productVariantMap = map[string]*model.ProductVariant{} // ids are product variant ids
 	)
 
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -87,26 +85,28 @@ func productVariantByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 		goto errorLabel
 	}
 
-	for _, variant := range productVariants {
-		res = append(res, &dataloader.Result[*ProductVariant]{Data: SystemProductVariantToGraphqlProductVariant(variant)})
+	productVariantMap = lo.SliceToMap(productVariants, func(v *model.ProductVariant) (string, *model.ProductVariant) { return v.Id, v })
+
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[*model.ProductVariant]{Data: productVariantMap[id]}
 	}
 	return res
 
 errorLabel:
-	for range ids {
-		res = append(res, &dataloader.Result[*ProductVariant]{Error: err})
+	for idx := range ids {
+		res[idx] = &dataloader.Result[*model.ProductVariant]{Error: err}
 	}
 	return res
 }
 
-func graphqlProductVariantsByProductIDLoader(ctx context.Context, productIDs []string) []*dataloader.Result[[]*ProductVariant] {
+func graphqlProductVariantsByProductIDLoader(ctx context.Context, productIDs []string) []*dataloader.Result[[]*model.ProductVariant] {
 	var (
 		productVariants model.ProductVariants
 		appErr          *model.AppError
-		res             []*dataloader.Result[[]*ProductVariant]
+		res             = make([]*dataloader.Result[[]*model.ProductVariant], len(productIDs))
 
 		// keys are product ids
-		variantsMap = map[string][]*ProductVariant{}
+		variantsMap = map[string][]*model.ProductVariant{}
 	)
 
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -128,18 +128,18 @@ func graphqlProductVariantsByProductIDLoader(ctx context.Context, productIDs []s
 
 	for _, variant := range productVariants {
 		if variant != nil {
-			variantsMap[variant.ProductID] = append(variantsMap[variant.ProductID], SystemProductVariantToGraphqlProductVariant(variant))
+			variantsMap[variant.ProductID] = append(variantsMap[variant.ProductID], variant)
 		}
 	}
 
-	for _, productID := range productIDs {
-		res = append(res, &dataloader.Result[[]*ProductVariant]{Data: variantsMap[productID]})
+	for idx, productID := range productIDs {
+		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: variantsMap[productID]}
 	}
 	return res
 
 errorLabel:
-	for range productIDs {
-		res = append(res, &dataloader.Result[[]*ProductVariant]{Error: err})
+	for idx := range productIDs {
+		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Error: err}
 	}
 	return res
 }

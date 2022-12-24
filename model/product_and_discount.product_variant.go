@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/measurement"
 	"golang.org/x/text/language"
 )
@@ -69,18 +70,7 @@ func (p *ProductVariant) WeightString() string {
 type ProductVariants []*ProductVariant
 
 func (p ProductVariants) DeepCopy() ProductVariants {
-	if p == nil {
-		return nil
-	}
-
-	res := ProductVariants{}
-	for _, item := range p {
-		if item != nil {
-			res = append(res, item.DeepCopy())
-		}
-	}
-
-	return res
+	return lo.Map(p, func(v *ProductVariant, _ int) *ProductVariant { return v.DeepCopy() })
 }
 
 func (s *ProductVariant) SetStocks(stk Stocks) {
@@ -93,35 +83,16 @@ func (p *ProductVariant) GetStocks() Stocks {
 
 // FilterNils returns new ProductVariants contains all non-nil items from current ProductVariants
 func (p ProductVariants) FilterNils() ProductVariants {
-	var res ProductVariants
-	for _, item := range p {
-		if item != nil {
-			res = append(res, item)
-		}
-	}
-
-	return res
+	return lo.Filter(p, func(v *ProductVariant, _ int) bool { return v != nil })
 }
 
 func (p ProductVariants) IDs() []string {
-	res := []string{}
-	for _, item := range p {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
-
-	return res
+	return lo.Map(p, func(v *ProductVariant, _ int) string { return v.Id })
 }
 
 // ProductIDs returns all product ids of current product variants
 func (p ProductVariants) ProductIDs() []string {
-	res := make([]string, len(p))
-	for i := range p {
-		res[i] = p[i].ProductID
-	}
-
-	return res
+	return lo.Map(p, func(v *ProductVariant, _ int) string { return v.ProductID })
 }
 
 func (p *ProductVariant) IsValid() *AppError {

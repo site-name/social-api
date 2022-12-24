@@ -3,6 +3,7 @@ package warehouse
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -278,7 +279,11 @@ func (as *SqlAllocationStore) BulkDelete(transaction store_iface.SqlxTxExecutor,
 		executor = transaction
 	}
 
-	result, err := executor.Exec("DELETE FROM "+store.AllocationTableName+" WHERE Id IN ?", allocationIDs)
+	query, args, err := as.GetQueryBuilder().Delete(store.AllocationTableName).Where(squirrel.Eq{"Id": allocationIDs}).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "BulkDelete_ToSql")
+	}
+	result, err := executor.Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete allocations")
 	}
