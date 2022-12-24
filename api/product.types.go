@@ -169,7 +169,12 @@ errorLabel:
 
 func productTypeByProductIdLoader(ctx context.Context, productIDs []string) []*dataloader.Result[*model.ProductType] {
 	var (
-		res []*dataloader.Result[*model.ProductType]
+		res            []*dataloader.Result[*model.ProductType]
+		productTypes   []*model.ProductType
+		products       []*model.Product
+		productTypeMap = map[string]*model.ProductType{} // keys are product type ids
+		appErr         *model.AppError
+		errs           []error
 	)
 
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -177,7 +182,30 @@ func productTypeByProductIdLoader(ctx context.Context, productIDs []string) []*d
 		goto errorLabel
 	}
 
-	embedCtx.App.Srv().ProductService().ProductTypesByProductIDs(productIDs)
+	products, errs = dataloaders.ProductByIdLoader.LoadMany(ctx, productIDs)()
+	if len(errs) != 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+
+	productTypes, appErr = embedCtx.
+		App.
+		Srv().
+		ProductService().
+		ProductTypesByProductIDs(productIDs)
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	productTypeMap = lo.SliceToMap(productTypes, func(p *model.ProductType) (string, *model.ProductType) {
+		return p.Id, p
+	})
+
+	for _, prd := range products {
+		res = append(res, &dataloader.Result[*model.ProductType]{Data: productTypeMap[prd.ProductTypeID]})
+	}
+	return res
 
 errorLabel:
 	for range productIDs {
@@ -186,13 +214,13 @@ errorLabel:
 	return res
 }
 
-func collectionsByVariantIdLoader(ctx context.Context, variantIDS []string) []*dataloader.Result[[]*Collection] {
+func collectionsByVariantIdLoader(ctx context.Context, variantIDS []string) []*dataloader.Result[[]*model.Collection] {
 	panic("not implemented")
 }
 
 // variantIDChannelIDPairs are slice of uuid_uuid pairs.
 // first uuid parts are product variant ids
 // second parts are channel ids
-func variantChannelListingByVariantIdAndChannelIdLoader(ctx context.Context, variantIDChannelIDPairs []string) []*dataloader.Result[*ProductVariantChannelListing] {
+func variantChannelListingByVariantIdAndChannelIdLoader(ctx context.Context, variantIDChannelIDPairs []string) []*dataloader.Result[*model.ProductVariantChannelListing] {
 	panic("not implemented")
 }

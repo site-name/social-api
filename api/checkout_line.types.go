@@ -61,18 +61,18 @@ func (line *CheckoutLine) RequiresShipping(ctx context.Context) (*bool, error) {
 		return nil, err
 	}
 
-	return model.NewBool(productType.IsShippingRequired), nil
+	return productType.IsShippingRequired, nil
 }
 
-func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[[]*CheckoutLine] {
+func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[[]*model.CheckoutLine] {
 	var (
-		res           []*dataloader.Result[[]*CheckoutLine]
+		res           = make([]*dataloader.Result[[]*model.CheckoutLine], len(tokens))
 		appErr        *model.AppError
 		checkoutLines model.CheckoutLines
 
 		// checkoutLinesMap has keys are checkout tokens.
 		// values are checkout lines belong to the checkout parent
-		checkoutLinesMap = map[string][]*CheckoutLine{}
+		checkoutLinesMap = map[string][]*model.CheckoutLine{}
 	)
 
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -92,20 +92,18 @@ func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []
 
 	for _, line := range checkoutLines {
 		if line != nil {
-			checkoutLinesMap[line.CheckoutID] = append(
-				checkoutLinesMap[line.CheckoutID],
-				SystemCheckoutLineToGraphqlCheckoutLine(line))
+			checkoutLinesMap[line.CheckoutID] = append(checkoutLinesMap[line.CheckoutID], line)
 		}
 	}
 
-	for _, token := range tokens {
-		res = append(res, &dataloader.Result[[]*CheckoutLine]{Data: checkoutLinesMap[token]})
+	for idx, token := range tokens {
+		res[idx] = &dataloader.Result[[]*model.CheckoutLine]{Data: checkoutLinesMap[token]}
 	}
 	return res
 
 errorLabel:
-	for range tokens {
-		res = append(res, &dataloader.Result[[]*CheckoutLine]{Error: err})
+	for idx := range tokens {
+		res[idx] = &dataloader.Result[[]*model.CheckoutLine]{Error: err}
 	}
 	return res
 }
@@ -154,20 +152,20 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 
 		variantIDS      []string
 		channelIDS      []string
-		checkoutLines   [][]*CheckoutLine
+		checkoutLines   [][]*model.CheckoutLine
 		variants        []*model.ProductVariant
-		products        []*Product
-		productTypes    []*ProductType
-		collections     [][]*Collection
-		channelListings []*ProductVariantChannelListing
+		products        []*model.Product
+		productTypes    []*model.ProductType
+		collections     [][]*model.Collection
+		channelListings []*model.ProductVariantChannelListing
 
-		variantIDChannelIDPairs []string // slice of variantID__channelID pairs
+		variantIDChannelIDPairs []string // slice of variantID__channelID values
 
-		variantsMap        = map[string]*model.ProductVariant{}         // keys are product variant ids
-		productsMap        = map[string]*Product{}                      // keys are product variant ids
-		productTypesMap    = map[string]*ProductType{}                  // keys are product variant ids
-		collectionsMap     = map[string][]*Collection{}                 // keys are product variant ids
-		channelListingsMap = map[string]*ProductVariantChannelListing{} // keys are variantID__channelID format
+		variantsMap        = map[string]*model.ProductVariant{}               // keys are product variant ids
+		productsMap        = map[string]*model.Product{}                      // keys are product variant ids
+		productTypesMap    = map[string]*model.ProductType{}                  // keys are product variant ids
+		collectionsMap     = map[string][]*model.Collection{}                 // keys are product variant ids
+		channelListingsMap = map[string]*model.ProductVariantChannelListing{} // keys are variantID__channelID format
 
 		linesInfoMap = map[string][]*model.CheckoutLineInfo{} // keys are checkout tokens
 	)
@@ -184,7 +182,7 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 
 	for _, lines := range checkoutLines {
 		for _, line := range lines {
-			variantIDS = append(variantIDS, line.variantID)
+			variantIDS = append(variantIDS, line.VariantID)
 		}
 	}
 
@@ -216,7 +214,7 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 
 	for i := 0; i < util.Min(len(channelIDS), len(checkoutLines)); i++ {
 		for _, line := range checkoutLines[i] {
-			variantIDChannelIDPairs = append(variantIDChannelIDPairs, line.variantID+"__"+channelIDS[i])
+			variantIDChannelIDPairs = append(variantIDChannelIDPairs, line.VariantID+"__"+channelIDS[i])
 		}
 	}
 
@@ -249,11 +247,11 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 		for _, line := range checkoutLines[i] {
 			linesInfoMap[checkouts[i].Token] = append(linesInfoMap[checkouts[i].Token], &model.CheckoutLineInfo{
 				Line:           *line,
-				Variant:        *variantsMap[line.variantID],
-				ChannelListing: *channelListingsMap[line.variantID+"__"+checkouts[i].channelID],
-				Product:        *productsMap[line.variantID],
-				ProductType:    *productTypesMap[line.variantID],
-				Collections:    collectionsMap[line.variantID],
+				Variant:        *variantsMap[line.VariantID],
+				ChannelListing: *channelListingsMap[line.VariantID+"__"+checkouts[i].channelID],
+				Product:        *productsMap[line.VariantID],
+				ProductType:    *productTypesMap[line.VariantID],
+				Collections:    collectionsMap[line.VariantID],
 			})
 		}
 	}

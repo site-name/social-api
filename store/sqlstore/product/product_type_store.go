@@ -106,10 +106,10 @@ func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([
 	var productTypes []*model.ProductType
 	queryString, args, err := pts.
 		GetQueryBuilder().
-		Select(pts.ModelFields(store.ProductTypeTableName + ".")...).
-		From(store.ProductTypeTableName).
-		InnerJoin(store.ProductTableName + " ON ProductTypes.Id = Products.ProductTypeID").
-		Where(squirrel.Eq{store.ProductTableName + ".Id": productIDs}).
+		Select("pt.*").
+		From(store.ProductTypeTableName + " pt").
+		InnerJoin(store.ProductTableName + " p ON pt.Id = p.ProductTypeID").
+		Where(squirrel.Eq{"p.Id": productIDs}).
 		ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "ProductTypesByProductIDs_ToSql")

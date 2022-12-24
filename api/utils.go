@@ -156,6 +156,11 @@ func SystemLanguageToGraphqlLanguageCodeEnum(code string) LanguageCodeEnum {
 // 	})
 // }
 
+// DataloaderResultMap converts slice of system models to graphql representations of them
+//
+// E.g:
+//
+//	DataloaderResultMap([]*model.Product, func(p *model.Product) *Product) => []*Product
 func DataloaderResultMap[S any, D any](slice []S, iteratee func(S) D) []D {
 	res := make([]D, len(slice))
 

@@ -87,6 +87,10 @@ func SystemCheckoutToGraphqlCheckout(ckout *model.Checkout) *Checkout {
 	return res
 }
 
+func (c *Checkout) ShippingPrice(ctx context.Context) (*TaxedMoney, error) {
+	panic("not implemented")
+}
+
 func (c *Checkout) User(ctx context.Context) (*User, error) {
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
@@ -130,7 +134,19 @@ func (c *Checkout) Quantity(ctx context.Context) (int32, error) {
 }
 
 func (c *Checkout) IsShippingRequired(ctx context.Context) (bool, error) {
-	panic("not implemented")
+	infos, err := dataloaders.CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	if err != nil {
+		return false, err
+	}
+
+	productIDs := lo.Map(infos, func(i *model.CheckoutLineInfo, _ int) string { return i.Product.Id })
+
+	productTypes, errs := dataloaders.ProductTypeByProductIdLoader.LoadMany(ctx, productIDs)()
+	if len(errs) != 0 && errs[0] != nil {
+		return false, errs[0]
+	}
+
+	return lo.SomeBy(productTypes, func(t *model.ProductType) bool { return *t.IsShippingRequired }), nil
 }
 
 func (c *Checkout) Channel(ctx context.Context) (*Channel, error) {
@@ -188,7 +204,49 @@ func (c *Checkout) AvailableShippingMethods(ctx context.Context) ([]*ShippingMet
 }
 
 func (c *Checkout) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	var address *model.Address
+
+	if c.shippingAddressID != nil {
+		address, err = dataloaders.AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	channel, err := dataloaders.ChannelByIdLoader.Load(ctx, c.channelID)()
+	if err != nil {
+		return nil, err
+	}
+
+	lines, err := dataloaders.CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	if err != nil {
+		return nil, err
+	}
+
+	var countryCode string
+	if address != nil {
+		countryCode = address.Country
+	} else if channel.DefaultCountry != nil {
+		countryCode = channel.DefaultCountry.Code
+	}
+
+	if countryCode != "" {
+		warehouses, appErr := embedCtx.App.Srv().
+			CheckoutService().
+			GetValidCollectionPointsForCheckout(lines, countryCode, true)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		return DataloaderResultMap(warehouses, SystemWarehouseTpGraphqlWarehouse), nil
+	}
+
+	return nil, nil
 }
 
 func (c *Checkout) AvailablePaymentGateways(ctx context.Context) ([]*PaymentGateway, error) {
@@ -196,11 +254,20 @@ func (c *Checkout) AvailablePaymentGateways(ctx context.Context) ([]*PaymentGate
 }
 
 func (c *Checkout) Lines(ctx context.Context) ([]*CheckoutLine, error) {
-	return dataloaders.CheckoutLinesByCheckoutTokenLoader.Load(ctx, c.Token)()
+	lines, err := dataloaders.CheckoutLinesByCheckoutTokenLoader.Load(ctx, c.Token)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(lines, SystemCheckoutLineToGraphqlCheckoutLine), nil
 }
 
-func (c *Checkout) DeliveryMethod(ctx context.Context) (any, error) {
-	panic("not implemented")
+func (c *Checkout) DeliveryMethod(ctx context.Context) (*Warehouse, error) {
+	if c.collectionPointID != nil {
+		return dataloaders.WarehouseByIdLoader.Load(ctx, *c.collectionPointID)()
+	}
+
+	return nil, nil
 }
 
 // NOTE:
