@@ -10,11 +10,11 @@ import (
 	"github.com/sitename/sitename/web"
 )
 
-func discountsByDateTimeLoader(ctx context.Context, dateTimes []*time.Time) []*dataloader.Result[[]*model.DiscountInfo] {
+func discountsByDateTimeLoader(ctx context.Context, dateTimes []time.Time) []*dataloader.Result[[]*model.DiscountInfo] {
 	var (
 		res             = make([]*dataloader.Result[[]*model.DiscountInfo], len(dateTimes))
 		appErr          *model.AppError
-		salesMap        = map[*time.Time]model.Sales{}
+		salesMap        = map[time.Time]model.Sales{}
 		saleIDS         []string
 		collections     = map[string][]string{}
 		channelListings = map[string]map[string]*model.SaleChannelListing{}
@@ -33,7 +33,7 @@ func discountsByDateTimeLoader(ctx context.Context, dateTimes []*time.Time) []*d
 	discountService = embedCtx.App.Srv().DiscountService()
 
 	for _, dateTime := range dateTimes {
-		sales, appErr := discountService.ActiveSales(dateTime)
+		sales, appErr := discountService.ActiveSales(&dateTime)
 		if appErr != nil {
 			err = appErr
 			goto errorLabel

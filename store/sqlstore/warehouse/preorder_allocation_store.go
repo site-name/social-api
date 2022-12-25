@@ -31,7 +31,7 @@ func (ws *SqlPreorderAllocationStore) ModelFields(prefix string) model.AnyArray[
 		return prefix + s
 	})
 }
-func (ws *SqlPreorderAllocationStore) ScanFields(preorderAllocation model.PreorderAllocation) []interface{} {
+func (ws *SqlPreorderAllocationStore) ScanFields(preorderAllocation *model.PreorderAllocation) []interface{} {
 	return []interface{}{
 		&preorderAllocation.Id,
 		&preorderAllocation.OrderLineID,
@@ -117,13 +117,13 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllo
 		preorderAllocation model.PreorderAllocation
 		orderLine          model.OrderLine
 		orDer              model.Order
-		scanFields         = ws.ScanFields(preorderAllocation)
+		scanFields         = ws.ScanFields(&preorderAllocation)
 	)
 	if options.SelectRelated_OrderLine {
-		scanFields = append(scanFields, ws.OrderLine().ScanFields(orderLine)...)
+		scanFields = append(scanFields, ws.OrderLine().ScanFields(&orderLine)...)
 	}
 	if options.SelectRelated_OrderLine_Order && options.SelectRelated_OrderLine {
-		scanFields = append(scanFields, ws.Order().ScanFields(orDer)...)
+		scanFields = append(scanFields, ws.Order().ScanFields(&orDer)...)
 	}
 
 	for rows.Next() {

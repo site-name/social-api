@@ -58,7 +58,7 @@ func (ols *SqlOrderLineStore) ModelFields(prefix string) model.AnyArray[string] 
 	})
 }
 
-func (ols *SqlOrderLineStore) ScanFields(orderLine model.OrderLine) []interface{} {
+func (ols *SqlOrderLineStore) ScanFields(orderLine *model.OrderLine) []interface{} {
 	return []interface{}{
 		&orderLine.Id,
 		&orderLine.CreateAt,

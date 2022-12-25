@@ -34,7 +34,7 @@ func (scls *SqlSaleChannelListingStore) ModelFields(prefix string) model.AnyArra
 	})
 }
 
-func (scls *SqlSaleChannelListingStore) ScanFields(listing model.SaleChannelListing) []interface{} {
+func (scls *SqlSaleChannelListingStore) ScanFields(listing *model.SaleChannelListing) []interface{} {
 	return []interface{}{
 		&listing.Id,
 		&listing.SaleID,

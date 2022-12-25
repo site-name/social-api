@@ -39,7 +39,7 @@ func (as *SqlAssignedVariantAttributeValueStore) ModelFields(prefix string) mode
 	})
 }
 
-func (as *SqlAssignedVariantAttributeValueStore) ScanFields(assignedVariantAttributeValue model.AssignedVariantAttributeValue) []interface{} {
+func (as *SqlAssignedVariantAttributeValueStore) ScanFields(assignedVariantAttributeValue *model.AssignedVariantAttributeValue) []interface{} {
 	return []interface{}{
 		&assignedVariantAttributeValue.Id,
 		&assignedVariantAttributeValue.ValueID,
@@ -140,7 +140,7 @@ func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID stri
 		attributeValues                []*model.AttributeValue
 		assignedVariantAttributeValue  model.AssignedVariantAttributeValue
 		attributeValue                 model.AttributeValue
-		scanFields                     = append(as.ScanFields(assignedVariantAttributeValue), as.AttributeValue().ScanFields(attributeValue)...)
+		scanFields                     = append(as.ScanFields(&assignedVariantAttributeValue), as.AttributeValue().ScanFields(&attributeValue)...)
 	)
 	for rows.Next() {
 		scanErr := rows.Scan(scanFields...)

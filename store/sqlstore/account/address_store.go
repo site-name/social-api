@@ -47,7 +47,7 @@ func (as *SqlAddressStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (as *SqlAddressStore) ScanFields(addr model.Address) []interface{} {
+func (as *SqlAddressStore) ScanFields(addr *model.Address) []interface{} {
 	return []interface{}{
 		&addr.Id,
 		&addr.FirstName,

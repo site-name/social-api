@@ -44,7 +44,7 @@ func (as *SqlAttributeStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (as *SqlAttributeStore) ScanFields(v model.Attribute) []interface{} {
+func (as *SqlAttributeStore) ScanFields(v *model.Attribute) []interface{} {
 	return []interface{}{
 		&v.Id,
 		&v.Slug,

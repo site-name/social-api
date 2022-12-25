@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -41,21 +42,19 @@ func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManage
 	}
 
 	// finds a list of plugin configs belong found channels
-	pluginConfigsOfChannels, appErr := manager.Srv.PluginService().FilterPluginConfigurations(&model.PluginConfigurationFilterOptions{
-		ChannelID: squirrel.Eq{store.PluginConfigurationTableName + ".ChannelID": channels.IDs()},
-	})
+	pluginConfigsOfChannels, appErr := manager.Srv.
+		PluginService().
+		FilterPluginConfigurations(&model.PluginConfigurationFilterOptions{
+			ChannelID: squirrel.Eq{store.PluginConfigurationTableName + ".ChannelID": channels.IDs()},
+		})
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	// keys are plugin configurations's identifiers
-	var configsMap = map[string]*model.PluginConfiguration{}
-	for _, config := range pluginConfigsOfChannels {
-		configsMap[config.Identifier] = config
-	}
+	var configsMap = lo.SliceToMap(pluginConfigsOfChannels, func(p *model.PluginConfiguration) (string, *model.PluginConfiguration) { return p.Identifier, p })
 
 	for _, pluginInitObj := range pluginInitObjects {
-
 		var (
 			pluginConfig []model.StringInterface = pluginInitObj.Manifest.DefaultConfiguration
 			active       bool                    = pluginInitObj.Manifest.DefaultActive

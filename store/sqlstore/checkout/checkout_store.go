@@ -54,7 +54,7 @@ func (cs *SqlCheckoutStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (cs *SqlCheckoutStore) ScanFields(checkOut model.Checkout) []interface{} {
+func (cs *SqlCheckoutStore) ScanFields(checkOut *model.Checkout) []interface{} {
 	return []interface{}{
 		&checkOut.Token,
 		&checkOut.CreateAt,
@@ -218,11 +218,11 @@ func (cs *SqlCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*mo
 
 	var (
 		res        model.Checkout
-		aChannel   model.Channel
-		scanFields = cs.ScanFields(res)
+		channel    model.Channel
+		scanFields = cs.ScanFields(&res)
 	)
 	if option.SelectRelatedChannel {
-		scanFields = append(scanFields, cs.Channel().ScanFields(aChannel)...)
+		scanFields = append(scanFields, cs.Channel().ScanFields(&channel)...)
 	}
 
 	query, args, err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).ToSql()
@@ -239,7 +239,7 @@ func (cs *SqlCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*mo
 	}
 
 	if option.SelectRelatedChannel {
-		res.SetChannel(&aChannel)
+		res.SetChannel(&channel)
 	}
 
 	return &res, nil
@@ -261,10 +261,10 @@ func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (
 		res        []*model.Checkout
 		checkOut   model.Checkout
 		aChannel   model.Channel
-		scanFields = cs.ScanFields(checkOut)
+		scanFields = cs.ScanFields(&checkOut)
 	)
 	if option.SelectRelatedChannel {
-		scanFields = append(scanFields, cs.Channel().ScanFields(aChannel)...)
+		scanFields = append(scanFields, cs.Channel().ScanFields(&aChannel)...)
 	}
 
 	for rows.Next() {

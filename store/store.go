@@ -220,7 +220,7 @@ type (
 	AttributeStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
 		Delete(ids ...string) (int64, error)
-		ScanFields(v model.Attribute) []interface{}
+		ScanFields(attr *model.Attribute) []interface{}
 		Upsert(attr *model.Attribute) (*model.Attribute, error)                       // Upsert inserts or updates given model then returns it
 		GetByOption(option *model.AttributeFilterOption) (*model.Attribute, error)    // GetByOption finds and returns 1 model
 		FilterbyOption(option *model.AttributeFilterOption) (model.Attributes, error) // FilterbyOption returns a list of attributes by given option
@@ -228,7 +228,7 @@ type (
 	AttributeTranslationStore interface {
 	}
 	AttributeValueStore interface {
-		ScanFields(attributeValue model.AttributeValue) []interface{}
+		ScanFields(attributeValue *model.AttributeValue) []interface{}
 		ModelFields(prefix string) model.AnyArray[string]
 		Count(options *model.AttributeValueFilterOptions) (int64, error)
 		Delete(ids ...string) (int64, error)
@@ -261,7 +261,7 @@ type (
 	}
 	AssignedVariantAttributeValueStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
-		ScanFields(assignedVariantAttributeValue model.AssignedVariantAttributeValue) []interface{}
+		ScanFields(assignedVariantAttributeValue *model.AssignedVariantAttributeValue) []interface{}
 		Save(assignedVariantAttrValue *model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error)                                              // Save inserts new value into database then returns it with an error
 		Get(assignedVariantAttrValueID string) (*model.AssignedVariantAttributeValue, error)                                                                           // Get try finding a value with given id then returns it with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedVariantAttributeValue, error)                                                    // SaveInBulk save multiple values into database then returns them
@@ -282,7 +282,7 @@ type (
 	}
 	AssignedProductAttributeValueStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
-		ScanFields(assignedProductAttributeValue model.AssignedProductAttributeValue) []interface{}
+		ScanFields(assignedProductAttributeValue *model.AssignedProductAttributeValue) []interface{}
 		Save(assignedProductAttrValue *model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) // Save inserts given instance into database then returns it with an error
 		Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error)                              // Get try finding an instance with given id then returns the value with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedProductAttributeValue, error)       // SaveInBulk save multiple values into database
@@ -345,7 +345,7 @@ type (
 type (
 	WarehouseStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
-		ScanFields(wh model.WareHouse) []interface{}
+		ScanFields(wh *model.WareHouse) []interface{}
 		Save(model *model.WareHouse) (*model.WareHouse, error)                          // Save inserts given model into database then returns it.
 		Get(id string) (*model.WareHouse, error)                                        // Get try findings model with given id, returns it. returned error could be wither (nil, *ErrNotFound, error)
 		FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) // FilterByOprion returns a slice of warehouses with given option
@@ -355,7 +355,7 @@ type (
 		ApplicableForClickAndCollect(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error)
 	}
 	StockStore interface {
-		ScanFields(stock model.Stock) []interface{}
+		ScanFields(stock *model.Stock) []interface{}
 		ModelFields(prefix string) model.AnyArray[string]
 		Get(stockID string) (*model.Stock, error)                                                                                                               // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
 		FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
@@ -380,7 +380,7 @@ type (
 	PreorderAllocationStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
 		BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) // BulkCreate bulk inserts given preorderAllocations and returns them
-		ScanFields(preorderAllocation model.PreorderAllocation) []interface{}
+		ScanFields(preorderAllocation *model.PreorderAllocation) []interface{}
 		FilterByOption(options *model.PreorderAllocationFilterOption) ([]*model.PreorderAllocation, error) // FilterByOption finds and returns a list of preorder allocations filtered using given options
 		Delete(transaction store_iface.SqlxTxExecutor, preorderAllocationIDs ...string) error              // Delete deletes preorder-allocations by given ids
 	}
@@ -390,7 +390,7 @@ type (
 type (
 	ShippingZoneStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
-		ScanFields(shippingZone model.ShippingZone) []interface{}
+		ScanFields(shippingZone *model.ShippingZone) []interface{}
 		Upsert(shippingZone *model.ShippingZone) (*model.ShippingZone, error)                 // Upsert depends on given model zone's Id to decide update or insert the zone
 		Get(shippingZoneID string) (*model.ShippingZone, error)                               // Get finds 1 model zone for given shippingZoneID
 		FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error) // FilterByOption finds a list of model zones based on given option
@@ -432,7 +432,7 @@ type (
 		Upsert(collection *model.Collection) (*model.Collection, error)                   // Upsert depends on given collection's Id property to decide update or insert the collection
 		Get(collectionID string) (*model.Collection, error)                               // Get finds and returns collection with given collectionID
 		FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) // FilterByOption finds and returns a list of collections satisfy the given option
-		ScanFields(col model.Collection) []interface{}
+		ScanFields(col *model.Collection) []interface{}
 	}
 	CollectionProductStore interface {
 		FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error)
@@ -450,14 +450,14 @@ type (
 	}
 	DigitalContentStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
-		ScanFields(content model.DigitalContent) []interface{}
+		ScanFields(content *model.DigitalContent) []interface{}
 		Save(content *model.DigitalContent) (*model.DigitalContent, error)                         // Save inserts given digital content into database then returns it
 		GetByOption(option *model.DigitalContenetFilterOption) (*model.DigitalContent, error)      // GetByOption finds and returns 1 digital content filtered using given option
 		FilterByOption(option *model.DigitalContenetFilterOption) ([]*model.DigitalContent, error) //
 	}
 	ProductVariantChannelListingStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
-		ScanFields(listing model.ProductVariantChannelListing) []interface{}
+		ScanFields(listing *model.ProductVariantChannelListing) []interface{}
 		Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error)                                                    // Save insert given value into database then returns it with an error
 		Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error)                                                                                // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
 		FilterbyOption(transaction store_iface.SqlxTxExecutor, option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error)   // FilterbyOption finds and returns all product variant channel listings filterd using given option
@@ -470,7 +470,7 @@ type (
 	}
 	ProductVariantStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
-		ScanFields(variant model.ProductVariant) []interface{}
+		ScanFields(variant *model.ProductVariant) []interface{}
 		Save(transaction store_iface.SqlxTxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error)   // Save inserts product variant instance to database
 		Get(id string) (*model.ProductVariant, error)                                                                // Get returns a product variant with given id
 		GetWeight(productVariantID string) (*measurement.Weight, error)                                              // GetWeight returns weight of given product variant
@@ -509,7 +509,7 @@ type (
 	}
 	ProductStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
-		ScanFields(prd model.Product) []interface{}
+		ScanFields(prd *model.Product) []interface{}
 		Save(prd *model.Product) (*model.Product, error)
 		GetByOption(option *model.ProductFilterOption) (*model.Product, error)      // GetByOption finds and returns 1 product that satisfies given option
 		FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) // FilterByOption finds and returns all products that satisfy given option
@@ -530,7 +530,7 @@ type (
 // model
 type (
 	PaymentStore interface {
-		ScanFields(payMent model.Payment) []interface{}
+		ScanFields(payMent *model.Payment) []interface{}
 		Save(transaction store_iface.SqlxTxExecutor, model *model.Payment) (*model.Payment, error)                               // Save save model instance into database
 		Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*model.Payment, error)                       // Get returns a model with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
 		Update(transaction store_iface.SqlxTxExecutor, model *model.Payment) (*model.Payment, error)                             // Update updates given model and returns new updated model
@@ -559,7 +559,7 @@ type (
 // order
 type (
 	OrderLineStore interface {
-		ScanFields(orderLine model.OrderLine) []interface{}
+		ScanFields(orderLine *model.OrderLine) []interface{}
 		ModelFields(prefix string) model.AnyArray[string]
 		Upsert(transaction store_iface.SqlxTxExecutor, orderLine *model.OrderLine) (*model.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
 		Get(id string) (*model.OrderLine, error)                                                                      // Get returns a order line with id of given id
@@ -569,7 +569,7 @@ type (
 	}
 	OrderStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
-		ScanFields(holder model.Order) []interface{}
+		ScanFields(holder *model.Order) []interface{}
 		Save(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error)   // Save insert an order into database and returns that order if success
 		Get(id string) (*model.Order, error)                                                     // Get find order in database with given id
 		Update(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error) // Update update order
@@ -590,7 +590,7 @@ type (
 	}
 	FulfillmentStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
-		ScanFields(holder model.Fulfillment) []interface{}
+		ScanFields(holder *model.Fulfillment) []interface{}
 		Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, error)                  // Upsert depends on given fulfillment's Id to decide update or insert it
 		Get(id string) (*model.Fulfillment, error)                                                                                  // Get finds and return a fulfillment by given id
 		GetByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, error)      // GetByOption returns 1 fulfillment, filtered by given option
@@ -695,7 +695,7 @@ type (
 	}
 	DiscountVoucherStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
-		ScanFields(voucher model.Voucher) []interface{}
+		ScanFields(voucher *model.Voucher) []interface{}
 		Upsert(voucher *model.Voucher) (*model.Voucher, error)                              // Upsert saves or updates given voucher then returns it with an error
 		Get(voucherID string) (*model.Voucher, error)                                       // Get finds a voucher with given id, then returns it with an error
 		FilterVouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, error) // FilterVouchersByOption finds vouchers bases on given option.
@@ -759,7 +759,7 @@ type (
 type (
 	CheckoutLineStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
-		ScanFields(line model.CheckoutLine) []interface{}
+		ScanFields(line *model.CheckoutLine) []interface{}
 		Upsert(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, error)               // Upsert checks whether to update or insert given model line then performs according operation
 		Get(id string) (*model.CheckoutLine, error)                                         // Get returns a model line with given id
 		CheckoutLinesByCheckoutID(checkoutID string) ([]*model.CheckoutLine, error)         // CheckoutLinesByCheckoutID returns a list of model lines that belong to given model
@@ -790,7 +790,7 @@ type (
 // channel
 type ChannelStore interface {
 	ModelFields(prefix string) model.AnyArray[string]
-	ScanFields(chanNel model.Channel) []interface{}
+	ScanFields(chanNel *model.Channel) []interface{}
 	Save(ch *model.Channel) (*model.Channel, error)
 	Get(id string) (*model.Channel, error)                                      // Get returns channel by given id
 	FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) // FilterByOption returns a list of channels with given option
@@ -872,7 +872,7 @@ type StatusStore interface {
 type (
 	AddressStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
-		ScanFields(addr model.Address) []interface{}
+		ScanFields(addr *model.Address) []interface{}
 		Upsert(transaction store_iface.SqlxTxExecutor, address *model.Address) (*model.Address, error)
 		Get(addressID string) (*model.Address, error)                               // Get returns an Address with given addressID is exist
 		DeleteAddresses(addressIDs []string) error                                  // DeleteAddress deletes given address and returns an error

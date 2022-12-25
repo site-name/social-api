@@ -44,7 +44,7 @@ func (ps *SqlProductVariantStore) ModelFields(prefix string) model.AnyArray[stri
 	})
 }
 
-func (ps *SqlProductVariantStore) ScanFields(variant model.ProductVariant) []interface{} {
+func (ps *SqlProductVariantStore) ScanFields(variant *model.ProductVariant) []interface{} {
 	return []interface{}{
 		&variant.Id,
 		&variant.Name,
@@ -298,10 +298,10 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 		res            []*model.ProductVariant
 		variant        model.ProductVariant
 		digitalContent model.DigitalContent
-		scanFields     = vs.ScanFields(variant)
+		scanFields     = vs.ScanFields(&variant)
 	)
 	if option.SelectRelatedDigitalContent {
-		scanFields = append(scanFields, vs.DigitalContent().ScanFields(digitalContent)...)
+		scanFields = append(scanFields, vs.DigitalContent().ScanFields(&digitalContent)...)
 	}
 
 	for rows.Next() {

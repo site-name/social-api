@@ -38,7 +38,7 @@ func (ws *SqlWareHouseStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (ws *SqlWareHouseStore) ScanFields(wareHouse model.WareHouse) []interface{} {
+func (ws *SqlWareHouseStore) ScanFields(wareHouse *model.WareHouse) []interface{} {
 	return []interface{}{
 		&wareHouse.Id,
 		&wareHouse.Name,
@@ -151,10 +151,10 @@ func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*
 	var (
 		res        model.WareHouse
 		address    model.Address
-		scanFields = ws.ScanFields(res)
+		scanFields = ws.ScanFields(&res)
 	)
 	if option.SelectRelatedAddress {
-		scanFields = append(scanFields, ws.Address().ScanFields(address)...)
+		scanFields = append(scanFields, ws.Address().ScanFields(&address)...)
 	}
 
 	err = ws.GetReplicaX().QueryRowX(query, args...).Scan(scanFields...)
@@ -190,7 +190,7 @@ func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*
 		}
 		var (
 			shippingZone model.ShippingZone
-			scanFields   = ws.ShippingZone().ScanFields(shippingZone)
+			scanFields   = ws.ShippingZone().ScanFields(&shippingZone)
 		)
 
 		for rows.Next() {
@@ -226,10 +226,10 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 		warehousesMap       = map[string]*model.WareHouse{} // keys are warehouse IDs
 		wareHouse           model.WareHouse
 		address             model.Address
-		scanFields          = wh.ScanFields(wareHouse)
+		scanFields          = wh.ScanFields(&wareHouse)
 	)
 	if option.SelectRelatedAddress {
-		scanFields = append(scanFields, wh.Address().ScanFields(address)...)
+		scanFields = append(scanFields, wh.Address().ScanFields(&address)...)
 	}
 	for rows.Next() {
 		err = rows.Scan(scanFields...)
@@ -271,7 +271,7 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 		var (
 			shippingZone model.ShippingZone
 			warehouseID  string
-			scanFields   = append(wh.ShippingZone().ScanFields(shippingZone), &warehouseID)
+			scanFields   = append(wh.ShippingZone().ScanFields(&shippingZone), &warehouseID)
 		)
 
 		for rows.Next() {

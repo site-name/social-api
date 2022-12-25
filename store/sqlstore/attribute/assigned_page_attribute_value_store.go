@@ -36,7 +36,7 @@ func (as *SqlAssignedPageAttributeValueStore) ModelFields(prefix string) model.A
 	})
 }
 
-func (as *SqlAssignedPageAttributeValueStore) ScanFields(attributeValue model.AssignedPageAttributeValue) []interface{} {
+func (as *SqlAssignedPageAttributeValueStore) ScanFields(attributeValue *model.AssignedPageAttributeValue) []interface{} {
 	return []interface{}{
 		&attributeValue.Id,
 		&attributeValue.ValueID,
@@ -118,7 +118,7 @@ func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string)
 		attributeValues             []*model.AttributeValue
 		assignedPageAttributeValue  model.AssignedPageAttributeValue
 		attributeValue              model.AttributeValue
-		scanFields                  = append(as.ScanFields(assignedPageAttributeValue), as.AttributeValue().ScanFields(attributeValue)...)
+		scanFields                  = append(as.ScanFields(&assignedPageAttributeValue), as.AttributeValue().ScanFields(&attributeValue)...)
 	)
 
 	for rows.Next() {

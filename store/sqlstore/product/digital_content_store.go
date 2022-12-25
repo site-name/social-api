@@ -39,7 +39,7 @@ func (ds *SqlDigitalContentStore) ModelFields(prefix string) model.AnyArray[stri
 	})
 }
 
-func (ds *SqlDigitalContentStore) ScanFields(content model.DigitalContent) []interface{} {
+func (ds *SqlDigitalContentStore) ScanFields(content *model.DigitalContent) []interface{} {
 	return []interface{}{
 		&content.Id,
 		&content.ShopID,

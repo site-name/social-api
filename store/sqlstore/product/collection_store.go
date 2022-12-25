@@ -40,7 +40,7 @@ func (ps *SqlCollectionStore) ModelFields(prefix string) model.AnyArray[string] 
 	})
 }
 
-func (ps *SqlCollectionStore) ScanFields(col model.Collection) []interface{} {
+func (ps *SqlCollectionStore) ScanFields(col *model.Collection) []interface{} {
 	return []interface{}{
 		&col.Id,
 		&col.ShopID,

@@ -36,7 +36,7 @@ func (s *SqlShippingZoneStore) ModelFields(prefix string) model.AnyArray[string]
 	})
 }
 
-func (s *SqlShippingZoneStore) ScanFields(shippingZone model.ShippingZone) []interface{} {
+func (s *SqlShippingZoneStore) ScanFields(shippingZone *model.ShippingZone) []interface{} {
 	return []interface{}{
 		&shippingZone.Id,
 		&shippingZone.Name,
@@ -149,7 +149,7 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 		returningShippingZones model.ShippingZones
 		warehouseID            string
 		shippingZonesMap       = map[string]*model.ShippingZone{} // shippingZonesMap is a map with keys are shipping zones's ids
-		scanFields             = s.ScanFields(shippingZone)
+		scanFields             = s.ScanFields(&shippingZone)
 	)
 
 	if option.SelectRelatedThroughData {

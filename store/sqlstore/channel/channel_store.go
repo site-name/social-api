@@ -5,7 +5,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
-	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
@@ -37,7 +36,7 @@ func (cs *SqlChannelStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (cs *SqlChannelStore) ScanFields(ch model.Channel) []interface{} {
+func (cs *SqlChannelStore) ScanFields(ch *model.Channel) []interface{} {
 	return []interface{}{
 		&ch.Id,
 		&ch.ShopID,
@@ -121,11 +120,16 @@ func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*mode
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
 
-	var res struct {
-		model.Channel
-		HasOrders bool
+	var res model.Channel
+	var hasOrder bool
+
+	row := cs.GetReplicaX().QueryRowX(queryString, args...)
+
+	scanFields := cs.ScanFields(&res)
+	if option.AnnotateHasOrders {
+		scanFields = append(scanFields, &hasOrder)
 	}
-	err = cs.GetReplicaX().Get(&res, queryString, args...)
+	err = row.Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ChannelTableName, "options")
@@ -133,10 +137,11 @@ func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*mode
 		return nil, errors.Wrap(err, "failed to find channel by given options")
 	}
 
-	ch := res.Channel
-	ch.SetHasOrders(res.HasOrders)
+	if option.AnnotateHasOrders {
+		res.SetHasOrders(hasOrder)
+	}
 
-	return &ch, nil
+	return &res, nil
 }
 
 // FilterByOption returns a list of channels with given option
@@ -146,23 +151,30 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*struct {
-		model.Channel
-		HasOrders bool
-	}
-	err = cs.GetReplicaX().Select(&res, queryString, args...)
+	rows, err := cs.GetReplicaX().QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find channels with given option")
 	}
+	defer rows.Close()
 
-	return lo.Map(res, func(item *struct {
-		model.Channel
-		HasOrders bool
-	}, _ int) *model.Channel {
+	var res model.Channels
+	var hasOrder bool
+	var channel model.Channel
+	var scanFields = cs.ScanFields(&channel)
 
-		ch := item.Channel
-		ch.SetHasOrders(item.HasOrders)
-		return &ch
+	if option.AnnotateHasOrders {
+		scanFields = append(scanFields, &hasOrder)
+	}
 
-	}), nil
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan channel row")
+		}
+
+		channel.SetHasOrders(hasOrder)
+		res = append(res, channel.DeepCopy())
+	}
+
+	return res, nil
 }

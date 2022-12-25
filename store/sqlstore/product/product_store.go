@@ -51,7 +51,7 @@ func (ps *SqlProductStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (ps *SqlProductStore) ScanFields(prd model.Product) []interface{} {
+func (ps *SqlProductStore) ScanFields(prd *model.Product) []interface{} {
 	return []interface{}{
 		&prd.Id,
 		&prd.ProductTypeID,

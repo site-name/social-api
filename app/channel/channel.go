@@ -40,7 +40,7 @@ func (s *ServiceChannel) ChannelByOption(option *model.ChannelFilterOption) (*mo
 	return foundChannel, nil
 }
 
-// ValidateChannel check if a channel with given slug is active
+// ValidateChannel check if a channel with given id is active
 func (a *ServiceChannel) ValidateChannel(channelID string) (*model.Channel, *model.AppError) {
 	channel, appErr := a.ChannelByOption(&model.ChannelFilterOption{
 		Id: squirrel.Eq{store.ChannelTableName + ".Id": channelID},
@@ -60,42 +60,29 @@ func (a *ServiceChannel) ValidateChannel(channelID string) (*model.Channel, *mod
 // CleanChannel
 func (a *ServiceChannel) CleanChannel(channelID *string) (*model.Channel, *model.AppError) {
 	var (
-		needChannel *model.Channel
-		appErr      *model.AppError
+		channel *model.Channel
+		appErr  *model.AppError
 	)
 
-	if channelID != nil && *channelID != "" {
-		needChannel, appErr = a.ValidateChannel(*channelID)
+	if channelID != nil {
+		channel, appErr = a.ValidateChannel(*channelID)
 	} else {
-		needChannel, appErr = a.ChannelByOption(&model.ChannelFilterOption{
+		channel, appErr = a.ChannelByOption(&model.ChannelFilterOption{
 			IsActive: model.NewBool(true),
 		})
 	}
-
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	return needChannel, nil
+	return channel, nil
 }
 
 // ChannelsByOption returns a list of channels by given options
 func (a *ServiceChannel) ChannelsByOption(option *model.ChannelFilterOption) (model.Channels, *model.AppError) {
 	channels, err := a.srv.Store.Channel().FilterByOption(option)
-	var (
-		statusCode int
-		errMsg     string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMsg = err.Error()
-	}
-	if len(channels) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("ChannelsByOptions", "app.channel.error_finding_channels_by_options.app_error", nil, errMsg, statusCode)
+		return nil, model.NewAppError("ChannelsByOptions", "app.channel.error_finding_channels_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return channels, nil

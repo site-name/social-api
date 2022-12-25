@@ -67,7 +67,7 @@ func (ps *SqlPaymentStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (ps *SqlPaymentStore) ScanFields(payMent model.Payment) []interface{} {
+func (ps *SqlPaymentStore) ScanFields(payMent *model.Payment) []interface{} {
 	return []interface{}{
 		&payMent.Id,
 		&payMent.GateWay,

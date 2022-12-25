@@ -41,7 +41,7 @@ func (fs *SqlFulfillmentStore) ModelFields(prefix string) model.AnyArray[string]
 	})
 }
 
-func (fs *SqlFulfillmentStore) ScanFields(holder model.Fulfillment) []interface{} {
+func (fs *SqlFulfillmentStore) ScanFields(holder *model.Fulfillment) []interface{} {
 	return []interface{}{
 		&holder.Id,
 		&holder.FulfillmentOrder,
@@ -194,11 +194,11 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecuto
 
 	var (
 		fulfillment model.Fulfillment
-		anOrder     model.Order
-		scanFields  = fs.ScanFields(fulfillment)
+		order       model.Order
+		scanFields  = fs.ScanFields(&fulfillment)
 	)
 	if option.SelectRelatedOrder {
-		scanFields = append(scanFields, fs.Order().ScanFields(anOrder)...)
+		scanFields = append(scanFields, fs.Order().ScanFields(&order)...)
 	}
 
 	queryString, args, err := fs.commonQueryBuild(option).ToSql()
@@ -216,7 +216,7 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecuto
 
 	// populate `Order` field for fulfillment
 	if option.SelectForUpdate {
-		fulfillment.Order = &anOrder
+		fulfillment.Order = &order
 	}
 
 	return &fulfillment, nil
@@ -241,11 +241,11 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExec
 	var (
 		res         []*model.Fulfillment
 		fulfillment model.Fulfillment
-		orDer       model.Order
-		scanFields  = fs.ScanFields(fulfillment)
+		order       model.Order
+		scanFields  = fs.ScanFields(&fulfillment)
 	)
 	if option.SelectRelatedOrder {
-		scanFields = append(scanFields, fs.Order().ScanFields(orDer)...)
+		scanFields = append(scanFields, fs.Order().ScanFields(&order)...)
 	}
 
 	for rows.Next() {
@@ -255,7 +255,7 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExec
 		}
 
 		if option.SelectRelatedOrder {
-			fulfillment.Order = orDer.DeepCopy()
+			fulfillment.Order = order.DeepCopy()
 		}
 		res = append(res, fulfillment.DeepCopy())
 	}

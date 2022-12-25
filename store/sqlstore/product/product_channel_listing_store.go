@@ -39,7 +39,7 @@ func (ps *SqlProductChannelListingStore) ModelFields(prefix string) model.AnyArr
 	})
 }
 
-func (ps *SqlProductChannelListingStore) ScanFields(prd model.ProductChannelListing) []interface{} {
+func (ps *SqlProductChannelListingStore) ScanFields(prd *model.ProductChannelListing) []interface{} {
 	return []interface{}{
 		&prd.Id,
 		&prd.ProductID,

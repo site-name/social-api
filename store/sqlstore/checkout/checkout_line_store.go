@@ -36,7 +36,7 @@ func (cls *SqlCheckoutLineStore) ModelFields(prefix string) model.AnyArray[strin
 	})
 }
 
-func (cls *SqlCheckoutLineStore) ScanFields(line model.CheckoutLine) []interface{} {
+func (cls *SqlCheckoutLineStore) ScanFields(line *model.CheckoutLine) []interface{} {
 	return []interface{}{
 		&line.Id,
 		&line.CreateAt,
@@ -256,10 +256,10 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 		productVariant  model.ProductVariant
 		product         model.Product
 		scanFields      = append(
-			cls.ScanFields(checkoutLine),
+			cls.ScanFields(&checkoutLine),
 			append(
-				cls.ProductVariant().ScanFields(productVariant),
-				cls.Product().ScanFields(product)...,
+				cls.ProductVariant().ScanFields(&productVariant),
+				cls.Product().ScanFields(&product)...,
 			)...,
 		)
 	)

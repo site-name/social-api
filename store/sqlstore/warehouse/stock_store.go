@@ -35,7 +35,7 @@ func (ss *SqlStockStore) ModelFields(prefix string) model.AnyArray[string] {
 		return prefix + s
 	})
 }
-func (ss *SqlStockStore) ScanFields(stock model.Stock) []interface{} {
+func (ss *SqlStockStore) ScanFields(stock *model.Stock) []interface{} {
 	return []interface{}{
 		&stock.Id,
 		&stock.CreateAt,
@@ -191,10 +191,10 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 		returningStocks []*model.Stock
 		stock           model.Stock
 		productVariant  model.ProductVariant
-		scanFields      = ss.ScanFields(stock)
+		scanFields      = ss.ScanFields(&stock)
 	)
 	if options.SelectRelatedProductVariant {
-		scanFields = append(scanFields, ss.ProductVariant().ScanFields(productVariant)...)
+		scanFields = append(scanFields, ss.ProductVariant().ScanFields(&productVariant)...)
 	}
 
 	for rows.Next() {
@@ -279,17 +279,17 @@ func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, 
 		wareHouse         model.WareHouse
 		queryer           store_iface.SqlxExecutor = ss.GetReplicaX()
 		availableQuantity int
-		scanFields        = ss.ScanFields(stock)
+		scanFields        = ss.ScanFields(&stock)
 	)
 	if transaction != nil {
 		queryer = transaction
 	}
 
 	if options.SelectRelatedWarehouse {
-		scanFields = append(scanFields, ss.Warehouse().ScanFields(wareHouse)...)
+		scanFields = append(scanFields, ss.Warehouse().ScanFields(&wareHouse)...)
 	}
 	if options.SelectRelatedProductVariant {
-		scanFields = append(scanFields, ss.ProductVariant().ScanFields(variant)...)
+		scanFields = append(scanFields, ss.ProductVariant().ScanFields(&variant)...)
 	}
 	if options.AnnotateAvailabeQuantity {
 		scanFields = append(scanFields, &availableQuantity)
@@ -388,11 +388,11 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.Sqlx
 		productVariant    model.ProductVariant
 		queryer           store_iface.SqlxExecutor = ss.GetReplicaX()
 		availableQuantity int
-		scanFields        = ss.ScanFields(stock)
+		scanFields        = ss.ScanFields(&stock)
 	)
 	// add some more fields to scan
-	scanFields = append(scanFields, ss.Warehouse().ScanFields(wareHouse)...)
-	scanFields = append(scanFields, ss.ProductVariant().ScanFields(productVariant)...)
+	scanFields = append(scanFields, ss.Warehouse().ScanFields(&wareHouse)...)
+	scanFields = append(scanFields, ss.ProductVariant().ScanFields(&productVariant)...)
 	// decide which query to use
 	if transaction != nil {
 		queryer = transaction

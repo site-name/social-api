@@ -93,7 +93,7 @@ func (us *SqlUserStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (us *SqlUserStore) ScanFields(user model.User) []interface{} {
+func (us *SqlUserStore) ScanFields(user *model.User) []interface{} {
 	return []interface{}{
 		&user.Id,
 		&user.Email,

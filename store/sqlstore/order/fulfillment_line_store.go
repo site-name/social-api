@@ -35,7 +35,7 @@ func (fls *SqlFulfillmentLineStore) ModelFields(prefix string) model.AnyArray[st
 	})
 }
 
-func (fls *SqlFulfillmentLineStore) ScanFields(line model.FulfillmentLine) []interface{} {
+func (fls *SqlFulfillmentLineStore) ScanFields(line *model.FulfillmentLine) []interface{} {
 	return []interface{}{
 		&line.Id,
 		&line.OrderLineID,

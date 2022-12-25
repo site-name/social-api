@@ -51,7 +51,7 @@ func (vs *SqlVoucherStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (vs *SqlVoucherStore) ScanFields(voucher model.Voucher) []interface{} {
+func (vs *SqlVoucherStore) ScanFields(voucher *model.Voucher) []interface{} {
 	return []interface{}{
 		&voucher.Id,
 		&voucher.ShopID,

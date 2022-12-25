@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
+	"github.com/samber/lo"
 	"golang.org/x/text/currency"
 )
 
@@ -52,14 +53,7 @@ type ChannelFilterOption struct {
 type Channels []*Channel
 
 func (c Channels) IDs() []string {
-	res := []string{}
-	for _, item := range c {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
-
-	return res
+	return lo.Map(c, func(ch *Channel, _ int) string { return ch.Id })
 }
 
 func (c *Channel) String() string {

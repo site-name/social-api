@@ -35,7 +35,7 @@ func (as *SqlAllocationStore) ModelFields(prefix string) model.AnyArray[string] 
 	})
 }
 
-func (as *SqlAllocationStore) ScanFields(allocation model.Allocation) []interface{} {
+func (as *SqlAllocationStore) ScanFields(allocation *model.Allocation) []interface{} {
 	return []interface{}{
 		&allocation.Id,
 		&allocation.CreateAt,
@@ -220,8 +220,9 @@ func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecu
 		orderLine              model.OrderLine
 		stock                  model.Stock
 		stockAvailableQuantity int
-		scanFields                                      = as.ScanFields(allocation)
-		queryer                store_iface.SqlxExecutor = as.GetReplicaX()
+		scanFields             = as.ScanFields(&allocation)
+
+		queryer store_iface.SqlxExecutor = as.GetReplicaX()
 	)
 
 	// check if transaction is non-nil to promote it to be actual queryer:
@@ -231,10 +232,10 @@ func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecu
 
 	// check if we need to modify scan list:
 	if option.SelectRelatedOrderLine {
-		scanFields = append(scanFields, as.OrderLine().ScanFields(orderLine)...)
+		scanFields = append(scanFields, as.OrderLine().ScanFields(&orderLine)...)
 	}
 	if option.SelectedRelatedStock {
-		scanFields = append(scanFields, as.Stock().ScanFields(stock)...)
+		scanFields = append(scanFields, as.Stock().ScanFields(&stock)...)
 	}
 	if option.AnnotateStockAvailableQuantity {
 		scanFields = append(scanFields, &stockAvailableQuantity)

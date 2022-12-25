@@ -38,7 +38,7 @@ func (cs *SqlCategoryStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (cs *SqlCategoryStore) ScanFields(cate model.Category) []interface{} {
+func (cs *SqlCategoryStore) ScanFields(cate *model.Category) []interface{} {
 	return []interface{}{
 		&cate.Id,
 		&cate.Name,

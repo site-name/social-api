@@ -67,7 +67,7 @@ func (os *SqlOrderStore) ModelFields(prefix string) model.AnyArray[string] {
 	})
 }
 
-func (os *SqlOrderStore) ScanFields(holder model.Order) []interface{} {
+func (os *SqlOrderStore) ScanFields(holder *model.Order) []interface{} {
 	return []interface{}{
 		&holder.Id,
 		&holder.CreateAt,

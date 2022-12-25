@@ -42,7 +42,7 @@ func (as *SqlAttributeValueStore) ModelFields(prefix string) model.AnyArray[stri
 	})
 }
 
-func (as *SqlAttributeValueStore) ScanFields(attributeValue model.AttributeValue) []interface{} {
+func (as *SqlAttributeValueStore) ScanFields(attributeValue *model.AttributeValue) []interface{} {
 	return []interface{}{
 		&attributeValue.Id,
 		&attributeValue.Name,
@@ -189,11 +189,11 @@ func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFi
 	var (
 		res            model.AttributeValues
 		attributeValue model.AttributeValue
-		attr           model.Attribute
-		scanFields     = as.ScanFields(attributeValue)
+		attribute      model.Attribute
+		scanFields     = as.ScanFields(&attributeValue)
 	)
 	if options.SelectRelatedAttribute {
-		scanFields = append(scanFields, as.Attribute().ScanFields(attr)...)
+		scanFields = append(scanFields, as.Attribute().ScanFields(&attribute)...)
 	}
 
 	for rows.Next() {
@@ -205,7 +205,7 @@ func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFi
 		// don't worry when we assign directly value here.
 		// The Attribute will be deep copied later
 		if options.SelectRelatedAttribute {
-			attributeValue.Attribute = &attr
+			attributeValue.Attribute = &attribute
 		}
 
 		res = append(res, attributeValue.DeepCopy())

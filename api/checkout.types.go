@@ -200,6 +200,36 @@ func (c *Checkout) GiftCards(ctx context.Context) ([]*GiftCard, error) {
 }
 
 func (c *Checkout) AvailableShippingMethods(ctx context.Context) ([]*ShippingMethod, error) {
+	// var address *model.Address
+	// var err error
+
+	// if c.shippingAddressID != nil {
+	// 	address, err = dataloaders.AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// }
+
+	// channel, err := dataloaders.ChannelByIdLoader.Load(ctx, c.channelID)()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// lines, err := dataloaders.CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// checkoutInfo, err := dataloaders.CheckoutInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// discounts, err := dataloaders.DiscountsByDateTimeLoader.Load(ctx, time.Now().UTC())()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
 	panic("not implemented")
 }
 
@@ -427,7 +457,7 @@ errorLabel:
 	return res
 }
 
-func CheckoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[*model.CheckoutInfo] {
+func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[*model.CheckoutInfo] {
 	var (
 		res        = make([]*dataloader.Result[*model.CheckoutInfo], len(tokens))
 		channelIDs []string

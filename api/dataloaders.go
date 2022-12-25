@@ -38,12 +38,12 @@ type apiDataloaders struct {
 	OrderByIdLoader     *dataloader.Loader[string, *Order]
 
 	// checkout
-	CheckoutByUserLoader               *dataloader.Loader[string, []*Checkout]
-	CheckoutByUserAndChannelLoader     *dataloader.Loader[string, []*Checkout]
-	CheckoutLinesByCheckoutTokenLoader *dataloader.Loader[string, []*model.CheckoutLine]
-	CheckoutByTokenLoader              *dataloader.Loader[string, *Checkout]
-	CheckoutByTokenLoader_SystemResult *dataloader.Loader[string, *model.Checkout] // same as above
-
+	CheckoutByUserLoader                   *dataloader.Loader[string, []*Checkout]
+	CheckoutByUserAndChannelLoader         *dataloader.Loader[string, []*Checkout]
+	CheckoutLinesByCheckoutTokenLoader     *dataloader.Loader[string, []*model.CheckoutLine]
+	CheckoutByTokenLoader                  *dataloader.Loader[string, *Checkout]
+	CheckoutByTokenLoader_SystemResult     *dataloader.Loader[string, *model.Checkout] // same as above
+	CheckoutInfoByCheckoutTokenLoader      *dataloader.Loader[string, *model.CheckoutInfo]
 	CheckoutLineByIdLoader                 *dataloader.Loader[string, *CheckoutLine]
 	CheckoutLinesInfoByCheckoutTokenLoader *dataloader.Loader[string, []*model.CheckoutLineInfo]
 
@@ -68,7 +68,7 @@ type apiDataloaders struct {
 	ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader_SystemResult *dataloader.Loader[string, *model.ShippingMethodChannelListing]
 
 	// discount
-	DiscountsByDateTimeLoader *dataloader.Loader[*time.Time, []*model.DiscountInfo]
+	DiscountsByDateTimeLoader *dataloader.Loader[time.Time, []*model.DiscountInfo]
 
 	// warehouse
 	WarehouseByIdLoader              *dataloader.Loader[string, *Warehouse]
@@ -109,6 +109,7 @@ func init() {
 		CheckoutByTokenLoader_SystemResult:     dataloader.NewBatchedLoader(checkoutByTokenLoader_systemResult, dataloader.WithBatchCapacity[string, *model.Checkout](batchCapacity)),
 		CheckoutLineByIdLoader:                 dataloader.NewBatchedLoader(checkoutLineByIdLoader, dataloader.WithBatchCapacity[string, *CheckoutLine](batchCapacity)),
 		CheckoutLinesInfoByCheckoutTokenLoader: dataloader.NewBatchedLoader(checkoutLinesInfoByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, []*model.CheckoutLineInfo](batchCapacity)),
+		CheckoutInfoByCheckoutTokenLoader:      dataloader.NewBatchedLoader(checkoutInfoByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, *model.CheckoutInfo](batchCapacity)),
 
 		// attribute
 		AttributesByAttributeIdLoader:      dataloader.NewBatchedLoader(attributesByAttributeIdLoader, dataloader.WithBatchCapacity[string, *Attribute](batchCapacity)),
@@ -131,7 +132,7 @@ func init() {
 		ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader_SystemResult: dataloader.NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader_systemResult, dataloader.WithBatchCapacity[string, *model.ShippingMethodChannelListing](batchCapacity)),
 
 		// discount
-		DiscountsByDateTimeLoader: dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[*time.Time, []*model.DiscountInfo](batchCapacity)),
+		DiscountsByDateTimeLoader: dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity)),
 
 		// warehouse
 		WarehouseByIdLoader:              dataloader.NewBatchedLoader(warehouseByIdLoader, dataloader.WithBatchCapacity[string, *Warehouse](batchCapacity)),

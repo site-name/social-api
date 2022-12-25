@@ -39,7 +39,7 @@ func (as *SqlAssignedProductAttributeValueStore) ModelFields(prefix string) mode
 	})
 }
 
-func (as *SqlAssignedProductAttributeValueStore) ScanFields(assignedProductAttributeValue model.AssignedProductAttributeValue) []interface{} {
+func (as *SqlAssignedProductAttributeValueStore) ScanFields(assignedProductAttributeValue *model.AssignedProductAttributeValue) []interface{} {
 	return []interface{}{
 		&assignedProductAttributeValue.Id,
 		&assignedProductAttributeValue.ValueID,
@@ -184,7 +184,7 @@ func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID stri
 		attributeValues                []*model.AttributeValue
 		assignedProductAttributeValue  model.AssignedProductAttributeValue
 		attributeValue                 model.AttributeValue
-		scanFields                     = append(as.ScanFields(assignedProductAttributeValue), as.AttributeValue().ScanFields(attributeValue)...)
+		scanFields                     = append(as.ScanFields(&assignedProductAttributeValue), as.AttributeValue().ScanFields(&attributeValue)...)
 	)
 
 	for rows.Next() {

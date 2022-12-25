@@ -40,7 +40,7 @@ func (ps *SqlProductTypeStore) ModelFields(prefix string) model.AnyArray[string]
 	})
 }
 
-func (ps *SqlProductTypeStore) ScanFields(productType model.ProductType) []interface{} {
+func (ps *SqlProductTypeStore) ScanFields(productType *model.ProductType) []interface{} {
 	return []interface{}{
 		&productType.Id,
 		&productType.Name,

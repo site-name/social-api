@@ -44,7 +44,7 @@ func (s *SqlShippingMethodStore) ModelFields(prefix string) model.AnyArray[strin
 	})
 }
 
-func (s *SqlShippingMethodStore) ScanFields(shippingMethod model.ShippingMethod) []interface{} {
+func (s *SqlShippingMethodStore) ScanFields(shippingMethod *model.ShippingMethod) []interface{} {
 	return []interface{}{
 		&shippingMethod.Id,
 		&shippingMethod.Name,

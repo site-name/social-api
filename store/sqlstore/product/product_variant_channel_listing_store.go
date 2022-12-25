@@ -37,7 +37,7 @@ func (ps *SqlProductVariantChannelListingStore) ModelFields(prefix string) model
 	})
 }
 
-func (ps *SqlProductVariantChannelListingStore) ScanFields(listing model.ProductVariantChannelListing) []interface{} {
+func (ps *SqlProductVariantChannelListingStore) ScanFields(listing *model.ProductVariantChannelListing) []interface{} {
 	return []interface{}{
 		&listing.Id,
 		&listing.VariantID,
@@ -168,10 +168,10 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction store
 		variantChannelListing     model.ProductVariantChannelListing
 		availablePreorderQuantity int
 		preorderQuantityAllocated int
-		scanFields                = ps.ScanFields(variantChannelListing) // order of fields must be identical to select fields above
+		scanFields                = ps.ScanFields(&variantChannelListing) // order of fields must be identical to select fields above
 	)
 	if option.SelectRelatedChannel {
-		scanFields = append(scanFields, ps.Channel().ScanFields(chanNel)...)
+		scanFields = append(scanFields, ps.Channel().ScanFields(&chanNel)...)
 	}
 	if option.AnnotateAvailablePreorderQuantity {
 		scanFields = append(scanFields, &availablePreorderQuantity)

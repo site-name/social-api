@@ -29,7 +29,7 @@ func (ps *SqlCollectionProductStore) ModelFields(prefix string) model.AnyArray[s
 	})
 }
 
-func (ps *SqlCollectionProductStore) ScanFields(rel model.CollectionProduct) []interface{} {
+func (ps *SqlCollectionProductStore) ScanFields(rel *model.CollectionProduct) []interface{} {
 	return []interface{}{
 		&rel.Id,
 		&rel.CollectionID,
@@ -61,10 +61,10 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 		res               []*model.CollectionProduct
 		collectionProduct model.CollectionProduct
 		collection        model.Collection
-		scanFields        = ps.ScanFields(collectionProduct)
+		scanFields        = ps.ScanFields(&collectionProduct)
 	)
 	if options.SelectRelatedCollection {
-		scanFields = append(scanFields, ps.Collection().ScanFields(collection)...)
+		scanFields = append(scanFields, ps.Collection().ScanFields(&collection)...)
 	}
 
 	queryString, args, err := query.ToSql()
