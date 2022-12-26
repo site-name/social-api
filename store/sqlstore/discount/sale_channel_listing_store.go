@@ -70,9 +70,8 @@ func (scls *SqlSaleChannelListingStore) Get(saleChannelListingID string) (*model
 
 	err := scls.GetReplicaX().Get(
 		&res,
-		"SELECT * FROM "+store.SaleChannelListingTableName+" WHERE Id = ? ORDER BY ?",
+		"SELECT * FROM "+store.SaleChannelListingTableName+" WHERE Id = ?",
 		saleChannelListingID,
-		store.TableOrderingMap[store.SaleChannelListingTableName],
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -94,11 +93,10 @@ func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *mo
 ) {
 
 	query := scls.GetQueryBuilder().
-		Select(scls.ModelFields(store.SaleChannelListingTableName + ".")...).
-		Column("Channels.Slug AS ChannelSlug").
-		From(store.SaleChannelListingTableName).
-		InnerJoin(store.ChannelTableName + " ON (Channels.Id = SaleChannelListings.ChannelID)").
-		OrderBy(store.TableOrderingMap[store.SaleChannelListingTableName])
+		Select("sc.*").
+		Column("c.Slug AS ChannelSlug").
+		From(store.SaleChannelListingTableName + " sc").
+		InnerJoin(store.ChannelTableName + " c ON (c.Id = sc.ChannelID)")
 
 	// parse filter option
 	if option.Id != nil {
@@ -116,14 +114,33 @@ func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *mo
 		return nil, errors.Wrap(err, "SaleChannelListingsWithOption_ToSql")
 	}
 
+	rows, err := scls.GetReplicaX().QueryX(queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find sale channel listing with given option")
+	}
+	defer rows.Close()
+
 	var res []*struct {
 		model.SaleChannelListing
 		ChannelSlug string
 	}
+	var listing model.SaleChannelListing
+	var channelSlug string
+	var scanFields = append(scls.ScanFields(&listing), &channelSlug)
 
-	err = scls.GetReplicaX().Select(&res, queryString, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find sale channel listing with given option")
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan sale channel listing")
+		}
+
+		res = append(res, &struct {
+			model.SaleChannelListing
+			ChannelSlug string
+		}{
+			ChannelSlug:        channelSlug,
+			SaleChannelListing: *(listing.DeepCopy()),
+		})
 	}
 
 	return res, nil

@@ -14,7 +14,7 @@ const batchCapacity = 200
 // This variable gets populated during package initialization (init() function)
 type apiDataloaders struct {
 	// giftcard
-	giftcardsByUser             *dataloader.Loader[string, *GiftCard]
+	GiftCardsByUserLoader       *dataloader.Loader[string, []*model.GiftCard]
 	giftcardEventsByGiftcardIDs *dataloader.Loader[string, *GiftCardEvent]
 
 	// account
@@ -95,7 +95,7 @@ func init() {
 
 		// giftcard
 		giftcardEventsByGiftcardIDs: dataloader.NewBatchedLoader(graphqlGiftcardEventsByGiftcardIDsLoader, dataloader.WithBatchCapacity[string, *GiftCardEvent](batchCapacity)),
-		giftcardsByUser:             dataloader.NewBatchedLoader(graphqlGiftcardsByUserLoader, dataloader.WithBatchCapacity[string, *GiftCard](batchCapacity)),
+		GiftCardsByUserLoader:       dataloader.NewBatchedLoader(graphqlGiftcardsByUserLoader, dataloader.WithBatchCapacity[string, []*model.GiftCard](batchCapacity)),
 
 		// order
 		OrderLineByIdLoader: dataloader.NewBatchedLoader(orderLineByIdLoader, dataloader.WithBatchCapacity[string, *OrderLine](batchCapacity)),

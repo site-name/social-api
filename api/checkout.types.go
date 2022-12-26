@@ -87,7 +87,46 @@ func SystemCheckoutToGraphqlCheckout(ckout *model.Checkout) *Checkout {
 	return res
 }
 
+func (c *Checkout) SubtotalPrice(ctx context.Context) (*TaxedMoney, error) {
+	panic("not implemented")
+}
+
 func (c *Checkout) ShippingPrice(ctx context.Context) (*TaxedMoney, error) {
+	// var (
+	// 	address *model.Address
+	// 	err     error
+	// )
+
+	// if c.shippingAddressID != nil {
+	// 	address, err = dataloaders.AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// }
+
+	// lines, err := dataloaders.CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// checkoutInfo, err := dataloaders.CheckoutInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// discounts, err := dataloaders.DiscountsByDateTimeLoader.Load(ctx, time.Now().UTC())()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// embedCtx.App.Srv().CheckoutService().CheckoutShippingPrice()
+	// embedCtx.AppContext
+
 	panic("not implemented")
 }
 

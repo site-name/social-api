@@ -214,7 +214,6 @@ func (a *ServiceDiscount) ValidateVoucherInOrder(ord *model.Order) (notApplicabl
 }
 
 func (a *ServiceDiscount) ValidateVoucher(voucher *model.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
-
 	notApplicableErr, appErr = a.ValidateMinSpent(voucher, totalPrice, channelID)
 	if appErr != nil || notApplicableErr != nil {
 		return
@@ -464,9 +463,8 @@ func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string
 	channelListings, err := a.srv.Store.DiscountSaleChannelListing().SaleChannelListingsWithOption(&model.SaleChannelListingFilterOption{
 		SaleID: squirrel.Eq{store.SaleChannelListingTableName + ".SaleID": saleIDs},
 	})
-
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("FetchSaleChannelListings", "app.discount.sale_channel_listings_by_option.app_error", err)
+		return nil, model.NewAppError("FetchSaleChannelListings", "app.discount.sale_channel_listings_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	channelListingMap := map[string]map[string]*model.SaleChannelListing{}

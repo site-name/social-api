@@ -390,11 +390,12 @@ func (g *GiftCard) BoughtInChannel(ctx context.Context) {
 	panic("not implemented")
 }
 
-func graphqlGiftcardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[*GiftCard] {
+func graphqlGiftcardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.GiftCard] {
 	var (
-		res       []*dataloader.Result[*GiftCard]
-		appErr    *model.AppError
-		giftcards []*model.GiftCard
+		res         = make([]*dataloader.Result[[]*model.GiftCard], len(userIDs))
+		appErr      *model.AppError
+		giftcards   []*model.GiftCard
+		giftcardMap = map[string][]*model.GiftCard{} // keys are user ids
 	)
 
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -415,13 +416,19 @@ func graphqlGiftcardsByUserLoader(ctx context.Context, userIDs []string) []*data
 	}
 
 	for _, gc := range giftcards {
-		res = append(res, &dataloader.Result[*GiftCard]{Data: SystemGiftcardToGraphqlGiftcard(gc)})
+		if gc.UsedByID != nil {
+			giftcardMap[*gc.UsedByID] = append(giftcardMap[*gc.UsedByID], gc)
+		}
+	}
+
+	for idx, id := range userIDs {
+		res[idx] = &dataloader.Result[[]*model.GiftCard]{Data: giftcardMap[id]}
 	}
 	return res
 
 errorLabel:
-	for range userIDs {
-		res = append(res, &dataloader.Result[*GiftCard]{Error: err})
+	for idx := range userIDs {
+		res[idx] = &dataloader.Result[[]*model.GiftCard]{Error: err}
 	}
 	return res
 }

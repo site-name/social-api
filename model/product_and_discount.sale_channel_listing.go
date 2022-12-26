@@ -17,6 +17,19 @@ type SaleChannelListing struct {
 	CreateAt      int64            `json:"create_at"`
 }
 
+func (s *SaleChannelListing) DeepCopy() *SaleChannelListing {
+	if s == nil {
+		return new(SaleChannelListing)
+	}
+
+	res := *s
+	if s.DiscountValue != nil {
+		res.DiscountValue = NewDecimal(*s.DiscountValue)
+	}
+
+	return &res
+}
+
 type SaleChannelListingFilterOption struct {
 	Id        squirrel.Sqlizer
 	SaleID    squirrel.Sqlizer

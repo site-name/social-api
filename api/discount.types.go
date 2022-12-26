@@ -102,6 +102,23 @@ errorLabel:
 	return res
 }
 
+// saleIDChannelIDPairs are strings with format of saleID__channelID.
 func saleChannelListingBySaleIdAndChanneSlugLoader(ctx context.Context, saleIDChannelIDPairs []string) []*dataloader.Result[*model.DiscountInfo] {
 	panic("not implemented")
+}
+
+func saleChannelListingBySaleIdLoader(ctx context.Context, saleIDs []string) []*dataloader.Result[[]*model.SaleChannelListing] {
+	var (
+		res = make([]*dataloader.Result[[]*model.SaleChannelListing], len(saleIDs))
+	)
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+errorLabel:
+	for idx := range saleIDs {
+		res[idx] = &dataloader.Result[[]*model.SaleChannelListing]{Error: err}
+	}
+	return res
 }
