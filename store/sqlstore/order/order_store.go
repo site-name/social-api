@@ -286,10 +286,12 @@ func (os *SqlOrderStore) Update(transaction store_iface.SqlxTxExecutor, newOrder
 func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
 	query := os.GetQueryBuilder().
 		Select(os.ModelFields(store.OrderTableName + ".")...).
-		From(store.OrderTableName).
-		OrderBy(store.TableOrderingMap[store.OrderTableName])
+		From(store.OrderTableName)
 
 	// parse options:
+	if option.Id != nil {
+		query = query.Where(option.Id)
+	}
 	if option.Status != nil {
 		query = query.Where(option.Status)
 	}

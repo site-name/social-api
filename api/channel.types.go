@@ -193,29 +193,26 @@ errorLabel:
 func channelByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*Channel] {
 	var (
 		res        []*dataloader.Result[*Channel]
-		orderIDs   []string
-		orders     []*Order
-		channelIDs []string
+		orders     model.Orders
 		channels   []*Channel
+		orderLines model.OrderLines
+		errs       []error
 	)
 
 	// find order lines
-	orderLines, errs := dataloaders.OrderLineByIdLoader.LoadMany(ctx, orderLineIDs)()
+	orderLines, errs = dataloaders.OrderLineByIdLoader.LoadMany(ctx, orderLineIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
-	orderIDs = lo.Map(orderLines, func(item *OrderLine, _ int) string { return item.orderID })
-
 	// find orders
-	orders, errs = dataloaders.OrderByIdLoader.LoadMany(ctx, orderIDs)()
+	orders, errs = dataloaders.OrderByIdLoader.LoadMany(ctx, orderLines.OrderIDs())()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
 	// find channels
-	channelIDs = lo.Map(orders, func(o *Order, _ int) string { return o.channelID })
-	channels, errs = dataloaders.ChannelByIdLoader.LoadMany(ctx, channelIDs)()
+	channels, errs = dataloaders.ChannelByIdLoader.LoadMany(ctx, orders.ChannelIDs())()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}

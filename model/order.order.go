@@ -5,6 +5,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/modules/measurement"
@@ -116,6 +117,7 @@ type Order struct {
 
 // OrderFilterOption is used to buils sql queries for filtering orders
 type OrderFilterOption struct {
+	Id            squirrel.Sqlizer // filter by order's id
 	Status        squirrel.Sqlizer // for filtering order's Status
 	CheckoutToken squirrel.Sqlizer // for filtering order's CheckoutToken
 	ChannelSlug   squirrel.Sqlizer // for comparing the channel of this order's slug
@@ -181,6 +183,10 @@ func (os Orders) PopulateNonDbFields() {
 	for _, o := range os {
 		o.PopulateNonDbFields()
 	}
+}
+
+func (orders Orders) ChannelIDs() []string {
+	return lo.Map(orders, func(o *Order, _ int) string { return o.ChannelID })
 }
 
 func (o *Order) IsValid() *AppError {

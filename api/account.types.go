@@ -465,7 +465,12 @@ func (c *CustomerEvent) User(ctx context.Context) (*User, error) {
 
 func (c *CustomerEvent) OrderLine(ctx context.Context) (*OrderLine, error) {
 	if c.orderLineID != nil {
-		return dataloaders.OrderLineByIdLoader.Load(ctx, *c.orderLineID)()
+		line, err := dataloaders.OrderLineByIdLoader.Load(ctx, *c.orderLineID)()
+		if err != nil {
+			return nil, err
+		}
+
+		return SystemOrderLineToGraphqlOrderLine(line), nil
 	}
 
 	return nil, nil

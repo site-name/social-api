@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
@@ -24,7 +25,6 @@ type OrderLine struct {
 	QuantityFulfilled     int32                  `json:"quantityFulfilled"`
 	UnitDiscountReason    *string                `json:"unitDiscountReason"`
 	TaxRate               float64                `json:"taxRate"`
-	Thumbnail             *Image                 `json:"thumbnail"`
 	UnitPrice             *TaxedMoney            `json:"unitPrice"`
 	UndiscountedUnitPrice *TaxedMoney            `json:"undiscountedUnitPrice"`
 	UnitDiscount          *Money                 `json:"unitDiscount"`
@@ -37,6 +37,8 @@ type OrderLine struct {
 
 	variantID *string
 	orderID   string
+
+	// Thumbnail             *Image                 `json:"thumbnail"`
 	// Allocations           []*Allocation          `json:"allocations"`
 	// DigitalContentURL     *DigitalContentURL     `json:"digitalContentUrl"`
 	// Variant               *ProductVariant        `json:"variant"`
@@ -79,6 +81,14 @@ func SystemOrderLineToGraphqlOrderLine(line *model.OrderLine) *OrderLine {
 	return res
 }
 
+func (o *OrderLine) Thumbnail(ctx context.Context) (*Image, error) {
+	panic("not implemented")
+}
+
+func (o *OrderLine) Allocation(ctx context.Context) (*Allocation, error) {
+	panic("not implemented")
+}
+
 func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
 	if o.variantID == nil {
 		return nil, nil
@@ -87,11 +97,12 @@ func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
 	panic("not implemented")
 }
 
-func orderLineByIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*OrderLine] {
+func orderLineByIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*model.OrderLine] {
 	var (
-		res        []*dataloader.Result[*OrderLine]
-		appErr     *model.AppError
-		orderLines []*model.OrderLine
+		res          = make([]*dataloader.Result[*model.OrderLine], len(orderLineIDs))
+		appErr       *model.AppError
+		orderLines   []*model.OrderLine
+		orderLineMap = map[string]*model.OrderLine{} // keys are order line ids
 	)
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
@@ -109,14 +120,16 @@ func orderLineByIdLoader(ctx context.Context, orderLineIDs []string) []*dataload
 		goto errorLabel
 	}
 
-	for _, orderLine := range orderLines {
-		res = append(res, &dataloader.Result[*OrderLine]{Data: SystemOrderLineToGraphqlOrderLine(orderLine)})
+	orderLineMap = lo.SliceToMap(orderLines, func(o *model.OrderLine) (string, *model.OrderLine) { return o.Id, o })
+
+	for idx, id := range orderLineIDs {
+		res[idx] = &dataloader.Result[*model.OrderLine]{Data: orderLineMap[id]}
 	}
 	return res
 
 errorLabel:
-	for range orderLineIDs {
-		res = append(res, &dataloader.Result[*OrderLine]{Error: err})
+	for idx := range orderLineIDs {
+		res[idx] = &dataloader.Result[*model.OrderLine]{Error: err}
 	}
 	return res
 }
@@ -124,42 +137,42 @@ errorLabel:
 // ------------------------------- ORDER
 
 type Order struct {
-	ID                   string                  `json:"id"`
-	Created              DateTime                `json:"created"`
-	Status               OrderStatus             `json:"status"`
-	User                 *User                   `json:"user"`
-	TrackingClientID     string                  `json:"trackingClientId"`
-	ShippingMethodName   *string                 `json:"shippingMethodName"`
-	CollectionPointName  *string                 `json:"collectionPointName"`
-	ShippingPrice        *TaxedMoney             `json:"shippingPrice"`
-	ShippingTaxRate      float64                 `json:"shippingTaxRate"`
-	Token                string                  `json:"token"`
-	DisplayGrossPrices   bool                    `json:"displayGrossPrices"`
-	CustomerNote         string                  `json:"customerNote"`
-	Weight               *Weight                 `json:"weight"`
-	RedirectURL          *string                 `json:"redirectUrl"`
-	PrivateMetadata      []*MetadataItem         `json:"privateMetadata"`
-	Metadata             []*MetadataItem         `json:"metadata"`
-	Number               *string                 `json:"number"`
-	Original             *string                 `json:"original"`
-	Origin               OrderOriginEnum         `json:"origin"`
-	IsPaid               bool                    `json:"isPaid"`
-	PaymentStatus        PaymentChargeStatusEnum `json:"paymentStatus"`
-	PaymentStatusDisplay string                  `json:"paymentStatusDisplay"`
-	Total                *TaxedMoney             `json:"total"`
-	UndiscountedTotal    *TaxedMoney             `json:"undiscountedTotal"`
-	Subtotal             *TaxedMoney             `json:"subtotal"`
-	StatusDisplay        *string                 `json:"statusDisplay"`
-	CanFinalize          bool                    `json:"canFinalize"`
-	TotalAuthorized      *Money                  `json:"totalAuthorized"`
-	TotalCaptured        *Money                  `json:"totalCaptured"`
-	TotalBalance         *Money                  `json:"totalBalance"`
-	UserEmail            *string                 `json:"userEmail"`
-	IsShippingRequired   bool                    `json:"isShippingRequired"`
-	LanguageCodeEnum     LanguageCodeEnum        `json:"languageCodeEnum"`
+	ID                  string           `json:"id"`
+	Created             DateTime         `json:"created"`
+	Status              OrderStatus      `json:"status"`
+	TrackingClientID    string           `json:"trackingClientId"`
+	ShippingMethodName  *string          `json:"shippingMethodName"`
+	CollectionPointName *string          `json:"collectionPointName"`
+	ShippingPrice       *TaxedMoney      `json:"shippingPrice"`
+	ShippingTaxRate     float64          `json:"shippingTaxRate"`
+	Token               string           `json:"token"`
+	DisplayGrossPrices  bool             `json:"displayGrossPrices"`
+	CustomerNote        string           `json:"customerNote"`
+	Weight              *Weight          `json:"weight"`
+	RedirectURL         *string          `json:"redirectUrl"`
+	PrivateMetadata     []*MetadataItem  `json:"privateMetadata"`
+	Metadata            []*MetadataItem  `json:"metadata"`
+	Number              *string          `json:"number"`
+	Origin              OrderOriginEnum  `json:"origin"`
+	IsPaid              bool             `json:"isPaid"`
+	Total               *TaxedMoney      `json:"total"`
+	UndiscountedTotal   *TaxedMoney      `json:"undiscountedTotal"`
+	StatusDisplay       *string          `json:"statusDisplay"`
+	TotalCaptured       *Money           `json:"totalCaptured"`
+	TotalBalance        *Money           `json:"totalBalance"`
+	LanguageCodeEnum    LanguageCodeEnum `json:"languageCodeEnum"`
 
 	channelID string
 
+	// Original             *string                 `json:"original"`
+	// IsShippingRequired   bool                    `json:"isShippingRequired"`
+	// User                 *User                   `json:"user"`
+	// UserEmail            *string                 `json:"userEmail"`
+	// CanFinalize          bool                    `json:"canFinalize"`
+	// PaymentStatusDisplay string                  `json:"paymentStatusDisplay"`
+	// PaymentStatus        PaymentChargeStatusEnum `json:"paymentStatus"`
+	// TotalAuthorized      *Money                  `json:"totalAuthorized"`
+	// Subtotal             *TaxedMoney             `json:"subtotal"`
 	// BillingAddress            *Address                `json:"billingAddress"`
 	// ShippingAddress           *Address                `json:"shippingAddress"`
 	// Channel                   *Channel                `json:"channel"`
@@ -191,6 +204,131 @@ func SystemOrderToGraphqlOrder(o *model.Order) *Order {
 	return res
 }
 
-func orderByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*Order] {
+func (o *Order) Discounts(ctx context.Context) ([]*OrderDiscount, error) {
 	panic("not implemented")
+}
+
+func (o *Order) BillingAddress(ctx context.Context) (*Address, error) {
+	panic("not implemented")
+}
+
+func (o *Order) ShippingAddress(ctx context.Context) (*Address, error) {
+	panic("not implemented")
+}
+
+func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
+	panic("not implemented")
+}
+
+func (o *Order) Subtotal(ctx context.Context) (*TaxedMoney, error) {
+	panic("not implemented")
+}
+
+func (o *Order) TotalAuthorized(ctx context.Context) (*Money, error) {
+	panic("not implemented")
+}
+
+func (o *Order) Fulfillments(ctx context.Context) ([]*Fulfillment, error) {
+	panic("not implemented")
+}
+
+func (o *Order) Lines(ctx context.Context) ([]*OrderLine, error) {
+	panic("not implemented")
+}
+
+func (o *Order) Events(ctx context.Context) ([]*OrderEvent, error) {
+	panic("not implemented")
+}
+
+func (o *Order) PaymentStatus(ctx context.Context) (PaymentChargeStatusEnum, error) {
+	panic("not implemented")
+}
+
+func (o *Order) PaymentStatusDisplay(ctx context.Context) (string, error) {
+	panic("not implemented")
+}
+
+func (o *Order) CanFinalize(ctx context.Context) (bool, error) {
+	panic("not implemented")
+}
+
+func (o *Order) UserEmail(ctx context.Context) (*string, error) {
+	panic("not implemented")
+}
+
+func (o *Order) User(ctx context.Context) (*User, error) {
+	panic("not implemented")
+}
+
+func (o *Order) DeliveryMethod(ctx context.Context) (DeliveryMethod, error) {
+	panic("not implemented")
+}
+
+func (o *Order) AvailableShippingMethods(ctx context.Context) ([]*ShippingMethod, error) {
+	panic("not implemented")
+}
+
+func (o *Order) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, error) {
+	panic("not implemented")
+}
+
+func (o *Order) Invoices(ctx context.Context) ([]*Invoice, error) {
+	panic("not implemented")
+}
+
+func (o *Order) IsShippingRequired(ctx context.Context) (bool, error) {
+	panic("not implemented")
+}
+
+func (o *Order) GiftCards(ctx context.Context) ([]*GiftCard, error) {
+	panic("not implemented")
+}
+
+func (o *Order) Voucher(ctx context.Context) (*Voucher, error) {
+	panic("not implemented")
+}
+
+func (o *Order) Original(ctx context.Context) (*string, error) {
+	panic("not implemented")
+}
+
+// func (o *Order) Errors(ctx context.Context) (*string, error) {
+// 	panic("not implemented")
+// }
+
+func orderByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Order] {
+	var (
+		res      = make([]*dataloader.Result[*model.Order], len(ids))
+		orders   model.Orders
+		appErr   *model.AppError
+		orderMap = map[string]*model.Order{}
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	orders, appErr = embedCtx.App.Srv().
+		OrderService().
+		FilterOrdersByOptions(&model.OrderFilterOption{
+			Id: squirrel.Eq{store.OrderTableName + ".Id": ids},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	orderMap = lo.SliceToMap(orders, func(o *model.Order) (string, *model.Order) { return o.Id, o })
+
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[*model.Order]{Data: orderMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range ids {
+		res[idx] = &dataloader.Result[*model.Order]{Error: err}
+	}
+	return res
 }

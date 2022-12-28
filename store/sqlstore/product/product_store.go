@@ -209,7 +209,7 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 		for _, rel := range collectionProducts {
 			product, ok := productsMap[rel.ProductID]
 			if ok && product != nil {
-				product.Collections = append(product.Collections, rel.Collection)
+				product.Collections = append(product.Collections, rel.GetCollection())
 			}
 		}
 	}

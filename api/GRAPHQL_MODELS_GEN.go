@@ -1395,19 +1395,6 @@ type FileUpload struct {
 	Errors       []*UploadError `json:"errors"`
 }
 
-type Fulfillment struct {
-	ID               string             `json:"id"`
-	FulfillmentOrder int32              `json:"fulfillmentOrder"`
-	Status           FulfillmentStatus  `json:"status"`
-	TrackingNumber   string             `json:"trackingNumber"`
-	Created          DateTime           `json:"created"`
-	PrivateMetadata  []*MetadataItem    `json:"privateMetadata"`
-	Metadata         []*MetadataItem    `json:"metadata"`
-	Lines            []*FulfillmentLine `json:"lines"`
-	StatusDisplay    *string            `json:"statusDisplay"`
-	Warehouse        *Warehouse         `json:"warehouse"`
-}
-
 type FulfillmentApprove struct {
 	Fulfillment *Fulfillment  `json:"fulfillment"`
 	Order       *Order        `json:"order"`
@@ -1422,12 +1409,6 @@ type FulfillmentCancel struct {
 
 type FulfillmentCancelInput struct {
 	WarehouseID *string `json:"warehouseId"`
-}
-
-type FulfillmentLine struct {
-	ID        string     `json:"id"`
-	Quantity  int32      `json:"quantity"`
-	OrderLine *OrderLine `json:"orderLine"`
 }
 
 type FulfillmentRefundProducts struct {
@@ -2094,31 +2075,6 @@ type OrderError struct {
 	OrderLine   *string          `json:"orderLine"`
 	Variants    []string         `json:"variants"`
 	AddressType *AddressTypeEnum `json:"addressType"`
-}
-
-type OrderEvent struct {
-	ID                    string                       `json:"id"`
-	Date                  *DateTime                    `json:"date"`
-	Type                  *OrderEventsEnum             `json:"type"`
-	User                  *User                        `json:"user"`
-	Message               *string                      `json:"message"`
-	Email                 *string                      `json:"email"`
-	EmailType             *OrderEventsEmailsEnum       `json:"emailType"`
-	Amount                *float64                     `json:"amount"`
-	PaymentID             *string                      `json:"paymentId"`
-	PaymentGateway        *string                      `json:"paymentGateway"`
-	Quantity              *int32                       `json:"quantity"`
-	ComposedID            *string                      `json:"composedId"`
-	OrderNumber           *string                      `json:"orderNumber"`
-	InvoiceNumber         *string                      `json:"invoiceNumber"`
-	OversoldItems         []string                     `json:"oversoldItems"`
-	Lines                 []*OrderEventOrderLineObject `json:"lines"`
-	FulfilledItems        []*FulfillmentLine           `json:"fulfilledItems"`
-	Warehouse             *Warehouse                   `json:"warehouse"`
-	TransactionReference  *string                      `json:"transactionReference"`
-	ShippingCostsIncluded *bool                        `json:"shippingCostsIncluded"`
-	RelatedOrder          *Order                       `json:"relatedOrder"`
-	Discount              *OrderEventDiscountObject    `json:"discount"`
 }
 
 type OrderEventCountableConnection struct {
@@ -5357,34 +5313,34 @@ func (e GiftCardErrorCode) String() string {
 	return string(e)
 }
 
-type GiftCardEventsEnum string
+type GiftCardEventsEnum = model.GiftcardEventType
 
 const (
-	GiftCardEventsEnumIssued            GiftCardEventsEnum = GiftCardEventsEnum(model.ISSUED)
-	GiftCardEventsEnumBought            GiftCardEventsEnum = GiftCardEventsEnum(model.BOUGHT)
-	GiftCardEventsEnumUpdated           GiftCardEventsEnum = GiftCardEventsEnum(model.UPDATED)
-	GiftCardEventsEnumActivated         GiftCardEventsEnum = GiftCardEventsEnum(model.ACTIVATED)
-	GiftCardEventsEnumDeactivated       GiftCardEventsEnum = GiftCardEventsEnum(model.DEACTIVATED)
-	GiftCardEventsEnumBalanceReset      GiftCardEventsEnum = GiftCardEventsEnum(model.BALANCE_RESET)
-	GiftCardEventsEnumExpiryDateUpdated GiftCardEventsEnum = GiftCardEventsEnum(model.EXPIRY_DATE_UPDATED)
-	GiftCardEventsEnumTagUpdated        GiftCardEventsEnum = GiftCardEventsEnum(model.TAG_UPDATED)
-	GiftCardEventsEnumSentToCustomer    GiftCardEventsEnum = GiftCardEventsEnum(model.SENT_TO_CUSTOMER)
-	GiftCardEventsEnumResent            GiftCardEventsEnum = GiftCardEventsEnum(model.RESENT)
-	GiftCardEventsEnumNoteAdded         GiftCardEventsEnum = GiftCardEventsEnum(model.NOTE_ADDED)
-	GiftCardEventsEnumUsedInOrder       GiftCardEventsEnum = GiftCardEventsEnum(model.USED_IN_ORDER)
+	GiftCardEventsEnumIssued            GiftCardEventsEnum = model.ISSUED
+	GiftCardEventsEnumBought            GiftCardEventsEnum = model.BOUGHT
+	GiftCardEventsEnumUpdated           GiftCardEventsEnum = model.UPDATED
+	GiftCardEventsEnumActivated         GiftCardEventsEnum = model.ACTIVATED
+	GiftCardEventsEnumDeactivated       GiftCardEventsEnum = model.DEACTIVATED
+	GiftCardEventsEnumBalanceReset      GiftCardEventsEnum = model.BALANCE_RESET
+	GiftCardEventsEnumExpiryDateUpdated GiftCardEventsEnum = model.EXPIRY_DATE_UPDATED
+	GiftCardEventsEnumTagUpdated        GiftCardEventsEnum = model.TAG_UPDATED
+	GiftCardEventsEnumSentToCustomer    GiftCardEventsEnum = model.SENT_TO_CUSTOMER
+	GiftCardEventsEnumResent            GiftCardEventsEnum = model.RESENT
+	GiftCardEventsEnumNoteAdded         GiftCardEventsEnum = model.NOTE_ADDED_
+	GiftCardEventsEnumUsedInOrder       GiftCardEventsEnum = model.USED_IN_ORDER
 )
 
-func (e GiftCardEventsEnum) IsValid() bool {
-	switch e {
-	case GiftCardEventsEnumIssued, GiftCardEventsEnumBought, GiftCardEventsEnumUpdated, GiftCardEventsEnumActivated, GiftCardEventsEnumDeactivated, GiftCardEventsEnumBalanceReset, GiftCardEventsEnumExpiryDateUpdated, GiftCardEventsEnumTagUpdated, GiftCardEventsEnumSentToCustomer, GiftCardEventsEnumResent, GiftCardEventsEnumNoteAdded, GiftCardEventsEnumUsedInOrder:
-		return true
-	}
-	return false
-}
+// func (e GiftCardEventsEnum) IsValid() bool {
+// 	switch e {
+// 	case GiftCardEventsEnumIssued, GiftCardEventsEnumBought, GiftCardEventsEnumUpdated, GiftCardEventsEnumActivated, GiftCardEventsEnumDeactivated, GiftCardEventsEnumBalanceReset, GiftCardEventsEnumExpiryDateUpdated, GiftCardEventsEnumTagUpdated, GiftCardEventsEnumSentToCustomer, GiftCardEventsEnumResent, GiftCardEventsEnumNoteAdded, GiftCardEventsEnumUsedInOrder:
+// 		return true
+// 	}
+// 	return false
+// }
 
-func (e GiftCardEventsEnum) String() string {
-	return string(e)
-}
+// func (e GiftCardEventsEnum) String() string {
+// 	return string(e)
+// }
 
 type GiftCardSettingsErrorCode string
 

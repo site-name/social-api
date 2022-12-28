@@ -134,8 +134,7 @@ func (gs *SqlGiftcardEventStore) Get(eventId string) (*model.GiftCardEvent, erro
 func (gs *SqlGiftcardEventStore) FilterByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, error) {
 	query := gs.GetQueryBuilder().
 		Select("*").
-		From(store.GiftcardEventTableName).
-		OrderBy(store.TableOrderingMap[store.GiftcardEventTableName])
+		From(store.GiftcardEventTableName)
 
 	// parse options
 	if options.Id != nil {

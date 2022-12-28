@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -25,8 +24,7 @@ func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCa
 	if evt.Date != 0 {
 		res.Date = &DateTime{util.TimeFromMillis(evt.Date)}
 	}
-	typ := GiftCardEventsEnum(strings.ToUpper(string(evt.Type)))
-	res.Type = &typ
+	res.Type = &evt.Type
 
 	msg, ok := evt.Parameters["message"]
 	if str, strOk := msg.(string); ok && strOk {
@@ -390,7 +388,7 @@ func (g *GiftCard) BoughtInChannel(ctx context.Context) {
 	panic("not implemented")
 }
 
-func graphqlGiftcardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.GiftCard] {
+func giftCardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.GiftCard] {
 	var (
 		res         = make([]*dataloader.Result[[]*model.GiftCard], len(userIDs))
 		appErr      *model.AppError
@@ -433,11 +431,12 @@ errorLabel:
 	return res
 }
 
-func graphqlGiftcardEventsByGiftcardIDsLoader(ctx context.Context, giftcardIDs []string) []*dataloader.Result[*GiftCardEvent] {
+func giftCardEventsByGiftCardIdLoader(ctx context.Context, giftcardIDs []string) []*dataloader.Result[[]*model.GiftCardEvent] {
 	var (
-		res    []*dataloader.Result[*GiftCardEvent]
-		appErr *model.AppError
-		events []*model.GiftCardEvent
+		res              = make([]*dataloader.Result[[]*model.GiftCardEvent], len(giftcardIDs))
+		appErr           *model.AppError
+		events           []*model.GiftCardEvent
+		giftcardEventMap = map[string][]*model.GiftCardEvent{} // keys are giftcard ids
 	)
 
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -455,14 +454,18 @@ func graphqlGiftcardEventsByGiftcardIDsLoader(ctx context.Context, giftcardIDs [
 		goto errorLabel
 	}
 
-	for _, evt := range events {
-		res = append(res, &dataloader.Result[*GiftCardEvent]{Data: SystemGiftcardEventToGraphqlGiftcardEvent(evt)})
+	for _, event := range events {
+		giftcardEventMap[event.GiftcardID] = append(giftcardEventMap[event.GiftcardID], event)
+	}
+
+	for idx, id := range giftcardIDs {
+		res[idx] = &dataloader.Result[[]*model.GiftCardEvent]{Data: giftcardEventMap[id]}
 	}
 	return res
 
 errorLabel:
-	for range giftcardIDs {
-		res = append(res, &dataloader.Result[*GiftCardEvent]{Error: err})
+	for idx := range giftcardIDs {
+		res[idx] = &dataloader.Result[[]*model.GiftCardEvent]{Error: err}
 	}
 	return res
 }

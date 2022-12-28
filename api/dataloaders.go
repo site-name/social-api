@@ -14,8 +14,8 @@ const batchCapacity = 200
 // This variable gets populated during package initialization (init() function)
 type apiDataloaders struct {
 	// giftcard
-	GiftCardsByUserLoader       *dataloader.Loader[string, []*model.GiftCard]
-	giftcardEventsByGiftcardIDs *dataloader.Loader[string, *GiftCardEvent]
+	GiftCardsByUserLoader            *dataloader.Loader[string, []*model.GiftCard]
+	GiftCardEventsByGiftCardIdLoader *dataloader.Loader[string, []*model.GiftCardEvent]
 
 	// account
 	AddressByIdLoader *dataloader.Loader[string, *model.Address]
@@ -32,10 +32,12 @@ type apiDataloaders struct {
 	CollectionsByVariantIdLoader                       *dataloader.Loader[string, []*model.Collection]
 	ProductTypeByProductIdLoader                       *dataloader.Loader[string, *model.ProductType]
 	VariantChannelListingByVariantIdAndChannelIdLoader *dataloader.Loader[string, *model.ProductVariantChannelListing]
+	CollectionsByProductIdLoader                       *dataloader.Loader[string, []*model.Collection]
+	CollectionByIdLoader                               *dataloader.Loader[string, *model.Collection]
 
 	// order
-	OrderLineByIdLoader *dataloader.Loader[string, *OrderLine]
-	OrderByIdLoader     *dataloader.Loader[string, *Order]
+	OrderLineByIdLoader *dataloader.Loader[string, *model.OrderLine]
+	OrderByIdLoader     *dataloader.Loader[string, *model.Order]
 
 	// checkout
 	CheckoutByUserLoader                   *dataloader.Loader[string, []*Checkout]
@@ -92,14 +94,16 @@ func init() {
 		CollectionsByVariantIdLoader:                       dataloader.NewBatchedLoader(collectionsByVariantIdLoader, dataloader.WithBatchCapacity[string, []*model.Collection](batchCapacity)),
 		ProductTypeByProductIdLoader:                       dataloader.NewBatchedLoader(productTypeByProductIdLoader, dataloader.WithBatchCapacity[string, *model.ProductType](batchCapacity)),
 		VariantChannelListingByVariantIdAndChannelIdLoader: dataloader.NewBatchedLoader(variantChannelListingByVariantIdAndChannelIdLoader, dataloader.WithBatchCapacity[string, *model.ProductVariantChannelListing](batchCapacity)),
+		CollectionsByProductIdLoader:                       dataloader.NewBatchedLoader(collectionsByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.Collection](batchCapacity)),
+		CollectionByIdLoader:                               dataloader.NewBatchedLoader(collectionByIdLoader, dataloader.WithBatchCapacity[string, *model.Collection](batchCapacity)),
 
 		// giftcard
-		giftcardEventsByGiftcardIDs: dataloader.NewBatchedLoader(graphqlGiftcardEventsByGiftcardIDsLoader, dataloader.WithBatchCapacity[string, *GiftCardEvent](batchCapacity)),
-		GiftCardsByUserLoader:       dataloader.NewBatchedLoader(graphqlGiftcardsByUserLoader, dataloader.WithBatchCapacity[string, []*model.GiftCard](batchCapacity)),
+		GiftCardEventsByGiftCardIdLoader: dataloader.NewBatchedLoader(giftCardEventsByGiftCardIdLoader, dataloader.WithBatchCapacity[string, []*model.GiftCardEvent](batchCapacity)),
+		GiftCardsByUserLoader:            dataloader.NewBatchedLoader(giftCardsByUserLoader, dataloader.WithBatchCapacity[string, []*model.GiftCard](batchCapacity)),
 
 		// order
-		OrderLineByIdLoader: dataloader.NewBatchedLoader(orderLineByIdLoader, dataloader.WithBatchCapacity[string, *OrderLine](batchCapacity)),
-		OrderByIdLoader:     dataloader.NewBatchedLoader(orderByIdLoader, dataloader.WithBatchCapacity[string, *Order](batchCapacity)),
+		OrderLineByIdLoader: dataloader.NewBatchedLoader(orderLineByIdLoader, dataloader.WithBatchCapacity[string, *model.OrderLine](batchCapacity)),
+		OrderByIdLoader:     dataloader.NewBatchedLoader(orderByIdLoader, dataloader.WithBatchCapacity[string, *model.Order](batchCapacity)),
 
 		// checkout
 		CheckoutByUserLoader:                   dataloader.NewBatchedLoader(CheckoutByUserLoader, dataloader.WithBatchCapacity[string, []*Checkout](batchCapacity)),

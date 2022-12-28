@@ -131,4 +131,6 @@ type ProductService interface {
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, *model.AppError)
 	ProductTypesByOptions(options *model.ProductTypeFilterOption) ([]*model.ProductType, *model.AppError)
 	UpdateProductsDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) *model.AppError
+	// CollectionProductRelationsByOptions finds and returns a list of product-collection relations based on given filter options
+	CollectionProductRelationsByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, *model.AppError)
 }

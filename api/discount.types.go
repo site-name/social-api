@@ -108,17 +108,19 @@ func saleChannelListingBySaleIdAndChanneSlugLoader(ctx context.Context, saleIDCh
 }
 
 func saleChannelListingBySaleIdLoader(ctx context.Context, saleIDs []string) []*dataloader.Result[[]*model.SaleChannelListing] {
-	var (
-		res = make([]*dataloader.Result[[]*model.SaleChannelListing], len(saleIDs))
-	)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	// 	var (
+	// 		res = make([]*dataloader.Result[[]*model.SaleChannelListing], len(saleIDs))
+	// 	)
+	// 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	// 	if err != nil {
+	// 		goto errorLabel
+	// 	}
 
-errorLabel:
-	for idx := range saleIDs {
-		res[idx] = &dataloader.Result[[]*model.SaleChannelListing]{Error: err}
-	}
-	return res
+	// errorLabel:
+	//
+	//	for idx := range saleIDs {
+	//		res[idx] = &dataloader.Result[[]*model.SaleChannelListing]{Error: err}
+	//	}
+	//	return res
+	panic("not implemented")
 }

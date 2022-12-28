@@ -197,7 +197,7 @@ type DeliveryMethod any
 
 func IsValidDeliveryMethod(v DeliveryMethod) bool {
 	switch v.(type) {
-	case Warehouse, ShippingMethod:
+	case Warehouse, ShippingMethod, *Warehouse, *ShippingMethod:
 		return true
 
 	default:

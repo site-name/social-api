@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"golang.org/x/text/currency"
@@ -136,26 +137,21 @@ func (o OrderLines) ProductVariantIDs() []string {
 	return res
 }
 
-func (o OrderLines) IDs() []string {
-	res := []string{}
-	for _, orderLine := range o {
-		if orderLine != nil {
-			res = append(res, orderLine.Id)
-		}
-	}
+func (o OrderLines) OrderIDs() []string {
+	return lo.Map(o, func(l *OrderLine, _ int) string { return l.OrderID })
+}
 
-	return res
+func (o OrderLines) IDs() []string {
+	return lo.Map(o, func(l *OrderLine, _ int) string { return l.Id })
 }
 
 func (o OrderLines) FilterNils() OrderLines {
-	var res OrderLines
-	for _, item := range o {
-		if item != nil {
-			res = append(res, item)
+	return lo.Filter(o, func(l *OrderLine, _ int) bool {
+		if l == nil {
+			return false
 		}
-	}
-
-	return res
+		return true
+	})
 }
 
 func (o *OrderLine) IsValid() *AppError {

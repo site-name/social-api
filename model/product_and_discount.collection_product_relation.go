@@ -9,8 +9,24 @@ type CollectionProduct struct {
 	CollectionID string `json:"collection_id"`
 	ProductID    string `json:"product_id"`
 
-	Collection *Collection `json:"-" db:"-"`
-	Product    *Product    `json:"-" db:"-"`
+	collection *Collection `db:"-"` // get populated if CollectionProductFilterOptions.SelectRelatedCollection is true
+	product    *Product    `db:"-"` // get populated if CollectionProductFilterOptions.SelectRelatedProduct is true
+}
+
+func (c *CollectionProduct) GetCollection() *Collection {
+	return c.collection
+}
+
+func (c *CollectionProduct) SetCollection(col *Collection) {
+	c.collection = col
+}
+
+func (c *CollectionProduct) GetProduct() *Product {
+	return c.product
+}
+
+func (c *CollectionProduct) SetProduct(p *Product) {
+	c.product = p
 }
 
 type CollectionProductFilterOptions struct {
@@ -18,6 +34,7 @@ type CollectionProductFilterOptions struct {
 	ProductID    squirrel.Sqlizer
 
 	SelectRelatedCollection bool
+	SelectRelatedProduct    bool
 }
 
 func (c *CollectionProduct) IsValid() *AppError {
@@ -47,11 +64,11 @@ func (c *CollectionProduct) DeepCopy() *CollectionProduct {
 	}
 
 	res := *c
-	if c.Collection != nil {
-		res.Collection = c.Collection.DeepCopy()
+	if c.GetCollection() != nil {
+		res.collection = c.GetCollection().DeepCopy()
 	}
-	if c.Product != nil {
-		res.Product = c.Product.DeepCopy()
+	if c.GetProduct() != nil {
+		res.product = c.GetProduct().DeepCopy()
 	}
 
 	return &res

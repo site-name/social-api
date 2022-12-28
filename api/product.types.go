@@ -109,18 +109,18 @@ func SystemProductTypeTpGraphqlProductType(prd *model.ProductType) *ProductType 
 
 func productByVariantIdLoader(ctx context.Context, variantIDS []string) []*dataloader.Result[*model.Product] {
 	var (
-		res         []*dataloader.Result[*model.Product]
-		productsIDs []string
-		products    []*model.Product
+		res      []*dataloader.Result[*model.Product]
+		products []*model.Product
+		variants model.ProductVariants
+		errs     []error
 	)
 
-	variants, errs := dataloaders.ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
+	variants, errs = dataloaders.ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
-	productsIDs = model.ProductVariants(variants).ProductIDs()
-	products, errs = dataloaders.ProductByIdLoader.LoadMany(ctx, productsIDs)()
+	products, errs = dataloaders.ProductByIdLoader.LoadMany(ctx, variants.ProductIDs())()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -141,16 +141,16 @@ errorLabel:
 func productTypeByVariantIdLoader(ctx context.Context, variantIDS []string) []*dataloader.Result[*model.ProductType] {
 	var (
 		res          []*dataloader.Result[*model.ProductType]
-		productIDs   []string
 		productTypes []*model.ProductType
+		variants     model.ProductVariants
+		errs         []error
 	)
-	variants, errs := dataloaders.ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
+	variants, errs = dataloaders.ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
-	productIDs = model.ProductVariants(variants).ProductIDs()
-	productTypes, errs = dataloaders.ProductTypeByProductIdLoader.LoadMany(ctx, productIDs)()
+	productTypes, errs = dataloaders.ProductTypeByProductIdLoader.LoadMany(ctx, variants.ProductIDs())()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -160,6 +160,7 @@ func productTypeByVariantIdLoader(ctx context.Context, variantIDS []string) []*d
 			Data: p,
 		}
 	})
+
 errorLabel:
 	for range variantIDS {
 		res = append(res, &dataloader.Result[*model.ProductType]{Error: errs[0]})
@@ -215,7 +216,122 @@ errorLabel:
 }
 
 func collectionsByVariantIdLoader(ctx context.Context, variantIDS []string) []*dataloader.Result[[]*model.Collection] {
-	panic("not implemented")
+	var (
+		variants    model.ProductVariants
+		errs        []error
+		res         []*dataloader.Result[[]*model.Collection]
+		collections [][]*model.Collection
+	)
+
+	variants, errs = dataloaders.ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
+	if len(errs) > 0 && errs[0] != nil {
+		goto errorLabel
+	}
+
+	collections, errs = dataloaders.CollectionsByProductIdLoader.LoadMany(ctx, variants.ProductIDs())()
+	if len(errs) > 0 && errs[0] != nil {
+		goto errorLabel
+	}
+
+	for _, cs := range collections {
+		res = append(res, &dataloader.Result[[]*model.Collection]{Data: cs})
+	}
+	return res
+
+errorLabel:
+	for range variantIDS {
+		res = append(res, &dataloader.Result[[]*model.Collection]{Error: errs[0]})
+	}
+	return res
+}
+
+func collectionsByProductIdLoader(ctx context.Context, productIDs []string) []*dataloader.Result[[]*model.Collection] {
+	var (
+		res                        = make([]*dataloader.Result[[]*model.Collection], len(productIDs))
+		collectionProductRelations []*model.CollectionProduct
+		appErr                     *model.AppError
+		productCollectionMap       = map[string][]string{}          // keys are product ids, values are slices of collection ids
+		collectionMap              = map[string]*model.Collection{} // keys are collection ids
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	collectionProductRelations, appErr = embedCtx.App.Srv().
+		ProductService().
+		CollectionProductRelationsByOptions(&model.CollectionProductFilterOptions{
+			ProductID:               squirrel.Eq{store.CollectionProductRelationTableName + ".ProductID": productIDs},
+			SelectRelatedCollection: true,
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, rel := range collectionProductRelations {
+		if rel.GetCollection() != nil {
+			// access to collection here since we asked SelectRelatedCollection in filter options
+			collectionMap[rel.CollectionID] = rel.GetCollection()
+		}
+		productCollectionMap[rel.ProductID] = append(productCollectionMap[rel.ProductID], rel.CollectionID)
+	}
+
+	for idx, productID := range productIDs {
+		collectionsOfProduct := make([]*model.Collection, len(productCollectionMap[productID]))
+
+		for idx, collectionID := range productCollectionMap[productID] {
+			collectionsOfProduct[idx] = collectionMap[collectionID]
+		}
+
+		res[idx] = &dataloader.Result[[]*model.Collection]{Data: collectionsOfProduct}
+	}
+
+	return res
+
+errorLabel:
+	for range productIDs {
+
+	}
+	return res
+}
+
+func collectionByIdLoader(ctx context.Context, collectionIDs []string) []*dataloader.Result[*model.Collection] {
+	var (
+		res           = make([]*dataloader.Result[*model.Collection], len(collectionIDs))
+		collections   []*model.Collection
+		appErr        *model.AppError
+		collectionMap = map[string]*model.Collection{} // keys are collection ids
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	collections, appErr = embedCtx.App.Srv().
+		ProductService().
+		CollectionsByOption(&model.CollectionFilterOption{
+			Id: squirrel.Eq{store.CollectionTableName + ".Id": collectionIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	collectionMap = lo.SliceToMap(collections, func(c *model.Collection) (string, *model.Collection) { return c.Id, c })
+
+	for idx, id := range collectionIDs {
+		res[idx] = &dataloader.Result[*model.Collection]{Data: collectionMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range collectionIDs {
+		res[idx] = &dataloader.Result[*model.Collection]{Error: err}
+	}
+	return res
 }
 
 // variantIDChannelIDPairs are slice of uuid_uuid pairs.

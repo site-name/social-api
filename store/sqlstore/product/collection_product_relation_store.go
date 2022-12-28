@@ -42,6 +42,9 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 	if options.SelectRelatedCollection {
 		selectFields = append(selectFields, ps.Collection().ModelFields(store.CollectionTableName+".")...)
 	}
+	if options.SelectRelatedProduct {
+		selectFields = append(selectFields, ps.Product().ModelFields(store.ProductTableName+".")...)
+	}
 
 	query := ps.GetQueryBuilder().
 		Select(selectFields...).
@@ -56,15 +59,22 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 	if options.SelectRelatedCollection {
 		query = query.InnerJoin(store.CollectionTableName + " ON Collections.Id = ProductCollections.CollectionID")
 	}
+	if options.SelectRelatedProduct {
+		query = query.InnerJoin(store.ProductTableName + " ON Products.Id = ProductCollections.ProductID")
+	}
 
 	var (
 		res               []*model.CollectionProduct
 		collectionProduct model.CollectionProduct
 		collection        model.Collection
+		product           model.Product
 		scanFields        = ps.ScanFields(&collectionProduct)
 	)
 	if options.SelectRelatedCollection {
 		scanFields = append(scanFields, ps.Collection().ScanFields(&collection)...)
+	}
+	if options.SelectRelatedProduct {
+		scanFields = append(scanFields, ps.Product().ScanFields(&product)...)
 	}
 
 	queryString, args, err := query.ToSql()
@@ -83,7 +93,8 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 		}
 
 		if options.SelectRelatedCollection {
-			collectionProduct.Collection = &collection // no need to deep copy collection here, See Collection_Product relation DeepCopy for detail
+			collectionProduct.SetCollection(&collection) // no need to deep copy collection here, See Collection_Product relation DeepCopy for detail
+			collectionProduct.SetProduct(&product)       // no need deep copy here
 		}
 
 		res = append(res, collectionProduct.DeepCopy())
