@@ -108,12 +108,12 @@ errorLabel:
 	return res
 }
 
-func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*CheckoutLine] {
+func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.CheckoutLine] {
 	var (
-		res             = make([]*dataloader.Result[*CheckoutLine], len(ids))
+		res             = make([]*dataloader.Result[*model.CheckoutLine], len(ids))
 		checkoutLines   model.CheckoutLines
 		appErr          *model.AppError
-		checkoutLineMap = map[string]*CheckoutLine{}
+		checkoutLineMap = map[string]*model.CheckoutLine{}
 	)
 
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -132,16 +132,16 @@ func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Res
 	}
 
 	for _, line := range checkoutLines {
-		checkoutLineMap[line.Id] = SystemCheckoutLineToGraphqlCheckoutLine(line)
+		checkoutLineMap[line.Id] = line
 	}
 	for idx, id := range ids {
-		res[idx] = &dataloader.Result[*CheckoutLine]{Data: checkoutLineMap[id]}
+		res[idx] = &dataloader.Result[*model.CheckoutLine]{Data: checkoutLineMap[id]}
 	}
 	return res
 
 errorLabel:
 	for idx := range ids {
-		res[idx] = &dataloader.Result[*CheckoutLine]{Error: err}
+		res[idx] = &dataloader.Result[*model.CheckoutLine]{Error: err}
 	}
 	return res
 }
@@ -190,7 +190,7 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 		return res
 	}
 
-	channelIDS = lo.Map(checkouts, func(c *Checkout, _ int) string { return c.channelID })
+	channelIDS = lo.Map(checkouts, func(c *model.Checkout, _ int) string { return c.ChannelID })
 
 	variants, errs = dataloaders.ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
 	if len(errs) > 0 && errs[0] != nil {
@@ -248,7 +248,7 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 			linesInfoMap[checkouts[i].Token] = append(linesInfoMap[checkouts[i].Token], &model.CheckoutLineInfo{
 				Line:           *line,
 				Variant:        *variantsMap[line.VariantID],
-				ChannelListing: *channelListingsMap[line.VariantID+"__"+checkouts[i].channelID],
+				ChannelListing: *channelListingsMap[line.VariantID+"__"+checkouts[i].ChannelID],
 				Product:        *productsMap[line.VariantID],
 				ProductType:    *productTypesMap[line.VariantID],
 				Collections:    collectionsMap[line.VariantID],

@@ -22,7 +22,6 @@ type Channel struct {
 	DefaultCountry *CountryDisplay `json:"defaultCountry"`
 
 	// HasOrders      bool            `json:"hasOrders"`
-	hasOrders bool
 }
 
 func (c *Channel) HasOrders(ctx context.Context) (*bool, error) {
@@ -41,7 +40,7 @@ func (c *Channel) HasOrders(ctx context.Context) (*bool, error) {
 		return nil, err
 	}
 
-	return model.NewBool(channel.hasOrders), nil
+	return model.NewBool(channel.GetHasOrders()), nil
 }
 
 func SystemChannelToGraphqlChannel(ch *model.Channel) *Channel {
@@ -59,11 +58,10 @@ func SystemChannelToGraphqlChannel(ch *model.Channel) *Channel {
 			Code:    ch.DefaultCountry,
 			Country: model.Countries[strings.ToUpper(ch.DefaultCountry)],
 		},
-		hasOrders: ch.GetHasOrders(),
 	}
 }
 
-func channelByIdLoader_systemResult(ctx context.Context, ids []string) []*dataloader.Result[*model.Channel] {
+func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Channel] {
 	var (
 		res        = make([]*dataloader.Result[*model.Channel], len(ids))
 		appErr     *model.AppError
@@ -101,22 +99,12 @@ errorLabel:
 	return res
 }
 
-func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*Channel] {
-	results := channelByIdLoader_systemResult(ctx, ids)
-
-	return lo.Map(results, func(r *dataloader.Result[*model.Channel], _ int) *dataloader.Result[*Channel] {
-		return &dataloader.Result[*Channel]{
-			Data:  SystemChannelToGraphqlChannel(r.Data),
-			Error: r.Error,
-		}
-	})
-}
-
-func channelBySlugLoader(ctx context.Context, slugs []string) []*dataloader.Result[*Channel] {
+func channelBySlugLoader(ctx context.Context, slugs []string) []*dataloader.Result[*model.Channel] {
 	var (
-		res      []*dataloader.Result[*Channel]
-		appErr   *model.AppError
-		channels model.Channels
+		res        = make([]*dataloader.Result[*model.Channel], len(slugs))
+		appErr     *model.AppError
+		channels   model.Channels
+		channelMap = map[string]*model.Channel{}
 	)
 
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -135,24 +123,26 @@ func channelBySlugLoader(ctx context.Context, slugs []string) []*dataloader.Resu
 		goto errorLabel
 	}
 
-	for _, channel := range channels {
-		res = append(res, &dataloader.Result[*Channel]{Data: SystemChannelToGraphqlChannel(channel)})
+	channelMap = lo.SliceToMap(channels, func(c *model.Channel) (string, *model.Channel) { return c.Slug, c })
+
+	for idx, slug := range slugs {
+		res[idx] = &dataloader.Result[*model.Channel]{Data: channelMap[slug]}
 	}
 	return res
 
 errorLabel:
-	for range slugs {
-		res = append(res, &dataloader.Result[*Channel]{Error: err})
+	for idx := range slugs {
+		res[idx] = &dataloader.Result[*model.Channel]{Error: err}
 	}
 	return res
 }
 
-func channelByCheckoutLineIDLoader(ctx context.Context, checkoutLineIDs []string) []*dataloader.Result[*Channel] {
+func channelByCheckoutLineIDLoader(ctx context.Context, checkoutLineIDs []string) []*dataloader.Result[*model.Channel] {
 	var (
-		res            []*dataloader.Result[*Channel]
+		res            []*dataloader.Result[*model.Channel]
 		errs           []error
-		checkouts      []*Checkout
-		channels       []*Channel
+		checkouts      []*model.Checkout
+		channels       []*model.Channel
 		checkoutTokens []string
 		channelIDs     []string
 	)
@@ -163,7 +153,7 @@ func channelByCheckoutLineIDLoader(ctx context.Context, checkoutLineIDs []string
 		goto errorLabel
 	}
 
-	checkoutTokens = lo.Map(checkoutLines, func(item *CheckoutLine, _ int) string { return item.checkoutID })
+	checkoutTokens = lo.Map(checkoutLines, func(item *model.CheckoutLine, _ int) string { return item.CheckoutID })
 
 	// find checkouts
 	checkouts, errs = dataloaders.CheckoutByTokenLoader.LoadMany(ctx, checkoutTokens)()
@@ -171,7 +161,7 @@ func channelByCheckoutLineIDLoader(ctx context.Context, checkoutLineIDs []string
 		goto errorLabel
 	}
 
-	channelIDs = lo.Map(checkouts, func(item *Checkout, _ int) string { return item.channelID })
+	channelIDs = lo.Map(checkouts, func(item *model.Checkout, _ int) string { return item.ChannelID })
 
 	// find channels
 	channels, errs = dataloaders.ChannelByIdLoader.LoadMany(ctx, channelIDs)()
@@ -179,22 +169,22 @@ func channelByCheckoutLineIDLoader(ctx context.Context, checkoutLineIDs []string
 		goto errorLabel
 	}
 
-	return lo.Map(channels, func(ch *Channel, _ int) *dataloader.Result[*Channel] {
-		return &dataloader.Result[*Channel]{Data: ch}
+	return lo.Map(channels, func(ch *model.Channel, _ int) *dataloader.Result[*model.Channel] {
+		return &dataloader.Result[*model.Channel]{Data: ch}
 	})
 
 errorLabel:
 	for range checkoutLineIDs {
-		res = append(res, &dataloader.Result[*Channel]{Error: errs[0]})
+		res = append(res, &dataloader.Result[*model.Channel]{Error: errs[0]})
 	}
 	return res
 }
 
-func channelByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*Channel] {
+func channelByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*model.Channel] {
 	var (
-		res        []*dataloader.Result[*Channel]
+		res        []*dataloader.Result[*model.Channel]
 		orders     model.Orders
-		channels   []*Channel
+		channels   []*model.Channel
 		orderLines model.OrderLines
 		errs       []error
 	)
@@ -217,22 +207,23 @@ func channelByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) []*d
 		goto errorLabel
 	}
 
-	return lo.Map(channels, func(i *Channel, _ int) *dataloader.Result[*Channel] {
-		return &dataloader.Result[*Channel]{Data: i}
+	return lo.Map(channels, func(i *model.Channel, _ int) *dataloader.Result[*model.Channel] {
+		return &dataloader.Result[*model.Channel]{Data: i}
 	})
 
 errorLabel:
 	for range orderLineIDs {
-		res = append(res, &dataloader.Result[*Channel]{Error: errs[0]})
+		res = append(res, &dataloader.Result[*model.Channel]{Error: errs[0]})
 	}
 	return res
 }
 
-func channelWithHasOrdersByIdLoader(ctx context.Context, channelIDs []string) []*dataloader.Result[*Channel] {
+func channelWithHasOrdersByIdLoader(ctx context.Context, channelIDs []string) []*dataloader.Result[*model.Channel] {
 	var (
-		res      []*dataloader.Result[*Channel]
-		channels model.Channels
-		appErr   *model.AppError
+		res        = make([]*dataloader.Result[*model.Channel], len(channelIDs))
+		channels   model.Channels
+		appErr     *model.AppError
+		channelMap = map[string]*model.Channel{}
 	)
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
@@ -246,19 +237,21 @@ func channelWithHasOrdersByIdLoader(ctx context.Context, channelIDs []string) []
 		ChannelsByOption(&model.ChannelFilterOption{
 			AnnotateHasOrders: true,
 		})
-
 	if appErr != nil {
 		err = appErr
 		goto errorLabel
 	}
 
-	return lo.Map(channels, func(c *model.Channel, _ int) *dataloader.Result[*Channel] {
-		return &dataloader.Result[*Channel]{Data: SystemChannelToGraphqlChannel(c)}
-	})
+	channelMap = lo.SliceToMap(channels, func(c *model.Channel) (string, *model.Channel) { return c.Id, c })
+
+	for idx, id := range channelIDs {
+		res[idx] = &dataloader.Result[*model.Channel]{Data: channelMap[id]}
+	}
+	return res
 
 errorLabel:
 	for range channelIDs {
-		res = append(res, &dataloader.Result[*Channel]{Error: err})
+		res = append(res, &dataloader.Result[*model.Channel]{Error: err})
 	}
 	return res
 }

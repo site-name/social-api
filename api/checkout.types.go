@@ -342,15 +342,15 @@ func (c *Checkout) DeliveryMethod(ctx context.Context) (*Warehouse, error) {
 // NOTE:
 // keys are strings that have format uuid__uuid.
 // The first uuid part is userID, send is channelID
-func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*dataloader.Result[[]*Checkout] {
+func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*dataloader.Result[[]*model.Checkout] {
 	var (
 		appErr     *model.AppError
-		res        = make([]*dataloader.Result[[]*Checkout], len(keys))
+		res        = make([]*dataloader.Result[[]*model.Checkout], len(keys))
 		userIDs    []string
 		channelIDs []string
 		checkouts  []*model.Checkout
 
-		checkoutsMap = map[string][]*Checkout{} // checkoutsMap has keys are each items of given param keys
+		checkoutsMap = map[string][]*model.Checkout{} // checkoutsMap has keys are each items of given param keys
 	)
 
 	for _, item := range keys {
@@ -384,28 +384,28 @@ func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*datal
 	for _, checkout := range checkouts {
 		if checkout.UserID != nil {
 			key := *checkout.UserID + "__" + checkout.ChannelID
-			checkoutsMap[key] = append(checkoutsMap[key], SystemCheckoutToGraphqlCheckout(checkout))
+			checkoutsMap[key] = append(checkoutsMap[key], checkout)
 		}
 	}
 
 	for idx, key := range keys {
-		res[idx] = &dataloader.Result[[]*Checkout]{Data: checkoutsMap[key]}
+		res[idx] = &dataloader.Result[[]*model.Checkout]{Data: checkoutsMap[key]}
 	}
 	return res
 
 errorLabel:
 	for idx := range keys {
-		res[idx] = &dataloader.Result[[]*Checkout]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.Checkout]{Error: err}
 	}
 	return res
 }
 
-func CheckoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*Checkout] {
+func checkoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.Checkout] {
 	var (
 		appErr       *model.AppError
 		checkouts    []*model.Checkout
-		res          = make([]*dataloader.Result[[]*Checkout], len(userIDs))
-		checkoutsMap = map[string][]*Checkout{} // keys are user ids
+		res          = make([]*dataloader.Result[[]*model.Checkout], len(userIDs))
+		checkoutsMap = map[string][]*model.Checkout{} // keys are user ids
 	)
 
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -428,34 +428,23 @@ func CheckoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.R
 
 	for _, checkout := range checkouts {
 		if checkout.UserID != nil {
-			checkoutsMap[*checkout.UserID] = append(checkoutsMap[*checkout.UserID], SystemCheckoutToGraphqlCheckout(checkout))
+			checkoutsMap[*checkout.UserID] = append(checkoutsMap[*checkout.UserID], checkout)
 		}
 	}
 
 	for idx, key := range userIDs {
-		res[idx] = &dataloader.Result[[]*Checkout]{Data: checkoutsMap[key]}
+		res[idx] = &dataloader.Result[[]*model.Checkout]{Data: checkoutsMap[key]}
 	}
 	return res
 
 errorLabel:
 	for idx := range userIDs {
-		res[idx] = &dataloader.Result[[]*Checkout]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.Checkout]{Error: err}
 	}
 	return res
 }
 
-func checkoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[*Checkout] {
-	results := checkoutByTokenLoader_systemResult(ctx, tokens)
-
-	return lo.Map(results, func(r *dataloader.Result[*model.Checkout], _ int) *dataloader.Result[*Checkout] {
-		return &dataloader.Result[*Checkout]{
-			Data:  SystemCheckoutToGraphqlCheckout(r.Data),
-			Error: r.Error,
-		}
-	})
-}
-
-func checkoutByTokenLoader_systemResult(ctx context.Context, tokens []string) []*dataloader.Result[*model.Checkout] {
+func checkoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[*model.Checkout] {
 	var (
 		res         = make([]*dataloader.Result[*model.Checkout], len(tokens))
 		appErr      *model.AppError
@@ -533,7 +522,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 		goto errorLabel
 	}
 
-	checkouts, errs = dataloaders.CheckoutByTokenLoader_SystemResult.LoadMany(ctx, tokens)()
+	checkouts, errs = dataloaders.CheckoutByTokenLoader.LoadMany(ctx, tokens)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
