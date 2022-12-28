@@ -414,6 +414,7 @@ type (
 	ShippingMethodTranslationStore interface {
 	}
 	ShippingZoneChannelStore interface {
+		FilterByOptions(options *model.ShippingZoneChannelFilterOptions) ([]*model.ShippingZoneChannel, error)
 	}
 	ShippingMethodExcludedProductStore interface {
 		Save(instance *model.ShippingMethodExcludedProduct) (*model.ShippingMethodExcludedProduct, error) // Save inserts given ShippingMethodExcludedProduct into database then returns it

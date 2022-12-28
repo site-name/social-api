@@ -5,6 +5,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/util"
 )
 
@@ -30,6 +31,7 @@ type ShippingZoneFilterOption struct {
 	Id           squirrel.Sqlizer
 	DefaultValue *bool
 	WarehouseID  squirrel.Sqlizer // INNER JOIN WarehouseShippingZones ON ... WHERE WarehouseShippingZones.WarehouseID
+	ChannelID    squirrel.Sqlizer // inner join shippingZoneChannel on ... WHERE shippingZoneChannel.ChannelID ...
 
 	SelectRelatedThroughData bool // if true, `RelativeWarehouseIDs` property get populated with related data
 }
@@ -37,14 +39,7 @@ type ShippingZoneFilterOption struct {
 type ShippingZones []*ShippingZone
 
 func (s ShippingZones) IDs() []string {
-	var res []string
-	for _, zone := range s {
-		if zone != nil {
-			res = append(res, zone.Id)
-		}
-	}
-
-	return res
+	return lo.Map(s, func(i *ShippingZone, _ int) string { return i.Id })
 }
 
 // RelativeWarehouseIDsFlat joins all `RelativeWarehouseIDs` fields of all shipping zones into single slice of strings

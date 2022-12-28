@@ -59,11 +59,10 @@ type apiDataloaders struct {
 	ChannelWithHasOrdersByIdLoader *dataloader.Loader[string, *model.Channel]
 
 	// shipping
-	ShippingZonesByChannelIdLoader                                                  *dataloader.Loader[string, *ShippingZone]
-	ShippingMethodByIdLoader                                                        *dataloader.Loader[string, *ShippingMethod]
-	ShippingMethodByIdLoader_SystemResult                                           *dataloader.Loader[string, *model.ShippingMethod]
-	ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader              *dataloader.Loader[string, *ShippingMethodChannelListing]
-	ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader_SystemResult *dataloader.Loader[string, *model.ShippingMethodChannelListing]
+	ShippingZoneByIdLoader                                             *dataloader.Loader[string, *model.ShippingZone]
+	ShippingZonesByChannelIdLoader                                     *dataloader.Loader[string, []*model.ShippingZone]
+	ShippingMethodByIdLoader                                           *dataloader.Loader[string, *model.ShippingMethod]
+	ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader *dataloader.Loader[string, *model.ShippingMethodChannelListing]
 
 	// discount
 	DiscountsByDateTimeLoader *dataloader.Loader[time.Time, []*model.DiscountInfo]
@@ -123,11 +122,10 @@ func init() {
 		ChannelWithHasOrdersByIdLoader: dataloader.NewBatchedLoader(channelWithHasOrdersByIdLoader, dataloader.WithBatchCapacity[string, *model.Channel](batchCapacity)),
 
 		// shipping
-		ShippingZonesByChannelIdLoader:                                                  dataloader.NewBatchedLoader(shippingZonesByChannelIdLoader, dataloader.WithBatchCapacity[string, *ShippingZone](batchCapacity)),
-		ShippingMethodByIdLoader:                                                        dataloader.NewBatchedLoader(shippingMethodByIdLoader, dataloader.WithBatchCapacity[string, *ShippingMethod](batchCapacity)),
-		ShippingMethodByIdLoader_SystemResult:                                           dataloader.NewBatchedLoader(shippingMethodByIdLoader_SystemResult, dataloader.WithBatchCapacity[string, *model.ShippingMethod](batchCapacity)),
-		ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader:              dataloader.NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, *ShippingMethodChannelListing](batchCapacity)),
-		ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader_SystemResult: dataloader.NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader_systemResult, dataloader.WithBatchCapacity[string, *model.ShippingMethodChannelListing](batchCapacity)),
+		ShippingZoneByIdLoader:         dataloader.NewBatchedLoader(shippingZoneByIdLoader, dataloader.WithBatchCapacity[string, *model.ShippingZone](batchCapacity)),
+		ShippingZonesByChannelIdLoader: dataloader.NewBatchedLoader(shippingZonesByChannelIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingZone](batchCapacity)),
+		ShippingMethodByIdLoader:       dataloader.NewBatchedLoader(shippingMethodByIdLoader, dataloader.WithBatchCapacity[string, *model.ShippingMethod](batchCapacity)),
+		ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader: dataloader.NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, *model.ShippingMethodChannelListing](batchCapacity)),
 
 		// discount
 		DiscountsByDateTimeLoader: dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity)),

@@ -135,6 +135,12 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 			InnerJoin(store.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
 			Where(option.WarehouseID)
 	}
+	if option.ChannelID != nil {
+		query = query.
+			InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id").
+			Where(option.ChannelID)
+
+	}
 
 	queryString, args, err := query.ToSql()
 	if err != nil {

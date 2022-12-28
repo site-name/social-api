@@ -1,10 +1,17 @@
 package model
 
+import "github.com/Masterminds/squirrel"
+
 // ShippingZoneChannel represents relationships between shipping zones and channels
 type ShippingZoneChannel struct {
 	Id             string `json:"id"`
 	ShippingZoneID string `json:"shipping_zone_id"` // unique together with channelID
 	ChannelID      string `json:"channel_id"`       // unique together with shipping zone id
+}
+
+type ShippingZoneChannelFilterOptions struct {
+	ShippingZoneID squirrel.Sqlizer
+	ChannelID      squirrel.Sqlizer
 }
 
 func (s *ShippingZoneChannel) IsValid() *AppError {

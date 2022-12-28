@@ -300,8 +300,8 @@ func (c *Checkout) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse,
 	var countryCode string
 	if address != nil {
 		countryCode = address.Country
-	} else if channel.DefaultCountry != nil {
-		countryCode = channel.DefaultCountry.Code
+	} else {
+		countryCode = channel.DefaultCountry
 	}
 
 	if countryCode != "" {
@@ -547,7 +547,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 		channelIDs = append(channelIDs, checkout.ChannelID)
 	}
 
-	channels, errs = dataloaders.ChannelByIdLoader_SystemResult.LoadMany(ctx, channelIDs)()
+	channels, errs = dataloaders.ChannelByIdLoader.LoadMany(ctx, channelIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}

@@ -2,17 +2,15 @@ package api
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
-
-func shippingZonesByChannelIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*ShippingZone] {
-	panic("not implemented")
-}
 
 type ShippingMethod struct {
 	ID                  string                  `json:"id"`
@@ -73,22 +71,7 @@ func SystemShippingMethodToGraphqlShippingMethod(m *model.ShippingMethod) *Shipp
 	return res
 }
 
-func shippingMethodByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*ShippingMethod] {
-	results := shippingMethodByIdLoader_SystemResult(ctx, ids)
-	res := make([]*dataloader.Result[*ShippingMethod], len(results))
-
-	for idx, result := range results {
-		res[idx] = &dataloader.Result[*ShippingMethod]{
-			Data:  SystemShippingMethodToGraphqlShippingMethod(result.Data),
-			Error: result.Error,
-		}
-	}
-
-	return res
-}
-
-// shippingMethodByIdLoaderSystemResult returns slice of dataloader results that have data fields are system shipping methods
-func shippingMethodByIdLoader_SystemResult(ctx context.Context, ids []string) []*dataloader.Result[*model.ShippingMethod] {
+func shippingMethodByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.ShippingMethod] {
 	var (
 		res       = make([]*dataloader.Result[*model.ShippingMethod], len(ids))
 		appErr    *model.AppError
@@ -127,10 +110,102 @@ errorLabel:
 	return res
 }
 
-func shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader(ctx context.Context, idPairs []string) []*dataloader.Result[*ShippingMethodChannelListing] {
+func shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader(ctx context.Context, idPairs []string) []*dataloader.Result[*model.ShippingMethodChannelListing] {
 	panic("not implemented")
 }
 
-func shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader_systemResult(ctx context.Context, idPairs []string) []*dataloader.Result[*model.ShippingMethodChannelListing] {
-	panic("not implemented")
+func shippingZonesByChannelIdLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.ShippingZone] {
+	var (
+		res                    = make([]*dataloader.Result[[]*model.ShippingZone], len(ids))
+		shippingZones          []*model.ShippingZone
+		shippingZoneMap        = map[string]*model.ShippingZone{}
+		relations              []*model.ShippingZoneChannel
+		err                    error
+		errs                   []error
+		shippingZoneIDs        []string
+		channelShippingZoneMap = map[string][]string{} // keys are channel ids, values are slices of shipping zone ids
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	relations, err = embedCtx.App.Srv().Store.
+		ShippingZoneChannel().
+		FilterByOptions(&model.ShippingZoneChannelFilterOptions{
+			ChannelID: squirrel.Eq{store.ShippingZoneChannelTableName + ".ChannelID": ids},
+		})
+	if err != nil {
+		err = model.NewAppError("ShippingZoneChanenlByOptions", "app.shipping.shippingzone-channel-relations_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		goto errorLabel
+	}
+
+	for _, rel := range relations {
+		shippingZoneIDs = append(shippingZoneIDs, rel.ShippingZoneID)
+		channelShippingZoneMap[rel.ChannelID] = append(channelShippingZoneMap[rel.ChannelID], rel.ShippingZoneID)
+	}
+
+	shippingZones, errs = dataloaders.ShippingZoneByIdLoader.LoadMany(ctx, shippingZoneIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+
+	for _, zone := range shippingZones {
+		shippingZoneMap[zone.Id] = zone
+	}
+
+	for idx, channelID := range ids {
+		data := []*model.ShippingZone{}
+
+		for _, zoneID := range channelShippingZoneMap[channelID] {
+			data = append(data, shippingZoneMap[zoneID])
+		}
+
+		res[idx] = &dataloader.Result[[]*model.ShippingZone]{Data: data}
+	}
+
+	return res
+
+errorLabel:
+	for idx := range ids {
+		res[idx] = &dataloader.Result[[]*model.ShippingZone]{Error: err}
+	}
+	return res
+}
+
+func shippingZoneByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.ShippingZone] {
+	var (
+		res             = make([]*dataloader.Result[*model.ShippingZone], len(ids))
+		shippingZones   []*model.ShippingZone
+		appErr          *model.AppError
+		shippingZoneMap = map[string]*model.ShippingZone{}
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	shippingZones, appErr = embedCtx.App.Srv().ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
+		Id: squirrel.Eq{store.ShippingZoneTableName + ".Id": ids},
+	})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	shippingZoneMap = lo.SliceToMap(shippingZones, func(s *model.ShippingZone) (string, *model.ShippingZone) { return s.Id, s })
+
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[*model.ShippingZone]{Data: shippingZoneMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range ids {
+		res[idx] = &dataloader.Result[*model.ShippingZone]{Error: err}
+	}
+	return res
 }
