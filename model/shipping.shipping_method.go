@@ -54,6 +54,7 @@ type ShippingMethodFilterOption struct {
 	MaximumOrderWeight         squirrel.Sqlizer
 	ShippingZoneChannelSlug    squirrel.Sqlizer
 	ChannelListingsChannelSlug squirrel.Sqlizer
+	ShippingZoneID             squirrel.Sqlizer
 }
 
 func (s *ShippingMethod) PopulateNonDbFields() {
@@ -122,6 +123,28 @@ func (s *ShippingMethod) IsValid() *AppError {
 		return outer("type", &s.Id)
 	}
 	return nil
+}
+
+func (s *ShippingMethod) DeepCopy() *ShippingMethod {
+	if s == nil {
+		return new(ShippingMethod)
+	}
+
+	res := *s
+
+	if len(s.ShippingZones) > 0 {
+		for _, zone := range s.ShippingZones {
+			res.ShippingZones = append(res.ShippingZones, zone.DeepCopy())
+		}
+	}
+
+	if len(s.ShippingMethodPostalCodeRules) > 0 {
+		for _, rule := range s.ShippingMethodPostalCodeRules {
+			res.ShippingMethodPostalCodeRules = append(res.ShippingMethodPostalCodeRules, rule.DeepCopy())
+		}
+	}
+
+	return &res
 }
 
 const SHIPPING_METHOD_TRANSLATION_NAME_MAX_LENGTH = 255

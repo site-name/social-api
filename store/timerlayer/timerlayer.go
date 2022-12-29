@@ -6162,6 +6162,22 @@ func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprice
 	return result, err
 }
 
+func (s *TimerLayerShippingMethodStore) FilterByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingMethodStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerShippingMethodStore) Get(methodID string) (*model.ShippingMethod, error) {
 	start := timemodule.Now()
 
@@ -6290,6 +6306,22 @@ func (s *TimerLayerShippingMethodExcludedProductStore) Save(instance *model.Ship
 	return result, err
 }
 
+func (s *TimerLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingMethodPostalCodeRuleStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodPostalCodeRuleStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error) {
 	start := timemodule.Now()
 
@@ -6334,6 +6366,22 @@ func (s *TimerLayerShippingZoneStore) Upsert(shippingZone *model.ShippingZone) (
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShippingZoneChannelStore) FilterByOptions(options *model.ShippingZoneChannelFilterOptions) ([]*model.ShippingZoneChannel, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingZoneChannelStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneChannelStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }

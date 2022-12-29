@@ -7359,6 +7359,26 @@ func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprice
 
 }
 
+func (s *RetryLayerShippingMethodStore) FilterByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShippingMethodStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerShippingMethodStore) Get(methodID string) (*model.ShippingMethod, error) {
 
 	tries := 0
@@ -7519,6 +7539,26 @@ func (s *RetryLayerShippingMethodExcludedProductStore) Save(instance *model.Ship
 
 }
 
+func (s *RetryLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShippingMethodPostalCodeRuleStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error) {
 
 	tries := 0
@@ -7564,6 +7604,26 @@ func (s *RetryLayerShippingZoneStore) Upsert(shippingZone *model.ShippingZone) (
 	tries := 0
 	for {
 		result, err := s.ShippingZoneStore.Upsert(shippingZone)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingZoneChannelStore) FilterByOptions(options *model.ShippingZoneChannelFilterOptions) ([]*model.ShippingZoneChannel, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShippingZoneChannelStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}

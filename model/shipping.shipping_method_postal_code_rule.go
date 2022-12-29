@@ -2,6 +2,8 @@ package model
 
 import (
 	"strings"
+
+	"github.com/Masterminds/squirrel"
 )
 
 // max lengths for some fields
@@ -26,6 +28,20 @@ type ShippingMethodPostalCodeRule struct {
 	Start            string `json:"start"`
 	End              string `json:"end"`
 	InclusionType    string `json:"inclusion_type"`
+}
+
+type ShippingMethodPostalCodeRuleFilterOptions struct {
+	Id               squirrel.Sqlizer
+	ShippingMethodID squirrel.Sqlizer
+}
+
+func (r *ShippingMethodPostalCodeRule) DeepCopy() *ShippingMethodPostalCodeRule {
+	if r == nil {
+		return new(ShippingMethodPostalCodeRule)
+	}
+
+	res := *r
+	return &res
 }
 
 func (s *ShippingMethodPostalCodeRule) IsValid() *AppError {

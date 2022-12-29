@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
@@ -110,8 +111,57 @@ errorLabel:
 	return res
 }
 
+// idPairs are slices of shippingMethodID__channelID string formats
 func shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader(ctx context.Context, idPairs []string) []*dataloader.Result[*model.ShippingMethodChannelListing] {
-	panic("not implemented")
+	var (
+		res                             = make([]*dataloader.Result[*model.ShippingMethodChannelListing], len(idPairs))
+		shippingMethodIDs               []string
+		channelIDs                      []string
+		shippingMethodChannelListings   []*model.ShippingMethodChannelListing
+		appErr                          *model.AppError
+		shippingMethodChannelListingMap = map[string]*model.ShippingMethodChannelListing{} // keys are pair of shippingMethodID__channelID formats
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	for _, pair := range idPairs {
+		index := strings.Index(pair, "__")
+		if index < 0 {
+			continue
+		}
+
+		shippingMethodIDs = append(shippingMethodIDs, pair[:index])
+		channelIDs = append(channelIDs, pair[index+2:])
+	}
+
+	shippingMethodChannelListings, appErr = embedCtx.App.Srv().
+		ShippingService().
+		ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
+			ShippingMethodID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethodIDs},
+			ChannelID:        squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": channelIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	shippingMethodChannelListingMap = lo.SliceToMap(shippingMethodChannelListings, func(r *model.ShippingMethodChannelListing) (string, *model.ShippingMethodChannelListing) {
+		return r.ShippingMethodID + "__" + r.ChannelID, r
+	})
+
+	for idx, pair := range idPairs {
+		res[idx] = &dataloader.Result[*model.ShippingMethodChannelListing]{Data: shippingMethodChannelListingMap[pair]}
+	}
+	return res
+
+errorLabel:
+	for idx := range idPairs {
+		res[idx] = &dataloader.Result[*model.ShippingMethodChannelListing]{Error: err}
+	}
+	return res
 }
 
 func shippingZonesByChannelIdLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.ShippingZone] {
@@ -208,4 +258,86 @@ errorLabel:
 		res[idx] = &dataloader.Result[*model.ShippingZone]{Error: err}
 	}
 	return res
+}
+
+func shippingMethodsByShippingZoneIdLoader(ctx context.Context, shippingZoneIDs []string) []*dataloader.Result[[]*model.ShippingMethod] {
+	var (
+		res               = make([]*dataloader.Result[[]*model.ShippingMethod], len(shippingZoneIDs))
+		shippingMethods   []*model.ShippingMethod
+		appErr            *model.AppError
+		shippingMethodMap = map[string][]*model.ShippingMethod{} // keys are shipping zone ids
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	shippingMethods, appErr = embedCtx.App.Srv().
+		ShippingService().
+		ShippingMethodsByOptions(&model.ShippingMethodFilterOption{
+			ShippingZoneID: squirrel.Eq{store.ShippingMethodTableName + ".ShippingZoneID": shippingZoneIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, method := range shippingMethods {
+		shippingMethodMap[method.ShippingZoneID] = append(shippingMethodMap[method.ShippingZoneID], method)
+	}
+
+	for idx, zoneID := range shippingZoneIDs {
+		res[idx] = &dataloader.Result[[]*model.ShippingMethod]{Data: shippingMethodMap[zoneID]}
+	}
+	return res
+
+errorLabel:
+	for idx := range shippingZoneIDs {
+		res[idx] = &dataloader.Result[[]*model.ShippingMethod]{Error: err}
+	}
+	return res
+}
+
+func postalCodeRulesByShippingMethodIdLoader(ctx context.Context, shippingMethodIDs []string) []*dataloader.Result[[]*model.ShippingMethodPostalCodeRule] {
+	var (
+		res     = make([]*dataloader.Result[[]*model.ShippingMethodPostalCodeRule], len(shippingMethodIDs))
+		rules   []*model.ShippingMethodPostalCodeRule
+		appErr  *model.AppError
+		ruleMap = map[string][]*model.ShippingMethodPostalCodeRule{}
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	rules, appErr = embedCtx.App.Srv().
+		ShippingService().
+		ShippingMethodPostalCodeRulesByOptions(&model.ShippingMethodPostalCodeRuleFilterOptions{
+			ShippingMethodID: squirrel.Eq{store.ShippingMethodPostalCodeRuleTableName + ".ShippingMethodID": shippingMethodIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, rule := range rules {
+		ruleMap[rule.ShippingMethodID] = append(ruleMap[rule.ShippingMethodID], rule)
+	}
+
+	for idx, id := range shippingMethodIDs {
+		res[idx] = &dataloader.Result[[]*model.ShippingMethodPostalCodeRule]{Data: ruleMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range shippingMethodIDs {
+		res[idx] = &dataloader.Result[[]*model.ShippingMethodPostalCodeRule]{Error: err}
+	}
+	return res
+}
+
+func ShippingMethodsByShippingZoneIdAndChannelSlugLoader(ctx context.Context, idPairs []string) []*dataloader.Result[[]*model.ShippingMethod] {
+	panic("not implemented")
 }

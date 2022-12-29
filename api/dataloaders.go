@@ -59,10 +59,13 @@ type apiDataloaders struct {
 	ChannelWithHasOrdersByIdLoader *dataloader.Loader[string, *model.Channel]
 
 	// shipping
-	ShippingZoneByIdLoader                                             *dataloader.Loader[string, *model.ShippingZone]
-	ShippingZonesByChannelIdLoader                                     *dataloader.Loader[string, []*model.ShippingZone]
-	ShippingMethodByIdLoader                                           *dataloader.Loader[string, *model.ShippingMethod]
+	ShippingZoneByIdLoader         *dataloader.Loader[string, *model.ShippingZone]
+	ShippingZonesByChannelIdLoader *dataloader.Loader[string, []*model.ShippingZone]
+	ShippingMethodByIdLoader       *dataloader.Loader[string, *model.ShippingMethod]
+	// NOTE: pass in shippingMethodID__channelID values
 	ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader *dataloader.Loader[string, *model.ShippingMethodChannelListing]
+	ShippingMethodsByShippingZoneIdLoader                              *dataloader.Loader[string, []*model.ShippingMethod]
+	PostalCodeRulesByShippingMethodIdLoader                            *dataloader.Loader[string, []*model.ShippingMethodPostalCodeRule]
 
 	// discount
 	DiscountsByDateTimeLoader *dataloader.Loader[time.Time, []*model.DiscountInfo]
@@ -126,6 +129,8 @@ func init() {
 		ShippingZonesByChannelIdLoader: dataloader.NewBatchedLoader(shippingZonesByChannelIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingZone](batchCapacity)),
 		ShippingMethodByIdLoader:       dataloader.NewBatchedLoader(shippingMethodByIdLoader, dataloader.WithBatchCapacity[string, *model.ShippingMethod](batchCapacity)),
 		ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader: dataloader.NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, *model.ShippingMethodChannelListing](batchCapacity)),
+		ShippingMethodsByShippingZoneIdLoader:                              dataloader.NewBatchedLoader(shippingMethodsByShippingZoneIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethod](batchCapacity)),
+		PostalCodeRulesByShippingMethodIdLoader:                            dataloader.NewBatchedLoader(postalCodeRulesByShippingMethodIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethodPostalCodeRule](batchCapacity)),
 
 		// discount
 		DiscountsByDateTimeLoader: dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity)),

@@ -405,6 +405,8 @@ type (
 	}
 	ShippingMethodPostalCodeRuleStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
+		ScanFields(rule *model.ShippingMethodPostalCodeRule) []interface{}
+		FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error)
 	}
 	ShippingMethodChannelListingStore interface {
 		Upsert(listing *model.ShippingMethodChannelListing) (*model.ShippingMethodChannelListing, error)                      // Upsert depends on given listing's Id to decide whether to save or update the listing

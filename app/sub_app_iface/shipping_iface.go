@@ -28,4 +28,5 @@ type ShippingService interface {
 	ShippingZonesByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, *model.AppError)
 	// ShippingMethodsByOptions finds and returns all shipping methods that satisfy given fiter options
 	ShippingMethodsByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, *model.AppError)
+	ShippingMethodPostalCodeRulesByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, *model.AppError)
 }

@@ -2,7 +2,6 @@ package shipping
 
 import (
 	"database/sql"
-	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
@@ -137,7 +136,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 		params["ExcludedProductIDs"] = productIDs
 	}
 
-	query := `SELECT ` + strings.Join(selectFields, ",") + `,
+	query := `SELECT ` + selectFields.Join(",") + `,
 	(
 		SELECT
 			ShippingMethodChannelListings.PriceAmount
@@ -168,7 +167,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 				ShippingMethodChannelListings.ChannelID = :ChannelID
 				AND ShippingMethodChannelListings.Currency = :Currency
 				AND ShippingZoneChannels.ChannelID = :ChannelID
-				AND ShippingZones.Countries :: text LIKE :CountryCode ` + forExcludedProductQuery + `
+				AND ShippingZones.Countries::text LIKE :CountryCode ` + forExcludedProductQuery + `
 				AND ShippingMethods.Type = :PriceBasedShipType
 				AND ShippingMethods.Id IN (
 				SELECT
@@ -195,7 +194,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 							ShippingMethodChannelListings.ChannelID = :ChannelID
 							AND ShippingMethodChannelListings.Currency = :Currency
 							AND ShippingZoneChannels.ChannelID = :ChannelID
-							AND ShippingZones.Countries :: text LIKE :CountryCode
+							AND ShippingZones.Countries::text LIKE :CountryCode
 							AND ShippingMethods.Type = :PriceBasedShipType ` + forExcludedProductQuery + `
 						)
 					)
@@ -210,7 +209,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 				ShippingMethodChannelListings.ChannelID = :ChannelID
 				AND ShippingMethodChannelListings.Currency = :Currency
 				AND ShippingZoneChannels.ChannelID = :ChannelID
-				AND ShippingZones.Countries :: text LIKE :CountryCode ` + forExcludedProductQuery + `
+				AND ShippingZones.Countries::text LIKE :CountryCode ` + forExcludedProductQuery + `
 				AND ShippingMethods.Type = :WeightBasedShippingType
 				AND (
 					ShippingMethods.MinimumOrderWeight <= :MinimumOrderWeight
@@ -224,128 +223,53 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 		)
 	ORDER BY PriceAmount ASC`
 
-	// this struct inherits entirely from `ShippingMethod`, `ShippingZone`, `ShippingMethodPostalCodeRule`
-	var holder []*struct {
-		// fields of shipping method
-		MethodID              string
-		MethodName            string
-		Type                  string
-		ShippingZoneID        string
-		MinimumOrderWeight    float32
-		MaximumOrderWeight    *float32
-		WeightUnit            measurement.WeightUnit
-		MaximumDeliveryDays   *uint
-		MinimumDeliveryDays   *uint
-		MethodDescription     model.StringInterface
-		MethodMetadata        model.StringMap
-		MethodPrivateMetadata model.StringMap
-
-		// fields of shipping zone
-		ShippingZoneId              string
-		ShippingZoneName            string
-		Countries                   string
-		Default                     *bool
-		Description                 string
-		ShippingZoneMetadata        model.StringMap
-		ShippingZonePrivateMetadata model.StringMap
-
-		// fields for postal code rules
-		PostalCodeId     string
-		ShippingMethodID string
-		Start            string
-		End              string
-		InclusionType    string
-	}
-
 	// use Select() here since it can inteprets map[string]interface{} value mapping
 	// Query() cannot understand.
-	err := s.GetReplicaX().Select(&holder, query, params)
+	rows, err := s.GetReplicaX().NamedQuery(query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds shipping methods for given conditions")
 	}
+	defer rows.Close()
 
 	var (
-		shippingMethods []*model.ShippingMethod
+		results []*model.ShippingMethod
+		meetMap = map[string]struct{}{}
 
-		// since each model instance has got a unique UUID, so 1 meetMap is ok.
-		//
-		// 1 shipping method can have multiple shipping zones.
-		// 1 shipping method can have multiple shipping method postal code rules.
-		meetMap = map[string]bool{}
+		shippingMethod model.ShippingMethod
+		shippingZone   model.ShippingZone
+		postalCodeRule model.ShippingMethodPostalCodeRule
 	)
+	scanFields := s.ScanFields(&shippingMethod)
+	scanFields = append(scanFields, s.ShippingZone().ScanFields(&shippingZone)...)
+	scanFields = append(scanFields, s.ShippingMethodPostalCodeRule().ScanFields(&postalCodeRule))
 
-	for _, item := range holder {
-		// check if item is not nil
-		if item != nil {
-			var shippingMethod *model.ShippingMethod
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan row")
+		}
 
-			// check if this method is already parsed
-			if _, exist := meetMap[item.MethodID]; !exist {
-				shippingMethod = &model.ShippingMethod{
-					Id:                  item.MethodID,
-					Name:                item.MethodName,
-					Type:                item.Type,
-					ShippingZoneID:      item.ShippingZoneID,
-					MinimumOrderWeight:  item.MinimumOrderWeight,
-					MaximumOrderWeight:  item.MaximumOrderWeight,
-					WeightUnit:          item.WeightUnit,
-					MaximumDeliveryDays: item.MaximumDeliveryDays,
-					MinimumDeliveryDays: item.MinimumDeliveryDays,
-					Description:         item.MethodDescription,
-					ModelMetadata: model.ModelMetadata{
-						Metadata:        model.StringMAP(item.MethodMetadata),
-						PrivateMetadata: model.StringMAP(item.MethodPrivateMetadata),
-					},
-				}
+		var copyShippingMethod *model.ShippingMethod = nil
 
-				// append shipping method to the defined slice
-				shippingMethods = append(shippingMethods, shippingMethod)
+		if _, exist := meetMap[shippingMethod.Id]; !exist {
+			copyShippingMethod := shippingMethod.DeepCopy()
+			results = append(results, copyShippingMethod)
 
-				// let meepMap hold parsed value for later check
-				meetMap[item.MethodID] = true
-			}
+			meetMap[shippingMethod.Id] = struct{}{}
+		}
 
-			// check if this zone is already parsed:
-			if _, exist := meetMap[item.ShippingZoneId]; !exist && shippingMethod != nil {
-				shippingMethod.ShippingZones = append(
-					shippingMethod.ShippingZones,
-					&model.ShippingZone{
-						Id:          item.ShippingZoneId,
-						Name:        item.ShippingZoneName,
-						Countries:   item.Countries,
-						Default:     item.Default,
-						Description: item.Description,
-						ModelMetadata: model.ModelMetadata{
-							Metadata:        model.StringMAP(item.ShippingZoneMetadata),
-							PrivateMetadata: model.StringMAP(item.ShippingZonePrivateMetadata),
-						},
-					},
-				)
+		if _, exist := meetMap[shippingZone.Id]; !exist && copyShippingMethod != nil {
+			copyShippingMethod.ShippingZones = append(copyShippingMethod.ShippingZones, shippingZone.DeepCopy())
+			meetMap[shippingZone.Id] = struct{}{}
+		}
 
-				// let meetMap hold the id for later check
-				meetMap[item.ShippingZoneId] = true
-			}
-
-			// check if this postal code rule is already parsed:
-			if _, exist := meetMap[item.PostalCodeId]; !exist && shippingMethod != nil {
-				shippingMethod.ShippingMethodPostalCodeRules = append(
-					shippingMethod.ShippingMethodPostalCodeRules,
-					&model.ShippingMethodPostalCodeRule{
-						Id:               item.PostalCodeId,
-						ShippingMethodID: item.ShippingMethodID,
-						Start:            item.Start,
-						End:              item.End,
-						InclusionType:    item.InclusionType,
-					},
-				)
-
-				// let meetMap hold the id for later check:
-				meetMap[item.PostalCodeId] = true
-			}
+		if _, exist := meetMap[postalCodeRule.Id]; !exist && copyShippingMethod != nil {
+			copyShippingMethod.ShippingMethodPostalCodeRules = append(copyShippingMethod.ShippingMethodPostalCodeRules, postalCodeRule.DeepCopy())
+			meetMap[postalCodeRule.Id] = struct{}{}
 		}
 	}
 
-	return shippingMethods, nil
+	return results, nil
 }
 
 func (ss *SqlShippingMethodStore) commonQueryBuilder(options *model.ShippingMethodFilterOption) squirrel.SelectBuilder {
@@ -371,6 +295,9 @@ func (ss *SqlShippingMethodStore) commonQueryBuilder(options *model.ShippingMeth
 	}
 	if options.ChannelListingsChannelSlug != nil {
 		query = query.Where(options.ChannelListingsChannelSlug)
+	}
+	if options.ShippingZoneID != nil {
+		query = query.Where(options.ShippingZoneID)
 	}
 
 	return query
