@@ -42,8 +42,8 @@ input ProductTypeInput {
 }
 
 enum ProductTypeKindEnum {
-  NORMAL
-  GIFT_CARD
+  normal
+  gift_card
 }
 
 type ProductTypeCreate {

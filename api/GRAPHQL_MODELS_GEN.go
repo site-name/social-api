@@ -4299,10 +4299,6 @@ func (e AccountErrorCode) IsValid() bool {
 	return false
 }
 
-func (e AccountErrorCode) String() string {
-	return string(e)
-}
-
 type AddressTypeEnum string
 
 const (
@@ -4316,10 +4312,6 @@ func (e AddressTypeEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e AddressTypeEnum) String() string {
-	return string(e)
 }
 
 type AppErrorCode string
@@ -4348,10 +4340,6 @@ func (e AppErrorCode) IsValid() bool {
 	return false
 }
 
-func (e AppErrorCode) String() string {
-	return string(e)
-}
-
 type AppExtensionTargetEnum string
 
 const (
@@ -4365,10 +4353,6 @@ func (e AppExtensionTargetEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e AppExtensionTargetEnum) String() string {
-	return string(e)
 }
 
 type AppExtensionTypeEnum string
@@ -4386,10 +4370,6 @@ func (e AppExtensionTypeEnum) IsValid() bool {
 	return false
 }
 
-func (e AppExtensionTypeEnum) String() string {
-	return string(e)
-}
-
 type AppExtensionViewEnum string
 
 const (
@@ -4402,10 +4382,6 @@ func (e AppExtensionViewEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e AppExtensionViewEnum) String() string {
-	return string(e)
 }
 
 type AppSortField string
@@ -4423,10 +4399,6 @@ func (e AppSortField) IsValid() bool {
 	return false
 }
 
-func (e AppSortField) String() string {
-	return string(e)
-}
-
 type AppTypeEnum string
 
 const (
@@ -4442,10 +4414,6 @@ func (e AppTypeEnum) IsValid() bool {
 	return false
 }
 
-func (e AppTypeEnum) String() string {
-	return string(e)
-}
-
 type AreaUnitsEnum string
 
 const (
@@ -4455,7 +4423,6 @@ const (
 	AreaUnitsEnumSqFt   AreaUnitsEnum = measurement.SQ_FT
 	AreaUnitsEnumSqYd   AreaUnitsEnum = measurement.SQ_YD
 	AreaUnitsEnumSqInch AreaUnitsEnum = measurement.SQ_INCH
-	// a = measurement.SQ_CM
 )
 
 func (e AreaUnitsEnum) IsValid() bool {
@@ -4464,10 +4431,6 @@ func (e AreaUnitsEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e AreaUnitsEnum) String() string {
-	return string(e)
 }
 
 type AttributeChoicesSortField string
@@ -4485,10 +4448,6 @@ func (e AttributeChoicesSortField) IsValid() bool {
 	return false
 }
 
-func (e AttributeChoicesSortField) String() string {
-	return string(e)
-}
-
 type AttributeEntityTypeEnum string
 
 const (
@@ -4502,10 +4461,6 @@ func (e AttributeEntityTypeEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e AttributeEntityTypeEnum) String() string {
-	return string(e)
 }
 
 type AttributeErrorCode string
@@ -4525,10 +4480,6 @@ func (e AttributeErrorCode) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e AttributeErrorCode) String() string {
-	return string(e)
 }
 
 type AttributeInputTypeEnum string
@@ -4554,10 +4505,6 @@ func (e AttributeInputTypeEnum) IsValid() bool {
 	return false
 }
 
-func (e AttributeInputTypeEnum) String() string {
-	return string(e)
-}
-
 type AttributeSortField string
 
 const (
@@ -4580,10 +4527,6 @@ func (e AttributeSortField) IsValid() bool {
 	return false
 }
 
-func (e AttributeSortField) String() string {
-	return string(e)
-}
-
 type AttributeTypeEnum string
 
 const (
@@ -4597,10 +4540,6 @@ func (e AttributeTypeEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e AttributeTypeEnum) String() string {
-	return string(e)
 }
 
 type CategorySortField string
@@ -4617,10 +4556,6 @@ func (e CategorySortField) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e CategorySortField) String() string {
-	return string(e)
 }
 
 type ChannelErrorCode string
@@ -4643,10 +4578,6 @@ func (e ChannelErrorCode) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e ChannelErrorCode) String() string {
-	return string(e)
 }
 
 type CheckoutErrorCode string
@@ -4687,10 +4618,6 @@ func (e CheckoutErrorCode) IsValid() bool {
 	return false
 }
 
-func (e CheckoutErrorCode) String() string {
-	return string(e)
-}
-
 type CollectionErrorCode string
 
 const (
@@ -4711,10 +4638,6 @@ func (e CollectionErrorCode) IsValid() bool {
 	return false
 }
 
-func (e CollectionErrorCode) String() string {
-	return string(e)
-}
-
 type CollectionPublished string
 
 const (
@@ -4728,10 +4651,6 @@ func (e CollectionPublished) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e CollectionPublished) String() string {
-	return string(e)
 }
 
 type CollectionSortField string
@@ -4749,10 +4668,6 @@ func (e CollectionSortField) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e CollectionSortField) String() string {
-	return string(e)
 }
 
 type ConfigurationTypeFieldEnum string
@@ -4773,10 +4688,6 @@ func (e ConfigurationTypeFieldEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e ConfigurationTypeFieldEnum) String() string {
-	return string(e)
 }
 
 type CountryCode string
@@ -5042,10 +4953,6 @@ func (e CountryCode) IsValid() bool {
 	return false
 }
 
-func (e CountryCode) String() string {
-	return string(e)
-}
-
 type CustomerEventsEnum string
 
 const (
@@ -5072,10 +4979,6 @@ func (e CustomerEventsEnum) IsValid() bool {
 	return false
 }
 
-func (e CustomerEventsEnum) String() string {
-	return string(e)
-}
-
 type DiscountErrorCode string
 
 const (
@@ -5097,10 +5000,6 @@ func (e DiscountErrorCode) IsValid() bool {
 	return false
 }
 
-func (e DiscountErrorCode) String() string {
-	return string(e)
-}
-
 type DiscountStatusEnum string
 
 const (
@@ -5117,10 +5016,6 @@ func (e DiscountStatusEnum) IsValid() bool {
 	return false
 }
 
-func (e DiscountStatusEnum) String() string {
-	return string(e)
-}
-
 type DiscountValueTypeEnum string
 
 const (
@@ -5134,10 +5029,6 @@ func (e DiscountValueTypeEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e DiscountValueTypeEnum) String() string {
-	return string(e)
 }
 
 type DistanceUnitsEnum string
@@ -5159,10 +5050,6 @@ func (e DistanceUnitsEnum) IsValid() bool {
 	return false
 }
 
-func (e DistanceUnitsEnum) String() string {
-	return string(e)
-}
-
 type ExportEventsEnum string
 
 const (
@@ -5182,10 +5069,6 @@ func (e ExportEventsEnum) IsValid() bool {
 	return false
 }
 
-func (e ExportEventsEnum) String() string {
-	return string(e)
-}
-
 type ExportFileSortField string
 
 const (
@@ -5202,10 +5085,6 @@ func (e ExportFileSortField) IsValid() bool {
 	return false
 }
 
-func (e ExportFileSortField) String() string {
-	return string(e)
-}
-
 type ExportScope string
 
 const (
@@ -5220,10 +5099,6 @@ func (e ExportScope) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e ExportScope) String() string {
-	return string(e)
 }
 
 type ExternalNotificationErrorCodes string
@@ -5243,10 +5118,6 @@ func (e ExternalNotificationErrorCodes) IsValid() bool {
 	return false
 }
 
-func (e ExternalNotificationErrorCodes) String() string {
-	return string(e)
-}
-
 type FileTypesEnum string
 
 const (
@@ -5260,10 +5131,6 @@ func (e FileTypesEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e FileTypesEnum) String() string {
-	return string(e)
 }
 
 type FulfillmentStatus string
@@ -5286,10 +5153,6 @@ func (e FulfillmentStatus) IsValid() bool {
 	return false
 }
 
-func (e FulfillmentStatus) String() string {
-	return string(e)
-}
-
 type GiftCardErrorCode string
 
 const (
@@ -5307,10 +5170,6 @@ func (e GiftCardErrorCode) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e GiftCardErrorCode) String() string {
-	return string(e)
 }
 
 type GiftCardEventsEnum = model.GiftcardEventType
@@ -5338,10 +5197,6 @@ const (
 // 	return false
 // }
 
-// func (e GiftCardEventsEnum) String() string {
-// 	return string(e)
-// }
-
 type GiftCardSettingsErrorCode string
 
 const (
@@ -5356,10 +5211,6 @@ func (e GiftCardSettingsErrorCode) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e GiftCardSettingsErrorCode) String() string {
-	return string(e)
 }
 
 type GiftCardSettingsExpiryTypeEnum string
@@ -5377,10 +5228,6 @@ func (e GiftCardSettingsExpiryTypeEnum) IsValid() bool {
 	return false
 }
 
-func (e GiftCardSettingsExpiryTypeEnum) String() string {
-	return string(e)
-}
-
 type GiftCardSortField string
 
 const (
@@ -5396,10 +5243,6 @@ func (e GiftCardSortField) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e GiftCardSortField) String() string {
-	return string(e)
 }
 
 type InvoiceErrorCode string
@@ -5422,10 +5265,6 @@ func (e InvoiceErrorCode) IsValid() bool {
 	return false
 }
 
-func (e InvoiceErrorCode) String() string {
-	return string(e)
-}
-
 type JobStatusEnum string
 
 const (
@@ -5441,10 +5280,6 @@ func (e JobStatusEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e JobStatusEnum) String() string {
-	return string(e)
 }
 
 type LanguageCodeEnum string
@@ -6239,10 +6074,6 @@ func (e LanguageCodeEnum) IsValid() bool {
 	return false
 }
 
-func (e LanguageCodeEnum) String() string {
-	return string(e)
-}
-
 type LoginErrorCode string
 
 const (
@@ -6259,10 +6090,6 @@ func (e LoginErrorCode) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e LoginErrorCode) String() string {
-	return string(e)
 }
 
 type MeasurementUnitsEnum string
@@ -6308,10 +6135,6 @@ func (e MeasurementUnitsEnum) IsValid() bool {
 	return false
 }
 
-func (e MeasurementUnitsEnum) String() string {
-	return string(e)
-}
-
 type MenuErrorCode string
 
 const (
@@ -6334,10 +6157,6 @@ func (e MenuErrorCode) IsValid() bool {
 	return false
 }
 
-func (e MenuErrorCode) String() string {
-	return string(e)
-}
-
 type MenuItemsSortField string
 
 const (
@@ -6350,10 +6169,6 @@ func (e MenuItemsSortField) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e MenuItemsSortField) String() string {
-	return string(e)
 }
 
 type MenuSortField string
@@ -6369,10 +6184,6 @@ func (e MenuSortField) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e MenuSortField) String() string {
-	return string(e)
 }
 
 type MetadataErrorCode string
@@ -6392,10 +6203,6 @@ func (e MetadataErrorCode) IsValid() bool {
 	return false
 }
 
-func (e MetadataErrorCode) String() string {
-	return string(e)
-}
-
 type NavigationType string
 
 const (
@@ -6409,10 +6216,6 @@ func (e NavigationType) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e NavigationType) String() string {
-	return string(e)
 }
 
 type OrderAction string
@@ -6432,28 +6235,12 @@ func (e OrderAction) IsValid() bool {
 	return false
 }
 
-func (e OrderAction) String() string {
-	return string(e)
-}
-
 type OrderDirection = model.OrderDirection
 
 const (
 	OrderDirectionAsc  OrderDirection = model.ASC
 	OrderDirectionDesc OrderDirection = model.DESC
 )
-
-// func (e OrderDirection) IsValid() bool {
-// 	switch e {
-// 	case OrderDirectionAsc, OrderDirectionDesc:
-// 		return true
-// 	}
-// 	return false
-// }
-
-// func (e OrderDirection) String() string {
-// 	return string(e)
-// }
 
 type OrderDiscountType string
 
@@ -6468,10 +6255,6 @@ func (e OrderDiscountType) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e OrderDiscountType) String() string {
-	return string(e)
 }
 
 type OrderErrorCode string
@@ -6518,10 +6301,6 @@ func (e OrderErrorCode) IsValid() bool {
 	return false
 }
 
-func (e OrderErrorCode) String() string {
-	return string(e)
-}
-
 type OrderEventsEmailsEnum string
 
 const (
@@ -6542,10 +6321,6 @@ func (e OrderEventsEmailsEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e OrderEventsEmailsEnum) String() string {
-	return string(e)
 }
 
 type OrderEventsEnum string
@@ -6601,10 +6376,6 @@ func (e OrderEventsEnum) IsValid() bool {
 	return false
 }
 
-func (e OrderEventsEnum) String() string {
-	return string(e)
-}
-
 type OrderOriginEnum string
 
 const (
@@ -6621,10 +6392,6 @@ func (e OrderOriginEnum) IsValid() bool {
 	return false
 }
 
-func (e OrderOriginEnum) String() string {
-	return string(e)
-}
-
 type OrderSettingsErrorCode string
 
 const (
@@ -6637,10 +6404,6 @@ func (e OrderSettingsErrorCode) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e OrderSettingsErrorCode) String() string {
-	return string(e)
 }
 
 type OrderSortField string
@@ -6659,10 +6422,6 @@ func (e OrderSortField) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e OrderSortField) String() string {
-	return string(e)
 }
 
 type OrderStatus string
@@ -6686,10 +6445,6 @@ func (e OrderStatus) IsValid() bool {
 	return false
 }
 
-func (e OrderStatus) String() string {
-	return string(e)
-}
-
 type OrderStatusFilter string
 
 const (
@@ -6708,10 +6463,6 @@ func (e OrderStatusFilter) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e OrderStatusFilter) String() string {
-	return string(e)
 }
 
 type PageErrorCode string
@@ -6734,10 +6485,6 @@ func (e PageErrorCode) IsValid() bool {
 	return false
 }
 
-func (e PageErrorCode) String() string {
-	return string(e)
-}
-
 type PageSortField string
 
 const (
@@ -6756,10 +6503,6 @@ func (e PageSortField) IsValid() bool {
 	return false
 }
 
-func (e PageSortField) String() string {
-	return string(e)
-}
-
 type PageTypeSortField string
 
 const (
@@ -6773,10 +6516,6 @@ func (e PageTypeSortField) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e PageTypeSortField) String() string {
-	return string(e)
 }
 
 type PaymentChargeStatusEnum string
@@ -6798,10 +6537,6 @@ func (e PaymentChargeStatusEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e PaymentChargeStatusEnum) String() string {
-	return string(e)
 }
 
 type PaymentErrorCode string
@@ -6828,10 +6563,6 @@ func (e PaymentErrorCode) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e PaymentErrorCode) String() string {
-	return string(e)
 }
 
 type PermissionEnum string
@@ -6866,10 +6597,6 @@ func (e PermissionEnum) IsValid() bool {
 	return false
 }
 
-func (e PermissionEnum) String() string {
-	return string(e)
-}
-
 type PermissionGroupErrorCode string
 
 const (
@@ -6891,10 +6618,6 @@ func (e PermissionGroupErrorCode) IsValid() bool {
 	return false
 }
 
-func (e PermissionGroupErrorCode) String() string {
-	return string(e)
-}
-
 type PermissionGroupSortField string
 
 const (
@@ -6907,10 +6630,6 @@ func (e PermissionGroupSortField) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e PermissionGroupSortField) String() string {
-	return string(e)
 }
 
 type PluginConfigurationType string
@@ -6926,10 +6645,6 @@ func (e PluginConfigurationType) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e PluginConfigurationType) String() string {
-	return string(e)
 }
 
 type PluginErrorCode string
@@ -6951,10 +6666,6 @@ func (e PluginErrorCode) IsValid() bool {
 	return false
 }
 
-func (e PluginErrorCode) String() string {
-	return string(e)
-}
-
 type PluginSortField string
 
 const (
@@ -6968,10 +6679,6 @@ func (e PluginSortField) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e PluginSortField) String() string {
-	return string(e)
 }
 
 type PostalCodeRuleInclusionTypeEnum string
@@ -6989,10 +6696,6 @@ func (e PostalCodeRuleInclusionTypeEnum) IsValid() bool {
 	return false
 }
 
-func (e PostalCodeRuleInclusionTypeEnum) String() string {
-	return string(e)
-}
-
 type ProductAttributeType string
 
 const (
@@ -7006,10 +6709,6 @@ func (e ProductAttributeType) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e ProductAttributeType) String() string {
-	return string(e)
 }
 
 type ProductErrorCode string
@@ -7042,10 +6741,6 @@ func (e ProductErrorCode) IsValid() bool {
 	return false
 }
 
-func (e ProductErrorCode) String() string {
-	return string(e)
-}
-
 type ProductFieldEnum string
 
 const (
@@ -7071,10 +6766,6 @@ func (e ProductFieldEnum) IsValid() bool {
 	return false
 }
 
-func (e ProductFieldEnum) String() string {
-	return string(e)
-}
-
 type ProductMediaType string
 
 const (
@@ -7088,10 +6779,6 @@ func (e ProductMediaType) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e ProductMediaType) String() string {
-	return string(e)
 }
 
 type ProductOrderField string
@@ -7117,10 +6804,6 @@ func (e ProductOrderField) IsValid() bool {
 	return false
 }
 
-func (e ProductOrderField) String() string {
-	return string(e)
-}
-
 type ProductTypeConfigurable string
 
 const (
@@ -7134,10 +6817,6 @@ func (e ProductTypeConfigurable) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e ProductTypeConfigurable) String() string {
-	return string(e)
 }
 
 type ProductTypeEnum string
@@ -7155,10 +6834,6 @@ func (e ProductTypeEnum) IsValid() bool {
 	return false
 }
 
-func (e ProductTypeEnum) String() string {
-	return string(e)
-}
-
 type ProductTypeKindEnum string
 
 const (
@@ -7172,10 +6847,6 @@ func (e ProductTypeKindEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e ProductTypeKindEnum) String() string {
-	return string(e)
 }
 
 type ProductTypeSortField string
@@ -7194,10 +6865,6 @@ func (e ProductTypeSortField) IsValid() bool {
 	return false
 }
 
-func (e ProductTypeSortField) String() string {
-	return string(e)
-}
-
 type ReportingPeriod string
 
 const (
@@ -7211,10 +6878,6 @@ func (e ReportingPeriod) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e ReportingPeriod) String() string {
-	return string(e)
 }
 
 type SaleSortField string
@@ -7235,10 +6898,6 @@ func (e SaleSortField) IsValid() bool {
 	return false
 }
 
-func (e SaleSortField) String() string {
-	return string(e)
-}
-
 type SaleType string
 
 const (
@@ -7252,10 +6911,6 @@ func (e SaleType) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e SaleType) String() string {
-	return string(e)
 }
 
 type ShippingErrorCode string
@@ -7279,10 +6934,6 @@ func (e ShippingErrorCode) IsValid() bool {
 	return false
 }
 
-func (e ShippingErrorCode) String() string {
-	return string(e)
-}
-
 type ShippingMethodTypeEnum string
 
 const (
@@ -7296,10 +6947,6 @@ func (e ShippingMethodTypeEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e ShippingMethodTypeEnum) String() string {
-	return string(e)
 }
 
 type ShopErrorCode string
@@ -7322,10 +6969,6 @@ func (e ShopErrorCode) IsValid() bool {
 	return false
 }
 
-func (e ShopErrorCode) String() string {
-	return string(e)
-}
-
 type StaffMemberStatus string
 
 const (
@@ -7341,10 +6984,6 @@ func (e StaffMemberStatus) IsValid() bool {
 	return false
 }
 
-func (e StaffMemberStatus) String() string {
-	return string(e)
-}
-
 type StockAvailability string
 
 const (
@@ -7358,10 +6997,6 @@ func (e StockAvailability) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e StockAvailability) String() string {
-	return string(e)
 }
 
 type StockErrorCode string
@@ -7383,10 +7018,6 @@ func (e StockErrorCode) IsValid() bool {
 	return false
 }
 
-func (e StockErrorCode) String() string {
-	return string(e)
-}
-
 type StorePaymentMethodEnum string
 
 const (
@@ -7401,10 +7032,6 @@ func (e StorePaymentMethodEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e StorePaymentMethodEnum) String() string {
-	return string(e)
 }
 
 type TimePeriodTypeEnum string
@@ -7422,10 +7049,6 @@ func (e TimePeriodTypeEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e TimePeriodTypeEnum) String() string {
-	return string(e)
 }
 
 type TransactionKind string
@@ -7449,10 +7072,6 @@ func (e TransactionKind) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e TransactionKind) String() string {
-	return string(e)
 }
 
 type TranslatableKinds string
@@ -7479,10 +7098,6 @@ func (e TranslatableKinds) IsValid() bool {
 	return false
 }
 
-func (e TranslatableKinds) String() string {
-	return string(e)
-}
-
 type TranslationErrorCode string
 
 const (
@@ -7499,10 +7114,6 @@ func (e TranslationErrorCode) IsValid() bool {
 	return false
 }
 
-func (e TranslationErrorCode) String() string {
-	return string(e)
-}
-
 type UploadErrorCode string
 
 const (
@@ -7515,10 +7126,6 @@ func (e UploadErrorCode) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e UploadErrorCode) String() string {
-	return string(e)
 }
 
 type UserSortField string
@@ -7538,10 +7145,6 @@ func (e UserSortField) IsValid() bool {
 	return false
 }
 
-func (e UserSortField) String() string {
-	return string(e)
-}
-
 type VariantAttributeScope string
 
 const (
@@ -7556,10 +7159,6 @@ func (e VariantAttributeScope) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e VariantAttributeScope) String() string {
-	return string(e)
 }
 
 type VolumeUnitsEnum string
@@ -7588,10 +7187,6 @@ func (e VolumeUnitsEnum) IsValid() bool {
 	return false
 }
 
-func (e VolumeUnitsEnum) String() string {
-	return string(e)
-}
-
 type VoucherDiscountType string
 
 const (
@@ -7606,10 +7201,6 @@ func (e VoucherDiscountType) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e VoucherDiscountType) String() string {
-	return string(e)
 }
 
 type VoucherSortField string
@@ -7632,10 +7223,6 @@ func (e VoucherSortField) IsValid() bool {
 	return false
 }
 
-func (e VoucherSortField) String() string {
-	return string(e)
-}
-
 type VoucherTypeEnum string
 
 const (
@@ -7652,10 +7239,6 @@ func (e VoucherTypeEnum) IsValid() bool {
 	return false
 }
 
-func (e VoucherTypeEnum) String() string {
-	return string(e)
-}
-
 type WarehouseClickAndCollectOptionEnum string
 
 const (
@@ -7670,10 +7253,6 @@ func (e WarehouseClickAndCollectOptionEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e WarehouseClickAndCollectOptionEnum) String() string {
-	return string(e)
 }
 
 type WarehouseErrorCode string
@@ -7695,10 +7274,6 @@ func (e WarehouseErrorCode) IsValid() bool {
 	return false
 }
 
-func (e WarehouseErrorCode) String() string {
-	return string(e)
-}
-
 type WarehouseSortField string
 
 const (
@@ -7711,10 +7286,6 @@ func (e WarehouseSortField) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e WarehouseSortField) String() string {
-	return string(e)
 }
 
 type WebhookErrorCode string
@@ -7733,10 +7304,6 @@ func (e WebhookErrorCode) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e WebhookErrorCode) String() string {
-	return string(e)
 }
 
 type WebhookEventTypeEnum string
@@ -7795,10 +7362,6 @@ func (e WebhookEventTypeEnum) IsValid() bool {
 	return false
 }
 
-func (e WebhookEventTypeEnum) String() string {
-	return string(e)
-}
-
 type WebhookSampleEventTypeEnum string
 
 const (
@@ -7854,10 +7417,6 @@ func (e WebhookSampleEventTypeEnum) IsValid() bool {
 	return false
 }
 
-func (e WebhookSampleEventTypeEnum) String() string {
-	return string(e)
-}
-
 type WeightUnitsEnum string
 
 const (
@@ -7874,8 +7433,4 @@ func (e WeightUnitsEnum) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (e WeightUnitsEnum) String() string {
-	return string(e)
 }

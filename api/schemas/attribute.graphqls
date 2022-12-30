@@ -170,8 +170,8 @@ type AttributeReorderValues {
 }
 
 enum AttributeEntityTypeEnum {
-  PAGE
-  PRODUCT
+  page
+  product
 }
 
 type AttributeError {
@@ -181,12 +181,12 @@ type AttributeError {
 }
 
 enum AttributeErrorCode {
-  ALREADY_EXISTS
-  GRAPHQL_ERROR
-  INVALID
-  NOT_FOUND
-  REQUIRED
-  UNIQUE
+  already_exists
+  graphql_error
+  invalid
+  not_found
+  required
+  unique
 }
 
 input AttributeFilterInput {
@@ -243,16 +243,16 @@ input AttributeInput {
 }
 
 enum AttributeInputTypeEnum {
-  DROPDOWN
-  MULTISELECT
-  FILE
-  REFERENCE
-  NUMERIC
-  RICH_TEXT
-  SWATCH
-  BOOLEAN
-  DATE
-  DATE_TIME
+  dropdown
+  multiselect
+  file
+  reference
+  numeric
+  rich_text
+  swatch
+  boolean
+  date
+  date_time
 }
 
 type AttributeTranslation  {
@@ -262,8 +262,8 @@ type AttributeTranslation  {
 }
 
 enum AttributeTypeEnum {
-  PRODUCT_TYPE
-  PAGE_TYPE
+  product_type
+  page_type
 }
 
 type AttributeValue  {

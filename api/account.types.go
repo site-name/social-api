@@ -43,7 +43,10 @@ func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 	}
 
 	// get current user
-	user, appErr := embedContext.App.Srv().AccountService().UserById(ctx, embedContext.AppContext.Session().UserId)
+	user, appErr := embedContext.App.
+		Srv().
+		AccountService().
+		UserById(ctx, embedContext.AppContext.Session().UserId)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -116,7 +119,7 @@ errLabel:
 
 func SystemUserToGraphqlUser(u *model.User) *User {
 	if u == nil {
-		return nil
+		return new(User)
 	}
 
 	res := &User{
@@ -126,7 +129,7 @@ func SystemUserToGraphqlUser(u *model.User) *User {
 		LastName:                 u.LastName,
 		UserName:                 u.Username,
 		IsActive:                 u.IsActive,
-		LanguageCode:             LanguageCodeEnum(strings.ToUpper(strings.Join(strings.Split(u.Locale, "-"), "_"))),
+		LanguageCode:             SystemLanguageToGraphqlLanguageCodeEnum(u.Locale),
 		DefaultShippingAddressID: u.DefaultShippingAddressID,
 		DefaultBillingAddressID:  u.DefaultBillingAddressID,
 		note:                     u.Note,
@@ -179,7 +182,7 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 	return SystemAddressToGraphqlAddress(address), nil
 }
 
-func (u *User) StoredPaymentSources(ctx context.Context) ([]*PaymentSource, error) {
+func (u *User) StoredPaymentSources(ctx context.Context, args struct{ Channel *string }) ([]*PaymentSource, error) {
 	// check if current user is this user
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
@@ -193,8 +196,22 @@ func (u *User) StoredPaymentSources(ctx context.Context) ([]*PaymentSource, erro
 	return nil, model.NewAppError("account.StoredPaymentSources", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 }
 
-func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel string }) ([]string, error) {
-	panic("not implemented")
+// args.Channel is channel id
+func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string }) ([]string, error) {
+	var checkouts []*model.Checkout
+	var err error
+
+	if args.Channel == nil {
+		checkouts, err = dataloaders.CheckoutByUserLoader.Load(ctx, u.ID)()
+	} else {
+		checkouts, err = dataloaders.CheckoutByUserAndChannelLoader.Load(ctx, u.ID+"__"+*args.Channel)()
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return lo.Map(checkouts, func(c *model.Checkout, _ int) string { return c.Token }), nil
 }
 
 func (u *User) Addresses(ctx context.Context) ([]*Address, error) {

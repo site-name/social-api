@@ -58,8 +58,8 @@ type ExportFileCountableConnection {
 }
 
 enum FileTypesEnum {
-  CSV
-  XLSX
+  csv
+  xlsx
 }
 
 # type ExportError {
@@ -85,12 +85,12 @@ type ExportEvent  {
 }
 
 enum ExportEventsEnum {
-  EXPORT_PENDING
-  EXPORT_SUCCESS
-  EXPORT_FAILED
-  EXPORT_DELETED
-  EXPORTED_FILE_SENT
-  EXPORT_FAILED_INFO_SENT
+  export_pending
+  export_success
+  export_failed
+  export_deleted
+  exported_file_sent
+  export_failed_info_sent
 }
 
 enum ExportFileSortField {

@@ -34,7 +34,6 @@ const (
 
 type AttributeInputType string
 
-// choices for attribute's input type
 const (
 	DROPDOWN    AttributeInputType = "dropdown"    //
 	MULTISELECT AttributeInputType = "multiselect" //

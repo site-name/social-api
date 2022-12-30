@@ -163,18 +163,18 @@ type GiftCardEventBalance {
 }
 
 enum GiftCardEventsEnum {
-  ISSUED
-  BOUGHT
-  UPDATED
-  ACTIVATED
-  DEACTIVATED
-  BALANCE_RESET
-  EXPIRY_DATE_UPDATED
-  TAG_UPDATED
-  SENT_TO_CUSTOMER
-  RESENT
-  NOTE_ADDED
-  USED_IN_ORDER
+  issued
+  bought
+  updated
+  activated
+  deactivated
+  balance_reset
+  expiry_date_updated
+  tag_updated
+  sent_to_customer
+  resent
+  note_added
+  used_in_order
 }
 
 input GiftCardFilterInput {
@@ -217,8 +217,8 @@ enum GiftCardSettingsErrorCode {
 }
 
 enum GiftCardSettingsExpiryTypeEnum {
-  NEVER_EXPIRE
-  EXPIRY_PERIOD
+  never_expire
+  expiry_period
 }
 
 type GiftCardSettingsUpdate {

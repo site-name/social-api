@@ -72,14 +72,14 @@ type PaymentCountableConnection {
 }
 
 enum PaymentChargeStatusEnum {
-  NOT_CHARGED
-  PENDING
-  PARTIALLY_CHARGED
-  FULLY_CHARGED
-  PARTIALLY_REFUNDED
-  FULLY_REFUNDED
-  REFUSED
-  CANCELLED
+  not_charged
+  pending
+  partially_charged
+  fully_charged
+  partially_refunded
+  partially_refunded
+  refused
+  cancelled
 }
 
 type PaymentError {
@@ -128,14 +128,14 @@ type Transaction  {
 }
 
 enum TransactionKind {
-  EXTERNAL
-  AUTH
-  PENDING
-  ACTION_TO_CONFIRM
-  REFUND
-  REFUND_ONGOING
-  CAPTURE
-  VOID
-  CONFIRM
-  CANCEL
+  external
+  auth
+  pending
+  action_to_confirm
+  refund
+  refund_ongoing
+  capture
+  void
+  confirm
+  cancel
 }

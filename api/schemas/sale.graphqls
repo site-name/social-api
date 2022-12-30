@@ -129,8 +129,8 @@ type SaleCountableEdge {
 }
 
 enum SaleType {
-  FIXED
-  PERCENTAGE
+  fixed
+  percentage
 }
 
 type SaleTranslation  {
@@ -147,8 +147,8 @@ type SaleChannelListing  {
 }
 
 enum DiscountValueTypeEnum {
-  FIXED
-  PERCENTAGE
+  fixed
+  percentage
 }
 
 input SaleChannelListingAddInput {

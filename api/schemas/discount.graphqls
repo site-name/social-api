@@ -141,9 +141,9 @@ type VoucherCountableEdge {
 }
 
 enum VoucherTypeEnum {
-  SHIPPING
-  ENTIRE_ORDER
-  SPECIFIC_PRODUCT
+  shipping
+  entire_order
+  specific_product
 }
 
 type VoucherTranslation  {
@@ -192,7 +192,7 @@ enum DiscountStatusEnum {
 }
 
 enum VoucherDiscountType {
-  FIXED
-  PERCENTAGE
-  SHIPPING
+  fixed
+  percentage
+  shipping
 }

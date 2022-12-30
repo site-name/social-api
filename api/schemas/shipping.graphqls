@@ -201,8 +201,8 @@ enum ShippingErrorCode {
 }
 
 enum ShippingMethodTypeEnum {
-  PRICE
-  WEIGHT
+  price
+  weight
 }
 
 input ShippingPostalCodeRulesCreateInputRange {

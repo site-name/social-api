@@ -888,7 +888,8 @@ func (p *PaginationOptions) GetOrderByExpression() string {
 }
 
 func (g *PaginationOptions) HasPreviousPage() bool {
-	return (g.First != nil && g.After != nil) || (g.Last != nil && g.Before != nil)
+	return (g.First != nil && *g.First > 0 && g.After != nil) ||
+		(g.Last != nil && *g.Last > 0 && g.Before != nil)
 }
 
 const paginationError = "api.graphql.pagination_params.invalid.app_error"
@@ -916,9 +917,9 @@ func (p *PaginationOptions) validate() *AppError {
 func (p *PaginationOptions) Limit() int32 {
 	// NOTE: add one here is a trick to help determine if there is next page
 	switch {
-	case p.First != nil:
+	case p.First != nil && *p.First > 0:
 		return *p.First + 1
-	case p.Last != nil:
+	case p.Last != nil && *p.Last > 0:
 		return *p.Last + 1
 
 	default:

@@ -96,6 +96,6 @@ input StaffUserInput {
 }
 
 enum StaffMemberStatus {
-  ACTIVE
-  DEACTIVATED
+  active
+  deactivated
 }

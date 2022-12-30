@@ -74,9 +74,9 @@ type Warehouse  {
 }
 
 enum WarehouseClickAndCollectOptionEnum {
-  DISABLED
-  LOCAL
-  ALL
+  disabled
+  local
+  all
 }
 
 enum WarehouseSortField {

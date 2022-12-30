@@ -11,12 +11,12 @@ type PageInfo {
 }
 
 enum AreaUnitsEnum {
-  SQ_CM
-  SQ_M
-  SQ_KM
-  SQ_FT
-  SQ_YD
-  SQ_INCH
+  sq_cm # SQ_CM
+  sq_m # SQ_M
+  sq_km # SQ_KM
+  sq_ft # SQ_FT
+  sq_yd # SQ_YD
+  sq_inch # SQ_INCH
 }
 
 type AssignNavigation {
@@ -333,12 +333,12 @@ input DateTimeRangeInput {
 }
 
 enum DistanceUnitsEnum {
-  CM
-  M
-  KM
-  FT
-  YD
-  INCH
+  cm
+  m
+  km
+  ft
+  yd
+  inch
 }
 
 type Domain {
@@ -1166,36 +1166,36 @@ type LanguageDisplay {
 }
 
 enum MeasurementUnitsEnum {
-  CM
-  M
-  KM
-  FT
-  YD
-  INCH
-  SQ_CM
-  SQ_M
-  SQ_KM
-  SQ_FT
-  SQ_YD
-  SQ_INCH
-  CUBIC_MILLIMETER
-  CUBIC_CENTIMETER
-  CUBIC_DECIMETER
-  CUBIC_METER
-  LITER
-  CUBIC_FOOT
-  CUBIC_INCH
-  CUBIC_YARD
-  QT
-  PINT
-  FL_OZ
-  ACRE_IN
-  ACRE_FT
-  G
-  LB
-  OZ
-  KG
-  TONNE
+  cm
+  m
+  km
+  ft
+  yd
+  inch
+  sq_cm
+  sq_m
+  sq_km
+  sq_ft
+  sq_yd
+  sq_inch
+  cubic_millimeter
+  cubic_centimeter
+  cubic_decimeter
+  cubic_meter
+  liter
+  cubic_foot
+  cubic_inch
+  cubic_yard
+  qt
+  pint
+  fl_oz
+  acre_in
+  acre_ft
+  g
+  lb
+  oz
+  kg
+  tonne
 }
 
 type Money {
@@ -1298,19 +1298,19 @@ type VariantMediaUnassign {
 }
 
 enum VolumeUnitsEnum {
-  CUBIC_MILLIMETER
-  CUBIC_CENTIMETER
-  CUBIC_DECIMETER
-  CUBIC_METER
-  LITER
-  CUBIC_FOOT
-  CUBIC_INCH
-  CUBIC_YARD
-  QT
-  PINT
-  FL_OZ
-  ACRE_IN
-  ACRE_FT
+  cubic_millimeter
+  cubic_centimeter
+  cubic_decimeter
+  cubic_meter
+  liter
+  cubic_foot
+  cubic_inch
+  cubic_yard
+  qt
+  pint
+  fl_oz
+  acre_in
+  acre_ft
 }
 
 type Weight {
@@ -1321,11 +1321,11 @@ type Weight {
 scalar WeightScalar
 
 enum WeightUnitsEnum {
-  G
-  LB
-  OZ
-  KG
-  TONNE
+  g
+  lb
+  oz
+  kg
+  tonne
 }
 
 type ExternalNotificationError {
@@ -1362,10 +1362,10 @@ input TimePeriodInputType {
 }
 
 enum TimePeriodTypeEnum {
-  DAY
-  WEEK
-  MONTH
-  YEAR
+  day
+  week
+  month
+  year
 }
 
 input MetadataFilter {

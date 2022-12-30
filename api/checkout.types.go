@@ -341,7 +341,7 @@ func (c *Checkout) DeliveryMethod(ctx context.Context) (*Warehouse, error) {
 
 // NOTE:
 // keys are strings that have format uuid__uuid.
-// The first uuid part is userID, send is channelID
+// The first uuid part is userID, second is channelID
 func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*dataloader.Result[[]*model.Checkout] {
 	var (
 		appErr     *model.AppError
@@ -567,7 +567,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 	userMap = lo.SliceToMap(users, func(u *model.User) (string, *model.User) { return u.Id, u })
 
 	// find shipping methods of checkouts
-	shippingMethods, errs = dataloaders.ShippingMethodByIdLoader_SystemResult.LoadMany(ctx, shippingMethodIDs)()
+	shippingMethods, errs = dataloaders.ShippingMethodByIdLoader.LoadMany(ctx, shippingMethodIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -580,7 +580,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 	}
 
 	// find shipping mehod channel listings of checkouts
-	shippingMethodChannelListings, errs = dataloaders.ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader_SystemResult.LoadMany(ctx, shippingMethodIDChannelIDPairs)()
+	shippingMethodChannelListings, errs = dataloaders.ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.LoadMany(ctx, shippingMethodIDChannelIDPairs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}

@@ -242,14 +242,14 @@ input OrderDraftFilterInput {
 }
 
 enum OrderStatus {
-  DRAFT
-  UNCONFIRMED
-  UNFULFILLED
-  PARTIALLY_FULFILLED
-  PARTIALLY_RETURNED
-  RETURNED
-  FULFILLED
-  CANCELED
+  draft
+  unconfirmed
+  unfulfilled
+  partially_fulfilled
+  partially_returned
+  returned
+  fulfilled
+  canceled
 }
 
 type Fulfillment  {
@@ -496,13 +496,13 @@ type FulfillmentLine  {
 }
 
 enum FulfillmentStatus {
-  FULFILLED
-  REFUNDED
-  RETURNED
-  REPLACED
-  REFUNDED_AND_RETURNED
-  CANCELED
-  WAITING_FOR_APPROVAL
+  fulfilled
+  refunded
+  returned
+  replaced
+  refunded_and_returned
+  canceled
+  waiting_for_approval
 }
 
 type OrderDiscount  {
@@ -517,8 +517,8 @@ type OrderDiscount  {
 }
 
 enum OrderDiscountType {
-  VOUCHER
-  MANUAL
+  voucher
+  manual
 }
 
 type OrderUpdate {

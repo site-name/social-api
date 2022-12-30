@@ -39,7 +39,7 @@ type apiDataloaders struct {
 
 	// checkout
 	CheckoutByUserLoader                   *dataloader.Loader[string, []*model.Checkout]
-	CheckoutByUserAndChannelLoader         *dataloader.Loader[string, []*model.Checkout]
+	CheckoutByUserAndChannelLoader         *dataloader.Loader[string, []*model.Checkout] // argument must has userID__channelID format
 	CheckoutLinesByCheckoutTokenLoader     *dataloader.Loader[string, []*model.CheckoutLine]
 	CheckoutByTokenLoader                  *dataloader.Loader[string, *model.Checkout]
 	CheckoutInfoByCheckoutTokenLoader      *dataloader.Loader[string, *model.CheckoutInfo]

@@ -142,20 +142,6 @@ func SystemLanguageToGraphqlLanguageCodeEnum(code string) LanguageCodeEnum {
 	return res
 }
 
-// SystemResultsToGraphqlResults
-//
-// E.g:
-//
-//	[]*dataloader.Result[*model.User] => []*dataloader.Result[*User]
-// func SystemResultsToGraphqlResults[S any, D any](rs []*dataloader.Result[S], iteratee func(S) D) []*dataloader.Result[D] {
-// 	return lo.Map(rs, func(item *dataloader.Result[S], _ int) *dataloader.Result[D] {
-// 		return &dataloader.Result[D]{
-// 			Data:  iteratee(item.Data),
-// 			Error: item.Error,
-// 		}
-// 	})
-// }
-
 // DataloaderResultMap converts slice of system models to graphql representations of them
 //
 // E.g:
