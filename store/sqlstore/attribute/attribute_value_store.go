@@ -141,12 +141,10 @@ func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFi
 		From(store.AttributeValueTableName)
 
 	// parse options
-
-	paginateExpr, appErr := options.ConstructSqlizer()
+	query, appErr := options.ConstructSqlizer(query)
 	if appErr != nil {
 		return nil, appErr
 	}
-	query = query.Where(paginateExpr)
 
 	if limit := options.Limit(); limit > 0 {
 		query = query.Limit(uint64(limit))
@@ -154,15 +152,19 @@ func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFi
 	if options.SelectForUpdate {
 		query = query.Suffix("FOR UPDATE")
 	}
-	if options.OrderBy != "" {
-		order := options.GetOrderByExpression()
 
-		// in case you want to sort by multiple fields
-		if options.Ordering != "" {
-			order += ", " + options.Ordering
-		}
-		query = query.OrderBy(order)
+	var orderBy string
+	if options.OrderBy != "" {
+		orderBy = options.GetOrderByExpression()
 	}
+	// in case you want to sort by multiple fields
+	if options.Ordering != "" && orderBy != "" {
+		orderBy += ", " + options.Ordering
+	}
+	if orderBy != "" {
+		query = query.OrderBy(orderBy)
+	}
+
 	if options.SelectRelatedAttribute {
 		query = query.InnerJoin(store.AttributeTableName + " ON AttributeValues.AttributeID = Attributes.Id")
 	}

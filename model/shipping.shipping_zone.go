@@ -34,6 +34,8 @@ type ShippingZoneFilterOption struct {
 	ChannelID    squirrel.Sqlizer // inner join shippingZoneChannel on ... WHERE shippingZoneChannel.ChannelID ...
 
 	SelectRelatedThroughData bool // if true, `RelativeWarehouseIDs` property get populated with related data
+
+	PaginationOptions
 }
 
 type ShippingZones []*ShippingZone
@@ -113,5 +115,8 @@ func (s *ShippingZone) DeepCopy() *ShippingZone {
 	res := *s
 
 	res.ModelMetadata = *s.ModelMetadata.DeepCopy()
+	if len(s.RelativeWarehouseIDs) > 0 {
+		copy(res.RelativeWarehouseIDs, s.RelativeWarehouseIDs)
+	}
 	return &res
 }

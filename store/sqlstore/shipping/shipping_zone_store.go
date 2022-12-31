@@ -120,14 +120,22 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 
 	query := s.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.ShippingZoneTableName).
-		OrderBy(store.TableOrderingMap[store.ShippingZoneTableName])
+		From(store.ShippingZoneTableName)
+
+	// parse options
+	if option.OrderBy == "" {
+		option.OrderBy = "ShippingZones.Name"
+	}
+	query, appErr := option.ConstructSqlizer(query)
+	if appErr != nil {
+		return nil, appErr
+	}
 
 	// check option id
-	if option != nil && option.Id != nil {
+	if option.Id != nil {
 		query = query.Where(option.Id)
 	}
-	if option != nil && option.DefaultValue != nil {
+	if option.DefaultValue != nil {
 		query = query.Where(squirrel.Eq{"ShippingZones.Default": *option.DefaultValue})
 	}
 	if option.WarehouseID != nil {
@@ -139,7 +147,6 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 		query = query.
 			InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id").
 			Where(option.ChannelID)
-
 	}
 
 	queryString, args, err := query.ToSql()
@@ -183,4 +190,39 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 	}
 
 	return returningShippingZones, nil
+}
+
+func (s *SqlShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterOption) (int64, error) {
+	query := s.GetQueryBuilder().Select("COUNT(*)").From(store.ShippingZoneTableName)
+
+	// parse option
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+	if options.DefaultValue != nil {
+		query = query.Where(squirrel.Eq{"ShippingZones.Default": *options.DefaultValue})
+	}
+	if options.WarehouseID != nil {
+		query = query.
+			InnerJoin(store.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
+			Where(options.WarehouseID)
+	}
+	if options.ChannelID != nil {
+		query = query.
+			InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id").
+			Where(options.ChannelID)
+	}
+
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		return 0, errors.Wrap(err, "CountByOptions_ToSql")
+	}
+
+	var res int64
+	err = s.GetReplicaX().Select(&res, queryStr, args...)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to count number of shipping zone by given options")
+	}
+
+	return res, nil
 }

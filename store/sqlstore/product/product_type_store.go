@@ -197,19 +197,11 @@ func (pts *SqlProductTypeStore) GetByOption(options *model.ProductTypeFilterOpti
 
 // FilterbyOption finds and returns a slice of product types filtered using given options
 func (pts *SqlProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error) {
-	paginateOpts, appErr := options.ConstructSqlizer()
+	query := pts.commonQueryBuilder(options)
+
+	query, appErr := options.ConstructSqlizer(query)
 	if appErr != nil {
 		return nil, appErr
-	}
-
-	query := pts.commonQueryBuilder(options).Where(paginateOpts)
-	if limit := options.Limit(); limit > 0 {
-		query = query.Limit(uint64(limit))
-	}
-	if options.OrderBy != "" {
-		query = query.OrderBy(options.GetOrderByExpression())
-	} else {
-		query = query.OrderBy(store.TableOrderingMap[store.ProductTypeTableName])
 	}
 
 	queryString, args, err := query.ToSql()

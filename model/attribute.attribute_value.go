@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/store/store_iface"
 	"golang.org/x/text/language"
 )
@@ -53,29 +54,11 @@ type AttributeValueFilterOptions struct {
 type AttributeValues []*AttributeValue
 
 func (a AttributeValues) IDs() []string {
-	var res = make([]string, len(a))
-
-	meetMap := map[string]struct{}{}
-	for idx, item := range a {
-		if _, met := meetMap[item.Id]; !met {
-			res[idx] = item.Id
-			meetMap[item.Id] = struct{}{}
-		}
-	}
-	return res
+	return lo.Map(a, func(v *AttributeValue, _ int) string { return v.Id })
 }
 
 func (a AttributeValues) DeepCopy() AttributeValues {
-	if a == nil {
-		return nil
-	}
-
-	res := AttributeValues{}
-	for _, item := range a {
-		res = append(res, item.DeepCopy())
-	}
-
-	return res
+	return lo.Map(a, func(v *AttributeValue, _ int) *AttributeValue { return v.DeepCopy() })
 }
 
 func (a *AttributeValue) String() string {

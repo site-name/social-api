@@ -219,28 +219,13 @@ func (a *Attribute) Choices(
 		return nil, err
 	}
 
-	// parse operand
-	var operandString string
-	switch {
-	case args.Before != nil:
-		operandString = *args.Before
-	case args.After != nil:
-		operandString = *args.After
-	}
-
-	operand, err := base64.StdEncoding.DecodeString(operandString)
-	if err != nil {
-		return nil, err
-	}
-
 	// construct filter options
 	filterOpts := &model.AttributeValueFilterOptions{
 		PaginationOptions: model.PaginationOptions{
-			Before:  args.Before,
-			After:   args.After,
-			First:   args.First,
-			Last:    args.Last,
-			Operand: operand,
+			Before: args.Before,
+			After:  args.After,
+			First:  args.First,
+			Last:   args.Last,
 		},
 	}
 
@@ -332,18 +317,6 @@ func (a *Attribute) ProductTypes(
 		return nil, err
 	}
 
-	var operandStr string
-	switch {
-	case args.Before != nil:
-		operandStr = *args.Before
-	case args.After != nil:
-		operandStr = *args.After
-	}
-	operand, err := base64.StdEncoding.DecodeString(operandStr)
-	if err != nil {
-		return nil, err
-	}
-
 	filterOpts := &model.ProductTypeFilterOption{
 		AttributeProducts_AttributeID: squirrel.Eq{store.AttributeProductTableName + ".AttributeID": a.ID},
 		PaginationOptions: model.PaginationOptions{
@@ -353,7 +326,6 @@ func (a *Attribute) ProductTypes(
 			Last:    args.Last,
 			OrderBy: "Slug",
 			Order:   model.ASC,
-			Operand: operand,
 		},
 	}
 
@@ -412,19 +384,6 @@ func (a *Attribute) ProductVariantTypes(
 		return nil, err
 	}
 
-	var operandStr string
-	switch {
-	case args.Before != nil:
-		operandStr = *args.Before
-	case args.After != nil:
-		operandStr = *args.After
-	}
-
-	operand, err := base64.StdEncoding.DecodeString(operandStr)
-	if err != nil {
-		return nil, err
-	}
-
 	filterOpts := &model.ProductTypeFilterOption{
 		AttributeVariants_AttributeID: squirrel.Eq{store.AttributeVariantTableName + ".AttributeID": a.ID},
 		PaginationOptions: model.PaginationOptions{
@@ -432,7 +391,6 @@ func (a *Attribute) ProductVariantTypes(
 			After:   args.After,
 			First:   args.First,
 			Last:    args.Last,
-			Operand: operand,
 			OrderBy: "Slug",
 			Order:   model.ASC,
 		},

@@ -35,19 +35,8 @@ func (s *ServiceAccount) DeleteUserAddressRelation(userID, addressID string) *mo
 // FilterUserAddressRelations finds and returns a list of user-address relations with given options
 func (s *ServiceAccount) FilterUserAddressRelations(options *model.UserAddressFilterOptions) ([]*model.UserAddress, *model.AppError) {
 	relations, err := s.srv.Store.UserAddress().FilterByOptions(options)
-	var (
-		statusCode int
-		errMsg     string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMsg = err.Error()
-	} else if len(relations) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("FilterUserAddressRelations", "app.model.error_finding_user_address_relations.app_error", nil, errMsg, statusCode)
+		return nil, model.NewAppError("FilterUserAddressRelations", "app.account.error_finding_user_address_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return relations, nil

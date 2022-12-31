@@ -394,6 +394,7 @@ type (
 		Upsert(shippingZone *model.ShippingZone) (*model.ShippingZone, error)                 // Upsert depends on given model zone's Id to decide update or insert the zone
 		Get(shippingZoneID string) (*model.ShippingZone, error)                               // Get finds 1 model zone for given shippingZoneID
 		FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error) // FilterByOption finds a list of model zones based on given option
+		CountByOptions(options *model.ShippingZoneFilterOption) (int64, error)
 	}
 	ShippingMethodStore interface {
 		ModelFields(prefix string) model.AnyArray[string]

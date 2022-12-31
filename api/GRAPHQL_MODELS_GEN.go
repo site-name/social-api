@@ -3460,20 +3460,6 @@ type ShippingPriceUpdate struct {
 	Errors         []*ShippingError `json:"errors"`
 }
 
-type ShippingZone struct {
-	ID              string            `json:"id"`
-	Name            string            `json:"name"`
-	Default         bool              `json:"default"`
-	PrivateMetadata []*MetadataItem   `json:"privateMetadata"`
-	Metadata        []*MetadataItem   `json:"metadata"`
-	PriceRange      *MoneyRange       `json:"priceRange"`
-	Countries       []*CountryDisplay `json:"countries"`
-	ShippingMethods []*ShippingMethod `json:"shippingMethods"`
-	Warehouses      []*Warehouse      `json:"warehouses"`
-	Channels        []*Channel        `json:"channels"`
-	Description     *string           `json:"description"`
-}
-
 type ShippingZoneBulkDelete struct {
 	Count  int32            `json:"count"`
 	Errors []*ShippingError `json:"errors"`
@@ -3711,14 +3697,6 @@ type StaffUpdateInput struct {
 type StaffUserInput struct {
 	Status *StaffMemberStatus `json:"status"`
 	Search *string            `json:"search"`
-}
-
-type Stock struct {
-	Warehouse         *Warehouse      `json:"warehouse"`
-	ProductVariant    *ProductVariant `json:"productVariant"`
-	Quantity          int32           `json:"quantity"`
-	ID                string          `json:"id"`
-	QuantityAllocated int32           `json:"quantityAllocated"`
 }
 
 type StockCountableConnection struct {
@@ -4094,19 +4072,6 @@ type VoucherTranslation struct {
 type VoucherUpdate struct {
 	Errors  []*DiscountError `json:"errors"`
 	Voucher *Voucher         `json:"voucher"`
-}
-
-type Warehouse struct {
-	ID                    string                             `json:"id"`
-	Name                  string                             `json:"name"`
-	Slug                  string                             `json:"slug"`
-	ShippingZones         *ShippingZoneCountableConnection   `json:"shippingZones"`
-	Address               *Address                           `json:"address"`
-	Email                 string                             `json:"email"`
-	IsPrivate             bool                               `json:"isPrivate"`
-	PrivateMetadata       []*MetadataItem                    `json:"privateMetadata"`
-	Metadata              []*MetadataItem                    `json:"metadata"`
-	ClickAndCollectOption WarehouseClickAndCollectOptionEnum `json:"clickAndCollectOption"`
 }
 
 type WarehouseCountableConnection struct {

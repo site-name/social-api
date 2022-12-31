@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"encoding/base64"
+	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
@@ -10,34 +12,119 @@ import (
 	"github.com/sitename/sitename/web"
 )
 
+type Warehouse struct {
+	ID                    string                             `json:"id"`
+	Name                  string                             `json:"name"`
+	Slug                  string                             `json:"slug"`
+	Email                 string                             `json:"email"`
+	IsPrivate             bool                               `json:"isPrivate"`
+	PrivateMetadata       []*MetadataItem                    `json:"privateMetadata"`
+	Metadata              []*MetadataItem                    `json:"metadata"`
+	ClickAndCollectOption WarehouseClickAndCollectOptionEnum `json:"clickAndCollectOption"`
+
+	addressID *string
+	// ShippingZones         *ShippingZoneCountableConnection   `json:"shippingZones"`
+	// Address               *Address                           `json:"address"`
+}
+
 func SystemWarehouseTpGraphqlWarehouse(wh *model.WareHouse) *Warehouse {
 	if wh == nil {
 		return nil
 	}
 
-	res := &Warehouse{
-		ID: wh.Id,
-	}
-	panic("not implemented")
+	return &Warehouse{
+		ID:                    wh.Id,
+		Name:                  wh.Name,
+		Slug:                  wh.Slug,
+		Email:                 wh.Email,
+		IsPrivate:             *wh.IsPrivate,
+		Metadata:              MetadataToSlice(wh.Metadata),
+		PrivateMetadata:       MetadataToSlice(wh.Metadata),
+		ClickAndCollectOption: WarehouseClickAndCollectOptionEnum(wh.ClickAndCollectOption),
 
-	return res
+		addressID: wh.AddressID,
+	}
 }
 
-func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*Warehouse] {
-	results := warehouseByIdLoader_systemResult(ctx, ids)
-	res := make([]*dataloader.Result[*Warehouse], len(results))
+func (w *Warehouse) ShippingZones(ctx context.Context, args struct {
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
+}) (*ShippingZoneCountableConnection, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
 
-	for idx, item := range results {
-		res[idx] = &dataloader.Result[*Warehouse]{
-			Data:  SystemWarehouseTpGraphqlWarehouse(item.Data),
-			Error: item.Error,
+	filterOpts := &model.ShippingZoneFilterOption{
+		PaginationOptions: model.PaginationOptions{
+			Before: args.Before,
+			After:  args.After,
+			First:  args.First,
+			Last:   args.Last,
+		},
+	}
+
+	zones, appErr := embedCtx.App.Srv().
+		ShippingService().
+		ShippingZonesByOption(filterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	count, err := embedCtx.App.Srv().Store.ShippingZone().CountByOptions(filterOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	hasNextPage := len(zones) == int(filterOpts.Limit())
+	edgeLength := len(zones)
+	if hasNextPage {
+		edgeLength--
+	}
+
+	res := &ShippingZoneCountableConnection{
+		TotalCount: model.NewInt32(int32(count)),
+		PageInfo: &PageInfo{
+			HasPreviousPage: filterOpts.HasPreviousPage(),
+			HasNextPage:     hasNextPage,
+		},
+		Edges: make([]*ShippingZoneCountableEdge, edgeLength),
+	}
+
+	for i := 0; i < edgeLength; i++ {
+		res.Edges[i] = &ShippingZoneCountableEdge{
+			Node:   SystemShippingZoneToGraphqlShippingZone(zones[i]),
+			Cursor: base64.StdEncoding.EncodeToString([]byte(zones[i].Name)),
 		}
 	}
 
-	return res
+	res.PageInfo.StartCursor = &res.Edges[0].Cursor
+	res.PageInfo.EndCursor = &res.Edges[edgeLength-1].Cursor
+
+	return res, nil
 }
 
-func warehouseByIdLoader_systemResult(ctx context.Context, ids []string) []*dataloader.Result[*model.WareHouse] {
+func (w *Warehouse) Address(ctx context.Context) (*Address, error) {
+	if w.addressID == nil {
+		return nil, nil
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	address, appErr := embedCtx.App.Srv().AccountService().AddressById(*w.addressID)
+	if appErr != nil {
+		return nil, err
+	}
+
+	return SystemAddressToGraphqlAddress(address), nil
+}
+
+func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.WareHouse] {
 	var (
 		res          = make([]*dataloader.Result[*model.WareHouse], len(ids))
 		appErr       *model.AppError
@@ -50,9 +137,11 @@ func warehouseByIdLoader_systemResult(ctx context.Context, ids []string) []*data
 		goto errorLabel
 	}
 
-	warehouses, appErr = embedCtx.App.Srv().WarehouseService().WarehousesByOption(&model.WarehouseFilterOption{
-		Id: squirrel.Eq{store.WarehouseTableName + ".Id": ids},
-	})
+	warehouses, appErr = embedCtx.App.Srv().
+		WarehouseService().
+		WarehousesByOption(&model.WarehouseFilterOption{
+			Id: squirrel.Eq{store.WarehouseTableName + ".Id": ids},
+		})
 	if appErr != nil {
 		err = appErr
 		goto errorLabel
@@ -73,3 +162,87 @@ errorLabel:
 	}
 	return res
 }
+
+// ---------------------- stock --------------------
+
+type Stock struct {
+	quantity          int32  `json:"quantity"`
+	ID                string `json:"id"`
+	quantityAllocated int32  `json:"quantityAllocated"`
+
+	warehouseID      string
+	productVariantID string
+}
+
+func SystemStockToGraphqlStock(s *model.Stock) *Stock {
+	if s == nil {
+		return nil
+	}
+
+	return &Stock{
+		ID:               s.Id,
+		quantity:         int32(s.Quantity),
+		warehouseID:      s.WarehouseID,
+		productVariantID: s.ProductVariantID,
+	}
+}
+
+func (s *Stock) Warehouse(ctx context.Context) (*Warehouse, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	warehouse, appErr := embedCtx.App.Srv().WarehouseService().WarehouseByStockID(s.ID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return SystemWarehouseTpGraphqlWarehouse(warehouse), nil
+}
+
+func (s *Stock) Quantity(ctx context.Context) (int32, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return 0, err
+	}
+
+	if !embedCtx.App.Srv().
+		AccountService().
+		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageProducts, model.PermissionManageOrders) {
+		return 0, model.NewAppError("stock.Wuantity", ErrorUnauthorized, nil, "You are not authorized to perform this action", http.StatusUnauthorized)
+	}
+
+	return s.quantity, nil
+}
+
+func (s *Stock) QuantityAllocated(ctx context.Context) (int32, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return 0, err
+	}
+
+	if !embedCtx.App.Srv().
+		AccountService().
+		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageProducts, model.PermissionManageOrders) {
+		return 0, model.NewAppError("stock.Wuantity", ErrorUnauthorized, nil, "You are not authorized to perform this action", http.StatusUnauthorized)
+	}
+
+	return s.quantityAllocated, nil
+}
+
+func (s *Stock) ProductVariant(ctx context.Context) (*ProductVariant, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	variant, appErr := embedCtx.App.Srv().ProductService().ProductVariantById(s.productVariantID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return SystemProductVariantToGraphqlProductVariant(variant), nil
+}
+
+// ----------------- allocation ----------------

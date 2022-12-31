@@ -71,8 +71,7 @@ type apiDataloaders struct {
 	DiscountsByDateTimeLoader *dataloader.Loader[time.Time, []*model.DiscountInfo]
 
 	// warehouse
-	WarehouseByIdLoader              *dataloader.Loader[string, *Warehouse]
-	WarehouseByIdLoader_SystemResult *dataloader.Loader[string, *model.WareHouse]
+	WarehouseByIdLoader *dataloader.Loader[string, *model.WareHouse]
 }
 
 var dataloaders *apiDataloaders
@@ -136,7 +135,6 @@ func init() {
 		DiscountsByDateTimeLoader: dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity)),
 
 		// warehouse
-		WarehouseByIdLoader:              dataloader.NewBatchedLoader(warehouseByIdLoader, dataloader.WithBatchCapacity[string, *Warehouse](batchCapacity)),
-		WarehouseByIdLoader_SystemResult: dataloader.NewBatchedLoader(warehouseByIdLoader_systemResult, dataloader.WithBatchCapacity[string, *model.WareHouse](batchCapacity)),
+		WarehouseByIdLoader: dataloader.NewBatchedLoader(warehouseByIdLoader, dataloader.WithBatchCapacity[string, *model.WareHouse](batchCapacity)),
 	}
 }

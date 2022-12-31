@@ -133,17 +133,16 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	}
 
 	// check if current user has this address
-	_, appErr := embededContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
+	relations, appErr := embededContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
 		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": embededContext.AppContext.Session().UserId},
 		AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
 	})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusNotFound {
-			// current user does not own this address
-			return nil, model.NewAppError("AccountAddressUpdate", ErrorUnauthorized, nil, "you are not authorized to perform this account", http.StatusUnauthorized)
-		}
 		// internal server error
 		return nil, appErr
+	}
+	if len(relations) == 0 {
+		return nil, model.NewAppError("AccountAddressUpdate", ErrorUnauthorized, nil, "you are not authorized to perform this account", http.StatusUnauthorized)
 	}
 
 	// validate input
@@ -191,9 +190,9 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	if value := args.Input.PostalCode; value != nil && *value != address.PostalCode {
 		address.PostalCode = *value
 	}
-	if value := args.Input.Country; !strings.EqualFold(value.String(), address.Country) {
+	if value := args.Input.Country; value != nil && !strings.EqualFold(string(*value), address.Country) {
 		// nil checking checked above
-		address.Country = value.String()
+		address.Country = string(*value)
 	}
 	if value := args.Input.CountryArea; value != nil && *value != address.CountryArea {
 		address.CountryArea = *value
@@ -293,7 +292,7 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 		ChangeUserDefaultAddress(
 			model.User{Id: embedContext.AppContext.Session().UserId},
 			model.Address{Id: args.Id},
-			strings.ToLower(args.Type.String()),
+			string(args.Type),
 			nil,
 		)
 	if appErr != nil {

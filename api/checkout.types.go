@@ -333,7 +333,12 @@ func (c *Checkout) Lines(ctx context.Context) ([]*CheckoutLine, error) {
 
 func (c *Checkout) DeliveryMethod(ctx context.Context) (*Warehouse, error) {
 	if c.collectionPointID != nil {
-		return dataloaders.WarehouseByIdLoader.Load(ctx, *c.collectionPointID)()
+		warehouse, err := dataloaders.WarehouseByIdLoader.Load(ctx, *c.collectionPointID)()
+		if err != nil {
+			return nil, err
+		}
+
+		return SystemWarehouseTpGraphqlWarehouse(warehouse), nil
 	}
 
 	return nil, nil
@@ -589,7 +594,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 	})
 
 	// find collection points of checkouts
-	collectionPoints, errs = dataloaders.WarehouseByIdLoader_SystemResult.LoadMany(ctx, collectionPointIDs)()
+	collectionPoints, errs = dataloaders.WarehouseByIdLoader.LoadMany(ctx, collectionPointIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}

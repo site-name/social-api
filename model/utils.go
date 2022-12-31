@@ -863,24 +863,13 @@ const (
 	ASC  OrderDirection = "ASC"
 )
 
-func (o *OrderDirection) validate() {
-	if *o != DESC && *o != ASC {
-		*o = ASC
-	}
-}
-
 type PaginationOptions struct {
-	OrderBy string // You want to sort result by which field
-	//  1 2 3 4 5 7 8 9 10
-	//   here |
-	Before any
-	//  1 2 3 4 5 7 8 9 10
-	//      | here
+	Before  any
 	After   any
 	First   *int32
 	Last    *int32
+	OrderBy string         // You want to sort result by which field
 	Order   OrderDirection // if not provided, will default to "asc"
-	Operand any            // for example you want to find customers that have more than 5 orders. So 5 would be this
 }
 
 func (p *PaginationOptions) GetOrderByExpression() string {
@@ -894,7 +883,13 @@ func (g *PaginationOptions) HasPreviousPage() bool {
 
 const paginationError = "api.graphql.pagination_params.invalid.app_error"
 
+// NOTE: if Before, After, First, Last are not passed, that means pagination will not apply.
+// Thus no validation needed, return nil
 func (p *PaginationOptions) validate() *AppError {
+	if p.First == nil && p.Last == nil && p.Before == nil && p.After == nil {
+		return nil
+	}
+
 	if p.First != nil && p.Last != nil {
 		return NewAppError("Pagination.validate", paginationError, map[string]interface{}{"Fields": "Last, First"}, "You must provide either First or Last, not both", http.StatusBadRequest)
 	}
@@ -908,7 +903,9 @@ func (p *PaginationOptions) validate() *AppError {
 		return NewAppError("Pagination.validate", paginationError, map[string]interface{}{"Fields": "OrderBy"}, "OrderBY must be provided", http.StatusBadRequest)
 	}
 
-	p.Order.validate()
+	if p.Order != ASC && p.Order != DESC {
+		p.Order = ASC
+	}
 
 	return nil
 }
@@ -927,16 +924,9 @@ func (p *PaginationOptions) Limit() int32 {
 	}
 }
 
-// ConstructSqlizer does:
-//
-// 1) check if arguments are provided properly
-//
-// 2) decodes given before or after cursor
-//
-// 3) construct a squirrel expression based on given key
-func (g *PaginationOptions) ConstructSqlizer() (squirrel.Sqlizer, *AppError) {
+func (g *PaginationOptions) ConstructSqlizer(query squirrel.SelectBuilder) (squirrel.SelectBuilder, *AppError) {
 	if err := g.validate(); err != nil {
-		return nil, err
+		return query, err
 	}
 
 	switch {
@@ -944,25 +934,32 @@ func (g *PaginationOptions) ConstructSqlizer() (squirrel.Sqlizer, *AppError) {
 		if g.Order == ASC {
 			// 1 2 3 4 5 6 (ASC)
 			//     | *     (AFTER)
-			return squirrel.Gt{g.OrderBy: g.Operand}, nil
+			query = query.Where(squirrel.Gt{g.OrderBy: g.After})
 		}
 
 		// 6 5 4 3 2 1 (DESC)
 		//       | *   (AFTER)
-		return squirrel.Lt{g.OrderBy: g.Operand}, nil
+		query = query.Where(squirrel.Lt{g.OrderBy: g.After})
 
 	case g.Before != nil:
 		if g.Order == ASC {
 			// 1 2 3 4 5 6 (ASC)
 			//   * |       (BEFORE)
-			return squirrel.Lt{g.OrderBy: g.Operand}, nil
+			query = query.Where(squirrel.Lt{g.OrderBy: g.Before})
 		}
 
 		// 6 5 4 3 2 1 (DESC)
 		//     * |     (BEFORE)
-		return squirrel.Gt{g.OrderBy: g.Operand}, nil
-
-	default:
-		return squirrel.Expr(""), nil
+		query = query.Where(squirrel.Gt{g.OrderBy: g.Before})
 	}
+
+	if g.OrderBy != "" {
+		query = query.OrderBy(g.GetOrderByExpression())
+	}
+
+	if limit := g.Limit(); limit > 0 {
+		query = query.Limit(uint64(limit))
+	}
+
+	return query, nil
 }

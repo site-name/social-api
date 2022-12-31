@@ -341,3 +341,57 @@ errorLabel:
 func ShippingMethodsByShippingZoneIdAndChannelSlugLoader(ctx context.Context, idPairs []string) []*dataloader.Result[[]*model.ShippingMethod] {
 	panic("not implemented")
 }
+
+// ---------------- shipping zone -------------------------
+
+type ShippingZone struct {
+	ID              string            `json:"id"`
+	Name            string            `json:"name"`
+	Default         bool              `json:"default"`
+	PrivateMetadata []*MetadataItem   `json:"privateMetadata"`
+	Metadata        []*MetadataItem   `json:"metadata"`
+	Countries       []*CountryDisplay `json:"countries"`
+	Description     *string           `json:"description"`
+
+	// PriceRange      *MoneyRange       `json:"priceRange"`
+	// ShippingMethods []*ShippingMethod `json:"shippingMethods"`
+	// Warehouses      []*Warehouse      `json:"warehouses"`
+	// Channels        []*Channel        `json:"channels"`
+}
+
+func SystemShippingZoneToGraphqlShippingZone(s *model.ShippingZone) *ShippingZone {
+	if s == nil {
+		return nil
+	}
+
+	res := &ShippingZone{
+		ID:              s.Id,
+		Name:            s.Name,
+		Default:         *s.Default,
+		PrivateMetadata: MetadataToSlice(s.PrivateMetadata),
+		Metadata:        MetadataToSlice(s.Metadata),
+		Description:     &s.Description,
+	}
+
+	if s.Countries != "" {
+		countries := strings.ToUpper(s.Countries)
+		var splitCountries []string
+
+		if strings.Count(countries, ",") > 0 {
+			splitCountries = strings.Split(countries, ",")
+		} else {
+			splitCountries = strings.Fields(countries)
+		}
+
+		for _, code := range splitCountries {
+			code = strings.TrimSpace(code)
+
+			res.Countries = append(res.Countries, &CountryDisplay{
+				Code:    code,
+				Country: model.Countries[code],
+			})
+		}
+	}
+
+	return res
+}
