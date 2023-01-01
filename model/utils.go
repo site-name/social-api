@@ -113,6 +113,7 @@ func NewFloat32(n float32) *float32                 { return &n }
 func NewFloat64(n float64) *float64                 { return &n }
 func NewString(s string) *string                    { return &s }
 func NewDecimal(d decimal.Decimal) *decimal.Decimal { return &d }
+func NewTime(t time.Time) *time.Time                { return &t }
 
 var translateFunc i18n.TranslateFunc
 var translateFuncOnce sync.Once

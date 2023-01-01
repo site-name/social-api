@@ -132,15 +132,38 @@ func (s *ShippingMethod) DeepCopy() *ShippingMethod {
 
 	res := *s
 
+	if s.MaximumOrderWeight != nil {
+		res.MaximumOrderWeight = NewFloat32(*s.MaximumOrderWeight)
+	}
+
+	if s.MaximumDeliveryDays != nil {
+		res.MaximumDeliveryDays = NewUint(*s.MaximumDeliveryDays)
+	}
+	if s.MinimumDeliveryDays != nil {
+		res.MinimumDeliveryDays = NewUint(*s.MinimumDeliveryDays)
+	}
+	if s.MinOrderWeight != nil {
+		res.MinOrderWeight = &measurement.Weight{s.MinOrderWeight.Amount, s.MinOrderWeight.Unit}
+	}
+	if s.MaxOrderWeight != nil {
+		res.MaxOrderWeight = &measurement.Weight{s.MaxOrderWeight.Amount, s.MaxOrderWeight.Unit}
+	}
+	res.Description = s.Description.DeepCopy()
+	res.ModelMetadata = s.ModelMetadata.DeepCopy()
+
 	if len(s.ShippingZones) > 0 {
-		for _, zone := range s.ShippingZones {
-			res.ShippingZones = append(res.ShippingZones, zone.DeepCopy())
+		s.ShippingZones = make([]*ShippingZone, len(s.ShippingZones))
+
+		for idx, zone := range s.ShippingZones {
+			res.ShippingZones[idx] = zone.DeepCopy()
 		}
 	}
 
 	if len(s.ShippingMethodPostalCodeRules) > 0 {
-		for _, rule := range s.ShippingMethodPostalCodeRules {
-			res.ShippingMethodPostalCodeRules = append(res.ShippingMethodPostalCodeRules, rule.DeepCopy())
+		res.ShippingMethodPostalCodeRules = make([]*ShippingMethodPostalCodeRule, len(s.ShippingMethodPostalCodeRules))
+
+		for idx, rule := range s.ShippingMethodPostalCodeRules {
+			res.ShippingMethodPostalCodeRules[idx] = rule.DeepCopy()
 		}
 	}
 

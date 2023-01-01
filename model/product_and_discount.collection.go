@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
+	"github.com/samber/lo"
 	"golang.org/x/text/language"
 )
 
@@ -57,28 +58,21 @@ func (c *Collection) DeepCopy() *Collection {
 	}
 
 	res := *c
+	res.Description = c.Description.DeepCopy()
+	res.ModelMetadata = c.ModelMetadata.DeepCopy()
+	if c.BackgroundImage != nil {
+		res.BackgroundImage = NewString(*c.BackgroundImage)
+	}
 
 	return &res
 }
 
 func (c Collections) IDs() []string {
-	var res []string
-	for _, item := range c {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
-
-	return res
+	return lo.Map(c, func(o *Collection, _ int) string { return o.Id })
 }
 
 func (c Collections) DeepCopy() Collections {
-	res := Collections{}
-	for _, cl := range c {
-		res = append(res, cl.DeepCopy())
-	}
-
-	return res
+	return lo.Map(c, func(o *Collection, _ int) *Collection { return o.DeepCopy() })
 }
 
 func (c *Collection) String() string {

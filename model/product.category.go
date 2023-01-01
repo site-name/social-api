@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
+	"github.com/samber/lo"
 )
 
 // max length for some fields
@@ -45,13 +46,12 @@ type CategoryFilterOption struct {
 type Categories []*Category
 
 func (c Categories) IDs() []string {
-	res := []string{}
-	for _, item := range c {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
-	return res
+	return lo.Map(c, func(g *Category, _ int) string { return g.Id })
+}
+
+func (cs Categories) DeepCopy() Categories {
+	return lo.Map(cs, func(g *Category, _ int) *Category { return g.DeepCopy() })
+
 }
 
 func (c *Category) String() string {
@@ -90,12 +90,17 @@ func (s *Category) DeepCopy() *Category {
 	}
 
 	res := *s
-
+	if s.Description != nil {
+		res.Description = NewString(*s.Description)
+	}
+	if s.ParentID != nil {
+		res.ParentID = NewString(*s.ParentID)
+	}
+	if s.BackgroundImage != nil {
+		res.BackgroundImage = NewString(*s.BackgroundImage)
+	}
 	if len(s.Children) > 0 {
-		res.Children = Categories{}
-		for _, item := range s.Children {
-			res.Children = append(res.Children, item.DeepCopy())
-		}
+		res.Children = s.Children.DeepCopy()
 	}
 	return &res
 }

@@ -118,9 +118,17 @@ func (a *AttributeValue) DeepCopy() *AttributeValue {
 	if a.RichText != nil {
 		res.RichText = a.RichText.DeepCopy()
 	}
-
 	if a.Attribute != nil {
 		res.Attribute = a.Attribute.DeepCopy()
+	}
+	if a.FileUrl != nil {
+		res.FileUrl = NewString(*a.FileUrl)
+	}
+	if a.Boolean != nil {
+		res.Boolean = NewBool(*a.Boolean)
+	}
+	if a.Datetime != nil {
+		res.Datetime = NewTime(*a.Datetime)
 	}
 
 	return &res

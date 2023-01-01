@@ -114,7 +114,10 @@ func (s *ShippingZone) PreUpdate() {
 func (s *ShippingZone) DeepCopy() *ShippingZone {
 	res := *s
 
-	res.ModelMetadata = *s.ModelMetadata.DeepCopy()
+	if s.Default != nil {
+		res.Default = NewBool(*s.Default)
+	}
+	res.ModelMetadata = s.ModelMetadata.DeepCopy()
 	if len(s.RelativeWarehouseIDs) > 0 {
 		copy(res.RelativeWarehouseIDs, s.RelativeWarehouseIDs)
 	}

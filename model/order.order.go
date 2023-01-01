@@ -379,8 +379,9 @@ func (o *Order) TotalCaptured() *goprices.Money {
 }
 
 // TotalBalance substracts order's total paid to order's total gross
-func (o *Order) TotalBalance() (*goprices.Money, error) {
-	return o.TotalCaptured().Sub(o.Total.Gross)
+func (o *Order) TotalBalance() *goprices.Money {
+	value, _ := o.TotalCaptured().Sub(o.Total.Gross)
+	return value
 }
 
 // GetTotalWeight returns current order's Weight
@@ -391,6 +392,63 @@ func (o *Order) GetTotalWeight() *measurement.Weight {
 
 func (s *Order) DeepCopy() *Order {
 	order := *s
+
+	if s.UserID != nil {
+		order.UserID = NewString(*s.UserID)
+	}
+	if s.BillingAddressID != nil {
+		order.BillingAddressID = NewString(*s.BillingAddressID)
+	}
+	if s.ShippingAddressID != nil {
+		order.ShippingAddressID = NewString(*s.ShippingAddressID)
+	}
+	if s.ShippingMethodID != nil {
+		order.ShippingMethodID = NewString(*s.ShippingMethodID)
+	}
+	if s.OriginalID != nil {
+		order.OriginalID = NewString(*s.OriginalID)
+	}
+	if s.CollectionPointID != nil {
+		order.CollectionPointID = NewString(*s.CollectionPointID)
+	}
+	if s.ShippingMethodName != nil {
+		order.ShippingMethodName = NewString(*s.ShippingMethodName)
+	}
+	if s.CollectionPointName != nil {
+		order.CollectionPointName = NewString(*s.CollectionPointName)
+	}
+	if s.VoucherID != nil {
+		order.VoucherID = NewString(*s.VoucherID)
+	}
+	if s.RedirectUrl != nil {
+		order.RedirectUrl = NewString(*s.RedirectUrl)
+	}
+
+	if s.ShippingPriceNetAmount != nil {
+		order.ShippingPriceNetAmount = NewDecimal(*s.ShippingPriceNetAmount)
+	}
+	if s.ShippingPriceGrossAmount != nil {
+		order.ShippingPriceGrossAmount = NewDecimal(*s.ShippingPriceGrossAmount)
+	}
+	if s.ShippingTaxRate != nil {
+		order.ShippingTaxRate = NewDecimal(*s.ShippingTaxRate)
+	}
+	if s.TotalNetAmount != nil {
+		order.TotalNetAmount = NewDecimal(*s.TotalNetAmount)
+	}
+	if s.UnDiscountedTotalNetAmount != nil {
+		order.UnDiscountedTotalNetAmount = NewDecimal(*s.UnDiscountedTotalNetAmount)
+	}
+
+	if s.TotalGrossAmount != nil {
+		order.TotalGrossAmount = NewDecimal(*s.TotalGrossAmount)
+	}
+	if s.UnDiscountedTotalGrossAmount != nil {
+		order.UnDiscountedTotalGrossAmount = NewDecimal(*s.UnDiscountedTotalGrossAmount)
+	}
+	if s.TotalPaidAmount != nil {
+		order.TotalPaidAmount = NewDecimal(*s.TotalPaidAmount)
+	}
 
 	return &order
 }

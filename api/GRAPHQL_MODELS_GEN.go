@@ -6344,9 +6344,9 @@ func (e OrderEventsEnum) IsValid() bool {
 type OrderOriginEnum string
 
 const (
-	OrderOriginEnumCheckout OrderOriginEnum = "CHECKOUT"
-	OrderOriginEnumDraft    OrderOriginEnum = "DRAFT"
-	OrderOriginEnumReissue  OrderOriginEnum = "REISSUE"
+	OrderOriginEnumCheckout OrderOriginEnum = OrderOriginEnum(model.CHECKOUT)
+	OrderOriginEnumDraft    OrderOriginEnum = OrderOriginEnum(model.DRAFT)
+	OrderOriginEnumReissue  OrderOriginEnum = OrderOriginEnum(model.REISSUE)
 )
 
 func (e OrderOriginEnum) IsValid() bool {

@@ -176,6 +176,27 @@ func (p *ProductVariant) DeepCopy() *ProductVariant {
 
 	res := *p
 
+	if p.Sku != nil {
+		res.Sku = NewString(*p.Sku)
+	}
+	if p.Weight != nil {
+		res.Weight = NewFloat32(*p.Weight)
+	}
+	if p.TrackInventory != nil {
+		res.TrackInventory = NewBool(*p.TrackInventory)
+	}
+	if p.PreorderEndDate != nil {
+		res.PreorderEndDate = NewInt64(*p.PreorderEndDate)
+	}
+	if p.PreOrderGlobalThreshold != nil {
+		res.PreOrderGlobalThreshold = NewInt(*p.PreOrderGlobalThreshold)
+	}
+	if p.SortOrder != nil {
+		res.SortOrder = NewInt(*p.SortOrder)
+	}
+
+	res.ModelMetadata = p.ModelMetadata.DeepCopy()
+
 	if p.Product != nil {
 		res.Product = p.Product.DeepCopy()
 	}

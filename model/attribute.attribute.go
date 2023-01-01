@@ -195,7 +195,13 @@ func (a *Attribute) DeepCopy() *Attribute {
 	}
 	res := *a
 
-	res.ModelMetadata = *(a.ModelMetadata.DeepCopy())
+	if a.EntityType != nil {
+		res.EntityType = NewString(*a.EntityType)
+	}
+	if a.Unit != nil {
+		res.Unit = NewString(*a.Unit)
+	}
+	res.ModelMetadata = a.ModelMetadata.DeepCopy()
 	res.AttributeValues = a.AttributeValues.DeepCopy()
 
 	return &res

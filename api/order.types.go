@@ -8,6 +8,7 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
@@ -134,7 +135,7 @@ errorLabel:
 	return res
 }
 
-// ------------------------------- ORDER
+// ------------------------------- ORDER ---------------------------------
 
 type Order struct {
 	ID                  string           `json:"id"`
@@ -154,16 +155,16 @@ type Order struct {
 	Metadata            []*MetadataItem  `json:"metadata"`
 	Number              *string          `json:"number"`
 	Origin              OrderOriginEnum  `json:"origin"`
-	IsPaid              bool             `json:"isPaid"`
 	Total               *TaxedMoney      `json:"total"`
 	UndiscountedTotal   *TaxedMoney      `json:"undiscountedTotal"`
-	StatusDisplay       *string          `json:"statusDisplay"`
 	TotalCaptured       *Money           `json:"totalCaptured"`
 	TotalBalance        *Money           `json:"totalBalance"`
 	LanguageCodeEnum    LanguageCodeEnum `json:"languageCodeEnum"`
 
 	channelID string
 
+	// StatusDisplay       *string          `json:"statusDisplay"`
+	// IsPaid              bool             `json:"isPaid"`
 	// Original             *string                 `json:"original"`
 	// IsShippingRequired   bool                    `json:"isShippingRequired"`
 	// User                 *User                   `json:"user"`
@@ -195,16 +196,54 @@ func SystemOrderToGraphqlOrder(o *model.Order) *Order {
 		return nil
 	}
 
+	o.PopulateNonDbFields()
+
 	res := &Order{
-		ID: o.Id,
+		ID:                  o.Id,
+		Created:             DateTime{util.TimeFromMillis(o.CreateAt)},
+		Status:              OrderStatus(o.Status),
+		TrackingClientID:    o.TrackingClientID,
+		ShippingMethodName:  o.ShippingMethodName,
+		CollectionPointName: o.CollectionPointName,
+		ShippingPrice:       SystemTaxedMoneyToGraphqlTaxedMoney(o.ShippingPrice),
+		Token:               o.Token,
+		DisplayGrossPrices:  *o.DisplayGrossPrices,
+		CustomerNote:        o.CustomerNote,
+		RedirectURL:         o.RedirectUrl,
+		PrivateMetadata:     MetadataToSlice(o.PrivateMetadata),
+		Metadata:            MetadataToSlice(o.Metadata),
+		Number:              &o.Id,
+		Origin:              OrderOriginEnum(o.Origin),
+		Total:               SystemTaxedMoneyToGraphqlTaxedMoney(o.Total),
+		UndiscountedTotal:   SystemTaxedMoneyToGraphqlTaxedMoney(o.UnDiscountedTotal),
+		TotalCaptured:       SystemMoneyToGraphqlMoney(o.TotalPaid),
+		TotalBalance:        SystemMoneyToGraphqlMoney(o.TotalBalance()),
+		LanguageCodeEnum:    SystemLanguageToGraphqlLanguageCodeEnum(o.LanguageCode),
+		Weight: &Weight{
+			Value: float64(o.WeightAmount),
+			Unit:  WeightUnitsEnum(o.WeightUnit),
+		},
 
 		channelID: o.ChannelID,
 	}
-	panic("not implemented")
+
+	if o.ShippingTaxRate != nil {
+		fl64, _ := o.ShippingTaxRate.Float64()
+		res.ShippingTaxRate = fl64
+	}
+
 	return res
 }
 
 func (o *Order) Discounts(ctx context.Context) ([]*OrderDiscount, error) {
+	panic("not implemented")
+}
+
+func (o *Order) IsPaid(ctx context.Context) (bool, error) {
+	panic("not implemented")
+}
+
+func (o *Order) StatusDisplay(ctx context.Context) (*string, error) {
 	panic("not implemented")
 }
 

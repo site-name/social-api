@@ -44,6 +44,9 @@ func (a *AssignedPageAttributeValue) PreSave() {
 func (a *AssignedPageAttributeValue) DeepCopy() *AssignedPageAttributeValue {
 	res := *a
 
+	if a.SortOrder != nil {
+		res.SortOrder = NewInt(*a.SortOrder)
+	}
 	return &res
 }
 

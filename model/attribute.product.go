@@ -55,6 +55,9 @@ func (a *AttributeProduct) DeepCopy() *AttributeProduct {
 	}
 
 	res := *a
+	if a.SortOrder != nil {
+		res.SortOrder = NewInt(*a.SortOrder)
+	}
 	if a.Attribute != nil {
 		res.Attribute = a.Attribute.DeepCopy()
 	}
@@ -123,9 +126,9 @@ func (a *AssignedProductAttribute) DeepCopy() *AssignedProductAttribute {
 }
 
 func (a AssignedProductAttributes) DeepCopy() AssignedProductAttributes {
-	res := AssignedProductAttributes{}
-	for _, item := range a {
-		res = append(res, item.DeepCopy())
+	res := make(AssignedProductAttributes, len(a))
+	for idx, item := range a {
+		res[idx] = item.DeepCopy()
 	}
 
 	return res
@@ -170,5 +173,9 @@ func (a *AssignedProductAttributeValue) PreSave() {
 
 func (a *AssignedProductAttributeValue) DeepCopy() *AssignedProductAttributeValue {
 	res := *a
+
+	if a.SortOrder != nil {
+		res.SortOrder = NewInt(*a.SortOrder)
+	}
 	return &res
 }

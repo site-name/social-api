@@ -190,6 +190,44 @@ func (c *Checkout) DeepCopy() *Checkout {
 	}
 
 	res := *c
+	if c.UserID != nil {
+		res.UserID = NewString(*c.UserID)
+	}
+	if c.BillingAddressID != nil {
+		res.BillingAddressID = NewString(*c.BillingAddressID)
+	}
+	if c.ShippingAddressID != nil {
+		res.ShippingAddressID = NewString(*c.ShippingAddressID)
+	}
+	if c.ShippingMethodID != nil {
+		res.ShippingMethodID = NewString(*c.ShippingMethodID)
+	}
+	if c.CollectionPointID != nil {
+		res.CollectionPointID = NewString(*c.CollectionPointID)
+	}
+	if c.DiscountName != nil {
+		res.DiscountName = NewString(*c.DiscountName)
+	}
+	if c.TranslatedDiscountName != nil {
+		res.TranslatedDiscountName = NewString(*c.TranslatedDiscountName)
+	}
+	if c.VoucherCode != nil {
+		res.VoucherCode = NewString(*c.VoucherCode)
+	}
+	if c.RedirectURL != nil {
+		res.RedirectURL = NewString(*c.RedirectURL)
+	}
+	if c.TrackingCode != nil {
+		res.TrackingCode = NewString(*c.TrackingCode)
+	}
+	if c.RedirectURL != nil {
+		res.RedirectURL = NewString(*c.RedirectURL)
+	}
+
+	if c.DiscountAmount != nil {
+		res.DiscountAmount = NewDecimal(*c.DiscountAmount)
+	}
+
 	if c.channel != nil {
 		res.channel = c.channel.DeepCopy()
 	}

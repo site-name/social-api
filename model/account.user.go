@@ -184,14 +184,21 @@ func (u UserSlice) FilterWithoutID(ids []string) UserSlice {
 
 func (u *User) DeepCopy() *User {
 	copyUser := *u
+
+	if u.DefaultShippingAddressID != nil {
+		copyUser.DefaultShippingAddressID = NewString(*u.DefaultShippingAddressID)
+	}
+	if u.DefaultBillingAddressID != nil {
+		copyUser.DefaultBillingAddressID = NewString(*u.DefaultBillingAddressID)
+	}
 	if u.AuthData != nil {
 		copyUser.AuthData = NewString(*u.AuthData)
 	}
-	if u.NotifyProps != nil {
-		copyUser.NotifyProps = u.NotifyProps.DeepCopy()
-	}
-	if u.Timezone != nil {
-		copyUser.Timezone = u.Timezone.DeepCopy()
+	copyUser.NotifyProps = u.NotifyProps.DeepCopy()
+	copyUser.Props = u.Props.DeepCopy()
+	copyUser.Timezone = u.Timezone.DeepCopy()
+	if u.Note != nil {
+		copyUser.Note = NewString(*u.Note)
 	}
 
 	return &copyUser
@@ -735,21 +742,11 @@ func (m *ModelMetadata) PopulateFields() {
 	}
 }
 
-func (p *ModelMetadata) DeepCopy() *ModelMetadata {
-	if p == nil {
-		return nil
+func (p ModelMetadata) DeepCopy() ModelMetadata {
+	return ModelMetadata{
+		p.Metadata.DeepCopy(),
+		p.PrivateMetadata.DeepCopy(),
 	}
-
-	res := ModelMetadata{}
-
-	if p.Metadata != nil {
-		res.Metadata = p.Metadata.DeepCopy()
-	}
-	if p.PrivateMetadata != nil {
-		res.PrivateMetadata = p.PrivateMetadata.DeepCopy()
-	}
-
-	return &res
 }
 
 type WhichMeta string

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/modules/util"
@@ -108,46 +109,26 @@ func (p *ProductChannelListing) DeepCopy() *ProductChannelListing {
 	if p.Channel != nil {
 		res.Channel = p.Channel.DeepCopy()
 	}
+	if p.AvailableForPurchase != nil {
+		res.AvailableForPurchase = NewTime(*p.AvailableForPurchase)
+	}
 	return &res
 }
 
 type ProductChannelListings []*ProductChannelListing
 
 func (p ProductChannelListings) IDs() []string {
-	res := make([]string, len(p))
-	for idx, item := range p {
-		res[idx] = item.Id
-	}
-	return res
+	return lo.Map(p, func(r *ProductChannelListing, _ int) string { return r.Id })
 }
 
 func (p ProductChannelListings) ChannelIDs() []string {
-	res := make([]string, len(p))
-	for idx, item := range p {
-		res[idx] = item.ChannelID
-	}
-	return res
+	return lo.Map(p, func(r *ProductChannelListing, _ int) string { return r.ChannelID })
 }
 
 func (p ProductChannelListings) ProductIDs() []string {
-	res := make([]string, len(p))
-	for idx, item := range p {
-		res[idx] = item.ProductID
-	}
-	return res
+	return lo.Map(p, func(r *ProductChannelListing, _ int) string { return r.ProductID })
 }
 
 func (p ProductChannelListings) DeepCopy() ProductChannelListings {
-	if p == nil {
-		return nil
-	}
-
-	res := ProductChannelListings{}
-	for _, item := range p {
-		if item != nil {
-			res = append(res, item.DeepCopy())
-		}
-	}
-
-	return res
+	return lo.Map(p, func(r *ProductChannelListing, _ int) *ProductChannelListing { return r.DeepCopy() })
 }

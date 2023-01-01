@@ -336,14 +336,60 @@ func (o *OrderLine) QuantityUnFulfilled() int {
 func (o *OrderLine) DeepCopy() *OrderLine {
 	orderLine := *o
 
+	if o.VariantID != nil {
+		orderLine.VariantID = NewString(*o.VariantID)
+	}
+	if o.ProductSku != nil {
+		orderLine.ProductSku = NewString(*o.ProductSku)
+	}
+	if o.ProductVariantID != nil {
+		orderLine.ProductVariantID = NewString(*o.ProductVariantID)
+	}
+	if o.UnitDiscountReason != nil {
+		orderLine.UnitDiscountReason = NewString(*o.UnitDiscountReason)
+	}
+
+	if o.UnitDiscountAmount != nil {
+		orderLine.UnitDiscountAmount = NewDecimal(*o.UnitDiscountAmount)
+	}
+	if o.UnitPriceNetAmount != nil {
+		orderLine.UnitPriceNetAmount = NewDecimal(*o.UnitPriceNetAmount)
+	}
+	if o.UnitDiscountValue != nil {
+		orderLine.UnitDiscountValue = NewDecimal(*o.UnitDiscountValue)
+	}
+	if o.UnitPriceGrossAmount != nil {
+		orderLine.UnitPriceGrossAmount = NewDecimal(*o.UnitPriceGrossAmount)
+	}
+	if o.TotalPriceNetAmount != nil {
+		orderLine.TotalPriceNetAmount = NewDecimal(*o.TotalPriceNetAmount)
+	}
+	if o.TotalPriceGrossAmount != nil {
+		orderLine.TotalPriceGrossAmount = NewDecimal(*o.TotalPriceGrossAmount)
+	}
+	if o.UnDiscountedUnitPriceNetAmount != nil {
+		orderLine.UnDiscountedUnitPriceNetAmount = NewDecimal(*o.UnDiscountedUnitPriceNetAmount)
+	}
+	if o.UnDiscountedUnitPriceGrossAmount != nil {
+		orderLine.UnDiscountedUnitPriceGrossAmount = NewDecimal(*o.UnDiscountedUnitPriceGrossAmount)
+	}
+	if o.UnDiscountedTotalPriceGrossAmount != nil {
+		orderLine.UnDiscountedTotalPriceGrossAmount = NewDecimal(*o.UnDiscountedTotalPriceGrossAmount)
+	}
+	if o.UnDiscountedTotalPriceNetAmount != nil {
+		orderLine.UnDiscountedTotalPriceNetAmount = NewDecimal(*o.UnDiscountedTotalPriceNetAmount)
+	}
+	if o.TaxRate != nil {
+		orderLine.TaxRate = NewDecimal(*o.TaxRate)
+	}
+
 	if o.productVariant != nil {
 		orderLine.productVariant = o.productVariant.DeepCopy()
 	}
 	if o.order != nil {
 		orderLine.order = o.order.DeepCopy()
 	}
-
-	for _, allo := range o.GetAllocations() {
+	for _, allo := range o.allocations {
 		o.allocations = append(o.allocations, allo.DeepCopy())
 	}
 

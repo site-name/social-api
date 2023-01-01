@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 )
 
 type Stock struct {
@@ -82,25 +83,11 @@ type Stocks []*Stock
 
 // IDs returns a slice of ids of stocks contained in current `Stocks`
 func (s Stocks) IDs() []string {
-	res := []string{}
-	for _, item := range s {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
-
-	return res
+	return lo.Map(s, func(st *Stock, _ int) string { return st.Id })
 }
 
 func (s Stocks) DeepCopy() Stocks {
-	res := make(Stocks, 0, cap(s))
-	for _, item := range s {
-		if item != nil {
-			res = append(res, item.DeepCopy())
-		}
-	}
-
-	return res
+	return lo.Map(s, func(st *Stock, _ int) *Stock { return st.DeepCopy() })
 }
 
 func (s *Stock) IsValid() *AppError {

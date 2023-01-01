@@ -64,11 +64,11 @@ func (c *CollectionProduct) DeepCopy() *CollectionProduct {
 	}
 
 	res := *c
-	if c.GetCollection() != nil {
-		res.collection = c.GetCollection().DeepCopy()
+	if c.collection != nil {
+		res.collection = c.collection.DeepCopy()
 	}
-	if c.GetProduct() != nil {
-		res.product = c.GetProduct().DeepCopy()
+	if c.product != nil {
+		res.product = c.product.DeepCopy()
 	}
 
 	return &res

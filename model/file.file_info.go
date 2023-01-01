@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+
+	"github.com/samber/lo"
 )
 
 const (
@@ -81,16 +83,18 @@ func (fi *FileInfo) DeepCopy() *FileInfo {
 	}
 
 	res := *fi
+	if fi.RemoteId != nil {
+		res.RemoteId = NewString(*fi.RemoteId)
+	}
+	if fi.MiniPreview != nil {
+		m := append([]byte{}, *fi.MiniPreview...)
+		res.MiniPreview = &m
+	}
 	return &res
 }
 
 func (f FileInfos) DeepCopy() FileInfos {
-	res := FileInfos{}
-	for _, item := range f {
-		res = append(res, item.DeepCopy())
-	}
-
-	return res
+	return lo.Map(f, func(fi *FileInfo, _ int) *FileInfo { return fi.DeepCopy() })
 }
 
 func (fi *FileInfo) IsValid() *AppError {

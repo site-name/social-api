@@ -66,9 +66,27 @@ func (o OrderDiscounts) IDs() []string {
 }
 
 func (o *OrderDiscount) DeepCopy() *OrderDiscount {
-	newOrderDiscount := *o
+	res := *o
 
-	return &newOrderDiscount
+	if o.OrderID != nil {
+		res.OrderID = NewString(*o.OrderID)
+	}
+	if o.Name != nil {
+		res.Name = NewString(*o.Name)
+	}
+	if o.TranslatedName != nil {
+		res.TranslatedName = NewString(*o.TranslatedName)
+	}
+	if o.Reason != nil {
+		res.Reason = NewString(*o.Reason)
+	}
+	if o.Value != nil {
+		res.Value = NewDecimal(*o.Value)
+	}
+	if o.AmountValue != nil {
+		res.AmountValue = NewDecimal(*o.AmountValue)
+	}
+	return &res
 }
 
 func (o *OrderDiscount) IsValid() *AppError {

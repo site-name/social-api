@@ -67,6 +67,18 @@ func (d *DigitalContent) ToJSON() string {
 
 func (d *DigitalContent) DeepCopy() *DigitalContent {
 	res := *d
+	if d.UseDefaultSettings != nil {
+		res.UseDefaultSettings = NewBool(*d.UseDefaultSettings)
+	}
+	if d.AutomaticFulfillment != nil {
+		res.AutomaticFulfillment = NewBool(*d.AutomaticFulfillment)
+	}
+	if d.MaxDownloads != nil {
+		res.MaxDownloads = NewUint(*d.MaxDownloads)
+	}
+	if d.UrlValidDays != nil {
+		res.UrlValidDays = NewUint(*d.UrlValidDays)
+	}
 	return &res
 }
 

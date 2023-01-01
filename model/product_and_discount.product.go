@@ -255,6 +255,19 @@ func (p *Product) String() string {
 func (p *Product) DeepCopy() *Product {
 	res := *p
 
+	if p.CategoryID != nil {
+		res.CategoryID = NewString(*p.CategoryID)
+	}
+	if p.DefaultVariantID != nil {
+		res.DefaultVariantID = NewString(*p.DefaultVariantID)
+	}
+	if p.Weight != nil {
+		res.Weight = NewFloat32(*p.Weight)
+	}
+	if p.Rating != nil {
+		res.Rating = NewFloat32(*p.Rating)
+	}
+
 	if p.Collections != nil {
 		res.Collections = p.Collections.DeepCopy()
 	}

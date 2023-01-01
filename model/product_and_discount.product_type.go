@@ -47,6 +47,18 @@ func (p *ProductType) DeepCopy() *ProductType {
 	}
 
 	res := *p
+	if p.HasVariants != nil {
+		res.HasVariants = NewBool(*p.HasVariants)
+	}
+	if p.IsShippingRequired != nil {
+		res.IsShippingRequired = NewBool(*p.IsShippingRequired)
+	}
+	if p.IsDigital != nil {
+		res.IsDigital = NewBool(*p.IsDigital)
+	}
+	if p.Weight != nil {
+		res.Weight = NewFloat32(*p.Weight)
+	}
 
 	return &res
 }

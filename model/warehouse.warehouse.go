@@ -139,13 +139,19 @@ func (w *WareHouse) ToJSON() string {
 func (w *WareHouse) DeepCopy() *WareHouse {
 	res := *w
 
+	if w.AddressID != nil {
+		res.AddressID = NewString(*w.AddressID)
+	}
+	if w.IsPrivate != nil {
+		res.IsPrivate = NewBool(*w.IsPrivate)
+	}
 	if w.Address != nil {
 		res.Address = w.Address.DeepCopy()
 	}
 
-	res.ShippingZones = []*ShippingZone{}
-	for _, sz := range w.ShippingZones {
-		res.ShippingZones = append(res.ShippingZones, sz.DeepCopy())
+	res.ShippingZones = make([]*ShippingZone, len(w.ShippingZones))
+	for idx, sz := range w.ShippingZones {
+		res.ShippingZones[idx] = sz.DeepCopy()
 	}
 	return &res
 }
