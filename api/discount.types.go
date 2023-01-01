@@ -2,11 +2,15 @@ package api
 
 import (
 	"context"
+	"strings"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -102,25 +106,94 @@ errorLabel:
 	return res
 }
 
-// saleIDChannelIDPairs are strings with format of saleID__channelID.
-func saleChannelListingBySaleIdAndChanneSlugLoader(ctx context.Context, saleIDChannelIDPairs []string) []*dataloader.Result[*model.DiscountInfo] {
-	panic("not implemented")
+// NOTE: saleIDChannelIDPairs are strings with format of saleID__channelID.
+func saleChannelListingBySaleIdAndChanneSlugLoader(ctx context.Context, saleIDChannelIDPairs []string) []*dataloader.Result[*model.SaleChannelListing] {
+	var (
+		res        = make([]*dataloader.Result[*model.SaleChannelListing], len(saleIDChannelIDPairs))
+		saleIDs    []string
+		channelIDs []string
+		listings   []*model.SaleChannelListing
+		appErr     *model.AppError
+		listingMap = map[string]*model.SaleChannelListing{} // keys are string format of saleID__channelID
+	)
+
+	for _, item := range saleIDChannelIDPairs {
+		index := strings.Index(item, "__")
+		if index < 0 {
+			continue
+		}
+
+		saleIDs = append(saleIDs, item[:index])
+		channelIDs = append(channelIDs, item[index+2:])
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	listings, appErr = embedCtx.App.Srv().
+		DiscountService().
+		SaleChannelListingsByOptions(&model.SaleChannelListingFilterOption{
+			SaleID:    squirrel.Eq{store.SaleChannelListingTableName + ".SaleID": saleIDs},
+			ChannelID: squirrel.Eq{store.SaleChannelListingTableName + ".ChannelID": channelIDs},
+			// SelectRelatedChannel: true,
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	listingMap = lo.SliceToMap(listings, func(l *model.SaleChannelListing) (string, *model.SaleChannelListing) {
+		return l.SaleID + "__" + l.ChannelID, l
+	})
+
+	for idx, pair := range saleIDChannelIDPairs {
+		res[idx] = &dataloader.Result[*model.SaleChannelListing]{Data: listingMap[pair]}
+	}
+	return res
+
+errorLabel:
+	for idx := range saleIDChannelIDPairs {
+		res[idx] = &dataloader.Result[*model.SaleChannelListing]{Error: err}
+	}
+	return res
 }
 
 func saleChannelListingBySaleIdLoader(ctx context.Context, saleIDs []string) []*dataloader.Result[[]*model.SaleChannelListing] {
-	// 	var (
-	// 		res = make([]*dataloader.Result[[]*model.SaleChannelListing], len(saleIDs))
-	// 	)
-	// 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	// 	if err != nil {
-	// 		goto errorLabel
-	// 	}
+	var (
+		res        = make([]*dataloader.Result[[]*model.SaleChannelListing], len(saleIDs))
+		listings   []*model.SaleChannelListing
+		appErr     *model.AppError
+		listingMap = map[string][]*model.SaleChannelListing{} // keys are sale ids
+	)
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
 
-	// errorLabel:
-	//
-	//	for idx := range saleIDs {
-	//		res[idx] = &dataloader.Result[[]*model.SaleChannelListing]{Error: err}
-	//	}
-	//	return res
-	panic("not implemented")
+	listings, appErr = embedCtx.App.Srv().
+		DiscountService().
+		SaleChannelListingsByOptions(&model.SaleChannelListingFilterOption{
+			SaleID: squirrel.Eq{store.SaleChannelListingTableName + ".SaleID": saleIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, listing := range listings {
+		listingMap[listing.SaleID] = append(listingMap[listing.SaleID], listing)
+	}
+
+	for idx, saleID := range saleIDs {
+		res[idx] = &dataloader.Result[[]*model.SaleChannelListing]{Data: listingMap[saleID]}
+	}
+	return res
+
+errorLabel:
+	for idx := range saleIDs {
+		res[idx] = &dataloader.Result[[]*model.SaleChannelListing]{Error: err}
+	}
+	return res
 }

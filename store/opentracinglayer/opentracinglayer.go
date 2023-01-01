@@ -3276,10 +3276,7 @@ func (s *OpenTracingLayerDiscountSaleChannelListingStore) Get(saleChannelListing
 	return result, err
 }
 
-func (s *OpenTracingLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*struct {
-	model.SaleChannelListing
-	ChannelSlug string
-}, error) {
+func (s *OpenTracingLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DiscountSaleChannelListingStore.SaleChannelListingsWithOption")
 	s.Root.Store.SetContext(newCtx)
@@ -6940,6 +6937,24 @@ func (s *OpenTracingLayerShippingMethodPostalCodeRuleStore) FilterByOptions(opti
 
 	defer span.Finish()
 	result, err := s.ShippingMethodPostalCodeRuleStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterOption) (int64, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingZoneStore.CountByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShippingZoneStore.CountByOptions(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

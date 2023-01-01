@@ -229,31 +229,69 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 		return nil, appErr
 	}
 
-	res := make([]*Address, len(addresses), cap(addresses))
-	for idx := range addresses {
-		res[idx] = SystemAddressToGraphqlAddress(addresses[idx])
-	}
-	return res, nil
+	return lo.Map(addresses, func(a *model.Address, _ int) *Address {
+		return SystemAddressToGraphqlAddress(a)
+	}), nil
 }
 
 func (u *User) GiftCards(ctx context.Context, args struct {
-	Before         *string
-	After          *string
-	First          *int32
-	Last           *int32
-	OrderBy        string
-	OrderDirection OrderDirection
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
 }) (*GiftCardCountableConnection, error) {
+
+	// paginOpts := model.PaginationOptions{
+	// 	Before: args.Before,
+	// 	After:  args.After,
+	// 	First:  args.First,
+	// 	Last:   args.Last,
+	// }
+
+	// appErr := paginOpts.Validate()
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
+
+	// // in giftcard store, default ordering is Code ASC. No need to sort by code here
+	// giftcards, err := dataloaders.GiftCardsByUserLoader.Load(ctx, u.ID)()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// totalCount := len(giftcards)
+	// // string cast since giftcard's Code is string
+	// operand, ok := paginOpts.Operand().(string)
+	// if !ok {
+	// 	return nil, model.NewAppError("user.GiftCards", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args.Before/args.After"}, "wrong type provided", http.StatusBadRequest)
+	// }
+	// giftcardCode, err := base64.StdEncoding.DecodeString(operand)
+	// if err != nil {
+	// 	return nil, model.NewAppError("user.GiftCards", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args.Before/args.After"}, "invalid cursor provided", http.StatusBadRequest)
+	// }
+	// limit := paginOpts.Limit()
+	// hasNextPage := limit > 0 && len(giftcards) >= int(limit)
+	// edgeLength := len(giftcards)
+	// if hasNextPage {
+	// 	edgeLength = int(limit) - 1
+	// }
+
+	// _, giftcardIndex, _ := lo.FindIndexOf(giftcards, func(g *model.GiftCard) bool { return g.Code == string(giftcardCode) })
+	// var neededGiftcards []*model.GiftCard
+	// if paginOpts.After != nil {
+	// 	neededGiftcards = giftcards[giftcardIndex+1 : giftcardIndex+edgeLength+1]
+	// } else {
+	// 	neededGiftcards = giftcards[:giftcardIndex]
+	// }
+
 	panic("not implemented")
 }
 
 func (u *User) Orders(ctx context.Context, args struct {
-	Before         *string
-	After          *string
-	First          *int32
-	Last           *int32
-	OrderBy        string
-	OrderDirection OrderDirection
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
 }) (*OrderCountableConnection, error) {
 	panic("not implemented")
 }

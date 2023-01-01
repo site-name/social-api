@@ -142,8 +142,14 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecuto
 	query := gs.
 		GetQueryBuilder().
 		Select("*").
-		From(store.GiftcardTableName).
-		OrderBy(store.TableOrderingMap[store.GiftcardTableName])
+		From(store.GiftcardTableName)
+
+	if option.OrderBy != "" {
+		query = query.OrderBy(option.OrderBy)
+	} else {
+		// defaut to code
+		query = query.OrderBy(store.TableOrderingMap[store.GiftcardTableName])
+	}
 
 	// check code
 	if option.Distinct {

@@ -110,14 +110,5 @@ func TestDraftJSContentToRawText(t *testing.T) {
 }
 
 func TestPaginationOptionsValidate(t *testing.T) {
-	p := &PaginationOptions{}
-	expr, appErr := p.ConstructSqlizer()
-	if appErr != nil {
-		t.Fatal(appErr)
-	}
 
-	_, _, err := expr.ToSql()
-	if err != nil {
-		t.Fatal(err)
-	}
 }

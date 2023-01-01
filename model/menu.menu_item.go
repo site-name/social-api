@@ -26,9 +26,10 @@ type MenuItem struct {
 }
 
 type MenuItemFilterOptions struct {
-	Id     squirrel.Sqlizer
-	Name   squirrel.Sqlizer
-	MenuID squirrel.Sqlizer
+	Id       squirrel.Sqlizer
+	Name     squirrel.Sqlizer
+	MenuID   squirrel.Sqlizer
+	ParentID squirrel.Sqlizer
 }
 
 func (m *MenuItem) IsValid() *AppError {

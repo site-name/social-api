@@ -26,6 +26,7 @@ import (
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/modules/util/fileutils"
 )
 
@@ -870,6 +871,8 @@ type PaginationOptions struct {
 	Last    *int32
 	OrderBy string         // You want to sort result by which field
 	Order   OrderDirection // if not provided, will default to "asc"
+
+	validated bool // mark if Valida() is called
 }
 
 func (p *PaginationOptions) GetOrderByExpression() string {
@@ -885,29 +888,48 @@ const paginationError = "api.graphql.pagination_params.invalid.app_error"
 
 // NOTE: if Before, After, First, Last are not passed, that means pagination will not apply.
 // Thus no validation needed, return nil
-func (p *PaginationOptions) validate() *AppError {
+func (p *PaginationOptions) Validate() *AppError {
 	if p.First == nil && p.Last == nil && p.Before == nil && p.After == nil {
 		return nil
 	}
 
 	if p.First != nil && p.Last != nil {
-		return NewAppError("Pagination.validate", paginationError, map[string]interface{}{"Fields": "Last, First"}, "You must provide either First or Last, not both", http.StatusBadRequest)
+		return NewAppError("Pagination.Validate", paginationError, map[string]interface{}{"Fields": "Last, First"}, "You must provide either First or Last, not both", http.StatusBadRequest)
 	}
 	if p.First != nil && p.Before != nil {
-		return NewAppError("Pagination.validate", paginationError, map[string]interface{}{"Fields": "First, Before"}, "First and Before can't go together", http.StatusBadRequest)
+		return NewAppError("Pagination.Validate", paginationError, map[string]interface{}{"Fields": "First, Before"}, "First and Before can't go together", http.StatusBadRequest)
 	}
 	if p.Last != nil && p.After != nil {
-		return NewAppError("Pagination.validate", paginationError, map[string]interface{}{"Fields": "Last, After"}, "Last and After can't go together", http.StatusBadRequest)
+		return NewAppError("Pagination.Validate", paginationError, map[string]interface{}{"Fields": "Last, After"}, "Last and After can't go together", http.StatusBadRequest)
 	}
 	if (p.Before != nil || p.After != nil) && p.OrderBy == "" {
-		return NewAppError("Pagination.validate", paginationError, map[string]interface{}{"Fields": "OrderBy"}, "OrderBY must be provided", http.StatusBadRequest)
+		return NewAppError("Pagination.Validate", paginationError, map[string]interface{}{"Fields": "OrderBy"}, "OrderBY must be provided", http.StatusBadRequest)
 	}
 
 	if p.Order != ASC && p.Order != DESC {
 		p.Order = ASC
 	}
 
+	p.validated = true
+
 	return nil
+}
+
+// must call after calling Validate()
+func (p *PaginationOptions) Operand() any {
+	if !p.validated {
+		return nil
+	}
+
+	switch {
+	case p.Before != nil:
+		return p.Before
+	case p.After != nil:
+		return p.After
+
+	default:
+		return nil
+	}
 }
 
 // -1 means no limit
@@ -925,7 +947,7 @@ func (p *PaginationOptions) Limit() int32 {
 }
 
 func (g *PaginationOptions) ConstructSqlizer(query squirrel.SelectBuilder) (squirrel.SelectBuilder, *AppError) {
-	if err := g.validate(); err != nil {
+	if err := g.Validate(); err != nil {
 		return query, err
 	}
 
@@ -962,4 +984,20 @@ func (g *PaginationOptions) ConstructSqlizer(query squirrel.SelectBuilder) (squi
 	}
 
 	return query, nil
+}
+
+type Paginator[T any, O util.Ordered] struct {
+	values    []T
+	limit     int
+	comparer  func(T) O
+	direction OrderDirection
+	operand   any
+}
+
+func (p *Paginator[T, O]) GetBefore(before O, limit int) []T {
+	panic("not implemented")
+}
+
+func (p *Paginator[T, O]) GetAfter(after O, limit int) []T {
+	panic("not implemented")
 }

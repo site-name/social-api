@@ -3522,10 +3522,7 @@ func (s *RetryLayerDiscountSaleChannelListingStore) Get(saleChannelListingID str
 
 }
 
-func (s *RetryLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*struct {
-	model.SaleChannelListing
-	ChannelSlug string
-}, error) {
+func (s *RetryLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, error) {
 
 	tries := 0
 	for {
@@ -7544,6 +7541,26 @@ func (s *RetryLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *m
 	tries := 0
 	for {
 		result, err := s.ShippingMethodPostalCodeRuleStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterOption) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShippingZoneStore.CountByOptions(options)
 		if err == nil {
 			return result, nil
 		}

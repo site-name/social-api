@@ -460,9 +460,12 @@ func (s *ServiceDiscount) FetchVariants(salePKs []string) (map[string][]string, 
 
 // FetchSaleChannelListings returns a map with keys are sale ids, values are maps with keys are channel slugs
 func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string]map[string]*model.SaleChannelListing, *model.AppError) {
-	channelListings, err := a.srv.Store.DiscountSaleChannelListing().SaleChannelListingsWithOption(&model.SaleChannelListingFilterOption{
-		SaleID: squirrel.Eq{store.SaleChannelListingTableName + ".SaleID": saleIDs},
-	})
+	channelListings, err := a.srv.Store.
+		DiscountSaleChannelListing().
+		SaleChannelListingsWithOption(&model.SaleChannelListingFilterOption{
+			SaleID:               squirrel.Eq{store.SaleChannelListingTableName + ".SaleID": saleIDs},
+			SelectRelatedChannel: true,
+		})
 	if err != nil {
 		return nil, model.NewAppError("FetchSaleChannelListings", "app.discount.sale_channel_listings_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -470,7 +473,7 @@ func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string
 	channelListingMap := map[string]map[string]*model.SaleChannelListing{}
 
 	for _, listing := range channelListings {
-		channelListingMap[listing.SaleID][listing.ChannelSlug] = &listing.SaleChannelListing
+		channelListingMap[listing.SaleID][listing.GetChannel().Slug] = listing
 	}
 
 	return channelListingMap, nil

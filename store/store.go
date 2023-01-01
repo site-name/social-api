@@ -673,13 +673,7 @@ type (
 		Save(saleChannelListing *model.SaleChannelListing) (*model.SaleChannelListing, error) // Save insert given instance into database then returns it
 		Get(saleChannelListingID string) (*model.SaleChannelListing, error)                   // Get finds and returns sale channel listing with given id
 		// SaleChannelListingsWithOption finds a list of sale channel listings plus foreign channel slugs
-		SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) (
-			[]*struct {
-				model.SaleChannelListing
-				ChannelSlug string
-			},
-			error,
-		)
+		SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, error)
 	}
 	VoucherTranslationStore interface {
 		Save(translation *model.VoucherTranslation) (*model.VoucherTranslation, error)                    // Save inserts given translation into database and returns it

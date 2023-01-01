@@ -15,6 +15,16 @@ type SaleChannelListing struct {
 	DiscountValue *decimal.Decimal `json:"discount_value"` // default decimal(0)
 	Currency      string           `json:"currency"`
 	CreateAt      int64            `json:"create_at"`
+
+	channel *Channel `db:"-"` // this field gets populated in queries that ask for select related channel
+}
+
+func (s *SaleChannelListing) GetChannel() *Channel {
+	return s.channel
+}
+
+func (s *SaleChannelListing) SetChannel(c *Channel) {
+	s.channel = c
 }
 
 func (s *SaleChannelListing) DeepCopy() *SaleChannelListing {
@@ -26,6 +36,9 @@ func (s *SaleChannelListing) DeepCopy() *SaleChannelListing {
 	if s.DiscountValue != nil {
 		res.DiscountValue = NewDecimal(*s.DiscountValue)
 	}
+	if s.channel != nil {
+		res.channel = s.channel.DeepCopy()
+	}
 
 	return &res
 }
@@ -34,6 +47,8 @@ type SaleChannelListingFilterOption struct {
 	Id        squirrel.Sqlizer
 	SaleID    squirrel.Sqlizer
 	ChannelID squirrel.Sqlizer
+
+	SelectRelatedChannel bool
 }
 
 func (s *SaleChannelListing) PreSave() {

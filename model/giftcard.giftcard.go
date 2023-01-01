@@ -68,6 +68,7 @@ type GiftCardFilterOption struct {
 	IsActive      *bool
 	Distinct      bool // if true, SELECT DISTINCT
 
+	OrderBy         string
 	SelectForUpdate bool // if true, concat `FOR UPDATE` to the end of SQL queries
 }
 

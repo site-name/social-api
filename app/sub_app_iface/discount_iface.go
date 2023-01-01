@@ -128,4 +128,5 @@ type DiscountService interface {
 	GetSaleDiscount(sale *model.Sale, saleChannelListing *model.SaleChannelListing) (types.DiscountCalculator, *model.AppError)
 	ValidateVoucher(voucher *model.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
 	ValidateVoucherInOrder(ord *model.Order) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
+	SaleChannelListingsByOptions(options *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, *model.AppError)
 }

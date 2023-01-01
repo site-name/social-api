@@ -3039,10 +3039,7 @@ func (s *TimerLayerDiscountSaleChannelListingStore) Get(saleChannelListingID str
 	return result, err
 }
 
-func (s *TimerLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*struct {
-	model.SaleChannelListing
-	ChannelSlug string
-}, error) {
+func (s *TimerLayerDiscountSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.DiscountSaleChannelListingStore.SaleChannelListingsWithOption(option)
@@ -6318,6 +6315,22 @@ func (s *TimerLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *m
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodPostalCodeRuleStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterOption) (int64, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingZoneStore.CountByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneStore.CountByOptions", success, elapsed)
 	}
 	return result, err
 }

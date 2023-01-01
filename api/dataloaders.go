@@ -68,10 +68,18 @@ type apiDataloaders struct {
 	PostalCodeRulesByShippingMethodIdLoader                            *dataloader.Loader[string, []*model.ShippingMethodPostalCodeRule]
 
 	// discount
-	DiscountsByDateTimeLoader *dataloader.Loader[time.Time, []*model.DiscountInfo]
+	DiscountsByDateTimeLoader                     *dataloader.Loader[time.Time, []*model.DiscountInfo]
+	SaleChannelListingBySaleIdAndChanneSlugLoader *dataloader.Loader[string, *model.SaleChannelListing] // NOTE: pass in saleID__channelID pair
+	SaleChannelListingBySaleIdLoader              *dataloader.Loader[string, []*model.SaleChannelListing]
 
 	// warehouse
 	WarehouseByIdLoader *dataloader.Loader[string, *model.WareHouse]
+
+	// menu
+	MenuByIdLoader              *dataloader.Loader[string, *model.Menu]
+	MenuItemByIdLoader          *dataloader.Loader[string, *model.MenuItem]
+	MenuItemsByParentMenuLoader *dataloader.Loader[string, []*model.MenuItem]
+	MenuItemChildrenLoader      *dataloader.Loader[string, []*model.MenuItem]
 }
 
 var dataloaders *apiDataloaders
@@ -132,9 +140,17 @@ func init() {
 		PostalCodeRulesByShippingMethodIdLoader:                            dataloader.NewBatchedLoader(postalCodeRulesByShippingMethodIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethodPostalCodeRule](batchCapacity)),
 
 		// discount
-		DiscountsByDateTimeLoader: dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity)),
+		DiscountsByDateTimeLoader:                     dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity)),
+		SaleChannelListingBySaleIdAndChanneSlugLoader: dataloader.NewBatchedLoader(saleChannelListingBySaleIdAndChanneSlugLoader, dataloader.WithBatchCapacity[string, *model.SaleChannelListing](batchCapacity)),
+		SaleChannelListingBySaleIdLoader:              dataloader.NewBatchedLoader(saleChannelListingBySaleIdLoader, dataloader.WithBatchCapacity[string, []*model.SaleChannelListing](batchCapacity)),
 
 		// warehouse
 		WarehouseByIdLoader: dataloader.NewBatchedLoader(warehouseByIdLoader, dataloader.WithBatchCapacity[string, *model.WareHouse](batchCapacity)),
+
+		// menu
+		MenuByIdLoader:              dataloader.NewBatchedLoader(menuByIdLoader, dataloader.WithBatchCapacity[string, *model.Menu](batchCapacity)),
+		MenuItemByIdLoader:          dataloader.NewBatchedLoader(menuItemByIdLoader, dataloader.WithBatchCapacity[string, *model.MenuItem](batchCapacity)),
+		MenuItemsByParentMenuLoader: dataloader.NewBatchedLoader(menuItemsByParentMenuLoader, dataloader.WithBatchCapacity[string, []*model.MenuItem](batchCapacity)),
+		MenuItemChildrenLoader:      dataloader.NewBatchedLoader(menuItemChildrenLoader, dataloader.WithBatchCapacity[string, []*model.MenuItem](batchCapacity)),
 	}
 }

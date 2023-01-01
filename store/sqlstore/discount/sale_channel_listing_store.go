@@ -84,19 +84,20 @@ func (scls *SqlSaleChannelListingStore) Get(saleChannelListingID string) (*model
 }
 
 // SaleChannelListingsWithOption finds a list of sale channel listings plus foreign channel slugs
-func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) (
-	[]*struct {
-		model.SaleChannelListing
-		ChannelSlug string
-	},
-	error,
-) {
+func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, error) {
+
+	selectFields := scls.ModelFields(store.SaleChannelListingTableName + ".")
+	if option.SelectRelatedChannel {
+		selectFields = append(selectFields, scls.Channel().ModelFields(store.ChannelTableName+".")...)
+	}
 
 	query := scls.GetQueryBuilder().
-		Select("sc.*").
-		Column("c.Slug AS ChannelSlug").
-		From(store.SaleChannelListingTableName + " sc").
-		InnerJoin(store.ChannelTableName + " c ON (c.Id = sc.ChannelID)")
+		Select(selectFields...).
+		From(store.SaleChannelListingTableName)
+
+	if option.SelectRelatedChannel {
+		query = query.InnerJoin(store.ChannelTableName + " ON (Channels.Id = SaleChannelListings.ChannelID)")
+	}
 
 	// parse filter option
 	if option.Id != nil {
@@ -120,13 +121,14 @@ func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *mo
 	}
 	defer rows.Close()
 
-	var res []*struct {
-		model.SaleChannelListing
-		ChannelSlug string
-	}
+	var res []*model.SaleChannelListing
+
 	var listing model.SaleChannelListing
-	var channelSlug string
-	var scanFields = append(scls.ScanFields(&listing), &channelSlug)
+	var channel model.Channel
+	var scanFields = scls.ScanFields(&listing)
+	if option.SelectRelatedChannel {
+		scanFields = append(scanFields, scls.Channel().ScanFields(&channel)...)
+	}
 
 	for rows.Next() {
 		err = rows.Scan(scanFields...)
@@ -134,13 +136,12 @@ func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *mo
 			return nil, errors.Wrap(err, "failed to scan sale channel listing")
 		}
 
-		res = append(res, &struct {
-			model.SaleChannelListing
-			ChannelSlug string
-		}{
-			ChannelSlug:        channelSlug,
-			SaleChannelListing: *(listing.DeepCopy()),
-		})
+		if option.SelectRelatedChannel {
+			listing.SetChannel(&channel)
+		} else {
+			listing.SetChannel(nil)
+		}
+		res = append(res, listing.DeepCopy())
 	}
 
 	return res, nil
