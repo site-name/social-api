@@ -610,10 +610,12 @@ type (
 	MenuStore interface {
 		Save(menu *model.Menu) (*model.Menu, error) // Save insert given menu into database and returns it
 		GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error)
+		FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error)
 	}
 	MenuItemStore interface {
 		Save(menuItem *model.MenuItem) (*model.MenuItem, error) // Save insert given menu item into database and returns it
 		GetByOptions(options *model.MenuItemFilterOptions) (*model.MenuItem, error)
+		FilterByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, error)
 	}
 )
 

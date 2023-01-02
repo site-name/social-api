@@ -4400,6 +4400,24 @@ func (s *OpenTracingLayerJobStore) UpdateStatusOptimistically(id string, current
 	return result, err
 }
 
+func (s *OpenTracingLayerMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.MenuStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuStore.GetByOptions")
@@ -4428,6 +4446,24 @@ func (s *OpenTracingLayerMenuStore) Save(menu *model.Menu) (*model.Menu, error) 
 
 	defer span.Finish()
 	result, err := s.MenuStore.Save(menu)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerMenuItemStore) FilterByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "MenuItemStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.MenuItemStore.FilterByOptions(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

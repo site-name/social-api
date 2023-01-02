@@ -42,3 +42,12 @@ func (s *ServiceMenu) MenuByOptions(options *model.MenuFilterOptions) (*model.Me
 
 	return mnu, nil
 }
+
+func (s *ServiceMenu) MenusByOptions(options *model.MenuFilterOptions) ([]*model.Menu, *model.AppError) {
+	mnu, err := s.srv.Store.Menu().FilterByOptions(options)
+	if err != nil {
+		return nil, model.NewAppError("MenuByOptions", "app.menu.missing_menu.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return mnu, nil
+}

@@ -4754,6 +4754,26 @@ func (s *RetryLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 
 }
 
+func (s *RetryLayerMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error) {
+
+	tries := 0
+	for {
+		result, err := s.MenuStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error) {
 
 	tries := 0
@@ -4779,6 +4799,26 @@ func (s *RetryLayerMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
 	tries := 0
 	for {
 		result, err := s.MenuStore.Save(menu)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerMenuItemStore) FilterByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, error) {
+
+	tries := 0
+	for {
+		result, err := s.MenuItemStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}

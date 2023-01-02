@@ -3,6 +3,7 @@ package menu
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -55,9 +56,9 @@ func (ms *SqlMenuStore) Save(mnu *model.Menu) (*model.Menu, error) {
 	return mnu, nil
 }
 
-func (ms *SqlMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error) {
+func (ms *SqlMenuStore) commonQueryBuilder(options *model.MenuFilterOptions) squirrel.SelectBuilder {
 	query := ms.GetQueryBuilder().
-		Select("*").
+		Select(ms.ModelFields(store.MenuTableName + ".")...).
 		From(store.MenuTableName)
 
 	if options.Id != nil {
@@ -70,7 +71,11 @@ func (ms *SqlMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.M
 		query = query.Where(options.Slug)
 	}
 
-	queryString, args, err := query.ToSql()
+	return query
+}
+
+func (ms *SqlMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error) {
+	queryString, args, err := ms.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOptions_ToSql")
 	}
@@ -85,4 +90,19 @@ func (ms *SqlMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.M
 	}
 
 	return &res, nil
+}
+
+func (ms *SqlMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error) {
+	queryString, args, err := ms.commonQueryBuilder(options).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.Menu
+	err = ms.GetReplicaX().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find menus with given options")
+	}
+
+	return res, nil
 }

@@ -4045,6 +4045,22 @@ func (s *TimerLayerJobStore) UpdateStatusOptimistically(id string, currentStatus
 	return result, err
 }
 
+func (s *TimerLayerMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error) {
+	start := timemodule.Now()
+
+	result, err := s.MenuStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error) {
 	start := timemodule.Now()
 
@@ -4073,6 +4089,22 @@ func (s *TimerLayerMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("MenuStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerMenuItemStore) FilterByOptions(options *model.MenuItemFilterOptions) ([]*model.MenuItem, error) {
+	start := timemodule.Now()
+
+	result, err := s.MenuItemStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("MenuItemStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }
