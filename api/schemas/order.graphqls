@@ -60,7 +60,7 @@ type Order  {
   original: String
   origin: OrderOriginEnum!
   isPaid: Boolean!
-  paymentStatus: PaymentChargeStatusEnum!
+  paymentStatus: PaymentChargeStatusEnum
   paymentStatusDisplay: String!
   payments: [Payment]
   total: TaxedMoney!

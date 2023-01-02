@@ -7,6 +7,7 @@ package payment
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
@@ -61,7 +62,7 @@ func (a *ServicePayment) PaymentsByOption(option *model.PaymentFilterOption) ([]
 
 func (a *ServicePayment) GetLastOrderPayment(orderID string) (*model.Payment, *model.AppError) {
 	payments, appError := a.PaymentsByOption(&model.PaymentFilterOption{
-		OrderID: orderID,
+		OrderID: squirrel.Eq{store.PaymentTableName + ".OrderID": orderID},
 	})
 	if appError != nil {
 		return nil, appError
@@ -163,7 +164,7 @@ func (a *ServicePayment) UpsertPayment(transaction store_iface.SqlxTxExecutor, p
 // GetAllPaymentsByCheckout returns all payments that belong to given checkout
 func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*model.Payment, *model.AppError) {
 	payments, appErr := a.PaymentsByOption(&model.PaymentFilterOption{
-		CheckoutToken: checkoutToken,
+		CheckoutID: squirrel.Eq{store.PaymentTableName + ".CheckoutID": checkoutToken},
 	})
 	if appErr != nil {
 		return nil, appErr

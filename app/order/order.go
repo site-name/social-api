@@ -118,7 +118,7 @@ func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError)
 // UpdateOrderTotalPaid update given order's total paid amount
 func (a *ServiceOrder) UpdateOrderTotalPaid(transaction store_iface.SqlxTxExecutor, orDer *model.Order) *model.AppError {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		OrderID: orDer.Id,
+		OrderID: squirrel.Eq{store.PaymentTableName + ".OrderID": orDer.Id},
 	})
 	if appErr != nil {
 		return appErr
@@ -144,7 +144,7 @@ func (a *ServiceOrder) UpdateOrderTotalPaid(transaction store_iface.SqlxTxExecut
 // OrderIsPreAuthorized checks if order is pre-authorized
 func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		OrderID:                    orderID,
+		OrderID:                    squirrel.Eq{store.PaymentTableName + ".OrderID": orderID},
 		IsActive:                   model.NewBool(true),
 		TransactionsKind:           squirrel.Eq{store.TransactionTableName + ".Kind": model.AUTH},
 		TransactionsActionRequired: model.NewBool(false),
@@ -160,7 +160,7 @@ func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppErr
 // OrderIsCaptured checks if given order is captured
 func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		OrderID:                    orderID,
+		OrderID:                    squirrel.Eq{store.PaymentTableName + ".OrderID": orderID},
 		IsActive:                   model.NewBool(true),
 		TransactionsKind:           squirrel.Eq{store.TransactionTableName + ".Kind": model.CAPTURE},
 		TransactionsActionRequired: model.NewBool(false),
@@ -209,12 +209,11 @@ func (a *ServiceOrder) OrderCanCancel(ord *model.Order) (bool, *model.AppError) 
 
 // OrderCanCapture
 func (a *ServiceOrder) OrderCanCapture(ord *model.Order, payment *model.Payment) (bool, *model.AppError) {
-	var err *model.AppError
-
 	if payment == nil {
-		payment, err = a.srv.PaymentService().GetLastOrderPayment(ord.Id)
-		if err != nil {
-			return false, err
+		var appErr *model.AppError
+		payment, appErr = a.srv.PaymentService().GetLastOrderPayment(ord.Id)
+		if appErr != nil {
+			return false, appErr
 		}
 	}
 
@@ -272,7 +271,7 @@ func (a *ServiceOrder) CanMarkOrderAsPaid(ord *model.Order, payments []*model.Pa
 	var appErr *model.AppError
 	if len(payments) == 0 {
 		payments, appErr = a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-			OrderID: ord.Id,
+			OrderID: squirrel.Eq{store.PaymentTableName + ".OrderID": ord.Id},
 		})
 	}
 

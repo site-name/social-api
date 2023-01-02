@@ -800,7 +800,7 @@ func (a *ServiceOrder) MarkOrderAsPaid(orDer model.Order, requestUser *model.Use
 // CleanMarkOrderAsPaid Check if an order can be marked as paid.
 func (a *ServiceOrder) CleanMarkOrderAsPaid(ord *model.Order) (*model.PaymentError, *model.AppError) {
 	paymentsForOrder, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		OrderID: ord.Id,
+		OrderID: squirrel.Eq{store.PaymentTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -878,7 +878,7 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord model.Order, manager
 		return nil, appErr
 	}
 
-	if digitalOrderLinesOfOrder == nil || len(digitalOrderLinesOfOrder) == 0 {
+	if len(digitalOrderLinesOfOrder) == 0 {
 		return nil, nil
 	}
 

@@ -15,14 +15,18 @@ func (a *ServicePayment) GetLastpayment(payments []*model.Payment) *model.Paymen
 		return nil
 	}
 
-	var latestPayment *model.Payment
-	for _, payMent := range payments {
-		if latestPayment == nil || (latestPayment != nil && payMent.CreateAt > latestPayment.CreateAt) {
-			latestPayment = payMent
+	if len(payments) == 1 {
+		return payments[0]
+	}
+
+	res := payments[0]
+	for _, pm := range payments[1:] {
+		if pm != nil && pm.CreateAt > res.CreateAt {
+			res = pm
 		}
 	}
 
-	return latestPayment
+	return res
 }
 
 func (a *ServicePayment) GetTotalAuthorized(payments []*model.Payment, fallbackCurrency string) (*goprices.Money, *model.AppError) {

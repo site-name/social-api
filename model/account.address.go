@@ -233,3 +233,23 @@ func (a *Address) DeepCopy() *Address {
 	res := *a
 	return &res
 }
+
+// Obfuscate make a copy of current address.
+// Transform some data of copied address so they look like dummy data.
+// Then return the copied address
+func (a *Address) Obfuscate() *Address {
+	if a == nil {
+		return &Address{}
+	}
+
+	res := *a
+
+	res.FirstName = util.ObfuscateString(res.FirstName, false)
+	res.LastName = util.ObfuscateString(res.LastName, false)
+	res.CompanyName = util.ObfuscateString(res.CompanyName, false)
+	res.StreetAddress1 = util.ObfuscateString(res.StreetAddress1, false)
+	res.StreetAddress2 = util.ObfuscateString(res.StreetAddress2, false)
+	res.Phone = util.ObfuscateString(res.Phone, true)
+
+	return &res
+}

@@ -67,8 +67,8 @@ type Payment struct {
 	Total              *decimal.Decimal   `json:"total"`           // DEFAULT decimal(0)
 	CapturedAmount     *decimal.Decimal   `json:"captured_amount"` // DEFAULT decimal(0)
 	Currency           string             `json:"currency"`        // default 'USD'
-	CheckoutID         *string            `json:"checkout_id"`
-	OrderID            *string            `json:"order_id"`
+	CheckoutID         *string            `json:"checkout_id"`     // foreign key to checkout
+	OrderID            *string            `json:"order_id"`        // foreign key to order
 	BillingEmail       string             `json:"billing_email"`
 	BillingFirstName   string             `json:"billing_first_name"`
 	BillingLastName    string             `json:"billing_last_name"`
@@ -97,8 +97,8 @@ type Payment struct {
 // PaymentFilterOption is used to build sql queries
 type PaymentFilterOption struct {
 	Id                         squirrel.Sqlizer
-	OrderID                    string // payments belong to order
-	CheckoutToken              string
+	OrderID                    squirrel.Sqlizer
+	CheckoutID                 squirrel.Sqlizer
 	IsActive                   *bool
 	TransactionsKind           squirrel.Sqlizer // for filtering payment's transactions's `Kind`
 	TransactionsActionRequired *bool            // for filtering payment's transactions's `ActionRequired`
@@ -120,19 +120,19 @@ func (p *Payment) GetChargeAmount() *decimal.Decimal {
 	return NewDecimal(p.Total.Sub(*p.CapturedAmount))
 }
 
-// IsNotCharged checks if current payment's charge status is "not_charged"
-func (p *Payment) IsNotCharged() bool {
+// NotCharged checks if current payment's charge status is "not_charged"
+func (p *Payment) NotCharged() bool {
 	return p.ChargeStatus == NOT_CHARGED
 }
 
 // CanAuthorize checks if current payment is active and not charged
 func (p *Payment) CanAuthorize() bool {
-	return *p.IsActive && p.IsNotCharged()
+	return *p.IsActive && p.NotCharged()
 }
 
 // CanCapture checks if payment is not active and is not charged => false, else => true.
 func (p *Payment) CanCapture() bool {
-	if !*p.IsActive && !p.IsNotCharged() {
+	if !*p.IsActive && !p.NotCharged() {
 		return false
 	}
 
@@ -152,7 +152,7 @@ func (p *Payment) CanRefund() bool {
 
 // CanConfirm checks if current payment is active && not charged
 func (p *Payment) CanConfirm() bool {
-	return *p.IsActive && p.IsNotCharged()
+	return *p.IsActive && p.NotCharged()
 }
 
 // IsManual checks if current payment's gateway == "manual"

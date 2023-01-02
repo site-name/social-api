@@ -8,6 +8,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
+	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -194,6 +195,69 @@ func saleChannelListingBySaleIdLoader(ctx context.Context, saleIDs []string) []*
 errorLabel:
 	for idx := range saleIDs {
 		res[idx] = &dataloader.Result[[]*model.SaleChannelListing]{Error: err}
+	}
+	return res
+}
+
+// ------------------------- order discount --------------------
+
+func SystemOrderDiscountToGraphqlOrderDiscount(r *model.OrderDiscount) *OrderDiscount {
+	if r == nil {
+		return &OrderDiscount{}
+	}
+
+	if r.Value == nil {
+		r.Value = &decimal.Zero
+	}
+
+	return &OrderDiscount{
+		ID:             r.Id,
+		Type:           OrderDiscountType(r.Type),
+		ValueType:      DiscountValueTypeEnum(r.ValueType),
+		Value:          PositiveDecimal(*r.Value),
+		Name:           r.Name,
+		TranslatedName: r.TranslatedName,
+		Reason:         r.Reason,
+		Amount:         SystemMoneyToGraphqlMoney(r.Amount),
+	}
+}
+
+func orderDiscountsByOrderIDLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.OrderDiscount] {
+	var (
+		res              = make([]*dataloader.Result[[]*model.OrderDiscount], len(orderIDs))
+		orderDiscounts   model.OrderDiscounts
+		appErr           *model.AppError
+		orderDiscountMap = map[string]model.OrderDiscounts{} // keys are order ids
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	orderDiscounts, appErr = embedCtx.App.Srv().DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
+		OrderID: squirrel.Eq{store.OrderDiscountTableName + ".OrderID": orderIDs},
+	})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, rel := range orderDiscounts {
+		if rel.OrderID == nil {
+			continue
+		}
+		orderDiscountMap[*rel.OrderID] = append(orderDiscountMap[*rel.OrderID], rel)
+	}
+
+	for idx, id := range orderIDs {
+		res[idx] = &dataloader.Result[[]*model.OrderDiscount]{Data: orderDiscountMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range orderIDs {
+		res[idx] = &dataloader.Result[[]*model.OrderDiscount]{Error: err}
 	}
 	return res
 }

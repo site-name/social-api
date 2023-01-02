@@ -2493,29 +2493,6 @@ type PasswordChange struct {
 	User *User `json:"user"`
 }
 
-type Payment struct {
-	ID                     string                  `json:"id"`
-	Gateway                string                  `json:"gateway"`
-	IsActive               bool                    `json:"isActive"`
-	Created                DateTime                `json:"created"`
-	Modified               DateTime                `json:"modified"`
-	Token                  string                  `json:"token"`
-	Checkout               *Checkout               `json:"checkout"`
-	Order                  *Order                  `json:"order"`
-	PaymentMethodType      string                  `json:"paymentMethodType"`
-	CustomerIPAddress      *string                 `json:"customerIpAddress"`
-	PrivateMetadata        []*MetadataItem         `json:"privateMetadata"`
-	Metadata               []*MetadataItem         `json:"metadata"`
-	ChargeStatus           PaymentChargeStatusEnum `json:"chargeStatus"`
-	Actions                []*OrderAction          `json:"actions"`
-	Total                  *Money                  `json:"total"`
-	CapturedAmount         *Money                  `json:"capturedAmount"`
-	Transactions           []*Transaction          `json:"transactions"`
-	AvailableCaptureAmount *Money                  `json:"availableCaptureAmount"`
-	AvailableRefundAmount  *Money                  `json:"availableRefundAmount"`
-	CreditCard             *CreditCard             `json:"creditCard"`
-}
-
 type PaymentCapture struct {
 	Payment *Payment        `json:"payment"`
 	Errors  []*PaymentError `json:"errors"`
@@ -6198,6 +6175,21 @@ func (e OrderAction) IsValid() bool {
 		return true
 	}
 	return false
+}
+
+func (o OrderAction) Description() string {
+	switch o {
+	case OrderActionCapture:
+		return "Represents the capture action."
+	case OrderActionMarkAsPaid:
+		return "Represents a mark-as-paid action."
+	case OrderActionRefund:
+		return "Represents a refund action."
+	case OrderActionVoid:
+		return "Represents a void action."
+	default:
+		return "Unsupported enum value: " + string(o)
+	}
 }
 
 type OrderDirection = model.OrderDirection

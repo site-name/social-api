@@ -77,6 +77,7 @@ type apiDataloaders struct {
 	DiscountsByDateTimeLoader                     *Loader[time.Time, []*model.DiscountInfo]
 	SaleChannelListingBySaleIdAndChanneSlugLoader *Loader[string, *model.SaleChannelListing] // NOTE: pass in saleID__channelID pair
 	SaleChannelListingBySaleIdLoader              *Loader[string, []*model.SaleChannelListing]
+	OrderDiscountsByOrderIDLoader                 *Loader[string, []*model.OrderDiscount]
 
 	// warehouse
 	WarehouseByIdLoader            *Loader[string, *model.WareHouse]
@@ -87,6 +88,9 @@ type apiDataloaders struct {
 	MenuItemByIdLoader          *Loader[string, *model.MenuItem]
 	MenuItemsByParentMenuLoader *Loader[string, []*model.MenuItem]
 	MenuItemChildrenLoader      *Loader[string, []*model.MenuItem]
+
+	// payment
+	PaymentsByOrderIdLoader *Loader[string, []*model.Payment]
 }
 
 var dataloaders *apiDataloaders
@@ -156,6 +160,7 @@ func init() {
 		DiscountsByDateTimeLoader:                     NewBatchedLoader(discountsByDateTimeLoader, WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity)),
 		SaleChannelListingBySaleIdAndChanneSlugLoader: NewBatchedLoader(saleChannelListingBySaleIdAndChanneSlugLoader, WithBatchCapacity[string, *model.SaleChannelListing](batchCapacity)),
 		SaleChannelListingBySaleIdLoader:              NewBatchedLoader(saleChannelListingBySaleIdLoader, WithBatchCapacity[string, []*model.SaleChannelListing](batchCapacity)),
+		OrderDiscountsByOrderIDLoader:                 NewBatchedLoader(orderDiscountsByOrderIDLoader, WithBatchCapacity[string, []*model.OrderDiscount](batchCapacity)),
 
 		// warehouse
 		WarehouseByIdLoader:            NewBatchedLoader(warehouseByIdLoader, WithBatchCapacity[string, *model.WareHouse](batchCapacity)),
@@ -166,5 +171,8 @@ func init() {
 		MenuItemByIdLoader:          NewBatchedLoader(menuItemByIdLoader, WithBatchCapacity[string, *model.MenuItem](batchCapacity)),
 		MenuItemsByParentMenuLoader: NewBatchedLoader(menuItemsByParentMenuLoader, WithBatchCapacity[string, []*model.MenuItem](batchCapacity)),
 		MenuItemChildrenLoader:      NewBatchedLoader(menuItemChildrenLoader, WithBatchCapacity[string, []*model.MenuItem](batchCapacity)),
+
+		// payment
+		PaymentsByOrderIdLoader: NewBatchedLoader(paymentsByOrderIdLoader, WithBatchCapacity[string, []*model.Payment](batchCapacity)),
 	}
 }

@@ -210,11 +210,11 @@ func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]
 	if option.Id != nil {
 		query = query.Where(option.Id)
 	}
-	if model.IsValidId(option.OrderID) {
-		query = query.Where(squirrel.Eq{"Payments.OrderID": option.OrderID})
+	if option.OrderID != nil {
+		query = query.Where(option.OrderID)
 	}
-	if model.IsValidId(option.CheckoutToken) {
-		query = query.Where(squirrel.Eq{"Payments.CheckoutID": option.CheckoutToken})
+	if option.CheckoutID != nil {
+		query = query.Where(option.CheckoutID)
 	}
 	if option.IsActive != nil {
 		query = query.Where(squirrel.Eq{"Payments.IsActive": *option.IsActive})

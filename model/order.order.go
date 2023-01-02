@@ -347,13 +347,17 @@ func (o *Order) NewToken() {
 
 // IsFullyPaid checks current order's total paid is greater than its total gross
 func (o *Order) IsFullyPaid() bool {
-	o.PopulateNonDbFields()
+	if !o.populatedNonDBFields {
+		o.PopulateNonDbFields()
+	}
 	return o.Total.Gross.LessThanOrEqual(o.TotalPaid)
 }
 
 // IsPartlyPaid checks if order has `TotalPaidAmount` > 0
 func (o *Order) IsPartlyPaid() bool {
-	o.PopulateNonDbFields()
+	if !o.populatedNonDBFields {
+		o.PopulateNonDbFields()
+	}
 	return o.TotalPaidAmount != nil && decimal.Zero.LessThan(*o.TotalPaidAmount)
 }
 
@@ -374,7 +378,9 @@ func (o *Order) IsOpen() bool {
 
 // TotalCaptured returns current order's TotalPaid money
 func (o *Order) TotalCaptured() *goprices.Money {
-	o.PopulateNonDbFields()
+	if !o.populatedNonDBFields {
+		o.PopulateNonDbFields()
+	}
 	return o.TotalPaid
 }
 
@@ -386,7 +392,9 @@ func (o *Order) TotalBalance() *goprices.Money {
 
 // GetTotalWeight returns current order's Weight
 func (o *Order) GetTotalWeight() *measurement.Weight {
-	o.PopulateNonDbFields()
+	if !o.populatedNonDBFields {
+		o.PopulateNonDbFields()
+	}
 	return o.Weight
 }
 

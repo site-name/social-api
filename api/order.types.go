@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -260,7 +261,11 @@ type Order struct {
 	TotalBalance        *Money           `json:"totalBalance"`
 	LanguageCodeEnum    LanguageCodeEnum `json:"languageCodeEnum"`
 
-	channelID string
+	channelID         string
+	userID            *string
+	billingAddressID  *string
+	shippingAddressID *string
+	order             *model.Order // parent order
 
 	// StatusDisplay       *string          `json:"statusDisplay"`
 	// IsPaid              bool             `json:"isPaid"`
@@ -323,7 +328,11 @@ func SystemOrderToGraphqlOrder(o *model.Order) *Order {
 			Unit:  WeightUnitsEnum(o.WeightUnit),
 		},
 
-		channelID: o.ChannelID,
+		channelID:         o.ChannelID,
+		userID:            o.UserID,
+		billingAddressID:  o.BillingAddressID,
+		shippingAddressID: o.ShippingAddressID,
+		order:             o,
 	}
 
 	if o.ShippingTaxRate != nil {
@@ -335,11 +344,16 @@ func SystemOrderToGraphqlOrder(o *model.Order) *Order {
 }
 
 func (o *Order) Discounts(ctx context.Context) ([]*OrderDiscount, error) {
-	panic("not implemented")
+	rels, err := dataloaders.OrderDiscountsByOrderIDLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(rels, SystemOrderDiscountToGraphqlOrderDiscount), nil
 }
 
 func (o *Order) IsPaid(ctx context.Context) (bool, error) {
-	panic("not implemented")
+	return o.order.IsFullyPaid(), nil
 }
 
 func (o *Order) StatusDisplay(ctx context.Context) (*string, error) {
@@ -347,19 +361,180 @@ func (o *Order) StatusDisplay(ctx context.Context) (*string, error) {
 }
 
 func (o *Order) BillingAddress(ctx context.Context) (*Address, error) {
-	panic("not implemented")
+	if o.billingAddressID == nil {
+		return nil, nil
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		currentSession = embedCtx.AppContext.Session()
+		accountSrv     = embedCtx.App.Srv().AccountService()
+	)
+
+	if o.userID != nil {
+		user, err := dataloaders.UserByUserIdLoader.Load(ctx, *o.userID)()
+		if err != nil {
+			return nil, err
+		}
+
+		address, err := dataloaders.AddressByIdLoader.Load(ctx, *o.billingAddressID)()
+		if err != nil {
+			return nil, err
+		}
+
+		if currentSession.UserId == user.Id || accountSrv.SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
+			return SystemAddressToGraphqlAddress(address), nil
+		}
+
+		return SystemAddressToGraphqlAddress(address.Obfuscate()), nil
+	}
+
+	// else case
+
+	address, err := dataloaders.AddressByIdLoader.Load(ctx, *o.billingAddressID)()
+	if err != nil {
+		return nil, err
+	}
+
+	if accountSrv.SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
+		return SystemAddressToGraphqlAddress(address), nil
+	}
+
+	return SystemAddressToGraphqlAddress(address.Obfuscate()), nil
 }
 
 func (o *Order) ShippingAddress(ctx context.Context) (*Address, error) {
-	panic("not implemented")
+	if o.shippingAddressID == nil {
+		return nil, nil
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		currentSession = embedCtx.AppContext.Session()
+		accountSrv     = embedCtx.App.Srv().AccountService()
+	)
+
+	if o.userID != nil {
+		user, err := dataloaders.UserByUserIdLoader.Load(ctx, *o.userID)()
+		if err != nil {
+			return nil, err
+		}
+
+		address, err := dataloaders.AddressByIdLoader.Load(ctx, *o.shippingAddressID)()
+		if err != nil {
+			return nil, err
+		}
+
+		if currentSession.UserId == user.Id || accountSrv.SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
+			return SystemAddressToGraphqlAddress(address), nil
+		}
+
+		return SystemAddressToGraphqlAddress(address.Obfuscate()), nil
+	}
+
+	// else case
+
+	address, err := dataloaders.AddressByIdLoader.Load(ctx, *o.shippingAddressID)()
+	if err != nil {
+		return nil, err
+	}
+
+	if accountSrv.SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
+		return SystemAddressToGraphqlAddress(address), nil
+	}
+
+	return SystemAddressToGraphqlAddress(address.Obfuscate()), nil
 }
 
 func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	orderSrv := embedCtx.App.Srv().OrderService()
+
+	payments, err := dataloaders.PaymentsByOrderIdLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	actions := []*OrderAction{}
+	lastPayment := embedCtx.App.Srv().PaymentService().GetLastpayment(payments)
+
+	ok, appErr := orderSrv.OrderCanCapture(o.order, lastPayment)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if ok {
+		ptr := OrderActionCapture
+		actions = append(actions, &ptr)
+	}
+
+	ok, appErr = orderSrv.CanMarkOrderAsPaid(o.order, payments)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if ok {
+		ptr := OrderActionMarkAsPaid
+		actions = append(actions, &ptr)
+	}
+
+	ok, appErr = orderSrv.OrderCanRefund(o.order, lastPayment)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if ok {
+		ptr := OrderActionRefund
+		actions = append(actions, &ptr)
+	}
+
+	ok, appErr = orderSrv.OrderCanVoid(o.order, lastPayment)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if ok {
+		ptr := OrderActionVoid
+		actions = append(actions, &ptr)
+	}
+
+	return actions, nil
 }
 
 func (o *Order) Subtotal(ctx context.Context) (*TaxedMoney, error) {
-	panic("not implemented")
+	lines, err := dataloaders.OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	subTotal, appErr := embedCtx.App.Srv().PaymentService().GetSubTotal(lines, o.order.Currency)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return SystemTaxedMoneyToGraphqlTaxedMoney(subTotal), nil
+}
+
+func (o *Order) Payments(ctx context.Context) ([]*Payment, error) {
+	payments, err := dataloaders.PaymentsByOrderIdLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(payments, SystemPaymentToGraphqlPayment), nil
 }
 
 func (o *Order) TotalAuthorized(ctx context.Context) (*Money, error) {
@@ -371,22 +546,100 @@ func (o *Order) Fulfillments(ctx context.Context) ([]*Fulfillment, error) {
 }
 
 func (o *Order) Lines(ctx context.Context) ([]*OrderLine, error) {
-	panic("not implemented")
+	lines, err := dataloaders.OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(lines, SystemOrderLineToGraphqlOrderLine), nil
 }
 
 func (o *Order) Events(ctx context.Context) ([]*OrderEvent, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	// check if current user has manage order permission to see order events:
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
+		return nil, model.NewAppError("Order,Events", ErrorUnauthorized, nil, "you are not authorized to see order events", http.StatusUnauthorized)
+	}
+
+	events, err := dataloaders.OrderEventsByOrderIdLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(events, SystemOrderEventToGraphqlOrderEvent), nil
 }
 
-func (o *Order) PaymentStatus(ctx context.Context) (PaymentChargeStatusEnum, error) {
-	panic("not implemented")
+func (o *Order) PaymentStatus(ctx context.Context) (*PaymentChargeStatusEnum, error) {
+	payments, err := dataloaders.PaymentsByOrderIdLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(payments) == 0 {
+		notCharged := PaymentChargeStatusEnumNotCharged
+		return &notCharged, nil
+	}
+
+	if len(payments) == 1 {
+		status := PaymentChargeStatusEnum(payments[0].ChargeStatus)
+		return &status, nil
+	}
+
+	// find latest payment
+	lastPayment := payments[0]
+	for _, pm := range payments {
+		if pm != nil && pm.CreateAt > lastPayment.CreateAt {
+			lastPayment = pm
+		}
+	}
+
+	status := PaymentChargeStatusEnum(lastPayment.ChargeStatus)
+	return &status, nil
 }
 
 func (o *Order) PaymentStatusDisplay(ctx context.Context) (string, error) {
-	panic("not implemented")
+	payments, err := dataloaders.PaymentsByOrderIdLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return "", err
+	}
+
+	if len(payments) == 0 {
+		return model.ChargeStatuString[model.NOT_CHARGED], nil
+	}
+
+	if len(payments) == 1 {
+		return model.ChargeStatuString[payments[0].ChargeStatus], nil
+	}
+
+	// find latest payment
+	lastPayment := payments[0]
+	for _, pm := range payments {
+		if pm != nil && pm.CreateAt > lastPayment.CreateAt {
+			lastPayment = pm
+		}
+	}
+
+	return model.ChargeStatuString[lastPayment.ChargeStatus], nil
 }
 
 func (o *Order) CanFinalize(ctx context.Context) (bool, error) {
+	// if o.Status == OrderStatusDraft {
+	// 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	// 	if err != nil {
+	// 		return false, err
+	// 	}
+
+	// 	country, appErr := embedCtx.App.Srv().OrderService().GetOrderCountry(o.order)
+	// 	if appErr != nil {
+	// 		return false, appErr
+	// 	}
+	// }
+
+	// return true, nil
 	panic("not implemented")
 }
 
@@ -429,10 +682,6 @@ func (o *Order) Voucher(ctx context.Context) (*Voucher, error) {
 func (o *Order) Original(ctx context.Context) (*string, error) {
 	panic("not implemented")
 }
-
-// func (o *Order) Errors(ctx context.Context) (*string, error) {
-// 	panic("not implemented")
-// }
 
 func orderByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Order] {
 	var (
@@ -506,45 +755,6 @@ func ordersByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Res
 errorLabel:
 	for idx := range userIDs {
 		res[idx] = &dataloader.Result[[]*model.Order]{Error: err}
-	}
-	return res
-}
-
-// ---------------- order event ----------------
-
-func orderEventsByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.OrderEvent] {
-	var (
-		res      = make([]*dataloader.Result[[]*model.OrderEvent], len(orderIDs))
-		events   []*model.OrderEvent
-		eventMap = map[string][]*model.OrderEvent{}
-		appErr   *model.AppError
-	)
-
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	events, appErr = embedCtx.App.Srv().OrderService().FilterOrderEventsByOptions(&model.OrderEventFilterOptions{
-		OrderID: squirrel.Eq{store.OrderEventTableName + ".OrderID": orderIDs},
-	})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
-
-	for _, event := range events {
-		eventMap[event.OrderID] = append(eventMap[event.OrderID], event)
-	}
-
-	for idx, id := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.OrderEvent]{Data: eventMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.OrderEvent]{Error: err}
 	}
 	return res
 }
