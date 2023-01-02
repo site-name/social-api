@@ -122,7 +122,7 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllo
 	if options.SelectRelated_OrderLine {
 		scanFields = append(scanFields, ws.OrderLine().ScanFields(&orderLine)...)
 	}
-	if options.SelectRelated_OrderLine_Order && options.SelectRelated_OrderLine {
+	if options.SelectRelated_OrderLine && options.SelectRelated_OrderLine_Order {
 		scanFields = append(scanFields, ws.Order().ScanFields(&orDer)...)
 	}
 
@@ -133,11 +133,11 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllo
 		}
 
 		// join data.
-		if options.SelectRelated_OrderLine_Order && options.SelectRelated_OrderLine {
-			orderLine.SetOrder(orDer.DeepCopy())
+		if options.SelectRelated_OrderLine && options.SelectRelated_OrderLine_Order {
+			orderLine.SetOrder(&orDer) // no need deep copy here, line 143 takes care of that
 		}
 		if options.SelectRelated_OrderLine {
-			preorderAllocation.OrderLine = orderLine.DeepCopy()
+			preorderAllocation.SetOrderLine(&orderLine) // no need deep copy here, line 143 takes care of that
 		}
 
 		res = append(res, preorderAllocation.DeepCopy())

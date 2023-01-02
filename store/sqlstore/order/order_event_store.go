@@ -66,3 +66,33 @@ func (oes *SqlOrderEventStore) Get(orderEventID string) (*model.OrderEvent, erro
 
 	return &res, nil
 }
+
+func (s *SqlOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error) {
+	query := s.GetQueryBuilder().
+		Select(s.ModelFields(store.OrderEventTableName + ".")...).
+		From(store.OrderEventTableName)
+
+	// parse options
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+	if options.OrderID != nil {
+		query = query.Where(options.OrderID)
+	}
+	if options.Type != nil {
+		query = query.Where(options.Type)
+	}
+
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.OrderEvent
+	err = s.GetReplicaX().Select(&res, queryStr, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find order events by given options")
+	}
+
+	return res, nil
+}

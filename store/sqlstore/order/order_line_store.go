@@ -194,8 +194,13 @@ func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
 //     +) find all order lines that satisfy given option
 //     +) if above operation founds order lines, prefetch the product variants, digital products that are related to found order lines
 func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) ([]*model.OrderLine, error) {
+	selectFields := ols.ModelFields(store.OrderLineTableName + ".")
+	if option.SelectRelatedOrder {
+		selectFields = append(selectFields, ols.Order().ModelFields(store.OrderTableName+".")...)
+	}
+
 	query := ols.GetQueryBuilder().
-		Select(ols.ModelFields(store.OrderLineTableName + ".")...).
+		Select(selectFields...).
 		From(store.OrderLineTableName).
 		OrderBy(store.TableOrderingMap[store.OrderLineTableName])
 
@@ -216,21 +221,37 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 		query = query.Where(option.VariantID)
 	}
 
+	joinedOrderTable := false
+
+	if option.SelectRelatedOrder {
+		query = query.InnerJoin(store.OrderTableName + " ON Orders.Id = OrderLines.OrderID")
+
+		joinedOrderTable = true
+	}
+
+	if option.OrderChannelID != nil {
+		if !joinedOrderTable {
+			query = query.InnerJoin(store.OrderTableName + " ON Orders.Id = OrderLines.OrderID")
+		}
+		query = query.Where(option.OrderChannelID)
+	}
+
 	var joined_ProductVariantTableName bool
 
 	if option.VariantDigitalContentID != nil {
 		query = query.
-			InnerJoin(store.ProductVariantTableName + " ON (Orderlines.VariantID = ProductVariants.Id)").
-			InnerJoin(store.DigitalContentTableName + "  ON (ProductVariants.Id = DigitalContents.ProductVariantID)").
+			InnerJoin(store.ProductVariantTableName + " ON Orderlines.VariantID = ProductVariants.Id").
+			InnerJoin(store.DigitalContentTableName + "  ON ProductVariants.Id = DigitalContents.ProductVariantID").
 			Where(option.VariantDigitalContentID)
+
 		joined_ProductVariantTableName = true // indicate joined the table
 	}
 	if option.VariantProductID != nil {
 		if !joined_ProductVariantTableName {
-			query = query.InnerJoin(store.ProductVariantTableName + " ON (Orderlines.VariantID = ProductVariants.Id)")
+			query = query.InnerJoin(store.ProductVariantTableName + " ON Orderlines.VariantID = ProductVariants.Id")
 		}
 		query = query.
-			InnerJoin(store.ProductTableName + " ON (ProductVariants.ProductID = Products.Id)").
+			InnerJoin(store.ProductTableName + " ON ProductVariants.ProductID = Products.Id").
 			Where(option.VariantProductID)
 	}
 
@@ -239,11 +260,35 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 		return nil, errors.Wrap(err, "OrderLineByOption_ToSql_1")
 	}
 
-	var orderLines model.OrderLines
-
-	err = ols.GetReplicaX().Select(&orderLines, queryString, args...)
+	rows, err := ols.GetReplicaX().QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order lines with given option")
+	}
+	defer rows.Close()
+
+	var (
+		orderLines model.OrderLines
+		line       model.OrderLine
+		order      model.Order
+		scanFields = ols.ScanFields(&line)
+	)
+	if option.SelectRelatedOrder {
+		scanFields = append(scanFields, ols.Order().ScanFields(&order)...)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row of order line")
+		}
+
+		if option.SelectRelatedOrder {
+			line.SetOrder(&order) // no need deep copy yet
+		} else {
+			line.SetOrder(nil)
+		}
+
+		orderLines = append(orderLines, line.DeepCopy())
 	}
 
 	// check if prefetching is needed and order lines have been found to proceed

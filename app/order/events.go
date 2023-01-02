@@ -101,7 +101,7 @@ func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction store_
 	)
 }
 
-func (a *ServiceOrder) OrderDiscountEvent(transaction store_iface.SqlxTxExecutor, eventType model.OrderEvents, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError) {
+func (a *ServiceOrder) OrderDiscountEvent(transaction store_iface.SqlxTxExecutor, eventType model.OrderEventType, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError) {
 	var userID *string
 	if user == nil || !model.IsValidId(user.Id) {
 		userID = nil
@@ -129,7 +129,7 @@ func getPaymentData(amount *decimal.Decimal, payMent model.Payment) map[string]m
 	}
 }
 
-func (a *ServiceOrder) OrderLineDiscountEvent(eventType model.OrderEvents, ord *model.Order, user *model.User, line *model.OrderLine, lineBeforeUpdate *model.OrderLine) (*model.OrderEvent, *model.AppError) {
+func (a *ServiceOrder) OrderLineDiscountEvent(eventType model.OrderEventType, ord *model.Order, user *model.User, line *model.OrderLine, lineBeforeUpdate *model.OrderLine) (*model.OrderEvent, *model.AppError) {
 	var userID *string
 	if user == nil || !model.IsValidId(user.Id) {
 		userID = nil
@@ -338,4 +338,13 @@ func (s *ServiceOrder) OrderReplacementCreated(transaction store_iface.SqlxTxExe
 			"related_order_pk": replaceOrder.Id,
 		},
 	})
+}
+
+func (s *ServiceOrder) FilterOrderEventsByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, *model.AppError) {
+	events, err := s.srv.Store.OrderEvent().FilterByOptions(options)
+	if err != nil {
+		return nil, model.NewAppError("FilterOrderEventsByOptions", "app.order.order_events_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return events, nil
 }

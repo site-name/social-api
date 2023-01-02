@@ -22,9 +22,7 @@ const ErrorUnauthorized = "api.unauthorized.app_error"
 // Unique type to hold our context.
 type CTXKey int
 
-const (
-	WebCtx CTXKey = iota
-)
+const WebCtx CTXKey = iota
 
 // constructSchema constructs schema from *.graphql files
 func constructSchema() (string, error) {
@@ -43,11 +41,7 @@ func constructSchema() (string, error) {
 			return "", errors.Wrapf(err, "failed to read schema file: %s", filepath.Join("schemas", entry.Name()))
 		}
 
-		_, err = builder.Write(data)
-		if err != nil {
-			return "", errors.Wrap(err, "failed to build up schema files")
-		}
-
+		builder.Write(data)
 		builder.WriteByte('\n')
 	}
 

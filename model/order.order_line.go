@@ -65,9 +65,9 @@ type OrderLine struct {
 	UnDiscountedTotalPrice            *goprices.TaxedMoney `json:"undiscounted_total_price" db:"-"`
 	TaxRate                           *decimal.Decimal     `json:"tax_rate"` // decimal places: 4
 
-	productVariant *ProductVariant `json:"-" db:"-"` // for storing value returned by prefetching
-	order          *Order          `json:"-" db:"-"` // related data, get popularized in some calls to database
-	allocations    Allocations
+	productVariant *ProductVariant `db:"-"` // for storing value returned by prefetching
+	order          *Order          `db:"-"` // related data, get popularized in some calls to database
+	allocations    Allocations     `db:"-"`
 }
 
 func (o *OrderLine) SetAllocations(allocations Allocations) {
@@ -106,14 +106,20 @@ type OrderLinePrefetchRelated struct {
 type OrderLineFilterOption struct {
 	Id                 squirrel.Sqlizer
 	OrderID            squirrel.Sqlizer
+	OrderChannelID     squirrel.Sqlizer // inner join Orders ON Orders.Id = OrderLines.OrderID WHERE Orders.ChannelID ...
 	IsShippingRequired *bool
 	IsGiftcard         *bool
 	VariantID          squirrel.Sqlizer
 
-	VariantProductID        squirrel.Sqlizer // INNER JOIN ProductVariants INNER JOIN Products WHERE Products.Id ...
-	VariantDigitalContentID squirrel.Sqlizer // INNER JOIN ProductVariants INNER JOIN DigitalContents WHERE DigitalContents.Id ...
+	VariantProductID squirrel.Sqlizer // INNER JOIN ProductVariants INNER JOIN Products WHERE Products.Id ...
+
+	// INNER JOIN ProductVariants ON OrderLines.VariantID = ProductVariants.Id
+	// INNER JOIN DigitalContents ON ProductVariants.Id = DigitalContents.ProductVariantID WHERE DigitalContents.Id ...
+	VariantDigitalContentID squirrel.Sqlizer
 
 	PrefetchRelated OrderLinePrefetchRelated
+
+	SelectRelatedOrder bool
 }
 
 func (o *OrderLine) String() string {

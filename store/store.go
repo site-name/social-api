@@ -583,6 +583,7 @@ type (
 	OrderEventStore interface {
 		Save(transaction store_iface.SqlxTxExecutor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) // Save inserts given order event into database then returns it
 		Get(orderEventID string) (*model.OrderEvent, error)                                                   // Get finds order event with given id then returns it
+		FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error)
 	}
 	FulfillmentLineStore interface {
 		ModelFields(prefix string) model.AnyArray[string]

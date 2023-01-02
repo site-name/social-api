@@ -4706,6 +4706,24 @@ func (s *OpenTracingLayerOrderDiscountStore) Upsert(transaction store_iface.Sqlx
 	return result, err
 }
 
+func (s *OpenTracingLayerOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderEventStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.OrderEventStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerOrderEventStore) Get(orderEventID string) (*model.OrderEvent, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "OrderEventStore.Get")

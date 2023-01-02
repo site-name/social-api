@@ -5094,6 +5094,26 @@ func (s *RetryLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExec
 
 }
 
+func (s *RetryLayerOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error) {
+
+	tries := 0
+	for {
+		result, err := s.OrderEventStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerOrderEventStore) Get(orderEventID string) (*model.OrderEvent, error) {
 
 	tries := 0

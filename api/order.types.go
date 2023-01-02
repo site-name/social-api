@@ -135,6 +135,105 @@ errorLabel:
 	return res
 }
 
+func orderLinesByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.OrderLine] {
+	var (
+		res     = make([]*dataloader.Result[[]*model.OrderLine], len(orderIDs))
+		lines   model.OrderLines
+		appErr  *model.AppError
+		lineMap = map[string][]*model.OrderLine{} // keys are order ids
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	lines, appErr = embedCtx.App.Srv().
+		OrderService().
+		OrderLinesByOption(&model.OrderLineFilterOption{
+			OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": orderIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, line := range lines {
+		lineMap[line.OrderID] = append(lineMap[line.OrderID], line)
+	}
+
+	for idx, id := range orderIDs {
+		res[idx] = &dataloader.Result[[]*model.OrderLine]{Data: lineMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range orderIDs {
+		res[idx] = &dataloader.Result[[]*model.OrderLine]{Error: err}
+	}
+	return res
+}
+
+// idPairs are strings with format variantID__channelID
+func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []string) []*dataloader.Result[[]*model.OrderLine] {
+	var (
+		res     = make([]*dataloader.Result[[]*model.OrderLine], len(idPairs))
+		lines   model.OrderLines
+		appErr  *model.AppError
+		lineMap = map[string]model.OrderLines{} // keys have format variantID__channelID
+
+		variantIDs []string
+		channelIDs []string
+	)
+
+	for _, pair := range idPairs {
+		index := strings.Index(pair, "__")
+		if index < 0 {
+			continue
+		}
+
+		variantIDs = append(variantIDs, pair[:index])
+		channelIDs = append(channelIDs, pair[index+2:])
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	lines, appErr = embedCtx.App.Srv().
+		OrderService().
+		OrderLinesByOption(&model.OrderLineFilterOption{
+			VariantID:          squirrel.Eq{store.OrderLineTableName + ".VariantID": variantIDs},
+			OrderChannelID:     squirrel.Eq{store.OrderTableName + ".ChannelID": channelIDs},
+			SelectRelatedOrder: true,
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, line := range lines {
+		if line.VariantID == nil {
+			continue
+		}
+
+		key := *line.VariantID + "__" + line.GetOrder().ChannelID
+		lineMap[key] = append(lineMap[key], line)
+	}
+
+	for idx, key := range idPairs {
+		res[idx] = &dataloader.Result[[]*model.OrderLine]{Data: lineMap[key]}
+	}
+	return res
+
+errorLabel:
+	for idx := range idPairs {
+		res[idx] = &dataloader.Result[[]*model.OrderLine]{Error: err}
+	}
+	return res
+}
+
 // ------------------------------- ORDER ---------------------------------
 
 type Order struct {
@@ -368,6 +467,84 @@ func orderByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*mo
 errorLabel:
 	for idx := range ids {
 		res[idx] = &dataloader.Result[*model.Order]{Error: err}
+	}
+	return res
+}
+
+func ordersByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.Order] {
+	var (
+		res      = make([]*dataloader.Result[[]*model.Order], len(userIDs))
+		appErr   *model.AppError
+		orders   model.Orders
+		orderMap = map[string]model.Orders{} // keys are user ids
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	orders, appErr = embedCtx.App.Srv().
+		OrderService().
+		FilterOrdersByOptions(&model.OrderFilterOption{
+			UserID: squirrel.Eq{store.OrderTableName + ".UserID": userIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, ord := range orders {
+		orderMap[*ord.UserID] = append(orderMap[*ord.UserID], ord)
+	}
+
+	for idx, id := range userIDs {
+		res[idx] = &dataloader.Result[[]*model.Order]{Data: orderMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range userIDs {
+		res[idx] = &dataloader.Result[[]*model.Order]{Error: err}
+	}
+	return res
+}
+
+// ---------------- order event ----------------
+
+func orderEventsByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.OrderEvent] {
+	var (
+		res      = make([]*dataloader.Result[[]*model.OrderEvent], len(orderIDs))
+		events   []*model.OrderEvent
+		eventMap = map[string][]*model.OrderEvent{}
+		appErr   *model.AppError
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	events, appErr = embedCtx.App.Srv().OrderService().FilterOrderEventsByOptions(&model.OrderEventFilterOptions{
+		OrderID: squirrel.Eq{store.OrderEventTableName + ".OrderID": orderIDs},
+	})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, event := range events {
+		eventMap[event.OrderID] = append(eventMap[event.OrderID], event)
+	}
+
+	for idx, id := range orderIDs {
+		res[idx] = &dataloader.Result[[]*model.OrderEvent]{Data: eventMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range orderIDs {
+		res[idx] = &dataloader.Result[[]*model.OrderEvent]{Error: err}
 	}
 	return res
 }

@@ -313,9 +313,9 @@ type OrderService interface {
 	OrderConfirmedEvent(orDer model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model.AppError)
 	OrderCreatedEvent(orDer model.Order, user *model.User, _ interface{}, fromDraft bool) (*model.OrderEvent, *model.AppError)
 	OrderDiscountAutomaticallyUpdatedEvent(transaction store_iface.SqlxTxExecutor, ord *model.Order, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError)
-	OrderDiscountEvent(transaction store_iface.SqlxTxExecutor, eventType model.OrderEvents, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError)
+	OrderDiscountEvent(transaction store_iface.SqlxTxExecutor, eventType model.OrderEventType, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError)
 	OrderDiscountsAutomaticallyUpdatedEvent(transaction store_iface.SqlxTxExecutor, ord *model.Order, changedOrderDiscounts [][2]*model.OrderDiscount) *model.AppError
-	OrderLineDiscountEvent(eventType model.OrderEvents, ord *model.Order, user *model.User, line *model.OrderLine, lineBeforeUpdate *model.OrderLine) (*model.OrderEvent, *model.AppError)
+	OrderLineDiscountEvent(eventType model.OrderEventType, ord *model.Order, user *model.User, line *model.OrderLine, lineBeforeUpdate *model.OrderLine) (*model.OrderEvent, *model.AppError)
 	OrderManuallyMarkedAsPaidEvent(transaction store_iface.SqlxTxExecutor, orDer model.Order, user *model.User, _ interface{}, transactionReference string) (*model.OrderEvent, *model.AppError)
 	OrderReplacementCreated(transaction store_iface.SqlxTxExecutor, originalOrder model.Order, replaceOrder *model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model.AppError)
 	SendOrderCancelledConfirmation(orDer *model.Order, user *model.User, _, manager interfaces.PluginManagerInterface) *model.AppError
@@ -324,4 +324,5 @@ type OrderService interface {
 	UpdateGiftcardBalance(giftCard *model.GiftCard, totalPriceLeft *goprices.Money) model.BalanceObject
 	UpdateTaxesForOrderLine(line model.OrderLine, ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	UpdateTaxesForOrderLines(lines model.OrderLines, ord model.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model.AppError
+	FilterOrderEventsByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, *model.AppError)
 }

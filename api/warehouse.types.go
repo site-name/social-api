@@ -246,3 +246,41 @@ func (s *Stock) ProductVariant(ctx context.Context) (*ProductVariant, error) {
 }
 
 // ----------------- allocation ----------------
+
+func allocationsByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[[]*model.Allocation] {
+	var (
+		res           = make([]*dataloader.Result[[]*model.Allocation], len(orderLineIDs))
+		appErr        *model.AppError
+		allocationMap = map[string]model.Allocations{}
+		allocations   model.Allocations
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	allocations, appErr = embedCtx.App.Srv().WarehouseService().AllocationsByOption(nil, &model.AllocationFilterOption{
+		OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLineIDs},
+	})
+
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, all := range allocations {
+		allocationMap[all.OrderLineID] = append(allocationMap[all.OrderLineID], all)
+	}
+
+	for idx, id := range orderLineIDs {
+		res[idx] = &dataloader.Result[[]*model.Allocation]{Data: allocationMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range orderLineIDs {
+		res[idx] = &dataloader.Result[[]*model.Allocation]{Error: err}
+	}
+	return res
+}

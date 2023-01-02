@@ -4317,6 +4317,22 @@ func (s *TimerLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExec
 	return result, err
 }
 
+func (s *TimerLayerOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error) {
+	start := timemodule.Now()
+
+	result, err := s.OrderEventStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("OrderEventStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerOrderEventStore) Get(orderEventID string) (*model.OrderEvent, error) {
 	start := timemodule.Now()
 

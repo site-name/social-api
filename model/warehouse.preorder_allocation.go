@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 )
 
 type PreorderAllocation struct {
@@ -10,7 +11,7 @@ type PreorderAllocation struct {
 	Quantity                       int    `json:"quantity"`
 	ProductVariantChannelListingID string `json:"product_variant_channel_listing_id"`
 
-	OrderLine *OrderLine `json:"-" db:"-"` // related data popularized in some database calls
+	orderLine *OrderLine `json:"-" db:"-"` // related data popularized in some database calls
 }
 
 // PreorderAllocationFilterOption is used to build squirrel sql queries
@@ -27,14 +28,15 @@ type PreorderAllocationFilterOption struct {
 type PreorderAllocations []*PreorderAllocation
 
 func (p PreorderAllocations) IDs() []string {
-	res := []string{}
-	for _, item := range p {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
+	return lo.Map(p, func(pr *PreorderAllocation, _ int) string { return pr.Id })
+}
 
-	return res
+func (p *PreorderAllocation) GetOrderLine() *OrderLine {
+	return p.orderLine
+}
+
+func (p *PreorderAllocation) SetOrderLine(l *OrderLine) {
+	p.orderLine = l
 }
 
 func (p *PreorderAllocation) PreSave() {
@@ -66,8 +68,8 @@ func (p *PreorderAllocation) IsValid() *AppError {
 func (p *PreorderAllocation) DeepCopy() *PreorderAllocation {
 	res := *p
 
-	if p.OrderLine != nil {
-		res.OrderLine = p.OrderLine.DeepCopy()
+	if p.orderLine != nil {
+		res.orderLine = p.orderLine.DeepCopy()
 	}
 	return &res
 }
