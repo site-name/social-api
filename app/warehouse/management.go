@@ -1042,9 +1042,9 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 
 	var orDer *model.Order
 	if preorderAllocation != nil &&
-		preorderAllocation.OrderLine != nil &&
-		preorderAllocation.OrderLine.GetOrder() != nil {
-		orDer = preorderAllocation.OrderLine.GetOrder()
+		preorderAllocation.GetOrderLine() != nil &&
+		preorderAllocation.GetOrderLine().GetOrder() != nil {
+		orDer = preorderAllocation.GetOrderLine().GetOrder()
 
 	} else {
 		preorderAllocations, appErr := s.srv.
@@ -1058,7 +1058,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 			return nil, nil, appErr
 		}
 		preorderAllocation = preorderAllocations[0]
-		orDer = preorderAllocation.OrderLine.GetOrder()
+		orDer = preorderAllocation.GetOrderLine().GetOrder()
 	}
 
 	var wareHouse *model.WareHouse
@@ -1112,7 +1112,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 	}
 
 	if wareHouse == nil {
-		return nil, model.NewPreorderAllocationError(preorderAllocation.OrderLine), nil
+		return nil, model.NewPreorderAllocationError(preorderAllocation.GetOrderLine()), nil
 	}
 
 	stocks, appErr := s.srv.WarehouseService().StocksByOption(transaction, &model.StockFilterOption{

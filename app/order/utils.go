@@ -2,11 +2,11 @@ package order
 
 import (
 	"net/http"
-	"reflect"
 	"strings"
 	"sync"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -368,43 +368,6 @@ func (a *ServiceOrder) UpdateOrderPrices(ord model.Order, manager interfaces.Plu
 	return a.RecalculateOrder(nil, &ord, nil)
 }
 
-// thereIsAnItem takes a slice and a checker function.
-// it iterates through the slice to find out if there is an item that satisfy given checker function
-func thereIsAnItem(slice interface{}, checker func(item interface{}) bool) bool {
-	valueOf := reflect.ValueOf(slice)
-	typeOf := reflect.TypeOf(slice)
-
-	if typeOf.Kind() == reflect.Slice {
-		for i := 0; i < valueOf.Len(); i++ {
-			valueAtIndex := valueOf.Index(i)
-			if checker(valueAtIndex.Interface()) {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-// collectionsIntersection select only common items between two given slices
-func collectionsIntersection(
-	collectionSlice1 []*model.Collection,
-	collectionSlice2 []*model.Collection,
-) []*model.Collection {
-
-	var res []*model.Collection
-
-	for i := 0; i < len(collectionSlice1); i++ {
-		for j := 0; j < len(collectionSlice2); j++ {
-			if collectionSlice1[i].Id == collectionSlice2[j].Id {
-				res = append(res, collectionSlice1[i])
-			}
-		}
-	}
-
-	return res
-}
-
 // GetDiscountedLines returns a list of discounted order lines, filterd from given orderLines
 func (a *ServiceOrder) GetDiscountedLines(orderLines []*model.OrderLine, voucher *model.Voucher) ([]*model.OrderLine, *model.AppError) {
 	var (
@@ -516,9 +479,9 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines []*model.OrderLine, voucher
 							if appErr != nil {
 								setAppError(appErr)
 							} else {
-								orderLineProductInDiscountedProducts := thereIsAnItem(discountedProducts, func(i interface{}) bool { return i.(*model.Product).Id == orderLineProduct.Id })
-								orderLineCategoryInDiscountedCategories := thereIsAnItem(discountedCategories, func(i interface{}) bool { return i.(*model.Category).Id == orderLineCategory.Id })
-								orderLineCollectionsIntersectDiscountedCollections := collectionsIntersection(orderLineCollections, discountedCollections)
+								orderLineProductInDiscountedProducts := lo.SomeBy(discountedProducts, func(p *model.Product) bool { return p.Id == orderLineProduct.Id })
+								orderLineCategoryInDiscountedCategories := lo.SomeBy(discountedCategories, func(c *model.Category) bool { return c.Id == orderLineCategory.Id })
+								orderLineCollectionsIntersectDiscountedCollections := lo.Intersect(orderLineCollections, discountedCollections)
 
 								if orderLineProductInDiscountedProducts || orderLineCategoryInDiscountedCategories || len(orderLineCollectionsIntersectDiscountedCollections) > 0 {
 									mut.Lock()

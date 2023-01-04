@@ -93,3 +93,28 @@ func (is *SqlInvoiceStore) Get(invoiceID string) (*model.Invoice, error) {
 
 	return &res, nil
 }
+
+func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, error) {
+	query := is.GetQueryBuilder().Select(is.ModelFields(store.InvoiceTableName + ".")...).
+		From(store.InvoiceTableName)
+
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.Invoice
+	err = is.GetReplicaX().Select(&res, queryStr, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find invoices by given options")
+	}
+
+	return res, nil
+}

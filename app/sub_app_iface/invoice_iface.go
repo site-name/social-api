@@ -14,5 +14,5 @@ type InvoiceService interface {
 	SendInvoice(inVoice model.Invoice, staffUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) *model.AppError
 	// UpsertInvoiceEvent is shortcut for creating invoice events
 	UpsertInvoiceEvent(option *model.InvoiceEventOption) (*model.InvoiceEvent, *model.AppError)
-	UpdateInvoice(inVoice *model.Invoice, number *string, url *string)
+	FilterInvoicesByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, *model.AppError)
 }

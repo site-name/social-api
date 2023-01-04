@@ -135,7 +135,7 @@ func (a *ServicePayment) PaymentCanVoid(payMent *model.Payment) (bool, *model.Ap
 		return false, err
 	}
 
-	return *payMent.IsActive && payMent.IsNotCharged() && authorized, nil
+	return *payMent.IsActive && payMent.NotCharged() && authorized, nil
 }
 
 // UpsertPayment updates or insert given payment, depends on the validity of its Id

@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/base64"
 	"net/http"
 	"strings"
 
@@ -261,11 +262,7 @@ type Order struct {
 	TotalBalance        *Money           `json:"totalBalance"`
 	LanguageCodeEnum    LanguageCodeEnum `json:"languageCodeEnum"`
 
-	channelID         string
-	userID            *string
-	billingAddressID  *string
-	shippingAddressID *string
-	order             *model.Order // parent order
+	order *model.Order // parent order
 
 	// StatusDisplay       *string          `json:"statusDisplay"`
 	// IsPaid              bool             `json:"isPaid"`
@@ -328,11 +325,7 @@ func SystemOrderToGraphqlOrder(o *model.Order) *Order {
 			Unit:  WeightUnitsEnum(o.WeightUnit),
 		},
 
-		channelID:         o.ChannelID,
-		userID:            o.UserID,
-		billingAddressID:  o.BillingAddressID,
-		shippingAddressID: o.ShippingAddressID,
-		order:             o,
+		order: o,
 	}
 
 	if o.ShippingTaxRate != nil {
@@ -361,7 +354,7 @@ func (o *Order) StatusDisplay(ctx context.Context) (*string, error) {
 }
 
 func (o *Order) BillingAddress(ctx context.Context) (*Address, error) {
-	if o.billingAddressID == nil {
+	if o.order.BillingAddressID == nil {
 		return nil, nil
 	}
 
@@ -370,37 +363,15 @@ func (o *Order) BillingAddress(ctx context.Context) (*Address, error) {
 		return nil, err
 	}
 
-	var (
-		currentSession = embedCtx.AppContext.Session()
-		accountSrv     = embedCtx.App.Srv().AccountService()
-	)
-
-	if o.userID != nil {
-		user, err := dataloaders.UserByUserIdLoader.Load(ctx, *o.userID)()
-		if err != nil {
-			return nil, err
-		}
-
-		address, err := dataloaders.AddressByIdLoader.Load(ctx, *o.billingAddressID)()
-		if err != nil {
-			return nil, err
-		}
-
-		if currentSession.UserId == user.Id || accountSrv.SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
-			return SystemAddressToGraphqlAddress(address), nil
-		}
-
-		return SystemAddressToGraphqlAddress(address.Obfuscate()), nil
-	}
-
-	// else case
-
-	address, err := dataloaders.AddressByIdLoader.Load(ctx, *o.billingAddressID)()
+	address, err := dataloaders.AddressByIdLoader.Load(ctx, *o.order.BillingAddressID)()
 	if err != nil {
 		return nil, err
 	}
 
-	if accountSrv.SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
+	var currentSession = embedCtx.AppContext.Session()
+
+	if (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
+		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
 		return SystemAddressToGraphqlAddress(address), nil
 	}
 
@@ -408,7 +379,7 @@ func (o *Order) BillingAddress(ctx context.Context) (*Address, error) {
 }
 
 func (o *Order) ShippingAddress(ctx context.Context) (*Address, error) {
-	if o.shippingAddressID == nil {
+	if o.order.ShippingAddressID == nil {
 		return nil, nil
 	}
 
@@ -417,37 +388,15 @@ func (o *Order) ShippingAddress(ctx context.Context) (*Address, error) {
 		return nil, err
 	}
 
-	var (
-		currentSession = embedCtx.AppContext.Session()
-		accountSrv     = embedCtx.App.Srv().AccountService()
-	)
-
-	if o.userID != nil {
-		user, err := dataloaders.UserByUserIdLoader.Load(ctx, *o.userID)()
-		if err != nil {
-			return nil, err
-		}
-
-		address, err := dataloaders.AddressByIdLoader.Load(ctx, *o.shippingAddressID)()
-		if err != nil {
-			return nil, err
-		}
-
-		if currentSession.UserId == user.Id || accountSrv.SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
-			return SystemAddressToGraphqlAddress(address), nil
-		}
-
-		return SystemAddressToGraphqlAddress(address.Obfuscate()), nil
-	}
-
-	// else case
-
-	address, err := dataloaders.AddressByIdLoader.Load(ctx, *o.shippingAddressID)()
+	address, err := dataloaders.AddressByIdLoader.Load(ctx, *o.order.ShippingAddressID)()
 	if err != nil {
 		return nil, err
 	}
 
-	if accountSrv.SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
+	var currentSession = embedCtx.AppContext.Session()
+
+	if (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
+		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
 		return SystemAddressToGraphqlAddress(address), nil
 	}
 
@@ -475,8 +424,8 @@ func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
 		return nil, appErr
 	}
 	if ok {
-		ptr := OrderActionCapture
-		actions = append(actions, &ptr)
+		action := OrderActionCapture
+		actions = append(actions, &action)
 	}
 
 	ok, appErr = orderSrv.CanMarkOrderAsPaid(o.order, payments)
@@ -484,8 +433,8 @@ func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
 		return nil, appErr
 	}
 	if ok {
-		ptr := OrderActionMarkAsPaid
-		actions = append(actions, &ptr)
+		action := OrderActionMarkAsPaid
+		actions = append(actions, &action)
 	}
 
 	ok, appErr = orderSrv.OrderCanRefund(o.order, lastPayment)
@@ -493,8 +442,8 @@ func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
 		return nil, appErr
 	}
 	if ok {
-		ptr := OrderActionRefund
-		actions = append(actions, &ptr)
+		action := OrderActionRefund
+		actions = append(actions, &action)
 	}
 
 	ok, appErr = orderSrv.OrderCanVoid(o.order, lastPayment)
@@ -502,8 +451,8 @@ func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
 		return nil, appErr
 	}
 	if ok {
-		ptr := OrderActionVoid
-		actions = append(actions, &ptr)
+		action := OrderActionVoid
+		actions = append(actions, &action)
 	}
 
 	return actions, nil
@@ -644,11 +593,47 @@ func (o *Order) CanFinalize(ctx context.Context) (bool, error) {
 }
 
 func (o *Order) UserEmail(ctx context.Context) (*string, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	var currentSession = embedCtx.AppContext.Session()
+
+	if (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
+		embedCtx.App.Srv().
+			AccountService().
+			SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
+
+		return &o.order.UserEmail, nil
+	}
+
+	return model.NewString(util.ObfuscateEmail(o.order.UserEmail)), nil
 }
 
 func (o *Order) User(ctx context.Context) (*User, error) {
-	panic("not implemented")
+	if o.order.UserID == nil {
+		return nil, nil
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	currentSession := embedCtx.AppContext.Session()
+
+	if (o.order.UserID != nil && currentSession.UserId == *o.order.UserID) ||
+		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageUsers) {
+		user, err := dataloaders.UserByUserIdLoader.Load(ctx, *o.order.UserID)()
+		if err != nil {
+			return nil, err
+		}
+
+		return SystemUserToGraphqlUser(user), nil
+	}
+
+	return nil, model.NewAppError("Order.User", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
 }
 
 func (o *Order) DeliveryMethod(ctx context.Context) (DeliveryMethod, error) {
@@ -660,27 +645,84 @@ func (o *Order) AvailableShippingMethods(ctx context.Context) ([]*ShippingMethod
 }
 
 func (o *Order) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, error) {
-	panic("not implemented")
+	lines, err := dataloaders.OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	address, err := o.ShippingAddress(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	embedCtx.App.Srv().OrderService().Order
 }
 
 func (o *Order) Invoices(ctx context.Context) ([]*Invoice, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	currentSession := embedCtx.AppContext.Session()
+
+	if (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
+		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
+		invoices, err := dataloaders.InvoicesByOrderIDLoader.Load(ctx, o.ID)()
+		if err != nil {
+			return nil, err
+		}
+
+		return DataloaderResultMap(invoices, SystemInvoiceToGraphqlInvoice), nil
+	}
+
+	return nil, model.NewAppError("Order.Invoice", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
 }
 
 func (o *Order) IsShippingRequired(ctx context.Context) (bool, error) {
-	panic("not implemented")
+	lines, err := dataloaders.OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return false, err
+	}
+
+	return lo.SomeBy(lines, func(o *model.OrderLine) bool { return o.IsShippingRequired }), nil
 }
 
 func (o *Order) GiftCards(ctx context.Context) ([]*GiftCard, error) {
-	panic("not implemented")
+	giftcards, err := dataloaders.GiftcardsByOrderIDsLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(giftcards, SystemGiftcardToGraphqlGiftcard), nil
 }
 
 func (o *Order) Voucher(ctx context.Context) (*Voucher, error) {
-	panic("not implemented")
+	if o.order.VoucherID == nil {
+		return nil, nil
+	}
+
+	voucher, err := dataloaders.VoucherByIDLoader.Load(ctx, *o.order.VoucherID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return systemVoucherToGraphqlVoucher(voucher), nil
 }
 
 func (o *Order) Original(ctx context.Context) (*string, error) {
-	panic("not implemented")
+	if o.order.OriginalID != nil {
+		return nil, nil
+	}
+	value := []byte("Order")
+	value = append(value, *o.order.OriginalID...)
+
+	return model.NewString(base64.StdEncoding.EncodeToString(value)), nil
 }
 
 func orderByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Order] {

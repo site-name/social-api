@@ -329,7 +329,9 @@ func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, 
 func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	options.CountryCode = strings.ToUpper(options.CountryCode)
 
-	warehouseIDQuery := ss.warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug)
+	warehouseIDQuery := ss.
+		warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug).
+		PlaceholderFormat(squirrel.Question)
 
 	// remember the order when scan
 	selectFields := ss.ModelFields(store.StockTableName + ".")
@@ -345,20 +347,22 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.Sqlx
 		OrderBy(store.TableOrderingMap[store.StockTableName])
 
 	// parse option for FilterVariantStocksForCountry
-	if options.ProductVariantID != "" {
-		query = query.Where(squirrel.Expr("Stocks.ProductVariantID = ?", options.ProductVariantID))
-	}
-	// parse option for FilterProductStocksForCountryAndChannel
-	if options.ProductID != "" {
-		query = query.
-			InnerJoin(store.ProductTableName + " ON (Products.Id = ProductVariants.ProductID)").
-			Where(squirrel.Expr("Products.Id = ?", options.ProductID))
-	}
 	// parse additional options
 	if options.AnnotateAvailabeQuantity {
 		query = query.
-			Column(squirrel.Alias(squirrel.Expr("Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0)"), "AvailableQuantity")).
+			Column("Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity").
 			LeftJoin(store.AllocationTableName + " ON (Stocks.Id = Allocations.StockID)")
+	}
+
+	if options.ProductVariantID != "" {
+		query = query.Where("Stocks.ProductVariantID = ?", options.ProductVariantID)
+	}
+
+	// parse option for FilterProductStocksForCountryAndChannel
+	if options.ProductID != "" {
+		query = query.
+			InnerJoin(store.ProductTableName+" ON (Products.Id = ProductVariants.ProductID)").
+			Where("Products.Id = ?", options.ProductID)
 	}
 	if options.Id != nil {
 		query = query.Where(options.Id)
@@ -443,14 +447,14 @@ func (ss *SqlStockStore) warehouseIdSelectQuery(countryCode string, channelSlug 
 
 	if countryCode != "" {
 		query = query.
-			InnerJoin(store.WarehouseShippingZoneTableName+" ON (Warehouses.Id = WarehouseShippingZones.WarehouseID)").
-			InnerJoin(store.ShippingZoneTableName+" ON (ShippingZones.Id = WarehouseShippingZones.ShippingZoneID)").
-			Where("ShippingZones.Countries :: text LIKE ?", "%"+countryCode+"%")
+			InnerJoin(store.WarehouseShippingZoneTableName+" ON Warehouses.Id = WarehouseShippingZones.WarehouseID").
+			InnerJoin(store.ShippingZoneTableName+" ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
+			Where("ShippingZones.Countries::text LIKE ?", "%"+countryCode+"%")
 	}
 	if channelSlug != "" {
 		query = query.
-			InnerJoin(store.ShippingZoneChannelTableName+" ON (ShippingZoneChannels.ShippingZoneID = ShippingZones.Id)").
-			InnerJoin(store.ChannelTableName+" ON (Channels.Id = ShippingZoneChannels.ChannelID)").
+			InnerJoin(store.ShippingZoneChannelTableName+" ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id").
+			InnerJoin(store.ChannelTableName+" ON Channels.Id = ShippingZoneChannels.ChannelID").
 			Where("Channels.Slug = ?", channelSlug)
 	}
 

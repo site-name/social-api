@@ -3661,6 +3661,22 @@ func (s *TimerLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTx
 	return result, err
 }
 
+func (s *TimerLayerGiftCardOrderStore) FilterByOptions(options *model.OrderGiftCardFilterOptions) ([]*model.OrderGiftCard, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardOrderStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardOrderStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerGiftCardOrderStore) Get(id string) (*model.OrderGiftCard, error) {
 	start := timemodule.Now()
 
@@ -3753,6 +3769,22 @@ func (s *TimerLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("GiftcardEventStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, error) {
+	start := timemodule.Now()
+
+	result, err := s.InvoiceStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("InvoiceStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }

@@ -5,6 +5,8 @@ so the init() function get the chance to register a function to create `ServiceA
 package invoice
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
@@ -22,11 +24,11 @@ func init() {
 	})
 }
 
-func (s *ServiceInvoice) UpdateInvoice(inVoice *model.Invoice, number *string, url *string) {
-	if number != nil {
-		inVoice.Number = *number
+func (s *ServiceInvoice) FilterInvoicesByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, *model.AppError) {
+	invoices, err := s.srv.Store.Invoice().FilterByOptions(options)
+	if err != nil {
+		return nil, model.NewAppError("FilterInvoicesByOptions", "app.invoice.invoices_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	if url != nil {
-		inVoice.ExternalUrl = *url
-	}
+
+	return invoices, nil
 }

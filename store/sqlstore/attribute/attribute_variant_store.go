@@ -75,10 +75,11 @@ func (as *SqlAttributeVariantStore) GetByOption(option *model.AttributeVariantFi
 		query = query.Where(option.ProductTypeID)
 	}
 	if len(option.ProductIDs) > 0 {
-		subQuery := as.GetQueryBuilder().
+		subQuery := as.GetQueryBuilder(squirrel.Question).
 			Select("AttributeID").
 			From(store.ProductTableName).
 			Where(squirrel.Eq{store.ProductTableName + ".Id": option.ProductIDs})
+
 		query = query.Where(squirrel.Expr("AttributeID IN ?", subQuery))
 	}
 

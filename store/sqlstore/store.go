@@ -13,6 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
@@ -522,8 +523,12 @@ func (ss *SqlStore) DropAllTables() {
 			$func$;`)
 }
 
-func (ss *SqlStore) GetQueryBuilder() sq.StatementBuilderType {
-	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+func (ss *SqlStore) GetQueryBuilder(placeholderFormats ...squirrel.PlaceholderFormat) sq.StatementBuilderType {
+	res := sq.StatementBuilder
+	if len(placeholderFormats) == 0 {
+		return res.PlaceholderFormat(squirrel.Dollar)
+	}
+	return res.PlaceholderFormat(placeholderFormats[0])
 }
 
 func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {

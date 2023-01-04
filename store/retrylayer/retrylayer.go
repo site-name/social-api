@@ -4274,6 +4274,26 @@ func (s *RetryLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTx
 
 }
 
+func (s *RetryLayerGiftCardOrderStore) FilterByOptions(options *model.OrderGiftCardFilterOptions) ([]*model.OrderGiftCard, error) {
+
+	tries := 0
+	for {
+		result, err := s.GiftCardOrderStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerGiftCardOrderStore) Get(id string) (*model.OrderGiftCard, error) {
 
 	tries := 0
@@ -4379,6 +4399,26 @@ func (s *RetryLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.
 	tries := 0
 	for {
 		result, err := s.GiftcardEventStore.Save(event)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, error) {
+
+	tries := 0
+	for {
+		result, err := s.InvoiceStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}

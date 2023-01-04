@@ -305,7 +305,7 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*model.Produ
 	today := util.StartOfDay(timemodule.Now().UTC())
 
 	productChannelListingQuery := ps.
-		GetQueryBuilder().
+		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ProductChannelListingTableName).
@@ -355,7 +355,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 ) {
 	today := util.StartOfDay(timemodule.Now().UTC()) // start of day
 
-	isPublishedColumnSelect := ps.GetQueryBuilder().
+	isPublishedColumnSelect := ps.GetQueryBuilder(squirrel.Question).
 		Select("ProductChannelListings.IsPublished").
 		From(store.ProductChannelListingTableName).
 		InnerJoin(store.ChannelTableName+" ON (ProductChannelListings.ChannelID = Channels.Id)").
@@ -363,7 +363,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 		OrderBy(store.TableOrderingMap[store.ProductChannelListingTableName]).
 		Limit(1)
 
-	publicationDateColumnSelect := ps.GetQueryBuilder().
+	publicationDateColumnSelect := ps.GetQueryBuilder(squirrel.Question).
 		Select("ProductChannelListings.PublicationDate").
 		From(store.ProductChannelListingTableName).
 		InnerJoin(store.ChannelTableName+" ON (Channels.Id = ProductChannelListings.ChannelID)").

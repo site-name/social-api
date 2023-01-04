@@ -155,6 +155,9 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecuto
 	if option.Distinct {
 		query = query.Distinct()
 	}
+	if option.Id != nil {
+		query = query.Where(option.Id)
+	}
 	if option.CreatedByID != nil {
 		query = query.Where(option.CreatedByID)
 	}
@@ -173,8 +176,12 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecuto
 	if option.StartDate != nil {
 		query = query.Where(option.StartDate)
 	}
+	if option.OrderID != nil {
+		query = query.InnerJoin(store.OrderGiftCardTableName + " ON OrderGiftCards.GiftCardID = GiftCards.Id").
+			Where(option.OrderID)
+	}
 	if option.CheckoutToken != nil {
-		subSelect := gs.GetQueryBuilder().
+		subSelect := gs.GetQueryBuilder(squirrel.Question).
 			Select("GiftcardID").
 			From(store.GiftcardCheckoutTableName).
 			Where(option.CheckoutToken)
@@ -257,32 +264,35 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 	*/
 
 	// select exists product type with kind == "gift_card":
-	productTypeQuery := gs.GetQueryBuilder().
+	productTypeQuery := gs.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		From(store.ProductTypeTableName).
 		Where("ProductTypes.Kind = ?", model.GIFT_CARD).
 		Where("ProductTypes.Id = Products.ProductTypeID").
+		Prefix("EXISTS (").Suffix(")").
 		Limit(1)
 
-	productQuery := gs.GetQueryBuilder().
+	productQuery := gs.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		From(store.ProductTableName).
-		Where(squirrel.Expr("EXISTS(?)", productTypeQuery)).
+		Where(productTypeQuery).
 		Where("Products.Id = ProductVariants.ProductID").
+		Prefix("EXISTS (").Suffix(")").
 		Limit(1)
 
-	productVariantQuery := gs.GetQueryBuilder().
+	productVariantQuery := gs.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		From(store.ProductVariantTableName).
-		Where(squirrel.Expr("EXISTS(?)", productQuery)).
+		Where(productQuery).
 		Where("ProductVariants.Id = Orderlines.VariantID").
+		Prefix("EXISTS (").Suffix(")").
 		Limit(1)
 
 	orderLineQuery := gs.GetQueryBuilder().
 		Select("*").
 		From(store.OrderLineTableName).
 		Where(squirrel.Eq{"Orderlines.Id": orderLineIDs}).
-		Where(squirrel.Expr("EXISTS(?)", productVariantQuery)).
+		Where(productVariantQuery).
 		OrderBy(store.TableOrderingMap[store.OrderLineTableName])
 
 	queryString, args, err := orderLineQuery.ToSql()

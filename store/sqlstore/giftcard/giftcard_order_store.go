@@ -114,3 +114,27 @@ func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecut
 
 	return orderGiftcards, nil
 }
+
+func (s *SqlGiftCardOrderStore) FilterByOptions(options *model.OrderGiftCardFilterOptions) ([]*model.OrderGiftCard, error) {
+	query := s.GetQueryBuilder().Select("Id", "GiftCardID", "OrderID").From(store.OrderGiftCardTableName)
+
+	if options.GiftCardID != nil {
+		query = query.Where(options.GiftCardID)
+	}
+	if options.OrderID != nil {
+		query = query.Where(options.OrderID)
+	}
+
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterbyOptions_ToSql")
+	}
+
+	var res []*model.OrderGiftCard
+	err = s.GetReplicaX().Select(&res, queryStr, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find order-giftcard relations with given options")
+	}
+
+	return res, nil
+}

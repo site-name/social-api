@@ -1,10 +1,17 @@
 package model
 
+import "github.com/Masterminds/squirrel"
+
 // OrderGiftCard is a relationship model between Order & GiftCard (m2m)
 type OrderGiftCard struct {
 	Id         string `json:"id"`
 	GiftCardID string `json:"giftcard_id"` // unique together with orderID
 	OrderID    string `json:"order_id"`    // unique together with GiftCardID
+}
+
+type OrderGiftCardFilterOptions struct {
+	GiftCardID squirrel.Sqlizer
+	OrderID    squirrel.Sqlizer
 }
 
 func (o *OrderGiftCard) IsValid() *AppError {

@@ -26,11 +26,17 @@ type Store interface {
 	ReplicaLagTime() error
 	ReplicaLagAbs() error
 	CheckIntegrity() <-chan model.IntegrityCheckResult
-	DropAllTables()                                             // DropAllTables drop all tables in databases
-	GetDbVersion(numerical bool) (string, error)                // GetDbVersion returns version in use of database
-	GetMasterX() store_iface.SqlxExecutor                       // GetMaster get master datasource
-	GetReplicaX() store_iface.SqlxExecutor                      // GetMaster gets slave datasource
-	GetQueryBuilder() squirrel.StatementBuilderType             // GetQueryBuilder create squirrel sql query builder
+	DropAllTables()                              // DropAllTables drop all tables in databases
+	GetDbVersion(numerical bool) (string, error) // GetDbVersion returns version in use of database
+	GetMasterX() store_iface.SqlxExecutor        // GetMaster get master datasource
+	GetReplicaX() store_iface.SqlxExecutor       // GetMaster gets slave datasource
+	// GetQueryBuilder create squirrel sql query builder.
+	//
+	// NOTE: Don't pass much placeholder format since only the first passed is applied.
+	// Ellipsis operator is a trick to support no argument passing.
+	//
+	// If no placeholder format is passed, defaut to squirrel.Dollar ($)
+	GetQueryBuilder(placeholderFormats ...squirrel.PlaceholderFormat) squirrel.StatementBuilderType
 	IsUniqueConstraintError(err error, indexName []string) bool //
 	MarkSystemRanUnitTests()                                    //
 	FinalizeTransaction(transaction driver.Tx)                  // FinalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
@@ -629,6 +635,7 @@ type (
 	InvoiceStore interface {
 		Upsert(invoice *model.Invoice) (*model.Invoice, error) // Upsert depends on given invoice Id to update/insert it
 		Get(invoiceID string) (*model.Invoice, error)          // Get finds and returns 1 invoice
+		FilterByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, error)
 	}
 )
 
@@ -653,6 +660,7 @@ type (
 		Save(giftcardOrder *model.OrderGiftCard) (*model.OrderGiftCard, error)                                                     // Save inserts new giftcard-order relation into database then returns it
 		Get(id string) (*model.OrderGiftCard, error)                                                                               // Get returns giftcard-order relation table with given id
 		BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) // BulkUpsert upserts given order-giftcard relations and returns it
+		FilterByOptions(options *model.OrderGiftCardFilterOptions) ([]*model.OrderGiftCard, error)
 	}
 	GiftCardCheckoutStore interface {
 		Save(giftcardOrder *model.GiftCardCheckout) (*model.GiftCardCheckout, error) // Save inserts new giftcard-model relation into database then returns it

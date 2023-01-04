@@ -58,6 +58,7 @@ type Voucher struct {
 
 // VoucherFilterOption
 type VoucherFilterOption struct {
+	Id                   squirrel.Sqlizer
 	UsageLimit           squirrel.Sqlizer
 	EndDate              squirrel.Sqlizer
 	StartDate            squirrel.Sqlizer

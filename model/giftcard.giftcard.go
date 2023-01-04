@@ -58,6 +58,7 @@ type GiftCard struct {
 
 // GiftCardFilterOption is used to buil sql queries
 type GiftCardFilterOption struct {
+	Id            squirrel.Sqlizer
 	ExpiryDate    squirrel.Sqlizer
 	StartDate     squirrel.Sqlizer
 	Code          squirrel.Sqlizer
@@ -66,7 +67,8 @@ type GiftCardFilterOption struct {
 	UsedByID      squirrel.Sqlizer
 	CheckoutToken squirrel.Sqlizer // SELECT * FROM 'Giftcards' WHERE 'Id' IN (SELECT 'GiftcardID' FROM 'GiftCardCheckouts' WHERE 'GiftCardCheckouts.CheckoutID' ...)
 	IsActive      *bool
-	Distinct      bool // if true, SELECT DISTINCT
+	Distinct      bool             // if true, SELECT DISTINCT
+	OrderID       squirrel.Sqlizer // INNER JOIN OrderGiftCards ON OrderGiftCards.GiftcardID = Giftcards.Id WHERE OrderGiftCards.OrderID ...
 
 	OrderBy         string
 	SelectForUpdate bool // if true, concat `FOR UPDATE` to the end of SQL queries

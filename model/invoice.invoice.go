@@ -1,5 +1,7 @@
 package model
 
+import "github.com/Masterminds/squirrel"
+
 // max lengths for Invoice
 const (
 	INVOICE_NUMBER_MAX_LENGTH       = 255
@@ -13,6 +15,11 @@ type Invoice struct {
 	CreateAt    int64   `json:"create_at"`
 	ExternalUrl string  `json:"external_url"`
 	ModelMetadata
+}
+
+type InvoiceFilterOptions struct {
+	Id      squirrel.Sqlizer
+	OrderID squirrel.Sqlizer
 }
 
 func (i *Invoice) IsValid() *AppError {

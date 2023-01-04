@@ -152,12 +152,14 @@ func (vs *SqlVoucherStore) commonQueryBuilder(option *model.VoucherFilterOption)
 	query := vs.
 		GetQueryBuilder().
 		Select(vs.ModelFields(store.VoucherTableName + ".")...).
-		From(store.VoucherTableName).
-		OrderBy(store.TableOrderingMap[store.VoucherTableName])
+		From(store.VoucherTableName)
 
 	// parse options:
 	if option.UsageLimit != nil {
 		query = query.Where(option.UsageLimit)
+	}
+	if option.Id != nil {
+		query = query.Where(option.Id)
 	}
 	if option.EndDate != nil {
 		query = query.Where(option.EndDate)

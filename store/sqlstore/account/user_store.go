@@ -207,7 +207,7 @@ func (us *SqlUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []s
 	}
 	builder := us.GetQueryBuilder().
 		Update("Users").
-		Set("AuthData", squirrel.Expr("Email")).
+		Set("AuthData", "Email").
 		Where(whereEquals)
 	query, args, err := builder.ToSql()
 	if err != nil {

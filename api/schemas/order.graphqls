@@ -43,7 +43,7 @@ type Order  {
   shippingTaxRate: Float!
   token: String!
   voucher: Voucher
-  giftCards: [GiftCard]
+  giftCards: [GiftCard]!
   displayGrossPrices: Boolean!
   customerNote: String!
   weight: Weight
@@ -53,16 +53,16 @@ type Order  {
   fulfillments: [Fulfillment]!
   lines: [OrderLine]!
   actions: [OrderAction]!
-  availableShippingMethods: [ShippingMethod]
+  availableShippingMethods: [ShippingMethod]!
   availableCollectionPoints: [Warehouse!]!
-  invoices: [Invoice]
+  invoices: [Invoice]!
   number: String
   original: String
   origin: OrderOriginEnum!
   isPaid: Boolean!
   paymentStatus: PaymentChargeStatusEnum
   paymentStatusDisplay: String!
-  payments: [Payment]
+  payments: [Payment]!
   total: TaxedMoney!
   undiscountedTotal: TaxedMoney!
   subtotal: TaxedMoney!
@@ -70,13 +70,13 @@ type Order  {
   canFinalize: Boolean! 
   totalAuthorized: Money!
   totalCaptured: Money!
-  events: [OrderEvent]
+  events: [OrderEvent]!
   totalBalance: Money!
   userEmail: String
   isShippingRequired: Boolean!
   deliveryMethod: DeliveryMethod
   languageCodeEnum: LanguageCodeEnum!
-  discounts: [OrderDiscount!]
+  discounts: [OrderDiscount!]!
 }
 
 union DeliveryMethod = Warehouse | ShippingMethod

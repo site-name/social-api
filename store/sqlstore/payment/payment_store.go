@@ -263,7 +263,7 @@ func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.Sqlx
 		executor = transaction
 	}
 
-	query := ps.GetQueryBuilder().Update(store.PaymentTableName).Where(squirrel.Expr("CheckoutID = ?", checkoutToken))
+	query := ps.GetQueryBuilder().Update(store.PaymentTableName).Where("CheckoutID = ?", checkoutToken)
 
 	// parse option
 	if model.IsValidEmail(option.BillingEmail) {

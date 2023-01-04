@@ -156,7 +156,7 @@ func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]
 			Where(option.OrderID.Id)
 	}
 	if option.UserID != nil {
-		addressIDSelect := as.GetQueryBuilder().
+		addressIDSelect := as.GetQueryBuilder(squirrel.Question).
 			Select("AddressID").
 			From(store.UserAddressTableName).
 			Where(option.UserID)

@@ -943,8 +943,8 @@ func (a *ServiceCheckout) ClearDeliveryMethod(checkoutInfo model.CheckoutInfo) *
 func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (bool, *model.AppError) {
 	checkOut := checkoutInfo.Checkout
 	payments, appErr := s.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		CheckoutToken: checkOut.Token,
-		IsActive:      model.NewBool(true),
+		IsActive:   model.NewBool(true),
+		CheckoutID: squirrel.Eq{store.PaymentTableName + ".CheckoutID": checkOut.Token},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

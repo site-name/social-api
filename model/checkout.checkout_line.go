@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 )
 
 // max lengths for checkout line table's fields
@@ -32,25 +33,11 @@ type CheckoutLineFilterOption struct {
 type CheckoutLines []*CheckoutLine
 
 func (c CheckoutLines) VariantIDs() []string {
-	res := []string{}
-	for _, item := range c {
-		if item != nil {
-			res = append(res, item.VariantID)
-		}
-	}
-
-	return res
+	return lo.Map(c, func(l *CheckoutLine, _ int) string { return l.VariantID })
 }
 
 func (c CheckoutLines) IDs() []string {
-	res := []string{}
-	for _, item := range c {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
-
-	return res
+	return lo.Map(c, func(l *CheckoutLine, _ int) string { return l.Id })
 }
 
 func (c *CheckoutLine) Equal(other *CheckoutLine) bool {

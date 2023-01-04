@@ -261,3 +261,76 @@ errorLabel:
 	}
 	return res
 }
+
+// ------------------------- voucher --------------------
+
+type Voucher struct {
+	ID                       string                `json:"id"`
+	Name                     *string               `json:"name"`
+	Type                     VoucherTypeEnum       `json:"type"`
+	Code                     string                `json:"code"`
+	UsageLimit               *int32                `json:"usageLimit"`
+	Used                     int32                 `json:"used"`
+	StartDate                DateTime              `json:"startDate"`
+	EndDate                  *DateTime             `json:"endDate"`
+	ApplyOncePerOrder        bool                  `json:"applyOncePerOrder"`
+	ApplyOncePerCustomer     bool                  `json:"applyOncePerCustomer"`
+	DiscountValueType        DiscountValueTypeEnum `json:"discountValueType"`
+	MinCheckoutItemsQuantity *int32                `json:"minCheckoutItemsQuantity"`
+	PrivateMetadata          []*MetadataItem       `json:"privateMetadata"`
+	Metadata                 []*MetadataItem       `json:"metadata"`
+	// Categories               *CategoryCountableConnection       `json:"categories"`
+	// Collections              *CollectionCountableConnection     `json:"collections"`
+	// Products                 *ProductCountableConnection        `json:"products"`
+	// Variants                 *ProductVariantCountableConnection `json:"variants"`
+	Countries   []*CountryDisplay   `json:"countries"`
+	Translation *VoucherTranslation `json:"translation"`
+	// DiscountValue            *float64                           `json:"discountValue"`
+	// Currency                 *string                            `json:"currency"`
+	// MinSpent                 *Money                             `json:"minSpent"`
+	// ChannelListings          []*VoucherChannelListing           `json:"channelListings"`
+}
+
+func systemVoucherToGraphqlVoucher(v *model.Voucher) *Voucher {
+	if v == nil {
+		return nil
+	}
+	panic("not implemented")
+}
+
+func voucherByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Voucher] {
+	var (
+		res        = make([]*dataloader.Result[*model.Voucher], len(ids))
+		voucherMap = map[string]*model.Voucher{}
+		appErr     *model.AppError
+		vouchers   []*model.Voucher
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	vouchers, appErr = embedCtx.App.Srv().DiscountService().VouchersByOption(&model.VoucherFilterOption{
+		Id: squirrel.Eq{store.VoucherTableName + ".Id": ids},
+	})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, v := range vouchers {
+		voucherMap[v.Id] = v
+	}
+
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[*model.Voucher]{Data: voucherMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range ids {
+		res[idx] = &dataloader.Result[*model.Voucher]{Error: err}
+	}
+	return res
+}

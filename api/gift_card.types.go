@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -466,6 +467,64 @@ func giftCardEventsByGiftCardIdLoader(ctx context.Context, giftcardIDs []string)
 errorLabel:
 	for idx := range giftcardIDs {
 		res[idx] = &dataloader.Result[[]*model.GiftCardEvent]{Error: err}
+	}
+	return res
+}
+
+func giftcardsByOrderIDsLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.GiftCard] {
+	var (
+		res         = make([]*dataloader.Result[[]*model.GiftCard], len(orderIDs))
+		giftcards   []*model.GiftCard
+		appErr      *model.AppError
+		giftcardMap = map[string]*model.GiftCard{} // keys are giftcard ids
+
+		orderGiftcardRelations []*model.OrderGiftCard
+		giftcardIDs            []string
+		cardMap                = map[string][]*model.GiftCard{} // keys are order ids
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	orderGiftcardRelations, err = embedCtx.App.Srv().Store.GiftCardOrder().FilterByOptions(&model.OrderGiftCardFilterOptions{
+		OrderID: squirrel.Eq{store.OrderGiftCardTableName + ".OrderID": orderIDs},
+	})
+	if err != nil {
+		err = model.NewAppError("giftcardsByOrderIDsLoader", "app.giftcard.giftcard-order-relations_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		goto errorLabel
+	}
+
+	giftcardIDs = lo.Map(orderGiftcardRelations, func(r *model.OrderGiftCard, _ int) string { return r.GiftCardID })
+
+	giftcards, appErr = embedCtx.App.
+		Srv().
+		GiftcardService().
+		GiftcardsByOption(nil, &model.GiftCardFilterOption{
+			Id: squirrel.Eq{store.OrderGiftCardTableName + ".Id": giftcardIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, gc := range giftcards {
+		giftcardMap[gc.Id] = gc
+	}
+
+	for _, rel := range orderGiftcardRelations {
+		cardMap[rel.OrderID] = append(cardMap[rel.OrderID], giftcardMap[rel.GiftCardID])
+	}
+
+	for idx, id := range orderIDs {
+		res[idx] = &dataloader.Result[[]*model.GiftCard]{Data: cardMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range orderIDs {
+		res[idx] = &dataloader.Result[[]*model.GiftCard]{Error: err}
 	}
 	return res
 }

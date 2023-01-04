@@ -16,6 +16,7 @@ type apiDataloaders struct {
 	// giftcard
 	GiftCardsByUserLoader            *Loader[string, []*model.GiftCard]
 	GiftCardEventsByGiftCardIdLoader *Loader[string, []*model.GiftCardEvent]
+	GiftcardsByOrderIDsLoader        *Loader[string, []*model.GiftCard]
 
 	// account
 	AddressByIdLoader          *Loader[string, *model.Address]
@@ -78,6 +79,7 @@ type apiDataloaders struct {
 	SaleChannelListingBySaleIdAndChanneSlugLoader *Loader[string, *model.SaleChannelListing] // NOTE: pass in saleID__channelID pair
 	SaleChannelListingBySaleIdLoader              *Loader[string, []*model.SaleChannelListing]
 	OrderDiscountsByOrderIDLoader                 *Loader[string, []*model.OrderDiscount]
+	VoucherByIDLoader                             *Loader[string, *model.Voucher]
 
 	// warehouse
 	WarehouseByIdLoader            *Loader[string, *model.WareHouse]
@@ -91,6 +93,9 @@ type apiDataloaders struct {
 
 	// payment
 	PaymentsByOrderIdLoader *Loader[string, []*model.Payment]
+
+	// invoice
+	InvoicesByOrderIDLoader *Loader[string, []*model.Invoice]
 }
 
 var dataloaders *apiDataloaders
@@ -116,6 +121,7 @@ func init() {
 		// giftcard
 		GiftCardEventsByGiftCardIdLoader: NewBatchedLoader(giftCardEventsByGiftCardIdLoader, WithBatchCapacity[string, []*model.GiftCardEvent](batchCapacity)),
 		GiftCardsByUserLoader:            NewBatchedLoader(giftCardsByUserLoader, WithBatchCapacity[string, []*model.GiftCard](batchCapacity)),
+		GiftcardsByOrderIDsLoader:        NewBatchedLoader(giftcardsByOrderIDsLoader, WithBatchCapacity[string, []*model.GiftCard](batchCapacity)),
 
 		// order
 		OrderLineByIdLoader:                     NewBatchedLoader(orderLineByIdLoader, WithBatchCapacity[string, *model.OrderLine](batchCapacity)),
@@ -161,6 +167,7 @@ func init() {
 		SaleChannelListingBySaleIdAndChanneSlugLoader: NewBatchedLoader(saleChannelListingBySaleIdAndChanneSlugLoader, WithBatchCapacity[string, *model.SaleChannelListing](batchCapacity)),
 		SaleChannelListingBySaleIdLoader:              NewBatchedLoader(saleChannelListingBySaleIdLoader, WithBatchCapacity[string, []*model.SaleChannelListing](batchCapacity)),
 		OrderDiscountsByOrderIDLoader:                 NewBatchedLoader(orderDiscountsByOrderIDLoader, WithBatchCapacity[string, []*model.OrderDiscount](batchCapacity)),
+		VoucherByIDLoader:                             NewBatchedLoader(voucherByIDLoader, WithBatchCapacity[string, *model.Voucher](batchCapacity)),
 
 		// warehouse
 		WarehouseByIdLoader:            NewBatchedLoader(warehouseByIdLoader, WithBatchCapacity[string, *model.WareHouse](batchCapacity)),
@@ -174,5 +181,8 @@ func init() {
 
 		// payment
 		PaymentsByOrderIdLoader: NewBatchedLoader(paymentsByOrderIdLoader, WithBatchCapacity[string, []*model.Payment](batchCapacity)),
+
+		// invoice
+		InvoicesByOrderIDLoader: NewBatchedLoader(invoicesByOrderIDLoader, WithBatchCapacity[string, []*model.Invoice](batchCapacity)),
 	}
 }

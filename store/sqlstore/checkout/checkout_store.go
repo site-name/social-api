@@ -376,7 +376,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 		query, args, _ := cs.GetQueryBuilder().
 			Select(cs.Collection().ModelFields(store.CollectionTableName + ".")...).
 			From(store.CollectionTableName).
-			Column(squirrel.Alias(squirrel.Expr("ProductCollections.ProductID"), "PrefetchRelatedValProductID")). // extra collumn
+			Column("ProductCollections.ProductID AS PrefetchRelatedValProductID"). // extra collumn
 			InnerJoin(store.CollectionProductRelationTableName + " ON (ProductCollections.CollectionID = Collections.Id)").
 			Where(squirrel.Eq{"ProductCollections.ProductID": productIDs}).
 			OrderBy(store.TableOrderingMap[store.CollectionTableName]).

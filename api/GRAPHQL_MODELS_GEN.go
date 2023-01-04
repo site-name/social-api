@@ -1661,19 +1661,6 @@ type IntRangeInput struct {
 	Lte *int32 `json:"lte"`
 }
 
-type Invoice struct {
-	ID              string          `json:"id"`
-	Metadata        []*MetadataItem `json:"metadata"`
-	Status          JobStatusEnum   `json:"status"`
-	Number          *string         `json:"number"`
-	ExternalURL     *string         `json:"externalUrl"`
-	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
-	CreatedAt       DateTime        `json:"createdAt"`
-	UpdatedAt       DateTime        `json:"updatedAt"`
-	Message         *string         `json:"message"`
-	URL             *string         `json:"url"`
-}
-
 type InvoiceCreate struct {
 	Errors  []*InvoiceError `json:"errors"`
 	Invoice *Invoice        `json:"invoice"`
@@ -3907,33 +3894,6 @@ type VerifyToken struct {
 	User    *User      `json:"user"`
 	IsValid bool       `json:"isValid"`
 	Payload JSONString `json:"payload"`
-}
-
-type Voucher struct {
-	ID                       string                             `json:"id"`
-	Name                     *string                            `json:"name"`
-	Type                     VoucherTypeEnum                    `json:"type"`
-	Code                     string                             `json:"code"`
-	UsageLimit               *int32                             `json:"usageLimit"`
-	Used                     int32                              `json:"used"`
-	StartDate                DateTime                           `json:"startDate"`
-	EndDate                  *DateTime                          `json:"endDate"`
-	ApplyOncePerOrder        bool                               `json:"applyOncePerOrder"`
-	ApplyOncePerCustomer     bool                               `json:"applyOncePerCustomer"`
-	DiscountValueType        DiscountValueTypeEnum              `json:"discountValueType"`
-	MinCheckoutItemsQuantity *int32                             `json:"minCheckoutItemsQuantity"`
-	PrivateMetadata          []*MetadataItem                    `json:"privateMetadata"`
-	Metadata                 []*MetadataItem                    `json:"metadata"`
-	Categories               *CategoryCountableConnection       `json:"categories"`
-	Collections              *CollectionCountableConnection     `json:"collections"`
-	Products                 *ProductCountableConnection        `json:"products"`
-	Variants                 *ProductVariantCountableConnection `json:"variants"`
-	Countries                []*CountryDisplay                  `json:"countries"`
-	Translation              *VoucherTranslation                `json:"translation"`
-	DiscountValue            *float64                           `json:"discountValue"`
-	Currency                 *string                            `json:"currency"`
-	MinSpent                 *Money                             `json:"minSpent"`
-	ChannelListings          []*VoucherChannelListing           `json:"channelListings"`
 }
 
 type VoucherAddCatalogues struct {

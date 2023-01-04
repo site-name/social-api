@@ -222,7 +222,7 @@ func (a *ServiceCheckout) CheckoutLineWithVariant(checkout *model.Checkout, prod
 // CheckoutLastActivePayment returns the most recent payment made for given checkout
 func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *model.Checkout) (*model.Payment, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		CheckoutToken: checkout.Token,
+		CheckoutID: squirrel.Eq{store.PaymentTableName + ".CheckoutID": checkout.Token},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {
