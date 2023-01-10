@@ -172,7 +172,7 @@ func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*
 	// check if we need to prefetch shipping zones:
 	// 1) prefetching shipping zones is required
 	// 2) returning warehouse is valid
-	if option.PrefetchShippingZones && model.IsValidId(res.Id) {
+	if option.PrefetchShippingZones {
 		queryString, args, err := ws.GetQueryBuilder().
 			Select(ws.ShippingZone().ModelFields(store.ShippingZoneTableName+".")...).
 			From(store.ShippingZoneTableName).
@@ -300,9 +300,7 @@ func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.WareHous
 		&res,
 		`SELECT `+ws.ModelFields(store.WarehouseTableName+".").Join(",")+`
 		FROM `+store.StockTableName+`
-		INNER JOIN `+store.WarehouseTableName+` ON (
-			Stocks.WarehouseID = Warehouses.Id
-		)
+		INNER JOIN `+store.WarehouseTableName+` ON Stocks.WarehouseID = Warehouses.Id
 		WHERE Stocks.Id = ?`,
 		stockID,
 	)
@@ -331,13 +329,13 @@ func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkou
 
 func (ws *SqlWareHouseStore) ApplicableForClickAndCollect(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
 
-	checkoutLinesQuantity := ws.GetQueryBuilder().
+	checkoutLinesQuantity := ws.GetQueryBuilder(squirrel.Question).
 		Select("SUM (CheckoutLines.Quantity) AS ProdSum").
 		From(store.CheckoutLineTableName).
 		Where(squirrel.Eq{store.CheckoutLineTableName + ".Id": checkoutLines.IDs()}).
 		Where("CheckoutLines.VariantID = Stocks.ProductVariantID")
 
-	stockQuery := ws.
+	stockQuery, args, err := ws.
 		GetQueryBuilder().
 		Select(ws.Stock().ModelFields(store.StockTableName + ".")...).
 		Column(`Stocks.Quantity - COALESCE( SUM (Allocations.QuantityAllocated) filter (WHERE Allocations.QuantityAllocated > 0), 0) AS AvailableQuantity`).
@@ -346,7 +344,11 @@ func (ws *SqlWareHouseStore) ApplicableForClickAndCollect(checkoutLines model.Ch
 		InnerJoin(store.AllocationTableName + " ON Stock.Id = Allocations.StockID").
 		InnerJoin(store.ProductVariantTableName + " ON Stock.ProductVariantID = ProductVariants.Id").
 		Where(squirrel.Eq{store.ProductVariantTableName + ".Id": checkoutLines.VariantIDs()}).
-		Where("LineQuantity >= 0")
+		Where("LineQuantity >= 0").ToSql()
+
+	if err != nil {
+		return nil, errors.Wrap(err, "ApplicableForClickAndCollect_ToSql")
+	}
 }
 
 func (ws *SqlWareHouseStore) forCountryLinesAndStocks(checkoutLines model.CheckoutLines, stocks model.Stocks, country string) (model.Warehouses, error) {

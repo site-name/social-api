@@ -43,7 +43,7 @@ var FulfillmentStrings = map[FulfillmentStatus]string{
 
 type Fulfillment struct {
 	Id                   string            `json:"id"`
-	FulfillmentOrder     uint              `json:"fulfillment_order"`
+	FulfillmentOrder     int               `json:"fulfillment_order"`
 	OrderID              string            `json:"order_id"` // not null nor editable
 	Status               FulfillmentStatus `json:"status"`
 	TrackingNumber       string            `json:"tracking_numdber"`

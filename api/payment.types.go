@@ -35,7 +35,7 @@ type Payment struct {
 
 func SystemPaymentToGraphqlPayment(p *model.Payment) *Payment {
 	if p == nil {
-		return &Payment{}
+		return nil
 	}
 
 	res := &Payment{}

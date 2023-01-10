@@ -48,8 +48,8 @@ type Shop struct {
 	TrackInventoryByDefault                  *bool                      `json:"track_inventory_by_default"`             // default true
 	DefaultWeightUnit                        string                     `json:"default_weight_unit"`                    // default kg
 	AutomaticFulfillmentDigitalProducts      *bool                      `json:"automatic_fulfillment_digital_products"` // default true
-	DefaultDigitalMaxDownloads               *uint                      `json:"default_digital_max_downloads"`
-	DefaultDigitalUrlValidDays               *uint                      `json:"default_digital_url_valid_days"`
+	DefaultDigitalMaxDownloads               *int                       `json:"default_digital_max_downloads"`
+	DefaultDigitalUrlValidDays               *int                       `json:"default_digital_url_valid_days"`
 	AddressID                                *string                    `json:"address_id"`
 	DefaultMailSenderName                    string                     `json:"default_mail_sender_name"`
 	DefaultMailSenderAddress                 string                     `json:"default_mail_sender_address"`
@@ -71,8 +71,8 @@ type ShopFilterOptions struct {
 
 type ShopDefaultDigitalContentSettings struct {
 	AutomaticFulfillmentDigitalProducts *bool
-	DefaultDigitalMaxDownloads          *uint
-	DefaultDigitalUrlValidDays          *uint
+	DefaultDigitalMaxDownloads          *int
+	DefaultDigitalUrlValidDays          *int
 }
 
 func (s *Shop) DefaultFromEmail() (string, error) {

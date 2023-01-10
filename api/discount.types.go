@@ -8,7 +8,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
-	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -206,10 +205,6 @@ func SystemOrderDiscountToGraphqlOrderDiscount(r *model.OrderDiscount) *OrderDis
 		return &OrderDiscount{}
 	}
 
-	if r.Value == nil {
-		r.Value = &decimal.Zero
-	}
-
 	return &OrderDiscount{
 		ID:             r.Id,
 		Type:           OrderDiscountType(r.Type),
@@ -279,12 +274,13 @@ type Voucher struct {
 	MinCheckoutItemsQuantity *int32                `json:"minCheckoutItemsQuantity"`
 	PrivateMetadata          []*MetadataItem       `json:"privateMetadata"`
 	Metadata                 []*MetadataItem       `json:"metadata"`
+	Countries                []*CountryDisplay     `json:"countries"`
+	Translation              *VoucherTranslation   `json:"translation"`
+
 	// Categories               *CategoryCountableConnection       `json:"categories"`
 	// Collections              *CollectionCountableConnection     `json:"collections"`
 	// Products                 *ProductCountableConnection        `json:"products"`
 	// Variants                 *ProductVariantCountableConnection `json:"variants"`
-	Countries   []*CountryDisplay   `json:"countries"`
-	Translation *VoucherTranslation `json:"translation"`
 	// DiscountValue            *float64                           `json:"discountValue"`
 	// Currency                 *string                            `json:"currency"`
 	// MinSpent                 *Money                             `json:"minSpent"`

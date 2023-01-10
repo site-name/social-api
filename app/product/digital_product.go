@@ -30,8 +30,8 @@ func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *model.DigitalConte
 	}
 
 	var (
-		urlValidDays *uint
-		maxDownloads *uint
+		urlValidDays *int
+		maxDownloads *int
 	)
 	if *digitalContent.UseDefaultSettings {
 		shop, appErr := a.srv.ShopService().ShopById(digitalContent.ShopID)
@@ -56,7 +56,7 @@ func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *model.DigitalConte
 		}
 	}
 
-	if maxDownloads != nil && *maxDownloads <= uint(contentURL.DownloadNum) {
+	if maxDownloads != nil && *maxDownloads <= contentURL.DownloadNum {
 		return false, nil
 	}
 

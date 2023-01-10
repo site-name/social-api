@@ -12,7 +12,11 @@ import (
 func (a *ServiceAccount) AddressById(id string) (*model.Address, *model.AppError) {
 	address, err := a.srv.Store.Address().Get(id)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("AddressById", "app.model.address_missing.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("AddressById", "app.account.address_by_id.app_error", nil, err.Error(), statusCode)
 	}
 
 	return address, nil
@@ -21,19 +25,8 @@ func (a *ServiceAccount) AddressById(id string) (*model.Address, *model.AppError
 // AddressesByOption returns a list of addresses by given option
 func (a *ServiceAccount) AddressesByOption(option *model.AddressFilterOption) ([]*model.Address, *model.AppError) {
 	addresses, err := a.srv.Store.Address().FilterByOption(option)
-	var (
-		errorMessage string
-		statusCode   int = 0
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errorMessage = err.Error()
-	} else if len(addresses) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("AddressesByOption", "app.model.error_finding_addresses_by_opyion.app_error", nil, errorMessage, statusCode)
+		return nil, model.NewAppError("AddressesByOption", "app.model.error_finding_addresses_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return addresses, nil
@@ -80,9 +73,9 @@ func (a *ServiceAccount) DeleteAddresses(addressIDs ...string) *model.AppError {
 
 // CopyAddress inserts a new address with fields identical to given address except Id field.
 func (a *ServiceAccount) CopyAddress(address *model.Address) (*model.Address, *model.AppError) {
-	var copyAddress model.Address = *address
+	copied := address.DeepCopy()
 
-	copyAddress.Id = ""
-	res, appErr := a.UpsertAddress(nil, &copyAddress)
+	copied.Id = ""
+	res, appErr := a.UpsertAddress(nil, copied)
 	return res, appErr
 }

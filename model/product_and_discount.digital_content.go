@@ -28,8 +28,8 @@ type DigitalContent struct {
 	ContentType          string `json:"content_type"`
 	ProductVariantID     string `json:"product_variant_id"`
 	ContentFile          string `json:"content_file"`
-	MaxDownloads         *uint  `json:"max_downloads"`
-	UrlValidDays         *uint  `json:"url_valid_days"`
+	MaxDownloads         *int   `json:"max_downloads"`
+	UrlValidDays         *int   `json:"url_valid_days"`
 	ModelMetadata
 }
 
@@ -74,10 +74,10 @@ func (d *DigitalContent) DeepCopy() *DigitalContent {
 		res.AutomaticFulfillment = NewBool(*d.AutomaticFulfillment)
 	}
 	if d.MaxDownloads != nil {
-		res.MaxDownloads = NewUint(*d.MaxDownloads)
+		res.MaxDownloads = NewInt(*d.MaxDownloads)
 	}
 	if d.UrlValidDays != nil {
-		res.UrlValidDays = NewUint(*d.UrlValidDays)
+		res.UrlValidDays = NewInt(*d.UrlValidDays)
 	}
 	return &res
 }

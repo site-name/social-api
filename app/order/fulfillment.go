@@ -34,7 +34,7 @@ func (a *ServiceOrder) UpsertFulfillment(transaction store_iface.SqlxTxExecutor,
 			// this means the order has no fulfillment, this is the first one and not saved yet
 			fulfillment.FulfillmentOrder = 1
 		} else {
-			var max uint
+			var max int
 			for _, fulfillment := range fulfillmentsByOrder {
 				if num := fulfillment.FulfillmentOrder; num > max {
 					max = num
@@ -45,7 +45,7 @@ func (a *ServiceOrder) UpsertFulfillment(transaction store_iface.SqlxTxExecutor,
 		}
 	}
 
-	fulfillment, err := a.srv.Store.Fulfillment().Upsert(transaction, fulfillment)
+	upsertedFulfillment, err := a.srv.Store.Fulfillment().Upsert(transaction, fulfillment)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -56,7 +56,7 @@ func (a *ServiceOrder) UpsertFulfillment(transaction store_iface.SqlxTxExecutor,
 		return nil, model.NewAppError("UpsertFulfillment", "app.order.error_saving_fulfillment.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return fulfillment, nil
+	return upsertedFulfillment, nil
 }
 
 // FulfillmentByOption returns 1 fulfillment filtered using given options
@@ -78,48 +78,42 @@ func (a *ServiceOrder) GetOrCreateFulfillment(transaction store_iface.SqlxTxExec
 			return nil, appErr
 		}
 
-		// not found, create a new one:
-		var parser = func(expr squirrel.Sqlizer) interface{} {
-			if expr == nil {
-				return nil
-			}
+		upsertFulfillment := &model.Fulfillment{}
 
-			if equal, ok := expr.(squirrel.Eq); ok && len(equal) > 0 {
-				// get first value only
-				index := 0
-				for _, value := range equal {
-					if index == 0 {
-						return value
-					}
-					return nil
-				}
-			}
-
-			return nil
-		}
-
-		fulfillmentByOption = new(model.Fulfillment)
 		// parse options. if any option is provided, take its Eq property:
 		if option.Id != nil {
-			value := parser(option.Id)
-			if value != nil {
-				fulfillmentByOption.Id = value.(string)
-			}
-		}
-		if option.OrderID != nil {
-			value := parser(option.OrderID)
-			if value != nil {
-				fulfillmentByOption.OrderID = value.(string)
-			}
-		}
-		if option.Status != nil {
-			value := parser(option.Status)
-			if value != nil {
-				fulfillmentByOption.Status = model.FulfillmentStatus(value.(string))
+			eq, isEqual := option.Id.(squirrel.Eq)
+			if isEqual && eq != nil {
+				eqExpr := eq[store.FulfillmentTableName+".Id"]
+				if eqExpr != nil {
+					if strID, ok := eqExpr.(string); ok {
+						upsertFulfillment.Id = strID
+					}
+				}
 			}
 		}
 
-		fulfillmentByOption, appErr = a.UpsertFulfillment(transaction, fulfillmentByOption)
+		if option.OrderID != nil {
+			if eq, isEqual := option.OrderID.(squirrel.Eq); isEqual && eq != nil {
+				if eqExpr := eq[store.FulfillmentTableName+".OrderID"]; eqExpr != nil {
+					if strEq, ok := eqExpr.(string); ok {
+						upsertFulfillment.OrderID = strEq
+					}
+				}
+			}
+		}
+
+		if option.Status != nil {
+			if eq, isEqual := option.Status.(squirrel.Eq); isEqual && eq != nil {
+				if eqExpr := eq[store.FulfillmentTableName+".Status"]; eqExpr != nil {
+					if strEq, ok := eqExpr.(string); ok {
+						upsertFulfillment.Status = model.FulfillmentStatus(strEq)
+					}
+				}
+			}
+		}
+
+		fulfillmentByOption, appErr = a.UpsertFulfillment(transaction, upsertFulfillment)
 		if appErr != nil {
 			return nil, appErr
 		}

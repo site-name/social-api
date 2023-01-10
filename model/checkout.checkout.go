@@ -28,7 +28,7 @@ type Checkout struct {
 	UserID                 *string          `json:"user_id"`
 	ShopID                 string           `json:"shop_id"` // shop in which this checkout is placed
 	Email                  string           `json:"email"`
-	Quantity               uint             `json:"quantity"`
+	Quantity               int              `json:"quantity"`
 	ChannelID              string           `json:"channel_id"`
 	BillingAddressID       *string          `json:"billing_address_id,omitempty"`  // NO EDITABLE
 	ShippingAddressID      *string          `json:"shipping_address_id,omitempty"` // NO EDITABLE

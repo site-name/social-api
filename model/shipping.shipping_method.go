@@ -37,8 +37,8 @@ type ShippingMethod struct {
 	WeightUnit          measurement.WeightUnit `json:"weight_unit"`
 	MinOrderWeight      *measurement.Weight    `json:"min_order_weight" db:"-"`
 	MaxOrderWeight      *measurement.Weight    `json:"max_order_weight" db:"-"`
-	MaximumDeliveryDays *uint                  `json:"maximum_delivery_days"`
-	MinimumDeliveryDays *uint                  `json:"minimum_delivery_days"`
+	MaximumDeliveryDays *int                   `json:"maximum_delivery_days"`
+	MinimumDeliveryDays *int                   `json:"minimum_delivery_days"`
 	Description         StringInterface        `json:"description"`
 	ModelMetadata
 
@@ -137,10 +137,10 @@ func (s *ShippingMethod) DeepCopy() *ShippingMethod {
 	}
 
 	if s.MaximumDeliveryDays != nil {
-		res.MaximumDeliveryDays = NewUint(*s.MaximumDeliveryDays)
+		res.MaximumDeliveryDays = NewInt(*s.MaximumDeliveryDays)
 	}
 	if s.MinimumDeliveryDays != nil {
-		res.MinimumDeliveryDays = NewUint(*s.MinimumDeliveryDays)
+		res.MinimumDeliveryDays = NewInt(*s.MinimumDeliveryDays)
 	}
 	if s.MinOrderWeight != nil {
 		res.MinOrderWeight = &measurement.Weight{s.MinOrderWeight.Amount, s.MinOrderWeight.Unit}

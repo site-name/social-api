@@ -641,26 +641,41 @@ func (o *Order) DeliveryMethod(ctx context.Context) (DeliveryMethod, error) {
 }
 
 func (o *Order) AvailableShippingMethods(ctx context.Context) ([]*ShippingMethod, error) {
-	panic("not implemented")
-}
-
-func (o *Order) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, error) {
-	lines, err := dataloaders.OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
-	if err != nil {
-		return nil, err
-	}
-
-	address, err := o.ShippingAddress(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
 	}
 
-	embedCtx.App.Srv().OrderService().Order
+	methods, appErr := embedCtx.App.Srv().OrderService().GetValidShippingMethodsForOrder(o.order)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if len(methods) == 0 {
+		return []*ShippingMethod{}, nil
+	}
+
+	panic("not implemented")
+}
+
+func (o *Order) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, error) {
+	// lines, err := dataloaders.OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// address, err := o.ShippingAddress(ctx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// embedCtx.App.Srv().OrderService().Order
+	panic("not implemented")
 }
 
 func (o *Order) Invoices(ctx context.Context) ([]*Invoice, error) {
