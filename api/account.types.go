@@ -117,6 +117,37 @@ errLabel:
 
 // -------------------------- User ------------------------------
 
+type User struct {
+	ID                       string           `json:"id"`
+	LastLogin                *DateTime        `json:"lastLogin"`
+	Email                    string           `json:"email"`
+	FirstName                string           `json:"firstName"`
+	LastName                 string           `json:"lastName"`
+	UserName                 string           `json:"userName"`
+	IsActive                 bool             `json:"isActive"`
+	DateJoined               DateTime         `json:"dateJoined"`
+	PrivateMetadata          []*MetadataItem  `json:"privateMetadata"`
+	Metadata                 []*MetadataItem  `json:"metadata"`
+	LanguageCode             LanguageCodeEnum `json:"languageCode"`
+	DefaultShippingAddressID *string          `json:"defaultShippingAddressID"`
+	DefaultBillingAddressID  *string          `json:"defaultBillingAddressID"`
+	note                     *string
+
+	// DefaultShippingAddress *Address         `json:"defaultShippingAddress"`
+	// DefaultBillingAddress  *Address         `json:"defaultBillingAddress"`
+	// StoredPaymentSources   []*PaymentSource             `json:"storedPaymentSources"`
+	// Avatar                 *Image                       `json:"avatar"`
+	// Orders                 *OrderCountableConnection    `json:"orders"`
+	// Events                 []*CustomerEvent             `json:"events"`
+	// Note                   *string                      `json:"note"`
+	// EditableGroups         []*Group                     `json:"editableGroups"`
+	// PermissionGroups       []*Group                     `json:"permissionGroups"`
+	// UserPermissions        []*UserPermission            `json:"userPermissions"`
+	// GiftCards              *GiftCardCountableConnection `json:"giftCards"`
+	// CheckoutTokens         []string                     `json:"checkoutTokens"`
+	// Addresses              []*Address                   `json:"addresses"`
+}
+
 func SystemUserToGraphqlUser(u *model.User) *User {
 	if u == nil {
 		return new(User)
@@ -133,15 +164,14 @@ func SystemUserToGraphqlUser(u *model.User) *User {
 		DefaultShippingAddressID: u.DefaultShippingAddressID,
 		DefaultBillingAddressID:  u.DefaultBillingAddressID,
 		note:                     u.Note,
+		Metadata:                 MetadataToSlice(u.Metadata),
+		PrivateMetadata:          MetadataToSlice(u.PrivateMetadata),
 	}
 
 	res.DateJoined = DateTime{util.TimeFromMillis(u.CreateAt)}
 	if u.LastActivityAt != 0 {
 		res.LastLogin = &DateTime{util.TimeFromMillis(u.LastActivityAt)}
 	}
-
-	res.Metadata = MetadataToSlice(u.Metadata)
-	res.PrivateMetadata = MetadataToSlice(u.PrivateMetadata)
 
 	return res
 }
@@ -240,50 +270,6 @@ func (u *User) GiftCards(ctx context.Context, args struct {
 	First  *int32
 	Last   *int32
 }) (*GiftCardCountableConnection, error) {
-
-	// paginOpts := model.PaginationOptions{
-	// 	Before: args.Before,
-	// 	After:  args.After,
-	// 	First:  args.First,
-	// 	Last:   args.Last,
-	// }
-
-	// appErr := paginOpts.Validate()
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
-
-	// // in giftcard store, default ordering is Code ASC. No need to sort by code here
-	// giftcards, err := dataloaders.GiftCardsByUserLoader.Load(ctx, u.ID)()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// totalCount := len(giftcards)
-	// // string cast since giftcard's Code is string
-	// operand, ok := paginOpts.Operand().(string)
-	// if !ok {
-	// 	return nil, model.NewAppError("user.GiftCards", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args.Before/args.After"}, "wrong type provided", http.StatusBadRequest)
-	// }
-	// giftcardCode, err := base64.StdEncoding.DecodeString(operand)
-	// if err != nil {
-	// 	return nil, model.NewAppError("user.GiftCards", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args.Before/args.After"}, "invalid cursor provided", http.StatusBadRequest)
-	// }
-	// limit := paginOpts.Limit()
-	// hasNextPage := limit > 0 && len(giftcards) >= int(limit)
-	// edgeLength := len(giftcards)
-	// if hasNextPage {
-	// 	edgeLength = int(limit) - 1
-	// }
-
-	// _, giftcardIndex, _ := lo.FindIndexOf(giftcards, func(g *model.GiftCard) bool { return g.Code == string(giftcardCode) })
-	// var neededGiftcards []*model.GiftCard
-	// if paginOpts.After != nil {
-	// 	neededGiftcards = giftcards[giftcardIndex+1 : giftcardIndex+edgeLength+1]
-	// } else {
-	// 	neededGiftcards = giftcards[:giftcardIndex]
-	// }
-
 	panic("not implemented")
 }
 

@@ -127,7 +127,7 @@ func AppErrorInit(t i18n.TranslateFunc) {
 
 // GetMillis is a convenience method to get milliseconds since epoch, utc time
 func GetMillis() int64 {
-	return time.Now().UTC().UnixNano() / int64(time.Millisecond)
+	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
 // GetMillisForTime is a convenience method to get milliseconds since epoch for provided Time.

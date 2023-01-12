@@ -3783,36 +3783,6 @@ type UploadError struct {
 	Code    UploadErrorCode `json:"code"`
 }
 
-type User struct {
-	ID                       string           `json:"id"`
-	LastLogin                *DateTime        `json:"lastLogin"`
-	Email                    string           `json:"email"`
-	FirstName                string           `json:"firstName"`
-	LastName                 string           `json:"lastName"`
-	UserName                 string           `json:"userName"`
-	IsActive                 bool             `json:"isActive"`
-	DateJoined               DateTime         `json:"dateJoined"`
-	PrivateMetadata          []*MetadataItem  `json:"privateMetadata"`
-	Metadata                 []*MetadataItem  `json:"metadata"`
-	LanguageCode             LanguageCodeEnum `json:"languageCode"`
-	DefaultShippingAddressID *string          `json:"defaultShippingAddressID"`
-	DefaultBillingAddressID  *string          `json:"defaultBillingAddressID"`
-	note                     *string
-	// DefaultShippingAddress *Address         `json:"defaultShippingAddress"`
-	// DefaultBillingAddress  *Address         `json:"defaultBillingAddress"`
-	// StoredPaymentSources   []*PaymentSource             `json:"storedPaymentSources"`
-	// Avatar                 *Image                       `json:"avatar"`
-	// Orders                 *OrderCountableConnection    `json:"orders"`
-	// Events                 []*CustomerEvent             `json:"events"`
-	// Note                   *string                      `json:"note"`
-	// EditableGroups         []*Group                     `json:"editableGroups"`
-	// PermissionGroups       []*Group                     `json:"permissionGroups"`
-	// UserPermissions        []*UserPermission            `json:"userPermissions"`
-	// GiftCards              *GiftCardCountableConnection `json:"giftCards"`
-	// CheckoutTokens         []string                     `json:"checkoutTokens"`
-	// Addresses              []*Address                   `json:"addresses"`
-}
-
 type UserAvatarDelete struct {
 	User   *User           `json:"user"`
 	Errors []*AccountError `json:"errors"`
