@@ -96,7 +96,7 @@ func (s *ShippingZone) PreSave() {
 	s.CreateAt = GetMillis()
 	s.Name = SanitizeUnicode(s.Name)
 	if s.Default == nil {
-		s.Default = NewBool(false)
+		s.Default = NewPrimitive(false)
 	}
 	s.Description = SanitizeUnicode(s.Description)
 	s.Countries = strings.ToUpper(s.Countries)
@@ -107,7 +107,7 @@ func (s *ShippingZone) PreUpdate() {
 	s.Description = SanitizeUnicode(s.Description)
 	s.Countries = strings.ToUpper(s.Countries)
 	if s.Default == nil {
-		s.Default = NewBool(false)
+		s.Default = NewPrimitive(false)
 	}
 }
 
@@ -115,7 +115,7 @@ func (s *ShippingZone) DeepCopy() *ShippingZone {
 	res := *s
 
 	if s.Default != nil {
-		res.Default = NewBool(*s.Default)
+		res.Default = NewPrimitive(*s.Default)
 	}
 	res.ModelMetadata = s.ModelMetadata.DeepCopy()
 	if len(s.RelativeWarehouseIDs) > 0 {

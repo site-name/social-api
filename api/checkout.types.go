@@ -377,7 +377,7 @@ func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*datal
 		Srv().
 		CheckoutService().
 		CheckoutsByOption(&model.CheckoutFilterOption{
-			ChannelIsActive: model.NewBool(true),
+			ChannelIsActive: model.NewPrimitive(true),
 			UserID:          squirrel.Eq{store.CheckoutTableName + ".UserID": userIDs},
 			ChannelID:       squirrel.Eq{store.CheckoutTableName + ".ChannelID": channelIDs},
 		})
@@ -423,7 +423,7 @@ func checkoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.R
 		Srv().
 		CheckoutService().
 		CheckoutsByOption(&model.CheckoutFilterOption{
-			ChannelIsActive: model.NewBool(true),
+			ChannelIsActive: model.NewPrimitive(true),
 			UserID:          squirrel.Eq{store.CheckoutTableName + ".UserID": userIDs},
 		})
 	if appErr != nil {

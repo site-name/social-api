@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -52,10 +54,10 @@ func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 	}
 
 	if user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == a.Address.Id {
-		return model.NewBool(true), nil
+		return model.NewPrimitive(true), nil
 	}
 
-	return model.NewBool(false), nil
+	return model.NewPrimitive(false), nil
 }
 
 func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
@@ -71,10 +73,10 @@ func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 	}
 
 	if user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == a.Address.Id {
-		return model.NewBool(true), nil
+		return model.NewPrimitive(true), nil
 	}
 
-	return model.NewBool(false), nil
+	return model.NewPrimitive(false), nil
 }
 
 func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Address] {
@@ -264,22 +266,126 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 	}), nil
 }
 
+// NOTE: giftcards are ordering by code
 func (u *User) GiftCards(ctx context.Context, args struct {
 	Before *string
 	After  *string
 	First  *int32
 	Last   *int32
 }) (*GiftCardCountableConnection, error) {
-	panic("not implemented")
+	giftcards, err := dataloaders.GiftCardsByUserLoader.Load(ctx, u.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	p := graphqlPaginator[*model.GiftCard, string]{
+		data:    giftcards,
+		keyFunc: func(gc *model.GiftCard) string { return gc.Code },
+
+		before: args.Before,
+		after:  args.After,
+		first:  args.First,
+		last:   args.Last,
+	}
+
+	data, hasPresious, hasNext, appErr := p.parse("User.GiftCards")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	res := &GiftCardCountableConnection{
+		Edges: lo.Map(data, func(g *model.GiftCard, _ int) *GiftCardCountableEdge {
+			return &GiftCardCountableEdge{SystemGiftcardToGraphqlGiftcard(g), g.Code}
+		}),
+		TotalCount: model.NewPrimitive(int32(len(giftcards))),
+	}
+
+	res.PageInfo = &PageInfo{
+		HasNextPage:     hasNext,
+		HasPreviousPage: hasPresious,
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
+	}
+
+	return res, nil
 }
 
+// NOTE: orders are ordering by CreateAt
 func (u *User) Orders(ctx context.Context, args struct {
 	Before *string
 	After  *string
 	First  *int32
 	Last   *int32
 }) (*OrderCountableConnection, error) {
-	panic("not implemented")
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	currentSession := embedCtx.AppContext.Session()
+
+	orders, err := dataloaders.OrdersByUserLoader.Load(ctx, u.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	// if current user has no order management permission and
+	// is not the owner of these orders,
+	// filter out orders that have status = draft
+	if currentSession.UserId != u.ID &&
+		!embedCtx.App.Srv().AccountService().
+			SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
+		orders = lo.Filter(orders, func(o *model.Order, _ int) bool { return o.Status != model.STATUS_DRAFT })
+	}
+
+	// parse before/after
+	var (
+		intBefore int64
+		intAfter  int64
+	)
+	if args.Before != nil {
+		intBefore, err = strconv.ParseInt(*args.Before, 10, 64)
+		if err != nil {
+			return nil, model.NewAppError("User.Orders", model.PaginationError, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
+		}
+	}
+	if args.After != nil {
+		intAfter, err = strconv.ParseInt(*args.After, 10, 64)
+		if err != nil {
+			return nil, model.NewAppError("User.Orders", model.PaginationError, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
+		}
+	}
+
+	p := graphqlPaginator[*model.Order, int64]{
+		data:    orders,
+		keyFunc: func(o *model.Order) int64 { return o.CreateAt },
+		first:   args.First,
+		last:    args.Last,
+		before:  &intBefore,
+		after:   &intAfter,
+	}
+
+	data, hasPrev, hasNext, appErr := p.parse("User.Orders")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	res := &OrderCountableConnection{
+		Edges: lo.Map(data, func(o *model.Order, _ int) *OrderCountableEdge {
+			return &OrderCountableEdge{SystemOrderToGraphqlOrder(o), fmt.Sprintf("%d", o.CreateAt)}
+		}),
+		TotalCount: model.NewPrimitive(int32(len(orders))),
+	}
+
+	res.PageInfo = &PageInfo{
+		HasNextPage:     hasNext,
+		HasPreviousPage: hasPrev,
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
+	}
+
+	return res, nil
 }
 
 func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
@@ -407,14 +513,14 @@ func SystemCustomerEventToGraphqlCustomerEvent(event *model.CustomerEvent) *Cust
 			reflect.Int16,
 			reflect.Int32,
 			reflect.Int64:
-			res.Count = model.NewInt32(int32(valueOf.Int()))
+			res.Count = model.NewPrimitive(int32(valueOf.Int()))
 
 		case reflect.Uint,
 			reflect.Uint8,
 			reflect.Uint16,
 			reflect.Uint32,
 			reflect.Uint64:
-			res.Count = model.NewInt32(int32(valueOf.Uint()))
+			res.Count = model.NewPrimitive(int32(valueOf.Uint()))
 		}
 	}
 

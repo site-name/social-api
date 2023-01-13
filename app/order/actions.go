@@ -868,7 +868,7 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord model.Order, manager
 	// 2) has ProductVariant attached AND that productVariant has a digitalContent accompanies
 	digitalOrderLinesOfOrder, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
 		OrderID:                 squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
-		IsShippingRequired:      model.NewBool(false),
+		IsShippingRequired:      model.NewPrimitive(false),
 		VariantDigitalContentID: squirrel.NotEq{store.DigitalContentTableName + ".Id": nil},
 		PrefetchRelated: model.OrderLinePrefetchRelated{
 			VariantDigitalContent: true, // this tell store to prefetch related product variants, digital contents too
@@ -2199,7 +2199,7 @@ func (a *ServiceOrder) processRefund(
 		}
 		// we take into consideration the shipping costs only when amount is not provided.
 		if refundShippingCosts && ord.ShippingPriceGrossAmount != nil {
-			amount = model.NewDecimal(amount.Add(*ord.ShippingPriceGrossAmount))
+			amount = model.NewPrimitive(amount.Add(*ord.ShippingPriceGrossAmount))
 		}
 	}
 

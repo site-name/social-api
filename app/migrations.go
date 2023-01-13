@@ -140,7 +140,7 @@ func (s *Server) doContentExtractionConfigDefaultTrueMigration() {
 	}
 
 	s.UpdateConfig(func(config *model.Config) {
-		config.FileSettings.ExtractContent = model.NewBool(true)
+		config.FileSettings.ExtractContent = model.NewPrimitive(true)
 	})
 
 	system := model.System{

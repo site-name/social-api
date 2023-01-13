@@ -222,7 +222,7 @@ func (a *ServicePayment) CreatePayment(
 		Total:              total,
 		ReturnUrl:          &returnUrl,
 		PspReference:       &externalReference,
-		IsActive:           model.NewBool(true),
+		IsActive:           model.NewPrimitive(true),
 		CustomerIpAddress:  &customerIpAddress,
 		ExtraData:          model.ModelToJson(extraData),
 		Token:              paymentToken,
@@ -423,8 +423,8 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 
 	switch paymentTransaction.Kind {
 	case model.CAPTURE, model.REFUND_REVERSED:
-		payMent.CapturedAmount = model.NewDecimal(payMent.CapturedAmount.Add(*paymentTransaction.Amount))
-		payMent.IsActive = model.NewBool(true)
+		payMent.CapturedAmount = model.NewPrimitive(payMent.CapturedAmount.Add(*paymentTransaction.Amount))
+		payMent.IsActive = model.NewPrimitive(true)
 		// Set payment charge status to fully charged
 		// only if there is no more amount needs to charge
 		payMent.ChargeStatus = model.PARTIALLY_CHARGED
@@ -434,17 +434,17 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 		changedFields = append(changedFields, "charge_status", "captured_amount", "update_at")
 
 	case model.VOID:
-		payMent.IsActive = model.NewBool(false)
+		payMent.IsActive = model.NewPrimitive(false)
 		changedFields = append(changedFields, "is_active", "update_at")
 
 	case model.REFUND:
 		changedFields = append(changedFields, "captured_amount", "update_at")
-		payMent.CapturedAmount = model.NewDecimal(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
+		payMent.CapturedAmount = model.NewPrimitive(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
 		payMent.ChargeStatus = model.PARTIALLY_REFUNDED
 		if payMent.CapturedAmount.LessThanOrEqual(decimal.Zero) {
 			payMent.CapturedAmount = &decimal.Zero
 			payMent.ChargeStatus = model.FULLY_REFUNDED
-			payMent.IsActive = model.NewBool(false)
+			payMent.IsActive = model.NewPrimitive(false)
 		}
 
 	case model.PENDING:
@@ -453,12 +453,12 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 
 	case model.CANCEL:
 		payMent.ChargeStatus = model.CANCELLED
-		payMent.IsActive = model.NewBool(false)
+		payMent.IsActive = model.NewPrimitive(false)
 		changedFields = append(changedFields, "charge_status", "is_active")
 
 	case model.CAPTURE_FAILED:
 		if payMent.ChargeStatus == model.PARTIALLY_CHARGED || payMent.ChargeStatus == model.FULLY_CHARGED {
-			payMent.CapturedAmount = model.NewDecimal(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
+			payMent.CapturedAmount = model.NewPrimitive(payMent.CapturedAmount.Sub(*paymentTransaction.Amount))
 			payMent.ChargeStatus = model.PARTIALLY_CHARGED
 			if payMent.CapturedAmount.LessThanOrEqual(decimal.Zero) {
 				payMent.CapturedAmount = &decimal.Zero
@@ -611,7 +611,7 @@ func (a *ServicePayment) UpdatePaymentMethodDetails(payMent model.Payment, payme
 func (a *ServicePayment) GetPaymentToken(payMent *model.Payment) (string, *model.PaymentError, *model.AppError) {
 	authTransactions, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
 		Kind:      squirrel.Eq{store.TransactionTableName + ".Kind": model.AUTH},
-		IsSuccess: model.NewBool(true),
+		IsSuccess: model.NewPrimitive(true),
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -650,7 +650,7 @@ func PriceFromMinorUnit(value string, currency string) (*decimal.Decimal, error)
 
 	numberPlaces := decimal.NewFromInt(10).Pow(decimal.NewFromInt(int64(-precision)))
 
-	return model.NewDecimal(deci.Mul(numberPlaces)), nil
+	return model.NewPrimitive(deci.Mul(numberPlaces)), nil
 }
 
 // Convert decimal value to the smallest unit of currency.

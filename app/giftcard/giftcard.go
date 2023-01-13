@@ -109,6 +109,6 @@ func (s *ServiceGiftcard) ActiveGiftcards(date time.Time) ([]*model.GiftCard, *m
 			squirrel.Eq{store.GiftcardTableName + ".ExpiryDate": nil},
 			squirrel.GtOrEq{store.GiftcardTableName + ".ExpiryDate": util.StartOfDay(date)},
 		},
-		IsActive: model.NewBool(true),
+		IsActive: model.NewPrimitive(true),
 	})
 }

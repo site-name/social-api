@@ -140,10 +140,10 @@ func (v *Voucher) PreSave() {
 
 func (v *Voucher) commonPre() {
 	if v.OnlyForStaff == nil {
-		v.OnlyForStaff = NewBool(false)
+		v.OnlyForStaff = NewPrimitive(false)
 	}
 	if v.Name != nil {
-		v.Name = NewString(SanitizeUnicode(*v.Name))
+		v.Name = NewPrimitive(SanitizeUnicode(*v.Name))
 	}
 	if v.DiscountValueType == "" {
 		v.DiscountValueType = FIXED
@@ -152,7 +152,7 @@ func (v *Voucher) commonPre() {
 		v.Type = ENTIRE_ORDER
 	}
 	if v.UsageLimit != nil && *v.UsageLimit < 0 {
-		v.UsageLimit = NewInt(0)
+		v.UsageLimit = NewPrimitive(0)
 	}
 	v.Countries = strings.ToUpper(v.Countries)
 }

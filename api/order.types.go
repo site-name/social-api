@@ -608,7 +608,7 @@ func (o *Order) UserEmail(ctx context.Context) (*string, error) {
 		return &o.order.UserEmail, nil
 	}
 
-	return model.NewString(util.ObfuscateEmail(o.order.UserEmail)), nil
+	return model.NewPrimitive(util.ObfuscateEmail(o.order.UserEmail)), nil
 }
 
 func (o *Order) User(ctx context.Context) (*User, error) {
@@ -737,7 +737,7 @@ func (o *Order) Original(ctx context.Context) (*string, error) {
 	value := []byte("Order")
 	value = append(value, *o.order.OriginalID...)
 
-	return model.NewString(base64.StdEncoding.EncodeToString(value)), nil
+	return model.NewPrimitive(base64.StdEncoding.EncodeToString(value)), nil
 }
 
 func orderByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Order] {

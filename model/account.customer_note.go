@@ -42,6 +42,6 @@ func (cn *CustomerNote) PreSave() {
 		cn.Date = GetMillis()
 	}
 	if cn.IsPublic == nil {
-		cn.IsPublic = NewBool(true)
+		cn.IsPublic = NewPrimitive(true)
 	}
 }

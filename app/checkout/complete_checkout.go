@@ -263,7 +263,7 @@ func (s *ServiceCheckout) createLineForOrder(
 		Line:        orderLine,
 		Quantity:    quantity,
 		Variant:     &variant,
-		WarehouseID: model.NewString(checkoutInfo.DeliveryMethodInfo.WarehousePK()),
+		WarehouseID: model.NewPrimitive(checkoutInfo.DeliveryMethodInfo.WarehousePK()),
 	}, nil
 }
 

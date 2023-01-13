@@ -225,7 +225,7 @@ func (g *GiftCard) CreatedByEmail(ctx context.Context) (*string, error) {
 			email = *g.createdByEmail
 		}
 
-		return model.NewString(util.ObfuscateEmail(email))
+		return model.NewPrimitive(util.ObfuscateEmail(email))
 	}
 
 	if g.createdByID == nil {
@@ -266,7 +266,7 @@ func (g *GiftCard) UsedByEmail(ctx context.Context) (*string, error) {
 			email = *g.usedByEmail
 		}
 
-		return model.NewString(util.ObfuscateEmail(email))
+		return model.NewPrimitive(util.ObfuscateEmail(email))
 	}
 
 	if g.usedByID == nil {

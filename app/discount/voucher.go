@@ -286,7 +286,7 @@ func (s *ServiceDiscount) FilterActiveVouchers(date time.Time, channelSlug strin
 
 	if channelSlug != "" {
 		filterOptions.ChannelListingSlug = squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug}
-		filterOptions.ChannelListingActive = model.NewBool(true)
+		filterOptions.ChannelListingActive = model.NewPrimitive(true)
 	}
 
 	return s.VouchersByOption(filterOptions)

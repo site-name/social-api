@@ -9,12 +9,12 @@ import (
 func TestClassifyCategories(t *testing.T) {
 	in := Categories{
 		&Category{Id: "1", ParentID: nil},
-		&Category{Id: "2", ParentID: NewString("1")},
-		&Category{Id: "3", ParentID: NewString("2")},
-		&Category{Id: "4", ParentID: NewString("3")},
-		&Category{Id: "5", ParentID: NewString("4")},
+		&Category{Id: "2", ParentID: NewPrimitive("1")},
+		&Category{Id: "3", ParentID: NewPrimitive("2")},
+		&Category{Id: "4", ParentID: NewPrimitive("3")},
+		&Category{Id: "5", ParentID: NewPrimitive("4")},
 		&Category{Id: "6", ParentID: nil},
-		&Category{Id: "7", ParentID: NewString("1")},
+		&Category{Id: "7", ParentID: NewPrimitive("1")},
 	}
 
 	t.Run("ello", func(t *testing.T) {

@@ -123,7 +123,7 @@ func (w *WareHouse) commonPre() {
 		w.ClickAndCollectOption = DISABLED
 	}
 	if w.IsPrivate == nil {
-		w.IsPrivate = NewBool(true)
+		w.IsPrivate = NewPrimitive(true)
 	}
 }
 
@@ -140,10 +140,10 @@ func (w *WareHouse) DeepCopy() *WareHouse {
 	res := *w
 
 	if w.AddressID != nil {
-		res.AddressID = NewString(*w.AddressID)
+		res.AddressID = NewPrimitive(*w.AddressID)
 	}
 	if w.IsPrivate != nil {
-		res.IsPrivate = NewBool(*w.IsPrivate)
+		res.IsPrivate = NewPrimitive(*w.IsPrivate)
 	}
 	if w.Address != nil {
 		res.Address = w.Address.DeepCopy()

@@ -117,7 +117,7 @@ func (p *Payment) GetChargeAmount() *decimal.Decimal {
 	if p.Total == nil || p.CapturedAmount == nil {
 		return &decimal.Zero
 	}
-	return NewDecimal(p.Total.Sub(*p.CapturedAmount))
+	return NewPrimitive(p.Total.Sub(*p.CapturedAmount))
 }
 
 // NotCharged checks if current payment's charge status is "not_charged"
@@ -316,7 +316,7 @@ func (p *Payment) commonPre() {
 		p.ChargeStatus = NOT_CHARGED
 	}
 	if p.IsActive == nil {
-		p.IsActive = NewBool(true)
+		p.IsActive = NewPrimitive(true)
 	}
 	if p.Currency == "" {
 		p.Currency = DEFAULT_CURRENCY

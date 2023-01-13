@@ -57,9 +57,9 @@ func (a *ServiceProduct) PublishedCollections(channelSlug string, shopID string)
 			squirrel.LtOrEq{store.CollectionChannelListingTableName + ".PublicationDate": today},
 			squirrel.Eq{store.CollectionChannelListingTableName + ".PublicationDate": nil},
 		},
-		ChannelListingIsPublished:     model.NewBool(true),
+		ChannelListingIsPublished:     model.NewPrimitive(true),
 		ChannelListingChannelSlug:     squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug},
-		ChannelListingChannelIsActive: model.NewBool(true),
+		ChannelListingChannelIsActive: model.NewPrimitive(true),
 	})
 }
 

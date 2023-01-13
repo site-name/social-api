@@ -34,7 +34,7 @@ func (s *SaleChannelListing) DeepCopy() *SaleChannelListing {
 
 	res := *s
 	if s.DiscountValue != nil {
-		res.DiscountValue = NewDecimal(*s.DiscountValue)
+		res.DiscountValue = NewPrimitive(*s.DiscountValue)
 	}
 	if s.channel != nil {
 		res.channel = s.channel.DeepCopy()

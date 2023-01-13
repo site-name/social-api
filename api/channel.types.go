@@ -40,7 +40,7 @@ func (c *Channel) HasOrders(ctx context.Context) (*bool, error) {
 		return nil, err
 	}
 
-	return model.NewBool(channel.GetHasOrders()), nil
+	return model.NewPrimitive(channel.GetHasOrders()), nil
 }
 
 func SystemChannelToGraphqlChannel(ch *model.Channel) *Channel {

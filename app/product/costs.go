@@ -94,5 +94,5 @@ func GetMarginForVariantChannelListing(variantChannelListing *model.ProductVaria
 		Mul(decimal.NewFromInt(100)).
 		Float64()
 
-	return model.NewFloat64(math.Round(fl64Percent))
+	return model.NewPrimitive(math.Round(fl64Percent))
 }

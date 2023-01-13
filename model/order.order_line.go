@@ -281,7 +281,7 @@ func (o *OrderLine) commonPre() {
 	o.TranslatedVariantName = SanitizeUnicode(o.TranslatedVariantName)
 
 	if o.UnitDiscountReason != nil {
-		o.UnitDiscountReason = NewString(SanitizeUnicode(*o.UnitDiscountReason))
+		o.UnitDiscountReason = NewPrimitive(SanitizeUnicode(*o.UnitDiscountReason))
 	}
 	if o.UnitDiscountType == "" {
 		o.UnitDiscountType = FIXED
@@ -343,50 +343,50 @@ func (o *OrderLine) DeepCopy() *OrderLine {
 	orderLine := *o
 
 	if o.VariantID != nil {
-		orderLine.VariantID = NewString(*o.VariantID)
+		orderLine.VariantID = NewPrimitive(*o.VariantID)
 	}
 	if o.ProductSku != nil {
-		orderLine.ProductSku = NewString(*o.ProductSku)
+		orderLine.ProductSku = NewPrimitive(*o.ProductSku)
 	}
 	if o.ProductVariantID != nil {
-		orderLine.ProductVariantID = NewString(*o.ProductVariantID)
+		orderLine.ProductVariantID = NewPrimitive(*o.ProductVariantID)
 	}
 	if o.UnitDiscountReason != nil {
-		orderLine.UnitDiscountReason = NewString(*o.UnitDiscountReason)
+		orderLine.UnitDiscountReason = NewPrimitive(*o.UnitDiscountReason)
 	}
 
 	if o.UnitDiscountAmount != nil {
-		orderLine.UnitDiscountAmount = NewDecimal(*o.UnitDiscountAmount)
+		orderLine.UnitDiscountAmount = NewPrimitive(*o.UnitDiscountAmount)
 	}
 	if o.UnitPriceNetAmount != nil {
-		orderLine.UnitPriceNetAmount = NewDecimal(*o.UnitPriceNetAmount)
+		orderLine.UnitPriceNetAmount = NewPrimitive(*o.UnitPriceNetAmount)
 	}
 	if o.UnitDiscountValue != nil {
-		orderLine.UnitDiscountValue = NewDecimal(*o.UnitDiscountValue)
+		orderLine.UnitDiscountValue = NewPrimitive(*o.UnitDiscountValue)
 	}
 	if o.UnitPriceGrossAmount != nil {
-		orderLine.UnitPriceGrossAmount = NewDecimal(*o.UnitPriceGrossAmount)
+		orderLine.UnitPriceGrossAmount = NewPrimitive(*o.UnitPriceGrossAmount)
 	}
 	if o.TotalPriceNetAmount != nil {
-		orderLine.TotalPriceNetAmount = NewDecimal(*o.TotalPriceNetAmount)
+		orderLine.TotalPriceNetAmount = NewPrimitive(*o.TotalPriceNetAmount)
 	}
 	if o.TotalPriceGrossAmount != nil {
-		orderLine.TotalPriceGrossAmount = NewDecimal(*o.TotalPriceGrossAmount)
+		orderLine.TotalPriceGrossAmount = NewPrimitive(*o.TotalPriceGrossAmount)
 	}
 	if o.UnDiscountedUnitPriceNetAmount != nil {
-		orderLine.UnDiscountedUnitPriceNetAmount = NewDecimal(*o.UnDiscountedUnitPriceNetAmount)
+		orderLine.UnDiscountedUnitPriceNetAmount = NewPrimitive(*o.UnDiscountedUnitPriceNetAmount)
 	}
 	if o.UnDiscountedUnitPriceGrossAmount != nil {
-		orderLine.UnDiscountedUnitPriceGrossAmount = NewDecimal(*o.UnDiscountedUnitPriceGrossAmount)
+		orderLine.UnDiscountedUnitPriceGrossAmount = NewPrimitive(*o.UnDiscountedUnitPriceGrossAmount)
 	}
 	if o.UnDiscountedTotalPriceGrossAmount != nil {
-		orderLine.UnDiscountedTotalPriceGrossAmount = NewDecimal(*o.UnDiscountedTotalPriceGrossAmount)
+		orderLine.UnDiscountedTotalPriceGrossAmount = NewPrimitive(*o.UnDiscountedTotalPriceGrossAmount)
 	}
 	if o.UnDiscountedTotalPriceNetAmount != nil {
-		orderLine.UnDiscountedTotalPriceNetAmount = NewDecimal(*o.UnDiscountedTotalPriceNetAmount)
+		orderLine.UnDiscountedTotalPriceNetAmount = NewPrimitive(*o.UnDiscountedTotalPriceNetAmount)
 	}
 	if o.TaxRate != nil {
-		orderLine.TaxRate = NewDecimal(*o.TaxRate)
+		orderLine.TaxRate = NewPrimitive(*o.TaxRate)
 	}
 
 	if o.productVariant != nil {

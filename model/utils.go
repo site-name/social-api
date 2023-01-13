@@ -104,16 +104,14 @@ func (s StringInterface) Pop(key string, defaultValue ...interface{}) interface{
 	return v
 }
 
-func NewBool(b bool) *bool                          { return &b }
-func NewInt(n int) *int                             { return &n }
-func NewUint(n uint) *uint                          { return &n }
-func NewInt64(n int64) *int64                       { return &n }
-func NewInt32(n int32) *int32                       { return &n }
-func NewFloat32(n float32) *float32                 { return &n }
-func NewFloat64(n float64) *float64                 { return &n }
-func NewString(s string) *string                    { return &s }
-func NewDecimal(d decimal.Decimal) *decimal.Decimal { return &d }
-func NewTime(t time.Time) *time.Time                { return &t }
+// NewPrimitive takes a primitive value, returns pointer to it.
+//
+// E.g:
+//
+//	2 => &2 // ^.^
+func NewPrimitive[T util.Ordered | bool | time.Time | decimal.Decimal](value T) *T {
+	return &value
+}
 
 var translateFunc i18n.TranslateFunc
 var translateFuncOnce sync.Once
@@ -885,7 +883,7 @@ func (g *PaginationOptions) HasPreviousPage() bool {
 		(g.Last != nil && *g.Last > 0 && g.Before != nil)
 }
 
-const paginationError = "api.graphql.pagination_params.invalid.app_error"
+const PaginationError = "api.graphql.pagination_params.invalid.app_error"
 
 // NOTE: if Before, After, First, Last are not passed, that means pagination will not apply.
 // Thus no validation needed, return nil
@@ -895,16 +893,19 @@ func (p *PaginationOptions) Validate() *AppError {
 	}
 
 	if p.First != nil && p.Last != nil {
-		return NewAppError("Pagination.Validate", paginationError, map[string]interface{}{"Fields": "Last, First"}, "You must provide either First or Last, not both", http.StatusBadRequest)
+		return NewAppError("Pagination.Validate", PaginationError, map[string]interface{}{"Fields": "Last, First"}, "You must provide either First or Last, not both", http.StatusBadRequest)
 	}
 	if p.First != nil && p.Before != nil {
-		return NewAppError("Pagination.Validate", paginationError, map[string]interface{}{"Fields": "First, Before"}, "First and Before can't go together", http.StatusBadRequest)
+		return NewAppError("Pagination.Validate", PaginationError, map[string]interface{}{"Fields": "First, Before"}, "First and Before can't go together", http.StatusBadRequest)
 	}
 	if p.Last != nil && p.After != nil {
-		return NewAppError("Pagination.Validate", paginationError, map[string]interface{}{"Fields": "Last, After"}, "Last and After can't go together", http.StatusBadRequest)
+		return NewAppError("Pagination.Validate", PaginationError, map[string]interface{}{"Fields": "Last, After"}, "Last and After can't go together", http.StatusBadRequest)
+	}
+	if p.Before != nil && p.After != nil {
+		return NewAppError("Pagination.Validate", PaginationError, map[string]interface{}{"Fields": "Before, After"}, "Before and After can't go together", http.StatusBadRequest)
 	}
 	if (p.Before != nil || p.After != nil) && p.OrderBy == "" {
-		return NewAppError("Pagination.Validate", paginationError, map[string]interface{}{"Fields": "OrderBy"}, "OrderBY must be provided", http.StatusBadRequest)
+		return NewAppError("Pagination.Validate", PaginationError, map[string]interface{}{"Fields": "OrderBy"}, "OrderBY must be provided", http.StatusBadRequest)
 	}
 
 	if p.Order != ASC && p.Order != DESC {
@@ -958,6 +959,7 @@ func (g *PaginationOptions) ConstructSqlizer(query squirrel.SelectBuilder) (squi
 			// 1 2 3 4 5 6 (ASC)
 			//     | *     (AFTER)
 			query = query.Where(squirrel.Gt{g.OrderBy: g.After})
+			break
 		}
 
 		// 6 5 4 3 2 1 (DESC)
@@ -969,6 +971,7 @@ func (g *PaginationOptions) ConstructSqlizer(query squirrel.SelectBuilder) (squi
 			// 1 2 3 4 5 6 (ASC)
 			//   * |       (BEFORE)
 			query = query.Where(squirrel.Lt{g.OrderBy: g.Before})
+			break
 		}
 
 		// 6 5 4 3 2 1 (DESC)
@@ -985,20 +988,4 @@ func (g *PaginationOptions) ConstructSqlizer(query squirrel.SelectBuilder) (squi
 	}
 
 	return query, nil
-}
-
-type Paginator[T any, O util.Ordered] struct {
-	values    []T
-	limit     int
-	comparer  func(T) O
-	direction OrderDirection
-	operand   any
-}
-
-func (p *Paginator[T, O]) GetBefore(before O, limit int) []T {
-	panic("not implemented")
-}
-
-func (p *Paginator[T, O]) GetAfter(after O, limit int) []T {
-	panic("not implemented")
 }

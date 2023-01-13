@@ -157,7 +157,7 @@ func (p *ProductVariant) PreSave() {
 func (p *ProductVariant) commonPre() {
 	p.Name = SanitizeUnicode(p.Name)
 	if p.TrackInventory == nil {
-		p.TrackInventory = NewBool(true)
+		p.TrackInventory = NewPrimitive(true)
 	}
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
@@ -177,22 +177,22 @@ func (p *ProductVariant) DeepCopy() *ProductVariant {
 	res := *p
 
 	if p.Sku != nil {
-		res.Sku = NewString(*p.Sku)
+		res.Sku = NewPrimitive(*p.Sku)
 	}
 	if p.Weight != nil {
-		res.Weight = NewFloat32(*p.Weight)
+		res.Weight = NewPrimitive(*p.Weight)
 	}
 	if p.TrackInventory != nil {
-		res.TrackInventory = NewBool(*p.TrackInventory)
+		res.TrackInventory = NewPrimitive(*p.TrackInventory)
 	}
 	if p.PreorderEndDate != nil {
-		res.PreorderEndDate = NewInt64(*p.PreorderEndDate)
+		res.PreorderEndDate = NewPrimitive(*p.PreorderEndDate)
 	}
 	if p.PreOrderGlobalThreshold != nil {
-		res.PreOrderGlobalThreshold = NewInt(*p.PreOrderGlobalThreshold)
+		res.PreOrderGlobalThreshold = NewPrimitive(*p.PreOrderGlobalThreshold)
 	}
 	if p.SortOrder != nil {
-		res.SortOrder = NewInt(*p.SortOrder)
+		res.SortOrder = NewPrimitive(*p.SortOrder)
 	}
 
 	res.ModelMetadata = p.ModelMetadata.DeepCopy()

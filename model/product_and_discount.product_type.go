@@ -48,16 +48,16 @@ func (p *ProductType) DeepCopy() *ProductType {
 
 	res := *p
 	if p.HasVariants != nil {
-		res.HasVariants = NewBool(*p.HasVariants)
+		res.HasVariants = NewPrimitive(*p.HasVariants)
 	}
 	if p.IsShippingRequired != nil {
-		res.IsShippingRequired = NewBool(*p.IsShippingRequired)
+		res.IsShippingRequired = NewPrimitive(*p.IsShippingRequired)
 	}
 	if p.IsDigital != nil {
-		res.IsDigital = NewBool(*p.IsDigital)
+		res.IsDigital = NewPrimitive(*p.IsDigital)
 	}
 	if p.Weight != nil {
-		res.Weight = NewFloat32(*p.Weight)
+		res.Weight = NewPrimitive(*p.Weight)
 	}
 
 	return &res
@@ -124,16 +124,16 @@ func (p *ProductType) commonPre() {
 	p.Slug = slug.Make(p.Name)
 
 	if p.HasVariants == nil {
-		p.HasVariants = NewBool(true)
+		p.HasVariants = NewPrimitive(true)
 	}
 	if p.IsShippingRequired == nil {
-		p.IsShippingRequired = NewBool(true)
+		p.IsShippingRequired = NewPrimitive(true)
 	}
 	if p.IsDigital == nil {
-		p.IsDigital = NewBool(false)
+		p.IsDigital = NewPrimitive(false)
 	}
 	if p.Weight == nil {
-		p.Weight = NewFloat32(0)
+		p.Weight = NewPrimitive[float32](0)
 	}
 	if p.Weight != nil && p.WeightUnit == "" {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT

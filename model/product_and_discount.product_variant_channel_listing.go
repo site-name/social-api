@@ -137,13 +137,13 @@ func (p *ProductVariantChannelListing) DeepCopy() *ProductVariantChannelListing 
 	res := *p
 
 	if p.PriceAmount != nil {
-		res.PriceAmount = NewDecimal(*p.PriceAmount)
+		res.PriceAmount = NewPrimitive(*p.PriceAmount)
 	}
 	if p.CostPriceAmount != nil {
-		res.CostPriceAmount = NewDecimal(*p.CostPriceAmount)
+		res.CostPriceAmount = NewPrimitive(*p.CostPriceAmount)
 	}
 	if p.PreorderQuantityThreshold != nil {
-		res.PreorderQuantityThreshold = NewInt(*p.PreorderQuantityThreshold)
+		res.PreorderQuantityThreshold = NewPrimitive(*p.PreorderQuantityThreshold)
 	}
 
 	if p.Channel != nil {

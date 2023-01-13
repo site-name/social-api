@@ -243,7 +243,7 @@ func (p *Product) commonPre() {
 		p.WeightUnit = measurement.STANDARD_WEIGHT_UNIT
 	}
 	if p.ChargeTaxes == nil {
-		p.ChargeTaxes = NewBool(true)
+		p.ChargeTaxes = NewPrimitive(true)
 	}
 }
 
@@ -256,16 +256,16 @@ func (p *Product) DeepCopy() *Product {
 	res := *p
 
 	if p.CategoryID != nil {
-		res.CategoryID = NewString(*p.CategoryID)
+		res.CategoryID = NewPrimitive(*p.CategoryID)
 	}
 	if p.DefaultVariantID != nil {
-		res.DefaultVariantID = NewString(*p.DefaultVariantID)
+		res.DefaultVariantID = NewPrimitive(*p.DefaultVariantID)
 	}
 	if p.Weight != nil {
-		res.Weight = NewFloat32(*p.Weight)
+		res.Weight = NewPrimitive(*p.Weight)
 	}
 	if p.Rating != nil {
-		res.Rating = NewFloat32(*p.Rating)
+		res.Rating = NewPrimitive(*p.Rating)
 	}
 
 	if p.Collections != nil {

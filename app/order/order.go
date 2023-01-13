@@ -145,10 +145,10 @@ func (a *ServiceOrder) UpdateOrderTotalPaid(transaction store_iface.SqlxTxExecut
 func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		OrderID:                    squirrel.Eq{store.PaymentTableName + ".OrderID": orderID},
-		IsActive:                   model.NewBool(true),
+		IsActive:                   model.NewPrimitive(true),
 		TransactionsKind:           squirrel.Eq{store.TransactionTableName + ".Kind": model.AUTH},
-		TransactionsActionRequired: model.NewBool(false),
-		TransactionsIsSuccess:      model.NewBool(true),
+		TransactionsActionRequired: model.NewPrimitive(false),
+		TransactionsIsSuccess:      model.NewPrimitive(true),
 	})
 	if appErr != nil {
 		return false, appErr
@@ -161,10 +161,10 @@ func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppErr
 func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		OrderID:                    squirrel.Eq{store.PaymentTableName + ".OrderID": orderID},
-		IsActive:                   model.NewBool(true),
+		IsActive:                   model.NewPrimitive(true),
 		TransactionsKind:           squirrel.Eq{store.TransactionTableName + ".Kind": model.CAPTURE},
-		TransactionsActionRequired: model.NewBool(false),
-		TransactionsIsSuccess:      model.NewBool(true),
+		TransactionsActionRequired: model.NewPrimitive(false),
+		TransactionsIsSuccess:      model.NewPrimitive(true),
 	})
 	if appErr != nil {
 		return false, appErr

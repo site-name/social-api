@@ -300,7 +300,7 @@ func (ps *SqlProductStore) channelQuery(channelSlug string, isActive *bool, comp
 // refer to ./product_store_doc.md (line 1)
 func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*model.Product, error) {
 
-	channelQuery := ps.channelQuery(channelSlug, model.NewBool(true), store.ProductChannelListingTableName)
+	channelQuery := ps.channelQuery(channelSlug, model.NewPrimitive(true), store.ProductChannelListingTableName)
 
 	today := util.StartOfDay(timemodule.Now().UTC())
 
@@ -410,7 +410,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 // refer to ./product_store_doc.md (line 157)
 func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*model.Product, error) {
 
-	channelQuery := ps.channelQuery(channelSlug, model.NewBool(true), store.ProductChannelListingTableName)
+	channelQuery := ps.channelQuery(channelSlug, model.NewPrimitive(true), store.ProductChannelListingTableName)
 	today := util.StartOfDay(timemodule.Now().UTC())
 
 	productChannelListingQuery := ps.
@@ -430,7 +430,7 @@ func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*model.P
 		Suffix(")").
 		Limit(1)
 
-	channelQuery = ps.channelQuery(channelSlug, model.NewBool(true), store.ProductVariantChannelListingTableName)
+	channelQuery = ps.channelQuery(channelSlug, model.NewPrimitive(true), store.ProductVariantChannelListingTableName)
 
 	productVariantChannelListingQuery := ps.
 		GetQueryBuilder().

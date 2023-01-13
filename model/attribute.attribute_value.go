@@ -122,13 +122,13 @@ func (a *AttributeValue) DeepCopy() *AttributeValue {
 		res.Attribute = a.Attribute.DeepCopy()
 	}
 	if a.FileUrl != nil {
-		res.FileUrl = NewString(*a.FileUrl)
+		res.FileUrl = NewPrimitive(*a.FileUrl)
 	}
 	if a.Boolean != nil {
-		res.Boolean = NewBool(*a.Boolean)
+		res.Boolean = NewPrimitive(*a.Boolean)
 	}
 	if a.Datetime != nil {
-		res.Datetime = NewTime(*a.Datetime)
+		res.Datetime = NewPrimitive(*a.Datetime)
 	}
 
 	return &res

@@ -45,7 +45,7 @@ func (a *AssignedVariantAttributeValue) ToJSON() string {
 func (a *AssignedVariantAttributeValue) DeepCopy() *AssignedVariantAttributeValue {
 	res := *a
 	if a.SortOrder != nil {
-		res.SortOrder = NewInt(*a.SortOrder)
+		res.SortOrder = NewPrimitive(*a.SortOrder)
 	}
 	return &res
 }

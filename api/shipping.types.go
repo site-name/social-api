@@ -63,10 +63,10 @@ func SystemShippingMethodToGraphqlShippingMethod(m *model.ShippingMethod) *Shipp
 	}
 
 	if m.MaximumDeliveryDays != nil {
-		res.MaximumDeliveryDays = model.NewInt32(int32(*m.MaximumDeliveryDays))
+		res.MaximumDeliveryDays = model.NewPrimitive(int32(*m.MaximumDeliveryDays))
 	}
 	if m.MinimumDeliveryDays != nil {
-		res.MinimumDeliveryDays = model.NewInt32(int32(*m.MinimumDeliveryDays))
+		res.MinimumDeliveryDays = model.NewPrimitive(int32(*m.MinimumDeliveryDays))
 	}
 
 	return res

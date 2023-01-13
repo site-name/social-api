@@ -170,34 +170,34 @@ func (s *Shop) commonPre() {
 	s.Name = SanitizeUnicode(s.Name)
 	s.Description = SanitizeUnicode(s.Description)
 	if s.IncludeTaxesInPrice == nil {
-		s.IncludeTaxesInPrice = NewBool(true)
+		s.IncludeTaxesInPrice = NewPrimitive(true)
 	}
 	if s.DisplayGrossPrices == nil {
-		s.DisplayGrossPrices = NewBool(true)
+		s.DisplayGrossPrices = NewPrimitive(true)
 	}
 	if s.ChargeTaxesOnShipping == nil {
-		s.ChargeTaxesOnShipping = NewBool(true)
+		s.ChargeTaxesOnShipping = NewPrimitive(true)
 	}
 	if s.TrackInventoryByDefault == nil {
-		s.TrackInventoryByDefault = NewBool(true)
+		s.TrackInventoryByDefault = NewPrimitive(true)
 	}
 	if s.AutomaticallyConfirmAllNewOrders == nil {
-		s.AutomaticallyConfirmAllNewOrders = NewBool(true)
+		s.AutomaticallyConfirmAllNewOrders = NewPrimitive(true)
 	}
 	if s.FulfillmentAllowUnPaid == nil {
-		s.FulfillmentAllowUnPaid = NewBool(true)
+		s.FulfillmentAllowUnPaid = NewPrimitive(true)
 	}
 	if s.FulfillmentAutoApprove == nil {
-		s.FulfillmentAutoApprove = NewBool(true)
+		s.FulfillmentAutoApprove = NewPrimitive(true)
 	}
 	if s.AutomaticallyFulfillNonShippableGiftcard == nil {
-		s.AutomaticallyFulfillNonShippableGiftcard = NewBool(true)
+		s.AutomaticallyFulfillNonShippableGiftcard = NewPrimitive(true)
 	}
 	if len(s.GiftcardExpiryType) == 0 {
 		s.GiftcardExpiryType = NEVER_EXPIRE
 	}
 	if s.GiftcardExpiryPeriod != nil && *s.GiftcardExpiryPeriod < 0 {
-		s.GiftcardExpiryPeriod = NewInt(0)
+		s.GiftcardExpiryPeriod = NewPrimitive(0)
 	}
 }
 

@@ -45,7 +45,7 @@ func (a *AssignedPageAttributeValue) DeepCopy() *AssignedPageAttributeValue {
 	res := *a
 
 	if a.SortOrder != nil {
-		res.SortOrder = NewInt(*a.SortOrder)
+		res.SortOrder = NewPrimitive(*a.SortOrder)
 	}
 	return &res
 }

@@ -85,7 +85,7 @@ func (w *Warehouse) ShippingZones(ctx context.Context, args struct {
 	}
 
 	res := &ShippingZoneCountableConnection{
-		TotalCount: model.NewInt32(int32(count)),
+		TotalCount: model.NewPrimitive(int32(count)),
 		PageInfo: &PageInfo{
 			HasPreviousPage: filterOpts.HasPreviousPage(),
 			HasNextPage:     hasNextPage,

@@ -110,7 +110,7 @@ func (p *ProductChannelListing) DeepCopy() *ProductChannelListing {
 		res.Channel = p.Channel.DeepCopy()
 	}
 	if p.AvailableForPurchase != nil {
-		res.AvailableForPurchase = NewTime(*p.AvailableForPurchase)
+		res.AvailableForPurchase = NewPrimitive(*p.AvailableForPurchase)
 	}
 	return &res
 }

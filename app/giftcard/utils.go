@@ -26,7 +26,7 @@ func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *model.Checkout, email
 			squirrel.Eq{store.GiftcardTableName + ".ExpiryDate": nil},
 		},
 		StartDate: squirrel.LtOrEq{store.GiftcardTableName + ".StartDate": now},
-		IsActive:  model.NewBool(true),
+		IsActive:  model.NewPrimitive(true),
 	})
 
 	if appErr != nil {
@@ -71,9 +71,9 @@ func (a *ServiceGiftcard) RemoveGiftcardCodeFromCheckout(ckout *model.Checkout, 
 // ToggleGiftcardStatus set status of given giftcard to inactive/active
 func (a *ServiceGiftcard) ToggleGiftcardStatus(giftCard *model.GiftCard) *model.AppError {
 	if *giftCard.IsActive {
-		giftCard.IsActive = model.NewBool(false)
+		giftCard.IsActive = model.NewPrimitive(false)
 	} else {
-		giftCard.IsActive = model.NewBool(true)
+		giftCard.IsActive = model.NewPrimitive(true)
 	}
 
 	_, appErr := a.UpsertGiftcards(nil, giftCard)
@@ -118,7 +118,7 @@ func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines model.OrderLines) (
 	giftcardLines := GetGiftcardLines(lines)
 	nonShippableLines, appErr := s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
 		Id:                 squirrel.Eq{store.OrderLineTableName + ".Id": giftcardLines.IDs()},
-		IsShippingRequired: model.NewBool(true),
+		IsShippingRequired: model.NewPrimitive(true),
 	})
 
 	if appErr != nil {
@@ -367,7 +367,7 @@ func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *model.U
 func (s *ServiceGiftcard) OrderHasGiftcardLines(orDer *model.Order) (bool, *model.AppError) {
 	orderLines, appErr := s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
 		OrderID:    squirrel.Eq{store.OrderLineTableName + ".OrderID": orDer.Id},
-		IsGiftcard: model.NewBool(true),
+		IsGiftcard: model.NewPrimitive(true),
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

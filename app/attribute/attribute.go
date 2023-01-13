@@ -96,6 +96,6 @@ func (s *ServiceAttribute) GetVisibleToUserAttributes(session *model.Session) (m
 	}
 
 	return s.AttributesByOption(&model.AttributeFilterOption{
-		VisibleInStoreFront: model.NewBool(true),
+		VisibleInStoreFront: model.NewPrimitive(true),
 	})
 }

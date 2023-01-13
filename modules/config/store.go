@@ -269,7 +269,7 @@ func (s *Store) Load() error {
 	// SetDefaults() will generate missing data. This avoids an additional write
 	// to the backing store.
 	if loadedCfg.ServiceSettings.SiteURL == nil {
-		loadedCfg.ServiceSettings.SiteURL = model.NewString("")
+		loadedCfg.ServiceSettings.SiteURL = model.NewPrimitive("")
 	}
 
 	// Setting defaults allows us to accept partial config objects.

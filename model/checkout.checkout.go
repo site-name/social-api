@@ -191,41 +191,41 @@ func (c *Checkout) DeepCopy() *Checkout {
 
 	res := *c
 	if c.UserID != nil {
-		res.UserID = NewString(*c.UserID)
+		res.UserID = NewPrimitive(*c.UserID)
 	}
 	if c.BillingAddressID != nil {
-		res.BillingAddressID = NewString(*c.BillingAddressID)
+		res.BillingAddressID = NewPrimitive(*c.BillingAddressID)
 	}
 	if c.ShippingAddressID != nil {
-		res.ShippingAddressID = NewString(*c.ShippingAddressID)
+		res.ShippingAddressID = NewPrimitive(*c.ShippingAddressID)
 	}
 	if c.ShippingMethodID != nil {
-		res.ShippingMethodID = NewString(*c.ShippingMethodID)
+		res.ShippingMethodID = NewPrimitive(*c.ShippingMethodID)
 	}
 	if c.CollectionPointID != nil {
-		res.CollectionPointID = NewString(*c.CollectionPointID)
+		res.CollectionPointID = NewPrimitive(*c.CollectionPointID)
 	}
 	if c.DiscountName != nil {
-		res.DiscountName = NewString(*c.DiscountName)
+		res.DiscountName = NewPrimitive(*c.DiscountName)
 	}
 	if c.TranslatedDiscountName != nil {
-		res.TranslatedDiscountName = NewString(*c.TranslatedDiscountName)
+		res.TranslatedDiscountName = NewPrimitive(*c.TranslatedDiscountName)
 	}
 	if c.VoucherCode != nil {
-		res.VoucherCode = NewString(*c.VoucherCode)
+		res.VoucherCode = NewPrimitive(*c.VoucherCode)
 	}
 	if c.RedirectURL != nil {
-		res.RedirectURL = NewString(*c.RedirectURL)
+		res.RedirectURL = NewPrimitive(*c.RedirectURL)
 	}
 	if c.TrackingCode != nil {
-		res.TrackingCode = NewString(*c.TrackingCode)
+		res.TrackingCode = NewPrimitive(*c.TrackingCode)
 	}
 	if c.RedirectURL != nil {
-		res.RedirectURL = NewString(*c.RedirectURL)
+		res.RedirectURL = NewPrimitive(*c.RedirectURL)
 	}
 
 	if c.DiscountAmount != nil {
-		res.DiscountAmount = NewDecimal(*c.DiscountAmount)
+		res.DiscountAmount = NewPrimitive(*c.DiscountAmount)
 	}
 
 	if c.channel != nil {

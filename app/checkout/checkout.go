@@ -181,7 +181,7 @@ func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkOut *model.Checkout
 			squirrel.Eq{store.GiftcardTableName + ".ExpiryDate": nil},
 			squirrel.GtOrEq{store.GiftcardTableName + ".ExpiryDate": util.StartOfDay(time.Now().UTC())},
 		},
-		IsActive: model.NewBool(true),
+		IsActive: model.NewPrimitive(true),
 	})
 	if appErr != nil {
 		return nil, appErr

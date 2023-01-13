@@ -68,7 +68,7 @@ func (a *ServiceChannel) CleanChannel(channelID *string) (*model.Channel, *model
 		channel, appErr = a.ValidateChannel(*channelID)
 	} else {
 		channel, appErr = a.ChannelByOption(&model.ChannelFilterOption{
-			IsActive: model.NewBool(true),
+			IsActive: model.NewPrimitive(true),
 		})
 	}
 	if appErr != nil {

@@ -142,9 +142,9 @@ func (c *StaffNotificationRecipient) PreSave() {
 		c.Id = NewId()
 	}
 	if c.Active == nil {
-		c.Active = NewBool(true)
+		c.Active = NewPrimitive(true)
 	}
 	if c.StaffEmail != nil {
-		c.StaffEmail = NewString(NormalizeEmail(*c.StaffEmail))
+		c.StaffEmail = NewPrimitive(NormalizeEmail(*c.StaffEmail))
 	}
 }

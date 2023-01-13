@@ -186,19 +186,19 @@ func (u *User) DeepCopy() *User {
 	copyUser := *u
 
 	if u.DefaultShippingAddressID != nil {
-		copyUser.DefaultShippingAddressID = NewString(*u.DefaultShippingAddressID)
+		copyUser.DefaultShippingAddressID = NewPrimitive(*u.DefaultShippingAddressID)
 	}
 	if u.DefaultBillingAddressID != nil {
-		copyUser.DefaultBillingAddressID = NewString(*u.DefaultBillingAddressID)
+		copyUser.DefaultBillingAddressID = NewPrimitive(*u.DefaultBillingAddressID)
 	}
 	if u.AuthData != nil {
-		copyUser.AuthData = NewString(*u.AuthData)
+		copyUser.AuthData = NewPrimitive(*u.AuthData)
 	}
 	copyUser.NotifyProps = u.NotifyProps.DeepCopy()
 	copyUser.Props = u.Props.DeepCopy()
 	copyUser.Timezone = u.Timezone.DeepCopy()
 	if u.Note != nil {
-		copyUser.Note = NewString(*u.Note)
+		copyUser.Note = NewPrimitive(*u.Note)
 	}
 
 	return &copyUser
@@ -401,7 +401,7 @@ func (u *User) Etag(showFullName, showEmail bool) string {
 // options's keys can be "email", "fullname", "passwordupdate", "authservice" OR Nothing
 func (u *User) Sanitize(options map[string]bool) {
 	u.Password = ""
-	u.AuthData = NewString("")
+	u.AuthData = NewPrimitive("")
 	u.MfaSecret = ""
 
 	if len(options) != 0 && !options["email"] {
@@ -422,7 +422,7 @@ func (u *User) Sanitize(options map[string]bool) {
 // Remove any input data from the user object that is not user controlled
 func (u *User) SanitizeInput(isAdmin bool) {
 	if !isAdmin {
-		u.AuthData = NewString("")
+		u.AuthData = NewPrimitive("")
 		u.AuthService = ""
 		u.EmailVerified = false
 	}
@@ -471,7 +471,7 @@ func (u *User) GetMentionKeys() []string {
 // LastPasswordUpdate, FailedAttempts to their default values
 func (u *User) ClearNonProfileFields() {
 	u.Password = ""
-	u.AuthData = NewString("")
+	u.AuthData = NewPrimitive("")
 	u.MfaSecret = ""
 	u.EmailVerified = false
 	u.LastPasswordUpdate = 0

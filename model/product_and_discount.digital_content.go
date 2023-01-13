@@ -68,16 +68,16 @@ func (d *DigitalContent) ToJSON() string {
 func (d *DigitalContent) DeepCopy() *DigitalContent {
 	res := *d
 	if d.UseDefaultSettings != nil {
-		res.UseDefaultSettings = NewBool(*d.UseDefaultSettings)
+		res.UseDefaultSettings = NewPrimitive(*d.UseDefaultSettings)
 	}
 	if d.AutomaticFulfillment != nil {
-		res.AutomaticFulfillment = NewBool(*d.AutomaticFulfillment)
+		res.AutomaticFulfillment = NewPrimitive(*d.AutomaticFulfillment)
 	}
 	if d.MaxDownloads != nil {
-		res.MaxDownloads = NewInt(*d.MaxDownloads)
+		res.MaxDownloads = NewPrimitive(*d.MaxDownloads)
 	}
 	if d.UrlValidDays != nil {
-		res.UrlValidDays = NewInt(*d.UrlValidDays)
+		res.UrlValidDays = NewPrimitive(*d.UrlValidDays)
 	}
 	return &res
 }
@@ -87,10 +87,10 @@ func (d *DigitalContent) PreSave() {
 		d.Id = NewId()
 	}
 	if d.UseDefaultSettings == nil {
-		d.UseDefaultSettings = NewBool(true)
+		d.UseDefaultSettings = NewPrimitive(true)
 	}
 	if d.AutomaticFulfillment == nil {
-		d.AutomaticFulfillment = NewBool(false)
+		d.AutomaticFulfillment = NewPrimitive(false)
 	}
 	if d.ContentType == "" {
 		d.ContentType = FILE

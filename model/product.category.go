@@ -91,13 +91,13 @@ func (s *Category) DeepCopy() *Category {
 
 	res := *s
 	if s.Description != nil {
-		res.Description = NewString(*s.Description)
+		res.Description = NewPrimitive(*s.Description)
 	}
 	if s.ParentID != nil {
-		res.ParentID = NewString(*s.ParentID)
+		res.ParentID = NewPrimitive(*s.ParentID)
 	}
 	if s.BackgroundImage != nil {
-		res.BackgroundImage = NewString(*s.BackgroundImage)
+		res.BackgroundImage = NewPrimitive(*s.BackgroundImage)
 	}
 	if len(s.Children) > 0 {
 		res.Children = s.Children.DeepCopy()

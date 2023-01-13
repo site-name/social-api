@@ -69,22 +69,22 @@ func (o *OrderDiscount) DeepCopy() *OrderDiscount {
 	res := *o
 
 	if o.OrderID != nil {
-		res.OrderID = NewString(*o.OrderID)
+		res.OrderID = NewPrimitive(*o.OrderID)
 	}
 	if o.Name != nil {
-		res.Name = NewString(*o.Name)
+		res.Name = NewPrimitive(*o.Name)
 	}
 	if o.TranslatedName != nil {
-		res.TranslatedName = NewString(*o.TranslatedName)
+		res.TranslatedName = NewPrimitive(*o.TranslatedName)
 	}
 	if o.Reason != nil {
-		res.Reason = NewString(*o.Reason)
+		res.Reason = NewPrimitive(*o.Reason)
 	}
 	if o.Value != nil {
-		res.Value = NewDecimal(*o.Value)
+		res.Value = NewPrimitive(*o.Value)
 	}
 	if o.AmountValue != nil {
-		res.AmountValue = NewDecimal(*o.AmountValue)
+		res.AmountValue = NewPrimitive(*o.AmountValue)
 	}
 	return &res
 }

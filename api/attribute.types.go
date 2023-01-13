@@ -273,7 +273,7 @@ func (a *Attribute) Choices(
 
 	// construct return value
 	res := &AttributeValueCountableConnection{
-		TotalCount: model.NewInt32(int32(totalValues)), // NOT sure this can scale well
+		TotalCount: model.NewPrimitive(int32(totalValues)), // NOT sure this can scale well
 		Edges:      make([]*AttributeValueCountableEdge, edgesLength),
 	}
 
@@ -349,7 +349,7 @@ func (a *Attribute) ProductTypes(
 	}
 
 	res := &ProductTypeCountableConnection{
-		TotalCount: model.NewInt32(int32(totalProductTypes)),
+		TotalCount: model.NewPrimitive(int32(totalProductTypes)),
 		Edges:      make([]*ProductTypeCountableEdge, edgesLength),
 	}
 
@@ -415,7 +415,7 @@ func (a *Attribute) ProductVariantTypes(
 	}
 
 	res := &ProductTypeCountableConnection{
-		TotalCount: model.NewInt32(int32(totalProductTypes)),
+		TotalCount: model.NewPrimitive(int32(totalProductTypes)),
 		Edges:      make([]*ProductTypeCountableEdge, edgesLength),
 	}
 

@@ -106,7 +106,7 @@ func (a *ServiceOrder) OrderDiscountEvent(transaction store_iface.SqlxTxExecutor
 	if user == nil || !model.IsValidId(user.Id) {
 		userID = nil
 	} else {
-		userID = model.NewString(user.Id)
+		userID = model.NewPrimitive(user.Id)
 	}
 
 	discountParameters := prepareDiscountObject(orderDiscount, oldOrderDiscount)
@@ -134,7 +134,7 @@ func (a *ServiceOrder) OrderLineDiscountEvent(eventType model.OrderEventType, or
 	if user == nil || !model.IsValidId(user.Id) {
 		userID = nil
 	} else {
-		userID = model.NewString(user.Id)
+		userID = model.NewPrimitive(user.Id)
 	}
 
 	discountParameters := map[string]interface{}{

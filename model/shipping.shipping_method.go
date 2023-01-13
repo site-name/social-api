@@ -133,14 +133,14 @@ func (s *ShippingMethod) DeepCopy() *ShippingMethod {
 	res := *s
 
 	if s.MaximumOrderWeight != nil {
-		res.MaximumOrderWeight = NewFloat32(*s.MaximumOrderWeight)
+		res.MaximumOrderWeight = NewPrimitive(*s.MaximumOrderWeight)
 	}
 
 	if s.MaximumDeliveryDays != nil {
-		res.MaximumDeliveryDays = NewInt(*s.MaximumDeliveryDays)
+		res.MaximumDeliveryDays = NewPrimitive(*s.MaximumDeliveryDays)
 	}
 	if s.MinimumDeliveryDays != nil {
-		res.MinimumDeliveryDays = NewInt(*s.MinimumDeliveryDays)
+		res.MinimumDeliveryDays = NewPrimitive(*s.MinimumDeliveryDays)
 	}
 	if s.MinOrderWeight != nil {
 		res.MinOrderWeight = &measurement.Weight{s.MinOrderWeight.Amount, s.MinOrderWeight.Unit}

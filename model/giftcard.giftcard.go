@@ -185,7 +185,7 @@ func (gc *GiftCard) commonPre() {
 	}
 
 	if gc.IsActive == nil {
-		gc.IsActive = NewBool(true)
+		gc.IsActive = NewPrimitive(true)
 	}
 
 	if gc.Currency == "" {

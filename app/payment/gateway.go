@@ -416,7 +416,7 @@ func (a *ServicePayment) Confirm(
 
 	transactionsOfPayment, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
 		Kind:      squirrel.Eq{store.TransactionTableName + ".Kind": model.ACTION_TO_CONFIRM},
-		IsSuccess: model.NewBool(true),
+		IsSuccess: model.NewPrimitive(true),
 	})
 	if appErr != nil {
 		return nil, nil, appErr
@@ -501,7 +501,7 @@ func (a *ServicePayment) getPastTransactionToken(payMent *model.Payment, kind st
 	transactions, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
 		PaymentID: squirrel.Eq{store.TransactionTableName + ".PaymentID": payMent.Id},
 		Kind:      squirrel.Eq{store.TransactionTableName + ".Kind": kind},
-		IsSuccess: model.NewBool(true),
+		IsSuccess: model.NewPrimitive(true),
 	})
 	if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {
 		return "", nil, appErr

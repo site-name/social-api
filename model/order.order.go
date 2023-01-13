@@ -311,13 +311,13 @@ func (o *Order) commonPre() {
 	}
 
 	if o.DisplayGrossPrices == nil {
-		o.DisplayGrossPrices = NewBool(true)
+		o.DisplayGrossPrices = NewPrimitive(true)
 	}
 	if o.WeightUnit == "" {
 		o.WeightUnit = measurement.KG
 	}
 	if o.ShippingMethodName != nil {
-		o.ShippingMethodName = NewString(SanitizeUnicode(*o.ShippingMethodName))
+		o.ShippingMethodName = NewPrimitive(SanitizeUnicode(*o.ShippingMethodName))
 	}
 	o.CustomerNote = SanitizeUnicode(o.CustomerNote)
 
@@ -336,7 +336,7 @@ func (o *Order) commonPre() {
 		o.Currency = DEFAULT_CURRENCY
 	}
 	if o.CollectionPointName != nil {
-		o.CollectionPointName = NewString(SanitizeUnicode(*o.CollectionPointName))
+		o.CollectionPointName = NewPrimitive(SanitizeUnicode(*o.CollectionPointName))
 	}
 }
 
@@ -402,60 +402,60 @@ func (s *Order) DeepCopy() *Order {
 	order := *s
 
 	if s.UserID != nil {
-		order.UserID = NewString(*s.UserID)
+		order.UserID = NewPrimitive(*s.UserID)
 	}
 	if s.BillingAddressID != nil {
-		order.BillingAddressID = NewString(*s.BillingAddressID)
+		order.BillingAddressID = NewPrimitive(*s.BillingAddressID)
 	}
 	if s.ShippingAddressID != nil {
-		order.ShippingAddressID = NewString(*s.ShippingAddressID)
+		order.ShippingAddressID = NewPrimitive(*s.ShippingAddressID)
 	}
 	if s.ShippingMethodID != nil {
-		order.ShippingMethodID = NewString(*s.ShippingMethodID)
+		order.ShippingMethodID = NewPrimitive(*s.ShippingMethodID)
 	}
 	if s.OriginalID != nil {
-		order.OriginalID = NewString(*s.OriginalID)
+		order.OriginalID = NewPrimitive(*s.OriginalID)
 	}
 	if s.CollectionPointID != nil {
-		order.CollectionPointID = NewString(*s.CollectionPointID)
+		order.CollectionPointID = NewPrimitive(*s.CollectionPointID)
 	}
 	if s.ShippingMethodName != nil {
-		order.ShippingMethodName = NewString(*s.ShippingMethodName)
+		order.ShippingMethodName = NewPrimitive(*s.ShippingMethodName)
 	}
 	if s.CollectionPointName != nil {
-		order.CollectionPointName = NewString(*s.CollectionPointName)
+		order.CollectionPointName = NewPrimitive(*s.CollectionPointName)
 	}
 	if s.VoucherID != nil {
-		order.VoucherID = NewString(*s.VoucherID)
+		order.VoucherID = NewPrimitive(*s.VoucherID)
 	}
 	if s.RedirectUrl != nil {
-		order.RedirectUrl = NewString(*s.RedirectUrl)
+		order.RedirectUrl = NewPrimitive(*s.RedirectUrl)
 	}
 
 	if s.ShippingPriceNetAmount != nil {
-		order.ShippingPriceNetAmount = NewDecimal(*s.ShippingPriceNetAmount)
+		order.ShippingPriceNetAmount = NewPrimitive(*s.ShippingPriceNetAmount)
 	}
 	if s.ShippingPriceGrossAmount != nil {
-		order.ShippingPriceGrossAmount = NewDecimal(*s.ShippingPriceGrossAmount)
+		order.ShippingPriceGrossAmount = NewPrimitive(*s.ShippingPriceGrossAmount)
 	}
 	if s.ShippingTaxRate != nil {
-		order.ShippingTaxRate = NewDecimal(*s.ShippingTaxRate)
+		order.ShippingTaxRate = NewPrimitive(*s.ShippingTaxRate)
 	}
 	if s.TotalNetAmount != nil {
-		order.TotalNetAmount = NewDecimal(*s.TotalNetAmount)
+		order.TotalNetAmount = NewPrimitive(*s.TotalNetAmount)
 	}
 	if s.UnDiscountedTotalNetAmount != nil {
-		order.UnDiscountedTotalNetAmount = NewDecimal(*s.UnDiscountedTotalNetAmount)
+		order.UnDiscountedTotalNetAmount = NewPrimitive(*s.UnDiscountedTotalNetAmount)
 	}
 
 	if s.TotalGrossAmount != nil {
-		order.TotalGrossAmount = NewDecimal(*s.TotalGrossAmount)
+		order.TotalGrossAmount = NewPrimitive(*s.TotalGrossAmount)
 	}
 	if s.UnDiscountedTotalGrossAmount != nil {
-		order.UnDiscountedTotalGrossAmount = NewDecimal(*s.UnDiscountedTotalGrossAmount)
+		order.UnDiscountedTotalGrossAmount = NewPrimitive(*s.UnDiscountedTotalGrossAmount)
 	}
 	if s.TotalPaidAmount != nil {
-		order.TotalPaidAmount = NewDecimal(*s.TotalPaidAmount)
+		order.TotalPaidAmount = NewPrimitive(*s.TotalPaidAmount)
 	}
 
 	return &order

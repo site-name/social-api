@@ -12,7 +12,7 @@ import (
 func (a *ServiceShipping) DefaultShippingZoneExists(shippingZoneID string) ([]*model.ShippingZone, *model.AppError) {
 	return a.ShippingZonesByOption(&model.ShippingZoneFilterOption{
 		Id:           squirrel.NotEq{store.ShippingZoneTableName + ".Id": shippingZoneID},
-		DefaultValue: model.NewBool(true),
+		DefaultValue: model.NewPrimitive(true),
 	})
 }
 

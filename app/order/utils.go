@@ -914,7 +914,7 @@ func (s *ServiceOrder) AddGiftcardsToOrder(transaction store_iface.SqlxTxExecuto
 			balanceData = append(balanceData, s.UpdateGiftcardBalance(giftCard, totalPriceLeft))
 			s.SetGiftcardUser(giftCard, usedByUser, usedByEmail)
 
-			giftCard.LastUsedOn = model.NewInt64(model.GetMillis())
+			giftCard.LastUsedOn = model.NewPrimitive(model.GetMillis())
 			giftcardsToUpdate = append(giftcardsToUpdate, giftCard)
 		}
 	}
@@ -1005,13 +1005,13 @@ func (a *ServiceOrder) ChangeOrderLineQuantity(transaction store_iface.SqlxTxExe
 
 		totalPriceNetAmount := orderLine.UnitPriceNetAmount.Mul(decimal.NewFromInt32(int32(orderLine.Quantity)))
 		totalPriceGrossAmount := orderLine.UnitPriceGrossAmount.Mul(decimal.NewFromInt32(int32(orderLine.Quantity)))
-		orderLine.TotalPriceNetAmount = model.NewDecimal(totalPriceNetAmount.Round(3))
-		orderLine.TotalPriceGrossAmount = model.NewDecimal(totalPriceGrossAmount.Round(3))
+		orderLine.TotalPriceNetAmount = model.NewPrimitive(totalPriceNetAmount.Round(3))
+		orderLine.TotalPriceGrossAmount = model.NewPrimitive(totalPriceGrossAmount.Round(3))
 
 		unDiscountedTotalPriceNetAmount := orderLine.UnDiscountedUnitPriceNetAmount.Mul(decimal.NewFromInt32(int32(orderLine.Quantity)))
 		unDiscountedTotalpriceGrossAmount := orderLine.UnDiscountedUnitPriceGrossAmount.Mul(decimal.NewFromInt32(int32(orderLine.Quantity)))
-		orderLine.UnDiscountedTotalPriceNetAmount = model.NewDecimal(unDiscountedTotalPriceNetAmount.Round(3))
-		orderLine.UnDiscountedTotalPriceGrossAmount = model.NewDecimal(unDiscountedTotalpriceGrossAmount.Round(3))
+		orderLine.UnDiscountedTotalPriceNetAmount = model.NewPrimitive(unDiscountedTotalPriceNetAmount.Round(3))
+		orderLine.UnDiscountedTotalPriceGrossAmount = model.NewPrimitive(unDiscountedTotalpriceGrossAmount.Round(3))
 
 		_, appErr = a.UpsertOrderLine(nil, &orderLine)
 		if appErr != nil {
@@ -1601,7 +1601,7 @@ func (a *ServiceOrder) RemoveDiscountFromOrderLine(orderLine model.OrderLine, or
 	orderLine.UnitPrice = orderLine.UnDiscountedUnitPrice
 	orderLine.UnitDiscountAmount = &decimal.Zero
 	orderLine.UnitDiscountValue = &decimal.Zero
-	orderLine.UnitDiscountReason = model.NewString("")
+	orderLine.UnitDiscountReason = model.NewPrimitive("")
 	orderLine.TotalPrice, _ = orderLine.UnitPrice.Mul(int(orderLine.Quantity))
 
 	_, appErr := a.UpsertOrderLine(nil, &orderLine)

@@ -1503,9 +1503,9 @@ type GiftCardBulkDelete struct {
 }
 
 type GiftCardCountableConnection struct {
-	PageInfo   *PageInfo   `json:"pageInfo"`
-	Edges      []*GiftCard `json:"edges"`
-	TotalCount *int32      `json:"totalCount"`
+	PageInfo   *PageInfo                `json:"pageInfo"`
+	Edges      []*GiftCardCountableEdge `json:"edges"`
+	TotalCount *int32                   `json:"totalCount"`
 }
 
 type GiftCardCountableEdge struct {
@@ -2011,7 +2011,7 @@ type OrderCountableConnection struct {
 
 type OrderCountableEdge struct {
 	Node   *Order `json:"node"`
-	Cursor string `json:"cursor"`
+	Cursor string `json:"cursor"` // string format of order's createAt
 }
 
 type OrderDiscount struct {

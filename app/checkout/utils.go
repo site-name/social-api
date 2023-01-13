@@ -618,7 +618,7 @@ func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo model.CheckoutInfo,
 		},
 		StartDate:            squirrel.LtOrEq{store.VoucherTableName + ".StartDate": now},
 		ChannelListingSlug:   squirrel.Eq{store.ChannelTableName + ".Slug": checkoutInfo.Channel.Slug},
-		ChannelListingActive: model.NewBool(true),
+		ChannelListingActive: model.NewPrimitive(true),
 	}
 
 	if checKout.VoucherCode != nil {
@@ -702,7 +702,7 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginM
 				if voucherTranslation.Name != *voucher.Name {
 					checkOut.TranslatedDiscountName = &voucherTranslation.Name
 				} else {
-					checkOut.TranslatedDiscountName = model.NewString("")
+					checkOut.TranslatedDiscountName = model.NewPrimitive("")
 				}
 			}
 		}
@@ -793,7 +793,7 @@ func (s *ServiceCheckout) AddVoucherToCheckout(manager interfaces.PluginManagerI
 		if voucherTranslation.Name != *voucher.Name {
 			checkout.TranslatedDiscountName = &voucherTranslation.Name
 		} else {
-			checkout.TranslatedDiscountName = model.NewString("")
+			checkout.TranslatedDiscountName = model.NewPrimitive("")
 		}
 	}
 	checkout.Discount = discountMoney
@@ -943,7 +943,7 @@ func (a *ServiceCheckout) ClearDeliveryMethod(checkoutInfo model.CheckoutInfo) *
 func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (bool, *model.AppError) {
 	checkOut := checkoutInfo.Checkout
 	payments, appErr := s.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		IsActive:   model.NewBool(true),
+		IsActive:   model.NewPrimitive(true),
 		CheckoutID: squirrel.Eq{store.PaymentTableName + ".CheckoutID": checkOut.Token},
 	})
 	if appErr != nil {
@@ -955,7 +955,7 @@ func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface,
 
 	totalPaid := &decimal.Zero
 	for _, payMent := range payments {
-		totalPaid = model.NewDecimal(totalPaid.Add(*payMent.Total))
+		totalPaid = model.NewPrimitive(totalPaid.Add(*payMent.Total))
 	}
 	address := checkoutInfo.ShippingAddress
 	if address == nil {

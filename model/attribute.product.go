@@ -56,7 +56,7 @@ func (a *AttributeProduct) DeepCopy() *AttributeProduct {
 
 	res := *a
 	if a.SortOrder != nil {
-		res.SortOrder = NewInt(*a.SortOrder)
+		res.SortOrder = NewPrimitive(*a.SortOrder)
 	}
 	if a.Attribute != nil {
 		res.Attribute = a.Attribute.DeepCopy()
@@ -175,7 +175,7 @@ func (a *AssignedProductAttributeValue) DeepCopy() *AssignedProductAttributeValu
 	res := *a
 
 	if a.SortOrder != nil {
-		res.SortOrder = NewInt(*a.SortOrder)
+		res.SortOrder = NewPrimitive(*a.SortOrder)
 	}
 	return &res
 }

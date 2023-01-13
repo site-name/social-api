@@ -58,8 +58,8 @@ func TestConfigEnableDeveloper(t *testing.T) {
 		EnableDeveloper *bool
 		ExpectedSiteURL string
 	}{
-		{"enable developer is true", NewBool(true), SERVICE_SETTINGS_DEFAULT_SITE_URL},
-		{"enable developer is false", NewBool(false), ""},
+		{"enable developer is true", NewPrimitive(true), SERVICE_SETTINGS_DEFAULT_SITE_URL},
+		{"enable developer is false", NewPrimitive(false), ""},
 		{"enable developer is nil", nil, ""},
 	}
 

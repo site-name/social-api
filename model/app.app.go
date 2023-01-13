@@ -80,22 +80,22 @@ func (a *App) PreSave() {
 	a.CreateAt = GetMillis()
 	a.Name = SanitizeUnicode(a.Name)
 	if a.Identifier != nil {
-		a.Identifier = NewString(SanitizeUnicode(*a.Identifier))
+		a.Identifier = NewPrimitive(SanitizeUnicode(*a.Identifier))
 	}
 	if a.IsActive == nil {
-		a.IsActive = NewBool(true)
+		a.IsActive = NewPrimitive(true)
 	}
 	if a.AboutApp != nil {
-		a.AboutApp = NewString(SanitizeUnicode(*a.AboutApp))
+		a.AboutApp = NewPrimitive(SanitizeUnicode(*a.AboutApp))
 	}
 }
 
 func (a *App) PreUpdate() {
 	a.Name = SanitizeUnicode(a.Name)
 	if a.Identifier != nil {
-		a.Identifier = NewString(SanitizeUnicode(*a.Identifier))
+		a.Identifier = NewPrimitive(SanitizeUnicode(*a.Identifier))
 	}
 	if a.AboutApp != nil {
-		a.AboutApp = NewString(SanitizeUnicode(*a.AboutApp))
+		a.AboutApp = NewPrimitive(SanitizeUnicode(*a.AboutApp))
 	}
 }
