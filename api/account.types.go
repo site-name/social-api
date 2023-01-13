@@ -622,3 +622,67 @@ func (c *CustomerEvent) OrderLine(ctx context.Context) (*OrderLine, error) {
 
 	return nil, nil
 }
+
+// ------------------- StaffNotificationRecipient
+
+type StaffNotificationRecipient struct {
+	// User   *User   `json:"user"`
+	// Email  *string `json:"email"`
+
+	Active *bool  `json:"active"`
+	ID     string `json:"id"`
+
+	userID     *string
+	staffEmail *string
+}
+
+func systemStaffNotificationRecipientToGraphqlStaffNotificationRecipient(s *model.StaffNotificationRecipient) *StaffNotificationRecipient {
+	if s == nil {
+		return nil
+	}
+
+	return &StaffNotificationRecipient{
+		Active:     s.Active,
+		ID:         s.Id,
+		userID:     s.UserID,
+		staffEmail: s.StaffEmail,
+	}
+}
+
+func (s *StaffNotificationRecipient) User(ctx context.Context) (*User, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	currentSession := embedCtx.AppContext.Session()
+
+	if (s.userID != nil && *s.userID == currentSession.UserId) ||
+		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageStaff) {
+
+		if s.userID != nil {
+			user, err := dataloaders.UserByUserIdLoader.Load(ctx, *s.userID)()
+			if err != nil {
+				return nil, err
+			}
+
+			return SystemUserToGraphqlUser(user), nil
+		}
+		return nil, nil
+	}
+
+	return nil, model.NewAppError("StaffNotificationRecipient.User", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+}
+
+func (s *StaffNotificationRecipient) Email(ctx context.Context) (*string, error) {
+	if s.userID != nil {
+		user, err := dataloaders.UserByUserIdLoader.Load(ctx, *s.userID)()
+		if err != nil {
+			return nil, err
+		}
+
+		return &user.Email, nil
+	}
+
+	return s.staffEmail, nil
+}
