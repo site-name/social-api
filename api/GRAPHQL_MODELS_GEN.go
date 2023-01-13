@@ -570,24 +570,6 @@ type CatalogueInput struct {
 	Collections []string `json:"collections"`
 }
 
-type Category struct {
-	ID              string                       `json:"id"`
-	SeoTitle        *string                      `json:"seoTitle"`
-	SeoDescription  *string                      `json:"seoDescription"`
-	Name            string                       `json:"name"`
-	Description     JSONString                   `json:"description"`
-	Slug            string                       `json:"slug"`
-	Parent          *Category                    `json:"parent"`
-	Level           int32                        `json:"level"`
-	PrivateMetadata []*MetadataItem              `json:"privateMetadata"`
-	Metadata        []*MetadataItem              `json:"metadata"`
-	Ancestors       *CategoryCountableConnection `json:"ancestors"`
-	Products        *ProductCountableConnection  `json:"products"`
-	Children        *CategoryCountableConnection `json:"children"`
-	BackgroundImage *Image                       `json:"backgroundImage"`
-	Translation     *CategoryTranslation         `json:"translation"`
-}
-
 type CategoryBulkDelete struct {
 	Count  int32           `json:"count"`
 	Errors []*ProductError `json:"errors"`
@@ -1547,23 +1529,6 @@ type GiftCardError struct {
 	Code    GiftCardErrorCode `json:"code"`
 }
 
-type GiftCardEvent struct {
-	ID   string              `json:"id"`
-	Date *DateTime           `json:"date"`
-	Type *GiftCardEventsEnum `json:"type"`
-	// User          *User                 `json:"user"`
-	// App           *App                  `json:"app"`
-	Message       *string               `json:"message"`
-	Email         *string               `json:"email"`
-	OrderID       *string               `json:"orderId"`
-	OrderNumber   *string               `json:"orderNumber"`
-	Tag           *string               `json:"tag"`
-	OldTag        *string               `json:"oldTag"`
-	Balance       *GiftCardEventBalance `json:"balance"`
-	ExpiryDate    *Date                 `json:"expiryDate"`
-	OldExpiryDate *Date                 `json:"oldExpiryDate"`
-}
-
 type GiftCardEventBalance struct {
 	InitialBalance    *Money `json:"initialBalance"`
 	CurrentBalance    *Money `json:"currentBalance"`
@@ -1762,15 +1727,6 @@ type Margin struct {
 	Stop  *int32 `json:"stop"`
 }
 
-type Menu struct {
-	ID              string          `json:"id"`
-	Name            string          `json:"name"`
-	Slug            string          `json:"slug"`
-	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
-	Metadata        []*MetadataItem `json:"metadata"`
-	Items           []*MenuItem     `json:"items"`
-}
-
 type MenuBulkDelete struct {
 	Count  int32        `json:"count"`
 	Errors []*MenuError `json:"errors"`
@@ -1818,22 +1774,6 @@ type MenuFilterInput struct {
 type MenuInput struct {
 	Name *string `json:"name"`
 	Slug *string `json:"slug"`
-}
-
-type MenuItem struct {
-	ID              string               `json:"id"`
-	Name            string               `json:"name"`
-	Menu            *Menu                `json:"menu"`
-	Parent          *MenuItem            `json:"parent"`
-	Category        *Category            `json:"category"`
-	Collection      *Collection          `json:"collection"`
-	Page            *Page                `json:"page"`
-	Level           int32                `json:"level"`
-	PrivateMetadata []*MetadataItem      `json:"privateMetadata"`
-	Metadata        []*MetadataItem      `json:"metadata"`
-	Children        []*MenuItem          `json:"children"`
-	URL             *string              `json:"url"`
-	Translation     *MenuItemTranslation `json:"translation"`
 }
 
 type MenuItemBulkDelete struct {

@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
@@ -48,11 +49,40 @@ func (line *CheckoutLine) Variant(ctx context.Context) (*ProductVariant, error) 
 }
 
 func (line *CheckoutLine) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
-	// checkout, err := dataloaders.CheckoutByTokenLoader.Load(ctx, line.checkoutID)()
-	// if err != nil {
-	// 	return nil, err
-	// }
-	panic("not implemented")
+	checkout, err := dataloaders.CheckoutByTokenLoader.Load(ctx, line.checkoutID)()
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+
+	discounts, err := dataloaders.DiscountsByDateTimeLoader.Load(ctx, now)()
+	if err != nil {
+		return nil, err
+	}
+
+	checkoutInfo, err := dataloaders.CheckoutInfoByCheckoutTokenLoader.Load(ctx, checkout.Token)()
+	if err != nil {
+		return nil, err
+	}
+
+	checkoutLineInfos, err := dataloaders.CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, checkout.Token)()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, lineInfo := range checkoutLineInfos {
+		if lineInfo.Line.Id == line.ID {
+			address := checkoutInfo.ShippingAddress
+			if address == nil {
+				address = checkoutInfo.BillingAddress
+			}
+
+			panic("not implemented")
+		}
+	}
+
+	return nil, nil
 }
 
 func (line *CheckoutLine) RequiresShipping(ctx context.Context) (*bool, error) {

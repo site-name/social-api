@@ -100,22 +100,6 @@ func (a *AttributeValue) InputType(ctx context.Context) (*AttributeInputTypeEnum
 }
 
 func (a *AttributeValue) Reference(ctx context.Context) (*string, error) {
-	// prepareReference := func(attr *Attribute) (*string, error) {
-	// 	if attr.inputType != model.REFERENCE {
-	// 		return nil, nil
-	// 	}
-
-	// 	referencePK := strings.Split(*a.Slug, "_")[1] // Slug is non-nil
-	// 	panic("not implemented")
-	// }
-
-	// attr, err := dataloaders.attributesByIDs.Load(ctx, a.attributeID)()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// return prepareReference(attr)
-
 	panic("not implemented")
 }
 
@@ -133,15 +117,7 @@ type Attribute struct {
 	Unit            *MeasurementUnitsEnum    `json:"unit"`
 	WithChoices     bool                     `json:"withChoices"`
 
-	// unexported fields, used for resolvers
-	storefrontSearchPosition int32
-	visibleInStorefront      bool
-	filterableInStorefront   bool
-	filterableInDashboard    bool
-	availableInGrid          bool
-	valueRequired            bool
-	inputType                model.AttributeInputType
-	entityType               *string
+	attr *model.Attribute
 
 	// ValueRequired   bool                     `json:"valueRequired"`
 	// Choices                  *AttributeValueCountableConnection `json:"choices"`
@@ -168,14 +144,7 @@ func SystemAttributeToGraphqlAttribute(attr *model.Attribute) *Attribute {
 		Slug:            &attr.Slug,
 		WithChoices:     model.TYPES_WITH_CHOICES.Contains(attr.InputType),
 
-		storefrontSearchPosition: int32(attr.StorefrontSearchPosition),
-		visibleInStorefront:      attr.VisibleInStoreFront,
-		filterableInStorefront:   attr.FilterableInStorefront,
-		filterableInDashboard:    attr.FilterableInDashboard,
-		availableInGrid:          attr.AvailableInGrid,
-		valueRequired:            attr.ValueRequired,
-		inputType:                attr.InputType,
-		entityType:               attr.EntityType,
+		attr: attr,
 	}
 	if graphqlAttributeInputType := AttributeInputTypeEnum(string(attr.InputType)); graphqlAttributeInputType.IsValid() {
 		res.InputType = &graphqlAttributeInputType
@@ -209,7 +178,7 @@ func (a *Attribute) Choices(
 		Last   *int32
 	},
 ) (*AttributeValueCountableConnection, error) {
-	if !model.TYPES_WITH_CHOICES.Contains(a.inputType) {
+	if !model.TYPES_WITH_CHOICES.Contains(a.attr.InputType) {
 		return nil, nil
 	}
 
@@ -465,42 +434,42 @@ func (a *Attribute) VisibleInStorefront(ctx context.Context) (bool, error) {
 	if err := a.currentUserHasPermissionToAccess(ctx); err != nil {
 		return false, err
 	}
-	return a.visibleInStorefront, nil
+	return a.attr.VisibleInStoreFront, nil
 }
 
 func (a *Attribute) ValueRequired(ctx context.Context) (bool, error) {
 	if err := a.currentUserHasPermissionToAccess(ctx); err != nil {
 		return false, err
 	}
-	return a.valueRequired, nil
+	return a.attr.ValueRequired, nil
 }
 
 func (a *Attribute) StorefrontSearchPosition(ctx context.Context) (int32, error) {
 	if err := a.currentUserHasPermissionToAccess(ctx); err != nil {
 		return 0, err
 	}
-	return a.storefrontSearchPosition, nil
+	return int32(a.attr.StorefrontSearchPosition), nil
 }
 
 func (a *Attribute) FilterableInStorefront(ctx context.Context) (bool, error) {
 	if err := a.currentUserHasPermissionToAccess(ctx); err != nil {
 		return false, err
 	}
-	return a.filterableInStorefront, nil
+	return a.attr.FilterableInStorefront, nil
 }
 
 func (a *Attribute) FilterableInDashboard(ctx context.Context) (bool, error) {
 	if err := a.currentUserHasPermissionToAccess(ctx); err != nil {
 		return false, err
 	}
-	return a.filterableInDashboard, nil
+	return a.attr.FilterableInDashboard, nil
 }
 
 func (a *Attribute) AvailableInGrid(ctx context.Context) (bool, error) {
 	if err := a.currentUserHasPermissionToAccess(ctx); err != nil {
 		return false, err
 	}
-	return a.availableInGrid, nil
+	return a.attr.AvailableInGrid, nil
 }
 
 func (a *Attribute) Translation(ctx context.Context) (*AttributeTranslation, error) {

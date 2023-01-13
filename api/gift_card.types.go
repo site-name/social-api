@@ -15,6 +15,23 @@ import (
 	"github.com/sitename/sitename/web"
 )
 
+type GiftCardEvent struct {
+	ID   string              `json:"id"`
+	Date *DateTime           `json:"date"`
+	Type *GiftCardEventsEnum `json:"type"`
+	// User          *User                 `json:"user"`
+	// App           *App                  `json:"app"`
+	Message       *string               `json:"message"`
+	Email         *string               `json:"email"`
+	OrderID       *string               `json:"orderId"`
+	OrderNumber   *string               `json:"orderNumber"`
+	Tag           *string               `json:"tag"`
+	OldTag        *string               `json:"oldTag"`
+	Balance       *GiftCardEventBalance `json:"balance"`
+	ExpiryDate    *Date                 `json:"expiryDate"`
+	OldExpiryDate *Date                 `json:"oldExpiryDate"`
+}
+
 func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCardEvent {
 	if evt == nil {
 		return nil
@@ -192,8 +209,12 @@ func (g *GiftCard) Events(ctx context.Context) ([]*GiftCardEvent, error) {
 		AccountService().
 		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageGiftcard) {
 
-		// dataloaders.giftcardEventsByGiftcardIDs.Load()()
-		panic("not implemented")
+		events, err := dataloaders.GiftCardEventsByGiftCardIdLoader.Load(ctx, g.ID)()
+		if err != nil {
+			return nil, err
+		}
+
+		return DataloaderResultMap(events, SystemGiftcardEventToGraphqlGiftcardEvent), nil
 	}
 
 	return nil, model.NewAppError("giftcard.Events", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
@@ -385,8 +406,52 @@ func (g *GiftCard) Code(ctx context.Context) (string, error) {
 	return resolveCode(user)
 }
 
-func (g *GiftCard) BoughtInChannel(ctx context.Context) {
-	panic("not implemented")
+func (g *GiftCard) BoughtInChannel(ctx context.Context) (*string, error) {
+	events, err := dataloaders.GiftCardEventsByGiftCardIdLoader.Load(ctx, g.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	var boughtEvent *model.GiftCardEvent
+	for _, evt := range events {
+		if evt.Type == model.BOUGHT {
+			boughtEvent = evt
+			break
+		}
+	}
+
+	if boughtEvent == nil {
+		return nil, nil
+	}
+
+	orderID := boughtEvent.Parameters["order_id"]
+	if orderID == nil {
+		return nil, nil
+	}
+	strOrderID, ok := orderID.(string)
+	if !ok {
+		return nil, nil
+	}
+
+	order, err := dataloaders.OrderByIdLoader.Load(ctx, strOrderID)()
+	if err != nil {
+		return nil, err
+	}
+
+	if order == nil || !model.IsValidId(order.ChannelID) {
+		return nil, nil
+	}
+
+	channel, err := dataloaders.ChannelByIdLoader.Load(ctx, order.ChannelID)()
+	if err != nil {
+		return nil, err
+	}
+
+	if channel == nil {
+		return nil, nil
+	}
+
+	return &channel.Slug, nil
 }
 
 func giftCardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.GiftCard] {

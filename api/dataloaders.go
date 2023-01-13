@@ -33,6 +33,7 @@ type apiDataloaders struct {
 	VariantChannelListingByVariantIdAndChannelIdLoader *Loader[string, *model.ProductVariantChannelListing]
 	CollectionsByProductIdLoader                       *Loader[string, []*model.Collection]
 	CollectionByIdLoader                               *Loader[string, *model.Collection]
+	CategoryByIdLoader                                 *Loader[string, *model.Category]
 
 	// order
 	OrderLineByIdLoader                     *Loader[string, *model.OrderLine]
@@ -117,6 +118,7 @@ func init() {
 		VariantChannelListingByVariantIdAndChannelIdLoader: NewBatchedLoader(variantChannelListingByVariantIdAndChannelIdLoader, WithBatchCapacity[string, *model.ProductVariantChannelListing](batchCapacity)),
 		CollectionsByProductIdLoader:                       NewBatchedLoader(collectionsByProductIdLoader, WithBatchCapacity[string, []*model.Collection](batchCapacity)),
 		CollectionByIdLoader:                               NewBatchedLoader(collectionByIdLoader, WithBatchCapacity[string, *model.Collection](batchCapacity)),
+		CategoryByIdLoader:                                 NewBatchedLoader(categoryByIdLoader, WithBatchCapacity[string, *model.Category](batchCapacity)),
 
 		// giftcard
 		GiftCardEventsByGiftCardIdLoader: NewBatchedLoader(giftCardEventsByGiftCardIdLoader, WithBatchCapacity[string, []*model.GiftCardEvent](batchCapacity)),
