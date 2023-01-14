@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"net/http"
 	"strings"
 	"time"
 
@@ -200,9 +201,20 @@ errorLabel:
 
 // ------------------------- order discount --------------------
 
+type OrderDiscount struct {
+	ID             string                `json:"id"`
+	Type           OrderDiscountType     `json:"type"`
+	ValueType      DiscountValueTypeEnum `json:"valueType"`
+	Value          PositiveDecimal       `json:"value"`
+	Name           *string               `json:"name"`
+	TranslatedName *string               `json:"translatedName"`
+	reason         *string               `json:"reason"`
+	Amount         *Money                `json:"amount"`
+}
+
 func SystemOrderDiscountToGraphqlOrderDiscount(r *model.OrderDiscount) *OrderDiscount {
 	if r == nil {
-		return &OrderDiscount{}
+		return nil
 	}
 
 	return &OrderDiscount{
@@ -212,9 +224,23 @@ func SystemOrderDiscountToGraphqlOrderDiscount(r *model.OrderDiscount) *OrderDis
 		Value:          PositiveDecimal(*r.Value),
 		Name:           r.Name,
 		TranslatedName: r.TranslatedName,
-		Reason:         r.Reason,
+		reason:         r.Reason,
 		Amount:         SystemMoneyToGraphqlMoney(r.Amount),
 	}
+}
+
+func (o *OrderDiscount) Reason(ctx context.Context) (*string, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	currentSession := embedCtx.AppContext.Session()
+	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
+		return o.reason, nil
+	}
+
+	return nil, model.NewAppError("OrderDiscount.Reason", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
 }
 
 func orderDiscountsByOrderIDLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.OrderDiscount] {
@@ -327,6 +353,97 @@ func voucherByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 errorLabel:
 	for idx := range ids {
 		res[idx] = &dataloader.Result[*model.Voucher]{Error: err}
+	}
+	return res
+}
+
+// NOTE: idPairs contains strings with format of voucherID__channelID
+func voucherChannelListingByVoucherIdAndChanneSlugLoader(ctx context.Context, idPairs []string) []*dataloader.Result[*model.VoucherChannelListing] {
+	var (
+		res                      = make([]*dataloader.Result[*model.VoucherChannelListing], len(idPairs))
+		voucherChannelListings   []*model.VoucherChannelListing
+		appErr                   *model.AppError
+		voucherChannelListingMap = map[string]*model.VoucherChannelListing{} // keys are voucher channel listing ids
+
+		voucherIDs []string
+		channelIDs []string
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	for _, pair := range idPairs {
+		index := strings.Index(pair, "__")
+		if index == -1 {
+			continue
+		}
+
+		voucherIDs = append(voucherIDs, pair[:index])
+		channelIDs = append(channelIDs, pair[index+2:])
+	}
+
+	voucherChannelListings, appErr = embedCtx.App.Srv().DiscountService().
+		VoucherChannelListingsByOption(&model.VoucherChannelListingFilterOption{
+			VoucherID: squirrel.Eq{store.VoucherChannelListingTableName + ".VoucherID": voucherIDs},
+			ChannelID: squirrel.Eq{store.VoucherChannelListingTableName + ".ChannelID": channelIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, rel := range voucherChannelListings {
+		voucherChannelListingMap[rel.VoucherID+"__"+rel.ChannelID] = rel
+	}
+
+	for idx, id := range idPairs {
+		res[idx] = &dataloader.Result[*model.VoucherChannelListing]{Data: voucherChannelListingMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range idPairs {
+		res[idx] = &dataloader.Result[*model.VoucherChannelListing]{Error: err}
+	}
+	return res
+}
+
+func voucherChannelListingByVoucherIdLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[*model.VoucherChannelListing] {
+	var (
+		res                      = make([]*dataloader.Result[*model.VoucherChannelListing], len(voucherIDs))
+		voucherChannelListings   []*model.VoucherChannelListing
+		appErr                   *model.AppError
+		voucherChannelListingMap = map[string]*model.VoucherChannelListing{} // keys are voucher ids
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	voucherChannelListings, appErr = embedCtx.App.Srv().DiscountService().
+		VoucherChannelListingsByOption(&model.VoucherChannelListingFilterOption{
+			VoucherID: squirrel.Eq{store.VoucherChannelListingTableName + ".VoucherID": voucherIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, rel := range voucherChannelListings {
+		voucherChannelListingMap[rel.VoucherID] = rel
+	}
+
+	for idx, id := range voucherIDs {
+		res[idx] = &dataloader.Result[*model.VoucherChannelListing]{Data: voucherChannelListingMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range voucherIDs {
+		res[idx] = &dataloader.Result[*model.VoucherChannelListing]{Error: err}
 	}
 	return res
 }

@@ -1954,17 +1954,6 @@ type OrderCountableEdge struct {
 	Cursor string `json:"cursor"` // string format of order's createAt
 }
 
-type OrderDiscount struct {
-	ID             string                `json:"id"`
-	Type           OrderDiscountType     `json:"type"`
-	ValueType      DiscountValueTypeEnum `json:"valueType"`
-	Value          PositiveDecimal       `json:"value"`
-	Name           *string               `json:"name"`
-	TranslatedName *string               `json:"translatedName"`
-	Reason         *string               `json:"reason"`
-	Amount         *Money                `json:"amount"`
-}
-
 type OrderDiscountAdd struct {
 	Order  *Order        `json:"order"`
 	Errors []*OrderError `json:"errors"`
@@ -2199,23 +2188,6 @@ type OrderUpdateShippingInput struct {
 type OrderVoid struct {
 	Order  *Order        `json:"order"`
 	Errors []*OrderError `json:"errors"`
-}
-
-type Page struct {
-	ID              string               `json:"id"`
-	SeoTitle        *string              `json:"seoTitle"`
-	SeoDescription  *string              `json:"seoDescription"`
-	Title           string               `json:"title"`
-	Content         JSONString           `json:"content"`
-	PublicationDate *Date                `json:"publicationDate"`
-	IsPublished     bool                 `json:"isPublished"`
-	Slug            string               `json:"slug"`
-	PageType        *PageType            `json:"pageType"`
-	Created         DateTime             `json:"created"`
-	PrivateMetadata []*MetadataItem      `json:"privateMetadata"`
-	Metadata        []*MetadataItem      `json:"metadata"`
-	Translation     *PageTranslation     `json:"translation"`
-	Attributes      []*SelectedAttribute `json:"attributes"`
 }
 
 type PageAttributeAssign struct {

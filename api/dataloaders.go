@@ -76,11 +76,13 @@ type apiDataloaders struct {
 	PostalCodeRulesByShippingMethodIdLoader                            *Loader[string, []*model.ShippingMethodPostalCodeRule]
 
 	// discount
-	DiscountsByDateTimeLoader                     *Loader[time.Time, []*model.DiscountInfo]
-	SaleChannelListingBySaleIdAndChanneSlugLoader *Loader[string, *model.SaleChannelListing] // NOTE: pass in saleID__channelID pair
-	SaleChannelListingBySaleIdLoader              *Loader[string, []*model.SaleChannelListing]
-	OrderDiscountsByOrderIDLoader                 *Loader[string, []*model.OrderDiscount]
-	VoucherByIDLoader                             *Loader[string, *model.Voucher]
+	DiscountsByDateTimeLoader                           *Loader[time.Time, []*model.DiscountInfo]
+	SaleChannelListingBySaleIdAndChanneSlugLoader       *Loader[string, *model.SaleChannelListing] // NOTE: pass in saleID__channelID pair
+	SaleChannelListingBySaleIdLoader                    *Loader[string, []*model.SaleChannelListing]
+	OrderDiscountsByOrderIDLoader                       *Loader[string, []*model.OrderDiscount]
+	VoucherByIDLoader                                   *Loader[string, *model.Voucher]
+	VoucherChannelListingByVoucherIdAndChanneSlugLoader *Loader[string, *model.VoucherChannelListing]
+	VoucherChannelListingByVoucherIdLoader              *Loader[string, *model.VoucherChannelListing]
 
 	// warehouse
 	WarehouseByIdLoader            *Loader[string, *model.WareHouse]
@@ -97,6 +99,9 @@ type apiDataloaders struct {
 
 	// invoice
 	InvoicesByOrderIDLoader *Loader[string, []*model.Invoice]
+
+	// page
+	PageByIdLoader *Loader[string, *model.Page]
 }
 
 var dataloaders *apiDataloaders
@@ -165,11 +170,13 @@ func init() {
 		PostalCodeRulesByShippingMethodIdLoader:                            NewBatchedLoader(postalCodeRulesByShippingMethodIdLoader, WithBatchCapacity[string, []*model.ShippingMethodPostalCodeRule](batchCapacity)),
 
 		// discount
-		DiscountsByDateTimeLoader:                     NewBatchedLoader(discountsByDateTimeLoader, WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity)),
-		SaleChannelListingBySaleIdAndChanneSlugLoader: NewBatchedLoader(saleChannelListingBySaleIdAndChanneSlugLoader, WithBatchCapacity[string, *model.SaleChannelListing](batchCapacity)),
-		SaleChannelListingBySaleIdLoader:              NewBatchedLoader(saleChannelListingBySaleIdLoader, WithBatchCapacity[string, []*model.SaleChannelListing](batchCapacity)),
-		OrderDiscountsByOrderIDLoader:                 NewBatchedLoader(orderDiscountsByOrderIDLoader, WithBatchCapacity[string, []*model.OrderDiscount](batchCapacity)),
-		VoucherByIDLoader:                             NewBatchedLoader(voucherByIDLoader, WithBatchCapacity[string, *model.Voucher](batchCapacity)),
+		DiscountsByDateTimeLoader:                           NewBatchedLoader(discountsByDateTimeLoader, WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity)),
+		SaleChannelListingBySaleIdAndChanneSlugLoader:       NewBatchedLoader(saleChannelListingBySaleIdAndChanneSlugLoader, WithBatchCapacity[string, *model.SaleChannelListing](batchCapacity)),
+		SaleChannelListingBySaleIdLoader:                    NewBatchedLoader(saleChannelListingBySaleIdLoader, WithBatchCapacity[string, []*model.SaleChannelListing](batchCapacity)),
+		OrderDiscountsByOrderIDLoader:                       NewBatchedLoader(orderDiscountsByOrderIDLoader, WithBatchCapacity[string, []*model.OrderDiscount](batchCapacity)),
+		VoucherByIDLoader:                                   NewBatchedLoader(voucherByIDLoader, WithBatchCapacity[string, *model.Voucher](batchCapacity)),
+		VoucherChannelListingByVoucherIdAndChanneSlugLoader: NewBatchedLoader(voucherChannelListingByVoucherIdAndChanneSlugLoader, WithBatchCapacity[string, *model.VoucherChannelListing](batchCapacity)),
+		VoucherChannelListingByVoucherIdLoader:              NewBatchedLoader(voucherChannelListingByVoucherIdLoader, WithBatchCapacity[string, *model.VoucherChannelListing](batchCapacity)),
 
 		// warehouse
 		WarehouseByIdLoader:            NewBatchedLoader(warehouseByIdLoader, WithBatchCapacity[string, *model.WareHouse](batchCapacity)),
@@ -186,5 +193,8 @@ func init() {
 
 		// invoice
 		InvoicesByOrderIDLoader: NewBatchedLoader(invoicesByOrderIDLoader, WithBatchCapacity[string, []*model.Invoice](batchCapacity)),
+
+		// page
+		PageByIdLoader: NewBatchedLoader(pageByIdLoader, WithBatchCapacity[string, *model.Page](batchCapacity)),
 	}
 }

@@ -3,6 +3,7 @@ package model
 import (
 	"unicode/utf8"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 )
 
@@ -22,6 +23,11 @@ type Page struct {
 	ModelMetadata
 	Publishable
 	Seo
+}
+
+type PageFilterOptions struct {
+	Id    squirrel.Sqlizer
+	Title squirrel.Sqlizer
 }
 
 func (p *Page) IsValid() *AppError {

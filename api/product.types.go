@@ -340,3 +340,15 @@ errorLabel:
 func variantChannelListingByVariantIdAndChannelIdLoader(ctx context.Context, variantIDChannelIDPairs []string) []*dataloader.Result[*model.ProductVariantChannelListing] {
 	panic("not implemented")
 }
+
+// -------------------- collection -----------------
+
+func systemCollectionToGraphqlCollection(c *model.Collection) *Collection {
+	if c == nil {
+		return nil
+	}
+
+	panic("not implemented")
+
+	return &Collection{}
+}

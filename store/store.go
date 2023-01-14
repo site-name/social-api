@@ -563,6 +563,7 @@ type (
 	PageTranslationStore interface {
 	}
 	PageStore interface {
+		FilterByOptions(options *model.PageFilterOptions) ([]*model.Page, error)
 	}
 )
 

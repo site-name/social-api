@@ -3,6 +3,9 @@
 
 package sub_app_iface
 
+import "github.com/sitename/sitename/model"
+
 // PageService contains methods for working with pages
 type PageService interface {
+	FindPagesByOptions(options *model.PageFilterOptions) ([]*model.Page, *model.AppError)
 }

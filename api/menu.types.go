@@ -101,6 +101,28 @@ func (i *MenuItem) Children(ctx context.Context) ([]*MenuItem, error) {
 }
 
 func (i *MenuItem) Collection(ctx context.Context) (*Collection, error) {
+	if i.m.CollectionID == nil {
+		return nil, nil
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	currentSession := embedCtx.AppContext.Session()
+
+	if embedCtx.App.Srv().AccountService().
+		SessionHasPermissionToAny(currentSession, model.PermissionManageProducts, model.PermissionManageOrders, model.PermissionManageDiscounts) {
+
+		collection, err := dataloaders.CollectionByIdLoader.Load(ctx, *i.m.CollectionID)()
+		if err != nil {
+			return nil, err
+		}
+
+		return systemCollectionToGraphqlCollection(collection), nil
+	}
+
 	panic("not implemented")
 }
 
@@ -130,7 +152,27 @@ func (i *MenuItem) Page(ctx context.Context) (*Page, error) {
 	if i.m.PageID == nil {
 		return nil, nil
 	}
-	panic("not implemented")
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	currentSession := embedCtx.AppContext.Session()
+
+	page, err := dataloaders.PageByIdLoader.Load(ctx, *i.m.PageID)()
+	if err != nil {
+		return nil, err
+	}
+
+	if embedCtx.App.Srv().
+		AccountService().
+		SessionHasPermissionTo(currentSession, model.PermissionManagePages) ||
+		page.IsVisible() {
+		return systemPageToGraphqlPage(page), nil
+	}
+
+	return nil, nil
 }
 
 func menuByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Menu] {

@@ -5294,6 +5294,26 @@ func (s *RetryLayerOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor
 
 }
 
+func (s *RetryLayerPageStore) FilterByOptions(options *model.PageFilterOptions) ([]*model.Page, error) {
+
+	tries := 0
+	for {
+		result, err := s.PageStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerPaymentStore) CancelActivePaymentsOfCheckout(checkoutToken string) error {
 
 	tries := 0

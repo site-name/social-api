@@ -4477,6 +4477,22 @@ func (s *TimerLayerOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor
 	return result, err
 }
 
+func (s *TimerLayerPageStore) FilterByOptions(options *model.PageFilterOptions) ([]*model.Page, error) {
+	start := timemodule.Now()
+
+	result, err := s.PageStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PageStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerPaymentStore) CancelActivePaymentsOfCheckout(checkoutToken string) error {
 	start := timemodule.Now()
 

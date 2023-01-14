@@ -216,6 +216,8 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 		}
 	}
 
+	variantIDS = lo.Uniq(variantIDS)
+
 	if len(variantIDS) == 0 {
 		return res
 	}
