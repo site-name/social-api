@@ -9260,6 +9260,24 @@ func (s *OpenTracingLayerVoucherCustomerStore) Save(voucherCustomer *model.Vouch
 	return result, err
 }
 
+func (s *OpenTracingLayerVoucherProductStore) FilterByOptions(options *model.VoucherProductFilterOptions) ([]*model.VoucherProduct, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherProductStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.VoucherProductStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerVoucherProductStore) Get(voucherProductID string) (*model.VoucherProduct, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherProductStore.Get")
@@ -9288,6 +9306,24 @@ func (s *OpenTracingLayerVoucherProductStore) Upsert(voucherProduct *model.Vouch
 
 	defer span.Finish()
 	result, err := s.VoucherProductStore.Upsert(voucherProduct)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerVoucherProductVariantStore) FilterByOptions(options *model.VoucherProductVariantFilterOption) ([]*model.VoucherProductVariant, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherProductVariantStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.VoucherProductVariantStore.FilterByOptions(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

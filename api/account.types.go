@@ -234,9 +234,9 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string 
 	var err error
 
 	if args.Channel == nil {
-		checkouts, err = dataloaders.CheckoutByUserLoader.Load(ctx, u.ID)()
+		checkouts, err = CheckoutByUserLoader.Load(ctx, u.ID)()
 	} else {
-		checkouts, err = dataloaders.CheckoutByUserAndChannelLoader.Load(ctx, u.ID+"__"+*args.Channel)()
+		checkouts, err = CheckoutByUserAndChannelLoader.Load(ctx, u.ID+"__"+*args.Channel)()
 	}
 
 	if err != nil {
@@ -273,7 +273,7 @@ func (u *User) GiftCards(ctx context.Context, args struct {
 	First  *int32
 	Last   *int32
 }) (*GiftCardCountableConnection, error) {
-	giftcards, err := dataloaders.GiftCardsByUserLoader.Load(ctx, u.ID)()
+	giftcards, err := GiftCardsByUserLoader.Load(ctx, u.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -325,7 +325,7 @@ func (u *User) Orders(ctx context.Context, args struct {
 
 	currentSession := embedCtx.AppContext.Session()
 
-	orders, err := dataloaders.OrdersByUserLoader.Load(ctx, u.ID)()
+	orders, err := OrdersByUserLoader.Load(ctx, u.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -400,7 +400,7 @@ func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
 		return nil, model.NewAppError("user.Events", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}
 
-	results, err := dataloaders.CustomerEventsByUserLoader.Load(ctx, u.ID)()
+	results, err := CustomerEventsByUserLoader.Load(ctx, u.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -612,7 +612,7 @@ func (c *CustomerEvent) User(ctx context.Context) (*User, error) {
 
 func (c *CustomerEvent) OrderLine(ctx context.Context) (*OrderLine, error) {
 	if c.orderLineID != nil {
-		line, err := dataloaders.OrderLineByIdLoader.Load(ctx, *c.orderLineID)()
+		line, err := OrderLineByIdLoader.Load(ctx, *c.orderLineID)()
 		if err != nil {
 			return nil, err
 		}
@@ -661,7 +661,7 @@ func (s *StaffNotificationRecipient) User(ctx context.Context) (*User, error) {
 		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageStaff) {
 
 		if s.userID != nil {
-			user, err := dataloaders.UserByUserIdLoader.Load(ctx, *s.userID)()
+			user, err := UserByUserIdLoader.Load(ctx, *s.userID)()
 			if err != nil {
 				return nil, err
 			}
@@ -676,7 +676,7 @@ func (s *StaffNotificationRecipient) User(ctx context.Context) (*User, error) {
 
 func (s *StaffNotificationRecipient) Email(ctx context.Context) (*string, error) {
 	if s.userID != nil {
-		user, err := dataloaders.UserByUserIdLoader.Load(ctx, *s.userID)()
+		user, err := UserByUserIdLoader.Load(ctx, *s.userID)()
 		if err != nil {
 			return nil, err
 		}

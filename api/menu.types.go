@@ -35,7 +35,7 @@ func systemMenuToGraphqlMenu(m *model.Menu) *Menu {
 }
 
 func (m *Menu) Items(ctx context.Context) ([]*MenuItem, error) {
-	items, err := dataloaders.MenuItemsByParentMenuLoader.Load(ctx, m.ID)()
+	items, err := MenuItemsByParentMenuLoader.Load(ctx, m.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (i *MenuItem) Category(ctx context.Context) (*Category, error) {
 		return nil, nil
 	}
 
-	category, err := dataloaders.CategoryByIdLoader.Load(ctx, *i.m.CategoryID)()
+	category, err := CategoryByIdLoader.Load(ctx, *i.m.CategoryID)()
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (i *MenuItem) Category(ctx context.Context) (*Category, error) {
 }
 
 func (i *MenuItem) Children(ctx context.Context) ([]*MenuItem, error) {
-	items, err := dataloaders.MenuItemChildrenLoader.Load(ctx, i.ID)()
+	items, err := MenuItemChildrenLoader.Load(ctx, i.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func (i *MenuItem) Collection(ctx context.Context) (*Collection, error) {
 	if embedCtx.App.Srv().AccountService().
 		SessionHasPermissionToAny(currentSession, model.PermissionManageProducts, model.PermissionManageOrders, model.PermissionManageDiscounts) {
 
-		collection, err := dataloaders.CollectionByIdLoader.Load(ctx, *i.m.CollectionID)()
+		collection, err := CollectionByIdLoader.Load(ctx, *i.m.CollectionID)()
 		if err != nil {
 			return nil, err
 		}
@@ -127,7 +127,7 @@ func (i *MenuItem) Collection(ctx context.Context) (*Collection, error) {
 }
 
 func (i *MenuItem) Menu(ctx context.Context) (*Menu, error) {
-	menu, err := dataloaders.MenuByIdLoader.Load(ctx, i.m.MenuID)()
+	menu, err := MenuByIdLoader.Load(ctx, i.m.MenuID)()
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func (i *MenuItem) Parent(ctx context.Context) (*MenuItem, error) {
 		return nil, nil
 	}
 
-	item, err := dataloaders.MenuItemByIdLoader.Load(ctx, *i.m.ParentID)()
+	item, err := MenuItemByIdLoader.Load(ctx, *i.m.ParentID)()
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (i *MenuItem) Page(ctx context.Context) (*Page, error) {
 
 	currentSession := embedCtx.AppContext.Session()
 
-	page, err := dataloaders.PageByIdLoader.Load(ctx, *i.m.PageID)()
+	page, err := PageByIdLoader.Load(ctx, *i.m.PageID)()
 	if err != nil {
 		return nil, err
 	}

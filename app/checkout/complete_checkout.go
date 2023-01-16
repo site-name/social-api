@@ -250,7 +250,7 @@ func (s *ServiceCheckout) createLineForOrder(
 		VariantName:           variantName,
 		TranslatedProductName: translatedProductName,
 		TranslatedVariantName: translatedVariantName,
-		ProductSku:            variant.Sku,
+		ProductSku:            &variant.Sku,
 		IsShippingRequired:    productVariantRequireShipping,
 		Quantity:              quantity,
 		VariantID:             &variant.Id,

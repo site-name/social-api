@@ -725,6 +725,7 @@ type (
 	VoucherProductStore interface {
 		Upsert(voucherProduct *model.VoucherProduct) (*model.VoucherProduct, error) // Upsert saves or updates given voucher product then returns it with an error
 		Get(voucherProductID string) (*model.VoucherProduct, error)                 // Get finds a voucher product with given id, then returns it with an error
+		FilterByOptions(options *model.VoucherProductFilterOptions) ([]*model.VoucherProduct, error)
 	}
 	VoucherCustomerStore interface {
 		Save(voucherCustomer *model.VoucherCustomer) (*model.VoucherCustomer, error)                  // Save inserts given voucher customer instance into database ands returns it
@@ -748,6 +749,7 @@ type (
 		FilterByOption(option *model.SaleCollectionRelationFilterOption) ([]*model.SaleCollectionRelation, error) // FilterByOption returns a list of collections filtered based on given option
 	}
 	VoucherProductVariantStore interface {
+		FilterByOptions(options *model.VoucherProductVariantFilterOption) ([]*model.VoucherProductVariant, error)
 	}
 	SaleProductVariantStore interface {
 		Upsert(relation *model.SaleProductVariant) (*model.SaleProductVariant, error)                      // Upsert inserts/updates given sale-product variant relation into database, then returns it

@@ -35,7 +35,7 @@ func (c *Channel) HasOrders(ctx context.Context) (*bool, error) {
 		return nil, model.NewAppError("Channel.HasOrders", ErrorUnauthorized, nil, "you are not allowed to perform this", http.StatusUnauthorized)
 	}
 
-	channel, err := dataloaders.ChannelWithHasOrdersByIdLoader.Load(ctx, c.ID)()
+	channel, err := ChannelWithHasOrdersByIdLoader.Load(ctx, c.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func channelByCheckoutLineIDLoader(ctx context.Context, checkoutLineIDs []string
 	)
 
 	// find checkout lines
-	checkoutLines, errs := dataloaders.CheckoutLineByIdLoader.LoadMany(ctx, checkoutLineIDs)()
+	checkoutLines, errs := CheckoutLineByIdLoader.LoadMany(ctx, checkoutLineIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -156,7 +156,7 @@ func channelByCheckoutLineIDLoader(ctx context.Context, checkoutLineIDs []string
 	checkoutTokens = lo.Map(checkoutLines, func(item *model.CheckoutLine, _ int) string { return item.CheckoutID })
 
 	// find checkouts
-	checkouts, errs = dataloaders.CheckoutByTokenLoader.LoadMany(ctx, checkoutTokens)()
+	checkouts, errs = CheckoutByTokenLoader.LoadMany(ctx, checkoutTokens)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -164,7 +164,7 @@ func channelByCheckoutLineIDLoader(ctx context.Context, checkoutLineIDs []string
 	channelIDs = lo.Map(checkouts, func(item *model.Checkout, _ int) string { return item.ChannelID })
 
 	// find channels
-	channels, errs = dataloaders.ChannelByIdLoader.LoadMany(ctx, channelIDs)()
+	channels, errs = ChannelByIdLoader.LoadMany(ctx, channelIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -190,19 +190,19 @@ func channelByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) []*d
 	)
 
 	// find order lines
-	orderLines, errs = dataloaders.OrderLineByIdLoader.LoadMany(ctx, orderLineIDs)()
+	orderLines, errs = OrderLineByIdLoader.LoadMany(ctx, orderLineIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
 	// find orders
-	orders, errs = dataloaders.OrderByIdLoader.LoadMany(ctx, orderLines.OrderIDs())()
+	orders, errs = OrderByIdLoader.LoadMany(ctx, orderLines.OrderIDs())()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
 	// find channels
-	channels, errs = dataloaders.ChannelByIdLoader.LoadMany(ctx, orders.ChannelIDs())()
+	channels, errs = ChannelByIdLoader.LoadMany(ctx, orders.ChannelIDs())()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}

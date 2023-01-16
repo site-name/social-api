@@ -98,23 +98,23 @@ func (c *Checkout) ShippingPrice(ctx context.Context) (*TaxedMoney, error) {
 	// )
 
 	// if c.shippingAddressID != nil {
-	// 	address, err = dataloaders.AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
+	// 	address, err = AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
 	// 	if err != nil {
 	// 		return nil, err
 	// 	}
 	// }
 
-	// lines, err := dataloaders.CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	// lines, err := CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
 	// if err != nil {
 	// 	return nil, err
 	// }
 
-	// checkoutInfo, err := dataloaders.CheckoutInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	// checkoutInfo, err := CheckoutInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
 	// if err != nil {
 	// 	return nil, err
 	// }
 
-	// discounts, err := dataloaders.DiscountsByDateTimeLoader.Load(ctx, time.Now().UTC())()
+	// discounts, err := DiscountsByDateTimeLoader.Load(ctx, time.Now().UTC())()
 	// if err != nil {
 	// 	return nil, err
 	// }
@@ -159,7 +159,7 @@ func (c *Checkout) User(ctx context.Context) (*User, error) {
 }
 
 func (c *Checkout) Quantity(ctx context.Context) (int32, error) {
-	lines, err := dataloaders.CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	lines, err := CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
 	if err != nil {
 		return 0, err
 	}
@@ -173,14 +173,14 @@ func (c *Checkout) Quantity(ctx context.Context) (int32, error) {
 }
 
 func (c *Checkout) IsShippingRequired(ctx context.Context) (bool, error) {
-	infos, err := dataloaders.CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	infos, err := CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
 	if err != nil {
 		return false, err
 	}
 
 	productIDs := lo.Map(infos, func(i *model.CheckoutLineInfo, _ int) string { return i.Product.Id })
 
-	productTypes, errs := dataloaders.ProductTypeByProductIdLoader.LoadMany(ctx, productIDs)()
+	productTypes, errs := ProductTypeByProductIdLoader.LoadMany(ctx, productIDs)()
 	if len(errs) != 0 && errs[0] != nil {
 		return false, errs[0]
 	}
@@ -197,7 +197,7 @@ func (c *Checkout) BillingAddress(ctx context.Context) (*Address, error) {
 		return nil, nil
 	}
 
-	addr, err := dataloaders.AddressByIdLoader.Load(ctx, *c.billingAddressID)()
+	addr, err := AddressByIdLoader.Load(ctx, *c.billingAddressID)()
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +210,7 @@ func (c *Checkout) ShippingAddress(ctx context.Context) (*Address, error) {
 		return nil, nil
 	}
 
-	address, err := dataloaders.AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
+	address, err := AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
 	if err != nil {
 		return nil, err
 	}
@@ -243,28 +243,28 @@ func (c *Checkout) AvailableShippingMethods(ctx context.Context) ([]*ShippingMet
 	// var err error
 
 	// if c.shippingAddressID != nil {
-	// 	address, err = dataloaders.AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
+	// 	address, err = AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
 	// 	if err != nil {
 	// 		return nil, err
 	// 	}
 	// }
 
-	// channel, err := dataloaders.ChannelByIdLoader.Load(ctx, c.channelID)()
+	// channel, err := ChannelByIdLoader.Load(ctx, c.channelID)()
 	// if err != nil {
 	// 	return nil, err
 	// }
 
-	// lines, err := dataloaders.CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	// lines, err := CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
 	// if err != nil {
 	// 	return nil, err
 	// }
 
-	// checkoutInfo, err := dataloaders.CheckoutInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	// checkoutInfo, err := CheckoutInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
 	// if err != nil {
 	// 	return nil, err
 	// }
 
-	// discounts, err := dataloaders.DiscountsByDateTimeLoader.Load(ctx, time.Now().UTC())()
+	// discounts, err := DiscountsByDateTimeLoader.Load(ctx, time.Now().UTC())()
 	// if err != nil {
 	// 	return nil, err
 	// }
@@ -281,18 +281,18 @@ func (c *Checkout) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse,
 	var address *model.Address
 
 	if c.shippingAddressID != nil {
-		address, err = dataloaders.AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
+		address, err = AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	channel, err := dataloaders.ChannelByIdLoader.Load(ctx, c.channelID)()
+	channel, err := ChannelByIdLoader.Load(ctx, c.channelID)()
 	if err != nil {
 		return nil, err
 	}
 
-	lines, err := dataloaders.CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	lines, err := CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
 	if err != nil {
 		return nil, err
 	}
@@ -323,7 +323,7 @@ func (c *Checkout) AvailablePaymentGateways(ctx context.Context) ([]*PaymentGate
 }
 
 func (c *Checkout) Lines(ctx context.Context) ([]*CheckoutLine, error) {
-	lines, err := dataloaders.CheckoutLinesByCheckoutTokenLoader.Load(ctx, c.Token)()
+	lines, err := CheckoutLinesByCheckoutTokenLoader.Load(ctx, c.Token)()
 	if err != nil {
 		return nil, err
 	}
@@ -333,7 +333,7 @@ func (c *Checkout) Lines(ctx context.Context) ([]*CheckoutLine, error) {
 
 func (c *Checkout) DeliveryMethod(ctx context.Context) (*Warehouse, error) {
 	if c.collectionPointID != nil {
-		warehouse, err := dataloaders.WarehouseByIdLoader.Load(ctx, *c.collectionPointID)()
+		warehouse, err := WarehouseByIdLoader.Load(ctx, *c.collectionPointID)()
 		if err != nil {
 			return nil, err
 		}
@@ -527,7 +527,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 		goto errorLabel
 	}
 
-	checkouts, errs = dataloaders.CheckoutByTokenLoader.LoadMany(ctx, tokens)()
+	checkouts, errs = CheckoutByTokenLoader.LoadMany(ctx, tokens)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -552,27 +552,27 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 		channelIDs = append(channelIDs, checkout.ChannelID)
 	}
 
-	channels, errs = dataloaders.ChannelByIdLoader.LoadMany(ctx, channelIDs)()
+	channels, errs = ChannelByIdLoader.LoadMany(ctx, channelIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
 	// find addresses of checkouts:
-	addresses, errs = dataloaders.AddressByIdLoader.LoadMany(ctx, checkoutAddressIDs)()
+	addresses, errs = AddressByIdLoader.LoadMany(ctx, checkoutAddressIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 	addressMap = lo.SliceToMap(addresses, func(a *model.Address) (string, *model.Address) { return a.Id, a })
 
 	// find owners of checkouts
-	users, errs = dataloaders.UserByUserIdLoader.LoadMany(ctx, checkoutUserIDs)()
+	users, errs = UserByUserIdLoader.LoadMany(ctx, checkoutUserIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 	userMap = lo.SliceToMap(users, func(u *model.User) (string, *model.User) { return u.Id, u })
 
 	// find shipping methods of checkouts
-	shippingMethods, errs = dataloaders.ShippingMethodByIdLoader.LoadMany(ctx, shippingMethodIDs)()
+	shippingMethods, errs = ShippingMethodByIdLoader.LoadMany(ctx, shippingMethodIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -585,7 +585,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 	}
 
 	// find shipping mehod channel listings of checkouts
-	shippingMethodChannelListings, errs = dataloaders.ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.LoadMany(ctx, shippingMethodIDChannelIDPairs)()
+	shippingMethodChannelListings, errs = ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.LoadMany(ctx, shippingMethodIDChannelIDPairs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -594,7 +594,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 	})
 
 	// find collection points of checkouts
-	collectionPoints, errs = dataloaders.WarehouseByIdLoader.LoadMany(ctx, collectionPointIDs)()
+	collectionPoints, errs = WarehouseByIdLoader.LoadMany(ctx, collectionPointIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}

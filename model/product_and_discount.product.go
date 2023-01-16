@@ -16,7 +16,7 @@ const (
 	PRODUCT_SLUG_MAX_LENGTH = 255
 )
 
-// Product contains all fields a product contains
+// ordering slug
 type Product struct {
 	Id                   string                 `json:"id"`
 	ProductTypeID        string                 `json:"product_type_id"`

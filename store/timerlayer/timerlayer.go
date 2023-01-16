@@ -8396,6 +8396,22 @@ func (s *TimerLayerVoucherCustomerStore) Save(voucherCustomer *model.VoucherCust
 	return result, err
 }
 
+func (s *TimerLayerVoucherProductStore) FilterByOptions(options *model.VoucherProductFilterOptions) ([]*model.VoucherProduct, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherProductStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherProductStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerVoucherProductStore) Get(voucherProductID string) (*model.VoucherProduct, error) {
 	start := timemodule.Now()
 
@@ -8424,6 +8440,22 @@ func (s *TimerLayerVoucherProductStore) Upsert(voucherProduct *model.VoucherProd
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("VoucherProductStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherProductVariantStore) FilterByOptions(options *model.VoucherProductVariantFilterOption) ([]*model.VoucherProductVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherProductVariantStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherProductVariantStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }

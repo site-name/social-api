@@ -1,10 +1,17 @@
 package model
 
+import "github.com/Masterminds/squirrel"
+
 // VoucherProduct represents relationship between vouchers and products
 type VoucherProduct struct {
 	Id        string `json:"id"`
 	VoucherID string `json:"voucher_id"`
 	ProductID string `json:"product_id"`
+}
+
+type VoucherProductFilterOptions struct {
+	VoucherID squirrel.Sqlizer
+	ProductID squirrel.Sqlizer
 }
 
 func (v *VoucherProduct) PreSave() {

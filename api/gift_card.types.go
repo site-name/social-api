@@ -190,7 +190,7 @@ func (g *GiftCard) Product(ctx context.Context) (*Product, error) {
 		return nil, nil
 	}
 
-	product, err := dataloaders.ProductByIdLoader.Load(ctx, *g.productID)()
+	product, err := ProductByIdLoader.Load(ctx, *g.productID)()
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +209,7 @@ func (g *GiftCard) Events(ctx context.Context) ([]*GiftCardEvent, error) {
 		AccountService().
 		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageGiftcard) {
 
-		events, err := dataloaders.GiftCardEventsByGiftCardIdLoader.Load(ctx, g.ID)()
+		events, err := GiftCardEventsByGiftCardIdLoader.Load(ctx, g.ID)()
 		if err != nil {
 			return nil, err
 		}
@@ -253,7 +253,7 @@ func (g *GiftCard) CreatedByEmail(ctx context.Context) (*string, error) {
 		return resolveCreatedByEmail(nil), nil
 	}
 
-	user, err := dataloaders.UserByUserIdLoader.Load(ctx, *g.createdByID)()
+	user, err := UserByUserIdLoader.Load(ctx, *g.createdByID)()
 	if err != nil {
 		return nil, err
 	}
@@ -294,7 +294,7 @@ func (g *GiftCard) UsedByEmail(ctx context.Context) (*string, error) {
 		return resolveUsedByEmail(nil), nil
 	}
 
-	user, err := dataloaders.UserByUserIdLoader.Load(ctx, *g.usedByID)()
+	user, err := UserByUserIdLoader.Load(ctx, *g.usedByID)()
 	if err != nil {
 		return nil, err
 	}
@@ -328,7 +328,7 @@ func (g *GiftCard) UsedBy(ctx context.Context) (*User, error) {
 		return resolveUsedBy(nil)
 	}
 
-	user, err := dataloaders.UserByUserIdLoader.Load(ctx, *g.usedByID)()
+	user, err := UserByUserIdLoader.Load(ctx, *g.usedByID)()
 	if err != nil {
 		return nil, err
 	}
@@ -369,7 +369,7 @@ func (g *GiftCard) CreatedBy(ctx context.Context) (*User, error) {
 		return resolveCreatedBy(nil)
 	}
 
-	user, err := dataloaders.UserByUserIdLoader.Load(ctx, *g.createdByID)()
+	user, err := UserByUserIdLoader.Load(ctx, *g.createdByID)()
 	if err != nil {
 		return nil, err
 	}
@@ -398,7 +398,7 @@ func (g *GiftCard) Code(ctx context.Context) (string, error) {
 		return resolveCode(nil)
 	}
 
-	user, err := dataloaders.UserByUserIdLoader.Load(ctx, *g.usedByID)()
+	user, err := UserByUserIdLoader.Load(ctx, *g.usedByID)()
 	if err != nil {
 		return "", err
 	}
@@ -407,7 +407,7 @@ func (g *GiftCard) Code(ctx context.Context) (string, error) {
 }
 
 func (g *GiftCard) BoughtInChannel(ctx context.Context) (*string, error) {
-	events, err := dataloaders.GiftCardEventsByGiftCardIdLoader.Load(ctx, g.ID)()
+	events, err := GiftCardEventsByGiftCardIdLoader.Load(ctx, g.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -433,7 +433,7 @@ func (g *GiftCard) BoughtInChannel(ctx context.Context) (*string, error) {
 		return nil, nil
 	}
 
-	order, err := dataloaders.OrderByIdLoader.Load(ctx, strOrderID)()
+	order, err := OrderByIdLoader.Load(ctx, strOrderID)()
 	if err != nil {
 		return nil, err
 	}
@@ -442,7 +442,7 @@ func (g *GiftCard) BoughtInChannel(ctx context.Context) (*string, error) {
 		return nil, nil
 	}
 
-	channel, err := dataloaders.ChannelByIdLoader.Load(ctx, order.ChannelID)()
+	channel, err := ChannelByIdLoader.Load(ctx, order.ChannelID)()
 	if err != nil {
 		return nil, err
 	}

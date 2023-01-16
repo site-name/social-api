@@ -337,7 +337,7 @@ func SystemOrderToGraphqlOrder(o *model.Order) *Order {
 }
 
 func (o *Order) Discounts(ctx context.Context) ([]*OrderDiscount, error) {
-	rels, err := dataloaders.OrderDiscountsByOrderIDLoader.Load(ctx, o.ID)()
+	rels, err := OrderDiscountsByOrderIDLoader.Load(ctx, o.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -363,7 +363,7 @@ func (o *Order) BillingAddress(ctx context.Context) (*Address, error) {
 		return nil, err
 	}
 
-	address, err := dataloaders.AddressByIdLoader.Load(ctx, *o.order.BillingAddressID)()
+	address, err := AddressByIdLoader.Load(ctx, *o.order.BillingAddressID)()
 	if err != nil {
 		return nil, err
 	}
@@ -388,7 +388,7 @@ func (o *Order) ShippingAddress(ctx context.Context) (*Address, error) {
 		return nil, err
 	}
 
-	address, err := dataloaders.AddressByIdLoader.Load(ctx, *o.order.ShippingAddressID)()
+	address, err := AddressByIdLoader.Load(ctx, *o.order.ShippingAddressID)()
 	if err != nil {
 		return nil, err
 	}
@@ -411,7 +411,7 @@ func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
 
 	orderSrv := embedCtx.App.Srv().OrderService()
 
-	payments, err := dataloaders.PaymentsByOrderIdLoader.Load(ctx, o.ID)()
+	payments, err := PaymentsByOrderIdLoader.Load(ctx, o.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -459,7 +459,7 @@ func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
 }
 
 func (o *Order) Subtotal(ctx context.Context) (*TaxedMoney, error) {
-	lines, err := dataloaders.OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
+	lines, err := OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -478,7 +478,7 @@ func (o *Order) Subtotal(ctx context.Context) (*TaxedMoney, error) {
 }
 
 func (o *Order) Payments(ctx context.Context) ([]*Payment, error) {
-	payments, err := dataloaders.PaymentsByOrderIdLoader.Load(ctx, o.ID)()
+	payments, err := PaymentsByOrderIdLoader.Load(ctx, o.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -495,7 +495,7 @@ func (o *Order) Fulfillments(ctx context.Context) ([]*Fulfillment, error) {
 }
 
 func (o *Order) Lines(ctx context.Context) ([]*OrderLine, error) {
-	lines, err := dataloaders.OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
+	lines, err := OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -514,7 +514,7 @@ func (o *Order) Events(ctx context.Context) ([]*OrderEvent, error) {
 		return nil, model.NewAppError("Order,Events", ErrorUnauthorized, nil, "you are not authorized to see order events", http.StatusUnauthorized)
 	}
 
-	events, err := dataloaders.OrderEventsByOrderIdLoader.Load(ctx, o.ID)()
+	events, err := OrderEventsByOrderIdLoader.Load(ctx, o.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -523,7 +523,7 @@ func (o *Order) Events(ctx context.Context) ([]*OrderEvent, error) {
 }
 
 func (o *Order) PaymentStatus(ctx context.Context) (*PaymentChargeStatusEnum, error) {
-	payments, err := dataloaders.PaymentsByOrderIdLoader.Load(ctx, o.ID)()
+	payments, err := PaymentsByOrderIdLoader.Load(ctx, o.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -551,7 +551,7 @@ func (o *Order) PaymentStatus(ctx context.Context) (*PaymentChargeStatusEnum, er
 }
 
 func (o *Order) PaymentStatusDisplay(ctx context.Context) (string, error) {
-	payments, err := dataloaders.PaymentsByOrderIdLoader.Load(ctx, o.ID)()
+	payments, err := PaymentsByOrderIdLoader.Load(ctx, o.ID)()
 	if err != nil {
 		return "", err
 	}
@@ -625,7 +625,7 @@ func (o *Order) User(ctx context.Context) (*User, error) {
 
 	if (o.order.UserID != nil && currentSession.UserId == *o.order.UserID) ||
 		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageUsers) {
-		user, err := dataloaders.UserByUserIdLoader.Load(ctx, *o.order.UserID)()
+		user, err := UserByUserIdLoader.Load(ctx, *o.order.UserID)()
 		if err != nil {
 			return nil, err
 		}
@@ -659,7 +659,7 @@ func (o *Order) AvailableShippingMethods(ctx context.Context) ([]*ShippingMethod
 }
 
 func (o *Order) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, error) {
-	// lines, err := dataloaders.OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
+	// lines, err := OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
 	// if err != nil {
 	// 	return nil, err
 	// }
@@ -688,7 +688,7 @@ func (o *Order) Invoices(ctx context.Context) ([]*Invoice, error) {
 
 	if (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
 		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
-		invoices, err := dataloaders.InvoicesByOrderIDLoader.Load(ctx, o.ID)()
+		invoices, err := InvoicesByOrderIDLoader.Load(ctx, o.ID)()
 		if err != nil {
 			return nil, err
 		}
@@ -700,7 +700,7 @@ func (o *Order) Invoices(ctx context.Context) ([]*Invoice, error) {
 }
 
 func (o *Order) IsShippingRequired(ctx context.Context) (bool, error) {
-	lines, err := dataloaders.OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
+	lines, err := OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
 	if err != nil {
 		return false, err
 	}
@@ -709,7 +709,7 @@ func (o *Order) IsShippingRequired(ctx context.Context) (bool, error) {
 }
 
 func (o *Order) GiftCards(ctx context.Context) ([]*GiftCard, error) {
-	giftcards, err := dataloaders.GiftcardsByOrderIDsLoader.Load(ctx, o.ID)()
+	giftcards, err := GiftcardsByOrderIDsLoader.Load(ctx, o.ID)()
 	if err != nil {
 		return nil, err
 	}
@@ -722,7 +722,7 @@ func (o *Order) Voucher(ctx context.Context) (*Voucher, error) {
 		return nil, nil
 	}
 
-	voucher, err := dataloaders.VoucherByIDLoader.Load(ctx, *o.order.VoucherID)()
+	voucher, err := VoucherByIDLoader.Load(ctx, *o.order.VoucherID)()
 	if err != nil {
 		return nil, err
 	}

@@ -196,7 +196,7 @@ func shippingZonesByChannelIdLoader(ctx context.Context, ids []string) []*datalo
 		channelShippingZoneMap[rel.ChannelID] = append(channelShippingZoneMap[rel.ChannelID], rel.ShippingZoneID)
 	}
 
-	shippingZones, errs = dataloaders.ShippingZoneByIdLoader.LoadMany(ctx, shippingZoneIDs)()
+	shippingZones, errs = ShippingZoneByIdLoader.LoadMany(ctx, shippingZoneIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		err = errs[0]
 		goto errorLabel

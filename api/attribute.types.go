@@ -91,7 +91,7 @@ func (a *AttributeValue) InputType(ctx context.Context) (*AttributeInputTypeEnum
 		return nil, model.NewAppError("AttributeValue.InputType", ErrorUnauthorized, nil, "You are not allowed to see this", http.StatusUnauthorized)
 	}
 
-	attr, err := dataloaders.AttributesByAttributeIdLoader.Load(ctx, a.attributeID)()
+	attr, err := AttributesByAttributeIdLoader.Load(ctx, a.attributeID)()
 	if err != nil {
 		return nil, err
 	}

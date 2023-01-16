@@ -17,11 +17,12 @@ const (
 	PRODUCT_VARIANT_SKU_MAX_LENGTH  = 255
 )
 
+// sort by sku
 type ProductVariant struct {
 	Id                      string                 `json:"id"`
 	Name                    string                 `json:"name"`
 	ProductID               string                 `json:"product_id"`
-	Sku                     *string                `json:"sku"`
+	Sku                     string                 `json:"sku"`
 	Weight                  *float32               `json:"weight"`
 	WeightUnit              measurement.WeightUnit `json:"weight_unit"`
 	TrackInventory          *bool                  `json:"track_inventory"` // default *true
@@ -49,6 +50,8 @@ type ProductVariantFilterOption struct {
 	ProductVariantChannelListingChannelSlug squirrel.Sqlizer // INNER JOIN `ProductVariantChannelListing` ON ... INNER JOIN Channels ON ... WHERE Channels.Slug ...
 
 	Distinct bool // if true, use SELECT DISTINCT
+
+	VoucherID squirrel.Sqlizer // INNER JOIN VariantVouchers ON ... WHERE VariantVouchers.VoucherID ...
 
 	SelectRelatedDigitalContent bool // if true, JOIN Digital content table and attach related values to returning values(s)
 }
@@ -107,7 +110,7 @@ func (p *ProductVariant) IsValid() *AppError {
 	if !IsValidId(p.ProductID) {
 		return outer("product_id", &p.Id)
 	}
-	if p.Sku != nil && len(*p.Sku) > PRODUCT_VARIANT_SKU_MAX_LENGTH {
+	if len(p.Sku) > PRODUCT_VARIANT_SKU_MAX_LENGTH {
 		return outer("sku", &p.Id)
 	}
 	if utf8.RuneCountInString(p.Name) > PRODUCT_VARIANT_NAME_MAX_LENGTH {
@@ -129,9 +132,6 @@ func (p *ProductVariant) IsValid() *AppError {
 func (p *ProductVariant) String() string {
 	if p.Name != "" {
 		return p.Name
-	}
-	if p.Sku != nil {
-		return *p.Sku
 	}
 
 	return fmt.Sprintf("ID:%s", p.Id)
@@ -176,9 +176,6 @@ func (p *ProductVariant) DeepCopy() *ProductVariant {
 
 	res := *p
 
-	if p.Sku != nil {
-		res.Sku = NewPrimitive(*p.Sku)
-	}
 	if p.Weight != nil {
 		res.Weight = NewPrimitive(*p.Weight)
 	}

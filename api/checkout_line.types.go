@@ -40,7 +40,7 @@ func SystemCheckoutLineToGraphqlCheckoutLine(line *model.CheckoutLine) *Checkout
 }
 
 func (line *CheckoutLine) Variant(ctx context.Context) (*ProductVariant, error) {
-	variant, err := dataloaders.ProductVariantByIdLoader.Load(ctx, line.variantID)()
+	variant, err := ProductVariantByIdLoader.Load(ctx, line.variantID)()
 	if err != nil {
 		return nil, err
 	}
@@ -49,24 +49,24 @@ func (line *CheckoutLine) Variant(ctx context.Context) (*ProductVariant, error) 
 }
 
 func (line *CheckoutLine) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
-	checkout, err := dataloaders.CheckoutByTokenLoader.Load(ctx, line.checkoutID)()
+	checkout, err := CheckoutByTokenLoader.Load(ctx, line.checkoutID)()
 	if err != nil {
 		return nil, err
 	}
 
 	now := time.Now()
 
-	discounts, err := dataloaders.DiscountsByDateTimeLoader.Load(ctx, now)()
+	discounts, err := DiscountsByDateTimeLoader.Load(ctx, now)()
 	if err != nil {
 		return nil, err
 	}
 
-	checkoutInfo, err := dataloaders.CheckoutInfoByCheckoutTokenLoader.Load(ctx, checkout.Token)()
+	checkoutInfo, err := CheckoutInfoByCheckoutTokenLoader.Load(ctx, checkout.Token)()
 	if err != nil {
 		return nil, err
 	}
 
-	checkoutLineInfos, err := dataloaders.CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, checkout.Token)()
+	checkoutLineInfos, err := CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, checkout.Token)()
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (line *CheckoutLine) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
 }
 
 func (line *CheckoutLine) RequiresShipping(ctx context.Context) (*bool, error) {
-	productType, err := dataloaders.ProductTypeByVariantIdLoader.Load(ctx, line.variantID)()
+	productType, err := ProductTypeByVariantIdLoader.Load(ctx, line.variantID)()
 	if err != nil {
 		return nil, err
 	}
@@ -200,12 +200,12 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 		linesInfoMap = map[string][]*model.CheckoutLineInfo{} // keys are checkout tokens
 	)
 
-	checkouts, errs := dataloaders.CheckoutByTokenLoader.LoadMany(ctx, tokens)()
+	checkouts, errs := CheckoutByTokenLoader.LoadMany(ctx, tokens)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
-	checkoutLines, errs = dataloaders.CheckoutLinesByCheckoutTokenLoader.LoadMany(ctx, tokens)()
+	checkoutLines, errs = CheckoutLinesByCheckoutTokenLoader.LoadMany(ctx, tokens)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -224,22 +224,22 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 
 	channelIDS = lo.Map(checkouts, func(c *model.Checkout, _ int) string { return c.ChannelID })
 
-	variants, errs = dataloaders.ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
+	variants, errs = ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
-	products, errs = dataloaders.ProductByVariantIdLoader.LoadMany(ctx, variantIDS)()
+	products, errs = ProductByVariantIdLoader.LoadMany(ctx, variantIDS)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
-	productTypes, errs = dataloaders.ProductTypeByVariantIdLoader.LoadMany(ctx, variantIDS)()
+	productTypes, errs = ProductTypeByVariantIdLoader.LoadMany(ctx, variantIDS)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
-	collections, errs = dataloaders.CollectionsByVariantIdLoader.LoadMany(ctx, variantIDS)()
+	collections, errs = CollectionsByVariantIdLoader.LoadMany(ctx, variantIDS)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -250,7 +250,7 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 		}
 	}
 
-	channelListings, errs = dataloaders.VariantChannelListingByVariantIdAndChannelIdLoader.LoadMany(ctx, variantIDChannelIDPairs)()
+	channelListings, errs = VariantChannelListingByVariantIdAndChannelIdLoader.LoadMany(ctx, variantIDChannelIDPairs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}

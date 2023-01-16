@@ -94,3 +94,27 @@ func (vps *SqlVoucherProductStore) Get(voucherProductID string) (*model.VoucherP
 
 	return &res, nil
 }
+
+func (s *SqlVoucherProductStore) FilterByOptions(options *model.VoucherProductFilterOptions) ([]*model.VoucherProduct, error) {
+	query := s.GetQueryBuilder().Select("*").From(store.VoucherProductTableName)
+
+	if options.ProductID != nil {
+		query = query.Where(options.ProductID)
+	}
+	if options.VoucherID != nil {
+		query = query.Where(options.VoucherID)
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.VoucherProduct
+	err = s.GetReplicaX().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find voucher product relations by options")
+	}
+
+	return res, nil
+}

@@ -10086,6 +10086,26 @@ func (s *RetryLayerVoucherCustomerStore) Save(voucherCustomer *model.VoucherCust
 
 }
 
+func (s *RetryLayerVoucherProductStore) FilterByOptions(options *model.VoucherProductFilterOptions) ([]*model.VoucherProduct, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherProductStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerVoucherProductStore) Get(voucherProductID string) (*model.VoucherProduct, error) {
 
 	tries := 0
@@ -10111,6 +10131,26 @@ func (s *RetryLayerVoucherProductStore) Upsert(voucherProduct *model.VoucherProd
 	tries := 0
 	for {
 		result, err := s.VoucherProductStore.Upsert(voucherProduct)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVoucherProductVariantStore) FilterByOptions(options *model.VoucherProductVariantFilterOption) ([]*model.VoucherProductVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.VoucherProductVariantStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}

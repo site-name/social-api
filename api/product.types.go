@@ -115,12 +115,12 @@ func productByVariantIdLoader(ctx context.Context, variantIDS []string) []*datal
 		errs     []error
 	)
 
-	variants, errs = dataloaders.ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
+	variants, errs = ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
-	products, errs = dataloaders.ProductByIdLoader.LoadMany(ctx, variants.ProductIDs())()
+	products, errs = ProductByIdLoader.LoadMany(ctx, variants.ProductIDs())()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -145,12 +145,12 @@ func productTypeByVariantIdLoader(ctx context.Context, variantIDS []string) []*d
 		variants     model.ProductVariants
 		errs         []error
 	)
-	variants, errs = dataloaders.ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
+	variants, errs = ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
-	productTypes, errs = dataloaders.ProductTypeByProductIdLoader.LoadMany(ctx, variants.ProductIDs())()
+	productTypes, errs = ProductTypeByProductIdLoader.LoadMany(ctx, variants.ProductIDs())()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
@@ -183,7 +183,7 @@ func productTypeByProductIdLoader(ctx context.Context, productIDs []string) []*d
 		goto errorLabel
 	}
 
-	products, errs = dataloaders.ProductByIdLoader.LoadMany(ctx, productIDs)()
+	products, errs = ProductByIdLoader.LoadMany(ctx, productIDs)()
 	if len(errs) != 0 && errs[0] != nil {
 		err = errs[0]
 		goto errorLabel
@@ -223,12 +223,12 @@ func collectionsByVariantIdLoader(ctx context.Context, variantIDS []string) []*d
 		collections [][]*model.Collection
 	)
 
-	variants, errs = dataloaders.ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
+	variants, errs = ProductVariantByIdLoader.LoadMany(ctx, variantIDS)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
-	collections, errs = dataloaders.CollectionsByProductIdLoader.LoadMany(ctx, variants.ProductIDs())()
+	collections, errs = CollectionsByProductIdLoader.LoadMany(ctx, variants.ProductIDs())()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}

@@ -44,7 +44,7 @@ func SystemProductVariantToGraphqlProductVariant(variant *model.ProductVariant) 
 	res := &ProductVariant{
 		ID:              variant.Id,
 		Name:            variant.Name,
-		Sku:             variant.Sku,
+		Sku:             &variant.Sku,
 		TrackInventory:  *variant.TrackInventory,
 		Channel:         model.NewPrimitive("unknown"), // ??
 		Metadata:        MetadataToSlice(variant.Metadata),

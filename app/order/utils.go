@@ -821,7 +821,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer model.Order, variant model.Produc
 			VariantName:           variantName,
 			TranslatedProductName: translatedProductName,
 			TranslatedVariantName: translatedVariantName,
-			ProductSku:            variant.Sku,
+			ProductSku:            &variant.Sku,
 			IsShippingRequired:    variantRequiresShipping,
 			IsGiftcard:            productType.IsGiftcard(),
 			Quantity:              quantity,
