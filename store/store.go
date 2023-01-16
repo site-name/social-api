@@ -715,10 +715,12 @@ type (
 	VoucherCategoryStore interface {
 		Upsert(voucherCategory *model.VoucherCategory) (*model.VoucherCategory, error) // Upsert saves or updates given voucher category then returns it with an error
 		Get(voucherCategoryID string) (*model.VoucherCategory, error)                  // Get finds a voucher category with given id, then returns it with an error
+		FilterByOptions(options *model.VoucherCategoryFilterOption) ([]*model.VoucherCategory, error)
 	}
 	VoucherCollectionStore interface {
 		Upsert(voucherCollection *model.VoucherCollection) (*model.VoucherCollection, error) // Upsert saves or updates given voucher collection then returns it with an error
 		Get(voucherCollectionID string) (*model.VoucherCollection, error)                    // Get finds a voucher collection with given id, then returns it with an error
+		FilterByOptions(options *model.VoucherCollectionFilterOptions) ([]*model.VoucherCollection, error)
 	}
 	VoucherProductStore interface {
 		Upsert(voucherProduct *model.VoucherProduct) (*model.VoucherProduct, error) // Upsert saves or updates given voucher product then returns it with an error

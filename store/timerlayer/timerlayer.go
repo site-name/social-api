@@ -8188,6 +8188,22 @@ func (s *TimerLayerUserAddressStore) Save(userAddress *model.UserAddress) (*mode
 	return result, err
 }
 
+func (s *TimerLayerVoucherCategoryStore) FilterByOptions(options *model.VoucherCategoryFilterOption) ([]*model.VoucherCategory, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherCategoryStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCategoryStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerVoucherCategoryStore) Get(voucherCategoryID string) (*model.VoucherCategory, error) {
 	start := timemodule.Now()
 
@@ -8264,6 +8280,22 @@ func (s *TimerLayerVoucherChannelListingStore) Upsert(voucherChannelListing *mod
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("VoucherChannelListingStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVoucherCollectionStore) FilterByOptions(options *model.VoucherCollectionFilterOptions) ([]*model.VoucherCollection, error) {
+	start := timemodule.Now()
+
+	result, err := s.VoucherCollectionStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VoucherCollectionStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }

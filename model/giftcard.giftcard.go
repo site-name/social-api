@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/modules/util"
@@ -76,15 +77,8 @@ type GiftCardFilterOption struct {
 
 type Giftcards []*GiftCard
 
-func (g Giftcards) IDs() []string {
-	res := []string{}
-	for _, item := range g {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
-
-	return res
+func (gs Giftcards) IDs() []string {
+	return lo.Map(gs, func(g *GiftCard, _ int) string { return g.Id })
 }
 
 func (gc *GiftCard) DisplayCode() string {
@@ -172,15 +166,11 @@ func (gc *GiftCard) PreSave() {
 }
 
 func (gc *GiftCard) commonPre() {
-	if gc.CurrentBalance != nil {
-		gc.CurrentBalanceAmount = &gc.CurrentBalance.Amount
-	} else {
+	if gc.CurrentBalanceAmount == nil {
 		gc.CurrentBalanceAmount = &decimal.Zero
 	}
 
-	if gc.InitialBalance != nil {
-		gc.InitialBalanceAmount = &gc.InitialBalance.Amount
-	} else {
+	if gc.InitialBalanceAmount == nil {
 		gc.InitialBalanceAmount = &decimal.Zero
 	}
 

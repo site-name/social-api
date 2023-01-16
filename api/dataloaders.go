@@ -82,7 +82,9 @@ type apiDataloaders struct {
 	OrderDiscountsByOrderIDLoader                       *Loader[string, []*model.OrderDiscount]
 	VoucherByIDLoader                                   *Loader[string, *model.Voucher]
 	VoucherChannelListingByVoucherIdAndChanneSlugLoader *Loader[string, *model.VoucherChannelListing]
-	VoucherChannelListingByVoucherIdLoader              *Loader[string, *model.VoucherChannelListing]
+	VoucherChannelListingByVoucherIdLoader              *Loader[string, []*model.VoucherChannelListing]
+	CategoriesByVoucherIDLoader                         *Loader[string, []*model.Category]
+	CollectionsByVoucherIDLoader                        *Loader[string, []*model.Collection]
 
 	// warehouse
 	WarehouseByIdLoader            *Loader[string, *model.WareHouse]
@@ -176,7 +178,9 @@ func init() {
 		OrderDiscountsByOrderIDLoader:                       NewBatchedLoader(orderDiscountsByOrderIDLoader, WithBatchCapacity[string, []*model.OrderDiscount](batchCapacity)),
 		VoucherByIDLoader:                                   NewBatchedLoader(voucherByIDLoader, WithBatchCapacity[string, *model.Voucher](batchCapacity)),
 		VoucherChannelListingByVoucherIdAndChanneSlugLoader: NewBatchedLoader(voucherChannelListingByVoucherIdAndChanneSlugLoader, WithBatchCapacity[string, *model.VoucherChannelListing](batchCapacity)),
-		VoucherChannelListingByVoucherIdLoader:              NewBatchedLoader(voucherChannelListingByVoucherIdLoader, WithBatchCapacity[string, *model.VoucherChannelListing](batchCapacity)),
+		VoucherChannelListingByVoucherIdLoader:              NewBatchedLoader(voucherChannelListingByVoucherIdLoader, WithBatchCapacity[string, []*model.VoucherChannelListing](batchCapacity)),
+		CategoriesByVoucherIDLoader:                         NewBatchedLoader(categoriesByVoucherIDLoader, WithBatchCapacity[string, []*model.Category](batchCapacity)),
+		CollectionsByVoucherIDLoader:                        NewBatchedLoader(collectionsByVoucherIDLoader, WithBatchCapacity[string, []*model.Collection](batchCapacity)),
 
 		// warehouse
 		WarehouseByIdLoader:            NewBatchedLoader(warehouseByIdLoader, WithBatchCapacity[string, *model.WareHouse](batchCapacity)),

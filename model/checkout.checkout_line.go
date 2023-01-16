@@ -20,7 +20,15 @@ type CheckoutLine struct {
 	VariantID  string `json:"variant_id"`
 	Quantity   int    `json:"quantity"`
 
-	ProductVariant *ProductVariant `json:"-" db:"-"`
+	productVariant *ProductVariant `db:"-"`
+}
+
+func (c *CheckoutLine) GetProductVariant() *ProductVariant {
+	return c.productVariant
+}
+
+func (c *CheckoutLine) SetProductVariant(p *ProductVariant) {
+	c.productVariant = p
 }
 
 // CheckoutLineFilterOption is used to build squirrel sql queries
@@ -84,8 +92,8 @@ func (c *CheckoutLine) PreSave() {
 
 func (c *CheckoutLine) DeepCopy() *CheckoutLine {
 	res := *c
-	if c.ProductVariant != nil {
-		res.ProductVariant = c.ProductVariant.DeepCopy()
+	if c.productVariant != nil {
+		res.productVariant = c.productVariant.DeepCopy()
 	}
 	return &res
 }

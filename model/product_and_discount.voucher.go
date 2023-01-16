@@ -49,7 +49,7 @@ type Voucher struct {
 	ApplyOncePerCustomer     bool    `json:"apply_once_per_customer"`
 	OnlyForStaff             *bool   `json:"only_for_staff"` // default false
 	DiscountValueType        string  `json:"discount_value_type"`
-	Countries                string  `json:"countries"` // multiple. E.g: "Vietnam America China"
+	Countries                string  `json:"countries"` // multiple. E.g: "VN US CN"
 	MinCheckoutItemsQuantity int     `json:"min_checkout_items_quantity"`
 	CreateAt                 int64   `json:"create_at"` // this field is for ordering
 	UpdateAt                 int64   `json:"update_at"`

@@ -9,7 +9,7 @@ import (
 )
 
 type SqlVoucherCollectionStore struct {
-	store.Store
+	s store.Store
 }
 
 func NewSqlVoucherCollectionStore(s store.Store) store.VoucherCollectionStore {
@@ -47,7 +47,7 @@ func (vcs *SqlVoucherCollectionStore) Upsert(voucherCollection *model.VoucherCol
 	)
 	if saving {
 		query := "INSERT INTO " + store.VoucherCollectionTableName + "(" + vcs.ModelFields("").Join(",") + ") VALUES (" + vcs.ModelFields(":").Join(",") + ")"
-		_, err = vcs.GetMasterX().NamedExec(query, voucherCollection)
+		_, err = vcs.s.GetMasterX().NamedExec(query, voucherCollection)
 
 	} else {
 		query := "UPDATE " + store.VoucherCollectionTableName + " SET " + vcs.
@@ -58,14 +58,14 @@ func (vcs *SqlVoucherCollectionStore) Upsert(voucherCollection *model.VoucherCol
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = vcs.GetMasterX().NamedExec(query, voucherCollection)
+		result, err = vcs.s.GetMasterX().NamedExec(query, voucherCollection)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
 	}
 
 	if err != nil {
-		if vcs.IsUniqueConstraintError(err, []string{"VoucherID", "CollectionID", "vouchercollections_voucherid_collectionid_key"}) {
+		if vcs.s.IsUniqueConstraintError(err, []string{"VoucherID", "CollectionID", "vouchercollections_voucherid_collectionid_key"}) {
 			return nil, store.NewErrInvalidInput(store.VoucherCollectionTableName, "VoucherID/CollectionID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to upsert voucher-collection relation with id=%s", voucherCollection.Id)
@@ -81,7 +81,7 @@ func (vcs *SqlVoucherCollectionStore) Upsert(voucherCollection *model.VoucherCol
 // Get finds a voucher collection with given id, then returns it with an error
 func (vcs *SqlVoucherCollectionStore) Get(voucherCollectionID string) (*model.VoucherCollection, error) {
 	var res model.VoucherCollection
-	err := vcs.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherCollectionTableName+" WHERE Id = ?", voucherCollectionID)
+	err := vcs.s.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherCollectionTableName+" WHERE Id = ?", voucherCollectionID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.VoucherCollectionTableName, voucherCollectionID)
@@ -90,4 +90,28 @@ func (vcs *SqlVoucherCollectionStore) Get(voucherCollectionID string) (*model.Vo
 	}
 
 	return &res, nil
+}
+
+func (s *SqlVoucherCollectionStore) FilterByOptions(options *model.VoucherCollectionFilterOptions) ([]*model.VoucherCollection, error) {
+	query := s.s.GetQueryBuilder().Select("*").From(store.VoucherCollectionTableName)
+
+	if options.VoucherID != nil {
+		query = query.Where(options.VoucherID)
+	}
+	if options.CollectionID != nil {
+		query = query.Where(options.CollectionID)
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.VoucherCollection
+	err = s.s.GetReplicaX().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find voucher collection relations by given options")
+	}
+
+	return res, nil
 }

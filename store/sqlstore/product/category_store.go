@@ -119,8 +119,7 @@ func (cs *SqlCategoryStore) Get(categoryID string) (*model.Category, error) {
 func (cs *SqlCategoryStore) commonQueryBuilder(option *model.CategoryFilterOption) (string, []interface{}, error) {
 	query := cs.GetQueryBuilder().
 		Select(cs.ModelFields(store.CategoryTableName + ".")...).
-		From(store.CategoryTableName).
-		OrderBy(store.TableOrderingMap[store.CategoryTableName])
+		From(store.CategoryTableName)
 
 	if option.LockForUpdate {
 		query = query.Suffix("FOR UPDATE")

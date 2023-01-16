@@ -14,9 +14,9 @@ type VoucherChannelListing struct {
 	CreateAt       int64            `json:"create_at"` // this field is for ordering
 	VoucherID      string           `json:"voucher_id"`
 	ChannelID      string           `json:"channel_id"`
-	DiscountValue  *decimal.Decimal `json:"discount_value"`
+	DiscountValue  *decimal.Decimal `json:"discount_value"` // default decimal.Zero
 	Currency       string           `json:"currency"`
-	MinSpentAmount *decimal.Decimal `json:"min_spent_amount"`
+	MinSpentAmount *decimal.Decimal `json:"min_spent_amount"` // default decimal.Zero
 	Discount       *goprices.Money  `json:"discount,omitempty" db:"-"`
 	MinSpent       *goprices.Money  `json:"min_spent,omitempty" db:"-"`
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/measurement"
 	"golang.org/x/text/language"
 )
@@ -156,14 +157,7 @@ func (a *Attribute) IsValid() *AppError {
 type Attributes []*Attribute
 
 func (as Attributes) IDs() []string {
-	res := []string{}
-	for _, item := range as {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
-
-	return res
+	return lo.Map(as, func(a *Attribute, _ int) string { return a.Id })
 }
 
 func (a *Attribute) PreSave() {

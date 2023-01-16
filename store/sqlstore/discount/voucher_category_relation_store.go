@@ -89,3 +89,30 @@ func (vcs *SqlVoucherCategoryStore) Get(voucherCategoryID string) (*model.Vouche
 
 	return &res, nil
 }
+
+func (s *SqlVoucherCategoryStore) FilterByOptions(options *model.VoucherCategoryFilterOption) ([]*model.VoucherCategory, error) {
+	query := s.GetQueryBuilder().Select("*").From(store.VoucherCategoryTableName)
+
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+	if options.VoucherID != nil {
+		query = query.Where(options.VoucherID)
+	}
+	if options.CategoryID != nil {
+		query = query.Where(options.CategoryID)
+	}
+
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.VoucherCategory
+	err = s.GetReplicaX().Select(&res, queryStr, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find voucher category relations by given options")
+	}
+
+	return res, nil
+}

@@ -146,9 +146,7 @@ func (o *OrderDiscount) commonPre() {
 		o.Value = &decimal.Zero
 	}
 
-	if o.Amount != nil {
-		o.AmountValue = &o.Amount.Amount
-	} else {
+	if o.AmountValue == nil {
 		o.AmountValue = &decimal.Zero
 	}
 

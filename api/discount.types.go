@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/base64"
 	"net/http"
 	"strings"
 	"time"
@@ -9,8 +10,10 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
@@ -301,8 +304,8 @@ type Voucher struct {
 	PrivateMetadata          []*MetadataItem       `json:"privateMetadata"`
 	Metadata                 []*MetadataItem       `json:"metadata"`
 	Countries                []*CountryDisplay     `json:"countries"`
-	Translation              *VoucherTranslation   `json:"translation"`
 
+	// Translation              *VoucherTranslation   `json:"translation"`
 	// Categories               *CategoryCountableConnection       `json:"categories"`
 	// Collections              *CollectionCountableConnection     `json:"collections"`
 	// Products                 *ProductCountableConnection        `json:"products"`
@@ -317,7 +320,222 @@ func systemVoucherToGraphqlVoucher(v *model.Voucher) *Voucher {
 	if v == nil {
 		return nil
 	}
+
+	res := &Voucher{
+		ID:                       v.Id,
+		Name:                     v.Name,
+		Type:                     VoucherTypeEnum(v.Type),
+		Code:                     v.Code,
+		Used:                     int32(v.Used),
+		StartDate:                DateTime{util.TimeFromMillis(v.StartDate)},
+		ApplyOncePerOrder:        v.ApplyOncePerOrder,
+		ApplyOncePerCustomer:     v.ApplyOncePerCustomer,
+		DiscountValueType:        DiscountValueTypeEnum(v.DiscountValueType),
+		MinCheckoutItemsQuantity: model.NewPrimitive[int32](int32(v.MinCheckoutItemsQuantity)),
+		Metadata:                 MetadataToSlice(v.Metadata),
+		PrivateMetadata:          MetadataToSlice(v.PrivateMetadata),
+	}
+
+	countries := strings.Fields(v.Countries)
+	if len(countries) > 0 {
+		for _, code := range countries {
+			res.Countries = append(res.Countries, &CountryDisplay{
+				Code:    code,
+				Country: model.Countries[code],
+			})
+		}
+	}
+
+	if v.EndDate != nil {
+		res.EndDate = &DateTime{util.TimeFromMillis(*v.EndDate)}
+	}
+	if v.UsageLimit != nil {
+		res.UsageLimit = model.NewPrimitive[int32](int32(*v.UsageLimit))
+	}
+
+	return res
+}
+
+func (v *Voucher) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*VoucherTranslation, error) {
 	panic("not implemented")
+}
+
+// categories are order by names
+func (v *Voucher) Categories(ctx context.Context, args struct {
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
+}) (*CategoryCountableConnection, error) {
+	categories, err := dataloaders.CategoriesByVoucherIDLoader.Load(ctx, v.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	// unbase64:
+	var (
+		before *string
+		after  *string
+	)
+
+	if args.Before != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.Before)
+		if err != nil {
+			return nil, model.NewAppError("Voucher.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
+		}
+		before = model.NewPrimitive(string(data))
+	}
+	if args.After != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.After)
+		if err != nil {
+			return nil, model.NewAppError("Voucher.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
+		}
+		after = model.NewPrimitive(string(data))
+	}
+
+	g := graphqlPaginator[*model.Category, string]{
+		data:    categories,
+		keyFunc: func(c *model.Category) string { return c.Name },
+
+		before: before,
+		after:  after,
+		first:  args.First,
+		last:   args.Last,
+	}
+
+	data, hasPrev, hasNext, appErr := g.parse("Voucher.Categories")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	res := &CategoryCountableConnection{
+		TotalCount: model.NewPrimitive(int32(len(categories))),
+		Edges: lo.Map(data, func(c *model.Category, _ int) *CategoryCountableEdge {
+			return &CategoryCountableEdge{
+				systemCategoryToGraphqlCategory(c),
+				base64.StdEncoding.EncodeToString([]byte(c.Name)),
+			}
+		}),
+	}
+	res.PageInfo = &PageInfo{
+		HasNextPage:     hasNext,
+		HasPreviousPage: hasPrev,
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
+	}
+
+	return res, nil
+}
+
+// collections order by slugs
+func (v *Voucher) Collections(ctx context.Context, args struct {
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
+}) (*CollectionCountableConnection, error) {
+	collections, err := dataloaders.CollectionsByVoucherIDLoader.Load(ctx, v.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	// unbase64
+	var (
+		before *string
+		after  *string
+	)
+
+	if args.Before != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.Before)
+		if err != nil {
+			return nil, model.NewAppError("Voucher.Collections", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
+		}
+		before = model.NewPrimitive(string(data))
+	}
+	if args.After != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.After)
+		if err != nil {
+			return nil, model.NewAppError("Voucher.Collections", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
+		}
+		after = model.NewPrimitive(string(data))
+	}
+
+	g := graphqlPaginator[*model.Collection, string]{
+		data:    collections,
+		keyFunc: func(c *model.Collection) string { return c.Slug },
+		before:  before,
+		after:   after,
+		first:   args.First,
+		last:    args.Last,
+	}
+
+	data, hasPrev, hasNext, appErr := g.parse("Voucher.Collections")
+	if err != nil {
+		return nil, appErr
+	}
+
+	res := &CollectionCountableConnection{
+		TotalCount: model.NewPrimitive(int32(len(collections))),
+		Edges: lo.Map(data, func(c *model.Collection, _ int) *CollectionCountableEdge {
+			return &CollectionCountableEdge{
+				systemCollectionToGraphqlCollection(c),
+				base64.StdEncoding.EncodeToString([]byte(c.Slug)),
+			}
+		}),
+	}
+
+	res.PageInfo = &PageInfo{hasNext, hasPrev, &res.Edges[0].Cursor, &res.Edges[len(res.Edges)-1].Cursor}
+
+	return res, nil
+}
+
+func (v *Voucher) Products(ctx context.Context, args struct {
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
+}) (*ProductCountableConnection, error) {
+	panic("not implemented")
+}
+
+func (v *Voucher) Variants(ctx context.Context, args struct {
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
+}) (*ProductVariantCountableConnection, error) {
+	panic("not implemented")
+}
+
+func (v *Voucher) DiscountValue(ctx context.Context) (*float64, error) {
+	panic("not implemented")
+}
+
+func (v *Voucher) Currency(ctx context.Context) (*string, error) {
+	panic("not implemented")
+}
+
+func (v *Voucher) MinSpent(ctx context.Context) (*Money, error) {
+	panic("not implemented")
+}
+
+func (v *Voucher) ChannelListings(ctx context.Context) ([]*VoucherChannelListing, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	currentSession := embedCtx.AppContext.Session()
+	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageDiscounts) {
+		listings, err := dataloaders.VoucherChannelListingByVoucherIdLoader.Load(ctx, v.ID)()
+		if err != nil {
+			return nil, err
+		}
+
+		return DataloaderResultMap(listings, systemVoucherChannelListingToGraphqlVoucherChannelListing), nil
+	}
+
+	return nil, model.NewAppError("Voucher.ChannelListings", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
 }
 
 func voucherByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Voucher] {
@@ -410,12 +628,12 @@ errorLabel:
 	return res
 }
 
-func voucherChannelListingByVoucherIdLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[*model.VoucherChannelListing] {
+func voucherChannelListingByVoucherIdLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[[]*model.VoucherChannelListing] {
 	var (
-		res                      = make([]*dataloader.Result[*model.VoucherChannelListing], len(voucherIDs))
+		res                      = make([]*dataloader.Result[[]*model.VoucherChannelListing], len(voucherIDs))
 		voucherChannelListings   []*model.VoucherChannelListing
 		appErr                   *model.AppError
-		voucherChannelListingMap = map[string]*model.VoucherChannelListing{} // keys are voucher ids
+		voucherChannelListingMap = map[string][]*model.VoucherChannelListing{} // keys are voucher ids
 	)
 
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -433,17 +651,57 @@ func voucherChannelListingByVoucherIdLoader(ctx context.Context, voucherIDs []st
 	}
 
 	for _, rel := range voucherChannelListings {
-		voucherChannelListingMap[rel.VoucherID] = rel
+		voucherChannelListingMap[rel.VoucherID] = append(voucherChannelListingMap[rel.VoucherID], rel)
 	}
 
 	for idx, id := range voucherIDs {
-		res[idx] = &dataloader.Result[*model.VoucherChannelListing]{Data: voucherChannelListingMap[id]}
+		res[idx] = &dataloader.Result[[]*model.VoucherChannelListing]{Data: voucherChannelListingMap[id]}
 	}
 	return res
 
 errorLabel:
 	for idx := range voucherIDs {
-		res[idx] = &dataloader.Result[*model.VoucherChannelListing]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.VoucherChannelListing]{Error: err}
 	}
 	return res
+}
+
+// ------------ voucher channel listing
+
+type VoucherChannelListing struct {
+	ID string `json:"id"`
+	// Channel       *Channel `json:"channel"`
+	DiscountValue float64 `json:"discountValue"`
+	Currency      string  `json:"currency"`
+	MinSpent      *Money  `json:"minSpent"`
+
+	channelID string
+}
+
+func systemVoucherChannelListingToGraphqlVoucherChannelListing(l *model.VoucherChannelListing) *VoucherChannelListing {
+	if l == nil {
+		return nil
+	}
+
+	l.PopulateNonDbFields()
+
+	res := &VoucherChannelListing{
+		ID:        l.Id,
+		Currency:  l.Currency,
+		MinSpent:  SystemMoneyToGraphqlMoney(l.MinSpent),
+		channelID: l.ChannelID,
+	}
+
+	flt, _ := l.DiscountValue.Float64()
+	res.DiscountValue = flt
+	return res
+}
+
+func (v *VoucherChannelListing) Channel(ctx context.Context) (*Channel, error) {
+	channel, err := dataloaders.ChannelByIdLoader.Load(ctx, v.channelID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemChannelToGraphqlChannel(channel), nil
 }

@@ -1,5 +1,7 @@
 package model
 
+import "github.com/Masterminds/squirrel"
+
 // VoucherCollection represents voucher collection relationship
 type VoucherCollection struct {
 	Id           string `json:"id"`
@@ -11,6 +13,11 @@ func (v *VoucherCollection) PreSave() {
 	if v.Id == "" {
 		v.Id = NewId()
 	}
+}
+
+type VoucherCollectionFilterOptions struct {
+	VoucherID    squirrel.Sqlizer
+	CollectionID squirrel.Sqlizer
 }
 
 func (v *VoucherCollection) IsValid() *AppError {

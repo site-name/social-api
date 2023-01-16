@@ -11,7 +11,15 @@ type AttributeProduct struct {
 	ProductTypeID string `json:"product_type_id"` // to product.ProductType
 	Sortable
 
-	Attribute *Attribute `json:"-" db:"-"`
+	attribute *Attribute `db:"-"`
+}
+
+func (a *AttributeProduct) GetAttribute() *Attribute {
+	return a.attribute
+}
+
+func (a *AttributeProduct) SetAttribute(at *Attribute) {
+	a.attribute = at
 }
 
 // AttributeProductFilterOption is used when finding an attributeProduct.
@@ -58,8 +66,8 @@ func (a *AttributeProduct) DeepCopy() *AttributeProduct {
 	if a.SortOrder != nil {
 		res.SortOrder = NewPrimitive(*a.SortOrder)
 	}
-	if a.Attribute != nil {
-		res.Attribute = a.Attribute.DeepCopy()
+	if a.attribute != nil {
+		res.attribute = a.attribute.DeepCopy()
 	}
 	return &res
 }

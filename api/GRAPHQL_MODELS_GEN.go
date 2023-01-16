@@ -3075,24 +3075,6 @@ type RequestPasswordReset struct {
 	Ok bool `json:"ok"`
 }
 
-type Sale struct {
-	ID              string                             `json:"id"`
-	Name            string                             `json:"name"`
-	Type            SaleType                           `json:"type"`
-	StartDate       DateTime                           `json:"startDate"`
-	EndDate         *DateTime                          `json:"endDate"`
-	PrivateMetadata []*MetadataItem                    `json:"privateMetadata"`
-	Metadata        []*MetadataItem                    `json:"metadata"`
-	Categories      *CategoryCountableConnection       `json:"categories"`
-	Collections     *CollectionCountableConnection     `json:"collections"`
-	Products        *ProductCountableConnection        `json:"products"`
-	Variants        *ProductVariantCountableConnection `json:"variants"`
-	Translation     *SaleTranslation                   `json:"translation"`
-	ChannelListings []*SaleChannelListing              `json:"channelListings"`
-	DiscountValue   *float64                           `json:"discountValue"`
-	Currency        *string                            `json:"currency"`
-}
-
 type SaleAddCatalogues struct {
 	Sale   *Sale            `json:"sale"`
 	Errors []*DiscountError `json:"errors"`
@@ -3779,14 +3761,6 @@ type VoucherAddCatalogues struct {
 type VoucherBulkDelete struct {
 	Count  int32            `json:"count"`
 	Errors []*DiscountError `json:"errors"`
-}
-
-type VoucherChannelListing struct {
-	ID            string   `json:"id"`
-	Channel       *Channel `json:"channel"`
-	DiscountValue float64  `json:"discountValue"`
-	Currency      string   `json:"currency"`
-	MinSpent      *Money   `json:"minSpent"`
 }
 
 type VoucherChannelListingAddInput struct {

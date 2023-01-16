@@ -2,6 +2,8 @@ package model
 
 import (
 	"errors"
+
+	"github.com/samber/lo"
 )
 
 // CheckoutLineInfo contains information of a checkout line
@@ -18,39 +20,18 @@ type CheckoutLineInfo struct {
 type CheckoutLineInfos []*CheckoutLineInfo
 
 // CheckoutLines returns a list of checkout lines
-func (c CheckoutLineInfos) CheckoutLines() CheckoutLines {
-	var res CheckoutLines
-	for _, item := range c {
-		if item != nil {
-			res = append(res, &item.Line)
-		}
-	}
-
-	return res
+func (cs CheckoutLineInfos) CheckoutLines() CheckoutLines {
+	return lo.Map(cs, func(c *CheckoutLineInfo, _ int) *CheckoutLine { return &c.Line })
 }
 
 // Products returns a list of products from current checkout line infos
-func (c CheckoutLineInfos) Products() Products {
-	var res Products
-	for _, item := range c {
-		if item != nil {
-			res = append(res, &item.Product)
-		}
-	}
-
-	return res
+func (cs CheckoutLineInfos) Products() Products {
+	return lo.Map(cs, func(c *CheckoutLineInfo, _ int) *Product { return &c.Product })
 }
 
 // FilterNils returns a list of non-nil checkout line info(s)
-func (c CheckoutLineInfos) FilterNils() CheckoutLineInfos {
-	var res CheckoutLineInfos
-	for _, item := range c {
-		if item != nil {
-			res = append(res, item)
-		}
-	}
-
-	return res
+func (cs CheckoutLineInfos) FilterNils() CheckoutLineInfos {
+	return lo.Filter(cs, func(c *CheckoutLineInfo, _ int) bool { return c != nil })
 }
 
 // CheckoutInfo contains information of a checkout

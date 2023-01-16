@@ -21,7 +21,6 @@ type Status struct {
 
 func (o *Status) ToJSON() string {
 	oCopy := *o
-	// oCopy.ActiveChannel = ""
 	return ModelToJson(&oCopy)
 }
 
@@ -40,7 +39,6 @@ func StatusListToJson(u []*Status) string {
 	uCopy := make([]Status, len(u))
 	for i, s := range u {
 		sCopy := *s
-		// sCopy.ActiveChannel = ""
 		uCopy[i] = sCopy
 	}
 
