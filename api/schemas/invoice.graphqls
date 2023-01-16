@@ -10,14 +10,15 @@ extend type Mutation {
 type Invoice {
   id: String!
   metadata: [MetadataItem]!
-  status: JobStatusEnum!
   number: String
   externalUrl: String
   privateMetadata: [MetadataItem]!
   createdAt: DateTime!
-  updatedAt: DateTime!
-  message: String
   url: String
+
+  # status: JobStatusEnum!
+  # updatedAt: DateTime!
+  # message: String
 }
 
 type InvoiceRequest {

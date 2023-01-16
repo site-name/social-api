@@ -13,21 +13,24 @@ import (
 )
 
 type Category struct {
-	ID              string                       `json:"id"`
-	SeoTitle        *string                      `json:"seoTitle"`
-	SeoDescription  *string                      `json:"seoDescription"`
-	Name            string                       `json:"name"`
-	Description     JSONString                   `json:"description"`
-	Slug            string                       `json:"slug"`
-	Parent          *Category                    `json:"parent"`
-	Level           int32                        `json:"level"`
-	PrivateMetadata []*MetadataItem              `json:"privateMetadata"`
-	Metadata        []*MetadataItem              `json:"metadata"`
-	Ancestors       *CategoryCountableConnection `json:"ancestors"`
-	Products        *ProductCountableConnection  `json:"products"`
-	Children        *CategoryCountableConnection `json:"children"`
-	BackgroundImage *Image                       `json:"backgroundImage"`
-	Translation     *CategoryTranslation         `json:"translation"`
+	ID              string          `json:"id"`
+	SeoTitle        *string         `json:"seoTitle"`
+	SeoDescription  *string         `json:"seoDescription"`
+	Name            string          `json:"name"`
+	Description     JSONString      `json:"description"`
+	Slug            string          `json:"slug"`
+	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
+	Metadata        []*MetadataItem `json:"metadata"`
+
+	parentID *string
+
+	// BackgroundImage *Image          `json:"backgroundImage"`
+	// Level           int32           `json:"level"`
+	// Parent          *Category       `json:"parent"`
+	// Ancestors       *CategoryCountableConnection `json:"ancestors"`
+	// Products        *ProductCountableConnection  `json:"products"`
+	// Children        *CategoryCountableConnection `json:"children"`
+	// Translation     *CategoryTranslation         `json:"translation"`
 }
 
 func systemCategoryToGraphqlCategory(c *model.Category) *Category {
@@ -35,6 +38,56 @@ func systemCategoryToGraphqlCategory(c *model.Category) *Category {
 		return nil
 	}
 
+	return &Category{
+		ID:              c.Id,
+		SeoTitle:        c.SeoTitle,
+		SeoDescription:  c.SeoDescription,
+		Name:            c.Name,
+		Description:     JSONString(c.Description),
+		Slug:            c.Slug,
+		Metadata:        MetadataToSlice(c.Metadata),
+		PrivateMetadata: MetadataToSlice(c.PrivateMetadata),
+
+		parentID: c.ParentID,
+	}
+}
+
+func (c *Category) BackgroundImage(ctx context.Context, args struct{ Size *int32 }) (*Image, error) {
+	panic("not implemented")
+}
+
+func (c *Category) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*CategoryTranslation, error) {
+	panic("not implemented")
+}
+
+func (c *Category) Parent(ctx context.Context) (*Category, error) {
+	panic("not implemented")
+}
+
+func (c *Category) Ancestors(ctx context.Context, args struct {
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
+}) (*CategoryCountableConnection, error) {
+	panic("not implemented")
+}
+
+func (c *Category) Children(ctx context.Context, args struct {
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
+}) (*CategoryCountableConnection, error) {
+	panic("not implemented")
+}
+
+func (c *Category) Products(ctx context.Context, args struct {
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
+}) (*ProductCountableConnection, error) {
 	panic("not implemented")
 }
 

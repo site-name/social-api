@@ -16,13 +16,13 @@ const (
 )
 
 type Category struct {
-	Id                 string  `json:"id"`
-	Name               string  `json:"name"` // unique
-	Slug               string  `json:"slug"` // unique
-	Description        *string `json:"description"`
-	ParentID           *string `json:"parent_id"`
-	BackgroundImage    *string `json:"background_image"`
-	BackgroundImageAlt string  `json:"background_image_alt"`
+	Id                 string          `json:"id"`
+	Name               string          `json:"name"` // unique
+	Slug               string          `json:"slug"` // unique
+	Description        StringInterface `json:"description"`
+	ParentID           *string         `json:"parent_id"`
+	BackgroundImage    *string         `json:"background_image"`
+	BackgroundImageAlt string          `json:"background_image_alt"`
 	Seo
 	ModelMetadata
 
@@ -91,7 +91,7 @@ func (s *Category) DeepCopy() *Category {
 
 	res := *s
 	if s.Description != nil {
-		res.Description = NewPrimitive(*s.Description)
+		res.Description = s.Description.DeepCopy()
 	}
 	if s.ParentID != nil {
 		res.ParentID = NewPrimitive(*s.ParentID)

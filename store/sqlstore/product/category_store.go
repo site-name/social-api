@@ -2,6 +2,7 @@ package product
 
 import (
 	"database/sql"
+	"encoding/json"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
@@ -166,10 +167,41 @@ func (cs *SqlCategoryStore) FilterByOption(option *model.CategoryFilterOption) (
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	var res []*model.Category
-	err = cs.GetReplicaX().Select(&res, queryString, args...)
+	rows, err := cs.GetReplicaX().QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find categories with given option")
+	}
+	defer rows.Close()
+
+	var res []*model.Category
+
+	for rows.Next() {
+		var cate model.Category
+		var description []byte
+
+		err = rows.Scan(
+			&cate.Id,
+			&cate.Name,
+			&cate.Slug,
+			&description,
+			&cate.ParentID,
+			&cate.BackgroundImage,
+			&cate.BackgroundImageAlt,
+			&cate.SeoTitle,
+			&cate.Metadata,
+			&cate.PrivateMetadata,
+		)
+
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row of category")
+		}
+
+		err = json.Unmarshal(description, &cate.Description)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to parse category's description")
+		}
+
+		res = append(res, &cate)
 	}
 
 	return res, nil
@@ -182,14 +214,32 @@ func (cs *SqlCategoryStore) GetByOption(option *model.CategoryFilterOption) (*mo
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	var res model.Category
-	err = cs.GetReplicaX().Get(&res, queryString, args...)
+	var cate model.Category
+	var description []byte
+
+	err = cs.GetReplicaX().QueryRowX(queryString, args...).Scan(
+		&cate.Id,
+		&cate.Name,
+		&cate.Slug,
+		&description,
+		&cate.ParentID,
+		&cate.BackgroundImage,
+		&cate.BackgroundImageAlt,
+		&cate.SeoTitle,
+		&cate.Metadata,
+		&cate.PrivateMetadata,
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.CategoryTableName, "option")
 		}
-		return nil, errors.Wrap(err, "failed to find categories with given option")
+		return nil, errors.Wrap(err, "failed to find category with given option")
 	}
 
-	return &res, nil
+	err = json.Unmarshal(description, &cate.Description)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to scan category's description")
+	}
+
+	return &cate, nil
 }

@@ -3085,13 +3085,6 @@ type SaleBulkDelete struct {
 	Errors []*DiscountError `json:"errors"`
 }
 
-type SaleChannelListing struct {
-	ID            string   `json:"id"`
-	Channel       *Channel `json:"channel"`
-	DiscountValue float64  `json:"discountValue"`
-	Currency      string   `json:"currency"`
-}
-
 type SaleChannelListingAddInput struct {
 	ChannelID     string          `json:"channelId"`
 	DiscountValue PositiveDecimal `json:"discountValue"`

@@ -782,7 +782,7 @@ errorLabel:
 	return res
 }
 
-// ------------ voucher channel listing
+// ------------ voucher channel listing ---------------
 
 type VoucherChannelListing struct {
 	ID string `json:"id"`
@@ -815,6 +815,42 @@ func systemVoucherChannelListingToGraphqlVoucherChannelListing(l *model.VoucherC
 
 func (v *VoucherChannelListing) Channel(ctx context.Context) (*Channel, error) {
 	channel, err := ChannelByIdLoader.Load(ctx, v.channelID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemChannelToGraphqlChannel(channel), nil
+}
+
+// ---------------------- sale channel listing
+
+type SaleChannelListing struct {
+	ID            string  `json:"id"`
+	DiscountValue float64 `json:"discountValue"`
+	Currency      string  `json:"currency"`
+
+	// Channel       *Channel `json:"channel"`
+
+	channelID string
+}
+
+func systemSaleChannelListingToGraphqlSaleChannelListing(s *model.SaleChannelListing) *SaleChannelListing {
+	if s == nil {
+		return nil
+	}
+
+	flt, _ := s.DiscountValue.Float64()
+
+	return &SaleChannelListing{
+		ID:            s.Id,
+		DiscountValue: flt,
+		Currency:      s.Currency,
+		channelID:     s.ChannelID,
+	}
+}
+
+func (s *SaleChannelListing) Channel(ctx context.Context) (*Channel, error) {
+	channel, err := ChannelByIdLoader.Load(ctx, s.channelID)()
 	if err != nil {
 		return nil, err
 	}
