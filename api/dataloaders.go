@@ -83,6 +83,10 @@ var (
 	CollectionsByVoucherIDLoader                        = NewBatchedLoader(collectionsByVoucherIDLoader, WithBatchCapacity[string, []*model.Collection](batchCapacity))
 	ProductsByVoucherIDLoader                           = NewBatchedLoader(productsByVoucherIDLoader, WithBatchCapacity[string, []*model.Product](batchCapacity))
 	ProductVariantsByVoucherIDLoader                    = NewBatchedLoader(productVariantsByVoucherIdLoader, WithBatchCapacity[string, []*model.ProductVariant](batchCapacity))
+	CategoriesBySaleIDLoader                            = NewBatchedLoader(categoriesBySaleIDLoader, WithBatchCapacity[string, []*model.Category](batchCapacity))
+	CollectionsBySaleIDLoader                           = NewBatchedLoader(collectionsBySaleIDLoader, WithBatchCapacity[string, []*model.Collection](batchCapacity))
+	ProductsBySaleIDLoader                              = NewBatchedLoader(productsBySaleIDLoader, WithBatchCapacity[string, []*model.Product](batchCapacity))
+	ProductVariantsBySaleIDLoader                       = NewBatchedLoader(productVariantsBySaleIDLoader, WithBatchCapacity[string, []*model.ProductVariant](batchCapacity))
 
 	// warehouse
 	WarehouseByIdLoader            = NewBatchedLoader(warehouseByIdLoader, WithBatchCapacity[string, *model.WareHouse](batchCapacity))

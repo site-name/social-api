@@ -399,10 +399,10 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 				productVariantsMap[variant.Id] = variant
 
 				if dgt := digitalContentsMap[variant.Id]; dgt != nil {
-					variant.DigitalContent = dgt
+					variant.SetDigitalContent(dgt)
 				}
 				if prd := productsMap[variant.ProductID]; prd != nil {
-					variant.Product = prd
+					variant.SetProduct(prd)
 				}
 				if stocks, ok := stocksMap[variant.Id]; ok && len(stocks) > 0 {
 					variant.SetStocks(stocks)

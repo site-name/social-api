@@ -9,19 +9,8 @@ import (
 // SaleCollectionsByOptions returns a slice of sale-collection relations filtered using given options
 func (s *ServiceDiscount) SaleCollectionsByOptions(options *model.SaleCollectionRelationFilterOption) ([]*model.SaleCollectionRelation, *model.AppError) {
 	saleCollections, err := s.srv.Store.SaleCollectionRelation().FilterByOption(options)
-	var (
-		statusCode int
-		errMessage string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMessage = err.Error()
-	} else if len(saleCollections) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("SaleCollectionsByOptions", "app.discount.error_finding_sale_collections_by_options.app_error", nil, errMessage, statusCode)
+		return nil, model.NewAppError("SaleCollectionsByOptions", "app.discount.error_finding_sale_collections_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return saleCollections, nil

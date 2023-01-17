@@ -227,8 +227,7 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 
 	query := vs.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.ProductVariantTableName).
-		OrderBy(store.TableOrderingMap[store.ProductVariantTableName])
+		From(store.ProductVariantTableName)
 
 	// parse option
 	if option.Distinct {
@@ -311,7 +310,7 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 		}
 
 		if option.SelectRelatedDigitalContent {
-			variant.DigitalContent = digitalContent.DeepCopy()
+			variant.SetDigitalContent(&digitalContent)
 		}
 		res = append(res, variant.DeepCopy())
 	}

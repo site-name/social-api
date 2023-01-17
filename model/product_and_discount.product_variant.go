@@ -32,9 +32,9 @@ type ProductVariant struct {
 	Sortable
 	ModelMetadata
 
-	DigitalContent *DigitalContent `json:"-" db:"-"` // for storing value returned by prefetching
-	Product        *Product        `json:"-" db:"-"`
-	stocks         Stocks          `json:"-" db:"-"`
+	digitalContent *DigitalContent `db:"-"` // for storing value returned by prefetching
+	product        *Product        `db:"-"`
+	stocks         Stocks          `db:"-"`
 }
 
 // ProductVariantFilterOption is used to build sql queries
@@ -52,6 +52,7 @@ type ProductVariantFilterOption struct {
 	Distinct bool // if true, use SELECT DISTINCT
 
 	VoucherID squirrel.Sqlizer // INNER JOIN VariantVouchers ON ... WHERE VariantVouchers.VoucherID ...
+	SaleID    squirrel.Sqlizer // INNER JOIN VariantSales ON ... WHERE VariantSales.SaleID ...
 
 	SelectRelatedDigitalContent bool // if true, JOIN Digital content table and attach related values to returning values(s)
 }
@@ -82,6 +83,22 @@ func (s *ProductVariant) SetStocks(stk Stocks) {
 
 func (p *ProductVariant) GetStocks() Stocks {
 	return p.stocks
+}
+
+func (s *ProductVariant) SetProduct(prd *Product) {
+	s.product = prd
+}
+
+func (p *ProductVariant) GetProduct() *Product {
+	return p.product
+}
+
+func (s *ProductVariant) SetDigitalContent(d *DigitalContent) {
+	s.digitalContent = d
+}
+
+func (p *ProductVariant) GetDigitalContent() *DigitalContent {
+	return p.digitalContent
 }
 
 // FilterNils returns new ProductVariants contains all non-nil items from current ProductVariants
@@ -194,11 +211,11 @@ func (p *ProductVariant) DeepCopy() *ProductVariant {
 
 	res.ModelMetadata = p.ModelMetadata.DeepCopy()
 
-	if p.Product != nil {
-		res.Product = p.Product.DeepCopy()
+	if p.product != nil {
+		res.product = p.product.DeepCopy()
 	}
-	if p.DigitalContent != nil {
-		res.DigitalContent = p.DigitalContent.DeepCopy()
+	if p.digitalContent != nil {
+		res.digitalContent = p.digitalContent.DeepCopy()
 	}
 	if p.stocks != nil {
 		res.stocks = p.stocks.DeepCopy()

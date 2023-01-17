@@ -2,8 +2,11 @@ package api
 
 import (
 	"context"
+	"encoding/base64"
 	"net/http"
 
+	"github.com/samber/lo"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
 )
@@ -57,7 +60,60 @@ func (s *Sale) Categories(ctx context.Context, args struct {
 	First  *int32
 	Last   *int32
 }) (*CategoryCountableConnection, error) {
-	panic("not implemented")
+	categories, err := CategoriesBySaleIDLoader.Load(ctx, s.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	var before *string
+	var after *string
+	if args.Before != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.Before)
+		if err != nil {
+			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
+		}
+		before = model.NewPrimitive(string(data))
+	}
+	if args.After != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.After)
+		if err != nil {
+			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
+		}
+		after = model.NewPrimitive(string(data))
+	}
+
+	p := graphqlPaginator[*model.Category, string]{
+		data:    categories,
+		keyFunc: func(c *model.Category) string { return c.Slug },
+		before:  before,
+		after:   after,
+		first:   args.First,
+		last:    args.Last,
+	}
+
+	data, hasPrev, hasNext, appErr := p.parse("sale.Categories")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	res := &CategoryCountableConnection{
+		TotalCount: model.NewPrimitive(int32(len(categories))),
+		Edges: lo.Map(data, func(c *model.Category, _ int) *CategoryCountableEdge {
+			return &CategoryCountableEdge{
+				Node:   systemCategoryToGraphqlCategory(c),
+				Cursor: base64.StdEncoding.EncodeToString([]byte(c.Slug)),
+			}
+		}),
+	}
+
+	res.PageInfo = &PageInfo{
+		HasNextPage:     hasNext,
+		HasPreviousPage: hasPrev,
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
+	}
+
+	return res, nil
 }
 
 func (s *Sale) Collections(ctx context.Context, args struct {
@@ -66,7 +122,59 @@ func (s *Sale) Collections(ctx context.Context, args struct {
 	First  *int32
 	Last   *int32
 }) (*CollectionCountableConnection, error) {
-	panic("not implemented")
+	collections, err := CollectionsBySaleIDLoader.Load(ctx, s.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	var before *string
+	var after *string
+	if args.Before != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.Before)
+		if err != nil {
+			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
+		}
+		before = model.NewPrimitive(string(data))
+	}
+	if args.After != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.After)
+		if err != nil {
+			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
+		}
+		after = model.NewPrimitive(string(data))
+	}
+
+	p := graphqlPaginator[*model.Collection, string]{
+		data:    collections,
+		keyFunc: func(c *model.Collection) string { return c.Slug },
+		before:  before,
+		after:   after,
+		first:   args.First,
+		last:    args.Last,
+	}
+
+	data, hasPrev, hasNext, appErr := p.parse("Sale.Collections")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	res := &CollectionCountableConnection{
+		TotalCount: model.NewPrimitive(int32(len(collections))),
+		Edges: lo.Map(data, func(c *model.Collection, _ int) *CollectionCountableEdge {
+			return &CollectionCountableEdge{
+				Node:   systemCollectionToGraphqlCollection(c),
+				Cursor: base64.StdEncoding.EncodeToString([]byte(c.Slug)),
+			}
+		}),
+	}
+	res.PageInfo = &PageInfo{
+		HasNextPage:     hasNext,
+		HasPreviousPage: hasPrev,
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
+	}
+
+	return res, nil
 }
 
 func (s *Sale) Products(ctx context.Context, args struct {
@@ -75,7 +183,59 @@ func (s *Sale) Products(ctx context.Context, args struct {
 	First  *int32
 	Last   *int32
 }) (*ProductCountableConnection, error) {
-	panic("not implemented")
+	products, err := ProductsBySaleIDLoader.Load(ctx, s.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	var before *string
+	var after *string
+	if args.Before != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.Before)
+		if err != nil {
+			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
+		}
+		before = model.NewPrimitive(string(data))
+	}
+	if args.After != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.After)
+		if err != nil {
+			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
+		}
+		after = model.NewPrimitive(string(data))
+	}
+
+	p := graphqlPaginator[*model.Product, string]{
+		data:    products,
+		keyFunc: func(p *model.Product) string { return p.Slug },
+		before:  before,
+		after:   after,
+		first:   args.First,
+		last:    args.Last,
+	}
+
+	data, hasPrev, hasNext, appErr := p.parse("Sale.Products")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	res := &ProductCountableConnection{
+		TotalCount: model.NewPrimitive(int32(len(products))),
+		Edges: lo.Map(data, func(p *model.Product, _ int) *ProductCountableEdge {
+			return &ProductCountableEdge{
+				Node:   SystemProductToGraphqlProduct(p),
+				Cursor: base64.StdEncoding.EncodeToString([]byte(p.Slug)),
+			}
+		}),
+	}
+	res.PageInfo = &PageInfo{
+		HasNextPage:     hasNext,
+		HasPreviousPage: hasPrev,
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
+	}
+
+	return res, nil
 }
 
 func (s *Sale) Variants(ctx context.Context, args struct {
@@ -84,11 +244,63 @@ func (s *Sale) Variants(ctx context.Context, args struct {
 	First  *int32
 	Last   *int32
 }) (*ProductVariantCountableConnection, error) {
-	panic("not implemented")
+	variants, err := ProductVariantsBySaleIDLoader.Load(ctx, s.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	var before *string
+	var after *string
+	if args.Before != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.Before)
+		if err != nil {
+			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
+		}
+		before = model.NewPrimitive(string(data))
+	}
+	if args.After != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.After)
+		if err != nil {
+			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
+		}
+		after = model.NewPrimitive(string(data))
+	}
+
+	p := graphqlPaginator[*model.ProductVariant, string]{
+		data:    variants,
+		keyFunc: func(pv *model.ProductVariant) string { return pv.Sku },
+		before:  before,
+		after:   after,
+		first:   args.First,
+		last:    args.Last,
+	}
+
+	data, hasPrev, hasNext, appErr := p.parse("Sale.Variants")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	res := &ProductVariantCountableConnection{
+		TotalCount: model.NewPrimitive(int32(len(variants))),
+		Edges: lo.Map(data, func(v *model.ProductVariant, _ int) *ProductVariantCountableEdge {
+			return &ProductVariantCountableEdge{
+				Node:   SystemProductVariantToGraphqlProductVariant(v),
+				Cursor: base64.RawStdEncoding.EncodeToString([]byte(v.Sku)),
+			}
+		}),
+	}
+
+	res.PageInfo = &PageInfo{
+		HasNextPage:     hasNext,
+		HasPreviousPage: hasPrev,
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
+	}
+
+	return res, nil
 }
 
 func (v *Sale) DiscountValue(ctx context.Context) (*float64, error) {
-	// VoucherChannelListingByVoucherIdLoader.Load(ctx, v.ID)()
 	panic("not implemented")
 }
 
