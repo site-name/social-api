@@ -56,7 +56,7 @@ func (line *CheckoutLine) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
 
 	now := time.Now()
 
-	discounts, err := DiscountsByDateTimeLoader.Load(ctx, now)()
+	_, err = DiscountsByDateTimeLoader.Load(ctx, now)()
 	if err != nil {
 		return nil, err
 	}

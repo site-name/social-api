@@ -207,7 +207,7 @@ func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFi
 		// don't worry when we assign directly value here.
 		// The Attribute will be deep copied later
 		if options.SelectRelatedAttribute {
-			attributeValue.Attribute = &attribute
+			attributeValue.SetAttribute(&attribute)
 		}
 
 		res = append(res, attributeValue.DeepCopy())

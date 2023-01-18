@@ -94,7 +94,15 @@ type Attribute struct {
 	AvailableInGrid          bool               `json:"available_in_grid"`
 	ModelMetadata
 
-	AttributeValues AttributeValues `json:"-" db:"-"`
+	attributeValues AttributeValues `db:"-"`
+}
+
+func (a *Attribute) SetAttributeValues(v AttributeValues) {
+	a.attributeValues = v
+}
+
+func (a *Attribute) GetAttributeValues() AttributeValues {
+	return a.attributeValues
 }
 
 type AttributeFilterOption struct {
@@ -108,7 +116,6 @@ type AttributeFilterOption struct {
 	VisibleInStoreFront    *bool
 	ValueRequired          *bool
 	IsVariantOnly          *bool
-	VisibleInStorefront    *bool
 	FilterableInStorefront *bool
 	FilterableInDashboard  *bool
 	AvailableInGrid        *bool
@@ -196,7 +203,7 @@ func (a *Attribute) DeepCopy() *Attribute {
 		res.Unit = NewPrimitive(*a.Unit)
 	}
 	res.ModelMetadata = a.ModelMetadata.DeepCopy()
-	res.AttributeValues = a.AttributeValues.DeepCopy()
+	res.attributeValues = a.attributeValues.DeepCopy()
 
 	return &res
 }

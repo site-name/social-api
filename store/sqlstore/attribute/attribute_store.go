@@ -91,7 +91,6 @@ func (as *SqlAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, er
 		_, err = as.GetMasterX().NamedExec(query, attr)
 
 	} else {
-
 		query := "UPDATE " + store.AttributeTableName + " SET " +
 			as.ModelFields("").
 				Map(func(_ int, s string) string {
@@ -123,7 +122,7 @@ func (as *SqlAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, er
 
 func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOption) (string, []interface{}, error) {
 	query := as.GetQueryBuilder().
-		Select(as.ModelFields(store.AttributeTableName + ".")...). // SELECT Attributes.Id, Attributes.Slug, ...
+		Select(as.ModelFields(store.AttributeTableName + ".")...).
 		From(store.AttributeTableName)
 
 	// parse options
@@ -135,48 +134,22 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 	if option.Id != nil {
 		query = query.Where(option.Id)
 	}
-	if option.VisibleInStoreFront != nil {
-		cond := store.AttributeTableName + ".VisibleInStoreFront"
-		if !*option.VisibleInStoreFront {
-			cond = "NOT " + cond
-		}
-		query = query.Where(cond)
+
+	fieldValuesMap := map[string]*bool{
+		"Attributes.VisibleInStoreFront":    option.VisibleInStoreFront,
+		"Attributes.ValueRequired":          option.ValueRequired,
+		"Attributes.IsVariantOnly":          option.IsVariantOnly,
+		"Attributes.FilterableInStorefront": option.FilterableInStorefront,
+		"Attributes.FilterableInDashboard":  option.FilterableInDashboard,
+		"Attributes.AvailableInGrid":        option.AvailableInGrid,
 	}
-	if option.ValueRequired != nil {
-		cond := store.AttributeTableName + ".ValueRequired"
-		if !*option.ValueRequired {
-			cond = "NOT " + cond
+
+	for fieldName, value := range fieldValuesMap {
+		if value != nil {
+			query = query.Where(squirrel.Eq{fieldName: *value})
 		}
-		query = query.Where(cond)
 	}
-	if option.IsVariantOnly != nil {
-		cond := store.AttributeTableName + ".IsVariantOnly"
-		if !*option.IsVariantOnly {
-			cond = "NOT " + cond
-		}
-		query = query.Where(cond)
-	}
-	if option.FilterableInStorefront != nil {
-		cond := store.AttributeTableName + ".FilterableInStorefront"
-		if !*option.FilterableInStorefront {
-			cond = "NOT " + cond
-		}
-		query = query.Where(cond)
-	}
-	if option.FilterableInDashboard != nil {
-		cond := store.AttributeTableName + ".FilterableInDashboard"
-		if !*option.FilterableInDashboard {
-			cond = "NOT " + cond
-		}
-		query = query.Where(cond)
-	}
-	if option.AvailableInGrid != nil {
-		cond := store.AttributeTableName + ".AvailableInGrid"
-		if !*option.AvailableInGrid {
-			cond = "NOT " + cond
-		}
-		query = query.Where(cond)
-	}
+
 	if option.Type != nil {
 		query = query.Where(option.Type)
 	}
@@ -230,7 +203,7 @@ func (as *SqlAttributeStore) GetByOption(option *model.AttributeFilterOption) (*
 			return nil, err
 		}
 
-		res.AttributeValues = attributeValues
+		res.SetAttributeValues(attributeValues)
 	}
 
 	return &res, nil
@@ -238,7 +211,6 @@ func (as *SqlAttributeStore) GetByOption(option *model.AttributeFilterOption) (*
 
 // FilterbyOption returns a list of attributes by given option
 func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption) (model.Attributes, error) {
-
 	queryString, args, err := as.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
@@ -259,15 +231,16 @@ func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption)
 			return nil, err
 		}
 
-		// attributesMap has keys are attribute ids
-		var attributesMap = map[string]*model.Attribute{}
-
-		for _, attr := range attributes {
-			attributesMap[attr.Id] = attr
+		var attributeValueMap = map[string]model.AttributeValues{} // keys are attribute ids
+		for _, value := range attributeValues {
+			attributeValueMap[value.AttributeID] = append(attributeValueMap[value.AttributeID], value)
 		}
 
-		for _, attrVl := range attributeValues {
-			attributesMap[attrVl.AttributeID].AttributeValues = append(attributesMap[attrVl.AttributeID].AttributeValues, attrVl)
+		for _, attr := range attributes {
+			values, ok := attributeValueMap[attr.Id]
+			if ok {
+				attr.SetAttributeValues(values)
+			}
 		}
 	}
 

@@ -215,9 +215,7 @@ func (g *graphqlPaginator[T, K]) parse(apiName string) (data []T, hasPreviousPag
 				hasNextPage = true
 			} else {
 				data = g.data[:]
-				hasNextPage = false
 			}
-			hasPreviousPage = false
 
 			return
 		}
@@ -229,9 +227,7 @@ func (g *graphqlPaginator[T, K]) parse(apiName string) (data []T, hasPreviousPag
 			hasPreviousPage = true
 		} else {
 			data = g.data[:]
-			hasPreviousPage = false
 		}
-		hasNextPage = false
 
 		return
 	}
@@ -240,7 +236,6 @@ func (g *graphqlPaginator[T, K]) parse(apiName string) (data []T, hasPreviousPag
 
 	index := sort.Search(g.Len(), func(i int) bool {
 		value := g.keyFunc(g.data[i])
-
 		if orderASC {
 			return value >= operand
 		}
@@ -260,10 +255,7 @@ func (g *graphqlPaginator[T, K]) parse(apiName string) (data []T, hasPreviousPag
 		if *g.first < int32(len(data)) {
 			data = data[:*g.first]
 			hasNextPage = true
-		} else {
-			hasNextPage = false
 		}
-
 		return
 	}
 
@@ -273,9 +265,6 @@ func (g *graphqlPaginator[T, K]) parse(apiName string) (data []T, hasPreviousPag
 	if *g.last < int32(len(data)) {
 		data = data[:*g.last]
 		hasNextPage = true
-	} else {
-		hasNextPage = false
 	}
-
 	return
 }

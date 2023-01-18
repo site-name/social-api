@@ -513,7 +513,7 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 		valuesMap     = map[string]map[float64]string{}
 	)
 	for _, attrValue := range attributeValues {
-		attributesMap[attrValue.Attribute.Slug] = attrValue.AttributeID
+		attributesMap[attrValue.GetAttribute().Slug] = attrValue.AttributeID
 
 		// we can parse strings into float64 here since:
 		// all found attribute values have parent attributes's input type is 'numeric'
@@ -521,7 +521,7 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 		if err != nil {
 			return errors.Wrap(err, "failed to parse attribute value's name to float64")
 		}
-		valuesMap[attrValue.Attribute.Slug][numericName] = attrValue.Id
+		valuesMap[attrValue.GetAttribute().Slug][numericName] = attrValue.Id
 	}
 
 	for _, vlRange := range filterValue {
@@ -575,7 +575,7 @@ func (ps *SqlProductStore) cleanProductAttributesDateTimeRangeFilterInput(filter
 	for _, attr := range attributes {
 		values := map[*time.Time]string{}
 
-		for _, attrValue := range attr.AttributeValues {
+		for _, attrValue := range attr.GetAttributeValues() {
 			values[attrValue.Datetime] = attrValue.Id
 		}
 
@@ -637,7 +637,7 @@ func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue 
 	for _, attr := range attributes {
 		values := map[bool]string{}
 
-		for _, attrValue := range attr.AttributeValues {
+		for _, attrValue := range attr.GetAttributeValues() {
 			if attrValue.Boolean != nil {
 				values[*attrValue.Boolean] = attrValue.Id
 			}
@@ -647,7 +647,6 @@ func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue 
 	}
 
 	for _, item := range filterValue {
-
 		attrPK := valuesMap[item.Slug].pk
 
 		if valuePK, ok := valuesMap[item.Slug].values[item.Boolean]; ok {

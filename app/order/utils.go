@@ -50,7 +50,7 @@ func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *model.Order
 		return false, nil
 	}
 
-	digitalContent := orderLine.GetProductVariant().DigitalContent
+	digitalContent := orderLine.GetProductVariant().GetDigitalContent()
 	var appErr *model.AppError
 
 	if digitalContent == nil {

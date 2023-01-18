@@ -46,8 +46,8 @@ func TestGraphqlPaginator(t *testing.T) {
 	p := graphqlPaginator[person, string]{
 		data:    persons,
 		keyFunc: func(p person) string { return p.name },
-		first:   model.NewPrimitive[int32](1),
-		after:   model.NewPrimitive("minh"),
+		last:    model.NewPrimitive[int32](1),
+		before:  model.NewPrimitive("cvfdgtg"),
 	}
 
 	data, hasPreviousPage, hasNextPage, err := p.parse("Something")

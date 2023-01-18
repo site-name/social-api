@@ -1086,7 +1086,7 @@ func (a *ServiceOrder) createFulfillmentLines(fulfillment *model.Fulfillment, wa
 			if orderLineIsDigital && productVariantOfOrderLineIsReal {
 
 				_, appErr = a.srv.ProductService().UpsertDigitalContentURL(&model.DigitalContentUrl{
-					ContentID: productVariantOfOrderLine.DigitalContent.Id, // check out 2nd goroutine above to see why is it possible to access DigitalContent.
+					ContentID: productVariantOfOrderLine.GetDigitalContent().Id, // check out 2nd goroutine above to see why is it possible to access DigitalContent.
 					LineID:    &orderLine.Id,
 				})
 				if appErr != nil {

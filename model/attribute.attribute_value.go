@@ -33,7 +33,15 @@ type AttributeValue struct {
 	Datetime    *time.Time      `json:"date_time"`
 	Sortable
 
-	Attribute *Attribute `db:"-" json:"-"`
+	attribute *Attribute `db:"-"`
+}
+
+func (v *AttributeValue) GetAttribute() *Attribute {
+	return v.attribute
+}
+
+func (v *AttributeValue) SetAttribute(a *Attribute) {
+	v.attribute = a
 }
 
 type AttributeValueFilterOptions struct {
@@ -118,8 +126,8 @@ func (a *AttributeValue) DeepCopy() *AttributeValue {
 	if a.RichText != nil {
 		res.RichText = a.RichText.DeepCopy()
 	}
-	if a.Attribute != nil {
-		res.Attribute = a.Attribute.DeepCopy()
+	if a.attribute != nil {
+		res.attribute = a.attribute.DeepCopy()
 	}
 	if a.FileUrl != nil {
 		res.FileUrl = NewPrimitive(*a.FileUrl)

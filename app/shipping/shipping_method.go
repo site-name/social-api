@@ -98,8 +98,8 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *model.Order, c
 		}
 
 		for _, orderLine := range orderLines {
-			if variant := orderLine.GetProductVariant(); variant != nil && variant.Product != nil {
-				orderProductIDs = append(orderProductIDs, variant.Product.Id)
+			if variant := orderLine.GetProductVariant(); variant != nil && variant.GetProduct() != nil {
+				orderProductIDs = append(orderProductIDs, variant.GetProduct().Id)
 			}
 		}
 	} else {
