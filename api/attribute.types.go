@@ -49,8 +49,8 @@ func SystemAttributeValueToGraphqlAttributeValue(attr *model.AttributeValue) *At
 		attributeID: attr.AttributeID,
 	}
 
-	if attr.Attribute != nil && attr.Datetime != nil {
-		switch attr.Attribute.InputType {
+	if attr.GetAttribute() != nil && attr.Datetime != nil {
+		switch attr.GetAttribute().InputType {
 		case model.DATE:
 			res.Date = &Date{DateTime{*attr.Datetime}}
 

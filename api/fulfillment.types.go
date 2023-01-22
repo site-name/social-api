@@ -21,6 +21,8 @@ type Fulfillment struct {
 	PrivateMetadata  []*MetadataItem   `json:"privateMetadata"`
 	Metadata         []*MetadataItem   `json:"metadata"`
 
+	fulfillment *model.Fulfillment
+
 	// Lines            []*FulfillmentLine `json:"lines"`
 	// StatusDisplay    *string            `json:"statusDisplay"`
 	// Warehouse        *Warehouse         `json:"warehouse"`
@@ -28,7 +30,7 @@ type Fulfillment struct {
 
 func SystemFulfillmentToGraphqlFulfillment(f *model.Fulfillment) *Fulfillment {
 	if f == nil {
-		return &Fulfillment{}
+		return nil
 	}
 
 	return &Fulfillment{
@@ -39,19 +41,44 @@ func SystemFulfillmentToGraphqlFulfillment(f *model.Fulfillment) *Fulfillment {
 		Created:          DateTime{util.TimeFromMillis(f.CreateAt)},
 		Metadata:         MetadataToSlice(f.Metadata),
 		PrivateMetadata:  MetadataToSlice(f.PrivateMetadata),
+
+		fulfillment: f,
 	}
 }
 
 func (f *Fulfillment) Lines(ctx context.Context) ([]*FulfillmentLine, error) {
-	panic("not implemented")
+	lines, err := FulfillmentLinesByFulfillmentIDLoader.Load(ctx, f.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(lines, SystemFulfillmentLineToGraphqlFulfillmentLine), nil
 }
 
 func (f *Fulfillment) StatusDisplay(ctx context.Context) (*string, error) {
-	panic("not implemented")
+	return model.NewPrimitive(model.FulfillmentStrings[f.fulfillment.Status]), nil
 }
 
 func (f *Fulfillment) Warehouse(ctx context.Context) (*Warehouse, error) {
-	panic("not implemented")
+	fulfillmentLines, err := FulfillmentLinesByFulfillmentIDLoader.Load(ctx, f.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(fulfillmentLines) > 0 && fulfillmentLines[0].StockID != nil {
+		stock, err := StocksByIDLoader.Load(ctx, *fulfillmentLines[0].StockID)()
+		if err != nil {
+			return nil, err
+		}
+
+		if stock.GetWarehouse() != nil {
+			return SystemWarehouseToGraphqlWarehouse(stock.GetWarehouse()), nil
+		}
+
+		return nil, nil
+	}
+
+	return nil, nil
 }
 
 func fulfillmentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.Fulfillment] {
@@ -91,11 +118,13 @@ errorLabel:
 	return res
 }
 
-// ------------
+// ------------ fulfillment line -------------------
 
 type FulfillmentLine struct {
 	ID       string `json:"id"`
 	Quantity int32  `json:"quantity"`
+
+	orderLineID string
 	// OrderLine *OrderLine `json:"orderLine"`
 }
 
@@ -105,13 +134,19 @@ func SystemFulfillmentLineToGraphqlFulfillmentLine(l *model.FulfillmentLine) *Fu
 	}
 
 	return &FulfillmentLine{
-		ID:       l.Id,
-		Quantity: int32(l.Quantity),
+		ID:          l.Id,
+		Quantity:    int32(l.Quantity),
+		orderLineID: l.OrderLineID,
 	}
 }
 
 func (f *FulfillmentLine) OrderLine(ctx context.Context) (*OrderLine, error) {
-	panic("not implemented")
+	orderLine, err := OrderLineByIdLoader.Load(ctx, f.orderLineID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemOrderLineToGraphqlOrderLine(orderLine), nil
 }
 
 func fulfillmentLinesByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.FulfillmentLine] {
@@ -145,6 +180,46 @@ func fulfillmentLinesByIdLoader(ctx context.Context, ids []string) []*dataloader
 errorLabel:
 	for idx := range ids {
 		res[idx] = &dataloader.Result[*model.FulfillmentLine]{Error: err}
+	}
+	return res
+}
+
+func fulfillmentLinesByFulfillmentIDLoader(ctx context.Context, fulfillmentIDs []string) []*dataloader.Result[[]*model.FulfillmentLine] {
+	var (
+		res                = make([]*dataloader.Result[[]*model.FulfillmentLine], len(fulfillmentIDs))
+		fulfillmentLines   model.FulfillmentLines
+		appErr             *model.AppError
+		fulfillmentLineMap = map[string]model.FulfillmentLines{} // keys are fulfillment ids
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	fulfillmentLines, appErr = embedCtx.App.
+		Srv().
+		OrderService().
+		FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
+			FulfillmentID: squirrel.Eq{store.FulfillmentLineTableName + ".FulfillmentID": fulfillmentIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, line := range fulfillmentLines {
+		fulfillmentLineMap[line.FulfillmentID] = append(fulfillmentLineMap[line.FulfillmentID], line)
+	}
+
+	for idx, id := range fulfillmentIDs {
+		res[idx] = &dataloader.Result[[]*model.FulfillmentLine]{Data: fulfillmentLineMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range fulfillmentIDs {
+		res[idx] = &dataloader.Result[[]*model.FulfillmentLine]{Error: err}
 	}
 	return res
 }

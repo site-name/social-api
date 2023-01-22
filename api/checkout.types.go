@@ -31,12 +31,7 @@ type Checkout struct {
 	Token                  string           `json:"token"`
 	LanguageCode           LanguageCodeEnum `json:"languageCode"`
 
-	shippingAddressID *string
-	billingAddressID  *string
-	shippingMethodID  *string
-	collectionPointID *string
-	userID            *string
-	channelID         string
+	checkout *model.Checkout
 
 	// Quantity               int32            `json:"quantity"`
 	// ShippingPrice          *TaxedMoney      `json:"shippingPrice"`
@@ -77,12 +72,7 @@ func SystemCheckoutToGraphqlCheckout(ckout *model.Checkout) *Checkout {
 		Token:                  ckout.Token,
 		LanguageCode:           SystemLanguageToGraphqlLanguageCodeEnum(ckout.LanguageCode),
 
-		shippingAddressID: ckout.ShippingAddressID,
-		billingAddressID:  ckout.BillingAddressID,
-		shippingMethodID:  ckout.ShippingMethodID,
-		collectionPointID: ckout.CollectionPointID,
-		userID:            ckout.UserID,
-		channelID:         ckout.ChannelID,
+		checkout: ckout,
 	}
 	return res
 }
@@ -136,15 +126,15 @@ func (c *Checkout) User(ctx context.Context) (*User, error) {
 		return nil, err
 	}
 
-	if (c.userID != nil && embedCtx.AppContext.Session().UserId == *c.userID) ||
+	if (c.checkout.UserID != nil && embedCtx.AppContext.Session().UserId == *c.checkout.UserID) ||
 		embedCtx.
 			App.
 			Srv().
 			AccountService().
 			SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageUsers) {
 
-		if c.userID != nil {
-			user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, *c.userID)
+		if c.checkout.UserID != nil {
+			user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, *c.checkout.UserID)
 			if appErr != nil {
 				return nil, appErr
 			}
@@ -193,11 +183,11 @@ func (c *Checkout) Channel(ctx context.Context) (*Channel, error) {
 }
 
 func (c *Checkout) BillingAddress(ctx context.Context) (*Address, error) {
-	if c.billingAddressID == nil {
+	if c.checkout.BillingAddressID == nil {
 		return nil, nil
 	}
 
-	addr, err := AddressByIdLoader.Load(ctx, *c.billingAddressID)()
+	addr, err := AddressByIdLoader.Load(ctx, *c.checkout.BillingAddressID)()
 	if err != nil {
 		return nil, err
 	}
@@ -206,11 +196,11 @@ func (c *Checkout) BillingAddress(ctx context.Context) (*Address, error) {
 }
 
 func (c *Checkout) ShippingAddress(ctx context.Context) (*Address, error) {
-	if c.shippingAddressID == nil {
+	if c.checkout.ShippingAddressID == nil {
 		return nil, nil
 	}
 
-	address, err := AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
+	address, err := AddressByIdLoader.Load(ctx, *c.checkout.ShippingAddressID)()
 	if err != nil {
 		return nil, err
 	}
@@ -280,14 +270,14 @@ func (c *Checkout) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse,
 
 	var address *model.Address
 
-	if c.shippingAddressID != nil {
-		address, err = AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
+	if c.checkout.ShippingAddressID != nil {
+		address, err = AddressByIdLoader.Load(ctx, *c.checkout.ShippingAddressID)()
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	channel, err := ChannelByIdLoader.Load(ctx, c.channelID)()
+	channel, err := ChannelByIdLoader.Load(ctx, c.checkout.ChannelID)()
 	if err != nil {
 		return nil, err
 	}
@@ -312,7 +302,7 @@ func (c *Checkout) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse,
 			return nil, appErr
 		}
 
-		return DataloaderResultMap(warehouses, SystemWarehouseTpGraphqlWarehouse), nil
+		return DataloaderResultMap(warehouses, SystemWarehouseToGraphqlWarehouse), nil
 	}
 
 	return nil, nil
@@ -332,13 +322,13 @@ func (c *Checkout) Lines(ctx context.Context) ([]*CheckoutLine, error) {
 }
 
 func (c *Checkout) DeliveryMethod(ctx context.Context) (*Warehouse, error) {
-	if c.collectionPointID != nil {
-		warehouse, err := WarehouseByIdLoader.Load(ctx, *c.collectionPointID)()
+	if c.checkout.CollectionPointID != nil {
+		warehouse, err := WarehouseByIdLoader.Load(ctx, *c.checkout.CollectionPointID)()
 		if err != nil {
 			return nil, err
 		}
 
-		return SystemWarehouseTpGraphqlWarehouse(warehouse), nil
+		return SystemWarehouseToGraphqlWarehouse(warehouse), nil
 	}
 
 	return nil, nil

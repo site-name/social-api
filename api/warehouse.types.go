@@ -27,7 +27,7 @@ type Warehouse struct {
 	// Address               *Address                           `json:"address"`
 }
 
-func SystemWarehouseTpGraphqlWarehouse(wh *model.WareHouse) *Warehouse {
+func SystemWarehouseToGraphqlWarehouse(wh *model.WareHouse) *Warehouse {
 	if wh == nil {
 		return nil
 	}
@@ -198,7 +198,7 @@ func (s *Stock) Warehouse(ctx context.Context) (*Warehouse, error) {
 		return nil, appErr
 	}
 
-	return SystemWarehouseTpGraphqlWarehouse(warehouse), nil
+	return SystemWarehouseToGraphqlWarehouse(warehouse), nil
 }
 
 func (s *Stock) Quantity(ctx context.Context) (int32, error) {
@@ -281,6 +281,46 @@ func allocationsByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) 
 errorLabel:
 	for idx := range orderLineIDs {
 		res[idx] = &dataloader.Result[[]*model.Allocation]{Error: err}
+	}
+	return res
+}
+
+func stocksByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Stock] {
+	var (
+		res      = make([]*dataloader.Result[*model.Stock], len(ids))
+		stocks   model.Stocks
+		appErr   *model.AppError
+		stockMap = map[string]*model.Stock{} // keys are stock ids
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	stocks, appErr = embedCtx.App.Srv().
+		WarehouseService().
+		StocksByOption(nil, &model.StockFilterOption{
+			Id:                     squirrel.Eq{store.StockTableName + ".Id": ids},
+			SelectRelatedWarehouse: true,
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, st := range stocks {
+		stockMap[st.Id] = st
+	}
+
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[*model.Stock]{Data: stockMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range ids {
+		res[idx] = &dataloader.Result[*model.Stock]{Error: err}
 	}
 	return res
 }

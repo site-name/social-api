@@ -41,6 +41,7 @@ var (
 	FulfillmentLinesByIdLoader              = NewBatchedLoader(fulfillmentLinesByIdLoader, WithBatchCapacity[string, *model.FulfillmentLine](batchCapacity))
 	FulfillmentsByOrderIdLoader             = NewBatchedLoader(fulfillmentsByOrderIdLoader, WithBatchCapacity[string, []*model.Fulfillment](batchCapacity))
 	OrderLinesByVariantIdAndChannelIdLoader = NewBatchedLoader(orderLinesByVariantIdAndChannelIdLoader, WithBatchCapacity[string, []*model.OrderLine](batchCapacity))
+	FulfillmentLinesByFulfillmentIDLoader   = NewBatchedLoader(fulfillmentLinesByFulfillmentIDLoader, WithBatchCapacity[string, []*model.FulfillmentLine](batchCapacity))
 
 	// checkout
 	CheckoutByUserLoader                   = NewBatchedLoader(checkoutByUserLoader, WithBatchCapacity[string, []*model.Checkout](batchCapacity))
@@ -91,6 +92,7 @@ var (
 	// warehouse
 	WarehouseByIdLoader            = NewBatchedLoader(warehouseByIdLoader, WithBatchCapacity[string, *model.WareHouse](batchCapacity))
 	AllocationsByOrderLineIdLoader = NewBatchedLoader(allocationsByOrderLineIdLoader, WithBatchCapacity[string, []*model.Allocation](batchCapacity))
+	StocksByIDLoader               = NewBatchedLoader(stocksByIDLoader, WithBatchCapacity[string, *model.Stock](batchCapacity))
 
 	// menu
 	MenuByIdLoader              = NewBatchedLoader(menuByIdLoader, WithBatchCapacity[string, *model.Menu](batchCapacity))

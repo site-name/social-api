@@ -211,8 +211,8 @@ type OrderDiscount struct {
 	Value          PositiveDecimal       `json:"value"`
 	Name           *string               `json:"name"`
 	TranslatedName *string               `json:"translatedName"`
-	reason         *string               `json:"reason"`
 	Amount         *Money                `json:"amount"`
+	reason         *string
 }
 
 func SystemOrderDiscountToGraphqlOrderDiscount(r *model.OrderDiscount) *OrderDiscount {
@@ -287,7 +287,6 @@ errorLabel:
 }
 
 // ------------------------- voucher --------------------
-
 type Voucher struct {
 	ID                       string                `json:"id"`
 	Name                     *string               `json:"name"`
@@ -331,7 +330,7 @@ func systemVoucherToGraphqlVoucher(v *model.Voucher) *Voucher {
 		ApplyOncePerOrder:        v.ApplyOncePerOrder,
 		ApplyOncePerCustomer:     v.ApplyOncePerCustomer,
 		DiscountValueType:        DiscountValueTypeEnum(v.DiscountValueType),
-		MinCheckoutItemsQuantity: model.NewPrimitive[int32](int32(v.MinCheckoutItemsQuantity)),
+		MinCheckoutItemsQuantity: model.NewPrimitive(int32(v.MinCheckoutItemsQuantity)),
 		Metadata:                 MetadataToSlice(v.Metadata),
 		PrivateMetadata:          MetadataToSlice(v.PrivateMetadata),
 	}
@@ -350,7 +349,7 @@ func systemVoucherToGraphqlVoucher(v *model.Voucher) *Voucher {
 		res.EndDate = &DateTime{util.TimeFromMillis(*v.EndDate)}
 	}
 	if v.UsageLimit != nil {
-		res.UsageLimit = model.NewPrimitive[int32](int32(*v.UsageLimit))
+		res.UsageLimit = model.NewPrimitive(int32(*v.UsageLimit))
 	}
 
 	return res

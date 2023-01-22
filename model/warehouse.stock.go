@@ -13,8 +13,8 @@ type Stock struct {
 	Quantity         int    `json:"quantity"`           // DEFAULT 0
 
 	AvailableQuantity int             `json:"-" db:"-"` // this field will be populated in same queries
-	warehouse         *WareHouse      `json:"-" db:"-"` // this foreign field is populated with select related data
-	productVariant    *ProductVariant `json:"-" db:"-"` // this foreign field is populated with select related data
+	warehouse         *WareHouse      `db:"-"`          // this foreign field is populated with select related data
+	productVariant    *ProductVariant `db:"-"`          // this foreign field is populated with select related data
 }
 
 // StockFilterForChannelOption is used by a filter function at store/sqlstore/channel/channel_store.go
