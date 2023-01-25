@@ -126,12 +126,6 @@ type AddressValidationData struct {
 	PostalCodePrefix   *string        `json:"postalCodePrefix"`
 }
 
-type Allocation struct {
-	ID        string     `json:"id"`
-	Quantity  int32      `json:"quantity"`
-	Warehouse *Warehouse `json:"warehouse"`
-}
-
 type App struct {
 	ID               string          `json:"id"`
 	Name             *string         `json:"name"`

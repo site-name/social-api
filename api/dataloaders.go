@@ -16,16 +16,17 @@ var (
 	CustomerEventsByUserLoader = NewBatchedLoader(customerEventsByUserLoader, WithBatchCapacity[string, []*model.CustomerEvent](batchCapacity))
 
 	// product
-	ProductByIdLoader                                  = NewBatchedLoader(productByIdLoader, WithBatchCapacity[string, *model.Product](batchCapacity))
-	ProductVariantByIdLoader                           = NewBatchedLoader(productVariantByIdLoader, WithBatchCapacity[string, *model.ProductVariant](batchCapacity))
-	ProductByVariantIdLoader                           = NewBatchedLoader(productByVariantIdLoader, WithBatchCapacity[string, *model.Product](batchCapacity))
-	ProductTypeByVariantIdLoader                       = NewBatchedLoader(productTypeByVariantIdLoader, WithBatchCapacity[string, *model.ProductType](batchCapacity))
-	CollectionsByVariantIdLoader                       = NewBatchedLoader(collectionsByVariantIdLoader, WithBatchCapacity[string, []*model.Collection](batchCapacity))
-	ProductTypeByProductIdLoader                       = NewBatchedLoader(productTypeByProductIdLoader, WithBatchCapacity[string, *model.ProductType](batchCapacity))
-	VariantChannelListingByVariantIdAndChannelIdLoader = NewBatchedLoader(variantChannelListingByVariantIdAndChannelIdLoader, WithBatchCapacity[string, *model.ProductVariantChannelListing](batchCapacity))
-	CollectionsByProductIdLoader                       = NewBatchedLoader(collectionsByProductIdLoader, WithBatchCapacity[string, []*model.Collection](batchCapacity))
-	CollectionByIdLoader                               = NewBatchedLoader(collectionByIdLoader, WithBatchCapacity[string, *model.Collection](batchCapacity))
-	CategoryByIdLoader                                 = NewBatchedLoader(categoryByIdLoader, WithBatchCapacity[string, *model.Category](batchCapacity))
+	ProductByIdLoader                                    = NewBatchedLoader(productByIdLoader, WithBatchCapacity[string, *model.Product](batchCapacity))
+	ProductVariantByIdLoader                             = NewBatchedLoader(productVariantByIdLoader, WithBatchCapacity[string, *model.ProductVariant](batchCapacity))
+	ProductByVariantIdLoader                             = NewBatchedLoader(productByVariantIdLoader, WithBatchCapacity[string, *model.Product](batchCapacity))
+	ProductTypeByVariantIdLoader                         = NewBatchedLoader(productTypeByVariantIdLoader, WithBatchCapacity[string, *model.ProductType](batchCapacity))
+	CollectionsByVariantIdLoader                         = NewBatchedLoader(collectionsByVariantIdLoader, WithBatchCapacity[string, []*model.Collection](batchCapacity))
+	ProductTypeByProductIdLoader                         = NewBatchedLoader(productTypeByProductIdLoader, WithBatchCapacity[string, *model.ProductType](batchCapacity))
+	VariantChannelListingByVariantIdAndChannelIdLoader   = NewBatchedLoader(variantChannelListingByVariantIdAndChannelIdLoader, WithBatchCapacity[string, *model.ProductVariantChannelListing](batchCapacity))
+	CollectionsByProductIdLoader                         = NewBatchedLoader(collectionsByProductIdLoader, WithBatchCapacity[string, []*model.Collection](batchCapacity))
+	CollectionByIdLoader                                 = NewBatchedLoader(collectionByIdLoader, WithBatchCapacity[string, *model.Collection](batchCapacity))
+	CategoryByIdLoader                                   = NewBatchedLoader(categoryByIdLoader, WithBatchCapacity[string, *model.Category](batchCapacity))
+	ProductChannelListingByProductIdAndChannelSlugLoader = NewBatchedLoader(productChannelListingByProductIDAnhChannelSlugLoader, WithBatchCapacity[string, *model.ProductChannelListing](batchCapacity))
 
 	// giftcard
 	GiftCardEventsByGiftCardIdLoader = NewBatchedLoader(giftCardEventsByGiftCardIdLoader, WithBatchCapacity[string, []*model.GiftCardEvent](batchCapacity))
@@ -93,6 +94,7 @@ var (
 	WarehouseByIdLoader            = NewBatchedLoader(warehouseByIdLoader, WithBatchCapacity[string, *model.WareHouse](batchCapacity))
 	AllocationsByOrderLineIdLoader = NewBatchedLoader(allocationsByOrderLineIdLoader, WithBatchCapacity[string, []*model.Allocation](batchCapacity))
 	StocksByIDLoader               = NewBatchedLoader(stocksByIDLoader, WithBatchCapacity[string, *model.Stock](batchCapacity))
+	AllocationsByStockIDLoader     = NewBatchedLoader(allocationsByStockIDLoader, WithBatchCapacity[string, []*model.Allocation](batchCapacity))
 
 	// menu
 	MenuByIdLoader              = NewBatchedLoader(menuByIdLoader, WithBatchCapacity[string, *model.Menu](batchCapacity))

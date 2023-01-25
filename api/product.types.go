@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
@@ -96,7 +97,60 @@ errorLabel:
 	return res
 }
 
-func SystemProductTypeTpGraphqlProductType(prd *model.ProductType) *ProductType {
+// idPairs is slice of strings with format of uuid__uuid.
+// First uuid part is productID, second part is channelID
+func productChannelListingByProductIDAnhChannelSlugLoader(ctx context.Context, idPairs []string) []*dataloader.Result[*model.ProductChannelListing] {
+	var (
+		res                      = make([]*dataloader.Result[*model.ProductChannelListing], len(idPairs))
+		appErr                   *model.AppError
+		productIDs               []string
+		channelIDs               []string
+		productChannelListings   model.ProductChannelListings
+		productChannelListingMap = map[string]*model.ProductChannelListing{} // keys are pair of productID__channelID pairs
+	)
+
+	for _, pair := range idPairs {
+		index := strings.Index(pair, "__")
+		if index < 0 {
+			continue
+		}
+
+		productIDs = append(productIDs, pair[:index])
+		channelIDs = append(channelIDs, pair[index+2:])
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	productChannelListings, appErr = embedCtx.App.Srv().ProductService().
+		ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
+			ProductID: squirrel.Eq{store.ProductChannelListingTableName + ".ProductID": productIDs},
+			ChannelID: squirrel.Eq{store.ProductChannelListingTableName + ".ChannelID": channelIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, item := range productChannelListings {
+		productChannelListingMap[item.ProductID+"__"+item.ChannelID] = item
+	}
+
+	for idx, id := range idPairs {
+		res[idx] = &dataloader.Result[*model.ProductChannelListing]{Data: productChannelListingMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range idPairs {
+		res[idx] = &dataloader.Result[*model.ProductChannelListing]{Error: err}
+	}
+	return res
+}
+
+func SystemProductTypeToGraphqlProductType(prd *model.ProductType) *ProductType {
 	if prd == nil {
 		return nil
 	}
@@ -334,7 +388,7 @@ errorLabel:
 	return res
 }
 
-// variantIDChannelIDPairs are slice of uuid_uuid pairs.
+// variantIDChannelIDPairs are slice of uuid__uuid pairs.
 // first uuid parts are product variant ids
 // second parts are channel ids
 func variantChannelListingByVariantIdAndChannelIdLoader(ctx context.Context, variantIDChannelIDPairs []string) []*dataloader.Result[*model.ProductVariantChannelListing] {

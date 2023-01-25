@@ -1544,7 +1544,6 @@ func (a *ServiceOrder) RemoveOrderDiscountFromOrder(transaction store_iface.Sqlx
 //
 // `reason`, `valueType` can be empty. `value` can be nil
 func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine model.OrderLine, ord model.Order, reason string, valueType string, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
-
 	ord.PopulateNonDbFields()
 	orderLine.PopulateNonDbFields()
 
@@ -1616,4 +1615,33 @@ func (a *ServiceOrder) RemoveDiscountFromOrderLine(orderLine model.OrderLine, or
 
 	_, appErr = a.UpsertOrderLine(nil, &orderLine)
 	return appErr
+}
+
+func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) (validationErrors []*model.AppError, apiError *model.AppError) {
+	if order.Status != model.STATUS_DRAFT {
+		return nil, nil
+	}
+
+	// validate billing address
+	if order.BillingAddressID == nil {
+		validationErrors = append(validationErrors, model.NewAppError("app.order.ValidateDraftOrder", "app.order.billing_address_not_set.app_error", nil, "Can't finalize draft order without billing address.", http.StatusNotAcceptable))
+	}
+
+	orderRequiresShipping, appErr := s.OrderShippingIsRequired(order.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if orderRequiresShipping {
+		// validate shipping address
+		if order.ShippingAddressID == nil {
+			validationErrors = append(validationErrors, model.NewAppError("app.order.ValidateDraftOrder", "app.order.shipping_address_not_set.app_errir", nil, "Can't finalize draft order without shipping address.", http.StatusNotAcceptable))
+		}
+
+		// validate shipping method
+		if order.ShippingMethodID == nil {
+			validationErrors = append(validationErrors)
+		}
+	}
+
+	return
 }

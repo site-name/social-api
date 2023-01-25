@@ -74,7 +74,7 @@ func SystemOrderLineToGraphqlOrderLine(line *model.OrderLine) *OrderLine {
 		variantID: line.VariantID,
 		orderID:   line.OrderID,
 	}
-	discountType := DiscountValueTypeEnum(strings.ToUpper(line.UnitDiscountType))
+	discountType := DiscountValueTypeEnum(line.UnitDiscountType)
 	res.UnitDiscountType = &discountType
 
 	if line.TaxRate != nil {
@@ -88,8 +88,24 @@ func (o *OrderLine) Thumbnail(ctx context.Context) (*Image, error) {
 	panic("not implemented")
 }
 
-func (o *OrderLine) Allocation(ctx context.Context) (*Allocation, error) {
-	panic("not implemented")
+func (o *OrderLine) Allocations(ctx context.Context) ([]*Allocation, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	currentSession := embedCtx.AppContext.Session()
+
+	if embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(currentSession, model.PermissionManageProducts, model.PermissionManageOrders) {
+		allocations, err := AllocationsByOrderLineIdLoader.Load(ctx, o.ID)()
+		if err != nil {
+			return nil, err
+		}
+
+		return DataloaderResultMap(allocations, systemAllocationToGraphqlAllocation), nil
+	}
+
+	return nil, model.NewAppError("OrderLine.Allocations", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
 }
 
 func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
@@ -97,7 +113,38 @@ func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
 		return nil, nil
 	}
 
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+	currentSession := embedCtx.AppContext.Session()
+
+	variant, err := ProductVariantByIdLoader.Load(ctx, *o.variantID)()
+	if err != nil {
+		return nil, err
+	}
+
+	if embedCtx.App.Srv().
+		AccountService().
+		SessionHasPermissionToAny(currentSession, model.PermissionManageOrders, model.PermissionManageDiscounts, model.PermissionManageProducts) {
+		return SystemProductVariantToGraphqlProductVariant(variant), nil
+	}
+
+	channel, err := ChannelByOrderLineIdLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	productChannelListing, err := ProductChannelListingByProductIdAndChannelSlugLoader.Load(ctx, variant.ProductID+"__"+channel.Id)()
+	if err != nil {
+		return nil, err
+	}
+
+	if productChannelListing.IsVisible() {
+		return SystemProductVariantToGraphqlProductVariant(variant), nil
+	}
+
+	return nil, nil
 }
 
 func orderLineByIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*model.OrderLine] {
