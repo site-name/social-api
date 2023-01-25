@@ -47,7 +47,13 @@ type GiftCardEvent struct {
 	Date int64             `json:"date"` // not editable
 	Type GiftcardEventType `json:"type"`
 
-	// if "expiry_date" presents, should be has format of "2006-01-02" or of type time.Time
+	// if "expiry_date" presents, its value should has format of "2006-01-02" or of type time.Time
+	// To reduce number of type checking steps, below are possible keys and their according value Types you must follow:
+	//  "message": string
+	//  "email": string
+	//  "order_id": string
+	//  "tag": string
+	//  "old_tag": string
 	Parameters StringInterface `json:"parameters"`  // default map[stirng]string{}
 	UserID     *string         `json:"user_id"`     // ON DELETE SET NULL
 	GiftcardID string          `json:"giftcard_id"` // ON DELETE CASCADE

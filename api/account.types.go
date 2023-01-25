@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -495,44 +494,18 @@ func SystemCustomerEventToGraphqlCustomerEvent(event *model.CustomerEvent) *Cust
 
 	msg, ok := event.Parameters["message"]
 	if ok && msg != nil {
-		switch t := msg.(type) {
-		case *string:
-			res.Message = t
-		case string:
-			res.Message = &t
-		}
+		res.Message = model.NewPrimitive(msg.(string))
 	}
 
 	count, ok := event.Parameters["count"]
 	if ok && count != nil {
-		valueOf := reflect.ValueOf(count)
-
-		switch valueOf.Kind() {
-		case reflect.Int,
-			reflect.Int8,
-			reflect.Int16,
-			reflect.Int32,
-			reflect.Int64:
-			res.Count = model.NewPrimitive(int32(valueOf.Int()))
-
-		case reflect.Uint,
-			reflect.Uint8,
-			reflect.Uint16,
-			reflect.Uint32,
-			reflect.Uint64:
-			res.Count = model.NewPrimitive(int32(valueOf.Uint()))
-		}
+		res.Count = model.NewPrimitive(int32(count.(int)))
 	}
 
 	res.userID = event.UserID
 	res.orderID = event.OrderID
 	if orderLineID, ok := event.Parameters["order_line_pk"]; ok && orderLineID != nil {
-		switch t := orderLineID.(type) {
-		case string:
-			res.orderLineID = &t
-		case *string:
-			res.orderLineID = t
-		}
+		res.orderLineID = model.NewPrimitive(orderLineID.(string))
 	}
 
 	return res

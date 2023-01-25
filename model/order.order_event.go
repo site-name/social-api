@@ -99,10 +99,26 @@ const (
 
 // Model used to store events that happened during the order lifecycle.
 type OrderEvent struct {
-	Id         string          `json:"id"`
-	CreateAt   int64           `json:"create_at"`
-	Type       OrderEventType  `json:"type"`
-	OrderID    string          `json:"order_id"`
+	Id       string         `json:"id"`
+	CreateAt int64          `json:"create_at"`
+	Type     OrderEventType `json:"type"`
+	OrderID  string         `json:"order_id"`
+	// To reduce number of type casting, checking steps, below are
+	// possible keys and their according values TYPES you must follow when storing things into this field:
+	//  "email": string
+	//  "email_type": string
+	//  "amount": float64
+	//  "payment_id": string
+	//  "quantity": int
+	//  "message": string
+	//  "composedID": string
+	//  "oversold_items": []string
+	//  "invoice_number": string
+	//  "transaction_reference": string
+	//  "shipping_costs_included": bool
+	//  "related_order_pk": string
+	//  "warehouse": string
+	//  "fulfilled_items": []string
 	Parameters StringInterface `json:"parameters"`
 	UserID     *string         `json:"user_id"`
 }

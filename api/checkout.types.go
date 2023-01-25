@@ -444,7 +444,7 @@ func checkoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.R
 		res         = make([]*dataloader.Result[*model.Checkout], len(tokens))
 		appErr      *model.AppError
 		checkouts   []*model.Checkout
-		checkoutMap = map[string]*model.Checkout{}
+		checkoutMap = map[string]*model.Checkout{} // keys are checkout tokens
 	)
 
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)

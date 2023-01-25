@@ -49,11 +49,16 @@ var CustomerEventTypes = []string{
 
 // Model used to store events that happened during the customer lifecycle
 type CustomerEvent struct {
-	Id         string          `json:"id"`
-	Date       int64           `json:"date"`
-	Type       string          `json:"type"`
-	OrderID    *string         `json:"order_id"`
-	UserID     *string         `json:"user_id"`
+	Id      string  `json:"id"`
+	Date    int64   `json:"date"`
+	Type    string  `json:"type"`
+	OrderID *string `json:"order_id"`
+	UserID  *string `json:"user_id"`
+	// To reduce number of type checking steps,
+	// below are possible keys and their according values's Types you must follow
+	//  "message": string
+	//  "count": int
+	//  "order_line_pk": string
 	Parameters StringInterface `json:"parameters"`
 }
 

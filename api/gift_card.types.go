@@ -45,29 +45,28 @@ func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCa
 	res.Type = &evt.Type
 
 	msg, ok := evt.Parameters["message"]
-	if str, strOk := msg.(string); ok && strOk {
-		res.Message = &str
+	if ok && msg != nil {
+		res.Message = model.NewPrimitive(msg.(string))
 	}
 
 	email, ok := evt.Parameters["email"]
-	if str, strOk := email.(string); ok && strOk {
-		res.Email = &str
+	if ok && email != nil {
+		res.Email = model.NewPrimitive(email.(string))
 	}
 
 	orderID, ok := evt.Parameters["order_id"]
-	if str, strOk := orderID.(string); ok && strOk {
-		res.OrderID = &str
-		res.OrderNumber = &str
+	if ok && orderID != nil {
+		res.OrderID = model.NewPrimitive(orderID.(string))
 	}
 
 	tag, ok := evt.Parameters["tag"]
-	if str, strOk := tag.(string); ok && strOk {
-		res.Tag = &str
+	if ok && tag != nil {
+		res.Tag = model.NewPrimitive(tag.(string))
 	}
 
 	oldTag, ok := evt.Parameters["old_tag"]
-	if str, strOk := oldTag.(string); ok && strOk {
-		res.OldTag = &str
+	if ok && oldTag != nil {
+		res.OldTag = model.NewPrimitive(oldTag.(string))
 	}
 
 	balance, ok := evt.Parameters["balance"]
