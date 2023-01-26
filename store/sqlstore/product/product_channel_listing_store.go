@@ -141,6 +141,9 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *model.ProductCha
 		OrderBy(store.TableOrderingMap[store.ProductChannelListingTableName])
 
 	// parse option
+	if option.Id != nil {
+		query = query.Where(option.Id)
+	}
 	if option.ProductID != nil {
 		query = query.Where(option.ProductID)
 	}
@@ -164,8 +167,8 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *model.ProductCha
 
 	if option.ProductVariantsId != nil {
 		query = query.
-			InnerJoin(store.ProductTableName + " ON (Products.Id = ProductChannelListings.ProductID)").
-			InnerJoin(store.ProductVariantTableName + " ON (ProductVariants.ProductID = Products.Id)").
+			InnerJoin(store.ProductTableName + " ON Products.Id = ProductChannelListings.ProductID").
+			InnerJoin(store.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
 			Where(option.ProductVariantsId)
 	}
 	if option.PublicationDate != nil {
@@ -201,7 +204,7 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *model.ProductCha
 			for _, listing := range listings {
 				for _, chanNel := range channels {
 					if listing.ChannelID == chanNel.Id {
-						listing.Channel = chanNel
+						listing.SetChannel(chanNel)
 						continue outerLoop
 					}
 				}

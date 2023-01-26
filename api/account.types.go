@@ -82,7 +82,7 @@ func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 	var (
 		res        = make([]*dataloader.Result[*model.Address], len(ids))
 		addresses  []*model.Address
-		addressMap = map[string]*model.Address{}
+		addressMap = map[string]*model.Address{} // keys are address ids
 		appErr     *model.AppError
 	)
 

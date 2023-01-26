@@ -3,7 +3,7 @@ package api
 import (
 	"time"
 
-	. "github.com/graph-gophers/dataloader/v7"
+	"github.com/graph-gophers/dataloader/v7"
 	"github.com/sitename/sitename/model"
 )
 
@@ -11,103 +11,106 @@ const batchCapacity = 200
 
 var (
 	// account
-	AddressByIdLoader          = NewBatchedLoader(addressByIdLoader, WithBatchCapacity[string, *model.Address](batchCapacity))
-	UserByUserIdLoader         = NewBatchedLoader(userByUserIdLoader, WithBatchCapacity[string, *model.User](batchCapacity))
-	CustomerEventsByUserLoader = NewBatchedLoader(customerEventsByUserLoader, WithBatchCapacity[string, []*model.CustomerEvent](batchCapacity))
+	AddressByIdLoader          = dataloader.NewBatchedLoader(addressByIdLoader, dataloader.WithBatchCapacity[string, *model.Address](batchCapacity))
+	UserByUserIdLoader         = dataloader.NewBatchedLoader(userByUserIdLoader, dataloader.WithBatchCapacity[string, *model.User](batchCapacity))
+	CustomerEventsByUserLoader = dataloader.NewBatchedLoader(customerEventsByUserLoader, dataloader.WithBatchCapacity[string, []*model.CustomerEvent](batchCapacity))
 
 	// product
-	ProductByIdLoader                                    = NewBatchedLoader(productByIdLoader, WithBatchCapacity[string, *model.Product](batchCapacity))
-	ProductVariantByIdLoader                             = NewBatchedLoader(productVariantByIdLoader, WithBatchCapacity[string, *model.ProductVariant](batchCapacity))
-	ProductByVariantIdLoader                             = NewBatchedLoader(productByVariantIdLoader, WithBatchCapacity[string, *model.Product](batchCapacity))
-	ProductTypeByVariantIdLoader                         = NewBatchedLoader(productTypeByVariantIdLoader, WithBatchCapacity[string, *model.ProductType](batchCapacity))
-	CollectionsByVariantIdLoader                         = NewBatchedLoader(collectionsByVariantIdLoader, WithBatchCapacity[string, []*model.Collection](batchCapacity))
-	ProductTypeByProductIdLoader                         = NewBatchedLoader(productTypeByProductIdLoader, WithBatchCapacity[string, *model.ProductType](batchCapacity))
-	VariantChannelListingByVariantIdAndChannelIdLoader   = NewBatchedLoader(variantChannelListingByVariantIdAndChannelIdLoader, WithBatchCapacity[string, *model.ProductVariantChannelListing](batchCapacity))
-	CollectionsByProductIdLoader                         = NewBatchedLoader(collectionsByProductIdLoader, WithBatchCapacity[string, []*model.Collection](batchCapacity))
-	CollectionByIdLoader                                 = NewBatchedLoader(collectionByIdLoader, WithBatchCapacity[string, *model.Collection](batchCapacity))
-	CategoryByIdLoader                                   = NewBatchedLoader(categoryByIdLoader, WithBatchCapacity[string, *model.Category](batchCapacity))
-	ProductChannelListingByProductIdAndChannelSlugLoader = NewBatchedLoader(productChannelListingByProductIDAnhChannelSlugLoader, WithBatchCapacity[string, *model.ProductChannelListing](batchCapacity))
+	ProductByIdLoader                                    = dataloader.NewBatchedLoader(productByIdLoader, dataloader.WithBatchCapacity[string, *model.Product](batchCapacity))
+	ProductVariantByIdLoader                             = dataloader.NewBatchedLoader(productVariantByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductVariant](batchCapacity))
+	ProductByVariantIdLoader                             = dataloader.NewBatchedLoader(productByVariantIdLoader, dataloader.WithBatchCapacity[string, *model.Product](batchCapacity))
+	ProductTypeByVariantIdLoader                         = dataloader.NewBatchedLoader(productTypeByVariantIdLoader, dataloader.WithBatchCapacity[string, *model.ProductType](batchCapacity))
+	CollectionsByVariantIdLoader                         = dataloader.NewBatchedLoader(collectionsByVariantIdLoader, dataloader.WithBatchCapacity[string, []*model.Collection](batchCapacity))
+	ProductTypeByProductIdLoader                         = dataloader.NewBatchedLoader(productTypeByProductIdLoader, dataloader.WithBatchCapacity[string, *model.ProductType](batchCapacity))
+	VariantChannelListingByVariantIdAndChannelIdLoader   = dataloader.NewBatchedLoader(variantChannelListingByVariantIdAndChannelIdLoader, dataloader.WithBatchCapacity[string, *model.ProductVariantChannelListing](batchCapacity))
+	CollectionsByProductIdLoader                         = dataloader.NewBatchedLoader(collectionsByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.Collection](batchCapacity))
+	CollectionByIdLoader                                 = dataloader.NewBatchedLoader(collectionByIdLoader, dataloader.WithBatchCapacity[string, *model.Collection](batchCapacity))
+	CategoryByIdLoader                                   = dataloader.NewBatchedLoader(categoryByIdLoader, dataloader.WithBatchCapacity[string, *model.Category](batchCapacity))
+	ProductChannelListingByProductIdAndChannelSlugLoader = dataloader.NewBatchedLoader(productChannelListingByProductIDAnhChannelSlugLoader, dataloader.WithBatchCapacity[string, *model.ProductChannelListing](batchCapacity)) // pass in keys with format of productID__channelID
+	ProductChannelListingByIdLoader                      = dataloader.NewBatchedLoader(productChannelListingByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductChannelListing](batchCapacity))
+	ProductChannelListingByProductIdLoader               = dataloader.NewBatchedLoader(productChannelListingByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductChannelListing](batchCapacity))
+	ProductTypeByIdLoader                                = dataloader.NewBatchedLoader(productTypeByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductType](batchCapacity))
 
 	// giftcard
-	GiftCardEventsByGiftCardIdLoader = NewBatchedLoader(giftCardEventsByGiftCardIdLoader, WithBatchCapacity[string, []*model.GiftCardEvent](batchCapacity))
-	GiftCardsByUserLoader            = NewBatchedLoader(giftCardsByUserLoader, WithBatchCapacity[string, []*model.GiftCard](batchCapacity))
-	GiftcardsByOrderIDsLoader        = NewBatchedLoader(giftcardsByOrderIDsLoader, WithBatchCapacity[string, []*model.GiftCard](batchCapacity))
+	GiftCardEventsByGiftCardIdLoader = dataloader.NewBatchedLoader(giftCardEventsByGiftCardIdLoader, dataloader.WithBatchCapacity[string, []*model.GiftCardEvent](batchCapacity))
+	GiftCardsByUserLoader            = dataloader.NewBatchedLoader(giftCardsByUserLoader, dataloader.WithBatchCapacity[string, []*model.GiftCard](batchCapacity))
+	GiftcardsByOrderIDsLoader        = dataloader.NewBatchedLoader(giftcardsByOrderIDsLoader, dataloader.WithBatchCapacity[string, []*model.GiftCard](batchCapacity))
 
 	// order
-	OrderLineByIdLoader                     = NewBatchedLoader(orderLineByIdLoader, WithBatchCapacity[string, *model.OrderLine](batchCapacity))
-	OrderByIdLoader                         = NewBatchedLoader(orderByIdLoader, WithBatchCapacity[string, *model.Order](batchCapacity))
-	OrderLinesByOrderIdLoader               = NewBatchedLoader(orderLinesByOrderIdLoader, WithBatchCapacity[string, []*model.OrderLine](batchCapacity))
-	OrdersByUserLoader                      = NewBatchedLoader(ordersByUserLoader, WithBatchCapacity[string, []*model.Order](batchCapacity))
-	OrderEventsByOrderIdLoader              = NewBatchedLoader(orderEventsByOrderIdLoader, WithBatchCapacity[string, []*model.OrderEvent](batchCapacity))
-	FulfillmentLinesByIdLoader              = NewBatchedLoader(fulfillmentLinesByIdLoader, WithBatchCapacity[string, *model.FulfillmentLine](batchCapacity))
-	FulfillmentsByOrderIdLoader             = NewBatchedLoader(fulfillmentsByOrderIdLoader, WithBatchCapacity[string, []*model.Fulfillment](batchCapacity))
-	OrderLinesByVariantIdAndChannelIdLoader = NewBatchedLoader(orderLinesByVariantIdAndChannelIdLoader, WithBatchCapacity[string, []*model.OrderLine](batchCapacity))
-	FulfillmentLinesByFulfillmentIDLoader   = NewBatchedLoader(fulfillmentLinesByFulfillmentIDLoader, WithBatchCapacity[string, []*model.FulfillmentLine](batchCapacity))
+	OrderLineByIdLoader                     = dataloader.NewBatchedLoader(orderLineByIdLoader, dataloader.WithBatchCapacity[string, *model.OrderLine](batchCapacity))
+	OrderByIdLoader                         = dataloader.NewBatchedLoader(orderByIdLoader, dataloader.WithBatchCapacity[string, *model.Order](batchCapacity))
+	OrderLinesByOrderIdLoader               = dataloader.NewBatchedLoader(orderLinesByOrderIdLoader, dataloader.WithBatchCapacity[string, []*model.OrderLine](batchCapacity))
+	OrdersByUserLoader                      = dataloader.NewBatchedLoader(ordersByUserLoader, dataloader.WithBatchCapacity[string, []*model.Order](batchCapacity))
+	OrderEventsByOrderIdLoader              = dataloader.NewBatchedLoader(orderEventsByOrderIdLoader, dataloader.WithBatchCapacity[string, []*model.OrderEvent](batchCapacity))
+	FulfillmentLinesByIdLoader              = dataloader.NewBatchedLoader(fulfillmentLinesByIdLoader, dataloader.WithBatchCapacity[string, *model.FulfillmentLine](batchCapacity))
+	FulfillmentsByOrderIdLoader             = dataloader.NewBatchedLoader(fulfillmentsByOrderIdLoader, dataloader.WithBatchCapacity[string, []*model.Fulfillment](batchCapacity))
+	OrderLinesByVariantIdAndChannelIdLoader = dataloader.NewBatchedLoader(orderLinesByVariantIdAndChannelIdLoader, dataloader.WithBatchCapacity[string, []*model.OrderLine](batchCapacity))
+	FulfillmentLinesByFulfillmentIDLoader   = dataloader.NewBatchedLoader(fulfillmentLinesByFulfillmentIDLoader, dataloader.WithBatchCapacity[string, []*model.FulfillmentLine](batchCapacity))
 
 	// checkout
-	CheckoutByUserLoader                   = NewBatchedLoader(checkoutByUserLoader, WithBatchCapacity[string, []*model.Checkout](batchCapacity))
-	CheckoutByUserAndChannelLoader         = NewBatchedLoader(checkoutByUserAndChannelLoader, WithBatchCapacity[string, []*model.Checkout](batchCapacity))
-	CheckoutLinesByCheckoutTokenLoader     = NewBatchedLoader(checkoutLinesByCheckoutTokenLoader, WithBatchCapacity[string, []*model.CheckoutLine](batchCapacity))
-	CheckoutByTokenLoader                  = NewBatchedLoader(checkoutByTokenLoader, WithBatchCapacity[string, *model.Checkout](batchCapacity))
-	CheckoutLineByIdLoader                 = NewBatchedLoader(checkoutLineByIdLoader, WithBatchCapacity[string, *model.CheckoutLine](batchCapacity))
-	CheckoutLinesInfoByCheckoutTokenLoader = NewBatchedLoader(checkoutLinesInfoByCheckoutTokenLoader, WithBatchCapacity[string, []*model.CheckoutLineInfo](batchCapacity))
-	CheckoutInfoByCheckoutTokenLoader      = NewBatchedLoader(checkoutInfoByCheckoutTokenLoader, WithBatchCapacity[string, *model.CheckoutInfo](batchCapacity))
+	CheckoutByUserLoader                   = dataloader.NewBatchedLoader(checkoutByUserLoader, dataloader.WithBatchCapacity[string, []*model.Checkout](batchCapacity))
+	CheckoutByUserAndChannelLoader         = dataloader.NewBatchedLoader(checkoutByUserAndChannelLoader, dataloader.WithBatchCapacity[string, []*model.Checkout](batchCapacity))
+	CheckoutLinesByCheckoutTokenLoader     = dataloader.NewBatchedLoader(checkoutLinesByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, []*model.CheckoutLine](batchCapacity))
+	CheckoutByTokenLoader                  = dataloader.NewBatchedLoader(checkoutByTokenLoader, dataloader.WithBatchCapacity[string, *model.Checkout](batchCapacity))
+	CheckoutLineByIdLoader                 = dataloader.NewBatchedLoader(checkoutLineByIdLoader, dataloader.WithBatchCapacity[string, *model.CheckoutLine](batchCapacity))
+	CheckoutLinesInfoByCheckoutTokenLoader = dataloader.NewBatchedLoader(checkoutLinesInfoByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, []*model.CheckoutLineInfo](batchCapacity))
+	CheckoutInfoByCheckoutTokenLoader      = dataloader.NewBatchedLoader(checkoutInfoByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, *model.CheckoutInfo](batchCapacity))
 
 	// attribute
-	AttributesByAttributeIdLoader      = NewBatchedLoader(attributesByAttributeIdLoader, WithBatchCapacity[string, *model.Attribute](batchCapacity))
-	AttributeValuesByAttributeIdLoader = NewBatchedLoader(attributeValuesByAttributeIdLoader, WithBatchCapacity[string, []*model.AttributeValue](batchCapacity))
-	AttributeValueByIdLoader           = NewBatchedLoader(attributeValueByIdLoader, WithBatchCapacity[string, *model.AttributeValue](batchCapacity))
+	AttributesByAttributeIdLoader      = dataloader.NewBatchedLoader(attributesByAttributeIdLoader, dataloader.WithBatchCapacity[string, *model.Attribute](batchCapacity))
+	AttributeValuesByAttributeIdLoader = dataloader.NewBatchedLoader(attributeValuesByAttributeIdLoader, dataloader.WithBatchCapacity[string, []*model.AttributeValue](batchCapacity))
+	AttributeValueByIdLoader           = dataloader.NewBatchedLoader(attributeValueByIdLoader, dataloader.WithBatchCapacity[string, *model.AttributeValue](batchCapacity))
 
 	// channel
-	ChannelByIdLoader              = NewBatchedLoader(channelByIdLoader, WithBatchCapacity[string, *model.Channel](batchCapacity))
-	ChannelBySlugLoader            = NewBatchedLoader(channelBySlugLoader, WithBatchCapacity[string, *model.Channel](batchCapacity))
-	ChannelByCheckoutLineIDLoader  = NewBatchedLoader(channelByCheckoutLineIDLoader, WithBatchCapacity[string, *model.Channel](batchCapacity))
-	ChannelByOrderLineIdLoader     = NewBatchedLoader(channelByOrderLineIdLoader, WithBatchCapacity[string, *model.Channel](batchCapacity))
-	ChannelWithHasOrdersByIdLoader = NewBatchedLoader(channelWithHasOrdersByIdLoader, WithBatchCapacity[string, *model.Channel](batchCapacity))
+	ChannelByIdLoader              = dataloader.NewBatchedLoader(channelByIdLoader, dataloader.WithBatchCapacity[string, *model.Channel](batchCapacity))
+	ChannelBySlugLoader            = dataloader.NewBatchedLoader(channelBySlugLoader, dataloader.WithBatchCapacity[string, *model.Channel](batchCapacity))
+	ChannelByCheckoutLineIDLoader  = dataloader.NewBatchedLoader(channelByCheckoutLineIDLoader, dataloader.WithBatchCapacity[string, *model.Channel](batchCapacity))
+	ChannelByOrderLineIdLoader     = dataloader.NewBatchedLoader(channelByOrderLineIdLoader, dataloader.WithBatchCapacity[string, *model.Channel](batchCapacity))
+	ChannelWithHasOrdersByIdLoader = dataloader.NewBatchedLoader(channelWithHasOrdersByIdLoader, dataloader.WithBatchCapacity[string, *model.Channel](batchCapacity))
 
 	// shipping
-	ShippingZoneByIdLoader                                             = NewBatchedLoader(shippingZoneByIdLoader, WithBatchCapacity[string, *model.ShippingZone](batchCapacity))
-	ShippingZonesByChannelIdLoader                                     = NewBatchedLoader(shippingZonesByChannelIdLoader, WithBatchCapacity[string, []*model.ShippingZone](batchCapacity))
-	ShippingMethodByIdLoader                                           = NewBatchedLoader(shippingMethodByIdLoader, WithBatchCapacity[string, *model.ShippingMethod](batchCapacity))
-	ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader = NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader, WithBatchCapacity[string, *model.ShippingMethodChannelListing](batchCapacity))
-	ShippingMethodsByShippingZoneIdLoader                              = NewBatchedLoader(shippingMethodsByShippingZoneIdLoader, WithBatchCapacity[string, []*model.ShippingMethod](batchCapacity))
-	PostalCodeRulesByShippingMethodIdLoader                            = NewBatchedLoader(postalCodeRulesByShippingMethodIdLoader, WithBatchCapacity[string, []*model.ShippingMethodPostalCodeRule](batchCapacity))
+	ShippingZoneByIdLoader                                             = dataloader.NewBatchedLoader(shippingZoneByIdLoader, dataloader.WithBatchCapacity[string, *model.ShippingZone](batchCapacity))
+	ShippingZonesByChannelIdLoader                                     = dataloader.NewBatchedLoader(shippingZonesByChannelIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingZone](batchCapacity))
+	ShippingMethodByIdLoader                                           = dataloader.NewBatchedLoader(shippingMethodByIdLoader, dataloader.WithBatchCapacity[string, *model.ShippingMethod](batchCapacity))
+	ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader = dataloader.NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, *model.ShippingMethodChannelListing](batchCapacity))
+	ShippingMethodsByShippingZoneIdLoader                              = dataloader.NewBatchedLoader(shippingMethodsByShippingZoneIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethod](batchCapacity))
+	PostalCodeRulesByShippingMethodIdLoader                            = dataloader.NewBatchedLoader(postalCodeRulesByShippingMethodIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethodPostalCodeRule](batchCapacity))
 
 	// discount
-	DiscountsByDateTimeLoader                           = NewBatchedLoader(discountsByDateTimeLoader, WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity))
-	SaleChannelListingBySaleIdAndChanneSlugLoader       = NewBatchedLoader(saleChannelListingBySaleIdAndChanneSlugLoader, WithBatchCapacity[string, *model.SaleChannelListing](batchCapacity))
-	SaleChannelListingBySaleIdLoader                    = NewBatchedLoader(saleChannelListingBySaleIdLoader, WithBatchCapacity[string, []*model.SaleChannelListing](batchCapacity))
-	OrderDiscountsByOrderIDLoader                       = NewBatchedLoader(orderDiscountsByOrderIDLoader, WithBatchCapacity[string, []*model.OrderDiscount](batchCapacity))
-	VoucherByIDLoader                                   = NewBatchedLoader(voucherByIDLoader, WithBatchCapacity[string, *model.Voucher](batchCapacity))
-	VoucherChannelListingByVoucherIdAndChanneSlugLoader = NewBatchedLoader(voucherChannelListingByVoucherIdAndChanneSlugLoader, WithBatchCapacity[string, *model.VoucherChannelListing](batchCapacity))
-	VoucherChannelListingByVoucherIdLoader              = NewBatchedLoader(voucherChannelListingByVoucherIdLoader, WithBatchCapacity[string, []*model.VoucherChannelListing](batchCapacity))
-	CategoriesByVoucherIDLoader                         = NewBatchedLoader(categoriesByVoucherIDLoader, WithBatchCapacity[string, []*model.Category](batchCapacity))
-	CollectionsByVoucherIDLoader                        = NewBatchedLoader(collectionsByVoucherIDLoader, WithBatchCapacity[string, []*model.Collection](batchCapacity))
-	ProductsByVoucherIDLoader                           = NewBatchedLoader(productsByVoucherIDLoader, WithBatchCapacity[string, []*model.Product](batchCapacity))
-	ProductVariantsByVoucherIDLoader                    = NewBatchedLoader(productVariantsByVoucherIdLoader, WithBatchCapacity[string, []*model.ProductVariant](batchCapacity))
-	CategoriesBySaleIDLoader                            = NewBatchedLoader(categoriesBySaleIDLoader, WithBatchCapacity[string, []*model.Category](batchCapacity))
-	CollectionsBySaleIDLoader                           = NewBatchedLoader(collectionsBySaleIDLoader, WithBatchCapacity[string, []*model.Collection](batchCapacity))
-	ProductsBySaleIDLoader                              = NewBatchedLoader(productsBySaleIDLoader, WithBatchCapacity[string, []*model.Product](batchCapacity))
-	ProductVariantsBySaleIDLoader                       = NewBatchedLoader(productVariantsBySaleIDLoader, WithBatchCapacity[string, []*model.ProductVariant](batchCapacity))
+	DiscountsByDateTimeLoader                           = dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity))
+	SaleChannelListingBySaleIdAndChanneSlugLoader       = dataloader.NewBatchedLoader(saleChannelListingBySaleIdAndChanneSlugLoader, dataloader.WithBatchCapacity[string, *model.SaleChannelListing](batchCapacity))
+	SaleChannelListingBySaleIdLoader                    = dataloader.NewBatchedLoader(saleChannelListingBySaleIdLoader, dataloader.WithBatchCapacity[string, []*model.SaleChannelListing](batchCapacity))
+	OrderDiscountsByOrderIDLoader                       = dataloader.NewBatchedLoader(orderDiscountsByOrderIDLoader, dataloader.WithBatchCapacity[string, []*model.OrderDiscount](batchCapacity))
+	VoucherByIDLoader                                   = dataloader.NewBatchedLoader(voucherByIDLoader, dataloader.WithBatchCapacity[string, *model.Voucher](batchCapacity))
+	VoucherChannelListingByVoucherIdAndChanneSlugLoader = dataloader.NewBatchedLoader(voucherChannelListingByVoucherIdAndChanneSlugLoader, dataloader.WithBatchCapacity[string, *model.VoucherChannelListing](batchCapacity))
+	VoucherChannelListingByVoucherIdLoader              = dataloader.NewBatchedLoader(voucherChannelListingByVoucherIdLoader, dataloader.WithBatchCapacity[string, []*model.VoucherChannelListing](batchCapacity))
+	CategoriesByVoucherIDLoader                         = dataloader.NewBatchedLoader(categoriesByVoucherIDLoader, dataloader.WithBatchCapacity[string, []*model.Category](batchCapacity))
+	CollectionsByVoucherIDLoader                        = dataloader.NewBatchedLoader(collectionsByVoucherIDLoader, dataloader.WithBatchCapacity[string, []*model.Collection](batchCapacity))
+	ProductsByVoucherIDLoader                           = dataloader.NewBatchedLoader(productsByVoucherIDLoader, dataloader.WithBatchCapacity[string, []*model.Product](batchCapacity))
+	ProductVariantsByVoucherIDLoader                    = dataloader.NewBatchedLoader(productVariantsByVoucherIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariant](batchCapacity))
+	CategoriesBySaleIDLoader                            = dataloader.NewBatchedLoader(categoriesBySaleIDLoader, dataloader.WithBatchCapacity[string, []*model.Category](batchCapacity))
+	CollectionsBySaleIDLoader                           = dataloader.NewBatchedLoader(collectionsBySaleIDLoader, dataloader.WithBatchCapacity[string, []*model.Collection](batchCapacity))
+	ProductsBySaleIDLoader                              = dataloader.NewBatchedLoader(productsBySaleIDLoader, dataloader.WithBatchCapacity[string, []*model.Product](batchCapacity))
+	ProductVariantsBySaleIDLoader                       = dataloader.NewBatchedLoader(productVariantsBySaleIDLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariant](batchCapacity))
 
 	// warehouse
-	WarehouseByIdLoader            = NewBatchedLoader(warehouseByIdLoader, WithBatchCapacity[string, *model.WareHouse](batchCapacity))
-	AllocationsByOrderLineIdLoader = NewBatchedLoader(allocationsByOrderLineIdLoader, WithBatchCapacity[string, []*model.Allocation](batchCapacity))
-	StocksByIDLoader               = NewBatchedLoader(stocksByIDLoader, WithBatchCapacity[string, *model.Stock](batchCapacity))
-	AllocationsByStockIDLoader     = NewBatchedLoader(allocationsByStockIDLoader, WithBatchCapacity[string, []*model.Allocation](batchCapacity))
+	WarehouseByIdLoader            = dataloader.NewBatchedLoader(warehouseByIdLoader, dataloader.WithBatchCapacity[string, *model.WareHouse](batchCapacity))
+	AllocationsByOrderLineIdLoader = dataloader.NewBatchedLoader(allocationsByOrderLineIdLoader, dataloader.WithBatchCapacity[string, []*model.Allocation](batchCapacity))
+	StocksByIDLoader               = dataloader.NewBatchedLoader(stocksByIDLoader, dataloader.WithBatchCapacity[string, *model.Stock](batchCapacity))
+	AllocationsByStockIDLoader     = dataloader.NewBatchedLoader(allocationsByStockIDLoader, dataloader.WithBatchCapacity[string, []*model.Allocation](batchCapacity))
 
 	// menu
-	MenuByIdLoader              = NewBatchedLoader(menuByIdLoader, WithBatchCapacity[string, *model.Menu](batchCapacity))
-	MenuItemByIdLoader          = NewBatchedLoader(menuItemByIdLoader, WithBatchCapacity[string, *model.MenuItem](batchCapacity))
-	MenuItemsByParentMenuLoader = NewBatchedLoader(menuItemsByParentMenuLoader, WithBatchCapacity[string, []*model.MenuItem](batchCapacity))
-	MenuItemChildrenLoader      = NewBatchedLoader(menuItemChildrenLoader, WithBatchCapacity[string, []*model.MenuItem](batchCapacity))
+	MenuByIdLoader              = dataloader.NewBatchedLoader(menuByIdLoader, dataloader.WithBatchCapacity[string, *model.Menu](batchCapacity))
+	MenuItemByIdLoader          = dataloader.NewBatchedLoader(menuItemByIdLoader, dataloader.WithBatchCapacity[string, *model.MenuItem](batchCapacity))
+	MenuItemsByParentMenuLoader = dataloader.NewBatchedLoader(menuItemsByParentMenuLoader, dataloader.WithBatchCapacity[string, []*model.MenuItem](batchCapacity))
+	MenuItemChildrenLoader      = dataloader.NewBatchedLoader(menuItemChildrenLoader, dataloader.WithBatchCapacity[string, []*model.MenuItem](batchCapacity))
 
 	// payment
-	PaymentsByOrderIdLoader = NewBatchedLoader(paymentsByOrderIdLoader, WithBatchCapacity[string, []*model.Payment](batchCapacity))
+	PaymentsByOrderIdLoader = dataloader.NewBatchedLoader(paymentsByOrderIdLoader, dataloader.WithBatchCapacity[string, []*model.Payment](batchCapacity))
 
 	// invoice
-	InvoicesByOrderIDLoader = NewBatchedLoader(invoicesByOrderIDLoader, WithBatchCapacity[string, []*model.Invoice](batchCapacity))
+	InvoicesByOrderIDLoader = dataloader.NewBatchedLoader(invoicesByOrderIDLoader, dataloader.WithBatchCapacity[string, []*model.Invoice](batchCapacity))
 
 	// page
-	PageByIdLoader = NewBatchedLoader(pageByIdLoader, WithBatchCapacity[string, *model.Page](batchCapacity))
+	PageByIdLoader = dataloader.NewBatchedLoader(pageByIdLoader, dataloader.WithBatchCapacity[string, *model.Page](batchCapacity))
 )

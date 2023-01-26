@@ -825,22 +825,6 @@ type ChoiceValue struct {
 	Verbose *string `json:"verbose"`
 }
 
-type Collection struct {
-	ID              string                      `json:"id"`
-	SeoTitle        *string                     `json:"seoTitle"`
-	SeoDescription  *string                     `json:"seoDescription"`
-	Name            string                      `json:"name"`
-	Description     JSONString                  `json:"description"`
-	Slug            string                      `json:"slug"`
-	PrivateMetadata []*MetadataItem             `json:"privateMetadata"`
-	Metadata        []*MetadataItem             `json:"metadata"`
-	Channel         *string                     `json:"channel"`
-	Products        *ProductCountableConnection `json:"products"`
-	BackgroundImage *Image                      `json:"backgroundImage"`
-	Translation     *CollectionTranslation      `json:"translation"`
-	ChannelListings []*CollectionChannelListing `json:"channelListings"`
-}
-
 type CollectionAddProducts struct {
 	Collection *Collection        `json:"collection"`
 	Errors     []*CollectionError `json:"errors"`
@@ -2812,23 +2796,6 @@ type ProductTranslation struct {
 	Name           *string          `json:"name"`
 	Description    JSONString       `json:"description"`
 	Language       *LanguageDisplay `json:"language"`
-}
-
-type ProductType struct {
-	ID                  string                        `json:"id"`
-	Name                string                        `json:"name"`
-	Slug                string                        `json:"slug"`
-	HasVariants         bool                          `json:"hasVariants"`
-	IsShippingRequired  bool                          `json:"isShippingRequired"`
-	IsDigital           bool                          `json:"isDigital"`
-	Weight              *Weight                       `json:"weight"`
-	PrivateMetadata     []*MetadataItem               `json:"privateMetadata"`
-	Metadata            []*MetadataItem               `json:"metadata"`
-	Kind                ProductTypeKindEnum           `json:"kind"`
-	TaxType             *TaxType                      `json:"taxType"`
-	VariantAttributes   []*Attribute                  `json:"variantAttributes"`
-	ProductAttributes   []*Attribute                  `json:"productAttributes"`
-	AvailableAttributes *AttributeCountableConnection `json:"availableAttributes"`
 }
 
 type ProductTypeBulkDelete struct {

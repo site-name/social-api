@@ -112,7 +112,7 @@ type Order struct {
 	RedirectUrl                  *string                `json:"redirect_url"`
 	ModelMetadata
 
-	populatedNonDBFields bool `json:"-" db:"-"`
+	populatedNonDBFields bool `db:"-"`
 }
 
 // OrderFilterOption is used to buils sql queries for filtering orders

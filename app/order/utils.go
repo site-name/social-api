@@ -1643,5 +1643,7 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) (validationErrors 
 		}
 	}
 
+	panic("not implemented")
+
 	return
 }

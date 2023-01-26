@@ -309,7 +309,7 @@ type Order struct {
 	TotalBalance        *Money           `json:"totalBalance"`
 	LanguageCodeEnum    LanguageCodeEnum `json:"languageCodeEnum"`
 
-	order *model.Order // parent order
+	order *model.Order // real order
 
 	// StatusDisplay       *string          `json:"statusDisplay"`
 	// IsPaid              bool             `json:"isPaid"`
@@ -376,8 +376,7 @@ func SystemOrderToGraphqlOrder(o *model.Order) *Order {
 	}
 
 	if o.ShippingTaxRate != nil {
-		fl64, _ := o.ShippingTaxRate.Float64()
-		res.ShippingTaxRate = fl64
+		res.ShippingTaxRate, _ = o.ShippingTaxRate.Float64()
 	}
 
 	return res
@@ -418,7 +417,9 @@ func (o *Order) BillingAddress(ctx context.Context) (*Address, error) {
 	var currentSession = embedCtx.AppContext.Session()
 
 	if (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
-		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
+		embedCtx.App.Srv().
+			AccountService().
+			SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
 		return SystemAddressToGraphqlAddress(address), nil
 	}
 
@@ -558,7 +559,7 @@ func (o *Order) Events(ctx context.Context) ([]*OrderEvent, error) {
 
 	// check if current user has manage order permission to see order events:
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
-		return nil, model.NewAppError("Order,Events", ErrorUnauthorized, nil, "you are not authorized to see order events", http.StatusUnauthorized)
+		return nil, model.NewAppError("Order.Events", ErrorUnauthorized, nil, "you are not authorized to see order events", http.StatusUnauthorized)
 	}
 
 	events, err := OrderEventsByOrderIdLoader.Load(ctx, o.ID)()
@@ -781,8 +782,7 @@ func (o *Order) Original(ctx context.Context) (*string, error) {
 	if o.order.OriginalID != nil {
 		return nil, nil
 	}
-	value := []byte("Order")
-	value = append(value, *o.order.OriginalID...)
+	value := append([]byte("Order"), *o.order.OriginalID...)
 
 	return model.NewPrimitive(base64.StdEncoding.EncodeToString(value)), nil
 }
@@ -848,6 +848,9 @@ func ordersByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Res
 	}
 
 	for _, ord := range orders {
+		if ord.UserID == nil {
+			continue
+		}
 		orderMap[*ord.UserID] = append(orderMap[*ord.UserID], ord)
 	}
 

@@ -24,11 +24,20 @@ type ProductChannelListing struct {
 	CreateAt              uint64           `json:"create_at"`
 	Publishable
 
-	Channel *Channel `json:"-" db:"-"` // this field may be populated when store performs prefetching
+	channel *Channel `db:"-"` // this field may be populated when store performs prefetching
+}
+
+func (p *ProductChannelListing) GetChannel() *Channel {
+	return p.channel
+}
+
+func (p *ProductChannelListing) SetChannel(c *Channel) {
+	p.channel = c
 }
 
 // ProductChannelListingFilterOption is option for filtering product channel listing
 type ProductChannelListingFilterOption struct {
+	Id                   squirrel.Sqlizer
 	ProductID            squirrel.Sqlizer
 	ChannelID            squirrel.Sqlizer
 	AvailableForPurchase squirrel.Sqlizer
@@ -106,8 +115,8 @@ func (p *ProductChannelListing) DeepCopy() *ProductChannelListing {
 	}
 
 	res := *p
-	if p.Channel != nil {
-		res.Channel = p.Channel.DeepCopy()
+	if p.channel != nil {
+		res.channel = p.channel.DeepCopy()
 	}
 	if p.AvailableForPurchase != nil {
 		res.AvailableForPurchase = NewPrimitive(*p.AvailableForPurchase)

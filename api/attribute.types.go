@@ -324,7 +324,7 @@ func (a *Attribute) ProductTypes(
 
 	for i := 0; i < edgesLength; i++ {
 		res.Edges[i] = &ProductTypeCountableEdge{
-			Node:   SystemProductTypeTpGraphqlProductType(productTypes[i]),
+			Node:   SystemProductTypeToGraphqlProductType(productTypes[i]),
 			Cursor: base64.StdEncoding.EncodeToString([]byte(productTypes[i].Slug)),
 		}
 	}
@@ -390,7 +390,7 @@ func (a *Attribute) ProductVariantTypes(
 
 	for i := 0; i < edgesLength; i++ {
 		res.Edges[i] = &ProductTypeCountableEdge{
-			Node:   SystemProductTypeTpGraphqlProductType(productTypes[i]),
+			Node:   SystemProductTypeToGraphqlProductType(productTypes[i]),
 			Cursor: base64.StdEncoding.EncodeToString([]byte(productTypes[i].Slug)),
 		}
 	}
