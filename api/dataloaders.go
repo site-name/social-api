@@ -30,6 +30,10 @@ var (
 	ProductChannelListingByIdLoader                      = dataloader.NewBatchedLoader(productChannelListingByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductChannelListing](batchCapacity))
 	ProductChannelListingByProductIdLoader               = dataloader.NewBatchedLoader(productChannelListingByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductChannelListing](batchCapacity))
 	ProductTypeByIdLoader                                = dataloader.NewBatchedLoader(productTypeByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductType](batchCapacity))
+	ProductVariantsByProductIdLoader                     = dataloader.NewBatchedLoader(productVariantsByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariant](batchCapacity))
+	ProductVariantChannelListingByIdLoader               = dataloader.NewBatchedLoader(productVariantChannelListingByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductVariantChannelListing](batchCapacity))
+	ProductVariantsByProductIdAndChannel                 = dataloader.NewBatchedLoader(productVariantsByProductIdAndChannelIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariant](batchCapacity))          // key has format of: productID__channelID
+	AvailableProductVariantsByProductIdAndChannel        = dataloader.NewBatchedLoader(availableProductVariantsByProductIdAndChannelIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariant](batchCapacity)) // key has format of: productID__channelID
 
 	// giftcard
 	GiftCardEventsByGiftCardIdLoader = dataloader.NewBatchedLoader(giftCardEventsByGiftCardIdLoader, dataloader.WithBatchCapacity[string, []*model.GiftCardEvent](batchCapacity))

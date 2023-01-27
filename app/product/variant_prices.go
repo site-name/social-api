@@ -144,8 +144,6 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(product model.Product, dis
 		} else {
 			productChannelListings = res
 		}
-
-		return
 	}()
 
 	wg.Wait()
@@ -161,17 +159,17 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(product model.Product, dis
 		listing.PopulateNonDbFields() // this call is crutial
 
 		variantPrices := variantPricesInChannelsDict[listing.ChannelID]
-		if variantPrices == nil || len(variantPrices) == 0 {
+		if len(variantPrices) == 0 {
 			continue
 		}
 
-		if listing.Channel != nil { // check if there is a channel populated
+		if listing.GetChannel() != nil { // check if there is a channel populated
 			productDiscountedPrice, appErr := a.getProductDiscountedPrice(
 				variantPrices,
 				product,
 				collectionsContainProduct,
 				discounts,
-				*listing.Channel,
+				*listing.GetChannel(),
 			)
 			if appErr != nil {
 				return appErr
@@ -203,7 +201,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPrices(products []*model.Produc
 		wg       sync.WaitGroup
 		mut      sync.Mutex
 	)
-	if discounts == nil || len(discounts) == 0 {
+	if len(discounts) == 0 {
 		discounts, appError = a.srv.DiscountService().FetchActiveDiscounts()
 		if appError != nil {
 			return appError

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"golang.org/x/text/currency"
@@ -21,9 +22,9 @@ type ProductVariantChannelListing struct {
 	PreorderQuantityThreshold *int             `json:"preorder_quantity_threshold"`
 	CreateAt                  int64            `json:"create_at"`
 
-	preorderQuantityAllocated int      `json:"-" db:"-"` // this field got populated in some db queries
-	availablePreorderQuantity int      `json:"-" db:"-"`
-	Channel                   *Channel `json:"-" db:"-"` // this field got populated in some db queries
+	preorderQuantityAllocated int      `db:"-"` // this field got populated in some db queries
+	availablePreorderQuantity int      `db:"-"`
+	channel                   *Channel `db:"-"` // this field got populated in some db queries
 }
 
 // ProductVariantChannelListingFilterOption is used to build sql queries
@@ -46,7 +47,6 @@ type ProductVariantChannelListingFilterOption struct {
 func (p *ProductVariantChannelListing) Set_preorderQuantityAllocated(value int) {
 	p.preorderQuantityAllocated = value
 }
-
 func (p *ProductVariantChannelListing) Get_preorderQuantityAllocated() int {
 	return p.preorderQuantityAllocated
 }
@@ -54,22 +54,26 @@ func (p *ProductVariantChannelListing) Get_preorderQuantityAllocated() int {
 func (p *ProductVariantChannelListing) Set_availablePreorderQuantity(value int) {
 	p.availablePreorderQuantity = value
 }
-
 func (p *ProductVariantChannelListing) Get_availablePreorderQuantity() int {
 	return p.availablePreorderQuantity
+}
+
+func (p *ProductVariantChannelListing) GetChannel() *Channel {
+	return p.channel
+}
+
+func (p *ProductVariantChannelListing) SetChannel(c *Channel) {
+	p.channel = c
 }
 
 type ProductVariantChannelListings []*ProductVariantChannelListing
 
 func (p ProductVariantChannelListings) IDs() []string {
-	var res []string
-	for _, item := range p {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
+	return lo.Map(p, func(l *ProductVariantChannelListing, _ int) string { return l.Id })
+}
 
-	return res
+func (ps ProductVariantChannelListings) DeepCopy() ProductVariantChannelListings {
+	return lo.Map(ps, func(p *ProductVariantChannelListing, _ int) *ProductVariantChannelListing { return p.DeepCopy() })
 }
 
 func (p *ProductVariantChannelListing) IsValid() *AppError {
@@ -145,9 +149,8 @@ func (p *ProductVariantChannelListing) DeepCopy() *ProductVariantChannelListing 
 	if p.PreorderQuantityThreshold != nil {
 		res.PreorderQuantityThreshold = NewPrimitive(*p.PreorderQuantityThreshold)
 	}
-
-	if p.Channel != nil {
-		res.Channel = p.Channel.DeepCopy()
+	if p.channel != nil {
+		res.channel = p.channel.DeepCopy()
 	}
 	return &res
 }

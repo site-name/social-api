@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -79,21 +80,14 @@ type ProductFilterOption struct {
 
 type Products []*Product
 
-func (p Products) IDs() []string {
-	res := []string{}
-	for _, product := range p {
-		if product != nil {
-			res = append(res, product.Id)
-		}
-	}
-
-	return res
+func (ps Products) IDs() []string {
+	return lo.Map(ps, func(p *Product, _ int) string { return p.Id })
 }
 
 func (p Products) CategoryIDs() []string {
 	res := []string{}
 	for _, product := range p {
-		if product != nil && product.CategoryID != nil {
+		if product.CategoryID != nil {
 			res = append(res, *product.CategoryID)
 		}
 	}
@@ -128,10 +122,8 @@ func (ps Products) Flat() []StringInterface {
 			len(prd.ProductVariants),
 		)
 
-		var (
-			categorySlug    string
-			productTypeName string
-		)
+		var categorySlug string
+		var productTypeName string
 
 		if prd.Category != nil {
 			categorySlug = prd.Category.Slug

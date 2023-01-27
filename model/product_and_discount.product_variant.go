@@ -32,9 +32,10 @@ type ProductVariant struct {
 	Sortable
 	ModelMetadata
 
-	digitalContent *DigitalContent `db:"-"` // for storing value returned by prefetching
-	product        *Product        `db:"-"`
-	stocks         Stocks          `db:"-"`
+	digitalContent         *DigitalContent               `db:"-"` // for storing value returned by prefetching
+	product                *Product                      `db:"-"`
+	stocks                 Stocks                        `db:"-"`
+	variantChannelListings ProductVariantChannelListings `db:"-"`
 }
 
 // ProductVariantFilterOption is used to build sql queries
@@ -48,6 +49,7 @@ type ProductVariantFilterOption struct {
 
 	ProductVariantChannelListingPriceAmount squirrel.Sqlizer // INNER JOIN `ProductVariantChannelListing` ON ... WHERE ProductVariantChannelListing.PriceAmount ...
 	ProductVariantChannelListingChannelSlug squirrel.Sqlizer // INNER JOIN `ProductVariantChannelListing` ON ... INNER JOIN Channels ON ... WHERE Channels.Slug ...
+	ProductVariantChannelListingChannelID   squirrel.Sqlizer // INNER JOIN ProductVariantChannelListing ON ... WHERE ProductVariantChannelListing.ChannelID ...
 
 	Distinct bool // if true, use SELECT DISTINCT
 
@@ -80,7 +82,6 @@ func (p ProductVariants) DeepCopy() ProductVariants {
 func (s *ProductVariant) SetStocks(stk Stocks) {
 	s.stocks = stk
 }
-
 func (p *ProductVariant) GetStocks() Stocks {
 	return p.stocks
 }
@@ -88,7 +89,6 @@ func (p *ProductVariant) GetStocks() Stocks {
 func (s *ProductVariant) SetProduct(prd *Product) {
 	s.product = prd
 }
-
 func (p *ProductVariant) GetProduct() *Product {
 	return p.product
 }
@@ -96,9 +96,18 @@ func (p *ProductVariant) GetProduct() *Product {
 func (s *ProductVariant) SetDigitalContent(d *DigitalContent) {
 	s.digitalContent = d
 }
-
 func (p *ProductVariant) GetDigitalContent() *DigitalContent {
 	return p.digitalContent
+}
+
+func (s *ProductVariant) SetVariantChannelListings(d ProductVariantChannelListings) {
+	s.variantChannelListings = d
+}
+func (s *ProductVariant) AppendVariantChannelListing(d *ProductVariantChannelListing) {
+	s.variantChannelListings = append(s.variantChannelListings, d)
+}
+func (p *ProductVariant) GetVariantChannelListings() ProductVariantChannelListings {
+	return p.variantChannelListings
 }
 
 // FilterNils returns new ProductVariants contains all non-nil items from current ProductVariants

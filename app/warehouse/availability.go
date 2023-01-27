@@ -277,7 +277,7 @@ func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants model.ProductVari
 	)
 
 	for _, channelListing := range allVariantChannelListings {
-		if channelListing.Channel != nil && channelListing.Channel.Slug == channelSlug {
+		if channelListing.GetChannel() != nil && channelListing.GetChannel().Slug == channelSlug {
 
 			variantsChannelAvailability[channelListing.VariantID] = structObject{
 				AvailablePreorderQuantity: channelListing.Get_availablePreorderQuantity(),

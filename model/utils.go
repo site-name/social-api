@@ -64,7 +64,6 @@ func (s StringInterface) DeepCopy() StringInterface {
 	}
 
 	res := StringInterface{}
-
 	for key, value := range s {
 		res[key] = value
 	}

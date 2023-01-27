@@ -477,3 +477,226 @@ errorLabel:
 	}
 	return res
 }
+
+func productVariantsByProductIdLoader(ctx context.Context, productIDs []string) []*dataloader.Result[[]*model.ProductVariant] {
+	var (
+		res        = make([]*dataloader.Result[[]*model.ProductVariant], len(productIDs))
+		variants   model.ProductVariants
+		variantMap = map[string]model.ProductVariants{} // keys are product ids
+		appErr     *model.AppError
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	variants, appErr = embedCtx.App.Srv().ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
+		ProductID: squirrel.Eq{store.ProductVariantTableName + ".ProductID": productIDs},
+	})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, variant := range variants {
+		variantMap[variant.ProductID] = append(variantMap[variant.ProductID], variant)
+	}
+
+	for idx, id := range productIDs {
+		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: variantMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range productIDs {
+		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Error: err}
+	}
+	return res
+}
+
+func productVariantChannelListingByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.ProductVariantChannelListing] {
+	var (
+		res        = make([]*dataloader.Result[*model.ProductVariantChannelListing], len(ids))
+		listings   model.ProductVariantChannelListings
+		listingMap = map[string]*model.ProductVariantChannelListing{} // keys are product_variant_channel_listing ids
+		appErr     *model.AppError
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	listings, appErr = embedCtx.App.Srv().
+		ProductService().
+		ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
+			Id: squirrel.Eq{store.ProductVariantChannelListingTableName + ".Id": ids},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, listing := range listings {
+		listingMap[listing.Id] = listing
+	}
+
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[*model.ProductVariantChannelListing]{Data: listingMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range ids {
+		res[idx] = &dataloader.Result[*model.ProductVariantChannelListing]{Error: err}
+	}
+	return res
+}
+
+func productVariantsByProductIdAndChannelIdLoader(ctx context.Context, idPairs []string) []*dataloader.Result[[]*model.ProductVariant] {
+	var (
+		res        = make([]*dataloader.Result[[]*model.ProductVariant], len(idPairs))
+		appErr     *model.AppError
+		variants   model.ProductVariants
+		variantMap = map[string]*model.ProductVariant{} // keys are product variant ids
+
+		variantChannelListings model.ProductVariantChannelListings
+		idPairVariantMap       = map[string]model.ProductVariants{} // keys have format of productID__channelID
+		productIDs             []string
+		channelIDs             []string
+	)
+
+	for _, pair := range idPairs {
+		index := strings.Index(pair, "__")
+		if index < 0 {
+			continue
+		}
+
+		productIDs = append(productIDs, pair[:index])
+		channelIDs = append(channelIDs, pair[index+2:])
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	variants, appErr = embedCtx.App.Srv().
+		ProductService().
+		ProductVariantsByOption(&model.ProductVariantFilterOption{
+			ProductID:                             squirrel.Eq{store.ProductVariantTableName + ".ProductID": productIDs},
+			ProductVariantChannelListingChannelID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	variantChannelListings, appErr = embedCtx.App.Srv().
+		ProductService().
+		ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
+			VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, variant := range variants {
+		variantMap[variant.Id] = variant
+	}
+
+	for _, listing := range variantChannelListings {
+		variant, ok := variantMap[listing.VariantID]
+		if ok {
+			key := variant.ProductID + "__" + listing.ChannelID
+			idPairVariantMap[key] = append(idPairVariantMap[key], variant)
+		}
+	}
+
+	for idx, idPair := range idPairs {
+		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: idPairVariantMap[idPair]}
+	}
+
+errorLabel:
+	for idx := range idPairs {
+		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Error: err}
+	}
+	return res
+}
+
+func availableProductVariantsByProductIdAndChannelIdLoader(ctx context.Context, idPairs []string) []*dataloader.Result[[]*model.ProductVariant] {
+	var (
+		res      = make([]*dataloader.Result[[]*model.ProductVariant], len(idPairs))
+		variants model.ProductVariants
+		appErr   *model.AppError
+
+		variantChannelListings model.ProductVariantChannelListings
+		variantMap             = map[string]*model.ProductVariant{} // keys are product variant ids
+		idPairVariantMap       = map[string]model.ProductVariants{} // keys have format of productID__channelID
+
+		productIDs []string
+		channelIDs []string
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	for _, pair := range idPairs {
+		index := strings.Index(pair, "__")
+		if index < 0 {
+			continue
+		}
+
+		productIDs = append(productIDs, pair[:index])
+		channelIDs = append(channelIDs, pair[index+2:])
+	}
+
+	variants, appErr = embedCtx.App.Srv().
+		ProductService().
+		ProductVariantsByOption(&model.ProductVariantFilterOption{
+			ProductID:                               squirrel.Eq{store.ProductVariantTableName + ".ProductID": productIDs},
+			ProductVariantChannelListingChannelID:   squirrel.Eq{store.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
+			ProductVariantChannelListingPriceAmount: squirrel.NotEq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	variantChannelListings, appErr = embedCtx.App.Srv().
+		ProductService().
+		ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
+			VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, variant := range variants {
+		variantMap[variant.Id] = variant
+	}
+
+	for _, listing := range variantChannelListings {
+		variant, ok := variantMap[listing.VariantID]
+		if ok {
+			key := variant.ProductID + "__" + listing.ChannelID
+			idPairVariantMap[key] = append(idPairVariantMap[key], variant)
+		}
+	}
+
+	for idx, id := range idPairs {
+		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: idPairVariantMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range idPairs {
+		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Error: err}
+	}
+	return res
+}

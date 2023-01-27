@@ -243,44 +243,40 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 		query = query.Where(option.ProductID)
 	}
 
-	var joinedProductVariantChannelListingTable bool
-
+	// catch all inner join
+	if option.ProductVariantChannelListingPriceAmount != nil ||
+		option.ProductVariantChannelListingChannelID != nil ||
+		option.ProductVariantChannelListingChannelSlug != nil {
+		query = query.InnerJoin(store.ProductVariantChannelListingTableName + " ON ProductVariantChannelListings.VariantID = ProductVariants.Id")
+	}
 	if option.ProductVariantChannelListingPriceAmount != nil {
-		query = query.
-			InnerJoin(store.ProductVariantChannelListingTableName + " ON (ProductVariantChannelListings.VariantID = ProductVariants.Id)").
-			Where(option.ProductVariantChannelListingPriceAmount)
-		joinedProductVariantChannelListingTable = true // indicate that already joined
+		query = query.Where(option.ProductVariantChannelListingPriceAmount)
+	}
+	if option.ProductVariantChannelListingChannelID != nil {
+		query = query.Where(option.ProductVariantChannelListingChannelID)
 	}
 	if option.ProductVariantChannelListingChannelSlug != nil {
-		if !joinedProductVariantChannelListingTable { // check if joined or not
-			query = query.InnerJoin(store.ProductVariantChannelListingTableName + " ON (ProductVariantChannelListings.VariantID = ProductVariants.Id)")
-		}
 		query = query.
-			InnerJoin(store.ChannelTableName + " ON (Channels.Id = ProductVariantChannelListings.ChannelID)").
+			InnerJoin(store.ChannelTableName + " ON Channels.Id = ProductVariantChannelListings.ChannelID").
 			Where(option.ProductVariantChannelListingChannelSlug)
 	}
 
-	var joined_WishlistProductVariantTableName_table bool
-
-	if option.WishlistItemID != nil {
-		query = query.
-			InnerJoin(store.WishlistItemProductVariantTableName + " ON (WishlistItemProductVariants.ProductVariantID = ProductVariants.Id)").
-			Where(option.WishlistItemID)
-
-		joined_WishlistProductVariantTableName_table = true // indicate joined `WishlistItemProductVariantTableName`
+	// catch all inner join
+	if option.WishlistItemID != nil ||
+		option.WishlistID != nil {
+		query = query.InnerJoin(store.WishlistItemProductVariantTableName + " ON WishlistItemProductVariants.ProductVariantID = ProductVariants.Id")
 	}
-
+	if option.WishlistItemID != nil {
+		query = query.Where(option.WishlistItemID)
+	}
 	if option.WishlistID != nil {
-		if !joined_WishlistProductVariantTableName_table {
-			query = query.InnerJoin(store.WishlistItemProductVariantTableName + " ON (WishlistItemProductVariants.ProductVariantID = ProductVariants.Id)")
-		}
 		query = query.
-			InnerJoin(store.WishlistItemTableName + " ON (WishlistItemProductVariants.WishlistItemID = WishlistItems.Id)").
+			InnerJoin(store.WishlistItemTableName + " ON WishlistItemProductVariants.WishlistItemID = WishlistItems.Id").
 			Where(option.WishlistID)
 	}
 
 	if option.SelectRelatedDigitalContent {
-		query = query.InnerJoin(store.DigitalContentTableName + " ON (ProductVariants.Id = DigitalContents.ProductVariantID)")
+		query = query.InnerJoin(store.DigitalContentTableName + " ON ProductVariants.Id = DigitalContents.ProductVariantID")
 	}
 
 	queryString, args, err := query.ToSql()

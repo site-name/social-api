@@ -187,15 +187,13 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction store
 		}
 
 		if option.SelectRelatedChannel {
-			variantChannelListing.Channel = chanNel.DeepCopy()
+			variantChannelListing.SetChannel(&chanNel) // no need deep copy channel here
 		}
 		if option.AnnotateAvailablePreorderQuantity {
-			var copied_availablePreorderQuantity int = availablePreorderQuantity
-			variantChannelListing.Set_availablePreorderQuantity(copied_availablePreorderQuantity)
+			variantChannelListing.Set_availablePreorderQuantity(availablePreorderQuantity)
 		}
 		if option.AnnotatePreorderQuantityAllocated {
-			var copied_preorderQuantityAllocated int = preorderQuantityAllocated
-			variantChannelListing.Set_preorderQuantityAllocated(copied_preorderQuantityAllocated)
+			variantChannelListing.Set_preorderQuantityAllocated(preorderQuantityAllocated)
 		}
 		res = append(res, variantChannelListing.DeepCopy())
 	}

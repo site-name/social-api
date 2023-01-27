@@ -778,6 +778,9 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo model.OrderLineDatas
 		ProductVariantChannelListingID: squirrel.Eq{store.PreOrderAllocationTableName + ".ProductVariantChannelListingID": allVariantChannelListings.IDs()},
 		Quantity:                       squirrel.Gt{store.PreOrderAllocationTableName + ".Quantity": 0},
 	})
+	if appErr != nil {
+		return nil, appErr
+	}
 
 	var (
 		// quantityAllocationForChannel has keys are product variant channel listing ids
@@ -793,7 +796,7 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo model.OrderLineDatas
 	}
 
 	for _, channelListing := range allVariantChannelListings {
-		if channelListing.Channel.Slug == channelSlug {
+		if channelListing.GetChannel() != nil && channelListing.GetChannel().Slug == channelSlug {
 			variantToChannelListings[channelListing.VariantID] = &variantChannelDataType{
 				ChannelListingID:         channelListing.Id,
 				ChannelQuantityThreshold: channelListing.PreorderQuantityThreshold,
