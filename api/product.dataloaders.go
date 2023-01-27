@@ -597,6 +597,7 @@ func productVariantsByProductIdAndChannelIdLoader(ctx context.Context, idPairs [
 		ProductService().
 		ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
 			VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
+			// ChannelID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
 		err = appErr
@@ -671,6 +672,7 @@ func availableProductVariantsByProductIdAndChannelIdLoader(ctx context.Context, 
 		ProductService().
 		ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
 			VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
+			// ChannelID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
 		err = appErr
@@ -697,6 +699,45 @@ func availableProductVariantsByProductIdAndChannelIdLoader(ctx context.Context, 
 errorLabel:
 	for idx := range idPairs {
 		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Error: err}
+	}
+	return res
+}
+
+func variantChannelListingByVariantIdLoader(ctx context.Context, variantIDs []string) []*dataloader.Result[[]*model.ProductVariantChannelListing] {
+	var (
+		res                      = make([]*dataloader.Result[[]*model.ProductVariantChannelListing], len(variantIDs))
+		variantChannelListings   model.ProductVariantChannelListings
+		variantChannelListingMap = map[string]model.ProductVariantChannelListings{} // keys are variant ids
+		appErr                   *model.AppError
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	variantChannelListings, appErr = embedCtx.App.Srv().
+		ProductService().
+		ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
+			VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variantIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, listing := range variantChannelListings {
+		variantChannelListingMap[listing.VariantID] = append(variantChannelListingMap[listing.VariantID], listing)
+	}
+
+	for idx, id := range variantIDs {
+		res[idx] = &dataloader.Result[[]*model.ProductVariantChannelListing]{Data: variantChannelListingMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range variantIDs {
+		res[idx] = &dataloader.Result[[]*model.ProductVariantChannelListing]{Error: err}
 	}
 	return res
 }
