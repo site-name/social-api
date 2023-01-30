@@ -3,6 +3,7 @@ package product
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -109,8 +110,7 @@ func (ps *SqlProductMediaStore) Get(id string) (*model.ProductMedia, error) {
 func (ps *SqlProductMediaStore) FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error) {
 	query := ps.GetQueryBuilder().
 		Select("*").
-		From(store.ProductMediaTableName).
-		OrderBy(store.TableOrderingMap[store.ProductMediaTableName])
+		From(store.ProductMediaTableName)
 
 	// parse options
 	if option.Id != nil {
@@ -121,6 +121,18 @@ func (ps *SqlProductMediaStore) FilterByOption(option *model.ProductMediaFilterO
 	}
 	if option.Type != nil {
 		query = query.Where(option.Type)
+	}
+	if option.VariantID != nil {
+		if eq, ok := option.VariantID.(squirrel.Eq); ok {
+			if val, ok := eq["VariantMedias.VariantID"]; ok && val == nil {
+				query = query.
+					LeftJoin("VariantMedias ON VariantMedias.MediaID = ProductMedias.Id").
+					Where(option.VariantID)
+			}
+		} else {
+			query = query.InnerJoin("VariantMedias ON VariantMedias.MediaID = ProductMedias.Id").
+				Where(option.VariantID)
+		}
 	}
 
 	queryString, args, err := query.ToSql()

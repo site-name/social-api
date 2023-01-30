@@ -15,19 +15,8 @@ import (
 // NOTE: `ShopID` is required.
 func (a *ServiceProduct) CollectionsByOption(option *model.CollectionFilterOption) ([]*model.Collection, *model.AppError) {
 	collections, err := a.srv.Store.Collection().FilterByOption(option)
-	var (
-		statusCode int
-		errMsg     string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMsg = err.Error()
-	} else if len(collections) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("CollectionsByOption", "app.product.error_finding_collections_by_option", nil, errMsg, statusCode)
+		return nil, model.NewAppError("CollectionsByOption", "app.product.error_finding_collections_by_option", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return collections, nil
@@ -49,7 +38,7 @@ func (a *ServiceProduct) CollectionsByProductID(productID string) ([]*model.Coll
 
 // PublishedCollections returns all published collections
 func (a *ServiceProduct) PublishedCollections(channelSlug string, shopID string) ([]*model.Collection, *model.AppError) {
-	today := util.StartOfDay(time.Now().UTC())
+	today := util.StartOfDay(time.Now())
 
 	return a.CollectionsByOption(&model.CollectionFilterOption{
 		ShopID: shopID,
@@ -85,4 +74,12 @@ func (a *ServiceProduct) VisibleCollectionsToUser(userID string, shopID string, 
 		ShopID:    shopID,
 		SelectAll: true,
 	})
+}
+
+func (a *ServiceProduct) CollectionChannelListingsByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, *model.AppError) {
+	rels, err := a.srv.Store.CollectionChannelListing().FilterByOptions(options)
+	if err != nil {
+		return nil, model.NewAppError("CollectionChannelListingsByOptions", "app.product.collection_channel_listings_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return rels, nil
 }

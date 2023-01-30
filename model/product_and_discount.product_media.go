@@ -43,6 +43,7 @@ type ProductMedia struct {
 type ProductMediaFilterOption struct {
 	Id        squirrel.Sqlizer
 	ProductID squirrel.Sqlizer
+	VariantID squirrel.Sqlizer // INNER/LEFT JOIN VariantMedias ON VariantMedias.MediaID = ProductMedias.Id Where VariantMedias.VariantID ...
 	Type      squirrel.Sqlizer
 }
 

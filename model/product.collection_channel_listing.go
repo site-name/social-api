@@ -1,11 +1,19 @@
 package model
 
+import "github.com/Masterminds/squirrel"
+
 type CollectionChannelListing struct {
 	Id           string `json:"id"`
 	CreateAt     int64  `json:"create_at"`
 	CollectionID string `json:"collection_id"`
 	ChannelID    string `json:"channel_id"`
 	Publishable
+}
+
+type CollectionChannelListingFilterOptions struct {
+	Id           squirrel.Sqlizer
+	CollectionID squirrel.Sqlizer
+	ChannelID    squirrel.Sqlizer
 }
 
 func (c *CollectionChannelListing) IsValid() *AppError {

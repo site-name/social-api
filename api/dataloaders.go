@@ -16,25 +16,35 @@ var (
 	CustomerEventsByUserLoader = dataloader.NewBatchedLoader(customerEventsByUserLoader, dataloader.WithBatchCapacity[string, []*model.CustomerEvent](batchCapacity))
 
 	// product
-	ProductByIdLoader                                    = dataloader.NewBatchedLoader(productByIdLoader, dataloader.WithBatchCapacity[string, *model.Product](batchCapacity))
-	ProductVariantByIdLoader                             = dataloader.NewBatchedLoader(productVariantByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductVariant](batchCapacity))
-	ProductByVariantIdLoader                             = dataloader.NewBatchedLoader(productByVariantIdLoader, dataloader.WithBatchCapacity[string, *model.Product](batchCapacity))
-	ProductTypeByVariantIdLoader                         = dataloader.NewBatchedLoader(productTypeByVariantIdLoader, dataloader.WithBatchCapacity[string, *model.ProductType](batchCapacity))
-	CollectionsByVariantIdLoader                         = dataloader.NewBatchedLoader(collectionsByVariantIdLoader, dataloader.WithBatchCapacity[string, []*model.Collection](batchCapacity))
-	ProductTypeByProductIdLoader                         = dataloader.NewBatchedLoader(productTypeByProductIdLoader, dataloader.WithBatchCapacity[string, *model.ProductType](batchCapacity))
-	VariantChannelListingByVariantIdAndChannelIdLoader   = dataloader.NewBatchedLoader(variantChannelListingByVariantIdAndChannelIdLoader, dataloader.WithBatchCapacity[string, *model.ProductVariantChannelListing](batchCapacity))
-	CollectionsByProductIdLoader                         = dataloader.NewBatchedLoader(collectionsByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.Collection](batchCapacity))
-	CollectionByIdLoader                                 = dataloader.NewBatchedLoader(collectionByIdLoader, dataloader.WithBatchCapacity[string, *model.Collection](batchCapacity))
-	CategoryByIdLoader                                   = dataloader.NewBatchedLoader(categoryByIdLoader, dataloader.WithBatchCapacity[string, *model.Category](batchCapacity))
-	ProductChannelListingByProductIdAndChannelSlugLoader = dataloader.NewBatchedLoader(productChannelListingByProductIDAnhChannelSlugLoader, dataloader.WithBatchCapacity[string, *model.ProductChannelListing](batchCapacity)) // pass in keys with format of productID__channelID
-	ProductChannelListingByIdLoader                      = dataloader.NewBatchedLoader(productChannelListingByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductChannelListing](batchCapacity))
-	ProductChannelListingByProductIdLoader               = dataloader.NewBatchedLoader(productChannelListingByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductChannelListing](batchCapacity))
-	ProductTypeByIdLoader                                = dataloader.NewBatchedLoader(productTypeByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductType](batchCapacity))
-	ProductVariantsByProductIdLoader                     = dataloader.NewBatchedLoader(productVariantsByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariant](batchCapacity))
-	ProductVariantChannelListingByIdLoader               = dataloader.NewBatchedLoader(productVariantChannelListingByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductVariantChannelListing](batchCapacity))
-	ProductVariantsByProductIdAndChannel                 = dataloader.NewBatchedLoader(productVariantsByProductIdAndChannelIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariant](batchCapacity))          // key has format of: productID__channelID
-	AvailableProductVariantsByProductIdAndChannel        = dataloader.NewBatchedLoader(availableProductVariantsByProductIdAndChannelIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariant](batchCapacity)) // key has format of: productID__channelID
-	VariantChannelListingByVariantIdLoader               = dataloader.NewBatchedLoader(variantChannelListingByVariantIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariantChannelListing](batchCapacity))
+	ProductByIdLoader                                          = dataloader.NewBatchedLoader(productByIdLoader, dataloader.WithBatchCapacity[string, *model.Product](batchCapacity))
+	ProductVariantByIdLoader                                   = dataloader.NewBatchedLoader(productVariantByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductVariant](batchCapacity))
+	ProductByVariantIdLoader                                   = dataloader.NewBatchedLoader(productByVariantIdLoader, dataloader.WithBatchCapacity[string, *model.Product](batchCapacity))
+	ProductTypeByVariantIdLoader                               = dataloader.NewBatchedLoader(productTypeByVariantIdLoader, dataloader.WithBatchCapacity[string, *model.ProductType](batchCapacity))
+	CollectionsByVariantIdLoader                               = dataloader.NewBatchedLoader(collectionsByVariantIdLoader, dataloader.WithBatchCapacity[string, []*model.Collection](batchCapacity))
+	ProductTypeByProductIdLoader                               = dataloader.NewBatchedLoader(productTypeByProductIdLoader, dataloader.WithBatchCapacity[string, *model.ProductType](batchCapacity))
+	CollectionsByProductIdLoader                               = dataloader.NewBatchedLoader(collectionsByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.Collection](batchCapacity))
+	CollectionByIdLoader                                       = dataloader.NewBatchedLoader(collectionByIdLoader, dataloader.WithBatchCapacity[string, *model.Collection](batchCapacity))
+	CategoryByIdLoader                                         = dataloader.NewBatchedLoader(categoryByIdLoader, dataloader.WithBatchCapacity[string, *model.Category](batchCapacity))
+	ProductChannelListingByProductIdAndChannelSlugLoader       = dataloader.NewBatchedLoader(productChannelListingByProductIDAnhChannelSlugLoader, dataloader.WithBatchCapacity[string, *model.ProductChannelListing](batchCapacity)) // pass in keys with format of productID__channelID
+	ProductChannelListingByIdLoader                            = dataloader.NewBatchedLoader(productChannelListingByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductChannelListing](batchCapacity))
+	ProductChannelListingByProductIdLoader                     = dataloader.NewBatchedLoader(productChannelListingByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductChannelListing](batchCapacity))
+	ProductTypeByIdLoader                                      = dataloader.NewBatchedLoader(productTypeByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductType](batchCapacity))
+	ProductVariantsByProductIdLoader                           = dataloader.NewBatchedLoader(productVariantsByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariant](batchCapacity))
+	ProductVariantChannelListingByIdLoader                     = dataloader.NewBatchedLoader(productVariantChannelListingByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductVariantChannelListing](batchCapacity))
+	ProductVariantsByProductIdAndChannel                       = dataloader.NewBatchedLoader(productVariantsByProductIdAndChannelIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariant](batchCapacity))          // key has format of: productID__channelID
+	AvailableProductVariantsByProductIdAndChannel              = dataloader.NewBatchedLoader(availableProductVariantsByProductIdAndChannelIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariant](batchCapacity)) // key has format of: productID__channelID
+	VariantChannelListingByVariantIdLoader                     = dataloader.NewBatchedLoader(variantChannelListingByVariantIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariantChannelListing](batchCapacity))
+	MediaByProductIdLoader                                     = dataloader.NewBatchedLoader(mediaByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductMedia](batchCapacity))
+	ImagesByProductIdLoader                                    = dataloader.NewBatchedLoader(imagesByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductMedia](batchCapacity))
+	VariantChannelListingByVariantIdAndChannelLoader           = dataloader.NewBatchedLoader(variantChannelListingByVariantIdAndChannelIdLoader, dataloader.WithBatchCapacity[string, *model.ProductVariantChannelListing](batchCapacity))      // key has format of: variantID__channelID
+	VariantsChannelListingByProductIdAndChannelSlugLoader      = dataloader.NewBatchedLoader(variantsChannelListingByProductIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, []*model.ProductVariantChannelListing](batchCapacity)) // key has format of: productID__channelID
+	ProductMediaByIdLoader                                     = dataloader.NewBatchedLoader(productMediaByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductMedia](batchCapacity))
+	ProductImageByIdLoader                                     = dataloader.NewBatchedLoader(productImageByIdLoader, dataloader.WithBatchCapacity[string, *model.ProductMedia](batchCapacity))
+	MediaByProductVariantIdLoader                              = dataloader.NewBatchedLoader(mediaByProductVariantIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductMedia](batchCapacity))
+	ImagesByProductVariantIdLoader                             = dataloader.NewBatchedLoader(imagesByProductVariantIdLoader, dataloader.WithBatchCapacity[string, []*model.ProductMedia](batchCapacity))
+	CollectionChannelListingByIdLoader                         = dataloader.NewBatchedLoader(collectionChannelListingByIdLoader, dataloader.WithBatchCapacity[string, *model.CollectionChannelListing](batchCapacity))
+	CollectionChannelListingByCollectionIdLoader               = dataloader.NewBatchedLoader(collectionChannelListingByCollectionIdLoader, dataloader.WithBatchCapacity[string, []*model.CollectionChannelListing](batchCapacity))
+	CollectionChannelListingByCollectionIdAndChannelSlugLoader = dataloader.NewBatchedLoader(collectionChannelListingByCollectionIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, *model.CollectionChannelListing](batchCapacity)) // key has format of: collectionID__channelID
 
 	// giftcard
 	GiftCardEventsByGiftCardIdLoader = dataloader.NewBatchedLoader(giftCardEventsByGiftCardIdLoader, dataloader.WithBatchCapacity[string, []*model.GiftCardEvent](batchCapacity))

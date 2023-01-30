@@ -1,13 +1,16 @@
 package model
 
-import (
-	"io"
-)
+import "github.com/Masterminds/squirrel"
 
 type VariantMedia struct {
 	Id        string `json:"id"`
 	VariantID string `json:"variant_id"`
 	MediaID   string `json:"media_id"`
+}
+
+type VariantMediaFilterOptions struct {
+	VariantID squirrel.Sqlizer
+	MediaID   squirrel.Sqlizer
 }
 
 func (v *VariantMedia) IsValid() *AppError {
@@ -32,12 +35,6 @@ func (v *VariantMedia) IsValid() *AppError {
 
 func (v *VariantMedia) ToJSON() string {
 	return ModelToJson(v)
-}
-
-func VariantMediaToJson(data io.Reader) *VariantMedia {
-	var v VariantMedia
-	ModelFromJson(&v, data)
-	return &v
 }
 
 func (v *VariantMedia) PreSave() {

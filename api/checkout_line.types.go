@@ -250,7 +250,7 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 		}
 	}
 
-	channelListings, errs = VariantChannelListingByVariantIdAndChannelIdLoader.LoadMany(ctx, variantIDChannelIDPairs)()
+	channelListings, errs = VariantChannelListingByVariantIdAndChannelLoader.LoadMany(ctx, variantIDChannelIDPairs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}

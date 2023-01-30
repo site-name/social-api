@@ -436,6 +436,7 @@ type (
 	CollectionTranslationStore interface {
 	}
 	CollectionChannelListingStore interface {
+		FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error)
 	}
 	CollectionStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
@@ -448,6 +449,7 @@ type (
 		FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error)
 	}
 	VariantMediaStore interface {
+		FilterByOptions(options *model.VariantMediaFilterOptions) ([]*model.VariantMedia, error)
 	}
 	ProductMediaStore interface {
 		Upsert(media *model.ProductMedia) (*model.ProductMedia, error)                        // Upsert depends on given media's Id property to decide insert or update it

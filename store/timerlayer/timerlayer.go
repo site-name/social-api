@@ -2623,6 +2623,22 @@ func (s *TimerLayerCollectionStore) Upsert(collection *model.Collection) (*model
 	return result, err
 }
 
+func (s *TimerLayerCollectionChannelListingStore) FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.CollectionChannelListingStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionChannelListingStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerCollectionProductStore) FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error) {
 	start := timemodule.Now()
 
@@ -8184,6 +8200,22 @@ func (s *TimerLayerUserAddressStore) Save(userAddress *model.UserAddress) (*mode
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVariantMediaStore) FilterByOptions(options *model.VariantMediaFilterOptions) ([]*model.VariantMedia, error) {
+	start := timemodule.Now()
+
+	result, err := s.VariantMediaStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VariantMediaStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }

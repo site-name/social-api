@@ -22,9 +22,10 @@ type ProductVariantChannelListing struct {
 	PreorderQuantityThreshold *int             `json:"preorder_quantity_threshold"`
 	CreateAt                  int64            `json:"create_at"`
 
-	preorderQuantityAllocated int      `db:"-"` // this field got populated in some db queries
-	availablePreorderQuantity int      `db:"-"`
-	channel                   *Channel `db:"-"` // this field got populated in some db queries
+	preorderQuantityAllocated int             `db:"-"` // this field got populated in some db queries
+	availablePreorderQuantity int             `db:"-"`
+	channel                   *Channel        `db:"-"` // this field got populated in some db queries
+	variant                   *ProductVariant `db:"-"` // this field got populated in some store functions
 }
 
 // ProductVariantChannelListingFilterOption is used to build sql queries
@@ -34,11 +35,12 @@ type ProductVariantChannelListingFilterOption struct {
 	ChannelID   squirrel.Sqlizer
 	PriceAmount squirrel.Sqlizer
 
-	VariantProductID squirrel.Sqlizer // INNER JOIN ProductVariants WHERE ProductVariants.ProductID ...
+	VariantProductID squirrel.Sqlizer // INNER JOIN ProductVariants ON ... WHERE ProductVariants.ProductID ...
 
-	SelectRelatedChannel bool   // tell store to select related Channel(s)
-	SelectForUpdate      bool   // if true, add `FOR UPDATE` to the end of query
-	SelectForUpdateOf    string // if provided, tell database system to lock on specific row(s)
+	SelectRelatedChannel        bool   // tell store to select related Channel(s)
+	SelectRelatedProductVariant bool   // tell store to select related product variant
+	SelectForUpdate             bool   // if true, add `FOR UPDATE` to the end of query
+	SelectForUpdateOf           string // if provided, tell database system to lock on specific row(s)
 
 	AnnotatePreorderQuantityAllocated bool // set true to populate `preorderQuantityAllocated` field of returning product variant channel listings
 	AnnotateAvailablePreorderQuantity bool // set true to populate `availablePreorderQuantity` field of returning product variant channel listings
@@ -61,9 +63,15 @@ func (p *ProductVariantChannelListing) Get_availablePreorderQuantity() int {
 func (p *ProductVariantChannelListing) GetChannel() *Channel {
 	return p.channel
 }
-
 func (p *ProductVariantChannelListing) SetChannel(c *Channel) {
 	p.channel = c
+}
+
+func (p *ProductVariantChannelListing) GetVariant() *ProductVariant {
+	return p.variant
+}
+func (p *ProductVariantChannelListing) SetVariant(c *ProductVariant) {
+	p.variant = c
 }
 
 type ProductVariantChannelListings []*ProductVariantChannelListing
@@ -151,6 +159,9 @@ func (p *ProductVariantChannelListing) DeepCopy() *ProductVariantChannelListing 
 	}
 	if p.channel != nil {
 		res.channel = p.channel.DeepCopy()
+	}
+	if p.variant != nil {
+		res.variant = p.variant.DeepCopy()
 	}
 	return &res
 }

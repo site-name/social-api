@@ -96,6 +96,9 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction store
 	if option.SelectRelatedChannel {
 		selectFields = append(selectFields, ps.Channel().ModelFields(store.ChannelTableName+".")...)
 	}
+	if option.SelectRelatedProductVariant {
+		selectFields = append(selectFields, ps.ProductVariant().ModelFields(store.ProductVariantTableName+".")...)
+	}
 	if option.AnnotateAvailablePreorderQuantity {
 		selectFields = append(selectFields, `ProductVariantChannelListings.PreorderQuantityThreshold - COALESCE( SUM( PreorderAllocations.Quantity ), 0) AS availablePreorderQuantity`)
 	}
@@ -105,8 +108,7 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction store
 
 	query := ps.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.ProductVariantChannelListingTableName).
-		OrderBy(store.TableOrderingMap[store.ProductVariantChannelListingTableName])
+		From(store.ProductVariantChannelListingTableName)
 
 	// parse option
 	if option.SelectForUpdate {
@@ -128,13 +130,11 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction store
 	if option.PriceAmount != nil {
 		query = query.Where(option.PriceAmount)
 	}
-	if option.VariantProductID != nil {
-		query = query.
-			InnerJoin(store.ProductVariantTableName + " ON (ProductVariants.Id = ProductVariantChannelListings.variantID)").
-			Where(option.VariantProductID)
+	if option.SelectRelatedProductVariant || option.VariantProductID != nil {
+		query = query.InnerJoin(store.ProductVariantTableName + " ON (ProductVariants.Id = ProductVariantChannelListings.variantID)")
 	}
-	if option.SelectRelatedChannel {
-		query = query.InnerJoin(store.ChannelTableName + " ON (Channels.Id = ProductVariants.ChannelID)")
+	if option.VariantProductID != nil {
+		query = query.Where(option.VariantProductID)
 	}
 
 	var groupBy []string
@@ -169,9 +169,13 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction store
 		availablePreorderQuantity int
 		preorderQuantityAllocated int
 		scanFields                = ps.ScanFields(&variantChannelListing) // order of fields must be identical to select fields above
+		variant                   model.ProductVariant
 	)
 	if option.SelectRelatedChannel {
 		scanFields = append(scanFields, ps.Channel().ScanFields(&chanNel)...)
+	}
+	if option.SelectRelatedProductVariant {
+		scanFields = append(scanFields, ps.ProductVariant().ScanFields(&variant)...)
 	}
 	if option.AnnotateAvailablePreorderQuantity {
 		scanFields = append(scanFields, &availablePreorderQuantity)
@@ -188,6 +192,9 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(transaction store
 
 		if option.SelectRelatedChannel {
 			variantChannelListing.SetChannel(&chanNel) // no need deep copy channel here
+		}
+		if option.SelectRelatedProductVariant {
+			variantChannelListing.SetVariant(&variant) // no need deep copy variant here
 		}
 		if option.AnnotateAvailablePreorderQuantity {
 			variantChannelListing.Set_availablePreorderQuantity(availablePreorderQuantity)

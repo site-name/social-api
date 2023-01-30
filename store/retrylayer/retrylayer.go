@@ -3002,6 +3002,26 @@ func (s *RetryLayerCollectionStore) Upsert(collection *model.Collection) (*model
 
 }
 
+func (s *RetryLayerCollectionChannelListingStore) FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error) {
+
+	tries := 0
+	for {
+		result, err := s.CollectionChannelListingStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerCollectionProductStore) FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error) {
 
 	tries := 0
@@ -9811,6 +9831,26 @@ func (s *RetryLayerUserAddressStore) Save(userAddress *model.UserAddress) (*mode
 	tries := 0
 	for {
 		result, err := s.UserAddressStore.Save(userAddress)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVariantMediaStore) FilterByOptions(options *model.VariantMediaFilterOptions) ([]*model.VariantMedia, error) {
+
+	tries := 0
+	for {
+		result, err := s.VariantMediaStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}
