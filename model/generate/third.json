@@ -1,0 +1,549 @@
+{
+  "CategoryAutomobilesAutomobileSparePartsElectronics": {
+    "CategoryAutomobilesAutomobileSparePartsElectronicsBatteriesAccessories": {},
+    "CategoryAutomobilesAutomobileSparePartsElectronicsIgnition": {},
+    "CategoryAutomobilesAutomobileSparePartsElectronicsLighting": {},
+    "CategoryAutomobilesAutomobileSparePartsElectronicsOther": {}
+  },
+  "CategoryAutomobilesAutomobileSparePartsEngineParts": {
+    "CategoryAutomobilesAutomobileSparePartsEnginePartsAirFilters": {},
+    "CategoryAutomobilesAutomobileSparePartsEnginePartsOilFilters": {},
+    "CategoryAutomobilesAutomobileSparePartsEnginePartsOther": {},
+    "CategoryAutomobilesAutomobileSparePartsEnginePartsPistons": {}
+  },
+  "CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluids": {
+    "CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluidsBrakeFluids": {},
+    "CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluidsTransmissionsFluids": {}
+  },
+  "CategoryBabyKidsFashionBabyClothesBottoms": {
+    "CategoryBabyKidsFashionBabyClothesBottomsPantsLeggings": {},
+    "CategoryBabyKidsFashionBabyClothesBottomsShorts": {},
+    "CategoryBabyKidsFashionBabyClothesBottomsSkirts": {}
+  },
+  "CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggage": {
+    "CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageBackpacks": {},
+    "CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageCrossbodyShoulderBags": {},
+    "CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageTrolleyBags": {},
+    "CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageWallets": {}
+  },
+  "CategoryBabyKidsFashionBabyKidsAccessoriesJewelry": {
+    "CategoryBabyKidsFashionBabyKidsAccessoriesJewelryBracelets": {},
+    "CategoryBabyKidsFashionBabyKidsAccessoriesJewelryEarrings": {},
+    "CategoryBabyKidsFashionBabyKidsAccessoriesJewelryNecklaces": {},
+    "CategoryBabyKidsFashionBabyKidsAccessoriesJewelryRings": {}
+  },
+  "CategoryBabyKidsFashionBabyKidsAccessoriesRainGear": {
+    "CategoryBabyKidsFashionBabyKidsAccessoriesRainGearRainBoots": {},
+    "CategoryBabyKidsFashionBabyKidsAccessoriesRainGearRaincoats": {}
+  },
+  "CategoryBabyKidsFashionBoyClothesBottoms": {
+    "CategoryBabyKidsFashionBoyClothesBottomsJeans": {},
+    "CategoryBabyKidsFashionBoyClothesBottomsOveralls": {},
+    "CategoryBabyKidsFashionBoyClothesBottomsPants": {},
+    "CategoryBabyKidsFashionBoyClothesBottomsShorts": {}
+  },
+  "CategoryBabyKidsFashionBoyClothesOuterwear": {
+    "CategoryBabyKidsFashionBoyClothesOuterwearBlazers": {},
+    "CategoryBabyKidsFashionBoyClothesOuterwearHoodies": {},
+    "CategoryBabyKidsFashionBoyClothesOuterwearRegularJacketsCoats": {},
+    "CategoryBabyKidsFashionBoyClothesOuterwearSweatersCardigans": {},
+    "CategoryBabyKidsFashionBoyClothesOuterwearVests": {},
+    "CategoryBabyKidsFashionBoyClothesOuterwearWinterOuterwear": {}
+  },
+  "CategoryBabyKidsFashionBoyClothesTops": {
+    "CategoryBabyKidsFashionBoyClothesTopsPoloShirts": {},
+    "CategoryBabyKidsFashionBoyClothesTopsShirts": {},
+    "CategoryBabyKidsFashionBoyClothesTopsTshirts": {}
+  },
+  "CategoryBabyKidsFashionGirlClothesBottoms": {
+    "CategoryBabyKidsFashionGirlClothesBottomsJeans": {},
+    "CategoryBabyKidsFashionGirlClothesBottomsLeggings": {},
+    "CategoryBabyKidsFashionGirlClothesBottomsPants": {},
+    "CategoryBabyKidsFashionGirlClothesBottomsShorts": {},
+    "CategoryBabyKidsFashionGirlClothesBottomsSkirts": {}
+  },
+  "CategoryBabyKidsFashionGirlClothesOuterwear": {
+    "CategoryBabyKidsFashionGirlClothesOuterwearBlazers": {},
+    "CategoryBabyKidsFashionGirlClothesOuterwearHoodies": {},
+    "CategoryBabyKidsFashionGirlClothesOuterwearRegularJacketsCoats": {},
+    "CategoryBabyKidsFashionGirlClothesOuterwearSweatersCardigans": {},
+    "CategoryBabyKidsFashionGirlClothesOuterwearVests": {},
+    "CategoryBabyKidsFashionGirlClothesOuterwearWinterOuterwear": {}
+  },
+  "CategoryBabyKidsFashionGirlClothesTops": {
+    "CategoryBabyKidsFashionGirlClothesTopsPoloShirts": {},
+    "CategoryBabyKidsFashionGirlClothesTopsShirtsBlouses": {},
+    "CategoryBabyKidsFashionGirlClothesTopsTShirts": {}
+  },
+  "CategoryBeautyBathBodyCareSunCare": {
+    "CategoryBeautyBathBodyCareSunCareBodySunscreenAfterSun": {},
+    "CategoryBeautyBathBodyCareSunCareTanningOilSelfTanners": {}
+  },
+  "CategoryBeautyBeautyToolsFacialCareTools": {
+    "CategoryBeautyBeautyToolsFacialCareToolsFacialCleansingTools": {},
+    "CategoryBeautyBeautyToolsFacialCareToolsFacialSlimmingMassageTools": {},
+    "CategoryBeautyBeautyToolsFacialCareToolsFacialSteamers": {}
+  },
+  "CategoryBeautyBeautyToolsHairTools": {
+    "CategoryBeautyBeautyToolsHairToolsBrushesCombs": {},
+    "CategoryBeautyBeautyToolsHairToolsHairDryers": {},
+    "CategoryBeautyBeautyToolsHairToolsHairStylingAppliances": {},
+    "CategoryBeautyBeautyToolsHairToolsHeatlessStylingTools": {},
+    "CategoryBeautyBeautyToolsHairToolsOther": {}
+  },
+  "CategoryBeautyBeautyToolsMakeupAccessories": {
+    "CategoryBeautyBeautyToolsMakeupAccessoriesCottonPadsandBuds": {},
+    "CategoryBeautyBeautyToolsMakeupAccessoriesEyebrowTemplates": {},
+    "CategoryBeautyBeautyToolsMakeupAccessoriesEyelashCurlers": {},
+    "CategoryBeautyBeautyToolsMakeupAccessoriesEyelidTapeGlue": {},
+    "CategoryBeautyBeautyToolsMakeupAccessoriesFalseEyelashes": {},
+    "CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBagsOrganizers": {},
+    "CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBrushCleaners": {},
+    "CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBrushes": {},
+    "CategoryBeautyBeautyToolsMakeupAccessoriesMirrors": {},
+    "CategoryBeautyBeautyToolsMakeupAccessoriesPencilSharpeners": {},
+    "CategoryBeautyBeautyToolsMakeupAccessoriesSpongesApplicators": {}
+  },
+  "CategoryBeautyHandFootNailCareFootCare": {
+    "CategoryBeautyHandFootNailCareFootCareFootDeodorant": {},
+    "CategoryBeautyHandFootNailCareFootCareFootMasks": {},
+    "CategoryBeautyHandFootNailCareFootCareLotionCreamScrubs": {},
+    "CategoryBeautyHandFootNailCareFootCareOther": {}
+  },
+  "CategoryBeautyHandFootNailCareHandCare": {
+    "CategoryBeautyHandFootNailCareHandCareHandMasks": {},
+    "CategoryBeautyHandFootNailCareHandCareHandWashes": {},
+    "CategoryBeautyHandFootNailCareHandCareLotionCreamScrubs": {}
+  },
+  "CategoryBeautyHandFootNailCareNailCare": {
+    "CategoryBeautyHandFootNailCareNailCareArtificialNail": {},
+    "CategoryBeautyHandFootNailCareNailCareBaseTopCoat": {},
+    "CategoryBeautyHandFootNailCareNailCareManicureToolsDevices": {},
+    "CategoryBeautyHandFootNailCareNailCareNailArtSticker": {},
+    "CategoryBeautyHandFootNailCareNailCareNailPolish": {},
+    "CategoryBeautyHandFootNailCareNailCareNailPolishRemover": {},
+    "CategoryBeautyHandFootNailCareNailCareNailTreatment": {}
+  },
+  "CategoryBeautyMakeupEyes": {
+    "CategoryBeautyMakeupEyesEyePrimer": {},
+    "CategoryBeautyMakeupEyesEyebrows": {},
+    "CategoryBeautyMakeupEyesEyeliner": {},
+    "CategoryBeautyMakeupEyesEyeshadow": {},
+    "CategoryBeautyMakeupEyesMascara": {}
+  },
+  "CategoryBeautyMakeupFace": {
+    "CategoryBeautyMakeupFaceBBCCCream": {},
+    "CategoryBeautyMakeupFaceBlush": {},
+    "CategoryBeautyMakeupFaceBronzerContourHighlighter": {},
+    "CategoryBeautyMakeupFaceConcealerCorrector": {},
+    "CategoryBeautyMakeupFaceFoundation": {},
+    "CategoryBeautyMakeupFaceMakeupBasePrimer": {},
+    "CategoryBeautyMakeupFaceOther": {},
+    "CategoryBeautyMakeupFacePowder": {},
+    "CategoryBeautyMakeupFaceSettingFinishingSpray": {}
+  },
+  "CategoryBeautyMakeupLips": {
+    "CategoryBeautyMakeupLipsLipGloss": {},
+    "CategoryBeautyMakeupLipsLipLiner": {},
+    "CategoryBeautyMakeupLipsLipPlumper": {},
+    "CategoryBeautyMakeupLipsLipTintStain": {},
+    "CategoryBeautyMakeupLipsLipstick": {}
+  },
+  "CategoryBeautyMensCareShavingGrooming": {
+    "CategoryBeautyMensCareShavingGroomingAftershave": {},
+    "CategoryBeautyMensCareShavingGroomingCreamsFoamsGels": {},
+    "CategoryBeautyMensCareShavingGroomingOther": {},
+    "CategoryBeautyMensCareShavingGroomingRazorsBlades": {},
+    "CategoryBeautyMensCareShavingGroomingShavers": {},
+    "CategoryBeautyMensCareShavingGroomingShavingAccessories": {},
+    "CategoryBeautyMensCareShavingGroomingShavingBrushes": {},
+    "CategoryBeautyMensCareShavingGroomingTrimmersClippersMultifunctional": {}
+  },
+  "CategoryBeautyMensCareSkinCare": {
+    "CategoryBeautyMensCareSkinCareFacialCleanser": {},
+    "CategoryBeautyMensCareSkinCareMoisturizerTreatment": {},
+    "CategoryBeautyMensCareSkinCareOther": {}
+  },
+  "CategoryBeautySkincareEyeTreatment": {
+    "CategoryBeautySkincareEyeTreatmentEyeCream": {},
+    "CategoryBeautySkincareEyeTreatmentEyeMaskPacks": {},
+    "CategoryBeautySkincareEyeTreatmentEyebrowEyelashSerum": {}
+  },
+  "CategoryBeautySkincareLipsTreatment": {
+    "CategoryBeautySkincareLipsTreatmentLipBalm": {},
+    "CategoryBeautySkincareLipsTreatmentLipMask": {},
+    "CategoryBeautySkincareLipsTreatmentLipScrubExfoliator": {}
+  },
+  "CategoryCamerasDronesCameraAccessoriesFlashAccessories": {
+    "CategoryCamerasDronesCameraAccessoriesFlashAccessoriesFlashDiffusers": {},
+    "CategoryCamerasDronesCameraAccessoriesFlashAccessoriesFlashTriggers": {}
+  },
+  "CategoryFoodBeverageCookingEssentialsSeasoningsCondiments": {
+    "CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsChilliSambal": {},
+    "CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsCookingWine": {},
+    "CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsDressing": {},
+    "CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsHerbsSpices": {},
+    "CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsOther": {},
+    "CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsPepper": {},
+    "CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsSauce": {},
+    "CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsVinegar": {}
+  },
+  "CategoryFoodBeverageDairyEggsMilk": {
+    "CategoryFoodBeverageDairyEggsMilkCondensedEvaporatedMilk": {},
+    "CategoryFoodBeverageDairyEggsMilkFreshMilk": {},
+    "CategoryFoodBeverageDairyEggsMilkPowderedMilk": {},
+    "CategoryFoodBeverageDairyEggsMilkUHTMilk": {}
+  },
+  "CategoryFoodBeverageFoodStaplesCannedFood": {
+    "CategoryFoodBeverageFoodStaplesCannedFoodCannedFruits": {},
+    "CategoryFoodBeverageFoodStaplesCannedFoodCannedMeat": {},
+    "CategoryFoodBeverageFoodStaplesCannedFoodCannedSeafood": {},
+    "CategoryFoodBeverageFoodStaplesCannedFoodCannedSoup": {},
+    "CategoryFoodBeverageFoodStaplesCannedFoodCannedVegetables": {},
+    "CategoryFoodBeverageFoodStaplesCannedFoodOther": {}
+  },
+  "CategoryFoodBeverageFoodStaplesDriedGoods": {
+    "CategoryFoodBeverageFoodStaplesDriedGoodsBeansGrains": {},
+    "CategoryFoodBeverageFoodStaplesDriedGoodsDriedSeafood": {},
+    "CategoryFoodBeverageFoodStaplesDriedGoodsOther": {},
+    "CategoryFoodBeverageFoodStaplesDriedGoodsTraditionalHerbs": {}
+  },
+  "CategoryFoodBeverageSeasoningsCondimentsCookingEssentials": {
+    "CategoryFoodBeverageSeasoningsCondimentsCookingEssentialsSalt": {}
+  },
+  "CategoryFoodBeverageSnacksDriedSnacks": {
+    "CategoryFoodBeverageSnacksDriedSnacksDriedFruits": {},
+    "CategoryFoodBeverageSnacksDriedSnacksMeatFloss": {},
+    "CategoryFoodBeverageSnacksDriedSnacksMeatJerkyandBakkwa": {},
+    "CategoryFoodBeverageSnacksDriedSnacksOther": {},
+    "CategoryFoodBeverageSnacksDriedSnacksSeafoodSnacks": {}
+  },
+  "CategoryHealthMedicalSuppliesFirstAidSupplies": {
+    "CategoryHealthMedicalSuppliesFirstAidSuppliesFirstAidAccessories": {},
+    "CategoryHealthMedicalSuppliesFirstAidSuppliesMedicalAntisepticsDisinfectants": {},
+    "CategoryHealthMedicalSuppliesFirstAidSuppliesOintmentsCreams": {},
+    "CategoryHealthMedicalSuppliesFirstAidSuppliesPlastersBandages": {}
+  },
+  "CategoryHealthMedicalSuppliesHealthMonitorsTests": {
+    "CategoryHealthMedicalSuppliesHealthMonitorsTestsBloodGlucoseMonitors": {},
+    "CategoryHealthMedicalSuppliesHealthMonitorsTestsBloodPressureMonitors": {},
+    "CategoryHealthMedicalSuppliesHealthMonitorsTestsOther": {},
+    "CategoryHealthMedicalSuppliesHealthMonitorsTestsPulseOximeters": {},
+    "CategoryHealthMedicalSuppliesHealthMonitorsTestsThermometers": {}
+  },
+  "CategoryHealthMedicalSuppliesInjuryDisabilitySupport": {
+    "CategoryHealthMedicalSuppliesInjuryDisabilitySupportBracesSupports": {},
+    "CategoryHealthMedicalSuppliesInjuryDisabilitySupportHearingAids": {},
+    "CategoryHealthMedicalSuppliesInjuryDisabilitySupportWalkingAids": {},
+    "CategoryHealthMedicalSuppliesInjuryDisabilitySupportWheelchairs": {}
+  },
+  "CategoryHealthPersonalCareEyeCare": {
+    "CategoryHealthPersonalCareEyeCareContactlens": {},
+    "CategoryHealthPersonalCareEyeCareLensSolutionsEyedrops": {},
+    "CategoryHealthPersonalCareEyeCareOther": {}
+  },
+  "CategoryHealthPersonalCareFeminineCare": {
+    "CategoryHealthPersonalCareFeminineCareFeminineWash": {},
+    "CategoryHealthPersonalCareFeminineCareMenstrualCup": {},
+    "CategoryHealthPersonalCareFeminineCarePregnancyFertilityTests": {},
+    "CategoryHealthPersonalCareFeminineCareSanitaryNapkinsPantyLiners": {},
+    "CategoryHealthPersonalCareFeminineCareTampons": {},
+    "CategoryHealthPersonalCareFeminineCareVaginalCream": {}
+  },
+  "CategoryHealthPersonalCareOralCare": {
+    "CategoryHealthPersonalCareOralCareDentalFloss": {},
+    "CategoryHealthPersonalCareOralCareDentureCare": {},
+    "CategoryHealthPersonalCareOralCareElectricToothbrushesAccessories": {},
+    "CategoryHealthPersonalCareOralCareManualToothbrushes": {},
+    "CategoryHealthPersonalCareOralCareMouthWash": {},
+    "CategoryHealthPersonalCareOralCareOrthodonticAccessories": {},
+    "CategoryHealthPersonalCareOralCareOther": {},
+    "CategoryHealthPersonalCareOralCareTeethWhitening": {},
+    "CategoryHealthPersonalCareOralCareToothpastes": {}
+  },
+  "CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstruments": {
+    "CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsGuitarsBassGuitars": {},
+    "CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsOther": {},
+    "CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsUkuleles": {}
+  },
+  "CategoryHomeAppliancesKitchenAppliancesSpecialtyCookware": {
+    "CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareBreadMakers": {},
+    "CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareDessertMachine": {},
+    "CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareEggBoilers": {},
+    "CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareOther": {},
+    "CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareSodaMakers": {},
+    "CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareTakoyakiMakers": {},
+    "CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareWaffleCrepeMakers": {}
+  },
+  "CategoryHomeAppliancesLargeHouseholdAppliancesCooling": {
+    "CategoryHomeAppliancesLargeHouseholdAppliancesCoolingAirConditioners": {},
+    "CategoryHomeAppliancesLargeHouseholdAppliancesCoolingAirCoolersPortableAircons": {},
+    "CategoryHomeAppliancesLargeHouseholdAppliancesCoolingFans": {}
+  },
+  "CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryers": {
+    "CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryersLaundryDryers": {},
+    "CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryersWashingMachines": {}
+  },
+  "CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatment": {
+    "CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatmentDehumidifiers": {},
+    "CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatmentPurifiers": {}
+  },
+  "CategoryHomeAppliancesSmallHouseholdAppliancesTelephones": {
+    "CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesCordedPhones": {},
+    "CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesCordlessPhones": {},
+    "CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesFaxMachines": {}
+  },
+  "CategoryHomeLivingBathroomsTowelsBathrobes": {
+    "CategoryHomeLivingBathroomsTowelsBathrobesBathRobes": {},
+    "CategoryHomeLivingBathroomsTowelsBathrobesBathTowels": {},
+    "CategoryHomeLivingBathroomsTowelsBathrobesFaceHandTowels": {},
+    "CategoryHomeLivingBathroomsTowelsBathrobesOther": {}
+  },
+  "CategoryHomeLivingHomeCareSuppliesLaundryCare": {
+    "CategoryHomeLivingHomeCareSuppliesLaundryCareDetergents": {},
+    "CategoryHomeLivingHomeCareSuppliesLaundryCareFabricConditionersSofteners": {},
+    "CategoryHomeLivingHomeCareSuppliesLaundryCareFabricFragrances": {},
+    "CategoryHomeLivingHomeCareSuppliesLaundryCareOther": {}
+  },
+  "CategoryHomeLivingToolsHomeImprovementTools": {
+    "CategoryHomeLivingToolsHomeImprovementToolsAirCompressors": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsBlowers": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsDrillsScrewdriversAccessories": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsElectricalTestersMultimeters": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsHammers": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsLevelsMeasuringWheels": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsMeasuringTapes": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsNailsScrewsFasteners": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsOther": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsPliers": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsPowerGenerators": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsPowerWeldingTools": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsPressureWashers": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsRangefinders": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsSandpaperPowerSandersAccessories": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsSawsCutoffMachinesGrinders": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsSpannerSets": {},
+    "CategoryHomeLivingToolsHomeImprovementToolsToolBoxes": {}
+  },
+  "CategoryMobileGadgetsAccessoriesCablesChargersConverters": {
+    "CategoryMobileGadgetsAccessoriesCablesChargersConvertersCableCasesProtectorsWinders": {},
+    "CategoryMobileGadgetsAccessoriesCablesChargersConvertersChargers": {},
+    "CategoryMobileGadgetsAccessoriesCablesChargersConvertersDocksStands": {},
+    "CategoryMobileGadgetsAccessoriesCablesChargersConvertersMobileCablesConverters": {},
+    "CategoryMobileGadgetsAccessoriesCablesChargersConvertersOther": {},
+    "CategoryMobileGadgetsAccessoriesCablesChargersConvertersTravelAdaptors": {}
+  },
+  "CategoryMobileGadgetsAccessoriesCasesCoversSkins": {
+    "CategoryMobileGadgetsAccessoriesCasesCoversSkinsOther": {},
+    "CategoryMobileGadgetsAccessoriesCasesCoversSkinsPhoneCasesCoversSkins": {},
+    "CategoryMobileGadgetsAccessoriesCasesCoversSkinsTabletCasesCoversSkins": {}
+  },
+  "CategoryMobileGadgetsAccessoriesPowerbanksBatteries": {
+    "CategoryMobileGadgetsAccessoriesPowerbanksBatteriesBatteries": {},
+    "CategoryMobileGadgetsAccessoriesPowerbanksBatteriesOther": {},
+    "CategoryMobileGadgetsAccessoriesPowerbanksBatteriesPowerbanks": {},
+    "CategoryMobileGadgetsAccessoriesPowerbanksBatteriesPowercases": {}
+  },
+  "CategoryMobileGadgetsAccessoriesSelfieAccessories": {
+    "CategoryMobileGadgetsAccessoriesSelfieAccessoriesLazypods": {},
+    "CategoryMobileGadgetsAccessoriesSelfieAccessoriesRemoteShutters": {},
+    "CategoryMobileGadgetsAccessoriesSelfieAccessoriesSelfieSticks": {}
+  },
+  "CategoryMomBabyBabyHealthcareBabySkincare": {
+    "CategoryMomBabyBabyHealthcareBabySkincareLotionCreams": {},
+    "CategoryMomBabyBabyHealthcareBabySkincareOils": {},
+    "CategoryMomBabyBabyHealthcareBabySkincarePowders": {}
+  },
+  "CategoryMomBabyFeedingEssentialsBottlefeeding": {
+    "CategoryMomBabyFeedingEssentialsBottlefeedingBottleCleansing": {},
+    "CategoryMomBabyFeedingEssentialsBottlefeedingBottleCoolerBag": {},
+    "CategoryMomBabyFeedingEssentialsBottlefeedingBottlesBottleaccessories": {},
+    "CategoryMomBabyFeedingEssentialsBottlefeedingSterilizers": {},
+    "CategoryMomBabyFeedingEssentialsBottlefeedingWarmers": {}
+  },
+  "CategoryMomBabyFeedingEssentialsBreastfeeding": {
+    "CategoryMomBabyFeedingEssentialsBreastfeedingBreastPadsShellsShields": {},
+    "CategoryMomBabyFeedingEssentialsBreastfeedingBreastPumpAccessories": {},
+    "CategoryMomBabyFeedingEssentialsBreastfeedingBreastmilkStorageBags": {},
+    "CategoryMomBabyFeedingEssentialsBreastfeedingNursingCovers": {}
+  },
+  "CategoryMomBabyFeedingEssentialsUtensils": {
+    "CategoryMomBabyFeedingEssentialsUtensilsBabyCups": {},
+    "CategoryMomBabyFeedingEssentialsUtensilsBabyFoodContainers": {},
+    "CategoryMomBabyFeedingEssentialsUtensilsBabyTableware": {}
+  },
+  "CategoryMomBabyNurseryMattressesBedding": {
+    "CategoryMomBabyNurseryMattressesBeddingBedsheets": {},
+    "CategoryMomBabyNurseryMattressesBeddingBlanketsWrappers": {},
+    "CategoryMomBabyNurseryMattressesBeddingPillowsBolsters": {}
+  },
+  "CategoryMomBabyToysBabyToddlerToys": {
+    "CategoryMomBabyToysBabyToddlerToysBathToys": {},
+    "CategoryMomBabyToysBabyToddlerToysCribMobilesRattles": {},
+    "CategoryMomBabyToysBabyToddlerToysPlayardsPlaypens": {},
+    "CategoryMomBabyToysBabyToddlerToysPlaygymPlaymats": {},
+    "CategoryMomBabyToysBabyToddlerToysTeethers": {}
+  },
+  "CategoryMomBabyToysDollsStuffedToys": {
+    "CategoryMomBabyToysDollsStuffedToysDollHousesAccessories": {},
+    "CategoryMomBabyToysDollsStuffedToysDollsAccessories": {},
+    "CategoryMomBabyToysDollsStuffedToysStuffedToys": {}
+  },
+  "CategoryMomBabyToysEducationalToys": {
+    "CategoryMomBabyToysEducationalToysArtsCrafts": {},
+    "CategoryMomBabyToysEducationalToysMathToys": {},
+    "CategoryMomBabyToysEducationalToysMusicalToys": {},
+    "CategoryMomBabyToysEducationalToysPuzzles": {},
+    "CategoryMomBabyToysEducationalToysScienceTechToys": {},
+    "CategoryMomBabyToysEducationalToysShapeSorters": {},
+    "CategoryMomBabyToysEducationalToysToyTabletsComputers": {}
+  },
+  "CategoryMomBabyToysSportsOutdoorPlay": {
+    "CategoryMomBabyToysSportsOutdoorPlayBicyclesScootersRideons": {},
+    "CategoryMomBabyToysSportsOutdoorPlayBlastersToyGuns": {},
+    "CategoryMomBabyToysSportsOutdoorPlayFlyingToysKitesWindSpinners": {},
+    "CategoryMomBabyToysSportsOutdoorPlayInflatablesSlides": {},
+    "CategoryMomBabyToysSportsOutdoorPlayPlayTentsTunnelsBallPits": {},
+    "CategoryMomBabyToysSportsOutdoorPlayPoolWaterSandToys": {},
+    "CategoryMomBabyToysSportsOutdoorPlaySportsToys": {}
+  },
+  "CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutches": {
+    "CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutchesBearings": {},
+    "CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutchesChainsGears": {},
+    "CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutchesClutches": {}
+  },
+  "CategoryMotorcyclesMotorcycleSparePartsIgnitionEngineParts": {
+    "CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsAirFilters": {},
+    "CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsCDIECU": {},
+    "CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsIgnitionCoils": {},
+    "CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsOther": {},
+    "CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsPistons": {},
+    "CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsRadiators": {},
+    "CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsSparkPlugs": {},
+    "CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsVBelts": {}
+  },
+  "CategoryPetsPetAccessoriesPetFurniture": {
+    "CategoryPetsPetAccessoriesPetFurnitureBedsMats": {},
+    "CategoryPetsPetAccessoriesPetFurnitureCagesCrates": {},
+    "CategoryPetsPetAccessoriesPetFurnitureHabitatsAccessories": {},
+    "CategoryPetsPetAccessoriesPetFurnitureHouses": {},
+    "CategoryPetsPetAccessoriesPetFurnitureScratchingPadsPosts": {}
+  },
+  "CategoryPetsPetAccessoriesToys": {
+    "CategoryPetsPetAccessoriesToysBirdToys": {},
+    "CategoryPetsPetAccessoriesToysDogCatToys": {},
+    "CategoryPetsPetAccessoriesToysSmallPetToys": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttire": {
+    "CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireBikiniSets": {},
+    "CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireOnePieceSwimsuits": {},
+    "CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireRashGuards": {},
+    "CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireSwimmingTrunks": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadminton": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonNets": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonRackets": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonOther": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonShuttlecocks": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketball": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketballBasketBalls": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketballBasketballRings": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketballOther": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsports": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsHelmetsProtectiveGears": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsScootersUnicycles": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSegwaysHoverboards": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSkateboardsRollerBlades": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArts": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArtsGlovesWrapsHelmets": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArtsMartialArtsBelts": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArtsPunchingBagsPaddings": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHiking": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingBinocularsMonocularsTelescopes": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingCookware": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingKnivesSurvivalKits": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingLampsFlashlights": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCompasses": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHammocks": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHikingSticks": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingOther": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingPicnicMatsBaskets": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingSleepingBags": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingTentsTentAccessories": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCycling": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingBicyclePartsAccessories": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingBicycles": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingCyclingHelmets": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingOther": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishing": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishFinders": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingBags": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingHooks": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingLines": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingNets": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingRodsReels": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingLuresBaits": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingOther": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipment": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentAbRollers": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentFitnessMachines": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentGymBalls": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentOther": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentPullUpPushUpBars": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentSkippingRopes": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentWeightTraining": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolf": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGearsTrainingEquipment": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfBagsOrganizers": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfBalls": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfClubs": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfOther": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakraw": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawBalls": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalPostsNets": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalkeeperGlovesShinGuards": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDiving": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingFlashlights": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingMasks": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingFlippers": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingLifeJackets": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingBoards": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingCaps": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingGoggles": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennis": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBalls": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBats": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisNets": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennis": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisOther": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisBalls": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisNets": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisRackets": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyball": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyBalls": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyNets": {}
+  },
+  "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilates": {
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesResistanceBands": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesYogaBlocksRingsFoamRollers": {},
+    "CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesYogaMats": {}
+  },
+  "CategoryWomenClothesLingerieUnderwearBraAccessories": {
+    "CategoryWomenClothesLingerieUnderwearBraAccessoriesNippleStickers": {},
+    "CategoryWomenClothesLingerieUnderwearBraAccessoriesPaddings": {},
+    "CategoryWomenClothesLingerieUnderwearBraAccessoriesStraps": {}
+  }
+}

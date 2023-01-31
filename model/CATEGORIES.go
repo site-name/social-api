@@ -15151,30 +15151,30 @@ var (
 		NameEn: "Fengshui & Religious Supplies",
 		Images: []string{},
 	}
-	CategorySportsCollections = &Category{
+	CategorySportsOutdoors = &Category{
 		Id:     "1002x0",
-		Slug:   "sports-and-collections",
+		Slug:   "sports-and-outdoors",
 		Name:   "Thể Thao & Dã Ngoại",
-		NameEn: "Sports & Collections",
+		NameEn: "Sports & Outdoors",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipments = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipments = &Category{
 		Id:     "1002x1",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments",
 		Name:   "Dụng Cụ Thể Thao & Dã Ngoại",
 		NameEn: "Sports & Outdoor Recreation Equipments",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFishing = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishing = &Category{
 		Id:     "1002x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fishing",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fishing",
 		Name:   "Câu Cá",
 		NameEn: "Fishing",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFishingFishingHooks = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingHooks = &Category{
 		Id:     "1002x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fishing-fishing-hooks",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fishing-fishing-hooks",
 		Name:   "Lưỡi Câu",
 		NameEn: "Fishing Hooks",
 		Images: []string{
@@ -15186,9 +15186,9 @@ var (
 			"https://cf.shopee.sg/file/7a3f772a28717239cb07e0cf44df6de3",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFishingFishingRodsReels = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingRodsReels = &Category{
 		Id:     "1003x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fishing-fishing-rods-and-reels",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fishing-fishing-rods-and-reels",
 		Name:   "Cần câu",
 		NameEn: "Fishing Rods & Reels",
 		Images: []string{
@@ -15200,9 +15200,9 @@ var (
 			"https://cf.shopee.sg/file/e908fca52a21a88dbe9c7d61dc0bcd00",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFishingFishFinders = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishFinders = &Category{
 		Id:     "1004x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fishing-fish-finders",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fishing-fish-finders",
 		Name:   "Máy Dò Tìm Cá",
 		NameEn: "Fish Finders",
 		Images: []string{
@@ -15214,9 +15214,9 @@ var (
 			"https://cf.shopee.sg/file/4de192370f894699f9545fe0a1471135",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFishingFishingLines = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingLines = &Category{
 		Id:     "1005x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fishing-fishing-lines",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fishing-fishing-lines",
 		Name:   "Dây Câu",
 		NameEn: "Fishing Lines",
 		Images: []string{
@@ -15228,9 +15228,9 @@ var (
 			"https://cf.shopee.sg/file/45c32df7f1f46f0a52bec76027174f0f",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFishingLuresBaits = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingLuresBaits = &Category{
 		Id:     "1006x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fishing-lures-and-baits",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fishing-lures-and-baits",
 		Name:   "Mồi Câu",
 		NameEn: "Lures & Baits",
 		Images: []string{
@@ -15242,9 +15242,9 @@ var (
 			"https://cf.shopee.sg/file/518721ea8095843c689ed579c58c014d",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFishingFishingBags = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingBags = &Category{
 		Id:     "1007x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fishing-fishing-bags",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fishing-fishing-bags",
 		Name:   "Túi Đựng Dụng Cụ Câu",
 		NameEn: "Fishing Bags",
 		Images: []string{
@@ -15256,9 +15256,9 @@ var (
 			"https://cf.shopee.sg/file/890d612ca73859f18ce06865aa7e6701",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFishingFishingNets = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingNets = &Category{
 		Id:     "1008x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fishing-fishing-nets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fishing-fishing-nets",
 		Name:   "Lưới Bắt Cá",
 		NameEn: "Fishing Nets",
 		Images: []string{
@@ -15270,9 +15270,9 @@ var (
 			"https://cf.shopee.sg/file/9b8b29eca96d0520fe5d3644eb361b20",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFishingOther = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingOther = &Category{
 		Id:     "1009x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fishing-other",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fishing-other",
 		Name:   "Khác",
 		NameEn: "Other",
 		Images: []string{
@@ -15284,16 +15284,16 @@ var (
 			"https://cf.shopee.sg/file/4e72ef8b1d8d6bca77e937c7bad199fa",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCycling = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCycling = &Category{
 		Id:     "1010x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-cycling",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-cycling",
 		Name:   "Đạp Xe",
 		NameEn: "Cycling",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCyclingBicycles = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingBicycles = &Category{
 		Id:     "1010x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-cycling-bicycles",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-cycling-bicycles",
 		Name:   "Xe Đạp",
 		NameEn: "Bicycles",
 		Images: []string{
@@ -15305,9 +15305,9 @@ var (
 			"https://cf.shopee.sg/file/6d703feca21d9fce6b564bb30dce98e3",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCyclingBicyclePartsAccessories = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingBicyclePartsAccessories = &Category{
 		Id:     "1011x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-cycling-bicycle-parts-and-accessories",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-cycling-bicycle-parts-and-accessories",
 		Name:   "Phụ Tùng & Phụ Kiện Xe Đạp",
 		NameEn: "Bicycle Parts & Accessories",
 		Images: []string{
@@ -15319,9 +15319,9 @@ var (
 			"https://cf.shopee.sg/file/280f80319d8fb6848784efe209140ab3",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCyclingCyclingHelmets = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingCyclingHelmets = &Category{
 		Id:     "1012x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-cycling-cycling-helmets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-cycling-cycling-helmets",
 		Name:   "Mũ Bảo Hiểm Xe Đạp",
 		NameEn: "Cycling Helmets",
 		Images: []string{
@@ -15333,9 +15333,9 @@ var (
 			"https://cf.shopee.sg/file/3dd3736ced2ea173e0d64b2dfd203864",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCyclingOther = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingOther = &Category{
 		Id:     "1013x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-cycling-other",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-cycling-other",
 		Name:   "Khác",
 		NameEn: "Other",
 		Images: []string{
@@ -15347,16 +15347,16 @@ var (
 			"https://cf.shopee.sg/file/bfb35ecc70a0abc3415b689cfd51143e",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCampingHiking = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHiking = &Category{
 		Id:     "1014x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-camping-and-hiking",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking",
 		Name:   "Cắm Trại & Dã ngoại",
 		NameEn: "Camping & Hiking",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCampingHikingCampingCookware = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingCookware = &Category{
 		Id:     "1014x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-camping-and-hiking-camping-cookware",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking-camping-cookware",
 		Name:   "Dụng Cụ Nấu Ăn Dã Ngoại",
 		NameEn: "Camping Cookware",
 		Images: []string{
@@ -15368,9 +15368,9 @@ var (
 			"https://cf.shopee.sg/file/d0021931e6f2fa4d2ac437e1ce862421",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCampingHikingCampingLampsFlashlights = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingLampsFlashlights = &Category{
 		Id:     "1015x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-camping-and-hiking-camping-lamps-and-flashlights",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking-camping-lamps-and-flashlights",
 		Name:   "Đèn & Đèn Pin",
 		NameEn: "Camping Lamps & Flashlights",
 		Images: []string{
@@ -15382,9 +15382,9 @@ var (
 			"https://cf.shopee.sg/file/e535392f9331020a9078d66dce69617e",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCampingHikingTentsTentAccessories = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingTentsTentAccessories = &Category{
 		Id:     "1016x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-camping-and-hiking-tents-and-tent-accessories",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking-tents-and-tent-accessories",
 		Name:   "Lều & Phụ Kiện",
 		NameEn: "Tents & Tent Accessories",
 		Images: []string{
@@ -15396,9 +15396,9 @@ var (
 			"https://cf.shopee.sg/file/9852e5ccc5b785a7920e4ceeff188001",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCampingHikingSleepingBags = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingSleepingBags = &Category{
 		Id:     "1017x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-camping-and-hiking-sleeping-bags",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking-sleeping-bags",
 		Name:   "Túi Ngủ",
 		NameEn: "Sleeping Bags",
 		Images: []string{
@@ -15410,9 +15410,9 @@ var (
 			"https://cf.shopee.sg/file/1ab32958d5bdd15673d2b30d53d1c793",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCampingHikingBinocularsMonocularsTelescopes = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingBinocularsMonocularsTelescopes = &Category{
 		Id:     "1018x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-camping-and-hiking-binoculars-monoculars-and-telescopes",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking-binoculars-monoculars-and-telescopes",
 		Name:   "Ống Nhòm & Kính Thiên Văn",
 		NameEn: "Binoculars, Monoculars & Telescopes",
 		Images: []string{
@@ -15424,9 +15424,9 @@ var (
 			"https://cf.shopee.sg/file/7304cff96e7738a795eb590812a0ad8b",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCampingHikingCompasses = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCompasses = &Category{
 		Id:     "1019x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-camping-and-hiking-compasses",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking-compasses",
 		Name:   "La Bàn",
 		NameEn: "Compasses",
 		Images: []string{
@@ -15438,9 +15438,9 @@ var (
 			"https://cf.shopee.sg/file/a4969f3c0c4ba041e12761b33a373457",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCampingHikingCampingKnivesSurvivalKits = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingKnivesSurvivalKits = &Category{
 		Id:     "1020x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-camping-and-hiking-camping-knives-and-survival-kits",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking-camping-knives-and-survival-kits",
 		Name:   "Dao & Bộ Dụng Cụ Cắm Trại",
 		NameEn: "Camping Knives & Survival Kits",
 		Images: []string{
@@ -15452,9 +15452,9 @@ var (
 			"https://cf.shopee.sg/file/3eb7d217390f27626acd14a1d869e0d4",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCampingHikingHammocks = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHammocks = &Category{
 		Id:     "1021x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-camping-and-hiking-hammocks",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking-hammocks",
 		Name:   "Võng",
 		NameEn: "Hammocks",
 		Images: []string{
@@ -15466,9 +15466,9 @@ var (
 			"https://cf.shopee.sg/file/8851340e8d14609b816ae5f16d3037c3",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCampingHikingHikingSticks = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHikingSticks = &Category{
 		Id:     "1022x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-camping-and-hiking-hiking-sticks",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking-hiking-sticks",
 		Name:   "Gậy Đi Bộ",
 		NameEn: "Hiking Sticks",
 		Images: []string{
@@ -15480,9 +15480,9 @@ var (
 			"https://cf.shopee.sg/file/ddb0e9ecf3729fd3f19626747f3eba6e",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCampingHikingPicnicMatsBaskets = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingPicnicMatsBaskets = &Category{
 		Id:     "1023x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-camping-and-hiking-picnic-mats-and-baskets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking-picnic-mats-and-baskets",
 		Name:   "Thảm & Giỏ Dã Ngoại",
 		NameEn: "Picnic Mats & Baskets",
 		Images: []string{
@@ -15494,9 +15494,9 @@ var (
 			"https://cf.shopee.sg/file/e10a3b65caa4376f5837d5c85da24a2e",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsCampingHikingOther = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingOther = &Category{
 		Id:     "1024x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-camping-and-hiking-other",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking-other",
 		Name:   "Khác",
 		NameEn: "Other",
 		Images: []string{
@@ -15508,9 +15508,9 @@ var (
 			"https://cf.shopee.sg/file/b0cabcff4383c2e3b707d0e1e88344e5",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsRockClimbing = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsRockClimbing = &Category{
 		Id:     "1025x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-rock-climbing",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-rock-climbing",
 		Name:   "Leo Núi",
 		NameEn: "Rock Climbing",
 		Images: []string{
@@ -15522,16 +15522,16 @@ var (
 			"https://cf.shopee.sg/file/2ced11b32bfd07b0ee141e09c5551443",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBoardsports = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsports = &Category{
 		Id:     "1026x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-boardsports",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boardsports",
 		Name:   "Thể Thao Ván Trượt",
 		NameEn: "Boardsports",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBoardsportsSkateboardsRollerBlades = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSkateboardsRollerBlades = &Category{
 		Id:     "1026x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-boardsports-skateboards-and-roller-blades",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boardsports-skateboards-and-roller-blades",
 		Name:   "Ván Trượt & Giày Patin",
 		NameEn: "Skateboards & Roller Blades",
 		Images: []string{
@@ -15543,9 +15543,9 @@ var (
 			"https://cf.shopee.sg/file/4c1660ffcbc854a6d510095e3d8cb352",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBoardsportsScootersUnicycles = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsScootersUnicycles = &Category{
 		Id:     "1027x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-boardsports-scooters-and-unicycles",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boardsports-scooters-and-unicycles",
 		Name:   "Scooters & Xe Đạp 1 Bánh",
 		NameEn: "Scooters & Unicycles",
 		Images: []string{
@@ -15557,9 +15557,9 @@ var (
 			"https://cf.shopee.sg/file/65bb0ed818ef3a3535e4e04269a224be",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBoardsportsSegwaysHoverboards = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSegwaysHoverboards = &Category{
 		Id:     "1028x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-boardsports-segways-and-hoverboards",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boardsports-segways-and-hoverboards",
 		Name:   "Xe Điện Cân Bằng",
 		NameEn: "Segways & Hoverboards",
 		Images: []string{
@@ -15571,9 +15571,9 @@ var (
 			"https://cf.shopee.sg/file/33f5e429d699e0153bd8b8fc90b8871e",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBoardsportsHelmetsProtectiveGears = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsHelmetsProtectiveGears = &Category{
 		Id:     "1029x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-boardsports-helmets-and-protective-gears",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boardsports-helmets-and-protective-gears",
 		Name:   "Nón Bảo Hiểm & Đồ Bảo Hộ",
 		NameEn: "Helmets & Protective Gears",
 		Images: []string{
@@ -15585,16 +15585,16 @@ var (
 			"https://cf.shopee.sg/file/459613519a742f5e6f12c03a9489dfcc",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakraw = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakraw = &Category{
 		Id:     "1030x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-soccer-futsal-and-sepak-takraw",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-soccer-futsal-and-sepak-takraw",
 		Name:   "Bóng Đá, Futsal & Cầu Mây",
 		NameEn: "Soccer, Futsal & Sepak Takraw",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawBalls = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawBalls = &Category{
 		Id:     "1030x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-soccer-futsal-and-sepak-takraw-balls",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-soccer-futsal-and-sepak-takraw-balls",
 		Name:   "Bóng",
 		NameEn: "Balls",
 		Images: []string{
@@ -15606,9 +15606,9 @@ var (
 			"https://cf.shopee.sg/file/06c8caaa9d90eaec02af12e62c660933",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalkeeperGlovesShinGuards = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalkeeperGlovesShinGuards = &Category{
 		Id:     "1031x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-soccer-futsal-and-sepak-takraw-goalkeeper-gloves-and-shin-guards",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-soccer-futsal-and-sepak-takraw-goalkeeper-gloves-and-shin-guards",
 		Name:   "Găng Tay & Ống Đồng",
 		NameEn: "Goalkeeper Gloves & Shin Guards",
 		Images: []string{
@@ -15620,9 +15620,9 @@ var (
 			"https://cf.shopee.sg/file/4259353d55eee37bbf066727866855c6",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalPostsNets = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalPostsNets = &Category{
 		Id:     "1032x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-soccer-futsal-and-sepak-takraw-goal-posts-and-nets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-soccer-futsal-and-sepak-takraw-goal-posts-and-nets",
 		Name:   "Khung Thành & Lưới",
 		NameEn: "Goal Posts & Nets",
 		Images: []string{
@@ -15634,16 +15634,16 @@ var (
 			"https://cf.shopee.sg/file/dd2a72b0f94d7d087b54c62c729cf547",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBasketball = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketball = &Category{
 		Id:     "1033x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-basketball",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-basketball",
 		Name:   "Bóng Rổ",
 		NameEn: "Basketball",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBasketballBasketBalls = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketballBasketBalls = &Category{
 		Id:     "1033x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-basketball-basket-balls",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-basketball-basket-balls",
 		Name:   "Banh Bóng Rổ",
 		NameEn: "Basket Balls",
 		Images: []string{
@@ -15655,9 +15655,9 @@ var (
 			"https://cf.shopee.sg/file/f2f2ba7fcb52ec776019522205eff888",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBasketballBasketballRings = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketballBasketballRings = &Category{
 		Id:     "1034x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-basketball-basketball-rings",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-basketball-basketball-rings",
 		Name:   "Khung Lưới Bóng Rổ",
 		NameEn: "Basketball Rings",
 		Images: []string{
@@ -15669,9 +15669,9 @@ var (
 			"https://cf.shopee.sg/file/bd27f6339eb37b9e1ae775458851ea70",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBasketballOther = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketballOther = &Category{
 		Id:     "1035x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-basketball-other",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-basketball-other",
 		Name:   "Vật Dụng Khác",
 		NameEn: "Other",
 		Images: []string{
@@ -15683,16 +15683,16 @@ var (
 			"https://cf.shopee.sg/file/95dc8472c6b13fd5645bb5ae369e5483",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsVolleyball = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyball = &Category{
 		Id:     "1036x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-volleyball",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-volleyball",
 		Name:   "Bóng Chuyền",
 		NameEn: "Volleyball",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsVolleyballVolleyBalls = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyBalls = &Category{
 		Id:     "1036x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-volleyball-volley-balls",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-volleyball-volley-balls",
 		Name:   "Banh Bóng Chuyền",
 		NameEn: "Volley Balls",
 		Images: []string{
@@ -15704,9 +15704,9 @@ var (
 			"https://cf.shopee.sg/file/96c6f8bfaf4919078fb7cc682ce9ff99",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsVolleyballVolleyNets = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyNets = &Category{
 		Id:     "1037x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-volleyball-volley-nets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-volleyball-volley-nets",
 		Name:   "Lưới Bóng Chuyền",
 		NameEn: "Volley Nets",
 		Images: []string{
@@ -15718,16 +15718,16 @@ var (
 			"https://cf.shopee.sg/file/505cb41d6fb1ee1be69a8a8c6386bde3",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBadminton = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadminton = &Category{
 		Id:     "1038x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-badminton",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-badminton",
 		Name:   "Cầu Lông",
 		NameEn: "Badminton",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBadmintonBadmintonRackets = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonRackets = &Category{
 		Id:     "1038x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-badminton-badminton-rackets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-badminton-badminton-rackets",
 		Name:   "Vợt Cầu Lông",
 		NameEn: "Badminton Rackets",
 		Images: []string{
@@ -15739,9 +15739,9 @@ var (
 			"https://cf.shopee.sg/file/bfa43e58a0a60c425ebbb75e3827e48d",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBadmintonShuttlecocks = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonShuttlecocks = &Category{
 		Id:     "1039x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-badminton-shuttlecocks",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-badminton-shuttlecocks",
 		Name:   "Quả Cầu",
 		NameEn: "Shuttlecocks",
 		Images: []string{
@@ -15753,9 +15753,9 @@ var (
 			"https://cf.shopee.sg/file/0e59199fb11f6e0c371c6df598ccbcf9",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBadmintonBadmintonNets = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonNets = &Category{
 		Id:     "1040x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-badminton-badminton-nets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-badminton-badminton-nets",
 		Name:   "Lưới Cầu Lông",
 		NameEn: "Badminton Nets",
 		Images: []string{
@@ -15767,9 +15767,9 @@ var (
 			"https://cf.shopee.sg/file/8c737438d5b5a6c16db756aed8c97957",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBadmintonOther = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonOther = &Category{
 		Id:     "1041x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-badminton-other",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-badminton-other",
 		Name:   "Khác",
 		NameEn: "Other",
 		Images: []string{
@@ -15781,16 +15781,16 @@ var (
 			"https://cf.shopee.sg/file/972a37ba62abf4590979cc52948f4c83",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsTennis = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennis = &Category{
 		Id:     "1042x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-tennis",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-tennis",
 		Name:   "Tennis",
 		NameEn: "Tennis",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsTennisTennisRackets = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisRackets = &Category{
 		Id:     "1042x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-tennis-tennis-rackets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-tennis-tennis-rackets",
 		Name:   "Vợt Tennis",
 		NameEn: "Tennis Rackets",
 		Images: []string{
@@ -15802,9 +15802,9 @@ var (
 			"https://cf.shopee.sg/file/f2c1d763858fe8076d3fc9e0215ec949",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsTennisTennisBalls = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisBalls = &Category{
 		Id:     "1043x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-tennis-tennis-balls",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-tennis-tennis-balls",
 		Name:   "Banh Tennis",
 		NameEn: "Tennis Balls",
 		Images: []string{
@@ -15816,9 +15816,9 @@ var (
 			"https://cf.shopee.sg/file/3ecafabe799db0ff220ed2cac067fc70",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsTennisTennisNets = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisNets = &Category{
 		Id:     "1044x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-tennis-tennis-nets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-tennis-tennis-nets",
 		Name:   "Lưới Tennis",
 		NameEn: "Tennis Nets",
 		Images: []string{
@@ -15830,9 +15830,9 @@ var (
 			"https://cf.shopee.sg/file/44b9738d4f442c21896a9802e322a0b4",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsTennisOther = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisOther = &Category{
 		Id:     "1045x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-tennis-other",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-tennis-other",
 		Name:   "Khác",
 		NameEn: "Other",
 		Images: []string{
@@ -15844,16 +15844,16 @@ var (
 			"https://cf.shopee.sg/file/ed83cd9490526db840ec6c98829e5dc2",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsTableTennis = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennis = &Category{
 		Id:     "1046x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-table-tennis",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-table-tennis",
 		Name:   "Bóng Bàn",
 		NameEn: "Table Tennis",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBalls = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBalls = &Category{
 		Id:     "1046x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-table-tennis-table-tennis-balls",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-table-tennis-table-tennis-balls",
 		Name:   "Banh Bóng Bàn",
 		NameEn: "Table Tennis Balls",
 		Images: []string{
@@ -15865,9 +15865,9 @@ var (
 			"https://cf.shopee.sg/file/e76871b5ac9f188bdaf544aa5a490077",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBats = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBats = &Category{
 		Id:     "1047x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-table-tennis-table-tennis-bats",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-table-tennis-table-tennis-bats",
 		Name:   "Vợt Bóng Bàn",
 		NameEn: "Table Tennis Bats",
 		Images: []string{
@@ -15879,9 +15879,9 @@ var (
 			"https://cf.shopee.sg/file/be44fb78a5fb390822c0e131aae52577",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsTableTennisTableTennisNets = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisNets = &Category{
 		Id:     "1048x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-table-tennis-table-tennis-nets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-table-tennis-table-tennis-nets",
 		Name:   "Lưới Bóng Bàn",
 		NameEn: "Table Tennis Nets",
 		Images: []string{
@@ -15893,16 +15893,16 @@ var (
 			"https://cf.shopee.sg/file/720fa4127fd1d5b2f83dc488d9d56aa1",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBoxingMartialArts = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArts = &Category{
 		Id:     "1049x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-boxing-and-martial-arts",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boxing-and-martial-arts",
 		Name:   "Đấm bốc & Võ Tổng Hợp",
 		NameEn: "Boxing & Martial Arts",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBoxingMartialArtsPunchingBagsPaddings = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArtsPunchingBagsPaddings = &Category{
 		Id:     "1049x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-boxing-and-martial-arts-punching-bags-and-paddings",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boxing-and-martial-arts-punching-bags-and-paddings",
 		Name:   "Bao Cát & Đệm",
 		NameEn: "Punching Bags & Paddings",
 		Images: []string{
@@ -15914,9 +15914,9 @@ var (
 			"https://cf.shopee.sg/file/f50a53539b9c4fb419560cde758a5e75",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBoxingMartialArtsMartialArtsBelts = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArtsMartialArtsBelts = &Category{
 		Id:     "1050x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-boxing-and-martial-arts-martial-arts-belts",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boxing-and-martial-arts-martial-arts-belts",
 		Name:   "Đai Võ",
 		NameEn: "Martial Arts Belts",
 		Images: []string{
@@ -15928,9 +15928,9 @@ var (
 			"https://cf.shopee.sg/file/72351a38e7e47b5bd4a40dd414c62812",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBoxingMartialArtsGlovesWrapsHelmets = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArtsGlovesWrapsHelmets = &Category{
 		Id:     "1051x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-boxing-and-martial-arts-gloves-wraps-and-helmets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boxing-and-martial-arts-gloves-wraps-and-helmets",
 		Name:   "Găng Tay, Bao Tay & Mũ Bảo Hộ",
 		NameEn: "Gloves, Wraps & Helmets",
 		Images: []string{
@@ -15942,16 +15942,16 @@ var (
 			"https://cf.shopee.sg/file/47c2533d9634b65ebff53417b12b014d",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsGolf = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolf = &Category{
 		Id:     "1052x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-golf",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-golf",
 		Name:   "Golf",
 		NameEn: "Golf",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsGolfGolfBalls = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfBalls = &Category{
 		Id:     "1052x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-golf-golf-balls",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-golf-golf-balls",
 		Name:   "Bóng Golf",
 		NameEn: "Golf Balls",
 		Images: []string{
@@ -15963,9 +15963,9 @@ var (
 			"https://cf.shopee.sg/file/7b5d5e9fafe2c8b3f19c9e164a7870f3",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsGolfGolfClubs = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfClubs = &Category{
 		Id:     "1053x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-golf-golf-clubs",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-golf-golf-clubs",
 		Name:   "Gậy Golf",
 		NameEn: "Golf Clubs",
 		Images: []string{
@@ -15977,9 +15977,9 @@ var (
 			"https://cf.shopee.sg/file/96c895838c24d100edce5738510bd999",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsGolfGearsTrainingEquipment = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGearsTrainingEquipment = &Category{
 		Id:     "1054x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-golf-gears-andtraining-equipment",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-golf-gears-andtraining-equipment",
 		Name:   "Đồ Bảo Hộ & Luyện Tập",
 		NameEn: "Gears &Training Equipment",
 		Images: []string{
@@ -15991,9 +15991,9 @@ var (
 			"https://cf.shopee.sg/file/9998b07ee37054a238c192934f110ed7",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsGolfGolfBagsOrganizers = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfBagsOrganizers = &Category{
 		Id:     "1055x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-golf-golf-bags-and-organizers",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-golf-golf-bags-and-organizers",
 		Name:   "Túi Đựng Dụng Cụ Golf",
 		NameEn: "Golf Bags & Organizers",
 		Images: []string{
@@ -16005,9 +16005,9 @@ var (
 			"https://cf.shopee.sg/file/911ac9db22f5ccd6025eed9b0a10dd00",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsGolfOther = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfOther = &Category{
 		Id:     "1056x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-golf-other",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-golf-other",
 		Name:   "Khác",
 		NameEn: "Other",
 		Images: []string{
@@ -16019,9 +16019,9 @@ var (
 			"https://cf.shopee.sg/file/8634b73972b27a3720d68ed05e1be0ff",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBaseballSoftball = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBaseballSoftball = &Category{
 		Id:     "1057x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-baseball-and-softball",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-baseball-and-softball",
 		Name:   "Bóng Chày & Bóng Ném",
 		NameEn: "Baseball & Softball",
 		Images: []string{
@@ -16033,9 +16033,9 @@ var (
 			"https://cf.shopee.sg/file/056c23b9e1e1606b57090999f52164ad",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSquash = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSquash = &Category{
 		Id:     "1058x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-squash",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-squash",
 		Name:   "Bóng Quần",
 		NameEn: "Squash",
 		Images: []string{
@@ -16047,9 +16047,9 @@ var (
 			"https://cf.shopee.sg/file/ee627b15020a8b338806a7a03ba589c2",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsShootingSurvivalGames = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsShootingSurvivalGames = &Category{
 		Id:     "1059x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-shooting-and-survival-games",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-shooting-and-survival-games",
 		Name:   "Bắn Súng & Game Sinh Tồn",
 		NameEn: "Shooting & Survival Games",
 		Images: []string{
@@ -16061,9 +16061,9 @@ var (
 			"https://cf.shopee.sg/file/a4ef5362deea5ce1f85a14da77031e31",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsRugby = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsRugby = &Category{
 		Id:     "1060x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-rugby",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-rugby",
 		Name:   "Bóng Bầu Dục",
 		NameEn: "Rugby",
 		Images: []string{
@@ -16075,9 +16075,9 @@ var (
 			"https://cf.shopee.sg/file/06dd77d763b3b5bec445f06c5e93adeb",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBilliards = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBilliards = &Category{
 		Id:     "1061x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-billiards",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-billiards",
 		Name:   "Bida",
 		NameEn: "Billiards",
 		Images: []string{
@@ -16089,9 +16089,9 @@ var (
 			"https://cf.shopee.sg/file/5668f22f5a53524a9eee748eeafa5b0c",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSurfingWakeboarding = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSurfingWakeboarding = &Category{
 		Id:     "1062x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-surfing-and-wakeboarding",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-surfing-and-wakeboarding",
 		Name:   "Lướt Ván",
 		NameEn: "Surfing & Wakeboarding",
 		Images: []string{
@@ -16103,9 +16103,9 @@ var (
 			"https://cf.shopee.sg/file/0ffcecf81061376ee17bee4185044486",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsIceSkatingWinterSports = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsIceSkatingWinterSports = &Category{
 		Id:     "1063x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-ice-skating-and-winter-sports",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-ice-skating-and-winter-sports",
 		Name:   "Trượt Tuyết & Thể Thao Mùa Đông",
 		NameEn: "Ice Skating & Winter Sports",
 		Images: []string{
@@ -16117,16 +16117,16 @@ var (
 			"https://cf.shopee.sg/file/5948d629d5687cdc8a31b04851502c3f",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSwimmingDiving = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDiving = &Category{
 		Id:     "1064x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-swimming-and-diving",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-swimming-and-diving",
 		Name:   "Bơi Lội & Lặn",
 		NameEn: "Swimming & Diving",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingCaps = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingCaps = &Category{
 		Id:     "1064x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-swimming-and-diving-swimming-caps",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-swimming-and-diving-swimming-caps",
 		Name:   "Mũ Bơi",
 		NameEn: "Swimming Caps",
 		Images: []string{
@@ -16138,9 +16138,9 @@ var (
 			"https://cf.shopee.sg/file/94d578252dbb471a6ddb1bc942d19caa",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingGoggles = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingGoggles = &Category{
 		Id:     "1065x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-swimming-and-diving-swimming-goggles",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-swimming-and-diving-swimming-goggles",
 		Name:   "Kính Bơi",
 		NameEn: "Swimming Goggles",
 		Images: []string{
@@ -16152,9 +16152,9 @@ var (
 			"https://cf.shopee.sg/file/531c21503d321ad97dc6cf0620c26ad2",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingBoards = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingBoards = &Category{
 		Id:     "1066x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-swimming-and-diving-swimming-boards",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-swimming-and-diving-swimming-boards",
 		Name:   "Ván Tập Bơi",
 		NameEn: "Swimming Boards",
 		Images: []string{
@@ -16166,9 +16166,9 @@ var (
 			"https://cf.shopee.sg/file/08c8a9a8b46a0753b858a9d7b60a9d73",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingFlashlights = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingFlashlights = &Category{
 		Id:     "1067x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-swimming-and-diving-diving-flashlights",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-swimming-and-diving-diving-flashlights",
 		Name:   "Đèn Lặn",
 		NameEn: "Diving Flashlights",
 		Images: []string{
@@ -16180,9 +16180,9 @@ var (
 			"https://cf.shopee.sg/file/87b4214624c49966c03f0a851dcbb4fd",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingMasks = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingMasks = &Category{
 		Id:     "1068x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-swimming-and-diving-diving-masks",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-swimming-and-diving-diving-masks",
 		Name:   "Mặt Nạ Lặn",
 		NameEn: "Diving Masks",
 		Images: []string{
@@ -16194,9 +16194,9 @@ var (
 			"https://cf.shopee.sg/file/4b46d508ed6a785da5392781d8a75d77",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSwimmingDivingFlippers = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingFlippers = &Category{
 		Id:     "1069x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-swimming-and-diving-flippers",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-swimming-and-diving-flippers",
 		Name:   "Chân Vịt Lặn",
 		NameEn: "Flippers",
 		Images: []string{
@@ -16208,9 +16208,9 @@ var (
 			"https://cf.shopee.sg/file/8fbe67ab45908b6d7d4b7da9f9ebe5bf",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsSwimmingDivingLifeJackets = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingLifeJackets = &Category{
 		Id:     "1070x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-swimming-and-diving-life-jackets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-swimming-and-diving-life-jackets",
 		Name:   "Áo Phao",
 		NameEn: "Life Jackets",
 		Images: []string{
@@ -16222,9 +16222,9 @@ var (
 			"https://cf.shopee.sg/file/dc0b93dbb13c5c50923d4b4471f84cad",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsBoating = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoating = &Category{
 		Id:     "1071x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-boating",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boating",
 		Name:   "Chèo Thuyền",
 		NameEn: "Boating",
 		Images: []string{
@@ -16236,16 +16236,16 @@ var (
 			"https://cf.shopee.sg/file/bb852790bd97cf8ad7c07bb245c533d3",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsYogaPilates = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilates = &Category{
 		Id:     "1072x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-yoga-and-pilates",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-yoga-and-pilates",
 		Name:   "Yoga & Pilates",
 		NameEn: "Yoga & Pilates",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsYogaPilatesYogaMats = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesYogaMats = &Category{
 		Id:     "1072x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-yoga-and-pilates-yoga-mats",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-yoga-and-pilates-yoga-mats",
 		Name:   "Thảm Yoga",
 		NameEn: "Yoga Mats",
 		Images: []string{
@@ -16257,9 +16257,9 @@ var (
 			"https://cf.shopee.sg/file/48d8179f4d580b3e053994bf7c3a855c",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsYogaPilatesYogaBlocksRingsFoamRollers = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesYogaBlocksRingsFoamRollers = &Category{
 		Id:     "1073x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-yoga-and-pilates-yoga-blocks-rings-and-foam-rollers",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-yoga-and-pilates-yoga-blocks-rings-and-foam-rollers",
 		Name:   "Dụng Cụ Hỗ Trợ Yoga",
 		NameEn: "Yoga Blocks, Rings & Foam Rollers",
 		Images: []string{
@@ -16271,9 +16271,9 @@ var (
 			"https://cf.shopee.sg/file/4b4338dc991bc903eb7b1ca55078e574",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsYogaPilatesResistanceBands = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesResistanceBands = &Category{
 		Id:     "1074x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-yoga-and-pilates-resistance-bands",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-yoga-and-pilates-resistance-bands",
 		Name:   "Dây Đàn Hồi",
 		NameEn: "Resistance Bands",
 		Images: []string{
@@ -16285,16 +16285,16 @@ var (
 			"https://cf.shopee.sg/file/1ab5405594c15646b6525cd31a4ec72f",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFitnessEquipment = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipment = &Category{
 		Id:     "1075x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fitness-equipment",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fitness-equipment",
 		Name:   "Thiết Bị Thể Thao",
 		NameEn: "Fitness Equipment",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFitnessEquipmentWeightTraining = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentWeightTraining = &Category{
 		Id:     "1075x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fitness-equipment-weight-training",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fitness-equipment-weight-training",
 		Name:   "Tạ Tập",
 		NameEn: "Weight Training",
 		Images: []string{
@@ -16306,9 +16306,9 @@ var (
 			"https://cf.shopee.sg/file/d4468e9de1869aaee9bef58fb687cac5",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFitnessEquipmentSkippingRopes = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentSkippingRopes = &Category{
 		Id:     "1076x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fitness-equipment-skipping-ropes",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fitness-equipment-skipping-ropes",
 		Name:   "Dây Nhảy",
 		NameEn: "Skipping Ropes",
 		Images: []string{
@@ -16320,9 +16320,9 @@ var (
 			"https://cf.shopee.sg/file/f2e9910ddc69992e30e5da0964a8819c",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFitnessEquipmentGymBalls = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentGymBalls = &Category{
 		Id:     "1077x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fitness-equipment-gym-balls",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fitness-equipment-gym-balls",
 		Name:   "Bóng Tập Yoga & Gym",
 		NameEn: "Gym Balls",
 		Images: []string{
@@ -16334,9 +16334,9 @@ var (
 			"https://cf.shopee.sg/file/77f021de5f690a9cdd01c91991259ba0",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFitnessEquipmentFitnessMachines = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentFitnessMachines = &Category{
 		Id:     "1078x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fitness-equipment-fitness-machines",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fitness-equipment-fitness-machines",
 		Name:   "Máy Tập",
 		NameEn: "Fitness Machines",
 		Images: []string{
@@ -16348,9 +16348,9 @@ var (
 			"https://cf.shopee.sg/file/383575f10d90f38f117b0bee9ea316c6",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFitnessEquipmentAbRollers = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentAbRollers = &Category{
 		Id:     "1079x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fitness-equipment-ab-rollers",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fitness-equipment-ab-rollers",
 		Name:   "Con Lăn Tập Bụng",
 		NameEn: "Ab Rollers",
 		Images: []string{
@@ -16362,9 +16362,9 @@ var (
 			"https://cf.shopee.sg/file/54231cc0669fc4b1541b900d09a40bcd",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFitnessEquipmentPullUpPushUpBars = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentPullUpPushUpBars = &Category{
 		Id:     "1080x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fitness-equipment-pull-up-and-push-up-bars",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fitness-equipment-pull-up-and-push-up-bars",
 		Name:   "Xà & Dụng Cụ Chống Đẩy",
 		NameEn: "Pull Up & Push Up Bars",
 		Images: []string{
@@ -16376,9 +16376,9 @@ var (
 			"https://cf.shopee.sg/file/b06923f4b9559835f0f3f5905a7273c0",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsFitnessEquipmentOther = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentOther = &Category{
 		Id:     "1081x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-fitness-equipment-other",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fitness-equipment-other",
 		Name:   "Khác",
 		NameEn: "Other",
 		Images: []string{
@@ -16390,9 +16390,9 @@ var (
 			"https://cf.shopee.sg/file/42916b184cbf5c91b9ab4377f1d31c3f",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsDarts = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsDarts = &Category{
 		Id:     "1082x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-darts",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-darts",
 		Name:   "Ném Phi Tiêu",
 		NameEn: "Darts",
 		Images: []string{
@@ -16404,9 +16404,9 @@ var (
 			"https://cf.shopee.sg/file/c64eac46037bafb2971467b8be084197",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorRecreationEquipmentsOther = &Category{
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsOther = &Category{
 		Id:     "1083x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-recreation-equipments-other",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-other",
 		Name:   "Môn Thể Thao Khác",
 		NameEn: "Other",
 		Images: []string{
@@ -16418,16 +16418,16 @@ var (
 			"https://cf.shopee.sg/file/18a2d71d454a5fac54c86b3538b7ee9b",
 		},
 	}
-	CategorySportsCollectionsSportFootwear = &Category{
+	CategorySportsOutdoorsSportFootwear = &Category{
 		Id:     "1084x1",
-		Slug:   "sports-and-collections-sport-footwear",
+		Slug:   "sports-and-outdoors-sport-footwear",
 		Name:   "Giày Thể Thao",
 		NameEn: "Sport Footwear",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportFootwearBasketballShoes = &Category{
+	CategorySportsOutdoorsSportFootwearBasketballShoes = &Category{
 		Id:     "1084x2",
-		Slug:   "sports-and-collections-sport-footwear-basketball-shoes",
+		Slug:   "sports-and-outdoors-sport-footwear-basketball-shoes",
 		Name:   "Giày Bóng Rổ",
 		NameEn: "Basketball Shoes",
 		Images: []string{
@@ -16439,9 +16439,9 @@ var (
 			"https://cf.shopee.sg/file/8b7d0057d86d0ac500564ccfd09fab69",
 		},
 	}
-	CategorySportsCollectionsSportFootwearRunningShoes = &Category{
+	CategorySportsOutdoorsSportFootwearRunningShoes = &Category{
 		Id:     "1085x2",
-		Slug:   "sports-and-collections-sport-footwear-running-shoes",
+		Slug:   "sports-and-outdoors-sport-footwear-running-shoes",
 		Name:   "Giày Chạy Bộ",
 		NameEn: "Running Shoes",
 		Images: []string{
@@ -16453,9 +16453,9 @@ var (
 			"https://cf.shopee.sg/file/4452fb39e0f78bdf73851a5cacd8af92",
 		},
 	}
-	CategorySportsCollectionsSportFootwearTrainingShoes = &Category{
+	CategorySportsOutdoorsSportFootwearTrainingShoes = &Category{
 		Id:     "1086x2",
-		Slug:   "sports-and-collections-sport-footwear-training-shoes",
+		Slug:   "sports-and-outdoors-sport-footwear-training-shoes",
 		Name:   "Giày Tập Luyện",
 		NameEn: "Training Shoes",
 		Images: []string{
@@ -16467,9 +16467,9 @@ var (
 			"https://cf.shopee.sg/file/cfd164133c682581e0cd2f443e93c794",
 		},
 	}
-	CategorySportsCollectionsSportFootwearTennisShoes = &Category{
+	CategorySportsOutdoorsSportFootwearTennisShoes = &Category{
 		Id:     "1087x2",
-		Slug:   "sports-and-collections-sport-footwear-tennis-shoes",
+		Slug:   "sports-and-outdoors-sport-footwear-tennis-shoes",
 		Name:   "Giày Tennis",
 		NameEn: "Tennis Shoes",
 		Images: []string{
@@ -16481,9 +16481,9 @@ var (
 			"https://cf.shopee.sg/file/d4729864982b8b49195cd2935ad5e524",
 		},
 	}
-	CategorySportsCollectionsSportFootwearVolleyballShoes = &Category{
+	CategorySportsOutdoorsSportFootwearVolleyballShoes = &Category{
 		Id:     "1088x2",
-		Slug:   "sports-and-collections-sport-footwear-volleyball-shoes",
+		Slug:   "sports-and-outdoors-sport-footwear-volleyball-shoes",
 		Name:   "Giày Bóng Chuyền",
 		NameEn: "Volleyball Shoes",
 		Images: []string{
@@ -16495,9 +16495,9 @@ var (
 			"https://cf.shopee.sg/file/a27e41f88ec819c0d7e9c49ed3ae32de",
 		},
 	}
-	CategorySportsCollectionsSportFootwearBadmintonShoes = &Category{
+	CategorySportsOutdoorsSportFootwearBadmintonShoes = &Category{
 		Id:     "1089x2",
-		Slug:   "sports-and-collections-sport-footwear-badminton-shoes",
+		Slug:   "sports-and-outdoors-sport-footwear-badminton-shoes",
 		Name:   "Giày Cầu Lông",
 		NameEn: "Badminton Shoes",
 		Images: []string{
@@ -16509,9 +16509,9 @@ var (
 			"https://cf.shopee.sg/file/bfb4ba8a3d4d42a52dc2b097d1f18c8e",
 		},
 	}
-	CategorySportsCollectionsSportFootwearFutsalShoes = &Category{
+	CategorySportsOutdoorsSportFootwearFutsalShoes = &Category{
 		Id:     "1090x2",
-		Slug:   "sports-and-collections-sport-footwear-futsal-shoes",
+		Slug:   "sports-and-outdoors-sport-footwear-futsal-shoes",
 		Name:   "Giày Futsal",
 		NameEn: "Futsal Shoes",
 		Images: []string{
@@ -16523,9 +16523,9 @@ var (
 			"https://cf.shopee.sg/file/e8f9c215d8a951c9cf58788e96509223",
 		},
 	}
-	CategorySportsCollectionsSportFootwearHikingShoes = &Category{
+	CategorySportsOutdoorsSportFootwearHikingShoes = &Category{
 		Id:     "1091x2",
-		Slug:   "sports-and-collections-sport-footwear-hiking-shoes",
+		Slug:   "sports-and-outdoors-sport-footwear-hiking-shoes",
 		Name:   "Giày Dã Ngoại",
 		NameEn: "Hiking Shoes",
 		Images: []string{
@@ -16537,9 +16537,9 @@ var (
 			"https://cf.shopee.sg/file/092586c916f8e49fdf5741319e621837",
 		},
 	}
-	CategorySportsCollectionsSportFootwearSoccerShoes = &Category{
+	CategorySportsOutdoorsSportFootwearSoccerShoes = &Category{
 		Id:     "1092x2",
-		Slug:   "sports-and-collections-sport-footwear-soccer-shoes",
+		Slug:   "sports-and-outdoors-sport-footwear-soccer-shoes",
 		Name:   "Giày Bóng Đá",
 		NameEn: "Soccer Shoes",
 		Images: []string{
@@ -16551,9 +16551,9 @@ var (
 			"https://cf.shopee.sg/file/3e4cb08bd4cadb213b0f67d0d52619a5",
 		},
 	}
-	CategorySportsCollectionsSportFootwearKidsSportShoes = &Category{
+	CategorySportsOutdoorsSportFootwearKidsSportShoes = &Category{
 		Id:     "1093x2",
-		Slug:   "sports-and-collections-sport-footwear-kids-sport-shoes",
+		Slug:   "sports-and-outdoors-sport-footwear-kids-sport-shoes",
 		Name:   "Giày Thể Thao Trẻ Em",
 		NameEn: "Kid's Sport Shoes",
 		Images: []string{
@@ -16565,9 +16565,9 @@ var (
 			"https://cf.shopee.sg/file/1a14c6f1db2084768192b962941174b4",
 		},
 	}
-	CategorySportsCollectionsSportFootwearOther = &Category{
+	CategorySportsOutdoorsSportFootwearOther = &Category{
 		Id:     "1094x2",
-		Slug:   "sports-and-collections-sport-footwear-other",
+		Slug:   "sports-and-outdoors-sport-footwear-other",
 		Name:   "Giày Thể Thao Khác",
 		NameEn: "Other",
 		Images: []string{
@@ -16579,16 +16579,16 @@ var (
 			"https://cf.shopee.sg/file/63abd3e9c48a0118e56ede3cc60fcfd1",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorApparels = &Category{
+	CategorySportsOutdoorsSportsOutdoorApparels = &Category{
 		Id:     "1095x1",
-		Slug:   "sports-and-collections-sports-and-outdoor-apparels",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels",
 		Name:   "Thời Trang Thể Thao & Dã Ngoại",
 		NameEn: "Sports & Outdoor Apparels",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorApparelsSets = &Category{
+	CategorySportsOutdoorsSportsOutdoorApparelsSets = &Category{
 		Id:     "1095x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-apparels-sets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels-sets",
 		Name:   "Bộ Đồ Thể Thao",
 		NameEn: "Sets",
 		Images: []string{
@@ -16600,9 +16600,9 @@ var (
 			"https://cf.shopee.sg/file/82f06892dfd5a6c56ebd8baf74824828",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorApparelsJackets = &Category{
+	CategorySportsOutdoorsSportsOutdoorApparelsJackets = &Category{
 		Id:     "1096x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-apparels-jackets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels-jackets",
 		Name:   "Áo Khoác",
 		NameEn: "Jackets",
 		Images: []string{
@@ -16614,9 +16614,9 @@ var (
 			"https://cf.shopee.sg/file/9a1ad1145bfaad90f1c2b090866445b1",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorApparelsTops = &Category{
+	CategorySportsOutdoorsSportsOutdoorApparelsTops = &Category{
 		Id:     "1097x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-apparels-tops",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels-tops",
 		Name:   "Áo Thể Thao",
 		NameEn: "Tops",
 		Images: []string{
@@ -16628,9 +16628,9 @@ var (
 			"https://cf.shopee.sg/file/334b924461a57063663c2f97691e36f8",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorApparelsJerseys = &Category{
+	CategorySportsOutdoorsSportsOutdoorApparelsJerseys = &Category{
 		Id:     "1098x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-apparels-jerseys",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels-jerseys",
 		Name:   "Áo CLB",
 		NameEn: "Jerseys",
 		Images: []string{
@@ -16642,9 +16642,9 @@ var (
 			"https://cf.shopee.sg/file/be458861749556e012e20be2f5d06b1c",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorApparelsBottoms = &Category{
+	CategorySportsOutdoorsSportsOutdoorApparelsBottoms = &Category{
 		Id:     "1099x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-apparels-bottoms",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels-bottoms",
 		Name:   "Quần Thể Thao",
 		NameEn: "Bottoms",
 		Images: []string{
@@ -16656,16 +16656,16 @@ var (
 			"https://cf.shopee.sg/file/2e143a054b4dd960e1942fc1eb80f635",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorApparelsSwimmingAttire = &Category{
+	CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttire = &Category{
 		Id:     "1100x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-apparels-swimming-attire",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels-swimming-attire",
 		Name:   "Đồ Bơi",
 		NameEn: "Swimming Attire",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorApparelsSwimmingAttireSwimmingTrunks = &Category{
+	CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireSwimmingTrunks = &Category{
 		Id:     "1100x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-apparels-swimming-attire-swimming-trunks",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels-swimming-attire-swimming-trunks",
 		Name:   "Quần Bơi",
 		NameEn: "Swimming Trunks",
 		Images: []string{
@@ -16677,9 +16677,9 @@ var (
 			"https://cf.shopee.sg/file/6c909c6095fc3958b41416ad665d8653",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorApparelsSwimmingAttireBikiniSets = &Category{
+	CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireBikiniSets = &Category{
 		Id:     "1101x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-apparels-swimming-attire-bikini-sets",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels-swimming-attire-bikini-sets",
 		Name:   "Bộ Bikini",
 		NameEn: "Bikini Sets",
 		Images: []string{
@@ -16691,9 +16691,9 @@ var (
 			"https://cf.shopee.sg/file/d21d850a98e925e532047a3020d7da45",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorApparelsSwimmingAttireOnePieceSwimsuits = &Category{
+	CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireOnePieceSwimsuits = &Category{
 		Id:     "1102x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-apparels-swimming-attire-one-piece-swimsuits",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels-swimming-attire-one-piece-swimsuits",
 		Name:   "Đồ Bơi Một Mảnh",
 		NameEn: "One-Piece Swimsuits",
 		Images: []string{
@@ -16705,9 +16705,9 @@ var (
 			"https://cf.shopee.sg/file/02f27573ae7467910614415d62fccd35",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorApparelsSwimmingAttireRashGuards = &Category{
+	CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireRashGuards = &Category{
 		Id:     "1103x3",
-		Slug:   "sports-and-collections-sports-and-outdoor-apparels-swimming-attire-rash-guards",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels-swimming-attire-rash-guards",
 		Name:   "Áo Bơi Kín",
 		NameEn: "Rash Guards",
 		Images: []string{
@@ -16719,9 +16719,9 @@ var (
 			"https://cf.shopee.sg/file/b8340b93089f434b4c8fbff2d39ac3fc",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorApparelsSportsBras = &Category{
+	CategorySportsOutdoorsSportsOutdoorApparelsSportsBras = &Category{
 		Id:     "1104x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-apparels-sports-bras",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels-sports-bras",
 		Name:   "Áo Lót Thể Thao",
 		NameEn: "Sports Bras",
 		Images: []string{
@@ -16733,9 +16733,9 @@ var (
 			"https://cf.shopee.sg/file/eee0c1063af36658cccf9c604cd3e292",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorApparelsKidsSportsApparel = &Category{
+	CategorySportsOutdoorsSportsOutdoorApparelsKidsSportsApparel = &Category{
 		Id:     "1105x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-apparels-kids-sports-apparel",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels-kids-sports-apparel",
 		Name:   "Thời Trang Thể Thao Trẻ Em",
 		NameEn: "Kid's Sports Apparel",
 		Images: []string{
@@ -16747,16 +16747,16 @@ var (
 			"https://cf.shopee.sg/file/54316a9fdebeee44ae661fbce8f0eceb",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorAccessories = &Category{
+	CategorySportsOutdoorsSportsOutdoorAccessories = &Category{
 		Id:     "1106x1",
-		Slug:   "sports-and-collections-sports-and-outdoor-accessories",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-accessories",
 		Name:   "Phụ Kiện Thể Thao & Dã Ngoại",
 		NameEn: "Sports & Outdoor Accessories",
 		Images: []string{},
 	}
-	CategorySportsCollectionsSportsOutdoorAccessoriesStopwatchesPedometers = &Category{
+	CategorySportsOutdoorsSportsOutdoorAccessoriesStopwatchesPedometers = &Category{
 		Id:     "1106x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-accessories-stopwatches-and-pedometers",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-accessories-stopwatches-and-pedometers",
 		Name:   "Đồng Hồ Bấm Giây & Máy Đếm Bước Chân",
 		NameEn: "Stopwatches & Pedometers",
 		Images: []string{
@@ -16768,9 +16768,9 @@ var (
 			"https://cf.shopee.sg/file/94d1aaffaa1a2177cb88de9e573a0ada",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorAccessoriesShoeBags = &Category{
+	CategorySportsOutdoorsSportsOutdoorAccessoriesShoeBags = &Category{
 		Id:     "1107x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-accessories-shoe-bags",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-accessories-shoe-bags",
 		Name:   "Túi Đựng Giày",
 		NameEn: "Shoe Bags",
 		Images: []string{
@@ -16782,9 +16782,9 @@ var (
 			"https://cf.shopee.sg/file/cc94e85b8933eee202b4d8859bf8f2d5",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorAccessoriesSportsWristbands = &Category{
+	CategorySportsOutdoorsSportsOutdoorAccessoriesSportsWristbands = &Category{
 		Id:     "1108x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-accessories-sports-wristbands",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-accessories-sports-wristbands",
 		Name:   "Vòng Tay Thể Thao",
 		NameEn: "Sports Wristbands",
 		Images: []string{
@@ -16796,9 +16796,9 @@ var (
 			"https://cf.shopee.sg/file/80f5ce94d243e8c0e10a8809c50502f2",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorAccessoriesSportsHeadbands = &Category{
+	CategorySportsOutdoorsSportsOutdoorAccessoriesSportsHeadbands = &Category{
 		Id:     "1109x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-accessories-sports-headbands",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-accessories-sports-headbands",
 		Name:   "Băng Đô Thể Thao",
 		NameEn: "Sports Headbands",
 		Images: []string{
@@ -16810,9 +16810,9 @@ var (
 			"https://cf.shopee.sg/file/0c0f23d2ef65a1661cf8ca1fb20b54f6",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorAccessoriesSportsOutdoorHats = &Category{
+	CategorySportsOutdoorsSportsOutdoorAccessoriesSportsOutdoorHats = &Category{
 		Id:     "1110x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-accessories-sports-and-outdoor-hats",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-accessories-sports-and-outdoor-hats",
 		Name:   "Mũ Thể Thao & Dã Ngoại",
 		NameEn: "Sports & Outdoor Hats",
 		Images: []string{
@@ -16824,9 +16824,9 @@ var (
 			"https://cf.shopee.sg/file/50af74cda606ac09ae1c6a30b0599b05",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorAccessoriesDryBags = &Category{
+	CategorySportsOutdoorsSportsOutdoorAccessoriesDryBags = &Category{
 		Id:     "1111x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-accessories-dry-bags",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-accessories-dry-bags",
 		Name:   "Túi Chống Thấm",
 		NameEn: "Dry Bags",
 		Images: []string{
@@ -16838,9 +16838,9 @@ var (
 			"https://cf.shopee.sg/file/19088bbe86462e9d5dca7454adb90bf3",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorAccessoriesRainCoats = &Category{
+	CategorySportsOutdoorsSportsOutdoorAccessoriesRainCoats = &Category{
 		Id:     "1112x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-accessories-rain-coats",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-accessories-rain-coats",
 		Name:   "Áo Mưa",
 		NameEn: "Rain Coats",
 		Images: []string{
@@ -16852,9 +16852,9 @@ var (
 			"https://cf.shopee.sg/file/25874c4e09c77506efc59b13e347cca0",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorAccessoriesUmbrellas = &Category{
+	CategorySportsOutdoorsSportsOutdoorAccessoriesUmbrellas = &Category{
 		Id:     "1113x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-accessories-umbrellas",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-accessories-umbrellas",
 		Name:   "Ô/Dù",
 		NameEn: "Umbrellas",
 		Images: []string{
@@ -16866,9 +16866,9 @@ var (
 			"https://cf.shopee.sg/file/c28f28d0304c1a0d124a0d5463f1389f",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorAccessoriesMouthguardsSportTapes = &Category{
+	CategorySportsOutdoorsSportsOutdoorAccessoriesMouthguardsSportTapes = &Category{
 		Id:     "1114x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-accessories-mouthguards-and-sport-tapes",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-accessories-mouthguards-and-sport-tapes",
 		Name:   "Dụng Cụ Bảo Vệ Miệng & Băng Keo Thể Thao",
 		NameEn: "Mouthguards & Sport Tapes",
 		Images: []string{
@@ -16880,9 +16880,9 @@ var (
 			"https://cf.shopee.sg/file/24f04ac9dc3a795ec70769fd167575c8",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorAccessoriesTrainingEquipments = &Category{
+	CategorySportsOutdoorsSportsOutdoorAccessoriesTrainingEquipments = &Category{
 		Id:     "1115x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-accessories-training-equipments",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-accessories-training-equipments",
 		Name:   "Phụ Kiện Tập Luyện",
 		NameEn: "Training Equipments",
 		Images: []string{
@@ -16894,9 +16894,9 @@ var (
 			"https://cf.shopee.sg/file/e8fefa50469aa112e787cc099d06d19c",
 		},
 	}
-	CategorySportsCollectionsSportsOutdoorAccessoriesGymProtectiveGears = &Category{
+	CategorySportsOutdoorsSportsOutdoorAccessoriesGymProtectiveGears = &Category{
 		Id:     "1116x2",
-		Slug:   "sports-and-collections-sports-and-outdoor-accessories-gym-protective-gears",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-accessories-gym-protective-gears",
 		Name:   "Đồ Bảo Hộ Gym",
 		NameEn: "Gym Protective Gears",
 		Images: []string{
@@ -19745,5 +19745,1083 @@ var (
 		Name:   "Truyện Tranh",
 		NameEn: "Comics & Manga",
 		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksRecipesCooking = &Category{
+		Id:     "1313x2",
+		Slug:   "books-and-magazines-books-recipes-and-cooking",
+		Name:   "Sách Dạy Nấu Ăn",
+		NameEn: "Recipes & Cooking",
+		Images: []string{
+			"https://cf.shopee.sg/file/e342f987f0191ad6d085d9d14dea61cb",
+			"https://cf.shopee.sg/file/b07f874ca8c3de83b18770aae4afc2ee",
+			"https://cf.shopee.sg/file/5b21288fc7a194bcb7196c216212ad37",
+			"https://cf.shopee.sg/file/aebbd7f196b0e11aba53a4e75ddd789e",
+			"https://cf.shopee.sg/file/2629b6005351f6987931c7bbc9170b6f",
+			"https://cf.shopee.sg/file/ce5ff2442f082528cbed213f9ac00ff2",
+		},
+	}
+	CategoryBooksMagazinesBooksBusinessInvestment = &Category{
+		Id:     "1314x2",
+		Slug:   "books-and-magazines-books-business-and-investment",
+		Name:   "Sách Kinh Tế - Kinh Doanh",
+		NameEn: "Business & Investment",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksPoliticsLawSocialSciences = &Category{
+		Id:     "1315x2",
+		Slug:   "books-and-magazines-books-politics-law-and-social-sciences",
+		Name:   "Sách Chính Trị - Pháp Lý & Khoa Học",
+		NameEn: "Politics, Law & Social Sciences",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksComputersTechnology = &Category{
+		Id:     "1316x2",
+		Slug:   "books-and-magazines-books-computers-and-technology",
+		Name:   "Sách Công Nghệ Thông Tin",
+		NameEn: "Computers & Technology",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksHealthFitnessDieting = &Category{
+		Id:     "1317x2",
+		Slug:   "books-and-magazines-books-health-fitness-and-dieting",
+		Name:   "Sách Sức Khỏe, Rèn Luyện & Ăn Kiêng",
+		NameEn: "Health, Fitness & Dieting",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksTravelTourism = &Category{
+		Id:     "1318x2",
+		Slug:   "books-and-magazines-books-travel-and-tourism",
+		Name:   "Sách Du Lịch - Du Ký",
+		NameEn: "Travel & Tourism",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksLanguageLearningDictionaries = &Category{
+		Id:     "1319x2",
+		Slug:   "books-and-magazines-books-language-learning-and-dictionaries",
+		Name:   "Sách Học Ngoại Ngữ & Từ Điển",
+		NameEn: "Language Learning & Dictionaries",
+		Images: []string{
+			"https://cf.shopee.sg/file/33ddd17367b7d08c5dd2d42e7e0c53af",
+			"https://cf.shopee.sg/file/c9e5738eaa65d21207c8be77b17f3d48",
+			"https://cf.shopee.sg/file/b4128a929368ed096bed47b04a2671bc",
+			"https://cf.shopee.sg/file/6aafd91bd27dd4dfc8f58ea8086ee073",
+			"https://cf.shopee.sg/file/c48b967cf1deff7a085528af2e736db5",
+			"https://cf.shopee.sg/file/da39821415c93f45446165b311911e67",
+		},
+	}
+	CategoryBooksMagazinesBooksHobbies = &Category{
+		Id:     "1320x2",
+		Slug:   "books-and-magazines-books-hobbies",
+		Name:   "Sách Sở Thích Cá Nhân",
+		NameEn: "Hobbies",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksLGBTQplusLiterature = &Category{
+		Id:     "1321x2",
+		Slug:   "books-and-magazines-books-lgbtq-literature",
+		Name:   "Văn Học LGBTQ+",
+		NameEn: "LGBTQ+ Literature",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksLightNovels = &Category{
+		Id:     "1322x2",
+		Slug:   "books-and-magazines-books-light-novels",
+		Name:   "Light Novels",
+		NameEn: "Light Novels",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksClassicLiterature = &Category{
+		Id:     "1323x2",
+		Slug:   "books-and-magazines-books-classic-literature",
+		Name:   "Văn Học Kinh Điển",
+		NameEn: "Classic Literature",
+		Images: []string{
+			"https://cf.shopee.sg/file/c73a78de3f6b032ba1ce747cbd6964a1",
+			"https://cf.shopee.sg/file/f06dffe0ad8ee93cfe9b43697ce9c87a",
+			"https://cf.shopee.sg/file/533e881e8951d7b3d088b9e73dd74e17",
+			"https://cf.shopee.sg/file/767060834bd25f28386cf8df150c307b",
+			"https://cf.shopee.sg/file/c9206d85398ba010d414a6d9c22e3384",
+			"https://cf.shopee.sg/file/5b585683d289a609d5339cdaa9545b49",
+		},
+	}
+	CategoryBooksMagazinesBooksFantasy = &Category{
+		Id:     "1324x2",
+		Slug:   "books-and-magazines-books-fantasy",
+		Name:   "Văn Học Giả Tưởng",
+		NameEn: "Fantasy",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksActionCrimeThrillers = &Category{
+		Id:     "1325x2",
+		Slug:   "books-and-magazines-books-action-crime-and-thrillers",
+		Name:   "Văn Học Hành Động, Tội Phạm & Kinh Dị",
+		NameEn: "Action, Crime & Thrillers",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksRomance = &Category{
+		Id:     "1326x2",
+		Slug:   "books-and-magazines-books-romance",
+		Name:   "Văn Học Lãng Mạn",
+		NameEn: "Romance",
+		Images: []string{
+			"https://cf.shopee.sg/file/56dfda2b68bf83b64efff30959a27b42",
+			"https://cf.shopee.sg/file/f2437da4976f398a34703a70de368030",
+			"https://cf.shopee.sg/file/c479c165fffdf8c4a5149329e79d09a6",
+			"https://cf.shopee.sg/file/c17146968bdbbf66a5a07cbb8b3d2cbf",
+			"https://cf.shopee.sg/file/54398d053316b8adeebb610090cdc1fa",
+			"https://cf.shopee.sg/file/5213dcf6820516add0f9ba9158f7ac84",
+		},
+	}
+	CategoryBooksMagazinesBooksBiographyMemoirs = &Category{
+		Id:     "1327x2",
+		Slug:   "books-and-magazines-books-biography-and-memoirs",
+		Name:   "Tiểu Sử - Hồi Ký",
+		NameEn: "Biography & Memoirs",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksScienceMaths = &Category{
+		Id:     "1328x2",
+		Slug:   "books-and-magazines-books-science-and-maths",
+		Name:   "VKhoa Học - Toán Học",
+		NameEn: "Science & Maths",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksMedical = &Category{
+		Id:     "1329x2",
+		Slug:   "books-and-magazines-books-medical",
+		Name:   "Sách Y Học",
+		NameEn: "Medical",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksParentingFamily = &Category{
+		Id:     "1330x2",
+		Slug:   "books-and-magazines-books-parenting-and-family",
+		Name:   "Sách Gia Đình",
+		NameEn: "Parenting & Family",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksPsychologyRelationships = &Category{
+		Id:     "1331x2",
+		Slug:   "books-and-magazines-books-psychology-and-relationships",
+		Name:   "Sách Tâm Lý Học",
+		NameEn: "Psychology & Relationships",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksReligionPhilosophy = &Category{
+		Id:     "1332x2",
+		Slug:   "books-and-magazines-books-religion-and-philosophy",
+		Name:   "Sách Tôn giáo & Triết học",
+		NameEn: "Religion & Philosophy",
+		Images: []string{
+			"https://cf.shopee.sg/file/47129bd9aebd356211c3eabb52725ac9",
+			"https://cf.shopee.sg/file/223b6719072f88ec1886b80e571e30b4",
+			"https://cf.shopee.sg/file/9d27235b73295c05b0880b1cbcf149d8",
+			"https://cf.shopee.sg/file/77a84b41a4d6cc220b29e6ecb9452631",
+			"https://cf.shopee.sg/file/b696ffc4cf007775b9fc0218b3feb8f7",
+			"https://cf.shopee.sg/file/8a845cca6a77ff088eaaadc270c58278",
+		},
+	}
+	CategoryBooksMagazinesBooksHistoryCultures = &Category{
+		Id:     "1333x2",
+		Slug:   "books-and-magazines-books-history-and-cultures",
+		Name:   "Sách Lịch Sử - Văn Hóa",
+		NameEn: "History & Cultures",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksCareersSelfHelpPersonalDevelopment = &Category{
+		Id:     "1334x2",
+		Slug:   "books-and-magazines-books-careers-self-help-and-personal-development",
+		Name:   "Sách Hướng Nghiệp & Phát Triển Bản Thân",
+		NameEn: "Careers, Self Help & Personal Development",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksHoroscopes = &Category{
+		Id:     "1335x2",
+		Slug:   "books-and-magazines-books-horoscopes",
+		Name:   "Sách Chiêm Tinh",
+		NameEn: "Horoscopes",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksEducationSchool = &Category{
+		Id:     "1336x2",
+		Slug:   "books-and-magazines-books-education-and-school",
+		Name:   "Sách Giáo Dục",
+		NameEn: "Education & School",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksStickerColouringBooks = &Category{
+		Id:     "1337x2",
+		Slug:   "books-and-magazines-books-sticker-and-colouring-books",
+		Name:   "Sách Hình Dán & Tô Màu",
+		NameEn: "Sticker & Colouring Books",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksMusic = &Category{
+		Id:     "1338x2",
+		Slug:   "books-and-magazines-books-music",
+		Name:   "SSách Âm Nhạc",
+		NameEn: "Music",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesBooksBabySoftBooks = &Category{
+		Id:     "1339x2",
+		Slug:   "books-and-magazines-books-baby-and-soft-books",
+		Name:   "Sách Vải",
+		NameEn: "Baby & Soft Books",
+		Images: []string{},
+	}
+	CategoryBooksMagazinesEBooks = &Category{
+		Id:     "1340x1",
+		Slug:   "books-and-magazines-e-books",
+		Name:   "E-Books",
+		NameEn: "E-Books",
+		Images: []string{},
+	}
+	CategoryComputersAccessories = &Category{
+		Id:     "1341x0",
+		Slug:   "computers-and-accessories",
+		Name:   "Máy tính & Laptop",
+		NameEn: "Computers & Accessories",
+		Images: []string{},
+	}
+	CategoryComputersAccessoriesDesktopComputer = &Category{
+		Id:     "1341x1",
+		Slug:   "computers-and-accessories-desktop-computer",
+		Name:   "Máy Tính Bàn",
+		NameEn: "Desktop Computer",
+		Images: []string{},
+	}
+	CategoryComputersAccessoriesDesktopComputerDesktopPC = &Category{
+		Id:     "1341x2",
+		Slug:   "computers-and-accessories-desktop-computer-desktop-pc",
+		Name:   "Bộ Máy Tính Bàn",
+		NameEn: "Desktop PC",
+		Images: []string{
+			"https://cf.shopee.sg/file/2584f7f59dcd43b329d436f741a0dd8c",
+			"https://cf.shopee.sg/file/1c8b11ab45affe1e29945d6eda074afa",
+			"https://cf.shopee.sg/file/9cc4fb4376b799087d7c3dae05734cf0",
+			"https://cf.shopee.sg/file/af6bf5b368eb6788b2abb0f4fd830883",
+			"https://cf.shopee.sg/file/7f6779bee70e26827a061cf156ccdc7f",
+			"https://cf.shopee.sg/file/e1b35edd4e0ccb78711c8823a0f5afe8",
+		},
+	}
+	CategoryComputersAccessoriesDesktopComputerMiniPC = &Category{
+		Id:     "1342x2",
+		Slug:   "computers-and-accessories-desktop-computer-mini-pc",
+		Name:   "Máy Tính Mini",
+		NameEn: "Mini PC",
+		Images: []string{
+			"https://cf.shopee.sg/file/d020aca7cb1ce51202a288dc239c0f1f",
+			"https://cf.shopee.sg/file/2004fac0ef1f3641817dc8c25a2022ca",
+			"https://cf.shopee.sg/file/fab1113e1c122dc391d0e7c7da4dabb8",
+			"https://cf.shopee.sg/file/cee6a097a9cc6926d882d5edc36364c2",
+			"https://cf.shopee.sg/file/228c22b232c018d770a2cfe408630fce",
+			"https://cf.shopee.sg/file/cbcf6c253b339fbf0e9a130d851ff9d2",
+		},
+	}
+	CategoryComputersAccessoriesDesktopComputerServerPC = &Category{
+		Id:     "1343x2",
+		Slug:   "computers-and-accessories-desktop-computer-server-pc",
+		Name:   "Máy Chủ",
+		NameEn: "Server PC",
+		Images: []string{
+			"https://cf.shopee.sg/file/15680f45e4a09b70792d18d12154aea1",
+			"https://cf.shopee.sg/file/1abc0582d60b8ee9e69eee14baa026db",
+			"https://cf.shopee.sg/file/ca32539e1a5a0afe7544474d059d4a9a",
+			"https://cf.shopee.sg/file/ce446bcce951d07556ca3779a909f934",
+			"https://cf.shopee.sg/file/40fae6b1c7000b67955fc66b80356499",
+			"https://cf.shopee.sg/file/e437134d7bf7a53b398eca1b2aa848d5",
+		},
+	}
+	CategoryComputersAccessoriesDesktopComputerAllInOneDesktops = &Category{
+		Id:     "1344x2",
+		Slug:   "computers-and-accessories-desktop-computer-all-in-one-desktops",
+		Name:   "Máy Tính All in one",
+		NameEn: "All-In-One Desktops",
+		Images: []string{
+			"https://cf.shopee.sg/file/193f15c573f9799f1ec2d2c5909845e2",
+			"https://cf.shopee.sg/file/db4be88df48eb3f1aa34b89b9e4a34d5",
+			"https://cf.shopee.sg/file/7e2da735bcffb11c8e3a9559c04b6c95",
+			"https://cf.shopee.sg/file/298b19214e66791a6af3745f723848e7",
+			"https://cf.shopee.sg/file/62ad33bee581671b0365ed9d7ce61e46",
+			"https://cf.shopee.sg/file/aed7546036394c6b9e5c1fd11f674d90",
+		},
+	}
+	CategoryComputersAccessoriesMonitors = &Category{
+		Id:     "1345x1",
+		Slug:   "computers-and-accessories-monitors",
+		Name:   "Màn Hình",
+		NameEn: "Monitors",
+		Images: []string{
+			"https://cf.shopee.sg/file/4cc4cc12fca8d1bc17ee8e5e47789a02",
+			"https://cf.shopee.sg/file/8f60b540eed7ef59d06229135013da72",
+			"https://cf.shopee.sg/file/2ad4fbda58d066f7c43aa0b795711464",
+			"https://cf.shopee.sg/file/c446fcfe6c61780e53d9cd8a364d685c",
+			"https://cf.shopee.sg/file/3be53603e8ade036e2fcdabdbd15d79f",
+			"https://cf.shopee.sg/file/ec537ebdf65bffdd687a6d1a2e866862",
+		},
+	}
+	CategoryComputersAccessoriesDesktopLaptopComponents = &Category{
+		Id:     "1346x1",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components",
+		Name:   "Linh Kiện Máy Tính",
+		NameEn: "Desktop & Laptop Components",
+		Images: []string{},
+	}
+	CategoryComputersAccessoriesDesktopLaptopComponentsFansHeatsinks = &Category{
+		Id:     "1346x2",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components-fans-and-heatsinks",
+		Name:   "Quạt và Tản Nhiệt",
+		NameEn: "Fans & Heatsinks",
+		Images: []string{
+			"https://cf.shopee.sg/file/f2feb3f63d4da3796997ee0ed550df1b",
+			"https://cf.shopee.sg/file/5b512a66debc430eaaaeb1d8050d13fc",
+			"https://cf.shopee.sg/file/74cb9d909122dd44a54438f10a7f2ea9",
+			"https://cf.shopee.sg/file/629421fa82a271aa07e113b027b3eb24",
+			"https://cf.shopee.sg/file/5da4f53f0b11dae725af71f2857888b3",
+			"https://cf.shopee.sg/file/0d88f26537f71a2981a8dfbe4f660a97",
+		},
+	}
+	CategoryComputersAccessoriesDesktopLaptopComponentsProcessors = &Category{
+		Id:     "1347x2",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components-processors",
+		Name:   "CPU - Bộ Vi Xử Lý",
+		NameEn: "Processors",
+		Images: []string{
+			"https://cf.shopee.sg/file/84755116df0f50b8a8fa3dc961b8c4fa",
+			"https://cf.shopee.sg/file/013b9df21614df5899aba06856a42963",
+			"https://cf.shopee.sg/file/63a99556dd9bf588979b7f0eabad06cb",
+			"https://cf.shopee.sg/file/cd4320218e9ca712e269ba2308d65525",
+			"https://cf.shopee.sg/file/e409faf73a2aef2ff8832154fec47da7",
+			"https://cf.shopee.sg/file/420e511ca15b0fd79bdad7c7445b1349",
+		},
+	}
+	CategoryComputersAccessoriesDesktopLaptopComponentsMotherboards = &Category{
+		Id:     "1348x2",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components-motherboards",
+		Name:   "Mainboard - Bo Mạch Chủ",
+		NameEn: "Motherboards",
+		Images: []string{
+			"https://cf.shopee.sg/file/2a92d8a647a15becfa1a61627b63486e",
+			"https://cf.shopee.sg/file/b3922e94f0a722c2c9e0476b59f2acbb",
+			"https://cf.shopee.sg/file/35a1d28a018812a99fc6578f14f9fbdd",
+			"https://cf.shopee.sg/file/9db5f41157eb0d57ded9c1756f9016d2",
+			"https://cf.shopee.sg/file/d51eed37b96b9826958c612db1972d35",
+			"https://cf.shopee.sg/file/e7b6a9f3e5a8af7d3f8b74c19a9be715",
+		},
+	}
+	CategoryComputersAccessoriesDesktopLaptopComponentsGraphicsCards = &Category{
+		Id:     "1349x2",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components-graphics-cards",
+		Name:   "VGA - Card Màn Hình",
+		NameEn: "Graphics Cards",
+		Images: []string{
+			"https://cf.shopee.sg/file/9fdad45af00e9a8a23543534d926a132",
+			"https://cf.shopee.sg/file/f07ebabccf048649136690ac64811854",
+			"https://cf.shopee.sg/file/431958bb8cd6d138793024fb193c1b33",
+			"https://cf.shopee.sg/file/99f6946fd611d3d61e5adc91f2f24c67",
+			"https://cf.shopee.sg/file/bc29b39f7487a40963d99e58828b4e01",
+			"https://cf.shopee.sg/file/250d63966e2151982dc6b82355a78618",
+		},
+	}
+	CategoryComputersAccessoriesDesktopLaptopComponentsThermalPaste = &Category{
+		Id:     "1350x2",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components-thermal-paste",
+		Name:   "Keo Tản Nhiệt",
+		NameEn: "Thermal Paste",
+		Images: []string{
+			"https://cf.shopee.sg/file/42b335b98b32dc24ff0bdf795c4a90dc",
+			"https://cf.shopee.sg/file/d9e53758509124fcace934fbba26771b",
+			"https://cf.shopee.sg/file/c6c0c725f113ad83a406f1dfd75d33d2",
+			"https://cf.shopee.sg/file/4f6c3c4328fbaa3c6473848a0a58a958",
+			"https://cf.shopee.sg/file/5768ae52d743f1d568e106ae4089dab1",
+			"https://cf.shopee.sg/file/220c038e25e7b53c472e9f7ed6f3d6d2",
+		},
+	}
+	CategoryComputersAccessoriesDesktopLaptopComponentsPowerSupplyUnits = &Category{
+		Id:     "1351x2",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components-power-supply-units",
+		Name:   "Nguồn Máy Tính",
+		NameEn: "Power Supply Units",
+		Images: []string{
+			"https://cf.shopee.sg/file/6e3fecfa405b45847a69b2705e8bc59e",
+			"https://cf.shopee.sg/file/8957835b7aeeec99b3a3e46e1ed8c057",
+			"https://cf.shopee.sg/file/2747518bfaea47558245b5b247ca3261",
+			"https://cf.shopee.sg/file/805db8c5cbb4b12ec19b12242bd29ae0",
+			"https://cf.shopee.sg/file/2995567c111f9a8eeb04a66f93b30463",
+			"https://cf.shopee.sg/file/fdfae2c4d9af53d01a9cac2c69551203",
+		},
+	}
+	CategoryComputersAccessoriesDesktopLaptopComponentsRAM = &Category{
+		Id:     "1352x2",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components-ram",
+		Name:   "Ram Máy Tính",
+		NameEn: "RAM",
+		Images: []string{
+			"https://cf.shopee.sg/file/7224f323600955fe2b9c4be1563e00ab",
+			"https://cf.shopee.sg/file/2364074567a09137a1a8bfbf3b0f5ad7",
+			"https://cf.shopee.sg/file/5618ab99b37c8dd8f7e64eadc0ad08aa",
+			"https://cf.shopee.sg/file/52b65f654cb6f6438075e887885f094e",
+			"https://cf.shopee.sg/file/32a6a2ae7d0d1271ab4493d5f4156f93",
+			"https://cf.shopee.sg/file/5551a71c7299ae27874d7c5646ae6977",
+		},
+	}
+	CategoryComputersAccessoriesDesktopLaptopComponentsUPSStabilizers = &Category{
+		Id:     "1353x2",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components-ups-and-stabilizers",
+		Name:   "Bộ Lưu Điện",
+		NameEn: "UPS & Stabilizers",
+		Images: []string{
+			"https://cf.shopee.sg/file/e190a8747d28b039f1a57247fa195d58",
+			"https://cf.shopee.sg/file/c38ccb5b3d630c08510df23106764452",
+			"https://cf.shopee.sg/file/36e34a755c1b2d96e1fc81f5b0bdeba4",
+			"https://cf.shopee.sg/file/6db51d27a471d10a0fdc869668eba8e5",
+			"https://cf.shopee.sg/file/5a9f1fe2c7a076c136dc7407f12db879",
+			"https://cf.shopee.sg/file/25e949fc3451a55cc77a6f02c118681a",
+		},
+	}
+	CategoryComputersAccessoriesDesktopLaptopComponentsPCCases = &Category{
+		Id:     "1354x2",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components-pc-cases",
+		Name:   "Case Máy Tính",
+		NameEn: "PC Cases",
+		Images: []string{
+			"https://cf.shopee.sg/file/051a4da74a2f3be164f2bf817d9b294f",
+			"https://cf.shopee.sg/file/d1712c50cdd5384c9375bde54b3b66cd",
+			"https://cf.shopee.sg/file/0cc4db8996edb7ff07dbe588afc44a4b",
+			"https://cf.shopee.sg/file/a9a2e9a6c32c2711dcecfc32ede52738",
+			"https://cf.shopee.sg/file/2515a30ecc3a0cb845f465019687a733",
+			"https://cf.shopee.sg/file/0975ce53f0036090b8dc4dd2c5d99b06",
+		},
+	}
+	CategoryComputersAccessoriesDesktopLaptopComponentsOpticalDrives = &Category{
+		Id:     "1355x2",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components-optical-drives",
+		Name:   "Ổ Đĩa Quang",
+		NameEn: "Optical Drives",
+		Images: []string{
+			"https://cf.shopee.sg/file/ca79eac65f90a1b5408d2e6bf29a0055",
+			"https://cf.shopee.sg/file/7053799494d72e8337bd071082161403",
+			"https://cf.shopee.sg/file/e4ffd2f67f17c814dfac1f9c43692d55",
+			"https://cf.shopee.sg/file/613ace114e036b58eab3b337c4285440",
+			"https://cf.shopee.sg/file/f1840918855e778a18ab738e2772bb2d",
+			"https://cf.shopee.sg/file/9c99f0b6b83087f71243d071ea1f6d53",
+		},
+	}
+	CategoryComputersAccessoriesDesktopLaptopComponentsSoundCards = &Category{
+		Id:     "1356x2",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components-sound-cards",
+		Name:   "Bo Mạch Âm Thanh",
+		NameEn: "Sound Cards",
+		Images: []string{
+			"https://cf.shopee.sg/file/dc062a5ff358457103445c6ef587fa2b",
+			"https://cf.shopee.sg/file/805308ebc111ee1cd16c3a1d8f92824e",
+			"https://cf.shopee.sg/file/7a0c25d12f0a9838dbbb6d3641b07069",
+			"https://cf.shopee.sg/file/d419ecf4390c8083d28914714f965bf3",
+			"https://cf.shopee.sg/file/e4148bd9372e334dae58e7577ff4c989",
+			"https://cf.shopee.sg/file/6194e810b823f557e72ff40d9967e7f5",
+		},
+	}
+	CategoryComputersAccessoriesDesktopLaptopComponentsOther = &Category{
+		Id:     "1357x2",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components-other",
+		Name:   "Khác",
+		NameEn: "Other",
+		Images: []string{
+			"https://cf.shopee.sg/file/c4ddd618dd018174806f1e54868c6358",
+			"https://cf.shopee.sg/file/9577f086bd0a4839e025eca961bb2862",
+			"https://cf.shopee.sg/file/b1ab903ba62f6eeacbcb16b5bc1aff29",
+			"https://cf.shopee.sg/file/ee128e2f18c91d3c9cd29a0710cabc76",
+			"https://cf.shopee.sg/file/e14dcab6bbb2828fb33f822e02e785b4",
+			"https://cf.shopee.sg/file/77c6cc456ba7fd15ecadc4ad3f68ebb5",
+		},
+	}
+	CategoryComputersAccessoriesDataStorage = &Category{
+		Id:     "1358x1",
+		Slug:   "computers-and-accessories-data-storage",
+		Name:   "Thiết Bị Lưu Trữ",
+		NameEn: "Data Storage",
+		Images: []string{},
+	}
+	CategoryComputersAccessoriesDataStorageHardDrives = &Category{
+		Id:     "1358x2",
+		Slug:   "computers-and-accessories-data-storage-hard-drives",
+		Name:   "Ổ Cứng Di Động",
+		NameEn: "Hard Drives",
+		Images: []string{
+			"https://cf.shopee.sg/file/c9f53c7bfbe6c072e66e9b55f0577ec1",
+			"https://cf.shopee.sg/file/c411e325574da7d0ffca1e2f518680e1",
+			"https://cf.shopee.sg/file/c006ce1dd7f9e68a8f3281f8ef16f892",
+			"https://cf.shopee.sg/file/ba969a489df150d66a799c606f67e372",
+			"https://cf.shopee.sg/file/158b598c501a3cef7d66169cfb94beb0",
+			"https://cf.shopee.sg/file/b71a81484d24fa92f5a239f96ac086e4",
+		},
+	}
+	CategoryComputersAccessoriesDataStorageSSD = &Category{
+		Id:     "1359x2",
+		Slug:   "computers-and-accessories-data-storage-ssd",
+		Name:   "Ổ Cứng SSD",
+		NameEn: "SSD",
+		Images: []string{
+			"https://cf.shopee.sg/file/d6e677d1c4f69dda35f027655a2d4015",
+			"https://cf.shopee.sg/file/98acef725b765ad5c2b2ca695f604d29",
+			"https://cf.shopee.sg/file/e9eada03370396ed606926c2ee4d4f47",
+			"https://cf.shopee.sg/file/5e36748cb23425011745d77f028a1718",
+			"https://cf.shopee.sg/file/cc6789b996085ebedea8ac9fdd46d1d0",
+			"https://cf.shopee.sg/file/3a12188edfd5e216bd8ab463bd12c020",
+		},
+	}
+	CategoryComputersAccessoriesDataStorageNetworkAttachedStorage = &Category{
+		Id:     "1360x2",
+		Slug:   "computers-and-accessories-data-storage-network-attached-storage",
+		Name:   "Ổ Cứng Mạng (NAS)",
+		NameEn: "Network Attached Storage",
+		Images: []string{
+			"https://cf.shopee.sg/file/4f8a13ed78d986020171ef9e74d37017",
+			"https://cf.shopee.sg/file/f402cbc36168f20dd1f0cad45a70ae3a",
+			"https://cf.shopee.sg/file/ca420be52ced4d5e04651c2092c4fb8c",
+			"https://cf.shopee.sg/file/6187b916ec0bdfaf94989fb3b313ca5a",
+			"https://cf.shopee.sg/file/499e1780560a6925e2a38a34d822a874",
+			"https://cf.shopee.sg/file/04bba837332830c5c20c8f506fb0ed61",
+		},
+	}
+	CategoryComputersAccessoriesDataStorageFlashDrivesOTG = &Category{
+		Id:     "1361x2",
+		Slug:   "computers-and-accessories-data-storage-flash-drives-and-otg",
+		Name:   "USB & OTG",
+		NameEn: "Flash Drives & OTG",
+		Images: []string{
+			"https://cf.shopee.sg/file/9d67423b72060a4ca695aa121185bd7c",
+			"https://cf.shopee.sg/file/2a643ab9539a61496ff09dc0b67f0870",
+			"https://cf.shopee.sg/file/4c362ffe1b315fa4acf7a9dadb2c1a9f",
+			"https://cf.shopee.sg/file/4863f333e9cc5542f3c4e8e846fc6edb",
+			"https://cf.shopee.sg/file/f6af2ae8882111a1526b63cc400193c1",
+			"https://cf.shopee.sg/file/f93bc1b47c631db237ef5fe47ba0c132",
+		},
+	}
+	CategoryComputersAccessoriesDataStorageHardDiskCasingsDockings = &Category{
+		Id:     "1362x2",
+		Slug:   "computers-and-accessories-data-storage-hard-disk-casings-and-dockings",
+		Name:   "Thiết Bị Đựng Ổ Cứng",
+		NameEn: "Hard Disk Casings & Dockings",
+		Images: []string{
+			"https://cf.shopee.sg/file/92164cff67639029173d2302ddc1010d",
+			"https://cf.shopee.sg/file/12969e0caec63ce51ba70d4f1868c839",
+			"https://cf.shopee.sg/file/b78dc9708a0f69fc1c2b0c8b5044c59e",
+			"https://cf.shopee.sg/file/808906ab9e243ad4d1a53ea350f39e0a",
+			"https://cf.shopee.sg/file/1d3774af0c1352f6b33209e48fbac2d0",
+			"https://cf.shopee.sg/file/656876ed44e52ac10a7c5e089b238a8c",
+		},
+	}
+	CategoryComputersAccessoriesDataStorageCompactDiscs = &Category{
+		Id:     "1363x2",
+		Slug:   "computers-and-accessories-data-storage-compact-discs",
+		Name:   "Đĩa CD",
+		NameEn: "Compact Discs",
+		Images: []string{
+			"https://cf.shopee.sg/file/b9d9156b9fe658f86ff4e784694a0091",
+			"https://cf.shopee.sg/file/1ec26fa0d55b878f7634e55b4205f384",
+			"https://cf.shopee.sg/file/3fc276ecf711d56876ed9121d00c3100",
+			"https://cf.shopee.sg/file/41feb67178aad20330095cd46b1e7c3b",
+			"https://cf.shopee.sg/file/a5279c02d40f2db9bf68b98419bcee6e",
+			"https://cf.shopee.sg/file/12406ab1a64634183f8244e56ac8e32b",
+		},
+	}
+	CategoryComputersAccessoriesNetworkComponents = &Category{
+		Id:     "1364x1",
+		Slug:   "computers-and-accessories-network-components",
+		Name:   "Thiết Bị Mạng",
+		NameEn: "Network Components",
+		Images: []string{},
+	}
+	CategoryComputersAccessoriesNetworkComponentsModemsWirelessRouters = &Category{
+		Id:     "1364x2",
+		Slug:   "computers-and-accessories-network-components-modems-and-wireless-routers",
+		Name:   "Bộ Phát Wifi",
+		NameEn: "Modems & Wireless Routers",
+		Images: []string{
+			"https://cf.shopee.sg/file/df721d492d38db13e870e11aee7acd2a",
+			"https://cf.shopee.sg/file/de7b3810a5456fe7ff3286d46d44ec00",
+			"https://cf.shopee.sg/file/58059d87cc0b8fb0ba188aa3d3fe9b5d",
+			"https://cf.shopee.sg/file/d52bbe474d41083f33733702d5a00394",
+			"https://cf.shopee.sg/file/03f67278c20aed9e5b52412ca3c594a9",
+			"https://cf.shopee.sg/file/c72d0ea208474369f2b124c6aa6f2e12",
+		},
+	}
+	CategoryComputersAccessoriesNetworkComponentsRepeaters = &Category{
+		Id:     "1365x2",
+		Slug:   "computers-and-accessories-network-components-repeaters",
+		Name:   "Bộ Kích Wifi",
+		NameEn: "Repeaters",
+		Images: []string{
+			"https://cf.shopee.sg/file/fbda619d315cb1a711aa98442a9fc757",
+			"https://cf.shopee.sg/file/883bc90f32ddcc819072d52419ade763",
+			"https://cf.shopee.sg/file/b2d837415091827ebc5557e406262e6f",
+			"https://cf.shopee.sg/file/4bbb92aa0074a20d1148fb034e847ed0",
+			"https://cf.shopee.sg/file/01dd0c0b62b8cd2892567039a4f4103c",
+			"https://cf.shopee.sg/file/1ccf74763b44d6ba99be5059aafe503e",
+		},
+	}
+	CategoryComputersAccessoriesNetworkComponentsWirelessAdaptersNetworkCards = &Category{
+		Id:     "1366x2",
+		Slug:   "computers-and-accessories-network-components-wireless-adapters-and-network-cards",
+		Name:   "Bộ Thu Wifi",
+		NameEn: "Wireless Adapters & Network Cards",
+		Images: []string{
+			"https://cf.shopee.sg/file/2b6c208f135953e25d0b809e4eda5483",
+			"https://cf.shopee.sg/file/89a16c1782186f463b504f678d04dfdd",
+			"https://cf.shopee.sg/file/dafb2ae179d8e0a4be845b5799fec01b",
+			"https://cf.shopee.sg/file/456a2b40552d05bac197342b29c69a02",
+			"https://cf.shopee.sg/file/18858525595b2b942ff376b0dfb1bc1b",
+			"https://cf.shopee.sg/file/59aeb60050bad43b075f2773d9f992b0",
+		},
+	}
+	CategoryComputersAccessoriesNetworkComponentsPowerlineAdapters = &Category{
+		Id:     "1367x2",
+		Slug:   "computers-and-accessories-network-components-powerline-adapters",
+		Name:   "Bộ Chuyển Đổi Mạng",
+		NameEn: "Powerline Adapters",
+		Images: []string{
+			"https://cf.shopee.sg/file/6b949c54c63cccf3db639c12a1312f92",
+			"https://cf.shopee.sg/file/4afd8087200578695364ed36b3622404",
+			"https://cf.shopee.sg/file/aa98983651b1d24164af130e346687dd",
+			"https://cf.shopee.sg/file/4c476ce99a24620c823f2663e127973c",
+			"https://cf.shopee.sg/file/07d59eac4fbf5ffe8cc2d2b78a22b3ba",
+			"https://cf.shopee.sg/file/3ddbc00f09e55277f84cd7c187f88ce1",
+		},
+	}
+	CategoryComputersAccessoriesNetworkComponentsNetworkSwitchesPoE = &Category{
+		Id:     "1368x2",
+		Slug:   "computers-and-accessories-network-components-network-switches-and-poe",
+		Name:   "Bộ chia mạng",
+		NameEn: "Network Switches & PoE",
+		Images: []string{
+			"https://cf.shopee.sg/file/5acff777f9cca7a2d32920f532cc3148",
+			"https://cf.shopee.sg/file/1dc65c2e179e3c05717ff51316d3c2f5",
+			"https://cf.shopee.sg/file/2b5ab53700dee6d1c5b367561e0de39c",
+			"https://cf.shopee.sg/file/3632124d5e791737d246239376e49be2",
+			"https://cf.shopee.sg/file/3b4ae0250d7bbbd4ec5ea5bbbb701293",
+			"https://cf.shopee.sg/file/e618a81d827fcf045f611f6ed153db12",
+		},
+	}
+	CategoryComputersAccessoriesNetworkComponentsNetworkCablesConnectors = &Category{
+		Id:     "1369x2",
+		Slug:   "computers-and-accessories-network-components-network-cables-and-connectors",
+		Name:   "Cáp Máy Tính",
+		NameEn: "Network Cables & Connectors",
+		Images: []string{
+			"https://cf.shopee.sg/file/3cfcd5af8414e5bbcd2126fc2ca7a671",
+			"https://cf.shopee.sg/file/a278190951a9765b061567dbb5c7025c",
+			"https://cf.shopee.sg/file/f0ad2903ac42e38c1719ebd2814bd388",
+			"https://cf.shopee.sg/file/11f4d3d63b1ab3940a343f67fbb949f3",
+			"https://cf.shopee.sg/file/fffed5b4169efe15e87bde64fa0ee2dc",
+			"https://cf.shopee.sg/file/3fad0945fec2538460d2f0f0317808c2",
+		},
+	}
+	CategoryComputersAccessoriesNetworkComponentsKVMSwitches = &Category{
+		Id:     "1370x2",
+		Slug:   "computers-and-accessories-network-components-kvm-switches",
+		Name:   "Bộ Chuyển Mạch KVM",
+		NameEn: "KVM Switches",
+		Images: []string{
+			"https://cf.shopee.sg/file/6c7e33d920ee9fc81a1cc2d28e24bad0",
+			"https://cf.shopee.sg/file/496a97a9da36e349f73be0f9a7a6fd08",
+			"https://cf.shopee.sg/file/65c3a12228a770bd3102607484fd8e18",
+			"https://cf.shopee.sg/file/70a13158267813a98189e15f049749ac",
+			"https://cf.shopee.sg/file/9b8d3e46dadf28ae3777d5f9c515b6ff",
+			"https://cf.shopee.sg/file/6d0de38860c7b256bd0939b10c1f77eb",
+		},
+	}
+	CategoryComputersAccessoriesNetworkComponentsPrintServers = &Category{
+		Id:     "1371x2",
+		Slug:   "computers-and-accessories-network-components-print-servers",
+		Name:   "Máy Chủ Máy In",
+		NameEn: "Print Servers",
+		Images: []string{
+			"https://cf.shopee.sg/file/e8d593cc2f832393c9a06451e01f6fb0",
+			"https://cf.shopee.sg/file/fe277c901e691a3e9e05973c06416692",
+			"https://cf.shopee.sg/file/b64502bc6041300f7d0c2981e30c4159",
+			"https://cf.shopee.sg/file/fe3f3a0ec234070a94ee579345af3522",
+			"https://cf.shopee.sg/file/2311cccfbc137f88f1b880840b6e343a",
+			"https://cf.shopee.sg/file/ef46ff49898e8c83b25274228c08aba2",
+		},
+	}
+	CategoryComputersAccessoriesSoftwares = &Category{
+		Id:     "1372x1",
+		Slug:   "computers-and-accessories-softwares",
+		Name:   "Phần Mềm",
+		NameEn: "Softwares",
+		Images: []string{
+			"https://cf.shopee.sg/file/efc0822a846da733cef173336da95e70",
+			"https://cf.shopee.sg/file/7975dac3170addaf6beebbba7d4e2e07",
+			"https://cf.shopee.sg/file/ca84757f3a09d73c89850ffa3bc05cae",
+			"https://cf.shopee.sg/file/ee1e82ef80791d7431da4c371cb51de5",
+			"https://cf.shopee.sg/file/89b25d903a1d052a4a149069c19d5d06",
+			"https://cf.shopee.sg/file/3c019aaea5e042c213f224b2f4fcea81",
+		},
+	}
+	CategoryComputersAccessoriesOfficeEquipment = &Category{
+		Id:     "1373x1",
+		Slug:   "computers-and-accessories-office-equipment",
+		Name:   "Thiết Bị Văn Phòng",
+		NameEn: "Office Equipment",
+		Images: []string{},
+	}
+	CategoryComputersAccessoriesOfficeEquipmentTypewriters = &Category{
+		Id:     "1373x2",
+		Slug:   "computers-and-accessories-office-equipment-typewriters",
+		Name:   "Máy Đánh Chữ",
+		NameEn: "Typewriters",
+		Images: []string{
+			"https://cf.shopee.sg/file/75682a2349891f7ee2f380ef79212e2f",
+			"https://cf.shopee.sg/file/a7c47031f593a949be4417e43ea46724",
+			"https://cf.shopee.sg/file/57cd3afa50805c7b597039fc97aaf869",
+			"https://cf.shopee.sg/file/e3e4fffeb8dd63c6edb21b04f3396bbf",
+			"https://cf.shopee.sg/file/90cf92b2d194b2fdeced9049c34129ba",
+			"https://cf.shopee.sg/file/9b7c890d617e49a99c7780aaf138c105",
+		},
+	}
+	CategoryComputersAccessoriesOfficeEquipmentAbsenceMachines = &Category{
+		Id:     "1374x2",
+		Slug:   "computers-and-accessories-office-equipment-absence-machines",
+		Name:   "Máy Chấm Công",
+		NameEn: "Absence Machines",
+		Images: []string{
+			"https://cf.shopee.sg/file/849c34061a6a17519b929136bc6a1b4a",
+			"https://cf.shopee.sg/file/67a5b543208dedc1eacd846f0f76e083",
+			"https://cf.shopee.sg/file/9e15384dddd2a2776b36616f2bcf7032",
+			"https://cf.shopee.sg/file/77710c4c1a52a152a566185d50ca75f5",
+			"https://cf.shopee.sg/file/82eaf9025ffbe4dc05b3ad9da84cdaf4",
+			"https://cf.shopee.sg/file/31c6ec27ff59558a55711bb261192ff4",
+		},
+	}
+	CategoryComputersAccessoriesOfficeEquipmentPaperShredders = &Category{
+		Id:     "1375x2",
+		Slug:   "computers-and-accessories-office-equipment-paper-shredders",
+		Name:   "Máy Hủy Tài Liệu",
+		NameEn: "Paper Shredders",
+		Images: []string{
+			"https://cf.shopee.sg/file/3d7901ed4236b90fefe52f8c94026fd8",
+			"https://cf.shopee.sg/file/793b2ec54841dba6623a4f433ba03b0f",
+			"https://cf.shopee.sg/file/8a64f85dc84fbdd7bd63ec940a78d9ab",
+			"https://cf.shopee.sg/file/132b0f8cc9d07e502239c78d922cf97c",
+			"https://cf.shopee.sg/file/612817c017ecda7145b21e14254d6d01",
+			"https://cf.shopee.sg/file/a2ed56db3d985f1a3404c51ae80c74e8",
+		},
+	}
+	CategoryComputersAccessoriesOfficeEquipmentMoneyCounters = &Category{
+		Id:     "1376x2",
+		Slug:   "computers-and-accessories-office-equipment-money-counters",
+		Name:   "Máy Đếm Tiền",
+		NameEn: "Money Counters",
+		Images: []string{
+			"https://cf.shopee.sg/file/992e0426a5a9e441cb3e9fb4694bffc1",
+			"https://cf.shopee.sg/file/a0da910992058784fbb79cc4bedf798b",
+			"https://cf.shopee.sg/file/c02d44fed5574fa875b75064321f944b",
+			"https://cf.shopee.sg/file/c1d43b03d0e0dc544fdb55d5c5b157c6",
+			"https://cf.shopee.sg/file/e6bd8f4d1d546544ede36687b72555bf",
+			"https://cf.shopee.sg/file/f0e18f790d3ecf0c467753c3e71dd894",
+		},
+	}
+	CategoryComputersAccessoriesPrintersScanners = &Category{
+		Id:     "1377x1",
+		Slug:   "computers-and-accessories-printers-and-scanners",
+		Name:   "Máy In & Máy Scan",
+		NameEn: "Printers & Scanners",
+		Images: []string{},
+	}
+	CategoryComputersAccessoriesPrintersScannersPrintersScannersPrintersScannersPhotocopyMachines = &Category{
+		Id:     "1377x2",
+		Slug:   "computers-and-accessories-printers-and-scanners-printers-and-scanners-printers-scanners-and-photocopy-machines",
+		Name:   "Máy In, Máy Scan & Máy Photo",
+		NameEn: "Printers & Scanners > Printers, Scanners & Photocopy Machines",
+		Images: []string{
+			"https://cf.shopee.sg/file/c46313e35db41923cdd168814ad1230e",
+			"https://cf.shopee.sg/file/a48dcc867026990fdceff806f17dd5fb",
+			"https://cf.shopee.sg/file/d5d0423734e0d87909ccd6d574561b0c",
+			"https://cf.shopee.sg/file/486f1d1bbf228e364baff10257497974",
+			"https://cf.shopee.sg/file/8008720132627e35612f6986e8a27fa7",
+			"https://cf.shopee.sg/file/d1c57e71ae1b822840deb0fc87f6485e",
+		},
+	}
+	CategoryComputersAccessoriesPrintersScannersThermalBarcodePrinters = &Category{
+		Id:     "1378x2",
+		Slug:   "computers-and-accessories-printers-and-scanners-thermal-and-barcode-printers",
+		Name:   "Máy In Mã Vạch",
+		NameEn: "Thermal & Barcode Printers",
+		Images: []string{
+			"https://cf.shopee.sg/file/78dcd3ba1bac76cb2bc6e045c4640d0b",
+			"https://cf.shopee.sg/file/81692ad8b98793ad621a0eb772978171",
+			"https://cf.shopee.sg/file/c472fd489ef8c28d838023f8dacf0603",
+			"https://cf.shopee.sg/file/5286a7c1be472a08c840c47ec11d6fed",
+			"https://cf.shopee.sg/file/0b96ef0b7725801a31a9e557771ac9c8",
+			"https://cf.shopee.sg/file/fda14ae85a566e09eb5fe4d5268f5fe9",
+		},
+	}
+	CategoryComputersAccessoriesPrintersScannersInksToners = &Category{
+		Id:     "1379x2",
+		Slug:   "computers-and-accessories-printers-and-scanners-inks-and-toners",
+		Name:   "Mực In & Khay Mực",
+		NameEn: "Inks & Toners",
+		Images: []string{
+			"https://cf.shopee.sg/file/01470b5d47d95f3e0e80fdba7e82d1f2",
+			"https://cf.shopee.sg/file/06743d34fe2e9ea3510049fbef0ee4b1",
+			"https://cf.shopee.sg/file/7174f8abaadadd8646489105d3029b0c",
+			"https://cf.shopee.sg/file/5dc96e36da540170b444a09ca8c40c5e",
+			"https://cf.shopee.sg/file/b5b28d99401875db1fe3595d24f40c41",
+			"https://cf.shopee.sg/file/bd3a85a045dd6d09f76404f740599098",
+		},
+	}
+	CategoryComputersAccessoriesPrintersScanners3DPrinters = &Category{
+		Id:     "1380x2",
+		Slug:   "computers-and-accessories-printers-and-scanners-3d-printers",
+		Name:   "Máy In 3D",
+		NameEn: "3D Printers",
+		Images: []string{
+			"https://cf.shopee.sg/file/6f21be4e09eb599743edf0ab7bd8a054",
+			"https://cf.shopee.sg/file/b04358b7e207cf48fde1543f6fd1e1f2",
+			"https://cf.shopee.sg/file/c4acf9466f657ca844b1a2f1e7762193",
+			"https://cf.shopee.sg/file/7f699555f4c52b0cbbed348cc0d6c1fb",
+			"https://cf.shopee.sg/file/55aa6f4ab71a305675897a4e38e9961f",
+			"https://cf.shopee.sg/file/4450c0b3e972fdfa5e60014db841708c",
+		},
+	}
+	CategoryComputersAccessoriesPrintersScannersOther = &Category{
+		Id:     "1381x2",
+		Slug:   "computers-and-accessories-printers-and-scanners-other",
+		Name:   "Khác",
+		NameEn: "Other",
+		Images: []string{
+			"https://cf.shopee.sg/file/5124d0390dd21e54469ae850e8ff8200",
+			"https://cf.shopee.sg/file/6655fda26e2757ebb6e7e9a67c07f34e",
+			"https://cf.shopee.sg/file/b3195b661f287e50554f93f2fa19659a",
+			"https://cf.shopee.sg/file/49a4054a4efb2eab1dd3e4a4f195e3a3",
+			"https://cf.shopee.sg/file/9f6a9d61bff753bb531dd0847d07cf62",
+			"https://cf.shopee.sg/file/0487c71aabfcc44babede9e0824027ed",
+		},
+	}
+	CategoryComputersAccessoriesPeripheralsAccessories = &Category{
+		Id:     "1382x1",
+		Slug:   "computers-and-accessories-peripherals-and-accessories",
+		Name:   "Phụ Kiện Máy Tính",
+		NameEn: "Peripherals & Accessories",
+		Images: []string{},
+	}
+	CategoryComputersAccessoriesPeripheralsAccessoriesUSBHubsCardReaders = &Category{
+		Id:     "1382x2",
+		Slug:   "computers-and-accessories-peripherals-and-accessories-usb-hubs-and-card-readers",
+		Name:   "Bộ chia cổng USB & Đọc thẻ nhớ",
+		NameEn: "USB Hubs & Card Readers",
+		Images: []string{
+			"https://cf.shopee.sg/file/b6d376432c401b75ea76b1d183990993",
+			"https://cf.shopee.sg/file/448bb6e9db3fea96c6d970c39cfc910c",
+			"https://cf.shopee.sg/file/7233d576f3bf4cd24695ffc4a24e4b00",
+			"https://cf.shopee.sg/file/b745b49964b10ceb1d43b22aec1cac79",
+			"https://cf.shopee.sg/file/a1df1cd631d4036dd82fb68f8c992e75",
+			"https://cf.shopee.sg/file/ee75a2a074b0d18a90c79c7fd46ee5af",
+		},
+	}
+	CategoryComputersAccessoriesPeripheralsAccessoriesWebcams = &Category{
+		Id:     "1383x2",
+		Slug:   "computers-and-accessories-peripherals-and-accessories-webcams",
+		Name:   "Webcam",
+		NameEn: "Webcams",
+		Images: []string{
+			"https://cf.shopee.sg/file/c086f9e95d32f7328130ec7353858cb5",
+			"https://cf.shopee.sg/file/769d3ec3e96c4c0eeb0ceb64fa370e14",
+			"https://cf.shopee.sg/file/b8da79444bac9a69c3ec7f4f83d495ca",
+			"https://cf.shopee.sg/file/2959d63a8d90e579621e1a2e2400d5a2",
+			"https://cf.shopee.sg/file/969c2a9cbd36d65388641eeadbd2b195",
+			"https://cf.shopee.sg/file/7ed4d66c71a9b2c435d274edd5f9c377",
+		},
+	}
+	CategoryComputersAccessoriesPeripheralsAccessoriesLaptopSkinsCovers = &Category{
+		Id:     "1384x2",
+		Slug:   "computers-and-accessories-peripherals-and-accessories-laptop-skins-and-covers",
+		Name:   "Miếng Dán & Ốp Laptop",
+		NameEn: "Laptop Skins & Covers",
+		Images: []string{
+			"https://cf.shopee.sg/file/08c3ed9c2c02d7de496949f699c5fe45",
+			"https://cf.shopee.sg/file/7a13a39a51096434dda4c504ab9afe20",
+			"https://cf.shopee.sg/file/eceace88488ab2d39ff0f41839e516fb",
+			"https://cf.shopee.sg/file/ff8139603f44d04d962e7c4d90d4f025",
+			"https://cf.shopee.sg/file/31be4152ad6f370a7073c4ff2939f97c",
+			"https://cf.shopee.sg/file/31cbafddd1cab37e3c046ca0d84a2091",
+		},
+	}
+	CategoryComputersAccessoriesPeripheralsAccessoriesCoolingPads = &Category{
+		Id:     "1385x2",
+		Slug:   "computers-and-accessories-peripherals-and-accessories-cooling-pads",
+		Name:   "Đế Tản Nhiệt",
+		NameEn: "Cooling Pads",
+		Images: []string{
+			"https://cf.shopee.sg/file/1c2aa073fd97953e77bd30b4bd329a54",
+			"https://cf.shopee.sg/file/7bbd2fbfd44dad028ec92985b6539944",
+			"https://cf.shopee.sg/file/8531cfd1159538354e81f6e5ce56f10c",
+			"https://cf.shopee.sg/file/f597733b6d9769886f480cd64173a69b",
+			"https://cf.shopee.sg/file/60641ae71aca029903d4fff7abaa8ad7",
+			"https://cf.shopee.sg/file/9fd5b53b2095a203032e2f14600095b6",
+		},
+	}
+	CategoryComputersAccessoriesPeripheralsAccessoriesLaptopStandsFoldableLaptopDesks = &Category{
+		Id:     "1386x2",
+		Slug:   "computers-and-accessories-peripherals-and-accessories-laptop-stands-and-foldable-laptop-desks",
+		Name:   "Bàn Laptop",
+		NameEn: "Laptop Stands & Foldable Laptop Desks",
+		Images: []string{
+			"https://cf.shopee.sg/file/7f2ed1716137e12e788909ea7bc0f21f",
+			"https://cf.shopee.sg/file/4d43ab9f864703ee61600a3ea6286226",
+			"https://cf.shopee.sg/file/ac214f9b844fa676b20cd56160ef7440",
+			"https://cf.shopee.sg/file/5a27d409e620301818755e6e7770c4f4",
+			"https://cf.shopee.sg/file/7392ee451ad123e54220c1593fe81ec9",
+			"https://cf.shopee.sg/file/12b0dd2a2c25cd5f8dab7f26fcd81378",
+		},
+	}
+	CategoryComputersAccessoriesPeripheralsAccessoriesKeyboardTrackpadCovers = &Category{
+		Id:     "1387x2",
+		Slug:   "computers-and-accessories-peripherals-and-accessories-keyboard-and-trackpad-covers",
+		Name:   "Miếng Dán Bàn Phím",
+		NameEn: "Keyboard & Trackpad Covers",
+		Images: []string{
+			"https://cf.shopee.sg/file/71fe79c9716e67a0855e4a45c3148872",
+			"https://cf.shopee.sg/file/763bd4f8cb84c421d5b6f6aae51c5753",
+			"https://cf.shopee.sg/file/de9fb9aecda5c288edf214482853617c",
+			"https://cf.shopee.sg/file/ab492eae2819cf5d3f944d7137c6733e",
+			"https://cf.shopee.sg/file/7fa9cb3c268fa6d401a8e3b2d4783c12",
+			"https://cf.shopee.sg/file/91bf585c1e7d5608d1cc049c08e3f12e",
+		},
+	}
+	CategoryComputersAccessoriesPeripheralsAccessoriesLaptopBatteries = &Category{
+		Id:     "1388x2",
+		Slug:   "computers-and-accessories-peripherals-and-accessories-laptop-batteries",
+		Name:   "Pin Laptop",
+		NameEn: "Laptop Batteries",
+		Images: []string{
+			"https://cf.shopee.sg/file/70b0c40b14429a0fac480852b943de24",
+			"https://cf.shopee.sg/file/fa6793ee4d228b576876cb00bed8f5fb",
+			"https://cf.shopee.sg/file/6815ebf4cb202f68a336edf8667ec669",
+			"https://cf.shopee.sg/file/2dfc3145737bead1b9df975f7f80dcf6",
+			"https://cf.shopee.sg/file/251bcaa1a1492ea8ff5faee2a69a9a42",
+			"https://cf.shopee.sg/file/da0bf24e98dca8261f5699a6eed2956e",
+		},
+	}
+	CategoryComputersAccessoriesPeripheralsAccessoriesLaptopChargersAdaptors = &Category{
+		Id:     "1389x2",
+		Slug:   "computers-and-accessories-peripherals-and-accessories-laptop-chargers-and-adaptors",
+		Name:   "Bộ Sạc Laptop",
+		NameEn: "Laptop Chargers & Adaptors",
+		Images: []string{
+			"https://cf.shopee.sg/file/41a55cfcef138a6195d79aa96a837c6e",
+			"https://cf.shopee.sg/file/c4f83997801b6c3a5a2c148987af6c17",
+			"https://cf.shopee.sg/file/1eb96ff4cb699c4e7607dc2846c94b2f",
+			"https://cf.shopee.sg/file/890443f37061f0cfff660763b605d7cb",
+			"https://cf.shopee.sg/file/09498120fcda734f84f5e8a0cbe5c29d",
+			"https://cf.shopee.sg/file/ecc06d7f1c059daf784fd0dcd15a599d",
+		},
+	}
+	CategoryComputersAccessoriesPeripheralsAccessoriesVideoConferenceDevices = &Category{
+		Id:     "1390x2",
+		Slug:   "computers-and-accessories-peripherals-and-accessories-video-conference-devices",
+		Name:   "Thiết Bị Truyền Hình Hội Nghị",
+		NameEn: "Video Conference Devices",
+		Images: []string{
+			"https://cf.shopee.sg/file/d2593d99cd0f0f43765983bfc32ced77",
+			"https://cf.shopee.sg/file/eb7120e767a0803be586e707d1ddb918",
+			"https://cf.shopee.sg/file/3364b86936fe25d4da56dd8a6b6e14ac",
+			"https://cf.shopee.sg/file/57e2a76be1112b6df3dad6e005b2b0ab",
+			"https://cf.shopee.sg/file/27d128ea2423cbdb0df85a5a8fd5271d",
+			"https://cf.shopee.sg/file/ee47ee0e2f6ad0f6ac2d686e97a20c53",
+		},
+	}
+	CategoryComputersAccessoriesPeripheralsAccessoriesMousePads = &Category{
+		Id:     "1391x2",
+		Slug:   "computers-and-accessories-peripherals-and-accessories-mouse-pads",
+		Name:   "Bàn Di Chuột",
+		NameEn: "Mouse Pads",
+		Images: []string{
+			"https://cf.shopee.sg/file/de0053e20454ee3f8555e3c4cd199d37",
+			"https://cf.shopee.sg/file/b66e75ab03f6969ec60114c62eec2ad7",
+			"https://cf.shopee.sg/file/e97890caaec149dda985f6f2104a0d56",
+			"https://cf.shopee.sg/file/a7619cf4cb06f95d4a67923cdd58f7a1",
+			"https://cf.shopee.sg/file/20a6fc2eadc8ab60735d6ca3f477e2f7",
+			"https://cf.shopee.sg/file/536f47687556bcb156cef6618fa3320e",
+		},
+	}
+	CategoryComputersAccessoriesKeyboardsMice = &Category{
+		Id:     "1392x1",
+		Slug:   "computers-and-accessories-keyboards-and-mice",
+		Name:   "Chuột & Bàn Phím",
+		NameEn: "Keyboards & Mice",
+		Images: []string{},
+	}
+	CategoryComputersAccessoriesKeyboardsMiceMice = &Category{
+		Id:     "1392x2",
+		Slug:   "computers-and-accessories-keyboards-and-mice-mice",
+		Name:   "Chuột Máy Tính",
+		NameEn: "Mice",
+		Images: []string{
+			"https://cf.shopee.sg/file/a69eafbb31f39893f6efb734c8399f04",
+			"https://cf.shopee.sg/file/609ebe6fa6e4a3e17d3b8f932ff1b4dc",
+			"https://cf.shopee.sg/file/290f7589d781b89e4538130f0ecc2636",
+			"https://cf.shopee.sg/file/1b23777f2420b856a9c9727e74af9b16",
+			"https://cf.shopee.sg/file/cff8b733453594e2fc13c45940a8ffb5",
+			"https://cf.shopee.sg/file/5c685deac1bd3d18d19cc66bd06fb0e5",
+		},
+	}
+	CategoryComputersAccessoriesKeyboardsMiceKeyboards = &Category{
+		Id:     "1393x2",
+		Slug:   "computers-and-accessories-keyboards-and-mice-keyboards",
+		Name:   "Bàn Phím Máy Tính",
+		NameEn: "Keyboards",
+		Images: []string{
+			"https://cf.shopee.sg/file/18003e04681f44e0d5c5357966bf1510",
+			"https://cf.shopee.sg/file/0e3bb960649a602ff949d43279ccc66a",
+			"https://cf.shopee.sg/file/f2b71c6b798819a5b22752c838d6cd80",
+			"https://cf.shopee.sg/file/941c3f40e989626704d143a02f043945",
+			"https://cf.shopee.sg/file/2468411f430ca377452bd90eae3317f5",
+			"https://cf.shopee.sg/file/00155da1f7ea48f618b2f76c9155176e",
+		},
+	}
+	CategoryComputersAccessoriesKeyboardsMiceDrawingTablets = &Category{
+		Id:     "1394x2",
+		Slug:   "computers-and-accessories-keyboards-and-mice-drawing-tablets",
+		Name:   "Bảng Vẽ Điện Tử",
+		NameEn: "Drawing Tablets",
+		Images: []string{
+			"https://cf.shopee.sg/file/b64b4865dd6588ed9e605eb6c5c4eae8",
+			"https://cf.shopee.sg/file/659a1c7c1662d905acec21aec5ca60a1",
+			"https://cf.shopee.sg/file/b89a9af1fc9160e0e26edff352f751b1",
+			"https://cf.shopee.sg/file/525b9cca927d4f43fd4ccad886b8ffd3",
+			"https://cf.shopee.sg/file/0a103e482fed145be61d0091c9d42a4f",
+			"https://cf.shopee.sg/file/2745b926e368c77a74bdd0832590259f",
+		},
+	}
+	CategoryComputersAccessoriesKeyboardsMiceOther = &Category{
+		Id:     "1395x2",
+		Slug:   "computers-and-accessories-keyboards-and-mice-other",
+		Name:   "Khác",
+		NameEn: "Other",
+		Images: []string{
+			"https://cf.shopee.sg/file/558bf3349a90cda38fbc07c2446600f6",
+			"https://cf.shopee.sg/file/5ef1ce975f09c5ce892055acabc65606",
+			"https://cf.shopee.sg/file/aea380b5c6424988d5506ea83f964c22",
+			"https://cf.shopee.sg/file/402ffc97f8ceb58e39dffb6022051bdf",
+			"https://cf.shopee.sg/file/1fbd1453671b5b500c139f42fbf312fd",
+			"https://cf.shopee.sg/file/b3c2551c3ce871015d5e77025f818ac0",
+		},
+	}
+	CategoryComputersAccessoriesLaptop = &Category{
+		Id:     "1396x1",
+		Slug:   "computers-and-accessories-laptop",
+		Name:   "Laptop",
+		NameEn: "Laptop",
+		Images: []string{
+			"https://cf.shopee.sg/file/e671e6fb65e2d14c4e9d9f83200ad8a3",
+			"https://cf.shopee.sg/file/38f3f451ee5b8b99351c627259daf6b9",
+			"https://cf.shopee.sg/file/3fd726203e682add99d3c946cc24de97",
+			"https://cf.shopee.sg/file/46f93f5f1f9f161a354660fc03629a28",
+			"https://cf.shopee.sg/file/ba069e2f740ed7f5fa442615f9250298",
+			"https://cf.shopee.sg/file/d5ccc593bf13e1a6f6fee1c40da34654",
+		},
 	}
 )

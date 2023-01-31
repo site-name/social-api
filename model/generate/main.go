@@ -44,10 +44,10 @@ type DesiredCategory struct {
 	Named string `json:"named"`
 }
 
-var firstLevel = map[string][]string{}
-
-// var secondLevel = map[string][]string{}
-// var thirdLevel = map[string][]string{}
+var firstLevel = map[string]map[string]struct{}{}
+var secondLevel = map[string]map[string]struct{}{}
+var thirdLevel = map[string]map[string]struct{}{}
+var fourthLevel = map[string]map[string]struct{}{}
 
 type data struct {
 	Categories []*DesiredCategory
@@ -60,6 +60,8 @@ var replacer = strings.NewReplacer(
 	"/", "",
 	"'", "",
 	" ", "",
+	">", "",
+	"+", "plus",
 )
 
 func main() {
@@ -82,12 +84,56 @@ func main() {
 			continue
 		}
 
+		var firstLevelName, secondLevelName,
+			thirdLevelName, fourthLevelName,
+			fifthLevelName string
+
 		named := "Category"
 		slugg := ""
 		for pathIdx, path := range cate.Path {
 
 			named += replacer.Replace(path.CategoryNameEn)
 			slugg += " " + path.CategoryNameEn
+
+			switch pathIdx {
+			case 0:
+				firstLevelName = named
+			case 1:
+				secondLevelName = named
+			case 2:
+				thirdLevelName = named
+			case 3:
+				fourthLevelName = named
+			case 4:
+				fifthLevelName = named
+			}
+
+			if pathIdx == len(cate.Path)-1 {
+				if secondLevelName != "" {
+					if firstLevel[firstLevelName] == nil {
+						firstLevel[firstLevelName] = map[string]struct{}{}
+					}
+					firstLevel[firstLevelName][secondLevelName] = struct{}{}
+				}
+				if thirdLevelName != "" {
+					if secondLevel[secondLevelName] == nil {
+						secondLevel[secondLevelName] = map[string]struct{}{}
+					}
+					secondLevel[secondLevelName][thirdLevelName] = struct{}{}
+				}
+				if fourthLevelName != "" {
+					if thirdLevel[thirdLevelName] == nil {
+						thirdLevel[thirdLevelName] = map[string]struct{}{}
+					}
+					thirdLevel[thirdLevelName][fourthLevelName] = struct{}{}
+				}
+				if fifthLevelName != "" {
+					if fourthLevel[fourthLevelName] == nil {
+						fourthLevel[fourthLevelName] = map[string]struct{}{}
+					}
+					fourthLevel[fourthLevelName][fifthLevelName] = struct{}{}
+				}
+			}
 
 			if _, met := meetMap[named]; !met {
 				desired := &DesiredCategory{
@@ -124,4 +170,16 @@ func main() {
 	if err != nil {
 		log.Fatalln("error writing file:", err)
 	}
+
+	dt, _ := json.Marshal(firstLevel)
+	os.WriteFile("first.json", dt, 0644)
+
+	dt, _ = json.Marshal(secondLevel)
+	os.WriteFile("second.json", dt, 0644)
+
+	dt, _ = json.Marshal(thirdLevel)
+	os.WriteFile("third.json", dt, 0644)
+
+	dt, _ = json.Marshal(fourthLevel)
+	os.WriteFile("fourth.json", dt, 0644)
 }
