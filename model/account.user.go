@@ -288,6 +288,8 @@ func (u *User) PreSave() {
 	if u.Password != "" {
 		u.Password = HashPassword(u.Password)
 	}
+
+	u.commonPre()
 }
 
 func (u *User) commonPre() {
@@ -328,6 +330,8 @@ func (u *User) PreUpdate() {
 		}
 		u.NotifyProps[MENTION_KEYS_NOTIFY_PROP] = strings.Join(goodKeys, ",")
 	}
+
+	u.commonPre()
 }
 
 func (u *User) IsSSOUser() bool {
