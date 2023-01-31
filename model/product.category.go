@@ -27,6 +27,9 @@ type Category struct {
 	ModelMetadata
 
 	Children Categories `db:"-"`
+
+	Name_  map[string]string `json:"name_"` // E.g {"vi": "Ten Tieng Viet", "en": "English Name"}
+	Images []string          `json:"images"`
 }
 
 // CategoryFilterOption is used for building sql queries
@@ -144,9 +147,6 @@ func (c *CategoryTranslation) IsValid() *AppError {
 		"category_translation_id=",
 		"CategoryTranslation.IsValid")
 
-	if !IsValidId(c.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(c.CategoryID) {
 		return outer("category_id", &c.Id)
 	}

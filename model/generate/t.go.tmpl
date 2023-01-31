@@ -1,0 +1,16 @@
+package model
+
+var (
+{{ range $cate := .Categories }}
+  {{$cate.Named}} = &Category{
+	  Id: "{{$cate.Id}}",
+		Slug: "{{$cate.Slug}}",
+    Name: "{{$cate.VnName}}",
+		Name_: map[string]string{
+			{{range $key, $value := $cate.Name}}"{{$key}}": "{{$value}}",
+			{{end}}},
+		Images: []string{
+			{{range $path := $cate.Images}}"{{$path}}",
+			{{end}}},
+	}{{ end }}
+)

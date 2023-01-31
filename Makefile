@@ -244,3 +244,5 @@ searchengine-mocks: ## Creates mock files for searchengines.
 	$(GO) install github.com/vektra/mockery/v2/...@v2.10.4
 	$(GOBIN)/mockery --dir services/searchengine --all --output services/searchengine/mocks --note 'Regenerate this file using `make searchengine-mocks`.'
 
+categories:
+	$(GO) generate $(GOFLAGS) ./model/generate

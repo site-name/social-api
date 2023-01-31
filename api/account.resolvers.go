@@ -215,6 +215,7 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 	if err != nil {
 		return nil, err
 	}
+	currentSession := embedContext.AppContext.Session()
 
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AccountAddressDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
@@ -222,7 +223,7 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 
 	// check if current user has this address
 	userAddressRelations, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
-		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": embedContext.AppContext.Session().UserId},
+		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": currentSession.UserId},
 		AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
 	})
 	if appErr != nil {
@@ -233,7 +234,7 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 	}
 
 	// delete user-address relation, keep address
-	appErr = embedContext.App.Srv().AccountService().DeleteUserAddressRelation(embedContext.AppContext.Session().UserId, args.Id)
+	appErr = embedContext.App.Srv().AccountService().DeleteUserAddressRelation(currentSession.UserId, args.Id)
 	if appErr != nil {
 		return nil, appErr
 	}
