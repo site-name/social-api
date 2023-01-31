@@ -90,6 +90,7 @@ var (
 	ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader = dataloader.NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, *model.ShippingMethodChannelListing](batchCapacity))
 	ShippingMethodsByShippingZoneIdLoader                              = dataloader.NewBatchedLoader(shippingMethodsByShippingZoneIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethod](batchCapacity))
 	PostalCodeRulesByShippingMethodIdLoader                            = dataloader.NewBatchedLoader(postalCodeRulesByShippingMethodIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethodPostalCodeRule](batchCapacity))
+	ShippingMethodChannelListingByShippingMethodIdLoader               = dataloader.NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethodChannelListing](batchCapacity))
 
 	// discount
 	DiscountsByDateTimeLoader                           = dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity))

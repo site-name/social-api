@@ -19,7 +19,7 @@ import (
 /*---------------------------- Address --------------------------------*/
 
 type Address struct {
-	model.Address
+	*model.Address
 }
 
 // SystemAddressToGraphqlAddress convert single database address to single graphql address
@@ -27,7 +27,7 @@ func SystemAddressToGraphqlAddress(address *model.Address) *Address {
 	if address == nil {
 		return nil
 	}
-	return &Address{*address}
+	return &Address{address}
 }
 
 func (a *Address) Country(ctx context.Context) (*CountryDisplay, error) {
@@ -602,11 +602,7 @@ type StaffNotificationRecipient struct {
 	// User   *User   `json:"user"`
 	// Email  *string `json:"email"`
 
-	Active *bool  `json:"active"`
-	ID     string `json:"id"`
-
-	userID     *string
-	staffEmail *string
+	*model.StaffNotificationRecipient
 }
 
 func systemStaffNotificationRecipientToGraphqlStaffNotificationRecipient(s *model.StaffNotificationRecipient) *StaffNotificationRecipient {
@@ -614,12 +610,7 @@ func systemStaffNotificationRecipientToGraphqlStaffNotificationRecipient(s *mode
 		return nil
 	}
 
-	return &StaffNotificationRecipient{
-		Active:     s.Active,
-		ID:         s.Id,
-		userID:     s.UserID,
-		staffEmail: s.StaffEmail,
-	}
+	return &StaffNotificationRecipient{s}
 }
 
 func (s *StaffNotificationRecipient) User(ctx context.Context) (*User, error) {
@@ -630,11 +621,11 @@ func (s *StaffNotificationRecipient) User(ctx context.Context) (*User, error) {
 
 	currentSession := embedCtx.AppContext.Session()
 
-	if (s.userID != nil && *s.userID == currentSession.UserId) ||
+	if (s.UserID != nil && *s.UserID == currentSession.UserId) ||
 		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageStaff) {
 
-		if s.userID != nil {
-			user, err := UserByUserIdLoader.Load(ctx, *s.userID)()
+		if s.UserID != nil {
+			user, err := UserByUserIdLoader.Load(ctx, *s.UserID)()
 			if err != nil {
 				return nil, err
 			}
@@ -648,8 +639,8 @@ func (s *StaffNotificationRecipient) User(ctx context.Context) (*User, error) {
 }
 
 func (s *StaffNotificationRecipient) Email(ctx context.Context) (*string, error) {
-	if s.userID != nil {
-		user, err := UserByUserIdLoader.Load(ctx, *s.userID)()
+	if s.UserID != nil {
+		user, err := UserByUserIdLoader.Load(ctx, *s.UserID)()
 		if err != nil {
 			return nil, err
 		}
@@ -657,5 +648,5 @@ func (s *StaffNotificationRecipient) Email(ctx context.Context) (*string, error)
 		return &user.Email, nil
 	}
 
-	return s.staffEmail, nil
+	return s.StaffEmail, nil
 }

@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
@@ -21,32 +20,34 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	Input AddressInput
 	Type  *AddressTypeEnum
 }) (*AccountAddressCreate, error) {
-
 	// get embeded context in current request
 	embedContext, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
 	}
+	currentSession := embedContext.AppContext.Session()
 
 	// validate input country
-	if args.Input.Country == nil || !args.Input.Country.IsValid() {
+	if country := args.Input.Country; country == nil || !country.IsValid() {
 		return nil, model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
 	}
 
 	var phoneNumber string
 	// validate input phone
-	if args.Input.Phone != nil {
+	if phone := args.Input.Phone; phone != nil {
 		var ok bool
-		phoneNumber, ok = util.ValidatePhoneNumber(*args.Input.Phone, string(*args.Input.Country))
+		phoneNumber, ok = util.ValidatePhoneNumber(*phone, string(*args.Input.Country))
 		if !ok {
-			return nil, model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, "phone number is invalid", http.StatusBadRequest)
+			return nil, model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
 		}
 	}
 
 	// TODO: consider adding validation for specific country
 
 	// construct address
-	address := &model.Address{}
+	address := &model.Address{
+		Phone: phoneNumber,
+	}
 	if args.Input.FirstName != nil {
 		address.FirstName = *args.Input.FirstName
 	}
@@ -75,9 +76,6 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	if args.Input.CountryArea != nil {
 		address.CountryArea = *args.Input.CountryArea
 	}
-	if phoneNumber != "" {
-		address.Phone = phoneNumber
-	}
 
 	// insert address
 	savedAddress, appErr := embedContext.App.Srv().AccountService().UpsertAddress(nil, address)
@@ -87,20 +85,21 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 
 	// add user-address relation
 	_, appErr = embedContext.App.Srv().AccountService().AddUserAddress(&model.UserAddress{
-		UserID:    embedContext.AppContext.Session().UserId,
+		UserID:    currentSession.UserId,
 		AddressID: savedAddress.Id,
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
 
+	// change current user's default address to this new one
 	if args.Type != nil && args.Type.IsValid() {
 		appErr = embedContext.App.Srv().AccountService().ChangeUserDefaultAddress(
 			model.User{
-				Id: embedContext.AppContext.Session().UserId,
+				Id: currentSession.UserId,
 			},
 			*savedAddress,
-			strings.ToLower(string(*args.Type)),
+			string(*args.Type),
 			nil,
 		)
 		if appErr != nil {
@@ -110,9 +109,7 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 
 	return &AccountAddressCreate{
 		Address: SystemAddressToGraphqlAddress(savedAddress),
-		User: &User{
-			ID: embedContext.AppContext.Session().UserId,
-		},
+		User:    &User{ID: currentSession.UserId},
 	}, nil
 }
 
@@ -120,44 +117,43 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AddressInput
 }) (*AccountAddressUpdate, error) {
-
 	// get embeded context
 	embededContext, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
 	}
+	currentSession := embededContext.AppContext.Session()
 
 	// validate given address id
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AccountAddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "invalid address ID provided", http.StatusBadRequest)
 	}
-
-	// check if current user has this address
-	relations, appErr := embededContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
-		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": embededContext.AppContext.Session().UserId},
-		AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
-	})
-	if appErr != nil {
-		// internal server error
-		return nil, appErr
-	}
-	if len(relations) == 0 {
-		return nil, model.NewAppError("AccountAddressUpdate", ErrorUnauthorized, nil, "you are not authorized to perform this account", http.StatusUnauthorized)
-	}
-
 	// validate input
-	if args.Input.Country == nil || !args.Input.Country.IsValid() {
-		return nil, model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
+	if country := args.Input.Country; country == nil || !country.IsValid() {
+		return nil, model.NewAppError("AccountAddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
 	}
-
 	// validate phone number
 	var phoneNumber string
 	if args.Input.Phone != nil {
 		var ok bool
 		phoneNumber, ok = util.ValidatePhoneNumber(*args.Input.Phone, string(*args.Input.Country))
 		if !ok {
-			return nil, model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, "phone number is invalid", http.StatusBadRequest)
+			return nil, model.NewAppError("AccountAddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, "phone number is invalid", http.StatusBadRequest)
 		}
+	}
+
+	// check if current user has this address
+	userAddressRelations, appErr := embededContext.App.Srv().
+		AccountService().
+		FilterUserAddressRelations(&model.UserAddressFilterOptions{
+			UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": currentSession.UserId},
+			AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
+		})
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(userAddressRelations) == 0 {
+		return nil, model.NewAppError("AccountAddressUpdate", ErrorUnauthorized, nil, "you are not the owner of this address", http.StatusUnauthorized)
 	}
 
 	// find address for updating
@@ -166,38 +162,38 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	if value := args.Input.FirstName; value != nil && *value != address.FirstName {
+	if value := args.Input.FirstName; value != nil {
 		address.FirstName = *value
 	}
-	if value := args.Input.LastName; value != nil && *value != address.LastName {
+	if value := args.Input.LastName; value != nil {
 		address.LastName = *value
 	}
-	if value := args.Input.CompanyName; value != nil && *value != address.CompanyName {
+	if value := args.Input.CompanyName; value != nil {
 		address.CompanyName = *value
 	}
-	if value := args.Input.StreetAddress1; value != nil && *value != address.StreetAddress1 {
+	if value := args.Input.StreetAddress1; value != nil {
 		address.StreetAddress1 = *value
 	}
-	if value := args.Input.StreetAddress2; value != nil && *value != address.StreetAddress2 {
+	if value := args.Input.StreetAddress2; value != nil {
 		address.StreetAddress2 = *value
 	}
-	if value := args.Input.City; value != nil && *value != address.City {
+	if value := args.Input.City; value != nil {
 		address.City = *value
 	}
-	if value := args.Input.CityArea; value != nil && *value != address.CityArea {
+	if value := args.Input.CityArea; value != nil {
 		address.CityArea = *value
 	}
-	if value := args.Input.PostalCode; value != nil && *value != address.PostalCode {
+	if value := args.Input.PostalCode; value != nil {
 		address.PostalCode = *value
 	}
-	if value := args.Input.Country; value != nil && !strings.EqualFold(string(*value), address.Country) {
+	if value := args.Input.Country; value != nil {
 		// nil checking checked above
 		address.Country = string(*value)
 	}
-	if value := args.Input.CountryArea; value != nil && *value != address.CountryArea {
+	if value := args.Input.CountryArea; value != nil {
 		address.CountryArea = *value
 	}
-	if phoneNumber != "" && phoneNumber != address.Phone {
+	if phoneNumber != "" {
 		address.Phone = phoneNumber
 	}
 
@@ -209,9 +205,7 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 
 	return &AccountAddressUpdate{
 		Address: SystemAddressToGraphqlAddress(savedAddress),
-		User: &User{
-			ID: embededContext.AppContext.Session().UserId,
-		},
+		User:    &User{ID: currentSession.UserId},
 	}, nil
 }
 
@@ -227,17 +221,15 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 	}
 
 	// check if current user has this address
-	_, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
+	userAddressRelations, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
 		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": embedContext.AppContext.Session().UserId},
 		AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
 	})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusNotFound {
-			// user does not own this address
-			return nil, model.NewAppError("AccountAddressDelete", ErrorUnauthorized, nil, "you are not authorized to delete this address", http.StatusUnauthorized)
-		}
-		// system error
 		return nil, appErr
+	}
+	if len(userAddressRelations) == 0 {
+		return nil, model.NewAppError("AccountAddressDelete", ErrorUnauthorized, nil, "you are not authorized to delete this address", http.StatusUnauthorized)
 	}
 
 	// delete user-address relation, keep address
@@ -253,36 +245,30 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 	Id   string
 	Type AddressTypeEnum
 }) (*AccountSetDefaultAddress, error) {
-
 	embedContext, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
 	}
+	currentSession := embedContext.AppContext.Session()
 
 	// validate arguments
-	invalidArguments := []string{}
 	if !model.IsValidId(args.Id) {
-		invalidArguments = append(invalidArguments, "Id")
+		return nil, model.NewAppError("api.AccountSetDefaultAddress", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid address id provided", http.StatusBadRequest)
 	}
 	if !args.Type.IsValid() {
-		invalidArguments = append(invalidArguments, "Type")
-	}
-
-	if len(invalidArguments) > 0 {
-		return nil, model.NewAppError("AccountSetDefaultAddress", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": strings.Join(invalidArguments, ", ")}, "invalid argument(s) provided", http.StatusBadRequest)
+		return nil, model.NewAppError("api.AccountSetDefaultAddress", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "invalid address type provided", http.StatusBadRequest)
 	}
 
 	// check if current user own this address
-	_, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
-		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": embedContext.AppContext.Session().UserId},
+	userAddressRelations, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
+		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": currentSession.UserId},
 		AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
 	})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusNotFound {
-			// user does not own this address
-			return nil, model.NewAppError("AccountSetDefaultAddress", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
-		}
 		return nil, appErr
+	}
+	if len(userAddressRelations) == 0 {
+		return nil, model.NewAppError("AccountSetDefaultAddress", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
 	}
 
 	// perform change user default address
@@ -290,7 +276,7 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 		Srv().
 		AccountService().
 		ChangeUserDefaultAddress(
-			model.User{Id: embedContext.AppContext.Session().UserId},
+			model.User{Id: currentSession.UserId},
 			model.Address{Id: args.Id},
 			string(args.Type),
 			nil,
@@ -301,7 +287,7 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 
 	return &AccountSetDefaultAddress{
 		User: &User{
-			ID: embedContext.AppContext.Session().UserId,
+			ID: currentSession.UserId,
 		},
 	}, nil
 }
@@ -312,7 +298,54 @@ func (r *Resolver) AccountRegister(ctx context.Context, args struct{ Input Accou
 }
 
 func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input AccountInput }) (*AccountUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+	currentSession := embedCtx.AppContext.Session()
+
+	// find current user
+	user, appErr := r.srv.AccountService().UserById(ctx, currentSession.UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if val := args.Input.FirstName; val != nil {
+		user.FirstName = *val
+	}
+	if val := args.Input.LastName; val != nil {
+		user.LastName = *val
+	}
+	if val := args.Input.LanguageCode; val != nil && val.IsValid() {
+		user.Locale = string(*val)
+	}
+	// save user
+	user, appErr = r.srv.AccountService().UpdateUser(user, false)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// update user's default addresses
+	if val := args.Input.DefaultBillingAddress; val != nil && user.DefaultBillingAddressID != nil {
+		_, err := r.AddressUpdate(ctx, struct {
+			Id    string
+			Input AddressInput
+		}{Id: *user.DefaultBillingAddressID, Input: *val})
+		if err != nil {
+			return nil, err
+		}
+	}
+	if val := args.Input.DefaultShippingAddress; val != nil && user.DefaultShippingAddressID != nil {
+		_, err := r.AddressUpdate(ctx, struct {
+			Id    string
+			Input AddressInput
+		}{Id: *user.DefaultShippingAddressID, Input: *val})
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &AccountUpdate{SystemUserToGraphqlUser(user)}, nil
 }
 
 func (r *Resolver) AccountRequestDeletion(ctx context.Context, args struct {
