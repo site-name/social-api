@@ -195,16 +195,4 @@ func main() {
 	if err != nil {
 		log.Fatalln("error writing file:", err)
 	}
-
-	// dt, _ := json.MarshalIndent(firstLevel, "", "  ")
-	// os.WriteFile("first.json", dt, 0644)
-
-	// dt, _ = json.MarshalIndent(secondLevel, "", "  ")
-	// os.WriteFile("second.json", dt, 0644)
-
-	// dt, _ = json.MarshalIndent(thirdLevel, "", "  ")
-	// os.WriteFile("third.json", dt, 0644)
-
-	// dt, _ = json.MarshalIndent(fourthLevel, "", "  ")
-	// os.WriteFile("fourth.json", dt, 0644)
 }
