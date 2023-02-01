@@ -31,15 +31,15 @@ type Category struct {
 }
 
 type DesiredCategory struct {
-	Id             string             `json:"id"`
-	VnName         string             `json:"vn_name"`
-	EnName         string             `json:"en_name"`
-	Slug           string             `json:"slug"`
-	Images         []string           `json:"images"`
-	SeoTitle       *string            `json:"seo_title"`
-	SeoDescription *string            `json:"seo_description"`
-	Description    map[string]any     `json:"description"`
-	Children       []*DesiredCategory `json:"children"`
+	Id             string         `json:"id"`
+	VnName         string         `json:"vn_name"`
+	EnName         string         `json:"en_name"`
+	Slug           string         `json:"slug"`
+	Images         []string       `json:"images"`
+	SeoTitle       *string        `json:"seo_title"`
+	SeoDescription *string        `json:"seo_description"`
+	Description    map[string]any `json:"description"`
+	Children       []string       `json:"children"`
 
 	Named string `json:"named"`
 }
@@ -50,7 +50,8 @@ var thirdLevel = map[string]map[string]struct{}{}
 var fourthLevel = map[string]map[string]struct{}{}
 
 type data struct {
-	Categories []*DesiredCategory
+	Categories  []*DesiredCategory
+	FirstLevels []string
 }
 
 var replacer = strings.NewReplacer(
@@ -148,8 +149,32 @@ func main() {
 				}
 
 				desireds = append(desireds, desired)
-
 				meetMap[named] = struct{}{}
+			}
+		}
+	}
+
+	firstLevels := []string{}
+
+	for _, cate := range desireds {
+		switch {
+		case firstLevel[cate.Named] != nil:
+			for key := range firstLevel[cate.Named] {
+				cate.Children = append(cate.Children, key)
+			}
+			firstLevels = append(firstLevels, cate.Named)
+
+		case secondLevel[cate.Named] != nil:
+			for key := range secondLevel[cate.Named] {
+				cate.Children = append(cate.Children, key)
+			}
+		case thirdLevel[cate.Named] != nil:
+			for key := range thirdLevel[cate.Named] {
+				cate.Children = append(cate.Children, key)
+			}
+		case fourthLevel[cate.Named] != nil:
+			for key := range fourthLevel[cate.Named] {
+				cate.Children = append(cate.Children, key)
 			}
 		}
 	}
@@ -157,7 +182,7 @@ func main() {
 	out := bytes.NewBufferString("")
 
 	t := template.Must(template.New("t.go.tmpl").ParseFiles("t.go.tmpl"))
-	if err = t.Execute(out, data{Categories: desireds}); err != nil {
+	if err = t.Execute(out, data{Categories: desireds, FirstLevels: firstLevels}); err != nil {
 		log.Fatalln("error template:", err)
 	}
 
@@ -171,15 +196,15 @@ func main() {
 		log.Fatalln("error writing file:", err)
 	}
 
-	dt, _ := json.Marshal(firstLevel)
-	os.WriteFile("first.json", dt, 0644)
+	// dt, _ := json.MarshalIndent(firstLevel, "", "  ")
+	// os.WriteFile("first.json", dt, 0644)
 
-	dt, _ = json.Marshal(secondLevel)
-	os.WriteFile("second.json", dt, 0644)
+	// dt, _ = json.MarshalIndent(secondLevel, "", "  ")
+	// os.WriteFile("second.json", dt, 0644)
 
-	dt, _ = json.Marshal(thirdLevel)
-	os.WriteFile("third.json", dt, 0644)
+	// dt, _ = json.MarshalIndent(thirdLevel, "", "  ")
+	// os.WriteFile("third.json", dt, 0644)
 
-	dt, _ = json.Marshal(fourthLevel)
-	os.WriteFile("fourth.json", dt, 0644)
+	// dt, _ = json.MarshalIndent(fourthLevel, "", "  ")
+	// os.WriteFile("fourth.json", dt, 0644)
 }

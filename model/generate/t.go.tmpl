@@ -3,15 +3,20 @@
 
 package model
 
+// all categories
 var (
 {{ range $cate := .Categories }}
   {{$cate.Named}} = &Category{
 	  Id: "{{$cate.Id}}",
 		Slug: "{{$cate.Slug}}",
     Name: "{{$cate.VnName}}",
-		NameEn: "{{$cate.EnName}}",
-		Images: []string{
-			{{range $path := $cate.Images}}"{{$path}}",
-			{{end}}},
+		NameEn: "{{$cate.EnName}}",{{if gt (len $cate.Images) 0 }}
+		Images: []string{ {{range $path := $cate.Images}}"{{$path}}", {{end}}}, {{end}}
+		{{if gt (len $cate.Children) 0}} Children: Categories{ {{ range $child := $cate.Children }}{{$child}},{{end}} }, {{end}}
 	}{{ end }}
 )
+
+// first level categories
+var firstLevelCategories = Categories{ {{ range $cate := .FirstLevels }}
+	{{$cate}}, {{ end }}
+}
