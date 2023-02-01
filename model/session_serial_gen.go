@@ -85,34 +85,10 @@ func (z *Session) DecodeMsg(dc *msgp.Reader) (err error) {
 				return
 			}
 		case "Props":
-			var zb0002 uint32
-			zb0002, err = dc.ReadMapHeader()
+			err = z.Props.DecodeMsg(dc)
 			if err != nil {
 				err = msgp.WrapError(err, "Props")
 				return
-			}
-			if z.Props == nil {
-				z.Props = make(StringMap, zb0002)
-			} else if len(z.Props) > 0 {
-				for key := range z.Props {
-					delete(z.Props, key)
-				}
-			}
-			for zb0002 > 0 {
-				zb0002--
-				var za0001 string
-				var za0002 string
-				za0001, err = dc.ReadString()
-				if err != nil {
-					err = msgp.WrapError(err, "Props")
-					return
-				}
-				za0002, err = dc.ReadString()
-				if err != nil {
-					err = msgp.WrapError(err, "Props", za0001)
-					return
-				}
-				z.Props[za0001] = za0002
 			}
 		case "Local":
 			z.Local, err = dc.ReadBool()
@@ -239,22 +215,10 @@ func (z *Session) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	err = en.WriteMapHeader(uint32(len(z.Props)))
+	err = z.Props.EncodeMsg(en)
 	if err != nil {
 		err = msgp.WrapError(err, "Props")
 		return
-	}
-	for za0001, za0002 := range z.Props {
-		err = en.WriteString(za0001)
-		if err != nil {
-			err = msgp.WrapError(err, "Props")
-			return
-		}
-		err = en.WriteString(za0002)
-		if err != nil {
-			err = msgp.WrapError(err, "Props", za0001)
-			return
-		}
 	}
 	// write "Local"
 	err = en.Append(0xa5, 0x4c, 0x6f, 0x63, 0x61, 0x6c)
@@ -305,10 +269,10 @@ func (z *Session) MarshalMsg(b []byte) (o []byte, err error) {
 	o = msgp.AppendBool(o, z.ExpiredNotify)
 	// string "Props"
 	o = append(o, 0xa5, 0x50, 0x72, 0x6f, 0x70, 0x73)
-	o = msgp.AppendMapHeader(o, uint32(len(z.Props)))
-	for za0001, za0002 := range z.Props {
-		o = msgp.AppendString(o, za0001)
-		o = msgp.AppendString(o, za0002)
+	o, err = z.Props.MarshalMsg(o)
+	if err != nil {
+		err = msgp.WrapError(err, "Props")
+		return
 	}
 	// string "Local"
 	o = append(o, 0xa5, 0x4c, 0x6f, 0x63, 0x61, 0x6c)
@@ -395,34 +359,10 @@ func (z *Session) UnmarshalMsg(bts []byte) (o []byte, err error) {
 				return
 			}
 		case "Props":
-			var zb0002 uint32
-			zb0002, bts, err = msgp.ReadMapHeaderBytes(bts)
+			bts, err = z.Props.UnmarshalMsg(bts)
 			if err != nil {
 				err = msgp.WrapError(err, "Props")
 				return
-			}
-			if z.Props == nil {
-				z.Props = make(StringMap, zb0002)
-			} else if len(z.Props) > 0 {
-				for key := range z.Props {
-					delete(z.Props, key)
-				}
-			}
-			for zb0002 > 0 {
-				var za0001 string
-				var za0002 string
-				zb0002--
-				za0001, bts, err = msgp.ReadStringBytes(bts)
-				if err != nil {
-					err = msgp.WrapError(err, "Props")
-					return
-				}
-				za0002, bts, err = msgp.ReadStringBytes(bts)
-				if err != nil {
-					err = msgp.WrapError(err, "Props", za0001)
-					return
-				}
-				z.Props[za0001] = za0002
 			}
 		case "Local":
 			z.Local, bts, err = msgp.ReadBoolBytes(bts)
@@ -444,127 +384,6 @@ func (z *Session) UnmarshalMsg(bts []byte) (o []byte, err error) {
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
 func (z *Session) Msgsize() (s int) {
-	s = 1 + 3 + msgp.StringPrefixSize + len(z.Id) + 6 + msgp.StringPrefixSize + len(z.Token) + 9 + msgp.Int64Size + 10 + msgp.Int64Size + 15 + msgp.Int64Size + 7 + msgp.StringPrefixSize + len(z.UserId) + 9 + msgp.StringPrefixSize + len(z.DeviceId) + 6 + msgp.StringPrefixSize + len(z.Roles) + 8 + msgp.BoolSize + 14 + msgp.BoolSize + 6 + msgp.MapHeaderSize
-	if z.Props != nil {
-		for za0001, za0002 := range z.Props {
-			_ = za0002
-			s += msgp.StringPrefixSize + len(za0001) + msgp.StringPrefixSize + len(za0002)
-		}
-	}
-	s += 6 + msgp.BoolSize
-	return
-}
-
-// DecodeMsg implements msgp.Decodable
-func (z *StringMap) DecodeMsg(dc *msgp.Reader) (err error) {
-	var zb0003 uint32
-	zb0003, err = dc.ReadMapHeader()
-	if err != nil {
-		err = msgp.WrapError(err)
-		return
-	}
-	if (*z) == nil {
-		(*z) = make(StringMap, zb0003)
-	} else if len((*z)) > 0 {
-		for key := range *z {
-			delete((*z), key)
-		}
-	}
-	for zb0003 > 0 {
-		zb0003--
-		var zb0001 string
-		var zb0002 string
-		zb0001, err = dc.ReadString()
-		if err != nil {
-			err = msgp.WrapError(err)
-			return
-		}
-		zb0002, err = dc.ReadString()
-		if err != nil {
-			err = msgp.WrapError(err, zb0001)
-			return
-		}
-		(*z)[zb0001] = zb0002
-	}
-	return
-}
-
-// EncodeMsg implements msgp.Encodable
-func (z StringMap) EncodeMsg(en *msgp.Writer) (err error) {
-	err = en.WriteMapHeader(uint32(len(z)))
-	if err != nil {
-		err = msgp.WrapError(err)
-		return
-	}
-	for zb0004, zb0005 := range z {
-		err = en.WriteString(zb0004)
-		if err != nil {
-			err = msgp.WrapError(err)
-			return
-		}
-		err = en.WriteString(zb0005)
-		if err != nil {
-			err = msgp.WrapError(err, zb0004)
-			return
-		}
-	}
-	return
-}
-
-// MarshalMsg implements msgp.Marshaler
-func (z StringMap) MarshalMsg(b []byte) (o []byte, err error) {
-	o = msgp.Require(b, z.Msgsize())
-	o = msgp.AppendMapHeader(o, uint32(len(z)))
-	for zb0004, zb0005 := range z {
-		o = msgp.AppendString(o, zb0004)
-		o = msgp.AppendString(o, zb0005)
-	}
-	return
-}
-
-// UnmarshalMsg implements msgp.Unmarshaler
-func (z *StringMap) UnmarshalMsg(bts []byte) (o []byte, err error) {
-	var zb0003 uint32
-	zb0003, bts, err = msgp.ReadMapHeaderBytes(bts)
-	if err != nil {
-		err = msgp.WrapError(err)
-		return
-	}
-	if (*z) == nil {
-		(*z) = make(StringMap, zb0003)
-	} else if len((*z)) > 0 {
-		for key := range *z {
-			delete((*z), key)
-		}
-	}
-	for zb0003 > 0 {
-		var zb0001 string
-		var zb0002 string
-		zb0003--
-		zb0001, bts, err = msgp.ReadStringBytes(bts)
-		if err != nil {
-			err = msgp.WrapError(err)
-			return
-		}
-		zb0002, bts, err = msgp.ReadStringBytes(bts)
-		if err != nil {
-			err = msgp.WrapError(err, zb0001)
-			return
-		}
-		(*z)[zb0001] = zb0002
-	}
-	o = bts
-	return
-}
-
-// Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
-func (z StringMap) Msgsize() (s int) {
-	s = msgp.MapHeaderSize
-	if z != nil {
-		for zb0004, zb0005 := range z {
-			_ = zb0005
-			s += msgp.StringPrefixSize + len(zb0004) + msgp.StringPrefixSize + len(zb0005)
-		}
-	}
+	s = 1 + 3 + msgp.StringPrefixSize + len(z.Id) + 6 + msgp.StringPrefixSize + len(z.Token) + 9 + msgp.Int64Size + 10 + msgp.Int64Size + 15 + msgp.Int64Size + 7 + msgp.StringPrefixSize + len(z.UserId) + 9 + msgp.StringPrefixSize + len(z.DeviceId) + 6 + msgp.StringPrefixSize + len(z.Roles) + 8 + msgp.BoolSize + 14 + msgp.BoolSize + 6 + z.Props.Msgsize() + 6 + msgp.BoolSize
 	return
 }

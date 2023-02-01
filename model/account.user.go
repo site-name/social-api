@@ -9,6 +9,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/crypto/bcrypt"
@@ -714,7 +715,6 @@ func (s StringMAP) DeepCopy() StringMAP {
 	if s == nil {
 		return nil
 	}
-
 	res := StringMAP{}
 	for key, value := range s {
 		res[key] = value
@@ -727,14 +727,41 @@ func (s StringMAP) Merge(other StringMAP) StringMAP {
 	for key, value := range other {
 		s[key] = value
 	}
-
 	return s
+}
+
+func (m StringMAP) Pop(key string, defaultValue ...string) string {
+	v := m.Get(key, defaultValue...)
+	delete(m, key)
+	return v
+}
+
+func (m StringMAP) Get(key string, defaultValue ...string) string {
+	if v, ok := m[key]; ok {
+		return v
+	}
+	if len(defaultValue) > 0 {
+		return defaultValue[0]
+	}
+	return ""
+}
+
+func (m StringMAP) Set(key, value string) {
+	m[key] = value
+}
+
+func (m StringMAP) Keys() []string {
+	return lo.MapToSlice(m, func(k string, _ string) string { return k })
+}
+
+func (m StringMap) Values() []string {
+	return lo.MapToSlice(m, func(_ string, v string) string { return v })
 }
 
 // Common abstract model for other models to inherit from
 type ModelMetadata struct {
-	Metadata        StringMAP `json:"metadata"`
-	PrivateMetadata StringMAP `json:"private_metadata"`
+	Metadata        StringMAP `json:"metadata,omitempty"`
+	PrivateMetadata StringMAP `json:"private_metadata,omitempty"`
 }
 
 func (m *ModelMetadata) PopulateFields() {
@@ -750,78 +777,5 @@ func (p ModelMetadata) DeepCopy() ModelMetadata {
 	return ModelMetadata{
 		p.Metadata.DeepCopy(),
 		p.PrivateMetadata.DeepCopy(),
-	}
-}
-
-type WhichMeta string
-
-const (
-	PrivateMetadata WhichMeta = "private"
-	Metadata        WhichMeta = "metadata"
-)
-
-func (p *ModelMetadata) GetValueFromMeta(key string, defaultValue string, which WhichMeta) string {
-
-	if which == PrivateMetadata { // get from private metadata
-		if p.PrivateMetadata == nil {
-			return defaultValue
-		}
-
-		if vl, ok := p.PrivateMetadata[key]; ok {
-			return vl
-		}
-	} else if which == Metadata { // get from metadata
-		if p.Metadata == nil {
-			return defaultValue
-		}
-
-		if vl, ok := p.Metadata[key]; ok {
-			return vl
-		}
-	}
-
-	return defaultValue
-}
-
-func (p *ModelMetadata) StoreValueInMeta(items map[string]string, which WhichMeta) {
-
-	if which == PrivateMetadata {
-		if p.PrivateMetadata == nil {
-			p.PrivateMetadata = make(map[string]string)
-		}
-
-		for k, vl := range items {
-			p.PrivateMetadata[k] = vl
-		}
-	} else if which == Metadata {
-		if p.Metadata == nil {
-			p.Metadata = make(map[string]string)
-		}
-
-		for k, vl := range items {
-			p.Metadata[k] = vl
-		}
-	}
-}
-
-func (p *ModelMetadata) ClearMeta(which WhichMeta) {
-
-	if which == PrivateMetadata {
-		for k := range p.PrivateMetadata {
-			delete(p.PrivateMetadata, k)
-		}
-	} else if which == Metadata {
-		for k := range p.Metadata {
-			delete(p.Metadata, k)
-		}
-	}
-}
-
-func (p *ModelMetadata) DeleteValueFromMeta(key string, which WhichMeta) {
-
-	if which == PrivateMetadata {
-		delete(p.PrivateMetadata, key)
-	} else if which == Metadata {
-		delete(p.Metadata, key)
 	}
 }

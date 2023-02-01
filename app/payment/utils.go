@@ -406,8 +406,8 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 
 	if paymentTransaction.ActionRequired {
 		payMent.ToConfirm = true
-		changedFields = append(changedFields, "to_confirm")
-		if _, appErr = a.UpsertPayment(nil, payMent); appErr != nil {
+		// changedFields = append(changedFields, "to_confirm")
+		if _, appErr = a.UpsertPayment(transaction, payMent); appErr != nil {
 			return appErr
 		}
 
@@ -513,7 +513,7 @@ func (a *ServicePayment) FetchCustomerId(user *model.User, gateway string) (stri
 	}
 
 	metaKey := prepareKeyForGatewayCustomerId(gateway)
-	return user.ModelMetadata.GetValueFromMeta(metaKey, "", model.PrivateMetadata), nil
+	return user.PrivateMetadata.Get(metaKey, ""), nil
 }
 
 // StoreCustomerId stores new value into given user's PrivateMetadata
@@ -539,12 +539,7 @@ func (a *ServicePayment) StoreCustomerId(userID string, gateway string, customer
 	if appErr != nil {
 		return appErr
 	}
-	user.StoreValueInMeta(
-		map[string]string{
-			metaKey: customerID,
-		},
-		model.PrivateMetadata,
-	)
+	user.PrivateMetadata.Set(metaKey, customerID)
 	_, appErr = a.srv.AccountService().UpdateUser(user, false)
 	return appErr
 }
@@ -558,22 +553,19 @@ func prepareKeyForGatewayCustomerId(gatewayName string) string {
 
 // UpdatePayment
 func (a *ServicePayment) UpdatePayment(payMent model.Payment, gatewayResponse *model.GatewayResponse) *model.AppError {
-	var (
-		changedFields []string
-		appErr        *model.AppError
-	)
+	var firstChange, secondChange bool
 
 	if gatewayResponse.PspReference != "" {
 		payMent.PspReference = &gatewayResponse.PspReference
-		changedFields = append(changedFields, "psp_reference")
+		firstChange = true
 	}
 
 	if gatewayResponse.PaymentMethodInfo != nil {
-		a.UpdatePaymentMethodDetails(payMent, gatewayResponse.PaymentMethodInfo, changedFields)
+		secondChange = a.UpdatePaymentMethodDetails(payMent, gatewayResponse.PaymentMethodInfo)
 	}
 
-	if len(changedFields) > 0 {
-		_, appErr = a.UpsertPayment(nil, &payMent)
+	if firstChange || secondChange {
+		_, appErr := a.UpsertPayment(nil, &payMent)
 		if appErr != nil {
 			return appErr
 		}
@@ -582,12 +574,11 @@ func (a *ServicePayment) UpdatePayment(payMent model.Payment, gatewayResponse *m
 	return nil
 }
 
-func (a *ServicePayment) UpdatePaymentMethodDetails(payMent model.Payment, paymentMethodInfo *model.PaymentMethodInfo, changedFields []string) {
-	if changedFields == nil {
-		changedFields = []string{}
-	}
+func (a *ServicePayment) UpdatePaymentMethodDetails(payMent model.Payment, paymentMethodInfo *model.PaymentMethodInfo) (changed bool) {
+	changed = true
 
 	if paymentMethodInfo == nil {
+		changed = false
 		return
 	}
 
@@ -606,6 +597,8 @@ func (a *ServicePayment) UpdatePaymentMethodDetails(payMent model.Payment, payme
 	if type_ := paymentMethodInfo.Type; type_ != nil {
 		payMent.PaymentMethodType = *type_
 	}
+
+	return
 }
 
 func (a *ServicePayment) GetPaymentToken(payMent *model.Payment) (string, *model.PaymentError, *model.AppError) {

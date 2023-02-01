@@ -20,15 +20,15 @@ type Category struct {
 	Name               string          `json:"name"` // unique
 	Slug               string          `json:"slug"` // unique
 	NameEn             string          `json:"name_en"`
-	Description        StringInterface `json:"description"`
-	ParentID           *string         `json:"parent_id"`
-	BackgroundImage    *string         `json:"background_image"`
+	Description        StringInterface `json:"description,omitempty"`
+	ParentID           *string         `json:"parent_id,omitempty"`
+	BackgroundImage    *string         `json:"background_image,omitempty"`
 	BackgroundImageAlt string          `json:"background_image_alt"`
 	Seo
 	ModelMetadata
 
-	Children Categories `json:"children"`
-	Images   []string   `json:"images"`
+	Children Categories `json:"children,omitempty"`
+	Images   []string   `json:"images,omitempty"`
 }
 
 // CategoryFilterOption is used for building sql queries

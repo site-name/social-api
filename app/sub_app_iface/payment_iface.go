@@ -129,6 +129,6 @@ type PaymentService interface {
 	PaymentGetAuthorizedAmount(pm *model.Payment) (*goprices.Money, *model.AppError)
 	PaymentIsAuthorized(paymentID string) (bool, *model.AppError)
 	SaveTransaction(transaction store_iface.SqlxTxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model.AppError)
-	UpdatePaymentMethodDetails(payMent model.Payment, paymentMethodInfo *model.PaymentMethodInfo, changedFields []string)
+	UpdatePaymentMethodDetails(payMent model.Payment, paymentMethodInfo *model.PaymentMethodInfo) (changed bool)
 	UpdateTransaction(transaction *model.PaymentTransaction) (*model.PaymentTransaction, *model.AppError)
 }

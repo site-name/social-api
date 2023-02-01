@@ -27,48 +27,7 @@ const (
 	SESSION_USER_ACCESS_TOKEN_EXPIRY  = 100 * 365     // 100 years
 )
 
-type StringMap map[string]string
-
-func (m StringMap) Pop(key string, defaultValue ...string) string {
-	defer delete(m, key)
-
-	if v, ok := m[key]; ok {
-		return v
-	}
-
-	return defaultValue[0]
-}
-
-func (m StringMap) DeepCopy() StringMap {
-	if m == nil {
-		return nil
-	}
-
-	res := StringMap{}
-	for key, value := range m {
-		res[key] = value
-	}
-
-	return res
-}
-
-func (m StringMap) Keys() []string {
-	res := []string{}
-	for key := range m {
-		res = append(res, key)
-	}
-
-	return res
-}
-
-func (m StringMap) Values() []string {
-	res := []string{}
-	for key := range m {
-		res = append(res, m[key])
-	}
-
-	return res
-}
+type StringMap = StringMAP
 
 // Session contains the user session details.
 // This struct's serializer methods are auto-generated. If a new field is added/removed,

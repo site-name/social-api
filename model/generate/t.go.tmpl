@@ -17,6 +17,6 @@ var (
 )
 
 // first level categories
-var firstLevelCategories = Categories{ {{ range $cate := .FirstLevels }}
+var FirstLevelCategories = Categories{ {{ range $cate := .FirstLevels }}
 	{{$cate}}, {{ end }}
 }

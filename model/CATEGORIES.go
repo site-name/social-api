@@ -10,14 +10,14 @@ var (
 		Slug:     "women-clothes",
 		Name:     "Thời Trang Nữ",
 		NameEn:   "Women Clothes",
-		Children: Categories{CategoryWomenClothesPantsLeggings, CategoryWomenClothesShorts, CategoryWomenClothesWeddingDresses, CategoryWomenClothesJumpsuitsPlaysuitsOveralls, CategoryWomenClothesJeans, CategoryWomenClothesDresses, CategoryWomenClothesJacketsCoatsVests, CategoryWomenClothesLingerieUnderwear, CategoryWomenClothesSleepwearPajamas, CategoryWomenClothesSweatersCardigans, CategoryWomenClothesSets, CategoryWomenClothesCostumes, CategoryWomenClothesSocksStockings, CategoryWomenClothesTops, CategoryWomenClothesSkirts, CategoryWomenClothesHoodiesSweatshirts, CategoryWomenClothesMaternityWear, CategoryWomenClothesTraditionalWear, CategoryWomenClothesFabric},
+		Children: Categories{CategoryWomenClothesLingerieUnderwear, CategoryWomenClothesCostumes, CategoryWomenClothesShorts, CategoryWomenClothesWeddingDresses, CategoryWomenClothesSweatersCardigans, CategoryWomenClothesFabric, CategoryWomenClothesPantsLeggings, CategoryWomenClothesJacketsCoatsVests, CategoryWomenClothesHoodiesSweatshirts, CategoryWomenClothesTraditionalWear, CategoryWomenClothesJeans, CategoryWomenClothesDresses, CategoryWomenClothesJumpsuitsPlaysuitsOveralls, CategoryWomenClothesSleepwearPajamas, CategoryWomenClothesMaternityWear, CategoryWomenClothesSocksStockings, CategoryWomenClothesTops, CategoryWomenClothesSkirts, CategoryWomenClothesSets},
 	}
 	CategoryWomenClothesTops = &Category{
 		Id:       "0x1",
 		Slug:     "women-clothes-tops",
 		Name:     "Áo",
 		NameEn:   "Tops",
-		Children: Categories{CategoryWomenClothesTopsTanksCamisoles, CategoryWomenClothesTopsTubeTops, CategoryWomenClothesTopsTshirts, CategoryWomenClothesTopsShirtsBlouses, CategoryWomenClothesTopsPoloShirts, CategoryWomenClothesTopsBodysuits},
+		Children: Categories{CategoryWomenClothesTopsBodysuits, CategoryWomenClothesTopsTanksCamisoles, CategoryWomenClothesTopsTubeTops, CategoryWomenClothesTopsTshirts, CategoryWomenClothesTopsShirtsBlouses, CategoryWomenClothesTopsPoloShirts},
 	}
 	CategoryWomenClothesTopsTanksCamisoles = &Category{
 		Id:     "0x2",
@@ -66,7 +66,7 @@ var (
 		Slug:     "women-clothes-pants-and-leggings",
 		Name:     "Quần",
 		NameEn:   "Pants & Leggings",
-		Children: Categories{CategoryWomenClothesPantsLeggingsPants, CategoryWomenClothesPantsLeggingsLeggingsTreggings},
+		Children: Categories{CategoryWomenClothesPantsLeggingsLeggingsTreggings, CategoryWomenClothesPantsLeggingsPants},
 	}
 	CategoryWomenClothesPantsLeggingsLeggingsTreggings = &Category{
 		Id:     "6x2",
@@ -87,7 +87,7 @@ var (
 		Slug:     "women-clothes-shorts",
 		Name:     "Quần đùi",
 		NameEn:   "Shorts",
-		Children: Categories{CategoryWomenClothesShortsSkorts, CategoryWomenClothesShortsShorts},
+		Children: Categories{CategoryWomenClothesShortsShorts, CategoryWomenClothesShortsSkorts},
 	}
 	CategoryWomenClothesShortsShorts = &Category{
 		Id:     "8x2",
@@ -136,7 +136,7 @@ var (
 		Slug:     "women-clothes-jumpsuits-playsuits-and-overalls",
 		Name:     "Đồ liền thân",
 		NameEn:   "Jumpsuits, Playsuits & Overalls",
-		Children: Categories{CategoryWomenClothesJumpsuitsPlaysuitsOverallsJumpsuits, CategoryWomenClothesJumpsuitsPlaysuitsOverallsplaysuits, CategoryWomenClothesJumpsuitsPlaysuitsOverallsOveralls},
+		Children: Categories{CategoryWomenClothesJumpsuitsPlaysuitsOverallsplaysuits, CategoryWomenClothesJumpsuitsPlaysuitsOverallsOveralls, CategoryWomenClothesJumpsuitsPlaysuitsOverallsJumpsuits},
 	}
 	CategoryWomenClothesJumpsuitsPlaysuitsOverallsJumpsuits = &Category{
 		Id:     "14x2",
@@ -164,7 +164,7 @@ var (
 		Slug:     "women-clothes-jackets-coats-and-vests",
 		Name:     "Áo khoác",
 		NameEn:   "Jackets, Coats & Vests",
-		Children: Categories{CategoryWomenClothesJacketsCoatsVestsWinterJacketsCoats, CategoryWomenClothesJacketsCoatsVestsCapes, CategoryWomenClothesJacketsCoatsVestsBlazers, CategoryWomenClothesJacketsCoatsVestsJackets, CategoryWomenClothesJacketsCoatsVestsVests},
+		Children: Categories{CategoryWomenClothesJacketsCoatsVestsVests, CategoryWomenClothesJacketsCoatsVestsWinterJacketsCoats, CategoryWomenClothesJacketsCoatsVestsCapes, CategoryWomenClothesJacketsCoatsVestsBlazers, CategoryWomenClothesJacketsCoatsVestsJackets},
 	}
 	CategoryWomenClothesJacketsCoatsVestsWinterJacketsCoats = &Category{
 		Id:     "17x2",
@@ -213,7 +213,7 @@ var (
 		Slug:     "women-clothes-hoodies-and-sweatshirts",
 		Name:     "Hoodie và Áo nỉ",
 		NameEn:   "Hoodies & Sweatshirts",
-		Children: Categories{CategoryWomenClothesHoodiesSweatshirtsHoodies, CategoryWomenClothesHoodiesSweatshirtsSweatshirts},
+		Children: Categories{CategoryWomenClothesHoodiesSweatshirtsSweatshirts, CategoryWomenClothesHoodiesSweatshirtsHoodies},
 	}
 	CategoryWomenClothesHoodiesSweatshirtsSweatshirts = &Category{
 		Id:     "23x2",
@@ -234,7 +234,7 @@ var (
 		Slug:     "women-clothes-sets",
 		Name:     "Bộ",
 		NameEn:   "Sets",
-		Children: Categories{CategoryWomenClothesSetsCoupleSets, CategoryWomenClothesSetsFamilySets, CategoryWomenClothesSetsIndividualSets},
+		Children: Categories{CategoryWomenClothesSetsFamilySets, CategoryWomenClothesSetsIndividualSets, CategoryWomenClothesSetsCoupleSets},
 	}
 	CategoryWomenClothesSetsCoupleSets = &Category{
 		Id:     "25x2",
@@ -262,7 +262,7 @@ var (
 		Slug:     "women-clothes-lingerie-and-underwear",
 		Name:     "Đồ lót",
 		NameEn:   "Lingerie & Underwear",
-		Children: Categories{CategoryWomenClothesLingerieUnderwearThermalInnerwear, CategoryWomenClothesLingerieUnderwearBraAccessories, CategoryWomenClothesLingerieUnderwearShapewear, CategoryWomenClothesLingerieUnderwearSafetyPants, CategoryWomenClothesLingerieUnderwearSexyLingerie, CategoryWomenClothesLingerieUnderwearSets, CategoryWomenClothesLingerieUnderwearBras, CategoryWomenClothesLingerieUnderwearPanties},
+		Children: Categories{CategoryWomenClothesLingerieUnderwearShapewear, CategoryWomenClothesLingerieUnderwearSafetyPants, CategoryWomenClothesLingerieUnderwearSexyLingerie, CategoryWomenClothesLingerieUnderwearSets, CategoryWomenClothesLingerieUnderwearBras, CategoryWomenClothesLingerieUnderwearPanties, CategoryWomenClothesLingerieUnderwearThermalInnerwear, CategoryWomenClothesLingerieUnderwearBraAccessories},
 	}
 	CategoryWomenClothesLingerieUnderwearSets = &Category{
 		Id:     "28x2",
@@ -374,7 +374,7 @@ var (
 		Slug:     "women-clothes-maternity-wear",
 		Name:     "Đồ Bầu",
 		NameEn:   "Maternity Wear",
-		Children: Categories{CategoryWomenClothesMaternityWearNursingBras, CategoryWomenClothesMaternityWearMaternityDresses, CategoryWomenClothesMaternityWearMaternityTops, CategoryWomenClothesMaternityWearBreastfeedingWear, CategoryWomenClothesMaternityWearMaternitySets, CategoryWomenClothesMaternityWearMaternityBottoms},
+		Children: Categories{CategoryWomenClothesMaternityWearMaternitySets, CategoryWomenClothesMaternityWearMaternityBottoms, CategoryWomenClothesMaternityWearNursingBras, CategoryWomenClothesMaternityWearMaternityDresses, CategoryWomenClothesMaternityWearMaternityTops, CategoryWomenClothesMaternityWearBreastfeedingWear},
 	}
 	CategoryWomenClothesMaternityWearNursingBras = &Category{
 		Id:     "41x2",
@@ -472,7 +472,7 @@ var (
 		Slug:     "women-clothes-fabric",
 		Name:     "Vải",
 		NameEn:   "Fabric",
-		Children: Categories{CategoryWomenClothesFabricLeather, CategoryWomenClothesFabricVinylNylon, CategoryWomenClothesFabricDenim, CategoryWomenClothesFabricCanvas, CategoryWomenClothesFabricCotton, CategoryWomenClothesFabricWool, CategoryWomenClothesFabricVelvetSilkSatin},
+		Children: Categories{CategoryWomenClothesFabricVelvetSilkSatin, CategoryWomenClothesFabricLeather, CategoryWomenClothesFabricVinylNylon, CategoryWomenClothesFabricDenim, CategoryWomenClothesFabricCanvas, CategoryWomenClothesFabricCotton, CategoryWomenClothesFabricWool},
 	}
 	CategoryWomenClothesFabricCotton = &Category{
 		Id:     "53x2",
@@ -549,7 +549,7 @@ var (
 		Slug:     "men-clothes",
 		Name:     "Thời Trang Nam",
 		NameEn:   "Men Clothes",
-		Children: Categories{CategoryMenClothesPants, CategoryMenClothesTops, CategoryMenClothesSocks, CategoryMenClothesJeans, CategoryMenClothesHoodiesSweatshirts, CategoryMenClothesJacketsCoatsVests, CategoryMenClothesInnerwearUnderwear, CategoryMenClothesSleepwear, CategoryMenClothesWinterJacketsCoats, CategoryMenClothesSuits, CategoryMenClothesShorts, CategoryMenClothesSets, CategoryMenClothesSweatersCardigans, CategoryMenClothesTraditionalWear, CategoryMenClothesCostumes, CategoryMenClothesOccupationalAttire},
+		Children: Categories{CategoryMenClothesHoodiesSweatshirts, CategoryMenClothesJacketsCoatsVests, CategoryMenClothesWinterJacketsCoats, CategoryMenClothesSuits, CategoryMenClothesTops, CategoryMenClothesTraditionalWear, CategoryMenClothesOccupationalAttire, CategoryMenClothesSweatersCardigans, CategoryMenClothesPants, CategoryMenClothesSleepwear, CategoryMenClothesJeans, CategoryMenClothesCostumes, CategoryMenClothesSocks, CategoryMenClothesShorts, CategoryMenClothesInnerwearUnderwear, CategoryMenClothesSets},
 	}
 	CategoryMenClothesJeans = &Category{
 		Id:     "62x1",
@@ -563,7 +563,7 @@ var (
 		Slug:     "men-clothes-hoodies-and-sweatshirts",
 		Name:     "Hoodie & Áo nỉ",
 		NameEn:   "Hoodies & Sweatshirts",
-		Children: Categories{CategoryMenClothesHoodiesSweatshirtsSweatshirts, CategoryMenClothesHoodiesSweatshirtsHoodies},
+		Children: Categories{CategoryMenClothesHoodiesSweatshirtsHoodies, CategoryMenClothesHoodiesSweatshirtsSweatshirts},
 	}
 	CategoryMenClothesHoodiesSweatshirtsHoodies = &Category{
 		Id:     "63x2",
@@ -822,7 +822,7 @@ var (
 		Slug:     "beauty",
 		Name:     "Sắc Đẹp",
 		NameEn:   "Beauty",
-		Children: Categories{CategoryBeautyPerfumesFragrances, CategoryBeautyBeautySetsPackages, CategoryBeautyBathBodyCare, CategoryBeautyHandFootNailCare, CategoryBeautyHairCare, CategoryBeautyMensCare, CategoryBeautyMakeup, CategoryBeautyBeautyTools, CategoryBeautySkincare},
+		Children: Categories{CategoryBeautyHandFootNailCare, CategoryBeautyMensCare, CategoryBeautyMakeup, CategoryBeautyHairCare, CategoryBeautyPerfumesFragrances, CategoryBeautyBeautyTools, CategoryBeautySkincare, CategoryBeautyBeautySetsPackages, CategoryBeautyBathBodyCare},
 	}
 	CategoryBeautyHandFootNailCare = &Category{
 		Id:       "92x1",
@@ -836,7 +836,7 @@ var (
 		Slug:     "beauty-hand-foot-and-nail-care-hand-care",
 		Name:     "Chăm sóc tay",
 		NameEn:   "Hand Care",
-		Children: Categories{CategoryBeautyHandFootNailCareHandCareHandMasks, CategoryBeautyHandFootNailCareHandCareLotionCreamScrubs, CategoryBeautyHandFootNailCareHandCareHandWashes},
+		Children: Categories{CategoryBeautyHandFootNailCareHandCareLotionCreamScrubs, CategoryBeautyHandFootNailCareHandCareHandWashes, CategoryBeautyHandFootNailCareHandCareHandMasks},
 	}
 	CategoryBeautyHandFootNailCareHandCareHandMasks = &Category{
 		Id:     "92x3",
@@ -1004,7 +1004,7 @@ var (
 		Slug:     "beauty-mens-care",
 		Name:     "Chăm sóc nam giới",
 		NameEn:   "Men's Care",
-		Children: Categories{CategoryBeautyMensCareBathBodyCare, CategoryBeautyMensCareSkinCare, CategoryBeautyMensCareShavingGrooming, CategoryBeautyMensCareHairCare},
+		Children: Categories{CategoryBeautyMensCareHairCare, CategoryBeautyMensCareBathBodyCare, CategoryBeautyMensCareSkinCare, CategoryBeautyMensCareShavingGrooming},
 	}
 	CategoryBeautyMensCareBathBodyCare = &Category{
 		Id:     "112x2",
@@ -1046,7 +1046,7 @@ var (
 		Slug:     "beauty-mens-care-shaving-and-grooming",
 		Name:     "Sản phẩm cạo râu & hớt tóc",
 		NameEn:   "Shaving & Grooming",
-		Children: Categories{CategoryBeautyMensCareShavingGroomingAftershave, CategoryBeautyMensCareShavingGroomingCreamsFoamsGels, CategoryBeautyMensCareShavingGroomingRazorsBlades, CategoryBeautyMensCareShavingGroomingShavers, CategoryBeautyMensCareShavingGroomingShavingBrushes, CategoryBeautyMensCareShavingGroomingTrimmersClippersMultifunctional, CategoryBeautyMensCareShavingGroomingShavingAccessories, CategoryBeautyMensCareShavingGroomingOther},
+		Children: Categories{CategoryBeautyMensCareShavingGroomingCreamsFoamsGels, CategoryBeautyMensCareShavingGroomingRazorsBlades, CategoryBeautyMensCareShavingGroomingShavers, CategoryBeautyMensCareShavingGroomingShavingBrushes, CategoryBeautyMensCareShavingGroomingTrimmersClippersMultifunctional, CategoryBeautyMensCareShavingGroomingShavingAccessories, CategoryBeautyMensCareShavingGroomingOther, CategoryBeautyMensCareShavingGroomingAftershave},
 	}
 	CategoryBeautyMensCareShavingGroomingAftershave = &Category{
 		Id:     "116x3",
@@ -1130,7 +1130,7 @@ var (
 		Slug:     "beauty-makeup-face",
 		Name:     "Trang điểm mặt",
 		NameEn:   "Face",
-		Children: Categories{CategoryBeautyMakeupFacePowder, CategoryBeautyMakeupFaceConcealerCorrector, CategoryBeautyMakeupFaceBlush, CategoryBeautyMakeupFaceOther, CategoryBeautyMakeupFaceMakeupBasePrimer, CategoryBeautyMakeupFaceBBCCCream, CategoryBeautyMakeupFaceSettingFinishingSpray, CategoryBeautyMakeupFaceFoundation, CategoryBeautyMakeupFaceBronzerContourHighlighter},
+		Children: Categories{CategoryBeautyMakeupFaceBBCCCream, CategoryBeautyMakeupFaceBronzerContourHighlighter, CategoryBeautyMakeupFaceSettingFinishingSpray, CategoryBeautyMakeupFaceBlush, CategoryBeautyMakeupFaceMakeupBasePrimer, CategoryBeautyMakeupFaceFoundation, CategoryBeautyMakeupFaceOther, CategoryBeautyMakeupFacePowder, CategoryBeautyMakeupFaceConcealerCorrector},
 	}
 	CategoryBeautyMakeupFaceMakeupBasePrimer = &Category{
 		Id:     "126x3",
@@ -1200,7 +1200,7 @@ var (
 		Slug:     "beauty-makeup-eyes",
 		Name:     "Trang điểm mắt",
 		NameEn:   "Eyes",
-		Children: Categories{CategoryBeautyMakeupEyesEyebrows, CategoryBeautyMakeupEyesEyeshadow, CategoryBeautyMakeupEyesEyePrimer, CategoryBeautyMakeupEyesEyeliner, CategoryBeautyMakeupEyesMascara},
+		Children: Categories{CategoryBeautyMakeupEyesEyeshadow, CategoryBeautyMakeupEyesEyePrimer, CategoryBeautyMakeupEyesEyeliner, CategoryBeautyMakeupEyesMascara, CategoryBeautyMakeupEyesEyebrows},
 	}
 	CategoryBeautyMakeupEyesEyeshadow = &Category{
 		Id:     "135x3",
@@ -1242,7 +1242,7 @@ var (
 		Slug:     "beauty-makeup-lips",
 		Name:     "Trang điểm môi",
 		NameEn:   "Lips",
-		Children: Categories{CategoryBeautyMakeupLipsLipstick, CategoryBeautyMakeupLipsLipGloss, CategoryBeautyMakeupLipsLipLiner, CategoryBeautyMakeupLipsLipTintStain, CategoryBeautyMakeupLipsLipPlumper},
+		Children: Categories{CategoryBeautyMakeupLipsLipGloss, CategoryBeautyMakeupLipsLipLiner, CategoryBeautyMakeupLipsLipTintStain, CategoryBeautyMakeupLipsLipPlumper, CategoryBeautyMakeupLipsLipstick},
 	}
 	CategoryBeautyMakeupLipsLipstick = &Category{
 		Id:     "140x3",
@@ -1298,7 +1298,7 @@ var (
 		Slug:     "beauty-beauty-tools-makeup-accessories",
 		Name:     "Dụng cụ trang điểm",
 		NameEn:   "Makeup Accessories",
-		Children: Categories{CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBrushCleaners, CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBrushes, CategoryBeautyBeautyToolsMakeupAccessoriesEyelashCurlers, CategoryBeautyBeautyToolsMakeupAccessoriesFalseEyelashes, CategoryBeautyBeautyToolsMakeupAccessoriesEyelidTapeGlue, CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBagsOrganizers, CategoryBeautyBeautyToolsMakeupAccessoriesMirrors, CategoryBeautyBeautyToolsMakeupAccessoriesSpongesApplicators, CategoryBeautyBeautyToolsMakeupAccessoriesEyebrowTemplates, CategoryBeautyBeautyToolsMakeupAccessoriesPencilSharpeners, CategoryBeautyBeautyToolsMakeupAccessoriesCottonPadsandBuds},
+		Children: Categories{CategoryBeautyBeautyToolsMakeupAccessoriesFalseEyelashes, CategoryBeautyBeautyToolsMakeupAccessoriesPencilSharpeners, CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBagsOrganizers, CategoryBeautyBeautyToolsMakeupAccessoriesMirrors, CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBrushes, CategoryBeautyBeautyToolsMakeupAccessoriesSpongesApplicators, CategoryBeautyBeautyToolsMakeupAccessoriesEyelidTapeGlue, CategoryBeautyBeautyToolsMakeupAccessoriesCottonPadsandBuds, CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBrushCleaners, CategoryBeautyBeautyToolsMakeupAccessoriesEyelashCurlers, CategoryBeautyBeautyToolsMakeupAccessoriesEyebrowTemplates},
 	}
 	CategoryBeautyBeautyToolsMakeupAccessoriesCottonPadsandBuds = &Category{
 		Id:     "146x3",
@@ -1473,7 +1473,7 @@ var (
 		Slug:     "beauty-skincare",
 		Name:     "Chăm sóc da mặt",
 		NameEn:   "Skincare",
-		Children: Categories{CategoryBeautySkincareEyeTreatment, CategoryBeautySkincareLipsTreatment, CategoryBeautySkincareAcneTreatment, CategoryBeautySkincareFacialOil, CategoryBeautySkincareFacialSerumEssence, CategoryBeautySkincareFaceMaskPacks, CategoryBeautySkincareFaceScrubPeel, CategoryBeautySkincareFaceSunscreen, CategoryBeautySkincareAfterSunFaceCare, CategoryBeautySkincareBlottingPaper, CategoryBeautySkincareFacialCleanser, CategoryBeautySkincareToner, CategoryBeautySkincareFacialMoisturizer},
+		Children: Categories{CategoryBeautySkincareFacialSerumEssence, CategoryBeautySkincareFaceMaskPacks, CategoryBeautySkincareLipsTreatment, CategoryBeautySkincareFaceSunscreen, CategoryBeautySkincareAfterSunFaceCare, CategoryBeautySkincareFacialCleanser, CategoryBeautySkincareToner, CategoryBeautySkincareFacialMoisturizer, CategoryBeautySkincareAcneTreatment, CategoryBeautySkincareBlottingPaper, CategoryBeautySkincareFacialOil, CategoryBeautySkincareFaceScrubPeel, CategoryBeautySkincareEyeTreatment},
 	}
 	CategoryBeautySkincareFacialCleanser = &Category{
 		Id:     "168x2",
@@ -1557,7 +1557,7 @@ var (
 		Slug:     "beauty-skincare-lips-treatment",
 		Name:     "Sản phẩm dưỡng môi",
 		NameEn:   "Lips Treatment",
-		Children: Categories{CategoryBeautySkincareLipsTreatmentLipBalm, CategoryBeautySkincareLipsTreatmentLipScrubExfoliator, CategoryBeautySkincareLipsTreatmentLipMask},
+		Children: Categories{CategoryBeautySkincareLipsTreatmentLipMask, CategoryBeautySkincareLipsTreatmentLipBalm, CategoryBeautySkincareLipsTreatmentLipScrubExfoliator},
 	}
 	CategoryBeautySkincareLipsTreatmentLipBalm = &Category{
 		Id:     "178x3",
@@ -1620,7 +1620,7 @@ var (
 		Slug:     "beauty-bath-and-body-care",
 		Name:     "Tắm & chăm sóc cơ thể",
 		NameEn:   "Bath & Body Care",
-		Children: Categories{CategoryBeautyBathBodyCareBodyMasks, CategoryBeautyBathBodyCareBodyCreamLotionButter, CategoryBeautyBathBodyCareHairRemovalCreamWax, CategoryBeautyBathBodyCareBreastCare, CategoryBeautyBathBodyCareOther, CategoryBeautyBathBodyCareSunCare, CategoryBeautyBathBodyCareBodyWashSoap, CategoryBeautyBathBodyCareBodyScrubPeel, CategoryBeautyBathBodyCareBodyOil, CategoryBeautyBathBodyCareBodyDeodorants, CategoryBeautyBathBodyCareMassageOil},
+		Children: Categories{CategoryBeautyBathBodyCareBodyWashSoap, CategoryBeautyBathBodyCareBodyScrubPeel, CategoryBeautyBathBodyCareBodyDeodorants, CategoryBeautyBathBodyCareHairRemovalCreamWax, CategoryBeautyBathBodyCareBreastCare, CategoryBeautyBathBodyCareOther, CategoryBeautyBathBodyCareBodyMasks, CategoryBeautyBathBodyCareBodyOil, CategoryBeautyBathBodyCareBodyCreamLotionButter, CategoryBeautyBathBodyCareMassageOil, CategoryBeautyBathBodyCareSunCare},
 	}
 	CategoryBeautyBathBodyCareBodyWashSoap = &Category{
 		Id:     "186x2",
@@ -1718,7 +1718,7 @@ var (
 		Slug:     "health",
 		Name:     "Sức Khỏe",
 		NameEn:   "Health",
-		Children: Categories{CategoryHealthSexualWellness, CategoryHealthFoodSupplement, CategoryHealthMedicalSupplies, CategoryHealthPersonalCare},
+		Children: Categories{CategoryHealthFoodSupplement, CategoryHealthMedicalSupplies, CategoryHealthPersonalCare, CategoryHealthSexualWellness},
 	}
 	CategoryHealthFoodSupplement = &Category{
 		Id:       "198x1",
@@ -1760,7 +1760,7 @@ var (
 		Slug:     "health-medical-supplies",
 		Name:     "Vật tư y tế",
 		NameEn:   "Medical Supplies",
-		Children: Categories{CategoryHealthMedicalSuppliesMedicalGlovesMasks, CategoryHealthMedicalSuppliesInjuryDisabilitySupport, CategoryHealthMedicalSuppliesHealthMonitorsTests, CategoryHealthMedicalSuppliesScaleBodyFatAnalyzers, CategoryHealthMedicalSuppliesNasalCare, CategoryHealthMedicalSuppliesFirstAidSupplies, CategoryHealthMedicalSuppliesStethoscopes, CategoryHealthMedicalSuppliesLaboratoryTools},
+		Children: Categories{CategoryHealthMedicalSuppliesScaleBodyFatAnalyzers, CategoryHealthMedicalSuppliesNasalCare, CategoryHealthMedicalSuppliesFirstAidSupplies, CategoryHealthMedicalSuppliesStethoscopes, CategoryHealthMedicalSuppliesLaboratoryTools, CategoryHealthMedicalSuppliesMedicalGlovesMasks, CategoryHealthMedicalSuppliesInjuryDisabilitySupport, CategoryHealthMedicalSuppliesHealthMonitorsTests},
 	}
 	CategoryHealthMedicalSuppliesHealthMonitorsTests = &Category{
 		Id:       "202x2",
@@ -1879,7 +1879,7 @@ var (
 		Slug:     "health-medical-supplies-injury-and-disability-support",
 		Name:     "Hỗ trợ chấn thương và khuyết tật",
 		NameEn:   "Injury & Disability Support",
-		Children: Categories{CategoryHealthMedicalSuppliesInjuryDisabilitySupportHearingAids, CategoryHealthMedicalSuppliesInjuryDisabilitySupportWalkingAids, CategoryHealthMedicalSuppliesInjuryDisabilitySupportWheelchairs, CategoryHealthMedicalSuppliesInjuryDisabilitySupportBracesSupports},
+		Children: Categories{CategoryHealthMedicalSuppliesInjuryDisabilitySupportWalkingAids, CategoryHealthMedicalSuppliesInjuryDisabilitySupportWheelchairs, CategoryHealthMedicalSuppliesInjuryDisabilitySupportBracesSupports, CategoryHealthMedicalSuppliesInjuryDisabilitySupportHearingAids},
 	}
 	CategoryHealthMedicalSuppliesInjuryDisabilitySupportWalkingAids = &Category{
 		Id:     "216x3",
@@ -1914,7 +1914,7 @@ var (
 		Slug:     "health-personal-care",
 		Name:     "Chăm sóc cá nhân",
 		NameEn:   "Personal Care",
-		Children: Categories{CategoryHealthPersonalCareAdultDiapersIncontinence, CategoryHealthPersonalCareFeminineCare, CategoryHealthPersonalCareMassageTherapyDevices, CategoryHealthPersonalCareInsectRepellents, CategoryHealthPersonalCareHandSanitizers, CategoryHealthPersonalCareEyeCare, CategoryHealthPersonalCareEarCare, CategoryHealthPersonalCareOralCare},
+		Children: Categories{CategoryHealthPersonalCareEarCare, CategoryHealthPersonalCareOralCare, CategoryHealthPersonalCareAdultDiapersIncontinence, CategoryHealthPersonalCareFeminineCare, CategoryHealthPersonalCareMassageTherapyDevices, CategoryHealthPersonalCareInsectRepellents, CategoryHealthPersonalCareHandSanitizers, CategoryHealthPersonalCareEyeCare},
 	}
 	CategoryHealthPersonalCareHandSanitizers = &Category{
 		Id:     "220x2",
@@ -1928,7 +1928,7 @@ var (
 		Slug:     "health-personal-care-eye-care",
 		Name:     "Chăm sóc mắt",
 		NameEn:   "Eye Care",
-		Children: Categories{CategoryHealthPersonalCareEyeCareOther, CategoryHealthPersonalCareEyeCareContactlens, CategoryHealthPersonalCareEyeCareLensSolutionsEyedrops},
+		Children: Categories{CategoryHealthPersonalCareEyeCareContactlens, CategoryHealthPersonalCareEyeCareLensSolutionsEyedrops, CategoryHealthPersonalCareEyeCareOther},
 	}
 	CategoryHealthPersonalCareEyeCareContactlens = &Category{
 		Id:     "221x3",
@@ -1963,7 +1963,7 @@ var (
 		Slug:     "health-personal-care-oral-care",
 		Name:     "Vệ sinh răng miệng",
 		NameEn:   "Oral Care",
-		Children: Categories{CategoryHealthPersonalCareOralCareManualToothbrushes, CategoryHealthPersonalCareOralCareDentalFloss, CategoryHealthPersonalCareOralCareTeethWhitening, CategoryHealthPersonalCareOralCareOther, CategoryHealthPersonalCareOralCareElectricToothbrushesAccessories, CategoryHealthPersonalCareOralCareToothpastes, CategoryHealthPersonalCareOralCareMouthWash, CategoryHealthPersonalCareOralCareDentureCare, CategoryHealthPersonalCareOralCareOrthodonticAccessories},
+		Children: Categories{CategoryHealthPersonalCareOralCareDentalFloss, CategoryHealthPersonalCareOralCareMouthWash, CategoryHealthPersonalCareOralCareDentureCare, CategoryHealthPersonalCareOralCareOther, CategoryHealthPersonalCareOralCareElectricToothbrushesAccessories, CategoryHealthPersonalCareOralCareToothpastes, CategoryHealthPersonalCareOralCareOrthodonticAccessories, CategoryHealthPersonalCareOralCareManualToothbrushes, CategoryHealthPersonalCareOralCareTeethWhitening},
 	}
 	CategoryHealthPersonalCareOralCareManualToothbrushes = &Category{
 		Id:     "225x3",
@@ -2131,7 +2131,7 @@ var (
 		Slug:     "fashion-accessories",
 		Name:     "Phụ Kiện Thời Trang",
 		NameEn:   "Fashion Accessories",
-		Children: Categories{CategoryFashionAccessoriesRings, CategoryFashionAccessoriesEarrings, CategoryFashionAccessoriesScarvesShawls, CategoryFashionAccessoriesHairAccessories, CategoryFashionAccessoriesNecklaces, CategoryFashionAccessoriesAccessoriesSetsPackages, CategoryFashionAccessoriesBraceletsBangles, CategoryFashionAccessoriesEyewear, CategoryFashionAccessoriesGloves, CategoryFashionAccessoriesBelts, CategoryFashionAccessoriesNecktiesBowTiesCravats, CategoryFashionAccessoriesAdditionalAccessories, CategoryFashionAccessoriesAnklets, CategoryFashionAccessoriesHatsCaps, CategoryFashionAccessoriesInvestmentPreciousMetals},
+		Children: Categories{CategoryFashionAccessoriesRings, CategoryFashionAccessoriesHairAccessories, CategoryFashionAccessoriesAnklets, CategoryFashionAccessoriesEyewear, CategoryFashionAccessoriesEarrings, CategoryFashionAccessoriesBelts, CategoryFashionAccessoriesAccessoriesSetsPackages, CategoryFashionAccessoriesGloves, CategoryFashionAccessoriesBraceletsBangles, CategoryFashionAccessoriesHatsCaps, CategoryFashionAccessoriesNecktiesBowTiesCravats, CategoryFashionAccessoriesAdditionalAccessories, CategoryFashionAccessoriesScarvesShawls, CategoryFashionAccessoriesNecklaces, CategoryFashionAccessoriesInvestmentPreciousMetals},
 	}
 	CategoryFashionAccessoriesRings = &Category{
 		Id:     "246x1",
@@ -2166,7 +2166,7 @@ var (
 		Slug:     "fashion-accessories-hair-accessories",
 		Name:     "Phụ kiện tóc",
 		NameEn:   "Hair Accessories",
-		Children: Categories{CategoryFashionAccessoriesHairAccessoriesHairTiesRibbonsScrunchies, CategoryFashionAccessoriesHairAccessoriesHairClipsHairPins, CategoryFashionAccessoriesHairAccessoriesWigsExtensions, CategoryFashionAccessoriesHairAccessoriesHeadpiecesTiarasFlowerCrowns, CategoryFashionAccessoriesHairAccessoriesHeadbands},
+		Children: Categories{CategoryFashionAccessoriesHairAccessoriesHeadbands, CategoryFashionAccessoriesHairAccessoriesHairTiesRibbonsScrunchies, CategoryFashionAccessoriesHairAccessoriesHairClipsHairPins, CategoryFashionAccessoriesHairAccessoriesWigsExtensions, CategoryFashionAccessoriesHairAccessoriesHeadpiecesTiarasFlowerCrowns},
 	}
 	CategoryFashionAccessoriesHairAccessoriesHeadbands = &Category{
 		Id:     "250x2",
@@ -2236,7 +2236,7 @@ var (
 		Slug:     "fashion-accessories-eyewear",
 		Name:     "Kính mắt",
 		NameEn:   "Eyewear",
-		Children: Categories{CategoryFashionAccessoriesEyewearEyewearCasesAccessories, CategoryFashionAccessoriesEyewearOther, CategoryFashionAccessoriesEyewearSunglasses, CategoryFashionAccessoriesEyewearFramesGlasses},
+		Children: Categories{CategoryFashionAccessoriesEyewearSunglasses, CategoryFashionAccessoriesEyewearFramesGlasses, CategoryFashionAccessoriesEyewearEyewearCasesAccessories, CategoryFashionAccessoriesEyewearOther},
 	}
 	CategoryFashionAccessoriesEyewearSunglasses = &Category{
 		Id:     "259x2",
@@ -2271,7 +2271,7 @@ var (
 		Slug:     "fashion-accessories-investment-precious-metals",
 		Name:     "Kim loại quý",
 		NameEn:   "Investment Precious Metals",
-		Children: Categories{CategoryFashionAccessoriesInvestmentPreciousMetalsOther, CategoryFashionAccessoriesInvestmentPreciousMetalsPlatinumKGold, CategoryFashionAccessoriesInvestmentPreciousMetalsSilver, CategoryFashionAccessoriesInvestmentPreciousMetalsDiamond, CategoryFashionAccessoriesInvestmentPreciousMetalsJade},
+		Children: Categories{CategoryFashionAccessoriesInvestmentPreciousMetalsPlatinumKGold, CategoryFashionAccessoriesInvestmentPreciousMetalsSilver, CategoryFashionAccessoriesInvestmentPreciousMetalsDiamond, CategoryFashionAccessoriesInvestmentPreciousMetalsJade, CategoryFashionAccessoriesInvestmentPreciousMetalsOther},
 	}
 	CategoryFashionAccessoriesInvestmentPreciousMetalsPlatinumKGold = &Category{
 		Id:     "263x2",
@@ -2397,7 +2397,7 @@ var (
 		Slug:     "home-appliances",
 		Name:     "Thiết Bị Điện Gia Dụng",
 		NameEn:   "Home Appliances",
-		Children: Categories{CategoryHomeAppliancesRemoteControls, CategoryHomeAppliancesProjectorsAccessories, CategoryHomeAppliancesSmallHouseholdAppliances, CategoryHomeAppliancesLargeHouseholdAppliances, CategoryHomeAppliancesTVsAccessories, CategoryHomeAppliancesKitchenAppliances, CategoryHomeAppliancesElectricalCircuitryParts, CategoryHomeAppliancesBatteries},
+		Children: Categories{CategoryHomeAppliancesProjectorsAccessories, CategoryHomeAppliancesSmallHouseholdAppliances, CategoryHomeAppliancesLargeHouseholdAppliances, CategoryHomeAppliancesTVsAccessories, CategoryHomeAppliancesKitchenAppliances, CategoryHomeAppliancesElectricalCircuitryParts, CategoryHomeAppliancesBatteries, CategoryHomeAppliancesRemoteControls},
 	}
 	CategoryHomeAppliancesProjectorsAccessories = &Category{
 		Id:       "279x1",
@@ -2432,7 +2432,7 @@ var (
 		Slug:     "home-appliances-small-household-appliances",
 		Name:     "Thiết bị điện gia dụng nhỏ",
 		NameEn:   "Small Household Appliances",
-		Children: Categories{CategoryHomeAppliancesSmallHouseholdAppliancesSewingMachinesAccessories, CategoryHomeAppliancesSmallHouseholdAppliancesTelephones, CategoryHomeAppliancesSmallHouseholdAppliancesIronsSteamers, CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatment, CategoryHomeAppliancesSmallHouseholdAppliancesVacuumCleanersFloorCare, CategoryHomeAppliancesSmallHouseholdAppliancesOther, CategoryHomeAppliancesSmallHouseholdAppliancesFootBathsSpas, CategoryHomeAppliancesSmallHouseholdAppliancesWaterFlossers},
+		Children: Categories{CategoryHomeAppliancesSmallHouseholdAppliancesTelephones, CategoryHomeAppliancesSmallHouseholdAppliancesIronsSteamers, CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatment, CategoryHomeAppliancesSmallHouseholdAppliancesVacuumCleanersFloorCare, CategoryHomeAppliancesSmallHouseholdAppliancesOther, CategoryHomeAppliancesSmallHouseholdAppliancesFootBathsSpas, CategoryHomeAppliancesSmallHouseholdAppliancesWaterFlossers, CategoryHomeAppliancesSmallHouseholdAppliancesSewingMachinesAccessories},
 	}
 	CategoryHomeAppliancesSmallHouseholdAppliancesFootBathsSpas = &Category{
 		Id:     "282x2",
@@ -2460,7 +2460,7 @@ var (
 		Slug:     "home-appliances-small-household-appliances-telephones",
 		Name:     "Điện thoại",
 		NameEn:   "Telephones",
-		Children: Categories{CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesFaxMachines, CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesCordedPhones, CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesCordlessPhones},
+		Children: Categories{CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesCordedPhones, CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesCordlessPhones, CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesFaxMachines},
 	}
 	CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesCordedPhones = &Category{
 		Id:     "285x3",
@@ -2607,7 +2607,7 @@ var (
 		Slug:     "home-appliances-tvs-and-accessories",
 		Name:     "Tivi & Phụ kiện",
 		NameEn:   "TVs & Accessories",
-		Children: Categories{CategoryHomeAppliancesTVsAccessoriesTVs, CategoryHomeAppliancesTVsAccessoriesTVAntennas, CategoryHomeAppliancesTVsAccessoriesTVBoxesReceivers, CategoryHomeAppliancesTVsAccessoriesTVBrackets, CategoryHomeAppliancesTVsAccessoriesOther},
+		Children: Categories{CategoryHomeAppliancesTVsAccessoriesTVBrackets, CategoryHomeAppliancesTVsAccessoriesOther, CategoryHomeAppliancesTVsAccessoriesTVs, CategoryHomeAppliancesTVsAccessoriesTVAntennas, CategoryHomeAppliancesTVsAccessoriesTVBoxesReceivers},
 	}
 	CategoryHomeAppliancesTVsAccessoriesTVs = &Category{
 		Id:     "301x2",
@@ -2648,7 +2648,7 @@ var (
 		Slug:     "home-appliances-kitchen-appliances",
 		Name:     "Đồ gia dụng nhà bếp",
 		NameEn:   "Kitchen Appliances",
-		Children: Categories{CategoryHomeAppliancesKitchenAppliancesWaterFiltersCoolersDispensers, CategoryHomeAppliancesKitchenAppliancesKettles, CategoryHomeAppliancesKitchenAppliancesMixers, CategoryHomeAppliancesKitchenAppliancesDeepFryers, CategoryHomeAppliancesKitchenAppliancesFreezers, CategoryHomeAppliancesKitchenAppliancesJuicersBlendersSoyaBeanMachines, CategoryHomeAppliancesKitchenAppliancesCoffeeMachinesAccessories, CategoryHomeAppliancesKitchenAppliancesDishwashers, CategoryHomeAppliancesKitchenAppliancesMicrowaves, CategoryHomeAppliancesKitchenAppliancesMultifunctionCookers, CategoryHomeAppliancesKitchenAppliancesAirFryers, CategoryHomeAppliancesKitchenAppliancesOvens, CategoryHomeAppliancesKitchenAppliancesToasters, CategoryHomeAppliancesKitchenAppliancesFoodProcessorsMeatGrinders, CategoryHomeAppliancesKitchenAppliancesPressureCookers, CategoryHomeAppliancesKitchenAppliancesSlowCookersSousVideMachines, CategoryHomeAppliancesKitchenAppliancesRefrigerators, CategoryHomeAppliancesKitchenAppliancesWineFridges, CategoryHomeAppliancesKitchenAppliancesStovesHobsGasRegulators, CategoryHomeAppliancesKitchenAppliancesRiceCookers, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookware, CategoryHomeAppliancesKitchenAppliancesHoods},
+		Children: Categories{CategoryHomeAppliancesKitchenAppliancesSpecialtyCookware, CategoryHomeAppliancesKitchenAppliancesFreezers, CategoryHomeAppliancesKitchenAppliancesDeepFryers, CategoryHomeAppliancesKitchenAppliancesToasters, CategoryHomeAppliancesKitchenAppliancesOvens, CategoryHomeAppliancesKitchenAppliancesSlowCookersSousVideMachines, CategoryHomeAppliancesKitchenAppliancesWineFridges, CategoryHomeAppliancesKitchenAppliancesAirFryers, CategoryHomeAppliancesKitchenAppliancesCoffeeMachinesAccessories, CategoryHomeAppliancesKitchenAppliancesDishwashers, CategoryHomeAppliancesKitchenAppliancesStovesHobsGasRegulators, CategoryHomeAppliancesKitchenAppliancesMicrowaves, CategoryHomeAppliancesKitchenAppliancesFoodProcessorsMeatGrinders, CategoryHomeAppliancesKitchenAppliancesPressureCookers, CategoryHomeAppliancesKitchenAppliancesKettles, CategoryHomeAppliancesKitchenAppliancesJuicersBlendersSoyaBeanMachines, CategoryHomeAppliancesKitchenAppliancesHoods, CategoryHomeAppliancesKitchenAppliancesRiceCookers, CategoryHomeAppliancesKitchenAppliancesRefrigerators, CategoryHomeAppliancesKitchenAppliancesMultifunctionCookers, CategoryHomeAppliancesKitchenAppliancesWaterFiltersCoolersDispensers, CategoryHomeAppliancesKitchenAppliancesMixers},
 	}
 	CategoryHomeAppliancesKitchenAppliancesWaterFiltersCoolersDispensers = &Category{
 		Id:     "306x2",
@@ -2781,7 +2781,7 @@ var (
 		Slug:     "home-appliances-kitchen-appliances-specialty-cookware",
 		Name:     "Dụng cụ nấu đặc biệt",
 		NameEn:   "Specialty Cookware",
-		Children: Categories{CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareOther, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareWaffleCrepeMakers, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareEggBoilers, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareBreadMakers, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareTakoyakiMakers, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareDessertMachine, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareSodaMakers},
+		Children: Categories{CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareBreadMakers, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareTakoyakiMakers, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareDessertMachine, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareSodaMakers, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareOther, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareWaffleCrepeMakers, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareEggBoilers},
 	}
 	CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareWaffleCrepeMakers = &Category{
 		Id:     "324x3",
@@ -2858,7 +2858,7 @@ var (
 		Slug:     "home-appliances-electrical-circuitry-and-parts",
 		Name:     "Mạch điện & Phụ tùng",
 		NameEn:   "Electrical Circuitry & Parts",
-		Children: Categories{CategoryHomeAppliancesElectricalCircuitryPartsDoorbells, CategoryHomeAppliancesElectricalCircuitryPartsSwitches, CategoryHomeAppliancesElectricalCircuitryPartsHouseAlarms, CategoryHomeAppliancesElectricalCircuitryPartsLightningProtection, CategoryHomeAppliancesElectricalCircuitryPartsElectricSocketsExtensionCords, CategoryHomeAppliancesElectricalCircuitryPartsElectricalSafety},
+		Children: Categories{CategoryHomeAppliancesElectricalCircuitryPartsElectricalSafety, CategoryHomeAppliancesElectricalCircuitryPartsDoorbells, CategoryHomeAppliancesElectricalCircuitryPartsSwitches, CategoryHomeAppliancesElectricalCircuitryPartsHouseAlarms, CategoryHomeAppliancesElectricalCircuitryPartsLightningProtection, CategoryHomeAppliancesElectricalCircuitryPartsElectricSocketsExtensionCords},
 	}
 	CategoryHomeAppliancesElectricalCircuitryPartsElectricSocketsExtensionCords = &Category{
 		Id:     "334x2",
@@ -2921,14 +2921,14 @@ var (
 		Slug:     "men-shoes",
 		Name:     "Giày Dép Nam",
 		NameEn:   "Men Shoes",
-		Children: Categories{CategoryMenShoesSneakers, CategoryMenShoesSlipOnsMules, CategoryMenShoesLoafersBoatShoes, CategoryMenShoesOxfordsLaceUps, CategoryMenShoesSandalsFlipFlops, CategoryMenShoesShoeCareAccessories, CategoryMenShoesBoots},
+		Children: Categories{CategoryMenShoesShoeCareAccessories, CategoryMenShoesBoots, CategoryMenShoesSneakers, CategoryMenShoesSlipOnsMules, CategoryMenShoesLoafersBoatShoes, CategoryMenShoesOxfordsLaceUps, CategoryMenShoesSandalsFlipFlops},
 	}
 	CategoryMenShoesBoots = &Category{
 		Id:       "342x1",
 		Slug:     "men-shoes-boots",
 		Name:     "Bốt",
 		NameEn:   "Boots",
-		Children: Categories{CategoryMenShoesBootsFashionBoots, CategoryMenShoesBootsRainBoots, CategoryMenShoesBootsSafetyBoots},
+		Children: Categories{CategoryMenShoesBootsRainBoots, CategoryMenShoesBootsSafetyBoots, CategoryMenShoesBootsFashionBoots},
 	}
 	CategoryMenShoesBootsFashionBoots = &Category{
 		Id:     "342x2",
@@ -3019,7 +3019,7 @@ var (
 		Slug:     "men-shoes-shoe-care-and-accessories",
 		Name:     "Phụ kiện giày dép",
 		NameEn:   "Shoe Care & Accessories",
-		Children: Categories{CategoryMenShoesShoeCareAccessoriesShoeHornsTrees, CategoryMenShoesShoeCareAccessoriesShoeInsoles, CategoryMenShoesShoeCareAccessoriesShoeCareCleaningTools, CategoryMenShoesShoeCareAccessoriesShoeDeodorizers, CategoryMenShoesShoeCareAccessoriesShoeLaces},
+		Children: Categories{CategoryMenShoesShoeCareAccessoriesShoeLaces, CategoryMenShoesShoeCareAccessoriesShoeHornsTrees, CategoryMenShoesShoeCareAccessoriesShoeInsoles, CategoryMenShoesShoeCareAccessoriesShoeCareCleaningTools, CategoryMenShoesShoeCareAccessoriesShoeDeodorizers},
 	}
 	CategoryMenShoesShoeCareAccessoriesShoeCareCleaningTools = &Category{
 		Id:     "353x2",
@@ -3061,7 +3061,7 @@ var (
 		Slug:     "mobile-and-gadgets",
 		Name:     "Điện Thoại & Phụ Kiện",
 		NameEn:   "Mobile & Gadgets",
-		Children: Categories{CategoryMobileGadgetsSimCards, CategoryMobileGadgetsTablets, CategoryMobileGadgetsMobilePhones, CategoryMobileGadgetsWearableDevices, CategoryMobileGadgetsAccessories, CategoryMobileGadgetsWalkieTalkies, CategoryMobileGadgetsOther},
+		Children: Categories{CategoryMobileGadgetsOther, CategoryMobileGadgetsSimCards, CategoryMobileGadgetsTablets, CategoryMobileGadgetsMobilePhones, CategoryMobileGadgetsWearableDevices, CategoryMobileGadgetsAccessories, CategoryMobileGadgetsWalkieTalkies},
 	}
 	CategoryMobileGadgetsSimCards = &Category{
 		Id:     "358x1",
@@ -3089,7 +3089,7 @@ var (
 		Slug:     "mobile-and-gadgets-wearable-devices",
 		Name:     "Thiết bị đeo thông minh",
 		NameEn:   "Wearable Devices",
-		Children: Categories{CategoryMobileGadgetsWearableDevicesGPSTrackers, CategoryMobileGadgetsWearableDevicesOther, CategoryMobileGadgetsWearableDevicesSmartwatchesFitnessTrackers, CategoryMobileGadgetsWearableDevicesVRDevices},
+		Children: Categories{CategoryMobileGadgetsWearableDevicesVRDevices, CategoryMobileGadgetsWearableDevicesGPSTrackers, CategoryMobileGadgetsWearableDevicesOther, CategoryMobileGadgetsWearableDevicesSmartwatchesFitnessTrackers},
 	}
 	CategoryMobileGadgetsWearableDevicesSmartwatchesFitnessTrackers = &Category{
 		Id:     "361x2",
@@ -3124,7 +3124,7 @@ var (
 		Slug:     "mobile-and-gadgets-accessories",
 		Name:     "Phụ kiện",
 		NameEn:   "Accessories",
-		Children: Categories{CategoryMobileGadgetsAccessoriesPhoneStrapsKeychains, CategoryMobileGadgetsAccessoriesPocketWifi, CategoryMobileGadgetsAccessoriesWearableAccessories, CategoryMobileGadgetsAccessoriesMobileFlashesSelfieLights, CategoryMobileGadgetsAccessoriesPhoneGrips, CategoryMobileGadgetsAccessoriesMemoryCards, CategoryMobileGadgetsAccessoriesCablesChargersConverters, CategoryMobileGadgetsAccessoriesUSBMobileLights, CategoryMobileGadgetsAccessoriesPowerbanksBatteries, CategoryMobileGadgetsAccessoriesMobileLens, CategoryMobileGadgetsAccessoriesStylus, CategoryMobileGadgetsAccessoriesCastingDevices, CategoryMobileGadgetsAccessoriesSelfieAccessories, CategoryMobileGadgetsAccessoriesUSBMobileFans, CategoryMobileGadgetsAccessoriesMobilePouches, CategoryMobileGadgetsAccessoriesScreenProtectors, CategoryMobileGadgetsAccessoriesCasesCoversSkins},
+		Children: Categories{CategoryMobileGadgetsAccessoriesUSBMobileFans, CategoryMobileGadgetsAccessoriesCastingDevices, CategoryMobileGadgetsAccessoriesMobilePouches, CategoryMobileGadgetsAccessoriesUSBMobileLights, CategoryMobileGadgetsAccessoriesCablesChargersConverters, CategoryMobileGadgetsAccessoriesPowerbanksBatteries, CategoryMobileGadgetsAccessoriesWearableAccessories, CategoryMobileGadgetsAccessoriesCasesCoversSkins, CategoryMobileGadgetsAccessoriesSelfieAccessories, CategoryMobileGadgetsAccessoriesMobileFlashesSelfieLights, CategoryMobileGadgetsAccessoriesStylus, CategoryMobileGadgetsAccessoriesPocketWifi, CategoryMobileGadgetsAccessoriesMobileLens, CategoryMobileGadgetsAccessoriesPhoneGrips, CategoryMobileGadgetsAccessoriesPhoneStrapsKeychains, CategoryMobileGadgetsAccessoriesMemoryCards, CategoryMobileGadgetsAccessoriesScreenProtectors},
 	}
 	CategoryMobileGadgetsAccessoriesSelfieAccessories = &Category{
 		Id:       "365x2",
@@ -3285,7 +3285,7 @@ var (
 		Slug:     "mobile-and-gadgets-accessories-powerbanks-and-batteries",
 		Name:     "Sạc dự phòng & Pin",
 		NameEn:   "Powerbanks & Batteries",
-		Children: Categories{CategoryMobileGadgetsAccessoriesPowerbanksBatteriesPowerbanks, CategoryMobileGadgetsAccessoriesPowerbanksBatteriesPowercases, CategoryMobileGadgetsAccessoriesPowerbanksBatteriesOther, CategoryMobileGadgetsAccessoriesPowerbanksBatteriesBatteries},
+		Children: Categories{CategoryMobileGadgetsAccessoriesPowerbanksBatteriesBatteries, CategoryMobileGadgetsAccessoriesPowerbanksBatteriesPowerbanks, CategoryMobileGadgetsAccessoriesPowerbanksBatteriesPowercases, CategoryMobileGadgetsAccessoriesPowerbanksBatteriesOther},
 	}
 	CategoryMobileGadgetsAccessoriesPowerbanksBatteriesBatteries = &Category{
 		Id:     "385x3",
@@ -3390,7 +3390,7 @@ var (
 		Slug:     "travel-and-luggage-travel-bags",
 		Name:     "Túi du lịch",
 		NameEn:   "Travel Bags",
-		Children: Categories{CategoryTravelLuggageTravelBagsDuffelWeekenderBags, CategoryTravelLuggageTravelBagsFoldableBags, CategoryTravelLuggageTravelBagsDrawstringBags},
+		Children: Categories{CategoryTravelLuggageTravelBagsDrawstringBags, CategoryTravelLuggageTravelBagsDuffelWeekenderBags, CategoryTravelLuggageTravelBagsFoldableBags},
 	}
 	CategoryTravelLuggageTravelBagsDuffelWeekenderBags = &Category{
 		Id:     "397x2",
@@ -3418,7 +3418,7 @@ var (
 		Slug:     "travel-and-luggage-travel-accessories",
 		Name:     "Phụ kiện du lịch",
 		NameEn:   "Travel Accessories",
-		Children: Categories{CategoryTravelLuggageTravelAccessoriesTravelPillowsEyeCovers, CategoryTravelLuggageTravelAccessoriesTravelSizeBottlesContainers, CategoryTravelLuggageTravelAccessoriesPassportHoldersCovers, CategoryTravelLuggageTravelAccessoriesLuggageProtectorsCovers, CategoryTravelLuggageTravelAccessoriesLuggageStraps, CategoryTravelLuggageTravelAccessoriesLuggageLocks, CategoryTravelLuggageTravelAccessoriesLuggageScales, CategoryTravelLuggageTravelAccessoriesTravelOrganizers, CategoryTravelLuggageTravelAccessoriesLuggageTags},
+		Children: Categories{CategoryTravelLuggageTravelAccessoriesTravelPillowsEyeCovers, CategoryTravelLuggageTravelAccessoriesTravelSizeBottlesContainers, CategoryTravelLuggageTravelAccessoriesTravelOrganizers, CategoryTravelLuggageTravelAccessoriesLuggageProtectorsCovers, CategoryTravelLuggageTravelAccessoriesLuggageLocks, CategoryTravelLuggageTravelAccessoriesLuggageScales, CategoryTravelLuggageTravelAccessoriesPassportHoldersCovers, CategoryTravelLuggageTravelAccessoriesLuggageTags, CategoryTravelLuggageTravelAccessoriesLuggageStraps},
 	}
 	CategoryTravelLuggageTravelAccessoriesPassportHoldersCovers = &Category{
 		Id:     "400x2",
@@ -3488,7 +3488,7 @@ var (
 		Slug:     "women-bags",
 		Name:     "Túi Ví Nữ",
 		NameEn:   "Women Bags",
-		Children: Categories{CategoryWomenBagsBackpacks, CategoryWomenBagsLaptopBags, CategoryWomenBagsCrossbodyShoulderBags, CategoryWomenBagsBagAccessories, CategoryWomenBagsClutchesWristlets, CategoryWomenBagsWaistBagsChestBags, CategoryWomenBagsToteBags, CategoryWomenBagsTophandleBags, CategoryWomenBagsWallets},
+		Children: Categories{CategoryWomenBagsLaptopBags, CategoryWomenBagsToteBags, CategoryWomenBagsBackpacks, CategoryWomenBagsClutchesWristlets, CategoryWomenBagsWaistBagsChestBags, CategoryWomenBagsTophandleBags, CategoryWomenBagsCrossbodyShoulderBags, CategoryWomenBagsWallets, CategoryWomenBagsBagAccessories},
 	}
 	CategoryWomenBagsBackpacks = &Category{
 		Id:     "409x1",
@@ -3502,7 +3502,7 @@ var (
 		Slug:     "women-bags-laptop-bags",
 		Name:     "Cặp laptop",
 		NameEn:   "Laptop Bags",
-		Children: Categories{CategoryWomenBagsLaptopBagsLaptopSleeves, CategoryWomenBagsLaptopBagsLaptopBackpacks, CategoryWomenBagsLaptopBagsOther, CategoryWomenBagsLaptopBagsLaptopBagsCases},
+		Children: Categories{CategoryWomenBagsLaptopBagsLaptopBagsCases, CategoryWomenBagsLaptopBagsLaptopSleeves, CategoryWomenBagsLaptopBagsLaptopBackpacks, CategoryWomenBagsLaptopBagsOther},
 	}
 	CategoryWomenBagsLaptopBagsLaptopBagsCases = &Category{
 		Id:     "410x2",
@@ -3572,7 +3572,7 @@ var (
 		Slug:     "women-bags-wallets",
 		Name:     "Ví",
 		NameEn:   "Wallets",
-		Children: Categories{CategoryWomenBagsWalletsPhoneKeyWallets, CategoryWomenBagsWalletsBifoldTrifoldWallets, CategoryWomenBagsWalletsLongWallets, CategoryWomenBagsWalletsOther, CategoryWomenBagsWalletsCardHolders, CategoryWomenBagsWalletsCoinHoldersPurses},
+		Children: Categories{CategoryWomenBagsWalletsCardHolders, CategoryWomenBagsWalletsCoinHoldersPurses, CategoryWomenBagsWalletsPhoneKeyWallets, CategoryWomenBagsWalletsBifoldTrifoldWallets, CategoryWomenBagsWalletsLongWallets, CategoryWomenBagsWalletsOther},
 	}
 	CategoryWomenBagsWalletsCardHolders = &Category{
 		Id:     "419x2",
@@ -3621,7 +3621,7 @@ var (
 		Slug:     "women-bags-bag-accessories",
 		Name:     "Phụ kiện túi",
 		NameEn:   "Bag Accessories",
-		Children: Categories{CategoryWomenBagsBagAccessoriesBagOrganizers, CategoryWomenBagsBagAccessoriesCleaningCareEquipment, CategoryWomenBagsBagAccessoriesBagStraps, CategoryWomenBagsBagAccessoriesBagHolders, CategoryWomenBagsBagAccessoriesCharmsTwillies},
+		Children: Categories{CategoryWomenBagsBagAccessoriesBagStraps, CategoryWomenBagsBagAccessoriesBagHolders, CategoryWomenBagsBagAccessoriesCharmsTwillies, CategoryWomenBagsBagAccessoriesBagOrganizers, CategoryWomenBagsBagAccessoriesCleaningCareEquipment},
 	}
 	CategoryWomenBagsBagAccessoriesBagStraps = &Category{
 		Id:     "425x2",
@@ -3747,7 +3747,7 @@ var (
 		Slug:     "women-shoes-flat-sandals-and-flip-flops",
 		Name:     "Xăng-đan và dép",
 		NameEn:   "Flat Sandals & Flip Flops",
-		Children: Categories{CategoryWomenShoesFlatSandalsFlipFlopsFlatSandals, CategoryWomenShoesFlatSandalsFlipFlopsFlipFlops, CategoryWomenShoesFlatSandalsFlipFlopsHealthSlippers, CategoryWomenShoesFlatSandalsFlipFlopsIndoorSlippers},
+		Children: Categories{CategoryWomenShoesFlatSandalsFlipFlopsFlipFlops, CategoryWomenShoesFlatSandalsFlipFlopsHealthSlippers, CategoryWomenShoesFlatSandalsFlipFlopsIndoorSlippers, CategoryWomenShoesFlatSandalsFlipFlopsFlatSandals},
 	}
 	CategoryWomenShoesFlatSandalsFlipFlopsFlatSandals = &Category{
 		Id:     "439x2",
@@ -3824,7 +3824,7 @@ var (
 		Slug:     "men-bags",
 		Name:     "Túi Ví Nam",
 		NameEn:   "Men Bags",
-		Children: Categories{CategoryMenBagsBriefcases, CategoryMenBagsClutches, CategoryMenBagsWaistBagsChestBags, CategoryMenBagsCrossbodyShoulderBags, CategoryMenBagsWallets, CategoryMenBagsBackpacks, CategoryMenBagsLaptopBags, CategoryMenBagsToteBags},
+		Children: Categories{CategoryMenBagsLaptopBags, CategoryMenBagsToteBags, CategoryMenBagsBriefcases, CategoryMenBagsClutches, CategoryMenBagsWaistBagsChestBags, CategoryMenBagsCrossbodyShoulderBags, CategoryMenBagsWallets, CategoryMenBagsBackpacks},
 	}
 	CategoryMenBagsBackpacks = &Category{
 		Id:     "448x1",
@@ -3901,7 +3901,7 @@ var (
 		Slug:     "men-bags-wallets",
 		Name:     "Bóp/ Ví",
 		NameEn:   "Wallets",
-		Children: Categories{CategoryMenBagsWalletsCoinHoldersPurses, CategoryMenBagsWalletsPhoneKeyWallets, CategoryMenBagsWalletsBifoldTrifoldWallets, CategoryMenBagsWalletsLongWallets, CategoryMenBagsWalletsCardHolders},
+		Children: Categories{CategoryMenBagsWalletsPhoneKeyWallets, CategoryMenBagsWalletsBifoldTrifoldWallets, CategoryMenBagsWalletsLongWallets, CategoryMenBagsWalletsCardHolders, CategoryMenBagsWalletsCoinHoldersPurses},
 	}
 	CategoryMenBagsWalletsCardHolders = &Category{
 		Id:     "457x2",
@@ -3971,7 +3971,7 @@ var (
 		Slug:     "watches-watches-accessories",
 		Name:     "Phụ kiện đồng hồ",
 		NameEn:   "Watches Accessories",
-		Children: Categories{CategoryWatchesWatchesAccessoriesBoxes, CategoryWatchesWatchesAccessoriesOther, CategoryWatchesWatchesAccessoriesStraps, CategoryWatchesWatchesAccessoriesServiceTools, CategoryWatchesWatchesAccessoriesBuckles, CategoryWatchesWatchesAccessoriesBatteries},
+		Children: Categories{CategoryWatchesWatchesAccessoriesStraps, CategoryWatchesWatchesAccessoriesServiceTools, CategoryWatchesWatchesAccessoriesBuckles, CategoryWatchesWatchesAccessoriesBatteries, CategoryWatchesWatchesAccessoriesBoxes, CategoryWatchesWatchesAccessoriesOther},
 	}
 	CategoryWatchesWatchesAccessoriesStraps = &Category{
 		Id:     "465x2",
@@ -4020,7 +4020,7 @@ var (
 		Slug:     "audio",
 		Name:     "Thiết Bị Âm Thanh",
 		NameEn:   "Audio",
-		Children: Categories{CategoryAudioOther, CategoryAudioEarphonesHeadphonesHeadsets, CategoryAudioMediaPlayers, CategoryAudioMicrophones, CategoryAudioAmplifiersMixers, CategoryAudioHomeAudioSpeakers, CategoryAudioAudioVideoCablesConverters},
+		Children: Categories{CategoryAudioMediaPlayers, CategoryAudioMicrophones, CategoryAudioAmplifiersMixers, CategoryAudioHomeAudioSpeakers, CategoryAudioAudioVideoCablesConverters, CategoryAudioOther, CategoryAudioEarphonesHeadphonesHeadsets},
 	}
 	CategoryAudioEarphonesHeadphonesHeadsets = &Category{
 		Id:     "471x1",
@@ -4034,7 +4034,7 @@ var (
 		Slug:     "audio-media-players",
 		Name:     "Máy nghe nhạc",
 		NameEn:   "Media Players",
-		Children: Categories{CategoryAudioMediaPlayersVoiceRecorders, CategoryAudioMediaPlayersRadioCassettePlayers, CategoryAudioMediaPlayersMP3MP4Players, CategoryAudioMediaPlayersCDDVDBlurayPlayers},
+		Children: Categories{CategoryAudioMediaPlayersMP3MP4Players, CategoryAudioMediaPlayersCDDVDBlurayPlayers, CategoryAudioMediaPlayersVoiceRecorders, CategoryAudioMediaPlayersRadioCassettePlayers},
 	}
 	CategoryAudioMediaPlayersMP3MP4Players = &Category{
 		Id:     "472x2",
@@ -4132,7 +4132,7 @@ var (
 		Slug:     "food-and-beverage",
 		Name:     "Thực phẩm và đồ uống",
 		NameEn:   "Food & Beverage",
-		Children: Categories{CategoryFoodBeverageFoodStaples, CategoryFoodBeverageSeasoningsCondiments, CategoryFoodBeverageBakingNeeds, CategoryFoodBeverageConvenienceReadytoeat, CategoryFoodBeverageSnacks, CategoryFoodBeverageBakery, CategoryFoodBeverageAlcoholicBeverages, CategoryFoodBeverageOther, CategoryFoodBeverageCookingEssentials, CategoryFoodBeverageBreakfastCerealsSpread, CategoryFoodBeverageBeverages, CategoryFoodBeverageDairyEggs, CategoryFoodBeverageFreshFrozenFood, CategoryFoodBeverageGiftSetHampers},
+		Children: Categories{CategoryFoodBeverageOther, CategoryFoodBeverageSeasoningsCondiments, CategoryFoodBeverageBakingNeeds, CategoryFoodBeverageFoodStaples, CategoryFoodBeverageFreshFrozenFood, CategoryFoodBeverageBreakfastCerealsSpread, CategoryFoodBeverageSnacks, CategoryFoodBeverageCookingEssentials, CategoryFoodBeverageDairyEggs, CategoryFoodBeverageBakery, CategoryFoodBeverageAlcoholicBeverages, CategoryFoodBeverageGiftSetHampers, CategoryFoodBeverageConvenienceReadytoeat, CategoryFoodBeverageBeverages},
 	}
 	CategoryFoodBeverageConvenienceReadytoeat = &Category{
 		Id:       "484x1",
@@ -4181,7 +4181,7 @@ var (
 		Slug:     "food-and-beverage-snacks",
 		Name:     "Đồ ăn vặt",
 		NameEn:   "Snacks",
-		Children: Categories{CategoryFoodBeverageSnacksChipsCrisps, CategoryFoodBeverageSnacksSeeds, CategoryFoodBeverageSnacksPopcorn, CategoryFoodBeverageSnacksPuddingJelliesMarshmallow, CategoryFoodBeverageSnacksDriedSnacks, CategoryFoodBeverageSnacksChocolate, CategoryFoodBeverageSnacksBiscuitsCookiesWafers, CategoryFoodBeverageSnacksSeaweed, CategoryFoodBeverageSnacksNuts, CategoryFoodBeverageSnacksSweetsCandies},
+		Children: Categories{CategoryFoodBeverageSnacksPuddingJelliesMarshmallow, CategoryFoodBeverageSnacksSweetsCandies, CategoryFoodBeverageSnacksChocolate, CategoryFoodBeverageSnacksSeeds, CategoryFoodBeverageSnacksPopcorn, CategoryFoodBeverageSnacksSeaweed, CategoryFoodBeverageSnacksNuts, CategoryFoodBeverageSnacksDriedSnacks, CategoryFoodBeverageSnacksBiscuitsCookiesWafers, CategoryFoodBeverageSnacksChipsCrisps},
 	}
 	CategoryFoodBeverageSnacksSweetsCandies = &Category{
 		Id:     "489x2",
@@ -4293,14 +4293,14 @@ var (
 		Slug:     "food-and-beverage-food-staples",
 		Name:     "Nhu yếu phẩm",
 		NameEn:   "Food Staples",
-		Children: Categories{CategoryFoodBeverageFoodStaplesPreservedVegetables, CategoryFoodBeverageFoodStaplesDriedGoods, CategoryFoodBeverageFoodStaplesNoodles, CategoryFoodBeverageFoodStaplesRice, CategoryFoodBeverageFoodStaplesPasta, CategoryFoodBeverageFoodStaplesCannedFood},
+		Children: Categories{CategoryFoodBeverageFoodStaplesDriedGoods, CategoryFoodBeverageFoodStaplesNoodles, CategoryFoodBeverageFoodStaplesRice, CategoryFoodBeverageFoodStaplesPasta, CategoryFoodBeverageFoodStaplesCannedFood, CategoryFoodBeverageFoodStaplesPreservedVegetables},
 	}
 	CategoryFoodBeverageFoodStaplesDriedGoods = &Category{
 		Id:       "503x2",
 		Slug:     "food-and-beverage-food-staples-dried-goods",
 		Name:     "Thực phẩm khô",
 		NameEn:   "Dried Goods",
-		Children: Categories{CategoryFoodBeverageFoodStaplesDriedGoodsDriedSeafood, CategoryFoodBeverageFoodStaplesDriedGoodsTraditionalHerbs, CategoryFoodBeverageFoodStaplesDriedGoodsOther, CategoryFoodBeverageFoodStaplesDriedGoodsBeansGrains},
+		Children: Categories{CategoryFoodBeverageFoodStaplesDriedGoodsBeansGrains, CategoryFoodBeverageFoodStaplesDriedGoodsDriedSeafood, CategoryFoodBeverageFoodStaplesDriedGoodsTraditionalHerbs, CategoryFoodBeverageFoodStaplesDriedGoodsOther},
 	}
 	CategoryFoodBeverageFoodStaplesDriedGoodsBeansGrains = &Category{
 		Id:     "503x3",
@@ -4355,7 +4355,7 @@ var (
 		Slug:     "food-and-beverage-food-staples-canned-food",
 		Name:     "Thực phẩm đóng hộp",
 		NameEn:   "Canned Food",
-		Children: Categories{CategoryFoodBeverageFoodStaplesCannedFoodCannedVegetables, CategoryFoodBeverageFoodStaplesCannedFoodCannedSoup, CategoryFoodBeverageFoodStaplesCannedFoodOther, CategoryFoodBeverageFoodStaplesCannedFoodCannedFruits, CategoryFoodBeverageFoodStaplesCannedFoodCannedMeat, CategoryFoodBeverageFoodStaplesCannedFoodCannedSeafood},
+		Children: Categories{CategoryFoodBeverageFoodStaplesCannedFoodCannedFruits, CategoryFoodBeverageFoodStaplesCannedFoodCannedMeat, CategoryFoodBeverageFoodStaplesCannedFoodCannedSeafood, CategoryFoodBeverageFoodStaplesCannedFoodCannedVegetables, CategoryFoodBeverageFoodStaplesCannedFoodCannedSoup, CategoryFoodBeverageFoodStaplesCannedFoodOther},
 	}
 	CategoryFoodBeverageFoodStaplesCannedFoodCannedFruits = &Category{
 		Id:     "510x3",
@@ -4411,7 +4411,7 @@ var (
 		Slug:     "food-and-beverage-cooking-essentials",
 		Name:     "Nguyên liệu nấu ăn",
 		NameEn:   "Cooking Essentials",
-		Children: Categories{CategoryFoodBeverageCookingEssentialsOil, CategoryFoodBeverageCookingEssentialsSeasoningsCondiments, CategoryFoodBeverageCookingEssentialsSurgar, CategoryFoodBeverageCookingEssentialsSweetener, CategoryFoodBeverageCookingEssentialsStockGravyInstantSoup, CategoryFoodBeverageCookingEssentialsCookingPasteKit, CategoryFoodBeverageCookingEssentialsFlourCoating, CategoryFoodBeverageCookingEssentialsFlavourEnhancers, CategoryFoodBeverageCookingEssentialsOther},
+		Children: Categories{CategoryFoodBeverageCookingEssentialsSweetener, CategoryFoodBeverageCookingEssentialsStockGravyInstantSoup, CategoryFoodBeverageCookingEssentialsFlourCoating, CategoryFoodBeverageCookingEssentialsOther, CategoryFoodBeverageCookingEssentialsOil, CategoryFoodBeverageCookingEssentialsSeasoningsCondiments, CategoryFoodBeverageCookingEssentialsFlavourEnhancers, CategoryFoodBeverageCookingEssentialsSurgar, CategoryFoodBeverageCookingEssentialsCookingPasteKit},
 	}
 	CategoryFoodBeverageCookingEssentialsOil = &Category{
 		Id:     "517x2",
@@ -4558,7 +4558,7 @@ var (
 		Slug:     "food-and-beverage-baking-needs",
 		Name:     "Đồ làm bánh",
 		NameEn:   "Baking Needs",
-		Children: Categories{CategoryFoodBeverageBakingNeedsFoodColoring, CategoryFoodBeverageBakingNeedsBakingdecoration, CategoryFoodBeverageBakingNeedsOther, CategoryFoodBeverageBakingNeedsBakingFlavoring, CategoryFoodBeverageBakingNeedsBakingPowderSoda, CategoryFoodBeverageBakingNeedsBakingPremixFlour, CategoryFoodBeverageBakingNeedsFlour},
+		Children: Categories{CategoryFoodBeverageBakingNeedsBakingFlavoring, CategoryFoodBeverageBakingNeedsBakingPowderSoda, CategoryFoodBeverageBakingNeedsBakingPremixFlour, CategoryFoodBeverageBakingNeedsFlour, CategoryFoodBeverageBakingNeedsFoodColoring, CategoryFoodBeverageBakingNeedsBakingdecoration, CategoryFoodBeverageBakingNeedsOther},
 	}
 	CategoryFoodBeverageBakingNeedsBakingFlavoring = &Category{
 		Id:     "534x2",
@@ -4614,7 +4614,7 @@ var (
 		Slug:     "food-and-beverage-breakfast-cereals-and-spread",
 		Name:     "Ngũ cốc & mứt",
 		NameEn:   "Breakfast Cereals & Spread",
-		Children: Categories{CategoryFoodBeverageBreakfastCerealsSpreadCerealGranolaOats, CategoryFoodBeverageBreakfastCerealsSpreadBreakfastBar, CategoryFoodBeverageBreakfastCerealsSpreadHoneyMapleSyrups, CategoryFoodBeverageBreakfastCerealsSpreadJamSpread},
+		Children: Categories{CategoryFoodBeverageBreakfastCerealsSpreadHoneyMapleSyrups, CategoryFoodBeverageBreakfastCerealsSpreadJamSpread, CategoryFoodBeverageBreakfastCerealsSpreadCerealGranolaOats, CategoryFoodBeverageBreakfastCerealsSpreadBreakfastBar},
 	}
 	CategoryFoodBeverageBreakfastCerealsSpreadHoneyMapleSyrups = &Category{
 		Id:     "541x2",
@@ -4649,7 +4649,7 @@ var (
 		Slug:     "food-and-beverage-beverages",
 		Name:     "Đồ uống",
 		NameEn:   "Beverages",
-		Children: Categories{CategoryFoodBeverageBeveragesCarbonatedDrinksTonics, CategoryFoodBeverageBeveragesPowderedDrinkMixes, CategoryFoodBeverageBeveragesTraditionalHerbalDrinks, CategoryFoodBeverageBeveragesNondairyMilk, CategoryFoodBeverageBeveragesChocolateDrinks, CategoryFoodBeverageBeveragesWater, CategoryFoodBeverageBeveragesJuiceJuiceVinegar, CategoryFoodBeverageBeveragesCordialSyrups, CategoryFoodBeverageBeveragesDessertDrink, CategoryFoodBeverageBeveragesDrinkToppings, CategoryFoodBeverageBeveragesCoffee, CategoryFoodBeverageBeveragesTeaTeaBags, CategoryFoodBeverageBeveragesEnergyIsotonicDrinks},
+		Children: Categories{CategoryFoodBeverageBeveragesTeaTeaBags, CategoryFoodBeverageBeveragesWater, CategoryFoodBeverageBeveragesCarbonatedDrinksTonics, CategoryFoodBeverageBeveragesPowderedDrinkMixes, CategoryFoodBeverageBeveragesDrinkToppings, CategoryFoodBeverageBeveragesTraditionalHerbalDrinks, CategoryFoodBeverageBeveragesNondairyMilk, CategoryFoodBeverageBeveragesCoffee, CategoryFoodBeverageBeveragesChocolateDrinks, CategoryFoodBeverageBeveragesEnergyIsotonicDrinks, CategoryFoodBeverageBeveragesJuiceJuiceVinegar, CategoryFoodBeverageBeveragesCordialSyrups, CategoryFoodBeverageBeveragesDessertDrink},
 	}
 	CategoryFoodBeverageBeveragesCoffee = &Category{
 		Id:     "545x2",
@@ -4747,7 +4747,7 @@ var (
 		Slug:     "food-and-beverage-dairy-and-eggs",
 		Name:     "Sữa - trứng",
 		NameEn:   "Dairy & Eggs",
-		Children: Categories{CategoryFoodBeverageDairyEggsCreamers, CategoryFoodBeverageDairyEggsButterMargarine, CategoryFoodBeverageDairyEggsCheeseCheesePowder, CategoryFoodBeverageDairyEggsIcecream, CategoryFoodBeverageDairyEggsEggs, CategoryFoodBeverageDairyEggsBeancurd, CategoryFoodBeverageDairyEggsMilk, CategoryFoodBeverageDairyEggsYogurtCulturedMilk},
+		Children: Categories{CategoryFoodBeverageDairyEggsIcecream, CategoryFoodBeverageDairyEggsEggs, CategoryFoodBeverageDairyEggsBeancurd, CategoryFoodBeverageDairyEggsMilk, CategoryFoodBeverageDairyEggsYogurtCulturedMilk, CategoryFoodBeverageDairyEggsCreamers, CategoryFoodBeverageDairyEggsButterMargarine, CategoryFoodBeverageDairyEggsCheeseCheesePowder},
 	}
 	CategoryFoodBeverageDairyEggsMilk = &Category{
 		Id:       "558x2",
@@ -4838,14 +4838,14 @@ var (
 		Slug:     "food-and-beverage-fresh-and-frozen-food",
 		Name:     "Thực phẩm tươi sống & đông lạnh",
 		NameEn:   "Fresh & Frozen Food",
-		Children: Categories{CategoryFoodBeverageFreshFrozenFoodMeat, CategoryFoodBeverageFreshFrozenFoodSeafood, CategoryFoodBeverageFreshFrozenFoodVegetarianMeat, CategoryFoodBeverageFreshFrozenFoodOther, CategoryFoodBeverageFreshFrozenFoodVegetables, CategoryFoodBeverageFreshFrozenFoodProcessedMeatSeafood, CategoryFoodBeverageFreshFrozenFoodFruits, CategoryFoodBeverageFreshFrozenFoodMushroom, CategoryFoodBeverageFreshFrozenFoodFrozenProcessedFood},
+		Children: Categories{CategoryFoodBeverageFreshFrozenFoodMeat, CategoryFoodBeverageFreshFrozenFoodVegetables, CategoryFoodBeverageFreshFrozenFoodFruits, CategoryFoodBeverageFreshFrozenFoodProcessedMeatSeafood, CategoryFoodBeverageFreshFrozenFoodSeafood, CategoryFoodBeverageFreshFrozenFoodVegetarianMeat, CategoryFoodBeverageFreshFrozenFoodOther, CategoryFoodBeverageFreshFrozenFoodMushroom, CategoryFoodBeverageFreshFrozenFoodFrozenProcessedFood},
 	}
 	CategoryFoodBeverageFreshFrozenFoodMeat = &Category{
 		Id:       "569x2",
 		Slug:     "food-and-beverage-fresh-and-frozen-food-meat",
 		Name:     "Thịt",
 		NameEn:   "Meat",
-		Children: Categories{CategoryFoodBeverageFreshFrozenFoodMeatPoultry, CategoryFoodBeverageFreshFrozenFoodMeatPork, CategoryFoodBeverageFreshFrozenFoodMeatLamb, CategoryFoodBeverageFreshFrozenFoodMeatOther, CategoryFoodBeverageFreshFrozenFoodMeatBeef},
+		Children: Categories{CategoryFoodBeverageFreshFrozenFoodMeatPork, CategoryFoodBeverageFreshFrozenFoodMeatLamb, CategoryFoodBeverageFreshFrozenFoodMeatOther, CategoryFoodBeverageFreshFrozenFoodMeatBeef, CategoryFoodBeverageFreshFrozenFoodMeatPoultry},
 	}
 	CategoryFoodBeverageFreshFrozenFoodMeatBeef = &Category{
 		Id:     "569x3",
@@ -4925,7 +4925,7 @@ var (
 		Slug:     "food-and-beverage-fresh-and-frozen-food-vegetables",
 		Name:     "Rau củ",
 		NameEn:   "Vegetables",
-		Children: Categories{CategoryFoodBeverageFreshFrozenFoodVegetablesSaladVegetables, CategoryFoodBeverageFreshFrozenFoodVegetablesOther, CategoryFoodBeverageFreshFrozenFoodVegetablesFreshHerbs, CategoryFoodBeverageFreshFrozenFoodVegetablesLeafyVegetables, CategoryFoodBeverageFreshFrozenFoodVegetablesBrinjalsGourdsSquashes, CategoryFoodBeverageFreshFrozenFoodVegetablesBroccoliCauliflowers, CategoryFoodBeverageFreshFrozenFoodVegetablesChilliCapsicum, CategoryFoodBeverageFreshFrozenFoodVegetablesGarlicGingerOnion, CategoryFoodBeverageFreshFrozenFoodVegetablesCabbageBrusselSprouts, CategoryFoodBeverageFreshFrozenFoodVegetablesPeasBeansNutsCorn, CategoryFoodBeverageFreshFrozenFoodVegetablesRootStemVegetables, CategoryFoodBeverageFreshFrozenFoodVegetablesSprouts, CategoryFoodBeverageFreshFrozenFoodVegetablesPrecutAssortedVegetableSet},
+		Children: Categories{CategoryFoodBeverageFreshFrozenFoodVegetablesRootStemVegetables, CategoryFoodBeverageFreshFrozenFoodVegetablesSprouts, CategoryFoodBeverageFreshFrozenFoodVegetablesSaladVegetables, CategoryFoodBeverageFreshFrozenFoodVegetablesOther, CategoryFoodBeverageFreshFrozenFoodVegetablesCabbageBrusselSprouts, CategoryFoodBeverageFreshFrozenFoodVegetablesBrinjalsGourdsSquashes, CategoryFoodBeverageFreshFrozenFoodVegetablesChilliCapsicum, CategoryFoodBeverageFreshFrozenFoodVegetablesGarlicGingerOnion, CategoryFoodBeverageFreshFrozenFoodVegetablesPeasBeansNutsCorn, CategoryFoodBeverageFreshFrozenFoodVegetablesPrecutAssortedVegetableSet, CategoryFoodBeverageFreshFrozenFoodVegetablesFreshHerbs, CategoryFoodBeverageFreshFrozenFoodVegetablesLeafyVegetables, CategoryFoodBeverageFreshFrozenFoodVegetablesBroccoliCauliflowers},
 	}
 	CategoryFoodBeverageFreshFrozenFoodVegetablesOther = &Category{
 		Id:     "580x3",
@@ -5010,7 +5010,7 @@ var (
 		Slug:     "food-and-beverage-fresh-and-frozen-food-fruits",
 		Name:     "Trái cây",
 		NameEn:   "Fruits",
-		Children: Categories{CategoryFoodBeverageFreshFrozenFoodFruitsOther, CategoryFoodBeverageFreshFrozenFoodFruitsApplesPears, CategoryFoodBeverageFreshFrozenFoodFruitsBerries, CategoryFoodBeverageFreshFrozenFoodFruitsCitrus, CategoryFoodBeverageFreshFrozenFoodFruitsGrapes, CategoryFoodBeverageFreshFrozenFoodFruitsMelons, CategoryFoodBeverageFreshFrozenFoodFruitsBananas, CategoryFoodBeverageFreshFrozenFoodFruitsStonefruits, CategoryFoodBeverageFreshFrozenFoodFruitsTropicalExoticFruits, CategoryFoodBeverageFreshFrozenFoodFruitsPrecutAssortedFruitSet},
+		Children: Categories{CategoryFoodBeverageFreshFrozenFoodFruitsStonefruits, CategoryFoodBeverageFreshFrozenFoodFruitsBerries, CategoryFoodBeverageFreshFrozenFoodFruitsCitrus, CategoryFoodBeverageFreshFrozenFoodFruitsGrapes, CategoryFoodBeverageFreshFrozenFoodFruitsTropicalExoticFruits, CategoryFoodBeverageFreshFrozenFoodFruitsPrecutAssortedFruitSet, CategoryFoodBeverageFreshFrozenFoodFruitsOther, CategoryFoodBeverageFreshFrozenFoodFruitsApplesPears, CategoryFoodBeverageFreshFrozenFoodFruitsBananas, CategoryFoodBeverageFreshFrozenFoodFruitsMelons},
 	}
 	CategoryFoodBeverageFreshFrozenFoodFruitsApplesPears = &Category{
 		Id:     "593x3",
@@ -5095,7 +5095,7 @@ var (
 		Slug:     "food-and-beverage-bakery",
 		Name:     "Các loại bánh",
 		NameEn:   "Bakery",
-		Children: Categories{CategoryFoodBeverageBakeryPastry, CategoryFoodBeverageBakeryOther, CategoryFoodBeverageBakeryBreads, CategoryFoodBeverageBakeryCakesPies},
+		Children: Categories{CategoryFoodBeverageBakeryBreads, CategoryFoodBeverageBakeryCakesPies, CategoryFoodBeverageBakeryPastry, CategoryFoodBeverageBakeryOther},
 	}
 	CategoryFoodBeverageBakeryBreads = &Category{
 		Id:     "606x2",
@@ -5126,7 +5126,7 @@ var (
 		Slug:     "food-and-beverage-alcoholic-beverages",
 		Name:     "Đồ uống có cồn",
 		NameEn:   "Alcoholic Beverages",
-		Children: Categories{CategoryFoodBeverageAlcoholicBeveragesOther, CategoryFoodBeverageAlcoholicBeveragesBearCider, CategoryFoodBeverageAlcoholicBeveragesWineChampange, CategoryFoodBeverageAlcoholicBeveragesLiquorSpirits, CategoryFoodBeverageAlcoholicBeveragesSakeSojuUmeshu},
+		Children: Categories{CategoryFoodBeverageAlcoholicBeveragesLiquorSpirits, CategoryFoodBeverageAlcoholicBeveragesSakeSojuUmeshu, CategoryFoodBeverageAlcoholicBeveragesOther, CategoryFoodBeverageAlcoholicBeveragesBearCider, CategoryFoodBeverageAlcoholicBeveragesWineChampange},
 	}
 	CategoryFoodBeverageAlcoholicBeveragesBearCider = &Category{
 		Id:     "610x2",
@@ -5175,14 +5175,14 @@ var (
 		Slug:     "pets",
 		Name:     "Chăm Sóc Thú Cưng",
 		NameEn:   "Pets",
-		Children: Categories{CategoryPetsPetFood, CategoryPetsPetAccessories, CategoryPetsLitterToilet, CategoryPetsPetGrooming, CategoryPetsPetClothingAccessories, CategoryPetsPetHealthcare},
+		Children: Categories{CategoryPetsPetGrooming, CategoryPetsPetClothingAccessories, CategoryPetsPetHealthcare, CategoryPetsPetFood, CategoryPetsPetAccessories, CategoryPetsLitterToilet},
 	}
 	CategoryPetsPetFood = &Category{
 		Id:       "617x1",
 		Slug:     "pets-pet-food",
 		Name:     "Thức ăn cho thú cưng",
 		NameEn:   "Pet Food",
-		Children: Categories{CategoryPetsPetFoodBirdFeed, CategoryPetsPetFoodReptileFood, CategoryPetsPetFoodCatFood, CategoryPetsPetFoodCatTreats, CategoryPetsPetFoodSmallPetFood, CategoryPetsPetFoodAquariumPetFood, CategoryPetsPetFoodDogFood, CategoryPetsPetFoodDogTreats, CategoryPetsPetFoodSmallPetTreats},
+		Children: Categories{CategoryPetsPetFoodAquariumPetFood, CategoryPetsPetFoodDogFood, CategoryPetsPetFoodDogTreats, CategoryPetsPetFoodCatFood, CategoryPetsPetFoodCatTreats, CategoryPetsPetFoodSmallPetFood, CategoryPetsPetFoodSmallPetTreats, CategoryPetsPetFoodBirdFeed, CategoryPetsPetFoodReptileFood},
 	}
 	CategoryPetsPetFoodDogFood = &Category{
 		Id:     "617x2",
@@ -5329,7 +5329,7 @@ var (
 		Slug:     "pets-pet-accessories-pet-furniture",
 		Name:     "Nội thất cho thú cưng",
 		NameEn:   "Pet Furniture",
-		Children: Categories{CategoryPetsPetAccessoriesPetFurnitureBedsMats, CategoryPetsPetAccessoriesPetFurnitureHouses, CategoryPetsPetAccessoriesPetFurnitureHabitatsAccessories, CategoryPetsPetAccessoriesPetFurnitureCagesCrates, CategoryPetsPetAccessoriesPetFurnitureScratchingPadsPosts},
+		Children: Categories{CategoryPetsPetAccessoriesPetFurnitureHouses, CategoryPetsPetAccessoriesPetFurnitureHabitatsAccessories, CategoryPetsPetAccessoriesPetFurnitureCagesCrates, CategoryPetsPetAccessoriesPetFurnitureScratchingPadsPosts, CategoryPetsPetAccessoriesPetFurnitureBedsMats},
 	}
 	CategoryPetsPetAccessoriesPetFurnitureBedsMats = &Category{
 		Id:     "634x3",
@@ -5378,7 +5378,7 @@ var (
 		Slug:     "pets-litter-and-toilet",
 		Name:     "Vệ sinh cho thú cưng",
 		NameEn:   "Litter & Toilet",
-		Children: Categories{CategoryPetsLitterToiletDiapers, CategoryPetsLitterToiletDogTrainingPadsTrays, CategoryPetsLitterToiletPoopBagsScoopers, CategoryPetsLitterToiletOther, CategoryPetsLitterToiletCatLitterBoxes, CategoryPetsLitterToiletSmallPetBeddingLitter},
+		Children: Categories{CategoryPetsLitterToiletOther, CategoryPetsLitterToiletCatLitterBoxes, CategoryPetsLitterToiletSmallPetBeddingLitter, CategoryPetsLitterToiletDiapers, CategoryPetsLitterToiletDogTrainingPadsTrays, CategoryPetsLitterToiletPoopBagsScoopers},
 	}
 	CategoryPetsLitterToiletCatLitterBoxes = &Category{
 		Id:     "640x2",
@@ -5462,7 +5462,7 @@ var (
 		Slug:     "pets-pet-clothing-and-accessories",
 		Name:     "Quần áo & phụ kiện",
 		NameEn:   "Pet Clothing & Accessories",
-		Children: Categories{CategoryPetsPetClothingAccessoriesBootsSocksPawProtectors, CategoryPetsPetClothingAccessoriesNeckAccessories, CategoryPetsPetClothingAccessoriesEyewear, CategoryPetsPetClothingAccessoriesHairAccessories, CategoryPetsPetClothingAccessoriesHats, CategoryPetsPetClothingAccessoriesPetClothing, CategoryPetsPetClothingAccessoriesWetWeatherGear},
+		Children: Categories{CategoryPetsPetClothingAccessoriesPetClothing, CategoryPetsPetClothingAccessoriesWetWeatherGear, CategoryPetsPetClothingAccessoriesBootsSocksPawProtectors, CategoryPetsPetClothingAccessoriesNeckAccessories, CategoryPetsPetClothingAccessoriesEyewear, CategoryPetsPetClothingAccessoriesHairAccessories, CategoryPetsPetClothingAccessoriesHats},
 	}
 	CategoryPetsPetClothingAccessoriesPetClothing = &Category{
 		Id:     "650x2",
@@ -5532,7 +5532,7 @@ var (
 		Slug:     "mom-and-baby",
 		Name:     "Mẹ & Bé",
 		NameEn:   "Mom & Baby",
-		Children: Categories{CategoryMomBabyBabySafety, CategoryMomBabyMilkFormulaBabyFood, CategoryMomBabyDiaperingPotty, CategoryMomBabyToys, CategoryMomBabyBabyTravelEssentials, CategoryMomBabyFeedingEssentials, CategoryMomBabyMaternityAccessories, CategoryMomBabyMaternityHealthcare, CategoryMomBabyBathBodyCare, CategoryMomBabyNursery, CategoryMomBabyBabyHealthcare, CategoryMomBabyGiftSetsPackages},
+		Children: Categories{CategoryMomBabyFeedingEssentials, CategoryMomBabyMaternityAccessories, CategoryMomBabyMilkFormulaBabyFood, CategoryMomBabyGiftSetsPackages, CategoryMomBabyBabyTravelEssentials, CategoryMomBabyMaternityHealthcare, CategoryMomBabyBathBodyCare, CategoryMomBabyNursery, CategoryMomBabyBabySafety, CategoryMomBabyBabyHealthcare, CategoryMomBabyDiaperingPotty, CategoryMomBabyToys},
 	}
 	CategoryMomBabyBabyTravelEssentials = &Category{
 		Id:       "658x1",
@@ -5595,7 +5595,7 @@ var (
 		Slug:     "mom-and-baby-feeding-essentials",
 		Name:     "Đồ dùng ăn dặm cho bé",
 		NameEn:   "Feeding Essentials",
-		Children: Categories{CategoryMomBabyFeedingEssentialsBibs, CategoryMomBabyFeedingEssentialsPacifiers, CategoryMomBabyFeedingEssentialsFoodProcessors, CategoryMomBabyFeedingEssentialsBottlefeeding, CategoryMomBabyFeedingEssentialsBreastfeeding, CategoryMomBabyFeedingEssentialsHighchairsBoosterSeats, CategoryMomBabyFeedingEssentialsUtensils},
+		Children: Categories{CategoryMomBabyFeedingEssentialsUtensils, CategoryMomBabyFeedingEssentialsBibs, CategoryMomBabyFeedingEssentialsPacifiers, CategoryMomBabyFeedingEssentialsFoodProcessors, CategoryMomBabyFeedingEssentialsBottlefeeding, CategoryMomBabyFeedingEssentialsBreastfeeding, CategoryMomBabyFeedingEssentialsHighchairsBoosterSeats},
 	}
 	CategoryMomBabyFeedingEssentialsBottlefeeding = &Category{
 		Id:       "665x2",
@@ -5644,7 +5644,7 @@ var (
 		Slug:     "mom-and-baby-feeding-essentials-breastfeeding",
 		Name:     "Đồ dùng cho con bú",
 		NameEn:   "Breastfeeding",
-		Children: Categories{CategoryMomBabyFeedingEssentialsBreastfeedingBreastPadsShellsShields, CategoryMomBabyFeedingEssentialsBreastfeedingNursingCovers, CategoryMomBabyFeedingEssentialsBreastfeedingBreastmilkStorageBags, CategoryMomBabyFeedingEssentialsBreastfeedingBreastPumpAccessories},
+		Children: Categories{CategoryMomBabyFeedingEssentialsBreastfeedingBreastPumpAccessories, CategoryMomBabyFeedingEssentialsBreastfeedingBreastPadsShellsShields, CategoryMomBabyFeedingEssentialsBreastfeedingNursingCovers, CategoryMomBabyFeedingEssentialsBreastfeedingBreastmilkStorageBags},
 	}
 	CategoryMomBabyFeedingEssentialsBreastfeedingBreastPumpAccessories = &Category{
 		Id:     "670x3",
@@ -5735,7 +5735,7 @@ var (
 		Slug:     "mom-and-baby-maternity-accessories",
 		Name:     "Phụ kiện cho mẹ",
 		NameEn:   "Maternity Accessories",
-		Children: Categories{CategoryMomBabyMaternityAccessoriesMaternityPillows, CategoryMomBabyMaternityAccessoriesSupportingBelts},
+		Children: Categories{CategoryMomBabyMaternityAccessoriesSupportingBelts, CategoryMomBabyMaternityAccessoriesMaternityPillows},
 	}
 	CategoryMomBabyMaternityAccessoriesSupportingBelts = &Category{
 		Id:     "681x2",
@@ -5756,7 +5756,7 @@ var (
 		Slug:     "mom-and-baby-maternity-healthcare",
 		Name:     "Chăm sóc sức khỏe mẹ",
 		NameEn:   "Maternity Healthcare",
-		Children: Categories{CategoryMomBabyMaternityHealthcareMaternityVitaminsSupplement, CategoryMomBabyMaternityHealthcareMoisturizersCreams, CategoryMomBabyMaternityHealthcareMaternityMilk},
+		Children: Categories{CategoryMomBabyMaternityHealthcareMoisturizersCreams, CategoryMomBabyMaternityHealthcareMaternityMilk, CategoryMomBabyMaternityHealthcareMaternityVitaminsSupplement},
 	}
 	CategoryMomBabyMaternityHealthcareMoisturizersCreams = &Category{
 		Id:     "683x2",
@@ -5781,7 +5781,7 @@ var (
 		Slug:     "mom-and-baby-bath-and-body-care",
 		Name:     "Đồ dùng phòng tắm & Chăm sóc cơ thể bé",
 		NameEn:   "Bath & Body Care",
-		Children: Categories{CategoryMomBabyBathBodyCareBathingTubsSeats, CategoryMomBabyBathBodyCareBathRobesTowelsWashCloths, CategoryMomBabyBathBodyCareShowerCaps, CategoryMomBabyBathBodyCareBathingToolsAccessories, CategoryMomBabyBathBodyCareBabyGroomingTools, CategoryMomBabyBathBodyCareBabyLaundryDetergent, CategoryMomBabyBathBodyCareHairCareBodyWash, CategoryMomBabyBathBodyCareBabyColognesFragrances, CategoryMomBabyBathBodyCareWipes},
+		Children: Categories{CategoryMomBabyBathBodyCareShowerCaps, CategoryMomBabyBathBodyCareBathingToolsAccessories, CategoryMomBabyBathBodyCareHairCareBodyWash, CategoryMomBabyBathBodyCareBabyColognesFragrances, CategoryMomBabyBathBodyCareBabyGroomingTools, CategoryMomBabyBathBodyCareWipes, CategoryMomBabyBathBodyCareBabyLaundryDetergent, CategoryMomBabyBathBodyCareBathRobesTowelsWashCloths, CategoryMomBabyBathBodyCareBathingTubsSeats},
 	}
 	CategoryMomBabyBathBodyCareBathingTubsSeats = &Category{
 		Id:     "686x2",
@@ -5911,7 +5911,7 @@ var (
 		Slug:     "mom-and-baby-baby-safety",
 		Name:     "An toàn cho bé",
 		NameEn:   "Baby Safety",
-		Children: Categories{CategoryMomBabyBabySafetyBumpersRailsGuards, CategoryMomBabyBabySafetyEdgeCornerGuards, CategoryMomBabyBabySafetyBabyGatesDoorways, CategoryMomBabyBabySafetySafetyLocksStraps, CategoryMomBabyBabySafetyMonitors, CategoryMomBabyBabySafetyMosquitoNetting},
+		Children: Categories{CategoryMomBabyBabySafetyBabyGatesDoorways, CategoryMomBabyBabySafetySafetyLocksStraps, CategoryMomBabyBabySafetyMonitors, CategoryMomBabyBabySafetyMosquitoNetting, CategoryMomBabyBabySafetyBumpersRailsGuards, CategoryMomBabyBabySafetyEdgeCornerGuards},
 	}
 	CategoryMomBabyBabySafetyMonitors = &Category{
 		Id:     "702x2",
@@ -5991,7 +5991,7 @@ var (
 		Slug:     "mom-and-baby-baby-healthcare",
 		Name:     "Chăm sóc sức khỏe bé",
 		NameEn:   "Baby Healthcare",
-		Children: Categories{CategoryMomBabyBabyHealthcareNasalCare, CategoryMomBabyBabyHealthcareBabySkincare, CategoryMomBabyBabyHealthcareBabyOralCare, CategoryMomBabyBabyHealthcareBabyVitaminsSupplements, CategoryMomBabyBabyHealthcareSunCare},
+		Children: Categories{CategoryMomBabyBabyHealthcareBabySkincare, CategoryMomBabyBabyHealthcareBabyOralCare, CategoryMomBabyBabyHealthcareBabyVitaminsSupplements, CategoryMomBabyBabyHealthcareSunCare, CategoryMomBabyBabyHealthcareNasalCare},
 	}
 	CategoryMomBabyBabyHealthcareNasalCare = &Category{
 		Id:     "712x2",
@@ -6087,14 +6087,14 @@ var (
 		Slug:     "mom-and-baby-toys",
 		Name:     "Đồ chơi",
 		NameEn:   "Toys",
-		Children: Categories{CategoryMomBabyToysDollsStuffedToys, CategoryMomBabyToysPretendPlay, CategoryMomBabyToysSportsOutdoorPlay, CategoryMomBabyToysEducationalToys, CategoryMomBabyToysSlimeSquishyToys, CategoryMomBabyToysBlockToys, CategoryMomBabyToysToyVehicles, CategoryMomBabyToysRobotToys, CategoryMomBabyToysBabyToddlerToys},
+		Children: Categories{CategoryMomBabyToysBabyToddlerToys, CategoryMomBabyToysToyVehicles, CategoryMomBabyToysSlimeSquishyToys, CategoryMomBabyToysRobotToys, CategoryMomBabyToysBlockToys, CategoryMomBabyToysDollsStuffedToys, CategoryMomBabyToysPretendPlay, CategoryMomBabyToysSportsOutdoorPlay, CategoryMomBabyToysEducationalToys},
 	}
 	CategoryMomBabyToysBabyToddlerToys = &Category{
 		Id:       "723x2",
 		Slug:     "mom-and-baby-toys-baby-and-toddler-toys",
 		Name:     "Đồ chơi cho trẻ sơ sinh & trẻ nhỏ",
 		NameEn:   "Baby & Toddler Toys",
-		Children: Categories{CategoryMomBabyToysBabyToddlerToysPlaygymPlaymats, CategoryMomBabyToysBabyToddlerToysPlayardsPlaypens, CategoryMomBabyToysBabyToddlerToysBathToys, CategoryMomBabyToysBabyToddlerToysCribMobilesRattles, CategoryMomBabyToysBabyToddlerToysTeethers},
+		Children: Categories{CategoryMomBabyToysBabyToddlerToysCribMobilesRattles, CategoryMomBabyToysBabyToddlerToysTeethers, CategoryMomBabyToysBabyToddlerToysPlaygymPlaymats, CategoryMomBabyToysBabyToddlerToysPlayardsPlaypens, CategoryMomBabyToysBabyToddlerToysBathToys},
 	}
 	CategoryMomBabyToysBabyToddlerToysPlaygymPlaymats = &Category{
 		Id:     "723x3",
@@ -6143,7 +6143,7 @@ var (
 		Slug:     "mom-and-baby-toys-dolls-and-stuffed-toys",
 		Name:     "Búp bê & Thú nhồi bông",
 		NameEn:   "Dolls & Stuffed Toys",
-		Children: Categories{CategoryMomBabyToysDollsStuffedToysDollsAccessories, CategoryMomBabyToysDollsStuffedToysDollHousesAccessories, CategoryMomBabyToysDollsStuffedToysStuffedToys},
+		Children: Categories{CategoryMomBabyToysDollsStuffedToysDollHousesAccessories, CategoryMomBabyToysDollsStuffedToysStuffedToys, CategoryMomBabyToysDollsStuffedToysDollsAccessories},
 	}
 	CategoryMomBabyToysDollsStuffedToysDollsAccessories = &Category{
 		Id:     "729x3",
@@ -6185,7 +6185,7 @@ var (
 		Slug:     "mom-and-baby-toys-sports-and-outdoor-play",
 		Name:     "Đồ chơi vận động & Ngoài trời",
 		NameEn:   "Sports & Outdoor Play",
-		Children: Categories{CategoryMomBabyToysSportsOutdoorPlayPoolWaterSandToys, CategoryMomBabyToysSportsOutdoorPlayBlastersToyGuns, CategoryMomBabyToysSportsOutdoorPlaySportsToys, CategoryMomBabyToysSportsOutdoorPlayFlyingToysKitesWindSpinners, CategoryMomBabyToysSportsOutdoorPlayBicyclesScootersRideons, CategoryMomBabyToysSportsOutdoorPlayInflatablesSlides, CategoryMomBabyToysSportsOutdoorPlayPlayTentsTunnelsBallPits},
+		Children: Categories{CategoryMomBabyToysSportsOutdoorPlayBicyclesScootersRideons, CategoryMomBabyToysSportsOutdoorPlayInflatablesSlides, CategoryMomBabyToysSportsOutdoorPlayPlayTentsTunnelsBallPits, CategoryMomBabyToysSportsOutdoorPlayPoolWaterSandToys, CategoryMomBabyToysSportsOutdoorPlayBlastersToyGuns, CategoryMomBabyToysSportsOutdoorPlaySportsToys, CategoryMomBabyToysSportsOutdoorPlayFlyingToysKitesWindSpinners},
 	}
 	CategoryMomBabyToysSportsOutdoorPlayBicyclesScootersRideons = &Category{
 		Id:     "734x3",
@@ -6317,14 +6317,14 @@ var (
 		Slug:     "baby-and-kids-fashion",
 		Name:     "Thời trang trẻ em & trẻ sơ sinh",
 		NameEn:   "Baby & Kids Fashion",
-		Children: Categories{CategoryBabyKidsFashionBabyClothes, CategoryBabyKidsFashionBabyMittensFootwear, CategoryBabyKidsFashionBabyKidsAccessories, CategoryBabyKidsFashionBoyClothes, CategoryBabyKidsFashionGirlClothes, CategoryBabyKidsFashionUnderwearInnerwear, CategoryBabyKidsFashionBoyShoes, CategoryBabyKidsFashionGirlShoes},
+		Children: Categories{CategoryBabyKidsFashionGirlClothes, CategoryBabyKidsFashionUnderwearInnerwear, CategoryBabyKidsFashionBoyShoes, CategoryBabyKidsFashionGirlShoes, CategoryBabyKidsFashionBabyClothes, CategoryBabyKidsFashionBabyMittensFootwear, CategoryBabyKidsFashionBabyKidsAccessories, CategoryBabyKidsFashionBoyClothes},
 	}
 	CategoryBabyKidsFashionBabyClothes = &Category{
 		Id:       "751x1",
 		Slug:     "baby-and-kids-fashion-baby-clothes",
 		Name:     "Quần áo trẻ em",
 		NameEn:   "Baby Clothes",
-		Children: Categories{CategoryBabyKidsFashionBabyClothesBottoms, CategoryBabyKidsFashionBabyClothesBodysuitsJumpsuits, CategoryBabyKidsFashionBabyClothesSets, CategoryBabyKidsFashionBabyClothesRegularOuterwear, CategoryBabyKidsFashionBabyClothesWinterOuterwear, CategoryBabyKidsFashionBabyClothesDresses, CategoryBabyKidsFashionBabyClothesSleepwear, CategoryBabyKidsFashionBabyClothesTops, CategoryBabyKidsFashionBabyClothesSwimwear},
+		Children: Categories{CategoryBabyKidsFashionBabyClothesSwimwear, CategoryBabyKidsFashionBabyClothesRegularOuterwear, CategoryBabyKidsFashionBabyClothesWinterOuterwear, CategoryBabyKidsFashionBabyClothesDresses, CategoryBabyKidsFashionBabyClothesBottoms, CategoryBabyKidsFashionBabyClothesBodysuitsJumpsuits, CategoryBabyKidsFashionBabyClothesSleepwear, CategoryBabyKidsFashionBabyClothesTops, CategoryBabyKidsFashionBabyClothesSets},
 	}
 	CategoryBabyKidsFashionBabyClothesRegularOuterwear = &Category{
 		Id:     "751x2",
@@ -6352,7 +6352,7 @@ var (
 		Slug:     "baby-and-kids-fashion-baby-clothes-bottoms",
 		Name:     "Quần/Chân váy",
 		NameEn:   "Bottoms",
-		Children: Categories{CategoryBabyKidsFashionBabyClothesBottomsSkirts, CategoryBabyKidsFashionBabyClothesBottomsPantsLeggings, CategoryBabyKidsFashionBabyClothesBottomsShorts},
+		Children: Categories{CategoryBabyKidsFashionBabyClothesBottomsPantsLeggings, CategoryBabyKidsFashionBabyClothesBottomsShorts, CategoryBabyKidsFashionBabyClothesBottomsSkirts},
 	}
 	CategoryBabyKidsFashionBabyClothesBottomsPantsLeggings = &Category{
 		Id:     "754x3",
@@ -6422,14 +6422,14 @@ var (
 		Slug:     "baby-and-kids-fashion-baby-and-kids-accessories",
 		Name:     "Phụ kiện trẻ em & trẻ sơ sinh",
 		NameEn:   "Baby & Kids Accessories",
-		Children: Categories{CategoryBabyKidsFashionBabyKidsAccessoriesHairAccessories, CategoryBabyKidsFashionBabyKidsAccessoriesGloves, CategoryBabyKidsFashionBabyKidsAccessoriesBelts, CategoryBabyKidsFashionBabyKidsAccessoriesSocks, CategoryBabyKidsFashionBabyKidsAccessoriesScarves, CategoryBabyKidsFashionBabyKidsAccessoriesWatches, CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggage, CategoryBabyKidsFashionBabyKidsAccessoriesHatsCaps, CategoryBabyKidsFashionBabyKidsAccessoriesJewelry, CategoryBabyKidsFashionBabyKidsAccessoriesEarmuffs, CategoryBabyKidsFashionBabyKidsAccessoriesEyewear, CategoryBabyKidsFashionBabyKidsAccessoriesRainGear},
+		Children: Categories{CategoryBabyKidsFashionBabyKidsAccessoriesWatches, CategoryBabyKidsFashionBabyKidsAccessoriesJewelry, CategoryBabyKidsFashionBabyKidsAccessoriesEarmuffs, CategoryBabyKidsFashionBabyKidsAccessoriesHatsCaps, CategoryBabyKidsFashionBabyKidsAccessoriesGloves, CategoryBabyKidsFashionBabyKidsAccessoriesScarves, CategoryBabyKidsFashionBabyKidsAccessoriesBelts, CategoryBabyKidsFashionBabyKidsAccessoriesSocks, CategoryBabyKidsFashionBabyKidsAccessoriesRainGear, CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggage, CategoryBabyKidsFashionBabyKidsAccessoriesEyewear, CategoryBabyKidsFashionBabyKidsAccessoriesHairAccessories},
 	}
 	CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggage = &Category{
 		Id:       "763x2",
 		Slug:     "baby-and-kids-fashion-baby-and-kids-accessories-bags-and-luggage",
 		Name:     "Túi xách & vali",
 		NameEn:   "Bags & Luggage",
-		Children: Categories{CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageBackpacks, CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageCrossbodyShoulderBags, CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageTrolleyBags, CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageWallets},
+		Children: Categories{CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageCrossbodyShoulderBags, CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageTrolleyBags, CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageWallets, CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageBackpacks},
 	}
 	CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageBackpacks = &Category{
 		Id:     "763x3",
@@ -6520,7 +6520,7 @@ var (
 		Slug:     "baby-and-kids-fashion-baby-and-kids-accessories-jewelry",
 		Name:     "Trang sức",
 		NameEn:   "Jewelry",
-		Children: Categories{CategoryBabyKidsFashionBabyKidsAccessoriesJewelryBracelets, CategoryBabyKidsFashionBabyKidsAccessoriesJewelryEarrings, CategoryBabyKidsFashionBabyKidsAccessoriesJewelryNecklaces, CategoryBabyKidsFashionBabyKidsAccessoriesJewelryRings},
+		Children: Categories{CategoryBabyKidsFashionBabyKidsAccessoriesJewelryRings, CategoryBabyKidsFashionBabyKidsAccessoriesJewelryBracelets, CategoryBabyKidsFashionBabyKidsAccessoriesJewelryEarrings, CategoryBabyKidsFashionBabyKidsAccessoriesJewelryNecklaces},
 	}
 	CategoryBabyKidsFashionBabyKidsAccessoriesJewelryBracelets = &Category{
 		Id:     "775x3",
@@ -6583,7 +6583,7 @@ var (
 		Slug:     "baby-and-kids-fashion-boy-clothes",
 		Name:     "Quần áo bé trai",
 		NameEn:   "Boy Clothes",
-		Children: Categories{CategoryBabyKidsFashionBoyClothesSleepwear, CategoryBabyKidsFashionBoyClothesSwimwear, CategoryBabyKidsFashionBoyClothesTops, CategoryBabyKidsFashionBoyClothesOuterwear, CategoryBabyKidsFashionBoyClothesBottoms, CategoryBabyKidsFashionBoyClothesSuitsSets, CategoryBabyKidsFashionBoyClothesCostumes, CategoryBabyKidsFashionBoyClothesUnderwearInnerwear},
+		Children: Categories{CategoryBabyKidsFashionBoyClothesUnderwearInnerwear, CategoryBabyKidsFashionBoyClothesSleepwear, CategoryBabyKidsFashionBoyClothesSwimwear, CategoryBabyKidsFashionBoyClothesTops, CategoryBabyKidsFashionBoyClothesOuterwear, CategoryBabyKidsFashionBoyClothesBottoms, CategoryBabyKidsFashionBoyClothesSuitsSets, CategoryBabyKidsFashionBoyClothesCostumes},
 	}
 	CategoryBabyKidsFashionBoyClothesCostumes = &Category{
 		Id:     "782x2",
@@ -6646,7 +6646,7 @@ var (
 		Slug:     "baby-and-kids-fashion-boy-clothes-outerwear",
 		Name:     "Áo khoác",
 		NameEn:   "Outerwear",
-		Children: Categories{CategoryBabyKidsFashionBoyClothesOuterwearBlazers, CategoryBabyKidsFashionBoyClothesOuterwearHoodies, CategoryBabyKidsFashionBoyClothesOuterwearRegularJacketsCoats, CategoryBabyKidsFashionBoyClothesOuterwearWinterOuterwear, CategoryBabyKidsFashionBoyClothesOuterwearVests, CategoryBabyKidsFashionBoyClothesOuterwearSweatersCardigans},
+		Children: Categories{CategoryBabyKidsFashionBoyClothesOuterwearVests, CategoryBabyKidsFashionBoyClothesOuterwearSweatersCardigans, CategoryBabyKidsFashionBoyClothesOuterwearBlazers, CategoryBabyKidsFashionBoyClothesOuterwearHoodies, CategoryBabyKidsFashionBoyClothesOuterwearRegularJacketsCoats, CategoryBabyKidsFashionBoyClothesOuterwearWinterOuterwear},
 	}
 	CategoryBabyKidsFashionBoyClothesOuterwearRegularJacketsCoats = &Category{
 		Id:     "789x3",
@@ -6695,7 +6695,7 @@ var (
 		Slug:     "baby-and-kids-fashion-boy-clothes-bottoms",
 		Name:     "Quần",
 		NameEn:   "Bottoms",
-		Children: Categories{CategoryBabyKidsFashionBoyClothesBottomsPants, CategoryBabyKidsFashionBoyClothesBottomsShorts, CategoryBabyKidsFashionBoyClothesBottomsOveralls, CategoryBabyKidsFashionBoyClothesBottomsJeans},
+		Children: Categories{CategoryBabyKidsFashionBoyClothesBottomsShorts, CategoryBabyKidsFashionBoyClothesBottomsOveralls, CategoryBabyKidsFashionBoyClothesBottomsJeans, CategoryBabyKidsFashionBoyClothesBottomsPants},
 	}
 	CategoryBabyKidsFashionBoyClothesBottomsJeans = &Category{
 		Id:     "795x3",
@@ -6737,7 +6737,7 @@ var (
 		Slug:     "baby-and-kids-fashion-girl-clothes",
 		Name:     "Quần áo bé gái",
 		NameEn:   "Girl Clothes",
-		Children: Categories{CategoryBabyKidsFashionGirlClothesSuitsSets, CategoryBabyKidsFashionGirlClothesSwimwear, CategoryBabyKidsFashionGirlClothesSleepwear, CategoryBabyKidsFashionGirlClothesTops, CategoryBabyKidsFashionGirlClothesOuterwear, CategoryBabyKidsFashionGirlClothesBottoms, CategoryBabyKidsFashionGirlClothesRompersJumpsuits, CategoryBabyKidsFashionGirlClothesDresses, CategoryBabyKidsFashionGirlClothesCostumes},
+		Children: Categories{CategoryBabyKidsFashionGirlClothesCostumes, CategoryBabyKidsFashionGirlClothesSleepwear, CategoryBabyKidsFashionGirlClothesSwimwear, CategoryBabyKidsFashionGirlClothesTops, CategoryBabyKidsFashionGirlClothesRompersJumpsuits, CategoryBabyKidsFashionGirlClothesOuterwear, CategoryBabyKidsFashionGirlClothesBottoms, CategoryBabyKidsFashionGirlClothesDresses, CategoryBabyKidsFashionGirlClothesSuitsSets},
 	}
 	CategoryBabyKidsFashionGirlClothesCostumes = &Category{
 		Id:     "800x2",
@@ -6779,7 +6779,7 @@ var (
 		Slug:     "baby-and-kids-fashion-girl-clothes-tops",
 		Name:     "Áo",
 		NameEn:   "Tops",
-		Children: Categories{CategoryBabyKidsFashionGirlClothesTopsTShirts, CategoryBabyKidsFashionGirlClothesTopsPoloShirts, CategoryBabyKidsFashionGirlClothesTopsShirtsBlouses},
+		Children: Categories{CategoryBabyKidsFashionGirlClothesTopsPoloShirts, CategoryBabyKidsFashionGirlClothesTopsShirtsBlouses, CategoryBabyKidsFashionGirlClothesTopsTShirts},
 	}
 	CategoryBabyKidsFashionGirlClothesTopsTShirts = &Category{
 		Id:     "804x3",
@@ -6807,7 +6807,7 @@ var (
 		Slug:     "baby-and-kids-fashion-girl-clothes-outerwear",
 		Name:     "Áo khoác",
 		NameEn:   "Outerwear",
-		Children: Categories{CategoryBabyKidsFashionGirlClothesOuterwearBlazers, CategoryBabyKidsFashionGirlClothesOuterwearHoodies, CategoryBabyKidsFashionGirlClothesOuterwearRegularJacketsCoats, CategoryBabyKidsFashionGirlClothesOuterwearWinterOuterwear, CategoryBabyKidsFashionGirlClothesOuterwearVests, CategoryBabyKidsFashionGirlClothesOuterwearSweatersCardigans},
+		Children: Categories{CategoryBabyKidsFashionGirlClothesOuterwearHoodies, CategoryBabyKidsFashionGirlClothesOuterwearRegularJacketsCoats, CategoryBabyKidsFashionGirlClothesOuterwearWinterOuterwear, CategoryBabyKidsFashionGirlClothesOuterwearVests, CategoryBabyKidsFashionGirlClothesOuterwearSweatersCardigans, CategoryBabyKidsFashionGirlClothesOuterwearBlazers},
 	}
 	CategoryBabyKidsFashionGirlClothesOuterwearRegularJacketsCoats = &Category{
 		Id:     "807x3",
@@ -6919,7 +6919,7 @@ var (
 		Slug:     "baby-and-kids-fashion-boy-shoes",
 		Name:     "Giày bé trai",
 		NameEn:   "Boy Shoes",
-		Children: Categories{CategoryBabyKidsFashionBoyShoesLoafers, CategoryBabyKidsFashionBoyShoesBoots, CategoryBabyKidsFashionBoyShoesSandals, CategoryBabyKidsFashionBoyShoesSneakers, CategoryBabyKidsFashionBoyShoesFlipFlops, CategoryBabyKidsFashionBoyShoesFormalShoes},
+		Children: Categories{CategoryBabyKidsFashionBoyShoesFlipFlops, CategoryBabyKidsFashionBoyShoesFormalShoes, CategoryBabyKidsFashionBoyShoesLoafers, CategoryBabyKidsFashionBoyShoesBoots, CategoryBabyKidsFashionBoyShoesSandals, CategoryBabyKidsFashionBoyShoesSneakers},
 	}
 	CategoryBabyKidsFashionBoyShoesBoots = &Category{
 		Id:     "821x2",
@@ -6968,7 +6968,7 @@ var (
 		Slug:     "baby-and-kids-fashion-girl-shoes",
 		Name:     "Giày bé gái",
 		NameEn:   "Girl Shoes",
-		Children: Categories{CategoryBabyKidsFashionGirlShoesBoots, CategoryBabyKidsFashionGirlShoesSandals, CategoryBabyKidsFashionGirlShoesSneakers, CategoryBabyKidsFashionGirlShoesLoafers, CategoryBabyKidsFashionGirlShoesFlipFlops, CategoryBabyKidsFashionGirlShoesFlats},
+		Children: Categories{CategoryBabyKidsFashionGirlShoesLoafers, CategoryBabyKidsFashionGirlShoesFlipFlops, CategoryBabyKidsFashionGirlShoesFlats, CategoryBabyKidsFashionGirlShoesBoots, CategoryBabyKidsFashionGirlShoesSandals, CategoryBabyKidsFashionGirlShoesSneakers},
 	}
 	CategoryBabyKidsFashionGirlShoesBoots = &Category{
 		Id:     "827x2",
@@ -7017,14 +7017,14 @@ var (
 		Slug:     "gaming-and-consoles",
 		Name:     "Gaming & Console",
 		NameEn:   "Gaming & Consoles",
-		Children: Categories{CategoryGamingConsolesConsoleMachines, CategoryGamingConsolesConsoleAccessories, CategoryGamingConsolesVideoGames},
+		Children: Categories{CategoryGamingConsolesConsoleAccessories, CategoryGamingConsolesVideoGames, CategoryGamingConsolesConsoleMachines},
 	}
 	CategoryGamingConsolesConsoleMachines = &Category{
 		Id:       "833x1",
 		Slug:     "gaming-and-consoles-console-machines",
 		Name:     "Máy chơi game",
 		NameEn:   "Console Machines",
-		Children: Categories{CategoryGamingConsolesConsoleMachinesWii, CategoryGamingConsolesConsoleMachinesNintendoDS, CategoryGamingConsolesConsoleMachinesGameboy, CategoryGamingConsolesConsoleMachinesSwitch, CategoryGamingConsolesConsoleMachinesPSVita, CategoryGamingConsolesConsoleMachinesPSP, CategoryGamingConsolesConsoleMachinesPlaystation, CategoryGamingConsolesConsoleMachinesXbox},
+		Children: Categories{CategoryGamingConsolesConsoleMachinesXbox, CategoryGamingConsolesConsoleMachinesWii, CategoryGamingConsolesConsoleMachinesNintendoDS, CategoryGamingConsolesConsoleMachinesGameboy, CategoryGamingConsolesConsoleMachinesSwitch, CategoryGamingConsolesConsoleMachinesPSVita, CategoryGamingConsolesConsoleMachinesPSP, CategoryGamingConsolesConsoleMachinesPlaystation},
 	}
 	CategoryGamingConsolesConsoleMachinesPlaystation = &Category{
 		Id:     "833x2",
@@ -7094,7 +7094,7 @@ var (
 		Slug:     "gaming-and-consoles-video-games",
 		Name:     "Video Games",
 		NameEn:   "Video Games",
-		Children: Categories{CategoryGamingConsolesVideoGamesWii, CategoryGamingConsolesVideoGamesNintendoDS, CategoryGamingConsolesVideoGamesPSP, CategoryGamingConsolesVideoGamesPCGame, CategoryGamingConsolesVideoGamesPlaystation, CategoryGamingConsolesVideoGamesXbox, CategoryGamingConsolesVideoGamesGameboy, CategoryGamingConsolesVideoGamesSwitch, CategoryGamingConsolesVideoGamesPSVita},
+		Children: Categories{CategoryGamingConsolesVideoGamesWii, CategoryGamingConsolesVideoGamesPSP, CategoryGamingConsolesVideoGamesPCGame, CategoryGamingConsolesVideoGamesPlaystation, CategoryGamingConsolesVideoGamesXbox, CategoryGamingConsolesVideoGamesNintendoDS, CategoryGamingConsolesVideoGamesGameboy, CategoryGamingConsolesVideoGamesSwitch, CategoryGamingConsolesVideoGamesPSVita},
 	}
 	CategoryGamingConsolesVideoGamesPlaystation = &Category{
 		Id:     "842x2",
@@ -7171,7 +7171,7 @@ var (
 		Slug:     "cameras-and-drones-cameras",
 		Name:     "Máy ảnh",
 		NameEn:   "Cameras",
-		Children: Categories{CategoryCamerasDronesCamerasDSLRs, CategoryCamerasDronesCamerasPointShoot, CategoryCamerasDronesCamerasMirrorlessCameras, CategoryCamerasDronesCamerasActionCameras, CategoryCamerasDronesCamerasVideoCamcorders, CategoryCamerasDronesCamerasInstantCameras, CategoryCamerasDronesCamerasAnalogCameras},
+		Children: Categories{CategoryCamerasDronesCamerasVideoCamcorders, CategoryCamerasDronesCamerasInstantCameras, CategoryCamerasDronesCamerasAnalogCameras, CategoryCamerasDronesCamerasDSLRs, CategoryCamerasDronesCamerasPointShoot, CategoryCamerasDronesCamerasMirrorlessCameras, CategoryCamerasDronesCamerasActionCameras},
 	}
 	CategoryCamerasDronesCamerasPointShoot = &Category{
 		Id:     "851x2",
@@ -7262,7 +7262,7 @@ var (
 		Slug:     "cameras-and-drones-lens-accessories",
 		Name:     "Phụ kiện ống kính",
 		NameEn:   "Lens Accessories",
-		Children: Categories{CategoryCamerasDronesLensAccessoriesLensMountAdaptors, CategoryCamerasDronesLensAccessoriesLensCaps, CategoryCamerasDronesLensAccessoriesFilters, CategoryCamerasDronesLensAccessoriesLensHoods, CategoryCamerasDronesLensAccessoriesOther},
+		Children: Categories{CategoryCamerasDronesLensAccessoriesOther, CategoryCamerasDronesLensAccessoriesLensMountAdaptors, CategoryCamerasDronesLensAccessoriesLensCaps, CategoryCamerasDronesLensAccessoriesFilters, CategoryCamerasDronesLensAccessoriesLensHoods},
 	}
 	CategoryCamerasDronesLensAccessoriesLensMountAdaptors = &Category{
 		Id:     "862x2",
@@ -7304,7 +7304,7 @@ var (
 		Slug:     "cameras-and-drones-camera-accessories",
 		Name:     "Phụ kiện máy ảnh",
 		NameEn:   "Camera Accessories",
-		Children: Categories{CategoryCamerasDronesCameraAccessoriesPhotoFilmsPapers, CategoryCamerasDronesCameraAccessoriesPhotoPrinters, CategoryCamerasDronesCameraAccessoriesTripodsMonopodsAccessories, CategoryCamerasDronesCameraAccessoriesFlashAccessories, CategoryCamerasDronesCameraAccessoriesGimbalsStabilizers, CategoryCamerasDronesCameraAccessoriesCameraCasesBags, CategoryCamerasDronesCameraAccessoriesBatteryChargers, CategoryCamerasDronesCameraAccessoriesBatteriesBatteryGrips, CategoryCamerasDronesCameraAccessoriesFlashes, CategoryCamerasDronesCameraAccessoriesLightingStudioEquipments},
+		Children: Categories{CategoryCamerasDronesCameraAccessoriesLightingStudioEquipments, CategoryCamerasDronesCameraAccessoriesPhotoPrinters, CategoryCamerasDronesCameraAccessoriesBatteryChargers, CategoryCamerasDronesCameraAccessoriesFlashes, CategoryCamerasDronesCameraAccessoriesGimbalsStabilizers, CategoryCamerasDronesCameraAccessoriesCameraCasesBags, CategoryCamerasDronesCameraAccessoriesBatteriesBatteryGrips, CategoryCamerasDronesCameraAccessoriesTripodsMonopodsAccessories, CategoryCamerasDronesCameraAccessoriesFlashAccessories, CategoryCamerasDronesCameraAccessoriesPhotoFilmsPapers},
 	}
 	CategoryCamerasDronesCameraAccessoriesFlashes = &Category{
 		Id:     "867x2",
@@ -7395,7 +7395,7 @@ var (
 		Slug:     "cameras-and-drones-camera-care",
 		Name:     "Phụ kiện chăm sóc máy ảnh",
 		NameEn:   "Camera Care",
-		Children: Categories{CategoryCamerasDronesCameraCareDryBoxesCabinets, CategoryCamerasDronesCameraCareCleaningKit, CategoryCamerasDronesCameraCareSilicaGel, CategoryCamerasDronesCameraCareBlowers, CategoryCamerasDronesCameraCareLenspensBrushes},
+		Children: Categories{CategoryCamerasDronesCameraCareLenspensBrushes, CategoryCamerasDronesCameraCareDryBoxesCabinets, CategoryCamerasDronesCameraCareCleaningKit, CategoryCamerasDronesCameraCareSilicaGel, CategoryCamerasDronesCameraCareBlowers},
 	}
 	CategoryCamerasDronesCameraCareDryBoxesCabinets = &Category{
 		Id:     "878x2",
@@ -7451,7 +7451,7 @@ var (
 		Slug:     "home-and-living",
 		Name:     "Nhà cửa & Đời sống",
 		NameEn:   "Home & Living",
-		Children: Categories{CategoryHomeLivingBathrooms, CategoryHomeLivingLighting, CategoryHomeLivingHomeOrganizers, CategoryHomeLivingHomeFragranceAromatherapy, CategoryHomeLivingGardening, CategoryHomeLivingKitchenware, CategoryHomeLivingFengshuiReligiousSupplies, CategoryHomeLivingBedding, CategoryHomeLivingHomeCareSupplies, CategoryHomeLivingDinnerware, CategoryHomeLivingToolsHomeImprovement, CategoryHomeLivingSafetySecurity, CategoryHomeLivingPartySupplies, CategoryHomeLivingDecoration, CategoryHomeLivingHandWarmersHotWaterBagsIceBags, CategoryHomeLivingFurniture},
+		Children: Categories{CategoryHomeLivingHomeOrganizers, CategoryHomeLivingFurniture, CategoryHomeLivingToolsHomeImprovement, CategoryHomeLivingHomeCareSupplies, CategoryHomeLivingDinnerware, CategoryHomeLivingLighting, CategoryHomeLivingBathrooms, CategoryHomeLivingDecoration, CategoryHomeLivingPartySupplies, CategoryHomeLivingBedding, CategoryHomeLivingHandWarmersHotWaterBagsIceBags, CategoryHomeLivingGardening, CategoryHomeLivingHomeFragranceAromatherapy, CategoryHomeLivingKitchenware, CategoryHomeLivingSafetySecurity, CategoryHomeLivingFengshuiReligiousSupplies},
 	}
 	CategoryHomeLivingHomeFragranceAromatherapy = &Category{
 		Id:       "885x1",
@@ -7486,7 +7486,7 @@ var (
 		Slug:     "home-and-living-bathrooms",
 		Name:     "Đồ dùng phòng tắm",
 		NameEn:   "Bathrooms",
-		Children: Categories{CategoryHomeLivingBathroomsBathBrushesLoofahs, CategoryHomeLivingBathroomsShowerCurtains, CategoryHomeLivingBathroomsShowerSeatsCommodes, CategoryHomeLivingBathroomsSafetyHandles, CategoryHomeLivingBathroomsOther, CategoryHomeLivingBathroomsToiletBowlsSeatsCovers, CategoryHomeLivingBathroomsBathtubs, CategoryHomeLivingBathroomsBathroomRacksCabinets, CategoryHomeLivingBathroomsTowelsBathrobes, CategoryHomeLivingBathroomsShowerheadsBidetSprays, CategoryHomeLivingBathroomsShowerCaps, CategoryHomeLivingBathroomsToothbrushHoldersToothpasteDispensers, CategoryHomeLivingBathroomsSoapDispensersHoldersBoxes},
+		Children: Categories{CategoryHomeLivingBathroomsToiletBowlsSeatsCovers, CategoryHomeLivingBathroomsToothbrushHoldersToothpasteDispensers, CategoryHomeLivingBathroomsBathtubs, CategoryHomeLivingBathroomsBathBrushesLoofahs, CategoryHomeLivingBathroomsShowerCurtains, CategoryHomeLivingBathroomsShowerSeatsCommodes, CategoryHomeLivingBathroomsOther, CategoryHomeLivingBathroomsSoapDispensersHoldersBoxes, CategoryHomeLivingBathroomsBathroomRacksCabinets, CategoryHomeLivingBathroomsTowelsBathrobes, CategoryHomeLivingBathroomsShowerheadsBidetSprays, CategoryHomeLivingBathroomsSafetyHandles, CategoryHomeLivingBathroomsShowerCaps},
 	}
 	CategoryHomeLivingBathroomsToiletBowlsSeatsCovers = &Category{
 		Id:     "888x2",
@@ -7528,7 +7528,7 @@ var (
 		Slug:     "home-and-living-bathrooms-towels-and-bathrobes",
 		Name:     "Khăn mặt, khăn tắm, áo choàng tắm",
 		NameEn:   "Towels & Bathrobes",
-		Children: Categories{CategoryHomeLivingBathroomsTowelsBathrobesBathRobes, CategoryHomeLivingBathroomsTowelsBathrobesOther, CategoryHomeLivingBathroomsTowelsBathrobesBathTowels, CategoryHomeLivingBathroomsTowelsBathrobesFaceHandTowels},
+		Children: Categories{CategoryHomeLivingBathroomsTowelsBathrobesFaceHandTowels, CategoryHomeLivingBathroomsTowelsBathrobesBathRobes, CategoryHomeLivingBathroomsTowelsBathrobesOther, CategoryHomeLivingBathroomsTowelsBathrobesBathTowels},
 	}
 	CategoryHomeLivingBathroomsTowelsBathrobesBathTowels = &Category{
 		Id:     "893x3",
@@ -7612,7 +7612,7 @@ var (
 		Slug:     "home-and-living-bedding",
 		Name:     "Chăn ga gối nệm",
 		NameEn:   "Bedding",
-		Children: Categories{CategoryHomeLivingBeddingCoolingMats, CategoryHomeLivingBeddingBlanketsComfortersQuilts, CategoryHomeLivingBeddingBedsheetsPillowcasesBolsterCases, CategoryHomeLivingBeddingMatresses, CategoryHomeLivingBeddingMosquitoNets, CategoryHomeLivingBeddingBolsters, CategoryHomeLivingBeddingMattressProtectorsToppers, CategoryHomeLivingBeddingPillows, CategoryHomeLivingBeddingOther},
+		Children: Categories{CategoryHomeLivingBeddingPillows, CategoryHomeLivingBeddingMatresses, CategoryHomeLivingBeddingMosquitoNets, CategoryHomeLivingBeddingBolsters, CategoryHomeLivingBeddingCoolingMats, CategoryHomeLivingBeddingBlanketsComfortersQuilts, CategoryHomeLivingBeddingOther, CategoryHomeLivingBeddingMattressProtectorsToppers, CategoryHomeLivingBeddingBedsheetsPillowcasesBolsterCases},
 	}
 	CategoryHomeLivingBeddingCoolingMats = &Category{
 		Id:     "904x2",
@@ -7682,7 +7682,7 @@ var (
 		Slug:     "home-and-living-decoration",
 		Name:     "Trang trí nhà cửa",
 		NameEn:   "Decoration",
-		Children: Categories{CategoryHomeLivingDecorationFurnitureApplianceCovers, CategoryHomeLivingDecorationWallpapersWallStickers, CategoryHomeLivingDecorationClocks, CategoryHomeLivingDecorationFloorMats, CategoryHomeLivingDecorationCarpetsRugs, CategoryHomeLivingDecorationCandlesCandleholders, CategoryHomeLivingDecorationFlowers, CategoryHomeLivingDecorationCurtainsBlinds, CategoryHomeLivingDecorationPhotoFramesWallDecoration, CategoryHomeLivingDecorationVasesVessels, CategoryHomeLivingDecorationMirrors, CategoryHomeLivingDecorationTableCloths, CategoryHomeLivingDecorationOther},
+		Children: Categories{CategoryHomeLivingDecorationVasesVessels, CategoryHomeLivingDecorationCandlesCandleholders, CategoryHomeLivingDecorationOther, CategoryHomeLivingDecorationFurnitureApplianceCovers, CategoryHomeLivingDecorationCurtainsBlinds, CategoryHomeLivingDecorationPhotoFramesWallDecoration, CategoryHomeLivingDecorationFloorMats, CategoryHomeLivingDecorationMirrors, CategoryHomeLivingDecorationTableCloths, CategoryHomeLivingDecorationFlowers, CategoryHomeLivingDecorationWallpapersWallStickers, CategoryHomeLivingDecorationClocks, CategoryHomeLivingDecorationCarpetsRugs},
 	}
 	CategoryHomeLivingDecorationFlowers = &Category{
 		Id:     "913x2",
@@ -7787,7 +7787,7 @@ var (
 		Slug:     "home-and-living-furniture",
 		Name:     "Nội thất",
 		NameEn:   "Furniture",
-		Children: Categories{CategoryHomeLivingFurnitureDoorstoppers, CategoryHomeLivingFurnitureBedFramesHeadboards, CategoryHomeLivingFurnitureDesksTables, CategoryHomeLivingFurnitureBenchesChairsStools, CategoryHomeLivingFurnitureCushions, CategoryHomeLivingFurnitureWardrobes, CategoryHomeLivingFurnitureSofas, CategoryHomeLivingFurnitureCupboardsCabinets, CategoryHomeLivingFurnitureShelvesRacks},
+		Children: Categories{CategoryHomeLivingFurnitureCushions, CategoryHomeLivingFurnitureDoorstoppers, CategoryHomeLivingFurnitureWardrobes, CategoryHomeLivingFurnitureBedFramesHeadboards, CategoryHomeLivingFurnitureDesksTables, CategoryHomeLivingFurnitureBenchesChairsStools, CategoryHomeLivingFurnitureSofas, CategoryHomeLivingFurnitureCupboardsCabinets, CategoryHomeLivingFurnitureShelvesRacks},
 	}
 	CategoryHomeLivingFurnitureCushions = &Category{
 		Id:     "927x2",
@@ -7857,7 +7857,7 @@ var (
 		Slug:     "home-and-living-gardening",
 		Name:     "Làm vườn",
 		NameEn:   "Gardening",
-		Children: Categories{CategoryHomeLivingGardeningFertilizer, CategoryHomeLivingGardeningSeedsBulbs, CategoryHomeLivingGardeningPotsPlanters, CategoryHomeLivingGardeningIrrigationSystems, CategoryHomeLivingGardeningGardeningTools, CategoryHomeLivingGardeningPlants, CategoryHomeLivingGardeningGardenDecorations, CategoryHomeLivingGardeningGardenSoilsGrowingMedia, CategoryHomeLivingGardeningOther, CategoryHomeLivingGardeningLawnMowers},
+		Children: Categories{CategoryHomeLivingGardeningPlants, CategoryHomeLivingGardeningFertilizer, CategoryHomeLivingGardeningSeedsBulbs, CategoryHomeLivingGardeningPotsPlanters, CategoryHomeLivingGardeningOther, CategoryHomeLivingGardeningLawnMowers, CategoryHomeLivingGardeningGardenDecorations, CategoryHomeLivingGardeningGardenSoilsGrowingMedia, CategoryHomeLivingGardeningIrrigationSystems, CategoryHomeLivingGardeningGardeningTools},
 	}
 	CategoryHomeLivingGardeningPlants = &Category{
 		Id:     "936x2",
@@ -7934,7 +7934,7 @@ var (
 		Slug:     "home-and-living-tools-and-home-improvement",
 		Name:     "Dụng cụ & Thiết bị tiện ích",
 		NameEn:   "Tools & Home Improvement",
-		Children: Categories{CategoryHomeLivingToolsHomeImprovementIndustrialAdhesivesTapes, CategoryHomeLivingToolsHomeImprovementSinksWaterTaps, CategoryHomeLivingToolsHomeImprovementConstructionMaterials, CategoryHomeLivingToolsHomeImprovementOther, CategoryHomeLivingToolsHomeImprovementTools, CategoryHomeLivingToolsHomeImprovementWaterPumpsPartsAccessories, CategoryHomeLivingToolsHomeImprovementAirPumpsPartsAccessories, CategoryHomeLivingToolsHomeImprovementProtectiveGlovesGogglesMasks, CategoryHomeLivingToolsHomeImprovementLadders, CategoryHomeLivingToolsHomeImprovementDoorsWindows, CategoryHomeLivingToolsHomeImprovementRoofingFlooring, CategoryHomeLivingToolsHomeImprovementWallPaintsCoatings, CategoryHomeLivingToolsHomeImprovementTrollies, CategoryHomeLivingToolsHomeImprovementShadesAwningsTarpaulins},
+		Children: Categories{CategoryHomeLivingToolsHomeImprovementAirPumpsPartsAccessories, CategoryHomeLivingToolsHomeImprovementProtectiveGlovesGogglesMasks, CategoryHomeLivingToolsHomeImprovementTools, CategoryHomeLivingToolsHomeImprovementDoorsWindows, CategoryHomeLivingToolsHomeImprovementOther, CategoryHomeLivingToolsHomeImprovementIndustrialAdhesivesTapes, CategoryHomeLivingToolsHomeImprovementConstructionMaterials, CategoryHomeLivingToolsHomeImprovementSinksWaterTaps, CategoryHomeLivingToolsHomeImprovementRoofingFlooring, CategoryHomeLivingToolsHomeImprovementWallPaintsCoatings, CategoryHomeLivingToolsHomeImprovementWaterPumpsPartsAccessories, CategoryHomeLivingToolsHomeImprovementLadders, CategoryHomeLivingToolsHomeImprovementTrollies, CategoryHomeLivingToolsHomeImprovementShadesAwningsTarpaulins},
 	}
 	CategoryHomeLivingToolsHomeImprovementIndustrialAdhesivesTapes = &Category{
 		Id:     "946x2",
@@ -7976,7 +7976,7 @@ var (
 		Slug:     "home-and-living-tools-and-home-improvement-tools",
 		Name:     "Dụng cụ",
 		NameEn:   "Tools",
-		Children: Categories{CategoryHomeLivingToolsHomeImprovementToolsPliers, CategoryHomeLivingToolsHomeImprovementToolsDrillsScrewdriversAccessories, CategoryHomeLivingToolsHomeImprovementToolsRangefinders, CategoryHomeLivingToolsHomeImprovementToolsMeasuringTapes, CategoryHomeLivingToolsHomeImprovementToolsNailsScrewsFasteners, CategoryHomeLivingToolsHomeImprovementToolsBlowers, CategoryHomeLivingToolsHomeImprovementToolsPowerWeldingTools, CategoryHomeLivingToolsHomeImprovementToolsToolBoxes, CategoryHomeLivingToolsHomeImprovementToolsSpannerSets, CategoryHomeLivingToolsHomeImprovementToolsSawsCutoffMachinesGrinders, CategoryHomeLivingToolsHomeImprovementToolsPowerGenerators, CategoryHomeLivingToolsHomeImprovementToolsLevelsMeasuringWheels, CategoryHomeLivingToolsHomeImprovementToolsAirCompressors, CategoryHomeLivingToolsHomeImprovementToolsSandpaperPowerSandersAccessories, CategoryHomeLivingToolsHomeImprovementToolsHammers, CategoryHomeLivingToolsHomeImprovementToolsPressureWashers, CategoryHomeLivingToolsHomeImprovementToolsElectricalTestersMultimeters, CategoryHomeLivingToolsHomeImprovementToolsOther},
+		Children: Categories{CategoryHomeLivingToolsHomeImprovementToolsSawsCutoffMachinesGrinders, CategoryHomeLivingToolsHomeImprovementToolsPressureWashers, CategoryHomeLivingToolsHomeImprovementToolsPowerGenerators, CategoryHomeLivingToolsHomeImprovementToolsElectricalTestersMultimeters, CategoryHomeLivingToolsHomeImprovementToolsMeasuringTapes, CategoryHomeLivingToolsHomeImprovementToolsPliers, CategoryHomeLivingToolsHomeImprovementToolsSpannerSets, CategoryHomeLivingToolsHomeImprovementToolsRangefinders, CategoryHomeLivingToolsHomeImprovementToolsAirCompressors, CategoryHomeLivingToolsHomeImprovementToolsSandpaperPowerSandersAccessories, CategoryHomeLivingToolsHomeImprovementToolsOther, CategoryHomeLivingToolsHomeImprovementToolsToolBoxes, CategoryHomeLivingToolsHomeImprovementToolsHammers, CategoryHomeLivingToolsHomeImprovementToolsNailsScrewsFasteners, CategoryHomeLivingToolsHomeImprovementToolsDrillsScrewdriversAccessories, CategoryHomeLivingToolsHomeImprovementToolsLevelsMeasuringWheels, CategoryHomeLivingToolsHomeImprovementToolsPowerWeldingTools, CategoryHomeLivingToolsHomeImprovementToolsBlowers},
 	}
 	CategoryHomeLivingToolsHomeImprovementToolsToolBoxes = &Category{
 		Id:     "951x3",
@@ -8164,7 +8164,7 @@ var (
 		Slug:     "home-and-living-home-care-supplies",
 		Name:     "Dụng cụ chăm sóc nhà cửa",
 		NameEn:   "Home Care Supplies",
-		Children: Categories{CategoryHomeLivingHomeCareSuppliesBrooms, CategoryHomeLivingHomeCareSuppliesBasinsBucketsWaterDippers, CategoryHomeLivingHomeCareSuppliesPlasticBagsTrashBags, CategoryHomeLivingHomeCareSuppliesClotheslinesDryingRacks, CategoryHomeLivingHomeCareSuppliesSpongesScouringPads, CategoryHomeLivingHomeCareSuppliesPestWeedControl, CategoryHomeLivingHomeCareSuppliesLaundryCare, CategoryHomeLivingHomeCareSuppliesCleaningBrushes, CategoryHomeLivingHomeCareSuppliesMops, CategoryHomeLivingHomeCareSuppliesTissuePaperTowels, CategoryHomeLivingHomeCareSuppliesToiletPaper, CategoryHomeLivingHomeCareSuppliesDusters, CategoryHomeLivingHomeCareSuppliesTrashRecyclingBins, CategoryHomeLivingHomeCareSuppliesCleaningCloths, CategoryHomeLivingHomeCareSuppliesCleaningAgents},
+		Children: Categories{CategoryHomeLivingHomeCareSuppliesBrooms, CategoryHomeLivingHomeCareSuppliesDusters, CategoryHomeLivingHomeCareSuppliesMops, CategoryHomeLivingHomeCareSuppliesBasinsBucketsWaterDippers, CategoryHomeLivingHomeCareSuppliesLaundryCare, CategoryHomeLivingHomeCareSuppliesClotheslinesDryingRacks, CategoryHomeLivingHomeCareSuppliesPestWeedControl, CategoryHomeLivingHomeCareSuppliesTissuePaperTowels, CategoryHomeLivingHomeCareSuppliesToiletPaper, CategoryHomeLivingHomeCareSuppliesCleaningAgents, CategoryHomeLivingHomeCareSuppliesSpongesScouringPads, CategoryHomeLivingHomeCareSuppliesTrashRecyclingBins, CategoryHomeLivingHomeCareSuppliesPlasticBagsTrashBags, CategoryHomeLivingHomeCareSuppliesCleaningBrushes, CategoryHomeLivingHomeCareSuppliesCleaningCloths},
 	}
 	CategoryHomeLivingHomeCareSuppliesClotheslinesDryingRacks = &Category{
 		Id:     "977x2",
@@ -8268,7 +8268,7 @@ var (
 		Slug:     "home-and-living-home-care-supplies-laundry-care",
 		Name:     "Phụ kiện giặt là",
 		NameEn:   "Laundry Care",
-		Children: Categories{CategoryHomeLivingHomeCareSuppliesLaundryCareOther, CategoryHomeLivingHomeCareSuppliesLaundryCareFabricFragrances, CategoryHomeLivingHomeCareSuppliesLaundryCareFabricConditionersSofteners, CategoryHomeLivingHomeCareSuppliesLaundryCareDetergents},
+		Children: Categories{CategoryHomeLivingHomeCareSuppliesLaundryCareFabricFragrances, CategoryHomeLivingHomeCareSuppliesLaundryCareFabricConditionersSofteners, CategoryHomeLivingHomeCareSuppliesLaundryCareDetergents, CategoryHomeLivingHomeCareSuppliesLaundryCareOther},
 	}
 	CategoryHomeLivingHomeCareSuppliesLaundryCareFabricFragrances = &Category{
 		Id:     "991x3",
@@ -8303,7 +8303,7 @@ var (
 		Slug:     "home-and-living-kitchenware",
 		Name:     "Dụng cụ nhà bếp",
 		NameEn:   "Kitchenware",
-		Children: Categories{CategoryHomeLivingKitchenwareKitchenRacks, CategoryHomeLivingKitchenwareChoppingBoards, CategoryHomeLivingKitchenwareGratersPeelersCutters, CategoryHomeLivingKitchenwareKitchenWeighingScales, CategoryHomeLivingKitchenwarePans, CategoryHomeLivingKitchenwarePots, CategoryHomeLivingKitchenwareFoodStorage, CategoryHomeLivingKitchenwareAluminiumFoil, CategoryHomeLivingKitchenwareCanBottleOpeners, CategoryHomeLivingKitchenwareMeasuringGlassesSpoons, CategoryHomeLivingKitchenwareOther, CategoryHomeLivingKitchenwareBakewaresDecorations, CategoryHomeLivingKitchenwareTeaCoffeeBartendingEquipments, CategoryHomeLivingKitchenwareApronsKitchenGloves, CategoryHomeLivingKitchenwareKnivesKitchenScissors, CategoryHomeLivingKitchenwareStrainers, CategoryHomeLivingKitchenwareSealers, CategoryHomeLivingKitchenwareGrillsAccessories, CategoryHomeLivingKitchenwareClingWrap, CategoryHomeLivingKitchenwareSpatulasCookingTweezers, CategoryHomeLivingKitchenwareWhisksBeaters},
+		Children: Categories{CategoryHomeLivingKitchenwareKitchenRacks, CategoryHomeLivingKitchenwareChoppingBoards, CategoryHomeLivingKitchenwareStrainers, CategoryHomeLivingKitchenwareKitchenWeighingScales, CategoryHomeLivingKitchenwareBakewaresDecorations, CategoryHomeLivingKitchenwareFoodStorage, CategoryHomeLivingKitchenwareAluminiumFoil, CategoryHomeLivingKitchenwareApronsKitchenGloves, CategoryHomeLivingKitchenwareMeasuringGlassesSpoons, CategoryHomeLivingKitchenwareOther, CategoryHomeLivingKitchenwarePans, CategoryHomeLivingKitchenwarePots, CategoryHomeLivingKitchenwareClingWrap, CategoryHomeLivingKitchenwareSpatulasCookingTweezers, CategoryHomeLivingKitchenwareWhisksBeaters, CategoryHomeLivingKitchenwareSealers, CategoryHomeLivingKitchenwareGrillsAccessories, CategoryHomeLivingKitchenwareTeaCoffeeBartendingEquipments, CategoryHomeLivingKitchenwareKnivesKitchenScissors, CategoryHomeLivingKitchenwareCanBottleOpeners, CategoryHomeLivingKitchenwareGratersPeelersCutters},
 	}
 	CategoryHomeLivingKitchenwareGrillsAccessories = &Category{
 		Id:     "995x2",
@@ -8457,7 +8457,7 @@ var (
 		Slug:     "home-and-living-dinnerware",
 		Name:     "Bộ đồ bàn ăn",
 		NameEn:   "Dinnerware",
-		Children: Categories{CategoryHomeLivingDinnerwareFoodCovers, CategoryHomeLivingDinnerwareTeaPotsSets, CategoryHomeLivingDinnerwareWaterBottlesAccessories, CategoryHomeLivingDinnerwarePlates, CategoryHomeLivingDinnerwareCutleries, CategoryHomeLivingDinnerwarePlacematsCoasters, CategoryHomeLivingDinnerwareOther, CategoryHomeLivingDinnerwareJugsPitchersAccessories, CategoryHomeLivingDinnerwareCupsMugsGlasses, CategoryHomeLivingDinnerwareBowls, CategoryHomeLivingDinnerwareStraws},
+		Children: Categories{CategoryHomeLivingDinnerwareJugsPitchersAccessories, CategoryHomeLivingDinnerwarePlates, CategoryHomeLivingDinnerwareCutleries, CategoryHomeLivingDinnerwareStraws, CategoryHomeLivingDinnerwareFoodCovers, CategoryHomeLivingDinnerwarePlacematsCoasters, CategoryHomeLivingDinnerwareTeaPotsSets, CategoryHomeLivingDinnerwareCupsMugsGlasses, CategoryHomeLivingDinnerwareWaterBottlesAccessories, CategoryHomeLivingDinnerwareBowls, CategoryHomeLivingDinnerwareOther},
 	}
 	CategoryHomeLivingDinnerwareJugsPitchersAccessories = &Category{
 		Id:     "1016x2",
@@ -8575,7 +8575,7 @@ var (
 		Slug:     "home-and-living-home-organizers",
 		Name:     "Sắp xếp nhà cửa",
 		NameEn:   "Home Organizers",
-		Children: Categories{CategoryHomeLivingHomeOrganizersWardrobeOrganizers, CategoryHomeLivingHomeOrganizersJewelryOrganizers, CategoryHomeLivingHomeOrganizersTissueHolders, CategoryHomeLivingHomeOrganizersHangersPegs, CategoryHomeLivingHomeOrganizersShoeStorageBoxes, CategoryHomeLivingHomeOrganizersHooks, CategoryHomeLivingHomeOrganizersOther, CategoryHomeLivingHomeOrganizersStorageBoxesBagsBaskets, CategoryHomeLivingHomeOrganizersLaundryBagsBaskets, CategoryHomeLivingHomeOrganizersDeskOrganizers},
+		Children: Categories{CategoryHomeLivingHomeOrganizersHangersPegs, CategoryHomeLivingHomeOrganizersStorageBoxesBagsBaskets, CategoryHomeLivingHomeOrganizersJewelryOrganizers, CategoryHomeLivingHomeOrganizersTissueHolders, CategoryHomeLivingHomeOrganizersShoeStorageBoxes, CategoryHomeLivingHomeOrganizersHooks, CategoryHomeLivingHomeOrganizersLaundryBagsBaskets, CategoryHomeLivingHomeOrganizersDeskOrganizers, CategoryHomeLivingHomeOrganizersWardrobeOrganizers, CategoryHomeLivingHomeOrganizersOther},
 	}
 	CategoryHomeLivingHomeOrganizersHangersPegs = &Category{
 		Id:     "1031x2",
@@ -8728,14 +8728,14 @@ var (
 		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments",
 		Name:     "Dụng Cụ Thể Thao & Dã Ngoại",
 		NameEn:   "Sports & Outdoor Recreation Equipments",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsOther, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyball, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennis, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolf, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBilliards, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSurfingWakeboarding, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipment, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsDarts, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishing, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCycling, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHiking, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakraw, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadminton, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsRockClimbing, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArts, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsShootingSurvivalGames, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsRugby, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsIceSkatingWinterSports, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoating, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilates, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsports, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketball, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennis, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBaseballSoftball, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSquash, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDiving},
+		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHiking, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsports, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyball, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolf, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBilliards, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoating, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishing, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBaseballSoftball, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsRugby, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsIceSkatingWinterSports, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDiving, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsDarts, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketball, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadminton, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennis, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArts, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSurfingWakeboarding, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilates, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipment, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsOther, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsRockClimbing, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakraw, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennis, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSquash, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsShootingSurvivalGames, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCycling},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishing = &Category{
 		Id:       "1050x2",
 		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fishing",
 		Name:     "Câu Cá",
 		NameEn:   "Fishing",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingLines, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingLuresBaits, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingBags, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingNets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingOther, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingHooks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingRodsReels, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishFinders},
+		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingHooks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingRodsReels, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishFinders, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingLines, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingLuresBaits, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingBags, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingNets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingOther},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingHooks = &Category{
 		Id:     "1050x3",
@@ -8833,7 +8833,7 @@ var (
 		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking",
 		Name:     "Cắm Trại & Dã ngoại",
 		NameEn:   "Camping & Hiking",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCompasses, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHammocks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHikingSticks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingCookware, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingBinocularsMonocularsTelescopes, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingSleepingBags, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingKnivesSurvivalKits, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingPicnicMatsBaskets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingOther, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingLampsFlashlights, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingTentsTentAccessories},
+		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingSleepingBags, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingOther, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingLampsFlashlights, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingTentsTentAccessories, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingBinocularsMonocularsTelescopes, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCompasses, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingKnivesSurvivalKits, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHammocks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHikingSticks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingPicnicMatsBaskets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingCookware},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingCookware = &Category{
 		Id:     "1062x3",
@@ -8924,7 +8924,7 @@ var (
 		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boardsports",
 		Name:     "Thể Thao Ván Trượt",
 		NameEn:   "Boardsports",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsHelmetsProtectiveGears, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSkateboardsRollerBlades, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsScootersUnicycles, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSegwaysHoverboards},
+		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsScootersUnicycles, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSegwaysHoverboards, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsHelmetsProtectiveGears, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSkateboardsRollerBlades},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSkateboardsRollerBlades = &Category{
 		Id:     "1074x3",
@@ -8959,7 +8959,7 @@ var (
 		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-soccer-futsal-and-sepak-takraw",
 		Name:     "Bóng Đá, Futsal & Cầu Mây",
 		NameEn:   "Soccer, Futsal & Sepak Takraw",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalkeeperGlovesShinGuards, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalPostsNets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawBalls},
+		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawBalls, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalkeeperGlovesShinGuards, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalPostsNets},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawBalls = &Category{
 		Id:     "1078x3",
@@ -9015,7 +9015,7 @@ var (
 		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-volleyball",
 		Name:     "Bóng Chuyền",
 		NameEn:   "Volleyball",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyBalls, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyNets},
+		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyNets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyBalls},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyBalls = &Category{
 		Id:     "1084x3",
@@ -9036,7 +9036,7 @@ var (
 		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-badminton",
 		Name:     "Cầu Lông",
 		NameEn:   "Badminton",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonRackets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonShuttlecocks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonNets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonOther},
+		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonShuttlecocks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonNets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonOther, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonRackets},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonRackets = &Category{
 		Id:     "1086x3",
@@ -9071,7 +9071,7 @@ var (
 		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-tennis",
 		Name:     "Tennis",
 		NameEn:   "Tennis",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisRackets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisBalls, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisNets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisOther},
+		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisNets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisOther, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisRackets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisBalls},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisRackets = &Category{
 		Id:     "1090x3",
@@ -9253,7 +9253,7 @@ var (
 		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-swimming-and-diving",
 		Name:     "Bơi Lội & Lặn",
 		NameEn:   "Swimming & Diving",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingLifeJackets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingCaps, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingGoggles, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingBoards, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingFlashlights, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingMasks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingFlippers},
+		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingCaps, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingGoggles, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingBoards, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingFlashlights, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingMasks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingFlippers, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingLifeJackets},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingCaps = &Category{
 		Id:     "1112x3",
@@ -9344,7 +9344,7 @@ var (
 		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fitness-equipment",
 		Name:     "Thiết Bị Thể Thao",
 		NameEn:   "Fitness Equipment",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentWeightTraining, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentSkippingRopes, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentGymBalls, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentFitnessMachines, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentAbRollers, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentPullUpPushUpBars, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentOther},
+		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentOther, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentWeightTraining, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentSkippingRopes, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentGymBalls, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentFitnessMachines, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentAbRollers, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentPullUpPushUpBars},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentWeightTraining = &Category{
 		Id:     "1123x3",
@@ -9414,7 +9414,7 @@ var (
 		Slug:     "sports-and-outdoors-sport-footwear",
 		Name:     "Giày Thể Thao",
 		NameEn:   "Sport Footwear",
-		Children: Categories{CategorySportsOutdoorsSportFootwearTennisShoes, CategorySportsOutdoorsSportFootwearFutsalShoes, CategorySportsOutdoorsSportFootwearHikingShoes, CategorySportsOutdoorsSportFootwearOther, CategorySportsOutdoorsSportFootwearBasketballShoes, CategorySportsOutdoorsSportFootwearRunningShoes, CategorySportsOutdoorsSportFootwearTrainingShoes, CategorySportsOutdoorsSportFootwearVolleyballShoes, CategorySportsOutdoorsSportFootwearBadmintonShoes, CategorySportsOutdoorsSportFootwearSoccerShoes, CategorySportsOutdoorsSportFootwearKidsSportShoes},
+		Children: Categories{CategorySportsOutdoorsSportFootwearTrainingShoes, CategorySportsOutdoorsSportFootwearVolleyballShoes, CategorySportsOutdoorsSportFootwearSoccerShoes, CategorySportsOutdoorsSportFootwearKidsSportShoes, CategorySportsOutdoorsSportFootwearBasketballShoes, CategorySportsOutdoorsSportFootwearRunningShoes, CategorySportsOutdoorsSportFootwearTennisShoes, CategorySportsOutdoorsSportFootwearBadmintonShoes, CategorySportsOutdoorsSportFootwearFutsalShoes, CategorySportsOutdoorsSportFootwearHikingShoes, CategorySportsOutdoorsSportFootwearOther},
 	}
 	CategorySportsOutdoorsSportFootwearBasketballShoes = &Category{
 		Id:     "1132x2",
@@ -9498,7 +9498,7 @@ var (
 		Slug:     "sports-and-outdoors-sports-and-outdoor-apparels",
 		Name:     "Thời Trang Thể Thao & Dã Ngoại",
 		NameEn:   "Sports & Outdoor Apparels",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorApparelsSportsBras, CategorySportsOutdoorsSportsOutdoorApparelsKidsSportsApparel, CategorySportsOutdoorsSportsOutdoorApparelsSets, CategorySportsOutdoorsSportsOutdoorApparelsJackets, CategorySportsOutdoorsSportsOutdoorApparelsTops, CategorySportsOutdoorsSportsOutdoorApparelsJerseys, CategorySportsOutdoorsSportsOutdoorApparelsBottoms, CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttire},
+		Children: Categories{CategorySportsOutdoorsSportsOutdoorApparelsJerseys, CategorySportsOutdoorsSportsOutdoorApparelsBottoms, CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttire, CategorySportsOutdoorsSportsOutdoorApparelsSportsBras, CategorySportsOutdoorsSportsOutdoorApparelsKidsSportsApparel, CategorySportsOutdoorsSportsOutdoorApparelsSets, CategorySportsOutdoorsSportsOutdoorApparelsJackets, CategorySportsOutdoorsSportsOutdoorApparelsTops},
 	}
 	CategorySportsOutdoorsSportsOutdoorApparelsSets = &Category{
 		Id:     "1143x2",
@@ -9589,7 +9589,7 @@ var (
 		Slug:     "sports-and-outdoors-sports-and-outdoor-accessories",
 		Name:     "Phụ Kiện Thể Thao & Dã Ngoại",
 		NameEn:   "Sports & Outdoor Accessories",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorAccessoriesSportsOutdoorHats, CategorySportsOutdoorsSportsOutdoorAccessoriesUmbrellas, CategorySportsOutdoorsSportsOutdoorAccessoriesMouthguardsSportTapes, CategorySportsOutdoorsSportsOutdoorAccessoriesTrainingEquipments, CategorySportsOutdoorsSportsOutdoorAccessoriesStopwatchesPedometers, CategorySportsOutdoorsSportsOutdoorAccessoriesShoeBags, CategorySportsOutdoorsSportsOutdoorAccessoriesSportsWristbands, CategorySportsOutdoorsSportsOutdoorAccessoriesSportsHeadbands, CategorySportsOutdoorsSportsOutdoorAccessoriesDryBags, CategorySportsOutdoorsSportsOutdoorAccessoriesRainCoats, CategorySportsOutdoorsSportsOutdoorAccessoriesGymProtectiveGears},
+		Children: Categories{CategorySportsOutdoorsSportsOutdoorAccessoriesGymProtectiveGears, CategorySportsOutdoorsSportsOutdoorAccessoriesStopwatchesPedometers, CategorySportsOutdoorsSportsOutdoorAccessoriesShoeBags, CategorySportsOutdoorsSportsOutdoorAccessoriesRainCoats, CategorySportsOutdoorsSportsOutdoorAccessoriesUmbrellas, CategorySportsOutdoorsSportsOutdoorAccessoriesMouthguardsSportTapes, CategorySportsOutdoorsSportsOutdoorAccessoriesTrainingEquipments, CategorySportsOutdoorsSportsOutdoorAccessoriesSportsWristbands, CategorySportsOutdoorsSportsOutdoorAccessoriesSportsHeadbands, CategorySportsOutdoorsSportsOutdoorAccessoriesSportsOutdoorHats, CategorySportsOutdoorsSportsOutdoorAccessoriesDryBags},
 	}
 	CategorySportsOutdoorsSportsOutdoorAccessoriesStopwatchesPedometers = &Category{
 		Id:     "1154x2",
@@ -9673,14 +9673,14 @@ var (
 		Slug:     "stationery",
 		Name:     "Văn Phòng Phẩm",
 		NameEn:   "Stationery",
-		Children: Categories{CategoryStationeryLettersEnvelopes, CategoryStationeryOther, CategoryStationeryGiftWrapping, CategoryStationeryWritingCorrection, CategoryStationerySchoolOfficeEquipment, CategoryStationeryArtSupplies, CategoryStationeryNotebooksPapers},
+		Children: Categories{CategoryStationeryWritingCorrection, CategoryStationerySchoolOfficeEquipment, CategoryStationeryArtSupplies, CategoryStationeryNotebooksPapers, CategoryStationeryLettersEnvelopes, CategoryStationeryOther, CategoryStationeryGiftWrapping},
 	}
 	CategoryStationeryGiftWrapping = &Category{
 		Id:       "1165x1",
 		Slug:     "stationery-gift-and-wrapping",
 		Name:     "Quà Tặng - Giấy Gói",
 		NameEn:   "Gift & Wrapping",
-		Children: Categories{CategoryStationeryGiftWrappingGiftWrappers, CategoryStationeryGiftWrappingGiftBoxes, CategoryStationeryGiftWrappingGiftBags, CategoryStationeryGiftWrappingRibbons, CategoryStationeryGiftWrappingBubbleWraps, CategoryStationeryGiftWrappingCartonBoxes, CategoryStationeryGiftWrappingOther},
+		Children: Categories{CategoryStationeryGiftWrappingCartonBoxes, CategoryStationeryGiftWrappingOther, CategoryStationeryGiftWrappingGiftWrappers, CategoryStationeryGiftWrappingGiftBoxes, CategoryStationeryGiftWrappingGiftBags, CategoryStationeryGiftWrappingRibbons, CategoryStationeryGiftWrappingBubbleWraps},
 	}
 	CategoryStationeryGiftWrappingGiftWrappers = &Category{
 		Id:     "1165x2",
@@ -9736,7 +9736,7 @@ var (
 		Slug:     "stationery-writing-and-correction",
 		Name:     "Bút Các Loại",
 		NameEn:   "Writing & Correction",
-		Children: Categories{CategoryStationeryWritingCorrectionPencils, CategoryStationeryWritingCorrectionEraserCorrectionSupplies, CategoryStationeryWritingCorrectionMarkers, CategoryStationeryWritingCorrectionHighlighters, CategoryStationeryWritingCorrectionPensInks},
+		Children: Categories{CategoryStationeryWritingCorrectionEraserCorrectionSupplies, CategoryStationeryWritingCorrectionMarkers, CategoryStationeryWritingCorrectionHighlighters, CategoryStationeryWritingCorrectionPensInks, CategoryStationeryWritingCorrectionPencils},
 	}
 	CategoryStationeryWritingCorrectionPensInks = &Category{
 		Id:     "1172x2",
@@ -9778,7 +9778,7 @@ var (
 		Slug:     "stationery-school-and-office-equipment",
 		Name:     "Thiết Bị Trường Học",
 		NameEn:   "School & Office Equipment",
-		Children: Categories{CategoryStationerySchoolOfficeEquipmentLanyardsNameTags, CategoryStationerySchoolOfficeEquipmentClipsPinsTacks, CategoryStationerySchoolOfficeEquipmentCalculators, CategoryStationerySchoolOfficeEquipmentStaplersStaples, CategoryStationerySchoolOfficeEquipmentSharpeners, CategoryStationerySchoolOfficeEquipmentPencilCases, CategoryStationerySchoolOfficeEquipmentHolePunchers, CategoryStationerySchoolOfficeEquipmentLabelPrinters, CategoryStationerySchoolOfficeEquipmentScissors, CategoryStationerySchoolOfficeEquipmentInkStampsPads, CategoryStationerySchoolOfficeEquipmentCalendars, CategoryStationerySchoolOfficeEquipmentOther, CategoryStationerySchoolOfficeEquipmentGlues, CategoryStationerySchoolOfficeEquipmentPenKnivesPaperCutters, CategoryStationerySchoolOfficeEquipmentStringsTapes, CategoryStationerySchoolOfficeEquipmentFoldersPaperOrganizersAccessories, CategoryStationerySchoolOfficeEquipmentRulersProtractorsStencils, CategoryStationerySchoolOfficeEquipmentWritingBoardsBoardStands},
+		Children: Categories{CategoryStationerySchoolOfficeEquipmentStringsTapes, CategoryStationerySchoolOfficeEquipmentClipsPinsTacks, CategoryStationerySchoolOfficeEquipmentHolePunchers, CategoryStationerySchoolOfficeEquipmentCalculators, CategoryStationerySchoolOfficeEquipmentLanyardsNameTags, CategoryStationerySchoolOfficeEquipmentRulersProtractorsStencils, CategoryStationerySchoolOfficeEquipmentSharpeners, CategoryStationerySchoolOfficeEquipmentPencilCases, CategoryStationerySchoolOfficeEquipmentWritingBoardsBoardStands, CategoryStationerySchoolOfficeEquipmentGlues, CategoryStationerySchoolOfficeEquipmentLabelPrinters, CategoryStationerySchoolOfficeEquipmentInkStampsPads, CategoryStationerySchoolOfficeEquipmentStaplersStaples, CategoryStationerySchoolOfficeEquipmentCalendars, CategoryStationerySchoolOfficeEquipmentOther, CategoryStationerySchoolOfficeEquipmentPenKnivesPaperCutters, CategoryStationerySchoolOfficeEquipmentScissors, CategoryStationerySchoolOfficeEquipmentFoldersPaperOrganizersAccessories},
 	}
 	CategoryStationerySchoolOfficeEquipmentWritingBoardsBoardStands = &Category{
 		Id:     "1177x2",
@@ -9911,7 +9911,7 @@ var (
 		Slug:     "stationery-art-supplies",
 		Name:     "Họa cụ",
 		NameEn:   "Art Supplies",
-		Children: Categories{CategoryStationeryArtSuppliesColorPencils, CategoryStationeryArtSuppliesCrayonsPastels, CategoryStationeryArtSuppliesAcrylicPaint, CategoryStationeryArtSuppliesPaintBrushes, CategoryStationeryArtSuppliesCanvasesEasels, CategoryStationeryArtSuppliesSketchBooks, CategoryStationeryArtSuppliesOther, CategoryStationeryArtSuppliesWaterPosterColours, CategoryStationeryArtSuppliesOilPaint, CategoryStationeryArtSuppliesPaintPalettes},
+		Children: Categories{CategoryStationeryArtSuppliesAcrylicPaint, CategoryStationeryArtSuppliesPaintBrushes, CategoryStationeryArtSuppliesWaterPosterColours, CategoryStationeryArtSuppliesOilPaint, CategoryStationeryArtSuppliesPaintPalettes, CategoryStationeryArtSuppliesCanvasesEasels, CategoryStationeryArtSuppliesSketchBooks, CategoryStationeryArtSuppliesOther, CategoryStationeryArtSuppliesColorPencils, CategoryStationeryArtSuppliesCrayonsPastels},
 	}
 	CategoryStationeryArtSuppliesColorPencils = &Category{
 		Id:     "1195x2",
@@ -9988,7 +9988,7 @@ var (
 		Slug:     "stationery-notebooks-and-papers",
 		Name:     "Sổ & Giấy Các Loại",
 		NameEn:   "Notebooks & Papers",
-		Children: Categories{CategoryStationeryNotebooksPapersLabelsStickers, CategoryStationeryNotebooksPapersOther, CategoryStationeryNotebooksPapersBookmarks, CategoryStationeryNotebooksPapersThermalPaperContinuousPaper, CategoryStationeryNotebooksPapersLooseLeaf, CategoryStationeryNotebooksPapersMemoStickyNotes, CategoryStationeryNotebooksPapersArtPaperBoards, CategoryStationeryNotebooksPapersNotebooksNotepads, CategoryStationeryNotebooksPapersBookCovers, CategoryStationeryNotebooksPapersPrintingPhotocopyPaper},
+		Children: Categories{CategoryStationeryNotebooksPapersMemoStickyNotes, CategoryStationeryNotebooksPapersLooseLeaf, CategoryStationeryNotebooksPapersArtPaperBoards, CategoryStationeryNotebooksPapersNotebooksNotepads, CategoryStationeryNotebooksPapersLabelsStickers, CategoryStationeryNotebooksPapersBookmarks, CategoryStationeryNotebooksPapersBookCovers, CategoryStationeryNotebooksPapersThermalPaperContinuousPaper, CategoryStationeryNotebooksPapersPrintingPhotocopyPaper, CategoryStationeryNotebooksPapersOther},
 	}
 	CategoryStationeryNotebooksPapersBookmarks = &Category{
 		Id:     "1205x2",
@@ -10065,7 +10065,7 @@ var (
 		Slug:     "stationery-letters-and-envelopes",
 		Name:     "Thư Tín",
 		NameEn:   "Letters & Envelopes",
-		Children: Categories{CategoryStationeryLettersEnvelopesPostageStampsDutyStamps, CategoryStationeryLettersEnvelopesEnvelopesAngpao, CategoryStationeryLettersEnvelopesPostCards},
+		Children: Categories{CategoryStationeryLettersEnvelopesEnvelopesAngpao, CategoryStationeryLettersEnvelopesPostCards, CategoryStationeryLettersEnvelopesPostageStampsDutyStamps},
 	}
 	CategoryStationeryLettersEnvelopesEnvelopesAngpao = &Category{
 		Id:     "1215x2",
@@ -10100,14 +10100,14 @@ var (
 		Slug:     "hobbies-and-collections",
 		Name:     "Sở thích & Sưu tầm",
 		NameEn:   "Hobbies & Collections",
-		Children: Categories{CategoryHobbiesCollectionsCollectibleItems, CategoryHobbiesCollectionsSouvenirs, CategoryHobbiesCollectionsToysGames, CategoryHobbiesCollectionsCDDVDBluray, CategoryHobbiesCollectionsMusicalInstrumentsAccessories, CategoryHobbiesCollectionsVinylRecords, CategoryHobbiesCollectionsPhotoAlbums, CategoryHobbiesCollectionsNeedlework},
+		Children: Categories{CategoryHobbiesCollectionsSouvenirs, CategoryHobbiesCollectionsToysGames, CategoryHobbiesCollectionsCDDVDBluray, CategoryHobbiesCollectionsMusicalInstrumentsAccessories, CategoryHobbiesCollectionsVinylRecords, CategoryHobbiesCollectionsPhotoAlbums, CategoryHobbiesCollectionsNeedlework, CategoryHobbiesCollectionsCollectibleItems},
 	}
 	CategoryHobbiesCollectionsCollectibleItems = &Category{
 		Id:       "1219x1",
 		Slug:     "hobbies-and-collections-collectible-items",
 		Name:     "Đồ Sưu Tầm",
 		NameEn:   "Collectible Items",
-		Children: Categories{CategoryHobbiesCollectionsCollectibleItemsStatuesSculptures, CategoryHobbiesCollectionsCollectibleItemsVehicleModelsDiecast, CategoryHobbiesCollectionsCollectibleItemsSportsCollectibles, CategoryHobbiesCollectionsCollectibleItemsCoinsBankNotes, CategoryHobbiesCollectionsCollectibleItemsOther, CategoryHobbiesCollectionsCollectibleItemsActionFigurines, CategoryHobbiesCollectionsCollectibleItemsMechaModelsDiecast, CategoryHobbiesCollectionsCollectibleItemsIdolCollectibles, CategoryHobbiesCollectionsCollectibleItemsAnimeMangaCollectibles},
+		Children: Categories{CategoryHobbiesCollectionsCollectibleItemsAnimeMangaCollectibles, CategoryHobbiesCollectionsCollectibleItemsCoinsBankNotes, CategoryHobbiesCollectionsCollectibleItemsStatuesSculptures, CategoryHobbiesCollectionsCollectibleItemsMechaModelsDiecast, CategoryHobbiesCollectionsCollectibleItemsVehicleModelsDiecast, CategoryHobbiesCollectionsCollectibleItemsSportsCollectibles, CategoryHobbiesCollectionsCollectibleItemsActionFigurines, CategoryHobbiesCollectionsCollectibleItemsIdolCollectibles, CategoryHobbiesCollectionsCollectibleItemsOther},
 	}
 	CategoryHobbiesCollectionsCollectibleItemsActionFigurines = &Category{
 		Id:     "1219x2",
@@ -10177,7 +10177,7 @@ var (
 		Slug:     "hobbies-and-collections-souvenirs",
 		Name:     "Quà Lưu Niệm",
 		NameEn:   "Souvenirs",
-		Children: Categories{CategoryHobbiesCollectionsSouvenirsOther, CategoryHobbiesCollectionsSouvenirsHandFans, CategoryHobbiesCollectionsSouvenirsKeychains, CategoryHobbiesCollectionsSouvenirsCoinBanks, CategoryHobbiesCollectionsSouvenirsFridgeMagnets},
+		Children: Categories{CategoryHobbiesCollectionsSouvenirsHandFans, CategoryHobbiesCollectionsSouvenirsKeychains, CategoryHobbiesCollectionsSouvenirsCoinBanks, CategoryHobbiesCollectionsSouvenirsFridgeMagnets, CategoryHobbiesCollectionsSouvenirsOther},
 	}
 	CategoryHobbiesCollectionsSouvenirsHandFans = &Category{
 		Id:     "1228x2",
@@ -10219,7 +10219,7 @@ var (
 		Slug:     "hobbies-and-collections-toys-and-games",
 		Name:     "Đồ chơi - Giải trí",
 		NameEn:   "Toys & Games",
-		Children: Categories{CategoryHobbiesCollectionsToysGamesPrankToys, CategoryHobbiesCollectionsToysGamesKendamas, CategoryHobbiesCollectionsToysGamesYoyos, CategoryHobbiesCollectionsToysGamesCapsuleToys, CategoryHobbiesCollectionsToysGamesDiceBoardCardGames, CategoryHobbiesCollectionsToysGamesMagicToys, CategoryHobbiesCollectionsToysGamesRemoteControlToysAccessories, CategoryHobbiesCollectionsToysGamesOther, CategoryHobbiesCollectionsToysGamesRubiksCubes, CategoryHobbiesCollectionsToysGamesSpinningTops},
+		Children: Categories{CategoryHobbiesCollectionsToysGamesRemoteControlToysAccessories, CategoryHobbiesCollectionsToysGamesDiceBoardCardGames, CategoryHobbiesCollectionsToysGamesMagicToys, CategoryHobbiesCollectionsToysGamesSpinningTops, CategoryHobbiesCollectionsToysGamesYoyos, CategoryHobbiesCollectionsToysGamesOther, CategoryHobbiesCollectionsToysGamesPrankToys, CategoryHobbiesCollectionsToysGamesRubiksCubes, CategoryHobbiesCollectionsToysGamesKendamas, CategoryHobbiesCollectionsToysGamesCapsuleToys},
 	}
 	CategoryHobbiesCollectionsToysGamesDiceBoardCardGames = &Category{
 		Id:     "1233x2",
@@ -10303,7 +10303,7 @@ var (
 		Slug:     "hobbies-and-collections-musical-instruments-and-accessories",
 		Name:     "Nhạc Cụ & Phụ Kiện",
 		NameEn:   "Musical Instruments & Accessories",
-		Children: Categories{CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesMusicAccessories, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstruments, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesKeyboardsPianos, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesPercussionInstruments, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesWindInstruments},
+		Children: Categories{CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesKeyboardsPianos, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesPercussionInstruments, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesWindInstruments, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesMusicAccessories, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstruments},
 	}
 	CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesKeyboardsPianos = &Category{
 		Id:     "1244x2",
@@ -10338,7 +10338,7 @@ var (
 		Slug:     "hobbies-and-collections-musical-instruments-and-accessories-string-instruments",
 		Name:     "Nhạc Cụ Dây",
 		NameEn:   "String Instruments",
-		Children: Categories{CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsGuitarsBassGuitars, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsOther, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsUkuleles},
+		Children: Categories{CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsUkuleles, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsGuitarsBassGuitars, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsOther},
 	}
 	CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsUkuleles = &Category{
 		Id:     "1248x3",
@@ -10387,14 +10387,14 @@ var (
 		Slug:     "automobiles",
 		Name:     "Ô tô",
 		NameEn:   "Automobiles",
-		Children: Categories{CategoryAutomobilesAutomobileInteriorAccessories, CategoryAutomobilesAutomobileExteriorAccessories, CategoryAutomobilesAutomobileSpareParts, CategoryAutomobilesAutomotiveTools, CategoryAutomobilesAutomotiveCare, CategoryAutomobilesAutomotiveOilsLubes, CategoryAutomobilesAutomotiveKeychainsKeyCovers},
+		Children: Categories{CategoryAutomobilesAutomobileExteriorAccessories, CategoryAutomobilesAutomobileSpareParts, CategoryAutomobilesAutomotiveTools, CategoryAutomobilesAutomotiveCare, CategoryAutomobilesAutomotiveOilsLubes, CategoryAutomobilesAutomotiveKeychainsKeyCovers, CategoryAutomobilesAutomobileInteriorAccessories},
 	}
 	CategoryAutomobilesAutomobileInteriorAccessories = &Category{
 		Id:       "1254x1",
 		Slug:     "automobiles-automobile-interior-accessories",
 		Name:     "Phụ kiện nội thất ô tô",
 		NameEn:   "Automobile Interior Accessories",
-		Children: Categories{CategoryAutomobilesAutomobileInteriorAccessoriesSunShieldsDashCovers, CategoryAutomobilesAutomobileInteriorAccessoriesHUDSpeedometersGauges, CategoryAutomobilesAutomobileInteriorAccessoriesOther, CategoryAutomobilesAutomobileInteriorAccessoriesPerfumesAirFreshenersPurifiers, CategoryAutomobilesAutomobileInteriorAccessoriesPhoneHolders, CategoryAutomobilesAutomobileInteriorAccessoriesSteeringWheelsCovers, CategoryAutomobilesAutomobileInteriorAccessoriesSeatsSeatCovers, CategoryAutomobilesAutomobileInteriorAccessoriesPedalsGearSticks, CategoryAutomobilesAutomobileInteriorAccessoriesAmplifiersSpeakersSubwoofers, CategoryAutomobilesAutomobileInteriorAccessoriesSeatHeadrestsBackSupports, CategoryAutomobilesAutomobileInteriorAccessoriesCamcordersParkingCameras, CategoryAutomobilesAutomobileInteriorAccessoriesOrganizersCompartments, CategoryAutomobilesAutomobileInteriorAccessoriesLocksSecurity, CategoryAutomobilesAutomobileInteriorAccessoriesCarMattresses, CategoryAutomobilesAutomobileInteriorAccessoriesUSBChargersFMBluetoothTransmitters, CategoryAutomobilesAutomobileInteriorAccessoriesNavigationAVReceivers, CategoryAutomobilesAutomobileInteriorAccessoriesCarpetsMats},
+		Children: Categories{CategoryAutomobilesAutomobileInteriorAccessoriesAmplifiersSpeakersSubwoofers, CategoryAutomobilesAutomobileInteriorAccessoriesSeatHeadrestsBackSupports, CategoryAutomobilesAutomobileInteriorAccessoriesUSBChargersFMBluetoothTransmitters, CategoryAutomobilesAutomobileInteriorAccessoriesLocksSecurity, CategoryAutomobilesAutomobileInteriorAccessoriesHUDSpeedometersGauges, CategoryAutomobilesAutomobileInteriorAccessoriesNavigationAVReceivers, CategoryAutomobilesAutomobileInteriorAccessoriesOrganizersCompartments, CategoryAutomobilesAutomobileInteriorAccessoriesPerfumesAirFreshenersPurifiers, CategoryAutomobilesAutomobileInteriorAccessoriesCarpetsMats, CategoryAutomobilesAutomobileInteriorAccessoriesCarMattresses, CategoryAutomobilesAutomobileInteriorAccessoriesSteeringWheelsCovers, CategoryAutomobilesAutomobileInteriorAccessoriesPedalsGearSticks, CategoryAutomobilesAutomobileInteriorAccessoriesSeatsSeatCovers, CategoryAutomobilesAutomobileInteriorAccessoriesPhoneHolders, CategoryAutomobilesAutomobileInteriorAccessoriesSunShieldsDashCovers, CategoryAutomobilesAutomobileInteriorAccessoriesCamcordersParkingCameras, CategoryAutomobilesAutomobileInteriorAccessoriesOther},
 	}
 	CategoryAutomobilesAutomobileInteriorAccessoriesNavigationAVReceivers = &Category{
 		Id:     "1254x2",
@@ -10519,7 +10519,7 @@ var (
 		Slug:     "automobiles-automobile-exterior-accessories",
 		Name:     "Phụ kiện ngoại thất ô tô",
 		NameEn:   "Automobile Exterior Accessories",
-		Children: Categories{CategoryAutomobilesAutomobileExteriorAccessoriesLicensePlateAccessories, CategoryAutomobilesAutomobileExteriorAccessoriesOther, CategoryAutomobilesAutomobileExteriorAccessoriesGarnish, CategoryAutomobilesAutomobileExteriorAccessoriesAntennas, CategoryAutomobilesAutomobileExteriorAccessoriesMudFlapsSplashGuards, CategoryAutomobilesAutomobileExteriorAccessoriesSillPlates, CategoryAutomobilesAutomobileExteriorAccessoriesGutters, CategoryAutomobilesAutomobileExteriorAccessoriesMirrorsAccessories, CategoryAutomobilesAutomobileExteriorAccessoriesCovers, CategoryAutomobilesAutomobileExteriorAccessoriesStickersLogosEmblems, CategoryAutomobilesAutomobileExteriorAccessoriesHornsAccessories},
+		Children: Categories{CategoryAutomobilesAutomobileExteriorAccessoriesSillPlates, CategoryAutomobilesAutomobileExteriorAccessoriesGutters, CategoryAutomobilesAutomobileExteriorAccessoriesOther, CategoryAutomobilesAutomobileExteriorAccessoriesAntennas, CategoryAutomobilesAutomobileExteriorAccessoriesStickersLogosEmblems, CategoryAutomobilesAutomobileExteriorAccessoriesMudFlapsSplashGuards, CategoryAutomobilesAutomobileExteriorAccessoriesHornsAccessories, CategoryAutomobilesAutomobileExteriorAccessoriesMirrorsAccessories, CategoryAutomobilesAutomobileExteriorAccessoriesLicensePlateAccessories, CategoryAutomobilesAutomobileExteriorAccessoriesGarnish, CategoryAutomobilesAutomobileExteriorAccessoriesCovers},
 	}
 	CategoryAutomobilesAutomobileExteriorAccessoriesGarnish = &Category{
 		Id:     "1271x2",
@@ -10603,7 +10603,7 @@ var (
 		Slug:     "automobiles-automobile-spare-parts",
 		Name:     "Phụ tùng ô tô",
 		NameEn:   "Automobile Spare Parts",
-		Children: Categories{CategoryAutomobilesAutomobileSparePartsElectronics, CategoryAutomobilesAutomobileSparePartsWheelsRimsAccessories, CategoryAutomobilesAutomobileSparePartsTiresAccessories, CategoryAutomobilesAutomobileSparePartsEngineParts, CategoryAutomobilesAutomobileSparePartsBeltsHosesPulleys, CategoryAutomobilesAutomobileSparePartsShocksStrutsSuspension, CategoryAutomobilesAutomobileSparePartsBodyFrameBumpers, CategoryAutomobilesAutomobileSparePartsWindshieldWipersWashers, CategoryAutomobilesAutomobileSparePartsExhaustEmissions, CategoryAutomobilesAutomobileSparePartsFuelSystem, CategoryAutomobilesAutomobileSparePartsRadiatorsEngineCoolingClimateControl, CategoryAutomobilesAutomobileSparePartsDrivetrainTransmissionClutches, CategoryAutomobilesAutomobileSparePartsBearingSeals, CategoryAutomobilesAutomobileSparePartsBrakeSystem},
+		Children: Categories{CategoryAutomobilesAutomobileSparePartsBodyFrameBumpers, CategoryAutomobilesAutomobileSparePartsExhaustEmissions, CategoryAutomobilesAutomobileSparePartsDrivetrainTransmissionClutches, CategoryAutomobilesAutomobileSparePartsEngineParts, CategoryAutomobilesAutomobileSparePartsBeltsHosesPulleys, CategoryAutomobilesAutomobileSparePartsElectronics, CategoryAutomobilesAutomobileSparePartsTiresAccessories, CategoryAutomobilesAutomobileSparePartsShocksStrutsSuspension, CategoryAutomobilesAutomobileSparePartsBearingSeals, CategoryAutomobilesAutomobileSparePartsBrakeSystem, CategoryAutomobilesAutomobileSparePartsWindshieldWipersWashers, CategoryAutomobilesAutomobileSparePartsWheelsRimsAccessories, CategoryAutomobilesAutomobileSparePartsRadiatorsEngineCoolingClimateControl, CategoryAutomobilesAutomobileSparePartsFuelSystem},
 	}
 	CategoryAutomobilesAutomobileSparePartsBodyFrameBumpers = &Category{
 		Id:     "1282x2",
@@ -10673,7 +10673,7 @@ var (
 		Slug:     "automobiles-automobile-spare-parts-engine-parts",
 		Name:     "Bộ phận động cơ",
 		NameEn:   "Engine Parts",
-		Children: Categories{CategoryAutomobilesAutomobileSparePartsEnginePartsOther, CategoryAutomobilesAutomobileSparePartsEnginePartsPistons, CategoryAutomobilesAutomobileSparePartsEnginePartsAirFilters, CategoryAutomobilesAutomobileSparePartsEnginePartsOilFilters},
+		Children: Categories{CategoryAutomobilesAutomobileSparePartsEnginePartsPistons, CategoryAutomobilesAutomobileSparePartsEnginePartsAirFilters, CategoryAutomobilesAutomobileSparePartsEnginePartsOilFilters, CategoryAutomobilesAutomobileSparePartsEnginePartsOther},
 	}
 	CategoryAutomobilesAutomobileSparePartsEnginePartsPistons = &Category{
 		Id:     "1291x3",
@@ -10722,7 +10722,7 @@ var (
 		Slug:     "automobiles-automobile-spare-parts-electronics",
 		Name:     "Thiết bị điện tử",
 		NameEn:   "Electronics",
-		Children: Categories{CategoryAutomobilesAutomobileSparePartsElectronicsBatteriesAccessories, CategoryAutomobilesAutomobileSparePartsElectronicsLighting, CategoryAutomobilesAutomobileSparePartsElectronicsOther, CategoryAutomobilesAutomobileSparePartsElectronicsIgnition},
+		Children: Categories{CategoryAutomobilesAutomobileSparePartsElectronicsLighting, CategoryAutomobilesAutomobileSparePartsElectronicsOther, CategoryAutomobilesAutomobileSparePartsElectronicsIgnition, CategoryAutomobilesAutomobileSparePartsElectronicsBatteriesAccessories},
 	}
 	CategoryAutomobilesAutomobileSparePartsElectronicsIgnition = &Category{
 		Id:       "1297x3",
@@ -10785,7 +10785,7 @@ var (
 		Slug:     "automobiles-automotive-tools",
 		Name:     "Dụng cụ sửa chữa ô tô",
 		NameEn:   "Automotive Tools",
-		Children: Categories{CategoryAutomobilesAutomotiveToolsTestDiagnosticRepairTools, CategoryAutomobilesAutomotiveToolsTirePressureDetectors, CategoryAutomobilesAutomotiveToolsOther},
+		Children: Categories{CategoryAutomobilesAutomotiveToolsOther, CategoryAutomobilesAutomotiveToolsTestDiagnosticRepairTools, CategoryAutomobilesAutomotiveToolsTirePressureDetectors},
 	}
 	CategoryAutomobilesAutomotiveToolsTestDiagnosticRepairTools = &Category{
 		Id:     "1304x2",
@@ -10813,7 +10813,7 @@ var (
 		Slug:     "automobiles-automotive-care",
 		Name:     "Chăm sóc ô tô",
 		NameEn:   "Automotive Care",
-		Children: Categories{CategoryAutomobilesAutomotiveCareWashWaxes, CategoryAutomobilesAutomotiveCareGlassCareWaterRepellents, CategoryAutomobilesAutomotiveCareInteriorCare, CategoryAutomobilesAutomotiveCareTireWheelCare, CategoryAutomobilesAutomotiveCarePolishCoatingSealants},
+		Children: Categories{CategoryAutomobilesAutomotiveCareTireWheelCare, CategoryAutomobilesAutomotiveCarePolishCoatingSealants, CategoryAutomobilesAutomotiveCareWashWaxes, CategoryAutomobilesAutomotiveCareGlassCareWaterRepellents, CategoryAutomobilesAutomotiveCareInteriorCare},
 	}
 	CategoryAutomobilesAutomotiveCareWashWaxes = &Category{
 		Id:     "1307x2",
@@ -10850,7 +10850,7 @@ var (
 		Slug:     "automobiles-automotive-oils-and-lubes",
 		Name:     "Dầu nhớt và phụ gia ô tô",
 		NameEn:   "Automotive Oils & Lubes",
-		Children: Categories{CategoryAutomobilesAutomotiveOilsLubesGreasesLubricants, CategoryAutomobilesAutomotiveOilsLubesAntifreezesCoolants, CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluids, CategoryAutomobilesAutomotiveOilsLubesOil, CategoryAutomobilesAutomotiveOilsLubesFuelAdditivesSavers},
+		Children: Categories{CategoryAutomobilesAutomotiveOilsLubesFuelAdditivesSavers, CategoryAutomobilesAutomotiveOilsLubesGreasesLubricants, CategoryAutomobilesAutomotiveOilsLubesAntifreezesCoolants, CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluids, CategoryAutomobilesAutomotiveOilsLubesOil},
 	}
 	CategoryAutomobilesAutomotiveOilsLubesOil = &Category{
 		Id:     "1312x2",
@@ -10908,7 +10908,7 @@ var (
 		Slug:     "motorcycles",
 		Name:     "Mô tô, xe máy",
 		NameEn:   "Motorcycles",
-		Children: Categories{CategoryMotorcyclesMotorcycles, CategoryMotorcyclesMotorcycleAccessories, CategoryMotorcyclesMotorcycleSpareParts, CategoryMotorcyclesMotorcycleHelmetsAccessories, CategoryMotorcyclesOther},
+		Children: Categories{CategoryMotorcyclesMotorcycleAccessories, CategoryMotorcyclesMotorcycleSpareParts, CategoryMotorcyclesMotorcycleHelmetsAccessories, CategoryMotorcyclesOther, CategoryMotorcyclesMotorcycles},
 	}
 	CategoryMotorcyclesMotorcycles = &Category{
 		Id:     "1319x1",
@@ -10922,7 +10922,7 @@ var (
 		Slug:     "motorcycles-motorcycle-accessories",
 		Name:     "Phụ kiện xe máy",
 		NameEn:   "Motorcycle Accessories",
-		Children: Categories{CategoryMotorcyclesMotorcycleAccessoriesMudFlapsSplashGuards, CategoryMotorcyclesMotorcycleAccessoriesCarpets, CategoryMotorcyclesMotorcycleAccessoriesSpeedometersOdometersGauges, CategoryMotorcyclesMotorcycleAccessoriesSeatsSeatCovers, CategoryMotorcyclesMotorcycleAccessoriesMirrorsAccessories, CategoryMotorcyclesMotorcycleAccessoriesLocksSecurity, CategoryMotorcyclesMotorcycleAccessoriesBoxesCases, CategoryMotorcyclesMotorcycleAccessoriesCovers, CategoryMotorcyclesMotorcycleAccessoriesStickersLogosEmblems, CategoryMotorcyclesMotorcycleAccessoriesPhoneHolders, CategoryMotorcyclesMotorcycleAccessoriesOther},
+		Children: Categories{CategoryMotorcyclesMotorcycleAccessoriesCovers, CategoryMotorcyclesMotorcycleAccessoriesSeatsSeatCovers, CategoryMotorcyclesMotorcycleAccessoriesOther, CategoryMotorcyclesMotorcycleAccessoriesCarpets, CategoryMotorcyclesMotorcycleAccessoriesSpeedometersOdometersGauges, CategoryMotorcyclesMotorcycleAccessoriesStickersLogosEmblems, CategoryMotorcyclesMotorcycleAccessoriesMirrorsAccessories, CategoryMotorcyclesMotorcycleAccessoriesLocksSecurity, CategoryMotorcyclesMotorcycleAccessoriesBoxesCases, CategoryMotorcyclesMotorcycleAccessoriesPhoneHolders, CategoryMotorcyclesMotorcycleAccessoriesMudFlapsSplashGuards},
 	}
 	CategoryMotorcyclesMotorcycleAccessoriesCarpets = &Category{
 		Id:     "1320x2",
@@ -11006,7 +11006,7 @@ var (
 		Slug:     "motorcycles-motorcycle-spare-parts",
 		Name:     "Phụ tùng xe máy",
 		NameEn:   "Motorcycle Spare Parts",
-		Children: Categories{CategoryMotorcyclesMotorcycleSparePartsIgnitionEngineParts, CategoryMotorcyclesMotorcycleSparePartsBatteriesAccessories, CategoryMotorcyclesMotorcycleSparePartsTiresAccessories, CategoryMotorcyclesMotorcycleSparePartsOther, CategoryMotorcyclesMotorcycleSparePartsHornsAccessories, CategoryMotorcyclesMotorcycleSparePartsBodyFrame, CategoryMotorcyclesMotorcycleSparePartsExhaustEmissions, CategoryMotorcyclesMotorcycleSparePartsFuelSystem, CategoryMotorcyclesMotorcycleSparePartsBrakeSystem, CategoryMotorcyclesMotorcycleSparePartsCablesTubes, CategoryMotorcyclesMotorcycleSparePartsWheelsRimsAccessories, CategoryMotorcyclesMotorcycleSparePartsShocksStrutsSuspension, CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutches, CategoryMotorcyclesMotorcycleSparePartsLighting},
+		Children: Categories{CategoryMotorcyclesMotorcycleSparePartsLighting, CategoryMotorcyclesMotorcycleSparePartsBatteriesAccessories, CategoryMotorcyclesMotorcycleSparePartsShocksStrutsSuspension, CategoryMotorcyclesMotorcycleSparePartsHornsAccessories, CategoryMotorcyclesMotorcycleSparePartsBodyFrame, CategoryMotorcyclesMotorcycleSparePartsExhaustEmissions, CategoryMotorcyclesMotorcycleSparePartsTiresAccessories, CategoryMotorcyclesMotorcycleSparePartsFuelSystem, CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutches, CategoryMotorcyclesMotorcycleSparePartsCablesTubes, CategoryMotorcyclesMotorcycleSparePartsOther, CategoryMotorcyclesMotorcycleSparePartsIgnitionEngineParts, CategoryMotorcyclesMotorcycleSparePartsWheelsRimsAccessories, CategoryMotorcyclesMotorcycleSparePartsBrakeSystem},
 	}
 	CategoryMotorcyclesMotorcycleSparePartsIgnitionEngineParts = &Category{
 		Id:       "1331x2",
@@ -11236,7 +11236,7 @@ var (
 		Slug:     "books-and-magazines-books",
 		Name:     "Sách",
 		NameEn:   "Books",
-		Children: Categories{CategoryBooksMagazinesBooksLanguageLearningDictionaries, CategoryBooksMagazinesBooksFantasy, CategoryBooksMagazinesBooksEducationSchool, CategoryBooksMagazinesBooksParentingFamily, CategoryBooksMagazinesBooksHoroscopes, CategoryBooksMagazinesBooksComicsManga, CategoryBooksMagazinesBooksBusinessInvestment, CategoryBooksMagazinesBooksPoliticsLawSocialSciences, CategoryBooksMagazinesBooksMedical, CategoryBooksMagazinesBooksScienceMaths, CategoryBooksMagazinesBooksRecipesCooking, CategoryBooksMagazinesBooksActionCrimeThrillers, CategoryBooksMagazinesBooksCareersSelfHelpPersonalDevelopment, CategoryBooksMagazinesBooksTravelTourism, CategoryBooksMagazinesBooksLightNovels, CategoryBooksMagazinesBooksPsychologyRelationships, CategoryBooksMagazinesBooksReligionPhilosophy, CategoryBooksMagazinesBooksClassicLiterature, CategoryBooksMagazinesBooksBiographyMemoirs, CategoryBooksMagazinesBooksStickerColouringBooks, CategoryBooksMagazinesBooksRomance, CategoryBooksMagazinesBooksMusic, CategoryBooksMagazinesBooksChildrensBooks, CategoryBooksMagazinesBooksHealthFitnessDieting, CategoryBooksMagazinesBooksHobbies, CategoryBooksMagazinesBooksLGBTQplusLiterature, CategoryBooksMagazinesBooksComputersTechnology, CategoryBooksMagazinesBooksHistoryCultures, CategoryBooksMagazinesBooksBabySoftBooks},
+		Children: Categories{CategoryBooksMagazinesBooksHobbies, CategoryBooksMagazinesBooksLightNovels, CategoryBooksMagazinesBooksMedical, CategoryBooksMagazinesBooksCareersSelfHelpPersonalDevelopment, CategoryBooksMagazinesBooksEducationSchool, CategoryBooksMagazinesBooksChildrensBooks, CategoryBooksMagazinesBooksPoliticsLawSocialSciences, CategoryBooksMagazinesBooksClassicLiterature, CategoryBooksMagazinesBooksRomance, CategoryBooksMagazinesBooksTravelTourism, CategoryBooksMagazinesBooksBiographyMemoirs, CategoryBooksMagazinesBooksHoroscopes, CategoryBooksMagazinesBooksFantasy, CategoryBooksMagazinesBooksBusinessInvestment, CategoryBooksMagazinesBooksHealthFitnessDieting, CategoryBooksMagazinesBooksLGBTQplusLiterature, CategoryBooksMagazinesBooksActionCrimeThrillers, CategoryBooksMagazinesBooksHistoryCultures, CategoryBooksMagazinesBooksComicsManga, CategoryBooksMagazinesBooksParentingFamily, CategoryBooksMagazinesBooksPsychologyRelationships, CategoryBooksMagazinesBooksReligionPhilosophy, CategoryBooksMagazinesBooksComputersTechnology, CategoryBooksMagazinesBooksStickerColouringBooks, CategoryBooksMagazinesBooksBabySoftBooks, CategoryBooksMagazinesBooksScienceMaths, CategoryBooksMagazinesBooksLanguageLearningDictionaries, CategoryBooksMagazinesBooksMusic, CategoryBooksMagazinesBooksRecipesCooking},
 	}
 	CategoryBooksMagazinesBooksChildrensBooks = &Category{
 		Id:     "1359x2",
@@ -11429,14 +11429,14 @@ var (
 		Slug:     "computers-and-accessories",
 		Name:     "Máy tính & Laptop",
 		NameEn:   "Computers & Accessories",
-		Children: Categories{CategoryComputersAccessoriesDesktopComputer, CategoryComputersAccessoriesDesktopLaptopComponents, CategoryComputersAccessoriesDataStorage, CategoryComputersAccessoriesNetworkComponents, CategoryComputersAccessoriesSoftwares, CategoryComputersAccessoriesOfficeEquipment, CategoryComputersAccessoriesPeripheralsAccessories, CategoryComputersAccessoriesKeyboardsMice, CategoryComputersAccessoriesMonitors, CategoryComputersAccessoriesPrintersScanners, CategoryComputersAccessoriesLaptop},
+		Children: Categories{CategoryComputersAccessoriesPeripheralsAccessories, CategoryComputersAccessoriesKeyboardsMice, CategoryComputersAccessoriesDesktopLaptopComponents, CategoryComputersAccessoriesDataStorage, CategoryComputersAccessoriesNetworkComponents, CategoryComputersAccessoriesSoftwares, CategoryComputersAccessoriesLaptop, CategoryComputersAccessoriesDesktopComputer, CategoryComputersAccessoriesMonitors, CategoryComputersAccessoriesOfficeEquipment, CategoryComputersAccessoriesPrintersScanners},
 	}
 	CategoryComputersAccessoriesDesktopComputer = &Category{
 		Id:       "1389x1",
 		Slug:     "computers-and-accessories-desktop-computer",
 		Name:     "Máy Tính Bàn",
 		NameEn:   "Desktop Computer",
-		Children: Categories{CategoryComputersAccessoriesDesktopComputerMiniPC, CategoryComputersAccessoriesDesktopComputerServerPC, CategoryComputersAccessoriesDesktopComputerAllInOneDesktops, CategoryComputersAccessoriesDesktopComputerDesktopPC},
+		Children: Categories{CategoryComputersAccessoriesDesktopComputerDesktopPC, CategoryComputersAccessoriesDesktopComputerMiniPC, CategoryComputersAccessoriesDesktopComputerServerPC, CategoryComputersAccessoriesDesktopComputerAllInOneDesktops},
 	}
 	CategoryComputersAccessoriesDesktopComputerDesktopPC = &Category{
 		Id:     "1389x2",
@@ -11478,7 +11478,7 @@ var (
 		Slug:     "computers-and-accessories-desktop-and-laptop-components",
 		Name:     "Linh Kiện Máy Tính",
 		NameEn:   "Desktop & Laptop Components",
-		Children: Categories{CategoryComputersAccessoriesDesktopLaptopComponentsUPSStabilizers, CategoryComputersAccessoriesDesktopLaptopComponentsOpticalDrives, CategoryComputersAccessoriesDesktopLaptopComponentsOther, CategoryComputersAccessoriesDesktopLaptopComponentsFansHeatsinks, CategoryComputersAccessoriesDesktopLaptopComponentsProcessors, CategoryComputersAccessoriesDesktopLaptopComponentsMotherboards, CategoryComputersAccessoriesDesktopLaptopComponentsPowerSupplyUnits, CategoryComputersAccessoriesDesktopLaptopComponentsRAM, CategoryComputersAccessoriesDesktopLaptopComponentsGraphicsCards, CategoryComputersAccessoriesDesktopLaptopComponentsThermalPaste, CategoryComputersAccessoriesDesktopLaptopComponentsPCCases, CategoryComputersAccessoriesDesktopLaptopComponentsSoundCards},
+		Children: Categories{CategoryComputersAccessoriesDesktopLaptopComponentsPCCases, CategoryComputersAccessoriesDesktopLaptopComponentsOther, CategoryComputersAccessoriesDesktopLaptopComponentsPowerSupplyUnits, CategoryComputersAccessoriesDesktopLaptopComponentsProcessors, CategoryComputersAccessoriesDesktopLaptopComponentsMotherboards, CategoryComputersAccessoriesDesktopLaptopComponentsGraphicsCards, CategoryComputersAccessoriesDesktopLaptopComponentsThermalPaste, CategoryComputersAccessoriesDesktopLaptopComponentsRAM, CategoryComputersAccessoriesDesktopLaptopComponentsUPSStabilizers, CategoryComputersAccessoriesDesktopLaptopComponentsOpticalDrives, CategoryComputersAccessoriesDesktopLaptopComponentsFansHeatsinks, CategoryComputersAccessoriesDesktopLaptopComponentsSoundCards},
 	}
 	CategoryComputersAccessoriesDesktopLaptopComponentsFansHeatsinks = &Category{
 		Id:     "1394x2",
@@ -11569,7 +11569,7 @@ var (
 		Slug:     "computers-and-accessories-data-storage",
 		Name:     "Thiết Bị Lưu Trữ",
 		NameEn:   "Data Storage",
-		Children: Categories{CategoryComputersAccessoriesDataStorageHardDrives, CategoryComputersAccessoriesDataStorageSSD, CategoryComputersAccessoriesDataStorageNetworkAttachedStorage, CategoryComputersAccessoriesDataStorageFlashDrivesOTG, CategoryComputersAccessoriesDataStorageHardDiskCasingsDockings, CategoryComputersAccessoriesDataStorageCompactDiscs},
+		Children: Categories{CategoryComputersAccessoriesDataStorageCompactDiscs, CategoryComputersAccessoriesDataStorageHardDrives, CategoryComputersAccessoriesDataStorageSSD, CategoryComputersAccessoriesDataStorageNetworkAttachedStorage, CategoryComputersAccessoriesDataStorageFlashDrivesOTG, CategoryComputersAccessoriesDataStorageHardDiskCasingsDockings},
 	}
 	CategoryComputersAccessoriesDataStorageHardDrives = &Category{
 		Id:     "1406x2",
@@ -11618,7 +11618,7 @@ var (
 		Slug:     "computers-and-accessories-network-components",
 		Name:     "Thiết Bị Mạng",
 		NameEn:   "Network Components",
-		Children: Categories{CategoryComputersAccessoriesNetworkComponentsWirelessAdaptersNetworkCards, CategoryComputersAccessoriesNetworkComponentsPowerlineAdapters, CategoryComputersAccessoriesNetworkComponentsNetworkSwitchesPoE, CategoryComputersAccessoriesNetworkComponentsNetworkCablesConnectors, CategoryComputersAccessoriesNetworkComponentsKVMSwitches, CategoryComputersAccessoriesNetworkComponentsPrintServers, CategoryComputersAccessoriesNetworkComponentsModemsWirelessRouters, CategoryComputersAccessoriesNetworkComponentsRepeaters},
+		Children: Categories{CategoryComputersAccessoriesNetworkComponentsRepeaters, CategoryComputersAccessoriesNetworkComponentsWirelessAdaptersNetworkCards, CategoryComputersAccessoriesNetworkComponentsPowerlineAdapters, CategoryComputersAccessoriesNetworkComponentsNetworkSwitchesPoE, CategoryComputersAccessoriesNetworkComponentsNetworkCablesConnectors, CategoryComputersAccessoriesNetworkComponentsKVMSwitches, CategoryComputersAccessoriesNetworkComponentsPrintServers, CategoryComputersAccessoriesNetworkComponentsModemsWirelessRouters},
 	}
 	CategoryComputersAccessoriesNetworkComponentsModemsWirelessRouters = &Category{
 		Id:     "1412x2",
@@ -11688,7 +11688,7 @@ var (
 		Slug:     "computers-and-accessories-office-equipment",
 		Name:     "Thiết Bị Văn Phòng",
 		NameEn:   "Office Equipment",
-		Children: Categories{CategoryComputersAccessoriesOfficeEquipmentTypewriters, CategoryComputersAccessoriesOfficeEquipmentAbsenceMachines, CategoryComputersAccessoriesOfficeEquipmentPaperShredders, CategoryComputersAccessoriesOfficeEquipmentMoneyCounters},
+		Children: Categories{CategoryComputersAccessoriesOfficeEquipmentPaperShredders, CategoryComputersAccessoriesOfficeEquipmentMoneyCounters, CategoryComputersAccessoriesOfficeEquipmentTypewriters, CategoryComputersAccessoriesOfficeEquipmentAbsenceMachines},
 	}
 	CategoryComputersAccessoriesOfficeEquipmentTypewriters = &Category{
 		Id:     "1421x2",
@@ -11765,7 +11765,7 @@ var (
 		Slug:     "computers-and-accessories-peripherals-and-accessories",
 		Name:     "Phụ Kiện Máy Tính",
 		NameEn:   "Peripherals & Accessories",
-		Children: Categories{CategoryComputersAccessoriesPeripheralsAccessoriesLaptopSkinsCovers, CategoryComputersAccessoriesPeripheralsAccessoriesCoolingPads, CategoryComputersAccessoriesPeripheralsAccessoriesKeyboardTrackpadCovers, CategoryComputersAccessoriesPeripheralsAccessoriesLaptopBatteries, CategoryComputersAccessoriesPeripheralsAccessoriesLaptopChargersAdaptors, CategoryComputersAccessoriesPeripheralsAccessoriesWebcams, CategoryComputersAccessoriesPeripheralsAccessoriesLaptopStandsFoldableLaptopDesks, CategoryComputersAccessoriesPeripheralsAccessoriesVideoConferenceDevices, CategoryComputersAccessoriesPeripheralsAccessoriesMousePads, CategoryComputersAccessoriesPeripheralsAccessoriesUSBHubsCardReaders},
+		Children: Categories{CategoryComputersAccessoriesPeripheralsAccessoriesUSBHubsCardReaders, CategoryComputersAccessoriesPeripheralsAccessoriesLaptopSkinsCovers, CategoryComputersAccessoriesPeripheralsAccessoriesCoolingPads, CategoryComputersAccessoriesPeripheralsAccessoriesLaptopStandsFoldableLaptopDesks, CategoryComputersAccessoriesPeripheralsAccessoriesLaptopBatteries, CategoryComputersAccessoriesPeripheralsAccessoriesLaptopChargersAdaptors, CategoryComputersAccessoriesPeripheralsAccessoriesWebcams, CategoryComputersAccessoriesPeripheralsAccessoriesKeyboardTrackpadCovers, CategoryComputersAccessoriesPeripheralsAccessoriesVideoConferenceDevices, CategoryComputersAccessoriesPeripheralsAccessoriesMousePads},
 	}
 	CategoryComputersAccessoriesPeripheralsAccessoriesUSBHubsCardReaders = &Category{
 		Id:     "1430x2",
@@ -11842,7 +11842,7 @@ var (
 		Slug:     "computers-and-accessories-keyboards-and-mice",
 		Name:     "Chuột & Bàn Phím",
 		NameEn:   "Keyboards & Mice",
-		Children: Categories{CategoryComputersAccessoriesKeyboardsMiceMice, CategoryComputersAccessoriesKeyboardsMiceKeyboards, CategoryComputersAccessoriesKeyboardsMiceDrawingTablets, CategoryComputersAccessoriesKeyboardsMiceOther},
+		Children: Categories{CategoryComputersAccessoriesKeyboardsMiceOther, CategoryComputersAccessoriesKeyboardsMiceMice, CategoryComputersAccessoriesKeyboardsMiceKeyboards, CategoryComputersAccessoriesKeyboardsMiceDrawingTablets},
 	}
 	CategoryComputersAccessoriesKeyboardsMiceMice = &Category{
 		Id:     "1440x2",
@@ -11882,7 +11882,7 @@ var (
 )
 
 // first level categories
-var firstLevelCategories = Categories{
+var FirstLevelCategories = Categories{
 	CategoryWomenClothes,
 	CategoryMenClothes,
 	CategoryBeauty,
