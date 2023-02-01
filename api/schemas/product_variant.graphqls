@@ -23,13 +23,13 @@ type ProductVariant  {
   id: String!
   name: String!
   sku: String
-  product: Product!
+  product: Product
   trackInventory: Boolean!
   weight: Weight
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   channel: String
-  channelListings: [ProductVariantChannelListing!]
+  channelListings: [ProductVariantChannelListing]
   pricing(address: AddressInput): VariantPricingInfo
   attributes(variantSelection: VariantAttributeScope): [SelectedAttribute!]!
   margin: Int

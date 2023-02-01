@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"reflect"
 	"time"
 
 	"github.com/site-name/decimal"
@@ -76,35 +75,26 @@ func (j *PositiveDecimal) UnmarshalGraphQL(input interface{}) error {
 		err  error
 	)
 
-	value := reflect.ValueOf(input)
-
-	switch value.Kind() {
-	case reflect.String:
-		deci, err = decimal.NewFromString(value.String())
-
-	case reflect.Uint, reflect.Uint16, reflect.Uint8, reflect.Uint32, reflect.Uint64:
-		deci = decimal.NewFromInt(int64(value.Uint()))
-
-	case reflect.Int,
-		reflect.Int16,
-		reflect.Int8,
-		reflect.Int32,
-		reflect.Int64:
-		deci = decimal.NewFromInt(value.Int())
-
-	case reflect.Float32,
-		reflect.Float64:
-		deci = decimal.NewFromFloat(value.Float())
-
+	switch t := input.(type) {
+	case string:
+		deci, err = decimal.NewFromString(t)
+	case int:
+		deci = decimal.NewFromInt32(int32(t))
+	case int32:
+		deci = decimal.NewFromInt32(t)
+	case float64:
+		deci = decimal.NewFromFloat(t)
+	case decimal.Decimal:
+		deci = t
 	default:
-		return fmt.Errorf("invalid input type: %T", input)
+		err = fmt.Errorf("unexpected input value's type: %T", input)
 	}
 
 	if err != nil {
 		return err
 	}
 	if deci.LessThan(decimal.Zero) {
-		return errors.New("positive decimal can't be less then zero")
+		return errors.New("positive decimal can't be less than zero")
 	}
 
 	*j = PositiveDecimal(deci)

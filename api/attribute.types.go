@@ -17,19 +17,19 @@ import (
 // attribute value
 
 type AttributeValue struct {
-	ID          string                     `json:"id"`
-	Name        *string                    `json:"name"`
-	Slug        *string                    `json:"slug"`
-	Value       *string                    `json:"value"`
-	Translation *AttributeValueTranslation `json:"translation"`
-	RichText    JSONString                 `json:"richText"`
-	Boolean     *bool                      `json:"boolean"`
-	Date        *Date                      `json:"date"`
-	DateTime    *DateTime                  `json:"dateTime"`
-	File        *File                      `json:"file"`
+	ID       string     `json:"id"`
+	Name     *string    `json:"name"`
+	Slug     *string    `json:"slug"`
+	Value    *string    `json:"value"`
+	RichText JSONString `json:"richText"`
+	Boolean  *bool      `json:"boolean"`
+	Date     *Date      `json:"date"`
+	DateTime *DateTime  `json:"dateTime"`
+	File     *File      `json:"file"`
 
 	attributeID string
 
+	// Translation *AttributeValueTranslation `json:"translation"`
 	// InputType   *AttributeInputTypeEnum    `json:"inputType"`
 	// Reference   *string                    `json:"reference"`
 }
@@ -69,8 +69,11 @@ func SystemAttributeValueToGraphqlAttributeValue(attr *model.AttributeValue) *At
 	return res
 }
 
-func (a *AttributeValue) InputType(ctx context.Context) (*AttributeInputTypeEnum, error) {
+func (a *AttributeValue) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*AttributeValueTranslation, error) {
+	panic("not implemented")
+}
 
+func (a *AttributeValue) InputType(ctx context.Context) (*AttributeInputTypeEnum, error) {
 	resolveInputType := func(attr Attribute) (*AttributeInputTypeEnum, error) {
 		embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 		if err != nil {

@@ -3,12 +3,7 @@ package api
 import (
 	"context"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/graph-gophers/dataloader/v7"
-	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/web"
 )
 
 type ProductVariant struct {
@@ -59,87 +54,54 @@ func SystemProductVariantToGraphqlProductVariant(variant *model.ProductVariant) 
 	return res
 }
 
-func productVariantByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.ProductVariant] {
-	var (
-		productVariants   model.ProductVariants
-		appErr            *model.AppError
-		res               = make([]*dataloader.Result[*model.ProductVariant], len(ids))
-		productVariantMap = map[string]*model.ProductVariant{} // ids are product variant ids
-	)
-
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	productVariants, appErr = embedCtx.
-		App.
-		Srv().
-		ProductService().
-		ProductVariantsByOption(&model.ProductVariantFilterOption{
-			Id: squirrel.Eq{store.ProductVariantTableName + ".Id": ids},
-		})
-
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
-
-	productVariantMap = lo.SliceToMap(productVariants, func(v *model.ProductVariant) (string, *model.ProductVariant) { return v.Id, v })
-
-	for idx, id := range ids {
-		res[idx] = &dataloader.Result[*model.ProductVariant]{Data: productVariantMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.ProductVariant]{Error: err}
-	}
-	return res
+func (p *ProductVariant) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*ProductVariantTranslation, error) {
+	panic("not implemented")
 }
 
-func graphqlProductVariantsByProductIDLoader(ctx context.Context, productIDs []string) []*dataloader.Result[[]*model.ProductVariant] {
-	var (
-		productVariants model.ProductVariants
-		appErr          *model.AppError
-		res             = make([]*dataloader.Result[[]*model.ProductVariant], len(productIDs))
+func (p *ProductVariant) DigitalContent(ctx context.Context) (*DigitalContent, error) {
+	panic("not implemented")
+}
 
-		// keys are product ids
-		variantsMap = map[string][]*model.ProductVariant{}
-	)
+func (p *ProductVariant) Stocks(ctx context.Context, args struct {
+	Address     *AddressInput
+	CountryCode *CountryCode
+}) ([]*Stock, error) {
+	panic("not implemented")
+}
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+func (p *ProductVariant) QuantityAvailable(ctx context.Context, args struct {
+	Address     *AddressInput
+	CountryCode *CountryCode
+}) (int32, error) {
+	panic("not implemented")
+}
 
-	productVariants, appErr = embedCtx.
-		App.
-		Srv().
-		ProductService().
-		ProductVariantsByOption(&model.ProductVariantFilterOption{
-			ProductID: squirrel.Eq{store.ProductVariantTableName + ".ProductID": productIDs},
-		})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
+func (p *ProductVariant) Preorder(ctx context.Context) (*PreorderData, error) {
+	panic("not implemented")
+}
 
-	for _, variant := range productVariants {
-		if variant != nil {
-			variantsMap[variant.ProductID] = append(variantsMap[variant.ProductID], variant)
-		}
-	}
+func (p *ProductVariant) ChannelListings(ctx context.Context) ([]*ProductVariantChannelListing, error) {
+	panic("not implemented")
+}
 
-	for idx, productID := range productIDs {
-		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: variantsMap[productID]}
-	}
-	return res
+func (p *ProductVariant) Pricing(ctx context.Context, args struct{ Address *AddressInput }) (*VariantPricingInfo, error) {
+	panic("not implemented")
+}
 
-errorLabel:
-	for idx := range productIDs {
-		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Error: err}
-	}
-	return res
+func (p *ProductVariant) Attributes(ctx context.Context, args struct {
+	VariantSelection *VariantAttributeScope
+}) ([]*SelectedAttribute, error) {
+	panic("not implemented")
+}
+
+func (p *ProductVariant) Product(ctx context.Context) (*Product, error) {
+	panic("not implemented")
+}
+
+func (p *ProductVariant) Revenue(ctx context.Context, args struct{ Period *ReportingPeriod }) (*TaxedMoney, error) {
+	panic("not implemented")
+}
+
+func (p *ProductVariant) Media(ctx context.Context) ([]*ProductMedia, error) {
+	panic("not implemented")
 }

@@ -641,9 +641,9 @@ func PriceFromMinorUnit(value string, currency string) (*decimal.Decimal, error)
 		return nil, err
 	}
 
-	numberPlaces := decimal.NewFromInt(10).Pow(decimal.NewFromInt(int64(-precision)))
-
-	return model.NewPrimitive(deci.Mul(numberPlaces)), nil
+	numberPlaces := decimal.NewFromInt(10).Pow(decimal.NewFromInt32(int32(-precision)))
+	mul := deci.Mul(numberPlaces)
+	return &mul, nil
 }
 
 // Convert decimal value to the smallest unit of currency.
@@ -652,46 +652,16 @@ func PriceFromMinorUnit(value string, currency string) (*decimal.Decimal, error)
 // Decimal('10.0'), then change quantization to remove the comma.
 // Decimal(10.0) -> str(1000)
 // func PriceToMinorUnit(value decimal.Decimal, currency string) (string, error) {
-// 	money, err := (&goprices.Money{
-// 		Amount:   value,
-// 		Currency: currency,
-// 	}).
-// 		Quantize(goprices.Up)
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	deci, err := decimal.NewFromString("10")
-// 	if err != nil {
-// 		return "", err
-// 	}
-
 // 	precision, err := goprices.GetCurrencyPrecision(currency)
 // 	if err != nil {
 // 		return "", err
 // 	}
-
-// 	numberPlaces := deci.Pow(decimal.NewFromInt32(precision))
-// 	valueWithoutComma, err := money.Mul(numberPlaces)
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	return value.
-// 		Mul(
-// 			decimal.
-// 				NewFromFloat(10.0).
-// 				Pow(decimal.NewFromInt32(precision)),
-// 		).
-// 		String(), nil
+// 	value = value.RoundUp(int32(precision))
 // }
 
 // PaymentOwnedByUser checks if given user is authenticated and owns given payment
 //
 // NOTE: if the `user` is unauthenticated, don't call me, just returns false
-// func (s *ServicePayment) PaymentOwnedByUser(paymentID string, user *account.User) (bool, *model.AppError) {
-// 	if user == nil || !model.IsValidId(user.Id) {
-// 		return false, nil
-// 	}
-
+// func (s *ServicePayment) PaymentOwnedByUser(paymentID string, userID string) (bool, *model.AppError) {
+// 	s.srv.Store.Payment().FilterByOption(&model.PaymentFilterOption{})
 // }

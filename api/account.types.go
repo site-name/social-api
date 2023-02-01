@@ -602,7 +602,7 @@ type StaffNotificationRecipient struct {
 	// User   *User   `json:"user"`
 	// Email  *string `json:"email"`
 
-	*model.StaffNotificationRecipient
+	model.StaffNotificationRecipient
 }
 
 func systemStaffNotificationRecipientToGraphqlStaffNotificationRecipient(s *model.StaffNotificationRecipient) *StaffNotificationRecipient {
@@ -610,7 +610,7 @@ func systemStaffNotificationRecipientToGraphqlStaffNotificationRecipient(s *mode
 		return nil
 	}
 
-	return &StaffNotificationRecipient{s}
+	return &StaffNotificationRecipient{*s}
 }
 
 func (s *StaffNotificationRecipient) User(ctx context.Context) (*User, error) {

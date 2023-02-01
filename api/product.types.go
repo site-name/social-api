@@ -7,27 +7,27 @@ import (
 )
 
 type Product struct {
-	ID                     string               `json:"id"`
-	SeoTitle               *string              `json:"seoTitle"`
-	SeoDescription         *string              `json:"seoDescription"`
-	Name                   string               `json:"name"`
-	Description            JSONString           `json:"description"`
-	Slug                   string               `json:"slug"`
-	UpdatedAt              *DateTime            `json:"updatedAt"`
-	ChargeTaxes            bool                 `json:"chargeTaxes"`
-	Weight                 *Weight              `json:"weight"`
-	Rating                 *float64             `json:"rating"`
-	PrivateMetadata        []*MetadataItem      `json:"privateMetadata"`
-	Metadata               []*MetadataItem      `json:"metadata"`
-	Channel                *string              `json:"channel"`
-	Thumbnail              *Image               `json:"thumbnail"`
-	Pricing                *ProductPricingInfo  `json:"pricing"`
-	IsAvailable            *bool                `json:"isAvailable"`
-	TaxType                *TaxType             `json:"taxType"`
-	Attributes             []*SelectedAttribute `json:"attributes"`
-	AvailableForPurchase   *Date                `json:"availableForPurchase"`
-	IsAvailableForPurchase *bool                `json:"isAvailableForPurchase"`
+	ID              string          `json:"id"`
+	SeoTitle        *string         `json:"seoTitle"`
+	SeoDescription  *string         `json:"seoDescription"`
+	Name            string          `json:"name"`
+	Description     JSONString      `json:"description"`
+	Slug            string          `json:"slug"`
+	UpdatedAt       *DateTime       `json:"updatedAt"`
+	ChargeTaxes     bool            `json:"chargeTaxes"`
+	Weight          *Weight         `json:"weight"`
+	Rating          *float64        `json:"rating"`
+	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
+	Metadata        []*MetadataItem `json:"metadata"`
+	Channel         *string         `json:"channel"`
 
+	// AvailableForPurchase   *Date           `json:"availableForPurchase"`
+	// IsAvailableForPurchase *bool           `json:"isAvailableForPurchase"`
+	// Attributes             []*SelectedAttribute `json:"attributes"`
+	// Pricing                *ProductPricingInfo  `json:"pricing"`
+	// TaxType                *TaxType             `json:"taxType"`
+	// IsAvailable            *bool                `json:"isAvailable"`
+	// Thumbnail              *Image               `json:"thumbnail"`
 	// ChannelListings        []*ProductChannelListing `json:"channelListings"`
 	// MediaByID              *ProductMedia            `json:"mediaById"`
 	// Variants               []*ProductVariant        `json:"variants"`
@@ -39,18 +39,98 @@ type Product struct {
 	// Category               *Category                `json:"category"`
 }
 
-func SystemProductToGraphqlProduct(prd *model.Product) *Product {
-	if prd == nil {
+func SystemProductToGraphqlProduct(p *model.Product) *Product {
+	if p == nil {
 		return nil
 	}
 
 	res := &Product{
-		ID: prd.Id,
+		ID:              p.Id,
+		SeoTitle:        p.SeoTitle,
+		SeoDescription:  p.SeoDescription,
+		Name:            p.Name,
+		Slug:            p.Slug,
+		ChargeTaxes:     *p.ChargeTaxes,
+		Description:     JSONString(p.Description),
+		Metadata:        MetadataToSlice(p.Metadata),
+		PrivateMetadata: MetadataToSlice(p.PrivateMetadata),
+		Channel:         nil,
+	}
+	if p.Rating != nil {
+		res.Rating = model.NewPrimitive(float64(*p.Rating))
+	}
+	if p.Weight != nil {
+		res.Weight = &Weight{
+			Unit:  WeightUnitsEnum(p.WeightUnit),
+			Value: float64(*p.Weight),
+		}
 	}
 
-	panic("not implemented")
-
 	return res
+}
+
+func (p *Product) AvailableForPurchase(ctx context.Context) (*Date, error) {
+	panic("not implemented")
+}
+
+func (p *Product) IsAvailableForPurchase(ctx context.Context) (*bool, error) {
+	panic("not implemented")
+}
+
+func (p *Product) ProductType(ctx context.Context) (*ProductType, error) {
+	panic("not implemented")
+}
+
+func (p *Product) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*ProductTranslation, error) {
+	panic("not implemented")
+}
+
+func (p *Product) Collections(ctx context.Context) ([]*Collection, error) {
+	panic("not implemented")
+}
+
+func (p *Product) ChannelListings(ctx context.Context) ([]*ProductChannelListing, error) {
+	panic("not implemented")
+}
+
+func (p *Product) Thumbnail(ctx context.Context, args struct{ Size int32 }) (*Image, error) {
+	panic("not implemented")
+}
+
+func (p *Product) DefaultVariant(ctx context.Context) (*ProductVariant, error) {
+	panic("not implemented")
+}
+
+func (p *Product) Category(ctx context.Context) (*Category, error) {
+	panic("not implemented")
+}
+
+func (p *Product) TaxType(ctx context.Context) (*TaxType, error) {
+	panic("not implemented")
+}
+
+func (p *Product) Pricing(ctx context.Context, args struct{ Address *AddressInput }) (*ProductPricingInfo, error) {
+	panic("not implemented")
+}
+
+func (p *Product) IsAvailable(ctx context.Context, args struct{ Address *AddressInput }) (*bool, error) {
+	panic("not implemented")
+}
+
+func (p *Product) Attributes(ctx context.Context) ([]*SelectedAttribute, error) {
+	panic("not implemented")
+}
+
+func (p *Product) MediaByID(ctx context.Context, args struct{ Id *string }) (*ProductMedia, error) {
+	panic("not implemented")
+}
+
+func (p *Product) Media(ctx context.Context) ([]*ProductMedia, error) {
+	panic("not implemented")
+}
+
+func (p *Product) Variants(ctx context.Context) ([]*ProductVariant, error) {
+	panic("not implemented")
 }
 
 type ProductType struct {

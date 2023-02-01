@@ -2,17 +2,18 @@ package payment
 
 import (
 	"fmt"
+	"log"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 func Test_PriceFromMinorUnit(t *testing.T) {
-	value := "1000"
-	currency := "USD"
+	value := "12.345"
+	currency := "VND"
 
 	res, err := PriceFromMinorUnit(value, currency)
-	require.NoError(t, err, err.Error())
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-	fmt.Println(res == nil)
+	fmt.Println(res.String())
 }
