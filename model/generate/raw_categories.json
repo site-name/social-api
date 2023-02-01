@@ -18114,6 +18114,1308 @@
     ]
   },
   {
+    "category_id": 100845,
+    "category_name": "Thịt bò",
+    "category_name_en": "Beef",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Thịt",
+        "category_name_en": "Meat"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Thịt bò",
+        "category_name_en": "Beef"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Thịt gia cầm",
+    "category_name_en": "Poultry",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Thịt",
+        "category_name_en": "Meat"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Thịt gia cầm",
+        "category_name_en": "Poultry"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Thịt lợn",
+    "category_name_en": "Pork",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Thịt",
+        "category_name_en": "Meat"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Thịt lợn",
+        "category_name_en": "Pork"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Thịt cừu",
+    "category_name_en": "Lamb",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Thịt",
+        "category_name_en": "Meat"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Thịt cừu",
+        "category_name_en": "Lamb"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Khác",
+    "category_name_en": "Other",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Thịt",
+        "category_name_en": "Meat"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Khác",
+        "category_name_en": "Other"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Cá",
+    "category_name_en": "Fish",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Hải sản",
+        "category_name_en": "Seafood"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Cá",
+        "category_name_en": "Fish"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Tôm",
+    "category_name_en": "Prawn",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Hải sản",
+        "category_name_en": "Seafood"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Tôm",
+        "category_name_en": "Prawn"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Cua",
+    "category_name_en": "Crab",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Hải sản",
+        "category_name_en": "Seafood"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Cua",
+        "category_name_en": "Crab"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Khác",
+    "category_name_en": "Other",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Hải sản",
+        "category_name_en": "Seafood"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Khác",
+        "category_name_en": "Other"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Thịt chay",
+    "category_name_en": "Vegetarian Meat",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Thịt chay",
+        "category_name_en": "Vegetarian Meat"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Khác",
+    "category_name_en": "Other",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Khác",
+        "category_name_en": "Other"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Khác",
+    "category_name_en": "Other",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ",
+        "category_name_en": "Vegetables"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Khác",
+        "category_name_en": "Other"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Bắp cải",
+    "category_name_en": "Cabbage & Brussel Sprouts",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ",
+        "category_name_en": "Vegetables"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Bắp cải",
+        "category_name_en": "Cabbage & Brussel Sprouts"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Rau gia vị",
+    "category_name_en": "Fresh Herbs",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ",
+        "category_name_en": "Vegetables"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau gia vị",
+        "category_name_en": "Fresh Herbs"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Các loại rau cải",
+    "category_name_en": "Leafy Vegetables",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ",
+        "category_name_en": "Vegetables"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Các loại rau cải",
+        "category_name_en": "Leafy Vegetables"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Họ cà tím, họ bầu bí",
+    "category_name_en": "Brinjals, Gourds & Squashes",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ",
+        "category_name_en": "Vegetables"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Họ cà tím, họ bầu bí",
+        "category_name_en": "Brinjals, Gourds & Squashes"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Bông cải & súp lơ",
+    "category_name_en": "Broccoli & Cauliflowers",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ",
+        "category_name_en": "Vegetables"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Bông cải & súp lơ",
+        "category_name_en": "Broccoli & Cauliflowers"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Ớt",
+    "category_name_en": "Chilli & Capsicum",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ",
+        "category_name_en": "Vegetables"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Ớt",
+        "category_name_en": "Chilli & Capsicum"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Tỏi, gừng & củ hành",
+    "category_name_en": "Garlic, Ginger & Onion",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ",
+        "category_name_en": "Vegetables"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Tỏi, gừng & củ hành",
+        "category_name_en": "Garlic, Ginger & Onion"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Đậu, hạt & bắp",
+    "category_name_en": "Peas, Beans, Nuts & Corn",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ",
+        "category_name_en": "Vegetables"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Đậu, hạt & bắp",
+        "category_name_en": "Peas, Beans, Nuts & Corn"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Rau dạng củ & thân",
+    "category_name_en": "Root & Stem Vegetables",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ",
+        "category_name_en": "Vegetables"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau dạng củ & thân",
+        "category_name_en": "Root & Stem Vegetables"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Rau mầm",
+    "category_name_en": "Sprouts",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ",
+        "category_name_en": "Vegetables"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau mầm",
+        "category_name_en": "Sprouts"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Các loại rau salad",
+    "category_name_en": "Salad Vegetables",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ",
+        "category_name_en": "Vegetables"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Các loại rau salad",
+        "category_name_en": "Salad Vegetables"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Rau củ sơ chế & set rau củ",
+    "category_name_en": "Pre-cut & Assorted Vegetable Set",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ",
+        "category_name_en": "Vegetables"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rau củ sơ chế & set rau củ",
+        "category_name_en": "Pre-cut & Assorted Vegetable Set"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Táo & Lê",
+    "category_name_en": "Apples & Pears",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Trái cây",
+        "category_name_en": "Fruits"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Táo & Lê",
+        "category_name_en": "Apples & Pears"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Chuối",
+    "category_name_en": "Bananas",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Trái cây",
+        "category_name_en": "Fruits"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Chuối",
+        "category_name_en": "Bananas"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Các loại quả mọng",
+    "category_name_en": "Berries",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Trái cây",
+        "category_name_en": "Fruits"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Các loại quả mọng",
+        "category_name_en": "Berries"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Họ cam quýt",
+    "category_name_en": "Citrus",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Trái cây",
+        "category_name_en": "Fruits"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Họ cam quýt",
+        "category_name_en": "Citrus"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Nho",
+    "category_name_en": "Grapes",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Trái cây",
+        "category_name_en": "Fruits"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Nho",
+        "category_name_en": "Grapes"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Các loại dưa",
+    "category_name_en": "Melons",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Trái cây",
+        "category_name_en": "Fruits"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Các loại dưa",
+        "category_name_en": "Melons"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Các loại quả hạch",
+    "category_name_en": "Stonefruits",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Trái cây",
+        "category_name_en": "Fruits"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Các loại quả hạch",
+        "category_name_en": "Stonefruits"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Trái cây nhiệt đới & ngoại lai",
+    "category_name_en": "Tropical & Exotic Fruits",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Trái cây",
+        "category_name_en": "Fruits"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Trái cây nhiệt đới & ngoại lai",
+        "category_name_en": "Tropical & Exotic Fruits"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Trái cây sơ chế & set trái cây",
+    "category_name_en": "Pre-cut & Assorted Fruit Set",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Trái cây",
+        "category_name_en": "Fruits"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Trái cây sơ chế & set trái cây",
+        "category_name_en": "Pre-cut & Assorted Fruit Set"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Khác",
+    "category_name_en": "Other",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Trái cây",
+        "category_name_en": "Fruits"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Khác",
+        "category_name_en": "Other"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Nấm",
+    "category_name_en": "Mushroom",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Nấm",
+        "category_name_en": "Mushroom"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Thực phẩm đông lạnh chế biến sẵn",
+    "category_name_en": "Frozen Processed Food",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Thực phẩm đông lạnh chế biến sẵn",
+        "category_name_en": "Frozen Processed Food"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Thịt và hải sản chế biến sẵn",
+    "category_name_en": "Processed Meat & Seafood",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Thực phẩm tươi sống & đông lạnh",
+        "category_name_en": "Fresh & Frozen Food"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Thịt và hải sản chế biến sẵn",
+        "category_name_en": "Processed Meat & Seafood"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Bánh mì",
+    "category_name_en": "Breads",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Các loại bánh",
+        "category_name_en": "Bakery"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Bánh mì",
+        "category_name_en": "Breads"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Bánh kem",
+    "category_name_en": "Cakes & Pies",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Các loại bánh",
+        "category_name_en": "Bakery"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Bánh kem",
+        "category_name_en": "Cakes & Pies"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Bánh ngọt/ pastry",
+    "category_name_en": "Pastry",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Các loại bánh",
+        "category_name_en": "Bakery"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Bánh ngọt/ pastry",
+        "category_name_en": "Pastry"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Khác",
+    "category_name_en": "Other",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Các loại bánh",
+        "category_name_en": "Bakery"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Khác",
+        "category_name_en": "Other"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Bia và trái cây lên men",
+    "category_name_en": "Bear & Cider",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Đồ uống có cồn",
+        "category_name_en": "Alcoholic Beverages"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Bia và trái cây lên men",
+        "category_name_en": "Bear & Cider"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Rượu vang & Sâm panh",
+    "category_name_en": "Wine & Champange",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Đồ uống có cồn",
+        "category_name_en": "Alcoholic Beverages"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rượu vang & Sâm panh",
+        "category_name_en": "Wine & Champange"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Rượu mạnh",
+    "category_name_en": "Liquor & Spirits",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Đồ uống có cồn",
+        "category_name_en": "Alcoholic Beverages"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rượu mạnh",
+        "category_name_en": "Liquor & Spirits"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Rượu sake, soju & umeshu",
+    "category_name_en": "Sake, Soju & Umeshu",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Đồ uống có cồn",
+        "category_name_en": "Alcoholic Beverages"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Rượu sake, soju & umeshu",
+        "category_name_en": "Sake, Soju & Umeshu"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Khác",
+    "category_name_en": "Other",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Đồ uống có cồn",
+        "category_name_en": "Alcoholic Beverages"
+      },
+      {
+        "category_id": 100845,
+        "category_name": "Khác",
+        "category_name_en": "Other"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Bộ quà tặng",
+    "category_name_en": "Gift Set & Hampers",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Bộ quà tặng",
+        "category_name_en": "Gift Set & Hampers"
+      }
+    ]
+  },
+  {
+    "category_id": 100845,
+    "category_name": "Khác",
+    "category_name_en": "Other",
+    "toggle": true,
+    "images": [],
+    "path": [
+      {
+        "category_id": 100629,
+        "category_name": "Thực phẩm và đồ uống",
+        "category_name_en": "Food \u0026 Beverage"
+      },
+      {
+        "category_id": 100652,
+        "category_name": "Khác",
+        "category_name_en": "Other"
+      }
+    ]
+  },
+  {
     "category_id": 100906,
     "category_name": "Thức ăn cho chó",
     "category_name_en": "Dog Food",
