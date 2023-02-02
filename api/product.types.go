@@ -46,8 +46,8 @@ func SystemProductToGraphqlProduct(p *model.Product) *Product {
 
 	res := &Product{
 		ID:              p.Id,
-		SeoTitle:        p.SeoTitle,
-		SeoDescription:  p.SeoDescription,
+		SeoTitle:        &p.SeoTitle,
+		SeoDescription:  &p.SeoDescription,
 		Name:            p.Name,
 		Slug:            p.Slug,
 		ChargeTaxes:     *p.ChargeTaxes,
@@ -205,19 +205,20 @@ func (p *ProductType) VariantAttributes(ctx context.Context) ([]*Attribute, erro
 // -------------------- collection -----------------
 
 type Collection struct {
-	ID              string                      `json:"id"`
-	SeoTitle        *string                     `json:"seoTitle"`
-	SeoDescription  *string                     `json:"seoDescription"`
-	Name            string                      `json:"name"`
-	Description     JSONString                  `json:"description"`
-	Slug            string                      `json:"slug"`
-	PrivateMetadata []*MetadataItem             `json:"privateMetadata"`
-	Metadata        []*MetadataItem             `json:"metadata"`
-	Channel         *string                     `json:"channel"`
-	Products        *ProductCountableConnection `json:"products"`
-	BackgroundImage *Image                      `json:"backgroundImage"`
-	Translation     *CollectionTranslation      `json:"translation"`
-	ChannelListings []*CollectionChannelListing `json:"channelListings"`
+	ID              string          `json:"id"`
+	SeoTitle        *string         `json:"seoTitle"`
+	SeoDescription  *string         `json:"seoDescription"`
+	Name            string          `json:"name"`
+	Description     JSONString      `json:"description"`
+	Slug            string          `json:"slug"`
+	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
+	Metadata        []*MetadataItem `json:"metadata"`
+	Channel         *string         `json:"channel"`
+
+	// Products        *ProductCountableConnection `json:"products"`
+	// BackgroundImage *Image                      `json:"backgroundImage"`
+	// Translation     *CollectionTranslation      `json:"translation"`
+	// ChannelListings []*CollectionChannelListing `json:"channelListings"`
 }
 
 func systemCollectionToGraphqlCollection(c *model.Collection) *Collection {
@@ -225,7 +226,38 @@ func systemCollectionToGraphqlCollection(c *model.Collection) *Collection {
 		return nil
 	}
 
-	panic("not implemented")
+	return &Collection{
+		ID:              c.Id,
+		SeoTitle:        &c.SeoTitle,
+		SeoDescription:  &c.SeoDescription,
+		Name:            c.Name,
+		Slug:            c.Slug,
+		Description:     JSONString(c.Description),
+		Metadata:        MetadataToSlice(c.Metadata),
+		PrivateMetadata: MetadataToSlice(c.PrivateMetadata),
+		Channel:         nil,
+	}
+}
 
-	return &Collection{}
+func (c *Collection) Products(ctx context.Context, args struct {
+	Filter *ProductFilterInput
+	SortBy *ProductOrder
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
+}) (*ProductCountableConnection, error) {
+	panic("not implemented")
+}
+
+func (c *Collection) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*CollectionTranslation, error) {
+	panic("not implemented")
+}
+
+func (c *Collection) BackgroundImage(ctx context.Context, args struct{ Size *int32 }) (*Image, error) {
+	panic("not implemented")
+}
+
+func (c *Collection) ChannelListings(ctx context.Context) ([]*CollectionChannelListing, error) {
+	panic("not implemented")
 }

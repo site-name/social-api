@@ -58,7 +58,9 @@ func (c *Collection) DeepCopy() *Collection {
 	}
 
 	res := *c
-	res.Description = c.Description.DeepCopy()
+	if c.Description != nil {
+		res.Description = c.Description.DeepCopy()
+	}
 	res.ModelMetadata = c.ModelMetadata.DeepCopy()
 	if c.BackgroundImage != nil {
 		res.BackgroundImage = NewPrimitive(*c.BackgroundImage)

@@ -6,18 +6,45 @@ package model
 // all categories
 var (
 	CategoryWomenClothes = &Category{
-		Id:       "0x0",
-		Slug:     "women-clothes",
-		Name:     "Thời Trang Nữ",
-		NameEn:   "Women Clothes",
-		Children: Categories{CategoryWomenClothesLingerieUnderwear, CategoryWomenClothesCostumes, CategoryWomenClothesShorts, CategoryWomenClothesWeddingDresses, CategoryWomenClothesSweatersCardigans, CategoryWomenClothesFabric, CategoryWomenClothesPantsLeggings, CategoryWomenClothesJacketsCoatsVests, CategoryWomenClothesHoodiesSweatshirts, CategoryWomenClothesTraditionalWear, CategoryWomenClothesJeans, CategoryWomenClothesDresses, CategoryWomenClothesJumpsuitsPlaysuitsOveralls, CategoryWomenClothesSleepwearPajamas, CategoryWomenClothesMaternityWear, CategoryWomenClothesSocksStockings, CategoryWomenClothesTops, CategoryWomenClothesSkirts, CategoryWomenClothesSets},
+		Id:     "0x0",
+		Slug:   "women-clothes",
+		Name:   "Thời Trang Nữ",
+		NameEn: "Women Clothes",
+		Children: Categories{
+			CategoryWomenClothesSkirts,
+			CategoryWomenClothesJeans,
+			CategoryWomenClothesWeddingDresses,
+			CategoryWomenClothesFabric,
+			CategoryWomenClothesSweatersCardigans,
+			CategoryWomenClothesLingerieUnderwear,
+			CategoryWomenClothesSocksStockings,
+			CategoryWomenClothesPantsLeggings,
+			CategoryWomenClothesShorts,
+			CategoryWomenClothesDresses,
+			CategoryWomenClothesJumpsuitsPlaysuitsOveralls,
+			CategoryWomenClothesSleepwearPajamas,
+			CategoryWomenClothesTops,
+			CategoryWomenClothesJacketsCoatsVests,
+			CategoryWomenClothesHoodiesSweatshirts,
+			CategoryWomenClothesSets,
+			CategoryWomenClothesMaternityWear,
+			CategoryWomenClothesTraditionalWear,
+			CategoryWomenClothesCostumes,
+		},
 	}
 	CategoryWomenClothesTops = &Category{
-		Id:       "0x1",
-		Slug:     "women-clothes-tops",
-		Name:     "Áo",
-		NameEn:   "Tops",
-		Children: Categories{CategoryWomenClothesTopsBodysuits, CategoryWomenClothesTopsTanksCamisoles, CategoryWomenClothesTopsTubeTops, CategoryWomenClothesTopsTshirts, CategoryWomenClothesTopsShirtsBlouses, CategoryWomenClothesTopsPoloShirts},
+		Id:     "0x1",
+		Slug:   "women-clothes-tops",
+		Name:   "Áo",
+		NameEn: "Tops",
+		Children: Categories{
+			CategoryWomenClothesTopsShirtsBlouses,
+			CategoryWomenClothesTopsPoloShirts,
+			CategoryWomenClothesTopsBodysuits,
+			CategoryWomenClothesTopsTanksCamisoles,
+			CategoryWomenClothesTopsTubeTops,
+			CategoryWomenClothesTopsTshirts,
+		},
 	}
 	CategoryWomenClothesTopsTanksCamisoles = &Category{
 		Id:     "0x2",
@@ -62,11 +89,14 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/02fa69df2810ac6c4553cabfb7b6c79a", "https://cf.shopee.sg/file/8088638a0587a805c2f8e8c97b1d3f71", "https://cf.shopee.sg/file/b135dd003ad44569a331867bfd6fd532", "https://cf.shopee.sg/file/3b0227758986a8156870a5f2d19df511", "https://cf.shopee.sg/file/0e7a1ee615baa9f3b81b8b2c70f06665", "https://cf.shopee.sg/file/2796f4c5202573d83139ece48888c96a"},
 	}
 	CategoryWomenClothesPantsLeggings = &Category{
-		Id:       "6x1",
-		Slug:     "women-clothes-pants-and-leggings",
-		Name:     "Quần",
-		NameEn:   "Pants & Leggings",
-		Children: Categories{CategoryWomenClothesPantsLeggingsLeggingsTreggings, CategoryWomenClothesPantsLeggingsPants},
+		Id:     "6x1",
+		Slug:   "women-clothes-pants-and-leggings",
+		Name:   "Quần",
+		NameEn: "Pants & Leggings",
+		Children: Categories{
+			CategoryWomenClothesPantsLeggingsLeggingsTreggings,
+			CategoryWomenClothesPantsLeggingsPants,
+		},
 	}
 	CategoryWomenClothesPantsLeggingsLeggingsTreggings = &Category{
 		Id:     "6x2",
@@ -83,11 +113,14 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/7c68fc4d5dda794b1bb2af3ca3c18165", "https://cf.shopee.sg/file/f51b1ccf395c2b72b56857acaaa6d9b6", "https://cf.shopee.sg/file/9bb3eefbad29d12e9ebf263b94fa2256", "https://cf.shopee.sg/file/7e31bb7b221db355d42aa938654f580f", "https://cf.shopee.sg/file/23b41dcb91a555aa03a4df280e3abd28", "https://cf.shopee.sg/file/65b87e29d5db41ccb25193c5fb249ed8"},
 	}
 	CategoryWomenClothesShorts = &Category{
-		Id:       "8x1",
-		Slug:     "women-clothes-shorts",
-		Name:     "Quần đùi",
-		NameEn:   "Shorts",
-		Children: Categories{CategoryWomenClothesShortsShorts, CategoryWomenClothesShortsSkorts},
+		Id:     "8x1",
+		Slug:   "women-clothes-shorts",
+		Name:   "Quần đùi",
+		NameEn: "Shorts",
+		Children: Categories{
+			CategoryWomenClothesShortsShorts,
+			CategoryWomenClothesShortsSkorts,
+		},
 	}
 	CategoryWomenClothesShortsShorts = &Category{
 		Id:     "8x2",
@@ -132,11 +165,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/1d480efa270d903cff5dcfc8e2a3dbb3", "https://cf.shopee.sg/file/11b87c51e5213debf74bd1a6b05403fa", "https://cf.shopee.sg/file/bc08ad7736569f0a3a1919057ae4eb31", "https://cf.shopee.sg/file/628d99a18541407c2ab487e65ad41d28", "https://cf.shopee.sg/file/f62a732b72d650be77db4c4763bd2c2b", "https://cf.shopee.sg/file/e7782044cff4293dac0a2bd19c19e333"},
 	}
 	CategoryWomenClothesJumpsuitsPlaysuitsOveralls = &Category{
-		Id:       "14x1",
-		Slug:     "women-clothes-jumpsuits-playsuits-and-overalls",
-		Name:     "Đồ liền thân",
-		NameEn:   "Jumpsuits, Playsuits & Overalls",
-		Children: Categories{CategoryWomenClothesJumpsuitsPlaysuitsOverallsplaysuits, CategoryWomenClothesJumpsuitsPlaysuitsOverallsOveralls, CategoryWomenClothesJumpsuitsPlaysuitsOverallsJumpsuits},
+		Id:     "14x1",
+		Slug:   "women-clothes-jumpsuits-playsuits-and-overalls",
+		Name:   "Đồ liền thân",
+		NameEn: "Jumpsuits, Playsuits & Overalls",
+		Children: Categories{
+			CategoryWomenClothesJumpsuitsPlaysuitsOverallsJumpsuits,
+			CategoryWomenClothesJumpsuitsPlaysuitsOverallsplaysuits,
+			CategoryWomenClothesJumpsuitsPlaysuitsOverallsOveralls,
+		},
 	}
 	CategoryWomenClothesJumpsuitsPlaysuitsOverallsJumpsuits = &Category{
 		Id:     "14x2",
@@ -160,11 +197,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/0b2c4bc1ff09f7654b8b146e17925028", "https://cf.shopee.sg/file/2db19739b67ddc48ffd68071b993eefb", "https://cf.shopee.sg/file/0a762af9d1fa93e005872dba30d1822c", "https://cf.shopee.sg/file/bb82fae9a31a9bfce405352ffe5af340", "https://cf.shopee.sg/file/e92494f2205b238c1db89d1abb6e2696", "https://cf.shopee.sg/file/0299d14c3717069b767079e09be7ceb2"},
 	}
 	CategoryWomenClothesJacketsCoatsVests = &Category{
-		Id:       "17x1",
-		Slug:     "women-clothes-jackets-coats-and-vests",
-		Name:     "Áo khoác",
-		NameEn:   "Jackets, Coats & Vests",
-		Children: Categories{CategoryWomenClothesJacketsCoatsVestsVests, CategoryWomenClothesJacketsCoatsVestsWinterJacketsCoats, CategoryWomenClothesJacketsCoatsVestsCapes, CategoryWomenClothesJacketsCoatsVestsBlazers, CategoryWomenClothesJacketsCoatsVestsJackets},
+		Id:     "17x1",
+		Slug:   "women-clothes-jackets-coats-and-vests",
+		Name:   "Áo khoác",
+		NameEn: "Jackets, Coats & Vests",
+		Children: Categories{
+			CategoryWomenClothesJacketsCoatsVestsJackets,
+			CategoryWomenClothesJacketsCoatsVestsVests,
+			CategoryWomenClothesJacketsCoatsVestsWinterJacketsCoats,
+			CategoryWomenClothesJacketsCoatsVestsCapes,
+			CategoryWomenClothesJacketsCoatsVestsBlazers,
+		},
 	}
 	CategoryWomenClothesJacketsCoatsVestsWinterJacketsCoats = &Category{
 		Id:     "17x2",
@@ -209,11 +252,14 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/37fffdf5c605ae13161619d89764c239", "https://cf.shopee.sg/file/c020c9a3082c239d31dcce6c8e6cfe24", "https://cf.shopee.sg/file/a3177bec1f0844ad7c5885658f45dd9e", "https://cf.shopee.sg/file/fe4c61275520458f08f84110cdc2b733", "https://cf.shopee.sg/file/7defe19472da06befd6a0033b39f22aa", "https://cf.shopee.sg/file/bdff6d9066af44c1ce8a0c3d7d5b8765"},
 	}
 	CategoryWomenClothesHoodiesSweatshirts = &Category{
-		Id:       "23x1",
-		Slug:     "women-clothes-hoodies-and-sweatshirts",
-		Name:     "Hoodie và Áo nỉ",
-		NameEn:   "Hoodies & Sweatshirts",
-		Children: Categories{CategoryWomenClothesHoodiesSweatshirtsSweatshirts, CategoryWomenClothesHoodiesSweatshirtsHoodies},
+		Id:     "23x1",
+		Slug:   "women-clothes-hoodies-and-sweatshirts",
+		Name:   "Hoodie và Áo nỉ",
+		NameEn: "Hoodies & Sweatshirts",
+		Children: Categories{
+			CategoryWomenClothesHoodiesSweatshirtsSweatshirts,
+			CategoryWomenClothesHoodiesSweatshirtsHoodies,
+		},
 	}
 	CategoryWomenClothesHoodiesSweatshirtsSweatshirts = &Category{
 		Id:     "23x2",
@@ -230,11 +276,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/470663a3025aeb30ef6a9a66ffa48b36", "https://cf.shopee.sg/file/32ce748afabbb77aa089337217112952", "https://cf.shopee.sg/file/a4a384610989c09a1d8a5fb11f9d4569", "https://cf.shopee.sg/file/0d892e9bddf5b5226f22379c04ebad2d", "https://cf.shopee.sg/file/3bdd6a5cdd1da84b00d68d68b68be6ac", "https://cf.shopee.sg/file/286c257b48fd5f51f94e776c981e26a1"},
 	}
 	CategoryWomenClothesSets = &Category{
-		Id:       "25x1",
-		Slug:     "women-clothes-sets",
-		Name:     "Bộ",
-		NameEn:   "Sets",
-		Children: Categories{CategoryWomenClothesSetsFamilySets, CategoryWomenClothesSetsIndividualSets, CategoryWomenClothesSetsCoupleSets},
+		Id:     "25x1",
+		Slug:   "women-clothes-sets",
+		Name:   "Bộ",
+		NameEn: "Sets",
+		Children: Categories{
+			CategoryWomenClothesSetsCoupleSets,
+			CategoryWomenClothesSetsFamilySets,
+			CategoryWomenClothesSetsIndividualSets,
+		},
 	}
 	CategoryWomenClothesSetsCoupleSets = &Category{
 		Id:     "25x2",
@@ -258,11 +308,20 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/110f0aa69cb1af6750c2c89951de4880", "https://cf.shopee.sg/file/137c96fc15e1c5ff137c8c56341284f6", "https://cf.shopee.sg/file/c60c1af542c32577f0ce97ddd30c3ee3", "https://cf.shopee.sg/file/e4498ef56268e754bf2b76a0dbc25bab", "https://cf.shopee.sg/file/747008d309844f2b3076505676051d32", "https://cf.shopee.sg/file/e28f9c2193906b8ed881399415918751"},
 	}
 	CategoryWomenClothesLingerieUnderwear = &Category{
-		Id:       "28x1",
-		Slug:     "women-clothes-lingerie-and-underwear",
-		Name:     "Đồ lót",
-		NameEn:   "Lingerie & Underwear",
-		Children: Categories{CategoryWomenClothesLingerieUnderwearShapewear, CategoryWomenClothesLingerieUnderwearSafetyPants, CategoryWomenClothesLingerieUnderwearSexyLingerie, CategoryWomenClothesLingerieUnderwearSets, CategoryWomenClothesLingerieUnderwearBras, CategoryWomenClothesLingerieUnderwearPanties, CategoryWomenClothesLingerieUnderwearThermalInnerwear, CategoryWomenClothesLingerieUnderwearBraAccessories},
+		Id:     "28x1",
+		Slug:   "women-clothes-lingerie-and-underwear",
+		Name:   "Đồ lót",
+		NameEn: "Lingerie & Underwear",
+		Children: Categories{
+			CategoryWomenClothesLingerieUnderwearSexyLingerie,
+			CategoryWomenClothesLingerieUnderwearSets,
+			CategoryWomenClothesLingerieUnderwearBras,
+			CategoryWomenClothesLingerieUnderwearPanties,
+			CategoryWomenClothesLingerieUnderwearThermalInnerwear,
+			CategoryWomenClothesLingerieUnderwearBraAccessories,
+			CategoryWomenClothesLingerieUnderwearShapewear,
+			CategoryWomenClothesLingerieUnderwearSafetyPants,
+		},
 	}
 	CategoryWomenClothesLingerieUnderwearSets = &Category{
 		Id:     "28x2",
@@ -293,11 +352,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/6541bf6e7d11e09db087cb8bf249a1b4", "https://cf.shopee.sg/file/ffcf21e8ae72a80988bdf504a60c1607", "https://cf.shopee.sg/file/ed6f85b5abbaff5c2c9e38a3f3ff1c4f", "https://cf.shopee.sg/file/75d6992dc96b381f30cfdc8c407e84d9", "https://cf.shopee.sg/file/8d59b87103f075cd10f5193c1d5af6e8", "https://cf.shopee.sg/file/dbd52547c0faac8944b28d156a785b06"},
 	}
 	CategoryWomenClothesLingerieUnderwearBraAccessories = &Category{
-		Id:       "32x2",
-		Slug:     "women-clothes-lingerie-and-underwear-bra-accessories",
-		Name:     "Phụ kiện đồ lót",
-		NameEn:   "Bra Accessories",
-		Children: Categories{CategoryWomenClothesLingerieUnderwearBraAccessoriesStraps, CategoryWomenClothesLingerieUnderwearBraAccessoriesPaddings, CategoryWomenClothesLingerieUnderwearBraAccessoriesNippleStickers},
+		Id:     "32x2",
+		Slug:   "women-clothes-lingerie-and-underwear-bra-accessories",
+		Name:   "Phụ kiện đồ lót",
+		NameEn: "Bra Accessories",
+		Children: Categories{
+			CategoryWomenClothesLingerieUnderwearBraAccessoriesStraps,
+			CategoryWomenClothesLingerieUnderwearBraAccessoriesPaddings,
+			CategoryWomenClothesLingerieUnderwearBraAccessoriesNippleStickers,
+		},
 	}
 	CategoryWomenClothesLingerieUnderwearBraAccessoriesStraps = &Category{
 		Id:     "32x3",
@@ -342,11 +405,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/b776cbed1e88ba9e1477549f4d64a00e", "https://cf.shopee.sg/file/972933970c867985437e2b9fb9c6d055", "https://cf.shopee.sg/file/925ee6b2a86a07a06f94b6c61e0bcf2a", "https://cf.shopee.sg/file/643fbf20aab3b49c14d7d92396fe92e6", "https://cf.shopee.sg/file/0aaa26f09f43c4d679dddfea71fff9cd", "https://cf.shopee.sg/file/81e7204698eade00d9a0b1aa61b1d4ef"},
 	}
 	CategoryWomenClothesSleepwearPajamas = &Category{
-		Id:       "38x1",
-		Slug:     "women-clothes-sleepwear-and-pajamas",
-		Name:     "Đồ ngủ",
-		NameEn:   "Sleepwear & Pajamas",
-		Children: Categories{CategoryWomenClothesSleepwearPajamasPajamas, CategoryWomenClothesSleepwearPajamasNightDresses, CategoryWomenClothesSleepwearPajamasKimonosRobes},
+		Id:     "38x1",
+		Slug:   "women-clothes-sleepwear-and-pajamas",
+		Name:   "Đồ ngủ",
+		NameEn: "Sleepwear & Pajamas",
+		Children: Categories{
+			CategoryWomenClothesSleepwearPajamasPajamas,
+			CategoryWomenClothesSleepwearPajamasNightDresses,
+			CategoryWomenClothesSleepwearPajamasKimonosRobes,
+		},
 	}
 	CategoryWomenClothesSleepwearPajamasPajamas = &Category{
 		Id:     "38x2",
@@ -370,11 +437,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/0fad82b6d92c277f3a04d7b97d1c009d", "https://cf.shopee.sg/file/2d5ecffe14a587e7687d1b76c369e75e", "https://cf.shopee.sg/file/a88fcffd427fa21a1557fed35a76d200", "https://cf.shopee.sg/file/dab1ee50b62e87e3c73dd37cbbdfad20", "https://cf.shopee.sg/file/5231f1fdf4deae2a9bbff77170843bca", "https://cf.shopee.sg/file/ed2dbc444228771146e417bc8ed67812"},
 	}
 	CategoryWomenClothesMaternityWear = &Category{
-		Id:       "41x1",
-		Slug:     "women-clothes-maternity-wear",
-		Name:     "Đồ Bầu",
-		NameEn:   "Maternity Wear",
-		Children: Categories{CategoryWomenClothesMaternityWearMaternitySets, CategoryWomenClothesMaternityWearMaternityBottoms, CategoryWomenClothesMaternityWearNursingBras, CategoryWomenClothesMaternityWearMaternityDresses, CategoryWomenClothesMaternityWearMaternityTops, CategoryWomenClothesMaternityWearBreastfeedingWear},
+		Id:     "41x1",
+		Slug:   "women-clothes-maternity-wear",
+		Name:   "Đồ Bầu",
+		NameEn: "Maternity Wear",
+		Children: Categories{
+			CategoryWomenClothesMaternityWearMaternityBottoms,
+			CategoryWomenClothesMaternityWearNursingBras,
+			CategoryWomenClothesMaternityWearMaternityDresses,
+			CategoryWomenClothesMaternityWearMaternityTops,
+			CategoryWomenClothesMaternityWearBreastfeedingWear,
+			CategoryWomenClothesMaternityWearMaternitySets,
+		},
 	}
 	CategoryWomenClothesMaternityWearNursingBras = &Category{
 		Id:     "41x2",
@@ -419,11 +493,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/9ee1afb9bf4aab497f3d23a4294d0abe", "https://cf.shopee.sg/file/2b10e575616dba75e2a517799b90fc76", "https://cf.shopee.sg/file/0a32bad14e57be8d70eae3f4fe85b308", "https://cf.shopee.sg/file/5e432aaca47be571a19ef00d566566a7", "https://cf.shopee.sg/file/68c3cadb1cdbbafc8082a8ee551286d7", "https://cf.shopee.sg/file/2c9bc9c630d94134715fca04276591c2"},
 	}
 	CategoryWomenClothesTraditionalWear = &Category{
-		Id:       "47x1",
-		Slug:     "women-clothes-traditional-wear",
-		Name:     "Đồ truyền thống",
-		NameEn:   "Traditional Wear",
-		Children: Categories{CategoryWomenClothesTraditionalWearTops, CategoryWomenClothesTraditionalWearBottoms, CategoryWomenClothesTraditionalWearSets, CategoryWomenClothesTraditionalWearDresses, CategoryWomenClothesTraditionalWearOther},
+		Id:     "47x1",
+		Slug:   "women-clothes-traditional-wear",
+		Name:   "Đồ truyền thống",
+		NameEn: "Traditional Wear",
+		Children: Categories{
+			CategoryWomenClothesTraditionalWearTops,
+			CategoryWomenClothesTraditionalWearBottoms,
+			CategoryWomenClothesTraditionalWearSets,
+			CategoryWomenClothesTraditionalWearDresses,
+			CategoryWomenClothesTraditionalWearOther,
+		},
 	}
 	CategoryWomenClothesTraditionalWearTops = &Category{
 		Id:     "47x2",
@@ -468,11 +548,19 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/35feb6250bda4c4a6cedcd63a1b998b9", "https://cf.shopee.sg/file/52bd298af458abee10d7d225755316e3", "https://cf.shopee.sg/file/50a83bcbdd78aced3fd2767cba4d9c67", "https://cf.shopee.sg/file/374ee00392c63ef61806499508b552f2", "https://cf.shopee.sg/file/57a1b278bb48b52fe294281af47eb9cf", "https://cf.shopee.sg/file/740b80f66b447dccd97bbb842c48abf7"},
 	}
 	CategoryWomenClothesFabric = &Category{
-		Id:       "53x1",
-		Slug:     "women-clothes-fabric",
-		Name:     "Vải",
-		NameEn:   "Fabric",
-		Children: Categories{CategoryWomenClothesFabricVelvetSilkSatin, CategoryWomenClothesFabricLeather, CategoryWomenClothesFabricVinylNylon, CategoryWomenClothesFabricDenim, CategoryWomenClothesFabricCanvas, CategoryWomenClothesFabricCotton, CategoryWomenClothesFabricWool},
+		Id:     "53x1",
+		Slug:   "women-clothes-fabric",
+		Name:   "Vải",
+		NameEn: "Fabric",
+		Children: Categories{
+			CategoryWomenClothesFabricWool,
+			CategoryWomenClothesFabricVelvetSilkSatin,
+			CategoryWomenClothesFabricLeather,
+			CategoryWomenClothesFabricVinylNylon,
+			CategoryWomenClothesFabricDenim,
+			CategoryWomenClothesFabricCanvas,
+			CategoryWomenClothesFabricCotton,
+		},
 	}
 	CategoryWomenClothesFabricCotton = &Category{
 		Id:     "53x2",
@@ -524,11 +612,14 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/a273ba715e9a0bb0526f6e78e6c428eb", "https://cf.shopee.sg/file/f0313acd051b5789da2a0d3a007d07af", "https://cf.shopee.sg/file/2ab7df23637360db61a40e794dd3d754", "https://cf.shopee.sg/file/3301cb533df4adfeb709db5797a2612f", "https://cf.shopee.sg/file/eee13f92b0e8227b2ce765a6a825755f", "https://cf.shopee.sg/file/b8dc2c4e3ec517d53d29ed1e09a1e36f"},
 	}
 	CategoryWomenClothesSocksStockings = &Category{
-		Id:       "60x1",
-		Slug:     "women-clothes-socks-and-stockings",
-		Name:     "Vớ, Tất",
-		NameEn:   "Socks & Stockings",
-		Children: Categories{CategoryWomenClothesSocksStockingsSocks, CategoryWomenClothesSocksStockingsPantyhose},
+		Id:     "60x1",
+		Slug:   "women-clothes-socks-and-stockings",
+		Name:   "Vớ, Tất",
+		NameEn: "Socks & Stockings",
+		Children: Categories{
+			CategoryWomenClothesSocksStockingsSocks,
+			CategoryWomenClothesSocksStockingsPantyhose,
+		},
 	}
 	CategoryWomenClothesSocksStockingsSocks = &Category{
 		Id:     "60x2",
@@ -545,11 +636,28 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/8e176b7f2c5e58bc21c646a0a35c5505", "https://cf.shopee.sg/file/036c5fdfab1f2f914ab22b6a25e38531", "https://cf.shopee.sg/file/d61560fc4677e67bbc4c48e617dca8fc", "https://cf.shopee.sg/file/930703a7b7cf893b40aeefbf11573430", "https://cf.shopee.sg/file/6fdf5fbdc8cce65fd2dd58bba38b0983", "https://cf.shopee.sg/file/d9acc1119bfaad2e718d288b40fd5a31"},
 	}
 	CategoryMenClothes = &Category{
-		Id:       "62x0",
-		Slug:     "men-clothes",
-		Name:     "Thời Trang Nam",
-		NameEn:   "Men Clothes",
-		Children: Categories{CategoryMenClothesHoodiesSweatshirts, CategoryMenClothesJacketsCoatsVests, CategoryMenClothesWinterJacketsCoats, CategoryMenClothesSuits, CategoryMenClothesTops, CategoryMenClothesTraditionalWear, CategoryMenClothesOccupationalAttire, CategoryMenClothesSweatersCardigans, CategoryMenClothesPants, CategoryMenClothesSleepwear, CategoryMenClothesJeans, CategoryMenClothesCostumes, CategoryMenClothesSocks, CategoryMenClothesShorts, CategoryMenClothesInnerwearUnderwear, CategoryMenClothesSets},
+		Id:     "62x0",
+		Slug:   "men-clothes",
+		Name:   "Thời Trang Nam",
+		NameEn: "Men Clothes",
+		Children: Categories{
+			CategoryMenClothesWinterJacketsCoats,
+			CategoryMenClothesSets,
+			CategoryMenClothesTraditionalWear,
+			CategoryMenClothesOccupationalAttire,
+			CategoryMenClothesSocks,
+			CategoryMenClothesSweatersCardigans,
+			CategoryMenClothesInnerwearUnderwear,
+			CategoryMenClothesCostumes,
+			CategoryMenClothesJeans,
+			CategoryMenClothesHoodiesSweatshirts,
+			CategoryMenClothesPants,
+			CategoryMenClothesShorts,
+			CategoryMenClothesSleepwear,
+			CategoryMenClothesJacketsCoatsVests,
+			CategoryMenClothesSuits,
+			CategoryMenClothesTops,
+		},
 	}
 	CategoryMenClothesJeans = &Category{
 		Id:     "62x1",
@@ -559,11 +667,14 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/bdaec2b86a299b9cc9ed94a1a08dae02", "https://cf.shopee.sg/file/e841c883b437fec8812cd47366bc4b14", "https://cf.shopee.sg/file/4cd9a443e704b74a421d9717be037d48", "https://cf.shopee.sg/file/1d0a85b111d2ed781b3944849062bdab", "https://cf.shopee.sg/file/9a8e9b9e46779b225609f8704dc856a5", "https://cf.shopee.sg/file/ee7ac698f9e970092a54c6f4c256ed7f"},
 	}
 	CategoryMenClothesHoodiesSweatshirts = &Category{
-		Id:       "63x1",
-		Slug:     "men-clothes-hoodies-and-sweatshirts",
-		Name:     "Hoodie & Áo nỉ",
-		NameEn:   "Hoodies & Sweatshirts",
-		Children: Categories{CategoryMenClothesHoodiesSweatshirtsHoodies, CategoryMenClothesHoodiesSweatshirtsSweatshirts},
+		Id:     "63x1",
+		Slug:   "men-clothes-hoodies-and-sweatshirts",
+		Name:   "Hoodie & Áo nỉ",
+		NameEn: "Hoodies & Sweatshirts",
+		Children: Categories{
+			CategoryMenClothesHoodiesSweatshirtsHoodies,
+			CategoryMenClothesHoodiesSweatshirtsSweatshirts,
+		},
 	}
 	CategoryMenClothesHoodiesSweatshirtsHoodies = &Category{
 		Id:     "63x2",
@@ -587,11 +698,13 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/1d7f63e82e07d5fc4821e5e4b1b5517a", "https://cf.shopee.sg/file/b26fdcc8a47b19794b5137966b00a448", "https://cf.shopee.sg/file/fd878648d5054895d112fab88d1c7faa", "https://cf.shopee.sg/file/fe074c7a79ebfd899e13f33dc58cff33", "https://cf.shopee.sg/file/d84bc371c4b433f84f871fbe874e3881", "https://cf.shopee.sg/file/cb5d0b1eba5045783b2eb1fe39c32ac0"},
 	}
 	CategoryMenClothesJacketsCoatsVests = &Category{
-		Id:       "66x1",
-		Slug:     "men-clothes-jackets-coats-and-vests",
-		Name:     "Áo khoác",
-		NameEn:   "Jackets, Coats & Vests",
-		Children: Categories{CategoryMenClothesJacketsCoatsVestsWinterJacketsCoats},
+		Id:     "66x1",
+		Slug:   "men-clothes-jackets-coats-and-vests",
+		Name:   "Áo khoác",
+		NameEn: "Jackets, Coats & Vests",
+		Children: Categories{
+			CategoryMenClothesJacketsCoatsVestsWinterJacketsCoats,
+		},
 	}
 	CategoryMenClothesJacketsCoatsVestsWinterJacketsCoats = &Category{
 		Id:     "66x2",
@@ -601,11 +714,14 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/b9798aff58061f99af16d8d0cc71f330", "https://cf.shopee.sg/file/b6d956cf9d7b1ef4d25a779a4c006b46", "https://cf.shopee.sg/file/f265e76d03ac3af9eeadfcfa2e3c88ff", "https://cf.shopee.sg/file/761b0ff1a3598699ae466da276783141", "https://cf.shopee.sg/file/4b3e0daac9424dfd1d6c5973fd9066b5", "https://cf.shopee.sg/file/284b64c11ca4a29229a796de872763f9"},
 	}
 	CategoryMenClothesWinterJacketsCoats = &Category{
-		Id:       "67x1",
-		Slug:     "men-clothes-winter-jackets-and-coats",
-		Name:     "Áo khoác",
-		NameEn:   "Winter Jackets & Coats",
-		Children: Categories{CategoryMenClothesWinterJacketsCoatsJackets, CategoryMenClothesWinterJacketsCoatsVests},
+		Id:     "67x1",
+		Slug:   "men-clothes-winter-jackets-and-coats",
+		Name:   "Áo khoác",
+		NameEn: "Winter Jackets & Coats",
+		Children: Categories{
+			CategoryMenClothesWinterJacketsCoatsJackets,
+			CategoryMenClothesWinterJacketsCoatsVests,
+		},
 	}
 	CategoryMenClothesWinterJacketsCoatsJackets = &Category{
 		Id:     "67x2",
@@ -622,11 +738,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/36205fe16988bf5cff7f2da0b13737ba", "https://cf.shopee.sg/file/37580f01b32397669fd27c779bbc3d19", "https://cf.shopee.sg/file/323ee18e6308b282e75317baed10ad75", "https://cf.shopee.sg/file/a798dfe344af18c4c0f3224fa2f227aa", "https://cf.shopee.sg/file/0b8f84b1e05111b964c42a4060ada790", "https://cf.shopee.sg/file/52c2fa94b631ee1066fbcdd7ad16f209"},
 	}
 	CategoryMenClothesSuits = &Category{
-		Id:       "69x1",
-		Slug:     "men-clothes-suits",
-		Name:     "Com lê",
-		NameEn:   "Suits",
-		Children: Categories{CategoryMenClothesSuitsSuitSets, CategoryMenClothesSuitsSuitJacketsBlazers, CategoryMenClothesSuitsSuitPants, CategoryMenClothesSuitsSuitVestsWaistcoats},
+		Id:     "69x1",
+		Slug:   "men-clothes-suits",
+		Name:   "Com lê",
+		NameEn: "Suits",
+		Children: Categories{
+			CategoryMenClothesSuitsSuitSets,
+			CategoryMenClothesSuitsSuitJacketsBlazers,
+			CategoryMenClothesSuitsSuitPants,
+			CategoryMenClothesSuitsSuitVestsWaistcoats,
+		},
 	}
 	CategoryMenClothesSuitsSuitSets = &Category{
 		Id:     "69x2",
@@ -657,11 +778,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/566651b0f5ade795e5e2fe1551f732b6", "https://cf.shopee.sg/file/abb235f00254703cae9f4f1752804190", "https://cf.shopee.sg/file/5a563adab71887dbc12d4bc4afe03ee2", "https://cf.shopee.sg/file/71bd9198b6fd8c4b1ba9b2f741090456", "https://cf.shopee.sg/file/caf3079b739d9216cd0e028e9e0a5899", "https://cf.shopee.sg/file/a609efd33a0eaf2951d63903dbc16108"},
 	}
 	CategoryMenClothesPants = &Category{
-		Id:       "73x1",
-		Slug:     "men-clothes-pants",
-		Name:     "Quần dài",
-		NameEn:   "Pants",
-		Children: Categories{CategoryMenClothesPantsCargo, CategoryMenClothesPantsJoggers, CategoryMenClothesPantsPants},
+		Id:     "73x1",
+		Slug:   "men-clothes-pants",
+		Name:   "Quần dài",
+		NameEn: "Pants",
+		Children: Categories{
+			CategoryMenClothesPantsJoggers,
+			CategoryMenClothesPantsPants,
+			CategoryMenClothesPantsCargo,
+		},
 	}
 	CategoryMenClothesPantsCargo = &Category{
 		Id:     "73x2",
@@ -692,11 +817,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/b3e4fbf6e709d9414f0a8304b88d2cd6", "https://cf.shopee.sg/file/16344cfced15845dd585db937c2005a0", "https://cf.shopee.sg/file/402ca3c0c5593ccbe878acea7ef9e3b2", "https://cf.shopee.sg/file/f03c6b027f71d2c0f2a410e3b320aa36", "https://cf.shopee.sg/file/c4632b3a3b8961660df9b36b1b66c181", "https://cf.shopee.sg/file/2d4f8c96313f57180aa7fe36660191e4"},
 	}
 	CategoryMenClothesTops = &Category{
-		Id:       "77x1",
-		Slug:     "men-clothes-tops",
-		Name:     "Áo",
-		NameEn:   "Tops",
-		Children: Categories{CategoryMenClothesTopsShirts, CategoryMenClothesTopsPoloShirts, CategoryMenClothesTopsTShirts, CategoryMenClothesTopsTanks},
+		Id:     "77x1",
+		Slug:   "men-clothes-tops",
+		Name:   "Áo",
+		NameEn: "Tops",
+		Children: Categories{
+			CategoryMenClothesTopsPoloShirts,
+			CategoryMenClothesTopsTShirts,
+			CategoryMenClothesTopsTanks,
+			CategoryMenClothesTopsShirts,
+		},
 	}
 	CategoryMenClothesTopsShirts = &Category{
 		Id:     "77x2",
@@ -727,11 +857,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/a823a0451e9204c2df55d90e344cb0fe", "https://cf.shopee.sg/file/398f027cb7f601aac3fb3a2ca22fced6", "https://cf.shopee.sg/file/60eeec40b2a97f8ba107b74662f939fc", "https://cf.shopee.sg/file/d6736d4bcf0be1094e11f9aa93d5e710", "https://cf.shopee.sg/file/06955319fdf23c835927f0d7c708c473", "https://cf.shopee.sg/file/055b534c7f1d65ffdd2afad9cfd5d1df"},
 	}
 	CategoryMenClothesInnerwearUnderwear = &Category{
-		Id:       "81x1",
-		Slug:     "men-clothes-innerwear-and-underwear",
-		Name:     "Đồ lót",
-		NameEn:   "Innerwear & Underwear",
-		Children: Categories{CategoryMenClothesInnerwearUnderwearUnderwear, CategoryMenClothesInnerwearUnderwearUndershirts, CategoryMenClothesInnerwearUnderwearThermalInnerwear},
+		Id:     "81x1",
+		Slug:   "men-clothes-innerwear-and-underwear",
+		Name:   "Đồ lót",
+		NameEn: "Innerwear & Underwear",
+		Children: Categories{
+			CategoryMenClothesInnerwearUnderwearUnderwear,
+			CategoryMenClothesInnerwearUnderwearUndershirts,
+			CategoryMenClothesInnerwearUnderwearThermalInnerwear,
+		},
 	}
 	CategoryMenClothesInnerwearUnderwearUnderwear = &Category{
 		Id:     "81x2",
@@ -769,11 +903,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/5796ab73eaec8eea706a81d212027bb9", "https://cf.shopee.sg/file/ccf7ed1496ad752e35cea792b98a9739", "https://cf.shopee.sg/file/4288b3d23b71f72ec1ea4eb8be3859d9", "https://cf.shopee.sg/file/616a01cb19e7fd06a785fd7ce5b4a4e1", "https://cf.shopee.sg/file/4dd6710c6ddc26f837266c253ca36fb3", "https://cf.shopee.sg/file/a1a0e927483e114acea5de70d302dd25"},
 	}
 	CategoryMenClothesTraditionalWear = &Category{
-		Id:       "86x1",
-		Slug:     "men-clothes-traditional-wear",
-		Name:     "Trang phục truyền thống",
-		NameEn:   "Traditional Wear",
-		Children: Categories{CategoryMenClothesTraditionalWearTops, CategoryMenClothesTraditionalWearBottoms, CategoryMenClothesTraditionalWearSets},
+		Id:     "86x1",
+		Slug:   "men-clothes-traditional-wear",
+		Name:   "Trang phục truyền thống",
+		NameEn: "Traditional Wear",
+		Children: Categories{
+			CategoryMenClothesTraditionalWearBottoms,
+			CategoryMenClothesTraditionalWearSets,
+			CategoryMenClothesTraditionalWearTops,
+		},
 	}
 	CategoryMenClothesTraditionalWearTops = &Category{
 		Id:     "86x2",
@@ -818,25 +956,43 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/c9537212e1dcd258eeb4e88ff0e4627b", "https://cf.shopee.sg/file/8c893d8d14fa2c671ece7fd73c5e3871", "https://cf.shopee.sg/file/1c63699d0ef435070a380cb3c957482e", "https://cf.shopee.sg/file/a1321a6512d8499eabdb923cbbbfdcf7", "https://cf.shopee.sg/file/69dcc7dcbd418d22f033c0e9af29cb33", "https://cf.shopee.sg/file/1d6fa287fbbf6438143768ba5a727e17"},
 	}
 	CategoryBeauty = &Category{
-		Id:       "92x0",
-		Slug:     "beauty",
-		Name:     "Sắc Đẹp",
-		NameEn:   "Beauty",
-		Children: Categories{CategoryBeautyHandFootNailCare, CategoryBeautyMensCare, CategoryBeautyMakeup, CategoryBeautyHairCare, CategoryBeautyPerfumesFragrances, CategoryBeautyBeautyTools, CategoryBeautySkincare, CategoryBeautyBeautySetsPackages, CategoryBeautyBathBodyCare},
+		Id:     "92x0",
+		Slug:   "beauty",
+		Name:   "Sắc Đẹp",
+		NameEn: "Beauty",
+		Children: Categories{
+			CategoryBeautyBeautySetsPackages,
+			CategoryBeautyBathBodyCare,
+			CategoryBeautyHandFootNailCare,
+			CategoryBeautyMensCare,
+			CategoryBeautyBeautyTools,
+			CategoryBeautySkincare,
+			CategoryBeautyHairCare,
+			CategoryBeautyPerfumesFragrances,
+			CategoryBeautyMakeup,
+		},
 	}
 	CategoryBeautyHandFootNailCare = &Category{
-		Id:       "92x1",
-		Slug:     "beauty-hand-foot-and-nail-care",
-		Name:     "Chăm sóc tay, chân & móng",
-		NameEn:   "Hand, Foot & Nail Care",
-		Children: Categories{CategoryBeautyHandFootNailCareHandCare, CategoryBeautyHandFootNailCareFootCare, CategoryBeautyHandFootNailCareNailCare},
+		Id:     "92x1",
+		Slug:   "beauty-hand-foot-and-nail-care",
+		Name:   "Chăm sóc tay, chân & móng",
+		NameEn: "Hand, Foot & Nail Care",
+		Children: Categories{
+			CategoryBeautyHandFootNailCareNailCare,
+			CategoryBeautyHandFootNailCareHandCare,
+			CategoryBeautyHandFootNailCareFootCare,
+		},
 	}
 	CategoryBeautyHandFootNailCareHandCare = &Category{
-		Id:       "92x2",
-		Slug:     "beauty-hand-foot-and-nail-care-hand-care",
-		Name:     "Chăm sóc tay",
-		NameEn:   "Hand Care",
-		Children: Categories{CategoryBeautyHandFootNailCareHandCareLotionCreamScrubs, CategoryBeautyHandFootNailCareHandCareHandWashes, CategoryBeautyHandFootNailCareHandCareHandMasks},
+		Id:     "92x2",
+		Slug:   "beauty-hand-foot-and-nail-care-hand-care",
+		Name:   "Chăm sóc tay",
+		NameEn: "Hand Care",
+		Children: Categories{
+			CategoryBeautyHandFootNailCareHandCareHandMasks,
+			CategoryBeautyHandFootNailCareHandCareLotionCreamScrubs,
+			CategoryBeautyHandFootNailCareHandCareHandWashes,
+		},
 	}
 	CategoryBeautyHandFootNailCareHandCareHandMasks = &Category{
 		Id:     "92x3",
@@ -860,11 +1016,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/7525a799b79edf56a8e7b3499f277086", "https://cf.shopee.sg/file/3cac8645268f9799cd66e074eb3b59e0", "https://cf.shopee.sg/file/d7f0a324a8e00b4030440e5032a863d9", "https://cf.shopee.sg/file/57931d29b5b855fb0552462637a4bbcb", "https://cf.shopee.sg/file/eed058499d117baaac71836cb9d72ba5", "https://cf.shopee.sg/file/c611c17fa14676f7a4213089cd4030e8"},
 	}
 	CategoryBeautyHandFootNailCareFootCare = &Category{
-		Id:       "95x2",
-		Slug:     "beauty-hand-foot-and-nail-care-foot-care",
-		Name:     "Chăm sóc chân",
-		NameEn:   "Foot Care",
-		Children: Categories{CategoryBeautyHandFootNailCareFootCareFootDeodorant, CategoryBeautyHandFootNailCareFootCareFootMasks, CategoryBeautyHandFootNailCareFootCareLotionCreamScrubs, CategoryBeautyHandFootNailCareFootCareOther},
+		Id:     "95x2",
+		Slug:   "beauty-hand-foot-and-nail-care-foot-care",
+		Name:   "Chăm sóc chân",
+		NameEn: "Foot Care",
+		Children: Categories{
+			CategoryBeautyHandFootNailCareFootCareOther,
+			CategoryBeautyHandFootNailCareFootCareFootDeodorant,
+			CategoryBeautyHandFootNailCareFootCareFootMasks,
+			CategoryBeautyHandFootNailCareFootCareLotionCreamScrubs,
+		},
 	}
 	CategoryBeautyHandFootNailCareFootCareFootDeodorant = &Category{
 		Id:     "95x3",
@@ -895,11 +1056,19 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/644869691f4241adac08132958ce23fa", "https://cf.shopee.sg/file/9bf22d4703e9e1fa83316e8947173b87", "https://cf.shopee.sg/file/b8f5f999af26e195c07aa645899146ec", "https://cf.shopee.sg/file/35a73068d1196ca1bd771e06a73bc35d", "https://cf.shopee.sg/file/71415788152760a4258e0d56169a523a", "https://cf.shopee.sg/file/8080911fed0864e897290ae9b9a57f4c"},
 	}
 	CategoryBeautyHandFootNailCareNailCare = &Category{
-		Id:       "99x2",
-		Slug:     "beauty-hand-foot-and-nail-care-nail-care",
-		Name:     "Chăm sóc móng",
-		NameEn:   "Nail Care",
-		Children: Categories{CategoryBeautyHandFootNailCareNailCareManicureToolsDevices, CategoryBeautyHandFootNailCareNailCareBaseTopCoat, CategoryBeautyHandFootNailCareNailCareNailPolish, CategoryBeautyHandFootNailCareNailCareNailPolishRemover, CategoryBeautyHandFootNailCareNailCareNailTreatment, CategoryBeautyHandFootNailCareNailCareArtificialNail, CategoryBeautyHandFootNailCareNailCareNailArtSticker},
+		Id:     "99x2",
+		Slug:   "beauty-hand-foot-and-nail-care-nail-care",
+		Name:   "Chăm sóc móng",
+		NameEn: "Nail Care",
+		Children: Categories{
+			CategoryBeautyHandFootNailCareNailCareBaseTopCoat,
+			CategoryBeautyHandFootNailCareNailCareNailPolish,
+			CategoryBeautyHandFootNailCareNailCareNailPolishRemover,
+			CategoryBeautyHandFootNailCareNailCareNailTreatment,
+			CategoryBeautyHandFootNailCareNailCareArtificialNail,
+			CategoryBeautyHandFootNailCareNailCareNailArtSticker,
+			CategoryBeautyHandFootNailCareNailCareManicureToolsDevices,
+		},
 	}
 	CategoryBeautyHandFootNailCareNailCareBaseTopCoat = &Category{
 		Id:     "99x3",
@@ -951,11 +1120,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/beaf9f09563488c1e620ab6b60e7b31c", "https://cf.shopee.sg/file/9acc9749c946ac23b22a45afe3272f0a", "https://cf.shopee.sg/file/e691b068edcb172ed583f150c8177521", "https://cf.shopee.sg/file/24f1359f905dfc33fc29150629bba237", "https://cf.shopee.sg/file/616769756ad728c2e87a362a67461dcf", "https://cf.shopee.sg/file/412c3d2fd533afbc2dcb2c3fbd030203"},
 	}
 	CategoryBeautyHairCare = &Category{
-		Id:       "106x1",
-		Slug:     "beauty-hair-care",
-		Name:     "Chăm sóc tóc",
-		NameEn:   "Hair Care",
-		Children: Categories{CategoryBeautyHairCareShampoo, CategoryBeautyHairCareHairColour, CategoryBeautyHairCareHairTreatment, CategoryBeautyHairCareHairandScalpConditioner, CategoryBeautyHairCareHairStyling, CategoryBeautyHairCareOther},
+		Id:     "106x1",
+		Slug:   "beauty-hair-care",
+		Name:   "Chăm sóc tóc",
+		NameEn: "Hair Care",
+		Children: Categories{
+			CategoryBeautyHairCareOther,
+			CategoryBeautyHairCareShampoo,
+			CategoryBeautyHairCareHairColour,
+			CategoryBeautyHairCareHairTreatment,
+			CategoryBeautyHairCareHairandScalpConditioner,
+			CategoryBeautyHairCareHairStyling,
+		},
 	}
 	CategoryBeautyHairCareShampoo = &Category{
 		Id:     "106x2",
@@ -1000,11 +1176,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/7238887ff49eb9b0ba62646c3c5f360a", "https://cf.shopee.sg/file/c13b055851dcf40edd10728d963430a0", "https://cf.shopee.sg/file/cfc594c9a352ebebe4f7a44ea9bcdc50", "https://cf.shopee.sg/file/a4f5c47a391653dc3aa41486e7dd9cb5", "https://cf.shopee.sg/file/8a0ac4aa03dd33fad39a4cb0a9dc060a", "https://cf.shopee.sg/file/ceae4db661174965f5294f8963d0fbe2"},
 	}
 	CategoryBeautyMensCare = &Category{
-		Id:       "112x1",
-		Slug:     "beauty-mens-care",
-		Name:     "Chăm sóc nam giới",
-		NameEn:   "Men's Care",
-		Children: Categories{CategoryBeautyMensCareHairCare, CategoryBeautyMensCareBathBodyCare, CategoryBeautyMensCareSkinCare, CategoryBeautyMensCareShavingGrooming},
+		Id:     "112x1",
+		Slug:   "beauty-mens-care",
+		Name:   "Chăm sóc nam giới",
+		NameEn: "Men's Care",
+		Children: Categories{
+			CategoryBeautyMensCareSkinCare,
+			CategoryBeautyMensCareShavingGrooming,
+			CategoryBeautyMensCareHairCare,
+			CategoryBeautyMensCareBathBodyCare,
+		},
 	}
 	CategoryBeautyMensCareBathBodyCare = &Category{
 		Id:     "112x2",
@@ -1014,11 +1195,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/c9266658866264486173543f9a916064", "https://cf.shopee.sg/file/3bfe47154ff1bbbe6a6c31eae1b8d6e7", "https://cf.shopee.sg/file/f6aa155bbb2d7e6a17f28b094b9bb81f", "https://cf.shopee.sg/file/42672cd7aa7daaa3e1713fe01e2697c3", "https://cf.shopee.sg/file/5fc1bfe92d1fc217ae60efb6ec32f56b", "https://cf.shopee.sg/file/0a8f36dd815e3a0c4043b5c060c35ef7"},
 	}
 	CategoryBeautyMensCareSkinCare = &Category{
-		Id:       "113x2",
-		Slug:     "beauty-mens-care-skin-care",
-		Name:     "Chăm sóc da",
-		NameEn:   "Skin Care",
-		Children: Categories{CategoryBeautyMensCareSkinCareFacialCleanser, CategoryBeautyMensCareSkinCareMoisturizerTreatment, CategoryBeautyMensCareSkinCareOther},
+		Id:     "113x2",
+		Slug:   "beauty-mens-care-skin-care",
+		Name:   "Chăm sóc da",
+		NameEn: "Skin Care",
+		Children: Categories{
+			CategoryBeautyMensCareSkinCareFacialCleanser,
+			CategoryBeautyMensCareSkinCareMoisturizerTreatment,
+			CategoryBeautyMensCareSkinCareOther,
+		},
 	}
 	CategoryBeautyMensCareSkinCareFacialCleanser = &Category{
 		Id:     "113x3",
@@ -1042,11 +1227,20 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/e42fc3c5774577be14f398f403cc9de7", "https://cf.shopee.sg/file/55393953ec7d1978a8458e0e8b44288e", "https://cf.shopee.sg/file/72108ff3be49e77b257dfdcc1b8fc382", "https://cf.shopee.sg/file/d6ede516bb34b24d0c6d803fcc78102c", "https://cf.shopee.sg/file/a1fc5b958867b2c501e70a4a60954cda", "https://cf.shopee.sg/file/16c997e2577b3c56c9e7222d2d1c5b64"},
 	}
 	CategoryBeautyMensCareShavingGrooming = &Category{
-		Id:       "116x2",
-		Slug:     "beauty-mens-care-shaving-and-grooming",
-		Name:     "Sản phẩm cạo râu & hớt tóc",
-		NameEn:   "Shaving & Grooming",
-		Children: Categories{CategoryBeautyMensCareShavingGroomingCreamsFoamsGels, CategoryBeautyMensCareShavingGroomingRazorsBlades, CategoryBeautyMensCareShavingGroomingShavers, CategoryBeautyMensCareShavingGroomingShavingBrushes, CategoryBeautyMensCareShavingGroomingTrimmersClippersMultifunctional, CategoryBeautyMensCareShavingGroomingShavingAccessories, CategoryBeautyMensCareShavingGroomingOther, CategoryBeautyMensCareShavingGroomingAftershave},
+		Id:     "116x2",
+		Slug:   "beauty-mens-care-shaving-and-grooming",
+		Name:   "Sản phẩm cạo râu & hớt tóc",
+		NameEn: "Shaving & Grooming",
+		Children: Categories{
+			CategoryBeautyMensCareShavingGroomingCreamsFoamsGels,
+			CategoryBeautyMensCareShavingGroomingRazorsBlades,
+			CategoryBeautyMensCareShavingGroomingShavers,
+			CategoryBeautyMensCareShavingGroomingShavingBrushes,
+			CategoryBeautyMensCareShavingGroomingTrimmersClippersMultifunctional,
+			CategoryBeautyMensCareShavingGroomingShavingAccessories,
+			CategoryBeautyMensCareShavingGroomingOther,
+			CategoryBeautyMensCareShavingGroomingAftershave,
+		},
 	}
 	CategoryBeautyMensCareShavingGroomingAftershave = &Category{
 		Id:     "116x3",
@@ -1119,18 +1313,33 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/171ea8f83ee75d87659009a162fca679", "https://cf.shopee.sg/file/2b5e4c1caee98dc338b03b326c32999d", "https://cf.shopee.sg/file/ce74f9163707697a19b6401493f03ae6", "https://cf.shopee.sg/file/b80fe60b46b4c825637902a878f9d00e", "https://cf.shopee.sg/file/9ac088819737cf80f4da9a77f12d619e", "https://cf.shopee.sg/file/b8270d602844ae4e2f4fb7e80b9b923b"},
 	}
 	CategoryBeautyMakeup = &Category{
-		Id:       "126x1",
-		Slug:     "beauty-makeup",
-		Name:     "Trang điểm",
-		NameEn:   "Makeup",
-		Children: Categories{CategoryBeautyMakeupFace, CategoryBeautyMakeupEyes, CategoryBeautyMakeupLips, CategoryBeautyMakeupMakeupRemovers},
+		Id:     "126x1",
+		Slug:   "beauty-makeup",
+		Name:   "Trang điểm",
+		NameEn: "Makeup",
+		Children: Categories{
+			CategoryBeautyMakeupFace,
+			CategoryBeautyMakeupEyes,
+			CategoryBeautyMakeupLips,
+			CategoryBeautyMakeupMakeupRemovers,
+		},
 	}
 	CategoryBeautyMakeupFace = &Category{
-		Id:       "126x2",
-		Slug:     "beauty-makeup-face",
-		Name:     "Trang điểm mặt",
-		NameEn:   "Face",
-		Children: Categories{CategoryBeautyMakeupFaceBBCCCream, CategoryBeautyMakeupFaceBronzerContourHighlighter, CategoryBeautyMakeupFaceSettingFinishingSpray, CategoryBeautyMakeupFaceBlush, CategoryBeautyMakeupFaceMakeupBasePrimer, CategoryBeautyMakeupFaceFoundation, CategoryBeautyMakeupFaceOther, CategoryBeautyMakeupFacePowder, CategoryBeautyMakeupFaceConcealerCorrector},
+		Id:     "126x2",
+		Slug:   "beauty-makeup-face",
+		Name:   "Trang điểm mặt",
+		NameEn: "Face",
+		Children: Categories{
+			CategoryBeautyMakeupFaceBBCCCream,
+			CategoryBeautyMakeupFacePowder,
+			CategoryBeautyMakeupFaceSettingFinishingSpray,
+			CategoryBeautyMakeupFaceMakeupBasePrimer,
+			CategoryBeautyMakeupFaceFoundation,
+			CategoryBeautyMakeupFaceConcealerCorrector,
+			CategoryBeautyMakeupFaceBronzerContourHighlighter,
+			CategoryBeautyMakeupFaceBlush,
+			CategoryBeautyMakeupFaceOther,
+		},
 	}
 	CategoryBeautyMakeupFaceMakeupBasePrimer = &Category{
 		Id:     "126x3",
@@ -1196,11 +1405,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/dd96bcf20ee65b9b074350120bd7b25e", "https://cf.shopee.sg/file/3d4a50353a44cdd1f9ad8b63de9a920f", "https://cf.shopee.sg/file/91b1f9da8f7e54e984925497eed6fb8f", "https://cf.shopee.sg/file/2bfc0b92ed7a5e8099e4860bba5e1fe2", "https://cf.shopee.sg/file/feefe113ab11b39c2150600b6aabc8fb", "https://cf.shopee.sg/file/08aa95945496e352df76a110bcafc03d"},
 	}
 	CategoryBeautyMakeupEyes = &Category{
-		Id:       "135x2",
-		Slug:     "beauty-makeup-eyes",
-		Name:     "Trang điểm mắt",
-		NameEn:   "Eyes",
-		Children: Categories{CategoryBeautyMakeupEyesEyeshadow, CategoryBeautyMakeupEyesEyePrimer, CategoryBeautyMakeupEyesEyeliner, CategoryBeautyMakeupEyesMascara, CategoryBeautyMakeupEyesEyebrows},
+		Id:     "135x2",
+		Slug:   "beauty-makeup-eyes",
+		Name:   "Trang điểm mắt",
+		NameEn: "Eyes",
+		Children: Categories{
+			CategoryBeautyMakeupEyesEyeshadow,
+			CategoryBeautyMakeupEyesEyePrimer,
+			CategoryBeautyMakeupEyesEyeliner,
+			CategoryBeautyMakeupEyesMascara,
+			CategoryBeautyMakeupEyesEyebrows,
+		},
 	}
 	CategoryBeautyMakeupEyesEyeshadow = &Category{
 		Id:     "135x3",
@@ -1238,11 +1453,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/cb12168375af96e88c1517bc47a2e55b", "https://cf.shopee.sg/file/9f8f96b1e5d1f52c919bfb4dbc500c21", "https://cf.shopee.sg/file/b053ffc3681ae37c651a5ee7f4b03ef9", "https://cf.shopee.sg/file/e9831aa8b84149b55714c786f04a3568", "https://cf.shopee.sg/file/69d504ab00c561d45c68ee64d62fcdbe", "https://cf.shopee.sg/file/224d0cc9e37b3b33a8d11f6dfe338675"},
 	}
 	CategoryBeautyMakeupLips = &Category{
-		Id:       "140x2",
-		Slug:     "beauty-makeup-lips",
-		Name:     "Trang điểm môi",
-		NameEn:   "Lips",
-		Children: Categories{CategoryBeautyMakeupLipsLipGloss, CategoryBeautyMakeupLipsLipLiner, CategoryBeautyMakeupLipsLipTintStain, CategoryBeautyMakeupLipsLipPlumper, CategoryBeautyMakeupLipsLipstick},
+		Id:     "140x2",
+		Slug:   "beauty-makeup-lips",
+		Name:   "Trang điểm môi",
+		NameEn: "Lips",
+		Children: Categories{
+			CategoryBeautyMakeupLipsLipTintStain,
+			CategoryBeautyMakeupLipsLipPlumper,
+			CategoryBeautyMakeupLipsLipstick,
+			CategoryBeautyMakeupLipsLipGloss,
+			CategoryBeautyMakeupLipsLipLiner,
+		},
 	}
 	CategoryBeautyMakeupLipsLipstick = &Category{
 		Id:     "140x3",
@@ -1287,18 +1508,37 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/28b2f0be5eb46673ce4352c93bbc2c3f", "https://cf.shopee.sg/file/6b708a417cd9c27af82b676576502d1c", "https://cf.shopee.sg/file/d28941256748e38977c7ebdcd8d396d7", "https://cf.shopee.sg/file/b8c9ebeda7ed63869763f3fc68161874", "https://cf.shopee.sg/file/b19bd67802b9a75f8cb4bd6d4cb9c973", "https://cf.shopee.sg/file/d088cc39bc7c96308a6cbf9ee3d7d028"},
 	}
 	CategoryBeautyBeautyTools = &Category{
-		Id:       "146x1",
-		Slug:     "beauty-beauty-tools",
-		Name:     "Dụng cụ làm đẹp",
-		NameEn:   "Beauty Tools",
-		Children: Categories{CategoryBeautyBeautyToolsHairTools, CategoryBeautyBeautyToolsOther, CategoryBeautyBeautyToolsMakeupAccessories, CategoryBeautyBeautyToolsFacialCareTools, CategoryBeautyBeautyToolsBodySlimmingTools, CategoryBeautyBeautyToolsHairRemovalTools},
+		Id:     "146x1",
+		Slug:   "beauty-beauty-tools",
+		Name:   "Dụng cụ làm đẹp",
+		NameEn: "Beauty Tools",
+		Children: Categories{
+			CategoryBeautyBeautyToolsHairTools,
+			CategoryBeautyBeautyToolsOther,
+			CategoryBeautyBeautyToolsMakeupAccessories,
+			CategoryBeautyBeautyToolsFacialCareTools,
+			CategoryBeautyBeautyToolsBodySlimmingTools,
+			CategoryBeautyBeautyToolsHairRemovalTools,
+		},
 	}
 	CategoryBeautyBeautyToolsMakeupAccessories = &Category{
-		Id:       "146x2",
-		Slug:     "beauty-beauty-tools-makeup-accessories",
-		Name:     "Dụng cụ trang điểm",
-		NameEn:   "Makeup Accessories",
-		Children: Categories{CategoryBeautyBeautyToolsMakeupAccessoriesFalseEyelashes, CategoryBeautyBeautyToolsMakeupAccessoriesPencilSharpeners, CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBagsOrganizers, CategoryBeautyBeautyToolsMakeupAccessoriesMirrors, CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBrushes, CategoryBeautyBeautyToolsMakeupAccessoriesSpongesApplicators, CategoryBeautyBeautyToolsMakeupAccessoriesEyelidTapeGlue, CategoryBeautyBeautyToolsMakeupAccessoriesCottonPadsandBuds, CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBrushCleaners, CategoryBeautyBeautyToolsMakeupAccessoriesEyelashCurlers, CategoryBeautyBeautyToolsMakeupAccessoriesEyebrowTemplates},
+		Id:     "146x2",
+		Slug:   "beauty-beauty-tools-makeup-accessories",
+		Name:   "Dụng cụ trang điểm",
+		NameEn: "Makeup Accessories",
+		Children: Categories{
+			CategoryBeautyBeautyToolsMakeupAccessoriesFalseEyelashes,
+			CategoryBeautyBeautyToolsMakeupAccessoriesCottonPadsandBuds,
+			CategoryBeautyBeautyToolsMakeupAccessoriesMirrors,
+			CategoryBeautyBeautyToolsMakeupAccessoriesEyebrowTemplates,
+			CategoryBeautyBeautyToolsMakeupAccessoriesSpongesApplicators,
+			CategoryBeautyBeautyToolsMakeupAccessoriesEyelashCurlers,
+			CategoryBeautyBeautyToolsMakeupAccessoriesEyelidTapeGlue,
+			CategoryBeautyBeautyToolsMakeupAccessoriesPencilSharpeners,
+			CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBagsOrganizers,
+			CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBrushCleaners,
+			CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBrushes,
+		},
 	}
 	CategoryBeautyBeautyToolsMakeupAccessoriesCottonPadsandBuds = &Category{
 		Id:     "146x3",
@@ -1378,11 +1618,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/61c389781a48331551babdf587cb30dc", "https://cf.shopee.sg/file/85394c5972ba027105a415856154de23", "https://cf.shopee.sg/file/14f8e35339cfef0efe9605c45793fc73", "https://cf.shopee.sg/file/c3af3b5587ee65d540cd04323452726e", "https://cf.shopee.sg/file/5f6de110860097e7c1da08a1dcdcf121", "https://cf.shopee.sg/file/779c78e13f2c5018a691b99d5d163010"},
 	}
 	CategoryBeautyBeautyToolsFacialCareTools = &Category{
-		Id:       "157x2",
-		Slug:     "beauty-beauty-tools-facial-care-tools",
-		Name:     "Dụng cụ chăm sóc da mặt",
-		NameEn:   "Facial Care Tools",
-		Children: Categories{CategoryBeautyBeautyToolsFacialCareToolsFacialSteamers, CategoryBeautyBeautyToolsFacialCareToolsFacialSlimmingMassageTools, CategoryBeautyBeautyToolsFacialCareToolsFacialCleansingTools},
+		Id:     "157x2",
+		Slug:   "beauty-beauty-tools-facial-care-tools",
+		Name:   "Dụng cụ chăm sóc da mặt",
+		NameEn: "Facial Care Tools",
+		Children: Categories{
+			CategoryBeautyBeautyToolsFacialCareToolsFacialSteamers,
+			CategoryBeautyBeautyToolsFacialCareToolsFacialSlimmingMassageTools,
+			CategoryBeautyBeautyToolsFacialCareToolsFacialCleansingTools,
+		},
 	}
 	CategoryBeautyBeautyToolsFacialCareToolsFacialSteamers = &Category{
 		Id:     "157x3",
@@ -1420,11 +1664,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/87a7166df4757d334350e547b4b28c36", "https://cf.shopee.sg/file/0612149e44f187008aa6a1f86a12cfd4", "https://cf.shopee.sg/file/2c35efdd009b0832b1861ee0d7a14346", "https://cf.shopee.sg/file/bbf82b1d19f46e1e7c6bb9ad53dd1b46", "https://cf.shopee.sg/file/7aa6d6714f4412b5de9cb9e9a1290f8e", "https://cf.shopee.sg/file/80f7ff6886f3c70fe07897d0787750de"},
 	}
 	CategoryBeautyBeautyToolsHairTools = &Category{
-		Id:       "162x2",
-		Slug:     "beauty-beauty-tools-hair-tools",
-		Name:     "Dụng cụ chăm sóc tóc",
-		NameEn:   "Hair Tools",
-		Children: Categories{CategoryBeautyBeautyToolsHairToolsBrushesCombs, CategoryBeautyBeautyToolsHairToolsHairDryers, CategoryBeautyBeautyToolsHairToolsHairStylingAppliances, CategoryBeautyBeautyToolsHairToolsHeatlessStylingTools, CategoryBeautyBeautyToolsHairToolsOther},
+		Id:     "162x2",
+		Slug:   "beauty-beauty-tools-hair-tools",
+		Name:   "Dụng cụ chăm sóc tóc",
+		NameEn: "Hair Tools",
+		Children: Categories{
+			CategoryBeautyBeautyToolsHairToolsOther,
+			CategoryBeautyBeautyToolsHairToolsBrushesCombs,
+			CategoryBeautyBeautyToolsHairToolsHairDryers,
+			CategoryBeautyBeautyToolsHairToolsHairStylingAppliances,
+			CategoryBeautyBeautyToolsHairToolsHeatlessStylingTools,
+		},
 	}
 	CategoryBeautyBeautyToolsHairToolsBrushesCombs = &Category{
 		Id:     "162x3",
@@ -1469,11 +1719,25 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/e2585473ecc23271beacf50218b3b5a3", "https://cf.shopee.sg/file/7284e8147ca4a1b95eceb4847b80fdf3", "https://cf.shopee.sg/file/2e08e1e69a209f6cced7499500749ffe", "https://cf.shopee.sg/file/a9ce1d969b533ed7f01d613c3b361e91", "https://cf.shopee.sg/file/3e2e5b269fc52e5f216461e7a2e4b429", "https://cf.shopee.sg/file/d879839d48b707daf3f99cbd110710f8"},
 	}
 	CategoryBeautySkincare = &Category{
-		Id:       "168x1",
-		Slug:     "beauty-skincare",
-		Name:     "Chăm sóc da mặt",
-		NameEn:   "Skincare",
-		Children: Categories{CategoryBeautySkincareFacialSerumEssence, CategoryBeautySkincareFaceMaskPacks, CategoryBeautySkincareLipsTreatment, CategoryBeautySkincareFaceSunscreen, CategoryBeautySkincareAfterSunFaceCare, CategoryBeautySkincareFacialCleanser, CategoryBeautySkincareToner, CategoryBeautySkincareFacialMoisturizer, CategoryBeautySkincareAcneTreatment, CategoryBeautySkincareBlottingPaper, CategoryBeautySkincareFacialOil, CategoryBeautySkincareFaceScrubPeel, CategoryBeautySkincareEyeTreatment},
+		Id:     "168x1",
+		Slug:   "beauty-skincare",
+		Name:   "Chăm sóc da mặt",
+		NameEn: "Skincare",
+		Children: Categories{
+			CategoryBeautySkincareEyeTreatment,
+			CategoryBeautySkincareFaceSunscreen,
+			CategoryBeautySkincareBlottingPaper,
+			CategoryBeautySkincareAcneTreatment,
+			CategoryBeautySkincareFacialMoisturizer,
+			CategoryBeautySkincareFacialOil,
+			CategoryBeautySkincareFaceScrubPeel,
+			CategoryBeautySkincareFaceMaskPacks,
+			CategoryBeautySkincareLipsTreatment,
+			CategoryBeautySkincareAfterSunFaceCare,
+			CategoryBeautySkincareFacialCleanser,
+			CategoryBeautySkincareToner,
+			CategoryBeautySkincareFacialSerumEssence,
+		},
 	}
 	CategoryBeautySkincareFacialCleanser = &Category{
 		Id:     "168x2",
@@ -1525,11 +1789,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/283a2f55ecba6d1afec2b5f33e6f3c7f", "https://cf.shopee.sg/file/0ae227faa9c3c24a5a13f670be8d7645", "https://cf.shopee.sg/file/d371f68687261baea1c478f7cee13d38", "https://cf.shopee.sg/file/985536de213febff1af343d9d7a7e3c4", "https://cf.shopee.sg/file/9df5ac9b90ae32911233475c9ba38bc5", "https://cf.shopee.sg/file/bc8b5fa445f1cdd7881e752cfc2c662f"},
 	}
 	CategoryBeautySkincareEyeTreatment = &Category{
-		Id:       "175x2",
-		Slug:     "beauty-skincare-eye-treatment",
-		Name:     "Sản phẩm dưỡng mắt",
-		NameEn:   "Eye Treatment",
-		Children: Categories{CategoryBeautySkincareEyeTreatmentEyeCream, CategoryBeautySkincareEyeTreatmentEyeMaskPacks, CategoryBeautySkincareEyeTreatmentEyebrowEyelashSerum},
+		Id:     "175x2",
+		Slug:   "beauty-skincare-eye-treatment",
+		Name:   "Sản phẩm dưỡng mắt",
+		NameEn: "Eye Treatment",
+		Children: Categories{
+			CategoryBeautySkincareEyeTreatmentEyeCream,
+			CategoryBeautySkincareEyeTreatmentEyeMaskPacks,
+			CategoryBeautySkincareEyeTreatmentEyebrowEyelashSerum,
+		},
 	}
 	CategoryBeautySkincareEyeTreatmentEyeCream = &Category{
 		Id:     "175x3",
@@ -1553,11 +1821,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/db76398fb852c9a21a0bf33517df0d6a", "https://cf.shopee.sg/file/c25120d763ec1dc8bc995e7f17d5a7af", "https://cf.shopee.sg/file/1a5950d0460cf2dc49484dd879e2953c", "https://cf.shopee.sg/file/9d549f77c153f8b841d55b9f8ec80579", "https://cf.shopee.sg/file/27ca01eb616693b95d541b15a4487189", "https://cf.shopee.sg/file/da3db86ec221fcf699dc9c1786cf3ef6"},
 	}
 	CategoryBeautySkincareLipsTreatment = &Category{
-		Id:       "178x2",
-		Slug:     "beauty-skincare-lips-treatment",
-		Name:     "Sản phẩm dưỡng môi",
-		NameEn:   "Lips Treatment",
-		Children: Categories{CategoryBeautySkincareLipsTreatmentLipMask, CategoryBeautySkincareLipsTreatmentLipBalm, CategoryBeautySkincareLipsTreatmentLipScrubExfoliator},
+		Id:     "178x2",
+		Slug:   "beauty-skincare-lips-treatment",
+		Name:   "Sản phẩm dưỡng môi",
+		NameEn: "Lips Treatment",
+		Children: Categories{
+			CategoryBeautySkincareLipsTreatmentLipBalm,
+			CategoryBeautySkincareLipsTreatmentLipScrubExfoliator,
+			CategoryBeautySkincareLipsTreatmentLipMask,
+		},
 	}
 	CategoryBeautySkincareLipsTreatmentLipBalm = &Category{
 		Id:     "178x3",
@@ -1616,11 +1888,23 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/e5cb37e516f1e956e1b87628356f0f70", "https://cf.shopee.sg/file/b25a5517d080c5d7db3eeb7f3aced9c7", "https://cf.shopee.sg/file/ec1cae7bc327cc378d287f48e4f32577", "https://cf.shopee.sg/file/c726d6076f3b285e3d25ed19e1796574", "https://cf.shopee.sg/file/518270d1e45f0bfb1ad6e5605ddf68a6", "https://cf.shopee.sg/file/6ccad1d15b590936ae5d16083ae53382"},
 	}
 	CategoryBeautyBathBodyCare = &Category{
-		Id:       "186x1",
-		Slug:     "beauty-bath-and-body-care",
-		Name:     "Tắm & chăm sóc cơ thể",
-		NameEn:   "Bath & Body Care",
-		Children: Categories{CategoryBeautyBathBodyCareBodyWashSoap, CategoryBeautyBathBodyCareBodyScrubPeel, CategoryBeautyBathBodyCareBodyDeodorants, CategoryBeautyBathBodyCareHairRemovalCreamWax, CategoryBeautyBathBodyCareBreastCare, CategoryBeautyBathBodyCareOther, CategoryBeautyBathBodyCareBodyMasks, CategoryBeautyBathBodyCareBodyOil, CategoryBeautyBathBodyCareBodyCreamLotionButter, CategoryBeautyBathBodyCareMassageOil, CategoryBeautyBathBodyCareSunCare},
+		Id:     "186x1",
+		Slug:   "beauty-bath-and-body-care",
+		Name:   "Tắm & chăm sóc cơ thể",
+		NameEn: "Bath & Body Care",
+		Children: Categories{
+			CategoryBeautyBathBodyCareBodyCreamLotionButter,
+			CategoryBeautyBathBodyCareMassageOil,
+			CategoryBeautyBathBodyCareHairRemovalCreamWax,
+			CategoryBeautyBathBodyCareSunCare,
+			CategoryBeautyBathBodyCareBreastCare,
+			CategoryBeautyBathBodyCareOther,
+			CategoryBeautyBathBodyCareBodyWashSoap,
+			CategoryBeautyBathBodyCareBodyMasks,
+			CategoryBeautyBathBodyCareBodyOil,
+			CategoryBeautyBathBodyCareBodyDeodorants,
+			CategoryBeautyBathBodyCareBodyScrubPeel,
+		},
 	}
 	CategoryBeautyBathBodyCareBodyWashSoap = &Category{
 		Id:     "186x2",
@@ -1679,11 +1963,14 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/0816bdb47f542da5b371c78ce73df0db", "https://cf.shopee.sg/file/857daec7845eb4ef08cb99ce445e964a", "https://cf.shopee.sg/file/234e04aeef02217058e3acbe33d1e92e", "https://cf.shopee.sg/file/082076902edc3b47df12a5aae53614cd", "https://cf.shopee.sg/file/225e13cff8e72a02eb66ac206cf31b3f", "https://cf.shopee.sg/file/eb2a193a81b6dbad2f7b00227d65a8b9"},
 	}
 	CategoryBeautyBathBodyCareSunCare = &Category{
-		Id:       "194x2",
-		Slug:     "beauty-bath-and-body-care-sun-care",
-		Name:     "Chống nắng",
-		NameEn:   "Sun Care",
-		Children: Categories{CategoryBeautyBathBodyCareSunCareBodySunscreenAfterSun, CategoryBeautyBathBodyCareSunCareTanningOilSelfTanners},
+		Id:     "194x2",
+		Slug:   "beauty-bath-and-body-care-sun-care",
+		Name:   "Chống nắng",
+		NameEn: "Sun Care",
+		Children: Categories{
+			CategoryBeautyBathBodyCareSunCareBodySunscreenAfterSun,
+			CategoryBeautyBathBodyCareSunCareTanningOilSelfTanners,
+		},
 	}
 	CategoryBeautyBathBodyCareSunCareBodySunscreenAfterSun = &Category{
 		Id:     "194x3",
@@ -1714,18 +2001,28 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/83b4e339e2f99be6f19a41a9a7368431", "https://cf.shopee.sg/file/049d325211621a09ddb8fa40ae25c063", "https://cf.shopee.sg/file/8934d8d8e815b05c4b17ce3cf11ce3be", "https://cf.shopee.sg/file/611bd100b74e08d98fa1e4a73d66d63d", "https://cf.shopee.sg/file/1066d4a45669a60dd02ed70aa66af5a8", "https://cf.shopee.sg/file/ad799a82d7d18d342375e5245fbec830"},
 	}
 	CategoryHealth = &Category{
-		Id:       "198x0",
-		Slug:     "health",
-		Name:     "Sức Khỏe",
-		NameEn:   "Health",
-		Children: Categories{CategoryHealthFoodSupplement, CategoryHealthMedicalSupplies, CategoryHealthPersonalCare, CategoryHealthSexualWellness},
+		Id:     "198x0",
+		Slug:   "health",
+		Name:   "Sức Khỏe",
+		NameEn: "Health",
+		Children: Categories{
+			CategoryHealthFoodSupplement,
+			CategoryHealthMedicalSupplies,
+			CategoryHealthPersonalCare,
+			CategoryHealthSexualWellness,
+		},
 	}
 	CategoryHealthFoodSupplement = &Category{
-		Id:       "198x1",
-		Slug:     "health-food-supplement",
-		Name:     "Thực phẩm chức năng",
-		NameEn:   "Food Supplement",
-		Children: Categories{CategoryHealthFoodSupplementWeightManagement, CategoryHealthFoodSupplementBeautySupplements, CategoryHealthFoodSupplementFitness, CategoryHealthFoodSupplementWellBeing},
+		Id:     "198x1",
+		Slug:   "health-food-supplement",
+		Name:   "Thực phẩm chức năng",
+		NameEn: "Food Supplement",
+		Children: Categories{
+			CategoryHealthFoodSupplementBeautySupplements,
+			CategoryHealthFoodSupplementFitness,
+			CategoryHealthFoodSupplementWellBeing,
+			CategoryHealthFoodSupplementWeightManagement,
+		},
 	}
 	CategoryHealthFoodSupplementWeightManagement = &Category{
 		Id:     "198x2",
@@ -1756,18 +2053,33 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/2e66562a11e79501c0298f05a6e159b4", "https://cf.shopee.sg/file/437267176d150d474478061260a4805f", "https://cf.shopee.sg/file/d05036590eba21258ecfe2097225f0c7", "https://cf.shopee.sg/file/ed9ec07ca1c801e020f130b61f21d6cf", "https://cf.shopee.sg/file/cc901711ff5b8c5c38614924e608f490", "https://cf.shopee.sg/file/c43dc06d378ee990558163f2a186debd"},
 	}
 	CategoryHealthMedicalSupplies = &Category{
-		Id:       "202x1",
-		Slug:     "health-medical-supplies",
-		Name:     "Vật tư y tế",
-		NameEn:   "Medical Supplies",
-		Children: Categories{CategoryHealthMedicalSuppliesScaleBodyFatAnalyzers, CategoryHealthMedicalSuppliesNasalCare, CategoryHealthMedicalSuppliesFirstAidSupplies, CategoryHealthMedicalSuppliesStethoscopes, CategoryHealthMedicalSuppliesLaboratoryTools, CategoryHealthMedicalSuppliesMedicalGlovesMasks, CategoryHealthMedicalSuppliesInjuryDisabilitySupport, CategoryHealthMedicalSuppliesHealthMonitorsTests},
+		Id:     "202x1",
+		Slug:   "health-medical-supplies",
+		Name:   "Vật tư y tế",
+		NameEn: "Medical Supplies",
+		Children: Categories{
+			CategoryHealthMedicalSuppliesStethoscopes,
+			CategoryHealthMedicalSuppliesLaboratoryTools,
+			CategoryHealthMedicalSuppliesMedicalGlovesMasks,
+			CategoryHealthMedicalSuppliesInjuryDisabilitySupport,
+			CategoryHealthMedicalSuppliesHealthMonitorsTests,
+			CategoryHealthMedicalSuppliesScaleBodyFatAnalyzers,
+			CategoryHealthMedicalSuppliesNasalCare,
+			CategoryHealthMedicalSuppliesFirstAidSupplies,
+		},
 	}
 	CategoryHealthMedicalSuppliesHealthMonitorsTests = &Category{
-		Id:       "202x2",
-		Slug:     "health-medical-supplies-health-monitors-and-tests",
-		Name:     "Kiểm tra và theo dõi sức khỏe",
-		NameEn:   "Health Monitors & Tests",
-		Children: Categories{CategoryHealthMedicalSuppliesHealthMonitorsTestsBloodPressureMonitors, CategoryHealthMedicalSuppliesHealthMonitorsTestsBloodGlucoseMonitors, CategoryHealthMedicalSuppliesHealthMonitorsTestsPulseOximeters, CategoryHealthMedicalSuppliesHealthMonitorsTestsThermometers, CategoryHealthMedicalSuppliesHealthMonitorsTestsOther},
+		Id:     "202x2",
+		Slug:   "health-medical-supplies-health-monitors-and-tests",
+		Name:   "Kiểm tra và theo dõi sức khỏe",
+		NameEn: "Health Monitors & Tests",
+		Children: Categories{
+			CategoryHealthMedicalSuppliesHealthMonitorsTestsBloodPressureMonitors,
+			CategoryHealthMedicalSuppliesHealthMonitorsTestsBloodGlucoseMonitors,
+			CategoryHealthMedicalSuppliesHealthMonitorsTestsPulseOximeters,
+			CategoryHealthMedicalSuppliesHealthMonitorsTestsThermometers,
+			CategoryHealthMedicalSuppliesHealthMonitorsTestsOther,
+		},
 	}
 	CategoryHealthMedicalSuppliesHealthMonitorsTestsBloodPressureMonitors = &Category{
 		Id:     "202x3",
@@ -1819,11 +2131,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/7592c5b785becafd71c9c10cef7b743f", "https://cf.shopee.sg/file/c766d43db9111c1c3323c147cfc2a5c7", "https://cf.shopee.sg/file/e7f69d0b35a67b6f77df233a7b70019d", "https://cf.shopee.sg/file/a625fb8e59aef035b1eaf9309e9fee55", "https://cf.shopee.sg/file/6824c4d40ad55312106c23631d97702a", "https://cf.shopee.sg/file/988647a958b36d2b838a7272275b2f62"},
 	}
 	CategoryHealthMedicalSuppliesFirstAidSupplies = &Category{
-		Id:       "209x2",
-		Slug:     "health-medical-supplies-first-aid-supplies",
-		Name:     "Dụng cụ sơ cứu",
-		NameEn:   "First Aid Supplies",
-		Children: Categories{CategoryHealthMedicalSuppliesFirstAidSuppliesPlastersBandages, CategoryHealthMedicalSuppliesFirstAidSuppliesFirstAidAccessories, CategoryHealthMedicalSuppliesFirstAidSuppliesOintmentsCreams, CategoryHealthMedicalSuppliesFirstAidSuppliesMedicalAntisepticsDisinfectants},
+		Id:     "209x2",
+		Slug:   "health-medical-supplies-first-aid-supplies",
+		Name:   "Dụng cụ sơ cứu",
+		NameEn: "First Aid Supplies",
+		Children: Categories{
+			CategoryHealthMedicalSuppliesFirstAidSuppliesPlastersBandages,
+			CategoryHealthMedicalSuppliesFirstAidSuppliesFirstAidAccessories,
+			CategoryHealthMedicalSuppliesFirstAidSuppliesOintmentsCreams,
+			CategoryHealthMedicalSuppliesFirstAidSuppliesMedicalAntisepticsDisinfectants,
+		},
 	}
 	CategoryHealthMedicalSuppliesFirstAidSuppliesPlastersBandages = &Category{
 		Id:     "209x3",
@@ -1875,11 +2192,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/7ba7418fb6cd5e3348b8e27e43cd5b8c", "https://cf.shopee.sg/file/1fe624b0c0933b318f182d822e66ec3d", "https://cf.shopee.sg/file/7696354d3f62d3020b5120c471df5c21", "https://cf.shopee.sg/file/043065ec8adfac242602bbf5aea7b4f2", "https://cf.shopee.sg/file/55d9d3da0d063e71e4da1beced899954", "https://cf.shopee.sg/file/ae97a2f20b8d9f58ca649a8e813d0d57"},
 	}
 	CategoryHealthMedicalSuppliesInjuryDisabilitySupport = &Category{
-		Id:       "216x2",
-		Slug:     "health-medical-supplies-injury-and-disability-support",
-		Name:     "Hỗ trợ chấn thương và khuyết tật",
-		NameEn:   "Injury & Disability Support",
-		Children: Categories{CategoryHealthMedicalSuppliesInjuryDisabilitySupportWalkingAids, CategoryHealthMedicalSuppliesInjuryDisabilitySupportWheelchairs, CategoryHealthMedicalSuppliesInjuryDisabilitySupportBracesSupports, CategoryHealthMedicalSuppliesInjuryDisabilitySupportHearingAids},
+		Id:     "216x2",
+		Slug:   "health-medical-supplies-injury-and-disability-support",
+		Name:   "Hỗ trợ chấn thương và khuyết tật",
+		NameEn: "Injury & Disability Support",
+		Children: Categories{
+			CategoryHealthMedicalSuppliesInjuryDisabilitySupportWalkingAids,
+			CategoryHealthMedicalSuppliesInjuryDisabilitySupportWheelchairs,
+			CategoryHealthMedicalSuppliesInjuryDisabilitySupportBracesSupports,
+			CategoryHealthMedicalSuppliesInjuryDisabilitySupportHearingAids,
+		},
 	}
 	CategoryHealthMedicalSuppliesInjuryDisabilitySupportWalkingAids = &Category{
 		Id:     "216x3",
@@ -1910,11 +2232,20 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/6d09b0283b43a264493ad354dcd646a6", "https://cf.shopee.sg/file/67d04c2ae6721eee9976f7ff6a0bcc9c", "https://cf.shopee.sg/file/3844b50e1ff98b07f56fab6ad50f41f3", "https://cf.shopee.sg/file/66e926190d29cf3f63f6a3cc8f30082a", "https://cf.shopee.sg/file/9ba1136d44b23a963a1c6798fd1ceaeb", "https://cf.shopee.sg/file/95e78cacecfab405a57d440c24be333a"},
 	}
 	CategoryHealthPersonalCare = &Category{
-		Id:       "220x1",
-		Slug:     "health-personal-care",
-		Name:     "Chăm sóc cá nhân",
-		NameEn:   "Personal Care",
-		Children: Categories{CategoryHealthPersonalCareEarCare, CategoryHealthPersonalCareOralCare, CategoryHealthPersonalCareAdultDiapersIncontinence, CategoryHealthPersonalCareFeminineCare, CategoryHealthPersonalCareMassageTherapyDevices, CategoryHealthPersonalCareInsectRepellents, CategoryHealthPersonalCareHandSanitizers, CategoryHealthPersonalCareEyeCare},
+		Id:     "220x1",
+		Slug:   "health-personal-care",
+		Name:   "Chăm sóc cá nhân",
+		NameEn: "Personal Care",
+		Children: Categories{
+			CategoryHealthPersonalCareEarCare,
+			CategoryHealthPersonalCareOralCare,
+			CategoryHealthPersonalCareAdultDiapersIncontinence,
+			CategoryHealthPersonalCareFeminineCare,
+			CategoryHealthPersonalCareMassageTherapyDevices,
+			CategoryHealthPersonalCareInsectRepellents,
+			CategoryHealthPersonalCareHandSanitizers,
+			CategoryHealthPersonalCareEyeCare,
+		},
 	}
 	CategoryHealthPersonalCareHandSanitizers = &Category{
 		Id:     "220x2",
@@ -1924,11 +2255,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/aa05599542c4a1764c94c6f8a12063e1", "https://cf.shopee.sg/file/a03e289af34968e0f67a1e69315a1286", "https://cf.shopee.sg/file/9355bc4bf5fddf2980f18bae8f61f5e7", "https://cf.shopee.sg/file/4492621086437c0a47884a9419304429", "https://cf.shopee.sg/file/44c2282bfc2e6514e92a8f103594031f", "https://cf.shopee.sg/file/1d27291611071c61867f72275da90584"},
 	}
 	CategoryHealthPersonalCareEyeCare = &Category{
-		Id:       "221x2",
-		Slug:     "health-personal-care-eye-care",
-		Name:     "Chăm sóc mắt",
-		NameEn:   "Eye Care",
-		Children: Categories{CategoryHealthPersonalCareEyeCareContactlens, CategoryHealthPersonalCareEyeCareLensSolutionsEyedrops, CategoryHealthPersonalCareEyeCareOther},
+		Id:     "221x2",
+		Slug:   "health-personal-care-eye-care",
+		Name:   "Chăm sóc mắt",
+		NameEn: "Eye Care",
+		Children: Categories{
+			CategoryHealthPersonalCareEyeCareContactlens,
+			CategoryHealthPersonalCareEyeCareLensSolutionsEyedrops,
+			CategoryHealthPersonalCareEyeCareOther,
+		},
 	}
 	CategoryHealthPersonalCareEyeCareContactlens = &Category{
 		Id:     "221x3",
@@ -1959,11 +2294,21 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/6c21f13fa29ea27ccf2f46a3c7a62a3c", "https://cf.shopee.sg/file/e122afded6851251e892cfe3fbac9d76", "https://cf.shopee.sg/file/a1495c9f7bba8e6d1356f5adf161aca8", "https://cf.shopee.sg/file/9888413da749c1a53fcc1adb5c26352d", "https://cf.shopee.sg/file/82b8e4b3ef5572a89e65ace710cb41ee", "https://cf.shopee.sg/file/410449efbaf8774feae33093d670149e"},
 	}
 	CategoryHealthPersonalCareOralCare = &Category{
-		Id:       "225x2",
-		Slug:     "health-personal-care-oral-care",
-		Name:     "Vệ sinh răng miệng",
-		NameEn:   "Oral Care",
-		Children: Categories{CategoryHealthPersonalCareOralCareDentalFloss, CategoryHealthPersonalCareOralCareMouthWash, CategoryHealthPersonalCareOralCareDentureCare, CategoryHealthPersonalCareOralCareOther, CategoryHealthPersonalCareOralCareElectricToothbrushesAccessories, CategoryHealthPersonalCareOralCareToothpastes, CategoryHealthPersonalCareOralCareOrthodonticAccessories, CategoryHealthPersonalCareOralCareManualToothbrushes, CategoryHealthPersonalCareOralCareTeethWhitening},
+		Id:     "225x2",
+		Slug:   "health-personal-care-oral-care",
+		Name:   "Vệ sinh răng miệng",
+		NameEn: "Oral Care",
+		Children: Categories{
+			CategoryHealthPersonalCareOralCareDentalFloss,
+			CategoryHealthPersonalCareOralCareMouthWash,
+			CategoryHealthPersonalCareOralCareOrthodonticAccessories,
+			CategoryHealthPersonalCareOralCareToothpastes,
+			CategoryHealthPersonalCareOralCareElectricToothbrushesAccessories,
+			CategoryHealthPersonalCareOralCareDentureCare,
+			CategoryHealthPersonalCareOralCareTeethWhitening,
+			CategoryHealthPersonalCareOralCareOther,
+			CategoryHealthPersonalCareOralCareManualToothbrushes,
+		},
 	}
 	CategoryHealthPersonalCareOralCareManualToothbrushes = &Category{
 		Id:     "225x3",
@@ -2036,11 +2381,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/b444c58da9e93f96393bfa60ecc126a3", "https://cf.shopee.sg/file/09cf8b6b99b87cce684f32e0540a9da1", "https://cf.shopee.sg/file/e0ff67c5aca3102e7cb06055f4193a01", "https://cf.shopee.sg/file/3b5b9d5f98fec1ad35ba94b868c87b32", "https://cf.shopee.sg/file/a1c68ebf88753429ba6d042d8b9dc299", "https://cf.shopee.sg/file/1f4bca35ba2fd7937b2ee5739923d924"},
 	}
 	CategoryHealthPersonalCareFeminineCare = &Category{
-		Id:       "235x2",
-		Slug:     "health-personal-care-feminine-care",
-		Name:     "Chăm sóc phụ nữ",
-		NameEn:   "Feminine Care",
-		Children: Categories{CategoryHealthPersonalCareFeminineCareSanitaryNapkinsPantyLiners, CategoryHealthPersonalCareFeminineCareTampons, CategoryHealthPersonalCareFeminineCarePregnancyFertilityTests, CategoryHealthPersonalCareFeminineCareMenstrualCup, CategoryHealthPersonalCareFeminineCareFeminineWash, CategoryHealthPersonalCareFeminineCareVaginalCream},
+		Id:     "235x2",
+		Slug:   "health-personal-care-feminine-care",
+		Name:   "Chăm sóc phụ nữ",
+		NameEn: "Feminine Care",
+		Children: Categories{
+			CategoryHealthPersonalCareFeminineCareSanitaryNapkinsPantyLiners,
+			CategoryHealthPersonalCareFeminineCareTampons,
+			CategoryHealthPersonalCareFeminineCarePregnancyFertilityTests,
+			CategoryHealthPersonalCareFeminineCareMenstrualCup,
+			CategoryHealthPersonalCareFeminineCareFeminineWash,
+			CategoryHealthPersonalCareFeminineCareVaginalCream,
+		},
 	}
 	CategoryHealthPersonalCareFeminineCareSanitaryNapkinsPantyLiners = &Category{
 		Id:     "235x3",
@@ -2099,11 +2451,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/93e564fcf4d526cd69212c996994f884", "https://cf.shopee.sg/file/2e0613c7a4c156a833babcf0c4145df5", "https://cf.shopee.sg/file/99854439fe5a3e953479e87d20dc406d", "https://cf.shopee.sg/file/e41d165aa777978e4db697d23c01dcab", "https://cf.shopee.sg/file/3e200ffe5852812288053b2782f73923", "https://cf.shopee.sg/file/46c4f114828eed1af232118756e3a932"},
 	}
 	CategoryHealthSexualWellness = &Category{
-		Id:       "243x1",
-		Slug:     "health-sexual-wellness",
-		Name:     "Hỗ trợ tình dục",
-		NameEn:   "Sexual Wellness",
-		Children: Categories{CategoryHealthSexualWellnessCondoms, CategoryHealthSexualWellnessLubricants, CategoryHealthSexualWellnessPerformanceEnhancement},
+		Id:     "243x1",
+		Slug:   "health-sexual-wellness",
+		Name:   "Hỗ trợ tình dục",
+		NameEn: "Sexual Wellness",
+		Children: Categories{
+			CategoryHealthSexualWellnessCondoms,
+			CategoryHealthSexualWellnessLubricants,
+			CategoryHealthSexualWellnessPerformanceEnhancement,
+		},
 	}
 	CategoryHealthSexualWellnessCondoms = &Category{
 		Id:     "243x2",
@@ -2127,11 +2483,27 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/3efd391df4c97ced6e6d0eacced154c7", "https://cf.shopee.sg/file/5c03a64833ee90ef5459c20040898912", "https://cf.shopee.sg/file/7c0bb33e2581e41a807f48021cfd2cef", "https://cf.shopee.sg/file/f4e79e3edd79651935b68eeb1e891fef", "https://cf.shopee.sg/file/33e39cb6b4c0f3ff5ca9c4143ace72a7", "https://cf.shopee.sg/file/699178da618902ff0cb3dfc18d4d13f9"},
 	}
 	CategoryFashionAccessories = &Category{
-		Id:       "246x0",
-		Slug:     "fashion-accessories",
-		Name:     "Phụ Kiện Thời Trang",
-		NameEn:   "Fashion Accessories",
-		Children: Categories{CategoryFashionAccessoriesRings, CategoryFashionAccessoriesHairAccessories, CategoryFashionAccessoriesAnklets, CategoryFashionAccessoriesEyewear, CategoryFashionAccessoriesEarrings, CategoryFashionAccessoriesBelts, CategoryFashionAccessoriesAccessoriesSetsPackages, CategoryFashionAccessoriesGloves, CategoryFashionAccessoriesBraceletsBangles, CategoryFashionAccessoriesHatsCaps, CategoryFashionAccessoriesNecktiesBowTiesCravats, CategoryFashionAccessoriesAdditionalAccessories, CategoryFashionAccessoriesScarvesShawls, CategoryFashionAccessoriesNecklaces, CategoryFashionAccessoriesInvestmentPreciousMetals},
+		Id:     "246x0",
+		Slug:   "fashion-accessories",
+		Name:   "Phụ Kiện Thời Trang",
+		NameEn: "Fashion Accessories",
+		Children: Categories{
+			CategoryFashionAccessoriesNecktiesBowTiesCravats,
+			CategoryFashionAccessoriesAccessoriesSetsPackages,
+			CategoryFashionAccessoriesRings,
+			CategoryFashionAccessoriesEarrings,
+			CategoryFashionAccessoriesGloves,
+			CategoryFashionAccessoriesHatsCaps,
+			CategoryFashionAccessoriesEyewear,
+			CategoryFashionAccessoriesInvestmentPreciousMetals,
+			CategoryFashionAccessoriesAdditionalAccessories,
+			CategoryFashionAccessoriesBraceletsBangles,
+			CategoryFashionAccessoriesAnklets,
+			CategoryFashionAccessoriesBelts,
+			CategoryFashionAccessoriesScarvesShawls,
+			CategoryFashionAccessoriesHairAccessories,
+			CategoryFashionAccessoriesNecklaces,
+		},
 	}
 	CategoryFashionAccessoriesRings = &Category{
 		Id:     "246x1",
@@ -2162,11 +2534,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/8911c08820e96cdea2e75c3b80c0aee1", "https://cf.shopee.sg/file/644497111d032f246239008188ed5154", "https://cf.shopee.sg/file/abae9d5d3f9305d98c9a2cb57d38e97f", "https://cf.shopee.sg/file/10b8a53479fd2d51c400d73b0bfe17dc", "https://cf.shopee.sg/file/e53943a0e126e70ccf8eda60256873b9", "https://cf.shopee.sg/file/8d39e40cb8e6b11bf85caf257430c699"},
 	}
 	CategoryFashionAccessoriesHairAccessories = &Category{
-		Id:       "250x1",
-		Slug:     "fashion-accessories-hair-accessories",
-		Name:     "Phụ kiện tóc",
-		NameEn:   "Hair Accessories",
-		Children: Categories{CategoryFashionAccessoriesHairAccessoriesHeadbands, CategoryFashionAccessoriesHairAccessoriesHairTiesRibbonsScrunchies, CategoryFashionAccessoriesHairAccessoriesHairClipsHairPins, CategoryFashionAccessoriesHairAccessoriesWigsExtensions, CategoryFashionAccessoriesHairAccessoriesHeadpiecesTiarasFlowerCrowns},
+		Id:     "250x1",
+		Slug:   "fashion-accessories-hair-accessories",
+		Name:   "Phụ kiện tóc",
+		NameEn: "Hair Accessories",
+		Children: Categories{
+			CategoryFashionAccessoriesHairAccessoriesHeadbands,
+			CategoryFashionAccessoriesHairAccessoriesHairTiesRibbonsScrunchies,
+			CategoryFashionAccessoriesHairAccessoriesHairClipsHairPins,
+			CategoryFashionAccessoriesHairAccessoriesWigsExtensions,
+			CategoryFashionAccessoriesHairAccessoriesHeadpiecesTiarasFlowerCrowns,
+		},
 	}
 	CategoryFashionAccessoriesHairAccessoriesHeadbands = &Category{
 		Id:     "250x2",
@@ -2232,11 +2610,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/13cc5e7a2eac3e4bcce569027f9a3d36", "https://cf.shopee.sg/file/ad58ece4ffda3ca1cf3bb75b8572f3fc", "https://cf.shopee.sg/file/620f1c1d573aa460ad7bbedbb6ed24f1", "https://cf.shopee.sg/file/0470fb8bfbb57e2bb0da93d7532381e7", "https://cf.shopee.sg/file/52a3bda96b266c68743eac5cad41cea2", "https://cf.shopee.sg/file/ea3861427b5b289f44131d1005e298be"},
 	}
 	CategoryFashionAccessoriesEyewear = &Category{
-		Id:       "259x1",
-		Slug:     "fashion-accessories-eyewear",
-		Name:     "Kính mắt",
-		NameEn:   "Eyewear",
-		Children: Categories{CategoryFashionAccessoriesEyewearSunglasses, CategoryFashionAccessoriesEyewearFramesGlasses, CategoryFashionAccessoriesEyewearEyewearCasesAccessories, CategoryFashionAccessoriesEyewearOther},
+		Id:     "259x1",
+		Slug:   "fashion-accessories-eyewear",
+		Name:   "Kính mắt",
+		NameEn: "Eyewear",
+		Children: Categories{
+			CategoryFashionAccessoriesEyewearSunglasses,
+			CategoryFashionAccessoriesEyewearFramesGlasses,
+			CategoryFashionAccessoriesEyewearEyewearCasesAccessories,
+			CategoryFashionAccessoriesEyewearOther,
+		},
 	}
 	CategoryFashionAccessoriesEyewearSunglasses = &Category{
 		Id:     "259x2",
@@ -2267,11 +2650,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/acaf26dc445df4b835566cfc990040c8", "https://cf.shopee.sg/file/01c632708896f59b11e1cf78ed626096", "https://cf.shopee.sg/file/0c60ea1ce22927ca45eeb3ecc628e5e0", "https://cf.shopee.sg/file/11eea3e3f512dcc83382ad8f293e0cc7", "https://cf.shopee.sg/file/2cc5f2a83fed260792a6b8dbabc3effe", "https://cf.shopee.sg/file/c685117737e177c4e6f36c5694643350"},
 	}
 	CategoryFashionAccessoriesInvestmentPreciousMetals = &Category{
-		Id:       "263x1",
-		Slug:     "fashion-accessories-investment-precious-metals",
-		Name:     "Kim loại quý",
-		NameEn:   "Investment Precious Metals",
-		Children: Categories{CategoryFashionAccessoriesInvestmentPreciousMetalsPlatinumKGold, CategoryFashionAccessoriesInvestmentPreciousMetalsSilver, CategoryFashionAccessoriesInvestmentPreciousMetalsDiamond, CategoryFashionAccessoriesInvestmentPreciousMetalsJade, CategoryFashionAccessoriesInvestmentPreciousMetalsOther},
+		Id:     "263x1",
+		Slug:   "fashion-accessories-investment-precious-metals",
+		Name:   "Kim loại quý",
+		NameEn: "Investment Precious Metals",
+		Children: Categories{
+			CategoryFashionAccessoriesInvestmentPreciousMetalsJade,
+			CategoryFashionAccessoriesInvestmentPreciousMetalsOther,
+			CategoryFashionAccessoriesInvestmentPreciousMetalsPlatinumKGold,
+			CategoryFashionAccessoriesInvestmentPreciousMetalsSilver,
+			CategoryFashionAccessoriesInvestmentPreciousMetalsDiamond,
+		},
 	}
 	CategoryFashionAccessoriesInvestmentPreciousMetalsPlatinumKGold = &Category{
 		Id:     "263x2",
@@ -2323,11 +2712,20 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/f5e61259d7b7c05e88bfe48eba834761", "https://cf.shopee.sg/file/eaf0ff46edd3b526bcd05be38424253b", "https://cf.shopee.sg/file/636ae6123c1ab2f975c992072ab53e20", "https://cf.shopee.sg/file/653fb8632a8792bafddd289c56e68e10", "https://cf.shopee.sg/file/df34a8277141afb57d7bb180f3751280", "https://cf.shopee.sg/file/b10912ab31cddf329b9647bb9a1363e3"},
 	}
 	CategoryFashionAccessoriesAdditionalAccessories = &Category{
-		Id:       "270x1",
-		Slug:     "fashion-accessories-additional-accessories",
-		Name:     "Phụ kiện thêm",
-		NameEn:   "Additional Accessories",
-		Children: Categories{CategoryFashionAccessoriesAdditionalAccessoriesBroochesPins, CategoryFashionAccessoriesAdditionalAccessoriesPatches, CategoryFashionAccessoriesAdditionalAccessoriesCharmsPendantsOrnaments, CategoryFashionAccessoriesAdditionalAccessoriesCufflinks, CategoryFashionAccessoriesAdditionalAccessoriesTattoos, CategoryFashionAccessoriesAdditionalAccessoriesMasks, CategoryFashionAccessoriesAdditionalAccessoriesHandkerchiefs, CategoryFashionAccessoriesAdditionalAccessoriesOther},
+		Id:     "270x1",
+		Slug:   "fashion-accessories-additional-accessories",
+		Name:   "Phụ kiện thêm",
+		NameEn: "Additional Accessories",
+		Children: Categories{
+			CategoryFashionAccessoriesAdditionalAccessoriesOther,
+			CategoryFashionAccessoriesAdditionalAccessoriesBroochesPins,
+			CategoryFashionAccessoriesAdditionalAccessoriesPatches,
+			CategoryFashionAccessoriesAdditionalAccessoriesCharmsPendantsOrnaments,
+			CategoryFashionAccessoriesAdditionalAccessoriesCufflinks,
+			CategoryFashionAccessoriesAdditionalAccessoriesTattoos,
+			CategoryFashionAccessoriesAdditionalAccessoriesMasks,
+			CategoryFashionAccessoriesAdditionalAccessoriesHandkerchiefs,
+		},
 	}
 	CategoryFashionAccessoriesAdditionalAccessoriesBroochesPins = &Category{
 		Id:     "270x2",
@@ -2393,18 +2791,31 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/5273c66ced1b0e904c0e985521a76697", "https://cf.shopee.sg/file/a72336548203176256ce0ffba640322c", "https://cf.shopee.sg/file/3120c5089e3cb3c3f62aa24e5132e8b7", "https://cf.shopee.sg/file/1561d62d9b61d9907da418496c10d8ee", "https://cf.shopee.sg/file/8a734604bd5d3c00eb8336936e865978", "https://cf.shopee.sg/file/41575e13966e52f7b42c69350dfd9125"},
 	}
 	CategoryHomeAppliances = &Category{
-		Id:       "279x0",
-		Slug:     "home-appliances",
-		Name:     "Thiết Bị Điện Gia Dụng",
-		NameEn:   "Home Appliances",
-		Children: Categories{CategoryHomeAppliancesProjectorsAccessories, CategoryHomeAppliancesSmallHouseholdAppliances, CategoryHomeAppliancesLargeHouseholdAppliances, CategoryHomeAppliancesTVsAccessories, CategoryHomeAppliancesKitchenAppliances, CategoryHomeAppliancesElectricalCircuitryParts, CategoryHomeAppliancesBatteries, CategoryHomeAppliancesRemoteControls},
+		Id:     "279x0",
+		Slug:   "home-appliances",
+		Name:   "Thiết Bị Điện Gia Dụng",
+		NameEn: "Home Appliances",
+		Children: Categories{
+			CategoryHomeAppliancesProjectorsAccessories,
+			CategoryHomeAppliancesSmallHouseholdAppliances,
+			CategoryHomeAppliancesLargeHouseholdAppliances,
+			CategoryHomeAppliancesTVsAccessories,
+			CategoryHomeAppliancesKitchenAppliances,
+			CategoryHomeAppliancesElectricalCircuitryParts,
+			CategoryHomeAppliancesBatteries,
+			CategoryHomeAppliancesRemoteControls,
+		},
 	}
 	CategoryHomeAppliancesProjectorsAccessories = &Category{
-		Id:       "279x1",
-		Slug:     "home-appliances-projectors-and-accessories",
-		Name:     "Máy chiếu & Phụ kiện",
-		NameEn:   "Projectors & Accessories",
-		Children: Categories{CategoryHomeAppliancesProjectorsAccessoriesOther, CategoryHomeAppliancesProjectorsAccessoriesProjectorsProjectorScreens, CategoryHomeAppliancesProjectorsAccessoriesPointers},
+		Id:     "279x1",
+		Slug:   "home-appliances-projectors-and-accessories",
+		Name:   "Máy chiếu & Phụ kiện",
+		NameEn: "Projectors & Accessories",
+		Children: Categories{
+			CategoryHomeAppliancesProjectorsAccessoriesOther,
+			CategoryHomeAppliancesProjectorsAccessoriesProjectorsProjectorScreens,
+			CategoryHomeAppliancesProjectorsAccessoriesPointers,
+		},
 	}
 	CategoryHomeAppliancesProjectorsAccessoriesProjectorsProjectorScreens = &Category{
 		Id:     "279x2",
@@ -2428,11 +2839,20 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/347b1e6d94aa106bcbcaf7956c82e39e", "https://cf.shopee.sg/file/eb06d4c307673d29e8fd704283b575b6", "https://cf.shopee.sg/file/6966f56b89a97f6a5910c0e2a29c5b86", "https://cf.shopee.sg/file/458eae813a51d7b5ad661fc996a305a3", "https://cf.shopee.sg/file/51c6100dcba0b8c369598d9d9747665c", "https://cf.shopee.sg/file/acb95a34639df47f0871f77bc840cbf7"},
 	}
 	CategoryHomeAppliancesSmallHouseholdAppliances = &Category{
-		Id:       "282x1",
-		Slug:     "home-appliances-small-household-appliances",
-		Name:     "Thiết bị điện gia dụng nhỏ",
-		NameEn:   "Small Household Appliances",
-		Children: Categories{CategoryHomeAppliancesSmallHouseholdAppliancesTelephones, CategoryHomeAppliancesSmallHouseholdAppliancesIronsSteamers, CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatment, CategoryHomeAppliancesSmallHouseholdAppliancesVacuumCleanersFloorCare, CategoryHomeAppliancesSmallHouseholdAppliancesOther, CategoryHomeAppliancesSmallHouseholdAppliancesFootBathsSpas, CategoryHomeAppliancesSmallHouseholdAppliancesWaterFlossers, CategoryHomeAppliancesSmallHouseholdAppliancesSewingMachinesAccessories},
+		Id:     "282x1",
+		Slug:   "home-appliances-small-household-appliances",
+		Name:   "Thiết bị điện gia dụng nhỏ",
+		NameEn: "Small Household Appliances",
+		Children: Categories{
+			CategoryHomeAppliancesSmallHouseholdAppliancesIronsSteamers,
+			CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatment,
+			CategoryHomeAppliancesSmallHouseholdAppliancesVacuumCleanersFloorCare,
+			CategoryHomeAppliancesSmallHouseholdAppliancesOther,
+			CategoryHomeAppliancesSmallHouseholdAppliancesFootBathsSpas,
+			CategoryHomeAppliancesSmallHouseholdAppliancesWaterFlossers,
+			CategoryHomeAppliancesSmallHouseholdAppliancesSewingMachinesAccessories,
+			CategoryHomeAppliancesSmallHouseholdAppliancesTelephones,
+		},
 	}
 	CategoryHomeAppliancesSmallHouseholdAppliancesFootBathsSpas = &Category{
 		Id:     "282x2",
@@ -2456,11 +2876,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/051a39ff2aa0107d8e2d046723c44de9", "https://cf.shopee.sg/file/77464beaf04b702bfd36979fe13a3f7f", "https://cf.shopee.sg/file/3c41c31b8fe8e006b8da8e7f82c42a18", "https://cf.shopee.sg/file/6e399dbc26ed219ff0c06338dbf6fadf", "https://cf.shopee.sg/file/a71d088edee8e543134b7e493d37d642", "https://cf.shopee.sg/file/2d6b9d6d7e6c3f0171c69559a20700ac"},
 	}
 	CategoryHomeAppliancesSmallHouseholdAppliancesTelephones = &Category{
-		Id:       "285x2",
-		Slug:     "home-appliances-small-household-appliances-telephones",
-		Name:     "Điện thoại",
-		NameEn:   "Telephones",
-		Children: Categories{CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesCordedPhones, CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesCordlessPhones, CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesFaxMachines},
+		Id:     "285x2",
+		Slug:   "home-appliances-small-household-appliances-telephones",
+		Name:   "Điện thoại",
+		NameEn: "Telephones",
+		Children: Categories{
+			CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesCordedPhones,
+			CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesCordlessPhones,
+			CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesFaxMachines,
+		},
 	}
 	CategoryHomeAppliancesSmallHouseholdAppliancesTelephonesCordedPhones = &Category{
 		Id:     "285x3",
@@ -2491,11 +2915,14 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/8fa3bcaf80e444e63f0e7f3ac39e42ff", "https://cf.shopee.sg/file/21ef7f75fe5064d17bfb91af90b1d097", "https://cf.shopee.sg/file/e7ee03d30bde5ad80dee877905a1d173", "https://cf.shopee.sg/file/58e8f87d288cbfc6f83572ed2cb6125f", "https://cf.shopee.sg/file/934bb62708ddf7b4fb5f741614f7f515", "https://cf.shopee.sg/file/deae11b30a77f6129443de02f129defd"},
 	}
 	CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatment = &Category{
-		Id:       "289x2",
-		Slug:     "home-appliances-small-household-appliances-air-treatment",
-		Name:     "Thiết bị xử lý không khí",
-		NameEn:   "Air Treatment",
-		Children: Categories{CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatmentPurifiers, CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatmentDehumidifiers},
+		Id:     "289x2",
+		Slug:   "home-appliances-small-household-appliances-air-treatment",
+		Name:   "Thiết bị xử lý không khí",
+		NameEn: "Air Treatment",
+		Children: Categories{
+			CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatmentPurifiers,
+			CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatmentDehumidifiers,
+		},
 	}
 	CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatmentPurifiers = &Category{
 		Id:     "289x3",
@@ -2526,18 +2953,27 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/2ee71b7c3c9aa954f2d0885f3603dbd2", "https://cf.shopee.sg/file/dd984f63b953daa1a4a33436a2b97e43", "https://cf.shopee.sg/file/706571d9e3ed539b957d3168b457b27d", "https://cf.shopee.sg/file/897042beea444500ce65694557b07a1c", "https://cf.shopee.sg/file/e8fba34aa189f897e64b13b7b560d8f9", "https://cf.shopee.sg/file/dbfd92e63fa8a1dc97e607625ed9037c"},
 	}
 	CategoryHomeAppliancesLargeHouseholdAppliances = &Category{
-		Id:       "293x1",
-		Slug:     "home-appliances-large-household-appliances",
-		Name:     "Thiết bị điện gia dụng lớn",
-		NameEn:   "Large Household Appliances",
-		Children: Categories{CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryers, CategoryHomeAppliancesLargeHouseholdAppliancesWaterHeaters, CategoryHomeAppliancesLargeHouseholdAppliancesCooling, CategoryHomeAppliancesLargeHouseholdAppliancesFutonShoeDryers, CategoryHomeAppliancesLargeHouseholdAppliancesHeaters},
+		Id:     "293x1",
+		Slug:   "home-appliances-large-household-appliances",
+		Name:   "Thiết bị điện gia dụng lớn",
+		NameEn: "Large Household Appliances",
+		Children: Categories{
+			CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryers,
+			CategoryHomeAppliancesLargeHouseholdAppliancesWaterHeaters,
+			CategoryHomeAppliancesLargeHouseholdAppliancesCooling,
+			CategoryHomeAppliancesLargeHouseholdAppliancesFutonShoeDryers,
+			CategoryHomeAppliancesLargeHouseholdAppliancesHeaters,
+		},
 	}
 	CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryers = &Category{
-		Id:       "293x2",
-		Slug:     "home-appliances-large-household-appliances-washing-machines-and-dryers",
-		Name:     "Máy giặt & Máy sấy",
-		NameEn:   "Washing Machines & Dryers",
-		Children: Categories{CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryersWashingMachines, CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryersLaundryDryers},
+		Id:     "293x2",
+		Slug:   "home-appliances-large-household-appliances-washing-machines-and-dryers",
+		Name:   "Máy giặt & Máy sấy",
+		NameEn: "Washing Machines & Dryers",
+		Children: Categories{
+			CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryersWashingMachines,
+			CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryersLaundryDryers,
+		},
 	}
 	CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryersWashingMachines = &Category{
 		Id:     "293x3",
@@ -2561,11 +2997,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/5fc763d6b0736163f8511821a73aee41", "https://cf.shopee.sg/file/23039682d4e68895ef5bc7e6e26728b5", "https://cf.shopee.sg/file/628d94f07b065020b12948affa8eabca", "https://cf.shopee.sg/file/356e2e8a8760dad369344ca767c03379", "https://cf.shopee.sg/file/7a7cd8bfcbb52dea2de24bfefe0c3bd7", "https://cf.shopee.sg/file/baa38539b33bb45d347874d63c5c2e04"},
 	}
 	CategoryHomeAppliancesLargeHouseholdAppliancesCooling = &Category{
-		Id:       "296x2",
-		Slug:     "home-appliances-large-household-appliances-cooling",
-		Name:     "Thiết bị làm mát",
-		NameEn:   "Cooling",
-		Children: Categories{CategoryHomeAppliancesLargeHouseholdAppliancesCoolingAirConditioners, CategoryHomeAppliancesLargeHouseholdAppliancesCoolingAirCoolersPortableAircons, CategoryHomeAppliancesLargeHouseholdAppliancesCoolingFans},
+		Id:     "296x2",
+		Slug:   "home-appliances-large-household-appliances-cooling",
+		Name:   "Thiết bị làm mát",
+		NameEn: "Cooling",
+		Children: Categories{
+			CategoryHomeAppliancesLargeHouseholdAppliancesCoolingAirConditioners,
+			CategoryHomeAppliancesLargeHouseholdAppliancesCoolingAirCoolersPortableAircons,
+			CategoryHomeAppliancesLargeHouseholdAppliancesCoolingFans,
+		},
 	}
 	CategoryHomeAppliancesLargeHouseholdAppliancesCoolingAirConditioners = &Category{
 		Id:     "296x3",
@@ -2603,11 +3043,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/8b81583273ba8c0da42dc25dea44724a", "https://cf.shopee.sg/file/eb684466531614bdccb407cc6cdce88d", "https://cf.shopee.sg/file/114f6e3958ab82ab400a067b4f9df4a0", "https://cf.shopee.sg/file/41a9fc000c7259b64ba3e9158483b6b6", "https://cf.shopee.sg/file/3a72dfcd479c2ac7ff6c5d069be919cd", "https://cf.shopee.sg/file/431d1eda5b620302601ed5410a03f453"},
 	}
 	CategoryHomeAppliancesTVsAccessories = &Category{
-		Id:       "301x1",
-		Slug:     "home-appliances-tvs-and-accessories",
-		Name:     "Tivi & Phụ kiện",
-		NameEn:   "TVs & Accessories",
-		Children: Categories{CategoryHomeAppliancesTVsAccessoriesTVBrackets, CategoryHomeAppliancesTVsAccessoriesOther, CategoryHomeAppliancesTVsAccessoriesTVs, CategoryHomeAppliancesTVsAccessoriesTVAntennas, CategoryHomeAppliancesTVsAccessoriesTVBoxesReceivers},
+		Id:     "301x1",
+		Slug:   "home-appliances-tvs-and-accessories",
+		Name:   "Tivi & Phụ kiện",
+		NameEn: "TVs & Accessories",
+		Children: Categories{
+			CategoryHomeAppliancesTVsAccessoriesTVs,
+			CategoryHomeAppliancesTVsAccessoriesTVAntennas,
+			CategoryHomeAppliancesTVsAccessoriesTVBoxesReceivers,
+			CategoryHomeAppliancesTVsAccessoriesTVBrackets,
+			CategoryHomeAppliancesTVsAccessoriesOther,
+		},
 	}
 	CategoryHomeAppliancesTVsAccessoriesTVs = &Category{
 		Id:     "301x2",
@@ -2644,11 +3090,34 @@ var (
 		NameEn: "Other",
 	}
 	CategoryHomeAppliancesKitchenAppliances = &Category{
-		Id:       "306x1",
-		Slug:     "home-appliances-kitchen-appliances",
-		Name:     "Đồ gia dụng nhà bếp",
-		NameEn:   "Kitchen Appliances",
-		Children: Categories{CategoryHomeAppliancesKitchenAppliancesSpecialtyCookware, CategoryHomeAppliancesKitchenAppliancesFreezers, CategoryHomeAppliancesKitchenAppliancesDeepFryers, CategoryHomeAppliancesKitchenAppliancesToasters, CategoryHomeAppliancesKitchenAppliancesOvens, CategoryHomeAppliancesKitchenAppliancesSlowCookersSousVideMachines, CategoryHomeAppliancesKitchenAppliancesWineFridges, CategoryHomeAppliancesKitchenAppliancesAirFryers, CategoryHomeAppliancesKitchenAppliancesCoffeeMachinesAccessories, CategoryHomeAppliancesKitchenAppliancesDishwashers, CategoryHomeAppliancesKitchenAppliancesStovesHobsGasRegulators, CategoryHomeAppliancesKitchenAppliancesMicrowaves, CategoryHomeAppliancesKitchenAppliancesFoodProcessorsMeatGrinders, CategoryHomeAppliancesKitchenAppliancesPressureCookers, CategoryHomeAppliancesKitchenAppliancesKettles, CategoryHomeAppliancesKitchenAppliancesJuicersBlendersSoyaBeanMachines, CategoryHomeAppliancesKitchenAppliancesHoods, CategoryHomeAppliancesKitchenAppliancesRiceCookers, CategoryHomeAppliancesKitchenAppliancesRefrigerators, CategoryHomeAppliancesKitchenAppliancesMultifunctionCookers, CategoryHomeAppliancesKitchenAppliancesWaterFiltersCoolersDispensers, CategoryHomeAppliancesKitchenAppliancesMixers},
+		Id:     "306x1",
+		Slug:   "home-appliances-kitchen-appliances",
+		Name:   "Đồ gia dụng nhà bếp",
+		NameEn: "Kitchen Appliances",
+		Children: Categories{
+			CategoryHomeAppliancesKitchenAppliancesWineFridges,
+			CategoryHomeAppliancesKitchenAppliancesJuicersBlendersSoyaBeanMachines,
+			CategoryHomeAppliancesKitchenAppliancesAirFryers,
+			CategoryHomeAppliancesKitchenAppliancesPressureCookers,
+			CategoryHomeAppliancesKitchenAppliancesSlowCookersSousVideMachines,
+			CategoryHomeAppliancesKitchenAppliancesRiceCookers,
+			CategoryHomeAppliancesKitchenAppliancesKettles,
+			CategoryHomeAppliancesKitchenAppliancesMixers,
+			CategoryHomeAppliancesKitchenAppliancesDeepFryers,
+			CategoryHomeAppliancesKitchenAppliancesMicrowaves,
+			CategoryHomeAppliancesKitchenAppliancesOvens,
+			CategoryHomeAppliancesKitchenAppliancesRefrigerators,
+			CategoryHomeAppliancesKitchenAppliancesCoffeeMachinesAccessories,
+			CategoryHomeAppliancesKitchenAppliancesStovesHobsGasRegulators,
+			CategoryHomeAppliancesKitchenAppliancesFoodProcessorsMeatGrinders,
+			CategoryHomeAppliancesKitchenAppliancesHoods,
+			CategoryHomeAppliancesKitchenAppliancesWaterFiltersCoolersDispensers,
+			CategoryHomeAppliancesKitchenAppliancesDishwashers,
+			CategoryHomeAppliancesKitchenAppliancesToasters,
+			CategoryHomeAppliancesKitchenAppliancesMultifunctionCookers,
+			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookware,
+			CategoryHomeAppliancesKitchenAppliancesFreezers,
+		},
 	}
 	CategoryHomeAppliancesKitchenAppliancesWaterFiltersCoolersDispensers = &Category{
 		Id:     "306x2",
@@ -2777,11 +3246,19 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/780c426761bc574c5d70d22da8bcd25a", "https://cf.shopee.sg/file/d354de3f5053d4ecf67da8a2f8c5f338", "https://cf.shopee.sg/file/e83e9bb0721e7758d6e21f9adc3c9403", "https://cf.shopee.sg/file/9106310049d266ec3600a494fed2f56f", "https://cf.shopee.sg/file/180ad425c637e5454abf5417a998604e", "https://cf.shopee.sg/file/75a902ee5960c91ce4cf421ca58ed37d"},
 	}
 	CategoryHomeAppliancesKitchenAppliancesSpecialtyCookware = &Category{
-		Id:       "324x2",
-		Slug:     "home-appliances-kitchen-appliances-specialty-cookware",
-		Name:     "Dụng cụ nấu đặc biệt",
-		NameEn:   "Specialty Cookware",
-		Children: Categories{CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareBreadMakers, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareTakoyakiMakers, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareDessertMachine, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareSodaMakers, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareOther, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareWaffleCrepeMakers, CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareEggBoilers},
+		Id:     "324x2",
+		Slug:   "home-appliances-kitchen-appliances-specialty-cookware",
+		Name:   "Dụng cụ nấu đặc biệt",
+		NameEn: "Specialty Cookware",
+		Children: Categories{
+			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareBreadMakers,
+			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareTakoyakiMakers,
+			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareDessertMachine,
+			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareSodaMakers,
+			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareOther,
+			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareWaffleCrepeMakers,
+			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareEggBoilers,
+		},
 	}
 	CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareWaffleCrepeMakers = &Category{
 		Id:     "324x3",
@@ -2854,11 +3331,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/a240128403cce2a95004caa700152f09", "https://cf.shopee.sg/file/c2535290e352d9bd741e766c49be9e03", "https://cf.shopee.sg/file/c45ce038bdbb45dfecd1516227c3c948", "https://cf.shopee.sg/file/e7093c6b150496df67fc1ffbc4da79ef", "https://cf.shopee.sg/file/c5f55c29a1cabd6d1655d0e459a9d3b0", "https://cf.shopee.sg/file/5cee2fb925cf74b88f866196793d0ee1"},
 	}
 	CategoryHomeAppliancesElectricalCircuitryParts = &Category{
-		Id:       "334x1",
-		Slug:     "home-appliances-electrical-circuitry-and-parts",
-		Name:     "Mạch điện & Phụ tùng",
-		NameEn:   "Electrical Circuitry & Parts",
-		Children: Categories{CategoryHomeAppliancesElectricalCircuitryPartsElectricalSafety, CategoryHomeAppliancesElectricalCircuitryPartsDoorbells, CategoryHomeAppliancesElectricalCircuitryPartsSwitches, CategoryHomeAppliancesElectricalCircuitryPartsHouseAlarms, CategoryHomeAppliancesElectricalCircuitryPartsLightningProtection, CategoryHomeAppliancesElectricalCircuitryPartsElectricSocketsExtensionCords},
+		Id:     "334x1",
+		Slug:   "home-appliances-electrical-circuitry-and-parts",
+		Name:   "Mạch điện & Phụ tùng",
+		NameEn: "Electrical Circuitry & Parts",
+		Children: Categories{
+			CategoryHomeAppliancesElectricalCircuitryPartsElectricalSafety,
+			CategoryHomeAppliancesElectricalCircuitryPartsDoorbells,
+			CategoryHomeAppliancesElectricalCircuitryPartsSwitches,
+			CategoryHomeAppliancesElectricalCircuitryPartsHouseAlarms,
+			CategoryHomeAppliancesElectricalCircuitryPartsLightningProtection,
+			CategoryHomeAppliancesElectricalCircuitryPartsElectricSocketsExtensionCords,
+		},
 	}
 	CategoryHomeAppliancesElectricalCircuitryPartsElectricSocketsExtensionCords = &Category{
 		Id:     "334x2",
@@ -2917,18 +3401,30 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/f815f194839304ac7c488272bd9d699b", "https://cf.shopee.sg/file/f26bc1de0ea377c50a8117e140a9c69c", "https://cf.shopee.sg/file/a2c423c815ab2d51f87b97c65225b63b", "https://cf.shopee.sg/file/faba0252a6d8d0d39e63ae46196349ae", "https://cf.shopee.sg/file/1c9a29decb8a0214284d3a7f799917e8", "https://cf.shopee.sg/file/95924c5a34b952bd66b325ef3e85eac4"},
 	}
 	CategoryMenShoes = &Category{
-		Id:       "342x0",
-		Slug:     "men-shoes",
-		Name:     "Giày Dép Nam",
-		NameEn:   "Men Shoes",
-		Children: Categories{CategoryMenShoesShoeCareAccessories, CategoryMenShoesBoots, CategoryMenShoesSneakers, CategoryMenShoesSlipOnsMules, CategoryMenShoesLoafersBoatShoes, CategoryMenShoesOxfordsLaceUps, CategoryMenShoesSandalsFlipFlops},
+		Id:     "342x0",
+		Slug:   "men-shoes",
+		Name:   "Giày Dép Nam",
+		NameEn: "Men Shoes",
+		Children: Categories{
+			CategoryMenShoesOxfordsLaceUps,
+			CategoryMenShoesSandalsFlipFlops,
+			CategoryMenShoesShoeCareAccessories,
+			CategoryMenShoesBoots,
+			CategoryMenShoesSneakers,
+			CategoryMenShoesSlipOnsMules,
+			CategoryMenShoesLoafersBoatShoes,
+		},
 	}
 	CategoryMenShoesBoots = &Category{
-		Id:       "342x1",
-		Slug:     "men-shoes-boots",
-		Name:     "Bốt",
-		NameEn:   "Boots",
-		Children: Categories{CategoryMenShoesBootsRainBoots, CategoryMenShoesBootsSafetyBoots, CategoryMenShoesBootsFashionBoots},
+		Id:     "342x1",
+		Slug:   "men-shoes-boots",
+		Name:   "Bốt",
+		NameEn: "Boots",
+		Children: Categories{
+			CategoryMenShoesBootsRainBoots,
+			CategoryMenShoesBootsSafetyBoots,
+			CategoryMenShoesBootsFashionBoots,
+		},
 	}
 	CategoryMenShoesBootsFashionBoots = &Category{
 		Id:     "342x2",
@@ -2980,11 +3476,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/00ff28f41bec0ab682900430dfd1f303", "https://cf.shopee.sg/file/1d82a98ce12da8ea3833bd068abb8980", "https://cf.shopee.sg/file/3dd4533365ff394a7e92ce9b110d9fb2", "https://cf.shopee.sg/file/03f0502543dcee44943346f67f9564c3", "https://cf.shopee.sg/file/9a6869303ba3d9bfce2c6df2f654f502", "https://cf.shopee.sg/file/10e21ac9dfda754fa14cf3fc2a59c0ff"},
 	}
 	CategoryMenShoesSandalsFlipFlops = &Category{
-		Id:       "349x1",
-		Slug:     "men-shoes-sandals-and-flip-flops",
-		Name:     "Xăng-đan & Dép",
-		NameEn:   "Sandals & Flip Flops",
-		Children: Categories{CategoryMenShoesSandalsFlipFlopsFlipFlops, CategoryMenShoesSandalsFlipFlopsSandals, CategoryMenShoesSandalsFlipFlopsIndoorSlippers, CategoryMenShoesSandalsFlipFlopsHealthSlippers},
+		Id:     "349x1",
+		Slug:   "men-shoes-sandals-and-flip-flops",
+		Name:   "Xăng-đan & Dép",
+		NameEn: "Sandals & Flip Flops",
+		Children: Categories{
+			CategoryMenShoesSandalsFlipFlopsFlipFlops,
+			CategoryMenShoesSandalsFlipFlopsSandals,
+			CategoryMenShoesSandalsFlipFlopsIndoorSlippers,
+			CategoryMenShoesSandalsFlipFlopsHealthSlippers,
+		},
 	}
 	CategoryMenShoesSandalsFlipFlopsFlipFlops = &Category{
 		Id:     "349x2",
@@ -3015,11 +3516,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/593c22bf138dd22ee2305a2cc6bf5927", "https://cf.shopee.sg/file/24f09b33a1280b08ee3b66ccfd35b648", "https://cf.shopee.sg/file/4871e43e388201ea371cef6479f9f47b", "https://cf.shopee.sg/file/fca16ca7cb70553f9ed376e3b5ee1ab4", "https://cf.shopee.sg/file/6c02b83cad70c695d750fcbd34e66203", "https://cf.shopee.sg/file/c7794cb3c3e7a3c1b860e3048b230b86"},
 	}
 	CategoryMenShoesShoeCareAccessories = &Category{
-		Id:       "353x1",
-		Slug:     "men-shoes-shoe-care-and-accessories",
-		Name:     "Phụ kiện giày dép",
-		NameEn:   "Shoe Care & Accessories",
-		Children: Categories{CategoryMenShoesShoeCareAccessoriesShoeLaces, CategoryMenShoesShoeCareAccessoriesShoeHornsTrees, CategoryMenShoesShoeCareAccessoriesShoeInsoles, CategoryMenShoesShoeCareAccessoriesShoeCareCleaningTools, CategoryMenShoesShoeCareAccessoriesShoeDeodorizers},
+		Id:     "353x1",
+		Slug:   "men-shoes-shoe-care-and-accessories",
+		Name:   "Phụ kiện giày dép",
+		NameEn: "Shoe Care & Accessories",
+		Children: Categories{
+			CategoryMenShoesShoeCareAccessoriesShoeCareCleaningTools,
+			CategoryMenShoesShoeCareAccessoriesShoeDeodorizers,
+			CategoryMenShoesShoeCareAccessoriesShoeLaces,
+			CategoryMenShoesShoeCareAccessoriesShoeHornsTrees,
+			CategoryMenShoesShoeCareAccessoriesShoeInsoles,
+		},
 	}
 	CategoryMenShoesShoeCareAccessoriesShoeCareCleaningTools = &Category{
 		Id:     "353x2",
@@ -3057,11 +3564,19 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/3f907756cd99878b5d056ccbe68fc929", "https://cf.shopee.sg/file/8c25f5452c51470bd71d06e0c9767855", "https://cf.shopee.sg/file/1418da2b848d44ab008a6410b9d24d94", "https://cf.shopee.sg/file/70373e1dca8daed8247fe03f511cae3b", "https://cf.shopee.sg/file/205af84facaba1f490c1fc1d7323480f", "https://cf.shopee.sg/file/c6cc667994f814d133c35c20854a0493"},
 	}
 	CategoryMobileGadgets = &Category{
-		Id:       "358x0",
-		Slug:     "mobile-and-gadgets",
-		Name:     "Điện Thoại & Phụ Kiện",
-		NameEn:   "Mobile & Gadgets",
-		Children: Categories{CategoryMobileGadgetsOther, CategoryMobileGadgetsSimCards, CategoryMobileGadgetsTablets, CategoryMobileGadgetsMobilePhones, CategoryMobileGadgetsWearableDevices, CategoryMobileGadgetsAccessories, CategoryMobileGadgetsWalkieTalkies},
+		Id:     "358x0",
+		Slug:   "mobile-and-gadgets",
+		Name:   "Điện Thoại & Phụ Kiện",
+		NameEn: "Mobile & Gadgets",
+		Children: Categories{
+			CategoryMobileGadgetsSimCards,
+			CategoryMobileGadgetsTablets,
+			CategoryMobileGadgetsMobilePhones,
+			CategoryMobileGadgetsWearableDevices,
+			CategoryMobileGadgetsAccessories,
+			CategoryMobileGadgetsWalkieTalkies,
+			CategoryMobileGadgetsOther,
+		},
 	}
 	CategoryMobileGadgetsSimCards = &Category{
 		Id:     "358x1",
@@ -3085,11 +3600,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/6444b126b59ee689044eb98f719a5425", "https://cf.shopee.sg/file/109d75f8bf5826f7896ef04e075b39a3", "https://cf.shopee.sg/file/c5ad104b0da46b965c29bf3ec521154b", "https://cf.shopee.sg/file/1e0feecf94a93ebc08ad922e0bd0d73f", "https://cf.shopee.sg/file/2dfe2797ad7b6083ac1992d394f66001", "https://cf.shopee.sg/file/9b9c5237263ad65a3a464606a44b7cda"},
 	}
 	CategoryMobileGadgetsWearableDevices = &Category{
-		Id:       "361x1",
-		Slug:     "mobile-and-gadgets-wearable-devices",
-		Name:     "Thiết bị đeo thông minh",
-		NameEn:   "Wearable Devices",
-		Children: Categories{CategoryMobileGadgetsWearableDevicesVRDevices, CategoryMobileGadgetsWearableDevicesGPSTrackers, CategoryMobileGadgetsWearableDevicesOther, CategoryMobileGadgetsWearableDevicesSmartwatchesFitnessTrackers},
+		Id:     "361x1",
+		Slug:   "mobile-and-gadgets-wearable-devices",
+		Name:   "Thiết bị đeo thông minh",
+		NameEn: "Wearable Devices",
+		Children: Categories{
+			CategoryMobileGadgetsWearableDevicesSmartwatchesFitnessTrackers,
+			CategoryMobileGadgetsWearableDevicesVRDevices,
+			CategoryMobileGadgetsWearableDevicesGPSTrackers,
+			CategoryMobileGadgetsWearableDevicesOther,
+		},
 	}
 	CategoryMobileGadgetsWearableDevicesSmartwatchesFitnessTrackers = &Category{
 		Id:     "361x2",
@@ -3120,18 +3640,40 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/aec75867072319943f75df355eb606aa", "https://cf.shopee.sg/file/e79bc7adbb1c346a764b92bb0d07f14a", "https://cf.shopee.sg/file/46d56201abb6816c321c8465ab8b14cb", "https://cf.shopee.sg/file/651eb95397b9746e2a8dbe83504f2441", "https://cf.shopee.sg/file/fe75f0d32efc4825eafbc3271ff5a527", "https://cf.shopee.sg/file/31237129562dc29fc201ac485700c655"},
 	}
 	CategoryMobileGadgetsAccessories = &Category{
-		Id:       "365x1",
-		Slug:     "mobile-and-gadgets-accessories",
-		Name:     "Phụ kiện",
-		NameEn:   "Accessories",
-		Children: Categories{CategoryMobileGadgetsAccessoriesUSBMobileFans, CategoryMobileGadgetsAccessoriesCastingDevices, CategoryMobileGadgetsAccessoriesMobilePouches, CategoryMobileGadgetsAccessoriesUSBMobileLights, CategoryMobileGadgetsAccessoriesCablesChargersConverters, CategoryMobileGadgetsAccessoriesPowerbanksBatteries, CategoryMobileGadgetsAccessoriesWearableAccessories, CategoryMobileGadgetsAccessoriesCasesCoversSkins, CategoryMobileGadgetsAccessoriesSelfieAccessories, CategoryMobileGadgetsAccessoriesMobileFlashesSelfieLights, CategoryMobileGadgetsAccessoriesStylus, CategoryMobileGadgetsAccessoriesPocketWifi, CategoryMobileGadgetsAccessoriesMobileLens, CategoryMobileGadgetsAccessoriesPhoneGrips, CategoryMobileGadgetsAccessoriesPhoneStrapsKeychains, CategoryMobileGadgetsAccessoriesMemoryCards, CategoryMobileGadgetsAccessoriesScreenProtectors},
+		Id:     "365x1",
+		Slug:   "mobile-and-gadgets-accessories",
+		Name:   "Phụ kiện",
+		NameEn: "Accessories",
+		Children: Categories{
+			CategoryMobileGadgetsAccessoriesSelfieAccessories,
+			CategoryMobileGadgetsAccessoriesPhoneGrips,
+			CategoryMobileGadgetsAccessoriesUSBMobileLights,
+			CategoryMobileGadgetsAccessoriesPocketWifi,
+			CategoryMobileGadgetsAccessoriesWearableAccessories,
+			CategoryMobileGadgetsAccessoriesScreenProtectors,
+			CategoryMobileGadgetsAccessoriesPhoneStrapsKeychains,
+			CategoryMobileGadgetsAccessoriesCastingDevices,
+			CategoryMobileGadgetsAccessoriesCablesChargersConverters,
+			CategoryMobileGadgetsAccessoriesCasesCoversSkins,
+			CategoryMobileGadgetsAccessoriesStylus,
+			CategoryMobileGadgetsAccessoriesMemoryCards,
+			CategoryMobileGadgetsAccessoriesMobilePouches,
+			CategoryMobileGadgetsAccessoriesPowerbanksBatteries,
+			CategoryMobileGadgetsAccessoriesMobileLens,
+			CategoryMobileGadgetsAccessoriesMobileFlashesSelfieLights,
+			CategoryMobileGadgetsAccessoriesUSBMobileFans,
+		},
 	}
 	CategoryMobileGadgetsAccessoriesSelfieAccessories = &Category{
-		Id:       "365x2",
-		Slug:     "mobile-and-gadgets-accessories-selfie-accessories",
-		Name:     "Phụ kiện selfie",
-		NameEn:   "Selfie Accessories",
-		Children: Categories{CategoryMobileGadgetsAccessoriesSelfieAccessoriesSelfieSticks, CategoryMobileGadgetsAccessoriesSelfieAccessoriesLazypods, CategoryMobileGadgetsAccessoriesSelfieAccessoriesRemoteShutters},
+		Id:     "365x2",
+		Slug:   "mobile-and-gadgets-accessories-selfie-accessories",
+		Name:   "Phụ kiện selfie",
+		NameEn: "Selfie Accessories",
+		Children: Categories{
+			CategoryMobileGadgetsAccessoriesSelfieAccessoriesSelfieSticks,
+			CategoryMobileGadgetsAccessoriesSelfieAccessoriesLazypods,
+			CategoryMobileGadgetsAccessoriesSelfieAccessoriesRemoteShutters,
+		},
 	}
 	CategoryMobileGadgetsAccessoriesSelfieAccessoriesSelfieSticks = &Category{
 		Id:     "365x3",
@@ -3218,11 +3760,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/0f4242ffc73cdf57b86edc8ee675fcef", "https://cf.shopee.sg/file/61c946efd17bf865aa9da4c6f2f71d0a", "https://cf.shopee.sg/file/c0e2790ea726e8c1aa68e37bc82a8bac", "https://cf.shopee.sg/file/009f088c5f314d68ed7f15dd60e0bc1b", "https://cf.shopee.sg/file/97af9d29ef4dd7e4d06a936cf3d6f85c", "https://cf.shopee.sg/file/f96e4959e244584fce45fc3e76e40b62"},
 	}
 	CategoryMobileGadgetsAccessoriesCablesChargersConverters = &Category{
-		Id:       "377x2",
-		Slug:     "mobile-and-gadgets-accessories-cables-chargers-and-converters",
-		Name:     "Cáp, sạc & bộ chuyển đổi",
-		NameEn:   "Cables, Chargers & Converters",
-		Children: Categories{CategoryMobileGadgetsAccessoriesCablesChargersConvertersCableCasesProtectorsWinders, CategoryMobileGadgetsAccessoriesCablesChargersConvertersTravelAdaptors, CategoryMobileGadgetsAccessoriesCablesChargersConvertersMobileCablesConverters, CategoryMobileGadgetsAccessoriesCablesChargersConvertersChargers, CategoryMobileGadgetsAccessoriesCablesChargersConvertersDocksStands, CategoryMobileGadgetsAccessoriesCablesChargersConvertersOther},
+		Id:     "377x2",
+		Slug:   "mobile-and-gadgets-accessories-cables-chargers-and-converters",
+		Name:   "Cáp, sạc & bộ chuyển đổi",
+		NameEn: "Cables, Chargers & Converters",
+		Children: Categories{
+			CategoryMobileGadgetsAccessoriesCablesChargersConvertersCableCasesProtectorsWinders,
+			CategoryMobileGadgetsAccessoriesCablesChargersConvertersTravelAdaptors,
+			CategoryMobileGadgetsAccessoriesCablesChargersConvertersMobileCablesConverters,
+			CategoryMobileGadgetsAccessoriesCablesChargersConvertersChargers,
+			CategoryMobileGadgetsAccessoriesCablesChargersConvertersDocksStands,
+			CategoryMobileGadgetsAccessoriesCablesChargersConvertersOther,
+		},
 	}
 	CategoryMobileGadgetsAccessoriesCablesChargersConvertersCableCasesProtectorsWinders = &Category{
 		Id:     "377x3",
@@ -3281,11 +3830,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/dbe6ae53aafdb06f0a40a284bc6e00d5", "https://cf.shopee.sg/file/d5d4c26700acc82b3a67182592c87a18", "https://cf.shopee.sg/file/b14cb5351c37acc55518185ebfa22a23", "https://cf.shopee.sg/file/be27862a20caf1c79e3e46340dc686f0", "https://cf.shopee.sg/file/8d11aa2629e8873d646129779310aa70", "https://cf.shopee.sg/file/7d3b3bfcea7a3dfb4f3a232916f5005d"},
 	}
 	CategoryMobileGadgetsAccessoriesPowerbanksBatteries = &Category{
-		Id:       "385x2",
-		Slug:     "mobile-and-gadgets-accessories-powerbanks-and-batteries",
-		Name:     "Sạc dự phòng & Pin",
-		NameEn:   "Powerbanks & Batteries",
-		Children: Categories{CategoryMobileGadgetsAccessoriesPowerbanksBatteriesBatteries, CategoryMobileGadgetsAccessoriesPowerbanksBatteriesPowerbanks, CategoryMobileGadgetsAccessoriesPowerbanksBatteriesPowercases, CategoryMobileGadgetsAccessoriesPowerbanksBatteriesOther},
+		Id:     "385x2",
+		Slug:   "mobile-and-gadgets-accessories-powerbanks-and-batteries",
+		Name:   "Sạc dự phòng & Pin",
+		NameEn: "Powerbanks & Batteries",
+		Children: Categories{
+			CategoryMobileGadgetsAccessoriesPowerbanksBatteriesBatteries,
+			CategoryMobileGadgetsAccessoriesPowerbanksBatteriesPowerbanks,
+			CategoryMobileGadgetsAccessoriesPowerbanksBatteriesPowercases,
+			CategoryMobileGadgetsAccessoriesPowerbanksBatteriesOther,
+		},
 	}
 	CategoryMobileGadgetsAccessoriesPowerbanksBatteriesBatteries = &Category{
 		Id:     "385x3",
@@ -3330,11 +3884,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/cd8132fe275afe91a40e7541fd83ef24", "https://cf.shopee.sg/file/188dbd39cf6a9a956ffddc2ba94b7490", "https://cf.shopee.sg/file/abccfcb77094adad8321d6b94a3576ce", "https://cf.shopee.sg/file/765e6a96254b18feac93ed0a988e3bf5", "https://cf.shopee.sg/file/2b76fba2da8d5212de3d09ac7081ab89", "https://cf.shopee.sg/file/0d76ef00386185c736f56ae390718a44"},
 	}
 	CategoryMobileGadgetsAccessoriesCasesCoversSkins = &Category{
-		Id:       "391x2",
-		Slug:     "mobile-and-gadgets-accessories-cases-covers-and-skins",
-		Name:     "Vỏ bao, Ốp lưng & Miếng dán",
-		NameEn:   "Cases, Covers, & Skins",
-		Children: Categories{CategoryMobileGadgetsAccessoriesCasesCoversSkinsTabletCasesCoversSkins, CategoryMobileGadgetsAccessoriesCasesCoversSkinsPhoneCasesCoversSkins, CategoryMobileGadgetsAccessoriesCasesCoversSkinsOther},
+		Id:     "391x2",
+		Slug:   "mobile-and-gadgets-accessories-cases-covers-and-skins",
+		Name:   "Vỏ bao, Ốp lưng & Miếng dán",
+		NameEn: "Cases, Covers, & Skins",
+		Children: Categories{
+			CategoryMobileGadgetsAccessoriesCasesCoversSkinsTabletCasesCoversSkins,
+			CategoryMobileGadgetsAccessoriesCasesCoversSkinsPhoneCasesCoversSkins,
+			CategoryMobileGadgetsAccessoriesCasesCoversSkinsOther,
+		},
 	}
 	CategoryMobileGadgetsAccessoriesCasesCoversSkinsTabletCasesCoversSkins = &Category{
 		Id:     "391x3",
@@ -3372,11 +3930,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/ce06b70aa4880962ce3ad3b1973b7bb2", "https://cf.shopee.sg/file/3ed392d3f576c2c93dbfc6981dc3bbab", "https://cf.shopee.sg/file/4c0b2b4e6c98c4969336193386e7d8e8", "https://cf.shopee.sg/file/3070662e1dc0f0659af5a8910b24e557", "https://cf.shopee.sg/file/c64a3f5bbe520d04990ce5ce078b4919", "https://cf.shopee.sg/file/ce06b70aa4880962ce3ad3b1973b7bb2"},
 	}
 	CategoryTravelLuggage = &Category{
-		Id:       "396x0",
-		Slug:     "travel-and-luggage",
-		Name:     "Du lịch & Hành lý",
-		NameEn:   "Travel & Luggage",
-		Children: Categories{CategoryTravelLuggageLuggage, CategoryTravelLuggageTravelBags, CategoryTravelLuggageTravelAccessories},
+		Id:     "396x0",
+		Slug:   "travel-and-luggage",
+		Name:   "Du lịch & Hành lý",
+		NameEn: "Travel & Luggage",
+		Children: Categories{
+			CategoryTravelLuggageLuggage,
+			CategoryTravelLuggageTravelBags,
+			CategoryTravelLuggageTravelAccessories,
+		},
 	}
 	CategoryTravelLuggageLuggage = &Category{
 		Id:     "396x1",
@@ -3386,11 +3948,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/cc25dfe26d67e6091a7afbf68d9a50ec", "https://cf.shopee.sg/file/6eeb810792cb458cfef9ef3a28bc83a9", "https://cf.shopee.sg/file/4dcacdbecab4b922cd992bc597fa9a0d", "https://cf.shopee.sg/file/d3e1f8afd796e2e205c500cf9932ab2c", "https://cf.shopee.sg/file/224023173e9273059be02d021423e6d2", "https://cf.shopee.sg/file/0ab3f76641d941c908dde971229a65a6"},
 	}
 	CategoryTravelLuggageTravelBags = &Category{
-		Id:       "397x1",
-		Slug:     "travel-and-luggage-travel-bags",
-		Name:     "Túi du lịch",
-		NameEn:   "Travel Bags",
-		Children: Categories{CategoryTravelLuggageTravelBagsDrawstringBags, CategoryTravelLuggageTravelBagsDuffelWeekenderBags, CategoryTravelLuggageTravelBagsFoldableBags},
+		Id:     "397x1",
+		Slug:   "travel-and-luggage-travel-bags",
+		Name:   "Túi du lịch",
+		NameEn: "Travel Bags",
+		Children: Categories{
+			CategoryTravelLuggageTravelBagsDuffelWeekenderBags,
+			CategoryTravelLuggageTravelBagsFoldableBags,
+			CategoryTravelLuggageTravelBagsDrawstringBags,
+		},
 	}
 	CategoryTravelLuggageTravelBagsDuffelWeekenderBags = &Category{
 		Id:     "397x2",
@@ -3414,11 +3980,21 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/a188eb67a00c1dd47c08115f1ee5f2c0", "https://cf.shopee.sg/file/bdb3c9637fcd9bf9ef8789db86fc768c", "https://cf.shopee.sg/file/2f0771636bcc7cebcbf0be4093e9f0f6", "https://cf.shopee.sg/file/4bb16eb3434d60633599294c0957b7af", "https://cf.shopee.sg/file/e740533f5869f52fad9301644cc895de", "https://cf.shopee.sg/file/db6bd49eaf326fd9f96b3a6828b484c9"},
 	}
 	CategoryTravelLuggageTravelAccessories = &Category{
-		Id:       "400x1",
-		Slug:     "travel-and-luggage-travel-accessories",
-		Name:     "Phụ kiện du lịch",
-		NameEn:   "Travel Accessories",
-		Children: Categories{CategoryTravelLuggageTravelAccessoriesTravelPillowsEyeCovers, CategoryTravelLuggageTravelAccessoriesTravelSizeBottlesContainers, CategoryTravelLuggageTravelAccessoriesTravelOrganizers, CategoryTravelLuggageTravelAccessoriesLuggageProtectorsCovers, CategoryTravelLuggageTravelAccessoriesLuggageLocks, CategoryTravelLuggageTravelAccessoriesLuggageScales, CategoryTravelLuggageTravelAccessoriesPassportHoldersCovers, CategoryTravelLuggageTravelAccessoriesLuggageTags, CategoryTravelLuggageTravelAccessoriesLuggageStraps},
+		Id:     "400x1",
+		Slug:   "travel-and-luggage-travel-accessories",
+		Name:   "Phụ kiện du lịch",
+		NameEn: "Travel Accessories",
+		Children: Categories{
+			CategoryTravelLuggageTravelAccessoriesPassportHoldersCovers,
+			CategoryTravelLuggageTravelAccessoriesTravelOrganizers,
+			CategoryTravelLuggageTravelAccessoriesLuggageScales,
+			CategoryTravelLuggageTravelAccessoriesLuggageProtectorsCovers,
+			CategoryTravelLuggageTravelAccessoriesLuggageTags,
+			CategoryTravelLuggageTravelAccessoriesLuggageStraps,
+			CategoryTravelLuggageTravelAccessoriesLuggageLocks,
+			CategoryTravelLuggageTravelAccessoriesTravelPillowsEyeCovers,
+			CategoryTravelLuggageTravelAccessoriesTravelSizeBottlesContainers,
+		},
 	}
 	CategoryTravelLuggageTravelAccessoriesPassportHoldersCovers = &Category{
 		Id:     "400x2",
@@ -3484,11 +4060,21 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/c933c35e36df86b883534c0d47a11768", "https://cf.shopee.sg/file/8a0f2aab9e36bf1341c78a3146a23ee6", "https://cf.shopee.sg/file/6f7c3f7d8bd150af4202f98877e2d74e", "https://cf.shopee.sg/file/594fb3c67dd377b87ca155ceec4d34bd", "https://cf.shopee.sg/file/1fcdb3c71ba641f70e5385bb336d3cc3", "https://cf.shopee.sg/file/bb036f7125529dbfb7b61ba136a2d53a"},
 	}
 	CategoryWomenBags = &Category{
-		Id:       "409x0",
-		Slug:     "women-bags",
-		Name:     "Túi Ví Nữ",
-		NameEn:   "Women Bags",
-		Children: Categories{CategoryWomenBagsLaptopBags, CategoryWomenBagsToteBags, CategoryWomenBagsBackpacks, CategoryWomenBagsClutchesWristlets, CategoryWomenBagsWaistBagsChestBags, CategoryWomenBagsTophandleBags, CategoryWomenBagsCrossbodyShoulderBags, CategoryWomenBagsWallets, CategoryWomenBagsBagAccessories},
+		Id:     "409x0",
+		Slug:   "women-bags",
+		Name:   "Túi Ví Nữ",
+		NameEn: "Women Bags",
+		Children: Categories{
+			CategoryWomenBagsTophandleBags,
+			CategoryWomenBagsToteBags,
+			CategoryWomenBagsLaptopBags,
+			CategoryWomenBagsClutchesWristlets,
+			CategoryWomenBagsWaistBagsChestBags,
+			CategoryWomenBagsCrossbodyShoulderBags,
+			CategoryWomenBagsWallets,
+			CategoryWomenBagsBagAccessories,
+			CategoryWomenBagsBackpacks,
+		},
 	}
 	CategoryWomenBagsBackpacks = &Category{
 		Id:     "409x1",
@@ -3498,11 +4084,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/d912a7049aa3d5f3b88aae80c272693e", "https://cf.shopee.sg/file/bd6e04904f9b54a708b08f51c66b71b3", "https://cf.shopee.sg/file/93ea0752636c8f43abde264d5d944529", "https://cf.shopee.sg/file/cacf24484a8478be6461cc8482cdbe4e", "https://cf.shopee.sg/file/bb6cff7ebe512ac73d32ddcd573519aa", "https://cf.shopee.sg/file/2b454191df501046a93196e93bf2395a"},
 	}
 	CategoryWomenBagsLaptopBags = &Category{
-		Id:       "410x1",
-		Slug:     "women-bags-laptop-bags",
-		Name:     "Cặp laptop",
-		NameEn:   "Laptop Bags",
-		Children: Categories{CategoryWomenBagsLaptopBagsLaptopBagsCases, CategoryWomenBagsLaptopBagsLaptopSleeves, CategoryWomenBagsLaptopBagsLaptopBackpacks, CategoryWomenBagsLaptopBagsOther},
+		Id:     "410x1",
+		Slug:   "women-bags-laptop-bags",
+		Name:   "Cặp laptop",
+		NameEn: "Laptop Bags",
+		Children: Categories{
+			CategoryWomenBagsLaptopBagsLaptopBackpacks,
+			CategoryWomenBagsLaptopBagsOther,
+			CategoryWomenBagsLaptopBagsLaptopBagsCases,
+			CategoryWomenBagsLaptopBagsLaptopSleeves,
+		},
 	}
 	CategoryWomenBagsLaptopBagsLaptopBagsCases = &Category{
 		Id:     "410x2",
@@ -3568,11 +4159,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/dee9167fc3134f42ded761d4f6fc2c86", "https://cf.shopee.sg/file/e8e1c96e2f1940fe82304dc9bb062a7a", "https://cf.shopee.sg/file/ac2020da88f62e2b8326b7541cb03be9", "https://cf.shopee.sg/file/c7ba19465233a0a2ca93d9ac87978a56", "https://cf.shopee.sg/file/3aa05628718b35043850744d68cdaa56", "https://cf.shopee.sg/file/d0acc5f958c737e6d3cf2881e1e7037d"},
 	}
 	CategoryWomenBagsWallets = &Category{
-		Id:       "419x1",
-		Slug:     "women-bags-wallets",
-		Name:     "Ví",
-		NameEn:   "Wallets",
-		Children: Categories{CategoryWomenBagsWalletsCardHolders, CategoryWomenBagsWalletsCoinHoldersPurses, CategoryWomenBagsWalletsPhoneKeyWallets, CategoryWomenBagsWalletsBifoldTrifoldWallets, CategoryWomenBagsWalletsLongWallets, CategoryWomenBagsWalletsOther},
+		Id:     "419x1",
+		Slug:   "women-bags-wallets",
+		Name:   "Ví",
+		NameEn: "Wallets",
+		Children: Categories{
+			CategoryWomenBagsWalletsBifoldTrifoldWallets,
+			CategoryWomenBagsWalletsLongWallets,
+			CategoryWomenBagsWalletsOther,
+			CategoryWomenBagsWalletsCardHolders,
+			CategoryWomenBagsWalletsCoinHoldersPurses,
+			CategoryWomenBagsWalletsPhoneKeyWallets,
+		},
 	}
 	CategoryWomenBagsWalletsCardHolders = &Category{
 		Id:     "419x2",
@@ -3617,11 +4215,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/7facd02d326bea2e31213a3e7c1e3809", "https://cf.shopee.sg/file/6f8830ebdb49d9aeef10c22f02444aef", "https://cf.shopee.sg/file/7d1d88c4192ae8afb82f32b769ede216", "https://cf.shopee.sg/file/1293959a42630b6c72bfb247f73d5741", "https://cf.shopee.sg/file/7362ea0928b058dd22488fd07cc1eed3", "https://cf.shopee.sg/file/bf03a4afac33fa90b330579ed58a8327"},
 	}
 	CategoryWomenBagsBagAccessories = &Category{
-		Id:       "425x1",
-		Slug:     "women-bags-bag-accessories",
-		Name:     "Phụ kiện túi",
-		NameEn:   "Bag Accessories",
-		Children: Categories{CategoryWomenBagsBagAccessoriesBagStraps, CategoryWomenBagsBagAccessoriesBagHolders, CategoryWomenBagsBagAccessoriesCharmsTwillies, CategoryWomenBagsBagAccessoriesBagOrganizers, CategoryWomenBagsBagAccessoriesCleaningCareEquipment},
+		Id:     "425x1",
+		Slug:   "women-bags-bag-accessories",
+		Name:   "Phụ kiện túi",
+		NameEn: "Bag Accessories",
+		Children: Categories{
+			CategoryWomenBagsBagAccessoriesCharmsTwillies,
+			CategoryWomenBagsBagAccessoriesBagOrganizers,
+			CategoryWomenBagsBagAccessoriesCleaningCareEquipment,
+			CategoryWomenBagsBagAccessoriesBagStraps,
+			CategoryWomenBagsBagAccessoriesBagHolders,
+		},
 	}
 	CategoryWomenBagsBagAccessoriesBagStraps = &Category{
 		Id:     "425x2",
@@ -3659,18 +4263,29 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/d72a49afddf5ce373f3621dc7674bb27", "https://cf.shopee.sg/file/293a41531561e4be33bcffef7c6f6d5c", "https://cf.shopee.sg/file/1117d7f46f9340f2d24c14e9f014b961"},
 	}
 	CategoryWomenShoes = &Category{
-		Id:       "430x0",
-		Slug:     "women-shoes",
-		Name:     "Giày Dép Nữ",
-		NameEn:   "Women Shoes",
-		Children: Categories{CategoryWomenShoesWedges, CategoryWomenShoesFlatSandalsFlipFlops, CategoryWomenShoesShoeCareAccessories, CategoryWomenShoesBoots, CategoryWomenShoesSneakers, CategoryWomenShoesFlats, CategoryWomenShoesHeels},
+		Id:     "430x0",
+		Slug:   "women-shoes",
+		Name:   "Giày Dép Nữ",
+		NameEn: "Women Shoes",
+		Children: Categories{
+			CategoryWomenShoesHeels,
+			CategoryWomenShoesWedges,
+			CategoryWomenShoesFlatSandalsFlipFlops,
+			CategoryWomenShoesShoeCareAccessories,
+			CategoryWomenShoesBoots,
+			CategoryWomenShoesSneakers,
+			CategoryWomenShoesFlats,
+		},
 	}
 	CategoryWomenShoesBoots = &Category{
-		Id:       "430x1",
-		Slug:     "women-shoes-boots",
-		Name:     "Bốt",
-		NameEn:   "Boots",
-		Children: Categories{CategoryWomenShoesBootsRainBoots, CategoryWomenShoesBootsFashionBoots},
+		Id:     "430x1",
+		Slug:   "women-shoes-boots",
+		Name:   "Bốt",
+		NameEn: "Boots",
+		Children: Categories{
+			CategoryWomenShoesBootsRainBoots,
+			CategoryWomenShoesBootsFashionBoots,
+		},
 	}
 	CategoryWomenShoesBootsRainBoots = &Category{
 		Id:     "430x2",
@@ -3694,11 +4309,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/aa1633fad7a9384f6e485373fec2c0f0", "https://cf.shopee.sg/file/d6674744d6f18646e49c28a63060e4c1", "https://cf.shopee.sg/file/2fa37652ff95f930b137c3768a64575a", "https://cf.shopee.sg/file/30c121e947e789e3736bb8a09339e3ac", "https://cf.shopee.sg/file/d62590f04290fa927e06d9ade2f95a81", "https://cf.shopee.sg/file/e36f4489799c3b2ecc9b7857ed9be780"},
 	}
 	CategoryWomenShoesFlats = &Category{
-		Id:       "433x1",
-		Slug:     "women-shoes-flats",
-		Name:     "Giày đế bằng",
-		NameEn:   "Flats",
-		Children: Categories{CategoryWomenShoesFlatsBalletFlats, CategoryWomenShoesFlatsLoafersBoatShoes, CategoryWomenShoesFlatsOxfordsLaceUps, CategoryWomenShoesFlatsSlipOnsMaryJanesMules},
+		Id:     "433x1",
+		Slug:   "women-shoes-flats",
+		Name:   "Giày đế bằng",
+		NameEn: "Flats",
+		Children: Categories{
+			CategoryWomenShoesFlatsSlipOnsMaryJanesMules,
+			CategoryWomenShoesFlatsBalletFlats,
+			CategoryWomenShoesFlatsLoafersBoatShoes,
+			CategoryWomenShoesFlatsOxfordsLaceUps,
+		},
 	}
 	CategoryWomenShoesFlatsBalletFlats = &Category{
 		Id:     "433x2",
@@ -3743,11 +4363,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/dccfdbc4dfba505588548eb74d14d4fd", "https://cf.shopee.sg/file/95920f9b4fba1d97461d9a40aa727956", "https://cf.shopee.sg/file/194a08c53b7d34ac48a9e3c913432a3d", "https://cf.shopee.sg/file/95b8f2cbcf85b1e5eb0a38d92db648fb", "https://cf.shopee.sg/file/96feeba474c37c509880738f0b72bf6c", "https://cf.shopee.sg/file/7162755c077b33cb53137f23e6efac3e"},
 	}
 	CategoryWomenShoesFlatSandalsFlipFlops = &Category{
-		Id:       "439x1",
-		Slug:     "women-shoes-flat-sandals-and-flip-flops",
-		Name:     "Xăng-đan và dép",
-		NameEn:   "Flat Sandals & Flip Flops",
-		Children: Categories{CategoryWomenShoesFlatSandalsFlipFlopsFlipFlops, CategoryWomenShoesFlatSandalsFlipFlopsHealthSlippers, CategoryWomenShoesFlatSandalsFlipFlopsIndoorSlippers, CategoryWomenShoesFlatSandalsFlipFlopsFlatSandals},
+		Id:     "439x1",
+		Slug:   "women-shoes-flat-sandals-and-flip-flops",
+		Name:   "Xăng-đan và dép",
+		NameEn: "Flat Sandals & Flip Flops",
+		Children: Categories{
+			CategoryWomenShoesFlatSandalsFlipFlopsFlatSandals,
+			CategoryWomenShoesFlatSandalsFlipFlopsFlipFlops,
+			CategoryWomenShoesFlatSandalsFlipFlopsHealthSlippers,
+			CategoryWomenShoesFlatSandalsFlipFlopsIndoorSlippers,
+		},
 	}
 	CategoryWomenShoesFlatSandalsFlipFlopsFlatSandals = &Category{
 		Id:     "439x2",
@@ -3778,11 +4403,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/e205bc32da4e0f9bb8d354e46ed12170", "https://cf.shopee.sg/file/372b967f84f96140b568a8f8d3538ac9", "https://cf.shopee.sg/file/28d54262f30b83f621962a86c6c20fba", "https://cf.shopee.sg/file/124c48014643fb091d5dc772e865b66c", "https://cf.shopee.sg/file/2e2cc08693b02744e7e3aa917839e941", "https://cf.shopee.sg/file/26888de221d0acbd90417b930433f0a1"},
 	}
 	CategoryWomenShoesShoeCareAccessories = &Category{
-		Id:       "443x1",
-		Slug:     "women-shoes-shoe-care-and-accessories",
-		Name:     "Phụ kiện & chăm sóc giày",
-		NameEn:   "Shoe Care & Accessories",
-		Children: Categories{CategoryWomenShoesShoeCareAccessoriesInsolesHeelLiners, CategoryWomenShoesShoeCareAccessoriesShoeDeodorizers, CategoryWomenShoesShoeCareAccessoriesShoeHornsTrees, CategoryWomenShoesShoeCareAccessoriesShoeCareCleaningTools, CategoryWomenShoesShoeCareAccessoriesShoeLaces},
+		Id:     "443x1",
+		Slug:   "women-shoes-shoe-care-and-accessories",
+		Name:   "Phụ kiện & chăm sóc giày",
+		NameEn: "Shoe Care & Accessories",
+		Children: Categories{
+			CategoryWomenShoesShoeCareAccessoriesInsolesHeelLiners,
+			CategoryWomenShoesShoeCareAccessoriesShoeDeodorizers,
+			CategoryWomenShoesShoeCareAccessoriesShoeHornsTrees,
+			CategoryWomenShoesShoeCareAccessoriesShoeCareCleaningTools,
+			CategoryWomenShoesShoeCareAccessoriesShoeLaces,
+		},
 	}
 	CategoryWomenShoesShoeCareAccessoriesInsolesHeelLiners = &Category{
 		Id:     "443x2",
@@ -3820,11 +4451,20 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/628e12dabd4fd06fbc16632c5c7c53c5", "https://cf.shopee.sg/file/2665376de15f9e515d7df60278ce759f", "https://cf.shopee.sg/file/6d0c37d891aa996ec85cb5b0a1a8fa6f", "https://cf.shopee.sg/file/af0ef5d6018d2429e5393941c948922b", "https://cf.shopee.sg/file/c190aa77ede3c492cc7503a4e90f99c7", "https://cf.shopee.sg/file/47c9a1fef51bf1f34658548d7273daef"},
 	}
 	CategoryMenBags = &Category{
-		Id:       "448x0",
-		Slug:     "men-bags",
-		Name:     "Túi Ví Nam",
-		NameEn:   "Men Bags",
-		Children: Categories{CategoryMenBagsLaptopBags, CategoryMenBagsToteBags, CategoryMenBagsBriefcases, CategoryMenBagsClutches, CategoryMenBagsWaistBagsChestBags, CategoryMenBagsCrossbodyShoulderBags, CategoryMenBagsWallets, CategoryMenBagsBackpacks},
+		Id:     "448x0",
+		Slug:   "men-bags",
+		Name:   "Túi Ví Nam",
+		NameEn: "Men Bags",
+		Children: Categories{
+			CategoryMenBagsLaptopBags,
+			CategoryMenBagsToteBags,
+			CategoryMenBagsBriefcases,
+			CategoryMenBagsClutches,
+			CategoryMenBagsWaistBagsChestBags,
+			CategoryMenBagsCrossbodyShoulderBags,
+			CategoryMenBagsWallets,
+			CategoryMenBagsBackpacks,
+		},
 	}
 	CategoryMenBagsBackpacks = &Category{
 		Id:     "448x1",
@@ -3834,11 +4474,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/c7f290abb981f03eb0fa5b4cff8716f7", "https://cf.shopee.sg/file/851c696eecd060b5e194a80de2ef25f6", "https://cf.shopee.sg/file/3eff85e3f303b832960f4be6418d597a", "https://cf.shopee.sg/file/4d18b889cbc6137a280bed8cc3d1bd14", "https://cf.shopee.sg/file/dfffc6f941300d3be24fcd6ba2c792ff", "https://cf.shopee.sg/file/5d8943b0b10e7bf1310f14a2cadb9524"},
 	}
 	CategoryMenBagsLaptopBags = &Category{
-		Id:       "449x1",
-		Slug:     "men-bags-laptop-bags",
-		Name:     "Cặp laptop",
-		NameEn:   "Laptop Bags",
-		Children: Categories{CategoryMenBagsLaptopBagsLaptopBagsCases, CategoryMenBagsLaptopBagsLaptopSleeves, CategoryMenBagsLaptopBagsLaptopBackpacks},
+		Id:     "449x1",
+		Slug:   "men-bags-laptop-bags",
+		Name:   "Cặp laptop",
+		NameEn: "Laptop Bags",
+		Children: Categories{
+			CategoryMenBagsLaptopBagsLaptopBagsCases,
+			CategoryMenBagsLaptopBagsLaptopSleeves,
+			CategoryMenBagsLaptopBagsLaptopBackpacks,
+		},
 	}
 	CategoryMenBagsLaptopBagsLaptopBagsCases = &Category{
 		Id:     "449x2",
@@ -3897,11 +4541,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/4839bcbb9bfcbacc55035c837ea72f33", "https://cf.shopee.sg/file/258e17677e224c214ebbafeeb659205e", "https://cf.shopee.sg/file/e572b72ff687d9cb45f22beeb1beb3da", "https://cf.shopee.sg/file/51b6b52efd7528bb319ebc030ec3b65d", "https://cf.shopee.sg/file/b046c2a295e86fa29aa6169f44661262", "https://cf.shopee.sg/file/8fb3e86ca93b89a4c207618804e40032"},
 	}
 	CategoryMenBagsWallets = &Category{
-		Id:       "457x1",
-		Slug:     "men-bags-wallets",
-		Name:     "Bóp/ Ví",
-		NameEn:   "Wallets",
-		Children: Categories{CategoryMenBagsWalletsPhoneKeyWallets, CategoryMenBagsWalletsBifoldTrifoldWallets, CategoryMenBagsWalletsLongWallets, CategoryMenBagsWalletsCardHolders, CategoryMenBagsWalletsCoinHoldersPurses},
+		Id:     "457x1",
+		Slug:   "men-bags-wallets",
+		Name:   "Bóp/ Ví",
+		NameEn: "Wallets",
+		Children: Categories{
+			CategoryMenBagsWalletsPhoneKeyWallets,
+			CategoryMenBagsWalletsBifoldTrifoldWallets,
+			CategoryMenBagsWalletsLongWallets,
+			CategoryMenBagsWalletsCardHolders,
+			CategoryMenBagsWalletsCoinHoldersPurses,
+		},
 	}
 	CategoryMenBagsWalletsCardHolders = &Category{
 		Id:     "457x2",
@@ -3939,11 +4589,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/671a18c02a2aa6b64b219c58551a59c6", "https://cf.shopee.sg/file/0f26a9bdc50910aaad2b39625a5a6b30", "https://cf.shopee.sg/file/a80d865e10c4818dd7e2aba10660b37b", "https://cf.shopee.sg/file/ef8dc8e1fa6611a4f34220b6656445dd", "https://cf.shopee.sg/file/b088d47b1122cd6a1eb606a109539b25", "https://cf.shopee.sg/file/7a7f0ab006ea91d226ff920c6249d77b"},
 	}
 	CategoryWatches = &Category{
-		Id:       "462x0",
-		Slug:     "watches",
-		Name:     "Đồng Hồ",
-		NameEn:   "Watches",
-		Children: Categories{CategoryWatchesWomenWatches, CategoryWatchesMenWatches, CategoryWatchesSetCoupleWatches, CategoryWatchesWatchesAccessories},
+		Id:     "462x0",
+		Slug:   "watches",
+		Name:   "Đồng Hồ",
+		NameEn: "Watches",
+		Children: Categories{
+			CategoryWatchesSetCoupleWatches,
+			CategoryWatchesWatchesAccessories,
+			CategoryWatchesWomenWatches,
+			CategoryWatchesMenWatches,
+		},
 	}
 	CategoryWatchesWomenWatches = &Category{
 		Id:     "462x1",
@@ -3967,11 +4622,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/e2dec3edfaa1af370cf186bebd721100", "https://cf.shopee.sg/file/219f4b522369647d71e85af558d20de1", "https://cf.shopee.sg/file/842130321001b47506c43b2e554473af", "https://cf.shopee.sg/file/11e185b2d30e1e316175620ba9b107ad", "https://cf.shopee.sg/file/2dbc65eb76e6b62bfa2a6cb3727ea502", "https://cf.shopee.sg/file/94550babb88a8268852646cc49fbf584"},
 	}
 	CategoryWatchesWatchesAccessories = &Category{
-		Id:       "465x1",
-		Slug:     "watches-watches-accessories",
-		Name:     "Phụ kiện đồng hồ",
-		NameEn:   "Watches Accessories",
-		Children: Categories{CategoryWatchesWatchesAccessoriesStraps, CategoryWatchesWatchesAccessoriesServiceTools, CategoryWatchesWatchesAccessoriesBuckles, CategoryWatchesWatchesAccessoriesBatteries, CategoryWatchesWatchesAccessoriesBoxes, CategoryWatchesWatchesAccessoriesOther},
+		Id:     "465x1",
+		Slug:   "watches-watches-accessories",
+		Name:   "Phụ kiện đồng hồ",
+		NameEn: "Watches Accessories",
+		Children: Categories{
+			CategoryWatchesWatchesAccessoriesBuckles,
+			CategoryWatchesWatchesAccessoriesBatteries,
+			CategoryWatchesWatchesAccessoriesBoxes,
+			CategoryWatchesWatchesAccessoriesOther,
+			CategoryWatchesWatchesAccessoriesStraps,
+			CategoryWatchesWatchesAccessoriesServiceTools,
+		},
 	}
 	CategoryWatchesWatchesAccessoriesStraps = &Category{
 		Id:     "465x2",
@@ -4016,11 +4678,19 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/b11c1ec88d2078abafaa24b54259846e", "https://cf.shopee.sg/file/130e0191a4e975f70665e3d11362766a", "https://cf.shopee.sg/file/586e3362f60f4a309c323995e0b83321", "https://cf.shopee.sg/file/7f380612371581c7257db7c4f74e551a", "https://cf.shopee.sg/file/3ac097881f035945c854091a93401045", "https://cf.shopee.sg/file/f988c2d4c9674b834383e22318278ee9"},
 	}
 	CategoryAudio = &Category{
-		Id:       "471x0",
-		Slug:     "audio",
-		Name:     "Thiết Bị Âm Thanh",
-		NameEn:   "Audio",
-		Children: Categories{CategoryAudioMediaPlayers, CategoryAudioMicrophones, CategoryAudioAmplifiersMixers, CategoryAudioHomeAudioSpeakers, CategoryAudioAudioVideoCablesConverters, CategoryAudioOther, CategoryAudioEarphonesHeadphonesHeadsets},
+		Id:     "471x0",
+		Slug:   "audio",
+		Name:   "Thiết Bị Âm Thanh",
+		NameEn: "Audio",
+		Children: Categories{
+			CategoryAudioMicrophones,
+			CategoryAudioAmplifiersMixers,
+			CategoryAudioHomeAudioSpeakers,
+			CategoryAudioAudioVideoCablesConverters,
+			CategoryAudioOther,
+			CategoryAudioEarphonesHeadphonesHeadsets,
+			CategoryAudioMediaPlayers,
+		},
 	}
 	CategoryAudioEarphonesHeadphonesHeadsets = &Category{
 		Id:     "471x1",
@@ -4030,11 +4700,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/06e1a63789b832e98d72c1da4f6891a8", "https://cf.shopee.sg/file/e3d3f3f85c3760e9380f6bfe6a2c4a67", "https://cf.shopee.sg/file/8ccbced37fdc53665f58ee585740ddda", "https://cf.shopee.sg/file/c7bdf420a5e446a849f4e857e1468073", "https://cf.shopee.sg/file/eac684d52fcc25b7ddd127933d993e66", "https://cf.shopee.sg/file/1e8bea16e7f776360dbf8d7f6eae528a"},
 	}
 	CategoryAudioMediaPlayers = &Category{
-		Id:       "472x1",
-		Slug:     "audio-media-players",
-		Name:     "Máy nghe nhạc",
-		NameEn:   "Media Players",
-		Children: Categories{CategoryAudioMediaPlayersMP3MP4Players, CategoryAudioMediaPlayersCDDVDBlurayPlayers, CategoryAudioMediaPlayersVoiceRecorders, CategoryAudioMediaPlayersRadioCassettePlayers},
+		Id:     "472x1",
+		Slug:   "audio-media-players",
+		Name:   "Máy nghe nhạc",
+		NameEn: "Media Players",
+		Children: Categories{
+			CategoryAudioMediaPlayersVoiceRecorders,
+			CategoryAudioMediaPlayersRadioCassettePlayers,
+			CategoryAudioMediaPlayersMP3MP4Players,
+			CategoryAudioMediaPlayersCDDVDBlurayPlayers,
+		},
 	}
 	CategoryAudioMediaPlayersMP3MP4Players = &Category{
 		Id:     "472x2",
@@ -4079,11 +4754,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/17e6ab7ed172263e74db846250aea7ab", "https://cf.shopee.sg/file/a52ef3b0897cdeabdff753a10aba8edc", "https://cf.shopee.sg/file/08a0d5f6cff325ffd6e65094ca19daed", "https://cf.shopee.sg/file/3674ff1ce64a3790aa4924aaea1aedf1", "https://cf.shopee.sg/file/f4c961296a48d902068853b9f5663200", "https://cf.shopee.sg/file/d7787e7981bde38ca3c6b5834f3e4b30"},
 	}
 	CategoryAudioHomeAudioSpeakers = &Category{
-		Id:       "478x1",
-		Slug:     "audio-home-audio-and-speakers",
-		Name:     "Dàn âm thanh",
-		NameEn:   "Home Audio & Speakers",
-		Children: Categories{CategoryAudioHomeAudioSpeakersSpeakers, CategoryAudioHomeAudioSpeakersHomeTheaterSystems, CategoryAudioHomeAudioSpeakersAVReceivers, CategoryAudioHomeAudioSpeakersOther},
+		Id:     "478x1",
+		Slug:   "audio-home-audio-and-speakers",
+		Name:   "Dàn âm thanh",
+		NameEn: "Home Audio & Speakers",
+		Children: Categories{
+			CategoryAudioHomeAudioSpeakersSpeakers,
+			CategoryAudioHomeAudioSpeakersHomeTheaterSystems,
+			CategoryAudioHomeAudioSpeakersAVReceivers,
+			CategoryAudioHomeAudioSpeakersOther,
+		},
 	}
 	CategoryAudioHomeAudioSpeakersSpeakers = &Category{
 		Id:     "478x2",
@@ -4128,18 +4808,39 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/5444c304c8e079d9c00630d68994bb06", "https://cf.shopee.sg/file/5a1abce59c30008ac7ec1730a09e6427", "https://cf.shopee.sg/file/2d2c4af766e09daaa8f129cb6846ca29", "https://cf.shopee.sg/file/ed3658ab73dae426bd1c0300f0e07e54", "https://cf.shopee.sg/file/10a52b6f150114b370fca09914b2e9cc", "https://cf.shopee.sg/file/e890448ef426cbd89d7e10efbac66225"},
 	}
 	CategoryFoodBeverage = &Category{
-		Id:       "484x0",
-		Slug:     "food-and-beverage",
-		Name:     "Thực phẩm và đồ uống",
-		NameEn:   "Food & Beverage",
-		Children: Categories{CategoryFoodBeverageOther, CategoryFoodBeverageSeasoningsCondiments, CategoryFoodBeverageBakingNeeds, CategoryFoodBeverageFoodStaples, CategoryFoodBeverageFreshFrozenFood, CategoryFoodBeverageBreakfastCerealsSpread, CategoryFoodBeverageSnacks, CategoryFoodBeverageCookingEssentials, CategoryFoodBeverageDairyEggs, CategoryFoodBeverageBakery, CategoryFoodBeverageAlcoholicBeverages, CategoryFoodBeverageGiftSetHampers, CategoryFoodBeverageConvenienceReadytoeat, CategoryFoodBeverageBeverages},
+		Id:     "484x0",
+		Slug:   "food-and-beverage",
+		Name:   "Thực phẩm và đồ uống",
+		NameEn: "Food & Beverage",
+		Children: Categories{
+			CategoryFoodBeverageFreshFrozenFood,
+			CategoryFoodBeverageBakery,
+			CategoryFoodBeverageGiftSetHampers,
+			CategoryFoodBeverageConvenienceReadytoeat,
+			CategoryFoodBeverageBakingNeeds,
+			CategoryFoodBeverageDairyEggs,
+			CategoryFoodBeverageOther,
+			CategoryFoodBeverageCookingEssentials,
+			CategoryFoodBeverageBreakfastCerealsSpread,
+			CategoryFoodBeverageBeverages,
+			CategoryFoodBeverageAlcoholicBeverages,
+			CategoryFoodBeverageSnacks,
+			CategoryFoodBeverageFoodStaples,
+			CategoryFoodBeverageSeasoningsCondiments,
+		},
 	}
 	CategoryFoodBeverageConvenienceReadytoeat = &Category{
-		Id:       "484x1",
-		Slug:     "food-and-beverage-convenience-ready-to-eat",
-		Name:     "Đồ chế biến sẵn",
-		NameEn:   "Convenience / Ready-to-eat",
-		Children: Categories{CategoryFoodBeverageConvenienceReadytoeatCookedFood, CategoryFoodBeverageConvenienceReadytoeatOther, CategoryFoodBeverageConvenienceReadytoeatInstantRicePorridge, CategoryFoodBeverageConvenienceReadytoeatInstantHotpot, CategoryFoodBeverageConvenienceReadytoeatInstantNoodles},
+		Id:     "484x1",
+		Slug:   "food-and-beverage-convenience-ready-to-eat",
+		Name:   "Đồ chế biến sẵn",
+		NameEn: "Convenience / Ready-to-eat",
+		Children: Categories{
+			CategoryFoodBeverageConvenienceReadytoeatCookedFood,
+			CategoryFoodBeverageConvenienceReadytoeatOther,
+			CategoryFoodBeverageConvenienceReadytoeatInstantRicePorridge,
+			CategoryFoodBeverageConvenienceReadytoeatInstantHotpot,
+			CategoryFoodBeverageConvenienceReadytoeatInstantNoodles,
+		},
 	}
 	CategoryFoodBeverageConvenienceReadytoeatCookedFood = &Category{
 		Id:     "484x2",
@@ -4177,11 +4878,22 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/02818875437be8f54cbfadc05dae77bb", "https://cf.shopee.sg/file/9ffe0b00cc54609d648780f3b61d1535", "https://cf.shopee.sg/file/617f5b656f5058012f1967dfe65351a3", "https://cf.shopee.sg/file/27c01879e7ec7b225b80d55c973acf5e", "https://cf.shopee.sg/file/d09524b7d275b263372baeb1a88fd69e", "https://cf.shopee.sg/file/2706aa40d4c3fb83df7ad65a088a21bc"},
 	}
 	CategoryFoodBeverageSnacks = &Category{
-		Id:       "489x1",
-		Slug:     "food-and-beverage-snacks",
-		Name:     "Đồ ăn vặt",
-		NameEn:   "Snacks",
-		Children: Categories{CategoryFoodBeverageSnacksPuddingJelliesMarshmallow, CategoryFoodBeverageSnacksSweetsCandies, CategoryFoodBeverageSnacksChocolate, CategoryFoodBeverageSnacksSeeds, CategoryFoodBeverageSnacksPopcorn, CategoryFoodBeverageSnacksSeaweed, CategoryFoodBeverageSnacksNuts, CategoryFoodBeverageSnacksDriedSnacks, CategoryFoodBeverageSnacksBiscuitsCookiesWafers, CategoryFoodBeverageSnacksChipsCrisps},
+		Id:     "489x1",
+		Slug:   "food-and-beverage-snacks",
+		Name:   "Đồ ăn vặt",
+		NameEn: "Snacks",
+		Children: Categories{
+			CategoryFoodBeverageSnacksSweetsCandies,
+			CategoryFoodBeverageSnacksSeeds,
+			CategoryFoodBeverageSnacksDriedSnacks,
+			CategoryFoodBeverageSnacksNuts,
+			CategoryFoodBeverageSnacksPuddingJelliesMarshmallow,
+			CategoryFoodBeverageSnacksChocolate,
+			CategoryFoodBeverageSnacksBiscuitsCookiesWafers,
+			CategoryFoodBeverageSnacksChipsCrisps,
+			CategoryFoodBeverageSnacksPopcorn,
+			CategoryFoodBeverageSnacksSeaweed,
+		},
 	}
 	CategoryFoodBeverageSnacksSweetsCandies = &Category{
 		Id:     "489x2",
@@ -4247,11 +4959,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/6e729ae1e7019f658359b2f335f17366", "https://cf.shopee.sg/file/e7534f6d7433e760b14a1a9e146f50be", "https://cf.shopee.sg/file/412a9d6a37f77ebb1d1d126b16c920f2", "https://cf.shopee.sg/file/372b0036f0996668ea0e4a5469d85f3f", "https://cf.shopee.sg/file/2be39e389776d34d0bfc94d93cfeb57f", "https://cf.shopee.sg/file/7fb62affb443190b0c1c456452b90fa2"},
 	}
 	CategoryFoodBeverageSnacksDriedSnacks = &Category{
-		Id:       "498x2",
-		Slug:     "food-and-beverage-snacks-dried-snacks",
-		Name:     "Thức ăn khô",
-		NameEn:   "Dried Snacks",
-		Children: Categories{CategoryFoodBeverageSnacksDriedSnacksMeatJerkyandBakkwa, CategoryFoodBeverageSnacksDriedSnacksDriedFruits, CategoryFoodBeverageSnacksDriedSnacksMeatFloss, CategoryFoodBeverageSnacksDriedSnacksSeafoodSnacks, CategoryFoodBeverageSnacksDriedSnacksOther},
+		Id:     "498x2",
+		Slug:   "food-and-beverage-snacks-dried-snacks",
+		Name:   "Thức ăn khô",
+		NameEn: "Dried Snacks",
+		Children: Categories{
+			CategoryFoodBeverageSnacksDriedSnacksMeatJerkyandBakkwa,
+			CategoryFoodBeverageSnacksDriedSnacksDriedFruits,
+			CategoryFoodBeverageSnacksDriedSnacksMeatFloss,
+			CategoryFoodBeverageSnacksDriedSnacksSeafoodSnacks,
+			CategoryFoodBeverageSnacksDriedSnacksOther,
+		},
 	}
 	CategoryFoodBeverageSnacksDriedSnacksMeatJerkyandBakkwa = &Category{
 		Id:     "498x3",
@@ -4289,18 +5007,30 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/8e71d72370f15b435e5f2e4319afe8f6", "https://cf.shopee.sg/file/b2a5137e2bc8184461794c9afc31d4c3", "https://cf.shopee.sg/file/3277fa09028d48f4849785b47a4f02da", "https://cf.shopee.sg/file/f511cb7b6421010dbff512547b0f8b90", "https://cf.shopee.sg/file/b69729b2bd307a5e614e436bbb40af7f", "https://cf.shopee.sg/file/82399176d3d864149fe4327b6adc3bc0"},
 	}
 	CategoryFoodBeverageFoodStaples = &Category{
-		Id:       "503x1",
-		Slug:     "food-and-beverage-food-staples",
-		Name:     "Nhu yếu phẩm",
-		NameEn:   "Food Staples",
-		Children: Categories{CategoryFoodBeverageFoodStaplesDriedGoods, CategoryFoodBeverageFoodStaplesNoodles, CategoryFoodBeverageFoodStaplesRice, CategoryFoodBeverageFoodStaplesPasta, CategoryFoodBeverageFoodStaplesCannedFood, CategoryFoodBeverageFoodStaplesPreservedVegetables},
+		Id:     "503x1",
+		Slug:   "food-and-beverage-food-staples",
+		Name:   "Nhu yếu phẩm",
+		NameEn: "Food Staples",
+		Children: Categories{
+			CategoryFoodBeverageFoodStaplesDriedGoods,
+			CategoryFoodBeverageFoodStaplesNoodles,
+			CategoryFoodBeverageFoodStaplesRice,
+			CategoryFoodBeverageFoodStaplesPasta,
+			CategoryFoodBeverageFoodStaplesCannedFood,
+			CategoryFoodBeverageFoodStaplesPreservedVegetables,
+		},
 	}
 	CategoryFoodBeverageFoodStaplesDriedGoods = &Category{
-		Id:       "503x2",
-		Slug:     "food-and-beverage-food-staples-dried-goods",
-		Name:     "Thực phẩm khô",
-		NameEn:   "Dried Goods",
-		Children: Categories{CategoryFoodBeverageFoodStaplesDriedGoodsBeansGrains, CategoryFoodBeverageFoodStaplesDriedGoodsDriedSeafood, CategoryFoodBeverageFoodStaplesDriedGoodsTraditionalHerbs, CategoryFoodBeverageFoodStaplesDriedGoodsOther},
+		Id:     "503x2",
+		Slug:   "food-and-beverage-food-staples-dried-goods",
+		Name:   "Thực phẩm khô",
+		NameEn: "Dried Goods",
+		Children: Categories{
+			CategoryFoodBeverageFoodStaplesDriedGoodsDriedSeafood,
+			CategoryFoodBeverageFoodStaplesDriedGoodsTraditionalHerbs,
+			CategoryFoodBeverageFoodStaplesDriedGoodsOther,
+			CategoryFoodBeverageFoodStaplesDriedGoodsBeansGrains,
+		},
 	}
 	CategoryFoodBeverageFoodStaplesDriedGoodsBeansGrains = &Category{
 		Id:     "503x3",
@@ -4351,11 +5081,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/7ee337359a4c156ecb1bea8851dbcf5d", "https://cf.shopee.sg/file/3c2dd2a068a25b9b5cec60f7025165cd", "https://cf.shopee.sg/file/ddc11fbf19a9cdd5086d00e810c6fa56", "https://cf.shopee.sg/file/d9cc7a7e2136b394249c2eb7a3dce5ae", "https://cf.shopee.sg/file/5fe092021091a1068f2f91dfe24c0d60", "https://cf.shopee.sg/file/7d42000b82a975c5eb5af523c0e1b9a7"},
 	}
 	CategoryFoodBeverageFoodStaplesCannedFood = &Category{
-		Id:       "510x2",
-		Slug:     "food-and-beverage-food-staples-canned-food",
-		Name:     "Thực phẩm đóng hộp",
-		NameEn:   "Canned Food",
-		Children: Categories{CategoryFoodBeverageFoodStaplesCannedFoodCannedFruits, CategoryFoodBeverageFoodStaplesCannedFoodCannedMeat, CategoryFoodBeverageFoodStaplesCannedFoodCannedSeafood, CategoryFoodBeverageFoodStaplesCannedFoodCannedVegetables, CategoryFoodBeverageFoodStaplesCannedFoodCannedSoup, CategoryFoodBeverageFoodStaplesCannedFoodOther},
+		Id:     "510x2",
+		Slug:   "food-and-beverage-food-staples-canned-food",
+		Name:   "Thực phẩm đóng hộp",
+		NameEn: "Canned Food",
+		Children: Categories{
+			CategoryFoodBeverageFoodStaplesCannedFoodCannedFruits,
+			CategoryFoodBeverageFoodStaplesCannedFoodCannedMeat,
+			CategoryFoodBeverageFoodStaplesCannedFoodCannedSeafood,
+			CategoryFoodBeverageFoodStaplesCannedFoodCannedVegetables,
+			CategoryFoodBeverageFoodStaplesCannedFoodCannedSoup,
+			CategoryFoodBeverageFoodStaplesCannedFoodOther,
+		},
 	}
 	CategoryFoodBeverageFoodStaplesCannedFoodCannedFruits = &Category{
 		Id:     "510x3",
@@ -4407,11 +5144,21 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/583be6391704cdd0b8b87b7c6e77b731", "https://cf.shopee.sg/file/c94ef44fc40bf15dfe4d67ccc7cd3992", "https://cf.shopee.sg/file/141a07c76602ddc69d8fe2ab6ef62762", "https://cf.shopee.sg/file/04550d9d3c5cfe444c3f81966b2ba717", "https://cf.shopee.sg/file/f2a1c463cc662b0d8156a890031bbf1a", "https://cf.shopee.sg/file/2494e34ee006d7bab6c1d1823baeafbb"},
 	}
 	CategoryFoodBeverageCookingEssentials = &Category{
-		Id:       "517x1",
-		Slug:     "food-and-beverage-cooking-essentials",
-		Name:     "Nguyên liệu nấu ăn",
-		NameEn:   "Cooking Essentials",
-		Children: Categories{CategoryFoodBeverageCookingEssentialsSweetener, CategoryFoodBeverageCookingEssentialsStockGravyInstantSoup, CategoryFoodBeverageCookingEssentialsFlourCoating, CategoryFoodBeverageCookingEssentialsOther, CategoryFoodBeverageCookingEssentialsOil, CategoryFoodBeverageCookingEssentialsSeasoningsCondiments, CategoryFoodBeverageCookingEssentialsFlavourEnhancers, CategoryFoodBeverageCookingEssentialsSurgar, CategoryFoodBeverageCookingEssentialsCookingPasteKit},
+		Id:     "517x1",
+		Slug:   "food-and-beverage-cooking-essentials",
+		Name:   "Nguyên liệu nấu ăn",
+		NameEn: "Cooking Essentials",
+		Children: Categories{
+			CategoryFoodBeverageCookingEssentialsOil,
+			CategoryFoodBeverageCookingEssentialsStockGravyInstantSoup,
+			CategoryFoodBeverageCookingEssentialsCookingPasteKit,
+			CategoryFoodBeverageCookingEssentialsFlavourEnhancers,
+			CategoryFoodBeverageCookingEssentialsOther,
+			CategoryFoodBeverageCookingEssentialsSeasoningsCondiments,
+			CategoryFoodBeverageCookingEssentialsSurgar,
+			CategoryFoodBeverageCookingEssentialsSweetener,
+			CategoryFoodBeverageCookingEssentialsFlourCoating,
+		},
 	}
 	CategoryFoodBeverageCookingEssentialsOil = &Category{
 		Id:     "517x2",
@@ -4421,11 +5168,20 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/98d14f38d9281e156a6f6bc5801eb292", "https://cf.shopee.sg/file/63c9fea41af714aec4b98135c060e53d", "https://cf.shopee.sg/file/9ec6f52134d4dd2adfe5744be66c5731", "https://cf.shopee.sg/file/e9f0b174c15a4852ea860e63cc44c90f", "https://cf.shopee.sg/file/ad7e145fa4cc234cf9bd02f58d34daf4", "https://cf.shopee.sg/file/fbb8ca66d692394a2e6e7fb493974ffc"},
 	}
 	CategoryFoodBeverageCookingEssentialsSeasoningsCondiments = &Category{
-		Id:       "518x2",
-		Slug:     "food-and-beverage-cooking-essentials-seasonings-and-condiments",
-		Name:     "Gia vị & Hương liệu",
-		NameEn:   "Seasonings & Condiments",
-		Children: Categories{CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsChilliSambal, CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsVinegar, CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsCookingWine, CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsDressing, CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsOther, CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsPepper, CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsHerbsSpices, CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsSauce},
+		Id:     "518x2",
+		Slug:   "food-and-beverage-cooking-essentials-seasonings-and-condiments",
+		Name:   "Gia vị & Hương liệu",
+		NameEn: "Seasonings & Condiments",
+		Children: Categories{
+			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsPepper,
+			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsHerbsSpices,
+			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsSauce,
+			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsChilliSambal,
+			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsVinegar,
+			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsCookingWine,
+			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsDressing,
+			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsOther,
+		},
 	}
 	CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsPepper = &Category{
 		Id:     "518x3",
@@ -4435,18 +5191,22 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/cf28e6f9df172974a1d965469c4676b5", "https://cf.shopee.sg/file/571fd0cc7cea1f6bcef010cb6a2e6a1e", "https://cf.shopee.sg/file/e95475ee7eab2c4c038612175969d982", "https://cf.shopee.sg/file/4e6a13247b260b153936a6ebf3b0bd1b", "https://cf.shopee.sg/file/3bb4415c4f1a58de4741bc3b0f66c2a2", "https://cf.shopee.sg/file/bb8fe7a2a8db1dbb1d3ab5d7b6f5e1de"},
 	}
 	CategoryFoodBeverageSeasoningsCondiments = &Category{
-		Id:       "519x1",
-		Slug:     "food-and-beverage-seasonings-and-condiments",
-		Name:     "Nguyên liệu nấu ăn",
-		NameEn:   "Seasonings & Condiments",
-		Children: Categories{CategoryFoodBeverageSeasoningsCondimentsCookingEssentials},
+		Id:     "519x1",
+		Slug:   "food-and-beverage-seasonings-and-condiments",
+		Name:   "Nguyên liệu nấu ăn",
+		NameEn: "Seasonings & Condiments",
+		Children: Categories{
+			CategoryFoodBeverageSeasoningsCondimentsCookingEssentials,
+		},
 	}
 	CategoryFoodBeverageSeasoningsCondimentsCookingEssentials = &Category{
-		Id:       "519x2",
-		Slug:     "food-and-beverage-seasonings-and-condiments-cooking-essentials",
-		Name:     "Gia vị & Hương liệu",
-		NameEn:   "Cooking Essentials",
-		Children: Categories{CategoryFoodBeverageSeasoningsCondimentsCookingEssentialsSalt},
+		Id:     "519x2",
+		Slug:   "food-and-beverage-seasonings-and-condiments-cooking-essentials",
+		Name:   "Gia vị & Hương liệu",
+		NameEn: "Cooking Essentials",
+		Children: Categories{
+			CategoryFoodBeverageSeasoningsCondimentsCookingEssentialsSalt,
+		},
 	}
 	CategoryFoodBeverageSeasoningsCondimentsCookingEssentialsSalt = &Category{
 		Id:     "519x3",
@@ -4554,11 +5314,19 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/ae2606358fab05d58c87c3c0722ebc51", "https://cf.shopee.sg/file/e1743a867a3bcc4827c2e76e8726c6b8", "https://cf.shopee.sg/file/88349f0a66e1d9649552c634573074bd", "https://cf.shopee.sg/file/3ec178291bfece0c7ce19e50b5a204e2", "https://cf.shopee.sg/file/8eab1f42d803127523e0de7804a8ad85"},
 	}
 	CategoryFoodBeverageBakingNeeds = &Category{
-		Id:       "534x1",
-		Slug:     "food-and-beverage-baking-needs",
-		Name:     "Đồ làm bánh",
-		NameEn:   "Baking Needs",
-		Children: Categories{CategoryFoodBeverageBakingNeedsBakingFlavoring, CategoryFoodBeverageBakingNeedsBakingPowderSoda, CategoryFoodBeverageBakingNeedsBakingPremixFlour, CategoryFoodBeverageBakingNeedsFlour, CategoryFoodBeverageBakingNeedsFoodColoring, CategoryFoodBeverageBakingNeedsBakingdecoration, CategoryFoodBeverageBakingNeedsOther},
+		Id:     "534x1",
+		Slug:   "food-and-beverage-baking-needs",
+		Name:   "Đồ làm bánh",
+		NameEn: "Baking Needs",
+		Children: Categories{
+			CategoryFoodBeverageBakingNeedsBakingFlavoring,
+			CategoryFoodBeverageBakingNeedsBakingPowderSoda,
+			CategoryFoodBeverageBakingNeedsBakingPremixFlour,
+			CategoryFoodBeverageBakingNeedsFlour,
+			CategoryFoodBeverageBakingNeedsFoodColoring,
+			CategoryFoodBeverageBakingNeedsBakingdecoration,
+			CategoryFoodBeverageBakingNeedsOther,
+		},
 	}
 	CategoryFoodBeverageBakingNeedsBakingFlavoring = &Category{
 		Id:     "534x2",
@@ -4610,11 +5378,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/91ad508da21f50d86dbdac1373c7ff17", "https://cf.shopee.sg/file/904e02b7febb1c480c863a8ee7b79cf3", "https://cf.shopee.sg/file/8776992d22464f9fc49b32391ea4fcba", "https://cf.shopee.sg/file/14f2f04f1d4538dc66b24e18124abe9f", "https://cf.shopee.sg/file/ddadc69068ce996d66af1d7b5a45c861", "https://cf.shopee.sg/file/e01fd896ee49de8d9eceeeefb5a95030"},
 	}
 	CategoryFoodBeverageBreakfastCerealsSpread = &Category{
-		Id:       "541x1",
-		Slug:     "food-and-beverage-breakfast-cereals-and-spread",
-		Name:     "Ngũ cốc & mứt",
-		NameEn:   "Breakfast Cereals & Spread",
-		Children: Categories{CategoryFoodBeverageBreakfastCerealsSpreadHoneyMapleSyrups, CategoryFoodBeverageBreakfastCerealsSpreadJamSpread, CategoryFoodBeverageBreakfastCerealsSpreadCerealGranolaOats, CategoryFoodBeverageBreakfastCerealsSpreadBreakfastBar},
+		Id:     "541x1",
+		Slug:   "food-and-beverage-breakfast-cereals-and-spread",
+		Name:   "Ngũ cốc & mứt",
+		NameEn: "Breakfast Cereals & Spread",
+		Children: Categories{
+			CategoryFoodBeverageBreakfastCerealsSpreadHoneyMapleSyrups,
+			CategoryFoodBeverageBreakfastCerealsSpreadJamSpread,
+			CategoryFoodBeverageBreakfastCerealsSpreadCerealGranolaOats,
+			CategoryFoodBeverageBreakfastCerealsSpreadBreakfastBar,
+		},
 	}
 	CategoryFoodBeverageBreakfastCerealsSpreadHoneyMapleSyrups = &Category{
 		Id:     "541x2",
@@ -4645,11 +5418,25 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/fe4614d9be3da0845c195c8593b52d52", "https://cf.shopee.sg/file/4c5e5a3059c2477e1c44b87781836c8f", "https://cf.shopee.sg/file/5b03e7c0b456bd610cc8003d57c80e50", "https://cf.shopee.sg/file/9e1261766011bf6a68dd50bf7f4e44ee", "https://cf.shopee.sg/file/7066ba66df1511da1af6365caf54a3fc", "https://cf.shopee.sg/file/517ec06b8ad0cf007f340283d2c84991"},
 	}
 	CategoryFoodBeverageBeverages = &Category{
-		Id:       "545x1",
-		Slug:     "food-and-beverage-beverages",
-		Name:     "Đồ uống",
-		NameEn:   "Beverages",
-		Children: Categories{CategoryFoodBeverageBeveragesTeaTeaBags, CategoryFoodBeverageBeveragesWater, CategoryFoodBeverageBeveragesCarbonatedDrinksTonics, CategoryFoodBeverageBeveragesPowderedDrinkMixes, CategoryFoodBeverageBeveragesDrinkToppings, CategoryFoodBeverageBeveragesTraditionalHerbalDrinks, CategoryFoodBeverageBeveragesNondairyMilk, CategoryFoodBeverageBeveragesCoffee, CategoryFoodBeverageBeveragesChocolateDrinks, CategoryFoodBeverageBeveragesEnergyIsotonicDrinks, CategoryFoodBeverageBeveragesJuiceJuiceVinegar, CategoryFoodBeverageBeveragesCordialSyrups, CategoryFoodBeverageBeveragesDessertDrink},
+		Id:     "545x1",
+		Slug:   "food-and-beverage-beverages",
+		Name:   "Đồ uống",
+		NameEn: "Beverages",
+		Children: Categories{
+			CategoryFoodBeverageBeveragesChocolateDrinks,
+			CategoryFoodBeverageBeveragesWater,
+			CategoryFoodBeverageBeveragesPowderedDrinkMixes,
+			CategoryFoodBeverageBeveragesDessertDrink,
+			CategoryFoodBeverageBeveragesCoffee,
+			CategoryFoodBeverageBeveragesEnergyIsotonicDrinks,
+			CategoryFoodBeverageBeveragesJuiceJuiceVinegar,
+			CategoryFoodBeverageBeveragesCordialSyrups,
+			CategoryFoodBeverageBeveragesCarbonatedDrinksTonics,
+			CategoryFoodBeverageBeveragesTraditionalHerbalDrinks,
+			CategoryFoodBeverageBeveragesDrinkToppings,
+			CategoryFoodBeverageBeveragesNondairyMilk,
+			CategoryFoodBeverageBeveragesTeaTeaBags,
+		},
 	}
 	CategoryFoodBeverageBeveragesCoffee = &Category{
 		Id:     "545x2",
@@ -4743,18 +5530,32 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/730048f3588ec046933b708598ffcdac", "https://cf.shopee.sg/file/ae9be89c70aea4a762b42d7bcc4971a5", "https://cf.shopee.sg/file/04e09b9940a2f02d619df23d804ab749", "https://cf.shopee.sg/file/2d67c19ad1eb0e5649cc7f7772731738", "https://cf.shopee.sg/file/979c614451af48ed2a8d11ef4ef1aff8", "https://cf.shopee.sg/file/14fdf3e29cbf6ef07fa44b1b4d2ea658"},
 	}
 	CategoryFoodBeverageDairyEggs = &Category{
-		Id:       "558x1",
-		Slug:     "food-and-beverage-dairy-and-eggs",
-		Name:     "Sữa - trứng",
-		NameEn:   "Dairy & Eggs",
-		Children: Categories{CategoryFoodBeverageDairyEggsIcecream, CategoryFoodBeverageDairyEggsEggs, CategoryFoodBeverageDairyEggsBeancurd, CategoryFoodBeverageDairyEggsMilk, CategoryFoodBeverageDairyEggsYogurtCulturedMilk, CategoryFoodBeverageDairyEggsCreamers, CategoryFoodBeverageDairyEggsButterMargarine, CategoryFoodBeverageDairyEggsCheeseCheesePowder},
+		Id:     "558x1",
+		Slug:   "food-and-beverage-dairy-and-eggs",
+		Name:   "Sữa - trứng",
+		NameEn: "Dairy & Eggs",
+		Children: Categories{
+			CategoryFoodBeverageDairyEggsCheeseCheesePowder,
+			CategoryFoodBeverageDairyEggsIcecream,
+			CategoryFoodBeverageDairyEggsEggs,
+			CategoryFoodBeverageDairyEggsBeancurd,
+			CategoryFoodBeverageDairyEggsMilk,
+			CategoryFoodBeverageDairyEggsYogurtCulturedMilk,
+			CategoryFoodBeverageDairyEggsCreamers,
+			CategoryFoodBeverageDairyEggsButterMargarine,
+		},
 	}
 	CategoryFoodBeverageDairyEggsMilk = &Category{
-		Id:       "558x2",
-		Slug:     "food-and-beverage-dairy-and-eggs-milk",
-		Name:     "Sữa",
-		NameEn:   "Milk",
-		Children: Categories{CategoryFoodBeverageDairyEggsMilkFreshMilk, CategoryFoodBeverageDairyEggsMilkUHTMilk, CategoryFoodBeverageDairyEggsMilkCondensedEvaporatedMilk, CategoryFoodBeverageDairyEggsMilkPowderedMilk},
+		Id:     "558x2",
+		Slug:   "food-and-beverage-dairy-and-eggs-milk",
+		Name:   "Sữa",
+		NameEn: "Milk",
+		Children: Categories{
+			CategoryFoodBeverageDairyEggsMilkFreshMilk,
+			CategoryFoodBeverageDairyEggsMilkUHTMilk,
+			CategoryFoodBeverageDairyEggsMilkCondensedEvaporatedMilk,
+			CategoryFoodBeverageDairyEggsMilkPowderedMilk,
+		},
 	}
 	CategoryFoodBeverageDairyEggsMilkFreshMilk = &Category{
 		Id:     "558x3",
@@ -4834,18 +5635,34 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/f40eb3e9dec606b77dad72393af950cf", "https://cf.shopee.sg/file/c0e2e9b7b0ba4badf21cc3bfd366824a", "https://cf.shopee.sg/file/f11513b43a737eaac5aab786bc4f1415", "https://cf.shopee.sg/file/daa7bb639816bfa143a35c21bfbc6828", "https://cf.shopee.sg/file/919eab848cf39b5c22361f41831e03d9", "https://cf.shopee.sg/file/80bfc97aeed7fb94f4deb9975bf45e4c"},
 	}
 	CategoryFoodBeverageFreshFrozenFood = &Category{
-		Id:       "569x1",
-		Slug:     "food-and-beverage-fresh-and-frozen-food",
-		Name:     "Thực phẩm tươi sống & đông lạnh",
-		NameEn:   "Fresh & Frozen Food",
-		Children: Categories{CategoryFoodBeverageFreshFrozenFoodMeat, CategoryFoodBeverageFreshFrozenFoodVegetables, CategoryFoodBeverageFreshFrozenFoodFruits, CategoryFoodBeverageFreshFrozenFoodProcessedMeatSeafood, CategoryFoodBeverageFreshFrozenFoodSeafood, CategoryFoodBeverageFreshFrozenFoodVegetarianMeat, CategoryFoodBeverageFreshFrozenFoodOther, CategoryFoodBeverageFreshFrozenFoodMushroom, CategoryFoodBeverageFreshFrozenFoodFrozenProcessedFood},
+		Id:     "569x1",
+		Slug:   "food-and-beverage-fresh-and-frozen-food",
+		Name:   "Thực phẩm tươi sống & đông lạnh",
+		NameEn: "Fresh & Frozen Food",
+		Children: Categories{
+			CategoryFoodBeverageFreshFrozenFoodMeat,
+			CategoryFoodBeverageFreshFrozenFoodSeafood,
+			CategoryFoodBeverageFreshFrozenFoodMushroom,
+			CategoryFoodBeverageFreshFrozenFoodProcessedMeatSeafood,
+			CategoryFoodBeverageFreshFrozenFoodVegetarianMeat,
+			CategoryFoodBeverageFreshFrozenFoodOther,
+			CategoryFoodBeverageFreshFrozenFoodVegetables,
+			CategoryFoodBeverageFreshFrozenFoodFruits,
+			CategoryFoodBeverageFreshFrozenFoodFrozenProcessedFood,
+		},
 	}
 	CategoryFoodBeverageFreshFrozenFoodMeat = &Category{
-		Id:       "569x2",
-		Slug:     "food-and-beverage-fresh-and-frozen-food-meat",
-		Name:     "Thịt",
-		NameEn:   "Meat",
-		Children: Categories{CategoryFoodBeverageFreshFrozenFoodMeatPork, CategoryFoodBeverageFreshFrozenFoodMeatLamb, CategoryFoodBeverageFreshFrozenFoodMeatOther, CategoryFoodBeverageFreshFrozenFoodMeatBeef, CategoryFoodBeverageFreshFrozenFoodMeatPoultry},
+		Id:     "569x2",
+		Slug:   "food-and-beverage-fresh-and-frozen-food-meat",
+		Name:   "Thịt",
+		NameEn: "Meat",
+		Children: Categories{
+			CategoryFoodBeverageFreshFrozenFoodMeatLamb,
+			CategoryFoodBeverageFreshFrozenFoodMeatOther,
+			CategoryFoodBeverageFreshFrozenFoodMeatBeef,
+			CategoryFoodBeverageFreshFrozenFoodMeatPoultry,
+			CategoryFoodBeverageFreshFrozenFoodMeatPork,
+		},
 	}
 	CategoryFoodBeverageFreshFrozenFoodMeatBeef = &Category{
 		Id:     "569x3",
@@ -4878,11 +5695,16 @@ var (
 		NameEn: "Other",
 	}
 	CategoryFoodBeverageFreshFrozenFoodSeafood = &Category{
-		Id:       "574x2",
-		Slug:     "food-and-beverage-fresh-and-frozen-food-seafood",
-		Name:     "Hải sản",
-		NameEn:   "Seafood",
-		Children: Categories{CategoryFoodBeverageFreshFrozenFoodSeafoodOther, CategoryFoodBeverageFreshFrozenFoodSeafoodFish, CategoryFoodBeverageFreshFrozenFoodSeafoodPrawn, CategoryFoodBeverageFreshFrozenFoodSeafoodCrab},
+		Id:     "574x2",
+		Slug:   "food-and-beverage-fresh-and-frozen-food-seafood",
+		Name:   "Hải sản",
+		NameEn: "Seafood",
+		Children: Categories{
+			CategoryFoodBeverageFreshFrozenFoodSeafoodFish,
+			CategoryFoodBeverageFreshFrozenFoodSeafoodPrawn,
+			CategoryFoodBeverageFreshFrozenFoodSeafoodCrab,
+			CategoryFoodBeverageFreshFrozenFoodSeafoodOther,
+		},
 	}
 	CategoryFoodBeverageFreshFrozenFoodSeafoodFish = &Category{
 		Id:     "574x3",
@@ -4921,11 +5743,25 @@ var (
 		NameEn: "Other",
 	}
 	CategoryFoodBeverageFreshFrozenFoodVegetables = &Category{
-		Id:       "580x2",
-		Slug:     "food-and-beverage-fresh-and-frozen-food-vegetables",
-		Name:     "Rau củ",
-		NameEn:   "Vegetables",
-		Children: Categories{CategoryFoodBeverageFreshFrozenFoodVegetablesRootStemVegetables, CategoryFoodBeverageFreshFrozenFoodVegetablesSprouts, CategoryFoodBeverageFreshFrozenFoodVegetablesSaladVegetables, CategoryFoodBeverageFreshFrozenFoodVegetablesOther, CategoryFoodBeverageFreshFrozenFoodVegetablesCabbageBrusselSprouts, CategoryFoodBeverageFreshFrozenFoodVegetablesBrinjalsGourdsSquashes, CategoryFoodBeverageFreshFrozenFoodVegetablesChilliCapsicum, CategoryFoodBeverageFreshFrozenFoodVegetablesGarlicGingerOnion, CategoryFoodBeverageFreshFrozenFoodVegetablesPeasBeansNutsCorn, CategoryFoodBeverageFreshFrozenFoodVegetablesPrecutAssortedVegetableSet, CategoryFoodBeverageFreshFrozenFoodVegetablesFreshHerbs, CategoryFoodBeverageFreshFrozenFoodVegetablesLeafyVegetables, CategoryFoodBeverageFreshFrozenFoodVegetablesBroccoliCauliflowers},
+		Id:     "580x2",
+		Slug:   "food-and-beverage-fresh-and-frozen-food-vegetables",
+		Name:   "Rau củ",
+		NameEn: "Vegetables",
+		Children: Categories{
+			CategoryFoodBeverageFreshFrozenFoodVegetablesGarlicGingerOnion,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesRootStemVegetables,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesSprouts,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesOther,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesCabbageBrusselSprouts,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesLeafyVegetables,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesBrinjalsGourdsSquashes,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesChilliCapsicum,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesPrecutAssortedVegetableSet,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesFreshHerbs,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesBroccoliCauliflowers,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesPeasBeansNutsCorn,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesSaladVegetables,
+		},
 	}
 	CategoryFoodBeverageFreshFrozenFoodVegetablesOther = &Category{
 		Id:     "580x3",
@@ -5006,11 +5842,22 @@ var (
 		NameEn: "Pre-cut & Assorted Vegetable Set",
 	}
 	CategoryFoodBeverageFreshFrozenFoodFruits = &Category{
-		Id:       "593x2",
-		Slug:     "food-and-beverage-fresh-and-frozen-food-fruits",
-		Name:     "Trái cây",
-		NameEn:   "Fruits",
-		Children: Categories{CategoryFoodBeverageFreshFrozenFoodFruitsStonefruits, CategoryFoodBeverageFreshFrozenFoodFruitsBerries, CategoryFoodBeverageFreshFrozenFoodFruitsCitrus, CategoryFoodBeverageFreshFrozenFoodFruitsGrapes, CategoryFoodBeverageFreshFrozenFoodFruitsTropicalExoticFruits, CategoryFoodBeverageFreshFrozenFoodFruitsPrecutAssortedFruitSet, CategoryFoodBeverageFreshFrozenFoodFruitsOther, CategoryFoodBeverageFreshFrozenFoodFruitsApplesPears, CategoryFoodBeverageFreshFrozenFoodFruitsBananas, CategoryFoodBeverageFreshFrozenFoodFruitsMelons},
+		Id:     "593x2",
+		Slug:   "food-and-beverage-fresh-and-frozen-food-fruits",
+		Name:   "Trái cây",
+		NameEn: "Fruits",
+		Children: Categories{
+			CategoryFoodBeverageFreshFrozenFoodFruitsApplesPears,
+			CategoryFoodBeverageFreshFrozenFoodFruitsGrapes,
+			CategoryFoodBeverageFreshFrozenFoodFruitsMelons,
+			CategoryFoodBeverageFreshFrozenFoodFruitsTropicalExoticFruits,
+			CategoryFoodBeverageFreshFrozenFoodFruitsPrecutAssortedFruitSet,
+			CategoryFoodBeverageFreshFrozenFoodFruitsBananas,
+			CategoryFoodBeverageFreshFrozenFoodFruitsBerries,
+			CategoryFoodBeverageFreshFrozenFoodFruitsCitrus,
+			CategoryFoodBeverageFreshFrozenFoodFruitsStonefruits,
+			CategoryFoodBeverageFreshFrozenFoodFruitsOther,
+		},
 	}
 	CategoryFoodBeverageFreshFrozenFoodFruitsApplesPears = &Category{
 		Id:     "593x3",
@@ -5091,11 +5938,16 @@ var (
 		NameEn: "Processed Meat & Seafood",
 	}
 	CategoryFoodBeverageBakery = &Category{
-		Id:       "606x1",
-		Slug:     "food-and-beverage-bakery",
-		Name:     "Các loại bánh",
-		NameEn:   "Bakery",
-		Children: Categories{CategoryFoodBeverageBakeryBreads, CategoryFoodBeverageBakeryCakesPies, CategoryFoodBeverageBakeryPastry, CategoryFoodBeverageBakeryOther},
+		Id:     "606x1",
+		Slug:   "food-and-beverage-bakery",
+		Name:   "Các loại bánh",
+		NameEn: "Bakery",
+		Children: Categories{
+			CategoryFoodBeverageBakeryPastry,
+			CategoryFoodBeverageBakeryOther,
+			CategoryFoodBeverageBakeryBreads,
+			CategoryFoodBeverageBakeryCakesPies,
+		},
 	}
 	CategoryFoodBeverageBakeryBreads = &Category{
 		Id:     "606x2",
@@ -5122,11 +5974,17 @@ var (
 		NameEn: "Other",
 	}
 	CategoryFoodBeverageAlcoholicBeverages = &Category{
-		Id:       "610x1",
-		Slug:     "food-and-beverage-alcoholic-beverages",
-		Name:     "Đồ uống có cồn",
-		NameEn:   "Alcoholic Beverages",
-		Children: Categories{CategoryFoodBeverageAlcoholicBeveragesLiquorSpirits, CategoryFoodBeverageAlcoholicBeveragesSakeSojuUmeshu, CategoryFoodBeverageAlcoholicBeveragesOther, CategoryFoodBeverageAlcoholicBeveragesBearCider, CategoryFoodBeverageAlcoholicBeveragesWineChampange},
+		Id:     "610x1",
+		Slug:   "food-and-beverage-alcoholic-beverages",
+		Name:   "Đồ uống có cồn",
+		NameEn: "Alcoholic Beverages",
+		Children: Categories{
+			CategoryFoodBeverageAlcoholicBeveragesOther,
+			CategoryFoodBeverageAlcoholicBeveragesBearCider,
+			CategoryFoodBeverageAlcoholicBeveragesWineChampange,
+			CategoryFoodBeverageAlcoholicBeveragesLiquorSpirits,
+			CategoryFoodBeverageAlcoholicBeveragesSakeSojuUmeshu,
+		},
 	}
 	CategoryFoodBeverageAlcoholicBeveragesBearCider = &Category{
 		Id:     "610x2",
@@ -5171,18 +6029,35 @@ var (
 		NameEn: "Other",
 	}
 	CategoryPets = &Category{
-		Id:       "617x0",
-		Slug:     "pets",
-		Name:     "Chăm Sóc Thú Cưng",
-		NameEn:   "Pets",
-		Children: Categories{CategoryPetsPetGrooming, CategoryPetsPetClothingAccessories, CategoryPetsPetHealthcare, CategoryPetsPetFood, CategoryPetsPetAccessories, CategoryPetsLitterToilet},
+		Id:     "617x0",
+		Slug:   "pets",
+		Name:   "Chăm Sóc Thú Cưng",
+		NameEn: "Pets",
+		Children: Categories{
+			CategoryPetsLitterToilet,
+			CategoryPetsPetGrooming,
+			CategoryPetsPetClothingAccessories,
+			CategoryPetsPetHealthcare,
+			CategoryPetsPetFood,
+			CategoryPetsPetAccessories,
+		},
 	}
 	CategoryPetsPetFood = &Category{
-		Id:       "617x1",
-		Slug:     "pets-pet-food",
-		Name:     "Thức ăn cho thú cưng",
-		NameEn:   "Pet Food",
-		Children: Categories{CategoryPetsPetFoodAquariumPetFood, CategoryPetsPetFoodDogFood, CategoryPetsPetFoodDogTreats, CategoryPetsPetFoodCatFood, CategoryPetsPetFoodCatTreats, CategoryPetsPetFoodSmallPetFood, CategoryPetsPetFoodSmallPetTreats, CategoryPetsPetFoodBirdFeed, CategoryPetsPetFoodReptileFood},
+		Id:     "617x1",
+		Slug:   "pets-pet-food",
+		Name:   "Thức ăn cho thú cưng",
+		NameEn: "Pet Food",
+		Children: Categories{
+			CategoryPetsPetFoodCatFood,
+			CategoryPetsPetFoodSmallPetFood,
+			CategoryPetsPetFoodSmallPetTreats,
+			CategoryPetsPetFoodAquariumPetFood,
+			CategoryPetsPetFoodBirdFeed,
+			CategoryPetsPetFoodReptileFood,
+			CategoryPetsPetFoodDogFood,
+			CategoryPetsPetFoodDogTreats,
+			CategoryPetsPetFoodCatTreats,
+		},
 	}
 	CategoryPetsPetFoodDogFood = &Category{
 		Id:     "617x2",
@@ -5248,11 +6123,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/96f0006a80e310a488b6dd1777ef2b44", "https://cf.shopee.sg/file/44537eb562a7e22aea0f2c580bc7a11e", "https://cf.shopee.sg/file/7cf49eb289c4ee69af984cdc6421a59d", "https://cf.shopee.sg/file/135e67ceec89d58a42b6a82d51ffe80a", "https://cf.shopee.sg/file/01bbd9dd6d920b82bb06e86d589f1b4b", "https://cf.shopee.sg/file/091f5ed1f3fd029af6cf18635f342549"},
 	}
 	CategoryPetsPetAccessories = &Category{
-		Id:       "626x1",
-		Slug:     "pets-pet-accessories",
-		Name:     "Phụ kiện cho thú cưng",
-		NameEn:   "Pet Accessories",
-		Children: Categories{CategoryPetsPetAccessoriesBowlsFeeders, CategoryPetsPetAccessoriesTravelEssentials, CategoryPetsPetAccessoriesLeashesCollarsHarnessesMuzzles, CategoryPetsPetAccessoriesToys, CategoryPetsPetAccessoriesPetFurniture, CategoryPetsPetAccessoriesAquariumNeeds},
+		Id:     "626x1",
+		Slug:   "pets-pet-accessories",
+		Name:   "Phụ kiện cho thú cưng",
+		NameEn: "Pet Accessories",
+		Children: Categories{
+			CategoryPetsPetAccessoriesBowlsFeeders,
+			CategoryPetsPetAccessoriesTravelEssentials,
+			CategoryPetsPetAccessoriesLeashesCollarsHarnessesMuzzles,
+			CategoryPetsPetAccessoriesToys,
+			CategoryPetsPetAccessoriesPetFurniture,
+			CategoryPetsPetAccessoriesAquariumNeeds,
+		},
 	}
 	CategoryPetsPetAccessoriesBowlsFeeders = &Category{
 		Id:     "626x2",
@@ -5276,18 +6158,26 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/7c816df87008de6c33d83888e05da508", "https://cf.shopee.sg/file/630541a030b987c938ea0b2b21fb14b2", "https://cf.shopee.sg/file/6e977cc4d20d323ceff95681aed2adde", "https://cf.shopee.sg/file/5c25b9eaec6c0d52ca7b2175d9450f76", "https://cf.shopee.sg/file/33c10ec58b61de2108315beb386f124b", "https://cf.shopee.sg/file/b3f5a1151264c065375ef8ca3bbd548d"},
 	}
 	CategoryPetsPetAccessoriesToys = &Category{
-		Id:       "629x2",
-		Slug:     "pets-pet-accessories-toys",
-		Name:     "Đồ chơi",
-		NameEn:   "Toys",
-		Children: Categories{CategoryPetsPetAccessoriesToysDogCatToys, CategoryPetsPetAccessoriesToysSmallPetToys, CategoryPetsPetAccessoriesToysBirdToys},
+		Id:     "629x2",
+		Slug:   "pets-pet-accessories-toys",
+		Name:   "Đồ chơi",
+		NameEn: "Toys",
+		Children: Categories{
+			CategoryPetsPetAccessoriesToysSmallPetToys,
+			CategoryPetsPetAccessoriesToysBirdToys,
+			CategoryPetsPetAccessoriesToysDogCatToys,
+		},
 	}
 	CategoryPetsPetAccessoriesToysDogCatToys = &Category{
-		Id:       "629x3",
-		Slug:     "pets-pet-accessories-toys-dog-and-cat-toys",
-		Name:     "Đồ chơi cho chó mèo",
-		NameEn:   "Dog & Cat Toys",
-		Children: Categories{CategoryPetsPetAccessoriesToysDogCatToysSticksChasers, CategoryPetsPetAccessoriesToysDogCatToysChewBonesBalls, CategoryPetsPetAccessoriesToysDogCatToysFrisbees},
+		Id:     "629x3",
+		Slug:   "pets-pet-accessories-toys-dog-and-cat-toys",
+		Name:   "Đồ chơi cho chó mèo",
+		NameEn: "Dog & Cat Toys",
+		Children: Categories{
+			CategoryPetsPetAccessoriesToysDogCatToysSticksChasers,
+			CategoryPetsPetAccessoriesToysDogCatToysChewBonesBalls,
+			CategoryPetsPetAccessoriesToysDogCatToysFrisbees,
+		},
 	}
 	CategoryPetsPetAccessoriesToysDogCatToysSticksChasers = &Category{
 		Id:     "629x4",
@@ -5325,11 +6215,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/9826ef765885ad29f829a7f36898faee", "https://cf.shopee.sg/file/15a7b38eabd5292a8c2fc977881ae7f1", "https://cf.shopee.sg/file/246856873ac49f48ab8e2257fa761b1e", "https://cf.shopee.sg/file/8abb0e092a16555f29b9acfe9e999384", "https://cf.shopee.sg/file/b45f210e2b411bd28130605baa700db6", "https://cf.shopee.sg/file/bc84ae2e4bb3e1eb80fbd32bcd0e543d"},
 	}
 	CategoryPetsPetAccessoriesPetFurniture = &Category{
-		Id:       "634x2",
-		Slug:     "pets-pet-accessories-pet-furniture",
-		Name:     "Nội thất cho thú cưng",
-		NameEn:   "Pet Furniture",
-		Children: Categories{CategoryPetsPetAccessoriesPetFurnitureHouses, CategoryPetsPetAccessoriesPetFurnitureHabitatsAccessories, CategoryPetsPetAccessoriesPetFurnitureCagesCrates, CategoryPetsPetAccessoriesPetFurnitureScratchingPadsPosts, CategoryPetsPetAccessoriesPetFurnitureBedsMats},
+		Id:     "634x2",
+		Slug:   "pets-pet-accessories-pet-furniture",
+		Name:   "Nội thất cho thú cưng",
+		NameEn: "Pet Furniture",
+		Children: Categories{
+			CategoryPetsPetAccessoriesPetFurnitureBedsMats,
+			CategoryPetsPetAccessoriesPetFurnitureHouses,
+			CategoryPetsPetAccessoriesPetFurnitureHabitatsAccessories,
+			CategoryPetsPetAccessoriesPetFurnitureCagesCrates,
+			CategoryPetsPetAccessoriesPetFurnitureScratchingPadsPosts,
+		},
 	}
 	CategoryPetsPetAccessoriesPetFurnitureBedsMats = &Category{
 		Id:     "634x3",
@@ -5374,11 +6270,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/4664bada37007e61ea8ded5aeac8509c", "https://cf.shopee.sg/file/ec525ec9b58fc857d214f3a014c84cf1", "https://cf.shopee.sg/file/0b62de5c7a6862ecdfa79c419978dab5", "https://cf.shopee.sg/file/564751eeb81f551b189ff86765eeccec", "https://cf.shopee.sg/file/e7f33b74f7372d2c7c8a7c5323dc320f", "https://cf.shopee.sg/file/70190952ed1f5832a9cbb9294c2f89c7"},
 	}
 	CategoryPetsLitterToilet = &Category{
-		Id:       "640x1",
-		Slug:     "pets-litter-and-toilet",
-		Name:     "Vệ sinh cho thú cưng",
-		NameEn:   "Litter & Toilet",
-		Children: Categories{CategoryPetsLitterToiletOther, CategoryPetsLitterToiletCatLitterBoxes, CategoryPetsLitterToiletSmallPetBeddingLitter, CategoryPetsLitterToiletDiapers, CategoryPetsLitterToiletDogTrainingPadsTrays, CategoryPetsLitterToiletPoopBagsScoopers},
+		Id:     "640x1",
+		Slug:   "pets-litter-and-toilet",
+		Name:   "Vệ sinh cho thú cưng",
+		NameEn: "Litter & Toilet",
+		Children: Categories{
+			CategoryPetsLitterToiletCatLitterBoxes,
+			CategoryPetsLitterToiletSmallPetBeddingLitter,
+			CategoryPetsLitterToiletDiapers,
+			CategoryPetsLitterToiletDogTrainingPadsTrays,
+			CategoryPetsLitterToiletPoopBagsScoopers,
+			CategoryPetsLitterToiletOther,
+		},
 	}
 	CategoryPetsLitterToiletCatLitterBoxes = &Category{
 		Id:     "640x2",
@@ -5423,11 +6326,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/ca270861168b2187ad3a86826c40fd6c", "https://cf.shopee.sg/file/4d807289f429e245ea976a9cb380d48e", "https://cf.shopee.sg/file/cd8c625fb568ef269b5b334d3393c1da", "https://cf.shopee.sg/file/47eb8a214c41fe197b0c96c5e7038f48", "https://cf.shopee.sg/file/c2731963dd83c69a4c4b9ea88f48a673", "https://cf.shopee.sg/file/56dbed6fe72cbb18bdc7179d60faceed"},
 	}
 	CategoryPetsPetGrooming = &Category{
-		Id:       "646x1",
-		Slug:     "pets-pet-grooming",
-		Name:     "Làm đẹp cho thú cưng",
-		NameEn:   "Pet Grooming",
-		Children: Categories{CategoryPetsPetGroomingHairCare, CategoryPetsPetGroomingOralCare, CategoryPetsPetGroomingClawCare, CategoryPetsPetGroomingOther},
+		Id:     "646x1",
+		Slug:   "pets-pet-grooming",
+		Name:   "Làm đẹp cho thú cưng",
+		NameEn: "Pet Grooming",
+		Children: Categories{
+			CategoryPetsPetGroomingClawCare,
+			CategoryPetsPetGroomingOther,
+			CategoryPetsPetGroomingHairCare,
+			CategoryPetsPetGroomingOralCare,
+		},
 	}
 	CategoryPetsPetGroomingHairCare = &Category{
 		Id:     "646x2",
@@ -5458,11 +6366,19 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/ad290b39ea227486b4f1761c99368802", "https://cf.shopee.sg/file/e702c691c8b1312a57c51df32a914e07", "https://cf.shopee.sg/file/ce82b28f6cb8b7752f600d0766baa0c0", "https://cf.shopee.sg/file/aa0ca5710806e67e6f175b571abf39c8", "https://cf.shopee.sg/file/c353e40ab0d26d8f9e32dc0ed6cdbe77", "https://cf.shopee.sg/file/80d025f48b2f0f26471dfdb364ff6f70"},
 	}
 	CategoryPetsPetClothingAccessories = &Category{
-		Id:       "650x1",
-		Slug:     "pets-pet-clothing-and-accessories",
-		Name:     "Quần áo & phụ kiện",
-		NameEn:   "Pet Clothing & Accessories",
-		Children: Categories{CategoryPetsPetClothingAccessoriesPetClothing, CategoryPetsPetClothingAccessoriesWetWeatherGear, CategoryPetsPetClothingAccessoriesBootsSocksPawProtectors, CategoryPetsPetClothingAccessoriesNeckAccessories, CategoryPetsPetClothingAccessoriesEyewear, CategoryPetsPetClothingAccessoriesHairAccessories, CategoryPetsPetClothingAccessoriesHats},
+		Id:     "650x1",
+		Slug:   "pets-pet-clothing-and-accessories",
+		Name:   "Quần áo & phụ kiện",
+		NameEn: "Pet Clothing & Accessories",
+		Children: Categories{
+			CategoryPetsPetClothingAccessoriesBootsSocksPawProtectors,
+			CategoryPetsPetClothingAccessoriesNeckAccessories,
+			CategoryPetsPetClothingAccessoriesEyewear,
+			CategoryPetsPetClothingAccessoriesHairAccessories,
+			CategoryPetsPetClothingAccessoriesHats,
+			CategoryPetsPetClothingAccessoriesPetClothing,
+			CategoryPetsPetClothingAccessoriesWetWeatherGear,
+		},
 	}
 	CategoryPetsPetClothingAccessoriesPetClothing = &Category{
 		Id:     "650x2",
@@ -5514,11 +6430,13 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/e4e1ab3ca42f9577a109c0cc5df7674c", "https://cf.shopee.sg/file/f8496eb71de4940dda192c04ad7f8eda", "https://cf.shopee.sg/file/9941ae6e2d80873f14a4479fb9794fbd", "https://cf.shopee.sg/file/d6328b8cd3f4bcd7b80480c8e136acbc", "https://cf.shopee.sg/file/df0333d710ae718bcf33a1def2f74505", "https://cf.shopee.sg/file/9462537eda186d48dd3b2cf112fb1406"},
 	}
 	CategoryPetsPetHealthcare = &Category{
-		Id:       "657x1",
-		Slug:     "pets-pet-healthcare",
-		Name:     "Chăm sóc sức khỏe",
-		NameEn:   "Pet Healthcare",
-		Children: Categories{CategoryPetsPetHealthcareVitaminsSupplements},
+		Id:     "657x1",
+		Slug:   "pets-pet-healthcare",
+		Name:   "Chăm sóc sức khỏe",
+		NameEn: "Pet Healthcare",
+		Children: Categories{
+			CategoryPetsPetHealthcareVitaminsSupplements,
+		},
 	}
 	CategoryPetsPetHealthcareVitaminsSupplements = &Category{
 		Id:     "657x2",
@@ -5528,18 +6446,39 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/e4e1ab3ca42f9577a109c0cc5df7674c", "https://cf.shopee.sg/file/f8496eb71de4940dda192c04ad7f8eda", "https://cf.shopee.sg/file/9941ae6e2d80873f14a4479fb9794fbd", "https://cf.shopee.sg/file/d6328b8cd3f4bcd7b80480c8e136acbc", "https://cf.shopee.sg/file/df0333d710ae718bcf33a1def2f74505", "https://cf.shopee.sg/file/9462537eda186d48dd3b2cf112fb1406"},
 	}
 	CategoryMomBaby = &Category{
-		Id:       "658x0",
-		Slug:     "mom-and-baby",
-		Name:     "Mẹ & Bé",
-		NameEn:   "Mom & Baby",
-		Children: Categories{CategoryMomBabyFeedingEssentials, CategoryMomBabyMaternityAccessories, CategoryMomBabyMilkFormulaBabyFood, CategoryMomBabyGiftSetsPackages, CategoryMomBabyBabyTravelEssentials, CategoryMomBabyMaternityHealthcare, CategoryMomBabyBathBodyCare, CategoryMomBabyNursery, CategoryMomBabyBabySafety, CategoryMomBabyBabyHealthcare, CategoryMomBabyDiaperingPotty, CategoryMomBabyToys},
+		Id:     "658x0",
+		Slug:   "mom-and-baby",
+		Name:   "Mẹ & Bé",
+		NameEn: "Mom & Baby",
+		Children: Categories{
+			CategoryMomBabyBabySafety,
+			CategoryMomBabyBabyHealthcare,
+			CategoryMomBabyDiaperingPotty,
+			CategoryMomBabyToys,
+			CategoryMomBabyGiftSetsPackages,
+			CategoryMomBabyBabyTravelEssentials,
+			CategoryMomBabyMaternityHealthcare,
+			CategoryMomBabyNursery,
+			CategoryMomBabyMilkFormulaBabyFood,
+			CategoryMomBabyFeedingEssentials,
+			CategoryMomBabyMaternityAccessories,
+			CategoryMomBabyBathBodyCare,
+		},
 	}
 	CategoryMomBabyBabyTravelEssentials = &Category{
-		Id:       "658x1",
-		Slug:     "mom-and-baby-baby-travel-essentials",
-		Name:     "Đồ dùng du lịch cho bé",
-		NameEn:   "Baby Travel Essentials",
-		Children: Categories{CategoryMomBabyBabyTravelEssentialsBabyCarrier, CategoryMomBabyBabyTravelEssentialsStrollersTravelSystems, CategoryMomBabyBabyTravelEssentialsStrollerAccessories, CategoryMomBabyBabyTravelEssentialsCarMotorbikeSeats, CategoryMomBabyBabyTravelEssentialsCarMotorbikeSeatsAccessories, CategoryMomBabyBabyTravelEssentialsDiaperBags, CategoryMomBabyBabyTravelEssentialsChildHarnessesLeashes},
+		Id:     "658x1",
+		Slug:   "mom-and-baby-baby-travel-essentials",
+		Name:   "Đồ dùng du lịch cho bé",
+		NameEn: "Baby Travel Essentials",
+		Children: Categories{
+			CategoryMomBabyBabyTravelEssentialsCarMotorbikeSeatsAccessories,
+			CategoryMomBabyBabyTravelEssentialsDiaperBags,
+			CategoryMomBabyBabyTravelEssentialsChildHarnessesLeashes,
+			CategoryMomBabyBabyTravelEssentialsBabyCarrier,
+			CategoryMomBabyBabyTravelEssentialsStrollersTravelSystems,
+			CategoryMomBabyBabyTravelEssentialsStrollerAccessories,
+			CategoryMomBabyBabyTravelEssentialsCarMotorbikeSeats,
+		},
 	}
 	CategoryMomBabyBabyTravelEssentialsBabyCarrier = &Category{
 		Id:     "658x2",
@@ -5591,18 +6530,32 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/ba9f0051940ac27effafcd804fe31515", "https://cf.shopee.sg/file/e935405ab74026b56d0076a1ae166d3b", "https://cf.shopee.sg/file/8249fff5e33a01aee64e713d137e0b6e", "https://cf.shopee.sg/file/5f05a0ac52f4e6e8d4a6a2a09e45490f", "https://cf.shopee.sg/file/ed65e46d9d0be52bfa076706aeca3518", "https://cf.shopee.sg/file/dcc370fdd611ff14b6186ada2c9b7653"},
 	}
 	CategoryMomBabyFeedingEssentials = &Category{
-		Id:       "665x1",
-		Slug:     "mom-and-baby-feeding-essentials",
-		Name:     "Đồ dùng ăn dặm cho bé",
-		NameEn:   "Feeding Essentials",
-		Children: Categories{CategoryMomBabyFeedingEssentialsUtensils, CategoryMomBabyFeedingEssentialsBibs, CategoryMomBabyFeedingEssentialsPacifiers, CategoryMomBabyFeedingEssentialsFoodProcessors, CategoryMomBabyFeedingEssentialsBottlefeeding, CategoryMomBabyFeedingEssentialsBreastfeeding, CategoryMomBabyFeedingEssentialsHighchairsBoosterSeats},
+		Id:     "665x1",
+		Slug:   "mom-and-baby-feeding-essentials",
+		Name:   "Đồ dùng ăn dặm cho bé",
+		NameEn: "Feeding Essentials",
+		Children: Categories{
+			CategoryMomBabyFeedingEssentialsBottlefeeding,
+			CategoryMomBabyFeedingEssentialsBreastfeeding,
+			CategoryMomBabyFeedingEssentialsHighchairsBoosterSeats,
+			CategoryMomBabyFeedingEssentialsUtensils,
+			CategoryMomBabyFeedingEssentialsBibs,
+			CategoryMomBabyFeedingEssentialsPacifiers,
+			CategoryMomBabyFeedingEssentialsFoodProcessors,
+		},
 	}
 	CategoryMomBabyFeedingEssentialsBottlefeeding = &Category{
-		Id:       "665x2",
-		Slug:     "mom-and-baby-feeding-essentials-bottle-feeding",
-		Name:     "Bình sữa",
-		NameEn:   "Bottle-feeding",
-		Children: Categories{CategoryMomBabyFeedingEssentialsBottlefeedingBottleCoolerBag, CategoryMomBabyFeedingEssentialsBottlefeedingBottlesBottleaccessories, CategoryMomBabyFeedingEssentialsBottlefeedingBottleCleansing, CategoryMomBabyFeedingEssentialsBottlefeedingWarmers, CategoryMomBabyFeedingEssentialsBottlefeedingSterilizers},
+		Id:     "665x2",
+		Slug:   "mom-and-baby-feeding-essentials-bottle-feeding",
+		Name:   "Bình sữa",
+		NameEn: "Bottle-feeding",
+		Children: Categories{
+			CategoryMomBabyFeedingEssentialsBottlefeedingWarmers,
+			CategoryMomBabyFeedingEssentialsBottlefeedingSterilizers,
+			CategoryMomBabyFeedingEssentialsBottlefeedingBottleCoolerBag,
+			CategoryMomBabyFeedingEssentialsBottlefeedingBottlesBottleaccessories,
+			CategoryMomBabyFeedingEssentialsBottlefeedingBottleCleansing,
+		},
 	}
 	CategoryMomBabyFeedingEssentialsBottlefeedingBottleCoolerBag = &Category{
 		Id:     "665x3",
@@ -5640,11 +6593,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/95ac960ae1b4c573f6f6afc399164f82", "https://cf.shopee.sg/file/7338b03dec3ae7e7e88e75fbedc48176", "https://cf.shopee.sg/file/e55c7eac37112f70078406785898a365"},
 	}
 	CategoryMomBabyFeedingEssentialsBreastfeeding = &Category{
-		Id:       "670x2",
-		Slug:     "mom-and-baby-feeding-essentials-breastfeeding",
-		Name:     "Đồ dùng cho con bú",
-		NameEn:   "Breastfeeding",
-		Children: Categories{CategoryMomBabyFeedingEssentialsBreastfeedingBreastPumpAccessories, CategoryMomBabyFeedingEssentialsBreastfeedingBreastPadsShellsShields, CategoryMomBabyFeedingEssentialsBreastfeedingNursingCovers, CategoryMomBabyFeedingEssentialsBreastfeedingBreastmilkStorageBags},
+		Id:     "670x2",
+		Slug:   "mom-and-baby-feeding-essentials-breastfeeding",
+		Name:   "Đồ dùng cho con bú",
+		NameEn: "Breastfeeding",
+		Children: Categories{
+			CategoryMomBabyFeedingEssentialsBreastfeedingNursingCovers,
+			CategoryMomBabyFeedingEssentialsBreastfeedingBreastmilkStorageBags,
+			CategoryMomBabyFeedingEssentialsBreastfeedingBreastPumpAccessories,
+			CategoryMomBabyFeedingEssentialsBreastfeedingBreastPadsShellsShields,
+		},
 	}
 	CategoryMomBabyFeedingEssentialsBreastfeedingBreastPumpAccessories = &Category{
 		Id:     "670x3",
@@ -5682,11 +6640,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/b7d04e795345e8c730e8e57c3026d14f", "https://cf.shopee.sg/file/a9c3c399f3f760fc251e8cad82457e7d", "https://cf.shopee.sg/file/fe86a928561a300416d4cb58275cf341", "https://cf.shopee.sg/file/9f3e2f5450fa7171defdf23d7372fb41", "https://cf.shopee.sg/file/54b44f8138a8864ac18f82ef21dc226f", "https://cf.shopee.sg/file/3e46d557a2a327ee880c6d7d157342f2"},
 	}
 	CategoryMomBabyFeedingEssentialsUtensils = &Category{
-		Id:       "675x2",
-		Slug:     "mom-and-baby-feeding-essentials-utensils",
-		Name:     "Đồ dùng cho bé",
-		NameEn:   "Utensils",
-		Children: Categories{CategoryMomBabyFeedingEssentialsUtensilsBabyCups, CategoryMomBabyFeedingEssentialsUtensilsBabyTableware, CategoryMomBabyFeedingEssentialsUtensilsBabyFoodContainers},
+		Id:     "675x2",
+		Slug:   "mom-and-baby-feeding-essentials-utensils",
+		Name:   "Đồ dùng cho bé",
+		NameEn: "Utensils",
+		Children: Categories{
+			CategoryMomBabyFeedingEssentialsUtensilsBabyCups,
+			CategoryMomBabyFeedingEssentialsUtensilsBabyTableware,
+			CategoryMomBabyFeedingEssentialsUtensilsBabyFoodContainers,
+		},
 	}
 	CategoryMomBabyFeedingEssentialsUtensilsBabyCups = &Category{
 		Id:     "675x3",
@@ -5731,11 +6693,14 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/e087aebe2325ad4cf748fa25565f5ddb", "https://cf.shopee.sg/file/1ace0de59ec9441a4b7a433f3d0955cf", "https://cf.shopee.sg/file/65a24a5481cf660aa9c073f416109fb5", "https://cf.shopee.sg/file/1c10e92a4d8e723d407a5a0d5f3101bc", "https://cf.shopee.sg/file/3798ede54a03b36ab4470811ec573e93", "https://cf.shopee.sg/file/2306fd04cd2c302bbd01364d393f1041"},
 	}
 	CategoryMomBabyMaternityAccessories = &Category{
-		Id:       "681x1",
-		Slug:     "mom-and-baby-maternity-accessories",
-		Name:     "Phụ kiện cho mẹ",
-		NameEn:   "Maternity Accessories",
-		Children: Categories{CategoryMomBabyMaternityAccessoriesSupportingBelts, CategoryMomBabyMaternityAccessoriesMaternityPillows},
+		Id:     "681x1",
+		Slug:   "mom-and-baby-maternity-accessories",
+		Name:   "Phụ kiện cho mẹ",
+		NameEn: "Maternity Accessories",
+		Children: Categories{
+			CategoryMomBabyMaternityAccessoriesSupportingBelts,
+			CategoryMomBabyMaternityAccessoriesMaternityPillows,
+		},
 	}
 	CategoryMomBabyMaternityAccessoriesSupportingBelts = &Category{
 		Id:     "681x2",
@@ -5752,11 +6717,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/b9b4085fd4d69d6b413c053623d4274e", "https://cf.shopee.sg/file/8df9bec58c20d55b52b65765da39c352", "https://cf.shopee.sg/file/27a4f3ea54cd8f7fd3957358d7e1ed19", "https://cf.shopee.sg/file/95500d7ff4fc72d15aa0df73cd037b32", "https://cf.shopee.sg/file/316e8f6061058c1b07caff45840770a9", "https://cf.shopee.sg/file/277727b5a95a6ba2edfd3d62cf110cc6"},
 	}
 	CategoryMomBabyMaternityHealthcare = &Category{
-		Id:       "683x1",
-		Slug:     "mom-and-baby-maternity-healthcare",
-		Name:     "Chăm sóc sức khỏe mẹ",
-		NameEn:   "Maternity Healthcare",
-		Children: Categories{CategoryMomBabyMaternityHealthcareMoisturizersCreams, CategoryMomBabyMaternityHealthcareMaternityMilk, CategoryMomBabyMaternityHealthcareMaternityVitaminsSupplement},
+		Id:     "683x1",
+		Slug:   "mom-and-baby-maternity-healthcare",
+		Name:   "Chăm sóc sức khỏe mẹ",
+		NameEn: "Maternity Healthcare",
+		Children: Categories{
+			CategoryMomBabyMaternityHealthcareMoisturizersCreams,
+			CategoryMomBabyMaternityHealthcareMaternityMilk,
+			CategoryMomBabyMaternityHealthcareMaternityVitaminsSupplement,
+		},
 	}
 	CategoryMomBabyMaternityHealthcareMoisturizersCreams = &Category{
 		Id:     "683x2",
@@ -5777,11 +6746,21 @@ var (
 		NameEn: "Maternity Vitamins & Supplement",
 	}
 	CategoryMomBabyBathBodyCare = &Category{
-		Id:       "686x1",
-		Slug:     "mom-and-baby-bath-and-body-care",
-		Name:     "Đồ dùng phòng tắm & Chăm sóc cơ thể bé",
-		NameEn:   "Bath & Body Care",
-		Children: Categories{CategoryMomBabyBathBodyCareShowerCaps, CategoryMomBabyBathBodyCareBathingToolsAccessories, CategoryMomBabyBathBodyCareHairCareBodyWash, CategoryMomBabyBathBodyCareBabyColognesFragrances, CategoryMomBabyBathBodyCareBabyGroomingTools, CategoryMomBabyBathBodyCareWipes, CategoryMomBabyBathBodyCareBabyLaundryDetergent, CategoryMomBabyBathBodyCareBathRobesTowelsWashCloths, CategoryMomBabyBathBodyCareBathingTubsSeats},
+		Id:     "686x1",
+		Slug:   "mom-and-baby-bath-and-body-care",
+		Name:   "Đồ dùng phòng tắm & Chăm sóc cơ thể bé",
+		NameEn: "Bath & Body Care",
+		Children: Categories{
+			CategoryMomBabyBathBodyCareBathingTubsSeats,
+			CategoryMomBabyBathBodyCareBabyGroomingTools,
+			CategoryMomBabyBathBodyCareWipes,
+			CategoryMomBabyBathBodyCareBabyLaundryDetergent,
+			CategoryMomBabyBathBodyCareBathRobesTowelsWashCloths,
+			CategoryMomBabyBathBodyCareShowerCaps,
+			CategoryMomBabyBathBodyCareBathingToolsAccessories,
+			CategoryMomBabyBathBodyCareHairCareBodyWash,
+			CategoryMomBabyBathBodyCareBabyColognesFragrances,
+		},
 	}
 	CategoryMomBabyBathBodyCareBathingTubsSeats = &Category{
 		Id:     "686x2",
@@ -5844,11 +6823,17 @@ var (
 		NameEn: "Baby Laundry Detergent",
 	}
 	CategoryMomBabyNursery = &Category{
-		Id:       "695x1",
-		Slug:     "mom-and-baby-nursery",
-		Name:     "Đồ dùng phòng ngủ cho bé",
-		NameEn:   "Nursery",
-		Children: Categories{CategoryMomBabyNurseryCribsCradlesBeds, CategoryMomBabyNurseryBouncersRockersJumpers, CategoryMomBabyNurseryWalkers, CategoryMomBabyNurseryMattressesBedding, CategoryMomBabyNurseryStorageOrganization},
+		Id:     "695x1",
+		Slug:   "mom-and-baby-nursery",
+		Name:   "Đồ dùng phòng ngủ cho bé",
+		NameEn: "Nursery",
+		Children: Categories{
+			CategoryMomBabyNurseryCribsCradlesBeds,
+			CategoryMomBabyNurseryBouncersRockersJumpers,
+			CategoryMomBabyNurseryWalkers,
+			CategoryMomBabyNurseryMattressesBedding,
+			CategoryMomBabyNurseryStorageOrganization,
+		},
 	}
 	CategoryMomBabyNurseryCribsCradlesBeds = &Category{
 		Id:     "695x2",
@@ -5872,11 +6857,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/5d702d59193363a95e2b55bae285dc59", "https://cf.shopee.sg/file/ccb2f8f7fc2d824091b407accda6a7db", "https://cf.shopee.sg/file/9a97c500a6d7f4136bba56d8537aaa8d", "https://cf.shopee.sg/file/1b6a649c0d2908d26f94623677343907", "https://cf.shopee.sg/file/bb46de1b81529b8d7d7006cb9275392a", "https://cf.shopee.sg/file/61f3e674dd5e86f7be162e36962b32d1"},
 	}
 	CategoryMomBabyNurseryMattressesBedding = &Category{
-		Id:       "698x2",
-		Slug:     "mom-and-baby-nursery-mattresses-and-bedding",
-		Name:     "Nệm và chăn ga",
-		NameEn:   "Mattresses & Bedding",
-		Children: Categories{CategoryMomBabyNurseryMattressesBeddingBlanketsWrappers, CategoryMomBabyNurseryMattressesBeddingPillowsBolsters, CategoryMomBabyNurseryMattressesBeddingBedsheets},
+		Id:     "698x2",
+		Slug:   "mom-and-baby-nursery-mattresses-and-bedding",
+		Name:   "Nệm và chăn ga",
+		NameEn: "Mattresses & Bedding",
+		Children: Categories{
+			CategoryMomBabyNurseryMattressesBeddingBlanketsWrappers,
+			CategoryMomBabyNurseryMattressesBeddingPillowsBolsters,
+			CategoryMomBabyNurseryMattressesBeddingBedsheets,
+		},
 	}
 	CategoryMomBabyNurseryMattressesBeddingBlanketsWrappers = &Category{
 		Id:     "698x3",
@@ -5907,11 +6896,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/623455a20a4dabd7876eb3f19f81cbce", "https://cf.shopee.sg/file/9918cd9bee37f446cd8a11118c0316f6", "https://cf.shopee.sg/file/35cacca0c9b5a6bff79cdf1a66a37caa", "https://cf.shopee.sg/file/6eca755365da943077fe406f3a571811", "https://cf.shopee.sg/file/727af7a82d880ce633108f82affb0ead", "https://cf.shopee.sg/file/3bfee7a95e66bc9ca34656fa48b8e0e0"},
 	}
 	CategoryMomBabyBabySafety = &Category{
-		Id:       "702x1",
-		Slug:     "mom-and-baby-baby-safety",
-		Name:     "An toàn cho bé",
-		NameEn:   "Baby Safety",
-		Children: Categories{CategoryMomBabyBabySafetyBabyGatesDoorways, CategoryMomBabyBabySafetySafetyLocksStraps, CategoryMomBabyBabySafetyMonitors, CategoryMomBabyBabySafetyMosquitoNetting, CategoryMomBabyBabySafetyBumpersRailsGuards, CategoryMomBabyBabySafetyEdgeCornerGuards},
+		Id:     "702x1",
+		Slug:   "mom-and-baby-baby-safety",
+		Name:   "An toàn cho bé",
+		NameEn: "Baby Safety",
+		Children: Categories{
+			CategoryMomBabyBabySafetySafetyLocksStraps,
+			CategoryMomBabyBabySafetyMonitors,
+			CategoryMomBabyBabySafetyMosquitoNetting,
+			CategoryMomBabyBabySafetyBumpersRailsGuards,
+			CategoryMomBabyBabySafetyEdgeCornerGuards,
+			CategoryMomBabyBabySafetyBabyGatesDoorways,
+		},
 	}
 	CategoryMomBabyBabySafetyMonitors = &Category{
 		Id:     "702x2",
@@ -5956,11 +6952,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/4add1cce35a05211b59dc4d94ab6af52", "https://cf.shopee.sg/file/b4a1b04fc2511e84f18fa394481917c8", "https://cf.shopee.sg/file/b009eb6c5800631c82fd7d1f3a02be7f", "https://cf.shopee.sg/file/17fd253e8441a04ea5aff0e248ebd91d", "https://cf.shopee.sg/file/a9577b533afd818e37b2330bf6b784f2", "https://cf.shopee.sg/file/7462d7dc0fe48e69933e46d3283743bc"},
 	}
 	CategoryMomBabyMilkFormulaBabyFood = &Category{
-		Id:       "708x1",
-		Slug:     "mom-and-baby-milk-formula-and-baby-food",
-		Name:     "Sữa công thức & Thực phẩm cho bé",
-		NameEn:   "Milk Formula & Baby Food",
-		Children: Categories{CategoryMomBabyMilkFormulaBabyFoodMilkFormula, CategoryMomBabyMilkFormulaBabyFoodBabyPorridgePureeCereal, CategoryMomBabyMilkFormulaBabyFoodBabySnack, CategoryMomBabyMilkFormulaBabyFoodReadytoDrinkMilk},
+		Id:     "708x1",
+		Slug:   "mom-and-baby-milk-formula-and-baby-food",
+		Name:   "Sữa công thức & Thực phẩm cho bé",
+		NameEn: "Milk Formula & Baby Food",
+		Children: Categories{
+			CategoryMomBabyMilkFormulaBabyFoodBabyPorridgePureeCereal,
+			CategoryMomBabyMilkFormulaBabyFoodBabySnack,
+			CategoryMomBabyMilkFormulaBabyFoodReadytoDrinkMilk,
+			CategoryMomBabyMilkFormulaBabyFoodMilkFormula,
+		},
 	}
 	CategoryMomBabyMilkFormulaBabyFoodMilkFormula = &Category{
 		Id:     "708x2",
@@ -5987,11 +6988,17 @@ var (
 		NameEn: "Ready-to-Drink Milk",
 	}
 	CategoryMomBabyBabyHealthcare = &Category{
-		Id:       "712x1",
-		Slug:     "mom-and-baby-baby-healthcare",
-		Name:     "Chăm sóc sức khỏe bé",
-		NameEn:   "Baby Healthcare",
-		Children: Categories{CategoryMomBabyBabyHealthcareBabySkincare, CategoryMomBabyBabyHealthcareBabyOralCare, CategoryMomBabyBabyHealthcareBabyVitaminsSupplements, CategoryMomBabyBabyHealthcareSunCare, CategoryMomBabyBabyHealthcareNasalCare},
+		Id:     "712x1",
+		Slug:   "mom-and-baby-baby-healthcare",
+		Name:   "Chăm sóc sức khỏe bé",
+		NameEn: "Baby Healthcare",
+		Children: Categories{
+			CategoryMomBabyBabyHealthcareBabyOralCare,
+			CategoryMomBabyBabyHealthcareBabyVitaminsSupplements,
+			CategoryMomBabyBabyHealthcareSunCare,
+			CategoryMomBabyBabyHealthcareNasalCare,
+			CategoryMomBabyBabyHealthcareBabySkincare,
+		},
 	}
 	CategoryMomBabyBabyHealthcareNasalCare = &Category{
 		Id:     "712x2",
@@ -6001,11 +7008,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/1857410c834684d4a4e4d1444015f619", "https://cf.shopee.sg/file/4e8d82156b4127dfbb8f6fd331eda20c", "https://cf.shopee.sg/file/0ba01343e096a591c07ce6ebc316865f", "https://cf.shopee.sg/file/3a1180c93b67c579d1d42d524a51ec20", "https://cf.shopee.sg/file/655556a666092e1752676a0240cea788", "https://cf.shopee.sg/file/cd6686ce2b4945171b9206557cf3d128"},
 	}
 	CategoryMomBabyBabyHealthcareBabySkincare = &Category{
-		Id:       "713x2",
-		Slug:     "mom-and-baby-baby-healthcare-baby-skincare",
-		Name:     "Chăm sóc da cho bé",
-		NameEn:   "Baby Skincare",
-		Children: Categories{CategoryMomBabyBabyHealthcareBabySkincareLotionCreams, CategoryMomBabyBabyHealthcareBabySkincarePowders, CategoryMomBabyBabyHealthcareBabySkincareOils},
+		Id:     "713x2",
+		Slug:   "mom-and-baby-baby-healthcare-baby-skincare",
+		Name:   "Chăm sóc da cho bé",
+		NameEn: "Baby Skincare",
+		Children: Categories{
+			CategoryMomBabyBabyHealthcareBabySkincareLotionCreams,
+			CategoryMomBabyBabyHealthcareBabySkincarePowders,
+			CategoryMomBabyBabyHealthcareBabySkincareOils,
+		},
 	}
 	CategoryMomBabyBabyHealthcareBabySkincareLotionCreams = &Category{
 		Id:     "713x3",
@@ -6048,11 +7059,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/a28615a336276543ca7de6fa623985be", "https://cf.shopee.sg/file/b8b5a075927778a20d97ba57b3cd0877", "https://cf.shopee.sg/file/0e5baaafc1449d759a3912c7babb416c", "https://cf.shopee.sg/file/33fc4fa7e6690a88dd885bf410d25e3a", "https://cf.shopee.sg/file/d8a93d4b19d5f2253351eace76337898", "https://cf.shopee.sg/file/54f89a4f19697c8b7b9a13cfadfa7846"},
 	}
 	CategoryMomBabyDiaperingPotty = &Category{
-		Id:       "719x1",
-		Slug:     "mom-and-baby-diapering-and-potty",
-		Name:     "Tã & bô em bé",
-		NameEn:   "Diapering & Potty",
-		Children: Categories{CategoryMomBabyDiaperingPottyPottyTrainingCommodeChairs, CategoryMomBabyDiaperingPottyDisposableDiapers, CategoryMomBabyDiaperingPottyClothDiapersAccessories, CategoryMomBabyDiaperingPottyChangingPadsKits},
+		Id:     "719x1",
+		Slug:   "mom-and-baby-diapering-and-potty",
+		Name:   "Tã & bô em bé",
+		NameEn: "Diapering & Potty",
+		Children: Categories{
+			CategoryMomBabyDiaperingPottyChangingPadsKits,
+			CategoryMomBabyDiaperingPottyPottyTrainingCommodeChairs,
+			CategoryMomBabyDiaperingPottyDisposableDiapers,
+			CategoryMomBabyDiaperingPottyClothDiapersAccessories,
+		},
 	}
 	CategoryMomBabyDiaperingPottyChangingPadsKits = &Category{
 		Id:     "719x2",
@@ -6083,18 +7099,34 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/844003a54da3981eaefd4a2cc301c858", "https://cf.shopee.sg/file/a8286c017760f82ba3982a9d27334e3c", "https://cf.shopee.sg/file/988f3355d47984061ba5c12e59289d2c", "https://cf.shopee.sg/file/ca8279d5c83533a6e7baad7b2d710265", "https://cf.shopee.sg/file/b4922abedeed4d13e6c4870660813570", "https://cf.shopee.sg/file/4f6d5a9ddf8cffa59355d6759f404706"},
 	}
 	CategoryMomBabyToys = &Category{
-		Id:       "723x1",
-		Slug:     "mom-and-baby-toys",
-		Name:     "Đồ chơi",
-		NameEn:   "Toys",
-		Children: Categories{CategoryMomBabyToysBabyToddlerToys, CategoryMomBabyToysToyVehicles, CategoryMomBabyToysSlimeSquishyToys, CategoryMomBabyToysRobotToys, CategoryMomBabyToysBlockToys, CategoryMomBabyToysDollsStuffedToys, CategoryMomBabyToysPretendPlay, CategoryMomBabyToysSportsOutdoorPlay, CategoryMomBabyToysEducationalToys},
+		Id:     "723x1",
+		Slug:   "mom-and-baby-toys",
+		Name:   "Đồ chơi",
+		NameEn: "Toys",
+		Children: Categories{
+			CategoryMomBabyToysPretendPlay,
+			CategoryMomBabyToysEducationalToys,
+			CategoryMomBabyToysBabyToddlerToys,
+			CategoryMomBabyToysBlockToys,
+			CategoryMomBabyToysSportsOutdoorPlay,
+			CategoryMomBabyToysRobotToys,
+			CategoryMomBabyToysSlimeSquishyToys,
+			CategoryMomBabyToysDollsStuffedToys,
+			CategoryMomBabyToysToyVehicles,
+		},
 	}
 	CategoryMomBabyToysBabyToddlerToys = &Category{
-		Id:       "723x2",
-		Slug:     "mom-and-baby-toys-baby-and-toddler-toys",
-		Name:     "Đồ chơi cho trẻ sơ sinh & trẻ nhỏ",
-		NameEn:   "Baby & Toddler Toys",
-		Children: Categories{CategoryMomBabyToysBabyToddlerToysCribMobilesRattles, CategoryMomBabyToysBabyToddlerToysTeethers, CategoryMomBabyToysBabyToddlerToysPlaygymPlaymats, CategoryMomBabyToysBabyToddlerToysPlayardsPlaypens, CategoryMomBabyToysBabyToddlerToysBathToys},
+		Id:     "723x2",
+		Slug:   "mom-and-baby-toys-baby-and-toddler-toys",
+		Name:   "Đồ chơi cho trẻ sơ sinh & trẻ nhỏ",
+		NameEn: "Baby & Toddler Toys",
+		Children: Categories{
+			CategoryMomBabyToysBabyToddlerToysPlaygymPlaymats,
+			CategoryMomBabyToysBabyToddlerToysPlayardsPlaypens,
+			CategoryMomBabyToysBabyToddlerToysBathToys,
+			CategoryMomBabyToysBabyToddlerToysCribMobilesRattles,
+			CategoryMomBabyToysBabyToddlerToysTeethers,
+		},
 	}
 	CategoryMomBabyToysBabyToddlerToysPlaygymPlaymats = &Category{
 		Id:     "723x3",
@@ -6139,11 +7171,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/d1d3bfb7b87119265f0204e983a0cc6c", "https://cf.shopee.sg/file/88bdfccd387d0e6c2bdf16ed0550667d", "https://cf.shopee.sg/file/113d4605a46ace942001c97295f0c9f2", "https://cf.shopee.sg/file/f967cdfb269ce180d1c10d809f82abf9", "https://cf.shopee.sg/file/14261474cb890af858418fbfadea121b", "https://cf.shopee.sg/file/9fbde29aea4779429262ad595bd05df3"},
 	}
 	CategoryMomBabyToysDollsStuffedToys = &Category{
-		Id:       "729x2",
-		Slug:     "mom-and-baby-toys-dolls-and-stuffed-toys",
-		Name:     "Búp bê & Thú nhồi bông",
-		NameEn:   "Dolls & Stuffed Toys",
-		Children: Categories{CategoryMomBabyToysDollsStuffedToysDollHousesAccessories, CategoryMomBabyToysDollsStuffedToysStuffedToys, CategoryMomBabyToysDollsStuffedToysDollsAccessories},
+		Id:     "729x2",
+		Slug:   "mom-and-baby-toys-dolls-and-stuffed-toys",
+		Name:   "Búp bê & Thú nhồi bông",
+		NameEn: "Dolls & Stuffed Toys",
+		Children: Categories{
+			CategoryMomBabyToysDollsStuffedToysDollsAccessories,
+			CategoryMomBabyToysDollsStuffedToysDollHousesAccessories,
+			CategoryMomBabyToysDollsStuffedToysStuffedToys,
+		},
 	}
 	CategoryMomBabyToysDollsStuffedToysDollsAccessories = &Category{
 		Id:     "729x3",
@@ -6181,11 +7217,19 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/580419f988f15d57194f5f3c24b28e0c", "https://cf.shopee.sg/file/c3856ed7f813eb334e31a53fec5b7210", "https://cf.shopee.sg/file/78ba62a06aad3175ea1ca95a4c6bf074", "https://cf.shopee.sg/file/77dd3eeb949c60e11509bf09758cff5b", "https://cf.shopee.sg/file/bf3b5ba1a38ca288da386452ec521bed", "https://cf.shopee.sg/file/08610a90ce15881e74a22cf607b3dccd"},
 	}
 	CategoryMomBabyToysSportsOutdoorPlay = &Category{
-		Id:       "734x2",
-		Slug:     "mom-and-baby-toys-sports-and-outdoor-play",
-		Name:     "Đồ chơi vận động & Ngoài trời",
-		NameEn:   "Sports & Outdoor Play",
-		Children: Categories{CategoryMomBabyToysSportsOutdoorPlayBicyclesScootersRideons, CategoryMomBabyToysSportsOutdoorPlayInflatablesSlides, CategoryMomBabyToysSportsOutdoorPlayPlayTentsTunnelsBallPits, CategoryMomBabyToysSportsOutdoorPlayPoolWaterSandToys, CategoryMomBabyToysSportsOutdoorPlayBlastersToyGuns, CategoryMomBabyToysSportsOutdoorPlaySportsToys, CategoryMomBabyToysSportsOutdoorPlayFlyingToysKitesWindSpinners},
+		Id:     "734x2",
+		Slug:   "mom-and-baby-toys-sports-and-outdoor-play",
+		Name:   "Đồ chơi vận động & Ngoài trời",
+		NameEn: "Sports & Outdoor Play",
+		Children: Categories{
+			CategoryMomBabyToysSportsOutdoorPlayBicyclesScootersRideons,
+			CategoryMomBabyToysSportsOutdoorPlayInflatablesSlides,
+			CategoryMomBabyToysSportsOutdoorPlayPlayTentsTunnelsBallPits,
+			CategoryMomBabyToysSportsOutdoorPlayPoolWaterSandToys,
+			CategoryMomBabyToysSportsOutdoorPlayBlastersToyGuns,
+			CategoryMomBabyToysSportsOutdoorPlaySportsToys,
+			CategoryMomBabyToysSportsOutdoorPlayFlyingToysKitesWindSpinners,
+		},
 	}
 	CategoryMomBabyToysSportsOutdoorPlayBicyclesScootersRideons = &Category{
 		Id:     "734x3",
@@ -6236,11 +7280,19 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/42a434204c48e6613cc215f263560bf9", "https://cf.shopee.sg/file/d928cd47781497e78e648534ac843021", "https://cf.shopee.sg/file/1c9a1d52312e79b0c63dfcfec9deaf45", "https://cf.shopee.sg/file/a0ef1dfb2dfd456ea97d47f4d8186814", "https://cf.shopee.sg/file/468113f96421cb166e28a53493c89ff6", "https://cf.shopee.sg/file/ccfdb2d313745404e5c98b02341ad63b"},
 	}
 	CategoryMomBabyToysEducationalToys = &Category{
-		Id:       "741x2",
-		Slug:     "mom-and-baby-toys-educational-toys",
-		Name:     "Đồ chơi giáo dục",
-		NameEn:   "Educational Toys",
-		Children: Categories{CategoryMomBabyToysEducationalToysPuzzles, CategoryMomBabyToysEducationalToysMusicalToys, CategoryMomBabyToysEducationalToysToyTabletsComputers, CategoryMomBabyToysEducationalToysArtsCrafts, CategoryMomBabyToysEducationalToysMathToys, CategoryMomBabyToysEducationalToysScienceTechToys, CategoryMomBabyToysEducationalToysShapeSorters},
+		Id:     "741x2",
+		Slug:   "mom-and-baby-toys-educational-toys",
+		Name:   "Đồ chơi giáo dục",
+		NameEn: "Educational Toys",
+		Children: Categories{
+			CategoryMomBabyToysEducationalToysArtsCrafts,
+			CategoryMomBabyToysEducationalToysMathToys,
+			CategoryMomBabyToysEducationalToysScienceTechToys,
+			CategoryMomBabyToysEducationalToysShapeSorters,
+			CategoryMomBabyToysEducationalToysPuzzles,
+			CategoryMomBabyToysEducationalToysMusicalToys,
+			CategoryMomBabyToysEducationalToysToyTabletsComputers,
+		},
 	}
 	CategoryMomBabyToysEducationalToysArtsCrafts = &Category{
 		Id:     "741x3",
@@ -6313,18 +7365,37 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/fdb6b7a87ddcb692d61d4f37a2b5eefc", "https://cf.shopee.sg/file/79db86a474427a6570b9a98758eeb30c", "https://cf.shopee.sg/file/4033bc962c3b085510b87549947ddde4", "https://cf.shopee.sg/file/cfc6a84caf9784003e9c23307a549dfe", "https://cf.shopee.sg/file/50ba441c71b2e1346d35184156ab0a36", "https://cf.shopee.sg/file/2ca47ed0091025993aaffcbd054eebd5"},
 	}
 	CategoryBabyKidsFashion = &Category{
-		Id:       "751x0",
-		Slug:     "baby-and-kids-fashion",
-		Name:     "Thời trang trẻ em & trẻ sơ sinh",
-		NameEn:   "Baby & Kids Fashion",
-		Children: Categories{CategoryBabyKidsFashionGirlClothes, CategoryBabyKidsFashionUnderwearInnerwear, CategoryBabyKidsFashionBoyShoes, CategoryBabyKidsFashionGirlShoes, CategoryBabyKidsFashionBabyClothes, CategoryBabyKidsFashionBabyMittensFootwear, CategoryBabyKidsFashionBabyKidsAccessories, CategoryBabyKidsFashionBoyClothes},
+		Id:     "751x0",
+		Slug:   "baby-and-kids-fashion",
+		Name:   "Thời trang trẻ em & trẻ sơ sinh",
+		NameEn: "Baby & Kids Fashion",
+		Children: Categories{
+			CategoryBabyKidsFashionUnderwearInnerwear,
+			CategoryBabyKidsFashionBoyShoes,
+			CategoryBabyKidsFashionGirlShoes,
+			CategoryBabyKidsFashionBabyClothes,
+			CategoryBabyKidsFashionBabyMittensFootwear,
+			CategoryBabyKidsFashionBabyKidsAccessories,
+			CategoryBabyKidsFashionBoyClothes,
+			CategoryBabyKidsFashionGirlClothes,
+		},
 	}
 	CategoryBabyKidsFashionBabyClothes = &Category{
-		Id:       "751x1",
-		Slug:     "baby-and-kids-fashion-baby-clothes",
-		Name:     "Quần áo trẻ em",
-		NameEn:   "Baby Clothes",
-		Children: Categories{CategoryBabyKidsFashionBabyClothesSwimwear, CategoryBabyKidsFashionBabyClothesRegularOuterwear, CategoryBabyKidsFashionBabyClothesWinterOuterwear, CategoryBabyKidsFashionBabyClothesDresses, CategoryBabyKidsFashionBabyClothesBottoms, CategoryBabyKidsFashionBabyClothesBodysuitsJumpsuits, CategoryBabyKidsFashionBabyClothesSleepwear, CategoryBabyKidsFashionBabyClothesTops, CategoryBabyKidsFashionBabyClothesSets},
+		Id:     "751x1",
+		Slug:   "baby-and-kids-fashion-baby-clothes",
+		Name:   "Quần áo trẻ em",
+		NameEn: "Baby Clothes",
+		Children: Categories{
+			CategoryBabyKidsFashionBabyClothesBottoms,
+			CategoryBabyKidsFashionBabyClothesSets,
+			CategoryBabyKidsFashionBabyClothesSwimwear,
+			CategoryBabyKidsFashionBabyClothesRegularOuterwear,
+			CategoryBabyKidsFashionBabyClothesWinterOuterwear,
+			CategoryBabyKidsFashionBabyClothesDresses,
+			CategoryBabyKidsFashionBabyClothesSleepwear,
+			CategoryBabyKidsFashionBabyClothesTops,
+			CategoryBabyKidsFashionBabyClothesBodysuitsJumpsuits,
+		},
 	}
 	CategoryBabyKidsFashionBabyClothesRegularOuterwear = &Category{
 		Id:     "751x2",
@@ -6348,11 +7419,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/1365fd7f8a4d539d47126568222ebad7", "https://cf.shopee.sg/file/f0415d5a5d5a43c13acf5a3dbd73ba44", "https://cf.shopee.sg/file/8a210f727b1ac7c1af3b8291d24b9a67", "https://cf.shopee.sg/file/a407ef64e5f65d2c14aa708552aff2b5", "https://cf.shopee.sg/file/bcdf315bd61a15a88fb23d4aaab71cb4", "https://cf.shopee.sg/file/434c713f4804eea69b89cfe1409c0c0b"},
 	}
 	CategoryBabyKidsFashionBabyClothesBottoms = &Category{
-		Id:       "754x2",
-		Slug:     "baby-and-kids-fashion-baby-clothes-bottoms",
-		Name:     "Quần/Chân váy",
-		NameEn:   "Bottoms",
-		Children: Categories{CategoryBabyKidsFashionBabyClothesBottomsPantsLeggings, CategoryBabyKidsFashionBabyClothesBottomsShorts, CategoryBabyKidsFashionBabyClothesBottomsSkirts},
+		Id:     "754x2",
+		Slug:   "baby-and-kids-fashion-baby-clothes-bottoms",
+		Name:   "Quần/Chân váy",
+		NameEn: "Bottoms",
+		Children: Categories{
+			CategoryBabyKidsFashionBabyClothesBottomsPantsLeggings,
+			CategoryBabyKidsFashionBabyClothesBottomsShorts,
+			CategoryBabyKidsFashionBabyClothesBottomsSkirts,
+		},
 	}
 	CategoryBabyKidsFashionBabyClothesBottomsPantsLeggings = &Category{
 		Id:     "754x3",
@@ -6418,18 +7493,36 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/0945545fd7377e02e2b082b1f60fc6f1", "https://cf.shopee.sg/file/beefd7d1747ab5e2562cdb078e8b7684", "https://cf.shopee.sg/file/1c6f21a41ba535b708fe35221ef8ed72", "https://cf.shopee.sg/file/9eaa33f07c1307560a77304b977a81a4", "https://cf.shopee.sg/file/8697e713ee781cf3d211b8edc416fa48", "https://cf.shopee.sg/file/5caccedec60dca3f7cd288a5a500d336"},
 	}
 	CategoryBabyKidsFashionBabyKidsAccessories = &Category{
-		Id:       "763x1",
-		Slug:     "baby-and-kids-fashion-baby-and-kids-accessories",
-		Name:     "Phụ kiện trẻ em & trẻ sơ sinh",
-		NameEn:   "Baby & Kids Accessories",
-		Children: Categories{CategoryBabyKidsFashionBabyKidsAccessoriesWatches, CategoryBabyKidsFashionBabyKidsAccessoriesJewelry, CategoryBabyKidsFashionBabyKidsAccessoriesEarmuffs, CategoryBabyKidsFashionBabyKidsAccessoriesHatsCaps, CategoryBabyKidsFashionBabyKidsAccessoriesGloves, CategoryBabyKidsFashionBabyKidsAccessoriesScarves, CategoryBabyKidsFashionBabyKidsAccessoriesBelts, CategoryBabyKidsFashionBabyKidsAccessoriesSocks, CategoryBabyKidsFashionBabyKidsAccessoriesRainGear, CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggage, CategoryBabyKidsFashionBabyKidsAccessoriesEyewear, CategoryBabyKidsFashionBabyKidsAccessoriesHairAccessories},
+		Id:     "763x1",
+		Slug:   "baby-and-kids-fashion-baby-and-kids-accessories",
+		Name:   "Phụ kiện trẻ em & trẻ sơ sinh",
+		NameEn: "Baby & Kids Accessories",
+		Children: Categories{
+			CategoryBabyKidsFashionBabyKidsAccessoriesScarves,
+			CategoryBabyKidsFashionBabyKidsAccessoriesWatches,
+			CategoryBabyKidsFashionBabyKidsAccessoriesRainGear,
+			CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggage,
+			CategoryBabyKidsFashionBabyKidsAccessoriesSocks,
+			CategoryBabyKidsFashionBabyKidsAccessoriesHairAccessories,
+			CategoryBabyKidsFashionBabyKidsAccessoriesGloves,
+			CategoryBabyKidsFashionBabyKidsAccessoriesBelts,
+			CategoryBabyKidsFashionBabyKidsAccessoriesJewelry,
+			CategoryBabyKidsFashionBabyKidsAccessoriesEarmuffs,
+			CategoryBabyKidsFashionBabyKidsAccessoriesHatsCaps,
+			CategoryBabyKidsFashionBabyKidsAccessoriesEyewear,
+		},
 	}
 	CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggage = &Category{
-		Id:       "763x2",
-		Slug:     "baby-and-kids-fashion-baby-and-kids-accessories-bags-and-luggage",
-		Name:     "Túi xách & vali",
-		NameEn:   "Bags & Luggage",
-		Children: Categories{CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageCrossbodyShoulderBags, CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageTrolleyBags, CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageWallets, CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageBackpacks},
+		Id:     "763x2",
+		Slug:   "baby-and-kids-fashion-baby-and-kids-accessories-bags-and-luggage",
+		Name:   "Túi xách & vali",
+		NameEn: "Bags & Luggage",
+		Children: Categories{
+			CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageTrolleyBags,
+			CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageWallets,
+			CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageBackpacks,
+			CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageCrossbodyShoulderBags,
+		},
 	}
 	CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageBackpacks = &Category{
 		Id:     "763x3",
@@ -6516,11 +7609,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/661b4323bd0780c337c13525852d3b13", "https://cf.shopee.sg/file/013f67bac07ea20d12002849737927c8", "https://cf.shopee.sg/file/2fc0f0953d9c323ea2da88a9ce3e404a", "https://cf.shopee.sg/file/e0db59c36c7a2cd510598e435e5eb9af", "https://cf.shopee.sg/file/11c00e9fcf4f0a03ebdc87a256713c73", "https://cf.shopee.sg/file/a142c67b3688d88b1e2952331d3e4e69"},
 	}
 	CategoryBabyKidsFashionBabyKidsAccessoriesJewelry = &Category{
-		Id:       "775x2",
-		Slug:     "baby-and-kids-fashion-baby-and-kids-accessories-jewelry",
-		Name:     "Trang sức",
-		NameEn:   "Jewelry",
-		Children: Categories{CategoryBabyKidsFashionBabyKidsAccessoriesJewelryRings, CategoryBabyKidsFashionBabyKidsAccessoriesJewelryBracelets, CategoryBabyKidsFashionBabyKidsAccessoriesJewelryEarrings, CategoryBabyKidsFashionBabyKidsAccessoriesJewelryNecklaces},
+		Id:     "775x2",
+		Slug:   "baby-and-kids-fashion-baby-and-kids-accessories-jewelry",
+		Name:   "Trang sức",
+		NameEn: "Jewelry",
+		Children: Categories{
+			CategoryBabyKidsFashionBabyKidsAccessoriesJewelryRings,
+			CategoryBabyKidsFashionBabyKidsAccessoriesJewelryBracelets,
+			CategoryBabyKidsFashionBabyKidsAccessoriesJewelryEarrings,
+			CategoryBabyKidsFashionBabyKidsAccessoriesJewelryNecklaces,
+		},
 	}
 	CategoryBabyKidsFashionBabyKidsAccessoriesJewelryBracelets = &Category{
 		Id:     "775x3",
@@ -6551,11 +7649,14 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/829f6226c1b1f68c6c8fc865072e6c56", "https://cf.shopee.sg/file/001cf2bae560354357fb9e960f82fa16", "https://cf.shopee.sg/file/9ce22927a55547ef8dbb0a4abbf61dee", "https://cf.shopee.sg/file/64245862675914748f5a015c4f7df068", "https://cf.shopee.sg/file/59e12fcfdddd12ff951a91793db206fa", "https://cf.shopee.sg/file/dd736f9940d986fbbfd3571ea5ae408a"},
 	}
 	CategoryBabyKidsFashionBabyKidsAccessoriesRainGear = &Category{
-		Id:       "779x2",
-		Slug:     "baby-and-kids-fashion-baby-and-kids-accessories-rain-gear",
-		Name:     "Đồ đi mưa",
-		NameEn:   "Rain Gear",
-		Children: Categories{CategoryBabyKidsFashionBabyKidsAccessoriesRainGearRaincoats, CategoryBabyKidsFashionBabyKidsAccessoriesRainGearRainBoots},
+		Id:     "779x2",
+		Slug:   "baby-and-kids-fashion-baby-and-kids-accessories-rain-gear",
+		Name:   "Đồ đi mưa",
+		NameEn: "Rain Gear",
+		Children: Categories{
+			CategoryBabyKidsFashionBabyKidsAccessoriesRainGearRaincoats,
+			CategoryBabyKidsFashionBabyKidsAccessoriesRainGearRainBoots,
+		},
 	}
 	CategoryBabyKidsFashionBabyKidsAccessoriesRainGearRaincoats = &Category{
 		Id:     "779x3",
@@ -6579,11 +7680,20 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/cc56d6bd7224fa801f311927539728b1", "https://cf.shopee.sg/file/ab3b5752e5645ec385e74d0901df09de", "https://cf.shopee.sg/file/fed6d04caddc8aab4779b57b4fdf3d80", "https://cf.shopee.sg/file/6a03a5624646f743dc5904dd32a86283", "https://cf.shopee.sg/file/f935f97bab663614795da9ed5d2fd57c", "https://cf.shopee.sg/file/2e0896c872078d8535191db94a0a34be"},
 	}
 	CategoryBabyKidsFashionBoyClothes = &Category{
-		Id:       "782x1",
-		Slug:     "baby-and-kids-fashion-boy-clothes",
-		Name:     "Quần áo bé trai",
-		NameEn:   "Boy Clothes",
-		Children: Categories{CategoryBabyKidsFashionBoyClothesUnderwearInnerwear, CategoryBabyKidsFashionBoyClothesSleepwear, CategoryBabyKidsFashionBoyClothesSwimwear, CategoryBabyKidsFashionBoyClothesTops, CategoryBabyKidsFashionBoyClothesOuterwear, CategoryBabyKidsFashionBoyClothesBottoms, CategoryBabyKidsFashionBoyClothesSuitsSets, CategoryBabyKidsFashionBoyClothesCostumes},
+		Id:     "782x1",
+		Slug:   "baby-and-kids-fashion-boy-clothes",
+		Name:   "Quần áo bé trai",
+		NameEn: "Boy Clothes",
+		Children: Categories{
+			CategoryBabyKidsFashionBoyClothesCostumes,
+			CategoryBabyKidsFashionBoyClothesUnderwearInnerwear,
+			CategoryBabyKidsFashionBoyClothesSleepwear,
+			CategoryBabyKidsFashionBoyClothesSwimwear,
+			CategoryBabyKidsFashionBoyClothesTops,
+			CategoryBabyKidsFashionBoyClothesOuterwear,
+			CategoryBabyKidsFashionBoyClothesBottoms,
+			CategoryBabyKidsFashionBoyClothesSuitsSets,
+		},
 	}
 	CategoryBabyKidsFashionBoyClothesCostumes = &Category{
 		Id:     "782x2",
@@ -6614,11 +7724,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/3d064ffa12978c287bc9a1986d63e2bc", "https://cf.shopee.sg/file/02c38ecd755981835cbda158ae83fd14", "https://cf.shopee.sg/file/00535f2377e45d175d9302b62c78fbc7", "https://cf.shopee.sg/file/ed5aeaa94bf85c39f565b595b3c627c4", "https://cf.shopee.sg/file/034c845e99950726a9d26cb7022b5886", "https://cf.shopee.sg/file/c09335d70f58334188feef6d5f35655c"},
 	}
 	CategoryBabyKidsFashionBoyClothesTops = &Category{
-		Id:       "786x2",
-		Slug:     "baby-and-kids-fashion-boy-clothes-tops",
-		Name:     "Áo",
-		NameEn:   "Tops",
-		Children: Categories{CategoryBabyKidsFashionBoyClothesTopsTshirts, CategoryBabyKidsFashionBoyClothesTopsPoloShirts, CategoryBabyKidsFashionBoyClothesTopsShirts},
+		Id:     "786x2",
+		Slug:   "baby-and-kids-fashion-boy-clothes-tops",
+		Name:   "Áo",
+		NameEn: "Tops",
+		Children: Categories{
+			CategoryBabyKidsFashionBoyClothesTopsShirts,
+			CategoryBabyKidsFashionBoyClothesTopsTshirts,
+			CategoryBabyKidsFashionBoyClothesTopsPoloShirts,
+		},
 	}
 	CategoryBabyKidsFashionBoyClothesTopsTshirts = &Category{
 		Id:     "786x3",
@@ -6642,11 +7756,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/3db3535e8483cb3e567bfc15c3a4478b", "https://cf.shopee.sg/file/165bfa5804ba94474fd98b6200a971a0", "https://cf.shopee.sg/file/edc98f9c8c65d35b4c67374a8625da32", "https://cf.shopee.sg/file/2c35703c85e4c1bf473f5b2142433224", "https://cf.shopee.sg/file/055b75ebacd82f754eb0a39aa648eb7f", "https://cf.shopee.sg/file/5d90e0d757cd53e4508297520ab8b9a2"},
 	}
 	CategoryBabyKidsFashionBoyClothesOuterwear = &Category{
-		Id:       "789x2",
-		Slug:     "baby-and-kids-fashion-boy-clothes-outerwear",
-		Name:     "Áo khoác",
-		NameEn:   "Outerwear",
-		Children: Categories{CategoryBabyKidsFashionBoyClothesOuterwearVests, CategoryBabyKidsFashionBoyClothesOuterwearSweatersCardigans, CategoryBabyKidsFashionBoyClothesOuterwearBlazers, CategoryBabyKidsFashionBoyClothesOuterwearHoodies, CategoryBabyKidsFashionBoyClothesOuterwearRegularJacketsCoats, CategoryBabyKidsFashionBoyClothesOuterwearWinterOuterwear},
+		Id:     "789x2",
+		Slug:   "baby-and-kids-fashion-boy-clothes-outerwear",
+		Name:   "Áo khoác",
+		NameEn: "Outerwear",
+		Children: Categories{
+			CategoryBabyKidsFashionBoyClothesOuterwearVests,
+			CategoryBabyKidsFashionBoyClothesOuterwearSweatersCardigans,
+			CategoryBabyKidsFashionBoyClothesOuterwearBlazers,
+			CategoryBabyKidsFashionBoyClothesOuterwearHoodies,
+			CategoryBabyKidsFashionBoyClothesOuterwearRegularJacketsCoats,
+			CategoryBabyKidsFashionBoyClothesOuterwearWinterOuterwear,
+		},
 	}
 	CategoryBabyKidsFashionBoyClothesOuterwearRegularJacketsCoats = &Category{
 		Id:     "789x3",
@@ -6691,11 +7812,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/d7f47a5abdbaefeefd9db3542a92f15a", "https://cf.shopee.sg/file/a0ab718ffa44f72c96bdd396ec6d44bd", "https://cf.shopee.sg/file/ad68fa369b53be35f37228dfc3d61210", "https://cf.shopee.sg/file/a9826708550f8d7cc7f97fc47814a5dc", "https://cf.shopee.sg/file/97f2a2aa1e5a831b2918c3df18459ec4", "https://cf.shopee.sg/file/51b047f79eff52723470f00d963d375b"},
 	}
 	CategoryBabyKidsFashionBoyClothesBottoms = &Category{
-		Id:       "795x2",
-		Slug:     "baby-and-kids-fashion-boy-clothes-bottoms",
-		Name:     "Quần",
-		NameEn:   "Bottoms",
-		Children: Categories{CategoryBabyKidsFashionBoyClothesBottomsShorts, CategoryBabyKidsFashionBoyClothesBottomsOveralls, CategoryBabyKidsFashionBoyClothesBottomsJeans, CategoryBabyKidsFashionBoyClothesBottomsPants},
+		Id:     "795x2",
+		Slug:   "baby-and-kids-fashion-boy-clothes-bottoms",
+		Name:   "Quần",
+		NameEn: "Bottoms",
+		Children: Categories{
+			CategoryBabyKidsFashionBoyClothesBottomsJeans,
+			CategoryBabyKidsFashionBoyClothesBottomsPants,
+			CategoryBabyKidsFashionBoyClothesBottomsShorts,
+			CategoryBabyKidsFashionBoyClothesBottomsOveralls,
+		},
 	}
 	CategoryBabyKidsFashionBoyClothesBottomsJeans = &Category{
 		Id:     "795x3",
@@ -6733,11 +7859,21 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/6c324cf38cf292fc8daaba417c3d87f7", "https://cf.shopee.sg/file/ba59d76303f3577b9797bd206502babf", "https://cf.shopee.sg/file/af91e475b1597e2c40569f7c1ce3a64c", "https://cf.shopee.sg/file/ba66736a1aacee19e628c14fc1f7c7da", "https://cf.shopee.sg/file/bebc1bfe5f3fcdc33fd0fc194bd3db22", "https://cf.shopee.sg/file/a34f7d81d9704db2a92ead953328ea21"},
 	}
 	CategoryBabyKidsFashionGirlClothes = &Category{
-		Id:       "800x1",
-		Slug:     "baby-and-kids-fashion-girl-clothes",
-		Name:     "Quần áo bé gái",
-		NameEn:   "Girl Clothes",
-		Children: Categories{CategoryBabyKidsFashionGirlClothesCostumes, CategoryBabyKidsFashionGirlClothesSleepwear, CategoryBabyKidsFashionGirlClothesSwimwear, CategoryBabyKidsFashionGirlClothesTops, CategoryBabyKidsFashionGirlClothesRompersJumpsuits, CategoryBabyKidsFashionGirlClothesOuterwear, CategoryBabyKidsFashionGirlClothesBottoms, CategoryBabyKidsFashionGirlClothesDresses, CategoryBabyKidsFashionGirlClothesSuitsSets},
+		Id:     "800x1",
+		Slug:   "baby-and-kids-fashion-girl-clothes",
+		Name:   "Quần áo bé gái",
+		NameEn: "Girl Clothes",
+		Children: Categories{
+			CategoryBabyKidsFashionGirlClothesDresses,
+			CategoryBabyKidsFashionGirlClothesSuitsSets,
+			CategoryBabyKidsFashionGirlClothesCostumes,
+			CategoryBabyKidsFashionGirlClothesOuterwear,
+			CategoryBabyKidsFashionGirlClothesRompersJumpsuits,
+			CategoryBabyKidsFashionGirlClothesBottoms,
+			CategoryBabyKidsFashionGirlClothesSleepwear,
+			CategoryBabyKidsFashionGirlClothesSwimwear,
+			CategoryBabyKidsFashionGirlClothesTops,
+		},
 	}
 	CategoryBabyKidsFashionGirlClothesCostumes = &Category{
 		Id:     "800x2",
@@ -6747,11 +7883,13 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/fe3d5c56c8a3483faf3c31e4cc105b3b", "https://cf.shopee.sg/file/45d27311fa86f26bd58683ea51f8d308", "https://cf.shopee.sg/file/3886cf8f684a01928fd809500ed773a5", "https://cf.shopee.sg/file/fccbfdb63492de4619e683e6a56ed1d1", "https://cf.shopee.sg/file/225f3114933cd9037f19a05dea7640c7", "https://cf.shopee.sg/file/989117b3faf6c76479d791371c5fb71e"},
 	}
 	CategoryBabyKidsFashionUnderwearInnerwear = &Category{
-		Id:       "801x1",
-		Slug:     "baby-and-kids-fashion-underwear-and-innerwear",
-		Name:     "Quần áo bé gái",
-		NameEn:   "Underwear & Innerwear",
-		Children: Categories{CategoryBabyKidsFashionUnderwearInnerwearUnderwearInnerwear},
+		Id:     "801x1",
+		Slug:   "baby-and-kids-fashion-underwear-and-innerwear",
+		Name:   "Quần áo bé gái",
+		NameEn: "Underwear & Innerwear",
+		Children: Categories{
+			CategoryBabyKidsFashionUnderwearInnerwearUnderwearInnerwear,
+		},
 	}
 	CategoryBabyKidsFashionUnderwearInnerwearUnderwearInnerwear = &Category{
 		Id:     "801x2",
@@ -6775,11 +7913,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/1f155d0930942e6cf673f17df9578a74", "https://cf.shopee.sg/file/1d089151a090de53770f94dadeabe040", "https://cf.shopee.sg/file/95d29bf59d77349c2a36ca97da738d67", "https://cf.shopee.sg/file/fa1db3aa7cfc16868a8406815ffdfded", "https://cf.shopee.sg/file/1e5f6b70af1ca2f467a2f89227ca3c61", "https://cf.shopee.sg/file/f37367d21c1507cfb6f3afe47ead7b1e"},
 	}
 	CategoryBabyKidsFashionGirlClothesTops = &Category{
-		Id:       "804x2",
-		Slug:     "baby-and-kids-fashion-girl-clothes-tops",
-		Name:     "Áo",
-		NameEn:   "Tops",
-		Children: Categories{CategoryBabyKidsFashionGirlClothesTopsPoloShirts, CategoryBabyKidsFashionGirlClothesTopsShirtsBlouses, CategoryBabyKidsFashionGirlClothesTopsTShirts},
+		Id:     "804x2",
+		Slug:   "baby-and-kids-fashion-girl-clothes-tops",
+		Name:   "Áo",
+		NameEn: "Tops",
+		Children: Categories{
+			CategoryBabyKidsFashionGirlClothesTopsTShirts,
+			CategoryBabyKidsFashionGirlClothesTopsPoloShirts,
+			CategoryBabyKidsFashionGirlClothesTopsShirtsBlouses,
+		},
 	}
 	CategoryBabyKidsFashionGirlClothesTopsTShirts = &Category{
 		Id:     "804x3",
@@ -6803,11 +7945,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/86d790009ee50b68aa7a0460104bf159", "https://cf.shopee.sg/file/8a01ab901ca31d25b93659c1093cb54e", "https://cf.shopee.sg/file/82c29c563f1ae6cd03871df97e3ab1bf", "https://cf.shopee.sg/file/fee4a20006e0d1fbb503f0d3168b61ac", "https://cf.shopee.sg/file/240227ab6b8c2d5f3bc2c84c5b246409", "https://cf.shopee.sg/file/4704544a20e26a68b85d7bdc545534d9"},
 	}
 	CategoryBabyKidsFashionGirlClothesOuterwear = &Category{
-		Id:       "807x2",
-		Slug:     "baby-and-kids-fashion-girl-clothes-outerwear",
-		Name:     "Áo khoác",
-		NameEn:   "Outerwear",
-		Children: Categories{CategoryBabyKidsFashionGirlClothesOuterwearHoodies, CategoryBabyKidsFashionGirlClothesOuterwearRegularJacketsCoats, CategoryBabyKidsFashionGirlClothesOuterwearWinterOuterwear, CategoryBabyKidsFashionGirlClothesOuterwearVests, CategoryBabyKidsFashionGirlClothesOuterwearSweatersCardigans, CategoryBabyKidsFashionGirlClothesOuterwearBlazers},
+		Id:     "807x2",
+		Slug:   "baby-and-kids-fashion-girl-clothes-outerwear",
+		Name:   "Áo khoác",
+		NameEn: "Outerwear",
+		Children: Categories{
+			CategoryBabyKidsFashionGirlClothesOuterwearSweatersCardigans,
+			CategoryBabyKidsFashionGirlClothesOuterwearBlazers,
+			CategoryBabyKidsFashionGirlClothesOuterwearHoodies,
+			CategoryBabyKidsFashionGirlClothesOuterwearRegularJacketsCoats,
+			CategoryBabyKidsFashionGirlClothesOuterwearWinterOuterwear,
+			CategoryBabyKidsFashionGirlClothesOuterwearVests,
+		},
 	}
 	CategoryBabyKidsFashionGirlClothesOuterwearRegularJacketsCoats = &Category{
 		Id:     "807x3",
@@ -6852,11 +8001,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/a84d93234d6e3f13b15a1ae10460cf86", "https://cf.shopee.sg/file/a31f0efbd35940d69364a9e4b69436b9", "https://cf.shopee.sg/file/80fae8e7b0c6ce7aa1ada347a10313a4", "https://cf.shopee.sg/file/2770f99a9457d94142f3712510c5074e", "https://cf.shopee.sg/file/c6735638cd977a97e5928644542d524c", "https://cf.shopee.sg/file/55313e967a3b2c859d771a7e5705111e"},
 	}
 	CategoryBabyKidsFashionGirlClothesBottoms = &Category{
-		Id:       "813x2",
-		Slug:     "baby-and-kids-fashion-girl-clothes-bottoms",
-		Name:     "Quần",
-		NameEn:   "Bottoms",
-		Children: Categories{CategoryBabyKidsFashionGirlClothesBottomsSkirts, CategoryBabyKidsFashionGirlClothesBottomsLeggings, CategoryBabyKidsFashionGirlClothesBottomsJeans, CategoryBabyKidsFashionGirlClothesBottomsPants, CategoryBabyKidsFashionGirlClothesBottomsShorts},
+		Id:     "813x2",
+		Slug:   "baby-and-kids-fashion-girl-clothes-bottoms",
+		Name:   "Quần",
+		NameEn: "Bottoms",
+		Children: Categories{
+			CategoryBabyKidsFashionGirlClothesBottomsSkirts,
+			CategoryBabyKidsFashionGirlClothesBottomsLeggings,
+			CategoryBabyKidsFashionGirlClothesBottomsJeans,
+			CategoryBabyKidsFashionGirlClothesBottomsPants,
+			CategoryBabyKidsFashionGirlClothesBottomsShorts,
+		},
 	}
 	CategoryBabyKidsFashionGirlClothesBottomsJeans = &Category{
 		Id:     "813x3",
@@ -6915,11 +8070,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/080fd0285f4692141d8eafcdc6c1a9d1", "https://cf.shopee.sg/file/512cbe6d5d4de786116bdd73fa153bf4", "https://cf.shopee.sg/file/f8d66ab31d12ce22a35c1b555c865b6e", "https://cf.shopee.sg/file/46ad6b8bb07d747906c5024b126680d6", "https://cf.shopee.sg/file/df0dc1d60f55c3205cce5bbe8e9c9929", "https://cf.shopee.sg/file/df31eb251e26d7b8daf0bd70af4a63ed"},
 	}
 	CategoryBabyKidsFashionBoyShoes = &Category{
-		Id:       "821x1",
-		Slug:     "baby-and-kids-fashion-boy-shoes",
-		Name:     "Giày bé trai",
-		NameEn:   "Boy Shoes",
-		Children: Categories{CategoryBabyKidsFashionBoyShoesFlipFlops, CategoryBabyKidsFashionBoyShoesFormalShoes, CategoryBabyKidsFashionBoyShoesLoafers, CategoryBabyKidsFashionBoyShoesBoots, CategoryBabyKidsFashionBoyShoesSandals, CategoryBabyKidsFashionBoyShoesSneakers},
+		Id:     "821x1",
+		Slug:   "baby-and-kids-fashion-boy-shoes",
+		Name:   "Giày bé trai",
+		NameEn: "Boy Shoes",
+		Children: Categories{
+			CategoryBabyKidsFashionBoyShoesSneakers,
+			CategoryBabyKidsFashionBoyShoesFlipFlops,
+			CategoryBabyKidsFashionBoyShoesFormalShoes,
+			CategoryBabyKidsFashionBoyShoesLoafers,
+			CategoryBabyKidsFashionBoyShoesBoots,
+			CategoryBabyKidsFashionBoyShoesSandals,
+		},
 	}
 	CategoryBabyKidsFashionBoyShoesBoots = &Category{
 		Id:     "821x2",
@@ -6964,11 +8126,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/322b7b266a63b80e95f047fc9d85b12c", "https://cf.shopee.sg/file/1f70b91d68e600bdc5583d556792cc76", "https://cf.shopee.sg/file/bf833aec0866a69986406ac16db1cf5b", "https://cf.shopee.sg/file/1ad959889b142c4922eb155dfcd7c3eb", "https://cf.shopee.sg/file/01eb436f63a199eb5c465cce797ae4a8", "https://cf.shopee.sg/file/bed22eb11b8b4adff761cac92b4af93d"},
 	}
 	CategoryBabyKidsFashionGirlShoes = &Category{
-		Id:       "827x1",
-		Slug:     "baby-and-kids-fashion-girl-shoes",
-		Name:     "Giày bé gái",
-		NameEn:   "Girl Shoes",
-		Children: Categories{CategoryBabyKidsFashionGirlShoesLoafers, CategoryBabyKidsFashionGirlShoesFlipFlops, CategoryBabyKidsFashionGirlShoesFlats, CategoryBabyKidsFashionGirlShoesBoots, CategoryBabyKidsFashionGirlShoesSandals, CategoryBabyKidsFashionGirlShoesSneakers},
+		Id:     "827x1",
+		Slug:   "baby-and-kids-fashion-girl-shoes",
+		Name:   "Giày bé gái",
+		NameEn: "Girl Shoes",
+		Children: Categories{
+			CategoryBabyKidsFashionGirlShoesBoots,
+			CategoryBabyKidsFashionGirlShoesSandals,
+			CategoryBabyKidsFashionGirlShoesSneakers,
+			CategoryBabyKidsFashionGirlShoesLoafers,
+			CategoryBabyKidsFashionGirlShoesFlipFlops,
+			CategoryBabyKidsFashionGirlShoesFlats,
+		},
 	}
 	CategoryBabyKidsFashionGirlShoesBoots = &Category{
 		Id:     "827x2",
@@ -7013,18 +8182,31 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/1b0ffa51c0a7ee2efc8926dbe54b300c", "https://cf.shopee.sg/file/30cbfc524dfd4c06e086965b2a50cc19", "https://cf.shopee.sg/file/fb6e4dc0a447930145512340a616cf58", "https://cf.shopee.sg/file/bb1124e228eebf055bfa907cd4d966ed", "https://cf.shopee.sg/file/914c6be2501fc428e6d303960b824837", "https://cf.shopee.sg/file/5ded8b4362b4ef41316cf4e28ece7b64"},
 	}
 	CategoryGamingConsoles = &Category{
-		Id:       "833x0",
-		Slug:     "gaming-and-consoles",
-		Name:     "Gaming & Console",
-		NameEn:   "Gaming & Consoles",
-		Children: Categories{CategoryGamingConsolesConsoleAccessories, CategoryGamingConsolesVideoGames, CategoryGamingConsolesConsoleMachines},
+		Id:     "833x0",
+		Slug:   "gaming-and-consoles",
+		Name:   "Gaming & Console",
+		NameEn: "Gaming & Consoles",
+		Children: Categories{
+			CategoryGamingConsolesConsoleMachines,
+			CategoryGamingConsolesConsoleAccessories,
+			CategoryGamingConsolesVideoGames,
+		},
 	}
 	CategoryGamingConsolesConsoleMachines = &Category{
-		Id:       "833x1",
-		Slug:     "gaming-and-consoles-console-machines",
-		Name:     "Máy chơi game",
-		NameEn:   "Console Machines",
-		Children: Categories{CategoryGamingConsolesConsoleMachinesXbox, CategoryGamingConsolesConsoleMachinesWii, CategoryGamingConsolesConsoleMachinesNintendoDS, CategoryGamingConsolesConsoleMachinesGameboy, CategoryGamingConsolesConsoleMachinesSwitch, CategoryGamingConsolesConsoleMachinesPSVita, CategoryGamingConsolesConsoleMachinesPSP, CategoryGamingConsolesConsoleMachinesPlaystation},
+		Id:     "833x1",
+		Slug:   "gaming-and-consoles-console-machines",
+		Name:   "Máy chơi game",
+		NameEn: "Console Machines",
+		Children: Categories{
+			CategoryGamingConsolesConsoleMachinesPSVita,
+			CategoryGamingConsolesConsoleMachinesPSP,
+			CategoryGamingConsolesConsoleMachinesPlaystation,
+			CategoryGamingConsolesConsoleMachinesXbox,
+			CategoryGamingConsolesConsoleMachinesWii,
+			CategoryGamingConsolesConsoleMachinesNintendoDS,
+			CategoryGamingConsolesConsoleMachinesGameboy,
+			CategoryGamingConsolesConsoleMachinesSwitch,
+		},
 	}
 	CategoryGamingConsolesConsoleMachinesPlaystation = &Category{
 		Id:     "833x2",
@@ -7090,11 +8272,21 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/c2de65a13e7b0fd984a32e6a7cdc9a87", "https://cf.shopee.sg/file/e90a5149fe8aac189e13369499abb1d5", "https://cf.shopee.sg/file/b071679b7ef0ea28233fe44ab6eb0079", "https://cf.shopee.sg/file/b6d351d57c1591ceccfccf9dc38b8846", "https://cf.shopee.sg/file/6854ed4f1bc7c2c74c14ecaff8ad70e0", "https://cf.shopee.sg/file/283453005e7f80ce3d4bec0b3f32ef8e"},
 	}
 	CategoryGamingConsolesVideoGames = &Category{
-		Id:       "842x1",
-		Slug:     "gaming-and-consoles-video-games",
-		Name:     "Video Games",
-		NameEn:   "Video Games",
-		Children: Categories{CategoryGamingConsolesVideoGamesWii, CategoryGamingConsolesVideoGamesPSP, CategoryGamingConsolesVideoGamesPCGame, CategoryGamingConsolesVideoGamesPlaystation, CategoryGamingConsolesVideoGamesXbox, CategoryGamingConsolesVideoGamesNintendoDS, CategoryGamingConsolesVideoGamesGameboy, CategoryGamingConsolesVideoGamesSwitch, CategoryGamingConsolesVideoGamesPSVita},
+		Id:     "842x1",
+		Slug:   "gaming-and-consoles-video-games",
+		Name:   "Video Games",
+		NameEn: "Video Games",
+		Children: Categories{
+			CategoryGamingConsolesVideoGamesPlaystation,
+			CategoryGamingConsolesVideoGamesWii,
+			CategoryGamingConsolesVideoGamesSwitch,
+			CategoryGamingConsolesVideoGamesPSVita,
+			CategoryGamingConsolesVideoGamesPSP,
+			CategoryGamingConsolesVideoGamesXbox,
+			CategoryGamingConsolesVideoGamesNintendoDS,
+			CategoryGamingConsolesVideoGamesGameboy,
+			CategoryGamingConsolesVideoGamesPCGame,
+		},
 	}
 	CategoryGamingConsolesVideoGamesPlaystation = &Category{
 		Id:     "842x2",
@@ -7160,18 +8352,35 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/6a76bba1c03ac8b45fb2c2ebfd15d49b", "https://cf.shopee.sg/file/8ad362eb6aee1f7e794f6f8e1e3df012", "https://cf.shopee.sg/file/76ea8802b14b8fae62a031a1681c92e7", "https://cf.shopee.sg/file/2ea77f8a77e3e09fe29033a20d947b1c", "https://cf.shopee.sg/file/c57b80e602c413082b8924015b4f0d8c", "https://cf.shopee.sg/file/3dda0953e4792177aa1afe03e2587645"},
 	}
 	CategoryCamerasDrones = &Category{
-		Id:       "851x0",
-		Slug:     "cameras-and-drones",
-		Name:     "Cameras & Flycam",
-		NameEn:   "Cameras & Drones",
-		Children: Categories{CategoryCamerasDronesLenses, CategoryCamerasDronesLensAccessories, CategoryCamerasDronesCameraAccessories, CategoryCamerasDronesCameraCare, CategoryCamerasDronesDrones, CategoryCamerasDronesDroneAccessories, CategoryCamerasDronesCameras, CategoryCamerasDronesSecurityCamerasSystems},
+		Id:     "851x0",
+		Slug:   "cameras-and-drones",
+		Name:   "Cameras & Flycam",
+		NameEn: "Cameras & Drones",
+		Children: Categories{
+			CategoryCamerasDronesCameraAccessories,
+			CategoryCamerasDronesCameraCare,
+			CategoryCamerasDronesDrones,
+			CategoryCamerasDronesDroneAccessories,
+			CategoryCamerasDronesCameras,
+			CategoryCamerasDronesSecurityCamerasSystems,
+			CategoryCamerasDronesLenses,
+			CategoryCamerasDronesLensAccessories,
+		},
 	}
 	CategoryCamerasDronesCameras = &Category{
-		Id:       "851x1",
-		Slug:     "cameras-and-drones-cameras",
-		Name:     "Máy ảnh",
-		NameEn:   "Cameras",
-		Children: Categories{CategoryCamerasDronesCamerasVideoCamcorders, CategoryCamerasDronesCamerasInstantCameras, CategoryCamerasDronesCamerasAnalogCameras, CategoryCamerasDronesCamerasDSLRs, CategoryCamerasDronesCamerasPointShoot, CategoryCamerasDronesCamerasMirrorlessCameras, CategoryCamerasDronesCamerasActionCameras},
+		Id:     "851x1",
+		Slug:   "cameras-and-drones-cameras",
+		Name:   "Máy ảnh",
+		NameEn: "Cameras",
+		Children: Categories{
+			CategoryCamerasDronesCamerasInstantCameras,
+			CategoryCamerasDronesCamerasAnalogCameras,
+			CategoryCamerasDronesCamerasDSLRs,
+			CategoryCamerasDronesCamerasPointShoot,
+			CategoryCamerasDronesCamerasMirrorlessCameras,
+			CategoryCamerasDronesCamerasActionCameras,
+			CategoryCamerasDronesCamerasVideoCamcorders,
+		},
 	}
 	CategoryCamerasDronesCamerasPointShoot = &Category{
 		Id:     "851x2",
@@ -7223,11 +8432,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/47e4b1a40e08ba91fa563ab02310fa98", "https://cf.shopee.sg/file/480c02967990a011e92257d2f31c5c9e", "https://cf.shopee.sg/file/30408e22fbe3501775fac8c974b7435e", "https://cf.shopee.sg/file/9d0b7cad9a5a85188998c19b1c5b01a6", "https://cf.shopee.sg/file/5fa72bb620987c5858abcb648cc215a7", "https://cf.shopee.sg/file/40831eba5cd846816641859e6ceafda9"},
 	}
 	CategoryCamerasDronesSecurityCamerasSystems = &Category{
-		Id:       "858x1",
-		Slug:     "cameras-and-drones-security-cameras-and-systems",
-		Name:     "Camera giám sát",
-		NameEn:   "Security Cameras & Systems",
-		Children: Categories{CategoryCamerasDronesSecurityCamerasSystemsCCTVSecurityCameras, CategoryCamerasDronesSecurityCamerasSystemsDVRs, CategoryCamerasDronesSecurityCamerasSystemsDummyCameras},
+		Id:     "858x1",
+		Slug:   "cameras-and-drones-security-cameras-and-systems",
+		Name:   "Camera giám sát",
+		NameEn: "Security Cameras & Systems",
+		Children: Categories{
+			CategoryCamerasDronesSecurityCamerasSystemsDVRs,
+			CategoryCamerasDronesSecurityCamerasSystemsDummyCameras,
+			CategoryCamerasDronesSecurityCamerasSystemsCCTVSecurityCameras,
+		},
 	}
 	CategoryCamerasDronesSecurityCamerasSystemsCCTVSecurityCameras = &Category{
 		Id:     "858x2",
@@ -7258,11 +8471,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/7647e3543ee94b7221dcb94421edfad8", "https://cf.shopee.sg/file/95b276a8d0c772583e11feafbb777ade", "https://cf.shopee.sg/file/467a4162f88a0f43749e55ea794f3642", "https://cf.shopee.sg/file/c24322596d1607e2420ba45b741f0ef8", "https://cf.shopee.sg/file/6f7cc0916f8aee7c1059de36147730e4", "https://cf.shopee.sg/file/4eeb4520d89d6e80427034cf259680f0"},
 	}
 	CategoryCamerasDronesLensAccessories = &Category{
-		Id:       "862x1",
-		Slug:     "cameras-and-drones-lens-accessories",
-		Name:     "Phụ kiện ống kính",
-		NameEn:   "Lens Accessories",
-		Children: Categories{CategoryCamerasDronesLensAccessoriesOther, CategoryCamerasDronesLensAccessoriesLensMountAdaptors, CategoryCamerasDronesLensAccessoriesLensCaps, CategoryCamerasDronesLensAccessoriesFilters, CategoryCamerasDronesLensAccessoriesLensHoods},
+		Id:     "862x1",
+		Slug:   "cameras-and-drones-lens-accessories",
+		Name:   "Phụ kiện ống kính",
+		NameEn: "Lens Accessories",
+		Children: Categories{
+			CategoryCamerasDronesLensAccessoriesLensMountAdaptors,
+			CategoryCamerasDronesLensAccessoriesLensCaps,
+			CategoryCamerasDronesLensAccessoriesFilters,
+			CategoryCamerasDronesLensAccessoriesLensHoods,
+			CategoryCamerasDronesLensAccessoriesOther,
+		},
 	}
 	CategoryCamerasDronesLensAccessoriesLensMountAdaptors = &Category{
 		Id:     "862x2",
@@ -7300,11 +8519,22 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/bd4d93c202bda4795cc12bb49205af48", "https://cf.shopee.sg/file/b22470a844a456688a7dd989f846310a", "https://cf.shopee.sg/file/efc869927356a44b9fcd118c3a33be21", "https://cf.shopee.sg/file/a327cc39c48e4bb26a8292b2a7985500", "https://cf.shopee.sg/file/3224b91f53bff2be273b48829634cfd6", "https://cf.shopee.sg/file/ba9b3a5a544f33cd35bed8ee646286eb"},
 	}
 	CategoryCamerasDronesCameraAccessories = &Category{
-		Id:       "867x1",
-		Slug:     "cameras-and-drones-camera-accessories",
-		Name:     "Phụ kiện máy ảnh",
-		NameEn:   "Camera Accessories",
-		Children: Categories{CategoryCamerasDronesCameraAccessoriesLightingStudioEquipments, CategoryCamerasDronesCameraAccessoriesPhotoPrinters, CategoryCamerasDronesCameraAccessoriesBatteryChargers, CategoryCamerasDronesCameraAccessoriesFlashes, CategoryCamerasDronesCameraAccessoriesGimbalsStabilizers, CategoryCamerasDronesCameraAccessoriesCameraCasesBags, CategoryCamerasDronesCameraAccessoriesBatteriesBatteryGrips, CategoryCamerasDronesCameraAccessoriesTripodsMonopodsAccessories, CategoryCamerasDronesCameraAccessoriesFlashAccessories, CategoryCamerasDronesCameraAccessoriesPhotoFilmsPapers},
+		Id:     "867x1",
+		Slug:   "cameras-and-drones-camera-accessories",
+		Name:   "Phụ kiện máy ảnh",
+		NameEn: "Camera Accessories",
+		Children: Categories{
+			CategoryCamerasDronesCameraAccessoriesTripodsMonopodsAccessories,
+			CategoryCamerasDronesCameraAccessoriesFlashes,
+			CategoryCamerasDronesCameraAccessoriesFlashAccessories,
+			CategoryCamerasDronesCameraAccessoriesGimbalsStabilizers,
+			CategoryCamerasDronesCameraAccessoriesLightingStudioEquipments,
+			CategoryCamerasDronesCameraAccessoriesPhotoFilmsPapers,
+			CategoryCamerasDronesCameraAccessoriesCameraCasesBags,
+			CategoryCamerasDronesCameraAccessoriesBatteryChargers,
+			CategoryCamerasDronesCameraAccessoriesPhotoPrinters,
+			CategoryCamerasDronesCameraAccessoriesBatteriesBatteryGrips,
+		},
 	}
 	CategoryCamerasDronesCameraAccessoriesFlashes = &Category{
 		Id:     "867x2",
@@ -7314,11 +8544,14 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/2956244e5c2025fe2358e2f8b1d100e2", "https://cf.shopee.sg/file/0d8a45c8f4fd069077ead7d856628dba", "https://cf.shopee.sg/file/ae449618585ba18fb5cb8a778e0dfaff", "https://cf.shopee.sg/file/f5b17088593818a7fbd35928df4b7983", "https://cf.shopee.sg/file/f06c29595a675793e014cbaf9151b8ed", "https://cf.shopee.sg/file/a6db08b093b4599d513aa513f9a6bf00"},
 	}
 	CategoryCamerasDronesCameraAccessoriesFlashAccessories = &Category{
-		Id:       "868x2",
-		Slug:     "cameras-and-drones-camera-accessories-flash-accessories",
-		Name:     "Phụ kiện đèn Flash",
-		NameEn:   "Flash Accessories",
-		Children: Categories{CategoryCamerasDronesCameraAccessoriesFlashAccessoriesFlashTriggers, CategoryCamerasDronesCameraAccessoriesFlashAccessoriesFlashDiffusers},
+		Id:     "868x2",
+		Slug:   "cameras-and-drones-camera-accessories-flash-accessories",
+		Name:   "Phụ kiện đèn Flash",
+		NameEn: "Flash Accessories",
+		Children: Categories{
+			CategoryCamerasDronesCameraAccessoriesFlashAccessoriesFlashDiffusers,
+			CategoryCamerasDronesCameraAccessoriesFlashAccessoriesFlashTriggers,
+		},
 	}
 	CategoryCamerasDronesCameraAccessoriesFlashAccessoriesFlashTriggers = &Category{
 		Id:     "868x3",
@@ -7391,11 +8624,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/531594e24bb363b5ba825e6b91fafbde", "https://cf.shopee.sg/file/b7a1c0ed511b3805792fbf8748d57b00", "https://cf.shopee.sg/file/f45de9d35ecd30ee19018ec5aee917cb", "https://cf.shopee.sg/file/69315a5e8c29b48fb4115d100758a318", "https://cf.shopee.sg/file/a853590ae23d15edb90459f1c2254c38", "https://cf.shopee.sg/file/6b3d9ab05b473d445f9669412e429ee0"},
 	}
 	CategoryCamerasDronesCameraCare = &Category{
-		Id:       "878x1",
-		Slug:     "cameras-and-drones-camera-care",
-		Name:     "Phụ kiện chăm sóc máy ảnh",
-		NameEn:   "Camera Care",
-		Children: Categories{CategoryCamerasDronesCameraCareLenspensBrushes, CategoryCamerasDronesCameraCareDryBoxesCabinets, CategoryCamerasDronesCameraCareCleaningKit, CategoryCamerasDronesCameraCareSilicaGel, CategoryCamerasDronesCameraCareBlowers},
+		Id:     "878x1",
+		Slug:   "cameras-and-drones-camera-care",
+		Name:   "Phụ kiện chăm sóc máy ảnh",
+		NameEn: "Camera Care",
+		Children: Categories{
+			CategoryCamerasDronesCameraCareDryBoxesCabinets,
+			CategoryCamerasDronesCameraCareCleaningKit,
+			CategoryCamerasDronesCameraCareSilicaGel,
+			CategoryCamerasDronesCameraCareBlowers,
+			CategoryCamerasDronesCameraCareLenspensBrushes,
+		},
 	}
 	CategoryCamerasDronesCameraCareDryBoxesCabinets = &Category{
 		Id:     "878x2",
@@ -7447,18 +8686,39 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/48dd2e463228e7a81d3146366e2db682", "https://cf.shopee.sg/file/94b09a1418e764ae0a5f7ae2fb114044", "https://cf.shopee.sg/file/72b02f0d333c0ef61929e66ae4ec581f", "https://cf.shopee.sg/file/613845c2d70e9b7d994f26b942a45021", "https://cf.shopee.sg/file/521cdfda67da9c4322993e0fc4279c2e", "https://cf.shopee.sg/file/1da292c693546ea805d6e6c4d62ce523"},
 	}
 	CategoryHomeLiving = &Category{
-		Id:       "885x0",
-		Slug:     "home-and-living",
-		Name:     "Nhà cửa & Đời sống",
-		NameEn:   "Home & Living",
-		Children: Categories{CategoryHomeLivingHomeOrganizers, CategoryHomeLivingFurniture, CategoryHomeLivingToolsHomeImprovement, CategoryHomeLivingHomeCareSupplies, CategoryHomeLivingDinnerware, CategoryHomeLivingLighting, CategoryHomeLivingBathrooms, CategoryHomeLivingDecoration, CategoryHomeLivingPartySupplies, CategoryHomeLivingBedding, CategoryHomeLivingHandWarmersHotWaterBagsIceBags, CategoryHomeLivingGardening, CategoryHomeLivingHomeFragranceAromatherapy, CategoryHomeLivingKitchenware, CategoryHomeLivingSafetySecurity, CategoryHomeLivingFengshuiReligiousSupplies},
+		Id:     "885x0",
+		Slug:   "home-and-living",
+		Name:   "Nhà cửa & Đời sống",
+		NameEn: "Home & Living",
+		Children: Categories{
+			CategoryHomeLivingDinnerware,
+			CategoryHomeLivingHomeFragranceAromatherapy,
+			CategoryHomeLivingFurniture,
+			CategoryHomeLivingGardening,
+			CategoryHomeLivingToolsHomeImprovement,
+			CategoryHomeLivingFengshuiReligiousSupplies,
+			CategoryHomeLivingBedding,
+			CategoryHomeLivingHandWarmersHotWaterBagsIceBags,
+			CategoryHomeLivingLighting,
+			CategoryHomeLivingHomeOrganizers,
+			CategoryHomeLivingDecoration,
+			CategoryHomeLivingHomeCareSupplies,
+			CategoryHomeLivingSafetySecurity,
+			CategoryHomeLivingPartySupplies,
+			CategoryHomeLivingBathrooms,
+			CategoryHomeLivingKitchenware,
+		},
 	}
 	CategoryHomeLivingHomeFragranceAromatherapy = &Category{
-		Id:       "885x1",
-		Slug:     "home-and-living-home-fragrance-and-aromatherapy",
-		Name:     "Chất khử mùi, làm thơm nhà",
-		NameEn:   "Home Fragrance & Aromatherapy",
-		Children: Categories{CategoryHomeLivingHomeFragranceAromatherapyAirFreshenersHomeFragrance, CategoryHomeLivingHomeFragranceAromatherapyEssentialOils, CategoryHomeLivingHomeFragranceAromatherapyDiffusersHumidifiersOilBurners},
+		Id:     "885x1",
+		Slug:   "home-and-living-home-fragrance-and-aromatherapy",
+		Name:   "Chất khử mùi, làm thơm nhà",
+		NameEn: "Home Fragrance & Aromatherapy",
+		Children: Categories{
+			CategoryHomeLivingHomeFragranceAromatherapyAirFreshenersHomeFragrance,
+			CategoryHomeLivingHomeFragranceAromatherapyEssentialOils,
+			CategoryHomeLivingHomeFragranceAromatherapyDiffusersHumidifiersOilBurners,
+		},
 	}
 	CategoryHomeLivingHomeFragranceAromatherapyAirFreshenersHomeFragrance = &Category{
 		Id:     "885x2",
@@ -7482,11 +8742,25 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/1c65239997580da636e3fe5cca2bc96c", "https://cf.shopee.sg/file/8a5cb0d2b83dbbfafea7adbab7e90348", "https://cf.shopee.sg/file/a928866ffaa8ecb5d170654e8206cd8b", "https://cf.shopee.sg/file/71758cb72f5833166eb6e6e57b267bd6", "https://cf.shopee.sg/file/f5f247ae26e203755b3a3d84b7f8ae3e", "https://cf.shopee.sg/file/cd0da14f0269e0c1451bc31624f60397"},
 	}
 	CategoryHomeLivingBathrooms = &Category{
-		Id:       "888x1",
-		Slug:     "home-and-living-bathrooms",
-		Name:     "Đồ dùng phòng tắm",
-		NameEn:   "Bathrooms",
-		Children: Categories{CategoryHomeLivingBathroomsToiletBowlsSeatsCovers, CategoryHomeLivingBathroomsToothbrushHoldersToothpasteDispensers, CategoryHomeLivingBathroomsBathtubs, CategoryHomeLivingBathroomsBathBrushesLoofahs, CategoryHomeLivingBathroomsShowerCurtains, CategoryHomeLivingBathroomsShowerSeatsCommodes, CategoryHomeLivingBathroomsOther, CategoryHomeLivingBathroomsSoapDispensersHoldersBoxes, CategoryHomeLivingBathroomsBathroomRacksCabinets, CategoryHomeLivingBathroomsTowelsBathrobes, CategoryHomeLivingBathroomsShowerheadsBidetSprays, CategoryHomeLivingBathroomsSafetyHandles, CategoryHomeLivingBathroomsShowerCaps},
+		Id:     "888x1",
+		Slug:   "home-and-living-bathrooms",
+		Name:   "Đồ dùng phòng tắm",
+		NameEn: "Bathrooms",
+		Children: Categories{
+			CategoryHomeLivingBathroomsOther,
+			CategoryHomeLivingBathroomsToiletBowlsSeatsCovers,
+			CategoryHomeLivingBathroomsBathroomRacksCabinets,
+			CategoryHomeLivingBathroomsBathtubs,
+			CategoryHomeLivingBathroomsBathBrushesLoofahs,
+			CategoryHomeLivingBathroomsShowerSeatsCommodes,
+			CategoryHomeLivingBathroomsSafetyHandles,
+			CategoryHomeLivingBathroomsShowerCaps,
+			CategoryHomeLivingBathroomsToothbrushHoldersToothpasteDispensers,
+			CategoryHomeLivingBathroomsSoapDispensersHoldersBoxes,
+			CategoryHomeLivingBathroomsTowelsBathrobes,
+			CategoryHomeLivingBathroomsShowerheadsBidetSprays,
+			CategoryHomeLivingBathroomsShowerCurtains,
+		},
 	}
 	CategoryHomeLivingBathroomsToiletBowlsSeatsCovers = &Category{
 		Id:     "888x2",
@@ -7524,11 +8798,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/95862e12b05c90d9f4aa18d642574217", "https://cf.shopee.sg/file/357ea5cf31aa3623ded9c5b0904bc258", "https://cf.shopee.sg/file/87850c2de251355f4e594a7d88cbf336", "https://cf.shopee.sg/file/8ebc408c8423418ac778675c2f3bad82", "https://cf.shopee.sg/file/2457910b9a3dc48759702afc63787878", "https://cf.shopee.sg/file/fe4de1548c1f4511ab25d1caeeaf65be"},
 	}
 	CategoryHomeLivingBathroomsTowelsBathrobes = &Category{
-		Id:       "893x2",
-		Slug:     "home-and-living-bathrooms-towels-and-bathrobes",
-		Name:     "Khăn mặt, khăn tắm, áo choàng tắm",
-		NameEn:   "Towels & Bathrobes",
-		Children: Categories{CategoryHomeLivingBathroomsTowelsBathrobesFaceHandTowels, CategoryHomeLivingBathroomsTowelsBathrobesBathRobes, CategoryHomeLivingBathroomsTowelsBathrobesOther, CategoryHomeLivingBathroomsTowelsBathrobesBathTowels},
+		Id:     "893x2",
+		Slug:   "home-and-living-bathrooms-towels-and-bathrobes",
+		Name:   "Khăn mặt, khăn tắm, áo choàng tắm",
+		NameEn: "Towels & Bathrobes",
+		Children: Categories{
+			CategoryHomeLivingBathroomsTowelsBathrobesBathTowels,
+			CategoryHomeLivingBathroomsTowelsBathrobesFaceHandTowels,
+			CategoryHomeLivingBathroomsTowelsBathrobesBathRobes,
+			CategoryHomeLivingBathroomsTowelsBathrobesOther,
+		},
 	}
 	CategoryHomeLivingBathroomsTowelsBathrobesBathTowels = &Category{
 		Id:     "893x3",
@@ -7608,11 +8887,21 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/a576608202c799f1cf1539e59a760df7", "https://cf.shopee.sg/file/5b89f31765d6010a6c3836a7a933a8b3", "https://cf.shopee.sg/file/9a7e784a6ca710f12b922847e6da55ca", "https://cf.shopee.sg/file/a819b565b20897ebb066f6b8f72c3f63", "https://cf.shopee.sg/file/32054c81174528e391693a3bf42a8a82", "https://cf.shopee.sg/file/c8028a34616110f64afbb12d9334cacd"},
 	}
 	CategoryHomeLivingBedding = &Category{
-		Id:       "904x1",
-		Slug:     "home-and-living-bedding",
-		Name:     "Chăn ga gối nệm",
-		NameEn:   "Bedding",
-		Children: Categories{CategoryHomeLivingBeddingPillows, CategoryHomeLivingBeddingMatresses, CategoryHomeLivingBeddingMosquitoNets, CategoryHomeLivingBeddingBolsters, CategoryHomeLivingBeddingCoolingMats, CategoryHomeLivingBeddingBlanketsComfortersQuilts, CategoryHomeLivingBeddingOther, CategoryHomeLivingBeddingMattressProtectorsToppers, CategoryHomeLivingBeddingBedsheetsPillowcasesBolsterCases},
+		Id:     "904x1",
+		Slug:   "home-and-living-bedding",
+		Name:   "Chăn ga gối nệm",
+		NameEn: "Bedding",
+		Children: Categories{
+			CategoryHomeLivingBeddingMattressProtectorsToppers,
+			CategoryHomeLivingBeddingBlanketsComfortersQuilts,
+			CategoryHomeLivingBeddingMosquitoNets,
+			CategoryHomeLivingBeddingBolsters,
+			CategoryHomeLivingBeddingCoolingMats,
+			CategoryHomeLivingBeddingPillows,
+			CategoryHomeLivingBeddingBedsheetsPillowcasesBolsterCases,
+			CategoryHomeLivingBeddingMatresses,
+			CategoryHomeLivingBeddingOther,
+		},
 	}
 	CategoryHomeLivingBeddingCoolingMats = &Category{
 		Id:     "904x2",
@@ -7678,11 +8967,25 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/1c6b12a61797ae6f46d5420b80364e8f", "https://cf.shopee.sg/file/f0ddab763dc5af0a933391868bf6a938", "https://cf.shopee.sg/file/fb7ff609661ba8401bde4d318e1d8482", "https://cf.shopee.sg/file/1851a9226d515402cccb038a67a66ae0", "https://cf.shopee.sg/file/43cc2576a119a4230dd1842a9fd4ef6c", "https://cf.shopee.sg/file/3cc274c266d70452aa499b41dfc5fc16"},
 	}
 	CategoryHomeLivingDecoration = &Category{
-		Id:       "913x1",
-		Slug:     "home-and-living-decoration",
-		Name:     "Trang trí nhà cửa",
-		NameEn:   "Decoration",
-		Children: Categories{CategoryHomeLivingDecorationVasesVessels, CategoryHomeLivingDecorationCandlesCandleholders, CategoryHomeLivingDecorationOther, CategoryHomeLivingDecorationFurnitureApplianceCovers, CategoryHomeLivingDecorationCurtainsBlinds, CategoryHomeLivingDecorationPhotoFramesWallDecoration, CategoryHomeLivingDecorationFloorMats, CategoryHomeLivingDecorationMirrors, CategoryHomeLivingDecorationTableCloths, CategoryHomeLivingDecorationFlowers, CategoryHomeLivingDecorationWallpapersWallStickers, CategoryHomeLivingDecorationClocks, CategoryHomeLivingDecorationCarpetsRugs},
+		Id:     "913x1",
+		Slug:   "home-and-living-decoration",
+		Name:   "Trang trí nhà cửa",
+		NameEn: "Decoration",
+		Children: Categories{
+			CategoryHomeLivingDecorationWallpapersWallStickers,
+			CategoryHomeLivingDecorationFloorMats,
+			CategoryHomeLivingDecorationVasesVessels,
+			CategoryHomeLivingDecorationCandlesCandleholders,
+			CategoryHomeLivingDecorationFlowers,
+			CategoryHomeLivingDecorationFurnitureApplianceCovers,
+			CategoryHomeLivingDecorationCurtainsBlinds,
+			CategoryHomeLivingDecorationPhotoFramesWallDecoration,
+			CategoryHomeLivingDecorationMirrors,
+			CategoryHomeLivingDecorationClocks,
+			CategoryHomeLivingDecorationCarpetsRugs,
+			CategoryHomeLivingDecorationTableCloths,
+			CategoryHomeLivingDecorationOther,
+		},
 	}
 	CategoryHomeLivingDecorationFlowers = &Category{
 		Id:     "913x2",
@@ -7783,11 +9086,21 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/8f3d34594e4b36986ecee6e86d44c81c", "https://cf.shopee.sg/file/04ad65631d51142620b1b47b0db9357d", "https://cf.shopee.sg/file/acad7c3faa4d67bda2c492689d53641b", "https://cf.shopee.sg/file/1b7e4aeadcaabaa0eb53f9fabfc8cc38", "https://cf.shopee.sg/file/97aecb588a8af72e6e01c2c76da17eb9", "https://cf.shopee.sg/file/2227b8ca54d5c20f55c6d744e62b2242"},
 	}
 	CategoryHomeLivingFurniture = &Category{
-		Id:       "927x1",
-		Slug:     "home-and-living-furniture",
-		Name:     "Nội thất",
-		NameEn:   "Furniture",
-		Children: Categories{CategoryHomeLivingFurnitureCushions, CategoryHomeLivingFurnitureDoorstoppers, CategoryHomeLivingFurnitureWardrobes, CategoryHomeLivingFurnitureBedFramesHeadboards, CategoryHomeLivingFurnitureDesksTables, CategoryHomeLivingFurnitureBenchesChairsStools, CategoryHomeLivingFurnitureSofas, CategoryHomeLivingFurnitureCupboardsCabinets, CategoryHomeLivingFurnitureShelvesRacks},
+		Id:     "927x1",
+		Slug:   "home-and-living-furniture",
+		Name:   "Nội thất",
+		NameEn: "Furniture",
+		Children: Categories{
+			CategoryHomeLivingFurnitureBedFramesHeadboards,
+			CategoryHomeLivingFurnitureDesksTables,
+			CategoryHomeLivingFurnitureWardrobes,
+			CategoryHomeLivingFurnitureCupboardsCabinets,
+			CategoryHomeLivingFurnitureCushions,
+			CategoryHomeLivingFurnitureDoorstoppers,
+			CategoryHomeLivingFurnitureBenchesChairsStools,
+			CategoryHomeLivingFurnitureSofas,
+			CategoryHomeLivingFurnitureShelvesRacks,
+		},
 	}
 	CategoryHomeLivingFurnitureCushions = &Category{
 		Id:     "927x2",
@@ -7853,11 +9166,22 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/2cf86ea5b808cb85c4bec3984f29f12b", "https://cf.shopee.sg/file/c8a54b1adc5737595dfb5bb926103e1f", "https://cf.shopee.sg/file/523ac3b5067c77a51fd6c311c38eb682", "https://cf.shopee.sg/file/418459be8034a738cc335f096a7fe5e2", "https://cf.shopee.sg/file/373bf7be0c0241b7413b144674a8ee2f", "https://cf.shopee.sg/file/69fe706a1de196bc18c5248ec33ed5ad"},
 	}
 	CategoryHomeLivingGardening = &Category{
-		Id:       "936x1",
-		Slug:     "home-and-living-gardening",
-		Name:     "Làm vườn",
-		NameEn:   "Gardening",
-		Children: Categories{CategoryHomeLivingGardeningPlants, CategoryHomeLivingGardeningFertilizer, CategoryHomeLivingGardeningSeedsBulbs, CategoryHomeLivingGardeningPotsPlanters, CategoryHomeLivingGardeningOther, CategoryHomeLivingGardeningLawnMowers, CategoryHomeLivingGardeningGardenDecorations, CategoryHomeLivingGardeningGardenSoilsGrowingMedia, CategoryHomeLivingGardeningIrrigationSystems, CategoryHomeLivingGardeningGardeningTools},
+		Id:     "936x1",
+		Slug:   "home-and-living-gardening",
+		Name:   "Làm vườn",
+		NameEn: "Gardening",
+		Children: Categories{
+			CategoryHomeLivingGardeningPotsPlanters,
+			CategoryHomeLivingGardeningIrrigationSystems,
+			CategoryHomeLivingGardeningOther,
+			CategoryHomeLivingGardeningSeedsBulbs,
+			CategoryHomeLivingGardeningGardenDecorations,
+			CategoryHomeLivingGardeningGardenSoilsGrowingMedia,
+			CategoryHomeLivingGardeningFertilizer,
+			CategoryHomeLivingGardeningGardeningTools,
+			CategoryHomeLivingGardeningLawnMowers,
+			CategoryHomeLivingGardeningPlants,
+		},
 	}
 	CategoryHomeLivingGardeningPlants = &Category{
 		Id:     "936x2",
@@ -7930,11 +9254,26 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/4bde34c9156fd8129c75411fb9d2a614", "https://cf.shopee.sg/file/d72176684a5c8749e0545701255f0026", "https://cf.shopee.sg/file/9df4234580971b663580abf838fb1df0", "https://cf.shopee.sg/file/7b8b5020b5103e46d5a735a1f545fdb7", "https://cf.shopee.sg/file/7c391e9d69f631058788a511d9c77eab", "https://cf.shopee.sg/file/48937388ebb77ba4291fb1d5792e4285"},
 	}
 	CategoryHomeLivingToolsHomeImprovement = &Category{
-		Id:       "946x1",
-		Slug:     "home-and-living-tools-and-home-improvement",
-		Name:     "Dụng cụ & Thiết bị tiện ích",
-		NameEn:   "Tools & Home Improvement",
-		Children: Categories{CategoryHomeLivingToolsHomeImprovementAirPumpsPartsAccessories, CategoryHomeLivingToolsHomeImprovementProtectiveGlovesGogglesMasks, CategoryHomeLivingToolsHomeImprovementTools, CategoryHomeLivingToolsHomeImprovementDoorsWindows, CategoryHomeLivingToolsHomeImprovementOther, CategoryHomeLivingToolsHomeImprovementIndustrialAdhesivesTapes, CategoryHomeLivingToolsHomeImprovementConstructionMaterials, CategoryHomeLivingToolsHomeImprovementSinksWaterTaps, CategoryHomeLivingToolsHomeImprovementRoofingFlooring, CategoryHomeLivingToolsHomeImprovementWallPaintsCoatings, CategoryHomeLivingToolsHomeImprovementWaterPumpsPartsAccessories, CategoryHomeLivingToolsHomeImprovementLadders, CategoryHomeLivingToolsHomeImprovementTrollies, CategoryHomeLivingToolsHomeImprovementShadesAwningsTarpaulins},
+		Id:     "946x1",
+		Slug:   "home-and-living-tools-and-home-improvement",
+		Name:   "Dụng cụ & Thiết bị tiện ích",
+		NameEn: "Tools & Home Improvement",
+		Children: Categories{
+			CategoryHomeLivingToolsHomeImprovementIndustrialAdhesivesTapes,
+			CategoryHomeLivingToolsHomeImprovementSinksWaterTaps,
+			CategoryHomeLivingToolsHomeImprovementLadders,
+			CategoryHomeLivingToolsHomeImprovementOther,
+			CategoryHomeLivingToolsHomeImprovementRoofingFlooring,
+			CategoryHomeLivingToolsHomeImprovementProtectiveGlovesGogglesMasks,
+			CategoryHomeLivingToolsHomeImprovementWallPaintsCoatings,
+			CategoryHomeLivingToolsHomeImprovementAirPumpsPartsAccessories,
+			CategoryHomeLivingToolsHomeImprovementTrollies,
+			CategoryHomeLivingToolsHomeImprovementShadesAwningsTarpaulins,
+			CategoryHomeLivingToolsHomeImprovementConstructionMaterials,
+			CategoryHomeLivingToolsHomeImprovementDoorsWindows,
+			CategoryHomeLivingToolsHomeImprovementTools,
+			CategoryHomeLivingToolsHomeImprovementWaterPumpsPartsAccessories,
+		},
 	}
 	CategoryHomeLivingToolsHomeImprovementIndustrialAdhesivesTapes = &Category{
 		Id:     "946x2",
@@ -7972,11 +9311,30 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/112b5a03ddb7715f0ca3a53501592cbb", "https://cf.shopee.sg/file/88f997490370249147c095468259b0dd", "https://cf.shopee.sg/file/b6107aa3074e616a28b3e0b50018445b", "https://cf.shopee.sg/file/70638eeea47bf3c02fb0a5ba9aefd20f", "https://cf.shopee.sg/file/96b8306c0de2293cb7444a3876ef4f52", "https://cf.shopee.sg/file/842759c5875e42f8f3c92d97c41aca99"},
 	}
 	CategoryHomeLivingToolsHomeImprovementTools = &Category{
-		Id:       "951x2",
-		Slug:     "home-and-living-tools-and-home-improvement-tools",
-		Name:     "Dụng cụ",
-		NameEn:   "Tools",
-		Children: Categories{CategoryHomeLivingToolsHomeImprovementToolsSawsCutoffMachinesGrinders, CategoryHomeLivingToolsHomeImprovementToolsPressureWashers, CategoryHomeLivingToolsHomeImprovementToolsPowerGenerators, CategoryHomeLivingToolsHomeImprovementToolsElectricalTestersMultimeters, CategoryHomeLivingToolsHomeImprovementToolsMeasuringTapes, CategoryHomeLivingToolsHomeImprovementToolsPliers, CategoryHomeLivingToolsHomeImprovementToolsSpannerSets, CategoryHomeLivingToolsHomeImprovementToolsRangefinders, CategoryHomeLivingToolsHomeImprovementToolsAirCompressors, CategoryHomeLivingToolsHomeImprovementToolsSandpaperPowerSandersAccessories, CategoryHomeLivingToolsHomeImprovementToolsOther, CategoryHomeLivingToolsHomeImprovementToolsToolBoxes, CategoryHomeLivingToolsHomeImprovementToolsHammers, CategoryHomeLivingToolsHomeImprovementToolsNailsScrewsFasteners, CategoryHomeLivingToolsHomeImprovementToolsDrillsScrewdriversAccessories, CategoryHomeLivingToolsHomeImprovementToolsLevelsMeasuringWheels, CategoryHomeLivingToolsHomeImprovementToolsPowerWeldingTools, CategoryHomeLivingToolsHomeImprovementToolsBlowers},
+		Id:     "951x2",
+		Slug:   "home-and-living-tools-and-home-improvement-tools",
+		Name:   "Dụng cụ",
+		NameEn: "Tools",
+		Children: Categories{
+			CategoryHomeLivingToolsHomeImprovementToolsMeasuringTapes,
+			CategoryHomeLivingToolsHomeImprovementToolsSpannerSets,
+			CategoryHomeLivingToolsHomeImprovementToolsPowerGenerators,
+			CategoryHomeLivingToolsHomeImprovementToolsDrillsScrewdriversAccessories,
+			CategoryHomeLivingToolsHomeImprovementToolsPressureWashers,
+			CategoryHomeLivingToolsHomeImprovementToolsLevelsMeasuringWheels,
+			CategoryHomeLivingToolsHomeImprovementToolsBlowers,
+			CategoryHomeLivingToolsHomeImprovementToolsOther,
+			CategoryHomeLivingToolsHomeImprovementToolsPliers,
+			CategoryHomeLivingToolsHomeImprovementToolsElectricalTestersMultimeters,
+			CategoryHomeLivingToolsHomeImprovementToolsRangefinders,
+			CategoryHomeLivingToolsHomeImprovementToolsAirCompressors,
+			CategoryHomeLivingToolsHomeImprovementToolsPowerWeldingTools,
+			CategoryHomeLivingToolsHomeImprovementToolsToolBoxes,
+			CategoryHomeLivingToolsHomeImprovementToolsHammers,
+			CategoryHomeLivingToolsHomeImprovementToolsNailsScrewsFasteners,
+			CategoryHomeLivingToolsHomeImprovementToolsSawsCutoffMachinesGrinders,
+			CategoryHomeLivingToolsHomeImprovementToolsSandpaperPowerSandersAccessories,
+		},
 	}
 	CategoryHomeLivingToolsHomeImprovementToolsToolBoxes = &Category{
 		Id:     "951x3",
@@ -8160,11 +9518,27 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/50e412ed6ceb7b2dc6297d78c08aceca", "https://cf.shopee.sg/file/6231bf41842d7ba1ea05ccf2efdd27ec", "https://cf.shopee.sg/file/0fea453091a810beb256928554823adb", "https://cf.shopee.sg/file/6c7c2b9d431124a95a32fb8e088460c2", "https://cf.shopee.sg/file/23f1d7d542a482e189fe12e38642a8c9", "https://cf.shopee.sg/file/fd9c21120d882fc7363d1b24f8a5eb76"},
 	}
 	CategoryHomeLivingHomeCareSupplies = &Category{
-		Id:       "977x1",
-		Slug:     "home-and-living-home-care-supplies",
-		Name:     "Dụng cụ chăm sóc nhà cửa",
-		NameEn:   "Home Care Supplies",
-		Children: Categories{CategoryHomeLivingHomeCareSuppliesBrooms, CategoryHomeLivingHomeCareSuppliesDusters, CategoryHomeLivingHomeCareSuppliesMops, CategoryHomeLivingHomeCareSuppliesBasinsBucketsWaterDippers, CategoryHomeLivingHomeCareSuppliesLaundryCare, CategoryHomeLivingHomeCareSuppliesClotheslinesDryingRacks, CategoryHomeLivingHomeCareSuppliesPestWeedControl, CategoryHomeLivingHomeCareSuppliesTissuePaperTowels, CategoryHomeLivingHomeCareSuppliesToiletPaper, CategoryHomeLivingHomeCareSuppliesCleaningAgents, CategoryHomeLivingHomeCareSuppliesSpongesScouringPads, CategoryHomeLivingHomeCareSuppliesTrashRecyclingBins, CategoryHomeLivingHomeCareSuppliesPlasticBagsTrashBags, CategoryHomeLivingHomeCareSuppliesCleaningBrushes, CategoryHomeLivingHomeCareSuppliesCleaningCloths},
+		Id:     "977x1",
+		Slug:   "home-and-living-home-care-supplies",
+		Name:   "Dụng cụ chăm sóc nhà cửa",
+		NameEn: "Home Care Supplies",
+		Children: Categories{
+			CategoryHomeLivingHomeCareSuppliesPlasticBagsTrashBags,
+			CategoryHomeLivingHomeCareSuppliesPestWeedControl,
+			CategoryHomeLivingHomeCareSuppliesLaundryCare,
+			CategoryHomeLivingHomeCareSuppliesBrooms,
+			CategoryHomeLivingHomeCareSuppliesMops,
+			CategoryHomeLivingHomeCareSuppliesCleaningAgents,
+			CategoryHomeLivingHomeCareSuppliesBasinsBucketsWaterDippers,
+			CategoryHomeLivingHomeCareSuppliesTissuePaperTowels,
+			CategoryHomeLivingHomeCareSuppliesDusters,
+			CategoryHomeLivingHomeCareSuppliesTrashRecyclingBins,
+			CategoryHomeLivingHomeCareSuppliesToiletPaper,
+			CategoryHomeLivingHomeCareSuppliesClotheslinesDryingRacks,
+			CategoryHomeLivingHomeCareSuppliesCleaningBrushes,
+			CategoryHomeLivingHomeCareSuppliesSpongesScouringPads,
+			CategoryHomeLivingHomeCareSuppliesCleaningCloths,
+		},
 	}
 	CategoryHomeLivingHomeCareSuppliesClotheslinesDryingRacks = &Category{
 		Id:     "977x2",
@@ -8264,11 +9638,16 @@ var (
 		NameEn: "Cleaning Agents",
 	}
 	CategoryHomeLivingHomeCareSuppliesLaundryCare = &Category{
-		Id:       "991x2",
-		Slug:     "home-and-living-home-care-supplies-laundry-care",
-		Name:     "Phụ kiện giặt là",
-		NameEn:   "Laundry Care",
-		Children: Categories{CategoryHomeLivingHomeCareSuppliesLaundryCareFabricFragrances, CategoryHomeLivingHomeCareSuppliesLaundryCareFabricConditionersSofteners, CategoryHomeLivingHomeCareSuppliesLaundryCareDetergents, CategoryHomeLivingHomeCareSuppliesLaundryCareOther},
+		Id:     "991x2",
+		Slug:   "home-and-living-home-care-supplies-laundry-care",
+		Name:   "Phụ kiện giặt là",
+		NameEn: "Laundry Care",
+		Children: Categories{
+			CategoryHomeLivingHomeCareSuppliesLaundryCareFabricConditionersSofteners,
+			CategoryHomeLivingHomeCareSuppliesLaundryCareDetergents,
+			CategoryHomeLivingHomeCareSuppliesLaundryCareOther,
+			CategoryHomeLivingHomeCareSuppliesLaundryCareFabricFragrances,
+		},
 	}
 	CategoryHomeLivingHomeCareSuppliesLaundryCareFabricFragrances = &Category{
 		Id:     "991x3",
@@ -8299,11 +9678,33 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/843f53619537239770f5e45a9810e442", "https://cf.shopee.sg/file/f2c5457e062a9116c49eacbce2ab143b", "https://cf.shopee.sg/file/35428d822f0059d459688e70da66985d", "https://cf.shopee.sg/file/0d40b3320886432f0b6dc5fec061cb8e", "https://cf.shopee.sg/file/ba09ecb13c82d37b597acf6d239faf23", "https://cf.shopee.sg/file/99ef66aa1dfd530f7b54221534d20cba"},
 	}
 	CategoryHomeLivingKitchenware = &Category{
-		Id:       "995x1",
-		Slug:     "home-and-living-kitchenware",
-		Name:     "Dụng cụ nhà bếp",
-		NameEn:   "Kitchenware",
-		Children: Categories{CategoryHomeLivingKitchenwareKitchenRacks, CategoryHomeLivingKitchenwareChoppingBoards, CategoryHomeLivingKitchenwareStrainers, CategoryHomeLivingKitchenwareKitchenWeighingScales, CategoryHomeLivingKitchenwareBakewaresDecorations, CategoryHomeLivingKitchenwareFoodStorage, CategoryHomeLivingKitchenwareAluminiumFoil, CategoryHomeLivingKitchenwareApronsKitchenGloves, CategoryHomeLivingKitchenwareMeasuringGlassesSpoons, CategoryHomeLivingKitchenwareOther, CategoryHomeLivingKitchenwarePans, CategoryHomeLivingKitchenwarePots, CategoryHomeLivingKitchenwareClingWrap, CategoryHomeLivingKitchenwareSpatulasCookingTweezers, CategoryHomeLivingKitchenwareWhisksBeaters, CategoryHomeLivingKitchenwareSealers, CategoryHomeLivingKitchenwareGrillsAccessories, CategoryHomeLivingKitchenwareTeaCoffeeBartendingEquipments, CategoryHomeLivingKitchenwareKnivesKitchenScissors, CategoryHomeLivingKitchenwareCanBottleOpeners, CategoryHomeLivingKitchenwareGratersPeelersCutters},
+		Id:     "995x1",
+		Slug:   "home-and-living-kitchenware",
+		Name:   "Dụng cụ nhà bếp",
+		NameEn: "Kitchenware",
+		Children: Categories{
+			CategoryHomeLivingKitchenwareApronsKitchenGloves,
+			CategoryHomeLivingKitchenwareWhisksBeaters,
+			CategoryHomeLivingKitchenwareKitchenRacks,
+			CategoryHomeLivingKitchenwareSpatulasCookingTweezers,
+			CategoryHomeLivingKitchenwareChoppingBoards,
+			CategoryHomeLivingKitchenwareKnivesKitchenScissors,
+			CategoryHomeLivingKitchenwareMeasuringGlassesSpoons,
+			CategoryHomeLivingKitchenwarePans,
+			CategoryHomeLivingKitchenwareAluminiumFoil,
+			CategoryHomeLivingKitchenwareTeaCoffeeBartendingEquipments,
+			CategoryHomeLivingKitchenwareSealers,
+			CategoryHomeLivingKitchenwareOther,
+			CategoryHomeLivingKitchenwareCanBottleOpeners,
+			CategoryHomeLivingKitchenwareKitchenWeighingScales,
+			CategoryHomeLivingKitchenwareGrillsAccessories,
+			CategoryHomeLivingKitchenwarePots,
+			CategoryHomeLivingKitchenwareClingWrap,
+			CategoryHomeLivingKitchenwareGratersPeelersCutters,
+			CategoryHomeLivingKitchenwareBakewaresDecorations,
+			CategoryHomeLivingKitchenwareFoodStorage,
+			CategoryHomeLivingKitchenwareStrainers,
+		},
 	}
 	CategoryHomeLivingKitchenwareGrillsAccessories = &Category{
 		Id:     "995x2",
@@ -8453,11 +9854,23 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/b53c0ffff33556b6dbc677c3e3c6ba2a", "https://cf.shopee.sg/file/a366ba39dbba02539f95888ba1c28afb", "https://cf.shopee.sg/file/7a1056f4cfb1efe1d480ed4454f52622"},
 	}
 	CategoryHomeLivingDinnerware = &Category{
-		Id:       "1016x1",
-		Slug:     "home-and-living-dinnerware",
-		Name:     "Bộ đồ bàn ăn",
-		NameEn:   "Dinnerware",
-		Children: Categories{CategoryHomeLivingDinnerwareJugsPitchersAccessories, CategoryHomeLivingDinnerwarePlates, CategoryHomeLivingDinnerwareCutleries, CategoryHomeLivingDinnerwareStraws, CategoryHomeLivingDinnerwareFoodCovers, CategoryHomeLivingDinnerwarePlacematsCoasters, CategoryHomeLivingDinnerwareTeaPotsSets, CategoryHomeLivingDinnerwareCupsMugsGlasses, CategoryHomeLivingDinnerwareWaterBottlesAccessories, CategoryHomeLivingDinnerwareBowls, CategoryHomeLivingDinnerwareOther},
+		Id:     "1016x1",
+		Slug:   "home-and-living-dinnerware",
+		Name:   "Bộ đồ bàn ăn",
+		NameEn: "Dinnerware",
+		Children: Categories{
+			CategoryHomeLivingDinnerwarePlates,
+			CategoryHomeLivingDinnerwareStraws,
+			CategoryHomeLivingDinnerwareFoodCovers,
+			CategoryHomeLivingDinnerwarePlacematsCoasters,
+			CategoryHomeLivingDinnerwareTeaPotsSets,
+			CategoryHomeLivingDinnerwareCupsMugsGlasses,
+			CategoryHomeLivingDinnerwareWaterBottlesAccessories,
+			CategoryHomeLivingDinnerwareBowls,
+			CategoryHomeLivingDinnerwareCutleries,
+			CategoryHomeLivingDinnerwareOther,
+			CategoryHomeLivingDinnerwareJugsPitchersAccessories,
+		},
 	}
 	CategoryHomeLivingDinnerwareJugsPitchersAccessories = &Category{
 		Id:     "1016x2",
@@ -8544,11 +9957,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/14bb18bc0f7cb2b9e60aea0e17b3f8f8", "https://cf.shopee.sg/file/60cefc73dd7b3642c0dc2267ce955027", "https://cf.shopee.sg/file/da5c8eb93b7e387423b4d289b1c889fe", "https://cf.shopee.sg/file/6ba6e178e6989ebc05aa6286172fc6c1", "https://cf.shopee.sg/file/388dafd86c0ae4b714f6536185783770", "https://cf.shopee.sg/file/c1031054eb94ceec3e53989e27e6df85"},
 	}
 	CategoryHomeLivingSafetySecurity = &Category{
-		Id:       "1028x1",
-		Slug:     "home-and-living-safety-and-security",
-		Name:     "Bảo hộ gia đình",
-		NameEn:   "Safety & Security",
-		Children: Categories{CategoryHomeLivingSafetySecuritySafes, CategoryHomeLivingSafetySecurityFireFightingEquipments, CategoryHomeLivingSafetySecurityDoorHardwareLocks},
+		Id:     "1028x1",
+		Slug:   "home-and-living-safety-and-security",
+		Name:   "Bảo hộ gia đình",
+		NameEn: "Safety & Security",
+		Children: Categories{
+			CategoryHomeLivingSafetySecuritySafes,
+			CategoryHomeLivingSafetySecurityFireFightingEquipments,
+			CategoryHomeLivingSafetySecurityDoorHardwareLocks,
+		},
 	}
 	CategoryHomeLivingSafetySecuritySafes = &Category{
 		Id:     "1028x2",
@@ -8571,11 +9988,22 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/0652ae5e506cd16fbf5ffab479d44326", "https://cf.shopee.sg/file/1cfac0a1905f1a56d6df1b071b35f797", "https://cf.shopee.sg/file/9f11e99bc848f8a92a190bd40b3e1209"},
 	}
 	CategoryHomeLivingHomeOrganizers = &Category{
-		Id:       "1031x1",
-		Slug:     "home-and-living-home-organizers",
-		Name:     "Sắp xếp nhà cửa",
-		NameEn:   "Home Organizers",
-		Children: Categories{CategoryHomeLivingHomeOrganizersHangersPegs, CategoryHomeLivingHomeOrganizersStorageBoxesBagsBaskets, CategoryHomeLivingHomeOrganizersJewelryOrganizers, CategoryHomeLivingHomeOrganizersTissueHolders, CategoryHomeLivingHomeOrganizersShoeStorageBoxes, CategoryHomeLivingHomeOrganizersHooks, CategoryHomeLivingHomeOrganizersLaundryBagsBaskets, CategoryHomeLivingHomeOrganizersDeskOrganizers, CategoryHomeLivingHomeOrganizersWardrobeOrganizers, CategoryHomeLivingHomeOrganizersOther},
+		Id:     "1031x1",
+		Slug:   "home-and-living-home-organizers",
+		Name:   "Sắp xếp nhà cửa",
+		NameEn: "Home Organizers",
+		Children: Categories{
+			CategoryHomeLivingHomeOrganizersHooks,
+			CategoryHomeLivingHomeOrganizersLaundryBagsBaskets,
+			CategoryHomeLivingHomeOrganizersJewelryOrganizers,
+			CategoryHomeLivingHomeOrganizersHangersPegs,
+			CategoryHomeLivingHomeOrganizersStorageBoxesBagsBaskets,
+			CategoryHomeLivingHomeOrganizersWardrobeOrganizers,
+			CategoryHomeLivingHomeOrganizersTissueHolders,
+			CategoryHomeLivingHomeOrganizersOther,
+			CategoryHomeLivingHomeOrganizersShoeStorageBoxes,
+			CategoryHomeLivingHomeOrganizersDeskOrganizers,
+		},
 	}
 	CategoryHomeLivingHomeOrganizersHangersPegs = &Category{
 		Id:     "1031x2",
@@ -8648,11 +10076,20 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/80d8dd031352444ee93ecf9195e44038", "https://cf.shopee.sg/file/b52251f258a62ca6909afe5058421d8d", "https://cf.shopee.sg/file/c373d256dc13116b1c46c13d972550da", "https://cf.shopee.sg/file/32e643f813984d42c64ca1f26357407b", "https://cf.shopee.sg/file/306643bd45ae1d4497dd70460ba4bfae", "https://cf.shopee.sg/file/6a97c0d59a09955b3df36991ccc4314c"},
 	}
 	CategoryHomeLivingPartySupplies = &Category{
-		Id:       "1041x1",
-		Slug:     "home-and-living-party-supplies",
-		Name:     "Trang trí tiệc tùng",
-		NameEn:   "Party Supplies",
-		Children: Categories{CategoryHomeLivingPartySuppliesSashes, CategoryHomeLivingPartySuppliesOther, CategoryHomeLivingPartySuppliesBalloons, CategoryHomeLivingPartySuppliesWoodenClips, CategoryHomeLivingPartySuppliesBackdropsBanners, CategoryHomeLivingPartySuppliesCards, CategoryHomeLivingPartySuppliesDisposableTableware, CategoryHomeLivingPartySuppliesPartyHatsMasks},
+		Id:     "1041x1",
+		Slug:   "home-and-living-party-supplies",
+		Name:   "Trang trí tiệc tùng",
+		NameEn: "Party Supplies",
+		Children: Categories{
+			CategoryHomeLivingPartySuppliesCards,
+			CategoryHomeLivingPartySuppliesDisposableTableware,
+			CategoryHomeLivingPartySuppliesPartyHatsMasks,
+			CategoryHomeLivingPartySuppliesSashes,
+			CategoryHomeLivingPartySuppliesOther,
+			CategoryHomeLivingPartySuppliesBalloons,
+			CategoryHomeLivingPartySuppliesWoodenClips,
+			CategoryHomeLivingPartySuppliesBackdropsBanners,
+		},
 	}
 	CategoryHomeLivingPartySuppliesBalloons = &Category{
 		Id:     "1041x2",
@@ -8717,25 +10154,66 @@ var (
 		NameEn: "Fengshui & Religious Supplies",
 	}
 	CategorySportsOutdoors = &Category{
-		Id:       "1050x0",
-		Slug:     "sports-and-outdoors",
-		Name:     "Thể Thao & Dã Ngoại",
-		NameEn:   "Sports & Outdoors",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipments, CategorySportsOutdoorsSportFootwear, CategorySportsOutdoorsSportsOutdoorApparels, CategorySportsOutdoorsSportsOutdoorAccessories},
+		Id:     "1050x0",
+		Slug:   "sports-and-outdoors",
+		Name:   "Thể Thao & Dã Ngoại",
+		NameEn: "Sports & Outdoors",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipments,
+			CategorySportsOutdoorsSportFootwear,
+			CategorySportsOutdoorsSportsOutdoorApparels,
+			CategorySportsOutdoorsSportsOutdoorAccessories,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipments = &Category{
-		Id:       "1050x1",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments",
-		Name:     "Dụng Cụ Thể Thao & Dã Ngoại",
-		NameEn:   "Sports & Outdoor Recreation Equipments",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHiking, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsports, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyball, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolf, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBilliards, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoating, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishing, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBaseballSoftball, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsRugby, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsIceSkatingWinterSports, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDiving, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsDarts, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketball, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadminton, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennis, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArts, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSurfingWakeboarding, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilates, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipment, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsOther, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsRockClimbing, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakraw, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennis, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSquash, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsShootingSurvivalGames, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCycling},
+		Id:     "1050x1",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments",
+		Name:   "Dụng Cụ Thể Thao & Dã Ngoại",
+		NameEn: "Sports & Outdoor Recreation Equipments",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArts,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSquash,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsShootingSurvivalGames,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSurfingWakeboarding,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsIceSkatingWinterSports,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsDarts,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHiking,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakraw,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadminton,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennis,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBaseballSoftball,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilates,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsports,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketball,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyball,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennis,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBilliards,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDiving,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipment,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsOther,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsRockClimbing,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCycling,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolf,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsRugby,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoating,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishing,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishing = &Category{
-		Id:       "1050x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fishing",
-		Name:     "Câu Cá",
-		NameEn:   "Fishing",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingHooks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingRodsReels, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishFinders, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingLines, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingLuresBaits, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingBags, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingNets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingOther},
+		Id:     "1050x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fishing",
+		Name:   "Câu Cá",
+		NameEn: "Fishing",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingRodsReels,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishFinders,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingLines,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingLuresBaits,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingBags,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingNets,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingOther,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingHooks,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingHooks = &Category{
 		Id:     "1050x3",
@@ -8794,11 +10272,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/709aedc497f5a8612427c7da032ea9de", "https://cf.shopee.sg/file/01b1478f8f78235d45036df715bf682b", "https://cf.shopee.sg/file/83868ee7568cf4c4f43bd8a17339cbfb", "https://cf.shopee.sg/file/88b0021d2f4b100bd627bbdc3a56562c", "https://cf.shopee.sg/file/ae8de293ac06d711a18d7d03ca511234", "https://cf.shopee.sg/file/4e72ef8b1d8d6bca77e937c7bad199fa"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCycling = &Category{
-		Id:       "1058x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-cycling",
-		Name:     "Đạp Xe",
-		NameEn:   "Cycling",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingBicycles, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingBicyclePartsAccessories, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingCyclingHelmets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingOther},
+		Id:     "1058x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-cycling",
+		Name:   "Đạp Xe",
+		NameEn: "Cycling",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingBicycles,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingBicyclePartsAccessories,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingCyclingHelmets,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingOther,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingBicycles = &Category{
 		Id:     "1058x3",
@@ -8829,11 +10312,23 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/a3ab863ad140ee6098f5c10af1005406", "https://cf.shopee.sg/file/c4cd50e8dc547026be3067c8429b4c5a", "https://cf.shopee.sg/file/5dc02acb119bdc7d65e3be2617065f5b", "https://cf.shopee.sg/file/c6abeba9a2bf3c75112a173acaf53827", "https://cf.shopee.sg/file/37f584d06325359088a7956951b5385b", "https://cf.shopee.sg/file/bfb35ecc70a0abc3415b689cfd51143e"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHiking = &Category{
-		Id:       "1062x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking",
-		Name:     "Cắm Trại & Dã ngoại",
-		NameEn:   "Camping & Hiking",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingSleepingBags, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingOther, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingLampsFlashlights, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingTentsTentAccessories, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingBinocularsMonocularsTelescopes, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCompasses, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingKnivesSurvivalKits, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHammocks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHikingSticks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingPicnicMatsBaskets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingCookware},
+		Id:     "1062x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-camping-and-hiking",
+		Name:   "Cắm Trại & Dã ngoại",
+		NameEn: "Camping & Hiking",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingLampsFlashlights,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingTentsTentAccessories,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingSleepingBags,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCompasses,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHammocks,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingPicnicMatsBaskets,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingCookware,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingKnivesSurvivalKits,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHikingSticks,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingOther,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingBinocularsMonocularsTelescopes,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingCookware = &Category{
 		Id:     "1062x3",
@@ -8920,11 +10415,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/b15149cd07b8638aca07bb66000ca2c7", "https://cf.shopee.sg/file/f72a545c6365844b0f9f9f622451df0d", "https://cf.shopee.sg/file/79bbf8460ff5cb673fce8b5b2b8080a9", "https://cf.shopee.sg/file/1f57f0f068a620a2d7bd9b707e2cefb2", "https://cf.shopee.sg/file/e2fe0ad2c9655f3dd63a41400684ed7c", "https://cf.shopee.sg/file/2ced11b32bfd07b0ee141e09c5551443"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsports = &Category{
-		Id:       "1074x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boardsports",
-		Name:     "Thể Thao Ván Trượt",
-		NameEn:   "Boardsports",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsScootersUnicycles, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSegwaysHoverboards, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsHelmetsProtectiveGears, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSkateboardsRollerBlades},
+		Id:     "1074x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boardsports",
+		Name:   "Thể Thao Ván Trượt",
+		NameEn: "Boardsports",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSegwaysHoverboards,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsHelmetsProtectiveGears,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSkateboardsRollerBlades,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsScootersUnicycles,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSkateboardsRollerBlades = &Category{
 		Id:     "1074x3",
@@ -8955,11 +10455,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/6bde715832cea1da1ea0213b926e53f7", "https://cf.shopee.sg/file/5b1abb53459c2141d4a06adc89e76892", "https://cf.shopee.sg/file/f2c841c20f0dc8b28ad106a5beecf30a", "https://cf.shopee.sg/file/42f1cea8404e4406a315bcf0fe5c5deb", "https://cf.shopee.sg/file/b70137462522a90bf1db44e62ff86e85", "https://cf.shopee.sg/file/459613519a742f5e6f12c03a9489dfcc"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakraw = &Category{
-		Id:       "1078x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-soccer-futsal-and-sepak-takraw",
-		Name:     "Bóng Đá, Futsal & Cầu Mây",
-		NameEn:   "Soccer, Futsal & Sepak Takraw",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawBalls, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalkeeperGlovesShinGuards, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalPostsNets},
+		Id:     "1078x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-soccer-futsal-and-sepak-takraw",
+		Name:   "Bóng Đá, Futsal & Cầu Mây",
+		NameEn: "Soccer, Futsal & Sepak Takraw",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalkeeperGlovesShinGuards,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalPostsNets,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawBalls,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawBalls = &Category{
 		Id:     "1078x3",
@@ -8983,11 +10487,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/80203441a8ad6feb6895be64cfd64e42", "https://cf.shopee.sg/file/68c3ad0feffb8b22f895352c1f91058f", "https://cf.shopee.sg/file/eee6e19331f1a1bbeb04982612ba7aa6", "https://cf.shopee.sg/file/9cec87795d4ac44f41a72a7e0155303d", "https://cf.shopee.sg/file/7d14f43b25392b831b0429825503e0f5", "https://cf.shopee.sg/file/dd2a72b0f94d7d087b54c62c729cf547"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketball = &Category{
-		Id:       "1081x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-basketball",
-		Name:     "Bóng Rổ",
-		NameEn:   "Basketball",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketballBasketBalls, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketballBasketballRings, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketballOther},
+		Id:     "1081x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-basketball",
+		Name:   "Bóng Rổ",
+		NameEn: "Basketball",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketballBasketBalls,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketballBasketballRings,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketballOther,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketballBasketBalls = &Category{
 		Id:     "1081x3",
@@ -9011,11 +10519,14 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/1508f5b335b95696cf7cfa9ecd14f493", "https://cf.shopee.sg/file/e7427d118002b2eb3fd9cc35ca7a93b2", "https://cf.shopee.sg/file/329d1be4dbc66339053cc88866371d1c", "https://cf.shopee.sg/file/ddde9d985709f92a6d0068f22e119a56", "https://cf.shopee.sg/file/2069e109154c06b6faae959227442b1e", "https://cf.shopee.sg/file/95dc8472c6b13fd5645bb5ae369e5483"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyball = &Category{
-		Id:       "1084x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-volleyball",
-		Name:     "Bóng Chuyền",
-		NameEn:   "Volleyball",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyNets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyBalls},
+		Id:     "1084x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-volleyball",
+		Name:   "Bóng Chuyền",
+		NameEn: "Volleyball",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyBalls,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyNets,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyballVolleyBalls = &Category{
 		Id:     "1084x3",
@@ -9032,11 +10543,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/03af5a85edccb7f6d242480551a429e2", "https://cf.shopee.sg/file/e4a29829d4e1250a8c55d00a3e91101e", "https://cf.shopee.sg/file/69fe04461830a924ea3b5a6776cff2be", "https://cf.shopee.sg/file/2800cd5333cf6ad95879ee5269c796d7", "https://cf.shopee.sg/file/df254c46cd6bb3ee94061448cfdc9410", "https://cf.shopee.sg/file/505cb41d6fb1ee1be69a8a8c6386bde3"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadminton = &Category{
-		Id:       "1086x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-badminton",
-		Name:     "Cầu Lông",
-		NameEn:   "Badminton",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonShuttlecocks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonNets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonOther, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonRackets},
+		Id:     "1086x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-badminton",
+		Name:   "Cầu Lông",
+		NameEn: "Badminton",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonRackets,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonShuttlecocks,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonNets,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonOther,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadmintonBadmintonRackets = &Category{
 		Id:     "1086x3",
@@ -9067,11 +10583,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/73556b7f97c7ba69108ba60ba6195cec", "https://cf.shopee.sg/file/325ee782eda2eaa203d55a211bf58751", "https://cf.shopee.sg/file/ff567cadd3bf84c349c0a01bba74b49b", "https://cf.shopee.sg/file/6310704a93fc0babb3550a51751c3489", "https://cf.shopee.sg/file/f6259c45eee2f16c911841ed298404ca", "https://cf.shopee.sg/file/972a37ba62abf4590979cc52948f4c83"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennis = &Category{
-		Id:       "1090x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-tennis",
-		Name:     "Tennis",
-		NameEn:   "Tennis",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisNets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisOther, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisRackets, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisBalls},
+		Id:     "1090x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-tennis",
+		Name:   "Tennis",
+		NameEn: "Tennis",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisNets,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisOther,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisRackets,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisBalls,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisRackets = &Category{
 		Id:     "1090x3",
@@ -9102,11 +10623,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/bf6ca539bcd72cbc483b821f3c54ddb3", "https://cf.shopee.sg/file/096ddea4f353dc80c5f8a5ea36e3da13", "https://cf.shopee.sg/file/3148066c608321515a67ab3d07275920", "https://cf.shopee.sg/file/431721bbc3dcc3f47fcbabf5da0dfe0e", "https://cf.shopee.sg/file/91aa60a26a1ac8c291d938fda340990f", "https://cf.shopee.sg/file/ed83cd9490526db840ec6c98829e5dc2"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennis = &Category{
-		Id:       "1094x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-table-tennis",
-		Name:     "Bóng Bàn",
-		NameEn:   "Table Tennis",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBalls, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBats, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisNets},
+		Id:     "1094x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-table-tennis",
+		Name:   "Bóng Bàn",
+		NameEn: "Table Tennis",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBalls,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBats,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisNets,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBalls = &Category{
 		Id:     "1094x3",
@@ -9130,11 +10655,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/0e94be102dab2e3d89dfcfadc529835f", "https://cf.shopee.sg/file/5de009119e5246e453e1856b2bc9fd3b", "https://cf.shopee.sg/file/3546e368e1f54a48038294f7c99161c0", "https://cf.shopee.sg/file/21dfa3c289070273d871d5a880680f2f", "https://cf.shopee.sg/file/00c809a53dc0ce199a35db23a65957fd", "https://cf.shopee.sg/file/720fa4127fd1d5b2f83dc488d9d56aa1"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArts = &Category{
-		Id:       "1097x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boxing-and-martial-arts",
-		Name:     "Đấm bốc & Võ Tổng Hợp",
-		NameEn:   "Boxing & Martial Arts",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArtsPunchingBagsPaddings, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArtsMartialArtsBelts, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArtsGlovesWrapsHelmets},
+		Id:     "1097x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-boxing-and-martial-arts",
+		Name:   "Đấm bốc & Võ Tổng Hợp",
+		NameEn: "Boxing & Martial Arts",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArtsPunchingBagsPaddings,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArtsMartialArtsBelts,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArtsGlovesWrapsHelmets,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArtsPunchingBagsPaddings = &Category{
 		Id:     "1097x3",
@@ -9158,11 +10687,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/0b4b73941566b3254b0dea12b8bd1a31", "https://cf.shopee.sg/file/399c5ca4c395f2ff109b310cad033b70", "https://cf.shopee.sg/file/2343d30508224a307f3be79a3de67f29", "https://cf.shopee.sg/file/817fb98cba76b48d436a99f11c4632e1", "https://cf.shopee.sg/file/9f28aabca9d6b29a90d4954b2910ce5c", "https://cf.shopee.sg/file/47c2533d9634b65ebff53417b12b014d"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolf = &Category{
-		Id:       "1100x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-golf",
-		Name:     "Golf",
-		NameEn:   "Golf",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfBalls, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfClubs, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGearsTrainingEquipment, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfBagsOrganizers, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfOther},
+		Id:     "1100x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-golf",
+		Name:   "Golf",
+		NameEn: "Golf",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfClubs,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGearsTrainingEquipment,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfBagsOrganizers,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfOther,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfBalls,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfBalls = &Category{
 		Id:     "1100x3",
@@ -9249,11 +10784,19 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/f6796b86f30ca28b65bb3faadfdfde93", "https://cf.shopee.sg/file/8d9bf363f52d3291b0561800c0358db4", "https://cf.shopee.sg/file/87ff0c5aced4c2f12bc98489a5979ab6", "https://cf.shopee.sg/file/c33ac4bc8f0cff1277860291682c2d60", "https://cf.shopee.sg/file/c7e8ae66750845a20a9f9e056c4d5130", "https://cf.shopee.sg/file/5948d629d5687cdc8a31b04851502c3f"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDiving = &Category{
-		Id:       "1112x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-swimming-and-diving",
-		Name:     "Bơi Lội & Lặn",
-		NameEn:   "Swimming & Diving",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingCaps, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingGoggles, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingBoards, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingFlashlights, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingMasks, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingFlippers, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingLifeJackets},
+		Id:     "1112x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-swimming-and-diving",
+		Name:   "Bơi Lội & Lặn",
+		NameEn: "Swimming & Diving",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingFlippers,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingLifeJackets,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingCaps,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingGoggles,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingBoards,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingFlashlights,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingMasks,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingCaps = &Category{
 		Id:     "1112x3",
@@ -9312,11 +10855,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/9f362052a30c08b315ce18f319598d65", "https://cf.shopee.sg/file/f22ce6fccf11d17fcd642ebba99dc077", "https://cf.shopee.sg/file/31c28ccd9e4e352a4f175f95141d80d3", "https://cf.shopee.sg/file/09ee797f8ced022229d28512e0171dad", "https://cf.shopee.sg/file/fbd0e2c6e866a49f2b81d6653b5f627f", "https://cf.shopee.sg/file/bb852790bd97cf8ad7c07bb245c533d3"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilates = &Category{
-		Id:       "1120x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-yoga-and-pilates",
-		Name:     "Yoga & Pilates",
-		NameEn:   "Yoga & Pilates",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesResistanceBands, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesYogaMats, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesYogaBlocksRingsFoamRollers},
+		Id:     "1120x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-yoga-and-pilates",
+		Name:   "Yoga & Pilates",
+		NameEn: "Yoga & Pilates",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesYogaBlocksRingsFoamRollers,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesResistanceBands,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesYogaMats,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesYogaMats = &Category{
 		Id:     "1120x3",
@@ -9340,11 +10887,19 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/dd76e328a1dc2184fc971e06ee0e2713", "https://cf.shopee.sg/file/28ba046ece42452d8c91ca20b1939522", "https://cf.shopee.sg/file/0dfe21c11a6e1a984b5e841da8d37ee9", "https://cf.shopee.sg/file/fea8ee04c46f05120d6f6cf2da1ae034", "https://cf.shopee.sg/file/ebc6bbb125b06d841da9e13064c7e20e", "https://cf.shopee.sg/file/1ab5405594c15646b6525cd31a4ec72f"},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipment = &Category{
-		Id:       "1123x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fitness-equipment",
-		Name:     "Thiết Bị Thể Thao",
-		NameEn:   "Fitness Equipment",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentOther, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentWeightTraining, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentSkippingRopes, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentGymBalls, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentFitnessMachines, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentAbRollers, CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentPullUpPushUpBars},
+		Id:     "1123x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-recreation-equipments-fitness-equipment",
+		Name:   "Thiết Bị Thể Thao",
+		NameEn: "Fitness Equipment",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentWeightTraining,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentSkippingRopes,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentGymBalls,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentFitnessMachines,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentAbRollers,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentPullUpPushUpBars,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentOther,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipmentWeightTraining = &Category{
 		Id:     "1123x3",
@@ -9410,11 +10965,23 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/875be587174c0fb0283f5ec12fccd4db", "https://cf.shopee.sg/file/042c8bfd512b025e86d763a97e0e0c86", "https://cf.shopee.sg/file/68d0370599794a5822515857923a9291", "https://cf.shopee.sg/file/d8f0081717269ab63afe65bb862cb567", "https://cf.shopee.sg/file/00b61b916775de8b708d521e8a2b6f1b", "https://cf.shopee.sg/file/18a2d71d454a5fac54c86b3538b7ee9b"},
 	}
 	CategorySportsOutdoorsSportFootwear = &Category{
-		Id:       "1132x1",
-		Slug:     "sports-and-outdoors-sport-footwear",
-		Name:     "Giày Thể Thao",
-		NameEn:   "Sport Footwear",
-		Children: Categories{CategorySportsOutdoorsSportFootwearTrainingShoes, CategorySportsOutdoorsSportFootwearVolleyballShoes, CategorySportsOutdoorsSportFootwearSoccerShoes, CategorySportsOutdoorsSportFootwearKidsSportShoes, CategorySportsOutdoorsSportFootwearBasketballShoes, CategorySportsOutdoorsSportFootwearRunningShoes, CategorySportsOutdoorsSportFootwearTennisShoes, CategorySportsOutdoorsSportFootwearBadmintonShoes, CategorySportsOutdoorsSportFootwearFutsalShoes, CategorySportsOutdoorsSportFootwearHikingShoes, CategorySportsOutdoorsSportFootwearOther},
+		Id:     "1132x1",
+		Slug:   "sports-and-outdoors-sport-footwear",
+		Name:   "Giày Thể Thao",
+		NameEn: "Sport Footwear",
+		Children: Categories{
+			CategorySportsOutdoorsSportFootwearSoccerShoes,
+			CategorySportsOutdoorsSportFootwearKidsSportShoes,
+			CategorySportsOutdoorsSportFootwearTrainingShoes,
+			CategorySportsOutdoorsSportFootwearTennisShoes,
+			CategorySportsOutdoorsSportFootwearVolleyballShoes,
+			CategorySportsOutdoorsSportFootwearBadmintonShoes,
+			CategorySportsOutdoorsSportFootwearFutsalShoes,
+			CategorySportsOutdoorsSportFootwearHikingShoes,
+			CategorySportsOutdoorsSportFootwearBasketballShoes,
+			CategorySportsOutdoorsSportFootwearRunningShoes,
+			CategorySportsOutdoorsSportFootwearOther,
+		},
 	}
 	CategorySportsOutdoorsSportFootwearBasketballShoes = &Category{
 		Id:     "1132x2",
@@ -9494,11 +11061,20 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/8247dcb6bd45b51f17f63331d8c657b0", "https://cf.shopee.sg/file/6a87c3213b063d84b35a547e0a8a7774", "https://cf.shopee.sg/file/268dc2c9dc0ce7a0a387bd44d7a6b70c", "https://cf.shopee.sg/file/9611ba4880d7baaa6d7c5ff798360666", "https://cf.shopee.sg/file/e2f78cd8dadc66d57d5e244ab485ce46", "https://cf.shopee.sg/file/63abd3e9c48a0118e56ede3cc60fcfd1"},
 	}
 	CategorySportsOutdoorsSportsOutdoorApparels = &Category{
-		Id:       "1143x1",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-apparels",
-		Name:     "Thời Trang Thể Thao & Dã Ngoại",
-		NameEn:   "Sports & Outdoor Apparels",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorApparelsJerseys, CategorySportsOutdoorsSportsOutdoorApparelsBottoms, CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttire, CategorySportsOutdoorsSportsOutdoorApparelsSportsBras, CategorySportsOutdoorsSportsOutdoorApparelsKidsSportsApparel, CategorySportsOutdoorsSportsOutdoorApparelsSets, CategorySportsOutdoorsSportsOutdoorApparelsJackets, CategorySportsOutdoorsSportsOutdoorApparelsTops},
+		Id:     "1143x1",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels",
+		Name:   "Thời Trang Thể Thao & Dã Ngoại",
+		NameEn: "Sports & Outdoor Apparels",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorApparelsSets,
+			CategorySportsOutdoorsSportsOutdoorApparelsJackets,
+			CategorySportsOutdoorsSportsOutdoorApparelsTops,
+			CategorySportsOutdoorsSportsOutdoorApparelsJerseys,
+			CategorySportsOutdoorsSportsOutdoorApparelsBottoms,
+			CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttire,
+			CategorySportsOutdoorsSportsOutdoorApparelsSportsBras,
+			CategorySportsOutdoorsSportsOutdoorApparelsKidsSportsApparel,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorApparelsSets = &Category{
 		Id:     "1143x2",
@@ -9536,11 +11112,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/011fdcea3459e02aa12ec80375b17205", "https://cf.shopee.sg/file/66e05613472329c36b07d02709682bc4", "https://cf.shopee.sg/file/6dc5639b03a9df938dff0241fcea23ec", "https://cf.shopee.sg/file/c61126689fcb885bffe7e75cba31b24d", "https://cf.shopee.sg/file/57f873f8da336b721c00092d45984026", "https://cf.shopee.sg/file/2e143a054b4dd960e1942fc1eb80f635"},
 	}
 	CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttire = &Category{
-		Id:       "1148x2",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-apparels-swimming-attire",
-		Name:     "Đồ Bơi",
-		NameEn:   "Swimming Attire",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireSwimmingTrunks, CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireBikiniSets, CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireOnePieceSwimsuits, CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireRashGuards},
+		Id:     "1148x2",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-apparels-swimming-attire",
+		Name:   "Đồ Bơi",
+		NameEn: "Swimming Attire",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireSwimmingTrunks,
+			CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireBikiniSets,
+			CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireOnePieceSwimsuits,
+			CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireRashGuards,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireSwimmingTrunks = &Category{
 		Id:     "1148x3",
@@ -9585,11 +11166,23 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/e274d2b21ef7ccca5f2096ba1c20b8fa", "https://cf.shopee.sg/file/2bd7b623b3dfaf7da433fe31844a71e5", "https://cf.shopee.sg/file/0cd734a62a607f9811c6e0930d115e7e", "https://cf.shopee.sg/file/dda3f05a53e9f224ed9d3ed6d53dc9c6", "https://cf.shopee.sg/file/7a68252e465df699c96cc9144b025ebc", "https://cf.shopee.sg/file/54316a9fdebeee44ae661fbce8f0eceb"},
 	}
 	CategorySportsOutdoorsSportsOutdoorAccessories = &Category{
-		Id:       "1154x1",
-		Slug:     "sports-and-outdoors-sports-and-outdoor-accessories",
-		Name:     "Phụ Kiện Thể Thao & Dã Ngoại",
-		NameEn:   "Sports & Outdoor Accessories",
-		Children: Categories{CategorySportsOutdoorsSportsOutdoorAccessoriesGymProtectiveGears, CategorySportsOutdoorsSportsOutdoorAccessoriesStopwatchesPedometers, CategorySportsOutdoorsSportsOutdoorAccessoriesShoeBags, CategorySportsOutdoorsSportsOutdoorAccessoriesRainCoats, CategorySportsOutdoorsSportsOutdoorAccessoriesUmbrellas, CategorySportsOutdoorsSportsOutdoorAccessoriesMouthguardsSportTapes, CategorySportsOutdoorsSportsOutdoorAccessoriesTrainingEquipments, CategorySportsOutdoorsSportsOutdoorAccessoriesSportsWristbands, CategorySportsOutdoorsSportsOutdoorAccessoriesSportsHeadbands, CategorySportsOutdoorsSportsOutdoorAccessoriesSportsOutdoorHats, CategorySportsOutdoorsSportsOutdoorAccessoriesDryBags},
+		Id:     "1154x1",
+		Slug:   "sports-and-outdoors-sports-and-outdoor-accessories",
+		Name:   "Phụ Kiện Thể Thao & Dã Ngoại",
+		NameEn: "Sports & Outdoor Accessories",
+		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorAccessoriesMouthguardsSportTapes,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesStopwatchesPedometers,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesSportsHeadbands,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesUmbrellas,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesDryBags,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesRainCoats,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesTrainingEquipments,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesGymProtectiveGears,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesShoeBags,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesSportsWristbands,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesSportsOutdoorHats,
+		},
 	}
 	CategorySportsOutdoorsSportsOutdoorAccessoriesStopwatchesPedometers = &Category{
 		Id:     "1154x2",
@@ -9669,18 +11262,34 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/dd8782c134f2de384e5ca778b5cad535", "https://cf.shopee.sg/file/85f8bb26c10425de9bc0c93ba603e63f", "https://cf.shopee.sg/file/c91967233de33a34edbee7e79c5d5f0b", "https://cf.shopee.sg/file/79cfad629e56f2d2be78388387f964aa", "https://cf.shopee.sg/file/8e95d152ecbbdf800783f67106f9902b", "https://cf.shopee.sg/file/61643816187c59f0b79ed9a7179e49eb"},
 	}
 	CategoryStationery = &Category{
-		Id:       "1165x0",
-		Slug:     "stationery",
-		Name:     "Văn Phòng Phẩm",
-		NameEn:   "Stationery",
-		Children: Categories{CategoryStationeryWritingCorrection, CategoryStationerySchoolOfficeEquipment, CategoryStationeryArtSupplies, CategoryStationeryNotebooksPapers, CategoryStationeryLettersEnvelopes, CategoryStationeryOther, CategoryStationeryGiftWrapping},
+		Id:     "1165x0",
+		Slug:   "stationery",
+		Name:   "Văn Phòng Phẩm",
+		NameEn: "Stationery",
+		Children: Categories{
+			CategoryStationeryArtSupplies,
+			CategoryStationeryNotebooksPapers,
+			CategoryStationeryLettersEnvelopes,
+			CategoryStationeryOther,
+			CategoryStationeryGiftWrapping,
+			CategoryStationeryWritingCorrection,
+			CategoryStationerySchoolOfficeEquipment,
+		},
 	}
 	CategoryStationeryGiftWrapping = &Category{
-		Id:       "1165x1",
-		Slug:     "stationery-gift-and-wrapping",
-		Name:     "Quà Tặng - Giấy Gói",
-		NameEn:   "Gift & Wrapping",
-		Children: Categories{CategoryStationeryGiftWrappingCartonBoxes, CategoryStationeryGiftWrappingOther, CategoryStationeryGiftWrappingGiftWrappers, CategoryStationeryGiftWrappingGiftBoxes, CategoryStationeryGiftWrappingGiftBags, CategoryStationeryGiftWrappingRibbons, CategoryStationeryGiftWrappingBubbleWraps},
+		Id:     "1165x1",
+		Slug:   "stationery-gift-and-wrapping",
+		Name:   "Quà Tặng - Giấy Gói",
+		NameEn: "Gift & Wrapping",
+		Children: Categories{
+			CategoryStationeryGiftWrappingGiftWrappers,
+			CategoryStationeryGiftWrappingGiftBoxes,
+			CategoryStationeryGiftWrappingGiftBags,
+			CategoryStationeryGiftWrappingRibbons,
+			CategoryStationeryGiftWrappingBubbleWraps,
+			CategoryStationeryGiftWrappingCartonBoxes,
+			CategoryStationeryGiftWrappingOther,
+		},
 	}
 	CategoryStationeryGiftWrappingGiftWrappers = &Category{
 		Id:     "1165x2",
@@ -9732,11 +11341,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/c8cd82f81d6da2b301a1621aa3970ffd", "https://cf.shopee.sg/file/47b29166dcaadabb7fc945bf634049f9", "https://cf.shopee.sg/file/716779efa1a61f89dfadb94b14115818", "https://cf.shopee.sg/file/dcb6401dac2dc277d0571a8742d18fe1", "https://cf.shopee.sg/file/f11c583759f1237851576431513fcb7d", "https://cf.shopee.sg/file/122b190f19a82b3705ec330606b875be"},
 	}
 	CategoryStationeryWritingCorrection = &Category{
-		Id:       "1172x1",
-		Slug:     "stationery-writing-and-correction",
-		Name:     "Bút Các Loại",
-		NameEn:   "Writing & Correction",
-		Children: Categories{CategoryStationeryWritingCorrectionEraserCorrectionSupplies, CategoryStationeryWritingCorrectionMarkers, CategoryStationeryWritingCorrectionHighlighters, CategoryStationeryWritingCorrectionPensInks, CategoryStationeryWritingCorrectionPencils},
+		Id:     "1172x1",
+		Slug:   "stationery-writing-and-correction",
+		Name:   "Bút Các Loại",
+		NameEn: "Writing & Correction",
+		Children: Categories{
+			CategoryStationeryWritingCorrectionPencils,
+			CategoryStationeryWritingCorrectionEraserCorrectionSupplies,
+			CategoryStationeryWritingCorrectionMarkers,
+			CategoryStationeryWritingCorrectionHighlighters,
+			CategoryStationeryWritingCorrectionPensInks,
+		},
 	}
 	CategoryStationeryWritingCorrectionPensInks = &Category{
 		Id:     "1172x2",
@@ -9774,11 +11389,30 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/db9dddd9071ea6d9507badaca9c5bb28", "https://cf.shopee.sg/file/dc2ee2541b39484f816cda9c2781341b", "https://cf.shopee.sg/file/54dc46de8ebd1b5d8e17695d4cb2d132", "https://cf.shopee.sg/file/39562814a86d3b0894df89bf2b009fdf", "https://cf.shopee.sg/file/78601f7128a059389c1aa36ec52a3629", "https://cf.shopee.sg/file/ae628074293edf49ff487703d9260de9"},
 	}
 	CategoryStationerySchoolOfficeEquipment = &Category{
-		Id:       "1177x1",
-		Slug:     "stationery-school-and-office-equipment",
-		Name:     "Thiết Bị Trường Học",
-		NameEn:   "School & Office Equipment",
-		Children: Categories{CategoryStationerySchoolOfficeEquipmentStringsTapes, CategoryStationerySchoolOfficeEquipmentClipsPinsTacks, CategoryStationerySchoolOfficeEquipmentHolePunchers, CategoryStationerySchoolOfficeEquipmentCalculators, CategoryStationerySchoolOfficeEquipmentLanyardsNameTags, CategoryStationerySchoolOfficeEquipmentRulersProtractorsStencils, CategoryStationerySchoolOfficeEquipmentSharpeners, CategoryStationerySchoolOfficeEquipmentPencilCases, CategoryStationerySchoolOfficeEquipmentWritingBoardsBoardStands, CategoryStationerySchoolOfficeEquipmentGlues, CategoryStationerySchoolOfficeEquipmentLabelPrinters, CategoryStationerySchoolOfficeEquipmentInkStampsPads, CategoryStationerySchoolOfficeEquipmentStaplersStaples, CategoryStationerySchoolOfficeEquipmentCalendars, CategoryStationerySchoolOfficeEquipmentOther, CategoryStationerySchoolOfficeEquipmentPenKnivesPaperCutters, CategoryStationerySchoolOfficeEquipmentScissors, CategoryStationerySchoolOfficeEquipmentFoldersPaperOrganizersAccessories},
+		Id:     "1177x1",
+		Slug:   "stationery-school-and-office-equipment",
+		Name:   "Thiết Bị Trường Học",
+		NameEn: "School & Office Equipment",
+		Children: Categories{
+			CategoryStationerySchoolOfficeEquipmentHolePunchers,
+			CategoryStationerySchoolOfficeEquipmentOther,
+			CategoryStationerySchoolOfficeEquipmentClipsPinsTacks,
+			CategoryStationerySchoolOfficeEquipmentPenKnivesPaperCutters,
+			CategoryStationerySchoolOfficeEquipmentLanyardsNameTags,
+			CategoryStationerySchoolOfficeEquipmentInkStampsPads,
+			CategoryStationerySchoolOfficeEquipmentStaplersStaples,
+			CategoryStationerySchoolOfficeEquipmentCalendars,
+			CategoryStationerySchoolOfficeEquipmentFoldersPaperOrganizersAccessories,
+			CategoryStationerySchoolOfficeEquipmentRulersProtractorsStencils,
+			CategoryStationerySchoolOfficeEquipmentCalculators,
+			CategoryStationerySchoolOfficeEquipmentPencilCases,
+			CategoryStationerySchoolOfficeEquipmentScissors,
+			CategoryStationerySchoolOfficeEquipmentStringsTapes,
+			CategoryStationerySchoolOfficeEquipmentGlues,
+			CategoryStationerySchoolOfficeEquipmentLabelPrinters,
+			CategoryStationerySchoolOfficeEquipmentSharpeners,
+			CategoryStationerySchoolOfficeEquipmentWritingBoardsBoardStands,
+		},
 	}
 	CategoryStationerySchoolOfficeEquipmentWritingBoardsBoardStands = &Category{
 		Id:     "1177x2",
@@ -9907,11 +11541,22 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/ece8480b0151983ad659c8e742317928", "https://cf.shopee.sg/file/a27246f2f50ac41b92ae251d38f94f1b", "https://cf.shopee.sg/file/da9f53cf5b4ff2c9f84f74acd6023e3e", "https://cf.shopee.sg/file/a7f40971296ac4a9b8bcf90d85d553e9", "https://cf.shopee.sg/file/f96e719e0d384861008f1c8e1111bd81", "https://cf.shopee.sg/file/9881e2ef1756cac54539ee22857b69f8"},
 	}
 	CategoryStationeryArtSupplies = &Category{
-		Id:       "1195x1",
-		Slug:     "stationery-art-supplies",
-		Name:     "Họa cụ",
-		NameEn:   "Art Supplies",
-		Children: Categories{CategoryStationeryArtSuppliesAcrylicPaint, CategoryStationeryArtSuppliesPaintBrushes, CategoryStationeryArtSuppliesWaterPosterColours, CategoryStationeryArtSuppliesOilPaint, CategoryStationeryArtSuppliesPaintPalettes, CategoryStationeryArtSuppliesCanvasesEasels, CategoryStationeryArtSuppliesSketchBooks, CategoryStationeryArtSuppliesOther, CategoryStationeryArtSuppliesColorPencils, CategoryStationeryArtSuppliesCrayonsPastels},
+		Id:     "1195x1",
+		Slug:   "stationery-art-supplies",
+		Name:   "Họa cụ",
+		NameEn: "Art Supplies",
+		Children: Categories{
+			CategoryStationeryArtSuppliesAcrylicPaint,
+			CategoryStationeryArtSuppliesPaintBrushes,
+			CategoryStationeryArtSuppliesCanvasesEasels,
+			CategoryStationeryArtSuppliesSketchBooks,
+			CategoryStationeryArtSuppliesOther,
+			CategoryStationeryArtSuppliesCrayonsPastels,
+			CategoryStationeryArtSuppliesOilPaint,
+			CategoryStationeryArtSuppliesPaintPalettes,
+			CategoryStationeryArtSuppliesColorPencils,
+			CategoryStationeryArtSuppliesWaterPosterColours,
+		},
 	}
 	CategoryStationeryArtSuppliesColorPencils = &Category{
 		Id:     "1195x2",
@@ -9984,11 +11629,22 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/c074c360eda25b8f1db548ff5a954f88", "https://cf.shopee.sg/file/22f5559412559f4c86652afcf3809502", "https://cf.shopee.sg/file/ad5b0425bf420a97e70cff9ce508dc36", "https://cf.shopee.sg/file/8e8fdabe7c5b42be9bf2f35ad024779c", "https://cf.shopee.sg/file/2adb858261fefdffd343efafdb5a5885", "https://cf.shopee.sg/file/eb9c641d57f8f95746a8028932e03761"},
 	}
 	CategoryStationeryNotebooksPapers = &Category{
-		Id:       "1205x1",
-		Slug:     "stationery-notebooks-and-papers",
-		Name:     "Sổ & Giấy Các Loại",
-		NameEn:   "Notebooks & Papers",
-		Children: Categories{CategoryStationeryNotebooksPapersMemoStickyNotes, CategoryStationeryNotebooksPapersLooseLeaf, CategoryStationeryNotebooksPapersArtPaperBoards, CategoryStationeryNotebooksPapersNotebooksNotepads, CategoryStationeryNotebooksPapersLabelsStickers, CategoryStationeryNotebooksPapersBookmarks, CategoryStationeryNotebooksPapersBookCovers, CategoryStationeryNotebooksPapersThermalPaperContinuousPaper, CategoryStationeryNotebooksPapersPrintingPhotocopyPaper, CategoryStationeryNotebooksPapersOther},
+		Id:     "1205x1",
+		Slug:   "stationery-notebooks-and-papers",
+		Name:   "Sổ & Giấy Các Loại",
+		NameEn: "Notebooks & Papers",
+		Children: Categories{
+			CategoryStationeryNotebooksPapersBookmarks,
+			CategoryStationeryNotebooksPapersThermalPaperContinuousPaper,
+			CategoryStationeryNotebooksPapersLooseLeaf,
+			CategoryStationeryNotebooksPapersMemoStickyNotes,
+			CategoryStationeryNotebooksPapersLabelsStickers,
+			CategoryStationeryNotebooksPapersOther,
+			CategoryStationeryNotebooksPapersBookCovers,
+			CategoryStationeryNotebooksPapersPrintingPhotocopyPaper,
+			CategoryStationeryNotebooksPapersArtPaperBoards,
+			CategoryStationeryNotebooksPapersNotebooksNotepads,
+		},
 	}
 	CategoryStationeryNotebooksPapersBookmarks = &Category{
 		Id:     "1205x2",
@@ -10061,11 +11717,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/cd3ed6e4687a63bd3a45c7bf1f985391", "https://cf.shopee.sg/file/067bf5eefc56a7f2e06f0512d2a056dc", "https://cf.shopee.sg/file/cec0315fdbc08f46feeb9a4aadb41ad7", "https://cf.shopee.sg/file/2fd6a9f83df6218d456cea00990371ee", "https://cf.shopee.sg/file/04d89fda228cc127811e1789121e208d", "https://cf.shopee.sg/file/983d2ba4c9e4f9c82ef8fd4abc95a7e2"},
 	}
 	CategoryStationeryLettersEnvelopes = &Category{
-		Id:       "1215x1",
-		Slug:     "stationery-letters-and-envelopes",
-		Name:     "Thư Tín",
-		NameEn:   "Letters & Envelopes",
-		Children: Categories{CategoryStationeryLettersEnvelopesEnvelopesAngpao, CategoryStationeryLettersEnvelopesPostCards, CategoryStationeryLettersEnvelopesPostageStampsDutyStamps},
+		Id:     "1215x1",
+		Slug:   "stationery-letters-and-envelopes",
+		Name:   "Thư Tín",
+		NameEn: "Letters & Envelopes",
+		Children: Categories{
+			CategoryStationeryLettersEnvelopesEnvelopesAngpao,
+			CategoryStationeryLettersEnvelopesPostCards,
+			CategoryStationeryLettersEnvelopesPostageStampsDutyStamps,
+		},
 	}
 	CategoryStationeryLettersEnvelopesEnvelopesAngpao = &Category{
 		Id:     "1215x2",
@@ -10096,18 +11756,37 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/115c3404c8e9f72009030954e03fd073", "https://cf.shopee.sg/file/c4938d7e54e8bc8295d2eba85be1484e", "https://cf.shopee.sg/file/2abe9245d12240074099c5009e82311e", "https://cf.shopee.sg/file/5dc267c7cf9828516604ce1d5127d0e1", "https://cf.shopee.sg/file/877552f0ff34a992978fdf69b8ec7f3f", "https://cf.shopee.sg/file/a792aefb2a0585298c002578be52ce60"},
 	}
 	CategoryHobbiesCollections = &Category{
-		Id:       "1219x0",
-		Slug:     "hobbies-and-collections",
-		Name:     "Sở thích & Sưu tầm",
-		NameEn:   "Hobbies & Collections",
-		Children: Categories{CategoryHobbiesCollectionsSouvenirs, CategoryHobbiesCollectionsToysGames, CategoryHobbiesCollectionsCDDVDBluray, CategoryHobbiesCollectionsMusicalInstrumentsAccessories, CategoryHobbiesCollectionsVinylRecords, CategoryHobbiesCollectionsPhotoAlbums, CategoryHobbiesCollectionsNeedlework, CategoryHobbiesCollectionsCollectibleItems},
+		Id:     "1219x0",
+		Slug:   "hobbies-and-collections",
+		Name:   "Sở thích & Sưu tầm",
+		NameEn: "Hobbies & Collections",
+		Children: Categories{
+			CategoryHobbiesCollectionsToysGames,
+			CategoryHobbiesCollectionsCDDVDBluray,
+			CategoryHobbiesCollectionsMusicalInstrumentsAccessories,
+			CategoryHobbiesCollectionsVinylRecords,
+			CategoryHobbiesCollectionsPhotoAlbums,
+			CategoryHobbiesCollectionsNeedlework,
+			CategoryHobbiesCollectionsCollectibleItems,
+			CategoryHobbiesCollectionsSouvenirs,
+		},
 	}
 	CategoryHobbiesCollectionsCollectibleItems = &Category{
-		Id:       "1219x1",
-		Slug:     "hobbies-and-collections-collectible-items",
-		Name:     "Đồ Sưu Tầm",
-		NameEn:   "Collectible Items",
-		Children: Categories{CategoryHobbiesCollectionsCollectibleItemsAnimeMangaCollectibles, CategoryHobbiesCollectionsCollectibleItemsCoinsBankNotes, CategoryHobbiesCollectionsCollectibleItemsStatuesSculptures, CategoryHobbiesCollectionsCollectibleItemsMechaModelsDiecast, CategoryHobbiesCollectionsCollectibleItemsVehicleModelsDiecast, CategoryHobbiesCollectionsCollectibleItemsSportsCollectibles, CategoryHobbiesCollectionsCollectibleItemsActionFigurines, CategoryHobbiesCollectionsCollectibleItemsIdolCollectibles, CategoryHobbiesCollectionsCollectibleItemsOther},
+		Id:     "1219x1",
+		Slug:   "hobbies-and-collections-collectible-items",
+		Name:   "Đồ Sưu Tầm",
+		NameEn: "Collectible Items",
+		Children: Categories{
+			CategoryHobbiesCollectionsCollectibleItemsVehicleModelsDiecast,
+			CategoryHobbiesCollectionsCollectibleItemsAnimeMangaCollectibles,
+			CategoryHobbiesCollectionsCollectibleItemsMechaModelsDiecast,
+			CategoryHobbiesCollectionsCollectibleItemsStatuesSculptures,
+			CategoryHobbiesCollectionsCollectibleItemsIdolCollectibles,
+			CategoryHobbiesCollectionsCollectibleItemsSportsCollectibles,
+			CategoryHobbiesCollectionsCollectibleItemsCoinsBankNotes,
+			CategoryHobbiesCollectionsCollectibleItemsOther,
+			CategoryHobbiesCollectionsCollectibleItemsActionFigurines,
+		},
 	}
 	CategoryHobbiesCollectionsCollectibleItemsActionFigurines = &Category{
 		Id:     "1219x2",
@@ -10173,11 +11852,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/b0c656d724a4c903fb4e256e462a3062", "https://cf.shopee.sg/file/49509a7cc22f98d3149fe8dfd36b1539", "https://cf.shopee.sg/file/42a10ef08dc83158d6b2d059026d5538", "https://cf.shopee.sg/file/d1897246448e03bb2dbef27ff73ed939", "https://cf.shopee.sg/file/10e7a366e45ab70b664a2c5579ff91e5", "https://cf.shopee.sg/file/c8926afa0c925a7ae219e34ea7c5fb95"},
 	}
 	CategoryHobbiesCollectionsSouvenirs = &Category{
-		Id:       "1228x1",
-		Slug:     "hobbies-and-collections-souvenirs",
-		Name:     "Quà Lưu Niệm",
-		NameEn:   "Souvenirs",
-		Children: Categories{CategoryHobbiesCollectionsSouvenirsHandFans, CategoryHobbiesCollectionsSouvenirsKeychains, CategoryHobbiesCollectionsSouvenirsCoinBanks, CategoryHobbiesCollectionsSouvenirsFridgeMagnets, CategoryHobbiesCollectionsSouvenirsOther},
+		Id:     "1228x1",
+		Slug:   "hobbies-and-collections-souvenirs",
+		Name:   "Quà Lưu Niệm",
+		NameEn: "Souvenirs",
+		Children: Categories{
+			CategoryHobbiesCollectionsSouvenirsKeychains,
+			CategoryHobbiesCollectionsSouvenirsCoinBanks,
+			CategoryHobbiesCollectionsSouvenirsFridgeMagnets,
+			CategoryHobbiesCollectionsSouvenirsOther,
+			CategoryHobbiesCollectionsSouvenirsHandFans,
+		},
 	}
 	CategoryHobbiesCollectionsSouvenirsHandFans = &Category{
 		Id:     "1228x2",
@@ -10215,11 +11900,22 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/c57293ee1cc82adab5e04b9756d8a769", "https://cf.shopee.sg/file/b4f999aba7f6dc8b054e16604deb3208", "https://cf.shopee.sg/file/ea66569eb83f131c9a1e98c769df8f79", "https://cf.shopee.sg/file/f8019d96d86d0459fd8d8e82d2bfd834", "https://cf.shopee.sg/file/90e5945cf2bf4f20cea2345f629d4010", "https://cf.shopee.sg/file/64a57a30db6f75f6b975234b787a1ec5"},
 	}
 	CategoryHobbiesCollectionsToysGames = &Category{
-		Id:       "1233x1",
-		Slug:     "hobbies-and-collections-toys-and-games",
-		Name:     "Đồ chơi - Giải trí",
-		NameEn:   "Toys & Games",
-		Children: Categories{CategoryHobbiesCollectionsToysGamesRemoteControlToysAccessories, CategoryHobbiesCollectionsToysGamesDiceBoardCardGames, CategoryHobbiesCollectionsToysGamesMagicToys, CategoryHobbiesCollectionsToysGamesSpinningTops, CategoryHobbiesCollectionsToysGamesYoyos, CategoryHobbiesCollectionsToysGamesOther, CategoryHobbiesCollectionsToysGamesPrankToys, CategoryHobbiesCollectionsToysGamesRubiksCubes, CategoryHobbiesCollectionsToysGamesKendamas, CategoryHobbiesCollectionsToysGamesCapsuleToys},
+		Id:     "1233x1",
+		Slug:   "hobbies-and-collections-toys-and-games",
+		Name:   "Đồ chơi - Giải trí",
+		NameEn: "Toys & Games",
+		Children: Categories{
+			CategoryHobbiesCollectionsToysGamesDiceBoardCardGames,
+			CategoryHobbiesCollectionsToysGamesPrankToys,
+			CategoryHobbiesCollectionsToysGamesYoyos,
+			CategoryHobbiesCollectionsToysGamesCapsuleToys,
+			CategoryHobbiesCollectionsToysGamesMagicToys,
+			CategoryHobbiesCollectionsToysGamesRubiksCubes,
+			CategoryHobbiesCollectionsToysGamesSpinningTops,
+			CategoryHobbiesCollectionsToysGamesKendamas,
+			CategoryHobbiesCollectionsToysGamesRemoteControlToysAccessories,
+			CategoryHobbiesCollectionsToysGamesOther,
+		},
 	}
 	CategoryHobbiesCollectionsToysGamesDiceBoardCardGames = &Category{
 		Id:     "1233x2",
@@ -10299,11 +11995,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/97b26ca77576ffef0dbb1cb89c3976b7", "https://cf.shopee.sg/file/697765676470d4d7c43072087b8d6a0b", "https://cf.shopee.sg/file/f66ac359770e8f933ee1e1ee5845afc6", "https://cf.shopee.sg/file/27057d7e25202d097934d9cc54086b24", "https://cf.shopee.sg/file/951fe6ac4a0b85f813e9c09a2b5f9e69", "https://cf.shopee.sg/file/f70b939049e4ce7741f56e9cec6b86d5"},
 	}
 	CategoryHobbiesCollectionsMusicalInstrumentsAccessories = &Category{
-		Id:       "1244x1",
-		Slug:     "hobbies-and-collections-musical-instruments-and-accessories",
-		Name:     "Nhạc Cụ & Phụ Kiện",
-		NameEn:   "Musical Instruments & Accessories",
-		Children: Categories{CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesKeyboardsPianos, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesPercussionInstruments, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesWindInstruments, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesMusicAccessories, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstruments},
+		Id:     "1244x1",
+		Slug:   "hobbies-and-collections-musical-instruments-and-accessories",
+		Name:   "Nhạc Cụ & Phụ Kiện",
+		NameEn: "Musical Instruments & Accessories",
+		Children: Categories{
+			CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesKeyboardsPianos,
+			CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesPercussionInstruments,
+			CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesWindInstruments,
+			CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesMusicAccessories,
+			CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstruments,
+		},
 	}
 	CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesKeyboardsPianos = &Category{
 		Id:     "1244x2",
@@ -10334,11 +12036,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/82374dc8888c6c17e1eb2be397cedd8e", "https://cf.shopee.sg/file/106c2bcff8400560df5edcf17ea7a2e1", "https://cf.shopee.sg/file/e9a549018aa25fc0a638642179145d83", "https://cf.shopee.sg/file/94ebc2979a4365626a1573007c2bde32", "https://cf.shopee.sg/file/ef5ed577700529497d565ced969706b7", "https://cf.shopee.sg/file/bcc52da9680f59098a77c112f17f3d3c"},
 	}
 	CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstruments = &Category{
-		Id:       "1248x2",
-		Slug:     "hobbies-and-collections-musical-instruments-and-accessories-string-instruments",
-		Name:     "Nhạc Cụ Dây",
-		NameEn:   "String Instruments",
-		Children: Categories{CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsUkuleles, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsGuitarsBassGuitars, CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsOther},
+		Id:     "1248x2",
+		Slug:   "hobbies-and-collections-musical-instruments-and-accessories-string-instruments",
+		Name:   "Nhạc Cụ Dây",
+		NameEn: "String Instruments",
+		Children: Categories{
+			CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsUkuleles,
+			CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsGuitarsBassGuitars,
+			CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsOther,
+		},
 	}
 	CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstrumentsUkuleles = &Category{
 		Id:     "1248x3",
@@ -10383,18 +12089,44 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/b02d7238041b0dd6477235c7c929e3f8", "https://cf.shopee.sg/file/d1c23d9063d3278079803f7b4358a760", "https://cf.shopee.sg/file/0dd703af5b13be8b685166c2a4e22ffa", "https://cf.shopee.sg/file/44dd20baa24e796f58c413293f08cc8e", "https://cf.shopee.sg/file/df122adff93d844c711ad43008870db8", "https://cf.shopee.sg/file/639d01c69be21e9bb2889c01ef9575a4"},
 	}
 	CategoryAutomobiles = &Category{
-		Id:       "1254x0",
-		Slug:     "automobiles",
-		Name:     "Ô tô",
-		NameEn:   "Automobiles",
-		Children: Categories{CategoryAutomobilesAutomobileExteriorAccessories, CategoryAutomobilesAutomobileSpareParts, CategoryAutomobilesAutomotiveTools, CategoryAutomobilesAutomotiveCare, CategoryAutomobilesAutomotiveOilsLubes, CategoryAutomobilesAutomotiveKeychainsKeyCovers, CategoryAutomobilesAutomobileInteriorAccessories},
+		Id:     "1254x0",
+		Slug:   "automobiles",
+		Name:   "Ô tô",
+		NameEn: "Automobiles",
+		Children: Categories{
+			CategoryAutomobilesAutomobileInteriorAccessories,
+			CategoryAutomobilesAutomobileExteriorAccessories,
+			CategoryAutomobilesAutomobileSpareParts,
+			CategoryAutomobilesAutomotiveTools,
+			CategoryAutomobilesAutomotiveCare,
+			CategoryAutomobilesAutomotiveOilsLubes,
+			CategoryAutomobilesAutomotiveKeychainsKeyCovers,
+		},
 	}
 	CategoryAutomobilesAutomobileInteriorAccessories = &Category{
-		Id:       "1254x1",
-		Slug:     "automobiles-automobile-interior-accessories",
-		Name:     "Phụ kiện nội thất ô tô",
-		NameEn:   "Automobile Interior Accessories",
-		Children: Categories{CategoryAutomobilesAutomobileInteriorAccessoriesAmplifiersSpeakersSubwoofers, CategoryAutomobilesAutomobileInteriorAccessoriesSeatHeadrestsBackSupports, CategoryAutomobilesAutomobileInteriorAccessoriesUSBChargersFMBluetoothTransmitters, CategoryAutomobilesAutomobileInteriorAccessoriesLocksSecurity, CategoryAutomobilesAutomobileInteriorAccessoriesHUDSpeedometersGauges, CategoryAutomobilesAutomobileInteriorAccessoriesNavigationAVReceivers, CategoryAutomobilesAutomobileInteriorAccessoriesOrganizersCompartments, CategoryAutomobilesAutomobileInteriorAccessoriesPerfumesAirFreshenersPurifiers, CategoryAutomobilesAutomobileInteriorAccessoriesCarpetsMats, CategoryAutomobilesAutomobileInteriorAccessoriesCarMattresses, CategoryAutomobilesAutomobileInteriorAccessoriesSteeringWheelsCovers, CategoryAutomobilesAutomobileInteriorAccessoriesPedalsGearSticks, CategoryAutomobilesAutomobileInteriorAccessoriesSeatsSeatCovers, CategoryAutomobilesAutomobileInteriorAccessoriesPhoneHolders, CategoryAutomobilesAutomobileInteriorAccessoriesSunShieldsDashCovers, CategoryAutomobilesAutomobileInteriorAccessoriesCamcordersParkingCameras, CategoryAutomobilesAutomobileInteriorAccessoriesOther},
+		Id:     "1254x1",
+		Slug:   "automobiles-automobile-interior-accessories",
+		Name:   "Phụ kiện nội thất ô tô",
+		NameEn: "Automobile Interior Accessories",
+		Children: Categories{
+			CategoryAutomobilesAutomobileInteriorAccessoriesAmplifiersSpeakersSubwoofers,
+			CategoryAutomobilesAutomobileInteriorAccessoriesSeatsSeatCovers,
+			CategoryAutomobilesAutomobileInteriorAccessoriesUSBChargersFMBluetoothTransmitters,
+			CategoryAutomobilesAutomobileInteriorAccessoriesSunShieldsDashCovers,
+			CategoryAutomobilesAutomobileInteriorAccessoriesPedalsGearSticks,
+			CategoryAutomobilesAutomobileInteriorAccessoriesLocksSecurity,
+			CategoryAutomobilesAutomobileInteriorAccessoriesOther,
+			CategoryAutomobilesAutomobileInteriorAccessoriesNavigationAVReceivers,
+			CategoryAutomobilesAutomobileInteriorAccessoriesOrganizersCompartments,
+			CategoryAutomobilesAutomobileInteriorAccessoriesPerfumesAirFreshenersPurifiers,
+			CategoryAutomobilesAutomobileInteriorAccessoriesSteeringWheelsCovers,
+			CategoryAutomobilesAutomobileInteriorAccessoriesPhoneHolders,
+			CategoryAutomobilesAutomobileInteriorAccessoriesHUDSpeedometersGauges,
+			CategoryAutomobilesAutomobileInteriorAccessoriesCarpetsMats,
+			CategoryAutomobilesAutomobileInteriorAccessoriesSeatHeadrestsBackSupports,
+			CategoryAutomobilesAutomobileInteriorAccessoriesCarMattresses,
+			CategoryAutomobilesAutomobileInteriorAccessoriesCamcordersParkingCameras,
+		},
 	}
 	CategoryAutomobilesAutomobileInteriorAccessoriesNavigationAVReceivers = &Category{
 		Id:     "1254x2",
@@ -10515,11 +12247,23 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/245f4bd94f28216fcda50d9ae0118cad", "https://cf.shopee.sg/file/f42fe60380b4d9b164d732fed967caff", "https://cf.shopee.sg/file/d5894991ae83a39296720ea7b84b1880", "https://cf.shopee.sg/file/0aff4b0ec07382b6465300fd991e561e", "https://cf.shopee.sg/file/6fdba2d73269b2fbdfe169929bd97a71", "https://cf.shopee.sg/file/3040d7a7b1131a6422268fef98654ac5"},
 	}
 	CategoryAutomobilesAutomobileExteriorAccessories = &Category{
-		Id:       "1271x1",
-		Slug:     "automobiles-automobile-exterior-accessories",
-		Name:     "Phụ kiện ngoại thất ô tô",
-		NameEn:   "Automobile Exterior Accessories",
-		Children: Categories{CategoryAutomobilesAutomobileExteriorAccessoriesSillPlates, CategoryAutomobilesAutomobileExteriorAccessoriesGutters, CategoryAutomobilesAutomobileExteriorAccessoriesOther, CategoryAutomobilesAutomobileExteriorAccessoriesAntennas, CategoryAutomobilesAutomobileExteriorAccessoriesStickersLogosEmblems, CategoryAutomobilesAutomobileExteriorAccessoriesMudFlapsSplashGuards, CategoryAutomobilesAutomobileExteriorAccessoriesHornsAccessories, CategoryAutomobilesAutomobileExteriorAccessoriesMirrorsAccessories, CategoryAutomobilesAutomobileExteriorAccessoriesLicensePlateAccessories, CategoryAutomobilesAutomobileExteriorAccessoriesGarnish, CategoryAutomobilesAutomobileExteriorAccessoriesCovers},
+		Id:     "1271x1",
+		Slug:   "automobiles-automobile-exterior-accessories",
+		Name:   "Phụ kiện ngoại thất ô tô",
+		NameEn: "Automobile Exterior Accessories",
+		Children: Categories{
+			CategoryAutomobilesAutomobileExteriorAccessoriesGarnish,
+			CategoryAutomobilesAutomobileExteriorAccessoriesAntennas,
+			CategoryAutomobilesAutomobileExteriorAccessoriesHornsAccessories,
+			CategoryAutomobilesAutomobileExteriorAccessoriesLicensePlateAccessories,
+			CategoryAutomobilesAutomobileExteriorAccessoriesCovers,
+			CategoryAutomobilesAutomobileExteriorAccessoriesStickersLogosEmblems,
+			CategoryAutomobilesAutomobileExteriorAccessoriesMudFlapsSplashGuards,
+			CategoryAutomobilesAutomobileExteriorAccessoriesSillPlates,
+			CategoryAutomobilesAutomobileExteriorAccessoriesGutters,
+			CategoryAutomobilesAutomobileExteriorAccessoriesMirrorsAccessories,
+			CategoryAutomobilesAutomobileExteriorAccessoriesOther,
+		},
 	}
 	CategoryAutomobilesAutomobileExteriorAccessoriesGarnish = &Category{
 		Id:     "1271x2",
@@ -10599,11 +12343,26 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/61ee6becdcddcc4b8b6363b4ead06e52", "https://cf.shopee.sg/file/eda50ea3a31a6ac41dda81513e18d1d5", "https://cf.shopee.sg/file/aa0cd330d057bb7b7c920ad166200c77", "https://cf.shopee.sg/file/de8b160ec99f6b2ddcee40eb9ea868c1", "https://cf.shopee.sg/file/9beb2b92e269337b87eddea5da245081", "https://cf.shopee.sg/file/172670d32d3acb33d04e772d8cfea211"},
 	}
 	CategoryAutomobilesAutomobileSpareParts = &Category{
-		Id:       "1282x1",
-		Slug:     "automobiles-automobile-spare-parts",
-		Name:     "Phụ tùng ô tô",
-		NameEn:   "Automobile Spare Parts",
-		Children: Categories{CategoryAutomobilesAutomobileSparePartsBodyFrameBumpers, CategoryAutomobilesAutomobileSparePartsExhaustEmissions, CategoryAutomobilesAutomobileSparePartsDrivetrainTransmissionClutches, CategoryAutomobilesAutomobileSparePartsEngineParts, CategoryAutomobilesAutomobileSparePartsBeltsHosesPulleys, CategoryAutomobilesAutomobileSparePartsElectronics, CategoryAutomobilesAutomobileSparePartsTiresAccessories, CategoryAutomobilesAutomobileSparePartsShocksStrutsSuspension, CategoryAutomobilesAutomobileSparePartsBearingSeals, CategoryAutomobilesAutomobileSparePartsBrakeSystem, CategoryAutomobilesAutomobileSparePartsWindshieldWipersWashers, CategoryAutomobilesAutomobileSparePartsWheelsRimsAccessories, CategoryAutomobilesAutomobileSparePartsRadiatorsEngineCoolingClimateControl, CategoryAutomobilesAutomobileSparePartsFuelSystem},
+		Id:     "1282x1",
+		Slug:   "automobiles-automobile-spare-parts",
+		Name:   "Phụ tùng ô tô",
+		NameEn: "Automobile Spare Parts",
+		Children: Categories{
+			CategoryAutomobilesAutomobileSparePartsWheelsRimsAccessories,
+			CategoryAutomobilesAutomobileSparePartsDrivetrainTransmissionClutches,
+			CategoryAutomobilesAutomobileSparePartsBearingSeals,
+			CategoryAutomobilesAutomobileSparePartsBeltsHosesPulleys,
+			CategoryAutomobilesAutomobileSparePartsFuelSystem,
+			CategoryAutomobilesAutomobileSparePartsBodyFrameBumpers,
+			CategoryAutomobilesAutomobileSparePartsExhaustEmissions,
+			CategoryAutomobilesAutomobileSparePartsShocksStrutsSuspension,
+			CategoryAutomobilesAutomobileSparePartsWindshieldWipersWashers,
+			CategoryAutomobilesAutomobileSparePartsTiresAccessories,
+			CategoryAutomobilesAutomobileSparePartsElectronics,
+			CategoryAutomobilesAutomobileSparePartsEngineParts,
+			CategoryAutomobilesAutomobileSparePartsBrakeSystem,
+			CategoryAutomobilesAutomobileSparePartsRadiatorsEngineCoolingClimateControl,
+		},
 	}
 	CategoryAutomobilesAutomobileSparePartsBodyFrameBumpers = &Category{
 		Id:     "1282x2",
@@ -10669,11 +12428,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/4c4f931cd6c4c7867a63eb4491e9a25a", "https://cf.shopee.sg/file/f14343b441ef590dea896374dd1a555a", "https://cf.shopee.sg/file/eb21778a31cfacfd30bbb9f8a11e1e64"},
 	}
 	CategoryAutomobilesAutomobileSparePartsEngineParts = &Category{
-		Id:       "1291x2",
-		Slug:     "automobiles-automobile-spare-parts-engine-parts",
-		Name:     "Bộ phận động cơ",
-		NameEn:   "Engine Parts",
-		Children: Categories{CategoryAutomobilesAutomobileSparePartsEnginePartsPistons, CategoryAutomobilesAutomobileSparePartsEnginePartsAirFilters, CategoryAutomobilesAutomobileSparePartsEnginePartsOilFilters, CategoryAutomobilesAutomobileSparePartsEnginePartsOther},
+		Id:     "1291x2",
+		Slug:   "automobiles-automobile-spare-parts-engine-parts",
+		Name:   "Bộ phận động cơ",
+		NameEn: "Engine Parts",
+		Children: Categories{
+			CategoryAutomobilesAutomobileSparePartsEnginePartsPistons,
+			CategoryAutomobilesAutomobileSparePartsEnginePartsAirFilters,
+			CategoryAutomobilesAutomobileSparePartsEnginePartsOilFilters,
+			CategoryAutomobilesAutomobileSparePartsEnginePartsOther,
+		},
 	}
 	CategoryAutomobilesAutomobileSparePartsEnginePartsPistons = &Category{
 		Id:     "1291x3",
@@ -10718,18 +12482,27 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/b9269c4737b4a82339b6153ff7a9efd2", "https://cf.shopee.sg/file/71785ffdc76ef7a21489188dbade0123", "https://cf.shopee.sg/file/2d51505727c1b27524db4758d478379d", "https://cf.shopee.sg/file/0b45812e8ca884035719640478a8b778", "https://cf.shopee.sg/file/d4d05fc0021286dcc5daa234587c6dbc", "https://cf.shopee.sg/file/bb8c740e1716e0b37f09ed73591ab755"},
 	}
 	CategoryAutomobilesAutomobileSparePartsElectronics = &Category{
-		Id:       "1297x2",
-		Slug:     "automobiles-automobile-spare-parts-electronics",
-		Name:     "Thiết bị điện tử",
-		NameEn:   "Electronics",
-		Children: Categories{CategoryAutomobilesAutomobileSparePartsElectronicsLighting, CategoryAutomobilesAutomobileSparePartsElectronicsOther, CategoryAutomobilesAutomobileSparePartsElectronicsIgnition, CategoryAutomobilesAutomobileSparePartsElectronicsBatteriesAccessories},
+		Id:     "1297x2",
+		Slug:   "automobiles-automobile-spare-parts-electronics",
+		Name:   "Thiết bị điện tử",
+		NameEn: "Electronics",
+		Children: Categories{
+			CategoryAutomobilesAutomobileSparePartsElectronicsOther,
+			CategoryAutomobilesAutomobileSparePartsElectronicsIgnition,
+			CategoryAutomobilesAutomobileSparePartsElectronicsBatteriesAccessories,
+			CategoryAutomobilesAutomobileSparePartsElectronicsLighting,
+		},
 	}
 	CategoryAutomobilesAutomobileSparePartsElectronicsIgnition = &Category{
-		Id:       "1297x3",
-		Slug:     "automobiles-automobile-spare-parts-electronics-ignition",
-		Name:     "Bộ phận đánh lửa",
-		NameEn:   "Ignition",
-		Children: Categories{CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionIgnitionCoils, CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionSparkPlugs, CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionOther},
+		Id:     "1297x3",
+		Slug:   "automobiles-automobile-spare-parts-electronics-ignition",
+		Name:   "Bộ phận đánh lửa",
+		NameEn: "Ignition",
+		Children: Categories{
+			CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionIgnitionCoils,
+			CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionSparkPlugs,
+			CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionOther,
+		},
 	}
 	CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionIgnitionCoils = &Category{
 		Id:     "1297x4",
@@ -10781,11 +12554,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/0b6e648d41dcc90bcd704cfcfa403f34", "https://cf.shopee.sg/file/9d4af6429b7ed696eed99bef0cb38ab5", "https://cf.shopee.sg/file/a880b3207d67e9ffde01451111d58606", "https://cf.shopee.sg/file/113046f73ad91769273794780c436d21", "https://cf.shopee.sg/file/717c190ddfc319f2c723c3bf1ea20c4e", "https://cf.shopee.sg/file/5c592fe55a49d3015f5873d420cb930e"},
 	}
 	CategoryAutomobilesAutomotiveTools = &Category{
-		Id:       "1304x1",
-		Slug:     "automobiles-automotive-tools",
-		Name:     "Dụng cụ sửa chữa ô tô",
-		NameEn:   "Automotive Tools",
-		Children: Categories{CategoryAutomobilesAutomotiveToolsOther, CategoryAutomobilesAutomotiveToolsTestDiagnosticRepairTools, CategoryAutomobilesAutomotiveToolsTirePressureDetectors},
+		Id:     "1304x1",
+		Slug:   "automobiles-automotive-tools",
+		Name:   "Dụng cụ sửa chữa ô tô",
+		NameEn: "Automotive Tools",
+		Children: Categories{
+			CategoryAutomobilesAutomotiveToolsTestDiagnosticRepairTools,
+			CategoryAutomobilesAutomotiveToolsTirePressureDetectors,
+			CategoryAutomobilesAutomotiveToolsOther,
+		},
 	}
 	CategoryAutomobilesAutomotiveToolsTestDiagnosticRepairTools = &Category{
 		Id:     "1304x2",
@@ -10809,11 +12586,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/c42d52bb998665839fc7768ac595565d", "https://cf.shopee.sg/file/c08b2ad7f337a3da6a49fc4d4692c643", "https://cf.shopee.sg/file/ff8c0c38d9a0bb8fcf31723a76f6e365", "https://cf.shopee.sg/file/de4dda91ecdc91680829e9a596ddf8ac", "https://cf.shopee.sg/file/29b16fd63fd4650892040ee97a6059ab", "https://cf.shopee.sg/file/797a6459e1ae109fa137e15026cdb424"},
 	}
 	CategoryAutomobilesAutomotiveCare = &Category{
-		Id:       "1307x1",
-		Slug:     "automobiles-automotive-care",
-		Name:     "Chăm sóc ô tô",
-		NameEn:   "Automotive Care",
-		Children: Categories{CategoryAutomobilesAutomotiveCareTireWheelCare, CategoryAutomobilesAutomotiveCarePolishCoatingSealants, CategoryAutomobilesAutomotiveCareWashWaxes, CategoryAutomobilesAutomotiveCareGlassCareWaterRepellents, CategoryAutomobilesAutomotiveCareInteriorCare},
+		Id:     "1307x1",
+		Slug:   "automobiles-automotive-care",
+		Name:   "Chăm sóc ô tô",
+		NameEn: "Automotive Care",
+		Children: Categories{
+			CategoryAutomobilesAutomotiveCarePolishCoatingSealants,
+			CategoryAutomobilesAutomotiveCareWashWaxes,
+			CategoryAutomobilesAutomotiveCareGlassCareWaterRepellents,
+			CategoryAutomobilesAutomotiveCareInteriorCare,
+			CategoryAutomobilesAutomotiveCareTireWheelCare,
+		},
 	}
 	CategoryAutomobilesAutomotiveCareWashWaxes = &Category{
 		Id:     "1307x2",
@@ -10846,11 +12629,17 @@ var (
 		NameEn: "Polish, Coating & Sealants",
 	}
 	CategoryAutomobilesAutomotiveOilsLubes = &Category{
-		Id:       "1312x1",
-		Slug:     "automobiles-automotive-oils-and-lubes",
-		Name:     "Dầu nhớt và phụ gia ô tô",
-		NameEn:   "Automotive Oils & Lubes",
-		Children: Categories{CategoryAutomobilesAutomotiveOilsLubesFuelAdditivesSavers, CategoryAutomobilesAutomotiveOilsLubesGreasesLubricants, CategoryAutomobilesAutomotiveOilsLubesAntifreezesCoolants, CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluids, CategoryAutomobilesAutomotiveOilsLubesOil},
+		Id:     "1312x1",
+		Slug:   "automobiles-automotive-oils-and-lubes",
+		Name:   "Dầu nhớt và phụ gia ô tô",
+		NameEn: "Automotive Oils & Lubes",
+		Children: Categories{
+			CategoryAutomobilesAutomotiveOilsLubesOil,
+			CategoryAutomobilesAutomotiveOilsLubesFuelAdditivesSavers,
+			CategoryAutomobilesAutomotiveOilsLubesGreasesLubricants,
+			CategoryAutomobilesAutomotiveOilsLubesAntifreezesCoolants,
+			CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluids,
+		},
 	}
 	CategoryAutomobilesAutomotiveOilsLubesOil = &Category{
 		Id:     "1312x2",
@@ -10878,11 +12667,14 @@ var (
 		NameEn: "Antifreezes & Coolants",
 	}
 	CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluids = &Category{
-		Id:       "1316x2",
-		Slug:     "automobiles-automotive-oils-and-lubes-automotive-fluids",
-		Name:     "Dầu máy",
-		NameEn:   "Automotive Fluids",
-		Children: Categories{CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluidsBrakeFluids, CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluidsTransmissionsFluids},
+		Id:     "1316x2",
+		Slug:   "automobiles-automotive-oils-and-lubes-automotive-fluids",
+		Name:   "Dầu máy",
+		NameEn: "Automotive Fluids",
+		Children: Categories{
+			CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluidsBrakeFluids,
+			CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluidsTransmissionsFluids,
+		},
 	}
 	CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluidsBrakeFluids = &Category{
 		Id:     "1316x3",
@@ -10904,11 +12696,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/ebc2e13f811292ce8300eebe36965998", "https://cf.shopee.sg/file/c8bdabd7d7fdb81088a08c4072ee7b8f", "https://cf.shopee.sg/file/f534e727d16ab76e2864308f28a09146", "https://cf.shopee.sg/file/363c267fa0132fbbf081b4552e10c3d1", "https://cf.shopee.sg/file/df5dd28cba1b503d187a2c4b3b785199", "https://cf.shopee.sg/file/6004c8baeed547503f66044275f891d6"},
 	}
 	CategoryMotorcycles = &Category{
-		Id:       "1319x0",
-		Slug:     "motorcycles",
-		Name:     "Mô tô, xe máy",
-		NameEn:   "Motorcycles",
-		Children: Categories{CategoryMotorcyclesMotorcycleAccessories, CategoryMotorcyclesMotorcycleSpareParts, CategoryMotorcyclesMotorcycleHelmetsAccessories, CategoryMotorcyclesOther, CategoryMotorcyclesMotorcycles},
+		Id:     "1319x0",
+		Slug:   "motorcycles",
+		Name:   "Mô tô, xe máy",
+		NameEn: "Motorcycles",
+		Children: Categories{
+			CategoryMotorcyclesMotorcycleHelmetsAccessories,
+			CategoryMotorcyclesOther,
+			CategoryMotorcyclesMotorcycles,
+			CategoryMotorcyclesMotorcycleAccessories,
+			CategoryMotorcyclesMotorcycleSpareParts,
+		},
 	}
 	CategoryMotorcyclesMotorcycles = &Category{
 		Id:     "1319x1",
@@ -10918,11 +12716,23 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/deff1614011ec3e845195c674e2384e6", "https://cf.shopee.sg/file/b020bd303b73639d51b71dc010c541db", "https://cf.shopee.sg/file/c7a62da6213dd24205198ad4be40774c", "https://cf.shopee.sg/file/84301aae6fd5f8f57a092463db63ed52", "https://cf.shopee.sg/file/85df7a59eafec2abb909f3153186033b", "https://cf.shopee.sg/file/f5547f90acdffb5a84d91c239cddc489"},
 	}
 	CategoryMotorcyclesMotorcycleAccessories = &Category{
-		Id:       "1320x1",
-		Slug:     "motorcycles-motorcycle-accessories",
-		Name:     "Phụ kiện xe máy",
-		NameEn:   "Motorcycle Accessories",
-		Children: Categories{CategoryMotorcyclesMotorcycleAccessoriesCovers, CategoryMotorcyclesMotorcycleAccessoriesSeatsSeatCovers, CategoryMotorcyclesMotorcycleAccessoriesOther, CategoryMotorcyclesMotorcycleAccessoriesCarpets, CategoryMotorcyclesMotorcycleAccessoriesSpeedometersOdometersGauges, CategoryMotorcyclesMotorcycleAccessoriesStickersLogosEmblems, CategoryMotorcyclesMotorcycleAccessoriesMirrorsAccessories, CategoryMotorcyclesMotorcycleAccessoriesLocksSecurity, CategoryMotorcyclesMotorcycleAccessoriesBoxesCases, CategoryMotorcyclesMotorcycleAccessoriesPhoneHolders, CategoryMotorcyclesMotorcycleAccessoriesMudFlapsSplashGuards},
+		Id:     "1320x1",
+		Slug:   "motorcycles-motorcycle-accessories",
+		Name:   "Phụ kiện xe máy",
+		NameEn: "Motorcycle Accessories",
+		Children: Categories{
+			CategoryMotorcyclesMotorcycleAccessoriesStickersLogosEmblems,
+			CategoryMotorcyclesMotorcycleAccessoriesSeatsSeatCovers,
+			CategoryMotorcyclesMotorcycleAccessoriesBoxesCases,
+			CategoryMotorcyclesMotorcycleAccessoriesMudFlapsSplashGuards,
+			CategoryMotorcyclesMotorcycleAccessoriesCovers,
+			CategoryMotorcyclesMotorcycleAccessoriesSpeedometersOdometersGauges,
+			CategoryMotorcyclesMotorcycleAccessoriesMirrorsAccessories,
+			CategoryMotorcyclesMotorcycleAccessoriesLocksSecurity,
+			CategoryMotorcyclesMotorcycleAccessoriesPhoneHolders,
+			CategoryMotorcyclesMotorcycleAccessoriesOther,
+			CategoryMotorcyclesMotorcycleAccessoriesCarpets,
+		},
 	}
 	CategoryMotorcyclesMotorcycleAccessoriesCarpets = &Category{
 		Id:     "1320x2",
@@ -11002,18 +12812,42 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/c9de4c19063437f7288e764dd9bf402b", "https://cf.shopee.sg/file/42f3b0e35aa6bc16cc6a59e30e4a438a", "https://cf.shopee.sg/file/9fddf5a9cbf9a67d23537655a1f17065", "https://cf.shopee.sg/file/9c7ad1e4159d74a17e1595ed9257375a", "https://cf.shopee.sg/file/654b2a3d814d31617f3ee8e10ce2189a", "https://cf.shopee.sg/file/51a534a814b8f54aa657f3bb516b1432"},
 	}
 	CategoryMotorcyclesMotorcycleSpareParts = &Category{
-		Id:       "1331x1",
-		Slug:     "motorcycles-motorcycle-spare-parts",
-		Name:     "Phụ tùng xe máy",
-		NameEn:   "Motorcycle Spare Parts",
-		Children: Categories{CategoryMotorcyclesMotorcycleSparePartsLighting, CategoryMotorcyclesMotorcycleSparePartsBatteriesAccessories, CategoryMotorcyclesMotorcycleSparePartsShocksStrutsSuspension, CategoryMotorcyclesMotorcycleSparePartsHornsAccessories, CategoryMotorcyclesMotorcycleSparePartsBodyFrame, CategoryMotorcyclesMotorcycleSparePartsExhaustEmissions, CategoryMotorcyclesMotorcycleSparePartsTiresAccessories, CategoryMotorcyclesMotorcycleSparePartsFuelSystem, CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutches, CategoryMotorcyclesMotorcycleSparePartsCablesTubes, CategoryMotorcyclesMotorcycleSparePartsOther, CategoryMotorcyclesMotorcycleSparePartsIgnitionEngineParts, CategoryMotorcyclesMotorcycleSparePartsWheelsRimsAccessories, CategoryMotorcyclesMotorcycleSparePartsBrakeSystem},
+		Id:     "1331x1",
+		Slug:   "motorcycles-motorcycle-spare-parts",
+		Name:   "Phụ tùng xe máy",
+		NameEn: "Motorcycle Spare Parts",
+		Children: Categories{
+			CategoryMotorcyclesMotorcycleSparePartsLighting,
+			CategoryMotorcyclesMotorcycleSparePartsIgnitionEngineParts,
+			CategoryMotorcyclesMotorcycleSparePartsFuelSystem,
+			CategoryMotorcyclesMotorcycleSparePartsBrakeSystem,
+			CategoryMotorcyclesMotorcycleSparePartsShocksStrutsSuspension,
+			CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutches,
+			CategoryMotorcyclesMotorcycleSparePartsCablesTubes,
+			CategoryMotorcyclesMotorcycleSparePartsExhaustEmissions,
+			CategoryMotorcyclesMotorcycleSparePartsWheelsRimsAccessories,
+			CategoryMotorcyclesMotorcycleSparePartsOther,
+			CategoryMotorcyclesMotorcycleSparePartsHornsAccessories,
+			CategoryMotorcyclesMotorcycleSparePartsBatteriesAccessories,
+			CategoryMotorcyclesMotorcycleSparePartsBodyFrame,
+			CategoryMotorcyclesMotorcycleSparePartsTiresAccessories,
+		},
 	}
 	CategoryMotorcyclesMotorcycleSparePartsIgnitionEngineParts = &Category{
-		Id:       "1331x2",
-		Slug:     "motorcycles-motorcycle-spare-parts-ignition-and-engine-parts",
-		Name:     "Bộ phận đánh lửa & động cơ",
-		NameEn:   "Ignition & Engine Parts",
-		Children: Categories{CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsCDIECU, CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsSparkPlugs, CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsIgnitionCoils, CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsVBelts, CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsAirFilters, CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsOther, CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsRadiators, CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsPistons},
+		Id:     "1331x2",
+		Slug:   "motorcycles-motorcycle-spare-parts-ignition-and-engine-parts",
+		Name:   "Bộ phận đánh lửa & động cơ",
+		NameEn: "Ignition & Engine Parts",
+		Children: Categories{
+			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsVBelts,
+			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsAirFilters,
+			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsOther,
+			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsRadiators,
+			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsPistons,
+			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsCDIECU,
+			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsSparkPlugs,
+			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsIgnitionCoils,
+		},
 	}
 	CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsRadiators = &Category{
 		Id:     "1331x3",
@@ -11093,11 +12927,15 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/65c823d2732903a4211b8e3c93f2d4e6", "https://cf.shopee.sg/file/fe7346301cbde165616a18493918665c", "https://cf.shopee.sg/file/ac568c1bbd67e692622a87185d630b5c", "https://cf.shopee.sg/file/bdc8068a482f9b8926918c22254c3a4b", "https://cf.shopee.sg/file/dda213ff9c4285217da0723ccadb02d9", "https://cf.shopee.sg/file/f04ee86b62c5f135ec1b45de761bcd4a"},
 	}
 	CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutches = &Category{
-		Id:       "1342x2",
-		Slug:     "motorcycles-motorcycle-spare-parts-drivetrain-transmission-and-clutches",
-		Name:     "Hệ thống dẫn động",
-		NameEn:   "Drivetrain, Transmission & Clutches",
-		Children: Categories{CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutchesChainsGears, CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutchesClutches, CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutchesBearings},
+		Id:     "1342x2",
+		Slug:   "motorcycles-motorcycle-spare-parts-drivetrain-transmission-and-clutches",
+		Name:   "Hệ thống dẫn động",
+		NameEn: "Drivetrain, Transmission & Clutches",
+		Children: Categories{
+			CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutchesChainsGears,
+			CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutchesClutches,
+			CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutchesBearings,
+		},
 	}
 	CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutchesChainsGears = &Category{
 		Id:     "1342x3",
@@ -11197,18 +13035,26 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/782e3106fe2f7c2288b498b65539e3cd", "https://cf.shopee.sg/file/d6b20534f838ba19d951da2a9025513b", "https://cf.shopee.sg/file/5878dc71ae740848d728ef606698679e", "https://cf.shopee.sg/file/85cbf9fabd52c34a698672f29af44207", "https://cf.shopee.sg/file/78f67e5d88c2b237ec6149640dff11cd", "https://cf.shopee.sg/file/ce4fbe183d2debf111d526306e998451"},
 	}
 	CategoryBooksMagazines = &Category{
-		Id:       "1356x0",
-		Slug:     "books-and-magazines",
-		Name:     "Sách & Tạp Chí",
-		NameEn:   "Books & Magazines",
-		Children: Categories{CategoryBooksMagazinesMagazinesNewspaper, CategoryBooksMagazinesBooks, CategoryBooksMagazinesEBooks},
+		Id:     "1356x0",
+		Slug:   "books-and-magazines",
+		Name:   "Sách & Tạp Chí",
+		NameEn: "Books & Magazines",
+		Children: Categories{
+			CategoryBooksMagazinesMagazinesNewspaper,
+			CategoryBooksMagazinesBooks,
+			CategoryBooksMagazinesEBooks,
+		},
 	}
 	CategoryBooksMagazinesMagazinesNewspaper = &Category{
-		Id:       "1356x1",
-		Slug:     "books-and-magazines-magazines-and-newspaper",
-		Name:     "Tạp Chí & Báo Giấy",
-		NameEn:   "Magazines & Newspaper",
-		Children: Categories{CategoryBooksMagazinesMagazinesNewspaperBusiness, CategoryBooksMagazinesMagazinesNewspaperLifestyle, CategoryBooksMagazinesMagazinesNewspaperTeenager},
+		Id:     "1356x1",
+		Slug:   "books-and-magazines-magazines-and-newspaper",
+		Name:   "Tạp Chí & Báo Giấy",
+		NameEn: "Magazines & Newspaper",
+		Children: Categories{
+			CategoryBooksMagazinesMagazinesNewspaperBusiness,
+			CategoryBooksMagazinesMagazinesNewspaperLifestyle,
+			CategoryBooksMagazinesMagazinesNewspaperTeenager,
+		},
 	}
 	CategoryBooksMagazinesMagazinesNewspaperBusiness = &Category{
 		Id:     "1356x2",
@@ -11232,11 +13078,41 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/dc8e8f02a02d938889b006d6986e03a3", "https://cf.shopee.sg/file/540455f5b7c9a76583a106f03706786b", "https://cf.shopee.sg/file/6f7390913a93c8828500890a597be5aa", "https://cf.shopee.sg/file/5b66d612571092113a9dc359751650cf", "https://cf.shopee.sg/file/e8fabb70e09db572615c8a68cdc3a92e", "https://cf.shopee.sg/file/def270438fdfa3b6eb82f8a908a921e2"},
 	}
 	CategoryBooksMagazinesBooks = &Category{
-		Id:       "1359x1",
-		Slug:     "books-and-magazines-books",
-		Name:     "Sách",
-		NameEn:   "Books",
-		Children: Categories{CategoryBooksMagazinesBooksHobbies, CategoryBooksMagazinesBooksLightNovels, CategoryBooksMagazinesBooksMedical, CategoryBooksMagazinesBooksCareersSelfHelpPersonalDevelopment, CategoryBooksMagazinesBooksEducationSchool, CategoryBooksMagazinesBooksChildrensBooks, CategoryBooksMagazinesBooksPoliticsLawSocialSciences, CategoryBooksMagazinesBooksClassicLiterature, CategoryBooksMagazinesBooksRomance, CategoryBooksMagazinesBooksTravelTourism, CategoryBooksMagazinesBooksBiographyMemoirs, CategoryBooksMagazinesBooksHoroscopes, CategoryBooksMagazinesBooksFantasy, CategoryBooksMagazinesBooksBusinessInvestment, CategoryBooksMagazinesBooksHealthFitnessDieting, CategoryBooksMagazinesBooksLGBTQplusLiterature, CategoryBooksMagazinesBooksActionCrimeThrillers, CategoryBooksMagazinesBooksHistoryCultures, CategoryBooksMagazinesBooksComicsManga, CategoryBooksMagazinesBooksParentingFamily, CategoryBooksMagazinesBooksPsychologyRelationships, CategoryBooksMagazinesBooksReligionPhilosophy, CategoryBooksMagazinesBooksComputersTechnology, CategoryBooksMagazinesBooksStickerColouringBooks, CategoryBooksMagazinesBooksBabySoftBooks, CategoryBooksMagazinesBooksScienceMaths, CategoryBooksMagazinesBooksLanguageLearningDictionaries, CategoryBooksMagazinesBooksMusic, CategoryBooksMagazinesBooksRecipesCooking},
+		Id:     "1359x1",
+		Slug:   "books-and-magazines-books",
+		Name:   "Sách",
+		NameEn: "Books",
+		Children: Categories{
+			CategoryBooksMagazinesBooksBusinessInvestment,
+			CategoryBooksMagazinesBooksHoroscopes,
+			CategoryBooksMagazinesBooksLightNovels,
+			CategoryBooksMagazinesBooksParentingFamily,
+			CategoryBooksMagazinesBooksPsychologyRelationships,
+			CategoryBooksMagazinesBooksHistoryCultures,
+			CategoryBooksMagazinesBooksBiographyMemoirs,
+			CategoryBooksMagazinesBooksHealthFitnessDieting,
+			CategoryBooksMagazinesBooksTravelTourism,
+			CategoryBooksMagazinesBooksLanguageLearningDictionaries,
+			CategoryBooksMagazinesBooksScienceMaths,
+			CategoryBooksMagazinesBooksReligionPhilosophy,
+			CategoryBooksMagazinesBooksEducationSchool,
+			CategoryBooksMagazinesBooksComicsManga,
+			CategoryBooksMagazinesBooksComputersTechnology,
+			CategoryBooksMagazinesBooksFantasy,
+			CategoryBooksMagazinesBooksCareersSelfHelpPersonalDevelopment,
+			CategoryBooksMagazinesBooksPoliticsLawSocialSciences,
+			CategoryBooksMagazinesBooksRomance,
+			CategoryBooksMagazinesBooksStickerColouringBooks,
+			CategoryBooksMagazinesBooksClassicLiterature,
+			CategoryBooksMagazinesBooksLGBTQplusLiterature,
+			CategoryBooksMagazinesBooksActionCrimeThrillers,
+			CategoryBooksMagazinesBooksMedical,
+			CategoryBooksMagazinesBooksMusic,
+			CategoryBooksMagazinesBooksHobbies,
+			CategoryBooksMagazinesBooksRecipesCooking,
+			CategoryBooksMagazinesBooksBabySoftBooks,
+			CategoryBooksMagazinesBooksChildrensBooks,
+		},
 	}
 	CategoryBooksMagazinesBooksChildrensBooks = &Category{
 		Id:     "1359x2",
@@ -11425,18 +13301,35 @@ var (
 		NameEn: "E-Books",
 	}
 	CategoryComputersAccessories = &Category{
-		Id:       "1389x0",
-		Slug:     "computers-and-accessories",
-		Name:     "Máy tính & Laptop",
-		NameEn:   "Computers & Accessories",
-		Children: Categories{CategoryComputersAccessoriesPeripheralsAccessories, CategoryComputersAccessoriesKeyboardsMice, CategoryComputersAccessoriesDesktopLaptopComponents, CategoryComputersAccessoriesDataStorage, CategoryComputersAccessoriesNetworkComponents, CategoryComputersAccessoriesSoftwares, CategoryComputersAccessoriesLaptop, CategoryComputersAccessoriesDesktopComputer, CategoryComputersAccessoriesMonitors, CategoryComputersAccessoriesOfficeEquipment, CategoryComputersAccessoriesPrintersScanners},
+		Id:     "1389x0",
+		Slug:   "computers-and-accessories",
+		Name:   "Máy tính & Laptop",
+		NameEn: "Computers & Accessories",
+		Children: Categories{
+			CategoryComputersAccessoriesPeripheralsAccessories,
+			CategoryComputersAccessoriesDesktopComputer,
+			CategoryComputersAccessoriesSoftwares,
+			CategoryComputersAccessoriesOfficeEquipment,
+			CategoryComputersAccessoriesNetworkComponents,
+			CategoryComputersAccessoriesPrintersScanners,
+			CategoryComputersAccessoriesKeyboardsMice,
+			CategoryComputersAccessoriesLaptop,
+			CategoryComputersAccessoriesMonitors,
+			CategoryComputersAccessoriesDesktopLaptopComponents,
+			CategoryComputersAccessoriesDataStorage,
+		},
 	}
 	CategoryComputersAccessoriesDesktopComputer = &Category{
-		Id:       "1389x1",
-		Slug:     "computers-and-accessories-desktop-computer",
-		Name:     "Máy Tính Bàn",
-		NameEn:   "Desktop Computer",
-		Children: Categories{CategoryComputersAccessoriesDesktopComputerDesktopPC, CategoryComputersAccessoriesDesktopComputerMiniPC, CategoryComputersAccessoriesDesktopComputerServerPC, CategoryComputersAccessoriesDesktopComputerAllInOneDesktops},
+		Id:     "1389x1",
+		Slug:   "computers-and-accessories-desktop-computer",
+		Name:   "Máy Tính Bàn",
+		NameEn: "Desktop Computer",
+		Children: Categories{
+			CategoryComputersAccessoriesDesktopComputerDesktopPC,
+			CategoryComputersAccessoriesDesktopComputerMiniPC,
+			CategoryComputersAccessoriesDesktopComputerServerPC,
+			CategoryComputersAccessoriesDesktopComputerAllInOneDesktops,
+		},
 	}
 	CategoryComputersAccessoriesDesktopComputerDesktopPC = &Category{
 		Id:     "1389x2",
@@ -11474,11 +13367,24 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/4cc4cc12fca8d1bc17ee8e5e47789a02", "https://cf.shopee.sg/file/8f60b540eed7ef59d06229135013da72", "https://cf.shopee.sg/file/2ad4fbda58d066f7c43aa0b795711464", "https://cf.shopee.sg/file/c446fcfe6c61780e53d9cd8a364d685c", "https://cf.shopee.sg/file/3be53603e8ade036e2fcdabdbd15d79f", "https://cf.shopee.sg/file/ec537ebdf65bffdd687a6d1a2e866862"},
 	}
 	CategoryComputersAccessoriesDesktopLaptopComponents = &Category{
-		Id:       "1394x1",
-		Slug:     "computers-and-accessories-desktop-and-laptop-components",
-		Name:     "Linh Kiện Máy Tính",
-		NameEn:   "Desktop & Laptop Components",
-		Children: Categories{CategoryComputersAccessoriesDesktopLaptopComponentsPCCases, CategoryComputersAccessoriesDesktopLaptopComponentsOther, CategoryComputersAccessoriesDesktopLaptopComponentsPowerSupplyUnits, CategoryComputersAccessoriesDesktopLaptopComponentsProcessors, CategoryComputersAccessoriesDesktopLaptopComponentsMotherboards, CategoryComputersAccessoriesDesktopLaptopComponentsGraphicsCards, CategoryComputersAccessoriesDesktopLaptopComponentsThermalPaste, CategoryComputersAccessoriesDesktopLaptopComponentsRAM, CategoryComputersAccessoriesDesktopLaptopComponentsUPSStabilizers, CategoryComputersAccessoriesDesktopLaptopComponentsOpticalDrives, CategoryComputersAccessoriesDesktopLaptopComponentsFansHeatsinks, CategoryComputersAccessoriesDesktopLaptopComponentsSoundCards},
+		Id:     "1394x1",
+		Slug:   "computers-and-accessories-desktop-and-laptop-components",
+		Name:   "Linh Kiện Máy Tính",
+		NameEn: "Desktop & Laptop Components",
+		Children: Categories{
+			CategoryComputersAccessoriesDesktopLaptopComponentsUPSStabilizers,
+			CategoryComputersAccessoriesDesktopLaptopComponentsOpticalDrives,
+			CategoryComputersAccessoriesDesktopLaptopComponentsFansHeatsinks,
+			CategoryComputersAccessoriesDesktopLaptopComponentsMotherboards,
+			CategoryComputersAccessoriesDesktopLaptopComponentsGraphicsCards,
+			CategoryComputersAccessoriesDesktopLaptopComponentsThermalPaste,
+			CategoryComputersAccessoriesDesktopLaptopComponentsPowerSupplyUnits,
+			CategoryComputersAccessoriesDesktopLaptopComponentsRAM,
+			CategoryComputersAccessoriesDesktopLaptopComponentsPCCases,
+			CategoryComputersAccessoriesDesktopLaptopComponentsSoundCards,
+			CategoryComputersAccessoriesDesktopLaptopComponentsProcessors,
+			CategoryComputersAccessoriesDesktopLaptopComponentsOther,
+		},
 	}
 	CategoryComputersAccessoriesDesktopLaptopComponentsFansHeatsinks = &Category{
 		Id:     "1394x2",
@@ -11565,11 +13471,18 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/c4ddd618dd018174806f1e54868c6358", "https://cf.shopee.sg/file/9577f086bd0a4839e025eca961bb2862", "https://cf.shopee.sg/file/b1ab903ba62f6eeacbcb16b5bc1aff29", "https://cf.shopee.sg/file/ee128e2f18c91d3c9cd29a0710cabc76", "https://cf.shopee.sg/file/e14dcab6bbb2828fb33f822e02e785b4", "https://cf.shopee.sg/file/77c6cc456ba7fd15ecadc4ad3f68ebb5"},
 	}
 	CategoryComputersAccessoriesDataStorage = &Category{
-		Id:       "1406x1",
-		Slug:     "computers-and-accessories-data-storage",
-		Name:     "Thiết Bị Lưu Trữ",
-		NameEn:   "Data Storage",
-		Children: Categories{CategoryComputersAccessoriesDataStorageCompactDiscs, CategoryComputersAccessoriesDataStorageHardDrives, CategoryComputersAccessoriesDataStorageSSD, CategoryComputersAccessoriesDataStorageNetworkAttachedStorage, CategoryComputersAccessoriesDataStorageFlashDrivesOTG, CategoryComputersAccessoriesDataStorageHardDiskCasingsDockings},
+		Id:     "1406x1",
+		Slug:   "computers-and-accessories-data-storage",
+		Name:   "Thiết Bị Lưu Trữ",
+		NameEn: "Data Storage",
+		Children: Categories{
+			CategoryComputersAccessoriesDataStorageCompactDiscs,
+			CategoryComputersAccessoriesDataStorageHardDrives,
+			CategoryComputersAccessoriesDataStorageSSD,
+			CategoryComputersAccessoriesDataStorageNetworkAttachedStorage,
+			CategoryComputersAccessoriesDataStorageFlashDrivesOTG,
+			CategoryComputersAccessoriesDataStorageHardDiskCasingsDockings,
+		},
 	}
 	CategoryComputersAccessoriesDataStorageHardDrives = &Category{
 		Id:     "1406x2",
@@ -11614,11 +13527,20 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/b9d9156b9fe658f86ff4e784694a0091", "https://cf.shopee.sg/file/1ec26fa0d55b878f7634e55b4205f384", "https://cf.shopee.sg/file/3fc276ecf711d56876ed9121d00c3100", "https://cf.shopee.sg/file/41feb67178aad20330095cd46b1e7c3b", "https://cf.shopee.sg/file/a5279c02d40f2db9bf68b98419bcee6e", "https://cf.shopee.sg/file/12406ab1a64634183f8244e56ac8e32b"},
 	}
 	CategoryComputersAccessoriesNetworkComponents = &Category{
-		Id:       "1412x1",
-		Slug:     "computers-and-accessories-network-components",
-		Name:     "Thiết Bị Mạng",
-		NameEn:   "Network Components",
-		Children: Categories{CategoryComputersAccessoriesNetworkComponentsRepeaters, CategoryComputersAccessoriesNetworkComponentsWirelessAdaptersNetworkCards, CategoryComputersAccessoriesNetworkComponentsPowerlineAdapters, CategoryComputersAccessoriesNetworkComponentsNetworkSwitchesPoE, CategoryComputersAccessoriesNetworkComponentsNetworkCablesConnectors, CategoryComputersAccessoriesNetworkComponentsKVMSwitches, CategoryComputersAccessoriesNetworkComponentsPrintServers, CategoryComputersAccessoriesNetworkComponentsModemsWirelessRouters},
+		Id:     "1412x1",
+		Slug:   "computers-and-accessories-network-components",
+		Name:   "Thiết Bị Mạng",
+		NameEn: "Network Components",
+		Children: Categories{
+			CategoryComputersAccessoriesNetworkComponentsRepeaters,
+			CategoryComputersAccessoriesNetworkComponentsWirelessAdaptersNetworkCards,
+			CategoryComputersAccessoriesNetworkComponentsPowerlineAdapters,
+			CategoryComputersAccessoriesNetworkComponentsNetworkSwitchesPoE,
+			CategoryComputersAccessoriesNetworkComponentsNetworkCablesConnectors,
+			CategoryComputersAccessoriesNetworkComponentsKVMSwitches,
+			CategoryComputersAccessoriesNetworkComponentsPrintServers,
+			CategoryComputersAccessoriesNetworkComponentsModemsWirelessRouters,
+		},
 	}
 	CategoryComputersAccessoriesNetworkComponentsModemsWirelessRouters = &Category{
 		Id:     "1412x2",
@@ -11684,11 +13606,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/efc0822a846da733cef173336da95e70", "https://cf.shopee.sg/file/7975dac3170addaf6beebbba7d4e2e07", "https://cf.shopee.sg/file/ca84757f3a09d73c89850ffa3bc05cae", "https://cf.shopee.sg/file/ee1e82ef80791d7431da4c371cb51de5", "https://cf.shopee.sg/file/89b25d903a1d052a4a149069c19d5d06", "https://cf.shopee.sg/file/3c019aaea5e042c213f224b2f4fcea81"},
 	}
 	CategoryComputersAccessoriesOfficeEquipment = &Category{
-		Id:       "1421x1",
-		Slug:     "computers-and-accessories-office-equipment",
-		Name:     "Thiết Bị Văn Phòng",
-		NameEn:   "Office Equipment",
-		Children: Categories{CategoryComputersAccessoriesOfficeEquipmentPaperShredders, CategoryComputersAccessoriesOfficeEquipmentMoneyCounters, CategoryComputersAccessoriesOfficeEquipmentTypewriters, CategoryComputersAccessoriesOfficeEquipmentAbsenceMachines},
+		Id:     "1421x1",
+		Slug:   "computers-and-accessories-office-equipment",
+		Name:   "Thiết Bị Văn Phòng",
+		NameEn: "Office Equipment",
+		Children: Categories{
+			CategoryComputersAccessoriesOfficeEquipmentAbsenceMachines,
+			CategoryComputersAccessoriesOfficeEquipmentPaperShredders,
+			CategoryComputersAccessoriesOfficeEquipmentMoneyCounters,
+			CategoryComputersAccessoriesOfficeEquipmentTypewriters,
+		},
 	}
 	CategoryComputersAccessoriesOfficeEquipmentTypewriters = &Category{
 		Id:     "1421x2",
@@ -11719,11 +13646,17 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/992e0426a5a9e441cb3e9fb4694bffc1", "https://cf.shopee.sg/file/a0da910992058784fbb79cc4bedf798b", "https://cf.shopee.sg/file/c02d44fed5574fa875b75064321f944b", "https://cf.shopee.sg/file/c1d43b03d0e0dc544fdb55d5c5b157c6", "https://cf.shopee.sg/file/e6bd8f4d1d546544ede36687b72555bf", "https://cf.shopee.sg/file/f0e18f790d3ecf0c467753c3e71dd894"},
 	}
 	CategoryComputersAccessoriesPrintersScanners = &Category{
-		Id:       "1425x1",
-		Slug:     "computers-and-accessories-printers-and-scanners",
-		Name:     "Máy In & Máy Scan",
-		NameEn:   "Printers & Scanners",
-		Children: Categories{CategoryComputersAccessoriesPrintersScannersPrintersScannersPrintersScannersPhotocopyMachines, CategoryComputersAccessoriesPrintersScannersThermalBarcodePrinters, CategoryComputersAccessoriesPrintersScannersInksToners, CategoryComputersAccessoriesPrintersScanners3DPrinters, CategoryComputersAccessoriesPrintersScannersOther},
+		Id:     "1425x1",
+		Slug:   "computers-and-accessories-printers-and-scanners",
+		Name:   "Máy In & Máy Scan",
+		NameEn: "Printers & Scanners",
+		Children: Categories{
+			CategoryComputersAccessoriesPrintersScannersThermalBarcodePrinters,
+			CategoryComputersAccessoriesPrintersScannersInksToners,
+			CategoryComputersAccessoriesPrintersScanners3DPrinters,
+			CategoryComputersAccessoriesPrintersScannersOther,
+			CategoryComputersAccessoriesPrintersScannersPrintersScannersPrintersScannersPhotocopyMachines,
+		},
 	}
 	CategoryComputersAccessoriesPrintersScannersPrintersScannersPrintersScannersPhotocopyMachines = &Category{
 		Id:     "1425x2",
@@ -11761,11 +13694,22 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/5124d0390dd21e54469ae850e8ff8200", "https://cf.shopee.sg/file/6655fda26e2757ebb6e7e9a67c07f34e", "https://cf.shopee.sg/file/b3195b661f287e50554f93f2fa19659a", "https://cf.shopee.sg/file/49a4054a4efb2eab1dd3e4a4f195e3a3", "https://cf.shopee.sg/file/9f6a9d61bff753bb531dd0847d07cf62", "https://cf.shopee.sg/file/0487c71aabfcc44babede9e0824027ed"},
 	}
 	CategoryComputersAccessoriesPeripheralsAccessories = &Category{
-		Id:       "1430x1",
-		Slug:     "computers-and-accessories-peripherals-and-accessories",
-		Name:     "Phụ Kiện Máy Tính",
-		NameEn:   "Peripherals & Accessories",
-		Children: Categories{CategoryComputersAccessoriesPeripheralsAccessoriesUSBHubsCardReaders, CategoryComputersAccessoriesPeripheralsAccessoriesLaptopSkinsCovers, CategoryComputersAccessoriesPeripheralsAccessoriesCoolingPads, CategoryComputersAccessoriesPeripheralsAccessoriesLaptopStandsFoldableLaptopDesks, CategoryComputersAccessoriesPeripheralsAccessoriesLaptopBatteries, CategoryComputersAccessoriesPeripheralsAccessoriesLaptopChargersAdaptors, CategoryComputersAccessoriesPeripheralsAccessoriesWebcams, CategoryComputersAccessoriesPeripheralsAccessoriesKeyboardTrackpadCovers, CategoryComputersAccessoriesPeripheralsAccessoriesVideoConferenceDevices, CategoryComputersAccessoriesPeripheralsAccessoriesMousePads},
+		Id:     "1430x1",
+		Slug:   "computers-and-accessories-peripherals-and-accessories",
+		Name:   "Phụ Kiện Máy Tính",
+		NameEn: "Peripherals & Accessories",
+		Children: Categories{
+			CategoryComputersAccessoriesPeripheralsAccessoriesUSBHubsCardReaders,
+			CategoryComputersAccessoriesPeripheralsAccessoriesLaptopSkinsCovers,
+			CategoryComputersAccessoriesPeripheralsAccessoriesCoolingPads,
+			CategoryComputersAccessoriesPeripheralsAccessoriesLaptopChargersAdaptors,
+			CategoryComputersAccessoriesPeripheralsAccessoriesWebcams,
+			CategoryComputersAccessoriesPeripheralsAccessoriesLaptopStandsFoldableLaptopDesks,
+			CategoryComputersAccessoriesPeripheralsAccessoriesKeyboardTrackpadCovers,
+			CategoryComputersAccessoriesPeripheralsAccessoriesLaptopBatteries,
+			CategoryComputersAccessoriesPeripheralsAccessoriesVideoConferenceDevices,
+			CategoryComputersAccessoriesPeripheralsAccessoriesMousePads,
+		},
 	}
 	CategoryComputersAccessoriesPeripheralsAccessoriesUSBHubsCardReaders = &Category{
 		Id:     "1430x2",
@@ -11838,11 +13782,16 @@ var (
 		Images: []string{"https://cf.shopee.sg/file/de0053e20454ee3f8555e3c4cd199d37", "https://cf.shopee.sg/file/b66e75ab03f6969ec60114c62eec2ad7", "https://cf.shopee.sg/file/e97890caaec149dda985f6f2104a0d56", "https://cf.shopee.sg/file/a7619cf4cb06f95d4a67923cdd58f7a1", "https://cf.shopee.sg/file/20a6fc2eadc8ab60735d6ca3f477e2f7", "https://cf.shopee.sg/file/536f47687556bcb156cef6618fa3320e"},
 	}
 	CategoryComputersAccessoriesKeyboardsMice = &Category{
-		Id:       "1440x1",
-		Slug:     "computers-and-accessories-keyboards-and-mice",
-		Name:     "Chuột & Bàn Phím",
-		NameEn:   "Keyboards & Mice",
-		Children: Categories{CategoryComputersAccessoriesKeyboardsMiceOther, CategoryComputersAccessoriesKeyboardsMiceMice, CategoryComputersAccessoriesKeyboardsMiceKeyboards, CategoryComputersAccessoriesKeyboardsMiceDrawingTablets},
+		Id:     "1440x1",
+		Slug:   "computers-and-accessories-keyboards-and-mice",
+		Name:   "Chuột & Bàn Phím",
+		NameEn: "Keyboards & Mice",
+		Children: Categories{
+			CategoryComputersAccessoriesKeyboardsMiceMice,
+			CategoryComputersAccessoriesKeyboardsMiceKeyboards,
+			CategoryComputersAccessoriesKeyboardsMiceDrawingTablets,
+			CategoryComputersAccessoriesKeyboardsMiceOther,
+		},
 	}
 	CategoryComputersAccessoriesKeyboardsMiceMice = &Category{
 		Id:     "1440x2",
@@ -11911,4 +13860,264 @@ var FirstLevelCategories = Categories{
 	CategoryMotorcycles,
 	CategoryBooksMagazines,
 	CategoryComputersAccessories,
+}
+
+// second level categories
+var SecondLevelCategories = Categories{
+	CategoryWomenClothesTops,
+	CategoryWomenClothesPantsLeggings,
+	CategoryWomenClothesShorts,
+	CategoryWomenClothesJumpsuitsPlaysuitsOveralls,
+	CategoryWomenClothesJacketsCoatsVests,
+	CategoryWomenClothesHoodiesSweatshirts,
+	CategoryWomenClothesSets,
+	CategoryWomenClothesLingerieUnderwear,
+	CategoryWomenClothesSleepwearPajamas,
+	CategoryWomenClothesMaternityWear,
+	CategoryWomenClothesTraditionalWear,
+	CategoryWomenClothesFabric,
+	CategoryWomenClothesSocksStockings,
+	CategoryMenClothesHoodiesSweatshirts,
+	CategoryMenClothesJacketsCoatsVests,
+	CategoryMenClothesWinterJacketsCoats,
+	CategoryMenClothesSuits,
+	CategoryMenClothesPants,
+	CategoryMenClothesTops,
+	CategoryMenClothesInnerwearUnderwear,
+	CategoryMenClothesTraditionalWear,
+	CategoryBeautyHandFootNailCare,
+	CategoryBeautyHairCare,
+	CategoryBeautyMensCare,
+	CategoryBeautyMakeup,
+	CategoryBeautyBeautyTools,
+	CategoryBeautySkincare,
+	CategoryBeautyBathBodyCare,
+	CategoryHealthFoodSupplement,
+	CategoryHealthMedicalSupplies,
+	CategoryHealthPersonalCare,
+	CategoryHealthSexualWellness,
+	CategoryFashionAccessoriesHairAccessories,
+	CategoryFashionAccessoriesEyewear,
+	CategoryFashionAccessoriesInvestmentPreciousMetals,
+	CategoryFashionAccessoriesAdditionalAccessories,
+	CategoryHomeAppliancesProjectorsAccessories,
+	CategoryHomeAppliancesSmallHouseholdAppliances,
+	CategoryHomeAppliancesLargeHouseholdAppliances,
+	CategoryHomeAppliancesTVsAccessories,
+	CategoryHomeAppliancesKitchenAppliances,
+	CategoryHomeAppliancesElectricalCircuitryParts,
+	CategoryMenShoesBoots,
+	CategoryMenShoesSandalsFlipFlops,
+	CategoryMenShoesShoeCareAccessories,
+	CategoryMobileGadgetsWearableDevices,
+	CategoryMobileGadgetsAccessories,
+	CategoryTravelLuggageTravelBags,
+	CategoryTravelLuggageTravelAccessories,
+	CategoryWomenBagsLaptopBags,
+	CategoryWomenBagsWallets,
+	CategoryWomenBagsBagAccessories,
+	CategoryWomenShoesBoots,
+	CategoryWomenShoesFlats,
+	CategoryWomenShoesFlatSandalsFlipFlops,
+	CategoryWomenShoesShoeCareAccessories,
+	CategoryMenBagsLaptopBags,
+	CategoryMenBagsWallets,
+	CategoryWatchesWatchesAccessories,
+	CategoryAudioMediaPlayers,
+	CategoryAudioHomeAudioSpeakers,
+	CategoryFoodBeverageConvenienceReadytoeat,
+	CategoryFoodBeverageSnacks,
+	CategoryFoodBeverageFoodStaples,
+	CategoryFoodBeverageCookingEssentials,
+	CategoryFoodBeverageSeasoningsCondiments,
+	CategoryFoodBeverageBakingNeeds,
+	CategoryFoodBeverageBreakfastCerealsSpread,
+	CategoryFoodBeverageBeverages,
+	CategoryFoodBeverageDairyEggs,
+	CategoryFoodBeverageFreshFrozenFood,
+	CategoryFoodBeverageBakery,
+	CategoryFoodBeverageAlcoholicBeverages,
+	CategoryPetsPetFood,
+	CategoryPetsPetAccessories,
+	CategoryPetsLitterToilet,
+	CategoryPetsPetGrooming,
+	CategoryPetsPetClothingAccessories,
+	CategoryPetsPetHealthcare,
+	CategoryMomBabyBabyTravelEssentials,
+	CategoryMomBabyFeedingEssentials,
+	CategoryMomBabyMaternityAccessories,
+	CategoryMomBabyMaternityHealthcare,
+	CategoryMomBabyBathBodyCare,
+	CategoryMomBabyNursery,
+	CategoryMomBabyBabySafety,
+	CategoryMomBabyMilkFormulaBabyFood,
+	CategoryMomBabyBabyHealthcare,
+	CategoryMomBabyDiaperingPotty,
+	CategoryMomBabyToys,
+	CategoryBabyKidsFashionBabyClothes,
+	CategoryBabyKidsFashionBabyKidsAccessories,
+	CategoryBabyKidsFashionBoyClothes,
+	CategoryBabyKidsFashionGirlClothes,
+	CategoryBabyKidsFashionUnderwearInnerwear,
+	CategoryBabyKidsFashionBoyShoes,
+	CategoryBabyKidsFashionGirlShoes,
+	CategoryGamingConsolesConsoleMachines,
+	CategoryGamingConsolesVideoGames,
+	CategoryCamerasDronesCameras,
+	CategoryCamerasDronesSecurityCamerasSystems,
+	CategoryCamerasDronesLensAccessories,
+	CategoryCamerasDronesCameraAccessories,
+	CategoryCamerasDronesCameraCare,
+	CategoryHomeLivingHomeFragranceAromatherapy,
+	CategoryHomeLivingBathrooms,
+	CategoryHomeLivingBedding,
+	CategoryHomeLivingDecoration,
+	CategoryHomeLivingFurniture,
+	CategoryHomeLivingGardening,
+	CategoryHomeLivingToolsHomeImprovement,
+	CategoryHomeLivingHomeCareSupplies,
+	CategoryHomeLivingKitchenware,
+	CategoryHomeLivingDinnerware,
+	CategoryHomeLivingSafetySecurity,
+	CategoryHomeLivingHomeOrganizers,
+	CategoryHomeLivingPartySupplies,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipments,
+	CategorySportsOutdoorsSportFootwear,
+	CategorySportsOutdoorsSportsOutdoorApparels,
+	CategorySportsOutdoorsSportsOutdoorAccessories,
+	CategoryStationeryGiftWrapping,
+	CategoryStationeryWritingCorrection,
+	CategoryStationerySchoolOfficeEquipment,
+	CategoryStationeryArtSupplies,
+	CategoryStationeryNotebooksPapers,
+	CategoryStationeryLettersEnvelopes,
+	CategoryHobbiesCollectionsCollectibleItems,
+	CategoryHobbiesCollectionsSouvenirs,
+	CategoryHobbiesCollectionsToysGames,
+	CategoryHobbiesCollectionsMusicalInstrumentsAccessories,
+	CategoryAutomobilesAutomobileInteriorAccessories,
+	CategoryAutomobilesAutomobileExteriorAccessories,
+	CategoryAutomobilesAutomobileSpareParts,
+	CategoryAutomobilesAutomotiveTools,
+	CategoryAutomobilesAutomotiveCare,
+	CategoryAutomobilesAutomotiveOilsLubes,
+	CategoryMotorcyclesMotorcycleAccessories,
+	CategoryMotorcyclesMotorcycleSpareParts,
+	CategoryBooksMagazinesMagazinesNewspaper,
+	CategoryBooksMagazinesBooks,
+	CategoryComputersAccessoriesDesktopComputer,
+	CategoryComputersAccessoriesDesktopLaptopComponents,
+	CategoryComputersAccessoriesDataStorage,
+	CategoryComputersAccessoriesNetworkComponents,
+	CategoryComputersAccessoriesOfficeEquipment,
+	CategoryComputersAccessoriesPrintersScanners,
+	CategoryComputersAccessoriesPeripheralsAccessories,
+	CategoryComputersAccessoriesKeyboardsMice,
+}
+
+// third level categories
+var ThirdLevelCategories = Categories{
+	CategoryWomenClothesLingerieUnderwearBraAccessories,
+	CategoryBeautyHandFootNailCareHandCare,
+	CategoryBeautyHandFootNailCareFootCare,
+	CategoryBeautyHandFootNailCareNailCare,
+	CategoryBeautyMensCareSkinCare,
+	CategoryBeautyMensCareShavingGrooming,
+	CategoryBeautyMakeupFace,
+	CategoryBeautyMakeupEyes,
+	CategoryBeautyMakeupLips,
+	CategoryBeautyBeautyToolsMakeupAccessories,
+	CategoryBeautyBeautyToolsFacialCareTools,
+	CategoryBeautyBeautyToolsHairTools,
+	CategoryBeautySkincareEyeTreatment,
+	CategoryBeautySkincareLipsTreatment,
+	CategoryBeautyBathBodyCareSunCare,
+	CategoryHealthMedicalSuppliesHealthMonitorsTests,
+	CategoryHealthMedicalSuppliesFirstAidSupplies,
+	CategoryHealthMedicalSuppliesInjuryDisabilitySupport,
+	CategoryHealthPersonalCareEyeCare,
+	CategoryHealthPersonalCareOralCare,
+	CategoryHealthPersonalCareFeminineCare,
+	CategoryHomeAppliancesSmallHouseholdAppliancesTelephones,
+	CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatment,
+	CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryers,
+	CategoryHomeAppliancesLargeHouseholdAppliancesCooling,
+	CategoryHomeAppliancesKitchenAppliancesSpecialtyCookware,
+	CategoryMobileGadgetsAccessoriesSelfieAccessories,
+	CategoryMobileGadgetsAccessoriesCablesChargersConverters,
+	CategoryMobileGadgetsAccessoriesPowerbanksBatteries,
+	CategoryMobileGadgetsAccessoriesCasesCoversSkins,
+	CategoryFoodBeverageSnacksDriedSnacks,
+	CategoryFoodBeverageFoodStaplesDriedGoods,
+	CategoryFoodBeverageFoodStaplesCannedFood,
+	CategoryFoodBeverageCookingEssentialsSeasoningsCondiments,
+	CategoryFoodBeverageSeasoningsCondimentsCookingEssentials,
+	CategoryFoodBeverageDairyEggsMilk,
+	CategoryFoodBeverageFreshFrozenFoodMeat,
+	CategoryFoodBeverageFreshFrozenFoodSeafood,
+	CategoryFoodBeverageFreshFrozenFoodVegetables,
+	CategoryFoodBeverageFreshFrozenFoodFruits,
+	CategoryPetsPetAccessoriesToys,
+	CategoryPetsPetAccessoriesPetFurniture,
+	CategoryMomBabyFeedingEssentialsBottlefeeding,
+	CategoryMomBabyFeedingEssentialsBreastfeeding,
+	CategoryMomBabyFeedingEssentialsUtensils,
+	CategoryMomBabyNurseryMattressesBedding,
+	CategoryMomBabyBabyHealthcareBabySkincare,
+	CategoryMomBabyToysBabyToddlerToys,
+	CategoryMomBabyToysDollsStuffedToys,
+	CategoryMomBabyToysSportsOutdoorPlay,
+	CategoryMomBabyToysEducationalToys,
+	CategoryBabyKidsFashionBabyClothesBottoms,
+	CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggage,
+	CategoryBabyKidsFashionBabyKidsAccessoriesJewelry,
+	CategoryBabyKidsFashionBabyKidsAccessoriesRainGear,
+	CategoryBabyKidsFashionBoyClothesTops,
+	CategoryBabyKidsFashionBoyClothesOuterwear,
+	CategoryBabyKidsFashionBoyClothesBottoms,
+	CategoryBabyKidsFashionGirlClothesTops,
+	CategoryBabyKidsFashionGirlClothesOuterwear,
+	CategoryBabyKidsFashionGirlClothesBottoms,
+	CategoryCamerasDronesCameraAccessoriesFlashAccessories,
+	CategoryHomeLivingBathroomsTowelsBathrobes,
+	CategoryHomeLivingToolsHomeImprovementTools,
+	CategoryHomeLivingHomeCareSuppliesLaundryCare,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishing,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCycling,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHiking,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsports,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakraw,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketball,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyball,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadminton,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennis,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennis,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArts,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolf,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDiving,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilates,
+	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipment,
+	CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttire,
+	CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstruments,
+	CategoryAutomobilesAutomobileSparePartsEngineParts,
+	CategoryAutomobilesAutomobileSparePartsElectronics,
+	CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluids,
+	CategoryMotorcyclesMotorcycleSparePartsIgnitionEngineParts,
+	CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutches,
+}
+
+// fourth level categories
+var FourthLevelCategories = Categories{
+	CategoryPetsPetAccessoriesToysDogCatToys,
+	CategoryAutomobilesAutomobileSparePartsElectronicsIgnition,
+}
+
+// fifth level categories
+var FifthLevelCategories = Categories{
+	CategoryPetsPetAccessoriesToysDogCatToysSticksChasers,
+	CategoryPetsPetAccessoriesToysDogCatToysChewBonesBalls,
+	CategoryPetsPetAccessoriesToysDogCatToysFrisbees,
+	CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionIgnitionCoils,
+	CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionSparkPlugs,
+	CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionOther,
 }

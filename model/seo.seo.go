@@ -11,8 +11,8 @@ const (
 )
 
 type Seo struct {
-	SeoTitle       *string `json:"seo_title,omitempty"`
-	SeoDescription *string `json:"seo_description,omitempty"`
+	SeoTitle       string `json:"seo_title,omitempty"`
+	SeoDescription string `json:"seo_description,omitempty"`
 }
 
 func (s *Seo) IsValid() *AppError {
@@ -22,10 +22,10 @@ func (s *Seo) IsValid() *AppError {
 		"Seo.IsValid",
 	)
 
-	if s.SeoTitle != nil && utf8.RuneCountInString(*s.SeoTitle) > SEO_TITLE_MAX_LENGTH {
+	if utf8.RuneCountInString(s.SeoTitle) > SEO_TITLE_MAX_LENGTH {
 		return outer("seo_title", nil)
 	}
-	if s.SeoDescription != nil && utf8.RuneCountInString(*s.SeoDescription) > SEO_DESCRIPTION_MAX_LENGTH {
+	if utf8.RuneCountInString(s.SeoDescription) > SEO_DESCRIPTION_MAX_LENGTH {
 		return outer("seo_description", nil)
 	}
 
@@ -33,6 +33,19 @@ func (s *Seo) IsValid() *AppError {
 }
 
 func (s *Seo) PreSave() {
+	s.commonPre()
+}
+
+func (s *Seo) commonPre() {
+	s.SeoTitle = SanitizeUnicode(s.SeoTitle)
+	s.SeoDescription = SanitizeUnicode(s.SeoDescription)
+}
+
+func (s *Seo) PreUpdate() {
+	s.commonPre()
+}
+
+func (s *SeoTranslation) PreSave() {
 	if s.SeoTitle != nil {
 		st := SanitizeUnicode(*s.SeoTitle)
 		s.SeoTitle = &st
@@ -63,15 +76,4 @@ func (s *SeoTranslation) IsValid() *AppError {
 	}
 
 	return nil
-}
-
-func (s *SeoTranslation) PreSave() {
-	if s.SeoTitle != nil {
-		st := SanitizeUnicode(*s.SeoTitle)
-		s.SeoTitle = &st
-	}
-	if s.SeoDescription != nil {
-		st := SanitizeUnicode(*s.SeoDescription)
-		s.SeoDescription = &st
-	}
 }

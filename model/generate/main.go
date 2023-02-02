@@ -50,8 +50,12 @@ var thirdLevel = map[string]map[string]struct{}{}
 var fourthLevel = map[string]map[string]struct{}{}
 
 type data struct {
-	Categories  []*DesiredCategory
-	FirstLevels []string
+	Categories   []*DesiredCategory
+	FirstLevels  []string
+	SecondLevels []string
+	ThirdLevels  []string
+	FourthLevels []string
+	FifthLevels  []string
 }
 
 var replacer = strings.NewReplacer(
@@ -85,56 +89,16 @@ func main() {
 			continue
 		}
 
-		var firstLevelName, secondLevelName,
-			thirdLevelName, fourthLevelName,
-			fifthLevelName string
-
-		named := "Category"
-		slugg := ""
+		var (
+			levelNameMap = map[int]string{}
+			named        = "Category"
+			slugg        = ""
+		)
 		for pathIdx, path := range cate.Path {
 
 			named += replacer.Replace(path.CategoryNameEn)
 			slugg += " " + path.CategoryNameEn
-
-			switch pathIdx {
-			case 0:
-				firstLevelName = named
-			case 1:
-				secondLevelName = named
-			case 2:
-				thirdLevelName = named
-			case 3:
-				fourthLevelName = named
-			case 4:
-				fifthLevelName = named
-			}
-
-			if pathIdx == len(cate.Path)-1 {
-				if secondLevelName != "" {
-					if firstLevel[firstLevelName] == nil {
-						firstLevel[firstLevelName] = map[string]struct{}{}
-					}
-					firstLevel[firstLevelName][secondLevelName] = struct{}{}
-				}
-				if thirdLevelName != "" {
-					if secondLevel[secondLevelName] == nil {
-						secondLevel[secondLevelName] = map[string]struct{}{}
-					}
-					secondLevel[secondLevelName][thirdLevelName] = struct{}{}
-				}
-				if fourthLevelName != "" {
-					if thirdLevel[thirdLevelName] == nil {
-						thirdLevel[thirdLevelName] = map[string]struct{}{}
-					}
-					thirdLevel[thirdLevelName][fourthLevelName] = struct{}{}
-				}
-				if fifthLevelName != "" {
-					if fourthLevel[fourthLevelName] == nil {
-						fourthLevel[fourthLevelName] = map[string]struct{}{}
-					}
-					fourthLevel[fourthLevelName][fifthLevelName] = struct{}{}
-				}
-			}
+			levelNameMap[pathIdx] = named
 
 			if _, met := meetMap[named]; !met {
 				desired := &DesiredCategory{
@@ -152,9 +116,37 @@ func main() {
 				meetMap[named] = struct{}{}
 			}
 		}
+
+		if levelNameMap[1] != "" {
+			if firstLevel[levelNameMap[0]] == nil {
+				firstLevel[levelNameMap[0]] = map[string]struct{}{}
+			}
+			firstLevel[levelNameMap[0]][levelNameMap[1]] = struct{}{}
+		}
+		if levelNameMap[2] != "" {
+			if secondLevel[levelNameMap[1]] == nil {
+				secondLevel[levelNameMap[1]] = map[string]struct{}{}
+			}
+			secondLevel[levelNameMap[1]][levelNameMap[2]] = struct{}{}
+		}
+		if levelNameMap[3] != "" {
+			if thirdLevel[levelNameMap[2]] == nil {
+				thirdLevel[levelNameMap[2]] = map[string]struct{}{}
+			}
+			thirdLevel[levelNameMap[2]][levelNameMap[3]] = struct{}{}
+		}
+		if levelNameMap[4] != "" {
+			if fourthLevel[levelNameMap[3]] == nil {
+				fourthLevel[levelNameMap[3]] = map[string]struct{}{}
+			}
+			fourthLevel[levelNameMap[3]][levelNameMap[4]] = struct{}{}
+		}
+
 	}
 
-	firstLevels := []string{}
+	dt := data{
+		Categories: desireds,
+	}
 
 	for _, cate := range desireds {
 		switch {
@@ -162,27 +154,33 @@ func main() {
 			for key := range firstLevel[cate.Named] {
 				cate.Children = append(cate.Children, key)
 			}
-			firstLevels = append(firstLevels, cate.Named)
+			dt.FirstLevels = append(dt.FirstLevels, cate.Named)
 
 		case secondLevel[cate.Named] != nil:
 			for key := range secondLevel[cate.Named] {
 				cate.Children = append(cate.Children, key)
 			}
+			dt.SecondLevels = append(dt.SecondLevels, cate.Named)
+
 		case thirdLevel[cate.Named] != nil:
 			for key := range thirdLevel[cate.Named] {
 				cate.Children = append(cate.Children, key)
 			}
+			dt.ThirdLevels = append(dt.ThirdLevels, cate.Named)
+
 		case fourthLevel[cate.Named] != nil:
 			for key := range fourthLevel[cate.Named] {
 				cate.Children = append(cate.Children, key)
+				dt.FifthLevels = append(dt.FifthLevels, key)
 			}
+			dt.FourthLevels = append(dt.FourthLevels, cate.Named)
 		}
 	}
 
 	out := bytes.NewBufferString("")
 
 	t := template.Must(template.New("t.go.tmpl").ParseFiles("t.go.tmpl"))
-	if err = t.Execute(out, data{Categories: desireds, FirstLevels: firstLevels}); err != nil {
+	if err = t.Execute(out, dt); err != nil {
 		log.Fatalln("error template:", err)
 	}
 
