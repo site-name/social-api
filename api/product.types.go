@@ -93,7 +93,7 @@ func (p *Product) ChannelListings(ctx context.Context) ([]*ProductChannelListing
 	panic("not implemented")
 }
 
-func (p *Product) Thumbnail(ctx context.Context, args struct{ Size int32 }) (*Image, error) {
+func (p *Product) Thumbnail(ctx context.Context, args struct{ Size *int32 }) (*Image, error) {
 	panic("not implemented")
 }
 
@@ -186,6 +186,7 @@ func (p *ProductType) Weight(ctx context.Context) (*Weight, error) {
 }
 
 func (p *ProductType) AvailableAttributes(ctx context.Context, args struct {
+	Filter *AttributeFilterInput
 	Before *string
 	After  *string
 	First  *int32

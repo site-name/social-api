@@ -1401,37 +1401,6 @@ type GatewayConfigLine struct {
 	Value *string `json:"value"`
 }
 
-type GiftCard struct {
-	IsActive        bool            `json:"isActive"`
-	ExpiryDate      *Date           `json:"expiryDate"`
-	Tag             *string         `json:"tag"`
-	Created         DateTime        `json:"created"`
-	LastUsedOn      *DateTime       `json:"lastUsedOn"`
-	InitialBalance  *Money          `json:"initialBalance"`
-	CurrentBalance  *Money          `json:"currentBalance"`
-	ID              string          `json:"id"`
-	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
-	Metadata        []*MetadataItem `json:"metadata"`
-	DisplayCode     string          `json:"displayCode"`
-
-	createdByEmail *string
-	usedByEmail    *string
-	code           string
-	usedByID       *string
-	createdByID    *string
-	productID      *string
-
-	// Code            string           `json:"code"`
-	// CreatedByEmail  *string          `json:"createdByEmail"`
-	// UsedByEmail     *string          `json:"usedByEmail"`
-	// App             *App             `json:"app"`
-	// Product         *Product         `json:"product"`
-	// Events          []*GiftCardEvent `json:"events"`
-	// BoughtInChannel *string          `json:"boughtInChannel"`
-	// CreatedBy       *User            `json:"createdBy"`
-	// UsedBy          *User            `json:"usedBy"`
-}
-
 type GiftCardActivate struct {
 	GiftCard *GiftCard        `json:"giftCard"`
 	Errors   []*GiftCardError `json:"errors"`

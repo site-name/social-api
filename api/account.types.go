@@ -19,7 +19,7 @@ import (
 /*---------------------------- Address --------------------------------*/
 
 type Address struct {
-	*model.Address
+	model.Address
 }
 
 // SystemAddressToGraphqlAddress convert single database address to single graphql address
@@ -27,7 +27,7 @@ func SystemAddressToGraphqlAddress(address *model.Address) *Address {
 	if address == nil {
 		return nil
 	}
-	return &Address{address}
+	return &Address{*address}
 }
 
 func (a *Address) Country(ctx context.Context) (*CountryDisplay, error) {
@@ -407,21 +407,17 @@ func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
 	return DataloaderResultMap(results, SystemCustomerEventToGraphqlCustomerEvent), nil
 }
 
-func (u *User) Note(ctx context.Context) (string, error) {
+func (u *User) Note(ctx context.Context) (*string, error) {
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageUsers, model.PermissionManageStaff) {
-		return "", model.NewAppError("user.Note", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+		return nil, model.NewAppError("user.Note", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}
 
-	if u.note != nil {
-		return *u.note, nil
-	}
-
-	return "", nil
+	return u.note, nil
 }
 
 func (u *User) EditableGroups(ctx context.Context) ([]*Group, error) {

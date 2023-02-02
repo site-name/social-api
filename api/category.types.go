@@ -7,10 +7,16 @@ import (
 )
 
 type Category struct {
+	Id              string          `json:"id"`
+	Name            string          `json:"name"`
+	SeoTitle        *string         `json:"seoTitle"`
+	SeoDescription  *string         `json:"seoDescription"`
+	Slug            string          `json:"slug"`
 	Description     JSONString      `json:"description"`
 	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
 	Metadata        []*MetadataItem `json:"metadata"`
-	model.Category
+
+	*model.Category
 
 	// BackgroundImage *Image          `json:"backgroundImage"`
 	// Level           int32           `json:"level"`
@@ -27,10 +33,15 @@ func systemCategoryToGraphqlCategory(c *model.Category) *Category {
 	}
 
 	return &Category{
+		Id:              c.Id,
+		Name:            c.Name,
+		Slug:            c.Slug,
+		SeoTitle:        &c.SeoTitle,
+		SeoDescription:  &c.SeoDescription,
 		Description:     JSONString(c.Description),
 		Metadata:        MetadataToSlice(c.Metadata),
 		PrivateMetadata: MetadataToSlice(c.PrivateMetadata),
-		Category:        *c,
+		Category:        c,
 	}
 }
 
@@ -43,6 +54,10 @@ func (c *Category) Translation(ctx context.Context, args struct{ LanguageCode La
 }
 
 func (c *Category) Parent(ctx context.Context) (*Category, error) {
+	panic("not implemented")
+}
+
+func (c *Category) Level(ctx context.Context) (int32, error) {
 	panic("not implemented")
 }
 
@@ -65,10 +80,11 @@ func (c *Category) Children(ctx context.Context, args struct {
 }
 
 func (c *Category) Products(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
+	Channel *string
+	Before  *string
+	After   *string
+	First   *int32
+	Last    *int32
 }) (*ProductCountableConnection, error) {
 	panic("not implemented")
 }

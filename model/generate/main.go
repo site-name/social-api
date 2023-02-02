@@ -160,20 +160,16 @@ func main() {
 			for key := range secondLevel[cate.Named] {
 				cate.Children = append(cate.Children, key)
 			}
-			dt.SecondLevels = append(dt.SecondLevels, cate.Named)
 
 		case thirdLevel[cate.Named] != nil:
 			for key := range thirdLevel[cate.Named] {
 				cate.Children = append(cate.Children, key)
 			}
-			dt.ThirdLevels = append(dt.ThirdLevels, cate.Named)
 
 		case fourthLevel[cate.Named] != nil:
 			for key := range fourthLevel[cate.Named] {
 				cate.Children = append(cate.Children, key)
-				dt.FifthLevels = append(dt.FifthLevels, key)
 			}
-			dt.FourthLevels = append(dt.FourthLevels, cate.Named)
 		}
 	}
 

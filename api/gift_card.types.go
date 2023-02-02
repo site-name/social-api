@@ -133,6 +133,37 @@ func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCa
 	return res
 }
 
+type GiftCard struct {
+	IsActive        bool            `json:"isActive"`
+	ExpiryDate      *Date           `json:"expiryDate"`
+	Tag             *string         `json:"tag"`
+	Created         DateTime        `json:"created"`
+	LastUsedOn      *DateTime       `json:"lastUsedOn"`
+	InitialBalance  *Money          `json:"initialBalance"`
+	CurrentBalance  *Money          `json:"currentBalance"`
+	ID              string          `json:"id"`
+	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
+	Metadata        []*MetadataItem `json:"metadata"`
+	DisplayCode     string          `json:"displayCode"`
+
+	createdByEmail *string
+	usedByEmail    *string
+	code           string
+	usedByID       *string
+	createdByID    *string
+	productID      *string
+
+	// Code            string           `json:"code"`
+	// CreatedByEmail  *string          `json:"createdByEmail"`
+	// UsedByEmail     *string          `json:"usedByEmail"`
+	// App             *App             `json:"app"`
+	// Product         *Product         `json:"product"`
+	// Events          []*GiftCardEvent `json:"events"`
+	// BoughtInChannel *string          `json:"boughtInChannel"`
+	// CreatedBy       *User            `json:"createdBy"`
+	// UsedBy          *User            `json:"usedBy"`
+}
+
 func SystemGiftcardToGraphqlGiftcard(gc *model.GiftCard) *GiftCard {
 	if gc == nil {
 		return nil
@@ -382,7 +413,7 @@ func (g *GiftCard) Code(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	resolveCode := func(u *model.User) (string, *model.AppError) {
+	resolveCode := func(u *model.User) (string, error) {
 		if (g.usedByEmail == nil && embedCtx.App.Srv().
 			AccountService().
 			SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageGiftcard)) ||

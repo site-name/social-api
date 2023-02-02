@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"strings"
 
 	"github.com/sitename/sitename/model"
@@ -65,6 +66,39 @@ func SystemShippingMethodToGraphqlShippingMethod(m *model.ShippingMethod) *Shipp
 	return res
 }
 
+func (s *ShippingMethod) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*ShippingMethodTranslation, error) {
+	panic("not implemented")
+}
+
+func (s *ShippingMethod) ChannelListings(ctx context.Context) ([]*ShippingMethodChannelListing, error) {
+	panic("not implemented")
+}
+
+func (s *ShippingMethod) Price(ctx context.Context) (*Money, error) {
+	panic("not implemented")
+}
+
+func (s *ShippingMethod) MaximumOrderPrice(ctx context.Context) (*Money, error) {
+	panic("not implemented")
+}
+
+func (s *ShippingMethod) MinimumOrderPrice(ctx context.Context) (*Money, error) {
+	panic("not implemented")
+}
+
+func (s *ShippingMethod) PostalCodeRules(ctx context.Context) ([]*ShippingMethodPostalCodeRule, error) {
+	panic("not implemented")
+}
+
+func (s *ShippingMethod) ExcludedProducts(ctx context.Context, args struct {
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
+}) (*ProductCountableConnection, error) {
+	panic("not implemented")
+}
+
 // ---------------- shipping zone -------------------------
 
 type ShippingZone struct {
@@ -97,14 +131,7 @@ func SystemShippingZoneToGraphqlShippingZone(s *model.ShippingZone) *ShippingZon
 	}
 
 	if s.Countries != "" {
-		countries := strings.ToUpper(s.Countries)
-		var splitCountries []string
-
-		if strings.Count(countries, ",") > 0 {
-			splitCountries = strings.Split(countries, ",")
-		} else {
-			splitCountries = strings.Fields(countries)
-		}
+		splitCountries := strings.FieldsFunc(s.Countries, func(r rune) bool { return r == ' ' || r == ',' })
 
 		for _, code := range splitCountries {
 			code = strings.TrimSpace(code)
@@ -117,4 +144,20 @@ func SystemShippingZoneToGraphqlShippingZone(s *model.ShippingZone) *ShippingZon
 	}
 
 	return res
+}
+
+func (s *ShippingZone) PriceRange(ctx context.Context) (*MoneyRange, error) {
+	panic("not implemented")
+}
+
+func (s *ShippingZone) ShippingMethods(ctx context.Context) ([]*ShippingMethod, error) {
+	panic("not implemented")
+}
+
+func (s *ShippingZone) Warehouses(ctx context.Context) ([]*Warehouse, error) {
+	panic("not implemented")
+}
+
+func (s *ShippingZone) Channels(ctx context.Context) ([]*Channel, error) {
+	panic("not implemented")
 }

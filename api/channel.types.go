@@ -24,23 +24,23 @@ type Channel struct {
 	// HasOrders      bool            `json:"hasOrders"`
 }
 
-func (c *Channel) HasOrders(ctx context.Context) (*bool, error) {
+func (c *Channel) HasOrders(ctx context.Context) (bool, error) {
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
 	// check if current user has channel management
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageChannels) {
-		return nil, model.NewAppError("Channel.HasOrders", ErrorUnauthorized, nil, "you are not allowed to perform this", http.StatusUnauthorized)
+		return false, model.NewAppError("Channel.HasOrders", ErrorUnauthorized, nil, "you are not allowed to perform this", http.StatusUnauthorized)
 	}
 
 	channel, err := ChannelWithHasOrdersByIdLoader.Load(ctx, c.ID)()
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
-	return model.NewPrimitive(channel.GetHasOrders()), nil
+	return channel.GetHasOrders(), nil
 }
 
 func SystemChannelToGraphqlChannel(ch *model.Channel) *Channel {

@@ -11,25 +11,25 @@ var (
 		Name:   "Thời Trang Nữ",
 		NameEn: "Women Clothes",
 		Children: Categories{
-			CategoryWomenClothesSkirts,
-			CategoryWomenClothesJeans,
-			CategoryWomenClothesWeddingDresses,
-			CategoryWomenClothesFabric,
-			CategoryWomenClothesSweatersCardigans,
-			CategoryWomenClothesLingerieUnderwear,
-			CategoryWomenClothesSocksStockings,
 			CategoryWomenClothesPantsLeggings,
 			CategoryWomenClothesShorts,
 			CategoryWomenClothesDresses,
 			CategoryWomenClothesJumpsuitsPlaysuitsOveralls,
-			CategoryWomenClothesSleepwearPajamas,
+			CategoryWomenClothesCostumes,
 			CategoryWomenClothesTops,
-			CategoryWomenClothesJacketsCoatsVests,
-			CategoryWomenClothesHoodiesSweatshirts,
+			CategoryWomenClothesJeans,
 			CategoryWomenClothesSets,
 			CategoryWomenClothesMaternityWear,
 			CategoryWomenClothesTraditionalWear,
-			CategoryWomenClothesCostumes,
+			CategoryWomenClothesFabric,
+			CategoryWomenClothesSocksStockings,
+			CategoryWomenClothesSkirts,
+			CategoryWomenClothesWeddingDresses,
+			CategoryWomenClothesJacketsCoatsVests,
+			CategoryWomenClothesSweatersCardigans,
+			CategoryWomenClothesHoodiesSweatshirts,
+			CategoryWomenClothesLingerieUnderwear,
+			CategoryWomenClothesSleepwearPajamas,
 		},
 	}
 	CategoryWomenClothesTops = &Category{
@@ -38,12 +38,12 @@ var (
 		Name:   "Áo",
 		NameEn: "Tops",
 		Children: Categories{
-			CategoryWomenClothesTopsShirtsBlouses,
-			CategoryWomenClothesTopsPoloShirts,
-			CategoryWomenClothesTopsBodysuits,
 			CategoryWomenClothesTopsTanksCamisoles,
 			CategoryWomenClothesTopsTubeTops,
 			CategoryWomenClothesTopsTshirts,
+			CategoryWomenClothesTopsShirtsBlouses,
+			CategoryWomenClothesTopsPoloShirts,
+			CategoryWomenClothesTopsBodysuits,
 		},
 	}
 	CategoryWomenClothesTopsTanksCamisoles = &Category{
@@ -94,8 +94,8 @@ var (
 		Name:   "Quần",
 		NameEn: "Pants & Leggings",
 		Children: Categories{
-			CategoryWomenClothesPantsLeggingsLeggingsTreggings,
 			CategoryWomenClothesPantsLeggingsPants,
+			CategoryWomenClothesPantsLeggingsLeggingsTreggings,
 		},
 	}
 	CategoryWomenClothesPantsLeggingsLeggingsTreggings = &Category{
@@ -202,11 +202,11 @@ var (
 		Name:   "Áo khoác",
 		NameEn: "Jackets, Coats & Vests",
 		Children: Categories{
+			CategoryWomenClothesJacketsCoatsVestsBlazers,
 			CategoryWomenClothesJacketsCoatsVestsJackets,
 			CategoryWomenClothesJacketsCoatsVestsVests,
 			CategoryWomenClothesJacketsCoatsVestsWinterJacketsCoats,
 			CategoryWomenClothesJacketsCoatsVestsCapes,
-			CategoryWomenClothesJacketsCoatsVestsBlazers,
 		},
 	}
 	CategoryWomenClothesJacketsCoatsVestsWinterJacketsCoats = &Category{
@@ -313,14 +313,14 @@ var (
 		Name:   "Đồ lót",
 		NameEn: "Lingerie & Underwear",
 		Children: Categories{
+			CategoryWomenClothesLingerieUnderwearShapewear,
+			CategoryWomenClothesLingerieUnderwearSafetyPants,
 			CategoryWomenClothesLingerieUnderwearSexyLingerie,
 			CategoryWomenClothesLingerieUnderwearSets,
 			CategoryWomenClothesLingerieUnderwearBras,
 			CategoryWomenClothesLingerieUnderwearPanties,
 			CategoryWomenClothesLingerieUnderwearThermalInnerwear,
 			CategoryWomenClothesLingerieUnderwearBraAccessories,
-			CategoryWomenClothesLingerieUnderwearShapewear,
-			CategoryWomenClothesLingerieUnderwearSafetyPants,
 		},
 	}
 	CategoryWomenClothesLingerieUnderwearSets = &Category{
@@ -410,9 +410,9 @@ var (
 		Name:   "Đồ ngủ",
 		NameEn: "Sleepwear & Pajamas",
 		Children: Categories{
+			CategoryWomenClothesSleepwearPajamasKimonosRobes,
 			CategoryWomenClothesSleepwearPajamasPajamas,
 			CategoryWomenClothesSleepwearPajamasNightDresses,
-			CategoryWomenClothesSleepwearPajamasKimonosRobes,
 		},
 	}
 	CategoryWomenClothesSleepwearPajamasPajamas = &Category{
@@ -442,12 +442,12 @@ var (
 		Name:   "Đồ Bầu",
 		NameEn: "Maternity Wear",
 		Children: Categories{
-			CategoryWomenClothesMaternityWearMaternityBottoms,
-			CategoryWomenClothesMaternityWearNursingBras,
-			CategoryWomenClothesMaternityWearMaternityDresses,
 			CategoryWomenClothesMaternityWearMaternityTops,
 			CategoryWomenClothesMaternityWearBreastfeedingWear,
 			CategoryWomenClothesMaternityWearMaternitySets,
+			CategoryWomenClothesMaternityWearMaternityBottoms,
+			CategoryWomenClothesMaternityWearNursingBras,
+			CategoryWomenClothesMaternityWearMaternityDresses,
 		},
 	}
 	CategoryWomenClothesMaternityWearNursingBras = &Category{
@@ -498,11 +498,11 @@ var (
 		Name:   "Đồ truyền thống",
 		NameEn: "Traditional Wear",
 		Children: Categories{
+			CategoryWomenClothesTraditionalWearOther,
 			CategoryWomenClothesTraditionalWearTops,
 			CategoryWomenClothesTraditionalWearBottoms,
 			CategoryWomenClothesTraditionalWearSets,
 			CategoryWomenClothesTraditionalWearDresses,
-			CategoryWomenClothesTraditionalWearOther,
 		},
 	}
 	CategoryWomenClothesTraditionalWearTops = &Category{
@@ -553,13 +553,13 @@ var (
 		Name:   "Vải",
 		NameEn: "Fabric",
 		Children: Categories{
+			CategoryWomenClothesFabricDenim,
+			CategoryWomenClothesFabricCanvas,
+			CategoryWomenClothesFabricCotton,
 			CategoryWomenClothesFabricWool,
 			CategoryWomenClothesFabricVelvetSilkSatin,
 			CategoryWomenClothesFabricLeather,
 			CategoryWomenClothesFabricVinylNylon,
-			CategoryWomenClothesFabricDenim,
-			CategoryWomenClothesFabricCanvas,
-			CategoryWomenClothesFabricCotton,
 		},
 	}
 	CategoryWomenClothesFabricCotton = &Category{
@@ -641,22 +641,22 @@ var (
 		Name:   "Thời Trang Nam",
 		NameEn: "Men Clothes",
 		Children: Categories{
-			CategoryMenClothesWinterJacketsCoats,
-			CategoryMenClothesSets,
+			CategoryMenClothesHoodiesSweatshirts,
+			CategoryMenClothesTops,
 			CategoryMenClothesTraditionalWear,
 			CategoryMenClothesOccupationalAttire,
-			CategoryMenClothesSocks,
-			CategoryMenClothesSweatersCardigans,
+			CategoryMenClothesJeans,
+			CategoryMenClothesWinterJacketsCoats,
 			CategoryMenClothesInnerwearUnderwear,
 			CategoryMenClothesCostumes,
-			CategoryMenClothesJeans,
-			CategoryMenClothesHoodiesSweatshirts,
 			CategoryMenClothesPants,
 			CategoryMenClothesShorts,
 			CategoryMenClothesSleepwear,
+			CategoryMenClothesSets,
+			CategoryMenClothesSocks,
+			CategoryMenClothesSweatersCardigans,
 			CategoryMenClothesJacketsCoatsVests,
 			CategoryMenClothesSuits,
-			CategoryMenClothesTops,
 		},
 	}
 	CategoryMenClothesJeans = &Category{
@@ -783,9 +783,9 @@ var (
 		Name:   "Quần dài",
 		NameEn: "Pants",
 		Children: Categories{
+			CategoryMenClothesPantsCargo,
 			CategoryMenClothesPantsJoggers,
 			CategoryMenClothesPantsPants,
-			CategoryMenClothesPantsCargo,
 		},
 	}
 	CategoryMenClothesPantsCargo = &Category{
@@ -822,10 +822,10 @@ var (
 		Name:   "Áo",
 		NameEn: "Tops",
 		Children: Categories{
+			CategoryMenClothesTopsShirts,
 			CategoryMenClothesTopsPoloShirts,
 			CategoryMenClothesTopsTShirts,
 			CategoryMenClothesTopsTanks,
-			CategoryMenClothesTopsShirts,
 		},
 	}
 	CategoryMenClothesTopsShirts = &Category{
@@ -908,9 +908,9 @@ var (
 		Name:   "Trang phục truyền thống",
 		NameEn: "Traditional Wear",
 		Children: Categories{
+			CategoryMenClothesTraditionalWearTops,
 			CategoryMenClothesTraditionalWearBottoms,
 			CategoryMenClothesTraditionalWearSets,
-			CategoryMenClothesTraditionalWearTops,
 		},
 	}
 	CategoryMenClothesTraditionalWearTops = &Category{
@@ -961,15 +961,15 @@ var (
 		Name:   "Sắc Đẹp",
 		NameEn: "Beauty",
 		Children: Categories{
+			CategoryBeautyPerfumesFragrances,
+			CategoryBeautyMakeup,
 			CategoryBeautyBeautySetsPackages,
 			CategoryBeautyBathBodyCare,
 			CategoryBeautyHandFootNailCare,
+			CategoryBeautyHairCare,
 			CategoryBeautyMensCare,
 			CategoryBeautyBeautyTools,
 			CategoryBeautySkincare,
-			CategoryBeautyHairCare,
-			CategoryBeautyPerfumesFragrances,
-			CategoryBeautyMakeup,
 		},
 	}
 	CategoryBeautyHandFootNailCare = &Category{
@@ -978,9 +978,9 @@ var (
 		Name:   "Chăm sóc tay, chân & móng",
 		NameEn: "Hand, Foot & Nail Care",
 		Children: Categories{
+			CategoryBeautyHandFootNailCareFootCare,
 			CategoryBeautyHandFootNailCareNailCare,
 			CategoryBeautyHandFootNailCareHandCare,
-			CategoryBeautyHandFootNailCareFootCare,
 		},
 	}
 	CategoryBeautyHandFootNailCareHandCare = &Category{
@@ -1021,10 +1021,10 @@ var (
 		Name:   "Chăm sóc chân",
 		NameEn: "Foot Care",
 		Children: Categories{
-			CategoryBeautyHandFootNailCareFootCareOther,
 			CategoryBeautyHandFootNailCareFootCareFootDeodorant,
 			CategoryBeautyHandFootNailCareFootCareFootMasks,
 			CategoryBeautyHandFootNailCareFootCareLotionCreamScrubs,
+			CategoryBeautyHandFootNailCareFootCareOther,
 		},
 	}
 	CategoryBeautyHandFootNailCareFootCareFootDeodorant = &Category{
@@ -1061,13 +1061,13 @@ var (
 		Name:   "Chăm sóc móng",
 		NameEn: "Nail Care",
 		Children: Categories{
-			CategoryBeautyHandFootNailCareNailCareBaseTopCoat,
 			CategoryBeautyHandFootNailCareNailCareNailPolish,
 			CategoryBeautyHandFootNailCareNailCareNailPolishRemover,
 			CategoryBeautyHandFootNailCareNailCareNailTreatment,
 			CategoryBeautyHandFootNailCareNailCareArtificialNail,
 			CategoryBeautyHandFootNailCareNailCareNailArtSticker,
 			CategoryBeautyHandFootNailCareNailCareManicureToolsDevices,
+			CategoryBeautyHandFootNailCareNailCareBaseTopCoat,
 		},
 	}
 	CategoryBeautyHandFootNailCareNailCareBaseTopCoat = &Category{
@@ -1125,12 +1125,12 @@ var (
 		Name:   "Chăm sóc tóc",
 		NameEn: "Hair Care",
 		Children: Categories{
-			CategoryBeautyHairCareOther,
-			CategoryBeautyHairCareShampoo,
-			CategoryBeautyHairCareHairColour,
 			CategoryBeautyHairCareHairTreatment,
 			CategoryBeautyHairCareHairandScalpConditioner,
 			CategoryBeautyHairCareHairStyling,
+			CategoryBeautyHairCareOther,
+			CategoryBeautyHairCareShampoo,
+			CategoryBeautyHairCareHairColour,
 		},
 	}
 	CategoryBeautyHairCareShampoo = &Category{
@@ -1181,10 +1181,10 @@ var (
 		Name:   "Chăm sóc nam giới",
 		NameEn: "Men's Care",
 		Children: Categories{
-			CategoryBeautyMensCareSkinCare,
 			CategoryBeautyMensCareShavingGrooming,
 			CategoryBeautyMensCareHairCare,
 			CategoryBeautyMensCareBathBodyCare,
+			CategoryBeautyMensCareSkinCare,
 		},
 	}
 	CategoryBeautyMensCareBathBodyCare = &Category{
@@ -1232,14 +1232,14 @@ var (
 		Name:   "Sản phẩm cạo râu & hớt tóc",
 		NameEn: "Shaving & Grooming",
 		Children: Categories{
+			CategoryBeautyMensCareShavingGroomingOther,
+			CategoryBeautyMensCareShavingGroomingAftershave,
 			CategoryBeautyMensCareShavingGroomingCreamsFoamsGels,
 			CategoryBeautyMensCareShavingGroomingRazorsBlades,
 			CategoryBeautyMensCareShavingGroomingShavers,
 			CategoryBeautyMensCareShavingGroomingShavingBrushes,
 			CategoryBeautyMensCareShavingGroomingTrimmersClippersMultifunctional,
 			CategoryBeautyMensCareShavingGroomingShavingAccessories,
-			CategoryBeautyMensCareShavingGroomingOther,
-			CategoryBeautyMensCareShavingGroomingAftershave,
 		},
 	}
 	CategoryBeautyMensCareShavingGroomingAftershave = &Category{
@@ -1318,10 +1318,10 @@ var (
 		Name:   "Trang điểm",
 		NameEn: "Makeup",
 		Children: Categories{
+			CategoryBeautyMakeupMakeupRemovers,
 			CategoryBeautyMakeupFace,
 			CategoryBeautyMakeupEyes,
 			CategoryBeautyMakeupLips,
-			CategoryBeautyMakeupMakeupRemovers,
 		},
 	}
 	CategoryBeautyMakeupFace = &Category{
@@ -1330,14 +1330,14 @@ var (
 		Name:   "Trang điểm mặt",
 		NameEn: "Face",
 		Children: Categories{
-			CategoryBeautyMakeupFaceBBCCCream,
 			CategoryBeautyMakeupFacePowder,
-			CategoryBeautyMakeupFaceSettingFinishingSpray,
+			CategoryBeautyMakeupFaceConcealerCorrector,
+			CategoryBeautyMakeupFaceBlush,
 			CategoryBeautyMakeupFaceMakeupBasePrimer,
 			CategoryBeautyMakeupFaceFoundation,
-			CategoryBeautyMakeupFaceConcealerCorrector,
+			CategoryBeautyMakeupFaceBBCCCream,
 			CategoryBeautyMakeupFaceBronzerContourHighlighter,
-			CategoryBeautyMakeupFaceBlush,
+			CategoryBeautyMakeupFaceSettingFinishingSpray,
 			CategoryBeautyMakeupFaceOther,
 		},
 	}
@@ -1458,11 +1458,11 @@ var (
 		Name:   "Trang điểm môi",
 		NameEn: "Lips",
 		Children: Categories{
-			CategoryBeautyMakeupLipsLipTintStain,
-			CategoryBeautyMakeupLipsLipPlumper,
 			CategoryBeautyMakeupLipsLipstick,
 			CategoryBeautyMakeupLipsLipGloss,
 			CategoryBeautyMakeupLipsLipLiner,
+			CategoryBeautyMakeupLipsLipTintStain,
+			CategoryBeautyMakeupLipsLipPlumper,
 		},
 	}
 	CategoryBeautyMakeupLipsLipstick = &Category{
@@ -1513,12 +1513,12 @@ var (
 		Name:   "Dụng cụ làm đẹp",
 		NameEn: "Beauty Tools",
 		Children: Categories{
-			CategoryBeautyBeautyToolsHairTools,
-			CategoryBeautyBeautyToolsOther,
 			CategoryBeautyBeautyToolsMakeupAccessories,
 			CategoryBeautyBeautyToolsFacialCareTools,
 			CategoryBeautyBeautyToolsBodySlimmingTools,
 			CategoryBeautyBeautyToolsHairRemovalTools,
+			CategoryBeautyBeautyToolsHairTools,
+			CategoryBeautyBeautyToolsOther,
 		},
 	}
 	CategoryBeautyBeautyToolsMakeupAccessories = &Category{
@@ -1528,16 +1528,16 @@ var (
 		NameEn: "Makeup Accessories",
 		Children: Categories{
 			CategoryBeautyBeautyToolsMakeupAccessoriesFalseEyelashes,
-			CategoryBeautyBeautyToolsMakeupAccessoriesCottonPadsandBuds,
-			CategoryBeautyBeautyToolsMakeupAccessoriesMirrors,
-			CategoryBeautyBeautyToolsMakeupAccessoriesEyebrowTemplates,
-			CategoryBeautyBeautyToolsMakeupAccessoriesSpongesApplicators,
-			CategoryBeautyBeautyToolsMakeupAccessoriesEyelashCurlers,
 			CategoryBeautyBeautyToolsMakeupAccessoriesEyelidTapeGlue,
 			CategoryBeautyBeautyToolsMakeupAccessoriesPencilSharpeners,
 			CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBagsOrganizers,
-			CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBrushCleaners,
+			CategoryBeautyBeautyToolsMakeupAccessoriesEyelashCurlers,
+			CategoryBeautyBeautyToolsMakeupAccessoriesEyebrowTemplates,
 			CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBrushes,
+			CategoryBeautyBeautyToolsMakeupAccessoriesSpongesApplicators,
+			CategoryBeautyBeautyToolsMakeupAccessoriesCottonPadsandBuds,
+			CategoryBeautyBeautyToolsMakeupAccessoriesMirrors,
+			CategoryBeautyBeautyToolsMakeupAccessoriesMakeupBrushCleaners,
 		},
 	}
 	CategoryBeautyBeautyToolsMakeupAccessoriesCottonPadsandBuds = &Category{
@@ -1623,9 +1623,9 @@ var (
 		Name:   "Dụng cụ chăm sóc da mặt",
 		NameEn: "Facial Care Tools",
 		Children: Categories{
+			CategoryBeautyBeautyToolsFacialCareToolsFacialCleansingTools,
 			CategoryBeautyBeautyToolsFacialCareToolsFacialSteamers,
 			CategoryBeautyBeautyToolsFacialCareToolsFacialSlimmingMassageTools,
-			CategoryBeautyBeautyToolsFacialCareToolsFacialCleansingTools,
 		},
 	}
 	CategoryBeautyBeautyToolsFacialCareToolsFacialSteamers = &Category{
@@ -1669,11 +1669,11 @@ var (
 		Name:   "Dụng cụ chăm sóc tóc",
 		NameEn: "Hair Tools",
 		Children: Categories{
-			CategoryBeautyBeautyToolsHairToolsOther,
-			CategoryBeautyBeautyToolsHairToolsBrushesCombs,
 			CategoryBeautyBeautyToolsHairToolsHairDryers,
 			CategoryBeautyBeautyToolsHairToolsHairStylingAppliances,
 			CategoryBeautyBeautyToolsHairToolsHeatlessStylingTools,
+			CategoryBeautyBeautyToolsHairToolsOther,
+			CategoryBeautyBeautyToolsHairToolsBrushesCombs,
 		},
 	}
 	CategoryBeautyBeautyToolsHairToolsBrushesCombs = &Category{
@@ -1724,19 +1724,19 @@ var (
 		Name:   "Chăm sóc da mặt",
 		NameEn: "Skincare",
 		Children: Categories{
+			CategoryBeautySkincareFacialOil,
 			CategoryBeautySkincareEyeTreatment,
-			CategoryBeautySkincareFaceSunscreen,
-			CategoryBeautySkincareBlottingPaper,
 			CategoryBeautySkincareAcneTreatment,
 			CategoryBeautySkincareFacialMoisturizer,
-			CategoryBeautySkincareFacialOil,
+			CategoryBeautySkincareToner,
+			CategoryBeautySkincareFacialSerumEssence,
 			CategoryBeautySkincareFaceScrubPeel,
 			CategoryBeautySkincareFaceMaskPacks,
 			CategoryBeautySkincareLipsTreatment,
+			CategoryBeautySkincareFaceSunscreen,
 			CategoryBeautySkincareAfterSunFaceCare,
 			CategoryBeautySkincareFacialCleanser,
-			CategoryBeautySkincareToner,
-			CategoryBeautySkincareFacialSerumEssence,
+			CategoryBeautySkincareBlottingPaper,
 		},
 	}
 	CategoryBeautySkincareFacialCleanser = &Category{
@@ -1893,17 +1893,17 @@ var (
 		Name:   "Tắm & chăm sóc cơ thể",
 		NameEn: "Bath & Body Care",
 		Children: Categories{
-			CategoryBeautyBathBodyCareBodyCreamLotionButter,
 			CategoryBeautyBathBodyCareMassageOil,
-			CategoryBeautyBathBodyCareHairRemovalCreamWax,
 			CategoryBeautyBathBodyCareSunCare,
 			CategoryBeautyBathBodyCareBreastCare,
-			CategoryBeautyBathBodyCareOther,
-			CategoryBeautyBathBodyCareBodyWashSoap,
 			CategoryBeautyBathBodyCareBodyMasks,
 			CategoryBeautyBathBodyCareBodyOil,
 			CategoryBeautyBathBodyCareBodyDeodorants,
+			CategoryBeautyBathBodyCareHairRemovalCreamWax,
+			CategoryBeautyBathBodyCareOther,
+			CategoryBeautyBathBodyCareBodyWashSoap,
 			CategoryBeautyBathBodyCareBodyScrubPeel,
+			CategoryBeautyBathBodyCareBodyCreamLotionButter,
 		},
 	}
 	CategoryBeautyBathBodyCareBodyWashSoap = &Category{
@@ -2058,7 +2058,6 @@ var (
 		Name:   "Vật tư y tế",
 		NameEn: "Medical Supplies",
 		Children: Categories{
-			CategoryHealthMedicalSuppliesStethoscopes,
 			CategoryHealthMedicalSuppliesLaboratoryTools,
 			CategoryHealthMedicalSuppliesMedicalGlovesMasks,
 			CategoryHealthMedicalSuppliesInjuryDisabilitySupport,
@@ -2066,6 +2065,7 @@ var (
 			CategoryHealthMedicalSuppliesScaleBodyFatAnalyzers,
 			CategoryHealthMedicalSuppliesNasalCare,
 			CategoryHealthMedicalSuppliesFirstAidSupplies,
+			CategoryHealthMedicalSuppliesStethoscopes,
 		},
 	}
 	CategoryHealthMedicalSuppliesHealthMonitorsTests = &Category{
@@ -2237,7 +2237,6 @@ var (
 		Name:   "Chăm sóc cá nhân",
 		NameEn: "Personal Care",
 		Children: Categories{
-			CategoryHealthPersonalCareEarCare,
 			CategoryHealthPersonalCareOralCare,
 			CategoryHealthPersonalCareAdultDiapersIncontinence,
 			CategoryHealthPersonalCareFeminineCare,
@@ -2245,6 +2244,7 @@ var (
 			CategoryHealthPersonalCareInsectRepellents,
 			CategoryHealthPersonalCareHandSanitizers,
 			CategoryHealthPersonalCareEyeCare,
+			CategoryHealthPersonalCareEarCare,
 		},
 	}
 	CategoryHealthPersonalCareHandSanitizers = &Category{
@@ -2299,15 +2299,15 @@ var (
 		Name:   "Vệ sinh răng miệng",
 		NameEn: "Oral Care",
 		Children: Categories{
-			CategoryHealthPersonalCareOralCareDentalFloss,
+			CategoryHealthPersonalCareOralCareManualToothbrushes,
 			CategoryHealthPersonalCareOralCareMouthWash,
-			CategoryHealthPersonalCareOralCareOrthodonticAccessories,
-			CategoryHealthPersonalCareOralCareToothpastes,
-			CategoryHealthPersonalCareOralCareElectricToothbrushesAccessories,
 			CategoryHealthPersonalCareOralCareDentureCare,
 			CategoryHealthPersonalCareOralCareTeethWhitening,
+			CategoryHealthPersonalCareOralCareOrthodonticAccessories,
+			CategoryHealthPersonalCareOralCareElectricToothbrushesAccessories,
+			CategoryHealthPersonalCareOralCareToothpastes,
+			CategoryHealthPersonalCareOralCareDentalFloss,
 			CategoryHealthPersonalCareOralCareOther,
-			CategoryHealthPersonalCareOralCareManualToothbrushes,
 		},
 	}
 	CategoryHealthPersonalCareOralCareManualToothbrushes = &Category{
@@ -2456,9 +2456,9 @@ var (
 		Name:   "Hỗ trợ tình dục",
 		NameEn: "Sexual Wellness",
 		Children: Categories{
+			CategoryHealthSexualWellnessPerformanceEnhancement,
 			CategoryHealthSexualWellnessCondoms,
 			CategoryHealthSexualWellnessLubricants,
-			CategoryHealthSexualWellnessPerformanceEnhancement,
 		},
 	}
 	CategoryHealthSexualWellnessCondoms = &Category{
@@ -2488,21 +2488,21 @@ var (
 		Name:   "Phụ Kiện Thời Trang",
 		NameEn: "Fashion Accessories",
 		Children: Categories{
-			CategoryFashionAccessoriesNecktiesBowTiesCravats,
+			CategoryFashionAccessoriesInvestmentPreciousMetals,
 			CategoryFashionAccessoriesAccessoriesSetsPackages,
+			CategoryFashionAccessoriesAnklets,
+			CategoryFashionAccessoriesBelts,
+			CategoryFashionAccessoriesNecklaces,
+			CategoryFashionAccessoriesNecktiesBowTiesCravats,
+			CategoryFashionAccessoriesAdditionalAccessories,
 			CategoryFashionAccessoriesRings,
 			CategoryFashionAccessoriesEarrings,
 			CategoryFashionAccessoriesGloves,
-			CategoryFashionAccessoriesHatsCaps,
-			CategoryFashionAccessoriesEyewear,
-			CategoryFashionAccessoriesInvestmentPreciousMetals,
-			CategoryFashionAccessoriesAdditionalAccessories,
-			CategoryFashionAccessoriesBraceletsBangles,
-			CategoryFashionAccessoriesAnklets,
-			CategoryFashionAccessoriesBelts,
-			CategoryFashionAccessoriesScarvesShawls,
 			CategoryFashionAccessoriesHairAccessories,
-			CategoryFashionAccessoriesNecklaces,
+			CategoryFashionAccessoriesHatsCaps,
+			CategoryFashionAccessoriesScarvesShawls,
+			CategoryFashionAccessoriesBraceletsBangles,
+			CategoryFashionAccessoriesEyewear,
 		},
 	}
 	CategoryFashionAccessoriesRings = &Category{
@@ -2539,11 +2539,11 @@ var (
 		Name:   "Phụ kiện tóc",
 		NameEn: "Hair Accessories",
 		Children: Categories{
+			CategoryFashionAccessoriesHairAccessoriesHeadpiecesTiarasFlowerCrowns,
 			CategoryFashionAccessoriesHairAccessoriesHeadbands,
 			CategoryFashionAccessoriesHairAccessoriesHairTiesRibbonsScrunchies,
 			CategoryFashionAccessoriesHairAccessoriesHairClipsHairPins,
 			CategoryFashionAccessoriesHairAccessoriesWigsExtensions,
-			CategoryFashionAccessoriesHairAccessoriesHeadpiecesTiarasFlowerCrowns,
 		},
 	}
 	CategoryFashionAccessoriesHairAccessoriesHeadbands = &Category{
@@ -2655,11 +2655,11 @@ var (
 		Name:   "Kim loại quý",
 		NameEn: "Investment Precious Metals",
 		Children: Categories{
-			CategoryFashionAccessoriesInvestmentPreciousMetalsJade,
-			CategoryFashionAccessoriesInvestmentPreciousMetalsOther,
 			CategoryFashionAccessoriesInvestmentPreciousMetalsPlatinumKGold,
 			CategoryFashionAccessoriesInvestmentPreciousMetalsSilver,
 			CategoryFashionAccessoriesInvestmentPreciousMetalsDiamond,
+			CategoryFashionAccessoriesInvestmentPreciousMetalsJade,
+			CategoryFashionAccessoriesInvestmentPreciousMetalsOther,
 		},
 	}
 	CategoryFashionAccessoriesInvestmentPreciousMetalsPlatinumKGold = &Category{
@@ -2717,14 +2717,14 @@ var (
 		Name:   "Phụ kiện thêm",
 		NameEn: "Additional Accessories",
 		Children: Categories{
-			CategoryFashionAccessoriesAdditionalAccessoriesOther,
-			CategoryFashionAccessoriesAdditionalAccessoriesBroochesPins,
-			CategoryFashionAccessoriesAdditionalAccessoriesPatches,
-			CategoryFashionAccessoriesAdditionalAccessoriesCharmsPendantsOrnaments,
 			CategoryFashionAccessoriesAdditionalAccessoriesCufflinks,
 			CategoryFashionAccessoriesAdditionalAccessoriesTattoos,
 			CategoryFashionAccessoriesAdditionalAccessoriesMasks,
 			CategoryFashionAccessoriesAdditionalAccessoriesHandkerchiefs,
+			CategoryFashionAccessoriesAdditionalAccessoriesOther,
+			CategoryFashionAccessoriesAdditionalAccessoriesBroochesPins,
+			CategoryFashionAccessoriesAdditionalAccessoriesPatches,
+			CategoryFashionAccessoriesAdditionalAccessoriesCharmsPendantsOrnaments,
 		},
 	}
 	CategoryFashionAccessoriesAdditionalAccessoriesBroochesPins = &Category{
@@ -2796,14 +2796,14 @@ var (
 		Name:   "Thiết Bị Điện Gia Dụng",
 		NameEn: "Home Appliances",
 		Children: Categories{
-			CategoryHomeAppliancesProjectorsAccessories,
-			CategoryHomeAppliancesSmallHouseholdAppliances,
 			CategoryHomeAppliancesLargeHouseholdAppliances,
 			CategoryHomeAppliancesTVsAccessories,
 			CategoryHomeAppliancesKitchenAppliances,
 			CategoryHomeAppliancesElectricalCircuitryParts,
 			CategoryHomeAppliancesBatteries,
 			CategoryHomeAppliancesRemoteControls,
+			CategoryHomeAppliancesProjectorsAccessories,
+			CategoryHomeAppliancesSmallHouseholdAppliances,
 		},
 	}
 	CategoryHomeAppliancesProjectorsAccessories = &Category{
@@ -2812,9 +2812,9 @@ var (
 		Name:   "Máy chiếu & Phụ kiện",
 		NameEn: "Projectors & Accessories",
 		Children: Categories{
-			CategoryHomeAppliancesProjectorsAccessoriesOther,
 			CategoryHomeAppliancesProjectorsAccessoriesProjectorsProjectorScreens,
 			CategoryHomeAppliancesProjectorsAccessoriesPointers,
+			CategoryHomeAppliancesProjectorsAccessoriesOther,
 		},
 	}
 	CategoryHomeAppliancesProjectorsAccessoriesProjectorsProjectorScreens = &Category{
@@ -2844,14 +2844,14 @@ var (
 		Name:   "Thiết bị điện gia dụng nhỏ",
 		NameEn: "Small Household Appliances",
 		Children: Categories{
+			CategoryHomeAppliancesSmallHouseholdAppliancesSewingMachinesAccessories,
+			CategoryHomeAppliancesSmallHouseholdAppliancesTelephones,
 			CategoryHomeAppliancesSmallHouseholdAppliancesIronsSteamers,
 			CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatment,
 			CategoryHomeAppliancesSmallHouseholdAppliancesVacuumCleanersFloorCare,
 			CategoryHomeAppliancesSmallHouseholdAppliancesOther,
 			CategoryHomeAppliancesSmallHouseholdAppliancesFootBathsSpas,
 			CategoryHomeAppliancesSmallHouseholdAppliancesWaterFlossers,
-			CategoryHomeAppliancesSmallHouseholdAppliancesSewingMachinesAccessories,
-			CategoryHomeAppliancesSmallHouseholdAppliancesTelephones,
 		},
 	}
 	CategoryHomeAppliancesSmallHouseholdAppliancesFootBathsSpas = &Category{
@@ -2958,11 +2958,11 @@ var (
 		Name:   "Thiết bị điện gia dụng lớn",
 		NameEn: "Large Household Appliances",
 		Children: Categories{
+			CategoryHomeAppliancesLargeHouseholdAppliancesHeaters,
 			CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryers,
 			CategoryHomeAppliancesLargeHouseholdAppliancesWaterHeaters,
 			CategoryHomeAppliancesLargeHouseholdAppliancesCooling,
 			CategoryHomeAppliancesLargeHouseholdAppliancesFutonShoeDryers,
-			CategoryHomeAppliancesLargeHouseholdAppliancesHeaters,
 		},
 	}
 	CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryers = &Category{
@@ -3048,11 +3048,11 @@ var (
 		Name:   "Tivi & Phụ kiện",
 		NameEn: "TVs & Accessories",
 		Children: Categories{
-			CategoryHomeAppliancesTVsAccessoriesTVs,
-			CategoryHomeAppliancesTVsAccessoriesTVAntennas,
 			CategoryHomeAppliancesTVsAccessoriesTVBoxesReceivers,
 			CategoryHomeAppliancesTVsAccessoriesTVBrackets,
 			CategoryHomeAppliancesTVsAccessoriesOther,
+			CategoryHomeAppliancesTVsAccessoriesTVs,
+			CategoryHomeAppliancesTVsAccessoriesTVAntennas,
 		},
 	}
 	CategoryHomeAppliancesTVsAccessoriesTVs = &Category{
@@ -3095,28 +3095,28 @@ var (
 		Name:   "Đồ gia dụng nhà bếp",
 		NameEn: "Kitchen Appliances",
 		Children: Categories{
-			CategoryHomeAppliancesKitchenAppliancesWineFridges,
-			CategoryHomeAppliancesKitchenAppliancesJuicersBlendersSoyaBeanMachines,
-			CategoryHomeAppliancesKitchenAppliancesAirFryers,
+			CategoryHomeAppliancesKitchenAppliancesWaterFiltersCoolersDispensers,
+			CategoryHomeAppliancesKitchenAppliancesCoffeeMachinesAccessories,
 			CategoryHomeAppliancesKitchenAppliancesPressureCookers,
-			CategoryHomeAppliancesKitchenAppliancesSlowCookersSousVideMachines,
-			CategoryHomeAppliancesKitchenAppliancesRiceCookers,
+			CategoryHomeAppliancesKitchenAppliancesFoodProcessorsMeatGrinders,
+			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookware,
+			CategoryHomeAppliancesKitchenAppliancesHoods,
 			CategoryHomeAppliancesKitchenAppliancesKettles,
+			CategoryHomeAppliancesKitchenAppliancesWineFridges,
+			CategoryHomeAppliancesKitchenAppliancesDishwashers,
+			CategoryHomeAppliancesKitchenAppliancesOvens,
+			CategoryHomeAppliancesKitchenAppliancesSlowCookersSousVideMachines,
+			CategoryHomeAppliancesKitchenAppliancesRefrigerators,
 			CategoryHomeAppliancesKitchenAppliancesMixers,
+			CategoryHomeAppliancesKitchenAppliancesStovesHobsGasRegulators,
 			CategoryHomeAppliancesKitchenAppliancesDeepFryers,
 			CategoryHomeAppliancesKitchenAppliancesMicrowaves,
-			CategoryHomeAppliancesKitchenAppliancesOvens,
-			CategoryHomeAppliancesKitchenAppliancesRefrigerators,
-			CategoryHomeAppliancesKitchenAppliancesCoffeeMachinesAccessories,
-			CategoryHomeAppliancesKitchenAppliancesStovesHobsGasRegulators,
-			CategoryHomeAppliancesKitchenAppliancesFoodProcessorsMeatGrinders,
-			CategoryHomeAppliancesKitchenAppliancesHoods,
-			CategoryHomeAppliancesKitchenAppliancesWaterFiltersCoolersDispensers,
-			CategoryHomeAppliancesKitchenAppliancesDishwashers,
+			CategoryHomeAppliancesKitchenAppliancesRiceCookers,
+			CategoryHomeAppliancesKitchenAppliancesFreezers,
+			CategoryHomeAppliancesKitchenAppliancesJuicersBlendersSoyaBeanMachines,
+			CategoryHomeAppliancesKitchenAppliancesAirFryers,
 			CategoryHomeAppliancesKitchenAppliancesToasters,
 			CategoryHomeAppliancesKitchenAppliancesMultifunctionCookers,
-			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookware,
-			CategoryHomeAppliancesKitchenAppliancesFreezers,
 		},
 	}
 	CategoryHomeAppliancesKitchenAppliancesWaterFiltersCoolersDispensers = &Category{
@@ -3251,13 +3251,13 @@ var (
 		Name:   "Dụng cụ nấu đặc biệt",
 		NameEn: "Specialty Cookware",
 		Children: Categories{
-			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareBreadMakers,
-			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareTakoyakiMakers,
-			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareDessertMachine,
 			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareSodaMakers,
 			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareOther,
 			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareWaffleCrepeMakers,
 			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareEggBoilers,
+			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareBreadMakers,
+			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareTakoyakiMakers,
+			CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareDessertMachine,
 		},
 	}
 	CategoryHomeAppliancesKitchenAppliancesSpecialtyCookwareWaffleCrepeMakers = &Category{
@@ -3336,12 +3336,12 @@ var (
 		Name:   "Mạch điện & Phụ tùng",
 		NameEn: "Electrical Circuitry & Parts",
 		Children: Categories{
-			CategoryHomeAppliancesElectricalCircuitryPartsElectricalSafety,
 			CategoryHomeAppliancesElectricalCircuitryPartsDoorbells,
 			CategoryHomeAppliancesElectricalCircuitryPartsSwitches,
 			CategoryHomeAppliancesElectricalCircuitryPartsHouseAlarms,
 			CategoryHomeAppliancesElectricalCircuitryPartsLightningProtection,
 			CategoryHomeAppliancesElectricalCircuitryPartsElectricSocketsExtensionCords,
+			CategoryHomeAppliancesElectricalCircuitryPartsElectricalSafety,
 		},
 	}
 	CategoryHomeAppliancesElectricalCircuitryPartsElectricSocketsExtensionCords = &Category{
@@ -3421,9 +3421,9 @@ var (
 		Name:   "Bốt",
 		NameEn: "Boots",
 		Children: Categories{
+			CategoryMenShoesBootsFashionBoots,
 			CategoryMenShoesBootsRainBoots,
 			CategoryMenShoesBootsSafetyBoots,
-			CategoryMenShoesBootsFashionBoots,
 		},
 	}
 	CategoryMenShoesBootsFashionBoots = &Category{
@@ -3481,10 +3481,10 @@ var (
 		Name:   "Xăng-đan & Dép",
 		NameEn: "Sandals & Flip Flops",
 		Children: Categories{
-			CategoryMenShoesSandalsFlipFlopsFlipFlops,
-			CategoryMenShoesSandalsFlipFlopsSandals,
 			CategoryMenShoesSandalsFlipFlopsIndoorSlippers,
 			CategoryMenShoesSandalsFlipFlopsHealthSlippers,
+			CategoryMenShoesSandalsFlipFlopsFlipFlops,
+			CategoryMenShoesSandalsFlipFlopsSandals,
 		},
 	}
 	CategoryMenShoesSandalsFlipFlopsFlipFlops = &Category{
@@ -3569,13 +3569,13 @@ var (
 		Name:   "Điện Thoại & Phụ Kiện",
 		NameEn: "Mobile & Gadgets",
 		Children: Categories{
+			CategoryMobileGadgetsAccessories,
+			CategoryMobileGadgetsWalkieTalkies,
+			CategoryMobileGadgetsOther,
 			CategoryMobileGadgetsSimCards,
 			CategoryMobileGadgetsTablets,
 			CategoryMobileGadgetsMobilePhones,
 			CategoryMobileGadgetsWearableDevices,
-			CategoryMobileGadgetsAccessories,
-			CategoryMobileGadgetsWalkieTalkies,
-			CategoryMobileGadgetsOther,
 		},
 	}
 	CategoryMobileGadgetsSimCards = &Category{
@@ -3646,22 +3646,22 @@ var (
 		NameEn: "Accessories",
 		Children: Categories{
 			CategoryMobileGadgetsAccessoriesSelfieAccessories,
-			CategoryMobileGadgetsAccessoriesPhoneGrips,
-			CategoryMobileGadgetsAccessoriesUSBMobileLights,
-			CategoryMobileGadgetsAccessoriesPocketWifi,
-			CategoryMobileGadgetsAccessoriesWearableAccessories,
-			CategoryMobileGadgetsAccessoriesScreenProtectors,
-			CategoryMobileGadgetsAccessoriesPhoneStrapsKeychains,
-			CategoryMobileGadgetsAccessoriesCastingDevices,
-			CategoryMobileGadgetsAccessoriesCablesChargersConverters,
-			CategoryMobileGadgetsAccessoriesCasesCoversSkins,
 			CategoryMobileGadgetsAccessoriesStylus,
+			CategoryMobileGadgetsAccessoriesPhoneStrapsKeychains,
+			CategoryMobileGadgetsAccessoriesCablesChargersConverters,
 			CategoryMobileGadgetsAccessoriesMemoryCards,
 			CategoryMobileGadgetsAccessoriesMobilePouches,
 			CategoryMobileGadgetsAccessoriesPowerbanksBatteries,
+			CategoryMobileGadgetsAccessoriesScreenProtectors,
 			CategoryMobileGadgetsAccessoriesMobileLens,
-			CategoryMobileGadgetsAccessoriesMobileFlashesSelfieLights,
 			CategoryMobileGadgetsAccessoriesUSBMobileFans,
+			CategoryMobileGadgetsAccessoriesPhoneGrips,
+			CategoryMobileGadgetsAccessoriesCastingDevices,
+			CategoryMobileGadgetsAccessoriesCasesCoversSkins,
+			CategoryMobileGadgetsAccessoriesMobileFlashesSelfieLights,
+			CategoryMobileGadgetsAccessoriesUSBMobileLights,
+			CategoryMobileGadgetsAccessoriesPocketWifi,
+			CategoryMobileGadgetsAccessoriesWearableAccessories,
 		},
 	}
 	CategoryMobileGadgetsAccessoriesSelfieAccessories = &Category{
@@ -3670,9 +3670,9 @@ var (
 		Name:   "Phụ kiện selfie",
 		NameEn: "Selfie Accessories",
 		Children: Categories{
+			CategoryMobileGadgetsAccessoriesSelfieAccessoriesRemoteShutters,
 			CategoryMobileGadgetsAccessoriesSelfieAccessoriesSelfieSticks,
 			CategoryMobileGadgetsAccessoriesSelfieAccessoriesLazypods,
-			CategoryMobileGadgetsAccessoriesSelfieAccessoriesRemoteShutters,
 		},
 	}
 	CategoryMobileGadgetsAccessoriesSelfieAccessoriesSelfieSticks = &Category{
@@ -3765,12 +3765,12 @@ var (
 		Name:   "Cáp, sạc & bộ chuyển đổi",
 		NameEn: "Cables, Chargers & Converters",
 		Children: Categories{
+			CategoryMobileGadgetsAccessoriesCablesChargersConvertersOther,
 			CategoryMobileGadgetsAccessoriesCablesChargersConvertersCableCasesProtectorsWinders,
 			CategoryMobileGadgetsAccessoriesCablesChargersConvertersTravelAdaptors,
 			CategoryMobileGadgetsAccessoriesCablesChargersConvertersMobileCablesConverters,
 			CategoryMobileGadgetsAccessoriesCablesChargersConvertersChargers,
 			CategoryMobileGadgetsAccessoriesCablesChargersConvertersDocksStands,
-			CategoryMobileGadgetsAccessoriesCablesChargersConvertersOther,
 		},
 	}
 	CategoryMobileGadgetsAccessoriesCablesChargersConvertersCableCasesProtectorsWinders = &Category{
@@ -3889,9 +3889,9 @@ var (
 		Name:   "Vỏ bao, Ốp lưng & Miếng dán",
 		NameEn: "Cases, Covers, & Skins",
 		Children: Categories{
+			CategoryMobileGadgetsAccessoriesCasesCoversSkinsOther,
 			CategoryMobileGadgetsAccessoriesCasesCoversSkinsTabletCasesCoversSkins,
 			CategoryMobileGadgetsAccessoriesCasesCoversSkinsPhoneCasesCoversSkins,
-			CategoryMobileGadgetsAccessoriesCasesCoversSkinsOther,
 		},
 	}
 	CategoryMobileGadgetsAccessoriesCasesCoversSkinsTabletCasesCoversSkins = &Category{
@@ -3987,13 +3987,13 @@ var (
 		Children: Categories{
 			CategoryTravelLuggageTravelAccessoriesPassportHoldersCovers,
 			CategoryTravelLuggageTravelAccessoriesTravelOrganizers,
-			CategoryTravelLuggageTravelAccessoriesLuggageScales,
+			CategoryTravelLuggageTravelAccessoriesTravelPillowsEyeCovers,
+			CategoryTravelLuggageTravelAccessoriesTravelSizeBottlesContainers,
 			CategoryTravelLuggageTravelAccessoriesLuggageProtectorsCovers,
 			CategoryTravelLuggageTravelAccessoriesLuggageTags,
 			CategoryTravelLuggageTravelAccessoriesLuggageStraps,
 			CategoryTravelLuggageTravelAccessoriesLuggageLocks,
-			CategoryTravelLuggageTravelAccessoriesTravelPillowsEyeCovers,
-			CategoryTravelLuggageTravelAccessoriesTravelSizeBottlesContainers,
+			CategoryTravelLuggageTravelAccessoriesLuggageScales,
 		},
 	}
 	CategoryTravelLuggageTravelAccessoriesPassportHoldersCovers = &Category{
@@ -4066,14 +4066,14 @@ var (
 		NameEn: "Women Bags",
 		Children: Categories{
 			CategoryWomenBagsTophandleBags,
-			CategoryWomenBagsToteBags,
+			CategoryWomenBagsCrossbodyShoulderBags,
+			CategoryWomenBagsBagAccessories,
+			CategoryWomenBagsBackpacks,
 			CategoryWomenBagsLaptopBags,
 			CategoryWomenBagsClutchesWristlets,
 			CategoryWomenBagsWaistBagsChestBags,
-			CategoryWomenBagsCrossbodyShoulderBags,
+			CategoryWomenBagsToteBags,
 			CategoryWomenBagsWallets,
-			CategoryWomenBagsBagAccessories,
-			CategoryWomenBagsBackpacks,
 		},
 	}
 	CategoryWomenBagsBackpacks = &Category{
@@ -4164,12 +4164,12 @@ var (
 		Name:   "Ví",
 		NameEn: "Wallets",
 		Children: Categories{
-			CategoryWomenBagsWalletsBifoldTrifoldWallets,
-			CategoryWomenBagsWalletsLongWallets,
 			CategoryWomenBagsWalletsOther,
 			CategoryWomenBagsWalletsCardHolders,
 			CategoryWomenBagsWalletsCoinHoldersPurses,
 			CategoryWomenBagsWalletsPhoneKeyWallets,
+			CategoryWomenBagsWalletsBifoldTrifoldWallets,
+			CategoryWomenBagsWalletsLongWallets,
 		},
 	}
 	CategoryWomenBagsWalletsCardHolders = &Category{
@@ -4220,11 +4220,11 @@ var (
 		Name:   "Phụ kiện túi",
 		NameEn: "Bag Accessories",
 		Children: Categories{
+			CategoryWomenBagsBagAccessoriesBagStraps,
+			CategoryWomenBagsBagAccessoriesBagHolders,
 			CategoryWomenBagsBagAccessoriesCharmsTwillies,
 			CategoryWomenBagsBagAccessoriesBagOrganizers,
 			CategoryWomenBagsBagAccessoriesCleaningCareEquipment,
-			CategoryWomenBagsBagAccessoriesBagStraps,
-			CategoryWomenBagsBagAccessoriesBagHolders,
 		},
 	}
 	CategoryWomenBagsBagAccessoriesBagStraps = &Category{
@@ -4268,13 +4268,13 @@ var (
 		Name:   "Giày Dép Nữ",
 		NameEn: "Women Shoes",
 		Children: Categories{
+			CategoryWomenShoesSneakers,
+			CategoryWomenShoesFlats,
 			CategoryWomenShoesHeels,
 			CategoryWomenShoesWedges,
 			CategoryWomenShoesFlatSandalsFlipFlops,
 			CategoryWomenShoesShoeCareAccessories,
 			CategoryWomenShoesBoots,
-			CategoryWomenShoesSneakers,
-			CategoryWomenShoesFlats,
 		},
 	}
 	CategoryWomenShoesBoots = &Category{
@@ -4368,10 +4368,10 @@ var (
 		Name:   "Xăng-đan và dép",
 		NameEn: "Flat Sandals & Flip Flops",
 		Children: Categories{
-			CategoryWomenShoesFlatSandalsFlipFlopsFlatSandals,
 			CategoryWomenShoesFlatSandalsFlipFlopsFlipFlops,
 			CategoryWomenShoesFlatSandalsFlipFlopsHealthSlippers,
 			CategoryWomenShoesFlatSandalsFlipFlopsIndoorSlippers,
+			CategoryWomenShoesFlatSandalsFlipFlopsFlatSandals,
 		},
 	}
 	CategoryWomenShoesFlatSandalsFlipFlopsFlatSandals = &Category{
@@ -4546,11 +4546,11 @@ var (
 		Name:   "Bóp/ Ví",
 		NameEn: "Wallets",
 		Children: Categories{
-			CategoryMenBagsWalletsPhoneKeyWallets,
-			CategoryMenBagsWalletsBifoldTrifoldWallets,
 			CategoryMenBagsWalletsLongWallets,
 			CategoryMenBagsWalletsCardHolders,
 			CategoryMenBagsWalletsCoinHoldersPurses,
+			CategoryMenBagsWalletsPhoneKeyWallets,
+			CategoryMenBagsWalletsBifoldTrifoldWallets,
 		},
 	}
 	CategoryMenBagsWalletsCardHolders = &Category{
@@ -4594,10 +4594,10 @@ var (
 		Name:   "Đồng Hồ",
 		NameEn: "Watches",
 		Children: Categories{
-			CategoryWatchesSetCoupleWatches,
-			CategoryWatchesWatchesAccessories,
 			CategoryWatchesWomenWatches,
 			CategoryWatchesMenWatches,
+			CategoryWatchesSetCoupleWatches,
+			CategoryWatchesWatchesAccessories,
 		},
 	}
 	CategoryWatchesWomenWatches = &Category{
@@ -4627,12 +4627,12 @@ var (
 		Name:   "Phụ kiện đồng hồ",
 		NameEn: "Watches Accessories",
 		Children: Categories{
+			CategoryWatchesWatchesAccessoriesStraps,
+			CategoryWatchesWatchesAccessoriesServiceTools,
 			CategoryWatchesWatchesAccessoriesBuckles,
 			CategoryWatchesWatchesAccessoriesBatteries,
 			CategoryWatchesWatchesAccessoriesBoxes,
 			CategoryWatchesWatchesAccessoriesOther,
-			CategoryWatchesWatchesAccessoriesStraps,
-			CategoryWatchesWatchesAccessoriesServiceTools,
 		},
 	}
 	CategoryWatchesWatchesAccessoriesStraps = &Category{
@@ -4683,13 +4683,13 @@ var (
 		Name:   "Thiết Bị Âm Thanh",
 		NameEn: "Audio",
 		Children: Categories{
+			CategoryAudioOther,
+			CategoryAudioEarphonesHeadphonesHeadsets,
+			CategoryAudioMediaPlayers,
 			CategoryAudioMicrophones,
 			CategoryAudioAmplifiersMixers,
 			CategoryAudioHomeAudioSpeakers,
 			CategoryAudioAudioVideoCablesConverters,
-			CategoryAudioOther,
-			CategoryAudioEarphonesHeadphonesHeadsets,
-			CategoryAudioMediaPlayers,
 		},
 	}
 	CategoryAudioEarphonesHeadphonesHeadsets = &Category{
@@ -4705,10 +4705,10 @@ var (
 		Name:   "Máy nghe nhạc",
 		NameEn: "Media Players",
 		Children: Categories{
-			CategoryAudioMediaPlayersVoiceRecorders,
-			CategoryAudioMediaPlayersRadioCassettePlayers,
 			CategoryAudioMediaPlayersMP3MP4Players,
 			CategoryAudioMediaPlayersCDDVDBlurayPlayers,
+			CategoryAudioMediaPlayersVoiceRecorders,
+			CategoryAudioMediaPlayersRadioCassettePlayers,
 		},
 	}
 	CategoryAudioMediaPlayersMP3MP4Players = &Category{
@@ -4813,20 +4813,20 @@ var (
 		Name:   "Thực phẩm và đồ uống",
 		NameEn: "Food & Beverage",
 		Children: Categories{
-			CategoryFoodBeverageFreshFrozenFood,
-			CategoryFoodBeverageBakery,
-			CategoryFoodBeverageGiftSetHampers,
-			CategoryFoodBeverageConvenienceReadytoeat,
-			CategoryFoodBeverageBakingNeeds,
-			CategoryFoodBeverageDairyEggs,
-			CategoryFoodBeverageOther,
-			CategoryFoodBeverageCookingEssentials,
-			CategoryFoodBeverageBreakfastCerealsSpread,
-			CategoryFoodBeverageBeverages,
-			CategoryFoodBeverageAlcoholicBeverages,
-			CategoryFoodBeverageSnacks,
 			CategoryFoodBeverageFoodStaples,
+			CategoryFoodBeverageBakingNeeds,
+			CategoryFoodBeverageBreakfastCerealsSpread,
+			CategoryFoodBeverageDairyEggs,
+			CategoryFoodBeverageFreshFrozenFood,
 			CategoryFoodBeverageSeasoningsCondiments,
+			CategoryFoodBeverageBeverages,
+			CategoryFoodBeverageBakery,
+			CategoryFoodBeverageAlcoholicBeverages,
+			CategoryFoodBeverageConvenienceReadytoeat,
+			CategoryFoodBeverageSnacks,
+			CategoryFoodBeverageCookingEssentials,
+			CategoryFoodBeverageGiftSetHampers,
+			CategoryFoodBeverageOther,
 		},
 	}
 	CategoryFoodBeverageConvenienceReadytoeat = &Category{
@@ -4835,11 +4835,11 @@ var (
 		Name:   "Đồ chế biến sẵn",
 		NameEn: "Convenience / Ready-to-eat",
 		Children: Categories{
-			CategoryFoodBeverageConvenienceReadytoeatCookedFood,
-			CategoryFoodBeverageConvenienceReadytoeatOther,
 			CategoryFoodBeverageConvenienceReadytoeatInstantRicePorridge,
 			CategoryFoodBeverageConvenienceReadytoeatInstantHotpot,
 			CategoryFoodBeverageConvenienceReadytoeatInstantNoodles,
+			CategoryFoodBeverageConvenienceReadytoeatCookedFood,
+			CategoryFoodBeverageConvenienceReadytoeatOther,
 		},
 	}
 	CategoryFoodBeverageConvenienceReadytoeatCookedFood = &Category{
@@ -4883,16 +4883,16 @@ var (
 		Name:   "Đồ ăn vặt",
 		NameEn: "Snacks",
 		Children: Categories{
-			CategoryFoodBeverageSnacksSweetsCandies,
-			CategoryFoodBeverageSnacksSeeds,
-			CategoryFoodBeverageSnacksDriedSnacks,
 			CategoryFoodBeverageSnacksNuts,
+			CategoryFoodBeverageSnacksDriedSnacks,
+			CategoryFoodBeverageSnacksSeaweed,
 			CategoryFoodBeverageSnacksPuddingJelliesMarshmallow,
+			CategoryFoodBeverageSnacksSweetsCandies,
 			CategoryFoodBeverageSnacksChocolate,
 			CategoryFoodBeverageSnacksBiscuitsCookiesWafers,
 			CategoryFoodBeverageSnacksChipsCrisps,
+			CategoryFoodBeverageSnacksSeeds,
 			CategoryFoodBeverageSnacksPopcorn,
-			CategoryFoodBeverageSnacksSeaweed,
 		},
 	}
 	CategoryFoodBeverageSnacksSweetsCandies = &Category{
@@ -5012,12 +5012,12 @@ var (
 		Name:   "Nhu yếu phẩm",
 		NameEn: "Food Staples",
 		Children: Categories{
-			CategoryFoodBeverageFoodStaplesDriedGoods,
 			CategoryFoodBeverageFoodStaplesNoodles,
 			CategoryFoodBeverageFoodStaplesRice,
 			CategoryFoodBeverageFoodStaplesPasta,
 			CategoryFoodBeverageFoodStaplesCannedFood,
 			CategoryFoodBeverageFoodStaplesPreservedVegetables,
+			CategoryFoodBeverageFoodStaplesDriedGoods,
 		},
 	}
 	CategoryFoodBeverageFoodStaplesDriedGoods = &Category{
@@ -5026,10 +5026,10 @@ var (
 		Name:   "Thực phẩm khô",
 		NameEn: "Dried Goods",
 		Children: Categories{
+			CategoryFoodBeverageFoodStaplesDriedGoodsBeansGrains,
 			CategoryFoodBeverageFoodStaplesDriedGoodsDriedSeafood,
 			CategoryFoodBeverageFoodStaplesDriedGoodsTraditionalHerbs,
 			CategoryFoodBeverageFoodStaplesDriedGoodsOther,
-			CategoryFoodBeverageFoodStaplesDriedGoodsBeansGrains,
 		},
 	}
 	CategoryFoodBeverageFoodStaplesDriedGoodsBeansGrains = &Category{
@@ -5086,12 +5086,12 @@ var (
 		Name:   "Thực phẩm đóng hộp",
 		NameEn: "Canned Food",
 		Children: Categories{
-			CategoryFoodBeverageFoodStaplesCannedFoodCannedFruits,
-			CategoryFoodBeverageFoodStaplesCannedFoodCannedMeat,
-			CategoryFoodBeverageFoodStaplesCannedFoodCannedSeafood,
 			CategoryFoodBeverageFoodStaplesCannedFoodCannedVegetables,
 			CategoryFoodBeverageFoodStaplesCannedFoodCannedSoup,
 			CategoryFoodBeverageFoodStaplesCannedFoodOther,
+			CategoryFoodBeverageFoodStaplesCannedFoodCannedFruits,
+			CategoryFoodBeverageFoodStaplesCannedFoodCannedMeat,
+			CategoryFoodBeverageFoodStaplesCannedFoodCannedSeafood,
 		},
 	}
 	CategoryFoodBeverageFoodStaplesCannedFoodCannedFruits = &Category{
@@ -5149,15 +5149,15 @@ var (
 		Name:   "Nguyên liệu nấu ăn",
 		NameEn: "Cooking Essentials",
 		Children: Categories{
+			CategoryFoodBeverageCookingEssentialsOther,
 			CategoryFoodBeverageCookingEssentialsOil,
-			CategoryFoodBeverageCookingEssentialsStockGravyInstantSoup,
+			CategoryFoodBeverageCookingEssentialsSeasoningsCondiments,
 			CategoryFoodBeverageCookingEssentialsCookingPasteKit,
 			CategoryFoodBeverageCookingEssentialsFlavourEnhancers,
-			CategoryFoodBeverageCookingEssentialsOther,
-			CategoryFoodBeverageCookingEssentialsSeasoningsCondiments,
+			CategoryFoodBeverageCookingEssentialsFlourCoating,
 			CategoryFoodBeverageCookingEssentialsSurgar,
 			CategoryFoodBeverageCookingEssentialsSweetener,
-			CategoryFoodBeverageCookingEssentialsFlourCoating,
+			CategoryFoodBeverageCookingEssentialsStockGravyInstantSoup,
 		},
 	}
 	CategoryFoodBeverageCookingEssentialsOil = &Category{
@@ -5173,14 +5173,14 @@ var (
 		Name:   "Gia vị & Hương liệu",
 		NameEn: "Seasonings & Condiments",
 		Children: Categories{
+			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsDressing,
+			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsOther,
 			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsPepper,
 			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsHerbsSpices,
 			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsSauce,
 			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsChilliSambal,
 			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsVinegar,
 			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsCookingWine,
-			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsDressing,
-			CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsOther,
 		},
 	}
 	CategoryFoodBeverageCookingEssentialsSeasoningsCondimentsPepper = &Category{
@@ -5423,19 +5423,19 @@ var (
 		Name:   "Đồ uống",
 		NameEn: "Beverages",
 		Children: Categories{
-			CategoryFoodBeverageBeveragesChocolateDrinks,
-			CategoryFoodBeverageBeveragesWater,
+			CategoryFoodBeverageBeveragesEnergyIsotonicDrinks,
+			CategoryFoodBeverageBeveragesJuiceJuiceVinegar,
+			CategoryFoodBeverageBeveragesCarbonatedDrinksTonics,
 			CategoryFoodBeverageBeveragesPowderedDrinkMixes,
 			CategoryFoodBeverageBeveragesDessertDrink,
 			CategoryFoodBeverageBeveragesCoffee,
-			CategoryFoodBeverageBeveragesEnergyIsotonicDrinks,
-			CategoryFoodBeverageBeveragesJuiceJuiceVinegar,
+			CategoryFoodBeverageBeveragesChocolateDrinks,
 			CategoryFoodBeverageBeveragesCordialSyrups,
-			CategoryFoodBeverageBeveragesCarbonatedDrinksTonics,
 			CategoryFoodBeverageBeveragesTraditionalHerbalDrinks,
 			CategoryFoodBeverageBeveragesDrinkToppings,
 			CategoryFoodBeverageBeveragesNondairyMilk,
 			CategoryFoodBeverageBeveragesTeaTeaBags,
+			CategoryFoodBeverageBeveragesWater,
 		},
 	}
 	CategoryFoodBeverageBeveragesCoffee = &Category{
@@ -5551,10 +5551,10 @@ var (
 		Name:   "Sữa",
 		NameEn: "Milk",
 		Children: Categories{
+			CategoryFoodBeverageDairyEggsMilkPowderedMilk,
 			CategoryFoodBeverageDairyEggsMilkFreshMilk,
 			CategoryFoodBeverageDairyEggsMilkUHTMilk,
 			CategoryFoodBeverageDairyEggsMilkCondensedEvaporatedMilk,
-			CategoryFoodBeverageDairyEggsMilkPowderedMilk,
 		},
 	}
 	CategoryFoodBeverageDairyEggsMilkFreshMilk = &Category{
@@ -5640,15 +5640,15 @@ var (
 		Name:   "Thực phẩm tươi sống & đông lạnh",
 		NameEn: "Fresh & Frozen Food",
 		Children: Categories{
-			CategoryFoodBeverageFreshFrozenFoodMeat,
-			CategoryFoodBeverageFreshFrozenFoodSeafood,
-			CategoryFoodBeverageFreshFrozenFoodMushroom,
-			CategoryFoodBeverageFreshFrozenFoodProcessedMeatSeafood,
-			CategoryFoodBeverageFreshFrozenFoodVegetarianMeat,
-			CategoryFoodBeverageFreshFrozenFoodOther,
 			CategoryFoodBeverageFreshFrozenFoodVegetables,
 			CategoryFoodBeverageFreshFrozenFoodFruits,
+			CategoryFoodBeverageFreshFrozenFoodMushroom,
 			CategoryFoodBeverageFreshFrozenFoodFrozenProcessedFood,
+			CategoryFoodBeverageFreshFrozenFoodMeat,
+			CategoryFoodBeverageFreshFrozenFoodVegetarianMeat,
+			CategoryFoodBeverageFreshFrozenFoodProcessedMeatSeafood,
+			CategoryFoodBeverageFreshFrozenFoodSeafood,
+			CategoryFoodBeverageFreshFrozenFoodOther,
 		},
 	}
 	CategoryFoodBeverageFreshFrozenFoodMeat = &Category{
@@ -5657,11 +5657,11 @@ var (
 		Name:   "Thịt",
 		NameEn: "Meat",
 		Children: Categories{
-			CategoryFoodBeverageFreshFrozenFoodMeatLamb,
-			CategoryFoodBeverageFreshFrozenFoodMeatOther,
 			CategoryFoodBeverageFreshFrozenFoodMeatBeef,
 			CategoryFoodBeverageFreshFrozenFoodMeatPoultry,
 			CategoryFoodBeverageFreshFrozenFoodMeatPork,
+			CategoryFoodBeverageFreshFrozenFoodMeatLamb,
+			CategoryFoodBeverageFreshFrozenFoodMeatOther,
 		},
 	}
 	CategoryFoodBeverageFreshFrozenFoodMeatBeef = &Category{
@@ -5748,19 +5748,19 @@ var (
 		Name:   "Rau củ",
 		NameEn: "Vegetables",
 		Children: Categories{
-			CategoryFoodBeverageFreshFrozenFoodVegetablesGarlicGingerOnion,
-			CategoryFoodBeverageFreshFrozenFoodVegetablesRootStemVegetables,
-			CategoryFoodBeverageFreshFrozenFoodVegetablesSprouts,
-			CategoryFoodBeverageFreshFrozenFoodVegetablesOther,
-			CategoryFoodBeverageFreshFrozenFoodVegetablesCabbageBrusselSprouts,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesFreshHerbs,
 			CategoryFoodBeverageFreshFrozenFoodVegetablesLeafyVegetables,
 			CategoryFoodBeverageFreshFrozenFoodVegetablesBrinjalsGourdsSquashes,
-			CategoryFoodBeverageFreshFrozenFoodVegetablesChilliCapsicum,
-			CategoryFoodBeverageFreshFrozenFoodVegetablesPrecutAssortedVegetableSet,
-			CategoryFoodBeverageFreshFrozenFoodVegetablesFreshHerbs,
 			CategoryFoodBeverageFreshFrozenFoodVegetablesBroccoliCauliflowers,
-			CategoryFoodBeverageFreshFrozenFoodVegetablesPeasBeansNutsCorn,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesGarlicGingerOnion,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesSprouts,
 			CategoryFoodBeverageFreshFrozenFoodVegetablesSaladVegetables,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesPrecutAssortedVegetableSet,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesOther,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesCabbageBrusselSprouts,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesChilliCapsicum,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesPeasBeansNutsCorn,
+			CategoryFoodBeverageFreshFrozenFoodVegetablesRootStemVegetables,
 		},
 	}
 	CategoryFoodBeverageFreshFrozenFoodVegetablesOther = &Category{
@@ -5849,13 +5849,13 @@ var (
 		Children: Categories{
 			CategoryFoodBeverageFreshFrozenFoodFruitsApplesPears,
 			CategoryFoodBeverageFreshFrozenFoodFruitsGrapes,
-			CategoryFoodBeverageFreshFrozenFoodFruitsMelons,
 			CategoryFoodBeverageFreshFrozenFoodFruitsTropicalExoticFruits,
-			CategoryFoodBeverageFreshFrozenFoodFruitsPrecutAssortedFruitSet,
 			CategoryFoodBeverageFreshFrozenFoodFruitsBananas,
 			CategoryFoodBeverageFreshFrozenFoodFruitsBerries,
 			CategoryFoodBeverageFreshFrozenFoodFruitsCitrus,
+			CategoryFoodBeverageFreshFrozenFoodFruitsMelons,
 			CategoryFoodBeverageFreshFrozenFoodFruitsStonefruits,
+			CategoryFoodBeverageFreshFrozenFoodFruitsPrecutAssortedFruitSet,
 			CategoryFoodBeverageFreshFrozenFoodFruitsOther,
 		},
 	}
@@ -5979,11 +5979,11 @@ var (
 		Name:   "Đồ uống có cồn",
 		NameEn: "Alcoholic Beverages",
 		Children: Categories{
+			CategoryFoodBeverageAlcoholicBeveragesSakeSojuUmeshu,
 			CategoryFoodBeverageAlcoholicBeveragesOther,
 			CategoryFoodBeverageAlcoholicBeveragesBearCider,
 			CategoryFoodBeverageAlcoholicBeveragesWineChampange,
 			CategoryFoodBeverageAlcoholicBeveragesLiquorSpirits,
-			CategoryFoodBeverageAlcoholicBeveragesSakeSojuUmeshu,
 		},
 	}
 	CategoryFoodBeverageAlcoholicBeveragesBearCider = &Category{
@@ -6034,12 +6034,12 @@ var (
 		Name:   "Chăm Sóc Thú Cưng",
 		NameEn: "Pets",
 		Children: Categories{
+			CategoryPetsPetFood,
+			CategoryPetsPetAccessories,
 			CategoryPetsLitterToilet,
 			CategoryPetsPetGrooming,
 			CategoryPetsPetClothingAccessories,
 			CategoryPetsPetHealthcare,
-			CategoryPetsPetFood,
-			CategoryPetsPetAccessories,
 		},
 	}
 	CategoryPetsPetFood = &Category{
@@ -6048,15 +6048,15 @@ var (
 		Name:   "Thức ăn cho thú cưng",
 		NameEn: "Pet Food",
 		Children: Categories{
-			CategoryPetsPetFoodCatFood,
-			CategoryPetsPetFoodSmallPetFood,
+			CategoryPetsPetFoodCatTreats,
+			CategoryPetsPetFoodDogFood,
+			CategoryPetsPetFoodDogTreats,
 			CategoryPetsPetFoodSmallPetTreats,
 			CategoryPetsPetFoodAquariumPetFood,
 			CategoryPetsPetFoodBirdFeed,
 			CategoryPetsPetFoodReptileFood,
-			CategoryPetsPetFoodDogFood,
-			CategoryPetsPetFoodDogTreats,
-			CategoryPetsPetFoodCatTreats,
+			CategoryPetsPetFoodCatFood,
+			CategoryPetsPetFoodSmallPetFood,
 		},
 	}
 	CategoryPetsPetFoodDogFood = &Category{
@@ -6163,9 +6163,9 @@ var (
 		Name:   "Đồ chơi",
 		NameEn: "Toys",
 		Children: Categories{
-			CategoryPetsPetAccessoriesToysSmallPetToys,
 			CategoryPetsPetAccessoriesToysBirdToys,
 			CategoryPetsPetAccessoriesToysDogCatToys,
+			CategoryPetsPetAccessoriesToysSmallPetToys,
 		},
 	}
 	CategoryPetsPetAccessoriesToysDogCatToys = &Category{
@@ -6275,12 +6275,12 @@ var (
 		Name:   "Vệ sinh cho thú cưng",
 		NameEn: "Litter & Toilet",
 		Children: Categories{
-			CategoryPetsLitterToiletCatLitterBoxes,
-			CategoryPetsLitterToiletSmallPetBeddingLitter,
 			CategoryPetsLitterToiletDiapers,
 			CategoryPetsLitterToiletDogTrainingPadsTrays,
 			CategoryPetsLitterToiletPoopBagsScoopers,
 			CategoryPetsLitterToiletOther,
+			CategoryPetsLitterToiletCatLitterBoxes,
+			CategoryPetsLitterToiletSmallPetBeddingLitter,
 		},
 	}
 	CategoryPetsLitterToiletCatLitterBoxes = &Category{
@@ -6331,10 +6331,10 @@ var (
 		Name:   "Làm đẹp cho thú cưng",
 		NameEn: "Pet Grooming",
 		Children: Categories{
-			CategoryPetsPetGroomingClawCare,
 			CategoryPetsPetGroomingOther,
 			CategoryPetsPetGroomingHairCare,
 			CategoryPetsPetGroomingOralCare,
+			CategoryPetsPetGroomingClawCare,
 		},
 	}
 	CategoryPetsPetGroomingHairCare = &Category{
@@ -6371,13 +6371,13 @@ var (
 		Name:   "Quần áo & phụ kiện",
 		NameEn: "Pet Clothing & Accessories",
 		Children: Categories{
-			CategoryPetsPetClothingAccessoriesBootsSocksPawProtectors,
 			CategoryPetsPetClothingAccessoriesNeckAccessories,
 			CategoryPetsPetClothingAccessoriesEyewear,
 			CategoryPetsPetClothingAccessoriesHairAccessories,
 			CategoryPetsPetClothingAccessoriesHats,
 			CategoryPetsPetClothingAccessoriesPetClothing,
 			CategoryPetsPetClothingAccessoriesWetWeatherGear,
+			CategoryPetsPetClothingAccessoriesBootsSocksPawProtectors,
 		},
 	}
 	CategoryPetsPetClothingAccessoriesPetClothing = &Category{
@@ -6451,18 +6451,18 @@ var (
 		Name:   "Mẹ & Bé",
 		NameEn: "Mom & Baby",
 		Children: Categories{
-			CategoryMomBabyBabySafety,
+			CategoryMomBabyMaternityAccessories,
+			CategoryMomBabyMaternityHealthcare,
+			CategoryMomBabyMilkFormulaBabyFood,
 			CategoryMomBabyBabyHealthcare,
 			CategoryMomBabyDiaperingPotty,
+			CategoryMomBabyBabyTravelEssentials,
+			CategoryMomBabyFeedingEssentials,
+			CategoryMomBabyBathBodyCare,
+			CategoryMomBabyNursery,
+			CategoryMomBabyBabySafety,
 			CategoryMomBabyToys,
 			CategoryMomBabyGiftSetsPackages,
-			CategoryMomBabyBabyTravelEssentials,
-			CategoryMomBabyMaternityHealthcare,
-			CategoryMomBabyNursery,
-			CategoryMomBabyMilkFormulaBabyFood,
-			CategoryMomBabyFeedingEssentials,
-			CategoryMomBabyMaternityAccessories,
-			CategoryMomBabyBathBodyCare,
 		},
 	}
 	CategoryMomBabyBabyTravelEssentials = &Category{
@@ -6471,13 +6471,13 @@ var (
 		Name:   "Đồ dùng du lịch cho bé",
 		NameEn: "Baby Travel Essentials",
 		Children: Categories{
-			CategoryMomBabyBabyTravelEssentialsCarMotorbikeSeatsAccessories,
-			CategoryMomBabyBabyTravelEssentialsDiaperBags,
 			CategoryMomBabyBabyTravelEssentialsChildHarnessesLeashes,
 			CategoryMomBabyBabyTravelEssentialsBabyCarrier,
 			CategoryMomBabyBabyTravelEssentialsStrollersTravelSystems,
 			CategoryMomBabyBabyTravelEssentialsStrollerAccessories,
 			CategoryMomBabyBabyTravelEssentialsCarMotorbikeSeats,
+			CategoryMomBabyBabyTravelEssentialsCarMotorbikeSeatsAccessories,
+			CategoryMomBabyBabyTravelEssentialsDiaperBags,
 		},
 	}
 	CategoryMomBabyBabyTravelEssentialsBabyCarrier = &Category{
@@ -6550,11 +6550,11 @@ var (
 		Name:   "Bình sữa",
 		NameEn: "Bottle-feeding",
 		Children: Categories{
+			CategoryMomBabyFeedingEssentialsBottlefeedingBottlesBottleaccessories,
+			CategoryMomBabyFeedingEssentialsBottlefeedingBottleCleansing,
 			CategoryMomBabyFeedingEssentialsBottlefeedingWarmers,
 			CategoryMomBabyFeedingEssentialsBottlefeedingSterilizers,
 			CategoryMomBabyFeedingEssentialsBottlefeedingBottleCoolerBag,
-			CategoryMomBabyFeedingEssentialsBottlefeedingBottlesBottleaccessories,
-			CategoryMomBabyFeedingEssentialsBottlefeedingBottleCleansing,
 		},
 	}
 	CategoryMomBabyFeedingEssentialsBottlefeedingBottleCoolerBag = &Category{
@@ -6598,10 +6598,10 @@ var (
 		Name:   "Đồ dùng cho con bú",
 		NameEn: "Breastfeeding",
 		Children: Categories{
-			CategoryMomBabyFeedingEssentialsBreastfeedingNursingCovers,
-			CategoryMomBabyFeedingEssentialsBreastfeedingBreastmilkStorageBags,
 			CategoryMomBabyFeedingEssentialsBreastfeedingBreastPumpAccessories,
 			CategoryMomBabyFeedingEssentialsBreastfeedingBreastPadsShellsShields,
+			CategoryMomBabyFeedingEssentialsBreastfeedingNursingCovers,
+			CategoryMomBabyFeedingEssentialsBreastfeedingBreastmilkStorageBags,
 		},
 	}
 	CategoryMomBabyFeedingEssentialsBreastfeedingBreastPumpAccessories = &Category{
@@ -6751,15 +6751,15 @@ var (
 		Name:   "Đồ dùng phòng tắm & Chăm sóc cơ thể bé",
 		NameEn: "Bath & Body Care",
 		Children: Categories{
-			CategoryMomBabyBathBodyCareBathingTubsSeats,
+			CategoryMomBabyBathBodyCareBabyColognesFragrances,
 			CategoryMomBabyBathBodyCareBabyGroomingTools,
-			CategoryMomBabyBathBodyCareWipes,
-			CategoryMomBabyBathBodyCareBabyLaundryDetergent,
+			CategoryMomBabyBathBodyCareBathingTubsSeats,
 			CategoryMomBabyBathBodyCareBathRobesTowelsWashCloths,
 			CategoryMomBabyBathBodyCareShowerCaps,
-			CategoryMomBabyBathBodyCareBathingToolsAccessories,
 			CategoryMomBabyBathBodyCareHairCareBodyWash,
-			CategoryMomBabyBathBodyCareBabyColognesFragrances,
+			CategoryMomBabyBathBodyCareBathingToolsAccessories,
+			CategoryMomBabyBathBodyCareWipes,
+			CategoryMomBabyBathBodyCareBabyLaundryDetergent,
 		},
 	}
 	CategoryMomBabyBathBodyCareBathingTubsSeats = &Category{
@@ -6828,11 +6828,11 @@ var (
 		Name:   "Đồ dùng phòng ngủ cho bé",
 		NameEn: "Nursery",
 		Children: Categories{
+			CategoryMomBabyNurseryMattressesBedding,
+			CategoryMomBabyNurseryStorageOrganization,
 			CategoryMomBabyNurseryCribsCradlesBeds,
 			CategoryMomBabyNurseryBouncersRockersJumpers,
 			CategoryMomBabyNurseryWalkers,
-			CategoryMomBabyNurseryMattressesBedding,
-			CategoryMomBabyNurseryStorageOrganization,
 		},
 	}
 	CategoryMomBabyNurseryCribsCradlesBeds = &Category{
@@ -6901,12 +6901,12 @@ var (
 		Name:   "An toàn cho bé",
 		NameEn: "Baby Safety",
 		Children: Categories{
+			CategoryMomBabyBabySafetyBabyGatesDoorways,
 			CategoryMomBabyBabySafetySafetyLocksStraps,
 			CategoryMomBabyBabySafetyMonitors,
 			CategoryMomBabyBabySafetyMosquitoNetting,
 			CategoryMomBabyBabySafetyBumpersRailsGuards,
 			CategoryMomBabyBabySafetyEdgeCornerGuards,
-			CategoryMomBabyBabySafetyBabyGatesDoorways,
 		},
 	}
 	CategoryMomBabyBabySafetyMonitors = &Category{
@@ -6957,10 +6957,10 @@ var (
 		Name:   "Sữa công thức & Thực phẩm cho bé",
 		NameEn: "Milk Formula & Baby Food",
 		Children: Categories{
+			CategoryMomBabyMilkFormulaBabyFoodMilkFormula,
 			CategoryMomBabyMilkFormulaBabyFoodBabyPorridgePureeCereal,
 			CategoryMomBabyMilkFormulaBabyFoodBabySnack,
 			CategoryMomBabyMilkFormulaBabyFoodReadytoDrinkMilk,
-			CategoryMomBabyMilkFormulaBabyFoodMilkFormula,
 		},
 	}
 	CategoryMomBabyMilkFormulaBabyFoodMilkFormula = &Category{
@@ -6993,11 +6993,11 @@ var (
 		Name:   "Chăm sóc sức khỏe bé",
 		NameEn: "Baby Healthcare",
 		Children: Categories{
-			CategoryMomBabyBabyHealthcareBabyOralCare,
 			CategoryMomBabyBabyHealthcareBabyVitaminsSupplements,
 			CategoryMomBabyBabyHealthcareSunCare,
 			CategoryMomBabyBabyHealthcareNasalCare,
 			CategoryMomBabyBabyHealthcareBabySkincare,
+			CategoryMomBabyBabyHealthcareBabyOralCare,
 		},
 	}
 	CategoryMomBabyBabyHealthcareNasalCare = &Category{
@@ -7013,9 +7013,9 @@ var (
 		Name:   "Chăm sóc da cho bé",
 		NameEn: "Baby Skincare",
 		Children: Categories{
+			CategoryMomBabyBabyHealthcareBabySkincareOils,
 			CategoryMomBabyBabyHealthcareBabySkincareLotionCreams,
 			CategoryMomBabyBabyHealthcareBabySkincarePowders,
-			CategoryMomBabyBabyHealthcareBabySkincareOils,
 		},
 	}
 	CategoryMomBabyBabyHealthcareBabySkincareLotionCreams = &Category{
@@ -7104,15 +7104,15 @@ var (
 		Name:   "Đồ chơi",
 		NameEn: "Toys",
 		Children: Categories{
-			CategoryMomBabyToysPretendPlay,
+			CategoryMomBabyToysToyVehicles,
 			CategoryMomBabyToysEducationalToys,
+			CategoryMomBabyToysRobotToys,
 			CategoryMomBabyToysBabyToddlerToys,
 			CategoryMomBabyToysBlockToys,
-			CategoryMomBabyToysSportsOutdoorPlay,
-			CategoryMomBabyToysRobotToys,
-			CategoryMomBabyToysSlimeSquishyToys,
 			CategoryMomBabyToysDollsStuffedToys,
-			CategoryMomBabyToysToyVehicles,
+			CategoryMomBabyToysPretendPlay,
+			CategoryMomBabyToysSportsOutdoorPlay,
+			CategoryMomBabyToysSlimeSquishyToys,
 		},
 	}
 	CategoryMomBabyToysBabyToddlerToys = &Category{
@@ -7121,11 +7121,11 @@ var (
 		Name:   "Đồ chơi cho trẻ sơ sinh & trẻ nhỏ",
 		NameEn: "Baby & Toddler Toys",
 		Children: Categories{
-			CategoryMomBabyToysBabyToddlerToysPlaygymPlaymats,
 			CategoryMomBabyToysBabyToddlerToysPlayardsPlaypens,
 			CategoryMomBabyToysBabyToddlerToysBathToys,
 			CategoryMomBabyToysBabyToddlerToysCribMobilesRattles,
 			CategoryMomBabyToysBabyToddlerToysTeethers,
+			CategoryMomBabyToysBabyToddlerToysPlaygymPlaymats,
 		},
 	}
 	CategoryMomBabyToysBabyToddlerToysPlaygymPlaymats = &Category{
@@ -7176,9 +7176,9 @@ var (
 		Name:   "Búp bê & Thú nhồi bông",
 		NameEn: "Dolls & Stuffed Toys",
 		Children: Categories{
-			CategoryMomBabyToysDollsStuffedToysDollsAccessories,
 			CategoryMomBabyToysDollsStuffedToysDollHousesAccessories,
 			CategoryMomBabyToysDollsStuffedToysStuffedToys,
+			CategoryMomBabyToysDollsStuffedToysDollsAccessories,
 		},
 	}
 	CategoryMomBabyToysDollsStuffedToysDollsAccessories = &Category{
@@ -7222,13 +7222,13 @@ var (
 		Name:   "Đồ chơi vận động & Ngoài trời",
 		NameEn: "Sports & Outdoor Play",
 		Children: Categories{
+			CategoryMomBabyToysSportsOutdoorPlayFlyingToysKitesWindSpinners,
 			CategoryMomBabyToysSportsOutdoorPlayBicyclesScootersRideons,
 			CategoryMomBabyToysSportsOutdoorPlayInflatablesSlides,
 			CategoryMomBabyToysSportsOutdoorPlayPlayTentsTunnelsBallPits,
 			CategoryMomBabyToysSportsOutdoorPlayPoolWaterSandToys,
 			CategoryMomBabyToysSportsOutdoorPlayBlastersToyGuns,
 			CategoryMomBabyToysSportsOutdoorPlaySportsToys,
-			CategoryMomBabyToysSportsOutdoorPlayFlyingToysKitesWindSpinners,
 		},
 	}
 	CategoryMomBabyToysSportsOutdoorPlayBicyclesScootersRideons = &Category{
@@ -7285,13 +7285,13 @@ var (
 		Name:   "Đồ chơi giáo dục",
 		NameEn: "Educational Toys",
 		Children: Categories{
+			CategoryMomBabyToysEducationalToysPuzzles,
+			CategoryMomBabyToysEducationalToysMusicalToys,
+			CategoryMomBabyToysEducationalToysToyTabletsComputers,
 			CategoryMomBabyToysEducationalToysArtsCrafts,
 			CategoryMomBabyToysEducationalToysMathToys,
 			CategoryMomBabyToysEducationalToysScienceTechToys,
 			CategoryMomBabyToysEducationalToysShapeSorters,
-			CategoryMomBabyToysEducationalToysPuzzles,
-			CategoryMomBabyToysEducationalToysMusicalToys,
-			CategoryMomBabyToysEducationalToysToyTabletsComputers,
 		},
 	}
 	CategoryMomBabyToysEducationalToysArtsCrafts = &Category{
@@ -7370,14 +7370,14 @@ var (
 		Name:   "Thời trang trẻ em & trẻ sơ sinh",
 		NameEn: "Baby & Kids Fashion",
 		Children: Categories{
+			CategoryBabyKidsFashionBabyKidsAccessories,
+			CategoryBabyKidsFashionBoyClothes,
+			CategoryBabyKidsFashionGirlClothes,
 			CategoryBabyKidsFashionUnderwearInnerwear,
 			CategoryBabyKidsFashionBoyShoes,
 			CategoryBabyKidsFashionGirlShoes,
 			CategoryBabyKidsFashionBabyClothes,
 			CategoryBabyKidsFashionBabyMittensFootwear,
-			CategoryBabyKidsFashionBabyKidsAccessories,
-			CategoryBabyKidsFashionBoyClothes,
-			CategoryBabyKidsFashionGirlClothes,
 		},
 	}
 	CategoryBabyKidsFashionBabyClothes = &Category{
@@ -7386,15 +7386,15 @@ var (
 		Name:   "Quần áo trẻ em",
 		NameEn: "Baby Clothes",
 		Children: Categories{
-			CategoryBabyKidsFashionBabyClothesBottoms,
+			CategoryBabyKidsFashionBabyClothesDresses,
+			CategoryBabyKidsFashionBabyClothesTops,
 			CategoryBabyKidsFashionBabyClothesSets,
 			CategoryBabyKidsFashionBabyClothesSwimwear,
+			CategoryBabyKidsFashionBabyClothesBodysuitsJumpsuits,
 			CategoryBabyKidsFashionBabyClothesRegularOuterwear,
 			CategoryBabyKidsFashionBabyClothesWinterOuterwear,
-			CategoryBabyKidsFashionBabyClothesDresses,
+			CategoryBabyKidsFashionBabyClothesBottoms,
 			CategoryBabyKidsFashionBabyClothesSleepwear,
-			CategoryBabyKidsFashionBabyClothesTops,
-			CategoryBabyKidsFashionBabyClothesBodysuitsJumpsuits,
 		},
 	}
 	CategoryBabyKidsFashionBabyClothesRegularOuterwear = &Category{
@@ -7424,9 +7424,9 @@ var (
 		Name:   "Quần/Chân váy",
 		NameEn: "Bottoms",
 		Children: Categories{
+			CategoryBabyKidsFashionBabyClothesBottomsSkirts,
 			CategoryBabyKidsFashionBabyClothesBottomsPantsLeggings,
 			CategoryBabyKidsFashionBabyClothesBottomsShorts,
-			CategoryBabyKidsFashionBabyClothesBottomsSkirts,
 		},
 	}
 	CategoryBabyKidsFashionBabyClothesBottomsPantsLeggings = &Category{
@@ -7500,16 +7500,16 @@ var (
 		Children: Categories{
 			CategoryBabyKidsFashionBabyKidsAccessoriesScarves,
 			CategoryBabyKidsFashionBabyKidsAccessoriesWatches,
-			CategoryBabyKidsFashionBabyKidsAccessoriesRainGear,
-			CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggage,
-			CategoryBabyKidsFashionBabyKidsAccessoriesSocks,
+			CategoryBabyKidsFashionBabyKidsAccessoriesHatsCaps,
+			CategoryBabyKidsFashionBabyKidsAccessoriesEyewear,
 			CategoryBabyKidsFashionBabyKidsAccessoriesHairAccessories,
 			CategoryBabyKidsFashionBabyKidsAccessoriesGloves,
 			CategoryBabyKidsFashionBabyKidsAccessoriesBelts,
+			CategoryBabyKidsFashionBabyKidsAccessoriesSocks,
 			CategoryBabyKidsFashionBabyKidsAccessoriesJewelry,
+			CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggage,
+			CategoryBabyKidsFashionBabyKidsAccessoriesRainGear,
 			CategoryBabyKidsFashionBabyKidsAccessoriesEarmuffs,
-			CategoryBabyKidsFashionBabyKidsAccessoriesHatsCaps,
-			CategoryBabyKidsFashionBabyKidsAccessoriesEyewear,
 		},
 	}
 	CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggage = &Category{
@@ -7518,10 +7518,10 @@ var (
 		Name:   "Túi xách & vali",
 		NameEn: "Bags & Luggage",
 		Children: Categories{
+			CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageCrossbodyShoulderBags,
 			CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageTrolleyBags,
 			CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageWallets,
 			CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageBackpacks,
-			CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageCrossbodyShoulderBags,
 		},
 	}
 	CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggageBackpacks = &Category{
@@ -7614,10 +7614,10 @@ var (
 		Name:   "Trang sức",
 		NameEn: "Jewelry",
 		Children: Categories{
+			CategoryBabyKidsFashionBabyKidsAccessoriesJewelryNecklaces,
 			CategoryBabyKidsFashionBabyKidsAccessoriesJewelryRings,
 			CategoryBabyKidsFashionBabyKidsAccessoriesJewelryBracelets,
 			CategoryBabyKidsFashionBabyKidsAccessoriesJewelryEarrings,
-			CategoryBabyKidsFashionBabyKidsAccessoriesJewelryNecklaces,
 		},
 	}
 	CategoryBabyKidsFashionBabyKidsAccessoriesJewelryBracelets = &Category{
@@ -7685,7 +7685,6 @@ var (
 		Name:   "Quần áo bé trai",
 		NameEn: "Boy Clothes",
 		Children: Categories{
-			CategoryBabyKidsFashionBoyClothesCostumes,
 			CategoryBabyKidsFashionBoyClothesUnderwearInnerwear,
 			CategoryBabyKidsFashionBoyClothesSleepwear,
 			CategoryBabyKidsFashionBoyClothesSwimwear,
@@ -7693,6 +7692,7 @@ var (
 			CategoryBabyKidsFashionBoyClothesOuterwear,
 			CategoryBabyKidsFashionBoyClothesBottoms,
 			CategoryBabyKidsFashionBoyClothesSuitsSets,
+			CategoryBabyKidsFashionBoyClothesCostumes,
 		},
 	}
 	CategoryBabyKidsFashionBoyClothesCostumes = &Category{
@@ -7729,9 +7729,9 @@ var (
 		Name:   "Áo",
 		NameEn: "Tops",
 		Children: Categories{
-			CategoryBabyKidsFashionBoyClothesTopsShirts,
 			CategoryBabyKidsFashionBoyClothesTopsTshirts,
 			CategoryBabyKidsFashionBoyClothesTopsPoloShirts,
+			CategoryBabyKidsFashionBoyClothesTopsShirts,
 		},
 	}
 	CategoryBabyKidsFashionBoyClothesTopsTshirts = &Category{
@@ -7761,12 +7761,12 @@ var (
 		Name:   "Áo khoác",
 		NameEn: "Outerwear",
 		Children: Categories{
-			CategoryBabyKidsFashionBoyClothesOuterwearVests,
-			CategoryBabyKidsFashionBoyClothesOuterwearSweatersCardigans,
 			CategoryBabyKidsFashionBoyClothesOuterwearBlazers,
 			CategoryBabyKidsFashionBoyClothesOuterwearHoodies,
 			CategoryBabyKidsFashionBoyClothesOuterwearRegularJacketsCoats,
 			CategoryBabyKidsFashionBoyClothesOuterwearWinterOuterwear,
+			CategoryBabyKidsFashionBoyClothesOuterwearVests,
+			CategoryBabyKidsFashionBoyClothesOuterwearSweatersCardigans,
 		},
 	}
 	CategoryBabyKidsFashionBoyClothesOuterwearRegularJacketsCoats = &Category{
@@ -7817,10 +7817,10 @@ var (
 		Name:   "Quần",
 		NameEn: "Bottoms",
 		Children: Categories{
-			CategoryBabyKidsFashionBoyClothesBottomsJeans,
 			CategoryBabyKidsFashionBoyClothesBottomsPants,
 			CategoryBabyKidsFashionBoyClothesBottomsShorts,
 			CategoryBabyKidsFashionBoyClothesBottomsOveralls,
+			CategoryBabyKidsFashionBoyClothesBottomsJeans,
 		},
 	}
 	CategoryBabyKidsFashionBoyClothesBottomsJeans = &Category{
@@ -7864,15 +7864,15 @@ var (
 		Name:   "Quần áo bé gái",
 		NameEn: "Girl Clothes",
 		Children: Categories{
-			CategoryBabyKidsFashionGirlClothesDresses,
+			CategoryBabyKidsFashionGirlClothesOuterwear,
+			CategoryBabyKidsFashionGirlClothesBottoms,
+			CategoryBabyKidsFashionGirlClothesRompersJumpsuits,
 			CategoryBabyKidsFashionGirlClothesSuitsSets,
 			CategoryBabyKidsFashionGirlClothesCostumes,
-			CategoryBabyKidsFashionGirlClothesOuterwear,
-			CategoryBabyKidsFashionGirlClothesRompersJumpsuits,
-			CategoryBabyKidsFashionGirlClothesBottoms,
 			CategoryBabyKidsFashionGirlClothesSleepwear,
 			CategoryBabyKidsFashionGirlClothesSwimwear,
 			CategoryBabyKidsFashionGirlClothesTops,
+			CategoryBabyKidsFashionGirlClothesDresses,
 		},
 	}
 	CategoryBabyKidsFashionGirlClothesCostumes = &Category{
@@ -7950,12 +7950,12 @@ var (
 		Name:   "Áo khoác",
 		NameEn: "Outerwear",
 		Children: Categories{
-			CategoryBabyKidsFashionGirlClothesOuterwearSweatersCardigans,
-			CategoryBabyKidsFashionGirlClothesOuterwearBlazers,
-			CategoryBabyKidsFashionGirlClothesOuterwearHoodies,
 			CategoryBabyKidsFashionGirlClothesOuterwearRegularJacketsCoats,
 			CategoryBabyKidsFashionGirlClothesOuterwearWinterOuterwear,
 			CategoryBabyKidsFashionGirlClothesOuterwearVests,
+			CategoryBabyKidsFashionGirlClothesOuterwearSweatersCardigans,
+			CategoryBabyKidsFashionGirlClothesOuterwearBlazers,
+			CategoryBabyKidsFashionGirlClothesOuterwearHoodies,
 		},
 	}
 	CategoryBabyKidsFashionGirlClothesOuterwearRegularJacketsCoats = &Category{
@@ -8006,11 +8006,11 @@ var (
 		Name:   "Quần",
 		NameEn: "Bottoms",
 		Children: Categories{
-			CategoryBabyKidsFashionGirlClothesBottomsSkirts,
-			CategoryBabyKidsFashionGirlClothesBottomsLeggings,
 			CategoryBabyKidsFashionGirlClothesBottomsJeans,
 			CategoryBabyKidsFashionGirlClothesBottomsPants,
 			CategoryBabyKidsFashionGirlClothesBottomsShorts,
+			CategoryBabyKidsFashionGirlClothesBottomsSkirts,
+			CategoryBabyKidsFashionGirlClothesBottomsLeggings,
 		},
 	}
 	CategoryBabyKidsFashionGirlClothesBottomsJeans = &Category{
@@ -8075,12 +8075,12 @@ var (
 		Name:   "Giày bé trai",
 		NameEn: "Boy Shoes",
 		Children: Categories{
-			CategoryBabyKidsFashionBoyShoesSneakers,
 			CategoryBabyKidsFashionBoyShoesFlipFlops,
 			CategoryBabyKidsFashionBoyShoesFormalShoes,
 			CategoryBabyKidsFashionBoyShoesLoafers,
 			CategoryBabyKidsFashionBoyShoesBoots,
 			CategoryBabyKidsFashionBoyShoesSandals,
+			CategoryBabyKidsFashionBoyShoesSneakers,
 		},
 	}
 	CategoryBabyKidsFashionBoyShoesBoots = &Category{
@@ -8131,12 +8131,12 @@ var (
 		Name:   "Giày bé gái",
 		NameEn: "Girl Shoes",
 		Children: Categories{
-			CategoryBabyKidsFashionGirlShoesBoots,
 			CategoryBabyKidsFashionGirlShoesSandals,
 			CategoryBabyKidsFashionGirlShoesSneakers,
 			CategoryBabyKidsFashionGirlShoesLoafers,
 			CategoryBabyKidsFashionGirlShoesFlipFlops,
 			CategoryBabyKidsFashionGirlShoesFlats,
+			CategoryBabyKidsFashionGirlShoesBoots,
 		},
 	}
 	CategoryBabyKidsFashionGirlShoesBoots = &Category{
@@ -8198,14 +8198,14 @@ var (
 		Name:   "Máy chơi game",
 		NameEn: "Console Machines",
 		Children: Categories{
+			CategoryGamingConsolesConsoleMachinesGameboy,
+			CategoryGamingConsolesConsoleMachinesSwitch,
 			CategoryGamingConsolesConsoleMachinesPSVita,
 			CategoryGamingConsolesConsoleMachinesPSP,
 			CategoryGamingConsolesConsoleMachinesPlaystation,
 			CategoryGamingConsolesConsoleMachinesXbox,
 			CategoryGamingConsolesConsoleMachinesWii,
 			CategoryGamingConsolesConsoleMachinesNintendoDS,
-			CategoryGamingConsolesConsoleMachinesGameboy,
-			CategoryGamingConsolesConsoleMachinesSwitch,
 		},
 	}
 	CategoryGamingConsolesConsoleMachinesPlaystation = &Category{
@@ -8277,15 +8277,15 @@ var (
 		Name:   "Video Games",
 		NameEn: "Video Games",
 		Children: Categories{
+			CategoryGamingConsolesVideoGamesNintendoDS,
+			CategoryGamingConsolesVideoGamesGameboy,
+			CategoryGamingConsolesVideoGamesPSP,
 			CategoryGamingConsolesVideoGamesPlaystation,
 			CategoryGamingConsolesVideoGamesWii,
 			CategoryGamingConsolesVideoGamesSwitch,
 			CategoryGamingConsolesVideoGamesPSVita,
-			CategoryGamingConsolesVideoGamesPSP,
-			CategoryGamingConsolesVideoGamesXbox,
-			CategoryGamingConsolesVideoGamesNintendoDS,
-			CategoryGamingConsolesVideoGamesGameboy,
 			CategoryGamingConsolesVideoGamesPCGame,
+			CategoryGamingConsolesVideoGamesXbox,
 		},
 	}
 	CategoryGamingConsolesVideoGamesPlaystation = &Category{
@@ -8357,7 +8357,6 @@ var (
 		Name:   "Cameras & Flycam",
 		NameEn: "Cameras & Drones",
 		Children: Categories{
-			CategoryCamerasDronesCameraAccessories,
 			CategoryCamerasDronesCameraCare,
 			CategoryCamerasDronesDrones,
 			CategoryCamerasDronesDroneAccessories,
@@ -8365,6 +8364,7 @@ var (
 			CategoryCamerasDronesSecurityCamerasSystems,
 			CategoryCamerasDronesLenses,
 			CategoryCamerasDronesLensAccessories,
+			CategoryCamerasDronesCameraAccessories,
 		},
 	}
 	CategoryCamerasDronesCameras = &Category{
@@ -8373,13 +8373,13 @@ var (
 		Name:   "Máy ảnh",
 		NameEn: "Cameras",
 		Children: Categories{
-			CategoryCamerasDronesCamerasInstantCameras,
-			CategoryCamerasDronesCamerasAnalogCameras,
 			CategoryCamerasDronesCamerasDSLRs,
 			CategoryCamerasDronesCamerasPointShoot,
 			CategoryCamerasDronesCamerasMirrorlessCameras,
 			CategoryCamerasDronesCamerasActionCameras,
 			CategoryCamerasDronesCamerasVideoCamcorders,
+			CategoryCamerasDronesCamerasInstantCameras,
+			CategoryCamerasDronesCamerasAnalogCameras,
 		},
 	}
 	CategoryCamerasDronesCamerasPointShoot = &Category{
@@ -8437,9 +8437,9 @@ var (
 		Name:   "Camera giám sát",
 		NameEn: "Security Cameras & Systems",
 		Children: Categories{
-			CategoryCamerasDronesSecurityCamerasSystemsDVRs,
 			CategoryCamerasDronesSecurityCamerasSystemsDummyCameras,
 			CategoryCamerasDronesSecurityCamerasSystemsCCTVSecurityCameras,
+			CategoryCamerasDronesSecurityCamerasSystemsDVRs,
 		},
 	}
 	CategoryCamerasDronesSecurityCamerasSystemsCCTVSecurityCameras = &Category{
@@ -8476,11 +8476,11 @@ var (
 		Name:   "Phụ kiện ống kính",
 		NameEn: "Lens Accessories",
 		Children: Categories{
+			CategoryCamerasDronesLensAccessoriesOther,
 			CategoryCamerasDronesLensAccessoriesLensMountAdaptors,
 			CategoryCamerasDronesLensAccessoriesLensCaps,
 			CategoryCamerasDronesLensAccessoriesFilters,
 			CategoryCamerasDronesLensAccessoriesLensHoods,
-			CategoryCamerasDronesLensAccessoriesOther,
 		},
 	}
 	CategoryCamerasDronesLensAccessoriesLensMountAdaptors = &Category{
@@ -8524,16 +8524,16 @@ var (
 		Name:   "Phụ kiện máy ảnh",
 		NameEn: "Camera Accessories",
 		Children: Categories{
+			CategoryCamerasDronesCameraAccessoriesGimbalsStabilizers,
+			CategoryCamerasDronesCameraAccessoriesLightingStudioEquipments,
+			CategoryCamerasDronesCameraAccessoriesBatteryChargers,
+			CategoryCamerasDronesCameraAccessoriesBatteriesBatteryGrips,
 			CategoryCamerasDronesCameraAccessoriesTripodsMonopodsAccessories,
 			CategoryCamerasDronesCameraAccessoriesFlashes,
 			CategoryCamerasDronesCameraAccessoriesFlashAccessories,
-			CategoryCamerasDronesCameraAccessoriesGimbalsStabilizers,
-			CategoryCamerasDronesCameraAccessoriesLightingStudioEquipments,
-			CategoryCamerasDronesCameraAccessoriesPhotoFilmsPapers,
 			CategoryCamerasDronesCameraAccessoriesCameraCasesBags,
-			CategoryCamerasDronesCameraAccessoriesBatteryChargers,
+			CategoryCamerasDronesCameraAccessoriesPhotoFilmsPapers,
 			CategoryCamerasDronesCameraAccessoriesPhotoPrinters,
-			CategoryCamerasDronesCameraAccessoriesBatteriesBatteryGrips,
 		},
 	}
 	CategoryCamerasDronesCameraAccessoriesFlashes = &Category{
@@ -8549,8 +8549,8 @@ var (
 		Name:   "Phụ kiện đèn Flash",
 		NameEn: "Flash Accessories",
 		Children: Categories{
-			CategoryCamerasDronesCameraAccessoriesFlashAccessoriesFlashDiffusers,
 			CategoryCamerasDronesCameraAccessoriesFlashAccessoriesFlashTriggers,
+			CategoryCamerasDronesCameraAccessoriesFlashAccessoriesFlashDiffusers,
 		},
 	}
 	CategoryCamerasDronesCameraAccessoriesFlashAccessoriesFlashTriggers = &Category{
@@ -8629,11 +8629,11 @@ var (
 		Name:   "Phụ kiện chăm sóc máy ảnh",
 		NameEn: "Camera Care",
 		Children: Categories{
+			CategoryCamerasDronesCameraCareLenspensBrushes,
 			CategoryCamerasDronesCameraCareDryBoxesCabinets,
 			CategoryCamerasDronesCameraCareCleaningKit,
 			CategoryCamerasDronesCameraCareSilicaGel,
 			CategoryCamerasDronesCameraCareBlowers,
-			CategoryCamerasDronesCameraCareLenspensBrushes,
 		},
 	}
 	CategoryCamerasDronesCameraCareDryBoxesCabinets = &Category{
@@ -8691,22 +8691,22 @@ var (
 		Name:   "Nhà cửa & Đời sống",
 		NameEn: "Home & Living",
 		Children: Categories{
+			CategoryHomeLivingLighting,
+			CategoryHomeLivingSafetySecurity,
+			CategoryHomeLivingPartySupplies,
+			CategoryHomeLivingGardening,
+			CategoryHomeLivingBathrooms,
+			CategoryHomeLivingBedding,
+			CategoryHomeLivingDecoration,
+			CategoryHomeLivingToolsHomeImprovement,
+			CategoryHomeLivingHomeCareSupplies,
+			CategoryHomeLivingKitchenware,
 			CategoryHomeLivingDinnerware,
 			CategoryHomeLivingHomeFragranceAromatherapy,
 			CategoryHomeLivingFurniture,
-			CategoryHomeLivingGardening,
-			CategoryHomeLivingToolsHomeImprovement,
 			CategoryHomeLivingFengshuiReligiousSupplies,
-			CategoryHomeLivingBedding,
 			CategoryHomeLivingHandWarmersHotWaterBagsIceBags,
-			CategoryHomeLivingLighting,
 			CategoryHomeLivingHomeOrganizers,
-			CategoryHomeLivingDecoration,
-			CategoryHomeLivingHomeCareSupplies,
-			CategoryHomeLivingSafetySecurity,
-			CategoryHomeLivingPartySupplies,
-			CategoryHomeLivingBathrooms,
-			CategoryHomeLivingKitchenware,
 		},
 	}
 	CategoryHomeLivingHomeFragranceAromatherapy = &Category{
@@ -8748,18 +8748,18 @@ var (
 		NameEn: "Bathrooms",
 		Children: Categories{
 			CategoryHomeLivingBathroomsOther,
-			CategoryHomeLivingBathroomsToiletBowlsSeatsCovers,
-			CategoryHomeLivingBathroomsBathroomRacksCabinets,
-			CategoryHomeLivingBathroomsBathtubs,
-			CategoryHomeLivingBathroomsBathBrushesLoofahs,
-			CategoryHomeLivingBathroomsShowerSeatsCommodes,
-			CategoryHomeLivingBathroomsSafetyHandles,
-			CategoryHomeLivingBathroomsShowerCaps,
-			CategoryHomeLivingBathroomsToothbrushHoldersToothpasteDispensers,
 			CategoryHomeLivingBathroomsSoapDispensersHoldersBoxes,
 			CategoryHomeLivingBathroomsTowelsBathrobes,
-			CategoryHomeLivingBathroomsShowerheadsBidetSprays,
+			CategoryHomeLivingBathroomsBathBrushesLoofahs,
 			CategoryHomeLivingBathroomsShowerCurtains,
+			CategoryHomeLivingBathroomsSafetyHandles,
+			CategoryHomeLivingBathroomsShowerSeatsCommodes,
+			CategoryHomeLivingBathroomsShowerCaps,
+			CategoryHomeLivingBathroomsToiletBowlsSeatsCovers,
+			CategoryHomeLivingBathroomsToothbrushHoldersToothpasteDispensers,
+			CategoryHomeLivingBathroomsBathroomRacksCabinets,
+			CategoryHomeLivingBathroomsBathtubs,
+			CategoryHomeLivingBathroomsShowerheadsBidetSprays,
 		},
 	}
 	CategoryHomeLivingBathroomsToiletBowlsSeatsCovers = &Category{
@@ -8803,10 +8803,10 @@ var (
 		Name:   "Khăn mặt, khăn tắm, áo choàng tắm",
 		NameEn: "Towels & Bathrobes",
 		Children: Categories{
-			CategoryHomeLivingBathroomsTowelsBathrobesBathTowels,
 			CategoryHomeLivingBathroomsTowelsBathrobesFaceHandTowels,
 			CategoryHomeLivingBathroomsTowelsBathrobesBathRobes,
 			CategoryHomeLivingBathroomsTowelsBathrobesOther,
+			CategoryHomeLivingBathroomsTowelsBathrobesBathTowels,
 		},
 	}
 	CategoryHomeLivingBathroomsTowelsBathrobesBathTowels = &Category{
@@ -8892,15 +8892,15 @@ var (
 		Name:   "Chăn ga gối nệm",
 		NameEn: "Bedding",
 		Children: Categories{
-			CategoryHomeLivingBeddingMattressProtectorsToppers,
-			CategoryHomeLivingBeddingBlanketsComfortersQuilts,
-			CategoryHomeLivingBeddingMosquitoNets,
-			CategoryHomeLivingBeddingBolsters,
 			CategoryHomeLivingBeddingCoolingMats,
+			CategoryHomeLivingBeddingMattressProtectorsToppers,
 			CategoryHomeLivingBeddingPillows,
-			CategoryHomeLivingBeddingBedsheetsPillowcasesBolsterCases,
 			CategoryHomeLivingBeddingMatresses,
+			CategoryHomeLivingBeddingBolsters,
 			CategoryHomeLivingBeddingOther,
+			CategoryHomeLivingBeddingBlanketsComfortersQuilts,
+			CategoryHomeLivingBeddingBedsheetsPillowcasesBolsterCases,
+			CategoryHomeLivingBeddingMosquitoNets,
 		},
 	}
 	CategoryHomeLivingBeddingCoolingMats = &Category{
@@ -8972,19 +8972,19 @@ var (
 		Name:   "Trang trí nhà cửa",
 		NameEn: "Decoration",
 		Children: Categories{
-			CategoryHomeLivingDecorationWallpapersWallStickers,
-			CategoryHomeLivingDecorationFloorMats,
-			CategoryHomeLivingDecorationVasesVessels,
-			CategoryHomeLivingDecorationCandlesCandleholders,
 			CategoryHomeLivingDecorationFlowers,
 			CategoryHomeLivingDecorationFurnitureApplianceCovers,
 			CategoryHomeLivingDecorationCurtainsBlinds,
 			CategoryHomeLivingDecorationPhotoFramesWallDecoration,
-			CategoryHomeLivingDecorationMirrors,
 			CategoryHomeLivingDecorationClocks,
-			CategoryHomeLivingDecorationCarpetsRugs,
-			CategoryHomeLivingDecorationTableCloths,
+			CategoryHomeLivingDecorationFloorMats,
+			CategoryHomeLivingDecorationVasesVessels,
+			CategoryHomeLivingDecorationCandlesCandleholders,
 			CategoryHomeLivingDecorationOther,
+			CategoryHomeLivingDecorationWallpapersWallStickers,
+			CategoryHomeLivingDecorationCarpetsRugs,
+			CategoryHomeLivingDecorationMirrors,
+			CategoryHomeLivingDecorationTableCloths,
 		},
 	}
 	CategoryHomeLivingDecorationFlowers = &Category{
@@ -9091,15 +9091,15 @@ var (
 		Name:   "Nội thất",
 		NameEn: "Furniture",
 		Children: Categories{
+			CategoryHomeLivingFurnitureDoorstoppers,
+			CategoryHomeLivingFurnitureSofas,
+			CategoryHomeLivingFurnitureWardrobes,
+			CategoryHomeLivingFurnitureBenchesChairsStools,
+			CategoryHomeLivingFurnitureCupboardsCabinets,
+			CategoryHomeLivingFurnitureShelvesRacks,
+			CategoryHomeLivingFurnitureCushions,
 			CategoryHomeLivingFurnitureBedFramesHeadboards,
 			CategoryHomeLivingFurnitureDesksTables,
-			CategoryHomeLivingFurnitureWardrobes,
-			CategoryHomeLivingFurnitureCupboardsCabinets,
-			CategoryHomeLivingFurnitureCushions,
-			CategoryHomeLivingFurnitureDoorstoppers,
-			CategoryHomeLivingFurnitureBenchesChairsStools,
-			CategoryHomeLivingFurnitureSofas,
-			CategoryHomeLivingFurnitureShelvesRacks,
 		},
 	}
 	CategoryHomeLivingFurnitureCushions = &Category{
@@ -9171,16 +9171,16 @@ var (
 		Name:   "Làm vườn",
 		NameEn: "Gardening",
 		Children: Categories{
-			CategoryHomeLivingGardeningPotsPlanters,
-			CategoryHomeLivingGardeningIrrigationSystems,
-			CategoryHomeLivingGardeningOther,
-			CategoryHomeLivingGardeningSeedsBulbs,
-			CategoryHomeLivingGardeningGardenDecorations,
-			CategoryHomeLivingGardeningGardenSoilsGrowingMedia,
-			CategoryHomeLivingGardeningFertilizer,
-			CategoryHomeLivingGardeningGardeningTools,
 			CategoryHomeLivingGardeningLawnMowers,
 			CategoryHomeLivingGardeningPlants,
+			CategoryHomeLivingGardeningGardenSoilsGrowingMedia,
+			CategoryHomeLivingGardeningSeedsBulbs,
+			CategoryHomeLivingGardeningPotsPlanters,
+			CategoryHomeLivingGardeningIrrigationSystems,
+			CategoryHomeLivingGardeningGardeningTools,
+			CategoryHomeLivingGardeningGardenDecorations,
+			CategoryHomeLivingGardeningFertilizer,
+			CategoryHomeLivingGardeningOther,
 		},
 	}
 	CategoryHomeLivingGardeningPlants = &Category{
@@ -9261,18 +9261,18 @@ var (
 		Children: Categories{
 			CategoryHomeLivingToolsHomeImprovementIndustrialAdhesivesTapes,
 			CategoryHomeLivingToolsHomeImprovementSinksWaterTaps,
-			CategoryHomeLivingToolsHomeImprovementLadders,
-			CategoryHomeLivingToolsHomeImprovementOther,
-			CategoryHomeLivingToolsHomeImprovementRoofingFlooring,
 			CategoryHomeLivingToolsHomeImprovementProtectiveGlovesGogglesMasks,
 			CategoryHomeLivingToolsHomeImprovementWallPaintsCoatings,
 			CategoryHomeLivingToolsHomeImprovementAirPumpsPartsAccessories,
 			CategoryHomeLivingToolsHomeImprovementTrollies,
-			CategoryHomeLivingToolsHomeImprovementShadesAwningsTarpaulins,
-			CategoryHomeLivingToolsHomeImprovementConstructionMaterials,
 			CategoryHomeLivingToolsHomeImprovementDoorsWindows,
 			CategoryHomeLivingToolsHomeImprovementTools,
+			CategoryHomeLivingToolsHomeImprovementLadders,
+			CategoryHomeLivingToolsHomeImprovementShadesAwningsTarpaulins,
+			CategoryHomeLivingToolsHomeImprovementRoofingFlooring,
 			CategoryHomeLivingToolsHomeImprovementWaterPumpsPartsAccessories,
+			CategoryHomeLivingToolsHomeImprovementConstructionMaterials,
+			CategoryHomeLivingToolsHomeImprovementOther,
 		},
 	}
 	CategoryHomeLivingToolsHomeImprovementIndustrialAdhesivesTapes = &Category{
@@ -9316,24 +9316,24 @@ var (
 		Name:   "Dụng cụ",
 		NameEn: "Tools",
 		Children: Categories{
-			CategoryHomeLivingToolsHomeImprovementToolsMeasuringTapes,
-			CategoryHomeLivingToolsHomeImprovementToolsSpannerSets,
-			CategoryHomeLivingToolsHomeImprovementToolsPowerGenerators,
-			CategoryHomeLivingToolsHomeImprovementToolsDrillsScrewdriversAccessories,
-			CategoryHomeLivingToolsHomeImprovementToolsPressureWashers,
-			CategoryHomeLivingToolsHomeImprovementToolsLevelsMeasuringWheels,
-			CategoryHomeLivingToolsHomeImprovementToolsBlowers,
-			CategoryHomeLivingToolsHomeImprovementToolsOther,
-			CategoryHomeLivingToolsHomeImprovementToolsPliers,
-			CategoryHomeLivingToolsHomeImprovementToolsElectricalTestersMultimeters,
-			CategoryHomeLivingToolsHomeImprovementToolsRangefinders,
-			CategoryHomeLivingToolsHomeImprovementToolsAirCompressors,
-			CategoryHomeLivingToolsHomeImprovementToolsPowerWeldingTools,
-			CategoryHomeLivingToolsHomeImprovementToolsToolBoxes,
-			CategoryHomeLivingToolsHomeImprovementToolsHammers,
 			CategoryHomeLivingToolsHomeImprovementToolsNailsScrewsFasteners,
 			CategoryHomeLivingToolsHomeImprovementToolsSawsCutoffMachinesGrinders,
+			CategoryHomeLivingToolsHomeImprovementToolsElectricalTestersMultimeters,
+			CategoryHomeLivingToolsHomeImprovementToolsBlowers,
+			CategoryHomeLivingToolsHomeImprovementToolsOther,
+			CategoryHomeLivingToolsHomeImprovementToolsToolBoxes,
+			CategoryHomeLivingToolsHomeImprovementToolsPressureWashers,
+			CategoryHomeLivingToolsHomeImprovementToolsAirCompressors,
+			CategoryHomeLivingToolsHomeImprovementToolsSpannerSets,
+			CategoryHomeLivingToolsHomeImprovementToolsHammers,
+			CategoryHomeLivingToolsHomeImprovementToolsPliers,
+			CategoryHomeLivingToolsHomeImprovementToolsDrillsScrewdriversAccessories,
+			CategoryHomeLivingToolsHomeImprovementToolsLevelsMeasuringWheels,
+			CategoryHomeLivingToolsHomeImprovementToolsRangefinders,
+			CategoryHomeLivingToolsHomeImprovementToolsMeasuringTapes,
 			CategoryHomeLivingToolsHomeImprovementToolsSandpaperPowerSandersAccessories,
+			CategoryHomeLivingToolsHomeImprovementToolsPowerWeldingTools,
+			CategoryHomeLivingToolsHomeImprovementToolsPowerGenerators,
 		},
 	}
 	CategoryHomeLivingToolsHomeImprovementToolsToolBoxes = &Category{
@@ -9523,21 +9523,21 @@ var (
 		Name:   "Dụng cụ chăm sóc nhà cửa",
 		NameEn: "Home Care Supplies",
 		Children: Categories{
-			CategoryHomeLivingHomeCareSuppliesPlasticBagsTrashBags,
-			CategoryHomeLivingHomeCareSuppliesPestWeedControl,
-			CategoryHomeLivingHomeCareSuppliesLaundryCare,
 			CategoryHomeLivingHomeCareSuppliesBrooms,
-			CategoryHomeLivingHomeCareSuppliesMops,
-			CategoryHomeLivingHomeCareSuppliesCleaningAgents,
-			CategoryHomeLivingHomeCareSuppliesBasinsBucketsWaterDippers,
+			CategoryHomeLivingHomeCareSuppliesCleaningCloths,
 			CategoryHomeLivingHomeCareSuppliesTissuePaperTowels,
-			CategoryHomeLivingHomeCareSuppliesDusters,
-			CategoryHomeLivingHomeCareSuppliesTrashRecyclingBins,
-			CategoryHomeLivingHomeCareSuppliesToiletPaper,
 			CategoryHomeLivingHomeCareSuppliesClotheslinesDryingRacks,
 			CategoryHomeLivingHomeCareSuppliesCleaningBrushes,
+			CategoryHomeLivingHomeCareSuppliesDusters,
+			CategoryHomeLivingHomeCareSuppliesMops,
+			CategoryHomeLivingHomeCareSuppliesBasinsBucketsWaterDippers,
+			CategoryHomeLivingHomeCareSuppliesPlasticBagsTrashBags,
+			CategoryHomeLivingHomeCareSuppliesPestWeedControl,
+			CategoryHomeLivingHomeCareSuppliesCleaningAgents,
+			CategoryHomeLivingHomeCareSuppliesTrashRecyclingBins,
+			CategoryHomeLivingHomeCareSuppliesToiletPaper,
 			CategoryHomeLivingHomeCareSuppliesSpongesScouringPads,
-			CategoryHomeLivingHomeCareSuppliesCleaningCloths,
+			CategoryHomeLivingHomeCareSuppliesLaundryCare,
 		},
 	}
 	CategoryHomeLivingHomeCareSuppliesClotheslinesDryingRacks = &Category{
@@ -9643,10 +9643,10 @@ var (
 		Name:   "Phụ kiện giặt là",
 		NameEn: "Laundry Care",
 		Children: Categories{
+			CategoryHomeLivingHomeCareSuppliesLaundryCareFabricFragrances,
 			CategoryHomeLivingHomeCareSuppliesLaundryCareFabricConditionersSofteners,
 			CategoryHomeLivingHomeCareSuppliesLaundryCareDetergents,
 			CategoryHomeLivingHomeCareSuppliesLaundryCareOther,
-			CategoryHomeLivingHomeCareSuppliesLaundryCareFabricFragrances,
 		},
 	}
 	CategoryHomeLivingHomeCareSuppliesLaundryCareFabricFragrances = &Category{
@@ -9683,27 +9683,27 @@ var (
 		Name:   "Dụng cụ nhà bếp",
 		NameEn: "Kitchenware",
 		Children: Categories{
-			CategoryHomeLivingKitchenwareApronsKitchenGloves,
-			CategoryHomeLivingKitchenwareWhisksBeaters,
-			CategoryHomeLivingKitchenwareKitchenRacks,
-			CategoryHomeLivingKitchenwareSpatulasCookingTweezers,
-			CategoryHomeLivingKitchenwareChoppingBoards,
-			CategoryHomeLivingKitchenwareKnivesKitchenScissors,
-			CategoryHomeLivingKitchenwareMeasuringGlassesSpoons,
 			CategoryHomeLivingKitchenwarePans,
-			CategoryHomeLivingKitchenwareAluminiumFoil,
-			CategoryHomeLivingKitchenwareTeaCoffeeBartendingEquipments,
-			CategoryHomeLivingKitchenwareSealers,
-			CategoryHomeLivingKitchenwareOther,
-			CategoryHomeLivingKitchenwareCanBottleOpeners,
-			CategoryHomeLivingKitchenwareKitchenWeighingScales,
+			CategoryHomeLivingKitchenwareSpatulasCookingTweezers,
+			CategoryHomeLivingKitchenwareWhisksBeaters,
 			CategoryHomeLivingKitchenwareGrillsAccessories,
-			CategoryHomeLivingKitchenwarePots,
-			CategoryHomeLivingKitchenwareClingWrap,
 			CategoryHomeLivingKitchenwareGratersPeelersCutters,
-			CategoryHomeLivingKitchenwareBakewaresDecorations,
+			CategoryHomeLivingKitchenwareCanBottleOpeners,
+			CategoryHomeLivingKitchenwarePots,
 			CategoryHomeLivingKitchenwareFoodStorage,
+			CategoryHomeLivingKitchenwareClingWrap,
+			CategoryHomeLivingKitchenwareChoppingBoards,
+			CategoryHomeLivingKitchenwareMeasuringGlassesSpoons,
+			CategoryHomeLivingKitchenwareKitchenWeighingScales,
+			CategoryHomeLivingKitchenwareSealers,
+			CategoryHomeLivingKitchenwareBakewaresDecorations,
+			CategoryHomeLivingKitchenwareTeaCoffeeBartendingEquipments,
+			CategoryHomeLivingKitchenwareKitchenRacks,
+			CategoryHomeLivingKitchenwareApronsKitchenGloves,
+			CategoryHomeLivingKitchenwareKnivesKitchenScissors,
 			CategoryHomeLivingKitchenwareStrainers,
+			CategoryHomeLivingKitchenwareOther,
+			CategoryHomeLivingKitchenwareAluminiumFoil,
 		},
 	}
 	CategoryHomeLivingKitchenwareGrillsAccessories = &Category{
@@ -9859,17 +9859,17 @@ var (
 		Name:   "Bộ đồ bàn ăn",
 		NameEn: "Dinnerware",
 		Children: Categories{
+			CategoryHomeLivingDinnerwareTeaPotsSets,
+			CategoryHomeLivingDinnerwareBowls,
 			CategoryHomeLivingDinnerwarePlates,
-			CategoryHomeLivingDinnerwareStraws,
+			CategoryHomeLivingDinnerwareCutleries,
 			CategoryHomeLivingDinnerwareFoodCovers,
 			CategoryHomeLivingDinnerwarePlacematsCoasters,
-			CategoryHomeLivingDinnerwareTeaPotsSets,
-			CategoryHomeLivingDinnerwareCupsMugsGlasses,
-			CategoryHomeLivingDinnerwareWaterBottlesAccessories,
-			CategoryHomeLivingDinnerwareBowls,
-			CategoryHomeLivingDinnerwareCutleries,
 			CategoryHomeLivingDinnerwareOther,
 			CategoryHomeLivingDinnerwareJugsPitchersAccessories,
+			CategoryHomeLivingDinnerwareWaterBottlesAccessories,
+			CategoryHomeLivingDinnerwareStraws,
+			CategoryHomeLivingDinnerwareCupsMugsGlasses,
 		},
 	}
 	CategoryHomeLivingDinnerwareJugsPitchersAccessories = &Category{
@@ -9993,16 +9993,16 @@ var (
 		Name:   "Sắp xếp nhà cửa",
 		NameEn: "Home Organizers",
 		Children: Categories{
-			CategoryHomeLivingHomeOrganizersHooks,
 			CategoryHomeLivingHomeOrganizersLaundryBagsBaskets,
-			CategoryHomeLivingHomeOrganizersJewelryOrganizers,
-			CategoryHomeLivingHomeOrganizersHangersPegs,
-			CategoryHomeLivingHomeOrganizersStorageBoxesBagsBaskets,
 			CategoryHomeLivingHomeOrganizersWardrobeOrganizers,
-			CategoryHomeLivingHomeOrganizersTissueHolders,
-			CategoryHomeLivingHomeOrganizersOther,
+			CategoryHomeLivingHomeOrganizersHangersPegs,
 			CategoryHomeLivingHomeOrganizersShoeStorageBoxes,
 			CategoryHomeLivingHomeOrganizersDeskOrganizers,
+			CategoryHomeLivingHomeOrganizersJewelryOrganizers,
+			CategoryHomeLivingHomeOrganizersTissueHolders,
+			CategoryHomeLivingHomeOrganizersOther,
+			CategoryHomeLivingHomeOrganizersStorageBoxesBagsBaskets,
+			CategoryHomeLivingHomeOrganizersHooks,
 		},
 	}
 	CategoryHomeLivingHomeOrganizersHangersPegs = &Category{
@@ -10081,7 +10081,6 @@ var (
 		Name:   "Trang trí tiệc tùng",
 		NameEn: "Party Supplies",
 		Children: Categories{
-			CategoryHomeLivingPartySuppliesCards,
 			CategoryHomeLivingPartySuppliesDisposableTableware,
 			CategoryHomeLivingPartySuppliesPartyHatsMasks,
 			CategoryHomeLivingPartySuppliesSashes,
@@ -10089,6 +10088,7 @@ var (
 			CategoryHomeLivingPartySuppliesBalloons,
 			CategoryHomeLivingPartySuppliesWoodenClips,
 			CategoryHomeLivingPartySuppliesBackdropsBanners,
+			CategoryHomeLivingPartySuppliesCards,
 		},
 	}
 	CategoryHomeLivingPartySuppliesBalloons = &Category{
@@ -10171,32 +10171,32 @@ var (
 		Name:   "Dụng Cụ Thể Thao & Dã Ngoại",
 		NameEn: "Sports & Outdoor Recreation Equipments",
 		Children: Categories{
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArts,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSquash,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsShootingSurvivalGames,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSurfingWakeboarding,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsIceSkatingWinterSports,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsDarts,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHiking,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakraw,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadminton,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennis,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBaseballSoftball,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolf,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsShootingSurvivalGames,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsRugby,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSurfingWakeboarding,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDiving,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyball,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipment,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakraw,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCycling,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHiking,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennis,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArts,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSquash,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsIceSkatingWinterSports,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilates,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishing,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsDarts,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsports,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketball,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyball,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennis,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBaseballSoftball,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBilliards,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDiving,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipment,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoating,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsOther,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsRockClimbing,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCycling,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolf,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsRugby,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoating,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishing,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishing = &Category{
@@ -10205,14 +10205,14 @@ var (
 		Name:   "Câu Cá",
 		NameEn: "Fishing",
 		Children: Categories{
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingRodsReels,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishFinders,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingLines,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingLuresBaits,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingBags,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingNets,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingOther,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingHooks,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingRodsReels,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishFinders,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingLines,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingLuresBaits,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishingFishingHooks = &Category{
@@ -10277,10 +10277,10 @@ var (
 		Name:   "Đạp Xe",
 		NameEn: "Cycling",
 		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingOther,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingBicycles,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingBicyclePartsAccessories,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingCyclingHelmets,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingOther,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCyclingBicycles = &Category{
@@ -10319,15 +10319,15 @@ var (
 		Children: Categories{
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingLampsFlashlights,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingTentsTentAccessories,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingSleepingBags,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCompasses,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHammocks,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingPicnicMatsBaskets,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingCookware,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingKnivesSurvivalKits,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHikingSticks,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingOther,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingCookware,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingSleepingBags,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingBinocularsMonocularsTelescopes,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCompasses,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingKnivesSurvivalKits,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHammocks,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingHikingSticks,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHikingCampingCookware = &Category{
@@ -10420,10 +10420,10 @@ var (
 		Name:   "Thể Thao Ván Trượt",
 		NameEn: "Boardsports",
 		Children: Categories{
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSegwaysHoverboards,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsHelmetsProtectiveGears,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSkateboardsRollerBlades,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsScootersUnicycles,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSegwaysHoverboards,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsportsSkateboardsRollerBlades = &Category{
@@ -10460,9 +10460,9 @@ var (
 		Name:   "Bóng Đá, Futsal & Cầu Mây",
 		NameEn: "Soccer, Futsal & Sepak Takraw",
 		Children: Categories{
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalkeeperGlovesShinGuards,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalPostsNets,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawBalls,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawGoalkeeperGlovesShinGuards,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakrawBalls = &Category{
@@ -10588,10 +10588,10 @@ var (
 		Name:   "Tennis",
 		NameEn: "Tennis",
 		Children: Categories{
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisNets,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisOther,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisRackets,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisBalls,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisNets,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisOther,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennisTennisRackets = &Category{
@@ -10628,9 +10628,9 @@ var (
 		Name:   "Bóng Bàn",
 		NameEn: "Table Tennis",
 		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisNets,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBalls,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBats,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisNets,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennisTableTennisBalls = &Category{
@@ -10692,11 +10692,11 @@ var (
 		Name:   "Golf",
 		NameEn: "Golf",
 		Children: Categories{
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfClubs,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGearsTrainingEquipment,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfBagsOrganizers,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfOther,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfBalls,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfClubs,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolfGolfBalls = &Category{
@@ -10789,13 +10789,13 @@ var (
 		Name:   "Bơi Lội & Lặn",
 		NameEn: "Swimming & Diving",
 		Children: Categories{
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingFlippers,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingLifeJackets,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingCaps,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingGoggles,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingBoards,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingFlashlights,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingDivingMasks,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingFlippers,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingLifeJackets,
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingCaps,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDivingSwimmingCaps = &Category{
@@ -10860,9 +10860,9 @@ var (
 		Name:   "Yoga & Pilates",
 		NameEn: "Yoga & Pilates",
 		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesYogaMats,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesYogaBlocksRingsFoamRollers,
 			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesResistanceBands,
-			CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesYogaMats,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilatesYogaMats = &Category{
@@ -10970,17 +10970,17 @@ var (
 		Name:   "Giày Thể Thao",
 		NameEn: "Sport Footwear",
 		Children: Categories{
-			CategorySportsOutdoorsSportFootwearSoccerShoes,
-			CategorySportsOutdoorsSportFootwearKidsSportShoes,
-			CategorySportsOutdoorsSportFootwearTrainingShoes,
+			CategorySportsOutdoorsSportFootwearRunningShoes,
 			CategorySportsOutdoorsSportFootwearTennisShoes,
-			CategorySportsOutdoorsSportFootwearVolleyballShoes,
+			CategorySportsOutdoorsSportFootwearKidsSportShoes,
 			CategorySportsOutdoorsSportFootwearBadmintonShoes,
 			CategorySportsOutdoorsSportFootwearFutsalShoes,
 			CategorySportsOutdoorsSportFootwearHikingShoes,
-			CategorySportsOutdoorsSportFootwearBasketballShoes,
-			CategorySportsOutdoorsSportFootwearRunningShoes,
+			CategorySportsOutdoorsSportFootwearSoccerShoes,
 			CategorySportsOutdoorsSportFootwearOther,
+			CategorySportsOutdoorsSportFootwearBasketballShoes,
+			CategorySportsOutdoorsSportFootwearTrainingShoes,
+			CategorySportsOutdoorsSportFootwearVolleyballShoes,
 		},
 	}
 	CategorySportsOutdoorsSportFootwearBasketballShoes = &Category{
@@ -11066,14 +11066,14 @@ var (
 		Name:   "Thời Trang Thể Thao & Dã Ngoại",
 		NameEn: "Sports & Outdoor Apparels",
 		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorApparelsSportsBras,
+			CategorySportsOutdoorsSportsOutdoorApparelsKidsSportsApparel,
 			CategorySportsOutdoorsSportsOutdoorApparelsSets,
 			CategorySportsOutdoorsSportsOutdoorApparelsJackets,
 			CategorySportsOutdoorsSportsOutdoorApparelsTops,
 			CategorySportsOutdoorsSportsOutdoorApparelsJerseys,
 			CategorySportsOutdoorsSportsOutdoorApparelsBottoms,
 			CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttire,
-			CategorySportsOutdoorsSportsOutdoorApparelsSportsBras,
-			CategorySportsOutdoorsSportsOutdoorApparelsKidsSportsApparel,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorApparelsSets = &Category{
@@ -11117,10 +11117,10 @@ var (
 		Name:   "Đồ Bơi",
 		NameEn: "Swimming Attire",
 		Children: Categories{
-			CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireSwimmingTrunks,
 			CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireBikiniSets,
 			CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireOnePieceSwimsuits,
 			CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireRashGuards,
+			CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireSwimmingTrunks,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttireSwimmingTrunks = &Category{
@@ -11171,17 +11171,17 @@ var (
 		Name:   "Phụ Kiện Thể Thao & Dã Ngoại",
 		NameEn: "Sports & Outdoor Accessories",
 		Children: Categories{
+			CategorySportsOutdoorsSportsOutdoorAccessoriesSportsWristbands,
 			CategorySportsOutdoorsSportsOutdoorAccessoriesMouthguardsSportTapes,
-			CategorySportsOutdoorsSportsOutdoorAccessoriesStopwatchesPedometers,
-			CategorySportsOutdoorsSportsOutdoorAccessoriesSportsHeadbands,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesGymProtectiveGears,
 			CategorySportsOutdoorsSportsOutdoorAccessoriesUmbrellas,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesTrainingEquipments,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesStopwatchesPedometers,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesShoeBags,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesSportsHeadbands,
+			CategorySportsOutdoorsSportsOutdoorAccessoriesSportsOutdoorHats,
 			CategorySportsOutdoorsSportsOutdoorAccessoriesDryBags,
 			CategorySportsOutdoorsSportsOutdoorAccessoriesRainCoats,
-			CategorySportsOutdoorsSportsOutdoorAccessoriesTrainingEquipments,
-			CategorySportsOutdoorsSportsOutdoorAccessoriesGymProtectiveGears,
-			CategorySportsOutdoorsSportsOutdoorAccessoriesShoeBags,
-			CategorySportsOutdoorsSportsOutdoorAccessoriesSportsWristbands,
-			CategorySportsOutdoorsSportsOutdoorAccessoriesSportsOutdoorHats,
 		},
 	}
 	CategorySportsOutdoorsSportsOutdoorAccessoriesStopwatchesPedometers = &Category{
@@ -11267,13 +11267,13 @@ var (
 		Name:   "Văn Phòng Phẩm",
 		NameEn: "Stationery",
 		Children: Categories{
-			CategoryStationeryArtSupplies,
-			CategoryStationeryNotebooksPapers,
 			CategoryStationeryLettersEnvelopes,
 			CategoryStationeryOther,
 			CategoryStationeryGiftWrapping,
 			CategoryStationeryWritingCorrection,
 			CategoryStationerySchoolOfficeEquipment,
+			CategoryStationeryArtSupplies,
+			CategoryStationeryNotebooksPapers,
 		},
 	}
 	CategoryStationeryGiftWrapping = &Category{
@@ -11282,13 +11282,13 @@ var (
 		Name:   "Quà Tặng - Giấy Gói",
 		NameEn: "Gift & Wrapping",
 		Children: Categories{
-			CategoryStationeryGiftWrappingGiftWrappers,
-			CategoryStationeryGiftWrappingGiftBoxes,
 			CategoryStationeryGiftWrappingGiftBags,
 			CategoryStationeryGiftWrappingRibbons,
 			CategoryStationeryGiftWrappingBubbleWraps,
 			CategoryStationeryGiftWrappingCartonBoxes,
 			CategoryStationeryGiftWrappingOther,
+			CategoryStationeryGiftWrappingGiftWrappers,
+			CategoryStationeryGiftWrappingGiftBoxes,
 		},
 	}
 	CategoryStationeryGiftWrappingGiftWrappers = &Category{
@@ -11394,24 +11394,24 @@ var (
 		Name:   "Thiết Bị Trường Học",
 		NameEn: "School & Office Equipment",
 		Children: Categories{
-			CategoryStationerySchoolOfficeEquipmentHolePunchers,
-			CategoryStationerySchoolOfficeEquipmentOther,
+			CategoryStationerySchoolOfficeEquipmentWritingBoardsBoardStands,
 			CategoryStationerySchoolOfficeEquipmentClipsPinsTacks,
-			CategoryStationerySchoolOfficeEquipmentPenKnivesPaperCutters,
-			CategoryStationerySchoolOfficeEquipmentLanyardsNameTags,
-			CategoryStationerySchoolOfficeEquipmentInkStampsPads,
-			CategoryStationerySchoolOfficeEquipmentStaplersStaples,
 			CategoryStationerySchoolOfficeEquipmentCalendars,
 			CategoryStationerySchoolOfficeEquipmentFoldersPaperOrganizersAccessories,
-			CategoryStationerySchoolOfficeEquipmentRulersProtractorsStencils,
-			CategoryStationerySchoolOfficeEquipmentCalculators,
-			CategoryStationerySchoolOfficeEquipmentPencilCases,
-			CategoryStationerySchoolOfficeEquipmentScissors,
-			CategoryStationerySchoolOfficeEquipmentStringsTapes,
-			CategoryStationerySchoolOfficeEquipmentGlues,
-			CategoryStationerySchoolOfficeEquipmentLabelPrinters,
 			CategoryStationerySchoolOfficeEquipmentSharpeners,
-			CategoryStationerySchoolOfficeEquipmentWritingBoardsBoardStands,
+			CategoryStationerySchoolOfficeEquipmentOther,
+			CategoryStationerySchoolOfficeEquipmentCalculators,
+			CategoryStationerySchoolOfficeEquipmentLabelPrinters,
+			CategoryStationerySchoolOfficeEquipmentLanyardsNameTags,
+			CategoryStationerySchoolOfficeEquipmentInkStampsPads,
+			CategoryStationerySchoolOfficeEquipmentPencilCases,
+			CategoryStationerySchoolOfficeEquipmentStringsTapes,
+			CategoryStationerySchoolOfficeEquipmentStaplersStaples,
+			CategoryStationerySchoolOfficeEquipmentRulersProtractorsStencils,
+			CategoryStationerySchoolOfficeEquipmentPenKnivesPaperCutters,
+			CategoryStationerySchoolOfficeEquipmentGlues,
+			CategoryStationerySchoolOfficeEquipmentHolePunchers,
+			CategoryStationerySchoolOfficeEquipmentScissors,
 		},
 	}
 	CategoryStationerySchoolOfficeEquipmentWritingBoardsBoardStands = &Category{
@@ -11546,16 +11546,16 @@ var (
 		Name:   "Họa cụ",
 		NameEn: "Art Supplies",
 		Children: Categories{
+			CategoryStationeryArtSuppliesPaintPalettes,
+			CategoryStationeryArtSuppliesOther,
+			CategoryStationeryArtSuppliesColorPencils,
+			CategoryStationeryArtSuppliesCrayonsPastels,
+			CategoryStationeryArtSuppliesWaterPosterColours,
+			CategoryStationeryArtSuppliesOilPaint,
 			CategoryStationeryArtSuppliesAcrylicPaint,
 			CategoryStationeryArtSuppliesPaintBrushes,
 			CategoryStationeryArtSuppliesCanvasesEasels,
 			CategoryStationeryArtSuppliesSketchBooks,
-			CategoryStationeryArtSuppliesOther,
-			CategoryStationeryArtSuppliesCrayonsPastels,
-			CategoryStationeryArtSuppliesOilPaint,
-			CategoryStationeryArtSuppliesPaintPalettes,
-			CategoryStationeryArtSuppliesColorPencils,
-			CategoryStationeryArtSuppliesWaterPosterColours,
 		},
 	}
 	CategoryStationeryArtSuppliesColorPencils = &Category{
@@ -11634,16 +11634,16 @@ var (
 		Name:   "Sổ & Giấy Các Loại",
 		NameEn: "Notebooks & Papers",
 		Children: Categories{
-			CategoryStationeryNotebooksPapersBookmarks,
 			CategoryStationeryNotebooksPapersThermalPaperContinuousPaper,
 			CategoryStationeryNotebooksPapersLooseLeaf,
 			CategoryStationeryNotebooksPapersMemoStickyNotes,
-			CategoryStationeryNotebooksPapersLabelsStickers,
+			CategoryStationeryNotebooksPapersNotebooksNotepads,
 			CategoryStationeryNotebooksPapersOther,
+			CategoryStationeryNotebooksPapersBookmarks,
 			CategoryStationeryNotebooksPapersBookCovers,
 			CategoryStationeryNotebooksPapersPrintingPhotocopyPaper,
 			CategoryStationeryNotebooksPapersArtPaperBoards,
-			CategoryStationeryNotebooksPapersNotebooksNotepads,
+			CategoryStationeryNotebooksPapersLabelsStickers,
 		},
 	}
 	CategoryStationeryNotebooksPapersBookmarks = &Category{
@@ -11761,14 +11761,14 @@ var (
 		Name:   "Sở thích & Sưu tầm",
 		NameEn: "Hobbies & Collections",
 		Children: Categories{
-			CategoryHobbiesCollectionsToysGames,
-			CategoryHobbiesCollectionsCDDVDBluray,
-			CategoryHobbiesCollectionsMusicalInstrumentsAccessories,
-			CategoryHobbiesCollectionsVinylRecords,
 			CategoryHobbiesCollectionsPhotoAlbums,
 			CategoryHobbiesCollectionsNeedlework,
 			CategoryHobbiesCollectionsCollectibleItems,
 			CategoryHobbiesCollectionsSouvenirs,
+			CategoryHobbiesCollectionsToysGames,
+			CategoryHobbiesCollectionsCDDVDBluray,
+			CategoryHobbiesCollectionsMusicalInstrumentsAccessories,
+			CategoryHobbiesCollectionsVinylRecords,
 		},
 	}
 	CategoryHobbiesCollectionsCollectibleItems = &Category{
@@ -11777,15 +11777,15 @@ var (
 		Name:   "Đồ Sưu Tầm",
 		NameEn: "Collectible Items",
 		Children: Categories{
-			CategoryHobbiesCollectionsCollectibleItemsVehicleModelsDiecast,
-			CategoryHobbiesCollectionsCollectibleItemsAnimeMangaCollectibles,
-			CategoryHobbiesCollectionsCollectibleItemsMechaModelsDiecast,
 			CategoryHobbiesCollectionsCollectibleItemsStatuesSculptures,
+			CategoryHobbiesCollectionsCollectibleItemsMechaModelsDiecast,
+			CategoryHobbiesCollectionsCollectibleItemsVehicleModelsDiecast,
 			CategoryHobbiesCollectionsCollectibleItemsIdolCollectibles,
-			CategoryHobbiesCollectionsCollectibleItemsSportsCollectibles,
-			CategoryHobbiesCollectionsCollectibleItemsCoinsBankNotes,
+			CategoryHobbiesCollectionsCollectibleItemsAnimeMangaCollectibles,
 			CategoryHobbiesCollectionsCollectibleItemsOther,
 			CategoryHobbiesCollectionsCollectibleItemsActionFigurines,
+			CategoryHobbiesCollectionsCollectibleItemsSportsCollectibles,
+			CategoryHobbiesCollectionsCollectibleItemsCoinsBankNotes,
 		},
 	}
 	CategoryHobbiesCollectionsCollectibleItemsActionFigurines = &Category{
@@ -11857,11 +11857,11 @@ var (
 		Name:   "Quà Lưu Niệm",
 		NameEn: "Souvenirs",
 		Children: Categories{
-			CategoryHobbiesCollectionsSouvenirsKeychains,
 			CategoryHobbiesCollectionsSouvenirsCoinBanks,
 			CategoryHobbiesCollectionsSouvenirsFridgeMagnets,
 			CategoryHobbiesCollectionsSouvenirsOther,
 			CategoryHobbiesCollectionsSouvenirsHandFans,
+			CategoryHobbiesCollectionsSouvenirsKeychains,
 		},
 	}
 	CategoryHobbiesCollectionsSouvenirsHandFans = &Category{
@@ -11905,16 +11905,16 @@ var (
 		Name:   "Đồ chơi - Giải trí",
 		NameEn: "Toys & Games",
 		Children: Categories{
+			CategoryHobbiesCollectionsToysGamesKendamas,
+			CategoryHobbiesCollectionsToysGamesYoyos,
+			CategoryHobbiesCollectionsToysGamesRemoteControlToysAccessories,
+			CategoryHobbiesCollectionsToysGamesCapsuleToys,
+			CategoryHobbiesCollectionsToysGamesOther,
+			CategoryHobbiesCollectionsToysGamesMagicToys,
+			CategoryHobbiesCollectionsToysGamesSpinningTops,
+			CategoryHobbiesCollectionsToysGamesRubiksCubes,
 			CategoryHobbiesCollectionsToysGamesDiceBoardCardGames,
 			CategoryHobbiesCollectionsToysGamesPrankToys,
-			CategoryHobbiesCollectionsToysGamesYoyos,
-			CategoryHobbiesCollectionsToysGamesCapsuleToys,
-			CategoryHobbiesCollectionsToysGamesMagicToys,
-			CategoryHobbiesCollectionsToysGamesRubiksCubes,
-			CategoryHobbiesCollectionsToysGamesSpinningTops,
-			CategoryHobbiesCollectionsToysGamesKendamas,
-			CategoryHobbiesCollectionsToysGamesRemoteControlToysAccessories,
-			CategoryHobbiesCollectionsToysGamesOther,
 		},
 	}
 	CategoryHobbiesCollectionsToysGamesDiceBoardCardGames = &Category{
@@ -12094,13 +12094,13 @@ var (
 		Name:   "Ô tô",
 		NameEn: "Automobiles",
 		Children: Categories{
+			CategoryAutomobilesAutomotiveOilsLubes,
+			CategoryAutomobilesAutomotiveKeychainsKeyCovers,
 			CategoryAutomobilesAutomobileInteriorAccessories,
 			CategoryAutomobilesAutomobileExteriorAccessories,
 			CategoryAutomobilesAutomobileSpareParts,
 			CategoryAutomobilesAutomotiveTools,
 			CategoryAutomobilesAutomotiveCare,
-			CategoryAutomobilesAutomotiveOilsLubes,
-			CategoryAutomobilesAutomotiveKeychainsKeyCovers,
 		},
 	}
 	CategoryAutomobilesAutomobileInteriorAccessories = &Category{
@@ -12109,23 +12109,23 @@ var (
 		Name:   "Phụ kiện nội thất ô tô",
 		NameEn: "Automobile Interior Accessories",
 		Children: Categories{
-			CategoryAutomobilesAutomobileInteriorAccessoriesAmplifiersSpeakersSubwoofers,
-			CategoryAutomobilesAutomobileInteriorAccessoriesSeatsSeatCovers,
-			CategoryAutomobilesAutomobileInteriorAccessoriesUSBChargersFMBluetoothTransmitters,
 			CategoryAutomobilesAutomobileInteriorAccessoriesSunShieldsDashCovers,
+			CategoryAutomobilesAutomobileInteriorAccessoriesOther,
+			CategoryAutomobilesAutomobileInteriorAccessoriesSeatHeadrestsBackSupports,
+			CategoryAutomobilesAutomobileInteriorAccessoriesAmplifiersSpeakersSubwoofers,
+			CategoryAutomobilesAutomobileInteriorAccessoriesCarpetsMats,
+			CategoryAutomobilesAutomobileInteriorAccessoriesCarMattresses,
+			CategoryAutomobilesAutomobileInteriorAccessoriesUSBChargersFMBluetoothTransmitters,
+			CategoryAutomobilesAutomobileInteriorAccessoriesCamcordersParkingCameras,
+			CategoryAutomobilesAutomobileInteriorAccessoriesNavigationAVReceivers,
 			CategoryAutomobilesAutomobileInteriorAccessoriesPedalsGearSticks,
 			CategoryAutomobilesAutomobileInteriorAccessoriesLocksSecurity,
-			CategoryAutomobilesAutomobileInteriorAccessoriesOther,
-			CategoryAutomobilesAutomobileInteriorAccessoriesNavigationAVReceivers,
-			CategoryAutomobilesAutomobileInteriorAccessoriesOrganizersCompartments,
-			CategoryAutomobilesAutomobileInteriorAccessoriesPerfumesAirFreshenersPurifiers,
-			CategoryAutomobilesAutomobileInteriorAccessoriesSteeringWheelsCovers,
-			CategoryAutomobilesAutomobileInteriorAccessoriesPhoneHolders,
 			CategoryAutomobilesAutomobileInteriorAccessoriesHUDSpeedometersGauges,
-			CategoryAutomobilesAutomobileInteriorAccessoriesCarpetsMats,
-			CategoryAutomobilesAutomobileInteriorAccessoriesSeatHeadrestsBackSupports,
-			CategoryAutomobilesAutomobileInteriorAccessoriesCarMattresses,
-			CategoryAutomobilesAutomobileInteriorAccessoriesCamcordersParkingCameras,
+			CategoryAutomobilesAutomobileInteriorAccessoriesSteeringWheelsCovers,
+			CategoryAutomobilesAutomobileInteriorAccessoriesPerfumesAirFreshenersPurifiers,
+			CategoryAutomobilesAutomobileInteriorAccessoriesSeatsSeatCovers,
+			CategoryAutomobilesAutomobileInteriorAccessoriesPhoneHolders,
+			CategoryAutomobilesAutomobileInteriorAccessoriesOrganizersCompartments,
 		},
 	}
 	CategoryAutomobilesAutomobileInteriorAccessoriesNavigationAVReceivers = &Category{
@@ -12253,16 +12253,16 @@ var (
 		NameEn: "Automobile Exterior Accessories",
 		Children: Categories{
 			CategoryAutomobilesAutomobileExteriorAccessoriesGarnish,
-			CategoryAutomobilesAutomobileExteriorAccessoriesAntennas,
+			CategoryAutomobilesAutomobileExteriorAccessoriesCovers,
 			CategoryAutomobilesAutomobileExteriorAccessoriesHornsAccessories,
 			CategoryAutomobilesAutomobileExteriorAccessoriesLicensePlateAccessories,
-			CategoryAutomobilesAutomobileExteriorAccessoriesCovers,
+			CategoryAutomobilesAutomobileExteriorAccessoriesOther,
+			CategoryAutomobilesAutomobileExteriorAccessoriesAntennas,
 			CategoryAutomobilesAutomobileExteriorAccessoriesStickersLogosEmblems,
 			CategoryAutomobilesAutomobileExteriorAccessoriesMudFlapsSplashGuards,
 			CategoryAutomobilesAutomobileExteriorAccessoriesSillPlates,
 			CategoryAutomobilesAutomobileExteriorAccessoriesGutters,
 			CategoryAutomobilesAutomobileExteriorAccessoriesMirrorsAccessories,
-			CategoryAutomobilesAutomobileExteriorAccessoriesOther,
 		},
 	}
 	CategoryAutomobilesAutomobileExteriorAccessoriesGarnish = &Category{
@@ -12348,20 +12348,20 @@ var (
 		Name:   "Phụ tùng ô tô",
 		NameEn: "Automobile Spare Parts",
 		Children: Categories{
-			CategoryAutomobilesAutomobileSparePartsWheelsRimsAccessories,
-			CategoryAutomobilesAutomobileSparePartsDrivetrainTransmissionClutches,
-			CategoryAutomobilesAutomobileSparePartsBearingSeals,
-			CategoryAutomobilesAutomobileSparePartsBeltsHosesPulleys,
-			CategoryAutomobilesAutomobileSparePartsFuelSystem,
-			CategoryAutomobilesAutomobileSparePartsBodyFrameBumpers,
-			CategoryAutomobilesAutomobileSparePartsExhaustEmissions,
-			CategoryAutomobilesAutomobileSparePartsShocksStrutsSuspension,
 			CategoryAutomobilesAutomobileSparePartsWindshieldWipersWashers,
+			CategoryAutomobilesAutomobileSparePartsWheelsRimsAccessories,
 			CategoryAutomobilesAutomobileSparePartsTiresAccessories,
-			CategoryAutomobilesAutomobileSparePartsElectronics,
 			CategoryAutomobilesAutomobileSparePartsEngineParts,
 			CategoryAutomobilesAutomobileSparePartsBrakeSystem,
+			CategoryAutomobilesAutomobileSparePartsExhaustEmissions,
+			CategoryAutomobilesAutomobileSparePartsShocksStrutsSuspension,
 			CategoryAutomobilesAutomobileSparePartsRadiatorsEngineCoolingClimateControl,
+			CategoryAutomobilesAutomobileSparePartsBeltsHosesPulleys,
+			CategoryAutomobilesAutomobileSparePartsElectronics,
+			CategoryAutomobilesAutomobileSparePartsBodyFrameBumpers,
+			CategoryAutomobilesAutomobileSparePartsDrivetrainTransmissionClutches,
+			CategoryAutomobilesAutomobileSparePartsBearingSeals,
+			CategoryAutomobilesAutomobileSparePartsFuelSystem,
 		},
 	}
 	CategoryAutomobilesAutomobileSparePartsBodyFrameBumpers = &Category{
@@ -12433,10 +12433,10 @@ var (
 		Name:   "Bộ phận động cơ",
 		NameEn: "Engine Parts",
 		Children: Categories{
+			CategoryAutomobilesAutomobileSparePartsEnginePartsOther,
 			CategoryAutomobilesAutomobileSparePartsEnginePartsPistons,
 			CategoryAutomobilesAutomobileSparePartsEnginePartsAirFilters,
 			CategoryAutomobilesAutomobileSparePartsEnginePartsOilFilters,
-			CategoryAutomobilesAutomobileSparePartsEnginePartsOther,
 		},
 	}
 	CategoryAutomobilesAutomobileSparePartsEnginePartsPistons = &Category{
@@ -12487,10 +12487,10 @@ var (
 		Name:   "Thiết bị điện tử",
 		NameEn: "Electronics",
 		Children: Categories{
-			CategoryAutomobilesAutomobileSparePartsElectronicsOther,
 			CategoryAutomobilesAutomobileSparePartsElectronicsIgnition,
 			CategoryAutomobilesAutomobileSparePartsElectronicsBatteriesAccessories,
 			CategoryAutomobilesAutomobileSparePartsElectronicsLighting,
+			CategoryAutomobilesAutomobileSparePartsElectronicsOther,
 		},
 	}
 	CategoryAutomobilesAutomobileSparePartsElectronicsIgnition = &Category{
@@ -12499,9 +12499,9 @@ var (
 		Name:   "Bộ phận đánh lửa",
 		NameEn: "Ignition",
 		Children: Categories{
-			CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionIgnitionCoils,
 			CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionSparkPlugs,
 			CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionOther,
+			CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionIgnitionCoils,
 		},
 	}
 	CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionIgnitionCoils = &Category{
@@ -12591,11 +12591,11 @@ var (
 		Name:   "Chăm sóc ô tô",
 		NameEn: "Automotive Care",
 		Children: Categories{
-			CategoryAutomobilesAutomotiveCarePolishCoatingSealants,
 			CategoryAutomobilesAutomotiveCareWashWaxes,
 			CategoryAutomobilesAutomotiveCareGlassCareWaterRepellents,
 			CategoryAutomobilesAutomotiveCareInteriorCare,
 			CategoryAutomobilesAutomotiveCareTireWheelCare,
+			CategoryAutomobilesAutomotiveCarePolishCoatingSealants,
 		},
 	}
 	CategoryAutomobilesAutomotiveCareWashWaxes = &Category{
@@ -12634,11 +12634,11 @@ var (
 		Name:   "Dầu nhớt và phụ gia ô tô",
 		NameEn: "Automotive Oils & Lubes",
 		Children: Categories{
-			CategoryAutomobilesAutomotiveOilsLubesOil,
-			CategoryAutomobilesAutomotiveOilsLubesFuelAdditivesSavers,
 			CategoryAutomobilesAutomotiveOilsLubesGreasesLubricants,
 			CategoryAutomobilesAutomotiveOilsLubesAntifreezesCoolants,
 			CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluids,
+			CategoryAutomobilesAutomotiveOilsLubesOil,
+			CategoryAutomobilesAutomotiveOilsLubesFuelAdditivesSavers,
 		},
 	}
 	CategoryAutomobilesAutomotiveOilsLubesOil = &Category{
@@ -12701,11 +12701,11 @@ var (
 		Name:   "Mô tô, xe máy",
 		NameEn: "Motorcycles",
 		Children: Categories{
-			CategoryMotorcyclesMotorcycleHelmetsAccessories,
-			CategoryMotorcyclesOther,
 			CategoryMotorcyclesMotorcycles,
 			CategoryMotorcyclesMotorcycleAccessories,
 			CategoryMotorcyclesMotorcycleSpareParts,
+			CategoryMotorcyclesMotorcycleHelmetsAccessories,
+			CategoryMotorcyclesOther,
 		},
 	}
 	CategoryMotorcyclesMotorcycles = &Category{
@@ -12721,17 +12721,17 @@ var (
 		Name:   "Phụ kiện xe máy",
 		NameEn: "Motorcycle Accessories",
 		Children: Categories{
-			CategoryMotorcyclesMotorcycleAccessoriesStickersLogosEmblems,
-			CategoryMotorcyclesMotorcycleAccessoriesSeatsSeatCovers,
 			CategoryMotorcyclesMotorcycleAccessoriesBoxesCases,
 			CategoryMotorcyclesMotorcycleAccessoriesMudFlapsSplashGuards,
-			CategoryMotorcyclesMotorcycleAccessoriesCovers,
-			CategoryMotorcyclesMotorcycleAccessoriesSpeedometersOdometersGauges,
-			CategoryMotorcyclesMotorcycleAccessoriesMirrorsAccessories,
+			CategoryMotorcyclesMotorcycleAccessoriesOther,
 			CategoryMotorcyclesMotorcycleAccessoriesLocksSecurity,
 			CategoryMotorcyclesMotorcycleAccessoriesPhoneHolders,
-			CategoryMotorcyclesMotorcycleAccessoriesOther,
 			CategoryMotorcyclesMotorcycleAccessoriesCarpets,
+			CategoryMotorcyclesMotorcycleAccessoriesSpeedometersOdometersGauges,
+			CategoryMotorcyclesMotorcycleAccessoriesCovers,
+			CategoryMotorcyclesMotorcycleAccessoriesStickersLogosEmblems,
+			CategoryMotorcyclesMotorcycleAccessoriesSeatsSeatCovers,
+			CategoryMotorcyclesMotorcycleAccessoriesMirrorsAccessories,
 		},
 	}
 	CategoryMotorcyclesMotorcycleAccessoriesCarpets = &Category{
@@ -12817,19 +12817,19 @@ var (
 		Name:   "Phụ tùng xe máy",
 		NameEn: "Motorcycle Spare Parts",
 		Children: Categories{
-			CategoryMotorcyclesMotorcycleSparePartsLighting,
+			CategoryMotorcyclesMotorcycleSparePartsShocksStrutsSuspension,
+			CategoryMotorcyclesMotorcycleSparePartsOther,
 			CategoryMotorcyclesMotorcycleSparePartsIgnitionEngineParts,
 			CategoryMotorcyclesMotorcycleSparePartsFuelSystem,
 			CategoryMotorcyclesMotorcycleSparePartsBrakeSystem,
-			CategoryMotorcyclesMotorcycleSparePartsShocksStrutsSuspension,
 			CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutches,
-			CategoryMotorcyclesMotorcycleSparePartsCablesTubes,
-			CategoryMotorcyclesMotorcycleSparePartsExhaustEmissions,
-			CategoryMotorcyclesMotorcycleSparePartsWheelsRimsAccessories,
-			CategoryMotorcyclesMotorcycleSparePartsOther,
 			CategoryMotorcyclesMotorcycleSparePartsHornsAccessories,
 			CategoryMotorcyclesMotorcycleSparePartsBatteriesAccessories,
 			CategoryMotorcyclesMotorcycleSparePartsBodyFrame,
+			CategoryMotorcyclesMotorcycleSparePartsExhaustEmissions,
+			CategoryMotorcyclesMotorcycleSparePartsLighting,
+			CategoryMotorcyclesMotorcycleSparePartsCablesTubes,
+			CategoryMotorcyclesMotorcycleSparePartsWheelsRimsAccessories,
 			CategoryMotorcyclesMotorcycleSparePartsTiresAccessories,
 		},
 	}
@@ -12839,14 +12839,14 @@ var (
 		Name:   "Bộ phận đánh lửa & động cơ",
 		NameEn: "Ignition & Engine Parts",
 		Children: Categories{
-			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsVBelts,
-			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsAirFilters,
 			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsOther,
 			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsRadiators,
 			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsPistons,
 			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsCDIECU,
 			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsSparkPlugs,
 			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsIgnitionCoils,
+			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsVBelts,
+			CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsAirFilters,
 		},
 	}
 	CategoryMotorcyclesMotorcycleSparePartsIgnitionEnginePartsRadiators = &Category{
@@ -13040,9 +13040,9 @@ var (
 		Name:   "Sách & Tạp Chí",
 		NameEn: "Books & Magazines",
 		Children: Categories{
-			CategoryBooksMagazinesMagazinesNewspaper,
 			CategoryBooksMagazinesBooks,
 			CategoryBooksMagazinesEBooks,
+			CategoryBooksMagazinesMagazinesNewspaper,
 		},
 	}
 	CategoryBooksMagazinesMagazinesNewspaper = &Category{
@@ -13083,35 +13083,35 @@ var (
 		Name:   "Sách",
 		NameEn: "Books",
 		Children: Categories{
-			CategoryBooksMagazinesBooksBusinessInvestment,
-			CategoryBooksMagazinesBooksHoroscopes,
+			CategoryBooksMagazinesBooksPoliticsLawSocialSciences,
+			CategoryBooksMagazinesBooksLanguageLearningDictionaries,
 			CategoryBooksMagazinesBooksLightNovels,
 			CategoryBooksMagazinesBooksParentingFamily,
 			CategoryBooksMagazinesBooksPsychologyRelationships,
-			CategoryBooksMagazinesBooksHistoryCultures,
-			CategoryBooksMagazinesBooksBiographyMemoirs,
-			CategoryBooksMagazinesBooksHealthFitnessDieting,
-			CategoryBooksMagazinesBooksTravelTourism,
-			CategoryBooksMagazinesBooksLanguageLearningDictionaries,
-			CategoryBooksMagazinesBooksScienceMaths,
 			CategoryBooksMagazinesBooksReligionPhilosophy,
+			CategoryBooksMagazinesBooksStickerColouringBooks,
+			CategoryBooksMagazinesBooksActionCrimeThrillers,
+			CategoryBooksMagazinesBooksCareersSelfHelpPersonalDevelopment,
+			CategoryBooksMagazinesBooksHoroscopes,
+			CategoryBooksMagazinesBooksChildrensBooks,
+			CategoryBooksMagazinesBooksHealthFitnessDieting,
+			CategoryBooksMagazinesBooksLGBTQplusLiterature,
+			CategoryBooksMagazinesBooksClassicLiterature,
+			CategoryBooksMagazinesBooksMedical,
 			CategoryBooksMagazinesBooksEducationSchool,
 			CategoryBooksMagazinesBooksComicsManga,
-			CategoryBooksMagazinesBooksComputersTechnology,
-			CategoryBooksMagazinesBooksFantasy,
-			CategoryBooksMagazinesBooksCareersSelfHelpPersonalDevelopment,
-			CategoryBooksMagazinesBooksPoliticsLawSocialSciences,
-			CategoryBooksMagazinesBooksRomance,
-			CategoryBooksMagazinesBooksStickerColouringBooks,
-			CategoryBooksMagazinesBooksClassicLiterature,
-			CategoryBooksMagazinesBooksLGBTQplusLiterature,
-			CategoryBooksMagazinesBooksActionCrimeThrillers,
-			CategoryBooksMagazinesBooksMedical,
-			CategoryBooksMagazinesBooksMusic,
-			CategoryBooksMagazinesBooksHobbies,
 			CategoryBooksMagazinesBooksRecipesCooking,
+			CategoryBooksMagazinesBooksBusinessInvestment,
+			CategoryBooksMagazinesBooksHobbies,
+			CategoryBooksMagazinesBooksBiographyMemoirs,
+			CategoryBooksMagazinesBooksHistoryCultures,
+			CategoryBooksMagazinesBooksFantasy,
+			CategoryBooksMagazinesBooksScienceMaths,
 			CategoryBooksMagazinesBooksBabySoftBooks,
-			CategoryBooksMagazinesBooksChildrensBooks,
+			CategoryBooksMagazinesBooksMusic,
+			CategoryBooksMagazinesBooksComputersTechnology,
+			CategoryBooksMagazinesBooksTravelTourism,
+			CategoryBooksMagazinesBooksRomance,
 		},
 	}
 	CategoryBooksMagazinesBooksChildrensBooks = &Category{
@@ -13306,17 +13306,17 @@ var (
 		Name:   "Máy tính & Laptop",
 		NameEn: "Computers & Accessories",
 		Children: Categories{
-			CategoryComputersAccessoriesPeripheralsAccessories,
-			CategoryComputersAccessoriesDesktopComputer,
+			CategoryComputersAccessoriesDataStorage,
+			CategoryComputersAccessoriesNetworkComponents,
+			CategoryComputersAccessoriesDesktopLaptopComponents,
 			CategoryComputersAccessoriesSoftwares,
 			CategoryComputersAccessoriesOfficeEquipment,
-			CategoryComputersAccessoriesNetworkComponents,
 			CategoryComputersAccessoriesPrintersScanners,
+			CategoryComputersAccessoriesPeripheralsAccessories,
 			CategoryComputersAccessoriesKeyboardsMice,
-			CategoryComputersAccessoriesLaptop,
+			CategoryComputersAccessoriesDesktopComputer,
 			CategoryComputersAccessoriesMonitors,
-			CategoryComputersAccessoriesDesktopLaptopComponents,
-			CategoryComputersAccessoriesDataStorage,
+			CategoryComputersAccessoriesLaptop,
 		},
 	}
 	CategoryComputersAccessoriesDesktopComputer = &Category{
@@ -13325,10 +13325,10 @@ var (
 		Name:   "Máy Tính Bàn",
 		NameEn: "Desktop Computer",
 		Children: Categories{
+			CategoryComputersAccessoriesDesktopComputerAllInOneDesktops,
 			CategoryComputersAccessoriesDesktopComputerDesktopPC,
 			CategoryComputersAccessoriesDesktopComputerMiniPC,
 			CategoryComputersAccessoriesDesktopComputerServerPC,
-			CategoryComputersAccessoriesDesktopComputerAllInOneDesktops,
 		},
 	}
 	CategoryComputersAccessoriesDesktopComputerDesktopPC = &Category{
@@ -13372,18 +13372,18 @@ var (
 		Name:   "Linh Kiện Máy Tính",
 		NameEn: "Desktop & Laptop Components",
 		Children: Categories{
-			CategoryComputersAccessoriesDesktopLaptopComponentsUPSStabilizers,
 			CategoryComputersAccessoriesDesktopLaptopComponentsOpticalDrives,
 			CategoryComputersAccessoriesDesktopLaptopComponentsFansHeatsinks,
-			CategoryComputersAccessoriesDesktopLaptopComponentsMotherboards,
+			CategoryComputersAccessoriesDesktopLaptopComponentsProcessors,
 			CategoryComputersAccessoriesDesktopLaptopComponentsGraphicsCards,
-			CategoryComputersAccessoriesDesktopLaptopComponentsThermalPaste,
 			CategoryComputersAccessoriesDesktopLaptopComponentsPowerSupplyUnits,
 			CategoryComputersAccessoriesDesktopLaptopComponentsRAM,
+			CategoryComputersAccessoriesDesktopLaptopComponentsUPSStabilizers,
 			CategoryComputersAccessoriesDesktopLaptopComponentsPCCases,
-			CategoryComputersAccessoriesDesktopLaptopComponentsSoundCards,
-			CategoryComputersAccessoriesDesktopLaptopComponentsProcessors,
 			CategoryComputersAccessoriesDesktopLaptopComponentsOther,
+			CategoryComputersAccessoriesDesktopLaptopComponentsMotherboards,
+			CategoryComputersAccessoriesDesktopLaptopComponentsThermalPaste,
+			CategoryComputersAccessoriesDesktopLaptopComponentsSoundCards,
 		},
 	}
 	CategoryComputersAccessoriesDesktopLaptopComponentsFansHeatsinks = &Category{
@@ -13476,12 +13476,12 @@ var (
 		Name:   "Thiết Bị Lưu Trữ",
 		NameEn: "Data Storage",
 		Children: Categories{
-			CategoryComputersAccessoriesDataStorageCompactDiscs,
 			CategoryComputersAccessoriesDataStorageHardDrives,
 			CategoryComputersAccessoriesDataStorageSSD,
 			CategoryComputersAccessoriesDataStorageNetworkAttachedStorage,
 			CategoryComputersAccessoriesDataStorageFlashDrivesOTG,
 			CategoryComputersAccessoriesDataStorageHardDiskCasingsDockings,
+			CategoryComputersAccessoriesDataStorageCompactDiscs,
 		},
 	}
 	CategoryComputersAccessoriesDataStorageHardDrives = &Category{
@@ -13532,7 +13532,6 @@ var (
 		Name:   "Thiết Bị Mạng",
 		NameEn: "Network Components",
 		Children: Categories{
-			CategoryComputersAccessoriesNetworkComponentsRepeaters,
 			CategoryComputersAccessoriesNetworkComponentsWirelessAdaptersNetworkCards,
 			CategoryComputersAccessoriesNetworkComponentsPowerlineAdapters,
 			CategoryComputersAccessoriesNetworkComponentsNetworkSwitchesPoE,
@@ -13540,6 +13539,7 @@ var (
 			CategoryComputersAccessoriesNetworkComponentsKVMSwitches,
 			CategoryComputersAccessoriesNetworkComponentsPrintServers,
 			CategoryComputersAccessoriesNetworkComponentsModemsWirelessRouters,
+			CategoryComputersAccessoriesNetworkComponentsRepeaters,
 		},
 	}
 	CategoryComputersAccessoriesNetworkComponentsModemsWirelessRouters = &Category{
@@ -13651,11 +13651,11 @@ var (
 		Name:   "Máy In & Máy Scan",
 		NameEn: "Printers & Scanners",
 		Children: Categories{
-			CategoryComputersAccessoriesPrintersScannersThermalBarcodePrinters,
-			CategoryComputersAccessoriesPrintersScannersInksToners,
 			CategoryComputersAccessoriesPrintersScanners3DPrinters,
 			CategoryComputersAccessoriesPrintersScannersOther,
 			CategoryComputersAccessoriesPrintersScannersPrintersScannersPrintersScannersPhotocopyMachines,
+			CategoryComputersAccessoriesPrintersScannersThermalBarcodePrinters,
+			CategoryComputersAccessoriesPrintersScannersInksToners,
 		},
 	}
 	CategoryComputersAccessoriesPrintersScannersPrintersScannersPrintersScannersPhotocopyMachines = &Category{
@@ -13699,16 +13699,16 @@ var (
 		Name:   "Phụ Kiện Máy Tính",
 		NameEn: "Peripherals & Accessories",
 		Children: Categories{
-			CategoryComputersAccessoriesPeripheralsAccessoriesUSBHubsCardReaders,
 			CategoryComputersAccessoriesPeripheralsAccessoriesLaptopSkinsCovers,
-			CategoryComputersAccessoriesPeripheralsAccessoriesCoolingPads,
-			CategoryComputersAccessoriesPeripheralsAccessoriesLaptopChargersAdaptors,
-			CategoryComputersAccessoriesPeripheralsAccessoriesWebcams,
 			CategoryComputersAccessoriesPeripheralsAccessoriesLaptopStandsFoldableLaptopDesks,
-			CategoryComputersAccessoriesPeripheralsAccessoriesKeyboardTrackpadCovers,
 			CategoryComputersAccessoriesPeripheralsAccessoriesLaptopBatteries,
 			CategoryComputersAccessoriesPeripheralsAccessoriesVideoConferenceDevices,
+			CategoryComputersAccessoriesPeripheralsAccessoriesUSBHubsCardReaders,
+			CategoryComputersAccessoriesPeripheralsAccessoriesWebcams,
+			CategoryComputersAccessoriesPeripheralsAccessoriesLaptopChargersAdaptors,
 			CategoryComputersAccessoriesPeripheralsAccessoriesMousePads,
+			CategoryComputersAccessoriesPeripheralsAccessoriesCoolingPads,
+			CategoryComputersAccessoriesPeripheralsAccessoriesKeyboardTrackpadCovers,
 		},
 	}
 	CategoryComputersAccessoriesPeripheralsAccessoriesUSBHubsCardReaders = &Category{
@@ -13787,10 +13787,10 @@ var (
 		Name:   "Chuột & Bàn Phím",
 		NameEn: "Keyboards & Mice",
 		Children: Categories{
+			CategoryComputersAccessoriesKeyboardsMiceOther,
 			CategoryComputersAccessoriesKeyboardsMiceMice,
 			CategoryComputersAccessoriesKeyboardsMiceKeyboards,
 			CategoryComputersAccessoriesKeyboardsMiceDrawingTablets,
-			CategoryComputersAccessoriesKeyboardsMiceOther,
 		},
 	}
 	CategoryComputersAccessoriesKeyboardsMiceMice = &Category{
@@ -13860,264 +13860,4 @@ var FirstLevelCategories = Categories{
 	CategoryMotorcycles,
 	CategoryBooksMagazines,
 	CategoryComputersAccessories,
-}
-
-// second level categories
-var SecondLevelCategories = Categories{
-	CategoryWomenClothesTops,
-	CategoryWomenClothesPantsLeggings,
-	CategoryWomenClothesShorts,
-	CategoryWomenClothesJumpsuitsPlaysuitsOveralls,
-	CategoryWomenClothesJacketsCoatsVests,
-	CategoryWomenClothesHoodiesSweatshirts,
-	CategoryWomenClothesSets,
-	CategoryWomenClothesLingerieUnderwear,
-	CategoryWomenClothesSleepwearPajamas,
-	CategoryWomenClothesMaternityWear,
-	CategoryWomenClothesTraditionalWear,
-	CategoryWomenClothesFabric,
-	CategoryWomenClothesSocksStockings,
-	CategoryMenClothesHoodiesSweatshirts,
-	CategoryMenClothesJacketsCoatsVests,
-	CategoryMenClothesWinterJacketsCoats,
-	CategoryMenClothesSuits,
-	CategoryMenClothesPants,
-	CategoryMenClothesTops,
-	CategoryMenClothesInnerwearUnderwear,
-	CategoryMenClothesTraditionalWear,
-	CategoryBeautyHandFootNailCare,
-	CategoryBeautyHairCare,
-	CategoryBeautyMensCare,
-	CategoryBeautyMakeup,
-	CategoryBeautyBeautyTools,
-	CategoryBeautySkincare,
-	CategoryBeautyBathBodyCare,
-	CategoryHealthFoodSupplement,
-	CategoryHealthMedicalSupplies,
-	CategoryHealthPersonalCare,
-	CategoryHealthSexualWellness,
-	CategoryFashionAccessoriesHairAccessories,
-	CategoryFashionAccessoriesEyewear,
-	CategoryFashionAccessoriesInvestmentPreciousMetals,
-	CategoryFashionAccessoriesAdditionalAccessories,
-	CategoryHomeAppliancesProjectorsAccessories,
-	CategoryHomeAppliancesSmallHouseholdAppliances,
-	CategoryHomeAppliancesLargeHouseholdAppliances,
-	CategoryHomeAppliancesTVsAccessories,
-	CategoryHomeAppliancesKitchenAppliances,
-	CategoryHomeAppliancesElectricalCircuitryParts,
-	CategoryMenShoesBoots,
-	CategoryMenShoesSandalsFlipFlops,
-	CategoryMenShoesShoeCareAccessories,
-	CategoryMobileGadgetsWearableDevices,
-	CategoryMobileGadgetsAccessories,
-	CategoryTravelLuggageTravelBags,
-	CategoryTravelLuggageTravelAccessories,
-	CategoryWomenBagsLaptopBags,
-	CategoryWomenBagsWallets,
-	CategoryWomenBagsBagAccessories,
-	CategoryWomenShoesBoots,
-	CategoryWomenShoesFlats,
-	CategoryWomenShoesFlatSandalsFlipFlops,
-	CategoryWomenShoesShoeCareAccessories,
-	CategoryMenBagsLaptopBags,
-	CategoryMenBagsWallets,
-	CategoryWatchesWatchesAccessories,
-	CategoryAudioMediaPlayers,
-	CategoryAudioHomeAudioSpeakers,
-	CategoryFoodBeverageConvenienceReadytoeat,
-	CategoryFoodBeverageSnacks,
-	CategoryFoodBeverageFoodStaples,
-	CategoryFoodBeverageCookingEssentials,
-	CategoryFoodBeverageSeasoningsCondiments,
-	CategoryFoodBeverageBakingNeeds,
-	CategoryFoodBeverageBreakfastCerealsSpread,
-	CategoryFoodBeverageBeverages,
-	CategoryFoodBeverageDairyEggs,
-	CategoryFoodBeverageFreshFrozenFood,
-	CategoryFoodBeverageBakery,
-	CategoryFoodBeverageAlcoholicBeverages,
-	CategoryPetsPetFood,
-	CategoryPetsPetAccessories,
-	CategoryPetsLitterToilet,
-	CategoryPetsPetGrooming,
-	CategoryPetsPetClothingAccessories,
-	CategoryPetsPetHealthcare,
-	CategoryMomBabyBabyTravelEssentials,
-	CategoryMomBabyFeedingEssentials,
-	CategoryMomBabyMaternityAccessories,
-	CategoryMomBabyMaternityHealthcare,
-	CategoryMomBabyBathBodyCare,
-	CategoryMomBabyNursery,
-	CategoryMomBabyBabySafety,
-	CategoryMomBabyMilkFormulaBabyFood,
-	CategoryMomBabyBabyHealthcare,
-	CategoryMomBabyDiaperingPotty,
-	CategoryMomBabyToys,
-	CategoryBabyKidsFashionBabyClothes,
-	CategoryBabyKidsFashionBabyKidsAccessories,
-	CategoryBabyKidsFashionBoyClothes,
-	CategoryBabyKidsFashionGirlClothes,
-	CategoryBabyKidsFashionUnderwearInnerwear,
-	CategoryBabyKidsFashionBoyShoes,
-	CategoryBabyKidsFashionGirlShoes,
-	CategoryGamingConsolesConsoleMachines,
-	CategoryGamingConsolesVideoGames,
-	CategoryCamerasDronesCameras,
-	CategoryCamerasDronesSecurityCamerasSystems,
-	CategoryCamerasDronesLensAccessories,
-	CategoryCamerasDronesCameraAccessories,
-	CategoryCamerasDronesCameraCare,
-	CategoryHomeLivingHomeFragranceAromatherapy,
-	CategoryHomeLivingBathrooms,
-	CategoryHomeLivingBedding,
-	CategoryHomeLivingDecoration,
-	CategoryHomeLivingFurniture,
-	CategoryHomeLivingGardening,
-	CategoryHomeLivingToolsHomeImprovement,
-	CategoryHomeLivingHomeCareSupplies,
-	CategoryHomeLivingKitchenware,
-	CategoryHomeLivingDinnerware,
-	CategoryHomeLivingSafetySecurity,
-	CategoryHomeLivingHomeOrganizers,
-	CategoryHomeLivingPartySupplies,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipments,
-	CategorySportsOutdoorsSportFootwear,
-	CategorySportsOutdoorsSportsOutdoorApparels,
-	CategorySportsOutdoorsSportsOutdoorAccessories,
-	CategoryStationeryGiftWrapping,
-	CategoryStationeryWritingCorrection,
-	CategoryStationerySchoolOfficeEquipment,
-	CategoryStationeryArtSupplies,
-	CategoryStationeryNotebooksPapers,
-	CategoryStationeryLettersEnvelopes,
-	CategoryHobbiesCollectionsCollectibleItems,
-	CategoryHobbiesCollectionsSouvenirs,
-	CategoryHobbiesCollectionsToysGames,
-	CategoryHobbiesCollectionsMusicalInstrumentsAccessories,
-	CategoryAutomobilesAutomobileInteriorAccessories,
-	CategoryAutomobilesAutomobileExteriorAccessories,
-	CategoryAutomobilesAutomobileSpareParts,
-	CategoryAutomobilesAutomotiveTools,
-	CategoryAutomobilesAutomotiveCare,
-	CategoryAutomobilesAutomotiveOilsLubes,
-	CategoryMotorcyclesMotorcycleAccessories,
-	CategoryMotorcyclesMotorcycleSpareParts,
-	CategoryBooksMagazinesMagazinesNewspaper,
-	CategoryBooksMagazinesBooks,
-	CategoryComputersAccessoriesDesktopComputer,
-	CategoryComputersAccessoriesDesktopLaptopComponents,
-	CategoryComputersAccessoriesDataStorage,
-	CategoryComputersAccessoriesNetworkComponents,
-	CategoryComputersAccessoriesOfficeEquipment,
-	CategoryComputersAccessoriesPrintersScanners,
-	CategoryComputersAccessoriesPeripheralsAccessories,
-	CategoryComputersAccessoriesKeyboardsMice,
-}
-
-// third level categories
-var ThirdLevelCategories = Categories{
-	CategoryWomenClothesLingerieUnderwearBraAccessories,
-	CategoryBeautyHandFootNailCareHandCare,
-	CategoryBeautyHandFootNailCareFootCare,
-	CategoryBeautyHandFootNailCareNailCare,
-	CategoryBeautyMensCareSkinCare,
-	CategoryBeautyMensCareShavingGrooming,
-	CategoryBeautyMakeupFace,
-	CategoryBeautyMakeupEyes,
-	CategoryBeautyMakeupLips,
-	CategoryBeautyBeautyToolsMakeupAccessories,
-	CategoryBeautyBeautyToolsFacialCareTools,
-	CategoryBeautyBeautyToolsHairTools,
-	CategoryBeautySkincareEyeTreatment,
-	CategoryBeautySkincareLipsTreatment,
-	CategoryBeautyBathBodyCareSunCare,
-	CategoryHealthMedicalSuppliesHealthMonitorsTests,
-	CategoryHealthMedicalSuppliesFirstAidSupplies,
-	CategoryHealthMedicalSuppliesInjuryDisabilitySupport,
-	CategoryHealthPersonalCareEyeCare,
-	CategoryHealthPersonalCareOralCare,
-	CategoryHealthPersonalCareFeminineCare,
-	CategoryHomeAppliancesSmallHouseholdAppliancesTelephones,
-	CategoryHomeAppliancesSmallHouseholdAppliancesAirTreatment,
-	CategoryHomeAppliancesLargeHouseholdAppliancesWashingMachinesDryers,
-	CategoryHomeAppliancesLargeHouseholdAppliancesCooling,
-	CategoryHomeAppliancesKitchenAppliancesSpecialtyCookware,
-	CategoryMobileGadgetsAccessoriesSelfieAccessories,
-	CategoryMobileGadgetsAccessoriesCablesChargersConverters,
-	CategoryMobileGadgetsAccessoriesPowerbanksBatteries,
-	CategoryMobileGadgetsAccessoriesCasesCoversSkins,
-	CategoryFoodBeverageSnacksDriedSnacks,
-	CategoryFoodBeverageFoodStaplesDriedGoods,
-	CategoryFoodBeverageFoodStaplesCannedFood,
-	CategoryFoodBeverageCookingEssentialsSeasoningsCondiments,
-	CategoryFoodBeverageSeasoningsCondimentsCookingEssentials,
-	CategoryFoodBeverageDairyEggsMilk,
-	CategoryFoodBeverageFreshFrozenFoodMeat,
-	CategoryFoodBeverageFreshFrozenFoodSeafood,
-	CategoryFoodBeverageFreshFrozenFoodVegetables,
-	CategoryFoodBeverageFreshFrozenFoodFruits,
-	CategoryPetsPetAccessoriesToys,
-	CategoryPetsPetAccessoriesPetFurniture,
-	CategoryMomBabyFeedingEssentialsBottlefeeding,
-	CategoryMomBabyFeedingEssentialsBreastfeeding,
-	CategoryMomBabyFeedingEssentialsUtensils,
-	CategoryMomBabyNurseryMattressesBedding,
-	CategoryMomBabyBabyHealthcareBabySkincare,
-	CategoryMomBabyToysBabyToddlerToys,
-	CategoryMomBabyToysDollsStuffedToys,
-	CategoryMomBabyToysSportsOutdoorPlay,
-	CategoryMomBabyToysEducationalToys,
-	CategoryBabyKidsFashionBabyClothesBottoms,
-	CategoryBabyKidsFashionBabyKidsAccessoriesBagsLuggage,
-	CategoryBabyKidsFashionBabyKidsAccessoriesJewelry,
-	CategoryBabyKidsFashionBabyKidsAccessoriesRainGear,
-	CategoryBabyKidsFashionBoyClothesTops,
-	CategoryBabyKidsFashionBoyClothesOuterwear,
-	CategoryBabyKidsFashionBoyClothesBottoms,
-	CategoryBabyKidsFashionGirlClothesTops,
-	CategoryBabyKidsFashionGirlClothesOuterwear,
-	CategoryBabyKidsFashionGirlClothesBottoms,
-	CategoryCamerasDronesCameraAccessoriesFlashAccessories,
-	CategoryHomeLivingBathroomsTowelsBathrobes,
-	CategoryHomeLivingToolsHomeImprovementTools,
-	CategoryHomeLivingHomeCareSuppliesLaundryCare,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFishing,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCycling,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsCampingHiking,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoardsports,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSoccerFutsalSepakTakraw,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBasketball,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsVolleyball,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBadminton,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTennis,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsTableTennis,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsBoxingMartialArts,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsGolf,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsSwimmingDiving,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsYogaPilates,
-	CategorySportsOutdoorsSportsOutdoorRecreationEquipmentsFitnessEquipment,
-	CategorySportsOutdoorsSportsOutdoorApparelsSwimmingAttire,
-	CategoryHobbiesCollectionsMusicalInstrumentsAccessoriesStringInstruments,
-	CategoryAutomobilesAutomobileSparePartsEngineParts,
-	CategoryAutomobilesAutomobileSparePartsElectronics,
-	CategoryAutomobilesAutomotiveOilsLubesAutomotiveFluids,
-	CategoryMotorcyclesMotorcycleSparePartsIgnitionEngineParts,
-	CategoryMotorcyclesMotorcycleSparePartsDrivetrainTransmissionClutches,
-}
-
-// fourth level categories
-var FourthLevelCategories = Categories{
-	CategoryPetsPetAccessoriesToysDogCatToys,
-	CategoryAutomobilesAutomobileSparePartsElectronicsIgnition,
-}
-
-// fifth level categories
-var FifthLevelCategories = Categories{
-	CategoryPetsPetAccessoriesToysDogCatToysSticksChasers,
-	CategoryPetsPetAccessoriesToysDogCatToysChewBonesBalls,
-	CategoryPetsPetAccessoriesToysDogCatToysFrisbees,
-	CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionIgnitionCoils,
-	CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionSparkPlugs,
-	CategoryAutomobilesAutomobileSparePartsElectronicsIgnitionOther,
 }

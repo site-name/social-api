@@ -475,7 +475,7 @@ func (a *Attribute) AvailableInGrid(ctx context.Context) (bool, error) {
 	return a.attr.AvailableInGrid, nil
 }
 
-func (a *Attribute) Translation(ctx context.Context) (*AttributeTranslation, error) {
+func (a *Attribute) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*AttributeTranslation, error) {
 	panic("not implemented")
 }
 

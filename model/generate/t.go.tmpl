@@ -22,23 +22,3 @@ var (
 var FirstLevelCategories = Categories{ {{ range $cate := .FirstLevels }}
 	{{$cate}}, {{ end }}
 }
-
-// second level categories
-var SecondLevelCategories = Categories{ {{ range $cate := .SecondLevels }}
-	{{$cate}}, {{ end }}
-}
-
-// third level categories
-var ThirdLevelCategories = Categories{ {{ range $cate := .ThirdLevels }}
-	{{$cate}}, {{ end }}
-}
-
-// fourth level categories
-var FourthLevelCategories = Categories{ {{ range $cate := .FourthLevels }}
-	{{$cate}}, {{ end }}
-}
-
-// fifth level categories
-var FifthLevelCategories = Categories{ {{ range $cate := .FifthLevels }}
-	{{$cate}}, {{ end }}
-}
