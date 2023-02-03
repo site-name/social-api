@@ -3536,18 +3536,6 @@ type TokenCreateInput struct {
 	LdapOnly string `json:"ldapOnly"`
 }
 
-type Transaction struct {
-	ID              string          `json:"id"`
-	Created         DateTime        `json:"created"`
-	Payment         *Payment        `json:"payment"`
-	Token           string          `json:"token"`
-	Kind            TransactionKind `json:"kind"`
-	IsSuccess       bool            `json:"isSuccess"`
-	Error           *string         `json:"error"`
-	GatewayResponse JSONString      `json:"gatewayResponse"`
-	Amount          *Money          `json:"amount"`
-}
-
 type TranslatableItemConnection struct {
 	PageInfo   *PageInfo               `json:"pageInfo"`
 	Edges      []*TranslatableItemEdge `json:"edges"`

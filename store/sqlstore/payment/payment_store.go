@@ -285,3 +285,18 @@ func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.Sqlx
 
 	return nil
 }
+
+func (ps *SqlPaymentStore) PaymentOwnedByUser(userID, paymentID string) (bool, error) {
+	query := `SELECT * FROM ` +
+		store.PaymentTableName + ` P INNER JOIN ` +
+		store.OrderTableName + ` O ON O.Id = P.OrderID INNER JOIN ` +
+		store.CheckoutTableName + ` C ON C.Id = P.CheckoutID WHERE (O.UserID = $1 OR C.UserID = $2) AND (P.Id = $3 OR P.Token = $4)`
+
+	var payments []*model.Payment
+	err := ps.GetReplicaX().Select(&payments, query, userID, userID, paymentID, paymentID)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to find payments belong to given user")
+	}
+
+	return len(payments) > 0, nil
+}

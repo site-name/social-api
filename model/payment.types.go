@@ -73,7 +73,7 @@ type GatewayResponse struct {
 	Error                       string
 	CustomerID                  string
 	PaymentMethodInfo           *PaymentMethodInfo
-	RawResponse                 StringMap
+	RawResponse                 StringInterface
 	ActionRequiredData          map[string]string
 	TransactionAlreadyProcessed bool
 	SearchableKey               string

@@ -549,6 +549,7 @@ type (
 		CancelActivePaymentsOfCheckout(checkoutToken string) error                                                               // CancelActivePaymentsOfCheckout inactivate all payments that belong to given model and in active status
 		FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error)                                              // FilterByOption finds and returns a list of payments that satisfy given option
 		UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *model.PaymentPatch) error // UpdatePaymentsOfCheckout updates payments of given model
+		PaymentOwnedByUser(userID, paymentID string) (bool, error)
 	}
 	PaymentTransactionStore interface {
 		Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) // Save inserts new model transaction into database

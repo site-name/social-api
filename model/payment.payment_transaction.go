@@ -64,7 +64,7 @@ type PaymentTransaction struct {
 	Amount             *decimal.Decimal `json:"amount"` // DEFAULT decimal(0)
 	Error              *string          `json:"error"`
 	CustomerID         *string          `json:"customer_id"`
-	GatewayResponse    StringMap        `json:"gateway_response"`
+	GatewayResponse    StringInterface  `json:"gateway_response"`
 	AlreadyProcessed   bool             `json:"already_processed"`
 }
 
@@ -154,7 +154,7 @@ func (p *PaymentTransaction) commonPre() {
 		p.ActionRequiredData = make(StringMap)
 	}
 	if p.GatewayResponse == nil {
-		p.GatewayResponse = make(StringMap)
+		p.GatewayResponse = make(StringInterface)
 	}
 }
 

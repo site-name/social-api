@@ -4557,6 +4557,22 @@ func (s *TimerLayerPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id 
 	return result, err
 }
 
+func (s *TimerLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID string) (bool, error) {
+	start := timemodule.Now()
+
+	result, err := s.PaymentStore.PaymentOwnedByUser(userID, paymentID)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("PaymentStore.PaymentOwnedByUser", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerPaymentStore) Save(transaction store_iface.SqlxTxExecutor, model *model.Payment) (*model.Payment, error) {
 	start := timemodule.Now()
 

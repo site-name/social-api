@@ -5394,6 +5394,26 @@ func (s *RetryLayerPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id 
 
 }
 
+func (s *RetryLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID string) (bool, error) {
+
+	tries := 0
+	for {
+		result, err := s.PaymentStore.PaymentOwnedByUser(userID, paymentID)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerPaymentStore) Save(transaction store_iface.SqlxTxExecutor, model *model.Payment) (*model.Payment, error) {
 
 	tries := 0

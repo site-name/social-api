@@ -765,7 +765,7 @@ func (a *ServiceOrder) MarkOrderAsPaid(orDer model.Order, requestUser *model.Use
 		IsSuccess:       true,
 		Amount:          &orDer.Total.Gross.Amount,
 		Currency:        orDer.Total.Gross.Currency,
-		GatewayResponse: model.StringMap{},
+		GatewayResponse: model.StringInterface{},
 	})
 	if appErr != nil {
 		return nil, appErr

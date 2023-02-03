@@ -24,7 +24,7 @@ type Payment  {
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   chargeStatus: PaymentChargeStatusEnum!
-  actions: [OrderAction]!
+  actions: [OrderAction!]!
   total: Money
   capturedAmount: Money
   transactions: [Transaction]

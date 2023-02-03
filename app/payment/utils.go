@@ -285,7 +285,7 @@ func (a *ServicePayment) CreateTransaction(paymentID string, kind string, paymen
 			Amount:         paymentInformation.Amount,
 			Currency:       paymentInformation.Currency,
 			Error:          errorMsg,
-			RawResponse:    map[string]string{},
+			RawResponse:    make(model.StringInterface),
 		}
 	}
 

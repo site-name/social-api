@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
@@ -454,16 +455,12 @@ func (g *GiftCard) BoughtInChannel(ctx context.Context) (*string, error) {
 		return nil, nil
 	}
 
-	orderID := boughtEvent.Parameters["order_id"]
-	if orderID == nil {
-		return nil, nil
-	}
-	strOrderID, ok := orderID.(string)
-	if !ok {
-		return nil, nil
+	orderID := boughtEvent.Parameters.Get("order_id", "").(string)
+	if orderID == "" {
+		return nil, errors.New("bought event's parameters field has no 'order_id' key")
 	}
 
-	order, err := OrderByIdLoader.Load(ctx, strOrderID)()
+	order, err := OrderByIdLoader.Load(ctx, orderID)()
 	if err != nil {
 		return nil, err
 	}

@@ -132,11 +132,7 @@ func (p *Payment) CanAuthorize() bool {
 
 // CanCapture checks if payment is not active and is not charged => false, else => true.
 func (p *Payment) CanCapture() bool {
-	if !*p.IsActive && !p.NotCharged() {
-		return false
-	}
-
-	return true
+	return *p.IsActive && p.NotCharged()
 }
 
 // CanRefund checks if current payment is active && (partially charged || fully charged || partially refunded)
@@ -160,13 +156,6 @@ func (p *Payment) IsManual() bool {
 	return p.GateWay == GATE_WAY_MANUAL
 }
 
-/*
-	  GetTotal returns:
-	  	&goprices.Money{
-				Amount:   p.Total,
-				Currency: p.Currency,
-			}
-*/
 func (p *Payment) GetTotal() *goprices.Money {
 	return &goprices.Money{
 		Amount:   *p.Total,
@@ -174,14 +163,6 @@ func (p *Payment) GetTotal() *goprices.Money {
 	}
 }
 
-/*
-GetCapturedAmount returns:
-
-	&goprices.Money{
-		Amount:   p.CapturedAmount,
-		Currency: p.Currency,
-	}
-*/
 func (p *Payment) GetCapturedAmount() *goprices.Money {
 	return &goprices.Money{
 		Amount:   *p.CapturedAmount,

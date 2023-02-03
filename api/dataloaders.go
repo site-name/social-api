@@ -122,7 +122,9 @@ var (
 	MenuItemChildrenLoader      = dataloader.NewBatchedLoader(menuItemChildrenLoader, dataloader.WithBatchCapacity[string, []*model.MenuItem](batchCapacity))
 
 	// payment
-	PaymentsByOrderIdLoader = dataloader.NewBatchedLoader(paymentsByOrderIdLoader, dataloader.WithBatchCapacity[string, []*model.Payment](batchCapacity))
+	PaymentsByOrderIdLoader       = dataloader.NewBatchedLoader(paymentsByOrderIdLoader, dataloader.WithBatchCapacity[string, []*model.Payment](batchCapacity))
+	TransactionsByPaymentIdLoader = dataloader.NewBatchedLoader(transactionsByPaymentIdLoader, dataloader.WithBatchCapacity[string, []*model.PaymentTransaction](batchCapacity))
+	PaymentsByTokensLoader        = dataloader.NewBatchedLoader(paymentsByTokenLoader, dataloader.WithBatchCapacity[string, *model.Payment](batchCapacity))
 
 	// invoice
 	InvoicesByOrderIDLoader = dataloader.NewBatchedLoader(invoicesByOrderIDLoader, dataloader.WithBatchCapacity[string, []*model.Invoice](batchCapacity))
