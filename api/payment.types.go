@@ -177,10 +177,8 @@ func (p *Payment) AvailableCaptureAmount(ctx context.Context) (*Money, error) {
 	if embedCtx.App.Srv().AccountService().
 		SessionHasPermissionTo(session, model.PermissionManageOrders) {
 		if p.p.CanCapture() {
-
-			floatAmount, _ := p.p.GetChargeAmount().Float64()
 			return &Money{
-				Amount:   floatAmount,
+				Amount:   p.p.GetChargeAmount().InexactFloat64(),
 				Currency: p.p.Currency,
 			}, nil
 		}

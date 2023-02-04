@@ -451,7 +451,7 @@ func (o *Order) ShippingAddress(ctx context.Context) (*Address, error) {
 	return SystemAddressToGraphqlAddress(address.Obfuscate()), nil
 }
 
-func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
+func (o *Order) Actions(ctx context.Context) ([]OrderAction, error) {
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
@@ -464,7 +464,7 @@ func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
 		return nil, err
 	}
 
-	actions := []*OrderAction{}
+	actions := []OrderAction{}
 	lastPayment := embedCtx.App.Srv().PaymentService().GetLastpayment(payments)
 
 	ok, appErr := orderSrv.OrderCanCapture(o.order, lastPayment)
@@ -472,8 +472,7 @@ func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
 		return nil, appErr
 	}
 	if ok {
-		action := OrderActionCapture
-		actions = append(actions, &action)
+		actions = append(actions, OrderActionCapture)
 	}
 
 	ok, appErr = orderSrv.CanMarkOrderAsPaid(o.order, payments)
@@ -481,8 +480,7 @@ func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
 		return nil, appErr
 	}
 	if ok {
-		action := OrderActionMarkAsPaid
-		actions = append(actions, &action)
+		actions = append(actions, OrderActionMarkAsPaid)
 	}
 
 	ok, appErr = orderSrv.OrderCanRefund(o.order, lastPayment)
@@ -490,8 +488,7 @@ func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
 		return nil, appErr
 	}
 	if ok {
-		action := OrderActionRefund
-		actions = append(actions, &action)
+		actions = append(actions, OrderActionRefund)
 	}
 
 	ok, appErr = orderSrv.OrderCanVoid(o.order, lastPayment)
@@ -499,8 +496,7 @@ func (o *Order) Actions(ctx context.Context) ([]*OrderAction, error) {
 		return nil, appErr
 	}
 	if ok {
-		action := OrderActionVoid
-		actions = append(actions, &action)
+		actions = append(actions, OrderActionVoid)
 	}
 
 	return actions, nil
@@ -535,11 +531,56 @@ func (o *Order) Payments(ctx context.Context) ([]*Payment, error) {
 }
 
 func (o *Order) TotalAuthorized(ctx context.Context) (*Money, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	payments, err := PaymentsByOrderIdLoader.Load(ctx, o.order.Id)()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(payments) == 0 {
+		return &Money{
+			Amount:   0,
+			Currency: o.order.Currency,
+		}, nil
+	}
+
+	// find most recent payment:
+	var mostRecentPayment = payments[0]
+	if len(payments) > 1 {
+		for _, pm := range payments {
+			if pm != nil && pm.CreateAt > mostRecentPayment.CreateAt {
+				mostRecentPayment = pm
+			}
+		}
+	}
+	if !*mostRecentPayment.IsActive {
+		return &Money{
+			Amount:   0,
+			Currency: o.order.Currency,
+		}, nil
+	}
+
+	money, appErr := embedCtx.App.Srv().PaymentService().PaymentGetAuthorizedAmount(mostRecentPayment)
+	if appErr != nil {
+		return nil, appErr
+	}
+	return SystemMoneyToGraphqlMoney(money), nil
 }
 
 func (o *Order) Fulfillments(ctx context.Context) ([]*Fulfillment, error) {
-	panic("not implemented")
+	fulfillments, err := FulfillmentsByOrderIdLoader.Load(ctx, o.order.Id)()
+	if err != nil {
+		return nil, err
+	}
+	/*
+		TODO: https://github.com/site-name/social-api/issues/11
+	*/
+
+	return DataloaderResultMap(fulfillments, SystemFulfillmentToGraphqlFulfillment), nil
 }
 
 func (o *Order) Lines(ctx context.Context) ([]*OrderLine, error) {
@@ -606,10 +647,6 @@ func (o *Order) PaymentStatusDisplay(ctx context.Context) (string, error) {
 
 	if len(payments) == 0 {
 		return model.ChargeStatuString[model.NOT_CHARGED], nil
-	}
-
-	if len(payments) == 1 {
-		return model.ChargeStatuString[payments[0].ChargeStatus], nil
 	}
 
 	// find latest payment

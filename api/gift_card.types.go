@@ -197,16 +197,14 @@ func SystemGiftcardToGraphqlGiftcard(gc *model.GiftCard) *GiftCard {
 		res.LastUsedOn = &DateTime{util.TimeFromMillis(*gc.LastUsedOn)}
 	}
 	if gc.CurrentBalance != nil { // these fields may got populated above
-		flt, _ := gc.CurrentBalance.Amount.Float64()
 		res.CurrentBalance = &Money{
-			Amount:   flt,
+			Amount:   gc.CurrentBalance.Amount.InexactFloat64(),
 			Currency: gc.CurrentBalance.Currency,
 		}
 	}
 	if gc.InitialBalance != nil { // these fields may got populated above
-		flt, _ := gc.InitialBalance.Amount.Float64()
 		res.InitialBalance = &Money{
-			Amount:   flt,
+			Amount:   gc.InitialBalance.Amount.InexactFloat64(),
 			Currency: gc.InitialBalance.Currency,
 		}
 	}

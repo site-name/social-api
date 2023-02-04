@@ -800,16 +800,13 @@ func systemVoucherChannelListingToGraphqlVoucherChannelListing(l *model.VoucherC
 
 	l.PopulateNonDbFields()
 
-	res := &VoucherChannelListing{
-		ID:        l.Id,
-		Currency:  l.Currency,
-		MinSpent:  SystemMoneyToGraphqlMoney(l.MinSpent),
-		channelID: l.ChannelID,
+	return &VoucherChannelListing{
+		ID:            l.Id,
+		Currency:      l.Currency,
+		MinSpent:      SystemMoneyToGraphqlMoney(l.MinSpent),
+		channelID:     l.ChannelID,
+		DiscountValue: l.DiscountValue.InexactFloat64(),
 	}
-
-	flt, _ := l.DiscountValue.Float64()
-	res.DiscountValue = flt
-	return res
 }
 
 func (v *VoucherChannelListing) Channel(ctx context.Context) (*Channel, error) {
@@ -838,11 +835,9 @@ func systemSaleChannelListingToGraphqlSaleChannelListing(s *model.SaleChannelLis
 		return nil
 	}
 
-	flt, _ := s.DiscountValue.Float64()
-
 	return &SaleChannelListing{
 		ID:            s.Id,
-		DiscountValue: flt,
+		DiscountValue: s.DiscountValue.InexactFloat64(),
 		Currency:      s.Currency,
 		channelID:     s.ChannelID,
 	}

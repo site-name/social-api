@@ -34,7 +34,6 @@ func TestApplicableShippingMethods(t *testing.T) {
 }
 
 func ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) (string, error) {
-
 	selects := []string{
 		"ShippingMethods.Id",
 		"ShippingMethods.Name",

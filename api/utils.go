@@ -83,12 +83,10 @@ func SystemMoneyToGraphqlMoney(money *goprices.Money) *Money {
 		return nil
 	}
 
-	res := &Money{
+	return &Money{
 		Currency: money.Currency,
+		Amount:   money.Amount.InexactFloat64(),
 	}
-	res.Amount, _ = money.Amount.Float64()
-
-	return res
 }
 
 func SystemTaxedMoneyToGraphqlTaxedMoney(money *goprices.TaxedMoney) *TaxedMoney {

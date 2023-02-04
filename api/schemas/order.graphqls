@@ -52,7 +52,7 @@ type Order  {
   metadata: [MetadataItem]!
   fulfillments: [Fulfillment]!
   lines: [OrderLine]!
-  actions: [OrderAction]!
+  actions: [OrderAction!]!
   availableShippingMethods: [ShippingMethod]!
   availableCollectionPoints: [Warehouse!]!
   invoices: [Invoice]!
