@@ -3,7 +3,6 @@ package checkout
 import (
 	"net/http"
 
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
@@ -12,20 +11,13 @@ import (
 func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model.AppError) {
 	lines, err := a.srv.Store.CheckoutLine().CheckoutLinesByCheckoutID(checkoutToken)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("CheckoutLinesByCheckoutID", "app.checkout.checkout_lines_by_checkout.app_error", err)
+		return nil, model.NewAppError("CheckoutLinesByCheckoutToken", "app.checkout.checkout_lines_by_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return lines, nil
 }
 
 func (a *ServiceCheckout) DeleteCheckoutLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) *model.AppError {
-	// validate id list
-	for _, id := range checkoutLineIDs {
-		if !model.IsValidId(id) {
-			return model.NewAppError("DeleteCheckoutLines", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "checkoutLineIDs"}, "", http.StatusBadRequest)
-		}
-	}
-
 	err := a.srv.Store.CheckoutLine().DeleteLines(transaction, checkoutLineIDs)
 	if err != nil {
 		return model.NewAppError("DeleteCheckoutLines", "app.checkout.error_deleting_checkoutlines.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -81,19 +73,8 @@ func (a *ServiceCheckout) BulkUpdateCheckoutLines(checkoutLines []*model.Checkou
 // CheckoutLinesByOption returns a list of checkout lines filtered using given option
 func (s *ServiceCheckout) CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, *model.AppError) {
 	checkoutLines, err := s.srv.Store.CheckoutLine().CheckoutLinesByOption(option)
-	var (
-		statusCode int
-		errMessage string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMessage = err.Error()
-	} else if len(checkoutLines) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("CheckoutLinesByOption", "app.checkout.error_finding_checkout_lines_by_options.app_error", nil, errMessage, statusCode)
+		return nil, model.NewAppError("CheckoutLinesByOption", "app.checkout.error_finding_checkout_lines_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return checkoutLines, nil

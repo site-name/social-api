@@ -61,29 +61,30 @@ func (as *SqlAttributeVariantStore) Get(attributeVariantID string) (*model.Attri
 	return &res, nil
 }
 
-func (as *SqlAttributeVariantStore) GetByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, error) {
-	query := as.GetQueryBuilder().Select("*").From(store.AttributeVariantTableName)
+func (s *SqlAttributeVariantStore) commonQueryBuilder(options *model.AttributeVariantFilterOption) squirrel.SelectBuilder {
+	query := s.GetQueryBuilder().Select("*").From(store.AttributeVariantTableName)
 
 	// parse option
-	if option.AttributeID != nil {
-		query = query.Where(option.AttributeID)
+	if options.AttributeID != nil {
+		query = query.Where(options.AttributeID)
 	}
-	if option.Id != nil {
-		query = query.Where(option.Id)
+	if options.Id != nil {
+		query = query.Where(options.Id)
 	}
-	if option.ProductTypeID != nil {
-		query = query.Where(option.ProductTypeID)
+	if options.ProductTypeID != nil {
+		query = query.Where(options.ProductTypeID)
 	}
-	if len(option.ProductIDs) > 0 {
-		subQuery := as.GetQueryBuilder(squirrel.Question).
-			Select("AttributeID").
-			From(store.ProductTableName).
-			Where(squirrel.Eq{store.ProductTableName + ".Id": option.ProductIDs})
-
-		query = query.Where(squirrel.Expr("AttributeID IN ?", subQuery))
+	if value := options.AttributeVisibleInStoreFront; value != nil {
+		query = query.
+			InnerJoin(store.AttributeTableName + " ON Attributes.Id = AttributeVariants.AttributeID").
+			Where(squirrel.Eq{store.AttributeTableName + ".VisibleInStoreFront": *value})
 	}
 
-	queryString, args, err := query.ToSql()
+	return query
+}
+
+func (as *SqlAttributeVariantStore) GetByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, error) {
+	queryString, args, err := as.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
@@ -98,4 +99,18 @@ func (as *SqlAttributeVariantStore) GetByOption(option *model.AttributeVariantFi
 	}
 
 	return &res, nil
+}
+
+func (s *SqlAttributeVariantStore) FilterByOptions(options *model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error) {
+	queryString, args, err := s.commonQueryBuilder(options).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.AttributeVariant
+	err = s.GetReplicaX().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find attribute variant by given options")
+	}
+	return res, nil
 }

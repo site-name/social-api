@@ -32,7 +32,11 @@ func (s *ServiceDiscount) VoucherTranslationsByOption(option *model.VoucherTrans
 func (s *ServiceDiscount) GetVoucherTranslationByOption(option *model.VoucherTranslationFilterOption) (*model.VoucherTranslation, *model.AppError) {
 	translation, err := s.srv.Store.VoucherTranslation().GetByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetVoucherTranslationByOption", "app.discount.error_finding_voucher_translation_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("GetVoucherTranslationByOption", "app.discount.error_finding_voucher_translation_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return translation, nil

@@ -15,7 +15,11 @@ import (
 func (a *ServiceProduct) ProductVariantById(id string) (*model.ProductVariant, *model.AppError) {
 	variant, err := a.srv.Store.ProductVariant().Get(id)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ProductVariantbyId", "app.product.product_variant_missing.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("ProductVariantById", "app.product.product_variant_missing.app_error", nil, err.Error(), statusCode)
 	}
 
 	return variant, nil
@@ -37,7 +41,11 @@ func (a *ServiceProduct) ProductVariantGetPrice(
 func (a *ServiceProduct) ProductVariantIsDigital(productVariantID string) (bool, *model.AppError) {
 	productType, err := a.srv.Store.ProductType().ProductTypeByProductVariantID(productVariantID)
 	if err != nil {
-		return false, store.AppErrorFromDatabaseLookupError("ProductVariantIsDigital", "app.product.product_type_by_product_variant_id.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return false, model.NewAppError("ProductVariantIsDigital", "app.product.product_type_by_product_variant_id.app_error", nil, err.Error(), statusCode)
 	}
 
 	return *productType.IsDigital && !*productType.IsShippingRequired, nil
@@ -47,7 +55,11 @@ func (a *ServiceProduct) ProductVariantIsDigital(productVariantID string) (bool,
 func (a *ServiceProduct) ProductVariantByOrderLineID(orderLineID string) (*model.ProductVariant, *model.AppError) {
 	productVariant, err := a.srv.Store.ProductVariant().GetByOrderLineID(orderLineID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ProductVariantByOrderLineID", "app.product.error_finding_product_variant_by_order_line_id.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("ProductVariantByOrderLineID", "app.product.error_finding_product_variant_by_order_line_id.app_error", nil, err.Error(), statusCode)
 	}
 
 	return productVariant, nil
@@ -56,19 +68,8 @@ func (a *ServiceProduct) ProductVariantByOrderLineID(orderLineID string) (*model
 // ProductVariantsByOption returns a list of product variants satisfy given option
 func (a *ServiceProduct) ProductVariantsByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, *model.AppError) {
 	productVariants, err := a.srv.Store.ProductVariant().FilterByOption(option)
-	var (
-		statusCode int
-		errMessage string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMessage = err.Error()
-	} else if len(productVariants) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("ProductVariantsByOption", "app.product.error_finding_product_variants_by_options.app_error", nil, errMessage, statusCode)
+		return nil, model.NewAppError("ProductVariantsByOption", "app.product.error_finding_product_variants_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return productVariants, nil
@@ -78,7 +79,11 @@ func (a *ServiceProduct) ProductVariantsByOption(option *model.ProductVariantFil
 func (a *ServiceProduct) ProductVariantGetWeight(productVariantID string) (*measurement.Weight, *model.AppError) {
 	weight, err := a.srv.Store.ProductVariant().GetWeight(productVariantID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ProductVariantGetWeight", "app.product.error_getting_product_variant_weight.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("ProductVariantGetWeight", "app.product.error_getting_product_variant_weight.app_error", nil, err.Error(), statusCode)
 	}
 
 	return weight, nil
@@ -120,13 +125,11 @@ func (s *ServiceProduct) UpsertProductVariant(transaction store_iface.SqlxTxExec
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
 		}
-		var (
-			statusCode = http.StatusInternalServerError
-		)
+		var statusCode = http.StatusInternalServerError
+
 		if _, ok := err.(*store.ErrNotFound); ok {
 			statusCode = http.StatusNotFound
-		}
-		if _, ok := err.(*store.ErrInvalidInput); ok {
+		} else if _, ok := err.(*store.ErrInvalidInput); ok {
 			statusCode = http.StatusBadRequest
 		}
 		return nil, model.NewAppError("UpsertProductVariant", "app.product.error_upserting_product_variant.app_error", nil, err.Error(), statusCode)

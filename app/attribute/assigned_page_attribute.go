@@ -12,7 +12,11 @@ import (
 func (a *ServiceAttribute) AssignedPageAttributeByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, *model.AppError) {
 	assignedPageAttr, err := a.srv.Store.AssignedPageAttribute().GetByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("AssignedPageAttributeByOption", "app.attribute.error_finding_assigned_page_attribute_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("AssignedPageAttributeByOption", "app.attribute.assigned_page_attribute_by_options.app_error", nil, err.Error(), statusCode)
 	}
 
 	return assignedPageAttr, nil

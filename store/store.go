@@ -285,6 +285,7 @@ type (
 		Save(attributeVariant *model.AttributeVariant) (*model.AttributeVariant, error)
 		Get(attributeVariantID string) (*model.AttributeVariant, error)
 		GetByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, error) // GetByOption finds 1 model variant with given option.
+		FilterByOptions(options *model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error)
 	}
 	AssignedProductAttributeValueStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
@@ -302,9 +303,10 @@ type (
 		FilterByOptions(options *model.AssignedProductAttributeFilterOption) ([]*model.AssignedProductAttribute, error)
 	}
 	AttributeProductStore interface {
-		Save(attributeProduct *model.AttributeProduct) (*model.AttributeProduct, error)          // Save inserts given model product relationship into database then returns it and an error
-		Get(attributeProductID string) (*model.AttributeProduct, error)                          // Get finds an attributeProduct relationship and returns it with an error
-		GetByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, error) // GetByOption returns an attributeProduct with given condition
+		Save(attributeProduct *model.AttributeProduct) (*model.AttributeProduct, error)                // Save inserts given model product relationship into database then returns it and an error
+		Get(attributeProductID string) (*model.AttributeProduct, error)                                // Get finds an attributeProduct relationship and returns it with an error
+		GetByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, error)       // GetByOption returns an attributeProduct with given condition
+		FilterByOptions(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) // FilterByOptions returns attributeProducts with given condition
 	}
 )
 

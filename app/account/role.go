@@ -15,7 +15,11 @@ import (
 func (a *ServiceAccount) GetRole(id string) (*model.Role, *model.AppError) {
 	role, err := a.srv.Store.Role().Get(id)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetRole", "app.role.get.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("GetRole", "app.role.get.app_error", nil, err.Error(), statusCode)
 	}
 
 	// appErr := a.srv.mergeChannelHigherScopedPermissions([]*model.Role{role})
@@ -28,9 +32,13 @@ func (a *ServiceAccount) GetRole(id string) (*model.Role, *model.AppError) {
 
 // GetRoleByName gets a model.Role from database with given name, returns nil and concret error if a problem occur
 func (s *ServiceAccount) GetRoleByName(ctx context.Context, name string) (*model.Role, *model.AppError) {
-	role, nErr := s.srv.Store.Role().GetByName(ctx, name)
-	if nErr != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetRoleByName", "app.role.get_by_name.app_error", nErr)
+	role, err := s.srv.Store.Role().GetByName(ctx, name)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("GetRoleByName", "app.role.get_by_name.app_error", nil, err.Error(), statusCode)
 	}
 
 	// err := s.mergeChannelHigherScopedPermissions([]*model.Role{role})

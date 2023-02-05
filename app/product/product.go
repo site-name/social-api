@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
@@ -32,19 +33,8 @@ func (a *ServiceProduct) ProductById(productID string) (*model.Product, *model.A
 // ProductsByOption returns a list of products that satisfy given option
 func (a *ServiceProduct) ProductsByOption(option *model.ProductFilterOption) ([]*model.Product, *model.AppError) {
 	products, err := a.srv.Store.Product().FilterByOption(option)
-	var (
-		statusCode int
-		errMsg     string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMsg = err.Error()
-	}
-	if len(products) == 0 {
-		statusCode = http.StatusNotFound
-	}
-	if statusCode != 0 {
-		return nil, model.NewAppError("ProductsByOption", "app.product.error_finding_products_by_option.app_error", nil, errMsg, statusCode)
+		return nil, model.NewAppError("ProductsByOption", "app.product.error_finding_products_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return products, nil
@@ -54,7 +44,11 @@ func (a *ServiceProduct) ProductsByOption(option *model.ProductFilterOption) ([]
 func (a *ServiceProduct) ProductByOption(option *model.ProductFilterOption) (*model.Product, *model.AppError) {
 	product, err := a.srv.Store.Product().GetByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ProductByOption", "app.error_finding_product_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("ProductByOption", "app.error_finding_product_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return product, nil
@@ -79,13 +73,11 @@ func (a *ServiceProduct) ProductsRequireShipping(productIDs []string) (bool, *mo
 		return false, appErr
 	}
 
-	for _, productType := range productTypes {
-		if *productType.IsShippingRequired {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	return lo.SomeBy(productTypes, func(p *model.ProductType) bool {
+		return p != nil &&
+			p.IsShippingRequired != nil &&
+			*p.IsShippingRequired
+	}), nil
 }
 
 // ProductGetFirstImage returns first media of given product

@@ -54,4 +54,5 @@ type AttributeService interface {
 	FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model.AppError)
 	GetVisibleToUserAttributes(session *model.Session) (model.Attributes, *model.AppError)
 	PerformReordering(values model.AttributeValues, operations map[string]*int) *model.AppError
+	AttributeProductsByOption(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, *model.AppError)
 }

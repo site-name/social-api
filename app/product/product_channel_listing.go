@@ -11,7 +11,7 @@ import (
 func (a *ServiceProduct) ProductChannelListingsByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, *model.AppError) {
 	listings, err := a.srv.Store.ProductChannelListing().FilterByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ProductChannelListingsByOption", "app.product.product_channel_listings_by_option_missing.app_error", err)
+		return nil, model.NewAppError("ProductChannelListingsByOption", "app.product.product_channel_listings_by_option_missing.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return listings, nil

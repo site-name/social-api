@@ -35,7 +35,7 @@ type WishlistService interface {
 	// RemoveProductVariant remove a wishlist item from given wishlist
 	RemoveProductVariant(wishlistID string, productVariant *model.ProductVariant) *model.AppError
 	// SetUser assigns given user to given wishlist
-	SetUserForWishlist(wishList *model.Wishlist, userID string) *model.AppError
+	SetUserForWishlist(wishList *model.Wishlist, userID string) (*model.Wishlist, *model.AppError)
 	// UpsertWishlist inserts a new wishlist instance into database with given userID
 	UpsertWishlist(wishList *model.Wishlist) (*model.Wishlist, *model.AppError)
 	// WishlistByOption returns 1 wishlist filtered by given option

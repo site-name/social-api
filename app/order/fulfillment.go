@@ -14,7 +14,7 @@ import (
 func (a *ServiceOrder) FulfillmentsByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (model.Fulfillments, *model.AppError) {
 	fulfillments, err := a.srv.Store.Fulfillment().FilterByOption(transaction, option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("FulfillmentsByOption", "app.model.error_finding_fulfillments_by_option.app_error", err)
+		return nil, model.NewAppError("FulfillmentsByOption", "app.model.error_finding_fulfillments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return fulfillments, nil
@@ -63,7 +63,11 @@ func (a *ServiceOrder) UpsertFulfillment(transaction store_iface.SqlxTxExecutor,
 func (a *ServiceOrder) FulfillmentByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, *model.AppError) {
 	fulfillment, err := a.srv.Store.Fulfillment().GetByOption(transaction, option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("FulfillmentByOption", "app.order.error_finding_fulfillment_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("FulfillmentByOption", "app.order.error_finding_fulfillment_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return fulfillment, nil

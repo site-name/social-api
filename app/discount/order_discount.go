@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
@@ -12,7 +11,7 @@ import (
 func (a *ServiceDiscount) OrderDiscountsByOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, *model.AppError) {
 	orderDiscounts, err := a.srv.Store.OrderDiscount().FilterbyOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("OrderDiscountsByOption", "app.discount.order_discount_by_option.app_error.app_error", err)
+		return nil, model.NewAppError("OrderDiscountsByOption", "app.discount.order_discount_by_option.app_error.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return orderDiscounts, nil

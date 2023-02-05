@@ -64,7 +64,7 @@ func (a *ServiceOrder) BulkUpsertOrders(orders []*model.Order) ([]*model.Order, 
 func (a *ServiceOrder) FilterOrdersByOptions(option *model.OrderFilterOption) ([]*model.Order, *model.AppError) {
 	orders, err := a.srv.Store.Order().FilterByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("FilterOrdersbyOption", "app.order.error_finding_orders_by_option.app_error", err)
+		return nil, model.NewAppError("FilterOrdersbyOption", "app.order.error_finding_orders_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return orders, nil
@@ -74,7 +74,11 @@ func (a *ServiceOrder) FilterOrdersByOptions(option *model.OrderFilterOption) ([
 func (a *ServiceOrder) OrderById(id string) (*model.Order, *model.AppError) {
 	order, err := a.srv.Store.Order().Get(id)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("OrderById", "app.order.order_missing.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("OrderById", "app.order.order_missing.app_error", nil, err.Error(), statusCode)
 	}
 
 	return order, nil

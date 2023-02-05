@@ -34,7 +34,11 @@ func init() {
 func (a *ServicePayment) PaymentByID(transaction store_iface.SqlxTxExecutor, paymentID string, lockForUpdate bool) (*model.Payment, *model.AppError) {
 	payMent, err := a.srv.Store.Payment().Get(transaction, paymentID, lockForUpdate)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("PaymentByID", "app.payment.error_finding_payment_by_id.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("PaymentByID", "app.payment.error_finding_payment_by_id.app_error", nil, err.Error(), statusCode)
 	}
 	return payMent, nil
 }

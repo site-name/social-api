@@ -1,6 +1,8 @@
 package account
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
@@ -26,7 +28,11 @@ func (a *ServiceAccount) AddStatusCache(status *model.Status) {
 func (a *ServiceAccount) StatusByID(statusID string) (*model.Status, *model.AppError) {
 	status, err := a.srv.Store.Status().Get(statusID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("StatusByID", "app.model.status_missing.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("StatusByID", "app.user.status_by_id.app_error", nil, err.Error(), statusCode)
 	}
 
 	return status, nil
@@ -35,7 +41,7 @@ func (a *ServiceAccount) StatusByID(statusID string) (*model.Status, *model.AppE
 func (a *ServiceAccount) StatusesByIDs(statusIDs []string) ([]*model.Status, *model.AppError) {
 	statuses, err := a.srv.Store.Status().GetByIds(statusIDs)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("StatusesByIDs", "app.model.statuses_missing.app_error", err)
+		return nil, model.NewAppError("StatusesByIDs", "app.user.statuses_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return statuses, nil

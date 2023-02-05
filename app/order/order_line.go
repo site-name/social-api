@@ -113,7 +113,11 @@ func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*model.Ord
 func (a *ServiceOrder) OrderLineById(orderLineID string) (*model.OrderLine, *model.AppError) {
 	orderLine, err := a.srv.Store.OrderLine().Get(orderLineID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("OrderLineById", "app.order.missing_order_line.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("OrderLineById", "app.order.missing_order_line.app_error", nil, err.Error(), statusCode)
 	}
 
 	return orderLine, nil

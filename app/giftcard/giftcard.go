@@ -30,12 +30,16 @@ func init() {
 }
 
 func (a *ServiceGiftcard) GetGiftCard(id string) (*model.GiftCard, *model.AppError) {
-	gc, err := a.srv.Store.GiftCard().GetById(id)
+	giftcard, err := a.srv.Store.GiftCard().GetById(id)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetGiftCard", "app.giftcard.giftcard_missing.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("GetGiftCard", "app.giftcard.giftcard_missing.app_error", nil, err.Error(), statusCode)
 	}
 
-	return gc, nil
+	return giftcard, nil
 }
 
 func (a *ServiceGiftcard) GiftcardsByCheckout(checkoutToken string) ([]*model.GiftCard, *model.AppError) {

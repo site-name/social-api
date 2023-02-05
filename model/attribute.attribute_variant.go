@@ -17,10 +17,12 @@ type AttributeVariant struct {
 //
 // properties can be provided partially or fully
 type AttributeVariantFilterOption struct {
-	Id            squirrel.Sqlizer
-	AttributeID   squirrel.Sqlizer
-	ProductTypeID squirrel.Sqlizer
-	ProductIDs    []string
+	Id                           squirrel.Sqlizer
+	AttributeID                  squirrel.Sqlizer
+	ProductTypeID                squirrel.Sqlizer
+	AttributeVisibleInStoreFront *bool
+
+	// ProductIDs    []string
 }
 
 func (a *AttributeVariant) IsValid() *AppError {

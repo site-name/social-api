@@ -1855,6 +1855,22 @@ func (s *TimerLayerAttributePageStore) Save(page *model.AttributePage) (*model.A
 	return result, err
 }
 
+func (s *TimerLayerAttributeProductStore) FilterByOptions(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeProductStore.FilterByOptions(option)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeProductStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAttributeProductStore) Get(attributeProductID string) (*model.AttributeProduct, error) {
 	start := timemodule.Now()
 
@@ -1995,6 +2011,22 @@ func (s *TimerLayerAttributeValueStore) Upsert(av *model.AttributeValue) (*model
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AttributeValueStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributeVariantStore) FilterByOptions(options *model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeVariantStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeVariantStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }

@@ -12,7 +12,11 @@ import (
 func (a *ServiceAttribute) AssignedProductAttributeByOption(option *model.AssignedProductAttributeFilterOption) (*model.AssignedProductAttribute, *model.AppError) {
 	assignedProductAttr, err := a.srv.Store.AssignedProductAttribute().GetWithOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("AssignedProductAttributeByOption", "app.attribute.error_finding_assigned_product_attribute_by_option", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("AssignedProductAttributeByOption", "app.attribute.error_finding_assigned_product_attribute_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return assignedProductAttr, nil

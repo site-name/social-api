@@ -24,7 +24,11 @@ func (s *ServiceCsv) CreateExportFile(file *model.ExportFile) (*model.ExportFile
 func (s *ServiceCsv) ExportFileById(id string) (*model.ExportFile, *model.AppError) {
 	file, err := s.srv.Store.CsvExportFile().Get(id)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("ExportFileById", "app.csv.error_finding_export_file_by_id.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("ExportFileById", "app.csv.error_finding_export_file_by_id.app_error", nil, err.Error(), statusCode)
 	}
 
 	return file, nil

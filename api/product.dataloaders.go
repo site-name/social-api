@@ -274,7 +274,6 @@ func productTypeByProductIdLoader(ctx context.Context, productIDs []string) []*d
 	for _, prdType := range productTypes {
 		productTypeMap[prdType.Id] = prdType
 	}
-
 	for idx, id := range productIDs {
 		productTypeID, ok := productMap[id]
 		if ok {
@@ -355,7 +354,6 @@ func collectionsByProductIdLoader(ctx context.Context, productIDs []string) []*d
 		}
 		productCollectionMap[rel.ProductID] = append(productCollectionMap[rel.ProductID], rel.CollectionID)
 	}
-
 	for idx, productID := range productIDs {
 		collectionsOfProduct := make([]*model.Collection, len(productCollectionMap[productID]))
 
@@ -456,7 +454,6 @@ func variantChannelListingByVariantIdAndChannelIdLoader(ctx context.Context, var
 			variantChannelListingMap[listing.VariantID+"__"+listing.ChannelID] = listing
 		}
 	}
-
 	for idx, id := range variantIDChannelIDPairs {
 		res[idx] = &dataloader.Result[*model.ProductVariantChannelListing]{Data: variantChannelListingMap[id]}
 	}
@@ -512,7 +509,6 @@ func variantsChannelListingByProductIdAndChannelSlugLoader(ctx context.Context, 
 			variantChannelListingMap[key] = append(variantChannelListingMap[key], listing)
 		}
 	}
-
 	for idx, id := range idPairs {
 		res[idx] = &dataloader.Result[[]*model.ProductVariantChannelListing]{Data: variantChannelListingMap[id]}
 	}
@@ -606,7 +602,6 @@ func productChannelListingByIdLoader(ctx context.Context, ids []string) []*datal
 	for _, listing := range productChannelListings {
 		productChannelListingMap[listing.Id] = listing
 	}
-
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.ProductChannelListing]{Data: productChannelListingMap[id]}
 	}
@@ -645,7 +640,6 @@ func productChannelListingByProductIdLoader(ctx context.Context, productIDs []st
 	for _, listing := range productChannelListings {
 		productChannelListingMap[listing.ProductID] = append(productChannelListingMap[listing.ProductID], listing)
 	}
-
 	for idx, id := range productIDs {
 		res[idx] = &dataloader.Result[[]*model.ProductChannelListing]{Data: productChannelListingMap[id]}
 	}
@@ -682,7 +676,6 @@ func productTypeByIdLoader(ctx context.Context, ids []string) []*dataloader.Resu
 	for _, prdType := range productTypes {
 		productTypeMap[prdType.Id] = prdType
 	}
-
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.ProductType]{Data: productTypeMap[id]}
 	}
@@ -757,7 +750,6 @@ func productVariantChannelListingByIdLoader(ctx context.Context, ids []string) [
 	for _, listing := range listings {
 		listingMap[listing.Id] = listing
 	}
-
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.ProductVariantChannelListing]{Data: listingMap[id]}
 	}
@@ -824,7 +816,6 @@ func productVariantsByProductIdAndChannelIdLoader(ctx context.Context, idPairs [
 	for _, variant := range variants {
 		variantMap[variant.Id] = variant
 	}
-
 	for _, listing := range variantChannelListings {
 		variant, ok := variantMap[listing.VariantID]
 		if ok {
@@ -832,7 +823,6 @@ func productVariantsByProductIdAndChannelIdLoader(ctx context.Context, idPairs [
 			idPairVariantMap[key] = append(idPairVariantMap[key], variant)
 		}
 	}
-
 	for idx, idPair := range idPairs {
 		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: idPairVariantMap[idPair]}
 	}
@@ -900,7 +890,6 @@ func availableProductVariantsByProductIdAndChannelIdLoader(ctx context.Context, 
 	for _, variant := range variants {
 		variantMap[variant.Id] = variant
 	}
-
 	for _, listing := range variantChannelListings {
 		variant, ok := variantMap[listing.VariantID]
 		if ok {
@@ -908,7 +897,6 @@ func availableProductVariantsByProductIdAndChannelIdLoader(ctx context.Context, 
 			idPairVariantMap[key] = append(idPairVariantMap[key], variant)
 		}
 	}
-
 	for idx, id := range idPairs {
 		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: idPairVariantMap[id]}
 	}
@@ -947,7 +935,6 @@ func variantChannelListingByVariantIdLoader(ctx context.Context, variantIDs []st
 	for _, listing := range variantChannelListings {
 		variantChannelListingMap[listing.VariantID] = append(variantChannelListingMap[listing.VariantID], listing)
 	}
-
 	for idx, id := range variantIDs {
 		res[idx] = &dataloader.Result[[]*model.ProductVariantChannelListing]{Data: variantChannelListingMap[id]}
 	}
@@ -1173,7 +1160,6 @@ func categoryByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[
 	}
 
 	categoryMap = lo.SliceToMap(categories, func(c *model.Category) (string, *model.Category) { return c.Id, c })
-
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.Category]{Data: categoryMap[id]}
 	}
@@ -1229,14 +1215,12 @@ func categoriesByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*da
 	for _, rel := range voucherCategories {
 		voucherCategoryMap[rel.CategoryID] = rel.VoucherID
 	}
-
 	for _, cate := range categories {
 		voucherID, ok := voucherCategoryMap[cate.Id]
 		if ok {
 			categoryMap[voucherID] = append(categoryMap[voucherID], cate)
 		}
 	}
-
 	for idx, id := range voucherIDs {
 		res[idx] = &dataloader.Result[[]*model.Category]{Data: categoryMap[id]}
 	}
@@ -1285,14 +1269,12 @@ func collectionsByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*d
 	for _, rel := range voucherCollections {
 		voucherCollectionMap[rel.CollectionID] = rel.VoucherID
 	}
-
 	for _, col := range collections {
 		voucherID, ok := voucherCollectionMap[col.Id]
 		if ok {
 			collectionMap[voucherID] = append(collectionMap[voucherID], col)
 		}
 	}
-
 	for idx, id := range voucherIDs {
 		res[idx] = &dataloader.Result[[]*model.Collection]{Data: collectionMap[id]}
 	}
@@ -1340,14 +1322,12 @@ func productsByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*data
 	for _, rel := range voucherProducts {
 		voucherProductMap[rel.ProductID] = rel.VoucherID
 	}
-
 	for _, prd := range products {
 		voucherID, ok := voucherProductMap[prd.Id]
 		if ok {
 			productMap[voucherID] = append(productMap[voucherID], prd)
 		}
 	}
-
 	for idx, id := range voucherIDs {
 		res[idx] = &dataloader.Result[[]*model.Product]{Data: productMap[id]}
 	}
@@ -1396,14 +1376,12 @@ func productVariantsByVoucherIdLoader(ctx context.Context, voucherIDs []string) 
 	for _, rel := range variantVouchers {
 		variantVoucherMap[rel.ProductVariantID] = rel.VoucherID
 	}
-
 	for _, variant := range variants {
 		voucherID, ok := variantVoucherMap[variant.Id]
 		if ok {
 			variantMap[voucherID] = append(variantMap[voucherID], variant)
 		}
 	}
-
 	for idx, id := range voucherIDs {
 		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: variantMap[id]}
 	}
@@ -1454,14 +1432,12 @@ func categoriesBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataload
 	for _, rel := range saleCategories {
 		saleCategoryMap[rel.CategoryID] = rel.SaleID
 	}
-
 	for _, cate := range categories {
 		saleID, ok := saleCategoryMap[cate.Id]
 		if ok {
 			categoryMap[saleID] = append(categoryMap[saleID], cate)
 		}
 	}
-
 	for idx, id := range saleIDs {
 		res[idx] = &dataloader.Result[[]*model.Category]{Data: categoryMap[id]}
 	}
@@ -1512,14 +1488,12 @@ func collectionsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloa
 	for _, rel := range saleCollections {
 		saleCollectionMap[rel.CollectionID] = rel.SaleID
 	}
-
 	for _, collection := range collections {
 		saleID, ok := saleCollectionMap[collection.Id]
 		if ok {
 			collectionMap[saleID] = append(collectionMap[saleID], collection)
 		}
 	}
-
 	for idx, id := range saleIDs {
 		res[idx] = &dataloader.Result[[]*model.Collection]{Data: collectionMap[id]}
 	}
@@ -1570,14 +1544,12 @@ func productsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dataloader
 	for _, rel := range saleProducts {
 		saleProductMap[rel.ProductID] = rel.SaleID
 	}
-
 	for _, product := range products {
 		saleID, ok := saleProductMap[product.Id]
 		if ok {
 			productMap[saleID] = append(productMap[saleID], product)
 		}
 	}
-
 	for idx, id := range saleIDs {
 		res[idx] = &dataloader.Result[[]*model.Product]{Data: productMap[id]}
 	}
@@ -1628,14 +1600,12 @@ func productVariantsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dat
 	for _, rel := range saleVariants {
 		saleProductVariantMap[rel.ProductVariantID] = rel.SaleID
 	}
-
 	for _, product := range variants {
 		saleID, ok := saleProductVariantMap[product.Id]
 		if ok {
 			productVariantMap[saleID] = append(productVariantMap[saleID], product)
 		}
 	}
-
 	for idx, id := range saleIDs {
 		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: productVariantMap[id]}
 	}
@@ -1675,7 +1645,6 @@ func productVariantByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 	}
 
 	productVariantMap = lo.SliceToMap(productVariants, func(v *model.ProductVariant) (string, *model.ProductVariant) { return v.Id, v })
-
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.ProductVariant]{Data: productVariantMap[id]}
 	}
@@ -1735,4 +1704,241 @@ errorLabel:
 
 func categoryChildrenByCategoryIdLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.Category] {
 	panic("not implemented")
+}
+
+func productAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs []string) []*dataloader.Result[[]*model.Attribute] {
+	var (
+		res                        = make([]*dataloader.Result[[]*model.Attribute], len(productTypeIDs))
+		attributeProducts          []*model.AttributeProduct
+		appErr                     *model.AppError
+		session                    *model.Session
+		productTypeToAttributesMap = map[string][]string{} // keys are product type ids, values are slices of attribute ids
+		attributeIDs               = []string{}
+		meetMap                    = map[string]struct{}{} // keys are attribute ids
+		attributes                 []*model.Attribute
+		errs                       []error
+		attributeMap               = map[string]*model.Attribute{} // keys are attribute ids
+	)
+
+	filterOptions := &model.AttributeProductFilterOption{
+		ProductTypeID: squirrel.Eq{store.AttributeProductTableName + ".ProductTypeID": productTypeIDs},
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+	session = embedCtx.AppContext.Session()
+
+	// if current user has no manage product permission:
+	if !embedCtx.App.
+		Srv().
+		AccountService().
+		SessionHasPermissionTo(session, model.PermissionManageProducts) {
+		filterOptions.AttributeVisibleInStoreFront = model.NewPrimitive(true)
+	}
+
+	attributeProducts, appErr = embedCtx.App.Srv().AttributeService().AttributeProductsByOption(filterOptions)
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, rel := range attributeProducts {
+		productTypeToAttributesMap[rel.ProductTypeID] = append(productTypeToAttributesMap[rel.ProductTypeID], rel.AttributeID)
+
+		if _, ok := meetMap[rel.AttributeID]; !ok {
+			attributeIDs = append(attributeIDs, rel.AttributeID)
+			meetMap[rel.AttributeID] = struct{}{}
+		}
+	}
+
+	attributes, errs = AttributesByAttributeIdLoader.LoadMany(ctx, attributeIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+
+	for _, attr := range attributes {
+		attributeMap[attr.Id] = attr
+	}
+
+	for idx, id := range productTypeIDs {
+		attrIDs := productTypeToAttributesMap[id]
+		datas := make([]*model.Attribute, len(attrIDs))
+
+		for index, attrID := range attrIDs {
+			datas[index] = attributeMap[attrID]
+		}
+
+		res[idx] = &dataloader.Result[[]*model.Attribute]{Data: datas}
+	}
+	return res
+
+errorLabel:
+	for idx := range productTypeIDs {
+		res[idx] = &dataloader.Result[[]*model.Attribute]{Error: err}
+	}
+	return res
+}
+
+func variantAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs []string) []*dataloader.Result[[]*model.Attribute] {
+	var (
+		res                        = make([]*dataloader.Result[[]*model.Attribute], len(productTypeIDs))
+		attributeVariants          []*model.AttributeVariant
+		appErr                     *model.AppError
+		session                    *model.Session
+		productTypeToAttributesMap = map[string][]string{} // keys are product type ids, values are slices of attribute ids
+		attributeIDs               = []string{}
+		meetMap                    = map[string]struct{}{} // keys are attribute ids
+		attributes                 []*model.Attribute
+		errs                       []error
+		attributeMap               = map[string]*model.Attribute{} // keys are attribute ids
+	)
+
+	filterOptions := &model.AttributeVariantFilterOption{
+		ProductTypeID: squirrel.Eq{store.AttributeVariantTableName + ".ProductTypeID": productTypeIDs},
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+	session = embedCtx.AppContext.Session()
+
+	// if current user has no manage product permission:
+	if !embedCtx.App.
+		Srv().
+		AccountService().
+		SessionHasPermissionTo(session, model.PermissionManageProducts) {
+		filterOptions.AttributeVisibleInStoreFront = model.NewPrimitive(true)
+	}
+
+	attributeVariants, err = embedCtx.App.Srv().
+		Store.AttributeVariant().
+		FilterByOptions(filterOptions)
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	for _, rel := range attributeVariants {
+		productTypeToAttributesMap[rel.ProductTypeID] = append(productTypeToAttributesMap[rel.ProductTypeID], rel.AttributeID)
+
+		if _, ok := meetMap[rel.AttributeID]; !ok {
+			attributeIDs = append(attributeIDs, rel.AttributeID)
+			meetMap[rel.AttributeID] = struct{}{}
+		}
+	}
+
+	attributes, errs = AttributesByAttributeIdLoader.LoadMany(ctx, attributeIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+
+	for _, attr := range attributes {
+		attributeMap[attr.Id] = attr
+	}
+
+	for idx, id := range productTypeIDs {
+		attrIDs := productTypeToAttributesMap[id]
+		datas := make([]*model.Attribute, len(attrIDs))
+
+		for index, attrID := range attrIDs {
+			datas[index] = attributeMap[attrID]
+		}
+
+		res[idx] = &dataloader.Result[[]*model.Attribute]{Data: datas}
+	}
+	return res
+
+errorLabel:
+	for idx := range productTypeIDs {
+		res[idx] = &dataloader.Result[[]*model.Attribute]{Error: err}
+	}
+	return res
+}
+
+func attributeProductsByProductTypeIdLoader(ctx context.Context, productTypeIDs []string) []*dataloader.Result[[]*model.AttributeProduct] {
+	var (
+		res                 = make([]*dataloader.Result[[]*model.AttributeProduct], len(productTypeIDs))
+		attributeProducts   []*model.AttributeProduct
+		appErr              *model.AppError
+		attributeProductMap = map[string][]*model.AttributeProduct{} // keys are product type ids
+	)
+
+	filterOptions := &model.AttributeProductFilterOption{
+		ProductTypeID: squirrel.Eq{store.AttributeProductTableName + ".ProductTypeID": productTypeIDs},
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	if !embedCtx.App.Srv().AccountService().
+		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+		filterOptions.AttributeVisibleInStoreFront = model.NewPrimitive(true)
+	}
+
+	attributeProducts, appErr = embedCtx.App.Srv().AttributeService().AttributeProductsByOption(filterOptions)
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+	for _, rel := range attributeProducts {
+		attributeProductMap[rel.ProductTypeID] = append(attributeProductMap[rel.ProductTypeID], rel)
+	}
+	for idx, id := range productTypeIDs {
+		res[idx] = &dataloader.Result[[]*model.AttributeProduct]{Data: attributeProductMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range productTypeIDs {
+		res[idx] = &dataloader.Result[[]*model.AttributeProduct]{Error: err}
+	}
+	return res
+}
+
+func attributeVariantsByProductTypeIdLoader(ctx context.Context, productTypeIDs []string) []*dataloader.Result[[]*model.AttributeVariant] {
+	var (
+		res                 = make([]*dataloader.Result[[]*model.AttributeVariant], len(productTypeIDs))
+		attributeVariants   []*model.AttributeVariant
+		attributeProductMap = map[string][]*model.AttributeVariant{} // keys are product type ids
+	)
+
+	filterOptions := &model.AttributeVariantFilterOption{
+		ProductTypeID: squirrel.Eq{store.AttributeVariantTableName + ".ProductTypeID": productTypeIDs},
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	if !embedCtx.App.Srv().AccountService().
+		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+		filterOptions.AttributeVisibleInStoreFront = model.NewPrimitive(true)
+	}
+
+	attributeVariants, err = embedCtx.App.Srv().Store.AttributeVariant().FilterByOptions(filterOptions)
+	if err != nil {
+		err = model.NewAppError("attributeVariantsByProductTypeIdLoader", "app.attribute.attribute_variants_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		goto errorLabel
+	}
+	for _, rel := range attributeVariants {
+		attributeProductMap[rel.ProductTypeID] = append(attributeProductMap[rel.ProductTypeID], rel)
+	}
+	for idx, id := range productTypeIDs {
+		res[idx] = &dataloader.Result[[]*model.AttributeVariant]{Data: attributeProductMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range productTypeIDs {
+		res[idx] = &dataloader.Result[[]*model.AttributeVariant]{Error: err}
+	}
+	return res
 }

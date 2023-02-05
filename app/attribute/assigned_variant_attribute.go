@@ -12,7 +12,11 @@ import (
 func (a *ServiceAttribute) AssignedVariantAttributeByOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, *model.AppError) {
 	assignedVariantAttr, err := a.srv.Store.AssignedVariantAttribute().GetWithOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("AssignedVariantAttributeByOption", "app.attribute.error_finding_assigned_variant_attribute_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("AssignedVariantAttributeByOption", "app.attribute.error_finding_assigned_variant_attribute_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return assignedVariantAttr, nil

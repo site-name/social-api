@@ -14,7 +14,7 @@ import (
 func (a *ServiceWishlist) WishlistItemsByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, *model.AppError) {
 	items, err := a.srv.Store.WishlistItem().FilterByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("WishlistItemsByOption", "app.model.error_finding_wishlist_items_by_option.app_error", err)
+		return nil, model.NewAppError("WishlistItemsByOption", "app.model.error_finding_wishlist_items_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return items, nil
 }
@@ -23,7 +23,11 @@ func (a *ServiceWishlist) WishlistItemsByOption(option *model.WishlistItemFilter
 func (a *ServiceWishlist) WishlistItemByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, *model.AppError) {
 	item, err := a.srv.Store.WishlistItem().GetByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("WishlistItemByOption", "app.model.error_finding_wishlist_item_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("WishlistItemByOption", "app.model.error_finding_wishlist_item_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return item, nil

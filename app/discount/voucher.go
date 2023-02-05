@@ -36,7 +36,11 @@ func (a *ServiceDiscount) UpsertVoucher(voucher *model.Voucher) (*model.Voucher,
 func (a *ServiceDiscount) VoucherById(voucherID string) (*model.Voucher, *model.AppError) {
 	voucher, err := a.srv.Store.DiscountVoucher().Get(voucherID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("VoucherById", "app.discount.voucher_missing.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("VoucherById", "app.discount.voucher_missing.app_error", nil, err.Error(), statusCode)
 	}
 	return voucher, nil
 }
@@ -248,7 +252,11 @@ func (a *ServiceDiscount) VouchersByOption(option *model.VoucherFilterOption) ([
 func (s *ServiceDiscount) VoucherByOption(options *model.VoucherFilterOption) (*model.Voucher, *model.AppError) {
 	voucher, err := s.srv.Store.DiscountVoucher().GetByOptions(options)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("VoucherByOption", "app.discount.error_finding_voucher_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("VoucherByOption", "app.discount.error_finding_voucher_by_option.app_error", nil, err.Error(), statusCode)
 	}
 	return voucher, nil
 }

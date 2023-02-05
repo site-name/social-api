@@ -72,6 +72,12 @@ func (as *SqlAssignedProductAttributeStore) commonQueryBuilder(options *model.As
 	if options.ProductID != nil {
 		query = query.Where(options.ProductID)
 	}
+	if value := options.AttributeProduct_Attribute_VisibleInStoreFront; value != nil {
+		query = query.
+			InnerJoin(store.AttributeProductTableName + " ON AttributeProducts.Id = AssignedProductAttributes.AssignmentID").
+			InnerJoin(store.AttributeTableName + " ON AttributeProducts.AttributeID = Attributes.Id").
+			Where(squirrel.Eq{store.AttributeTableName + ".VisibleInStoreFront": *value})
+	}
 
 	return query
 }

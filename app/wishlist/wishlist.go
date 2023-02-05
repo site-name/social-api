@@ -42,24 +42,23 @@ func (a *ServiceWishlist) UpsertWishlist(wishList *model.Wishlist) (*model.Wishl
 
 // WishlistByOption returns 1 wishlist filtered by given option
 func (a *ServiceWishlist) WishlistByOption(option *model.WishlistFilterOption) (*model.Wishlist, *model.AppError) {
-	wl, err := a.srv.Store.Wishlist().GetByOption(option)
+	wishlist, err := a.srv.Store.Wishlist().GetByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("WishlistByOption", "app.wishlist.error_finding_wishlist.app_error", err)
+		status := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			status = http.StatusNotFound
+		}
+		return nil, model.NewAppError("WishlistByOption", "app.wishlist.error_finding_wishlist.app_error", nil, err.Error(), status)
 	}
 
-	return wl, nil
+	return wishlist, nil
 }
 
 // SetUser assigns given user to given wishlist
-func (a *ServiceWishlist) SetUserForWishlist(wishList *model.Wishlist, userID string) *model.AppError {
-	// validate given user is valid
-	if !model.IsValidId(userID) || wishList.UserID == &userID {
-		return model.NewAppError("SetUserForWishlist", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "userID"}, "", http.StatusBadRequest)
-	}
+func (a *ServiceWishlist) SetUserForWishlist(wishList *model.Wishlist, userID string) (*model.Wishlist, *model.AppError) {
 	wishList.UserID = &userID
 
-	_, appErr := a.UpsertWishlist(wishList)
-	return appErr
+	return a.UpsertWishlist(wishList)
 }
 
 // GetAllVariants returns all product variants in child wishlist items of given wishlist

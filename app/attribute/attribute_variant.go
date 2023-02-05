@@ -1,6 +1,8 @@
 package attribute
 
 import (
+	"net/http"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
@@ -9,7 +11,12 @@ import (
 func (a *ServiceAttribute) AttributeVariantByOption(option *model.AttributeVariantFilterOption) (*model.AttributeVariant, *model.AppError) {
 	attributeVariant, err := a.srv.Store.AttributeVariant().GetByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("AttributeVariantByOption", "app.attribute.error_finding_attribute_variant_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+
+		return nil, model.NewAppError("AttributeVariantByOption", "app.attribute.attribute_variant_by_options.app_error", nil, err.Error(), statusCode)
 	}
 
 	return attributeVariant, nil

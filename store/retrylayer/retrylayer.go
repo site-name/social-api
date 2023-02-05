@@ -2042,6 +2042,26 @@ func (s *RetryLayerAttributePageStore) Save(page *model.AttributePage) (*model.A
 
 }
 
+func (s *RetryLayerAttributeProductStore) FilterByOptions(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeProductStore.FilterByOptions(option)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAttributeProductStore) Get(attributeProductID string) (*model.AttributeProduct, error) {
 
 	tries := 0
@@ -2207,6 +2227,26 @@ func (s *RetryLayerAttributeValueStore) Upsert(av *model.AttributeValue) (*model
 	tries := 0
 	for {
 		result, err := s.AttributeValueStore.Upsert(av)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeVariantStore) FilterByOptions(options *model.AttributeVariantFilterOption) ([]*model.AttributeVariant, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeVariantStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}

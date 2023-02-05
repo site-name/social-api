@@ -622,11 +622,6 @@ func (o *Order) PaymentStatus(ctx context.Context) (*PaymentChargeStatusEnum, er
 		return &notCharged, nil
 	}
 
-	if len(payments) == 1 {
-		status := PaymentChargeStatusEnum(payments[0].ChargeStatus)
-		return &status, nil
-	}
-
 	// find latest payment
 	lastPayment := payments[0]
 	for _, pm := range payments {

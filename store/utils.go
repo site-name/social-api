@@ -3,12 +3,10 @@ package store
 import (
 	"database/sql"
 	"database/sql/driver"
-	"net/http"
 	"strconv"
 	"strings"
 	"unicode"
 
-	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -77,8 +75,9 @@ func ContainsAlphaNumericChar(s string) bool {
 }
 
 // isQuotedWord return true if the input string is quoted, false otherwise. Ex :-
-// 		"quoted string"  -  will return true
-// 		unquoted string  -  will return false
+//
+//	"quoted string"  -  will return true
+//	unquoted string  -  will return false
 func IsQuotedWord(s string) bool {
 	if len(s) < 2 {
 		return false
@@ -90,29 +89,8 @@ func IsQuotedWord(s string) bool {
 // WildcardSearchTerm convert given term to lower-case, concatenates `%` to both ends
 //
 // Example:
-//  WildcardSearchTerm("HELLO") => "%hello%"
+//
+//	WildcardSearchTerm("HELLO") => "%hello%"
 func WildcardSearchTerm(term string) string {
 	return strings.ToLower("%" + term + "%")
-}
-
-// AppErrorFromDatabaseLookupError is a utility function that create *model.AppError with given error.
-//
-// NOTE: ONLY SUPPORTS 3 TYPES OF ERRORS:
-//
-// 1) not found database lookup error (*ErrNotFound - 404)
-//
-// 2) system error while performing lookup operations (500)
-//
-// 3) *model.AppError, returns directly
-func AppErrorFromDatabaseLookupError(where, errId string, err error) *model.AppError {
-	statusCode := http.StatusInternalServerError
-
-	switch t := err.(type) {
-	case *ErrNotFound:
-		statusCode = http.StatusNotFound
-	case *model.AppError:
-		return t
-	}
-
-	return model.NewAppError(where, errId, nil, err.Error(), statusCode)
 }

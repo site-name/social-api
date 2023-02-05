@@ -1,6 +1,7 @@
 package shipping
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -20,14 +21,16 @@ func (a *ServiceShipping) DefaultShippingZoneExists(shippingZoneID string) ([]*m
 func (a *ServiceShipping) GetCountriesWithoutShippingZone() ([]string, *model.AppError) {
 	zones, err := a.srv.Store.ShippingZone().FilterByOption(nil) // nil mean find all
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetCountriesWithoutShippingZone", "app.shipping.shipping_zones_with_option.app_error", err)
+		return nil, model.NewAppError("GetCountriesWithoutShippingZone", "app.shipping.shipping_zones_with_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	meetMap := map[string]bool{}
+	meetMap := map[string]struct{}{}
 
 	for _, zone := range zones {
-		for _, code := range strings.Fields(zone.Countries) {
-			meetMap[strings.ToUpper(code)] = true
+		uppserCountries := strings.ToUpper(zone.Countries)
+
+		for _, code := range strings.Fields(uppserCountries) {
+			meetMap[code] = struct{}{}
 		}
 	}
 

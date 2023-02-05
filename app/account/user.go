@@ -41,7 +41,11 @@ type tokenExtra struct {
 func (a *ServiceAccount) UserById(ctx context.Context, userID string) (*model.User, *model.AppError) {
 	user, err := a.srv.Store.User().Get(ctx, userID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("UserById", "app.model.missing_user.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("UserById", "app.account.user_by_id.app_error", nil, err.Error(), statusCode)
 	}
 
 	return user, nil
@@ -376,7 +380,11 @@ func (a *ServiceAccount) VerifyUserEmail(userID, email string) *model.AppError {
 func (a *ServiceAccount) GetUserByUsername(username string) (*model.User, *model.AppError) {
 	result, err := a.srv.Store.User().GetByUsername(username)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetUserByUsername", "app.model.user_by_username.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("GetUserByUsername", "app.model.user_by_username.app_error", nil, err.Error(), statusCode)
 	}
 	return result, nil
 }
@@ -772,9 +780,9 @@ func (a *ServiceAccount) PermanentDeleteAllUsers(c *request.Context) *model.AppE
 }
 
 func (a *ServiceAccount) UpdateUser(user *model.User, sendNotifications bool) (*model.User, *model.AppError) {
-	prev, err := a.srv.Store.User().Get(context.Background(), user.Id)
-	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("UpdateUser", MissingAccountError, err)
+	prev, appErr := a.UserById(context.Background(), user.Id)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	var newEmail string
@@ -1282,7 +1290,11 @@ func (a *ServiceAccount) UpdateUserActive(c *request.Context, userID string, act
 func (a *ServiceAccount) UserByOrderId(orderID string) (*model.User, *model.AppError) {
 	user, err := a.srv.Store.User().UserByOrderID(orderID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("UserByOrderId", "app.model.error_finding_user_by_order_id.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("UserByOrderId", "app.model.error_finding_user_by_order_id.app_error", nil, err.Error(), statusCode)
 	}
 
 	return user, nil

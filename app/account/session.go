@@ -483,7 +483,11 @@ func (a *ServiceAccount) GetUserAccessTokensForUser(userID string, page, perPage
 func (a *ServiceAccount) GetUserAccessToken(tokenID string, sanitize bool) (*model.UserAccessToken, *model.AppError) {
 	token, err := a.srv.Store.UserAccessToken().Get(tokenID)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("GetUserAccessToken", "app.user.accesstoken_missing.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("GetUserAccessToken", "app.user.accesstoken_missing.app_error", nil, err.Error(), statusCode)
 	}
 
 	if sanitize {

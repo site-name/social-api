@@ -24,8 +24,9 @@ func (a *AttributeProduct) SetAttribute(at *Attribute) {
 
 // AttributeProductFilterOption is used when finding an attributeProduct.
 type AttributeProductFilterOption struct {
-	AttributeID   squirrel.Sqlizer
-	ProductTypeID squirrel.Sqlizer
+	AttributeID                  squirrel.Sqlizer
+	ProductTypeID                squirrel.Sqlizer
+	AttributeVisibleInStoreFront *bool
 }
 
 func (a *AttributeProduct) IsValid() *AppError {
@@ -89,6 +90,8 @@ type AssignedProductAttributes []*AssignedProductAttribute
 type AssignedProductAttributeFilterOption struct {
 	ProductID    squirrel.Sqlizer
 	AssignmentID squirrel.Sqlizer
+
+	AttributeProduct_Attribute_VisibleInStoreFront *bool // INNER JOIN AttributeProduct ON ... INNER JOIN Attribute ON ... WHERE Attribute.VisibleInStoreFront ...
 }
 
 func (a *AssignedProductAttribute) IsValid() *AppError {

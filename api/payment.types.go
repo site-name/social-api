@@ -110,9 +110,8 @@ func (p *Payment) CustomerIPAddress(ctx context.Context) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
-	session := embedCtx.AppContext.Session()
 
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageOrders) {
+	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
 		return p.p.CustomerIpAddress, nil
 	}
 	return nil, model.NewAppError("Payment.CustomerIPAddress", ErrorUnauthorized, nil, "you are not authorized to perform this action.", http.StatusUnauthorized)
@@ -123,9 +122,8 @@ func (p *Payment) Actions(ctx context.Context) ([]OrderAction, error) {
 	if err != nil {
 		return nil, err
 	}
-	session := embedCtx.AppContext.Session()
 
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(session, model.PermissionManageOrders) {
+	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
 		actions := []OrderAction{}
 
 		if p.p.CanCapture() {
@@ -152,10 +150,9 @@ func (p *Payment) Transactions(ctx context.Context) ([]*Transaction, error) {
 	if err != nil {
 		return nil, err
 	}
-	session := embedCtx.AppContext.Session()
 
 	if embedCtx.App.Srv().AccountService().
-		SessionHasPermissionTo(session, model.PermissionManageOrders) {
+		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
 		transactions, err := TransactionsByPaymentIdLoader.Load(ctx, p.p.Id)()
 		if err != nil {
 			return nil, err
@@ -172,10 +169,9 @@ func (p *Payment) AvailableCaptureAmount(ctx context.Context) (*Money, error) {
 	if err != nil {
 		return nil, err
 	}
-	session := embedCtx.AppContext.Session()
 
 	if embedCtx.App.Srv().AccountService().
-		SessionHasPermissionTo(session, model.PermissionManageOrders) {
+		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
 		if p.p.CanCapture() {
 			return &Money{
 				Amount:   p.p.GetChargeAmount().InexactFloat64(),
@@ -194,10 +190,9 @@ func (p *Payment) AvailableRefundAmount(ctx context.Context) (*Money, error) {
 	if err != nil {
 		return nil, err
 	}
-	session := embedCtx.AppContext.Session()
 
 	if embedCtx.App.Srv().AccountService().
-		SessionHasPermissionTo(session, model.PermissionManageOrders) {
+		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
 		if p.p.CanRefund() {
 			return SystemMoneyToGraphqlMoney(p.p.GetCapturedAmount()), nil
 		}

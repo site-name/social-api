@@ -10,19 +10,8 @@ import (
 // CategoriesByOption returns all categories that satisfy given option
 func (a *ServiceProduct) CategoriesByOption(option *model.CategoryFilterOption) ([]*model.Category, *model.AppError) {
 	categories, err := a.srv.Store.Category().FilterByOption(option)
-	var (
-		statusCode int
-		errMsg     string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMsg = err.Error()
-	} else if len(categories) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("CategoriesByOption", "app.product.error_finding_categories_by_option.app_error", nil, errMsg, statusCode)
+		return nil, model.NewAppError("CategoriesByOption", "app.product.error_finding_categories_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return categories, nil
@@ -32,7 +21,11 @@ func (a *ServiceProduct) CategoriesByOption(option *model.CategoryFilterOption) 
 func (a *ServiceProduct) CategoryByOption(option *model.CategoryFilterOption) (*model.Category, *model.AppError) {
 	category, err := a.srv.Store.Category().GetByOption(option)
 	if err != nil {
-		return nil, store.AppErrorFromDatabaseLookupError("CategoryByOption", "app.product.error_finding_category_by_option.app_error", err)
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+		return nil, model.NewAppError("CategoryByOption", "app.product.error_finding_category_by_option.app_error", nil, err.Error(), statusCode)
 	}
 
 	return category, nil

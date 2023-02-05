@@ -3,6 +3,7 @@ package attribute
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -62,8 +63,8 @@ func (as *SqlAttributeProductStore) Get(id string) (*model.AttributeProduct, err
 	return &res, nil
 }
 
-func (as *SqlAttributeProductStore) GetByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, error) {
-	query := as.GetQueryBuilder().
+func (s *SqlAttributeProductStore) commonQueryBuilder(option *model.AttributeProductFilterOption) squirrel.SelectBuilder {
+	query := s.GetQueryBuilder().
 		Select("*").
 		From(store.AttributeProductTableName)
 
@@ -74,8 +75,16 @@ func (as *SqlAttributeProductStore) GetByOption(option *model.AttributeProductFi
 	if option.ProductTypeID != nil {
 		query = query.Where(option.ProductTypeID)
 	}
+	if option.AttributeVisibleInStoreFront != nil {
+		query = query.
+			InnerJoin(store.AttributeTableName + " ON Attributes.Id = AttributeProducts.AttributeID").
+			Where(squirrel.Eq{store.AttributeTableName + ".VisibleInStoreFront": *option.AttributeVisibleInStoreFront})
+	}
+	return query
+}
 
-	queryString, args, err := query.ToSql()
+func (as *SqlAttributeProductStore) GetByOption(option *model.AttributeProductFilterOption) (*model.AttributeProduct, error) {
+	queryString, args, err := as.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
@@ -94,4 +103,19 @@ func (as *SqlAttributeProductStore) GetByOption(option *model.AttributeProductFi
 	}
 
 	return &attributeProduct, nil
+}
+
+func (s *SqlAttributeProductStore) FilterByOptions(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, error) {
+	queryString, args, err := s.commonQueryBuilder(option).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOption_ToSql")
+	}
+
+	var res []*model.AttributeProduct
+	err = s.GetReplicaX().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find attribute products by given options")
+	}
+
+	return res, nil
 }
