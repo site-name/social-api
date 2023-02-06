@@ -1657,51 +1657,6 @@ errorLabel:
 	return res
 }
 
-func graphqlProductVariantsByProductIDLoader(ctx context.Context, productIDs []string) []*dataloader.Result[[]*model.ProductVariant] {
-	var (
-		productVariants model.ProductVariants
-		appErr          *model.AppError
-		res             = make([]*dataloader.Result[[]*model.ProductVariant], len(productIDs))
-
-		// keys are product ids
-		variantsMap = map[string][]*model.ProductVariant{}
-	)
-
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	productVariants, appErr = embedCtx.
-		App.
-		Srv().
-		ProductService().
-		ProductVariantsByOption(&model.ProductVariantFilterOption{
-			ProductID: squirrel.Eq{store.ProductVariantTableName + ".ProductID": productIDs},
-		})
-	if appErr != nil {
-		err = appErr
-		goto errorLabel
-	}
-
-	for _, variant := range productVariants {
-		if variant != nil {
-			variantsMap[variant.ProductID] = append(variantsMap[variant.ProductID], variant)
-		}
-	}
-
-	for idx, productID := range productIDs {
-		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Data: variantsMap[productID]}
-	}
-	return res
-
-errorLabel:
-	for idx := range productIDs {
-		res[idx] = &dataloader.Result[[]*model.ProductVariant]{Error: err}
-	}
-	return res
-}
-
 func categoryChildrenByCategoryIdLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.Category] {
 	panic("not implemented")
 }
@@ -1786,7 +1741,6 @@ func variantAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	var (
 		res                        = make([]*dataloader.Result[[]*model.Attribute], len(productTypeIDs))
 		attributeVariants          []*model.AttributeVariant
-		appErr                     *model.AppError
 		session                    *model.Session
 		productTypeToAttributesMap = map[string][]string{} // keys are product type ids, values are slices of attribute ids
 		attributeIDs               = []string{}
@@ -1817,8 +1771,8 @@ func variantAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	attributeVariants, err = embedCtx.App.Srv().
 		Store.AttributeVariant().
 		FilterByOptions(filterOptions)
-	if appErr != nil {
-		err = appErr
+	if err != nil {
+		err = model.NewAppError("variantAttributesByProductTypeIdLoader", "app.attribute.variant_attributes_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 		goto errorLabel
 	}
 
@@ -1939,6 +1893,195 @@ func attributeVariantsByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 errorLabel:
 	for idx := range productTypeIDs {
 		res[idx] = &dataloader.Result[[]*model.AttributeVariant]{Error: err}
+	}
+	return res
+}
+
+func assignedProductAttributesByProductIdLoader(ctx context.Context, productIDs []string) []*dataloader.Result[[]*model.AssignedProductAttribute] {
+	var (
+		res                         = make([]*dataloader.Result[[]*model.AssignedProductAttribute], len(productIDs))
+		assignedProductAttributes   []*model.AssignedProductAttribute
+		assignedProductAttributeMap = map[string][]*model.AssignedProductAttribute{} // keys are product ids
+	)
+	filterOptions := model.AssignedProductAttributeFilterOption{
+		ProductID: squirrel.Eq{store.AssignedProductAttributeTableName + ".ProductID": productIDs},
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	if !embedCtx.App.Srv().AccountService().
+		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+		filterOptions.AttributeProduct_Attribute_VisibleInStoreFront = model.NewPrimitive(true)
+	}
+
+	assignedProductAttributes, err = embedCtx.App.Srv().Store.AssignedProductAttribute().FilterByOptions(&filterOptions)
+	if err != nil {
+		err = model.NewAppError("assignedProductAttributesByProductIdLoader", "app.attribute.assigned_product_attribute_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		goto errorLabel
+	}
+
+	for _, attr := range assignedProductAttributes {
+		assignedProductAttributeMap[attr.ProductID] = append(assignedProductAttributeMap[attr.ProductID], attr)
+	}
+	for idx, id := range productIDs {
+		res[idx] = &dataloader.Result[[]*model.AssignedProductAttribute]{Data: assignedProductAttributeMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range productIDs {
+		res[idx] = &dataloader.Result[[]*model.AssignedProductAttribute]{Error: err}
+	}
+	return res
+}
+
+func assignedVariantAttributesByProductVariantId(ctx context.Context, variantIDs []string) []*dataloader.Result[[]*model.AssignedVariantAttribute] {
+	var (
+		res                         = make([]*dataloader.Result[[]*model.AssignedVariantAttribute], len(variantIDs))
+		assignedVariantAttributes   []*model.AssignedVariantAttribute
+		assignedVariantAttributeMap = map[string][]*model.AssignedVariantAttribute{} // variant ids are keys
+	)
+
+	filterOptions := &model.AssignedVariantAttributeFilterOption{
+		VariantID: squirrel.Eq{store.AssignedVariantAttributeTableName + ".VariantID": variantIDs},
+	}
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	if !embedCtx.App.Srv().
+		AccountService().
+		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+		filterOptions.Assignment_Attribute_VisibleInStoreFront = model.NewPrimitive(true)
+	}
+
+	assignedVariantAttributes, err = embedCtx.App.Srv().Store.AssignedVariantAttribute().FilterByOption(filterOptions)
+	if err != nil {
+		err = model.NewAppError("assignedVariantAttributesByProductVariantId", "app.attribute.assigned_variant_attribute_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		goto errorLabel
+	}
+
+	for _, attr := range assignedVariantAttributes {
+		assignedVariantAttributeMap[attr.VariantID] = append(assignedVariantAttributeMap[attr.VariantID], attr)
+	}
+	for idx, id := range variantIDs {
+		res[idx] = &dataloader.Result[[]*model.AssignedVariantAttribute]{Data: assignedVariantAttributeMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range variantIDs {
+		res[idx] = &dataloader.Result[[]*model.AssignedVariantAttribute]{Error: err}
+	}
+	return res
+}
+
+func attributeValuesByAssignedProductAttributeIdLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.AttributeValue] {
+	var (
+		res                            = make([]*dataloader.Result[[]*model.AttributeValue], len(ids))
+		assignedProductAttributeValues []*model.AssignedProductAttributeValue
+
+		attributeValueIDs  []string
+		attributeValues    []*model.AttributeValue
+		attributeValueMap  = map[string]*model.AttributeValue{} // keys are attribute value ids
+		errs               []error
+		assignedProductMap = map[string][]*model.AttributeValue{} // keys are AssignedProductAttribute ids
+	)
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	assignedProductAttributeValues, err = embedCtx.App.Srv().
+		Store.AssignedProductAttributeValue().
+		FilterByOptions(&model.AssignedProductAttributeValueFilterOptions{
+			AssignmentID: squirrel.Eq{store.AssignedProductAttributeValueTableName + ".AssignmentID": ids},
+		})
+	if err != nil {
+		err = model.NewAppError("attributeValuesByAssignedProductAttributeIdLoader", "app.attribute.assigned_product_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		goto errorLabel
+	}
+
+	for _, attr := range assignedProductAttributeValues {
+		attributeValueIDs = append(attributeValueIDs, attr.ValueID)
+	}
+
+	attributeValues, errs = AttributeValueByIdLoader.LoadMany(ctx, attributeValueIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+
+	for _, attributeValue := range attributeValues {
+		attributeValueMap[attributeValue.Id] = attributeValue
+	}
+	for _, attr := range assignedProductAttributeValues {
+		assignedProductMap[attr.AssignmentID] = append(assignedProductMap[attr.AssignmentID], attributeValueMap[attr.ValueID])
+	}
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[[]*model.AttributeValue]{Data: assignedProductMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range ids {
+		res[idx] = &dataloader.Result[[]*model.AttributeValue]{Error: err}
+	}
+	return res
+}
+
+func attributeValuesByAssignedVariantAttributeIdLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.AttributeValue] {
+	var (
+		assignedVariantAttributeValues []*model.AssignedVariantAttributeValue
+		res                            = make([]*dataloader.Result[[]*model.AttributeValue], len(ids))
+		valueIDs                       []string
+		attributeValues                []*model.AttributeValue
+		attributeValueMap              = map[string]*model.AttributeValue{} // keys are attribute values ids
+		errs                           []error
+		assignedVariantMap             = map[string][]*model.AttributeValue{}
+	)
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	assignedVariantAttributeValues, err = embedCtx.App.Srv().Store.AssignedVariantAttributeValue().
+		FilterByOptions(&model.AssignedVariantAttributeValueFilterOptions{
+			AssignmentID: squirrel.Eq{store.AssignedVariantAttributeValueTableName + ".AssignmentID": ids},
+		})
+	if err != nil {
+		err = model.NewAppError("AttributeValuesByAssignedVariantAttributeIdLoader", "app.attribute.assigned_variant_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		goto errorLabel
+	}
+
+	for _, attr := range assignedVariantAttributeValues {
+		valueIDs = append(valueIDs, attr.ValueID)
+	}
+
+	attributeValues, errs = AttributeValueByIdLoader.LoadMany(ctx, valueIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+
+	for _, attrValue := range attributeValues {
+		attributeValueMap[attrValue.Id] = attrValue
+	}
+	for _, attr := range assignedVariantAttributeValues {
+		assignedVariantMap[attr.AssignmentID] = append(assignedVariantMap[attr.AssignmentID], attributeValueMap[attr.ValueID])
+	}
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[[]*model.AttributeValue]{Data: assignedVariantMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range ids {
+		res[idx] = &dataloader.Result[[]*model.AttributeValue]{Error: err}
 	}
 	return res
 }

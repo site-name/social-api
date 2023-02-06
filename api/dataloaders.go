@@ -72,13 +72,17 @@ var (
 	CheckoutInfoByCheckoutTokenLoader      = dataloader.NewBatchedLoader(checkoutInfoByCheckoutTokenLoader, dataloader.WithBatchCapacity[string, *model.CheckoutInfo](batchCapacity))
 
 	// attribute
-	AttributesByAttributeIdLoader          = dataloader.NewBatchedLoader(attributesByAttributeIdLoader, dataloader.WithBatchCapacity[string, *model.Attribute](batchCapacity))
-	AttributeValuesByAttributeIdLoader     = dataloader.NewBatchedLoader(attributeValuesByAttributeIdLoader, dataloader.WithBatchCapacity[string, []*model.AttributeValue](batchCapacity))
-	AttributeValueByIdLoader               = dataloader.NewBatchedLoader(attributeValueByIdLoader, dataloader.WithBatchCapacity[string, *model.AttributeValue](batchCapacity))
-	ProductAttributesByProductTypeIdLoader = dataloader.NewBatchedLoader(productAttributesByProductTypeIdLoader, dataloader.WithBatchCapacity[string, []*model.Attribute](batchCapacity))
-	VariantAttributesByProductTypeIdLoader = dataloader.NewBatchedLoader(variantAttributesByProductTypeIdLoader, dataloader.WithBatchCapacity[string, []*model.Attribute](batchCapacity))
-	AttributeProductsByProductTypeIdLoader = dataloader.NewBatchedLoader(attributeProductsByProductTypeIdLoader, dataloader.WithBatchCapacity[string, []*model.AttributeProduct](batchCapacity))
-	AttributeVariantsByProductTypeIdLoader = dataloader.NewBatchedLoader(attributeVariantsByProductTypeIdLoader, dataloader.WithBatchCapacity[string, []*model.AttributeVariant](batchCapacity))
+	AttributesByAttributeIdLoader                     = dataloader.NewBatchedLoader(attributesByAttributeIdLoader, dataloader.WithBatchCapacity[string, *model.Attribute](batchCapacity))
+	AttributeValuesByAttributeIdLoader                = dataloader.NewBatchedLoader(attributeValuesByAttributeIdLoader, dataloader.WithBatchCapacity[string, []*model.AttributeValue](batchCapacity))
+	AttributeValueByIdLoader                          = dataloader.NewBatchedLoader(attributeValueByIdLoader, dataloader.WithBatchCapacity[string, *model.AttributeValue](batchCapacity))
+	ProductAttributesByProductTypeIdLoader            = dataloader.NewBatchedLoader(productAttributesByProductTypeIdLoader, dataloader.WithBatchCapacity[string, []*model.Attribute](batchCapacity))
+	VariantAttributesByProductTypeIdLoader            = dataloader.NewBatchedLoader(variantAttributesByProductTypeIdLoader, dataloader.WithBatchCapacity[string, []*model.Attribute](batchCapacity))
+	AttributeProductsByProductTypeIdLoader            = dataloader.NewBatchedLoader(attributeProductsByProductTypeIdLoader, dataloader.WithBatchCapacity[string, []*model.AttributeProduct](batchCapacity))
+	AttributeVariantsByProductTypeIdLoader            = dataloader.NewBatchedLoader(attributeVariantsByProductTypeIdLoader, dataloader.WithBatchCapacity[string, []*model.AttributeVariant](batchCapacity))
+	AssignedProductAttributesByProductIdLoader        = dataloader.NewBatchedLoader(assignedProductAttributesByProductIdLoader, dataloader.WithBatchCapacity[string, []*model.AssignedProductAttribute](batchCapacity))
+	AssignedVariantAttributesByProductVariantId       = dataloader.NewBatchedLoader(assignedVariantAttributesByProductVariantId, dataloader.WithBatchCapacity[string, []*model.AssignedVariantAttribute](batchCapacity))
+	AttributeValuesByAssignedProductAttributeIdLoader = dataloader.NewBatchedLoader(attributeValuesByAssignedProductAttributeIdLoader, dataloader.WithBatchCapacity[string, []*model.AttributeValue](batchCapacity))
+	AttributeValuesByAssignedVariantAttributeIdLoader = dataloader.NewBatchedLoader(attributeValuesByAssignedVariantAttributeIdLoader, dataloader.WithBatchCapacity[string, []*model.AttributeValue](batchCapacity))
 
 	// channel
 	ChannelByIdLoader              = dataloader.NewBatchedLoader(channelByIdLoader, dataloader.WithBatchCapacity[string, *model.Channel](batchCapacity))

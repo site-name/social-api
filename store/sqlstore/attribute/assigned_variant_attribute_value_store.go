@@ -203,3 +203,26 @@ func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []
 
 	return nil
 }
+
+func (s *SqlAssignedVariantAttributeValueStore) FilterByOptions(options *model.AssignedVariantAttributeValueFilterOptions) ([]*model.AssignedVariantAttributeValue, error) {
+	query := s.GetQueryBuilder().Select("*").From(store.AssignedVariantAttributeValueTableName)
+	if options.AssignmentID != nil {
+		query = query.Where(options.AssignmentID)
+	}
+	if options.ValueID != nil {
+		query = query.Where(options.ValueID)
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.AssignedVariantAttributeValue
+	err = s.GetReplicaX().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find assigned variant attribute values by given options")
+	}
+
+	return res, nil
+}

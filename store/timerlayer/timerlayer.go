@@ -1519,6 +1519,22 @@ func (s *TimerLayerAssignedProductAttributeStore) Save(assignedProductAttribute 
 	return result, err
 }
 
+func (s *TimerLayerAssignedProductAttributeValueStore) FilterByOptions(options *model.AssignedProductAttributeValueFilterOptions) ([]*model.AssignedProductAttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedProductAttributeValueStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedProductAttributeValueStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error) {
 	start := timemodule.Now()
 
@@ -1663,10 +1679,26 @@ func (s *TimerLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute 
 	return result, err
 }
 
-func (s *TimerLayerAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*model.AssignedVariantAttributeValue, error) {
+func (s *TimerLayerAssignedVariantAttributeValueStore) FilterByOptions(options *model.AssignedVariantAttributeValueFilterOptions) ([]*model.AssignedVariantAttributeValue, error) {
 	start := timemodule.Now()
 
-	result, err := s.AssignedVariantAttributeValueStore.Get(assignedVariantAttrValueID)
+	result, err := s.AssignedVariantAttributeValueStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AssignedVariantAttributeValueStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAssignedVariantAttributeValueStore) Get(id string) (*model.AssignedVariantAttributeValue, error) {
+	start := timemodule.Now()
+
+	result, err := s.AssignedVariantAttributeValueStore.Get(id)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

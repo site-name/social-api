@@ -203,3 +203,28 @@ func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID stri
 
 	return assignedProductAttributeValues, attributeValues, nil
 }
+
+func (s *SqlAssignedProductAttributeValueStore) FilterByOptions(options *model.AssignedProductAttributeValueFilterOptions) ([]*model.AssignedProductAttributeValue, error) {
+	query := s.GetQueryBuilder().
+		Select("*").
+		From(store.AssignedProductAttributeValueTableName)
+
+	if options.AssignmentID != nil {
+		query = query.Where(options.AssignmentID)
+	}
+	if options.ValueID != nil {
+		query = query.Where(options.ValueID)
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.AssignedProductAttributeValue
+	err = s.GetReplicaX().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find assigned product attributes by given options")
+	}
+	return res, nil
+}

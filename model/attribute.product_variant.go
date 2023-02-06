@@ -12,6 +12,11 @@ type AssignedVariantAttributeValue struct {
 	Sortable
 }
 
+type AssignedVariantAttributeValueFilterOptions struct {
+	ValueID      squirrel.Sqlizer
+	AssignmentID squirrel.Sqlizer
+}
+
 func (a *AssignedVariantAttributeValue) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
 		"assigned_variant_attribute_value.is_valid.%s.app_error",
@@ -61,6 +66,8 @@ type AssignedVariantAttribute struct {
 type AssignedVariantAttributeFilterOption struct {
 	VariantID    squirrel.Sqlizer
 	AssignmentID squirrel.Sqlizer
+
+	Assignment_Attribute_VisibleInStoreFront *bool // INNER JOIN AttributeVariant ON ... INNER JOIN Attributes ON ... WHERE Attributes.VisibleInStoreFront ...
 
 	AssignmentAttributeInputType squirrel.Sqlizer // INNER JOIN AttributeVariants ON () INNER JOIN Attributes ON () WHERE Attributes.InputType
 	AssignmentAttributeType      squirrel.Sqlizer // INNER JOIN AttributeVariants ON () INNER JOIN Attributes ON () WHERE Attributes.Type

@@ -17,7 +17,7 @@ type AttributeService interface {
 	// AssignedVariantAttributeByOption returns an assigned variant attribute filtered by given option
 	AssignedVariantAttributeByOption(option *model.AssignedVariantAttributeFilterOption) (*model.AssignedVariantAttribute, *model.AppError)
 	// AssignedVariantAttributesByOption returns a list of assigned variant attributes filtered by given options
-	AssignedVariantAttributesByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, error)
+	AssignedVariantAttributesByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, *model.AppError)
 	// AssociateAttributeValuesToInstance Assign given attribute values to a product or variant.
 	// Note: be award this function invokes the “set“ method on the instance's
 	// attribute association. Meaning any values already assigned or concurrently

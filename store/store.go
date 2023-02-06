@@ -269,10 +269,11 @@ type (
 		ModelFields(prefix string) model.AnyArray[string]
 		ScanFields(assignedVariantAttributeValue *model.AssignedVariantAttributeValue) []interface{}
 		Save(assignedVariantAttrValue *model.AssignedVariantAttributeValue) (*model.AssignedVariantAttributeValue, error)                                              // Save inserts new value into database then returns it with an error
-		Get(assignedVariantAttrValueID string) (*model.AssignedVariantAttributeValue, error)                                                                           // Get try finding a value with given id then returns it with an error
+		Get(id string) (*model.AssignedVariantAttributeValue, error)                                                                                                   // Get try finding a value with given id then returns it with an error
 		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedVariantAttributeValue, error)                                                    // SaveInBulk save multiple values into database then returns them
 		SelectForSort(assignmentID string) (assignedVariantAttributeValues []*model.AssignedVariantAttributeValue, attributeValues []*model.AttributeValue, err error) // SelectForSort
 		UpdateInBulk(attributeValues []*model.AssignedVariantAttributeValue) error                                                                                     // UpdateInBulk use transaction to update given values, then returns an error to indicate if the operation was successful or not
+		FilterByOptions(options *model.AssignedVariantAttributeValueFilterOptions) ([]*model.AssignedVariantAttributeValue, error)
 	}
 	AssignedVariantAttributeStore interface {
 		Save(assignedVariantAttribute *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, error)       // Save insert new instance into database then returns it with an error
@@ -295,6 +296,7 @@ type (
 		SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedProductAttributeValue, error)       // SaveInBulk save multiple values into database
 		SelectForSort(assignmentID string) ([]*model.AssignedProductAttributeValue, []*model.AttributeValue, error)       // SelectForSort finds all `*AssignedProductAttributeValue` and related `*AttributeValues` with given `assignmentID`, then returns them with an error.
 		UpdateInBulk(attributeValues []*model.AssignedProductAttributeValue) error                                        // UpdateInBulk use transaction to update the given values. Returned error can be `*store.ErrInvalidInput` or `system error`
+		FilterByOptions(options *model.AssignedProductAttributeValueFilterOptions) ([]*model.AssignedProductAttributeValue, error)
 	}
 	AssignedProductAttributeStore interface {
 		Save(assignedProductAttribute *model.AssignedProductAttribute) (*model.AssignedProductAttribute, error)    // Save inserts new assgignedProductAttribute into database and returns it with an error

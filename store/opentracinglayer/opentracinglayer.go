@@ -1566,6 +1566,24 @@ func (s *OpenTracingLayerAssignedProductAttributeStore) Save(assignedProductAttr
 	return result, err
 }
 
+func (s *OpenTracingLayerAssignedProductAttributeValueStore) FilterByOptions(options *model.AssignedProductAttributeValueFilterOptions) ([]*model.AssignedProductAttributeValue, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeValueStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AssignedProductAttributeValueStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedProductAttributeValueStore.Get")
@@ -1728,7 +1746,25 @@ func (s *OpenTracingLayerAssignedVariantAttributeStore) Save(assignedVariantAttr
 	return result, err
 }
 
-func (s *OpenTracingLayerAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*model.AssignedVariantAttributeValue, error) {
+func (s *OpenTracingLayerAssignedVariantAttributeValueStore) FilterByOptions(options *model.AssignedVariantAttributeValueFilterOptions) ([]*model.AssignedVariantAttributeValue, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeValueStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AssignedVariantAttributeValueStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerAssignedVariantAttributeValueStore) Get(id string) (*model.AssignedVariantAttributeValue, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AssignedVariantAttributeValueStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -1737,7 +1773,7 @@ func (s *OpenTracingLayerAssignedVariantAttributeValueStore) Get(assignedVariant
 	}()
 
 	defer span.Finish()
-	result, err := s.AssignedVariantAttributeValueStore.Get(assignedVariantAttrValueID)
+	result, err := s.AssignedVariantAttributeValueStore.Get(id)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

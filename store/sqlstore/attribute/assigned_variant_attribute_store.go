@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -76,22 +77,23 @@ func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *model.Assign
 	if option.VariantID != nil {
 		query = query.Where(option.VariantID)
 	}
-	var joined_AssignedVariantAttributes_and_Attributes_tables bool
-	if option.AssignmentAttributeInputType != nil {
+
+	if option.AssignmentAttributeInputType != nil ||
+		option.Assignment_Attribute_VisibleInStoreFront != nil ||
+		option.AssignmentAttributeType != nil {
 		query = query.
 			InnerJoin(store.AttributeVariantTableName + " ON (AssignedVariantAttributes.AssignmentID = AttributeVariants.Id)").
-			InnerJoin(store.AttributeTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)").
-			Where(option.AssignmentAttributeInputType)
+			InnerJoin(store.AttributeTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)")
+	}
 
-		joined_AssignedVariantAttributes_and_Attributes_tables = true // indicate that already joined 2 tables
+	if option.AssignmentAttributeInputType != nil {
+		query = query.Where(option.AssignmentAttributeInputType)
 	}
 	if option.AssignmentAttributeType != nil {
-		if !joined_AssignedVariantAttributes_and_Attributes_tables {
-			query = query.
-				InnerJoin(store.AttributeVariantTableName + " ON (AssignedVariantAttributes.AssignmentID = AttributeVariants.Id)").
-				InnerJoin(store.AttributeTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)")
-		}
 		query = query.Where(option.AssignmentAttributeType)
+	}
+	if value := option.Assignment_Attribute_VisibleInStoreFront; value != nil {
+		query = query.Where(squirrel.Eq{store.AttributeTableName + ".VisibleInStoreFront": *value})
 	}
 
 	return query.ToSql()
@@ -122,7 +124,6 @@ func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *model.Assigned
 
 // FilterByOption finds and returns a list of assigned variant attributes filtered by given options
 func (as *SqlAssignedVariantAttributeStore) FilterByOption(option *model.AssignedVariantAttributeFilterOption) ([]*model.AssignedVariantAttribute, error) {
-
 	queryString, args, err := as.builFilterQuery(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")

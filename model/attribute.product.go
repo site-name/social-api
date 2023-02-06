@@ -148,9 +148,14 @@ func (a AssignedProductAttributes) DeepCopy() AssignedProductAttributes {
 // ValueID unique together AssignmentID
 type AssignedProductAttributeValue struct {
 	Id           string `json:"id"`
-	ValueID      string `json:"value_id"`      // to attribute.AttributeValue
-	AssignmentID string `json:"assignment_id"` // to attribute.AssignedProductAttribute
+	ValueID      string `json:"value_id"`      // to AttributeValue
+	AssignmentID string `json:"assignment_id"` // to AssignedProductAttribute
 	Sortable
+}
+
+type AssignedProductAttributeValueFilterOptions struct {
+	ValueID      squirrel.Sqlizer
+	AssignmentID squirrel.Sqlizer
 }
 
 func (a *AssignedProductAttributeValue) IsValid() *AppError {

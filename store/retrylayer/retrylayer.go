@@ -1622,6 +1622,26 @@ func (s *RetryLayerAssignedProductAttributeStore) Save(assignedProductAttribute 
 
 }
 
+func (s *RetryLayerAssignedProductAttributeValueStore) FilterByOptions(options *model.AssignedProductAttributeValueFilterOptions) ([]*model.AssignedProductAttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedProductAttributeValueStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error) {
 
 	tries := 0
@@ -1802,11 +1822,31 @@ func (s *RetryLayerAssignedVariantAttributeStore) Save(assignedVariantAttribute 
 
 }
 
-func (s *RetryLayerAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*model.AssignedVariantAttributeValue, error) {
+func (s *RetryLayerAssignedVariantAttributeValueStore) FilterByOptions(options *model.AssignedVariantAttributeValueFilterOptions) ([]*model.AssignedVariantAttributeValue, error) {
 
 	tries := 0
 	for {
-		result, err := s.AssignedVariantAttributeValueStore.Get(assignedVariantAttrValueID)
+		result, err := s.AssignedVariantAttributeValueStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAssignedVariantAttributeValueStore) Get(id string) (*model.AssignedVariantAttributeValue, error) {
+
+	tries := 0
+	for {
+		result, err := s.AssignedVariantAttributeValueStore.Get(id)
 		if err == nil {
 			return result, nil
 		}
