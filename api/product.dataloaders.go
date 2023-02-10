@@ -9,6 +9,7 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
@@ -2049,12 +2050,13 @@ func attributeValuesByAssignedVariantAttributeIdLoader(ctx context.Context, ids 
 		goto errorLabel
 	}
 
-	assignedVariantAttributeValues, err = embedCtx.App.Srv().Store.AssignedVariantAttributeValue().
+	assignedVariantAttributeValues, err = embedCtx.App.Srv().
+		Store.AssignedVariantAttributeValue().
 		FilterByOptions(&model.AssignedVariantAttributeValueFilterOptions{
 			AssignmentID: squirrel.Eq{store.AssignedVariantAttributeValueTableName + ".AssignmentID": ids},
 		})
 	if err != nil {
-		err = model.NewAppError("AttributeValuesByAssignedVariantAttributeIdLoader", "app.attribute.assigned_variant_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		err = model.NewAppError("attributeValuesByAssignedVariantAttributeIdLoader", "app.attribute.assigned_variant_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 		goto errorLabel
 	}
 
@@ -2082,6 +2084,214 @@ func attributeValuesByAssignedVariantAttributeIdLoader(ctx context.Context, ids 
 errorLabel:
 	for idx := range ids {
 		res[idx] = &dataloader.Result[[]*model.AttributeValue]{Error: err}
+	}
+	return res
+}
+
+func selectedAttributesByProductIdLoader(ctx context.Context, productIDs []string) []*dataloader.Result[[]*SelectedAttribute] {
+	var (
+		res                         = make([]*dataloader.Result[[]*SelectedAttribute], len(productIDs))
+		err                         error
+		assignedProductAttributes   [][]*model.AssignedProductAttribute
+		assignedProductAttributeIDs []string // ids of items of assignedProductAttributes
+		productTypeIDs              []string
+		attributeProducts           [][]*model.AttributeProduct
+		attributeValues             [][]*model.AttributeValue
+		attributeIDs                []string
+		attributes                  []*model.Attribute
+
+		selectedAttributesMap       = map[string][]*SelectedAttribute{}              // keys are product ids
+		attributeValueMap           = map[string][]*model.AttributeValue{}           // keys are attribute value ids
+		attributeMap                = map[string]*model.Attribute{}                  // keys are attribute ids
+		attributeProductMap         = map[string][]*model.AttributeProduct{}         // keys are attribute product ids
+		assignedProductAttributeMap = map[string][]*model.AssignedProductAttribute{} // keys are product ids
+	)
+
+	products, errs := ProductByIdLoader.LoadMany(ctx, productIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+	assignedProductAttributes, errs = AssignedProductAttributesByProductIdLoader.LoadMany(ctx, productIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+
+	assignedProductAttributeIDs = lo.Map(lo.Flatten(assignedProductAttributes), func(item *model.AssignedProductAttribute, _ int) string { return item.Id })
+	products = lo.Filter(products, func(p *model.Product, _ int) bool { return p != nil })
+	productTypeIDs = lo.Map(products, func(p *model.Product, _ int) string { return p.ProductTypeID })
+
+	//
+	attributeProducts, errs = AttributeProductsByProductTypeIdLoader.LoadMany(ctx, productTypeIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+	attributeValues, errs = AttributeValuesByAssignedProductAttributeIdLoader.LoadMany(ctx, assignedProductAttributeIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+	attributeIDs = lo.Map(lo.Flatten(attributeProducts), func(item *model.AttributeProduct, _ int) string { return item.AttributeID })
+
+	//
+	attributes, errs = AttributesByAttributeIdLoader.LoadMany(ctx, attributeIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+
+	//
+	attributeValueMap = keyValuesToMap(assignedProductAttributeIDs, attributeValues)
+	attributeMap = keyValuesToMap(attributeIDs, attributes)
+	attributeProductMap = keyValuesToMap(productTypeIDs, attributeProducts)
+	assignedProductAttributeMap = keyValuesToMap(productIDs, assignedProductAttributes)
+
+	for key, product := range keyValuesToMap(productIDs, products) {
+		assignedProductTypeAttributes := attributeProductMap[product.ProductTypeID]
+		assignedProductAttributes := assignedProductAttributeMap[key]
+
+		for _, assignedProductTypeAttribute := range assignedProductTypeAttributes {
+			productAssignment, found := lo.Find(assignedProductAttributes, func(a *model.AssignedProductAttribute) bool { return a.AssignmentID == assignedProductTypeAttribute.Id })
+			attribute := attributeMap[assignedProductTypeAttribute.AttributeID]
+			values := []*model.AttributeValue{}
+
+			if found {
+				values = attributeValueMap[productAssignment.Id]
+			}
+
+			selectedAttributesMap[key] = append(selectedAttributesMap[key], &SelectedAttribute{
+				Attribute: SystemAttributeToGraphqlAttribute(attribute),
+				Values:    DataloaderResultMap(values, SystemAttributeValueToGraphqlAttributeValue),
+			})
+		}
+	}
+
+	for idx, id := range productIDs {
+		res[idx] = &dataloader.Result[[]*SelectedAttribute]{Data: selectedAttributesMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range productIDs {
+		res[idx] = &dataloader.Result[[]*SelectedAttribute]{Error: err}
+	}
+	return res
+}
+
+func selectedAttributesByProductVariantIdLoader(ctx context.Context, variantIDs []string) []*dataloader.Result[[]*SelectedAttribute] {
+	var (
+		res                         = make([]*dataloader.Result[[]*SelectedAttribute], len(variantIDs))
+		err                         error
+		assignedVariantAttributes   [][]*model.AssignedVariantAttribute
+		productIDs                  []string
+		assignedVariantAttributeIDs []string
+		products                    []*model.Product
+		attributeValues             [][]*model.AttributeValue
+		productTypeIDs              []string
+		productMap                  = map[string]*model.Product{}          // keys are product ids
+		attributeValueMap           = map[string][]*model.AttributeValue{} // keys are assigned variant attribute ids
+		attributeVariants           [][]*model.AttributeVariant
+		attributeIDs                []string
+		attributeProducts           = map[string][]*model.AttributeVariant{}
+		attributes                  []*model.Attribute
+		attributeMap                map[string]*model.Attribute
+		assignedVariantAttributeMap map[string][]*model.AssignedVariantAttribute
+		selectedAttributesMap       = map[string][]*SelectedAttribute{}
+	)
+
+	productVariants, errs := ProductVariantByIdLoader.LoadMany(ctx, variantIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+
+	assignedVariantAttributes, errs = AssignedVariantAttributesByProductVariantId.LoadMany(ctx, variantIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+	assignedVariantAttributeMap = keyValuesToMap(variantIDs, assignedVariantAttributes)
+
+	productIDs = lo.Map(productVariants, func(v *model.ProductVariant, _ int) string { return v.ProductID })
+	assignedVariantAttributeIDs = lo.Map(lo.Flatten(assignedVariantAttributes), func(a *model.AssignedVariantAttribute, _ int) string { return a.Id })
+
+	products, errs = ProductByIdLoader.LoadMany(ctx, productIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+
+	attributeValues, errs = AttributeValuesByAssignedVariantAttributeIdLoader.LoadMany(ctx, assignedVariantAttributeIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+
+	productTypeIDs = lo.Map(products, func(p *model.Product, _ int) string { return p.ProductTypeID })
+	productMap = keyValuesToMap(productIDs, products)
+	attributeValueMap = keyValuesToMap(assignedVariantAttributeIDs, attributeValues)
+
+	attributeVariants, errs = AttributeVariantsByProductTypeIdLoader.LoadMany(ctx, productTypeIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+
+	attributeIDs = lo.Map(lo.Flatten(attributeVariants), func(v *model.AttributeVariant, _ int) string { return v.AttributeID })
+	attributeProducts = keyValuesToMap(productTypeIDs, attributeVariants)
+
+	attributes, errs = AttributesByAttributeIdLoader.LoadMany(ctx, attributeIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		err = errs[0]
+		goto errorLabel
+	}
+
+	attributeMap = keyValuesToMap(attributeIDs, attributes)
+
+	for key, variant := range keyValuesToMap(variantIDs, productVariants) {
+		product := productMap[variant.ProductID]
+		assignedProductTypeAttributes := attributeProducts[product.ProductTypeID]
+		assignedVariantAttributes := assignedVariantAttributeMap[key]
+
+		for _, assignedProductTypeAttribute := range assignedProductTypeAttributes {
+			variantAssignment, found := lo.Find(assignedVariantAttributes, func(a *model.AssignedVariantAttribute) bool { return a.AssignmentID == assignedProductTypeAttribute.Id })
+			attribute := attributeMap[assignedProductTypeAttribute.AttributeID]
+			values := []*model.AttributeValue{}
+
+			if found {
+				values = attributeValueMap[variantAssignment.Id]
+			}
+
+			selectedAttributesMap[key] = append(selectedAttributesMap[key], &SelectedAttribute{
+				Attribute: SystemAttributeToGraphqlAttribute(attribute),
+				Values:    DataloaderResultMap(values, SystemAttributeValueToGraphqlAttributeValue),
+			})
+		}
+	}
+
+	for idx, id := range variantIDs {
+		res[idx] = &dataloader.Result[[]*SelectedAttribute]{Data: selectedAttributesMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range variantIDs {
+		res[idx] = &dataloader.Result[[]*SelectedAttribute]{Error: err}
+	}
+	return res
+}
+
+// keyValuesToMap
+// E.g:
+//
+//	a := []int{1, 2}; b := []int{1, 2, 3, 4} Produces {1: 1, 2: 2}
+func keyValuesToMap[K util.Ordered, V any](keys []K, values []V) map[K]V {
+	res := map[K]V{}
+
+	for i := 0; i < util.Min(len(keys), len(values)); i++ {
+		res[keys[i]] = values[i]
 	}
 	return res
 }

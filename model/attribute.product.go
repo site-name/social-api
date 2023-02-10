@@ -80,8 +80,24 @@ type AssignedProductAttribute struct {
 	ProductID    string `json:"product_id"`    // to product.Product
 	AssignmentID string `json:"assignment_id"` // to attribute.AttributeProduct
 
-	AttributeValues  AttributeValues   `json:"-" db:"-"`
-	AttributeProduct *AttributeProduct `json:"-" db:"-"`
+	attributeValues  AttributeValues   `db:"-"`
+	attributeProduct *AttributeProduct `db:"-"`
+}
+
+func (a *AssignedProductAttribute) GetAttributeValues() AttributeValues {
+	return a.attributeValues
+}
+
+func (a *AssignedProductAttribute) SetAttributeValues(avs AttributeValues) {
+	a.attributeValues = avs
+}
+
+func (a *AssignedProductAttribute) GetAttributeProduct() *AttributeProduct {
+	return a.attributeProduct
+}
+
+func (a *AssignedProductAttribute) SetAttributeProduct(ap *AttributeProduct) {
+	a.attributeProduct = ap
 }
 
 type AssignedProductAttributes []*AssignedProductAttribute
@@ -129,9 +145,9 @@ func (a *AssignedProductAttribute) DeepCopy() *AssignedProductAttribute {
 	}
 
 	res := *a
-	res.AttributeValues = a.AttributeValues.DeepCopy()
-	if a.AttributeProduct != nil {
-		res.AttributeProduct = a.AttributeProduct.DeepCopy()
+	res.attributeValues = a.attributeValues.DeepCopy()
+	if a.attributeProduct != nil {
+		res.attributeProduct = a.attributeProduct.DeepCopy()
 	}
 	return &res
 }

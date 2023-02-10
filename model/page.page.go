@@ -14,12 +14,12 @@ const (
 )
 
 type Page struct {
-	Id         string           `json:"id"`
-	Title      string           `json:"title"` // unique
-	Slug       string           `json:"slug"`  // unique
-	PageTypeID string           `json:"page_type_id"`
-	Content    *StringInterface `json:"content"`
-	CreateAt   int64            `json:"create_at"`
+	Id         string          `json:"id"`
+	Title      string          `json:"title"` // unique
+	Slug       string          `json:"slug"`  // unique
+	PageTypeID string          `json:"page_type_id"`
+	Content    StringInterface `json:"content"`
+	CreateAt   int64           `json:"create_at"`
 	ModelMetadata
 	Publishable
 	Seo

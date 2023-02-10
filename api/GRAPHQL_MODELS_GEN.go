@@ -2547,20 +2547,6 @@ type ProductBulkDelete struct {
 	Errors []*ProductError `json:"errors"`
 }
 
-type ProductChannelListing struct {
-	ID                     string              `json:"id"`
-	PublicationDate        *Date               `json:"publicationDate"`
-	IsPublished            bool                `json:"isPublished"`
-	Channel                *Channel            `json:"channel"`
-	VisibleInListings      bool                `json:"visibleInListings"`
-	AvailableForPurchase   *Date               `json:"availableForPurchase"`
-	DiscountedPrice        *Money              `json:"discountedPrice"`
-	PurchaseCost           *MoneyRange         `json:"purchaseCost"`
-	Margin                 *Margin             `json:"margin"`
-	IsAvailableForPurchase *bool               `json:"isAvailableForPurchase"`
-	Pricing                *ProductPricingInfo `json:"pricing"`
-}
-
 type ProductChannelListingAddInput struct {
 	ChannelID                string   `json:"channelId"`
 	IsPublished              *bool    `json:"isPublished"`

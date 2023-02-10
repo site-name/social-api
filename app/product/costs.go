@@ -15,9 +15,7 @@ func GetProductCostsData(
 	variantChannelListings []*model.ProductVariantChannelListing,
 	hasVariants bool,
 	currency string,
-
 ) (*goprices.MoneyRange, []float64, *model.AppError) {
-
 	purchaseCostsRange, err := util.ZeroMoneyRange(currency)
 	if err != nil {
 		return nil, nil, model.NewAppError("GetProductCostsData", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, err.Error(), http.StatusBadRequest)
@@ -41,7 +39,6 @@ func GetProductCostsData(
 }
 
 func GetCostDataFromVariantChannelListing(variantChannelListings []*model.ProductVariantChannelListing) *model.CostsData {
-
 	var (
 		costs   []*goprices.Money
 		margins []float64

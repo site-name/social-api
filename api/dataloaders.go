@@ -45,6 +45,8 @@ var (
 	CollectionChannelListingByIdLoader                         = dataloader.NewBatchedLoader(collectionChannelListingByIdLoader, dataloader.WithBatchCapacity[string, *model.CollectionChannelListing](batchCapacity))
 	CollectionChannelListingByCollectionIdLoader               = dataloader.NewBatchedLoader(collectionChannelListingByCollectionIdLoader, dataloader.WithBatchCapacity[string, []*model.CollectionChannelListing](batchCapacity))
 	CollectionChannelListingByCollectionIdAndChannelSlugLoader = dataloader.NewBatchedLoader(collectionChannelListingByCollectionIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, *model.CollectionChannelListing](batchCapacity)) // key has format of: collectionID__channelID
+	SelectedAttributesByProductIdLoader                        = dataloader.NewBatchedLoader(selectedAttributesByProductIdLoader, dataloader.WithBatchCapacity[string, []*SelectedAttribute](batchCapacity))
+	SelectedAttributesByProductVariantIdLoader                 = dataloader.NewBatchedLoader(selectedAttributesByProductVariantIdLoader, dataloader.WithBatchCapacity[string, []*SelectedAttribute](batchCapacity))
 
 	// giftcard
 	GiftCardEventsByGiftCardIdLoader = dataloader.NewBatchedLoader(giftCardEventsByGiftCardIdLoader, dataloader.WithBatchCapacity[string, []*model.GiftCardEvent](batchCapacity))

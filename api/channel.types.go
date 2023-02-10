@@ -8,6 +8,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
+	"github.com/sitename/sitename/app/product"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
@@ -254,4 +255,113 @@ errorLabel:
 		res = append(res, &dataloader.Result[*model.Channel]{Error: err})
 	}
 	return res
+}
+
+// ChannelListing
+type ProductChannelListing struct {
+	ID                   string `json:"id"`
+	PublicationDate      *Date  `json:"publicationDate"`
+	IsPublished          bool   `json:"isPublished"`
+	VisibleInListings    bool   `json:"visibleInListings"`
+	AvailableForPurchase *Date  `json:"availableForPurchase"`
+	DiscountedPrice      *Money `json:"discountedPrice"`
+
+	c *model.ProductChannelListing
+
+	// Pricing                *ProductPricingInfo `json:"pricing"`
+	// IsAvailableForPurchase *bool               `json:"isAvailableForPurchase"`
+	// Margin                 *Margin             `json:"margin"`
+	// PurchaseCost           *MoneyRange         `json:"purchaseCost"`
+	// Channel                *Channel            `json:"channel"`
+}
+
+func systemProductChannelListingToGraphqlProductChannelListing(c *model.ProductChannelListing) *ProductChannelListing {
+	if c == nil {
+		return nil
+	}
+
+	c.PopulateNonDbFields()
+
+	res := &ProductChannelListing{
+		ID:                c.Id,
+		IsPublished:       c.IsPublished,
+		VisibleInListings: c.VisibleInListings,
+	}
+	if c.PublicationDate != nil {
+		res.PublicationDate = &Date{DateTime{*c.PublicationDate}}
+	}
+	if c.AvailableForPurchase != nil {
+		res.AvailableForPurchase = &Date{DateTime{*c.AvailableForPurchase}}
+	}
+	if c.DiscountedPrice != nil {
+		res.DiscountedPrice = SystemMoneyToGraphqlMoney(c.DiscountedPrice)
+	}
+
+	return res
+}
+
+func (c *ProductChannelListing) Channel(ctx context.Context) (*Channel, error) {
+	channel, err := ChannelByIdLoader.Load(ctx, c.c.ChannelID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemChannelToGraphqlChannel(channel), nil
+}
+
+func (c *ProductChannelListing) PurchaseCost(ctx context.Context) (*MoneyRange, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !embedCtx.App.
+		Srv().AccountService().
+		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+		return nil, model.NewAppError("ProductChannelListing.PurchaseCost", ErrorUnauthorized, nil, "you are not allowed to perform this actions", http.StatusUnauthorized)
+	}
+
+	productVariants, err := ProductVariantsByProductIdLoader.Load(ctx, c.c.ProductID)()
+	if err != nil {
+		return nil, err
+	}
+
+	channel, err := ChannelByIdLoader.Load(ctx, c.c.ChannelID)()
+	if err != nil {
+		return nil, err
+	}
+
+	variantIDChannelIDPairs := lo.Map(productVariants, func(v *model.ProductVariant, _ int) string { return v.Id + "__" + channel.Id })
+	productVariantChannelListings, errs := VariantChannelListingByVariantIdAndChannelLoader.LoadMany(ctx, variantIDChannelIDPairs)()
+	if len(errs) > 0 && errs[0] != nil {
+		return nil, errs[0]
+	}
+
+	productVariantChannelListings = lo.Filter(productVariantChannelListings, func(c *model.ProductVariantChannelListing, _ int) bool { return c != nil })
+
+	if len(productVariantChannelListings) == 0 {
+		return nil, nil
+	}
+
+	hasVariants := len(variantIDChannelIDPairs) > 0
+
+	purchaseCosts, _, appErr := product.GetProductCostsData(productVariantChannelListings, hasVariants, c.c.Currency)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return SystemMoneyRangeToGraphqlMoneyRange(purchaseCosts), nil
+}
+
+func (c *ProductChannelListing) IsAvailableForPurchase(ctx context.Context) (*bool, error) {
+	res := c.c.IsAvailableForPurchase()
+	return &res, nil
+}
+
+func (c *ProductChannelListing) Margin(ctx context.Context) (*Margin, error) {
+	panic("not implemented")
+}
+
+func (c *ProductChannelListing) Pricing(ctx context.Context) (*ProductPricingInfo, error) {
+	panic("not implemented")
 }
