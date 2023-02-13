@@ -4,6 +4,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 )
 
 // max length for some fields
@@ -21,31 +22,17 @@ type PluginConfiguration struct {
 	Active        bool              `json:"active"`
 	Configuration []StringInterface `json:"configuration"` // default [{}]
 
-	relatedChannel *Channel `json:"-" db:"-"` // this field is populated in some sql queries
+	relatedChannel *Channel `db:"-"` // this field is populated in some sql queries
 }
 
 type PluginConfigurations []*PluginConfiguration
 
 func (p PluginConfigurations) IDs() []string {
-	var res []string
-	for _, item := range p {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
-
-	return res
+	return lo.Map(p, func(c *PluginConfiguration, _ int) string { return c.Id })
 }
 
 func (p PluginConfigurations) ChannelIDs() []string {
-	var res []string
-	for _, item := range p {
-		if item != nil {
-			res = append(res, item.ChannelID)
-		}
-	}
-
-	return res
+	return lo.Map(p, func(c *PluginConfiguration, _ int) string { return c.ChannelID })
 }
 
 // PluginConfigurationFilterOptions is used to build sql queries

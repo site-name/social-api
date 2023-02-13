@@ -65,12 +65,24 @@ type Shop struct {
 	GiftcardExpiryPeriodType                 TimePeriodType             `json:"gift_card_expiry_period_type"`
 	GiftcardExpiryPeriod                     *int                       `json:"gift_card_expiry_period"`
 	AutomaticallyFulfillNonShippableGiftcard *bool                      `json:"automatically_fulfill_non_shippable_gift_card"` // default *true
+
+	companyAddress *Address `db:"-"`
+}
+
+func (s *Shop) GetCompanyAddress() *Address {
+	return s.companyAddress
+}
+
+func (s *Shop) SetCompanyAddress(a *Address) {
+	s.companyAddress = a
 }
 
 type ShopFilterOptions struct {
 	Id      squirrel.Sqlizer
 	OwnerID squirrel.Sqlizer
 	Name    squirrel.Sqlizer
+
+	SelectRelatedCompanyAddress bool
 }
 
 type ShopDefaultDigitalContentSettings struct {
@@ -213,4 +225,65 @@ func (s *Shop) commonPre() {
 func (s *Shop) PreUpdate() {
 	s.UpdateAt = GetMillis()
 	s.commonPre()
+}
+
+func (s *Shop) DeepCopy() *Shop {
+	res := *s
+
+	if s.TopMenuID != nil {
+		res.TopMenuID = NewPrimitive(*s.TopMenuID)
+	}
+	if s.BottomMenuID != nil {
+		res.BottomMenuID = NewPrimitive(*s.BottomMenuID)
+	}
+	if s.IncludeTaxesInPrice != nil {
+		res.IncludeTaxesInPrice = NewPrimitive(*s.IncludeTaxesInPrice)
+	}
+	if s.DisplayGrossPrices != nil {
+		res.DisplayGrossPrices = NewPrimitive(*s.DisplayGrossPrices)
+	}
+	if s.ChargeTaxesOnShipping != nil {
+		res.ChargeTaxesOnShipping = NewPrimitive(*s.ChargeTaxesOnShipping)
+	}
+	if s.TrackInventoryByDefault != nil {
+		res.TrackInventoryByDefault = NewPrimitive(*s.TrackInventoryByDefault)
+	}
+	if s.AutomaticFulfillmentDigitalProducts != nil {
+		res.AutomaticFulfillmentDigitalProducts = NewPrimitive(*s.AutomaticFulfillmentDigitalProducts)
+	}
+	if s.DefaultDigitalMaxDownloads != nil {
+		res.DefaultDigitalMaxDownloads = NewPrimitive(*s.DefaultDigitalMaxDownloads)
+	}
+	if s.DefaultDigitalUrlValidDays != nil {
+		res.DefaultDigitalUrlValidDays = NewPrimitive(*s.DefaultDigitalUrlValidDays)
+	}
+	if s.AddressID != nil {
+		res.AddressID = NewPrimitive(*s.AddressID)
+	}
+	if s.CompanyAddressID != nil {
+		res.CompanyAddressID = NewPrimitive(*s.CompanyAddressID)
+	}
+	if s.CustomerSetPasswordUrl != nil {
+		res.CustomerSetPasswordUrl = NewPrimitive(*s.CustomerSetPasswordUrl)
+	}
+	if s.AutomaticallyConfirmAllNewOrders != nil {
+		res.AutomaticallyConfirmAllNewOrders = NewPrimitive(*s.AutomaticallyConfirmAllNewOrders)
+	}
+	if s.FulfillmentAutoApprove != nil {
+		res.FulfillmentAutoApprove = NewPrimitive(*s.FulfillmentAutoApprove)
+	}
+	if s.FulfillmentAllowUnPaid != nil {
+		res.FulfillmentAllowUnPaid = NewPrimitive(*s.FulfillmentAllowUnPaid)
+	}
+	if s.GiftcardExpiryPeriod != nil {
+		res.GiftcardExpiryPeriod = NewPrimitive(*s.GiftcardExpiryPeriod)
+	}
+	if s.AutomaticallyFulfillNonShippableGiftcard != nil {
+		res.AutomaticallyFulfillNonShippableGiftcard = NewPrimitive(*s.AutomaticallyFulfillNonShippableGiftcard)
+	}
+	if s.companyAddress != nil {
+		res.companyAddress = s.companyAddress.DeepCopy()
+	}
+
+	return &res
 }

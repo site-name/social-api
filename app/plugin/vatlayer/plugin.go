@@ -4,11 +4,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 )
 
 var manifest = &interfaces.PluginManifest{
@@ -175,11 +178,34 @@ func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo
 //
 // If the plugin doesn't have cached taxes for a given country it will fetch it
 // from cache or db.
-func (vp *VatlayerPlugin) getTaxesForCountry(country string) {
+func (vp *VatlayerPlugin) getTaxesForCountry(country string) (any, *model.AppError) {
 	if country == "" {
-		originCountryCode := vp.config.OriginCountry
-		if originCountryCode == "" {
-			panic("not implemented")
+		country = vp.config.OriginCountry
+		if country == "" {
+			shop, appErr := vp.Manager.Srv.ShopService().ShopByOptions(&model.ShopFilterOptions{
+				Id:                          squirrel.Eq{store.ShopTableName + ".Id": vp.Manager.ShopID},
+				SelectRelatedCompanyAddress: true,
+			})
+			if appErr != nil {
+				return nil, appErr
+			}
+
+			if companyAddr := shop.GetCompanyAddress(); companyAddr != nil {
+				country = companyAddr.Country
+			} else {
+				country = model.DEFAULT_COUNTRY
+			}
 		}
+	}
+
+	if util.ItemInSlice(country, vp.config.CountriesFromOrigin) {
+		country = vp.config.OriginCountry
+	}
+	if util.ItemInSlice(country, vp.config.ExcludedCountries) {
+		return nil, nil
+	}
+
+	if tax, ok := vp.cachedTaxes[country]; ok {
+		return tax, nil
 	}
 }

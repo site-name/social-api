@@ -16,45 +16,84 @@ func NewSqlShopStore(s store.Store) store.ShopStore {
 	return &SqlShopStore{s}
 }
 
+var shopModelFields = model.AnyArray[string]{
+	"Id",
+	"OwnerID",
+	"CreateAt",
+	"UpdateAt",
+	"Name",
+	"HeaderText",
+	"Description",
+	"TopMenuID",
+	"BottomMenuID",
+	"IncludeTaxesInPrice",
+	"DisplayGrossPrices",
+	"ChargeTaxesOnShipping",
+	"TrackInventoryByDefault",
+	"DefaultWeightUnit",
+	"AutomaticFulfillmentDigitalProducts",
+	"DefaultDigitalMaxDownloads",
+	"DefaultDigitalUrlValidDays",
+	"AddressID",
+	"CompanyAddressID",
+	"DefaultMailSenderName",
+	"DefaultMailSenderAddress",
+	"CustomerSetPasswordUrl",
+	"AutomaticallyConfirmAllNewOrders",
+	"FulfillmentAutoApprove",
+	"FulfillmentAllowUnPaid",
+	"GiftcardExpiryType",
+	"GiftcardExpiryPeriodType",
+	"GiftcardExpiryPeriod",
+	"AutomaticallyFulfillNonShippableGiftcard",
+}
+
 func (s *SqlShopStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
-		"Id",
-		"OwnerID",
-		"CreateAt",
-		"UpdateAt",
-		"Name",
-		"HeaderText",
-		"Description",
-		"TopMenuID",
-		"BottomMenuID",
-		"IncludeTaxesInPrice",
-		"DisplayGrossPrices",
-		"ChargeTaxesOnShipping",
-		"TrackInventoryByDefault",
-		"DefaultWeightUnit",
-		"AutomaticFulfillmentDigitalProducts",
-		"DefaultDigitalMaxDownloads",
-		"DefaultDigitalUrlValidDays",
-		"AddressID",
-		"CompanyAddressID",
-		"DefaultMailSenderName",
-		"DefaultMailSenderAddress",
-		"CustomerSetPasswordUrl",
-		"AutomaticallyConfirmAllNewOrders",
-		"FulfillmentAutoApprove",
-		"FulfillmentAllowUnPaid",
-		"GiftcardExpiryType",
-		"GiftcardExpiryPeriodType",
-		"GiftcardExpiryPeriod",
-		"AutomaticallyFulfillNonShippableGiftcard",
-	}
 	if prefix == "" {
-		return res
+		return shopModelFields
 	}
 
-	return res.Map(func(_ int, s string) string {
+	return shopModelFields.Map(func(_ int, s string) string {
 		return prefix + s
 	})
+}
+
+func (s *SqlShopStore) Scanfields(shop *model.Shop) []any {
+	if shop == nil {
+		shop = new(model.Shop)
+	}
+
+	return []any{
+		&shop.Id,
+		&shop.OwnerID,
+		&shop.CreateAt,
+		&shop.UpdateAt,
+		&shop.Name,
+		&shop.HeaderText,
+		&shop.Description,
+		&shop.TopMenuID,
+		&shop.BottomMenuID,
+		&shop.IncludeTaxesInPrice,
+		&shop.DisplayGrossPrices,
+		&shop.ChargeTaxesOnShipping,
+		&shop.TrackInventoryByDefault,
+		&shop.DefaultWeightUnit,
+		&shop.AutomaticFulfillmentDigitalProducts,
+		&shop.DefaultDigitalMaxDownloads,
+		&shop.DefaultDigitalUrlValidDays,
+		&shop.AddressID,
+		&shop.CompanyAddressID,
+		&shop.DefaultMailSenderName,
+		&shop.DefaultMailSenderAddress,
+		&shop.CustomerSetPasswordUrl,
+		&shop.AutomaticallyConfirmAllNewOrders,
+		&shop.FulfillmentAutoApprove,
+		&shop.FulfillmentAllowUnPaid,
+		&shop.GiftcardExpiryType,
+		&shop.GiftcardExpiryPeriodType,
+		&shop.GiftcardExpiryPeriod,
+		&shop.AutomaticallyFulfillNonShippableGiftcard,
+	}
 }
 
 // Upsert depends on shop's Id to decide to update/insert the given shop.
@@ -120,7 +159,11 @@ func (ss *SqlShopStore) Get(shopID string) (*model.Shop, error) {
 }
 
 func (ss *SqlShopStore) commonQueryBuilder(options *model.ShopFilterOptions) (string, []interface{}, error) {
-	query := ss.GetQueryBuilder().Select("*").From(store.ShopTableName)
+	selectFields := ss.ModelFields("Shops.")
+	if options.SelectRelatedCompanyAddress {
+		selectFields = append(selectFields, ss.Address().ModelFields("Addresses.")...)
+	}
+	query := ss.GetQueryBuilder().Select(selectFields...).From(store.ShopTableName)
 
 	if options.Id != nil {
 		query = query.Where(options.Id)
@@ -131,22 +174,48 @@ func (ss *SqlShopStore) commonQueryBuilder(options *model.ShopFilterOptions) (st
 	if options.Name != nil {
 		query = query.Where(options.Name)
 	}
+	if options.SelectRelatedCompanyAddress {
+		query = query.InnerJoin(store.AddressTableName + " ON Addresses.Id = Shops.CompanyAddressID")
+	}
 
 	return query.ToSql()
 }
 
 // FilterByOptions finds and returns shops with given options
 func (ss *SqlShopStore) FilterByOptions(options *model.ShopFilterOptions) ([]*model.Shop, error) {
-	var res []*model.Shop
-
 	queryString, args, err := ss.commonQueryBuilder(options)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	err = ss.GetReplicaX().Select(&res, queryString, args...)
+	rows, err := ss.GetReplicaX().QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shops with given options")
+	}
+
+	var res []*model.Shop
+	var shop model.Shop
+	var address model.Address
+	var scanFields = ss.Scanfields(&shop)
+	if options.SelectRelatedCompanyAddress {
+		scanFields = append(scanFields, ss.Address().ScanFields(&address)...)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "error scanning shops")
+		}
+
+		if options.SelectRelatedCompanyAddress {
+			shop.SetCompanyAddress(&address) // no need deepcopy here
+		}
+		res = append(res, shop.DeepCopy())
+	}
+
+	err = rows.Close()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to close rows of shops")
 	}
 
 	return res, nil
@@ -159,13 +228,24 @@ func (ss *SqlShopStore) GetByOptions(options *model.ShopFilterOptions) (*model.S
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
+	row := ss.GetReplicaX().QueryRowX(queryString, args...)
+
 	var res model.Shop
-	err = ss.GetReplicaX().Get(&res, queryString, args...)
+	var address model.Address
+	var scanFields = ss.Scanfields(&res)
+	if options.SelectRelatedCompanyAddress {
+		scanFields = append(scanFields, ss.Address().ScanFields(&address)...)
+	}
+
+	err = row.Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ShopTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find shop with given options")
+	}
+	if options.SelectRelatedCompanyAddress {
+		res.SetCompanyAddress(&address)
 	}
 
 	return &res, nil
