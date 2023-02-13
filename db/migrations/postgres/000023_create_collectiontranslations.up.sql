@@ -11,3 +11,5 @@ CREATE TABLE IF NOT EXISTS collectiontranslations (
 ALTER TABLE ONLY collectiontranslations
     ADD CONSTRAINT collectiontranslations_languagecode_collectionid_key UNIQUE (languagecode, collectionid);
 
+ALTER TABLE ONLY collectiontranslations
+    ADD CONSTRAINT fk_collectiontranslations_collections FOREIGN KEY (collectionid) REFERENCES collections(id) ON DELETE CASCADE;

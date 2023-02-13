@@ -6,3 +6,7 @@ CREATE TABLE IF NOT EXISTS ordergiftcards (
 
 ALTER TABLE ONLY ordergiftcards
     ADD CONSTRAINT ordergiftcards_giftcardid_orderid_key UNIQUE (giftcardid, orderid);
+ALTER TABLE ONLY ordergiftcards
+    ADD CONSTRAINT fk_ordergiftcards_giftcards FOREIGN KEY (giftcardid) REFERENCES giftcards(id);
+ALTER TABLE ONLY ordergiftcards
+    ADD CONSTRAINT fk_ordergiftcards_orders FOREIGN KEY (orderid) REFERENCES orders(id);

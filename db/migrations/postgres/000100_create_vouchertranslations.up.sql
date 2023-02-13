@@ -8,3 +8,5 @@ CREATE TABLE IF NOT EXISTS vouchertranslations (
 
 ALTER TABLE ONLY vouchertranslations
     ADD CONSTRAINT vouchertranslations_languagecode_voucherid_key UNIQUE (languagecode, voucherid);
+ALTER TABLE ONLY vouchertranslations
+    ADD CONSTRAINT fk_vouchertranslations_vouchers FOREIGN KEY (voucherid) REFERENCES vouchers(id) ON DELETE CASCADE;

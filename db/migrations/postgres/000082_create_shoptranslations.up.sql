@@ -10,3 +10,5 @@ CREATE TABLE IF NOT EXISTS shoptranslations (
 
 ALTER TABLE ONLY shoptranslations
     ADD CONSTRAINT shoptranslations_languagecode_shopid_key UNIQUE (languagecode, shopid);
+ALTER TABLE ONLY shoptranslations
+    ADD CONSTRAINT fk_shoptranslations_shops FOREIGN KEY (shopid) REFERENCES shops(id) ON DELETE CASCADE;

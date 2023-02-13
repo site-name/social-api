@@ -34,9 +34,11 @@ func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManage
 	}
 
 	// find all channels belong to given shop
-	channels, appErr := manager.Srv.ChannelService().ChannelsByOption(&model.ChannelFilterOption{
-		ShopID: squirrel.Eq{store.ChannelTableName + ".ShopID": shopID},
-	})
+	channels, appErr := manager.Srv.
+		ChannelService().
+		ChannelsByOption(&model.ChannelFilterOption{
+			ShopID: squirrel.Eq{store.ChannelTableName + ".ShopID": shopID},
+		})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -56,8 +58,8 @@ func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManage
 
 	for _, pluginInitObj := range pluginInitObjects {
 		var (
-			pluginConfig []model.StringInterface = pluginInitObj.Manifest.DefaultConfiguration
-			active       bool                    = pluginInitObj.Manifest.DefaultActive
+			pluginConfig = pluginInitObj.Manifest.DefaultConfiguration
+			active       = pluginInitObj.Manifest.DefaultActive
 			channelID    string
 		)
 		if existingConfig, ok := configsMap[pluginInitObj.Manifest.PluginID]; ok {
@@ -71,6 +73,7 @@ func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManage
 			Configuration: pluginConfig,
 			Active:        active,
 			ChannelID:     channelID,
+			Manifest:      pluginInitObj.Manifest,
 		})
 
 		manager.AllPlugins = append(manager.AllPlugins, plugin)

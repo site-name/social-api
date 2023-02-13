@@ -14,3 +14,5 @@ CREATE TABLE IF NOT EXISTS sales (
 CREATE INDEX idx_sales_name ON sales USING btree (name);
 
 CREATE INDEX idx_sales_type ON sales USING btree (type);
+ALTER TABLE ONLY sales
+    ADD CONSTRAINT fk_sales_shops FOREIGN KEY (shopid) REFERENCES shops(id);

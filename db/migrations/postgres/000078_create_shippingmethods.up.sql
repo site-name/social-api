@@ -16,3 +16,5 @@ CREATE TABLE IF NOT EXISTS shippingmethods (
 CREATE INDEX idx_shipping_methods_name ON shippingmethods USING btree (name);
 
 CREATE INDEX idx_shipping_methods_name_lower_textpattern ON shippingmethods USING btree (lower((name)::text) text_pattern_ops);
+ALTER TABLE ONLY shippingmethods
+    ADD CONSTRAINT fk_shippingmethods_shippingzones FOREIGN KEY (shippingzoneid) REFERENCES shippingzones(id) ON DELETE CASCADE;

@@ -26,6 +26,7 @@ var GiftCardSettingsExpiryTypeValues = map[GiftCardSettingsExpiryType]string{
 // max length values for some shop fields
 const (
 	SHOP_NAME_MAX_LENGTH                        = 100
+	SHOP_HEADER_TEXT_MAX_LENGTH                 = 100
 	SHOP_DESCRIPTION_MAX_LENGTH                 = 200
 	SHOP_DEFAULT_WEIGHT_UNIT_MAX_LENGTH         = 10
 	SHOP_DEFAULT_MAX_EMAIL_DISPLAY_NAME_LENGTH  = 78
@@ -40,8 +41,10 @@ type Shop struct {
 	CreateAt                                 int64                      `json:"create_at"`
 	UpdateAt                                 int64                      `json:"update_at"`
 	Name                                     string                     `json:"name"`
+	HeaderText                               string                     `json:"header_text"`
 	Description                              string                     `json:"description"`
-	TopMenuID                                string                     `json:"top_menu_id"`
+	TopMenuID                                *string                    `json:"top_menu_id"`
+	BottomMenuID                             *string                    `json:"bottom_menu_id"`
 	IncludeTaxesInPrice                      *bool                      `json:"include_taxes_in_prices"`                // default true
 	DisplayGrossPrices                       *bool                      `json:"display_gross_prices"`                   // default true
 	ChargeTaxesOnShipping                    *bool                      `json:"charge_taxes_on_shipping"`               // default true
@@ -51,6 +54,7 @@ type Shop struct {
 	DefaultDigitalMaxDownloads               *int                       `json:"default_digital_max_downloads"`
 	DefaultDigitalUrlValidDays               *int                       `json:"default_digital_url_valid_days"`
 	AddressID                                *string                    `json:"address_id"`
+	CompanyAddressID                         *string                    `json:"company_address_id"`
 	DefaultMailSenderName                    string                     `json:"default_mail_sender_name"`
 	DefaultMailSenderAddress                 string                     `json:"default_mail_sender_address"`
 	CustomerSetPasswordUrl                   *string                    `json:"customer_set_password_url"`
@@ -97,13 +101,22 @@ func (s *Shop) IsValid() *AppError {
 		return outer("id", nil)
 	}
 	if !IsValidId(s.OwnerID) {
-		return outer("owner_id", nil)
+		return outer("owner_id", &s.Id)
 	}
-	if !IsValidId(s.TopMenuID) {
-		return outer("top_menu_id", nil)
+	if s.TopMenuID != nil && !IsValidId(*s.TopMenuID) {
+		return outer("top_menu_id", &s.Id)
+	}
+	if s.BottomMenuID != nil && !IsValidId(*s.BottomMenuID) {
+		return outer("top_menu_id", &s.Id)
 	}
 	if s.AddressID != nil && !IsValidId(*s.AddressID) {
-		return outer("address_id", nil)
+		return outer("address_id", &s.Id)
+	}
+	if s.CompanyAddressID != nil && !IsValidId(*s.CompanyAddressID) {
+		return outer("company_address_id", &s.Id)
+	}
+	if len(s.HeaderText) > SHOP_HEADER_TEXT_MAX_LENGTH {
+		return outer("header_text", &s.Id)
 	}
 	if utf8.RuneCountInString(s.Name) > SHOP_NAME_MAX_LENGTH {
 		return outer("name", &s.Id)
@@ -115,15 +128,11 @@ func (s *Shop) IsValid() *AppError {
 		return outer("default_weight_unit", &s.Id)
 	}
 	if s.CustomerSetPasswordUrl != nil {
-		var err bool
 		if len(*s.CustomerSetPasswordUrl) > URL_LINK_MAX_LENGTH {
-			err = true
+			return outer("customer_set_password_url", &s.Id)
 		}
-		_, parseErr := url.Parse(*s.CustomerSetPasswordUrl)
-		if parseErr != nil {
-			err = true
-		}
-		if err {
+		_, err := url.Parse(*s.CustomerSetPasswordUrl)
+		if err != nil {
 			return outer("customer_set_password_url", &s.Id)
 		}
 	}

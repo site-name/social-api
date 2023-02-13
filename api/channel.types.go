@@ -359,7 +359,46 @@ func (c *ProductChannelListing) IsAvailableForPurchase(ctx context.Context) (*bo
 }
 
 func (c *ProductChannelListing) Margin(ctx context.Context) (*Margin, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+		return nil, model.NewAppError("ProductChannelListing.Margin", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	}
+
+	productVariants, err := ProductVariantsByProductIdLoader.Load(ctx, c.c.ProductID)()
+	if err != nil {
+		return nil, err
+	}
+
+	channel, err := ChannelByIdLoader.Load(ctx, c.c.ChannelID)()
+	if err != nil {
+		return nil, err
+	}
+
+	variantIDChannelIDPairs := lo.Map(productVariants, func(v *model.ProductVariant, _ int) string { return v.Id + "__" + channel.Id })
+	variantChannelListings, errs := VariantChannelListingByVariantIdAndChannelLoader.LoadMany(ctx, variantIDChannelIDPairs)()
+	if len(errs) > 0 && errs[0] != nil {
+		return nil, err
+	}
+
+	variantChannelListings = lo.Filter(variantChannelListings, func(v *model.ProductVariantChannelListing, _ int) bool { return v != nil })
+	if len(variantChannelListings) == 0 {
+		return nil, nil
+	}
+
+	_, margin, appErr := product.GetProductCostsData(variantChannelListings, len(variantIDChannelIDPairs) > 0, c.c.Currency)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &Margin{
+		// TODO: Check if we need precision here
+		Start: model.NewPrimitive(int32(margin[0])),
+		Stop:  model.NewPrimitive(int32(margin[1])),
+	}, nil
 }
 
 func (c *ProductChannelListing) Pricing(ctx context.Context) (*ProductPricingInfo, error) {

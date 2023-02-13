@@ -15,3 +15,5 @@ CREATE TABLE IF NOT EXISTS collections (
 CREATE INDEX idx_collections_name ON collections USING btree (name);
 
 CREATE INDEX idx_collections_name_lower_textpattern ON collections USING btree (lower((name)::text) text_pattern_ops);
+ALTER TABLE ONLY collections
+    ADD CONSTRAINT fk_collections_shops FOREIGN KEY (shopid) REFERENCES shops(id) ON DELETE CASCADE;

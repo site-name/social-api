@@ -50,7 +50,7 @@ var manifest = &interfaces.PluginManifest{
 var _ interfaces.BasePluginInterface = (*VatlayerPlugin)(nil)
 
 type VatlayerPlugin struct {
-	*plugin.BasePlugin
+	plugin.BasePlugin
 
 	config      VatlayerConfiguration
 	cachedTaxes model.StringInterface
@@ -58,47 +58,41 @@ type VatlayerPlugin struct {
 
 func init() {
 	plugin.RegisterVatlayerPlugin(func(cfg *plugin.PluginConfig) interfaces.BasePluginInterface {
-
-		basePlg := plugin.NewBasePlugin(cfg)
-
-		// override base plugin's manifest
-		basePlg.Manifest = manifest
-
 		vatPlugin := &VatlayerPlugin{
-			BasePlugin: basePlg,
+			BasePlugin: *plugin.NewBasePlugin(cfg),
 		}
 
-		var configuration = map[string]interface{}{}
+		var configuration = model.StringInterface{}
 		for _, item := range vatPlugin.Configuration {
-			configuration[item["name"].(string)] = item["value"]
+			configuration[item.Get("name", "").(string)] = item["value"]
 		}
-		var originCountry = configuration["origin_country"].(string)
+		var originCountry = configuration.Get("origin_country", "").(string)
 		if upper := strings.ToUpper(originCountry); model.Countries[upper] != "" {
 			originCountry = upper
 		} else {
 			originCountry = ""
 		}
 
-		var countriesFromOrigin = configuration["countries_to_calculate_taxes_from_origin"].(string)
+		var countriesFromOrigin = configuration.Get("countries_to_calculate_taxes_from_origin", "").(string)
 		var splitCountriesFromOrigin = []string{}
 
-		for _, str := range strings.Split(countriesFromOrigin, ",") {
-			if upper := strings.ToUpper(strings.TrimSpace(str)); model.Countries[upper] != "" {
+		for _, str := range strings.FieldsFunc(countriesFromOrigin, func(r rune) bool { return r == ' ' || r == ',' }) {
+			if upper := strings.ToUpper(str); model.Countries[upper] != "" {
 				splitCountriesFromOrigin = append(splitCountriesFromOrigin, upper)
 			}
 		}
 
-		var excludedCountries = configuration["excluded_countries"].(string)
+		var excludedCountries = configuration.Get("excluded_countries", "").(string)
 		var splitExcludedCountries = []string{}
 
-		for _, str := range strings.Split(excludedCountries, ",") {
-			if upper := strings.ToUpper(strings.TrimSpace(str)); model.Countries[upper] != "" {
+		for _, str := range strings.FieldsFunc(excludedCountries, func(r rune) bool { return r == ' ' || r == ',' }) {
+			if upper := strings.ToUpper(str); model.Countries[upper] != "" {
 				splitExcludedCountries = append(splitExcludedCountries, upper)
 			}
 		}
 
 		vatPlugin.config = VatlayerConfiguration{
-			AccessKey:           configuration["Access key"].(string),
+			AccessKey:           configuration.Get("Access key", "").(string),
 			OriginCountry:       originCountry,
 			ExcludedCountries:   splitExcludedCountries,
 			CountriesFromOrigin: splitCountriesFromOrigin,
@@ -120,9 +114,13 @@ func (vp *VatlayerPlugin) skipPlugin(previousValue interface{}) bool {
 	switch t := previousValue.(type) {
 	case *goprices.TaxedMoneyRange:
 		return !t.Start.Net.Equal(t.Start.Gross) && !t.Stop.Net.Equal(t.Stop.Gross)
+	case goprices.TaxedMoneyRange:
+		return !t.Start.Net.Equal(t.Start.Gross) && !t.Stop.Net.Equal(t.Stop.Gross)
 
 	case *goprices.TaxedMoney:
-		return t.Net.Equal(t.Gross)
+		return !t.Net.Equal(t.Gross)
+	case goprices.TaxedMoney:
+		return !t.Net.Equal(t.Gross)
 
 	default:
 		return false
@@ -134,8 +132,6 @@ func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo
 	if vp.skipPlugin(previousValue) {
 		return &previousValue, nil
 	}
-
-	checkoutInfo.Checkout.PopulateNonDbFields() // this is needed
 
 	checkoutSubTotal, appErr := vp.Manager.Srv.CheckoutService().CheckoutSubTotal(
 		vp.Manager,
@@ -164,12 +160,15 @@ func (vp *VatlayerPlugin) CalculateCheckoutTotal(checkoutInfo model.CheckoutInfo
 		return nil, model.NewAppError("CalculateCheckoutTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	sub, err := sum.Sub(checkoutInfo.Checkout.Discount)
-	if err != nil {
-		return nil, model.NewAppError("CalculateCheckoutTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+	checkoutInfo.Checkout.PopulateNonDbFields() // this is needed
+	if checkoutInfo.Checkout.Discount != nil {
+		sum, err = sum.Sub(checkoutInfo.Checkout.Discount)
+		if err != nil {
+			return nil, model.NewAppError("CalculateCheckoutTotal", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
+		}
 	}
 
-	return sub, nil
+	return sum, nil
 }
 
 // Try to fetch cached taxes on the plugin level.

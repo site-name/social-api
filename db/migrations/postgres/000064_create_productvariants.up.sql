@@ -18,3 +18,5 @@ ALTER TABLE ONLY productvariants
     ADD CONSTRAINT productvariants_sku_key UNIQUE (sku);
 
 CREATE INDEX idx_product_variants_sku ON productvariants USING btree (sku);
+ALTER TABLE ONLY productvariants
+    ADD CONSTRAINT fk_productvariants_products FOREIGN KEY (productid) REFERENCES products(id) ON DELETE CASCADE;

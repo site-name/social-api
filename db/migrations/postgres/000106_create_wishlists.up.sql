@@ -10,3 +10,5 @@ ALTER TABLE ONLY wishlists
 
 ALTER TABLE ONLY wishlists
     ADD CONSTRAINT wishlists_userid_key UNIQUE (userid);
+ALTER TABLE ONLY wishlists
+    ADD CONSTRAINT fk_wishlists_users FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE;
