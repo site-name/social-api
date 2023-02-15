@@ -208,4 +208,6 @@ func (vp *VatlayerPlugin) getTaxesForCountry(country string) (any, *model.AppErr
 	if tax, ok := vp.cachedTaxes[country]; ok {
 		return tax, nil
 	}
+
+	panic("not implemented")
 }

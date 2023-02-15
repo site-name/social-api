@@ -1,7 +1,6 @@
 package product
 
 import (
-	"math"
 	"net/http"
 
 	"github.com/site-name/decimal"
@@ -86,10 +85,11 @@ func GetMarginForVariantChannelListing(variantChannelListing *model.ProductVaria
 	}
 
 	margin, _ := variantChannelListing.Price.Sub(variantChannelListing.CostPrice)
-	fl64Percent, _ := margin.Amount.
+	fl64Percent := margin.Amount.
 		Div(*variantChannelListing.PriceAmount).
 		Mul(decimal.NewFromInt(100)).
-		Float64()
+		Round(0).
+		InexactFloat64()
 
-	return model.NewPrimitive(math.Round(fl64Percent))
+	return &fl64Percent
 }

@@ -72,7 +72,7 @@ func PluginContext(c *request.Context) *plugin.Context {
 // NOTE: `price` must be either *Money, *MoneyRange, *TaxedMoney, *TaxedMoneyRange
 func (a *Server) ToLocalCurrency(price interface{}, currency string) (interface{}, *model.AppError) {
 	// validate if currency exchange is enabled
-	if a.Config().ServiceSettings.OpenExchangeRateApiKey == nil {
+	if a.Config().ThirdPartySettings.OpenExchangeRateApiKey == nil {
 		return nil, model.NewAppError("ToLocalCurrency", "app.setting.currency_conversion_disabled.app_error", nil, "", http.StatusNotAcceptable)
 	}
 
@@ -83,14 +83,8 @@ func (a *Server) ToLocalCurrency(price interface{}, currency string) (interface{
 	)
 
 	switch t := price.(type) {
-	case *goprices.Money:
-		fromCurrency = t.Currency
-	case *goprices.MoneyRange:
-		fromCurrency = t.Start.Currency // this differs from other cases
-	case *goprices.TaxedMoney:
-		fromCurrency = t.Currency
-	case *goprices.TaxedMoneyRange:
-		fromCurrency = t.Currency
+	case goprices.Currencyable:
+		fromCurrency = t.MyCurrency()
 
 	default:
 		errArguments = append(errArguments, "price")

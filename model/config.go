@@ -3,6 +3,7 @@ package model
 import (
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io"
 	"math"
 	"net"
@@ -261,6 +262,44 @@ var ServerTLSSupportedCiphers = map[string]uint16{
 	"TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305":  tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
 }
 
+const VAT_LAYER_ACCESS_KEY = "bb98bc77f97b4b060ca39b78e27396ec"
+
+type ThirdPartySettings struct {
+	OpenExchangeApiEndpoint           *string
+	OpenExchangeRateApiKey            *string `access:"experimental_features"`
+	OpenExchangeRecuringDurationHours *int    `access:"experimental_features"`
+
+	VatlayerApi       *string
+	VatlayerAccessKey *string
+	RateTypeURL       *string
+	VateRateURL       *string
+}
+
+func (s *ThirdPartySettings) SetDefaults() {
+	if s.OpenExchangeRateApiKey == nil {
+		s.OpenExchangeRateApiKey = NewPrimitive(OPEN_EXCHANGE_RATE_API_KEY)
+	}
+	if s.OpenExchangeRecuringDurationHours == nil {
+		s.OpenExchangeRecuringDurationHours = NewPrimitive(2)
+	}
+	if s.OpenExchangeApiEndpoint == nil {
+		s.OpenExchangeApiEndpoint = NewPrimitive("http://openexchangerates.org/api/latest.json")
+	}
+
+	if s.VatlayerApi == nil {
+		s.VatlayerApi = NewPrimitive("http://apilayer.net/api/")
+	}
+	if s.VatlayerAccessKey == nil {
+		s.VatlayerAccessKey = NewPrimitive(VAT_LAYER_ACCESS_KEY)
+	}
+	if s.RateTypeURL == nil {
+		s.RateTypeURL = NewPrimitive(fmt.Sprintf("http://apilayer.net/api/types?access_key=%s", VAT_LAYER_ACCESS_KEY))
+	}
+	if s.VateRateURL == nil {
+		s.VateRateURL = NewPrimitive(fmt.Sprintf("http://apilayer.net/api/rate_list?access_key=%s", VAT_LAYER_ACCESS_KEY))
+	}
+}
+
 type ServiceSettings struct {
 	SiteURL                                           *string  `access:"environment_web_server,authentication_saml,write_restrictable"`
 	SiteName                                          *string  `access:"environment_web_server,write_restrictable"`
@@ -358,9 +397,6 @@ type ServiceSettings struct {
 	ManagedResourcePaths                              *string `access:"environment_web_server,write_restrictable,cloud_restrictable"`
 	EnableLegacySidebar                               *bool   `access:"experimental_features"`
 	EnableReliableWebSockets                          *bool   `access:"experimental_features"` // telemetry: none
-	OpenExhcnageApiEndPoint                           *string
-	OpenExchangeRateApiKey                            *string `access:"experimental_features"`
-	OpenExchangeRecuringDurationHours                 *int    `access:"experimental_features"`
 	EnablePermalinkPreviews                           *bool   `access:"site_posts"`
 	EnableInlineLatex                                 *bool   `access:"site_posts"`
 
@@ -825,15 +861,7 @@ func (s *ServiceSettings) SetDefaults(isUpdate bool) {
 	if s.EnableReliableWebSockets == nil {
 		s.EnableReliableWebSockets = NewPrimitive(true)
 	}
-	if s.OpenExchangeRateApiKey == nil {
-		s.OpenExchangeRateApiKey = NewPrimitive(OPEN_EXCHANGE_RATE_API_KEY)
-	}
-	if s.OpenExchangeRecuringDurationHours == nil {
-		s.OpenExchangeRecuringDurationHours = NewPrimitive(2)
-	}
-	if s.OpenExhcnageApiEndPoint == nil {
-		s.OpenExhcnageApiEndPoint = NewPrimitive("http://openexchangerates.org/api/latest.json")
-	}
+
 }
 
 type ClusterSettings struct {
@@ -2917,6 +2945,7 @@ type Config struct {
 	FeatureFlags              *FeatureFlags  `access:"*_read" json:",omitempty"` // telemetry: none
 	ImportSettings            ImportSettings // telemetry: none
 	ExportSettings            ExportSettings
+	ThirdPartySettings        ThirdPartySettings
 }
 
 func (o *Config) Clone() *Config {
@@ -3011,6 +3040,7 @@ func (o *Config) SetDefaults() {
 	}
 	o.ImportSettings.SetDefaults()
 	o.ExportSettings.SetDefaults()
+	o.ThirdPartySettings.SetDefaults()
 }
 
 func (o *Config) IsValid() *AppError {

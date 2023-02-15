@@ -182,6 +182,12 @@ type ProductVariantChannelListing  {
   price: Money
   costPrice: Money
   margin: Int
+  preorderThreshold: PreorderThreshold
+}
+
+type PreorderThreshold {
+  quantity: Int
+  soldUnits: Int!
 }
 
 type VariantPricingInfo {

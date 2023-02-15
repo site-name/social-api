@@ -96,7 +96,7 @@
         "ManagedResourcePaths": "",
         "EnableLegacySidebar": false,
         "EnableReliableWebSockets": false,
-        "OpenExhcnageApiEndPoint": "http://openexchangerates.org/api/latest.json",
+        "OpenExchangeApiEndpoint": "http://openexchangerates.org/api/latest.json",
         "OpenExchangeRateApiKey": "cb3c20ad2a624639806f043e4b5aafa4",
         "OpenExchangeRecuringDurationHours": 2,
         "EnablePermalinkPreviews": true,

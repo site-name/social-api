@@ -835,13 +835,6 @@ type CollectionBulkDelete struct {
 	Errors []*CollectionError `json:"errors"`
 }
 
-type CollectionChannelListing struct {
-	ID              string   `json:"id"`
-	PublicationDate *Date    `json:"publicationDate"`
-	IsPublished     bool     `json:"isPublished"`
-	Channel         *Channel `json:"channel"`
-}
-
 type CollectionChannelListingError struct {
 	Field      *string          `json:"field"`
 	Message    *string          `json:"message"`
@@ -1088,19 +1081,6 @@ type DeleteMetadata struct {
 type DeletePrivateMetadata struct {
 	Errors []*MetadataError   `json:"errors"`
 	Item   ObjectWithMetadata `json:"item"`
-}
-
-type DigitalContent struct {
-	UseDefaultSettings   bool                 `json:"useDefaultSettings"`
-	AutomaticFulfillment bool                 `json:"automaticFulfillment"`
-	ContentFile          string               `json:"contentFile"`
-	MaxDownloads         *int32               `json:"maxDownloads"`
-	URLValidDays         *int32               `json:"urlValidDays"`
-	Urls                 []*DigitalContentURL `json:"urls"`
-	ID                   string               `json:"id"`
-	PrivateMetadata      []*MetadataItem      `json:"privateMetadata"`
-	Metadata             []*MetadataItem      `json:"metadata"`
-	ProductVariant       *ProductVariant      `json:"productVariant"`
 }
 
 type DigitalContentCountableConnection struct {
@@ -2847,12 +2827,9 @@ type ProductVariantBulkDelete struct {
 	Errors []*ProductError `json:"errors"`
 }
 
-type ProductVariantChannelListing struct {
-	ID        string   `json:"id"`
-	Channel   *Channel `json:"channel"`
-	Price     *Money   `json:"price"`
-	CostPrice *Money   `json:"costPrice"`
-	Margin    *int32   `json:"margin"`
+type PreorderThreshold struct {
+	Quantity  *int32 `json:"quantity"`
+	SoldUnits int32  `json:"soldUnits"`
 }
 
 type ProductVariantChannelListingAddInput struct {

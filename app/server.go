@@ -740,10 +740,10 @@ func (s *Server) runJobs() {
 	}
 
 	// check if we can run periodic task on fetching currency rate
-	if setting := s.Config().ServiceSettings; setting.OpenExchangeRateApiKey != nil &&
+	if setting := s.Config().ThirdPartySettings; setting.OpenExchangeRateApiKey != nil &&
 		setting.OpenExchangeRecuringDurationHours != nil &&
-		setting.OpenExhcnageApiEndPoint != nil {
-		runFetchingCurrencyExchangeRateJob(s, *setting.OpenExchangeRateApiKey, *setting.OpenExchangeRecuringDurationHours, *setting.OpenExhcnageApiEndPoint)
+		setting.OpenExchangeApiEndpoint != nil {
+		runFetchingCurrencyExchangeRateJob(s, *setting.OpenExchangeRateApiKey, *setting.OpenExchangeRecuringDurationHours, *setting.OpenExchangeApiEndpoint)
 	}
 }
 

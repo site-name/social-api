@@ -185,7 +185,7 @@ errorLabel:
 
 func channelByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*model.Channel] {
 	var (
-		res        []*dataloader.Result[*model.Channel]
+		res        = make([]*dataloader.Result[*model.Channel], len(orderLineIDs))
 		orders     model.Orders
 		channels   []*model.Channel
 		orderLines model.OrderLines
@@ -215,8 +215,8 @@ func channelByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) []*d
 	})
 
 errorLabel:
-	for range orderLineIDs {
-		res = append(res, &dataloader.Result[*model.Channel]{Error: errs[0]})
+	for idx := range orderLineIDs {
+		res[idx] = &dataloader.Result[*model.Channel]{Error: errs[0]}
 	}
 	return res
 }
@@ -456,4 +456,106 @@ func (c *ProductChannelListing) Pricing(ctx context.Context, args struct{ Addres
 	}
 
 	localCurrency := util.GetCurrencyForCountry(addressCountry)
+	panic("not implemented")
+}
+
+type ProductVariantChannelListing struct {
+	ID        string `json:"id"`
+	Price     *Money `json:"price"`
+	CostPrice *Money `json:"costPrice"`
+
+	p *model.ProductVariantChannelListing
+
+	// Channel   *Channel `json:"channel"`
+	// Margin    *int32   `json:"margin"`
+	PreorderThreshold *PreorderThreshold `json:"preorderThreshold"`
+}
+
+func systemProductVariantChannelListingToGraphqlProductVariantChannelListing(p *model.ProductVariantChannelListing) *ProductVariantChannelListing {
+	if p == nil {
+		return nil
+	}
+
+	p.PopulateNonDbFields()
+
+	thresHold := &PreorderThreshold{
+		SoldUnits: int32(p.Get_preorderQuantityAllocated()),
+	}
+	if qt := p.PreorderQuantityThreshold; qt != nil {
+		thresHold.Quantity = model.NewPrimitive(int32(*qt))
+	}
+
+	res := &ProductVariantChannelListing{
+		ID:                p.Id,
+		p:                 p,
+		PreorderThreshold: thresHold,
+	}
+	if p.Price != nil {
+		res.Price = SystemMoneyToGraphqlMoney(p.Price)
+	}
+	if p.CostPrice != nil {
+		res.CostPrice = SystemMoneyToGraphqlMoney(p.CostPrice)
+	}
+
+	return res
+}
+
+func (p *ProductVariantChannelListing) Channel(ctx context.Context) (*Channel, error) {
+	channel, err := ChannelByIdLoader.Load(ctx, p.p.ChannelID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemChannelToGraphqlChannel(channel), nil
+}
+
+func (p *ProductVariantChannelListing) Margin(ctx context.Context) (*int32, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !embedCtx.App.Srv().
+		AccountService().
+		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+		return nil, model.NewAppError("ProductVariantChannelListing.Margin", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	}
+
+	margin := product.GetMarginForVariantChannelListing(p.p)
+	if margin == nil {
+		return nil, nil
+	}
+	return model.NewPrimitive(int32(*margin)), nil
+}
+
+type CollectionChannelListing struct {
+	ID              string `json:"id"`
+	PublicationDate *Date  `json:"publicationDate"`
+	IsPublished     bool   `json:"isPublished"`
+	c               *model.CollectionChannelListing
+	// Channel         *Channel `json:"channel"`
+}
+
+func systemCollectionChannelListingToGraphqlCollectionChannelListing(c *model.CollectionChannelListing) *CollectionChannelListing {
+	if c == nil {
+		return nil
+	}
+
+	res := &CollectionChannelListing{
+		ID:          c.Id,
+		IsPublished: c.IsPublished,
+		c:           c,
+	}
+	if c.PublicationDate != nil {
+		res.PublicationDate = &Date{DateTime{*c.PublicationDate}}
+	}
+	return res
+}
+
+func (c *CollectionChannelListing) Channel(ctx context.Context) (*Channel, error) {
+	channel, err := ChannelByIdLoader.Load(ctx, c.c.ChannelID)()
+	if err != nil {
+		return nil, err
+	}
+	return SystemChannelToGraphqlChannel(channel), nil
 }
