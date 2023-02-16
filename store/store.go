@@ -463,13 +463,14 @@ type (
 	DigitalContentUrlStore interface {
 		Upsert(contentURL *model.DigitalContentUrl) (*model.DigitalContentUrl, error) // Upsert inserts or updates given digital content url into database then returns it
 		Get(id string) (*model.DigitalContentUrl, error)                              // Get finds and returns a digital content url with given id
+		FilterByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, error)
 	}
 	DigitalContentStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
 		ScanFields(content *model.DigitalContent) []interface{}
-		Save(content *model.DigitalContent) (*model.DigitalContent, error)                         // Save inserts given digital content into database then returns it
-		GetByOption(option *model.DigitalContenetFilterOption) (*model.DigitalContent, error)      // GetByOption finds and returns 1 digital content filtered using given option
-		FilterByOption(option *model.DigitalContenetFilterOption) ([]*model.DigitalContent, error) //
+		Save(content *model.DigitalContent) (*model.DigitalContent, error)                        // Save inserts given digital content into database then returns it
+		GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error)      // GetByOption finds and returns 1 digital content filtered using given option
+		FilterByOption(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, error) //
 	}
 	ProductVariantChannelListingStore interface {
 		ModelFields(prefix string) model.AnyArray[string]

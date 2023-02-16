@@ -104,3 +104,29 @@ func (ps *SqlDigitalContentUrlStore) Get(id string) (*model.DigitalContentUrl, e
 
 	return &res, nil
 }
+
+func (s *SqlDigitalContentUrlStore) FilterByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, error) {
+	query := s.GetQueryBuilder().Select("*").From(store.DigitalContentURLTableName)
+
+	if options.Id != nil {
+		query = query.Where(options.Id)
+	}
+	if options.Token != nil {
+		query = query.Where(options.Token)
+	}
+	if options.ContentID != nil {
+		query = query.Where(options.ContentID)
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.DigitalContentUrl
+	err = s.GetReplicaX().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find digital content urls by options")
+	}
+	return res, nil
+}

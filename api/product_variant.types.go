@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/web"
 )
 
 type ProductVariant struct {
@@ -104,4 +106,36 @@ func (p *ProductVariant) Revenue(ctx context.Context, args struct{ Period *Repor
 
 func (p *ProductVariant) Media(ctx context.Context) ([]*ProductMedia, error) {
 	panic("not implemented")
+}
+
+type PreorderData struct {
+	globalThreshold *int32
+	globalSoldUnits int32
+	EndDate         *DateTime
+}
+
+func (p *PreorderData) GlobalThreshold(ctx context.Context) (*int32, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+		return p.globalThreshold, nil
+	}
+
+	return nil, model.NewAppError("GlobalThreshold", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+}
+
+func (p *PreorderData) GlobalSoldUnits(ctx context.Context) (int32, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return 0, err
+	}
+
+	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+		return p.globalSoldUnits, nil
+	}
+
+	return 0, model.NewAppError("GlobalSoldUnits", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 }

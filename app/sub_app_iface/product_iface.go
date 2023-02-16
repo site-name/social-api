@@ -48,7 +48,9 @@ type ProductService interface {
 	// to check if url is still valid.
 	DigitalContentUrlIsValid(contentURL *model.DigitalContentUrl) (bool, *model.AppError)
 	// DigitalContentbyOption returns 1 digital content filtered using given option
-	DigitalContentbyOption(option *model.DigitalContenetFilterOption) (*model.DigitalContent, *model.AppError)
+	DigitalContentbyOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, *model.AppError)
+	DigitalContentsbyOptions(options *model.DigitalContentFilterOption) ([]*model.DigitalContent, *model.AppError)
+	DigitalContentURLSByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, *model.AppError)
 	// DisplayProduct return display text for given product variant
 	//
 	// `translated` default to false

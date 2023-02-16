@@ -1126,15 +1126,6 @@ type DigitalContentUploadInput struct {
 	ContentFile          graphql.Upload `json:"contentFile"`
 }
 
-type DigitalContentURL struct {
-	Content     *DigitalContent `json:"content"`
-	Created     DateTime        `json:"created"`
-	DownloadNum int32           `json:"downloadNum"`
-	ID          string          `json:"id"`
-	URL         *string         `json:"url"`
-	Token       string          `json:"token"`
-}
-
 type DigitalContentURLCreate struct {
 	Errors            []*ProductError    `json:"errors"`
 	DigitalContentURL *DigitalContentURL `json:"digitalContentUrl"`
@@ -2805,12 +2796,6 @@ type ProductVariantBulkCreate struct {
 	Count           int32               `json:"count"`
 	ProductVariants []*ProductVariant   `json:"productVariants"`
 	Errors          []*BulkProductError `json:"errors"`
-}
-
-type PreorderData struct {
-	GlobalThreshold *int32
-	GlobalSoldUnits int32
-	EndDate         *DateTime
 }
 
 type ProductVariantBulkCreateInput struct {

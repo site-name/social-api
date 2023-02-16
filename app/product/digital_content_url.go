@@ -26,3 +26,11 @@ func (a *ServiceProduct) UpsertDigitalContentURL(contentURL *model.DigitalConten
 
 	return contentURL, nil
 }
+
+func (s *ServiceProduct) DigitalContentURLSByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, error) {
+	urls, err := s.srv.Store.DigitalContentUrl().FilterByOptions(options)
+	if err != nil {
+		return nil, model.NewAppError("DigitalContentURLSByOptions", "app.product.digital_content_urls_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return urls, nil
+}

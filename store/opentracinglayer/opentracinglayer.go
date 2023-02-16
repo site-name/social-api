@@ -3204,7 +3204,7 @@ func (s *OpenTracingLayerCustomerNoteStore) Save(note *model.CustomerNote) (*mod
 	return result, err
 }
 
-func (s *OpenTracingLayerDigitalContentStore) FilterByOption(option *model.DigitalContenetFilterOption) ([]*model.DigitalContent, error) {
+func (s *OpenTracingLayerDigitalContentStore) FilterByOption(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DigitalContentStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -3222,7 +3222,7 @@ func (s *OpenTracingLayerDigitalContentStore) FilterByOption(option *model.Digit
 	return result, err
 }
 
-func (s *OpenTracingLayerDigitalContentStore) GetByOption(option *model.DigitalContenetFilterOption) (*model.DigitalContent, error) {
+func (s *OpenTracingLayerDigitalContentStore) GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DigitalContentStore.GetByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -3250,6 +3250,24 @@ func (s *OpenTracingLayerDigitalContentStore) Save(content *model.DigitalContent
 
 	defer span.Finish()
 	result, err := s.DigitalContentStore.Save(content)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerDigitalContentUrlStore) FilterByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "DigitalContentUrlStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.DigitalContentUrlStore.FilterByOptions(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

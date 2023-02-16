@@ -54,7 +54,7 @@ func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *model.Order
 	var appErr *model.AppError
 
 	if digitalContent == nil {
-		digitalContent, appErr = a.srv.ProductService().DigitalContentbyOption(&model.DigitalContenetFilterOption{
+		digitalContent, appErr = a.srv.ProductService().DigitalContentbyOption(&model.DigitalContentFilterOption{
 			ProductVariantID: squirrel.Eq{store.DigitalContentTableName + ".ProductVariantID": *orderLine.VariantID},
 		})
 		if appErr != nil {

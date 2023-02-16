@@ -71,7 +71,7 @@ func (ds *SqlDigitalContentStore) Save(content *model.DigitalContent) (*model.Di
 	return content, nil
 }
 
-func (ds *SqlDigitalContentStore) commonQueryBuilder(option *model.DigitalContenetFilterOption) (string, []interface{}, error) {
+func (ds *SqlDigitalContentStore) commonQueryBuilder(option *model.DigitalContentFilterOption) (string, []interface{}, error) {
 	query := ds.GetQueryBuilder().
 		Select(ds.ModelFields(store.DigitalContentTableName + ".")...).
 		From(store.DigitalContentTableName)
@@ -88,7 +88,7 @@ func (ds *SqlDigitalContentStore) commonQueryBuilder(option *model.DigitalConten
 }
 
 // GetByOption finds and returns 1 digital content filtered using given option
-func (ds *SqlDigitalContentStore) GetByOption(option *model.DigitalContenetFilterOption) (*model.DigitalContent, error) {
+func (ds *SqlDigitalContentStore) GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error) {
 	queryString, args, err := ds.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
@@ -106,7 +106,7 @@ func (ds *SqlDigitalContentStore) GetByOption(option *model.DigitalContenetFilte
 	return &res, nil
 }
 
-func (ds *SqlDigitalContentStore) FilterByOption(option *model.DigitalContenetFilterOption) ([]*model.DigitalContent, error) {
+func (ds *SqlDigitalContentStore) FilterByOption(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, error) {
 	queryString, args, err := ds.commonQueryBuilder(option)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")

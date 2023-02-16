@@ -3442,7 +3442,7 @@ func (s *RetryLayerCustomerNoteStore) Save(note *model.CustomerNote) (*model.Cus
 
 }
 
-func (s *RetryLayerDigitalContentStore) FilterByOption(option *model.DigitalContenetFilterOption) ([]*model.DigitalContent, error) {
+func (s *RetryLayerDigitalContentStore) FilterByOption(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, error) {
 
 	tries := 0
 	for {
@@ -3462,7 +3462,7 @@ func (s *RetryLayerDigitalContentStore) FilterByOption(option *model.DigitalCont
 
 }
 
-func (s *RetryLayerDigitalContentStore) GetByOption(option *model.DigitalContenetFilterOption) (*model.DigitalContent, error) {
+func (s *RetryLayerDigitalContentStore) GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error) {
 
 	tries := 0
 	for {
@@ -3487,6 +3487,26 @@ func (s *RetryLayerDigitalContentStore) Save(content *model.DigitalContent) (*mo
 	tries := 0
 	for {
 		result, err := s.DigitalContentStore.Save(content)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerDigitalContentUrlStore) FilterByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, error) {
+
+	tries := 0
+	for {
+		result, err := s.DigitalContentUrlStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}

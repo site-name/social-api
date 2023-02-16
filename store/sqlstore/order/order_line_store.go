@@ -321,7 +321,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 		if option.PrefetchRelated.VariantDigitalContent && len(productVariants) > 0 {
 			digitalContents, err = ols.
 				DigitalContent().
-				FilterByOption(&model.DigitalContenetFilterOption{
+				FilterByOption(&model.DigitalContentFilterOption{
 					ProductVariantID: squirrel.Eq{store.DigitalContentTableName + ".ProductVariantID": productVariants.IDs()},
 				})
 			if err != nil {

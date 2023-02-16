@@ -2975,7 +2975,7 @@ func (s *TimerLayerCustomerNoteStore) Save(note *model.CustomerNote) (*model.Cus
 	return result, err
 }
 
-func (s *TimerLayerDigitalContentStore) FilterByOption(option *model.DigitalContenetFilterOption) ([]*model.DigitalContent, error) {
+func (s *TimerLayerDigitalContentStore) FilterByOption(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, error) {
 	start := timemodule.Now()
 
 	result, err := s.DigitalContentStore.FilterByOption(option)
@@ -2991,7 +2991,7 @@ func (s *TimerLayerDigitalContentStore) FilterByOption(option *model.DigitalCont
 	return result, err
 }
 
-func (s *TimerLayerDigitalContentStore) GetByOption(option *model.DigitalContenetFilterOption) (*model.DigitalContent, error) {
+func (s *TimerLayerDigitalContentStore) GetByOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, error) {
 	start := timemodule.Now()
 
 	result, err := s.DigitalContentStore.GetByOption(option)
@@ -3019,6 +3019,22 @@ func (s *TimerLayerDigitalContentStore) Save(content *model.DigitalContent) (*mo
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerDigitalContentUrlStore) FilterByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, error) {
+	start := timemodule.Now()
+
+	result, err := s.DigitalContentUrlStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("DigitalContentUrlStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }

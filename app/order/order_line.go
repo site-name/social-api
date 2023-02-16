@@ -138,7 +138,7 @@ func (a *ServiceOrder) OrderLineIsDigital(orderLine *model.OrderLine) (bool, *mo
 	var orderLineProductVariantHasDigitalContent bool
 
 	// check if there is a digital content accompanies order line's product variant:
-	digitalContent, appErr := a.srv.ProductService().DigitalContentbyOption(&model.DigitalContenetFilterOption{
+	digitalContent, appErr := a.srv.ProductService().DigitalContentbyOption(&model.DigitalContentFilterOption{
 		ProductVariantID: squirrel.Eq{store.DigitalContentTableName + ".ProductVariantID": *orderLine.VariantID},
 	})
 	if appErr != nil {
