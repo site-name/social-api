@@ -36,6 +36,9 @@ type StockFilterOption struct {
 	WarehouseID      squirrel.Sqlizer //
 	ProductVariantID squirrel.Sqlizer //
 
+	Warehouse_ShippingZone_countries squirrel.Sqlizer // INNER JOIN Warehouses ON ... INNER JOIN WarehouseShippingZones ON ... INNER JOIN ShippingZones ON ... WHERE ShippingZones.Countries ...
+	Warehouse_ShippingZone_ChannelID squirrel.Sqlizer // INNER JOIN Warehouses ON ... INNER JOIN WarehouseShippingZones ON ... INNER JOIN ShippingZones ON ... INNER JOIN ShippingZoneChannels WHERE ShippingZoneChannels.ChannelID ...
+
 	SelectRelatedProductVariant bool // inner join ProductVariants and attachs them to returning stocks
 	SelectRelatedWarehouse      bool // inner join Warehouses and attachs them to returning stocks
 

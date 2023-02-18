@@ -126,6 +126,20 @@ var (
 	AllocationsByOrderLineIdLoader = dataloader.NewBatchedLoader(allocationsByOrderLineIdLoader, dataloader.WithBatchCapacity[string, []*model.Allocation](batchCapacity))
 	StocksByIDLoader               = dataloader.NewBatchedLoader(stocksByIDLoader, dataloader.WithBatchCapacity[string, *model.Stock](batchCapacity))
 	AllocationsByStockIDLoader     = dataloader.NewBatchedLoader(allocationsByStockIDLoader, dataloader.WithBatchCapacity[string, []*model.Allocation](batchCapacity))
+	// Return stocks with available quantity based on variant ID, country code, channel.
+	// For each country code, for each shipping zone supporting that country and channel,
+	// return stocks with maximum available quantity.
+	//
+	// NOTE: keys have format of variantID__countryCode__channelID
+	StocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader = dataloader.NewBatchedLoader(stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader, dataloader.WithBatchCapacity[string, model.Stocks](batchCapacity))
+	// Calculates available variant quantity based on variant ID and country code.
+	//
+	// For each country code, for each shipping zone supporting that country,
+	// calculate the maximum available quantity, then return either that number
+	// or the maximum allowed checkout quantity, whichever is lower.
+	//
+	// NOTE: keys have format of variantID__countryCode__channelID
+	AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader = dataloader.NewBatchedLoader(availableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader, dataloader.WithBatchCapacity[string, int](batchCapacity))
 
 	// menu
 	MenuByIdLoader              = dataloader.NewBatchedLoader(menuByIdLoader, dataloader.WithBatchCapacity[string, *model.Menu](batchCapacity))

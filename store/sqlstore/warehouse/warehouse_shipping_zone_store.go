@@ -1,6 +1,9 @@
 package warehouse
 
 import (
+	"strings"
+
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -46,4 +49,63 @@ func (ws *SqlWarehouseShippingZoneStore) Save(warehouseShippingZone *model.Wareh
 	}
 
 	return warehouseShippingZone, nil
+}
+
+func (s *SqlWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryCode, channelID string) ([]*model.WarehouseShippingZone, error) {
+	countryCode = strings.ToUpper(countryCode)
+
+	query := s.
+		GetQueryBuilder().
+		Select(s.ModelFields(store.WarehouseShippingZoneTableName + ".")...)
+
+	if countryCode != "" {
+		shippingZoneQuery := s.
+			GetQueryBuilder(squirrel.Question).
+			Select(`(1) AS "a"`).
+			Prefix("EXISTS (").
+			Suffix(")").
+			From(store.ShippingZoneTableName).
+			Where("ShippingZones.Countries::text LIKE ?", "%"+countryCode+"%").
+			Where("ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
+			Limit(1)
+
+		query = query.Where(shippingZoneQuery)
+	}
+
+	if channelID != "" {
+		channelQuery := s.
+			GetQueryBuilder(squirrel.Question).
+			Select(`(1) AS "a"`).
+			Prefix("EXISTS (").
+			Suffix(")").
+			From(store.ChannelTableName).
+			Where("Channels.Id = ?", channelID).
+			Where("Channels.Id = ShippingZoneChannels.ChannelID").
+			Limit(1)
+
+		shippingZoneChannelQuery := s.
+			GetQueryBuilder(squirrel.Question).
+			Select(`(1) AS "a"`).
+			Prefix("EXISTS (").
+			Suffix(")").
+			From(store.ShippingZoneChannelTableName).
+			Where(channelQuery).
+			Where("ShippingZoneChannels.ShippingZoneID = WarehouseShippingZones.ShippingZoneID").
+			Limit(1)
+
+		query = query.Where(shippingZoneChannelQuery)
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByCountryCodeAndChannelID_ToSql")
+	}
+
+	var res []*model.WarehouseShippingZone
+	err = s.GetReplicaX().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find warehouse shipping zones by options")
+	}
+
+	return res, nil
 }

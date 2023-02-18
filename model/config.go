@@ -231,6 +231,8 @@ const (
 	OPENID_SETTINGS_DEFAULT_SCOPE      = "profile openid email"
 
 	LOCAL_MODE_SOCKET_PATH = "/var/tmp/sitename_local.socket"
+
+	MAX_CHECKOUT_LINE_QUANTITY = 50
 )
 
 func GetDefaultAppCustomURLSchemes() []string {
@@ -399,6 +401,8 @@ type ServiceSettings struct {
 	EnableReliableWebSockets                          *bool   `access:"experimental_features"` // telemetry: none
 	EnablePermalinkPreviews                           *bool   `access:"site_posts"`
 	EnableInlineLatex                                 *bool   `access:"site_posts"`
+
+	MaxCheckoutLineQuantity *int `access:"site_posts"` // default to 50
 
 	DEPRECATED_DO_NOT_USE_ImageProxyType              *string `json:"ImageProxyType" mapstructure:"ImageProxyType"`                           // Deprecated: do not use
 	DEPRECATED_DO_NOT_USE_ImageProxyURL               *string `json:"ImageProxyURL" mapstructure:"ImageProxyURL"`                             // Deprecated: do not use
@@ -727,6 +731,9 @@ func (s *ServiceSettings) SetDefaults(isUpdate bool) {
 
 	if s.DEPRECATED_DO_NOT_USE_AllowEditPost == nil {
 		s.DEPRECATED_DO_NOT_USE_AllowEditPost = NewPrimitive(ALLOW_EDIT_POST_ALWAYS)
+	}
+	if s.MaxCheckoutLineQuantity == nil {
+		s.MaxCheckoutLineQuantity = NewPrimitive(MAX_CHECKOUT_LINE_QUANTITY)
 	}
 
 	if s.ExperimentalEnableAuthenticationTransfer == nil {

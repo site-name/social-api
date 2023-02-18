@@ -386,6 +386,7 @@ type (
 	WarehouseShippingZoneStore interface {
 		ModelFields(prefix string) model.AnyArray[string]
 		Save(warehouseShippingZone *model.WarehouseShippingZone) (*model.WarehouseShippingZone, error) // Save inserts given model-model zone relation into database
+		FilterByCountryCodeAndChannelID(countryCode, channelID string) ([]*model.WarehouseShippingZone, error)
 	}
 	PreorderAllocationStore interface {
 		ModelFields(prefix string) model.AnyArray[string]

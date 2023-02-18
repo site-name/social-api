@@ -112,9 +112,8 @@ func (ss *SqlStockStore) Get(stockID string) (*model.Stock, error) {
 			return nil, store.NewErrNotFound(store.StockTableName, stockID)
 		}
 		return nil, errors.Wrapf(err, "failed to find stock with id=%s", stockID)
-	} else {
-		return &res, nil
 	}
+	return &res, nil
 }
 
 // FilterForChannel finds and returns stocks that satisfy given options
@@ -252,6 +251,21 @@ func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, 
 	}
 	if options.ForUpdateOf != "" && options.LockForUpdate {
 		query = query.Suffix("OF " + options.ForUpdateOf)
+	}
+	if options.Warehouse_ShippingZone_countries != nil ||
+		options.Warehouse_ShippingZone_ChannelID != nil {
+		query = query.
+			InnerJoin(store.WarehouseTableName + " ON Warehouses.Id = Stocks.WarehouseID").
+			InnerJoin(store.WarehouseShippingZoneTableName + " ON WarehouseShippingZones.WarehouseID = Warehouses.Id").
+			InnerJoin(store.ShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
+	}
+	if options.Warehouse_ShippingZone_countries != nil {
+		query = query.Where(options.Warehouse_ShippingZone_countries)
+	}
+	if options.Warehouse_ShippingZone_ChannelID != nil {
+		query = query.
+			InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id").
+			Where(options.Warehouse_ShippingZone_ChannelID)
 	}
 
 	var groupBy string
