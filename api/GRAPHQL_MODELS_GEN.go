@@ -3077,14 +3077,6 @@ type ShippingError struct {
 	Channels   []string          `json:"channels"`
 }
 
-type ShippingMethodChannelListing struct {
-	ID                string   `json:"id"`
-	Channel           *Channel `json:"channel"`
-	MinimumOrderPrice *Money   `json:"minimumOrderPrice"`
-	MaximumOrderPrice *Money   `json:"maximumOrderPrice"`
-	Price             *Money   `json:"price"`
-}
-
 type ShippingMethodChannelListingAddInput struct {
 	ChannelID         string           `json:"channelId"`
 	Price             *PositiveDecimal `json:"price"`
@@ -6309,8 +6301,8 @@ func (e PluginSortField) IsValid() bool {
 type PostalCodeRuleInclusionTypeEnum string
 
 const (
-	PostalCodeRuleInclusionTypeEnumInclude PostalCodeRuleInclusionTypeEnum = "INCLUDE"
-	PostalCodeRuleInclusionTypeEnumExclude PostalCodeRuleInclusionTypeEnum = "EXCLUDE"
+	PostalCodeRuleInclusionTypeEnumInclude PostalCodeRuleInclusionTypeEnum = model.INCLUDE
+	PostalCodeRuleInclusionTypeEnumExclude PostalCodeRuleInclusionTypeEnum = model.EXCLUDE
 )
 
 func (e PostalCodeRuleInclusionTypeEnum) IsValid() bool {

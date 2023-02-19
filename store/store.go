@@ -432,7 +432,7 @@ type (
 	}
 	ShippingMethodExcludedProductStore interface {
 		Save(instance *model.ShippingMethodExcludedProduct) (*model.ShippingMethodExcludedProduct, error) // Save inserts given ShippingMethodExcludedProduct into database then returns it
-		Get(id string) (*model.ShippingMethodExcludedProduct, error)                                      // Get finds and returns a model method excluded product with given id then reutrns it
+		FilterByOptions(options *model.ShippingMethodExcludedProductFilterOptions) ([]*model.ShippingMethodExcludedProduct, error)
 	}
 )
 

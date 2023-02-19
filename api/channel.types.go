@@ -4,14 +4,12 @@ import (
 	"context"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app/product"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
@@ -404,58 +402,58 @@ func (c *ProductChannelListing) Margin(ctx context.Context) (*Margin, error) {
 }
 
 func (c *ProductChannelListing) Pricing(ctx context.Context, args struct{ Address *AddressInput }) (*ProductPricingInfo, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	now := time.Now()
-	var addressCountry string
-	if args.Address != nil &&
-		args.Address.Country != nil &&
-		args.Address.Country.IsValid() {
-		addressCountry = string(*args.Address.Country)
-	}
+	// now := time.Now()
+	// var addressCountry string
+	// if args.Address != nil &&
+	// 	args.Address.Country != nil &&
+	// 	args.Address.Country.IsValid() {
+	// 	addressCountry = string(*args.Address.Country)
+	// }
 
-	discountInfos, err := DiscountsByDateTimeLoader.Load(ctx, now)()
-	if err != nil {
-		return nil, err
-	}
+	// discountInfos, err := DiscountsByDateTimeLoader.Load(ctx, now)()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	channel, err := ChannelByIdLoader.Load(ctx, c.c.ChannelID)()
-	if err != nil {
-		return nil, err
-	}
+	// channel, err := ChannelByIdLoader.Load(ctx, c.c.ChannelID)()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	product, err := ProductByIdLoader.Load(ctx, c.c.ProductID)()
-	if err != nil {
-		return nil, err
-	}
+	// product, err := ProductByIdLoader.Load(ctx, c.c.ProductID)()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	variants, err := ProductVariantsByProductIdLoader.Load(ctx, c.c.ProductID)()
-	if err != nil {
-		return nil, err
-	}
+	// variants, err := ProductVariantsByProductIdLoader.Load(ctx, c.c.ProductID)()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	variantChannelListings, err := VariantsChannelListingByProductIdAndChannelSlugLoader.Load(ctx, c.c.ProductID+"__"+channel.Id)()
-	if err != nil {
-		return nil, err
-	}
+	// variantChannelListings, err := VariantsChannelListingByProductIdAndChannelSlugLoader.Load(ctx, c.c.ProductID+"__"+channel.Id)()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	collections, err := CollectionsByProductIdLoader.Load(ctx, c.c.ProductID)()
-	if err != nil {
-		return nil, err
-	}
+	// collections, err := CollectionsByProductIdLoader.Load(ctx, c.c.ProductID)()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	if len(variantChannelListings) == 0 {
-		return nil, nil
-	}
+	// if len(variantChannelListings) == 0 {
+	// 	return nil, nil
+	// }
 
-	if addressCountry == "" {
-		addressCountry = channel.DefaultCountry
-	}
+	// if addressCountry == "" {
+	// 	addressCountry = channel.DefaultCountry
+	// }
 
-	localCurrency := util.GetCurrencyForCountry(addressCountry)
+	// localCurrency := util.GetCurrencyForCountry(addressCountry)
 	panic("not implemented")
 }
 

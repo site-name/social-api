@@ -26,7 +26,10 @@ const ErrorUnauthorized = "api.unauthorized.app_error"
 // Unique type to hold our context.
 type CTXKey int
 
-const WebCtx CTXKey = iota
+const (
+	WebCtx CTXKey = iota
+	ChannelIdCtx
+)
 
 // constructSchema constructs schema from *.graphql files
 func constructSchema() (string, error) {
@@ -37,16 +40,15 @@ func constructSchema() (string, error) {
 
 	var builder strings.Builder
 	for _, entry := range entries {
-		if entry.IsDir() || !(strings.HasSuffix(entry.Name(), ".graphql") || strings.HasSuffix(entry.Name(), ".graphqls")) {
-			continue
-		}
-		data, err := assets.ReadFile(filepath.Join("schemas", entry.Name()))
-		if err != nil {
-			return "", errors.Wrapf(err, "failed to read schema file: %s", filepath.Join("schemas", entry.Name()))
-		}
+		if !entry.IsDir() && strings.Contains(entry.Name(), ".graphql") {
+			data, err := assets.ReadFile(filepath.Join("schemas", entry.Name()))
+			if err != nil {
+				return "", errors.Wrapf(err, "failed to read schema file: %s", filepath.Join("schemas", entry.Name()))
+			}
 
-		builder.Write(data)
-		builder.WriteByte('\n')
+			builder.Write(data)
+			builder.WriteByte('\n')
+		}
 	}
 
 	return builder.String(), nil

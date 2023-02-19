@@ -1,8 +1,6 @@
 package shipping
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -14,6 +12,14 @@ type SqlShippingMethodExcludedProductStore struct {
 
 func NewSqlShippingMethodExcludedProductStore(s store.Store) store.ShippingMethodExcludedProductStore {
 	return &SqlShippingMethodExcludedProductStore{s}
+}
+
+func (s *SqlShippingMethodExcludedProductStore) ScanFields(rel *model.ShippingMethodExcludedProduct) []any {
+	return []any{
+		&rel.Id,
+		&rel.ShippingMethodID,
+		&rel.ProductID,
+	}
 }
 
 func (s *SqlShippingMethodExcludedProductStore) ModelFields(prefix string) model.AnyArray[string] {
@@ -50,16 +56,61 @@ func (ss *SqlShippingMethodExcludedProductStore) Save(instance *model.ShippingMe
 	return instance, nil
 }
 
-// Get finds and returns a shipping method excluded product with given id then reutrns it
-func (ss *SqlShippingMethodExcludedProductStore) Get(id string) (*model.ShippingMethodExcludedProduct, error) {
-	var res model.ShippingMethodExcludedProduct
-	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShippingMethodExcludedProductTableName+" WHERE Id = ?", id)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ShippingMethodExcludedProductTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find shipping method excluded product with id=%s", id)
+func (s *SqlShippingMethodExcludedProductStore) FilterByOptions(options *model.ShippingMethodExcludedProductFilterOptions) ([]*model.ShippingMethodExcludedProduct, error) {
+	selectFields := s.ModelFields(store.ShippingMethodExcludedProductTableName + ".")
+	if options.SelectRelatedProduct {
+		selectFields = append(selectFields, s.Product().ModelFields(store.ProductTableName+".")...)
 	}
 
-	return &res, nil
+	query := s.GetQueryBuilder().Select(selectFields...).From(store.ShippingMethodExcludedProductTableName)
+
+	if options.ProductID != nil {
+		query = query.Where(options.ProductID)
+	}
+	if options.ShippingMethodID != nil {
+		query = query.Where(options.ShippingMethodID)
+	}
+	if options.SelectRelatedProduct {
+		query = query.InnerJoin(store.ProductTableName + " ON Products.Id = ShippingMethodExcludedProducts.ProductID")
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	rows, err := s.GetReplicaX().QueryX(queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find shipping method excluded products by given options")
+	}
+
+	var (
+		res        []*model.ShippingMethodExcludedProduct
+		rel        model.ShippingMethodExcludedProduct
+		prd        model.Product
+		scanFields = s.ScanFields(&rel)
+	)
+	if options.SelectRelatedProduct {
+		scanFields = append(scanFields, s.Product().ScanFields(&prd)...)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan a row of shipping method excluded product")
+		}
+
+		if options.SelectRelatedProduct {
+			rel.SetProduct(&prd) // no need to deepcopy prodict here
+		}
+
+		res = append(res, rel.DeepCopy())
+	}
+
+	err = rows.Close()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to close rows of shipping method excluded products")
+	}
+
+	return res, nil
 }

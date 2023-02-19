@@ -6479,10 +6479,10 @@ func (s *TimerLayerShippingMethodChannelListingStore) Upsert(listing *model.Ship
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodExcludedProductStore) Get(id string) (*model.ShippingMethodExcludedProduct, error) {
+func (s *TimerLayerShippingMethodExcludedProductStore) FilterByOptions(options *model.ShippingMethodExcludedProductFilterOptions) ([]*model.ShippingMethodExcludedProduct, error) {
 	start := timemodule.Now()
 
-	result, err := s.ShippingMethodExcludedProductStore.Get(id)
+	result, err := s.ShippingMethodExcludedProductStore.FilterByOptions(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6490,7 +6490,7 @@ func (s *TimerLayerShippingMethodExcludedProductStore) Get(id string) (*model.Sh
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodExcludedProductStore.Get", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodExcludedProductStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }

@@ -310,11 +310,11 @@ func shippingMethodsByShippingZoneIdAndChannelSlugLoader(ctx context.Context, id
 	// 	}
 
 	// errorLabel:
-	//
-	//	for idx := range idPairs {
-	//		res[idx] = &dataloader.Result[[]*model.ShippingMethod]{Error: err}
-	//	}
-	//	return res
+
+	// 	for idx := range idPairs {
+	// 		res[idx] = &dataloader.Result[[]*model.ShippingMethod]{Error: err}
+	// 	}
+	// 	return res
 	panic("not implemented")
 }
 

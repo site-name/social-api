@@ -219,7 +219,7 @@ func (s *Stock) QuantityAllocated(ctx context.Context) (int32, error) {
 		return 0, err
 	}
 
-	if !embedCtx.App.Srv().
+	if embedCtx.App.Srv().
 		AccountService().
 		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageProducts, model.PermissionManageOrders) {
 		allocations, err := AllocationsByStockIDLoader.Load(ctx, s.ID)()
@@ -231,15 +231,21 @@ func (s *Stock) QuantityAllocated(ctx context.Context) (int32, error) {
 		for _, allocation := range allocations {
 			sum += allocation.QuantityAllocated
 		}
-
 		if sum < 0 {
 			sum = 0
 		}
-
 		return int32(sum), nil
 	}
 
 	return 0, model.NewAppError("Stock.QuantityAllocated", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+}
+
+func (s *Stock) ProductVariant(ctx context.Context) (*ProductVariant, error) {
+	variant, err := ProductVariantByIdLoader.Load(ctx, s.stock.ProductVariantID)()
+	if err != nil {
+		return nil, err
+	}
+	return SystemProductVariantToGraphqlProductVariant(variant), nil
 }
 
 func allocationsByStockIDLoader(ctx context.Context, stockIDs []string) []*dataloader.Result[[]*model.Allocation] {
@@ -277,14 +283,6 @@ errorLabel:
 		res[idx] = &dataloader.Result[[]*model.Allocation]{Error: err}
 	}
 	return res
-}
-
-func (s *Stock) ProductVariant(ctx context.Context) (*ProductVariant, error) {
-	variant, err := ProductVariantByIdLoader.Load(ctx, s.stock.ProductVariantID)()
-	if err != nil {
-		return nil, err
-	}
-	return SystemProductVariantToGraphqlProductVariant(variant), nil
 }
 
 func stocksByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Stock] {

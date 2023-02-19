@@ -96,13 +96,15 @@ var (
 	ChannelWithHasOrdersByIdLoader = dataloader.NewBatchedLoader(channelWithHasOrdersByIdLoader, dataloader.WithBatchCapacity[string, *model.Channel](batchCapacity))
 
 	// shipping
-	ShippingZoneByIdLoader                                             = dataloader.NewBatchedLoader(shippingZoneByIdLoader, dataloader.WithBatchCapacity[string, *model.ShippingZone](batchCapacity))
-	ShippingZonesByChannelIdLoader                                     = dataloader.NewBatchedLoader(shippingZonesByChannelIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingZone](batchCapacity))
-	ShippingMethodByIdLoader                                           = dataloader.NewBatchedLoader(shippingMethodByIdLoader, dataloader.WithBatchCapacity[string, *model.ShippingMethod](batchCapacity))
+	ShippingZoneByIdLoader         = dataloader.NewBatchedLoader(shippingZoneByIdLoader, dataloader.WithBatchCapacity[string, *model.ShippingZone](batchCapacity))
+	ShippingZonesByChannelIdLoader = dataloader.NewBatchedLoader(shippingZonesByChannelIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingZone](batchCapacity))
+	ShippingMethodByIdLoader       = dataloader.NewBatchedLoader(shippingMethodByIdLoader, dataloader.WithBatchCapacity[string, *model.ShippingMethod](batchCapacity))
+	// NOTE: keys have format of shippingMethodID__channelID
 	ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader = dataloader.NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, *model.ShippingMethodChannelListing](batchCapacity))
 	ShippingMethodsByShippingZoneIdLoader                              = dataloader.NewBatchedLoader(shippingMethodsByShippingZoneIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethod](batchCapacity))
 	PostalCodeRulesByShippingMethodIdLoader                            = dataloader.NewBatchedLoader(postalCodeRulesByShippingMethodIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethodPostalCodeRule](batchCapacity))
 	ShippingMethodChannelListingByShippingMethodIdLoader               = dataloader.NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethodChannelListing](batchCapacity))
+	ExcludedProductByShippingMethodIDLoader                            = dataloader.NewBatchedLoader(excludedProductByShippingMethodIDLoader, dataloader.WithBatchCapacity[string, []*model.Product](batchCapacity))
 
 	// discount
 	DiscountsByDateTimeLoader                           = dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity))

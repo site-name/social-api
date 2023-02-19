@@ -2,9 +2,19 @@ package api
 
 import (
 	"context"
+	"encoding/base64"
+	"net/http"
+	"sort"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
+	"github.com/graph-gophers/dataloader/v7"
+	"github.com/samber/lo"
+	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/web"
 )
 
 type ShippingMethod struct {
@@ -19,7 +29,7 @@ type ShippingMethod struct {
 	Metadata            []*MetadataItem         `json:"metadata"`
 	Type                *ShippingMethodTypeEnum `json:"type"`
 
-	shippingZoneID string
+	s *model.ShippingMethod
 
 	// Translation         *ShippingMethodTranslation `json:"translation"`
 	// ChannelListings     []*ShippingMethodChannelListing `json:"channelListings"`
@@ -36,18 +46,20 @@ func SystemShippingMethodToGraphqlShippingMethod(m *model.ShippingMethod) *Shipp
 	}
 
 	res := &ShippingMethod{
-		ID:             m.Id,
-		Name:           m.Name,
-		Description:    JSONString(m.Description),
-		shippingZoneID: m.ShippingZoneID,
+		ID:              m.Id,
+		Name:            m.Name,
+		Description:     JSONString(m.Description),
+		PrivateMetadata: MetadataToSlice(m.PrivateMetadata),
+		Metadata:        MetadataToSlice(m.Metadata),
+		s:               m,
 		MinimumOrderWeight: &Weight{
 			Unit:  WeightUnitsEnum(m.WeightUnit),
 			Value: float64(m.MinimumOrderWeight),
 		},
-		PrivateMetadata: MetadataToSlice(m.PrivateMetadata),
-		Metadata:        MetadataToSlice(m.Metadata),
-		Type:            (*ShippingMethodTypeEnum)(&m.Type),
 	}
+
+	type_ := ShippingMethodTypeEnum(m.Type)
+	res.Type = &type_
 
 	if m.MaximumOrderWeight != nil {
 		res.MaximumOrderWeight = &Weight{
@@ -71,32 +83,217 @@ func (s *ShippingMethod) Translation(ctx context.Context, args struct{ LanguageC
 }
 
 func (s *ShippingMethod) ChannelListings(ctx context.Context) ([]*ShippingMethodChannelListing, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageShipping) {
+		listings, err := ShippingMethodChannelListingByShippingMethodIdLoader.Load(ctx, s.ID)()
+		if err != nil {
+			return nil, err
+		}
+
+		return DataloaderResultMap(listings, systemShippingMethodChannelListingToGraphqlShippingMethodChannelListing), nil
+	}
+
+	return nil, model.NewAppError("ShippingMethod.ChannelListings", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
 }
 
 func (s *ShippingMethod) Price(ctx context.Context) (*Money, error) {
-	panic("not implemented")
+	embedChannel, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+	if embedChannel == "" {
+		return nil, nil
+	}
+
+	listing, err := ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+embedChannel)()
+	if err != nil {
+		return nil, err
+	}
+
+	if p := listing.PriceAmount; p != nil {
+		return &Money{
+			Amount:   p.InexactFloat64(),
+			Currency: listing.Currency,
+		}, nil
+	}
+
+	return nil, nil
 }
 
 func (s *ShippingMethod) MaximumOrderPrice(ctx context.Context) (*Money, error) {
-	panic("not implemented")
+	embedChannel, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+	if embedChannel == "" {
+		return nil, nil
+	}
+
+	listing, err := ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+embedChannel)()
+	if err != nil {
+		return nil, err
+	}
+
+	if p := listing.MaximumOrderPriceAmount; p != nil {
+		return &Money{
+			Amount:   p.InexactFloat64(),
+			Currency: listing.Currency,
+		}, nil
+	}
+	return nil, nil
 }
 
 func (s *ShippingMethod) MinimumOrderPrice(ctx context.Context) (*Money, error) {
-	panic("not implemented")
+	embedChannel, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+	if embedChannel == "" {
+		return nil, nil
+	}
+
+	listing, err := ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+embedChannel)()
+	if err != nil {
+		return nil, err
+	}
+
+	if p := listing.MinimumOrderPriceAmount; p != nil {
+		return &Money{
+			Amount:   p.InexactFloat64(),
+			Currency: listing.Currency,
+		}, nil
+	}
+	return nil, nil
 }
 
 func (s *ShippingMethod) PostalCodeRules(ctx context.Context) ([]*ShippingMethodPostalCodeRule, error) {
-	panic("not implemented")
+	postalCodeRules, err := PostalCodeRulesByShippingMethodIdLoader.Load(ctx, s.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return lo.Map(postalCodeRules, func(r *model.ShippingMethodPostalCodeRule, _ int) *ShippingMethodPostalCodeRule {
+		inclusionType := PostalCodeRuleInclusionTypeEnum(r.InclusionType)
+
+		return &ShippingMethodPostalCodeRule{
+			Start:         &r.Start,
+			End:           &r.End,
+			ID:            r.Id,
+			InclusionType: &inclusionType,
+		}
+	}), nil
 }
 
+// NOTE: products are ordered by their slugs
 func (s *ShippingMethod) ExcludedProducts(ctx context.Context, args struct {
 	Before *string
 	After  *string
 	First  *int32
 	Last   *int32
 }) (*ProductCountableConnection, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageShipping) {
+		return nil, model.NewAppError("ShippingMethod.ExcludedProducts", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	}
+
+	products, err := ExcludedProductByShippingMethodIDLoader.Load(ctx, s.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		before *string
+		after  *string
+	)
+	if args.Before != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.Before)
+		if err != nil {
+			return nil, model.NewAppError("ShippingMethod.ExcludedProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
+		}
+		before = model.NewPrimitive(string(data))
+	} else if args.After != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.After)
+		if err != nil {
+			return nil, model.NewAppError("ShippingMethod.ExcludedProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
+		}
+		after = model.NewPrimitive(string(data))
+	}
+
+	paginator := &graphqlPaginator[*model.Product, string]{
+		data:    products,
+		keyFunc: func(p *model.Product) string { return p.Slug },
+		before:  before,
+		after:   after,
+		first:   args.First,
+		last:    args.Last,
+	}
+
+	data, hasPrev, hasNext, appErr := paginator.parse("ShippingMethod.ExcludedProducts")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	res := &ProductCountableConnection{
+		TotalCount: model.NewPrimitive(int32(len(products))),
+		Edges: lo.Map(data, func(d *model.Product, _ int) *ProductCountableEdge {
+			return &ProductCountableEdge{
+				Node:   SystemProductToGraphqlProduct(d),
+				Cursor: base64.StdEncoding.EncodeToString([]byte(d.Slug)),
+			}
+		}),
+	}
+
+	res.PageInfo = &PageInfo{
+		HasNextPage:     hasNext,
+		HasPreviousPage: hasPrev,
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
+	}
+
+	return res, nil
+}
+
+func excludedProductByShippingMethodIDLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.Product] {
+	var (
+		res                              = make([]*dataloader.Result[[]*model.Product], len(ids))
+		shippingMethodExcludedProducts   []*model.ShippingMethodExcludedProduct
+		shippingMethodExcludedProductMap = map[string]model.Products{} // keys are shipping method ids
+	)
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	shippingMethodExcludedProducts, err = embedCtx.App.Srv().Store.
+		ShippingMethodExcludedProduct().
+		FilterByOptions(&model.ShippingMethodExcludedProductFilterOptions{
+			SelectRelatedProduct: true,
+			ShippingMethodID:     squirrel.Eq{store.ShippingMethodExcludedProductTableName + ".ShippingMethodID": ids},
+		})
+	if err != nil {
+		err = model.NewAppError("excludedProductByShippingMethodIDLoader", "app.shipping.shipping_method_excluded_product_relations_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+		goto errorLabel
+	}
+
+	for _, rel := range shippingMethodExcludedProducts {
+		shippingMethodExcludedProductMap[rel.ShippingMethodID] = append(shippingMethodExcludedProductMap[rel.ShippingMethodID], rel.GetProduct())
+	}
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[[]*model.Product]{Data: shippingMethodExcludedProductMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range ids {
+		res[idx] = &dataloader.Result[[]*model.Product]{Error: err}
+	}
+	return res
 }
 
 // ---------------- shipping zone -------------------------
@@ -134,8 +331,6 @@ func SystemShippingZoneToGraphqlShippingZone(s *model.ShippingZone) *ShippingZon
 		splitCountries := strings.FieldsFunc(s.Countries, func(r rune) bool { return r == ' ' || r == ',' })
 
 		for _, code := range splitCountries {
-			code = strings.TrimSpace(code)
-
 			res.Countries = append(res.Countries, &CountryDisplay{
 				Code:    code,
 				Country: model.Countries[code],
@@ -147,10 +342,48 @@ func SystemShippingZoneToGraphqlShippingZone(s *model.ShippingZone) *ShippingZon
 }
 
 func (s *ShippingZone) PriceRange(ctx context.Context) (*MoneyRange, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if channelID == "" {
+		return nil, nil
+	}
+
+	listings, appErr := embedCtx.App.Srv().ShippingService().
+		ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
+			ChannelID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": channelID},
+		})
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(listings) == 0 {
+		return nil, nil
+	}
+
+	var prices model.Moneys = lo.Map(listings, func(l *model.ShippingMethodChannelListing, _ int) *goprices.Money { return l.GetTotal() })
+	sort.Sort(prices) // sort ascending order
+
+	return SystemMoneyRangeToGraphqlMoneyRange(&goprices.MoneyRange{
+		Start: prices[0],
+		Stop:  prices[len(prices)-1],
+	}), nil
 }
 
 func (s *ShippingZone) ShippingMethods(ctx context.Context) ([]*ShippingMethod, error) {
+	// channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if channelID != "" {
+
+	// }
 	panic("not implemented")
 }
 
@@ -160,4 +393,47 @@ func (s *ShippingZone) Warehouses(ctx context.Context) ([]*Warehouse, error) {
 
 func (s *ShippingZone) Channels(ctx context.Context) ([]*Channel, error) {
 	panic("not implemented")
+
+}
+
+// ------------------
+type ShippingMethodChannelListing struct {
+	ID string `json:"id"`
+	// Channel           *Channel `json:"channel"`
+	MinimumOrderPrice *Money `json:"minimumOrderPrice"`
+	MaximumOrderPrice *Money `json:"maximumOrderPrice"`
+	Price             *Money `json:"price"`
+
+	s *model.ShippingMethodChannelListing
+}
+
+func systemShippingMethodChannelListingToGraphqlShippingMethodChannelListing(s *model.ShippingMethodChannelListing) *ShippingMethodChannelListing {
+	if s == nil {
+		return nil
+	}
+
+	s.PopulateNonDbFields()
+
+	res := &ShippingMethodChannelListing{
+		ID: s.Id,
+		s:  s,
+	}
+	if p := s.MinimumOrderPrice; p != nil {
+		res.MinimumOrderPrice = SystemMoneyToGraphqlMoney(p)
+	}
+	if p := s.MaximumOrderPrice; p != nil {
+		res.MaximumOrderPrice = SystemMoneyToGraphqlMoney(p)
+	}
+	if p := s.Price; p != nil {
+		res.Price = SystemMoneyToGraphqlMoney(p)
+	}
+	return res
+}
+
+func (s *ShippingMethodChannelListing) Channel(ctx context.Context) (*Channel, error) {
+	channel, err := ChannelByIdLoader.Load(ctx, s.s.ChannelID)()
+	if err != nil {
+		return nil, err
+	}
+	return SystemChannelToGraphqlChannel(channel), nil
 }

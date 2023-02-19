@@ -16,6 +16,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -24,6 +25,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/site-name/decimal"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
@@ -987,4 +989,20 @@ func (g *PaginationOptions) ConstructSqlizer(query squirrel.SelectBuilder) (squi
 	}
 
 	return query, nil
+}
+
+var _ sort.Interface = (Moneys)(nil)
+
+type Moneys []*goprices.Money
+
+func (m Moneys) Len() int {
+	return len(m)
+}
+
+func (m Moneys) Less(i, j int) bool {
+	return m[i].LessThan(m[j])
+}
+
+func (m Moneys) Swap(i, j int) {
+	m[i], m[j] = m[j], m[i]
 }

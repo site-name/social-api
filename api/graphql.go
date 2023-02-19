@@ -44,7 +44,7 @@ func (api *API) InitGraphql() error {
 	}
 
 	api.Router.Handle("/graphql", api.APIHandlerTrustRequester(graphiQL)).Methods(http.MethodGet)
-	api.Router.Handle("/graphql", api.APIHandlerTrustRequester(api.graphql)).Methods(http.MethodPost)
+	api.Router.Handle("/graphql", api.APISessionRequired(api.graphql)).Methods(http.MethodPost)
 	return nil
 }
 
@@ -81,7 +81,11 @@ func (api *API) graphql(c *web.Context, w http.ResponseWriter, r *http.Request) 
 
 	// Populate the context with required info.
 	reqCtx := r.Context()
+	channelID := r.URL.Query().Get("channel_id")
 	reqCtx = context.WithValue(reqCtx, WebCtx, c)
+	if channelID != "" {
+		reqCtx = context.WithValue(reqCtx, ChannelIdCtx, channelID)
+	}
 
 	response = api.schema.Exec(reqCtx, params.Query, params.OperationName, params.Variables)
 
@@ -103,7 +107,7 @@ func (api *API) graphql(c *web.Context, w http.ResponseWriter, r *http.Request) 
 
 func graphiQL(c *web.Context, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	w.Write(graphiqlPage)
+	w.Write(newGraphqlPlayground)
 }
 
 var graphiqlPage = []byte(`
@@ -145,5 +149,43 @@ var graphiqlPage = []byte(`
 			);
 		</script>
 	</body>
+</html>
+`)
+
+var newGraphqlPlayground = []byte(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8/>
+  <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
+  <title>GraphQL Playground</title>
+  <link rel="shortcut icon" href="https://cdn.jsdelivr.net/npm/graphql-playground-react@1.7.22/build/favicon.png" />
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@saleor/graphql-playground@2.0.0-7/dist/umd/index.css"
+    integrity="sha512-YALe4xVqDdxVBojNizFFC0gUAjBqk7o21iRUqIOhObfKmSPKpMU8MNT+SsTpLWkY1z13gODofWdLJbKdfov7Ag=="
+    crossorigin="anonymous"
+  />
+  <!-- sha256-Y/huXlwoYkVyQlxwSVcCi1RCDGDCSVBzDt0hYP9qlTc= is inline css added by the playground when opening settings -->
+  <!-- sha256-hM8ziVmFsNZhvY3EjvTholqPBoYTMv/3+1nOBhZrL+c= is the inline code below -->
+  <meta http-equiv="content-security-policy" content="default-src 'none'; connect-src {{ api_url }} {{ plugins_url }}; script-src https://cdn.jsdelivr.net/npm/@saleor/graphql-playground@2.0.0-7/dist/umd/index.js 'sha256-hM8ziVmFsNZhvY3EjvTholqPBoYTMv/3+1nOBhZrL+c='; style-src https://cdn.jsdelivr.net/npm/@saleor/graphql-playground@2.0.0-7/dist/umd/index.css 'sha256-Y/huXlwoYkVyQlxwSVcCi1RCDGDCSVBzDt0hYP9qlTc='; font-src 'self' data:; img-src data: https://cdn.jsdelivr.net/npm/graphql-playground-react@1.7.22/build/favicon.png" />
+</head>
+<body>
+  <div id="root" data-endpoint="/graphql"></div>
+  <script
+    src="https://cdn.jsdelivr.net/npm/@saleor/graphql-playground@2.0.0-7/dist/umd/index.js"
+    integrity="sha512-azSAOqHoYDQ+EF7UM4C6EaOsNNPFBPRA9kxExPC6ksqQAf323UISxzTQ9Hn+PjFhg7qLArXztC1ZUp5tBV5o9Q=="
+    crossorigin="anonymous"
+  ></script>
+
+  {# sha256-hM8ziVmFsNZhvY3EjvTholqPBoYTMv/3+1nOBhZrL+c= #}
+  <script type="module">
+    const root = document.querySelector("#root");
+    const endpoint = root.dataset.endpoint;
+    // const query = root.dataset.query;
+
+    createPlayground(root, { endpoint });
+  </script>
+</body>
 </html>
 `)

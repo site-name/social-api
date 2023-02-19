@@ -7756,11 +7756,11 @@ func (s *RetryLayerShippingMethodChannelListingStore) Upsert(listing *model.Ship
 
 }
 
-func (s *RetryLayerShippingMethodExcludedProductStore) Get(id string) (*model.ShippingMethodExcludedProduct, error) {
+func (s *RetryLayerShippingMethodExcludedProductStore) FilterByOptions(options *model.ShippingMethodExcludedProductFilterOptions) ([]*model.ShippingMethodExcludedProduct, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShippingMethodExcludedProductStore.Get(id)
+		result, err := s.ShippingMethodExcludedProductStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}

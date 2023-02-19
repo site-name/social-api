@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
 )
@@ -19,6 +20,8 @@ type ProductVariant struct {
 	Channel         *string         `json:"channel"`
 	Margin          *int32          `json:"margin"`
 	QuantityOrdered *int32          `json:"quantityOrdered"`
+
+	p *model.ProductVariant
 
 	// Translation     *ProductVariantTranslation `json:"translation"`
 	// DigitalContent  *DigitalContent            `json:"digitalContent"`
@@ -68,6 +71,15 @@ func (p *ProductVariant) Stocks(ctx context.Context, args struct {
 	Address     *AddressInput
 	CountryCode *CountryCode
 }) ([]*Stock, error) {
+	if args.Address != nil && args.CountryCode == nil {
+		args.CountryCode = args.Address.Country
+	}
+
+	if args.CountryCode == nil || !args.CountryCode.IsValid() {
+		return nil, model.NewAppError("ProductVariant.Stocks", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countryCode"}, "", http.StatusBadRequest)
+	}
+
+	// StocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader.Load(ctx, p.ID + "__" + string(*args.CountryCode) + "__" + p.ch)
 	panic("not implemented")
 }
 
