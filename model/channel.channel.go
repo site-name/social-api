@@ -25,7 +25,16 @@ type Channel struct {
 	Currency       string `json:"currency"`        //
 	DefaultCountry string `json:"default_country"` // default "US"
 
-	hasOrders bool `db:"-"`
+	hasOrders     bool          `db:"-"`
+	shippingZones ShippingZones `db:"-"` // get populated in some queries that require selected related shipping zones
+}
+
+func (c *Channel) GetShippingZones() ShippingZones {
+	return c.shippingZones
+}
+
+func (c *Channel) SetShippingZones(s ShippingZones) {
+	c.shippingZones = s
 }
 
 func (c *Channel) GetHasOrders() bool {
@@ -45,7 +54,9 @@ type ChannelFilterOption struct {
 	Slug     squirrel.Sqlizer
 	Currency squirrel.Sqlizer
 
-	AnnotateHasOrders bool // to check if there are at least 1 order associated to this channel
+	ShippingZoneID             squirrel.Sqlizer // INNER/LEFT JOIN ChannelShippingZones ON ... WHERE ChannelShippingZones.ShippingZoneID ...
+	SelectRelatedShippingZones bool
+	AnnotateHasOrders          bool // to check if there are at least 1 order associated to this channel
 
 	Extra squirrel.Sqlizer
 }

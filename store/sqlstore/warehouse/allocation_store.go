@@ -302,7 +302,7 @@ func (as *SqlAllocationStore) BulkDelete(transaction store_iface.SqlxTxExecutor,
 // CountAvailableQuantityForStock counts and returns available quantity of given stock
 func (as *SqlAllocationStore) CountAvailableQuantityForStock(stock *model.Stock) (int, error) {
 	var count int
-	err := as.GetReplicaX().Get(
+	err := as.GetReplicaX().Select(
 		&count,
 		`SELECT COALESCE(
 			SUM (

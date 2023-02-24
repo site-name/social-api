@@ -51,6 +51,7 @@ func SystemProductVariantToGraphqlProductVariant(variant *model.ProductVariant) 
 		PrivateMetadata: MetadataToSlice(variant.PrivateMetadata),
 		Margin:          model.NewPrimitive[int32](0), // ??
 		QuantityOrdered: model.NewPrimitive[int32](0), // ??
+		p:               variant,
 	}
 	if variant.Weight != nil {
 		res.Weight = &Weight{WeightUnitsEnum(variant.WeightUnit), float64(*variant.Weight)}

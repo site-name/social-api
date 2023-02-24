@@ -437,3 +437,26 @@ func (s *ShippingMethodChannelListing) Channel(ctx context.Context) (*Channel, e
 	}
 	return SystemChannelToGraphqlChannel(channel), nil
 }
+
+func channelsByShippingZoneIdLoader(ctx context.Context, shippingZoneIDs []string) []*dataloader.Result[any] {
+	// 	var (
+	// 		res = make([]*dataloader.Result[any], len(shippingZoneIDs))
+	// 	)
+
+	// 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	// 	if err != nil {
+	// 		goto errorLabel
+	// 	}
+
+	// 	embedCtx.App.Srv().ChannelService().
+	// 		ChannelsByOption(&model.ChannelFilterOption{
+	// 			ShippingZoneID: squirrel.Eq{store.ShippingZoneChannelTableName + ".ShippingZoneID": shippingZoneIDs},
+	// 		})
+
+	// errorLabel:
+	// 	for idx := range shippingZoneIDs {
+	// 		res[idx] = &dataloader.Result[any]{Error: err}
+	// 	}
+	// 	return res
+	panic("not implemented")
+}

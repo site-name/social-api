@@ -2,30 +2,32 @@ package model
 
 import "time"
 
+type AttributeFilter struct {
+	Slug        string
+	Values      []string
+	ValuesRange *struct {
+		Gte *int32
+		Lte *int32
+	}
+	DateTime *struct {
+		Gte *time.Time
+		Lte *time.Time
+	}
+	Date *struct {
+		Gte *time.Time
+		Lte *time.Time
+	}
+	Boolean *bool
+}
+
 type ExportProductsFilterOptions struct {
-	Scope  string // all or ids or filter
+	Scope  string // "all" or "ids" or "filter"
 	Filter *struct {
-		IsPublished *bool
-		Collections []string
-		Categories  []string
-		HasCategory *bool
-		Attributes  []*struct {
-			Slug        string
-			Values      []string
-			ValuesRange *struct {
-				Gte *int32
-				Lte *int32
-			}
-			DateTime *struct {
-				Gte *time.Time
-				Lte *time.Time
-			}
-			Date *struct {
-				Gte *time.Time
-				Lte *time.Time
-			}
-			Boolean *bool
-		}
+		IsPublished       *bool
+		Collections       []string
+		Categories        []string
+		HasCategory       *bool
+		Attributes        []*AttributeFilter
 		StockAvailability *string
 		Stocks            *struct {
 			WarehouseIds []string

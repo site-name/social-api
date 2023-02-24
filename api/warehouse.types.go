@@ -514,7 +514,6 @@ func availableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(ctx cont
 		if appErr != nil {
 			err = appErr
 			goto errorLabel
-			break
 		}
 
 		for variantID, quantity := range quantityMap {
@@ -591,7 +590,6 @@ func stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(ct
 		if appErr != nil {
 			err = appErr
 			goto errorLabel
-			break
 		}
 
 		for _, variantID := range variantIDs {

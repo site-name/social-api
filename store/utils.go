@@ -7,6 +7,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/modules/slog"
 )
 
@@ -93,4 +94,19 @@ func IsQuotedWord(s string) bool {
 //	WildcardSearchTerm("HELLO") => "%hello%"
 func WildcardSearchTerm(term string) string {
 	return strings.ToLower("%" + term + "%")
+}
+
+// SqlizerIsEqualNull checks if given expr is like squirrel.Eq{"...": nil}
+func SqlizerIsEqualNull(expr squirrel.Sqlizer) bool {
+	eq, ok := expr.(squirrel.Eq)
+	if ok {
+		for _, value := range eq {
+			if value == nil {
+				return true
+			}
+		}
+		return false
+	}
+
+	return false
 }

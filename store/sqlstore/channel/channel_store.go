@@ -80,8 +80,15 @@ func (cs *SqlChannelStore) Get(id string) (*model.Channel, error) {
 }
 
 func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption) (string, []interface{}, error) {
+	selectFields := cs.ModelFields(store.ChannelTableName + ".")
+	if option.AnnotateHasOrders {
+		selectFields = append(selectFields, `EXISTS ( SELECT (1) AS "a" FROM Orders WHERE Orders.ChannelID = Channels.Id LIMIT 1 ) AS HasOrders`)
+	}
+	if option.SelectRelatedShippingZones {
+		selectFields = append(selectFields, cs.ShippingZone().ModelFields(store.ShippingZoneTableName+".")...)
+	}
 	query := cs.GetQueryBuilder().
-		Select(cs.ModelFields("")...).
+		Select(selectFields...).
 		From(store.ChannelTableName)
 
 	// parse options
@@ -95,7 +102,7 @@ func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption)
 		query = query.Where(option.Name)
 	}
 	if option.IsActive != nil {
-		query = query.Where(squirrel.Eq{"IsActive": *option.IsActive})
+		query = query.Where(squirrel.Eq{"Channels.IsActive": *option.IsActive})
 	}
 	if option.Slug != nil {
 		query = query.Where(option.Slug)
@@ -106,8 +113,25 @@ func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption)
 	if option.Extra != nil {
 		query = query.Where(option.Extra)
 	}
-	if option.AnnotateHasOrders {
-		query = query.Column(`EXISTS ( SELECT (1) AS "a" FROM Orders WHERE Orders.ChannelID = Channels.Id LIMIT 1 ) AS HasOrders`)
+
+	joined_ShippingZoneChannel := false
+
+	if option.ShippingZoneID != nil {
+		joinFun := query.InnerJoin
+		if store.SqlizerIsEqualNull(option.ShippingZoneID) {
+			joinFun = query.LeftJoin
+		}
+
+		query = joinFun(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ChannelID = Channels.Id").Where(option.ShippingZoneID)
+		joined_ShippingZoneChannel = true
+	}
+
+	if option.SelectRelatedShippingZones {
+		if !joined_ShippingZoneChannel {
+			query = query.
+				InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ChannelID = Channels.Id").
+				InnerJoin(store.ShippingZoneTableName + " ON ShippingZones.Id = ShippingZoneChannels.ShippingZoneID")
+		}
 	}
 
 	return query.ToSql()
@@ -120,14 +144,19 @@ func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*mode
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
 
-	var res model.Channel
-	var hasOrder bool
+	var (
+		res          model.Channel
+		hasOrder     bool
+		shippingZone model.ShippingZone
+		row          = cs.GetReplicaX().QueryRowX(queryString, args...)
+		scanFields   = cs.ScanFields(&res)
+	)
 
-	row := cs.GetReplicaX().QueryRowX(queryString, args...)
-
-	scanFields := cs.ScanFields(&res)
 	if option.AnnotateHasOrders {
 		scanFields = append(scanFields, &hasOrder)
+	}
+	if option.SelectRelatedShippingZones {
+		scanFields = append(scanFields, cs.ShippingZone().ScanFields(&shippingZone)...)
 	}
 	err = row.Scan(scanFields...)
 	if err != nil {
@@ -139,6 +168,9 @@ func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*mode
 
 	if option.AnnotateHasOrders {
 		res.SetHasOrders(hasOrder)
+	}
+	if option.SelectRelatedShippingZones {
+		res.SetShippingZones(model.ShippingZones{&shippingZone})
 	}
 
 	return &res, nil
@@ -157,13 +189,18 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 	}
 	defer rows.Close()
 
-	var res model.Channels
-	var hasOrder bool
-	var channel model.Channel
-	var scanFields = cs.ScanFields(&channel)
-
+	var (
+		res          model.Channels
+		hasOrder     bool
+		shippingZone model.ShippingZone
+		channel      model.Channel
+		scanFields   = cs.ScanFields(&channel)
+	)
 	if option.AnnotateHasOrders {
 		scanFields = append(scanFields, &hasOrder)
+	}
+	if option.SelectRelatedShippingZones {
+		scanFields = append(scanFields, cs.ShippingZone().ScanFields(&shippingZone)...)
 	}
 
 	for rows.Next() {
@@ -172,7 +209,12 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 			return nil, errors.Wrap(err, "failed to scan channel row")
 		}
 
-		channel.SetHasOrders(hasOrder)
+		if option.AnnotateHasOrders {
+			channel.SetHasOrders(hasOrder)
+		}
+		if option.SelectRelatedShippingZones {
+			// channel.SetShippingZones()
+		}
 		res = append(res, channel.DeepCopy())
 	}
 

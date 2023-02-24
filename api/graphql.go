@@ -81,8 +81,8 @@ func (api *API) graphql(c *web.Context, w http.ResponseWriter, r *http.Request) 
 
 	// Populate the context with required info.
 	reqCtx := r.Context()
-	channelID := r.URL.Query().Get("channel_id")
 	reqCtx = context.WithValue(reqCtx, WebCtx, c)
+	channelID := r.URL.Query().Get("channel_id")
 	if channelID != "" {
 		reqCtx = context.WithValue(reqCtx, ChannelIdCtx, channelID)
 	}

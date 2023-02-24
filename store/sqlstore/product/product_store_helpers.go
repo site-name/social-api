@@ -7,7 +7,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
@@ -31,21 +30,19 @@ func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, colle
 		return query
 	}
 
-	condition := ps.GetQueryBuilder().
+	condition := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) as "a"`).
 		Prefix("EXISTS (").
 		Suffix(")").
 		From(store.CollectionProductRelationTableName).
-		Where(squirrel.And{
-			squirrel.Eq{"ProductCollections.CollectionID": collectionIDs},
-			squirrel.Expr("ProductCollections.ProductID = Products.Id"),
-		}).
+		Where(squirrel.Eq{"ProductCollections.CollectionID": collectionIDs}).
+		Where("ProductCollections.ProductID = Products.Id").
 		Limit(1)
 
 	return query.Where(condition)
 }
 
-func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPublished bool, channelID interface{}) squirrel.SelectBuilder {
+func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPublished bool, channelID string) squirrel.SelectBuilder {
 	return query.Where(`
 		EXISTS (
 			SELECT
@@ -117,9 +114,9 @@ func (ps *SqlProductStore) filterVariantPrice(
 	priceRange struct {
 		Gte *float64
 		Lte *float64
-	}, channelID interface{},
+	}, channelID string,
 ) squirrel.SelectBuilder {
-	channelQuery := ps.GetQueryBuilder().
+	channelQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ChannelTableName).
@@ -127,7 +124,7 @@ func (ps *SqlProductStore) filterVariantPrice(
 		Limit(1).
 		Suffix(")")
 
-	productVariantChannelListingQuery := ps.GetQueryBuilder().
+	productVariantChannelListingQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ProductVariantChannelListingTableName).
@@ -145,7 +142,7 @@ func (ps *SqlProductStore) filterVariantPrice(
 			Where("ProductVariantChannelListings.PriceAmount >= ? OR ProductVariantChannelListings.PriceAmount IS NULL", *priceRange.Lte)
 	}
 
-	productVariantQuery := ps.GetQueryBuilder().
+	productVariantQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		From(store.ProductVariantTableName).
 		Prefix("EXISTS (").
@@ -163,9 +160,9 @@ func (ps *SqlProductStore) filterMinimalPrice(
 		Gte *float64
 		Lte *float64
 	},
-	channelID interface{},
+	channelID string,
 ) squirrel.SelectBuilder {
-	channelQuery := ps.GetQueryBuilder().
+	channelQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ChannelTableName).
@@ -173,7 +170,7 @@ func (ps *SqlProductStore) filterMinimalPrice(
 		Limit(1).
 		Suffix(")")
 
-	productChannelListingQuery := ps.GetQueryBuilder().
+	productChannelListingQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ProductChannelListingTableName).
@@ -225,21 +222,11 @@ type (
 )
 
 func (t timeRangeList) Slugs() []string {
-	res := []string{}
-	for _, item := range t {
-		res = append(res, item.Slug)
-	}
-
-	return res
+	return lo.Map(t, func(item timeRange, _ int) string { return item.Slug })
 }
 
 func (t booleanList) Slugs() []string {
-	res := []string{}
-	for _, item := range t {
-		res = append(res, item.Slug)
-	}
-
-	return res
+	return lo.Map(t, func(item booleanRange, _ int) string { return item.Slug })
 }
 
 type safeMap struct {
@@ -254,31 +241,13 @@ func (m *safeMap) write(key string, value []string) {
 	}
 }
 
-type attributeFilterInput struct {
-	Slug        string
-	Values      []string
-	ValuesRange *struct {
-		Gte *int32
-		Lte *int32
-	}
-	DateTime *struct {
-		Gte *timemodule.Time
-		Lte *timemodule.Time
-	}
-	Date *struct {
-		Gte *timemodule.Time
-		Lte *timemodule.Time
-	}
-	Boolean *bool
-}
-
 func (ps *SqlProductStore) filterAttributes(
 	query squirrel.SelectBuilder,
-	attributes []*attributeFilterInput,
+	attributes []*model.AttributeFilter,
 ) squirrel.SelectBuilder {
 
 	// filter out nil values
-	nonNilAttributes := lo.Filter(attributes, func(v *attributeFilterInput, _ int) bool { return v != nil })
+	nonNilAttributes := lo.Filter(attributes, func(v *model.AttributeFilter, _ int) bool { return v != nil })
 
 	if len(nonNilAttributes) == 0 {
 		return query
@@ -383,11 +352,10 @@ func (ps *SqlProductStore) filterAttributes(
 }
 
 func (ps *SqlProductStore) filterProductsByAttributesValues(query squirrel.SelectBuilder, queries *safeMap) squirrel.SelectBuilder {
-
 	for _, values := range queries.m {
 		orExpr := squirrel.Or{}
 
-		assigned_product_attribute_values := ps.GetQueryBuilder().
+		assignedProductAttributeValues := ps.GetQueryBuilder(squirrel.Question).
 			Select(`(1) AS "a"`).
 			Prefix("EXISTS (").
 			From(store.AssignedProductAttributeValueTableName).
@@ -396,18 +364,18 @@ func (ps *SqlProductStore) filterProductsByAttributesValues(query squirrel.Selec
 			Limit(1).
 			Suffix(")")
 
-		assigned_product_attributes := ps.GetQueryBuilder().
+		assignedProductAttributes := ps.GetQueryBuilder(squirrel.Question).
 			Select(`(1) AS "a"`).
 			Prefix("EXISTS (").
 			From(store.AssignedProductAttributeTableName).
-			Where(assigned_product_attribute_values).
+			Where(assignedProductAttributeValues).
 			Where("AssignedProductAttributes.ProductID = Products.Id").
 			Limit(1).
 			Suffix(")")
 
-		orExpr = append(orExpr, assigned_product_attributes)
+		orExpr = append(orExpr, assignedProductAttributes)
 
-		assigned_variant_attribute_values := ps.GetQueryBuilder().
+		ssignedVariantAttributeValues := ps.GetQueryBuilder(squirrel.Question).
 			Select(`(1) AS "a"`).
 			From(store.AssignedVariantAttributeValueTableName).
 			Prefix("EXISTS (").
@@ -416,20 +384,20 @@ func (ps *SqlProductStore) filterProductsByAttributesValues(query squirrel.Selec
 			Limit(1).
 			Suffix(")")
 
-		assigned_variant_attributes := ps.GetQueryBuilder().
+		assignedVariantAttributes := ps.GetQueryBuilder(squirrel.Question).
 			Select(`(1) AS "a"`).
 			From(store.AssignedVariantAttributeTableName).
 			Prefix("EXISTS (").
-			Where(assigned_variant_attribute_values).
+			Where(ssignedVariantAttributeValues).
 			Where("AssignedVariantAttributes.VariantID = ProductVariants.Id").
 			Limit(1).
 			Suffix(")")
 
-		productVariants := ps.GetQueryBuilder().
+		productVariants := ps.GetQueryBuilder(squirrel.Question).
 			Select(`(1) AS "a"`).
 			From(store.ProductVariantTableName).
 			Prefix("EXISTS (").
-			Where(assigned_variant_attributes).
+			Where(assignedVariantAttributes).
 			Where("ProductVariants.ProductID = Products.Id").
 			Limit(1).
 			Suffix(")")
@@ -490,7 +458,7 @@ func (ps *SqlProductStore) cleanProductAttributesFilterInput(filterValue valueLi
 }
 
 func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue valueRangeList, queries *safeMap) error {
-	attributeQuery := ps.GetQueryBuilder().
+	attributeQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.AttributeTableName).
@@ -687,7 +655,7 @@ func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder,
 		ReturnQueryOnly: true,
 	})
 
-	productVariantIDsQuery := ps.GetQueryBuilder().
+	productVariantIDsQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select("Stocks.ProductVariantID").
 		Prefix("ProductVariants.Id IN (").
 		From(store.StockTableName).
@@ -707,7 +675,7 @@ func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder,
 		)`).
 		Suffix(")")
 
-	productVariantSelect := ps.GetQueryBuilder().
+	productVariantSelect := ps.GetQueryBuilder(squirrel.Question).
 		Select("ProductVariants.ProductID").
 		Prefix(prefix).
 		From(store.ProductVariantTableName).
@@ -784,16 +752,13 @@ func (ps *SqlProductStore) filterQuantity(
 		Where(squirrel.Eq{"ProductVariants.ProductID": products.IDs()})
 
 	if len(warehouseIDs) > 0 {
-		warehouseIDIfaces := []interface{}{warehouseIDs}
-
 		productVariantQuery = productVariantQuery.
 			Column(`SUM (Stocks.Quantity) FILTER (
 				WHERE	Stocks.WarehouseID IN (`+squirrel.Placeholders(len(warehouseIDs))+`)
-			) AS TotalQuantity`, warehouseIDIfaces...)
+			) AS TotalQuantity`, lo.Map(warehouseIDs, func(item string, _ int) any { return item })...)
 
 	} else {
-		productVariantQuery = productVariantQuery.
-			Column(`SUM (Stocks.Quantity) AS TotalQuantity`)
+		productVariantQuery = productVariantQuery.Column(`SUM (Stocks.Quantity) AS TotalQuantity`)
 	}
 
 	productVariantQuery = productVariantQuery.
@@ -827,19 +792,20 @@ func (ps *SqlProductStore) filterQuantity(
 }
 
 func (ps *SqlProductStore) filterGiftCard(query squirrel.SelectBuilder, value bool) squirrel.SelectBuilder {
+	prefix := "EXISTS ("
+	if !value {
+		prefix = "NOT EXISTS ("
+	}
 	productTypeFilter := ps.GetQueryBuilder().
 		Select(`(1) AS "a"`).
+		Prefix(prefix).
 		From(store.ProductTypeTableName).
 		Where("ProductTypes.Kind = ?", model.GIFT_CARD).
 		Where("ProductTypes.Id = Products.ProductTypeID").
 		Limit(1).
 		Suffix(")")
 
-	if value {
-		return query.Where(productTypeFilter.Prefix("EXISTS ("))
-	}
-
-	return query.Where(productTypeFilter.Prefix("NOT EXISTS ("))
+	return query.Where(productTypeFilter)
 }
 
 func (ps *SqlProductStore) filterProductIDs(query squirrel.SelectBuilder, productIDs []string) squirrel.SelectBuilder {
@@ -851,12 +817,17 @@ func (ps *SqlProductStore) filterProductIDs(query squirrel.SelectBuilder, produc
 }
 
 func (ps *SqlProductStore) filterHasPreorderedVariants(query squirrel.SelectBuilder, value bool) squirrel.SelectBuilder {
-	variantQuery := ps.GetQueryBuilder().
+	prefix := "EXISTS ("
+	if !value {
+		prefix = "NOT EXISTS ("
+	}
+	variantQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
+		Prefix(prefix).
 		From(store.ProductVariantTableName).
 		Where(
-			`ProductVariants.IsPreOrder = true
-			AND ( 
+			`ProductVariants.IsPreOrder
+			AND (
 				ProductVariants.PreorderEndDate IS NULL 
 				OR ProductVariants.PreorderEndDate > ? 
 			)
@@ -866,11 +837,7 @@ func (ps *SqlProductStore) filterHasPreorderedVariants(query squirrel.SelectBuil
 		Limit(1).
 		Suffix(")")
 
-	if value {
-		return query.Where(variantQuery.Prefix("EXISTS ("))
-	}
-
-	return query.Where(variantQuery.Prefix("NOT EXISTS ("))
+	return query.Where(variantQuery)
 }
 
 func (ps *SqlProductStore) filterSearch(query squirrel.SelectBuilder, value string) squirrel.SelectBuilder {

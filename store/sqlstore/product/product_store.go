@@ -2,12 +2,10 @@ package product
 
 import (
 	"database/sql"
-	"strings"
 	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
-	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -98,8 +96,7 @@ func (ps *SqlProductStore) Save(product *model.Product) (*model.Product, error) 
 func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption) (string, []interface{}, error) {
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields(store.ProductTableName + ".")...).
-		From(store.ProductTableName).
-		OrderBy(store.TableOrderingMap[store.ProductTableName])
+		From(store.ProductTableName)
 
 	// parse option
 	if option.Limit != nil {
@@ -113,10 +110,9 @@ func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption)
 	}
 	if option.ProductVariantID != nil {
 		// decide which type of join to use (LEFT or INNER)
-		var joinFunc func(join string, rest ...interface{}) squirrel.SelectBuilder = query.InnerJoin
+		joinFunc := query.InnerJoin
 
-		strExpr, _, _ := option.ProductVariantID.ToSql()
-		if strings.Contains(strings.ToUpper(strExpr), "IS NULL") {
+		if store.SqlizerIsEqualNull(option.ProductVariantID) {
 			joinFunc = query.LeftJoin
 		}
 
@@ -280,17 +276,17 @@ func (ps *SqlProductStore) channelQuery(channelSlug string, isActive *bool, comp
 	var channelActiveExpr string
 	if isActive != nil {
 		if *isActive {
-			channelActiveExpr = "Channels.IsActive"
+			channelActiveExpr = "Channels.IsActive AND "
 		} else {
-			channelActiveExpr = "NOT Channels.IsActive"
+			channelActiveExpr = "NOT Channels.IsActive AND "
 		}
 	}
 	return ps.
-		GetQueryBuilder().
+		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ChannelTableName).
-		Where(channelActiveExpr+" AND Channels.Slug = ? AND Channels.Id = ?.ChannelID", channelSlug, compareToTable).
+		Where(channelActiveExpr+"Channels.Slug = ? AND Channels.Id = ?.ChannelID", channelSlug, compareToTable).
 		Suffix(")").
 		Limit(1)
 }
@@ -299,25 +295,20 @@ func (ps *SqlProductStore) channelQuery(channelSlug string, isActive *bool, comp
 //
 // refer to ./product_store_doc.md (line 1)
 func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*model.Product, error) {
-
 	channelQuery := ps.channelQuery(channelSlug, model.NewPrimitive(true), store.ProductChannelListingTableName)
 
-	today := util.StartOfDay(timemodule.Now().UTC())
+	today := util.StartOfDay(timemodule.Now())
 
 	productChannelListingQuery := ps.
 		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ProductChannelListingTableName).
-		Where(squirrel.And{
-			squirrel.Or{
-				squirrel.LtOrEq{"ProductChannelListings.PublicationDate": today},
-				squirrel.Eq{"ProductChannelListings.PublicationDate": nil},
-			},
-			squirrel.Eq{"ProductChannelListings.IsPublished": true},
-			squirrel.Expr("ProductChannelListings.ProductID = Products.Id"),
-			channelQuery,
-		}).
+		Where(`(ProductChannelListings.PublicationDate <= ? OR 
+			ProductChannelListings.PublicationDate IS NULL)
+			AND ProductChannelListings.IsPublished
+			AND ProductChannelListings.ProductID = Products.Id`, today).
+		Where(channelQuery).
 		Suffix(")").
 		Limit(1)
 
@@ -325,8 +316,7 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*model.Produ
 		GetQueryBuilder().
 		Select("*").
 		From(store.ProductTableName).
-		Where(productChannelListingQuery).
-		OrderBy(store.TableOrderingMap[store.ProductTableName])
+		Where(productChannelListingQuery)
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
@@ -353,7 +343,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 	},
 	error,
 ) {
-	today := util.StartOfDay(timemodule.Now().UTC()) // start of day
+	today := util.StartOfDay(timemodule.Now()) // start of day
 
 	isPublishedColumnSelect := ps.GetQueryBuilder(squirrel.Question).
 		Select("ProductChannelListings.IsPublished").
@@ -378,7 +368,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 		From(store.ProductTableName).
 		Where(squirrel.Or{
 			squirrel.And{
-				squirrel.Expr("PublicationDate :: date > ?", today),
+				squirrel.Expr("PublicationDate::date > ?", today),
 				squirrel.Expr("IsPublished"),
 			},
 			squirrel.Expr("NOT IsPublished"),
@@ -409,12 +399,11 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 //
 // refer to ./product_store_doc.md (line 157)
 func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*model.Product, error) {
-
 	channelQuery := ps.channelQuery(channelSlug, model.NewPrimitive(true), store.ProductChannelListingTableName)
-	today := util.StartOfDay(timemodule.Now().UTC())
+	today := util.StartOfDay(timemodule.Now())
 
 	productChannelListingQuery := ps.
-		GetQueryBuilder().
+		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ProductChannelListingTableName).
@@ -433,7 +422,7 @@ func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*model.P
 	channelQuery = ps.channelQuery(channelSlug, model.NewPrimitive(true), store.ProductVariantChannelListingTableName)
 
 	productVariantChannelListingQuery := ps.
-		GetQueryBuilder().
+		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ProductVariantChannelListingTableName).
@@ -443,7 +432,7 @@ func (ps *SqlProductStore) PublishedWithVariants(channelSlug string) ([]*model.P
 		Limit(1)
 
 	productVariantQuery := ps.
-		GetQueryBuilder().
+		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ProductVariantTableName).
@@ -493,7 +482,7 @@ func (ps *SqlProductStore) VisibleToUserProducts(channelSlug string, requesterIs
 		} else {
 			channelQuery := ps.channelQuery(channelSlug, nil, store.ProductChannelListingTableName)
 			productChannelListingQuery := ps.
-				GetQueryBuilder().
+				GetQueryBuilder(squirrel.Question).
 				Select(`(1) AS "a"`).
 				Prefix("EXISTS (").
 				From(store.ProductChannelListingTableName).
@@ -563,100 +552,68 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder {
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields(store.ProductTableName + ".")...).
-		From(store.ProductTableName).
-		OrderBy("Products.CreateAt ASC")
+		From(store.ProductTableName)
 
-	if strings.EqualFold(input.Scope, "all") {
+	if input.Scope == "all" {
 		return query
 	}
-	if strings.EqualFold(input.Scope, "ids") {
+	if input.Scope == "ids" {
 		return query.Where(squirrel.Eq{"Products.Id": input.Ids})
 	}
 
-	var options = input.Filter
-	var channelID interface{}
-	if options.Channel != nil {
-		channelID = *options.Channel
+	var channelID string
+	if cID := input.Filter.Channel; cID != nil && model.IsValidId(*cID) {
+		channelID = *cID
 	}
 
-	// parse options
-	if options.IsPublished != nil {
-		query = ps.filterIsPublished(query, *options.IsPublished, channelID)
+	// parse input.Filter
+	if input.Filter.IsPublished != nil {
+		query = ps.filterIsPublished(query, *input.Filter.IsPublished, channelID)
 	}
-	if len(options.Collections) > 0 {
-		query = ps.filterCollections(query, options.Collections)
+	if len(input.Filter.Collections) > 0 {
+		query = ps.filterCollections(query, input.Filter.Collections)
 	}
-	if len(options.Categories) != 0 {
-		query = ps.filterCategories(query, options.Categories)
+	if len(input.Filter.Categories) != 0 {
+		query = ps.filterCategories(query, input.Filter.Categories)
 	}
-	if options.HasCategory != nil {
+	if input.Filter.HasCategory != nil {
 		// default to has no category
 		condition := "Products.CategoryID IS NULL"
 
-		if *options.HasCategory {
+		if *input.Filter.HasCategory {
 			condition = "Products.CategoryID IS NOT NULL"
 		}
 		query = query.Where(condition)
 	}
-	if options.Price != nil {
-		query = ps.filterVariantPrice(query, *options.Price, channelID)
+	if input.Filter.Price != nil {
+		query = ps.filterVariantPrice(query, *input.Filter.Price, channelID)
 	}
-	if options.MinimalPrice != nil {
-		query = ps.filterMinimalPrice(query, *options.MinimalPrice, channelID)
+	if input.Filter.MinimalPrice != nil {
+		query = ps.filterMinimalPrice(query, *input.Filter.MinimalPrice, channelID)
 	}
-	if len(options.Attributes) > 0 {
-		arg := lo.Map(
-			options.Attributes,
-			func(v *struct {
-				Slug        string
-				Values      []string
-				ValuesRange *struct {
-					Gte *int32
-					Lte *int32
-				}
-				DateTime *struct {
-					Gte *timemodule.Time
-					Lte *timemodule.Time
-				}
-				Date *struct {
-					Gte *timemodule.Time
-					Lte *timemodule.Time
-				}
-				Boolean *bool
-			}, _ int) *attributeFilterInput {
-
-				return &attributeFilterInput{
-					Slug:        v.Slug,
-					Values:      v.Values,
-					ValuesRange: v.ValuesRange,
-					DateTime:    v.DateTime,
-					Date:        v.Date,
-					Boolean:     v.Boolean,
-				}
-			})
-
-		query = ps.filterAttributes(query, arg)
+	if len(input.Filter.Attributes) > 0 {
+		query = ps.filterAttributes(query, input.Filter.Attributes)
 	}
-	if options.StockAvailability != nil {
-		query = ps.filterStockAvailability(query, *options.StockAvailability, channelID)
+	if input.Filter.StockAvailability != nil {
+		query = ps.filterStockAvailability(query, *input.Filter.StockAvailability, channelID)
 	}
-	if len(options.ProductTypes) > 0 {
-		query = ps.filterProductTypes(query, options.ProductTypes)
+	if len(input.Filter.ProductTypes) > 0 {
+		query = ps.filterProductTypes(query, input.Filter.ProductTypes)
 	}
-	if options.Stocks != nil {
-		query = ps.filterStocks(query, *options.Stocks)
+	if input.Filter.Stocks != nil {
+		query = ps.filterStocks(query, *input.Filter.Stocks)
 	}
-	if options.GiftCard != nil {
-		query = ps.filterGiftCard(query, *options.GiftCard)
+	if input.Filter.GiftCard != nil {
+		query = ps.filterGiftCard(query, *input.Filter.GiftCard)
 	}
-	if len(options.Ids) != 0 {
-		query = ps.filterProductIDs(query, options.Ids)
+	if len(input.Filter.Ids) != 0 {
+		query = ps.filterProductIDs(query, input.Filter.Ids)
 	}
-	if options.HasPreorderedVariants != nil {
-		query = ps.filterHasPreorderedVariants(query, *options.HasPreorderedVariants)
+	if input.Filter.HasPreorderedVariants != nil {
+		query = ps.filterHasPreorderedVariants(query, *input.Filter.HasPreorderedVariants)
 	}
-	if options.Search != nil {
-		query = ps.filterSearch(query, *options.Search)
+	if input.Filter.Search != nil {
+		query = ps.filterSearch(query, *input.Filter.Search)
 	}
 	return query
 }
