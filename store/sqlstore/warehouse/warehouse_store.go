@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
@@ -166,7 +167,7 @@ func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*
 	}
 
 	if option.SelectRelatedAddress {
-		res.Address = address.DeepCopy()
+		res.SetAddress(&address)
 	}
 
 	// check if we need to prefetch shipping zones:
@@ -176,35 +177,21 @@ func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*
 		queryString, args, err := ws.GetQueryBuilder().
 			Select(ws.ShippingZone().ModelFields(store.ShippingZoneTableName+".")...).
 			From(store.ShippingZoneTableName).
-			InnerJoin(store.WarehouseShippingZoneTableName+" ON (ShippingZones.Id = WarehouseShippingZones.ShippingZoneID)").
+			InnerJoin(store.WarehouseShippingZoneTableName+" ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
 			Where("WarehouseShippingZones.WarehouseID = ?", res.Id).
 			ToSql()
 
 		if err != nil {
-			return nil, errors.Wrap(err, "GetByOption_ToSql")
+			return nil, errors.Wrap(err, "GetByOption_Warehouse_ToSql")
 		}
 
-		rows, err := ws.GetReplicaX().QueryX(queryString, args...)
+		var shippingZones model.ShippingZones
+		err = ws.GetReplicaX().Select(&shippingZones, queryString, args...)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to find shipping zones related to returning warehouse")
-		}
-		var (
-			shippingZone model.ShippingZone
-			scanFields   = ws.ShippingZone().ScanFields(&shippingZone)
-		)
-
-		for rows.Next() {
-			err = rows.Scan(scanFields...)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to scan a row of shipping zone")
-			}
-
-			res.ShippingZones = append(res.ShippingZones, shippingZone.DeepCopy())
+			return nil, errors.Wrap(err, "failed to find shipping zones by warehouse ids")
 		}
 
-		if err = rows.Close(); err != nil {
-			return nil, errors.Wrap(err, "failed to close rows of shipping zones")
-		}
+		res.SetShippingZones(shippingZones)
 	}
 
 	return &res, nil
@@ -223,7 +210,6 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 
 	var (
 		returningWarehouses model.Warehouses
-		warehousesMap       = map[string]*model.WareHouse{} // keys are warehouse IDs
 		wareHouse           model.WareHouse
 		address             model.Address
 		scanFields          = wh.ScanFields(&wareHouse)
@@ -231,20 +217,17 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 	if option.SelectRelatedAddress {
 		scanFields = append(scanFields, wh.Address().ScanFields(&address)...)
 	}
+
 	for rows.Next() {
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row of warehouse and address")
 		}
 
-		copiedWarehouse := wareHouse.DeepCopy()
-
 		if option.SelectRelatedAddress {
-			copiedWarehouse.Address = address.DeepCopy()
+			wareHouse.SetAddress(&address) // no need deepcopy address here yet
 		}
-
-		returningWarehouses = append(returningWarehouses, copiedWarehouse)
-		warehousesMap[wareHouse.Id] = copiedWarehouse
+		returningWarehouses = append(returningWarehouses, wareHouse.DeepCopy())
 	}
 
 	if err = rows.Close(); err != nil {
@@ -255,10 +238,10 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 	if option.PrefetchShippingZones && len(returningWarehouses) > 0 {
 		query, args, err = wh.GetQueryBuilder().
 			Select(wh.ShippingZone().ModelFields(store.ShippingZoneTableName + ".")...).
-			Column(squirrel.Alias(squirrel.Expr("WarehouseShippingZones.WarehouseID"), "PrefetchRelatedWarehouseID")). // <- this column selection helps determine which shipping zone is related to which warehouse
+			Column("WarehouseShippingZones.WarehouseID AS PrefetchRelatedWarehouseID"). // <- this column selection helps determine which shipping zone is related to which warehouse
 			From(store.ShippingZoneTableName).
-			InnerJoin(store.WarehouseShippingZoneTableName + " ON (ShippingZones.Id = WarehouseShippingZones.ShippingZoneID)").
-			Where(squirrel.Eq{"WarehouseShippingZones.WarehouseID": returningWarehouses.IDs()}).
+			InnerJoin(store.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
+			Where(squirrel.Eq{"PrefetchRelatedWarehouseID": returningWarehouses.IDs()}).
 			ToSql()
 		if err != nil {
 			return nil, errors.Wrap(err, "FilerByOption_ToSql")
@@ -269,9 +252,10 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 			return nil, errors.Wrap(err, "failed to find shipping zones of warehouses")
 		}
 		var (
-			shippingZone model.ShippingZone
-			warehouseID  string
-			scanFields   = append(wh.ShippingZone().ScanFields(&shippingZone), &warehouseID)
+			warehousesMap      = lo.SliceToMap(returningWarehouses, func(w *model.WareHouse) (string, *model.WareHouse) { return w.Id, w })
+			shippingZone       model.ShippingZone
+			relatedWarehouseID string
+			scanFields         = append(wh.ShippingZone().ScanFields(&shippingZone), &relatedWarehouseID)
 		)
 
 		for rows.Next() {
@@ -280,8 +264,8 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 				return nil, errors.Wrap(err, "failed to scan a row of shipping zone and warehouse id")
 			}
 
-			if warehousesMap[warehouseID] != nil {
-				warehousesMap[warehouseID].ShippingZones = append(warehousesMap[warehouseID].ShippingZones, shippingZone.DeepCopy())
+			if warehousesMap[relatedWarehouseID] != nil {
+				warehousesMap[relatedWarehouseID].AppendShippingZone(shippingZone.DeepCopy())
 			}
 		}
 
@@ -296,11 +280,11 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 // WarehouseByStockID returns 1 warehouse by given stock id
 func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, error) {
 	var res model.WareHouse
-	err := ws.GetReplicaX().Get(
+	err := ws.GetReplicaX().Select(
 		&res,
 		`SELECT `+ws.ModelFields(store.WarehouseTableName+".").Join(",")+`
-		FROM `+store.StockTableName+`
-		INNER JOIN `+store.WarehouseTableName+` ON Stocks.WarehouseID = Warehouses.Id
+		FROM `+store.WarehouseTableName+`
+		INNER JOIN `+store.StockTableName+` ON Stocks.WarehouseID = Warehouses.Id
 		WHERE Stocks.Id = ?`,
 		stockID,
 	)

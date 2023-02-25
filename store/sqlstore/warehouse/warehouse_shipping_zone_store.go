@@ -109,3 +109,27 @@ func (s *SqlWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryC
 
 	return res, nil
 }
+
+func (s *SqlWarehouseShippingZoneStore) FilterByOptions(options *model.WarehouseShippingZoneFilterOption) ([]*model.WarehouseShippingZone, error) {
+	query := s.GetQueryBuilder().Select("*").From(store.WarehouseShippingZoneTableName)
+
+	if options.WarehouseID != nil {
+		query = query.Where(options.WarehouseID)
+	}
+	if options.ShippingZoneID != nil {
+		query = query.Where(options.ShippingZoneID)
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.WarehouseShippingZone
+	err = s.GetReplicaX().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find warehouse shipping zones by given options")
+	}
+
+	return res, nil
+}

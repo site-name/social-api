@@ -153,7 +153,6 @@ func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result
 	for _, wh := range warehouses {
 		warehouseMap[wh.Id] = wh
 	}
-
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.WareHouse]{Data: warehouseMap[id]}
 	}
@@ -162,6 +161,60 @@ func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result
 errorLabel:
 	for i := range ids {
 		res[i] = &dataloader.Result[*model.WareHouse]{Error: err}
+	}
+	return res
+}
+
+func warehousesByShippingZoneIDLoader(ctx context.Context, shippingZoneIDs []string) []*dataloader.Result[model.Warehouses] {
+	var (
+		res                    = make([]*dataloader.Result[model.Warehouses], len(shippingZoneIDs))
+		appErr                 *model.AppError
+		warehouses             model.Warehouses
+		warehouseShippingZones []*model.WarehouseShippingZone
+		warehouseMap           = map[string]*model.WareHouse{} // keys are shipping zone ids
+		shippingZoneWarehouses = map[string]model.Warehouses{} // keys are shipping zone ids
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	warehouses, appErr = embedCtx.App.Srv().
+		WarehouseService().
+		WarehousesByOption(&model.WarehouseFilterOption{
+			ShippingZonesId: squirrel.Eq{store.WarehouseShippingZoneTableName + ".ShippingZoneID": shippingZoneIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	warehouseShippingZones, err = embedCtx.App.Srv().Store.WarehouseShippingZone().
+		FilterByOptions(&model.WarehouseShippingZoneFilterOption{
+			ShippingZoneID: squirrel.Eq{store.WarehouseShippingZoneTableName + ".ShippingZoneID": shippingZoneIDs},
+		})
+	if err != nil {
+		goto errorLabel
+	}
+
+	for _, warehouse := range warehouses {
+		warehouseMap[warehouse.Id] = warehouse
+	}
+	for _, rel := range warehouseShippingZones {
+		warehouse, ok := warehouseMap[rel.WarehouseID]
+		if ok {
+			shippingZoneWarehouses[rel.ShippingZoneID] = append(shippingZoneWarehouses[rel.ShippingZoneID], warehouse)
+		}
+	}
+	for idx, id := range shippingZoneIDs {
+		res[idx] = &dataloader.Result[model.Warehouses]{Data: shippingZoneWarehouses[id]}
+	}
+	return res
+
+errorLabel:
+	for i := range shippingZoneIDs {
+		res[i] = &dataloader.Result[model.Warehouses]{Error: err}
 	}
 	return res
 }

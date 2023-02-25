@@ -54,9 +54,8 @@ type ChannelFilterOption struct {
 	Slug     squirrel.Sqlizer
 	Currency squirrel.Sqlizer
 
-	ShippingZoneID             squirrel.Sqlizer // INNER/LEFT JOIN ChannelShippingZones ON ... WHERE ChannelShippingZones.ShippingZoneID ...
-	SelectRelatedShippingZones bool
-	AnnotateHasOrders          bool // to check if there are at least 1 order associated to this channel
+	ShippingZoneID    squirrel.Sqlizer // INNER/LEFT JOIN ChannelShippingZones ON ... WHERE ChannelShippingZones.ShippingZoneID ...
+	AnnotateHasOrders bool             // to check if there are at least 1 order associated to this channel
 
 	Extra squirrel.Sqlizer
 }

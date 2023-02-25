@@ -9692,6 +9692,24 @@ func (s *OpenTracingLayerWarehouseShippingZoneStore) FilterByCountryCodeAndChann
 	return result, err
 }
 
+func (s *OpenTracingLayerWarehouseShippingZoneStore) FilterByOptions(options *model.WarehouseShippingZoneFilterOption) ([]*model.WarehouseShippingZone, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseShippingZoneStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WarehouseShippingZoneStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *model.WarehouseShippingZone) (*model.WarehouseShippingZone, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseShippingZoneStore.Save")

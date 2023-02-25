@@ -94,6 +94,7 @@ var (
 	ChannelByCheckoutLineIDLoader  = dataloader.NewBatchedLoader(channelByCheckoutLineIDLoader, dataloader.WithBatchCapacity[string, *model.Channel](batchCapacity))
 	ChannelByOrderLineIdLoader     = dataloader.NewBatchedLoader(channelByOrderLineIdLoader, dataloader.WithBatchCapacity[string, *model.Channel](batchCapacity))
 	ChannelWithHasOrdersByIdLoader = dataloader.NewBatchedLoader(channelWithHasOrdersByIdLoader, dataloader.WithBatchCapacity[string, *model.Channel](batchCapacity))
+	ChannelsByShippingZoneIdLoader = dataloader.NewBatchedLoader(channelsByShippingZoneIdLoader, dataloader.WithBatchCapacity[string, []*model.Channel](batchCapacity))
 
 	// shipping
 	ShippingZoneByIdLoader         = dataloader.NewBatchedLoader(shippingZoneByIdLoader, dataloader.WithBatchCapacity[string, *model.ShippingZone](batchCapacity))
@@ -105,6 +106,8 @@ var (
 	PostalCodeRulesByShippingMethodIdLoader                            = dataloader.NewBatchedLoader(postalCodeRulesByShippingMethodIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethodPostalCodeRule](batchCapacity))
 	ShippingMethodChannelListingByShippingMethodIdLoader               = dataloader.NewBatchedLoader(shippingMethodChannelListingByShippingMethodIdLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethodChannelListing](batchCapacity))
 	ExcludedProductByShippingMethodIDLoader                            = dataloader.NewBatchedLoader(excludedProductByShippingMethodIDLoader, dataloader.WithBatchCapacity[string, []*model.Product](batchCapacity))
+	// NOTE: keys have format of shippingZoneID__channelID
+	ShippingMethodsByShippingZoneIdAndChannelSlugLoader = dataloader.NewBatchedLoader(shippingMethodsByShippingZoneIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethod](batchCapacity))
 
 	// discount
 	DiscountsByDateTimeLoader                           = dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity))
@@ -142,6 +145,7 @@ var (
 	//
 	// NOTE: keys have format of variantID__countryCode__channelID
 	AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader = dataloader.NewBatchedLoader(availableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader, dataloader.WithBatchCapacity[string, int](batchCapacity))
+	WarehousesByShippingZoneIDLoader                                   = dataloader.NewBatchedLoader(warehousesByShippingZoneIDLoader, dataloader.WithBatchCapacity[string, model.Warehouses](batchCapacity))
 
 	// menu
 	MenuByIdLoader              = dataloader.NewBatchedLoader(menuByIdLoader, dataloader.WithBatchCapacity[string, *model.Menu](batchCapacity))

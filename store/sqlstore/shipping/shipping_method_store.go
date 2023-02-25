@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
@@ -78,16 +79,9 @@ func (s *SqlShippingMethodStore) Upsert(method *model.ShippingMethod) (*model.Sh
 
 // Get finds and returns a shipping method with given id
 func (s *SqlShippingMethodStore) Get(methodID string) (*model.ShippingMethod, error) {
-	var res model.ShippingMethod
-	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShippingMethodTableName+" WHERE Id = ?", methodID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ShippingMethodTableName, methodID)
-		}
-		return nil, errors.Wrapf(err, "failed to find shipping method with id=%s", methodID)
-	}
-
-	return &res, nil
+	return s.GetbyOption(&model.ShippingMethodFilterOption{
+		Id: squirrel.Eq{store.ShippingMethodTableName + ".Id": methodID},
+	})
 }
 
 // ApplicableShippingMethods finds all shipping method for given checkout
@@ -101,7 +95,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 	selectFields := append(s.ModelFields(store.ShippingMethodTableName+"."), s.ShippingZone().ModelFields(store.ShippingZoneTableName+".")...)
 	selectFields = append(selectFields, s.ShippingMethodPostalCodeRule().ModelFields(store.ShippingMethodPostalCodeRuleTableName+".")...)
 
-	priceAmount, _ := price.Amount.Float64()
+	priceAmount := price.Amount.InexactFloat64()
 
 	params := map[string]interface{}{
 		"ChannelID":               channelID,
@@ -118,11 +112,10 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 	// check if productIDs is provided:
 	var forExcludedProductQuery string
 	if len(productIDs) > 0 {
-		forExcludedProductQuery = `
-		AND NOT (
+		forExcludedProductQuery = `AND NOT (
 			EXISTS(
 				SELECT
-					(1) AS a
+					(1) AS "a"
 				FROM
 					ShippingMethodExcludedProducts
 				WHERE (
@@ -232,12 +225,10 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 	defer rows.Close()
 
 	var (
-		results []*model.ShippingMethod
-		meetMap = map[string]struct{}{}
-
-		shippingMethod model.ShippingMethod
-		shippingZone   model.ShippingZone
-		postalCodeRule model.ShippingMethodPostalCodeRule
+		shippingMethodMeetMap = map[string]*model.ShippingMethod{}
+		shippingMethod        model.ShippingMethod
+		shippingZone          model.ShippingZone
+		postalCodeRule        model.ShippingMethodPostalCodeRule
 	)
 	scanFields := s.ScanFields(&shippingMethod)
 	scanFields = append(scanFields, s.ShippingZone().ScanFields(&shippingZone)...)
@@ -249,27 +240,14 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 			return nil, errors.Wrap(err, "failed to scan row")
 		}
 
-		var copyShippingMethod *model.ShippingMethod = nil
-
-		if _, exist := meetMap[shippingMethod.Id]; !exist {
-			copyShippingMethod := shippingMethod.DeepCopy()
-			results = append(results, copyShippingMethod)
-
-			meetMap[shippingMethod.Id] = struct{}{}
+		if _, exist := shippingMethodMeetMap[shippingMethod.Id]; !exist {
+			shippingMethodMeetMap[shippingMethod.Id] = shippingMethod.DeepCopy()
 		}
-
-		if _, exist := meetMap[shippingZone.Id]; !exist && copyShippingMethod != nil {
-			copyShippingMethod.ShippingZones = append(copyShippingMethod.ShippingZones, shippingZone.DeepCopy())
-			meetMap[shippingZone.Id] = struct{}{}
-		}
-
-		if _, exist := meetMap[postalCodeRule.Id]; !exist && copyShippingMethod != nil {
-			copyShippingMethod.ShippingMethodPostalCodeRules = append(copyShippingMethod.ShippingMethodPostalCodeRules, postalCodeRule.DeepCopy())
-			meetMap[postalCodeRule.Id] = struct{}{}
-		}
+		shippingMethodMeetMap[shippingMethod.Id].AppendShippingMethodPostalCodeRule(postalCodeRule.DeepCopy())
+		shippingMethodMeetMap[shippingMethod.Id].AppendShippingZone(shippingZone.DeepCopy())
 	}
 
-	return results, nil
+	return lo.Values(shippingMethodMeetMap), nil
 }
 
 func (ss *SqlShippingMethodStore) commonQueryBuilder(options *model.ShippingMethodFilterOption) squirrel.SelectBuilder {

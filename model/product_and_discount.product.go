@@ -101,7 +101,6 @@ func (p *Product) WeightString() string {
 	}
 
 	u := p.WeightUnit
-
 	if measurement.WEIGHT_UNIT_STRINGS[u] == "" {
 		u = measurement.G
 	}

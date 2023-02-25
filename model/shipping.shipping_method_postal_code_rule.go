@@ -30,6 +30,16 @@ type ShippingMethodPostalCodeRule struct {
 	InclusionType    string `json:"inclusion_type"`
 }
 
+type ShippingMethodPostalCodeRules []*ShippingMethodPostalCodeRule
+
+func (rs ShippingMethodPostalCodeRules) DeepCopy() ShippingMethodPostalCodeRules {
+	res := make(ShippingMethodPostalCodeRules, len(rs))
+	for idx, rule := range rs {
+		res[idx] = rule.DeepCopy()
+	}
+	return res
+}
+
 type ShippingMethodPostalCodeRuleFilterOptions struct {
 	Id               squirrel.Sqlizer
 	ShippingMethodID squirrel.Sqlizer

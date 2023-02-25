@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
+	"github.com/samber/lo"
 )
 
 // max lengths for some warehouse's fields
@@ -39,8 +40,8 @@ type WareHouse struct {
 	IsPrivate             *bool                          `json:"is_private"`               // default *true
 	ModelMetadata
 
-	Address       *Address        `json:"-" db:"-"` // this field hold data from select related queries
-	ShippingZones []*ShippingZone `json:"-" db:"-"` // this field hold data from prefetch_related queries
+	address       *Address      `db:"-"` // this field hold data from select related queries
+	shippingZones ShippingZones `db:"-"` // this field hold data from prefetch_related queries
 }
 
 // WarehouseFilterOption is used to build squirrel queries
@@ -50,26 +51,38 @@ type WarehouseFilterOption struct {
 	Slug                   squirrel.Sqlizer
 	AddressID              squirrel.Sqlizer
 	Email                  squirrel.Sqlizer
-	ShippingZonesCountries squirrel.Sqlizer // inner join warehouseShippingZones ON (...) INNER JOIN shippingZones ON (...)
-	ShippingZonesId        squirrel.Sqlizer // inner join warehouseShippingZones ON (...) INNER JOIN shippingZones ON (...)
+	ShippingZonesCountries squirrel.Sqlizer // INNER JOIN warehouseShippingZones ON (...) INNER JOIN shippingZones ON (...) WHERE ShippingZones.Countries ...
+	ShippingZonesId        squirrel.Sqlizer // INNER JOIN warehouseShippingZones ON (...) INNER JOIN shippingZones ON (...) WHERE ShippingZones.Id ...
 
 	SelectRelatedAddress  bool // set true if you want it to attach the `Address` property to returning warehouse(s)
 	PrefetchShippingZones bool // set true if you want it to find all shipping zones of found warehouses also
 	Distinct              bool // SELECT DISTINCT
 }
 
+func (w *WareHouse) GetAddress() *Address {
+	return w.address
+}
+
+func (w *WareHouse) SetAddress(a *Address) {
+	w.address = a
+}
+
+func (w *WareHouse) GetShippingZones() ShippingZones {
+	return w.shippingZones
+}
+
+func (w *WareHouse) SetShippingZones(s ShippingZones) {
+	w.shippingZones = s
+}
+
+func (w *WareHouse) AppendShippingZone(s *ShippingZone) {
+	w.shippingZones = append(w.shippingZones, s)
+}
+
 type Warehouses []*WareHouse
 
 func (ws Warehouses) IDs() []string {
-	res := []string{}
-
-	for _, warehouse := range ws {
-		if warehouse != nil {
-			res = append(res, warehouse.Id)
-		}
-	}
-
-	return res
+	return lo.Map(ws, func(w *WareHouse, _ int) string { return w.Id })
 }
 
 func (w *WareHouse) String() string {
@@ -145,13 +158,7 @@ func (w *WareHouse) DeepCopy() *WareHouse {
 	if w.IsPrivate != nil {
 		res.IsPrivate = NewPrimitive(*w.IsPrivate)
 	}
-	if w.Address != nil {
-		res.Address = w.Address.DeepCopy()
-	}
-
-	res.ShippingZones = make([]*ShippingZone, len(w.ShippingZones))
-	for idx, sz := range w.ShippingZones {
-		res.ShippingZones[idx] = sz.DeepCopy()
-	}
+	res.address = w.address.DeepCopy()
+	res.shippingZones = w.shippingZones.DeepCopy()
 	return &res
 }

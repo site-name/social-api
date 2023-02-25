@@ -84,9 +84,7 @@ func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption)
 	if option.AnnotateHasOrders {
 		selectFields = append(selectFields, `EXISTS ( SELECT (1) AS "a" FROM Orders WHERE Orders.ChannelID = Channels.Id LIMIT 1 ) AS HasOrders`)
 	}
-	if option.SelectRelatedShippingZones {
-		selectFields = append(selectFields, cs.ShippingZone().ModelFields(store.ShippingZoneTableName+".")...)
-	}
+
 	query := cs.GetQueryBuilder().
 		Select(selectFields...).
 		From(store.ChannelTableName)
@@ -114,24 +112,12 @@ func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption)
 		query = query.Where(option.Extra)
 	}
 
-	joined_ShippingZoneChannel := false
-
 	if option.ShippingZoneID != nil {
 		joinFun := query.InnerJoin
 		if store.SqlizerIsEqualNull(option.ShippingZoneID) {
 			joinFun = query.LeftJoin
 		}
-
 		query = joinFun(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ChannelID = Channels.Id").Where(option.ShippingZoneID)
-		joined_ShippingZoneChannel = true
-	}
-
-	if option.SelectRelatedShippingZones {
-		if !joined_ShippingZoneChannel {
-			query = query.
-				InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ChannelID = Channels.Id").
-				InnerJoin(store.ShippingZoneTableName + " ON ShippingZones.Id = ShippingZoneChannels.ShippingZoneID")
-		}
 	}
 
 	return query.ToSql()
@@ -145,19 +131,16 @@ func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*mode
 	}
 
 	var (
-		res          model.Channel
-		hasOrder     bool
-		shippingZone model.ShippingZone
-		row          = cs.GetReplicaX().QueryRowX(queryString, args...)
-		scanFields   = cs.ScanFields(&res)
+		res        model.Channel
+		hasOrder   bool
+		row        = cs.GetReplicaX().QueryRowX(queryString, args...)
+		scanFields = cs.ScanFields(&res)
 	)
 
 	if option.AnnotateHasOrders {
 		scanFields = append(scanFields, &hasOrder)
 	}
-	if option.SelectRelatedShippingZones {
-		scanFields = append(scanFields, cs.ShippingZone().ScanFields(&shippingZone)...)
-	}
+
 	err = row.Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -168,9 +151,6 @@ func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*mode
 
 	if option.AnnotateHasOrders {
 		res.SetHasOrders(hasOrder)
-	}
-	if option.SelectRelatedShippingZones {
-		res.SetShippingZones(model.ShippingZones{&shippingZone})
 	}
 
 	return &res, nil
@@ -190,17 +170,13 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 	defer rows.Close()
 
 	var (
-		res          model.Channels
-		hasOrder     bool
-		shippingZone model.ShippingZone
-		channel      model.Channel
-		scanFields   = cs.ScanFields(&channel)
+		res        model.Channels
+		hasOrder   bool
+		channel    model.Channel
+		scanFields = cs.ScanFields(&channel)
 	)
 	if option.AnnotateHasOrders {
 		scanFields = append(scanFields, &hasOrder)
-	}
-	if option.SelectRelatedShippingZones {
-		scanFields = append(scanFields, cs.ShippingZone().ScanFields(&shippingZone)...)
 	}
 
 	for rows.Next() {
@@ -211,9 +187,6 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 
 		if option.AnnotateHasOrders {
 			channel.SetHasOrders(hasOrder)
-		}
-		if option.SelectRelatedShippingZones {
-			// channel.SetShippingZones()
 		}
 		res = append(res, channel.DeepCopy())
 	}

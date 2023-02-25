@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -51,15 +50,13 @@ func SystemShippingMethodToGraphqlShippingMethod(m *model.ShippingMethod) *Shipp
 		Description:     JSONString(m.Description),
 		PrivateMetadata: MetadataToSlice(m.PrivateMetadata),
 		Metadata:        MetadataToSlice(m.Metadata),
+		Type:            model.NewPrimitive(ShippingMethodTypeEnum(m.Type)),
 		s:               m,
 		MinimumOrderWeight: &Weight{
 			Unit:  WeightUnitsEnum(m.WeightUnit),
 			Value: float64(m.MinimumOrderWeight),
 		},
 	}
-
-	type_ := ShippingMethodTypeEnum(m.Type)
-	res.Type = &type_
 
 	if m.MaximumOrderWeight != nil {
 		res.MaximumOrderWeight = &Weight{
@@ -259,43 +256,6 @@ func (s *ShippingMethod) ExcludedProducts(ctx context.Context, args struct {
 	return res, nil
 }
 
-func excludedProductByShippingMethodIDLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.Product] {
-	var (
-		res                              = make([]*dataloader.Result[[]*model.Product], len(ids))
-		shippingMethodExcludedProducts   []*model.ShippingMethodExcludedProduct
-		shippingMethodExcludedProductMap = map[string]model.Products{} // keys are shipping method ids
-	)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	shippingMethodExcludedProducts, err = embedCtx.App.Srv().Store.
-		ShippingMethodExcludedProduct().
-		FilterByOptions(&model.ShippingMethodExcludedProductFilterOptions{
-			SelectRelatedProduct: true,
-			ShippingMethodID:     squirrel.Eq{store.ShippingMethodExcludedProductTableName + ".ShippingMethodID": ids},
-		})
-	if err != nil {
-		err = model.NewAppError("excludedProductByShippingMethodIDLoader", "app.shipping.shipping_method_excluded_product_relations_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
-		goto errorLabel
-	}
-
-	for _, rel := range shippingMethodExcludedProducts {
-		shippingMethodExcludedProductMap[rel.ShippingMethodID] = append(shippingMethodExcludedProductMap[rel.ShippingMethodID], rel.GetProduct())
-	}
-	for idx, id := range ids {
-		res[idx] = &dataloader.Result[[]*model.Product]{Data: shippingMethodExcludedProductMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[[]*model.Product]{Error: err}
-	}
-	return res
-}
-
 // ---------------- shipping zone -------------------------
 
 type ShippingZone struct {
@@ -328,7 +288,7 @@ func SystemShippingZoneToGraphqlShippingZone(s *model.ShippingZone) *ShippingZon
 	}
 
 	if s.Countries != "" {
-		splitCountries := strings.FieldsFunc(s.Countries, func(r rune) bool { return r == ' ' || r == ',' })
+		splitCountries := strings.FieldsFunc(strings.TrimSpace(s.Countries), func(r rune) bool { return r == ' ' || r == ',' })
 
 		for _, code := range splitCountries {
 			res.Countries = append(res.Countries, &CountryDisplay{
@@ -376,35 +336,52 @@ func (s *ShippingZone) PriceRange(ctx context.Context) (*MoneyRange, error) {
 }
 
 func (s *ShippingZone) ShippingMethods(ctx context.Context) ([]*ShippingMethod, error) {
-	// channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
 
-	// if channelID != "" {
+	var shippingMethods []*model.ShippingMethod
+	if model.IsValidId(channelID) {
+		shippingMethods, err = ShippingMethodsByShippingZoneIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+channelID)()
+	} else {
+		shippingMethods, err = ShippingMethodsByShippingZoneIdLoader.Load(ctx, s.ID)()
+	}
 
-	// }
-	panic("not implemented")
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(shippingMethods, SystemShippingMethodToGraphqlShippingMethod), nil
 }
 
 func (s *ShippingZone) Warehouses(ctx context.Context) ([]*Warehouse, error) {
-	panic("not implemented")
+	warehouses, err := WarehousesByShippingZoneIDLoader.Load(ctx, s.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(warehouses, SystemWarehouseToGraphqlWarehouse), nil
 }
 
 func (s *ShippingZone) Channels(ctx context.Context) ([]*Channel, error) {
-	panic("not implemented")
+	channels, err := ChannelsByShippingZoneIdLoader.Load(ctx, s.ID)()
+	if err != nil {
+		return nil, err
+	}
 
+	return DataloaderResultMap(channels, SystemChannelToGraphqlChannel), nil
 }
 
 // ------------------
 type ShippingMethodChannelListing struct {
-	ID string `json:"id"`
-	// Channel           *Channel `json:"channel"`
+	ID                string `json:"id"`
 	MinimumOrderPrice *Money `json:"minimumOrderPrice"`
 	MaximumOrderPrice *Money `json:"maximumOrderPrice"`
 	Price             *Money `json:"price"`
+	s                 *model.ShippingMethodChannelListing
 
-	s *model.ShippingMethodChannelListing
+	// Channel           *Channel `json:"channel"`
 }
 
 func systemShippingMethodChannelListingToGraphqlShippingMethodChannelListing(s *model.ShippingMethodChannelListing) *ShippingMethodChannelListing {
@@ -436,27 +413,4 @@ func (s *ShippingMethodChannelListing) Channel(ctx context.Context) (*Channel, e
 		return nil, err
 	}
 	return SystemChannelToGraphqlChannel(channel), nil
-}
-
-func channelsByShippingZoneIdLoader(ctx context.Context, shippingZoneIDs []string) []*dataloader.Result[any] {
-	// 	var (
-	// 		res = make([]*dataloader.Result[any], len(shippingZoneIDs))
-	// 	)
-
-	// 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	// 	if err != nil {
-	// 		goto errorLabel
-	// 	}
-
-	// 	embedCtx.App.Srv().ChannelService().
-	// 		ChannelsByOption(&model.ChannelFilterOption{
-	// 			ShippingZoneID: squirrel.Eq{store.ShippingZoneChannelTableName + ".ShippingZoneID": shippingZoneIDs},
-	// 		})
-
-	// errorLabel:
-	// 	for idx := range shippingZoneIDs {
-	// 		res[idx] = &dataloader.Result[any]{Error: err}
-	// 	}
-	// 	return res
-	panic("not implemented")
 }

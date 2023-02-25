@@ -42,8 +42,36 @@ type ShippingMethod struct {
 	Description         StringInterface        `json:"description"`
 	ModelMetadata
 
-	ShippingZones                 []*ShippingZone                 `json:"-" db:"-"` // this field is used for holding prefetched related instances
-	ShippingMethodPostalCodeRules []*ShippingMethodPostalCodeRule `json:"-" db:"-"` // this field is used for holding prefetched related instances
+	shippingZones                 ShippingZones                 `db:"-"` // this field is used for holding prefetched related instances
+	shippingMethodPostalCodeRules ShippingMethodPostalCodeRules `db:"-"` // this field is used for holding prefetched related instances
+}
+
+func (s *ShippingMethod) GetShippingZones() ShippingZones {
+	return s.shippingZones
+}
+
+func (s *ShippingMethod) SetShippingZones(zones ShippingZones) {
+	s.shippingZones = zones
+}
+
+func (s *ShippingMethod) AppendShippingZone(zone *ShippingZone) {
+	if zone != nil {
+		s.shippingZones = append(s.shippingZones, zone)
+	}
+}
+
+func (s *ShippingMethod) GetshippingMethodPostalCodeRules() ShippingMethodPostalCodeRules {
+	return s.shippingMethodPostalCodeRules
+}
+
+func (s *ShippingMethod) SetshippingMethodPostalCodeRules(r ShippingMethodPostalCodeRules) {
+	s.shippingMethodPostalCodeRules = r
+}
+
+func (s *ShippingMethod) AppendShippingMethodPostalCodeRule(rule *ShippingMethodPostalCodeRule) {
+	if rule != nil {
+		s.shippingMethodPostalCodeRules = append(s.shippingMethodPostalCodeRules, rule)
+	}
 }
 
 // ShippingMethodFilterOption is used for filtering shipping methods
@@ -143,29 +171,16 @@ func (s *ShippingMethod) DeepCopy() *ShippingMethod {
 		res.MinimumDeliveryDays = NewPrimitive(*s.MinimumDeliveryDays)
 	}
 	if s.MinOrderWeight != nil {
-		res.MinOrderWeight = &measurement.Weight{s.MinOrderWeight.Amount, s.MinOrderWeight.Unit}
+		res.MinOrderWeight = &measurement.Weight{Amount: s.MinOrderWeight.Amount, Unit: s.MinOrderWeight.Unit}
 	}
 	if s.MaxOrderWeight != nil {
-		res.MaxOrderWeight = &measurement.Weight{s.MaxOrderWeight.Amount, s.MaxOrderWeight.Unit}
+		res.MaxOrderWeight = &measurement.Weight{Amount: s.MaxOrderWeight.Amount, Unit: s.MaxOrderWeight.Unit}
 	}
 	res.Description = s.Description.DeepCopy()
 	res.ModelMetadata = s.ModelMetadata.DeepCopy()
 
-	if len(s.ShippingZones) > 0 {
-		s.ShippingZones = make([]*ShippingZone, len(s.ShippingZones))
-
-		for idx, zone := range s.ShippingZones {
-			res.ShippingZones[idx] = zone.DeepCopy()
-		}
-	}
-
-	if len(s.ShippingMethodPostalCodeRules) > 0 {
-		res.ShippingMethodPostalCodeRules = make([]*ShippingMethodPostalCodeRule, len(s.ShippingMethodPostalCodeRules))
-
-		for idx, rule := range s.ShippingMethodPostalCodeRules {
-			res.ShippingMethodPostalCodeRules[idx] = rule.DeepCopy()
-		}
-	}
+	res.shippingZones = s.shippingZones.DeepCopy()
+	res.shippingMethodPostalCodeRules = s.shippingMethodPostalCodeRules.DeepCopy()
 
 	return &res
 }

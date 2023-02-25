@@ -44,6 +44,14 @@ func (s ShippingZones) IDs() []string {
 	return lo.Map(s, func(i *ShippingZone, _ int) string { return i.Id })
 }
 
+func (s ShippingZones) DeepCopy() ShippingZones {
+	res := make(ShippingZones, len(s))
+	for idx, shippingZone := range s {
+		res[idx] = shippingZone.DeepCopy()
+	}
+	return res
+}
+
 // RelativeWarehouseIDsFlat joins all `RelativeWarehouseIDs` fields of all shipping zones into single slice of strings
 //
 // E.g: [["a", "b"], ["c", "d"]] => ["a", "b", "c", "d"]

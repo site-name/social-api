@@ -25,17 +25,17 @@ func (s *ServiceCheckout) GetDeliveryMethodInfo(deliveryMethod interface{}, addr
 		}, nil
 
 	case *model.WareHouse:
-		if t.Address == nil && t.AddressID != nil {
+		address := t.GetAddress()
+		if address == nil && t.AddressID != nil {
 			var appErr *model.AppError
-
-			t.Address, appErr = s.srv.AccountService().AddressById(*t.AddressID)
+			address, appErr = s.srv.AccountService().AddressById(*t.AddressID)
 			if appErr != nil {
 				return nil, appErr
 			}
 		}
 		return &model.CollectionPointInfo{
 			DeliveryMethod:  *t,
-			ShippingAddress: t.Address,
+			ShippingAddress: address,
 		}, nil
 
 	default:
