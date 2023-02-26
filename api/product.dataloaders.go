@@ -441,8 +441,9 @@ func variantChannelListingByVariantIdAndChannelIdLoader(ctx context.Context, var
 	variantChannelListings, appErr = embedCtx.App.Srv().
 		ProductService().
 		ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
-			VariantID:   squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variantIDs},
-			PriceAmount: squirrel.NotEq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+			VariantID:                         squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variantIDs},
+			PriceAmount:                       squirrel.NotEq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+			AnnotatePreorderQuantityAllocated: true,
 		})
 	if appErr != nil {
 		err = appErr
@@ -926,7 +927,8 @@ func variantChannelListingByVariantIdLoader(ctx context.Context, variantIDs []st
 	variantChannelListings, appErr = embedCtx.App.Srv().
 		ProductService().
 		ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
-			VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variantIDs},
+			VariantID:                         squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variantIDs},
+			AnnotatePreorderQuantityAllocated: true,
 		})
 	if appErr != nil {
 		err = appErr

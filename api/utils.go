@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/pkg/errors"
@@ -22,6 +23,7 @@ var assets embed.FS
 
 // ErrorUnauthorized
 const ErrorUnauthorized = "api.unauthorized.app_error"
+const ErrorChannelIDQueryParamMissing = "api.channel_id.missing.app_error"
 
 // Unique type to hold our context.
 type CTXKey int
@@ -267,4 +269,17 @@ func (g *graphqlPaginator[T, K]) parse(apiName string) (data []T, hasPreviousPag
 		hasNextPage = true
 	}
 	return
+}
+
+func reportingPeriodToDate(period ReportingPeriod) time.Time {
+	now := time.Now()
+
+	switch period {
+	case ReportingPeriodToday:
+		return util.StartOfDay(now)
+	case ReportingPeriodThisMonth:
+		return util.StartOfMonth(now)
+	default:
+		return now
+	}
 }

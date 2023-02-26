@@ -34,7 +34,7 @@ type ProductVariant  {
   attributes(variantSelection: VariantAttributeScope): [SelectedAttribute!]!
   margin: Int
   quantityOrdered: Int
-  revenue(period: ReportingPeriod): TaxedMoney
+  revenue(period: ReportingPeriod!): TaxedMoney
   media: [ProductMedia!]
   translation(languageCode: LanguageCodeEnum!): ProductVariantTranslation
   digitalContent: DigitalContent
