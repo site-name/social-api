@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"net/http"
-	"sort"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -12,6 +11,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
@@ -326,12 +326,13 @@ func (s *ShippingZone) PriceRange(ctx context.Context) (*MoneyRange, error) {
 		return nil, nil
 	}
 
-	var prices model.Moneys = lo.Map(listings, func(l *model.ShippingMethodChannelListing, _ int) *goprices.Money { return l.GetTotal() })
-	sort.Sort(prices) // sort ascending order
+	var prices = lo.Map(listings, func(l *model.ShippingMethodChannelListing, _ int) *goprices.Money { return l.GetTotal() })
+	min, max := util.MinMaxMoneyInMoneySlice(prices)
 
 	return SystemMoneyRangeToGraphqlMoneyRange(&goprices.MoneyRange{
-		Start: prices[0],
-		Stop:  prices[len(prices)-1],
+		Start:    min,
+		Stop:     max,
+		Currency: min.Currency,
 	}), nil
 }
 

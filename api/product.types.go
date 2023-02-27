@@ -2,8 +2,14 @@ package api
 
 import (
 	"context"
+	"fmt"
+	"net/http"
+	"time"
 
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/web"
 )
 
 type Product struct {
@@ -19,8 +25,9 @@ type Product struct {
 	Rating          *float64        `json:"rating"`
 	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
 	Metadata        []*MetadataItem `json:"metadata"`
-	Channel         *string         `json:"channel"`
+	p               *model.Product
 
+	// Channel         *string         `json:"channel"`
 	// AvailableForPurchase   *Date           `json:"availableForPurchase"`
 	// IsAvailableForPurchase *bool           `json:"isAvailableForPurchase"`
 	// Attributes             []*SelectedAttribute `json:"attributes"`
@@ -54,7 +61,7 @@ func SystemProductToGraphqlProduct(p *model.Product) *Product {
 		Description:     JSONString(p.Description),
 		Metadata:        MetadataToSlice(p.Metadata),
 		PrivateMetadata: MetadataToSlice(p.PrivateMetadata),
-		Channel:         nil,
+		p:               p,
 	}
 	if p.Rating != nil {
 		res.Rating = model.NewPrimitive(float64(*p.Rating))
@@ -69,16 +76,66 @@ func SystemProductToGraphqlProduct(p *model.Product) *Product {
 	return res
 }
 
+func (p *Product) Channel(ctx context.Context) (*string, error) {
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &channelID, nil
+}
+
 func (p *Product) AvailableForPurchase(ctx context.Context) (*Date, error) {
-	panic("not implemented")
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+	if channelID == "" {
+		return nil, nil
+	}
+
+	productChannelListing, err := ProductChannelListingByProductIdAndChannelSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channelID))()
+	if err != nil {
+		return nil, err
+	}
+	if productChannelListing == nil {
+		return nil, nil
+	}
+	if productChannelListing.AvailableForPurchase == nil {
+		return nil, nil
+	}
+
+	return &Date{DateTime{*productChannelListing.AvailableForPurchase}}, nil
 }
 
 func (p *Product) IsAvailableForPurchase(ctx context.Context) (*bool, error) {
-	panic("not implemented")
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+	if channelID == "" {
+		return nil, nil
+	}
+
+	productChannelListing, err := ProductChannelListingByProductIdAndChannelSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channelID))()
+	if err != nil {
+		return nil, err
+	}
+	if productChannelListing == nil {
+		return nil, nil
+	}
+
+	available := productChannelListing.IsAvailableForPurchase()
+	return &available, nil
 }
 
 func (p *Product) ProductType(ctx context.Context) (*ProductType, error) {
-	panic("not implemented")
+	productType, err := ProductTypeByIdLoader.Load(ctx, p.p.ProductTypeID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemProductTypeToGraphqlProductType(productType), nil
 }
 
 func (p *Product) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*ProductTranslation, error) {
@@ -86,11 +143,63 @@ func (p *Product) Translation(ctx context.Context, args struct{ LanguageCode Lan
 }
 
 func (p *Product) Collections(ctx context.Context) ([]*Collection, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	hasProductPermission := embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.ProductPermissions...)
+
+	collections, err := CollectionsByProductIdLoader.Load(ctx, p.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	if hasProductPermission {
+		return DataloaderResultMap(collections, systemCollectionToGraphqlCollection), nil
+	}
+
+	keys := lo.Map(collections, func(c *model.Collection, _ int) string { return fmt.Sprintf("%s__%s", c.Id, channelID) })
+	collectionChannelListings, errs := CollectionChannelListingByCollectionIdAndChannelSlugLoader.LoadMany(ctx, keys)()
+	if len(errs) > 0 && errs[0] != nil {
+		return nil, errs[0]
+	}
+
+	channelListingsDict := map[string]*model.CollectionChannelListing{} // keys are collection ids
+	for _, listing := range collectionChannelListings {
+		if listing != nil {
+			channelListingsDict[listing.CollectionID] = listing
+		}
+	}
+
+	visibleCollections := lo.Filter(collections, func(c *model.Collection, _ int) bool {
+		listing, ok := channelListingsDict[c.Id]
+		return ok && listing != nil && listing.IsVisible()
+	})
+
+	return DataloaderResultMap(visibleCollections, systemCollectionToGraphqlCollection), nil
 }
 
 func (p *Product) ChannelListings(ctx context.Context) ([]*ProductChannelListing, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+		return nil, model.NewAppError("Product.ChannelListings", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	}
+
+	channelListings, err := ProductChannelListingByProductIdLoader.Load(ctx, p.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(channelListings, systemProductChannelListingToGraphqlProductChannelListing), nil
 }
 
 func (p *Product) Thumbnail(ctx context.Context, args struct{ Size *int32 }) (*Image, error) {
@@ -98,11 +207,29 @@ func (p *Product) Thumbnail(ctx context.Context, args struct{ Size *int32 }) (*I
 }
 
 func (p *Product) DefaultVariant(ctx context.Context) (*ProductVariant, error) {
-	panic("not implemented")
+	if p.p.DefaultVariantID == nil {
+		return nil, nil
+	}
+
+	variant, err := ProductVariantByIdLoader.Load(ctx, *p.p.DefaultVariantID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemProductVariantToGraphqlProductVariant(variant), nil
 }
 
 func (p *Product) Category(ctx context.Context) (*Category, error) {
-	panic("not implemented")
+	if p.p.CategoryID == nil {
+		return nil, nil
+	}
+
+	category, err := CategoryByIdLoader.Load(ctx, *p.p.CategoryID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return systemCategoryToGraphqlCategory(category), nil
 }
 
 func (p *Product) TaxType(ctx context.Context) (*TaxType, error) {
@@ -110,27 +237,185 @@ func (p *Product) TaxType(ctx context.Context) (*TaxType, error) {
 }
 
 func (p *Product) Pricing(ctx context.Context, args struct{ Address *AddressInput }) (*ProductPricingInfo, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+	if channelID == "" {
+		return nil, nil
+	}
+
+	discountInfos, err := DiscountsByDateTimeLoader.Load(ctx, time.Now())()
+	if err != nil {
+		return nil, err
+	}
+
+	channel, err := ChannelByIdLoader.Load(ctx, channelID)()
+	if err != nil {
+		return nil, err
+	}
+
+	productChannelLiting, err := ProductChannelListingByProductIdAndChannelSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channelID))()
+	if err != nil {
+		return nil, err
+	}
+
+	variants, err := ProductVariantsByProductIdLoader.Load(ctx, p.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	variantChannelListings, err := VariantsChannelListingByProductIdAndChannelSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channelID))()
+	if err != nil {
+		return nil, err
+	}
+	if len(variantChannelListings) == 0 {
+		return nil, nil
+	}
+
+	collections, err := CollectionsByProductIdLoader.Load(ctx, p.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	var countryCode string
+	if args.Address != nil && args.Address.Country != nil {
+		countryCode = string(*args.Address.Country)
+	}
+	if countryCode == "" {
+		countryCode = channel.DefaultCountry
+	}
+
+	localCurrency := util.GetCurrencyForCountry(countryCode)
+
+	panic("not implemented") // TODO: complete plugin manager before removeing this panic
+
+	availability, appErr := embedCtx.App.Srv().ProductService().GetProductAvailability(
+		*p.p,
+		productChannelLiting,
+		variants,
+		variantChannelListings,
+		collections,
+		discountInfos,
+		*channel,
+		nil,
+		countryCode,
+		localCurrency,
+	)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &ProductPricingInfo{
+		OnSale:                  &availability.OnSale,
+		Discount:                SystemTaxedMoneyToGraphqlTaxedMoney(availability.Discount),
+		DiscountLocalCurrency:   SystemTaxedMoneyToGraphqlTaxedMoney(availability.DiscountLocalCurrency),
+		PriceRange:              SystemTaxedMoneyRangeToGraphqlTaxedMoneyRange(availability.PriceRange),
+		PriceRangeUndiscounted:  SystemTaxedMoneyRangeToGraphqlTaxedMoneyRange(availability.PriceRangeUnDiscounted),
+		PriceRangeLocalCurrency: SystemTaxedMoneyRangeToGraphqlTaxedMoneyRange(availability.PriceRangeLocalCurrency),
+	}, nil
 }
 
 func (p *Product) IsAvailable(ctx context.Context, args struct{ Address *AddressInput }) (*bool, error) {
-	panic("not implemented")
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	var countryCode string
+	if args.Address != nil && args.Address.Country != nil {
+		countryCode = string(*args.Address.Country)
+	}
+
+	hasRequiredPermission := embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.ProductPermissions...)
+
+	productChannelListing, err := ProductChannelListingByProductIdAndChannelSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channelID))()
+	if err != nil {
+		return nil, err
+	}
+
+	if productChannelListing != nil && productChannelListing.IsAvailableForPurchase() {
+		// check variant availability:
+		var variants model.ProductVariants
+		if hasRequiredPermission && channelID == "" {
+			variants, err = ProductVariantsByProductIdLoader.Load(ctx, p.ID)()
+		} else if hasRequiredPermission && channelID != "" {
+			variants, err = ProductVariantsByProductIdAndChannel.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channelID))()
+		} else {
+			variants, err = AvailableProductVariantsByProductIdAndChannel.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channelID))()
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		keys := lo.Map(variants, func(v *model.ProductVariant, _ int) string {
+			return fmt.Sprintf("%s__%s__%s", v.Id, countryCode, channelID)
+		})
+		quantities, errs := AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader.LoadMany(ctx, keys)()
+		if len(errs) > 0 && errs[0] != nil {
+			return nil, errs[0]
+		}
+
+		res := lo.SomeBy(quantities, func(v int) bool { return v > 0 })
+		return &res, nil
+	}
+
+	return model.NewPrimitive(false), nil
 }
 
 func (p *Product) Attributes(ctx context.Context) ([]*SelectedAttribute, error) {
-	panic("not implemented")
+	return SelectedAttributesByProductIdLoader.Load(ctx, p.ID)()
 }
 
-func (p *Product) MediaByID(ctx context.Context, args struct{ Id *string }) (*ProductMedia, error) {
-	panic("not implemented")
+func (p *Product) MediaByID(ctx context.Context, args struct{ Id string }) (*ProductMedia, error) {
+	media, err := ProductMediaByIdLoader.Load(ctx, args.Id)()
+	if err != nil {
+		return nil, err
+	}
+
+	return systemProductMediaToGraphqlProductMedia(media), nil
 }
 
 func (p *Product) Media(ctx context.Context) ([]*ProductMedia, error) {
-	panic("not implemented")
+	medias, err := MediaByProductIdLoader.Load(ctx, p.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(medias, systemProductMediaToGraphqlProductMedia), nil
 }
 
 func (p *Product) Variants(ctx context.Context) ([]*ProductVariant, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	hasProductPermissions := embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.ProductPermissions...)
+
+	var variants model.ProductVariants
+
+	if hasProductPermissions && channelID == "" {
+		variants, err = ProductVariantsByProductIdLoader.Load(ctx, p.ID)()
+	} else if hasProductPermissions && channelID != "" {
+		variants, err = ProductVariantsByProductIdAndChannel.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channelID))()
+	} else {
+		variants, err = AvailableProductVariantsByProductIdAndChannel.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channelID))()
+	}
+
+	return DataloaderResultMap(variants, SystemProductVariantToGraphqlProductVariant), nil
 }
 
 type ProductType struct {
@@ -260,5 +545,40 @@ func (c *Collection) BackgroundImage(ctx context.Context, args struct{ Size *int
 }
 
 func (c *Collection) ChannelListings(ctx context.Context) ([]*CollectionChannelListing, error) {
+	panic("not implemented")
+}
+
+// ------- ProductMedia
+
+type ProductMedia struct {
+	ID         string           `json:"id"`
+	SortOrder  *int32           `json:"sortOrder"`
+	Alt        string           `json:"alt"`
+	Type       ProductMediaType `json:"type"`
+	OembedData JSONString       `json:"oembedData"`
+	// URL        string           `json:"url"`
+}
+
+func systemProductMediaToGraphqlProductMedia(p *model.ProductMedia) *ProductMedia {
+	if p == nil {
+		return nil
+	}
+
+	res := &ProductMedia{
+		ID:   p.Id,
+		Alt:  p.Alt,
+		Type: ProductMediaType(p.Type),
+	}
+	if p.OembedData != nil {
+		res.OembedData = JSONString(p.OembedData)
+	}
+	if s := p.SortOrder; s != nil {
+		res.SortOrder = model.NewPrimitive(int32(*s))
+	}
+
+	return res
+}
+
+func (p *ProductMedia) URL(ctx context.Context, args struct{ Size *int32 }) (string, error) {
 	panic("not implemented")
 }

@@ -13,7 +13,7 @@ type ProductAvailability struct {
 	PriceRangeUnDiscounted  *goprices.TaxedMoneyRange // can be nil
 	Discount                *goprices.TaxedMoney      // can be nil
 	PriceRangeLocalCurrency *goprices.TaxedMoneyRange // can be nil
-	DiscountLocalCurrency   *goprices.TaxedMoneyRange // can be nil
+	DiscountLocalCurrency   *goprices.TaxedMoney      // can be nil
 }
 
 type VariantAvailability struct {

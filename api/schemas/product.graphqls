@@ -64,7 +64,7 @@ type Product  {
   taxType: TaxType
   attributes: [SelectedAttribute!]!
   channelListings: [ProductChannelListing!]
-  mediaById(id: String): ProductMedia
+  mediaById(id: String!): ProductMedia
   variants: [ProductVariant]
   media: [ProductMedia!]
   collections: [Collection]

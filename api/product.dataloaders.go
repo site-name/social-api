@@ -2285,6 +2285,41 @@ errorLabel:
 	return res
 }
 
+func digitalContentsByProductVariantIDLoader(ctx context.Context, variantIDs []string) []*dataloader.Result[*model.DigitalContent] {
+	var (
+		res               = make([]*dataloader.Result[*model.DigitalContent], len(variantIDs))
+		digitalContents   []*model.DigitalContent
+		appErr            *model.AppError
+		digitalContentMap = map[string]*model.DigitalContent{} // keys are digital content ids
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	digitalContents, appErr = embedCtx.App.Srv().ProductService().
+		DigitalContentsbyOptions(&model.DigitalContentFilterOption{
+			ProductVariantID: squirrel.Eq{store.DigitalContentTableName + ".ProductVariantID": variantIDs},
+		})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+
+	digitalContentMap = lo.SliceToMap(digitalContents, func(d *model.DigitalContent) (string, *model.DigitalContent) { return d.Id, d })
+	for idx, id := range variantIDs {
+		res[idx] = &dataloader.Result[*model.DigitalContent]{Data: digitalContentMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range variantIDs {
+		res[idx] = &dataloader.Result[*model.DigitalContent]{Error: err}
+	}
+	return res
+}
+
 // keyValuesToMap
 // E.g:
 //

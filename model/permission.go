@@ -41,6 +41,7 @@ var (
 	// SaleorPermissionEnumMap has keys of permission ids,
 	// values of permission names
 	SaleorPermissionEnumMap map[string]string
+	ProductPermissions      []*Permission
 )
 
 // init all saleor's permissions
@@ -84,6 +85,9 @@ func initializeSaleorPermission() {
 		PermissionManageSettings,
 		PermissionManageTranslations,
 		PermissionImpersonateUser,
+	}
+	ProductPermissions = []*Permission{
+		PermissionManageOrders, PermissionManageDiscounts, PermissionManageProducts,
 	}
 
 	SaleorPermissionEnumMap = make(map[string]string)

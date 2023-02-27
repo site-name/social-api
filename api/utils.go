@@ -109,6 +109,17 @@ func SystemTaxedMoneyToGraphqlTaxedMoney(money *goprices.TaxedMoney) *TaxedMoney
 	return res
 }
 
+func SystemTaxedMoneyRangeToGraphqlTaxedMoneyRange(m *goprices.TaxedMoneyRange) *TaxedMoneyRange {
+	if m == nil {
+		return nil
+	}
+
+	return &TaxedMoneyRange{
+		Start: SystemTaxedMoneyToGraphqlTaxedMoney(m.Start),
+		Stop:  SystemTaxedMoneyToGraphqlTaxedMoney(m.Stop),
+	}
+}
+
 func SystemMoneyRangeToGraphqlMoneyRange(money *goprices.MoneyRange) *MoneyRange {
 	if money == nil {
 		return nil

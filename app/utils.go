@@ -77,33 +77,26 @@ func (a *Server) ToLocalCurrency(price interface{}, currency string) (interface{
 	}
 
 	// validate price is valid:
-	var (
-		fromCurrency string
-		errArguments []string
-	)
+	var fromCurrency string
 
 	switch t := price.(type) {
 	case goprices.Currencyable:
 		fromCurrency = t.MyCurrency()
 
 	default:
-		errArguments = append(errArguments, "price")
+		return nil, model.NewAppError("ToLocalCurrency", InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "price"}, "price is not Money type", http.StatusBadRequest)
 	}
 	// validate provided currency is valid:
 	currency = strings.ToUpper(currency)
 	if goprices.CurrenciesMap[currency] == "" {
-		errArguments = append(errArguments, "currency")
-	}
-
-	if len(errArguments) > 0 {
-		return nil, model.NewAppError("ToLocalCurrency", InvalidArgumentAppErrorID, map[string]interface{}{"Fields": strings.Join(errArguments, ", ")}, "", http.StatusBadRequest)
+		return nil, model.NewAppError("ToLocalCurrency", InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, "unknown currency", http.StatusBadRequest)
 	}
 
 	if !strings.EqualFold(currency, fromCurrency) {
 		return a.ExchangeCurrency(price, currency, nil)
 	}
 
-	return nil, nil
+	return price, nil
 }
 
 // ExchangeCurrency Exchanges Money, TaxedMoney and their ranges to the specified currency.

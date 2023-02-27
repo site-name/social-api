@@ -31,68 +31,33 @@ func getTotalDiscount(unDiscounted *goprices.TaxedMoney, discounted *goprices.Ta
 	return nil, nil
 }
 
-// `PriceRangeLocal` and `DiscountLocalCurrency` can be of 2 format:
-// (*MoneyRange, *MoneyRange) or (*TaxedMoneyRange, *TaxedMoneyRange)
-type aStructType struct {
-	PriceRangeLocal       interface{}
-	DiscountLocalCurrency interface{}
-}
-
 // getProductPriceRange
 //
-// NOTE: `discounted`, `unDiscounted` both can be either *MoneyRange or *TaxedMoneyRange
-func (a *ServiceProduct) getProductPriceRange(discounted interface{}, unDiscounted interface{}, localCurrency string) (*aStructType, *model.AppError) {
-
-	// validate `discounted` and `unDiscounted` and `localCurrency` are valid and have same currencies
-	errorArguments := []string{}
-
+// NOTE: `discounted`, `unDiscounted` both can be either *MoneyRange or *TaxedMoneyRange. they must be same type
+func (a *ServiceProduct) getProductPriceRange(discounted interface{}, unDiscounted interface{}, localCurrency string) (priceRangeLocal any, discountLocalCurrency any, appErr *model.AppError) {
 	switch discounted.(type) {
 	case *goprices.MoneyRange, *goprices.TaxedMoneyRange:
 	default:
-		errorArguments = append(errorArguments, "discounted")
+		return nil, nil, model.NewAppError("ServiceProduct.getProductPriceRange", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discounted"}, "discounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
 	}
 
 	switch unDiscounted.(type) {
 	case *goprices.MoneyRange, *goprices.TaxedMoneyRange:
 	default:
-		errorArguments = append(errorArguments, "unDiscounted")
-	}
-	// validate they go in pair like:
-	// (*MoneyRange, *MoneyRange) or (*TaxedMoneyRange, *TaxedMoneyRange)
-	switch v := discounted.(type) {
-	case *goprices.MoneyRange:
-		if t, ok := unDiscounted.(*goprices.MoneyRange); !ok {
-			errorArguments = append(errorArguments, "unDiscounted.(type) != discounted.(type)")
-		} else if !strings.EqualFold(t.Currency, v.Currency) {
-			errorArguments = append(errorArguments, "unDiscounted.Currency != discounted.Currency")
-		}
-	case *goprices.TaxedMoneyRange:
-		if t, ok := unDiscounted.(*goprices.TaxedMoneyRange); !ok {
-			errorArguments = append(errorArguments, "unDiscounted.(type) != discounted.(type)")
-		} else if !strings.EqualFold(v.Currency, t.Currency) {
-			errorArguments = append(errorArguments, "unDiscounted.Currency != discounted.Currency")
-		}
-	}
-
-	if len(errorArguments) > 0 {
-		return nil, model.NewAppError("getProductPriceRange", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": strings.Join(errorArguments, ", ")}, "", http.StatusBadRequest)
+		return nil, nil, model.NewAppError("ServiceProduct.getProductPriceRange", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "unDiscounted"}, "unDiscounted must be either *MoneyRange or *TaxedMoneyRange", http.StatusBadRequest)
 	}
 
 	localCurrency = strings.ToUpper(localCurrency)
 
-	var (
-		priceRangeLocal       interface{}
-		discountLocalCurrency interface{}
-	)
 	// validate provided currency is calid
 	if goprices.CurrenciesMap[localCurrency] != "" {
 		priceRangeLocal, appErr := a.srv.ToLocalCurrency(discounted, localCurrency)
 		if appErr != nil {
-			return nil, appErr
+			return nil, nil, appErr
 		}
 		unDiscountedLocal, appErr := a.srv.ToLocalCurrency(unDiscounted, localCurrency)
 		if appErr != nil {
-			return nil, appErr
+			return nil, nil, appErr
 		}
 
 		if unDiscountedLocal != nil {
@@ -112,10 +77,7 @@ func (a *ServiceProduct) getProductPriceRange(discounted interface{}, unDiscount
 		}
 	}
 
-	return &aStructType{
-		PriceRangeLocal:       priceRangeLocal,
-		DiscountLocalCurrency: discountLocalCurrency,
-	}, nil
+	return priceRangeLocal, discountLocalCurrency, nil
 }
 
 // GetVariantPrice
@@ -215,9 +177,7 @@ func (a *ServiceProduct) GetProductAvailability(
 	manager interfaces.PluginManagerInterface,
 	countryCode string, // can be empty
 	localCurrency string, // can be empty
-
 ) (*model.ProductAvailability, *model.AppError) {
-
 	if countryCode == "" {
 		countryCode = model.DEFAULT_COUNTRY
 	}
@@ -257,7 +217,6 @@ func (a *ServiceProduct) GetProductAvailability(
 		if appErr != nil {
 			return nil, appErr
 		}
-
 		stop, appErr := manager.ApplyTaxesToProduct(product, *undiscountedNetRange.Stop, countryCode, chanNel.Slug)
 		if appErr != nil {
 			return nil, appErr
@@ -273,24 +232,22 @@ func (a *ServiceProduct) GetProductAvailability(
 	var (
 		discount              *goprices.TaxedMoney
 		priceRangeLocal       *goprices.TaxedMoneyRange
-		discountLocalCurrency *goprices.TaxedMoneyRange
+		discountLocalCurrency *goprices.TaxedMoney
 	)
 	if discountedNetRange != nil && undiscountedNetRange != nil {
 		discount, _ = getTotalDiscountFromRange(undiscounted, discounted)
 
-		aType, appErr := a.getProductPriceRange(discounted, undiscounted, localCurrency)
+		priceRangeLocal_, discountLocalCurrency_, appErr := a.getProductPriceRange(discounted, undiscounted, localCurrency)
 		if appErr != nil {
 			return nil, appErr
 		}
 
-		priceRangeLocal = aType.PriceRangeLocal.(*goprices.TaxedMoneyRange)
-		discountLocalCurrency = aType.DiscountLocalCurrency.(*goprices.TaxedMoneyRange)
+		priceRangeLocal = priceRangeLocal_.(*goprices.TaxedMoneyRange)
+		discountLocalCurrency = discountLocalCurrency_.(*goprices.TaxedMoney)
 	}
 
-	isOnSale := productChannelListing != nil && productChannelListing.IsVisible() && discount != nil
-
 	return &model.ProductAvailability{
-		OnSale:                  isOnSale,
+		OnSale:                  productChannelListing != nil && productChannelListing.IsVisible() && discount != nil,
 		PriceRange:              discounted,
 		PriceRangeUnDiscounted:  undiscounted,
 		Discount:                discount,
@@ -310,9 +267,7 @@ func (a *ServiceProduct) GetVariantAvailability(
 	plugins interfaces.PluginManagerInterface,
 	country string, // can be empty
 	localCurrency string, // can be empty
-
 ) (*model.VariantAvailability, *model.AppError) {
-
 	variarntPrice, appErr := a.GetVariantPrice(variant, variantChannelListing, product, collections, discounts, chanNel)
 	if appErr != nil {
 		return nil, appErr

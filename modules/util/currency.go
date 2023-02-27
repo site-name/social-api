@@ -13,9 +13,9 @@ import (
 //
 // eg: us -> USD
 //
-// returns empty string if givent country_code is invalid
-func GetCurrencyForCountry(country_code string) string {
-	region, err := language.ParseRegion(country_code)
+// returns empty string if given countryCode is invalid
+func GetCurrencyForCountry(countryCode string) string {
+	region, err := language.ParseRegion(countryCode)
 	if err != nil {
 		return ""
 	}
@@ -37,9 +37,7 @@ func MinMaxMoneyInMoneySlice(moneys []*goprices.Money) (min *goprices.Money, max
 		return moneys[0], moneys[0]
 	}
 
-	moneys = lo.Filter(moneys, func(v *goprices.Money, _ int) bool {
-		return v != nil
-	})
+	moneys = lo.Filter(moneys, func(v *goprices.Money, _ int) bool { return v != nil })
 	sort.Slice(moneys, func(i, j int) bool {
 		return moneys[i].LessThan(moneys[j])
 	})

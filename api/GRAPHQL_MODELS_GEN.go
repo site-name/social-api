@@ -2626,15 +2626,6 @@ type ProductInput struct {
 	Rating      *float64               `json:"rating"`
 }
 
-type ProductMedia struct {
-	ID         string           `json:"id"`
-	SortOrder  *int32           `json:"sortOrder"`
-	Alt        string           `json:"alt"`
-	Type       ProductMediaType `json:"type"`
-	OembedData JSONString       `json:"oembedData"`
-	URL        string           `json:"url"`
-}
-
 type ProductMediaBulkDelete struct {
 	Count  int32           `json:"count"`
 	Errors []*ProductError `json:"errors"`
