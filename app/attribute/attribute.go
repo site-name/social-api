@@ -42,22 +42,9 @@ func (a *ServiceAttribute) AttributeByOption(option *model.AttributeFilterOption
 // AttributesByOption returns a list of attributes filtered using given options
 func (a *ServiceAttribute) AttributesByOption(option *model.AttributeFilterOption) ([]*model.Attribute, *model.AppError) {
 	attributes, err := a.srv.Store.Attribute().FilterbyOption(option)
-
-	var (
-		statusCode int = 0
-		errMsg     string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMsg = err.Error()
-	} else if len(attributes) == 0 {
-		statusCode = http.StatusNotFound
+		return nil, model.NewAppError("AttributesByOption", "app.attribute.attributes_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("AttributesByOption", "app.attribute.error_finding_attributes_by_options.app_error", nil, errMsg, statusCode)
-	}
-
 	return attributes, nil
 }
 

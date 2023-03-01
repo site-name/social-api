@@ -2002,6 +2002,46 @@ func (s *RetryLayerAttributeStore) GetByOption(option *model.AttributeFilterOpti
 
 }
 
+func (s *RetryLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeStore.GetPageTypeAttributes(pageTypeID, unassigned)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool) (model.Attributes, error) {
+
+	tries := 0
+	for {
+		result, err := s.AttributeStore.GetProductTypeAttributes(productTypeID, unassigned)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, error) {
 
 	tries := 0

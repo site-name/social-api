@@ -2,11 +2,13 @@ package api
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/samber/lo"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
@@ -414,6 +416,9 @@ func (p *Product) Variants(ctx context.Context) ([]*ProductVariant, error) {
 	} else {
 		variants, err = AvailableProductVariantsByProductIdAndChannel.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channelID))()
 	}
+	if err != nil {
+		return nil, err
+	}
 
 	return DataloaderResultMap(variants, SystemProductVariantToGraphqlProductVariant), nil
 }
@@ -428,6 +433,7 @@ type ProductType struct {
 	PrivateMetadata    []*MetadataItem     `json:"privateMetadata"`
 	Metadata           []*MetadataItem     `json:"metadata"`
 	Kind               ProductTypeKindEnum `json:"kind"`
+	p                  *model.ProductType
 
 	// Weight              *Weight                       `json:"weight"`
 	// TaxType             *TaxType                      `json:"taxType"`
@@ -448,6 +454,7 @@ func SystemProductTypeToGraphqlProductType(t *model.ProductType) *ProductType {
 		Metadata:        MetadataToSlice(t.Metadata),
 		PrivateMetadata: MetadataToSlice(t.PrivateMetadata),
 		Kind:            ProductTypeKindEnum(t.Kind),
+		p:               t,
 	}
 
 	if t.HasVariants != nil {
@@ -467,9 +474,17 @@ func (p *ProductType) TaxType(ctx context.Context) (*TaxType, error) {
 }
 
 func (p *ProductType) Weight(ctx context.Context) (*Weight, error) {
-	panic("not implemented")
+	if p.p.Weight == nil {
+		return nil, nil
+	}
+
+	return &Weight{
+		Value: float64(*p.p.Weight),
+		Unit:  WeightUnitsEnum(p.p.WeightUnit),
+	}, nil
 }
 
+// ORDER BY Slug
 func (p *ProductType) AvailableAttributes(ctx context.Context, args struct {
 	Filter *AttributeFilterInput
 	Before *string
@@ -477,15 +492,105 @@ func (p *ProductType) AvailableAttributes(ctx context.Context, args struct {
 	First  *int32
 	Last   *int32
 }) (*AttributeCountableConnection, error) {
-	panic("not implemented")
+
+	var before, after *string
+	if args.Before != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.Before)
+		if err != nil {
+			return nil, model.NewAppError("ProductType.AvailableAttributes", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args.Before"}, err.Error(), http.StatusBadRequest)
+		}
+		before = model.NewPrimitive(string(data))
+
+	} else if args.After != nil {
+		data, err := base64.StdEncoding.DecodeString(*args.After)
+		if err != nil {
+			return nil, model.NewAppError("ProductType.AvailableAttributes", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args.After"}, err.Error(), http.StatusBadRequest)
+		}
+		after = model.NewPrimitive(string(data))
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+		return nil, model.NewAppError("ProductType.AvailableAttributes", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	}
+
+	attributes, err := embedCtx.App.Srv().Store.Attribute().GetProductTypeAttributes(p.ID, true)
+	if err != nil {
+		return nil, model.NewAppError("GetProductTypeAttributes", "app.attribute.unassigned_product_type_attributes.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	pagin := &graphqlPaginator[*model.Attribute, string]{
+		data:    attributes,
+		keyFunc: func(a *model.Attribute) string { return a.Slug },
+		before:  before,
+		after:   after,
+		first:   args.First,
+		last:    args.Last,
+	}
+
+	data, hasPrev, hasNext, appErr := pagin.parse("ProductType.AvailableAttributes")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	res := &AttributeCountableConnection{
+		TotalCount: model.NewPrimitive(int32(len(attributes))),
+		Edges: lo.Map(data, func(a *model.Attribute, _ int) *AttributeCountableEdge {
+			return &AttributeCountableEdge{
+				Node:   SystemAttributeToGraphqlAttribute(a),
+				Cursor: base64.StdEncoding.EncodeToString([]byte(a.Slug)),
+			}
+		}),
+	}
+	res.PageInfo = &PageInfo{
+		HasNextPage:     hasNext,
+		HasPreviousPage: hasPrev,
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
+	}
+
+	return res, nil
 }
 
 func (p *ProductType) ProductAttributes(ctx context.Context) ([]*Attribute, error) {
-	panic("not implemented")
+	attributes, err := ProductAttributesByProductTypeIdLoader.Load(ctx, p.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(attributes, SystemAttributeToGraphqlAttribute), nil
 }
 
-func (p *ProductType) VariantAttributes(ctx context.Context) ([]*Attribute, error) {
-	panic("not implemented")
+func (p *ProductType) VariantAttributes(ctx context.Context, args struct{ VariantSelection *VariantAttributeScope }) ([]*Attribute, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+	attributes, err := VariantAttributesByProductTypeIdLoader.Load(ctx, p.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	if args.VariantSelection == nil || *args.VariantSelection == VariantAttributeScopeAll {
+		return DataloaderResultMap(attributes, SystemAttributeToGraphqlAttribute), nil
+	}
+
+	variantSelectionAttributes := embedCtx.App.Srv().ProductService().GetVariantSelectionAttributes(attributes)
+	if *args.VariantSelection == VariantAttributeScopeVariantSelection {
+		return DataloaderResultMap(variantSelectionAttributes, SystemAttributeToGraphqlAttribute), nil
+	}
+
+	variantSelectionAttributesMap := lo.SliceToMap(variantSelectionAttributes, func(v *model.Attribute) (string, struct{}) { return v.Id, struct{}{} })
+	attributes = lo.Filter(attributes, func(a *model.Attribute, _ int) bool {
+		_, exist := variantSelectionAttributesMap[a.Id]
+		return !exist
+	})
+
+	return DataloaderResultMap(attributes, SystemAttributeToGraphqlAttribute), nil
 }
 
 // -------------------- collection -----------------
@@ -499,8 +604,8 @@ type Collection struct {
 	Slug            string          `json:"slug"`
 	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
 	Metadata        []*MetadataItem `json:"metadata"`
-	Channel         *string         `json:"channel"`
 
+	// Channel         *string         `json:"channel"`
 	// Products        *ProductCountableConnection `json:"products"`
 	// BackgroundImage *Image                      `json:"backgroundImage"`
 	// Translation     *CollectionTranslation      `json:"translation"`
@@ -521,8 +626,11 @@ func systemCollectionToGraphqlCollection(c *model.Collection) *Collection {
 		Description:     JSONString(c.Description),
 		Metadata:        MetadataToSlice(c.Metadata),
 		PrivateMetadata: MetadataToSlice(c.PrivateMetadata),
-		Channel:         nil,
 	}
+}
+
+func (c *Collection) Channel(ctx context.Context) (*string, error) {
+	panic("not implemented")
 }
 
 func (c *Collection) Products(ctx context.Context, args struct {
@@ -534,6 +642,14 @@ func (c *Collection) Products(ctx context.Context, args struct {
 	Last   *int32
 }) (*ProductCountableConnection, error) {
 	panic("not implemented")
+	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// userHasPermission := embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.ProductPermissions...)
+
+	// embedCtx.App.Srv().Store.Product().VisibleToUserProducts()
 }
 
 func (c *Collection) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*CollectionTranslation, error) {

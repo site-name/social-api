@@ -1823,6 +1823,38 @@ func (s *TimerLayerAttributeStore) GetByOption(option *model.AttributeFilterOpti
 	return result, err
 }
 
+func (s *TimerLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeStore.GetPageTypeAttributes(pageTypeID, unassigned)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.GetPageTypeAttributes", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool) (model.Attributes, error) {
+	start := timemodule.Now()
+
+	result, err := s.AttributeStore.GetProductTypeAttributes(productTypeID, unassigned)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.GetProductTypeAttributes", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, error) {
 	start := timemodule.Now()
 

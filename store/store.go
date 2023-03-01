@@ -230,6 +230,8 @@ type (
 		Upsert(attr *model.Attribute) (*model.Attribute, error)                       // Upsert inserts or updates given model then returns it
 		GetByOption(option *model.AttributeFilterOption) (*model.Attribute, error)    // GetByOption finds and returns 1 model
 		FilterbyOption(option *model.AttributeFilterOption) (model.Attributes, error) // FilterbyOption returns a list of attributes by given option
+		GetProductTypeAttributes(productTypeID string, unassigned bool) (model.Attributes, error)
+		GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error)
 	}
 	AttributeTranslationStore interface {
 	}

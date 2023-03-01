@@ -269,3 +269,83 @@ func (as *SqlAttributeStore) Delete(ids ...string) (int64, error) {
 
 	return numDeleted, nil
 }
+
+func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool) (model.Attributes, error) {
+	// unassigned query:
+	query := `SELECT * FROM ` +
+		store.AttributeTableName + `A WHERE A.Type = $1 AND NOT (
+	(
+		EXISTS(
+			SELECT (1) AS "a"
+			FROM ` + store.AttributeProductTableName + ` AP
+			WHERE 
+				AP.ProductTypeID = $2 AND AP.AttributeID = A.Id
+			LIMIT 1
+		)
+		OR EXISTS(
+			SELECT (1) AS "a"
+			FROM ` + store.AttributeVariantTableName + ` AV
+			WHERE
+				AV.ProductTypeID = $3 AND AV.AttributeID = A.Id
+			LIMIT 1
+		)
+	)
+)`
+
+	// in case select assigned attributes only:
+	if !unassigned {
+		query = `SELECT ` +
+			s.ModelFields(store.AttributeTableName+".").Join(",") +
+			` FROM ` + store.AttributeTableName +
+			` A LEFT OUTER JOIN ` + store.AttributeProductTableName + ` AP ON A.Id = AP.AttributeID` +
+			` LEFT OUTER JOIN ` + store.AttributeVariantTableName + ` AV ON AV.AttributeID = A.Id` +
+			` WHERE (
+					A.Type = $1 AND (
+						AP.ProductTypeID = $2
+						OR AV.ProductTypeID = $3
+					)
+			)`
+	}
+
+	var res model.Attributes
+	err := s.GetReplicaX().Select(&res, query, model.PRODUCT_TYPE, productTypeID, productTypeID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find product type attributes with given product type id")
+	}
+
+	return res, nil
+}
+
+func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error) {
+	// unassigned
+	query := `SELECT * FROM ` + store.AttributeTableName +
+		` A WHERE
+			A.Type = $1
+		AND
+			NOT EXISTS(
+				SELECT (1) AS "a"
+				FROM ` + store.AttributePageTableName + ` AP
+				WHERE (
+					AP.PageTypeID = $2
+					AND AP.AttributeID = A.Id
+				)
+				LIMIT 1
+			)`
+
+	if !unassigned {
+		query = `SELECT ` + s.ModelFields("A.").Join(",") +
+			` FROM ` + store.AttributeTableName +
+			` A INNER JOIN ` + store.AttributePageTableName +
+			` AP ON AP.AttributeID = A.Id
+			WHERE A.Type = $1
+			AND AP.PageTypeID = $2`
+	}
+
+	var res model.Attributes
+	err := s.GetReplicaX().Select(&res, query, model.PAGE_TYPE, pageTypeID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find page type attribute with given page type id")
+	}
+
+	return res, nil
+}

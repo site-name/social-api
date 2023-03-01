@@ -76,7 +76,7 @@ var attributeEntityTypeStrings = map[string]bool{
 	PRODUCT: true,
 }
 
-// Attribute
+// ORDER BY Slug
 type Attribute struct {
 	Id                       string             `json:"id"`
 	Slug                     string             `json:"slug"` // unique

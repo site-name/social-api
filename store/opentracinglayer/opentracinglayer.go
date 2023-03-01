@@ -1908,6 +1908,42 @@ func (s *OpenTracingLayerAttributeStore) GetByOption(option *model.AttributeFilt
 	return result, err
 }
 
+func (s *OpenTracingLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.GetPageTypeAttributes")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AttributeStore.GetPageTypeAttributes(pageTypeID, unassigned)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool) (model.Attributes, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.GetProductTypeAttributes")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.AttributeStore.GetProductTypeAttributes(productTypeID, unassigned)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.Upsert")
