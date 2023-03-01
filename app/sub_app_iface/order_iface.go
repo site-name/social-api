@@ -325,4 +325,5 @@ type OrderService interface {
 	UpdateTaxesForOrderLine(line model.OrderLine, ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	UpdateTaxesForOrderLines(lines model.OrderLines, ord model.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model.AppError
 	FilterOrderEventsByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, *model.AppError)
+	GetValidCollectionPointsForOrder(lines model.OrderLines, addressCountryCode string) (model.Warehouses, *model.AppError)
 }

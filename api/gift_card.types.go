@@ -31,6 +31,8 @@ type GiftCardEvent struct {
 	Balance       *GiftCardEventBalance `json:"balance"`
 	ExpiryDate    *Date                 `json:"expiryDate"`
 	OldExpiryDate *Date                 `json:"oldExpiryDate"`
+
+	e *model.GiftCardEvent
 }
 
 func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCardEvent {
@@ -40,6 +42,7 @@ func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCa
 
 	res := new(GiftCardEvent)
 	res.ID = evt.Id
+	res.e = evt
 	if evt.Date != 0 {
 		res.Date = &DateTime{util.TimeFromMillis(evt.Date)}
 	}
@@ -134,6 +137,33 @@ func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCa
 	return res
 }
 
+func (e *GiftCardEvent) User(ctx context.Context) (*User, error) {
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	currentSession := embedCtx.AppContext.Session()
+	if e.e.UserID != nil && currentSession.UserId == *e.e.UserID ||
+		embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(currentSession, model.PermissionManageUsers, model.PermissionManageStaff) {
+
+		if e.e.UserID == nil {
+			return nil, nil
+		}
+		user, err := UserByUserIdLoader.Load(ctx, *e.e.UserID)()
+		if err != nil {
+			return nil, err
+		}
+		return SystemUserToGraphqlUser(user), nil
+	}
+
+	return nil, model.NewAppError("GiftCardEvent.User", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+}
+
+func (e *GiftCardEvent) App(ctx context.Context) (*App, error) {
+	panic("not implemented")
+}
+
 type GiftCard struct {
 	IsActive        bool            `json:"isActive"`
 	ExpiryDate      *Date           `json:"expiryDate"`
@@ -212,6 +242,10 @@ func SystemGiftcardToGraphqlGiftcard(gc *model.GiftCard) *GiftCard {
 	res.PrivateMetadata = MetadataToSlice(gc.PrivateMetadata)
 
 	return res
+}
+
+func (g *GiftCard) App(ctx context.Context) (*App, error) {
+	panic("not implemented")
 }
 
 func (g *GiftCard) Product(ctx context.Context) (*Product, error) {

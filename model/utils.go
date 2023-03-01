@@ -3,6 +3,7 @@ package model
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"database/sql/driver"
 	"encoding/base32"
 	"encoding/base64"
 	"encoding/json"
@@ -101,6 +102,39 @@ func (s StringInterface) Pop(key string, defaultValue ...interface{}) interface{
 	v := s.Get(key, defaultValue...)
 	delete(s, key)
 	return v
+}
+
+func (si *StringInterface) Scan(value any) error {
+	if value == nil {
+		return nil
+	}
+
+	buf, ok := value.([]byte)
+	if ok {
+		return json.Unmarshal(buf, si)
+	}
+
+	str, ok := value.(string)
+	if ok {
+		return json.Unmarshal([]byte(str), si)
+	}
+
+	return errors.New("received value is neither a byte slice nor string")
+}
+
+// Value converts StringInterface to database value
+func (si StringInterface) Value() (driver.Value, error) {
+	j, err := json.Marshal(si)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(j) > maxPropSizeBytes {
+		return nil, ErrMaxPropSizeExceeded
+	}
+
+	// non utf8 characters are not supported https://mattermost.atlassian.net/browse/MM-41066
+	return string(j), err
 }
 
 // NewPrimitive takes a primitive value, returns pointer to it.

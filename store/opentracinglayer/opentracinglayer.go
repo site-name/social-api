@@ -9584,16 +9584,16 @@ func (s *OpenTracingLayerVoucherTranslationStore) Save(translation *model.Vouche
 	return result, err
 }
 
-func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollect(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
+func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.ApplicableForClickAndCollect")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.ApplicableForClickAndCollectCheckoutLines")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.WarehouseStore.ApplicableForClickAndCollect(checkoutLines, country)
+	result, err := s.WarehouseStore.ApplicableForClickAndCollectCheckoutLines(checkoutLines, country)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -9612,6 +9612,24 @@ func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityC
 
 	defer span.Finish()
 	result, err := s.WarehouseStore.ApplicableForClickAndCollectNoQuantityCheck(checkoutLines, country)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country string) (model.Warehouses, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.ApplicableForClickAndCollectOrderLines")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WarehouseStore.ApplicableForClickAndCollectOrderLines(orderLines, country)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

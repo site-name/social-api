@@ -10446,11 +10446,11 @@ func (s *RetryLayerVoucherTranslationStore) Save(translation *model.VoucherTrans
 
 }
 
-func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollect(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
+func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
 
 	tries := 0
 	for {
-		result, err := s.WarehouseStore.ApplicableForClickAndCollect(checkoutLines, country)
+		result, err := s.WarehouseStore.ApplicableForClickAndCollectCheckoutLines(checkoutLines, country)
 		if err == nil {
 			return result, nil
 		}
@@ -10471,6 +10471,26 @@ func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(c
 	tries := 0
 	for {
 		result, err := s.WarehouseStore.ApplicableForClickAndCollectNoQuantityCheck(checkoutLines, country)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country string) (model.Warehouses, error) {
+
+	tries := 0
+	for {
+		result, err := s.WarehouseStore.ApplicableForClickAndCollectOrderLines(orderLines, country)
 		if err == nil {
 			return result, nil
 		}

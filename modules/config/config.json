@@ -96,11 +96,9 @@
         "ManagedResourcePaths": "",
         "EnableLegacySidebar": false,
         "EnableReliableWebSockets": false,
-        "OpenExchangeApiEndpoint": "http://openexchangerates.org/api/latest.json",
-        "OpenExchangeRateApiKey": "cb3c20ad2a624639806f043e4b5aafa4",
-        "OpenExchangeRecuringDurationHours": 2,
         "EnablePermalinkPreviews": true,
         "EnableInlineLatex": true,
+        "MaxCheckoutLineQuantity": 50,
         "ImageProxyType": "",
         "ImageProxyURL": "",
         "ImageProxyOptions": "",
@@ -543,5 +541,14 @@
     "ExportSettings": {
         "Directory": "./export",
         "RetentionDays": 30
+    },
+    "ThirdPartySettings": {
+        "OpenExchangeApiEndpoint": "http://openexchangerates.org/api/latest.json",
+        "OpenExchangeRateApiKey": "cb3c20ad2a624639806f043e4b5aafa4",
+        "OpenExchangeRecuringDurationHours": 2,
+        "VatlayerApi": "http://apilayer.net/api/",
+        "VatlayerAccessKey": "bb98bc77f97b4b060ca39b78e27396ec",
+        "RateTypeURL": "http://apilayer.net/api/types?access_key=bb98bc77f97b4b060ca39b78e27396ec",
+        "VateRateURL": "http://apilayer.net/api/rate_list?access_key=bb98bc77f97b4b060ca39b78e27396ec"
     }
 }

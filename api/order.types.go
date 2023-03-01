@@ -717,7 +717,24 @@ func (o *Order) User(ctx context.Context) (*User, error) {
 }
 
 func (o *Order) DeliveryMethod(ctx context.Context) (DeliveryMethod, error) {
-	panic("not implemented")
+	if o.order.ShippingMethodID != nil {
+		shippingMethod, err := ShippingMethodByIdLoader.Load(ctx, *o.order.ShippingMethodID)()
+		if err != nil {
+			return nil, err
+		}
+		return SystemShippingMethodToGraphqlShippingMethod(shippingMethod), nil
+	}
+
+	if o.order.CollectionPointID != nil {
+		warehouse, err := WarehouseByIdLoader.Load(ctx, *o.order.CollectionPointID)()
+		if err != nil {
+			return nil, err
+		}
+
+		return SystemWarehouseToGraphqlWarehouse(warehouse), nil
+	}
+
+	return nil, nil
 }
 
 func (o *Order) AvailableShippingMethods(ctx context.Context) ([]*ShippingMethod, error) {
@@ -735,27 +752,40 @@ func (o *Order) AvailableShippingMethods(ctx context.Context) ([]*ShippingMethod
 		return []*ShippingMethod{}, nil
 	}
 
+	// TODO: complete plugin manager
 	panic("not implemented")
 }
 
+func (o *Order) Channel(ctx context.Context) (*Channel, error) {
+	channel, err := ChannelByIdLoader.Load(ctx, o.order.ChannelID)()
+	if err != nil {
+		return nil, err
+	}
+	return SystemChannelToGraphqlChannel(channel), nil
+}
+
 func (o *Order) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, error) {
-	// lines, err := OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	lines, err := OrderLinesByOrderIdLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return nil, err
+	}
 
-	// address, err := o.ShippingAddress(ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	address, err := o.ShippingAddress(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
 
-	// embedCtx.App.Srv().OrderService().Order
-	panic("not implemented")
+	warehouses, appErr := embedCtx.App.Srv().OrderService().GetValidCollectionPointsForOrder(lines, address.Address.Country)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return DataloaderResultMap(warehouses, SystemWarehouseToGraphqlWarehouse), nil
 }
 
 func (o *Order) Invoices(ctx context.Context) ([]*Invoice, error) {

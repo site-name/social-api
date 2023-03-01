@@ -1,7 +1,10 @@
 package model
 
 import (
+	"database/sql/driver"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"sort"
@@ -756,6 +759,49 @@ func (m StringMAP) Keys() []string {
 
 func (m StringMap) Values() []string {
 	return lo.MapToSlice(m, func(_ string, v string) string { return v })
+}
+
+// Scan converts database column value to StringMap
+func (m *StringMAP) Scan(value any) error {
+	if value == nil {
+		return nil
+	}
+
+	buf, ok := value.([]byte)
+	if ok {
+		return json.Unmarshal(buf, m)
+	}
+
+	str, ok := value.(string)
+	if ok {
+		return json.Unmarshal([]byte(str), m)
+	}
+
+	return errors.New("received value is neither a byte slice nor string")
+}
+
+const (
+	maxPropSizeBytes = 1024 * 1024
+)
+
+var ErrMaxPropSizeExceeded = fmt.Errorf("max prop size of %d exceeded", maxPropSizeBytes)
+
+// Value converts StringMap to database value
+func (m StringMAP) Value() (driver.Value, error) {
+	sz := 0
+	for k := range m {
+		sz += len(k) + len(m[k])
+		if sz > maxPropSizeBytes {
+			return nil, ErrMaxPropSizeExceeded
+		}
+	}
+
+	buf, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+	// Key wasn't found. We fall back to the default case.
+	return string(buf), nil
 }
 
 // Common abstract model for other models to inherit from

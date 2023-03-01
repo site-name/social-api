@@ -364,7 +364,8 @@ type (
 		GetByOption(option *model.WarehouseFilterOption) (*model.WareHouse, error)      // GetByOption finds and returns a model filtered given option
 		WarehouseByStockID(stockID string) (*model.WareHouse, error)                    // WarehouseByStockID returns 1 model by given stock id
 		ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error)
-		ApplicableForClickAndCollect(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error)
+		ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error)
+		ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country string) (model.Warehouses, error)
 	}
 	StockStore interface {
 		ScanFields(stock *model.Stock) []interface{}

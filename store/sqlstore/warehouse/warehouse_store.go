@@ -311,31 +311,13 @@ func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkou
 	return ws.forCountryLinesAndStocks(checkoutLines, stocks, country)
 }
 
-func (ws *SqlWareHouseStore) ApplicableForClickAndCollect(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
-
-	// checkoutLinesQuantity := ws.GetQueryBuilder(squirrel.Question).
-	// 	Select("SUM (CheckoutLines.Quantity) AS ProdSum").
-	// 	From(store.CheckoutLineTableName).
-	// 	Where(squirrel.Eq{store.CheckoutLineTableName + ".Id": checkoutLines.IDs()}).
-	// 	Where("CheckoutLines.VariantID = Stocks.ProductVariantID")
-
-	// stockQuery, args, err := ws.
-	// 	GetQueryBuilder().
-	// 	Select(ws.Stock().ModelFields(store.StockTableName + ".")...).
-	// 	Column(`Stocks.Quantity - COALESCE( SUM (Allocations.QuantityAllocated) filter (WHERE Allocations.QuantityAllocated > 0), 0) AS AvailableQuantity`).
-	// 	Column(squirrel.Expr("AvailableQuantity - ? AS LineQuantity", checkoutLinesQuantity)).
-	// 	From(store.StockTableName).
-	// 	InnerJoin(store.AllocationTableName + " ON Stock.Id = Allocations.StockID").
-	// 	InnerJoin(store.ProductVariantTableName + " ON Stock.ProductVariantID = ProductVariants.Id").
-	// 	Where(squirrel.Eq{store.ProductVariantTableName + ".Id": checkoutLines.VariantIDs()}).
-	// 	Where("LineQuantity >= 0").ToSql()
-
-	// if err != nil {
-	// 	return nil, errors.Wrap(err, "ApplicableForClickAndCollect_ToSql")
-	// }
+func (ws *SqlWareHouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
 
 	panic("not implemented")
+}
 
+func (s *SqlWareHouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country string) (model.Warehouses, error) {
+	panic("not implemented")
 }
 
 func (ws *SqlWareHouseStore) forCountryLinesAndStocks(checkoutLines model.CheckoutLines, stocks model.Stocks, country string) (model.Warehouses, error) {

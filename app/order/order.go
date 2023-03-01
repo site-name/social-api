@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -93,13 +94,7 @@ func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.App
 		return false, appErr
 	}
 
-	for _, line := range lines {
-		if line.IsShippingRequired {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	return lo.SomeBy(lines, func(o *model.OrderLine) bool { return o.IsShippingRequired }), nil
 }
 
 // OrderTotalQuantity return total quantity of given order

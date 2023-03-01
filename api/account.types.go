@@ -294,7 +294,10 @@ func (u *User) GiftCards(ctx context.Context, args struct {
 
 	res := &GiftCardCountableConnection{
 		Edges: lo.Map(data, func(g *model.GiftCard, _ int) *GiftCardCountableEdge {
-			return &GiftCardCountableEdge{SystemGiftcardToGraphqlGiftcard(g), g.Code}
+			return &GiftCardCountableEdge{
+				Node:   SystemGiftcardToGraphqlGiftcard(g),
+				Cursor: g.Code,
+			}
 		}),
 		TotalCount: model.NewPrimitive(int32(len(giftcards))),
 	}

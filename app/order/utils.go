@@ -368,6 +368,24 @@ func (a *ServiceOrder) UpdateOrderPrices(ord model.Order, manager interfaces.Plu
 	return a.RecalculateOrder(nil, &ord, nil)
 }
 
+func (s *ServiceOrder) GetValidCollectionPointsForOrder(lines model.OrderLines, addressCountryCode string) (model.Warehouses, *model.AppError) {
+	// check shipping required:
+	if !lo.SomeBy(lines, func(l *model.OrderLine) bool { return l.IsShippingRequired }) {
+		return model.Warehouses{}, nil
+	}
+	addressCountryCode = strings.ToUpper(addressCountryCode)
+	if _, ok := model.Countries[addressCountryCode]; !ok {
+		return model.Warehouses{}, nil
+	}
+
+	warehouses, err := s.srv.Store.Warehouse().ApplicableForClickAndCollectOrderLines(lines, addressCountryCode)
+	if err != nil {
+		return nil, model.NewAppError("GetValidCollectionPointsForOrder", "app.order.valid_collection_points_for_order.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return warehouses, nil
+}
+
 // GetDiscountedLines returns a list of discounted order lines, filterd from given orderLines
 func (a *ServiceOrder) GetDiscountedLines(orderLines []*model.OrderLine, voucher *model.Voucher) ([]*model.OrderLine, *model.AppError) {
 	var (

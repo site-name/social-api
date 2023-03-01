@@ -8684,10 +8684,10 @@ func (s *TimerLayerVoucherTranslationStore) Save(translation *model.VoucherTrans
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollect(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
+func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
 	start := timemodule.Now()
 
-	result, err := s.WarehouseStore.ApplicableForClickAndCollect(checkoutLines, country)
+	result, err := s.WarehouseStore.ApplicableForClickAndCollectCheckoutLines(checkoutLines, country)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -8695,7 +8695,7 @@ func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollect(checkoutLines mo
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.ApplicableForClickAndCollect", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.ApplicableForClickAndCollectCheckoutLines", success, elapsed)
 	}
 	return result, err
 }
@@ -8712,6 +8712,22 @@ func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(c
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.ApplicableForClickAndCollectNoQuantityCheck", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country string) (model.Warehouses, error) {
+	start := timemodule.Now()
+
+	result, err := s.WarehouseStore.ApplicableForClickAndCollectOrderLines(orderLines, country)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.ApplicableForClickAndCollectOrderLines", success, elapsed)
 	}
 	return result, err
 }
