@@ -2332,3 +2332,37 @@ func keyValuesToMap[K util.Ordered, V any](keys []K, values []V) map[K]V {
 	}
 	return res
 }
+
+func digitalContentUrlByOrderLineID(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*model.DigitalContentUrl] {
+	var (
+		res           = make([]*dataloader.Result[*model.DigitalContentUrl], len(orderLineIDs))
+		contentURLs   []*model.DigitalContentUrl
+		contentURLMap = map[string]*model.DigitalContentUrl{} // keys are order line ids
+		appErr        *model.AppError
+	)
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+
+	contentURLs, appErr = embedCtx.App.Srv().ProductService().DigitalContentURLSByOptions(&model.DigitalContentUrlFilterOptions{
+		LineID: squirrel.Eq{store.DigitalContentURLTableName + ".LineID": orderLineIDs},
+	})
+	if appErr != nil {
+		err = appErr
+		goto errorLabel
+	}
+	contentURLMap = lo.SliceToMap(contentURLs, func(c *model.DigitalContentUrl) (string, *model.DigitalContentUrl) { return *c.LineID, c })
+
+	for idx, id := range orderLineIDs {
+		res[idx] = &dataloader.Result[*model.DigitalContentUrl]{Data: contentURLMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range orderLineIDs {
+		res[idx] = &dataloader.Result[*model.DigitalContentUrl]{Error: err}
+	}
+	return res
+}

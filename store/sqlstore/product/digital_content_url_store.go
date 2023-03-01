@@ -117,6 +117,9 @@ func (s *SqlDigitalContentUrlStore) FilterByOptions(options *model.DigitalConten
 	if options.ContentID != nil {
 		query = query.Where(options.ContentID)
 	}
+	if options.LineID != nil {
+		query = query.Where(options.LineID)
+	}
 
 	queryString, args, err := query.ToSql()
 	if err != nil {

@@ -84,8 +84,16 @@ func SystemOrderLineToGraphqlOrderLine(line *model.OrderLine) *OrderLine {
 	return res
 }
 
-func (o *OrderLine) Thumbnail(ctx context.Context) (*Image, error) {
+func (o *OrderLine) Thumbnail(ctx context.Context, args struct{ Size *int32 }) (*Image, error) {
 	panic("not implemented")
+}
+
+func (o *OrderLine) DigitalContentURL(ctx context.Context) (*DigitalContentURL, error) {
+	url, err := DigitalContentUrlByOrderLineID.Load(ctx, o.ID)()
+	if err != nil {
+		return nil, err
+	}
+	return systemDigitalContentURLToGraphqlDigitalContentURL(url), nil
 }
 
 func (o *OrderLine) Allocations(ctx context.Context) ([]*Allocation, error) {

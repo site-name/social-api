@@ -132,6 +132,25 @@ func SystemOrderEventToGraphqlOrderEvent(o *model.OrderEvent) *OrderEvent {
 	return res
 }
 
+func (o *OrderEvent) Discount(ctx context.Context) (*OrderEventDiscountObject, error) {
+	discountObj := o.event.Parameters.Get("discount")
+	if discountObj == nil {
+		return nil, nil
+	}
+
+	obj, ok := discountObj.(model.StringInterface)
+	if !ok {
+		return nil, nil
+	}
+
+	currency := obj.Get("currency")
+	if currency == nil {
+		return nil, nil
+	}
+
+	panic("not implemented")
+}
+
 func (o *OrderEvent) RelatedOrder(ctx context.Context) (*Order, error) {
 	orderID, ok := o.event.Parameters["related_order_pk"]
 	if ok && orderID != nil {

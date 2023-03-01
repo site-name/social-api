@@ -912,7 +912,7 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines model.Checko
 		err        error
 	)
 	if quantityCheck {
-		warehouses, err = s.srv.Store.Warehouse().ApplicableForClickAndCollect(checkoutLines, countryCode)
+		warehouses, err = s.srv.Store.Warehouse().ApplicableForClickAndCollectCheckoutLines(checkoutLines, countryCode)
 	} else {
 		warehouses, err = s.srv.Store.Warehouse().ApplicableForClickAndCollectNoQuantityCheck(checkoutLines, countryCode)
 	}

@@ -435,7 +435,7 @@ func (u *User) UserPermissions(ctx context.Context) ([]*UserPermission, error) {
 	panic("not implemented")
 }
 
-func (u *User) Avatar(ctx context.Context) (*Image, error) {
+func (u *User) Avatar(ctx context.Context, args struct{ Size *int32 }) (*Image, error) {
 	panic("not implemented")
 }
 
@@ -480,6 +480,20 @@ errorLabel:
 
 /*-------------------------- CustomerEvent --------------------------------*/
 
+type CustomerEvent struct {
+	ID      string              `json:"id"`
+	Date    *DateTime           `json:"date"`
+	Type    *CustomerEventsEnum `json:"type"`
+	Message *string             `json:"message"`
+	Count   *int32              `json:"count"`
+
+	event *model.CustomerEvent
+	// User      *User               `json:"user"`
+	// App       *App                `json:"app"`
+	// Order     *Order              `json:"order"`
+	// OrderLine *OrderLine          `json:"orderLine"`
+}
+
 func SystemCustomerEventToGraphqlCustomerEvent(event *model.CustomerEvent) *CustomerEvent {
 	if event == nil {
 		return nil
@@ -501,13 +515,26 @@ func SystemCustomerEventToGraphqlCustomerEvent(event *model.CustomerEvent) *Cust
 		res.Count = model.NewPrimitive(int32(count.(int)))
 	}
 
-	res.userID = event.UserID
-	res.orderID = event.OrderID
-	if orderLineID, ok := event.Parameters["order_line_pk"]; ok && orderLineID != nil {
-		res.orderLineID = model.NewPrimitive(orderLineID.(string))
-	}
+	res.event = event
 
 	return res
+}
+
+func (c *CustomerEvent) App(ctx context.Context) (*App, error) {
+	panic("not implemented")
+}
+
+func (c *CustomerEvent) Order(ctx context.Context) (*Order, error) {
+	if c.event.OrderID == nil {
+		return nil, nil
+	}
+
+	order, err := OrderByIdLoader.Load(ctx, *c.event.OrderID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemOrderToGraphqlOrder(order), nil
 }
 
 func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.CustomerEvent] {
@@ -559,38 +586,39 @@ func (c *CustomerEvent) User(ctx context.Context) (*User, error) {
 		return nil, err
 	}
 
-	if (c.userID != nil && *c.userID == embedCtx.AppContext.Session().UserId) ||
+	if (c.event.UserID != nil && *c.event.UserID == embedCtx.AppContext.Session().UserId) ||
 		embedCtx.App.Srv().
 			AccountService().
 			SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageUsers, model.PermissionManageStaff) {
 
 		// determine user id
-		var userID string
-		if c.userID != nil {
-			userID = *c.userID
-		} else {
-			userID = embedCtx.AppContext.Session().UserId
-		}
-		user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, userID)
-		if appErr != nil {
-			return nil, appErr
+		if c.event.UserID != nil {
+			user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, *c.event.UserID)
+			if appErr != nil {
+				return nil, appErr
+			}
+
+			return SystemUserToGraphqlUser(user), nil
 		}
 
-		return SystemUserToGraphqlUser(user), nil
+		return nil, nil
 	}
 
 	return nil, model.NewAppError("customerEvent.User", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 }
 
 func (c *CustomerEvent) OrderLine(ctx context.Context) (*OrderLine, error) {
-	if c.orderLineID != nil {
-		line, err := OrderLineByIdLoader.Load(ctx, *c.orderLineID)()
-		if err != nil {
-			return nil, err
-		}
-
-		return SystemOrderLineToGraphqlOrderLine(line), nil
+	orderLineID := c.event.Parameters.Get("order_line_pk")
+	if orderLineID == nil {
+		return nil, nil
 	}
+
+	line, err := OrderLineByIdLoader.Load(ctx, orderLineID.(string))()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemOrderLineToGraphqlOrderLine(line), nil
 
 	return nil, nil
 }

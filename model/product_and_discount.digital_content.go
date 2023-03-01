@@ -108,13 +108,14 @@ type DigitalContentUrl struct {
 	ContentID   string  `json:"content_id"`
 	CreateAt    int64   `json:"create_at"`    // DEFAULT UTC now
 	DownloadNum int     `json:"download_num"` //
-	LineID      *string `json:"line_id"`      // order line, unique
+	LineID      *string `json:"line_id"`      // 1-1 order line, unique
 }
 
 type DigitalContentUrlFilterOptions struct {
 	Id        squirrel.Sqlizer
 	Token     squirrel.Sqlizer
 	ContentID squirrel.Sqlizer
+	LineID    squirrel.Sqlizer
 }
 
 func (d *DigitalContentUrl) IsValid() *AppError {

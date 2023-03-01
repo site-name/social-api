@@ -78,7 +78,11 @@ func SystemCheckoutToGraphqlCheckout(ckout *model.Checkout) *Checkout {
 }
 
 func (c *Checkout) SubtotalPrice(ctx context.Context) (*TaxedMoney, error) {
-	panic("not implemented")
+	panic("not implemented") // TODO: complete plugin manager
+}
+
+func (c *Checkout) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
+	panic("not implemented") // TODO: complete plugin manager
 }
 
 func (c *Checkout) ShippingPrice(ctx context.Context) (*TaxedMoney, error) {
@@ -321,7 +325,7 @@ func (c *Checkout) Lines(ctx context.Context) ([]*CheckoutLine, error) {
 	return DataloaderResultMap(lines, SystemCheckoutLineToGraphqlCheckoutLine), nil
 }
 
-func (c *Checkout) DeliveryMethod(ctx context.Context) (*Warehouse, error) {
+func (c *Checkout) DeliveryMethod(ctx context.Context) (DeliveryMethod, error) {
 	if c.checkout.CollectionPointID != nil {
 		warehouse, err := WarehouseByIdLoader.Load(ctx, *c.checkout.CollectionPointID)()
 		if err != nil {
