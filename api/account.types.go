@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -167,9 +166,9 @@ func SystemUserToGraphqlUser(u *model.User) *User {
 		note:                     u.Note,
 		Metadata:                 MetadataToSlice(u.Metadata),
 		PrivateMetadata:          MetadataToSlice(u.PrivateMetadata),
+		DateJoined:               DateTime{util.TimeFromMillis(u.CreateAt)},
 	}
 
-	res.DateJoined = DateTime{util.TimeFromMillis(u.CreateAt)}
 	if u.LastActivityAt != 0 {
 		res.LastLogin = &DateTime{util.TimeFromMillis(u.LastActivityAt)}
 	}
@@ -237,7 +236,6 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string 
 	} else {
 		checkouts, err = CheckoutByUserAndChannelLoader.Load(ctx, u.ID+"__"+*args.Channel)()
 	}
-
 	if err != nil {
 		return nil, err
 	}
@@ -260,31 +258,20 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 		return nil, appErr
 	}
 
-	return lo.Map(addresses, func(a *model.Address, _ int) *Address {
-		return SystemAddressToGraphqlAddress(a)
-	}), nil
+	return DataloaderResultMap(addresses, SystemAddressToGraphqlAddress), nil
 }
 
 // NOTE: giftcards are ordering by code
-func (u *User) GiftCards(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*GiftCardCountableConnection, error) {
+func (u *User) GiftCards(ctx context.Context, args GraphqlParams) (*GiftCardCountableConnection, error) {
 	giftcards, err := GiftCardsByUserLoader.Load(ctx, u.ID)()
 	if err != nil {
 		return nil, err
 	}
 
 	p := graphqlPaginator[*model.GiftCard, string]{
-		data:    giftcards,
-		keyFunc: func(gc *model.GiftCard) string { return gc.Code },
-
-		before: args.Before,
-		after:  args.After,
-		first:  args.First,
-		last:   args.Last,
+		data:          giftcards,
+		keyFunc:       func(gc *model.GiftCard) string { return gc.Code },
+		GraphqlParams: args,
 	}
 
 	data, hasPresious, hasNext, appErr := p.parse("User.GiftCards")
@@ -313,24 +300,17 @@ func (u *User) GiftCards(ctx context.Context, args struct {
 }
 
 // NOTE: orders are ordering by CreateAt
-func (u *User) Orders(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*OrderCountableConnection, error) {
-
+func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableConnection, error) {
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
 	}
 
-	currentSession := embedCtx.AppContext.Session()
-
 	orders, err := OrdersByUserLoader.Load(ctx, u.ID)()
 	if err != nil {
 		return nil, err
 	}
+	currentSession := embedCtx.AppContext.Session()
 
 	// if current user has no order management permission and
 	// is not the owner of these orders,
@@ -341,31 +321,10 @@ func (u *User) Orders(ctx context.Context, args struct {
 		orders = lo.Filter(orders, func(o *model.Order, _ int) bool { return o.Status != model.STATUS_DRAFT })
 	}
 
-	// parse before/after
-	var (
-		intBefore int64
-		intAfter  int64
-	)
-	if args.Before != nil {
-		intBefore, err = strconv.ParseInt(*args.Before, 10, 64)
-		if err != nil {
-			return nil, model.NewAppError("User.Orders", model.PaginationError, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
-		}
-	}
-	if args.After != nil {
-		intAfter, err = strconv.ParseInt(*args.After, 10, 64)
-		if err != nil {
-			return nil, model.NewAppError("User.Orders", model.PaginationError, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
-		}
-	}
-
 	p := graphqlPaginator[*model.Order, int64]{
-		data:    orders,
-		keyFunc: func(o *model.Order) int64 { return o.CreateAt },
-		first:   args.First,
-		last:    args.Last,
-		before:  &intBefore,
-		after:   &intAfter,
+		data:          orders,
+		keyFunc:       func(o *model.Order) int64 { return o.CreateAt },
+		GraphqlParams: args,
 	}
 
 	data, hasPrev, hasNext, appErr := p.parse("User.Orders")
@@ -619,8 +578,6 @@ func (c *CustomerEvent) OrderLine(ctx context.Context) (*OrderLine, error) {
 	}
 
 	return SystemOrderLineToGraphqlOrderLine(line), nil
-
-	return nil, nil
 }
 
 // ------------------- StaffNotificationRecipient

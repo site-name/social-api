@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
 )
@@ -54,41 +53,16 @@ func (s *Sale) Translation(ctx context.Context, args struct{ LanguageCode Langua
 	panic("not implemented")
 }
 
-func (s *Sale) Categories(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*CategoryCountableConnection, error) {
+func (s *Sale) Categories(ctx context.Context, args GraphqlParams) (*CategoryCountableConnection, error) {
 	categories, err := CategoriesBySaleIDLoader.Load(ctx, s.ID)()
 	if err != nil {
 		return nil, err
 	}
 
-	var before *string
-	var after *string
-	if args.Before != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.Before)
-		if err != nil {
-			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
-		}
-		before = model.NewPrimitive(string(data))
-	}
-	if args.After != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.After)
-		if err != nil {
-			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
-		}
-		after = model.NewPrimitive(string(data))
-	}
-
 	p := graphqlPaginator[*model.Category, string]{
-		data:    categories,
-		keyFunc: func(c *model.Category) string { return c.Slug },
-		before:  before,
-		after:   after,
-		first:   args.First,
-		last:    args.Last,
+		data:          categories,
+		keyFunc:       func(c *model.Category) string { return c.Slug },
+		GraphqlParams: args,
 	}
 
 	data, hasPrev, hasNext, appErr := p.parse("sale.Categories")
@@ -116,41 +90,16 @@ func (s *Sale) Categories(ctx context.Context, args struct {
 	return res, nil
 }
 
-func (s *Sale) Collections(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*CollectionCountableConnection, error) {
+func (s *Sale) Collections(ctx context.Context, args GraphqlParams) (*CollectionCountableConnection, error) {
 	collections, err := CollectionsBySaleIDLoader.Load(ctx, s.ID)()
 	if err != nil {
 		return nil, err
 	}
 
-	var before *string
-	var after *string
-	if args.Before != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.Before)
-		if err != nil {
-			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
-		}
-		before = model.NewPrimitive(string(data))
-	}
-	if args.After != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.After)
-		if err != nil {
-			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
-		}
-		after = model.NewPrimitive(string(data))
-	}
-
 	p := graphqlPaginator[*model.Collection, string]{
-		data:    collections,
-		keyFunc: func(c *model.Collection) string { return c.Slug },
-		before:  before,
-		after:   after,
-		first:   args.First,
-		last:    args.Last,
+		data:          collections,
+		keyFunc:       func(c *model.Collection) string { return c.Slug },
+		GraphqlParams: args,
 	}
 
 	data, hasPrev, hasNext, appErr := p.parse("Sale.Collections")
@@ -177,41 +126,16 @@ func (s *Sale) Collections(ctx context.Context, args struct {
 	return res, nil
 }
 
-func (s *Sale) Products(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*ProductCountableConnection, error) {
+func (s *Sale) Products(ctx context.Context, args GraphqlParams) (*ProductCountableConnection, error) {
 	products, err := ProductsBySaleIDLoader.Load(ctx, s.ID)()
 	if err != nil {
 		return nil, err
 	}
 
-	var before *string
-	var after *string
-	if args.Before != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.Before)
-		if err != nil {
-			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
-		}
-		before = model.NewPrimitive(string(data))
-	}
-	if args.After != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.After)
-		if err != nil {
-			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
-		}
-		after = model.NewPrimitive(string(data))
-	}
-
 	p := graphqlPaginator[*model.Product, string]{
-		data:    products,
-		keyFunc: func(p *model.Product) string { return p.Slug },
-		before:  before,
-		after:   after,
-		first:   args.First,
-		last:    args.Last,
+		data:          products,
+		keyFunc:       func(p *model.Product) string { return p.Slug },
+		GraphqlParams: args,
 	}
 
 	data, hasPrev, hasNext, appErr := p.parse("Sale.Products")
@@ -238,41 +162,16 @@ func (s *Sale) Products(ctx context.Context, args struct {
 	return res, nil
 }
 
-func (s *Sale) Variants(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*ProductVariantCountableConnection, error) {
+func (s *Sale) Variants(ctx context.Context, args GraphqlParams) (*ProductVariantCountableConnection, error) {
 	variants, err := ProductVariantsBySaleIDLoader.Load(ctx, s.ID)()
 	if err != nil {
 		return nil, err
 	}
 
-	var before *string
-	var after *string
-	if args.Before != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.Before)
-		if err != nil {
-			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
-		}
-		before = model.NewPrimitive(string(data))
-	}
-	if args.After != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.After)
-		if err != nil {
-			return nil, model.NewAppError("Sale.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
-		}
-		after = model.NewPrimitive(string(data))
-	}
-
 	p := graphqlPaginator[*model.ProductVariant, string]{
-		data:    variants,
-		keyFunc: func(pv *model.ProductVariant) string { return pv.Sku },
-		before:  before,
-		after:   after,
-		first:   args.First,
-		last:    args.Last,
+		data:          variants,
+		keyFunc:       func(pv *model.ProductVariant) string { return pv.Sku },
+		GraphqlParams: args,
 	}
 
 	data, hasPrev, hasNext, appErr := p.parse("Sale.Variants")

@@ -3,16 +3,20 @@ package api
 import (
 	"context"
 	"embed"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
+	"unsafe"
 
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
+	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -99,14 +103,12 @@ func SystemTaxedMoneyToGraphqlTaxedMoney(money *goprices.TaxedMoney) *TaxedMoney
 	}
 
 	tax, _ := money.Tax()
-	res := &TaxedMoney{
+	return &TaxedMoney{
 		Currency: money.Currency,
 		Gross:    SystemMoneyToGraphqlMoney(money.Gross),
 		Net:      SystemMoneyToGraphqlMoney(money.Net),
 		Tax:      SystemMoneyToGraphqlMoney(tax),
 	}
-
-	return res
 }
 
 func SystemTaxedMoneyRangeToGraphqlTaxedMoneyRange(m *goprices.TaxedMoneyRange) *TaxedMoneyRange {
@@ -168,12 +170,153 @@ func DataloaderResultMap[S any, D any](slice []S, iteratee func(S) D) []D {
 	return res
 }
 
+// parseOperand can possibly returns (nil, nil)
+func (p *graphqlPaginator[_, K]) parseOperand() (*K, error) {
+	var res K
+
+	// in case users query resuts for the first time
+	if p.Before == nil && p.After == nil {
+		return nil, nil
+	}
+
+	// convert base64 cursor to string:
+	var strCursorValue []byte
+	var err error
+	if p.Before != nil {
+		strCursorValue, err = base64.StdEncoding.DecodeString(*p.Before)
+	} else if p.After != nil {
+		strCursorValue, err = base64.StdEncoding.DecodeString(*p.After)
+	}
+	if err != nil {
+		return nil, err
+	}
+	var cursorValue = string(strCursorValue)
+
+	switch any(res).(type) {
+	case string:
+		return (*K)(unsafe.Pointer(&cursorValue)), nil
+
+	case float64:
+		float, err := strconv.ParseFloat(cursorValue, 64)
+		if err != nil {
+			return nil, err
+		}
+		return (*K)(unsafe.Pointer(&float)), nil
+
+	case int:
+		i32, err := strconv.ParseInt(cursorValue, 10, 32)
+		if err != nil {
+			return nil, err
+		}
+		return (*K)(unsafe.Pointer(&i32)), nil
+
+	case int64:
+		i64, err := strconv.ParseInt(cursorValue, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		return (*K)(unsafe.Pointer(&i64)), nil
+
+	case uint64:
+		ui64, err := strconv.ParseUint(cursorValue, 10, 64)
+		if err != nil {
+			return nil, nil
+		}
+		return (*K)(unsafe.Pointer(&ui64)), nil
+
+	case time.Time:
+		tim, err := time.Parse(time.RFC3339, cursorValue)
+		if err != nil {
+			return nil, err
+		}
+		return (*K)(unsafe.Pointer(&tim)), nil
+
+	case decimal.Decimal:
+		deci, err := decimal.NewFromString(cursorValue)
+		if err != nil {
+			return nil, err
+		}
+		return (*K)(unsafe.Pointer(&deci)), nil
+
+	default:
+		return nil, fmt.Errorf("unknwon dest type: %T", res)
+	}
+}
+
+// If the type is time.Time, we always parse it in RFC3339 format
+type graphqlCursorType interface {
+	string | float64 | int | int64 | uint64 | time.Time | decimal.Decimal
+}
+
+type CompareOrder int8
+
+const (
+	Lesser CompareOrder = iota
+	Equal
+	Greater
+)
+
+func comparePrimitives[T util.Ordered](a, b T) CompareOrder {
+	if a < b {
+		return Lesser
+	} else if a > b {
+		return Greater
+	}
+	return Equal
+}
+
+// compare compares a and b and returns CompareOrder.
+func compare[K graphqlCursorType](a, b K) CompareOrder {
+	anyA, anyB := any(a), any(b)
+
+	switch t := anyA.(type) {
+	case time.Time:
+		bTime := anyB.(time.Time)
+		switch {
+		case t.Before(bTime):
+			return Lesser
+		case t.After(bTime):
+			return Greater
+		}
+		return Equal
+
+	case decimal.Decimal:
+		deciB := anyB.(decimal.Decimal)
+		switch {
+		case t.LessThan(deciB):
+			return Lesser
+		case t.GreaterThan(deciB):
+			return Greater
+		}
+		return Equal
+
+	case string:
+		return comparePrimitives(t, anyB.(string))
+	case int:
+		return comparePrimitives(t, anyB.(int))
+	case float64:
+		return comparePrimitives(t, anyB.(float64))
+	case int64:
+		return comparePrimitives(t, anyB.(int64))
+
+	default:
+		return comparePrimitives(t.(uint64), anyB.(uint64))
+	}
+}
+
+type GraphqlParams struct {
+	Before *string
+	After  *string
+	First  *int32
+	Last   *int32
+}
+
 func (s *graphqlPaginator[T, K]) Len() int {
 	return len(s.data)
 }
 
 func (s *graphqlPaginator[T, K]) Less(i, j int) bool {
-	return s.keyFunc(s.data[i]) < s.keyFunc(s.data[j])
+	return compare(s.keyFunc(s.data[i]), s.keyFunc(s.data[j])) == Lesser
 }
 
 func (s *graphqlPaginator[T, K]) Swap(i, j int) {
@@ -181,31 +324,34 @@ func (s *graphqlPaginator[T, K]) Swap(i, j int) {
 }
 
 // graphqlPaginator implements sort.Interface
-type graphqlPaginator[T any, K util.Ordered] struct {
+type graphqlPaginator[
+	T any,
+	K graphqlCursorType,
+] struct {
 	data    []T
 	keyFunc func(T) K
-
-	before *K
-	after  *K
-	first  *int32
-	last   *int32
+	GraphqlParams
 }
 
-func (g *graphqlPaginator[T, K]) parse(apiName string) (data []T, hasPreviousPage bool, hasNextPage bool, err *model.AppError) {
-	if (g.first != nil && g.last != nil) || (g.first == nil && g.last == nil) {
-		return nil, false, false, model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "first / last"}, "provide either first or last, not both", http.StatusBadRequest)
+func (g *graphqlPaginator[T, K]) parse(apiName string) (data []T, hasPreviousPage bool, hasNextPage bool, appErr *model.AppError) {
+	if (g.First != nil && g.Last != nil) || (g.First == nil && g.Last == nil) {
+		appErr = model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "First / Last"}, "provide either First or Last, not both", http.StatusBadRequest)
+		return
 	}
-	if g.first != nil && g.before != nil {
-		return nil, false, false, model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "first / before"}, "first and before can't go together", http.StatusBadRequest)
+	if g.First != nil && g.Before != nil {
+		appErr = model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "First / Before"}, "First and Before can't go together", http.StatusBadRequest)
+		return
 	}
-	if g.last != nil && g.after != nil {
-		return nil, false, false, model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "last / after"}, "last and after can't go together", http.StatusBadRequest)
+	if g.Last != nil && g.After != nil {
+		appErr = model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "Last / After"}, "Last and After can't go together", http.StatusBadRequest)
+		return
 	}
-	if g.before != nil && g.after != nil {
-		return nil, false, false, model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "before / after"}, "before and after can'g go together", http.StatusBadRequest)
+	if g.Before != nil && g.After != nil {
+		appErr = model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "Before / After"}, "Before and After can'g go together", http.StatusBadRequest)
+		return
 	}
 
-	orderASC := g.first != nil // order ascending or not
+	orderASC := g.First != nil // order ascending or not
 
 	if orderASC {
 		sort.Sort(g)
@@ -213,70 +359,64 @@ func (g *graphqlPaginator[T, K]) parse(apiName string) (data []T, hasPreviousPag
 		sort.Sort(sort.Reverse(g))
 	}
 
-	var operand K
-	if g.before != nil {
-		operand = *g.before
-	} else if g.after != nil {
-		operand = *g.after
+	operand, err := g.parseOperand()
+	if err != nil {
+		appErr = model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "Before / After"}, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	var emptyK K
-	if operand == emptyK {
+	if operand == nil {
 		if orderASC {
-			if *g.first < int32(g.Len()) { // prevent slicing out of range
-				data = g.data[:*g.first]
+			if *g.First < int32(g.Len()) { // prevent slicing out of range
+				data = g.data[:*g.First]
 				hasNextPage = true
 			} else {
 				data = g.data[:]
 			}
-
 			return
 		}
 
 		// order desc:
-
-		if *g.last < int32(g.Len()) { // prevent slicing out of range
-			data = g.data[:*g.last]
-			hasPreviousPage = true
+		if *g.Last < int32(g.Len()) { // prevent slicing out of range
+			data = g.data[:*g.Last]
+			hasNextPage = true
 		} else {
 			data = g.data[:]
 		}
-
 		return
 	}
 
 	// case operand provided:
-
 	index := sort.Search(g.Len(), func(i int) bool {
 		value := g.keyFunc(g.data[i])
+		cmp := compare(value, *operand)
+
 		if orderASC {
-			return value >= operand
+			return cmp == Greater || cmp == Equal // >=
 		}
-		return value <= operand
+		return cmp == Lesser || cmp == Equal // <=
 	})
 
-	// if not found, sort.Search returns exactly first int argument passed
+	// if not found, sort.Search returns exactly First int argument passed
 	// we need to check it here
 	if index >= g.Len() {
-		return nil, false, false, model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "before / after"}, "invalid before or after provided", http.StatusBadRequest)
+		appErr = model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "before / after"}, "invalid before or after provided", http.StatusBadRequest)
+		return
 	}
 
-	if orderASC {
-		data = g.data[index+1:]
-		hasPreviousPage = true
+	hasPreviousPage = true
+	data = g.data[index+1:]
 
-		if *g.first < int32(len(data)) {
-			data = data[:*g.first]
+	if orderASC {
+		if *g.First < int32(len(data)) {
+			data = data[:*g.First]
 			hasNextPage = true
 		}
 		return
 	}
 
-	data = g.data[index+1:]
-	hasPreviousPage = true
-
-	if *g.last < int32(len(data)) {
-		data = data[:*g.last]
+	if *g.Last < int32(len(data)) {
+		data = data[:*g.Last]
 		hasNextPage = true
 	}
 	return

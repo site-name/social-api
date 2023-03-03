@@ -10,7 +10,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -360,46 +359,16 @@ func (v *Voucher) Translation(ctx context.Context, args struct{ LanguageCode Lan
 }
 
 // categories are order by names
-func (v *Voucher) Categories(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*CategoryCountableConnection, error) {
+func (v *Voucher) Categories(ctx context.Context, args GraphqlParams) (*CategoryCountableConnection, error) {
 	categories, err := CategoriesByVoucherIDLoader.Load(ctx, v.ID)()
 	if err != nil {
 		return nil, err
 	}
 
-	// unbase64:
-	var (
-		before *string
-		after  *string
-	)
-
-	if args.Before != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.Before)
-		if err != nil {
-			return nil, model.NewAppError("Voucher.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
-		}
-		before = model.NewPrimitive(string(data))
-	}
-	if args.After != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.After)
-		if err != nil {
-			return nil, model.NewAppError("Voucher.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
-		}
-		after = model.NewPrimitive(string(data))
-	}
-
 	g := graphqlPaginator[*model.Category, string]{
-		data:    categories,
-		keyFunc: func(c *model.Category) string { return c.Name },
-
-		before: before,
-		after:  after,
-		first:  args.First,
-		last:   args.Last,
+		data:          categories,
+		keyFunc:       func(c *model.Category) string { return c.Name },
+		GraphqlParams: args,
 	}
 
 	data, hasPrev, hasNext, appErr := g.parse("Voucher.Categories")
@@ -427,45 +396,16 @@ func (v *Voucher) Categories(ctx context.Context, args struct {
 }
 
 // collections order by slugs
-func (v *Voucher) Collections(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*CollectionCountableConnection, error) {
+func (v *Voucher) Collections(ctx context.Context, args GraphqlParams) (*CollectionCountableConnection, error) {
 	collections, err := CollectionsByVoucherIDLoader.Load(ctx, v.ID)()
 	if err != nil {
 		return nil, err
 	}
 
-	// unbase64
-	var (
-		before *string
-		after  *string
-	)
-
-	if args.Before != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.Before)
-		if err != nil {
-			return nil, model.NewAppError("Voucher.Collections", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
-		}
-		before = model.NewPrimitive(string(data))
-	}
-	if args.After != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.After)
-		if err != nil {
-			return nil, model.NewAppError("Voucher.Collections", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
-		}
-		after = model.NewPrimitive(string(data))
-	}
-
 	g := graphqlPaginator[*model.Collection, string]{
-		data:    collections,
-		keyFunc: func(c *model.Collection) string { return c.Slug },
-		before:  before,
-		after:   after,
-		first:   args.First,
-		last:    args.Last,
+		data:          collections,
+		keyFunc:       func(c *model.Collection) string { return c.Slug },
+		GraphqlParams: args,
 	}
 
 	data, hasPrev, hasNext, appErr := g.parse("Voucher.Collections")
@@ -488,47 +428,16 @@ func (v *Voucher) Collections(ctx context.Context, args struct {
 	return res, nil
 }
 
-func (v *Voucher) Products(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*ProductCountableConnection, error) {
+func (v *Voucher) Products(ctx context.Context, args GraphqlParams) (*ProductCountableConnection, error) {
 	products, err := ProductsByVoucherIDLoader.Load(ctx, v.ID)()
 	if err != nil {
 		return nil, err
 	}
 
-	// unbase64
-	var (
-		before *string
-		after  *string
-	)
-
-	if args.Before != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.Before)
-		if err != nil {
-			return nil, model.NewAppError("Voucher.Products", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
-		}
-
-		before = model.NewPrimitive(string(data))
-	}
-	if args.After != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.After)
-		if err != nil {
-			return nil, model.NewAppError("Voucher.Products", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
-		}
-
-		after = model.NewPrimitive(string(data))
-	}
-
 	g := graphqlPaginator[*model.Product, string]{
-		data:    products,
-		keyFunc: func(p *model.Product) string { return p.Slug },
-		before:  before,
-		after:   after,
-		first:   args.First,
-		last:    args.Last,
+		data:          products,
+		keyFunc:       func(p *model.Product) string { return p.Slug },
+		GraphqlParams: args,
 	}
 
 	data, hasPrev, hasNext, appErr := g.parse("voucher.Products")
@@ -555,45 +464,16 @@ func (v *Voucher) Products(ctx context.Context, args struct {
 	return res, nil
 }
 
-func (v *Voucher) Variants(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*ProductVariantCountableConnection, error) {
+func (v *Voucher) Variants(ctx context.Context, args GraphqlParams) (*ProductVariantCountableConnection, error) {
 	variants, err := ProductVariantsByVoucherIDLoader.Load(ctx, v.ID)()
 	if err != nil {
 		return nil, err
 	}
 
-	// unbase 64
-	var before *string
-	var after *string
-
-	if args.Before != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.Before)
-		if err != nil {
-			return nil, model.NewAppError("Voucher.Variants", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
-		}
-
-		before = model.NewPrimitive(string(data))
-	}
-	if args.After != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.After)
-		if err != nil {
-			return nil, model.NewAppError("Voucher.Variants", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
-		}
-
-		after = model.NewPrimitive(string(data))
-	}
-
 	p := graphqlPaginator[*model.ProductVariant, string]{
-		data:    variants,
-		keyFunc: func(pv *model.ProductVariant) string { return pv.Sku },
-		before:  before,
-		after:   after,
-		first:   args.First,
-		last:    args.Last,
+		data:          variants,
+		keyFunc:       func(pv *model.ProductVariant) string { return pv.Sku },
+		GraphqlParams: args,
 	}
 
 	data, hasPrev, hasNext, appErr := p.parse("Voucher.Variants")

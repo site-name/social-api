@@ -9,7 +9,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -185,12 +184,7 @@ func (s *ShippingMethod) PostalCodeRules(ctx context.Context) ([]*ShippingMethod
 }
 
 // NOTE: products are ordered by their slugs
-func (s *ShippingMethod) ExcludedProducts(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*ProductCountableConnection, error) {
+func (s *ShippingMethod) ExcludedProducts(ctx context.Context, args GraphqlParams) (*ProductCountableConnection, error) {
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
@@ -204,31 +198,10 @@ func (s *ShippingMethod) ExcludedProducts(ctx context.Context, args struct {
 		return nil, err
 	}
 
-	var (
-		before *string
-		after  *string
-	)
-	if args.Before != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.Before)
-		if err != nil {
-			return nil, model.NewAppError("ShippingMethod.ExcludedProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "before"}, err.Error(), http.StatusBadRequest)
-		}
-		before = model.NewPrimitive(string(data))
-	} else if args.After != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.After)
-		if err != nil {
-			return nil, model.NewAppError("ShippingMethod.ExcludedProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "after"}, err.Error(), http.StatusBadRequest)
-		}
-		after = model.NewPrimitive(string(data))
-	}
-
 	paginator := &graphqlPaginator[*model.Product, string]{
-		data:    products,
-		keyFunc: func(p *model.Product) string { return p.Slug },
-		before:  before,
-		after:   after,
-		first:   args.First,
-		last:    args.Last,
+		data:          products,
+		keyFunc:       func(p *model.Product) string { return p.Slug },
+		GraphqlParams: args,
 	}
 
 	data, hasPrev, hasNext, appErr := paginator.parse("ShippingMethod.ExcludedProducts")

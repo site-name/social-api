@@ -2112,6 +2112,17 @@ type PageBulkPublish struct {
 	Errors []*PageError `json:"errors"`
 }
 
+type CountableConnection struct {
+	PageInfo   *PageInfo
+	TotalCount *int32
+	// Edges
+}
+
+type ConnectonEdge struct {
+	Node   any    `json:"node"`
+	Cursor string `json:"cursor"`
+}
+
 type PageCountableConnection struct {
 	PageInfo   *PageInfo            `json:"pageInfo"`
 	Edges      []*PageCountableEdge `json:"edges"`

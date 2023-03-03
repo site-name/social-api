@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/web"
@@ -485,30 +484,7 @@ func (p *ProductType) Weight(ctx context.Context) (*Weight, error) {
 }
 
 // ORDER BY Slug
-func (p *ProductType) AvailableAttributes(ctx context.Context, args struct {
-	Filter *AttributeFilterInput
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*AttributeCountableConnection, error) {
-
-	var before, after *string
-	if args.Before != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.Before)
-		if err != nil {
-			return nil, model.NewAppError("ProductType.AvailableAttributes", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args.Before"}, err.Error(), http.StatusBadRequest)
-		}
-		before = model.NewPrimitive(string(data))
-
-	} else if args.After != nil {
-		data, err := base64.StdEncoding.DecodeString(*args.After)
-		if err != nil {
-			return nil, model.NewAppError("ProductType.AvailableAttributes", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args.After"}, err.Error(), http.StatusBadRequest)
-		}
-		after = model.NewPrimitive(string(data))
-	}
-
+func (p *ProductType) AvailableAttributes(ctx context.Context, args GraphqlParams) (*AttributeCountableConnection, error) {
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
@@ -524,12 +500,9 @@ func (p *ProductType) AvailableAttributes(ctx context.Context, args struct {
 	}
 
 	pagin := &graphqlPaginator[*model.Attribute, string]{
-		data:    attributes,
-		keyFunc: func(a *model.Attribute) string { return a.Slug },
-		before:  before,
-		after:   after,
-		first:   args.First,
-		last:    args.Last,
+		data:          attributes,
+		keyFunc:       func(a *model.Attribute) string { return a.Slug },
+		GraphqlParams: args,
 	}
 
 	data, hasPrev, hasNext, appErr := pagin.parse("ProductType.AvailableAttributes")
