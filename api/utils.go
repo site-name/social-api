@@ -323,6 +323,8 @@ func (s *graphqlPaginator[T, K]) Swap(i, j int) {
 	s.data[i], s.data[j] = s.data[j], s.data[i]
 }
 
+const PaginationError = "api.graphql.pagination_params.invalid.app_error"
+
 // graphqlPaginator implements sort.Interface
 type graphqlPaginator[
 	T any,
@@ -335,19 +337,19 @@ type graphqlPaginator[
 
 func (g *graphqlPaginator[T, K]) parse(apiName string) (data []T, hasPreviousPage bool, hasNextPage bool, appErr *model.AppError) {
 	if (g.First != nil && g.Last != nil) || (g.First == nil && g.Last == nil) {
-		appErr = model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "First / Last"}, "provide either First or Last, not both", http.StatusBadRequest)
+		appErr = model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "provide either First or Last, not both", http.StatusBadRequest)
 		return
 	}
 	if g.First != nil && g.Before != nil {
-		appErr = model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "First / Before"}, "First and Before can't go together", http.StatusBadRequest)
+		appErr = model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Before"}, "First and Before can't go together", http.StatusBadRequest)
 		return
 	}
 	if g.Last != nil && g.After != nil {
-		appErr = model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "Last / After"}, "Last and After can't go together", http.StatusBadRequest)
+		appErr = model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "Last / After"}, "Last and After can't go together", http.StatusBadRequest)
 		return
 	}
 	if g.Before != nil && g.After != nil {
-		appErr = model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "Before / After"}, "Before and After can'g go together", http.StatusBadRequest)
+		appErr = model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "Before / After"}, "Before and After can'g go together", http.StatusBadRequest)
 		return
 	}
 
@@ -361,7 +363,7 @@ func (g *graphqlPaginator[T, K]) parse(apiName string) (data []T, hasPreviousPag
 
 	operand, err := g.parseOperand()
 	if err != nil {
-		appErr = model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "Before / After"}, err.Error(), http.StatusInternalServerError)
+		appErr = model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "Before / After"}, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -400,7 +402,7 @@ func (g *graphqlPaginator[T, K]) parse(apiName string) (data []T, hasPreviousPag
 	// if not found, sort.Search returns exactly First int argument passed
 	// we need to check it here
 	if index >= g.Len() {
-		appErr = model.NewAppError(apiName, model.PaginationError, map[string]interface{}{"Fields": "before / after"}, "invalid before or after provided", http.StatusBadRequest)
+		appErr = model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "before / after"}, "invalid before or after provided", http.StatusBadRequest)
 		return
 	}
 

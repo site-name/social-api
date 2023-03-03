@@ -56,7 +56,6 @@ type AttributeValueFilterOptions struct {
 	SelectForUpdate bool                       // is true, add `FOR UPDATE` suffic to the end of sql query
 
 	Ordering string
-	PaginationOptions
 }
 
 type AttributeValues []*AttributeValue

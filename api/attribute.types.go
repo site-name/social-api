@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/base64"
 	"net/http"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
@@ -175,234 +175,153 @@ func (a *Attribute) Choices(
 	args struct {
 		Filter *AttributeValueFilterInput
 		SortBy *AttributeChoicesSortingInput
-		Before *string
-		After  *string
-		First  *int32
-		Last   *int32
+		GraphqlParams
 	},
 ) (*AttributeValueCountableConnection, error) {
 	if !model.TYPES_WITH_CHOICES.Contains(a.attr.InputType) {
 		return nil, nil
 	}
 
-	// get embed context
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	attributeValues, err := AttributeValuesByAttributeIdLoader.Load(ctx, a.ID)()
 	if err != nil {
 		return nil, err
 	}
 
-	// construct filter options
-	filterOpts := &model.AttributeValueFilterOptions{
-		PaginationOptions: model.PaginationOptions{
-			Before: args.Before,
-			After:  args.After,
-			First:  args.First,
-			Last:   args.Last,
-		},
-	}
-
-	if args.SortBy != nil {
-		filterOpts.Order = args.SortBy.Direction
-
-		var field = "Slug"
-		if args.SortBy.Field == AttributeChoicesSortFieldName {
-			field = "Name"
-		}
-
-		filterOpts.OrderBy = field
+	keyFunc := func(v *model.AttributeValue) string { return v.Name }
+	if args.SortBy != nil && args.SortBy.Field == AttributeChoicesSortFieldSlug {
+		keyFunc = func(v *model.AttributeValue) string { return v.Slug }
 	}
 
 	// parse filter
 	if args.Filter != nil && args.Filter.Search != nil {
-		filterOpts.Extra = squirrel.Or{
-			squirrel.ILike{store.AttributeValueTableName + ".Name": *args.Filter.Search},
-			squirrel.ILike{store.AttributeValueTableName + ".Slug": *args.Filter.Search},
-		}
+		search := *args.Filter.Search
+
+		attributeValues = lo.Filter(attributeValues, func(v *model.AttributeValue, _ int) bool {
+			return v.Name == search || v.Slug == search
+		})
+	}
+	totalCount := len(attributeValues)
+
+	p := &graphqlPaginator[*model.AttributeValue, string]{
+		data:          attributeValues,
+		keyFunc:       keyFunc,
+		GraphqlParams: args.GraphqlParams,
 	}
 
-	// find attribute values conform to filter criterias
-	attributeValues, appErr := embedCtx.
-		App.
-		Srv().
-		AttributeService().
-		FilterAttributeValuesByOptions(*filterOpts)
+	data, hasPrev, hasNext, appErr := p.parse("Attribute.Choices")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	// count all attribute values that conform to filter criterias
-	totalValues, err := embedCtx.App.Srv().Store.AttributeValue().Count(filterOpts)
-	if err != nil {
-		return nil, model.NewAppError("Attribute.Choices", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	hasNextPage := len(attributeValues) == int(filterOpts.Limit())
-
-	edgesLength := len(attributeValues)
-	if hasNextPage {
-		edgesLength--
-	}
-
-	// construct return value
 	res := &AttributeValueCountableConnection{
-		TotalCount: model.NewPrimitive(int32(totalValues)), // NOT sure this can scale well
-		Edges:      make([]*AttributeValueCountableEdge, edgesLength),
-	}
-
-	for index := 0; index < edgesLength; index++ {
-
-		var cursor string
-		switch filterOpts.OrderBy {
-		case "Name":
-			cursor = base64.StdEncoding.EncodeToString([]byte(attributeValues[index].Name))
-		case "Slug":
-			cursor = base64.StdEncoding.EncodeToString([]byte(attributeValues[index].Slug))
-		}
-
-		res.Edges[index] = &AttributeValueCountableEdge{
-			Node:   SystemAttributeValueToGraphqlAttributeValue(attributeValues[index]),
-			Cursor: cursor,
-		}
+		TotalCount: (*int32)(unsafe.Pointer(&totalCount)),
+		Edges: lo.Map(data, func(v *model.AttributeValue, _ int) *AttributeValueCountableEdge {
+			return &AttributeValueCountableEdge{
+				Node:   SystemAttributeValueToGraphqlAttributeValue(v),
+				Cursor: base64.StdEncoding.EncodeToString([]byte(keyFunc(v))),
+			}
+		}),
 	}
 
 	res.PageInfo = &PageInfo{
-		HasPreviousPage: filterOpts.HasPreviousPage(),
-		HasNextPage:     hasNextPage,
+		HasPreviousPage: hasPrev,
+		HasNextPage:     hasNext,
 		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[edgesLength-1].Cursor,
+		EndCursor:       &res.Edges[len(data)-1].Cursor,
 	}
 
 	return res, nil
 }
 
-func (a *Attribute) ProductTypes(
-	ctx context.Context,
-	args struct {
-		Before *string
-		After  *string
-		First  *int32
-		Last   *int32
-	},
-) (*ProductTypeCountableConnection, error) {
+func (a *Attribute) ProductTypes(ctx context.Context, args GraphqlParams) (*ProductTypeCountableConnection, error) {
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
 	}
 
-	filterOpts := &model.ProductTypeFilterOption{
-		AttributeProducts_AttributeID: squirrel.Eq{store.AttributeProductTableName + ".AttributeID": a.ID},
-		PaginationOptions: model.PaginationOptions{
-			Before:  args.Before,
-			After:   args.After,
-			First:   args.First,
-			Last:    args.Last,
-			OrderBy: "Slug",
-			Order:   model.ASC,
-		},
-	}
-
 	productTypes, appErr := embedCtx.App.Srv().
 		ProductService().
-		ProductTypesByOptions(filterOpts)
+		ProductTypesByOptions(&model.ProductTypeFilterOption{
+			AttributeProducts_AttributeID: squirrel.Eq{store.AttributeProductTableName + ".AttributeID": a.ID},
+		})
+	if appErr != nil {
+		return nil, appErr
+	}
+	totalCount := len(productTypes)
+
+	p := &graphqlPaginator[*model.ProductType, string]{
+		data:          productTypes,
+		keyFunc:       func(pt *model.ProductType) string { return pt.Slug },
+		GraphqlParams: args,
+	}
+
+	data, hasPrev, hasNext, appErr := p.parse("Attribute.ProductTypes")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	totalProductTypes, err := embedCtx.App.Srv().
-		Store.ProductType().Count(filterOpts)
-	if err != nil {
-		return nil, model.NewAppError("Attribute.ProductTypes", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	hasNextPage := len(productTypes) == int(filterOpts.Limit())
-	edgesLength := len(productTypes)
-	if hasNextPage {
-		edgesLength--
-	}
-
 	res := &ProductTypeCountableConnection{
-		TotalCount: model.NewPrimitive(int32(totalProductTypes)),
-		Edges:      make([]*ProductTypeCountableEdge, edgesLength),
-	}
-
-	for i := 0; i < edgesLength; i++ {
-		res.Edges[i] = &ProductTypeCountableEdge{
-			Node:   SystemProductTypeToGraphqlProductType(productTypes[i]),
-			Cursor: base64.StdEncoding.EncodeToString([]byte(productTypes[i].Slug)),
-		}
+		TotalCount: (*int32)(unsafe.Pointer(&totalCount)),
+		Edges: lo.Map(data, func(pt *model.ProductType, _ int) *ProductTypeCountableEdge {
+			return &ProductTypeCountableEdge{
+				Node:   SystemProductTypeToGraphqlProductType(pt),
+				Cursor: base64.StdEncoding.EncodeToString([]byte(p.keyFunc(pt))),
+			}
+		}),
 	}
 
 	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNextPage,
-		HasPreviousPage: filterOpts.HasPreviousPage(),
+		HasNextPage:     hasNext,
+		HasPreviousPage: hasPrev,
 		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[edgesLength-1].Cursor,
+		EndCursor:       &res.Edges[len(data)-1].Cursor,
 	}
 
 	return res, nil
 }
 
-func (a *Attribute) ProductVariantTypes(
-	ctx context.Context,
-	args struct {
-		Before *string
-		After  *string
-		First  *int32
-		Last   *int32
-	},
-) (*ProductTypeCountableConnection, error) {
+func (a *Attribute) ProductVariantTypes(ctx context.Context, args GraphqlParams) (*ProductTypeCountableConnection, error) {
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
 	}
 
-	filterOpts := &model.ProductTypeFilterOption{
-		AttributeVariants_AttributeID: squirrel.Eq{store.AttributeVariantTableName + ".AttributeID": a.ID},
-		PaginationOptions: model.PaginationOptions{
-			Before:  args.Before,
-			After:   args.After,
-			First:   args.First,
-			Last:    args.Last,
-			OrderBy: "Slug",
-			Order:   model.ASC,
-		},
-	}
-
 	productTypes, appErr := embedCtx.App.Srv().
 		ProductService().
-		ProductTypesByOptions(filterOpts)
+		ProductTypesByOptions(&model.ProductTypeFilterOption{
+			AttributeVariants_AttributeID: squirrel.Eq{store.AttributeVariantTableName + ".AttributeID": a.ID},
+		})
+	if appErr != nil {
+		return nil, appErr
+	}
+	totalCount := len(productTypes)
+
+	p := &graphqlPaginator[*model.ProductType, string]{
+		data:          productTypes,
+		keyFunc:       func(pt *model.ProductType) string { return pt.Slug },
+		GraphqlParams: args,
+	}
+
+	data, hasPrev, hasNext, appErr := p.parse("Attribute.ProductVariantTypes")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	totalProductTypes, err := embedCtx.App.Srv().Store.ProductType().Count(filterOpts)
-	if err != nil {
-		return nil, model.NewAppError("Attribute.ProductVariantTypes", app.InternalServerErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	hasNextPage := len(productTypes) == int(filterOpts.Limit())
-	edgesLength := len(productTypes)
-	if hasNextPage {
-		edgesLength--
-	}
-
 	res := &ProductTypeCountableConnection{
-		TotalCount: model.NewPrimitive(int32(totalProductTypes)),
-		Edges:      make([]*ProductTypeCountableEdge, edgesLength),
-	}
-
-	for i := 0; i < edgesLength; i++ {
-		res.Edges[i] = &ProductTypeCountableEdge{
-			Node:   SystemProductTypeToGraphqlProductType(productTypes[i]),
-			Cursor: base64.StdEncoding.EncodeToString([]byte(productTypes[i].Slug)),
-		}
+		TotalCount: (*int32)(unsafe.Pointer(&totalCount)),
+		Edges: lo.Map(data, func(pt *model.ProductType, _ int) *ProductTypeCountableEdge {
+			return &ProductTypeCountableEdge{
+				Node:   SystemProductTypeToGraphqlProductType(pt),
+				Cursor: base64.StdEncoding.EncodeToString([]byte(p.keyFunc(pt))),
+			}
+		}),
 	}
 
 	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNextPage,
-		HasPreviousPage: filterOpts.HasPreviousPage(),
+		HasNextPage:     hasNext,
+		HasPreviousPage: hasPrev,
 		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[edgesLength-1].Cursor,
+		EndCursor:       &res.Edges[len(data)-1].Cursor,
 	}
 
 	return res, nil

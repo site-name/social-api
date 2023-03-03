@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -49,62 +50,41 @@ func SystemWarehouseToGraphqlWarehouse(wh *model.WareHouse) *Warehouse {
 	}
 }
 
-func (w *Warehouse) ShippingZones(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*ShippingZoneCountableConnection, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+func (w *Warehouse) ShippingZones(ctx context.Context, args GraphqlParams) (*ShippingZoneCountableConnection, error) {
+	shippingZones, err := ShippingZonesByWarehouseIDLoader.Load(ctx, w.ID)()
 	if err != nil {
 		return nil, err
 	}
 
-	filterOpts := &model.ShippingZoneFilterOption{
-		PaginationOptions: model.PaginationOptions{
-			Before: args.Before,
-			After:  args.After,
-			First:  args.First,
-			Last:   args.Last,
-		},
+	p := &graphqlPaginator[*model.ShippingZone, int64]{
+		data:          shippingZones,
+		keyFunc:       func(sz *model.ShippingZone) int64 { return sz.CreateAt },
+		GraphqlParams: args,
 	}
 
-	zones, appErr := embedCtx.App.Srv().
-		ShippingService().
-		ShippingZonesByOption(filterOpts)
+	data, hasPrev, hasNext, appErr := p.parse("Warehouse.ShippingZones")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	count, err := embedCtx.App.Srv().Store.ShippingZone().CountByOptions(filterOpts)
-	if err != nil {
-		return nil, err
-	}
-
-	hasNextPage := len(zones) == int(filterOpts.Limit())
-	edgeLength := len(zones)
-	if hasNextPage {
-		edgeLength--
-	}
-
 	res := &ShippingZoneCountableConnection{
-		TotalCount: model.NewPrimitive(int32(count)),
-		PageInfo: &PageInfo{
-			HasPreviousPage: filterOpts.HasPreviousPage(),
-			HasNextPage:     hasNextPage,
-		},
-		Edges: make([]*ShippingZoneCountableEdge, edgeLength),
+		TotalCount: model.NewPrimitive(int32(len(shippingZones))),
+		Edges: lo.Map(data, func(z *model.ShippingZone, _ int) *ShippingZoneCountableEdge {
+			stringCreatedAt := fmt.Sprintf("%d", z.CreateAt)
+
+			return &ShippingZoneCountableEdge{
+				Node:   SystemShippingZoneToGraphqlShippingZone(z),
+				Cursor: base64.StdEncoding.EncodeToString([]byte(stringCreatedAt)),
+			}
+		}),
 	}
 
-	for i := 0; i < edgeLength; i++ {
-		res.Edges[i] = &ShippingZoneCountableEdge{
-			Node:   SystemShippingZoneToGraphqlShippingZone(zones[i]),
-			Cursor: base64.StdEncoding.EncodeToString([]byte(zones[i].Name)),
-		}
+	res.PageInfo = &PageInfo{
+		HasNextPage:     hasNext,
+		HasPreviousPage: hasPrev,
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[len(data)-1].Cursor,
 	}
-
-	res.PageInfo.StartCursor = &res.Edges[0].Cursor
-	res.PageInfo.EndCursor = &res.Edges[edgeLength-1].Cursor
 
 	return res, nil
 }

@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -131,10 +132,10 @@ func (r *Reordering) orderedNodeMap(transaction store_iface.SqlxTxExecutor) (map
 			Id:              squirrel.Eq{store.AttributeValueTableName + ".Id": r.Values.IDs()},
 			SelectForUpdate: true,
 
-			PaginationOptions: model.PaginationOptions{
-				OrderBy: store.AttributeValueTableName + ".Id",
-				Order:   model.ASC,
-			},
+			// PaginationOptions: model.PaginationOptions{
+			// 	OrderBy: store.AttributeValueTableName + ".Id",
+			// 	Order:   model.ASC,
+			// },
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -256,13 +257,11 @@ func (s *Reordering) processMoveOperation(pk string, move *int) {
 func (r *Reordering) addToSortValueIfInRange(valueToAdd int, start int, end int) {
 	orderedNodeMap, _ := r.orderedNodeMap(nil)
 	for pk, sortOrder := range orderedNodeMap {
-		if sortOrder != nil {
-			if !(start <= *sortOrder && *sortOrder <= end) {
-				continue
-			}
-
-			r.cachedOrderedNodeMap[pk] = model.NewPrimitive(valueToAdd + *sortOrder)
+		if sortOrder != nil && !(start <= *sortOrder && *sortOrder <= end) {
+			continue
 		}
+
+		r.cachedOrderedNodeMap[pk] = model.NewPrimitive(valueToAdd + *sortOrder)
 	}
 }
 
@@ -272,20 +271,17 @@ func (r *Reordering) commit(transaction store_iface.SqlxTxExecutor) *model.AppEr
 		return nil
 	}
 
-	var attributeValuesMap = make(map[string]*model.AttributeValue)
-	for _, item := range r.cachedAttributeValues {
-		attributeValuesMap[item.Id] = item
-	}
+	copiedAttributeValues := r.cachedAttributeValues.DeepCopy()
+	var attributeValuesMap = lo.SliceToMap(copiedAttributeValues, func(a *model.AttributeValue) (string, *model.AttributeValue) { return a.Id, a })
 
 	changed := false
 
-	orderedNodeMap, _ := r.orderedNodeMap(nil)
+	orderedNodeMap, _ := r.orderedNodeMap(transaction)
 	for pk, sortOrder := range orderedNodeMap {
-		if sortOrder != nil && r.OldSortMap[pk] != nil && *sortOrder != *(r.OldSortMap[pk]) {
-			if !changed {
-				changed = true
-			}
+		oldSortOrder, exist := r.OldSortMap[pk]
+		if exist && oldSortOrder != nil && sortOrder != nil && *oldSortOrder != *sortOrder {
 			attributeValuesMap[pk].SortOrder = sortOrder
+			changed = true
 		}
 	}
 
@@ -293,7 +289,7 @@ func (r *Reordering) commit(transaction store_iface.SqlxTxExecutor) *model.AppEr
 		return nil
 	}
 
-	_, appErr := r.s.BulkUpsertAttributeValue(transaction, r.cachedAttributeValues)
+	_, appErr := r.s.BulkUpsertAttributeValue(transaction, copiedAttributeValues)
 	return appErr
 }
 
@@ -312,12 +308,7 @@ func (r *Reordering) Run(transaction store_iface.SqlxTxExecutor) *model.AppError
 		r.processMoveOperation(key, move)
 	}
 
-	appErr := r.commit(transaction)
-	if appErr != nil {
-		return appErr
-	}
-
-	return nil
+	return r.commit(transaction)
 }
 
 func (s *ServiceAttribute) PerformReordering(values model.AttributeValues, operations map[string]*int) *model.AppError {

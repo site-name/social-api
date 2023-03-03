@@ -197,14 +197,7 @@ func (pts *SqlProductTypeStore) GetByOption(options *model.ProductTypeFilterOpti
 
 // FilterbyOption finds and returns a slice of product types filtered using given options
 func (pts *SqlProductTypeStore) FilterbyOption(options *model.ProductTypeFilterOption) ([]*model.ProductType, error) {
-	query := pts.commonQueryBuilder(options)
-
-	query, appErr := options.ConstructSqlizer(query)
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	queryString, args, err := query.ToSql()
+	queryString, args, err := pts.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
@@ -219,12 +212,9 @@ func (pts *SqlProductTypeStore) FilterbyOption(options *model.ProductTypeFilterO
 }
 
 func (pts *SqlProductTypeStore) Count(options *model.ProductTypeFilterOption) (int64, error) {
-	// reset
-	options.PaginationOptions = model.PaginationOptions{}
+	countQuery := pts.commonQueryBuilder(options)
 
-	query := pts.commonQueryBuilder(options)
-
-	queryStr, args, err := pts.GetQueryBuilder().Select("COUNT(*)").FromSelect(query, "c").ToSql()
+	queryStr, args, err := pts.GetQueryBuilder().Select("COUNT(*)").FromSelect(countQuery, "c").ToSql()
 	if err != nil {
 		return 0, errors.Wrap(err, "Count_ToSql")
 	}

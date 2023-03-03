@@ -14,6 +14,7 @@ const (
 	SHIPPING_ZONE_NAME_MAX_LENGTH = 100
 )
 
+// order by CreateAt
 type ShippingZone struct {
 	Id          string `json:"id"`
 	Name        string `json:"name"`
@@ -34,8 +35,6 @@ type ShippingZoneFilterOption struct {
 	ChannelID    squirrel.Sqlizer // inner join shippingZoneChannel on ... WHERE shippingZoneChannel.ChannelID ...
 
 	SelectRelatedThroughData bool // if true, `RelativeWarehouseIDs` property get populated with related data
-
-	PaginationOptions
 }
 
 type ShippingZones []*ShippingZone

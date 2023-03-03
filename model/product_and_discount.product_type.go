@@ -28,6 +28,7 @@ const (
 	PRODUCT_TYPE_KIND_MAX_LENGTH = 32
 )
 
+// Orderby Slug
 type ProductType struct {
 	Id                 string                 `json:"id"`
 	Name               string                 `json:"name"`
@@ -71,8 +72,6 @@ type ProductTypeFilterOption struct {
 	AttributeProducts_AttributeID squirrel.Sqlizer // INNER JOIN AttributeProducts ON (...) WHERE AttributeProducts.AttributeID ...
 	AttributeVariants_AttributeID squirrel.Sqlizer // INNER JOIN AttributeVariants ON (...) WHERE AttributeVariants.AttributeID ...
 	Extra                         squirrel.Sqlizer
-
-	PaginationOptions
 }
 
 func (p *ProductType) String() string {

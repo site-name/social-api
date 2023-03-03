@@ -122,15 +122,6 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 		Select(selectFields...).
 		From(store.ShippingZoneTableName)
 
-	// parse options
-	if option.OrderBy == "" {
-		option.OrderBy = "ShippingZones.Name"
-	}
-	query, appErr := option.ConstructSqlizer(query)
-	if appErr != nil {
-		return nil, appErr
-	}
-
 	// check option id
 	if option.Id != nil {
 		query = query.Where(option.Id)
