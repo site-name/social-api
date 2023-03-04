@@ -60,18 +60,23 @@ func constructSchema() (string, error) {
 	return builder.String(), nil
 }
 
+var (
+	ErrorContextHasNoKey = errors.New("context has no given key")
+	ErrorUnExpectedType  = errors.New("can't convert stored value to given type")
+)
+
 // GetContextValue extracts according value of given key in given `ctx` and returns the value.
 func GetContextValue[T any](ctx context.Context, key CTXKey) (T, error) {
 	value := ctx.Value(key)
 	if value == nil {
 		var res T
-		return res, fmt.Errorf("context doesn't store given key")
+		return res, ErrorContextHasNoKey
 	}
 
 	cast, ok := value.(T)
 	if !ok {
 		var res T
-		return res, fmt.Errorf("found value has unexpected type: %T", value)
+		return res, ErrorUnExpectedType
 	}
 
 	return cast, nil
@@ -79,9 +84,15 @@ func GetContextValue[T any](ctx context.Context, key CTXKey) (T, error) {
 
 func MetadataToSlice[T any](m map[string]T) []*MetadataItem {
 	return lo.MapToSlice(m, func(k string, v T) *MetadataItem {
+		var strValue string
+		if impl, ok := any(v).(fmt.Stringer); ok {
+			strValue = impl.String()
+		} else {
+			strValue = fmt.Sprintf("%v", v)
+		}
 		return &MetadataItem{
 			Key:   k,
-			Value: fmt.Sprintf("%v", v),
+			Value: strValue,
 		}
 	})
 }
@@ -90,7 +101,6 @@ func SystemMoneyToGraphqlMoney(money *goprices.Money) *Money {
 	if money == nil {
 		return nil
 	}
-
 	return &Money{
 		Currency: money.Currency,
 		Amount:   money.Amount.InexactFloat64(),
@@ -101,7 +111,6 @@ func SystemTaxedMoneyToGraphqlTaxedMoney(money *goprices.TaxedMoney) *TaxedMoney
 	if money == nil {
 		return nil
 	}
-
 	tax, _ := money.Tax()
 	return &TaxedMoney{
 		Currency: money.Currency,
@@ -115,7 +124,6 @@ func SystemTaxedMoneyRangeToGraphqlTaxedMoneyRange(m *goprices.TaxedMoneyRange) 
 	if m == nil {
 		return nil
 	}
-
 	return &TaxedMoneyRange{
 		Start: SystemTaxedMoneyToGraphqlTaxedMoney(m.Start),
 		Stop:  SystemTaxedMoneyToGraphqlTaxedMoney(m.Stop),
@@ -126,7 +134,6 @@ func SystemMoneyRangeToGraphqlMoneyRange(money *goprices.MoneyRange) *MoneyRange
 	if money == nil {
 		return nil
 	}
-
 	return &MoneyRange{
 		Start: SystemMoneyToGraphqlMoney(money.Start),
 		Stop:  SystemMoneyToGraphqlMoney(money.Stop),
@@ -178,14 +185,12 @@ func convertGraphqlOperandToString[C graphqlCursorType](operand C) string {
 		return t.String()
 
 	default:
-		// once case catch all
 		return fmt.Sprintf("%v", t)
 	}
 }
 
 // parseGraphqlOperand can possibly returns (nil, nil)
 func parseGraphqlOperand[C graphqlCursorType](params GraphqlParams) (*C, error) {
-	var res C
 
 	// in case users query resuts for the first time
 	if params.Before == nil && params.After == nil {
@@ -205,6 +210,7 @@ func parseGraphqlOperand[C graphqlCursorType](params GraphqlParams) (*C, error) 
 	}
 	var cursorValue = string(strCursorValue)
 
+	var res C
 	switch any(res).(type) {
 	case string:
 		return (*C)(unsafe.Pointer(&cursorValue)), nil
@@ -373,6 +379,9 @@ func (g *graphqlPaginator[R, C, D]) parse(apiName string) (*CountableConnection[
 	if (g.First != nil && g.Last != nil) || (g.First == nil && g.Last == nil) {
 		return nil, model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "provide either First or Last, not both", http.StatusBadRequest)
 	}
+	if (g.First != nil && *g.First <= 0) || (g.Last != nil && *g.Last <= 0) {
+		return nil, model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "First and Last must be greater than zero", http.StatusBadRequest)
+	}
 	if g.First != nil && g.Before != nil {
 		return nil, model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Before"}, "First and Before can't go together", http.StatusBadRequest)
 	}
@@ -400,22 +409,15 @@ func (g *graphqlPaginator[R, C, D]) parse(apiName string) (*CountableConnection[
 		resultData                   []R
 		hasNextPage, hasPreviousPage bool
 		index                        int
+		limit                        = g.First
 	)
+	if limit == nil {
+		limit = g.Last
+	}
 
 	if operand == nil {
-		if orderASC {
-			if *g.First < int32(g.Len()) { // prevent slicing out of range
-				resultData = g.data[:*g.First]
-				hasNextPage = true
-			} else {
-				resultData = g.data[:]
-			}
-			goto returnLabel
-		}
-
-		// order desc:
-		if *g.Last < int32(g.Len()) { // prevent slicing out of range
-			resultData = g.data[:*g.Last]
+		if *limit < int32(g.Len()) { // prevent slicing out of range
+			resultData = g.data[:*limit]
 			hasNextPage = true
 		} else {
 			resultData = g.data[:]
@@ -443,22 +445,15 @@ func (g *graphqlPaginator[R, C, D]) parse(apiName string) (*CountableConnection[
 	hasPreviousPage = true
 	resultData = g.data[index+1:]
 
-	if orderASC {
-		if *g.First < int32(len(resultData)) {
-			resultData = resultData[:*g.First]
-			hasNextPage = true
-		}
-		goto returnLabel
-	}
-
-	if *g.Last < int32(len(resultData)) {
-		resultData = resultData[:*g.Last]
+	if *limit < int32(len(resultData)) {
+		resultData = resultData[:*limit]
 		hasNextPage = true
 	}
 
 returnLabel:
+	totalCount := g.Len()
 	res := &CountableConnection[D]{
-		TotalCount: model.NewPrimitive(int32(g.Len())),
+		TotalCount: (*int32)(unsafe.Pointer(&totalCount)),
 		Edges: lo.Map(resultData, func(item R, _ int) *CountableEdge[D] {
 			stringRawCursor := convertGraphqlOperandToString(g.keyFunc(item))
 

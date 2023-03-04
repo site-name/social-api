@@ -541,8 +541,8 @@ type (
 			IsPublished     bool
 			PublicationDate *timemodule.Time
 		}, error) // FilterNotPublishedProducts finds all not published products belong to given channel
-		PublishedWithVariants(channelSlug string) ([]*model.Product, error)                                                                      // PublishedWithVariants finds and returns products.
-		VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*model.Product, error)                                               // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
+		PublishedWithVariants(channel_SlugOrID string) ([]*model.Product, error)                                                                 // PublishedWithVariants finds and returns products.
+		VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) ([]*model.Product, error)                            // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
 		SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*model.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
 		AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder                                              // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
 		FilterByQuery(query squirrel.SelectBuilder) (model.Products, error)                                                                      // FilterByQuery finds and returns products with given query, limit, createdAtGt

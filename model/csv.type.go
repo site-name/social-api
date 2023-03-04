@@ -20,41 +20,43 @@ type AttributeFilter struct {
 	Boolean *bool
 }
 
-type ExportProductsFilterOptions struct {
-	Scope  string // "all" or "ids" or "filter"
-	Filter *struct {
-		IsPublished       *bool
-		Collections       []string
-		Categories        []string
-		HasCategory       *bool
-		Attributes        []*AttributeFilter
-		StockAvailability *string
-		Stocks            *struct {
-			WarehouseIds []string
-			Quantity     *struct {
-				Gte *int32
-				Lte *int32
-			}
+type ProductFilterInput struct {
+	IsPublished       *bool
+	Collections       []string
+	Categories        []string
+	HasCategory       *bool
+	Attributes        []*AttributeFilter
+	StockAvailability *string
+	Stocks            *struct {
+		WarehouseIds []string
+		Quantity     *struct {
+			Gte *int32
+			Lte *int32
 		}
-		Search   *string
-		Metadata []*struct {
-			Key   string
-			Value string
-		}
-		Price *struct {
-			Gte *float64
-			Lte *float64
-		}
-		MinimalPrice *struct {
-			Gte *float64
-			Lte *float64
-		}
-		ProductTypes          []string
-		GiftCard              *bool
-		Ids                   []string
-		HasPreorderedVariants *bool
-		Channel               *string
 	}
+	Search   *string
+	Metadata []*struct {
+		Key   string
+		Value string
+	}
+	Price *struct {
+		Gte *float64
+		Lte *float64
+	}
+	MinimalPrice *struct {
+		Gte *float64
+		Lte *float64
+	}
+	ProductTypes          []string
+	GiftCard              *bool
+	Ids                   []string
+	HasPreorderedVariants *bool
+	Channel               *string
+}
+
+type ExportProductsFilterOptions struct {
+	Scope      string // "all" or "ids" or "filter"
+	Filter     *ProductFilterInput
 	Ids        []string
 	ExportInfo *struct {
 		Attributes []string

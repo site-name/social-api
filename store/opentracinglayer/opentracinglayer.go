@@ -5870,7 +5870,7 @@ func (s *OpenTracingLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogu
 	return result, err
 }
 
-func (s *OpenTracingLayerProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*model.Product, error) {
+func (s *OpenTracingLayerProductStore) VisibleToUserProducts(channelSlug string, userHasOneOfProductpermissions bool) ([]*model.Product, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.VisibleToUserProducts")
 	s.Root.Store.SetContext(newCtx)
@@ -5879,7 +5879,7 @@ func (s *OpenTracingLayerProductStore) VisibleToUserProducts(channelSlug string,
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductStore.VisibleToUserProducts(channelSlug, requesterIsStaff)
+	result, err := s.ProductStore.VisibleToUserProducts(channelSlug, userHasOneOfProductpermissions)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

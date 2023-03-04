@@ -5,6 +5,11 @@ import (
 	"github.com/samber/lo"
 )
 
+const (
+	StockAvailabilityInStock    = "in_stock"
+	StockAvailabilityOutOfStock = "out_of_stock"
+)
+
 type Stock struct {
 	Id               string `json:"id"`
 	CreateAt         int64  `json:"create_at"`

@@ -6370,11 +6370,11 @@ func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(pro
 
 }
 
-func (s *RetryLayerProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*model.Product, error) {
+func (s *RetryLayerProductStore) VisibleToUserProducts(channelSlug string, userHasOneOfProductpermissions bool) ([]*model.Product, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductStore.VisibleToUserProducts(channelSlug, requesterIsStaff)
+		result, err := s.ProductStore.VisibleToUserProducts(channelSlug, userHasOneOfProductpermissions)
 		if err == nil {
 			return result, nil
 		}

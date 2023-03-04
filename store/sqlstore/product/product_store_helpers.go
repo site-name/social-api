@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -635,11 +634,10 @@ func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder,
 		channelID_ = channelID.(string)
 	}
 
-	switch strings.ToLower(value) {
-	case "in_stock":
+	switch value {
+	case model.StockAvailabilityInStock:
 		prefix = "EXISTS ("
-
-	case "out_of_stock":
+	case model.StockAvailabilityOutOfStock:
 		prefix = "NOT EXISTS ("
 
 	default:

@@ -7,9 +7,11 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
+	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -594,7 +596,41 @@ func (c *Collection) Products(ctx context.Context, args struct {
 	SortBy *ProductOrder
 	GraphqlParams
 }) (*ProductCountableConnection, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		if err.Error() != "context doesn't store given key" {
+			return nil, err
+		}
+		// ignore no channelid provided
+	}
+
+	userHasOneOfProductpermissions := embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.ProductPermissions...)
+
+	// find all products that are visible to current user
+	products, err := embedCtx.App.Srv().Store.Product().VisibleToUserProducts(channelID, userHasOneOfProductpermissions)
+	if err != nil {
+		return nil, model.NewAppError("Collection.Products", "app.product.visible_to_user_products.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// filter to get products that belong to current collection:
+	collectionProductRelations, appErr := embedCtx.App.Srv().ProductService().CollectionProductRelationsByOptions(&model.CollectionProductFilterOptions{
+		CollectionID: squirrel.Eq{store.CollectionProductRelationTableName + ".CollectionID": c.ID},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// keys are product ids
+	validProductIdMap := lo.SliceToMap(collectionProductRelations, func(rel *model.CollectionProduct) (string, struct{}) { return rel.ProductID, struct{}{} })
+	products = lo.Filter(products, func(p *model.Product, _ int) bool {
+		_, exist := validProductIdMap[p.Id]
+		return exist
+	})
+
 }
 
 func (c *Collection) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*CollectionTranslation, error) {

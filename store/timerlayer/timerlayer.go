@@ -5360,10 +5360,10 @@ func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(pro
 	return result, err
 }
 
-func (s *TimerLayerProductStore) VisibleToUserProducts(channelSlug string, requesterIsStaff bool) ([]*model.Product, error) {
+func (s *TimerLayerProductStore) VisibleToUserProducts(channelSlug string, userHasOneOfProductpermissions bool) ([]*model.Product, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.VisibleToUserProducts(channelSlug, requesterIsStaff)
+	result, err := s.ProductStore.VisibleToUserProducts(channelSlug, userHasOneOfProductpermissions)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

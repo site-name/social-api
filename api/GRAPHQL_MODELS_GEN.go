@@ -3,7 +3,10 @@
 package api
 
 import (
+	"unsafe"
+
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 )
@@ -2593,7 +2596,112 @@ type ProductFilterInput struct {
 	GiftCard              *bool                    `json:"giftCard"`
 	Ids                   []string                 `json:"ids"`
 	HasPreorderedVariants *bool                    `json:"hasPreorderedVariants"`
-	Channel               *string                  `json:"channel"`
+	Channel               *string                  `json:"channel"` // can be either channel id or channel slug
+}
+
+func (p *ProductFilterInput) ToSystemProductFilterInput() *model.ProductFilterInput {
+	systemAttributeFilter := lo.Map(p.Attributes, func(item *AttributeInput, _ int) *model.AttributeFilter {
+		res := &model.AttributeFilter{
+			Slug:   item.Slug,
+			Values: item.Values,
+			ValuesRange: &struct {
+				Gte *int32
+				Lte *int32
+			}{
+				Gte: item.ValuesRange.Gte,
+				Lte: item.ValuesRange.Lte,
+			},
+			Boolean: item.Boolean,
+		}
+
+		if item.DateTime != nil && item.DateTime.Gte != nil {
+			res.DateTime.Gte = &item.DateTime.Gte.Time
+		}
+		if item.DateTime != nil && item.DateTime.Lte != nil {
+			res.DateTime.Lte = &item.DateTime.Lte.Time
+		}
+
+		if item.Date != nil && item.Date.Gte != nil {
+			res.Date.Gte = &item.Date.Gte.Time
+		}
+		if item.Date != nil && item.Date.Lte != nil {
+			res.Date.Lte = &item.Date.Lte.Time
+		}
+		return res
+	})
+
+	metadata := lo.Map(p.Metadata, func(m *MetadataInput, _ int) *struct {
+		Key   string
+		Value string
+	} {
+		res := &struct {
+			Key   string
+			Value string
+		}{}
+		if m != nil {
+			res.Key = m.Key
+			res.Value = m.Value
+		}
+		return res
+	})
+
+	res := &model.ProductFilterInput{
+		IsPublished:           p.IsPublished,
+		Collections:           p.Collections,
+		Categories:            p.Categories,
+		HasCategory:           p.HasCategory,
+		Attributes:            systemAttributeFilter,
+		Search:                p.Search,
+		Metadata:              metadata,
+		ProductTypes:          p.ProductTypes,
+		GiftCard:              p.GiftCard,
+		Ids:                   p.Ids,
+		HasPreorderedVariants: p.HasPreorderedVariants,
+		Channel:               p.Channel,
+	}
+	if val := p.StockAvailability; val != nil {
+		res.StockAvailability = (*string)(unsafe.Pointer(val))
+	}
+	if p.Stocks != nil {
+		res.Stocks = &struct {
+			WarehouseIds []string
+			Quantity     *struct {
+				Gte *int32
+				Lte *int32
+			}
+		}{
+			WarehouseIds: p.Stocks.WarehouseIds,
+		}
+		if p.Stocks.Quantity != nil {
+			res.Stocks.Quantity = &struct {
+				Gte *int32
+				Lte *int32
+			}{
+				Gte: p.Stocks.Quantity.Gte,
+				Lte: p.Stocks.Quantity.Lte,
+			}
+		}
+	}
+	if p.Price != nil {
+		res.Price = &struct {
+			Gte *float64
+			Lte *float64
+		}{
+			Gte: p.Price.Gte,
+			Lte: p.Price.Lte,
+		}
+	}
+	if p.MinimalPrice != nil {
+		res.MinimalPrice = &struct {
+			Gte *float64
+			Lte *float64
+		}{
+			Gte: p.MinimalPrice.Gte,
+			Lte: p.MinimalPrice.Lte,
+		}
+	}
+
+	return res
 }
 
 type ProductInput struct {
@@ -6579,8 +6687,8 @@ func (e StaffMemberStatus) IsValid() bool {
 type StockAvailability string
 
 const (
-	StockAvailabilityInStock    StockAvailability = "IN_STOCK"
-	StockAvailabilityOutOfStock StockAvailability = "OUT_OF_STOCK"
+	StockAvailabilityInStock    StockAvailability = model.StockAvailabilityInStock
+	StockAvailabilityOutOfStock StockAvailability = model.StockAvailabilityOutOfStock
 )
 
 func (e StockAvailability) IsValid() bool {
