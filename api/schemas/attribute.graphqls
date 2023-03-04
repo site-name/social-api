@@ -268,9 +268,9 @@ enum AttributeTypeEnum {
 
 type AttributeValue  {
   id: String!
-  name: String
-  slug: String
-  value: String
+  name: String!
+  slug: String!
+  value: String!
   translation(languageCode: LanguageCodeEnum!): AttributeValueTranslation
   inputType: AttributeInputTypeEnum
   reference: String

@@ -2,9 +2,9 @@ package api
 
 import (
 	"context"
-	"encoding/base64"
 	"net/http"
 	"strings"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
@@ -198,35 +198,13 @@ func (s *ShippingMethod) ExcludedProducts(ctx context.Context, args GraphqlParam
 		return nil, err
 	}
 
-	paginator := &graphqlPaginator[*model.Product, string]{
-		data:          products,
-		keyFunc:       func(p *model.Product) string { return p.Slug },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := paginator.parse("ShippingMethod.ExcludedProducts")
+	keyFunc := func(p *model.Product) string { return p.Slug }
+	res, appErr := newGraphqlPaginator(products, keyFunc, SystemProductToGraphqlProduct, args).parse("ShippingMethod.ExcludedProducts")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &ProductCountableConnection{
-		TotalCount: model.NewPrimitive(int32(len(products))),
-		Edges: lo.Map(data, func(d *model.Product, _ int) *ProductCountableEdge {
-			return &ProductCountableEdge{
-				Node:   SystemProductToGraphqlProduct(d),
-				Cursor: base64.StdEncoding.EncodeToString([]byte(d.Slug)),
-			}
-		}),
-	}
-
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNext,
-		HasPreviousPage: hasPrev,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
-	}
-
-	return res, nil
+	return (*ProductCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 // ---------------- shipping zone -------------------------

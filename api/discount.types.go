@@ -2,10 +2,11 @@ package api
 
 import (
 	"context"
-	"encoding/base64"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
@@ -365,34 +366,13 @@ func (v *Voucher) Categories(ctx context.Context, args GraphqlParams) (*Category
 		return nil, err
 	}
 
-	g := graphqlPaginator[*model.Category, string]{
-		data:          categories,
-		keyFunc:       func(c *model.Category) string { return c.Name },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := g.parse("Voucher.Categories")
+	keyFunc := func(c *model.Category) string { return c.Name }
+	res, appErr := newGraphqlPaginator(categories, keyFunc, systemCategoryToGraphqlCategory, args).parse("Voucher.Categories")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &CategoryCountableConnection{
-		TotalCount: model.NewPrimitive(int32(len(categories))),
-		Edges: lo.Map(data, func(c *model.Category, _ int) *CategoryCountableEdge {
-			return &CategoryCountableEdge{
-				systemCategoryToGraphqlCategory(c),
-				base64.StdEncoding.EncodeToString([]byte(c.Name)),
-			}
-		}),
-	}
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNext,
-		HasPreviousPage: hasPrev,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
-	}
-
-	return res, nil
+	return (*CategoryCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 // collections order by slugs
@@ -402,30 +382,13 @@ func (v *Voucher) Collections(ctx context.Context, args GraphqlParams) (*Collect
 		return nil, err
 	}
 
-	g := graphqlPaginator[*model.Collection, string]{
-		data:          collections,
-		keyFunc:       func(c *model.Collection) string { return c.Slug },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := g.parse("Voucher.Collections")
+	keyFunc := func(c *model.Collection) string { return c.Slug }
+	res, appErr := newGraphqlPaginator(collections, keyFunc, systemCollectionToGraphqlCollection, args).parse("Voucher.Collections")
 	if err != nil {
 		return nil, appErr
 	}
 
-	res := &CollectionCountableConnection{
-		TotalCount: model.NewPrimitive(int32(len(collections))),
-		Edges: lo.Map(data, func(c *model.Collection, _ int) *CollectionCountableEdge {
-			return &CollectionCountableEdge{
-				systemCollectionToGraphqlCollection(c),
-				base64.StdEncoding.EncodeToString([]byte(c.Slug)),
-			}
-		}),
-	}
-
-	res.PageInfo = &PageInfo{hasNext, hasPrev, &res.Edges[0].Cursor, &res.Edges[len(res.Edges)-1].Cursor}
-
-	return res, nil
+	return (*CollectionCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (v *Voucher) Products(ctx context.Context, args GraphqlParams) (*ProductCountableConnection, error) {
@@ -434,34 +397,13 @@ func (v *Voucher) Products(ctx context.Context, args GraphqlParams) (*ProductCou
 		return nil, err
 	}
 
-	g := graphqlPaginator[*model.Product, string]{
-		data:          products,
-		keyFunc:       func(p *model.Product) string { return p.Slug },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := g.parse("voucher.Products")
+	keyFunc := func(p *model.Product) string { return p.Slug }
+	res, appErr := newGraphqlPaginator(products, keyFunc, SystemProductToGraphqlProduct, args).parse("voucher.Products")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &ProductCountableConnection{
-		TotalCount: model.NewPrimitive(int32(len(products))),
-		Edges: lo.Map(data, func(p *model.Product, _ int) *ProductCountableEdge {
-			return &ProductCountableEdge{
-				Node:   SystemProductToGraphqlProduct(p),
-				Cursor: base64.StdEncoding.EncodeToString([]byte(p.Slug)),
-			}
-		}),
-	}
-	res.PageInfo = &PageInfo{
-		hasNext,
-		hasPrev,
-		&res.Edges[0].Cursor,
-		&res.Edges[len(res.Edges)-1].Cursor,
-	}
-
-	return res, nil
+	return (*ProductCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (v *Voucher) Variants(ctx context.Context, args GraphqlParams) (*ProductVariantCountableConnection, error) {
@@ -470,48 +412,65 @@ func (v *Voucher) Variants(ctx context.Context, args GraphqlParams) (*ProductVar
 		return nil, err
 	}
 
-	p := graphqlPaginator[*model.ProductVariant, string]{
-		data:          variants,
-		keyFunc:       func(pv *model.ProductVariant) string { return pv.Sku },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := p.parse("Voucher.Variants")
+	keyFunc := func(pv *model.ProductVariant) string { return pv.Sku }
+	res, appErr := newGraphqlPaginator(variants, keyFunc, SystemProductVariantToGraphqlProductVariant, args).parse("Voucher.Variants")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &ProductVariantCountableConnection{
-		TotalCount: model.NewPrimitive(int32(len(variants))),
-		Edges: lo.Map(data, func(v *model.ProductVariant, _ int) *ProductVariantCountableEdge {
-			return &ProductVariantCountableEdge{
-				Node:   SystemProductVariantToGraphqlProductVariant(v),
-				Cursor: base64.StdEncoding.EncodeToString([]byte(v.Sku)),
-			}
-		}),
-	}
-
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNext,
-		HasPreviousPage: hasPrev,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
-	}
-
-	return res, nil
+	return (*ProductVariantCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (v *Voucher) DiscountValue(ctx context.Context) (*float64, error) {
-	// VoucherChannelListingByVoucherIdLoader.Load(ctx, v.ID)()
-	panic("not implemented")
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+	if channelID == "" {
+		return nil, nil
+	}
+
+	voucherChannelListing, err := VoucherChannelListingByVoucherIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, channelID))()
+	if err != nil {
+		return nil, err
+	}
+
+	res := voucherChannelListing.DiscountValue.InexactFloat64()
+	return &res, nil
 }
 
 func (v *Voucher) Currency(ctx context.Context) (*string, error) {
-	panic("not implemented")
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+	if channelID == "" {
+		return nil, nil
+	}
+
+	voucherChannelListing, err := VoucherChannelListingByVoucherIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, channelID))()
+	if err != nil {
+		return nil, err
+	}
+
+	return &voucherChannelListing.Currency, nil
 }
 
 func (v *Voucher) MinSpent(ctx context.Context) (*Money, error) {
-	panic("not implemented")
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+	if channelID == "" {
+		return nil, nil
+	}
+
+	voucherChannelListing, err := VoucherChannelListingByVoucherIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, channelID))()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemMoneyToGraphqlMoney(voucherChannelListing.MinSpent), nil
 }
 
 func (v *Voucher) ChannelListings(ctx context.Context) ([]*VoucherChannelListing, error) {
@@ -520,8 +479,7 @@ func (v *Voucher) ChannelListings(ctx context.Context) ([]*VoucherChannelListing
 		return nil, err
 	}
 
-	currentSession := embedCtx.AppContext.Session()
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageDiscounts) {
+	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageDiscounts) {
 		listings, err := VoucherChannelListingByVoucherIdLoader.Load(ctx, v.ID)()
 		if err != nil {
 			return nil, err
@@ -588,13 +546,10 @@ func voucherChannelListingByVoucherIdAndChanneSlugLoader(ctx context.Context, id
 	}
 
 	for _, pair := range idPairs {
-		index := strings.Index(pair, "__")
-		if index == -1 {
-			continue
+		if index := strings.Index(pair, "__"); index >= 0 {
+			voucherIDs = append(voucherIDs, pair[:index])
+			channelIDs = append(channelIDs, pair[index+2:])
 		}
-
-		voucherIDs = append(voucherIDs, pair[:index])
-		channelIDs = append(channelIDs, pair[index+2:])
 	}
 
 	voucherChannelListings, appErr = embedCtx.App.Srv().DiscountService().

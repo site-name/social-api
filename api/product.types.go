@@ -2,10 +2,10 @@ package api
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"net/http"
 	"time"
+	"unsafe"
 
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
@@ -489,7 +489,6 @@ func (p *ProductType) AvailableAttributes(ctx context.Context, args GraphqlParam
 	if err != nil {
 		return nil, err
 	}
-
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
 		return nil, model.NewAppError("ProductType.AvailableAttributes", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}
@@ -499,34 +498,13 @@ func (p *ProductType) AvailableAttributes(ctx context.Context, args GraphqlParam
 		return nil, model.NewAppError("GetProductTypeAttributes", "app.attribute.unassigned_product_type_attributes.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	pagin := &graphqlPaginator[*model.Attribute, string]{
-		data:          attributes,
-		keyFunc:       func(a *model.Attribute) string { return a.Slug },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := pagin.parse("ProductType.AvailableAttributes")
+	keyFunc := func(a *model.Attribute) string { return a.Slug }
+	res, appErr := newGraphqlPaginator(attributes, keyFunc, SystemAttributeToGraphqlAttribute, args).parse("ProductType.AvailableAttributes")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &AttributeCountableConnection{
-		TotalCount: model.NewPrimitive(int32(len(attributes))),
-		Edges: lo.Map(data, func(a *model.Attribute, _ int) *AttributeCountableEdge {
-			return &AttributeCountableEdge{
-				Node:   SystemAttributeToGraphqlAttribute(a),
-				Cursor: base64.StdEncoding.EncodeToString([]byte(a.Slug)),
-			}
-		}),
-	}
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNext,
-		HasPreviousPage: hasPrev,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
-	}
-
-	return res, nil
+	return (*AttributeCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (p *ProductType) ProductAttributes(ctx context.Context) ([]*Attribute, error) {
@@ -603,26 +581,20 @@ func systemCollectionToGraphqlCollection(c *model.Collection) *Collection {
 }
 
 func (c *Collection) Channel(ctx context.Context) (*string, error) {
-	panic("not implemented")
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, nil
+	}
+
+	return &channelID, nil
 }
 
 func (c *Collection) Products(ctx context.Context, args struct {
 	Filter *ProductFilterInput
 	SortBy *ProductOrder
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
+	GraphqlParams
 }) (*ProductCountableConnection, error) {
 	panic("not implemented")
-	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// userHasPermission := embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.ProductPermissions...)
-
-	// embedCtx.App.Srv().Store.Product().VisibleToUserProducts()
 }
 
 func (c *Collection) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*CollectionTranslation, error) {
@@ -634,7 +606,20 @@ func (c *Collection) BackgroundImage(ctx context.Context, args struct{ Size *int
 }
 
 func (c *Collection) ChannelListings(ctx context.Context) ([]*CollectionChannelListing, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+		return nil, model.NewAppError("Collection.ChannelListings", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	}
+
+	listings, err := CollectionChannelListingByCollectionIdLoader.Load(ctx, c.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(listings, systemCollectionChannelListingToGraphqlCollectionChannelListing), nil
 }
 
 // ------- ProductMedia

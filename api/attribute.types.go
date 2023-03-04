@@ -3,7 +3,9 @@ package api
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"net/http"
+	"strings"
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
@@ -18,9 +20,9 @@ import (
 
 type AttributeValue struct {
 	ID       string     `json:"id"`
-	Name     *string    `json:"name"`
-	Slug     *string    `json:"slug"`
-	Value    *string    `json:"value"`
+	Name     string     `json:"name"`
+	Slug     string     `json:"slug"`
+	Value    string     `json:"value"`
 	RichText JSONString `json:"richText"`
 	Boolean  *bool      `json:"boolean"`
 	Date     *Date      `json:"date"`
@@ -34,35 +36,35 @@ type AttributeValue struct {
 	// Reference   *string                    `json:"reference"`
 }
 
-func SystemAttributeValueToGraphqlAttributeValue(attr *model.AttributeValue) *AttributeValue {
-	if attr == nil {
+func SystemAttributeValueToGraphqlAttributeValue(attrValue *model.AttributeValue) *AttributeValue {
+	if attrValue == nil {
 		return nil
 	}
 
 	res := &AttributeValue{
-		ID:          attr.Id,
-		Name:        &attr.Name,
-		Slug:        &attr.Slug,
-		Value:       &attr.Value,
-		Boolean:     attr.Boolean,
-		RichText:    JSONString(attr.RichText),
-		attributeID: attr.AttributeID,
+		ID:          attrValue.Id,
+		Name:        attrValue.Name,
+		Slug:        attrValue.Slug,
+		Value:       attrValue.Value,
+		Boolean:     attrValue.Boolean,
+		RichText:    JSONString(attrValue.RichText),
+		attributeID: attrValue.AttributeID,
 	}
 
-	if attr.GetAttribute() != nil && attr.Datetime != nil {
-		switch attr.GetAttribute().InputType {
+	if attr := attrValue.GetAttribute(); attr != nil && attrValue.Datetime != nil {
+		switch attr.InputType {
 		case model.DATE:
-			res.Date = &Date{DateTime{*attr.Datetime}}
+			res.Date = &Date{DateTime{*attrValue.Datetime}}
 
 		case model.DATE_TIME:
-			res.DateTime = &DateTime{*attr.Datetime}
+			res.DateTime = &DateTime{*attrValue.Datetime}
 		}
 	}
 
-	if attr.FileUrl != nil && len(*attr.FileUrl) > 0 {
+	if attrValue.FileUrl != nil && len(*attrValue.FileUrl) > 0 {
 		res.File = &File{
-			URL:         *attr.FileUrl,
-			ContentType: attr.ContentType,
+			URL:         *attrValue.FileUrl,
+			ContentType: attrValue.ContentType,
 		}
 	}
 
@@ -102,8 +104,24 @@ func (a *AttributeValue) InputType(ctx context.Context) (*AttributeInputTypeEnum
 	return resolveInputType(*SystemAttributeToGraphqlAttribute(attr))
 }
 
+// the result would has format of "EntityType:slug"
 func (a *AttributeValue) Reference(ctx context.Context) (*string, error) {
-	panic("not implemented")
+	attribute, err := AttributesByAttributeIdLoader.Load(ctx, a.attributeID)()
+	if err != nil {
+		return nil, err
+	}
+
+	if attribute.InputType != model.REFERENCE {
+		return nil, nil
+	}
+
+	splitSlug := strings.Split(a.Slug, "_")
+	if len(splitSlug) < 2 || attribute.EntityType == nil { // we need at least length of 2 to get element at 1st index
+		return nil, nil
+	}
+
+	referenceID := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", *attribute.EntityType, splitSlug[1])))
+	return &referenceID, nil
 }
 
 // --------------------- Attribute --------------------
@@ -194,43 +212,27 @@ func (a *Attribute) Choices(
 
 	// parse filter
 	if args.Filter != nil && args.Filter.Search != nil {
-		search := *args.Filter.Search
+		search := strings.ToLower(*args.Filter.Search)
 
 		attributeValues = lo.Filter(attributeValues, func(v *model.AttributeValue, _ int) bool {
-			return v.Name == search || v.Slug == search
+			lowerName := strings.ToLower(v.Name)
+			lowerSlug := strings.ToLower(v.Slug)
+
+			return strings.Contains(lowerName, search) || strings.Contains(lowerSlug, search)
 		})
 	}
-	totalCount := len(attributeValues)
 
-	p := &graphqlPaginator[*model.AttributeValue, string]{
-		data:          attributeValues,
-		keyFunc:       keyFunc,
-		GraphqlParams: args.GraphqlParams,
-	}
+	res, appErr := newGraphqlPaginator(
+		attributeValues,
+		keyFunc,
+		SystemAttributeValueToGraphqlAttributeValue,
+		args.GraphqlParams).parse("Attribute.Choices")
 
-	data, hasPrev, hasNext, appErr := p.parse("Attribute.Choices")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &AttributeValueCountableConnection{
-		TotalCount: (*int32)(unsafe.Pointer(&totalCount)),
-		Edges: lo.Map(data, func(v *model.AttributeValue, _ int) *AttributeValueCountableEdge {
-			return &AttributeValueCountableEdge{
-				Node:   SystemAttributeValueToGraphqlAttributeValue(v),
-				Cursor: base64.StdEncoding.EncodeToString([]byte(keyFunc(v))),
-			}
-		}),
-	}
-
-	res.PageInfo = &PageInfo{
-		HasPreviousPage: hasPrev,
-		HasNextPage:     hasNext,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(data)-1].Cursor,
-	}
-
-	return res, nil
+	return (*AttributeValueCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (a *Attribute) ProductTypes(ctx context.Context, args GraphqlParams) (*ProductTypeCountableConnection, error) {
@@ -247,37 +249,14 @@ func (a *Attribute) ProductTypes(ctx context.Context, args GraphqlParams) (*Prod
 	if appErr != nil {
 		return nil, appErr
 	}
-	totalCount := len(productTypes)
 
-	p := &graphqlPaginator[*model.ProductType, string]{
-		data:          productTypes,
-		keyFunc:       func(pt *model.ProductType) string { return pt.Slug },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := p.parse("Attribute.ProductTypes")
+	keyFunc := func(pt *model.ProductType) string { return pt.Slug }
+	res, appErr := newGraphqlPaginator(productTypes, keyFunc, SystemProductTypeToGraphqlProductType, args).parse("Attribute.ProductTypes")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &ProductTypeCountableConnection{
-		TotalCount: (*int32)(unsafe.Pointer(&totalCount)),
-		Edges: lo.Map(data, func(pt *model.ProductType, _ int) *ProductTypeCountableEdge {
-			return &ProductTypeCountableEdge{
-				Node:   SystemProductTypeToGraphqlProductType(pt),
-				Cursor: base64.StdEncoding.EncodeToString([]byte(p.keyFunc(pt))),
-			}
-		}),
-	}
-
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNext,
-		HasPreviousPage: hasPrev,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(data)-1].Cursor,
-	}
-
-	return res, nil
+	return (*ProductTypeCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (a *Attribute) ProductVariantTypes(ctx context.Context, args GraphqlParams) (*ProductTypeCountableConnection, error) {
@@ -294,37 +273,14 @@ func (a *Attribute) ProductVariantTypes(ctx context.Context, args GraphqlParams)
 	if appErr != nil {
 		return nil, appErr
 	}
-	totalCount := len(productTypes)
 
-	p := &graphqlPaginator[*model.ProductType, string]{
-		data:          productTypes,
-		keyFunc:       func(pt *model.ProductType) string { return pt.Slug },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := p.parse("Attribute.ProductVariantTypes")
+	keyFunc := func(pt *model.ProductType) string { return pt.Slug }
+	res, appErr := newGraphqlPaginator(productTypes, keyFunc, SystemProductTypeToGraphqlProductType, args).parse("Attribute.ProductVariantTypes")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &ProductTypeCountableConnection{
-		TotalCount: (*int32)(unsafe.Pointer(&totalCount)),
-		Edges: lo.Map(data, func(pt *model.ProductType, _ int) *ProductTypeCountableEdge {
-			return &ProductTypeCountableEdge{
-				Node:   SystemProductTypeToGraphqlProductType(pt),
-				Cursor: base64.StdEncoding.EncodeToString([]byte(p.keyFunc(pt))),
-			}
-		}),
-	}
-
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNext,
-		HasPreviousPage: hasPrev,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(data)-1].Cursor,
-	}
-
-	return res, nil
+	return (*ProductTypeCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 // If return error is nil, meaning current user can perform action.

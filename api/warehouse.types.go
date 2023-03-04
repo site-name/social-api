@@ -2,10 +2,9 @@ package api
 
 import (
 	"context"
-	"encoding/base64"
-	"fmt"
 	"net/http"
 	"strings"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
@@ -56,37 +55,13 @@ func (w *Warehouse) ShippingZones(ctx context.Context, args GraphqlParams) (*Shi
 		return nil, err
 	}
 
-	p := &graphqlPaginator[*model.ShippingZone, int64]{
-		data:          shippingZones,
-		keyFunc:       func(sz *model.ShippingZone) int64 { return sz.CreateAt },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := p.parse("Warehouse.ShippingZones")
+	keyFunc := func(sz *model.ShippingZone) int64 { return sz.CreateAt }
+	res, appErr := newGraphqlPaginator(shippingZones, keyFunc, SystemShippingZoneToGraphqlShippingZone, args).parse("Warehouse.ShippingZones")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &ShippingZoneCountableConnection{
-		TotalCount: model.NewPrimitive(int32(len(shippingZones))),
-		Edges: lo.Map(data, func(z *model.ShippingZone, _ int) *ShippingZoneCountableEdge {
-			stringCreatedAt := fmt.Sprintf("%d", z.CreateAt)
-
-			return &ShippingZoneCountableEdge{
-				Node:   SystemShippingZoneToGraphqlShippingZone(z),
-				Cursor: base64.StdEncoding.EncodeToString([]byte(stringCreatedAt)),
-			}
-		}),
-	}
-
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNext,
-		HasPreviousPage: hasPrev,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(data)-1].Cursor,
-	}
-
-	return res, nil
+	return (*ShippingZoneCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (w *Warehouse) Address(ctx context.Context) (*Address, error) {

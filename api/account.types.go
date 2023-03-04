@@ -2,9 +2,9 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
@@ -268,35 +268,13 @@ func (u *User) GiftCards(ctx context.Context, args GraphqlParams) (*GiftCardCoun
 		return nil, err
 	}
 
-	p := graphqlPaginator[*model.GiftCard, string]{
-		data:          giftcards,
-		keyFunc:       func(gc *model.GiftCard) string { return gc.Code },
-		GraphqlParams: args,
-	}
-
-	data, hasPresious, hasNext, appErr := p.parse("User.GiftCards")
+	keyFunc := func(gc *model.GiftCard) string { return gc.Code }
+	res, appErr := newGraphqlPaginator(giftcards, keyFunc, SystemGiftcardToGraphqlGiftcard, args).parse("User.GiftCards")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &GiftCardCountableConnection{
-		Edges: lo.Map(data, func(g *model.GiftCard, _ int) *GiftCardCountableEdge {
-			return &GiftCardCountableEdge{
-				Node:   SystemGiftcardToGraphqlGiftcard(g),
-				Cursor: g.Code,
-			}
-		}),
-		TotalCount: model.NewPrimitive(int32(len(giftcards))),
-	}
-
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNext,
-		HasPreviousPage: hasPresious,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
-	}
-
-	return res, nil
+	return (*GiftCardCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 // NOTE: orders are ordering by CreateAt
@@ -321,32 +299,13 @@ func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableC
 		orders = lo.Filter(orders, func(o *model.Order, _ int) bool { return o.Status != model.STATUS_DRAFT })
 	}
 
-	p := graphqlPaginator[*model.Order, int64]{
-		data:          orders,
-		keyFunc:       func(o *model.Order) int64 { return o.CreateAt },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := p.parse("User.Orders")
+	keyFunc := func(o *model.Order) int64 { return o.CreateAt }
+	res, appErr := newGraphqlPaginator(orders, keyFunc, SystemOrderToGraphqlOrder, args).parse("User.Orders")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &OrderCountableConnection{
-		Edges: lo.Map(data, func(o *model.Order, _ int) *OrderCountableEdge {
-			return &OrderCountableEdge{SystemOrderToGraphqlOrder(o), fmt.Sprintf("%d", o.CreateAt)}
-		}),
-		TotalCount: model.NewPrimitive(int32(len(orders))),
-	}
-
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNext,
-		HasPreviousPage: hasPrev,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
-	}
-
-	return res, nil
+	return (*OrderCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {

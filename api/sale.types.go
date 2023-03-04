@@ -2,10 +2,10 @@ package api
 
 import (
 	"context"
-	"encoding/base64"
+	"fmt"
 	"net/http"
+	"unsafe"
 
-	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
 )
@@ -59,35 +59,13 @@ func (s *Sale) Categories(ctx context.Context, args GraphqlParams) (*CategoryCou
 		return nil, err
 	}
 
-	p := graphqlPaginator[*model.Category, string]{
-		data:          categories,
-		keyFunc:       func(c *model.Category) string { return c.Slug },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := p.parse("sale.Categories")
+	keyFunc := func(c *model.Category) string { return c.Slug }
+	res, appErr := newGraphqlPaginator(categories, keyFunc, systemCategoryToGraphqlCategory, args).parse("sale.Categories")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &CategoryCountableConnection{
-		TotalCount: model.NewPrimitive(int32(len(categories))),
-		Edges: lo.Map(data, func(c *model.Category, _ int) *CategoryCountableEdge {
-			return &CategoryCountableEdge{
-				Node:   systemCategoryToGraphqlCategory(c),
-				Cursor: base64.StdEncoding.EncodeToString([]byte(c.Slug)),
-			}
-		}),
-	}
-
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNext,
-		HasPreviousPage: hasPrev,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
-	}
-
-	return res, nil
+	return (*CategoryCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (s *Sale) Collections(ctx context.Context, args GraphqlParams) (*CollectionCountableConnection, error) {
@@ -96,34 +74,13 @@ func (s *Sale) Collections(ctx context.Context, args GraphqlParams) (*Collection
 		return nil, err
 	}
 
-	p := graphqlPaginator[*model.Collection, string]{
-		data:          collections,
-		keyFunc:       func(c *model.Collection) string { return c.Slug },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := p.parse("Sale.Collections")
+	keyFunc := func(c *model.Collection) string { return c.Slug }
+	res, appErr := newGraphqlPaginator(collections, keyFunc, systemCollectionToGraphqlCollection, args).parse("Sale.Collections")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &CollectionCountableConnection{
-		TotalCount: model.NewPrimitive(int32(len(collections))),
-		Edges: lo.Map(data, func(c *model.Collection, _ int) *CollectionCountableEdge {
-			return &CollectionCountableEdge{
-				Node:   systemCollectionToGraphqlCollection(c),
-				Cursor: base64.StdEncoding.EncodeToString([]byte(c.Slug)),
-			}
-		}),
-	}
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNext,
-		HasPreviousPage: hasPrev,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
-	}
-
-	return res, nil
+	return (*CollectionCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (s *Sale) Products(ctx context.Context, args GraphqlParams) (*ProductCountableConnection, error) {
@@ -132,34 +89,13 @@ func (s *Sale) Products(ctx context.Context, args GraphqlParams) (*ProductCounta
 		return nil, err
 	}
 
-	p := graphqlPaginator[*model.Product, string]{
-		data:          products,
-		keyFunc:       func(p *model.Product) string { return p.Slug },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := p.parse("Sale.Products")
+	keyFunc := func(p *model.Product) string { return p.Slug }
+	res, appErr := newGraphqlPaginator(products, keyFunc, SystemProductToGraphqlProduct, args).parse("Sale.Products")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &ProductCountableConnection{
-		TotalCount: model.NewPrimitive(int32(len(products))),
-		Edges: lo.Map(data, func(p *model.Product, _ int) *ProductCountableEdge {
-			return &ProductCountableEdge{
-				Node:   SystemProductToGraphqlProduct(p),
-				Cursor: base64.StdEncoding.EncodeToString([]byte(p.Slug)),
-			}
-		}),
-	}
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNext,
-		HasPreviousPage: hasPrev,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
-	}
-
-	return res, nil
+	return (*ProductCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (s *Sale) Variants(ctx context.Context, args GraphqlParams) (*ProductVariantCountableConnection, error) {
@@ -168,43 +104,48 @@ func (s *Sale) Variants(ctx context.Context, args GraphqlParams) (*ProductVarian
 		return nil, err
 	}
 
-	p := graphqlPaginator[*model.ProductVariant, string]{
-		data:          variants,
-		keyFunc:       func(pv *model.ProductVariant) string { return pv.Sku },
-		GraphqlParams: args,
-	}
-
-	data, hasPrev, hasNext, appErr := p.parse("Sale.Variants")
+	keyFunc := func(pv *model.ProductVariant) string { return pv.Sku }
+	res, appErr := newGraphqlPaginator(variants, keyFunc, SystemProductVariantToGraphqlProductVariant, args).parse("Sale.Variants")
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	res := &ProductVariantCountableConnection{
-		TotalCount: model.NewPrimitive(int32(len(variants))),
-		Edges: lo.Map(data, func(v *model.ProductVariant, _ int) *ProductVariantCountableEdge {
-			return &ProductVariantCountableEdge{
-				Node:   SystemProductVariantToGraphqlProductVariant(v),
-				Cursor: base64.RawStdEncoding.EncodeToString([]byte(v.Sku)),
-			}
-		}),
-	}
-
-	res.PageInfo = &PageInfo{
-		HasNextPage:     hasNext,
-		HasPreviousPage: hasPrev,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
-	}
-
-	return res, nil
+	return (*ProductVariantCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (v *Sale) DiscountValue(ctx context.Context) (*float64, error) {
-	panic("not implemented")
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+	if channelID == "" {
+		return nil, nil
+	}
+
+	saleChannelListing, err := SaleChannelListingBySaleIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, channelID))()
+	if err != nil {
+		return nil, err
+	}
+
+	res := saleChannelListing.DiscountValue.InexactFloat64()
+	return &res, nil
 }
 
 func (v *Sale) Currency(ctx context.Context) (*string, error) {
-	panic("not implemented")
+	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
+	if err != nil {
+		return nil, err
+	}
+	if channelID == "" {
+		return nil, nil
+	}
+
+	saleChannelListing, err := SaleChannelListingBySaleIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, channelID))()
+	if err != nil {
+		return nil, err
+	}
+
+	return &saleChannelListing.Currency, nil
 }
 
 func (v *Sale) ChannelListings(ctx context.Context) ([]*SaleChannelListing, error) {

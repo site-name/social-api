@@ -479,7 +479,7 @@ type AttributeValueDelete struct {
 }
 
 type AttributeValueFilterInput struct {
-	Search *string `json:"search"`
+	Search *string `json:"search"` // find attribute values with Name ILIKE %...% OR Slug ILIKE %...%
 }
 
 type AttributeValueInput struct {
@@ -2110,17 +2110,6 @@ type PageBulkDelete struct {
 type PageBulkPublish struct {
 	Count  int32        `json:"count"`
 	Errors []*PageError `json:"errors"`
-}
-
-type CountableConnection struct {
-	PageInfo   *PageInfo
-	TotalCount *int32
-	// Edges
-}
-
-type ConnectonEdge struct {
-	Node   any    `json:"node"`
-	Cursor string `json:"cursor"`
 }
 
 type PageCountableConnection struct {
