@@ -487,7 +487,10 @@ func (p *ProductType) Weight(ctx context.Context) (*Weight, error) {
 }
 
 // ORDER BY Slug
-func (p *ProductType) AvailableAttributes(ctx context.Context, args GraphqlParams) (*AttributeCountableConnection, error) {
+func (p *ProductType) AvailableAttributes(ctx context.Context, args struct {
+	GraphqlParams
+	Filter *AttributeFilterInput
+}) (*AttributeCountableConnection, error) {
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
@@ -496,13 +499,22 @@ func (p *ProductType) AvailableAttributes(ctx context.Context, args GraphqlParam
 		return nil, model.NewAppError("ProductType.AvailableAttributes", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}
 
-	attributes, err := embedCtx.App.Srv().Store.Attribute().GetProductTypeAttributes(p.ID, true)
+	userHasOneOfProductPermission := embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.ProductPermissions...)
+
+	filterOptions := &model.AttributeFilterOption{}
+	if args.Filter != nil {
+		filterOptions = args.Filter.ToAttributeFilterOption()
+	}
+	// NOTE: this permission check is necessary
+	filterOptions.UserHasOneOfProductPermissions = &userHasOneOfProductPermission
+
+	attributes, err := embedCtx.App.Srv().Store.Attribute().GetProductTypeAttributes(p.ID, true, filterOptions)
 	if err != nil {
 		return nil, model.NewAppError("GetProductTypeAttributes", "app.attribute.unassigned_product_type_attributes.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	keyFunc := func(a *model.Attribute) string { return a.Slug }
-	res, appErr := newGraphqlPaginator(attributes, keyFunc, SystemAttributeToGraphqlAttribute, args).parse("ProductType.AvailableAttributes")
+	res, appErr := newGraphqlPaginator(attributes, keyFunc, SystemAttributeToGraphqlAttribute, args.GraphqlParams).parse("ProductType.AvailableAttributes")
 	if appErr != nil {
 		return nil, appErr
 	}

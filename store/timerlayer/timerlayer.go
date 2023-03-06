@@ -1839,10 +1839,10 @@ func (s *TimerLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unas
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool) (model.Attributes, error) {
+func (s *TimerLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.Attributes, error) {
 	start := timemodule.Now()
 
-	result, err := s.AttributeStore.GetProductTypeAttributes(productTypeID, unassigned)
+	result, err := s.AttributeStore.GetProductTypeAttributes(productTypeID, unassigned, filter)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5312,20 +5312,20 @@ func (s *TimerLayerProductStore) PublishedProducts(channelSlug string) ([]*model
 	return result, err
 }
 
-func (s *TimerLayerProductStore) PublishedWithVariants(channel_SlugOrID string) ([]*model.Product, error) {
+func (s *TimerLayerProductStore) PublishedWithVariants(channel_SlugOrID string) squirrel.SelectBuilder {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.PublishedWithVariants(channel_SlugOrID)
+	result := s.ProductStore.PublishedWithVariants(channel_SlugOrID)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
 		success := "false"
-		if err == nil {
+		if true {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.PublishedWithVariants", success, elapsed)
 	}
-	return result, err
+	return result
 }
 
 func (s *TimerLayerProductStore) Save(prd *model.Product) (*model.Product, error) {
@@ -5360,20 +5360,20 @@ func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(pro
 	return result, err
 }
 
-func (s *TimerLayerProductStore) VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) ([]*model.Product, error) {
+func (s *TimerLayerProductStore) VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.VisibleToUserProducts(channel_SlugOrID, userHasOneOfProductpermissions)
+	result := s.ProductStore.VisibleToUserProducts(channel_SlugOrID, userHasOneOfProductpermissions)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
 		success := "false"
-		if err == nil {
+		if true {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.VisibleToUserProducts", success, elapsed)
 	}
-	return result, err
+	return result
 }
 
 func (s *TimerLayerProductChannelListingStore) BulkUpsert(listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {

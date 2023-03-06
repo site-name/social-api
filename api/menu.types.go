@@ -78,6 +78,14 @@ func systemMenuItemToGraphqlMenuItem(i *model.MenuItem) *MenuItem {
 	}
 }
 
+func (i *MenuItem) Level(ctx context.Context) (int32, error) {
+	panic("not implemented")
+}
+
+func (i *MenuItem) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*MenuItemTranslation, error) {
+	panic("not implemented")
+}
+
 func (i *MenuItem) Category(ctx context.Context) (*Category, error) {
 	if i.m.CategoryID == nil {
 		return nil, nil

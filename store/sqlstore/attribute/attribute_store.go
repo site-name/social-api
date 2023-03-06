@@ -2,6 +2,7 @@ package attribute
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
@@ -120,7 +121,7 @@ func (as *SqlAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, er
 	return attr, nil
 }
 
-func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOption) (string, []interface{}, error) {
+func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOption) squirrel.SelectBuilder {
 	query := as.GetQueryBuilder().
 		Select(as.ModelFields(store.AttributeTableName + ".")...).
 		From(store.AttributeTableName)
@@ -128,8 +129,6 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 	// parse options
 	if option.OrderBy != "" {
 		query = query.OrderBy(option.OrderBy)
-	} else {
-		query = query.OrderBy(store.TableOrderingMap[store.AttributeTableName])
 	}
 	if option.Id != nil {
 		query = query.Where(option.Id)
@@ -175,12 +174,32 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 			InnerJoin(store.AttributeVariantTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)").
 			Where(option.ProductVariantTypes)
 	}
+	if option.Metadata != nil && len(option.Metadata) > 0 {
+		conditions := ""
+		for key, value := range option.Metadata {
+			if key != "" {
+				if conditions != "" {
+					conditions += " AND "
+				}
+				if value != "" {
+					conditions += fmt.Sprintf("Attributes.Metadata::jsonb @> '{%q:%q}'", key, value)
+					continue
+				}
+				conditions += fmt.Sprintf("Attributes.Metadata::jsonb ? '%s'", key)
+			}
+		}
+		query = query.Where(conditions)
+	}
+	if search := option.Search; search != nil && *search != "" {
+		expr := "%" + *search + "%"
+		query = query.Where("Attributes.Name ILIKE ? OR Attributes.Slug ILIKE ?", expr, expr)
+	}
 
-	return query.ToSql()
+	return query
 }
 
 func (as *SqlAttributeStore) GetByOption(option *model.AttributeFilterOption) (*model.Attribute, error) {
-	queryString, args, err := as.commonQueryBuilder(option)
+	queryString, args, err := as.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
@@ -211,7 +230,7 @@ func (as *SqlAttributeStore) GetByOption(option *model.AttributeFilterOption) (*
 
 // FilterbyOption returns a list of attributes by given option
 func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption) (model.Attributes, error) {
-	queryString, args, err := as.commonQueryBuilder(option)
+	queryString, args, err := as.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
@@ -270,45 +289,105 @@ func (as *SqlAttributeStore) Delete(ids ...string) (int64, error) {
 	return numDeleted, nil
 }
 
-func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool) (model.Attributes, error) {
-	// unassigned query:
-	query := `SELECT * FROM ` +
-		store.AttributeTableName + `A WHERE A.Type = $1 AND NOT (
+func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.Attributes, error) {
+	if filter == nil {
+		filter = new(model.AttributeFilterOption)
+	}
+	if filter.Type == nil {
+		filter.Type = squirrel.Eq{store.AttributeTableName + ".Type": model.PRODUCT_TYPE}
+	}
+	filter.Distinct = true
+	sqQuery := s.commonQueryBuilder(filter)
+
+	if unassigned {
+		sqQuery = sqQuery.Where(`NOT (
 	(
 		EXISTS(
 			SELECT (1) AS "a"
-			FROM ` + store.AttributeProductTableName + ` AP
-			WHERE 
-				AP.ProductTypeID = $2 AND AP.AttributeID = A.Id
+			FROM `+store.AttributeProductTableName+` WHERE
+				AttributeProducts.ProductTypeID = ? AND AttributeProducts.AttributeID = Attributes.Id
 			LIMIT 1
 		)
 		OR EXISTS(
 			SELECT (1) AS "a"
-			FROM ` + store.AttributeVariantTableName + ` AV
-			WHERE
-				AV.ProductTypeID = $3 AND AV.AttributeID = A.Id
+			FROM `+store.AttributeVariantTableName+` WHERE
+				AttributeVariants.ProductTypeID = ? AND AttributeVariants.AttributeID = Attributes.Id
 			LIMIT 1
 		)
 	)
-)`
+)`, productTypeID, productTypeID)
 
-	// in case select assigned attributes only:
-	if !unassigned {
-		query = `SELECT ` +
-			s.ModelFields(store.AttributeTableName+".").Join(",") +
-			` FROM ` + store.AttributeTableName +
-			` A LEFT OUTER JOIN ` + store.AttributeProductTableName + ` AP ON A.Id = AP.AttributeID` +
-			` LEFT OUTER JOIN ` + store.AttributeVariantTableName + ` AV ON AV.AttributeID = A.Id` +
-			` WHERE (
-					A.Type = $1 AND (
-						AP.ProductTypeID = $2
-						OR AV.ProductTypeID = $3
+	} else {
+		sqQuery = sqQuery.
+			LeftJoin(store.AttributeProductTableName+" ON AttributeProducts.AttributeID = Attributes.Id").
+			LeftJoin(store.AttributeVariantTableName+" ON Attributes.Id = AttributeVariants.AttributeID").
+			Where("Attributes.Type = ?", model.PRODUCT_TYPE).
+			Where(squirrel.Or{
+				squirrel.Expr("AttributeProducts.ProductTypeID = ?", productTypeID),
+				squirrel.Expr("AttributeVariants.ProductTypeID = ?", productTypeID),
+			})
+	}
+
+	if filter.InCategory != nil || filter.InCollection != nil {
+		if filter.UserHasOneOfProductPermissions == nil {
+			filter.UserHasOneOfProductPermissions = model.NewPrimitive(false)
+		}
+
+		var channelIdOrSlug string
+		if filter.Channel != nil {
+			channelIdOrSlug = *filter.Channel
+		}
+
+		productQuery := s.
+			Product().
+			VisibleToUserProducts(channelIdOrSlug, *filter.UserHasOneOfProductPermissions)
+
+		if filter.InCategory != nil {
+			productQuery = productQuery.Where("Products.CategoryID = ?", *filter.InCategory)
+
+			if !*filter.UserHasOneOfProductPermissions {
+				productQuery = productQuery.Column(`(
+					SELECT PC.VisibleInListings
+					FROM ProductChannelListings PC
+					INNER JOIN Channels C ON C.Id = PC.ChannelID
+					WHERE (
+						(C.Id = ? OR C.Slug = ?)
+						AND PC.ProductID = Products.Id
 					)
-			)`
+					LIMIT 1
+				) AS VisibleInListings`, channelIdOrSlug, channelIdOrSlug).
+					Where("NOT (NOT VisibleInListings)")
+			}
+
+		} else if filter.InCollection != nil {
+			productQuery = productQuery.
+				InnerJoin(store.CollectionProductRelationTableName+" PC ON PC.ProductID = Products.Id").
+				Where("PC.CollectionID = ?", *filter.InCollection)
+		}
+		//
+		products, err := s.Product().FilterByQuery(productQuery)
+		if err != nil {
+			return nil, err
+		}
+
+		productTypeIDs := products.ProductTypeIDs()
+
+		sqQuery = sqQuery.
+			LeftJoin(store.AttributeVariantTableName + " AV ON AV.AttributeID = Attributes.Id").
+			LeftJoin(store.AttributeProductTableName + " AP ON AP.AttributeID = Attributes.Id").
+			Where(squirrel.Or{
+				squirrel.Eq{"AV.ProductTypeID": productTypeIDs},
+				squirrel.Eq{"AP.ProductTypeID": productTypeIDs},
+			})
+	}
+
+	query, args, err := sqQuery.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetProductTypeAttributes_ToSql")
 	}
 
 	var res model.Attributes
-	err := s.GetReplicaX().Select(&res, query, model.PRODUCT_TYPE, productTypeID, productTypeID)
+	err = s.GetReplicaX().Select(&res, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product type attributes with given product type id")
 	}
@@ -319,8 +398,7 @@ func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unass
 func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error) {
 	// unassigned
 	query := `SELECT * FROM ` + store.AttributeTableName +
-		` A WHERE
-			A.Type = $1
+		` A WHERE A.Type = $1
 		AND
 			NOT EXISTS(
 				SELECT (1) AS "a"

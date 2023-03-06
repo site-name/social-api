@@ -2022,11 +2022,11 @@ func (s *RetryLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unas
 
 }
 
-func (s *RetryLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool) (model.Attributes, error) {
+func (s *RetryLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.Attributes, error) {
 
 	tries := 0
 	for {
-		result, err := s.AttributeStore.GetProductTypeAttributes(productTypeID, unassigned)
+		result, err := s.AttributeStore.GetProductTypeAttributes(productTypeID, unassigned, filter)
 		if err == nil {
 			return result, nil
 		}
@@ -6310,23 +6310,9 @@ func (s *RetryLayerProductStore) PublishedProducts(channelSlug string) ([]*model
 
 }
 
-func (s *RetryLayerProductStore) PublishedWithVariants(channel_SlugOrID string) ([]*model.Product, error) {
+func (s *RetryLayerProductStore) PublishedWithVariants(channel_SlugOrID string) squirrel.SelectBuilder {
 
-	tries := 0
-	for {
-		result, err := s.ProductStore.PublishedWithVariants(channel_SlugOrID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
+	return s.ProductStore.PublishedWithVariants(channel_SlugOrID)
 
 }
 
@@ -6370,23 +6356,9 @@ func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(pro
 
 }
 
-func (s *RetryLayerProductStore) VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) ([]*model.Product, error) {
+func (s *RetryLayerProductStore) VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
 
-	tries := 0
-	for {
-		result, err := s.ProductStore.VisibleToUserProducts(channel_SlugOrID, userHasOneOfProductpermissions)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
+	return s.ProductStore.VisibleToUserProducts(channel_SlugOrID, userHasOneOfProductpermissions)
 
 }
 

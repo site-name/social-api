@@ -81,13 +81,27 @@ type ProductFilterOption struct {
 type Products []*Product
 
 func (ps Products) IDs() []string {
-	return lo.Map(ps, func(p *Product, _ int) string { return p.Id })
+	return lo.Map(ps, func(p *Product, _ int) string {
+		if p == nil {
+			return ""
+		}
+		return p.Id
+	})
+}
+
+func (ps Products) ProductTypeIDs() []string {
+	return lo.Map(ps, func(p *Product, _ int) string {
+		if p == nil {
+			return ""
+		}
+		return p.ProductTypeID
+	})
 }
 
 func (p Products) CategoryIDs() []string {
 	res := []string{}
 	for _, product := range p {
-		if product.CategoryID != nil {
+		if product != nil && product.CategoryID != nil {
 			res = append(res, *product.CategoryID)
 		}
 	}

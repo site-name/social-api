@@ -47,6 +47,5 @@ func (p *AdvancedPermissionsPhase2Progress) IsValid() bool {
 }
 
 func (worker *Worker) runAdvancedPermissionsPhase2Migration(lastDone string) (bool, string, *model.AppError) {
-
 	panic("not implemented")
 }

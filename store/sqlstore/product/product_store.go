@@ -399,7 +399,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 // PublishedWithVariants finds and returns products.
 //
 // refer to ./product_store_doc.md (line 157)
-func (ps *SqlProductStore) PublishedWithVariants(channelIdOrSlug string) ([]*model.Product, error) {
+func (ps *SqlProductStore) PublishedWithVariants(channelIdOrSlug string) squirrel.SelectBuilder {
 	channelQuery := ps.channelQuery(channelIdOrSlug, model.NewPrimitive(true), store.ProductChannelListingTableName)
 	today := util.StartOfDay(time.Now())
 
@@ -442,40 +442,26 @@ func (ps *SqlProductStore) PublishedWithVariants(channelIdOrSlug string) ([]*mod
 		Suffix(")").
 		Limit(1)
 
-	queryString, args, err := ps.GetQueryBuilder().
+	return ps.GetQueryBuilder().
 		Select(ps.ModelFields(store.ProductTableName + ".")...).
 		From(store.ProductTableName).
 		Where(productChannelListingQuery).
 		Where(productVariantQuery).
-		OrderBy(store.TableOrderingMap[store.ProductTableName]).
-		ToSql()
-
-	if err != nil {
-		return nil, errors.Wrap(err, "PublishedWithVariants_ToSql")
-	}
-	var res model.Products
-	err = ps.GetReplicaX().Select(&res, queryString, args...)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find published with variants product with channelSlug=%s or channelId=%s", channelIdOrSlug, channelIdOrSlug)
-	}
-
-	return res, nil
+		OrderBy(store.TableOrderingMap[store.ProductTableName])
 }
 
-// FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
-//
-// 1) If requesting user is shop staff:
+// 1) If requesting user has any of product-related permissions
 //
 //	+) if `channelSlugOrID` is empty string: returns all products. refer to ./product_store_doc.md (line 241, CASE 2)
 //
 //	+) if `channelSlugOrID` is provided: refer to ./product_store_doc.md (line 241, CASE 1)
 //
 // 2) If requesting user is shop visitor: Refer to ./product_store_doc.md (line 241, case 3)
-func (ps *SqlProductStore) VisibleToUserProducts(channelSlugOrID string, userHasOneOfProductpermissions bool) ([]*model.Product, error) {
+func (ps *SqlProductStore) VisibleToUserProducts(channelSlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
 	// check if requesting user has right to view products
 	if userHasOneOfProductpermissions {
 		if channelSlugOrID == "" {
-			return ps.FilterByOption(&model.ProductFilterOption{}) // find all
+			return ps.GetQueryBuilder().Select(ps.ModelFields(store.ProductTableName + ".")...).From(store.ProductTableName) // find all
 		}
 
 		// else
@@ -490,24 +476,12 @@ func (ps *SqlProductStore) VisibleToUserProducts(channelSlugOrID string, userHas
 			Suffix(")").
 			Limit(1)
 
-		productQueryString, args, er := ps.
+		return ps.
 			GetQueryBuilder().
 			Select(ps.ModelFields(store.ProductTableName + ".")...).
 			From(store.ProductTableName).
 			Where(productChannelListingQuery).
-			OrderBy(store.TableOrderingMap[store.ProductTableName]).
-			ToSql()
-		if er != nil {
-			return nil, errors.Wrap(er, "VisibleToUserProducts_ToSql") // return immediately since this is system error
-		}
-
-		var res model.Products
-		err := ps.GetReplicaX().Select(&res, productQueryString, args...)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to find visible products to user with given channel")
-		}
-
-		return res, nil
+			OrderBy(store.TableOrderingMap[store.ProductTableName])
 	}
 
 	return ps.PublishedWithVariants(channelSlugOrID)
@@ -629,6 +603,10 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProduct
 			if pair != nil && pair.Key != "" {
 				if idx > 0 {
 					condition += " AND "
+				}
+				if pair.Value == "" {
+					condition += fmt.Sprintf(`Products.Metadata::jsonb ? '%s'`, pair.Key)
+					continue
 				}
 				condition += fmt.Sprintf(`Products.Metadata::jsonb @> '{%q:%q}'::jsonb`, pair.Key, pair.Value)
 			}

@@ -6,9 +6,11 @@ import (
 	"unsafe"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/store"
 )
 
 type AccountAddressCreate struct {
@@ -387,6 +389,37 @@ type AttributeFilterInput struct {
 	InCollection           *string            `json:"inCollection"`
 	InCategory             *string            `json:"inCategory"`
 	Channel                *string            `json:"channel"`
+}
+
+func (a *AttributeFilterInput) ToAttributeFilterOption() *model.AttributeFilterOption {
+	res := &model.AttributeFilterOption{
+		VisibleInStoreFront:    a.VisibleInStorefront,
+		ValueRequired:          a.ValueRequired,
+		IsVariantOnly:          a.IsVariantOnly,
+		FilterableInStorefront: a.FilterableInStorefront,
+		FilterableInDashboard:  a.FilterableInDashboard,
+		AvailableInGrid:        a.AvailableInGrid,
+		InCollection:           a.InCollection,
+		InCategory:             a.InCategory,
+		Channel:                a.Channel,
+	}
+
+	if len(a.Metadata) > 0 {
+		res.Metadata = model.StringMAP{}
+		for _, meta := range a.Metadata {
+			if meta != nil && meta.Key != "" {
+				res.Metadata[meta.Key] = meta.Value
+			}
+		}
+	}
+	if len(a.Ids) > 0 {
+		res.Id = squirrel.Eq{store.AttributeTableName + ".Id": a.Ids}
+	}
+	if a.Type != nil && a.Type.IsValid() {
+		res.Type = squirrel.Eq{store.AttributeTableName + ".Type": string(*a.Type)}
+	}
+
+	return res
 }
 
 type AttributeInput struct {
@@ -2771,8 +2804,8 @@ func (o *ProductOrder) ToSystemProductOrder() *model.ProductOrder {
 	}
 
 	res := &model.ProductOrder{
-		Direction:   o.Direction,
-		AttributeID: o.AttributeID,
+		Direction: o.Direction,
+		// AttributeID: o.AttributeID,
 	}
 	if o.Field != nil {
 		res.Field = (*string)(unsafe.Pointer(o.Field))

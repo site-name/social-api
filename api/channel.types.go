@@ -25,7 +25,7 @@ type Channel struct {
 	// HasOrders      bool            `json:"hasOrders"`
 }
 
-func (c *Channel) HasOrders(ctx context.Context) (bool, error) {
+func (c Channel) HasOrders(ctx context.Context) (bool, error) {
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return false, err

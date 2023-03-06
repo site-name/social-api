@@ -230,7 +230,7 @@ type (
 		Upsert(attr *model.Attribute) (*model.Attribute, error)                       // Upsert inserts or updates given model then returns it
 		GetByOption(option *model.AttributeFilterOption) (*model.Attribute, error)    // GetByOption finds and returns 1 model
 		FilterbyOption(option *model.AttributeFilterOption) (model.Attributes, error) // FilterbyOption returns a list of attributes by given option
-		GetProductTypeAttributes(productTypeID string, unassigned bool) (model.Attributes, error)
+		GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.Attributes, error)
 		GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error)
 	}
 	AttributeTranslationStore interface {
@@ -541,8 +541,8 @@ type (
 			IsPublished     bool
 			PublicationDate *timemodule.Time
 		}, error) // FilterNotPublishedProducts finds all not published products belong to given channel
-		PublishedWithVariants(channel_SlugOrID string) ([]*model.Product, error)                                                           // PublishedWithVariants finds and returns products.
-		VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) ([]*model.Product, error)                      // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
+		PublishedWithVariants(channel_SlugOrID string) squirrel.SelectBuilder                                                              // PublishedWithVariants finds and returns products.
+		VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder                         // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
 		SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
 		AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder                                        // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
 		FilterByQuery(query squirrel.SelectBuilder) (model.Products, error)                                                                // FilterByQuery finds and returns products with given query, limit, createdAtGt

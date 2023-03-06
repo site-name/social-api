@@ -106,22 +106,27 @@ func (a *Attribute) GetAttributeValues() AttributeValues {
 }
 
 type AttributeFilterOption struct {
-	Id                  squirrel.Sqlizer
-	Slug                squirrel.Sqlizer
-	InputType           squirrel.Sqlizer
-	ProductTypes        squirrel.Sqlizer // INNER JOIN AttributeProducts ON ... WHERE AttributeProducts.ProductTypeID ...
-	ProductVariantTypes squirrel.Sqlizer // INNER JOIN AttributeVariants ON ... WHERE AttributeVariants.ProductTypeID ...
-	Type                squirrel.Sqlizer
-
+	Id                     squirrel.Sqlizer
+	Slug                   squirrel.Sqlizer
+	InputType              squirrel.Sqlizer
+	ProductTypes           squirrel.Sqlizer // INNER JOIN AttributeProducts ON ... WHERE AttributeProducts.ProductTypeID ...
+	ProductVariantTypes    squirrel.Sqlizer // INNER JOIN AttributeVariants ON ... WHERE AttributeVariants.ProductTypeID ...
+	Type                   squirrel.Sqlizer
 	VisibleInStoreFront    *bool
 	ValueRequired          *bool
 	IsVariantOnly          *bool
 	FilterableInStorefront *bool
 	FilterableInDashboard  *bool
 	AvailableInGrid        *bool
+	Metadata               StringMAP
+	Search                 *string // Slug or Name ILIKE ...
+	InCollection           *string
+	InCategory             *string
+	Channel                *string // channel id or slug in which attributes reside
 
-	OrderBy  string
-	Distinct bool
+	OrderBy                        string
+	Distinct                       bool
+	UserHasOneOfProductPermissions *bool
 
 	Extra squirrel.Sqlizer
 

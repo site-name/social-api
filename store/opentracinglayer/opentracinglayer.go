@@ -1926,7 +1926,7 @@ func (s *OpenTracingLayerAttributeStore) GetPageTypeAttributes(pageTypeID string
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool) (model.Attributes, error) {
+func (s *OpenTracingLayerAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.Attributes, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.GetProductTypeAttributes")
 	s.Root.Store.SetContext(newCtx)
@@ -1935,7 +1935,7 @@ func (s *OpenTracingLayerAttributeStore) GetProductTypeAttributes(productTypeID 
 	}()
 
 	defer span.Finish()
-	result, err := s.AttributeStore.GetProductTypeAttributes(productTypeID, unassigned)
+	result, err := s.AttributeStore.GetProductTypeAttributes(productTypeID, unassigned, filter)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -5816,7 +5816,7 @@ func (s *OpenTracingLayerProductStore) PublishedProducts(channelSlug string) ([]
 	return result, err
 }
 
-func (s *OpenTracingLayerProductStore) PublishedWithVariants(channel_SlugOrID string) ([]*model.Product, error) {
+func (s *OpenTracingLayerProductStore) PublishedWithVariants(channel_SlugOrID string) squirrel.SelectBuilder {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.PublishedWithVariants")
 	s.Root.Store.SetContext(newCtx)
@@ -5825,13 +5825,8 @@ func (s *OpenTracingLayerProductStore) PublishedWithVariants(channel_SlugOrID st
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductStore.PublishedWithVariants(channel_SlugOrID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
+	result := s.ProductStore.PublishedWithVariants(channel_SlugOrID)
+	return result
 }
 
 func (s *OpenTracingLayerProductStore) Save(prd *model.Product) (*model.Product, error) {
@@ -5870,7 +5865,7 @@ func (s *OpenTracingLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogu
 	return result, err
 }
 
-func (s *OpenTracingLayerProductStore) VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) ([]*model.Product, error) {
+func (s *OpenTracingLayerProductStore) VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.VisibleToUserProducts")
 	s.Root.Store.SetContext(newCtx)
@@ -5879,13 +5874,8 @@ func (s *OpenTracingLayerProductStore) VisibleToUserProducts(channel_SlugOrID st
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductStore.VisibleToUserProducts(channel_SlugOrID, userHasOneOfProductpermissions)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
+	result := s.ProductStore.VisibleToUserProducts(channel_SlugOrID, userHasOneOfProductpermissions)
+	return result
 }
 
 func (s *OpenTracingLayerProductChannelListingStore) BulkUpsert(listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
