@@ -6310,11 +6310,11 @@ func (s *RetryLayerProductStore) PublishedProducts(channelSlug string) ([]*model
 
 }
 
-func (s *RetryLayerProductStore) PublishedWithVariants(channelSlug string) ([]*model.Product, error) {
+func (s *RetryLayerProductStore) PublishedWithVariants(channel_SlugOrID string) ([]*model.Product, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductStore.PublishedWithVariants(channelSlug)
+		result, err := s.ProductStore.PublishedWithVariants(channel_SlugOrID)
 		if err == nil {
 			return result, nil
 		}
@@ -6350,11 +6350,11 @@ func (s *RetryLayerProductStore) Save(prd *model.Product) (*model.Product, error
 
 }
 
-func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*model.Product, error) {
+func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) ([]*model.Product, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs)
+		result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs)
 		if err == nil {
 			return result, nil
 		}
@@ -6370,11 +6370,11 @@ func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(pro
 
 }
 
-func (s *RetryLayerProductStore) VisibleToUserProducts(channelSlug string, userHasOneOfProductpermissions bool) ([]*model.Product, error) {
+func (s *RetryLayerProductStore) VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) ([]*model.Product, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductStore.VisibleToUserProducts(channelSlug, userHasOneOfProductpermissions)
+		result, err := s.ProductStore.VisibleToUserProducts(channel_SlugOrID, userHasOneOfProductpermissions)
 		if err == nil {
 			return result, nil
 		}

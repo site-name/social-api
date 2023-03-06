@@ -92,3 +92,42 @@ func (a *ServiceProduct) ProductGetFirstImage(productID string) (*model.ProductM
 
 	return productMedias[0], nil
 }
+
+func (a *ServiceProduct) GetVisibleProductsToUser(userSession *model.Session, channel_IdOrSlug string) (model.Products, *model.AppError) {
+	userHasOneOfProductPermissions := a.srv.AccountService().SessionHasPermissionToAny(userSession, model.ProductPermissions...)
+	products, err := a.srv.Store.Product().VisibleToUserProducts(channel_IdOrSlug, userHasOneOfProductPermissions)
+	if err != nil {
+		return nil, model.NewAppError("GetVisibleProductsToUser", "app.product.get_visible_products_for_user.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return products, nil
+}
+
+func (s *ServiceProduct) FilterProductsAdvanced(options *model.ExportProductsFilterOptions, channelIdOrSlug string) (model.Products, *model.AppError) {
+	productsQuery := s.srv.Store.Product().AdvancedFilterQueryBuilder(options)
+
+	if channelIdOrSlug != "" {
+		productsQuery = productsQuery.
+			Where(`EXISTS (
+				SELECT (1) AS "a"
+				FROM ProductChannelListings PC
+				WHERE (
+					EXISTS (
+						SELECT (1) AS "a"
+						FROM Channels C
+						WHERE (
+							(C.Slug = ? OR C.Id = ?)
+							AND C.Id = PC.ChannelId
+						)
+						LIMIT 1
+					)
+				)
+				LIMIT 1
+			)`, channelIdOrSlug, channelIdOrSlug)
+	}
+
+	products, err := s.srv.Store.Product().FilterByQuery(productsQuery)
+	if err != nil {
+		return nil, model.NewAppError("FilterProductsAdvanced", "app.product.filter_advanced_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return products, nil
+}

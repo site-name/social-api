@@ -195,7 +195,6 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(product model.Product, dis
 
 // UpdateProductsDiscountedPrices
 func (a *ServiceProduct) UpdateProductsDiscountedPrices(products []*model.Product, discounts []*model.DiscountInfo) *model.AppError {
-
 	var (
 		appError *model.AppError
 		wg       sync.WaitGroup
@@ -223,7 +222,6 @@ func (a *ServiceProduct) UpdateProductsDiscountedPrices(products []*model.Produc
 		go func(prd *model.Product) {
 			defer wg.Done()
 			syncSetAppError(a.UpdateProductDiscountedPrice(*prd, discounts))
-
 		}(product)
 	}
 
@@ -232,21 +230,10 @@ func (a *ServiceProduct) UpdateProductsDiscountedPrices(products []*model.Produc
 	return appError
 }
 
-func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) *model.AppError {
-	products, err := a.srv.Store.Product().SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs)
-	var (
-		statusCode   int
-		errorMessage string
-	)
+func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError {
+	products, err := a.srv.Store.Product().SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errorMessage = err.Error()
-	} else if len(products) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return model.NewAppError("UpdateProductsDiscountedPricesOfCatalogues", "app.product.error_finding_products_by_given_id_lists.app_error", nil, errorMessage, statusCode)
+		return model.NewAppError("UpdateProductsDiscountedPricesOfCatalogues", "app.product.error_finding_products_by_given_id_lists.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return a.UpdateProductsDiscountedPrices(products, nil)
@@ -256,14 +243,36 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(productIDs [
 //
 // NOTE: discount must be either *Sale or *Voucher
 func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount interface{}) *model.AppError {
-	// validate discount is validly provided:
 	var (
 		productFilterOption    model.ProductFilterOption
 		categoryFilterOption   model.CategoryFilterOption
 		collectionFilterOption model.CollectionFilterOption
-		appError               *model.AppError
-		wg                     sync.WaitGroup
-		mut                    sync.Mutex
+		variantFilterOptions   model.ProductVariantFilterOption
+	)
+	switch t := discount.(type) {
+	case *model.Sale:
+		productFilterOption.SaleID = squirrel.Eq{store.SaleProductRelationTableName + ".SaleID": t.Id}
+		categoryFilterOption.SaleID = squirrel.Eq{store.SaleCategoryRelationTableName + ".SaleID": t.Id}
+		collectionFilterOption.SaleID = squirrel.Eq{store.SaleCollectionRelationTableName + ".SaleID": t.Id}
+		variantFilterOptions.SaleID = squirrel.Eq{store.SaleProductVariantTableName + ".SaleID": t.Id}
+	case *model.Voucher:
+		productFilterOption.VoucherID = squirrel.Eq{store.VoucherProductTableName + ".VoucherID": t.Id}
+		categoryFilterOption.VoucherID = squirrel.Eq{store.VoucherCategoryTableName + ".VoucherID": t.Id}
+		collectionFilterOption.VoucherID = squirrel.Eq{store.VoucherCollectionTableName + ".VoucherID": t.Id}
+		variantFilterOptions.VoucherID = squirrel.Eq{store.VoucherProductVariantTableName + ".VoucherID": t.Id}
+
+	default:
+		return model.NewAppError("UpdateProductsDiscountedPricesOfDiscount", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discount"}, "", http.StatusBadRequest)
+	}
+
+	var (
+		productIDs    []string
+		categoryIDs   []string
+		collectionIDs []string
+		variantIDs    []string
+		appError      *model.AppError
+		wg            sync.WaitGroup
+		mut           sync.Mutex
 	)
 
 	syncSetAppError := func(err *model.AppError) {
@@ -274,67 +283,57 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount inter
 		}
 	}
 
-	switch t := discount.(type) {
-	case *model.Sale:
-		productFilterOption.SaleID = squirrel.Eq{store.SaleProductRelationTableName + ".SaleID": t.Id}
-		categoryFilterOption.SaleID = squirrel.Eq{store.SaleCategoryRelationTableName + ".SaleID": t.Id}
-		collectionFilterOption.SaleID = squirrel.Eq{store.SaleCollectionRelationTableName + ".SaleID": t.Id}
-	case *model.Voucher:
-		productFilterOption.VoucherID = squirrel.Eq{store.VoucherProductTableName + ".VoucherID": t.Id}
-		categoryFilterOption.VoucherID = squirrel.Eq{store.VoucherCategoryTableName + ".VoucherID": t.Id}
-		collectionFilterOption.VoucherID = squirrel.Eq{store.VoucherCollectionTableName + ".VoucherID": t.Id}
-
-	default:
-		return model.NewAppError("UpdateProductsDiscountedPricesOfDiscount", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "discount"}, "", http.StatusBadRequest)
-	}
-
-	var (
-		productIDs    []string
-		categoryIDs   []string
-		collectionIDs []string
-	)
-
-	wg.Add(3)
+	wg.Add(4)
 
 	go func() {
-		mut.Lock()
-		defer mut.Unlock()
 		defer wg.Done()
-
-		products, appErr := a.ProductsByOption(&productFilterOption)
+		var products model.Products
+		var appErr *model.AppError
+		products, appErr = a.ProductsByOption(&productFilterOption)
 		if appErr != nil {
 			syncSetAppError(appErr)
 			return
 		}
-		productIDs = model.Products(products).IDs()
+		productIDs = products.IDs()
 	}()
 
 	go func() {
-		mut.Lock()
-		defer mut.Unlock()
 		defer wg.Done()
-
-		categories, appErr := a.CategoriesByOption(&categoryFilterOption)
+		var categories model.Categories
+		var appErr *model.AppError
+		categories, appErr = a.CategoriesByOption(&categoryFilterOption)
 		if appErr != nil {
 			syncSetAppError(appErr)
 			return
 		}
-		categoryIDs = model.Categories(categories).IDs()
+		categoryIDs = categories.IDs()
 	}()
 
 	go func() {
-		mut.Lock()
-		defer mut.Unlock()
 		defer wg.Done()
-		collections, appErr := a.CollectionsByOption(&collectionFilterOption)
+		var collections model.Collections
+		var appErr *model.AppError
+		collections, appErr = a.CollectionsByOption(&collectionFilterOption)
 		if appErr != nil {
 			syncSetAppError(appErr)
 			return
 		}
-		collectionIDs = model.Collections(collections).IDs()
+		collectionIDs = collections.IDs()
+	}()
+
+	go func() {
+		defer wg.Done()
+		var variants model.ProductVariants
+		var appErr *model.AppError
+		variants, appErr = a.ProductVariantsByOption(&variantFilterOptions)
+		if appErr != nil {
+			syncSetAppError(appErr)
+			return
+		}
+		variantIDs = variants.IDs()
 	}()
 
 	wg.Wait()
 
-	return a.UpdateProductsDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs)
+	return a.UpdateProductsDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs)
 }

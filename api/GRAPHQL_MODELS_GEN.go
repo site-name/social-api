@@ -2760,9 +2760,24 @@ type ProductMediaUpdateInput struct {
 
 type ProductOrder struct {
 	Direction   OrderDirection     `json:"direction"`
-	Channel     *string            `json:"channel"`
+	Channel     *string            `json:"channel"` // DEPRECATED, don't use this field
 	AttributeID *string            `json:"attributeId"`
 	Field       *ProductOrderField `json:"field"`
+}
+
+func (o *ProductOrder) ToSystemProductOrder() *model.ProductOrder {
+	if o == nil {
+		return nil
+	}
+
+	res := &model.ProductOrder{
+		Direction:   o.Direction,
+		AttributeID: o.AttributeID,
+	}
+	if o.Field != nil {
+		res.Field = (*string)(unsafe.Pointer(o.Field))
+	}
+	return res
 }
 
 type ProductPricingInfo struct {
@@ -6484,16 +6499,16 @@ func (e ProductMediaType) IsValid() bool {
 type ProductOrderField string
 
 const (
-	ProductOrderFieldName            ProductOrderField = "NAME"
-	ProductOrderFieldRank            ProductOrderField = "RANK"
-	ProductOrderFieldPrice           ProductOrderField = "PRICE"
-	ProductOrderFieldMinimalPrice    ProductOrderField = "MINIMAL_PRICE"
-	ProductOrderFieldDate            ProductOrderField = "DATE"
-	ProductOrderFieldType            ProductOrderField = "TYPE"
-	ProductOrderFieldPublished       ProductOrderField = "PUBLISHED"
-	ProductOrderFieldPublicationDate ProductOrderField = "PUBLICATION_DATE"
-	ProductOrderFieldCollection      ProductOrderField = "COLLECTION"
-	ProductOrderFieldRating          ProductOrderField = "RATING"
+	ProductOrderFieldName            ProductOrderField = model.ProductOrderFieldName
+	ProductOrderFieldRank            ProductOrderField = model.ProductOrderFieldRank
+	ProductOrderFieldPrice           ProductOrderField = model.ProductOrderFieldPrice
+	ProductOrderFieldMinimalPrice    ProductOrderField = model.ProductOrderFieldMinimalPrice
+	ProductOrderFieldDate            ProductOrderField = model.ProductOrderFieldDate
+	ProductOrderFieldType            ProductOrderField = model.ProductOrderFieldType
+	ProductOrderFieldPublished       ProductOrderField = model.ProductOrderFieldPublished
+	ProductOrderFieldPublicationDate ProductOrderField = model.ProductOrderFieldPublicationDate
+	ProductOrderFieldCollection      ProductOrderField = model.ProductOrderFieldCollection
+	ProductOrderFieldRating          ProductOrderField = model.ProductOrderFieldRating
 )
 
 func (e ProductOrderField) IsValid() bool {

@@ -5312,10 +5312,10 @@ func (s *TimerLayerProductStore) PublishedProducts(channelSlug string) ([]*model
 	return result, err
 }
 
-func (s *TimerLayerProductStore) PublishedWithVariants(channelSlug string) ([]*model.Product, error) {
+func (s *TimerLayerProductStore) PublishedWithVariants(channel_SlugOrID string) ([]*model.Product, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.PublishedWithVariants(channelSlug)
+	result, err := s.ProductStore.PublishedWithVariants(channel_SlugOrID)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5344,10 +5344,10 @@ func (s *TimerLayerProductStore) Save(prd *model.Product) (*model.Product, error
 	return result, err
 }
 
-func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string) ([]*model.Product, error) {
+func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productIDs []string, categoryIDs []string, collectionIDs []string, variantIDs []string) ([]*model.Product, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs)
+	result, err := s.ProductStore.SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5360,10 +5360,10 @@ func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(pro
 	return result, err
 }
 
-func (s *TimerLayerProductStore) VisibleToUserProducts(channelSlug string, userHasOneOfProductpermissions bool) ([]*model.Product, error) {
+func (s *TimerLayerProductStore) VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) ([]*model.Product, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductStore.VisibleToUserProducts(channelSlug, userHasOneOfProductpermissions)
+	result, err := s.ProductStore.VisibleToUserProducts(channel_SlugOrID, userHasOneOfProductpermissions)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

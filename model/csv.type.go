@@ -54,10 +54,33 @@ type ProductFilterInput struct {
 	Channel               *string
 }
 
+// valid values for ProductOrder.Field
+const (
+	ProductOrderFieldName            = "NAME"
+	ProductOrderFieldRank            = "RANK"
+	ProductOrderFieldPrice           = "PRICE"
+	ProductOrderFieldMinimalPrice    = "MINIMAL_PRICE"
+	ProductOrderFieldDate            = "DATE"
+	ProductOrderFieldType            = "TYPE"
+	ProductOrderFieldPublished       = "PUBLISHED"
+	ProductOrderFieldPublicationDate = "PUBLICATION_DATE"
+	ProductOrderFieldCollection      = "COLLECTION"
+	ProductOrderFieldRating          = "RATING"
+)
+
+// TODO: add support for field AttributeID
+type ProductOrder struct {
+	Field     *string
+	Direction OrderDirection
+
+	// AttributeID *string // TODO: add support filtering by this field
+}
+
 type ExportProductsFilterOptions struct {
 	Scope      string // "all" or "ids" or "filter"
 	Filter     *ProductFilterInput
 	Ids        []string
+	SortBy     *ProductOrder
 	ExportInfo *struct {
 		Attributes []string
 		Warehouses []string

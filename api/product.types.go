@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -591,9 +592,10 @@ func (c *Collection) Channel(ctx context.Context) (*string, error) {
 	return &channelID, nil
 }
 
+// TODO: add support filtering
 func (c *Collection) Products(ctx context.Context, args struct {
-	Filter *ProductFilterInput
-	SortBy *ProductOrder
+	// Filter *ProductFilterInput
+	// SortBy *ProductOrder
 	GraphqlParams
 }) (*ProductCountableConnection, error) {
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
@@ -601,19 +603,13 @@ func (c *Collection) Products(ctx context.Context, args struct {
 		return nil, err
 	}
 	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		if err.Error() != "context doesn't store given key" {
-			return nil, err
-		}
-		// ignore no channelid provided
+	if err != nil && errors.Is(err, ErrorUnExpectedType) {
+		return nil, err
 	}
 
-	userHasOneOfProductpermissions := embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.ProductPermissions...)
-
-	// find all products that are visible to current user
-	products, err := embedCtx.App.Srv().Store.Product().VisibleToUserProducts(channelID, userHasOneOfProductpermissions)
-	if err != nil {
-		return nil, model.NewAppError("Collection.Products", "app.product.visible_to_user_products.app_error", nil, err.Error(), http.StatusInternalServerError)
+	products, appErr := embedCtx.App.Srv().ProductService().GetVisibleProductsToUser(embedCtx.AppContext.Session(), channelID)
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	// filter to get products that belong to current collection:
@@ -631,6 +627,13 @@ func (c *Collection) Products(ctx context.Context, args struct {
 		return exist
 	})
 
+	keyFunc := func(p *model.Product) string { return p.Slug }
+	res, appErr := newGraphqlPaginator(products, keyFunc, SystemProductToGraphqlProduct, args.GraphqlParams).parse("Collection.Products")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return (*ProductCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (c *Collection) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*CollectionTranslation, error) {
