@@ -118,7 +118,7 @@ func (ss *SqlStockStore) Get(stockID string) (*model.Stock, error) {
 
 // FilterForChannel finds and returns stocks that satisfy given options
 func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error) {
-	channelQuery := ss.GetQueryBuilder(squirrel.Dollar).
+	channelQuery := ss.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ChannelTableName).
@@ -127,7 +127,7 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 		Limit(1).
 		Suffix(")")
 
-	shippingZoneChannelQuery := ss.GetQueryBuilder(squirrel.Dollar).
+	shippingZoneChannelQuery := ss.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ShippingZoneChannelTableName).
@@ -136,7 +136,7 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 		Limit(1).
 		Suffix(")")
 
-	warehouseShippingZoneQuery := ss.GetQueryBuilder(squirrel.Dollar).
+	warehouseShippingZoneQuery := ss.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.WarehouseShippingZoneTableName).
@@ -181,7 +181,6 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 	}
 
 	rows, err := ss.GetReplicaX().QueryX(queryString, args...)
-
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to find stocks with given channel slug")
 	}

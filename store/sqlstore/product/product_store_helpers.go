@@ -21,7 +21,7 @@ func (ps *SqlProductStore) filterCategories(query squirrel.SelectBuilder, catego
 		return query
 	}
 
-	panic("not implemented")
+	return query.Where(squirrel.Eq{store.ProductTableName + ".CategoryID": categoryIDs})
 }
 
 func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, collectionIDs []string) squirrel.SelectBuilder {
@@ -41,29 +41,29 @@ func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, colle
 	return query.Where(condition)
 }
 
-func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPublished bool, channelID string) squirrel.SelectBuilder {
+func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPublished bool, channelIdOrSlug string) squirrel.SelectBuilder {
 	return query.Where(`
 		EXISTS (
 			SELECT
 				(1) AS "a"
 			FROM 
-				`+store.ProductChannelListingTableName+`
+				`+store.ProductChannelListingTableName+` PCL
 			WHERE
 				(
 					EXISTS (
 						SELECT 
 							(1) AS "a"
 						FROM
-							`+store.ChannelTableName+`
+							`+store.ChannelTableName+` C
 						WHERE
 							(
-								ProductChannelListings.ChannelID = Channels.Id AND
-								Channels.Id = ?
+								PCL.ChannelID = C.Id
+								AND (C.Id = ? OR C.Slug = ?)
 							)
 						LIMIT 1
 					)
-					AND ProductChannelListings.IsPublished = ?
-					AND ProductChannelListings.ProductID = Products.Id
+					AND PCL.IsPublished = ?
+					AND PCL.ProductID = Products.Id
 				)
 			LIMIT 1
 		)
@@ -71,40 +71,42 @@ func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPub
 			SELECT
 				(1) AS "a"
 			FROM
-				`+store.ProductVariantTableName+`
+				`+store.ProductVariantTableName+` PV
 			WHERE
 				(
 					EXISTS (
 						SELECT
 							(1) AS "a"
 						FROM
-							`+store.ProductVariantChannelListingTableName+`
+							`+store.ProductVariantChannelListingTableName+` PVCL
 						WHERE
 							(
 								EXISTS (
 									SELECT
 										(1) AS "a"
 									FROM
-										`+store.ChannelTableName+`
+										`+store.ChannelTableName+` C
 									WHERE
 										(
-											Channels.Id = ?
-											AND Channels.Id = ProductVariantChannelListings.ChannelID
+											(C.Id = ? OR C.Slug = ?)
+											AND C.Id = PVCL.ChannelID
 										)
 									LIMIT 1
 								)
-								AND ProductVariantChannelListings.PriceAmount IS NOT NULL
-								AND ProductVariantChannelListings.VariantID = ProductVariants.Id
+								AND PVCL.PriceAmount IS NOT NULL
+								AND PVCL.VariantID = PV.Id
 							)
 						LIMIT 1
 					)
-					AND ProductVariants.ProductID = Products.Id
+					AND PV.ProductID = Products.Id
 				)
 			LIMIT 1
 		)`,
-		channelID,
+		channelIdOrSlug,
+		channelIdOrSlug,
 		isPublished,
-		channelID,
+		channelIdOrSlug,
+		channelIdOrSlug,
 	)
 }
 
@@ -113,13 +115,13 @@ func (ps *SqlProductStore) filterVariantPrice(
 	priceRange struct {
 		Gte *float64
 		Lte *float64
-	}, channelID string,
+	}, channelIdOrSlug string,
 ) squirrel.SelectBuilder {
 	channelQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ChannelTableName).
-		Where("Channels.Id = ? AND Channels.Id = ProductVariantChannelListings.ChannelID", channelID).
+		Where("(Channels.Id = ? OR Channels.Slug = ?) AND Channels.Id = ProductVariantChannelListings.ChannelID", channelIdOrSlug, channelIdOrSlug).
 		Limit(1).
 		Suffix(")")
 
@@ -134,11 +136,11 @@ func (ps *SqlProductStore) filterVariantPrice(
 
 	if priceRange.Lte != nil {
 		productVariantChannelListingQuery = productVariantChannelListingQuery.
-			Where("ProductVariantChannelListings.PriceAmount <= ? OR ProductVariantChannelListings.PriceAmount IS NULL", *priceRange.Gte)
+			Where("ProductVariantChannelListings.PriceAmount <= ? OR ProductVariantChannelListings.PriceAmount IS NULL", *priceRange.Lte)
 	}
 	if priceRange.Gte != nil {
 		productVariantChannelListingQuery = productVariantChannelListingQuery.
-			Where("ProductVariantChannelListings.PriceAmount >= ? OR ProductVariantChannelListings.PriceAmount IS NULL", *priceRange.Lte)
+			Where("ProductVariantChannelListings.PriceAmount >= ? OR ProductVariantChannelListings.PriceAmount IS NULL", *priceRange.Gte)
 	}
 
 	productVariantQuery := ps.GetQueryBuilder(squirrel.Question).
@@ -159,13 +161,13 @@ func (ps *SqlProductStore) filterMinimalPrice(
 		Gte *float64
 		Lte *float64
 	},
-	channelID string,
+	channelIdOrSlug string,
 ) squirrel.SelectBuilder {
 	channelQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ChannelTableName).
-		Where("Channels.Id = ? AND Channels.Id = ProductChannelListings.ChannelID", channelID).
+		Where("(Channels.Id = ? OR Channels.Slug = ?) AND Channels.Id = ProductChannelListings.ChannelID", channelIdOrSlug, channelIdOrSlug).
 		Limit(1).
 		Suffix(")")
 
@@ -624,15 +626,8 @@ func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue 
 	return nil
 }
 
-func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder, value string, channelID interface{}) squirrel.SelectBuilder {
-	var (
-		validValue = true
-		prefix     string
-		channelID_ string
-	)
-	if channelID != nil {
-		channelID_ = channelID.(string)
-	}
+func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder, value string, channelIdOrSlug string) squirrel.SelectBuilder {
+	var prefix string
 
 	switch value {
 	case model.StockAvailabilityInStock:
@@ -641,15 +636,11 @@ func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder,
 		prefix = "NOT EXISTS ("
 
 	default:
-		validValue = false
-	}
-
-	if !validValue {
 		return query
 	}
 
 	channelQuery, _, _ := ps.Stock().FilterForChannel(&model.StockFilterForChannelOption{
-		ChannelID:       channelID_,
+		ChannelID:       channelIdOrSlug,
 		ReturnQueryOnly: true,
 	})
 
@@ -838,7 +829,14 @@ func (ps *SqlProductStore) filterHasPreorderedVariants(query squirrel.SelectBuil
 	return query.Where(variantQuery)
 }
 
+// TODO: add search by search vector.
 func (ps *SqlProductStore) filterSearch(query squirrel.SelectBuilder, value string) squirrel.SelectBuilder {
-	slog.Warn("this method is not implemented", slog.String("method", "SqlProductStore.filterSearch"))
-	return query
+	variantQuery := ps.GetQueryBuilder(squirrel.Question).
+		Select(`(1) AS "a"`).
+		Prefix("EXISTS (").
+		From(store.ProductVariantTableName+" PV").
+		Where("PV.Sku = ? AND PV.ProductID = Products.Id", value).
+		Suffix(")")
+
+	return query.Where(variantQuery)
 }

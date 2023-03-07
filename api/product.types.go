@@ -510,7 +510,7 @@ func (p *ProductType) AvailableAttributes(ctx context.Context, args struct {
 
 	attributes, err := embedCtx.App.Srv().Store.Attribute().GetProductTypeAttributes(p.ID, true, filterOptions)
 	if err != nil {
-		return nil, model.NewAppError("GetProductTypeAttributes", "app.attribute.unassigned_product_type_attributes.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, model.NewAppError("AvailableAttributes", "app.attribute.filter_product_type_attributes.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	keyFunc := func(a *model.Attribute) string { return a.Slug }

@@ -3,6 +3,7 @@ package product
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -598,20 +599,20 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProduct
 		query = ps.filterSearch(query, *input.Filter.Search)
 	}
 	if meta := input.Filter.Metadata; len(meta) > 0 {
-		condition := ""
-		for idx, pair := range meta {
+		condition := strings.Builder{}
+		for _, pair := range meta {
 			if pair != nil && pair.Key != "" {
-				if idx > 0 {
-					condition += " AND "
+				if condition.Len() > 0 {
+					condition.WriteString(" AND ")
 				}
 				if pair.Value == "" {
-					condition += fmt.Sprintf(`Products.Metadata::jsonb ? '%s'`, pair.Key)
+					condition.WriteString(fmt.Sprintf(`Products.Metadata::jsonb ? '%s'`, pair.Key))
 					continue
 				}
-				condition += fmt.Sprintf(`Products.Metadata::jsonb @> '{%q:%q}'::jsonb`, pair.Key, pair.Value)
+				condition.WriteString(fmt.Sprintf(`Products.Metadata::jsonb @> '{%q:%q}'::jsonb`, pair.Key, pair.Value))
 			}
 		}
-		query = query.Where(condition)
+		query = query.Where(condition.String())
 	}
 
 	// filter by SortBy

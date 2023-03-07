@@ -3,10 +3,12 @@ package attribute
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
 
@@ -175,24 +177,77 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 			Where(option.ProductVariantTypes)
 	}
 	if option.Metadata != nil && len(option.Metadata) > 0 {
-		conditions := ""
+		conditions := strings.Builder{}
 		for key, value := range option.Metadata {
 			if key != "" {
-				if conditions != "" {
-					conditions += " AND "
+				if conditions.Len() > 0 {
+					conditions.WriteString(" AND ")
 				}
 				if value != "" {
-					conditions += fmt.Sprintf("Attributes.Metadata::jsonb @> '{%q:%q}'", key, value)
+					conditions.WriteString(fmt.Sprintf("Attributes.Metadata::jsonb @> '{%q:%q}'", key, value))
 					continue
 				}
-				conditions += fmt.Sprintf("Attributes.Metadata::jsonb ? '%s'", key)
+				conditions.WriteString(fmt.Sprintf("Attributes.Metadata::jsonb ? '%s'", key))
 			}
 		}
-		query = query.Where(conditions)
+		query = query.Where(conditions.String())
 	}
 	if search := option.Search; search != nil && *search != "" {
 		expr := "%" + *search + "%"
 		query = query.Where("Attributes.Name ILIKE ? OR Attributes.Slug ILIKE ?", expr, expr)
+	}
+
+	if option.InCategory != nil || option.InCollection != nil {
+		if option.UserHasOneOfProductPermissions == nil {
+			option.UserHasOneOfProductPermissions = model.NewPrimitive(false)
+		}
+
+		var channelIdOrSlug string
+		if option.Channel != nil {
+			channelIdOrSlug = *option.Channel
+		}
+
+		productQuery := as.
+			Product().
+			VisibleToUserProducts(channelIdOrSlug, *option.UserHasOneOfProductPermissions)
+
+		if option.InCategory != nil {
+			productQuery = productQuery.Where("Products.CategoryID = ?", *option.InCategory)
+
+			if !*option.UserHasOneOfProductPermissions {
+				productQuery = productQuery.Column(`(
+					SELECT PC.VisibleInListings
+					FROM ProductChannelListings PC
+					INNER JOIN Channels C ON C.Id = PC.ChannelID
+					WHERE (
+						(C.Id = ? OR C.Slug = ?)
+						AND PC.ProductID = Products.Id
+					)
+					LIMIT 1
+				) AS VisibleInListings`, channelIdOrSlug, channelIdOrSlug).
+					Where("NOT (NOT VisibleInListings)")
+			}
+
+		} else if option.InCollection != nil {
+			productQuery = productQuery.
+				InnerJoin(store.CollectionProductRelationTableName+" PC ON PC.ProductID = Products.Id").
+				Where("PC.CollectionID = ?", *option.InCollection)
+		}
+		//
+		products, err := as.Product().FilterByQuery(productQuery)
+		if err != nil {
+			slog.Error("failed to find products for filtering attributes", slog.Err(err))
+			return query
+		}
+
+		productTypeIDs := products.ProductTypeIDs()
+		query = query.
+			LeftJoin(store.AttributeVariantTableName + " AV ON AV.AttributeID = Attributes.Id").
+			LeftJoin(store.AttributeProductTableName + " AP ON AP.AttributeID = Attributes.Id").
+			Where(squirrel.Or{
+				squirrel.Eq{"AV.ProductTypeID": productTypeIDs},
+				squirrel.Eq{"AP.ProductTypeID": productTypeIDs},
+			})
 	}
 
 	return query
@@ -325,59 +380,6 @@ func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unass
 			Where(squirrel.Or{
 				squirrel.Expr("AttributeProducts.ProductTypeID = ?", productTypeID),
 				squirrel.Expr("AttributeVariants.ProductTypeID = ?", productTypeID),
-			})
-	}
-
-	if filter.InCategory != nil || filter.InCollection != nil {
-		if filter.UserHasOneOfProductPermissions == nil {
-			filter.UserHasOneOfProductPermissions = model.NewPrimitive(false)
-		}
-
-		var channelIdOrSlug string
-		if filter.Channel != nil {
-			channelIdOrSlug = *filter.Channel
-		}
-
-		productQuery := s.
-			Product().
-			VisibleToUserProducts(channelIdOrSlug, *filter.UserHasOneOfProductPermissions)
-
-		if filter.InCategory != nil {
-			productQuery = productQuery.Where("Products.CategoryID = ?", *filter.InCategory)
-
-			if !*filter.UserHasOneOfProductPermissions {
-				productQuery = productQuery.Column(`(
-					SELECT PC.VisibleInListings
-					FROM ProductChannelListings PC
-					INNER JOIN Channels C ON C.Id = PC.ChannelID
-					WHERE (
-						(C.Id = ? OR C.Slug = ?)
-						AND PC.ProductID = Products.Id
-					)
-					LIMIT 1
-				) AS VisibleInListings`, channelIdOrSlug, channelIdOrSlug).
-					Where("NOT (NOT VisibleInListings)")
-			}
-
-		} else if filter.InCollection != nil {
-			productQuery = productQuery.
-				InnerJoin(store.CollectionProductRelationTableName+" PC ON PC.ProductID = Products.Id").
-				Where("PC.CollectionID = ?", *filter.InCollection)
-		}
-		//
-		products, err := s.Product().FilterByQuery(productQuery)
-		if err != nil {
-			return nil, err
-		}
-
-		productTypeIDs := products.ProductTypeIDs()
-
-		sqQuery = sqQuery.
-			LeftJoin(store.AttributeVariantTableName + " AV ON AV.AttributeID = Attributes.Id").
-			LeftJoin(store.AttributeProductTableName + " AP ON AP.AttributeID = Attributes.Id").
-			Where(squirrel.Or{
-				squirrel.Eq{"AV.ProductTypeID": productTypeIDs},
-				squirrel.Eq{"AP.ProductTypeID": productTypeIDs},
 			})
 	}
 

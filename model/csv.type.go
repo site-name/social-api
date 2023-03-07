@@ -26,7 +26,7 @@ type ProductFilterInput struct {
 	Categories        []string
 	HasCategory       *bool
 	Attributes        []*AttributeFilter
-	StockAvailability *string
+	StockAvailability *string // can either be Instock or outOfStock
 	Stocks            *struct {
 		WarehouseIds []string
 		Quantity     *struct {
