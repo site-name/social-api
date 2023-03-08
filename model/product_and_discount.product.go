@@ -45,6 +45,11 @@ type Product struct {
 	ProductChannelListings    ProductChannelListings    `json:"-" db:"-"`
 }
 
+type ProductCountByCategoryID struct {
+	CategoryID   string `json:"category_id"`
+	ProductCount uint64 `json:"product_count"`
+}
+
 // ProductFilterOption is used to compose squirrel sql queries
 type ProductFilterOption struct {
 	Id squirrel.Sqlizer

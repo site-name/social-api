@@ -627,9 +627,9 @@ type CategoryDelete struct {
 }
 
 type CategoryFilterInput struct {
-	Search   *string          `json:"search"`
-	Metadata []*MetadataInput `json:"metadata"`
-	Ids      []string         `json:"ids"`
+	Search *string  `json:"search"`
+	Ids    []string `json:"ids"`
+	// Metadata []*MetadataInput `json:"metadata"`
 }
 
 type CategoryInput struct {
@@ -643,8 +643,8 @@ type CategoryInput struct {
 
 type CategorySortingInput struct {
 	Direction OrderDirection    `json:"direction"`
-	Channel   *string           `json:"channel"`
 	Field     CategorySortField `json:"field"`
+	// Channel   *string           `json:"channel"`
 }
 
 type CategoryTranslatableContent struct {

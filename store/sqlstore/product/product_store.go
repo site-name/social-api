@@ -705,3 +705,24 @@ func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Pr
 	}
 	return products, nil
 }
+
+func (s *SqlProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error) {
+	query, args, err := s.GetQueryBuilder().
+		Select("P.CategoryID", "COUNT(P.Id) AS ProductCount").
+		From(store.ProductTableName).
+		Distinct().
+		Where("P.CategoryID IS NOT NULL").
+		Where(squirrel.Eq{"P.CategoryID": categoryIDs}).
+		GroupBy("P.CategoryID").ToSql()
+
+	if err != nil {
+		return nil, errors.Wrap(err, "CountByCategoryIDs_ToSql")
+	}
+	var res []*model.ProductCountByCategoryID
+	err = s.GetMasterX().Select(&res, query, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to count products by given category ids")
+	}
+
+	return res, nil
+}

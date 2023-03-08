@@ -546,6 +546,7 @@ type (
 		SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
 		AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder                                        // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
 		FilterByQuery(query squirrel.SelectBuilder) (model.Products, error)                                                                // FilterByQuery finds and returns products with given query, limit, createdAtGt
+		CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error)
 	}
 )
 

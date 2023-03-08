@@ -3,7 +3,7 @@
 
 package model
 
-// all categories
+// all categories ({{ len .Categories }})
 var (
 {{ range $cate := .Categories }}
   {{$cate.Named}} = &Category{
@@ -12,13 +12,42 @@ var (
     Name: "{{$cate.VnName}}",
 		NameEn: "{{$cate.EnName}}",{{if gt (len $cate.Images) 0 }}
 		Images: []string{ {{range $path := $cate.Images}}"{{$path}}", {{end}}}, {{end}}
-		{{if gt (len $cate.Children) 0}} Children: Categories{ 
-		{{ range $child := $cate.Children }}{{$child}},
-		{{end}} }, {{end}}
+		{{if gt (len $cate.Children) 0}} Children: Categories{ {{ range $child := $cate.Children }}{{$child}},{{end}} }, {{end}}
 	}{{ end }}
 )
 
-// first level categories
-var FirstLevelCategories = Categories{ {{ range $cate := .FirstLevels }}
-	{{$cate}}, {{ end }}
+var (
+	FirstLevelCategories  Categories // first level categories ({{ len .FirstLevels }})
+	SecondLevelCategories Categories // second level categories ({{ len .SecondLevels }})
+	ThirdLevelCategories  Categories // third level categories ({{ len .ThirdLevels }})
+	FourthLevelCategories Categories // Fourth level categories ({{ len .FourthLevels }})
+	FifthhLevelCategories Categories // Fifth level categories ({{ len .FifthLevels }})
+	AllCategories         Categories // All Categories
+)
+
+func init() {
+	FirstLevelCategories = Categories{ {{ range $cate := .FirstLevels }}
+		{{$cate}}, {{ end }}
+	}
+
+	SecondLevelCategories = Categories{ {{ range $cate := .SecondLevels }}
+		{{$cate}}, {{ end }}
+	}
+
+	ThirdLevelCategories = Categories{ {{ range $cate := .ThirdLevels }}
+		{{$cate}}, {{ end }}
+	}
+
+	FourthLevelCategories = Categories{ {{ range $cate := .FourthLevels }}
+		{{$cate}}, {{ end }}
+	}
+
+	FifthhLevelCategories = Categories{ {{ range $cate := .FifthLevels }}
+		{{$cate}}, {{ end }}
+	}
+
+	AllCategories = append(FirstLevelCategories, SecondLevelCategories...)
+	AllCategories = append(AllCategories, ThirdLevelCategories...)
+	AllCategories = append(AllCategories, FourthLevelCategories...)
+	AllCategories = append(AllCategories, FifthhLevelCategories...)
 }

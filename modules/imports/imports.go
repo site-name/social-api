@@ -1,5 +1,5 @@
 /*
-	this package used for registering all sub applications for main app
+this package used for registering all sub applications for main app
 */
 package imports
 
@@ -25,4 +25,5 @@ import (
 	_ "github.com/sitename/sitename/app/warehouse"
 	_ "github.com/sitename/sitename/app/webhook"
 	_ "github.com/sitename/sitename/app/wishlist"
+	_ "github.com/sitename/sitename/model" // for constant initilalization
 )

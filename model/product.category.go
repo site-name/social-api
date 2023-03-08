@@ -24,6 +24,7 @@ type Category struct {
 	ParentID           *string         `json:"parent_id,omitempty"`
 	BackgroundImage    *string         `json:"background_image,omitempty"`
 	BackgroundImageAlt string          `json:"background_image_alt"`
+	NumOfProducts      uint64          `json:"num_of_products"`
 	Seo
 	ModelMetadata
 
@@ -51,9 +52,30 @@ func (c Categories) IDs() []string {
 	return lo.Map(c, func(g *Category, _ int) string { return g.Id })
 }
 
+func (c Categories) Len() int {
+	return len(c)
+}
+
 func (cs Categories) DeepCopy() Categories {
 	return lo.Map(cs, func(g *Category, _ int) *Category { return g.DeepCopy() })
+}
 
+// Search recursively find for a category in current Categories that satisfy given checker function
+func (cs Categories) Search(checker func(c *Category) bool) *Category {
+	for _, cate := range cs {
+		if checker(cate) {
+			return cate
+		}
+
+		if cate.Children.Len() > 0 {
+			reCate := cate.Children.Search(checker)
+			if reCate != nil {
+				return reCate
+			}
+		}
+	}
+
+	return nil
 }
 
 func (c *Category) String() string {
@@ -62,7 +84,7 @@ func (c *Category) String() string {
 
 func (c *Category) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"category.is_valid.%s.app_error",
+		"model.category.is_valid.%s.app_error",
 		"category_id=",
 		"Category.IsValid",
 	)
@@ -142,7 +164,7 @@ func (c *CategoryTranslation) ToJSON() string {
 
 func (c *CategoryTranslation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"category_translation.is_valid.%s.app_error",
+		"model.category_translation.is_valid.%s.app_error",
 		"category_translation_id=",
 		"CategoryTranslation.IsValid")
 
@@ -181,15 +203,13 @@ func ClassifyCategories(categories Categories) Categories {
 		}
 	}
 
-	for _, cate := range categories {
-		if cate != nil {
-			if cate.ParentID == nil { // category has no child category
-				res = append(res, cate)
-				continue
-			}
-
-			trackMap[*cate.ParentID].Children = append(trackMap[*cate.ParentID].Children, cate)
+	for _, cate := range trackMap {
+		if cate.ParentID == nil { // first level categoies have no parent
+			res = append(res, cate)
+			continue
 		}
+
+		trackMap[*cate.ParentID].Children = append(trackMap[*cate.ParentID].Children, cate)
 	}
 
 	return res

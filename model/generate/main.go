@@ -82,8 +82,8 @@ func main() {
 	}
 
 	meetMap := map[string]struct{}{}
+	dt := data{}
 
-	desireds := []*DesiredCategory{}
 	for idx, cate := range cates {
 		if cate.CategoryNameEn == "" {
 			continue
@@ -112,7 +112,19 @@ func main() {
 					desired.Images = cate.Images
 				}
 
-				desireds = append(desireds, desired)
+				dt.Categories = append(dt.Categories, desired)
+				switch pathIdx {
+				case 0:
+					dt.FirstLevels = append(dt.FirstLevels, named)
+				case 1:
+					dt.SecondLevels = append(dt.SecondLevels, named)
+				case 2:
+					dt.ThirdLevels = append(dt.ThirdLevels, named)
+				case 3:
+					dt.FourthLevels = append(dt.FourthLevels, named)
+				case 4:
+					dt.FifthLevels = append(dt.FifthLevels, named)
+				}
 				meetMap[named] = struct{}{}
 			}
 		}
@@ -141,35 +153,33 @@ func main() {
 			}
 			fourthLevel[levelNameMap[3]][levelNameMap[4]] = struct{}{}
 		}
-
 	}
 
-	dt := data{
-		Categories: desireds,
-	}
-
-	for _, cate := range desireds {
+	for _, cate := range dt.Categories {
 		switch {
 		case firstLevel[cate.Named] != nil:
 			for key := range firstLevel[cate.Named] {
 				cate.Children = append(cate.Children, key)
 			}
-			dt.FirstLevels = append(dt.FirstLevels, cate.Named)
+			// dt.FirstLevels = append(dt.FirstLevels, cate.Named)
 
 		case secondLevel[cate.Named] != nil:
 			for key := range secondLevel[cate.Named] {
 				cate.Children = append(cate.Children, key)
 			}
+			// dt.SecondLevels = append(dt.SecondLevels, cate.Named)
 
 		case thirdLevel[cate.Named] != nil:
 			for key := range thirdLevel[cate.Named] {
 				cate.Children = append(cate.Children, key)
 			}
+			// dt.ThirdLevels = append(dt.ThirdLevels, cate.Named)
 
 		case fourthLevel[cate.Named] != nil:
 			for key := range fourthLevel[cate.Named] {
 				cate.Children = append(cate.Children, key)
 			}
+			// dt.FourthLevels = append(dt.FourthLevels, cate.Named)
 		}
 	}
 
