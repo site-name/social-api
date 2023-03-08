@@ -77,10 +77,7 @@ func (r *Resolver) Collections(ctx context.Context, args struct {
 	Filter  *CollectionFilterInput
 	SortBy  *CollectionSortingInput
 	Channel *string
-	Before  *string
-	After   *string
-	First   *int
-	Last    *int
+	GraphqlParams
 }) (*CollectionCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

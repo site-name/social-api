@@ -32,11 +32,6 @@ func (r *Resolver) CheckoutLinesUpdate(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) CheckoutLines(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
-}) (*CheckoutLineCountableConnection, error) {
+func (r *Resolver) CheckoutLines(ctx context.Context, args GraphqlParams) (*CheckoutLineCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

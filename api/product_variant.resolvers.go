@@ -106,10 +106,7 @@ func (r *Resolver) ProductVariants(ctx context.Context, args struct {
 	Ids     []string
 	Channel *string
 	Filter  *ProductVariantFilterInput
-	Before  *string
-	After   *string
-	First   *int
-	Last    *int
+	GraphqlParams
 }) (*ProductVariantCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

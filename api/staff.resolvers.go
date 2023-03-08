@@ -47,10 +47,7 @@ func (r *Resolver) StaffBulkDelete(ctx context.Context, args struct{ Ids []strin
 func (r *Resolver) StaffUsers(ctx context.Context, args struct {
 	Filter *StaffUserInput
 	SortBy *UserSortingInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*UserCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

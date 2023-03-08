@@ -68,10 +68,7 @@ func (r *Resolver) Sales(ctx context.Context, args struct {
 	SortBy  *SaleSortingInput
 	Query   *string
 	Channel *string
-	Before  *string
-	After   *string
-	First   *int
-	Last    *int
+	GraphqlParams
 }) (*SaleCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

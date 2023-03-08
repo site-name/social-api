@@ -74,10 +74,7 @@ func (r *Resolver) Page(ctx context.Context, args struct {
 func (r *Resolver) Pages(ctx context.Context, args struct {
 	SortBy *PageSortingInput
 	Filter *PageFilterInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*PageCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

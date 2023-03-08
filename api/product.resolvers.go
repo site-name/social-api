@@ -76,10 +76,7 @@ func (r *Resolver) Products(ctx context.Context, args struct {
 	Filter  *ProductFilterInput
 	SortBy  *ProductOrder
 	Channel *string
-	Before  *string
-	After   *string
-	First   *int
-	Last    *int
+	GraphqlParams
 }) (*ProductCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

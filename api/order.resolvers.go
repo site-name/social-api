@@ -135,10 +135,7 @@ func (r *Resolver) Orders(ctx context.Context, args struct {
 	SortBy  *OrderSortingInput
 	Filter  *OrderFilterInput
 	Channel *string
-	Before  *string
-	After   *string
-	First   *int
-	Last    *int
+	GraphqlParams
 }) (*OrderCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -146,10 +143,7 @@ func (r *Resolver) Orders(ctx context.Context, args struct {
 func (r *Resolver) DraftOrders(ctx context.Context, args struct {
 	SortBy *OrderSortingInput
 	Filter *OrderDraftFilterInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*OrderCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

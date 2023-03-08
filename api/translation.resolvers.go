@@ -9,11 +9,8 @@ import (
 )
 
 func (r *Resolver) Translations(ctx context.Context, args struct {
-	Kind   TranslatableKinds
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	Kind TranslatableKinds
+	GraphqlParams
 }) (*TranslatableItemConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

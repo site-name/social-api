@@ -96,10 +96,7 @@ func (r *Resolver) Checkout(ctx context.Context, args struct{ Token *string }) (
 
 func (r *Resolver) Checkouts(ctx context.Context, args struct {
 	Channel *string
-	Before  *string
-	After   *string
-	First   *int
-	Last    *int
+	GraphqlParams
 }) (*CheckoutCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

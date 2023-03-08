@@ -68,10 +68,7 @@ func (r *Resolver) Vouchers(ctx context.Context, args struct {
 	SortBy  *VoucherSortingInput
 	Query   *string
 	Channel *string
-	Before  *string
-	After   *string
-	First   *int
-	Last    *int
+	GraphqlParams
 }) (*VoucherCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

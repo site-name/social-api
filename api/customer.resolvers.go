@@ -30,10 +30,7 @@ func (r *Resolver) CustomerBulkDelete(ctx context.Context, args struct{ Ids []st
 func (r *Resolver) Customers(ctx context.Context, args struct {
 	Filter *CustomerFilterInput
 	SortBy *UserSortingInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*UserCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

@@ -65,10 +65,7 @@ func (r *Resolver) GiftCardSettings(ctx context.Context) (*GiftCardSettings, err
 func (r *Resolver) GiftCards(ctx context.Context, args struct {
 	SortBy *GiftCardSortingInput
 	Filter *GiftCardFilterInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*GiftCardCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

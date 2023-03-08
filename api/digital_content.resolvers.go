@@ -36,11 +36,6 @@ func (r *Resolver) DigitalContent(ctx context.Context, args struct{ Id string })
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) DigitalContents(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
-}) (*DigitalContentCountableConnection, error) {
+func (r *Resolver) DigitalContents(ctx context.Context, args GraphqlParams) (*DigitalContentCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

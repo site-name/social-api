@@ -87,10 +87,7 @@ func (r *Resolver) ShippingZone(ctx context.Context, args struct {
 func (r *Resolver) ShippingZones(ctx context.Context, args struct {
 	Filter  *ShippingZoneFilterInput
 	Channel *string
-	Before  *string
-	After   *string
-	First   *int
-	Last    *int
+	GraphqlParams
 }) (*ShippingZoneCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

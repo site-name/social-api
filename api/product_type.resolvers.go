@@ -42,10 +42,7 @@ func (r *Resolver) ProductType(ctx context.Context, args struct{ Id string }) (*
 func (r *Resolver) ProductTypes(ctx context.Context, args struct {
 	Filter *ProductTypeFilterInput
 	SortBy *ProductTypeSortingInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*ProductTypeCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

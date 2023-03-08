@@ -44,10 +44,7 @@ func (r *Resolver) Warehouse(ctx context.Context, args struct{ Id string }) (*Wa
 func (r *Resolver) Warehouses(ctx context.Context, args struct {
 	Filter *WarehouseFilterInput
 	SortBy *WarehouseSortingInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*WarehouseCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -58,10 +55,7 @@ func (r *Resolver) Stock(ctx context.Context, args struct{ Id string }) (*Stock,
 
 func (r *Resolver) Stocks(ctx context.Context, args struct {
 	Filter *StockFilterInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*StockCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

@@ -76,10 +76,7 @@ func (r *Resolver) Attributes(ctx context.Context, args struct {
 	Filter     *AttributeFilterInput
 	SortBy     *AttributeSortingInput
 	ChanelSlug *string
-	Before     *string
-	After      *string
-	First      *int
-	Last       *int
+	GraphqlParams
 }) (*AttributeCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

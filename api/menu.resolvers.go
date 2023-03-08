@@ -74,10 +74,7 @@ func (r *Resolver) Menus(ctx context.Context, args struct {
 	Channel *string
 	SortBy  *MenuSortingInput
 	Filter  *MenuFilterInput
-	Before  *string
-	After   *string
-	First   *int
-	Last    *int
+	GraphqlParams
 }) (*MenuCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -93,10 +90,7 @@ func (r *Resolver) MenuItems(ctx context.Context, args struct {
 	Channel *string
 	SortBy  *MenuItemSortingInput
 	Filter  *MenuItemFilterInput
-	Before  *string
-	After   *string
-	First   *int
-	Last    *int
+	GraphqlParams
 }) (*MenuItemCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

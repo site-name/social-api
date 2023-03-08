@@ -43,10 +43,7 @@ func (r *Resolver) Payment(ctx context.Context, args struct{ Id string }) (*Paym
 
 func (r *Resolver) Payments(ctx context.Context, args struct {
 	Filter *PaymentFilterInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*PaymentCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

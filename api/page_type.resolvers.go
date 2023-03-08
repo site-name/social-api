@@ -41,10 +41,7 @@ func (r *Resolver) PageType(ctx context.Context, args struct{ Id string }) (*Pag
 func (r *Resolver) PageTypes(ctx context.Context, args struct {
 	SortBy *PageTypeSortingInput
 	Filter *PageTypeFilterInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*PageTypeCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

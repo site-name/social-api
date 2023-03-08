@@ -28,10 +28,7 @@ func (r *Resolver) PermissionGroupDelete(ctx context.Context, args struct{ Id st
 func (r *Resolver) PermissionGroups(ctx context.Context, args struct {
 	Filter *PermissionGroupFilterInput
 	SortBy *PermissionGroupSortingInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*GroupCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

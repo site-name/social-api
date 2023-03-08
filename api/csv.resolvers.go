@@ -19,10 +19,7 @@ func (r *Resolver) ExportFile(ctx context.Context, args struct{ Id string }) (*E
 func (r *Resolver) ExportFiles(ctx context.Context, args struct {
 	Filter *ExportFileFilterInput
 	SortBy *ExportFileSortingInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*ExportFileCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

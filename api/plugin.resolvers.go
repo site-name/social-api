@@ -23,10 +23,7 @@ func (r *Resolver) Plugin(ctx context.Context, args struct{ Id string }) (*Plugi
 func (r *Resolver) Plugins(ctx context.Context, args struct {
 	Filter *PluginFilterInput
 	SortBy *PluginSortingInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*PluginCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

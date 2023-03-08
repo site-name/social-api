@@ -46,20 +46,12 @@ func (r *Resolver) ExternalNotificationTrigger(ctx context.Context, args struct 
 func (r *Resolver) ReportProductSales(ctx context.Context, args struct {
 	Period  ReportingPeriod
 	Channel string
-	Before  *string
-	After   *string
-	First   *int
-	Last    *int
+	GraphqlParams
 }) (*ProductVariantCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) HomepageEvents(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
-}) (*OrderEventCountableConnection, error) {
+func (r *Resolver) HomepageEvents(ctx context.Context, args GraphqlParams) (*OrderEventCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
