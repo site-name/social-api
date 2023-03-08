@@ -524,6 +524,7 @@ type (
 	CategoryTranslationStore interface {
 	}
 	CategoryStore interface {
+		ModelFields(prefix string) model.AnyArray[string]
 		Upsert(category *model.Category) (*model.Category, error)                     // Upsert depends on given category's Id field to decide update or insert it
 		Get(categoryID string) (*model.Category, error)                               // Get finds and returns a category with given id
 		GetByOption(option *model.CategoryFilterOption) (*model.Category, error)      // GetByOption finds and returns 1 category satisfy given option

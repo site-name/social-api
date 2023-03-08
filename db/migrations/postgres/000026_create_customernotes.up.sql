@@ -8,5 +8,4 @@ CREATE TABLE IF NOT EXISTS customernotes (
 );
 
 CREATE INDEX idx_customer_notes_date ON customernotes USING btree (date);
-		ALTER TABLE ONLY customernotes
-    ADD CONSTRAINT fk_customernotes_users FOREIGN KEY (userid) REFERENCES users(id);
+		

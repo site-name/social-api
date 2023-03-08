@@ -60,13 +60,8 @@ type SqlStore struct {
 	rrCounter int64
 	srCounter int64
 
-	// master  *gorp.DbMap
-	masterX *sqlxDBWrapper
-
-	// Replicas  []*gorp.DbMap
-	ReplicaXs []*sqlxDBWrapper
-
-	// searchReplicas  []*gorp.DbMap
+	masterX         *sqlxDBWrapper
+	ReplicaXs       []*sqlxDBWrapper
 	searchReplicaXs []*sqlxDBWrapper
 
 	replicaLagHandles []*dbsql.DB

@@ -16,7 +16,7 @@ type Category struct {
 	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
 	Metadata        []*MetadataItem `json:"metadata"`
 
-	*model.Category
+	c *model.Category
 
 	// BackgroundImage *Image          `json:"backgroundImage"`
 	// Level           int32           `json:"level"`
@@ -41,7 +41,7 @@ func systemCategoryToGraphqlCategory(c *model.Category) *Category {
 		Description:     JSONString(c.Description),
 		Metadata:        MetadataToSlice(c.Metadata),
 		PrivateMetadata: MetadataToSlice(c.PrivateMetadata),
-		Category:        c,
+		c:               c,
 	}
 }
 
@@ -61,30 +61,17 @@ func (c *Category) Level(ctx context.Context) (int32, error) {
 	panic("not implemented")
 }
 
-func (c *Category) Ancestors(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*CategoryCountableConnection, error) {
+func (c *Category) Ancestors(ctx context.Context, args GraphqlParams) (*CategoryCountableConnection, error) {
 	panic("not implemented")
 }
 
-func (c *Category) Children(ctx context.Context, args struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
-}) (*CategoryCountableConnection, error) {
+func (c *Category) Children(ctx context.Context, args GraphqlParams) (*CategoryCountableConnection, error) {
 	panic("not implemented")
 }
 
 func (c *Category) Products(ctx context.Context, args struct {
 	Channel *string
-	Before  *string
-	After   *string
-	First   *int32
-	Last    *int32
+	GraphqlParams
 }) (*ProductCountableConnection, error) {
 	panic("not implemented")
 }

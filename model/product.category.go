@@ -17,19 +17,20 @@ const (
 
 type Category struct {
 	Id                 string          `json:"id"`
-	Name               string          `json:"name"` // unique
+	Name               string          `json:"name"` // unique, English
 	Slug               string          `json:"slug"` // unique
-	NameEn             string          `json:"name_en"`
 	Description        StringInterface `json:"description,omitempty"`
 	ParentID           *string         `json:"parent_id,omitempty"`
+	Level              uint8           `json:"level"` // 0, 1, 2, 3, 4
 	BackgroundImage    *string         `json:"background_image,omitempty"`
 	BackgroundImageAlt string          `json:"background_image_alt"`
-	NumOfProducts      uint64          `json:"num_of_products"`
+	Images             string          `json:"images"` // space-seperated urls
 	Seo
+	NameTranslation StringMAP `json:"name_translation,omitempty"` // e.g {"vi": "Xin Chaou"}
 	ModelMetadata
 
-	Children Categories `json:"children,omitempty"`
-	Images   []string   `json:"images,omitempty"`
+	NumOfProducts uint64     `json:"num_of_products" db:"-"`    // this field gets fulfilled in some db quesries
+	Children      Categories `json:"children,omitempty" db:"-"` // this field gets populated sometimes
 }
 
 // CategoryFilterOption is used for building sql queries
@@ -123,6 +124,9 @@ func (s *Category) DeepCopy() *Category {
 	if s.BackgroundImage != nil {
 		res.BackgroundImage = NewPrimitive(*s.BackgroundImage)
 	}
+	if s.NameTranslation != nil {
+		res.NameTranslation = s.NameTranslation.DeepCopy()
+	}
 	if len(s.Children) > 0 {
 		res.Children = s.Children.DeepCopy()
 	}
@@ -134,7 +138,9 @@ func (c *Category) PreSave() {
 		c.Id = NewId()
 	}
 	c.Name = SanitizeUnicode(c.Name)
-	c.Slug = slug.Make(c.Slug)
+	if c.Slug == "" {
+		c.Slug = slug.Make(c.Name)
+	}
 }
 
 func (c *Category) PreUpdate() {

@@ -21,5 +21,3 @@ CREATE INDEX idx_attributevalues_name_lower_textpattern ON attributevalues USING
 
 CREATE INDEX idx_attributevalues_slug ON attributevalues USING btree (slug);
 
-ALTER TABLE ONLY attributevalues
-    ADD CONSTRAINT fk_attributevalues_attributes FOREIGN KEY (attributeid) REFERENCES attributes(id) ON DELETE CASCADE;

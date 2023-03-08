@@ -8,5 +8,3 @@ CREATE TABLE IF NOT EXISTS shippingmethodpostalcoderules (
 
 ALTER TABLE ONLY shippingmethodpostalcoderules
     ADD CONSTRAINT shippingmethodpostalcoderules_shippingmethodid_start_end_key UNIQUE (shippingmethodid, start, "end");
-ALTER TABLE ONLY shippingmethodpostalcoderules
-    ADD CONSTRAINT fk_shippingmethodpostalcoderules_shippingmethods FOREIGN KEY (shippingmethodid) REFERENCES shippingmethods(id) ON DELETE CASCADE;

@@ -10,5 +10,3 @@ CREATE TABLE IF NOT EXISTS pagetranslations (
 
 ALTER TABLE ONLY pagetranslations
     ADD CONSTRAINT pagetranslations_languagecode_pageid_key UNIQUE (languagecode, pageid);
-ALTER TABLE ONLY pagetranslations
-    ADD CONSTRAINT fk_pagetranslations_pages FOREIGN KEY (pageid) REFERENCES pages(id) ON DELETE CASCADE;

@@ -1,0 +1,145 @@
+//go:generate go run main.go
+
+package main
+
+import (
+	"encoding/json"
+	"log"
+	"os"
+	"strings"
+
+	"github.com/Masterminds/squirrel"
+	"github.com/gosimple/slug"
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/sqlstore"
+)
+
+type CategoryPath struct {
+	CategoryID     int    `json:"category_id"`
+	CategoryName   string `json:"category_name"`
+	CategoryNameEn string `json:"category_name_en"`
+}
+
+type Category struct {
+	CategoryID     int            `json:"category_id"`
+	CategoryName   string         `json:"category_name"`
+	CategoryNameEn string         `json:"category_name_en"`
+	Toggle         bool           `json:"toggle"`
+	Images         []string       `json:"images"`
+	Path           []CategoryPath `json:"path"`
+}
+
+type data struct {
+	Categories []*model.Category
+}
+
+func main() {
+	rawData, err := os.ReadFile("./raw_categories.json")
+	if err != nil {
+		log.Fatalln("Error reading json file: ", err)
+	}
+
+	var cates []*Category
+	err = json.Unmarshal(rawData, &cates)
+	if err != nil {
+		log.Fatalln("Error unmarshaling:", err)
+	}
+
+	meetMap := map[string]*model.Category{}
+	dt := data{}
+
+	for _, cate := range cates {
+		if cate.CategoryNameEn == "" {
+			continue
+		}
+
+		var (
+			named     = "Category"
+			slugg     = ""
+			parentKey string
+		)
+		for pathIdx, path := range cate.Path {
+			slugg += " " + path.CategoryNameEn
+			if pathIdx > 0 {
+				parentKey = named
+			}
+			named += path.CategoryNameEn
+
+			if _, met := meetMap[named]; !met {
+				desired := &model.Category{
+					Id:    model.NewId(),
+					Slug:  slug.Make(slugg),
+					Name:  path.CategoryNameEn,
+					Level: uint8(pathIdx),
+					NameTranslation: model.StringMAP{
+						"vi": path.CategoryName,
+					},
+				}
+				if pathIdx == len(cate.Path)-1 {
+					desired.Images = strings.Join(cate.Images, " ")
+				}
+				if pathIdx > 0 {
+					desired.ParentID = &meetMap[parentKey].Id
+				}
+
+				dt.Categories = append(dt.Categories, desired)
+
+				meetMap[named] = desired
+			}
+		}
+	}
+
+	cfg := model.Config{}
+	cfg.SetDefaults()
+	database := sqlstore.New(cfg.SqlSettings, nil)
+
+	_, err = database.GetMasterX().Exec("DELETE FROM " + store.CategoryTableName)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for _, cate := range dt.Categories {
+		// find first
+		_, err := database.Category().Get(cate.Id)
+		if err != nil {
+			// var notFound *store.ErrNotFound
+			if _, ok := err.(*store.ErrNotFound); ok {
+				goto createLabel
+			} else {
+				log.Fatalln(err)
+			}
+		}
+
+	createLabel:
+		query, args, err := squirrel.StatementBuilder.
+			PlaceholderFormat(squirrel.Dollar).
+			Insert(store.CategoryTableName).
+			Columns(database.Category().ModelFields("")...).
+			Values(
+				cate.Id,
+				cate.Name,
+				cate.Slug,
+				cate.Description,
+				cate.ParentID,
+				cate.Level,
+				cate.BackgroundImage,
+				cate.BackgroundImageAlt,
+				cate.Images,
+				cate.SeoTitle,
+				cate.SeoDescription,
+				cate.NameTranslation,
+				cate.Metadata,
+				cate.PrivateMetadata,
+			).ToSql()
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		_, err = database.GetMasterX().Exec(query, args...)
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+
+}

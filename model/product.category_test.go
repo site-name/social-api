@@ -3,7 +3,6 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"testing"
 )
 
@@ -27,14 +26,4 @@ func TestClassifyCategories(t *testing.T) {
 
 		fmt.Println(string(data))
 	})
-}
-
-func TestSearch(t *testing.T) {
-	cate := FirstLevelCategories.Search(func(c *Category) bool {
-		return c != nil && c.Id == "48x2"
-	})
-	if cate == nil {
-		t.Fatal("cate can't be nil")
-	}
-	log.Println(cate)
 }

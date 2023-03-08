@@ -4,10 +4,8 @@ CREATE TABLE IF NOT EXISTS shops (
   createat bigint,
   updateat bigint,
   name character varying(100),
-  headertext character varying(100)
   description character varying(200),
   topmenuid character varying(36),
-  bottommenuid character varying(36),
   includetaxesinprice boolean,
   displaygrossprices boolean,
   chargetaxesonshipping boolean,
@@ -17,7 +15,6 @@ CREATE TABLE IF NOT EXISTS shops (
   defaultdigitalmaxdownloads integer,
   defaultdigitalurlvaliddays integer,
   addressid character varying(36),
-  companyaddressid character varying(36),
   defaultmailsendername character varying(78),
   defaultmailsenderaddress text,
   customersetpasswordurl text,
@@ -37,16 +34,3 @@ CREATE INDEX idx_shops_description_lower_textpattern ON shops USING btree (lower
 CREATE INDEX idx_shops_name ON shops USING btree (name);
 
 CREATE INDEX idx_shops_name_lower_textpattern ON shops USING btree (lower((name)::text) text_pattern_ops);
-
-ALTER TABLE ONLY shops
-  ADD CONSTRAINT fk_shops_bottommenuid FOREIGN KEY (bottommenuid) REFERENCES menus(id);
-
-ALTER TABLE ONLY shops
-    ADD CONSTRAINT fk_shops_addressid FOREIGN KEY (addressid) REFERENCES addresses(id);
-ALTER TABLE ONLY shops
-    ADD CONSTRAINT fk_shops_companyaddressid FOREIGN KEY (companyaddressid) REFERENCES addresses(id);
-
-ALTER TABLE ONLY shops
-    ADD CONSTRAINT fk_shops_topmenuid FOREIGN KEY (topmenuid) REFERENCES menus(id);
-ALTER TABLE ONLY shops
-    ADD CONSTRAINT fk_shops_users FOREIGN KEY (ownerid) REFERENCES users(id) ON DELETE CASCADE;

@@ -49,7 +49,3 @@ CREATE INDEX idx_payments_order_id ON payments USING btree (orderid);
 CREATE INDEX idx_payments_private_metadata ON payments USING btree (privatemetadata);
 
 CREATE INDEX idx_payments_psp_reference ON payments USING btree (pspreference);
-ALTER TABLE ONLY payments
-    ADD CONSTRAINT fk_payments_checkouts FOREIGN KEY (checkoutid) REFERENCES checkouts(token);
-ALTER TABLE ONLY payments
-    ADD CONSTRAINT fk_payments_orders FOREIGN KEY (orderid) REFERENCES orders(id);

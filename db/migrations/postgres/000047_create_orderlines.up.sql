@@ -41,7 +41,3 @@ CREATE INDEX idx_order_lines_variant_name ON orderlines USING btree (variantname
 CREATE INDEX idx_order_lines_variant_name_lower_textpattern ON orderlines USING btree (lower((variantname)::text) text_pattern_ops);
 
 CREATE INDEX idx_order_lines_product_name ON orderlines USING btree (productname);
-ALTER TABLE ONLY orderlines
-    ADD CONSTRAINT fk_orderlines_orders FOREIGN KEY (orderid) REFERENCES orders(id) ON DELETE CASCADE;
-ALTER TABLE ONLY orderlines
-    ADD CONSTRAINT fk_orderlines_productvariants FOREIGN KEY (variantid) REFERENCES productvariants(id);
