@@ -3,6 +3,7 @@ package csv
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -14,8 +15,8 @@ func NewSqlCsvExportEventStore(sqlStore store.Store) store.CsvExportEventStore {
 	return &SqlCsvExportEventStore{sqlStore}
 }
 
-func (s *SqlCsvExportEventStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (s *SqlCsvExportEventStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"Date",
 		"Type",

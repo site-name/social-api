@@ -1,5 +1,7 @@
 package model
 
+import "github.com/sitename/sitename/modules/util"
+
 type MessageExport struct {
 	TeamId          *string
 	TeamName        *string
@@ -24,7 +26,7 @@ type MessageExport struct {
 	PostRootId     *string
 	PostProps      *string
 	PostOriginalId *string
-	PostFileIds    AnyArray[string]
+	PostFileIds    util.AnyArray[string]
 }
 
 type MessageExportCursor struct {

@@ -31,7 +31,7 @@ const (
 	CUSTOMER_NOTE_ADDED = "note_added"       // the staff user added a note to the customer
 )
 
-var CustomerEventTypes = []string{
+var CustomerEventTypes = util.AnyArray[string]{
 	ACCOUNT_CREATED,
 	PASSWORD_RESET_LINK_SENT,
 	PASSWORD_RESET,
@@ -91,7 +91,7 @@ func (ce *CustomerEvent) IsValid() *AppError {
 		return outer("order_id", &ce.Id)
 	}
 	if len(ce.Type) > CUSTOMER_EVENT_TYPE_MAX_LENGTH ||
-		!util.ItemInSlice(ce.Type, CustomerEventTypes) {
+		!CustomerEventTypes.Contains(ce.Type) {
 		return outer("type", &ce.Id)
 	}
 

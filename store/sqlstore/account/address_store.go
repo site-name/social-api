@@ -15,7 +15,7 @@ type SqlAddressStore struct {
 	store.Store
 }
 
-var modelFields = model.AnyArray[string]{
+var modelFields = util.AnyArray[string]{
 	"Id",
 	"FirstName",
 	"LastName",
@@ -37,7 +37,7 @@ func NewSqlAddressStore(sqlStore store.Store) store.AddressStore {
 	return &SqlAddressStore{Store: sqlStore}
 }
 
-func (as *SqlAddressStore) ModelFields(prefix string) model.AnyArray[string] {
+func (as *SqlAddressStore) ModelFields(prefix string) util.AnyArray[string] {
 	if prefix == "" {
 		return modelFields
 	}
@@ -148,8 +148,10 @@ func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]
 	if option.Id != nil {
 		query = query.Where(option.Id)
 	}
-	if option.OrderID != nil && option.OrderID.Id != nil &&
-		util.ItemInSlice(string(option.OrderID.On), []string{"BillingAddressID", "ShippingAddressID"}) {
+	if option.OrderID != nil &&
+		option.OrderID.Id != nil &&
+		util.AnyArray[string]([]string{"BillingAddressID", "ShippingAddressID"}).
+			Contains(string(option.OrderID.On)) {
 
 		query = query.
 			InnerJoin(store.OrderTableName+" ON (Orders.? = Addresses.Id)", option.OrderID.On).

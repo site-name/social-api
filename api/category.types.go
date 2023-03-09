@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"unsafe"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/web"
 )
 
 type Category struct {
@@ -11,6 +13,7 @@ type Category struct {
 	Name            string          `json:"name"`
 	SeoTitle        *string         `json:"seoTitle"`
 	SeoDescription  *string         `json:"seoDescription"`
+	Level           int32           `json:"level"`
 	Slug            string          `json:"slug"`
 	Description     JSONString      `json:"description"`
 	PrivateMetadata []*MetadataItem `json:"privateMetadata"`
@@ -38,6 +41,7 @@ func systemCategoryToGraphqlCategory(c *model.Category) *Category {
 		Slug:            c.Slug,
 		SeoTitle:        &c.SeoTitle,
 		SeoDescription:  &c.SeoDescription,
+		Level:           int32(c.Level),
 		Description:     JSONString(c.Description),
 		Metadata:        MetadataToSlice(c.Metadata),
 		PrivateMetadata: MetadataToSlice(c.PrivateMetadata),
@@ -54,11 +58,21 @@ func (c *Category) Translation(ctx context.Context, args struct{ LanguageCode La
 }
 
 func (c *Category) Parent(ctx context.Context) (*Category, error) {
-	panic("not implemented")
-}
+	if c.c.ParentID == nil {
+		return nil, nil
+	}
 
-func (c *Category) Level(ctx context.Context) (int32, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	categories, appErr := embedCtx.App.Srv().ProductService().CategoryByIds([]string{*c.c.ParentID}, true)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return systemCategoryToGraphqlCategory(categories[0]), nil
 }
 
 func (c *Category) Ancestors(ctx context.Context, args GraphqlParams) (*CategoryCountableConnection, error) {
@@ -66,7 +80,21 @@ func (c *Category) Ancestors(ctx context.Context, args GraphqlParams) (*Category
 }
 
 func (c *Category) Children(ctx context.Context, args GraphqlParams) (*CategoryCountableConnection, error) {
-	panic("not implemented")
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := func(c *model.Category) bool { return c.ParentID == &c.Id }
+	children := embedCtx.App.Srv().ProductService().FilterCategoriesFromCache(filter)
+
+	keyFunc := func(c *model.Category) string { return c.Slug }
+	res, appErr := newGraphqlPaginator(children, keyFunc, systemCategoryToGraphqlCategory, args).parse("Category.Children")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return (*CategoryCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (c *Category) Products(ctx context.Context, args struct {

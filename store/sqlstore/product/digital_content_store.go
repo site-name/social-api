@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -16,8 +17,8 @@ func NewSqlDigitalContentStore(s store.Store) store.DigitalContentStore {
 	return &SqlDigitalContentStore{s}
 }
 
-func (ds *SqlDigitalContentStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (ds *SqlDigitalContentStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"ShopID",
 		"UseDefaultSettings",

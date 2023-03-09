@@ -68,11 +68,11 @@ func (a *ServiceDiscount) RemoveVoucherUsageByCustomer(voucher *model.Voucher, c
 // GetProductDiscountOnSale Return discount value if product is on sale or raise NotApplicable
 func (a *ServiceDiscount) GetProductDiscountOnSale(product model.Product, productCollectionIDs []string, discountInfo *model.DiscountInfo, channeL model.Channel, variantID string) (types.DiscountCalculator, *model.AppError) {
 	// this checks whether the given product is on sale
-	isProductOnSale := util.ItemInSlice(product.Id, discountInfo.ProductIDs) ||
-		(product.CategoryID != nil && util.ItemInSlice(*product.CategoryID, discountInfo.CategoryIDs)) ||
-		len(util.SlicesIntersection(productCollectionIDs, discountInfo.CollectionIDs)) > 0
+	isProductOnSale := discountInfo.ProductIDs.Contains(product.Id) ||
+		(product.CategoryID != nil && discountInfo.CategoryIDs.Contains(*product.CategoryID)) ||
+		discountInfo.CollectionIDs.InterSection(productCollectionIDs).Len() > 0
 
-	isVariantOnSale := model.IsValidId(variantID) && util.ItemInSlice(variantID, discountInfo.VariantsIDs)
+	isVariantOnSale := model.IsValidId(variantID) && discountInfo.VariantsIDs.Contains(variantID)
 
 	if isProductOnSale || isVariantOnSale {
 		switch t := discountInfo.Sale.(type) {
@@ -329,37 +329,28 @@ func (a *ServiceDiscount) FetchCategories(saleIDs []string) (map[string][]string
 		SaleID: squirrel.Eq{store.SaleCategoryRelationTableName + ".SaleID": saleIDs},
 	})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return nil, appErr
-		}
-		return map[string][]string{}, nil
+		return nil, appErr
 	}
 
 	// categoryMap has keys are sale ids, values are slices of category ids
-	var categoryMap = map[string][]string{}
+	var categoryMap = map[string]*util.AnySet[string]{}
 	for _, relation := range saleCategories {
-		categoryMap[relation.SaleID] = append(categoryMap[relation.SaleID], relation.CategoryID)
+		if categoryMap[relation.SaleID] == nil {
+			categoryMap[relation.SaleID] = util.NewSet[string]()
+		}
+		categoryMap[relation.SaleID].Add(relation.CategoryID)
 	}
 
-	allCategories, appErr := a.srv.ProductService().CategoriesByOption(&model.CategoryFilterOption{
-		All: true,
-	})
-	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
+	var subCategoryMap = map[string][]string{}
+	for saleID, categoryIDs := range categoryMap {
+		categories, appErr := a.srv.ProductService().CategoryByIds(categoryIDs.Values(), true)
+		if appErr != nil {
 			return nil, appErr
 		}
-
-		return map[string][]string{}, nil
+		subCategoryMap[saleID] = util.NewSet[string](categories.IDs(true)...).Values()
 	}
 
-	categorizedCategories := model.ClassifyCategories(allCategories)
-
-	var subCategoriesMap = map[string][]string{}
-	for saleID, categoryIDs := range categoryMap {
-		subCategoriesMap[saleID] = util.SlicesIntersection(categoryIDs, categorizedCategories.IDs())
-	}
-
-	return subCategoriesMap, nil
+	return subCategoryMap, nil
 }
 
 // FetchCollections returns a map with keys are sale ids, values are slices of UNIQUE collection ids
@@ -586,11 +577,11 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 		productIDs    []string
 		variantIDs    []string
 
-		setAppErr = func(err *model.AppError, setWhenCode ...int) {
+		trySetAppError = func(err *model.AppError) {
 			mut.Lock()
 			defer mut.Unlock()
 
-			if err != nil && appError == nil && util.ItemInSlice(err.StatusCode, setWhenCode) {
+			if err != nil && appError == nil {
 				appError = err
 			}
 		}
@@ -604,11 +595,8 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 		cates, appErr := s.srv.ProductService().CategoriesByOption(&model.CategoryFilterOption{
 			SaleID: squirrel.Eq{store.SaleCategoryRelationTableName + ".SaleID": instance.Id},
 		})
-		if appErr != nil {
-			setAppErr(appErr, http.StatusInternalServerError)
-			return
-		}
-		categorieIDs = model.Categories(cates).IDs()
+		trySetAppError(appErr)
+		categorieIDs = model.Categories(cates).IDs(false)
 	}()
 
 	go func() {
@@ -617,34 +605,25 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 		collecs, appErr := s.srv.ProductService().CollectionsByOption(&model.CollectionFilterOption{
 			SaleID: squirrel.Eq{store.SaleCollectionRelationTableName + ".SaleID": instance.Id},
 		})
-		if appErr != nil {
-			setAppErr(appErr, http.StatusInternalServerError)
-			return
-		}
+		trySetAppError(appErr)
 		collectionIDs = model.Collections(collecs).IDs()
 	}()
 
 	go func() {
 		defer wg.Done()
 
-		prds, appErr := s.srv.ProductService().ProductsByOption(&model.ProductFilterOption{
+		products, appErr := s.srv.ProductService().ProductsByOption(&model.ProductFilterOption{
 			SaleID: squirrel.Eq{store.SaleProductRelationTableName + ".SaleID": instance.Id},
 		})
-		if appErr != nil {
-			setAppErr(appErr, http.StatusInternalServerError)
-			return
-		}
-		productIDs = model.Products(prds).IDs()
+		trySetAppError(appErr)
+		productIDs = model.Products(products).IDs()
 	}()
 
 	go func() {
 		defer wg.Done()
 
 		productVariants, appErr := s.srv.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{})
-		if appErr != nil {
-			setAppErr(appErr, http.StatusInternalServerError)
-			return
-		}
+		trySetAppError(appErr)
 		variantIDs = model.ProductVariants(productVariants).IDs()
 	}()
 

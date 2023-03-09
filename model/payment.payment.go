@@ -135,15 +135,15 @@ func (p *Payment) CanCapture() bool {
 	return *p.IsActive && p.NotCharged()
 }
 
+var canRefundChargeStatuses = util.AnyArray[string]{
+	PARTIALLY_CHARGED,
+	FULLY_CHARGED,
+	PARTIALLY_REFUNDED,
+}
+
 // CanRefund checks if current payment is active && (partially charged || fully charged || partially refunded)
 func (p *Payment) CanRefund() bool {
-	canRefundChargeStatuses := []string{
-		PARTIALLY_CHARGED,
-		FULLY_CHARGED,
-		PARTIALLY_REFUNDED,
-	}
-
-	return *p.IsActive && util.ItemInSlice(p.ChargeStatus, canRefundChargeStatuses)
+	return *p.IsActive && canRefundChargeStatuses.Contains(p.ChargeStatus)
 }
 
 // CanConfirm checks if current payment is active && not charged

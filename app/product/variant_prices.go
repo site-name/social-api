@@ -287,49 +287,29 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount inter
 
 	go func() {
 		defer wg.Done()
-		var products model.Products
-		var appErr *model.AppError
-		products, appErr = a.ProductsByOption(&productFilterOption)
-		if appErr != nil {
-			syncSetAppError(appErr)
-			return
-		}
+		products, appErr := a.ProductsByOption(&productFilterOption)
+		syncSetAppError(appErr)
 		productIDs = products.IDs()
 	}()
 
 	go func() {
 		defer wg.Done()
-		var categories model.Categories
-		var appErr *model.AppError
-		categories, appErr = a.CategoriesByOption(&categoryFilterOption)
-		if appErr != nil {
-			syncSetAppError(appErr)
-			return
-		}
-		categoryIDs = categories.IDs()
+		categories, appErr := a.CategoriesByOption(&categoryFilterOption)
+		syncSetAppError(appErr)
+		categoryIDs = categories.IDs(false)
 	}()
 
 	go func() {
 		defer wg.Done()
-		var collections model.Collections
-		var appErr *model.AppError
-		collections, appErr = a.CollectionsByOption(&collectionFilterOption)
-		if appErr != nil {
-			syncSetAppError(appErr)
-			return
-		}
+		collections, appErr := a.CollectionsByOption(&collectionFilterOption)
+		syncSetAppError(appErr)
 		collectionIDs = collections.IDs()
 	}()
 
 	go func() {
 		defer wg.Done()
-		var variants model.ProductVariants
-		var appErr *model.AppError
-		variants, appErr = a.ProductVariantsByOption(&variantFilterOptions)
-		if appErr != nil {
-			syncSetAppError(appErr)
-			return
-		}
+		variants, appErr := a.ProductVariantsByOption(&variantFilterOptions)
+		syncSetAppError(appErr)
 		variantIDs = variants.IDs()
 	}()
 

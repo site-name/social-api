@@ -7,6 +7,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -18,8 +19,8 @@ func NewSqlAssignedProductAttributeStore(s store.Store) store.AssignedProductAtt
 	return &SqlAssignedProductAttributeStore{s}
 }
 
-func (as *SqlAssignedProductAttributeStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{"Id", "ProductID", "AssignmentID"}
+func (as *SqlAssignedProductAttributeStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{"Id", "ProductID", "AssignmentID"}
 	if prefix == "" {
 		return res
 	}

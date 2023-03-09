@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -16,7 +17,7 @@ func NewSqlShopStore(s store.Store) store.ShopStore {
 	return &SqlShopStore{s}
 }
 
-var shopModelFields = model.AnyArray[string]{
+var shopModelFields = util.AnyArray[string]{
 	"Id",
 	"OwnerID",
 	"CreateAt",
@@ -48,7 +49,7 @@ var shopModelFields = model.AnyArray[string]{
 	"AutomaticallyFulfillNonShippableGiftcard",
 }
 
-func (s *SqlShopStore) ModelFields(prefix string) model.AnyArray[string] {
+func (s *SqlShopStore) ModelFields(prefix string) util.AnyArray[string] {
 	if prefix == "" {
 		return shopModelFields
 	}

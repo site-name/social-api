@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -17,8 +18,8 @@ func NewSqlWishlistItemStore(s store.Store) store.WishlistItemStore {
 	return &SqlWishlistItemStore{s}
 }
 
-func (s *SqlWishlistItemStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (s *SqlWishlistItemStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"WishlistID",
 		"ProductID",

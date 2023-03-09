@@ -21,8 +21,8 @@ func NewSqlProductStore(s store.Store) store.ProductStore {
 	return &SqlProductStore{s}
 }
 
-func (ps *SqlProductStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (ps *SqlProductStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"ProductTypeID",
 		"Name",
@@ -709,7 +709,7 @@ func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Pr
 func (s *SqlProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error) {
 	query, args, err := s.GetQueryBuilder().
 		Select("P.CategoryID", "COUNT(P.Id) AS ProductCount").
-		From(store.ProductTableName).
+		From(store.ProductTableName + " P").
 		Distinct().
 		Where("P.CategoryID IS NOT NULL").
 		Where(squirrel.Eq{"P.CategoryID": categoryIDs}).

@@ -3,6 +3,7 @@ package account
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -14,8 +15,8 @@ func NewSqlUserAddressStore(s store.Store) store.UserAddressStore {
 	return &SqlUserAddressStore{s}
 }
 
-func (s *SqlUserAddressStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (s *SqlUserAddressStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"UserID",
 		"AddressID",

@@ -9,6 +9,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -20,8 +21,8 @@ func NewSqlShippingMethodStore(s store.Store) store.ShippingMethodStore {
 	return &SqlShippingMethodStore{s}
 }
 
-func (s *SqlShippingMethodStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (s *SqlShippingMethodStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"Name",
 		"Type",

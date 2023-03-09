@@ -55,7 +55,7 @@ func (a *ServiceProduct) DeleteCategories(categoryIDs []string, manager interfac
 }
 
 // CollectCategoriesTreeProducts Collect products from all levels in category tree.
-func (a *ServiceProduct) CollectCategoriesTreeProducts(category *model.Category) ([]*model.Product, *model.AppError) {
+func (a *ServiceProduct) CollectCategoriesTreeProducts(category *model.Category) (model.Products, *model.AppError) {
 	panic("not implemented")
 }
 

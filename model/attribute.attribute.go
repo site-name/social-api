@@ -8,6 +8,7 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/text/language"
 )
 
@@ -49,10 +50,10 @@ const (
 )
 
 var (
-	ALLOWED_IN_VARIANT_SELECTION = AnyArray[AttributeInputType]{DROPDOWN, BOOLEAN, SWATCH, NUMERIC}
-	TYPES_WITH_CHOICES           = AnyArray[AttributeInputType]{DROPDOWN, MULTISELECT, SWATCH}
-	TYPES_WITH_UNIQUE_VALUES     = AnyArray[AttributeInputType]{FILE_, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME} // list of the translatable attributes, excluding attributes with choices.
-	TRANSLATABLE_ATTRIBUTES      = AnyArray[AttributeInputType]{RICH_TEXT}
+	ALLOWED_IN_VARIANT_SELECTION = util.AnyArray[AttributeInputType]{DROPDOWN, BOOLEAN, SWATCH, NUMERIC}
+	TYPES_WITH_CHOICES           = util.AnyArray[AttributeInputType]{DROPDOWN, MULTISELECT, SWATCH}
+	TYPES_WITH_UNIQUE_VALUES     = util.AnyArray[AttributeInputType]{FILE_, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME} // list of the translatable attributes, excluding attributes with choices.
+	TRANSLATABLE_ATTRIBUTES      = util.AnyArray[AttributeInputType]{RICH_TEXT}
 )
 var attributeInputTypeStrings = map[AttributeInputType]bool{
 	DROPDOWN:    true,

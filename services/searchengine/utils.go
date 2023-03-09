@@ -36,9 +36,9 @@ func GetSuggestionInputsSplitBy(term, splitStr string) []string {
 }
 
 func GetSuggestionInputsSplitByMultiple(term string, splitStrs []string) []string {
-	suggestionList := []string{}
+	suggestionList := util.AnyArray[string]{}
 	for _, splitStr := range splitStrs {
 		suggestionList = append(suggestionList, GetSuggestionInputsSplitBy(term, splitStr)...)
 	}
-	return util.Dedup(suggestionList)
+	return suggestionList.Dedup()
 }

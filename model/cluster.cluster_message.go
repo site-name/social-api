@@ -34,6 +34,7 @@ const (
 	ClusterEventPluginEvent                                 ClusterEvent = "plugin_event"
 	ClusterEventInvalidateCacheForTermsOfService            ClusterEvent = "inv_terms_of_service"
 	ClusterEventBusyStateChanged                            ClusterEvent = "busy_state_change"
+	ClusterEventInvalidateCacheForCategoryByIds             ClusterEvent = "inv_category_ids"
 
 	// Gossip communication
 	ClusterGossipEventRequestGetLogs            = "gossip_request_get_logs"

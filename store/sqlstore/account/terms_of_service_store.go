@@ -7,6 +7,7 @@ import (
 
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -15,8 +16,8 @@ type SqlTermsOfServiceStore struct {
 	metrics einterfaces.MetricsInterface
 }
 
-func (s *SqlTermsOfServiceStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (s *SqlTermsOfServiceStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"CreateAt",
 		"UserID",

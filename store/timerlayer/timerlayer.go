@@ -2207,10 +2207,10 @@ func (s *TimerLayerCategoryStore) FilterByOption(option *model.CategoryFilterOpt
 	return result, err
 }
 
-func (s *TimerLayerCategoryStore) Get(categoryID string) (*model.Category, error) {
+func (s *TimerLayerCategoryStore) Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) {
 	start := timemodule.Now()
 
-	result, err := s.CategoryStore.Get(categoryID)
+	result, err := s.CategoryStore.Get(ctx, categoryID, allowFromCache)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5226,6 +5226,22 @@ func (s *TimerLayerProductStore) AdvancedFilterQueryBuilder(input *model.ExportP
 		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.AdvancedFilterQueryBuilder", success, elapsed)
 	}
 	return result
+}
+
+func (s *TimerLayerProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error) {
+	start := timemodule.Now()
+
+	result, err := s.ProductStore.CountByCategoryIDs(categoryIDs)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.CountByCategoryIDs", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerProductStore) FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) {

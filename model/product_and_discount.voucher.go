@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/text/language"
 )
 
@@ -15,13 +16,15 @@ const (
 	SPECIFIC_PRODUCT = "specific_product"
 )
 
+var AllVoucherTypes = util.AnyArray[string]{SHIPPING, ENTIRE_ORDER, SPECIFIC_PRODUCT}
+
 // Applicable values for voucher's discount value type
 const (
 	FIXED      = "fixed"
 	PERCENTAGE = "percentage"
 )
 
-var SALE_TYPES = AnyArray[string]{FIXED, PERCENTAGE}
+var SALE_TYPES = util.AnyArray[string]{FIXED, PERCENTAGE}
 
 // max length values for some fields of voucher
 const (
@@ -92,7 +95,7 @@ func (v *Voucher) IsValid() *AppError {
 	if !IsValidId(v.ShopID) {
 		return outer("shop_id", &v.Id)
 	}
-	if len(v.Type) > VOUCHER_TYPE_MAX_LENGTH || !(AnyArray[string]{SHIPPING, ENTIRE_ORDER, SPECIFIC_PRODUCT}).Contains(v.Type) {
+	if len(v.Type) > VOUCHER_TYPE_MAX_LENGTH || !AllVoucherTypes.Contains(v.Type) {
 		return outer("type", &v.Id)
 	}
 	if v.Name != nil && len(*v.Name) > VOUCHER_NAME_MAX_LENGTH {

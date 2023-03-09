@@ -477,7 +477,7 @@ func availableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(ctx cont
 		var quantityByShippingZoneByProductVariant = map[string]map[string]int{}
 
 		for _, stock := range stocks {
-			quantity := util.Max(0, stock.AvailableQuantity)
+			quantity := util.GetMinMax(0, stock.AvailableQuantity).Max
 
 			for _, shippingZoneID := range warehouseShippingZonesMap[stock.WarehouseID] {
 				quantityByShippingZoneByProductVariant[stock.ProductVariantID][shippingZoneID] += quantity
@@ -492,17 +492,17 @@ func availableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(ctx cont
 			if countryCode != "" {
 				// When country code is known, return the sum of quantities from all
 				// shipping zones supporting given country.
-				quantityMap[variantID] = util.SumOfSlice(quantityValues...)
+				quantityMap[variantID] = util.AnyArray[int](quantityValues).Sum()
 			} else {
 				// When country code is unknown, return the highest known quantity.
-				quantityMap[variantID] = util.Max(quantityValues...)
+				quantityMap[variantID] = util.GetMinMax(quantityValues...).Max
 			}
 		}
 
 		// Return the quantities after capping them at the maximum quantity allowed in
 		// checkout. This prevent users from tracking the store's precise stock levels.
 		for key, value := range quantityMap {
-			quantityMap[key] = util.Min(value, *embedCtx.App.Config().ServiceSettings.MaxCheckoutLineQuantity)
+			quantityMap[key] = util.GetMinMax(value, *embedCtx.App.Config().ServiceSettings.MaxCheckoutLineQuantity).Min
 		}
 		return quantityMap, nil
 	}
@@ -526,7 +526,7 @@ func availableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(ctx cont
 
 		for variantID, quantity := range quantityMap {
 			key := variantID + "__" + countryCode + "__" + channelID
-			quantityByVariantAndCountry[key] = util.Max(0, quantity)
+			quantityByVariantAndCountry[key] = util.GetMinMax(0, quantity).Max
 		}
 	}
 

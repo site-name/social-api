@@ -2327,7 +2327,7 @@ errorLabel:
 func keyValuesToMap[K util.Ordered, V any](keys []K, values []V) map[K]V {
 	res := map[K]V{}
 
-	for i := 0; i < util.Min(len(keys), len(values)); i++ {
+	for i := 0; i < util.GetMinMax(len(keys), len(values)).Min; i++ {
 		res[keys[i]] = values[i]
 	}
 	return res

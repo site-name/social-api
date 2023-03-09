@@ -306,7 +306,7 @@ func NewServer(options ...Option) (*Server, error) {
 	if s.StatusCache, err = s.CacheProvider.NewCache(&cache.CacheOptions{
 		Size:           model.STATUS_CACHE_SIZE,
 		Striped:        true,
-		StripedBuckets: util.Max(runtime.NumCPU()-1, 1),
+		StripedBuckets: util.AnyArray[int]{runtime.NumCPU() - 1, 1}.GetMinMax().Max,
 	}); err != nil {
 		return nil, errors.Wrap(err, "Unable to create status cache")
 	}
@@ -547,7 +547,7 @@ func NewServer(options ...Option) (*Server, error) {
 		s.runJobs()
 	}
 
-	// register all sub services
+	// register all sub services, must go after store creation
 	if err = s.registerSubServices(); err != nil {
 		return nil, err
 	}

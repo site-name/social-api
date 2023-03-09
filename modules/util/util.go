@@ -2,13 +2,13 @@ package util
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
 	"reflect"
 	"runtime"
-	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -65,48 +65,6 @@ type Ordered interface {
 		~string
 }
 
-// Max accepts any number of arguments of any type and returns max value
-func Max[T Ordered](a ...T) T {
-	if len(a) == 0 {
-		var res T
-		return res
-	}
-
-	if len(a) == 1 {
-		return a[0]
-	}
-
-	res := a[0]
-	for i := range a[1:] {
-		if a[i] > res {
-			res = a[i]
-		}
-	}
-
-	return res
-}
-
-// Min accepts any number of arguments of any type and returns min value
-func Min[T Ordered](a ...T) T {
-	if len(a) == 0 {
-		var res T
-		return res
-	}
-
-	if len(a) == 1 {
-		return a[0]
-	}
-
-	res := a[0]
-	for i := range a[1:] {
-		if a[i] < res {
-			res = a[i]
-		}
-	}
-
-	return res
-}
-
 // IsEmptyString checks if the provided string is empty
 func IsEmptyString(s string) bool {
 	return len(strings.TrimSpace(s)) == 0
@@ -146,87 +104,6 @@ func NormalizeEOL(input []byte) []byte {
 		pos++
 	}
 	return tmp[:pos]
-}
-
-// ItemInSlice checks if given item a resides in given slice
-func ItemInSlice[T Ordered](item T, slice []T) bool {
-	for _, b := range slice {
-		if b == item {
-			return true
-		}
-	}
-	return false
-}
-
-// RemoveItemsFromSlice removes all occurrences of items from slice
-func RemoveItemsFromSlice[T Ordered](slice []T, items ...T) []T {
-	res := make([]T, 0, cap(slice))
-
-	for _, item := range items {
-		if !ItemInSlice(item, slice) {
-			res = append(res, item)
-		}
-	}
-
-	return res
-}
-
-// SlicesIntersection returns a slice of common items of both given slices
-func SlicesIntersection[T Ordered](slice1, slice2 []T) []T {
-	meetMap := map[T]struct{}{}
-	res := []T{}
-
-	for _, value := range slice1 {
-		meetMap[value] = struct{}{}
-	}
-
-	for _, value := range slice2 {
-		if _, ok := meetMap[value]; ok {
-			res = append(res, value)
-		}
-	}
-
-	return res
-}
-
-// Dedup return a slice of unique elements of any type
-func Dedup[T Ordered](slice []T) []T {
-	if len(slice) == 0 {
-		return slice
-	}
-
-	sort.Slice(slice, func(i, j int) bool {
-		return slice[i] < slice[j]
-	})
-
-	j := 0
-	for i := 1; i < len(slice); i++ {
-		if slice[j] == slice[i] {
-			continue
-		}
-		j++
-		// preserve the original data
-		// in[i], in[j] = in[j], in[i]
-		// only set what is required
-		slice[j] = slice[i]
-	}
-
-	return slice[:j+1]
-}
-
-// SumOfSlice returns sum of item in given array
-func SumOfSlice[T Ordered](slice ...T) T {
-	if len(slice) == 0 {
-		var res T
-		return res
-	}
-
-	sum := slice[0]
-	for i := range slice[1:] {
-		sum += slice[i]
-	}
-
-	return sum
 }
 
 func GetIPAddress(r *http.Request, trustedProxyIPHeader []string) string {
@@ -337,4 +214,160 @@ func AppendQueryParamsToURL(baseURL string, params map[string]string) string {
 //	fmt.Println(name) == "hello"
 func GetFunctionName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+}
+
+func NewSet[T Ordered](items ...T) *AnySet[T] {
+	res := &AnySet[T]{
+		meetMap: make(map[T]struct{}),
+	}
+	res.Add(items...)
+
+	return res
+}
+
+// AnySet makes sure there are no duplicate in its values.
+type AnySet[T Ordered] struct {
+	values  AnyArray[T]
+	meetMap map[T]struct{}
+}
+
+func (s *AnySet[T]) Add(items ...T) {
+	if s.meetMap == nil {
+		s.meetMap = make(map[T]struct{})
+	}
+	for _, item := range items {
+		if _, ok := s.meetMap[item]; !ok {
+			s.values = append(s.values, item)
+			s.meetMap[item] = struct{}{}
+		}
+	}
+}
+
+func (s *AnySet[T]) Values() AnyArray[T] {
+	return s.values
+}
+
+// AnyArray if a generic slice with a set of member methods that can be chained
+type AnyArray[T Ordered] []T
+
+// Remove removes input from the array
+func (a AnyArray[T]) Remove(item T) AnyArray[T] {
+	var res = make(AnyArray[T], 0, cap(a))
+	for _, it := range a {
+		if it != item {
+			res = append(res, it)
+		}
+	}
+
+	return res
+}
+
+func (a AnyArray[T]) Dedup() AnyArray[T] {
+	meetMap := map[T]struct{}{}
+	res := make(AnyArray[T], 0, len(a))
+
+	for _, item := range a {
+		_, ok := meetMap[item]
+		if !ok {
+			res = append(res, item)
+			meetMap[item] = struct{}{}
+		}
+	}
+
+	return res
+}
+
+type MinMax[T Ordered] struct {
+	Min, Max T
+}
+
+func (s AnyArray[T]) GetMinMax() MinMax[T] {
+	var min, max T
+	for _, item := range s {
+		if item < min {
+			min = item
+		} else if item > max {
+			max = item
+		}
+	}
+
+	return MinMax[T]{min, max}
+}
+
+func (s AnyArray[T]) InterSection(other []T) AnyArray[T] {
+	var res AnyArray[T]
+	meetMap := map[T]struct{}{}
+
+	for _, item := range s {
+		meetMap[item] = struct{}{}
+	}
+
+	for _, item := range other {
+		_, ok := meetMap[item]
+		if ok {
+			res = append(res, item)
+		}
+	}
+
+	return res
+}
+
+func (a AnyArray[T]) Sum() T {
+	var res T
+	for _, item := range a {
+		res += item
+	}
+	return res
+}
+
+func (a AnyArray[T]) Len() int {
+	return len(a)
+}
+
+// Map loops through current string slice and applies mapFunc to each index-item pair
+//
+// E.g
+//
+//	StringArray{"a", "b", "c"}.Map(func(_ int, s string) string { return s + s })
+func (a AnyArray[T]) Map(fn func(index int, item T) T) AnyArray[T] {
+	res := make([]T, len(a), cap(a))
+
+	for idx, item := range a {
+		res[idx] = fn(idx, item)
+	}
+
+	return res
+}
+
+// check if array of strings contains given input
+func (sa AnyArray[T]) Contains(input T) bool {
+	for _, item := range sa {
+		if item == input {
+			return true
+		}
+	}
+	return false
+}
+
+// Equals checks if two arrays of strings have same length and contains the same elements at each index
+func (sa AnyArray[T]) Equals(input []T) bool {
+	return reflect.DeepEqual(sa, input)
+}
+
+// Join
+func (sa AnyArray[T]) Join(sep string) string {
+	var builder strings.Builder
+
+	for i, item := range sa {
+		if i == len(sa)-1 {
+			sep = ""
+		}
+		builder.WriteString(fmt.Sprintf("%v%s", item, sep))
+	}
+
+	return builder.String()
+}
+
+func GetMinMax[T Ordered](items ...T) MinMax[T] {
+	return AnyArray[T](items).GetMinMax()
 }

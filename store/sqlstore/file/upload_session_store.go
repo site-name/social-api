@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -16,8 +17,8 @@ func NewSqlUploadSessionStore(sqlStore store.Store) store.UploadSessionStore {
 	return &SqlUploadSessionStore{sqlStore}
 }
 
-func (s *SqlUploadSessionStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (s *SqlUploadSessionStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"Type",
 		"CreateAt",

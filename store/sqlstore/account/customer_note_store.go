@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -12,7 +13,7 @@ type SqlCustomerNoteStore struct {
 	store.Store
 }
 
-var customerNoteModelFields = model.AnyArray[string]{
+var customerNoteModelFields = util.AnyArray[string]{
 	"Id",
 	"UserID",
 	"Date",
@@ -25,7 +26,7 @@ func NewSqlCustomerNoteStore(s store.Store) store.CustomerNoteStore {
 	return &SqlCustomerNoteStore{s}
 }
 
-func (cs *SqlCustomerNoteStore) ModelFields(prefix string) model.AnyArray[string] {
+func (cs *SqlCustomerNoteStore) ModelFields(prefix string) util.AnyArray[string] {
 	if prefix == "" {
 		return customerNoteModelFields
 	}

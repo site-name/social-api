@@ -148,10 +148,10 @@ func (p *ProductVariant) QuantityAvailable(ctx context.Context, args struct {
 		}
 
 		if channelListing.PreorderQuantityThreshold != nil {
-			min := util.Min(
+			min := util.GetMinMax(
 				*channelListing.PreorderQuantityThreshold-channelListing.Get_preorderQuantityAllocated(),
 				defaultMaxCheckoutLineQuantity,
-			)
+			).Min
 			return int32(min), nil
 		}
 
@@ -162,7 +162,7 @@ func (p *ProductVariant) QuantityAvailable(ctx context.Context, args struct {
 			}
 
 			globalSoldUnits := lo.SumBy(variantChannelListings, func(l *model.ProductVariantChannelListing) int { return l.Get_preorderQuantityAllocated() })
-			min := util.Min(*p.p.PreOrderGlobalThreshold-globalSoldUnits, defaultMaxCheckoutLineQuantity)
+			min := util.GetMinMax(*p.p.PreOrderGlobalThreshold-globalSoldUnits, defaultMaxCheckoutLineQuantity).Min
 			return int32(min), nil
 		}
 

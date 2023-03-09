@@ -8,10 +8,13 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"unsafe"
 
-	"github.com/samber/lo"
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/web"
 )
 
 func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
@@ -46,73 +49,80 @@ func (r *Resolver) CategoryTranslate(ctx context.Context, args struct {
 
 func (r *Resolver) Categories(ctx context.Context, args struct {
 	Filter *CategoryFilterInput
-	SortBy *CategorySortingInput
-	Level  *int
+	SortBy CategorySortingInput
+	Level  *int32 // 0 <= level <= 4
 	GraphqlParams
 }) (*CategoryCountableConnection, error) {
-	var categories model.Categories // NOTE: don't modify inner categories
-
-	if args.Level != nil {
-		switch *args.Level {
-		case 0:
-			categories = model.FirstLevelCategories
-		case 1:
-			categories = model.SecondLevelCategories
-		case 2:
-			categories = model.ThirdLevelCategories
-		case 3:
-			categories = model.FourthLevelCategories
-		case 4:
-			categories = model.FifthhLevelCategories
-		default:
-			return nil, model.NewAppError("Resolver.Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "level"}, "level can be in range [0, 4] only", http.StatusBadRequest)
-		}
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
 	}
+	var levelFilter, searchFilter, idFilter func(c *model.Category) bool
 
-	if categories.Len() == 0 {
-		categories = model.AllCategories
+	if lv := args.Level; lv != nil && *lv >= model.CATEGORY_MIN_LEVEL &&
+		*lv <= model.CATEGORY_MAX_LEVEL {
+		levelFilter = func(c *model.Category) bool {
+			return c.Level == uint8(*lv)
+		}
 	}
 
 	if args.Filter != nil {
-		if s := args.Filter.Search; s != nil && *s != "" {
-			search := strings.ToLower(*s)
+		if search := args.Filter.Search; search != nil && *search != "" {
+			lowSearch := strings.ToLower(*search)
 
-			categories = lo.Filter(categories, func(c *model.Category, _ int) bool {
+			searchFilter = func(c *model.Category) bool {
+				lowerSlug := strings.ToLower(c.Slug)
 				lowerName := strings.ToLower(c.Name)
-				lowerNameEn := strings.ToLower(c.NameEn)
-
-				return strings.Contains(lowerNameEn, search) ||
-					strings.Contains(lowerName, search) ||
-					strings.Contains(c.Slug, search)
-			})
+				return strings.Contains(lowerName, lowSearch) || strings.Contains(lowerSlug, lowSearch)
+			}
 		}
 
-		if ids := args.Filter.Ids; len(ids) > 0 {
-			idMap := lo.SliceToMap(ids, func(item string) (string, struct{}) { return item, struct{}{} })
-			categories = lo.Filter(categories, func(c *model.Category, _ int) bool {
-				_, exist := idMap[c.Id]
-				return exist
-			})
+		if len(args.Filter.Ids) > 0 {
+			idMap := map[string]struct{}{}
+			for _, id := range args.Filter.Ids {
+				idMap[id] = struct{}{}
+			}
+
+			idFilter = func(c *model.Category) bool {
+				_, ok := idMap[c.Id]
+				return ok
+			}
 		}
 	}
+
+	filter := func(c *model.Category) bool {
+		return (levelFilter != nil && levelFilter(c)) ||
+			(searchFilter != nil && searchFilter(c)) ||
+			(idFilter != nil && idFilter(c))
+	}
+
+	// find categories:
+	categories := embedCtx.App.Srv().ProductService().FilterCategoriesFromCache(filter)
 
 	// default to sort by english name
-	var keyFunc any = func(c *model.Category) string { return c.NameEn }
-	if args.SortBy != nil && args.SortBy.Field.IsValid() {
+	var res *CountableConnection[*Category]
+	var appErr *model.AppError
 
-		switch args.SortBy.Field {
-		case CategorySortFieldSubcategoryCount:
-			keyFunc = func(c *model.Category) int { return len(c.Children) }
+	switch args.SortBy.Field {
+	case CategorySortFieldSubcategoryCount:
+		keyFunc := func(c *model.Category) int { return c.NumOfChildren }
+		res, appErr = newGraphqlPaginator(categories, keyFunc, systemCategoryToGraphqlCategory, args.GraphqlParams).parse("Resolver.Categories")
 
-		case CategorySortFieldProductCount:
+	case CategorySortFieldProductCount:
+		keyFunc := func(c *model.Category) uint64 { return c.NumOfProducts }
+		res, appErr = newGraphqlPaginator(categories, keyFunc, systemCategoryToGraphqlCategory, args.GraphqlParams).parse("Resolver.Categories")
 
+	default:
+		keyFunc := func(c *model.Category) string { return c.Name }
+		if args.SortBy.Field != CategorySortFieldName {
+			keyFunc = func(c *model.Category) string { return c.Slug }
 		}
+		res, appErr = newGraphqlPaginator(categories, keyFunc, systemCategoryToGraphqlCategory, args.GraphqlParams).parse("Resolver.Categories")
 	}
-
-	res, appErr := newGraphqlPaginator(categories, nil, systemCategoryToGraphqlCategory, args.GraphqlParams).parse("Resolver.Categories")
 	if appErr != nil {
 		return nil, appErr
 	}
+	return (*CategoryCountableConnection)(unsafe.Pointer(res)), nil
 }
 
 func (r *Resolver) Category(ctx context.Context, args struct {
@@ -120,7 +130,7 @@ func (r *Resolver) Category(ctx context.Context, args struct {
 	Slug *string
 }) (*Category, error) {
 	var id, slug string
-	if args.Id != nil {
+	if args.Id != nil && IdsAreValidUUIDs(*args.Id) {
 		id = *args.Id
 	}
 	if args.Slug != nil {
@@ -130,8 +140,18 @@ func (r *Resolver) Category(ctx context.Context, args struct {
 		return nil, model.NewAppError("Resolver.Category", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id/Slug"}, "please provide either id or slug", http.StatusBadRequest)
 	}
 
-	category := model.FirstLevelCategories.Search(func(c *model.Category) bool {
-		return c.Id == id || c.Slug == slug
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+	category, appErr := embedCtx.App.Srv().ProductService().CategoryByOption(&model.CategoryFilterOption{
+		Extra: squirrel.Or{
+			squirrel.Eq{store.CategoryTableName + ".Id": id},
+			squirrel.Eq{store.CategoryTableName + ".Slug": slug},
+		},
 	})
+	if appErr != nil {
+		return nil, appErr
+	}
 	return systemCategoryToGraphqlCategory(category), nil
 }

@@ -24,15 +24,15 @@ type ProductService interface {
 	// NOTE: `startDate` must be UTC time
 	CalculateRevenueForVariant(variant *model.ProductVariant, startDate *time.Time, orderLines []*model.OrderLine, ordersDict map[string]*model.Order, currencyCode string) (*goprices.TaxedMoney, *model.AppError)
 	// CategoriesByOption returns all categories that satisfy given option
-	CategoriesByOption(option *model.CategoryFilterOption) ([]*model.Category, *model.AppError)
+	CategoriesByOption(option *model.CategoryFilterOption) (model.Categories, *model.AppError)
 	// CategoryByOption returns 1 category that satisfies given option
 	CategoryByOption(option *model.CategoryFilterOption) (*model.Category, *model.AppError)
 	// CollectCategoriesTreeProducts Collect products from all levels in category tree.
-	CollectCategoriesTreeProducts(category *model.Category) ([]*model.Product, *model.AppError)
+	CollectCategoriesTreeProducts(category *model.Category) (model.Products, *model.AppError)
 	// CollectionsByOption returns all collections that satisfy given option.
 	//
 	// NOTE: `ShopID` is required.
-	CollectionsByOption(option *model.CollectionFilterOption) ([]*model.Collection, *model.AppError)
+	CollectionsByOption(option *model.CollectionFilterOption) (model.Collections, *model.AppError)
 	// CollectionsByProductID finds and returns all collections related to given product
 	CollectionsByProductID(productID string) ([]*model.Collection, *model.AppError)
 	// CollectionsByVoucherID finds all collections that have relationships with given voucher
@@ -99,9 +99,9 @@ type ProductService interface {
 	// ProductVariantsAvailableInChannel returns product variants based on given channel slug
 	ProductVariantsAvailableInChannel(channelSlug string) ([]*model.ProductVariant, *model.AppError)
 	// ProductVariantsByOption returns a list of product variants satisfy given option
-	ProductVariantsByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, *model.AppError)
+	ProductVariantsByOption(option *model.ProductVariantFilterOption) (model.ProductVariants, *model.AppError)
 	// ProductsByOption returns a list of products that satisfy given option
-	ProductsByOption(option *model.ProductFilterOption) ([]*model.Product, *model.AppError)
+	ProductsByOption(option *model.ProductFilterOption) (model.Products, *model.AppError)
 	// ProductsByVoucherID finds all products that have relationships with given voucher
 	ProductsByVoucherID(voucherID string) ([]*model.Product, *model.AppError)
 	// ProductsRequireShipping checks if at least 1 product require shipping, then return true, false otherwise
@@ -138,4 +138,7 @@ type ProductService interface {
 	CollectionChannelListingsByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, *model.AppError)
 	GetVisibleProductsToUser(userSession *model.Session, channelIdOrSlug string) (model.Products, *model.AppError)
 	FilterProductsAdvanced(options *model.ExportProductsFilterOptions, channelIdOrSlug string) (model.Products, *model.AppError)
+	ClassifyCategories(cs model.Categories) model.Categories
+	CategoryByIds(ids []string, allowFromCache bool) (model.Categories, *model.AppError)
+	FilterCategoriesFromCache(filter func(c *model.Category) bool) model.Categories
 }

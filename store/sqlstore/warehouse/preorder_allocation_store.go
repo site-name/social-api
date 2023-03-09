@@ -4,6 +4,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -16,8 +17,8 @@ func NewSqlPreorderAllocationStore(s store.Store) store.PreorderAllocationStore 
 	return &SqlPreorderAllocationStore{s}
 }
 
-func (ws *SqlPreorderAllocationStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (ws *SqlPreorderAllocationStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"OrderLineID",
 		"Quantity",

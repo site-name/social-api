@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -17,8 +18,8 @@ func NewSqlAttributePageStore(s store.Store) store.AttributePageStore {
 	return &SqlAttributePageStore{s}
 }
 
-func (as *SqlAttributePageStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (as *SqlAttributePageStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"AttributeID",
 		"PageTypeID",

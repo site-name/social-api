@@ -66,7 +66,7 @@ func (a *ServiceProduct) ProductVariantByOrderLineID(orderLineID string) (*model
 }
 
 // ProductVariantsByOption returns a list of product variants satisfy given option
-func (a *ServiceProduct) ProductVariantsByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, *model.AppError) {
+func (a *ServiceProduct) ProductVariantsByOption(option *model.ProductVariantFilterOption) (model.ProductVariants, *model.AppError) {
 	productVariants, err := a.srv.Store.ProductVariant().FilterByOption(option)
 	if err != nil {
 		return nil, model.NewAppError("ProductVariantsByOption", "app.product.error_finding_product_variants_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)

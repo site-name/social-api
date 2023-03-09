@@ -152,7 +152,7 @@ func FixInvalidLocales(cfg *model.Config) bool {
 			changed = true
 		}
 
-		*cfg.LocalizationSettings.AvailableLocales = strings.Join(util.Dedup(strings.Split(availableLocales, ",")), ",")
+		*cfg.LocalizationSettings.AvailableLocales = util.AnyArray[string](strings.Fields(availableLocales)).Dedup().Join(",")
 	}
 
 	return changed

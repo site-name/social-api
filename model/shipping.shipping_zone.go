@@ -55,8 +55,7 @@ func (s ShippingZones) DeepCopy() ShippingZones {
 //
 // E.g: [["a", "b"], ["c", "d"]] => ["a", "b", "c", "d"]
 func (s ShippingZones) RelativeWarehouseIDsFlat(keepDuplicates bool) []string {
-	var res []string
-
+	var res util.AnyArray[string]
 	for _, item := range s {
 		res = append(res, item.RelativeWarehouseIDs...)
 	}
@@ -64,7 +63,7 @@ func (s ShippingZones) RelativeWarehouseIDsFlat(keepDuplicates bool) []string {
 	if keepDuplicates {
 		return res
 	}
-	return util.Dedup(res)
+	return res.Dedup()
 }
 
 func (s *ShippingZone) String() string {

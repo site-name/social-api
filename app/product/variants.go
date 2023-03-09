@@ -3,7 +3,6 @@ package product
 import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -23,7 +22,8 @@ func (a *ServiceProduct) GenerateAndSetVariantName(variant *model.ProductVariant
 func (a *ServiceProduct) GetVariantSelectionAttributes(attributes []*model.Attribute) []*model.Attribute {
 
 	for i, attr := range attributes {
-		if !util.ItemInSlice(attr.InputType, model.ALLOWED_IN_VARIANT_SELECTION) || attr.Type != model.PRODUCT_TYPE {
+		if !model.ALLOWED_IN_VARIANT_SELECTION.Contains(attr.InputType) ||
+			attr.Type != model.PRODUCT_TYPE {
 			attributes = append(attributes[:i], attributes[i+1:]...)
 		}
 	}

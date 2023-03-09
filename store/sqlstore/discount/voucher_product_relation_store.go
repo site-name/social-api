@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -20,8 +21,8 @@ func NewSqlVoucherProductStore(s store.Store) store.VoucherProductStore {
 	return &SqlVoucherProductStore{s}
 }
 
-func (s *SqlVoucherProductStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (s *SqlVoucherProductStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id", "VoucherID", "ProductID",
 	}
 	if prefix == "" {

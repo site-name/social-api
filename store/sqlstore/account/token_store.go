@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -18,8 +19,8 @@ func NewSqlTokenStore(sqlStore store.Store) store.TokenStore {
 	return &SqlTokenStore{sqlStore}
 }
 
-func (s *SqlTokenStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (s *SqlTokenStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Token",
 		"CreateAt",
 		"Type",

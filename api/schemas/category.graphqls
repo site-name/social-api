@@ -7,7 +7,7 @@ extend type Mutation {
 }
 
 extend type Query {
-  categories(filter: CategoryFilterInput, sortBy: CategorySortingInput, level: Int, before: String, after: String, first: Int, last: Int): CategoryCountableConnection
+  categories(filter: CategoryFilterInput, sortBy: CategorySortingInput!, level: Int, before: String, after: String, first: Int, last: Int): CategoryCountableConnection
   category(id: String, slug: String): Category
 }
 

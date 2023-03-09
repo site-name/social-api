@@ -2482,11 +2482,11 @@ func (s *RetryLayerCategoryStore) FilterByOption(option *model.CategoryFilterOpt
 
 }
 
-func (s *RetryLayerCategoryStore) Get(categoryID string) (*model.Category, error) {
+func (s *RetryLayerCategoryStore) Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) {
 
 	tries := 0
 	for {
-		result, err := s.CategoryStore.Get(categoryID)
+		result, err := s.CategoryStore.Get(ctx, categoryID, allowFromCache)
 		if err == nil {
 			return result, nil
 		}
@@ -6203,6 +6203,26 @@ func (s *RetryLayerPreorderAllocationStore) FilterByOption(options *model.Preord
 func (s *RetryLayerProductStore) AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder {
 
 	return s.ProductStore.AdvancedFilterQueryBuilder(input)
+
+}
+
+func (s *RetryLayerProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error) {
+
+	tries := 0
+	for {
+		result, err := s.ProductStore.CountByCategoryIDs(categoryIDs)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
 
 }
 

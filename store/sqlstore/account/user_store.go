@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -47,8 +48,8 @@ func NewSqlUserStore(sqlStore store.Store, metrics einterfaces.MetricsInterface)
 	return us
 }
 
-func (us *SqlUserStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (us *SqlUserStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"Email",
 		"Username",

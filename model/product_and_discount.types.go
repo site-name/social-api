@@ -5,6 +5,7 @@ import (
 
 	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/modules/util"
 )
 
 type ProductAvailability struct {
@@ -29,10 +30,10 @@ type VariantAvailability struct {
 type DiscountInfo struct {
 	Sale            interface{} // either *Sale || *Voucher
 	ChannelListings map[string]*SaleChannelListing
-	ProductIDs      []string
-	CategoryIDs     []string
-	CollectionIDs   []string
-	VariantsIDs     []string
+	ProductIDs      util.AnyArray[string]
+	CategoryIDs     util.AnyArray[string]
+	CollectionIDs   util.AnyArray[string]
+	VariantsIDs     util.AnyArray[string]
 }
 
 func (d *DiscountInfo) IsSaleValid() bool {

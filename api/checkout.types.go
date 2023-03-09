@@ -572,7 +572,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 	}
 	shippingMethodMap = lo.SliceToMap(shippingMethods, func(s *model.ShippingMethod) (string, *model.ShippingMethod) { return s.Id, s })
 
-	for i := 0; i < util.Min(len(checkouts), len(channels)); i++ {
+	for i := 0; i < util.GetMinMax(len(checkouts), len(channels)).Min; i++ {
 		if checkouts[i].ShippingMethodID != nil {
 			shippingMethodIDChannelIDPairs = append(shippingMethodIDChannelIDPairs, *checkouts[i].ShippingMethodID+"__"+channels[i].Id)
 		}
@@ -594,7 +594,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 	}
 	collectionPointMap = lo.SliceToMap(collectionPoints, func(s *model.WareHouse) (string, *model.WareHouse) { return s.Id, s })
 
-	for i := 0; i < util.Min(len(tokens), len(checkouts), len(channels)); i++ {
+	for i := 0; i < util.GetMinMax(len(tokens), len(checkouts), len(channels)).Min; i++ {
 		var (
 			checkout                 = checkouts[i]
 			channel                  = channels[i]

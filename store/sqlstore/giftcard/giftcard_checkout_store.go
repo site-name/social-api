@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -16,8 +17,8 @@ func NewSqlGiftCardCheckoutStore(s store.Store) store.GiftCardCheckoutStore {
 	return &SqlGiftCardCheckoutStore{s}
 }
 
-func (s *SqlGiftCardCheckoutStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{"Id", "GiftcardID", "CheckoutID"}
+func (s *SqlGiftCardCheckoutStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{"Id", "GiftcardID", "CheckoutID"}
 	if prefix == "" {
 		return res
 	}

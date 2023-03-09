@@ -2,6 +2,7 @@ package product
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
@@ -12,14 +13,22 @@ import (
 )
 
 type ServiceProduct struct {
-	srv *app.Server
+	srv         *app.Server
+	categoryMap sync.Map // this is cache for all categories of this system, look up by category ids
 }
 
 func init() {
 	app.RegisterProductService(func(s *app.Server) (sub_app_iface.ProductService, error) {
-		return &ServiceProduct{
+		service := &ServiceProduct{
 			srv: s,
-		}, nil
+		}
+
+		appErr := service.DoAnalyticCategories()
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		return service, nil
 	})
 }
 
@@ -31,7 +40,7 @@ func (a *ServiceProduct) ProductById(productID string) (*model.Product, *model.A
 }
 
 // ProductsByOption returns a list of products that satisfy given option
-func (a *ServiceProduct) ProductsByOption(option *model.ProductFilterOption) ([]*model.Product, *model.AppError) {
+func (a *ServiceProduct) ProductsByOption(option *model.ProductFilterOption) (model.Products, *model.AppError) {
 	products, err := a.srv.Store.Product().FilterByOption(option)
 	if err != nil {
 		return nil, model.NewAppError("ProductsByOption", "app.product.error_finding_products_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)

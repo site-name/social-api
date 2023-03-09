@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -17,8 +18,8 @@ func NewSqlGiftCardOrderStore(s store.Store) store.GiftCardOrderStore {
 	return &SqlGiftCardOrderStore{s}
 }
 
-func (s *SqlGiftCardOrderStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{"Id", "GiftCardID", "OrderID"}
+func (s *SqlGiftCardOrderStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{"Id", "GiftCardID", "OrderID"}
 	if prefix == "" {
 		return res
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -19,8 +20,8 @@ func NewSqlProductVariantStore(s store.Store) store.ProductVariantStore {
 	return &SqlProductVariantStore{s}
 }
 
-func (ps *SqlProductVariantStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (ps *SqlProductVariantStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"Name",
 		"ProductID",

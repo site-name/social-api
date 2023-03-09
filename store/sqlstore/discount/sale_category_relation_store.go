@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -16,8 +17,8 @@ func NewSqlSaleCategoryRelationStore(s store.Store) store.SaleCategoryRelationSt
 	return &SqlSaleCategoryRelationStore{s}
 }
 
-func (s *SqlSaleCategoryRelationStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (s *SqlSaleCategoryRelationStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id", "SaleID", "CategoryID", "CreateAt",
 	}
 	if prefix == "" {

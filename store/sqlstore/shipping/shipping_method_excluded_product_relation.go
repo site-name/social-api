@@ -3,6 +3,7 @@ package shipping
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -22,8 +23,8 @@ func (s *SqlShippingMethodExcludedProductStore) ScanFields(rel *model.ShippingMe
 	}
 }
 
-func (s *SqlShippingMethodExcludedProductStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (s *SqlShippingMethodExcludedProductStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"ShippingMethodID",
 		"ProductID",

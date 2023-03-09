@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -12,7 +13,7 @@ type SqlCustomerEventStore struct {
 	store.Store
 }
 
-var customerModelFields = model.AnyArray[string]{
+var customerModelFields = util.AnyArray[string]{
 	"Id",
 	"Date",
 	"Type",
@@ -25,7 +26,7 @@ func NewSqlCustomerEventStore(s store.Store) store.CustomerEventStore {
 	return &SqlCustomerEventStore{s}
 }
 
-func (cs *SqlCustomerEventStore) ModelFields(prefix string) model.AnyArray[string] {
+func (cs *SqlCustomerEventStore) ModelFields(prefix string) util.AnyArray[string] {
 	if prefix == "" {
 		return customerModelFields
 	}

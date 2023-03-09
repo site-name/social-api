@@ -244,7 +244,7 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 		goto errorLabel
 	}
 
-	for i := 0; i < util.Min(len(channelIDS), len(checkoutLines)); i++ {
+	for i := 0; i < util.GetMinMax(len(channelIDS), len(checkoutLines)).Min; i++ {
 		for _, line := range checkoutLines[i] {
 			variantIDChannelIDPairs = append(variantIDChannelIDPairs, line.VariantID+"__"+channelIDS[i])
 		}
@@ -255,27 +255,27 @@ func checkoutLinesInfoByCheckoutTokenLoader(ctx context.Context, tokens []string
 		goto errorLabel
 	}
 
-	for i := 0; i < util.Min(len(variantIDS), len(variants)); i++ {
+	for i := 0; i < util.GetMinMax(len(variantIDS), len(variants)).Min; i++ {
 		variantsMap[variantIDS[i]] = variants[i]
 	}
 
-	for i := 0; i < util.Min(len(variantIDS), len(products)); i++ {
+	for i := 0; i < util.GetMinMax(len(variantIDS), len(products)).Min; i++ {
 		productsMap[variantIDS[i]] = products[i]
 	}
 
-	for i := 0; i < util.Min(len(variantIDS), len(productTypes)); i++ {
+	for i := 0; i < util.GetMinMax(len(variantIDS), len(productTypes)).Min; i++ {
 		productTypesMap[variantIDS[i]] = productTypes[i]
 	}
 
-	for i := 0; i < util.Min(len(variantIDS), len(collections)); i++ {
+	for i := 0; i < util.GetMinMax(len(variantIDS), len(collections)).Min; i++ {
 		collectionsMap[variantIDS[i]] = collections[i]
 	}
 
-	for i := 0; i < util.Min(len(variantIDChannelIDPairs), len(channelListings)); i++ {
+	for i := 0; i < util.GetMinMax(len(variantIDChannelIDPairs), len(channelListings)).Min; i++ {
 		channelListingsMap[variantIDChannelIDPairs[i]] = channelListings[i]
 	}
 
-	for i := 0; i < util.Min(len(checkouts), len(checkoutLines)); i++ {
+	for i := 0; i < util.GetMinMax(len(checkouts), len(checkoutLines)).Min; i++ {
 		for _, line := range checkoutLines[i] {
 			linesInfoMap[checkouts[i].Token] = append(linesInfoMap[checkouts[i].Token], &model.CheckoutLineInfo{
 				Line:           *line,

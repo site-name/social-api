@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/modules/util"
 )
 
 type PaymentErrorCode string
@@ -163,7 +164,7 @@ type CustomerSource struct {
 type PaymentGateway struct {
 	Id         string
 	Name       string
-	Currencies AnyArray[string]
+	Currencies util.AnyArray[string]
 	Config     []StringInterface
 }
 

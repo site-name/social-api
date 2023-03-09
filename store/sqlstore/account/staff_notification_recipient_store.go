@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -12,14 +13,14 @@ type SqlStaffNotificationRecipientStore struct {
 	store.Store
 }
 
-var staffNotificationRecipientModelFields = model.AnyArray[string]{
+var staffNotificationRecipientModelFields = util.AnyArray[string]{
 	"Id",
 	"UserID",
 	"StaffEmail",
 	"Active",
 }
 
-func (ss *SqlStaffNotificationRecipientStore) ModelFields(prefix string) model.AnyArray[string] {
+func (ss *SqlStaffNotificationRecipientStore) ModelFields(prefix string) util.AnyArray[string] {
 	if prefix == "" {
 		return staffNotificationRecipientModelFields
 	}

@@ -3,6 +3,7 @@ package product
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -14,8 +15,8 @@ func NewSqlCollectionProductStore(s store.Store) store.CollectionProductStore {
 	return &SqlCollectionProductStore{s}
 }
 
-func (ps *SqlCollectionProductStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (ps *SqlCollectionProductStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"CollectionID",
 		"ProductID",

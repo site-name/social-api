@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -23,8 +24,8 @@ func NewSqlSessionStore(sqlStore store.Store) store.SessionStore {
 	return &SqlSessionStore{sqlStore}
 }
 
-func (s *SqlSessionStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (s *SqlSessionStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"Token",
 		"CreateAt",

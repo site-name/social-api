@@ -6,6 +6,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -18,8 +19,8 @@ func NewSqlAllocationStore(s store.Store) store.AllocationStore {
 	return &SqlAllocationStore{s}
 }
 
-func (as *SqlAllocationStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (as *SqlAllocationStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"CreateAt",
 		"OrderLineID",

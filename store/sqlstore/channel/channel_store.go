@@ -6,6 +6,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -17,8 +18,8 @@ func NewSqlChannelStore(sqlStore store.Store) store.ChannelStore {
 	return &SqlChannelStore{sqlStore}
 }
 
-func (cs *SqlChannelStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (cs *SqlChannelStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"ShopID",
 		"Name",

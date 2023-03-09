@@ -133,12 +133,12 @@ func (ps Products) Flat() []StringInterface {
 	var res = []StringInterface{}
 
 	for _, prd := range ps {
-		maxLength := util.Max(
+		maxLength := util.AnyArray[int]{
 			len(prd.Collections),
 			len(prd.Medias),
 			len(prd.AssignedProductAttributes),
 			len(prd.ProductVariants),
-		)
+		}.GetMinMax().Max
 
 		var categorySlug string
 		var productTypeName string

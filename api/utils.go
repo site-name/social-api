@@ -14,6 +14,7 @@ import (
 	"unicode"
 	"unsafe"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
@@ -484,4 +485,15 @@ func reportingPeriodToDate(period ReportingPeriod) time.Time {
 	default:
 		return now
 	}
+}
+
+// IdsAreValidUUIDs checks if all given ids are valid according to https://github.com/google/uuid package
+func IdsAreValidUUIDs(ids ...string) bool {
+	for _, id := range ids {
+		_, err := uuid.Parse(id)
+		if err != nil {
+			return false
+		}
+	}
+	return true
 }

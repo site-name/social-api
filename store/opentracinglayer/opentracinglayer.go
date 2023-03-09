@@ -2340,7 +2340,7 @@ func (s *OpenTracingLayerCategoryStore) FilterByOption(option *model.CategoryFil
 	return result, err
 }
 
-func (s *OpenTracingLayerCategoryStore) Get(categoryID string) (*model.Category, error) {
+func (s *OpenTracingLayerCategoryStore) Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CategoryStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -2349,7 +2349,7 @@ func (s *OpenTracingLayerCategoryStore) Get(categoryID string) (*model.Category,
 	}()
 
 	defer span.Finish()
-	result, err := s.CategoryStore.Get(categoryID)
+	result, err := s.CategoryStore.Get(ctx, categoryID, allowFromCache)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -5720,6 +5720,24 @@ func (s *OpenTracingLayerProductStore) AdvancedFilterQueryBuilder(input *model.E
 	defer span.Finish()
 	result := s.ProductStore.AdvancedFilterQueryBuilder(input)
 	return result
+}
+
+func (s *OpenTracingLayerProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model.ProductCountByCategoryID, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.CountByCategoryIDs")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ProductStore.CountByCategoryIDs(categoryIDs)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerProductStore) FilterByOption(option *model.ProductFilterOption) ([]*model.Product, error) {

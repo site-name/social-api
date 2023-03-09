@@ -8,17 +8,18 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
 type SqlFileInfoStore struct {
 	store.Store
 	metrics     einterfaces.MetricsInterface
-	queryFields model.AnyArray[string]
+	queryFields util.AnyArray[string]
 }
 
-func (fs *SqlFileInfoStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (fs *SqlFileInfoStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"CreatorId",
 		"ParentID",
@@ -56,7 +57,7 @@ func NewSqlFileInfoStore(sqlStore store.Store, metrics einterfaces.MetricsInterf
 		metrics: metrics,
 	}
 
-	s.queryFields = model.AnyArray[string]{
+	s.queryFields = util.AnyArray[string]{
 		"FileInfos.Id",
 		"FileInfos.CreatorId",
 		"FileInfos.ParentID",

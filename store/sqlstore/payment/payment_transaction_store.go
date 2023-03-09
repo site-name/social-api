@@ -6,6 +6,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
@@ -18,8 +19,8 @@ func NewSqlPaymentTransactionStore(s store.Store) store.PaymentTransactionStore 
 	return &SqlPaymentTransactionStore{s}
 }
 
-func (s *SqlPaymentTransactionStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (s *SqlPaymentTransactionStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"CreateAt",
 		"PaymentID",

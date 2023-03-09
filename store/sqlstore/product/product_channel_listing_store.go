@@ -6,6 +6,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -17,8 +18,8 @@ func NewSqlProductChannelListingStore(s store.Store) store.ProductChannelListing
 	return &SqlProductChannelListingStore{s}
 }
 
-func (ps *SqlProductChannelListingStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (ps *SqlProductChannelListingStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"ProductID",
 		"ChannelID",

@@ -13,7 +13,7 @@ import (
 // CollectionsByOption returns all collections that satisfy given option.
 //
 // NOTE: `ShopID` is required.
-func (a *ServiceProduct) CollectionsByOption(option *model.CollectionFilterOption) ([]*model.Collection, *model.AppError) {
+func (a *ServiceProduct) CollectionsByOption(option *model.CollectionFilterOption) (model.Collections, *model.AppError) {
 	collections, err := a.srv.Store.Collection().FilterByOption(option)
 	if err != nil {
 		return nil, model.NewAppError("CollectionsByOption", "app.product.error_finding_collections_by_option", nil, err.Error(), http.StatusInternalServerError)

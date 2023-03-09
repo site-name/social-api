@@ -1,11 +1,13 @@
 package product
 
 import (
+	"context"
 	"database/sql"
-	"encoding/json"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -17,8 +19,8 @@ func NewSqlCategoryStore(s store.Store) store.CategoryStore {
 	return &SqlCategoryStore{s}
 }
 
-func (cs *SqlCategoryStore) ModelFields(prefix string) model.AnyArray[string] {
-	res := model.AnyArray[string]{
+func (cs *SqlCategoryStore) ModelFields(prefix string) util.AnyArray[string] {
+	res := util.AnyArray[string]{
 		"Id",
 		"Name",
 		"Slug",
@@ -112,9 +114,9 @@ func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, e
 }
 
 // Get finds and returns a category with given id
-func (cs *SqlCategoryStore) Get(categoryID string) (*model.Category, error) {
+func (cs *SqlCategoryStore) Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) {
 	var res model.Category
-	err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+store.CategoryTableName+" WHERE Id = ?", categoryID)
+	err := cs.DBXFromContext(ctx).Get(&res, "SELECT * FROM "+store.CategoryTableName+" WHERE Id = ?", categoryID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.CategoryTableName, categoryID)
@@ -125,7 +127,7 @@ func (cs *SqlCategoryStore) Get(categoryID string) (*model.Category, error) {
 	return &res, nil
 }
 
-func (cs *SqlCategoryStore) commonQueryBuilder(option *model.CategoryFilterOption) (string, []interface{}, error) {
+func (cs *SqlCategoryStore) commonQueryBuilder(option *model.CategoryFilterOption) squirrel.SelectBuilder {
 	query := cs.GetQueryBuilder().
 		Select(cs.ModelFields(store.CategoryTableName + ".")...).
 		From(store.CategoryTableName)
@@ -135,7 +137,7 @@ func (cs *SqlCategoryStore) commonQueryBuilder(option *model.CategoryFilterOptio
 	}
 
 	if option.All {
-		return query.ToSql()
+		return query
 	}
 
 	// parse option
@@ -147,6 +149,12 @@ func (cs *SqlCategoryStore) commonQueryBuilder(option *model.CategoryFilterOptio
 	}
 	if option.Name != nil {
 		query = query.Where(option.Name)
+	}
+	if option.Level != nil {
+		query = query.Where(option.Level)
+	}
+	if option.Extra != nil {
+		query = query.Where(option.Extra)
 	}
 
 	if option.VoucherID != nil {
@@ -165,12 +173,22 @@ func (cs *SqlCategoryStore) commonQueryBuilder(option *model.CategoryFilterOptio
 			Where(option.ProductID)
 	}
 
-	return query.ToSql()
+	return query
 }
 
 // FilterByOption finds and returns a list of categories satisfy given option
 func (cs *SqlCategoryStore) FilterByOption(option *model.CategoryFilterOption) ([]*model.Category, error) {
-	queryString, args, err := cs.commonQueryBuilder(option)
+	query := cs.commonQueryBuilder(option)
+
+	// parse pagination options:
+	if option.Limit != 0 {
+		query = query.Limit(option.Limit)
+	}
+	if option.OrderBy != "" {
+		query = query.OrderBy(option.OrderBy)
+	}
+
+	queryString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
@@ -185,28 +203,9 @@ func (cs *SqlCategoryStore) FilterByOption(option *model.CategoryFilterOption) (
 
 	for rows.Next() {
 		var cate model.Category
-		var description []byte
-
-		err = rows.Scan(
-			&cate.Id,
-			&cate.Name,
-			&cate.Slug,
-			&description,
-			&cate.ParentID,
-			&cate.BackgroundImage,
-			&cate.BackgroundImageAlt,
-			&cate.SeoTitle,
-			&cate.Metadata,
-			&cate.PrivateMetadata,
-		)
-
+		err = rows.Scan(cs.ScanFields(&cate)...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row of category")
-		}
-
-		err = json.Unmarshal(description, &cate.Description)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to parse category's description")
 		}
 
 		res = append(res, &cate)
@@ -217,26 +216,16 @@ func (cs *SqlCategoryStore) FilterByOption(option *model.CategoryFilterOption) (
 
 // GetByOption finds and returns 1 category satisfy given option
 func (cs *SqlCategoryStore) GetByOption(option *model.CategoryFilterOption) (*model.Category, error) {
-	queryString, args, err := cs.commonQueryBuilder(option)
+	queryString, args, err := cs.commonQueryBuilder(option).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
 	var cate model.Category
-	var description []byte
 
-	err = cs.GetReplicaX().QueryRowX(queryString, args...).Scan(
-		&cate.Id,
-		&cate.Name,
-		&cate.Slug,
-		&description,
-		&cate.ParentID,
-		&cate.BackgroundImage,
-		&cate.BackgroundImageAlt,
-		&cate.SeoTitle,
-		&cate.Metadata,
-		&cate.PrivateMetadata,
-	)
+	err = cs.GetReplicaX().
+		QueryRowX(queryString, args...).
+		Scan(cs.ScanFields(&cate)...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.CategoryTableName, "option")
@@ -244,10 +233,7 @@ func (cs *SqlCategoryStore) GetByOption(option *model.CategoryFilterOption) (*mo
 		return nil, errors.Wrap(err, "failed to find category with given option")
 	}
 
-	err = json.Unmarshal(description, &cate.Description)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to scan category's description")
-	}
-
 	return &cate, nil
 }
+
+func (s *SqlCategoryStore) UpdateCategoryCache(categories model.Categories, allowFromCache bool) {}

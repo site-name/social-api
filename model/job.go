@@ -2,6 +2,8 @@ package model
 
 import (
 	"time"
+
+	"github.com/sitename/sitename/modules/util"
 )
 
 // job types
@@ -36,7 +38,7 @@ const (
 	JobStatusWarning         = "warning"
 )
 
-var ALL_JOB_TYPES = []string{
+var ALL_JOB_TYPES = util.AnyArray[string]{
 	JobTypeDataRetention,
 	JobTypeMessageExport,
 	JobTypeElasticsearchPostIndexing,
@@ -56,7 +58,7 @@ var ALL_JOB_TYPES = []string{
 	JobTypeResendInvitationEmail,
 }
 
-var ALL_JOB_STATUSES = []string{
+var ALL_JOB_STATUSES = util.AnyArray[string]{
 	JobStatusPending,
 	JobStatusInProgress,
 	JobStatusSuccess,
@@ -90,10 +92,10 @@ func (j *Job) IsValid() *AppError {
 	if j.CreateAt == 0 {
 		return outer("create_at", &j.Id)
 	}
-	if !AnyArray[string](ALL_JOB_TYPES).Contains(j.Type) {
+	if !ALL_JOB_TYPES.Contains(j.Type) {
 		return outer("type", &j.Id)
 	}
-	if !AnyArray[string](ALL_JOB_STATUSES).Contains(j.Status) {
+	if !ALL_JOB_STATUSES.Contains(j.Status) {
 		return outer("status", &j.Id)
 	}
 
