@@ -282,6 +282,9 @@ type MinMax[T Ordered] struct {
 }
 
 func (s AnyArray[T]) GetMinMax() MinMax[T] {
+	if len(s) == 1 {
+		return MinMax[T]{s[0], s[0]}
+	}
 	var min, max T
 	for _, item := range s {
 		if item < min {

@@ -45,7 +45,7 @@ func (a *ServiceWarehouse) getAvailableQuantity(stocks model.Stocks) (int, *mode
 		quantityAllocated += allocation.QuantityAllocated
 	}
 
-	return util.Max(totalQuantity-quantityAllocated, 0), nil
+	return util.GetMinMax(totalQuantity-quantityAllocated, 0).Max, nil
 }
 
 // CheckStockAndPreorderQuantity Validate if there is stock/preorder available for given variant.
@@ -135,7 +135,7 @@ func (s *ServiceWarehouse) splitLinesForTrackableAndPreorder(variants []*model.P
 		stockQuantities    []int
 	)
 
-	for i := 0; i < util.Min(len(variants), len(quantities)); i++ {
+	for i := 0; i < util.GetMinMax(len(variants), len(quantities)).Min; i++ {
 		variant := variants[i]
 		quantity := quantities[i]
 
@@ -207,7 +207,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 		}
 	}
 
-	for i := 0; i < util.Min(len(variants), len(quantities)); i++ {
+	for i := 0; i < util.GetMinMax(len(variants), len(quantities)).Min; i++ {
 		quantity := quantities[i]
 		variant := variants[i]
 
@@ -296,7 +296,7 @@ func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants model.ProductVari
 	}
 
 	var insufficientStocks []*model.InsufficientStockData
-	for i := 0; i < util.Min(len(variants), len(quantities)); i++ {
+	for i := 0; i < util.GetMinMax(len(variants), len(quantities)).Min; i++ {
 		var (
 			variant  = variants[i]
 			quantity = quantities[i]

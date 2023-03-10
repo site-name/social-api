@@ -126,7 +126,7 @@ type OrderEvent struct {
 // OrderEventOption contains parameters to create new order event instance
 type OrderEventOption struct {
 	OrderID    string
-	Parameters StringInterface
+	Parameters StringInterface // should contains keys in ["invoice_number"]
 	Type       OrderEventType
 	UserID     *string
 }
@@ -139,7 +139,7 @@ type OrderEventFilterOptions struct {
 
 func (o *OrderEvent) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"order_event.is_valid.%s.app_error",
+		"model.order_event.is_valid.%s.app_error",
 		"order_event_id=",
 		"OrderEvent.IsValid",
 	)

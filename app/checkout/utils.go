@@ -221,7 +221,7 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkOut *model.Checkout, varian
 		toDeleteCheckoutLineIDs = []string{}
 	)
 	// use Min() since two slices may not have same length
-	for i := 0; i < util.Min(len(variants), len(quantities)); i++ {
+	for i := 0; i < util.GetMinMax(len(variants), len(quantities)).Min; i++ {
 		variant := variants[i]
 		quantity := quantities[i]
 
@@ -548,11 +548,8 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*model.Checkout
 		return nil, appError
 	}
 
-	var (
-		discountedProductIDs    []string
-		discountedCategoryIDs   []string
-		discountedCollectionIDs []string
-	)
+	var discountedProductIDs, discountedCategoryIDs, discountedCollectionIDs util.AnyArray[string]
+
 	for _, prd := range discountedProducts {
 		discountedProductIDs = append(discountedProductIDs, prd.Id)
 	}
@@ -586,8 +583,8 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*model.Checkout
 				}
 			}
 
-			if util.ItemInSlice(lineInfo.Product.Id, discountedProductIDs) ||
-				(lineInfo.Product.CategoryID != nil && util.ItemInSlice(*lineInfo.Product.CategoryID, discountedCategoryIDs)) ||
+			if discountedProductIDs.Contains(lineInfo.Product.Id) ||
+				(lineInfo.Product.CategoryID != nil && discountedCategoryIDs.Contains(*lineInfo.Product.CategoryID)) ||
 				lineInfoCollections_have_common_with_discountedCollections {
 				discountedLines = append(discountedLines, lineInfo)
 			}
@@ -996,7 +993,7 @@ func (a *ServiceCheckout) CancelActivePayments(checkOut *model.Checkout) *model.
 }
 
 func (a *ServiceCheckout) ValidateVariantsInCheckoutLines(lines []*model.CheckoutLineInfo) *model.AppError {
-	var notAvailableVariantIDs []string
+	var notAvailableVariantIDs util.AnyArray[string]
 	for _, line := range lines {
 		if line.ChannelListing.Price == nil {
 			notAvailableVariantIDs = append(notAvailableVariantIDs, line.Variant.Id)
@@ -1004,7 +1001,7 @@ func (a *ServiceCheckout) ValidateVariantsInCheckoutLines(lines []*model.Checkou
 	}
 
 	if len(notAvailableVariantIDs) > 0 {
-		notAvailableVariantIDs = util.Dedup(notAvailableVariantIDs)
+		notAvailableVariantIDs = notAvailableVariantIDs.Dedup()
 		// return error indicate there are some product variants that have no channel listing or channel listing price is null
 		return model.NewAppError("ValidateVariantsInCheckoutLines", "app.checkout.cannot_add_lines_with_unavailable_variants.app_error", map[string]interface{}{"variants": strings.Join(notAvailableVariantIDs, ", ")}, "", http.StatusNotAcceptable)
 	}

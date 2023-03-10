@@ -4,6 +4,9 @@ CREATE TABLE IF NOT EXISTS invoices (
   number character varying(255),
   createat bigint,
   externalurl character varying(2048),
+  status character varying(50),
+  message character varying(255),
+  updateat bigint,
   invoicefile text,
   metadata jsonb,
   privatemetadata jsonb

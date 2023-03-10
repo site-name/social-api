@@ -391,7 +391,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	var (
-		changedFields []string
+		changedFields util.AnyArray[string]
 		appErr        *model.AppError
 	)
 
@@ -447,8 +447,8 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 			payMent.IsActive = model.NewPrimitive(false)
 		}
 
-	case model.PENDING:
-		payMent.ChargeStatus = model.PENDING
+	case model.PENDING_:
+		payMent.ChargeStatus = model.PENDING_
 		changedFields = append(changedFields, "charge_status")
 
 	case model.CANCEL:
@@ -478,7 +478,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 		return appErr
 	}
 
-	if util.ItemInSlice("captured_amount", changedFields) && payMent.OrderID != nil {
+	if changedFields.Contains("captured_amount") && payMent.OrderID != nil {
 		orDer, appErr := a.srv.OrderService().OrderById(*payMent.OrderID)
 		if appErr != nil {
 			return appErr

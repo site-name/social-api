@@ -17,7 +17,7 @@ type MenuItemTranslation struct {
 
 func (m *MenuItemTranslation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"moodel.menu_item_translation.is_valid.%s.app_error",
+		"model.menu_item_translation.is_valid.%s.app_error",
 		"menu_item_id=",
 		"MenuItemTranslation.IsValid",
 	)

@@ -15,4 +15,5 @@ type InvoiceService interface {
 	// UpsertInvoiceEvent is shortcut for creating invoice events
 	UpsertInvoiceEvent(option *model.InvoiceEventOption) (*model.InvoiceEvent, *model.AppError)
 	FilterInvoicesByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, *model.AppError)
+	UpsertInvoice(invoice *model.Invoice) (*model.Invoice, *model.AppError)
 }

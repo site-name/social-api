@@ -109,7 +109,7 @@ type Reordering struct {
 
 	// Will contain the list of keys kept
 	// in correct order in accordance to their sort order
-	OrderedPKs []string
+	OrderedPKs util.AnyArray[string]
 
 	s      *ServiceAttribute
 	runned bool // to make sure that the method `orderedNodeMap` only run once
@@ -194,8 +194,8 @@ func (r *Reordering) calculateNewSortOrder(pk string, move int) (int, int, int) 
 	targetPos := nodePos + move
 
 	// Make sure we are not getting out of bounds
-	targetPos = util.Max(0, targetPos)
-	targetPos = util.Min(len(r.OrderedPKs)-1, targetPos)
+	targetPos = util.GetMinMax(0, targetPos).Max
+	targetPos = util.GetMinMax(len(r.OrderedPKs)-1, targetPos).Min
 
 	// Retrieve the target node and its sort order
 	var (
@@ -244,7 +244,7 @@ func (s *Reordering) processMoveOperation(pk string, move *int) {
 	s.cachedOrderedNodeMap[pk] = &newSortOrder
 
 	// Reorder the pk list
-	s.OrderedPKs = util.RemoveItemsFromSlice(s.OrderedPKs, pk)
+	s.OrderedPKs = s.OrderedPKs.Remove(pk)
 	s.OrderedPKs = append( // <=> list.insert() in python3
 		s.OrderedPKs[0:targetPos],
 		append(

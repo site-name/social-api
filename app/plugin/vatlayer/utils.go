@@ -4,12 +4,13 @@ import (
 	"fmt"
 
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/modules/util"
 )
 
 type VatlayerConfiguration struct {
 	AccessKey           string
-	ExcludedCountries   []string
-	CountriesFromOrigin []string
+	ExcludedCountries   util.AnyArray[string]
+	CountriesFromOrigin util.AnyArray[string]
 	OriginCountry       string
 }
 

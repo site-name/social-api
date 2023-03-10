@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 )
 
@@ -71,19 +72,12 @@ type FulfillmentFilterOption struct {
 type Fulfillments []*Fulfillment
 
 func (f Fulfillments) IDs() []string {
-	res := []string{}
-	for _, item := range f {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
-
-	return res
+	return lo.Map(f, func(item *Fulfillment, _ int) string { return item.Id })
 }
 
 func (f *Fulfillment) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"fulfillment.is_valid.%s.app_error",
+		"model.fulfillment.is_valid.%s.app_error",
 		"fulfillment_id=",
 		"Fulfillment.IsValid",
 	)

@@ -6,6 +6,8 @@ import "github.com/Masterminds/squirrel"
 const (
 	INVOICE_NUMBER_MAX_LENGTH       = 255
 	INVOICE_EXTERNAL_URL_MAX_LENGTH = 2048
+	INVOICE_STATUS_MAX_LENGTH       = 50
+	INVOICE_MESSAGE_MAX_LENGTH      = 255
 )
 
 type Invoice struct {
@@ -14,6 +16,9 @@ type Invoice struct {
 	Number      string  `json:"number"`
 	CreateAt    int64   `json:"create_at"`
 	ExternalUrl string  `json:"external_url"`
+	Status      string  `json:"status"`
+	Message     string  `json:"message"`
+	UpdateAt    int64   `json:"update_at"`
 	ModelMetadata
 }
 
@@ -24,7 +29,7 @@ type InvoiceFilterOptions struct {
 
 func (i *Invoice) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"invoice.is_valid.%s.app_error",
+		"model.invoice.is_valid.%s.app_error",
 		"invoice_id=",
 		"Invoice.IsValid",
 	)
@@ -40,6 +45,12 @@ func (i *Invoice) IsValid() *AppError {
 	if len(i.ExternalUrl) > INVOICE_EXTERNAL_URL_MAX_LENGTH {
 		return outer("external_url", &i.Id)
 	}
+	if len(i.Status) > INVOICE_STATUS_MAX_LENGTH || !ALL_JOB_STATUSES.Contains(i.Status) {
+		return outer("status", &i.Id)
+	}
+	if len(i.Message) > INVOICE_MESSAGE_MAX_LENGTH {
+		return outer("message", &i.Id)
+	}
 	if i.CreateAt == 0 {
 		return outer("create_at", &i.Id)
 	}
@@ -52,4 +63,9 @@ func (i *Invoice) PreSave() {
 		i.Id = NewId()
 	}
 	i.CreateAt = GetMillis()
+	i.UpdateAt = i.CreateAt
+}
+
+func (i *Invoice) PreUpdate() {
+	i.UpdateAt = GetMillis()
 }

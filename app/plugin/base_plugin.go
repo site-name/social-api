@@ -367,12 +367,13 @@ func (b *BasePlugin) GetPaymentGateways(currency string, checkOut *model.Checkou
 		paymentConfig = []model.StringInterface{}
 	}
 
-	currencies, notImplt := b.GetSupportedCurrencies(previousValue)
+	var currencies util.AnyArray[string]
+	currencies, notImplt = b.GetSupportedCurrencies(previousValue)
 	if notImplt != nil {
 		currencies = []string{}
 	}
 
-	if currency != "" && !util.ItemInSlice(currency, currencies) {
+	if currency != "" && !currencies.Contains(currency) {
 		return []*model.PaymentGateway{}, nil
 	}
 
@@ -554,23 +555,23 @@ func (b *BasePlugin) UpdateConfigItems(configurationToUpdate []model.StringInter
 	}
 
 	// Get new keys that don't exist in currentConfig and extend it:
-	currentConfigKeys := []string{}
+	currentConfigKeys := util.AnyArray[string]{}
 	for _, cField := range currentConfig {
 		currentConfigKeys = append(currentConfigKeys, cField["name"].(string))
 	}
-	currentConfigKeys = util.Dedup(currentConfigKeys)
+	currentConfigKeys = currentConfigKeys.Dedup()
 
 	configurationToUpdateDict := make(model.StringInterface)
-	configurationToUpdateDictKeys := []string{}
+	configurationToUpdateDictKeys := util.AnyArray[string]{}
 
 	for _, item := range configurationToUpdate {
 		configurationToUpdateDict[item["name"].(string)] = item["value"]
 		configurationToUpdateDictKeys = append(configurationToUpdateDictKeys, item["name"].(string))
 	}
-	configurationToUpdateDictKeys = util.Dedup(configurationToUpdateDictKeys)
+	configurationToUpdateDictKeys = configurationToUpdateDictKeys.Dedup()
 
 	for _, item := range configurationToUpdateDictKeys {
-		if !util.ItemInSlice(item, currentConfigKeys) {
+		if !currentConfigKeys.Contains(item) {
 			if val, ok := configStructure[item]; !ok || val == nil {
 				continue
 			}

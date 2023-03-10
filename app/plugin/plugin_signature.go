@@ -3,14 +3,12 @@ package plugin
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/crypto/openpgp"
 	"golang.org/x/crypto/openpgp/armor"
 )
@@ -32,7 +30,7 @@ func (a *ServicePlugin) AddPublicKey(name string, key io.Reader) *model.AppError
 	if model.IsSamlFile(&a.srv.Config().SamlSettings, name) {
 		return model.NewAppError("AddPublicKey", "app.plugin.modify_saml.app_error", nil, "", http.StatusInternalServerError)
 	}
-	data, err := ioutil.ReadAll(key)
+	data, err := io.ReadAll(key)
 	if err != nil {
 		return model.NewAppError("AddPublicKey", "app.plugin.write_file.read.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -42,7 +40,7 @@ func (a *ServicePlugin) AddPublicKey(name string, key io.Reader) *model.AppError
 	}
 
 	a.srv.UpdateConfig(func(cfg *model.Config) {
-		if !util.ItemInSlice(name, cfg.PluginSettings.SignaturePublicKeyFiles) {
+		if !cfg.PluginSettings.SignaturePublicKeyFiles.Contains(name) {
 			cfg.PluginSettings.SignaturePublicKeyFiles = append(cfg.PluginSettings.SignaturePublicKeyFiles, name)
 		}
 	})
@@ -61,7 +59,7 @@ func (a *ServicePlugin) DeletePublicKey(name string) *model.AppError {
 	}
 
 	a.srv.UpdateConfig(func(cfg *model.Config) {
-		cfg.PluginSettings.SignaturePublicKeyFiles = util.RemoveItemsFromSlice(cfg.PluginSettings.SignaturePublicKeyFiles, filename)
+		cfg.PluginSettings.SignaturePublicKeyFiles = cfg.PluginSettings.SignaturePublicKeyFiles.Remove(filename)
 	})
 
 	return nil
@@ -115,7 +113,7 @@ func verifyBinarySignature(publicKey, signedFile, signature io.Reader) error {
 }
 
 func decodeIfArmored(reader io.Reader) (io.Reader, error) {
-	readBytes, err := ioutil.ReadAll(reader)
+	readBytes, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, errors.Wrap(err, "can't read the file")
 	}

@@ -191,7 +191,7 @@ func (orders Orders) ChannelIDs() []string {
 
 func (o *Order) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"order.is_valid.%s.app_error",
+		"model.order.is_valid.%s.app_error",
 		"order_id=",
 		"Order.IsValid",
 	)

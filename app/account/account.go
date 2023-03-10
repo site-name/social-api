@@ -33,7 +33,7 @@ func init() {
 		sessionCache, err := s.CacheProvider.NewCache(&cache.CacheOptions{
 			Size:           model.SESSION_CACHE_SIZE,
 			Striped:        true,
-			StripedBuckets: util.Max(runtime.NumCPU()-1, 1),
+			StripedBuckets: util.GetMinMax(runtime.NumCPU()-1, 1).Max,
 		})
 		if err != nil {
 			return nil, errors.New("could not create session cache")

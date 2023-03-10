@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
 )
 
 type ServiceInvoice struct {
@@ -31,4 +32,18 @@ func (s *ServiceInvoice) FilterInvoicesByOptions(options *model.InvoiceFilterOpt
 	}
 
 	return invoices, nil
+}
+
+func (s *ServiceInvoice) UpsertInvoice(invoice *model.Invoice) (*model.Invoice, *model.AppError) {
+	res, err := s.srv.Store.Invoice().Upsert(invoice)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		if _, ok := err.(*store.ErrNotFound); ok {
+			return nil, model.NewAppError("UpsertInvoice", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "invoice.Id"}, "", http.StatusBadRequest)
+		}
+		return nil, model.NewAppError("UpsertInvoice", "app.invoice.upserting_invoice.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return res, nil
 }

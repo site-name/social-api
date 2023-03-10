@@ -5,7 +5,7 @@ const (
 	INVOICE_EVENT_TYPE_MAX_LENGTH = 255
 )
 
-// events for invoice
+// types for invoice events
 const (
 	REQUESTED          = "requested"
 	REQUESTED_DELETION = "requested_deletion"
@@ -39,12 +39,12 @@ type InvoiceEventOption struct {
 	InvoiceID  *string
 	OrderID    *string
 	UserID     *string
-	Parameters StringMap
+	Parameters StringMap // keys should be "number", "url"
 }
 
 func (i *InvoiceEvent) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"invoice_event.is_valid.%s.app_error",
+		"model.invoice_event.is_valid.%s.app_error",
 		"invoice_event_id=",
 		"InvoiceEvent.IsValid",
 	)

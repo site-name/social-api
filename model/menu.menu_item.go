@@ -34,7 +34,7 @@ type MenuItemFilterOptions struct {
 
 func (m *MenuItem) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"menu_item.is_valid.%s.app_error",
+		"model.menu_item.is_valid.%s.app_error",
 		"menu_item_id=",
 		"MenuItem.IsValid",
 	)

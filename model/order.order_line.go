@@ -153,16 +153,13 @@ func (o OrderLines) IDs() []string {
 
 func (o OrderLines) FilterNils() OrderLines {
 	return lo.Filter(o, func(l *OrderLine, _ int) bool {
-		if l == nil {
-			return false
-		}
-		return true
+		return l != nil
 	})
 }
 
 func (o *OrderLine) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"order_line.is_valid.%s.app_error",
+		"model.order_line.is_valid.%s.app_error",
 		"order_line_id=",
 		"OrderLine.IsValid",
 	)

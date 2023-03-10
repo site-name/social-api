@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 )
 
 type FulfillmentLine struct {
@@ -31,23 +32,12 @@ type FulfillmentLineFilterOption struct {
 type FulfillmentLines []*FulfillmentLine
 
 func (f FulfillmentLines) IDs() []string {
-	res := make([]string, len(f))
-	for i := range f {
-		res[i] = f[i].Id
-	}
-
-	return res
+	return lo.Map(f, func(item *FulfillmentLine, _ int) string { return item.Id })
 }
 
 func (f FulfillmentLines) OrderLineIDs() []string {
-	res := []string{}
-	for _, item := range f {
-		if item != nil {
-			res = append(res, item.OrderLineID)
-		}
-	}
+	return lo.Map(f, func(item *FulfillmentLine, _ int) string { return item.OrderLineID })
 
-	return res
 }
 
 // OrderLines returns a slice of order lines attached to every items in f.
@@ -56,7 +46,9 @@ func (f FulfillmentLines) OrderLineIDs() []string {
 func (f FulfillmentLines) OrderLines() OrderLines {
 	res := OrderLines{}
 	for _, item := range f {
-		res = append(res, item.OrderLine)
+		if item.OrderLine != nil {
+			res = append(res, item.OrderLine)
+		}
 	}
 
 	return res
@@ -75,7 +67,7 @@ func (f FulfillmentLines) StockIDs() []string {
 
 func (f *FulfillmentLine) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"fulfillment_line.is_valid.%s.app_error",
+		"model.fulfillment_line.is_valid.%s.app_error",
 		"fulfillment_line_id=",
 		"FulfillmentLine.IsValid",
 	)

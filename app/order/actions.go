@@ -1291,7 +1291,7 @@ func (a *ServiceOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*mod
 
 	for _, lineData := range orderLinesToMove {
 		// calculate the quantity fulfilled/unfulfilled to move
-		unFulfilledToMove := util.Min(lineData.Line.QuantityUnFulfilled(), lineData.Quantity)
+		unFulfilledToMove := util.GetMinMax(lineData.Line.QuantityUnFulfilled(), lineData.Quantity).Min
 		lineData.Line.QuantityFulfilled += unFulfilledToMove
 
 		// update current lines with new value of quantity
@@ -1369,7 +1369,7 @@ func (a *ServiceOrder) moveFulfillmentLinesToTargetFulfillment(fulfillmentLinesT
 		res := a.getFulfillmentLine(targetFulfillment, linesInTargetFulfillment, fulfillmentLine.OrderLineID, fulfillmentLine.StockID)
 
 		// calculate the quantity fulfilled/unfulfilled/to move
-		fulfilledToMove := util.Min(fulfillmentLine.Quantity, quantityToMove)
+		fulfilledToMove := util.GetMinMax(fulfillmentLine.Quantity, quantityToMove).Min
 		quantityToMove -= fulfilledToMove
 		res.MovedFulfillmentLine.Quantity += fulfilledToMove
 		fulfillmentLine.Quantity -= fulfilledToMove

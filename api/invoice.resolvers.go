@@ -6,6 +6,11 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
+
+	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/web"
 )
 
 func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
@@ -23,7 +28,74 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 	Input   InvoiceCreateInput
 	OrderID string
 }) (*InvoiceCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
+		return nil, model.NewAppError("InvoiceCreate", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	}
+
+	// try finding order in db
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.OrderID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// clean order
+	if order.IsDraft() || order.IsUnconfirmed() {
+		return nil, model.NewAppError("InvoiceCreate", "app.order.order_draft_unconfirmed.app_error", nil, "cannot create an invoice for draft or unconfirmed order", http.StatusNotAcceptable)
+	}
+	if order.BillingAddressID == nil {
+		return nil, model.NewAppError("InvoiceCreate", "app.order.order_billing_address_not_set.app_error", nil, "cannot create an invoice for order without biling address", http.StatusNotAcceptable)
+	}
+
+	// clean input
+	if args.Input.Number == "" || args.Input.URL == "" {
+		return nil, model.NewAppError("InvoiceCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "url or number"}, "url and number input cannot be empty", http.StatusBadRequest)
+	}
+
+	newInvoice := &model.Invoice{
+		Number:      args.Input.Number,
+		ExternalUrl: args.Input.URL,
+		OrderID:     &order.Id,
+		Status:      model.JobStatusSuccess,
+	}
+	savedInvoice, appErr := embedCtx.App.Srv().InvoiceService().UpsertInvoice(newInvoice)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// upsert invoice event
+	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventOption{
+		UserID:    &embedCtx.AppContext.Session().UserId,
+		InvoiceID: &savedInvoice.Id,
+		Type:      model.CREATED,
+		Parameters: model.StringMAP{
+			"number": args.Input.Number,
+			"url":    args.Input.URL,
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	_, appErr = embedCtx.App.Srv().OrderService().CommonCreateOrderEvent(nil, &model.OrderEventOption{
+		OrderID: order.Id,
+		UserID:  &embedCtx.AppContext.Session().UserId,
+		Type:    model.INVOICE_GENERATED,
+		Parameters: model.StringInterface{
+			"invoice_number": args.Input.Number,
+		},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &InvoiceCreate{
+		Invoice: SystemInvoiceToGraphqlInvoice(savedInvoice),
+	}, nil
 }
 
 func (r *Resolver) InvoiceDelete(ctx context.Context, args struct{ Id string }) (*InvoiceDelete, error) {

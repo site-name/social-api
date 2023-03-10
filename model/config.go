@@ -20,6 +20,7 @@ import (
 
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/util"
 )
 
 const (
@@ -2574,7 +2575,7 @@ type PluginSettings struct {
 	AutomaticPrepackagedPlugins *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
 	RequirePluginSignature      *bool                             `access:"plugins,write_restrictable,cloud_restrictable"`
 	MarketplaceUrl              *string                           `access:"plugins,write_restrictable,cloud_restrictable"`
-	SignaturePublicKeyFiles     []string                          `access:"plugins,write_restrictable,cloud_restrictable"`
+	SignaturePublicKeyFiles     util.AnyArray[string]             `access:"plugins,write_restrictable,cloud_restrictable"`
 	ChimeraOAuthProxyUrl        *string                           `access:"plugins,write_restrictable,cloud_restrictable"`
 }
 

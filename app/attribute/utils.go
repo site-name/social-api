@@ -97,16 +97,16 @@ func (a *ServiceAttribute) AssociateAttributeValuesToInstance(instance interface
 }
 
 // validateAttributeOwnsValues Checks given value IDs are belonging to the given attribute.
-func (a *ServiceAttribute) validateAttributeOwnsValues(attributeID string, valueIDs []string) *model.AppError {
+func (a *ServiceAttribute) validateAttributeOwnsValues(attributeID string, valueIDs util.AnyArray[string]) *model.AppError {
 	attributeValues, appErr := a.AttributeValuesOfAttribute(attributeID)
 	if appErr != nil {
 		return appErr
 	}
 	attributeActualValueIDs := model.AttributeValues(attributeValues).IDs()
-	foundAssociatedIDs := util.SlicesIntersection(attributeActualValueIDs, valueIDs)
+	foundAssociatedIDs := valueIDs.InterSection(attributeActualValueIDs)
 
 	for _, associatedID := range foundAssociatedIDs {
-		if !util.ItemInSlice(associatedID, valueIDs) {
+		if !valueIDs.Contains(associatedID) {
 			return model.NewAppError("validateAttributeOwnsValues", "app.attribute.attribute_missing_some_values", nil, "", http.StatusNotFound)
 		}
 	}

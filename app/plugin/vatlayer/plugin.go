@@ -10,7 +10,6 @@ import (
 	"github.com/sitename/sitename/app/plugin"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -198,10 +197,10 @@ func (vp *VatlayerPlugin) getTaxesForCountry(country string) (any, *model.AppErr
 		}
 	}
 
-	if util.ItemInSlice(country, vp.config.CountriesFromOrigin) {
+	if vp.config.CountriesFromOrigin.Contains(country) {
 		country = vp.config.OriginCountry
 	}
-	if util.ItemInSlice(country, vp.config.ExcludedCountries) {
+	if vp.config.ExcludedCountries.Contains(country) {
 		return nil, nil
 	}
 

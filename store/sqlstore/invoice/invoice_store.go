@@ -24,6 +24,9 @@ func (s *SqlInvoiceStore) ModelFields(prefix string) util.AnyArray[string] {
 		"Number",
 		"CreateAt",
 		"ExternalUrl",
+		"Status",
+		"Message",
+		"UpdateAt",
 		"Metadata",
 		"PrivateMetadata",
 	}
@@ -39,9 +42,12 @@ func (s *SqlInvoiceStore) ModelFields(prefix string) util.AnyArray[string] {
 // Upsert depends on given inVoice's Id to decide update or delete it
 func (is *SqlInvoiceStore) Upsert(inVoice *model.Invoice) (*model.Invoice, error) {
 	var isSaving bool
-	if inVoice.Id == "" {
+	if inVoice.Id == "" || !model.IsValidId(inVoice.Id) {
+		inVoice.Id = ""
 		isSaving = true
 		inVoice.PreSave()
+	} else {
+		inVoice.PreUpdate()
 	}
 	if err := inVoice.IsValid(); err != nil {
 		return nil, err
@@ -56,6 +62,13 @@ func (is *SqlInvoiceStore) Upsert(inVoice *model.Invoice) (*model.Invoice, error
 		_, err = is.GetMasterX().NamedExec(query, inVoice)
 
 	} else {
+		oldInvoice, err := is.Get(inVoice.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		inVoice.CreateAt = oldInvoice.CreateAt
+
 		query := "UPDATE " + store.InvoiceEventTableName + " SET " + is.
 			ModelFields("").
 			Map(func(_ int, s string) string {

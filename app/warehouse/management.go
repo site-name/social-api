@@ -186,10 +186,10 @@ func (a *ServiceWarehouse) createAllocations(lineInfo *model.OrderLineData, stoc
 		quantityAllocatedInStock := quantityAllocationForStocks[stockData.Pk]
 		quantityAvailableInStock := stockData.Quantity - quantityAllocatedInStock
 
-		quantityToAllocate := util.Min(
+		quantityToAllocate := util.GetMinMax(
 			(quantity - quantityAllocated),
 			quantityAvailableInStock,
-		)
+		).Min
 
 		if quantityToAllocate > 0 {
 			allocations = append(allocations, &model.Allocation{
@@ -261,10 +261,10 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 		)
 
 		for _, allocation := range allocations {
-			quantityToDeallocate := util.Min(
+			quantityToDeallocate := util.GetMinMax(
 				(quantity - quantityDeAllocated),
 				allocation.QuantityAllocated,
-			)
+			).Min
 			if quantityToDeallocate > 0 {
 				allocation.QuantityAllocated = allocation.QuantityAllocated - quantityToDeallocate
 				quantityDeAllocated += quantityToDeallocate
@@ -314,7 +314,7 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 	}
 
 	for _, allocation := range allocationsBeforeUpdate {
-		availableStockNow := util.Max(allocation.Stock.Quantity-stockAndTotalQuantityAllocatedMap[allocation.StockID], 0)
+		availableStockNow := util.GetMinMax(allocation.Stock.Quantity-stockAndTotalQuantityAllocatedMap[allocation.StockID], 0).Max
 
 		if allocation.StockAvailableQuantity <= 0 && availableStockNow > 0 {
 			if appErr := manager.ProductVariantBackInStock(*allocation.Stock); appErr != nil {
@@ -448,7 +448,7 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos model.OrderLineDatas, c
 
 		// keys are IDs of order lines.
 		// Values are lists of allocated quantities of allocations
-		allocationQuantityMap = map[string][]int{}
+		allocationQuantityMap = map[string]util.AnyArray[int]{}
 	)
 
 	for _, allocation := range allocations {
@@ -457,7 +457,7 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos model.OrderLineDatas, c
 
 	for _, lineInfo := range lineInfos {
 		// lineInfo.quantity resembles amount to add, sum it with already allocated.
-		lineInfo.Quantity += util.SumOfSlice(allocationQuantityMap[lineInfo.Line.Id]...)
+		lineInfo.Quantity += allocationQuantityMap[lineInfo.Line.Id].Sum()
 	}
 
 	if len(allocationIDsToDelete) > 0 {
