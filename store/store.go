@@ -654,6 +654,7 @@ type (
 		Upsert(invoice *model.Invoice) (*model.Invoice, error) // Upsert depends on given invoice Id to update/insert it
 		Get(invoiceID string) (*model.Invoice, error)          // Get finds and returns 1 invoice
 		FilterByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, error)
+		Delete(transaction store_iface.SqlxTxExecutor, ids []string) error
 	}
 )
 

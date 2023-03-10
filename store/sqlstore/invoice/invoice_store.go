@@ -3,10 +3,12 @@ package invoice
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlInvoiceStore struct {
@@ -118,6 +120,9 @@ func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) 
 	if options.Id != nil {
 		query = query.Where(options.Id)
 	}
+	if options.Limit > 0 {
+		query = query.Limit(options.Limit)
+	}
 
 	queryStr, args, err := query.ToSql()
 	if err != nil {
@@ -131,4 +136,26 @@ func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) 
 	}
 
 	return res, nil
+}
+
+func (s *SqlInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+	var runner store_iface.SqlxExecutor = s.GetMasterX()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	query, args, err := s.GetQueryBuilder().Delete(store.InvoiceTableName).Where(squirrel.Eq{store.InvoiceTableName + ".Id": ids}).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "Delete_ToSql")
+	}
+
+	result, err := runner.Exec(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete invoices with given ids")
+	}
+	rows, _ := result.RowsAffected()
+	if rows != int64(len(ids)) {
+		return errors.Errorf("%d invoices were deleted instead of %d", rows, len(ids))
+	}
+	return nil
 }

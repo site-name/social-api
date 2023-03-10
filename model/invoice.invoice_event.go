@@ -39,7 +39,7 @@ type InvoiceEventOption struct {
 	InvoiceID  *string
 	OrderID    *string
 	UserID     *string
-	Parameters StringMap // keys should be "number", "url"
+	Parameters StringMap // keys should be "number", "url", "invoice_id"
 }
 
 func (i *InvoiceEvent) IsValid() *AppError {

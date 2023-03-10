@@ -25,6 +25,7 @@ type Invoice struct {
 type InvoiceFilterOptions struct {
 	Id      squirrel.Sqlizer
 	OrderID squirrel.Sqlizer
+	Limit   uint64
 }
 
 func (i *Invoice) IsValid() *AppError {
