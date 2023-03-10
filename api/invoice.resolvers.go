@@ -157,9 +157,127 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 	Id    string
 	Input UpdateInvoiceInput
 }) (*InvoiceUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("InvoiceUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+	}
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
+		return nil, model.NewAppError("InvoiceUpdate", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	}
+
+	invoices, appErr := embedCtx.App.Srv().InvoiceService().FilterInvoicesByOptions(&model.InvoiceFilterOptions{
+		Id:    squirrel.Eq{store.InvoiceTableName + ".Id": args.Id},
+		Limit: 1,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(invoices) == 0 {
+		return nil, model.NewAppError("InvoiceUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invoice with given id does not exist", http.StatusBadRequest)
+	}
+	invoice := invoices[0]
+
+	// clean input
+	var number = invoice.Number
+	var anUrl = invoice.ExternalUrl
+	if numInput := args.Input.Number; numInput != nil && *numInput != "" {
+		number = *numInput
+	}
+	if url := args.Input.URL; url != nil && *url != "" {
+		anUrl = *url
+	}
+
+	if number == "" || anUrl == "" {
+		return nil, model.NewAppError("InvoiceUpdate", "app.invoice.value_not_set.app_error", nil, "number and url must be set after update operation", http.StatusNotAcceptable)
+	}
+
+	invoice.Number = number
+	invoice.ExternalUrl = anUrl
+	invoice.Status = model.JobStatusSuccess
+	updatedInvoice, appErr := embedCtx.App.Srv().InvoiceService().UpsertInvoice(invoice)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	orderEventOptions := &model.OrderEventOption{
+		UserID: &embedCtx.AppContext.Session().UserId,
+		Type:   model.INVOICE_UPDATED,
+		Parameters: model.StringInterface{
+			"invoice_number": updatedInvoice.Number,
+			"url":            updatedInvoice.ExternalUrl,
+			"status":         updatedInvoice.Status,
+		},
+	}
+	if oID := updatedInvoice.OrderID; oID != nil {
+		orderEventOptions.OrderID = *oID
+	}
+	_, appErr = embedCtx.App.Srv().OrderService().CommonCreateOrderEvent(nil, orderEventOptions)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &InvoiceUpdate{
+		Invoice: SystemInvoiceToGraphqlInvoice(updatedInvoice),
+	}, nil
 }
 
 func (r *Resolver) InvoiceSendNotification(ctx context.Context, args struct{ Id string }) (*InvoiceSendNotification, error) {
-	panic(fmt.Errorf("not implemented"))
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("InvoiceSendNotification", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+	}
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
+		return nil, model.NewAppError("InvoiceSendNotification", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	}
+
+	invoices, appErr := embedCtx.App.Srv().InvoiceService().FilterInvoicesByOptions(&model.InvoiceFilterOptions{
+		Id:                 squirrel.Eq{store.InvoiceTableName + ".Id": args.Id},
+		Limit:              1,
+		SelectRelatedOrder: true,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(invoices) == 0 {
+		return nil, model.NewAppError("InvoiceSendNotification", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invoice with given id does not exist", http.StatusBadRequest)
+	}
+	invoice := invoices[0]
+
+	// clean instance
+	switch {
+	case invoice.Status != model.JobStatusSuccess:
+		return nil, model.NewAppError("InvoiceSendNotification", "app.invoice.status_not_success.app_error", nil, "Provided invoice is not ready to be sent", http.StatusNotAcceptable)
+	case invoice.ExternalUrl == "":
+		return nil, model.NewAppError("InvoiceSendNotification", "app.invoice.url_not_set.app_error", nil, "Provided invoice needs to have an URL", http.StatusNotAcceptable)
+	case invoice.Number == "":
+		return nil, model.NewAppError("InvoiceSendNotification", "app.invoice.number_not_set.app_error", nil, "Provided invoice needs to have an invoice number", http.StatusNotAcceptable)
+	case invoice.OrderID == nil:
+		return nil, model.NewAppError("InvoiceSendNotification", "app.invoice.order_not_set.app_error", nil, "provided invoice needs an associated order", http.StatusNotAcceptable)
+	}
+
+	orderEmail, appErr := embedCtx.App.Srv().OrderService().CustomerEmail(invoice.GetOrder())
+	if appErr != nil {
+		return nil, appErr
+	}
+	if orderEmail == "" {
+		return nil, model.NewAppError("InvoiceSendNotification", "app.order.order_email_not_set.app_error", nil, "provided invoice order needs an email address", http.StatusNotAcceptable)
+	}
+
+	panic("not implemented") // TODO: compete plugin manager first
+	appErr = embedCtx.App.Srv().InvoiceService().SendInvoice(*invoice, &model.User{Id: embedCtx.AppContext.Session().UserId}, nil, nil)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &InvoiceSendNotification{
+		Invoice: SystemInvoiceToGraphqlInvoice(invoice),
+	}, nil
 }

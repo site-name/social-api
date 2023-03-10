@@ -19,6 +19,21 @@ func NewSqlInvoiceStore(s store.Store) store.InvoiceStore {
 	return &SqlInvoiceStore{s}
 }
 
+func (s *SqlInvoiceStore) ScanFields(iv *model.Invoice) []any {
+	return []any{
+		&iv.Id,
+		&iv.OrderID,
+		&iv.Number,
+		&iv.CreateAt,
+		&iv.ExternalUrl,
+		&iv.Status,
+		&iv.Message,
+		&iv.UpdateAt,
+		&iv.Metadata,
+		&iv.PrivateMetadata,
+	}
+}
+
 func (s *SqlInvoiceStore) ModelFields(prefix string) util.AnyArray[string] {
 	res := util.AnyArray[string]{
 		"Id",
@@ -111,7 +126,11 @@ func (is *SqlInvoiceStore) Get(invoiceID string) (*model.Invoice, error) {
 }
 
 func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, error) {
-	query := is.GetQueryBuilder().Select(is.ModelFields(store.InvoiceTableName + ".")...).
+	selectFields := is.ModelFields(store.InvoiceTableName + ".")
+	if options.SelectRelatedOrder {
+		selectFields = append(selectFields, is.Order().ModelFields(store.OrderTableName+".")...)
+	}
+	query := is.GetQueryBuilder().Select(selectFields...).
 		From(store.InvoiceTableName)
 
 	if options.Id != nil {
@@ -123,6 +142,9 @@ func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) 
 	if options.Limit > 0 {
 		query = query.Limit(options.Limit)
 	}
+	if options.SelectRelatedOrder {
+		query = query.InnerJoin(store.OrderTableName + " ON Orders.Id = Invoices.OrderID")
+	}
 
 	queryStr, args, err := query.ToSql()
 	if err != nil {
@@ -130,9 +152,29 @@ func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) 
 	}
 
 	var res []*model.Invoice
-	err = is.GetReplicaX().Select(&res, queryStr, args...)
+	var invoice model.Invoice
+	var order model.Order
+	scanFields := is.ScanFields(&invoice)
+	if options.SelectRelatedOrder {
+		scanFields = append(scanFields, is.Order().ScanFields(&order)...)
+	}
+
+	rows, err := is.GetReplicaX().QueryX(queryStr, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find invoices by given options")
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan an invoice row")
+		}
+
+		if options.SelectRelatedOrder {
+			invoice.SetOrder(&order)
+		}
+		res = append(res, invoice.DeepCopy())
 	}
 
 	return res, nil

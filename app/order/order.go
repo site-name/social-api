@@ -178,7 +178,6 @@ func (a *ServiceOrder) OrderSubTotal(ord *model.Order) (*goprices.TaxedMoney, *m
 		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
-		appErr.Where = "OrderSubTotal"
 		return nil, appErr
 	}
 

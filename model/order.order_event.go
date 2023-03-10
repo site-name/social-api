@@ -126,7 +126,7 @@ type OrderEvent struct {
 // OrderEventOption contains parameters to create new order event instance
 type OrderEventOption struct {
 	OrderID    string
-	Parameters StringInterface // should contains keys in ["invoice_number"]
+	Parameters StringInterface // should contains keys in ["invoice_number", "url", "status"]
 	Type       OrderEventType
 	UserID     *string
 }

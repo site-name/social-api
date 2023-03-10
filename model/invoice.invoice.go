@@ -1,6 +1,8 @@
 package model
 
-import "github.com/Masterminds/squirrel"
+import (
+	"github.com/Masterminds/squirrel"
+)
 
 // max lengths for Invoice
 const (
@@ -20,12 +22,24 @@ type Invoice struct {
 	Message     string  `json:"message"`
 	UpdateAt    int64   `json:"update_at"`
 	ModelMetadata
+
+	order *Order `db:"-"`
+}
+
+func (i *Invoice) GetOrder() *Order {
+	return i.order
+}
+
+func (i *Invoice) SetOrder(o *Order) {
+	i.order = o
 }
 
 type InvoiceFilterOptions struct {
 	Id      squirrel.Sqlizer
 	OrderID squirrel.Sqlizer
 	Limit   uint64
+
+	SelectRelatedOrder bool
 }
 
 func (i *Invoice) IsValid() *AppError {
@@ -69,4 +83,20 @@ func (i *Invoice) PreSave() {
 
 func (i *Invoice) PreUpdate() {
 	i.UpdateAt = GetMillis()
+}
+
+func (i *Invoice) DeepCopy() *Invoice {
+	if i == nil {
+		return nil
+	}
+
+	res := *i
+	if i.OrderID != nil {
+		res.OrderID = NewPrimitive(*i.OrderID)
+	}
+	if i.order != nil {
+		res.order = i.order.DeepCopy()
+	}
+	res.ModelMetadata = i.ModelMetadata.DeepCopy()
+	return &res
 }
