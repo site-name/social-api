@@ -97,13 +97,13 @@ func (s *ServiceCsv) prepareProductsRelationsData(products model.Products, field
 		resultData    = map[string]map[string][]any{}
 	)
 
-	fields = append(fields, "id")
-	if len(attributeIDs) > 0 {
-		fields = fields.AddNoDup(ProductExportFields.PRODUCT_ATTRIBUTE_FIELDS.Values()...)
-	}
-	if len(channelIDs) > 0 {
-		fields = fields.AddNoDup(channelFields.Values()...)
-	}
+	// fields = append(fields, "id")
+	// if len(attributeIDs) > 0 {
+	// 	fields = fields.AddNoDup(ProductExportFields.PRODUCT_ATTRIBUTE_FIELDS.Values()...)
+	// }
+	// if len(channelIDs) > 0 {
+	// 	fields = fields.AddNoDup(channelFields.Values()...)
+	// }
 
 	var (
 		channelPkLookup   = channelFields.Pop("channel_pk")
@@ -114,7 +114,7 @@ func (s *ServiceCsv) prepareProductsRelationsData(products model.Products, field
 		var (
 			pk         = data["id"].(string)
 			collection = data["collections__slug"]
-			image      = data.Pop("media__image", nil)
+			image      = data.Pop("media__image", "")
 		)
 
 		if image != nil {
@@ -169,19 +169,18 @@ func (s *ServiceCsv) getVariantsRelationsData(products model.Products, exportFie
 }
 
 func (s *ServiceCsv) prepareVariantsRelationsData(products model.Products, fields util.AnyArray[string], attributeIDs, warehouseIDs, channelIDs []string) map[string]model.StringMap {
-	fields = append(fields, "variants__id")
-
 	var channelFields = ProductExportFields.VARIANT_CHANNEL_LISTING_FIELDS.DeepCopy()
 
-	if len(attributeIDs) > 0 {
-		fields = fields.AddNoDup(ProductExportFields.VARIANT_ATTRIBUTE_FIELDS.Values()...)
-	}
-	if len(warehouseIDs) > 0 {
-		fields = fields.AddNoDup(ProductExportFields.WAREHOUSE_FIELDS.Values()...)
-	}
-	if len(channelIDs) > 0 {
-		fields = fields.AddNoDup(channelFields.Values()...)
-	}
+	// fields = append(fields, "variants__id")
+	// if len(attributeIDs) > 0 {
+	// 	fields = fields.AddNoDup(ProductExportFields.VARIANT_ATTRIBUTE_FIELDS.Values()...)
+	// }
+	// if len(warehouseIDs) > 0 {
+	// 	fields = fields.AddNoDup(ProductExportFields.WAREHOUSE_FIELDS.Values()...)
+	// }
+	// if len(channelIDs) > 0 {
+	// 	fields = fields.AddNoDup(channelFields.Values()...)
+	// }
 
 	var (
 		resultData        = map[string]map[string][]any{}

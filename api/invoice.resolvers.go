@@ -5,7 +5,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
@@ -19,11 +18,134 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 	Number  *string
 	OrderID string
 }) (*InvoiceRequest, error) {
-	panic(fmt.Errorf("not implemented"))
+	if !model.IsValidId(args.OrderID) {
+		return nil, model.NewAppError("InvoiceRequest", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderID"}, "invalid id provided", http.StatusBadRequest)
+	}
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
+		return nil, model.NewAppError("InvoiceRequest", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	}
+
+	// clean order
+	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.OrderID)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if appErr := commonCleanOrder(order); appErr != nil {
+		return nil, appErr
+	}
+
+	shallowInvoice := &model.Invoice{
+		OrderID: &order.Id,
+	}
+	if args.Number != nil && *args.Number != "" {
+		shallowInvoice.Number = *args.Number
+	}
+
+	shallowInvoice, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoice(shallowInvoice)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	panic("not implemented") // todo: complete plugin
+	var invoice *model.Invoice
+
+	newOrderEventOptions := &model.OrderEventOption{
+		OrderID: order.Id,
+		UserID:  &embedCtx.AppContext.Session().UserId,
+	}
+	if invoice.Status == model.JobStatusSuccess {
+		newOrderEventOptions.Parameters["invoice_number"] = invoice.Number
+	}
+
+	_, appErr = embedCtx.App.Srv().OrderService().CommonCreateOrderEvent(nil, newOrderEventOptions)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	invoiceEventOpts := &model.InvoiceEventOption{
+		UserID:  &embedCtx.AppContext.Session().UserId,
+		OrderID: &order.Id,
+	}
+	if args.Number != nil {
+		invoiceEventOpts.Parameters["number"] = *args.Number
+	}
+	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(invoiceEventOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &InvoiceRequest{
+		Invoice: SystemInvoiceToGraphqlInvoice(invoice),
+		Order:   SystemOrderToGraphqlOrder(order),
+	}, nil
 }
 
 func (r *Resolver) InvoiceRequestDelete(ctx context.Context, args struct{ Id string }) (*InvoiceRequestDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("InvoiceRequestDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
+	}
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
+		return nil, model.NewAppError("InvoiceRequestDelete", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	}
+
+	invoices, appErr := embedCtx.App.Srv().InvoiceService().FilterInvoicesByOptions(&model.InvoiceFilterOptions{
+		Id: squirrel.Eq{store.InvoiceTableName + ".Id": args.Id},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(invoices) == 0 {
+		return nil, model.NewAppError("InvoiceRequestDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
+	}
+
+	invoice := invoices[0]
+	invoice.Status = model.JobStatusPending
+
+	updatedInvoice, appErr := embedCtx.App.Srv().InvoiceService().UpsertInvoice(invoice)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	panic("not implemented") // complete plugin module
+
+	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventOption{
+		UserID:    &embedCtx.AppContext.Session().UserId,
+		InvoiceID: &updatedInvoice.Id,
+		OrderID:   updatedInvoice.OrderID,
+		Type:      model.REQUESTED_DELETION,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &InvoiceRequestDelete{
+		Invoice: SystemInvoiceToGraphqlInvoice(updatedInvoice),
+	}, nil
+}
+
+// commonCleanOrder checks:
+//
+// If order is draft or unconfirmed, return error.
+//
+// If order has no BillingAddressID, return error.
+func commonCleanOrder(order *model.Order) *model.AppError {
+	if order.IsDraft() || order.IsUnconfirmed() {
+		return model.NewAppError("commonCleanOrder", "app.order.order_draft_unconfirmed.app_error", nil, "cannot create an invoice for draft or unconfirmed order", http.StatusNotAcceptable)
+	}
+	if order.BillingAddressID == nil {
+		return model.NewAppError("commonCleanOrder", "app.order.order_billing_address_not_set.app_error", nil, "cannot create an invoice for order without biling address", http.StatusNotAcceptable)
+	}
+	return nil
 }
 
 func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
@@ -46,11 +168,8 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 	}
 
 	// clean order
-	if order.IsDraft() || order.IsUnconfirmed() {
-		return nil, model.NewAppError("InvoiceCreate", "app.order.order_draft_unconfirmed.app_error", nil, "cannot create an invoice for draft or unconfirmed order", http.StatusNotAcceptable)
-	}
-	if order.BillingAddressID == nil {
-		return nil, model.NewAppError("InvoiceCreate", "app.order.order_billing_address_not_set.app_error", nil, "cannot create an invoice for order without biling address", http.StatusNotAcceptable)
+	if appErr := commonCleanOrder(order); appErr != nil {
+		return nil, appErr
 	}
 
 	// clean input
