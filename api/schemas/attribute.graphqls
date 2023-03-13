@@ -117,7 +117,7 @@ input AttributeValueUpdateInput {
   richText: JSONString
   fileUrl: String
   contentType: String
-  name: String
+  name: String!
 }
 
 type AttributeUpdate {

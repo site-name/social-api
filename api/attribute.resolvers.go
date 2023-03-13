@@ -6,10 +6,98 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"unsafe"
+
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/web"
 )
 
 func (r *Resolver) AttributeCreate(ctx context.Context, args struct{ Input AttributeCreateInput }) (*AttributeCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	var permissionToCheck = model.PermissionManagePageTypesAndAttributes
+	if args.Input.Type == AttributeTypeEnumProductType {
+		permissionToCheck = model.PermissionManageProductTypesAndAttributes
+	}
+
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), permissionToCheck) {
+		return nil, model.NewAppError("AttributeCreate", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	}
+
+	// clean input
+	inputType := args.Input.InputType
+	if inputType != nil &&
+		*inputType == model.REFERENCE &&
+		(args.Input.EntityType == nil || !args.Input.EntityType.IsValid()) {
+		return nil, model.NewAppError("AttributeCreate", "api.attribute.entity_type_missing.app_error", nil, "entity type is required when REFERENCE input type is used", http.StatusBadRequest)
+	}
+
+	// no need to initialize Slug here, since it will be done in PreSave() method
+	attribute := &model.Attribute{
+		Name:       args.Input.Name,
+		Type:       string(args.Input.Type),
+		Unit:       (*string)(unsafe.Pointer(args.Input.Unit)),
+		EntityType: (*string)(unsafe.Pointer(args.Input.EntityType)),
+	}
+	if inputType != nil {
+		attribute.InputType = *inputType
+	}
+	if v := args.Input.ValueRequired; v != nil {
+		attribute.ValueRequired = *v
+	}
+	if v := args.Input.IsVariantOnly; v != nil {
+		attribute.IsVariantOnly = *v
+	}
+	if v := args.Input.VisibleInStorefront; v != nil {
+		attribute.VisibleInStoreFront = *v
+	}
+	if v := args.Input.FilterableInStorefront; v != nil {
+		attribute.FilterableInStorefront = *v
+	}
+	if v := args.Input.FilterableInDashboard; v != nil {
+		attribute.FilterableInDashboard = *v
+	}
+	if v := args.Input.StorefrontSearchPosition; v != nil {
+		attribute.StorefrontSearchPosition = int(*v)
+	}
+	if v := args.Input.AvailableInGrid; v != nil {
+		attribute.AvailableInGrid = *v
+	}
+
+	// clean attribute
+	appErr := cleanAttributeSettings(attribute, &args.Input)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// clean values
+	validatedAttributeValues, appErr := (&AttributeMixin[*AttributeCreateInput]{
+		ATTRIBUTE_VALUES_FIELD: "values",
+		srv:                    embedCtx.App.Srv(),
+	}).cleanValues(&args.Input, attribute)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// save
+	savedAttr, appErr := embedCtx.App.Srv().AttributeService().UpsertAttribute(attribute)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// save attribute values
+	_, appErr = embedCtx.App.Srv().AttributeService().BulkUpsertAttributeValue(nil, validatedAttributeValues)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &AttributeCreate{
+		Attribute: SystemAttributeToGraphqlAttribute(savedAttr),
+	}, nil
 }
 
 func (r *Resolver) AttributeDelete(ctx context.Context, args struct{ Id string }) (*AttributeDelete, error) {

@@ -23,22 +23,9 @@ func NewSqlAttributeStore(s store.Store) store.AttributeStore {
 
 func (as *SqlAttributeStore) ModelFields(prefix string) util.AnyArray[string] {
 	res := util.AnyArray[string]{
-		"Id",
-		"Slug",
-		"Name",
-		"Type",
-		"InputType",
-		"EntityType",
-		"Unit",
-		"ValueRequired",
-		"IsVariantOnly",
-		"VisibleInStoreFront",
-		"FilterableInStorefront",
-		"FilterableInDashboard",
-		"StorefrontSearchPosition",
-		"AvailableInGrid",
-		"Metadata",
-		"PrivateMetadata",
+		"Id", "Slug", "Name", "Type", "InputType", "EntityType", "Unit", "ValueRequired",
+		"IsVariantOnly", "VisibleInStoreFront", "FilterableInStorefront", "FilterableInDashboard",
+		"StorefrontSearchPosition", "AvailableInGrid", "Metadata", "PrivateMetadata",
 	}
 	if prefix == "" {
 		return res
@@ -50,22 +37,9 @@ func (as *SqlAttributeStore) ModelFields(prefix string) util.AnyArray[string] {
 
 func (as *SqlAttributeStore) ScanFields(v *model.Attribute) []interface{} {
 	return []interface{}{
-		&v.Id,
-		&v.Slug,
-		&v.Name,
-		&v.Type,
-		&v.InputType,
-		&v.EntityType,
-		&v.Unit,
-		&v.ValueRequired,
-		&v.IsVariantOnly,
-		&v.VisibleInStoreFront,
-		&v.FilterableInStorefront,
-		&v.FilterableInDashboard,
-		&v.StorefrontSearchPosition,
-		&v.AvailableInGrid,
-		&v.Metadata,
-		&v.PrivateMetadata,
+		&v.Id, &v.Slug, &v.Name, &v.Type, &v.InputType, &v.EntityType, &v.Unit, &v.ValueRequired,
+		&v.IsVariantOnly, &v.VisibleInStoreFront, &v.FilterableInStorefront, &v.FilterableInDashboard,
+		&v.StorefrontSearchPosition, &v.AvailableInGrid, &v.Metadata, &v.PrivateMetadata,
 	}
 }
 
@@ -111,12 +85,11 @@ func (as *SqlAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, er
 
 	if err != nil {
 		if as.IsUniqueConstraintError(err, []string{"Slug", "attributes_slug_key", "idx_attributes_slug_unique"}) {
-			return nil, store.NewErrInvalidInput(store.AttributeTableName, "slug", attr.Slug)
+			attr.Slug = attr.Slug + model.NewRandomString(5)
+			return as.Upsert(attr)
 		}
-
 		return nil, errors.Wrap(err, "failed to upsert attribute")
 	}
-
 	if numUpdated > 1 {
 		return nil, errors.Errorf("%d attribute(s) was/were updated instead of 1", numUpdated)
 	}

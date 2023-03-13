@@ -36,6 +36,11 @@ const (
 
 type AttributeInputType string
 
+func (e AttributeInputType) IsValid() bool {
+	_, exist := attributeInputTypeStrings[e]
+	return exist
+}
+
 const (
 	DROPDOWN    AttributeInputType = "dropdown"    //
 	MULTISELECT AttributeInputType = "multiselect" //
@@ -55,6 +60,7 @@ var (
 	TYPES_WITH_UNIQUE_VALUES     = util.AnyArray[AttributeInputType]{FILE_, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME} // list of the translatable attributes, excluding attributes with choices.
 	TRANSLATABLE_ATTRIBUTES      = util.AnyArray[AttributeInputType]{RICH_TEXT}
 )
+
 var attributeInputTypeStrings = map[AttributeInputType]bool{
 	DROPDOWN:    true,
 	MULTISELECT: true,
@@ -75,6 +81,43 @@ var attributeTypeStrings = map[string]bool{
 var attributeEntityTypeStrings = map[string]bool{
 	PAGE:    true,
 	PRODUCT: true,
+}
+
+var ATTRIBUTE_PROPERTIES_CONFIGURATION = map[string][]AttributeInputType{
+	"filterable_in_storefront": {
+		DROPDOWN,
+		MULTISELECT,
+		NUMERIC,
+		SWATCH,
+		BOOLEAN,
+		DATE,
+		DATE_TIME,
+	},
+	"filterable_in_dashboard": {
+		DROPDOWN,
+		MULTISELECT,
+		NUMERIC,
+		SWATCH,
+		BOOLEAN,
+		DATE,
+		DATE_TIME,
+	},
+	"available_in_grid": {
+		DROPDOWN,
+		MULTISELECT,
+		NUMERIC,
+		SWATCH,
+		BOOLEAN,
+		DATE,
+		DATE_TIME,
+	},
+	"storefront_search_position": {
+		DROPDOWN,
+		MULTISELECT,
+		BOOLEAN,
+		DATE,
+		DATE_TIME,
+	},
 }
 
 // ORDER BY Slug
@@ -136,7 +179,7 @@ type AttributeFilterOption struct {
 
 func (a *Attribute) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"attribute.is_valid.%s.app_error",
+		"model.attribute.is_valid.%s.app_error",
 		"attribute_id=",
 		"Attribute.IsValid",
 	)

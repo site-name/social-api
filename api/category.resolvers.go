@@ -59,7 +59,8 @@ func (r *Resolver) Categories(ctx context.Context, args struct {
 	}
 	var levelFilter, searchFilter, idFilter func(c *model.Category) bool
 
-	if lv := args.Level; lv != nil && *lv >= model.CATEGORY_MIN_LEVEL &&
+	if lv := args.Level; lv != nil &&
+		*lv >= model.CATEGORY_MIN_LEVEL &&
 		*lv <= model.CATEGORY_MAX_LEVEL {
 		levelFilter = func(c *model.Category) bool {
 			return c.Level == uint8(*lv)

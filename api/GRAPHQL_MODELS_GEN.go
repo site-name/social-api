@@ -347,23 +347,6 @@ type AttributeCreate struct {
 	Errors    []*AttributeError `json:"errors"`
 }
 
-type AttributeCreateInput struct {
-	InputType                *AttributeInputTypeEnum      `json:"inputType"`
-	EntityType               *AttributeEntityTypeEnum     `json:"entityType"`
-	Name                     string                       `json:"name"`
-	Slug                     *string                      `json:"slug"`
-	Type                     AttributeTypeEnum            `json:"type"`
-	Unit                     *MeasurementUnitsEnum        `json:"unit"`
-	Values                   []*AttributeValueCreateInput `json:"values"`
-	ValueRequired            *bool                        `json:"valueRequired"`
-	IsVariantOnly            *bool                        `json:"isVariantOnly"`
-	VisibleInStorefront      *bool                        `json:"visibleInStorefront"`
-	FilterableInStorefront   *bool                        `json:"filterableInStorefront"`
-	FilterableInDashboard    *bool                        `json:"filterableInDashboard"`
-	StorefrontSearchPosition *int32                       `json:"storefrontSearchPosition"`
-	AvailableInGrid          *bool                        `json:"availableInGrid"`
-}
-
 type AttributeDelete struct {
 	Errors    []*AttributeError `json:"errors"`
 	Attribute *Attribute        `json:"attribute"`
@@ -463,6 +446,54 @@ type AttributeUpdate struct {
 	Errors    []*AttributeError `json:"errors"`
 }
 
+var (
+	_ AttributeUpsertInputIface = (*AttributeUpdateInput)(nil)
+	_ AttributeUpsertInputIface = (*AttributeCreateInput)(nil)
+)
+
+type AttributeCreateInput struct {
+	InputType                *AttributeInputTypeEnum      `json:"inputType"`
+	EntityType               *AttributeEntityTypeEnum     `json:"entityType"`
+	Name                     string                       `json:"name"`
+	Slug                     *string                      `json:"slug"`
+	Type                     AttributeTypeEnum            `json:"type"`
+	Unit                     *MeasurementUnitsEnum        `json:"unit"`
+	Values                   []*AttributeValueCreateInput `json:"values"`
+	ValueRequired            *bool                        `json:"valueRequired"`
+	IsVariantOnly            *bool                        `json:"isVariantOnly"`
+	VisibleInStorefront      *bool                        `json:"visibleInStorefront"`
+	FilterableInStorefront   *bool                        `json:"filterableInStorefront"`
+	FilterableInDashboard    *bool                        `json:"filterableInDashboard"`
+	StorefrontSearchPosition *int32                       `json:"storefrontSearchPosition"`
+	AvailableInGrid          *bool                        `json:"availableInGrid"`
+}
+
+func (a *AttributeCreateInput) getInputType() AttributeInputTypeEnum {
+	if a.InputType != nil {
+		return *a.InputType
+	}
+	return AttributeInputTypeEnum("")
+}
+
+func (a *AttributeCreateInput) getFieldValueByString(field string) any {
+	switch field {
+	case "filterable_in_storefront":
+		return a.FilterableInStorefront
+	case "filterable_in_dashboard":
+		return a.FilterableInDashboard
+	case "available_in_grid":
+		return a.AvailableInGrid
+	case "storefront_search_position":
+		return a.StorefrontSearchPosition
+	case "values":
+		return a.Values
+	case "input_type":
+		return a.InputType
+	default:
+		return nil
+	}
+}
+
 type AttributeUpdateInput struct {
 	Name                     *string                      `json:"name"`
 	Slug                     *string                      `json:"slug"`
@@ -477,6 +508,52 @@ type AttributeUpdateInput struct {
 	StorefrontSearchPosition *int32                       `json:"storefrontSearchPosition"`
 	AvailableInGrid          *bool                        `json:"availableInGrid"`
 }
+
+func (a *AttributeUpdateInput) getInputType() AttributeInputTypeEnum {
+	return AttributeInputTypeEnum("")
+}
+
+func (i *AttributeUpdateInput) getFieldValueByString(name string) any {
+	switch name {
+	case "add_values":
+		return i.AddValues
+	default:
+		return nil
+	}
+}
+
+var (
+	_ attributeValueInputIface = (*AttributeValueCreateInput)(nil)
+	_ attributeValueInputIface = (*AttributeValueUpdateInput)(nil)
+)
+
+type AttributeValueCreateInput struct {
+	Name        string     `json:"name"`
+	Value       *string    `json:"value"`
+	RichText    JSONString `json:"richText"`
+	FileURL     *string    `json:"fileUrl"`
+	ContentType *string    `json:"contentType"`
+}
+
+func (a *AttributeValueCreateInput) getName() string           { return a.Name }
+func (a *AttributeValueCreateInput) getFileURL() *string       { return a.FileURL }
+func (a *AttributeValueCreateInput) getContentType() *string   { return a.ContentType }
+func (a *AttributeValueCreateInput) getValue() *string         { return a.Value }
+func (a *AttributeValueCreateInput) getJsonString() JSONString { return a.RichText }
+
+type AttributeValueUpdateInput struct {
+	Value       *string    `json:"value"`
+	RichText    JSONString `json:"richText"`
+	FileURL     *string    `json:"fileUrl"`
+	ContentType *string    `json:"contentType"`
+	Name        string     `json:"name"`
+}
+
+func (a *AttributeValueUpdateInput) getName() string           { return a.Name }
+func (a *AttributeValueUpdateInput) getFileURL() *string       { return a.FileURL }
+func (a *AttributeValueUpdateInput) getContentType() *string   { return a.ContentType }
+func (a *AttributeValueUpdateInput) getValue() *string         { return a.Value }
+func (a *AttributeValueUpdateInput) getJsonString() JSONString { return a.RichText }
 
 type AttributeValueBulkDelete struct {
 	Count  int32             `json:"count"`
@@ -498,14 +575,6 @@ type AttributeValueCreate struct {
 	Attribute      *Attribute        `json:"attribute"`
 	Errors         []*AttributeError `json:"errors"`
 	AttributeValue *AttributeValue   `json:"attributeValue"`
-}
-
-type AttributeValueCreateInput struct {
-	Name        string     `json:"name"`
-	Value       *string    `json:"value"`
-	RichText    JSONString `json:"richText"`
-	FileURL     *string    `json:"fileUrl"`
-	ContentType *string    `json:"contentType"`
 }
 
 type AttributeValueDelete struct {
@@ -558,14 +627,6 @@ type AttributeValueUpdate struct {
 	Attribute      *Attribute        `json:"attribute"`
 	Errors         []*AttributeError `json:"errors"`
 	AttributeValue *AttributeValue   `json:"attributeValue"`
-}
-
-type AttributeValueUpdateInput struct {
-	Value       *string    `json:"value"`
-	RichText    JSONString `json:"richText"`
-	FileURL     *string    `json:"fileUrl"`
-	ContentType *string    `json:"contentType"`
-	Name        *string    `json:"name"`
 }
 
 type BulkAttributeValueInput struct {
@@ -4215,28 +4276,20 @@ func (e AttributeErrorCode) IsValid() bool {
 	return false
 }
 
-type AttributeInputTypeEnum string
+type AttributeInputTypeEnum = model.AttributeInputType
 
 const (
-	AttributeInputTypeEnumDropdown    AttributeInputTypeEnum = AttributeInputTypeEnum(model.DROPDOWN)
-	AttributeInputTypeEnumMultiselect AttributeInputTypeEnum = AttributeInputTypeEnum(model.MULTISELECT)
-	AttributeInputTypeEnumFile        AttributeInputTypeEnum = AttributeInputTypeEnum(model.FILE)
-	AttributeInputTypeEnumReference   AttributeInputTypeEnum = AttributeInputTypeEnum(model.REFERENCE)
-	AttributeInputTypeEnumNumeric     AttributeInputTypeEnum = AttributeInputTypeEnum(model.NUMERIC)
-	AttributeInputTypeEnumRichText    AttributeInputTypeEnum = AttributeInputTypeEnum(model.RICH_TEXT)
-	AttributeInputTypeEnumSwatch      AttributeInputTypeEnum = AttributeInputTypeEnum(model.SWATCH)
-	AttributeInputTypeEnumBoolean     AttributeInputTypeEnum = AttributeInputTypeEnum(model.BOOLEAN)
-	AttributeInputTypeEnumDate        AttributeInputTypeEnum = AttributeInputTypeEnum(model.DATE)
-	AttributeInputTypeEnumDateTime    AttributeInputTypeEnum = AttributeInputTypeEnum(model.DATE_TIME)
+	AttributeInputTypeEnumDropdown    AttributeInputTypeEnum = model.DROPDOWN
+	AttributeInputTypeEnumMultiselect AttributeInputTypeEnum = model.MULTISELECT
+	AttributeInputTypeEnumFile        AttributeInputTypeEnum = model.FILE
+	AttributeInputTypeEnumReference   AttributeInputTypeEnum = model.REFERENCE
+	AttributeInputTypeEnumNumeric     AttributeInputTypeEnum = model.NUMERIC
+	AttributeInputTypeEnumRichText    AttributeInputTypeEnum = model.RICH_TEXT
+	AttributeInputTypeEnumSwatch      AttributeInputTypeEnum = model.SWATCH
+	AttributeInputTypeEnumBoolean     AttributeInputTypeEnum = model.BOOLEAN
+	AttributeInputTypeEnumDate        AttributeInputTypeEnum = model.DATE
+	AttributeInputTypeEnumDateTime    AttributeInputTypeEnum = model.DATE_TIME
 )
-
-func (e AttributeInputTypeEnum) IsValid() bool {
-	switch e {
-	case AttributeInputTypeEnumDropdown, AttributeInputTypeEnumMultiselect, AttributeInputTypeEnumFile, AttributeInputTypeEnumReference, AttributeInputTypeEnumNumeric, AttributeInputTypeEnumRichText, AttributeInputTypeEnumSwatch, AttributeInputTypeEnumBoolean, AttributeInputTypeEnumDate, AttributeInputTypeEnumDateTime:
-		return true
-	}
-	return false
-}
 
 type AttributeSortField string
 

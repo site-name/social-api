@@ -150,12 +150,10 @@ func SystemLanguageToGraphqlLanguageCodeEnum(code string) LanguageCodeEnum {
 		if r == '-' {
 			return '_'
 		}
-
 		return unicode.ToUpper(r)
 	}, code)
 
 	res := LanguageCodeEnum(upperCaseCode)
-
 	if !res.IsValid() {
 		return LanguageCodeEnumEn
 	}
@@ -192,7 +190,6 @@ func convertGraphqlOperandToString[C graphqlCursorType](operand C) string {
 
 // parseGraphqlOperand can possibly returns (nil, nil)
 func parseGraphqlOperand[C graphqlCursorType](params GraphqlParams) (*C, error) {
-
 	// in case users query resuts for the first time
 	if params.Before == nil && params.After == nil {
 		return nil, nil
@@ -265,15 +262,15 @@ type graphqlCursorType interface {
 	string | float64 | int | int64 | uint64 | time.Time | decimal.Decimal
 }
 
-type GraphqlCompareOrder int8
+type CompareOrder int8
 
 const (
-	Lesser GraphqlCompareOrder = iota
+	Lesser CompareOrder = iota
 	Equal
 	Greater
 )
 
-func comparePrimitives[T util.Ordered](a, b T) GraphqlCompareOrder {
+func comparePrimitives[T util.Ordered](a, b T) CompareOrder {
 	if a < b {
 		return Lesser
 	} else if a > b {
@@ -282,8 +279,8 @@ func comparePrimitives[T util.Ordered](a, b T) GraphqlCompareOrder {
 	return Equal
 }
 
-// compareGraphqlOperands compares a and b and returns GraphqlCompareOrder.
-func compareGraphqlOperands[K graphqlCursorType](a, b K) GraphqlCompareOrder {
+// compareGraphqlOperands compares a and b and returns CompareOrder.
+func compareGraphqlOperands[K graphqlCursorType](a, b K) CompareOrder {
 	anyA, anyB := any(a), any(b)
 
 	switch t := anyA.(type) {
@@ -340,17 +337,18 @@ func (s *graphqlPaginator[R, C, D]) Swap(i, j int) {
 	s.data[i], s.data[j] = s.data[j], s.data[i]
 }
 
-const PaginationError = "api.graphql.pagination_params.invalid.app_error"
+const PaginationError = "api.graphql.pagination_params_invalid.app_error"
 
 // graphqlPaginator implements sort.Interface
 type graphqlPaginator[RawT any, CurT graphqlCursorType, DestT any] struct {
-	data                  []RawT
-	keyFunc               func(RawT) CurT  // extract value from raw type
-	rawTypeToDestTypeFunc func(RawT) DestT // convert rawType to dest type
+	data                  []RawT           // E.g []*model.Product
+	keyFunc               func(RawT) CurT  // extract value from system model types
+	rawTypeToDestTypeFunc func(RawT) DestT // convert raw system model types to their according graphql type
 	GraphqlParams
 }
 
-// newGraphqlPaginator use this instead of manually construct graphqlPaginator.
+// newGraphqlPaginator returns *graphqlPaginator formed using given arguments.
+// Use this instead of manually construct &graphqlPaginator{} to prevent missing some fields.
 func newGraphqlPaginator[RawT any, CurT graphqlCursorType, DestT any](
 	data []RawT,
 	keyFunc func(RawT) CurT,
@@ -365,6 +363,7 @@ func newGraphqlPaginator[RawT any, CurT graphqlCursorType, DestT any](
 	}
 }
 
+// CountableConnection shares similar memory layout as all graphql api Connections.
 type CountableConnection[D any] struct {
 	TotalCount *int32
 	Edges      []*CountableEdge[D]
@@ -411,23 +410,24 @@ func (g *graphqlPaginator[R, C, D]) parse(apiName string) (*CountableConnection[
 		hasNextPage, hasPreviousPage bool
 		index                        int
 		limit                        = g.First
+		totalCount                   = g.Len()
 	)
 	if limit == nil {
 		limit = g.Last
 	}
 
 	if operand == nil {
-		if *limit < int32(g.Len()) { // prevent slicing out of range
+		if *limit < int32(totalCount) { // prevent slicing out of range
 			resultData = g.data[:*limit]
 			hasNextPage = true
 		} else {
-			resultData = g.data[:]
+			resultData = g.data
 		}
 		goto returnLabel
 	}
 
 	// case operand provided:
-	index = sort.Search(g.Len(), func(i int) bool {
+	index = sort.Search(totalCount, func(i int) bool {
 		value := g.keyFunc(g.data[i])
 		cmp := compareGraphqlOperands(value, *operand)
 
@@ -437,9 +437,8 @@ func (g *graphqlPaginator[R, C, D]) parse(apiName string) (*CountableConnection[
 		return cmp == Lesser || cmp == Equal // <=
 	})
 
-	// if not found, sort.Search returns exactly First int argument passed
-	// we need to check it here
-	if index >= g.Len() {
+	// if not found, sort.Search returns exactly First int argument passed. We need to check it here
+	if index >= totalCount {
 		return nil, model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "before / after"}, "invalid before or after provided", http.StatusBadRequest)
 	}
 
@@ -452,7 +451,6 @@ func (g *graphqlPaginator[R, C, D]) parse(apiName string) (*CountableConnection[
 	}
 
 returnLabel:
-	totalCount := g.Len()
 	res := &CountableConnection[D]{
 		TotalCount: (*int32)(unsafe.Pointer(&totalCount)),
 		Edges: lo.Map(resultData, func(item R, _ int) *CountableEdge[D] {
