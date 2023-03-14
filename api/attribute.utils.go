@@ -33,6 +33,10 @@ type AttributeMixin[T AttributeUpsertInputIface] struct {
 	srv                    *app.Server
 }
 
+func newAttributeMixin[T AttributeUpsertInputIface](srv *app.Server, ATTRIBUTE_VALUES_FIELD string) *AttributeMixin[T] {
+	return &AttributeMixin[T]{ATTRIBUTE_VALUES_FIELD, srv}
+}
+
 func (a *AttributeMixin[T]) cleanValues(cleanedInput AttributeUpsertInputIface, attribute *model.Attribute) (model.AttributeValues, *model.AppError) {
 	value := cleanedInput.getFieldValueByString(a.ATTRIBUTE_VALUES_FIELD)
 	valuesInput := []attributeValueInputIface{}

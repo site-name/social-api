@@ -4242,20 +4242,12 @@ func (e AttributeChoicesSortField) IsValid() bool {
 	return false
 }
 
-type AttributeEntityTypeEnum string
+type AttributeEntityTypeEnum = model.AttributeEntityType
 
 const (
 	AttributeEntityTypeEnumPage    AttributeEntityTypeEnum = model.PAGE
 	AttributeEntityTypeEnumProduct AttributeEntityTypeEnum = model.PRODUCT
 )
-
-func (e AttributeEntityTypeEnum) IsValid() bool {
-	switch e {
-	case AttributeEntityTypeEnumPage, AttributeEntityTypeEnumProduct:
-		return true
-	}
-	return false
-}
 
 type AttributeErrorCode string
 
@@ -4313,20 +4305,12 @@ func (e AttributeSortField) IsValid() bool {
 	return false
 }
 
-type AttributeTypeEnum string
+type AttributeTypeEnum = model.AttributeType
 
 const (
 	AttributeTypeEnumProductType AttributeTypeEnum = model.PRODUCT_TYPE
 	AttributeTypeEnumPageType    AttributeTypeEnum = model.PAGE_TYPE
 )
-
-func (e AttributeTypeEnum) IsValid() bool {
-	switch e {
-	case AttributeTypeEnumProductType, AttributeTypeEnumPageType:
-		return true
-	}
-	return false
-}
 
 type CategorySortField string
 

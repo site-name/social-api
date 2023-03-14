@@ -23,22 +23,39 @@ const (
 )
 
 // choices for attribute's type
+type AttributeType string
+
 const (
-	PRODUCT_TYPE = "product_type"
-	PAGE_TYPE    = "page_type"
+	PRODUCT_TYPE AttributeType = "product_type"
+	PAGE_TYPE    AttributeType = "page_type"
 )
 
+func (e AttributeType) IsValid() bool {
+	return e == PRODUCT_TYPE || e == PAGE_TYPE
+}
+
 // choices for attribute's entity type
+type AttributeEntityType string
+
+func (t AttributeEntityType) IsValid() bool {
+	return t == PAGE || t == PRODUCT
+}
+
 const (
-	PAGE    = "page"
-	PRODUCT = "product"
+	PAGE    AttributeEntityType = "page"
+	PRODUCT AttributeEntityType = "product"
 )
 
 type AttributeInputType string
 
 func (e AttributeInputType) IsValid() bool {
-	_, exist := attributeInputTypeStrings[e]
-	return exist
+	switch e {
+	case DROPDOWN, MULTISELECT, FILE_, REFERENCE,
+		NUMERIC, RICH_TEXT, SWATCH, BOOLEAN, DATE, DATE_TIME:
+		return true
+	default:
+		return false
+	}
 }
 
 const (
@@ -60,28 +77,6 @@ var (
 	TYPES_WITH_UNIQUE_VALUES     = util.AnyArray[AttributeInputType]{FILE_, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME} // list of the translatable attributes, excluding attributes with choices.
 	TRANSLATABLE_ATTRIBUTES      = util.AnyArray[AttributeInputType]{RICH_TEXT}
 )
-
-var attributeInputTypeStrings = map[AttributeInputType]bool{
-	DROPDOWN:    true,
-	MULTISELECT: true,
-	FILE_:       true,
-	REFERENCE:   true,
-	NUMERIC:     true,
-	RICH_TEXT:   true,
-	BOOLEAN:     true,
-	DATE:        true,
-	DATE_TIME:   true,
-}
-
-var attributeTypeStrings = map[string]bool{
-	PRODUCT_TYPE: true,
-	PAGE_TYPE:    true,
-}
-
-var attributeEntityTypeStrings = map[string]bool{
-	PAGE:    true,
-	PRODUCT: true,
-}
 
 var ATTRIBUTE_PROPERTIES_CONFIGURATION = map[string][]AttributeInputType{
 	"filterable_in_storefront": {
@@ -122,20 +117,20 @@ var ATTRIBUTE_PROPERTIES_CONFIGURATION = map[string][]AttributeInputType{
 
 // ORDER BY Slug
 type Attribute struct {
-	Id                       string             `json:"id"`
-	Slug                     string             `json:"slug"` // unique
-	Name                     string             `json:"name"`
-	Type                     string             `json:"type"`
-	InputType                AttributeInputType `json:"input_type"`
-	EntityType               *string            `json:"entity_type"`
-	Unit                     *string            `json:"unit"` // lower cased
-	ValueRequired            bool               `json:"value_required"`
-	IsVariantOnly            bool               `json:"is_variant_only"`
-	VisibleInStoreFront      bool               `json:"visible_in_storefront"`
-	FilterableInStorefront   bool               `json:"filterable_in_storefront"`
-	FilterableInDashboard    bool               `json:"filterable_in_dashboard"`
-	StorefrontSearchPosition int                `json:"storefront_search_position"`
-	AvailableInGrid          bool               `json:"available_in_grid"`
+	Id                       string               `json:"id"`
+	Slug                     string               `json:"slug"` // unique
+	Name                     string               `json:"name"`
+	Type                     AttributeType        `json:"type"`
+	InputType                AttributeInputType   `json:"input_type"`
+	EntityType               *AttributeEntityType `json:"entity_type"`
+	Unit                     *string              `json:"unit"` // lower cased
+	ValueRequired            bool                 `json:"value_required"`
+	IsVariantOnly            bool                 `json:"is_variant_only"`
+	VisibleInStoreFront      bool                 `json:"visible_in_storefront"`
+	FilterableInStorefront   bool                 `json:"filterable_in_storefront"`
+	FilterableInDashboard    bool                 `json:"filterable_in_dashboard"`
+	StorefrontSearchPosition int                  `json:"storefront_search_position"`
+	AvailableInGrid          bool                 `json:"available_in_grid"`
 	ModelMetadata
 
 	attributeValues AttributeValues `db:"-"`
@@ -192,14 +187,14 @@ func (a *Attribute) IsValid() *AppError {
 	if len(a.Slug) > ATTRIBUTE_SLUG_MAX_LENGTH {
 		return outer("slug", &a.Id)
 	}
-	if len(a.Type) > ATTRIBUTE_TYPE_MAX_LENGTH || !attributeTypeStrings[a.Type] {
+	if len(a.Type) > ATTRIBUTE_TYPE_MAX_LENGTH || !a.Type.IsValid() {
 		return outer("type", &a.Id)
 	}
-	if len(a.InputType) > ATTRIBUTE_TYPE_MAX_LENGTH || !attributeInputTypeStrings[a.InputType] {
+	if len(a.InputType) > ATTRIBUTE_TYPE_MAX_LENGTH || !a.InputType.IsValid() {
 		return outer("input_type", &a.Id)
 	}
-	if (a.EntityType != nil && len(*a.EntityType) > ATTRIBUTE_ENTITY_TYPE_MAX_LENGTH) ||
-		(a.EntityType != nil && !attributeEntityTypeStrings[*a.EntityType]) {
+	if a.EntityType != nil &&
+		(len(*a.EntityType) > ATTRIBUTE_ENTITY_TYPE_MAX_LENGTH || !(*a.EntityType).IsValid()) {
 		return outer("entity_type", &a.Id)
 	}
 	if (a.Unit != nil && len(*a.Unit) > ATTRIBUTE_UNIT_MAX_LENGTH) ||
@@ -271,7 +266,7 @@ type AttributeTranslation struct {
 
 func (a *AttributeTranslation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"attribute_translation.is_valid.%s.app_error",
+		"model.attribute_translation.is_valid.%s.app_error",
 		"attribute_translation_id=",
 		"AttributeTranslation.IsValid",
 	)
