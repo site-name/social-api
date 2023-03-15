@@ -2131,11 +2131,11 @@ type LocalizationSettings struct {
 
 func (s *LocalizationSettings) SetDefaults() {
 	if s.DefaultServerLocale == nil {
-		s.DefaultServerLocale = NewPrimitive(DEFAULT_LOCALE)
+		s.DefaultServerLocale = NewPrimitive(DEFAULT_LOCALE.String())
 	}
 
 	if s.DefaultClientLocale == nil {
-		s.DefaultClientLocale = NewPrimitive(DEFAULT_LOCALE)
+		s.DefaultClientLocale = NewPrimitive(DEFAULT_LOCALE.String())
 	}
 
 	if s.AvailableLocales == nil {

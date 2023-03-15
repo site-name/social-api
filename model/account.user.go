@@ -16,7 +16,6 @@ import (
 	"github.com/sitename/sitename/modules/timezones"
 	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/text/language"
 )
 
 // constants used in package account
@@ -252,7 +251,7 @@ func (u *User) IsValid() *AppError {
 	if len(u.Password) > USER_PASSWORD_MAX_LENGTH {
 		return outer("password_limit", &u.Id)
 	}
-	if tag, err := language.Parse(u.Locale); err != nil || !strings.EqualFold(tag.String(), u.Locale) {
+	if !LanguageCodeEnum(u.Locale).IsValid() {
 		return outer("locale", &u.Id)
 	}
 	if len(u.Timezone) > 0 {
@@ -311,7 +310,7 @@ func (u *User) commonPre() {
 		u.Props = make(map[string]string)
 	}
 	if u.Locale == "" {
-		u.Locale = DEFAULT_LOCALE
+		u.Locale = DEFAULT_LOCALE.String()
 	} else {
 		u.Locale = strings.ToLower(u.Locale)
 	}

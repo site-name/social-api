@@ -70,7 +70,7 @@ func SystemCheckoutToGraphqlCheckout(ckout *model.Checkout) *Checkout {
 		Metadata:               MetadataToSlice(ckout.Metadata),
 		Email:                  ckout.Email,
 		Token:                  ckout.Token,
-		LanguageCode:           SystemLanguageToGraphqlLanguageCodeEnum(ckout.LanguageCode),
+		LanguageCode:           ckout.LanguageCode,
 
 		checkout: ckout,
 	}

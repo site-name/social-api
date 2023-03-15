@@ -374,7 +374,7 @@ func SystemOrderToGraphqlOrder(o *model.Order) *Order {
 		UndiscountedTotal:   SystemTaxedMoneyToGraphqlTaxedMoney(o.UnDiscountedTotal),
 		TotalCaptured:       SystemMoneyToGraphqlMoney(o.TotalPaid),
 		TotalBalance:        SystemMoneyToGraphqlMoney(o.TotalBalance()),
-		LanguageCodeEnum:    SystemLanguageToGraphqlLanguageCodeEnum(o.LanguageCode),
+		LanguageCodeEnum:    o.LanguageCode,
 		Weight: &Weight{
 			Value: float64(o.WeightAmount),
 			Unit:  WeightUnitsEnum(o.WeightUnit),

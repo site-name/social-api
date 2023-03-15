@@ -64,17 +64,17 @@ const (
 	URL_LINK_MAX_LENGTH            = 200
 	SINGLE_COUNTRY_CODE_MAX_LENGTH = 5
 	IP_ADDRESS_MAX_LENGTH          = 39
-	DEFAULT_LOCALE                 = "en" // this is default language also
+	DEFAULT_LOCALE                 = LanguageCodeEnumEn // this is default language also
 	DEFAULT_COUNTRY                = CountryCodeUs
 )
 
 var (
-	Countries                     map[CountryCode]string // countries supported by app
-	Languages                     map[string]string      // Languages supported by app
-	MULTIPLE_COUNTRIES_MAX_LENGTH int                    // some model"s country fields contains multiple countries
-	ReservedName                  []string               // usernames that can only be used by system
-	ValidUsernameChars            *regexp.Regexp         // regexp for username validation
-	RestrictedUsernames           map[string]bool        // usernames that cannot be used
+	Countries                     map[CountryCode]string      // countries supported by app
+	Languages                     map[LanguageCodeEnum]string // Languages supported by app
+	MULTIPLE_COUNTRIES_MAX_LENGTH int                         // some model"s country fields contains multiple countries
+	ReservedName                  []string                    // usernames that can only be used by system
+	ValidUsernameChars            *regexp.Regexp              // regexp for username validation
+	RestrictedUsernames           map[string]bool             // usernames that cannot be used
 )
 
 type CountryCode string
@@ -340,6 +340,799 @@ const (
 	CountryCodeZw CountryCode = "ZW"
 )
 
+type LanguageCodeEnum string
+
+func (l LanguageCodeEnum) IsValid() bool {
+	return Languages[l] != ""
+}
+
+func (l LanguageCodeEnum) String() string {
+	return *(*string)(unsafe.Pointer(&l))
+}
+
+const (
+	LanguageCodeEnumAf           LanguageCodeEnum = "af"
+	LanguageCodeEnumAfNa         LanguageCodeEnum = "af-na"
+	LanguageCodeEnumId           LanguageCodeEnum = "id"
+	LanguageCodeEnumAfZa         LanguageCodeEnum = "af-za"
+	LanguageCodeEnumAgq          LanguageCodeEnum = "agq"
+	LanguageCodeEnumAgqCm        LanguageCodeEnum = "agq-cm"
+	LanguageCodeEnumAk           LanguageCodeEnum = "ak"
+	LanguageCodeEnumAkGh         LanguageCodeEnum = "ak-gh"
+	LanguageCodeEnumAm           LanguageCodeEnum = "am"
+	LanguageCodeEnumAmEt         LanguageCodeEnum = "am-et"
+	LanguageCodeEnumAr           LanguageCodeEnum = "ar"
+	LanguageCodeEnumArAe         LanguageCodeEnum = "ar-ae"
+	LanguageCodeEnumArBh         LanguageCodeEnum = "ar-bh"
+	LanguageCodeEnumArDj         LanguageCodeEnum = "ar-dj"
+	LanguageCodeEnumArDz         LanguageCodeEnum = "ar-dz"
+	LanguageCodeEnumArEg         LanguageCodeEnum = "ar-eg"
+	LanguageCodeEnumArEh         LanguageCodeEnum = "ar-eh"
+	LanguageCodeEnumArEr         LanguageCodeEnum = "ar-er"
+	LanguageCodeEnumArIl         LanguageCodeEnum = "ar-il"
+	LanguageCodeEnumArIq         LanguageCodeEnum = "ar-iq"
+	LanguageCodeEnumArJo         LanguageCodeEnum = "ar-jo"
+	LanguageCodeEnumArKm         LanguageCodeEnum = "ar-km"
+	LanguageCodeEnumArKw         LanguageCodeEnum = "ar-kw"
+	LanguageCodeEnumArLb         LanguageCodeEnum = "ar-lb"
+	LanguageCodeEnumArLy         LanguageCodeEnum = "ar-ly"
+	LanguageCodeEnumArMa         LanguageCodeEnum = "ar-ma"
+	LanguageCodeEnumArMr         LanguageCodeEnum = "ar-mr"
+	LanguageCodeEnumArOm         LanguageCodeEnum = "ar-om"
+	LanguageCodeEnumArPs         LanguageCodeEnum = "ar-ps"
+	LanguageCodeEnumArQa         LanguageCodeEnum = "ar-qa"
+	LanguageCodeEnumArSa         LanguageCodeEnum = "ar-sa"
+	LanguageCodeEnumArSd         LanguageCodeEnum = "ar-sd"
+	LanguageCodeEnumArSo         LanguageCodeEnum = "ar-so"
+	LanguageCodeEnumArSs         LanguageCodeEnum = "ar-ss"
+	LanguageCodeEnumArSy         LanguageCodeEnum = "ar-sy"
+	LanguageCodeEnumArTd         LanguageCodeEnum = "ar-td"
+	LanguageCodeEnumArTn         LanguageCodeEnum = "ar-tn"
+	LanguageCodeEnumArYe         LanguageCodeEnum = "ar-ye"
+	LanguageCodeEnumAs           LanguageCodeEnum = "as"
+	LanguageCodeEnumAsIn         LanguageCodeEnum = "as-in"
+	LanguageCodeEnumAsa          LanguageCodeEnum = "asa"
+	LanguageCodeEnumAsaTz        LanguageCodeEnum = "asa-tz"
+	LanguageCodeEnumAst          LanguageCodeEnum = "ast"
+	LanguageCodeEnumAstEs        LanguageCodeEnum = "ast-es"
+	LanguageCodeEnumAz           LanguageCodeEnum = "az"
+	LanguageCodeEnumAzCyrl       LanguageCodeEnum = "az-cyrl"
+	LanguageCodeEnumAzCyrlAz     LanguageCodeEnum = "az-cyrl-az"
+	LanguageCodeEnumAzLatn       LanguageCodeEnum = "az-latn"
+	LanguageCodeEnumAzLatnAz     LanguageCodeEnum = "az-latn-az"
+	LanguageCodeEnumBas          LanguageCodeEnum = "bas"
+	LanguageCodeEnumBasCm        LanguageCodeEnum = "bas-cm"
+	LanguageCodeEnumBe           LanguageCodeEnum = "be"
+	LanguageCodeEnumBeBy         LanguageCodeEnum = "be-by"
+	LanguageCodeEnumBem          LanguageCodeEnum = "bem"
+	LanguageCodeEnumBemZm        LanguageCodeEnum = "bem-zm"
+	LanguageCodeEnumBez          LanguageCodeEnum = "bez"
+	LanguageCodeEnumBezTz        LanguageCodeEnum = "bez-tz"
+	LanguageCodeEnumBg           LanguageCodeEnum = "bg"
+	LanguageCodeEnumBgBg         LanguageCodeEnum = "bg-bg"
+	LanguageCodeEnumBm           LanguageCodeEnum = "bm"
+	LanguageCodeEnumBmMl         LanguageCodeEnum = "bm-ml"
+	LanguageCodeEnumBn           LanguageCodeEnum = "bn"
+	LanguageCodeEnumBnBd         LanguageCodeEnum = "bn-bd"
+	LanguageCodeEnumBnIn         LanguageCodeEnum = "bn-in"
+	LanguageCodeEnumBo           LanguageCodeEnum = "bo"
+	LanguageCodeEnumBoCn         LanguageCodeEnum = "bo-cn"
+	LanguageCodeEnumBoIn         LanguageCodeEnum = "bo-in"
+	LanguageCodeEnumBr           LanguageCodeEnum = "br"
+	LanguageCodeEnumBrFr         LanguageCodeEnum = "br-fr"
+	LanguageCodeEnumBrx          LanguageCodeEnum = "brx"
+	LanguageCodeEnumBrxIn        LanguageCodeEnum = "brx-in"
+	LanguageCodeEnumBs           LanguageCodeEnum = "bs"
+	LanguageCodeEnumBsCyrl       LanguageCodeEnum = "bs-cyrl"
+	LanguageCodeEnumBsCyrlBa     LanguageCodeEnum = "bs-cyrl-ba"
+	LanguageCodeEnumBsLatn       LanguageCodeEnum = "bs-latn"
+	LanguageCodeEnumBsLatnBa     LanguageCodeEnum = "bs-latn-ba"
+	LanguageCodeEnumCa           LanguageCodeEnum = "ca"
+	LanguageCodeEnumCaAd         LanguageCodeEnum = "ca-ad"
+	LanguageCodeEnumCaEs         LanguageCodeEnum = "ca-es"
+	LanguageCodeEnumCaEsValencia LanguageCodeEnum = "ca-es-valencia"
+	LanguageCodeEnumCaFr         LanguageCodeEnum = "ca-fr"
+	LanguageCodeEnumCaIt         LanguageCodeEnum = "ca-it"
+	LanguageCodeEnumCcp          LanguageCodeEnum = "ccp"
+	LanguageCodeEnumCcpBd        LanguageCodeEnum = "ccp-bd"
+	LanguageCodeEnumCcpIn        LanguageCodeEnum = "ccp-in"
+	LanguageCodeEnumCe           LanguageCodeEnum = "ce"
+	LanguageCodeEnumCeRu         LanguageCodeEnum = "ce-ru"
+	LanguageCodeEnumCeb          LanguageCodeEnum = "ceb"
+	LanguageCodeEnumCebPh        LanguageCodeEnum = "ceb-ph"
+	LanguageCodeEnumCgg          LanguageCodeEnum = "cgg"
+	LanguageCodeEnumCggUg        LanguageCodeEnum = "cgg-ug"
+	LanguageCodeEnumChr          LanguageCodeEnum = "chr"
+	LanguageCodeEnumChrUs        LanguageCodeEnum = "chr-us"
+	LanguageCodeEnumCkb          LanguageCodeEnum = "ckb"
+	LanguageCodeEnumCkbIq        LanguageCodeEnum = "ckb-iq"
+	LanguageCodeEnumCkbIr        LanguageCodeEnum = "ckb-ir"
+	LanguageCodeEnumCs           LanguageCodeEnum = "cs"
+	LanguageCodeEnumCsCz         LanguageCodeEnum = "cs-cz"
+	LanguageCodeEnumCu           LanguageCodeEnum = "cu"
+	LanguageCodeEnumCuRu         LanguageCodeEnum = "cu-ru"
+	LanguageCodeEnumCy           LanguageCodeEnum = "cy"
+	LanguageCodeEnumCyGb         LanguageCodeEnum = "cy-gb"
+	LanguageCodeEnumDa           LanguageCodeEnum = "da"
+	LanguageCodeEnumDaDk         LanguageCodeEnum = "da-dk"
+	LanguageCodeEnumDaGl         LanguageCodeEnum = "da-gl"
+	LanguageCodeEnumDav          LanguageCodeEnum = "dav"
+	LanguageCodeEnumDavKe        LanguageCodeEnum = "dav-ke"
+	LanguageCodeEnumDe           LanguageCodeEnum = "de"
+	LanguageCodeEnumDeAt         LanguageCodeEnum = "de-at"
+	LanguageCodeEnumDeBe         LanguageCodeEnum = "de-be"
+	LanguageCodeEnumDeCh         LanguageCodeEnum = "de-ch"
+	LanguageCodeEnumDeDe         LanguageCodeEnum = "de-de"
+	LanguageCodeEnumDeIt         LanguageCodeEnum = "de-it"
+	LanguageCodeEnumDeLi         LanguageCodeEnum = "de-li"
+	LanguageCodeEnumDeLu         LanguageCodeEnum = "de-lu"
+	LanguageCodeEnumDje          LanguageCodeEnum = "dje"
+	LanguageCodeEnumDjeNe        LanguageCodeEnum = "dje-ne"
+	LanguageCodeEnumDsb          LanguageCodeEnum = "dsb"
+	LanguageCodeEnumDsbDe        LanguageCodeEnum = "dsb-de"
+	LanguageCodeEnumDua          LanguageCodeEnum = "dua"
+	LanguageCodeEnumDuaCm        LanguageCodeEnum = "dua-cm"
+	LanguageCodeEnumDyo          LanguageCodeEnum = "dyo"
+	LanguageCodeEnumDyoSn        LanguageCodeEnum = "dyo-sn"
+	LanguageCodeEnumDz           LanguageCodeEnum = "dz"
+	LanguageCodeEnumDzBt         LanguageCodeEnum = "dz-bt"
+	LanguageCodeEnumEbu          LanguageCodeEnum = "ebu"
+	LanguageCodeEnumEbuKe        LanguageCodeEnum = "ebu-ke"
+	LanguageCodeEnumEe           LanguageCodeEnum = "ee"
+	LanguageCodeEnumEeGh         LanguageCodeEnum = "ee-gh"
+	LanguageCodeEnumEeTg         LanguageCodeEnum = "ee-tg"
+	LanguageCodeEnumEl           LanguageCodeEnum = "el"
+	LanguageCodeEnumElCy         LanguageCodeEnum = "el-cy"
+	LanguageCodeEnumElGr         LanguageCodeEnum = "el-gr"
+	LanguageCodeEnumEn           LanguageCodeEnum = "en"
+	LanguageCodeEnumEnAe         LanguageCodeEnum = "en-ae"
+	LanguageCodeEnumEnAg         LanguageCodeEnum = "en-ag"
+	LanguageCodeEnumEnAi         LanguageCodeEnum = "en-ai"
+	LanguageCodeEnumEnAs         LanguageCodeEnum = "en-as"
+	LanguageCodeEnumEnAt         LanguageCodeEnum = "en-at"
+	LanguageCodeEnumEnAu         LanguageCodeEnum = "en-au"
+	LanguageCodeEnumEnBb         LanguageCodeEnum = "en-bb"
+	LanguageCodeEnumEnBe         LanguageCodeEnum = "en-be"
+	LanguageCodeEnumEnBi         LanguageCodeEnum = "en-bi"
+	LanguageCodeEnumEnBm         LanguageCodeEnum = "en-bm"
+	LanguageCodeEnumEnBs         LanguageCodeEnum = "en-bs"
+	LanguageCodeEnumEnBw         LanguageCodeEnum = "en-bw"
+	LanguageCodeEnumEnBz         LanguageCodeEnum = "en-bz"
+	LanguageCodeEnumEnCa         LanguageCodeEnum = "en-ca"
+	LanguageCodeEnumEnCc         LanguageCodeEnum = "en-cc"
+	LanguageCodeEnumEnCh         LanguageCodeEnum = "en-ch"
+	LanguageCodeEnumEnCk         LanguageCodeEnum = "en-ck"
+	LanguageCodeEnumEnCm         LanguageCodeEnum = "en-cm"
+	LanguageCodeEnumEnCx         LanguageCodeEnum = "en-cx"
+	LanguageCodeEnumEnCy         LanguageCodeEnum = "en-cy"
+	LanguageCodeEnumEnDe         LanguageCodeEnum = "en-de"
+	LanguageCodeEnumEnDg         LanguageCodeEnum = "en-dg"
+	LanguageCodeEnumEnDk         LanguageCodeEnum = "en-dk"
+	LanguageCodeEnumEnDm         LanguageCodeEnum = "en-dm"
+	LanguageCodeEnumEnEr         LanguageCodeEnum = "en-er"
+	LanguageCodeEnumEnFi         LanguageCodeEnum = "en-fi"
+	LanguageCodeEnumEnFj         LanguageCodeEnum = "en-fj"
+	LanguageCodeEnumEnFk         LanguageCodeEnum = "en-fk"
+	LanguageCodeEnumEnFm         LanguageCodeEnum = "en-fm"
+	LanguageCodeEnumEnGb         LanguageCodeEnum = "en-gb"
+	LanguageCodeEnumEnGd         LanguageCodeEnum = "en-gd"
+	LanguageCodeEnumEnGg         LanguageCodeEnum = "en-gg"
+	LanguageCodeEnumEnGh         LanguageCodeEnum = "en-gh"
+	LanguageCodeEnumEnGi         LanguageCodeEnum = "en-gi"
+	LanguageCodeEnumEnGm         LanguageCodeEnum = "en-gm"
+	LanguageCodeEnumEnGu         LanguageCodeEnum = "en-gu"
+	LanguageCodeEnumEnGy         LanguageCodeEnum = "en-gy"
+	LanguageCodeEnumEnHk         LanguageCodeEnum = "en-hk"
+	LanguageCodeEnumEnIe         LanguageCodeEnum = "en-ie"
+	LanguageCodeEnumEnIl         LanguageCodeEnum = "en-il"
+	LanguageCodeEnumEnIm         LanguageCodeEnum = "en-im"
+	LanguageCodeEnumEnIn         LanguageCodeEnum = "en-in"
+	LanguageCodeEnumEnIo         LanguageCodeEnum = "en-io"
+	LanguageCodeEnumEnJe         LanguageCodeEnum = "en-je"
+	LanguageCodeEnumEnJm         LanguageCodeEnum = "en-jm"
+	LanguageCodeEnumEnKe         LanguageCodeEnum = "en-ke"
+	LanguageCodeEnumEnKi         LanguageCodeEnum = "en-ki"
+	LanguageCodeEnumEnKn         LanguageCodeEnum = "en-kn"
+	LanguageCodeEnumEnKy         LanguageCodeEnum = "en-ky"
+	LanguageCodeEnumEnLc         LanguageCodeEnum = "en-lc"
+	LanguageCodeEnumEnLr         LanguageCodeEnum = "en-lr"
+	LanguageCodeEnumEnLs         LanguageCodeEnum = "en-ls"
+	LanguageCodeEnumEnMg         LanguageCodeEnum = "en-mg"
+	LanguageCodeEnumEnMh         LanguageCodeEnum = "en-mh"
+	LanguageCodeEnumEnMo         LanguageCodeEnum = "en-mo"
+	LanguageCodeEnumEnMp         LanguageCodeEnum = "en-mp"
+	LanguageCodeEnumEnMs         LanguageCodeEnum = "en-ms"
+	LanguageCodeEnumEnMt         LanguageCodeEnum = "en-mt"
+	LanguageCodeEnumEnMu         LanguageCodeEnum = "en-mu"
+	LanguageCodeEnumEnMw         LanguageCodeEnum = "en-mw"
+	LanguageCodeEnumEnMy         LanguageCodeEnum = "en-my"
+	LanguageCodeEnumEnNa         LanguageCodeEnum = "en-na"
+	LanguageCodeEnumEnNf         LanguageCodeEnum = "en-nf"
+	LanguageCodeEnumEnNg         LanguageCodeEnum = "en-ng"
+	LanguageCodeEnumEnNl         LanguageCodeEnum = "en-nl"
+	LanguageCodeEnumEnNr         LanguageCodeEnum = "en-nr"
+	LanguageCodeEnumEnNu         LanguageCodeEnum = "en-nu"
+	LanguageCodeEnumEnNz         LanguageCodeEnum = "en-nz"
+	LanguageCodeEnumEnPg         LanguageCodeEnum = "en-pg"
+	LanguageCodeEnumEnPh         LanguageCodeEnum = "en-ph"
+	LanguageCodeEnumEnPk         LanguageCodeEnum = "en-pk"
+	LanguageCodeEnumEnPn         LanguageCodeEnum = "en-pn"
+	LanguageCodeEnumEnPr         LanguageCodeEnum = "en-pr"
+	LanguageCodeEnumEnPw         LanguageCodeEnum = "en-pw"
+	LanguageCodeEnumEnRw         LanguageCodeEnum = "en-rw"
+	LanguageCodeEnumEnSb         LanguageCodeEnum = "en-sb"
+	LanguageCodeEnumEnSc         LanguageCodeEnum = "en-sc"
+	LanguageCodeEnumEnSd         LanguageCodeEnum = "en-sd"
+	LanguageCodeEnumEnSe         LanguageCodeEnum = "en-se"
+	LanguageCodeEnumEnSg         LanguageCodeEnum = "en-sg"
+	LanguageCodeEnumEnSh         LanguageCodeEnum = "en-sh"
+	LanguageCodeEnumEnSi         LanguageCodeEnum = "en-si"
+	LanguageCodeEnumEnSl         LanguageCodeEnum = "en-sl"
+	LanguageCodeEnumEnSs         LanguageCodeEnum = "en-ss"
+	LanguageCodeEnumEnSx         LanguageCodeEnum = "en-sx"
+	LanguageCodeEnumEnSz         LanguageCodeEnum = "en-sz"
+	LanguageCodeEnumEnTc         LanguageCodeEnum = "en-tc"
+	LanguageCodeEnumEnTk         LanguageCodeEnum = "en-tk"
+	LanguageCodeEnumEnTo         LanguageCodeEnum = "en-to"
+	LanguageCodeEnumEnTt         LanguageCodeEnum = "en-tt"
+	LanguageCodeEnumEnTv         LanguageCodeEnum = "en-tv"
+	LanguageCodeEnumEnTz         LanguageCodeEnum = "en-tz"
+	LanguageCodeEnumEnUg         LanguageCodeEnum = "en-ug"
+	LanguageCodeEnumEnUm         LanguageCodeEnum = "en-um"
+	LanguageCodeEnumEnUs         LanguageCodeEnum = "en-us"
+	LanguageCodeEnumEnVc         LanguageCodeEnum = "en-vc"
+	LanguageCodeEnumEnVg         LanguageCodeEnum = "en-vg"
+	LanguageCodeEnumEnVi         LanguageCodeEnum = "en-vi"
+	LanguageCodeEnumEnVu         LanguageCodeEnum = "en-vu"
+	LanguageCodeEnumEnWs         LanguageCodeEnum = "en-ws"
+	LanguageCodeEnumEnZa         LanguageCodeEnum = "en-za"
+	LanguageCodeEnumEnZm         LanguageCodeEnum = "en-zm"
+	LanguageCodeEnumEnZw         LanguageCodeEnum = "en-zw"
+	LanguageCodeEnumEo           LanguageCodeEnum = "eo"
+	LanguageCodeEnumEs           LanguageCodeEnum = "es"
+	LanguageCodeEnumEsAr         LanguageCodeEnum = "es-ar"
+	LanguageCodeEnumEsBo         LanguageCodeEnum = "es-bo"
+	LanguageCodeEnumEsBr         LanguageCodeEnum = "es-br"
+	LanguageCodeEnumEsBz         LanguageCodeEnum = "es-bz"
+	LanguageCodeEnumEsCl         LanguageCodeEnum = "es-cl"
+	LanguageCodeEnumEsCo         LanguageCodeEnum = "es-co"
+	LanguageCodeEnumEsCr         LanguageCodeEnum = "es-cr"
+	LanguageCodeEnumEsCu         LanguageCodeEnum = "es-cu"
+	LanguageCodeEnumEsDo         LanguageCodeEnum = "es-do"
+	LanguageCodeEnumEsEa         LanguageCodeEnum = "es-ea"
+	LanguageCodeEnumEsEc         LanguageCodeEnum = "es-ec"
+	LanguageCodeEnumEsEs         LanguageCodeEnum = "es-es"
+	LanguageCodeEnumEsGq         LanguageCodeEnum = "es-gq"
+	LanguageCodeEnumEsGt         LanguageCodeEnum = "es-gt"
+	LanguageCodeEnumEsHn         LanguageCodeEnum = "es-hn"
+	LanguageCodeEnumEsIc         LanguageCodeEnum = "es-ic"
+	LanguageCodeEnumEsMx         LanguageCodeEnum = "es-mx"
+	LanguageCodeEnumEsNi         LanguageCodeEnum = "es-ni"
+	LanguageCodeEnumEsPa         LanguageCodeEnum = "es-pa"
+	LanguageCodeEnumEsPe         LanguageCodeEnum = "es-pe"
+	LanguageCodeEnumEsPh         LanguageCodeEnum = "es-ph"
+	LanguageCodeEnumEsPr         LanguageCodeEnum = "es-pr"
+	LanguageCodeEnumEsPy         LanguageCodeEnum = "es-py"
+	LanguageCodeEnumEsSv         LanguageCodeEnum = "es-sv"
+	LanguageCodeEnumEsUs         LanguageCodeEnum = "es-us"
+	LanguageCodeEnumEsUy         LanguageCodeEnum = "es-uy"
+	LanguageCodeEnumEsVe         LanguageCodeEnum = "es-ve"
+	LanguageCodeEnumEt           LanguageCodeEnum = "et"
+	LanguageCodeEnumEtEe         LanguageCodeEnum = "et-ee"
+	LanguageCodeEnumEu           LanguageCodeEnum = "eu"
+	LanguageCodeEnumEuEs         LanguageCodeEnum = "eu-es"
+	LanguageCodeEnumEwo          LanguageCodeEnum = "ewo"
+	LanguageCodeEnumEwoCm        LanguageCodeEnum = "ewo-cm"
+	LanguageCodeEnumFa           LanguageCodeEnum = "fa"
+	LanguageCodeEnumFaAf         LanguageCodeEnum = "fa-af"
+	LanguageCodeEnumFaIr         LanguageCodeEnum = "fa-ir"
+	LanguageCodeEnumFf           LanguageCodeEnum = "ff"
+	LanguageCodeEnumFfAdlm       LanguageCodeEnum = "ff-adlm"
+	LanguageCodeEnumFfAdlmBf     LanguageCodeEnum = "ff-adlm-bf"
+	LanguageCodeEnumFfAdlmCm     LanguageCodeEnum = "ff-adlm-cm"
+	LanguageCodeEnumFfAdlmGh     LanguageCodeEnum = "ff-adlm-gh"
+	LanguageCodeEnumFfAdlmGm     LanguageCodeEnum = "ff-adlm-gm"
+	LanguageCodeEnumFfAdlmGn     LanguageCodeEnum = "ff-adlm-gn"
+	LanguageCodeEnumFfAdlmGw     LanguageCodeEnum = "ff-adlm-gw"
+	LanguageCodeEnumFfAdlmLr     LanguageCodeEnum = "ff-adlm-lr"
+	LanguageCodeEnumFfAdlmMr     LanguageCodeEnum = "ff-adlm-mr"
+	LanguageCodeEnumFfAdlmNe     LanguageCodeEnum = "ff-adlm-ne"
+	LanguageCodeEnumFfAdlmNg     LanguageCodeEnum = "ff-adlm-ng"
+	LanguageCodeEnumFfAdlmSl     LanguageCodeEnum = "ff-adlm-sl"
+	LanguageCodeEnumFfAdlmSn     LanguageCodeEnum = "ff-adlm-sn"
+	LanguageCodeEnumFfLatn       LanguageCodeEnum = "ff-latn"
+	LanguageCodeEnumFfLatnBf     LanguageCodeEnum = "ff-latn-bf"
+	LanguageCodeEnumFfLatnCm     LanguageCodeEnum = "ff-latn-cm"
+	LanguageCodeEnumFfLatnGh     LanguageCodeEnum = "ff-latn-gh"
+	LanguageCodeEnumFfLatnGm     LanguageCodeEnum = "ff-latn-gm"
+	LanguageCodeEnumFfLatnGn     LanguageCodeEnum = "ff-latn-gn"
+	LanguageCodeEnumFfLatnGw     LanguageCodeEnum = "ff-latn-gw"
+	LanguageCodeEnumFfLatnLr     LanguageCodeEnum = "ff-latn-lr"
+	LanguageCodeEnumFfLatnMr     LanguageCodeEnum = "ff-latn-mr"
+	LanguageCodeEnumFfLatnNe     LanguageCodeEnum = "ff-latn-ne"
+	LanguageCodeEnumFfLatnNg     LanguageCodeEnum = "ff-latn-ng"
+	LanguageCodeEnumFfLatnSl     LanguageCodeEnum = "ff-latn-sl"
+	LanguageCodeEnumFfLatnSn     LanguageCodeEnum = "ff-latn-sn"
+	LanguageCodeEnumFi           LanguageCodeEnum = "fi"
+	LanguageCodeEnumFiFi         LanguageCodeEnum = "fi-fi"
+	LanguageCodeEnumFil          LanguageCodeEnum = "fil"
+	LanguageCodeEnumFilPh        LanguageCodeEnum = "fil-ph"
+	LanguageCodeEnumFo           LanguageCodeEnum = "fo"
+	LanguageCodeEnumFoDk         LanguageCodeEnum = "fo-dk"
+	LanguageCodeEnumFoFo         LanguageCodeEnum = "fo-fo"
+	LanguageCodeEnumFr           LanguageCodeEnum = "fr"
+	LanguageCodeEnumFrBe         LanguageCodeEnum = "fr-be"
+	LanguageCodeEnumFrBf         LanguageCodeEnum = "fr-bf"
+	LanguageCodeEnumFrBi         LanguageCodeEnum = "fr-bi"
+	LanguageCodeEnumFrBj         LanguageCodeEnum = "fr-bj"
+	LanguageCodeEnumFrBl         LanguageCodeEnum = "fr-bl"
+	LanguageCodeEnumFrCa         LanguageCodeEnum = "fr-ca"
+	LanguageCodeEnumFrCd         LanguageCodeEnum = "fr-cd"
+	LanguageCodeEnumFrCf         LanguageCodeEnum = "fr-cf"
+	LanguageCodeEnumFrCg         LanguageCodeEnum = "fr-cg"
+	LanguageCodeEnumFrCh         LanguageCodeEnum = "fr-ch"
+	LanguageCodeEnumFrCi         LanguageCodeEnum = "fr-ci"
+	LanguageCodeEnumFrCm         LanguageCodeEnum = "fr-cm"
+	LanguageCodeEnumFrDj         LanguageCodeEnum = "fr-dj"
+	LanguageCodeEnumFrDz         LanguageCodeEnum = "fr-dz"
+	LanguageCodeEnumFrFr         LanguageCodeEnum = "fr-fr"
+	LanguageCodeEnumFrGa         LanguageCodeEnum = "fr-ga"
+	LanguageCodeEnumFrGf         LanguageCodeEnum = "fr-gf"
+	LanguageCodeEnumFrGn         LanguageCodeEnum = "fr-gn"
+	LanguageCodeEnumFrGp         LanguageCodeEnum = "fr-gp"
+	LanguageCodeEnumFrGq         LanguageCodeEnum = "fr-gq"
+	LanguageCodeEnumFrHt         LanguageCodeEnum = "fr-ht"
+	LanguageCodeEnumFrKm         LanguageCodeEnum = "fr-km"
+	LanguageCodeEnumFrLu         LanguageCodeEnum = "fr-lu"
+	LanguageCodeEnumFrMa         LanguageCodeEnum = "fr-ma"
+	LanguageCodeEnumFrMc         LanguageCodeEnum = "fr-mc"
+	LanguageCodeEnumFrMf         LanguageCodeEnum = "fr-mf"
+	LanguageCodeEnumFrMg         LanguageCodeEnum = "fr-mg"
+	LanguageCodeEnumFrMl         LanguageCodeEnum = "fr-ml"
+	LanguageCodeEnumFrMq         LanguageCodeEnum = "fr-mq"
+	LanguageCodeEnumFrMr         LanguageCodeEnum = "fr-mr"
+	LanguageCodeEnumFrMu         LanguageCodeEnum = "fr-mu"
+	LanguageCodeEnumFrNc         LanguageCodeEnum = "fr-nc"
+	LanguageCodeEnumFrNe         LanguageCodeEnum = "fr-ne"
+	LanguageCodeEnumFrPf         LanguageCodeEnum = "fr-pf"
+	LanguageCodeEnumFrPm         LanguageCodeEnum = "fr-pm"
+	LanguageCodeEnumFrRe         LanguageCodeEnum = "fr-re"
+	LanguageCodeEnumFrRw         LanguageCodeEnum = "fr-rw"
+	LanguageCodeEnumFrSc         LanguageCodeEnum = "fr-sc"
+	LanguageCodeEnumFrSn         LanguageCodeEnum = "fr-sn"
+	LanguageCodeEnumFrSy         LanguageCodeEnum = "fr-sy"
+	LanguageCodeEnumFrTd         LanguageCodeEnum = "fr-td"
+	LanguageCodeEnumFrTg         LanguageCodeEnum = "fr-tg"
+	LanguageCodeEnumFrTn         LanguageCodeEnum = "fr-tn"
+	LanguageCodeEnumFrVu         LanguageCodeEnum = "fr-vu"
+	LanguageCodeEnumFrWf         LanguageCodeEnum = "fr-wf"
+	LanguageCodeEnumFrYt         LanguageCodeEnum = "fr-yt"
+	LanguageCodeEnumFur          LanguageCodeEnum = "fur"
+	LanguageCodeEnumFurIt        LanguageCodeEnum = "fur-it"
+	LanguageCodeEnumFy           LanguageCodeEnum = "fy"
+	LanguageCodeEnumFyNl         LanguageCodeEnum = "fy-nl"
+	LanguageCodeEnumGa           LanguageCodeEnum = "ga"
+	LanguageCodeEnumGaGb         LanguageCodeEnum = "ga-gb"
+	LanguageCodeEnumGaIe         LanguageCodeEnum = "ga-ie"
+	LanguageCodeEnumGd           LanguageCodeEnum = "gd"
+	LanguageCodeEnumGdGb         LanguageCodeEnum = "gd-gb"
+	LanguageCodeEnumGl           LanguageCodeEnum = "gl"
+	LanguageCodeEnumGlEs         LanguageCodeEnum = "gl-es"
+	LanguageCodeEnumGsw          LanguageCodeEnum = "gsw"
+	LanguageCodeEnumGswCh        LanguageCodeEnum = "gsw-ch"
+	LanguageCodeEnumGswFr        LanguageCodeEnum = "gsw-fr"
+	LanguageCodeEnumGswLi        LanguageCodeEnum = "gsw-li"
+	LanguageCodeEnumGu           LanguageCodeEnum = "gu"
+	LanguageCodeEnumGuIn         LanguageCodeEnum = "gu-in"
+	LanguageCodeEnumGuz          LanguageCodeEnum = "guz"
+	LanguageCodeEnumGuzKe        LanguageCodeEnum = "guz-ke"
+	LanguageCodeEnumGv           LanguageCodeEnum = "gv"
+	LanguageCodeEnumGvIm         LanguageCodeEnum = "gv-im"
+	LanguageCodeEnumHa           LanguageCodeEnum = "ha"
+	LanguageCodeEnumHaGh         LanguageCodeEnum = "ha-gh"
+	LanguageCodeEnumHaNe         LanguageCodeEnum = "ha-ne"
+	LanguageCodeEnumHaNg         LanguageCodeEnum = "ha-ng"
+	LanguageCodeEnumHaw          LanguageCodeEnum = "haw"
+	LanguageCodeEnumHawUs        LanguageCodeEnum = "haw-us"
+	LanguageCodeEnumHe           LanguageCodeEnum = "he"
+	LanguageCodeEnumHeIl         LanguageCodeEnum = "he-il"
+	LanguageCodeEnumHi           LanguageCodeEnum = "hi"
+	LanguageCodeEnumHiIn         LanguageCodeEnum = "hi-in"
+	LanguageCodeEnumHr           LanguageCodeEnum = "hr"
+	LanguageCodeEnumHrBa         LanguageCodeEnum = "hr-ba"
+	LanguageCodeEnumHrHr         LanguageCodeEnum = "hr-hr"
+	LanguageCodeEnumHsb          LanguageCodeEnum = "hsb"
+	LanguageCodeEnumHsbDe        LanguageCodeEnum = "hsb-de"
+	LanguageCodeEnumHu           LanguageCodeEnum = "hu"
+	LanguageCodeEnumHuHu         LanguageCodeEnum = "hu-hu"
+	LanguageCodeEnumHy           LanguageCodeEnum = "hy"
+	LanguageCodeEnumHyAm         LanguageCodeEnum = "hy-am"
+	LanguageCodeEnumIa           LanguageCodeEnum = "ia"
+	LanguageCodeEnumString       LanguageCodeEnum = "string"
+	LanguageCodeEnumIDID         LanguageCodeEnum = "id-id"
+	LanguageCodeEnumIg           LanguageCodeEnum = "ig"
+	LanguageCodeEnumIgNg         LanguageCodeEnum = "ig-ng"
+	LanguageCodeEnumIi           LanguageCodeEnum = "ii"
+	LanguageCodeEnumIiCn         LanguageCodeEnum = "ii-cn"
+	LanguageCodeEnumIs           LanguageCodeEnum = "is"
+	LanguageCodeEnumIsIs         LanguageCodeEnum = "is-is"
+	LanguageCodeEnumIt           LanguageCodeEnum = "it"
+	LanguageCodeEnumItCh         LanguageCodeEnum = "it-ch"
+	LanguageCodeEnumItIt         LanguageCodeEnum = "it-it"
+	LanguageCodeEnumItSm         LanguageCodeEnum = "it-sm"
+	LanguageCodeEnumItVa         LanguageCodeEnum = "it-va"
+	LanguageCodeEnumJa           LanguageCodeEnum = "ja"
+	LanguageCodeEnumJaJp         LanguageCodeEnum = "ja-jp"
+	LanguageCodeEnumJgo          LanguageCodeEnum = "jgo"
+	LanguageCodeEnumJgoCm        LanguageCodeEnum = "jgo-cm"
+	LanguageCodeEnumJmc          LanguageCodeEnum = "jmc"
+	LanguageCodeEnumJmcTz        LanguageCodeEnum = "jmc-tz"
+	LanguageCodeEnumJv           LanguageCodeEnum = "jv"
+	LanguageCodeEnumJvID         LanguageCodeEnum = "jv-id"
+	LanguageCodeEnumKa           LanguageCodeEnum = "ka"
+	LanguageCodeEnumKaGe         LanguageCodeEnum = "ka-ge"
+	LanguageCodeEnumKab          LanguageCodeEnum = "kab"
+	LanguageCodeEnumKabDz        LanguageCodeEnum = "kab-dz"
+	LanguageCodeEnumKam          LanguageCodeEnum = "kam"
+	LanguageCodeEnumKamKe        LanguageCodeEnum = "kam-ke"
+	LanguageCodeEnumKde          LanguageCodeEnum = "kde"
+	LanguageCodeEnumKdeTz        LanguageCodeEnum = "kde-tz"
+	LanguageCodeEnumKea          LanguageCodeEnum = "kea"
+	LanguageCodeEnumKeaCv        LanguageCodeEnum = "kea-cv"
+	LanguageCodeEnumKhq          LanguageCodeEnum = "khq"
+	LanguageCodeEnumKhqMl        LanguageCodeEnum = "khq-ml"
+	LanguageCodeEnumKi           LanguageCodeEnum = "ki"
+	LanguageCodeEnumKiKe         LanguageCodeEnum = "ki-ke"
+	LanguageCodeEnumKk           LanguageCodeEnum = "kk"
+	LanguageCodeEnumKkKz         LanguageCodeEnum = "kk-kz"
+	LanguageCodeEnumKkj          LanguageCodeEnum = "kkj"
+	LanguageCodeEnumKkjCm        LanguageCodeEnum = "kkj-cm"
+	LanguageCodeEnumKl           LanguageCodeEnum = "kl"
+	LanguageCodeEnumKlGl         LanguageCodeEnum = "kl-gl"
+	LanguageCodeEnumKln          LanguageCodeEnum = "kln"
+	LanguageCodeEnumKlnKe        LanguageCodeEnum = "kln-ke"
+	LanguageCodeEnumKm           LanguageCodeEnum = "km"
+	LanguageCodeEnumKmKh         LanguageCodeEnum = "km-kh"
+	LanguageCodeEnumKn           LanguageCodeEnum = "kn"
+	LanguageCodeEnumKnIn         LanguageCodeEnum = "kn-in"
+	LanguageCodeEnumKo           LanguageCodeEnum = "ko"
+	LanguageCodeEnumKoKp         LanguageCodeEnum = "ko-kp"
+	LanguageCodeEnumKoKr         LanguageCodeEnum = "ko-kr"
+	LanguageCodeEnumKok          LanguageCodeEnum = "kok"
+	LanguageCodeEnumKokIn        LanguageCodeEnum = "kok-in"
+	LanguageCodeEnumKs           LanguageCodeEnum = "ks"
+	LanguageCodeEnumKsArab       LanguageCodeEnum = "ks-arab"
+	LanguageCodeEnumKsArabIn     LanguageCodeEnum = "ks-arab-in"
+	LanguageCodeEnumKsb          LanguageCodeEnum = "ksb"
+	LanguageCodeEnumKsbTz        LanguageCodeEnum = "ksb-tz"
+	LanguageCodeEnumKsf          LanguageCodeEnum = "ksf"
+	LanguageCodeEnumKsfCm        LanguageCodeEnum = "ksf-cm"
+	LanguageCodeEnumKsh          LanguageCodeEnum = "ksh"
+	LanguageCodeEnumKshDe        LanguageCodeEnum = "ksh-de"
+	LanguageCodeEnumKu           LanguageCodeEnum = "ku"
+	LanguageCodeEnumKuTr         LanguageCodeEnum = "ku-tr"
+	LanguageCodeEnumKw           LanguageCodeEnum = "kw"
+	LanguageCodeEnumKwGb         LanguageCodeEnum = "kw-gb"
+	LanguageCodeEnumKy           LanguageCodeEnum = "ky"
+	LanguageCodeEnumKyKg         LanguageCodeEnum = "ky-kg"
+	LanguageCodeEnumLag          LanguageCodeEnum = "lag"
+	LanguageCodeEnumLagTz        LanguageCodeEnum = "lag-tz"
+	LanguageCodeEnumLb           LanguageCodeEnum = "lb"
+	LanguageCodeEnumLbLu         LanguageCodeEnum = "lb-lu"
+	LanguageCodeEnumLg           LanguageCodeEnum = "lg"
+	LanguageCodeEnumLgUg         LanguageCodeEnum = "lg-ug"
+	LanguageCodeEnumLkt          LanguageCodeEnum = "lkt"
+	LanguageCodeEnumLktUs        LanguageCodeEnum = "lkt-us"
+	LanguageCodeEnumLn           LanguageCodeEnum = "ln"
+	LanguageCodeEnumLnAo         LanguageCodeEnum = "ln-ao"
+	LanguageCodeEnumLnCd         LanguageCodeEnum = "ln-cd"
+	LanguageCodeEnumLnCf         LanguageCodeEnum = "ln-cf"
+	LanguageCodeEnumLnCg         LanguageCodeEnum = "ln-cg"
+	LanguageCodeEnumLo           LanguageCodeEnum = "lo"
+	LanguageCodeEnumLoLa         LanguageCodeEnum = "lo-la"
+	LanguageCodeEnumLrc          LanguageCodeEnum = "lrc"
+	LanguageCodeEnumLrcIq        LanguageCodeEnum = "lrc-iq"
+	LanguageCodeEnumLrcIr        LanguageCodeEnum = "lrc-ir"
+	LanguageCodeEnumLt           LanguageCodeEnum = "lt"
+	LanguageCodeEnumLtLt         LanguageCodeEnum = "lt-lt"
+	LanguageCodeEnumLu           LanguageCodeEnum = "lu"
+	LanguageCodeEnumLuCd         LanguageCodeEnum = "lu-cd"
+	LanguageCodeEnumLuo          LanguageCodeEnum = "luo"
+	LanguageCodeEnumLuoKe        LanguageCodeEnum = "luo-ke"
+	LanguageCodeEnumLuy          LanguageCodeEnum = "luy"
+	LanguageCodeEnumLuyKe        LanguageCodeEnum = "luy-ke"
+	LanguageCodeEnumLv           LanguageCodeEnum = "lv"
+	LanguageCodeEnumLvLv         LanguageCodeEnum = "lv-lv"
+	LanguageCodeEnumMai          LanguageCodeEnum = "mai"
+	LanguageCodeEnumMaiIn        LanguageCodeEnum = "mai-in"
+	LanguageCodeEnumMas          LanguageCodeEnum = "mas"
+	LanguageCodeEnumMasKe        LanguageCodeEnum = "mas-ke"
+	LanguageCodeEnumMasTz        LanguageCodeEnum = "mas-tz"
+	LanguageCodeEnumMer          LanguageCodeEnum = "mer"
+	LanguageCodeEnumMerKe        LanguageCodeEnum = "mer-ke"
+	LanguageCodeEnumMfe          LanguageCodeEnum = "mfe"
+	LanguageCodeEnumMfeMu        LanguageCodeEnum = "mfe-mu"
+	LanguageCodeEnumMg           LanguageCodeEnum = "mg"
+	LanguageCodeEnumMgMg         LanguageCodeEnum = "mg-mg"
+	LanguageCodeEnumMgh          LanguageCodeEnum = "mgh"
+	LanguageCodeEnumMghMz        LanguageCodeEnum = "mgh-mz"
+	LanguageCodeEnumMgo          LanguageCodeEnum = "mgo"
+	LanguageCodeEnumMgoCm        LanguageCodeEnum = "mgo-cm"
+	LanguageCodeEnumMi           LanguageCodeEnum = "mi"
+	LanguageCodeEnumMiNz         LanguageCodeEnum = "mi-nz"
+	LanguageCodeEnumMk           LanguageCodeEnum = "mk"
+	LanguageCodeEnumMkMk         LanguageCodeEnum = "mk-mk"
+	LanguageCodeEnumMl           LanguageCodeEnum = "ml"
+	LanguageCodeEnumMlIn         LanguageCodeEnum = "ml-in"
+	LanguageCodeEnumMn           LanguageCodeEnum = "mn"
+	LanguageCodeEnumMnMn         LanguageCodeEnum = "mn-mn"
+	LanguageCodeEnumMni          LanguageCodeEnum = "mni"
+	LanguageCodeEnumMniBeng      LanguageCodeEnum = "mni-beng"
+	LanguageCodeEnumMniBengIn    LanguageCodeEnum = "mni-beng-in"
+	LanguageCodeEnumMr           LanguageCodeEnum = "mr"
+	LanguageCodeEnumMrIn         LanguageCodeEnum = "mr-in"
+	LanguageCodeEnumMs           LanguageCodeEnum = "ms"
+	LanguageCodeEnumMsBn         LanguageCodeEnum = "ms-bn"
+	LanguageCodeEnumMsID         LanguageCodeEnum = "ms-id"
+	LanguageCodeEnumMsMy         LanguageCodeEnum = "ms-my"
+	LanguageCodeEnumMsSg         LanguageCodeEnum = "ms-sg"
+	LanguageCodeEnumMt           LanguageCodeEnum = "mt"
+	LanguageCodeEnumMtMt         LanguageCodeEnum = "mt-mt"
+	LanguageCodeEnumMua          LanguageCodeEnum = "mua"
+	LanguageCodeEnumMuaCm        LanguageCodeEnum = "mua-cm"
+	LanguageCodeEnumMy           LanguageCodeEnum = "my"
+	LanguageCodeEnumMyMm         LanguageCodeEnum = "my-mm"
+	LanguageCodeEnumMzn          LanguageCodeEnum = "mzn"
+	LanguageCodeEnumMznIr        LanguageCodeEnum = "mzn-ir"
+	LanguageCodeEnumNaq          LanguageCodeEnum = "naq"
+	LanguageCodeEnumNaqNa        LanguageCodeEnum = "naq-na"
+	LanguageCodeEnumNb           LanguageCodeEnum = "nb"
+	LanguageCodeEnumNbNo         LanguageCodeEnum = "nb-no"
+	LanguageCodeEnumNbSj         LanguageCodeEnum = "nb-sj"
+	LanguageCodeEnumNd           LanguageCodeEnum = "nd"
+	LanguageCodeEnumNdZw         LanguageCodeEnum = "nd-zw"
+	LanguageCodeEnumNds          LanguageCodeEnum = "nds"
+	LanguageCodeEnumNdsDe        LanguageCodeEnum = "nds-de"
+	LanguageCodeEnumNdsNl        LanguageCodeEnum = "nds-nl"
+	LanguageCodeEnumNe           LanguageCodeEnum = "ne"
+	LanguageCodeEnumNeIn         LanguageCodeEnum = "ne-in"
+	LanguageCodeEnumNeNp         LanguageCodeEnum = "ne-np"
+	LanguageCodeEnumNl           LanguageCodeEnum = "nl"
+	LanguageCodeEnumNlAw         LanguageCodeEnum = "nl-aw"
+	LanguageCodeEnumNlBe         LanguageCodeEnum = "nl-be"
+	LanguageCodeEnumNlBq         LanguageCodeEnum = "nl-bq"
+	LanguageCodeEnumNlCw         LanguageCodeEnum = "nl-cw"
+	LanguageCodeEnumNlNl         LanguageCodeEnum = "nl-nl"
+	LanguageCodeEnumNlSr         LanguageCodeEnum = "nl-sr"
+	LanguageCodeEnumNlSx         LanguageCodeEnum = "nl-sx"
+	LanguageCodeEnumNmg          LanguageCodeEnum = "nmg"
+	LanguageCodeEnumNmgCm        LanguageCodeEnum = "nmg-cm"
+	LanguageCodeEnumNn           LanguageCodeEnum = "nn"
+	LanguageCodeEnumNnNo         LanguageCodeEnum = "nn-no"
+	LanguageCodeEnumNnh          LanguageCodeEnum = "nnh"
+	LanguageCodeEnumNnhCm        LanguageCodeEnum = "nnh-cm"
+	LanguageCodeEnumNus          LanguageCodeEnum = "nus"
+	LanguageCodeEnumNusSs        LanguageCodeEnum = "nus-ss"
+	LanguageCodeEnumNyn          LanguageCodeEnum = "nyn"
+	LanguageCodeEnumNynUg        LanguageCodeEnum = "nyn-ug"
+	LanguageCodeEnumOm           LanguageCodeEnum = "om"
+	LanguageCodeEnumOmEt         LanguageCodeEnum = "om-et"
+	LanguageCodeEnumOmKe         LanguageCodeEnum = "om-ke"
+	LanguageCodeEnumOr           LanguageCodeEnum = "or"
+	LanguageCodeEnumOrIn         LanguageCodeEnum = "or-in"
+	LanguageCodeEnumOs           LanguageCodeEnum = "os"
+	LanguageCodeEnumOsGe         LanguageCodeEnum = "os-ge"
+	LanguageCodeEnumOsRu         LanguageCodeEnum = "os-ru"
+	LanguageCodeEnumPa           LanguageCodeEnum = "pa"
+	LanguageCodeEnumPaArab       LanguageCodeEnum = "pa-arab"
+	LanguageCodeEnumPaArabPk     LanguageCodeEnum = "pa-arab-pk"
+	LanguageCodeEnumPaGuru       LanguageCodeEnum = "pa-guru"
+	LanguageCodeEnumPaGuruIn     LanguageCodeEnum = "pa-guru-in"
+	LanguageCodeEnumPcm          LanguageCodeEnum = "pcm"
+	LanguageCodeEnumPcmNg        LanguageCodeEnum = "pcm-ng"
+	LanguageCodeEnumPl           LanguageCodeEnum = "pl"
+	LanguageCodeEnumPlPl         LanguageCodeEnum = "pl-pl"
+	LanguageCodeEnumPrg          LanguageCodeEnum = "prg"
+	LanguageCodeEnumPs           LanguageCodeEnum = "ps"
+	LanguageCodeEnumPsAf         LanguageCodeEnum = "ps-af"
+	LanguageCodeEnumPsPk         LanguageCodeEnum = "ps-pk"
+	LanguageCodeEnumPt           LanguageCodeEnum = "pt"
+	LanguageCodeEnumPtAo         LanguageCodeEnum = "pt-ao"
+	LanguageCodeEnumPtBr         LanguageCodeEnum = "pt-br"
+	LanguageCodeEnumPtCh         LanguageCodeEnum = "pt-ch"
+	LanguageCodeEnumPtCv         LanguageCodeEnum = "pt-cv"
+	LanguageCodeEnumPtGq         LanguageCodeEnum = "pt-gq"
+	LanguageCodeEnumPtGw         LanguageCodeEnum = "pt-gw"
+	LanguageCodeEnumPtLu         LanguageCodeEnum = "pt-lu"
+	LanguageCodeEnumPtMo         LanguageCodeEnum = "pt-mo"
+	LanguageCodeEnumPtMz         LanguageCodeEnum = "pt-mz"
+	LanguageCodeEnumPtPt         LanguageCodeEnum = "pt-pt"
+	LanguageCodeEnumPtSt         LanguageCodeEnum = "pt-st"
+	LanguageCodeEnumPtTl         LanguageCodeEnum = "pt-tl"
+	LanguageCodeEnumQu           LanguageCodeEnum = "qu"
+	LanguageCodeEnumQuBo         LanguageCodeEnum = "qu-bo"
+	LanguageCodeEnumQuEc         LanguageCodeEnum = "qu-ec"
+	LanguageCodeEnumQuPe         LanguageCodeEnum = "qu-pe"
+	LanguageCodeEnumRm           LanguageCodeEnum = "rm"
+	LanguageCodeEnumRmCh         LanguageCodeEnum = "rm-ch"
+	LanguageCodeEnumRn           LanguageCodeEnum = "rn"
+	LanguageCodeEnumRnBi         LanguageCodeEnum = "rn-bi"
+	LanguageCodeEnumRo           LanguageCodeEnum = "ro"
+	LanguageCodeEnumRoMd         LanguageCodeEnum = "ro-md"
+	LanguageCodeEnumRoRo         LanguageCodeEnum = "ro-ro"
+	LanguageCodeEnumRof          LanguageCodeEnum = "rof"
+	LanguageCodeEnumRofTz        LanguageCodeEnum = "rof-tz"
+	LanguageCodeEnumRu           LanguageCodeEnum = "ru"
+	LanguageCodeEnumRuBy         LanguageCodeEnum = "ru-by"
+	LanguageCodeEnumRuKg         LanguageCodeEnum = "ru-kg"
+	LanguageCodeEnumRuKz         LanguageCodeEnum = "ru-kz"
+	LanguageCodeEnumRuMd         LanguageCodeEnum = "ru-md"
+	LanguageCodeEnumRuRu         LanguageCodeEnum = "ru-ru"
+	LanguageCodeEnumRuUa         LanguageCodeEnum = "ru-ua"
+	LanguageCodeEnumRw           LanguageCodeEnum = "rw"
+	LanguageCodeEnumRwRw         LanguageCodeEnum = "rw-rw"
+	LanguageCodeEnumRwk          LanguageCodeEnum = "rwk"
+	LanguageCodeEnumRwkTz        LanguageCodeEnum = "rwk-tz"
+	LanguageCodeEnumSah          LanguageCodeEnum = "sah"
+	LanguageCodeEnumSahRu        LanguageCodeEnum = "sah-ru"
+	LanguageCodeEnumSaq          LanguageCodeEnum = "saq"
+	LanguageCodeEnumSaqKe        LanguageCodeEnum = "saq-ke"
+	LanguageCodeEnumSat          LanguageCodeEnum = "sat"
+	LanguageCodeEnumSatOlck      LanguageCodeEnum = "sat-olck"
+	LanguageCodeEnumSatOlckIn    LanguageCodeEnum = "sat-olck-in"
+	LanguageCodeEnumSbp          LanguageCodeEnum = "sbp"
+	LanguageCodeEnumSbpTz        LanguageCodeEnum = "sbp-tz"
+	LanguageCodeEnumSd           LanguageCodeEnum = "sd"
+	LanguageCodeEnumSdArab       LanguageCodeEnum = "sd-arab"
+	LanguageCodeEnumSdArabPk     LanguageCodeEnum = "sd-arab-pk"
+	LanguageCodeEnumSdDeva       LanguageCodeEnum = "sd-deva"
+	LanguageCodeEnumSdDevaIn     LanguageCodeEnum = "sd-deva-in"
+	LanguageCodeEnumSe           LanguageCodeEnum = "se"
+	LanguageCodeEnumSeFi         LanguageCodeEnum = "se-fi"
+	LanguageCodeEnumSeNo         LanguageCodeEnum = "se-no"
+	LanguageCodeEnumSeSe         LanguageCodeEnum = "se-se"
+	LanguageCodeEnumSeh          LanguageCodeEnum = "seh"
+	LanguageCodeEnumSehMz        LanguageCodeEnum = "seh-mz"
+	LanguageCodeEnumSes          LanguageCodeEnum = "ses"
+	LanguageCodeEnumSesMl        LanguageCodeEnum = "ses-ml"
+	LanguageCodeEnumSg           LanguageCodeEnum = "sg"
+	LanguageCodeEnumSgCf         LanguageCodeEnum = "sg-cf"
+	LanguageCodeEnumShi          LanguageCodeEnum = "shi"
+	LanguageCodeEnumShiLatn      LanguageCodeEnum = "shi-latn"
+	LanguageCodeEnumShiLatnMa    LanguageCodeEnum = "shi-latn-ma"
+	LanguageCodeEnumShiTfng      LanguageCodeEnum = "shi-tfng"
+	LanguageCodeEnumShiTfngMa    LanguageCodeEnum = "shi-tfng-ma"
+	LanguageCodeEnumSi           LanguageCodeEnum = "si"
+	LanguageCodeEnumSiLk         LanguageCodeEnum = "si-lk"
+	LanguageCodeEnumSk           LanguageCodeEnum = "sk"
+	LanguageCodeEnumSkSk         LanguageCodeEnum = "sk-sk"
+	LanguageCodeEnumSl           LanguageCodeEnum = "sl"
+	LanguageCodeEnumSlSi         LanguageCodeEnum = "sl-si"
+	LanguageCodeEnumSmn          LanguageCodeEnum = "smn"
+	LanguageCodeEnumSmnFi        LanguageCodeEnum = "smn-fi"
+	LanguageCodeEnumSn           LanguageCodeEnum = "sn"
+	LanguageCodeEnumSnZw         LanguageCodeEnum = "sn-zw"
+	LanguageCodeEnumSo           LanguageCodeEnum = "so"
+	LanguageCodeEnumSoDj         LanguageCodeEnum = "so-dj"
+	LanguageCodeEnumSoEt         LanguageCodeEnum = "so-et"
+	LanguageCodeEnumSoKe         LanguageCodeEnum = "so-ke"
+	LanguageCodeEnumSoSo         LanguageCodeEnum = "so-so"
+	LanguageCodeEnumSq           LanguageCodeEnum = "sq"
+	LanguageCodeEnumSqAl         LanguageCodeEnum = "sq-al"
+	LanguageCodeEnumSqMk         LanguageCodeEnum = "sq-mk"
+	LanguageCodeEnumSqXk         LanguageCodeEnum = "sq-xk"
+	LanguageCodeEnumSr           LanguageCodeEnum = "sr"
+	LanguageCodeEnumSrCyrl       LanguageCodeEnum = "sr-cyrl"
+	LanguageCodeEnumSrCyrlBa     LanguageCodeEnum = "sr-cyrl-ba"
+	LanguageCodeEnumSrCyrlMe     LanguageCodeEnum = "sr-cyrl-me"
+	LanguageCodeEnumSrCyrlRs     LanguageCodeEnum = "sr-cyrl-rs"
+	LanguageCodeEnumSrCyrlXk     LanguageCodeEnum = "sr-cyrl-xk"
+	LanguageCodeEnumSrLatn       LanguageCodeEnum = "sr-latn"
+	LanguageCodeEnumSrLatnBa     LanguageCodeEnum = "sr-latn-ba"
+	LanguageCodeEnumSrLatnMe     LanguageCodeEnum = "sr-latn-me"
+	LanguageCodeEnumSrLatnRs     LanguageCodeEnum = "sr-latn-rs"
+	LanguageCodeEnumSrLatnXk     LanguageCodeEnum = "sr-latn-xk"
+	LanguageCodeEnumSu           LanguageCodeEnum = "su"
+	LanguageCodeEnumSuLatn       LanguageCodeEnum = "su-latn"
+	LanguageCodeEnumSuLatnID     LanguageCodeEnum = "su-latn-id"
+	LanguageCodeEnumSv           LanguageCodeEnum = "sv"
+	LanguageCodeEnumSvAx         LanguageCodeEnum = "sv-ax"
+	LanguageCodeEnumSvFi         LanguageCodeEnum = "sv-fi"
+	LanguageCodeEnumSvSe         LanguageCodeEnum = "sv-se"
+	LanguageCodeEnumSw           LanguageCodeEnum = "sw"
+	LanguageCodeEnumSwCd         LanguageCodeEnum = "sw-cd"
+	LanguageCodeEnumSwKe         LanguageCodeEnum = "sw-ke"
+	LanguageCodeEnumSwTz         LanguageCodeEnum = "sw-tz"
+	LanguageCodeEnumSwUg         LanguageCodeEnum = "sw-ug"
+	LanguageCodeEnumTa           LanguageCodeEnum = "ta"
+	LanguageCodeEnumTaIn         LanguageCodeEnum = "ta-in"
+	LanguageCodeEnumTaLk         LanguageCodeEnum = "ta-lk"
+	LanguageCodeEnumTaMy         LanguageCodeEnum = "ta-my"
+	LanguageCodeEnumTaSg         LanguageCodeEnum = "ta-sg"
+	LanguageCodeEnumTe           LanguageCodeEnum = "te"
+	LanguageCodeEnumTeIn         LanguageCodeEnum = "te-in"
+	LanguageCodeEnumTeo          LanguageCodeEnum = "teo"
+	LanguageCodeEnumTeoKe        LanguageCodeEnum = "teo-ke"
+	LanguageCodeEnumTeoUg        LanguageCodeEnum = "teo-ug"
+	LanguageCodeEnumTg           LanguageCodeEnum = "tg"
+	LanguageCodeEnumTgTj         LanguageCodeEnum = "tg-tj"
+	LanguageCodeEnumTh           LanguageCodeEnum = "th"
+	LanguageCodeEnumThTh         LanguageCodeEnum = "th-th"
+	LanguageCodeEnumTi           LanguageCodeEnum = "ti"
+	LanguageCodeEnumTiEr         LanguageCodeEnum = "ti-er"
+	LanguageCodeEnumTiEt         LanguageCodeEnum = "ti-et"
+	LanguageCodeEnumTk           LanguageCodeEnum = "tk"
+	LanguageCodeEnumTkTm         LanguageCodeEnum = "tk-tm"
+	LanguageCodeEnumTo           LanguageCodeEnum = "to"
+	LanguageCodeEnumToTo         LanguageCodeEnum = "to-to"
+	LanguageCodeEnumTr           LanguageCodeEnum = "tr"
+	LanguageCodeEnumTrCy         LanguageCodeEnum = "tr-cy"
+	LanguageCodeEnumTrTr         LanguageCodeEnum = "tr-tr"
+	LanguageCodeEnumTt           LanguageCodeEnum = "tt"
+	LanguageCodeEnumTtRu         LanguageCodeEnum = "tt-ru"
+	LanguageCodeEnumTwq          LanguageCodeEnum = "twq"
+	LanguageCodeEnumTwqNe        LanguageCodeEnum = "twq-ne"
+	LanguageCodeEnumTzm          LanguageCodeEnum = "tzm"
+	LanguageCodeEnumTzmMa        LanguageCodeEnum = "tzm-ma"
+	LanguageCodeEnumUg           LanguageCodeEnum = "ug"
+	LanguageCodeEnumUgCn         LanguageCodeEnum = "ug-cn"
+	LanguageCodeEnumUk           LanguageCodeEnum = "uk"
+	LanguageCodeEnumUkUa         LanguageCodeEnum = "uk-ua"
+	LanguageCodeEnumUr           LanguageCodeEnum = "ur"
+	LanguageCodeEnumUrIn         LanguageCodeEnum = "ur-in"
+	LanguageCodeEnumUrPk         LanguageCodeEnum = "ur-pk"
+	LanguageCodeEnumUz           LanguageCodeEnum = "uz"
+	LanguageCodeEnumUzArab       LanguageCodeEnum = "uz-arab"
+	LanguageCodeEnumUzArabAf     LanguageCodeEnum = "uz-arab-af"
+	LanguageCodeEnumUzCyrl       LanguageCodeEnum = "uz-cyrl"
+	LanguageCodeEnumUzCyrlUz     LanguageCodeEnum = "uz-cyrl-uz"
+	LanguageCodeEnumUzLatn       LanguageCodeEnum = "uz-latn"
+	LanguageCodeEnumUzLatnUz     LanguageCodeEnum = "uz-latn-uz"
+	LanguageCodeEnumVai          LanguageCodeEnum = "vai"
+	LanguageCodeEnumVaiLatn      LanguageCodeEnum = "vai-latn"
+	LanguageCodeEnumVaiLatnLr    LanguageCodeEnum = "vai-latn-lr"
+	LanguageCodeEnumVaiVaii      LanguageCodeEnum = "vai-vaii"
+	LanguageCodeEnumVaiVaiiLr    LanguageCodeEnum = "vai-vaii-lr"
+	LanguageCodeEnumVi           LanguageCodeEnum = "vi"
+	LanguageCodeEnumViVn         LanguageCodeEnum = "vi-vn"
+	LanguageCodeEnumVo           LanguageCodeEnum = "vo"
+	LanguageCodeEnumVun          LanguageCodeEnum = "vun"
+	LanguageCodeEnumVunTz        LanguageCodeEnum = "vun-tz"
+	LanguageCodeEnumWae          LanguageCodeEnum = "wae"
+	LanguageCodeEnumWaeCh        LanguageCodeEnum = "wae-ch"
+	LanguageCodeEnumWo           LanguageCodeEnum = "wo"
+	LanguageCodeEnumWoSn         LanguageCodeEnum = "wo-sn"
+	LanguageCodeEnumXh           LanguageCodeEnum = "xh"
+	LanguageCodeEnumXhZa         LanguageCodeEnum = "xh-za"
+	LanguageCodeEnumXog          LanguageCodeEnum = "xog"
+	LanguageCodeEnumXogUg        LanguageCodeEnum = "xog-ug"
+	LanguageCodeEnumYav          LanguageCodeEnum = "yav"
+	LanguageCodeEnumYavCm        LanguageCodeEnum = "yav-cm"
+	LanguageCodeEnumYi           LanguageCodeEnum = "yi"
+	LanguageCodeEnumYo           LanguageCodeEnum = "yo"
+	LanguageCodeEnumYoBj         LanguageCodeEnum = "yo-bj"
+	LanguageCodeEnumYoNg         LanguageCodeEnum = "yo-ng"
+	LanguageCodeEnumYue          LanguageCodeEnum = "yue"
+	LanguageCodeEnumYueHans      LanguageCodeEnum = "yue-hans"
+	LanguageCodeEnumYueHansCn    LanguageCodeEnum = "yue-hans-cn"
+	LanguageCodeEnumYueHant      LanguageCodeEnum = "yue-hant"
+	LanguageCodeEnumYueHantHk    LanguageCodeEnum = "yue-hant-hk"
+	LanguageCodeEnumZgh          LanguageCodeEnum = "zgh"
+	LanguageCodeEnumZghMa        LanguageCodeEnum = "zgh-ma"
+	LanguageCodeEnumZh           LanguageCodeEnum = "zh"
+	LanguageCodeEnumZhHans       LanguageCodeEnum = "zh-hans"
+	LanguageCodeEnumZhHansCn     LanguageCodeEnum = "zh-hans-cn"
+	LanguageCodeEnumZhHansHk     LanguageCodeEnum = "zh-hans-hk"
+	LanguageCodeEnumZhHansMo     LanguageCodeEnum = "zh-hans-mo"
+	LanguageCodeEnumZhHansSg     LanguageCodeEnum = "zh-hans-sg"
+	LanguageCodeEnumZhHant       LanguageCodeEnum = "zh-hant"
+	LanguageCodeEnumZhHantHk     LanguageCodeEnum = "zh-hant-hk"
+	LanguageCodeEnumZhHantMo     LanguageCodeEnum = "zh-hant-mo"
+	LanguageCodeEnumZhHantTw     LanguageCodeEnum = "zh-hant-tw"
+	LanguageCodeEnumZu           LanguageCodeEnum = "zu"
+	LanguageCodeEnumZuZa         LanguageCodeEnum = "zu-za"
+)
+
 func init() {
 	// borrowed from django_countries
 	Countries = map[CountryCode]string{
@@ -594,786 +1387,787 @@ func init() {
 		CountryCodeZw: "Zimbabwe",
 		CountryCodeEu: "European Union",
 	}
-	Languages = map[string]string{
-		"af":             "Afrikaans",
-		"af-na":          "Afrikaans (Namibia)",
-		"af-za":          "Afrikaans (South Africa)",
-		"agq":            "Aghem",
-		"agq-cm":         "Aghem (Cameroon)",
-		"ak":             "Akan",
-		"ak-gh":          "Akan (Ghana)",
-		"am":             "Amharic",
-		"am-et":          "Amharic (Ethiopia)",
-		"ar":             "Arabic",
-		"ar-ae":          "Arabic (United Arab Emirates)",
-		"ar-bh":          "Arabic (Bahrain)",
-		"ar-dj":          "Arabic (Djibouti)",
-		"ar-dz":          "Arabic (Algeria)",
-		"ar-eg":          "Arabic (Egypt)",
-		"ar-eh":          "Arabic (Western Sahara)",
-		"ar-er":          "Arabic (Eritrea)",
-		"ar-il":          "Arabic (Israel)",
-		"ar-iq":          "Arabic (Iraq)",
-		"ar-jo":          "Arabic (Jordan)",
-		"ar-km":          "Arabic (Comoros)",
-		"ar-kw":          "Arabic (Kuwait)",
-		"ar-lb":          "Arabic (Lebanon)",
-		"ar-ly":          "Arabic (Libya)",
-		"ar-ma":          "Arabic (Morocco)",
-		"ar-mr":          "Arabic (Mauritania)",
-		"ar-om":          "Arabic (Oman)",
-		"ar-ps":          "Arabic (Palestinian Territories)",
-		"ar-qa":          "Arabic (Qatar)",
-		"ar-sa":          "Arabic (Saudi Arabia)",
-		"ar-sd":          "Arabic (Sudan)",
-		"ar-so":          "Arabic (Somalia)",
-		"ar-ss":          "Arabic (South Sudan)",
-		"ar-sy":          "Arabic (Syria)",
-		"ar-td":          "Arabic (Chad)",
-		"ar-tn":          "Arabic (Tunisia)",
-		"ar-ye":          "Arabic (Yemen)",
-		"as":             "Assamese",
-		"as-in":          "Assamese (India)",
-		"asa":            "Asu",
-		"asa-tz":         "Asu (Tanzania)",
-		"ast":            "Asturian",
-		"ast-es":         "Asturian (Spain)",
-		"az":             "Azerbaijani",
-		"az-cyrl":        "Azerbaijani (Cyrillic)",
-		"az-cyrl-az":     "Azerbaijani (Cyrillic, Azerbaijan)",
-		"az-latn":        "Azerbaijani (Latin)",
-		"az-latn-az":     "Azerbaijani (Latin, Azerbaijan)",
-		"bas":            "Basaa",
-		"bas-cm":         "Basaa (Cameroon)",
-		"be":             "Belarusian",
-		"be-by":          "Belarusian (Belarus)",
-		"bem":            "Bemba",
-		"bem-zm":         "Bemba (Zambia)",
-		"bez":            "Bena",
-		"bez-tz":         "Bena (Tanzania)",
-		"bg":             "Bulgarian",
-		"bg-bg":          "Bulgarian (Bulgaria)",
-		"bm":             "Bambara",
-		"bm-ml":          "Bambara (Mali)",
-		"bn":             "Bangla",
-		"bn-bd":          "Bangla (Bangladesh)",
-		"bn-in":          "Bangla (India)",
-		"bo":             "Tibetan",
-		"bo-cn":          "Tibetan (China)",
-		"bo-in":          "Tibetan (India)",
-		"br":             "Breton",
-		"br-fr":          "Breton (France)",
-		"brx":            "Bodo",
-		"brx-in":         "Bodo (India)",
-		"bs":             "Bosnian",
-		"bs-cyrl":        "Bosnian (Cyrillic)",
-		"bs-cyrl-ba":     "Bosnian (Cyrillic, Bosnia & Herzegovina)",
-		"bs-latn":        "Bosnian (Latin)",
-		"bs-latn-ba":     "Bosnian (Latin, Bosnia & Herzegovina)",
-		"ca":             "Catalan",
-		"ca-ad":          "Catalan (Andorra)",
-		"ca-es":          "Catalan (Spain)",
-		"ca-es-valencia": "Catalan (Spain, Valencian)",
-		"ca-fr":          "Catalan (France)",
-		"ca-it":          "Catalan (Italy)",
-		"ccp":            "Chakma",
-		"ccp-bd":         "Chakma (Bangladesh)",
-		"ccp-in":         "Chakma (India)",
-		"ce":             "Chechen",
-		"ce-ru":          "Chechen (Russia)",
-		"ceb":            "Cebuano",
-		"ceb-ph":         "Cebuano (Philippines)",
-		"cgg":            "Chiga",
-		"cgg-ug":         "Chiga (Uganda)",
-		"chr":            "Cherokee",
-		"chr-us":         "Cherokee (United States)",
-		"ckb":            "Central Kurdish",
-		"ckb-iq":         "Central Kurdish (Iraq)",
-		"ckb-ir":         "Central Kurdish (Iran)",
-		"cs":             "Czech",
-		"cs-cz":          "Czech (Czechia)",
-		"cu":             "Church Slavic",
-		"cu-ru":          "Church Slavic (Russia)",
-		"cy":             "Welsh",
-		"cy-gb":          "Welsh (United Kingdom)",
-		"da":             "Danish",
-		"da-dk":          "Danish (Denmark)",
-		"da-gl":          "Danish (Greenland)",
-		"dav":            "Taita",
-		"dav-ke":         "Taita (Kenya)",
-		"de":             "German",
-		"de-at":          "German (Austria)",
-		"de-be":          "German (Belgium)",
-		"de-ch":          "German (Switzerland)",
-		"de-de":          "German (Germany)",
-		"de-it":          "German (Italy)",
-		"de-li":          "German (Liechtenstein)",
-		"de-lu":          "German (Luxembourg)",
-		"dje":            "Zarma",
-		"dje-ne":         "Zarma (Niger)",
-		"dsb":            "Lower Sorbian",
-		"dsb-de":         "Lower Sorbian (Germany)",
-		"dua":            "Duala",
-		"dua-cm":         "Duala (Cameroon)",
-		"dyo":            "Jola-Fonyi",
-		"dyo-sn":         "Jola-Fonyi (Senegal)",
-		"dz":             "Dzongkha",
-		"dz-bt":          "Dzongkha (Bhutan)",
-		"ebu":            "Embu",
-		"ebu-ke":         "Embu (Kenya)",
-		"ee":             "Ewe",
-		"ee-gh":          "Ewe (Ghana)",
-		"ee-tg":          "Ewe (Togo)",
-		"el":             "Greek",
-		"el-cy":          "Greek (Cyprus)",
-		"el-gr":          "Greek (Greece)",
-		"en":             "English",
-		"en-ae":          "English (United Arab Emirates)",
-		"en-ag":          "English (Antigua & Barbuda)",
-		"en-ai":          "English (Anguilla)",
-		"en-as":          "English (American Samoa)",
-		"en-at":          "English (Austria)",
-		"en-au":          "English (Australia)",
-		"en-bb":          "English (Barbados)",
-		"en-be":          "English (Belgium)",
-		"en-bi":          "English (Burundi)",
-		"en-bm":          "English (Bermuda)",
-		"en-bs":          "English (Bahamas)",
-		"en-bw":          "English (Botswana)",
-		"en-bz":          "English (Belize)",
-		"en-ca":          "English (Canada)",
-		"en-cc":          "English (Cocos (Keeling) Islands)",
-		"en-ch":          "English (Switzerland)",
-		"en-ck":          "English (Cook Islands)",
-		"en-cm":          "English (Cameroon)",
-		"en-cx":          "English (Christmas Island)",
-		"en-cy":          "English (Cyprus)",
-		"en-de":          "English (Germany)",
-		"en-dg":          "English (Diego Garcia)",
-		"en-dk":          "English (Denmark)",
-		"en-dm":          "English (Dominica)",
-		"en-er":          "English (Eritrea)",
-		"en-fi":          "English (Finland)",
-		"en-fj":          "English (Fiji)",
-		"en-fk":          "English (Falkland Islands)",
-		"en-fm":          "English (Micronesia)",
-		"en-gb":          "English (United Kingdom)",
-		"en-gd":          "English (Grenada)",
-		"en-gg":          "English (Guernsey)",
-		"en-gh":          "English (Ghana)",
-		"en-gi":          "English (Gibraltar)",
-		"en-gm":          "English (Gambia)",
-		"en-gu":          "English (Guam)",
-		"en-gy":          "English (Guyana)",
-		"en-hk":          "English (Hong Kong SAR China)",
-		"en-ie":          "English (Ireland)",
-		"en-il":          "English (Israel)",
-		"en-im":          "English (Isle of Man)",
-		"en-in":          "English (India)",
-		"en-io":          "English (British Indian Ocean Territory)",
-		"en-je":          "English (Jersey)",
-		"en-jm":          "English (Jamaica)",
-		"en-ke":          "English (Kenya)",
-		"en-ki":          "English (Kiribati)",
-		"en-kn":          "English (St. Kitts & Nevis)",
-		"en-ky":          "English (Cayman Islands)",
-		"en-lc":          "English (St. Lucia)",
-		"en-lr":          "English (Liberia)",
-		"en-ls":          "English (Lesotho)",
-		"en-mg":          "English (Madagascar)",
-		"en-mh":          "English (Marshall Islands)",
-		"en-mo":          "English (Macao SAR China)",
-		"en-mp":          "English (Northern Mariana Islands)",
-		"en-ms":          "English (Montserrat)",
-		"en-mt":          "English (Malta)",
-		"en-mu":          "English (Mauritius)",
-		"en-mw":          "English (Malawi)",
-		"en-my":          "English (Malaysia)",
-		"en-na":          "English (Namibia)",
-		"en-nf":          "English (Norfolk Island)",
-		"en-ng":          "English (Nigeria)",
-		"en-nl":          "English (Netherlands)",
-		"en-nr":          "English (Nauru)",
-		"en-nu":          "English (Niue)",
-		"en-nz":          "English (New Zealand)",
-		"en-pg":          "English (Papua New Guinea)",
-		"en-ph":          "English (Philippines)",
-		"en-pk":          "English (Pakistan)",
-		"en-pn":          "English (Pitcairn Islands)",
-		"en-pr":          "English (Puerto Rico)",
-		"en-pw":          "English (Palau)",
-		"en-rw":          "English (Rwanda)",
-		"en-sb":          "English (Solomon Islands)",
-		"en-sc":          "English (Seychelles)",
-		"en-sd":          "English (Sudan)",
-		"en-se":          "English (Sweden)",
-		"en-sg":          "English (Singapore)",
-		"en-sh":          "English (St. Helena)",
-		"en-si":          "English (Slovenia)",
-		"en-sl":          "English (Sierra Leone)",
-		"en-ss":          "English (South Sudan)",
-		"en-sx":          "English (Sint Maarten)",
-		"en-sz":          "English (Eswatini)",
-		"en-tc":          "English (Turks & Caicos Islands)",
-		"en-tk":          "English (Tokelau)",
-		"en-to":          "English (Tonga)",
-		"en-tt":          "English (Trinidad & Tobago)",
-		"en-tv":          "English (Tuvalu)",
-		"en-tz":          "English (Tanzania)",
-		"en-ug":          "English (Uganda)",
-		"en-um":          "English (U.S. Outlying Islands)",
-		"en-us":          "English (United States)",
-		"en-vc":          "English (St. Vincent & Grenadines)",
-		"en-vg":          "English (British Virgin Islands)",
-		"en-vi":          "English (U.S. Virgin Islands)",
-		"en-vu":          "English (Vanuatu)",
-		"en-ws":          "English (Samoa)",
-		"en-za":          "English (South Africa)",
-		"en-zm":          "English (Zambia)",
-		"en-zw":          "English (Zimbabwe)",
-		"eo":             "Esperanto",
-		"es":             "Spanish",
-		"es-ar":          "Spanish (Argentina)",
-		"es-bo":          "Spanish (Bolivia)",
-		"es-br":          "Spanish (Brazil)",
-		"es-bz":          "Spanish (Belize)",
-		"es-cl":          "Spanish (Chile)",
-		"es-co":          "Spanish (Colombia)",
-		"es-cr":          "Spanish (Costa Rica)",
-		"es-cu":          "Spanish (Cuba)",
-		"es-do":          "Spanish (Dominican Republic)",
-		"es-ea":          "Spanish (Ceuta & Melilla)",
-		"es-ec":          "Spanish (Ecuador)",
-		"es-es":          "Spanish (Spain)",
-		"es-gq":          "Spanish (Equatorial Guinea)",
-		"es-gt":          "Spanish (Guatemala)",
-		"es-hn":          "Spanish (Honduras)",
-		"es-ic":          "Spanish (Canary Islands)",
-		"es-mx":          "Spanish (Mexico)",
-		"es-ni":          "Spanish (Nicaragua)",
-		"es-pa":          "Spanish (Panama)",
-		"es-pe":          "Spanish (Peru)",
-		"es-ph":          "Spanish (Philippines)",
-		"es-pr":          "Spanish (Puerto Rico)",
-		"es-py":          "Spanish (Paraguay)",
-		"es-sv":          "Spanish (El Salvador)",
-		"es-us":          "Spanish (United States)",
-		"es-uy":          "Spanish (Uruguay)",
-		"es-ve":          "Spanish (Venezuela)",
-		"et":             "Estonian",
-		"et-ee":          "Estonian (Estonia)",
-		"eu":             "Basque",
-		"eu-es":          "Basque (Spain)",
-		"ewo":            "Ewondo",
-		"ewo-cm":         "Ewondo (Cameroon)",
-		"fa":             "Persian",
-		"fa-af":          "Persian (Afghanistan)",
-		"fa-ir":          "Persian (Iran)",
-		"ff":             "Fulah",
-		"ff-adlm":        "Fulah (Adlam)",
-		"ff-adlm-bf":     "Fulah (Adlam, Burkina Faso)",
-		"ff-adlm-cm":     "Fulah (Adlam, Cameroon)",
-		"ff-adlm-gh":     "Fulah (Adlam, Ghana)",
-		"ff-adlm-gm":     "Fulah (Adlam, Gambia)",
-		"ff-adlm-gn":     "Fulah (Adlam, Guinea)",
-		"ff-adlm-gw":     "Fulah (Adlam, Guinea-Bissau)",
-		"ff-adlm-lr":     "Fulah (Adlam, Liberia)",
-		"ff-adlm-mr":     "Fulah (Adlam, Mauritania)",
-		"ff-adlm-ne":     "Fulah (Adlam, Niger)",
-		"ff-adlm-ng":     "Fulah (Adlam, Nigeria)",
-		"ff-adlm-sl":     "Fulah (Adlam, Sierra Leone)",
-		"ff-adlm-sn":     "Fulah (Adlam, Senegal)",
-		"ff-latn":        "Fulah (Latin)",
-		"ff-latn-bf":     "Fulah (Latin, Burkina Faso)",
-		"ff-latn-cm":     "Fulah (Latin, Cameroon)",
-		"ff-latn-gh":     "Fulah (Latin, Ghana)",
-		"ff-latn-gm":     "Fulah (Latin, Gambia)",
-		"ff-latn-gn":     "Fulah (Latin, Guinea)",
-		"ff-latn-gw":     "Fulah (Latin, Guinea-Bissau)",
-		"ff-latn-lr":     "Fulah (Latin, Liberia)",
-		"ff-latn-mr":     "Fulah (Latin, Mauritania)",
-		"ff-latn-ne":     "Fulah (Latin, Niger)",
-		"ff-latn-ng":     "Fulah (Latin, Nigeria)",
-		"ff-latn-sl":     "Fulah (Latin, Sierra Leone)",
-		"ff-latn-sn":     "Fulah (Latin, Senegal)",
-		"fi":             "Finnish",
-		"fi-fi":          "Finnish (Finland)",
-		"fil":            "Filipino",
-		"fil-ph":         "Filipino (Philippines)",
-		"fo":             "Faroese",
-		"fo-dk":          "Faroese (Denmark)",
-		"fo-fo":          "Faroese (Faroe Islands)",
-		"fr":             "French",
-		"fr-be":          "French (Belgium)",
-		"fr-bf":          "French (Burkina Faso)",
-		"fr-bi":          "French (Burundi)",
-		"fr-bj":          "French (Benin)",
-		"fr-bl":          "French (St. Barth\u00e9lemy)",
-		"fr-ca":          "French (Canada)",
-		"fr-cd":          "French (Congo - Kinshasa)",
-		"fr-cf":          "French (Central African Republic)",
-		"fr-cg":          "French (Congo - Brazzaville)",
-		"fr-ch":          "French (Switzerland)",
-		"fr-ci":          "French (C\u00f4te d\u2019Ivoire)",
-		"fr-cm":          "French (Cameroon)",
-		"fr-dj":          "French (Djibouti)",
-		"fr-dz":          "French (Algeria)",
-		"fr-fr":          "French (France)",
-		"fr-ga":          "French (Gabon)",
-		"fr-gf":          "French (French Guiana)",
-		"fr-gn":          "French (Guinea)",
-		"fr-gp":          "French (Guadeloupe)",
-		"fr-gq":          "French (Equatorial Guinea)",
-		"fr-ht":          "French (Haiti)",
-		"fr-km":          "French (Comoros)",
-		"fr-lu":          "French (Luxembourg)",
-		"fr-ma":          "French (Morocco)",
-		"fr-mc":          "French (Monaco)",
-		"fr-mf":          "French (St. Martin)",
-		"fr-mg":          "French (Madagascar)",
-		"fr-ml":          "French (Mali)",
-		"fr-mq":          "French (Martinique)",
-		"fr-mr":          "French (Mauritania)",
-		"fr-mu":          "French (Mauritius)",
-		"fr-nc":          "French (New Caledonia)",
-		"fr-ne":          "French (Niger)",
-		"fr-pf":          "French (French Polynesia)",
-		"fr-pm":          "French (St. Pierre & Miquelon)",
-		"fr-re":          "French (R\u00e9union)",
-		"fr-rw":          "French (Rwanda)",
-		"fr-sc":          "French (Seychelles)",
-		"fr-sn":          "French (Senegal)",
-		"fr-sy":          "French (Syria)",
-		"fr-td":          "French (Chad)",
-		"fr-tg":          "French (Togo)",
-		"fr-tn":          "French (Tunisia)",
-		"fr-vu":          "French (Vanuatu)",
-		"fr-wf":          "French (Wallis & Futuna)",
-		"fr-yt":          "French (Mayotte)",
-		"fur":            "Friulian",
-		"fur-it":         "Friulian (Italy)",
-		"fy":             "Western Frisian",
-		"fy-nl":          "Western Frisian (Netherlands)",
-		"ga":             "Irish",
-		"ga-gb":          "Irish (United Kingdom)",
-		"ga-ie":          "Irish (Ireland)",
-		"gd":             "Scottish Gaelic",
-		"gd-gb":          "Scottish Gaelic (United Kingdom)",
-		"gl":             "Galician",
-		"gl-es":          "Galician (Spain)",
-		"gsw":            "Swiss German",
-		"gsw-ch":         "Swiss German (Switzerland)",
-		"gsw-fr":         "Swiss German (France)",
-		"gsw-li":         "Swiss German (Liechtenstein)",
-		"gu":             "Gujarati",
-		"gu-in":          "Gujarati (India)",
-		"guz":            "Gusii",
-		"guz-ke":         "Gusii (Kenya)",
-		"gv":             "Manx",
-		"gv-im":          "Manx (Isle of Man)",
-		"ha":             "Hausa",
-		"ha-gh":          "Hausa (Ghana)",
-		"ha-ne":          "Hausa (Niger)",
-		"ha-ng":          "Hausa (Nigeria)",
-		"haw":            "Hawaiian",
-		"haw-us":         "Hawaiian (United States)",
-		"he":             "Hebrew",
-		"he-il":          "Hebrew (Israel)",
-		"hi":             "Hindi",
-		"hi-in":          "Hindi (India)",
-		"hr":             "Croatian",
-		"hr-ba":          "Croatian (Bosnia & Herzegovina)",
-		"hr-hr":          "Croatian (Croatia)",
-		"hsb":            "Upper Sorbian",
-		"hsb-de":         "Upper Sorbian (Germany)",
-		"hu":             "Hungarian",
-		"hu-hu":          "Hungarian (Hungary)",
-		"hy":             "Armenian",
-		"hy-am":          "Armenian (Armenia)",
-		"ia":             "Interlingua",
-		"id":             "Indonesian",
-		"id-id":          "Indonesian (Indonesia)",
-		"ig":             "Igbo",
-		"ig-ng":          "Igbo (Nigeria)",
-		"ii":             "Sichuan Yi",
-		"ii-cn":          "Sichuan Yi (China)",
-		"is":             "Icelandic",
-		"is-is":          "Icelandic (Iceland)",
-		"it":             "Italian",
-		"it-ch":          "Italian (Switzerland)",
-		"it-it":          "Italian (Italy)",
-		"it-sm":          "Italian (San Marino)",
-		"it-va":          "Italian (Vatican City)",
-		"ja":             "Japanese",
-		"ja-jp":          "Japanese (Japan)",
-		"jgo":            "Ngomba",
-		"jgo-cm":         "Ngomba (Cameroon)",
-		"jmc":            "Machame",
-		"jmc-tz":         "Machame (Tanzania)",
-		"jv":             "Javanese",
-		"jv-id":          "Javanese (Indonesia)",
-		"ka":             "Georgian",
-		"ka-ge":          "Georgian (Georgia)",
-		"kab":            "Kabyle",
-		"kab-dz":         "Kabyle (Algeria)",
-		"kam":            "Kamba",
-		"kam-ke":         "Kamba (Kenya)",
-		"kde":            "Makonde",
-		"kde-tz":         "Makonde (Tanzania)",
-		"kea":            "Kabuverdianu",
-		"kea-cv":         "Kabuverdianu (Cape Verde)",
-		"khq":            "Koyra Chiini",
-		"khq-ml":         "Koyra Chiini (Mali)",
-		"ki":             "Kikuyu",
-		"ki-ke":          "Kikuyu (Kenya)",
-		"kk":             "Kazakh",
-		"kk-kz":          "Kazakh (Kazakhstan)",
-		"kkj":            "Kako",
-		"kkj-cm":         "Kako (Cameroon)",
-		"kl":             "Kalaallisut",
-		"kl-gl":          "Kalaallisut (Greenland)",
-		"kln":            "Kalenjin",
-		"kln-ke":         "Kalenjin (Kenya)",
-		"km":             "Khmer",
-		"km-kh":          "Khmer (Cambodia)",
-		"kn":             "Kannada",
-		"kn-in":          "Kannada (India)",
-		"ko":             "Korean",
-		"ko-kp":          "Korean (North Korea)",
-		"ko-kr":          "Korean (South Korea)",
-		"kok":            "Konkani",
-		"kok-in":         "Konkani (India)",
-		"ks":             "Kashmiri",
-		"ks-arab":        "Kashmiri (Arabic)",
-		"ks-arab-in":     "Kashmiri (Arabic, India)",
-		"ksb":            "Shambala",
-		"ksb-tz":         "Shambala (Tanzania)",
-		"ksf":            "Bafia",
-		"ksf-cm":         "Bafia (Cameroon)",
-		"ksh":            "Colognian",
-		"ksh-de":         "Colognian (Germany)",
-		"ku":             "Kurdish",
-		"ku-tr":          "Kurdish (Turkey)",
-		"kw":             "Cornish",
-		"kw-gb":          "Cornish (United Kingdom)",
-		"ky":             "Kyrgyz",
-		"ky-kg":          "Kyrgyz (Kyrgyzstan)",
-		"lag":            "Langi",
-		"lag-tz":         "Langi (Tanzania)",
-		"lb":             "Luxembourgish",
-		"lb-lu":          "Luxembourgish (Luxembourg)",
-		"lg":             "Ganda",
-		"lg-ug":          "Ganda (Uganda)",
-		"lkt":            "Lakota",
-		"lkt-us":         "Lakota (United States)",
-		"ln":             "Lingala",
-		"ln-ao":          "Lingala (Angola)",
-		"ln-cd":          "Lingala (Congo - Kinshasa)",
-		"ln-cf":          "Lingala (Central African Republic)",
-		"ln-cg":          "Lingala (Congo - Brazzaville)",
-		"lo":             "Lao",
-		"lo-la":          "Lao (Laos)",
-		"lrc":            "Northern Luri",
-		"lrc-iq":         "Northern Luri (Iraq)",
-		"lrc-ir":         "Northern Luri (Iran)",
-		"lt":             "Lithuanian",
-		"lt-lt":          "Lithuanian (Lithuania)",
-		"lu":             "Luba-Katanga",
-		"lu-cd":          "Luba-Katanga (Congo - Kinshasa)",
-		"luo":            "Luo",
-		"luo-ke":         "Luo (Kenya)",
-		"luy":            "Luyia",
-		"luy-ke":         "Luyia (Kenya)",
-		"lv":             "Latvian",
-		"lv-lv":          "Latvian (Latvia)",
-		"mai":            "Maithili",
-		"mai-in":         "Maithili (India)",
-		"mas":            "Masai",
-		"mas-ke":         "Masai (Kenya)",
-		"mas-tz":         "Masai (Tanzania)",
-		"mer":            "Meru",
-		"mer-ke":         "Meru (Kenya)",
-		"mfe":            "Morisyen",
-		"mfe-mu":         "Morisyen (Mauritius)",
-		"mg":             "Malagasy",
-		"mg-mg":          "Malagasy (Madagascar)",
-		"mgh":            "Makhuwa-Meetto",
-		"mgh-mz":         "Makhuwa-Meetto (Mozambique)",
-		"mgo":            "Meta\u02bc",
-		"mgo-cm":         "Meta\u02bc (Cameroon)",
-		"mi":             "Maori",
-		"mi-nz":          "Maori (New Zealand)",
-		"mk":             "Macedonian",
-		"mk-mk":          "Macedonian (North Macedonia)",
-		"ml":             "Malayalam",
-		"ml-in":          "Malayalam (India)",
-		"mn":             "Mongolian",
-		"mn-mn":          "Mongolian (Mongolia)",
-		"mni":            "Manipuri",
-		"mni-beng":       "Manipuri (Bangla)",
-		"mni-beng-in":    "Manipuri (Bangla, India)",
-		"mr":             "Marathi",
-		"mr-in":          "Marathi (India)",
-		"ms":             "Malay",
-		"ms-bn":          "Malay (Brunei)",
-		"ms-id":          "Malay (Indonesia)",
-		"ms-my":          "Malay (Malaysia)",
-		"ms-sg":          "Malay (Singapore)",
-		"mt":             "Maltese",
-		"mt-mt":          "Maltese (Malta)",
-		"mua":            "Mundang",
-		"mua-cm":         "Mundang (Cameroon)",
-		"my":             "Burmese",
-		"my-mm":          "Burmese (Myanmar (Burma))",
-		"mzn":            "Mazanderani",
-		"mzn-ir":         "Mazanderani (Iran)",
-		"naq":            "Nama",
-		"naq-na":         "Nama (Namibia)",
-		"nb":             "Norwegian Bokm\u00e5l",
-		"nb-no":          "Norwegian Bokm\u00e5l (Norway)",
-		"nb-sj":          "Norwegian Bokm\u00e5l (Svalbard & Jan Mayen)",
-		"nd":             "North Ndebele",
-		"nd-zw":          "North Ndebele (Zimbabwe)",
-		"nds":            "Low German",
-		"nds-de":         "Low German (Germany)",
-		"nds-nl":         "Low German (Netherlands)",
-		"ne":             "Nepali",
-		"ne-in":          "Nepali (India)",
-		"ne-np":          "Nepali (Nepal)",
-		"nl":             "Dutch",
-		"nl-aw":          "Dutch (Aruba)",
-		"nl-be":          "Dutch (Belgium)",
-		"nl-bq":          "Dutch (Caribbean Netherlands)",
-		"nl-cw":          "Dutch (Cura\u00e7ao)",
-		"nl-nl":          "Dutch (Netherlands)",
-		"nl-sr":          "Dutch (Suriname)",
-		"nl-sx":          "Dutch (Sint Maarten)",
-		"nmg":            "Kwasio",
-		"nmg-cm":         "Kwasio (Cameroon)",
-		"nn":             "Norwegian Nynorsk",
-		"nn-no":          "Norwegian Nynorsk (Norway)",
-		"nnh":            "Ngiemboon",
-		"nnh-cm":         "Ngiemboon (Cameroon)",
-		"nus":            "Nuer",
-		"nus-ss":         "Nuer (South Sudan)",
-		"nyn":            "Nyankole",
-		"nyn-ug":         "Nyankole (Uganda)",
-		"om":             "Oromo",
-		"om-et":          "Oromo (Ethiopia)",
-		"om-ke":          "Oromo (Kenya)",
-		"or":             "Odia",
-		"or-in":          "Odia (India)",
-		"os":             "Ossetic",
-		"os-ge":          "Ossetic (Georgia)",
-		"os-ru":          "Ossetic (Russia)",
-		"pa":             "Punjabi",
-		"pa-arab":        "Punjabi (Arabic)",
-		"pa-arab-pk":     "Punjabi (Arabic, Pakistan)",
-		"pa-guru":        "Punjabi (Gurmukhi)",
-		"pa-guru-in":     "Punjabi (Gurmukhi, India)",
-		"pcm":            "Nigerian Pidgin",
-		"pcm-ng":         "Nigerian Pidgin (Nigeria)",
-		"pl":             "Polish",
-		"pl-pl":          "Polish (Poland)",
-		"prg":            "Prussian",
-		"ps":             "Pashto",
-		"ps-af":          "Pashto (Afghanistan)",
-		"ps-pk":          "Pashto (Pakistan)",
-		"pt":             "Portuguese",
-		"pt-ao":          "Portuguese (Angola)",
-		"pt-br":          "Portuguese (Brazil)",
-		"pt-ch":          "Portuguese (Switzerland)",
-		"pt-cv":          "Portuguese (Cape Verde)",
-		"pt-gq":          "Portuguese (Equatorial Guinea)",
-		"pt-gw":          "Portuguese (Guinea-Bissau)",
-		"pt-lu":          "Portuguese (Luxembourg)",
-		"pt-mo":          "Portuguese (Macao SAR China)",
-		"pt-mz":          "Portuguese (Mozambique)",
-		"pt-pt":          "Portuguese (Portugal)",
-		"pt-st":          "Portuguese (S\u00e3o Tom\u00e9 & Pr\u00edncipe)",
-		"pt-tl":          "Portuguese (Timor-Leste)",
-		"qu":             "Quechua",
-		"qu-bo":          "Quechua (Bolivia)",
-		"qu-ec":          "Quechua (Ecuador)",
-		"qu-pe":          "Quechua (Peru)",
-		"rm":             "Romansh",
-		"rm-ch":          "Romansh (Switzerland)",
-		"rn":             "Rundi",
-		"rn-bi":          "Rundi (Burundi)",
-		"ro":             "Romanian",
-		"ro-md":          "Romanian (Moldova)",
-		"ro-ro":          "Romanian (Romania)",
-		"rof":            "Rombo",
-		"rof-tz":         "Rombo (Tanzania)",
-		"ru":             "Russian",
-		"ru-by":          "Russian (Belarus)",
-		"ru-kg":          "Russian (Kyrgyzstan)",
-		"ru-kz":          "Russian (Kazakhstan)",
-		"ru-md":          "Russian (Moldova)",
-		"ru-ru":          "Russian (Russia)",
-		"ru-ua":          "Russian (Ukraine)",
-		"rw":             "Kinyarwanda",
-		"rw-rw":          "Kinyarwanda (Rwanda)",
-		"rwk":            "Rwa",
-		"rwk-tz":         "Rwa (Tanzania)",
-		"sah":            "Sakha",
-		"sah-ru":         "Sakha (Russia)",
-		"saq":            "Samburu",
-		"saq-ke":         "Samburu (Kenya)",
-		"sat":            "Santali",
-		"sat-olck":       "Santali (Ol Chiki)",
-		"sat-olck-in":    "Santali (Ol Chiki, India)",
-		"sbp":            "Sangu",
-		"sbp-tz":         "Sangu (Tanzania)",
-		"sd":             "Sindhi",
-		"sd-arab":        "Sindhi (Arabic)",
-		"sd-arab-pk":     "Sindhi (Arabic, Pakistan)",
-		"sd-deva":        "Sindhi (Devanagari)",
-		"sd-deva-in":     "Sindhi (Devanagari, India)",
-		"se":             "Northern Sami",
-		"se-fi":          "Northern Sami (Finland)",
-		"se-no":          "Northern Sami (Norway)",
-		"se-se":          "Northern Sami (Sweden)",
-		"seh":            "Sena",
-		"seh-mz":         "Sena (Mozambique)",
-		"ses":            "Koyraboro Senni",
-		"ses-ml":         "Koyraboro Senni (Mali)",
-		"sg":             "Sango",
-		"sg-cf":          "Sango (Central African Republic)",
-		"shi":            "Tachelhit",
-		"shi-latn":       "Tachelhit (Latin)",
-		"shi-latn-ma":    "Tachelhit (Latin, Morocco)",
-		"shi-tfng":       "Tachelhit (Tifinagh)",
-		"shi-tfng-ma":    "Tachelhit (Tifinagh, Morocco)",
-		"si":             "Sinhala",
-		"si-lk":          "Sinhala (Sri Lanka)",
-		"sk":             "Slovak",
-		"sk-sk":          "Slovak (Slovakia)",
-		"sl":             "Slovenian",
-		"sl-si":          "Slovenian (Slovenia)",
-		"smn":            "Inari Sami",
-		"smn-fi":         "Inari Sami (Finland)",
-		"sn":             "Shona",
-		"sn-zw":          "Shona (Zimbabwe)",
-		"so":             "Somali",
-		"so-dj":          "Somali (Djibouti)",
-		"so-et":          "Somali (Ethiopia)",
-		"so-ke":          "Somali (Kenya)",
-		"so-so":          "Somali (Somalia)",
-		"sq":             "Albanian",
-		"sq-al":          "Albanian (Albania)",
-		"sq-mk":          "Albanian (North Macedonia)",
-		"sq-xk":          "Albanian (Kosovo)",
-		"sr":             "Serbian",
-		"sr-cyrl":        "Serbian (Cyrillic)",
-		"sr-cyrl-ba":     "Serbian (Cyrillic, Bosnia & Herzegovina)",
-		"sr-cyrl-me":     "Serbian (Cyrillic, Montenegro)",
-		"sr-cyrl-rs":     "Serbian (Cyrillic, Serbia)",
-		"sr-cyrl-xk":     "Serbian (Cyrillic, Kosovo)",
-		"sr-latn":        "Serbian (Latin)",
-		"sr-latn-ba":     "Serbian (Latin, Bosnia & Herzegovina)",
-		"sr-latn-me":     "Serbian (Latin, Montenegro)",
-		"sr-latn-rs":     "Serbian (Latin, Serbia)",
-		"sr-latn-xk":     "Serbian (Latin, Kosovo)",
-		"su":             "Sundanese",
-		"su-latn":        "Sundanese (Latin)",
-		"su-latn-id":     "Sundanese (Latin, Indonesia)",
-		"sv":             "Swedish",
-		"sv-ax":          "Swedish (\u00c5land Islands)",
-		"sv-fi":          "Swedish (Finland)",
-		"sv-se":          "Swedish (Sweden)",
-		"sw":             "Swahili",
-		"sw-cd":          "Swahili (Congo - Kinshasa)",
-		"sw-ke":          "Swahili (Kenya)",
-		"sw-tz":          "Swahili (Tanzania)",
-		"sw-ug":          "Swahili (Uganda)",
-		"ta":             "Tamil",
-		"ta-in":          "Tamil (India)",
-		"ta-lk":          "Tamil (Sri Lanka)",
-		"ta-my":          "Tamil (Malaysia)",
-		"ta-sg":          "Tamil (Singapore)",
-		"te":             "Telugu",
-		"te-in":          "Telugu (India)",
-		"teo":            "Teso",
-		"teo-ke":         "Teso (Kenya)",
-		"teo-ug":         "Teso (Uganda)",
-		"tg":             "Tajik",
-		"tg-tj":          "Tajik (Tajikistan)",
-		"th":             "Thai",
-		"th-th":          "Thai (Thailand)",
-		"ti":             "Tigrinya",
-		"ti-er":          "Tigrinya (Eritrea)",
-		"ti-et":          "Tigrinya (Ethiopia)",
-		"tk":             "Turkmen",
-		"tk-tm":          "Turkmen (Turkmenistan)",
-		"to":             "Tongan",
-		"to-to":          "Tongan (Tonga)",
-		"tr":             "Turkish",
-		"tr-cy":          "Turkish (Cyprus)",
-		"tr-tr":          "Turkish (Turkey)",
-		"tt":             "Tatar",
-		"tt-ru":          "Tatar (Russia)",
-		"twq":            "Tasawaq",
-		"twq-ne":         "Tasawaq (Niger)",
-		"tzm":            "Central Atlas Tamazight",
-		"tzm-ma":         "Central Atlas Tamazight (Morocco)",
-		"ug":             "Uyghur",
-		"ug-cn":          "Uyghur (China)",
-		"uk":             "Ukrainian",
-		"uk-ua":          "Ukrainian (Ukraine)",
-		"ur":             "Urdu",
-		"ur-in":          "Urdu (India)",
-		"ur-pk":          "Urdu (Pakistan)",
-		"uz":             "Uzbek",
-		"uz-arab":        "Uzbek (Arabic)",
-		"uz-arab-af":     "Uzbek (Arabic, Afghanistan)",
-		"uz-cyrl":        "Uzbek (Cyrillic)",
-		"uz-cyrl-uz":     "Uzbek (Cyrillic, Uzbekistan)",
-		"uz-latn":        "Uzbek (Latin)",
-		"uz-latn-uz":     "Uzbek (Latin, Uzbekistan)",
-		"vai":            "Vai",
-		"vai-latn":       "Vai (Latin)",
-		"vai-latn-lr":    "Vai (Latin, Liberia)",
-		"vai-vaii":       "Vai (Vai)",
-		"vai-vaii-lr":    "Vai (Vai, Liberia)",
-		"vi":             "Vietnamese",
-		"vi-vn":          "Vietnamese (Vietnam)",
-		"vo":             "Volap\u00fck",
-		"vun":            "Vunjo",
-		"vun-tz":         "Vunjo (Tanzania)",
-		"wae":            "Walser",
-		"wae-ch":         "Walser (Switzerland)",
-		"wo":             "Wolof",
-		"wo-sn":          "Wolof (Senegal)",
-		"xh":             "Xhosa",
-		"xh-za":          "Xhosa (South Africa)",
-		"xog":            "Soga",
-		"xog-ug":         "Soga (Uganda)",
-		"yav":            "Yangben",
-		"yav-cm":         "Yangben (Cameroon)",
-		"yi":             "Yiddish",
-		"yo":             "Yoruba",
-		"yo-bj":          "Yoruba (Benin)",
-		"yo-ng":          "Yoruba (Nigeria)",
-		"yue":            "Cantonese",
-		"yue-hans":       "Cantonese (Simplified)",
-		"yue-hans-cn":    "Cantonese (Simplified, China)",
-		"yue-hant":       "Cantonese (Traditional)",
-		"yue-hant-hk":    "Cantonese (Traditional, Hong Kong SAR China)",
-		"zgh":            "Standard Moroccan Tamazight",
-		"zgh-ma":         "Standard Moroccan Tamazight (Morocco)",
-		"zh":             "Chinese",
-		"zh-hans":        "Chinese (Simplified)",
-		"zh-hans-cn":     "Chinese (Simplified, China)",
-		"zh-hans-hk":     "Chinese (Simplified, Hong Kong SAR China)",
-		"zh-hans-mo":     "Chinese (Simplified, Macao SAR China)",
-		"zh-hans-sg":     "Chinese (Simplified, Singapore)",
-		"zh-hant":        "Chinese (Traditional)",
-		"zh-hant-hk":     "Chinese (Traditional, Hong Kong SAR China)",
-		"zh-hant-mo":     "Chinese (Traditional, Macao SAR China)",
-		"zh-hant-tw":     "Chinese (Traditional, Taiwan)",
-		"zu":             "Zulu",
-		"zu-za":          "Zulu (South Africa)",
+
+	Languages = map[LanguageCodeEnum]string{
+		LanguageCodeEnumAf:           "Afrikaans",
+		LanguageCodeEnumAfNa:         "Afrikaans (Namibia)",
+		LanguageCodeEnumAfZa:         "Afrikaans (South Africa)",
+		LanguageCodeEnumAgq:          "Aghem",
+		LanguageCodeEnumAgqCm:        "Aghem (Cameroon)",
+		LanguageCodeEnumAk:           "Akan",
+		LanguageCodeEnumAkGh:         "Akan (Ghana)",
+		LanguageCodeEnumAm:           "Amharic",
+		LanguageCodeEnumAmEt:         "Amharic (Ethiopia)",
+		LanguageCodeEnumAr:           "Arabic",
+		LanguageCodeEnumArAe:         "Arabic (United Arab Emirates)",
+		LanguageCodeEnumArBh:         "Arabic (Bahrain)",
+		LanguageCodeEnumArDj:         "Arabic (Djibouti)",
+		LanguageCodeEnumArDz:         "Arabic (Algeria)",
+		LanguageCodeEnumArEg:         "Arabic (Egypt)",
+		LanguageCodeEnumArEh:         "Arabic (Western Sahara)",
+		LanguageCodeEnumArEr:         "Arabic (Eritrea)",
+		LanguageCodeEnumArIl:         "Arabic (Israel)",
+		LanguageCodeEnumArIq:         "Arabic (Iraq)",
+		LanguageCodeEnumArJo:         "Arabic (Jordan)",
+		LanguageCodeEnumArKm:         "Arabic (Comoros)",
+		LanguageCodeEnumArKw:         "Arabic (Kuwait)",
+		LanguageCodeEnumArLb:         "Arabic (Lebanon)",
+		LanguageCodeEnumArLy:         "Arabic (Libya)",
+		LanguageCodeEnumArMa:         "Arabic (Morocco)",
+		LanguageCodeEnumArMr:         "Arabic (Mauritania)",
+		LanguageCodeEnumArOm:         "Arabic (Oman)",
+		LanguageCodeEnumArPs:         "Arabic (Palestinian Territories)",
+		LanguageCodeEnumArQa:         "Arabic (Qatar)",
+		LanguageCodeEnumArSa:         "Arabic (Saudi Arabia)",
+		LanguageCodeEnumArSd:         "Arabic (Sudan)",
+		LanguageCodeEnumArSo:         "Arabic (Somalia)",
+		LanguageCodeEnumArSs:         "Arabic (South Sudan)",
+		LanguageCodeEnumArSy:         "Arabic (Syria)",
+		LanguageCodeEnumArTd:         "Arabic (Chad)",
+		LanguageCodeEnumArTn:         "Arabic (Tunisia)",
+		LanguageCodeEnumArYe:         "Arabic (Yemen)",
+		LanguageCodeEnumAs:           "Assamese",
+		LanguageCodeEnumAsIn:         "Assamese (India)",
+		LanguageCodeEnumAsa:          "Asu",
+		LanguageCodeEnumAsaTz:        "Asu (Tanzania)",
+		LanguageCodeEnumAst:          "Asturian",
+		LanguageCodeEnumAstEs:        "Asturian (Spain)",
+		LanguageCodeEnumAz:           "Azerbaijani",
+		LanguageCodeEnumAzCyrl:       "Azerbaijani (Cyrillic)",
+		LanguageCodeEnumAzCyrlAz:     "Azerbaijani (Cyrillic, Azerbaijan)",
+		LanguageCodeEnumAzLatn:       "Azerbaijani (Latin)",
+		LanguageCodeEnumAzLatnAz:     "Azerbaijani (Latin, Azerbaijan)",
+		LanguageCodeEnumBas:          "Basaa",
+		LanguageCodeEnumBasCm:        "Basaa (Cameroon)",
+		LanguageCodeEnumBe:           "Belarusian",
+		LanguageCodeEnumBeBy:         "Belarusian (Belarus)",
+		LanguageCodeEnumBem:          "Bemba",
+		LanguageCodeEnumBemZm:        "Bemba (Zambia)",
+		LanguageCodeEnumBez:          "Bena",
+		LanguageCodeEnumBezTz:        "Bena (Tanzania)",
+		LanguageCodeEnumBg:           "Bulgarian",
+		LanguageCodeEnumBgBg:         "Bulgarian (Bulgaria)",
+		LanguageCodeEnumBm:           "Bambara",
+		LanguageCodeEnumBmMl:         "Bambara (Mali)",
+		LanguageCodeEnumBn:           "Bangla",
+		LanguageCodeEnumBnBd:         "Bangla (Bangladesh)",
+		LanguageCodeEnumBnIn:         "Bangla (India)",
+		LanguageCodeEnumBo:           "Tibetan",
+		LanguageCodeEnumBoCn:         "Tibetan (China)",
+		LanguageCodeEnumBoIn:         "Tibetan (India)",
+		LanguageCodeEnumBr:           "Breton",
+		LanguageCodeEnumBrFr:         "Breton (France)",
+		LanguageCodeEnumBrx:          "Bodo",
+		LanguageCodeEnumBrxIn:        "Bodo (India)",
+		LanguageCodeEnumBs:           "Bosnian",
+		LanguageCodeEnumBsCyrl:       "Bosnian (Cyrillic)",
+		LanguageCodeEnumBsCyrlBa:     "Bosnian (Cyrillic, Bosnia & Herzegovina)",
+		LanguageCodeEnumBsLatn:       "Bosnian (Latin)",
+		LanguageCodeEnumBsLatnBa:     "Bosnian (Latin, Bosnia & Herzegovina)",
+		LanguageCodeEnumCa:           "Catalan",
+		LanguageCodeEnumCaAd:         "Catalan (Andorra)",
+		LanguageCodeEnumCaEs:         "Catalan (Spain)",
+		LanguageCodeEnumCaEsValencia: "Catalan (Spain, Valencian)",
+		LanguageCodeEnumCaFr:         "Catalan (France)",
+		LanguageCodeEnumCaIt:         "Catalan (Italy)",
+		LanguageCodeEnumCcp:          "Chakma",
+		LanguageCodeEnumCcpBd:        "Chakma (Bangladesh)",
+		LanguageCodeEnumCcpIn:        "Chakma (India)",
+		LanguageCodeEnumCe:           "Chechen",
+		LanguageCodeEnumCeRu:         "Chechen (Russia)",
+		LanguageCodeEnumCeb:          "Cebuano",
+		LanguageCodeEnumCebPh:        "Cebuano (Philippines)",
+		LanguageCodeEnumCgg:          "Chiga",
+		LanguageCodeEnumCggUg:        "Chiga (Uganda)",
+		LanguageCodeEnumChr:          "Cherokee",
+		LanguageCodeEnumChrUs:        "Cherokee (United States)",
+		LanguageCodeEnumCkb:          "Central Kurdish",
+		LanguageCodeEnumCkbIq:        "Central Kurdish (Iraq)",
+		LanguageCodeEnumCkbIr:        "Central Kurdish (Iran)",
+		LanguageCodeEnumCs:           "Czech",
+		LanguageCodeEnumCsCz:         "Czech (Czechia)",
+		LanguageCodeEnumCu:           "Church Slavic",
+		LanguageCodeEnumCuRu:         "Church Slavic (Russia)",
+		LanguageCodeEnumCy:           "Welsh",
+		LanguageCodeEnumCyGb:         "Welsh (United Kingdom)",
+		LanguageCodeEnumDa:           "Danish",
+		LanguageCodeEnumDaDk:         "Danish (Denmark)",
+		LanguageCodeEnumDaGl:         "Danish (Greenland)",
+		LanguageCodeEnumDav:          "Taita",
+		LanguageCodeEnumDavKe:        "Taita (Kenya)",
+		LanguageCodeEnumDe:           "German",
+		LanguageCodeEnumDeAt:         "German (Austria)",
+		LanguageCodeEnumDeBe:         "German (Belgium)",
+		LanguageCodeEnumDeCh:         "German (Switzerland)",
+		LanguageCodeEnumDeDe:         "German (Germany)",
+		LanguageCodeEnumDeIt:         "German (Italy)",
+		LanguageCodeEnumDeLi:         "German (Liechtenstein)",
+		LanguageCodeEnumDeLu:         "German (Luxembourg)",
+		LanguageCodeEnumDje:          "Zarma",
+		LanguageCodeEnumDjeNe:        "Zarma (Niger)",
+		LanguageCodeEnumDsb:          "Lower Sorbian",
+		LanguageCodeEnumDsbDe:        "Lower Sorbian (Germany)",
+		LanguageCodeEnumDua:          "Duala",
+		LanguageCodeEnumDuaCm:        "Duala (Cameroon)",
+		LanguageCodeEnumDyo:          "Jola-Fonyi",
+		LanguageCodeEnumDyoSn:        "Jola-Fonyi (Senegal)",
+		LanguageCodeEnumDz:           "Dzongkha",
+		LanguageCodeEnumDzBt:         "Dzongkha (Bhutan)",
+		LanguageCodeEnumEbu:          "Embu",
+		LanguageCodeEnumEbuKe:        "Embu (Kenya)",
+		LanguageCodeEnumEe:           "Ewe",
+		LanguageCodeEnumEeGh:         "Ewe (Ghana)",
+		LanguageCodeEnumEeTg:         "Ewe (Togo)",
+		LanguageCodeEnumEl:           "Greek",
+		LanguageCodeEnumElCy:         "Greek (Cyprus)",
+		LanguageCodeEnumElGr:         "Greek (Greece)",
+		LanguageCodeEnumEn:           "English",
+		LanguageCodeEnumEnAe:         "English (United Arab Emirates)",
+		LanguageCodeEnumEnAg:         "English (Antigua & Barbuda)",
+		LanguageCodeEnumEnAi:         "English (Anguilla)",
+		LanguageCodeEnumEnAs:         "English (American Samoa)",
+		LanguageCodeEnumEnAt:         "English (Austria)",
+		LanguageCodeEnumEnAu:         "English (Australia)",
+		LanguageCodeEnumEnBb:         "English (Barbados)",
+		LanguageCodeEnumEnBe:         "English (Belgium)",
+		LanguageCodeEnumEnBi:         "English (Burundi)",
+		LanguageCodeEnumEnBm:         "English (Bermuda)",
+		LanguageCodeEnumEnBs:         "English (Bahamas)",
+		LanguageCodeEnumEnBw:         "English (Botswana)",
+		LanguageCodeEnumEnBz:         "English (Belize)",
+		LanguageCodeEnumEnCa:         "English (Canada)",
+		LanguageCodeEnumEnCc:         "English (Cocos (Keeling) Islands)",
+		LanguageCodeEnumEnCh:         "English (Switzerland)",
+		LanguageCodeEnumEnCk:         "English (Cook Islands)",
+		LanguageCodeEnumEnCm:         "English (Cameroon)",
+		LanguageCodeEnumEnCx:         "English (Christmas Island)",
+		LanguageCodeEnumEnCy:         "English (Cyprus)",
+		LanguageCodeEnumEnDe:         "English (Germany)",
+		LanguageCodeEnumEnDg:         "English (Diego Garcia)",
+		LanguageCodeEnumEnDk:         "English (Denmark)",
+		LanguageCodeEnumEnDm:         "English (Dominica)",
+		LanguageCodeEnumEnEr:         "English (Eritrea)",
+		LanguageCodeEnumEnFi:         "English (Finland)",
+		LanguageCodeEnumEnFj:         "English (Fiji)",
+		LanguageCodeEnumEnFk:         "English (Falkland Islands)",
+		LanguageCodeEnumEnFm:         "English (Micronesia)",
+		LanguageCodeEnumEnGb:         "English (United Kingdom)",
+		LanguageCodeEnumEnGd:         "English (Grenada)",
+		LanguageCodeEnumEnGg:         "English (Guernsey)",
+		LanguageCodeEnumEnGh:         "English (Ghana)",
+		LanguageCodeEnumEnGi:         "English (Gibraltar)",
+		LanguageCodeEnumEnGm:         "English (Gambia)",
+		LanguageCodeEnumEnGu:         "English (Guam)",
+		LanguageCodeEnumEnGy:         "English (Guyana)",
+		LanguageCodeEnumEnHk:         "English (Hong Kong SAR China)",
+		LanguageCodeEnumEnIe:         "English (Ireland)",
+		LanguageCodeEnumEnIl:         "English (Israel)",
+		LanguageCodeEnumEnIm:         "English (Isle of Man)",
+		LanguageCodeEnumEnIn:         "English (India)",
+		LanguageCodeEnumEnIo:         "English (British Indian Ocean Territory)",
+		LanguageCodeEnumEnJe:         "English (Jersey)",
+		LanguageCodeEnumEnJm:         "English (Jamaica)",
+		LanguageCodeEnumEnKe:         "English (Kenya)",
+		LanguageCodeEnumEnKi:         "English (Kiribati)",
+		LanguageCodeEnumEnKn:         "English (St. Kitts & Nevis)",
+		LanguageCodeEnumEnKy:         "English (Cayman Islands)",
+		LanguageCodeEnumEnLc:         "English (St. Lucia)",
+		LanguageCodeEnumEnLr:         "English (Liberia)",
+		LanguageCodeEnumEnLs:         "English (Lesotho)",
+		LanguageCodeEnumEnMg:         "English (Madagascar)",
+		LanguageCodeEnumEnMh:         "English (Marshall Islands)",
+		LanguageCodeEnumEnMo:         "English (Macao SAR China)",
+		LanguageCodeEnumEnMp:         "English (Northern Mariana Islands)",
+		LanguageCodeEnumEnMs:         "English (Montserrat)",
+		LanguageCodeEnumEnMt:         "English (Malta)",
+		LanguageCodeEnumEnMu:         "English (Mauritius)",
+		LanguageCodeEnumEnMw:         "English (Malawi)",
+		LanguageCodeEnumEnMy:         "English (Malaysia)",
+		LanguageCodeEnumEnNa:         "English (Namibia)",
+		LanguageCodeEnumEnNf:         "English (Norfolk Island)",
+		LanguageCodeEnumEnNg:         "English (Nigeria)",
+		LanguageCodeEnumEnNl:         "English (Netherlands)",
+		LanguageCodeEnumEnNr:         "English (Nauru)",
+		LanguageCodeEnumEnNu:         "English (Niue)",
+		LanguageCodeEnumEnNz:         "English (New Zealand)",
+		LanguageCodeEnumEnPg:         "English (Papua New Guinea)",
+		LanguageCodeEnumEnPh:         "English (Philippines)",
+		LanguageCodeEnumEnPk:         "English (Pakistan)",
+		LanguageCodeEnumEnPn:         "English (Pitcairn Islands)",
+		LanguageCodeEnumEnPr:         "English (Puerto Rico)",
+		LanguageCodeEnumEnPw:         "English (Palau)",
+		LanguageCodeEnumEnRw:         "English (Rwanda)",
+		LanguageCodeEnumEnSb:         "English (Solomon Islands)",
+		LanguageCodeEnumEnSc:         "English (Seychelles)",
+		LanguageCodeEnumEnSd:         "English (Sudan)",
+		LanguageCodeEnumEnSe:         "English (Sweden)",
+		LanguageCodeEnumEnSg:         "English (Singapore)",
+		LanguageCodeEnumEnSh:         "English (St. Helena)",
+		LanguageCodeEnumEnSi:         "English (Slovenia)",
+		LanguageCodeEnumEnSl:         "English (Sierra Leone)",
+		LanguageCodeEnumEnSs:         "English (South Sudan)",
+		LanguageCodeEnumEnSx:         "English (Sint Maarten)",
+		LanguageCodeEnumEnSz:         "English (Eswatini)",
+		LanguageCodeEnumEnTc:         "English (Turks & Caicos Islands)",
+		LanguageCodeEnumEnTk:         "English (Tokelau)",
+		LanguageCodeEnumEnTo:         "English (Tonga)",
+		LanguageCodeEnumEnTt:         "English (Trinidad & Tobago)",
+		LanguageCodeEnumEnTv:         "English (Tuvalu)",
+		LanguageCodeEnumEnTz:         "English (Tanzania)",
+		LanguageCodeEnumEnUg:         "English (Uganda)",
+		LanguageCodeEnumEnUm:         "English (U.S. Outlying Islands)",
+		LanguageCodeEnumEnUs:         "English (United States)",
+		LanguageCodeEnumEnVc:         "English (St. Vincent & Grenadines)",
+		LanguageCodeEnumEnVg:         "English (British Virgin Islands)",
+		LanguageCodeEnumEnVi:         "English (U.S. Virgin Islands)",
+		LanguageCodeEnumEnVu:         "English (Vanuatu)",
+		LanguageCodeEnumEnWs:         "English (Samoa)",
+		LanguageCodeEnumEnZa:         "English (South Africa)",
+		LanguageCodeEnumEnZm:         "English (Zambia)",
+		LanguageCodeEnumEnZw:         "English (Zimbabwe)",
+		LanguageCodeEnumEo:           "Esperanto",
+		LanguageCodeEnumEs:           "Spanish",
+		LanguageCodeEnumEsAr:         "Spanish (Argentina)",
+		LanguageCodeEnumEsBo:         "Spanish (Bolivia)",
+		LanguageCodeEnumEsBr:         "Spanish (Brazil)",
+		LanguageCodeEnumEsBz:         "Spanish (Belize)",
+		LanguageCodeEnumEsCl:         "Spanish (Chile)",
+		LanguageCodeEnumEsCo:         "Spanish (Colombia)",
+		LanguageCodeEnumEsCr:         "Spanish (Costa Rica)",
+		LanguageCodeEnumEsCu:         "Spanish (Cuba)",
+		LanguageCodeEnumEsDo:         "Spanish (Dominican Republic)",
+		LanguageCodeEnumEsEa:         "Spanish (Ceuta & Melilla)",
+		LanguageCodeEnumEsEc:         "Spanish (Ecuador)",
+		LanguageCodeEnumEsEs:         "Spanish (Spain)",
+		LanguageCodeEnumEsGq:         "Spanish (Equatorial Guinea)",
+		LanguageCodeEnumEsGt:         "Spanish (Guatemala)",
+		LanguageCodeEnumEsHn:         "Spanish (Honduras)",
+		LanguageCodeEnumEsIc:         "Spanish (Canary Islands)",
+		LanguageCodeEnumEsMx:         "Spanish (Mexico)",
+		LanguageCodeEnumEsNi:         "Spanish (Nicaragua)",
+		LanguageCodeEnumEsPa:         "Spanish (Panama)",
+		LanguageCodeEnumEsPe:         "Spanish (Peru)",
+		LanguageCodeEnumEsPh:         "Spanish (Philippines)",
+		LanguageCodeEnumEsPr:         "Spanish (Puerto Rico)",
+		LanguageCodeEnumEsPy:         "Spanish (Paraguay)",
+		LanguageCodeEnumEsSv:         "Spanish (El Salvador)",
+		LanguageCodeEnumEsUs:         "Spanish (United States)",
+		LanguageCodeEnumEsUy:         "Spanish (Uruguay)",
+		LanguageCodeEnumEsVe:         "Spanish (Venezuela)",
+		LanguageCodeEnumEt:           "Estonian",
+		LanguageCodeEnumEtEe:         "Estonian (Estonia)",
+		LanguageCodeEnumEu:           "Basque",
+		LanguageCodeEnumEuEs:         "Basque (Spain)",
+		LanguageCodeEnumEwo:          "Ewondo",
+		LanguageCodeEnumEwoCm:        "Ewondo (Cameroon)",
+		LanguageCodeEnumFa:           "Persian",
+		LanguageCodeEnumFaAf:         "Persian (Afghanistan)",
+		LanguageCodeEnumFaIr:         "Persian (Iran)",
+		LanguageCodeEnumFf:           "Fulah",
+		LanguageCodeEnumFfAdlm:       "Fulah (Adlam)",
+		LanguageCodeEnumFfAdlmBf:     "Fulah (Adlam, Burkina Faso)",
+		LanguageCodeEnumFfAdlmCm:     "Fulah (Adlam, Cameroon)",
+		LanguageCodeEnumFfAdlmGh:     "Fulah (Adlam, Ghana)",
+		LanguageCodeEnumFfAdlmGm:     "Fulah (Adlam, Gambia)",
+		LanguageCodeEnumFfAdlmGn:     "Fulah (Adlam, Guinea)",
+		LanguageCodeEnumFfAdlmGw:     "Fulah (Adlam, Guinea-Bissau)",
+		LanguageCodeEnumFfAdlmLr:     "Fulah (Adlam, Liberia)",
+		LanguageCodeEnumFfAdlmMr:     "Fulah (Adlam, Mauritania)",
+		LanguageCodeEnumFfAdlmNe:     "Fulah (Adlam, Niger)",
+		LanguageCodeEnumFfAdlmNg:     "Fulah (Adlam, Nigeria)",
+		LanguageCodeEnumFfAdlmSl:     "Fulah (Adlam, Sierra Leone)",
+		LanguageCodeEnumFfAdlmSn:     "Fulah (Adlam, Senegal)",
+		LanguageCodeEnumFfLatn:       "Fulah (Latin)",
+		LanguageCodeEnumFfLatnBf:     "Fulah (Latin, Burkina Faso)",
+		LanguageCodeEnumFfLatnCm:     "Fulah (Latin, Cameroon)",
+		LanguageCodeEnumFfLatnGh:     "Fulah (Latin, Ghana)",
+		LanguageCodeEnumFfLatnGm:     "Fulah (Latin, Gambia)",
+		LanguageCodeEnumFfLatnGn:     "Fulah (Latin, Guinea)",
+		LanguageCodeEnumFfLatnGw:     "Fulah (Latin, Guinea-Bissau)",
+		LanguageCodeEnumFfLatnLr:     "Fulah (Latin, Liberia)",
+		LanguageCodeEnumFfLatnMr:     "Fulah (Latin, Mauritania)",
+		LanguageCodeEnumFfLatnNe:     "Fulah (Latin, Niger)",
+		LanguageCodeEnumFfLatnNg:     "Fulah (Latin, Nigeria)",
+		LanguageCodeEnumFfLatnSl:     "Fulah (Latin, Sierra Leone)",
+		LanguageCodeEnumFfLatnSn:     "Fulah (Latin, Senegal)",
+		LanguageCodeEnumFi:           "Finnish",
+		LanguageCodeEnumFiFi:         "Finnish (Finland)",
+		LanguageCodeEnumFil:          "Filipino",
+		LanguageCodeEnumFilPh:        "Filipino (Philippines)",
+		LanguageCodeEnumFo:           "Faroese",
+		LanguageCodeEnumFoDk:         "Faroese (Denmark)",
+		LanguageCodeEnumFoFo:         "Faroese (Faroe Islands)",
+		LanguageCodeEnumFr:           "French",
+		LanguageCodeEnumFrBe:         "French (Belgium)",
+		LanguageCodeEnumFrBf:         "French (Burkina Faso)",
+		LanguageCodeEnumFrBi:         "French (Burundi)",
+		LanguageCodeEnumFrBj:         "French (Benin)",
+		LanguageCodeEnumFrBl:         "French (St. Barth\u00e9lemy)",
+		LanguageCodeEnumFrCa:         "French (Canada)",
+		LanguageCodeEnumFrCd:         "French (Congo - Kinshasa)",
+		LanguageCodeEnumFrCf:         "French (Central African Republic)",
+		LanguageCodeEnumFrCg:         "French (Congo - Brazzaville)",
+		LanguageCodeEnumFrCh:         "French (Switzerland)",
+		LanguageCodeEnumFrCi:         "French (C\u00f4te d\u2019Ivoire)",
+		LanguageCodeEnumFrCm:         "French (Cameroon)",
+		LanguageCodeEnumFrDj:         "French (Djibouti)",
+		LanguageCodeEnumFrDz:         "French (Algeria)",
+		LanguageCodeEnumFrFr:         "French (France)",
+		LanguageCodeEnumFrGa:         "French (Gabon)",
+		LanguageCodeEnumFrGf:         "French (French Guiana)",
+		LanguageCodeEnumFrGn:         "French (Guinea)",
+		LanguageCodeEnumFrGp:         "French (Guadeloupe)",
+		LanguageCodeEnumFrGq:         "French (Equatorial Guinea)",
+		LanguageCodeEnumFrHt:         "French (Haiti)",
+		LanguageCodeEnumFrKm:         "French (Comoros)",
+		LanguageCodeEnumFrLu:         "French (Luxembourg)",
+		LanguageCodeEnumFrMa:         "French (Morocco)",
+		LanguageCodeEnumFrMc:         "French (Monaco)",
+		LanguageCodeEnumFrMf:         "French (St. Martin)",
+		LanguageCodeEnumFrMg:         "French (Madagascar)",
+		LanguageCodeEnumFrMl:         "French (Mali)",
+		LanguageCodeEnumFrMq:         "French (Martinique)",
+		LanguageCodeEnumFrMr:         "French (Mauritania)",
+		LanguageCodeEnumFrMu:         "French (Mauritius)",
+		LanguageCodeEnumFrNc:         "French (New Caledonia)",
+		LanguageCodeEnumFrNe:         "French (Niger)",
+		LanguageCodeEnumFrPf:         "French (French Polynesia)",
+		LanguageCodeEnumFrPm:         "French (St. Pierre & Miquelon)",
+		LanguageCodeEnumFrRe:         "French (R\u00e9union)",
+		LanguageCodeEnumFrRw:         "French (Rwanda)",
+		LanguageCodeEnumFrSc:         "French (Seychelles)",
+		LanguageCodeEnumFrSn:         "French (Senegal)",
+		LanguageCodeEnumFrSy:         "French (Syria)",
+		LanguageCodeEnumFrTd:         "French (Chad)",
+		LanguageCodeEnumFrTg:         "French (Togo)",
+		LanguageCodeEnumFrTn:         "French (Tunisia)",
+		LanguageCodeEnumFrVu:         "French (Vanuatu)",
+		LanguageCodeEnumFrWf:         "French (Wallis & Futuna)",
+		LanguageCodeEnumFrYt:         "French (Mayotte)",
+		LanguageCodeEnumFur:          "Friulian",
+		LanguageCodeEnumFurIt:        "Friulian (Italy)",
+		LanguageCodeEnumFy:           "Western Frisian",
+		LanguageCodeEnumFyNl:         "Western Frisian (Netherlands)",
+		LanguageCodeEnumGa:           "Irish",
+		LanguageCodeEnumGaGb:         "Irish (United Kingdom)",
+		LanguageCodeEnumGaIe:         "Irish (Ireland)",
+		LanguageCodeEnumGd:           "Scottish Gaelic",
+		LanguageCodeEnumGdGb:         "Scottish Gaelic (United Kingdom)",
+		LanguageCodeEnumGl:           "Galician",
+		LanguageCodeEnumGlEs:         "Galician (Spain)",
+		LanguageCodeEnumGsw:          "Swiss German",
+		LanguageCodeEnumGswCh:        "Swiss German (Switzerland)",
+		LanguageCodeEnumGswFr:        "Swiss German (France)",
+		LanguageCodeEnumGswLi:        "Swiss German (Liechtenstein)",
+		LanguageCodeEnumGu:           "Gujarati",
+		LanguageCodeEnumGuIn:         "Gujarati (India)",
+		LanguageCodeEnumGuz:          "Gusii",
+		LanguageCodeEnumGuzKe:        "Gusii (Kenya)",
+		LanguageCodeEnumGv:           "Manx",
+		LanguageCodeEnumGvIm:         "Manx (Isle of Man)",
+		LanguageCodeEnumHa:           "Hausa",
+		LanguageCodeEnumHaGh:         "Hausa (Ghana)",
+		LanguageCodeEnumHaNe:         "Hausa (Niger)",
+		LanguageCodeEnumHaNg:         "Hausa (Nigeria)",
+		LanguageCodeEnumHaw:          "Hawaiian",
+		LanguageCodeEnumHawUs:        "Hawaiian (United States)",
+		LanguageCodeEnumHe:           "Hebrew",
+		LanguageCodeEnumHeIl:         "Hebrew (Israel)",
+		LanguageCodeEnumHi:           "Hindi",
+		LanguageCodeEnumHiIn:         "Hindi (India)",
+		LanguageCodeEnumHr:           "Croatian",
+		LanguageCodeEnumHrBa:         "Croatian (Bosnia & Herzegovina)",
+		LanguageCodeEnumHrHr:         "Croatian (Croatia)",
+		LanguageCodeEnumHsb:          "Upper Sorbian",
+		LanguageCodeEnumHsbDe:        "Upper Sorbian (Germany)",
+		LanguageCodeEnumHu:           "Hungarian",
+		LanguageCodeEnumHuHu:         "Hungarian (Hungary)",
+		LanguageCodeEnumHy:           "Armenian",
+		LanguageCodeEnumHyAm:         "Armenian (Armenia)",
+		LanguageCodeEnumIa:           "Interlingua",
+		LanguageCodeEnumId:           "Indonesian",
+		LanguageCodeEnumIDID:         "Indonesian (Indonesia)",
+		LanguageCodeEnumIg:           "Igbo",
+		LanguageCodeEnumIgNg:         "Igbo (Nigeria)",
+		LanguageCodeEnumIi:           "Sichuan Yi",
+		LanguageCodeEnumIiCn:         "Sichuan Yi (China)",
+		LanguageCodeEnumIs:           "Icelandic",
+		LanguageCodeEnumIsIs:         "Icelandic (Iceland)",
+		LanguageCodeEnumIt:           "Italian",
+		LanguageCodeEnumItCh:         "Italian (Switzerland)",
+		LanguageCodeEnumItIt:         "Italian (Italy)",
+		LanguageCodeEnumItSm:         "Italian (San Marino)",
+		LanguageCodeEnumItVa:         "Italian (Vatican City)",
+		LanguageCodeEnumJa:           "Japanese",
+		LanguageCodeEnumJaJp:         "Japanese (Japan)",
+		LanguageCodeEnumJgo:          "Ngomba",
+		LanguageCodeEnumJgoCm:        "Ngomba (Cameroon)",
+		LanguageCodeEnumJmc:          "Machame",
+		LanguageCodeEnumJmcTz:        "Machame (Tanzania)",
+		LanguageCodeEnumJv:           "Javanese",
+		LanguageCodeEnumJvID:         "Javanese (Indonesia)",
+		LanguageCodeEnumKa:           "Georgian",
+		LanguageCodeEnumKaGe:         "Georgian (Georgia)",
+		LanguageCodeEnumKab:          "Kabyle",
+		LanguageCodeEnumKabDz:        "Kabyle (Algeria)",
+		LanguageCodeEnumKam:          "Kamba",
+		LanguageCodeEnumKamKe:        "Kamba (Kenya)",
+		LanguageCodeEnumKde:          "Makonde",
+		LanguageCodeEnumKdeTz:        "Makonde (Tanzania)",
+		LanguageCodeEnumKea:          "Kabuverdianu",
+		LanguageCodeEnumKeaCv:        "Kabuverdianu (Cape Verde)",
+		LanguageCodeEnumKhq:          "Koyra Chiini",
+		LanguageCodeEnumKhqMl:        "Koyra Chiini (Mali)",
+		LanguageCodeEnumKi:           "Kikuyu",
+		LanguageCodeEnumKiKe:         "Kikuyu (Kenya)",
+		LanguageCodeEnumKk:           "Kazakh",
+		LanguageCodeEnumKkKz:         "Kazakh (Kazakhstan)",
+		LanguageCodeEnumKkj:          "Kako",
+		LanguageCodeEnumKkjCm:        "Kako (Cameroon)",
+		LanguageCodeEnumKl:           "Kalaallisut",
+		LanguageCodeEnumKlGl:         "Kalaallisut (Greenland)",
+		LanguageCodeEnumKln:          "Kalenjin",
+		LanguageCodeEnumKlnKe:        "Kalenjin (Kenya)",
+		LanguageCodeEnumKm:           "Khmer",
+		LanguageCodeEnumKmKh:         "Khmer (Cambodia)",
+		LanguageCodeEnumKn:           "Kannada",
+		LanguageCodeEnumKnIn:         "Kannada (India)",
+		LanguageCodeEnumKo:           "Korean",
+		LanguageCodeEnumKoKp:         "Korean (North Korea)",
+		LanguageCodeEnumKoKr:         "Korean (South Korea)",
+		LanguageCodeEnumKok:          "Konkani",
+		LanguageCodeEnumKokIn:        "Konkani (India)",
+		LanguageCodeEnumKs:           "Kashmiri",
+		LanguageCodeEnumKsArab:       "Kashmiri (Arabic)",
+		LanguageCodeEnumKsArabIn:     "Kashmiri (Arabic, India)",
+		LanguageCodeEnumKsb:          "Shambala",
+		LanguageCodeEnumKsbTz:        "Shambala (Tanzania)",
+		LanguageCodeEnumKsf:          "Bafia",
+		LanguageCodeEnumKsfCm:        "Bafia (Cameroon)",
+		LanguageCodeEnumKsh:          "Colognian",
+		LanguageCodeEnumKshDe:        "Colognian (Germany)",
+		LanguageCodeEnumKu:           "Kurdish",
+		LanguageCodeEnumKuTr:         "Kurdish (Turkey)",
+		LanguageCodeEnumKw:           "Cornish",
+		LanguageCodeEnumKwGb:         "Cornish (United Kingdom)",
+		LanguageCodeEnumKy:           "Kyrgyz",
+		LanguageCodeEnumKyKg:         "Kyrgyz (Kyrgyzstan)",
+		LanguageCodeEnumLag:          "Langi",
+		LanguageCodeEnumLagTz:        "Langi (Tanzania)",
+		LanguageCodeEnumLb:           "Luxembourgish",
+		LanguageCodeEnumLbLu:         "Luxembourgish (Luxembourg)",
+		LanguageCodeEnumLg:           "Ganda",
+		LanguageCodeEnumLgUg:         "Ganda (Uganda)",
+		LanguageCodeEnumLkt:          "Lakota",
+		LanguageCodeEnumLktUs:        "Lakota (United States)",
+		LanguageCodeEnumLn:           "Lingala",
+		LanguageCodeEnumLnAo:         "Lingala (Angola)",
+		LanguageCodeEnumLnCd:         "Lingala (Congo - Kinshasa)",
+		LanguageCodeEnumLnCf:         "Lingala (Central African Republic)",
+		LanguageCodeEnumLnCg:         "Lingala (Congo - Brazzaville)",
+		LanguageCodeEnumLo:           "Lao",
+		LanguageCodeEnumLoLa:         "Lao (Laos)",
+		LanguageCodeEnumLrc:          "Northern Luri",
+		LanguageCodeEnumLrcIq:        "Northern Luri (Iraq)",
+		LanguageCodeEnumLrcIr:        "Northern Luri (Iran)",
+		LanguageCodeEnumLt:           "Lithuanian",
+		LanguageCodeEnumLtLt:         "Lithuanian (Lithuania)",
+		LanguageCodeEnumLu:           "Luba-Katanga",
+		LanguageCodeEnumLuCd:         "Luba-Katanga (Congo - Kinshasa)",
+		LanguageCodeEnumLuo:          "Luo",
+		LanguageCodeEnumLuoKe:        "Luo (Kenya)",
+		LanguageCodeEnumLuy:          "Luyia",
+		LanguageCodeEnumLuyKe:        "Luyia (Kenya)",
+		LanguageCodeEnumLv:           "Latvian",
+		LanguageCodeEnumLvLv:         "Latvian (Latvia)",
+		LanguageCodeEnumMai:          "Maithili",
+		LanguageCodeEnumMaiIn:        "Maithili (India)",
+		LanguageCodeEnumMas:          "Masai",
+		LanguageCodeEnumMasKe:        "Masai (Kenya)",
+		LanguageCodeEnumMasTz:        "Masai (Tanzania)",
+		LanguageCodeEnumMer:          "Meru",
+		LanguageCodeEnumMerKe:        "Meru (Kenya)",
+		LanguageCodeEnumMfe:          "Morisyen",
+		LanguageCodeEnumMfeMu:        "Morisyen (Mauritius)",
+		LanguageCodeEnumMg:           "Malagasy",
+		LanguageCodeEnumMgMg:         "Malagasy (Madagascar)",
+		LanguageCodeEnumMgh:          "Makhuwa-Meetto",
+		LanguageCodeEnumMghMz:        "Makhuwa-Meetto (Mozambique)",
+		LanguageCodeEnumMgo:          "Meta\u02bc",
+		LanguageCodeEnumMgoCm:        "Meta\u02bc (Cameroon)",
+		LanguageCodeEnumMi:           "Maori",
+		LanguageCodeEnumMiNz:         "Maori (New Zealand)",
+		LanguageCodeEnumMk:           "Macedonian",
+		LanguageCodeEnumMkMk:         "Macedonian (North Macedonia)",
+		LanguageCodeEnumMl:           "Malayalam",
+		LanguageCodeEnumMlIn:         "Malayalam (India)",
+		LanguageCodeEnumMn:           "Mongolian",
+		LanguageCodeEnumMnMn:         "Mongolian (Mongolia)",
+		LanguageCodeEnumMni:          "Manipuri",
+		LanguageCodeEnumMniBeng:      "Manipuri (Bangla)",
+		LanguageCodeEnumMniBengIn:    "Manipuri (Bangla, India)",
+		LanguageCodeEnumMr:           "Marathi",
+		LanguageCodeEnumMrIn:         "Marathi (India)",
+		LanguageCodeEnumMs:           "Malay",
+		LanguageCodeEnumMsBn:         "Malay (Brunei)",
+		LanguageCodeEnumMsID:         "Malay (Indonesia)",
+		LanguageCodeEnumMsMy:         "Malay (Malaysia)",
+		LanguageCodeEnumMsSg:         "Malay (Singapore)",
+		LanguageCodeEnumMt:           "Maltese",
+		LanguageCodeEnumMtMt:         "Maltese (Malta)",
+		LanguageCodeEnumMua:          "Mundang",
+		LanguageCodeEnumMuaCm:        "Mundang (Cameroon)",
+		LanguageCodeEnumMy:           "Burmese",
+		LanguageCodeEnumMyMm:         "Burmese (Myanmar (Burma))",
+		LanguageCodeEnumMzn:          "Mazanderani",
+		LanguageCodeEnumMznIr:        "Mazanderani (Iran)",
+		LanguageCodeEnumNaq:          "Nama",
+		LanguageCodeEnumNaqNa:        "Nama (Namibia)",
+		LanguageCodeEnumNb:           "Norwegian Bokm\u00e5l",
+		LanguageCodeEnumNbNo:         "Norwegian Bokm\u00e5l (Norway)",
+		LanguageCodeEnumNbSj:         "Norwegian Bokm\u00e5l (Svalbard & Jan Mayen)",
+		LanguageCodeEnumNd:           "North Ndebele",
+		LanguageCodeEnumNdZw:         "North Ndebele (Zimbabwe)",
+		LanguageCodeEnumNds:          "Low German",
+		LanguageCodeEnumNdsDe:        "Low German (Germany)",
+		LanguageCodeEnumNdsNl:        "Low German (Netherlands)",
+		LanguageCodeEnumNe:           "Nepali",
+		LanguageCodeEnumNeIn:         "Nepali (India)",
+		LanguageCodeEnumNeNp:         "Nepali (Nepal)",
+		LanguageCodeEnumNl:           "Dutch",
+		LanguageCodeEnumNlAw:         "Dutch (Aruba)",
+		LanguageCodeEnumNlBe:         "Dutch (Belgium)",
+		LanguageCodeEnumNlBq:         "Dutch (Caribbean Netherlands)",
+		LanguageCodeEnumNlCw:         "Dutch (Cura\u00e7ao)",
+		LanguageCodeEnumNlNl:         "Dutch (Netherlands)",
+		LanguageCodeEnumNlSr:         "Dutch (Suriname)",
+		LanguageCodeEnumNlSx:         "Dutch (Sint Maarten)",
+		LanguageCodeEnumNmg:          "Kwasio",
+		LanguageCodeEnumNmgCm:        "Kwasio (Cameroon)",
+		LanguageCodeEnumNn:           "Norwegian Nynorsk",
+		LanguageCodeEnumNnNo:         "Norwegian Nynorsk (Norway)",
+		LanguageCodeEnumNnh:          "Ngiemboon",
+		LanguageCodeEnumNnhCm:        "Ngiemboon (Cameroon)",
+		LanguageCodeEnumNus:          "Nuer",
+		LanguageCodeEnumNusSs:        "Nuer (South Sudan)",
+		LanguageCodeEnumNyn:          "Nyankole",
+		LanguageCodeEnumNynUg:        "Nyankole (Uganda)",
+		LanguageCodeEnumOm:           "Oromo",
+		LanguageCodeEnumOmEt:         "Oromo (Ethiopia)",
+		LanguageCodeEnumOmKe:         "Oromo (Kenya)",
+		LanguageCodeEnumOr:           "Odia",
+		LanguageCodeEnumOrIn:         "Odia (India)",
+		LanguageCodeEnumOs:           "Ossetic",
+		LanguageCodeEnumOsGe:         "Ossetic (Georgia)",
+		LanguageCodeEnumOsRu:         "Ossetic (Russia)",
+		LanguageCodeEnumPa:           "Punjabi",
+		LanguageCodeEnumPaArab:       "Punjabi (Arabic)",
+		LanguageCodeEnumPaArabPk:     "Punjabi (Arabic, Pakistan)",
+		LanguageCodeEnumPaGuru:       "Punjabi (Gurmukhi)",
+		LanguageCodeEnumPaGuruIn:     "Punjabi (Gurmukhi, India)",
+		LanguageCodeEnumPcm:          "Nigerian Pidgin",
+		LanguageCodeEnumPcmNg:        "Nigerian Pidgin (Nigeria)",
+		LanguageCodeEnumPl:           "Polish",
+		LanguageCodeEnumPlPl:         "Polish (Poland)",
+		LanguageCodeEnumPrg:          "Prussian",
+		LanguageCodeEnumPs:           "Pashto",
+		LanguageCodeEnumPsAf:         "Pashto (Afghanistan)",
+		LanguageCodeEnumPsPk:         "Pashto (Pakistan)",
+		LanguageCodeEnumPt:           "Portuguese",
+		LanguageCodeEnumPtAo:         "Portuguese (Angola)",
+		LanguageCodeEnumPtBr:         "Portuguese (Brazil)",
+		LanguageCodeEnumPtCh:         "Portuguese (Switzerland)",
+		LanguageCodeEnumPtCv:         "Portuguese (Cape Verde)",
+		LanguageCodeEnumPtGq:         "Portuguese (Equatorial Guinea)",
+		LanguageCodeEnumPtGw:         "Portuguese (Guinea-Bissau)",
+		LanguageCodeEnumPtLu:         "Portuguese (Luxembourg)",
+		LanguageCodeEnumPtMo:         "Portuguese (Macao SAR China)",
+		LanguageCodeEnumPtMz:         "Portuguese (Mozambique)",
+		LanguageCodeEnumPtPt:         "Portuguese (Portugal)",
+		LanguageCodeEnumPtSt:         "Portuguese (S\u00e3o Tom\u00e9 & Pr\u00edncipe)",
+		LanguageCodeEnumPtTl:         "Portuguese (Timor-Leste)",
+		LanguageCodeEnumQu:           "Quechua",
+		LanguageCodeEnumQuBo:         "Quechua (Bolivia)",
+		LanguageCodeEnumQuEc:         "Quechua (Ecuador)",
+		LanguageCodeEnumQuPe:         "Quechua (Peru)",
+		LanguageCodeEnumRm:           "Romansh",
+		LanguageCodeEnumRmCh:         "Romansh (Switzerland)",
+		LanguageCodeEnumRn:           "Rundi",
+		LanguageCodeEnumRnBi:         "Rundi (Burundi)",
+		LanguageCodeEnumRo:           "Romanian",
+		LanguageCodeEnumRoMd:         "Romanian (Moldova)",
+		LanguageCodeEnumRoRo:         "Romanian (Romania)",
+		LanguageCodeEnumRof:          "Rombo",
+		LanguageCodeEnumRofTz:        "Rombo (Tanzania)",
+		LanguageCodeEnumRu:           "Russian",
+		LanguageCodeEnumRuBy:         "Russian (Belarus)",
+		LanguageCodeEnumRuKg:         "Russian (Kyrgyzstan)",
+		LanguageCodeEnumRuKz:         "Russian (Kazakhstan)",
+		LanguageCodeEnumRuMd:         "Russian (Moldova)",
+		LanguageCodeEnumRuRu:         "Russian (Russia)",
+		LanguageCodeEnumRuUa:         "Russian (Ukraine)",
+		LanguageCodeEnumRw:           "Kinyarwanda",
+		LanguageCodeEnumRwRw:         "Kinyarwanda (Rwanda)",
+		LanguageCodeEnumRwk:          "Rwa",
+		LanguageCodeEnumRwkTz:        "Rwa (Tanzania)",
+		LanguageCodeEnumSah:          "Sakha",
+		LanguageCodeEnumSahRu:        "Sakha (Russia)",
+		LanguageCodeEnumSaq:          "Samburu",
+		LanguageCodeEnumSaqKe:        "Samburu (Kenya)",
+		LanguageCodeEnumSat:          "Santali",
+		LanguageCodeEnumSatOlck:      "Santali (Ol Chiki)",
+		LanguageCodeEnumSatOlckIn:    "Santali (Ol Chiki, India)",
+		LanguageCodeEnumSbp:          "Sangu",
+		LanguageCodeEnumSbpTz:        "Sangu (Tanzania)",
+		LanguageCodeEnumSd:           "Sindhi",
+		LanguageCodeEnumSdArab:       "Sindhi (Arabic)",
+		LanguageCodeEnumSdArabPk:     "Sindhi (Arabic, Pakistan)",
+		LanguageCodeEnumSdDeva:       "Sindhi (Devanagari)",
+		LanguageCodeEnumSdDevaIn:     "Sindhi (Devanagari, India)",
+		LanguageCodeEnumSe:           "Northern Sami",
+		LanguageCodeEnumSeFi:         "Northern Sami (Finland)",
+		LanguageCodeEnumSeNo:         "Northern Sami (Norway)",
+		LanguageCodeEnumSeSe:         "Northern Sami (Sweden)",
+		LanguageCodeEnumSeh:          "Sena",
+		LanguageCodeEnumSehMz:        "Sena (Mozambique)",
+		LanguageCodeEnumSes:          "Koyraboro Senni",
+		LanguageCodeEnumSesMl:        "Koyraboro Senni (Mali)",
+		LanguageCodeEnumSg:           "Sango",
+		LanguageCodeEnumSgCf:         "Sango (Central African Republic)",
+		LanguageCodeEnumShi:          "Tachelhit",
+		LanguageCodeEnumShiLatn:      "Tachelhit (Latin)",
+		LanguageCodeEnumShiLatnMa:    "Tachelhit (Latin, Morocco)",
+		LanguageCodeEnumShiTfng:      "Tachelhit (Tifinagh)",
+		LanguageCodeEnumShiTfngMa:    "Tachelhit (Tifinagh, Morocco)",
+		LanguageCodeEnumSi:           "Sinhala",
+		LanguageCodeEnumSiLk:         "Sinhala (Sri Lanka)",
+		LanguageCodeEnumSk:           "Slovak",
+		LanguageCodeEnumSkSk:         "Slovak (Slovakia)",
+		LanguageCodeEnumSl:           "Slovenian",
+		LanguageCodeEnumSlSi:         "Slovenian (Slovenia)",
+		LanguageCodeEnumSmn:          "Inari Sami",
+		LanguageCodeEnumSmnFi:        "Inari Sami (Finland)",
+		LanguageCodeEnumSn:           "Shona",
+		LanguageCodeEnumSnZw:         "Shona (Zimbabwe)",
+		LanguageCodeEnumSo:           "Somali",
+		LanguageCodeEnumSoDj:         "Somali (Djibouti)",
+		LanguageCodeEnumSoEt:         "Somali (Ethiopia)",
+		LanguageCodeEnumSoKe:         "Somali (Kenya)",
+		LanguageCodeEnumSoSo:         "Somali (Somalia)",
+		LanguageCodeEnumSq:           "Albanian",
+		LanguageCodeEnumSqAl:         "Albanian (Albania)",
+		LanguageCodeEnumSqMk:         "Albanian (North Macedonia)",
+		LanguageCodeEnumSqXk:         "Albanian (Kosovo)",
+		LanguageCodeEnumSr:           "Serbian",
+		LanguageCodeEnumSrCyrl:       "Serbian (Cyrillic)",
+		LanguageCodeEnumSrCyrlBa:     "Serbian (Cyrillic, Bosnia & Herzegovina)",
+		LanguageCodeEnumSrCyrlMe:     "Serbian (Cyrillic, Montenegro)",
+		LanguageCodeEnumSrCyrlRs:     "Serbian (Cyrillic, Serbia)",
+		LanguageCodeEnumSrCyrlXk:     "Serbian (Cyrillic, Kosovo)",
+		LanguageCodeEnumSrLatn:       "Serbian (Latin)",
+		LanguageCodeEnumSrLatnBa:     "Serbian (Latin, Bosnia & Herzegovina)",
+		LanguageCodeEnumSrLatnMe:     "Serbian (Latin, Montenegro)",
+		LanguageCodeEnumSrLatnRs:     "Serbian (Latin, Serbia)",
+		LanguageCodeEnumSrLatnXk:     "Serbian (Latin, Kosovo)",
+		LanguageCodeEnumSu:           "Sundanese",
+		LanguageCodeEnumSuLatn:       "Sundanese (Latin)",
+		LanguageCodeEnumSuLatnID:     "Sundanese (Latin, Indonesia)",
+		LanguageCodeEnumSv:           "Swedish",
+		LanguageCodeEnumSvAx:         "Swedish (\u00c5land Islands)",
+		LanguageCodeEnumSvFi:         "Swedish (Finland)",
+		LanguageCodeEnumSvSe:         "Swedish (Sweden)",
+		LanguageCodeEnumSw:           "Swahili",
+		LanguageCodeEnumSwCd:         "Swahili (Congo - Kinshasa)",
+		LanguageCodeEnumSwKe:         "Swahili (Kenya)",
+		LanguageCodeEnumSwTz:         "Swahili (Tanzania)",
+		LanguageCodeEnumSwUg:         "Swahili (Uganda)",
+		LanguageCodeEnumTa:           "Tamil",
+		LanguageCodeEnumTaIn:         "Tamil (India)",
+		LanguageCodeEnumTaLk:         "Tamil (Sri Lanka)",
+		LanguageCodeEnumTaMy:         "Tamil (Malaysia)",
+		LanguageCodeEnumTaSg:         "Tamil (Singapore)",
+		LanguageCodeEnumTe:           "Telugu",
+		LanguageCodeEnumTeIn:         "Telugu (India)",
+		LanguageCodeEnumTeo:          "Teso",
+		LanguageCodeEnumTeoKe:        "Teso (Kenya)",
+		LanguageCodeEnumTeoUg:        "Teso (Uganda)",
+		LanguageCodeEnumTg:           "Tajik",
+		LanguageCodeEnumTgTj:         "Tajik (Tajikistan)",
+		LanguageCodeEnumTh:           "Thai",
+		LanguageCodeEnumThTh:         "Thai (Thailand)",
+		LanguageCodeEnumTi:           "Tigrinya",
+		LanguageCodeEnumTiEr:         "Tigrinya (Eritrea)",
+		LanguageCodeEnumTiEt:         "Tigrinya (Ethiopia)",
+		LanguageCodeEnumTk:           "Turkmen",
+		LanguageCodeEnumTkTm:         "Turkmen (Turkmenistan)",
+		LanguageCodeEnumTo:           "Tongan",
+		LanguageCodeEnumToTo:         "Tongan (Tonga)",
+		LanguageCodeEnumTr:           "Turkish",
+		LanguageCodeEnumTrCy:         "Turkish (Cyprus)",
+		LanguageCodeEnumTrTr:         "Turkish (Turkey)",
+		LanguageCodeEnumTt:           "Tatar",
+		LanguageCodeEnumTtRu:         "Tatar (Russia)",
+		LanguageCodeEnumTwq:          "Tasawaq",
+		LanguageCodeEnumTwqNe:        "Tasawaq (Niger)",
+		LanguageCodeEnumTzm:          "Central Atlas Tamazight",
+		LanguageCodeEnumTzmMa:        "Central Atlas Tamazight (Morocco)",
+		LanguageCodeEnumUg:           "Uyghur",
+		LanguageCodeEnumUgCn:         "Uyghur (China)",
+		LanguageCodeEnumUk:           "Ukrainian",
+		LanguageCodeEnumUkUa:         "Ukrainian (Ukraine)",
+		LanguageCodeEnumUr:           "Urdu",
+		LanguageCodeEnumUrIn:         "Urdu (India)",
+		LanguageCodeEnumUrPk:         "Urdu (Pakistan)",
+		LanguageCodeEnumUz:           "Uzbek",
+		LanguageCodeEnumUzArab:       "Uzbek (Arabic)",
+		LanguageCodeEnumUzArabAf:     "Uzbek (Arabic, Afghanistan)",
+		LanguageCodeEnumUzCyrl:       "Uzbek (Cyrillic)",
+		LanguageCodeEnumUzCyrlUz:     "Uzbek (Cyrillic, Uzbekistan)",
+		LanguageCodeEnumUzLatn:       "Uzbek (Latin)",
+		LanguageCodeEnumUzLatnUz:     "Uzbek (Latin, Uzbekistan)",
+		LanguageCodeEnumVai:          "Vai",
+		LanguageCodeEnumVaiLatn:      "Vai (Latin)",
+		LanguageCodeEnumVaiLatnLr:    "Vai (Latin, Liberia)",
+		LanguageCodeEnumVaiVaii:      "Vai (Vai)",
+		LanguageCodeEnumVaiVaiiLr:    "Vai (Vai, Liberia)",
+		LanguageCodeEnumVi:           "Vietnamese",
+		LanguageCodeEnumViVn:         "Vietnamese (Vietnam)",
+		LanguageCodeEnumVo:           "Volap\u00fck",
+		LanguageCodeEnumVun:          "Vunjo",
+		LanguageCodeEnumVunTz:        "Vunjo (Tanzania)",
+		LanguageCodeEnumWae:          "Walser",
+		LanguageCodeEnumWaeCh:        "Walser (Switzerland)",
+		LanguageCodeEnumWo:           "Wolof",
+		LanguageCodeEnumWoSn:         "Wolof (Senegal)",
+		LanguageCodeEnumXh:           "Xhosa",
+		LanguageCodeEnumXhZa:         "Xhosa (South Africa)",
+		LanguageCodeEnumXog:          "Soga",
+		LanguageCodeEnumXogUg:        "Soga (Uganda)",
+		LanguageCodeEnumYav:          "Yangben",
+		LanguageCodeEnumYavCm:        "Yangben (Cameroon)",
+		LanguageCodeEnumYi:           "Yiddish",
+		LanguageCodeEnumYo:           "Yoruba",
+		LanguageCodeEnumYoBj:         "Yoruba (Benin)",
+		LanguageCodeEnumYoNg:         "Yoruba (Nigeria)",
+		LanguageCodeEnumYue:          "Cantonese",
+		LanguageCodeEnumYueHans:      "Cantonese (Simplified)",
+		LanguageCodeEnumYueHansCn:    "Cantonese (Simplified, China)",
+		LanguageCodeEnumYueHant:      "Cantonese (Traditional)",
+		LanguageCodeEnumYueHantHk:    "Cantonese (Traditional, Hong Kong SAR China)",
+		LanguageCodeEnumZgh:          "Standard Moroccan Tamazight",
+		LanguageCodeEnumZghMa:        "Standard Moroccan Tamazight (Morocco)",
+		LanguageCodeEnumZh:           "Chinese",
+		LanguageCodeEnumZhHans:       "Chinese (Simplified)",
+		LanguageCodeEnumZhHansCn:     "Chinese (Simplified, China)",
+		LanguageCodeEnumZhHansHk:     "Chinese (Simplified, Hong Kong SAR China)",
+		LanguageCodeEnumZhHansMo:     "Chinese (Simplified, Macao SAR China)",
+		LanguageCodeEnumZhHansSg:     "Chinese (Simplified, Singapore)",
+		LanguageCodeEnumZhHant:       "Chinese (Traditional)",
+		LanguageCodeEnumZhHantHk:     "Chinese (Traditional, Hong Kong SAR China)",
+		LanguageCodeEnumZhHantMo:     "Chinese (Traditional, Macao SAR China)",
+		LanguageCodeEnumZhHantTw:     "Chinese (Traditional, Taiwan)",
+		LanguageCodeEnumZu:           "Zulu",
+		LanguageCodeEnumZuZa:         "Zulu (South Africa)",
 	}
 	ReservedName = []string{
 		"admin",

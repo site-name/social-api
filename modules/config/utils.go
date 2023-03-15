@@ -117,13 +117,13 @@ func FixInvalidLocales(cfg *model.Config) bool {
 
 	locales := i18n.GetSupportedLocales()
 	if _, ok := locales[*cfg.LocalizationSettings.DefaultServerLocale]; !ok {
-		*cfg.LocalizationSettings.DefaultServerLocale = model.DEFAULT_LOCALE
+		*cfg.LocalizationSettings.DefaultServerLocale = model.DEFAULT_LOCALE.String()
 		slog.Warn("DefaultServerLocale must be one of the supported locales. Setting DefaultServerLocale to en as default value.")
 		changed = true
 	}
 
 	if _, ok := locales[*cfg.LocalizationSettings.DefaultClientLocale]; !ok {
-		*cfg.LocalizationSettings.DefaultClientLocale = model.DEFAULT_LOCALE
+		*cfg.LocalizationSettings.DefaultClientLocale = model.DEFAULT_LOCALE.String()
 		slog.Warn("DefaultClientLocale must be one of the supported locales. Setting DefaultClientLocale to en as default value.")
 		changed = true
 	}

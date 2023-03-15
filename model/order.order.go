@@ -10,7 +10,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/modules/measurement"
 	"golang.org/x/text/currency"
-	"golang.org/x/text/language"
 )
 
 // max lengths for some fields of order model
@@ -70,7 +69,7 @@ type Order struct {
 	Status                       OrderStatus            `json:"status"`    // default: UNFULFILLED
 	UserID                       *string                `json:"user_id"`   //
 	ShopID                       string                 `json:"shop_id"`
-	LanguageCode                 string                 `json:"language_code"`       // default: "en"
+	LanguageCode                 LanguageCodeEnum       `json:"language_code"`       // default: "en"
 	TrackingClientID             string                 `json:"tracking_client_id"`  // NOT editable
 	BillingAddressID             *string                `json:"billing_address_id"`  // NOT editable
 	ShippingAddressID            *string                `json:"shipping_address_id"` // NOT editable
@@ -246,7 +245,7 @@ func (o *Order) IsValid() *AppError {
 	if len(o.CheckoutToken) > ORDER_CHECKOUT_TOKEN_MAX_LENGTH {
 		return outer("checkout_token", &o.Id)
 	}
-	if tag, err := language.Parse(o.LanguageCode); err != nil || !strings.EqualFold(tag.String(), o.LanguageCode) {
+	if !o.LanguageCode.IsValid() {
 		return outer("language_code", &o.Id)
 	}
 	if !IsValidEmail(o.UserEmail) || len(o.UserEmail) > USER_EMAIL_MAX_LENGTH {

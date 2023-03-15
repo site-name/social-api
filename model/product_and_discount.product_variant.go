@@ -2,13 +2,11 @@ package model
 
 import (
 	"fmt"
-	"strings"
 	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/measurement"
-	"golang.org/x/text/language"
 )
 
 // max lengths for some fields of product variant
@@ -234,10 +232,10 @@ func (p *ProductVariant) DeepCopy() *ProductVariant {
 }
 
 type ProductVariantTranslation struct {
-	Id               string `json:"id"`
-	LanguageCode     string `json:"language_code"`
-	ProductVariantID string `json:"product_variant_id"`
-	Name             string `json:"name"`
+	Id               string           `json:"id"`
+	LanguageCode     LanguageCodeEnum `json:"language_code"`
+	ProductVariantID string           `json:"product_variant_id"`
+	Name             string           `json:"name"`
 }
 
 // ProductVariantTranslationFilterOption is used to build squirrel sql queries
@@ -283,8 +281,7 @@ func (p *ProductVariantTranslation) IsValid() *AppError {
 	if !IsValidId(p.ProductVariantID) {
 		return outer("product_variant_id", &p.Id)
 	}
-	tag, err := language.Parse(p.LanguageCode)
-	if err != nil || !strings.EqualFold(tag.String(), p.LanguageCode) || Languages[strings.ToLower(p.LanguageCode)] == "" {
+	if !p.LanguageCode.IsValid() {
 		return outer("language_code", &p.Id)
 	}
 

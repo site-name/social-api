@@ -9,7 +9,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
-	"golang.org/x/text/language"
 )
 
 // max lengths for some fields
@@ -258,10 +257,10 @@ const (
 )
 
 type AttributeTranslation struct {
-	Id           string `json:"id"`
-	AttributeID  string `json:"attribute_id"`
-	LanguageCode string `json:"language_code"`
-	Name         string `json:"name"`
+	Id           string           `json:"id"`
+	AttributeID  string           `json:"attribute_id"`
+	LanguageCode LanguageCodeEnum `json:"language_code"`
+	Name         string           `json:"name"`
 }
 
 func (a *AttributeTranslation) IsValid() *AppError {
@@ -279,11 +278,8 @@ func (a *AttributeTranslation) IsValid() *AppError {
 	if utf8.RuneCountInString(a.Name) > ATTRIBUTE_TRANSLATION_NAME_MAX_LENGTH {
 		return outer("name", &a.Id)
 	}
-	if tag, err := language.Parse(a.LanguageCode); err != nil || !strings.EqualFold(tag.String(), a.LanguageCode) {
+	if !a.LanguageCode.IsValid() {
 		return outer("language_code", &a.Id)
-	}
-	if Languages[strings.ToLower(a.LanguageCode)] == "" {
-		return outer("language_coce", &a.Id)
 	}
 
 	return nil

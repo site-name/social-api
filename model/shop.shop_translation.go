@@ -1,7 +1,6 @@
 package model
 
 import (
-	"strings"
 	"unicode/utf8"
 )
 
@@ -11,13 +10,13 @@ const (
 )
 
 type ShopTranslation struct {
-	Id           string `json:"id"`
-	ShopID       string `json:"shop_id"`
-	LanguageCode string `json:"language_code"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	CreateAt     int64  `json:"create_at"`
-	UpdateAt     int64  `json:"update_at"`
+	Id           string           `json:"id"`
+	ShopID       string           `json:"shop_id"`
+	LanguageCode LanguageCodeEnum `json:"language_code"`
+	Name         string           `json:"name"`
+	Description  string           `json:"description"`
+	CreateAt     int64            `json:"create_at"`
+	UpdateAt     int64            `json:"update_at"`
 }
 
 func (s *ShopTranslation) PreSave() {
@@ -50,7 +49,7 @@ func (s *ShopTranslation) IsValid() *AppError {
 	if !IsValidId(s.ShopID) {
 		return outer("shop_id", &s.Id)
 	}
-	if len(s.LanguageCode) > LANGUAGE_CODE_MAX_LENGTH || Languages[strings.ToUpper(s.LanguageCode)] == "" {
+	if !s.LanguageCode.IsValid() {
 		return outer("language_code", &s.Id)
 	}
 	if utf8.RuneCountInString(s.Name) > SHOP_TRANSLATION_NAME_MAX_LENGTH {

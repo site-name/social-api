@@ -8,7 +8,6 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"golang.org/x/text/currency"
-	"golang.org/x/text/language"
 )
 
 // max lengths for Checkout table
@@ -44,7 +43,7 @@ type Checkout struct {
 	VoucherCode            *string          `json:"voucher_code"`
 	RedirectURL            *string          `json:"redirect_url"`
 	TrackingCode           *string          `json:"tracking_code"`
-	LanguageCode           string           `json:"language_code"`
+	LanguageCode           LanguageCodeEnum `json:"language_code"`
 	ModelMetadata
 
 	channel *Channel `db:"-"`
@@ -113,7 +112,7 @@ func (c *Checkout) IsValid() *AppError {
 	if c.RedirectURL != nil && len(*c.RedirectURL) > URL_LINK_MAX_LENGTH {
 		return outer("redirect_url", &c.Token)
 	}
-	if tag, err := language.Parse(c.LanguageCode); err != nil || !strings.EqualFold(tag.String(), c.LanguageCode) {
+	if !c.LanguageCode.IsValid() {
 		return outer("language_code", &c.Token)
 	}
 	if c.TrackingCode != nil && len(*c.TrackingCode) > CHECKOUT_TRACKING_CODE_MAX_LENGTH || *c.TrackingCode == "" {

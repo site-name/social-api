@@ -685,7 +685,7 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginM
 		checkOut.DiscountName = voucher.Name
 
 		// check if the owner of this checkout has ther primary language:
-		if checkoutInfo.User != nil && model.Languages[checkoutInfo.User.Locale] != "" {
+		if checkoutInfo.User != nil && model.Languages[model.LanguageCodeEnum(checkoutInfo.User.Locale)] != "" {
 			voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&model.VoucherTranslationFilterOption{
 				LanguageCode: squirrel.Eq{store.VoucherTranslationTableName + ".LanguageCode": checkoutInfo.User.Locale},
 				VoucherID:    squirrel.Eq{store.VoucherTranslationTableName + ".VoucherID": voucher.Id},
@@ -780,7 +780,7 @@ func (s *ServiceCheckout) AddVoucherToCheckout(manager interfaces.PluginManagerI
 	checkout.VoucherCode = &voucher.Code
 	checkout.DiscountName = voucher.Name
 
-	if user := checkoutInfo.User; user != nil && model.Languages[user.Locale] != "" {
+	if user := checkoutInfo.User; user != nil && model.Languages[model.LanguageCodeEnum(user.Locale)] != "" {
 		voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&model.VoucherTranslationFilterOption{
 			LanguageCode: squirrel.Eq{store.VoucherTranslationTableName + ".LanguageCode": user.Locale},
 		})

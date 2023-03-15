@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 	"unsafe"
 
 	"github.com/google/uuid"
@@ -139,26 +138,6 @@ func SystemMoneyRangeToGraphqlMoneyRange(money *goprices.MoneyRange) *MoneyRange
 		Start: SystemMoneyToGraphqlMoney(money.Start),
 		Stop:  SystemMoneyToGraphqlMoney(money.Stop),
 	}
-}
-
-func SystemLanguageToGraphqlLanguageCodeEnum(code string) LanguageCodeEnum {
-	if len(code) == 0 {
-		return LanguageCodeEnumEn
-	}
-
-	upperCaseCode := strings.Map(func(r rune) rune {
-		if r == '-' {
-			return '_'
-		}
-		return unicode.ToUpper(r)
-	}, code)
-
-	res := LanguageCodeEnum(upperCaseCode)
-	if !res.IsValid() {
-		return LanguageCodeEnumEn
-	}
-
-	return res
 }
 
 // DataloaderResultMap converts slice of system models to graphql representations of them

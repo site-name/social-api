@@ -159,7 +159,7 @@ func SystemUserToGraphqlUser(u *model.User) *User {
 		LastName:                 u.LastName,
 		UserName:                 u.Username,
 		IsActive:                 u.IsActive,
-		LanguageCode:             SystemLanguageToGraphqlLanguageCodeEnum(u.Locale),
+		LanguageCode:             model.LanguageCodeEnum(u.Locale),
 		DefaultShippingAddressID: u.DefaultShippingAddressID,
 		DefaultBillingAddressID:  u.DefaultBillingAddressID,
 		note:                     u.Note,
