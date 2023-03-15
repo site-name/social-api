@@ -385,7 +385,7 @@ func (s *ServiceCheckout) getShippingVoucherDiscountForCheckout(manager interfac
 
 	// check if voucher is limited to specified countries
 	if address != nil {
-		if voucher.Countries != "" && !strings.Contains(voucher.Countries, address.Country) {
+		if voucher.Countries != "" && !strings.Contains(voucher.Countries, string(address.Country)) {
 			return nil, model.NewNotApplicable("getShippingVoucherDiscountForCheckout", "This offer is not valid in your country.", nil, 0), nil
 		}
 	}
@@ -852,7 +852,7 @@ func (a *ServiceCheckout) RemoveVoucherFromCheckout(checkOut *model.Checkout) *m
 }
 
 // GetValidShippingMethodsForCheckout finds all valid shipping methods for given checkout
-func (a *ServiceCheckout) GetValidShippingMethodsForCheckout(checkoutInfo model.CheckoutInfo, lineInfos []*model.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) ([]*model.ShippingMethod, *model.AppError) {
+func (a *ServiceCheckout) GetValidShippingMethodsForCheckout(checkoutInfo model.CheckoutInfo, lineInfos []*model.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode model.CountryCode) ([]*model.ShippingMethod, *model.AppError) {
 	var productIDs []string
 	for _, line := range lineInfos {
 		productIDs = append(productIDs, line.Product.Id)
@@ -882,7 +882,7 @@ func (a *ServiceCheckout) GetValidShippingMethodsForCheckout(checkoutInfo model.
 // Note that `quantity_check=False` should be used, when stocks quantity will
 // be validated in further steps (checkout completion) in order to raise
 // 'InsufficientProductStock' error instead of 'InvalidShippingError'.
-func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines model.CheckoutLineInfos, countryCode string, quantityCheck bool) ([]*model.WareHouse, *model.AppError) {
+func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines model.CheckoutLineInfos, countryCode model.CountryCode, quantityCheck bool) ([]*model.WareHouse, *model.AppError) {
 	linesRequireShipping, appErr := s.srv.ProductService().ProductsRequireShipping(lines.Products().IDs())
 	if appErr != nil {
 		return nil, appErr
@@ -891,7 +891,7 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines model.Checko
 		return model.Warehouses{}, nil
 	}
 
-	if model.Countries[strings.ToUpper(countryCode)] == "" {
+	if !countryCode.IsValid() {
 		return model.Warehouses{}, nil
 	}
 	checkoutLines, appErr := s.CheckoutLinesByOption(&model.CheckoutLineFilterOption{

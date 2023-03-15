@@ -161,7 +161,7 @@ func (b *BasePlugin) ApplyTaxesToShipping(price goprices.Money, shippingAddress 
 	return nil, model.NewAppError("ApplyTaxesToShipping", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ApplyTaxesToProduct(product model.Product, price goprices.Money, country string, previousVlaue goprices.TaxedMoney) (*goprices.TaxedMoney, *model.AppError) {
+func (b *BasePlugin) ApplyTaxesToProduct(product model.Product, price goprices.Money, country model.CountryCode, previousVlaue goprices.TaxedMoney) (*goprices.TaxedMoney, *model.AppError) {
 	return nil, model.NewAppError("ApplyTaxesToProduct", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 

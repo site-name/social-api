@@ -101,9 +101,7 @@ func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *mo
 }
 
 // FindWarehousesForCountry returns a list of warehouses that are available in given country
-func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode string) ([]*model.WareHouse, *model.AppError) {
-	countryCode = strings.ToUpper(countryCode)
-
+func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode model.CountryCode) ([]*model.WareHouse, *model.AppError) {
 	return a.WarehousesByOption(&model.WarehouseFilterOption{
 		ShippingZonesCountries: squirrel.Like{store.ShippingZoneTableName + ".Countries": countryCode},
 		SelectRelatedAddress:   true,

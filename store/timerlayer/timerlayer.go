@@ -2239,6 +2239,21 @@ func (s *TimerLayerCategoryStore) GetByOption(option *model.CategoryFilterOption
 	return result, err
 }
 
+func (s *TimerLayerCategoryStore) UpdateCategoryCache(categories model.Categories, allowFromCache bool) {
+	start := timemodule.Now()
+
+	s.CategoryStore.UpdateCategoryCache(categories, allowFromCache)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CategoryStore.UpdateCategoryCache", success, elapsed)
+	}
+}
+
 func (s *TimerLayerCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
 	start := timemodule.Now()
 
@@ -3899,6 +3914,22 @@ func (s *TimerLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.
 		s.Root.Metrics.ObserveStoreMethodDuration("GiftcardEventStore.Save", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+	start := timemodule.Now()
+
+	err := s.InvoiceStore.Delete(transaction, ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("InvoiceStore.Delete", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, error) {
@@ -6399,7 +6430,7 @@ func (s *TimerLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*model.ShippingMethod, error) {
+func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodStore.ApplicableShippingMethods(price, channelID, weight, countryCode, productIDs)
@@ -8700,7 +8731,7 @@ func (s *TimerLayerVoucherTranslationStore) Save(translation *model.VoucherTrans
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
+func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.ApplicableForClickAndCollectCheckoutLines(checkoutLines, country)
@@ -8716,7 +8747,7 @@ func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(che
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
+func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.ApplicableForClickAndCollectNoQuantityCheck(checkoutLines, country)
@@ -8732,7 +8763,7 @@ func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(c
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country string) (model.Warehouses, error) {
+func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country model.CountryCode) (model.Warehouses, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseStore.ApplicableForClickAndCollectOrderLines(orderLines, country)

@@ -175,7 +175,7 @@ func (a *ServiceProduct) GetProductAvailability(
 	discounts []*model.DiscountInfo,
 	chanNel model.Channel,
 	manager interfaces.PluginManagerInterface,
-	countryCode string, // can be empty
+	countryCode model.CountryCode, // can be empty
 	localCurrency string, // can be empty
 ) (*model.ProductAvailability, *model.AppError) {
 	if countryCode == "" {
@@ -265,7 +265,7 @@ func (a *ServiceProduct) GetVariantAvailability(
 	discounts []*model.DiscountInfo,
 	chanNel model.Channel,
 	plugins interfaces.PluginManagerInterface,
-	country string, // can be empty
+	country model.CountryCode, // can be empty
 	localCurrency string, // can be empty
 ) (*model.VariantAvailability, *model.AppError) {
 	variarntPrice, appErr := a.GetVariantPrice(variant, variantChannelListing, product, collections, discounts, chanNel)

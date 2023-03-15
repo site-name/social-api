@@ -52,7 +52,7 @@ func (a *ServiceWarehouse) StocksByOption(transaction store_iface.SqlxTxExecutor
 // GetVariantStocksForCountry Return the stock information about the a stock for a given country.
 //
 // Note it will raise a 'Stock.DoesNotExist' exception if no such stock is found.
-func (a *ServiceWarehouse) GetVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, countryCode string, channelSlug string, variantID string) ([]*model.Stock, *model.AppError) {
+func (a *ServiceWarehouse) GetVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, countryCode model.CountryCode, channelSlug string, variantID string) ([]*model.Stock, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().FilterVariantStocksForCountry(transaction, &model.StockFilterForCountryAndChannel{
 		CountryCode:      countryCode,
 		ChannelSlug:      channelSlug,

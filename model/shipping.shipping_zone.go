@@ -72,7 +72,7 @@ func (s *ShippingZone) String() string {
 
 func (s *ShippingZone) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"shipping_zone.is_valid.%s.app_error",
+		"model.shipping_zone.is_valid.%s.app_error",
 		"shipping_zone_id=",
 		"ShippingZone.IsValid",
 	)
@@ -87,7 +87,7 @@ func (s *ShippingZone) IsValid() *AppError {
 		return outer("name", &s.Id)
 	}
 	for _, country := range strings.Fields(s.Countries) {
-		if _, ok := Countries[country]; !ok {
+		if !CountryCode(country).IsValid() {
 			return outer("country", &s.Id)
 		}
 	}
@@ -96,10 +96,14 @@ func (s *ShippingZone) IsValid() *AppError {
 }
 
 func (s *ShippingZone) PreSave() {
-	if s.Id == "" {
+	if IsValidId(s.Id) {
 		s.Id = NewId()
 	}
 	s.CreateAt = GetMillis()
+	s.commonPre()
+}
+
+func (s *ShippingZone) commonPre() {
 	s.Name = SanitizeUnicode(s.Name)
 	if s.Default == nil {
 		s.Default = NewPrimitive(false)
@@ -109,12 +113,7 @@ func (s *ShippingZone) PreSave() {
 }
 
 func (s *ShippingZone) PreUpdate() {
-	s.Name = SanitizeUnicode(s.Name)
-	s.Description = SanitizeUnicode(s.Description)
-	s.Countries = strings.ToUpper(s.Countries)
-	if s.Default == nil {
-		s.Default = NewPrimitive(false)
-	}
+	s.commonPre()
 }
 
 func (s *ShippingZone) DeepCopy() *ShippingZone {

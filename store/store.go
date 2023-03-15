@@ -364,9 +364,9 @@ type (
 		FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) // FilterByOprion returns a slice of warehouses with given option
 		GetByOption(option *model.WarehouseFilterOption) (*model.WareHouse, error)      // GetByOption finds and returns a model filtered given option
 		WarehouseByStockID(stockID string) (*model.WareHouse, error)                    // WarehouseByStockID returns 1 model by given stock id
-		ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error)
-		ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error)
-		ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country string) (model.Warehouses, error)
+		ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error)
+		ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error)
+		ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country model.CountryCode) (model.Warehouses, error)
 	}
 	StockStore interface {
 		ScanFields(stock *model.Stock) []interface{}
@@ -414,10 +414,10 @@ type (
 	}
 	ShippingMethodStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
-		Upsert(method *model.ShippingMethod) (*model.ShippingMethod, error)                                                                                                      // Upsert bases on given method's Id to decide update or insert it
-		Get(methodID string) (*model.ShippingMethod, error)                                                                                                                      // Get finds and returns a model method with given id
-		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*model.ShippingMethod, error) // ApplicableShippingMethods finds all model methods with given conditions
-		GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error)                                                                                    // GetbyOption finds and returns a model method that satisfy given options
+		Upsert(method *model.ShippingMethod) (*model.ShippingMethod, error)                                                                                                                 // Upsert bases on given method's Id to decide update or insert it
+		Get(methodID string) (*model.ShippingMethod, error)                                                                                                                                 // Get finds and returns a model method with given id
+		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) // ApplicableShippingMethods finds all model methods with given conditions
+		GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error)                                                                                               // GetbyOption finds and returns a model method that satisfy given options
 		FilterByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, error)
 	}
 	ShippingMethodPostalCodeRuleStore interface {

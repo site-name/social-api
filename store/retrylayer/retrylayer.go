@@ -2522,6 +2522,12 @@ func (s *RetryLayerCategoryStore) GetByOption(option *model.CategoryFilterOption
 
 }
 
+func (s *RetryLayerCategoryStore) UpdateCategoryCache(categories model.Categories, allowFromCache bool) {
+
+	s.CategoryStore.UpdateCategoryCache(categories, allowFromCache)
+
+}
+
 func (s *RetryLayerCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
 
 	tries := 0
@@ -4569,6 +4575,26 @@ func (s *RetryLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+
+	tries := 0
+	for {
+		err := s.InvoiceStore.Delete(transaction, ids)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
 		}
 	}
 
@@ -7628,7 +7654,7 @@ func (s *RetryLayerSessionStore) UpdateRoles(userID string, roles string) (strin
 
 }
 
-func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*model.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) {
 
 	tries := 0
 	for {
@@ -10438,7 +10464,7 @@ func (s *RetryLayerVoucherTranslationStore) Save(translation *model.VoucherTrans
 
 }
 
-func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
+func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
 
 	tries := 0
 	for {
@@ -10458,7 +10484,7 @@ func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(che
 
 }
 
-func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
+func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
 
 	tries := 0
 	for {
@@ -10478,7 +10504,7 @@ func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(c
 
 }
 
-func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country string) (model.Warehouses, error) {
+func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country model.CountryCode) (model.Warehouses, error) {
 
 	tries := 0
 	for {

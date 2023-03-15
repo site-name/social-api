@@ -122,7 +122,7 @@ type BasePluginInterface interface {
 	ApplyTaxesToShipping(price goprices.Money, shippingAddress model.Address, previousValue goprices.TaxedMoney) (*goprices.TaxedMoney, *model.AppError)
 	// Apply taxes to the product price based on the customer country.
 	// Overwrite this method if you want to show products with taxes.
-	ApplyTaxesToProduct(product model.Product, price goprices.Money, country string, previousVlaue goprices.TaxedMoney) (*goprices.TaxedMoney, *model.AppError)
+	ApplyTaxesToProduct(product model.Product, price goprices.Money, country model.CountryCode, previousVlaue goprices.TaxedMoney) (*goprices.TaxedMoney, *model.AppError)
 	// Trigger directly before order creation.
 	// Overwrite this method if you need to trigger specific logic before an order is created.
 	PreprocessOrderCreation(checkoutInfo model.CheckoutInfo, discounts []*model.DiscountInfo, lines model.CheckoutLineInfos, previousValue interface{}) (interface{}, *model.AppError)

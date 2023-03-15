@@ -62,7 +62,7 @@ type StockFilterOption struct {
 }
 
 type StockFilterForCountryAndChannel struct {
-	CountryCode      string
+	CountryCode      CountryCode
 	ChannelSlug      string
 	WarehouseID      string
 	ProductVariantID string

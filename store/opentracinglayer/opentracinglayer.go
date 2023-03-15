@@ -2376,6 +2376,19 @@ func (s *OpenTracingLayerCategoryStore) GetByOption(option *model.CategoryFilter
 	return result, err
 }
 
+func (s *OpenTracingLayerCategoryStore) UpdateCategoryCache(categories model.Categories, allowFromCache bool) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CategoryStore.UpdateCategoryCache")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	s.CategoryStore.UpdateCategoryCache(categories, allowFromCache)
+
+}
+
 func (s *OpenTracingLayerCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CategoryStore.Upsert")
@@ -4236,6 +4249,24 @@ func (s *OpenTracingLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "InvoiceStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.InvoiceStore.Delete(transaction, ids)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
 }
 
 func (s *OpenTracingLayerInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, error) {
@@ -7025,7 +7056,7 @@ func (s *OpenTracingLayerSessionStore) UpdateRoles(userID string, roles string) 
 	return result, err
 }
 
-func (s *OpenTracingLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*model.ShippingMethod, error) {
+func (s *OpenTracingLayerShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.ApplicableShippingMethods")
 	s.Root.Store.SetContext(newCtx)
@@ -9592,7 +9623,7 @@ func (s *OpenTracingLayerVoucherTranslationStore) Save(translation *model.Vouche
 	return result, err
 }
 
-func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
+func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.ApplicableForClickAndCollectCheckoutLines")
 	s.Root.Store.SetContext(newCtx)
@@ -9610,7 +9641,7 @@ func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollectCheckoutLin
 	return result, err
 }
 
-func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
+func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.ApplicableForClickAndCollectNoQuantityCheck")
 	s.Root.Store.SetContext(newCtx)
@@ -9628,7 +9659,7 @@ func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollectNoQuantityC
 	return result, err
 }
 
-func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country string) (model.Warehouses, error) {
+func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country model.CountryCode) (model.Warehouses, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.ApplicableForClickAndCollectOrderLines")
 	s.Root.Store.SetContext(newCtx)

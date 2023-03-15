@@ -299,7 +299,7 @@ func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.WareHous
 	return &res, nil
 }
 
-func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
+func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
 	stocks, err := ws.Stock().FilterByOption(nil, &model.StockFilterOption{
 		ProductVariantID:            squirrel.Eq{store.StockTableName + ".ProductVariantID": checkoutLines.VariantIDs()},
 		SelectRelatedProductVariant: true,
@@ -312,15 +312,15 @@ func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkou
 	return ws.forCountryLinesAndStocks(checkoutLines, stocks, country)
 }
 
-func (ws *SqlWareHouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country string) (model.Warehouses, error) {
+func (ws *SqlWareHouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
 
 	panic("not implemented")
 }
 
-func (s *SqlWareHouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country string) (model.Warehouses, error) {
+func (s *SqlWareHouseStore) ApplicableForClickAndCollectOrderLines(orderLines model.OrderLines, country model.CountryCode) (model.Warehouses, error) {
 	panic("not implemented")
 }
 
-func (ws *SqlWareHouseStore) forCountryLinesAndStocks(checkoutLines model.CheckoutLines, stocks model.Stocks, country string) (model.Warehouses, error) {
+func (ws *SqlWareHouseStore) forCountryLinesAndStocks(checkoutLines model.CheckoutLines, stocks model.Stocks, country model.CountryCode) (model.Warehouses, error) {
 	panic("not implemented")
 }

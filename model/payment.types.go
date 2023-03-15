@@ -90,7 +90,7 @@ type AddressData struct {
 	City           string
 	CityArea       string
 	PostalCode     string
-	Country        string
+	Country        CountryCode
 	CountryArea    string
 	Phone          string
 }

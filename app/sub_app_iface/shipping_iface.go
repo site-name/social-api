@@ -11,15 +11,15 @@ import (
 // ShippingService contains methods for working with shippings
 type ShippingService interface {
 	// ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
-	ApplicableShippingMethodsForCheckout(ckout *model.Checkout, channelID string, price *goprices.Money, countryCode string, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError)
+	ApplicableShippingMethodsForCheckout(ckout *model.Checkout, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError)
 	// ApplicableShippingMethodsForOrder finds all applicable shippingmethods for given order, based on other arguments passed in
-	ApplicableShippingMethodsForOrder(oder *model.Order, channelID string, price *goprices.Money, countryCode string, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError)
+	ApplicableShippingMethodsForOrder(oder *model.Order, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError)
 	// DefaultShippingZoneExists returns all shipping zones that have Ids differ than given shippingZoneID and has `Default` properties equal to true
 	DefaultShippingZoneExists(shippingZoneID string) ([]*model.ShippingZone, *model.AppError)
 	// FilterShippingMethodsByPostalCodeRules Filter shipping methods for given address by postal code rules.
 	FilterShippingMethodsByPostalCodeRules(shippingMethods []*model.ShippingMethod, shippingAddressID string) ([]*model.ShippingMethod, *model.AppError)
 	// GetCountriesWithoutShippingZone Returns country codes that are not assigned to any shipping zone.
-	GetCountriesWithoutShippingZone() ([]string, *model.AppError)
+	GetCountriesWithoutShippingZone() ([]model.CountryCode, *model.AppError)
 	// ShippingMethodByOption returns a shipping method with given options
 	ShippingMethodByOption(option *model.ShippingMethodFilterOption) (*model.ShippingMethod, *model.AppError)
 	// ShippingMethodChannelListingsByOption returns a list of shipping method channel listings by given option

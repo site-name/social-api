@@ -11,7 +11,7 @@ import (
 )
 
 // ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
-func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(ckout *model.Checkout, channelID string, price *goprices.Money, countryCode string, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError) {
+func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(ckout *model.Checkout, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError) {
 	if ckout.ShippingAddressID == nil || !model.IsValidId(*ckout.ShippingAddressID) {
 		return nil, nil
 	}
@@ -72,12 +72,12 @@ func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(ckout *model.Chec
 }
 
 // ApplicableShippingMethodsForOrder finds all applicable shippingmethods for given order, based on other arguments passed in
-func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *model.Order, channelID string, price *goprices.Money, countryCode string, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError) {
+func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *model.Order, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError) {
 	if oder.ShippingAddressID == nil || !model.IsValidId(*oder.ShippingAddressID) {
 		return nil, nil
 	}
 
-	if countryCode == "" {
+	if !countryCode.IsValid() {
 		address, appErr := a.srv.AccountService().AddressById(*oder.ShippingAddressID)
 		if appErr != nil {
 			return nil, appErr

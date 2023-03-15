@@ -126,7 +126,7 @@ type OrderService interface {
 	// If a fulfillment found, returns it. Otherwise, creates a new one then returns it.
 	GetOrCreateFulfillment(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, *model.AppError)
 	// GetOrderCountry Return country to which order will be shipped
-	GetOrderCountry(ord *model.Order) (string, *model.AppError)
+	GetOrderCountry(ord *model.Order) (model.CountryCode, *model.AppError)
 	// GetOrderDiscounts Return all discounts applied to the order by staff user
 	GetOrderDiscounts(ord *model.Order) ([]*model.OrderDiscount, *model.AppError)
 	// GetProductsVoucherDiscountForOrder Calculate products discount value for a voucher, depending on its type.
@@ -325,5 +325,5 @@ type OrderService interface {
 	UpdateTaxesForOrderLine(line model.OrderLine, ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	UpdateTaxesForOrderLines(lines model.OrderLines, ord model.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model.AppError
 	FilterOrderEventsByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, *model.AppError)
-	GetValidCollectionPointsForOrder(lines model.OrderLines, addressCountryCode string) (model.Warehouses, *model.AppError)
+	GetValidCollectionPointsForOrder(lines model.OrderLines, addressCountryCode model.CountryCode) (model.Warehouses, *model.AppError)
 }

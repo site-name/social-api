@@ -20,7 +20,7 @@ import (
 )
 
 // GetOrderCountry Return country to which order will be shipped
-func (a *ServiceOrder) GetOrderCountry(ord *model.Order) (string, *model.AppError) {
+func (a *ServiceOrder) GetOrderCountry(ord *model.Order) (model.CountryCode, *model.AppError) {
 	addressID := ord.BillingAddressID
 	orderRequireShipping, appErr := a.OrderShippingIsRequired(ord.Id)
 	if appErr != nil {
@@ -368,13 +368,12 @@ func (a *ServiceOrder) UpdateOrderPrices(ord model.Order, manager interfaces.Plu
 	return a.RecalculateOrder(nil, &ord, nil)
 }
 
-func (s *ServiceOrder) GetValidCollectionPointsForOrder(lines model.OrderLines, addressCountryCode string) (model.Warehouses, *model.AppError) {
+func (s *ServiceOrder) GetValidCollectionPointsForOrder(lines model.OrderLines, addressCountryCode model.CountryCode) (model.Warehouses, *model.AppError) {
 	// check shipping required:
 	if !lo.SomeBy(lines, func(l *model.OrderLine) bool { return l.IsShippingRequired }) {
 		return model.Warehouses{}, nil
 	}
-	addressCountryCode = strings.ToUpper(addressCountryCode)
-	if _, ok := model.Countries[addressCountryCode]; !ok {
+	if !addressCountryCode.IsValid() {
 		return model.Warehouses{}, nil
 	}
 

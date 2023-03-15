@@ -69,7 +69,7 @@ func (c *CheckoutInfo) ValidDeliveryMethods() []interface{} {
 }
 
 // GetCountry
-func (c *CheckoutInfo) GetCountry() string {
+func (c *CheckoutInfo) GetCountry() CountryCode {
 	addr := c.ShippingAddress
 	if addr == nil {
 		addr = c.BillingAddress

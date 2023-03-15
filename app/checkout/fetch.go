@@ -228,7 +228,7 @@ func (a *ServiceCheckout) UpdateCheckoutInfoShippingAddress(checkoutInfo model.C
 
 // GetValidShippingMethodListForCheckoutInfo
 func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo model.CheckoutInfo, shippingAddress *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) ([]*model.ShippingMethod, *model.AppError) {
-	var countryCode string
+	var countryCode model.CountryCode
 	if shippingAddress != nil {
 		countryCode = shippingAddress.Country
 	}
@@ -248,7 +248,7 @@ func (a *ServiceCheckout) GetValidShippingMethodListForCheckoutInfo(checkoutInfo
 }
 
 func (s *ServiceCheckout) GetValidCollectionPointsForCheckoutInfo(shippingAddress *model.Address, lines []*model.CheckoutLineInfo, checkoutInfo *model.CheckoutInfo) ([]*model.WareHouse, *model.AppError) {
-	var countryCode string
+	var countryCode model.CountryCode
 
 	if shippingAddress != nil {
 		countryCode = shippingAddress.Country

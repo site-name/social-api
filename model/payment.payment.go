@@ -78,7 +78,7 @@ type Payment struct {
 	BillingCity        string             `json:"billing_city"`
 	BillingCityArea    string             `json:"billing_city_area"`
 	BillingPostalCode  string             `json:"billing_postal_code"`
-	BillingCountryCode string             `json:"billing_country_code"`
+	BillingCountryCode CountryCode        `json:"billing_country_code"`
 	BillingCountryArea string             `json:"billing_country_area"`
 	CcFirstDigits      string             `json:"cc_first_digits"`
 	CcLastDigits       string             `json:"cc_last_digits"`
@@ -235,8 +235,8 @@ func (p *Payment) IsValid() *AppError {
 		return outer("billing_postal_code", &p.Id)
 	}
 	// make sure country code and currency code are match:
-	region, err := language.ParseRegion(p.BillingCountryCode)
-	if err != nil || !strings.EqualFold(region.String(), p.BillingCountryCode) {
+	region, err := language.ParseRegion(string(p.BillingCountryCode))
+	if err != nil || !strings.EqualFold(region.String(), string(p.BillingCountryCode)) {
 		return outer("billing_country_code", &p.Id)
 	}
 	if un, ok := currency.FromRegion(region); !ok || !strings.EqualFold(un.String(), p.Currency) {

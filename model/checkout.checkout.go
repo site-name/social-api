@@ -36,7 +36,7 @@ type Checkout struct {
 	CollectionPointID      *string          `json:"collection_point_id"` // foreign key *Warehouse
 	Note                   string           `json:"note"`
 	Currency               string           `json:"currency"`        // default "USD"
-	Country                string           `json:"country"`         // one country only
+	Country                CountryCode      `json:"country"`         // one country only
 	DiscountAmount         *decimal.Decimal `json:"discount_amount"` // default decimal(0)
 	Discount               *goprices.Money  `db:"-" json:"discount,omitempty"`
 	DiscountName           *string          `json:"discount_name"`
@@ -119,7 +119,7 @@ func (c *Checkout) IsValid() *AppError {
 	if c.TrackingCode != nil && len(*c.TrackingCode) > CHECKOUT_TRACKING_CODE_MAX_LENGTH || *c.TrackingCode == "" {
 		return outer("tracking_code", &c.Token)
 	}
-	if _, ok := Countries[c.Country]; !ok {
+	if !c.Country.IsValid() {
 		return outer("country", &c.Token)
 	}
 
@@ -174,8 +174,6 @@ func (c *Checkout) commonPre() {
 	}
 	if c.Country == "" {
 		c.Country = DEFAULT_COUNTRY
-	} else {
-		c.Country = strings.ToUpper(c.Country)
 	}
 }
 

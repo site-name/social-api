@@ -23,7 +23,7 @@ type PluginManagerInterface interface {
 	//
 	// obj must be either Product or ProductType
 	GetTaxRatePercentageValue(obj interface{}, country string) (*decimal.Decimal, *model.AppError)
-	ApplyTaxesToProduct(product model.Product, price goprices.Money, country string, channelID string) (*goprices.TaxedMoney, *model.AppError)
+	ApplyTaxesToProduct(product model.Product, price goprices.Money, country model.CountryCode, channelID string) (*goprices.TaxedMoney, *model.AppError)
 	ApplyTaxesToShipping(price goprices.Money, shippingAddress model.Address, channelID string) (*goprices.TaxedMoney, *model.AppError)
 	AuthenticateUser(req *http.Request) (*model.User, *model.AppError)
 	AuthorizePayment(gateway string, paymentInformation model.PaymentData, channelID string) (*model.GatewayResponse, error)

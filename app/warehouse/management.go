@@ -27,7 +27,7 @@ type StockData struct {
 // Iterate by stocks and allocate as many items as needed or available in stock
 // for order line, until allocated all required quantity for the order line.
 // If there is less quantity in stocks then rise InsufficientStock exception.
-func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, countryCode string, channelSlug string, manager interfaces.PluginManagerInterface, additionalFilterLookup model.StringInterface) (*model.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, countryCode model.CountryCode, channelSlug string, manager interfaces.PluginManagerInterface, additionalFilterLookup model.StringInterface) (*model.InsufficientStock, *model.AppError) {
 	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, model.NewAppError("AllocateStocks", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)

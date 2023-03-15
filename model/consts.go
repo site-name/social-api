@@ -1,6 +1,9 @@
 package model
 
-import "regexp"
+import (
+	"regexp"
+	"unsafe"
+)
 
 // constants for access http(s) requests's headers
 const (
@@ -62,271 +65,534 @@ const (
 	SINGLE_COUNTRY_CODE_MAX_LENGTH = 5
 	IP_ADDRESS_MAX_LENGTH          = 39
 	DEFAULT_LOCALE                 = "en" // this is default language also
-	DEFAULT_COUNTRY                = "US"
+	DEFAULT_COUNTRY                = CountryCodeUs
 )
 
 var (
-	Countries                     map[string]string // countries supported by app
-	Languages                     map[string]string // Languages supported by app
-	MULTIPLE_COUNTRIES_MAX_LENGTH int               // some model"s country fields contains multiple countries
-	ReservedName                  []string          // usernames that can only be used by system
-	ValidUsernameChars            *regexp.Regexp    // regexp for username validation
-	RestrictedUsernames           map[string]bool   // usernames that cannot be used
+	Countries                     map[CountryCode]string // countries supported by app
+	Languages                     map[string]string      // Languages supported by app
+	MULTIPLE_COUNTRIES_MAX_LENGTH int                    // some model"s country fields contains multiple countries
+	ReservedName                  []string               // usernames that can only be used by system
+	ValidUsernameChars            *regexp.Regexp         // regexp for username validation
+	RestrictedUsernames           map[string]bool        // usernames that cannot be used
+)
+
+type CountryCode string
+
+func (c CountryCode) IsValid() bool {
+	return Countries[c] != ""
+}
+
+func (c CountryCode) String() string {
+	return *(*string)(unsafe.Pointer(&c))
+}
+
+const (
+	CountryCodeAf CountryCode = "AF"
+	CountryCodeId CountryCode = "ID"
+	CountryCodeAx CountryCode = "AX"
+	CountryCodeAl CountryCode = "AL"
+	CountryCodeDz CountryCode = "DZ"
+	CountryCodeAs CountryCode = "AS"
+	CountryCodeAd CountryCode = "AD"
+	CountryCodeAo CountryCode = "AO"
+	CountryCodeAi CountryCode = "AI"
+	CountryCodeAq CountryCode = "AQ"
+	CountryCodeAg CountryCode = "AG"
+	CountryCodeAr CountryCode = "AR"
+	CountryCodeAm CountryCode = "AM"
+	CountryCodeAw CountryCode = "AW"
+	CountryCodeAu CountryCode = "AU"
+	CountryCodeAt CountryCode = "AT"
+	CountryCodeAz CountryCode = "AZ"
+	CountryCodeBs CountryCode = "BS"
+	CountryCodeBh CountryCode = "BH"
+	CountryCodeBd CountryCode = "BD"
+	CountryCodeBb CountryCode = "BB"
+	CountryCodeBy CountryCode = "BY"
+	CountryCodeBe CountryCode = "BE"
+	CountryCodeBz CountryCode = "BZ"
+	CountryCodeBj CountryCode = "BJ"
+	CountryCodeBm CountryCode = "BM"
+	CountryCodeBt CountryCode = "BT"
+	CountryCodeBo CountryCode = "BO"
+	CountryCodeBq CountryCode = "BQ"
+	CountryCodeBa CountryCode = "BA"
+	CountryCodeBw CountryCode = "BW"
+	CountryCodeBv CountryCode = "BV"
+	CountryCodeBr CountryCode = "BR"
+	CountryCodeIo CountryCode = "IO"
+	CountryCodeBn CountryCode = "BN"
+	CountryCodeBg CountryCode = "BG"
+	CountryCodeBf CountryCode = "BF"
+	CountryCodeBi CountryCode = "BI"
+	CountryCodeCv CountryCode = "CV"
+	CountryCodeKh CountryCode = "KH"
+	CountryCodeCm CountryCode = "CM"
+	CountryCodeCa CountryCode = "CA"
+	CountryCodeKy CountryCode = "KY"
+	CountryCodeCf CountryCode = "CF"
+	CountryCodeTd CountryCode = "TD"
+	CountryCodeCl CountryCode = "CL"
+	CountryCodeCn CountryCode = "CN"
+	CountryCodeCx CountryCode = "CX"
+	CountryCodeCc CountryCode = "CC"
+	CountryCodeCo CountryCode = "CO"
+	CountryCodeKm CountryCode = "KM"
+	CountryCodeCg CountryCode = "CG"
+	CountryCodeCd CountryCode = "CD"
+	CountryCodeCk CountryCode = "CK"
+	CountryCodeCr CountryCode = "CR"
+	CountryCodeCi CountryCode = "CI"
+	CountryCodeHr CountryCode = "HR"
+	CountryCodeCu CountryCode = "CU"
+	CountryCodeCw CountryCode = "CW"
+	CountryCodeCy CountryCode = "CY"
+	CountryCodeCz CountryCode = "CZ"
+	CountryCodeDk CountryCode = "DK"
+	CountryCodeDj CountryCode = "DJ"
+	CountryCodeDm CountryCode = "DM"
+	CountryCodeDo CountryCode = "DO"
+	CountryCodeEc CountryCode = "EC"
+	CountryCodeEg CountryCode = "EG"
+	CountryCodeSv CountryCode = "SV"
+	CountryCodeGq CountryCode = "GQ"
+	CountryCodeEr CountryCode = "ER"
+	CountryCodeEe CountryCode = "EE"
+	CountryCodeSz CountryCode = "SZ"
+	CountryCodeEt CountryCode = "ET"
+	CountryCodeEu CountryCode = "EU"
+	CountryCodeFk CountryCode = "FK"
+	CountryCodeFo CountryCode = "FO"
+	CountryCodeFj CountryCode = "FJ"
+	CountryCodeFi CountryCode = "FI"
+	CountryCodeFr CountryCode = "FR"
+	CountryCodeGf CountryCode = "GF"
+	CountryCodePf CountryCode = "PF"
+	CountryCodeTf CountryCode = "TF"
+	CountryCodeGa CountryCode = "GA"
+	CountryCodeGm CountryCode = "GM"
+	CountryCodeGe CountryCode = "GE"
+	CountryCodeDe CountryCode = "DE"
+	CountryCodeGh CountryCode = "GH"
+	CountryCodeGi CountryCode = "GI"
+	CountryCodeGr CountryCode = "GR"
+	CountryCodeGl CountryCode = "GL"
+	CountryCodeGd CountryCode = "GD"
+	CountryCodeGp CountryCode = "GP"
+	CountryCodeGu CountryCode = "GU"
+	CountryCodeGt CountryCode = "GT"
+	CountryCodeGg CountryCode = "GG"
+	CountryCodeGn CountryCode = "GN"
+	CountryCodeGw CountryCode = "GW"
+	CountryCodeGy CountryCode = "GY"
+	CountryCodeHt CountryCode = "HT"
+	CountryCodeHm CountryCode = "HM"
+	CountryCodeVa CountryCode = "VA"
+	CountryCodeHn CountryCode = "HN"
+	CountryCodeHk CountryCode = "HK"
+	CountryCodeHu CountryCode = "HU"
+	CountryCodeIs CountryCode = "IS"
+	CountryCodeIn CountryCode = "IN"
+	CountryCodeIr CountryCode = "IR"
+	CountryCodeIq CountryCode = "IQ"
+	CountryCodeIe CountryCode = "IE"
+	CountryCodeIm CountryCode = "IM"
+	CountryCodeIl CountryCode = "IL"
+	CountryCodeIt CountryCode = "IT"
+	CountryCodeJm CountryCode = "JM"
+	CountryCodeJp CountryCode = "JP"
+	CountryCodeJe CountryCode = "JE"
+	CountryCodeJo CountryCode = "JO"
+	CountryCodeKz CountryCode = "KZ"
+	CountryCodeKe CountryCode = "KE"
+	CountryCodeKi CountryCode = "KI"
+	CountryCodeKw CountryCode = "KW"
+	CountryCodeKg CountryCode = "KG"
+	CountryCodeLa CountryCode = "LA"
+	CountryCodeLv CountryCode = "LV"
+	CountryCodeLb CountryCode = "LB"
+	CountryCodeLs CountryCode = "LS"
+	CountryCodeLr CountryCode = "LR"
+	CountryCodeLy CountryCode = "LY"
+	CountryCodeLi CountryCode = "LI"
+	CountryCodeLt CountryCode = "LT"
+	CountryCodeLu CountryCode = "LU"
+	CountryCodeMo CountryCode = "MO"
+	CountryCodeMg CountryCode = "MG"
+	CountryCodeMw CountryCode = "MW"
+	CountryCodeMy CountryCode = "MY"
+	CountryCodeMv CountryCode = "MV"
+	CountryCodeMl CountryCode = "ML"
+	CountryCodeMt CountryCode = "MT"
+	CountryCodeMh CountryCode = "MH"
+	CountryCodeMq CountryCode = "MQ"
+	CountryCodeMr CountryCode = "MR"
+	CountryCodeMu CountryCode = "MU"
+	CountryCodeYt CountryCode = "YT"
+	CountryCodeMx CountryCode = "MX"
+	CountryCodeFm CountryCode = "FM"
+	CountryCodeMd CountryCode = "MD"
+	CountryCodeMc CountryCode = "MC"
+	CountryCodeMn CountryCode = "MN"
+	CountryCodeMe CountryCode = "ME"
+	CountryCodeMs CountryCode = "MS"
+	CountryCodeMa CountryCode = "MA"
+	CountryCodeMz CountryCode = "MZ"
+	CountryCodeMm CountryCode = "MM"
+	CountryCodeNa CountryCode = "NA"
+	CountryCodeNr CountryCode = "NR"
+	CountryCodeNp CountryCode = "NP"
+	CountryCodeNl CountryCode = "NL"
+	CountryCodeNc CountryCode = "NC"
+	CountryCodeNz CountryCode = "NZ"
+	CountryCodeNi CountryCode = "NI"
+	CountryCodeNe CountryCode = "NE"
+	CountryCodeNg CountryCode = "NG"
+	CountryCodeNu CountryCode = "NU"
+	CountryCodeNf CountryCode = "NF"
+	CountryCodeKp CountryCode = "KP"
+	CountryCodeMk CountryCode = "MK"
+	CountryCodeMp CountryCode = "MP"
+	CountryCodeNo CountryCode = "NO"
+	CountryCodeOm CountryCode = "OM"
+	CountryCodePk CountryCode = "PK"
+	CountryCodePw CountryCode = "PW"
+	CountryCodePs CountryCode = "PS"
+	CountryCodePa CountryCode = "PA"
+	CountryCodePg CountryCode = "PG"
+	CountryCodePy CountryCode = "PY"
+	CountryCodePe CountryCode = "PE"
+	CountryCodePh CountryCode = "PH"
+	CountryCodePn CountryCode = "PN"
+	CountryCodePl CountryCode = "PL"
+	CountryCodePt CountryCode = "PT"
+	CountryCodePr CountryCode = "PR"
+	CountryCodeQa CountryCode = "QA"
+	CountryCodeRe CountryCode = "RE"
+	CountryCodeRo CountryCode = "RO"
+	CountryCodeRu CountryCode = "RU"
+	CountryCodeRw CountryCode = "RW"
+	CountryCodeBl CountryCode = "BL"
+	CountryCodeSh CountryCode = "SH"
+	CountryCodeKn CountryCode = "KN"
+	CountryCodeLc CountryCode = "LC"
+	CountryCodeMf CountryCode = "MF"
+	CountryCodePm CountryCode = "PM"
+	CountryCodeVc CountryCode = "VC"
+	CountryCodeWs CountryCode = "WS"
+	CountryCodeSm CountryCode = "SM"
+	CountryCodeSt CountryCode = "ST"
+	CountryCodeSa CountryCode = "SA"
+	CountryCodeSn CountryCode = "SN"
+	CountryCodeRs CountryCode = "RS"
+	CountryCodeSc CountryCode = "SC"
+	CountryCodeSl CountryCode = "SL"
+	CountryCodeSg CountryCode = "SG"
+	CountryCodeSx CountryCode = "SX"
+	CountryCodeSk CountryCode = "SK"
+	CountryCodeSi CountryCode = "SI"
+	CountryCodeSb CountryCode = "SB"
+	CountryCodeSo CountryCode = "SO"
+	CountryCodeZa CountryCode = "ZA"
+	CountryCodeGs CountryCode = "GS"
+	CountryCodeKr CountryCode = "KR"
+	CountryCodeSs CountryCode = "SS"
+	CountryCodeEs CountryCode = "ES"
+	CountryCodeLk CountryCode = "LK"
+	CountryCodeSd CountryCode = "SD"
+	CountryCodeSr CountryCode = "SR"
+	CountryCodeSj CountryCode = "SJ"
+	CountryCodeSe CountryCode = "SE"
+	CountryCodeCh CountryCode = "CH"
+	CountryCodeSy CountryCode = "SY"
+	CountryCodeTw CountryCode = "TW"
+	CountryCodeTj CountryCode = "TJ"
+	CountryCodeTz CountryCode = "TZ"
+	CountryCodeTh CountryCode = "TH"
+	CountryCodeTl CountryCode = "TL"
+	CountryCodeTg CountryCode = "TG"
+	CountryCodeTk CountryCode = "TK"
+	CountryCodeTo CountryCode = "TO"
+	CountryCodeTt CountryCode = "TT"
+	CountryCodeTn CountryCode = "TN"
+	CountryCodeTr CountryCode = "TR"
+	CountryCodeTm CountryCode = "TM"
+	CountryCodeTc CountryCode = "TC"
+	CountryCodeTv CountryCode = "TV"
+	CountryCodeUg CountryCode = "UG"
+	CountryCodeUa CountryCode = "UA"
+	CountryCodeAe CountryCode = "AE"
+	CountryCodeGb CountryCode = "GB"
+	CountryCodeUm CountryCode = "UM"
+	CountryCodeUs CountryCode = "US"
+	CountryCodeUy CountryCode = "UY"
+	CountryCodeUz CountryCode = "UZ"
+	CountryCodeVu CountryCode = "VU"
+	CountryCodeVe CountryCode = "VE"
+	CountryCodeVn CountryCode = "VN"
+	CountryCodeVg CountryCode = "VG"
+	CountryCodeVi CountryCode = "VI"
+	CountryCodeWf CountryCode = "WF"
+	CountryCodeEh CountryCode = "EH"
+	CountryCodeYe CountryCode = "YE"
+	CountryCodeZm CountryCode = "ZM"
+	CountryCodeZw CountryCode = "ZW"
 )
 
 func init() {
 	// borrowed from django_countries
-	Countries = map[string]string{
-		"AF": "Afghanistan",
-		"AX": "Åland Islands",
-		"AL": "Albania",
-		"DZ": "Algeria",
-		"AS": "American Samoa",
-		"AD": "Andorra",
-		"AO": "Angola",
-		"AI": "Anguilla",
-		"AQ": "Antarctica",
-		"AG": "Antigua and Barbuda",
-		"AR": "Argentina",
-		"AM": "Armenia",
-		"AW": "Aruba",
-		"AU": "Australia",
-		"AT": "Austria",
-		"AZ": "Azerbaijan",
-		"BS": "Bahamas",
-		"BH": "Bahrain",
-		"BD": "Bangladesh",
-		"BB": "Barbados",
-		"BY": "Belarus",
-		"BE": "Belgium",
-		"BZ": "Belize",
-		"BJ": "Benin",
-		"BM": "Bermuda",
-		"BT": "Bhutan",
-		"BO": "Bolivia",
-		"BQ": "Bonaire, Sint Eustatius and Saba",
-		"BA": "Bosnia and Herzegovina",
-		"BW": "Botswana",
-		"BV": "Bouvet Island",
-		"BR": "Brazil",
-		"IO": "British Indian Ocean Territory",
-		"BN": "Brunei",
-		"BG": "Bulgaria",
-		"BF": "Burkina Faso",
-		"BI": "Burundi",
-		"CV": "Cabo Verde",
-		"KH": "Cambodia",
-		"CM": "Cameroon",
-		"CA": "Canada",
-		"KY": "Cayman Islands",
-		"CF": "Central African Republic",
-		"TD": "Chad",
-		"CL": "Chile",
-		"CN": "China",
-		"CX": "Christmas Island",
-		"CC": "Cocos (Keeling) Islands",
-		"CO": "Colombia",
-		"KM": "Comoros",
-		"CG": "Congo",
-		"CD": "Congo (the Democratic Republic of the)",
-		"CK": "Cook Islands",
-		"CR": "Costa Rica",
-		"CI": "Côte d'Ivoire",
-		"HR": "Croatia",
-		"CU": "Cuba",
-		"CW": "Curaçao",
-		"CY": "Cyprus",
-		"CZ": "Czechia",
-		"DK": "Denmark",
-		"DJ": "Djibouti",
-		"DM": "Dominica",
-		"DO": "Dominican Republic",
-		"EC": "Ecuador",
-		"EG": "Egypt",
-		"SV": "El Salvador",
-		"GQ": "Equatorial Guinea",
-		"ER": "Eritrea",
-		"EE": "Estonia",
-		"SZ": "Eswatini",
-		"ET": "Ethiopia",
-		"FK": "Falkland Islands (Malvinas)",
-		"FO": "Faroe Islands",
-		"FJ": "Fiji",
-		"FI": "Finland",
-		"FR": "France",
-		"GF": "French Guiana",
-		"PF": "French Polynesia",
-		"TF": "French Southern Territories",
-		"GA": "Gabon",
-		"GM": "Gambia",
-		"GE": "Georgia",
-		"DE": "Germany",
-		"GH": "Ghana",
-		"GI": "Gibraltar",
-		"GR": "Greece",
-		"GL": "Greenland",
-		"GD": "Grenada",
-		"GP": "Guadeloupe",
-		"GU": "Guam",
-		"GT": "Guatemala",
-		"GG": "Guernsey",
-		"GN": "Guinea",
-		"GW": "Guinea-Bissau",
-		"GY": "Guyana",
-		"HT": "Haiti",
-		"HM": "Heard Island and McDonald Islands",
-		"VA": "Holy See",
-		"HN": "Honduras",
-		"HK": "Hong Kong",
-		"HU": "Hungary",
-		"IS": "Iceland",
-		"IN": "India",
-		"ID": "Indonesia",
-		"IR": "Iran",
-		"IQ": "Iraq",
-		"IE": "Ireland",
-		"IM": "Isle of Man",
-		"IL": "Israel",
-		"IT": "Italy",
-		"JM": "Jamaica",
-		"JP": "Japan",
-		"JE": "Jersey",
-		"JO": "Jordan",
-		"KZ": "Kazakhstan",
-		"KE": "Kenya",
-		"KI": "Kiribati",
-		"KP": "North Korea",
-		"KR": "South Korea",
-		"KW": "Kuwait",
-		"KG": "Kyrgyzstan",
-		"LA": "Laos",
-		"LV": "Latvia",
-		"LB": "Lebanon",
-		"LS": "Lesotho",
-		"LR": "Liberia",
-		"LY": "Libya",
-		"LI": "Liechtenstein",
-		"LT": "Lithuania",
-		"LU": "Luxembourg",
-		"MO": "Macao",
-		"MG": "Madagascar",
-		"MW": "Malawi",
-		"MY": "Malaysia",
-		"MV": "Maldives",
-		"ML": "Mali",
-		"MT": "Malta",
-		"MH": "Marshall Islands",
-		"MQ": "Martinique",
-		"MR": "Mauritania",
-		"MU": "Mauritius",
-		"YT": "Mayotte",
-		"MX": "Mexico",
-		"FM": "Micronesia (Federated States of)",
-		"MD": "Moldova",
-		"MC": "Monaco",
-		"MN": "Mongolia",
-		"ME": "Montenegro",
-		"MS": "Montserrat",
-		"MA": "Morocco",
-		"MZ": "Mozambique",
-		"MM": "Myanmar",
-		"NA": "Namibia",
-		"NR": "Nauru",
-		"NP": "Nepal",
-		"NL": "Netherlands",
-		"NC": "New Caledonia",
-		"NZ": "New Zealand",
-		"NI": "Nicaragua",
-		"NE": "Niger",
-		"NG": "Nigeria",
-		"NU": "Niue",
-		"NF": "Norfolk Island",
-		"MK": "North Macedonia",
-		"MP": "Northern Mariana Islands",
-		"NO": "Norway",
-		"OM": "Oman",
-		"PK": "Pakistan",
-		"PW": "Palau",
-		"PS": "Palestine, State of",
-		"PA": "Panama",
-		"PG": "Papua New Guinea",
-		"PY": "Paraguay",
-		"PE": "Peru",
-		"PH": "Philippines",
-		"PN": "Pitcairn",
-		"PL": "Poland",
-		"PT": "Portugal",
-		"PR": "Puerto Rico",
-		"QA": "Qatar",
-		"RE": "Réunion",
-		"RO": "Romania",
-		"RU": "Russia",
-		"RW": "Rwanda",
-		"BL": "Saint Barthélemy",
-		"SH": "Saint Helena, Ascension and Tristan da Cunha",
-		"KN": "Saint Kitts and Nevis",
-		"LC": "Saint Lucia",
-		"MF": "Saint Martin (French part)",
-		"PM": "Saint Pierre and Miquelon",
-		"VC": "Saint Vincent and the Grenadines",
-		"WS": "Samoa",
-		"SM": "San Marino",
-		"ST": "Sao Tome and Principe",
-		"SA": "Saudi Arabia",
-		"SN": "Senegal",
-		"RS": "Serbia",
-		"SC": "Seychelles",
-		"SL": "Sierra Leone",
-		"SG": "Singapore",
-		"SX": "Sint Maarten (Dutch part)",
-		"SK": "Slovakia",
-		"SI": "Slovenia",
-		"SB": "Solomon Islands",
-		"SO": "Somalia",
-		"ZA": "South Africa",
-		"GS": "South Georgia and the South Sandwich Islands",
-		"SS": "South Sudan",
-		"ES": "Spain",
-		"LK": "Sri Lanka",
-		"SD": "Sudan",
-		"SR": "Suriname",
-		"SJ": "Svalbard and Jan Mayen",
-		"SE": "Sweden",
-		"CH": "Switzerland",
-		"SY": "Syria",
-		"TW": "Taiwan",
-		"TJ": "Tajikistan",
-		"TZ": "Tanzania",
-		"TH": "Thailand",
-		"TL": "Timor-Leste",
-		"TG": "Togo",
-		"TK": "Tokelau",
-		"TO": "Tonga",
-		"TT": "Trinidad and Tobago",
-		"TN": "Tunisia",
-		"TR": "Turkey",
-		"TM": "Turkmenistan",
-		"TC": "Turks and Caicos Islands",
-		"TV": "Tuvalu",
-		"UG": "Uganda",
-		"UA": "Ukraine",
-		"AE": "United Arab Emirates",
-		"GB": "United Kingdom",
-		"UM": "United States Minor Outlying Islands",
-		"US": "United States of America",
-		"UY": "Uruguay",
-		"UZ": "Uzbekistan",
-		"VU": "Vanuatu",
-		"VE": "Venezuela",
-		"VN": "Vietnam",
-		"VG": "Virgin Islands (British)",
-		"VI": "Virgin Islands (U.S.)",
-		"WF": "Wallis and Futuna",
-		"EH": "Western Sahara",
-		"YE": "Yemen",
-		"ZM": "Zambia",
-		"ZW": "Zimbabwe",
-		"EU": "European Union",
+	Countries = map[CountryCode]string{
+		CountryCodeAf: "Afghanistan",
+		CountryCodeAx: "Aland Islands",
+		CountryCodeAl: "Albania",
+		CountryCodeDz: "Algeria",
+		CountryCodeAs: "American Samoa",
+		CountryCodeAd: "Andorra",
+		CountryCodeAo: "Angola",
+		CountryCodeAi: "Anguilla",
+		CountryCodeAq: "Antarctica",
+		CountryCodeAg: "Antigua and Barbuda",
+		CountryCodeAr: "Argentina",
+		CountryCodeAm: "Armenia",
+		CountryCodeAw: "Aruba",
+		CountryCodeAu: "Australia",
+		CountryCodeAt: "Austria",
+		CountryCodeAz: "Azerbaijan",
+		CountryCodeBs: "Bahamas",
+		CountryCodeBh: "Bahrain",
+		CountryCodeBd: "Bangladesh",
+		CountryCodeBb: "Barbados",
+		CountryCodeBy: "Belarus",
+		CountryCodeBe: "Belgium",
+		CountryCodeBz: "Belize",
+		CountryCodeBj: "Benin",
+		CountryCodeBm: "Bermuda",
+		CountryCodeBt: "Bhutan",
+		CountryCodeBo: "Bolivia",
+		CountryCodeBq: "Bonaire, Sint Eustatius and Saba",
+		CountryCodeBa: "Bosnia and Herzegovina",
+		CountryCodeBw: "Botswana",
+		CountryCodeBv: "Bouvet Island",
+		CountryCodeBr: "Brazil",
+		CountryCodeIo: "British Indian Ocean Territory",
+		CountryCodeBn: "Brunei",
+		CountryCodeBg: "Bulgaria",
+		CountryCodeBf: "Burkina Faso",
+		CountryCodeBi: "Burundi",
+		CountryCodeCv: "Cabo Verde",
+		CountryCodeKh: "Cambodia",
+		CountryCodeCm: "Cameroon",
+		CountryCodeCa: "Canada",
+		CountryCodeKy: "Cayman Islands",
+		CountryCodeCf: "Central African Republic",
+		CountryCodeTd: "Chad",
+		CountryCodeCl: "Chile",
+		CountryCodeCn: "China",
+		CountryCodeCx: "Christmas Island",
+		CountryCodeCc: "Cocos (Keeling) Islands",
+		CountryCodeCo: "Colombia",
+		CountryCodeKm: "Comoros",
+		CountryCodeCg: "Congo",
+		CountryCodeCd: "Congo (the Democratic Republic of the)",
+		CountryCodeCk: "Cook Islands",
+		CountryCodeCr: "Costa Rica",
+		CountryCodeCi: "C\u00f4te d'Ivoire",
+		CountryCodeHr: "Croatia",
+		CountryCodeCu: "Cuba",
+		CountryCodeCw: "Cura\u00e7ao",
+		CountryCodeCy: "Cyprus",
+		CountryCodeCz: "Czechia",
+		CountryCodeDk: "Denmark",
+		CountryCodeDj: "Djibouti",
+		CountryCodeDm: "Dominica",
+		CountryCodeDo: "Dominican Republic",
+		CountryCodeEc: "Ecuador",
+		CountryCodeEg: "Egypt",
+		CountryCodeSv: "El Salvador",
+		CountryCodeGq: "Equatorial Guinea",
+		CountryCodeEr: "Eritrea",
+		CountryCodeEe: "Estonia",
+		CountryCodeSz: "Eswatini",
+		CountryCodeEt: "Ethiopia",
+		CountryCodeFk: "Falkland Islands (Malvinas)",
+		CountryCodeFo: "Faroe Islands",
+		CountryCodeFj: "Fiji",
+		CountryCodeFi: "Finland",
+		CountryCodeFr: "France",
+		CountryCodeGf: "French Guiana",
+		CountryCodePf: "French Polynesia",
+		CountryCodeTf: "French Southern Territories",
+		CountryCodeGa: "Gabon",
+		CountryCodeGm: "Gambia",
+		CountryCodeGe: "Georgia",
+		CountryCodeDe: "Germany",
+		CountryCodeGh: "Ghana",
+		CountryCodeGi: "Gibraltar",
+		CountryCodeGr: "Greece",
+		CountryCodeGl: "Greenland",
+		CountryCodeGd: "Grenada",
+		CountryCodeGp: "Guadeloupe",
+		CountryCodeGu: "Guam",
+		CountryCodeGt: "Guatemala",
+		CountryCodeGg: "Guernsey",
+		CountryCodeGn: "Guinea",
+		CountryCodeGw: "Guinea-Bissau",
+		CountryCodeGy: "Guyana",
+		CountryCodeHt: "Haiti",
+		CountryCodeHm: "Heard Island and McDonald Islands",
+		CountryCodeVa: "Holy See",
+		CountryCodeHn: "Honduras",
+		CountryCodeHk: "Hong Kong",
+		CountryCodeHu: "Hungary",
+		CountryCodeIs: "Iceland",
+		CountryCodeIn: "India",
+		CountryCodeId: "Indonesia",
+		CountryCodeIr: "Iran",
+		CountryCodeIq: "Iraq",
+		CountryCodeIe: "Ireland",
+		CountryCodeIm: "Isle of Man",
+		CountryCodeIl: "Israel",
+		CountryCodeIt: "Italy",
+		CountryCodeJm: "Jamaica",
+		CountryCodeJp: "Japan",
+		CountryCodeJe: "Jersey",
+		CountryCodeJo: "Jordan",
+		CountryCodeKz: "Kazakhstan",
+		CountryCodeKe: "Kenya",
+		CountryCodeKi: "Kiribati",
+		CountryCodeKp: "North Korea",
+		CountryCodeKr: "South Korea",
+		CountryCodeKw: "Kuwait",
+		CountryCodeKg: "Kyrgyzstan",
+		CountryCodeLa: "Laos",
+		CountryCodeLv: "Latvia",
+		CountryCodeLb: "Lebanon",
+		CountryCodeLs: "Lesotho",
+		CountryCodeLr: "Liberia",
+		CountryCodeLy: "Libya",
+		CountryCodeLi: "Liechtenstein",
+		CountryCodeLt: "Lithuania",
+		CountryCodeLu: "Luxembourg",
+		CountryCodeMo: "Macao",
+		CountryCodeMg: "Madagascar",
+		CountryCodeMw: "Malawi",
+		CountryCodeMy: "Malaysia",
+		CountryCodeMv: "Maldives",
+		CountryCodeMl: "Mali",
+		CountryCodeMt: "Malta",
+		CountryCodeMh: "Marshall Islands",
+		CountryCodeMq: "Martinique",
+		CountryCodeMr: "Mauritania",
+		CountryCodeMu: "Mauritius",
+		CountryCodeYt: "Mayotte",
+		CountryCodeMx: "Mexico",
+		CountryCodeFm: "Micronesia (Federated States of)",
+		CountryCodeMd: "Moldova",
+		CountryCodeMc: "Monaco",
+		CountryCodeMn: "Mongolia",
+		CountryCodeMe: "Montenegro",
+		CountryCodeMs: "Montserrat",
+		CountryCodeMa: "Morocco",
+		CountryCodeMz: "Mozambique",
+		CountryCodeMm: "Myanmar",
+		CountryCodeNa: "Namibia",
+		CountryCodeNr: "Nauru",
+		CountryCodeNp: "Nepal",
+		CountryCodeNl: "Netherlands",
+		CountryCodeNc: "New Caledonia",
+		CountryCodeNz: "New Zealand",
+		CountryCodeNi: "Nicaragua",
+		CountryCodeNe: "Niger",
+		CountryCodeNg: "Nigeria",
+		CountryCodeNu: "Niue",
+		CountryCodeNf: "Norfolk Island",
+		CountryCodeMk: "North Macedonia",
+		CountryCodeMp: "Northern Mariana Islands",
+		CountryCodeNo: "Norway",
+		CountryCodeOm: "Oman",
+		CountryCodePk: "Pakistan",
+		CountryCodePw: "Palau",
+		CountryCodePs: "Palestine, State of",
+		CountryCodePa: "Panama",
+		CountryCodePg: "Papua New Guinea",
+		CountryCodePy: "Paraguay",
+		CountryCodePe: "Peru",
+		CountryCodePh: "Philippines",
+		CountryCodePn: "Pitcairn",
+		CountryCodePl: "Poland",
+		CountryCodePt: "Portugal",
+		CountryCodePr: "Puerto Rico",
+		CountryCodeQa: "Qatar",
+		CountryCodeRe: "R\u00e9union",
+		CountryCodeRo: "Romania",
+		CountryCodeRu: "Russia",
+		CountryCodeRw: "Rwanda",
+		CountryCodeBl: "Saint Barth\u00e9lemy",
+		CountryCodeSh: "Saint Helena, Ascension and Tristan da Cunha",
+		CountryCodeKn: "Saint Kitts and Nevis",
+		CountryCodeLc: "Saint Lucia",
+		CountryCodeMf: "Saint Martin (French part)",
+		CountryCodePm: "Saint Pierre and Miquelon",
+		CountryCodeVc: "Saint Vincent and the Grenadines",
+		CountryCodeWs: "Samoa",
+		CountryCodeSm: "San Marino",
+		CountryCodeSt: "Sao Tome and Principe",
+		CountryCodeSa: "Saudi Arabia",
+		CountryCodeSn: "Senegal",
+		CountryCodeRs: "Serbia",
+		CountryCodeSc: "Seychelles",
+		CountryCodeSl: "Sierra Leone",
+		CountryCodeSg: "Singapore",
+		CountryCodeSx: "Sint Maarten (Dutch part)",
+		CountryCodeSk: "Slovakia",
+		CountryCodeSi: "Slovenia",
+		CountryCodeSb: "Solomon Islands",
+		CountryCodeSo: "Somalia",
+		CountryCodeZa: "South Africa",
+		CountryCodeGs: "South Georgia and the South Sandwich Islands",
+		CountryCodeSs: "South Sudan",
+		CountryCodeEs: "Spain",
+		CountryCodeLk: "Sri Lanka",
+		CountryCodeSd: "Sudan",
+		CountryCodeSr: "Suriname",
+		CountryCodeSj: "Svalbard and Jan Mayen",
+		CountryCodeSe: "Sweden",
+		CountryCodeCh: "Switzerland",
+		CountryCodeSy: "Syria",
+		CountryCodeTw: "Taiwan",
+		CountryCodeTj: "Tajikistan",
+		CountryCodeTz: "Tanzania",
+		CountryCodeTh: "Thailand",
+		CountryCodeTl: "Timor-Leste",
+		CountryCodeTg: "Togo",
+		CountryCodeTk: "Tokelau",
+		CountryCodeTo: "Tonga",
+		CountryCodeTt: "Trinidad and Tobago",
+		CountryCodeTn: "Tunisia",
+		CountryCodeTr: "Turkey",
+		CountryCodeTm: "Turkmenistan",
+		CountryCodeTc: "Turks and Caicos Islands",
+		CountryCodeTv: "Tuvalu",
+		CountryCodeUg: "Uganda",
+		CountryCodeUa: "Ukraine",
+		CountryCodeAe: "United Arab Emirates",
+		CountryCodeGb: "United Kingdom",
+		CountryCodeUm: "United States Minor Outlying Islands",
+		CountryCodeUs: "United States of America",
+		CountryCodeUy: "Uruguay",
+		CountryCodeUz: "Uzbekistan",
+		CountryCodeVu: "Vanuatu",
+		CountryCodeVe: "Venezuela",
+		CountryCodeVn: "Vietnam",
+		CountryCodeVg: "Virgin Islands (British)",
+		CountryCodeVi: "Virgin Islands (U.S.)",
+		CountryCodeWf: "Wallis and Futuna",
+		CountryCodeEh: "Western Sahara",
+		CountryCodeYe: "Yemen",
+		CountryCodeZm: "Zambia",
+		CountryCodeZw: "Zimbabwe",
+		CountryCodeEu: "European Union",
 	}
 	Languages = map[string]string{
 		"af":             "Afrikaans",

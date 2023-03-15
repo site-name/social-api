@@ -2,7 +2,6 @@ package warehouse
 
 import (
 	"database/sql"
-	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
@@ -341,7 +340,7 @@ func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, 
 
 // FilterForCountryAndChannel finds and returns stocks with given options
 func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
-	options.CountryCode = strings.ToUpper(options.CountryCode)
+	options.CountryCode = options.CountryCode
 
 	warehouseIDQuery := ss.
 		warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug).
@@ -454,7 +453,7 @@ func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(transaction sto
 	return ss.FilterForCountryAndChannel(transaction, options)
 }
 
-func (ss *SqlStockStore) warehouseIdSelectQuery(countryCode string, channelSlug string) squirrel.SelectBuilder {
+func (ss *SqlStockStore) warehouseIdSelectQuery(countryCode model.CountryCode, channelSlug string) squirrel.SelectBuilder {
 	query := ss.GetQueryBuilder().
 		Select("Warehouses.Id").
 		From(store.WarehouseTableName)

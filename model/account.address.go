@@ -32,20 +32,20 @@ const (
 
 // Address contains information that tells details about an address
 type Address struct {
-	Id             string `json:"id"`
-	FirstName      string `json:"first_name"`
-	LastName       string `json:"last_name"`
-	CompanyName    string `json:"company_name,omitempty"`
-	StreetAddress1 string `json:"street_address_1,omitempty"`
-	StreetAddress2 string `json:"street_address_2,omitempty"`
-	City           string `json:"city"`
-	CityArea       string `json:"city_area,omitempty"`
-	PostalCode     string `json:"postal_code"`
-	Country        string `json:"country"` // single value
-	CountryArea    string `json:"country_area"`
-	Phone          string `json:"phone"` // db_index
-	CreateAt       int64  `json:"create_at,omitempty"`
-	UpdateAt       int64  `json:"update_at,omitempty"`
+	Id             string      `json:"id"`
+	FirstName      string      `json:"first_name"`
+	LastName       string      `json:"last_name"`
+	CompanyName    string      `json:"company_name,omitempty"`
+	StreetAddress1 string      `json:"street_address_1,omitempty"`
+	StreetAddress2 string      `json:"street_address_2,omitempty"`
+	City           string      `json:"city"`
+	CityArea       string      `json:"city_area,omitempty"`
+	PostalCode     string      `json:"postal_code"`
+	Country        CountryCode `json:"country"` // single value
+	CountryArea    string      `json:"country_area"`
+	Phone          string      `json:"phone"` // db_index
+	CreateAt       int64       `json:"create_at,omitempty"`
+	UpdateAt       int64       `json:"update_at,omitempty"`
 }
 
 type AddressFilterOrderOption struct {
@@ -115,8 +115,6 @@ func (a *Address) commonPre() {
 	a.LastName = SanitizeUnicode(CleanNamePart(a.LastName, LastName))
 	if a.Country == "" {
 		a.Country = DEFAULT_COUNTRY
-	} else {
-		a.Country = strings.ToUpper(a.Country)
 	}
 }
 
@@ -165,7 +163,7 @@ func (a *Address) IsValid() *AppError {
 	if utf8.RuneCountInString(a.PostalCode) > ADDRESS_POSTAL_CODE_MAX_LENGTH || !IsAllNumbers(a.PostalCode) {
 		return outer("postal_code", &a.Id)
 	}
-	if _, ok := Countries[a.Country]; !ok {
+	if !a.Country.IsValid() {
 		return outer("country", &a.Id)
 	}
 	if utf8.RuneCountInString(a.CountryArea) > ADDRESS_COUNTRY_AREA_MAX_LENGTH {
@@ -174,7 +172,7 @@ func (a *Address) IsValid() *AppError {
 	if utf8.RuneCountInString(a.Phone) > ADDRESS_PHONE_MAX_LENGTH {
 		return outer("phone", &a.Id)
 	}
-	if str, ok := util.ValidatePhoneNumber(a.Phone, a.Country); !ok {
+	if str, ok := util.ValidatePhoneNumber(a.Phone, string(a.Country)); !ok {
 		return outer("phone", &a.Id)
 	} else {
 		a.Phone = str

@@ -12,12 +12,12 @@ type checkPostalCodeFunc func(code, start, end string) bool
 var (
 	ukPostalCodePattern    = regexp.MustCompile(`^([A-Z]{1,2})([0-9]+)([A-Z]?) ?([0-9][A-Z]{2})$`) // ukPostalCodePattern to check againts United Kingdom postal codes
 	irishPostalCodePattern = regexp.MustCompile(`([\dA-Z]{3}) ?([\dA-Z]{4})`)                      // irishPostalCodePattern to check againts ireland postal codes
-	countryFuncMap         = map[string]checkPostalCodeFunc{
-		"GB": CheckUkPostalCode,    // United Kingdom
-		"IM": CheckUkPostalCode,    // Isle of Man
-		"GG": CheckUkPostalCode,    // Guernsey
-		"JE": CheckUkPostalCode,    // Jersey
-		"IE": CheckIRishPostalCode, // Ireland
+	countryFuncMap         = map[model.CountryCode]checkPostalCodeFunc{
+		model.CountryCodeGb: CheckUkPostalCode,    // United Kingdom
+		model.CountryCodeIm: CheckUkPostalCode,    // Isle of Man
+		model.CountryCodeGg: CheckUkPostalCode,    // Guernsey
+		model.CountryCodeJe: CheckUkPostalCode,    // Jersey
+		model.CountryCodeIe: CheckIRishPostalCode, // Ireland
 	}
 )
 
@@ -57,7 +57,7 @@ func CheckAnyPostalCode(code, start, end string) bool {
 	return CompareValues(code, start, end)
 }
 
-func CheckPostalCodeInRange(countryCode, postalCode, start, end string) bool {
+func CheckPostalCodeInRange(countryCode model.CountryCode, postalCode, start, end string) bool {
 	fun, exist := countryFuncMap[countryCode]
 	if !exist {
 		fun = CheckAnyPostalCode

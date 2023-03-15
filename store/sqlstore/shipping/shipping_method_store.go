@@ -88,7 +88,7 @@ func (s *SqlShippingMethodStore) Get(methodID string) (*model.ShippingMethod, er
 // ApplicableShippingMethods finds all shipping method for given checkout
 //
 // sql queries here are borrowed. Please check the file shipping_method_store.md
-func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) ([]*model.ShippingMethod, error) {
+func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) {
 	/*
 		NOTE: we also prefetch postal_code_rules, shipping zones for later use
 		please refer to saleor/shipping/models for details

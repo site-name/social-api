@@ -85,7 +85,7 @@ func (voucher *Voucher) ValidateMinCheckoutItemsQuantity(quantity int) *NotAppli
 
 func (v *Voucher) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"voucher.is_valid.%s.app_error",
+		"model.voucher.is_valid.%s.app_error",
 		"voucher_id=",
 		"Voucher.IsValid",
 	)
@@ -114,7 +114,7 @@ func (v *Voucher) IsValid() *AppError {
 		return outer("countries", &v.Id)
 	}
 	for _, country := range strings.Fields(v.Countries) {
-		if Countries[strings.ToUpper(country)] == "" { // does not exist in map
+		if !CountryCode(country).IsValid() {
 			return outer("countries", &v.Id)
 		}
 	}

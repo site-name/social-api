@@ -69,7 +69,7 @@ func init() {
 			configuration[item.Get("name", "").(string)] = item["value"]
 		}
 		var originCountry = configuration.Get("origin_country", "").(string)
-		if upper := strings.ToUpper(originCountry); model.Countries[upper] != "" {
+		if upper := strings.ToUpper(originCountry); model.CountryCode(upper).IsValid() {
 			originCountry = upper
 		} else {
 			originCountry = ""
@@ -79,7 +79,7 @@ func init() {
 		var splitCountriesFromOrigin = []string{}
 
 		for _, str := range strings.FieldsFunc(countriesFromOrigin, func(r rune) bool { return r == ' ' || r == ',' }) {
-			if upper := strings.ToUpper(str); model.Countries[upper] != "" {
+			if upper := strings.ToUpper(str); model.CountryCode(upper).IsValid() {
 				splitCountriesFromOrigin = append(splitCountriesFromOrigin, upper)
 			}
 		}
@@ -88,7 +88,7 @@ func init() {
 		var splitExcludedCountries = []string{}
 
 		for _, str := range strings.FieldsFunc(excludedCountries, func(r rune) bool { return r == ' ' || r == ',' }) {
-			if upper := strings.ToUpper(str); model.Countries[upper] != "" {
+			if upper := strings.ToUpper(str); model.CountryCode(upper).IsValid() {
 				splitExcludedCountries = append(splitExcludedCountries, upper)
 			}
 		}
@@ -190,9 +190,9 @@ func (vp *VatlayerPlugin) getTaxesForCountry(country string) (any, *model.AppErr
 			}
 
 			if companyAddr := shop.GetCompanyAddress(); companyAddr != nil {
-				country = companyAddr.Country
+				country = companyAddr.Country.String()
 			} else {
-				country = model.DEFAULT_COUNTRY
+				country = model.DEFAULT_COUNTRY.String()
 			}
 		}
 	}

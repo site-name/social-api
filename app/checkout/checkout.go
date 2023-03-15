@@ -7,7 +7,6 @@ package checkout
 import (
 	"context"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -112,9 +111,9 @@ func (a *ServiceCheckout) CheckoutShippingRequired(checkoutToken string) (bool, 
 	return false, nil
 }
 
-func (a *ServiceCheckout) CheckoutSetCountry(ckout *model.Checkout, newCountryCode string) *model.AppError {
+func (a *ServiceCheckout) CheckoutSetCountry(ckout *model.Checkout, newCountryCode model.CountryCode) *model.AppError {
 	// no need to validate country code here, since checkout.IsValid() does that
-	ckout.Country = strings.ToUpper(strings.TrimSpace(newCountryCode))
+	ckout.Country = newCountryCode
 	_, appErr := a.UpsertCheckout(ckout)
 	return appErr
 }
@@ -140,7 +139,7 @@ func (a *ServiceCheckout) UpsertCheckout(ckout *model.Checkout) (*model.Checkout
 	return ckout, nil
 }
 
-func (a *ServiceCheckout) CheckoutCountry(ckout *model.Checkout) (string, *model.AppError) {
+func (a *ServiceCheckout) CheckoutCountry(ckout *model.Checkout) (model.CountryCode, *model.AppError) {
 	addressID := ckout.ShippingAddressID
 	if addressID == nil {
 		addressID = ckout.BillingAddressID
@@ -156,12 +155,12 @@ func (a *ServiceCheckout) CheckoutCountry(ckout *model.Checkout) (string, *model
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return "", appErr
 		}
-		if address == nil || strings.TrimSpace(address.Country) == "" {
+		if address == nil || address.Country == "" {
 			return ckout.Country, nil
 		}
 	}
 
-	countryCode := strings.TrimSpace(address.Country)
+	countryCode := address.Country
 	if countryCode != ckout.Country {
 		// set new country code for checkout:
 		appErr := a.CheckoutSetCountry(ckout, countryCode)

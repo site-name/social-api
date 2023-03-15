@@ -502,7 +502,7 @@ func (m *PluginManager) ShowTaxesOnStoreFront() (bool, *model.AppError) {
 	return showTax, nil
 }
 
-func (m *PluginManager) ApplyTaxesToProduct(product model.Product, price goprices.Money, country string, channelID string) (*goprices.TaxedMoney, *model.AppError) {
+func (m *PluginManager) ApplyTaxesToProduct(product model.Product, price goprices.Money, country model.CountryCode, channelID string) (*goprices.TaxedMoney, *model.AppError) {
 	defaultValue, _ := (&goprices.TaxedMoney{
 		Net:      &price,
 		Gross:    &price,

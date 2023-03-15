@@ -110,11 +110,11 @@ type CheckoutService interface {
 	// Note that `quantity_check=False` should be used, when stocks quantity will
 	// be validated in further steps (checkout completion) in order to raise
 	// 'InsufficientProductStock' error instead of 'InvalidShippingError'.
-	GetValidCollectionPointsForCheckout(lines model.CheckoutLineInfos, countryCode string, quantityCheck bool) ([]*model.WareHouse, *model.AppError)
+	GetValidCollectionPointsForCheckout(lines model.CheckoutLineInfos, countryCode model.CountryCode, quantityCheck bool) ([]*model.WareHouse, *model.AppError)
 	// GetValidShippingMethodListForCheckoutInfo
 	GetValidShippingMethodListForCheckoutInfo(checkoutInfo model.CheckoutInfo, shippingAddress *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) ([]*model.ShippingMethod, *model.AppError)
 	// GetValidShippingMethodsForCheckout finds all valid shipping methods for given checkout
-	GetValidShippingMethodsForCheckout(checkoutInfo model.CheckoutInfo, lineInfos []*model.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode string) ([]*model.ShippingMethod, *model.AppError)
+	GetValidShippingMethodsForCheckout(checkoutInfo model.CheckoutInfo, lineInfos []*model.CheckoutLineInfo, subTotal *goprices.TaxedMoney, countryCode model.CountryCode) ([]*model.ShippingMethod, *model.AppError)
 	// GetVoucherDiscountForCheckout Calculate discount value depending on voucher and discount types.
 	// Raise NotApplicable if voucher of given type cannot be applied.
 	GetVoucherDiscountForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.Money, *model.NotApplicable, *model.AppError)
@@ -162,10 +162,10 @@ type CheckoutService interface {
 	BulkUpdateCheckoutLines(checkoutLines []*model.CheckoutLine) *model.AppError
 	CalculateCheckoutQuantity(lineInfos []*model.CheckoutLineInfo) (int, *model.AppError)
 	ChangeBillingAddressInCheckout(checkOut *model.Checkout, address *model.Address) *model.AppError
-	CheckoutCountry(ckout *model.Checkout) (string, *model.AppError)
+	CheckoutCountry(ckout *model.Checkout) (model.CountryCode, *model.AppError)
 	CheckoutLineWithVariant(checkout *model.Checkout, productVariantID string) (*model.CheckoutLine, *model.AppError)
 	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model.AppError)
-	CheckoutSetCountry(ckout *model.Checkout, newCountryCode string) *model.AppError
+	CheckoutSetCountry(ckout *model.Checkout, newCountryCode model.CountryCode) *model.AppError
 	CleanBillingAddress(checkoutInfo model.CheckoutInfo) *model.AppError
 	CleanCheckoutPayment(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model.AppError)
 	ClearDeliveryMethod(checkoutInfo model.CheckoutInfo) *model.AppError

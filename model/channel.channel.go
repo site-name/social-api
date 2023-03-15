@@ -17,13 +17,13 @@ const (
 )
 
 type Channel struct {
-	Id             string `json:"id"`
-	ShopID         string `json:"shop_id"`
-	Name           string `json:"name"`
-	IsActive       bool   `json:"is_active"`
-	Slug           string `json:"slug"`            // unique
-	Currency       string `json:"currency"`        //
-	DefaultCountry string `json:"default_country"` // default "US"
+	Id             string      `json:"id"`
+	ShopID         string      `json:"shop_id"`
+	Name           string      `json:"name"`
+	IsActive       bool        `json:"is_active"`
+	Slug           string      `json:"slug"`            // unique
+	Currency       string      `json:"currency"`        //
+	DefaultCountry CountryCode `json:"default_country"` // default "US"
 
 	hasOrders     bool          `db:"-"`
 	shippingZones ShippingZones `db:"-"` // get populated in some queries that require selected related shipping zones
@@ -72,7 +72,7 @@ func (c *Channel) String() string {
 
 func (c *Channel) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"channel.is_valid.%s.app_error",
+		"model.channel.is_valid.%s.app_error",
 		"channel_id=",
 		"Channel.IsValid",
 	)
@@ -113,10 +113,10 @@ func (c *Channel) PreSave() {
 func (c *Channel) commonPre() {
 	c.Name = SanitizeUnicode(c.Name)
 	c.Currency = strings.ToUpper(c.Currency)
-	if _, exist := Countries[c.DefaultCountry]; !exist {
+	if !c.DefaultCountry.IsValid() {
 		c.DefaultCountry = DEFAULT_COUNTRY
 	}
-	c.DefaultCountry = strings.ToUpper(c.DefaultCountry)
+	// c.DefaultCountry = strings.ToUpper(c.DefaultCountry)
 }
 
 func (c *Channel) PreUpdate() {

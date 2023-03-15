@@ -18,23 +18,20 @@ func (a *ServiceShipping) DefaultShippingZoneExists(shippingZoneID string) ([]*m
 }
 
 // GetCountriesWithoutShippingZone Returns country codes that are not assigned to any shipping zone.
-func (a *ServiceShipping) GetCountriesWithoutShippingZone() ([]string, *model.AppError) {
+func (a *ServiceShipping) GetCountriesWithoutShippingZone() ([]model.CountryCode, *model.AppError) {
 	zones, err := a.srv.Store.ShippingZone().FilterByOption(nil) // nil mean find all
 	if err != nil {
 		return nil, model.NewAppError("GetCountriesWithoutShippingZone", "app.shipping.shipping_zones_with_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	meetMap := map[string]struct{}{}
-
+	meetMap := map[model.CountryCode]struct{}{}
 	for _, zone := range zones {
-		uppserCountries := strings.ToUpper(zone.Countries)
-
-		for _, code := range strings.Fields(uppserCountries) {
-			meetMap[code] = struct{}{}
+		for _, code := range strings.Fields(zone.Countries) {
+			meetMap[model.CountryCode(code)] = struct{}{}
 		}
 	}
 
-	res := []string{}
+	res := []model.CountryCode{}
 	for code := range model.Countries {
 		if _, exist := meetMap[code]; !exist {
 			res = append(res, code)
