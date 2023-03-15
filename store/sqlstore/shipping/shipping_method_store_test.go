@@ -1,7 +1,6 @@
 package shipping
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -14,7 +13,7 @@ import (
 )
 
 func TestApplicableShippingMethods(t *testing.T) {
-	sqlString, err := ApplicableShippingMethods(
+	_, err := ApplicableShippingMethods(
 		&goprices.Money{
 			Amount:   decimal.NewFromFloat(56.78),
 			Currency: "USD",
@@ -29,8 +28,6 @@ func TestApplicableShippingMethods(t *testing.T) {
 	)
 
 	require.NoError(t, err)
-
-	fmt.Println(sqlString)
 }
 
 func ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode string, productIDs []string) (string, error) {
