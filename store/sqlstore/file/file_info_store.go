@@ -168,7 +168,7 @@ func (fs *SqlFileInfoStore) get(id string, fromMaster bool) (*model.FileInfo, er
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("FileInfos", id)
 		}
-		return nil, errors.Wrapf(err, "failed to get FileInfos with id=%s")
+		return nil, errors.Wrapf(err, "failed to get FileInfo with id=%s", id)
 	}
 	return info, nil
 }

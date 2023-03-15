@@ -99,7 +99,7 @@ func (ss *SqlStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stoc
 			return nil, errors.Wrapf(err, "failed to upsert a stock with id=%s", stock.Id)
 		}
 		if numUpdate > 1 {
-			return nil, errors.Errorf("multiple stocks with id=%d were updated: %d instead of 1", stock.Id, numUpdate)
+			return nil, errors.Errorf("multiple stocks with id=%s were updated: %d instead of 1", stock.Id, numUpdate)
 		}
 	}
 

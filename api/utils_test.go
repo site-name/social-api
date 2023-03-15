@@ -12,9 +12,9 @@ type person struct {
 }
 
 func TestGetContextValue(t *testing.T) {
-	b := person{"minh", 24}
+	minh := person{"minh", 24}
 
-	c := context.WithValue(context.Background(), WebCtx, &b)
+	c := context.WithValue(context.Background(), WebCtx, minh)
 
 	p, err := GetContextValue[person](c, WebCtx)
 	if err != nil {
