@@ -244,7 +244,7 @@ func SystemShippingZoneToGraphqlShippingZone(s *model.ShippingZone) *ShippingZon
 		for _, code := range splitCountries {
 			res.Countries = append(res.Countries, &CountryDisplay{
 				Code:    code,
-				Country: model.Countries[code],
+				Country: model.Countries[model.CountryCode(code)],
 			})
 		}
 	}

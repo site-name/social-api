@@ -286,15 +286,15 @@ func (p *Product) Pricing(ctx context.Context, args struct{ Address *AddressInpu
 		return nil, err
 	}
 
-	var countryCode string
+	var countryCode model.CountryCode
 	if args.Address != nil && args.Address.Country != nil {
-		countryCode = string(*args.Address.Country)
+		countryCode = *args.Address.Country
 	}
 	if countryCode == "" {
 		countryCode = channel.DefaultCountry
 	}
 
-	localCurrency := util.GetCurrencyForCountry(countryCode)
+	localCurrency := util.GetCurrencyForCountry(countryCode.String())
 
 	panic("not implemented") // TODO: complete plugin manager before removeing this panic
 

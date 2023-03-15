@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"net/http"
-	"strings"
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
@@ -31,8 +30,8 @@ func SystemAddressToGraphqlAddress(address *model.Address) *Address {
 
 func (a *Address) Country(ctx context.Context) (*CountryDisplay, error) {
 	return &CountryDisplay{
-		Code:    a.Address.Country,
-		Country: model.Countries[strings.ToUpper(a.Address.Country)],
+		Code:    a.Address.Country.String(),
+		Country: model.Countries[a.Address.Country],
 	}, nil
 }
 

@@ -340,7 +340,7 @@ func systemVoucherToGraphqlVoucher(v *model.Voucher) *Voucher {
 		for _, code := range countries {
 			res.Countries = append(res.Countries, &CountryDisplay{
 				Code:    code,
-				Country: model.Countries[code],
+				Country: model.Countries[model.CountryCode(code)],
 			})
 		}
 	}

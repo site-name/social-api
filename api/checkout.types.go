@@ -291,7 +291,7 @@ func (c *Checkout) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse,
 		return nil, err
 	}
 
-	var countryCode string
+	var countryCode model.CountryCode
 	if address != nil {
 		countryCode = address.Country
 	} else {

@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"net/http"
-	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
@@ -56,8 +55,8 @@ func SystemChannelToGraphqlChannel(ch *model.Channel) *Channel {
 		Slug:         ch.Slug,
 		CurrencyCode: ch.Currency,
 		DefaultCountry: &CountryDisplay{
-			Code:    ch.DefaultCountry,
-			Country: model.Countries[strings.ToUpper(ch.DefaultCountry)],
+			Code:    ch.DefaultCountry.String(),
+			Country: model.Countries[ch.DefaultCountry],
 		},
 	}
 }

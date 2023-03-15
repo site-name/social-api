@@ -72,7 +72,7 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	if args.Input.PostalCode != nil {
 		address.PostalCode = *args.Input.PostalCode
 	}
-	address.Country = string(*args.Input.Country) // country validated above
+	address.Country = *args.Input.Country // country validated above
 	if args.Input.CountryArea != nil {
 		address.CountryArea = *args.Input.CountryArea
 	}
@@ -188,7 +188,7 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	}
 	if value := args.Input.Country; value != nil {
 		// nil checking checked above
-		address.Country = string(*value)
+		address.Country = *value
 	}
 	if value := args.Input.CountryArea; value != nil {
 		address.CountryArea = *value
