@@ -7,9 +7,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -309,8 +311,8 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 			return nil, appErr
 		}
 	} else {
-		fileUrl := args.Input.getFileURL()
-		contentType := args.Input.getContentType()
+		fileUrl := args.Input.FileURL
+		contentType := args.Input.ContentType
 		if (fileUrl != nil && *fileUrl != "") ||
 			(contentType != nil && *contentType != "") {
 			return nil, model.NewAppError("AttributeValueCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "fileUrl or contentType"}, "fieUrl and contentType can only be defined for swatch attribute", http.StatusBadRequest)
@@ -319,10 +321,10 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 
 	// construct instance
 	attrValue := &model.AttributeValue{
-		Name:        args.Input.getName(),
+		Name:        args.Input.Name,
 		RichText:    model.StringInterface(args.Input.RichText),
-		FileUrl:     args.Input.getFileURL(),
-		ContentType: args.Input.getContentType(),
+		FileUrl:     args.Input.FileURL,
+		ContentType: args.Input.ContentType,
 		AttributeID: attribute.Id,
 	}
 	if v := args.Input.getValue(); v != nil && *v != "" {
@@ -404,21 +406,21 @@ func (r *Resolver) AttributeValueUpdate(ctx context.Context, args struct {
 	attrValue := attrValues[0]
 
 	// clean input
-	if v := args.Input.getValue(); v != nil && *v != "" {
+	if v := args.Input.Value; v != nil && *v != "" {
 		args.Input.FileURL = nil
 		args.Input.ContentType = nil
-	} else if v := args.Input.getFileURL(); v != nil && *v != "" {
+	} else if v := args.Input.FileURL; v != nil && *v != "" {
 		args.Input.Value = nil
 	}
 
 	// update value
-	attrValue.Name = args.Input.getName()
+	attrValue.Name = args.Input.Name
 	if v := args.Input.Value; v != nil {
 		attrValue.Value = *v
 	}
 	attrValue.RichText = model.StringInterface(args.Input.RichText)
-	attrValue.FileUrl = args.Input.getFileURL()
-	attrValue.ContentType = args.Input.getContentType()
+	attrValue.FileUrl = args.Input.FileURL
+	attrValue.ContentType = args.Input.ContentType
 
 	savedAttrValue, appErr := embedCtx.App.Srv().AttributeService().UpsertAttributeValue(attrValue)
 	if appErr != nil {
@@ -443,7 +445,49 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 	AttributeID string
 	Moves       []*ReorderInput
 }) (*AttributeReorderValues, error) {
-	panic(fmt.Errorf("not implemented"))
+	if !model.IsValidId(args.AttributeID) {
+		return nil, model.NewAppError("AttributeReorderValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.AttributeID+" is in valid", http.StatusBadRequest)
+	}
+	// validate permission(s)
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManagePageTypesAndAttributes) {
+		return nil, model.NewAppError("AttributeReorderValues", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	}
+
+	// find attribute with given id
+	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{
+		Id:                             squirrel.Eq{store.AttributeTableName + ".Id": args.AttributeID},
+		PrefetchRelatedAttributeValues: true,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	attributeValues := attribute.GetAttributeValues()
+	attributeValueMap := lo.SliceToMap(attributeValues, func(a *model.AttributeValue) (string, bool) { return a.Id, true })
+	operations := map[string]*int{}
+
+	for _, move := range args.Moves {
+		if !model.IsValidId(move.ID) {
+			return nil, model.NewAppError("AttributeReorderValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "move.Id"}, fmt.Sprintf("id=%s is not valid attribute value id", move.ID), http.StatusBadRequest)
+		}
+		if !attributeValueMap[move.ID] { // not contains
+			return nil, model.NewAppError("AttributeReorderValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "move.Id"}, fmt.Sprintf("attribute value with id=%s does not belong to the attribute", move.ID), http.StatusBadRequest)
+		}
+
+		operations[move.ID] = (*int)(unsafe.Pointer(move.SortOrder))
+	}
+
+	appErr = embedCtx.App.Srv().AttributeService().PerformReordering(attributeValues, operations)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &AttributeReorderValues{
+		Attribute: SystemAttributeToGraphqlAttribute(attribute),
+	}, nil
 }
 
 func (r *Resolver) Attributes(ctx context.Context, args struct {
@@ -459,8 +503,11 @@ func (r *Resolver) Attribute(ctx context.Context, args struct {
 	Id   *string
 	Slug *string
 }) (*Attribute, error) {
-	if args.Id == nil || (args.Slug == nil || *args.Slug == "") {
-		return nil, nil
+	if args.Id != nil && !model.IsValidId(*args.Id) {
+		return nil, model.NewAppError("Attribute", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+	}
+	if args.Slug != nil && strings.TrimSpace(*args.Slug) == "" {
+		return nil, model.NewAppError("Attribute", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid slug", http.StatusBadRequest)
 	}
 
 	attrFilter := &model.AttributeFilterOption{}

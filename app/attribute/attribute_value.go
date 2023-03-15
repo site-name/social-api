@@ -14,44 +14,15 @@ import (
 )
 
 func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) ([]*model.AttributeValue, *model.AppError) {
-	attrValues, err := a.srv.Store.AttributeValue().FilterByOptions(model.AttributeValueFilterOptions{
+	return a.FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
 		AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": attributeID},
 	})
-	var (
-		statusCode = 0
-		errMsg     string
-	)
-	if err != nil {
-		errMsg = err.Error()
-		statusCode = http.StatusInternalServerError
-	}
-	if len(attrValues) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("AttributeValuesOfAttribute", "app.attribute.error_finding_attribute_values_by_attribute_id.app_error", nil, errMsg, statusCode)
-	}
-
-	return attrValues, nil
 }
 
 func (s *ServiceAttribute) FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model.AppError) {
 	values, err := s.srv.Store.AttributeValue().FilterByOptions(option)
-
-	var (
-		statusCode = 0
-		errMsg     = ""
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMsg = err.Error()
-	} else if len(values) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("FilterAttributeValuesByOptions", "app.attribute.error_finding_attribute_values_by_options.app_error", nil, errMsg, statusCode)
+		return nil, model.NewAppError("FilterAttributeValuesByOptions", "app.attribute.error_finding_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return values, nil
@@ -69,7 +40,6 @@ func (a *ServiceAttribute) UpsertAttributeValue(attrValue *model.AttributeValue)
 		if _, ok := err.(*store.ErrInvalidInput); ok {
 			statusCode = http.StatusBadRequest
 		}
-
 		return nil, model.NewAppError("UpsertAttributeValue", "app.attribute.error_upserting_attribute_value.app_error", nil, err.Error(), statusCode)
 	}
 
@@ -131,11 +101,6 @@ func (r *Reordering) orderedNodeMap(transaction store_iface.SqlxTxExecutor) (map
 			Ordering:        store.AttributeValueTableName + ".SortOrder ASC NULLS LAST",
 			Id:              squirrel.Eq{store.AttributeValueTableName + ".Id": r.Values.IDs()},
 			SelectForUpdate: true,
-
-			// PaginationOptions: model.PaginationOptions{
-			// 	OrderBy: store.AttributeValueTableName + ".Id",
-			// 	Order:   model.ASC,
-			// },
 		})
 		if appErr != nil {
 			return nil, appErr

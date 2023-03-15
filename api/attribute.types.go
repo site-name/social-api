@@ -292,7 +292,6 @@ func (a *Attribute) currentUserHasPermissionToAccess(ctx context.Context) error 
 	}
 
 	var permToCheck = model.PermissionManageProducts
-
 	if a.Type != nil && *a.Type == AttributeTypeEnumPageType {
 		permToCheck = model.PermissionManagePages
 	}

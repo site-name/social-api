@@ -1,6 +1,6 @@
 module github.com/sitename/sitename
 
-go 1.19
+go 1.20
 
 require (
 	code.sajari.com/docconv v1.2.1
