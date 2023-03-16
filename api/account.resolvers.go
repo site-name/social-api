@@ -99,7 +99,7 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 				Id: currentSession.UserId,
 			},
 			*savedAddress,
-			string(*args.Type),
+			*args.Type,
 			nil,
 		)
 		if appErr != nil {
@@ -279,7 +279,7 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 		ChangeUserDefaultAddress(
 			model.User{Id: currentSession.UserId},
 			model.Address{Id: args.Id},
-			string(args.Type),
+			args.Type,
 			nil,
 		)
 	if appErr != nil {

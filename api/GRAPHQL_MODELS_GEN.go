@@ -4093,20 +4093,7 @@ func (e AccountErrorCode) IsValid() bool {
 	return false
 }
 
-type AddressTypeEnum string
-
-const (
-	AddressTypeEnumBilling  AddressTypeEnum = model.ADDRESS_TYPE_BILLING
-	AddressTypeEnumShipping AddressTypeEnum = model.ADDRESS_TYPE_SHIPPING
-)
-
-func (e AddressTypeEnum) IsValid() bool {
-	switch e {
-	case AddressTypeEnumBilling, AddressTypeEnumShipping:
-		return true
-	}
-	return false
-}
+type AddressTypeEnum = model.AddressTypeEnum
 
 type AppErrorCode string
 

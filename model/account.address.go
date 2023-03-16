@@ -11,6 +11,22 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
+// types for addresses
+type AddressTypeEnum string
+
+const (
+	ADDRESS_TYPE_SHIPPING AddressTypeEnum = "shipping"
+	ADDRESS_TYPE_BILLING  AddressTypeEnum = "billing"
+)
+
+func (e AddressTypeEnum) IsValid() bool {
+	switch e {
+	case ADDRESS_TYPE_SHIPPING, ADDRESS_TYPE_BILLING:
+		return true
+	}
+	return false
+}
+
 // length limits for address fields
 const (
 	ADDRESS_COMPANY_NAME_MAX_LENGTH   = 256

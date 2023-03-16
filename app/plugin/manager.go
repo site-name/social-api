@@ -98,7 +98,7 @@ func (m *PluginManager) getPlugins(channelID string, active bool) []interfaces.B
 	return res
 }
 
-func (m *PluginManager) ChangeUserAddress(address model.Address, addressType string, user *model.User) (*model.Address, *model.AppError) {
+func (m *PluginManager) ChangeUserAddress(address model.Address, addressType model.AddressTypeEnum, user *model.User) (*model.Address, *model.AppError) {
 	var (
 		appErr        *model.AppError
 		previousValue model.Address = address

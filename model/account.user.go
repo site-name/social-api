@@ -37,12 +37,6 @@ const (
 	USER_LANGUAGE_CODE_MAX_LENGTH = 10
 )
 
-// types for addresses
-const (
-	ADDRESS_TYPE_SHIPPING = "shipping"
-	ADDRESS_TYPE_BILLING  = "billing"
-)
-
 // User contains the details about the user.
 // This struct's serializer methods are auto-generated. If a new field is added/removed,
 // please run make gen-serialized.

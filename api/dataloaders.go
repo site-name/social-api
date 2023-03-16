@@ -51,6 +51,7 @@ var (
 	DigitalContentByIdLoader                                   = dataloader.NewBatchedLoader(digitalContentByIdLoader, dataloader.WithBatchCapacity[string, *model.DigitalContent](batchCapacity))
 	DigitalContentsByProductVariantIDLoader                    = dataloader.NewBatchedLoader(digitalContentsByProductVariantIDLoader, dataloader.WithBatchCapacity[string, *model.DigitalContent](batchCapacity))
 	DigitalContentUrlByOrderLineID                             = dataloader.NewBatchedLoader(digitalContentUrlByOrderLineID, dataloader.WithBatchCapacity[string, *model.DigitalContentUrl](batchCapacity))
+	CategoryChildrenByCategoryIdLoader                         = dataloader.NewBatchedLoader(categoryChildrenByCategoryIdLoader, dataloader.WithBatchCapacity[string, []*model.Category](batchCapacity))
 
 	// giftcard
 	GiftCardEventsByGiftCardIdLoader = dataloader.NewBatchedLoader(giftCardEventsByGiftCardIdLoader, dataloader.WithBatchCapacity[string, []*model.GiftCardEvent](batchCapacity))

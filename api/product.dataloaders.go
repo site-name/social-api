@@ -1154,9 +1154,7 @@ func categoryByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[
 		goto errorLabel
 	}
 
-	categories, appErr = embedCtx.App.Srv().ProductService().CategoriesByOption(&model.CategoryFilterOption{
-		Id: squirrel.Eq{store.CategoryTableName + ".Id": ids},
-	})
+	categories, appErr = embedCtx.App.Srv().ProductService().CategoryByIds(ids, true)
 	if appErr != nil {
 		err = appErr
 		goto errorLabel
@@ -1661,7 +1659,37 @@ errorLabel:
 }
 
 func categoryChildrenByCategoryIdLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.Category] {
-	panic("not implemented")
+	var (
+		res         = make([]*dataloader.Result[[]*model.Category], len(ids))
+		idMap       map[string]bool
+		children    model.Categories
+		childrenMap = map[string]model.Categories{} // keys are parent category ids
+	)
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		goto errorLabel
+	}
+	idMap = lo.SliceToMap(ids, func(c string) (string, bool) { return c, true })
+
+	children = embedCtx.App.Srv().ProductService().FilterCategoriesFromCache(func(c *model.Category) bool {
+		return c.ParentID != nil && idMap[*c.ParentID]
+	})
+
+	for _, category := range children {
+		if category.ParentID != nil {
+			childrenMap[*category.ParentID] = append(childrenMap[*category.ParentID], category)
+		}
+	}
+	for idx, id := range ids {
+		res[idx] = &dataloader.Result[[]*model.Category]{Data: childrenMap[id]}
+	}
+	return res
+
+errorLabel:
+	for idx := range ids {
+		res[idx] = &dataloader.Result[[]*model.Category]{Error: err}
+	}
+	return res
 }
 
 func productAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs []string) []*dataloader.Result[[]*model.Attribute] {

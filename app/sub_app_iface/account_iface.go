@@ -38,7 +38,7 @@ type AccountService interface {
 	// AuthenticateUserForLogin
 	AuthenticateUserForLogin(c *request.Context, id, loginId, password, mfaToken, cwsToken string, ldapOnly bool) (user *model.User, err *model.AppError)
 	// ChangeUserDefaultAddress set default address for given user
-	ChangeUserDefaultAddress(user model.User, address model.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError
+	ChangeUserDefaultAddress(user model.User, address model.Address, addressType model.AddressTypeEnum, manager interfaces.PluginManagerInterface) *model.AppError
 	// CheckForClientSideCert checks request's header's `X-SSL-Client-Cert` and `X-SSL-Client-Cert-Subject-DN` keys
 	CheckForClientSideCert(r *http.Request) (string, string, string)
 	// CheckPasswordAndAllCriteria
@@ -149,7 +149,7 @@ type AccountService interface {
 	// SetUserDefaultShippingAddress sets default shipping address for given user
 	SetUserDefaultShippingAddress(user *model.User, defaultShippingAddressID string) *model.AppError
 	// StoreUserAddress Add address to user address book and set as default one.
-	StoreUserAddress(user *model.User, address model.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError
+	StoreUserAddress(user *model.User, address model.Address, addressType model.AddressTypeEnum, manager interfaces.PluginManagerInterface) *model.AppError
 	// Trigger sending a email change notification for the given user
 	SendUserChangeEmailNotification(recipientEmail string, user model.User, manager interfaces.PluginManagerInterface, channelID string) *model.AppError
 	// Trigger sending a notification change email for the given user
@@ -260,7 +260,7 @@ type AccountService interface {
 	UpdateUserRolesWithUser(user *model.User, newRoles string, sendWebSocketEvent bool) (*model.User, *model.AppError)
 	UserByEmail(email string) (*model.User, *model.AppError)
 	UserById(ctx context.Context, userID string) (*model.User, *model.AppError)
-	UserSetDefaultAddress(userID, addressID, addressType string) (*model.User, *model.AppError)
+	UserSetDefaultAddress(userID, addressID string, addressType model.AddressTypeEnum) (*model.User, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
 	VerifyUserEmail(userID, email string) *model.AppError
 }

@@ -84,7 +84,7 @@ func (a *ServiceAccount) CopyAddress(address *model.Address) (*model.Address, *m
 }
 
 // StoreUserAddress Add address to user address book and set as default one.
-func (s *ServiceAccount) StoreUserAddress(user *model.User, address model.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError {
+func (s *ServiceAccount) StoreUserAddress(user *model.User, address model.Address, addressType model.AddressTypeEnum, manager interfaces.PluginManagerInterface) *model.AppError {
 	address_, appErr := manager.ChangeUserAddress(address, addressType, user)
 	if appErr != nil {
 		return appErr
@@ -171,7 +171,7 @@ func (s *ServiceAccount) SetUserDefaultShippingAddress(user *model.User, default
 }
 
 // ChangeUserDefaultAddress set default address for given user
-func (s *ServiceAccount) ChangeUserDefaultAddress(user model.User, address model.Address, addressType string, manager interfaces.PluginManagerInterface) *model.AppError {
+func (s *ServiceAccount) ChangeUserDefaultAddress(user model.User, address model.Address, addressType model.AddressTypeEnum, manager interfaces.PluginManagerInterface) *model.AppError {
 	if manager != nil {
 		_, appErr := manager.ChangeUserAddress(address, addressType, &user)
 		if appErr != nil {

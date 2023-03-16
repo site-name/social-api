@@ -268,7 +268,7 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkOut *model.Checkout, varian
 }
 
 // checkNewCheckoutAddress Check if and address in checkout has changed and if to remove old one
-func (a *ServiceCheckout) checkNewCheckoutAddress(checkOut *model.Checkout, address *model.Address, addressType string) (bool, bool, *model.AppError) {
+func (a *ServiceCheckout) checkNewCheckoutAddress(checkOut *model.Checkout, address *model.Address, addressType model.AddressTypeEnum) (bool, bool, *model.AppError) {
 	// validate if non-nill checkout was provided
 	var invalidArguments string
 	if checkOut == nil {

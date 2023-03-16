@@ -51,7 +51,7 @@ func (a *ServiceAccount) UserById(ctx context.Context, userID string) (*model.Us
 	return user, nil
 }
 
-func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID, addressType string) (*model.User, *model.AppError) {
+func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID string, addressType model.AddressTypeEnum) (*model.User, *model.AppError) {
 	// check if address is owned by user
 	addresses, appErr := a.AddressesByUserId(userID)
 	if appErr != nil {
