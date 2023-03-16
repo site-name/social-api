@@ -71,9 +71,6 @@ type LocalCacheStore struct {
 
 	user                  *LocalCacheUserStore
 	userProfileByIdsCache cache.Cache
-
-	category           *LocalCacheCategoryStore
-	categoryByIdsCache cache.Cache
 }
 
 func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterface, cluster einterfaces.ClusterInterface, cacheProvider cache.Provider) (localCacheStore LocalCacheStore, err error) {
@@ -100,24 +97,8 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 		userProfileByIdsInvalidations: make(map[string]bool),
 	}
 
-	// category
-	if localCacheStore.categoryByIdsCache, err = cacheProvider.NewCache(&cache.CacheOptions{
-		Size:                   CategoryCacheSize,
-		Name:                   "CategoryByIds",
-		DefaultExpiry:          CategoryCacheSec * time.Second,
-		InvalidateClusterEvent: model.ClusterEventInvalidateCacheForCategoryByIds,
-	}); err != nil {
-		return
-	}
-	localCacheStore.category = &LocalCacheCategoryStore{
-		CategoryStore:             baseStore.Category(),
-		rootStore:                 &localCacheStore,
-		categoryByIdInvalidations: make(map[string]bool),
-	}
-
 	if cluster != nil {
 		cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForProfileByIds, localCacheStore.user.handleClusterInvalidateScheme)
-		cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForCategoryByIds, localCacheStore.category.handleClusterInvalidateCategoryById)
 	}
 
 	return
@@ -125,10 +106,6 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 
 func (s LocalCacheStore) User() store.UserStore {
 	return s.user
-}
-
-func (s LocalCacheStore) Category() store.CategoryStore {
-	return s.category
 }
 
 func (s LocalCacheStore) DropAllTables() {
@@ -180,5 +157,4 @@ func (s *LocalCacheStore) doClearCacheCluster(cache cache.Cache) {
 
 func (s *LocalCacheStore) Invalidate() {
 	s.doClearCacheCluster(s.userProfileByIdsCache)
-	s.doClearCacheCluster(s.categoryByIdsCache)
 }

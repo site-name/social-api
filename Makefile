@@ -209,12 +209,12 @@ gen-serialized: ## Generates serialization methods for hot structs
 	$(GOBIN)/msgp -file=./model/session.go -tests=false -o=./model/session_serial_gen.go
 	$(GOBIN)/msgp -file=./model/account.user.go -tests=false -o=./model/account.user_serial_gen.go
 
-gqlgen:
-	$(GO) install github.com/99designs/gqlgen@v0.17.9
+# gqlgen:
+# 	$(GO) install github.com/99designs/gqlgen@v0.17.9
 # $(GO) get -d -modfile=go.tools.mod github.com/vektah/gqlparser/v2@v2.1.0
 
-	$(GOBIN)/gqlgen
-	@echo Gqlgen has done generating.
+# $(GOBIN)/gqlgen
+# @echo Gqlgen has done generating.
 
 update-dependencies: ## Uses go get -u to update all the dependencies while holding back any that require it.
 	@echo Updating Dependencies

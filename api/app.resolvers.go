@@ -69,10 +69,7 @@ func (r *Resolver) AppsInstallations(ctx context.Context) ([]AppInstallation, er
 func (r *Resolver) Apps(ctx context.Context, args struct {
 	Filter *AppFilterInput
 	SortBy *AppSortingInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*AppCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -83,10 +80,7 @@ func (r *Resolver) App(ctx context.Context, args struct{ Id *string }) (*App, er
 
 func (r *Resolver) AppExtensions(ctx context.Context, args struct {
 	Filter *AppExtensionFilterInput
-	Before *string
-	After  *string
-	First  *int
-	Last   *int
+	GraphqlParams
 }) (*AppExtensionCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }

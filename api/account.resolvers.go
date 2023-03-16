@@ -36,7 +36,7 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	// validate input phone
 	if phone := args.Input.Phone; phone != nil {
 		var ok bool
-		phoneNumber, ok = util.ValidatePhoneNumber(*phone, string(*args.Input.Country))
+		phoneNumber, ok = util.ValidatePhoneNumber(*phone, args.Input.Country.String())
 		if !ok {
 			return nil, model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
 		}
@@ -46,35 +46,35 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 
 	// construct address
 	address := &model.Address{
-		Phone: phoneNumber,
+		Phone:   phoneNumber,
+		Country: *args.Input.Country,
 	}
-	if args.Input.FirstName != nil {
-		address.FirstName = *args.Input.FirstName
+	if v := args.Input.FirstName; v != nil {
+		address.FirstName = *v
 	}
-	if args.Input.LastName != nil {
-		address.LastName = *args.Input.LastName
+	if v := args.Input.LastName; v != nil {
+		address.LastName = *v
 	}
-	if args.Input.CompanyName != nil {
-		address.CompanyName = *args.Input.CompanyName
+	if v := args.Input.CompanyName; v != nil {
+		address.CompanyName = *v
 	}
-	if args.Input.StreetAddress1 != nil {
-		address.StreetAddress1 = *args.Input.StreetAddress1
+	if v := args.Input.StreetAddress1; v != nil {
+		address.StreetAddress1 = *v
 	}
-	if args.Input.StreetAddress2 != nil {
-		address.StreetAddress2 = *args.Input.StreetAddress2
+	if v := args.Input.StreetAddress2; v != nil {
+		address.StreetAddress2 = *v
 	}
-	if args.Input.City != nil {
-		address.City = *args.Input.City
+	if v := args.Input.City; v != nil {
+		address.City = *v
 	}
-	if args.Input.CityArea != nil {
-		address.CityArea = *args.Input.CityArea
+	if v := args.Input.CityArea; v != nil {
+		address.CityArea = *v
 	}
-	if args.Input.PostalCode != nil {
-		address.PostalCode = *args.Input.PostalCode
+	if v := args.Input.PostalCode; v != nil {
+		address.PostalCode = *v
 	}
-	address.Country = *args.Input.Country // country validated above
-	if args.Input.CountryArea != nil {
-		address.CountryArea = *args.Input.CountryArea
+	if v := args.Input.CountryArea; v != nil {
+		address.CountryArea = *v
 	}
 
 	// insert address
@@ -95,9 +95,7 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	// change current user's default address to this new one
 	if args.Type != nil && args.Type.IsValid() {
 		appErr = embedContext.App.Srv().AccountService().ChangeUserDefaultAddress(
-			model.User{
-				Id: currentSession.UserId,
-			},
+			model.User{Id: currentSession.UserId},
 			*savedAddress,
 			*args.Type,
 			nil,
@@ -187,7 +185,6 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 		address.PostalCode = *value
 	}
 	if value := args.Input.Country; value != nil {
-		// nil checking checked above
 		address.Country = *value
 	}
 	if value := args.Input.CountryArea; value != nil {
@@ -202,6 +199,8 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	if appErr != nil {
 		return nil, appErr
 	}
+
+	panic("not implemented") // TODO: complete plugin manager
 
 	return &AccountAddressUpdate{
 		Address: SystemAddressToGraphqlAddress(savedAddress),
@@ -238,6 +237,8 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 	if appErr != nil {
 		return nil, appErr
 	}
+
+	panic("not implemented") // TODO : complete plugin manager
 
 	return &AccountAddressDelete{true}, nil
 }
@@ -286,6 +287,8 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
+	panic("not implemented") // TODO: complete manager plugin
+
 	return &AccountSetDefaultAddress{
 		User: &User{
 			ID: currentSession.UserId,
@@ -318,7 +321,7 @@ func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input Account
 		user.LastName = *val
 	}
 	if val := args.Input.LanguageCode; val != nil && val.IsValid() {
-		user.Locale = string(*val)
+		user.Locale = val.String()
 	}
 	// save user
 	user, appErr = r.srv.AccountService().UpdateUser(user, false)

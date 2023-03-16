@@ -30,8 +30,9 @@ func (s *Server) SaveToken(tokenType string, extraData interface{}) (*model.Toke
 	return token, nil
 }
 
-// ValidateTokenByToken finds and checks if token is expired
-func (s *Server) ValidateTokenByToken(token string) (*model.Token, *model.AppError) {
+// ValidateTokenByToken finds and checks if token is expired.
+// NOTE: extraHolder must be pointer
+func (s *Server) ValidateTokenByToken(token string, extraHolder any) (*model.Token, *model.AppError) {
 	tkn, err := s.Store.Token().GetByToken(token)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -43,7 +44,14 @@ func (s *Server) ValidateTokenByToken(token string) (*model.Token, *model.AppErr
 	}
 
 	if model.GetMillis() > tkn.CreateAt+model.MAX_TOKEN_EXIPRY_TIME {
-		return tkn, model.NewAppError("ValidateTokenByToken", "app.server.token_expired.app_error", nil, "token expired", http.StatusNotExtended)
+		return tkn, model.NewAppError("ValidateTokenByToken", "app.server.token_expired.app_error", nil, "token expired", http.StatusBadRequest)
+	}
+
+	if extraHolder != nil {
+		err = json.Unmarshal([]byte(tkn.Extra), extraHolder)
+		if err != nil {
+			return nil, model.NewAppError("ValidateTokenByToken", "app.server.token_unmarshal.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
 	}
 
 	return tkn, nil

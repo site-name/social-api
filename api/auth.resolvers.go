@@ -6,8 +6,11 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
 
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/web"
 )
 
 func (r *Resolver) TokenCreate(ctx context.Context, args struct{ Input TokenCreateInput }) (*CreateToken, error) {
@@ -100,12 +103,94 @@ func (r *Resolver) RequestEmailChange(ctx context.Context, args struct {
 	Password    string
 	RedirectURL string
 }) (*RequestEmailChange, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = embedCtx.App.Srv().AccountService().CheckUserPassword(user, args.Password)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// validate if given email already used
+	userWithEmail, appErr := embedCtx.App.Srv().AccountService().UserByEmail(args.NewEmail)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if userWithEmail != nil {
+		return nil, model.NewAppError("RequestEmailChange", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "given email is already used by other user", http.StatusBadRequest)
+	}
+
+	// validate url
+	appErr = model.ValidateStoreFrontUrl(embedCtx.App.Srv().Config(), args.RedirectURL)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	tokenExtra := model.RequestEmailChangeTokenExtra{
+		OldEmail: user.Email,
+		NewEmail: args.NewEmail,
+		UserID:   user.Id,
+	}
+
+	_, appErr = embedCtx.App.Srv().SaveToken(model.TokenTypeRequestChangeEmail, tokenExtra)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	panic("not implemented") // TODO: finish plugin manager
+
+	return &RequestEmailChange{
+		User: SystemUserToGraphqlUser(user),
+	}, nil
 }
 
 func (r *Resolver) ConfirmEmailChange(ctx context.Context, args struct {
 	Channel *string
 	Token   string
 }) (*ConfirmEmailChange, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	var extra model.RequestEmailChangeTokenExtra
+	dbToken, appErr := embedCtx.App.Srv().ValidateTokenByToken(args.Token, &extra)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	userWithnewEmail, appErr := embedCtx.App.Srv().AccountService().UserByEmail(extra.NewEmail)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if userWithnewEmail != nil {
+		return nil, model.NewAppError("ConfirmEmailChange", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "Email is used by other user", http.StatusBadRequest)
+	}
+
+	currentUser, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	currentUser.Email = extra.NewEmail
+	_, appErr = embedCtx.App.Srv().AccountService().UpdateUser(currentUser, false)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// delete token
+	embedCtx.App.Srv().Store.Token().Delete(dbToken.Token)
+
+	panic("not implemented") // TODO: finish plugin manager
+
+	return &ConfirmEmailChange{
+		User: SystemUserToGraphqlUser(currentUser),
+	}, nil
 }
