@@ -31,7 +31,7 @@ type AttributeProductFilterOption struct {
 
 func (a *AttributeProduct) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"attribute_product.is_valid.%s.app_error",
+		"model.attribute_product.is_valid.%s.app_error",
 		"attribute_product_id=",
 		"AttributeProduct.IsValid",
 	)
@@ -112,7 +112,7 @@ type AssignedProductAttributeFilterOption struct {
 
 func (a *AssignedProductAttribute) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"assigned_product_attribute.is_valid.%s.app_error",
+		"model.assigned_product_attribute.is_valid.%s.app_error",
 		"assigned_product_attribute_id=",
 		"AssignedProductAttribute.IsValid",
 	)

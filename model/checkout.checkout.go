@@ -63,7 +63,7 @@ type CheckoutFilterOption struct {
 
 func (c *Checkout) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"checkout.is_valid.%s.app_error",
+		"model.checkout.is_valid.%s.app_error",
 		"checkout_token=",
 		"Checkout.IsValid",
 	)

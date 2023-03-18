@@ -205,7 +205,7 @@ func (u *User) DeepCopy() *User {
 // correctly.
 func (u *User) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"user.is_valid.%s.app_error",
+		"model.user.is_valid.%s.app_error",
 		"user_id=",
 		"User.IsValid")
 
@@ -349,31 +349,24 @@ func (u *User) Patch(patch *UserPatch) {
 	if patch.Username != nil {
 		u.Username = *patch.Username
 	}
-
 	if patch.Nickname != nil {
 		u.Nickname = *patch.Nickname
 	}
-
 	if patch.FirstName != nil {
 		u.FirstName = *patch.FirstName
 	}
-
 	if patch.NotifyProps != nil {
 		u.NotifyProps = patch.NotifyProps
 	}
-
 	if patch.LastName != nil {
 		u.LastName = *patch.LastName
 	}
-
 	if patch.Email != nil {
 		u.Email = *patch.Email
 	}
-
 	if patch.Locale != nil {
 		u.Locale = *patch.Locale
 	}
-
 	if patch.Timezone != nil {
 		u.Timezone = patch.Timezone
 	}

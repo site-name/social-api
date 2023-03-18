@@ -142,7 +142,7 @@ func (a *Address) PreUpdate() {
 // IsValid validates address and returns an error if data is not processed
 func (a *Address) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"address.is_valid.%s.app_error",
+		"model.address.is_valid.%s.app_error",
 		"address_id=",
 		"Address.IsValid",
 	)
@@ -188,7 +188,7 @@ func (a *Address) IsValid() *AppError {
 	if utf8.RuneCountInString(a.Phone) > ADDRESS_PHONE_MAX_LENGTH {
 		return outer("phone", &a.Id)
 	}
-	if str, ok := util.ValidatePhoneNumber(a.Phone, string(a.Country)); !ok {
+	if str, ok := util.ValidatePhoneNumber(a.Phone, a.Country.String()); !ok {
 		return outer("phone", &a.Id)
 	} else {
 		a.Phone = str
@@ -212,9 +212,7 @@ func IsValidNamePart(s string, nameType NamePart) bool {
 	if !ValidUsernameChars.MatchString(s) {
 		return false
 	}
-	_, found := RestrictedUsernames[s]
-
-	return !found
+	return !RestrictedUsernames[s]
 }
 
 // CleanNamePart makes sure first_name or last_name do not violate standard requirements

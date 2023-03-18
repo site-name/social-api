@@ -20,7 +20,7 @@ type AttributePageFilterOption struct {
 
 func (a *AttributePage) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"attribute_page.is_valid.%s.app_error",
+		"model.attribute_page.is_valid.%s.app_error",
 		"attribute_page_id=",
 		"AttributePage.IsValid",
 	)

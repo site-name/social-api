@@ -2207,8 +2207,8 @@ type NamePart string
 
 // two name parts
 const (
-	FirstName NamePart = "first"
-	LastName  NamePart = "last"
+	FirstName NamePart = "first" // "first"
+	LastName  NamePart = "last"  // "last"
 )
 
 // TaxType is for unifying tax type object that comes from tax gateway

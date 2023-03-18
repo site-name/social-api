@@ -74,7 +74,7 @@ func (c *CustomerEvent) ToJSON() string {
 
 func (ce *CustomerEvent) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"customer_event.is_valid.%s.app_error",
+		"model.customer_event.is_valid.%s.app_error",
 		"customer_event_id=",
 		"CustomerEvent.IsValid",
 	)
@@ -125,7 +125,7 @@ func (c *StaffNotificationRecipient) ToJSON() string {
 
 func (ce *StaffNotificationRecipient) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"staff_notification_recipient.is_valid.%s.app_error",
+		"model.staff_notification_recipient.is_valid.%s.app_error",
 		"staff_notification_recipient_id=",
 		"CustomerEvent.IsValid",
 	)

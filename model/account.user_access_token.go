@@ -1,9 +1,5 @@
 package model
 
-import (
-	"io"
-)
-
 type UserAccessToken struct {
 	Id          string `json:"id"`
 	Token       string `json:"token,omitempty"`
@@ -18,7 +14,7 @@ const (
 
 func (t *UserAccessToken) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"user_access_token.is_valid.%s.app_error",
+		"model.user_access_token.is_valid.%s.app_error",
 		"user_access_token_id=",
 		"UserAccessToken.IsValid",
 	)
@@ -52,18 +48,6 @@ func (t *UserAccessToken) ToJSON() string {
 	return ModelToJson(t)
 }
 
-func UserAccessTokenFromJson(data io.Reader) *UserAccessToken {
-	var t UserAccessToken
-	ModelFromJson(&t, data)
-	return &t
-}
-
 func UserAccessTokenListToJson(t []*UserAccessToken) string {
 	return ModelToJson(&t)
-}
-
-func UserAccessTokenListFromJson(data io.Reader) []*UserAccessToken {
-	var t []*UserAccessToken
-	ModelFromJson(&t, data)
-	return t
 }

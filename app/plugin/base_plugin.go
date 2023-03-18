@@ -515,27 +515,22 @@ func (b *BasePlugin) UpdateConfigItems(configurationToUpdate []model.StringInter
 
 	for _, configItem := range currentConfig {
 		for _, configItemToUpdate := range configurationToUpdate {
+			configItemName := configItemToUpdate.Get("name", "")
 
-			configItemToUpdateName, ok1 := configItemToUpdate["name"]
-			configItemName, ok2 := configItem["name"]
-
-			if ok1 && ok2 && configItemToUpdateName == configItemName {
-
+			if configItem.Get("name", "") == configItemName {
 				newValue, ok3 := configItemToUpdate["value"]
+				configStructureValue, ok4 := configStructure[configItemName.(string)]
+
+				if !ok4 || configStructureValue == nil {
+					configStructureValue = make(model.StringInterface)
+				}
+				itemType, ok5 := configStructureValue["type"]
 
 				newValueIsNotNullNorBoolean := ok3 && newValue != nil
 				if newValueIsNotNullNorBoolean {
 					_, newValueIsBoolean := newValue.(bool)
 					newValueIsNotNullNorBoolean = newValueIsNotNullNorBoolean && !newValueIsBoolean
 				}
-
-				configStructureValue, ok4 := configStructure[configItemToUpdateName.(string)]
-
-				if !ok4 || configStructureValue == nil {
-					configStructureValue = make(model.StringInterface)
-				}
-
-				itemType, ok5 := configStructureValue["type"]
 
 				if ok5 &&
 					itemType != nil &&

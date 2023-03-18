@@ -82,7 +82,7 @@ func FilterClusterDiscovery(vs []*ClusterDiscovery, f func(*ClusterDiscovery) bo
 
 func (o *ClusterDiscovery) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"cluster.is_valid.%s.app_error",
+		"model.cluster.is_valid.%s.app_error",
 		"cluster_discovery_id=",
 		"ClusterDiscovery.IsValid",
 	)

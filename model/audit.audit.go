@@ -16,7 +16,7 @@ type Audit struct {
 
 func (a *Audit) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"audit.is_valid.%s.app_error",
+		"model.audit.is_valid.%s.app_error",
 		"audit_id=",
 		"Audit.IsValid",
 	)

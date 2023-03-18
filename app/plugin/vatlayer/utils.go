@@ -1,8 +1,6 @@
 package vatlayer
 
 import (
-	"fmt"
-
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -18,26 +16,23 @@ type VatlayerConfiguration struct {
 //
 // It is meant for consistency with price handling logic across the codebase,
 // passthrough other money types.
-func convertToNaiveTaxedMoney(base any, taxes any, rateName string) (any, error) {
+func convertToNaiveTaxedMoney[M goprices.MoneyObject](base M, taxes M, rateName string) any {
 	if base == nil {
-		return nil, nil
+		return nil
 	}
 
-	switch t := base.(type) {
+	switch t := any(base).(type) {
 	case *goprices.TaxedMoney, *goprices.TaxedMoneyRange:
-		return t, nil
+		return t
 
 	case *goprices.Money:
 		return &goprices.TaxedMoney{
 			Net:   t,
 			Gross: t,
-		}, nil
-
-	case *goprices.MoneyRange:
-		return nil, nil
+		}
 
 	default:
-		return nil, fmt.Errorf("unknown base for flat_tax: %T", base)
+		return nil
 	}
 }
 

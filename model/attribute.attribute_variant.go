@@ -27,7 +27,7 @@ type AttributeVariantFilterOption struct {
 
 func (a *AttributeVariant) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"attribute_variant.is_valid.%s.app_error",
+		"model.attribute_variant.is_valid.%s.app_error",
 		"attribute_variant_id=",
 		"AttributeVariant.IsValid",
 	)

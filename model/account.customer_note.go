@@ -15,7 +15,7 @@ func (c *CustomerNote) ToJSON() string {
 
 func (c *CustomerNote) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"customer_note.is_valid.%s.app_error",
+		"model.customer_note.is_valid.%s.app_error",
 		"customer_note_id=",
 		"CustomerNote.IsValid",
 	)

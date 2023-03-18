@@ -74,7 +74,7 @@ func (a *AttributeValue) String() string {
 
 func (a *AttributeValue) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"attribute_value.is_valid.%s.app_error",
+		"model.attribute_value.is_valid.%s.app_error",
 		"attribute_value_id=",
 		"AttributeValue.IsValid",
 	)

@@ -19,7 +19,7 @@ type AssignedVariantAttributeValueFilterOptions struct {
 
 func (a *AssignedVariantAttributeValue) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"assigned_variant_attribute_value.is_valid.%s.app_error",
+		"model.assigned_variant_attribute_value.is_valid.%s.app_error",
 		"assigned_variant_attribute_value_id=",
 		"AssignedVariantAttributeValue.IsValid",
 	)

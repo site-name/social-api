@@ -58,7 +58,7 @@ func (c *CheckoutLine) NotEqual(other *CheckoutLine) bool {
 
 func (c *CheckoutLine) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"checkout_line.is_valid.%s.app_error",
+		"model.checkout_line.is_valid.%s.app_error",
 		"checkout_id=",
 		"CheckoutLine.IsValid",
 	)

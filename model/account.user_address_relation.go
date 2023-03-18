@@ -18,7 +18,7 @@ type UserAddressFilterOptions struct {
 
 func (ua *UserAddress) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"user_address.is_valid.%s.app_error",
+		"model.user_address.is_valid.%s.app_error",
 		"user_address_id=",
 		"UserAddress",
 	)

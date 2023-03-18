@@ -14,7 +14,7 @@ type AssignedPageAttributeValue struct {
 
 func (a *AssignedPageAttributeValue) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"assigned_page_attribute_value.is_valid.%s.app_error",
+		"model.assigned_page_attribute_value.is_valid.%s.app_error",
 		"assigned_page_sttribute_value_id=",
 		"AssignedPageAttributeValue.IsValid",
 	)
