@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/plugin/interfaces"
@@ -554,16 +555,12 @@ func (b *BasePlugin) UpdateConfigItems(configurationToUpdate []model.StringInter
 	for _, cField := range currentConfig {
 		currentConfigKeys = append(currentConfigKeys, cField["name"].(string))
 	}
-	currentConfigKeys = currentConfigKeys.Dedup()
 
 	configurationToUpdateDict := make(model.StringInterface)
-	configurationToUpdateDictKeys := util.AnyArray[string]{}
-
 	for _, item := range configurationToUpdate {
 		configurationToUpdateDict[item["name"].(string)] = item["value"]
-		configurationToUpdateDictKeys = append(configurationToUpdateDictKeys, item["name"].(string))
 	}
-	configurationToUpdateDictKeys = configurationToUpdateDictKeys.Dedup()
+	configurationToUpdateDictKeys := lo.Keys(configurationToUpdateDict)
 
 	for _, item := range configurationToUpdateDictKeys {
 		if !currentConfigKeys.Contains(item) {

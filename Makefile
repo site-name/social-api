@@ -158,10 +158,6 @@ app-layers: ## Extract interface from App struct
 	$(GOBIN)/struct2interface -f "app/wishlist" -o "app/sub_app_iface/wishlist_iface.go" -p "wishlist" -s "ServiceWishlist" -i "WishlistService" -t ./app/layer_generators/wishlist_iface.go.tmpl
 	$(GOBIN)/struct2interface -f "app/plugin" -o "app/plugin/interfaces/plugin_manager_iface.go" -p "plugin" -s "PluginManager" -i "PluginManagerInterface" -t ./app/layer_generators/plugin_manager_iface.go.tmpl
 
-i18n-extract: ## Extract strings for translation from the source code
-	$(GO) get -modfile=go.tools.mod github.com/mattermost/mattermost-utilities/mmgotool
-	$(GOBIN)/mmgotool i18n extract --portal-dir=""
-
 i18n-check: ## Exit on empty translation strings and translation source strings
 	$(GO) get -modfile=go.tools.mod github.com/mattermost/mattermost-utilities/mmgotool
 	$(GOBIN)/mmgotool i18n clean-empty --portal-dir="" --check
@@ -246,3 +242,7 @@ searchengine-mocks: ## Creates mock files for searchengines.
 
 categories:
 	$(GO) generate $(GOFLAGS) ./model/generate
+
+i18n-extract: ## Extract strings for translation from the source code
+	$(GO) install github.com/mattermost/mattermost-utilities/mmgotool@fdf2cd651b261bcd511a32da33dd76febedd44a8
+	$(GOBIN)/mmgotool i18n extract --portal-dir=""

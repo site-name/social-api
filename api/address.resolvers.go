@@ -6,6 +6,13 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"regexp"
+
+	"github.com/samber/lo"
+	"github.com/site-name/i18naddress"
+	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/model"
 )
 
 func (r *Resolver) AddressCreate(ctx context.Context, args struct {
@@ -40,7 +47,52 @@ func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 	City        *string
 	CityArea    *string
 }) (*AddressValidationData, error) {
-	panic(fmt.Errorf("not implemented"))
+	addressParam := &i18naddress.Params{
+		CountryCode: args.CountryCode.String(),
+	}
+	if area := args.CountryArea; area != nil && *area != "" {
+		addressParam.CountryArea = *area
+	}
+	if city := args.City; city != nil && *city != "" {
+		addressParam.City = *city
+	}
+	if cArea := args.CityArea; cArea != nil && *cArea != "" {
+		addressParam.CityArea = *cArea
+	}
+	validationRules, err := i18naddress.GetValidationRules(addressParam)
+
+	if err != nil {
+		return nil, model.NewAppError("AddressValidationRules", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args"}, err.Error(), http.StatusBadRequest)
+	}
+
+	choicesToChoiceValues := func(choices [][2]string) []*ChoiceValue {
+		return lo.Map(choices, func(item [2]string, _ int) *ChoiceValue {
+			return &ChoiceValue{
+				Raw:     &item[0],
+				Verbose: &item[1],
+			}
+		})
+	}
+
+	return &AddressValidationData{
+		CountryCode:        &validationRules.CountryCode,
+		CountryName:        &validationRules.CountryName,
+		AddressFormat:      &validationRules.AddressFormat,
+		AddressLatinFormat: &validationRules.AddressLatinFormat,
+		AllowedFields:      GetAllowedFieldsCamelCase(validationRules.AllowedFields),
+		RequiredFields:     GetRequiredFieldsCamelCase(validationRules.RequiredFields),
+		UpperFields:        GetUppserFieldsCamelCase(validationRules.UpperFields),
+		CountryAreaType:    &validationRules.CountryAreaType,
+		CityType:           &validationRules.CityType,
+		CityAreaType:       &validationRules.CityAreaType,
+		PostalCodeType:     &validationRules.PostalCodeType,
+		PostalCodeExamples: validationRules.PostalCodeExamples,
+		PostalCodePrefix:   &validationRules.PostalCodePrefix,
+		CountryAreaChoices: choicesToChoiceValues(validationRules.CountryAreaChoices),
+		CityChoices:        choicesToChoiceValues(validationRules.CityChoices),
+		CityAreaChoices:    choicesToChoiceValues(validationRules.CityAreaChoices),
+		PostalCodeMatchers: lo.Map(validationRules.PostalCodeMatchers, func(rg *regexp.Regexp, _ int) string { return rg.String() }),
+	}, nil
 }
 
 func (r *Resolver) Address(ctx context.Context, args struct{ Id string }) (*Address, error) {
