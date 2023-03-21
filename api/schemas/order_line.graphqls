@@ -30,7 +30,7 @@ type OrderLine  {
   variant: ProductVariant
   translatedProductName: String!
   translatedVariantName: String!
-  allocations: [Allocation!]
+  allocations: [Allocation!]!
   quantityToFulfill: Int!
   unitDiscountType: DiscountValueTypeEnum
 }
@@ -42,7 +42,7 @@ input OrderLineCreateInput {
 
 type OrderLinesCreate {
   order: Order
-  orderLines: [OrderLine!]
+  orderLines: [OrderLine!]!
   errors: [OrderError!]!
 }
 

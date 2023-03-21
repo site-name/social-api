@@ -87,7 +87,7 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 		DefaultExpiry:          UserProfileByIDSec * time.Second,
 		InvalidateClusterEvent: model.ClusterEventInvalidateCacheForProfileByIds,
 		Striped:                true,
-		StripedBuckets:         util.AnyArray[int]{runtime.NumCPU() - 1, 1}.GetMinMax().Min,
+		StripedBuckets:         util.GetMinMax(runtime.NumCPU()-1, 1).Max,
 	}); err != nil {
 		return
 	}

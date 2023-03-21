@@ -1,9 +1,11 @@
 package migrations
 
 import (
+	"encoding/json"
 	"io"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
 )
 
 type AdvancedPermissionsPhase2Progress struct {
@@ -19,7 +21,10 @@ func (p *AdvancedPermissionsPhase2Progress) ToJSON() string {
 
 func AdvancedPermissionsPhase2ProgressFromJson(data io.Reader) *AdvancedPermissionsPhase2Progress {
 	var o *AdvancedPermissionsPhase2Progress
-	model.ModelFromJson(&o, data)
+	err := json.NewDecoder(data).Decode(&o)
+	if err != nil {
+		slog.Warn("Error decoding advanced permissions phase 2 progress", slog.Err(err))
+	}
 	return o
 }
 
@@ -47,5 +52,7 @@ func (p *AdvancedPermissionsPhase2Progress) IsValid() bool {
 }
 
 func (worker *Worker) runAdvancedPermissionsPhase2Migration(lastDone string) (bool, string, *model.AppError) {
-	panic("not implemented")
+	slog.Debug("runAdvancedPermissionsPhase2Migration...")
+	// TODO: consider remove me
+	return false, "", nil
 }

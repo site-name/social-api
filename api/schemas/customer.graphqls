@@ -58,7 +58,7 @@ input CustomerFilterInput {
   numberOfOrders: IntRangeInput
   placedOrders: DateRangeInput
   search: String
-  metadata: [MetadataInput]
+  metadata: [MetadataInput]!
 }
 
 input UserSortingInput {

@@ -29,16 +29,16 @@ type ProductVariant  {
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   channel: String
-  channelListings: [ProductVariantChannelListing]
+  channelListings: [ProductVariantChannelListing]!
   pricing(address: AddressInput): VariantPricingInfo
   attributes(variantSelection: VariantAttributeScope): [SelectedAttribute!]!
   margin: Int
   quantityOrdered: Int
   revenue(period: ReportingPeriod!): TaxedMoney
-  media: [ProductMedia!]
+  media: [ProductMedia]!
   translation(languageCode: LanguageCodeEnum!): ProductVariantTranslation
   digitalContent: DigitalContent
-  stocks(address: AddressInput, countryCode: CountryCode): [Stock]
+  stocks(address: AddressInput, countryCode: CountryCode): [Stock]!
   quantityAvailable(address: AddressInput, countryCode: CountryCode): Int!
   preorder: PreorderData
 }
@@ -60,7 +60,7 @@ input ProductVariantCreateInput {
   trackInventory: Boolean
   weight: WeightScalar
   product: String!
-  stocks: [StockInput!]
+  stocks: [StockInput!]!
 }
 
 type ProductVariantCreate {
@@ -78,8 +78,8 @@ input ProductVariantBulkCreateInput {
   sku: String
   trackInventory: Boolean
   weight: WeightScalar
-  stocks: [StockInput!]
-  channelListings: [ProductVariantChannelListingAddInput!]
+  stocks: [StockInput!]!
+  channelListings: [ProductVariantChannelListingAddInput!]!
 }
 
 type ProductVariantBulkDelete {
@@ -123,7 +123,7 @@ type ProductVariantStocksUpdate {
 }
 
 input ProductVariantInput {
-  attributes: [AttributeValueInput!]
+  attributes: [AttributeValueInput!]!
   sku: String
   trackInventory: Boolean
   weight: WeightScalar
@@ -167,7 +167,7 @@ type ProductVariantReorderAttributeValues {
 input ProductVariantFilterInput {
   search: String
   sku: [String!]!
-  metadata: [MetadataInput]
+  metadata: [MetadataInput]!
 }
 
 type ProductVariantCountableConnection {

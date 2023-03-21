@@ -16,7 +16,7 @@ type Category  {
   seoTitle: String
   seoDescription: String
   name: String!
-  description: JSONString
+  description: JSONString!
   slug: String!
   parent: Category
   level: Int!
@@ -30,7 +30,7 @@ type Category  {
 }
 
 input CategoryInput {
-  description: JSONString
+  description: JSONString!
   name: String
   slug: String
   seo: SeoInput
@@ -65,13 +65,13 @@ type CategoryTranslate {
 
 input CategoryFilterInput {
   search: String
-  metadata: [MetadataInput]
+  # metadata: [MetadataInput]! // TODO: add support this field
   ids: [String!]!
 }
 
 input CategorySortingInput {
   direction: OrderDirection!
-  channel: String
+  # channel: String
   field: CategorySortField!
 }
 
@@ -86,7 +86,7 @@ type CategoryTranslation  {
   seoTitle: String
   seoDescription: String
   name: String
-  description: JSONString
+  description: JSONString!
   language: LanguageDisplay!
 }
 

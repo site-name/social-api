@@ -1,6 +1,6 @@
 extend type Query {
   webhook(id: String!): Webhook
-  webhookEvents: [WebhookEvent]
+  webhookEvents: [WebhookEvent]!
   webhookSamplePayload(eventType: WebhookSampleEventTypeEnum!): JSONString!
 }
 
@@ -13,7 +13,7 @@ extend type Mutation {
 input WebhookCreateInput {
   name: String
   targetUrl: String
-  events: [WebhookEventTypeEnum]
+  events: [WebhookEventTypeEnum]!
   app: String
   isActive: Boolean
   secretKey: String
@@ -142,7 +142,7 @@ enum WebhookSampleEventTypeEnum {
 input WebhookUpdateInput {
   name: String
   targetUrl: String
-  events: [WebhookEventTypeEnum]
+  events: [WebhookEventTypeEnum]!
   app: String
   isActive: Boolean
   secretKey: String

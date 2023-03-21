@@ -27,7 +27,7 @@ type Sale  {
   products(before: String, after: String, first: Int, last: Int): ProductCountableConnection
   variants(before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
   translation(languageCode: LanguageCodeEnum!): SaleTranslation
-  channelListings: [SaleChannelListing!]
+  channelListings: [SaleChannelListing!]!
   discountValue: Float
   currency: String
 }
@@ -86,7 +86,7 @@ type SaleTranslate {
 }
 
 input SaleChannelListingInput {
-  addChannels: [SaleChannelListingAddInput!]
+  addChannels: [SaleChannelListingAddInput!]!
   removeChannels: [String!]!
 }
 
@@ -96,11 +96,11 @@ type SaleChannelListingUpdate {
 }
 
 input SaleFilterInput {
-  status: [DiscountStatusEnum]
+  status: [DiscountStatusEnum]!
   saleType: DiscountValueTypeEnum
   started: DateTimeRangeInput
   search: String
-  metadata: [MetadataFilter]
+  metadata: [MetadataFilter]!
 }
 
 enum SaleSortField {

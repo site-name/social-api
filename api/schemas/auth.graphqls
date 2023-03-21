@@ -53,7 +53,7 @@ type DeactivateAllUserTokens {
 }
 
 type ExternalAuthenticationUrl {
-  authenticationData: JSONString
+  authenticationData: JSONString!
   # errors: [AccountError!]!
 }
 
@@ -74,14 +74,14 @@ type ExternalRefresh {
 }
 
 type ExternalLogout {
-  logoutData: JSONString
+  logoutData: JSONString!
   # errors: [AccountError!]!
 }
 
 type ExternalVerify {
   user: User
   isValid: Boolean!
-  verifyData: JSONString
+  verifyData: JSONString!
   # errors: [AccountError!]!
 }
 

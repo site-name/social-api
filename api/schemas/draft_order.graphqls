@@ -23,7 +23,7 @@ input DraftOrderCreateInput {
   customerNote: String
   channelId: String
   redirectUrl: String
-  lines: [OrderLineCreateInput]
+  lines: [OrderLineCreateInput]!
 }
 
 type DraftOrderCreate {

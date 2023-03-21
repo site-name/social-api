@@ -26,12 +26,12 @@ type App {
   name: String
   created: DateTime
   isActive: Boolean
-  permissions: [Permission]
-  tokens: [AppToken]
+  permissions: [Permission]!
+  tokens: [AppToken]!
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   type: AppTypeEnum
-  webhooks: [Webhook]
+  webhooks: [Webhook]!
   aboutApp: String
   dataPrivacy: String
   dataPrivacyUrl: String
@@ -98,7 +98,7 @@ type AppManifestExtension {
 
 input AppInput {
   name: String
-  permissions: [PermissionEnum]
+  permissions: [PermissionEnum]!
 }
 
 type AppCreate {
@@ -214,7 +214,7 @@ type AppError {
   field: String
   message: String
   code: AppErrorCode!
-  permissions: [PermissionEnum!]
+  permissions: [PermissionEnum!]!
 }
 
 enum AppErrorCode {
@@ -243,7 +243,7 @@ input AppInstallInput {
   appName: String
   manifestUrl: String
   activateAfterInstallation: Boolean
-  permissions: [PermissionEnum]
+  permissions: [PermissionEnum]!
 }
 
 type Manifest {
@@ -251,7 +251,7 @@ type Manifest {
   version: String!
   name: String!
   about: String
-  permissions: [Permission]
+  permissions: [Permission]!
   appUrl: String
   configurationUrl: String
   tokenTargetUrl: String

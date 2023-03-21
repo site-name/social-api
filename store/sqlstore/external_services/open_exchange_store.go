@@ -24,28 +24,27 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) 
 	}
 	defer store.FinalizeTransaction(transaction)
 
-	var (
-		oldRate    model.OpenExchangeRate
-		numUpdated int64
-	)
-
 	for _, rate := range rates {
-		isSaving := false
-		// try lookup:
-		err := transaction.Get(
-			&oldRate,
-			"SELECT * FROM "+store.OpenExchangeRateTableName+" WHERE ToCurrency = ? FOR UPDATE",
-			rate.ToCurrency,
+		var (
+			oldRate  model.OpenExchangeRate
+			isSaving bool
 		)
+		// try lookup:
+		err := transaction.
+			QueryRowX(
+				"SELECT * FROM "+store.OpenExchangeRateTableName+" WHERE ToCurrency = $1 FOR UPDATE",
+				rate.ToCurrency,
+			).
+			Scan(&oldRate.Id, &oldRate.ToCurrency, &oldRate.Rate)
 		if err != nil {
-			if err == sql.ErrNoRows { // does not exist
-				isSaving = true
-			} else {
+			if err != sql.ErrNoRows {
 				return nil, errors.Wrapf(err, "failed to find exchange rate with ToCurrency=%s", rate.ToCurrency)
 			}
+			isSaving = true
 		}
 
 		if isSaving {
+			rate.Id = ""
 			rate.PreSave()
 		} else {
 			rate.PreUpdate()
@@ -57,25 +56,16 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) 
 
 		if isSaving {
 			_, err = transaction.NamedExec("INSERT INTO "+store.OpenExchangeRateTableName+"(Id, ToCurrency, Rate) VALUES (:Id, :ToCurrency, :Rate)", rate)
-
 		} else {
 			// check if rates are different then update
 			if !rate.Rate.Equal(*oldRate.Rate) {
 				rate.Id = oldRate.Id
-
-				var result sql.Result
-				result, err = transaction.NamedExec("UPDATE "+store.OpenExchangeRateTableName+" SET Id=:Id, ToCurrency=:ToCurrency, Rate=:Rate WHERE Id=:Id", rate)
-				if err == nil && result != nil {
-					numUpdated, _ = result.RowsAffected()
-				}
+				_, err = transaction.NamedExec("UPDATE "+store.OpenExchangeRateTableName+" SET Rate=:Rate WHERE Id=:Id", rate)
 			}
 		}
 
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to upsert exchange rate with ToCurrency=%s", rate.ToCurrency)
-		}
-		if numUpdated > 1 {
-			return nil, errors.Errorf("multiple exchange rates were updated: %d instead of 1", numUpdated)
 		}
 	}
 

@@ -2,7 +2,7 @@ extend type Mutation {
   paymentCapture(amount: PositiveDecimal, paymentId: String!): PaymentCapture
   paymentRefund(amount: PositiveDecimal, paymentId: String!): PaymentRefund
   paymentVoid(paymentId: String!): PaymentVoid
-  paymentInitialize(channel: String, gateway: String!, paymentData: JSONString): PaymentInitialize
+  paymentInitialize(channel: String, gateway: String!, paymentData: JSONString!): PaymentInitialize
 }
 
 extend type Query {
@@ -27,7 +27,7 @@ type Payment  {
   actions: [OrderAction!]!
   total: Money
   capturedAmount: Money
-  transactions: [Transaction]
+  transactions: [Transaction]!
   availableCaptureAmount: Money
   availableRefundAmount: Money
   creditCard: CreditCard
@@ -107,7 +107,7 @@ enum PaymentErrorCode {
 type PaymentInitialized {
   gateway: String!
   name: String!
-  data: JSONString
+  data: JSONString!
 }
 
 type PaymentCountableEdge {

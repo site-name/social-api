@@ -60,7 +60,7 @@ type StaffError {
   message: String
   code: AccountErrorCode!
   addressType: AddressTypeEnum
-  permissions: [PermissionEnum!]
+  permissions: [PermissionEnum!]!
   groups: [String!]!
   users: [String!]!
 }

@@ -193,22 +193,10 @@ func (cs *SqlCategoryStore) FilterByOption(option *model.CategoryFilterOption) (
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	rows, err := cs.GetReplicaX().QueryX(queryString, args...)
+	var res model.Categories
+	err = cs.GetReplicaX().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find categories with given option")
-	}
-	defer rows.Close()
-
-	var res []*model.Category
-
-	for rows.Next() {
-		var cate model.Category
-		err = rows.Scan(cs.ScanFields(&cate)...)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to scan a row of category")
-		}
-
-		res = append(res, &cate)
 	}
 
 	return res, nil
@@ -222,7 +210,6 @@ func (cs *SqlCategoryStore) GetByOption(option *model.CategoryFilterOption) (*mo
 	}
 
 	var cate model.Category
-
 	err = cs.GetReplicaX().
 		QueryRowX(queryString, args...).
 		Scan(cs.ScanFields(&cate)...)

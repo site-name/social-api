@@ -33,12 +33,12 @@ type Voucher  {
   collections(before: String, after: String, first: Int, last: Int): CollectionCountableConnection
   products(before: String, after: String, first: Int, last: Int): ProductCountableConnection
   variants(before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
-  countries: [CountryDisplay]
+  countries: [CountryDisplay]!
   translation(languageCode: LanguageCodeEnum!): VoucherTranslation
   discountValue: Float
   currency: String
   minSpent: Money
-  channelListings: [VoucherChannelListing!]
+  channelListings: [VoucherChannelListing!]!
 }
 
 input VoucherInput {
@@ -95,7 +95,7 @@ type VoucherTranslate {
 }
 
 input VoucherChannelListingInput {
-  addChannels: [VoucherChannelListingAddInput!]
+  addChannels: [VoucherChannelListingAddInput!]!
   removeChannels: [String!]!
 }
 
@@ -105,12 +105,12 @@ type VoucherChannelListingUpdate {
 }
 
 input VoucherFilterInput {
-  status: [DiscountStatusEnum]
+  status: [DiscountStatusEnum]!
   timesUsed: IntRangeInput
-  discountType: [VoucherDiscountType]
+  discountType: [VoucherDiscountType]!
   started: DateTimeRangeInput
   search: String
-  metadata: [MetadataFilter]
+  metadata: [MetadataFilter]!
 }
 
 enum VoucherSortField {

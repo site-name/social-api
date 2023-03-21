@@ -17,7 +17,7 @@ type PageType  {
   slug: String!
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
-  attributes: [Attribute]
+  attributes: [Attribute]!
   availableAttributes(filter: AttributeFilterInput, before: String, after: String, first: Int, last: Int): AttributeCountableConnection
   hasPages: Boolean
 }

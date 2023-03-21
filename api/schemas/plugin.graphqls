@@ -17,7 +17,7 @@ type Plugin {
 
 input PluginUpdateInput {
   active: Boolean
-  configuration: [ConfigurationItemInput]
+  configuration: [ConfigurationItemInput]!
 }
 
 type PluginUpdate {
@@ -75,7 +75,7 @@ type PluginCountableConnection {
 type PluginConfiguration {
   active: Boolean!
   channel: Channel
-  configuration: [ConfigurationItem]
+  configuration: [ConfigurationItem]!
 }
 
 enum PluginConfigurationType {

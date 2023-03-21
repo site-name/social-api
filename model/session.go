@@ -25,6 +25,7 @@ const (
 	SESSION_PROP_IS_GUEST             = "is_guest"
 	SESSION_ACTIVITY_TIMEOUT          = 1000 * 60 * 5 // 5 minutes
 	SESSION_USER_ACCESS_TOKEN_EXPIRY  = 100 * 365     // 100 years
+	SESSION_DEVICE_ID_MAX_LENGTH      = 512
 )
 
 type StringMap = StringMAP
@@ -38,7 +39,7 @@ type Session struct {
 	CreateAt       int64     `json:"create_at"`
 	ExpiresAt      int64     `json:"expires_at"`
 	LastActivityAt int64     `json:"last_activity_at"`
-	UserId         string    `json:"user_id"`
+	UserId         string    `json:"user_id"` // uuid
 	DeviceId       string    `json:"device_id"`
 	Roles          string    `json:"roles"`
 	IsOAuth        bool      `json:"is_oauth"`
@@ -93,6 +94,9 @@ func (s *Session) IsValid() *AppError {
 	}
 	if !IsValidId(s.UserId) {
 		return outer("user_id", &s.Id)
+	}
+	if s.DeviceId != "" && len(s.DeviceId) > SESSION_DEVICE_ID_MAX_LENGTH {
+		return outer("device_id", &s.Id)
 	}
 	return nil
 }

@@ -1,7 +1,7 @@
 extend type Mutation {
   checkoutAddPromoCode(promoCode: String!, token: String): CheckoutAddPromoCode
   checkoutBillingAddressUpdate(billingAddress: AddressInput!, token: String): CheckoutBillingAddressUpdate
-  checkoutComplete(paymentData: JSONString, redirectUrl: String, storeSource: Boolean, token: String): CheckoutComplete
+  checkoutComplete(paymentData: JSONString!, redirectUrl: String, storeSource: Boolean, token: String): CheckoutComplete
   checkoutCreate(input: CheckoutCreateInput!): CheckoutCreate
   checkoutCustomerAttach(customerId: String, token: String): CheckoutCustomerAttach
   checkoutCustomerDetach(token: String): CheckoutCustomerDetach
@@ -36,7 +36,7 @@ type Checkout  {
   discountName: String
   translatedDiscountName: String
   voucherCode: String
-  giftCards: [GiftCard]
+  giftCards: [GiftCard]!
   id: String!
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
@@ -46,7 +46,7 @@ type Checkout  {
   email: String!
   isShippingRequired: Boolean!
   quantity: Int!
-  lines: [CheckoutLine]
+  lines: [CheckoutLine]!
   shippingPrice: TaxedMoney
   # shippingMethod: ShippingMethod
   deliveryMethod: DeliveryMethod
@@ -69,7 +69,7 @@ type CheckoutBillingAddressUpdate {
 type CheckoutComplete {
   order: Order
   confirmationNeeded: Boolean!
-  confirmationData: JSONString
+  confirmationData: JSONString!
   errors: [CheckoutError!]!
 }
 
@@ -120,7 +120,7 @@ input PaymentInput {
   amount: PositiveDecimal
   returnUrl: String
   storePaymentMethod: StorePaymentMethodEnum
-  metadata: [MetadataInput!]
+  metadata: [MetadataInput!]!
 }
 
 enum StorePaymentMethodEnum {

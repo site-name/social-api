@@ -16,7 +16,7 @@ type DigitalContent  {
   contentFile: String!
   maxDownloads: Int
   urlValidDays: Int
-  urls: [DigitalContentUrl]
+  urls: [DigitalContentUrl]!
   id: String!
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!

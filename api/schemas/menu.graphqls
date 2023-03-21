@@ -24,7 +24,7 @@ type Menu  {
   slug: String!
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
-  items: [MenuItem]
+  items: [MenuItem]!
 }
 
 type MenuItem  {
@@ -38,7 +38,7 @@ type MenuItem  {
   level: Int!
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
-  children: [MenuItem]
+  children: [MenuItem]!
   url: String
   translation(languageCode: LanguageCodeEnum!): MenuItemTranslation
 }
@@ -46,7 +46,7 @@ type MenuItem  {
 input MenuCreateInput {
   name: String!
   slug: String
-  items: [MenuItemInput]
+  items: [MenuItemInput]!
 }
 
 type MenuCreate {
@@ -154,7 +154,7 @@ input MenuSortingInput {
 input MenuFilterInput {
   search: String
   slug: [String!]!
-  metadata: [MetadataInput]
+  metadata: [MetadataInput]!
 }
 
 type MenuCountableConnection {
@@ -181,7 +181,7 @@ input MenuItemSortingInput {
 
 input MenuItemFilterInput {
   search: String
-  metadata: [MetadataInput]
+  metadata: [MetadataInput]!
 }
 
 type MenuItemCountableConnection {

@@ -20,7 +20,7 @@ type Collection  {
   seoTitle: String
   seoDescription: String
   name: String!
-  description: JSONString
+  description: JSONString!
   slug: String!
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
@@ -30,7 +30,7 @@ type Collection  {
     before: String, after: String, first: Int, last: Int): ProductCountableConnection
   backgroundImage(size: Int): Image
   translation(languageCode: LanguageCodeEnum!): CollectionTranslation
-  channelListings: [CollectionChannelListing!]
+  channelListings: [CollectionChannelListing!]!
 }
 
 type CollectionAddProducts {
@@ -42,7 +42,7 @@ input CollectionCreateInput {
   isPublished: Boolean
   name: String
   slug: String
-  description: JSONString
+  description: JSONString!
   backgroundImage: Upload
   backgroundImageAlt: String
   seo: SeoInput
@@ -84,7 +84,7 @@ input CollectionInput {
   isPublished: Boolean
   name: String
   slug: String
-  description: JSONString
+  description: JSONString!
   backgroundImage: Upload
   backgroundImageAlt: String
   seo: SeoInput
@@ -102,7 +102,7 @@ type CollectionTranslate {
 }
 
 input CollectionChannelListingUpdateInput {
-  addChannels: [PublishableChannelListingInput!]
+  addChannels: [PublishableChannelListingInput!]!
   removeChannels: [String!]!
 }
 
@@ -114,7 +114,7 @@ type CollectionChannelListingUpdate {
 input CollectionFilterInput {
   published: CollectionPublished
   search: String
-  metadata: [MetadataInput]
+  metadata: [MetadataInput]!
   ids: [String!]!
   channel: String
 }
@@ -148,7 +148,7 @@ type CollectionTranslation  {
   seoTitle: String
   seoDescription: String
   name: String
-  description: JSONString
+  description: JSONString!
   language: LanguageDisplay!
 }
 

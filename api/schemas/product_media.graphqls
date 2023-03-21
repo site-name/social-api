@@ -41,7 +41,7 @@ type ProductMediaBulkDelete {
 
 type ProductMediaReorder {
   product: Product
-  media: [ProductMedia!]
+  media: [ProductMedia!]!
   errors: [ProductError!]!
 }
 

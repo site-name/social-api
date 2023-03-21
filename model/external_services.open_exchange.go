@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/site-name/decimal"
-	goprices "github.com/site-name/go-prices"
 )
 
 type OpenExchangeRate struct {
@@ -15,7 +14,7 @@ type OpenExchangeRate struct {
 
 func (o *OpenExchangeRate) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"open_exchange.is_valid.%s.app_error",
+		"model.open_exchange.is_valid.%s.app_error",
 		"open_exchange_id=",
 		"OpenExchangeRate.IsValid",
 	)
@@ -23,8 +22,7 @@ func (o *OpenExchangeRate) IsValid() *AppError {
 	if !IsValidId(o.Id) {
 		return outer("id", nil)
 	}
-	if len(o.ToCurrency) > CURRENCY_CODE_MAX_LENGTH ||
-		goprices.CurrenciesMap[o.ToCurrency] == "" {
+	if len(o.ToCurrency) > CURRENCY_CODE_MAX_LENGTH {
 		return outer("to_currency", &o.Id)
 	}
 	if o.Rate.LessThan(decimal.Zero) || o.Rate == nil {

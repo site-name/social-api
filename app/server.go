@@ -38,8 +38,8 @@ import (
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/jobs/active_users"
+	"github.com/sitename/sitename/modules/jobs/migrations"
 	"github.com/sitename/sitename/modules/mail"
-	"github.com/sitename/sitename/modules/migrations"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/templates"
@@ -285,7 +285,7 @@ func NewServer(options ...Option) (*Server, error) {
 	}
 	model.AppErrorInit(i18n.T)
 
-	searchEngine := searchengine.NewBroker(s.Config(), s.Jobs)
+	searchEngine := searchengine.NewBroker(s.Config())
 	bleveEngine := bleveengine.NewBleveEngine(s.Config(), s.Jobs)
 	if err := bleveEngine.Start(); err != nil {
 		return nil, err
@@ -803,8 +803,9 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 			exchangeRateInstances = append(exchangeRateInstances, exchangeRate)
 		}
 		// update rates in database
-		if s.upsertCurrencyExchangeRates(exchangeRateInstances); err != nil {
+		if err := s.upsertCurrencyExchangeRates(exchangeRateInstances); err != nil {
 			s.Log.Error("Failed to upsert exchange rates", slog.Err(err))
+			return
 		}
 
 		s.Log.Info("Successfully fetched and set currency exchange rates", slog.String("base_currency", model.DEFAULT_CURRENCY))
@@ -812,17 +813,12 @@ func runFetchingCurrencyExchangeRateJob(s *Server, apiKey string, recuringHours 
 
 	// first run
 	fetchFun()
-
 	model.CreateRecurringTask("Collect and set currency exchange rates", fetchFun, time.Duration(recuringHours)*time.Hour)
 }
 
 func (s *Server) upsertCurrencyExchangeRates(newRates []*model.OpenExchangeRate) error {
 	_, err := s.Store.OpenExchangeRate().BulkUpsert(newRates)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // Global app options that should be applied to apps created by this server

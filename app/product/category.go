@@ -27,20 +27,20 @@ func (s *ServiceProduct) FilterCategoriesFromCache(filter func(c *model.Category
 func (s *ServiceProduct) CategoryByIds(ids []string, allowFromCache bool) (model.Categories, *model.AppError) {
 	if allowFromCache {
 		var res model.Categories
-		idMap := lo.SliceToMap(ids, func(id string) (string, struct{}) { return id, struct{}{} })
+		notFoundCategoryIdMap := lo.SliceToMap(ids, func(id string) (string, struct{}) { return id, struct{}{} })
 
 		s.categoryMap.Range(func(id, value any) bool {
-			_, ok := idMap[id.(string)]
+			_, ok := notFoundCategoryIdMap[id.(string)]
 			if ok {
 				res = append(res, value.(*model.Category))
-				delete(idMap, id.(string))
+				delete(notFoundCategoryIdMap, id.(string))
 			}
 			return true
 		})
 
-		if len(idMap) > 0 {
+		if len(notFoundCategoryIdMap) > 0 {
 			categories, appErr := s.CategoriesByOption(&model.CategoryFilterOption{
-				Id: squirrel.Eq{store.CategoryTableName + ".Id": lo.Keys(idMap)},
+				Id: squirrel.Eq{store.CategoryTableName + ".Id": lo.Keys(notFoundCategoryIdMap)},
 			})
 			if appErr != nil {
 				return nil, appErr
@@ -148,14 +148,15 @@ func (s *ServiceProduct) ClassifyCategories(categories model.Categories) model.C
 		if cate == nil {
 			continue
 		}
-
 		res = append(res, cate)
 
-		parent, ok := categoryMap[*cate.ParentID]
-		if ok && parent != nil {
-			// parent.Children = append(parent.Children, cate)
-			parent.NumOfChildren++
-			parent.NumOfProducts += cate.NumOfProducts
+		if cate.ParentID != nil {
+			parent, ok := categoryMap[*cate.ParentID]
+			if ok && parent != nil {
+				// parent.Children = append(parent.Children, cate)
+				parent.NumOfChildren++
+				parent.NumOfProducts += cate.NumOfProducts
+			}
 		}
 	}
 

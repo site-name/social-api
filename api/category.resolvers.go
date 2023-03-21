@@ -47,6 +47,7 @@ func (r *Resolver) CategoryTranslate(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// TODO: Add support filter by metadata
 func (r *Resolver) Categories(ctx context.Context, args struct {
 	Filter *CategoryFilterInput
 	SortBy CategorySortingInput
@@ -89,6 +90,16 @@ func (r *Resolver) Categories(ctx context.Context, args struct {
 				return ok
 			}
 		}
+
+		// if len(args.Filter.Metadata) > 0 {
+		// 	metadataFilter = func(c *model.Category) bool {
+		// 		for _, meta := range args.Filter.Metadata {
+		// 			if meta.Key != "" {
+
+		// 			}
+		// 		}
+		// 	}
+		// }
 	}
 
 	filter := func(c *model.Category) bool {

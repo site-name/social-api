@@ -123,7 +123,7 @@ input OrderFulfillInput {
 }
 
 type OrderFulfill {
-  fulfillments: [Fulfillment]
+  fulfillments: [Fulfillment]!
   order: Order
   errors: [OrderError!]!
 }
@@ -150,8 +150,8 @@ type FulfillmentUpdateTracking {
 }
 
 input OrderRefundProductsInput {
-  orderLines: [OrderRefundLineInput!]
-  fulfillmentLines: [OrderRefundFulfillmentLineInput!]
+  orderLines: [OrderRefundLineInput!]!
+  fulfillmentLines: [OrderRefundFulfillmentLineInput!]!
   amountToRefund: PositiveDecimal
   includeShippingCosts: Boolean
 }
@@ -163,8 +163,8 @@ type FulfillmentRefundProducts {
 }
 
 input OrderReturnProductsInput {
-  orderLines: [OrderReturnLineInput!]
-  fulfillmentLines: [OrderReturnFulfillmentLineInput!]
+  orderLines: [OrderReturnLineInput!]!
+  fulfillmentLines: [OrderReturnFulfillmentLineInput!]!
   amountToRefund: PositiveDecimal
   includeShippingCosts: Boolean
   refund: Boolean
@@ -218,12 +218,12 @@ input OrderSortingInput {
 }
 
 input OrderFilterInput {
-  paymentStatus: [PaymentChargeStatusEnum]
-  status: [OrderStatusFilter]
+  paymentStatus: [PaymentChargeStatusEnum]!
+  status: [OrderStatusFilter]!
   customer: String
   created: DateRangeInput
   search: String
-  metadata: [MetadataInput]
+  metadata: [MetadataInput]!
   channels: [String!]!
 }
 
@@ -237,7 +237,7 @@ input OrderDraftFilterInput {
   customer: String
   created: DateRangeInput
   search: String
-  metadata: [MetadataInput]
+  metadata: [MetadataInput]!
   channels: [String!]!
 }
 
@@ -260,7 +260,7 @@ type Fulfillment  {
   created: DateTime!
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
-  lines: [FulfillmentLine]
+  lines: [FulfillmentLine]!
   statusDisplay: String
   warehouse: Warehouse
 }
@@ -304,8 +304,8 @@ type OrderEvent  {
   orderNumber: String
   invoiceNumber: String
   oversoldItems: [String!]!
-  lines: [OrderEventOrderLineObject]
-  fulfilledItems: [FulfillmentLine]
+  lines: [OrderEventOrderLineObject]!
+  fulfilledItems: [FulfillmentLine]!
   warehouse: Warehouse
   transactionReference: String
   shippingCostsIncluded: Boolean

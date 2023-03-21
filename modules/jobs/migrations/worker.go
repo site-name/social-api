@@ -45,13 +45,14 @@ func (worker *Worker) Run() {
 	slog.Debug("Worker started", slog.String("worker", worker.name))
 
 	defer func() {
+		// Set to open if closed before. We are not bothered about multiple opens.
+		if atomic.CompareAndSwapInt32(&worker.closed, 1, 0) {
+			worker.stop = make(chan struct{})
+		}
 		slog.Debug("Worker finished", slog.String("worker", worker.name))
 		worker.stopped <- true
 	}()
 
-	// keep waiting until either:
-	// 1) stop signal arrived: quit
-	// 2) job arrived: do that job and keep waiting
 	for {
 		select {
 		case <-worker.stop:

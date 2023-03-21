@@ -4,6 +4,7 @@
 package sqlstore
 
 import (
+	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/sqlstore/account"
 	"github.com/sitename/sitename/store/sqlstore/app"
@@ -36,6 +37,12 @@ import (
 	"github.com/sitename/sitename/store/sqlstore/warehouse"
 	"github.com/sitename/sitename/store/sqlstore/wishlist"
 )
+
+var (
+	addressStoreCreator func(s store.Store, metrics einterfaces.MetricsInterface) store.AddressStore
+)
+
+func RegisterUserStoreCreator(f func(s store.Store, metrics einterfaces.MetricsInterface) store.AddressStore) {addressStoreCreator = f}
 
 type SqlStoreStores struct {
 	address                       store.AddressStore

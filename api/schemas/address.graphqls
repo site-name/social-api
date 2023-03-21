@@ -78,11 +78,11 @@ type AddressValidationData {
   requiredFields: [String!]!
   upperFields: [String!]!
   countryAreaType: String
-  countryAreaChoices: [ChoiceValue]
+  countryAreaChoices: [ChoiceValue]!
   cityType: String
-  cityChoices: [ChoiceValue]
+  cityChoices: [ChoiceValue]!
   cityAreaType: String
-  cityAreaChoices: [ChoiceValue]
+  cityAreaChoices: [ChoiceValue]!
   postalCodeType: String
   postalCodeMatchers: [String!]!
   postalCodeExamples: [String!]!

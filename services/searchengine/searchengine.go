@@ -2,20 +2,17 @@ package searchengine
 
 import (
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/jobs"
 )
 
 type Broker struct {
 	cfg                 *model.Config
-	jobServer           *jobs.JobServer
 	ElasticsearchEngine SearchEngineInterface
 	BleveEngine         SearchEngineInterface
 }
 
-func NewBroker(cfg *model.Config, jobServer *jobs.JobServer) *Broker {
+func NewBroker(cfg *model.Config) *Broker {
 	return &Broker{
-		cfg:       cfg,
-		jobServer: jobServer,
+		cfg: cfg,
 	}
 }
 

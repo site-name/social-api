@@ -38,6 +38,6 @@ func (r *Resolver) Channel(ctx context.Context, args struct{ Id *string }) (*Cha
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Channels(ctx context.Context) ([]Channel, error) {
+func (r *Resolver) Channels(ctx context.Context) ([]*Channel, error) {
 	panic(fmt.Errorf("not implemented"))
 }

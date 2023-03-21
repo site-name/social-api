@@ -46,7 +46,7 @@ type ProductTranslatableContent  {
   seoTitle: String
   seoDescription: String
   name: String!
-  description: JSONString
+  description: JSONString!
   translation(languageCode: LanguageCodeEnum!): ProductTranslation
   # product: Product
 }
@@ -56,7 +56,7 @@ type CollectionTranslatableContent  {
   seoTitle: String
   seoDescription: String
   name: String!
-  description: JSONString
+  description: JSONString!
   translation(languageCode: LanguageCodeEnum!): CollectionTranslation
   # collection: Collection
 }
@@ -66,7 +66,7 @@ type CategoryTranslatableContent  {
   seoTitle: String
   seoDescription: String
   name: String!
-  description: JSONString
+  description: JSONString!
   translation(languageCode: LanguageCodeEnum!): CategoryTranslation
   # category: Category
 }
@@ -81,7 +81,7 @@ type AttributeTranslatableContent  {
 type AttributeValueTranslatableContent  {
   id: String!
   name: String!
-  richText: JSONString
+  richText: JSONString!
   translation(languageCode: LanguageCodeEnum!): AttributeValueTranslation
   # attributeValue: AttributeValue
 }
@@ -99,7 +99,7 @@ type PageTranslatableContent  {
   seoTitle: String
   seoDescription: String
   title: String!
-  content: JSONString
+  content: JSONString!
   translation(languageCode: LanguageCodeEnum!): PageTranslation
   # page: Page
 }
@@ -107,7 +107,7 @@ type PageTranslatableContent  {
 type ShippingMethodTranslatableContent  {
   id: String!
   name: String!
-  description: JSONString
+  description: JSONString!
   translation(languageCode: LanguageCodeEnum!): ShippingMethodTranslation
   # shippingMethod: ShippingMethod
 }

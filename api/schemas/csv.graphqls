@@ -35,7 +35,7 @@ type ExportFile  {
   updatedAt: DateTime!
   message: String
   url: String
-  events: [ExportEvent!]
+  events: [ExportEvent!]!
 }
 
 input ExportFileFilterInput {
@@ -108,7 +108,7 @@ input ExportInfoInput {
   attributes: [String!]!
   warehouses: [String!]!
   channels: [String!]!
-  fields: [ProductFieldEnum!]
+  fields: [ProductFieldEnum!]!
 }
 
 enum ProductFieldEnum {

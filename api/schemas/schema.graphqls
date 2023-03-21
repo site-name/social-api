@@ -30,7 +30,7 @@ input AttributeValueInput {
   file: String
   contentType: String
   references: [String!]!
-  richText: JSONString
+  richText: JSONString!
   boolean: Boolean
   date: Date
   dateTime: DateTime
@@ -1248,7 +1248,7 @@ scalar PositiveDecimal
 type Query {
   reportProductSales(period: ReportingPeriod!, channel: String!, before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
   homepageEvents(before: String, after: String, first: Int, last: Int): OrderEventCountableConnection
-  taxTypes: [TaxType]
+  taxTypes: [TaxType]!
 }
 
 enum ReportingPeriod {
@@ -1347,7 +1347,7 @@ type ExternalNotificationTrigger {
 
 input ExternalNotificationTriggerInput {
   ids: [String!]!
-  extraPayload: JSONString
+  extraPayload: JSONString!
   externalEventType: String!
 }
 

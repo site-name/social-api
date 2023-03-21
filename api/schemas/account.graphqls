@@ -41,7 +41,7 @@ input AccountRegisterInput {
   password: String!
   redirectUrl: String
   languageCode: LanguageCodeEnum
-  metadata: [MetadataInput!]
+  metadata: [MetadataInput]!
   channel: String
 }
 

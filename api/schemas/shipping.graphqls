@@ -19,7 +19,7 @@ extend type Query {
 }
 
 input ShippingMethodChannelListingInput {
-  addChannels: [ShippingMethodChannelListingAddInput!]
+  addChannels: [ShippingMethodChannelListingAddInput!]!
   removeChannels: [String!]!
 }
 
@@ -30,14 +30,14 @@ type ShippingMethodChannelListingUpdate {
 
 input ShippingPriceInput {
   name: String
-  description: JSONString
+  description: JSONString!
   minimumOrderWeight: WeightScalar
   maximumOrderWeight: WeightScalar
   maximumDeliveryDays: Int
   minimumDeliveryDays: Int
   type: ShippingMethodTypeEnum
   shippingZone: String
-  addPostalCodeRules: [ShippingPostalCodeRulesCreateInputRange!]
+  addPostalCodeRules: [ShippingPostalCodeRulesCreateInputRange!]!
   deletePostalCodeRules: [String!]!
   inclusionType: PostalCodeRuleInclusionTypeEnum
 }
@@ -67,7 +67,7 @@ type ShippingPriceUpdate {
 
 input ShippingPriceTranslationInput {
   name: String
-  description: JSONString
+  description: JSONString!
 }
 
 type ShippingPriceTranslate {
@@ -136,8 +136,8 @@ type ShippingZone  {
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   priceRange: MoneyRange
-  countries: [CountryDisplay]
-  shippingMethods: [ShippingMethod]
+  countries: [CountryDisplay]!
+  shippingMethods: [ShippingMethod]!
   warehouses: [Warehouse!]!
   channels: [Channel!]!
   description: String
@@ -164,7 +164,7 @@ input ShippingMethodChannelListingAddInput {
 type ShippingMethod  {
   id: String!
   name: String!
-  description: JSONString
+  description: JSONString!
   minimumOrderWeight: Weight
   maximumOrderWeight: Weight
   maximumDeliveryDays: Int
@@ -173,11 +173,11 @@ type ShippingMethod  {
   metadata: [MetadataItem]!
   type: ShippingMethodTypeEnum
   translation(languageCode: LanguageCodeEnum!): ShippingMethodTranslation
-  channelListings: [ShippingMethodChannelListing!]
+  channelListings: [ShippingMethodChannelListing!]!
   price: Money
   maximumOrderPrice: Money
   minimumOrderPrice: Money
-  postalCodeRules: [ShippingMethodPostalCodeRule]
+  postalCodeRules: [ShippingMethodPostalCodeRule]!
   excludedProducts(before: String, after: String, first: Int, last: Int): ProductCountableConnection
 }
 
@@ -223,7 +223,7 @@ type ShippingZoneCountableEdge {
 type ShippingMethodTranslation  {
   id: String!
   name: String
-  description: JSONString
+  description: JSONString!
   language: LanguageDisplay!
 }
 

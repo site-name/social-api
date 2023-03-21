@@ -16,7 +16,7 @@ extend type Query {
 }
 
 input ProductChannelListingUpdateInput {
-  updateChannels: [ProductChannelListingAddInput!]
+  updateChannels: [ProductChannelListingAddInput!]!
   removeChannels: [String!]!
 }
 
@@ -63,11 +63,11 @@ type Product  {
   isAvailable(address: AddressInput): Boolean
   taxType: TaxType
   attributes: [SelectedAttribute!]!
-  channelListings: [ProductChannelListing!]
+  channelListings: [ProductChannelListing!]!
   mediaById(id: String!): ProductMedia
-  variants: [ProductVariant]
-  media: [ProductMedia!]
-  collections: [Collection]
+  variants: [ProductVariant]!
+  media: [ProductMedia!]!
+  collections: [Collection]!
   translation(languageCode: LanguageCodeEnum!): ProductTranslation
   availableForPurchase: Date
   isAvailableForPurchase: Boolean
@@ -101,7 +101,7 @@ type ProductTranslation  {
   seoTitle: String
   seoDescription: String
   name: String
-  description: JSONString
+  description: JSONString!
   language: LanguageDisplay!
 }
 
@@ -126,11 +126,11 @@ type ProductAttributeUnassign {
 }
 
 input ProductCreateInput {
-  attributes: [AttributeValueInput!]
+  attributes: [AttributeValueInput!]!
   category: String
   chargeTaxes: Boolean
   collections: [String!]!
-  description: JSONString
+  description: JSONString!
   name: String
   slug: String
   taxCode: String
@@ -156,11 +156,11 @@ type ProductBulkDelete {
 }
 
 input ProductInput {
-  attributes: [AttributeValueInput!]
+  attributes: [AttributeValueInput!]!
   category: String
   chargeTaxes: Boolean
   collections: [String!]!
-  description: JSONString
+  description: JSONString!
   name: String
   slug: String
   taxCode: String
@@ -178,7 +178,7 @@ input TranslationInput {
   seoTitle: String
   seoDescription: String
   name: String
-  description: JSONString
+  description: JSONString!
 }
 
 type ProductTranslate {
@@ -191,11 +191,11 @@ input ProductFilterInput {
   collections: [String!]!
   categories: [String!]!
   hasCategory: Boolean
-  attributes: [AttributeInput]
+  attributes: [AttributeInput]!
   stockAvailability: StockAvailability
   stocks: ProductStockFilterInput
   search: String
-  metadata: [MetadataInput]
+  metadata: [MetadataInput]!
   price: PriceRangeInput
   minimalPrice: PriceRangeInput
   productTypes: [String!]!
