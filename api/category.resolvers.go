@@ -103,7 +103,8 @@ func (r *Resolver) Categories(ctx context.Context, args struct {
 	}
 
 	filter := func(c *model.Category) bool {
-		return (levelFilter != nil && levelFilter(c)) ||
+		return (levelFilter == nil && searchFilter == nil && idFilter == nil) ||
+			(levelFilter != nil && levelFilter(c)) ||
 			(searchFilter != nil && searchFilter(c)) ||
 			(idFilter != nil && idFilter(c))
 	}

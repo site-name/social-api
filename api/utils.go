@@ -344,9 +344,9 @@ func newGraphqlPaginator[RawT any, CurT graphqlCursorType, DestT any](
 
 // CountableConnection shares similar memory layout as all graphql api Connections.
 type CountableConnection[D any] struct {
-	TotalCount *int32
-	Edges      []*CountableEdge[D]
 	PageInfo   *PageInfo
+	Edges      []*CountableEdge[D]
+	TotalCount *int32
 }
 
 type CountableEdge[D any] struct {
@@ -391,6 +391,7 @@ func (g *graphqlPaginator[R, C, D]) parse(apiName string) (*CountableConnection[
 		limit                        = g.First
 		totalCount                   = g.Len()
 	)
+
 	if limit == nil {
 		limit = g.Last
 	}

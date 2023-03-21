@@ -40,9 +40,7 @@ func (o *OpenExchangeRate) PreSave() {
 }
 
 func (o *OpenExchangeRate) commonPre() {
-	if o.ToCurrency != "" {
-		o.ToCurrency = strings.ToUpper(o.ToCurrency)
-	}
+	o.ToCurrency = strings.ToUpper(o.ToCurrency)
 	if o.Rate == nil {
 		o.Rate = &decimal.Zero
 	}

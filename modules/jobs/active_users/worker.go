@@ -26,6 +26,5 @@ func MakeWorker(jobServer *jobs.JobServer, store store.Store, getMetrics func() 
 		}
 		return nil
 	}
-	worker := jobs.NewSimpleWorker(JobName, jobServer, execute, isEnabled)
-	return worker
+	return jobs.NewSimpleWorker(JobName, jobServer, execute, isEnabled)
 }

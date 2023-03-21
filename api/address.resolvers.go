@@ -26,6 +26,27 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AddressInput
 }) (*AddressUpdate, error) {
+	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// // validate given id
+	// if !model.IsValidId(args.Id) {
+	// 	return nil, model.NewAppError("AddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
+	// }
+
+	// // validate permission
+	// if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageUsers) {
+	// 	return nil, model.NewAppError("AddressUpdate", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	// }
+
+	// // find address with given id
+	// address, appErr := embedCtx.App.Srv().AccountService().AddressById(args.Id)
+	// if err != nil {
+	// 	return nil, appErr
+	// }
+
 	panic(fmt.Errorf("not implemented"))
 }
 

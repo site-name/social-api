@@ -38,7 +38,6 @@ import (
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/jobs"
 	"github.com/sitename/sitename/modules/jobs/active_users"
-	"github.com/sitename/sitename/modules/jobs/migrations"
 	"github.com/sitename/sitename/modules/mail"
 	"github.com/sitename/sitename/modules/plugin"
 	"github.com/sitename/sitename/modules/slog"
@@ -596,16 +595,16 @@ func (s *Server) initJobs() {
 	)
 
 	s.Jobs.RegisterJobType(
-		model.JobTypeMigrations,
-		migrations.MakeWorker(s.Jobs, s.Store),
-		migrations.MakeScheduler(s.Jobs, s.Store),
-	)
-
-	s.Jobs.RegisterJobType(
 		model.JobTypeActiveUsers,
 		active_users.MakeWorker(s.Jobs, s.Store, func() einterfaces.MetricsInterface { return s.Metrics }),
 		active_users.MakeScheduler(s.Jobs),
 	)
+
+	// s.Jobs.RegisterJobType(
+	// 	model.JobTypeMigrations,
+	// 	migrations.MakeWorker(s.Jobs, s.Store),
+	// 	migrations.MakeScheduler(s.Jobs, s.Store),
+	// )
 
 	// s.Jobs.RegisterJobType(
 	// 	model.JobTypeResendInvitationEmail,
