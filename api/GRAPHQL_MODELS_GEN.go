@@ -688,9 +688,9 @@ type CategoryDelete struct {
 }
 
 type CategoryFilterInput struct {
-	Search *string  `json:"search"` // categories.Slug ILIKE ... OR categories.Name ILIKE ...
-	Ids    []string `json:"ids"`
-	// Metadata []*MetadataInput `json:"metadata"`
+	Search   *string          `json:"search"` // categories.Slug ILIKE ... OR categories.Name ILIKE ...
+	Ids      []string         `json:"ids"`
+	Metadata []*MetadataInput `json:"metadata"`
 }
 
 type CategoryInput struct {

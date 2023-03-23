@@ -67,7 +67,9 @@ func (cs *SqlCategoryStore) ScanFields(cate *model.Category) []interface{} {
 // Upsert depends on given category's Id field to decide update or insert it
 func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
 	var isSaving bool
-	if category.Id == "" {
+	if !model.IsValidId(category.Id) {
+		category.Id = ""
+		isSaving = true
 		category.PreSave()
 	} else {
 		category.PreUpdate()
@@ -77,10 +79,7 @@ func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, e
 		return nil, err
 	}
 
-	var (
-		numUpdated int64
-		err        error
-	)
+	var err error
 	if isSaving {
 		query := "INSERT INTO " + store.CategoryTableName + "(" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
 		_, err = cs.GetMasterX().NamedExec(query, category)
@@ -93,11 +92,7 @@ func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, e
 			}).
 			Join(",") + " WHERE Id=:Id"
 
-		var result sql.Result
-		result, err = cs.GetMasterX().NamedExec(query, category)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
-		}
+		_, err = cs.GetMasterX().NamedExec(query, category)
 	}
 	if err != nil {
 		// this error may be caused by category slug duplicate
@@ -105,9 +100,6 @@ func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, e
 			return nil, store.NewErrInvalidInput(store.CategoryTableName, "Slug", category.Slug)
 		}
 		return nil, errors.Wrapf(err, "failed to upsert category with id=%s", category.Id)
-	}
-	if numUpdated > 1 {
-		return nil, errors.Errorf("multiple categories were updated: %d instead of 1", numUpdated)
 	}
 
 	return category, nil

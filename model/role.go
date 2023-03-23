@@ -1,12 +1,11 @@
 package model
 
 import (
-	"io"
 	"strings"
 )
 
 var (
-	SysconsoleAncillaryPermissions        map[string][]*Permission // SysconsoleAncillaryPermissions maps the non-sysconsole permissions required by each sysconsole view.
+	SysconsoleAncillaryPermissions        map[string][]string // SysconsoleAncillaryPermissions maps the non-sysconsole permissions required by each sysconsole view.
 	SystemManagerDefaultPermissions       []string
 	SystemUserManagerDefaultPermissions   []string
 	SystemReadOnlyAdminDefaultPermissions []string
@@ -21,21 +20,17 @@ const (
 	SystemGuestRoleId           = "system_guest"
 	SystemUserRoleId            = "system_user"
 	SystemAdminRoleId           = "system_admin"
-	SystemPostAllRoleId         = "system_post_all"
-	SystemPostAllPublicRoleId   = "system_post_all_public"
 	SystemUserAccessTokenRoleId = "system_user_access_token"
 	SystemUserManagerRoleId     = "system_user_manager"
 	SystemReadOnlyAdminRoleId   = "system_read_only_admin"
 	SystemManagerRoleId         = "system_manager"
 
+	ShopAdminRoleId = "shop_admin"
+	ShopStaffRoleId = "shop_staff"
+
 	RoleNameMaxLength        = 64
 	RoleDisplayNameMaxLength = 128
 	RoleDescriptionMaxLength = 1024
-
-	RoleScopeSystem RoleScope = "System"
-
-	RoleTypeUser  RoleType = "User"
-	RoleTypeAdmin RoleType = "Admin"
 )
 
 func init() {
@@ -49,96 +44,94 @@ func init() {
 		SystemGuestRoleId,
 		SystemUserRoleId,
 		SystemAdminRoleId,
-		SystemPostAllRoleId,
-		SystemPostAllPublicRoleId,
 		SystemUserAccessTokenRoleId,
 	}, NewSystemRoleIDs...)
 
 	// When updating the values here, the values in mattermost-redux must also be updated.
-	SysconsoleAncillaryPermissions = map[string][]*Permission{
+	SysconsoleAncillaryPermissions = map[string][]string{
 		PermissionSysconsoleReadUserManagementUsers.Id: {
-			PermissionGetAnalytics,
+			PermissionGetAnalytics.Id,
 		},
 		PermissionSysconsoleReadEnvironmentElasticsearch.Id: {
-			PermissionReadElasticsearchPostIndexingJob,
-			PermissionReadElasticsearchPostAggregationJob,
-		},
-		PermissionSysconsoleWriteEnvironmentWebServer.Id: {
-			PermissionTestSiteUrl,
-			PermissionReloadConfig,
-			PermissionInvalidateCaches,
-		},
-		PermissionSysconsoleWriteEnvironmentDatabase.Id: {
-			PermissionRecycleDatabaseConnections,
+			PermissionReadElasticsearchPostIndexingJob.Id,
+			PermissionReadElasticsearchPostAggregationJob.Id,
 		},
 		PermissionSysconsoleWriteEnvironmentElasticsearch.Id: {
-			PermissionTestElasticsearch,
-			PermissionCreateElasticsearchPostIndexingJob,
-			PermissionCreateElasticsearchPostAggregationJob,
-			PermissionPurgeElasticsearchIndexes,
+			PermissionTestElasticsearch.Id,
+			PermissionCreateElasticsearchPostIndexingJob.Id,
+			PermissionCreateElasticsearchPostAggregationJob.Id,
+			PermissionPurgeElasticsearchIndexes.Id,
+		},
+		PermissionSysconsoleWriteEnvironmentWebServer.Id: {
+			PermissionTestSiteUrl.Id,
+			PermissionReloadConfig.Id,
+			PermissionInvalidateCaches.Id,
+		},
+		PermissionSysconsoleWriteEnvironmentDatabase.Id: {
+			PermissionRecycleDatabaseConnections.Id,
 		},
 		PermissionSysconsoleWriteEnvironmentFileStorage.Id: {
-			PermissionTestS3,
+			PermissionTestS3.Id,
 		},
 		PermissionSysconsoleWriteEnvironmentSmtp.Id: {
-			PermissionTestEmail,
+			PermissionTestEmail.Id,
 		},
 		PermissionSysconsoleReadReportingServerLogs.Id: {
-			PermissionGetLogs,
+			PermissionGetLogs.Id,
 		},
 		PermissionSysconsoleReadReportingSiteStatistics.Id: {
-			PermissionGetAnalytics,
+			PermissionGetAnalytics.Id,
 		},
 		PermissionSysconsoleWriteUserManagementUsers.Id: {
-			PermissionEditOtherUsers,
+			PermissionEditOtherUsers.Id,
 		},
 		PermissionSysconsoleWriteSiteCustomization.Id: {
-			PermissionEditBrand,
+			PermissionEditBrand.Id,
 		},
 		PermissionSysconsoleWriteComplianceDataRetentionPolicy.Id: {
-			PermissionCreateDataRetentionJob,
+			PermissionCreateDataRetentionJob.Id,
 		},
 		PermissionSysconsoleReadComplianceDataRetentionPolicy.Id: {
-			PermissionReadDataRetentionJob,
+			PermissionReadDataRetentionJob.Id,
 		},
 		PermissionSysconsoleWriteComplianceComplianceExport.Id: {
-			PermissionCreateComplianceExportJob,
-			PermissionDownloadComplianceExportResult,
+			PermissionCreateComplianceExportJob.Id,
+			PermissionDownloadComplianceExportResult.Id,
 		},
 		PermissionSysconsoleReadComplianceComplianceExport.Id: {
-			PermissionReadComplianceExportJob,
-			PermissionDownloadComplianceExportResult,
+			PermissionReadComplianceExportJob.Id,
+			PermissionDownloadComplianceExportResult.Id,
 		},
 		PermissionSysconsoleReadComplianceCustomTermsOfService.Id: {
-			PermissionReadAudits,
+			PermissionReadAudits.Id,
 		},
 		PermissionSysconsoleWriteExperimentalBleve.Id: {
-			PermissionCreatePostBleveIndexesJob,
-			PermissionPurgeBleveIndexes,
+			PermissionCreatePostBleveIndexesJob.Id,
+			PermissionPurgeBleveIndexes.Id,
 		},
 		PermissionSysconsoleWriteAuthenticationLdap.Id: {
-			PermissionCreateLdapSyncJob,
-			PermissionAddLdapPublicCert,
-			PermissionRemoveLdapPublicCert,
-			PermissionAddLdapPrivateCert,
-			PermissionRemoveLdapPrivateCert,
+			PermissionCreateLdapSyncJob.Id,
+			PermissionAddLdapPublicCert.Id,
+			PermissionRemoveLdapPublicCert.Id,
+			PermissionAddLdapPrivateCert.Id,
+			PermissionRemoveLdapPrivateCert.Id,
 		},
 		PermissionSysconsoleReadAuthenticationLdap.Id: {
-			PermissionTestLdap,
-			PermissionReadLdapSyncJob,
+			PermissionTestLdap.Id,
+			PermissionReadLdapSyncJob.Id,
 		},
 		PermissionSysconsoleWriteAuthenticationEmail.Id: {
-			PermissionInvalidateEmailInvite,
+			PermissionInvalidateEmailInvite.Id,
 		},
 		PermissionSysconsoleWriteAuthenticationSaml.Id: {
-			PermissionGetSamlMetadataFromIdp,
-			PermissionAddSamlPublicCert,
-			PermissionAddSamlPrivateCert,
-			PermissionAddSamlIdpCert,
-			PermissionRemoveSamlPublicCert,
-			PermissionRemoveSamlPrivateCert,
-			PermissionRemoveSamlIdpCert,
-			PermissionGetSamlCertStatus,
+			PermissionGetSamlMetadataFromIdp.Id,
+			PermissionAddSamlPublicCert.Id,
+			PermissionAddSamlPrivateCert.Id,
+			PermissionAddSamlIdpCert.Id,
+			PermissionRemoveSamlPublicCert.Id,
+			PermissionRemoveSamlPrivateCert.Id,
+			PermissionRemoveSamlIdpCert.Id,
+			PermissionGetSamlCertStatus.Id,
 		},
 	}
 
@@ -319,30 +312,12 @@ func (r *Role) ToJSON() string {
 	return ModelToJson(r)
 }
 
-func RoleFromJson(data io.Reader) *Role {
-	var r *Role
-	ModelFromJson(&r, data)
-	return r
-}
-
 func RoleListToJson(r []*Role) string {
 	return ModelToJson(r)
 }
 
-func RoleListFromJson(data io.Reader) []*Role {
-	var roles []*Role
-	ModelFromJson(&roles, data)
-	return roles
-}
-
 func (r *RolePatch) ToJSON() string {
 	return ModelToJson(r)
-}
-
-func RolePatchFromJson(data io.Reader) *RolePatch {
-	var rolePatch *RolePatch
-	ModelFromJson(&rolePatch, data)
-	return rolePatch
 }
 
 func (r *Role) Patch(patch *RolePatch) {
@@ -366,17 +341,14 @@ func PermissionsChangedByPatch(role *Role, patch *RolePatch) []string {
 	for _, permission := range role.Permissions {
 		roleMap[permission] = true
 	}
-
 	for _, permission := range *patch.Permissions {
 		patchMap[permission] = true
 	}
-
 	for _, permission := range role.Permissions {
 		if !patchMap[permission] {
 			result = append(result, permission)
 		}
 	}
-
 	for _, permission := range *patch.Permissions {
 		if !roleMap[permission] {
 			result = append(result, permission)
@@ -419,8 +391,7 @@ func (r *Role) IsValidWithoutId() bool {
 	}
 
 	for _, permissionId := range r.Permissions {
-		permissionValidated := check(AllPermissions, permissionId) || check(DeprecatedPermissions, permissionId)
-		if !permissionValidated {
+		if !check(AllSystemScopedPermissions, permissionId) {
 			return false
 		}
 	}
@@ -481,30 +452,9 @@ func MakeDefaultRoles() map[string]*Role {
 		Description: "authentication.roles.global_user.description",
 		Permissions: []string{
 			PermissionViewMembers.Id,
+			PermissionCreateShop.Id,
 		},
 		SchemeManaged: true,
-		BuiltIn:       true,
-	}
-
-	roles[SystemPostAllRoleId] = &Role{
-		Name:        SystemPostAllRoleId,
-		DisplayName: "authentication.roles.system_post_all.name",
-		Description: "authentication.roles.system_post_all.description",
-		Permissions: []string{
-			PermissionCreatePost.Id,
-		},
-		SchemeManaged: false,
-		BuiltIn:       true,
-	}
-
-	roles[SystemPostAllPublicRoleId] = &Role{
-		Name:        SystemPostAllPublicRoleId,
-		DisplayName: "authentication.roles.system_post_all_public.name",
-		Description: "authentication.roles.system_post_all_public.description",
-		Permissions: []string{
-			PermissionCreatePostPublic.Id,
-		},
-		SchemeManaged: false,
 		BuiltIn:       true,
 	}
 
@@ -548,16 +498,11 @@ func MakeDefaultRoles() map[string]*Role {
 		BuiltIn:       true,
 	}
 
-	allPermissionIDs := []string{}
-	for _, permission := range AllPermissions {
-		allPermissionIDs = append(allPermissionIDs, permission.Id)
-	}
-
 	roles[SystemAdminRoleId] = &Role{
 		Name:          SystemAdminRoleId,
 		DisplayName:   "authentication.roles.global_admin.name",
 		Description:   "authentication.roles.global_admin.description",
-		Permissions:   allPermissionIDs,
+		Permissions:   AllSystemScopedPermissions.IDs(),
 		SchemeManaged: true,
 		BuiltIn:       true,
 	}
@@ -568,9 +513,7 @@ func MakeDefaultRoles() map[string]*Role {
 func AddAncillaryPermissions(permissions []string) []string {
 	for _, permission := range permissions {
 		if ancillaryPermissions, ok := SysconsoleAncillaryPermissions[permission]; ok {
-			for _, ancillaryPermission := range ancillaryPermissions {
-				permissions = append(permissions, ancillaryPermission.Id)
-			}
+			permissions = append(permissions, ancillaryPermissions...)
 		}
 	}
 	return permissions

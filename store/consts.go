@@ -82,8 +82,8 @@ func init() {
 
 		RoleTableName: "", //
 
-		CsvExportEventTablename: "Date ASC", // csv
-		CsvExportFileTablename:  "",         //
+		CsvExportEventTableName: "Date ASC", // csv
+		CsvExportFileTableName:  "",         //
 
 		BaseAssignedAttributeTableName:         "",                                       // attribute
 		AttributeTableName:                     "StorefrontSearchPosition ASC, Slug ASC", //
@@ -139,7 +139,7 @@ func init() {
 		UploadSessionTableName: "", //
 
 		PageTableName:            "Slug ASC",         // page
-		PageTranslationtableName: "LanguageCode ASC", //
+		PageTranslationTableName: "LanguageCode ASC", //
 		PageTypeTableName:        "Slug ASC",         //
 
 		InvoiceEventTableName: "CreateAt ASC", // invoice
@@ -252,8 +252,8 @@ const RoleTableName = "Roles"
 
 // csv-related table names
 const (
-	CsvExportEventTablename = "ExportEvents" //
-	CsvExportFileTablename  = "ExportFiles"  //
+	CsvExportEventTableName = "ExportEvents" //
+	CsvExportFileTableName  = "ExportFiles"  //
 )
 
 // attribute-related table names
@@ -333,7 +333,7 @@ const (
 // page-related table names
 const (
 	PageTableName            = "Pages"            //
-	PageTranslationtableName = "PageTranslations" //
+	PageTranslationTableName = "PageTranslations" //
 	PageTypeTableName        = "PageTypes"        //
 )
 

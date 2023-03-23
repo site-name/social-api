@@ -10,11 +10,8 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/web"
 )
 
 func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
@@ -25,6 +22,27 @@ func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
 }
 
 func (r *Resolver) CategoryDelete(ctx context.Context, args struct{ Id string }) (*CategoryDelete, error) {
+	// if !model.IsValidId(args.Id) {
+	// 	return nil, model.NewAppError("CategoryDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid category id", http.StatusBadRequest)
+	// }
+
+	// // check permission to delete category:
+	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// if !r.srv.AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionDeleteCategory) {
+	// 	return nil, model.NewAppError("CategoryDelete", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	// }
+
+	// categories, appErr := r.srv.ProductService().CategoryByIds([]string{args.Id}, true)
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
+	// if categories.Len() == 0 {
+	// 	return nil, model.NewAppError("CategoryDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid category id", http.StatusBadRequest)
+	// }
+
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -54,21 +72,11 @@ func (r *Resolver) Categories(ctx context.Context, args struct {
 	Level  *int32 // 0 <= level <= 4
 	GraphqlParams
 }) (*CategoryCountableConnection, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	var levelFilter, searchFilter, idFilter func(c *model.Category) bool
+	var levelFilter, searchFilter, idFilter, metadataFilter func(c *model.Category) bool
 
-	if lv := args.Level; lv != nil &&
-		*lv >= model.CATEGORY_MIN_LEVEL &&
-		*lv <= model.CATEGORY_MAX_LEVEL {
-		levelFilter = func(c *model.Category) bool {
-			return c.Level == uint8(*lv)
-		}
-	}
-
+	// parse filter
 	if args.Filter != nil {
+		// parse search
 		if search := args.Filter.Search; search != nil && *search != "" {
 			lowSearch := strings.ToLower(*search)
 
@@ -79,38 +87,68 @@ func (r *Resolver) Categories(ctx context.Context, args struct {
 			}
 		}
 
-		if len(args.Filter.Ids) > 0 {
-			idMap := map[string]struct{}{}
-			for _, id := range args.Filter.Ids {
-				idMap[id] = struct{}{}
+		// parse ids
+		if ids := args.Filter.Ids; len(ids) > 0 {
+			if !IdsAreValidUUIDs(ids...) {
+				return nil, model.NewAppError("Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Filter.Ids"}, "please provide valid uuids", http.StatusBadRequest)
 			}
-
+			idMap := map[string]bool{}
+			for _, id := range ids {
+				idMap[id] = true
+			}
 			idFilter = func(c *model.Category) bool {
-				_, ok := idMap[c.Id]
-				return ok
+				return idMap[c.Id]
 			}
 		}
 
-		// if len(args.Filter.Metadata) > 0 {
-		// 	metadataFilter = func(c *model.Category) bool {
-		// 		for _, meta := range args.Filter.Metadata {
-		// 			if meta.Key != "" {
+		// parse meta
+		if metas := args.Filter.Metadata; len(metas) > 0 {
+			metadataFilter = func(c *model.Category) bool {
+				for _, meta := range metas {
+					if meta.Key != "" {
+						if meta.Value != "" {
+							value := c.Metadata[meta.Key]
+							if value == meta.Value {
+								return true
+							}
+							continue
+						}
 
-		// 			}
-		// 		}
-		// 	}
-		// }
+						if _, ok := c.Metadata[meta.Key]; ok {
+							return true
+						}
+					}
+				}
+				return false
+			}
+		}
 	}
 
+	// parse level
+	if lv := args.Level; lv != nil {
+		if *lv < model.CATEGORY_MIN_LEVEL || *lv > model.CATEGORY_MAX_LEVEL {
+			return nil, model.NewAppError("Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Level"}, fmt.Sprintf("Level must be >= %d and <= %d", model.CATEGORY_MIN_LEVEL, model.CATEGORY_MAX_LEVEL), http.StatusBadRequest)
+		}
+		levelFilter = func(c *model.Category) bool {
+			return c.Level == uint8(*lv)
+		}
+	}
+
+	noNeedFilter := levelFilter == nil &&
+		searchFilter == nil &&
+		idFilter == nil &&
+		metadataFilter == nil
+
 	filter := func(c *model.Category) bool {
-		return (levelFilter == nil && searchFilter == nil && idFilter == nil) ||
+		return noNeedFilter ||
 			(levelFilter != nil && levelFilter(c)) ||
 			(searchFilter != nil && searchFilter(c)) ||
-			(idFilter != nil && idFilter(c))
+			(idFilter != nil && idFilter(c)) ||
+			(metadataFilter != nil && metadataFilter(c))
 	}
 
 	// find categories:
-	categories := embedCtx.App.Srv().ProductService().FilterCategoriesFromCache(filter)
+	categories := r.srv.ProductService().FilterCategoriesFromCache(filter)
 
 	// default to sort by english name
 	var res *CountableConnection[*Category]
@@ -143,28 +181,25 @@ func (r *Resolver) Category(ctx context.Context, args struct {
 	Slug *string
 }) (*Category, error) {
 	var id, slug string
-	if args.Id != nil && IdsAreValidUUIDs(*args.Id) {
+	if args.Id != nil && model.IsValidId(*args.Id) {
 		id = *args.Id
 	}
-	if args.Slug != nil {
+	if args.Slug != nil && *args.Slug != "" {
 		slug = *args.Slug
 	}
 	if id == "" && slug == "" {
 		return nil, model.NewAppError("Resolver.Category", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id/Slug"}, "please provide either id or slug", http.StatusBadRequest)
 	}
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	category, appErr := embedCtx.App.Srv().ProductService().CategoryByOption(&model.CategoryFilterOption{
-		Extra: squirrel.Or{
-			squirrel.Eq{store.CategoryTableName + ".Id": id},
-			squirrel.Eq{store.CategoryTableName + ".Slug": slug},
-		},
+	categories := r.srv.ProductService().FilterCategoriesFromCache(func(c *model.Category) bool {
+		if id != "" {
+			return c.Id == id
+		}
+		return c.Slug == slug
 	})
-	if appErr != nil {
-		return nil, appErr
+	if categories.Len() == 0 {
+		return nil, nil
 	}
-	return systemCategoryToGraphqlCategory(category), nil
+
+	return systemCategoryToGraphqlCategory(categories[0]), nil
 }

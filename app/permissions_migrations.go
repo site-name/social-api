@@ -213,11 +213,11 @@ func (a *App) getBillingPermissionsMigration() (permissionsMap, error) {
 
 func (a *App) getAddManageSecureConnectionsPermissionsMigration() (permissionsMap, error) {
 	transformations := []permissionTransformation{
-		{ // add the new permission to system admin
+		{
 			On:  isRole(model.SystemAdminRoleId),
 			Add: []string{PermissionManageSecureConnections},
 		},
-		{ // remote the decprecated permission from system admin
+		{
 			On:     isRole(model.SystemAdminRoleId),
 			Remove: []string{PermissionManageSecureConnections},
 		},

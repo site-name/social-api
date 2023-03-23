@@ -4,9 +4,8 @@ package model
 const (
 	AdvancedPermissionsMigrationKey       = "AdvancedPermissionsMigrationComplete"
 	MigrationKeyAdvancedPermissionsPhase2 = "migration_advanced_permissions_phase_2"
-)
+	PopulateCategoriesForTheFirstTimeKey  = "populated_categories_for_first_time"
 
-const (
 	MigrationKeyAddSystemRolesPermissions              = "add_system_roles_permissions"
 	MigrationKeyAddBillingPermissions                  = "add_billing_permissions"
 	MigrationKeyAddSystemConsolePermissions            = "add_system_console_permissions"
@@ -25,15 +24,4 @@ const (
 	MigrationKeyAddAboutSubsectionPermissions          = "about_subsection_permissions"
 	MigrationKeyAddIntegrationsSubsectionPermissions   = "integrations_subsection_permissions"
 	MigrationKeyAddTestEmailAncillaryPermission        = "test_email_ancillary_permission"
-
-	// MigrationKeyEmojiPermissionsSplit                     = "emoji_permissions_split"
-	// MigrationKeyListJoinPublicPrivateTeams              = "list_join_public_private_teams"
-	// MigrationKeyAddBotPermissions                         = "add_bot_permissions"
-	// MigrationKeyApplyChannelManageDeleteToChannelUser = "apply_channel_manage_delete_to_channel_user"
-	// MigrationKeyRemoveChannelManageDeleteFromTeamUser = "remove_channel_manage_delete_from_team_user"
-	// MigrationKeyAddManageGuestsPermissions               = "add_manage_guests_permissions"
-	// MigrationKeyChannelModerationsPermissions             = "channel_moderations_permissions"
-	// MigrationKeyAddUseGroupMentionsPermission           = "add_use_group_mentions_permission"
-	// MigrationKeyAddConvertChannelPermissions             = "add_convert_channel_permissions"
-	// MigrationKeyAddManageSharedChannelPermissions       = "manage_shared_channel_permissions"
 )

@@ -3,15 +3,15 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"os"
+	"path"
 	"strconv"
 	"strings"
-	"time"
 
+	"github.com/gosimple/slug"
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
 
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
@@ -51,77 +51,202 @@ var MigrateCmd = &cobra.Command{
 	RunE:  migrateCmdF,
 }
 
+var PopulateCmd = &cobra.Command{
+	Use:   "populate",
+	Short: "Populate categories",
+	RunE:  populateCategoriesCmdF,
+}
+
 func init() {
 	InitDbCmd.Flags().StringP("config", "c", "modules/config/config.json", "path to config.json file.")
+	PopulateCmd.Flags().StringP("type", "t", "category", "which type of table to populate")
 
 	DbCmd.AddCommand(
 		InitDbCmd,
 		DBVersionCmd,
 		MigrateCmd,
+		PopulateCmd,
 	)
-
 	RootCmd.AddCommand(
 		DbCmd,
 	)
 }
 
-func populateAll(a *app.App, cmd *cobra.Command, args []string, amount int) error {
-	err := populateChannel(a, cmd, args, amount)
-	if err != nil {
-		return errors.Wrap(err, "populate all failed to populate channel table")
-	}
+// func populateAll(a *app.App, cmd *cobra.Command, args []string, amount int) error {
+// 	err := populateChannel(a, cmd, args, amount)
+// 	if err != nil {
+// 		return errors.Wrap(err, "populate all failed to populate channel table")
+// 	}
 
-	return nil
+// 	return nil
+// }
+
+// func populateChannel(a *app.App, cmd *cobra.Command, args []string, amount int) error {
+// 	if amount == 0 {
+// 		return errors.New("amount must be greater than 0")
+// 	}
+// 	rd := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+// 	for i := 0; i < amount; i++ {
+// 		active := i%2 == 0
+// 		channel := &model.Channel{
+// 			Name:     fmt.Sprintf("This is first channel #%d name", i+1),
+// 			IsActive: active,
+// 			Currency: Currencies[rd.Intn(len(Currencies))],
+// 		}
+// 		_, err := a.Srv().Store.Channel().Save(channel)
+// 		if err != nil {
+// 			return errors.Wrap(err, "could not create channel")
+// 		}
+// 	}
+// 	return nil
+// }
+
+type categoryPath struct {
+	CategoryID     int    `json:"category_id"`
+	CategoryName   string `json:"category_name"`
+	CategoryNameEn string `json:"category_name_en"`
 }
 
-func populateChannel(a *app.App, cmd *cobra.Command, args []string, amount int) error {
-	if amount == 0 {
-		return errors.New("amount must be greater than 0")
-	}
-	rand.Seed(time.Now().UnixNano())
+type rawCategory struct {
+	CategoryID     int            `json:"category_id"`
+	CategoryName   string         `json:"category_name"`
+	CategoryNameEn string         `json:"category_name_en"`
+	Toggle         bool           `json:"toggle"`
+	Images         []string       `json:"images"`
+	Path           []categoryPath `json:"path"`
+}
 
-	for i := 0; i < amount; i++ {
-		active := i%2 == 0
-		channel := &model.Channel{
-			Name:     fmt.Sprintf("This is first channel #%d name", i+1),
-			IsActive: active,
-			Currency: Currencies[rand.Intn(len(Currencies))],
+func populateCategoriesCmdF(command *cobra.Command, args []string) error {
+	cfgDSN := getConfigDSN(command, config.GetEnvironment())
+	cfgStore, err := config.NewStoreFromDSN(cfgDSN, true, nil, true)
+	if err != nil {
+		return errors.Wrap(err, "failed to load configuration")
+	}
+	config := cfgStore.Get()
+
+	sqlStore := sqlstore.New(config.SqlSettings, nil)
+	defer sqlStore.Close()
+
+	// check if we already populated categories for the first time
+	_, err = sqlStore.System().GetByName(model.PopulateCategoriesForTheFirstTimeKey)
+	if err == nil {
+		// means populated, return now
+		slog.Info("categories already populated. Returning now.")
+		return nil
+	}
+
+	currentDir, _ := os.Getwd()
+	filePath := path.Join(currentDir, "model/raw_data/raw_categories.json")
+
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	var rawCategories []*rawCategory
+	err = json.Unmarshal(data, &rawCategories)
+	if err != nil {
+		return err
+	}
+
+	categories := model.Categories{}
+	meetMap := map[string]*model.Category{}
+
+	for _, cate := range rawCategories {
+		if cate.CategoryNameEn == "" {
+			slog.Debug("a category is not translated", slog.Int("id", cate.CategoryID))
+			continue
 		}
-		_, err := a.Srv().Store.Channel().Save(channel)
+
+		var (
+			named     = "Category"
+			slugg     = ""
+			parentKey string
+		)
+		for pathIdx, path := range cate.Path {
+			slugg += " " + path.CategoryNameEn
+			if pathIdx > 0 {
+				parentKey = named
+			}
+			named += path.CategoryNameEn
+
+			if _, met := meetMap[named]; !met {
+				desired := &model.Category{
+					Slug:  slug.Make(slugg),
+					Name:  path.CategoryNameEn,
+					Level: uint8(pathIdx),
+					NameTranslation: model.StringMAP{
+						"vi": path.CategoryName,
+					},
+				}
+				if pathIdx == len(cate.Path)-1 {
+					desired.Images = strings.Join(cate.Images, " ")
+				}
+				if pathIdx > 0 {
+					desired.ParentID = &meetMap[parentKey].Id
+				}
+
+				categories = append(categories, desired)
+				meetMap[named] = desired
+			}
+		}
+	}
+
+	slog.Info("Populating categories for the first time...")
+
+	_, err = sqlStore.GetMasterX().Exec("DELETE FROM " + store.CategoryTableName)
+	if err != nil {
+		slog.Error("failed to delete categories from db")
+		return err
+	}
+
+	for _, cate := range categories {
+		_, err = sqlStore.Category().Upsert(cate)
 		if err != nil {
-			return errors.Wrap(err, "could not create channel")
+			slog.Error("failed to insert category", slog.String("name", cate.Name))
+			return err
 		}
 	}
-	return nil
+
+	slog.Info("Successfully populated categories.")
+
+	// indicate populated
+	return sqlStore.System().Save(&model.System{
+		Name:  model.PopulateCategoriesForTheFirstTimeKey,
+		Value: "true",
+	})
 }
 
-func populateDbCmdF(command *cobra.Command, args []string) error {
-	a, err := InitDBCommandContextCobra(command)
-	if err != nil {
-		return err
-	}
-	defer a.Srv().Shutdown()
+// func populateDbCmdF(command *cobra.Command, args []string) error {
+// 	a, err := InitDBCommandContextCobra(command)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer a.Srv().Shutdown()
 
-	populateType, err := command.Flags().GetString("type")
-	if err != nil {
-		return err
-	}
-	populateType = strings.TrimSpace(strings.ToLower(populateType))
+// 	populateType, err := command.Flags().GetString("type")
+// 	if err != nil {
+// 		return err
+// 	}
+// 	populateType = strings.TrimSpace(strings.ToLower(populateType))
 
-	amount, err := command.Flags().GetInt("amount")
-	if err != nil {
-		return err
-	}
+// 	amount, err := command.Flags().GetInt("amount")
+// 	if err != nil {
+// 		return err
+// 	}
 
-	switch populateType {
-	case "all":
-		return populateAll(a, command, args, amount)
-	case "channel":
-		return populateChannel(a, command, args, amount)
-	}
+// 	switch populateType {
+// 	case "all":
+// 		return populateAll(a, command, args, amount)
+// 	case "channel":
+// 		return populateChannel(a, command, args, amount)
+// 	case "category":
+// 		return populateCategoriesCmdF(command, args)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func initDbCmdF(command *cobra.Command, _ []string) error {
 	dsn, err := command.Flags().GetString("config")

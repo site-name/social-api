@@ -62,6 +62,15 @@ func (r *Resolver) AddressSetDefault(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
+func choicesToChoiceValues(choices [][2]string) []*ChoiceValue {
+	return lo.Map(choices, func(item [2]string, _ int) *ChoiceValue {
+		return &ChoiceValue{
+			Raw:     &item[0],
+			Verbose: &item[1],
+		}
+	})
+}
+
 func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 	CountryCode CountryCode
 	CountryArea *string
@@ -81,18 +90,8 @@ func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 		addressParam.CityArea = *cArea
 	}
 	validationRules, err := i18naddress.GetValidationRules(addressParam)
-
 	if err != nil {
 		return nil, model.NewAppError("AddressValidationRules", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "args"}, err.Error(), http.StatusBadRequest)
-	}
-
-	choicesToChoiceValues := func(choices [][2]string) []*ChoiceValue {
-		return lo.Map(choices, func(item [2]string, _ int) *ChoiceValue {
-			return &ChoiceValue{
-				Raw:     &item[0],
-				Verbose: &item[1],
-			}
-		})
 	}
 
 	return &AddressValidationData{
