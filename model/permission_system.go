@@ -117,7 +117,6 @@ var (
 	PermissionRevokeUserAccessToken *Permission
 
 	PermissionViewMembers *Permission // view a shop's member
-	PermissionEditBrand   *Permission // can change shop's identity
 
 	PermissionManageRemoteClusters           *Permission
 	PermissionDownloadComplianceExportResult *Permission
@@ -384,7 +383,6 @@ func initializeSystemScopedPermissions() {
 	PermissionReadJobs = &Permission{"read_jobs", "authentication.permisssions.read_jobs.name", "authentication.permisssions.read_jobs.description", PermissionScopeSystem}
 	PermissionManageJobs = &Permission{"manage_jobs", "authentication.permisssions.manage_jobs.name", "authentication.permisssions.manage_jobs.description", PermissionScopeSystem}
 	PermissionViewMembers = &Permission{"view_members", "authentication.permisssions.view_members.name", "authentication.permisssions.view_members.description", PermissionScopeSystem}
-	PermissionEditBrand = &Permission{"edit_brand", "authentication.permissions.edit_brand.name", "authentication.permissions.edit_brand.description", PermissionScopeSystem}
 	PermissionSysconsoleReadBilling = &Permission{"sysconsole_read_billing", "", "", PermissionScopeSystem}
 	PermissionSysconsoleWriteBilling = &Permission{"sysconsole_write_billing", "", "", PermissionScopeSystem}
 	PermissionSysconsoleReadReportingSiteStatistics = &Permission{"sysconsole_read_reporting_site_statistics", "", "", PermissionScopeSystem}
@@ -638,16 +636,57 @@ func initializeSystemScopedPermissions() {
 		PermissionRemoveLdapPrivateCert,
 		PermissionGetAnalytics,
 		PermissionGetLogs,
-		PermissionInviteUser,
 		PermissionManageIncomingWebhooks,
 		PermissionManageOutgoingWebhooks,
 		PermissionManageOthersIncomingWebhooks,
 		PermissionManageOthersOutgoingWebhooks,
+
+		PermissionCreateCategoryTranslation,
+		PermissionReadCategoryTranslation,
+		PermissionUpdateCategoryTranslation,
+		PermissionDeleteCategoryTranslation,
+		PermissionCreateOpenExchangeRate,
+		PermissionReadOpenExchangeRate,
+		PermissionUpdateOpenExchangeRate,
+		PermissionDeleteOpenExchangeRate,
+		PermissionCreateAudit,
+		PermissionReadAudit,
+		PermissionUpdateAudit,
+		PermissionDeleteAudit,
+		PermissionCreateClusterDiscovery,
+		PermissionReadClusterDiscovery,
+		PermissionUpdateClusterDiscovery,
+		PermissionDeleteClusterDiscovery,
+		PermissionCreateRole, // important permissions
+		PermissionReadRole,
+		PermissionUpdateRole,
+		PermissionDeleteRole,
+		PermissionCreateCompliance,
+		PermissionReadCompliance,
+		PermissionUpdateCompliance,
+		PermissionDeleteCompliance,
+		PermissionCreateChannel,
+		PermissionReadChannel,
+		PermissionUpdateChannel,
+		PermissionDeleteChannel,
+		PermissionCreateTermsOfService,
+		PermissionReadTermsOfService,
+		PermissionUpdateTermsOfService,
+		PermissionDeleteTermsOfService,
+		PermissionCreateToken,
+		PermissionReadToken,
+		PermissionUpdateToken,
+		PermissionDeleteToken,
+		PermissionCreateUser,
+		PermissionReadUser,
+		PermissionDeleteUser,
+		PermissionCreateCategory,
+		PermissionReadCategory,
+		PermissionUpdateCategory,
+		PermissionDeleteCategory,
 	}
 
-	AllSystemScopedPermissions = Permissions{}
-	AllSystemScopedPermissions = append(AllSystemScopedPermissions, SystemScopedPermissionsMinusSysconsole...)
-	AllSystemScopedPermissions = append(AllSystemScopedPermissions, SysconsoleReadPermissions...)
+	AllSystemScopedPermissions = append(SystemScopedPermissionsMinusSysconsole, SysconsoleReadPermissions...)
 	AllSystemScopedPermissions = append(AllSystemScopedPermissions, SysconsoleWritePermissions...)
 }
 

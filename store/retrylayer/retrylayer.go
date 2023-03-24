@@ -8054,11 +8054,11 @@ func (s *RetryLayerShopStore) Upsert(shop *model.Shop) (*model.Shop, error) {
 
 }
 
-func (s *RetryLayerShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*model.ShopStaffRelation, error) {
+func (s *RetryLayerShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaffRelation, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShopStaffStore.FilterByShopAndStaff(shopID, staffID)
+		result, err := s.ShopStaffStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}

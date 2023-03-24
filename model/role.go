@@ -13,9 +13,6 @@ var (
 	NewSystemRoleIDs                      []string
 )
 
-type RoleType string
-type RoleScope string
-
 const (
 	SystemGuestRoleId           = "system_guest"
 	SystemUserRoleId            = "system_user"
@@ -24,9 +21,8 @@ const (
 	SystemUserManagerRoleId     = "system_user_manager"
 	SystemReadOnlyAdminRoleId   = "system_read_only_admin"
 	SystemManagerRoleId         = "system_manager"
-
-	ShopAdminRoleId = "shop_admin"
-	ShopStaffRoleId = "shop_staff"
+	ShopAdminRoleId             = "shop_admin"
+	ShopStaffRoleId             = "shop_staff"
 
 	RoleNameMaxLength        = 64
 	RoleDisplayNameMaxLength = 128
@@ -85,9 +81,7 @@ func init() {
 		PermissionSysconsoleWriteUserManagementUsers.Id: {
 			PermissionEditOtherUsers.Id,
 		},
-		PermissionSysconsoleWriteSiteCustomization.Id: {
-			PermissionEditBrand.Id,
-		},
+		PermissionSysconsoleWriteSiteCustomization.Id: {},
 		PermissionSysconsoleWriteComplianceDataRetentionPolicy.Id: {
 			PermissionCreateDataRetentionJob.Id,
 		},
@@ -280,7 +274,7 @@ type Role struct {
 	CreateAt      int64    `json:"create_at"`
 	UpdateAt      int64    `json:"update_at"`
 	DeleteAt      int64    `json:"delete_at"`
-	Permissions   []string `json:"permissions" db:"-"` // NOT save to database, populate by `PermissionsStr`
+	Permissions   []string `json:"permissions"`
 	SchemeManaged bool     `json:"scheme_managed"`
 	BuiltIn       bool     `json:"built_in"`
 }
@@ -441,19 +435,16 @@ func MakeDefaultRoles() map[string]*Role {
 		Name:          SystemGuestRoleId,
 		DisplayName:   "authentication.roles.global_guest.name",
 		Description:   "authentication.roles.global_guest.description",
-		Permissions:   []string{},
+		Permissions:   SystemGuestPermissions.IDs(),
 		SchemeManaged: true,
 		BuiltIn:       true,
 	}
 
 	roles[SystemUserRoleId] = &Role{
-		Name:        SystemUserRoleId,
-		DisplayName: "authentication.roles.global_user.name",
-		Description: "authentication.roles.global_user.description",
-		Permissions: []string{
-			PermissionViewMembers.Id,
-			PermissionCreateShop.Id,
-		},
+		Name:          SystemUserRoleId,
+		DisplayName:   "authentication.roles.global_user.name",
+		Description:   "authentication.roles.global_user.description",
+		Permissions:   SystemUserPermissions.IDs(),
 		SchemeManaged: true,
 		BuiltIn:       true,
 	}
@@ -503,6 +494,24 @@ func MakeDefaultRoles() map[string]*Role {
 		DisplayName:   "authentication.roles.global_admin.name",
 		Description:   "authentication.roles.global_admin.description",
 		Permissions:   AllSystemScopedPermissions.IDs(),
+		SchemeManaged: true,
+		BuiltIn:       true,
+	}
+
+	roles[ShopAdminRoleId] = &Role{
+		Name:          ShopAdminRoleId,
+		DisplayName:   "authentication.roles.shop_admin.name",
+		Description:   "authentication.roles.shop_admin.description",
+		Permissions:   ShopScopedAllPermissions.IDs(),
+		SchemeManaged: true,
+		BuiltIn:       true,
+	}
+
+	roles[ShopStaffRoleId] = &Role{
+		Name:          ShopStaffRoleId,
+		DisplayName:   "authentication.roles.shop_staff.name",
+		Description:   "authentication.roles.shop_staff.description",
+		Permissions:   ShopStaffPermissions.IDs(),
 		SchemeManaged: true,
 		BuiltIn:       true,
 	}

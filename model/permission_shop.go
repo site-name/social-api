@@ -1,26 +1,30 @@
 package model
 
 var (
-	PermissionCreateWarehouse             *Permission
-	PermissionReadWarehouse               *Permission
-	PermissionUpdateWarehouse             *Permission
-	PermissionDeleteWarehouse             *Permission
+	PermissionCreateWarehouse *Permission
+	PermissionReadWarehouse   *Permission
+	PermissionUpdateWarehouse *Permission
+	PermissionDeleteWarehouse *Permission
+
 	PermissionCreateAssignedPageAttribute *Permission
 	PermissionReadAssignedPageAttribute   *Permission
 	PermissionUpdateAssignedPageAttribute *Permission
 	PermissionDeleteAssignedPageAttribute *Permission
-	PermissionCreateSaleChannelListing    *Permission
-	PermissionReadSaleChannelListing      *Permission
-	PermissionUpdateSaleChannelListing    *Permission
-	PermissionDeleteSaleChannelListing    *Permission
-	PermissionCreateShop                  *Permission
-	PermissionReadShop                    *Permission
-	PermissionUpdateShop                  *Permission
-	PermissionDeleteShop                  *Permission
-	PermissionCreatePageTranslation       *Permission
-	PermissionReadPageTranslation         *Permission
-	PermissionUpdatePageTranslation       *Permission
-	PermissionDeletePageTranslation       *Permission
+
+	PermissionCreateSaleChannelListing *Permission
+	PermissionReadSaleChannelListing   *Permission
+	PermissionUpdateSaleChannelListing *Permission
+	PermissionDeleteSaleChannelListing *Permission
+
+	PermissionCreateShop *Permission // system user can create shops
+	PermissionReadShop   *Permission
+	PermissionUpdateShop *Permission
+	PermissionDeleteShop *Permission
+
+	PermissionCreatePageTranslation *Permission
+	PermissionReadPageTranslation   *Permission
+	PermissionUpdatePageTranslation *Permission
+	PermissionDeletePageTranslation *Permission
 
 	PermissionCreateCategoryTranslation *Permission // system scoped since only system admin can perform CRUD on categories
 	PermissionReadCategoryTranslation   *Permission // system scoped since only system admin can perform CRUD on categories
@@ -41,417 +45,485 @@ var (
 	PermissionReadAssignedVariantAttributeValue   *Permission
 	PermissionUpdateAssignedVariantAttributeValue *Permission
 	PermissionDeleteAssignedVariantAttributeValue *Permission
-	PermissionCreateJob                           *Permission
-	PermissionReadJob                             *Permission
-	PermissionUpdateJob                           *Permission
-	PermissionDeleteJob                           *Permission
-	PermissionCreateShippingZone                  *Permission
-	PermissionReadShippingZone                    *Permission
-	PermissionUpdateShippingZone                  *Permission
-	PermissionDeleteShippingZone                  *Permission
-	PermissionCreateWishlistItemProductVariant    *Permission
-	PermissionReadWishlistItemProductVariant      *Permission
-	PermissionUpdateWishlistItemProductVariant    *Permission
-	PermissionDeleteWishlistItemProductVariant    *Permission
-	PermissionCreateTransaction                   *Permission
-	PermissionReadTransaction                     *Permission
-	PermissionUpdateTransaction                   *Permission
-	PermissionDeleteTransaction                   *Permission
-	PermissionCreateAttributeValue                *Permission
-	PermissionReadAttributeValue                  *Permission
-	PermissionUpdateAttributeValue                *Permission
-	PermissionDeleteAttributeValue                *Permission
-	PermissionCreateAttributePage                 *Permission
-	PermissionReadAttributePage                   *Permission
-	PermissionUpdateAttributePage                 *Permission
-	PermissionDeleteAttributePage                 *Permission
-	PermissionCreateSaleProductVariant            *Permission
-	PermissionReadSaleProductVariant              *Permission
-	PermissionUpdateSaleProductVariant            *Permission
-	PermissionDeleteSaleProductVariant            *Permission
-	PermissionCreateOrderEvent                    *Permission
-	PermissionReadOrderEvent                      *Permission
-	PermissionUpdateOrderEvent                    *Permission
-	PermissionDeleteOrderEvent                    *Permission
-	PermissionCreatePreOrderAllocation            *Permission
-	PermissionReadPreOrderAllocation              *Permission
-	PermissionUpdatePreOrderAllocation            *Permission
-	PermissionDeletePreOrderAllocation            *Permission
-	PermissionCreateCustomerEvent                 *Permission
-	PermissionReadCustomerEvent                   *Permission
-	PermissionUpdateCustomerEvent                 *Permission
-	PermissionDeleteCustomerEvent                 *Permission
-	PermissionCreateAttributeProduct              *Permission
-	PermissionReadAttributeProduct                *Permission
-	PermissionUpdateAttributeProduct              *Permission
-	PermissionDeleteAttributeProduct              *Permission
-	PermissionCreateCsvExportEvent                *Permission
-	PermissionReadCsvExportEvent                  *Permission
-	PermissionUpdateCsvExportEvent                *Permission
-	PermissionDeleteCsvExportEvent                *Permission
-	PermissionCreateCsvExportFile                 *Permission
-	PermissionReadCsvExportFile                   *Permission
-	PermissionUpdateCsvExportFile                 *Permission
-	PermissionDeleteCsvExportFile                 *Permission
-	PermissionCreateCollectionProductRelation     *Permission
-	PermissionReadCollectionProductRelation       *Permission
-	PermissionUpdateCollectionProductRelation     *Permission
-	PermissionDeleteCollectionProductRelation     *Permission
-	PermissionCreateCustomerNote                  *Permission
-	PermissionReadCustomerNote                    *Permission
-	PermissionUpdateCustomerNote                  *Permission
-	PermissionDeleteCustomerNote                  *Permission
-	PermissionCreateMenuItemTranslation           *Permission
-	PermissionReadMenuItemTranslation             *Permission
-	PermissionUpdateMenuItemTranslation           *Permission
-	PermissionDeleteMenuItemTranslation           *Permission
-	PermissionUpdateUserAccessToken               *Permission
-	PermissionDeleteUserAccessToken               *Permission
-	PermissionCreateOrderGiftCard                 *Permission
-	PermissionReadOrderGiftCard                   *Permission
-	PermissionUpdateOrderGiftCard                 *Permission
-	PermissionDeleteOrderGiftCard                 *Permission
-	PermissionCreateCheckoutLine                  *Permission
-	PermissionReadCheckoutLine                    *Permission
-	PermissionUpdateCheckoutLine                  *Permission
-	PermissionDeleteCheckoutLine                  *Permission
-	PermissionCreateSaleCollectionRelation        *Permission
-	PermissionReadSaleCollectionRelation          *Permission
-	PermissionUpdateSaleCollectionRelation        *Permission
-	PermissionDeleteSaleCollectionRelation        *Permission
-	PermissionCreateSaleProductRelation           *Permission
-	PermissionReadSaleProductRelation             *Permission
-	PermissionUpdateSaleProductRelation           *Permission
-	PermissionDeleteSaleProductRelation           *Permission
-	PermissionCreateShopStaff                     *Permission
-	PermissionReadShopStaff                       *Permission
-	PermissionUpdateShopStaff                     *Permission
-	PermissionDeleteShopStaff                     *Permission
-	PermissionCreateProductTranslation            *Permission
-	PermissionReadProductTranslation              *Permission
-	PermissionUpdateProductTranslation            *Permission
-	PermissionDeleteProductTranslation            *Permission
-	PermissionCreateWarehouseShippingZone         *Permission
-	PermissionReadWarehouseShippingZone           *Permission
-	PermissionUpdateWarehouseShippingZone         *Permission
-	PermissionDeleteWarehouseShippingZone         *Permission
+
+	PermissionCreateShippingZone *Permission
+	PermissionReadShippingZone   *Permission
+	PermissionUpdateShippingZone *Permission
+	PermissionDeleteShippingZone *Permission
+
+	PermissionCreateWishlistItemProductVariant *Permission
+	PermissionReadWishlistItemProductVariant   *Permission
+	PermissionUpdateWishlistItemProductVariant *Permission
+	PermissionDeleteWishlistItemProductVariant *Permission
+
+	PermissionCreateTransaction *Permission
+	PermissionReadTransaction   *Permission
+	PermissionUpdateTransaction *Permission
+	PermissionDeleteTransaction *Permission
+
+	PermissionCreateAttributeValue *Permission
+	PermissionReadAttributeValue   *Permission
+	PermissionUpdateAttributeValue *Permission
+	PermissionDeleteAttributeValue *Permission
+
+	PermissionCreateAttributePage *Permission
+	PermissionReadAttributePage   *Permission
+	PermissionUpdateAttributePage *Permission
+	PermissionDeleteAttributePage *Permission
+
+	PermissionCreateSaleProductVariant *Permission
+	PermissionReadSaleProductVariant   *Permission
+	PermissionUpdateSaleProductVariant *Permission
+	PermissionDeleteSaleProductVariant *Permission
+
+	PermissionCreateOrderEvent *Permission
+	PermissionReadOrderEvent   *Permission
+	PermissionUpdateOrderEvent *Permission
+	PermissionDeleteOrderEvent *Permission
+
+	PermissionCreatePreOrderAllocation *Permission
+	PermissionReadPreOrderAllocation   *Permission
+	PermissionUpdatePreOrderAllocation *Permission
+	PermissionDeletePreOrderAllocation *Permission
+
+	PermissionCreateCustomerEvent *Permission
+	PermissionReadCustomerEvent   *Permission
+	PermissionUpdateCustomerEvent *Permission
+	PermissionDeleteCustomerEvent *Permission
+
+	PermissionCreateAttributeProduct *Permission
+	PermissionReadAttributeProduct   *Permission
+	PermissionUpdateAttributeProduct *Permission
+	PermissionDeleteAttributeProduct *Permission
+
+	PermissionCreateCsvExportEvent *Permission
+	PermissionReadCsvExportEvent   *Permission
+	PermissionUpdateCsvExportEvent *Permission
+	PermissionDeleteCsvExportEvent *Permission
+
+	PermissionCreateCsvExportFile *Permission
+	PermissionReadCsvExportFile   *Permission
+	PermissionUpdateCsvExportFile *Permission
+	PermissionDeleteCsvExportFile *Permission
+
+	PermissionCreateCollectionProductRelation *Permission
+	PermissionReadCollectionProductRelation   *Permission
+	PermissionUpdateCollectionProductRelation *Permission
+	PermissionDeleteCollectionProductRelation *Permission
+
+	PermissionCreateCustomerNote *Permission
+	PermissionReadCustomerNote   *Permission
+	PermissionUpdateCustomerNote *Permission
+	PermissionDeleteCustomerNote *Permission
+
+	PermissionCreateMenuItemTranslation *Permission
+	PermissionReadMenuItemTranslation   *Permission
+	PermissionUpdateMenuItemTranslation *Permission
+	PermissionDeleteMenuItemTranslation *Permission
+
+	PermissionCreateOrderGiftCard *Permission
+	PermissionReadOrderGiftCard   *Permission
+	PermissionUpdateOrderGiftCard *Permission
+	PermissionDeleteOrderGiftCard *Permission
+
+	PermissionCreateCheckoutLine *Permission
+	PermissionReadCheckoutLine   *Permission
+	PermissionUpdateCheckoutLine *Permission
+	PermissionDeleteCheckoutLine *Permission
+
+	PermissionCreateSaleCollectionRelation *Permission
+	PermissionReadSaleCollectionRelation   *Permission
+	PermissionUpdateSaleCollectionRelation *Permission
+	PermissionDeleteSaleCollectionRelation *Permission
+
+	PermissionCreateSaleProductRelation *Permission
+	PermissionReadSaleProductRelation   *Permission
+	PermissionUpdateSaleProductRelation *Permission
+	PermissionDeleteSaleProductRelation *Permission
+
+	PermissionCreateShopStaff *Permission
+	PermissionReadShopStaff   *Permission
+	PermissionUpdateShopStaff *Permission
+	PermissionDeleteShopStaff *Permission
+
+	PermissionCreateProductTranslation *Permission
+	PermissionReadProductTranslation   *Permission
+	PermissionUpdateProductTranslation *Permission
+	PermissionDeleteProductTranslation *Permission
+
+	PermissionCreateWarehouseShippingZone *Permission
+	PermissionReadWarehouseShippingZone   *Permission
+	PermissionUpdateWarehouseShippingZone *Permission
+	PermissionDeleteWarehouseShippingZone *Permission
 
 	PermissionCreatePluginConfiguration *Permission // each shop has their own configuration
 	PermissionReadPluginConfiguration   *Permission // each shop has their own configuration
 	PermissionUpdatePluginConfiguration *Permission // each shop has their own configuration
 	PermissionDeletePluginConfiguration *Permission // each shop has their own configuration
 
-	PermissionCreateAudit                        *Permission
-	PermissionReadAudit                          *Permission
-	PermissionUpdateAudit                        *Permission
-	PermissionDeleteAudit                        *Permission
-	PermissionCreateProductChannelListing        *Permission
-	PermissionReadProductChannelListing          *Permission
-	PermissionUpdateProductChannelListing        *Permission
-	PermissionDeleteProductChannelListing        *Permission
-	PermissionCreateCollectionChannelListing     *Permission
-	PermissionReadCollectionChannelListing       *Permission
-	PermissionUpdateCollectionChannelListing     *Permission
-	PermissionDeleteCollectionChannelListing     *Permission
-	PermissionCreateVoucherTranslation           *Permission
-	PermissionReadVoucherTranslation             *Permission
-	PermissionUpdateVoucherTranslation           *Permission
-	PermissionDeleteVoucherTranslation           *Permission
-	PermissionCreateClusterDiscovery             *Permission
-	PermissionReadClusterDiscovery               *Permission
-	PermissionUpdateClusterDiscovery             *Permission
-	PermissionDeleteClusterDiscovery             *Permission
-	PermissionCreateProductVariantTranslation    *Permission
-	PermissionReadProductVariantTranslation      *Permission
-	PermissionUpdateProductVariantTranslation    *Permission
-	PermissionDeleteProductVariantTranslation    *Permission
-	PermissionCreateShopTranslation              *Permission
-	PermissionReadShopTranslation                *Permission
-	PermissionUpdateShopTranslation              *Permission
-	PermissionDeleteShopTranslation              *Permission
+	PermissionCreateAudit *Permission
+	PermissionReadAudit   *Permission
+	PermissionUpdateAudit *Permission
+	PermissionDeleteAudit *Permission
+
+	PermissionCreateProductChannelListing *Permission
+	PermissionReadProductChannelListing   *Permission
+	PermissionUpdateProductChannelListing *Permission
+	PermissionDeleteProductChannelListing *Permission
+
+	PermissionCreateCollectionChannelListing *Permission
+	PermissionReadCollectionChannelListing   *Permission
+	PermissionUpdateCollectionChannelListing *Permission
+	PermissionDeleteCollectionChannelListing *Permission
+
+	PermissionCreateVoucherTranslation *Permission
+	PermissionReadVoucherTranslation   *Permission
+	PermissionUpdateVoucherTranslation *Permission
+	PermissionDeleteVoucherTranslation *Permission
+
+	PermissionCreateClusterDiscovery *Permission
+	PermissionReadClusterDiscovery   *Permission
+	PermissionUpdateClusterDiscovery *Permission
+	PermissionDeleteClusterDiscovery *Permission
+
+	PermissionCreateProductVariantTranslation *Permission
+	PermissionReadProductVariantTranslation   *Permission
+	PermissionUpdateProductVariantTranslation *Permission
+	PermissionDeleteProductVariantTranslation *Permission
+
+	PermissionCreateShopTranslation *Permission
+	PermissionReadShopTranslation   *Permission
+	PermissionUpdateShopTranslation *Permission
+	PermissionDeleteShopTranslation *Permission
+
 	PermissionCreateShippingMethodChannelListing *Permission
 	PermissionReadShippingMethodChannelListing   *Permission
 	PermissionUpdateShippingMethodChannelListing *Permission
 	PermissionDeleteShippingMethodChannelListing *Permission
-	PermissionCreateRole                         *Permission
-	PermissionReadRole                           *Permission
-	PermissionUpdateRole                         *Permission
-	PermissionDeleteRole                         *Permission
-	PermissionCreateBaseAssignedAttribute        *Permission
-	PermissionReadBaseAssignedAttribute          *Permission
-	PermissionUpdateBaseAssignedAttribute        *Permission
-	PermissionDeleteBaseAssignedAttribute        *Permission
-	PermissionCreateAssignedVariantAttribute     *Permission
-	PermissionReadAssignedVariantAttribute       *Permission
-	PermissionUpdateAssignedVariantAttribute     *Permission
-	PermissionDeleteAssignedVariantAttribute     *Permission
-	PermissionCreateCompliance                   *Permission
-	PermissionReadCompliance                     *Permission
-	PermissionUpdateCompliance                   *Permission
-	PermissionDeleteCompliance                   *Permission
-	PermissionCreateStaffNotificationRecipient   *Permission
-	PermissionReadStaffNotificationRecipient     *Permission
-	PermissionUpdateStaffNotificationRecipient   *Permission
-	PermissionDeleteStaffNotificationRecipient   *Permission
-	PermissionCreatePluginKeyValueStore          *Permission
-	PermissionReadPluginKeyValueStore            *Permission
-	PermissionUpdatePluginKeyValueStore          *Permission
-	PermissionDeletePluginKeyValueStore          *Permission
+
+	PermissionCreateRole *Permission
+	PermissionReadRole   *Permission
+	PermissionUpdateRole *Permission
+	PermissionDeleteRole *Permission
+
+	PermissionCreateAssignedVariantAttribute *Permission
+	PermissionReadAssignedVariantAttribute   *Permission
+	PermissionUpdateAssignedVariantAttribute *Permission
+	PermissionDeleteAssignedVariantAttribute *Permission
+
+	PermissionCreateCompliance                 *Permission
+	PermissionReadCompliance                   *Permission
+	PermissionUpdateCompliance                 *Permission
+	PermissionDeleteCompliance                 *Permission
+	PermissionCreateStaffNotificationRecipient *Permission
+	PermissionReadStaffNotificationRecipient   *Permission
+	PermissionUpdateStaffNotificationRecipient *Permission
+	PermissionDeleteStaffNotificationRecipient *Permission
+	PermissionCreatePluginKeyValueStore        *Permission
+	PermissionReadPluginKeyValueStore          *Permission
+	PermissionUpdatePluginKeyValueStore        *Permission
+	PermissionDeletePluginKeyValueStore        *Permission
 
 	PermissionCreateChannel *Permission // system admin can do this only
 	PermissionReadChannel   *Permission // system admin can do this only
 	PermissionUpdateChannel *Permission // system admin can do this only
 	PermissionDeleteChannel *Permission // system admin can do this only
 
-	PermissionCreateFulfillmentLine               *Permission
-	PermissionReadFulfillmentLine                 *Permission
-	PermissionUpdateFulfillmentLine               *Permission
-	PermissionDeleteFulfillmentLine               *Permission
-	PermissionCreateUserAddress                   *Permission
-	PermissionReadUserAddress                     *Permission
-	PermissionUpdateUserAddress                   *Permission
-	PermissionDeleteUserAddress                   *Permission
-	PermissionCreateStatus                        *Permission
-	PermissionReadStatus                          *Permission
-	PermissionUpdateStatus                        *Permission
-	PermissionDeleteStatus                        *Permission
-	PermissionCreateVoucherCollection             *Permission
-	PermissionReadVoucherCollection               *Permission
-	PermissionUpdateVoucherCollection             *Permission
-	PermissionDeleteVoucherCollection             *Permission
-	PermissionCreateVoucherProduct                *Permission
-	PermissionReadVoucherProduct                  *Permission
-	PermissionUpdateVoucherProduct                *Permission
-	PermissionDeleteVoucherProduct                *Permission
-	PermissionCreateVoucherProductVariant         *Permission
-	PermissionReadVoucherProductVariant           *Permission
-	PermissionUpdateVoucherProductVariant         *Permission
-	PermissionDeleteVoucherProductVariant         *Permission
-	PermissionCreateFulfillment                   *Permission
-	PermissionReadFulfillment                     *Permission
-	PermissionUpdateFulfillment                   *Permission
-	PermissionDeleteFulfillment                   *Permission
-	PermissionCreateProduct                       *Permission
-	PermissionReadProduct                         *Permission
-	PermissionUpdateProduct                       *Permission
-	PermissionDeleteProduct                       *Permission
-	PermissionCreateTermsOfService                *Permission
-	PermissionReadTermsOfService                  *Permission
-	PermissionUpdateTermsOfService                *Permission
-	PermissionDeleteTermsOfService                *Permission
+	PermissionCreateFulfillmentLine *Permission
+	PermissionReadFulfillmentLine   *Permission
+	PermissionUpdateFulfillmentLine *Permission
+	PermissionDeleteFulfillmentLine *Permission
+
+	PermissionCreateVoucherCollection *Permission
+	PermissionReadVoucherCollection   *Permission
+	PermissionUpdateVoucherCollection *Permission
+	PermissionDeleteVoucherCollection *Permission
+
+	PermissionCreateVoucherProduct *Permission
+	PermissionReadVoucherProduct   *Permission
+	PermissionUpdateVoucherProduct *Permission
+	PermissionDeleteVoucherProduct *Permission
+
+	PermissionCreateVoucherProductVariant *Permission
+	PermissionReadVoucherProductVariant   *Permission
+	PermissionUpdateVoucherProductVariant *Permission
+	PermissionDeleteVoucherProductVariant *Permission
+
+	PermissionCreateFulfillment *Permission
+	PermissionReadFulfillment   *Permission
+	PermissionUpdateFulfillment *Permission
+	PermissionDeleteFulfillment *Permission
+
+	PermissionCreateProduct *Permission
+	PermissionReadProduct   *Permission
+	PermissionUpdateProduct *Permission
+	PermissionDeleteProduct *Permission
+
+	PermissionCreateTermsOfService *Permission
+	PermissionReadTermsOfService   *Permission
+	PermissionUpdateTermsOfService *Permission
+	PermissionDeleteTermsOfService *Permission
+
 	PermissionCreateAssignedProductAttributeValue *Permission
 	PermissionReadAssignedProductAttributeValue   *Permission
 	PermissionUpdateAssignedProductAttributeValue *Permission
 	PermissionDeleteAssignedProductAttributeValue *Permission
-	PermissionCreateOrderDiscount                 *Permission
-	PermissionReadOrderDiscount                   *Permission
-	PermissionUpdateOrderDiscount                 *Permission
-	PermissionDeleteOrderDiscount                 *Permission
-	PermissionCreateProductVariantMedia           *Permission
-	PermissionReadProductVariantMedia             *Permission
-	PermissionUpdateProductVariantMedia           *Permission
-	PermissionDeleteProductVariantMedia           *Permission
-	PermissionCreateAttributeTranslation          *Permission
-	PermissionReadAttributeTranslation            *Permission
-	PermissionUpdateAttributeTranslation          *Permission
-	PermissionDeleteAttributeTranslation          *Permission
-	PermissionCreateAttributeValueTranslation     *Permission
-	PermissionReadAttributeValueTranslation       *Permission
-	PermissionUpdateAttributeValueTranslation     *Permission
-	PermissionDeleteAttributeValueTranslation     *Permission
-	PermissionCreateGiftcard                      *Permission
-	PermissionReadGiftcard                        *Permission
-	PermissionUpdateGiftcard                      *Permission
-	PermissionDeleteGiftcard                      *Permission
-	PermissionCreatePayment                       *Permission
-	PermissionReadPayment                         *Permission
-	PermissionUpdatePayment                       *Permission
-	PermissionDeletePayment                       *Permission
-	PermissionCreateToken                         *Permission
-	PermissionReadToken                           *Permission
-	PermissionUpdateToken                         *Permission
-	PermissionDeleteToken                         *Permission
-	PermissionCreateAttribute                     *Permission
-	PermissionReadAttribute                       *Permission
-	PermissionUpdateAttribute                     *Permission
-	PermissionDeleteAttribute                     *Permission
-	PermissionCreateSale                          *Permission
-	PermissionReadSale                            *Permission
-	PermissionUpdateSale                          *Permission
-	PermissionDeleteSale                          *Permission
-	PermissionCreateShippingMethod                *Permission
-	PermissionReadShippingMethod                  *Permission
-	PermissionUpdateShippingMethod                *Permission
-	PermissionDeleteShippingMethod                *Permission
-	PermissionCreateShippingMethodPostalCodeRule  *Permission
-	PermissionReadShippingMethodPostalCodeRule    *Permission
-	PermissionUpdateShippingMethodPostalCodeRule  *Permission
-	PermissionDeleteShippingMethodPostalCodeRule  *Permission
-	PermissionCreateUploadSession                 *Permission
-	PermissionReadUploadSession                   *Permission
-	PermissionUpdateUploadSession                 *Permission
-	PermissionDeleteUploadSession                 *Permission
-	PermissionCreateCheckout                      *Permission
-	PermissionReadCheckout                        *Permission
-	PermissionUpdateCheckout                      *Permission
-	PermissionDeleteCheckout                      *Permission
-	PermissionCreateAllocation                    *Permission
-	PermissionReadAllocation                      *Permission
-	PermissionUpdateAllocation                    *Permission
-	PermissionDeleteAllocation                    *Permission
-	PermissionCreateVoucher                       *Permission
-	PermissionReadVoucher                         *Permission
-	PermissionUpdateVoucher                       *Permission
-	PermissionDeleteVoucher                       *Permission
-	PermissionCreateMenuItem                      *Permission
-	PermissionReadMenuItem                        *Permission
-	PermissionUpdateMenuItem                      *Permission
-	PermissionDeleteMenuItem                      *Permission
-	PermissionCreateProductMedia                  *Permission
-	PermissionReadProductMedia                    *Permission
-	PermissionUpdateProductMedia                  *Permission
-	PermissionDeleteProductMedia                  *Permission
-	PermissionCreateProductType                   *Permission
-	PermissionReadProductType                     *Permission
-	PermissionUpdateProductType                   *Permission
-	PermissionDeleteProductType                   *Permission
-	PermissionCreateSaleTranslation               *Permission
-	PermissionReadSaleTranslation                 *Permission
-	PermissionUpdateSaleTranslation               *Permission
-	PermissionDeleteSaleTranslation               *Permission
+
+	PermissionCreateOrderDiscount *Permission
+	PermissionReadOrderDiscount   *Permission
+	PermissionUpdateOrderDiscount *Permission
+	PermissionDeleteOrderDiscount *Permission
+
+	PermissionCreateProductVariantMedia *Permission
+	PermissionReadProductVariantMedia   *Permission
+	PermissionUpdateProductVariantMedia *Permission
+	PermissionDeleteProductVariantMedia *Permission
+
+	PermissionCreateAttributeTranslation *Permission
+	PermissionReadAttributeTranslation   *Permission
+	PermissionUpdateAttributeTranslation *Permission
+	PermissionDeleteAttributeTranslation *Permission
+
+	PermissionCreateAttributeValueTranslation *Permission
+	PermissionReadAttributeValueTranslation   *Permission
+	PermissionUpdateAttributeValueTranslation *Permission
+	PermissionDeleteAttributeValueTranslation *Permission
+
+	PermissionCreateGiftcard *Permission
+	PermissionReadGiftcard   *Permission
+	PermissionUpdateGiftcard *Permission
+	PermissionDeleteGiftcard *Permission
+
+	PermissionCreatePayment *Permission
+	PermissionReadPayment   *Permission
+	PermissionUpdatePayment *Permission
+	PermissionDeletePayment *Permission
+
+	PermissionCreateToken *Permission
+	PermissionReadToken   *Permission
+	PermissionUpdateToken *Permission
+	PermissionDeleteToken *Permission
+
+	PermissionCreateAttribute *Permission
+	PermissionReadAttribute   *Permission
+	PermissionUpdateAttribute *Permission
+	PermissionDeleteAttribute *Permission
+
+	PermissionCreateSale *Permission
+	PermissionReadSale   *Permission
+	PermissionUpdateSale *Permission
+	PermissionDeleteSale *Permission
+
+	PermissionCreateShippingMethod *Permission
+	PermissionReadShippingMethod   *Permission
+	PermissionUpdateShippingMethod *Permission
+	PermissionDeleteShippingMethod *Permission
+
+	PermissionCreateShippingMethodPostalCodeRule *Permission
+	PermissionReadShippingMethodPostalCodeRule   *Permission
+	PermissionUpdateShippingMethodPostalCodeRule *Permission
+	PermissionDeleteShippingMethodPostalCodeRule *Permission
+
+	PermissionCreateCheckout *Permission
+	PermissionReadCheckout   *Permission
+	PermissionUpdateCheckout *Permission
+	PermissionDeleteCheckout *Permission
+
+	PermissionCreateAllocation *Permission
+	PermissionReadAllocation   *Permission
+	PermissionUpdateAllocation *Permission
+	PermissionDeleteAllocation *Permission
+
+	PermissionCreateVoucher *Permission
+	PermissionReadVoucher   *Permission
+	PermissionUpdateVoucher *Permission
+	PermissionDeleteVoucher *Permission
+
+	PermissionCreateMenuItem *Permission
+	PermissionReadMenuItem   *Permission
+	PermissionUpdateMenuItem *Permission
+	PermissionDeleteMenuItem *Permission
+
+	PermissionCreateProductMedia *Permission
+	PermissionReadProductMedia   *Permission
+	PermissionUpdateProductMedia *Permission
+	PermissionDeleteProductMedia *Permission
+
+	PermissionCreateProductType *Permission
+	PermissionReadProductType   *Permission
+	PermissionUpdateProductType *Permission
+	PermissionDeleteProductType *Permission
+
+	PermissionCreateSaleTranslation *Permission
+	PermissionReadSaleTranslation   *Permission
+	PermissionUpdateSaleTranslation *Permission
+	PermissionDeleteSaleTranslation *Permission
+
 	PermissionCreateShippingMethodExcludedProduct *Permission
 	PermissionReadShippingMethodExcludedProduct   *Permission
 	PermissionUpdateShippingMethodExcludedProduct *Permission
 	PermissionDeleteShippingMethodExcludedProduct *Permission
-	PermissionCreateOrderLine                     *Permission
-	PermissionReadOrderLine                       *Permission
-	PermissionUpdateOrderLine                     *Permission
-	PermissionDeleteOrderLine                     *Permission
-	PermissionCreateUser                          *Permission
-	PermissionReadUser                            *Permission
-	PermissionUpdateUser                          *Permission
-	PermissionDeleteUser                          *Permission
-	PermissionCreateVoucherCustomer               *Permission
-	PermissionReadVoucherCustomer                 *Permission
-	PermissionUpdateVoucherCustomer               *Permission
-	PermissionDeleteVoucherCustomer               *Permission
-	PermissionCreateCollection                    *Permission
-	PermissionReadCollection                      *Permission
-	PermissionUpdateCollection                    *Permission
-	PermissionDeleteCollection                    *Permission
-	PermissionCreateWishlistItem                  *Permission
-	PermissionReadWishlistItem                    *Permission
-	PermissionUpdateWishlistItem                  *Permission
-	PermissionDeleteWishlistItem                  *Permission
-	PermissionCreateDigitalContent                *Permission
-	PermissionReadDigitalContent                  *Permission
-	PermissionUpdateDigitalContent                *Permission
-	PermissionDeleteDigitalContent                *Permission
-	PermissionCreateVoucherChannelListing         *Permission
-	PermissionReadVoucherChannelListing           *Permission
-	PermissionUpdateVoucherChannelListing         *Permission
-	PermissionDeleteVoucherChannelListing         *Permission
-	PermissionCreateProductVariant                *Permission
-	PermissionReadProductVariant                  *Permission
-	PermissionUpdateProductVariant                *Permission
-	PermissionDeleteProductVariant                *Permission
-	PermissionCreateAddress                       *Permission
-	PermissionReadAddress                         *Permission
-	PermissionUpdateAddress                       *Permission
-	PermissionDeleteAddress                       *Permission
-	PermissionCreateVoucherCategory               *Permission
-	PermissionReadVoucherCategory                 *Permission
-	PermissionUpdateVoucherCategory               *Permission
-	PermissionDeleteVoucherCategory               *Permission
-	PermissionCreateMenu                          *Permission
-	PermissionReadMenu                            *Permission
-	PermissionUpdateMenu                          *Permission
-	PermissionDeleteMenu                          *Permission
-	PermissionCreateCollectionTranslation         *Permission
-	PermissionReadCollectionTranslation           *Permission
-	PermissionUpdateCollectionTranslation         *Permission
-	PermissionDeleteCollectionTranslation         *Permission
-	PermissionCreateProductVariantChannelListing  *Permission
-	PermissionReadProductVariantChannelListing    *Permission
-	PermissionUpdateProductVariantChannelListing  *Permission
-	PermissionDeleteProductVariantChannelListing  *Permission
-	PermissionCreateSaleCategoryRelation          *Permission
-	PermissionReadSaleCategoryRelation            *Permission
-	PermissionUpdateSaleCategoryRelation          *Permission
-	PermissionDeleteSaleCategoryRelation          *Permission
-	PermissionCreateOrder                         *Permission
-	PermissionReadOrder                           *Permission
-	PermissionUpdateOrder                         *Permission
-	PermissionDeleteOrder                         *Permission
+
+	PermissionCreateOrderLine *Permission
+	PermissionReadOrderLine   *Permission
+	PermissionUpdateOrderLine *Permission
+	PermissionDeleteOrderLine *Permission
+
+	PermissionCreateUser *Permission
+	PermissionReadUser   *Permission
+	PermissionDeleteUser *Permission
+
+	PermissionCreateVoucherCustomer *Permission
+	PermissionReadVoucherCustomer   *Permission
+	PermissionUpdateVoucherCustomer *Permission
+	PermissionDeleteVoucherCustomer *Permission
+
+	PermissionCreateCollection *Permission
+	PermissionReadCollection   *Permission
+	PermissionUpdateCollection *Permission
+	PermissionDeleteCollection *Permission
+
+	PermissionCreateWishlistItem *Permission
+	PermissionReadWishlistItem   *Permission
+	PermissionUpdateWishlistItem *Permission
+	PermissionDeleteWishlistItem *Permission
+
+	PermissionCreateDigitalContent *Permission
+	PermissionReadDigitalContent   *Permission
+	PermissionUpdateDigitalContent *Permission
+	PermissionDeleteDigitalContent *Permission
+
+	PermissionCreateVoucherChannelListing *Permission
+	PermissionReadVoucherChannelListing   *Permission
+	PermissionUpdateVoucherChannelListing *Permission
+	PermissionDeleteVoucherChannelListing *Permission
+
+	PermissionCreateProductVariant *Permission
+	PermissionReadProductVariant   *Permission
+	PermissionUpdateProductVariant *Permission
+	PermissionDeleteProductVariant *Permission
+
+	PermissionCreateAddress *Permission
+	PermissionReadAddress   *Permission
+	PermissionUpdateAddress *Permission
+	PermissionDeleteAddress *Permission
+
+	PermissionCreateVoucherCategory *Permission
+	PermissionReadVoucherCategory   *Permission
+	PermissionUpdateVoucherCategory *Permission
+	PermissionDeleteVoucherCategory *Permission
+
+	PermissionCreateMenu *Permission
+	PermissionReadMenu   *Permission
+	PermissionUpdateMenu *Permission
+	PermissionDeleteMenu *Permission
+
+	PermissionCreateCollectionTranslation *Permission
+	PermissionReadCollectionTranslation   *Permission
+	PermissionUpdateCollectionTranslation *Permission
+	PermissionDeleteCollectionTranslation *Permission
+
+	PermissionCreateProductVariantChannelListing *Permission
+	PermissionReadProductVariantChannelListing   *Permission
+	PermissionUpdateProductVariantChannelListing *Permission
+	PermissionDeleteProductVariantChannelListing *Permission
+
+	PermissionCreateSaleCategoryRelation *Permission
+	PermissionReadSaleCategoryRelation   *Permission
+	PermissionUpdateSaleCategoryRelation *Permission
+	PermissionDeleteSaleCategoryRelation *Permission
+
+	PermissionCreateOrder *Permission
+	PermissionReadOrder   *Permission
+	PermissionUpdateOrder *Permission
+	PermissionDeleteOrder *Permission
 
 	PermissionCreateCategory *Permission // system_admin manages categories
 	PermissionReadCategory   *Permission // system_admin manages categories
 	PermissionUpdateCategory *Permission // system_admin manages categories
 	PermissionDeleteCategory *Permission // system_admin manages categories
 
-	PermissionCreateShippingMethodTranslation  *Permission
-	PermissionReadShippingMethodTranslation    *Permission
-	PermissionUpdateShippingMethodTranslation  *Permission
-	PermissionDeleteShippingMethodTranslation  *Permission
-	PermissionCreateFileInfo                   *Permission
-	PermissionReadFileInfo                     *Permission
-	PermissionUpdateFileInfo                   *Permission
-	PermissionDeleteFileInfo                   *Permission
-	PermissionCreatePage                       *Permission
-	PermissionReadPage                         *Permission
-	PermissionUpdatePage                       *Permission
-	PermissionDeletePage                       *Permission
-	PermissionCreateInvoiceEvent               *Permission
-	PermissionReadInvoiceEvent                 *Permission
-	PermissionUpdateInvoiceEvent               *Permission
-	PermissionDeleteInvoiceEvent               *Permission
-	PermissionCreateInvoice                    *Permission
-	PermissionReadInvoice                      *Permission
-	PermissionUpdateInvoice                    *Permission
-	PermissionDeleteInvoice                    *Permission
-	PermissionCreateWishlist                   *Permission
-	PermissionReadWishlist                     *Permission
-	PermissionUpdateWishlist                   *Permission
-	PermissionDeleteWishlist                   *Permission
-	PermissionCreatePreference                 *Permission
-	PermissionReadPreference                   *Permission
-	PermissionUpdatePreference                 *Permission
-	PermissionDeletePreference                 *Permission
-	PermissionCreateAssignedProductAttribute   *Permission
-	PermissionReadAssignedProductAttribute     *Permission
-	PermissionUpdateAssignedProductAttribute   *Permission
-	PermissionDeleteAssignedProductAttribute   *Permission
-	PermissionCreatePageType                   *Permission
-	PermissionReadPageType                     *Permission
-	PermissionUpdatePageType                   *Permission
-	PermissionDeletePageType                   *Permission
-	PermissionCreateDigitalContentURL          *Permission
-	PermissionReadDigitalContentURL            *Permission
-	PermissionUpdateDigitalContentURL          *Permission
-	PermissionDeleteDigitalContentURL          *Permission
-	PermissionCreateAttributeVariant           *Permission
-	PermissionReadAttributeVariant             *Permission
-	PermissionUpdateAttributeVariant           *Permission
-	PermissionDeleteAttributeVariant           *Permission
+	PermissionCreateShippingMethodTranslation *Permission
+	PermissionReadShippingMethodTranslation   *Permission
+	PermissionUpdateShippingMethodTranslation *Permission
+	PermissionDeleteShippingMethodTranslation *Permission
+
+	PermissionCreateFileInfo *Permission
+	PermissionReadFileInfo   *Permission
+	PermissionUpdateFileInfo *Permission
+	PermissionDeleteFileInfo *Permission
+
+	PermissionCreatePage *Permission
+	PermissionReadPage   *Permission
+	PermissionUpdatePage *Permission
+	PermissionDeletePage *Permission
+
+	PermissionCreateInvoiceEvent *Permission
+	PermissionReadInvoiceEvent   *Permission
+	PermissionUpdateInvoiceEvent *Permission
+	PermissionDeleteInvoiceEvent *Permission
+
+	PermissionCreateInvoice *Permission
+	PermissionReadInvoice   *Permission
+	PermissionUpdateInvoice *Permission
+	PermissionDeleteInvoice *Permission
+
+	PermissionCreateWishlist *Permission
+	PermissionReadWishlist   *Permission
+	PermissionUpdateWishlist *Permission
+	PermissionDeleteWishlist *Permission
+
+	PermissionCreatePreference *Permission
+	PermissionReadPreference   *Permission
+	PermissionUpdatePreference *Permission
+	PermissionDeletePreference *Permission
+
+	PermissionCreateAssignedProductAttribute *Permission
+	PermissionReadAssignedProductAttribute   *Permission
+	PermissionUpdateAssignedProductAttribute *Permission
+	PermissionDeleteAssignedProductAttribute *Permission
+
+	PermissionCreatePageType *Permission
+	PermissionReadPageType   *Permission
+	PermissionUpdatePageType *Permission
+	PermissionDeletePageType *Permission
+
+	PermissionCreateDigitalContentURL *Permission
+	PermissionReadDigitalContentURL   *Permission
+	PermissionUpdateDigitalContentURL *Permission
+	PermissionDeleteDigitalContentURL *Permission
+
+	PermissionCreateAttributeVariant *Permission
+	PermissionReadAttributeVariant   *Permission
+	PermissionUpdateAttributeVariant *Permission
+	PermissionDeleteAttributeVariant *Permission
+
 	PermissionCreateAssignedPageAttributeValue *Permission
 	PermissionReadAssignedPageAttributeValue   *Permission
 	PermissionUpdateAssignedPageAttributeValue *Permission
 	PermissionDeleteAssignedPageAttributeValue *Permission
-	PermissionCreateShippingZoneChannel        *Permission
-	PermissionReadShippingZoneChannel          *Permission
-	PermissionUpdateShippingZoneChannel        *Permission
-	PermissionDeleteShippingZoneChannel        *Permission
-	PermissionCreateGiftcardEvent              *Permission
-	PermissionReadGiftcardEvent                *Permission
-	PermissionUpdateGiftcardEvent              *Permission
-	PermissionDeleteGiftcardEvent              *Permission
-	PermissionCreateGiftcardCheckout           *Permission
-	PermissionReadGiftcardCheckout             *Permission
-	PermissionUpdateGiftcardCheckout           *Permission
-	PermissionDeleteGiftcardCheckout           *Permission
+
+	PermissionCreateShippingZoneChannel *Permission
+	PermissionReadShippingZoneChannel   *Permission
+	PermissionUpdateShippingZoneChannel *Permission
+	PermissionDeleteShippingZoneChannel *Permission
+
+	PermissionCreateGiftcardEvent *Permission
+	PermissionReadGiftcardEvent   *Permission
+	PermissionUpdateGiftcardEvent *Permission
+	PermissionDeleteGiftcardEvent *Permission
+
+	PermissionCreateGiftcardCheckout *Permission
+	PermissionReadGiftcardCheckout   *Permission
+	PermissionUpdateGiftcardCheckout *Permission
+	PermissionDeleteGiftcardCheckout *Permission
 )
 
-var ShopScopedPermissions Permissions
+// ShopScopedAllPermissions contains all shop-related permissions
+var ShopScopedAllPermissions Permissions
+var ShopStaffPermissions Permissions
+var SystemUserPermissions Permissions
+var SystemGuestPermissions Permissions
 
 func initializeShopScopedPermissions() {
 	PermissionCreateWarehouse = &Permission{"create_warehouse", "", "", PermissionScopeShop}
@@ -499,25 +571,20 @@ func initializeShopScopedPermissions() {
 	PermissionUpdateAssignedVariantAttributeValue = &Permission{"update_assignedvariantattributevalue", "", "", PermissionScopeShop}
 	PermissionDeleteAssignedVariantAttributeValue = &Permission{"delete_assignedvariantattributevalue", "", "", PermissionScopeShop}
 
-	PermissionCreateJob = &Permission{"create_job", "", "", PermissionScopeSystem}
-	PermissionReadJob = &Permission{"read_job", "", "", PermissionScopeSystem}
-	PermissionUpdateJob = &Permission{"update_job", "", "", PermissionScopeSystem}
-	PermissionDeleteJob = &Permission{"delete_job", "", "", PermissionScopeSystem}
-
 	PermissionCreateShippingZone = &Permission{"create_shippingzone", "", "", PermissionScopeShop}
 	PermissionReadShippingZone = &Permission{"read_shippingzone", "", "", PermissionScopeShop}
 	PermissionUpdateShippingZone = &Permission{"update_shippingzone", "", "", PermissionScopeShop}
 	PermissionDeleteShippingZone = &Permission{"delete_shippingzone", "", "", PermissionScopeShop}
 
-	PermissionCreateWishlistItemProductVariant = &Permission{"create_wishlistitemproductvariant", "", "", PermissionScopeShop}
-	PermissionReadWishlistItemProductVariant = &Permission{"read_wishlistitemproductvariant", "", "", PermissionScopeShop}
-	PermissionUpdateWishlistItemProductVariant = &Permission{"update_wishlistitemproductvariant", "", "", PermissionScopeShop}
-	PermissionDeleteWishlistItemProductVariant = &Permission{"delete_wishlistitemproductvariant", "", "", PermissionScopeShop}
+	PermissionCreateWishlistItemProductVariant = &Permission{"create_wishlistitemproductvariant", "", "", PermissionScopeSystem}
+	PermissionReadWishlistItemProductVariant = &Permission{"read_wishlistitemproductvariant", "", "", PermissionScopeSystem}
+	PermissionUpdateWishlistItemProductVariant = &Permission{"update_wishlistitemproductvariant", "", "", PermissionScopeSystem}
+	PermissionDeleteWishlistItemProductVariant = &Permission{"delete_wishlistitemproductvariant", "", "", PermissionScopeSystem}
 
-	PermissionCreateTransaction = &Permission{"create_transaction", "", "", PermissionScopeShop}
-	PermissionReadTransaction = &Permission{"read_transaction", "", "", PermissionScopeShop}
-	PermissionUpdateTransaction = &Permission{"update_transaction", "", "", PermissionScopeShop}
-	PermissionDeleteTransaction = &Permission{"delete_transaction", "", "", PermissionScopeShop}
+	PermissionCreateTransaction = &Permission{"create_transaction", "", "", PermissionScopeSystem}
+	PermissionReadTransaction = &Permission{"read_transaction", "", "", PermissionScopeSystem}
+	PermissionUpdateTransaction = &Permission{"update_transaction", "", "", PermissionScopeSystem}
+	PermissionDeleteTransaction = &Permission{"delete_transaction", "", "", PermissionScopeSystem}
 
 	PermissionCreateAttributeValue = &Permission{"create_attributevalue", "", "", PermissionScopeShop}
 	PermissionReadAttributeValue = &Permission{"read_attributevalue", "", "", PermissionScopeShop}
@@ -578,11 +645,6 @@ func initializeShopScopedPermissions() {
 	PermissionReadMenuItemTranslation = &Permission{"read_menuitemtranslation", "", "", PermissionScopeShop}
 	PermissionUpdateMenuItemTranslation = &Permission{"update_menuitemtranslation", "", "", PermissionScopeShop}
 	PermissionDeleteMenuItemTranslation = &Permission{"delete_menuitemtranslation", "", "", PermissionScopeShop}
-
-	PermissionCreateUserAccessToken = &Permission{"create_useraccesstoken", "", "", PermissionScopeSystem}
-	PermissionReadUserAccessToken = &Permission{"read_useraccesstoken", "", "", PermissionScopeSystem}
-	PermissionUpdateUserAccessToken = &Permission{"update_useraccesstoken", "", "", PermissionScopeSystem}
-	PermissionDeleteUserAccessToken = &Permission{"delete_useraccesstoken", "", "", PermissionScopeSystem}
 
 	PermissionCreateOrderGiftCard = &Permission{"create_ordergiftcard", "", "", PermissionScopeShop}
 	PermissionReadOrderGiftCard = &Permission{"read_ordergiftcard", "", "", PermissionScopeShop}
@@ -669,11 +731,6 @@ func initializeShopScopedPermissions() {
 	PermissionUpdateRole = &Permission{"update_role", "", "", PermissionScopeSystem}
 	PermissionDeleteRole = &Permission{"delete_role", "", "", PermissionScopeSystem}
 
-	PermissionCreateBaseAssignedAttribute = &Permission{"create_baseassignedattribute", "", "", PermissionScopeShop}
-	PermissionReadBaseAssignedAttribute = &Permission{"read_baseassignedattribute", "", "", PermissionScopeShop}
-	PermissionUpdateBaseAssignedAttribute = &Permission{"update_baseassignedattribute", "", "", PermissionScopeShop}
-	PermissionDeleteBaseAssignedAttribute = &Permission{"delete_baseassignedattribute", "", "", PermissionScopeShop}
-
 	PermissionCreateAssignedVariantAttribute = &Permission{"create_assignedvariantattribute", "", "", PermissionScopeShop}
 	PermissionReadAssignedVariantAttribute = &Permission{"read_assignedvariantattribute", "", "", PermissionScopeShop}
 	PermissionUpdateAssignedVariantAttribute = &Permission{"update_assignedvariantattribute", "", "", PermissionScopeShop}
@@ -703,16 +760,6 @@ func initializeShopScopedPermissions() {
 	PermissionReadFulfillmentLine = &Permission{"read_fulfillmentline", "", "", PermissionScopeShop}
 	PermissionUpdateFulfillmentLine = &Permission{"update_fulfillmentline", "", "", PermissionScopeShop}
 	PermissionDeleteFulfillmentLine = &Permission{"delete_fulfillmentline", "", "", PermissionScopeShop}
-
-	PermissionCreateUserAddress = &Permission{"create_useraddress", "", "", PermissionScopeSystem}
-	PermissionReadUserAddress = &Permission{"read_useraddress", "", "", PermissionScopeSystem}
-	PermissionUpdateUserAddress = &Permission{"update_useraddress", "", "", PermissionScopeSystem}
-	PermissionDeleteUserAddress = &Permission{"delete_useraddress", "", "", PermissionScopeSystem}
-
-	PermissionCreateStatus = &Permission{"create_status", "", "", PermissionScopeSystem}
-	PermissionReadStatus = &Permission{"read_status", "", "", PermissionScopeSystem}
-	PermissionUpdateStatus = &Permission{"update_status", "", "", PermissionScopeSystem}
-	PermissionDeleteStatus = &Permission{"delete_status", "", "", PermissionScopeSystem}
 
 	PermissionCreateVoucherCollection = &Permission{"create_vouchercollection", "", "", PermissionScopeShop}
 	PermissionReadVoucherCollection = &Permission{"read_vouchercollection", "", "", PermissionScopeShop}
@@ -804,11 +851,6 @@ func initializeShopScopedPermissions() {
 	PermissionUpdateShippingMethodPostalCodeRule = &Permission{"update_shippingmethodpostalcoderule", "", "", PermissionScopeShop}
 	PermissionDeleteShippingMethodPostalCodeRule = &Permission{"delete_shippingmethodpostalcoderule", "", "", PermissionScopeShop}
 
-	PermissionCreateUploadSession = &Permission{"create_uploadsession", "", "", PermissionScopeShop}
-	PermissionReadUploadSession = &Permission{"read_uploadsession", "", "", PermissionScopeShop}
-	PermissionUpdateUploadSession = &Permission{"update_uploadsession", "", "", PermissionScopeShop}
-	PermissionDeleteUploadSession = &Permission{"delete_uploadsession", "", "", PermissionScopeShop}
-
 	PermissionCreateCheckout = &Permission{"create_checkout", "", "", PermissionScopeShop}
 	PermissionReadCheckout = &Permission{"read_checkout", "", "", PermissionScopeShop}
 	PermissionUpdateCheckout = &Permission{"update_checkout", "", "", PermissionScopeShop}
@@ -856,7 +898,6 @@ func initializeShopScopedPermissions() {
 
 	PermissionCreateUser = &Permission{"create_user", "", "", PermissionScopeSystem}
 	PermissionReadUser = &Permission{"read_user", "", "", PermissionScopeSystem}
-	PermissionUpdateUser = &Permission{"update_user", "", "", PermissionScopeSystem}
 	PermissionDeleteUser = &Permission{"delete_user", "", "", PermissionScopeSystem}
 
 	PermissionCreateVoucherCustomer = &Permission{"create_vouchercustomer", "", "", PermissionScopeShop}
@@ -1004,9 +1045,90 @@ func initializeShopScopedPermissions() {
 	PermissionUpdateGiftcardCheckout = &Permission{"update_giftcardcheckout", "", "", PermissionScopeShop}
 	PermissionDeleteGiftcardCheckout = &Permission{"delete_giftcardcheckout", "", "", PermissionScopeShop}
 
-	ShopScopedPermissions = Permissions{
-		PermissionUploadFile,
-		PermissionViewMembers,
-		PermissionEditBrand,
+	SystemGuestPermissions = Permissions{
+		PermissionReadShop,
+		PermissionReadPageTranslation,
+		PermissionReadCategoryTranslation,
+		PermissionReadProductTranslation,
+		PermissionReadProductChannelListing,
+		PermissionReadCollectionChannelListing,
+		PermissionReadVoucherTranslation,
+		PermissionReadProductVariantTranslation,
+		PermissionReadShopTranslation,
+		PermissionReadChannel,
+		PermissionReadProduct,
+		PermissionReadProductVariantMedia,
+		PermissionReadSale,
+		PermissionReadVoucher,
+		PermissionReadSaleTranslation,
+		PermissionReadCollection,
+		PermissionReadVoucherChannelListing,
+		PermissionReadProductVariant,
+		PermissionReadMenu,
+		PermissionReadVoucherCategory,
+		PermissionReadCollectionTranslation,
+		PermissionReadProductVariantChannelListing,
+		PermissionReadCategory,
+		PermissionReadPage,
 	}
+
+	SystemUserPermissions = append(
+		SystemGuestPermissions, //
+
+		PermissionReadSaleCategoryRelation,
+		PermissionInviteUser,
+		PermissionCreateShop,
+		PermissionCreatePayment,
+		PermissionReadPayment,
+		PermissionCreateOrderLine,
+		PermissionReadOrderLine,
+		PermissionUpdateOrderLine,
+		PermissionDeleteOrderLine,
+		PermissionReadSaleChannelListing,
+		PermissionReadShippingZone,
+		PermissionCreateTransaction,
+		PermissionReadTransaction,
+		PermissionUpdateTransaction,
+		PermissionCreateCheckoutLine,
+		PermissionReadCheckoutLine,
+		PermissionReadShippingMethodChannelListing,
+		PermissionReadAttributeTranslation,
+		PermissionReadAttributeValueTranslation,
+		PermissionReadGiftcard,
+		PermissionCreatePayment,
+		PermissionReadPayment,
+		PermissionReadAttribute,
+		PermissionReadShippingMethod,
+		PermissionReadShippingMethodPostalCodeRule,
+		PermissionCreateCheckout,
+		PermissionReadMenuItem,
+		PermissionReadProductMedia,
+		PermissionReadUser,
+		PermissionCreateWishlistItem,
+		PermissionReadWishlistItem,
+		PermissionUpdateWishlistItem,
+		PermissionDeleteWishlistItem,
+		PermissionCreateAddress,
+		PermissionReadAddress,
+		PermissionUpdateAddress,
+		PermissionDeleteAddress,
+		PermissionCreateOrder,
+		PermissionReadOrder,
+		PermissionUpdateOrder,
+		PermissionDeleteOrder,
+		PermissionReadShippingMethodTranslation,
+		PermissionCreateWishlist,
+		PermissionReadWishlist,
+		PermissionUpdateWishlist,
+		PermissionDeleteWishlist,
+		PermissionCreatePreference,
+		PermissionReadPreference,
+		PermissionUpdatePreference,
+		PermissionDeletePreference)
+
+	ShopStaffPermissions = append(
+		SystemUserPermissions,
+	)
+
+	ShopScopedAllPermissions = append(ShopStaffPermissions)
 }

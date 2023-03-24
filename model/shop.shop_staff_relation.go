@@ -1,5 +1,7 @@
 package model
 
+import "github.com/Masterminds/squirrel"
+
 // ShopStaffRelation represents a relation between a shop and an staff user
 type ShopStaffRelation struct {
 	Id       string `json:"id"`
@@ -7,6 +9,11 @@ type ShopStaffRelation struct {
 	StaffID  string `json:"staff_id"` //
 	CreateAt int64  `json:"create_at"`
 	EndAt    *int64 `json:"end_at"`
+}
+
+type ShopStaffRelationFilterOptions struct {
+	ShopID  squirrel.Sqlizer
+	StaffID squirrel.Sqlizer
 }
 
 func (s *ShopStaffRelation) PreSave() {
@@ -18,7 +25,7 @@ func (s *ShopStaffRelation) PreSave() {
 
 func (s *ShopStaffRelation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"shop_staff_relation.is_valid.%s.app_error",
+		"model.shop_staff_relation.is_valid.%s.app_error",
 		"shop_staff_relation_id=",
 		"ShopStaffRelation.IsValid",
 	)

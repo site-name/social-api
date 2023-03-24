@@ -200,14 +200,13 @@ func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *model.Voucher, custom
 }
 
 // ValidateVoucherOnlyForStaff validate if voucher is only for staff
-func (a *ServiceDiscount) ValidateVoucherOnlyForStaff(voucher *model.Voucher, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
+func (a *ServiceDiscount) ValidateVoucherOnlyForStaff(voucher *model.Voucher, customerID string) (*model.NotApplicable, *model.AppError) {
 	if !*voucher.OnlyForStaff {
-		return
+		return nil, nil
 	}
 
 	if !model.IsValidId(customerID) {
-		appErr = model.NewAppError("ValidateVoucherOnlyForStaff", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customerID"}, "", http.StatusBadRequest)
-		return
+		return nil, model.NewAppError("ValidateVoucherOnlyForStaff", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "customerID"}, "", http.StatusBadRequest)
 	}
 
 	// try checking if there is a relationship between the shop(owner of this voucher) and the customer
@@ -215,34 +214,21 @@ func (a *ServiceDiscount) ValidateVoucherOnlyForStaff(voucher *model.Voucher, cu
 	relation, appErr := a.srv.ShopService().ShopStaffRelationByShopIDAndStaffID(voucher.ShopID, customerID)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound || relation == nil {
-			notApplicableErr = &model.NotApplicable{
+			return &model.NotApplicable{
 				Message: "This offer is valid only for staff customers",
-			}
-			return
+			}, nil
 		}
-		// error caused by server, returns immediately
-		return
+		return nil, nil
 	}
 
-	return
+	return nil, nil
 }
 
 // VouchersByOption finds all vouchers with given option then returns them
 func (a *ServiceDiscount) VouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, *model.AppError) {
 	vouchers, err := a.srv.Store.DiscountVoucher().FilterVouchersByOption(option)
-	var (
-		statusCode int
-		errMessage string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMessage = err.Error()
-	} else if len(vouchers) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("VouchersByOption", "app.discount.error_finding_vouchers_by_option_error.app_error", nil, errMessage, statusCode)
+		return nil, model.NewAppError("VouchersByOption", "app.discount.error_finding_vouchers_by_option_error.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return vouchers, nil
@@ -267,9 +253,6 @@ func (a *ServiceDiscount) PromoCodeIsVoucher(code string) (bool, *model.AppError
 		Code: squirrel.Eq{store.VoucherTableName + ".Code": code},
 	})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusNotFound {
-			return false, nil
-		}
 		return false, appErr
 	}
 
@@ -303,19 +286,8 @@ func (s *ServiceDiscount) FilterActiveVouchers(date time.Time, channelSlug strin
 // ExpiredVouchers returns vouchers that are expired before given date (beginning of the day). If date is nil, use today instead
 func (s *ServiceDiscount) ExpiredVouchers(date *time.Time) ([]*model.Voucher, *model.AppError) {
 	expiredVouchers, err := s.srv.Store.DiscountVoucher().ExpiredVouchers(date)
-	var (
-		statusCode int
-		errMessage string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errMessage = err.Error()
-	} else if len(expiredVouchers) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("ExpiredVouchers", "app.discount.error_finding_expired_vouchers.app_error", nil, errMessage, statusCode)
+		return nil, model.NewAppError("ExpiredVouchers", "app.discount.error_finding_expired_vouchers.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return expiredVouchers, nil

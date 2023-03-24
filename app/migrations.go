@@ -161,30 +161,5 @@ func (a *App) DoAppMigrations() {
 func (s *Server) doAppMigrations() {
 	s.doAdvancedPermissionsMigration()
 	s.doSystemConsoleRolesCreationMigration()
-	// This migration always must be the last, because can be based on previous
-	// migrations. For example, it needs the guest roles migration.
-	err := s.doPermissionsMigrations()
-	if err != nil {
-		slog.Critical("(app.App).DoPermissionsMigrations failed", slog.Err(err))
-	}
 	s.doContentExtractionConfigDefaultTrueMigration()
-}
-
-func SetRolePermissionsFromConfig(roles map[string]*model.Role, cfg *model.Config) map[string]*model.Role {
-	if !*cfg.ServiceSettings.DEPRECATED_DO_NOT_USE_EnableOnlyAdminIntegrations {
-		roles[model.SystemUserRoleId].Permissions = append(
-			roles[model.SystemUserRoleId].Permissions,
-			model.PermissionManageOAuth.Id,
-		)
-	}
-
-	switch *cfg.ServiceSettings.DEPRECATED_DO_NOT_USE_AllowEditPost {
-	case model.ALLOW_EDIT_POST_ALWAYS, model.ALLOW_EDIT_POST_TIME_LIMIT:
-		roles[model.SystemAdminRoleId].Permissions = append(
-			roles[model.SystemAdminRoleId].Permissions,
-			model.PermissionEditPost.Id,
-		)
-	}
-
-	return roles
 }

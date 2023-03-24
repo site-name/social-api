@@ -29,11 +29,11 @@ type Role struct {
 
 func NewRoleFromModel(role *model.Role) *Role {
 	permissionsMap := make(map[string]bool)
-	permissions := ""
+	var permissionBuilder strings.Builder
 
 	for _, permission := range role.Permissions {
 		if !permissionsMap[permission] {
-			permissions += fmt.Sprintf(" %v", permission)
+			permissionBuilder.WriteString(" " + permission)
 			permissionsMap[permission] = true
 		}
 	}
@@ -46,7 +46,7 @@ func NewRoleFromModel(role *model.Role) *Role {
 		CreateAt:      role.CreateAt,
 		UpdateAt:      role.UpdateAt,
 		DeleteAt:      role.DeleteAt,
-		Permissions:   permissions,
+		Permissions:   permissionBuilder.String(),
 		SchemeManaged: role.SchemeManaged,
 		BuiltIn:       role.BuiltIn,
 	}
@@ -69,15 +69,6 @@ func (role Role) ToModel() *model.Role {
 
 type SqlRoleStore struct {
 	store.Store
-}
-
-type channelRolesPermissions struct {
-	GuestRoleName                string
-	UserRoleName                 string
-	AdminRoleName                string
-	HigherScopedGuestPermissions string
-	HigherScopedUserPermissions  string
-	HigherScopedAdminPermissions string
 }
 
 func NewSqlRoleStore(sqlStore store.Store) store.RoleStore {

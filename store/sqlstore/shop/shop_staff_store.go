@@ -2,7 +2,6 @@ package shop
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
@@ -67,24 +66,25 @@ func (sss *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaffRelation,
 	return &res, nil
 }
 
-// FilterByShopAndStaff finds a relation ship with given shopId and staffId
-func (sss *SqlShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*model.ShopStaffRelation, error) {
-	var result model.ShopStaffRelation
-	err := sss.GetReplicaX().Get(
-		&result,
-		`SELECT * FROM `+store.ShopStaffTableName+`
-		WHERE (
-			ShopID = ? AND StaffID = ?
-		)`,
-		shopID,
-		staffID,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ShopStaffTableName, fmt.Sprintf("ShopID=%s, StaffID=%s", shopID, staffID))
-		}
-		return nil, errors.Wrapf(err, "failed to find shop-staff relation with ShopID=%s, StaffID=%s", shopID, staffID)
+func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaffRelation, error) {
+	query := s.GetQueryBuilder().Select("*").From(store.ShopStaffTableName)
+
+	if options.ShopID != nil {
+		query = query.Where(options.ShopID)
+	}
+	if options.StaffID != nil {
+		query = query.Where(options.StaffID)
 	}
 
-	return &result, nil
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.ShopStaffRelation
+	err = s.GetReplicaX().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find shop staff relations with given opsitons")
+	}
+	return res, nil
 }

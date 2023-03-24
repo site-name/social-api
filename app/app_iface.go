@@ -29,8 +29,6 @@ type AppIface interface {
 	Config() *model.Config
 	// DoAppMigrations migrate permissions
 	DoAppMigrations()
-	// DoPermissionsMigrations execute all the permissions migrations need by the current version.
-	DoPermissionsMigrations() error
 	// GetComplianceReports returns compliances along with an app error
 	GetComplianceReports(page, perPage int) (model.Compliances, *model.AppError)
 	// GetConfigFile proxies access to the given configuration file to the underlying config store.

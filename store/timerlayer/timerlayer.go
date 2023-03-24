@@ -6750,10 +6750,10 @@ func (s *TimerLayerShopStore) Upsert(shop *model.Shop) (*model.Shop, error) {
 	return result, err
 }
 
-func (s *TimerLayerShopStaffStore) FilterByShopAndStaff(shopID string, staffID string) (*model.ShopStaffRelation, error) {
+func (s *TimerLayerShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaffRelation, error) {
 	start := timemodule.Now()
 
-	result, err := s.ShopStaffStore.FilterByShopAndStaff(shopID, staffID)
+	result, err := s.ShopStaffStore.FilterByOptions(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6761,7 +6761,7 @@ func (s *TimerLayerShopStaffStore) FilterByShopAndStaff(shopID string, staffID s
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ShopStaffStore.FilterByShopAndStaff", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("ShopStaffStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }
