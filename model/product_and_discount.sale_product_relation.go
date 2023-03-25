@@ -26,7 +26,7 @@ func (s *SaleProductRelation) PreSave() {
 
 func (s *SaleProductRelation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"sale_product_relation.is_valid.%s.app_error",
+		"model.sale_product_relation.is_valid.%s.app_error",
 		"sale_product_relation_id=",
 		"SaleProductRelation.IsValid",
 	)

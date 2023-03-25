@@ -56,7 +56,7 @@ func (p *ProductChannelListing) IsAvailableForPurchase() bool {
 
 func (p *ProductChannelListing) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"product_channel_listing.is_valid.%s.app_error",
+		"model.product_channel_listing.is_valid.%s.app_error",
 		"product_channel_listing_id=",
 		"ProductChannelListing.IsValid",
 	)

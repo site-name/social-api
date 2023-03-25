@@ -22,7 +22,7 @@ type VoucherCollectionFilterOptions struct {
 
 func (v *VoucherCollection) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"voucher_collection.is_valid.%s.app_error",
+		"model.voucher_collection.is_valid.%s.app_error",
 		"voucher_collection_id=",
 		"VoucherCollection.IsValid",
 	)

@@ -18,7 +18,7 @@ type CollectionChannelListingFilterOptions struct {
 
 func (c *CollectionChannelListing) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"collection_channel_listing.is_valid.%s.app_error",
+		"model.collection_channel_listing.is_valid.%s.app_error",
 		"collection_channel_listing_id=",
 		"CollectionChannelListing.IsValid")
 

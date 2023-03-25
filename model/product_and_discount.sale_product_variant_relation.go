@@ -27,7 +27,7 @@ func (s *SaleProductVariant) PreSave() {
 
 func (s *SaleProductVariant) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"sale_product_variant.is_valid.%s.app_error",
+		"model.sale_product_variant.is_valid.%s.app_error",
 		"sale_product_variant_id=",
 		"SaleProductVariant.IsValid",
 	)

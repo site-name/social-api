@@ -31,7 +31,7 @@ type ShippingMethodChannelListingFilterOption struct {
 
 func (s *ShippingMethodChannelListing) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"shipping_method_channel_listing.is_valid.%s.app_error",
+		"model.shipping_method_channel_listing.is_valid.%s.app_error",
 		"shipping_method_channel_listing_id=",
 		"ShippingMethodChannelListing.IsValid",
 	)

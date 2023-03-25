@@ -31,7 +31,9 @@ func (c Channel) HasOrders(ctx context.Context) (bool, error) {
 	}
 
 	// check if current user has channel management
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageChannels) {
+	if !embedCtx.App.Srv().
+		AccountService().
+		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageChannels) {
 		return false, model.NewAppError("Channel.HasOrders", ErrorUnauthorized, nil, "you are not allowed to perform this", http.StatusUnauthorized)
 	}
 

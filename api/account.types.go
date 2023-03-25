@@ -50,7 +50,7 @@ func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 		return nil, appErr
 	}
 
-	if user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == a.Address.Id {
+	if user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == a.Id {
 		return model.NewPrimitive(true), nil
 	}
 
@@ -64,12 +64,15 @@ func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 	}
 
 	// get current user
-	user, appErr := embedContext.App.Srv().AccountService().UserById(ctx, embedContext.AppContext.Session().UserId)
+	user, appErr := embedContext.App.
+		Srv().
+		AccountService().
+		UserById(ctx, embedContext.AppContext.Session().UserId)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	if user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == a.Address.Id {
+	if user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == a.Id {
 		return model.NewPrimitive(true), nil
 	}
 
@@ -149,7 +152,7 @@ type User struct {
 
 func SystemUserToGraphqlUser(u *model.User) *User {
 	if u == nil {
-		return new(User)
+		return nil
 	}
 
 	res := &User{
@@ -202,7 +205,6 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 	if u.DefaultBillingAddressID == nil {
 		return nil, nil
 	}
-
 	address, appErr := embedCtx.App.Srv().AccountService().AddressById(*u.DefaultBillingAddressID)
 	if appErr != nil {
 		return nil, appErr
@@ -333,7 +335,9 @@ func (u *User) Note(ctx context.Context) (*string, error) {
 		return nil, err
 	}
 
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageUsers, model.PermissionManageStaff) {
+	if !embedCtx.App.Srv().
+		AccountService().
+		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageUsers, model.PermissionManageStaff) {
 		return nil, model.NewAppError("user.Note", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}
 

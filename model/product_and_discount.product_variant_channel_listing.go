@@ -86,7 +86,7 @@ func (ps ProductVariantChannelListings) DeepCopy() ProductVariantChannelListings
 
 func (p *ProductVariantChannelListing) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"product_variant_channel_listing.is_valid.%s.app_error",
+		"model.product_variant_channel_listing.is_valid.%s.app_error",
 		"product_variant_channel_listing_id=",
 		"ProductVariantChannelListing.IsValid",
 	)

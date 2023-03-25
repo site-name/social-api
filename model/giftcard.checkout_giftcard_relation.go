@@ -9,8 +9,8 @@ type GiftCardCheckout struct {
 
 func (o *GiftCardCheckout) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"order_giftcard.is_valid.%s.app_error",
-		"order_giftcard_id=",
+		"model.giftcard_checkout.is_valid.%s.app_error",
+		"giftcard_checkout_id=",
 		"GiftCardCheckout.IsValid",
 	)
 	if !IsValidId(o.Id) {

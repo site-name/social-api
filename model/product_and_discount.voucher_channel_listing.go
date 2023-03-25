@@ -80,7 +80,7 @@ func (vs VoucherChannelListingList) PopulateNonDbFields() {
 
 func (v *VoucherChannelListing) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"voucher_channel_listing.is_valid.%s.app_error",
+		"model.voucher_channel_listing.is_valid.%s.app_error",
 		"voucher_channel_listing_id=",
 		"VoucherChannelListing.IsValid",
 	)

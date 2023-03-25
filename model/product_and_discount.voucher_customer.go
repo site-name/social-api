@@ -26,7 +26,7 @@ func (vc *VoucherCustomer) PreSave() {
 
 func (vc *VoucherCustomer) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"voucher_customer.is_valid.%s.app_error",
+		"model.voucher_customer.is_valid.%s.app_error",
 		"voucher_customer_id=",
 		"VoucherCustomer.IsValid",
 	)

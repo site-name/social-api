@@ -19,7 +19,7 @@ type WarehouseShippingZoneFilterOption struct {
 
 func (w *WarehouseShippingZone) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"warehouse_shipping_zone.is_valid.%s.app_error",
+		"model.warehouse_shipping_zone.is_valid.%s.app_error",
 		"warehouse_shipping_zone_id=",
 		"WarehouseShippingZone.IsValid",
 	)

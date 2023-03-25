@@ -19,7 +19,7 @@ func (w *WishlistItemProductVariant) ToJSON() string {
 
 func (w *WishlistItemProductVariant) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"wishlist_product_variant.is_valid.%s.app_error",
+		"model.wishlist_product_variant.is_valid.%s.app_error",
 		"wishlist_product_variant_id=",
 		"WishlistItemProductVariant.IsValid",
 	)
