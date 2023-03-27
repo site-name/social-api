@@ -83,7 +83,7 @@ type PaymentService interface {
 	// billing/shipping addresses for optional fraud-prevention mechanisms.
 	CreatePaymentInformation(payMent *model.Payment, paymentToken *string, amount *decimal.Decimal, customerId *string, storeSource bool, additionalData map[string]interface{}) (*model.PaymentData, *model.AppError)
 	// CreateTransaction reate a transaction based on transaction kind and gateway response.
-	CreateTransaction(paymentID string, kind string, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string, isSuccess bool) (*model.PaymentTransaction, *model.AppError)
+	CreateTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string, isSuccess bool) (*model.PaymentTransaction, *model.AppError)
 	// FetchCustomerId Retrieve users customer_id stored for desired gateway.
 	// returning string could be "" or long string
 	FetchCustomerId(user *model.User, gateway string) (string, *model.AppError)
@@ -119,7 +119,7 @@ type PaymentService interface {
 	ValidateGatewayResponse(response *model.GatewayResponse) *model.GatewayError
 	GetAllPaymentTransactions(paymentID string) ([]*model.PaymentTransaction, *model.AppError)
 	GetAlreadyProcessedTransaction(paymentID string, gatewayResponse *model.GatewayResponse) (*model.PaymentTransaction, *model.AppError)
-	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model.AppError)
+	GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model.AppError)
 	GetLastOrderPayment(orderID string) (*model.Payment, *model.AppError)
 	GetLastPaymentTransaction(paymentID string) (*model.PaymentTransaction, *model.AppError)
 	GetPaymentToken(payMent *model.Payment) (string, *model.PaymentError, *model.AppError)

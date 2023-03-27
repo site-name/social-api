@@ -43,11 +43,13 @@ const (
 	YEAR  TimePeriodType = "year"
 )
 
-var TimePeriodMap = map[TimePeriodType]string{
-	DAY:   "Day",
-	WEEK:  "Week",
-	MONTH: "Month",
-	YEAR:  "Year",
+func (t TimePeriodType) IsValid() bool {
+	switch t {
+	case DAY, WEEK, MONTH, YEAR:
+		return true
+	default:
+		return false
+	}
 }
 
 // some default values for model fields

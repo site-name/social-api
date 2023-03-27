@@ -269,7 +269,7 @@ func (a *ServicePayment) GetAlreadyProcessedTransaction(paymentID string, gatewa
 }
 
 // CreateTransaction reate a transaction based on transaction kind and gateway response.
-func (a *ServicePayment) CreateTransaction(paymentID string, kind string, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string, isSuccess bool) (*model.PaymentTransaction, *model.AppError) {
+func (a *ServicePayment) CreateTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string, isSuccess bool) (*model.PaymentTransaction, *model.AppError) {
 	// Default values for token, amount, currency are only used in cases where
 	// response from gateway was invalid or an exception occured
 	if gatewayResponse == nil {
@@ -306,7 +306,7 @@ func (a *ServicePayment) CreateTransaction(paymentID string, kind string, paymen
 	return a.SaveTransaction(nil, tran)
 }
 
-func (a *ServicePayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID, kind string, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model.AppError) {
+func (a *ServicePayment) GetAlreadyProcessedTransactionOrCreateNewTransaction(paymentID string, kind model.TransactionKind, paymentInformation *model.PaymentData, actionRequired bool, gatewayResponse *model.GatewayResponse, errorMsg string) (*model.PaymentTransaction, *model.AppError) {
 	if gatewayResponse != nil && gatewayResponse.TransactionAlreadyProcessed {
 		transaction, appErr := a.GetAlreadyProcessedTransaction(paymentID, gatewayResponse)
 		if appErr != nil {
@@ -360,7 +360,7 @@ func (a *ServicePayment) ValidateGatewayResponse(response *model.GatewayResponse
 	if _, ok := model.TransactionKindString[response.Kind]; !ok {
 		validTransactionKinds := []string{}
 		for key := range model.TransactionKindString {
-			validTransactionKinds = append(validTransactionKinds, key)
+			validTransactionKinds = append(validTransactionKinds, key.String())
 		}
 
 		return &model.GatewayError{
@@ -448,7 +448,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 		}
 
 	case model.PENDING_:
-		payMent.ChargeStatus = model.PENDING_
+		payMent.ChargeStatus = model.PENDING
 		changedFields = append(changedFields, "charge_status")
 
 	case model.CANCEL:

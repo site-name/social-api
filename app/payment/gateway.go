@@ -497,7 +497,7 @@ func (a *ServicePayment) fetchGatewayResponse(paymentFunc interfaces.PaymentMeth
 	return res, errMsg
 }
 
-func (a *ServicePayment) getPastTransactionToken(payMent *model.Payment, kind string) (string, *model.PaymentError, *model.AppError) {
+func (a *ServicePayment) getPastTransactionToken(payMent *model.Payment, kind model.TransactionKind) (string, *model.PaymentError, *model.AppError) {
 	transactions, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
 		PaymentID: squirrel.Eq{store.TransactionTableName + ".PaymentID": payMent.Id},
 		Kind:      squirrel.Eq{store.TransactionTableName + ".Kind": kind},

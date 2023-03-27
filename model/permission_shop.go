@@ -6,10 +6,10 @@ var (
 	PermissionUpdateWarehouse *Permission
 	PermissionDeleteWarehouse *Permission
 
-	PermissionCreateAssignedPageAttribute *Permission
-	PermissionReadAssignedPageAttribute   *Permission
-	PermissionUpdateAssignedPageAttribute *Permission
-	PermissionDeleteAssignedPageAttribute *Permission
+	// PermissionCreateAssignedPageAttribute *Permission
+	// PermissionReadAssignedPageAttribute   *Permission
+	// PermissionUpdateAssignedPageAttribute *Permission
+	// PermissionDeleteAssignedPageAttribute *Permission
 
 	PermissionCreateSaleChannelListing *Permission
 	PermissionReadSaleChannelListing   *Permission
@@ -41,10 +41,10 @@ var (
 	PermissionUpdateOpenExchangeRate *Permission // system scoped since only system admin can perform CRUD
 	PermissionDeleteOpenExchangeRate *Permission // system scoped since only system admin can perform CRUD
 
-	PermissionCreateAssignedVariantAttributeValue *Permission
-	PermissionReadAssignedVariantAttributeValue   *Permission
-	PermissionUpdateAssignedVariantAttributeValue *Permission
-	PermissionDeleteAssignedVariantAttributeValue *Permission
+	// PermissionCreateAssignedVariantAttributeValue *Permission
+	// PermissionReadAssignedVariantAttributeValue   *Permission
+	// PermissionUpdateAssignedVariantAttributeValue *Permission
+	// PermissionDeleteAssignedVariantAttributeValue *Permission
 
 	PermissionCreateShippingZone *Permission
 	PermissionReadShippingZone   *Permission
@@ -66,35 +66,36 @@ var (
 	PermissionUpdateAttributePage *Permission
 	PermissionDeleteAttributePage *Permission
 
-	PermissionCreateOrderEvent *Permission
-	PermissionReadOrderEvent   *Permission
-	PermissionUpdateOrderEvent *Permission
-	PermissionDeleteOrderEvent *Permission
+	// PermissionCreateOrderEvent *Permission
+	// PermissionDeleteOrderEvent *Permission
+	// PermissionUpdateOrderEvent *Permission
+
+	PermissionReadOrderEvent *Permission
 
 	PermissionCreatePreOrderAllocation *Permission
 	PermissionReadPreOrderAllocation   *Permission
 	PermissionUpdatePreOrderAllocation *Permission
 	PermissionDeletePreOrderAllocation *Permission
 
-	PermissionCreateCustomerEvent *Permission
-	PermissionReadCustomerEvent   *Permission
-	PermissionUpdateCustomerEvent *Permission
-	PermissionDeleteCustomerEvent *Permission
+	// PermissionCreateCustomerEvent *Permission
+	PermissionReadCustomerEvent *Permission
+	// PermissionUpdateCustomerEvent *Permission
+	// PermissionDeleteCustomerEvent *Permission
 
 	PermissionCreateAttributeProduct *Permission
 	PermissionReadAttributeProduct   *Permission
 	PermissionUpdateAttributeProduct *Permission
 	PermissionDeleteAttributeProduct *Permission
 
-	PermissionCreateCsvExportEvent *Permission
-	PermissionReadCsvExportEvent   *Permission
-	PermissionUpdateCsvExportEvent *Permission
-	PermissionDeleteCsvExportEvent *Permission
+	// PermissionCreateCsvExportEvent *Permission
+	PermissionReadCsvExportEvent *Permission
+	// PermissionUpdateCsvExportEvent *Permission
+	// PermissionDeleteCsvExportEvent *Permission
 
-	PermissionCreateCsvExportFile *Permission
-	PermissionReadCsvExportFile   *Permission
-	PermissionUpdateCsvExportFile *Permission
-	PermissionDeleteCsvExportFile *Permission
+	// PermissionCreateCsvExportFile *Permission
+	PermissionReadCsvExportFile *Permission
+	// PermissionUpdateCsvExportFile *Permission
+	// PermissionDeleteCsvExportFile *Permission
 
 	PermissionCreateCustomerNote *Permission
 	PermissionReadCustomerNote   *Permission
@@ -114,7 +115,7 @@ var (
 	PermissionCreateShopStaff *Permission
 	PermissionReadShopStaff   *Permission
 	PermissionUpdateShopStaff *Permission
-	PermissionDeleteShopStaff *Permission
+	// PermissionDeleteShopStaff *Permission
 
 	PermissionCreateProductTranslation *Permission
 	PermissionReadProductTranslation   *Permission
@@ -126,10 +127,10 @@ var (
 	PermissionUpdatePluginConfiguration *Permission // each shop has their own configuration
 	PermissionDeletePluginConfiguration *Permission // each shop has their own configuration
 
-	PermissionCreateAudit *Permission
-	PermissionReadAudit   *Permission
-	PermissionUpdateAudit *Permission
-	PermissionDeleteAudit *Permission
+	PermissionCreateAudit *Permission // system scoped
+	PermissionReadAudit   *Permission // system scoped
+	PermissionUpdateAudit *Permission // system scoped
+	PermissionDeleteAudit *Permission // system scoped
 
 	PermissionCreateProductChannelListing *Permission
 	PermissionReadProductChannelListing   *Permission
@@ -146,10 +147,10 @@ var (
 	PermissionUpdateVoucherTranslation *Permission
 	PermissionDeleteVoucherTranslation *Permission
 
-	PermissionCreateClusterDiscovery *Permission
-	PermissionReadClusterDiscovery   *Permission
-	PermissionUpdateClusterDiscovery *Permission
-	PermissionDeleteClusterDiscovery *Permission
+	PermissionCreateClusterDiscovery *Permission // system scoped
+	PermissionReadClusterDiscovery   *Permission // system scoped
+	PermissionUpdateClusterDiscovery *Permission // system scoped
+	PermissionDeleteClusterDiscovery *Permission // system scoped
 
 	PermissionCreateProductVariantTranslation *Permission
 	PermissionReadProductVariantTranslation   *Permission
@@ -171,18 +172,20 @@ var (
 	PermissionUpdateRole *Permission
 	PermissionDeleteRole *Permission
 
-	PermissionCreateCompliance                 *Permission
-	PermissionReadCompliance                   *Permission
-	PermissionUpdateCompliance                 *Permission
-	PermissionDeleteCompliance                 *Permission
+	PermissionCreateCompliance *Permission // system scoped
+	PermissionReadCompliance   *Permission // system scoped
+	PermissionUpdateCompliance *Permission // system scoped
+	PermissionDeleteCompliance *Permission // system scoped
+
 	PermissionCreateStaffNotificationRecipient *Permission
 	PermissionReadStaffNotificationRecipient   *Permission
 	PermissionUpdateStaffNotificationRecipient *Permission
 	PermissionDeleteStaffNotificationRecipient *Permission
-	PermissionCreatePluginKeyValueStore        *Permission
-	PermissionReadPluginKeyValueStore          *Permission
-	PermissionUpdatePluginKeyValueStore        *Permission
-	PermissionDeletePluginKeyValueStore        *Permission
+
+	// PermissionCreatePluginKeyValueStore *Permission
+	// PermissionReadPluginKeyValueStore   *Permission
+	// PermissionUpdatePluginKeyValueStore *Permission
+	// PermissionDeletePluginKeyValueStore *Permission
 
 	PermissionCreateChannel *Permission // system admin can do this only
 	PermissionReadChannel   *Permission // system admin can do this only
@@ -204,10 +207,10 @@ var (
 	PermissionUpdateProduct *Permission
 	PermissionDeleteProduct *Permission
 
-	PermissionCreateTermsOfService *Permission
-	PermissionReadTermsOfService   *Permission
-	PermissionUpdateTermsOfService *Permission
-	PermissionDeleteTermsOfService *Permission
+	PermissionCreateTermsOfService *Permission // system scoped
+	PermissionReadTermsOfService   *Permission // system scoped
+	PermissionUpdateTermsOfService *Permission // system scoped
+	PermissionDeleteTermsOfService *Permission // system scoped
 
 	PermissionCreateOrderDiscount *Permission
 	PermissionReadOrderDiscount   *Permission
@@ -236,12 +239,12 @@ var (
 
 	PermissionCreatePayment *Permission
 	PermissionReadPayment   *Permission
-	PermissionUpdatePayment *Permission
-	PermissionDeletePayment *Permission
+	// PermissionUpdatePayment *Permission
+	// PermissionDeletePayment *Permission
 
 	PermissionCreateToken *Permission
 	PermissionReadToken   *Permission
-	PermissionUpdateToken *Permission
+	// PermissionUpdateToken *Permission
 	PermissionDeleteToken *Permission
 
 	PermissionCreateAttribute *Permission
@@ -259,15 +262,15 @@ var (
 	PermissionUpdateShippingMethod *Permission
 	PermissionDeleteShippingMethod *Permission
 
-	PermissionCreateShippingMethodPostalCodeRule *Permission
-	PermissionReadShippingMethodPostalCodeRule   *Permission
-	PermissionUpdateShippingMethodPostalCodeRule *Permission
-	PermissionDeleteShippingMethodPostalCodeRule *Permission
+	// PermissionCreateShippingMethodPostalCodeRule *Permission
+	PermissionReadShippingMethodPostalCodeRule *Permission
+	// PermissionUpdateShippingMethodPostalCodeRule *Permission
+	// PermissionDeleteShippingMethodPostalCodeRule *Permission
 
 	PermissionCreateCheckout *Permission
 	PermissionReadCheckout   *Permission
 	PermissionUpdateCheckout *Permission
-	PermissionDeleteCheckout *Permission
+	// PermissionDeleteCheckout *Permission
 
 	PermissionCreateAllocation *Permission
 	PermissionReadAllocation   *Permission
@@ -373,20 +376,20 @@ var (
 	PermissionUpdateShippingMethodTranslation *Permission
 	PermissionDeleteShippingMethodTranslation *Permission
 
-	PermissionCreateFileInfo *Permission
-	PermissionReadFileInfo   *Permission
-	PermissionUpdateFileInfo *Permission
-	PermissionDeleteFileInfo *Permission
+	// PermissionCreateFileInfo *Permission
+	// PermissionReadFileInfo   *Permission
+	// PermissionUpdateFileInfo *Permission
+	// PermissionDeleteFileInfo *Permission
 
 	PermissionCreatePage *Permission
 	PermissionReadPage   *Permission
 	PermissionUpdatePage *Permission
 	PermissionDeletePage *Permission
 
-	PermissionCreateInvoiceEvent *Permission
-	PermissionReadInvoiceEvent   *Permission
-	PermissionUpdateInvoiceEvent *Permission
-	PermissionDeleteInvoiceEvent *Permission
+	// PermissionCreateInvoiceEvent *Permission
+	// PermissionReadInvoiceEvent   *Permission
+	// PermissionUpdateInvoiceEvent *Permission
+	// PermissionDeleteInvoiceEvent *Permission
 
 	PermissionCreateInvoice *Permission
 	PermissionReadInvoice   *Permission
@@ -403,10 +406,10 @@ var (
 	PermissionUpdatePreference *Permission
 	PermissionDeletePreference *Permission
 
-	PermissionCreateAssignedProductAttribute *Permission
-	PermissionReadAssignedProductAttribute   *Permission
-	PermissionUpdateAssignedProductAttribute *Permission
-	PermissionDeleteAssignedProductAttribute *Permission
+	// PermissionCreateAssignedProductAttribute *Permission
+	// PermissionReadAssignedProductAttribute   *Permission
+	// PermissionUpdateAssignedProductAttribute *Permission
+	// PermissionDeleteAssignedProductAttribute *Permission
 
 	PermissionCreatePageType *Permission
 	PermissionReadPageType   *Permission
@@ -423,20 +426,20 @@ var (
 	PermissionUpdateAttributeVariant *Permission
 	PermissionDeleteAttributeVariant *Permission
 
-	PermissionCreateAssignedPageAttributeValue *Permission
-	PermissionReadAssignedPageAttributeValue   *Permission
-	PermissionUpdateAssignedPageAttributeValue *Permission
-	PermissionDeleteAssignedPageAttributeValue *Permission
+	// PermissionCreateAssignedPageAttributeValue *Permission
+	// PermissionReadAssignedPageAttributeValue   *Permission
+	// PermissionUpdateAssignedPageAttributeValue *Permission
+	// PermissionDeleteAssignedPageAttributeValue *Permission
 
 	PermissionCreateShippingZoneChannel *Permission
 	PermissionReadShippingZoneChannel   *Permission
 	PermissionUpdateShippingZoneChannel *Permission
 	PermissionDeleteShippingZoneChannel *Permission
 
-	PermissionCreateGiftcardEvent *Permission
-	PermissionReadGiftcardEvent   *Permission
-	PermissionUpdateGiftcardEvent *Permission
-	PermissionDeleteGiftcardEvent *Permission
+	// PermissionCreateGiftcardEvent *Permission
+	// PermissionReadGiftcardEvent   *Permission
+	// PermissionUpdateGiftcardEvent *Permission
+	// PermissionDeleteGiftcardEvent *Permission
 )
 
 // ShopScopedAllPermissions contains all shop-related permissions
@@ -451,10 +454,10 @@ func initializeShopScopedPermissions() {
 	PermissionUpdateWarehouse = &Permission{"update_warehouse", "", "", PermissionScopeShop}
 	PermissionDeleteWarehouse = &Permission{"delete_warehouse", "", "", PermissionScopeShop}
 
-	PermissionCreateAssignedPageAttribute = &Permission{"create_assignedpageattribute", "", "", PermissionScopeShop}
-	PermissionReadAssignedPageAttribute = &Permission{"read_assignedpageattribute", "", "", PermissionScopeShop}
-	PermissionUpdateAssignedPageAttribute = &Permission{"update_assignedpageattribute", "", "", PermissionScopeShop}
-	PermissionDeleteAssignedPageAttribute = &Permission{"delete_assignedpageattribute", "", "", PermissionScopeShop}
+	// PermissionCreateAssignedPageAttribute = &Permission{"create_assignedpageattribute", "", "", PermissionScopeShop}
+	// PermissionReadAssignedPageAttribute = &Permission{"read_assignedpageattribute", "", "", PermissionScopeShop}
+	// PermissionUpdateAssignedPageAttribute = &Permission{"update_assignedpageattribute", "", "", PermissionScopeShop}
+	// PermissionDeleteAssignedPageAttribute = &Permission{"delete_assignedpageattribute", "", "", PermissionScopeShop}
 
 	PermissionCreateSaleChannelListing = &Permission{"create_salechannellisting", "", "", PermissionScopeShop}
 	PermissionReadSaleChannelListing = &Permission{"read_salechannellisting", "", "", PermissionScopeShop}
@@ -486,10 +489,10 @@ func initializeShopScopedPermissions() {
 	PermissionUpdateOpenExchangeRate = &Permission{"update_openexchangerate", "", "", PermissionScopeSystem}
 	PermissionDeleteOpenExchangeRate = &Permission{"delete_openexchangerate", "", "", PermissionScopeSystem}
 
-	PermissionCreateAssignedVariantAttributeValue = &Permission{"create_assignedvariantattributevalue", "", "", PermissionScopeShop}
-	PermissionReadAssignedVariantAttributeValue = &Permission{"read_assignedvariantattributevalue", "", "", PermissionScopeShop}
-	PermissionUpdateAssignedVariantAttributeValue = &Permission{"update_assignedvariantattributevalue", "", "", PermissionScopeShop}
-	PermissionDeleteAssignedVariantAttributeValue = &Permission{"delete_assignedvariantattributevalue", "", "", PermissionScopeShop}
+	// PermissionCreateAssignedVariantAttributeValue = &Permission{"create_assignedvariantattributevalue", "", "", PermissionScopeShop}
+	// PermissionReadAssignedVariantAttributeValue = &Permission{"read_assignedvariantattributevalue", "", "", PermissionScopeShop}
+	// PermissionUpdateAssignedVariantAttributeValue = &Permission{"update_assignedvariantattributevalue", "", "", PermissionScopeShop}
+	// PermissionDeleteAssignedVariantAttributeValue = &Permission{"delete_assignedvariantattributevalue", "", "", PermissionScopeShop}
 
 	PermissionCreateShippingZone = &Permission{"create_shippingzone", "", "", PermissionScopeShop}
 	PermissionReadShippingZone = &Permission{"read_shippingzone", "", "", PermissionScopeShop}
@@ -511,35 +514,35 @@ func initializeShopScopedPermissions() {
 	PermissionUpdateAttributePage = &Permission{"update_attributepage", "", "", PermissionScopeShop}
 	PermissionDeleteAttributePage = &Permission{"delete_attributepage", "", "", PermissionScopeShop}
 
-	PermissionCreateOrderEvent = &Permission{"create_orderevent", "", "", PermissionScopeShop}
+	// PermissionCreateOrderEvent = &Permission{"create_orderevent", "", "", PermissionScopeShop}
 	PermissionReadOrderEvent = &Permission{"read_orderevent", "", "", PermissionScopeShop}
-	PermissionUpdateOrderEvent = &Permission{"update_orderevent", "", "", PermissionScopeShop}
-	PermissionDeleteOrderEvent = &Permission{"delete_orderevent", "", "", PermissionScopeShop}
+	// PermissionUpdateOrderEvent = &Permission{"update_orderevent", "", "", PermissionScopeShop}
+	// PermissionDeleteOrderEvent = &Permission{"delete_orderevent", "", "", PermissionScopeShop}
 
 	PermissionCreatePreOrderAllocation = &Permission{"create_preorderallocation", "", "", PermissionScopeShop}
 	PermissionReadPreOrderAllocation = &Permission{"read_preorderallocation", "", "", PermissionScopeShop}
 	PermissionUpdatePreOrderAllocation = &Permission{"update_preorderallocation", "", "", PermissionScopeShop}
 	PermissionDeletePreOrderAllocation = &Permission{"delete_preorderallocation", "", "", PermissionScopeShop}
 
-	PermissionCreateCustomerEvent = &Permission{"create_customerevent", "", "", PermissionScopeShop}
+	// PermissionCreateCustomerEvent = &Permission{"create_customerevent", "", "", PermissionScopeShop}
 	PermissionReadCustomerEvent = &Permission{"read_customerevent", "", "", PermissionScopeShop}
-	PermissionUpdateCustomerEvent = &Permission{"update_customerevent", "", "", PermissionScopeShop}
-	PermissionDeleteCustomerEvent = &Permission{"delete_customerevent", "", "", PermissionScopeShop}
+	// PermissionUpdateCustomerEvent = &Permission{"update_customerevent", "", "", PermissionScopeShop}
+	// PermissionDeleteCustomerEvent = &Permission{"delete_customerevent", "", "", PermissionScopeShop}
 
 	PermissionCreateAttributeProduct = &Permission{"create_attributeproduct", "", "", PermissionScopeShop}
 	PermissionReadAttributeProduct = &Permission{"read_attributeproduct", "", "", PermissionScopeShop}
 	PermissionUpdateAttributeProduct = &Permission{"update_attributeproduct", "", "", PermissionScopeShop}
 	PermissionDeleteAttributeProduct = &Permission{"delete_attributeproduct", "", "", PermissionScopeShop}
 
-	PermissionCreateCsvExportEvent = &Permission{"create_csvexportevent", "", "", PermissionScopeShop}
+	// PermissionCreateCsvExportEvent = &Permission{"create_csvexportevent", "", "", PermissionScopeShop}
 	PermissionReadCsvExportEvent = &Permission{"read_csvexportevent", "", "", PermissionScopeShop}
-	PermissionUpdateCsvExportEvent = &Permission{"update_csvexportevent", "", "", PermissionScopeShop}
-	PermissionDeleteCsvExportEvent = &Permission{"delete_csvexportevent", "", "", PermissionScopeShop}
+	// PermissionUpdateCsvExportEvent = &Permission{"update_csvexportevent", "", "", PermissionScopeShop}
+	// PermissionDeleteCsvExportEvent = &Permission{"delete_csvexportevent", "", "", PermissionScopeShop}
 
-	PermissionCreateCsvExportFile = &Permission{"create_csvexportfile", "", "", PermissionScopeShop}
+	// PermissionCreateCsvExportFile = &Permission{"create_csvexportfile", "", "", PermissionScopeShop}
 	PermissionReadCsvExportFile = &Permission{"read_csvexportfile", "", "", PermissionScopeShop}
-	PermissionUpdateCsvExportFile = &Permission{"update_csvexportfile", "", "", PermissionScopeShop}
-	PermissionDeleteCsvExportFile = &Permission{"delete_csvexportfile", "", "", PermissionScopeShop}
+	// PermissionUpdateCsvExportFile = &Permission{"update_csvexportfile", "", "", PermissionScopeShop}
+	// PermissionDeleteCsvExportFile = &Permission{"delete_csvexportfile", "", "", PermissionScopeShop}
 
 	PermissionCreateCustomerNote = &Permission{"create_customernote", "", "", PermissionScopeShop}
 	PermissionReadCustomerNote = &Permission{"read_customernote", "", "", PermissionScopeShop}
@@ -559,7 +562,7 @@ func initializeShopScopedPermissions() {
 	PermissionCreateShopStaff = &Permission{"create_shopstaff", "", "", PermissionScopeShop}
 	PermissionReadShopStaff = &Permission{"read_shopstaff", "", "", PermissionScopeShop}
 	PermissionUpdateShopStaff = &Permission{"update_shopstaff", "", "", PermissionScopeShop}
-	PermissionDeleteShopStaff = &Permission{"delete_shopstaff", "", "", PermissionScopeShop}
+	// PermissionDeleteShopStaff = &Permission{"delete_shopstaff", "", "", PermissionScopeShop}
 
 	PermissionCreateProductTranslation = &Permission{"create_producttranslation", "", "", PermissionScopeShop}
 	PermissionReadProductTranslation = &Permission{"read_producttranslation", "", "", PermissionScopeShop}
@@ -626,10 +629,10 @@ func initializeShopScopedPermissions() {
 	PermissionUpdateStaffNotificationRecipient = &Permission{"update_staffnotificationrecipient", "", "", PermissionScopeShop}
 	PermissionDeleteStaffNotificationRecipient = &Permission{"delete_staffnotificationrecipient", "", "", PermissionScopeShop}
 
-	PermissionCreatePluginKeyValueStore = &Permission{"create_pluginkeyvaluestore", "", "", PermissionScopeSystem}
-	PermissionReadPluginKeyValueStore = &Permission{"read_pluginkeyvaluestore", "", "", PermissionScopeSystem}
-	PermissionUpdatePluginKeyValueStore = &Permission{"update_pluginkeyvaluestore", "", "", PermissionScopeSystem}
-	PermissionDeletePluginKeyValueStore = &Permission{"delete_pluginkeyvaluestore", "", "", PermissionScopeSystem}
+	// PermissionCreatePluginKeyValueStore = &Permission{"create_pluginkeyvaluestore", "", "", PermissionScopeSystem}
+	// PermissionReadPluginKeyValueStore = &Permission{"read_pluginkeyvaluestore", "", "", PermissionScopeSystem}
+	// PermissionUpdatePluginKeyValueStore = &Permission{"update_pluginkeyvaluestore", "", "", PermissionScopeSystem}
+	// PermissionDeletePluginKeyValueStore = &Permission{"delete_pluginkeyvaluestore", "", "", PermissionScopeSystem}
 
 	PermissionCreateChannel = &Permission{"create_channel", "", "", PermissionScopeSystem}
 	PermissionReadChannel = &Permission{"read_channel", "", "", PermissionScopeSystem}
@@ -683,12 +686,12 @@ func initializeShopScopedPermissions() {
 
 	PermissionCreatePayment = &Permission{"create_payment", "", "", PermissionScopeShop}
 	PermissionReadPayment = &Permission{"read_payment", "", "", PermissionScopeShop}
-	PermissionUpdatePayment = &Permission{"update_payment", "", "", PermissionScopeShop}
-	PermissionDeletePayment = &Permission{"delete_payment", "", "", PermissionScopeShop}
+	// PermissionUpdatePayment = &Permission{"update_payment", "", "", PermissionScopeShop}
+	// PermissionDeletePayment = &Permission{"delete_payment", "", "", PermissionScopeShop}
 
 	PermissionCreateToken = &Permission{"create_token", "", "", PermissionScopeSystem}
 	PermissionReadToken = &Permission{"read_token", "", "", PermissionScopeSystem}
-	PermissionUpdateToken = &Permission{"update_token", "", "", PermissionScopeSystem}
+	// PermissionUpdateToken = &Permission{"update_token", "", "", PermissionScopeSystem}
 	PermissionDeleteToken = &Permission{"delete_token", "", "", PermissionScopeSystem}
 
 	PermissionCreateAttribute = &Permission{"create_attribute", "", "", PermissionScopeShop}
@@ -706,15 +709,15 @@ func initializeShopScopedPermissions() {
 	PermissionUpdateShippingMethod = &Permission{"update_shippingmethod", "", "", PermissionScopeShop}
 	PermissionDeleteShippingMethod = &Permission{"delete_shippingmethod", "", "", PermissionScopeShop}
 
-	PermissionCreateShippingMethodPostalCodeRule = &Permission{"create_shippingmethodpostalcoderule", "", "", PermissionScopeShop}
+	// PermissionCreateShippingMethodPostalCodeRule = &Permission{"create_shippingmethodpostalcoderule", "", "", PermissionScopeShop}
 	PermissionReadShippingMethodPostalCodeRule = &Permission{"read_shippingmethodpostalcoderule", "", "", PermissionScopeShop}
-	PermissionUpdateShippingMethodPostalCodeRule = &Permission{"update_shippingmethodpostalcoderule", "", "", PermissionScopeShop}
-	PermissionDeleteShippingMethodPostalCodeRule = &Permission{"delete_shippingmethodpostalcoderule", "", "", PermissionScopeShop}
+	// PermissionUpdateShippingMethodPostalCodeRule = &Permission{"update_shippingmethodpostalcoderule", "", "", PermissionScopeShop}
+	// PermissionDeleteShippingMethodPostalCodeRule = &Permission{"delete_shippingmethodpostalcoderule", "", "", PermissionScopeShop}
 
 	PermissionCreateCheckout = &Permission{"create_checkout", "", "", PermissionScopeShop}
 	PermissionReadCheckout = &Permission{"read_checkout", "", "", PermissionScopeShop}
 	PermissionUpdateCheckout = &Permission{"update_checkout", "", "", PermissionScopeShop}
-	PermissionDeleteCheckout = &Permission{"delete_checkout", "", "", PermissionScopeShop}
+	// PermissionDeleteCheckout = &Permission{"delete_checkout", "", "", PermissionScopeShop}
 
 	PermissionCreateAllocation = &Permission{"create_allocation", "", "", PermissionScopeShop}
 	PermissionReadAllocation = &Permission{"read_allocation", "", "", PermissionScopeShop}
@@ -820,20 +823,20 @@ func initializeShopScopedPermissions() {
 	PermissionUpdateShippingMethodTranslation = &Permission{"update_shippingmethodtranslation", "", "", PermissionScopeShop}
 	PermissionDeleteShippingMethodTranslation = &Permission{"delete_shippingmethodtranslation", "", "", PermissionScopeShop}
 
-	PermissionCreateFileInfo = &Permission{"create_fileinfo", "", "", PermissionScopeShop}
-	PermissionReadFileInfo = &Permission{"read_fileinfo", "", "", PermissionScopeShop}
-	PermissionUpdateFileInfo = &Permission{"update_fileinfo", "", "", PermissionScopeShop}
-	PermissionDeleteFileInfo = &Permission{"delete_fileinfo", "", "", PermissionScopeShop}
+	// PermissionCreateFileInfo = &Permission{"create_fileinfo", "", "", PermissionScopeShop}
+	// PermissionReadFileInfo = &Permission{"read_fileinfo", "", "", PermissionScopeShop}
+	// PermissionUpdateFileInfo = &Permission{"update_fileinfo", "", "", PermissionScopeShop}
+	// PermissionDeleteFileInfo = &Permission{"delete_fileinfo", "", "", PermissionScopeShop}
 
 	PermissionCreatePage = &Permission{"create_page", "", "", PermissionScopeShop}
 	PermissionReadPage = &Permission{"read_page", "", "", PermissionScopeShop}
 	PermissionUpdatePage = &Permission{"update_page", "", "", PermissionScopeShop}
 	PermissionDeletePage = &Permission{"delete_page", "", "", PermissionScopeShop}
 
-	PermissionCreateInvoiceEvent = &Permission{"create_invoiceevent", "", "", PermissionScopeShop}
-	PermissionReadInvoiceEvent = &Permission{"read_invoiceevent", "", "", PermissionScopeShop}
-	PermissionUpdateInvoiceEvent = &Permission{"update_invoiceevent", "", "", PermissionScopeShop}
-	PermissionDeleteInvoiceEvent = &Permission{"delete_invoiceevent", "", "", PermissionScopeShop}
+	// PermissionCreateInvoiceEvent = &Permission{"create_invoiceevent", "", "", PermissionScopeShop}
+	// PermissionReadInvoiceEvent = &Permission{"read_invoiceevent", "", "", PermissionScopeShop}
+	// PermissionUpdateInvoiceEvent = &Permission{"update_invoiceevent", "", "", PermissionScopeShop}
+	// PermissionDeleteInvoiceEvent = &Permission{"delete_invoiceevent", "", "", PermissionScopeShop}
 
 	PermissionCreateInvoice = &Permission{"create_invoice", "", "", PermissionScopeShop}
 	PermissionReadInvoice = &Permission{"read_invoice", "", "", PermissionScopeShop}
@@ -850,10 +853,10 @@ func initializeShopScopedPermissions() {
 	PermissionUpdatePreference = &Permission{"update_preference", "", "", PermissionScopeSystem}
 	PermissionDeletePreference = &Permission{"delete_preference", "", "", PermissionScopeSystem}
 
-	PermissionCreateAssignedProductAttribute = &Permission{"create_assignedproductattribute", "", "", PermissionScopeShop}
-	PermissionReadAssignedProductAttribute = &Permission{"read_assignedproductattribute", "", "", PermissionScopeShop}
-	PermissionUpdateAssignedProductAttribute = &Permission{"update_assignedproductattribute", "", "", PermissionScopeShop}
-	PermissionDeleteAssignedProductAttribute = &Permission{"delete_assignedproductattribute", "", "", PermissionScopeShop}
+	// PermissionCreateAssignedProductAttribute = &Permission{"create_assignedproductattribute", "", "", PermissionScopeShop}
+	// PermissionReadAssignedProductAttribute = &Permission{"read_assignedproductattribute", "", "", PermissionScopeShop}
+	// PermissionUpdateAssignedProductAttribute = &Permission{"update_assignedproductattribute", "", "", PermissionScopeShop}
+	// PermissionDeleteAssignedProductAttribute = &Permission{"delete_assignedproductattribute", "", "", PermissionScopeShop}
 
 	PermissionCreatePageType = &Permission{"create_pagetype", "", "", PermissionScopeShop}
 	PermissionReadPageType = &Permission{"read_pagetype", "", "", PermissionScopeShop}
@@ -870,103 +873,149 @@ func initializeShopScopedPermissions() {
 	PermissionUpdateAttributeVariant = &Permission{"update_attributevariant", "", "", PermissionScopeShop}
 	PermissionDeleteAttributeVariant = &Permission{"delete_attributevariant", "", "", PermissionScopeShop}
 
-	PermissionCreateAssignedPageAttributeValue = &Permission{"create_assignedpageattributevalue", "", "", PermissionScopeShop}
-	PermissionReadAssignedPageAttributeValue = &Permission{"read_assignedpageattributevalue", "", "", PermissionScopeShop}
-	PermissionUpdateAssignedPageAttributeValue = &Permission{"update_assignedpageattributevalue", "", "", PermissionScopeShop}
-	PermissionDeleteAssignedPageAttributeValue = &Permission{"delete_assignedpageattributevalue", "", "", PermissionScopeShop}
+	// PermissionCreateAssignedPageAttributeValue = &Permission{"create_assignedpageattributevalue", "", "", PermissionScopeShop}
+	// PermissionReadAssignedPageAttributeValue = &Permission{"read_assignedpageattributevalue", "", "", PermissionScopeShop}
+	// PermissionUpdateAssignedPageAttributeValue = &Permission{"update_assignedpageattributevalue", "", "", PermissionScopeShop}
+	// PermissionDeleteAssignedPageAttributeValue = &Permission{"delete_assignedpageattributevalue", "", "", PermissionScopeShop}
 
 	PermissionCreateShippingZoneChannel = &Permission{"create_shippingzonechannel", "", "", PermissionScopeShop}
 	PermissionReadShippingZoneChannel = &Permission{"read_shippingzonechannel", "", "", PermissionScopeShop}
 	PermissionUpdateShippingZoneChannel = &Permission{"update_shippingzonechannel", "", "", PermissionScopeShop}
 	PermissionDeleteShippingZoneChannel = &Permission{"delete_shippingzonechannel", "", "", PermissionScopeShop}
 
-	PermissionCreateGiftcardEvent = &Permission{"create_giftcardevent", "", "", PermissionScopeShop}
-	PermissionReadGiftcardEvent = &Permission{"read_giftcardevent", "", "", PermissionScopeShop}
-	PermissionUpdateGiftcardEvent = &Permission{"update_giftcardevent", "", "", PermissionScopeShop}
-	PermissionDeleteGiftcardEvent = &Permission{"delete_giftcardevent", "", "", PermissionScopeShop}
+	// PermissionCreateGiftcardEvent = &Permission{"create_giftcardevent", "", "", PermissionScopeShop}
+	// PermissionReadGiftcardEvent = &Permission{"read_giftcardevent", "", "", PermissionScopeShop}
+	// PermissionUpdateGiftcardEvent = &Permission{"update_giftcardevent", "", "", PermissionScopeShop}
+	// PermissionDeleteGiftcardEvent = &Permission{"delete_giftcardevent", "", "", PermissionScopeShop}
 
 	SystemGuestPermissions = Permissions{
-		PermissionReadShop,
-		PermissionReadPageTranslation,
-		PermissionReadCategoryTranslation,
-		PermissionReadProductTranslation,
+		PermissionReadShop, PermissionReadShopTranslation,
+		PermissionReadPage, PermissionReadPageTranslation,
+		PermissionReadCategory, PermissionReadCategoryTranslation,
+		PermissionReadProduct, PermissionReadProductTranslation,
+		PermissionReadCollection, PermissionReadCollectionTranslation,
+		PermissionReadVoucher, PermissionReadVoucherTranslation,
+		PermissionReadSale, PermissionReadSaleTranslation,
+		PermissionReadProductVariant, PermissionReadProductVariantTranslation,
+		PermissionReadMenuItem, PermissionReadMenuItemTranslation,
+		PermissionReadVoucherChannelListing, PermissionReadSaleChannelListing,
+		PermissionReadAttribute, PermissionReadAttributeTranslation,
+		PermissionReadAttributeValue, PermissionReadAttributeValueTranslation,
+		PermissionReadShippingMethod, PermissionReadShippingMethodTranslation,
+
+		PermissionReadMenu,
 		PermissionReadProductChannelListing,
 		PermissionReadCollectionChannelListing,
-		PermissionReadVoucherTranslation,
-		PermissionReadProductVariantTranslation,
-		PermissionReadShopTranslation,
 		PermissionReadChannel,
-		PermissionReadProduct,
 		PermissionReadProductVariantMedia,
-		PermissionReadSale,
-		PermissionReadVoucher,
-		PermissionReadSaleTranslation,
-		PermissionReadCollection,
-		PermissionReadVoucherChannelListing,
-		PermissionReadProductVariant,
-		PermissionReadMenu,
-		PermissionReadCollectionTranslation,
 		PermissionReadProductVariantChannelListing,
-		PermissionReadCategory,
-		PermissionReadPage,
+		PermissionReadShippingZone,
+		PermissionReadShippingMethodChannelListing,
+		PermissionReadProductMedia,
+		PermissionReadAttributePage,
+		PermissionReadAttributeProduct,
 	}
 
 	SystemUserPermissions = append(
 		SystemGuestPermissions, //
 
+		PermissionCreatePayment, PermissionReadPayment,
+		PermissionCreateOrderLine, PermissionReadOrderLine, PermissionUpdateOrderLine, PermissionDeleteOrderLine,
+		PermissionCreateTransaction, PermissionReadTransaction, PermissionUpdateTransaction,
+		PermissionCreateCheckoutLine, PermissionReadCheckoutLine,
+		PermissionCreateAddress, PermissionReadAddress, PermissionUpdateAddress, PermissionDeleteAddress,
+		PermissionCreateOrder, PermissionReadOrder, PermissionUpdateOrder, PermissionDeleteOrder,
+		PermissionCreateWishlistItem, PermissionReadWishlistItem, PermissionUpdateWishlistItem, PermissionDeleteWishlistItem,
+		PermissionCreateWishlist, PermissionReadWishlist, PermissionUpdateWishlist, PermissionDeleteWishlist,
+		PermissionCreatePreference, PermissionReadPreference, PermissionUpdatePreference, PermissionDeletePreference,
+		PermissionCreateCheckout, PermissionReadCheckout,
+		PermissionCreateToken, PermissionReadToken, PermissionDeleteToken,
+
 		PermissionInviteUser,
-		PermissionCreateShop,
-		PermissionCreatePayment,
-		PermissionReadPayment,
-		PermissionCreateOrderLine,
-		PermissionReadOrderLine,
-		PermissionUpdateOrderLine,
-		PermissionDeleteOrderLine,
-		PermissionReadSaleChannelListing,
-		PermissionReadShippingZone,
-		PermissionCreateTransaction,
-		PermissionReadTransaction,
-		PermissionUpdateTransaction,
-		PermissionCreateCheckoutLine,
-		PermissionReadCheckoutLine,
-		PermissionReadShippingMethodChannelListing,
-		PermissionReadAttributeTranslation,
-		PermissionReadAttributeValueTranslation,
-		PermissionReadGiftcard,
-		PermissionCreatePayment,
-		PermissionReadPayment,
-		PermissionReadAttribute,
-		PermissionReadShippingMethod,
-		PermissionReadShippingMethodPostalCodeRule,
-		PermissionCreateCheckout,
-		PermissionReadMenuItem,
-		PermissionReadProductMedia,
 		PermissionReadUser,
-		PermissionCreateWishlistItem,
-		PermissionReadWishlistItem,
-		PermissionUpdateWishlistItem,
-		PermissionDeleteWishlistItem,
-		PermissionCreateAddress,
-		PermissionReadAddress,
-		PermissionUpdateAddress,
-		PermissionDeleteAddress,
-		PermissionCreateOrder,
-		PermissionReadOrder,
-		PermissionUpdateOrder,
-		PermissionDeleteOrder,
-		PermissionReadShippingMethodTranslation,
-		PermissionCreateWishlist,
-		PermissionReadWishlist,
-		PermissionUpdateWishlist,
-		PermissionDeleteWishlist,
-		PermissionCreatePreference,
-		PermissionReadPreference,
-		PermissionUpdatePreference,
-		PermissionDeletePreference)
+		PermissionCreateShop,
+		PermissionReadGiftcard,
+		PermissionReadShippingMethodPostalCodeRule,
+		PermissionReadInvoice,
+	)
 
 	ShopStaffPermissions = append(
 		SystemUserPermissions,
+		PermissionReadWarehouse, PermissionUpdateWarehouse,
+		PermissionCreateSaleChannelListing, PermissionUpdateSaleChannelListing,
+		PermissionCreatePageTranslation, PermissionUpdatePageTranslation, PermissionDeletePageTranslation,
+		PermissionCreateShippingZone, PermissionUpdateShippingZone, PermissionDeleteShippingZone,
+		PermissionCreateAttributeValue, PermissionReadAttributeValue, PermissionUpdateAttributeValue, PermissionDeleteAttributeValue,
+		PermissionCreateAttributePage, PermissionUpdateAttributePage, PermissionDeleteAttributePage,
+		PermissionCreatePreOrderAllocation, PermissionReadPreOrderAllocation, PermissionUpdatePreOrderAllocation, PermissionDeletePreOrderAllocation,
+		PermissionCreateAttributeProduct, PermissionUpdateAttributeProduct, PermissionDeleteAttributeProduct,
+		PermissionCreateCustomerNote, PermissionReadCustomerNote, PermissionUpdateCustomerNote, PermissionDeleteCustomerNote,
+		PermissionCreateMenuItemTranslation, PermissionUpdateMenuItemTranslation, PermissionDeleteMenuItemTranslation,
+		PermissionUpdateCheckoutLine, PermissionDeleteCheckoutLine,
+		PermissionCreateProductTranslation, PermissionUpdateProductTranslation, PermissionDeleteProductTranslation,
+		PermissionCreatePluginConfiguration, PermissionReadPluginConfiguration, PermissionUpdatePluginConfiguration, PermissionDeletePluginConfiguration,
+		PermissionCreateProductChannelListing, PermissionUpdateProductChannelListing, PermissionDeleteProductChannelListing,
+		PermissionCreateCollectionChannelListing, PermissionUpdateCollectionChannelListing, PermissionDeleteCollectionChannelListing,
+		PermissionCreateVoucherTranslation, PermissionUpdateVoucherTranslation, PermissionDeleteVoucherTranslation,
+		PermissionCreateProductVariantTranslation, PermissionUpdateProductVariantTranslation, PermissionDeleteProductVariantTranslation,
+		PermissionCreateShopTranslation, PermissionUpdateShopTranslation, PermissionDeleteShopTranslation,
+		PermissionCreateShippingMethodChannelListing, PermissionUpdateShippingMethodChannelListing, PermissionDeleteShippingMethodChannelListing,
+		PermissionCreateStaffNotificationRecipient, PermissionReadStaffNotificationRecipient, PermissionUpdateStaffNotificationRecipient, PermissionDeleteStaffNotificationRecipient,
+		PermissionCreateFulfillmentLine, PermissionReadFulfillmentLine, PermissionUpdateFulfillmentLine,
+		PermissionCreateFulfillment, PermissionReadFulfillment, PermissionUpdateFulfillment,
+		PermissionCreateProduct, PermissionReadProduct, PermissionUpdateProduct, PermissionDeleteProduct,
+		PermissionCreateOrderDiscount, PermissionReadOrderDiscount, PermissionUpdateOrderDiscount, PermissionDeleteOrderDiscount,
+		PermissionCreateProductVariantMedia, PermissionReadProductVariantMedia, PermissionUpdateProductVariantMedia, PermissionDeleteProductVariantMedia,
+		PermissionCreateAttributeTranslation, PermissionUpdateAttributeTranslation, PermissionDeleteAttributeTranslation,
+		PermissionCreateAttributeValueTranslation, PermissionUpdateAttributeValueTranslation, PermissionDeleteAttributeValueTranslation,
+		PermissionCreateGiftcard, PermissionUpdateGiftcard, PermissionDeleteGiftcard,
+		PermissionCreateAttribute, PermissionUpdateAttribute, PermissionDeleteAttribute,
+		PermissionCreateSale, PermissionUpdateSale,
+		PermissionCreateShippingMethod, PermissionUpdateShippingMethod, PermissionDeleteShippingMethod,
+		PermissionCreateCheckout, PermissionUpdateCheckout,
+		PermissionCreateAllocation, PermissionReadAllocation, PermissionUpdateAllocation, PermissionDeleteAllocation,
+		PermissionCreateVoucher, PermissionUpdateVoucher,
+		PermissionCreateMenuItem, PermissionUpdateMenuItem, PermissionDeleteMenuItem,
+		PermissionCreateProductMedia, PermissionUpdateProductMedia, PermissionDeleteProductMedia,
+		PermissionCreateProductType, PermissionReadProductType, PermissionUpdateProductType, PermissionDeleteProductType,
+		PermissionCreateSaleTranslation, PermissionUpdateSaleTranslation, PermissionDeleteSaleTranslation,
+		PermissionCreateShippingMethodExcludedProduct, PermissionReadShippingMethodExcludedProduct, PermissionUpdateShippingMethodExcludedProduct, PermissionDeleteShippingMethodExcludedProduct,
+		PermissionCreateCollection, PermissionUpdateCollection, PermissionDeleteCollection,
+		PermissionCreateDigitalContent, PermissionReadDigitalContent, PermissionUpdateDigitalContent, PermissionDeleteDigitalContent,
+		PermissionCreateVoucherChannelListing, PermissionUpdateVoucherChannelListing, PermissionDeleteVoucherChannelListing,
+		PermissionCreateProductVariant, PermissionUpdateProductVariant, PermissionDeleteProductVariant,
+		PermissionCreateMenu, PermissionUpdateMenu, PermissionDeleteMenu,
+		PermissionCreateCollectionTranslation, PermissionUpdateCollectionTranslation, PermissionDeleteCollectionTranslation,
+		PermissionCreateProductVariantChannelListing, PermissionUpdateProductVariantChannelListing, PermissionDeleteProductVariantChannelListing,
+		PermissionCreateShippingMethodTranslation, PermissionUpdateShippingMethodTranslation, PermissionDeleteShippingMethodTranslation,
+		PermissionCreatePage, PermissionUpdatePage, PermissionDeletePage,
+		PermissionCreateInvoice, PermissionUpdateInvoice, PermissionDeleteInvoice,
+		PermissionCreatePageType, PermissionReadPageType, PermissionUpdatePageType, PermissionDeletePageType,
+		PermissionCreateDigitalContentURL, PermissionReadDigitalContentURL, PermissionUpdateDigitalContentURL, PermissionDeleteDigitalContentURL,
+		PermissionCreateAttributeVariant, PermissionReadAttributeVariant, PermissionUpdateAttributeVariant, PermissionDeleteAttributeVariant,
+		PermissionCreateShippingZoneChannel, PermissionReadShippingZoneChannel, PermissionUpdateShippingZoneChannel, PermissionDeleteShippingZoneChannel,
+
+		PermissionReadStock,
+		PermissionReadOrderEvent,
+		PermissionReadCustomerEvent,
+		PermissionReadCsvExportEvent,
+		PermissionReadCsvExportFile,
+		PermissionReadShopStaff,
 	)
 
-	ShopScopedAllPermissions = append(ShopStaffPermissions)
+	ShopScopedAllPermissions = append(
+		ShopStaffPermissions,
+
+		PermissionCreateWarehouse, PermissionDeleteWarehouse,
+		PermissionDeleteSaleChannelListing,
+		PermissionUpdateShop, PermissionDeleteShop,
+		PermissionUpdateStock, PermissionCreateStock, PermissionDeleteStock,
+		PermissionCreateShopStaff, PermissionUpdateShopStaff,
+
+		PermissionDeleteTransaction,
+		PermissionDeleteFulfillmentLine,
+		PermissionDeleteFulfillment,
+		PermissionDeleteSale,
+		PermissionDeleteVoucher,
+	)
 }

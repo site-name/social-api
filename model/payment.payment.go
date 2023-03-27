@@ -173,7 +173,7 @@ func (p *Payment) GetCapturedAmount() *goprices.Money {
 // Check if input from user is valid or not
 func (p *Payment) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"payment.is_valid.%s.app_error",
+		"model.payment.is_valid.%s.app_error",
 		"payment_id=",
 		"Payment.IsValid",
 	)

@@ -127,16 +127,16 @@ func (a *AttributeValue) Reference(ctx context.Context) (*string, error) {
 // --------------------- Attribute --------------------
 
 type Attribute struct {
-	ID              string                   `json:"id"`
-	PrivateMetadata []*MetadataItem          `json:"privateMetadata"`
-	Metadata        []*MetadataItem          `json:"metadata"`
-	InputType       *AttributeInputTypeEnum  `json:"inputType"`
-	EntityType      *AttributeEntityTypeEnum `json:"entityType"`
-	Name            *string                  `json:"name"`
-	Slug            *string                  `json:"slug"`
-	Type            *AttributeTypeEnum       `json:"type"`
-	Unit            *MeasurementUnitsEnum    `json:"unit"`
-	WithChoices     bool                     `json:"withChoices"`
+	ID              string                     `json:"id"`
+	PrivateMetadata []*MetadataItem            `json:"privateMetadata"`
+	Metadata        []*MetadataItem            `json:"metadata"`
+	InputType       *model.AttributeInputType  `json:"inputType"`
+	EntityType      *model.AttributeEntityType `json:"entityType"`
+	Name            *string                    `json:"name"`
+	Slug            *string                    `json:"slug"`
+	Type            *model.AttributeType       `json:"type"`
+	Unit            *MeasurementUnitsEnum      `json:"unit"`
+	WithChoices     bool                       `json:"withChoices"`
 
 	attr *model.Attribute
 
@@ -164,19 +164,10 @@ func SystemAttributeToGraphqlAttribute(attr *model.Attribute) *Attribute {
 		Name:            &attr.Name,
 		Slug:            &attr.Slug,
 		WithChoices:     model.TYPES_WITH_CHOICES.Contains(attr.InputType),
-
-		attr: attr,
-	}
-	if graphqlAttributeInputType := AttributeInputTypeEnum(string(attr.InputType)); graphqlAttributeInputType.IsValid() {
-		res.InputType = &graphqlAttributeInputType
-	}
-	if attr.EntityType != nil {
-		if graphqlAttributeEntityType := AttributeEntityTypeEnum(*attr.EntityType); graphqlAttributeEntityType.IsValid() {
-			res.EntityType = &graphqlAttributeEntityType
-		}
-	}
-	if graphqlAttributeType := AttributeTypeEnum(attr.Type); graphqlAttributeType.IsValid() {
-		res.Type = &graphqlAttributeType
+		InputType:       &attr.InputType,
+		EntityType:      attr.EntityType,
+		attr:            attr,
+		Type:            &attr.Type,
 	}
 
 	if attr.Unit != nil {

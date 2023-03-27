@@ -24,6 +24,10 @@ const (
 	ALL_WAREHOUSES WarehouseClickAndCollectOption = "all"
 )
 
+func (w WarehouseClickAndCollectOption) IsValid() bool {
+	return ValidWarehouseClickAndCollectOptionMap[w] != ""
+}
+
 var ValidWarehouseClickAndCollectOptionMap = map[WarehouseClickAndCollectOption]string{
 	DISABLED:       "Disabled",
 	LOCAL_STOCK:    "Local stock only",

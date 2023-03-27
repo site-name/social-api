@@ -11,24 +11,34 @@ import (
 	"golang.org/x/text/currency"
 )
 
+type TransactionKind string
+
 // valid values for payment transaction's kind
 const (
-	EXTERNAL          = "external"
-	AUTH              = "auth"
-	CAPTURE           = "capture"
-	CAPTURE_FAILED    = "capture_failed" // ?
-	ACTION_TO_CONFIRM = "action_to_confirm"
-	VOID              = "void"
-	REFUND            = "refund"
-	REFUND_ONGOING    = "refund_ongoing"
-	REFUND_FAILED     = "refund_failed"   // ?
-	REFUND_REVERSED   = "refund_reversed" // ?
-	CONFIRM           = "confirm"
-	CANCEL            = "cancel"
-	PENDING_          = "pending"
+	EXTERNAL          TransactionKind = "external"
+	AUTH              TransactionKind = "auth"
+	CAPTURE           TransactionKind = "capture"
+	CAPTURE_FAILED    TransactionKind = "capture_failed" // ?
+	ACTION_TO_CONFIRM TransactionKind = "action_to_confirm"
+	VOID              TransactionKind = "void"
+	REFUND            TransactionKind = "refund"
+	REFUND_ONGOING    TransactionKind = "refund_ongoing"
+	REFUND_FAILED     TransactionKind = "refund_failed"   // ?
+	REFUND_REVERSED   TransactionKind = "refund_reversed" // ?
+	CONFIRM           TransactionKind = "confirm"
+	CANCEL            TransactionKind = "cancel"
+	PENDING_          TransactionKind = "pending"
 )
 
-var TransactionKindString = map[string]string{
+func (t TransactionKind) String() string {
+	return string(t)
+}
+
+func (t TransactionKind) IsValid() bool {
+	return TransactionKindString[t] != ""
+}
+
+var TransactionKindString = map[TransactionKind]string{
 	EXTERNAL:          "External reference",
 	AUTH:              "Authorization",
 	PENDING_:          "Pending", // transaction and payment share this value
@@ -56,7 +66,7 @@ type PaymentTransaction struct {
 	CreateAt           int64            `json:"create_at"` // NOT editable
 	PaymentID          string           `json:"payment_id"`
 	Token              string           `json:"token"`
-	Kind               string           `json:"kind"`
+	Kind               TransactionKind  `json:"kind"`
 	IsSuccess          bool             `json:"is_success"`
 	ActionRequired     bool             `json:"action_required"`
 	ActionRequiredData StringMap        `json:"action_required_data"`
@@ -95,7 +105,7 @@ func (p *PaymentTransaction) GetAmount() *goprices.Money {
 
 func (p *PaymentTransaction) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"payment_transaction.is_valid.%s.app_error",
+		"model.payment_transaction.is_valid.%s.app_error",
 		"transaction_id=",
 		"PaymentTransaction.IsValid",
 	)

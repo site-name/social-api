@@ -109,7 +109,7 @@ type DiscountService interface {
 	// ValidateVoucherForCheckout validates given voucher
 	ValidateVoucherForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (*model.NotApplicable, *model.AppError)
 	// ValidateVoucherOnlyForStaff validate if voucher is only for staff
-	ValidateVoucherOnlyForStaff(voucher *model.Voucher, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
+	ValidateVoucherOnlyForStaff(voucher *model.Voucher, customerID string) (*model.NotApplicable, *model.AppError)
 	// VoucherById finds and returns a voucher with given id
 	VoucherById(voucherID string) (*model.Voucher, *model.AppError)
 	// VoucherByOption returns 1 voucher filtered using given options
@@ -126,7 +126,7 @@ type DiscountService interface {
 	VouchersByOption(option *model.VoucherFilterOption) ([]*model.Voucher, *model.AppError)
 	FetchDiscounts(date time.Time) ([]*model.DiscountInfo, *model.AppError)
 	GetSaleDiscount(sale *model.Sale, saleChannelListing *model.SaleChannelListing) (types.DiscountCalculator, *model.AppError)
+	SaleChannelListingsByOptions(options *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, *model.AppError)
 	ValidateVoucher(voucher *model.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
 	ValidateVoucherInOrder(ord *model.Order) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
-	SaleChannelListingsByOptions(options *model.SaleChannelListingFilterOption) ([]*model.SaleChannelListing, *model.AppError)
 }

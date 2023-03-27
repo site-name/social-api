@@ -67,7 +67,7 @@ type PaymentMethodInfo struct {
 type GatewayResponse struct {
 	IsSucess                    bool
 	ActionRequired              bool
-	Kind                        string
+	Kind                        TransactionKind
 	Amount                      decimal.Decimal
 	Currency                    string
 	TransactionID               string

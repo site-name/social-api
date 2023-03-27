@@ -79,7 +79,6 @@ type AccountService interface {
 	CreateRole(role *model.Role) (*model.Role, *model.AppError)
 	// CreateSession try saving given session to the database. If success then add that session to cache.
 	CreateSession(session *model.Session) (*model.Session, *model.AppError)
-	CustomerEventsByOptions(option *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, *model.AppError)
 	// CustomerPlacedOrderEvent creates an customer event, if given user is not valid, it returns immediately.
 	CustomerPlacedOrderEvent(user *model.User, orDer model.Order) (*model.CustomerEvent, *model.AppError)
 	// DeleteUserAddressRelation deletes 1 user-address relation from database
@@ -182,6 +181,7 @@ type AccountService interface {
 	CreateUserAsAdmin(c *request.Context, user *model.User, redirect string) (*model.User, *model.AppError)
 	CreateUserFromSignup(c *request.Context, user *model.User, redirect string) (*model.User, *model.AppError)
 	CreateUserWithToken(c *request.Context, user *model.User, token *model.Token) (*model.User, *model.AppError)
+	CustomerEventsByOptions(option *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, *model.AppError)
 	DeactivateMfa(userID string) *model.AppError
 	DeleteAddresses(addressIDs ...string) *model.AppError
 	DeletePreferences(userID string, preferences model.Preferences) *model.AppError

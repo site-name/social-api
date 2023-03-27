@@ -163,7 +163,7 @@ func (s *Shop) IsValid() *AppError {
 	if len(s.GiftcardExpiryType) > SHOP_GIFTCARD_EXPIRY_TYPE_MAX_LENGTH || GiftCardSettingsExpiryTypeValues[s.GiftcardExpiryType] == "" {
 		return outer("gift_card_expiry_type", &s.Id)
 	}
-	if TimePeriodMap[s.GiftcardExpiryPeriodType] == "" {
+	if !s.GiftcardExpiryPeriodType.IsValid() {
 		return outer("gift_card_expiry_period_type", &s.Id)
 	}
 	if s.AutomaticallyFulfillNonShippableGiftcard == nil {

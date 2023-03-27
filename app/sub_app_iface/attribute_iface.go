@@ -47,6 +47,7 @@ type AttributeService interface {
 	// UpsertAttributeValue insderts or updates given attribute value then returns it
 	UpsertAttributeValue(attrValue *model.AttributeValue) (*model.AttributeValue, *model.AppError)
 	AttributeByOption(option *model.AttributeFilterOption) (*model.Attribute, *model.AppError)
+	AttributeProductsByOption(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, *model.AppError)
 	AttributeValuesOfAttribute(attributeID string) ([]*model.AttributeValue, *model.AppError)
 	BulkUpsertAttributeValue(transaction store_iface.SqlxTxExecutor, values model.AttributeValues) (model.AttributeValues, *model.AppError)
 	DeleteAttributeValues(ids ...string) (int64, *model.AppError)
@@ -54,5 +55,4 @@ type AttributeService interface {
 	FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model.AppError)
 	GetVisibleToUserAttributes(session *model.Session) (model.Attributes, *model.AppError)
 	PerformReordering(values model.AttributeValues, operations map[string]*int) *model.AppError
-	AttributeProductsByOption(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, *model.AppError)
 }

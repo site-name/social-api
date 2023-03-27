@@ -359,19 +359,19 @@ type AttributeError struct {
 }
 
 type AttributeFilterInput struct {
-	ValueRequired          *bool              `json:"valueRequired"`
-	IsVariantOnly          *bool              `json:"isVariantOnly"`
-	VisibleInStorefront    *bool              `json:"visibleInStorefront"`
-	FilterableInStorefront *bool              `json:"filterableInStorefront"`
-	FilterableInDashboard  *bool              `json:"filterableInDashboard"`
-	AvailableInGrid        *bool              `json:"availableInGrid"`
-	Metadata               []*MetadataInput   `json:"metadata"`
-	Search                 *string            `json:"search"`
-	Ids                    []string           `json:"ids"`
-	Type                   *AttributeTypeEnum `json:"type"`
-	InCollection           *string            `json:"inCollection"`
-	InCategory             *string            `json:"inCategory"`
-	Channel                *string            `json:"channel"`
+	ValueRequired          *bool                `json:"valueRequired"`
+	IsVariantOnly          *bool                `json:"isVariantOnly"`
+	VisibleInStorefront    *bool                `json:"visibleInStorefront"`
+	FilterableInStorefront *bool                `json:"filterableInStorefront"`
+	FilterableInDashboard  *bool                `json:"filterableInDashboard"`
+	AvailableInGrid        *bool                `json:"availableInGrid"`
+	Metadata               []*MetadataInput     `json:"metadata"`
+	Search                 *string              `json:"search"`
+	Ids                    []string             `json:"ids"`
+	Type                   *model.AttributeType `json:"type"`
+	InCollection           *string              `json:"inCollection"`
+	InCategory             *string              `json:"inCategory"`
+	Channel                *string              `json:"channel"`
 }
 
 func (a *AttributeFilterInput) ToAttributeFilterOption() *model.AttributeFilterOption {
@@ -452,11 +452,11 @@ var (
 )
 
 type AttributeCreateInput struct {
-	InputType                *AttributeInputTypeEnum      `json:"inputType"`
-	EntityType               *AttributeEntityTypeEnum     `json:"entityType"`
+	InputType                *model.AttributeInputType    `json:"inputType"`
+	EntityType               *model.AttributeEntityType   `json:"entityType"`
 	Name                     string                       `json:"name"`
 	Slug                     *string                      `json:"slug"`
-	Type                     AttributeTypeEnum            `json:"type"`
+	Type                     model.AttributeType          `json:"type"`
 	Unit                     *MeasurementUnitsEnum        `json:"unit"`
 	Values                   []*AttributeValueCreateInput `json:"values"`
 	ValueRequired            *bool                        `json:"valueRequired"`
@@ -468,11 +468,11 @@ type AttributeCreateInput struct {
 	AvailableInGrid          *bool                        `json:"availableInGrid"`
 }
 
-func (a *AttributeCreateInput) getInputType() AttributeInputTypeEnum {
+func (a *AttributeCreateInput) getInputType() model.AttributeInputType {
 	if a.InputType != nil {
 		return *a.InputType
 	}
-	return AttributeInputTypeEnum("")
+	return model.AttributeInputType("")
 }
 
 func (a *AttributeCreateInput) getFieldValueByString(field string) any {
@@ -509,8 +509,8 @@ type AttributeUpdateInput struct {
 	AvailableInGrid          *bool                        `json:"availableInGrid"`
 }
 
-func (a *AttributeUpdateInput) getInputType() AttributeInputTypeEnum {
-	return AttributeInputTypeEnum("")
+func (a *AttributeUpdateInput) getInputType() model.AttributeInputType {
+	return model.AttributeInputType("")
 }
 
 func (i *AttributeUpdateInput) getFieldValueByString(name string) any {
@@ -3650,13 +3650,13 @@ type TaxedMoneyRange struct {
 }
 
 type TimePeriod struct {
-	Amount int32              `json:"amount"`
-	Type   TimePeriodTypeEnum `json:"type"`
+	Amount int32                `json:"amount"`
+	Type   model.TimePeriodType `json:"type"`
 }
 
 type TimePeriodInputType struct {
-	Amount int32              `json:"amount"`
-	Type   TimePeriodTypeEnum `json:"type"`
+	Amount int32                `json:"amount"`
+	Type   model.TimePeriodType `json:"type"`
 }
 
 type TokenCreateInput struct {
@@ -3940,10 +3940,10 @@ type WarehouseError struct {
 }
 
 type WarehouseFilterInput struct {
-	ClickAndCollectOption *WarehouseClickAndCollectOptionEnum `json:"clickAndCollectOption"`
-	Search                *string                             `json:"search"`
-	Ids                   []string                            `json:"ids"`
-	IsPrivate             *bool                               `json:"isPrivate"`
+	ClickAndCollectOption *model.WarehouseClickAndCollectOption `json:"clickAndCollectOption"`
+	Search                *string                               `json:"search"`
+	Ids                   []string                              `json:"ids"`
+	IsPrivate             *bool                                 `json:"isPrivate"`
 }
 
 type WarehouseShippingZoneAssign struct {
@@ -3967,12 +3967,12 @@ type WarehouseUpdate struct {
 }
 
 type WarehouseUpdateInput struct {
-	Slug                  *string                             `json:"slug"`
-	Email                 *string                             `json:"email"`
-	Name                  *string                             `json:"name"`
-	Address               *AddressInput                       `json:"address"`
-	ClickAndCollectOption *WarehouseClickAndCollectOptionEnum `json:"clickAndCollectOption"`
-	IsPrivate             *bool                               `json:"isPrivate"`
+	Slug                  *string                               `json:"slug"`
+	Email                 *string                               `json:"email"`
+	Name                  *string                               `json:"name"`
+	Address               *AddressInput                         `json:"address"`
+	ClickAndCollectOption *model.WarehouseClickAndCollectOption `json:"clickAndCollectOption"`
+	IsPrivate             *bool                                 `json:"isPrivate"`
 }
 
 type Webhook struct {
@@ -4229,13 +4229,6 @@ func (e AttributeChoicesSortField) IsValid() bool {
 	return false
 }
 
-type AttributeEntityTypeEnum = model.AttributeEntityType
-
-const (
-	AttributeEntityTypeEnumPage    AttributeEntityTypeEnum = model.PAGE
-	AttributeEntityTypeEnumProduct AttributeEntityTypeEnum = model.PRODUCT
-)
-
 type AttributeErrorCode string
 
 const (
@@ -4254,21 +4247,6 @@ func (e AttributeErrorCode) IsValid() bool {
 	}
 	return false
 }
-
-type AttributeInputTypeEnum = model.AttributeInputType
-
-const (
-	AttributeInputTypeEnumDropdown    AttributeInputTypeEnum = model.DROPDOWN
-	AttributeInputTypeEnumMultiselect AttributeInputTypeEnum = model.MULTISELECT
-	AttributeInputTypeEnumFile        AttributeInputTypeEnum = model.FILE
-	AttributeInputTypeEnumReference   AttributeInputTypeEnum = model.REFERENCE
-	AttributeInputTypeEnumNumeric     AttributeInputTypeEnum = model.NUMERIC
-	AttributeInputTypeEnumRichText    AttributeInputTypeEnum = model.RICH_TEXT
-	AttributeInputTypeEnumSwatch      AttributeInputTypeEnum = model.SWATCH
-	AttributeInputTypeEnumBoolean     AttributeInputTypeEnum = model.BOOLEAN
-	AttributeInputTypeEnumDate        AttributeInputTypeEnum = model.DATE
-	AttributeInputTypeEnumDateTime    AttributeInputTypeEnum = model.DATE_TIME
-)
 
 type AttributeSortField string
 
@@ -4291,13 +4269,6 @@ func (e AttributeSortField) IsValid() bool {
 	}
 	return false
 }
-
-type AttributeTypeEnum = model.AttributeType
-
-const (
-	AttributeTypeEnumProductType AttributeTypeEnum = model.PRODUCT_TYPE
-	AttributeTypeEnumPageType    AttributeTypeEnum = model.PAGE_TYPE
-)
 
 type CategorySortField string
 
@@ -5755,46 +5726,6 @@ func (e StorePaymentMethodEnum) IsValid() bool {
 	return false
 }
 
-type TimePeriodTypeEnum string
-
-const (
-	TimePeriodTypeEnumDay   TimePeriodTypeEnum = TimePeriodTypeEnum(model.DAY)
-	TimePeriodTypeEnumWeek  TimePeriodTypeEnum = TimePeriodTypeEnum(model.WEEK)
-	TimePeriodTypeEnumMonth TimePeriodTypeEnum = TimePeriodTypeEnum(model.MONTH)
-	TimePeriodTypeEnumYear  TimePeriodTypeEnum = TimePeriodTypeEnum(model.YEAR)
-)
-
-func (e TimePeriodTypeEnum) IsValid() bool {
-	switch e {
-	case TimePeriodTypeEnumDay, TimePeriodTypeEnumWeek, TimePeriodTypeEnumMonth, TimePeriodTypeEnumYear:
-		return true
-	}
-	return false
-}
-
-type TransactionKind string
-
-const (
-	TransactionKindExternal        TransactionKind = model.EXTERNAL
-	TransactionKindAuth            TransactionKind = model.AUTH
-	TransactionKindPending         TransactionKind = model.PENDING
-	TransactionKindActionToConfirm TransactionKind = model.ACTION_TO_CONFIRM
-	TransactionKindRefund          TransactionKind = model.REFUND
-	TransactionKindRefundOngoing   TransactionKind = model.REFUND_ONGOING
-	TransactionKindCapture         TransactionKind = model.CAPTURE
-	TransactionKindVoid            TransactionKind = model.VOID
-	TransactionKindConfirm         TransactionKind = model.CONFIRM
-	TransactionKindCancel          TransactionKind = model.CANCEL
-)
-
-func (e TransactionKind) IsValid() bool {
-	switch e {
-	case TransactionKindExternal, TransactionKindAuth, TransactionKindPending, TransactionKindActionToConfirm, TransactionKindRefund, TransactionKindRefundOngoing, TransactionKindCapture, TransactionKindVoid, TransactionKindConfirm, TransactionKindCancel:
-		return true
-	}
-	return false
-}
-
 type TranslatableKinds string
 
 const (
@@ -5955,22 +5886,6 @@ const (
 func (e VoucherTypeEnum) IsValid() bool {
 	switch e {
 	case VoucherTypeEnumShipping, VoucherTypeEnumEntireOrder, VoucherTypeEnumSpecificProduct:
-		return true
-	}
-	return false
-}
-
-type WarehouseClickAndCollectOptionEnum string
-
-const (
-	WarehouseClickAndCollectOptionEnumDisabled WarehouseClickAndCollectOptionEnum = WarehouseClickAndCollectOptionEnum(model.DISABLED)
-	WarehouseClickAndCollectOptionEnumLocal    WarehouseClickAndCollectOptionEnum = WarehouseClickAndCollectOptionEnum(model.LOCAL_STOCK)
-	WarehouseClickAndCollectOptionEnumAll      WarehouseClickAndCollectOptionEnum = WarehouseClickAndCollectOptionEnum(model.ALL_WAREHOUSES)
-)
-
-func (e WarehouseClickAndCollectOptionEnum) IsValid() bool {
-	switch e {
-	case WarehouseClickAndCollectOptionEnumDisabled, WarehouseClickAndCollectOptionEnumLocal, WarehouseClickAndCollectOptionEnumAll:
 		return true
 	}
 	return false

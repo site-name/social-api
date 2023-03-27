@@ -675,7 +675,7 @@ func initializeSystemScopedPermissions() {
 		PermissionDeleteTermsOfService,
 		PermissionCreateToken,
 		PermissionReadToken,
-		PermissionUpdateToken,
+		// PermissionUpdateToken,
 		PermissionDeleteToken,
 		PermissionCreateUser,
 		PermissionReadUser,

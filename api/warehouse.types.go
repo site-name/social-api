@@ -16,14 +16,14 @@ import (
 )
 
 type Warehouse struct {
-	ID                    string                             `json:"id"`
-	Name                  string                             `json:"name"`
-	Slug                  string                             `json:"slug"`
-	Email                 string                             `json:"email"`
-	IsPrivate             bool                               `json:"isPrivate"`
-	PrivateMetadata       []*MetadataItem                    `json:"privateMetadata"`
-	Metadata              []*MetadataItem                    `json:"metadata"`
-	ClickAndCollectOption WarehouseClickAndCollectOptionEnum `json:"clickAndCollectOption"`
+	ID                    string                               `json:"id"`
+	Name                  string                               `json:"name"`
+	Slug                  string                               `json:"slug"`
+	Email                 string                               `json:"email"`
+	IsPrivate             bool                                 `json:"isPrivate"`
+	PrivateMetadata       []*MetadataItem                      `json:"privateMetadata"`
+	Metadata              []*MetadataItem                      `json:"metadata"`
+	ClickAndCollectOption model.WarehouseClickAndCollectOption `json:"clickAndCollectOption"`
 
 	addressID *string
 	// ShippingZones         *ShippingZoneCountableConnection   `json:"shippingZones"`
@@ -43,7 +43,7 @@ func SystemWarehouseToGraphqlWarehouse(wh *model.WareHouse) *Warehouse {
 		IsPrivate:             *wh.IsPrivate,
 		Metadata:              MetadataToSlice(wh.Metadata),
 		PrivateMetadata:       MetadataToSlice(wh.Metadata),
-		ClickAndCollectOption: WarehouseClickAndCollectOptionEnum(wh.ClickAndCollectOption),
+		ClickAndCollectOption: wh.ClickAndCollectOption,
 
 		addressID: wh.AddressID,
 	}

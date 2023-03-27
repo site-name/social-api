@@ -71,7 +71,7 @@ type CsvService interface {
 	// csv writer and list of attribute and warehouse headers.
 	//
 	// TODO: consider improving me
-	GetProductsData(products model.Products, exportFields , attributeIDs , warehouseIDs , channelIDs util.AnyArray[string]) []model.StringInterface
+	GetProductsData(products model.Products, exportFields, attributeIDs, warehouseIDs, channelIDs util.AnyArray[string]) []model.StringInterface
 	ExportProductsInBatches(productQuery squirrel.SelectBuilder, ExportInfo struct {
 		Attributes []string
 		Warehouses []string

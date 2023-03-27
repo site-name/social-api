@@ -27,8 +27,14 @@ type ProductService interface {
 	CategoriesByOption(option *model.CategoryFilterOption) (model.Categories, *model.AppError)
 	// CategoryByOption returns 1 category that satisfies given option
 	CategoryByOption(option *model.CategoryFilterOption) (*model.Category, *model.AppError)
+	// ClassifyCategories takes a slice of single categories.
+	// Returns a slice of category families
+	// NOTE: you can call this function
+	ClassifyCategories(categories model.Categories) model.Categories
 	// CollectCategoriesTreeProducts Collect products from all levels in category tree.
 	CollectCategoriesTreeProducts(category *model.Category) (model.Products, *model.AppError)
+	// CollectionProductRelationsByOptions finds and returns a list of product-collection relations based on given filter options
+	CollectionProductRelationsByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, *model.AppError)
 	// CollectionsByOption returns all collections that satisfy given option.
 	//
 	// NOTE: `ShopID` is required.
@@ -49,12 +55,15 @@ type ProductService interface {
 	DigitalContentUrlIsValid(contentURL *model.DigitalContentUrl) (bool, *model.AppError)
 	// DigitalContentbyOption returns 1 digital content filtered using given option
 	DigitalContentbyOption(option *model.DigitalContentFilterOption) (*model.DigitalContent, *model.AppError)
-	DigitalContentsbyOptions(options *model.DigitalContentFilterOption) ([]*model.DigitalContent, *model.AppError)
-	DigitalContentURLSByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, *model.AppError)
 	// DisplayProduct return display text for given product variant
 	//
 	// `translated` default to false
 	DisplayProduct(productVariant *model.ProductVariant, translated bool) (stringm *model.AppError)
+	// DoAnalyticCategories finds all categories in system.
+	// Counts number of products of each category.
+	// Sets NumberOfProducts, NumberOfChildren, Children attributes of each category.
+	// Stores classified categories in cache
+	DoAnalyticCategories() *model.AppError
 	// GenerateAndSetVariantName Generate ProductVariant's name based on its attributes
 	GenerateAndSetVariantName(variant *model.ProductVariant, sku string) *model.AppError
 	// GetProductsIDsWithoutVariants Return list of product's ids without variants
@@ -124,21 +133,20 @@ type ProductService interface {
 	UpsertProductVariant(transaction store_iface.SqlxTxExecutor, variant *model.ProductVariant) (*model.ProductVariant, *model.AppError)
 	// VisibleCollectionsToUser returns all collections that belong to given shop and can be viewed by given user
 	VisibleCollectionsToUser(userID string, shopID string, channelSlug string) ([]*model.Collection, *model.AppError)
+	CategoryByIds(ids []string, allowFromCache bool) (model.Categories, *model.AppError)
+	CollectionChannelListingsByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, *model.AppError)
 	CountProductTypesByOptions(options *model.ProductTypeFilterOption) (int64, *model.AppError)
+	DigitalContentURLSByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, *model.AppError)
+	DigitalContentsbyOptions(option *model.DigitalContentFilterOption) ([]*model.DigitalContent, *model.AppError)
+	FilterCategoriesFromCache(filter func(c *model.Category) bool) model.Categories
+	FilterProductsAdvanced(options *model.ExportProductsFilterOptions, channelIdOrSlug string) (model.Products, *model.AppError)
 	GetDefaultDigitalContentSettings(aShop *model.Shop) *model.ShopDefaultDigitalContentSettings
 	GetProductAvailability(product model.Product, productChannelListing *model.ProductChannelListing, variants []*model.ProductVariant, variantsChannelListing []*model.ProductVariantChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel, manager interfaces.PluginManagerInterface, countryCode model.CountryCode, localCurrency string) (*model.ProductAvailability, *model.AppError)
 	GetProductPriceRange(product model.Product, variants model.ProductVariants, variantsChannelListing []*model.ProductVariantChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel) (*goprices.MoneyRange, *model.AppError)
 	GetVariantAvailability(variant model.ProductVariant, variantChannelListing model.ProductVariantChannelListing, product model.Product, productChannelListing *model.ProductChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel, plugins interfaces.PluginManagerInterface, country model.CountryCode, localCurrency string) (*model.VariantAvailability, *model.AppError)
+	GetVisibleProductsToUser(userSession *model.Session, channel_IdOrSlug string) (model.Products, *model.AppError)
 	IncrementDownloadCount(contentURL *model.DigitalContentUrl) *model.AppError
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, *model.AppError)
 	ProductTypesByOptions(options *model.ProductTypeFilterOption) ([]*model.ProductType, *model.AppError)
 	UpdateProductsDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError
-	// CollectionProductRelationsByOptions finds and returns a list of product-collection relations based on given filter options
-	CollectionProductRelationsByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, *model.AppError)
-	CollectionChannelListingsByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, *model.AppError)
-	GetVisibleProductsToUser(userSession *model.Session, channelIdOrSlug string) (model.Products, *model.AppError)
-	FilterProductsAdvanced(options *model.ExportProductsFilterOptions, channelIdOrSlug string) (model.Products, *model.AppError)
-	ClassifyCategories(cs model.Categories) model.Categories
-	CategoryByIds(ids []string, allowFromCache bool) (model.Categories, *model.AppError)
-	FilterCategoriesFromCache(filter func(c *model.Category) bool) model.Categories
 }

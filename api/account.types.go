@@ -179,13 +179,12 @@ func SystemUserToGraphqlUser(u *model.User) *User {
 }
 
 func (u *User) DefaultShippingAddress(ctx context.Context) (*Address, error) {
+	if u.DefaultShippingAddressID == nil {
+		return nil, nil
+	}
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
-	}
-
-	if u.DefaultShippingAddressID == nil {
-		return nil, nil
 	}
 
 	address, appErr := embedCtx.App.Srv().AccountService().AddressById(*u.DefaultShippingAddressID)
@@ -197,14 +196,14 @@ func (u *User) DefaultShippingAddress(ctx context.Context) (*Address, error) {
 }
 
 func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
+	if u.DefaultBillingAddressID == nil {
+		return nil, nil
+	}
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
 	}
 
-	if u.DefaultBillingAddressID == nil {
-		return nil, nil
-	}
 	address, appErr := embedCtx.App.Srv().AccountService().AddressById(*u.DefaultBillingAddressID)
 	if appErr != nil {
 		return nil, appErr
@@ -232,7 +231,7 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string 
 	var checkouts []*model.Checkout
 	var err error
 
-	if args.Channel == nil {
+	if args.Channel == nil || *args.Channel == "" {
 		checkouts, err = CheckoutByUserLoader.Load(ctx, u.ID)()
 	} else {
 		checkouts, err = CheckoutByUserAndChannelLoader.Load(ctx, u.ID+"__"+*args.Channel)()
@@ -295,7 +294,10 @@ func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableC
 	// is not the owner of these orders,
 	// filter out orders that have status = draft
 	if currentSession.UserId != u.ID &&
-		!embedCtx.App.Srv().AccountService().
+		!embedCtx.
+			App.
+			Srv().
+			AccountService().
 			SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
 		orders = lo.Filter(orders, func(o *model.Order, _ int) bool { return o.Status != model.STATUS_DRAFT })
 	}

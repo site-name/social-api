@@ -13,7 +13,7 @@ type ChannelService interface {
 	ChannelsByOption(option *model.ChannelFilterOption) (model.Channels, *model.AppError)
 	// CleanChannel
 	CleanChannel(channelID *string) (*model.Channel, *model.AppError)
-	// ValidateChannel check if a channel with given slug is active
+	// ValidateChannel check if a channel with given id is active
 	ValidateChannel(channelID string) (*model.Channel, *model.AppError)
 	GetDefaultChannel() (*model.Channel, *model.AppError)
 	GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError)

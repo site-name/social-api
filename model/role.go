@@ -141,6 +141,8 @@ func init() {
 		PermissionSysconsoleReadAuthenticationSaml.Id,
 		PermissionSysconsoleReadAuthenticationOpenid.Id,
 		PermissionSysconsoleReadAuthenticationGuestAccess.Id,
+		PermissionDeleteUser.Id,
+		PermissionReadUser.Id,
 	}
 
 	SystemReadOnlyAdminDefaultPermissions = []string{
