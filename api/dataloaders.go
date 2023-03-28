@@ -55,8 +55,9 @@ var (
 
 	// giftcard
 	GiftCardEventsByGiftCardIdLoader = dataloader.NewBatchedLoader(giftCardEventsByGiftCardIdLoader, dataloader.WithBatchCapacity[string, []*model.GiftCardEvent](batchCapacity))
-	GiftCardsByUserLoader            = dataloader.NewBatchedLoader(giftCardsByUserLoader, dataloader.WithBatchCapacity[string, []*model.GiftCard](batchCapacity))
-	GiftcardsByOrderIDsLoader        = dataloader.NewBatchedLoader(giftcardsByOrderIDsLoader, dataloader.WithBatchCapacity[string, []*model.GiftCard](batchCapacity))
+	// find giftcards based on field .UsedById
+	GiftCardsByUserLoader     = dataloader.NewBatchedLoader(giftCardsByUserLoader, dataloader.WithBatchCapacity[string, []*model.GiftCard](batchCapacity))
+	GiftcardsByOrderIDsLoader = dataloader.NewBatchedLoader(giftcardsByOrderIDsLoader, dataloader.WithBatchCapacity[string, []*model.GiftCard](batchCapacity))
 
 	// order
 	OrderLineByIdLoader                     = dataloader.NewBatchedLoader(orderLineByIdLoader, dataloader.WithBatchCapacity[string, *model.OrderLine](batchCapacity))

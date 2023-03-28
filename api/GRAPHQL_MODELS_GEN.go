@@ -5068,22 +5068,6 @@ func (e OrderEventsEnum) IsValid() bool {
 	return false
 }
 
-type OrderOriginEnum string
-
-const (
-	OrderOriginEnumCheckout OrderOriginEnum = OrderOriginEnum(model.CHECKOUT)
-	OrderOriginEnumDraft    OrderOriginEnum = OrderOriginEnum(model.DRAFT)
-	OrderOriginEnumReissue  OrderOriginEnum = OrderOriginEnum(model.REISSUE)
-)
-
-func (e OrderOriginEnum) IsValid() bool {
-	switch e {
-	case OrderOriginEnumCheckout, OrderOriginEnumDraft, OrderOriginEnumReissue:
-		return true
-	}
-	return false
-}
-
 type OrderSettingsErrorCode string
 
 const (
@@ -5111,27 +5095,6 @@ const (
 func (e OrderSortField) IsValid() bool {
 	switch e {
 	case OrderSortFieldNumber, OrderSortFieldCreationDate, OrderSortFieldCustomer, OrderSortFieldPayment, OrderSortFieldFulfillmentStatus:
-		return true
-	}
-	return false
-}
-
-type OrderStatus string
-
-const (
-	OrderStatusDraft              OrderStatus = OrderStatus(model.STATUS_DRAFT)
-	OrderStatusUnconfirmed        OrderStatus = OrderStatus(model.UNCONFIRMED)
-	OrderStatusUnfulfilled        OrderStatus = OrderStatus(model.UNFULFILLED)
-	OrderStatusPartiallyFulfilled OrderStatus = OrderStatus(model.PARTIALLY_FULFILLED)
-	OrderStatusPartiallyReturned  OrderStatus = OrderStatus(model.PARTIALLY_RETURNED)
-	OrderStatusReturned           OrderStatus = OrderStatus(model.RETURNED)
-	OrderStatusFulfilled          OrderStatus = OrderStatus(model.FULFILLED)
-	OrderStatusCanceled           OrderStatus = OrderStatus(model.CANCELED)
-)
-
-func (e OrderStatus) IsValid() bool {
-	switch e {
-	case OrderStatusDraft, OrderStatusUnconfirmed, OrderStatusUnfulfilled, OrderStatusPartiallyFulfilled, OrderStatusPartiallyReturned, OrderStatusReturned, OrderStatusFulfilled, OrderStatusCanceled:
 		return true
 	}
 	return false

@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"net/http"
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
@@ -223,7 +222,7 @@ func (u *User) StoredPaymentSources(ctx context.Context, args struct{ Channel *s
 		panic("not implemented")
 	}
 
-	return nil, model.NewAppError("account.StoredPaymentSources", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	return nil, MakeUnauthorizedError("user.StoredPaymentSources")
 }
 
 // args.Channel is channel id
@@ -283,32 +282,45 @@ func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableC
 	if err != nil {
 		return nil, err
 	}
-
-	orders, err := OrdersByUserLoader.Load(ctx, u.ID)()
-	if err != nil {
-		return nil, err
+	if embedCtx.CurrentShopID == "" {
+		return nil, MakeShopIDQueryParamMissingError("User.Orders")
 	}
+
 	currentSession := embedCtx.AppContext.Session()
 
-	// if current user has no order management permission and
-	// is not the owner of these orders,
-	// filter out orders that have status = draft
-	if currentSession.UserId != u.ID &&
-		!embedCtx.
+	// Requester can see given user's orders if:
+	//
+	// 1) requester is given user OR
+	//
+	// 2) requester has permission to read orders AND given user was customer of the shop requester IS WORKING for
+	if currentSession.UserId == u.ID ||
+		(embedCtx.
 			App.
 			Srv().
-			AccountService().
-			SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
-		orders = lo.Filter(orders, func(o *model.Order, _ int) bool { return o.Status != model.STATUS_DRAFT })
+			ShopService().
+			UserIsCustomerOfShop(embedCtx.CurrentShopID, u.ID) &&
+			embedCtx.
+				App.
+				Srv().
+				ShopService().
+				UserIsStaffOfShop(currentSession.UserId, embedCtx.CurrentShopID)) {
+
+		orders, err := OrdersByUserLoader.Load(ctx, u.ID)()
+		if err != nil {
+			return nil, err
+		}
+		orders = lo.Filter(orders, func(ord *model.Order, _ int) bool { return ord.ShopID == embedCtx.CurrentShopID })
+
+		keyFunc := func(o *model.Order) int64 { return o.CreateAt }
+		res, appErr := newGraphqlPaginator(orders, keyFunc, SystemOrderToGraphqlOrder, args).parse("User.Orders")
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		return (*OrderCountableConnection)(unsafe.Pointer(res)), nil
 	}
 
-	keyFunc := func(o *model.Order) int64 { return o.CreateAt }
-	res, appErr := newGraphqlPaginator(orders, keyFunc, SystemOrderToGraphqlOrder, args).parse("User.Orders")
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	return (*OrderCountableConnection)(unsafe.Pointer(res)), nil
+	return nil, MakeUnauthorizedError("User.Orders")
 }
 
 func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
@@ -316,19 +328,23 @@ func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	if !embedCtx.App.Srv().
-		AccountService().
-		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageUsers, model.PermissionManageStaff) {
-		return nil, model.NewAppError("user.Events", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	if embedCtx.CurrentShopID == "" {
+		return nil, MakeShopIDQueryParamMissingError("User.Events")
 	}
 
-	results, err := CustomerEventsByUserLoader.Load(ctx, u.ID)()
-	if err != nil {
-		return nil, err
+	// requester can see given user's events only if he has view_event permission
+	// and is working for the shop from which given user made some purchase(s)
+	if embedCtx.App.Srv().ShopService().UserIsCustomerOfShop(embedCtx.CurrentShopID, u.ID) &&
+		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionReadCustomerEvent) {
+		results, err := CustomerEventsByUserLoader.Load(ctx, u.ID)()
+		if err != nil {
+			return nil, err
+		}
+
+		return DataloaderResultMap(results, SystemCustomerEventToGraphqlCustomerEvent), nil
 	}
 
-	return DataloaderResultMap(results, SystemCustomerEventToGraphqlCustomerEvent), nil
+	return nil, MakeUnauthorizedError("User.Events")
 }
 
 func (u *User) Note(ctx context.Context) (*string, error) {
@@ -337,10 +353,8 @@ func (u *User) Note(ctx context.Context) (*string, error) {
 		return nil, err
 	}
 
-	if !embedCtx.App.Srv().
-		AccountService().
-		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageUsers, model.PermissionManageStaff) {
-		return nil, model.NewAppError("user.Note", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	if embedCtx.AppContext.Session().UserId != u.ID {
+		return nil, MakeUnauthorizedError("User.Note")
 	}
 
 	return u.note, nil
@@ -508,26 +522,26 @@ func (c *CustomerEvent) User(ctx context.Context) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	if (c.event.UserID != nil && *c.event.UserID == embedCtx.AppContext.Session().UserId) ||
-		embedCtx.App.Srv().
-			AccountService().
-			SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageUsers, model.PermissionManageStaff) {
-
-		// determine user id
-		if c.event.UserID != nil {
-			user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, *c.event.UserID)
-			if appErr != nil {
-				return nil, appErr
-			}
-
-			return SystemUserToGraphqlUser(user), nil
-		}
-
-		return nil, nil
+	if embedCtx.CurrentShopID == "" {
+		return nil, MakeShopIDQueryParamMissingError("CustomerEvent.User")
 	}
 
-	return nil, model.NewAppError("customerEvent.User", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	// requester can see customer event's user only if:
+	// +) the event has owner id
+	// +) the user of the event was customer of current shop in the past
+	if c.event.UserID != nil &&
+		embedCtx.App.Srv().ShopService().UserIsCustomerOfShop(*c.event.UserID, embedCtx.CurrentShopID) &&
+		embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) {
+
+		user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, *c.event.UserID)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		return SystemUserToGraphqlUser(user), nil
+	}
+
+	return nil, MakeUnauthorizedError("CustomerEvent.User")
 }
 
 func (c *CustomerEvent) OrderLine(ctx context.Context) (*OrderLine, error) {
@@ -566,11 +580,14 @@ func (s *StaffNotificationRecipient) User(ctx context.Context) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	currentSession := embedCtx.AppContext.Session()
 
+	// requester can see user of current StaffNotificationRecipient if
+	// 1) He is owner of the notification OR
+	// 2) he is staff of the shop the owner of event was customer at
 	if (s.UserID != nil && *s.UserID == currentSession.UserId) ||
-		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageStaff) {
+		embedCtx.App.Srv().AccountService().
+			SessionHasPermissionTo(currentSession, model.PermissionReadUser) {
 
 		if s.UserID != nil {
 			user, err := UserByUserIdLoader.Load(ctx, *s.UserID)()
@@ -583,7 +600,7 @@ func (s *StaffNotificationRecipient) User(ctx context.Context) (*User, error) {
 		return nil, nil
 	}
 
-	return nil, model.NewAppError("StaffNotificationRecipient.User", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	return nil, MakeUnauthorizedError("StaffNotificationRecipient.User")
 }
 
 func (s *StaffNotificationRecipient) Email(ctx context.Context) (*string, error) {

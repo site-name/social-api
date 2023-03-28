@@ -151,7 +151,7 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if len(userAddressRelations) == 0 {
-		return nil, model.NewAppError("AccountAddressUpdate", ErrorUnauthorized, nil, "you are not the owner of this address", http.StatusUnauthorized)
+		return nil, MakeUnauthorizedError("AccountAddressUpdate")
 	}
 
 	// find address for updating
@@ -229,7 +229,7 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 		return nil, appErr
 	}
 	if len(userAddressRelations) == 0 {
-		return nil, model.NewAppError("AccountAddressDelete", ErrorUnauthorized, nil, "you are not authorized to delete this address", http.StatusUnauthorized)
+		return nil, MakeUnauthorizedError("AccountAddressDelete")
 	}
 
 	// delete user-address relation, keep address
@@ -270,7 +270,7 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 		return nil, appErr
 	}
 	if len(userAddressRelations) == 0 {
-		return nil, model.NewAppError("AccountSetDefaultAddress", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+		return nil, MakeUnauthorizedError("AccountSetDefaultAddress")
 	}
 
 	// perform change user default address

@@ -25,16 +25,23 @@ import (
 //go:embed schemas
 var assets embed.FS
 
-// ErrorUnauthorized
-const ErrorUnauthorized = "api.unauthorized.app_error"
-const ErrorChannelIDQueryParamMissing = "api.channel_id.missing.app_error"
+func MakeUnauthorizedError(where string) *model.AppError {
+	return model.NewAppError(where, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+}
+
+func MakeChannelIDQueryParamMissingError(where string) *model.AppError {
+	return model.NewAppError(where, "api.channel_id.missing.app_error", nil, "please provide channel_id query param", http.StatusBadRequest)
+}
+
+func MakeShopIDQueryParamMissingError(where string) *model.AppError {
+	return model.NewAppError(where, "api.shop_id.missing.app_error", nil, "please provide shop_id query param", http.StatusBadRequest)
+}
 
 // Unique type to hold our context.
 type CTXKey int
 
 const (
 	WebCtx CTXKey = iota
-	ChannelIdCtx
 )
 
 // constructSchema constructs schema from *.graphql files

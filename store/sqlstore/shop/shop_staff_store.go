@@ -3,6 +3,7 @@ package shop
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -66,8 +67,8 @@ func (sss *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaffRelation,
 	return &res, nil
 }
 
-func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaffRelation, error) {
-	query := s.GetQueryBuilder().Select("*").From(store.ShopStaffTableName)
+func (s *SqlShopStaffStore) commonQueryBuilder(options *model.ShopStaffRelationFilterOptions) squirrel.SelectBuilder {
+	query := s.GetQueryBuilder().Select(s.ModelFields(store.ShopStaffTableName + ".")...).From(store.ShopStaffTableName)
 
 	if options.ShopID != nil {
 		query = query.Where(options.ShopID)
@@ -76,7 +77,11 @@ func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilt
 		query = query.Where(options.StaffID)
 	}
 
-	queryString, args, err := query.ToSql()
+	return query
+}
+
+func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaffRelation, error) {
+	queryString, args, err := s.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
@@ -87,4 +92,22 @@ func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilt
 		return nil, errors.Wrap(err, "failed to find shop staff relations with given opsitons")
 	}
 	return res, nil
+}
+
+func (s *SqlShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaffRelation, error) {
+	queryString, args, err := s.commonQueryBuilder(options).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res model.ShopStaffRelation
+	err = s.GetReplicaX().Get(&res, queryString, args...)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.NewErrNotFound("ShopStaffs", "options")
+		}
+		return nil, errors.Wrap(err, "failed to find shop-staff relation with given options")
+	}
+
+	return &res, nil
 }

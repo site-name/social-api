@@ -6782,6 +6782,22 @@ func (s *TimerLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaffRela
 	return result, err
 }
 
+func (s *TimerLayerShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaffRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShopStaffStore.GetByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShopStaffStore.GetByOptions", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerShopStaffStore) Save(shopStaff *model.ShopStaffRelation) (*model.ShopStaffRelation, error) {
 	start := timemodule.Now()
 

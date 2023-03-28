@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -23,28 +24,45 @@ func (a *ServiceAccount) SessionHasPermissionTo(session *model.Session, permissi
 	if session.IsUnrestricted() {
 		return true
 	}
-	return a.RolesGrantPermission(session.GetUserRoles(), permission.Id)
+	roleNames := session.GetUserRoles()
+	roles, appErr := a.GetRolesByNames(roleNames)
+	if appErr != nil {
+		slog.Error("Failed to get roles from database with role names: "+strings.Join(roleNames, ",")+" ", slog.Err(appErr))
+		return false
+	}
+	return a.RolesGrantPermission(roles, permission.Id)
 }
 
 // SessionHasPermissionToAny checks if current user has atleast one of given permissions
 func (a *ServiceAccount) SessionHasPermissionToAny(session *model.Session, permissions ...*model.Permission) bool {
-	for _, perm := range permissions {
-		if a.SessionHasPermissionTo(session, perm) {
-			return true
-		}
+	if session.IsUnrestricted() {
+		return true
 	}
-	return false
+	roleNames := session.GetUserRoles()
+	roles, appErr := a.GetRolesByNames(roleNames)
+	if appErr != nil {
+		slog.Error("Failed to get roles from database with role names: "+strings.Join(roleNames, ",")+" ", slog.Err(appErr))
+		return false
+	}
+	return lo.SomeBy(permissions, func(perm *model.Permission) bool {
+		return a.RolesGrantPermission(roles, perm.Id)
+	})
 }
 
 // SessionHasPermissionToAll checks if given session has all given permissions
 func (a *ServiceAccount) SessionHasPermissionToAll(session *model.Session, permissions ...*model.Permission) bool {
-	for _, perm := range permissions {
-		if !a.SessionHasPermissionTo(session, perm) {
-			return false
-		}
+	if session.IsUnrestricted() {
+		return true
 	}
-
-	return true
+	roleNames := session.GetUserRoles()
+	roles, appErr := a.GetRolesByNames(roleNames)
+	if appErr != nil {
+		slog.Error("Failed to get roles from database with role names: "+strings.Join(roleNames, ",")+" ", slog.Err(appErr))
+		return false
+	}
+	return lo.EveryBy(permissions, func(perm *model.Permission) bool {
+		return a.RolesGrantPermission(roles, perm.Id)
+	})
 }
 
 // SessionHasPermissionToUser checks if current user has permission to perform modifications to another user with Id of given userID
@@ -73,8 +91,14 @@ func (a *ServiceAccount) HasPermissionTo(askingUserId string, permission *model.
 	if err != nil {
 		return false
 	}
+	roleNames := user.GetRoles()
+	roles, appErr := a.GetRolesByNames(roleNames)
+	if appErr != nil {
+		slog.Error("Failed to get roles from database with role names: "+strings.Join(roleNames, ",")+" ", slog.Err(appErr))
+		return false
+	}
 
-	return a.RolesGrantPermission(user.GetRoles(), permission.Id)
+	return a.RolesGrantPermission(roles, permission.Id)
 }
 
 // HasPermissionToUser checks if an user with Id of `askingUserId` has permission to modify another user with Id of given `userID`
@@ -90,21 +114,7 @@ func (a *ServiceAccount) HasPermissionToUser(askingUserId string, userID string)
 	return false
 }
 
-// RolesGrantPermission gets all model.Role with given roleNames.
-// Then checks if one of these model.Role satisfies:
-//
-// 1) Not deleted
-//
-// 2) one item in the role's Permissions is equal to given permissionId
-func (a *ServiceAccount) RolesGrantPermission(roleNames []string, permissionId string) bool {
-	roles, err := a.GetRolesByNames(roleNames)
-	if err != nil {
-		// This should only happen if something is very broken. We can't realistically
-		// recover the situation, so deny permission and log an error.
-		slog.Error("Failed to get roles from database with role names: "+strings.Join(roleNames, ",")+" ", slog.Err(err))
-		return false
-	}
-
+func (a *ServiceAccount) RolesGrantPermission(roles []*model.Role, permissionId string) bool {
 	for _, role := range roles {
 		if role.DeleteAt != 0 {
 			continue

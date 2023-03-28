@@ -17,7 +17,7 @@ import (
 type AttributeUpsertInputIface interface {
 	getFieldValueByString(name string) any
 	// getInputType. NOTE: make sure to check result by call its .IsValid() method
-	getInputType() AttributeInputTypeEnum
+	getInputType() model.AttributeInputType
 }
 
 type attributeValueInputIface interface {

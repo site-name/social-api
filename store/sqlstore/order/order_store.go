@@ -310,6 +310,9 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*mod
 	if option.UserID != nil {
 		query = query.Where(option.UserID)
 	}
+	if option.ShopID != nil {
+		query = query.Where(option.ShopID)
+	}
 
 	queryString, args, err := query.ToSql()
 	if err != nil {

@@ -77,8 +77,8 @@ var (
 	PermissionUpdatePreOrderAllocation *Permission
 	PermissionDeletePreOrderAllocation *Permission
 
-	// PermissionCreateCustomerEvent *Permission
 	PermissionReadCustomerEvent *Permission
+	// PermissionCreateCustomerEvent *Permission
 	// PermissionUpdateCustomerEvent *Permission
 	// PermissionDeleteCustomerEvent *Permission
 
@@ -87,13 +87,13 @@ var (
 	PermissionUpdateAttributeProduct *Permission
 	PermissionDeleteAttributeProduct *Permission
 
-	// PermissionCreateCsvExportEvent *Permission
 	PermissionReadCsvExportEvent *Permission
+	// PermissionCreateCsvExportEvent *Permission
 	// PermissionUpdateCsvExportEvent *Permission
 	// PermissionDeleteCsvExportEvent *Permission
 
-	// PermissionCreateCsvExportFile *Permission
 	PermissionReadCsvExportFile *Permission
+	// PermissionCreateCsvExportFile *Permission
 	// PermissionUpdateCsvExportFile *Permission
 	// PermissionDeleteCsvExportFile *Permission
 

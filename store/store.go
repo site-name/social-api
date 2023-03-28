@@ -164,6 +164,7 @@ type (
 		Save(shopStaff *model.ShopStaffRelation) (*model.ShopStaffRelation, error)                         // Save inserts given shopStaff into database then returns it with an error
 		Get(shopStaffID string) (*model.ShopStaffRelation, error)                                          // Get finds a shop staff with given id then returns it with an error
 		FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaffRelation, error) // FilterByShopAndStaff finds a relation ship with given shopId and staffId
+		GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaffRelation, error)
 	}
 	ShopStore interface {
 		Upsert(shop *model.Shop) (*model.Shop, error)                            // Upsert depends on shop's Id to decide to update/insert the given model.

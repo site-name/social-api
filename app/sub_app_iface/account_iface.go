@@ -122,13 +122,7 @@ type AccountService interface {
 	RevokeSession(session *model.Session) *model.AppError
 	// RevokeSessionById gets session with given sessionID then revokes it
 	RevokeSessionById(sessionID string) *model.AppError
-	// RolesGrantPermission gets all model.Role with given roleNames.
-	// Then checks if one of these model.Role satisfies:
-	//
-	// 1) Not deleted
-	//
-	// 2) one item in the role's Permissions is equal to given permissionId
-	RolesGrantPermission(roleNames []string, permissionId string) bool
+	RolesGrantPermission(roles []*model.Role, permissionId string) bool
 	// SendAccountDeleteConfirmationNotification Trigger sending a account delete notification for the given user
 	SendAccountDeleteConfirmationNotification(redirectUrl string, user model.User, manager interfaces.PluginManagerInterface, channelID string) *model.AppError
 	// SessionHasPermissionTo checks if this user has given permission to procceed

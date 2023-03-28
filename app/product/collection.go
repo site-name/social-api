@@ -53,9 +53,12 @@ func (a *ServiceProduct) PublishedCollections(channelSlug string, shopID string)
 }
 
 // VisibleCollectionsToUser returns all collections that belong to given shop and can be viewed by given user
-func (a *ServiceProduct) VisibleCollectionsToUser(userID string, shopID string, channelSlug string) ([]*model.Collection, *model.AppError) {
+func (a *ServiceProduct) VisibleCollectionsToUser(userID, shopID, channelSlug string) ([]*model.Collection, *model.AppError) {
 	// check if shop and user has relationship (shop-staff)
-	_, appErr := a.srv.ShopService().ShopStaffRelationByShopIDAndStaffID(shopID, userID)
+	_, appErr := a.srv.ShopService().ShopStaffByOptions(&model.ShopStaffRelationFilterOptions{
+		ShopID:  squirrel.Eq{store.ShopStaffTableName + ".ShopID": shopID},
+		StaffID: squirrel.Eq{store.ShopStaffTableName + ".StaffID": userID},
+	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr // return immediately if error is caused by system

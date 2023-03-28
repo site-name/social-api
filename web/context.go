@@ -18,12 +18,14 @@ type Context struct {
 	App        app.AppIface
 	AppContext *request.Context // AppContext holds information of an http request. It is created when an http request is made
 	Logger     *slog.Logger
-	// Params     *Params
-	Err *model.AppError
+	Err        *model.AppError
 	// This is used to track the graphQL query that's being executed,
 	// so that we can monitor the timings in Grafana.
 	GraphQLOperationName string
 	siteURLHeader        string
+
+	CurrentShopID    string
+	CurrentChannelID string
 }
 
 // LogAuditRec logs an audit record using default LevelAPI.

@@ -294,28 +294,28 @@ errorLabel:
 // ------------------------------- ORDER ---------------------------------
 
 type Order struct {
-	ID                  string           `json:"id"`
-	Created             DateTime         `json:"created"`
-	Status              OrderStatus      `json:"status"`
-	TrackingClientID    string           `json:"trackingClientId"`
-	ShippingMethodName  *string          `json:"shippingMethodName"`
-	CollectionPointName *string          `json:"collectionPointName"`
-	ShippingPrice       *TaxedMoney      `json:"shippingPrice"`
-	ShippingTaxRate     float64          `json:"shippingTaxRate"`
-	Token               string           `json:"token"`
-	DisplayGrossPrices  bool             `json:"displayGrossPrices"`
-	CustomerNote        string           `json:"customerNote"`
-	Weight              *Weight          `json:"weight"`
-	RedirectURL         *string          `json:"redirectUrl"`
-	PrivateMetadata     []*MetadataItem  `json:"privateMetadata"`
-	Metadata            []*MetadataItem  `json:"metadata"`
-	Number              *string          `json:"number"`
-	Origin              OrderOriginEnum  `json:"origin"`
-	Total               *TaxedMoney      `json:"total"`
-	UndiscountedTotal   *TaxedMoney      `json:"undiscountedTotal"`
-	TotalCaptured       *Money           `json:"totalCaptured"`
-	TotalBalance        *Money           `json:"totalBalance"`
-	LanguageCodeEnum    LanguageCodeEnum `json:"languageCodeEnum"`
+	ID                  string            `json:"id"`
+	Created             DateTime          `json:"created"`
+	Status              model.OrderStatus `json:"status"`
+	TrackingClientID    string            `json:"trackingClientId"`
+	ShippingMethodName  *string           `json:"shippingMethodName"`
+	CollectionPointName *string           `json:"collectionPointName"`
+	ShippingPrice       *TaxedMoney       `json:"shippingPrice"`
+	ShippingTaxRate     float64           `json:"shippingTaxRate"`
+	Token               string            `json:"token"`
+	DisplayGrossPrices  bool              `json:"displayGrossPrices"`
+	CustomerNote        string            `json:"customerNote"`
+	Weight              *Weight           `json:"weight"`
+	RedirectURL         *string           `json:"redirectUrl"`
+	PrivateMetadata     []*MetadataItem   `json:"privateMetadata"`
+	Metadata            []*MetadataItem   `json:"metadata"`
+	Number              *string           `json:"number"`
+	Origin              model.OrderOrigin `json:"origin"`
+	Total               *TaxedMoney       `json:"total"`
+	UndiscountedTotal   *TaxedMoney       `json:"undiscountedTotal"`
+	TotalCaptured       *Money            `json:"totalCaptured"`
+	TotalBalance        *Money            `json:"totalBalance"`
+	LanguageCodeEnum    LanguageCodeEnum  `json:"languageCodeEnum"`
 
 	order *model.Order // real order
 
@@ -357,7 +357,7 @@ func SystemOrderToGraphqlOrder(o *model.Order) *Order {
 	res := &Order{
 		ID:                  o.Id,
 		Created:             DateTime{util.TimeFromMillis(o.CreateAt)},
-		Status:              OrderStatus(o.Status),
+		Status:              o.Status,
 		TrackingClientID:    o.TrackingClientID,
 		ShippingMethodName:  o.ShippingMethodName,
 		CollectionPointName: o.CollectionPointName,
@@ -369,7 +369,7 @@ func SystemOrderToGraphqlOrder(o *model.Order) *Order {
 		PrivateMetadata:     MetadataToSlice(o.PrivateMetadata),
 		Metadata:            MetadataToSlice(o.Metadata),
 		Number:              &o.Id,
-		Origin:              OrderOriginEnum(o.Origin),
+		Origin:              o.Origin,
 		Total:               SystemTaxedMoneyToGraphqlTaxedMoney(o.Total),
 		UndiscountedTotal:   SystemTaxedMoneyToGraphqlTaxedMoney(o.UnDiscountedTotal),
 		TotalCaptured:       SystemMoneyToGraphqlMoney(o.TotalPaid),

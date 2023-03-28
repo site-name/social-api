@@ -246,3 +246,6 @@ categories:
 i18n-extract: ## Extract strings for translation from the source code
 	$(GO) install github.com/mattermost/mattermost-utilities/mmgotool@fdf2cd651b261bcd511a32da33dd76febedd44a8
 	$(GOBIN)/mmgotool i18n extract --portal-dir=""
+
+graphql-gen:
+	$(GO) run api/schemas/gen.go

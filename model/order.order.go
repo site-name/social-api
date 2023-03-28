@@ -3,6 +3,7 @@ package model
 import (
 	"strings"
 	"unicode/utf8"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
@@ -23,6 +24,7 @@ const (
 	ORDER_COLLECTION_POINT_NAME_MAX_LENGTH = 255
 )
 
+// order's Origin field type. Can be either "checkout", "draft" or "reissue"
 type OrderOrigin string
 
 // order origin valid values
@@ -31,6 +33,14 @@ const (
 	DRAFT    OrderOrigin = "draft"    // order created from draft order
 	REISSUE  OrderOrigin = "reissue"  // order created from reissue existing one
 )
+
+func (e OrderOrigin) IsValid() bool {
+	switch e {
+	case CHECKOUT, DRAFT, REISSUE:
+		return true
+	}
+	return false
+}
 
 type OrderStatus string
 
@@ -46,21 +56,19 @@ const (
 	CANCELED            OrderStatus = "canceled"            // permanently canceled order
 )
 
-var OrderStatusStrings = map[OrderStatus]string{
-	STATUS_DRAFT:        "Draft",
-	UNCONFIRMED:         "Unconfirmed",
-	UNFULFILLED:         "Unfulfilled",
-	PARTIALLY_FULFILLED: "Partially fulfilled",
-	PARTIALLY_RETURNED:  "Partially returned",
-	RETURNED:            "Returned",
-	FULFILLED:           "Fulfilled",
-	CANCELED:            "Canceled",
-}
-
-var OrderOriginStrings = map[OrderOrigin]string{
-	CHECKOUT: "Checkout",
-	DRAFT:    "Draft",
-	REISSUE:  "Reissue",
+func (e OrderStatus) IsValid() bool {
+	switch e {
+	case STATUS_DRAFT,
+		UNCONFIRMED,
+		UNFULFILLED,
+		PARTIALLY_FULFILLED,
+		FULFILLED,
+		PARTIALLY_RETURNED,
+		RETURNED,
+		CANCELED:
+		return true
+	}
+	return false
 }
 
 type Order struct {
@@ -122,6 +130,7 @@ type OrderFilterOption struct {
 	ChannelSlug   squirrel.Sqlizer // for comparing the channel of this order's slug
 	UserEmail     squirrel.Sqlizer // for filtering order's UserEmail
 	UserID        squirrel.Sqlizer // for filtering order's UserID
+	ShopID        squirrel.Sqlizer
 }
 
 // PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.
@@ -129,9 +138,6 @@ func (o *Order) PopulateNonDbFields() {
 	if o.populatedNonDBFields {
 		return
 	}
-	defer func() {
-		o.populatedNonDBFields = true
-	}()
 
 	// errors can be ignored since orders's Currencies were checked before saving into database
 	o.ShippingPriceNet = &goprices.Money{
@@ -173,6 +179,7 @@ func (o *Order) PopulateNonDbFields() {
 		Amount: o.WeightAmount,
 		Unit:   o.WeightUnit,
 	}
+	o.populatedNonDBFields = true
 }
 
 // Orders is slice contains order(s)
@@ -400,62 +407,24 @@ func (o *Order) GetTotalWeight() *measurement.Weight {
 func (s *Order) DeepCopy() *Order {
 	order := *s
 
-	if s.UserID != nil {
-		order.UserID = NewPrimitive(*s.UserID)
-	}
-	if s.BillingAddressID != nil {
-		order.BillingAddressID = NewPrimitive(*s.BillingAddressID)
-	}
-	if s.ShippingAddressID != nil {
-		order.ShippingAddressID = NewPrimitive(*s.ShippingAddressID)
-	}
-	if s.ShippingMethodID != nil {
-		order.ShippingMethodID = NewPrimitive(*s.ShippingMethodID)
-	}
-	if s.OriginalID != nil {
-		order.OriginalID = NewPrimitive(*s.OriginalID)
-	}
-	if s.CollectionPointID != nil {
-		order.CollectionPointID = NewPrimitive(*s.CollectionPointID)
-	}
-	if s.ShippingMethodName != nil {
-		order.ShippingMethodName = NewPrimitive(*s.ShippingMethodName)
-	}
-	if s.CollectionPointName != nil {
-		order.CollectionPointName = NewPrimitive(*s.CollectionPointName)
-	}
-	if s.VoucherID != nil {
-		order.VoucherID = NewPrimitive(*s.VoucherID)
-	}
-	if s.RedirectUrl != nil {
-		order.RedirectUrl = NewPrimitive(*s.RedirectUrl)
-	}
-
-	if s.ShippingPriceNetAmount != nil {
-		order.ShippingPriceNetAmount = NewPrimitive(*s.ShippingPriceNetAmount)
-	}
-	if s.ShippingPriceGrossAmount != nil {
-		order.ShippingPriceGrossAmount = NewPrimitive(*s.ShippingPriceGrossAmount)
-	}
-	if s.ShippingTaxRate != nil {
-		order.ShippingTaxRate = NewPrimitive(*s.ShippingTaxRate)
-	}
-	if s.TotalNetAmount != nil {
-		order.TotalNetAmount = NewPrimitive(*s.TotalNetAmount)
-	}
-	if s.UnDiscountedTotalNetAmount != nil {
-		order.UnDiscountedTotalNetAmount = NewPrimitive(*s.UnDiscountedTotalNetAmount)
-	}
-
-	if s.TotalGrossAmount != nil {
-		order.TotalGrossAmount = NewPrimitive(*s.TotalGrossAmount)
-	}
-	if s.UnDiscountedTotalGrossAmount != nil {
-		order.UnDiscountedTotalGrossAmount = NewPrimitive(*s.UnDiscountedTotalGrossAmount)
-	}
-	if s.TotalPaidAmount != nil {
-		order.TotalPaidAmount = NewPrimitive(*s.TotalPaidAmount)
-	}
+	s.UserID = (*string)(unsafe.Pointer(s.UserID))
+	s.VoucherID = (*string)(unsafe.Pointer(s.VoucherID))
+	s.OriginalID = (*string)(unsafe.Pointer(s.OriginalID))
+	s.RedirectUrl = (*string)(unsafe.Pointer(s.RedirectUrl))
+	s.BillingAddressID = (*string)(unsafe.Pointer(s.BillingAddressID))
+	s.ShippingMethodID = (*string)(unsafe.Pointer(s.ShippingMethodID))
+	s.ShippingAddressID = (*string)(unsafe.Pointer(s.ShippingAddressID))
+	s.CollectionPointID = (*string)(unsafe.Pointer(s.CollectionPointID))
+	s.ShippingMethodName = (*string)(unsafe.Pointer(s.ShippingMethodName))
+	s.CollectionPointName = (*string)(unsafe.Pointer(s.CollectionPointName))
+	s.TotalNetAmount = (*decimal.Decimal)(unsafe.Pointer(s.TotalNetAmount))
+	s.ShippingTaxRate = (*decimal.Decimal)(unsafe.Pointer(s.ShippingTaxRate))
+	s.TotalPaidAmount = (*decimal.Decimal)(unsafe.Pointer(s.TotalPaidAmount))
+	s.TotalGrossAmount = (*decimal.Decimal)(unsafe.Pointer(s.TotalGrossAmount))
+	s.ShippingPriceNetAmount = (*decimal.Decimal)(unsafe.Pointer(s.ShippingPriceNetAmount))
+	s.ShippingPriceGrossAmount = (*decimal.Decimal)(unsafe.Pointer(s.ShippingPriceGrossAmount))
+	s.UnDiscountedTotalNetAmount = (*decimal.Decimal)(unsafe.Pointer(s.UnDiscountedTotalNetAmount))
+	s.UnDiscountedTotalGrossAmount = (*decimal.Decimal)(unsafe.Pointer(s.UnDiscountedTotalGrossAmount))
 
 	return &order
 }

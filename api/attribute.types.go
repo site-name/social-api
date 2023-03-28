@@ -32,7 +32,7 @@ type AttributeValue struct {
 	attributeID string
 
 	// Translation *AttributeValueTranslation `json:"translation"`
-	// InputType   *AttributeInputTypeEnum    `json:"inputType"`
+	// InputType   *model.AttributeInputType    `json:"inputType"`
 	// Reference   *string                    `json:"reference"`
 }
 
@@ -75,8 +75,8 @@ func (a *AttributeValue) Translation(ctx context.Context, args struct{ LanguageC
 	panic("not implemented")
 }
 
-func (a *AttributeValue) InputType(ctx context.Context) (*AttributeInputTypeEnum, error) {
-	resolveInputType := func(attr Attribute) (*AttributeInputTypeEnum, error) {
+func (a *AttributeValue) InputType(ctx context.Context) (*model.AttributeInputType, error) {
+	resolveInputType := func(attr Attribute) (*model.AttributeInputType, error) {
 		embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 		if err != nil {
 			return nil, err

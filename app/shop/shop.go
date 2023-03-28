@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 )
 
@@ -45,4 +46,17 @@ func (a *ServiceShop) ShopByOptions(options *model.ShopFilterOptions) (*model.Sh
 	}
 
 	return shop, nil
+}
+
+func (s *ServiceShop) UserIsCustomerOfShop(shopID, userID string) bool {
+	relations, appErr := s.srv.Store.Order().FilterByOption(&model.OrderFilterOption{
+		UserID: squirrel.Eq{store.OrderTableName + ".UserID": userID},
+		ShopID: squirrel.Eq{store.OrderTableName + ".ShopID": shopID},
+	})
+	if appErr != nil {
+		slog.Error("failed to find orders of user in shop", slog.String("userID", userID), slog.String("shopID", shopID))
+		return false
+	}
+
+	return len(relations) > 0
 }

@@ -19,17 +19,36 @@ import (
 )
 
 func (r *Resolver) AttributeCreate(ctx context.Context, args struct{ Input AttributeCreateInput }) (*AttributeCreate, error) {
-	var permissionToCheck = model.PermissionManagePageTypesAndAttributes
-	if args.Input.Type == AttributeTypeEnumProductType {
-		permissionToCheck = model.PermissionManageProductTypesAndAttributes
-	}
-
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
 	}
+	var permissionsToCheck = model.Permissions{
+		model.PermissionCreateProductType,
+		model.PermissionReadProductType,
+		model.PermissionUpdateProductType,
+		model.PermissionDeleteProductType,
 
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), permissionToCheck) {
+		model.PermissionCreateAttributeProduct,
+		model.PermissionUpdateAttributeProduct,
+		model.PermissionDeleteAttributeProduct,
+		model.PermissionReadAttributeProduct,
+	}
+	if args.Input.Type == model.PRODUCT_TYPE {
+		permissionsToCheck = model.Permissions{
+			model.PermissionCreatePageType,
+			model.PermissionReadPageType,
+			model.PermissionUpdatePageType,
+			model.PermissionDeletePageType,
+
+			model.PermissionCreateAttributePage,
+			model.PermissionReadAttributePage,
+			model.PermissionUpdateAttributePage,
+			model.PermissionDeleteAttributePage,
+		}
+	}
+
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionToAll(embedCtx.AppContext.Session(), permissionsToCheck...) {
 		return nil, model.NewAppError("AttributeCreate", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}
 
