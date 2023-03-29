@@ -66,7 +66,7 @@ type AssignedPageAttributeFilterOption struct {
 
 func (a *AssignedPageAttribute) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"assigned_page_attribute.is_valid.%s.app_error",
+		"model.assigned_page_attribute.is_valid.%s.app_error",
 		"assigned_page_attribute_id=",
 		"AssignedPageAttribute.IsValid",
 	)

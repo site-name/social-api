@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/util"
 )
 
 const (
@@ -182,7 +183,7 @@ func (s *Session) IsSSOLogin() bool {
 }
 
 // GetUserRoles turns current session's Roles into a slice of strings
-func (s *Session) GetUserRoles() []string {
+func (s *Session) GetUserRoles() util.AnyArray[string] {
 	return strings.Fields(s.Roles)
 }
 

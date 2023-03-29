@@ -9,73 +9,35 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
 func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	Input AddressInput
-	Type  *AddressTypeEnum
+	Type  *model.AddressTypeEnum
 }) (*AccountAddressCreate, error) {
 	// get embeded context in current request
-	embedContext, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
+	embedContext, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedContext.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateAddress)
+	if embedContext.Err != nil {
+		return nil, embedContext.Err
 	}
 	currentSession := embedContext.AppContext.Session()
 
-	// validate input country
-	if country := args.Input.Country; country == nil || !country.IsValid() {
-		return nil, model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
-	}
-
-	var phoneNumber string
-	// validate input phone
-	if phone := args.Input.Phone; phone != nil {
-		var ok bool
-		phoneNumber, ok = util.ValidatePhoneNumber(*phone, args.Input.Country.String())
-		if !ok {
-			return nil, model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
-		}
+	appErr := args.Input.Validate()
+	if appErr != nil {
+		return nil, appErr
 	}
 
 	// TODO: consider adding validation for specific country
 
 	// construct address
-	address := &model.Address{
-		Phone:   phoneNumber,
-		Country: *args.Input.Country,
-	}
-	if v := args.Input.FirstName; v != nil {
-		address.FirstName = *v
-	}
-	if v := args.Input.LastName; v != nil {
-		address.LastName = *v
-	}
-	if v := args.Input.CompanyName; v != nil {
-		address.CompanyName = *v
-	}
-	if v := args.Input.StreetAddress1; v != nil {
-		address.StreetAddress1 = *v
-	}
-	if v := args.Input.StreetAddress2; v != nil {
-		address.StreetAddress2 = *v
-	}
-	if v := args.Input.City; v != nil {
-		address.City = *v
-	}
-	if v := args.Input.CityArea; v != nil {
-		address.CityArea = *v
-	}
-	if v := args.Input.PostalCode; v != nil {
-		address.PostalCode = *v
-	}
-	if v := args.Input.CountryArea; v != nil {
-		address.CountryArea = *v
-	}
+	address := new(model.Address)
+	args.Input.PatchAddress(address)
 
 	// insert address
 	savedAddress, appErr := embedContext.App.Srv().AccountService().UpsertAddress(nil, address)
@@ -115,10 +77,12 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AddressInput
 }) (*AccountAddressUpdate, error) {
-	// get embeded context
-	embededContext, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
+
+	// check authenticated first
+	embededContext, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embededContext.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateAddress)
+	if embededContext.Err != nil {
+		return nil, embededContext.Err
 	}
 	currentSession := embededContext.AppContext.Session()
 
@@ -126,73 +90,23 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AccountAddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "invalid address ID provided", http.StatusBadRequest)
 	}
-	// validate input
-	if country := args.Input.Country; country == nil || !country.IsValid() {
-		return nil, model.NewAppError("AccountAddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
-	}
-	// validate phone number
-	var phoneNumber string
-	if args.Input.Phone != nil {
-		var ok bool
-		phoneNumber, ok = util.ValidatePhoneNumber(*args.Input.Phone, string(*args.Input.Country))
-		if !ok {
-			return nil, model.NewAppError("AccountAddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, "phone number is invalid", http.StatusBadRequest)
-		}
-	}
 
-	// check if current user has this address
-	userAddressRelations, appErr := embededContext.App.Srv().
-		AccountService().
-		FilterUserAddressRelations(&model.UserAddressFilterOptions{
-			UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": currentSession.UserId},
-			AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
-		})
+	appErr := args.Input.Validate()
 	if appErr != nil {
 		return nil, appErr
 	}
-	if len(userAddressRelations) == 0 {
+
+	// check if user really owns the address:
+	addresses, appErr := embededContext.App.Srv().AccountService().AddressesByUserId(currentSession.UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+	address, found := lo.Find(addresses, func(addr *model.Address) bool { return addr.Id == args.Id })
+	if !found {
 		return nil, MakeUnauthorizedError("AccountAddressUpdate")
 	}
 
-	// find address for updating
-	address, appErr := embededContext.App.Srv().AccountService().AddressById(args.Id)
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	if value := args.Input.FirstName; value != nil {
-		address.FirstName = *value
-	}
-	if value := args.Input.LastName; value != nil {
-		address.LastName = *value
-	}
-	if value := args.Input.CompanyName; value != nil {
-		address.CompanyName = *value
-	}
-	if value := args.Input.StreetAddress1; value != nil {
-		address.StreetAddress1 = *value
-	}
-	if value := args.Input.StreetAddress2; value != nil {
-		address.StreetAddress2 = *value
-	}
-	if value := args.Input.City; value != nil {
-		address.City = *value
-	}
-	if value := args.Input.CityArea; value != nil {
-		address.CityArea = *value
-	}
-	if value := args.Input.PostalCode; value != nil {
-		address.PostalCode = *value
-	}
-	if value := args.Input.Country; value != nil {
-		address.Country = *value
-	}
-	if value := args.Input.CountryArea; value != nil {
-		address.CountryArea = *value
-	}
-	if phoneNumber != "" {
-		address.Phone = phoneNumber
-	}
+	args.Input.PatchAddress(address)
 
 	// update address
 	savedAddress, appErr := embededContext.App.Srv().AccountService().UpsertAddress(nil, address)
@@ -210,9 +124,10 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 
 func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id string }) (*AccountAddressDelete, error) {
 	// get embed context
-	embedContext, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
+	embedContext, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedContext.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAddress)
+	if embedContext.Err != nil {
+		return nil, embedContext.Err
 	}
 	currentSession := embedContext.AppContext.Session()
 
@@ -245,21 +160,15 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 
 func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 	Id   string
-	Type AddressTypeEnum
+	Type model.AddressTypeEnum
 }) (*AccountSetDefaultAddress, error) {
-	embedContext, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
+	// check if requester is authenticated
+	embedContext, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedContext.SessionRequired()
+	if embedContext.Err != nil {
+		return nil, embedContext.Err
 	}
 	currentSession := embedContext.AppContext.Session()
-
-	// validate arguments
-	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("api.AccountSetDefaultAddress", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid address id provided", http.StatusBadRequest)
-	}
-	if !args.Type.IsValid() {
-		return nil, model.NewAppError("api.AccountSetDefaultAddress", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "invalid address type provided", http.StatusBadRequest)
-	}
 
 	// check if current user own this address
 	userAddressRelations, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
@@ -271,6 +180,14 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 	}
 	if len(userAddressRelations) == 0 {
 		return nil, MakeUnauthorizedError("AccountSetDefaultAddress")
+	}
+
+	// validate arguments
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("api.AccountSetDefaultAddress", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid address id provided", http.StatusBadRequest)
+	}
+	if !args.Type.IsValid() {
+		return nil, model.NewAppError("api.AccountSetDefaultAddress", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "invalid address type provided", http.StatusBadRequest)
 	}
 
 	// perform change user default address
@@ -302,14 +219,15 @@ func (r *Resolver) AccountRegister(ctx context.Context, args struct{ Input Accou
 }
 
 func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input AccountInput }) (*AccountUpdate, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
+	// check if requester is authenticated
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
-	currentSession := embedCtx.AppContext.Session()
 
-	// find current user
-	user, appErr := r.srv.AccountService().UserById(ctx, currentSession.UserId)
+	// find requester
+	user, appErr := r.srv.AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -352,6 +270,7 @@ func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input Account
 	return &AccountUpdate{SystemUserToGraphqlUser(user)}, nil
 }
 
+// this create a link (with a token attached), sends to user's email address
 func (r *Resolver) AccountRequestDeletion(ctx context.Context, args struct {
 	Channel     *string
 	RedirectURL string

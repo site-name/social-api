@@ -9,7 +9,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/audit"
 	"github.com/sitename/sitename/modules/i18n"
 	"github.com/sitename/sitename/modules/slog"
 )
@@ -28,66 +27,6 @@ type Context struct {
 	CurrentChannelID string
 }
 
-// LogAuditRec logs an audit record using default LevelAPI.
-func (c *Context) LogAuditRec(rec *audit.Record) {
-	c.LogAuditRecWithLevel(rec, app.LevelAPI)
-}
-
-// LogAuditRec logs an audit record using specified Level.
-// If the context is flagged with a permissions error then `level`
-// is ignored and the audit record is emitted with `LevelPerms`.
-func (c *Context) LogAuditRecWithLevel(rec *audit.Record, level slog.Level) {
-	if rec == nil {
-		return
-	}
-	if c.Err != nil {
-		rec.AddMeta("err", c.Err.Id)
-		rec.AddMeta("code", c.Err.StatusCode)
-		if c.Err.Id == "api.context.permissions.app_error" {
-			level = app.LevelPerms
-		}
-		rec.Fail()
-	}
-	c.App.Srv().Audit.LogRecord(level, *rec)
-}
-
-// MakeAuditRecord creates a audit record pre-populated with data from this context.
-func (c *Context) MakeAuditRecord(event string, initialStatus string) *audit.Record {
-	rec := &audit.Record{
-		APIPath:   c.AppContext.Path(),
-		Event:     event,
-		Status:    initialStatus,
-		UserID:    c.AppContext.Session().UserId,
-		SessionID: c.AppContext.Session().Id,
-		Client:    c.AppContext.UserAgent(),
-		IPAddress: c.AppContext.IpAddress(),
-		Meta:      audit.Meta{audit.KeyClusterID: c.App.GetClusterId()},
-	}
-	rec.AddMetaTypeConverter(model.AuditModelTypeConv)
-
-	return rec
-}
-
-func (c *Context) LogAudit(extraInfo string) {
-	audit := &model.Audit{UserId: c.AppContext.Session().UserId, IpAddress: c.AppContext.IpAddress(), Action: c.AppContext.Path(), ExtraInfo: extraInfo, SessionId: c.AppContext.Session().Id}
-	if err := c.App.Srv().Store.Audit().Save(audit); err != nil {
-		appErr := model.NewAppError("LogAudit", "app.audit.save.saving.app_error", nil, err.Error(), http.StatusInternalServerError)
-		c.LogErrorByCode(appErr)
-	}
-}
-
-func (c *Context) LogAuditWithUserId(userId, extraInfo string) {
-	if c.AppContext.Session().UserId != "" {
-		extraInfo = strings.TrimSpace(extraInfo + " session_user=" + c.AppContext.Session().UserId)
-	}
-
-	audit := &model.Audit{UserId: userId, IpAddress: c.AppContext.IpAddress(), Action: c.AppContext.Path(), ExtraInfo: extraInfo, SessionId: c.AppContext.Session().Id}
-	if err := c.App.Srv().Store.Audit().Save(audit); err != nil {
-		appErr := model.NewAppError("LogAuditWithUserId", "app.audit.save.saving.app_error", nil, err.Error(), http.StatusInternalServerError)
-		c.LogErrorByCode(appErr)
-	}
-}
-
 // set session missing error for c
 func (c *Context) SessionRequired() {
 	if !*c.App.Config().ServiceSettings.EnableUserAccessTokens &&
@@ -100,6 +39,28 @@ func (c *Context) SessionRequired() {
 	if c.AppContext.Session().UserId == "" {
 		c.Err = model.NewAppError("", "api.context.session_expired.app_error", nil, "UserRequired", http.StatusUnauthorized)
 		return
+	}
+}
+
+// CheckAuthenticatedAndHasPermissionToAll checks if user is authenticated, then check if user has all given permission(s)
+func (c *Context) CheckAuthenticatedAndHasPermissionToAll(perms ...*model.Permission) {
+	c.SessionRequired()
+	if c.Err != nil {
+		return
+	}
+	if !c.App.Srv().AccountService().SessionHasPermissionToAll(c.AppContext.Session(), perms...) {
+		c.SetPermissionError(perms...)
+	}
+}
+
+// CheckAuthenticatedAndHasPermissionToAny check user authenticated, then check if user has any of given permission(s)
+func (c *Context) CheckAuthenticatedAndHasPermissionToAny(perms ...*model.Permission) {
+	c.SessionRequired()
+	if c.Err != nil {
+		return
+	}
+	if !c.App.Srv().AccountService().SessionHasPermissionToAny(c.AppContext.Session(), perms...) {
+		c.SetPermissionError(perms...)
 	}
 }
 
@@ -231,7 +192,8 @@ func (c *Context) HandleEtag(etag string, routeName string, w http.ResponseWrite
 
 // IsSystemAdmin checks if given session contains info of system's administrator.
 func (c *Context) IsSystemAdmin() bool {
-	return c.App.Srv().AccountService().SessionHasPermissionTo(c.AppContext.Session(), model.PermissionManageSystem)
+	c.SessionRequired()
+	return c.Err == nil && c.AppContext.Session().GetUserRoles().Contains(model.SystemAdminRoleId)
 }
 
 func NewInvalidParamError(parameter string) *model.AppError {
@@ -273,202 +235,6 @@ func (c *Context) SetSiteURLHeader(url string) {
 func (c *Context) GetSiteURLHeader() string {
 	return c.siteURLHeader
 }
-
-// RequireUserId checks if:
-//
-// 1) If c.Err != nil => return c
-//
-// 2) If c.Params.UserId == "me" => c.Params.UserId = session.UserId
-//
-// 3) If c.Params.UserId is not valid => set invalid params
-// func (c *Context) RequireUserId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if c.Params.UserId == account.ME {
-// 		c.Params.UserId = c.AppContext.Session().UserId
-// 	}
-
-// 	if !model.IsValidId(c.Params.UserId) {
-// 		c.SetInvalidUrlParam("user_id")
-// 	}
-// 	return c
-// }
-
-// // RequireTokenId make sure the TokenId is valid in c's Params
-// func (c *Context) RequireTokenId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.TokenId) {
-// 		c.SetInvalidUrlParam("token_id")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireTimestamp() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if c.Params.Timestamp == 0 {
-// 		c.SetInvalidUrlParam("timestamp")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireUsername() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidUsername(c.Params.Username) {
-// 		c.SetInvalidParam("username")
-// 	}
-
-// 	return c
-// }
-
-// func (c *Context) RequirePolicyId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.PolicyId) {
-// 		c.SetInvalidUrlParam("policy_id")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireFileId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.FileId) {
-// 		c.SetInvalidUrlParam("file_id")
-// 	}
-
-// 	return c
-// }
-
-// // RequireUploadId checks if Params's UploadId is set and valid
-// func (c *Context) RequireUploadId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.UploadId) {
-// 		c.SetInvalidUrlParam("upload_id")
-// 	}
-
-// 	return c
-// }
-
-// func (c *Context) RequireFilename() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if c.Params.Filename == "" {
-// 		c.SetInvalidUrlParam("filename")
-// 	}
-
-// 	return c
-// }
-
-// func (c *Context) RequireReportId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.ReportId) {
-// 		c.SetInvalidUrlParam("report_id")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) SanitizeEmail() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-// 	c.Params.Email = strings.ToLower(c.Params.Email)
-// 	if !model.IsValidEmail(c.Params.Email) {
-// 		c.SetInvalidUrlParam("email")
-// 	}
-
-// 	return c
-// }
-
-// func (c *Context) RequireJobId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.JobId) {
-// 		c.SetInvalidUrlParam("job_id")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireJobType() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if c.Params.JobType == "" || len(c.Params.JobType) > 32 {
-// 		c.SetInvalidUrlParam("job_type")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireRoleId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.RoleId) {
-// 		c.SetInvalidUrlParam("role_id")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireSchemeId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidId(c.Params.SchemeId) {
-// 		c.SetInvalidUrlParam("scheme_id")
-// 	}
-// 	return c
-// }
-
-// func (c *Context) RequireRoleName() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if !model.IsValidRoleName(c.Params.RoleName) {
-// 		c.SetInvalidUrlParam("role_name")
-// 	}
-
-// 	return c
-// }
-
-// func (c *Context) RequireInvoiceId() *Context {
-// 	if c.Err != nil {
-// 		return c
-// 	}
-
-// 	if len(c.Params.InvoiceId) != 27 {
-// 		c.SetInvalidUrlParam("invoice_id")
-// 	}
-
-// 	return c
-// }
 
 func (c *Context) GetRemoteID(r *http.Request) string {
 	return r.Header.Get(model.HEADER_REMOTECLUSTER_ID)

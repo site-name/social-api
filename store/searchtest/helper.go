@@ -172,17 +172,17 @@ func (th *SearchTestHelper) createUser(username, nickname, firstName, lastName s
 	})
 }
 
-func (th *SearchTestHelper) createGuest(username, nickname, firstName, lastName string) (*model.User, error) {
-	return th.Store.User().Save(&model.User{
-		Username:  username,
-		Password:  username,
-		Nickname:  nickname,
-		FirstName: firstName,
-		LastName:  lastName,
-		Email:     th.makeEmail(),
-		Roles:     model.SystemGuestRoleId,
-	})
-}
+// func (th *SearchTestHelper) createGuest(username, nickname, firstName, lastName string) (*model.User, error) {
+// 	return th.Store.User().Save(&model.User{
+// 		Username:  username,
+// 		Password:  username,
+// 		Nickname:  nickname,
+// 		FirstName: firstName,
+// 		LastName:  lastName,
+// 		Email:     th.makeEmail(),
+// 		Roles:     model.SystemGuestRoleId,
+// 	})
+// }
 
 func (th *SearchTestHelper) deleteUser(user *model.User) error {
 	return th.Store.User().PermanentDelete(user.Id)

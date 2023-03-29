@@ -37,6 +37,7 @@ type GiftCard struct {
 	Id                   string           `json:"id"`
 	Code                 string           `json:"code"`          // unique, db_index
 	CreatedByID          *string          `json:"created_by_id"` // foreign key User, ON DELETE SET NULL
+	ShopID               string           `json:"shop_id"`       // the shop which issued this giftcard
 	UsedByID             *string          `json:"used_by_id"`
 	CreatedByEmail       *string          `json:"created_by_email"`
 	UsedByEmail          *string          `json:"used_by_email"`
@@ -54,7 +55,7 @@ type GiftCard struct {
 	CurrentBalance       *goprices.Money  `json:"current_balance,omitempty" db:"-"`
 	ModelMetadata
 
-	populatedNonDBFields bool `json:"-" db:"-"`
+	populatedNonDBFields bool `db:"-"`
 }
 
 // GiftCardFilterOption is used to buil sql queries
@@ -66,6 +67,7 @@ type GiftCardFilterOption struct {
 	Currency      squirrel.Sqlizer
 	CreatedByID   squirrel.Sqlizer
 	UsedByID      squirrel.Sqlizer
+	ShopID        squirrel.Sqlizer
 	CheckoutToken squirrel.Sqlizer // SELECT * FROM 'Giftcards' WHERE 'Id' IN (SELECT 'GiftcardID' FROM 'GiftCardCheckouts' WHERE 'GiftCardCheckouts.CheckoutID' ...)
 	IsActive      *bool
 	Distinct      bool             // if true, SELECT DISTINCT
@@ -114,7 +116,7 @@ func (gc *GiftCard) PopulateNonDbFields() {
 
 func (gc *GiftCard) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"gift_card.is_valid.%s.app_error",
+		"model.gift_card.is_valid.%s.app_error",
 		"gift_card_id=",
 		"GiftCard.IsValid",
 	)
@@ -127,6 +129,9 @@ func (gc *GiftCard) IsValid() *AppError {
 	}
 	if gc.UsedByID != nil && !IsValidId(*gc.UsedByID) {
 		return outer("used_by_id", &gc.Id)
+	}
+	if !IsValidId(gc.ShopID) {
+		return outer("shop_id", &gc.Id)
 	}
 	if gc.CreatedByEmail != nil && len(*gc.CreatedByEmail) > USER_EMAIL_MAX_LENGTH {
 		return outer("created_by_email", &gc.Id)

@@ -14,7 +14,7 @@ var (
 )
 
 const (
-	SystemGuestRoleId           = "system_guest"
+	// SystemGuestRoleId           = "system_guest"
 	SystemUserRoleId            = "system_user"
 	SystemAdminRoleId           = "system_admin"
 	SystemUserAccessTokenRoleId = "system_user_access_token"
@@ -37,7 +37,6 @@ func init() {
 	}
 
 	BuiltInSchemeManagedRoleIDs = append([]string{
-		SystemGuestRoleId,
 		SystemUserRoleId,
 		SystemAdminRoleId,
 		SystemUserAccessTokenRoleId,
@@ -260,6 +259,13 @@ func init() {
 		PermissionSysconsoleWriteIntegrationsBotAccounts.Id,
 		PermissionSysconsoleWriteIntegrationsGif.Id,
 		PermissionSysconsoleWriteIntegrationsCors.Id,
+
+		PermissionCreateAttribute.Id,
+		PermissionReadAttribute.Id,
+		PermissionDeleteAttribute.Id,
+		PermissionUpdateAttributeValue.Id,
+		PermissionDeleteAttributeValue.Id,
+		PermissionCreateAttributeValue.Id,
 	}
 
 	// Add the ancillary permissions to each system role
@@ -432,15 +438,6 @@ func IsValidRoleName(roleName string) bool {
 // MakeDefaultRoles make an map with values are default roles
 func MakeDefaultRoles() map[string]*Role {
 	roles := make(map[string]*Role)
-
-	roles[SystemGuestRoleId] = &Role{
-		Name:          SystemGuestRoleId,
-		DisplayName:   "authentication.roles.global_guest.name",
-		Description:   "authentication.roles.global_guest.description",
-		Permissions:   SystemGuestPermissions.IDs(),
-		SchemeManaged: true,
-		BuiltIn:       true,
-	}
 
 	roles[SystemUserRoleId] = &Role{
 		Name:          SystemUserRoleId,

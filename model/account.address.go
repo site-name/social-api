@@ -11,7 +11,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 )
 
-// types for addresses
+// types for addresses, can only be "shipping" or "billing"
 type AddressTypeEnum string
 
 const (

@@ -76,32 +76,12 @@ func (a *AttributeValue) Translation(ctx context.Context, args struct{ LanguageC
 }
 
 func (a *AttributeValue) InputType(ctx context.Context) (*model.AttributeInputType, error) {
-	resolveInputType := func(attr Attribute) (*model.AttributeInputType, error) {
-		embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-		if err != nil {
-			return nil, err
-		}
-
-		var permToCheck = model.PermissionManageProducts
-		if attr.Type != nil && *attr.Type == AttributeTypeEnumPageType {
-			permToCheck = model.PermissionManagePages
-		}
-
-		if !embedCtx.App.Srv().
-			AccountService().
-			SessionHasPermissionTo(embedCtx.AppContext.Session(), permToCheck) {
-			return attr.InputType, nil
-		}
-
-		return nil, model.NewAppError("AttributeValue.InputType", ErrorUnauthorized, nil, "You are not allowed to see this", http.StatusUnauthorized)
-	}
-
 	attr, err := AttributesByAttributeIdLoader.Load(ctx, a.attributeID)()
 	if err != nil {
 		return nil, err
 	}
 
-	return resolveInputType(*SystemAttributeToGraphqlAttribute(attr))
+	return &attr.InputType, nil
 }
 
 // the result would has format of "EntityType:slug"

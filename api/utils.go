@@ -13,7 +13,6 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
@@ -29,20 +28,10 @@ func MakeUnauthorizedError(where string) *model.AppError {
 	return model.NewAppError(where, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 }
 
-func MakeChannelIDQueryParamMissingError(where string) *model.AppError {
-	return model.NewAppError(where, "api.channel_id.missing.app_error", nil, "please provide channel_id query param", http.StatusBadRequest)
-}
-
-func MakeShopIDQueryParamMissingError(where string) *model.AppError {
-	return model.NewAppError(where, "api.shop_id.missing.app_error", nil, "please provide shop_id query param", http.StatusBadRequest)
-}
-
 // Unique type to hold our context.
 type CTXKey int
 
-const (
-	WebCtx CTXKey = iota
-)
+const WebCtx CTXKey = iota
 
 // constructSchema constructs schema from *.graphql files
 func constructSchema() (string, error) {
@@ -309,6 +298,29 @@ type GraphqlParams struct {
 	After  *string
 	First  *int32
 	Last   *int32
+
+	validated bool
+}
+
+func (g *GraphqlParams) Validate(apiName string) *model.AppError {
+	g.validated = true
+	if (g.First != nil && g.Last != nil) || (g.First == nil && g.Last == nil) {
+		return model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "provide either First or Last, not both", http.StatusBadRequest)
+	}
+	if (g.First != nil && *g.First <= 0) || (g.Last != nil && *g.Last <= 0) {
+		return model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "First and Last must be greater than zero", http.StatusBadRequest)
+	}
+	if g.First != nil && g.Before != nil {
+		return model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Before"}, "First and Before can't go together", http.StatusBadRequest)
+	}
+	if g.Last != nil && g.After != nil {
+		return model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "Last / After"}, "Last and After can't go together", http.StatusBadRequest)
+	}
+	if g.Before != nil && g.After != nil {
+		return model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "Before / After"}, "Before and After can'g go together", http.StatusBadRequest)
+	}
+
+	return nil
 }
 
 func (s *graphqlPaginator[R, C, D]) Len() int {
@@ -362,20 +374,11 @@ type CountableEdge[D any] struct {
 }
 
 func (g *graphqlPaginator[R, C, D]) parse(apiName string) (*CountableConnection[D], *model.AppError) {
-	if (g.First != nil && g.Last != nil) || (g.First == nil && g.Last == nil) {
-		return nil, model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "provide either First or Last, not both", http.StatusBadRequest)
-	}
-	if (g.First != nil && *g.First <= 0) || (g.Last != nil && *g.Last <= 0) {
-		return nil, model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "First and Last must be greater than zero", http.StatusBadRequest)
-	}
-	if g.First != nil && g.Before != nil {
-		return nil, model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Before"}, "First and Before can't go together", http.StatusBadRequest)
-	}
-	if g.Last != nil && g.After != nil {
-		return nil, model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "Last / After"}, "Last and After can't go together", http.StatusBadRequest)
-	}
-	if g.Before != nil && g.After != nil {
-		return nil, model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "Before / After"}, "Before and After can'g go together", http.StatusBadRequest)
+	if !g.validated {
+		appErr := g.Validate(apiName)
+		if appErr != nil {
+			return nil, appErr
+		}
 	}
 
 	orderASC := g.First != nil // order ascending or not
@@ -470,15 +473,4 @@ func reportingPeriodToDate(period ReportingPeriod) time.Time {
 	default:
 		return now
 	}
-}
-
-// IdsAreValidUUIDs checks if all given ids are valid according to https://github.com/google/uuid package
-func IdsAreValidUUIDs(ids ...string) bool {
-	for _, id := range ids {
-		_, err := uuid.Parse(id)
-		if err != nil {
-			return false
-		}
-	}
-	return true
 }

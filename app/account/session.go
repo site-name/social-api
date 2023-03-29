@@ -265,11 +265,11 @@ func (a *ServiceAccount) createSessionForUserAccessToken(tokenString string) (*m
 	// if user.IsBot {
 	// 	session.AddProp(model.SESSION_PROP_IS_BOT, model.SESSION_PROP_IS_BOT_VALUE)
 	// }
-	if user.IsGuest() {
-		session.AddProp(model.SESSION_PROP_IS_GUEST, "true")
-	} else {
-		session.AddProp(model.SESSION_PROP_IS_GUEST, "false")
-	}
+	// if user.IsGuest() {
+	// 	session.AddProp(model.SESSION_PROP_IS_GUEST, "true")
+	// } else {
+	// 	session.AddProp(model.SESSION_PROP_IS_GUEST, "false")
+	// }
 	a.SetSessionExpireInDays(session, model.SESSION_USER_ACCESS_TOKEN_EXPIRY)
 
 	session, nErr = a.srv.Store.Session().Save(session)

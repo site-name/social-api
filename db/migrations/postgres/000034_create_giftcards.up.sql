@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS giftcards (
   id character varying(36) NOT NULL PRIMARY KEY,
   code character varying(40),
   createdbyid character varying(36),
+  shopid character varying(36),
   usedbyid character varying(36),
   createdbyemail character varying(128),
   usedbyemail character varying(128),
@@ -29,3 +30,5 @@ CREATE INDEX idx_giftcards_metadata ON giftcards USING btree (metadata);
 CREATE INDEX idx_giftcards_private_metadata ON giftcards USING btree (privatemetadata);
 
 CREATE INDEX idx_giftcards_tag ON giftcards USING btree (tag);
+
+CREATE INDEX idx_giftcards_shopid ON giftcards USING btree (shopid);

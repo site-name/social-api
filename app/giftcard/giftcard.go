@@ -53,33 +53,18 @@ func (a *ServiceGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppErro
 	giftcards, appErr := a.GiftcardsByOption(nil, &model.GiftCardFilterOption{
 		Code: squirrel.Eq{store.GiftcardTableName + ".Code": code},
 	})
-
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusNotFound {
-			return false, nil
-		}
 		return false, appErr
 	}
 
-	return len(giftcards) != 0, nil
+	return len(giftcards) > 0, nil
 }
 
 // GiftcardsByOption finds a list of giftcards with given option
 func (a *ServiceGiftcard) GiftcardsByOption(transaction store_iface.SqlxTxExecutor, option *model.GiftCardFilterOption) ([]*model.GiftCard, *model.AppError) {
 	giftcards, err := a.srv.Store.GiftCard().FilterByOption(transaction, option)
-	var (
-		statusCode int
-		errMessage string
-	)
 	if err != nil {
-		errMessage = err.Error()
-		statusCode = http.StatusInternalServerError
-	} else if len(giftcards) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("GiftcardsByOption", "app.giftcard.error_finding_giftcards_by_option.app_error", nil, errMessage, statusCode)
+		return nil, model.NewAppError("GiftcardsByOption", "app.giftcard.error_finding_giftcards_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return giftcards, nil

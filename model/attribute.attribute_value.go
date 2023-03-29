@@ -161,7 +161,7 @@ func (a *AttributeValueTranslation) String() string {
 
 func (a *AttributeValueTranslation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"attribute_value_translation.is_valid.%s.app_error",
+		"model.attribute_value_translation.is_valid.%s.app_error",
 		"attribute_value_translation_id=",
 		"AttributeValueTranslation.IsValid",
 	)

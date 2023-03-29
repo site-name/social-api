@@ -10,6 +10,7 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 )
@@ -89,7 +90,7 @@ func (r *Resolver) Categories(ctx context.Context, args struct {
 
 		// parse ids
 		if ids := args.Filter.Ids; len(ids) > 0 {
-			if !IdsAreValidUUIDs(ids...) {
+			if !lo.EveryBy(ids, model.IsValidId) {
 				return nil, model.NewAppError("Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Filter.Ids"}, "please provide valid uuids", http.StatusBadRequest)
 			}
 			idMap := map[string]bool{}

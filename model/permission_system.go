@@ -675,7 +675,6 @@ func initializeSystemScopedPermissions() {
 		PermissionDeleteTermsOfService,
 		PermissionCreateToken,
 		PermissionReadToken,
-		// PermissionUpdateToken,
 		PermissionDeleteToken,
 		PermissionCreateUser,
 		PermissionReadUser,
@@ -684,6 +683,13 @@ func initializeSystemScopedPermissions() {
 		PermissionReadCategory,
 		PermissionUpdateCategory,
 		PermissionDeleteCategory,
+
+		PermissionCreateAttribute,
+		PermissionUpdateAttribute,
+		PermissionDeleteAttribute,
+		PermissionUpdateAttributeValue,
+		PermissionDeleteAttributeValue,
+		PermissionCreateAttributeValue,
 	}
 
 	AllSystemScopedPermissions = append(SystemScopedPermissionsMinusSysconsole, SysconsoleReadPermissions...)

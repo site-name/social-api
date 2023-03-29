@@ -117,10 +117,10 @@ enum AccountErrorCode {
 }
 
 extend type Mutation {
-  addressCreate(input: AddressInput!, userId: String!): AddressCreate
+  addressCreate(input: AddressInput!): AddressCreate
   addressUpdate(id: String!, input: AddressInput!): AddressUpdate
   addressDelete(id: String!): AddressDelete
-  addressSetDefault(addressId: String!, type: AddressTypeEnum!, userId: String!): AddressSetDefault
+  addressSetDefault(addressId: String!, type: AddressTypeEnum!): AddressSetDefault
 }
 
 extend type Query {

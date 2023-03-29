@@ -19,6 +19,7 @@ var customerModelFields = util.AnyArray[string]{
 	"Type",
 	"OrderID",
 	"UserID",
+	"ShopID",
 	"Parameters",
 }
 
@@ -78,7 +79,7 @@ func (cs *SqlCustomerEventStore) FilterByOptions(options *model.CustomerEventFil
 		options = new(model.CustomerEventFilterOptions)
 	}
 
-	query := cs.GetQueryBuilder().Select("*").From(store.CustomerEventTableName)
+	query := cs.GetQueryBuilder().Select(store.CustomerEventTableName + ".").From(store.CustomerEventTableName)
 
 	if options.Id != nil {
 		query = query.Where(options.Id)

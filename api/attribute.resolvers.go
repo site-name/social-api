@@ -19,37 +19,10 @@ import (
 )
 
 func (r *Resolver) AttributeCreate(ctx context.Context, args struct{ Input AttributeCreateInput }) (*AttributeCreate, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	var permissionsToCheck = model.Permissions{
-		model.PermissionCreateProductType,
-		model.PermissionReadProductType,
-		model.PermissionUpdateProductType,
-		model.PermissionDeleteProductType,
-
-		model.PermissionCreateAttributeProduct,
-		model.PermissionUpdateAttributeProduct,
-		model.PermissionDeleteAttributeProduct,
-		model.PermissionReadAttributeProduct,
-	}
-	if args.Input.Type == model.PRODUCT_TYPE {
-		permissionsToCheck = model.Permissions{
-			model.PermissionCreatePageType,
-			model.PermissionReadPageType,
-			model.PermissionUpdatePageType,
-			model.PermissionDeletePageType,
-
-			model.PermissionCreateAttributePage,
-			model.PermissionReadAttributePage,
-			model.PermissionUpdateAttributePage,
-			model.PermissionDeleteAttributePage,
-		}
-	}
-
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionToAll(embedCtx.AppContext.Session(), permissionsToCheck...) {
-		return nil, model.NewAppError("AttributeCreate", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateAttribute)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	// clean input
@@ -125,12 +98,10 @@ func (r *Resolver) AttributeDelete(ctx context.Context, args struct{ Id string }
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AttributeDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "id = "+args.Id+" is invalid id", http.StatusBadRequest)
 	}
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManagePageTypesAndAttributes) {
-		return nil, model.NewAppError("AttributeDelete", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAttribute)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	_, appErr := embedCtx.App.Srv().AttributeService().DeleteAttributes(args.Id)
@@ -146,18 +117,15 @@ func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AttributeUpdateInput
 }) (*AttributeUpdate, error) {
-	// upfront validate remove attribute values ids
-	if len(args.Input.RemoveValues) > 0 && !IdsAreValidUUIDs(args.Input.RemoveValues...) {
+
+	if len(args.Input.RemoveValues) > 0 && !lo.EveryBy(args.Input.RemoveValues, model.IsValidId) {
 		return nil, model.NewAppError("AttributeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "removeValues"}, "please provide valid attribute value ids", http.StatusBadRequest)
 	}
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManagePageTypesAndAttributes) {
-		return nil, model.NewAppError("AttributeUpdate", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateAttribute)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	// get attribute
@@ -257,16 +225,14 @@ func (r *Resolver) AttributeTranslate(ctx context.Context, args struct {
 }
 
 func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []string }) (*AttributeBulkDelete, error) {
-	if len(args.Ids) == 0 || !IdsAreValidUUIDs(args.Ids...) {
+	if len(args.Ids) == 0 || !lo.EveryBy(args.Ids, model.IsValidId) {
 		return nil, model.NewAppError("AttributeBulkDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid ids", http.StatusBadRequest)
 	}
 	// validate permission(s)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManagePageTypesAndAttributes) {
-		return nil, model.NewAppError("AttributeBulkDelete", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAttribute)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	count, appErr := embedCtx.App.Srv().AttributeService().DeleteAttributes(args.Ids...)
@@ -279,16 +245,15 @@ func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []s
 }
 
 func (r *Resolver) AttributeValueBulkDelete(ctx context.Context, args struct{ Ids []string }) (*AttributeValueBulkDelete, error) {
-	if len(args.Ids) == 0 || !IdsAreValidUUIDs(args.Ids...) {
+	if len(args.Ids) == 0 || !lo.EveryBy(args.Ids, model.IsValidId) {
 		return nil, model.NewAppError("AttributeValueBulkDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid ids", http.StatusBadRequest)
 	}
+
 	// validate permission(s)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManagePageTypesAndAttributes) {
-		return nil, model.NewAppError("AttributeValueBulkDelete", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAttributeValue)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	count, appErr := embedCtx.App.Srv().AttributeService().DeleteAttributeValues(args.Ids...)
@@ -308,12 +273,10 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 		return nil, model.NewAppError("AttributeValueCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributeID"}, "id="+args.AttributeID+" is in valid", http.StatusBadRequest)
 	}
 	// validate permission(s)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManagePageTypesAndAttributes) {
-		return nil, model.NewAppError("AttributeValueCreate", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateAttributeValue)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{
@@ -365,13 +328,10 @@ func (r *Resolver) AttributeValueDelete(ctx context.Context, args struct{ Id str
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AttributeValueDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.Id+" is in valid", http.StatusBadRequest)
 	}
-	// validate permission(s)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManagePageTypesAndAttributes) {
-		return nil, model.NewAppError("AttributeValueDelete", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAttributeValue)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	attrValues, appErr := embedCtx.App.Srv().AttributeService().FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
@@ -404,12 +364,10 @@ func (r *Resolver) AttributeValueUpdate(ctx context.Context, args struct {
 		return nil, model.NewAppError("AttributeValueUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.Id+" is in valid", http.StatusBadRequest)
 	}
 	// validate permission(s)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManagePageTypesAndAttributes) {
-		return nil, model.NewAppError("AttributeValueUpdate", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateAttribute)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	attrValues, appErr := embedCtx.App.Srv().AttributeService().FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
@@ -468,13 +426,8 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 		return nil, model.NewAppError("AttributeReorderValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.AttributeID+" is in valid", http.StatusBadRequest)
 	}
 	// validate permission(s)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManagePageTypesAndAttributes) {
-		return nil, model.NewAppError("AttributeReorderValues", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateAttribute, model.PermissionUpdateAttribute, model.PermissionCreateAttributeValue, model.PermissionUpdateAttributeValue)
 
 	// find attribute with given id
 	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{

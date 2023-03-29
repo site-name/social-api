@@ -13,53 +13,157 @@ import (
 	"github.com/site-name/i18naddress"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/web"
 )
 
 func (r *Resolver) AddressCreate(ctx context.Context, args struct {
-	Input  AddressInput
-	UserID string
+	Input AddressInput
 }) (*AddressCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+	currentSession := embedCtx.AppContext.Session()
+
+	// valudate input
+	appErr := args.Input.Validate()
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// create new address:
+	address := new(model.Address)
+	args.Input.PatchAddress(address)
+
+	savedAddress, appErr := r.srv.AccountService().UpsertAddress(nil, address)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// add user-address relation:
+	_, appErr = r.srv.AccountService().AddUserAddress(&model.UserAddress{
+		UserID:    currentSession.UserId,
+		AddressID: savedAddress.Id,
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	panic("not implemented") // TODO : finish plugin feature
+
+	return &AddressCreate{
+		User:    &User{ID: currentSession.UserId},
+		Address: SystemAddressToGraphqlAddress(savedAddress),
+	}, nil
 }
 
 func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AddressInput
 }) (*AddressUpdate, error) {
-	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	// requester can update address only if he is owner of that address
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
 
-	// // validate given id
-	// if !model.IsValidId(args.Id) {
-	// 	return nil, model.NewAppError("AddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
-	// }
+	// validate given id
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("AddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
+	}
 
-	// // validate permission
-	// if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageUsers) {
-	// 	return nil, model.NewAppError("AddressUpdate", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
-	// }
+	appErr := args.Input.Validate()
+	if appErr != nil {
+		return nil, appErr
+	}
 
-	// // find address with given id
-	// address, appErr := embedCtx.App.Srv().AccountService().AddressById(args.Id)
-	// if err != nil {
-	// 	return nil, appErr
-	// }
+	// check if requester really owns address:
+	addresses, appErr := r.srv.AccountService().AddressesByUserId(embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
 
-	panic(fmt.Errorf("not implemented"))
+	address, found := lo.Find(addresses, func(addr *model.Address) bool { return addr.Id == args.Id })
+	if !found || address == nil {
+		return nil, MakeUnauthorizedError("AddressUpdate")
+	}
+
+	args.Input.PatchAddress(address)
+
+	updatedAddress, appErr := r.srv.AccountService().UpsertAddress(nil, address)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	panic(fmt.Errorf("not implemented")) // TODO: finish plugin feature
+
+	return &AddressUpdate{
+		Address: SystemAddressToGraphqlAddress(updatedAddress),
+		User:    &User{ID: embedCtx.AppContext.Session().UserId},
+	}, nil
 }
 
 func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) (*AddressDelete, error) {
+	// requester can delete address only if he is owner of given address
+	// TODO: investigate if deleting an address affects other parts like shipping/billing address of orders
+
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+
+	// validate id input
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("AddressDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
+	}
+
+	// delete relation between user and address, address stil exists
+	appErr := embedCtx.App.Srv().AccountService().AddressDeleteForUser(embedCtx.AppContext.Session().UserId, args.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
 	panic(fmt.Errorf("not implemented"))
+
+	return &AddressDelete{
+		Address: &Address{model.Address{Id: args.Id}},
+		User:    &User{ID: embedCtx.AppContext.Session().UserId},
+	}, nil
 }
 
 func (r *Resolver) AddressSetDefault(ctx context.Context, args struct {
 	AddressID string
-	Type      AddressTypeEnum
-	UserID    string
+	Type      model.AddressTypeEnum
 }) (*AddressSetDefault, error) {
-	panic(fmt.Errorf("not implemented"))
+	// requester can update default billing/shipping address of himself only
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+
+	// validate address id
+	if !model.IsValidId(args.AddressID) {
+		return nil, model.NewAppError("AddressSetDefault", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "addressId"}, "please provide valid address id", http.StatusBadRequest)
+	}
+	if !args.Type.IsValid() {
+		return nil, model.NewAppError("AddressSetDefault", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "address type"}, "please provide valid address type", http.StatusBadRequest)
+	}
+
+	// check if requester own address
+	updatedUser, appErr := embedCtx.App.Srv().AccountService().UserSetDefaultAddress(embedCtx.AppContext.Session().UserId, args.AddressID, args.Type)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	panic("not implemented") // TODO: finish plugin apis
+
+	return &AddressSetDefault{
+		User: SystemUserToGraphqlUser(updatedUser),
+	}, nil
 }
 
 func choicesToChoiceValues(choices [][2]string) []*ChoiceValue {
@@ -116,5 +220,28 @@ func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 }
 
 func (r *Resolver) Address(ctx context.Context, args struct{ Id string }) (*Address, error) {
-	panic(fmt.Errorf("not implemented"))
+	// +) requester can see address if he is owner of that address OR
+	// +) requester is staff of currentshop, this address is shipping/billing address of an order
+	// that order belong to current shop
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("Address", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
+	}
+
+	// case user own address
+	addresses, appErr := r.srv.AccountService().AddressesByUserId(embedCtx.AppContext.Session().UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(addresses) > 0 {
+		return SystemAddressToGraphqlAddress(addresses[0]), nil
+	}
+
+	// TODO: check if shop staff can see address
+	return nil, MakeUnauthorizedError("Address")
 }

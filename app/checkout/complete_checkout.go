@@ -152,7 +152,6 @@ func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo model.CheckoutInf
 
 // validateGiftcards Check if all gift cards assigned to checkout are available.
 func (s *ServiceCheckout) validateGiftcards(checkOut model.Checkout) (*model.NotApplicable, *model.AppError) {
-
 	var (
 		totalGiftcardsOfCheckout       int
 		totalActiveGiftcardsOfCheckout int
@@ -164,15 +163,10 @@ func (s *ServiceCheckout) validateGiftcards(checkOut model.Checkout) (*model.Not
 		Distinct:      true,
 	})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return nil, appErr
-		}
-		// ignore not found error
+		return nil, appErr
 	}
 
-	if allGiftcards != nil {
-		totalGiftcardsOfCheckout = len(allGiftcards)
-	}
+	totalGiftcardsOfCheckout = len(allGiftcards)
 
 	// find active giftcards
 	// NOTE: active giftcards are active and has (ExpiryDate == NULL || ExpiryDate >= beginning of Today)

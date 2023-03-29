@@ -24,6 +24,7 @@ func (s *SqlGiftCardStore) ModelFields(prefix string) util.AnyArray[string] {
 		"Id",
 		"Code",
 		"CreatedByID",
+		"ShopID",
 		"UsedByID",
 		"CreatedByEmail",
 		"UsedByEmail",
@@ -59,7 +60,8 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, 
 	for _, giftCard := range giftCards {
 		saving := false
 
-		if giftCard.Id == "" {
+		if !model.IsValidId(giftCard.Id) {
+			giftCard.Id = ""
 			giftCard.PreSave()
 			saving = true
 		} else {
@@ -70,11 +72,7 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, 
 			return nil, err
 		}
 
-		var (
-			err error
-
-			numUpdated int64
-		)
+		var err error
 		if saving {
 			query := "INSERT INTO " + store.GiftcardTableName + "(" + gcs.ModelFields("").Join(",") + ") VALUES (" + gcs.ModelFields(":").Join(",") + ")"
 			_, err = executor.NamedExec(query, giftCard)
@@ -99,11 +97,7 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, 
 				}).
 				Join(",") + " WHERE Id=:Id"
 
-			var result sql.Result
-			result, err = executor.NamedExec(query, giftCard)
-			if err == nil && result != nil {
-				numUpdated, _ = result.RowsAffected()
-			}
+			_, err = executor.NamedExec(query, giftCard)
 		}
 
 		if err != nil {
@@ -111,10 +105,6 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, 
 				return nil, store.NewErrInvalidInput(store.GiftcardTableName, "Code", giftCard.Code)
 			}
 			return nil, errors.Wrapf(err, "failed to upsert giftcard with id=%s", giftCard.Id)
-		}
-
-		if numUpdated != 1 {
-			return nil, errors.Errorf("%d giftcard(s) were updated instead of 1", numUpdated)
 		}
 	}
 
@@ -128,9 +118,8 @@ func (gcs *SqlGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 			return nil, store.NewErrNotFound(store.GiftcardTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find giftcard with id=%s", id)
-	} else {
-		return &res, nil
 	}
+	return &res, nil
 }
 
 // FilterByOption finds giftcards wth option
@@ -142,7 +131,7 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecuto
 
 	query := gs.
 		GetQueryBuilder().
-		Select("*").
+		Select(store.GiftcardTableName + ".").
 		From(store.GiftcardTableName)
 
 	if option.OrderBy != "" {
@@ -164,6 +153,9 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecuto
 	}
 	if option.UsedByID != nil {
 		query = query.Where(option.UsedByID)
+	}
+	if option.ShopID != nil {
+		query = query.Where(option.ShopID)
 	}
 	if option.Code != nil {
 		query = query.Where(option.Code)

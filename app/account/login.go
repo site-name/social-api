@@ -214,11 +214,11 @@ func (a *ServiceAccount) DoLogin(c *request.Context, w http.ResponseWriter, r *h
 	session.AddProp(model.SESSION_PROP_PLATFORM, app.GetPlatformName(ua))
 	session.AddProp(model.SESSION_PROP_OS, app.GetOSName(ua))
 	session.AddProp(model.SESSION_PROP_BROWSER, fmt.Sprintf("%s/%s", app.GetBrowserName(ua, r.UserAgent()), app.GetBrowserVersion(ua, r.UserAgent())))
-	if user.IsGuest() {
-		session.AddProp(model.SESSION_PROP_IS_GUEST, "true")
-	} else {
-		session.AddProp(model.SESSION_PROP_IS_GUEST, "false")
-	}
+	// if user.IsGuest() {
+	// 	session.AddProp(model.SESSION_PROP_IS_GUEST, "true")
+	// } else {
+	// 	session.AddProp(model.SESSION_PROP_IS_GUEST, "false")
+	// }
 
 	var err *model.AppError
 	if session, err = a.CreateSession(session); err != nil {

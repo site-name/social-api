@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/email"
 	fileApp "github.com/sitename/sitename/app/file"
@@ -58,14 +59,7 @@ func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID string, address
 		return nil, appErr
 	}
 
-	addressBelongToUser := false
-	for _, addr := range addresses {
-		if addr.Id == addressID {
-			addressBelongToUser = true
-		}
-	}
-
-	if !addressBelongToUser {
+	if !lo.SomeBy(addresses, func(addr *model.Address) bool { return addr.Id == addressID }) {
 		return nil, model.NewAppError("UserSetDefaultAddress", "app.model.user_not_own_address.app_error", nil, "", http.StatusForbidden)
 	}
 
@@ -155,7 +149,7 @@ func (a *ServiceAccount) CreateUserFromSignup(c *request.Context, user *model.Us
 func (a *ServiceAccount) CreateUser(c *request.Context, user *model.User) (*model.User, *model.AppError) {
 	user.Roles = model.SystemUserRoleId
 
-	if !user.IsLDAPUser() && !user.IsSAMLUser() && user.IsGuest() && !CheckUserDomain(user, *a.srv.Config().GuestAccountsSettings.RestrictCreationToDomains) {
+	if !user.IsLDAPUser() && !user.IsSAMLUser() && !CheckUserDomain(user, *a.srv.Config().GuestAccountsSettings.RestrictCreationToDomains) {
 		return nil, model.NewAppError("CreateUser", "api.user.create_user.accepted_domain.app_error", nil, "", http.StatusBadRequest)
 	}
 
@@ -788,7 +782,7 @@ func (a *ServiceAccount) UpdateUser(user *model.User, sendNotifications bool) (*
 	var newEmail string
 	if user.Email != prev.Email {
 		if !CheckUserDomain(user, *a.srv.Config().GuestAccountsSettings.RestrictCreationToDomains) {
-			if prev.IsGuest() && !prev.IsLDAPUser() && !prev.IsSAMLUser() {
+			if !prev.IsLDAPUser() && !prev.IsSAMLUser() {
 				return nil, model.NewAppError("UpdateUser", "api.user.update_user.accepted_guest_domain.app_error", nil, "", http.StatusBadRequest)
 			}
 		}

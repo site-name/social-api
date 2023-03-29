@@ -854,8 +854,7 @@ func applyMultiRoleFilters(query squirrel.SelectBuilder, systemRoles []string) s
 			case model.SystemUserRoleId:
 				// If querying for a `system_user` ensure that the user is only a system_user.
 				sqOr = append(sqOr, squirrel.Eq{"u.Roles": role})
-			case model.SystemGuestRoleId,
-				model.SystemAdminRoleId,
+			case model.SystemAdminRoleId,
 				model.SystemUserManagerRoleId,
 				model.SystemReadOnlyAdminRoleId,
 				model.SystemManagerRoleId:

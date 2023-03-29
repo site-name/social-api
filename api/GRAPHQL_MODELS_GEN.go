@@ -3,13 +3,17 @@
 package api
 
 import (
+	"fmt"
+	"net/http"
 	"unsafe"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -98,6 +102,60 @@ type AddressInput struct {
 	Country        *CountryCode `json:"country"`
 	CountryArea    *string      `json:"countryArea"`
 	Phone          *string      `json:"phone"`
+}
+
+func (a *AddressInput) Validate() *model.AppError {
+	// validate input country
+	if country := a.Country; country == nil || !country.IsValid() {
+		return model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
+	}
+
+	// validate input phone
+	if phone := a.Phone; phone != nil {
+		var ok bool
+		_, ok = util.ValidatePhoneNumber(*phone, a.Country.String())
+		if !ok {
+			return model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
+		}
+	}
+
+	return nil
+}
+
+// NOTE: should be called after calling Validate()
+func (a *AddressInput) PatchAddress(addr *model.Address) {
+	if a.Phone != nil && *a.Phone != "" {
+		addr.Phone = *a.Phone
+	}
+	addr.Country = *a.Country
+
+	if v := a.FirstName; v != nil {
+		addr.FirstName = *v
+	}
+	if v := a.LastName; v != nil {
+		addr.LastName = *v
+	}
+	if v := a.CompanyName; v != nil {
+		addr.CompanyName = *v
+	}
+	if v := a.StreetAddress1; v != nil {
+		addr.StreetAddress1 = *v
+	}
+	if v := a.StreetAddress2; v != nil {
+		addr.StreetAddress2 = *v
+	}
+	if v := a.City; v != nil {
+		addr.City = *v
+	}
+	if v := a.CityArea; v != nil {
+		addr.CityArea = *v
+	}
+	if v := a.PostalCode; v != nil {
+		addr.PostalCode = *v
+	}
+	if v := a.CountryArea; v != nil {
+		addr.CountryArea = *v
+	}
 }
 
 type AddressSetDefault struct {
@@ -853,11 +911,11 @@ type CheckoutEmailUpdate struct {
 }
 
 type CheckoutError struct {
-	Field       *string           `json:"field"`
-	Message     *string           `json:"message"`
-	Code        CheckoutErrorCode `json:"code"`
-	Variants    []string          `json:"variants"`
-	AddressType *AddressTypeEnum  `json:"addressType"`
+	Field       *string                `json:"field"`
+	Message     *string                `json:"message"`
+	Code        CheckoutErrorCode      `json:"code"`
+	Variants    []string               `json:"variants"`
+	AddressType *model.AddressTypeEnum `json:"addressType"`
 }
 
 type CheckoutLanguageCodeUpdate struct {
@@ -1983,13 +2041,13 @@ type OrderDraftFilterInput struct {
 }
 
 type OrderError struct {
-	Field       *string          `json:"field"`
-	Message     *string          `json:"message"`
-	Code        OrderErrorCode   `json:"code"`
-	Warehouse   *string          `json:"warehouse"`
-	OrderLine   *string          `json:"orderLine"`
-	Variants    []string         `json:"variants"`
-	AddressType *AddressTypeEnum `json:"addressType"`
+	Field       *string                `json:"field"`
+	Message     *string                `json:"message"`
+	Code        OrderErrorCode         `json:"code"`
+	Warehouse   *string                `json:"warehouse"`
+	OrderLine   *string                `json:"orderLine"`
+	Variants    []string               `json:"variants"`
+	AddressType *model.AddressTypeEnum `json:"addressType"`
 }
 
 type OrderEventCountableConnection struct {
@@ -3555,13 +3613,13 @@ type StaffDelete struct {
 }
 
 type StaffError struct {
-	Field       *string          `json:"field"`
-	Message     *string          `json:"message"`
-	Code        AccountErrorCode `json:"code"`
-	AddressType *AddressTypeEnum `json:"addressType"`
-	Permissions []PermissionEnum `json:"permissions"`
-	Groups      []string         `json:"groups"`
-	Users       []string         `json:"users"`
+	Field       *string                `json:"field"`
+	Message     *string                `json:"message"`
+	Code        AccountErrorCode       `json:"code"`
+	AddressType *model.AddressTypeEnum `json:"addressType"`
+	Permissions []PermissionEnum       `json:"permissions"`
+	Groups      []string               `json:"groups"`
+	Users       []string               `json:"users"`
 }
 
 type StaffNotificationRecipientCreate struct {
@@ -4092,8 +4150,6 @@ func (e AccountErrorCode) IsValid() bool {
 	}
 	return false
 }
-
-type AddressTypeEnum = model.AddressTypeEnum
 
 type AppErrorCode string
 

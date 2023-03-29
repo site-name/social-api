@@ -7,9 +7,7 @@ import (
 	"github.com/sitename/sitename/web"
 )
 
-type Context = web.Context
-
-type handlerFunc func(*Context, http.ResponseWriter, *http.Request)
+type handlerFunc func(*web.Context, http.ResponseWriter, *http.Request)
 
 // APIHandler provides a handler for API endpoints which do not require the user to be logged in order for access to be
 // granted.
@@ -95,14 +93,15 @@ func (api *API) APISessionRequiredMfa(h handlerFunc) http.Handler {
 // websocket.
 func (api *API) APIHandlerTrustRequester(h handlerFunc) http.Handler {
 	handler := &web.Handler{
-		Srv:            api.srv,
-		HandleFunc:     h,
-		HandlerName:    web.GetHandlerName(h),
-		RequireSession: false,
-		TrustRequester: true,
-		RequireMfa:     false,
-		IsStatic:       false,
-		IsLocal:        false,
+		Srv:             api.srv,
+		HandleFunc:      h,
+		HandlerName:     web.GetHandlerName(h),
+		RequireSession:  false,
+		TrustRequester:  true,
+		RequireMfa:      false,
+		IsStatic:        false,
+		IsLocal:         false,
+		DisableWhenBusy: true,
 	}
 	if *api.srv.Config().ServiceSettings.WebserverMode == "gzip" {
 		return gziphandler.GzipHandler(handler)
@@ -153,20 +152,20 @@ func (api *API) APISessionRequiredDisableWhenBusy(h handlerFunc) http.Handler {
 // mode, this is, through a UNIX socket and without an authenticated
 // session, but with one that has no user set and no permission
 // restrictions
-func (api *API) APILocal(h handlerFunc) http.Handler {
-	handler := &web.Handler{
-		Srv:            api.srv,
-		HandleFunc:     h,
-		HandlerName:    web.GetHandlerName(h),
-		RequireSession: false,
-		TrustRequester: false,
-		RequireMfa:     false,
-		IsStatic:       false,
-		IsLocal:        true,
-	}
+// func (api *API) APILocal(h handlerFunc) http.Handler {
+// 	handler := &web.Handler{
+// 		Srv:            api.srv,
+// 		HandleFunc:     h,
+// 		HandlerName:    web.GetHandlerName(h),
+// 		RequireSession: false,
+// 		TrustRequester: false,
+// 		RequireMfa:     false,
+// 		IsStatic:       false,
+// 		IsLocal:        true,
+// 	}
 
-	if *api.srv.Config().ServiceSettings.WebserverMode == "gzip" {
-		return gziphandler.GzipHandler(handler)
-	}
-	return handler
-}
+// 	if *api.srv.Config().ServiceSettings.WebserverMode == "gzip" {
+// 		return gziphandler.GzipHandler(handler)
+// 	}
+// 	return handler
+// }
