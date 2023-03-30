@@ -77,7 +77,7 @@ func (c *Context) MfaRequired() {
 		return
 	}
 
-	if user.IsGuest() && !*c.App.Config().GuestAccountsSettings.EnforceMultifactorAuthentication {
+	if !*c.App.Config().GuestAccountsSettings.EnforceMultifactorAuthentication {
 		return
 	}
 	// Only required for email and ldap accounts

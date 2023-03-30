@@ -31,8 +31,6 @@ func (s *ServiceCheckout) CheckoutShippingPrice(manager interfaces.PluginManager
 }
 
 // CheckoutSubTotal Return the total cost of all the checkout lines, taxes included.
-//
-// It takes in account all plugins.
 func (s *ServiceCheckout) CheckoutSubTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError) {
 	if discounts == nil {
 		discounts = []*model.DiscountInfo{}

@@ -117,8 +117,7 @@ func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AttributeUpdateInput
 }) (*AttributeUpdate, error) {
-
-	if len(args.Input.RemoveValues) > 0 && !lo.EveryBy(args.Input.RemoveValues, model.IsValidId) {
+	if !lo.EveryBy(args.Input.RemoveValues, model.IsValidId) {
 		return nil, model.NewAppError("AttributeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "removeValues"}, "please provide valid attribute value ids", http.StatusBadRequest)
 	}
 
@@ -160,10 +159,9 @@ func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 		if appErr != nil {
 			return nil, appErr
 		}
-		for _, value := range removeValues {
-			if value.AttributeID != attribute.Id {
-				return nil, model.NewAppError("AttributeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "removeValues"}, fmt.Sprintf("attribute value with id=%s does not belong to this attribute", value.Id), http.StatusBadRequest)
-			}
+		// validate all found attribute values are children of attribute
+		if !lo.EveryBy(removeValues, func(vl *model.AttributeValue) bool { return vl.AttributeID == attribute.Id }) {
+			return nil, model.NewAppError("AttributeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "removeValues"}, "one of attribute values does not belong to given attribute", http.StatusBadRequest)
 		}
 
 		// remove attribute values designated:
@@ -425,9 +423,16 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 	if !model.IsValidId(args.AttributeID) {
 		return nil, model.NewAppError("AttributeReorderValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.AttributeID+" is in valid", http.StatusBadRequest)
 	}
+	if !lo.EveryBy(args.Moves, func(ro *ReorderInput) bool { return model.IsValidId(ro.ID) }) {
+		return nil, model.NewAppError("AttributeReorderValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "moves"}, "one of moves provided has invalid id", http.StatusBadRequest)
+	}
+
 	// validate permission(s)
 	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateAttribute, model.PermissionUpdateAttribute, model.PermissionCreateAttributeValue, model.PermissionUpdateAttributeValue)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
 
 	// find attribute with given id
 	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{
@@ -442,9 +447,6 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 	operations := map[string]*int{}
 
 	for _, move := range args.Moves {
-		if !model.IsValidId(move.ID) {
-			return nil, model.NewAppError("AttributeReorderValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "move.Id"}, fmt.Sprintf("id=%s is not valid attribute value id", move.ID), http.StatusBadRequest)
-		}
 		if !attributeValueMap[move.ID] { // not contains
 			return nil, model.NewAppError("AttributeReorderValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "move.Id"}, fmt.Sprintf("attribute value with id=%s does not belong to the attribute", move.ID), http.StatusBadRequest)
 		}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"net/http"
 	"strings"
 	"unsafe"
 
@@ -170,6 +169,10 @@ func (a *Attribute) Choices(
 	if !model.TYPES_WITH_CHOICES.Contains(a.attr.InputType) {
 		return nil, nil
 	}
+	appErr := args.Validate("Attribute.Choices")
+	if appErr != nil {
+		return nil, appErr
+	}
 
 	attributeValues, err := AttributeValuesByAttributeIdLoader.Load(ctx, a.ID)()
 	if err != nil {
@@ -256,15 +259,15 @@ func (a *Attribute) ProductVariantTypes(ctx context.Context, args GraphqlParams)
 
 // If return error is nil, meaning current user can perform action.
 // if not, user can't
-func (a *Attribute) currentUserHasPermissionToAccess(ctx context.Context) error {
+func (a *Attribute) currentUserHasPermissionToAccess(ctx context.Context, apiName string) error {
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return err
 	}
 
-	var permToCheck = model.PermissionManageProducts
-	if a.Type != nil && *a.Type == AttributeTypeEnumPageType {
-		permToCheck = model.PermissionManagePages
+	var permToCheck = model.PermissionReadProduct
+	if a.Type != nil && *a.Type == model.PAGE_TYPE {
+		permToCheck = model.PermissionReadPage
 	}
 
 	if !embedCtx.
@@ -272,49 +275,49 @@ func (a *Attribute) currentUserHasPermissionToAccess(ctx context.Context) error 
 		Srv().
 		AccountService().
 		SessionHasPermissionTo(embedCtx.AppContext.Session(), permToCheck) {
-		return model.NewAppError("Attribute.currentUserHasPermissionToAccess", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+		return MakeUnauthorizedError(apiName)
 	}
 
 	return nil
 }
 
 func (a *Attribute) VisibleInStorefront(ctx context.Context) (bool, error) {
-	if err := a.currentUserHasPermissionToAccess(ctx); err != nil {
+	if err := a.currentUserHasPermissionToAccess(ctx, "Attribute.VisibleInStorefront"); err != nil {
 		return false, err
 	}
 	return a.attr.VisibleInStoreFront, nil
 }
 
 func (a *Attribute) ValueRequired(ctx context.Context) (bool, error) {
-	if err := a.currentUserHasPermissionToAccess(ctx); err != nil {
+	if err := a.currentUserHasPermissionToAccess(ctx, "Attribute.ValueRequired"); err != nil {
 		return false, err
 	}
 	return a.attr.ValueRequired, nil
 }
 
 func (a *Attribute) StorefrontSearchPosition(ctx context.Context) (int32, error) {
-	if err := a.currentUserHasPermissionToAccess(ctx); err != nil {
+	if err := a.currentUserHasPermissionToAccess(ctx, "Attribute.StorefrontSearchPosition"); err != nil {
 		return 0, err
 	}
 	return int32(a.attr.StorefrontSearchPosition), nil
 }
 
 func (a *Attribute) FilterableInStorefront(ctx context.Context) (bool, error) {
-	if err := a.currentUserHasPermissionToAccess(ctx); err != nil {
+	if err := a.currentUserHasPermissionToAccess(ctx, "Attribute.FilterableInStorefront"); err != nil {
 		return false, err
 	}
 	return a.attr.FilterableInStorefront, nil
 }
 
 func (a *Attribute) FilterableInDashboard(ctx context.Context) (bool, error) {
-	if err := a.currentUserHasPermissionToAccess(ctx); err != nil {
+	if err := a.currentUserHasPermissionToAccess(ctx, "Attribute.FilterableInDashboard"); err != nil {
 		return false, err
 	}
 	return a.attr.FilterableInDashboard, nil
 }
 
 func (a *Attribute) AvailableInGrid(ctx context.Context) (bool, error) {
-	if err := a.currentUserHasPermissionToAccess(ctx); err != nil {
+	if err := a.currentUserHasPermissionToAccess(ctx, "Attribute.AvailableInGrid"); err != nil {
 		return false, err
 	}
 	return a.attr.AvailableInGrid, nil

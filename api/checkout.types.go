@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
@@ -78,11 +79,95 @@ func SystemCheckoutToGraphqlCheckout(ckout *model.Checkout) *Checkout {
 }
 
 func (c *Checkout) SubtotalPrice(ctx context.Context) (*TaxedMoney, error) {
+	addressID := c.checkout.ShippingAddressID
+	if addressID == nil {
+		addressID = c.checkout.BillingAddressID
+	}
+
+	var address *model.Address
+	if addressID != nil {
+		var err error
+		address, err = AddressByIdLoader.Load(ctx, *addressID)()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	checkoutLineInfos, err := CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.checkout.Token)()
+	if err != nil {
+		return nil, err
+	}
+
+	checkoutInfo, err := CheckoutInfoByCheckoutTokenLoader.Load(ctx, c.checkout.Token)()
+	if err != nil {
+		return nil, err
+	}
+
+	discountInfos, err := DiscountsByDateTimeLoader.Load(ctx, time.Now())()
+	if err != nil {
+		return nil, err
+	}
+
 	panic("not implemented") // TODO: complete plugin manager
+
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	money, appErr := embedCtx.App.Srv().CheckoutService().CheckoutSubTotal(nil /*TODO: add this manager*/, *checkoutInfo, checkoutLineInfos, address, discountInfos)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return SystemTaxedMoneyToGraphqlTaxedMoney(money), nil
 }
 
 func (c *Checkout) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
+	addressID := c.checkout.ShippingAddressID
+	if addressID == nil {
+		addressID = c.checkout.BillingAddressID
+	}
+
+	var address *model.Address
+	if addressID != nil {
+		var err error
+		address, err = AddressByIdLoader.Load(ctx, *addressID)()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	lineInfos, err := CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.checkout.Token)()
+	if err != nil {
+		return nil, err
+	}
+
+	checkoutInfo, err := CheckoutInfoByCheckoutTokenLoader.Load(ctx, c.checkout.Token)()
+	if err != nil {
+		return nil, err
+	}
+
+	discountInfos, err := DiscountsByDateTimeLoader.Load(ctx, time.Now())()
+	if err != nil {
+		return nil, err
+	}
 	panic("not implemented") // TODO: complete plugin manager
+
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	taxedMoney, appErr := embedCtx.App.Srv().CheckoutService().CheckoutTotal(nil /*add this*/, *checkoutInfo, lineInfos, address, discountInfos)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	giftcardBalance, appErr := embedCtx.App.Srv().CheckoutService().CheckoutTotalGiftCardsBalance(c.checkout)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	taxedTotal, _ := taxedMoney.Sub(giftcardBalance)
+	zeroTaxedMoney, _ := util.ZeroTaxedMoney(c.checkout.Currency)
+	if taxedTotal.LessThan(zeroTaxedMoney) {
+		taxedTotal = zeroTaxedMoney
+	}
+
+	return SystemTaxedMoneyToGraphqlTaxedMoney(taxedTotal), nil
 }
 
 func (c *Checkout) ShippingPrice(ctx context.Context) (*TaxedMoney, error) {
@@ -125,6 +210,8 @@ func (c *Checkout) ShippingPrice(ctx context.Context) (*TaxedMoney, error) {
 }
 
 func (c *Checkout) User(ctx context.Context) (*User, error) {
+	// requester can see user of checkout only if
+	// requester is staff of the shop that has this checkout
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err

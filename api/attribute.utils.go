@@ -14,11 +14,17 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
+// AttributeUpsertInputIface represents AttributeUpdateInput | AttributeCreateInput
 type AttributeUpsertInputIface interface {
 	getFieldValueByString(name string) any
 	// getInputType. NOTE: make sure to check result by call its .IsValid() method
 	getInputType() model.AttributeInputType
 }
+
+var (
+	_ AttributeUpsertInputIface = (*AttributeUpdateInput)(nil)
+	_ AttributeUpsertInputIface = (*AttributeCreateInput)(nil)
+)
 
 type attributeValueInputIface interface {
 	getName() string

@@ -504,11 +504,6 @@ type AttributeUpdate struct {
 	Errors    []*AttributeError `json:"errors"`
 }
 
-var (
-	_ AttributeUpsertInputIface = (*AttributeUpdateInput)(nil)
-	_ AttributeUpsertInputIface = (*AttributeCreateInput)(nil)
-)
-
 type AttributeCreateInput struct {
 	InputType                *model.AttributeInputType    `json:"inputType"`
 	EntityType               *model.AttributeEntityType   `json:"entityType"`

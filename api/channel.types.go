@@ -3,12 +3,14 @@ package api
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app/product"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
@@ -25,16 +27,10 @@ type Channel struct {
 }
 
 func (c Channel) HasOrders(ctx context.Context) (bool, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return false, err
-	}
-
-	// check if current user has channel management
-	if !embedCtx.App.Srv().
-		AccountService().
-		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageChannels) {
-		return false, model.NewAppError("Channel.HasOrders", ErrorUnauthorized, nil, "you are not allowed to perform this", http.StatusUnauthorized)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionReadChannel)
+	if embedCtx.Err != nil {
+		return false, embedCtx.Err
 	}
 
 	channel, err := ChannelWithHasOrdersByIdLoader.Load(ctx, c.ID)()
@@ -311,15 +307,14 @@ func (c *ProductChannelListing) Channel(ctx context.Context) (*Channel, error) {
 }
 
 func (c *ProductChannelListing) PurchaseCost(ctx context.Context) (*MoneyRange, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	// requester can see purchase cost only if
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateProduct)
 
 	if !embedCtx.App.
 		Srv().AccountService().
 		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
-		return nil, model.NewAppError("ProductChannelListing.PurchaseCost", ErrorUnauthorized, nil, "you are not allowed to perform this actions", http.StatusUnauthorized)
+		return nil, MakeUnauthorizedError("ProductChannelListing.PurchaseCost")
 	}
 
 	productVariants, err := ProductVariantsByProductIdLoader.Load(ctx, c.c.ProductID)()
@@ -339,19 +334,17 @@ func (c *ProductChannelListing) PurchaseCost(ctx context.Context) (*MoneyRange, 
 	}
 
 	productVariantChannelListings = lo.Filter(productVariantChannelListings, func(c *model.ProductVariantChannelListing, _ int) bool { return c != nil })
-
 	if len(productVariantChannelListings) == 0 {
 		return nil, nil
 	}
 
 	hasVariants := len(variantIDChannelIDPairs) > 0
-
-	purchaseCosts, _, appErr := product.GetProductCostsData(productVariantChannelListings, hasVariants, c.c.Currency)
+	purchaseCost, _, appErr := product.GetProductCostsData(productVariantChannelListings, hasVariants, c.c.Currency)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	return SystemMoneyRangeToGraphqlMoneyRange(purchaseCosts), nil
+	return SystemMoneyRangeToGraphqlMoneyRange(purchaseCost), nil
 }
 
 func (c *ProductChannelListing) IsAvailableForPurchase(ctx context.Context) (*bool, error) {
@@ -402,60 +395,77 @@ func (c *ProductChannelListing) Margin(ctx context.Context) (*Margin, error) {
 	}, nil
 }
 
+// Pricing is selling price of product
 func (c *ProductChannelListing) Pricing(ctx context.Context, args struct{ Address *AddressInput }) (*ProductPricingInfo, error) {
-	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	if err != nil {
+		return nil, err
+	}
 
-	// now := time.Now()
-	// var addressCountry string
-	// if args.Address != nil &&
-	// 	args.Address.Country != nil &&
-	// 	args.Address.Country.IsValid() {
-	// 	addressCountry = string(*args.Address.Country)
-	// }
+	now := time.Now()
+	var addressCountry model.CountryCode
+	if args.Address != nil &&
+		args.Address.Country != nil &&
+		args.Address.Country.IsValid() {
+		addressCountry = *args.Address.Country
+	}
 
-	// discountInfos, err := DiscountsByDateTimeLoader.Load(ctx, now)()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	discountInfos, err := DiscountsByDateTimeLoader.Load(ctx, now)()
+	if err != nil {
+		return nil, err
+	}
 
-	// channel, err := ChannelByIdLoader.Load(ctx, c.c.ChannelID)()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	channel, err := ChannelByIdLoader.Load(ctx, c.c.ChannelID)()
+	if err != nil {
+		return nil, err
+	}
 
-	// product, err := ProductByIdLoader.Load(ctx, c.c.ProductID)()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	product, err := ProductByIdLoader.Load(ctx, c.c.ProductID)()
+	if err != nil {
+		return nil, err
+	}
 
-	// variants, err := ProductVariantsByProductIdLoader.Load(ctx, c.c.ProductID)()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	variants, err := ProductVariantsByProductIdLoader.Load(ctx, c.c.ProductID)()
+	if err != nil {
+		return nil, err
+	}
 
-	// variantChannelListings, err := VariantsChannelListingByProductIdAndChannelSlugLoader.Load(ctx, c.c.ProductID+"__"+channel.Id)()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	variantChannelListings, err := VariantsChannelListingByProductIdAndChannelSlugLoader.Load(ctx, c.c.ProductID+"__"+channel.Id)()
+	if err != nil {
+		return nil, err
+	}
 
-	// collections, err := CollectionsByProductIdLoader.Load(ctx, c.c.ProductID)()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	collections, err := CollectionsByProductIdLoader.Load(ctx, c.c.ProductID)()
+	if err != nil {
+		return nil, err
+	}
 
-	// if len(variantChannelListings) == 0 {
-	// 	return nil, nil
-	// }
+	if len(variantChannelListings) == 0 {
+		return nil, nil
+	}
 
-	// if addressCountry == "" {
-	// 	addressCountry = channel.DefaultCountry
-	// }
+	if !addressCountry.IsValid() {
+		addressCountry = channel.DefaultCountry
+	}
 
-	// localCurrency := util.GetCurrencyForCountry(addressCountry)
+	localCurrency := util.GetCurrencyForCountry(addressCountry.String())
+
+	// TODO: finish plugin feature
 	panic("not implemented")
+
+	availability, appErr := embedCtx.App.Srv().ProductService().GetProductAvailability(*product, c.c, variants, variantChannelListings, collections, discountInfos, *channel, nil /*TODO: add this*/, addressCountry, localCurrency)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &ProductPricingInfo{
+		OnSale:                  &availability.OnSale,
+		Discount:                SystemTaxedMoneyToGraphqlTaxedMoney(availability.Discount),
+		DiscountLocalCurrency:   SystemTaxedMoneyToGraphqlTaxedMoney(availability.DiscountLocalCurrency),
+		PriceRange:              SystemTaxedMoneyRangeToGraphqlTaxedMoneyRange(availability.PriceRange),
+		PriceRangeUndiscounted:  SystemTaxedMoneyRangeToGraphqlTaxedMoneyRange(availability.PriceRangeUnDiscounted),
+		PriceRangeLocalCurrency: SystemTaxedMoneyRangeToGraphqlTaxedMoneyRange(availability.PriceRangeLocalCurrency),
+	}, nil
 }
 
 type ProductVariantChannelListing struct {
@@ -531,7 +541,8 @@ type CollectionChannelListing struct {
 	ID              string `json:"id"`
 	PublicationDate *Date  `json:"publicationDate"`
 	IsPublished     bool   `json:"isPublished"`
-	c               *model.CollectionChannelListing
+
+	c *model.CollectionChannelListing
 	// Channel         *Channel `json:"channel"`
 }
 

@@ -1,11 +1,8 @@
 package product
 
 import (
-	"net/http"
-
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -15,10 +12,7 @@ func GetProductCostsData(
 	hasVariants bool,
 	currency string,
 ) (*goprices.MoneyRange, []float64, *model.AppError) {
-	purchaseCostsRange, err := util.ZeroMoneyRange(currency)
-	if err != nil {
-		return nil, nil, model.NewAppError("GetProductCostsData", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, err.Error(), http.StatusBadRequest)
-	}
+	purchaseCostsRange, _ := util.ZeroMoneyRange(currency)
 	margins := []float64{0.0, 0.0}
 
 	if !hasVariants {
@@ -27,7 +21,6 @@ func GetProductCostsData(
 
 	costsData := GetCostDataFromVariantChannelListing(variantChannelListings)
 	if len(costsData.Costs()) > 0 {
-
 		purchaseCostsRange, _ = goprices.NewMoneyRange(util.MinMaxMoneyInMoneySlice(costsData.Costs()))
 	}
 	if length := len(costsData.Margins()); length > 0 {

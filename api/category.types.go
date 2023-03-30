@@ -62,11 +62,7 @@ func (c *Category) Parent(ctx context.Context) (*Category, error) {
 		return nil, nil
 	}
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 	categories, appErr := embedCtx.App.Srv().ProductService().CategoryByIds([]string{*c.c.ParentID}, true)
 	if appErr != nil {
 		return nil, appErr
