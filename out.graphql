@@ -950,7 +950,7 @@ input CategoryInput {
   name: String
   slug: String
   seo: SeoInput
-  backgroundImage: Upload
+  backgroundImage: String
   backgroundImageAlt: String
 }
 
@@ -4205,8 +4205,8 @@ enum ProductErrorCode {
 }
 
 input SeoInput {
-  title: String
-  description: String
+  title: String!
+  description: String!
 }
 
 input ProductStockFilterInput {

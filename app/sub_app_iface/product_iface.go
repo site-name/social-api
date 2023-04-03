@@ -67,7 +67,7 @@ type ProductService interface {
 	// GenerateAndSetVariantName Generate ProductVariant's name based on its attributes
 	GenerateAndSetVariantName(variant *model.ProductVariant, sku string) *model.AppError
 	// GetProductsIDsWithoutVariants Return list of product's ids without variants
-	GetProductsIDsWithoutVariants(productList []*model.Product) ([]string, *model.AppError)
+	GetProductsIDsWithoutVariants(productList model.Products) ([]string, *model.AppError)
 	// GetVariantPrice
 	GetVariantPrice(variant model.ProductVariant, variantChannelListing model.ProductVariantChannelListing, product model.Product, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel) (*goprices.Money, *model.AppError)
 	// GetVariantSelectionAttributes Return attributes that can be used in variant selection.
@@ -144,9 +144,10 @@ type ProductService interface {
 	GetProductAvailability(product model.Product, productChannelListing *model.ProductChannelListing, variants []*model.ProductVariant, variantsChannelListing []*model.ProductVariantChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel, manager interfaces.PluginManagerInterface, countryCode model.CountryCode, localCurrency string) (*model.ProductAvailability, *model.AppError)
 	GetProductPriceRange(product model.Product, variants model.ProductVariants, variantsChannelListing []*model.ProductVariantChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel) (*goprices.MoneyRange, *model.AppError)
 	GetVariantAvailability(variant model.ProductVariant, variantChannelListing model.ProductVariantChannelListing, product model.Product, productChannelListing *model.ProductChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel, plugins interfaces.PluginManagerInterface, country model.CountryCode, localCurrency string) (*model.VariantAvailability, *model.AppError)
-	GetVisibleProductsToUser(userSession *model.Session, channel_IdOrSlug string) (model.Products, *model.AppError)
+	GetVisibleToUserProducts(userSession *model.Session, channel_IdOrSlug string) (model.Products, *model.AppError)
 	IncrementDownloadCount(contentURL *model.DigitalContentUrl) *model.AppError
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, *model.AppError)
 	ProductTypesByOptions(options *model.ProductTypeFilterOption) ([]*model.ProductType, *model.AppError)
 	UpdateProductsDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError
+	UpsertCategory(cate *model.Category) (*model.Category, *model.AppError)
 }

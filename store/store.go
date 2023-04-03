@@ -530,7 +530,6 @@ type (
 		Get(ctx context.Context, categoryID string, allowFromCache bool) (*model.Category, error) // Get finds and returns a category with given id
 		GetByOption(option *model.CategoryFilterOption) (*model.Category, error)                  // GetByOption finds and returns 1 category satisfy given option
 		FilterByOption(option *model.CategoryFilterOption) ([]*model.Category, error)             // FilterByOption finds and returns a list of categories satisfy given option
-		UpdateCategoryCache(categories model.Categories, allowFromCache bool)                     // this method is done in cache layer only
 	}
 	ProductStore interface {
 		ModelFields(prefix string) util.AnyArray[string]

@@ -619,7 +619,7 @@ func (c *Collection) Products(ctx context.Context, args struct {
 		return nil, err
 	}
 
-	products, appErr := embedCtx.App.Srv().ProductService().GetVisibleProductsToUser(embedCtx.AppContext.Session(), channelID)
+	products, appErr := embedCtx.App.Srv().ProductService().GetVisibleToUserProducts(embedCtx.AppContext.Session(), channelID)
 	if appErr != nil {
 		return nil, appErr
 	}

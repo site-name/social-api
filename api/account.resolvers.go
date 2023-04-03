@@ -279,5 +279,37 @@ func (r *Resolver) AccountRequestDeletion(ctx context.Context, args struct {
 }
 
 func (r *Resolver) AccountDelete(ctx context.Context, args struct{ Token string }) (*AccountDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+	// user must be authenticated to deactivate himself
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+	currentSession := embedCtx.AppContext.Session()
+
+	// validate if token is valid
+	_, appErr := embedCtx.App.Srv().ValidateTokenByToken(args.Token, model.TokenTypeDeactivateAccount, nil)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, currentSession.UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// system admin and system manager cannot deactivate himself
+	if user.IsSystemAdmin() || user.IsInRole(model.SystemManagerRoleId) {
+		return nil, model.NewAppError("AccountDelete", "app.account.administrator_cannot_self_deactivate.app_error", nil, "administration members cannot deactivate themself", http.StatusNotAcceptable)
+	}
+
+	user.IsActive = false
+	updatedUser, appErr := embedCtx.App.Srv().AccountService().UpdateUser(user, false)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &AccountDelete{
+		User: SystemUserToGraphqlUser(updatedUser),
+	}, nil
 }

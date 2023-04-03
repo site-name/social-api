@@ -94,7 +94,26 @@ func (r *Resolver) PasswordChange(ctx context.Context, args struct {
 	NewPassword string
 	OldPassword string
 }) (*PasswordChange, error) {
-	panic(fmt.Errorf("not implemented"))
+	// user must be authenticated to proceed
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+
+	appErr := embedCtx.App.Srv().AccountService().UpdatePasswordAsUser(embedCtx.AppContext.Session().UserId, args.OldPassword, args.NewPassword)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	_, appErr = embedCtx.App.Srv().AccountService().CommonCustomerCreateEvent(&embedCtx.AppContext.Session().UserId, nil, model.PASSWORD_CHANGED, nil)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &PasswordChange{
+		User: SystemUserToGraphqlUser(&model.User{Id: embedCtx.AppContext.Session().UserId}),
+	}, nil
 }
 
 func (r *Resolver) RequestEmailChange(ctx context.Context, args struct {
@@ -103,9 +122,10 @@ func (r *Resolver) RequestEmailChange(ctx context.Context, args struct {
 	Password    string
 	RedirectURL string
 }) (*RequestEmailChange, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
@@ -155,22 +175,24 @@ func (r *Resolver) ConfirmEmailChange(ctx context.Context, args struct {
 	Channel *string
 	Token   string
 }) (*ConfirmEmailChange, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
+	// user must be authenticated
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	var extra model.RequestEmailChangeTokenExtra
-	dbToken, appErr := embedCtx.App.Srv().ValidateTokenByToken(args.Token, &extra)
+	dbToken, appErr := embedCtx.App.Srv().ValidateTokenByToken(args.Token, model.TokenTypeRequestChangeEmail, &extra)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	userWithnewEmail, appErr := embedCtx.App.Srv().AccountService().UserByEmail(extra.NewEmail)
+	userByEmail, appErr := embedCtx.App.Srv().AccountService().UserByEmail(extra.NewEmail)
 	if appErr != nil {
 		return nil, appErr
 	}
-	if userWithnewEmail != nil {
+	if userByEmail != nil {
 		return nil, model.NewAppError("ConfirmEmailChange", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "newEmail"}, "Email is used by other user", http.StatusBadRequest)
 	}
 
@@ -186,8 +208,10 @@ func (r *Resolver) ConfirmEmailChange(ctx context.Context, args struct {
 	}
 
 	// delete token
-	embedCtx.App.Srv().Store.Token().Delete(dbToken.Token)
-
+	err := embedCtx.App.Srv().Store.Token().Delete(dbToken.Token)
+	if err != nil {
+		return nil, model.NewAppError("ConfirmEmailChange", "app.account.delete_token.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
 	panic("not implemented") // TODO: finish plugin manager
 
 	return &ConfirmEmailChange{

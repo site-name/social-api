@@ -19,6 +19,7 @@ const (
 	TokenTypeGuestInvitation    = "guest_invitation"
 	TokenTypeCWSAccess          = "cws_access_token"
 	TokenTypeRequestChangeEmail = "request_change_email"
+	TokenTypeDeactivateAccount  = "deactivate_account"
 )
 
 type Token struct {

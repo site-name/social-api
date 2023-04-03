@@ -88,7 +88,7 @@ func (s *ServiceProduct) DoAnalyticCategories() *model.AppError {
 	slog.Info("Analyzing categories")
 
 	var allCategories model.Categories
-	const limit uint64 = 400
+	const limit uint64 = 500
 	var lastCategorySlug string
 
 	for {
@@ -161,4 +161,32 @@ func (s *ServiceProduct) ClassifyCategories(categories model.Categories) model.C
 	}
 
 	return res
+}
+
+func (s *ServiceProduct) UpsertCategory(cate *model.Category) (*model.Category, *model.AppError) {
+	if !model.IsValidId(cate.Id) && cate.ParentID != nil { // meaning saving category
+		parentCate, _ := s.categoryMap.Load(*cate.ParentID)
+		cate.Level = parentCate.(*model.Category).Level + 1
+	}
+
+	cate, err := s.srv.Store.Category().Upsert(cate)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return nil, model.NewAppError("UpsertCategory", "app.product.upsert_category.app_error", nil, err.Error(), statusCode)
+	}
+
+	s.srv.Go(func() {
+		appErr := s.DoAnalyticCategories()
+		if appErr != nil {
+			slog.Error("failed to do category analytic", slog.Err(appErr))
+		}
+	})
+
+	return cate, nil
 }

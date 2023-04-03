@@ -2376,19 +2376,6 @@ func (s *OpenTracingLayerCategoryStore) GetByOption(option *model.CategoryFilter
 	return result, err
 }
 
-func (s *OpenTracingLayerCategoryStore) UpdateCategoryCache(categories model.Categories, allowFromCache bool) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CategoryStore.UpdateCategoryCache")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	s.CategoryStore.UpdateCategoryCache(categories, allowFromCache)
-
-}
-
 func (s *OpenTracingLayerCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CategoryStore.Upsert")

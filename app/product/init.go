@@ -35,11 +35,10 @@ func (a *ServiceProduct) CalculateRevenueForVariant(
 
 		orderValue := ordersDict[orderLine.OrderID]
 		if orderValue != nil && orderValue.CreateAt >= util.MillisFromTime(*startDate) {
-			addedRevenue, err := revenue.Add(orderLine.TotalPrice)
+			revenue, err = revenue.Add(orderLine.TotalPrice)
 			if err != nil {
 				return nil, model.NewAppError("CalculateRevenueForVariant", app.ErrorCalculatingMoneyErrorID, nil, err.Error(), http.StatusInternalServerError)
 			}
-			revenue = addedRevenue
 		}
 	}
 
@@ -60,8 +59,8 @@ func (a *ServiceProduct) CollectCategoriesTreeProducts(category *model.Category)
 }
 
 // GetProductsIDsWithoutVariants Return list of product's ids without variants
-func (a *ServiceProduct) GetProductsIDsWithoutVariants(productList []*model.Product) ([]string, *model.AppError) {
-	productIDs := model.Products(productList).IDs()
+func (a *ServiceProduct) GetProductsIDsWithoutVariants(productList model.Products) ([]string, *model.AppError) {
+	productIDs := productList.IDs()
 
 	productsWithNoVariant, appErr := a.ProductsByOption(&model.ProductFilterOption{
 		Id:               squirrel.Eq{store.ProductTableName + ".Id": productIDs},
@@ -71,5 +70,5 @@ func (a *ServiceProduct) GetProductsIDsWithoutVariants(productList []*model.Prod
 		return nil, appErr
 	}
 
-	return model.Products(productsWithNoVariant).IDs(), nil
+	return productsWithNoVariant.IDs(), nil
 }

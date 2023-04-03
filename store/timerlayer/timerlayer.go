@@ -2239,21 +2239,6 @@ func (s *TimerLayerCategoryStore) GetByOption(option *model.CategoryFilterOption
 	return result, err
 }
 
-func (s *TimerLayerCategoryStore) UpdateCategoryCache(categories model.Categories, allowFromCache bool) {
-	start := timemodule.Now()
-
-	s.CategoryStore.UpdateCategoryCache(categories, allowFromCache)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if true {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CategoryStore.UpdateCategoryCache", success, elapsed)
-	}
-}
-
 func (s *TimerLayerCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
 	start := timemodule.Now()
 

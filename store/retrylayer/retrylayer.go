@@ -2522,12 +2522,6 @@ func (s *RetryLayerCategoryStore) GetByOption(option *model.CategoryFilterOption
 
 }
 
-func (s *RetryLayerCategoryStore) UpdateCategoryCache(categories model.Categories, allowFromCache bool) {
-
-	s.CategoryStore.UpdateCategoryCache(categories, allowFromCache)
-
-}
-
 func (s *RetryLayerCategoryStore) Upsert(category *model.Category) (*model.Category, error) {
 
 	tries := 0

@@ -9,6 +9,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Masterminds/squirrel"
+	"github.com/gosimple/slug"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
@@ -112,8 +113,7 @@ func (a *AddressInput) Validate() *model.AppError {
 
 	// validate input phone
 	if phone := a.Phone; phone != nil {
-		var ok bool
-		_, ok = util.ValidatePhoneNumber(*phone, a.Country.String())
+		_, ok := util.ValidatePhoneNumber(*phone, a.Country.String())
 		if !ok {
 			return model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
 		}
@@ -747,12 +747,40 @@ type CategoryFilterInput struct {
 }
 
 type CategoryInput struct {
-	Description        JSONString      `json:"description"`
-	Name               *string         `json:"name"`
-	Slug               *string         `json:"slug"`
-	Seo                *SeoInput       `json:"seo"`
-	BackgroundImage    *graphql.Upload `json:"backgroundImage"`
-	BackgroundImageAlt *string         `json:"backgroundImageAlt"`
+	Description        JSONString `json:"description"`
+	Name               string     `json:"name"`
+	Slug               *string    `json:"slug"`
+	Seo                *SeoInput  `json:"seo"`
+	BackgroundImage    *string    `json:"backgroundImage"`
+	BackgroundImageAlt *string    `json:"backgroundImageAlt"`
+}
+
+func (c *CategoryInput) Validate() *model.AppError {
+	if c.Slug != nil && !slug.IsSlug(*c.Slug) {
+		return model.NewAppError("CategoryInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprintf("%s is not a slug", *c.Slug), http.StatusBadRequest)
+	}
+	return nil
+}
+
+// PatchCategory must be called after calling Validate()
+func (c *CategoryInput) PatchCategory(category *model.Category) {
+	category.Name = c.Name
+	category.BackgroundImage = c.BackgroundImage
+	if c.Description != nil {
+		category.Description = model.StringInterface(c.Description)
+	}
+	if c.Slug != nil {
+		category.Slug = *c.Slug
+	}
+	if c.Seo != nil {
+		category.Seo = model.Seo{
+			SeoTitle:       c.Seo.Title,
+			SeoDescription: c.Seo.Description,
+		}
+	}
+	if c.BackgroundImageAlt != nil {
+		category.BackgroundImageAlt = *c.BackgroundImageAlt
+	}
 }
 
 type CategorySortingInput struct {
@@ -3303,8 +3331,8 @@ type SelectedAttribute struct {
 }
 
 type SeoInput struct {
-	Title       *string `json:"title"`
-	Description *string `json:"description"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
 type SetPassword struct {

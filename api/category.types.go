@@ -2,8 +2,12 @@ package api
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"unsafe"
 
+	"github.com/gosimple/slug"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/web"
 )
@@ -93,9 +97,16 @@ func (c *Category) Children(ctx context.Context, args GraphqlParams) (*CategoryC
 	return (*CategoryCountableConnection)(unsafe.Pointer(res)), nil
 }
 
+// NOTE: channel can be Id or Slug
 func (c *Category) Products(ctx context.Context, args struct {
 	Channel *string
 	GraphqlParams
 }) (*ProductCountableConnection, error) {
-	panic("not implemented")
+	if args.Channel != nil && (!slug.IsSlug(*args.Channel) || !model.IsValidId(*args.Channel)) {
+		return nil, model.NewAppError("Category.Products", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, fmt.Sprintf("%s is not a channel slug nor id", *args.Channel), http.StatusBadRequest)
+	}
+
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	embedCtx.App.Srv().ProductService().GetVisibleToUserProducts()
 }

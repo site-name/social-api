@@ -562,15 +562,7 @@ func (u *User) IsSystemAdmin() bool {
 //
 // This function should not be used to check permissions.
 func IsInRole(userRoles string, inRole string) bool {
-	roles := strings.Split(userRoles, " ")
-
-	for _, r := range roles {
-		if r == inRole {
-			return true
-		}
-	}
-
-	return false
+	return strings.Contains(userRoles, inRole)
 }
 
 // IsOAuthUser checks if user is authenticated via google or open oauth systems

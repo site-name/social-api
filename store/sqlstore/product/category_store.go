@@ -214,5 +214,3 @@ func (cs *SqlCategoryStore) GetByOption(option *model.CategoryFilterOption) (*mo
 
 	return &cate, nil
 }
-
-func (s *SqlCategoryStore) UpdateCategoryCache(categories model.Categories, allowFromCache bool) {}

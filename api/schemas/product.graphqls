@@ -252,8 +252,8 @@ enum ProductErrorCode {
 }
 
 input SeoInput {
-  title: String
-  description: String
+  title: String!
+  description: String!
 }
 
 input ProductStockFilterInput {

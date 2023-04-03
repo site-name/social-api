@@ -10,41 +10,63 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/gosimple/slug"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/web"
 )
 
 func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
 	Input  CategoryInput
 	Parent *string
 }) (*CategoryCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	// check user permissions
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateCategory)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+
+	// validate parent
+	if pr := args.Parent; pr != nil && !model.IsValidId(*pr) {
+		return nil, model.NewAppError("CategoryCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "parent"}, fmt.Sprintf("%s is not a valid category id", *pr), http.StatusBadRequest)
+	}
+	if appErr := args.Input.Validate(); appErr != nil {
+		return nil, appErr
+	}
+
+	// construct category instance
+	category := new(model.Category)
+	args.Input.PatchCategory(category)
+
+	// save category
+	category, appErr := embedCtx.App.Srv().ProductService().UpsertCategory(category)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// TODO: check if we need create bg image thumbnail
+
+	return &CategoryCreate{
+		Category: systemCategoryToGraphqlCategory(category),
+	}, nil
 }
 
 func (r *Resolver) CategoryDelete(ctx context.Context, args struct{ Id string }) (*CategoryDelete, error) {
+	// requester must have delete category permission to delete
+	// embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	// embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteCategory)
+	// if embedCtx.Err != nil {
+	// 	return nil, embedCtx.Err
+	// }
+
 	// if !model.IsValidId(args.Id) {
 	// 	return nil, model.NewAppError("CategoryDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid category id", http.StatusBadRequest)
 	// }
 
-	// // check permission to delete category:
-	// embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// if !r.srv.AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionDeleteCategory) {
-	// 	return nil, model.NewAppError("CategoryDelete", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
-	// }
-
-	// categories, appErr := r.srv.ProductService().CategoryByIds([]string{args.Id}, true)
-	// if appErr != nil {
-	// 	return nil, appErr
-	// }
-	// if categories.Len() == 0 {
-	// 	return nil, model.NewAppError("CategoryDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid category id", http.StatusBadRequest)
-	// }
-
-	panic(fmt.Errorf("not implemented"))
+	// embedCtx.App.Srv().ProductService().DeleteCategories()
+	panic("not implemented")
 }
 
 func (r *Resolver) CategoryBulkDelete(ctx context.Context, args struct{ Ids []string }) (*CategoryBulkDelete, error) {
@@ -55,7 +77,40 @@ func (r *Resolver) CategoryUpdate(ctx context.Context, args struct {
 	Id    string
 	Input CategoryInput
 }) (*CategoryUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	// requester must be authenticated and has category_update permission to do this
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateCategory)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+
+	// validate given id
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("CategoryUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
+	}
+	if appErr := args.Input.Validate(); appErr != nil {
+		return nil, appErr
+	}
+
+	categories, appErr := embedCtx.App.Srv().ProductService().CategoryByIds([]string{args.Id}, true)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if categories.Len() == 0 {
+		return nil, model.NewAppError("CategoryUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("category with id=%s not found", args.Id), http.StatusBadRequest)
+	}
+
+	category := categories[0]
+	args.Input.PatchCategory(category)
+
+	category, appErr = r.srv.ProductService().UpsertCategory(category)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &CategoryUpdate{
+		Category: systemCategoryToGraphqlCategory(category),
+	}, nil
 }
 
 func (r *Resolver) CategoryTranslate(ctx context.Context, args struct {
@@ -181,22 +236,21 @@ func (r *Resolver) Category(ctx context.Context, args struct {
 	Id   *string
 	Slug *string
 }) (*Category, error) {
-	var id, slug string
+	if args.Id == nil && args.Slug == nil {
+		return nil, model.NewAppError("Category", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id and slug"}, "id or slug must be provided", http.StatusBadRequest)
+	}
 	if args.Id != nil && model.IsValidId(*args.Id) {
-		id = *args.Id
+		return nil, model.NewAppError("Category", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprint("%s is invalid id", *args.Id), http.StatusBadRequest)
 	}
-	if args.Slug != nil && *args.Slug != "" {
-		slug = *args.Slug
-	}
-	if id == "" && slug == "" {
-		return nil, model.NewAppError("Resolver.Category", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id/Slug"}, "please provide either id or slug", http.StatusBadRequest)
+	if args.Slug != nil && !slug.IsSlug(*args.Slug) {
+		return nil, model.NewAppError("Category", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprint("%s is invalid slug", *args.Slug), http.StatusBadRequest)
 	}
 
 	categories := r.srv.ProductService().FilterCategoriesFromCache(func(c *model.Category) bool {
-		if id != "" {
-			return c.Id == id
+		if args.Id != nil {
+			return c.Id == *args.Id
 		}
-		return c.Slug == slug
+		return c.Slug == *args.Slug
 	})
 	if categories.Len() == 0 {
 		return nil, nil

@@ -31,10 +31,10 @@ type Category  {
 
 input CategoryInput {
   description: JSONString!
-  name: String
+  name: String!
   slug: String
   seo: SeoInput
-  backgroundImage: Upload
+  backgroundImage: String
   backgroundImageAlt: String
 }
 
