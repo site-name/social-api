@@ -116,7 +116,7 @@ func buildStoreImplement() error {
 				return "audit"
 			case "App", "AppToken":
 				return "app"
-			case "Channel":
+			case "Channel", "ChannelShop":
 				return "channel"
 			case "Checkout", "CheckoutLine":
 				return "checkout"

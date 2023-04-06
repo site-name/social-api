@@ -104,7 +104,7 @@ func (a *ServiceProduct) ProductGetFirstImage(productID string) (*model.ProductM
 
 func (a *ServiceProduct) GetVisibleToUserProducts(userSession *model.Session, channel_IdOrSlug string) (model.Products, *model.AppError) {
 	userHasOneOfProductPermissions := a.srv.AccountService().SessionHasPermissionToAny(userSession, model.ProductPermissions...)
-	productQuery := a.srv.Store.Product().VisibleToUserProducts(channel_IdOrSlug, userHasOneOfProductPermissions)
+	productQuery := a.srv.Store.Product().VisibleToUserProductsQuery(channel_IdOrSlug, userHasOneOfProductPermissions)
 	products, err := a.srv.Store.Product().FilterByQuery(productQuery)
 	if err != nil {
 		return nil, model.NewAppError("GetVisibleToUserProducts", "app.product.get_visible_products_for_user.app_error", nil, err.Error(), http.StatusInternalServerError)

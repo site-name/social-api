@@ -183,7 +183,7 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 
 		productQuery := as.
 			Product().
-			VisibleToUserProducts(channelIdOrSlug, *option.UserHasOneOfProductPermissions)
+			VisibleToUserProductsQuery(channelIdOrSlug, *option.UserHasOneOfProductPermissions)
 
 		if option.InCategory != nil {
 			productQuery = productQuery.Where("Products.CategoryID = ?", *option.InCategory)

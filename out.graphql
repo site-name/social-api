@@ -1306,7 +1306,7 @@ type GatewayConfigLine {
 }
 
 extend type Mutation {
-  checkoutLineDelete(checkoutId: String, lineId: String, token: String): CheckoutLineDelete
+  checkoutLineDelete(lineId: String, token: String): CheckoutLineDelete
   checkoutLinesAdd(checkoutId: String, lines: [CheckoutLineInput]!, token: String): CheckoutLinesAdd
   checkoutLinesUpdate(checkoutId: String, lines: [CheckoutLineInput]!, token: String): CheckoutLinesUpdate
 }
@@ -1326,7 +1326,7 @@ type CheckoutLine  {
 
 type CheckoutLineDelete {
   checkout: Checkout
-  errors: [CheckoutError!]!
+  # errors: [CheckoutError!]!
 }
 
 input CheckoutLineInput {

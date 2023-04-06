@@ -9,11 +9,13 @@ import (
 )
 
 func (r *Resolver) CheckoutLineDelete(ctx context.Context, args struct {
-	CheckoutID *string
-	LineID     *string
-	Token      *string
+	LineID *string
+	Token  *string
 }) (*CheckoutLineDelete, error) {
 	panic(fmt.Errorf("not implemented"))
+	// if args.Token != nil {
+
+	// }
 }
 
 func (r *Resolver) CheckoutLinesAdd(ctx context.Context, args struct {

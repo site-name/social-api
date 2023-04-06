@@ -40,6 +40,7 @@ type TimerLayer struct {
 	CategoryStore                      store.CategoryStore
 	CategoryTranslationStore           store.CategoryTranslationStore
 	ChannelStore                       store.ChannelStore
+	ChannelShopStore                   store.ChannelShopStore
 	CheckoutStore                      store.CheckoutStore
 	CheckoutLineStore                  store.CheckoutLineStore
 	ClusterDiscoveryStore              store.ClusterDiscoveryStore
@@ -216,6 +217,10 @@ func (s *TimerLayer) CategoryTranslation() store.CategoryTranslationStore {
 
 func (s *TimerLayer) Channel() store.ChannelStore {
 	return s.ChannelStore
+}
+
+func (s *TimerLayer) ChannelShop() store.ChannelShopStore {
+	return s.ChannelShopStore
 }
 
 func (s *TimerLayer) Checkout() store.CheckoutStore {
@@ -688,6 +693,11 @@ type TimerLayerCategoryTranslationStore struct {
 
 type TimerLayerChannelStore struct {
 	store.ChannelStore
+	Root *TimerLayer
+}
+
+type TimerLayerChannelShopStore struct {
+	store.ChannelShopStore
 	Root *TimerLayer
 }
 
@@ -2315,6 +2325,38 @@ func (s *TimerLayerChannelStore) Save(ch *model.Channel) (*model.Channel, error)
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.Save", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerChannelShopStore) FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.ChannelShopStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelShopStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerChannelShopStore) Save(relation *model.ChannelShopRelation) (*model.ChannelShopRelation, error) {
+	start := timemodule.Now()
+
+	result, err := s.ChannelShopStore.Save(relation)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelShopStore.Save", success, elapsed)
 	}
 	return result, err
 }
@@ -5392,10 +5434,10 @@ func (s *TimerLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(pro
 	return result, err
 }
 
-func (s *TimerLayerProductStore) VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
+func (s *TimerLayerProductStore) VisibleToUserProductsQuery(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
 	start := timemodule.Now()
 
-	result := s.ProductStore.VisibleToUserProducts(channel_SlugOrID, userHasOneOfProductpermissions)
+	result := s.ProductStore.VisibleToUserProductsQuery(channel_SlugOrID, userHasOneOfProductpermissions)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5403,7 +5445,7 @@ func (s *TimerLayerProductStore) VisibleToUserProducts(channel_SlugOrID string, 
 		if true {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.VisibleToUserProducts", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("ProductStore.VisibleToUserProductsQuery", success, elapsed)
 	}
 	return result
 }
@@ -9135,6 +9177,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.CategoryStore = &TimerLayerCategoryStore{CategoryStore: childStore.Category(), Root: &newStore}
 	newStore.CategoryTranslationStore = &TimerLayerCategoryTranslationStore{CategoryTranslationStore: childStore.CategoryTranslation(), Root: &newStore}
 	newStore.ChannelStore = &TimerLayerChannelStore{ChannelStore: childStore.Channel(), Root: &newStore}
+	newStore.ChannelShopStore = &TimerLayerChannelShopStore{ChannelShopStore: childStore.ChannelShop(), Root: &newStore}
 	newStore.CheckoutStore = &TimerLayerCheckoutStore{CheckoutStore: childStore.Checkout(), Root: &newStore}
 	newStore.CheckoutLineStore = &TimerLayerCheckoutLineStore{CheckoutLineStore: childStore.CheckoutLine(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &TimerLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}

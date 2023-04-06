@@ -58,7 +58,7 @@ func (cs *SqlChannelStore) Save(ch *model.Channel) (*model.Channel, error) {
 	query := "INSERT INTO " + store.ChannelTableName + "(" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
 	if _, err := cs.GetMasterX().NamedExec(query, ch); err != nil {
 		if cs.IsUniqueConstraintError(err, []string{"Slug", "channels_slug_key", "idx_channels_slug_unique"}) {
-			return nil, store.NewErrInvalidInput("Channel", "Slug", ch.Slug)
+			return nil, store.NewErrInvalidInput(store.ChannelTableName, "Slug", ch.Slug)
 		}
 		return nil, errors.Wrapf(err, "failed to save channel with id=%s", ch.Id)
 	}

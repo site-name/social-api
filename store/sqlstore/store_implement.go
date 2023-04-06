@@ -59,6 +59,7 @@ type SqlStoreStores struct {
 	category                      store.CategoryStore
 	categoryTranslation           store.CategoryTranslationStore
 	channel                       store.ChannelStore
+	channelShop                   store.ChannelShopStore
 	checkout                      store.CheckoutStore
 	checkoutLine                  store.CheckoutLineStore
 	clusterDiscovery              store.ClusterDiscoveryStore
@@ -177,6 +178,7 @@ func (store *SqlStore) setupTables() {
 		category:                      product.NewSqlCategoryStore(store),
 		categoryTranslation:           product.NewSqlCategoryTranslationStore(store),
 		channel:                       channel.NewSqlChannelStore(store),
+		channelShop:                   channel.NewSqlChannelShopStore(store),
 		checkout:                      checkout.NewSqlCheckoutStore(store),
 		checkoutLine:                  checkout.NewSqlCheckoutLineStore(store),
 		clusterDiscovery:              cluster.NewSqlClusterDiscoveryStore(store),
@@ -354,6 +356,10 @@ func (ss *SqlStore) CategoryTranslation() store.CategoryTranslationStore {
 
 func (ss *SqlStore) Channel() store.ChannelStore {
 	return ss.stores.channel
+}
+
+func (ss *SqlStore) ChannelShop() store.ChannelShopStore {
+	return ss.stores.channelShop
 }
 
 func (ss *SqlStore) Checkout() store.CheckoutStore {

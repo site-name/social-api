@@ -80,12 +80,9 @@ func (c *Category) Ancestors(ctx context.Context, args GraphqlParams) (*Category
 }
 
 func (c *Category) Children(ctx context.Context, args GraphqlParams) (*CategoryCountableConnection, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
-	filter := func(c *model.Category) bool { return c.ParentID == &c.Id }
+	filter := func(c *model.Category) bool { return c.ParentID != nil && *c.ParentID == c.Id }
 	children := embedCtx.App.Srv().ProductService().FilterCategoriesFromCache(filter)
 
 	keyFunc := func(c *model.Category) string { return c.Slug }
@@ -102,11 +99,29 @@ func (c *Category) Products(ctx context.Context, args struct {
 	Channel *string
 	GraphqlParams
 }) (*ProductCountableConnection, error) {
-	if args.Channel != nil && (!slug.IsSlug(*args.Channel) || !model.IsValidId(*args.Channel)) {
-		return nil, model.NewAppError("Category.Products", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, fmt.Sprintf("%s is not a channel slug nor id", *args.Channel), http.StatusBadRequest)
+	var channelIdOrSlug string
+
+	if args.Channel != nil {
+		if !slug.IsSlug(*args.Channel) && !model.IsValidId(*args.Channel) {
+			return nil, model.NewAppError("Category.Products", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, fmt.Sprintf("%s is not a channel slug nor id", *args.Channel), http.StatusBadRequest)
+		}
+		channelIdOrSlug = *args.Channel
+	}
+
+	if appErr := args.GraphqlParams.Validate("Category.Products"); appErr != nil {
+		return nil, appErr
 	}
 
 	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	embedCtx.App.Srv().ProductService().GetVisibleToUserProducts()
+	products, appErr := embedCtx.App.Srv().ProductService().GetVisibleToUserProducts(embedCtx.AppContext.Session(), channelIdOrSlug)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	keyFunc := func(p *model.Product) string { return p.Slug }
+	res, appErr := newGraphqlPaginator(products, keyFunc, SystemProductToGraphqlProduct, args.GraphqlParams).parse("Category.Products")
+	if appErr != nil {
+		return nil, appErr
+	}
+	return (*ProductCountableConnection)(unsafe.Pointer(res)), nil
 }

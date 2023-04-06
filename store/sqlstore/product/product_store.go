@@ -409,15 +409,9 @@ func (ps *SqlProductStore) PublishedWithVariants(channelIdOrSlug string) squirre
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ProductChannelListingTableName).
-		Where(squirrel.And{
-			squirrel.Or{
-				squirrel.LtOrEq{"ProductChannelListings.PublicationDate": today},
-				squirrel.Eq{"ProductChannelListings.PublicationDate": nil},
-			},
-			squirrel.Eq{"ProductChannelListings.IsPublished": true},
-			squirrel.Expr("ProductChannelListings.ProductID = Products.Id"),
-			channelQuery,
-		}).
+		Where("ProductChannelListings.PublicationDate IS NULL OR ProductChannelListings.PublicationDate <= ?", today).
+		Where("ProductChannelListings.IsPublished AND ProductChannelListings.ProductID = Products.Id").
+		Where(channelQuery).
 		Suffix(")").
 		Limit(1)
 
@@ -458,14 +452,13 @@ func (ps *SqlProductStore) PublishedWithVariants(channelIdOrSlug string) squirre
 //	+) if `channelSlugOrID` is provided: refer to ./product_store_doc.md (line 241, CASE 1)
 //
 // 2) If requesting user is shop visitor: Refer to ./product_store_doc.md (line 241, case 3)
-func (ps *SqlProductStore) VisibleToUserProducts(channelSlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
+func (ps *SqlProductStore) VisibleToUserProductsQuery(channelSlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
 	// check if requesting user has right to view products
 	if userHasOneOfProductpermissions {
 		if channelSlugOrID == "" {
 			return ps.GetQueryBuilder().Select(ps.ModelFields(store.ProductTableName + ".")...).From(store.ProductTableName) // find all
 		}
 
-		// else
 		channelQuery := ps.channelQuery(channelSlugOrID, nil, store.ProductChannelListingTableName)
 		productChannelListingQuery := ps.
 			GetQueryBuilder(squirrel.Question).

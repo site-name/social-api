@@ -26,21 +26,6 @@ type Channel struct {
 	// HasOrders      bool            `json:"hasOrders"`
 }
 
-func (c Channel) HasOrders(ctx context.Context) (bool, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionReadChannel)
-	if embedCtx.Err != nil {
-		return false, embedCtx.Err
-	}
-
-	channel, err := ChannelWithHasOrdersByIdLoader.Load(ctx, c.ID)()
-	if err != nil {
-		return false, err
-	}
-
-	return channel.GetHasOrders(), nil
-}
-
 func SystemChannelToGraphqlChannel(ch *model.Channel) *Channel {
 	if ch == nil {
 		return nil
@@ -57,6 +42,32 @@ func SystemChannelToGraphqlChannel(ch *model.Channel) *Channel {
 			Country: model.Countries[ch.DefaultCountry],
 		},
 	}
+}
+
+func (c Channel) HasOrders(ctx context.Context) (bool, error) {
+	// requester can see if current channel has order(s) only if
+	// he is staff at the shop that sells products in current channel
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return false, embedCtx.Err
+	}
+	if embedCtx.CurrentShopID == "" {
+		embedCtx.SetInvalidUrlParam("shop_id")
+		return false, embedCtx.Err
+	}
+
+	if embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) &&
+		embedCtx.App.Srv().ChannelService().ShopSellsInChannel(embedCtx.CurrentShopID, c.ID) {
+		channel, err := ChannelWithHasOrdersByIdLoader.Load(ctx, c.ID)()
+		if err != nil {
+			return false, err
+		}
+
+		return channel.GetHasOrders(), nil
+	}
+
+	return false, MakeUnauthorizedError("Channel.HasOrders")
 }
 
 func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Channel] {
@@ -135,6 +146,7 @@ errorLabel:
 	return res
 }
 
+// TODO: Check if we need to define res another way
 func channelByCheckoutLineIDLoader(ctx context.Context, checkoutLineIDs []string) []*dataloader.Result[*model.Channel] {
 	var (
 		res            []*dataloader.Result[*model.Channel]
@@ -220,28 +232,23 @@ func channelWithHasOrdersByIdLoader(ctx context.Context, channelIDs []string) []
 	var (
 		res        = make([]*dataloader.Result[*model.Channel], len(channelIDs))
 		channels   model.Channels
-		appErr     *model.AppError
 		channelMap = map[string]*model.Channel{}
+		err        *model.AppError
 	)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// find all channels that have orders
-	channels, appErr = embedCtx.App.
+	channels, err = embedCtx.App.
 		Srv().
 		ChannelService().
 		ChannelsByOption(&model.ChannelFilterOption{
 			AnnotateHasOrders: true,
 		})
-	if appErr != nil {
-		err = appErr
+	if err != nil {
 		goto errorLabel
 	}
 
 	channelMap = lo.SliceToMap(channels, func(c *model.Channel) (string, *model.Channel) { return c.Id, c })
-
 	for idx, id := range channelIDs {
 		res[idx] = &dataloader.Result[*model.Channel]{Data: channelMap[id]}
 	}
@@ -307,13 +314,20 @@ func (c *ProductChannelListing) Channel(ctx context.Context) (*Channel, error) {
 }
 
 func (c *ProductChannelListing) PurchaseCost(ctx context.Context) (*MoneyRange, error) {
-	// requester can see purchase cost only if
+	// requester can see purchase cost only if he is owner of current shop
 	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateProduct)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+	if embedCtx.CurrentShopID == "" {
+		embedCtx.SetInvalidUrlParam("shop_id")
+		return nil, embedCtx.Err
+	}
 
-	if !embedCtx.App.
-		Srv().AccountService().
-		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+	if !embedCtx.App.Srv().
+		ShopService().
+		UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) {
 		return nil, MakeUnauthorizedError("ProductChannelListing.PurchaseCost")
 	}
 

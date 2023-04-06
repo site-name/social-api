@@ -163,10 +163,15 @@ func (s *ServiceProduct) ClassifyCategories(categories model.Categories) model.C
 	return res
 }
 
+// UpsertCategory first checks if given category need a Level number.
+// Performs upsert given category into database.
+// asynchronously does category anayltic to update category cache.
 func (s *ServiceProduct) UpsertCategory(cate *model.Category) (*model.Category, *model.AppError) {
 	if !model.IsValidId(cate.Id) && cate.ParentID != nil { // meaning saving category
 		parentCate, _ := s.categoryMap.Load(*cate.ParentID)
-		cate.Level = parentCate.(*model.Category).Level + 1
+		if parentCate != nil {
+			cate.Level = parentCate.(*model.Category).Level + 1
+		}
 	}
 
 	cate, err := s.srv.Store.Category().Upsert(cate)

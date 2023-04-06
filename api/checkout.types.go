@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"net/http"
 	"strings"
 	"time"
 
@@ -211,19 +210,22 @@ func (c *Checkout) ShippingPrice(ctx context.Context) (*TaxedMoney, error) {
 
 func (c *Checkout) User(ctx context.Context) (*User, error) {
 	// requester can see user of checkout only if
+	// current checkout is made by himself OR
 	// requester is staff of the shop that has this checkout
 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
 	if err != nil {
 		return nil, err
 	}
 
-	if (c.checkout.UserID != nil && embedCtx.AppContext.Session().UserId == *c.checkout.UserID) ||
-		embedCtx.
-			App.
-			Srv().
-			AccountService().
-			SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageUsers) {
+	currentUserCanSeeCheckoutOwner := c.checkout.UserID != nil && embedCtx.AppContext.Session().UserId == *c.checkout.UserID
+	if !currentUserCanSeeCheckoutOwner {
+		if embedCtx.CurrentShopID == "" {
+			embedCtx.SetInvalidUrlParam("shop_id")
+		}
+		currentUserCanSeeCheckoutOwner = embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID)
+	}
 
+	if currentUserCanSeeCheckoutOwner {
 		if c.checkout.UserID != nil {
 			user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, *c.checkout.UserID)
 			if appErr != nil {
@@ -236,7 +238,7 @@ func (c *Checkout) User(ctx context.Context) (*User, error) {
 		return nil, nil
 	}
 
-	return nil, model.NewAppError("checkout.User", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	return nil, MakeUnauthorizedError("Checkout.User")
 }
 
 func (c *Checkout) Quantity(ctx context.Context) (int32, error) {

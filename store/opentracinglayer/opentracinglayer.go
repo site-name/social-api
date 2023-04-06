@@ -41,6 +41,7 @@ type OpenTracingLayer struct {
 	CategoryStore                      store.CategoryStore
 	CategoryTranslationStore           store.CategoryTranslationStore
 	ChannelStore                       store.ChannelStore
+	ChannelShopStore                   store.ChannelShopStore
 	CheckoutStore                      store.CheckoutStore
 	CheckoutLineStore                  store.CheckoutLineStore
 	ClusterDiscoveryStore              store.ClusterDiscoveryStore
@@ -217,6 +218,10 @@ func (s *OpenTracingLayer) CategoryTranslation() store.CategoryTranslationStore 
 
 func (s *OpenTracingLayer) Channel() store.ChannelStore {
 	return s.ChannelStore
+}
+
+func (s *OpenTracingLayer) ChannelShop() store.ChannelShopStore {
+	return s.ChannelShopStore
 }
 
 func (s *OpenTracingLayer) Checkout() store.CheckoutStore {
@@ -689,6 +694,11 @@ type OpenTracingLayerCategoryTranslationStore struct {
 
 type OpenTracingLayerChannelStore struct {
 	store.ChannelStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerChannelShopStore struct {
+	store.ChannelShopStore
 	Root *OpenTracingLayer
 }
 
@@ -2458,6 +2468,42 @@ func (s *OpenTracingLayerChannelStore) Save(ch *model.Channel) (*model.Channel, 
 
 	defer span.Finish()
 	result, err := s.ChannelStore.Save(ch)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerChannelShopStore) FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelShopStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ChannelShopStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerChannelShopStore) Save(relation *model.ChannelShopRelation) (*model.ChannelShopRelation, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelShopStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ChannelShopStore.Save(relation)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -5901,16 +5947,16 @@ func (s *OpenTracingLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogu
 	return result, err
 }
 
-func (s *OpenTracingLayerProductStore) VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
+func (s *OpenTracingLayerProductStore) VisibleToUserProductsQuery(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.VisibleToUserProducts")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductStore.VisibleToUserProductsQuery")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result := s.ProductStore.VisibleToUserProducts(channel_SlugOrID, userHasOneOfProductpermissions)
+	result := s.ProductStore.VisibleToUserProductsQuery(channel_SlugOrID, userHasOneOfProductpermissions)
 	return result
 }
 
@@ -10074,6 +10120,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.CategoryStore = &OpenTracingLayerCategoryStore{CategoryStore: childStore.Category(), Root: &newStore}
 	newStore.CategoryTranslationStore = &OpenTracingLayerCategoryTranslationStore{CategoryTranslationStore: childStore.CategoryTranslation(), Root: &newStore}
 	newStore.ChannelStore = &OpenTracingLayerChannelStore{ChannelStore: childStore.Channel(), Root: &newStore}
+	newStore.ChannelShopStore = &OpenTracingLayerChannelShopStore{ChannelShopStore: childStore.ChannelShop(), Root: &newStore}
 	newStore.CheckoutStore = &OpenTracingLayerCheckoutStore{CheckoutStore: childStore.Checkout(), Root: &newStore}
 	newStore.CheckoutLineStore = &OpenTracingLayerCheckoutLineStore{CheckoutLineStore: childStore.CheckoutLine(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &OpenTracingLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}

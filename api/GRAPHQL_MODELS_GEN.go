@@ -958,8 +958,8 @@ type CheckoutLineCountableEdge struct {
 }
 
 type CheckoutLineDelete struct {
-	Checkout *Checkout        `json:"checkout"`
-	Errors   []*CheckoutError `json:"errors"`
+	Checkout *Checkout `json:"checkout"`
+	// Errors   []*CheckoutError `json:"errors"`
 }
 
 type CheckoutLineInput struct {

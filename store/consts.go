@@ -222,7 +222,8 @@ const (
 
 // channel-related table names
 const (
-	ChannelTableName = "Channels"
+	ChannelTableName             = "Channels"
+	ChannelShopRelationTableName = "ChannelShops"
 )
 
 // giftcard-related table names

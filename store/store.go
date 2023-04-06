@@ -63,6 +63,7 @@ type Store interface {
 	App() AppStore                                                     // app
 	AppToken() AppTokenStore                                           //
 	Channel() ChannelStore                                             // channel
+	ChannelShop() ChannelShopStore                                     //
 	Checkout() CheckoutStore                                           // model
 	CheckoutLine() CheckoutLineStore                                   //
 	CsvExportEvent() CsvExportEventStore                               // csv
@@ -544,7 +545,7 @@ type (
 			PublicationDate *timemodule.Time
 		}, error) // FilterNotPublishedProducts finds all not published products belong to given channel
 		PublishedWithVariants(channel_SlugOrID string) squirrel.SelectBuilder                                                              // PublishedWithVariants finds and returns products.
-		VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder                         // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
+		VisibleToUserProductsQuery(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder                    // FilterVisibleToUserProduct finds and returns all products that are visible to requesting user.
 		SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs []string) ([]*model.Product, error) // SelectForUpdateDiscountedPricesOfCatalogues finds and returns product based on given ids lists.
 		AdvancedFilterQueryBuilder(input *model.ExportProductsFilterOptions) squirrel.SelectBuilder                                        // AdvancedFilterQueryBuilder advancedly finds products, filtered using given options
 		FilterByQuery(query squirrel.SelectBuilder) (model.Products, error)                                                                // FilterByQuery finds and returns products with given query, limit, createdAtGt
@@ -826,6 +827,10 @@ type ChannelStore interface {
 	Get(id string) (*model.Channel, error)                                      // Get returns channel by given id
 	FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) // FilterByOption returns a list of channels with given option
 	GetbyOption(option *model.ChannelFilterOption) (*model.Channel, error)      // GetbyOption finds and returns 1 channel filtered using given options
+}
+type ChannelShopStore interface {
+	FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error)
+	Save(relation *model.ChannelShopRelation) (*model.ChannelShopRelation, error)
 }
 
 // app

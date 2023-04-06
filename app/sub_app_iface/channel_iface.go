@@ -17,4 +17,7 @@ type ChannelService interface {
 	ValidateChannel(channelID string) (*model.Channel, *model.AppError)
 	GetDefaultChannel() (*model.Channel, *model.AppError)
 	GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError)
+	ChannelShopRelationsByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, *model.AppError)
+	SaveChannelShopRelation(relation *model.ChannelShopRelation) (*model.ChannelShopRelation, *model.AppError)
+	ShopSellsInChannel(shopID, channelID string) bool
 }

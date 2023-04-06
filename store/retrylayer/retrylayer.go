@@ -40,6 +40,7 @@ type RetryLayer struct {
 	CategoryStore                      store.CategoryStore
 	CategoryTranslationStore           store.CategoryTranslationStore
 	ChannelStore                       store.ChannelStore
+	ChannelShopStore                   store.ChannelShopStore
 	CheckoutStore                      store.CheckoutStore
 	CheckoutLineStore                  store.CheckoutLineStore
 	ClusterDiscoveryStore              store.ClusterDiscoveryStore
@@ -216,6 +217,10 @@ func (s *RetryLayer) CategoryTranslation() store.CategoryTranslationStore {
 
 func (s *RetryLayer) Channel() store.ChannelStore {
 	return s.ChannelStore
+}
+
+func (s *RetryLayer) ChannelShop() store.ChannelShopStore {
+	return s.ChannelShopStore
 }
 
 func (s *RetryLayer) Checkout() store.CheckoutStore {
@@ -688,6 +693,11 @@ type RetryLayerCategoryTranslationStore struct {
 
 type RetryLayerChannelStore struct {
 	store.ChannelStore
+	Root *RetryLayer
+}
+
+type RetryLayerChannelShopStore struct {
+	store.ChannelShopStore
 	Root *RetryLayer
 }
 
@@ -2607,6 +2617,46 @@ func (s *RetryLayerChannelStore) Save(ch *model.Channel) (*model.Channel, error)
 	tries := 0
 	for {
 		result, err := s.ChannelStore.Save(ch)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerChannelShopStore) FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.ChannelShopStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerChannelShopStore) Save(relation *model.ChannelShopRelation) (*model.ChannelShopRelation, error) {
+
+	tries := 0
+	for {
+		result, err := s.ChannelShopStore.Save(relation)
 		if err == nil {
 			return result, nil
 		}
@@ -6396,9 +6446,9 @@ func (s *RetryLayerProductStore) SelectForUpdateDiscountedPricesOfCatalogues(pro
 
 }
 
-func (s *RetryLayerProductStore) VisibleToUserProducts(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
+func (s *RetryLayerProductStore) VisibleToUserProductsQuery(channel_SlugOrID string, userHasOneOfProductpermissions bool) squirrel.SelectBuilder {
 
-	return s.ProductStore.VisibleToUserProducts(channel_SlugOrID, userHasOneOfProductpermissions)
+	return s.ProductStore.VisibleToUserProductsQuery(channel_SlugOrID, userHasOneOfProductpermissions)
 
 }
 
@@ -10968,6 +11018,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.CategoryStore = &RetryLayerCategoryStore{CategoryStore: childStore.Category(), Root: &newStore}
 	newStore.CategoryTranslationStore = &RetryLayerCategoryTranslationStore{CategoryTranslationStore: childStore.CategoryTranslation(), Root: &newStore}
 	newStore.ChannelStore = &RetryLayerChannelStore{ChannelStore: childStore.Channel(), Root: &newStore}
+	newStore.ChannelShopStore = &RetryLayerChannelShopStore{ChannelShopStore: childStore.ChannelShop(), Root: &newStore}
 	newStore.CheckoutStore = &RetryLayerCheckoutStore{CheckoutStore: childStore.Checkout(), Root: &newStore}
 	newStore.CheckoutLineStore = &RetryLayerCheckoutLineStore{CheckoutLineStore: childStore.CheckoutLine(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &RetryLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
