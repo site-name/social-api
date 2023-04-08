@@ -367,13 +367,10 @@ func (c *ProductChannelListing) IsAvailableForPurchase(ctx context.Context) (*bo
 }
 
 func (c *ProductChannelListing) Margin(ctx context.Context) (*Margin, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
-		return nil, model.NewAppError("ProductChannelListing.Margin", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateProduct, model.PermissionReadProduct)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	productVariants, err := ProductVariantsByProductIdLoader.Load(ctx, c.c.ProductID)()
