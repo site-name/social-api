@@ -60,7 +60,7 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 			model.User{Id: currentSession.UserId},
 			*savedAddress,
 			*args.Type,
-			nil,
+			nil, // TODO: finish plugin manager
 		)
 		if appErr != nil {
 			return nil, appErr
@@ -77,7 +77,6 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AddressInput
 }) (*AccountAddressUpdate, error) {
-
 	// check authenticated first
 	embededContext, _ := GetContextValue[*web.Context](ctx, WebCtx)
 	embededContext.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateAddress)
@@ -88,7 +87,7 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 
 	// validate given address id
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("AccountAddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "invalid address ID provided", http.StatusBadRequest)
+		return nil, model.NewAppError("AccountAddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, fmt.Sprintf("$s is invalid address id", args.Id), http.StatusBadRequest)
 	}
 
 	appErr := args.Input.Validate()

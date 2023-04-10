@@ -1,11 +1,9 @@
 package account
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -192,7 +190,7 @@ func (s *ServiceAccount) ChangeUserDefaultAddress(user model.User, address model
 		}
 		return s.SetUserDefaultBillingAddress(&user, address.Id)
 
-	case model.ADDRESS_TYPE_SHIPPING:
+	default:
 		if user.DefaultShippingAddressID != nil {
 			_, appErr := s.AddUserAddress(&model.UserAddress{
 				UserID:    user.Id,
@@ -202,15 +200,6 @@ func (s *ServiceAccount) ChangeUserDefaultAddress(user model.User, address model
 				return appErr
 			}
 		}
-
 		return s.SetUserDefaultShippingAddress(&user, address.Id)
-
-	default:
-		return model.NewAppError(
-			"app.account.ChangeUserDefaultAddress",
-			app.InvalidArgumentAppErrorID,
-			map[string]interface{}{"Fields": "addressType"},
-			fmt.Sprintf("address type must be either %s or %s, got %s", model.ADDRESS_TYPE_BILLING, model.ADDRESS_TYPE_SHIPPING, addressType),
-			http.StatusBadRequest)
 	}
 }

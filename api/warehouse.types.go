@@ -214,8 +214,8 @@ func (s *Stock) Quantity(ctx context.Context) (int32, error) {
 
 	if !embedCtx.App.Srv().
 		AccountService().
-		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageProducts, model.PermissionManageOrders) {
-		return 0, model.NewAppError("stock.Wuantity", ErrorUnauthorized, nil, "You are not authorized to perform this action", http.StatusUnauthorized)
+		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionReadStock) {
+		return 0, MakeUnauthorizedError("Stock.Quantity")
 	}
 
 	return int32(s.stock.Quantity), nil
@@ -229,7 +229,7 @@ func (s *Stock) QuantityAllocated(ctx context.Context) (int32, error) {
 
 	if embedCtx.App.Srv().
 		AccountService().
-		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageProducts, model.PermissionManageOrders) {
+		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionReadStock) {
 		allocations, err := AllocationsByStockIDLoader.Load(ctx, s.ID)()
 		if err != nil {
 			return 0, err
@@ -245,7 +245,7 @@ func (s *Stock) QuantityAllocated(ctx context.Context) (int32, error) {
 		return int32(sum), nil
 	}
 
-	return 0, model.NewAppError("Stock.QuantityAllocated", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	return 0, MakeUnauthorizedError("Stock.QuantityAllocated")
 }
 
 func (s *Stock) ProductVariant(ctx context.Context) (*ProductVariant, error) {
@@ -355,27 +355,22 @@ func systemAllocationToGraphqlAllocation(a *model.Allocation) *Allocation {
 }
 
 func (a *Allocation) Quantity(ctx context.Context) (int32, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return 0, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	if embedCtx.App.Srv().
 		AccountService().
-		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageProducts, model.PermissionManageOrders) {
+		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionReadStock, model.PermissionReadAllocation) {
 		return int32(a.a.QuantityAllocated), nil
 	}
 
-	return 0, model.NewAppError("Allocation.Quantity", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	return 0, MakeUnauthorizedError("Allocation.Quantity")
 }
 
 func (a *Allocation) Warehouse(ctx context.Context) (*Warehouse, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageOrders, model.PermissionManageProducts) {
-		return nil, model.NewAppError("Allocation.Warehouse", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+
+	if !embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionReadStock, model.PermissionReadAllocation) {
+		return nil, MakeUnauthorizedError("Allocation.Warehouse")
 	}
 
 	stock, err := StocksByIDLoader.Load(ctx, a.a.StockID)()

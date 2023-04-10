@@ -73,24 +73,17 @@ func (c Channel) HasOrders(ctx context.Context) (bool, error) {
 func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Channel] {
 	var (
 		res        = make([]*dataloader.Result[*model.Channel], len(ids))
-		appErr     *model.AppError
-		channels   model.Channels
 		channelMap = map[string]*model.Channel{} // keys are channel ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	channels, appErr = embedCtx.App.
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	channels, appErr := embedCtx.App.
 		Srv().
 		ChannelService().
 		ChannelsByOption(&model.ChannelFilterOption{
 			Id: squirrel.Eq{store.ChannelTableName + ".Id": ids},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -103,7 +96,7 @@ func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 
 errorLabel:
 	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.Channel]{Error: err}
+		res[idx] = &dataloader.Result[*model.Channel]{Error: appErr}
 	}
 	return res
 }
@@ -111,24 +104,17 @@ errorLabel:
 func channelBySlugLoader(ctx context.Context, slugs []string) []*dataloader.Result[*model.Channel] {
 	var (
 		res        = make([]*dataloader.Result[*model.Channel], len(slugs))
-		appErr     *model.AppError
-		channels   model.Channels
 		channelMap = map[string]*model.Channel{}
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	channels, appErr = embedCtx.App.
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	channels, appErr := embedCtx.App.
 		Srv().
 		ChannelService().
 		ChannelsByOption(&model.ChannelFilterOption{
 			Slug: squirrel.Eq{store.ChannelTableName + ".Slug": slugs},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -141,7 +127,7 @@ func channelBySlugLoader(ctx context.Context, slugs []string) []*dataloader.Resu
 
 errorLabel:
 	for idx := range slugs {
-		res[idx] = &dataloader.Result[*model.Channel]{Error: err}
+		res[idx] = &dataloader.Result[*model.Channel]{Error: appErr}
 	}
 	return res
 }
@@ -231,14 +217,12 @@ errorLabel:
 func channelWithHasOrdersByIdLoader(ctx context.Context, channelIDs []string) []*dataloader.Result[*model.Channel] {
 	var (
 		res        = make([]*dataloader.Result[*model.Channel], len(channelIDs))
-		channels   model.Channels
 		channelMap = map[string]*model.Channel{}
-		err        *model.AppError
 	)
 	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// find all channels that have orders
-	channels, err = embedCtx.App.
+	channels, err := embedCtx.App.
 		Srv().
 		ChannelService().
 		ChannelsByOption(&model.ChannelFilterOption{
@@ -367,13 +351,10 @@ func (c *ProductChannelListing) IsAvailableForPurchase(ctx context.Context) (*bo
 }
 
 func (c *ProductChannelListing) Margin(ctx context.Context) (*Margin, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
-		return nil, model.NewAppError("ProductChannelListing.Margin", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateProduct, model.PermissionUpdateProduct)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	productVariants, err := ProductVariantsByProductIdLoader.Load(ctx, c.c.ProductID)()

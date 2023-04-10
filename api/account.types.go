@@ -42,7 +42,7 @@ func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 		return nil, embedContext.Err
 	}
 
-	// get current user
+	// get requester
 	user, appErr := embedContext.App.
 		Srv().
 		AccountService().
@@ -66,7 +66,7 @@ func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 		return nil, embedContext.Err
 	}
 
-	// get current user
+	// get requester
 	user, appErr := embedContext.App.
 		Srv().
 		AccountService().
@@ -85,24 +85,18 @@ func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Address] {
 	var (
 		res        = make([]*dataloader.Result[*model.Address], len(ids))
-		addresses  []*model.Address
 		addressMap = map[string]*model.Address{} // keys are address ids
-		appErr     *model.AppError
 	)
 
-	var webCtx, err = GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errLabel
-	}
+	var webCtx, _ = GetContextValue[*web.Context](ctx, WebCtx)
 
-	addresses, appErr = webCtx.App.
+	addresses, appErr := webCtx.App.
 		Srv().
 		AccountService().
 		AddressesByOption(&model.AddressFilterOption{
 			Id: squirrel.Eq{store.AddressTableName + ".Id": ids},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errLabel
 	}
 
@@ -115,7 +109,7 @@ func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 
 errLabel:
 	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.Address]{Error: err}
+		res[idx] = &dataloader.Result[*model.Address]{Error: appErr}
 	}
 	return res
 }
@@ -191,11 +185,9 @@ func (u *User) DefaultShippingAddress(ctx context.Context) (*Address, error) {
 	}
 	currentSession := embedCtx.AppContext.Session()
 
-	canSeeDefaultShippingAddress := false
+	canSeeDefaultShippingAddress := currentSession.UserId == u.ID
 
-	if currentSession.UserId == u.ID {
-		canSeeDefaultShippingAddress = true
-	} else {
+	if !canSeeDefaultShippingAddress {
 		// check url param current shop is provided
 		if embedCtx.CurrentShopID == "" {
 			embedCtx.SetInvalidUrlParam("shop_id")
@@ -230,11 +222,9 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 	}
 	currentSession := embedCtx.AppContext.Session()
 
-	canSeeDefaultBillingAddress := false
+	canSeeDefaultBillingAddress := currentSession.UserId == u.ID
 
-	if currentSession.UserId == u.ID {
-		canSeeDefaultBillingAddress = true
-	} else {
+	if !canSeeDefaultBillingAddress {
 		// check url param current shop is provided
 		if embedCtx.CurrentShopID == "" {
 			embedCtx.SetInvalidUrlParam("shop_id")
@@ -244,7 +234,7 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 			embedCtx.App.Srv().ShopService().UserIsCustomerOfShop(embedCtx.CurrentShopID, u.ID)
 	}
 
-	// check requester belong to shop with user was customer
+	// check requester belong to shop at which user was customer
 	if canSeeDefaultBillingAddress {
 		if u.DefaultBillingAddressID == nil {
 			return nil, nil
@@ -497,13 +487,10 @@ func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
 }
 
 func (u *User) Note(ctx context.Context) (*string, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
-	if embedCtx.AppContext.Session().UserId != u.ID {
-		return nil, MakeUnauthorizedError("User.Note")
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	return u.note, nil
@@ -528,23 +515,16 @@ func (u *User) Avatar(ctx context.Context, args struct{ Size *int32 }) (*Image, 
 func userByUserIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.User] {
 	var (
 		res     = make([]*dataloader.Result[*model.User], len(ids))
-		users   []*model.User
 		userMap = map[string]*model.User{} // keys are user ids
-		appErr  *model.AppError
 	)
 
-	var webCtx, err = GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	users, appErr = webCtx.
+	var webCtx, _ = GetContextValue[*web.Context](ctx, WebCtx)
+	users, appErr := webCtx.
 		App.
 		Srv().
 		AccountService().
 		GetUsersByIds(ids, &store.UserGetByIdsOpts{})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -559,7 +539,7 @@ func userByUserIdLoader(ctx context.Context, ids []string) []*dataloader.Result[
 
 errorLabel:
 	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.User]{Error: err}
+		res[idx] = &dataloader.Result[*model.User]{Error: appErr}
 	}
 	return res
 }
@@ -626,17 +606,11 @@ func (c *CustomerEvent) Order(ctx context.Context) (*Order, error) {
 func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.CustomerEvent] {
 	var (
 		res               = make([]*dataloader.Result[[]*model.CustomerEvent], len(userIDs))
-		customerEvents    []*model.CustomerEvent
-		appErr            *model.AppError
 		customerEventsMap = map[string][]*model.CustomerEvent{} // keys are user ids
 	)
 
-	var webCtx, err = GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	customerEvents, appErr = webCtx.
+	var webCtx, _ = GetContextValue[*web.Context](ctx, WebCtx)
+	customerEvents, appErr := webCtx.
 		App.
 		Srv().
 		AccountService().
@@ -644,7 +618,6 @@ func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*datalo
 			UserID: squirrel.Eq{store.CustomerEventTableName + ".UserID": userIDs},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -661,7 +634,7 @@ func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*datalo
 
 errorLabel:
 	for idx := range userIDs {
-		res[idx] = &dataloader.Result[[]*model.CustomerEvent]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.CustomerEvent]{Error: appErr}
 	}
 	return res
 }

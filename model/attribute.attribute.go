@@ -218,7 +218,9 @@ func (a *Attribute) PreSave() {
 		a.InputType = DROPDOWN
 	}
 	a.Name = SanitizeUnicode(a.Name)
-	a.Slug = slug.Make(a.Name)
+	if a.Slug == "" {
+		a.Slug = slug.Make(a.Name)
+	}
 }
 
 func (a *Attribute) PreUpdate() {

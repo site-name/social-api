@@ -221,8 +221,7 @@ func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 
 func (r *Resolver) Address(ctx context.Context, args struct{ Id string }) (*Address, error) {
 	// +) requester can see address if he is owner of that address OR
-	// +) requester is staff of currentshop, this address is shipping/billing address of an order
-	// that order belong to current shop
+	// +) requester is staff of currentshop, this address is shipping/billing address of an order belongs to current shop
 	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
@@ -233,15 +232,9 @@ func (r *Resolver) Address(ctx context.Context, args struct{ Id string }) (*Addr
 		return nil, model.NewAppError("Address", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}
 
-	// case user own address
-	addresses, appErr := r.srv.AccountService().AddressesByUserId(embedCtx.AppContext.Session().UserId)
+	address, appErr := r.srv.AccountService().AddressById(args.Id)
 	if appErr != nil {
 		return nil, appErr
 	}
-	if len(addresses) > 0 {
-		return SystemAddressToGraphqlAddress(addresses[0]), nil
-	}
-
-	// TODO: check if shop staff can see address
-	return nil, MakeUnauthorizedError("Address")
+	return SystemAddressToGraphqlAddress(address), nil
 }

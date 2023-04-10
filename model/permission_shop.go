@@ -58,8 +58,8 @@ var (
 
 	PermissionCreateAttributeValue *Permission
 	PermissionReadAttributeValue   *Permission
-	PermissionUpdateAttributeValue *Permission
-	PermissionDeleteAttributeValue *Permission
+	PermissionUpdateAttributeValue *Permission // only administrators have this permission
+	PermissionDeleteAttributeValue *Permission // only administrators have this permission
 
 	// PermissionCreateAttributePage *Permission
 	// PermissionReadAttributePage   *Permission
@@ -505,8 +505,8 @@ func initializeShopScopedPermissions() {
 
 	PermissionCreateAttributeValue = &Permission{"create_attributevalue", "", "", PermissionScopeShop}
 	PermissionReadAttributeValue = &Permission{"read_attributevalue", "", "", PermissionScopeShop}
-	PermissionUpdateAttributeValue = &Permission{"update_attributevalue", "", "", PermissionScopeShop}
-	PermissionDeleteAttributeValue = &Permission{"delete_attributevalue", "", "", PermissionScopeShop}
+	PermissionUpdateAttributeValue = &Permission{"update_attributevalue", "", "", PermissionScopeSystem}
+	PermissionDeleteAttributeValue = &Permission{"delete_attributevalue", "", "", PermissionScopeSystem}
 
 	// PermissionCreateAttributePage = &Permission{"create_attributepage", "", "", PermissionScopeShop}
 	// PermissionReadAttributePage = &Permission{"read_attributepage", "", "", PermissionScopeShop}
