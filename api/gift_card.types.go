@@ -139,11 +139,21 @@ func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCa
 }
 
 func (e *GiftCardEvent) User(ctx context.Context) (*User, error) {
+	// requester must be staff of current shop that issued the giftcard of this event
 	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
-	currentSession := embedCtx.AppContext.Session()
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+	if embedCtx.CurrentShopID == "" {
+		embedCtx.SetInvalidUrlParam("shop_id")
+		return nil, embedCtx.Err
+	}
 
-	if e.e.UserID != nil && currentSession.UserId == *e.e.UserID ||
-		embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(currentSession, model.PermissionManageUsers, model.PermissionManageStaff) {
+	if embedCtx.App.Srv().
+		GiftcardService().
+		GiftcardBelongToShop(e.e.GiftcardID, embedCtx.CurrentShopID) &&
+		embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) {
 
 		if e.e.UserID == nil {
 			return nil, nil
@@ -155,7 +165,7 @@ func (e *GiftCardEvent) User(ctx context.Context) (*User, error) {
 		return SystemUserToGraphqlUser(user), nil
 	}
 
-	return nil, model.NewAppError("GiftCardEvent.User", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	return nil, MakeUnauthorizedError("Giftcard.User")
 }
 
 func (e *GiftCardEvent) App(ctx context.Context) (*App, error) {
@@ -249,12 +259,20 @@ func (g *GiftCard) Product(ctx context.Context) (*Product, error) {
 }
 
 func (g *GiftCard) Events(ctx context.Context) ([]*GiftCardEvent, error) {
+	// requester must be staff of current shop that issued this giftcard
 	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
 
-	// check if current user has permission to manage this giftcard
-	if embedCtx.App.Srv().
-		AccountService().
-		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageGiftcard) {
+	if embedCtx.CurrentShopID == "" {
+		embedCtx.SetInvalidUrlParam("shop_id")
+		return nil, embedCtx.Err
+	}
+
+	if g.giftcard.ShopID == embedCtx.CurrentShopID &&
+		embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) {
 
 		events, err := GiftCardEventsByGiftCardIdLoader.Load(ctx, g.ID)()
 		if err != nil {
@@ -264,49 +282,49 @@ func (g *GiftCard) Events(ctx context.Context) ([]*GiftCardEvent, error) {
 		return DataloaderResultMap(events, SystemGiftcardEventToGraphqlGiftcardEvent), nil
 	}
 
-	return nil, model.NewAppError("giftcard.Events", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	return nil, MakeUnauthorizedError("Giftcard.Events")
 }
 
 func (g *GiftCard) CreatedByEmail(ctx context.Context) (*string, error) {
+	// requester must be staff of shop that issued current giftcard to see
 	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
 
-	resolveCreatedByEmail := func(u *model.User) *string {
-		if (u != nil && u.Id == embedCtx.AppContext.Session().UserId) ||
-			embedCtx.App.Srv().
-				AccountService().
-				HasPermissionTo(embedCtx.AppContext.Session().UserId, model.PermissionManageGiftcard) {
+	if embedCtx.CurrentShopID == "" {
+		embedCtx.SetInvalidUrlParam("shop_id")
+		return nil, embedCtx.Err
+	}
 
-			if u != nil {
-				return &u.Email
+	if g.giftcard.ShopID == embedCtx.CurrentShopID &&
+		embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) {
+
+		if g.giftcard.CreatedByID != nil {
+			user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, *g.giftcard.CreatedByID)
+			if appErr != nil {
+				if appErr.StatusCode == http.StatusInternalServerError {
+					return nil, appErr
+				}
+				return g.giftcard.CreatedByEmail, nil
 			}
 
-			return g.giftcard.CreatedByEmail
+			return &user.Email, nil
 		}
 
-		var email string
-		if u != nil {
-			email = u.Email
-		} else if g.giftcard.CreatedByEmail != nil {
-			email = *g.giftcard.CreatedByEmail
-		}
-
-		return model.NewPrimitive(util.ObfuscateEmail(email))
+		return g.giftcard.CreatedByEmail, nil
 	}
 
-	if g.giftcard.CreatedByID == nil {
-		return resolveCreatedByEmail(nil), nil
-	}
-
-	user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.CreatedByID)()
-	if err != nil {
-		return nil, err
-	}
-
-	return resolveCreatedByEmail(user), nil
+	return nil, MakeUnauthorizedError("GiftCard.CreatedByEmail")
 }
 
 func (g *GiftCard) UsedByEmail(ctx context.Context) (*string, error) {
 	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
 
 	resolveUsedByEmail := func(u *model.User) *string {
 		if (u != nil && u.Id == embedCtx.AppContext.Session().UserId) ||

@@ -12,6 +12,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
@@ -100,4 +101,12 @@ func (s *ServiceGiftcard) ActiveGiftcards(date time.Time) ([]*model.GiftCard, *m
 		},
 		IsActive: model.NewPrimitive(true),
 	})
+}
+
+func (s *ServiceGiftcard) GiftcardBelongToShop(giftcardID, shopID string) bool {
+	giftcard, appErr := s.GetGiftCard(giftcardID)
+	if appErr != nil {
+		slog.Error("failed to find giftcard by id", slog.Err(appErr))
+	}
+	return giftcard.ShopID == shopID
 }

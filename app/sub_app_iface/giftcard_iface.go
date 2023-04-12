@@ -56,4 +56,5 @@ type GiftcardService interface {
 	GiftcardsByCheckout(checkoutToken string) ([]*model.GiftCard, *model.AppError)
 	OrderHasGiftcardLines(orDer *model.Order) (bool, *model.AppError)
 	SendGiftcardsToCustomer(giftcards []*model.GiftCard, userEmail string, requestorUser *model.User, _ interface{}, customerUser *model.User, manager interfaces.PluginManagerInterface, channelSlug string) *model.AppError
+	GiftcardBelongToShop(giftcardID, shopID string) bool
 }
