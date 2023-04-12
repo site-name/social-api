@@ -68,21 +68,15 @@ func (d *DigitalContent) ProductVariant(ctx context.Context) (*ProductVariant, e
 func digitalContentByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.DigitalContent] {
 	var (
 		res        = make([]*dataloader.Result[*model.DigitalContent], len(ids))
-		contents   []*model.DigitalContent
-		appErr     *model.AppError
 		contentMap = map[string]*model.DigitalContent{} // keys are digital content ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
-	contents, appErr = embedCtx.App.Srv().ProductService().DigitalContentsbyOptions(&model.DigitalContentFilterOption{
+	contents, appErr := embedCtx.App.Srv().ProductService().DigitalContentsbyOptions(&model.DigitalContentFilterOption{
 		Id: squirrel.Eq{store.DigitalContentTableName + ".Id": ids},
 	})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 	for _, content := range contents {
@@ -95,7 +89,7 @@ func digitalContentByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 
 errorLabel:
 	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.DigitalContent]{Error: err}
+		res[idx] = &dataloader.Result[*model.DigitalContent]{Error: appErr}
 	}
 	return res
 }
@@ -103,22 +97,15 @@ errorLabel:
 func digitalContentUrlsByDigitalContentIDLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.DigitalContentUrl] {
 	var (
 		res                  = make([]*dataloader.Result[[]*model.DigitalContentUrl], len(ids))
-		digitalContentURLs   []*model.DigitalContentUrl
-		appErr               *model.AppError
 		digitalContentURLMap = map[string][]*model.DigitalContentUrl{} // keys are digital content ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	digitalContentURLs, appErr = embedCtx.App.Srv().ProductService().
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	digitalContentURLs, appErr := embedCtx.App.Srv().ProductService().
 		DigitalContentURLSByOptions(&model.DigitalContentUrlFilterOptions{
 			ContentID: squirrel.Eq{store.DigitalContentURLTableName + ".ContentID": ids},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -132,7 +119,7 @@ func digitalContentUrlsByDigitalContentIDLoader(ctx context.Context, ids []strin
 
 errorLabel:
 	for idx := range ids {
-		res[idx] = &dataloader.Result[[]*model.DigitalContentUrl]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.DigitalContentUrl]{Error: appErr}
 	}
 	return res
 }

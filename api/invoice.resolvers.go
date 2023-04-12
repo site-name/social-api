@@ -18,16 +18,13 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 	Number  *string
 	OrderID string
 }) (*InvoiceRequest, error) {
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateOrder)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
 	if !model.IsValidId(args.OrderID) {
 		return nil, model.NewAppError("InvoiceRequest", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderID"}, "invalid id provided", http.StatusBadRequest)
-	}
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
-		return nil, model.NewAppError("InvoiceRequest", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
 	}
 
 	// clean order

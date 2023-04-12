@@ -28,21 +28,21 @@ type Fulfillment struct {
 	// Warehouse        *Warehouse         `json:"warehouse"`
 }
 
-func SystemFulfillmentToGraphqlFulfillment(f *model.Fulfillment) *Fulfillment {
-	if f == nil {
+func SystemFulfillmentToGraphqlFulfillment(fulfillment *model.Fulfillment) *Fulfillment {
+	if fulfillment == nil {
 		return nil
 	}
 
 	return &Fulfillment{
-		ID:               f.Id,
-		FulfillmentOrder: int32(f.FulfillmentOrder),
-		Status:           FulfillmentStatus(f.Status),
-		TrackingNumber:   f.TrackingNumber,
-		Created:          DateTime{util.TimeFromMillis(f.CreateAt)},
-		Metadata:         MetadataToSlice(f.Metadata),
-		PrivateMetadata:  MetadataToSlice(f.PrivateMetadata),
+		ID:               fulfillment.Id,
+		FulfillmentOrder: int32(fulfillment.FulfillmentOrder),
+		Status:           FulfillmentStatus(fulfillment.Status),
+		TrackingNumber:   fulfillment.TrackingNumber,
+		Created:          DateTime{util.TimeFromMillis(fulfillment.CreateAt)},
+		Metadata:         MetadataToSlice(fulfillment.Metadata),
+		PrivateMetadata:  MetadataToSlice(fulfillment.PrivateMetadata),
 
-		fulfillment: f,
+		fulfillment: fulfillment,
 	}
 }
 
@@ -56,7 +56,8 @@ func (f *Fulfillment) Lines(ctx context.Context) ([]*FulfillmentLine, error) {
 }
 
 func (f *Fulfillment) StatusDisplay(ctx context.Context) (*string, error) {
-	return model.NewPrimitive(model.FulfillmentStrings[f.fulfillment.Status]), nil
+	res := model.FulfillmentStrings[f.fulfillment.Status]
+	return &res, nil
 }
 
 func (f *Fulfillment) Warehouse(ctx context.Context) (*Warehouse, error) {
@@ -84,21 +85,14 @@ func (f *Fulfillment) Warehouse(ctx context.Context) (*Warehouse, error) {
 func fulfillmentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.Fulfillment] {
 	var (
 		res            = make([]*dataloader.Result[[]*model.Fulfillment], len(orderIDs))
-		appErr         *model.AppError
 		fulfillmentMap = map[string]model.Fulfillments{}
-		fulfillments   model.Fulfillments
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	fulfillments, appErr = embedCtx.App.Srv().OrderService().FulfillmentsByOption(nil, &model.FulfillmentFilterOption{
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	fulfillments, appErr := embedCtx.App.Srv().OrderService().FulfillmentsByOption(nil, &model.FulfillmentFilterOption{
 		OrderID: squirrel.Eq{store.FulfillmentTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -113,7 +107,7 @@ func fulfillmentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*data
 
 errorLabel:
 	for idx := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.Fulfillment]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.Fulfillment]{Error: appErr}
 	}
 	return res
 }
@@ -124,24 +118,24 @@ type FulfillmentLine struct {
 	ID       string `json:"id"`
 	Quantity int32  `json:"quantity"`
 
-	orderLineID string
 	// OrderLine *OrderLine `json:"orderLine"`
+	fml *model.FulfillmentLine
 }
 
-func SystemFulfillmentLineToGraphqlFulfillmentLine(l *model.FulfillmentLine) *FulfillmentLine {
-	if l == nil {
-		return &FulfillmentLine{}
+func SystemFulfillmentLineToGraphqlFulfillmentLine(fml *model.FulfillmentLine) *FulfillmentLine {
+	if fml == nil {
+		return nil
 	}
 
 	return &FulfillmentLine{
-		ID:          l.Id,
-		Quantity:    int32(l.Quantity),
-		orderLineID: l.OrderLineID,
+		ID:       fml.Id,
+		Quantity: int32(fml.Quantity),
+		fml:      fml,
 	}
 }
 
 func (f *FulfillmentLine) OrderLine(ctx context.Context) (*OrderLine, error) {
-	orderLine, err := OrderLineByIdLoader.Load(ctx, f.orderLineID)()
+	orderLine, err := OrderLineByIdLoader.Load(ctx, f.fml.OrderLineID)()
 	if err != nil {
 		return nil, err
 	}
@@ -152,21 +146,14 @@ func (f *FulfillmentLine) OrderLine(ctx context.Context) (*OrderLine, error) {
 func fulfillmentLinesByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.FulfillmentLine] {
 	var (
 		res     = make([]*dataloader.Result[*model.FulfillmentLine], len(ids))
-		lines   model.FulfillmentLines
-		appErr  *model.AppError
 		LineMap = map[string]*model.FulfillmentLine{}
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	lines, appErr = embedCtx.App.Srv().OrderService().FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	lines, appErr := embedCtx.App.Srv().OrderService().FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
 		Id: squirrel.Eq{store.FulfillmentLineTableName + ".Id": ids},
 	})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -179,7 +166,7 @@ func fulfillmentLinesByIdLoader(ctx context.Context, ids []string) []*dataloader
 
 errorLabel:
 	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.FulfillmentLine]{Error: err}
+		res[idx] = &dataloader.Result[*model.FulfillmentLine]{Error: appErr}
 	}
 	return res
 }
@@ -187,24 +174,17 @@ errorLabel:
 func fulfillmentLinesByFulfillmentIDLoader(ctx context.Context, fulfillmentIDs []string) []*dataloader.Result[[]*model.FulfillmentLine] {
 	var (
 		res                = make([]*dataloader.Result[[]*model.FulfillmentLine], len(fulfillmentIDs))
-		fulfillmentLines   model.FulfillmentLines
-		appErr             *model.AppError
 		fulfillmentLineMap = map[string]model.FulfillmentLines{} // keys are fulfillment ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	fulfillmentLines, appErr = embedCtx.App.
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	fulfillmentLines, appErr := embedCtx.App.
 		Srv().
 		OrderService().
 		FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
 			FulfillmentID: squirrel.Eq{store.FulfillmentLineTableName + ".FulfillmentID": fulfillmentIDs},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -219,7 +199,7 @@ func fulfillmentLinesByFulfillmentIDLoader(ctx context.Context, fulfillmentIDs [
 
 errorLabel:
 	for idx := range fulfillmentIDs {
-		res[idx] = &dataloader.Result[[]*model.FulfillmentLine]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.FulfillmentLine]{Error: appErr}
 	}
 	return res
 }

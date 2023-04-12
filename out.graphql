@@ -2203,8 +2203,8 @@ type GiftCardDeactivate {
 input GiftCardUpdateInput {
   tag: String
   expiryDate: Date
-  startDate: Date
-  endDate: Date
+  # startDate: Date
+  # endDate: Date
   balanceAmount: PositiveDecimal
 }
 

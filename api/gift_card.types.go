@@ -17,11 +17,9 @@ import (
 )
 
 type GiftCardEvent struct {
-	ID   string              `json:"id"`
-	Date *DateTime           `json:"date"`
-	Type *GiftCardEventsEnum `json:"type"`
-	// User          *User                 `json:"user"`
-	// App           *App                  `json:"app"`
+	ID            string                `json:"id"`
+	Date          *DateTime             `json:"date"`
+	Type          *GiftCardEventsEnum   `json:"type"`
 	Message       *string               `json:"message"`
 	Email         *string               `json:"email"`
 	OrderID       *string               `json:"orderId"`
@@ -33,6 +31,9 @@ type GiftCardEvent struct {
 	OldExpiryDate *Date                 `json:"oldExpiryDate"`
 
 	e *model.GiftCardEvent
+
+	// User          *User                 `json:"user"`
+	// App           *App                  `json:"app"`
 }
 
 func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCardEvent {
@@ -138,12 +139,9 @@ func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCa
 }
 
 func (e *GiftCardEvent) User(ctx context.Context) (*User, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
+
 	if e.e.UserID != nil && currentSession.UserId == *e.e.UserID ||
 		embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(currentSession, model.PermissionManageUsers, model.PermissionManageStaff) {
 
@@ -177,12 +175,7 @@ type GiftCard struct {
 	Metadata        []*MetadataItem `json:"metadata"`
 	DisplayCode     string          `json:"displayCode"`
 
-	createdByEmail *string
-	usedByEmail    *string
-	code           string
-	usedByID       *string
-	createdByID    *string
-	productID      *string
+	giftcard *model.GiftCard
 
 	// Code            string           `json:"code"`
 	// CreatedByEmail  *string          `json:"createdByEmail"`
@@ -208,13 +201,7 @@ func SystemGiftcardToGraphqlGiftcard(gc *model.GiftCard) *GiftCard {
 	res.IsActive = *gc.IsActive
 	res.Tag = gc.Tag
 	res.DisplayCode = gc.DisplayCode()
-
-	res.createdByEmail = gc.CreatedByEmail
-	res.usedByEmail = gc.UsedByEmail
-	res.code = gc.Code
-	res.usedByID = gc.UsedByID
-	res.createdByID = gc.CreatedByID
-	res.productID = gc.ProductID
+	res.giftcard = gc
 
 	if gc.ExpiryDate != nil {
 		res.ExpiryDate = &Date{
@@ -249,11 +236,11 @@ func (g *GiftCard) App(ctx context.Context) (*App, error) {
 }
 
 func (g *GiftCard) Product(ctx context.Context) (*Product, error) {
-	if g.productID == nil {
+	if g.giftcard.ProductID == nil {
 		return nil, nil
 	}
 
-	product, err := ProductByIdLoader.Load(ctx, *g.productID)()
+	product, err := ProductByIdLoader.Load(ctx, *g.giftcard.ProductID)()
 	if err != nil {
 		return nil, err
 	}
@@ -262,10 +249,7 @@ func (g *GiftCard) Product(ctx context.Context) (*Product, error) {
 }
 
 func (g *GiftCard) Events(ctx context.Context) ([]*GiftCardEvent, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// check if current user has permission to manage this giftcard
 	if embedCtx.App.Srv().
@@ -284,10 +268,7 @@ func (g *GiftCard) Events(ctx context.Context) ([]*GiftCardEvent, error) {
 }
 
 func (g *GiftCard) CreatedByEmail(ctx context.Context) (*string, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	resolveCreatedByEmail := func(u *model.User) *string {
 		if (u != nil && u.Id == embedCtx.AppContext.Session().UserId) ||
@@ -299,24 +280,24 @@ func (g *GiftCard) CreatedByEmail(ctx context.Context) (*string, error) {
 				return &u.Email
 			}
 
-			return g.createdByEmail
+			return g.giftcard.CreatedByEmail
 		}
 
 		var email string
 		if u != nil {
 			email = u.Email
-		} else if g.createdByEmail != nil {
-			email = *g.createdByEmail
+		} else if g.giftcard.CreatedByEmail != nil {
+			email = *g.giftcard.CreatedByEmail
 		}
 
 		return model.NewPrimitive(util.ObfuscateEmail(email))
 	}
 
-	if g.createdByID == nil {
+	if g.giftcard.CreatedByID == nil {
 		return resolveCreatedByEmail(nil), nil
 	}
 
-	user, err := UserByUserIdLoader.Load(ctx, *g.createdByID)()
+	user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.CreatedByID)()
 	if err != nil {
 		return nil, err
 	}
@@ -325,10 +306,7 @@ func (g *GiftCard) CreatedByEmail(ctx context.Context) (*string, error) {
 }
 
 func (g *GiftCard) UsedByEmail(ctx context.Context) (*string, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	resolveUsedByEmail := func(u *model.User) *string {
 		if (u != nil && u.Id == embedCtx.AppContext.Session().UserId) ||
@@ -340,24 +318,24 @@ func (g *GiftCard) UsedByEmail(ctx context.Context) (*string, error) {
 				return &u.Email
 			}
 
-			return g.usedByEmail
+			return g.giftcard.UsedByEmail
 		}
 
 		var email string
 		if u != nil {
 			email = u.Email
-		} else if g.usedByEmail != nil {
-			email = *g.usedByEmail
+		} else if g.giftcard.UsedByEmail != nil {
+			email = *g.giftcard.UsedByEmail
 		}
 
 		return model.NewPrimitive(util.ObfuscateEmail(email))
 	}
 
-	if g.usedByID == nil {
+	if g.giftcard.UsedByID == nil {
 		return resolveUsedByEmail(nil), nil
 	}
 
-	user, err := UserByUserIdLoader.Load(ctx, *g.usedByID)()
+	user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.UsedByID)()
 	if err != nil {
 		return nil, err
 	}
@@ -366,10 +344,7 @@ func (g *GiftCard) UsedByEmail(ctx context.Context) (*string, error) {
 }
 
 func (g *GiftCard) UsedBy(ctx context.Context) (*User, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	resolveUsedBy := func(u *model.User) (*User, *model.AppError) {
 		if (u != nil && u.Id == embedCtx.AppContext.Session().UserId) ||
@@ -387,11 +362,11 @@ func (g *GiftCard) UsedBy(ctx context.Context) (*User, error) {
 		return nil, model.NewAppError("GiftCard.UsedBy", ErrorUnauthorized, nil, "You are not authorized to perform this", http.StatusUnauthorized)
 	}
 
-	if g.usedByID == nil {
+	if g.giftcard.UsedByID == nil {
 		return resolveUsedBy(nil)
 	}
 
-	user, err := UserByUserIdLoader.Load(ctx, *g.usedByID)()
+	user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.UsedByID)()
 	if err != nil {
 		return nil, err
 	}
@@ -400,10 +375,7 @@ func (g *GiftCard) UsedBy(ctx context.Context) (*User, error) {
 }
 
 func (g *GiftCard) CreatedBy(ctx context.Context) (*User, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	resolveCreatedBy := func(u *model.User) (*User, error) {
 		if (u != nil && u.Id == embedCtx.AppContext.Session().UserId) ||
@@ -428,11 +400,11 @@ func (g *GiftCard) CreatedBy(ctx context.Context) (*User, error) {
 		return nil, model.NewAppError("GiftCard.CreatedBy", ErrorUnauthorized, nil, "you are not authorized to perform this", http.StatusUnauthorized)
 	}
 
-	if g.createdByID == nil {
+	if g.giftcard.CreatedByID == nil {
 		return resolveCreatedBy(nil)
 	}
 
-	user, err := UserByUserIdLoader.Load(ctx, *g.createdByID)()
+	user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.CreatedByID)()
 	if err != nil {
 		return nil, err
 	}
@@ -441,27 +413,24 @@ func (g *GiftCard) CreatedBy(ctx context.Context) (*User, error) {
 }
 
 func (g *GiftCard) Code(ctx context.Context) (string, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return "", err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	resolveCode := func(u *model.User) (string, error) {
-		if (g.usedByEmail == nil && embedCtx.App.Srv().
+		if (g.giftcard.UsedByEmail == nil && embedCtx.App.Srv().
 			AccountService().
 			SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageGiftcard)) ||
 			(u != nil && u.Id == embedCtx.AppContext.Session().UserId) {
-			return g.code, nil
+			return g.giftcard.Code, nil
 		}
 
 		return "", model.NewAppError("GiftCard.Code", ErrorUnauthorized, nil, "You are not authorized to perform this action", http.StatusUnauthorized)
 	}
 
-	if g.usedByID == nil {
+	if g.giftcard.UsedByID == nil {
 		return resolveCode(nil)
 	}
 
-	user, err := UserByUserIdLoader.Load(ctx, *g.usedByID)()
+	user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.UsedByID)()
 	if err != nil {
 		return "", err
 	}
@@ -470,10 +439,7 @@ func (g *GiftCard) Code(ctx context.Context) (string, error) {
 }
 
 func (g *GiftCard) BoughtInChannel(ctx context.Context) (*string, error) {
-	events, err := GiftCardEventsByGiftCardIdLoader.Load(ctx, g.ID)()
-	if err != nil {
-		return nil, err
-	}
+	events, _ := GiftCardEventsByGiftCardIdLoader.Load(ctx, g.ID)()
 
 	var boughtEvent *model.GiftCardEvent
 	for _, evt := range events {
@@ -516,17 +482,12 @@ func (g *GiftCard) BoughtInChannel(ctx context.Context) (*string, error) {
 func giftCardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.GiftCard] {
 	var (
 		res         = make([]*dataloader.Result[[]*model.GiftCard], len(userIDs))
-		appErr      *model.AppError
-		giftcards   []*model.GiftCard
 		giftcardMap = map[string][]*model.GiftCard{} // keys are user ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
-	giftcards, appErr = embedCtx.
+	giftcards, appErr := embedCtx.
 		App.
 		Srv().
 		GiftcardService().
@@ -534,7 +495,6 @@ func giftCardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.
 			UsedByID: squirrel.Eq{store.GiftcardTableName + ".UsedByID": userIDs},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -551,7 +511,7 @@ func giftCardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.
 
 errorLabel:
 	for idx := range userIDs {
-		res[idx] = &dataloader.Result[[]*model.GiftCard]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.GiftCard]{Error: appErr}
 	}
 	return res
 }
@@ -559,23 +519,17 @@ errorLabel:
 func giftCardEventsByGiftCardIdLoader(ctx context.Context, giftcardIDs []string) []*dataloader.Result[[]*model.GiftCardEvent] {
 	var (
 		res              = make([]*dataloader.Result[[]*model.GiftCardEvent], len(giftcardIDs))
-		appErr           *model.AppError
-		events           []*model.GiftCardEvent
 		giftcardEventMap = map[string][]*model.GiftCardEvent{} // keys are giftcard ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
-	events, appErr = embedCtx.App.Srv().
+	events, appErr := embedCtx.App.Srv().
 		GiftcardService().
 		GiftcardEventsByOptions(&model.GiftCardEventFilterOption{
 			GiftcardID: squirrel.Eq{store.GiftcardTableName + ".GiftcardID": giftcardIDs},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -590,7 +544,7 @@ func giftCardEventsByGiftCardIdLoader(ctx context.Context, giftcardIDs []string)
 
 errorLabel:
 	for idx := range giftcardIDs {
-		res[idx] = &dataloader.Result[[]*model.GiftCardEvent]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.GiftCardEvent]{Error: appErr}
 	}
 	return res
 }
@@ -602,17 +556,13 @@ func giftcardsByOrderIDsLoader(ctx context.Context, orderIDs []string) []*datalo
 		appErr      *model.AppError
 		giftcardMap = map[string]*model.GiftCard{} // keys are giftcard ids
 
-		orderGiftcardRelations []*model.OrderGiftCard
-		giftcardIDs            []string
-		cardMap                = map[string][]*model.GiftCard{} // keys are order ids
+		giftcardIDs []string
+		cardMap     = map[string][]*model.GiftCard{} // keys are order ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
-	orderGiftcardRelations, err = embedCtx.App.Srv().Store.GiftCardOrder().FilterByOptions(&model.OrderGiftCardFilterOptions{
+	orderGiftcardRelations, err := embedCtx.App.Srv().Store.GiftCardOrder().FilterByOptions(&model.OrderGiftCardFilterOptions{
 		OrderID: squirrel.Eq{store.OrderGiftCardTableName + ".OrderID": orderIDs},
 	})
 	if err != nil {

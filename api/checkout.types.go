@@ -212,10 +212,7 @@ func (c *Checkout) User(ctx context.Context) (*User, error) {
 	// requester can see user of checkout only if
 	// current checkout is made by himself OR
 	// requester is staff of the shop that has this checkout
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	currentUserCanSeeCheckoutOwner := c.checkout.UserID != nil && embedCtx.AppContext.Session().UserId == *c.checkout.UserID
 	if !currentUserCanSeeCheckoutOwner {
@@ -356,12 +353,10 @@ func (c *Checkout) AvailableShippingMethods(ctx context.Context) ([]*ShippingMet
 }
 
 func (c *Checkout) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	var address *model.Address
+	var err error
 
 	if c.checkout.ShippingAddressID != nil {
 		address, err = AddressByIdLoader.Load(ctx, *c.checkout.ShippingAddressID)()

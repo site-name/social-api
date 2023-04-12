@@ -360,7 +360,7 @@ func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *model.U
 		})
 	}
 
-	_, appErr := s.BulkUpsertGiftcardEvents(nil, events)
+	_, appErr := s.BulkUpsertGiftcardEvents(nil, events...)
 	return appErr
 }
 

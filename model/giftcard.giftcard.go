@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -27,15 +28,9 @@ const (
 	ExpiryDate   = "expiry_date"
 )
 
-var GiftcardExpiryTypeMap = map[string]string{
-	NeverExpire:  "Never expire",
-	ExpiryPeriod: "Expiry period",
-	ExpiryDate:   "Expiry date",
-}
-
 type GiftCard struct {
 	Id                   string           `json:"id"`
-	Code                 string           `json:"code"`          // unique, db_index
+	Code                 string           `json:"code"`          // unique, db_index, looks like ABCD-EFGH-IJKL
 	CreatedByID          *string          `json:"created_by_id"` // foreign key User, ON DELETE SET NULL
 	ShopID               string           `json:"shop_id"`       // the shop which issued this giftcard
 	UsedByID             *string          `json:"used_by_id"`
@@ -164,6 +159,10 @@ func (gc *GiftCard) IsValid() *AppError {
 func (gc *GiftCard) PreSave() {
 	if gc.Id == "" {
 		gc.Id = NewId()
+	}
+	if gc.Code == "" {
+		rawString := NewRandomString(16)
+		gc.Code = fmt.Sprintf("%s-%s-%s-%s", rawString[:4], rawString[4:8], rawString[8:12], rawString[12:])
 	}
 	gc.CreateAt = GetMillis()
 

@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"net/http"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -392,10 +391,7 @@ func (c *ProductChannelListing) Margin(ctx context.Context) (*Margin, error) {
 
 // Pricing is selling price of product
 func (c *ProductChannelListing) Pricing(ctx context.Context, args struct{ Address *AddressInput }) (*ProductPricingInfo, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	now := time.Now()
 	var addressCountry model.CountryCode
@@ -514,15 +510,10 @@ func (p *ProductVariantChannelListing) Channel(ctx context.Context) (*Channel, e
 }
 
 func (p *ProductVariantChannelListing) Margin(ctx context.Context) (*int32, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
-	if !embedCtx.App.Srv().
-		AccountService().
-		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
-		return nil, model.NewAppError("ProductVariantChannelListing.Margin", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateProduct, model.PermissionUpdateProduct, model.PermissionDeleteProduct)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	margin := product.GetMarginForVariantChannelListing(p.p)

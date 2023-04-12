@@ -18,7 +18,7 @@ type GiftcardService interface {
 	// AddGiftcardCodeToCheckout adds giftcard data to checkout by code. Raise InvalidPromoCode if gift card cannot be applied.
 	AddGiftcardCodeToCheckout(ckout *model.Checkout, email, promoCode, currency string) (*model.InvalidPromoCode, *model.AppError)
 	// BulkUpsertGiftcardEvents tells store to upsert given giftcard events into database then returns them
-	BulkUpsertGiftcardEvents(transaction store_iface.SqlxTxExecutor, events []*model.GiftCardEvent) ([]*model.GiftCardEvent, *model.AppError)
+	BulkUpsertGiftcardEvents(transaction store_iface.SqlxTxExecutor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, *model.AppError)
 	// CalculateExpiryDate calculate expiry date based on giftcard settings.
 	CalculateExpiryDate(shopSettings *model.Shop) *time.Time
 	// CreateGiftCardCheckout create a new giftcard-checkout relation and returns it

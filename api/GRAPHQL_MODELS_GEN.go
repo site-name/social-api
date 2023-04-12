@@ -1672,9 +1672,10 @@ type GiftCardUpdate struct {
 type GiftCardUpdateInput struct {
 	Tag           *string          `json:"tag"`
 	ExpiryDate    *Date            `json:"expiryDate"`
-	StartDate     *Date            `json:"startDate"`
-	EndDate       *Date            `json:"endDate"`
 	BalanceAmount *PositiveDecimal `json:"balanceAmount"`
+
+	// StartDate     *Date            `json:"startDate"`
+	// EndDate       *Date            `json:"endDate"`
 }
 
 type Group struct {

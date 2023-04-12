@@ -78,7 +78,7 @@ func (s *ServiceAttribute) DeleteAttributes(ids ...string) (int64, *model.AppErr
 }
 
 func (s *ServiceAttribute) GetVisibleToUserAttributes(session *model.Session) (model.Attributes, *model.AppError) {
-	if s.srv.AccountService().SessionHasPermissionToAny(session, model.PermissionManagePageTypesAndAttributes, model.PermissionManageProductTypesAndAttributes) {
+	if s.srv.AccountService().SessionHasPermissionToAny(session, model.PermissionCreateAttribute, model.PermissionUpdateAttribute, model.PermissionDeleteAttribute) {
 		return s.AttributesByOption(&model.AttributeFilterOption{})
 	}
 

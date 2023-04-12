@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
 	"unsafe"
@@ -11,7 +10,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -21,29 +19,22 @@ import (
 func discountsByDateTimeLoader(ctx context.Context, dateTimes []time.Time) []*dataloader.Result[[]*model.DiscountInfo] {
 	var (
 		res             = make([]*dataloader.Result[[]*model.DiscountInfo], len(dateTimes))
-		appErr          *model.AppError
 		salesMap        = map[time.Time]model.Sales{}
 		saleIDS         []string
-		collections     = map[string][]string{}
 		channelListings = map[string]map[string]*model.SaleChannelListing{}
 		products        = map[string][]string{}
 		categories      = map[string][]string{}
 		variants        = map[string][]string{}
-
-		discountService sub_app_iface.DiscountService
+		collections     map[string][]string
+		appErr          *model.AppError
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	discountService = embedCtx.App.Srv().DiscountService()
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	discountService := embedCtx.App.Srv().DiscountService()
 
 	for _, dateTime := range dateTimes {
 		sales, appErr := discountService.ActiveSales(&dateTime)
 		if appErr != nil {
-			err = appErr
 			goto errorLabel
 		}
 
@@ -56,31 +47,26 @@ func discountsByDateTimeLoader(ctx context.Context, dateTimes []time.Time) []*da
 
 	collections, appErr = discountService.FetchCollections(saleIDS)
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
 	channelListings, appErr = discountService.FetchSaleChannelListings(saleIDS)
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
 	products, appErr = discountService.FetchProducts(saleIDS)
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
 	categories, appErr = discountService.FetchCategories(saleIDS)
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
 	variants, appErr = discountService.FetchVariants(saleIDS)
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -105,7 +91,7 @@ func discountsByDateTimeLoader(ctx context.Context, dateTimes []time.Time) []*da
 
 errorLabel:
 	for i := range dateTimes {
-		res[i] = &dataloader.Result[[]*model.DiscountInfo]{Error: err}
+		res[i] = &dataloader.Result[[]*model.DiscountInfo]{Error: appErr}
 	}
 	return res
 }
@@ -116,27 +102,19 @@ func saleChannelListingBySaleIdAndChanneSlugLoader(ctx context.Context, saleIDCh
 		res        = make([]*dataloader.Result[*model.SaleChannelListing], len(saleIDChannelIDPairs))
 		saleIDs    []string
 		channelIDs []string
-		listings   []*model.SaleChannelListing
-		appErr     *model.AppError
 		listingMap = map[string]*model.SaleChannelListing{} // keys are string format of saleID__channelID
 	)
 
 	for _, item := range saleIDChannelIDPairs {
 		index := strings.Index(item, "__")
-		if index < 0 {
-			continue
+		if index >= 0 {
+			saleIDs = append(saleIDs, item[:index])
+			channelIDs = append(channelIDs, item[index+2:])
 		}
-
-		saleIDs = append(saleIDs, item[:index])
-		channelIDs = append(channelIDs, item[index+2:])
 	}
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	listings, appErr = embedCtx.App.Srv().
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	listings, appErr := embedCtx.App.Srv().
 		DiscountService().
 		SaleChannelListingsByOptions(&model.SaleChannelListingFilterOption{
 			SaleID:    squirrel.Eq{store.SaleChannelListingTableName + ".SaleID": saleIDs},
@@ -144,7 +122,6 @@ func saleChannelListingBySaleIdAndChanneSlugLoader(ctx context.Context, saleIDCh
 			// SelectRelatedChannel: true,
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -159,7 +136,7 @@ func saleChannelListingBySaleIdAndChanneSlugLoader(ctx context.Context, saleIDCh
 
 errorLabel:
 	for idx := range saleIDChannelIDPairs {
-		res[idx] = &dataloader.Result[*model.SaleChannelListing]{Error: err}
+		res[idx] = &dataloader.Result[*model.SaleChannelListing]{Error: appErr}
 	}
 	return res
 }
@@ -167,22 +144,16 @@ errorLabel:
 func saleChannelListingBySaleIdLoader(ctx context.Context, saleIDs []string) []*dataloader.Result[[]*model.SaleChannelListing] {
 	var (
 		res        = make([]*dataloader.Result[[]*model.SaleChannelListing], len(saleIDs))
-		listings   []*model.SaleChannelListing
-		appErr     *model.AppError
 		listingMap = map[string][]*model.SaleChannelListing{} // keys are sale ids
 	)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
-	listings, appErr = embedCtx.App.Srv().
+	listings, appErr := embedCtx.App.Srv().
 		DiscountService().
 		SaleChannelListingsByOptions(&model.SaleChannelListingFilterOption{
 			SaleID: squirrel.Eq{store.SaleChannelListingTableName + ".SaleID": saleIDs},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -197,7 +168,7 @@ func saleChannelListingBySaleIdLoader(ctx context.Context, saleIDs []string) []*
 
 errorLabel:
 	for idx := range saleIDs {
-		res[idx] = &dataloader.Result[[]*model.SaleChannelListing]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.SaleChannelListing]{Error: appErr}
 	}
 	return res
 }
@@ -233,37 +204,26 @@ func SystemOrderDiscountToGraphqlOrderDiscount(r *model.OrderDiscount) *OrderDis
 }
 
 func (o *OrderDiscount) Reason(ctx context.Context) (*string, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionReadOrderDiscount, model.PermissionCreateOrderDiscount, model.PermissionUpdateOrderDiscount)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
-	currentSession := embedCtx.AppContext.Session()
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
-		return o.reason, nil
-	}
-
-	return nil, model.NewAppError("OrderDiscount.Reason", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	return o.reason, nil
 }
 
 func orderDiscountsByOrderIDLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.OrderDiscount] {
 	var (
 		res              = make([]*dataloader.Result[[]*model.OrderDiscount], len(orderIDs))
-		orderDiscounts   model.OrderDiscounts
-		appErr           *model.AppError
 		orderDiscountMap = map[string]model.OrderDiscounts{} // keys are order ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	orderDiscounts, appErr = embedCtx.App.Srv().DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	orderDiscounts, appErr := embedCtx.App.Srv().DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
 		OrderID: squirrel.Eq{store.OrderDiscountTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -281,7 +241,7 @@ func orderDiscountsByOrderIDLoader(ctx context.Context, orderIDs []string) []*da
 
 errorLabel:
 	for idx := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.OrderDiscount]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.OrderDiscount]{Error: appErr}
 	}
 	return res
 }
@@ -422,15 +382,13 @@ func (v *Voucher) Variants(ctx context.Context, args GraphqlParams) (*ProductVar
 }
 
 func (v *Voucher) DiscountValue(ctx context.Context) (*float64, error) {
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
-	if channelID == "" {
-		return nil, nil
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	if embedCtx.CurrentChannelID == "" {
+		embedCtx.SetInvalidUrlParam("channel_id")
+		return nil, embedCtx.Err
 	}
 
-	voucherChannelListing, err := VoucherChannelListingByVoucherIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, channelID))()
+	voucherChannelListing, err := VoucherChannelListingByVoucherIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, embedCtx.CurrentChannelID))()
 	if err != nil {
 		return nil, err
 	}
@@ -440,15 +398,13 @@ func (v *Voucher) DiscountValue(ctx context.Context) (*float64, error) {
 }
 
 func (v *Voucher) Currency(ctx context.Context) (*string, error) {
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
-	if channelID == "" {
-		return nil, nil
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	if embedCtx.CurrentChannelID == "" {
+		embedCtx.SetInvalidUrlParam("channel_id")
+		return nil, embedCtx.Err
 	}
 
-	voucherChannelListing, err := VoucherChannelListingByVoucherIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, channelID))()
+	voucherChannelListing, err := VoucherChannelListingByVoucherIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, embedCtx.CurrentChannelID))()
 	if err != nil {
 		return nil, err
 	}
@@ -457,15 +413,13 @@ func (v *Voucher) Currency(ctx context.Context) (*string, error) {
 }
 
 func (v *Voucher) MinSpent(ctx context.Context) (*Money, error) {
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
-	if channelID == "" {
-		return nil, nil
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	if embedCtx.CurrentChannelID == "" {
+		embedCtx.SetInvalidUrlParam("channel_id")
+		return nil, embedCtx.Err
 	}
 
-	voucherChannelListing, err := VoucherChannelListingByVoucherIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, channelID))()
+	voucherChannelListing, err := VoucherChannelListingByVoucherIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, embedCtx.CurrentChannelID))()
 	if err != nil {
 		return nil, err
 	}
@@ -474,41 +428,31 @@ func (v *Voucher) MinSpent(ctx context.Context) (*Money, error) {
 }
 
 func (v *Voucher) ChannelListings(ctx context.Context) ([]*VoucherChannelListing, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionReadVoucher, model.PermissionUpdateVoucher, model.PermissionDeleteVoucher)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+
+	listings, err := VoucherChannelListingByVoucherIdLoader.Load(ctx, v.ID)()
 	if err != nil {
 		return nil, err
 	}
 
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageDiscounts) {
-		listings, err := VoucherChannelListingByVoucherIdLoader.Load(ctx, v.ID)()
-		if err != nil {
-			return nil, err
-		}
-
-		return DataloaderResultMap(listings, systemVoucherChannelListingToGraphqlVoucherChannelListing), nil
-	}
-
-	return nil, model.NewAppError("Voucher.ChannelListings", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	return DataloaderResultMap(listings, systemVoucherChannelListingToGraphqlVoucherChannelListing), nil
 }
 
 func voucherByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Voucher] {
 	var (
 		res        = make([]*dataloader.Result[*model.Voucher], len(ids))
 		voucherMap = map[string]*model.Voucher{}
-		appErr     *model.AppError
-		vouchers   []*model.Voucher
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	vouchers, appErr = embedCtx.App.Srv().DiscountService().VouchersByOption(&model.VoucherFilterOption{
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	vouchers, appErr := embedCtx.App.Srv().DiscountService().VouchersByOption(&model.VoucherFilterOption{
 		Id: squirrel.Eq{store.VoucherTableName + ".Id": ids},
 	})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -523,7 +467,7 @@ func voucherByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 
 errorLabel:
 	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.Voucher]{Error: err}
+		res[idx] = &dataloader.Result[*model.Voucher]{Error: appErr}
 	}
 	return res
 }
@@ -532,19 +476,13 @@ errorLabel:
 func voucherChannelListingByVoucherIdAndChanneSlugLoader(ctx context.Context, idPairs []string) []*dataloader.Result[*model.VoucherChannelListing] {
 	var (
 		res                      = make([]*dataloader.Result[*model.VoucherChannelListing], len(idPairs))
-		voucherChannelListings   []*model.VoucherChannelListing
-		appErr                   *model.AppError
 		voucherChannelListingMap = map[string]*model.VoucherChannelListing{} // keys are voucher channel listing ids
 
 		voucherIDs []string
 		channelIDs []string
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 	for _, pair := range idPairs {
 		if index := strings.Index(pair, "__"); index >= 0 {
 			voucherIDs = append(voucherIDs, pair[:index])
@@ -552,13 +490,12 @@ func voucherChannelListingByVoucherIdAndChanneSlugLoader(ctx context.Context, id
 		}
 	}
 
-	voucherChannelListings, appErr = embedCtx.App.Srv().DiscountService().
+	voucherChannelListings, appErr := embedCtx.App.Srv().DiscountService().
 		VoucherChannelListingsByOption(&model.VoucherChannelListingFilterOption{
 			VoucherID: squirrel.Eq{store.VoucherChannelListingTableName + ".VoucherID": voucherIDs},
 			ChannelID: squirrel.Eq{store.VoucherChannelListingTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -573,7 +510,7 @@ func voucherChannelListingByVoucherIdAndChanneSlugLoader(ctx context.Context, id
 
 errorLabel:
 	for idx := range idPairs {
-		res[idx] = &dataloader.Result[*model.VoucherChannelListing]{Error: err}
+		res[idx] = &dataloader.Result[*model.VoucherChannelListing]{Error: appErr}
 	}
 	return res
 }
@@ -581,22 +518,15 @@ errorLabel:
 func voucherChannelListingByVoucherIdLoader(ctx context.Context, voucherIDs []string) []*dataloader.Result[[]*model.VoucherChannelListing] {
 	var (
 		res                      = make([]*dataloader.Result[[]*model.VoucherChannelListing], len(voucherIDs))
-		voucherChannelListings   []*model.VoucherChannelListing
-		appErr                   *model.AppError
 		voucherChannelListingMap = map[string][]*model.VoucherChannelListing{} // keys are voucher ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	voucherChannelListings, appErr = embedCtx.App.Srv().DiscountService().
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	voucherChannelListings, appErr := embedCtx.App.Srv().DiscountService().
 		VoucherChannelListingsByOption(&model.VoucherChannelListingFilterOption{
 			VoucherID: squirrel.Eq{store.VoucherChannelListingTableName + ".VoucherID": voucherIDs},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -611,7 +541,7 @@ func voucherChannelListingByVoucherIdLoader(ctx context.Context, voucherIDs []st
 
 errorLabel:
 	for idx := range voucherIDs {
-		res[idx] = &dataloader.Result[[]*model.VoucherChannelListing]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.VoucherChannelListing]{Error: appErr}
 	}
 	return res
 }
@@ -619,33 +549,33 @@ errorLabel:
 // ------------ voucher channel listing ---------------
 
 type VoucherChannelListing struct {
-	ID string `json:"id"`
-	// Channel       *Channel `json:"channel"`
+	ID            string  `json:"id"`
 	DiscountValue float64 `json:"discountValue"`
 	Currency      string  `json:"currency"`
 	MinSpent      *Money  `json:"minSpent"`
 
-	channelID string
+	// Channel       *Channel `json:"channel"`
+	vcl *model.VoucherChannelListing
 }
 
-func systemVoucherChannelListingToGraphqlVoucherChannelListing(l *model.VoucherChannelListing) *VoucherChannelListing {
-	if l == nil {
+func systemVoucherChannelListingToGraphqlVoucherChannelListing(vcl *model.VoucherChannelListing) *VoucherChannelListing {
+	if vcl == nil {
 		return nil
 	}
 
-	l.PopulateNonDbFields()
+	vcl.PopulateNonDbFields()
 
 	return &VoucherChannelListing{
-		ID:            l.Id,
-		Currency:      l.Currency,
-		MinSpent:      SystemMoneyToGraphqlMoney(l.MinSpent),
-		channelID:     l.ChannelID,
-		DiscountValue: l.DiscountValue.InexactFloat64(),
+		ID:            vcl.Id,
+		Currency:      vcl.Currency,
+		MinSpent:      SystemMoneyToGraphqlMoney(vcl.MinSpent),
+		DiscountValue: vcl.DiscountValue.InexactFloat64(),
+		vcl:           vcl,
 	}
 }
 
 func (v *VoucherChannelListing) Channel(ctx context.Context) (*Channel, error) {
-	channel, err := ChannelByIdLoader.Load(ctx, v.channelID)()
+	channel, err := ChannelByIdLoader.Load(ctx, v.vcl.ChannelID)()
 	if err != nil {
 		return nil, err
 	}
@@ -661,25 +591,24 @@ type SaleChannelListing struct {
 	Currency      string  `json:"currency"`
 
 	// Channel       *Channel `json:"channel"`
-
-	channelID string
+	scl *model.SaleChannelListing
 }
 
-func systemSaleChannelListingToGraphqlSaleChannelListing(s *model.SaleChannelListing) *SaleChannelListing {
-	if s == nil {
+func systemSaleChannelListingToGraphqlSaleChannelListing(scl *model.SaleChannelListing) *SaleChannelListing {
+	if scl == nil {
 		return nil
 	}
 
 	return &SaleChannelListing{
-		ID:            s.Id,
-		DiscountValue: s.DiscountValue.InexactFloat64(),
-		Currency:      s.Currency,
-		channelID:     s.ChannelID,
+		ID:            scl.Id,
+		DiscountValue: scl.DiscountValue.InexactFloat64(),
+		Currency:      scl.Currency,
+		scl:           scl,
 	}
 }
 
 func (s *SaleChannelListing) Channel(ctx context.Context) (*Channel, error) {
-	channel, err := ChannelByIdLoader.Load(ctx, s.channelID)()
+	channel, err := ChannelByIdLoader.Load(ctx, s.scl.ChannelID)()
 	if err != nil {
 		return nil, err
 	}

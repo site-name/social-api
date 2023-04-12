@@ -169,7 +169,7 @@ func (a *Attribute) Choices(
 	if !model.TYPES_WITH_CHOICES.Contains(a.attr.InputType) {
 		return nil, nil
 	}
-	appErr := args.Validate("Attribute.Choices")
+	appErr := args.GraphqlParams.Validate("Attribute.Choices")
 	if appErr != nil {
 		return nil, appErr
 	}
