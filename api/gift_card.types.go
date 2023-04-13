@@ -320,49 +320,38 @@ func (g *GiftCard) CreatedByEmail(ctx context.Context) (*string, error) {
 }
 
 func (g *GiftCard) UsedByEmail(ctx context.Context) (*string, error) {
+	// requester must be staff of current shop that issued this giftcard to see
 	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
 	}
 
-	resolveUsedByEmail := func(u *model.User) *string {
-		if (u != nil && u.Id == embedCtx.AppContext.Session().UserId) ||
-			embedCtx.App.Srv().
-				AccountService().
-				HasPermissionTo(embedCtx.AppContext.Session().UserId, model.PermissionManageGiftcard) {
+	if embedCtx.CurrentShopID == "" {
+		embedCtx.SetInvalidUrlParam("shop_id")
+		return nil, embedCtx.Err
+	}
 
-			if u != nil {
-				return &u.Email
-			}
-
-			return g.giftcard.UsedByEmail
+	if g.giftcard.ShopID == embedCtx.CurrentShopID &&
+		embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) {
+		user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.UsedByID)()
+		if err != nil {
+			return nil, err
 		}
 
-		var email string
-		if u != nil {
-			email = u.Email
-		} else if g.giftcard.UsedByEmail != nil {
-			email = *g.giftcard.UsedByEmail
-		}
-
-		return model.NewPrimitive(util.ObfuscateEmail(email))
+		return &user.Email, nil
 	}
 
-	if g.giftcard.UsedByID == nil {
-		return resolveUsedByEmail(nil), nil
-	}
-
-	user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.UsedByID)()
-	if err != nil {
-		return nil, err
-	}
-
-	return resolveUsedByEmail(user), nil
+	return nil, MakeUnauthorizedError("GiftCard.UsedByEmail")
 }
 
 func (g *GiftCard) UsedBy(ctx context.Context) (*User, error) {
+	// requester must be staff of the shop that issued this giftcard to see
 	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
 
 	resolveUsedBy := func(u *model.User) (*User, *model.AppError) {
 		if (u != nil && u.Id == embedCtx.AppContext.Session().UserId) ||

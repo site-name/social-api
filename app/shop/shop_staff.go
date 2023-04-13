@@ -10,9 +10,6 @@ import (
 )
 
 func (a *ServiceShop) ShopStaffByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaffRelation, *model.AppError) {
-	if options == nil {
-		options = new(model.ShopStaffRelationFilterOptions)
-	}
 	relation, err := a.srv.Store.ShopStaff().GetByOptions(options)
 	if err != nil {
 		statusCode := http.StatusInternalServerError

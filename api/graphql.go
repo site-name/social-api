@@ -43,8 +43,8 @@ func (api *API) InitGraphql() error {
 		return errors.Wrap(err, "failed to parse graphql schema")
 	}
 
-	api.Router.Handle("/graphql", api.APIHandlerTrustRequester(graphiQL)).Methods(http.MethodGet)
-	api.Router.Handle("/graphql", api.APIHandlerTrustRequester(api.graphql)).Methods(http.MethodPost)
+	api.Router.Handle("/graphql", api.APIHandler(graphiQL)).Methods(http.MethodGet)
+	api.Router.Handle("/graphql", api.APIHandler(api.graphql)).Methods(http.MethodPost)
 	return nil
 }
 
