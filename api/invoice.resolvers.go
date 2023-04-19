@@ -18,7 +18,7 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 	Number  *string
 	OrderID string
 }) (*InvoiceRequest, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateOrder)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -83,18 +83,14 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 }
 
 func (r *Resolver) InvoiceRequestDelete(ctx context.Context, args struct{ Id string }) (*InvoiceRequestDelete, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("InvoiceRequestDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
-	}
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
 		return nil, model.NewAppError("InvoiceRequestDelete", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
 	}
 
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("InvoiceRequestDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
+	}
 	invoices, appErr := embedCtx.App.Srv().InvoiceService().FilterInvoicesByOptions(&model.InvoiceFilterOptions{
 		Id: squirrel.Eq{store.InvoiceTableName + ".Id": args.Id},
 	})
@@ -149,10 +145,7 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 	Input   InvoiceCreateInput
 	OrderID string
 }) (*InvoiceCreate, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
 		return nil, model.NewAppError("InvoiceCreate", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
@@ -217,16 +210,13 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 }
 
 func (r *Resolver) InvoiceDelete(ctx context.Context, args struct{ Id string }) (*InvoiceDelete, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("InvoiceDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
-	}
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
 		return nil, model.NewAppError("InvoiceDelete", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	}
+
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("InvoiceDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
 	invoices, appErr := embedCtx.App.Srv().InvoiceService().FilterInvoicesByOptions(&model.InvoiceFilterOptions{
@@ -273,16 +263,14 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 	Id    string
 	Input UpdateInvoiceInput
 }) (*InvoiceUpdate, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("InvoiceUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
-	}
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
 		return nil, model.NewAppError("InvoiceUpdate", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	}
+
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("InvoiceUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
 	invoices, appErr := embedCtx.App.Srv().InvoiceService().FilterInvoicesByOptions(&model.InvoiceFilterOptions{
@@ -342,16 +330,14 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 }
 
 func (r *Resolver) InvoiceSendNotification(ctx context.Context, args struct{ Id string }) (*InvoiceSendNotification, error) {
-	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("InvoiceSendNotification", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
-	}
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
 		return nil, model.NewAppError("InvoiceSendNotification", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	}
+
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("InvoiceSendNotification", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
 	invoices, appErr := embedCtx.App.Srv().InvoiceService().FilterInvoicesByOptions(&model.InvoiceFilterOptions{

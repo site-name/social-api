@@ -58,6 +58,7 @@ var (
 	// find giftcards based on field .UsedById
 	GiftCardsByUserLoader     = dataloader.NewBatchedLoader(giftCardsByUserLoader, dataloader.WithBatchCapacity[string, []*model.GiftCard](batchCapacity))
 	GiftcardsByOrderIDsLoader = dataloader.NewBatchedLoader(giftcardsByOrderIDsLoader, dataloader.WithBatchCapacity[string, []*model.GiftCard](batchCapacity))
+	GiftcardsByShopIDsLoader  = dataloader.NewBatchedLoader(giftcardsByShopIdLoader, dataloader.WithBatchCapacity[string, []*model.GiftCard](batchCapacity))
 
 	// order
 	OrderLineByIdLoader                     = dataloader.NewBatchedLoader(orderLineByIdLoader, dataloader.WithBatchCapacity[string, *model.OrderLine](batchCapacity))
@@ -170,4 +171,9 @@ var (
 
 	// page
 	PageByIdLoader = dataloader.NewBatchedLoader(pageByIdLoader, dataloader.WithBatchCapacity[string, *model.Page](batchCapacity))
+
+	// shop
+
+	// StaffsByShopIDsLoader returns shop-staff relations that are not ended yet
+	StaffsByShopIDsLoader = dataloader.NewBatchedLoader(staffsByShopIDLoader, dataloader.WithBatchCapacity[string, []*model.User](batchCapacity))
 )

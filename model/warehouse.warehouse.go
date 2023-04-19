@@ -95,7 +95,7 @@ func (w *WareHouse) String() string {
 
 func (w *WareHouse) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"warehouse.is_valid.%s.app_error",
+		"model.warehouse.is_valid.%s.app_error",
 		"warehouse_id=",
 		"WareHouse.IsValid",
 	)

@@ -168,6 +168,8 @@ type (
 		GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaffRelation, error)
 	}
 	ShopStore interface {
+		ModelFields(prefix string) util.AnyArray[string]
+		ScanFields(shop *model.Shop) []interface{}
 		Upsert(shop *model.Shop) (*model.Shop, error)                            // Upsert depends on shop's Id to decide to update/insert the given model.
 		Get(shopID string) (*model.Shop, error)                                  // Get finds a shop with given id and returns it
 		FilterByOptions(options *model.ShopFilterOptions) ([]*model.Shop, error) // FilterByOptions finds and returns shops with given options
@@ -917,6 +919,7 @@ type (
 	UserStore interface {
 		ClearCaches()
 		ModelFields(prefix string) util.AnyArray[string]
+		ScanFields(user *model.User) []interface{}
 		Save(user *model.User) (*model.User, error)                               // Save takes an user struct and save into database
 		Update(user *model.User, allowRoleUpdate bool) (*model.UserUpdate, error) // Update update given user
 		UpdateLastPictureUpdate(userID string) error

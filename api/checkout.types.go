@@ -109,7 +109,7 @@ func (c *Checkout) SubtotalPrice(ctx context.Context) (*TaxedMoney, error) {
 
 	panic("not implemented") // TODO: complete plugin manager
 
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	money, appErr := embedCtx.App.Srv().CheckoutService().CheckoutSubTotal(nil /*TODO: add this manager*/, *checkoutInfo, checkoutLineInfos, address, discountInfos)
 	if appErr != nil {
 		return nil, appErr
@@ -149,7 +149,7 @@ func (c *Checkout) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
 	}
 	panic("not implemented") // TODO: complete plugin manager
 
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	taxedMoney, appErr := embedCtx.App.Srv().CheckoutService().CheckoutTotal(nil /*add this*/, *checkoutInfo, lineInfos, address, discountInfos)
 	if appErr != nil {
 		return nil, appErr
@@ -212,21 +212,32 @@ func (c *Checkout) User(ctx context.Context) (*User, error) {
 	// requester can see user of checkout only if
 	// current checkout is made by himself OR
 	// requester is staff of the shop that has this checkout
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
 
 	currentUserCanSeeCheckoutOwner := c.checkout.UserID != nil && embedCtx.AppContext.Session().UserId == *c.checkout.UserID
 	if !currentUserCanSeeCheckoutOwner {
 		if embedCtx.CurrentShopID == "" {
 			embedCtx.SetInvalidUrlParam("shop_id")
+			return nil, embedCtx.Err
 		}
-		currentUserCanSeeCheckoutOwner = embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID)
+
+		// check if requester is staff of shop
+		staffs, err := StaffsByShopIDsLoader.Load(ctx, embedCtx.CurrentShopID)()
+		if err != nil {
+			return nil, err
+		}
+		currentUserCanSeeCheckoutOwner = lo.SomeBy(staffs, func(u *model.User) bool { return u.Id == embedCtx.AppContext.Session().UserId })
 	}
 
 	if currentUserCanSeeCheckoutOwner {
 		if c.checkout.UserID != nil {
-			user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, *c.checkout.UserID)
-			if appErr != nil {
-				return nil, appErr
+			user, err := UserByUserIdLoader.Load(ctx, *c.checkout.UserID)()
+			if err != nil {
+				return nil, err
 			}
 
 			return SystemUserToGraphqlUser(user), nil
@@ -299,10 +310,7 @@ func (c *Checkout) ShippingAddress(ctx context.Context) (*Address, error) {
 }
 
 func (c *Checkout) GiftCards(ctx context.Context) ([]*GiftCard, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	giftcards, appErr := embedCtx.
 		App.
@@ -353,7 +361,7 @@ func (c *Checkout) AvailableShippingMethods(ctx context.Context) ([]*ShippingMet
 }
 
 func (c *Checkout) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	var address *model.Address
 	var err error
@@ -427,11 +435,9 @@ func (c *Checkout) DeliveryMethod(ctx context.Context) (DeliveryMethod, error) {
 // The first uuid part is userID, second is channelID
 func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*dataloader.Result[[]*model.Checkout] {
 	var (
-		appErr     *model.AppError
 		res        = make([]*dataloader.Result[[]*model.Checkout], len(keys))
 		userIDs    []string
 		channelIDs []string
-		checkouts  []*model.Checkout
 
 		checkoutsMap = map[string][]*model.Checkout{} // checkoutsMap has keys are each items of given param keys
 	)
@@ -446,11 +452,9 @@ func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*datal
 		channelIDs = append(channelIDs, item[sepIndex+2:])
 	}
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-	checkouts, appErr = embedCtx.
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	checkouts, appErr := embedCtx.
 		App.
 		Srv().
 		CheckoutService().
@@ -460,7 +464,6 @@ func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*datal
 			ChannelID:       squirrel.Eq{store.CheckoutTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -470,7 +473,6 @@ func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*datal
 			checkoutsMap[key] = append(checkoutsMap[key], checkout)
 		}
 	}
-
 	for idx, key := range keys {
 		res[idx] = &dataloader.Result[[]*model.Checkout]{Data: checkoutsMap[key]}
 	}
@@ -478,25 +480,20 @@ func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*datal
 
 errorLabel:
 	for idx := range keys {
-		res[idx] = &dataloader.Result[[]*model.Checkout]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.Checkout]{Error: appErr}
 	}
 	return res
 }
 
 func checkoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.Checkout] {
 	var (
-		appErr       *model.AppError
-		checkouts    []*model.Checkout
 		res          = make([]*dataloader.Result[[]*model.Checkout], len(userIDs))
 		checkoutsMap = map[string][]*model.Checkout{} // keys are user ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	checkouts, appErr = embedCtx.
+	checkouts, appErr := embedCtx.
 		App.
 		Srv().
 		CheckoutService().
@@ -505,7 +502,6 @@ func checkoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.R
 			UserID:          squirrel.Eq{store.CheckoutTableName + ".UserID": userIDs},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -514,7 +510,6 @@ func checkoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.R
 			checkoutsMap[*checkout.UserID] = append(checkoutsMap[*checkout.UserID], checkout)
 		}
 	}
-
 	for idx, key := range userIDs {
 		res[idx] = &dataloader.Result[[]*model.Checkout]{Data: checkoutsMap[key]}
 	}
@@ -522,7 +517,7 @@ func checkoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.R
 
 errorLabel:
 	for idx := range userIDs {
-		res[idx] = &dataloader.Result[[]*model.Checkout]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.Checkout]{Error: appErr}
 	}
 	return res
 }
@@ -530,17 +525,12 @@ errorLabel:
 func checkoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[*model.Checkout] {
 	var (
 		res         = make([]*dataloader.Result[*model.Checkout], len(tokens))
-		appErr      *model.AppError
-		checkouts   []*model.Checkout
 		checkoutMap = map[string]*model.Checkout{} // keys are checkout tokens
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	checkouts, appErr = embedCtx.
+	checkouts, appErr := embedCtx.
 		App.
 		Srv().
 		CheckoutService().
@@ -548,7 +538,6 @@ func checkoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.R
 			Token: squirrel.Eq{store.CheckoutTableName + ".Token": tokens},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -563,7 +552,7 @@ func checkoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.R
 
 errorLabel:
 	for idx := range tokens {
-		res[idx] = &dataloader.Result[*model.Checkout]{Error: err}
+		res[idx] = &dataloader.Result[*model.Checkout]{Error: appErr}
 	}
 	return res
 }
@@ -599,11 +588,7 @@ func checkoutInfoByCheckoutTokenLoader(ctx context.Context, tokens []string) []*
 		checkoutInfoMap = map[string]*model.CheckoutInfo{} // keys are checkout tokens
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		errs = []error{err}
-		goto errorLabel
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	checkouts, errs = CheckoutByTokenLoader.LoadMany(ctx, tokens)()
 	if len(errs) > 0 && errs[0] != nil {

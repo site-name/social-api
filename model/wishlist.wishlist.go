@@ -20,7 +20,7 @@ type WishlistFilterOption struct {
 
 func (w *Wishlist) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"wishlist.is_valid.%s.app_error",
+		"model.wishlist.is_valid.%s.app_error",
 		"wishlist_id=",
 		"Wishlist.IsValid",
 	)

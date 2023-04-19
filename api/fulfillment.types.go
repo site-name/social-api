@@ -72,8 +72,8 @@ func (f *Fulfillment) Warehouse(ctx context.Context) (*Warehouse, error) {
 			return nil, err
 		}
 
-		if stock.GetWarehouse() != nil {
-			return SystemWarehouseToGraphqlWarehouse(stock.GetWarehouse()), nil
+		if warehouse := stock.GetWarehouse(); warehouse != nil {
+			return SystemWarehouseToGraphqlWarehouse(warehouse), nil
 		}
 
 		return nil, nil
@@ -88,7 +88,7 @@ func fulfillmentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*data
 		fulfillmentMap = map[string]model.Fulfillments{}
 	)
 
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	fulfillments, appErr := embedCtx.App.Srv().OrderService().FulfillmentsByOption(nil, &model.FulfillmentFilterOption{
 		OrderID: squirrel.Eq{store.FulfillmentTableName + ".OrderID": orderIDs},
 	})
@@ -99,7 +99,6 @@ func fulfillmentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*data
 	for _, f := range fulfillments {
 		fulfillmentMap[f.OrderID] = append(fulfillmentMap[f.OrderID], f)
 	}
-
 	for idx, id := range orderIDs {
 		res[idx] = &dataloader.Result[[]*model.Fulfillment]{Data: fulfillmentMap[id]}
 	}
@@ -149,7 +148,7 @@ func fulfillmentLinesByIdLoader(ctx context.Context, ids []string) []*dataloader
 		LineMap = map[string]*model.FulfillmentLine{}
 	)
 
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	lines, appErr := embedCtx.App.Srv().OrderService().FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
 		Id: squirrel.Eq{store.FulfillmentLineTableName + ".Id": ids},
 	})
@@ -177,7 +176,7 @@ func fulfillmentLinesByFulfillmentIDLoader(ctx context.Context, fulfillmentIDs [
 		fulfillmentLineMap = map[string]model.FulfillmentLines{} // keys are fulfillment ids
 	)
 
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	fulfillmentLines, appErr := embedCtx.App.
 		Srv().
 		OrderService().
@@ -191,7 +190,6 @@ func fulfillmentLinesByFulfillmentIDLoader(ctx context.Context, fulfillmentIDs [
 	for _, line := range fulfillmentLines {
 		fulfillmentLineMap[line.FulfillmentID] = append(fulfillmentLineMap[line.FulfillmentID], line)
 	}
-
 	for idx, id := range fulfillmentIDs {
 		res[idx] = &dataloader.Result[[]*model.FulfillmentLine]{Data: fulfillmentLineMap[id]}
 	}

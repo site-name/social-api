@@ -9,11 +9,35 @@ type ShopStaffRelation struct {
 	StaffID  string `json:"staff_id"` //
 	CreateAt int64  `json:"create_at"`
 	EndAt    *int64 `json:"end_at"`
+
+	staff *User
+	shop  *Shop
+}
+
+func (r *ShopStaffRelation) GetStaff() *User {
+	return r.staff
+}
+
+func (r *ShopStaffRelation) SetStaff(u *User) {
+	r.staff = u
+}
+
+func (r *ShopStaffRelation) GetShop() *Shop {
+	return r.shop
+}
+
+func (r *ShopStaffRelation) SetShop(s *Shop) {
+	r.shop = s
 }
 
 type ShopStaffRelationFilterOptions struct {
-	ShopID  squirrel.Sqlizer
-	StaffID squirrel.Sqlizer
+	ShopID   squirrel.Sqlizer
+	StaffID  squirrel.Sqlizer
+	CreateAt squirrel.Sqlizer
+	EndAt    squirrel.Sqlizer
+
+	SelectRelatedStaff bool
+	SelectRelatedShop  bool
 }
 
 func (s *ShopStaffRelation) PreSave() {
@@ -47,4 +71,17 @@ func (s *ShopStaffRelation) IsValid() *AppError {
 	}
 
 	return nil
+}
+
+func (s *ShopStaffRelation) DeepCopy() *ShopStaffRelation {
+	res := *s
+
+	if s.staff != nil {
+		res.staff = s.staff.DeepCopy()
+	}
+	if s.shop != nil {
+		res.shop = s.shop.DeepCopy()
+	}
+
+	return &res
 }

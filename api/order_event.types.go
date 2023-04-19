@@ -194,16 +194,22 @@ func (o *OrderEvent) FulfilledItems(ctx context.Context) ([]*FulfillmentLine, er
 }
 
 func (o *OrderEvent) User(ctx context.Context) (*User, error) {
+	// requester must be staff of shop which has an order contains this event
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+	currentSession := embedCtx.AppContext.Session()
+
+	if embedCtx.CurrentShopID == "" {
+		embedCtx.SetInvalidUrlParam("shop_id")
+		return nil, embedCtx.Err
+	}
+
 	if o.event.UserID == nil {
 		return nil, nil
 	}
-
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
-	currentSession := embedCtx.AppContext.Session()
 
 	if currentSession.UserId == *o.event.UserID ||
 		embedCtx.App.Srv().
@@ -228,21 +234,14 @@ func (o *OrderEvent) Lines(ctx context.Context) ([]*OrderEventOrderLineObject, e
 func orderEventsByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.OrderEvent] {
 	var (
 		res      = make([]*dataloader.Result[[]*model.OrderEvent], len(orderIDs))
-		events   []*model.OrderEvent
 		eventMap = map[string][]*model.OrderEvent{}
-		appErr   *model.AppError
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	events, appErr = embedCtx.App.Srv().OrderService().FilterOrderEventsByOptions(&model.OrderEventFilterOptions{
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	events, appErr := embedCtx.App.Srv().OrderService().FilterOrderEventsByOptions(&model.OrderEventFilterOptions{
 		OrderID: squirrel.Eq{store.OrderEventTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -257,7 +256,7 @@ func orderEventsByOrderIdLoader(ctx context.Context, orderIDs []string) []*datal
 
 errorLabel:
 	for idx := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.OrderEvent]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.OrderEvent]{Error: appErr}
 	}
 	return res
 }

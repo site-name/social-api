@@ -19,7 +19,7 @@ import (
 func (r *Resolver) AddressCreate(ctx context.Context, args struct {
 	Input AddressInput
 }) (*AddressCreate, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -63,7 +63,7 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 	Input AddressInput
 }) (*AddressUpdate, error) {
 	// requester can update address only if he is owner of that address
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -109,7 +109,7 @@ func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) 
 	// requester can delete address only if he is owner of given address
 	// TODO: investigate if deleting an address affects other parts like shipping/billing address of orders
 
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -139,7 +139,7 @@ func (r *Resolver) AddressSetDefault(ctx context.Context, args struct {
 	Type      model.AddressTypeEnum
 }) (*AddressSetDefault, error) {
 	// requester can update default billing/shipping address of himself only
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -222,7 +222,7 @@ func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 func (r *Resolver) Address(ctx context.Context, args struct{ Id string }) (*Address, error) {
 	// +) requester can see address if he is owner of that address OR
 	// +) requester is staff of currentshop, this address is shipping/billing address of an order belongs to current shop
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err

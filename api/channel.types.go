@@ -46,7 +46,7 @@ func SystemChannelToGraphqlChannel(ch *model.Channel) *Channel {
 func (c Channel) HasOrders(ctx context.Context) (bool, error) {
 	// requester can see if current channel has order(s) only if
 	// he is staff at the shop that sells products in current channel
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return false, embedCtx.Err
@@ -75,7 +75,7 @@ func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 		channelMap = map[string]*model.Channel{} // keys are channel ids
 	)
 
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	channels, appErr := embedCtx.App.
 		Srv().
 		ChannelService().
@@ -106,7 +106,7 @@ func channelBySlugLoader(ctx context.Context, slugs []string) []*dataloader.Resu
 		channelMap = map[string]*model.Channel{}
 	)
 
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	channels, appErr := embedCtx.App.
 		Srv().
 		ChannelService().
@@ -218,7 +218,7 @@ func channelWithHasOrdersByIdLoader(ctx context.Context, channelIDs []string) []
 		res        = make([]*dataloader.Result[*model.Channel], len(channelIDs))
 		channelMap = map[string]*model.Channel{}
 	)
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// find all channels that have orders
 	channels, err := embedCtx.App.
@@ -298,7 +298,7 @@ func (c *ProductChannelListing) Channel(ctx context.Context) (*Channel, error) {
 
 func (c *ProductChannelListing) PurchaseCost(ctx context.Context) (*MoneyRange, error) {
 	// requester can see purchase cost only if he is owner of current shop
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -350,7 +350,7 @@ func (c *ProductChannelListing) IsAvailableForPurchase(ctx context.Context) (*bo
 }
 
 func (c *ProductChannelListing) Margin(ctx context.Context) (*Margin, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateProduct, model.PermissionUpdateProduct)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -391,7 +391,7 @@ func (c *ProductChannelListing) Margin(ctx context.Context) (*Margin, error) {
 
 // Pricing is selling price of product
 func (c *ProductChannelListing) Pricing(ctx context.Context, args struct{ Address *AddressInput }) (*ProductPricingInfo, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	now := time.Now()
 	var addressCountry model.CountryCode
@@ -510,7 +510,7 @@ func (p *ProductVariantChannelListing) Channel(ctx context.Context) (*Channel, e
 }
 
 func (p *ProductVariantChannelListing) Margin(ctx context.Context) (*int32, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateProduct, model.PermissionUpdateProduct, model.PermissionDeleteProduct)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err

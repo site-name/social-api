@@ -17,7 +17,7 @@ import (
 
 func (r *Resolver) GiftCardActivate(ctx context.Context, args struct{ Id string }) (*GiftCardActivate, error) {
 	// only staffs of shop which issued the giftcard can activate them
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateGiftcard)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -73,7 +73,7 @@ func (r *Resolver) GiftCardDelete(ctx context.Context, args struct{ Id string })
 
 func (r *Resolver) GiftCardDeactivate(ctx context.Context, args struct{ Id string }) (*GiftCardDeactivate, error) {
 	// only staffs of shop which issued the giftcard can deactivate them
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateGiftcard)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -121,7 +121,7 @@ func (r *Resolver) GiftCardUpdate(ctx context.Context, args struct {
 	Input GiftCardUpdateInput
 }) (*GiftCardUpdate, error) {
 	// requester must be staff at the shop which issued given giftcard to update it
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateGiftcard)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -196,7 +196,7 @@ func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids 
 
 func (r *Resolver) GiftCard(ctx context.Context, args struct{ Id string }) (*GiftCard, error) {
 	// requester must be authenticated to see giftcard
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err

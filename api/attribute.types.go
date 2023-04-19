@@ -210,10 +210,7 @@ func (a *Attribute) Choices(
 }
 
 func (a *Attribute) ProductTypes(ctx context.Context, args GraphqlParams) (*ProductTypeCountableConnection, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	productTypes, appErr := embedCtx.App.Srv().
 		ProductService().
@@ -234,10 +231,7 @@ func (a *Attribute) ProductTypes(ctx context.Context, args GraphqlParams) (*Prod
 }
 
 func (a *Attribute) ProductVariantTypes(ctx context.Context, args GraphqlParams) (*ProductTypeCountableConnection, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	productTypes, appErr := embedCtx.App.Srv().
 		ProductService().
@@ -260,10 +254,7 @@ func (a *Attribute) ProductVariantTypes(ctx context.Context, args GraphqlParams)
 // If return error is nil, meaning current user can perform action.
 // if not, user can't
 func (a *Attribute) currentUserHasPermissionToAccess(ctx context.Context, apiName string) error {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	var permToCheck = model.PermissionReadProduct
 	if a.Type != nil && *a.Type == model.PAGE_TYPE {
@@ -330,16 +321,11 @@ func (a *Attribute) Translation(ctx context.Context, args struct{ LanguageCode L
 func attributesByAttributeIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Attribute] {
 	var (
 		res          = make([]*dataloader.Result[*model.Attribute], len(ids))
-		appErr       *model.AppError
-		attributes   model.Attributes
 		attributeMap = map[string]*model.Attribute{} // keys are attribute ids
 	)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	attributes, appErr = embedCtx.
+	attributes, appErr := embedCtx.
 		App.
 		Srv().
 		AttributeService().
@@ -347,7 +333,6 @@ func attributesByAttributeIdLoader(ctx context.Context, ids []string) []*dataloa
 			Id: squirrel.Eq{store.AttributeTableName + ".Id": ids},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -362,34 +347,28 @@ func attributesByAttributeIdLoader(ctx context.Context, ids []string) []*dataloa
 
 errorLabel:
 	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.Attribute]{Error: err}
+		res[idx] = &dataloader.Result[*model.Attribute]{Error: appErr}
 	}
 	return res
 }
 
 func attributeValuesByAttributeIdLoader(ctx context.Context, attributeIDs []string) []*dataloader.Result[[]*model.AttributeValue] {
 	var (
-		res             = make([]*dataloader.Result[[]*model.AttributeValue], len(attributeIDs))
-		appErr          *model.AppError
-		attributeValues model.AttributeValues
+		res = make([]*dataloader.Result[[]*model.AttributeValue], len(attributeIDs))
 
 		// keys are attribute ids
 		attributeValuesMap = map[string][]*model.AttributeValue{}
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	attributeValues, appErr = embedCtx.App.
+	attributeValues, appErr := embedCtx.App.
 		Srv().
 		AttributeService().
 		FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
 			AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": attributeIDs},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -404,7 +383,7 @@ func attributeValuesByAttributeIdLoader(ctx context.Context, attributeIDs []stri
 
 errorLabel:
 	for idx := range attributeIDs {
-		res[idx] = &dataloader.Result[[]*model.AttributeValue]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.AttributeValue]{Error: appErr}
 	}
 	return res
 }
@@ -412,24 +391,18 @@ errorLabel:
 func attributeValueByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.AttributeValue] {
 	var (
 		res               = make([]*dataloader.Result[*model.AttributeValue], len(ids))
-		appErr            *model.AppError
-		attributeValues   model.AttributeValues
 		attributeValueMap = map[string]*model.AttributeValue{} // keys are attribute value ids
 	)
 
-	embedCts, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCts := GetContextValue[*web.Context](ctx, WebCtx)
 
-	attributeValues, appErr = embedCts.App.
+	attributeValues, appErr := embedCts.App.
 		Srv().
 		AttributeService().
 		FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
 			Id: squirrel.Eq{store.AttributeValueTableName + ".Id": ids},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -444,7 +417,7 @@ func attributeValueByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 
 errorLabel:
 	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.AttributeValue]{Error: err}
+		res[idx] = &dataloader.Result[*model.AttributeValue]{Error: appErr}
 	}
 	return res
 }

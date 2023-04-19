@@ -19,7 +19,7 @@ import (
 )
 
 func (r *Resolver) AttributeCreate(ctx context.Context, args struct{ Input AttributeCreateInput }) (*AttributeCreate, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateAttribute)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -95,7 +95,7 @@ func (r *Resolver) AttributeCreate(ctx context.Context, args struct{ Input Attri
 }
 
 func (r *Resolver) AttributeDelete(ctx context.Context, args struct{ Id string }) (*AttributeDelete, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAttribute)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -119,7 +119,7 @@ func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AttributeUpdateInput
 }) (*AttributeUpdate, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateAttribute)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -226,7 +226,7 @@ func (r *Resolver) AttributeTranslate(ctx context.Context, args struct {
 
 func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []string }) (*AttributeBulkDelete, error) {
 	// validate permission(s)
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAttribute)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -247,7 +247,7 @@ func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []s
 
 func (r *Resolver) AttributeValueBulkDelete(ctx context.Context, args struct{ Ids []string }) (*AttributeValueBulkDelete, error) {
 	// validate permission(s)
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAttributeValue)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -271,7 +271,7 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 	Input       AttributeValueCreateInput
 }) (*AttributeValueCreate, error) {
 	// validate permission(s)
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateAttributeValue)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -327,7 +327,7 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 }
 
 func (r *Resolver) AttributeValueDelete(ctx context.Context, args struct{ Id string }) (*AttributeValueDelete, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAttributeValue)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -364,7 +364,7 @@ func (r *Resolver) AttributeValueUpdate(ctx context.Context, args struct {
 	Input AttributeValueUpdateInput
 }) (*AttributeValueUpdate, error) {
 	// validate permission(s)
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateAttributeValue)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -426,7 +426,7 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 	Moves       []*ReorderInput
 }) (*AttributeReorderValues, error) {
 	// validate permission(s)
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateAttribute, model.PermissionUpdateAttribute, model.PermissionCreateAttributeValue, model.PermissionUpdateAttributeValue)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err

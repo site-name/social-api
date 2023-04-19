@@ -95,7 +95,7 @@ func (r *Resolver) PasswordChange(ctx context.Context, args struct {
 	OldPassword string
 }) (*PasswordChange, error) {
 	// user must be authenticated to proceed
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -122,7 +122,7 @@ func (r *Resolver) RequestEmailChange(ctx context.Context, args struct {
 	Password    string
 	RedirectURL string
 }) (*RequestEmailChange, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -176,7 +176,7 @@ func (r *Resolver) ConfirmEmailChange(ctx context.Context, args struct {
 	Token   string
 }) (*ConfirmEmailChange, error) {
 	// user must be authenticated
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err

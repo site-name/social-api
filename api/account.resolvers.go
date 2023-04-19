@@ -21,7 +21,7 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	Type  *model.AddressTypeEnum
 }) (*AccountAddressCreate, error) {
 	// get embeded context in current request
-	embedContext, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
 	embedContext.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateAddress)
 	if embedContext.Err != nil {
 		return nil, embedContext.Err
@@ -78,7 +78,7 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	Input AddressInput
 }) (*AccountAddressUpdate, error) {
 	// check authenticated first
-	embededContext, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embededContext := GetContextValue[*web.Context](ctx, WebCtx)
 	embededContext.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateAddress)
 	if embededContext.Err != nil {
 		return nil, embededContext.Err
@@ -123,7 +123,7 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 
 func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id string }) (*AccountAddressDelete, error) {
 	// get embed context
-	embedContext, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
 	embedContext.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAddress)
 	if embedContext.Err != nil {
 		return nil, embedContext.Err
@@ -162,7 +162,7 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 	Type model.AddressTypeEnum
 }) (*AccountSetDefaultAddress, error) {
 	// check if requester is authenticated
-	embedContext, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
 	embedContext.SessionRequired()
 	if embedContext.Err != nil {
 		return nil, embedContext.Err
@@ -219,7 +219,7 @@ func (r *Resolver) AccountRegister(ctx context.Context, args struct{ Input Accou
 
 func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input AccountInput }) (*AccountUpdate, error) {
 	// check if requester is authenticated
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -279,7 +279,7 @@ func (r *Resolver) AccountRequestDeletion(ctx context.Context, args struct {
 
 func (r *Resolver) AccountDelete(ctx context.Context, args struct{ Token string }) (*AccountDelete, error) {
 	// user must be authenticated to deactivate himself
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err

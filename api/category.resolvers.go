@@ -22,7 +22,7 @@ func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
 	Parent *string
 }) (*CategoryCreate, error) {
 	// check user permissions
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateCategory)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -55,7 +55,7 @@ func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
 
 func (r *Resolver) CategoryDelete(ctx context.Context, args struct{ Id string }) (*CategoryDelete, error) {
 	// requester must have delete category permission to delete
-	// embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	// embedCtx:= GetContextValue[*web.Context](ctx, WebCtx)
 	// embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteCategory)
 	// if embedCtx.Err != nil {
 	// 	return nil, embedCtx.Err
@@ -78,7 +78,7 @@ func (r *Resolver) CategoryUpdate(ctx context.Context, args struct {
 	Input CategoryInput
 }) (*CategoryUpdate, error) {
 	// requester must be authenticated and has category_update permission to do this
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateCategory)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err

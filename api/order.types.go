@@ -97,11 +97,7 @@ func (o *OrderLine) DigitalContentURL(ctx context.Context) (*DigitalContentURL, 
 }
 
 func (o *OrderLine) Allocations(ctx context.Context) ([]*Allocation, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
 	if embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(currentSession, model.PermissionManageProducts, model.PermissionManageOrders) {
@@ -113,19 +109,16 @@ func (o *OrderLine) Allocations(ctx context.Context) ([]*Allocation, error) {
 		return DataloaderResultMap(allocations, systemAllocationToGraphqlAllocation), nil
 	}
 
-	return nil, model.NewAppError("OrderLine.Allocations", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	return nil, MakeUnauthorizedError("OrderLine.Allocations")
 }
 
 func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	currentSession := embedCtx.AppContext.Session()
+
 	if o.variantID == nil {
 		return nil, nil
 	}
-
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	currentSession := embedCtx.AppContext.Session()
 
 	variant, err := ProductVariantByIdLoader.Load(ctx, *o.variantID)()
 	if err != nil {
@@ -158,23 +151,16 @@ func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
 func orderLineByIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*model.OrderLine] {
 	var (
 		res          = make([]*dataloader.Result[*model.OrderLine], len(orderLineIDs))
-		appErr       *model.AppError
-		orderLines   []*model.OrderLine
 		orderLineMap = map[string]*model.OrderLine{} // keys are order line ids
 	)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	orderLines, appErr = embedCtx.App.
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	orderLines, appErr := embedCtx.App.
 		Srv().
 		OrderService().
 		OrderLinesByOption(&model.OrderLineFilterOption{
 			Id: squirrel.Eq{store.OrderLineTableName + ".Id": orderLineIDs},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -187,7 +173,7 @@ func orderLineByIdLoader(ctx context.Context, orderLineIDs []string) []*dataload
 
 errorLabel:
 	for idx := range orderLineIDs {
-		res[idx] = &dataloader.Result[*model.OrderLine]{Error: err}
+		res[idx] = &dataloader.Result[*model.OrderLine]{Error: appErr}
 	}
 	return res
 }
@@ -195,23 +181,16 @@ errorLabel:
 func orderLinesByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.OrderLine] {
 	var (
 		res     = make([]*dataloader.Result[[]*model.OrderLine], len(orderIDs))
-		lines   model.OrderLines
-		appErr  *model.AppError
 		lineMap = map[string][]*model.OrderLine{} // keys are order ids
 	)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	lines, appErr = embedCtx.App.Srv().
+	lines, appErr := embedCtx.App.Srv().
 		OrderService().
 		OrderLinesByOption(&model.OrderLineFilterOption{
 			OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": orderIDs},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -226,7 +205,7 @@ func orderLinesByOrderIdLoader(ctx context.Context, orderIDs []string) []*datalo
 
 errorLabel:
 	for idx := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.OrderLine]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.OrderLine]{Error: appErr}
 	}
 	return res
 }
@@ -235,8 +214,6 @@ errorLabel:
 func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []string) []*dataloader.Result[[]*model.OrderLine] {
 	var (
 		res     = make([]*dataloader.Result[[]*model.OrderLine], len(idPairs))
-		lines   model.OrderLines
-		appErr  *model.AppError
 		lineMap = map[string]model.OrderLines{} // keys have format variantID__channelID
 
 		variantIDs []string
@@ -253,12 +230,9 @@ func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []stri
 		channelIDs = append(channelIDs, pair[index+2:])
 	}
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	lines, appErr = embedCtx.App.Srv().
+	lines, appErr := embedCtx.App.Srv().
 		OrderService().
 		OrderLinesByOption(&model.OrderLineFilterOption{
 			VariantID:          squirrel.Eq{store.OrderLineTableName + ".VariantID": variantIDs},
@@ -266,7 +240,6 @@ func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []stri
 			SelectRelatedOrder: true,
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -286,7 +259,7 @@ func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []stri
 
 errorLabel:
 	for idx := range idPairs {
-		res[idx] = &dataloader.Result[[]*model.OrderLine]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.OrderLine]{Error: appErr}
 	}
 	return res
 }

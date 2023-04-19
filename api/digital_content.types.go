@@ -71,8 +71,7 @@ func digitalContentByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 		contentMap = map[string]*model.DigitalContent{} // keys are digital content ids
 	)
 
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
-
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	contents, appErr := embedCtx.App.Srv().ProductService().DigitalContentsbyOptions(&model.DigitalContentFilterOption{
 		Id: squirrel.Eq{store.DigitalContentTableName + ".Id": ids},
 	})
@@ -100,7 +99,7 @@ func digitalContentUrlsByDigitalContentIDLoader(ctx context.Context, ids []strin
 		digitalContentURLMap = map[string][]*model.DigitalContentUrl{} // keys are digital content ids
 	)
 
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	digitalContentURLs, appErr := embedCtx.App.Srv().ProductService().
 		DigitalContentURLSByOptions(&model.DigitalContentUrlFilterOptions{
 			ContentID: squirrel.Eq{store.DigitalContentURLTableName + ".ContentID": ids},

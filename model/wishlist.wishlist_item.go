@@ -44,7 +44,7 @@ func (w WishlistItems) ProductIDs() []string {
 
 func (w *WishlistItem) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"wishlist_item.is_valid.%s.app_error",
+		"model.wishlist_item.is_valid.%s.app_error",
 		"wishlist_item_id=",
 		"WishlistItem.IsValid",
 	)

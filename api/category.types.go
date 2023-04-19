@@ -66,7 +66,7 @@ func (c *Category) Parent(ctx context.Context) (*Category, error) {
 		return nil, nil
 	}
 
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	categories, appErr := embedCtx.App.Srv().ProductService().CategoryByIds([]string{*c.c.ParentID}, true)
 	if appErr != nil {
 		return nil, appErr
@@ -80,7 +80,7 @@ func (c *Category) Ancestors(ctx context.Context, args GraphqlParams) (*Category
 }
 
 func (c *Category) Children(ctx context.Context, args GraphqlParams) (*CategoryCountableConnection, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	filter := func(c *model.Category) bool { return c.ParentID != nil && *c.ParentID == c.Id }
 	children := embedCtx.App.Srv().ProductService().FilterCategoriesFromCache(filter)
@@ -112,7 +112,7 @@ func (c *Category) Products(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	products, appErr := embedCtx.App.Srv().ProductService().GetVisibleToUserProducts(embedCtx.AppContext.Session(), channelIdOrSlug)
 	if appErr != nil {
 		return nil, appErr

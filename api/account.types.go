@@ -36,7 +36,7 @@ func (a *Address) Country(ctx context.Context) (*CountryDisplay, error) {
 
 func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 	// check requester is authenticated to perform this
-	embedContext, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
 	embedContext.SessionRequired()
 	if embedContext.Err != nil {
 		return nil, embedContext.Err
@@ -60,7 +60,7 @@ func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 
 func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 	// requester must be authenticated
-	embedContext, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
 	embedContext.SessionRequired()
 	if embedContext.Err != nil {
 		return nil, embedContext.Err
@@ -88,7 +88,7 @@ func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 		addressMap = map[string]*model.Address{} // keys are address ids
 	)
 
-	var webCtx, _ = GetContextValue[*web.Context](ctx, WebCtx)
+	var webCtx = GetContextValue[*web.Context](ctx, WebCtx)
 
 	addresses, appErr := webCtx.App.
 		Srv().
@@ -178,7 +178,7 @@ func SystemUserToGraphqlUser(u *model.User) *User {
 func (u *User) DefaultShippingAddress(ctx context.Context) (*Address, error) {
 	// +) requester must be current user himself OR
 	// +) requester is staff of shop that has current user was customer of
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -215,7 +215,7 @@ func (u *User) DefaultShippingAddress(ctx context.Context) (*Address, error) {
 func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 	// +) requester must be current user himself OR
 	// +) requester is staff of shop that has current user was customer of
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -251,7 +251,7 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 
 func (u *User) StoredPaymentSources(ctx context.Context, args struct{ Channel *string }) ([]*PaymentSource, error) {
 	// check if current user is this user
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -267,7 +267,7 @@ func (u *User) StoredPaymentSources(ctx context.Context, args struct{ Channel *s
 // args.Channel is channel id
 func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string }) ([]string, error) {
 	// only user himself or staffs of a shop which has user was customer can see
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -311,7 +311,7 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string 
 func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 	// +) requester must be current user himself OR
 	// +) requester is staff of shop that has current user was customer of
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -350,7 +350,7 @@ func (u *User) GiftCards(ctx context.Context, args GraphqlParams) (*GiftCardCoun
 	// +) requester must be staff of current shop that:
 	//   1) has current user was customer of AND
 	//   2) issued at least 1 giftcard used by current user
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -412,7 +412,7 @@ func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableC
 	// requester can see orders of current user if:
 	// +) requester is user himself
 	// +) requester is staff of a shop that has current user was customer of
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -461,7 +461,7 @@ func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableC
 func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
 	// requester can see user's event when he is staff of a shop that has current user was customer of
 	// Normal users have nothing to do with customer event, so they can't see them.
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -487,7 +487,7 @@ func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
 }
 
 func (u *User) Note(ctx context.Context) (*string, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -518,7 +518,7 @@ func userByUserIdLoader(ctx context.Context, ids []string) []*dataloader.Result[
 		userMap = map[string]*model.User{} // keys are user ids
 	)
 
-	var webCtx, _ = GetContextValue[*web.Context](ctx, WebCtx)
+	var webCtx = GetContextValue[*web.Context](ctx, WebCtx)
 	users, appErr := webCtx.
 		App.
 		Srv().
@@ -609,7 +609,7 @@ func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*datalo
 		customerEventsMap = map[string][]*model.CustomerEvent{} // keys are user ids
 	)
 
-	var webCtx, _ = GetContextValue[*web.Context](ctx, WebCtx)
+	var webCtx = GetContextValue[*web.Context](ctx, WebCtx)
 	customerEvents, appErr := webCtx.
 		App.
 		Srv().
@@ -642,7 +642,7 @@ errorLabel:
 func (c *CustomerEvent) User(ctx context.Context) (*User, error) {
 	// requester can see user of event only if:
 	// He is staff of the shop that has event owner was customer at
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -699,7 +699,7 @@ func systemStaffNotificationRecipientToGraphqlStaffNotificationRecipient(s *mode
 }
 
 func (s *StaffNotificationRecipient) User(ctx context.Context) (*User, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err

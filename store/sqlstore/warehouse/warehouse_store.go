@@ -281,14 +281,14 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 // WarehouseByStockID returns 1 warehouse by given stock id
 func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, error) {
 	var res model.WareHouse
-	err := ws.GetReplicaX().Select(
-		&res,
+	err := ws.GetReplicaX().QueryRowX(
 		`SELECT `+ws.ModelFields(store.WarehouseTableName+".").Join(",")+`
 		FROM `+store.WarehouseTableName+`
 		INNER JOIN `+store.StockTableName+` ON Stocks.WarehouseID = Warehouses.Id
 		WHERE Stocks.Id = ?`,
 		stockID,
-	)
+	).
+		Scan(ws.ScanFields(&res)...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.WarehouseTableName, "StockID="+stockID)

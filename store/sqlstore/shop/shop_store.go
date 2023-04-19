@@ -59,12 +59,8 @@ func (s *SqlShopStore) ModelFields(prefix string) util.AnyArray[string] {
 	})
 }
 
-func (s *SqlShopStore) Scanfields(shop *model.Shop) []any {
-	if shop == nil {
-		shop = new(model.Shop)
-	}
-
-	return []any{
+func (s *SqlShopStore) ScanFields(shop *model.Shop) []interface{} {
+	return []interface{}{
 		&shop.Id,
 		&shop.OwnerID,
 		&shop.CreateAt,
@@ -197,7 +193,7 @@ func (ss *SqlShopStore) FilterByOptions(options *model.ShopFilterOptions) ([]*mo
 	var res []*model.Shop
 	var shop model.Shop
 	var address model.Address
-	var scanFields = ss.Scanfields(&shop)
+	var scanFields = ss.ScanFields(&shop)
 	if options.SelectRelatedCompanyAddress {
 		scanFields = append(scanFields, ss.Address().ScanFields(&address)...)
 	}
@@ -233,7 +229,7 @@ func (ss *SqlShopStore) GetByOptions(options *model.ShopFilterOptions) (*model.S
 
 	var res model.Shop
 	var address model.Address
-	var scanFields = ss.Scanfields(&res)
+	var scanFields = ss.ScanFields(&res)
 	if options.SelectRelatedCompanyAddress {
 		scanFields = append(scanFields, ss.Address().ScanFields(&address)...)
 	}

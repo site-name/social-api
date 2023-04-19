@@ -96,27 +96,21 @@ func (line *CheckoutLine) RequiresShipping(ctx context.Context) (*bool, error) {
 
 func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[[]*model.CheckoutLine] {
 	var (
-		res           = make([]*dataloader.Result[[]*model.CheckoutLine], len(tokens))
-		appErr        *model.AppError
-		checkoutLines model.CheckoutLines
+		res = make([]*dataloader.Result[[]*model.CheckoutLine], len(tokens))
 
 		// checkoutLinesMap has keys are checkout tokens.
 		// values are checkout lines belong to the checkout parent
 		checkoutLinesMap = map[string][]*model.CheckoutLine{}
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	checkoutLines, appErr = embedCtx.App.Srv().
+	checkoutLines, appErr := embedCtx.App.Srv().
 		CheckoutService().
 		CheckoutLinesByOption(&model.CheckoutLineFilterOption{
 			CheckoutID: squirrel.Eq{store.CheckoutLineTableName + ".CheckoutID": tokens},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -133,7 +127,7 @@ func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []
 
 errorLabel:
 	for idx := range tokens {
-		res[idx] = &dataloader.Result[[]*model.CheckoutLine]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.CheckoutLine]{Error: appErr}
 	}
 	return res
 }
@@ -141,23 +135,16 @@ errorLabel:
 func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.CheckoutLine] {
 	var (
 		res             = make([]*dataloader.Result[*model.CheckoutLine], len(ids))
-		checkoutLines   model.CheckoutLines
-		appErr          *model.AppError
 		checkoutLineMap = map[string]*model.CheckoutLine{}
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	checkoutLines, appErr = embedCtx.App.Srv().
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	checkoutLines, appErr := embedCtx.App.Srv().
 		CheckoutService().
 		CheckoutLinesByOption(&model.CheckoutLineFilterOption{
 			Id: squirrel.Eq{store.CheckoutLineTableName + ".Id": ids},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -171,7 +158,7 @@ func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Res
 
 errorLabel:
 	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.CheckoutLine]{Error: err}
+		res[idx] = &dataloader.Result[*model.CheckoutLine]{Error: appErr}
 	}
 	return res
 }

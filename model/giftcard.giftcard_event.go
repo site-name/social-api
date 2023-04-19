@@ -69,7 +69,7 @@ type GiftCardEventFilterOption struct {
 
 func (g *GiftCardEvent) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"giftcard_event.is_valid.%s.app_error",
+		"model.giftcard_event.is_valid.%s.app_error",
 		"giftcard_event_id=",
 		"GiftcardEvent.IsValid",
 	)

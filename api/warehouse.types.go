@@ -69,14 +69,11 @@ func (w *Warehouse) Address(ctx context.Context) (*Address, error) {
 		return nil, nil
 	}
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	address, appErr := embedCtx.App.Srv().AccountService().AddressById(*w.addressID)
 	if appErr != nil {
-		return nil, err
+		return nil, appErr
 	}
 
 	return SystemAddressToGraphqlAddress(address), nil
@@ -85,23 +82,17 @@ func (w *Warehouse) Address(ctx context.Context) (*Address, error) {
 func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.WareHouse] {
 	var (
 		res          = make([]*dataloader.Result[*model.WareHouse], len(ids))
-		appErr       *model.AppError
-		warehouses   model.Warehouses
 		warehouseMap = map[string]*model.WareHouse{} // keys are warehouse ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
-	warehouses, appErr = embedCtx.App.Srv().
+	warehouses, appErr := embedCtx.App.Srv().
 		WarehouseService().
 		WarehousesByOption(&model.WarehouseFilterOption{
 			Id: squirrel.Eq{store.WarehouseTableName + ".Id": ids},
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -115,7 +106,7 @@ func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result
 
 errorLabel:
 	for i := range ids {
-		res[i] = &dataloader.Result[*model.WareHouse]{Error: err}
+		res[i] = &dataloader.Result[*model.WareHouse]{Error: appErr}
 	}
 	return res
 }
@@ -193,10 +184,7 @@ func SystemStockToGraphqlStock(s *model.Stock) *Stock {
 }
 
 func (s *Stock) Warehouse(ctx context.Context) (*Warehouse, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	warehouse, appErr := embedCtx.App.Srv().WarehouseService().WarehouseByStockID(s.ID)
 	if appErr != nil {
@@ -207,10 +195,7 @@ func (s *Stock) Warehouse(ctx context.Context) (*Warehouse, error) {
 }
 
 func (s *Stock) Quantity(ctx context.Context) (int32, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return 0, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	if !embedCtx.App.Srv().
 		AccountService().
@@ -222,10 +207,7 @@ func (s *Stock) Quantity(ctx context.Context) (int32, error) {
 }
 
 func (s *Stock) QuantityAllocated(ctx context.Context) (int32, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return 0, err
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	if embedCtx.App.Srv().
 		AccountService().
@@ -264,16 +246,12 @@ func allocationsByStockIDLoader(ctx context.Context, stockIDs []string) []*datal
 		allocationsMap = map[string]model.Allocations{} // keys are stock ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	allocations, appErr = embedCtx.App.Srv().WarehouseService().AllocationsByOption(nil, &model.AllocationFilterOption{
 		StockID: squirrel.Eq{store.AllocationTableName + ".StockID": stockIDs},
 	})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -288,7 +266,7 @@ func allocationsByStockIDLoader(ctx context.Context, stockIDs []string) []*datal
 
 errorLabel:
 	for idx := range stockIDs {
-		res[idx] = &dataloader.Result[[]*model.Allocation]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.Allocation]{Error: appErr}
 	}
 	return res
 }
@@ -301,10 +279,7 @@ func stocksByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*m
 		stockMap = map[string]*model.Stock{} // keys are stock ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	stocks, appErr = embedCtx.App.Srv().
 		WarehouseService().
@@ -313,7 +288,6 @@ func stocksByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*m
 			SelectRelatedWarehouse: true,
 		})
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -328,7 +302,7 @@ func stocksByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*m
 
 errorLabel:
 	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.Stock]{Error: err}
+		res[idx] = &dataloader.Result[*model.Stock]{Error: appErr}
 	}
 	return res
 }
@@ -394,17 +368,13 @@ func allocationsByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) 
 		allocations   model.Allocations
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	allocations, appErr = embedCtx.App.Srv().WarehouseService().AllocationsByOption(nil, &model.AllocationFilterOption{
 		OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLineIDs},
 	})
 
 	if appErr != nil {
-		err = appErr
 		goto errorLabel
 	}
 
@@ -419,7 +389,7 @@ func allocationsByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) 
 
 errorLabel:
 	for idx := range orderLineIDs {
-		res[idx] = &dataloader.Result[[]*model.Allocation]{Error: err}
+		res[idx] = &dataloader.Result[[]*model.Allocation]{Error: appErr}
 	}
 	return res
 }
@@ -545,10 +515,7 @@ func stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(ct
 		batchLoadStocksByCountry    func(countryCode string, channelID string, variantIDs []string) (map[string]model.Stocks, *model.AppError)
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	batchLoadStocksByCountry = func(countryCode, channelID string, variantIDs []string) (map[string]model.Stocks, *model.AppError) {
 		countryCode = strings.ToUpper(countryCode)
@@ -586,12 +553,14 @@ func stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(ct
 		}
 	}
 
+	var appError *model.AppError
+
 	for key, variantIDs := range variantsByCountryAndChannel {
 		countryCode, channelID := key[0], key[1]
 
 		stocksByVariantIdMap, appErr := batchLoadStocksByCountry(countryCode, channelID, variantIDs)
 		if appErr != nil {
-			err = appErr
+			appError = appErr
 			goto errorLabel
 		}
 
@@ -611,7 +580,7 @@ func stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(ct
 
 errorLabel:
 	for idx := range idTripple {
-		res[idx] = &dataloader.Result[model.Stocks]{Error: err}
+		res[idx] = &dataloader.Result[model.Stocks]{Error: appError}
 	}
 	return res
 }

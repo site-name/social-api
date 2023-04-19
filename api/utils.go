@@ -62,20 +62,8 @@ var (
 )
 
 // GetContextValue extracts according value of given key in given `ctx` and returns the value.
-func GetContextValue[T any](ctx context.Context, key CTXKey) (T, error) {
-	value := ctx.Value(key)
-	if value == nil {
-		var res T
-		return res, ErrorContextHasNoKey
-	}
-
-	cast, ok := value.(T)
-	if !ok {
-		var res T
-		return res, ErrorUnExpectedType
-	}
-
-	return cast, nil
+func GetContextValue[T any](ctx context.Context, key CTXKey) T {
+	return ctx.Value(key).(T)
 }
 
 func MetadataToSlice[T any](m map[string]T) []*MetadataItem {

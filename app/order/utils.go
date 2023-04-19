@@ -1633,33 +1633,44 @@ func (a *ServiceOrder) RemoveDiscountFromOrderLine(orderLine model.OrderLine, or
 	return appErr
 }
 
-func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) (validationErrors []*model.AppError, apiError *model.AppError) {
+func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 	if order.Status != model.STATUS_DRAFT {
-		return nil, nil
+		return nil
 	}
 
 	// validate billing address
 	if order.BillingAddressID == nil {
-		validationErrors = append(validationErrors, model.NewAppError("app.order.ValidateDraftOrder", "app.order.billing_address_not_set.app_error", nil, "Can't finalize draft order without billing address.", http.StatusNotAcceptable))
+		return model.NewAppError("app.order.ValidateDraftOrder", "app.order.billing_address_not_set.app_error", nil, "Can't finalize draft order without billing address.", http.StatusNotAcceptable)
 	}
 
 	orderRequiresShipping, appErr := s.OrderShippingIsRequired(order.Id)
 	if appErr != nil {
-		return nil, appErr
+		return appErr
 	}
 	if orderRequiresShipping {
 		// validate shipping address
 		if order.ShippingAddressID == nil {
-			validationErrors = append(validationErrors, model.NewAppError("app.order.ValidateDraftOrder", "app.order.shipping_address_not_set.app_errir", nil, "Can't finalize draft order without shipping address.", http.StatusNotAcceptable))
+			return model.NewAppError("app.order.ValidateDraftOrder", "app.order.shipping_address_not_set.app_error", nil, "Can't finalize draft order without shipping address.", http.StatusNotAcceptable)
 		}
 
 		// validate shipping method
 		if order.ShippingMethodID == nil {
-			validationErrors = append(validationErrors)
+			return model.NewAppError("app.order.ValidateDraftOrder", "app.order.shipping_method_required.app_error", nil, "shipping method is required", http.StatusNotAcceptable)
 		}
 	}
 
+	// validate total quantity
+	totalQuantity, appErr := s.OrderTotalQuantity(order.Id)
+	if appErr != nil {
+		return appErr
+	}
+	if totalQuantity == 0 {
+		return model.NewAppError("app.order.ValidateDraftOrder", "app.order.total_quantity_zero.app_error", nil, "cannot create order without product", http.StatusNotAcceptable)
+	}
+
+	// validate order lines
+
 	panic("not implemented")
 
-	return
+	return nil
 }
