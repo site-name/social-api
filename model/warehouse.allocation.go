@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 )
 
 type Allocation struct {
@@ -38,25 +39,11 @@ type AllocationFilterOption struct {
 type Allocations []*Allocation
 
 func (a Allocations) IDs() []string {
-	res := []string{}
-	for _, item := range a {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
-
-	return res
+	return lo.Map(a, func(al *Allocation, _ int) string { return al.Id })
 }
 
 func (a Allocations) StockIDs() []string {
-	res := []string{}
-	for _, item := range a {
-		if item != nil {
-			res = append(res, item.StockID)
-		}
-	}
-
-	return res
+	return lo.Map(a, func(al *Allocation, _ int) string { return al.StockID })
 }
 
 func (a Allocations) Len() int {

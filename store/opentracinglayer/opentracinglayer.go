@@ -2476,42 +2476,6 @@ func (s *OpenTracingLayerChannelStore) Save(ch *model.Channel) (*model.Channel, 
 	return result, err
 }
 
-func (s *OpenTracingLayerChannelShopStore) FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelShopStore.FilterByOptions")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ChannelShopStore.FilterByOptions(options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerChannelShopStore) Save(relation *model.ChannelShopRelation) (*model.ChannelShopRelation, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelShopStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ChannelShopStore.Save(relation)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayerCheckoutStore) CountCheckouts(options *model.CheckoutFilterOption) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutStore.CountCheckouts")
@@ -7449,7 +7413,7 @@ func (s *OpenTracingLayerShopStore) Upsert(shop *model.Shop) (*model.Shop, error
 	return result, err
 }
 
-func (s *OpenTracingLayerShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaffRelation, error) {
+func (s *OpenTracingLayerShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaff, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStaffStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -7467,7 +7431,7 @@ func (s *OpenTracingLayerShopStaffStore) FilterByOptions(options *model.ShopStaf
 	return result, err
 }
 
-func (s *OpenTracingLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaffRelation, error) {
+func (s *OpenTracingLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStaffStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -7485,7 +7449,7 @@ func (s *OpenTracingLayerShopStaffStore) Get(shopStaffID string) (*model.ShopSta
 	return result, err
 }
 
-func (s *OpenTracingLayerShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaffRelation, error) {
+func (s *OpenTracingLayerShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaff, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStaffStore.GetByOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -7503,7 +7467,7 @@ func (s *OpenTracingLayerShopStaffStore) GetByOptions(options *model.ShopStaffRe
 	return result, err
 }
 
-func (s *OpenTracingLayerShopStaffStore) Save(shopStaff *model.ShopStaffRelation) (*model.ShopStaffRelation, error) {
+func (s *OpenTracingLayerShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.ShopStaff, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStaffStore.Save")
 	s.Root.Store.SetContext(newCtx)

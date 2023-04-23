@@ -21,7 +21,6 @@ func NewSqlCollectionStore(s store.Store) store.CollectionStore {
 func (ps *SqlCollectionStore) ModelFields(prefix string) util.AnyArray[string] {
 	res := util.AnyArray[string]{
 		"Id",
-		"ShopID",
 		"Name",
 		"Slug",
 		"BackgroundImage",
@@ -44,7 +43,6 @@ func (ps *SqlCollectionStore) ModelFields(prefix string) util.AnyArray[string] {
 func (ps *SqlCollectionStore) ScanFields(col *model.Collection) []interface{} {
 	return []interface{}{
 		&col.Id,
-		&col.ShopID,
 		&col.Name,
 		&col.Slug,
 		&col.BackgroundImage,
@@ -125,8 +123,8 @@ func (cs *SqlCollectionStore) Get(collectionID string) (*model.Collection, error
 func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) {
 	var res []*model.Collection
 
-	if option.SelectAll && model.IsValidId(option.ShopID) {
-		err := cs.GetReplicaX().Select(&res, "SELECT * FROM "+store.CollectionTableName+" WHERE ShopID = ?", option.ShopID)
+	if option.SelectAll {
+		err := cs.GetReplicaX().Select(&res, "SELECT * FROM "+store.CollectionTableName)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find collections of given shop")
 		}

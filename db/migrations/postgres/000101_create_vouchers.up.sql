@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS vouchers (
   id character varying(36) NOT NULL PRIMARY KEY,
-  shopid character varying(36),
   type character varying(20),
   name character varying(255),
   code character varying(16),

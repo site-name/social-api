@@ -17,7 +17,6 @@ const (
 
 type Sale struct {
 	Id        string     `json:"id"`
-	ShopID    string     `json:"shop_id"` // shop which owns this sale
 	Name      string     `json:"name"`
 	Type      string     `json:"type"` // DEFAULT `fixed`
 	StartDate time.Time  `json:"start_date"`
@@ -31,7 +30,6 @@ type Sale struct {
 type SaleFilterOption struct {
 	StartDate squirrel.Sqlizer
 	EndDate   squirrel.Sqlizer
-	ShopID    squirrel.Sqlizer
 }
 
 type Sales []*Sale
@@ -53,15 +51,12 @@ func (s *Sale) String() string {
 
 func (s *Sale) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"sale.is_valid.%s.app_error",
+		"model.sale.is_valid.%s.app_error",
 		"sale_id=",
 		"Sale.IsValid",
 	)
 	if !IsValidId(s.Id) {
 		return outer("id", nil)
-	}
-	if !IsValidId(s.ShopID) {
-		return outer("shop_id", &s.Id)
 	}
 	if utf8.RuneCountInString(s.Name) > SALE_NAME_MAX_LENGTH {
 		return outer("name", &s.Id)

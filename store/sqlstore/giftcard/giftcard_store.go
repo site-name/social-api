@@ -24,7 +24,6 @@ func (s *SqlGiftCardStore) ModelFields(prefix string) util.AnyArray[string] {
 		"Id",
 		"Code",
 		"CreatedByID",
-		"ShopID",
 		"UsedByID",
 		"CreatedByEmail",
 		"UsedByEmail",
@@ -153,9 +152,6 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecuto
 	}
 	if option.UsedByID != nil {
 		query = query.Where(option.UsedByID)
-	}
-	if option.ShopID != nil {
-		query = query.Where(option.ShopID)
 	}
 	if option.Code != nil {
 		query = query.Where(option.Code)

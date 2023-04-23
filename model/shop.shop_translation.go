@@ -11,7 +11,6 @@ const (
 
 type ShopTranslation struct {
 	Id           string           `json:"id"`
-	ShopID       string           `json:"shop_id"`
 	LanguageCode LanguageCodeEnum `json:"language_code"`
 	Name         string           `json:"name"`
 	Description  string           `json:"description"`
@@ -39,16 +38,14 @@ func (s *ShopTranslation) PreUpdate() {
 
 func (s *ShopTranslation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"shop_translation.is_valid.%s.app_error",
+		"model.shop_translation.is_valid.%s.app_error",
 		"shop_translation_id=",
 		"ShopTranslation.IsValid",
 	)
 	if !IsValidId(s.Id) {
 		return outer("id", nil)
 	}
-	if !IsValidId(s.ShopID) {
-		return outer("shop_id", &s.Id)
-	}
+
 	if !s.LanguageCode.IsValid() {
 		return outer("language_code", &s.Id)
 	}

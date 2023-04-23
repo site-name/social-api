@@ -37,11 +37,10 @@ func (a *ServiceProduct) CollectionsByProductID(productID string) ([]*model.Coll
 }
 
 // PublishedCollections returns all published collections
-func (a *ServiceProduct) PublishedCollections(channelSlug string, shopID string) ([]*model.Collection, *model.AppError) {
+func (a *ServiceProduct) PublishedCollections(channelSlug string) ([]*model.Collection, *model.AppError) {
 	today := util.StartOfDay(time.Now())
 
 	return a.CollectionsByOption(&model.CollectionFilterOption{
-		ShopID: shopID,
 		ChannelListingPublicationDate: squirrel.Or{
 			squirrel.LtOrEq{store.CollectionChannelListingTableName + ".PublicationDate": today},
 			squirrel.Eq{store.CollectionChannelListingTableName + ".PublicationDate": nil},
@@ -53,28 +52,25 @@ func (a *ServiceProduct) PublishedCollections(channelSlug string, shopID string)
 }
 
 // VisibleCollectionsToUser returns all collections that belong to given shop and can be viewed by given user
-func (a *ServiceProduct) VisibleCollectionsToUser(userID, shopID, channelSlug string) ([]*model.Collection, *model.AppError) {
+func (a *ServiceProduct) VisibleCollectionsToUser(userID, channelSlug string) ([]*model.Collection, *model.AppError) {
 	// check if shop and user has relationship (shop-staff)
 	_, appErr := a.srv.ShopService().ShopStaffByOptions(&model.ShopStaffRelationFilterOptions{
-		ShopID:  squirrel.Eq{store.ShopStaffTableName + ".ShopID": shopID},
 		StaffID: squirrel.Eq{store.ShopStaffTableName + ".StaffID": userID},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr // return immediately if error is caused by system
 		}
-		return a.PublishedCollections(channelSlug, shopID) // not found error, returns only published collections
+		return a.PublishedCollections(channelSlug) // not found error, returns only published collections
 	}
 
 	if channelSlug != "" {
 		return a.CollectionsByOption(&model.CollectionFilterOption{
-			ShopID:                    shopID,
 			ChannelListingChannelSlug: squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug},
 		})
 	}
 
 	return a.CollectionsByOption(&model.CollectionFilterOption{
-		ShopID:    shopID,
 		SelectAll: true,
 	})
 }

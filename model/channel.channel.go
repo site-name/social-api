@@ -18,7 +18,6 @@ const (
 
 type Channel struct {
 	Id             string      `json:"id"`
-	ShopID         string      `json:"shop_id"`
 	Name           string      `json:"name"`
 	IsActive       bool        `json:"is_active"`
 	Slug           string      `json:"slug"`            // unique
@@ -48,7 +47,6 @@ func (c *Channel) SetHasOrders(b bool) {
 // ChannelFilterOption is used for building sql queries
 type ChannelFilterOption struct {
 	Id       squirrel.Sqlizer
-	ShopID   squirrel.Sqlizer
 	Name     squirrel.Sqlizer
 	IsActive *bool
 	Slug     squirrel.Sqlizer
@@ -78,9 +76,6 @@ func (c *Channel) IsValid() *AppError {
 	)
 	if !IsValidId(c.Id) {
 		return outer("id", nil)
-	}
-	if !IsValidId(c.ShopID) {
-		return outer("shop_id", &c.Id)
 	}
 	if utf8.RuneCountInString(c.Name) > CHANNEL_NAME_MAX_LENGTH {
 		outer("name", &c.Id)

@@ -65,11 +65,10 @@ func (w *Warehouse) ShippingZones(ctx context.Context, args GraphqlParams) (*Shi
 }
 
 func (w *Warehouse) Address(ctx context.Context) (*Address, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	if w.addressID == nil {
 		return nil, nil
 	}
-
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
 
 	address, appErr := embedCtx.App.Srv().AccountService().AddressById(*w.addressID)
 	if appErr != nil {
@@ -85,7 +84,7 @@ func warehouseByIdLoader(ctx context.Context, ids []string) []*dataloader.Result
 		warehouseMap = map[string]*model.WareHouse{} // keys are warehouse ids
 	)
 
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	warehouses, appErr := embedCtx.App.Srv().
 		WarehouseService().
@@ -114,19 +113,15 @@ errorLabel:
 func warehousesByShippingZoneIDLoader(ctx context.Context, shippingZoneIDs []string) []*dataloader.Result[model.Warehouses] {
 	var (
 		res                    = make([]*dataloader.Result[model.Warehouses], len(shippingZoneIDs))
-		appErr                 *model.AppError
-		warehouses             model.Warehouses
 		warehouseShippingZones []*model.WarehouseShippingZone
 		warehouseMap           = map[string]*model.WareHouse{} // keys are shipping zone ids
 		shippingZoneWarehouses = map[string]model.Warehouses{} // keys are shipping zone ids
+		err                    error
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	warehouses, appErr = embedCtx.App.Srv().
+	warehouses, appErr := embedCtx.App.Srv().
 		WarehouseService().
 		WarehousesByOption(&model.WarehouseFilterOption{
 			ShippingZonesId: squirrel.Eq{store.WarehouseShippingZoneTableName + ".ShippingZoneID": shippingZoneIDs},
@@ -184,7 +179,7 @@ func SystemStockToGraphqlStock(s *model.Stock) *Stock {
 }
 
 func (s *Stock) Warehouse(ctx context.Context) (*Warehouse, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	warehouse, appErr := embedCtx.App.Srv().WarehouseService().WarehouseByStockID(s.ID)
 	if appErr != nil {
@@ -195,7 +190,11 @@ func (s *Stock) Warehouse(ctx context.Context) (*Warehouse, error) {
 }
 
 func (s *Stock) Quantity(ctx context.Context) (int32, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return 0, embedCtx.Err
+	}
 
 	if !embedCtx.App.Srv().
 		AccountService().
@@ -207,7 +206,7 @@ func (s *Stock) Quantity(ctx context.Context) (int32, error) {
 }
 
 func (s *Stock) QuantityAllocated(ctx context.Context) (int32, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	if embedCtx.App.Srv().
 		AccountService().

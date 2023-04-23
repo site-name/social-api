@@ -99,7 +99,7 @@ func (f FileInfos) DeepCopy() FileInfos {
 
 func (fi *FileInfo) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"file_info.is_valid.%s.app_error",
+		"model.file_info.is_valid.%s.app_error",
 		"file_info_id=",
 		"FileInfo.IsValid",
 	)

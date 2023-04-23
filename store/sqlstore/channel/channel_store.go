@@ -21,7 +21,6 @@ func NewSqlChannelStore(sqlStore store.Store) store.ChannelStore {
 func (cs *SqlChannelStore) ModelFields(prefix string) util.AnyArray[string] {
 	res := util.AnyArray[string]{
 		"Id",
-		"ShopID",
 		"Name",
 		"IsActive",
 		"Slug",
@@ -40,7 +39,6 @@ func (cs *SqlChannelStore) ModelFields(prefix string) util.AnyArray[string] {
 func (cs *SqlChannelStore) ScanFields(ch *model.Channel) []interface{} {
 	return []interface{}{
 		&ch.Id,
-		&ch.ShopID,
 		&ch.Name,
 		&ch.IsActive,
 		&ch.Slug,
@@ -93,9 +91,6 @@ func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption)
 	// parse options
 	if option.Id != nil {
 		query = query.Where(option.Id)
-	}
-	if option.ShopID != nil {
-		query = query.Where(option.ShopID)
 	}
 	if option.Name != nil {
 		query = query.Where(option.Name)

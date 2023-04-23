@@ -3,7 +3,6 @@ CREATE TABLE IF NOT EXISTS orders (
   createat bigint,
   status character varying(32),
   userid character varying(36),
-  shopid character varying(36),
   languagecode character varying(5),
   trackingclientid character varying(36),
   billingaddressid character varying(36),

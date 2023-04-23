@@ -9,7 +9,6 @@ import (
 
 type ChannelShopRelation struct {
 	Id        string `json:"id"`
-	ShopID    string `json:"shop_id"`    // unique together with channel_id
 	ChannelID string `json:"channel_id"` // unique together with shop_id
 	CreateAt  int64  `json:"create_at"`
 	EndAt     int64  `json:"end_at"`
@@ -17,7 +16,6 @@ type ChannelShopRelation struct {
 
 type ChannelShopRelationFilterOptions struct {
 	Id        squirrel.Sqlizer
-	ShopID    squirrel.Sqlizer
 	ChannelID squirrel.Sqlizer
 }
 
@@ -25,9 +23,7 @@ func (c *ChannelShopRelation) IsValid() *AppError {
 	if !IsValidId(c.Id) {
 		return NewAppError("ChannelShopRelation.IsValid", "model.channel_shop.id.app_error", nil, fmt.Sprintf("%s is invalid id", c.Id), http.StatusBadRequest)
 	}
-	if !IsValidId(c.ShopID) {
-		return NewAppError("ChannelShopRelation.IsValid", "model.channel_shop.shop_id.app_error", nil, fmt.Sprintf("%s is invalid shopID", c.ShopID), http.StatusBadRequest)
-	}
+
 	if !IsValidId(c.ChannelID) {
 		return NewAppError("ChannelShopRelation.IsValid", "model.channel_shop.channel_id.app_error", nil, fmt.Sprintf("%s is invalid channelID", c.ChannelID), http.StatusBadRequest)
 	}

@@ -5,8 +5,6 @@ ALTER TABLE ONLY checkouts
 ALTER TABLE ONLY checkouts
     ADD CONSTRAINT fk_checkouts_shippingmethods FOREIGN KEY (shippingmethodid) REFERENCES shippingmethods(id);
 ALTER TABLE ONLY checkouts
-    ADD CONSTRAINT fk_checkouts_shops FOREIGN KEY (shopid) REFERENCES shops(id) ON DELETE CASCADE;
-ALTER TABLE ONLY checkouts
     ADD CONSTRAINT fk_checkouts_users FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE ONLY checkouts
     ADD CONSTRAINT fk_checkouts_warehouses FOREIGN KEY (collectionpointid) REFERENCES warehouses(id);

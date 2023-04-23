@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS channels (
   id character varying(36) NOT NULL PRIMARY KEY,
-  shopid character varying(36),
   name character varying(250),
   isactive boolean,
   slug character varying(255),

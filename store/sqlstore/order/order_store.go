@@ -25,7 +25,6 @@ func (os *SqlOrderStore) ModelFields(prefix string) util.AnyArray[string] {
 		"CreateAt",
 		"Status",
 		"UserID",
-		"ShopID",
 		"LanguageCode",
 		"TrackingClientID",
 		"BillingAddressID",
@@ -74,7 +73,6 @@ func (os *SqlOrderStore) ScanFields(holder *model.Order) []interface{} {
 		&holder.CreateAt,
 		&holder.Status,
 		&holder.UserID,
-		&holder.ShopID,
 		&holder.LanguageCode,
 		&holder.TrackingClientID,
 		&holder.BillingAddressID,
@@ -309,9 +307,6 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*mod
 	}
 	if option.UserID != nil {
 		query = query.Where(option.UserID)
-	}
-	if option.ShopID != nil {
-		query = query.Where(option.ShopID)
 	}
 
 	queryString, args, err := query.ToSql()

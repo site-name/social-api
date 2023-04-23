@@ -20,7 +20,7 @@ type AppToken struct {
 
 func (a *AppToken) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"app_token.is_valid.%s.app_error",
+		"model.app_token.is_valid.%s.app_error",
 		"app_token_id=",
 		"AppToken.IsValid",
 	)

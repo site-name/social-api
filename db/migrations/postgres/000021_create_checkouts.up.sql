@@ -3,7 +3,6 @@ CREATE TABLE IF NOT EXISTS checkouts (
   createat bigint,
   updateat bigint,
   userid character varying(36),
-  shopid character varying(36),
   email text,
   quantity integer,
   channelid character varying(36),

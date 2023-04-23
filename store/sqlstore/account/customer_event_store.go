@@ -19,7 +19,6 @@ var customerModelFields = util.AnyArray[string]{
 	"Type",
 	"OrderID",
 	"UserID",
-	"ShopID",
 	"Parameters",
 }
 

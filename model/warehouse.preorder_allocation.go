@@ -47,7 +47,7 @@ func (p *PreorderAllocation) PreSave() {
 
 func (p *PreorderAllocation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"preorder_allocation.is_valid.%s.app_error",
+		"model.preorder_allocation.is_valid.%s.app_error",
 		"oreorder_allocation_id=",
 		"PreorderAllocation.IsValid",
 	)

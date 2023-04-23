@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS digitalcontents (
   id character varying(36) NOT NULL PRIMARY KEY,
-  shopid character varying(36),
   usedefaultsettings boolean,
   automaticfulfillment boolean,
   contenttype character varying(128),

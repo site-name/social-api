@@ -25,7 +25,6 @@ type Checkout struct {
 	CreateAt               int64            `json:"create_at"`
 	UpdateAt               int64            `json:"update_at"`
 	UserID                 *string          `json:"user_id"`
-	ShopID                 string           `json:"shop_id"` // shop in which this checkout is placed
 	Email                  string           `json:"email"`
 	Quantity               int              `json:"quantity"`
 	ChannelID              string           `json:"channel_id"`
@@ -69,9 +68,6 @@ func (c *Checkout) IsValid() *AppError {
 	)
 	if c.UserID != nil && !IsValidId(*c.UserID) {
 		return outer("user_id", &c.Token)
-	}
-	if !IsValidId(c.ShopID) {
-		return outer("shop_id", &c.Token)
 	}
 	if !IsValidId(c.ChannelID) {
 		return outer("channel_id", &c.Token)

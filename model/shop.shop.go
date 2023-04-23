@@ -37,7 +37,6 @@ const (
 // Shop represents a selling unit
 type Shop struct {
 	Id                                       string                     `json:"id"`
-	OwnerID                                  string                     `json:"owner_id"`
 	CreateAt                                 int64                      `json:"create_at"`
 	UpdateAt                                 int64                      `json:"update_at"`
 	Name                                     string                     `json:"name"`
@@ -105,15 +104,12 @@ func (s *Shop) DefaultFromEmail() (string, error) {
 
 func (s *Shop) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"shop.is_valid.%s.app_error",
+		"model.shop.is_valid.%s.app_error",
 		"shop_id=",
 		"Shop.IsValid",
 	)
 	if !IsValidId(s.Id) {
 		return outer("id", nil)
-	}
-	if !IsValidId(s.OwnerID) {
-		return outer("owner_id", &s.Id)
 	}
 	if s.TopMenuID != nil && !IsValidId(*s.TopMenuID) {
 		return outer("top_menu_id", &s.Id)

@@ -58,7 +58,6 @@ type PluginManagerInterface interface {
 	GetClientToken(gateway string, tokenConfig model.TokenConfig, channelID string) (string, *model.AppError)
 	GetOrderLineTaxRate(orDer model.Order, product model.Product, variant model.ProductVariant, address *model.Address, unitPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError)
 	GetOrderShippingTaxRate(orDer model.Order, shippingPrice goprices.TaxedMoney) (*decimal.Decimal, *model.AppError)
-	GetShopID() string
 	GetTaxRateTypeChoices() ([]*model.TaxType, *model.AppError)
 	InitializePayment(gateway string, paymentData model.StringInterface, channelID string) *model.InitializedPaymentResponse
 	InvoiceDelete(inVoice model.Invoice) (interface{}, *model.AppError)

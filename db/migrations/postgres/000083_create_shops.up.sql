@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS shops (
   id character varying(36) NOT NULL PRIMARY KEY,
-  ownerid character varying(36),
   createat bigint,
   updateat bigint,
   name character varying(100),

@@ -54,7 +54,6 @@ type CustomerEvent struct {
 	Type    string  `json:"type"`
 	OrderID *string `json:"order_id"`
 	UserID  *string `json:"user_id"`
-	ShopID  string  `json:"shop_id"`
 	// To reduce number of type checking steps,
 	// below are possible keys and their according values's Types you must follow
 	//  "message": string
@@ -87,9 +86,6 @@ func (ce *CustomerEvent) IsValid() *AppError {
 	}
 	if ce.UserID != nil && !IsValidId(*ce.UserID) {
 		return outer("usder_id", &ce.Id)
-	}
-	if !IsValidId(ce.ShopID) {
-		return outer("shop_id", &ce.Id)
 	}
 	if ce.OrderID != nil && !IsValidId(*ce.OrderID) {
 		return outer("order_id", &ce.Id)

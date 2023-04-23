@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS collections (
   id character varying(36) NOT NULL PRIMARY KEY,
-  shopid character varying(36),
   name character varying(250),
   slug character varying(255),
   backgroundimage character varying(200),

@@ -17,7 +17,6 @@ func NewSqlChannelShopStore(s store.Store) store.ChannelShopStore {
 
 var channelShopModelFields = util.AnyArray[string]{
 	"Id",
-	"ShopID",
 	"ChannelID",
 	"CreateAt",
 	"EndAt",
@@ -40,8 +39,8 @@ func (s *SqlChannelShopStore) Save(relation *model.ChannelShopRelation) (*model.
 
 	_, err := s.GetMasterX().NamedExec("INSERT INTO "+store.ChannelShopRelationTableName+"("+s.ModelFields("").Join(",")+") VALUES ("+s.ModelFields(":").Join(",")+")", relation)
 	if err != nil {
-		if s.IsUniqueConstraintError(err, []string{"ShopID", "ChannelID", "channelshops_shopid_channelid_key"}) {
-			return nil, store.NewErrInvalidInput(store.ChannelShopRelationTableName, "channelID / shopID", relation.ChannelID+" / "+relation.ShopID)
+		if s.IsUniqueConstraintError(err, []string{"ChannelID", "channelshops_shopid_channelid_key"}) {
+			return nil, store.NewErrInvalidInput(store.ChannelShopRelationTableName, "channelID / shopID", "")
 		}
 		return nil, errors.Wrapf(err, "failed to insert channel-shop relation with id=%s", relation.Id)
 	}
@@ -60,9 +59,7 @@ func (s *SqlChannelShopStore) FilterByOptions(options *model.ChannelShopRelation
 	if options.Id != nil {
 		query = query.Where(options.Id)
 	}
-	if options.ShopID != nil {
-		query = query.Where(options.ShopID)
-	}
+
 	if options.ChannelID != nil {
 		query = query.Where(options.ChannelID)
 	}

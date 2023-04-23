@@ -20,7 +20,6 @@ func NewSqlShopTranslationStore(s store.Store) store.ShopTranslationStore {
 func (s *SqlShopTranslationStore) ModelFields(prefix string) util.AnyArray[string] {
 	res := util.AnyArray[string]{
 		"Id",
-		"ShopID",
 		"LanguageCode",
 		"Name",
 		"Description",
@@ -74,7 +73,7 @@ func (sts *SqlShopTranslationStore) Upsert(translation *model.ShopTranslation) (
 	}
 
 	if err != nil {
-		if sts.IsUniqueConstraintError(err, []string{"LanguageCode", "ShopID", "shoptranslations_languagecode_shopid_key"}) {
+		if sts.IsUniqueConstraintError(err, []string{"LanguageCode", "shoptranslations_languagecode_shopid_key"}) {
 			return nil, store.NewErrInvalidInput(store.ShopTranslationTableName, "LanguageCode/ShopID", "duplicate value")
 		}
 		return nil, errors.Wrapf(err, "failed to upsert shop translation with id=%s", translation.Id)

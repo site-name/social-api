@@ -73,10 +73,9 @@ func (e OrderStatus) IsValid() bool {
 
 type Order struct {
 	Id                           string                 `json:"id"`
-	CreateAt                     int64                  `json:"create_at"` // NOT editable
-	Status                       OrderStatus            `json:"status"`    // default: UNFULFILLED
-	UserID                       *string                `json:"user_id"`   //
-	ShopID                       string                 `json:"shop_id"`
+	CreateAt                     int64                  `json:"create_at"`           // NOT editable
+	Status                       OrderStatus            `json:"status"`              // default: UNFULFILLED
+	UserID                       *string                `json:"user_id"`             //
 	LanguageCode                 LanguageCodeEnum       `json:"language_code"`       // default: "en"
 	TrackingClientID             string                 `json:"tracking_client_id"`  // NOT editable
 	BillingAddressID             *string                `json:"billing_address_id"`  // NOT editable
@@ -130,7 +129,6 @@ type OrderFilterOption struct {
 	ChannelSlug   squirrel.Sqlizer // for comparing the channel of this order's slug
 	UserEmail     squirrel.Sqlizer // for filtering order's UserEmail
 	UserID        squirrel.Sqlizer // for filtering order's UserID
-	ShopID        squirrel.Sqlizer
 }
 
 // PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.
@@ -206,9 +204,6 @@ func (o *Order) IsValid() *AppError {
 	}
 	if o.UserID != nil && !IsValidId(*o.UserID) {
 		return outer("user_id", &o.Id)
-	}
-	if !IsValidId(o.ShopID) {
-		return outer("shop_id", &o.Id)
 	}
 	if o.BillingAddressID != nil && !IsValidId(*o.BillingAddressID) {
 		return outer("billing_address_id", &o.Id)

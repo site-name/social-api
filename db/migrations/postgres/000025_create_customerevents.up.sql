@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS customerevents (
   type character varying(255),
   orderid character varying(36),
   userid character varying(36),
-  shopid character varying(36),
   parameters jsonb
 );
 

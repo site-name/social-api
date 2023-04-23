@@ -23,7 +23,6 @@ func NewSqlDiscountVoucherStore(sqlStore store.Store) store.DiscountVoucherStore
 func (vs *SqlVoucherStore) ModelFields(prefix string) util.AnyArray[string] {
 	res := util.AnyArray[string]{
 		"Id",
-		"ShopID",
 		"Type",
 		"Name",
 		"Code",
@@ -54,7 +53,6 @@ func (vs *SqlVoucherStore) ModelFields(prefix string) util.AnyArray[string] {
 func (vs *SqlVoucherStore) ScanFields(voucher *model.Voucher) []interface{} {
 	return []interface{}{
 		&voucher.Id,
-		&voucher.ShopID,
 		&voucher.Type,
 		&voucher.Name,
 		&voucher.Code,

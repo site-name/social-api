@@ -82,7 +82,7 @@ func (c *Compliance) JobName() string {
 
 func (c *Compliance) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"compliance.is_valid.%s.app_error",
+		"model.compliance.is_valid.%s.app_error",
 		"compliance_id=",
 		"Compliance.IsValid",
 	)

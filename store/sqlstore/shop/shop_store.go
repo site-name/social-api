@@ -19,7 +19,6 @@ func NewSqlShopStore(s store.Store) store.ShopStore {
 
 var shopModelFields = util.AnyArray[string]{
 	"Id",
-	"OwnerID",
 	"CreateAt",
 	"UpdateAt",
 	"Name",
@@ -62,7 +61,6 @@ func (s *SqlShopStore) ModelFields(prefix string) util.AnyArray[string] {
 func (s *SqlShopStore) ScanFields(shop *model.Shop) []interface{} {
 	return []interface{}{
 		&shop.Id,
-		&shop.OwnerID,
 		&shop.CreateAt,
 		&shop.UpdateAt,
 		&shop.Name,

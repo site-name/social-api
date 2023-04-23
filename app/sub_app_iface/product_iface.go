@@ -116,7 +116,7 @@ type ProductService interface {
 	// ProductsRequireShipping checks if at least 1 product require shipping, then return true, false otherwise
 	ProductsRequireShipping(productIDs []string) (bool, *model.AppError)
 	// PublishedCollections returns all published collections
-	PublishedCollections(channelSlug string, shopID string) ([]*model.Collection, *model.AppError)
+	PublishedCollections(channelSlug string) ([]*model.Collection, *model.AppError)
 	// UpdateProductDiscountedPrice
 	//
 	// NOTE: `discounts` can be nil
@@ -132,7 +132,7 @@ type ProductService interface {
 	// UpsertProductVariant tells store to upsert given product variant and returns it
 	UpsertProductVariant(transaction store_iface.SqlxTxExecutor, variant *model.ProductVariant) (*model.ProductVariant, *model.AppError)
 	// VisibleCollectionsToUser returns all collections that belong to given shop and can be viewed by given user
-	VisibleCollectionsToUser(userID string, shopID string, channelSlug string) ([]*model.Collection, *model.AppError)
+	VisibleCollectionsToUser(userID, channelSlug string) ([]*model.Collection, *model.AppError)
 	CategoryByIds(ids []string, allowFromCache bool) (model.Categories, *model.AppError)
 	CollectionChannelListingsByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, *model.AppError)
 	CountProductTypesByOptions(options *model.ProductTypeFilterOption) (int64, *model.AppError)

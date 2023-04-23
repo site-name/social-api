@@ -17,7 +17,7 @@ type Seo struct {
 
 func (s *Seo) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"seo.is_valid.%s.app_error",
+		"model.seo.is_valid.%s.app_error",
 		"seo_id=",
 		"Seo.IsValid",
 	)

@@ -1,9 +1,5 @@
 package model
 
-import (
-	"io"
-)
-
 const USER_SEARCH_MAX_LIMIT = 1000
 const USER_SEARCH_DEFAULT_LIMIT = 100
 
@@ -29,18 +25,6 @@ type UserSearch struct {
 // ToJson convert a User to a json string
 func (u *UserSearch) ToJSON() []byte {
 	return []byte(ModelToJson(u))
-}
-
-// UserSearchFromJson will decode the input and return a User
-func UserSearchFromJson(data io.Reader) *UserSearch {
-	var us *UserSearch
-	ModelFromJson(&us, data)
-
-	if us.Limit == 0 {
-		us.Limit = USER_SEARCH_DEFAULT_LIMIT
-	}
-
-	return us
 }
 
 // UserSearchOptions captures internal parameters derived from the user's permissions and a

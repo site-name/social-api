@@ -43,7 +43,7 @@ type App struct {
 
 func (a *App) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"app.is_valid.%s.app_error",
+		"model.app.is_valid.%s.app_error",
 		"app_id=",
 		"App.IsValid",
 	)

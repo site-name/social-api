@@ -19,7 +19,6 @@ const (
 
 type Collection struct {
 	Id                 string          `json:"id"`
-	ShopID             string          `json:"shop_id"` // shop that owns this collection
 	Name               string          `json:"name"`
 	Slug               string          `json:"slug"`
 	BackgroundImage    *string         `json:"background_image"`
@@ -33,8 +32,7 @@ type Collection struct {
 //
 // if `SelectAll` is set to true, it finds all collections of given shop, ignores other options too
 type CollectionFilterOption struct {
-	ShopID    string // single string since we can only view collections of ONLY 1 shop at a time
-	SelectAll bool   // if this is true, ignore every other options and find all collections by shop
+	SelectAll bool // if this is true, ignore every other options and find all collections by shop
 
 	Id   squirrel.Sqlizer
 	Name squirrel.Sqlizer
@@ -85,9 +83,6 @@ func (c *Collection) IsValid() *AppError {
 	outer := CreateAppErrorForModel("collection.is_valid.%s.app_error", "collection_id=", "Collection.IsValid")
 	if !IsValidId(c.Id) {
 		return outer("id", nil)
-	}
-	if !IsValidId(c.ShopID) {
-		return outer("shop_id", &c.Id)
 	}
 	if utf8.RuneCountInString(c.Name) > COLLECTION_NAME_MAX_LENGTH {
 		return outer("name", &c.Id)

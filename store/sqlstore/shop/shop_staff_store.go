@@ -21,10 +21,12 @@ func NewSqlShopStaffStore(s store.Store) store.ShopStaffStore {
 func (s *SqlShopStaffStore) ModelFields(prefix string) util.AnyArray[string] {
 	res := util.AnyArray[string]{
 		"Id",
-		"ShopID",
 		"StaffID",
 		"CreateAt",
 		"EndAt",
+		"SalaryPeriod",
+		"Salary",
+		"SalaryCurrency",
 	}
 	if prefix == "" {
 		return res
@@ -35,18 +37,20 @@ func (s *SqlShopStaffStore) ModelFields(prefix string) util.AnyArray[string] {
 	})
 }
 
-func (s *SqlShopStaffStore) ScanFields(rel *model.ShopStaffRelation) []interface{} {
+func (s *SqlShopStaffStore) ScanFields(rel *model.ShopStaff) []interface{} {
 	return []interface{}{
 		&rel.Id,
-		&rel.ShopID,
 		&rel.StaffID,
 		&rel.CreateAt,
 		&rel.EndAt,
+		&rel.SalaryPeriod,
+		&rel.Salary,
+		&rel.SalaryCurrency,
 	}
 }
 
 // Save inserts given shopStaff into database then returns it with an error
-func (sss *SqlShopStaffStore) Save(shopStaff *model.ShopStaffRelation) (*model.ShopStaffRelation, error) {
+func (sss *SqlShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.ShopStaff, error) {
 	shopStaff.PreSave()
 	if err := shopStaff.IsValid(); err != nil {
 		return nil, err
@@ -64,8 +68,8 @@ func (sss *SqlShopStaffStore) Save(shopStaff *model.ShopStaffRelation) (*model.S
 }
 
 // Get finds a shop staff with given id then returns it with an error
-func (sss *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaffRelation, error) {
-	var res model.ShopStaffRelation
+func (sss *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, error) {
+	var res model.ShopStaff
 	err := sss.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShopStaffTableName+" WHERE Id = ?", shopStaffID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -79,18 +83,12 @@ func (sss *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaffRelation,
 
 func (s *SqlShopStaffStore) commonQueryBuilder(options *model.ShopStaffRelationFilterOptions) squirrel.SelectBuilder {
 	selectFields := s.ModelFields(store.ShopStaffTableName + ".")
-	if options.SelectRelatedShop {
-		selectFields = append(selectFields, s.Shop().ModelFields(store.ShopTableName+".")...)
-	}
 	if options.SelectRelatedStaff {
 		selectFields = append(selectFields, s.User().ModelFields(store.UserTableName+".")...)
 	}
 
 	query := s.GetQueryBuilder().Select(selectFields...).From(store.ShopStaffTableName)
 
-	if options.ShopID != nil {
-		query = query.Where(options.ShopID)
-	}
 	if options.StaffID != nil {
 		query = query.Where(options.StaffID)
 	}
@@ -100,9 +98,6 @@ func (s *SqlShopStaffStore) commonQueryBuilder(options *model.ShopStaffRelationF
 	if options.EndAt != nil {
 		query = query.Where(options.EndAt)
 	}
-	if options.SelectRelatedShop {
-		query = query.InnerJoin(store.ShopTableName + " ON Shops.Id = ShopStaffs.ShopID")
-	}
 	if options.SelectRelatedStaff {
 		query = query.InnerJoin(store.UserTableName + " ON Users.Id = ShopStaffs.StaffID")
 	}
@@ -110,7 +105,7 @@ func (s *SqlShopStaffStore) commonQueryBuilder(options *model.ShopStaffRelationF
 	return query
 }
 
-func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaffRelation, error) {
+func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaff, error) {
 	queryString, args, err := s.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
@@ -122,14 +117,11 @@ func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilt
 	}
 	defer rows.Close()
 
-	var res []*model.ShopStaffRelation
-	var relation model.ShopStaffRelation
-	var shop model.Shop
+	var res []*model.ShopStaff
+	var relation model.ShopStaff
 	var staff model.User
 	var scanFields = s.ScanFields(&relation)
-	if options.SelectRelatedShop {
-		scanFields = append(scanFields, s.Shop().ScanFields(&shop)...)
-	}
+
 	if options.SelectRelatedStaff {
 		scanFields = append(scanFields, s.User().ScanFields(&staff)...)
 	}
@@ -140,9 +132,6 @@ func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilt
 			return nil, errors.Wrap(err, "failed to scan a row of shop-staff relation")
 		}
 
-		if options.SelectRelatedShop {
-			relation.SetShop(&shop)
-		}
 		if options.SelectRelatedStaff {
 			relation.SetStaff(&staff)
 		}
@@ -151,20 +140,16 @@ func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilt
 	return res, nil
 }
 
-func (s *SqlShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaffRelation, error) {
+func (s *SqlShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaff, error) {
 	queryString, args, err := s.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	var relation model.ShopStaffRelation
-	var shop model.Shop
+	var relation model.ShopStaff
 	var staff model.User
 	var scanFields = s.ScanFields(&relation)
 
-	if options.SelectRelatedShop {
-		scanFields = append(scanFields, s.Shop().ScanFields(&shop)...)
-	}
 	if options.SelectRelatedStaff {
 		scanFields = append(scanFields, s.User().ScanFields(&staff))
 	}
@@ -176,9 +161,7 @@ func (s *SqlShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterO
 		}
 		return nil, errors.Wrap(err, "failed to scan shop-staff relation with given options")
 	}
-	if options.SelectRelatedShop {
-		relation.SetShop(&shop)
-	}
+
 	if options.SelectRelatedStaff {
 		relation.SetStaff(&staff)
 	}

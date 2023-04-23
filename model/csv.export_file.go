@@ -22,7 +22,7 @@ func (e *ExportFile) ToJSON() string {
 
 func (e *ExportFile) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"mdodel.export_file.is_valid.%s.app_error",
+		"model.export_file.is_valid.%s.app_error",
 		"export_file_id=",
 		"ExportFile.IsValid",
 	)

@@ -15,7 +15,7 @@ func staffsByShopIDLoader(ctx context.Context, shopIDs []string) []*dataloader.R
 		res          = make([]*dataloader.Result[[]*model.User], len(shopIDs))
 		shopStaffMap = map[string][]*model.User{} // keys are shop ids
 	)
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	shopStaffRelations, err := embedCtx.App.Srv().Store.ShopStaff().FilterByOptions(&model.ShopStaffRelationFilterOptions{
 		ShopID:             squirrel.Eq{store.ShopStaffTableName + ".ShopID": shopIDs},
 		EndAt:              squirrel.Eq{store.ShopStaffTableName + ".EndAt": nil},

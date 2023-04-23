@@ -40,8 +40,7 @@ var (
 
 type Voucher struct {
 	Id                       string  `json:"id"`
-	ShopID                   string  `json:"shop_id"` // the shop which issued this voucher
-	Type                     string  `json:"type"`    // default to "entire_order"
+	Type                     string  `json:"type"` // default to "entire_order"
 	Name                     *string `json:"name"`
 	Code                     string  `json:"code"` // UNIQUE
 	UsageLimit               *int    `json:"usage_limit"`
@@ -92,9 +91,7 @@ func (v *Voucher) IsValid() *AppError {
 	if !IsValidId(v.Id) {
 		return outer("id", nil)
 	}
-	if !IsValidId(v.ShopID) {
-		return outer("shop_id", &v.Id)
-	}
+
 	if len(v.Type) > VOUCHER_TYPE_MAX_LENGTH || !AllVoucherTypes.Contains(v.Type) {
 		return outer("type", &v.Id)
 	}

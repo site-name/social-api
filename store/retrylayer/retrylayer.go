@@ -2632,46 +2632,6 @@ func (s *RetryLayerChannelStore) Save(ch *model.Channel) (*model.Channel, error)
 
 }
 
-func (s *RetryLayerChannelShopStore) FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error) {
-
-	tries := 0
-	for {
-		result, err := s.ChannelShopStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerChannelShopStore) Save(relation *model.ChannelShopRelation) (*model.ChannelShopRelation, error) {
-
-	tries := 0
-	for {
-		result, err := s.ChannelShopStore.Save(relation)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerCheckoutStore) CountCheckouts(options *model.CheckoutFilterOption) (int64, error) {
 
 	tries := 0
@@ -8098,7 +8058,7 @@ func (s *RetryLayerShopStore) Upsert(shop *model.Shop) (*model.Shop, error) {
 
 }
 
-func (s *RetryLayerShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaffRelation, error) {
+func (s *RetryLayerShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaff, error) {
 
 	tries := 0
 	for {
@@ -8118,7 +8078,7 @@ func (s *RetryLayerShopStaffStore) FilterByOptions(options *model.ShopStaffRelat
 
 }
 
-func (s *RetryLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaffRelation, error) {
+func (s *RetryLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, error) {
 
 	tries := 0
 	for {
@@ -8138,7 +8098,7 @@ func (s *RetryLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaffRela
 
 }
 
-func (s *RetryLayerShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaffRelation, error) {
+func (s *RetryLayerShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaff, error) {
 
 	tries := 0
 	for {
@@ -8158,7 +8118,7 @@ func (s *RetryLayerShopStaffStore) GetByOptions(options *model.ShopStaffRelation
 
 }
 
-func (s *RetryLayerShopStaffStore) Save(shopStaff *model.ShopStaffRelation) (*model.ShopStaffRelation, error) {
+func (s *RetryLayerShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.ShopStaff, error) {
 
 	tries := 0
 	for {

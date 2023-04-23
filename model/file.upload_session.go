@@ -61,7 +61,7 @@ func (t UploadType) IsValid() error {
 
 func (us *UploadSession) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"upload_session.is_valid.%s.app_error",
+		"model.upload_session.is_valid.%s.app_error",
 		"upload_session_id=",
 		"UploadSession.IsValid",
 	)

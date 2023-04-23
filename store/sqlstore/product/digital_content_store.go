@@ -20,7 +20,6 @@ func NewSqlDigitalContentStore(s store.Store) store.DigitalContentStore {
 func (ds *SqlDigitalContentStore) ModelFields(prefix string) util.AnyArray[string] {
 	res := util.AnyArray[string]{
 		"Id",
-		"ShopID",
 		"UseDefaultSettings",
 		"AutomaticFulfillment",
 		"ContentType",
@@ -43,7 +42,6 @@ func (ds *SqlDigitalContentStore) ModelFields(prefix string) util.AnyArray[strin
 func (ds *SqlDigitalContentStore) ScanFields(content *model.DigitalContent) []interface{} {
 	return []interface{}{
 		&content.Id,
-		&content.ShopID,
 		&content.UseDefaultSettings,
 		&content.AutomaticFulfillment,
 		&content.ContentType,

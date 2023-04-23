@@ -16,11 +16,6 @@ func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ 
 		userID = &requesterUser.Id
 	}
 
-	shop, appErr := s.srv.ShopService().ShopById(manager.GetShopID())
-	if appErr != nil {
-		return appErr
-	}
-
 	payload := model.StringInterface{
 		"gift_card":         s.GetDefaultGiftcardPayload(giftCard),
 		"user":              userPayload,
@@ -32,7 +27,7 @@ func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ 
 		"site_name":         shop.Name,
 	}
 
-	_, appErr = manager.Notify(model.SEND_GIFT_CARD, payload, channelID, "")
+	_, appErr := manager.Notify(model.SEND_GIFT_CARD, payload, channelID, "")
 	return appErr
 }
 

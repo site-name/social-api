@@ -20,7 +20,6 @@ func NewSqlDiscountSaleStore(sqlStore store.Store) store.DiscountSaleStore {
 func (s *SqlDiscountSaleStore) ModelFields(prefix string) util.AnyArray[string] {
 	res := util.AnyArray[string]{
 		"Id",
-		"ShopID",
 		"Name",
 		"Type",
 		"StartDate",

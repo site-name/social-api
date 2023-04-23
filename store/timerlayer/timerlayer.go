@@ -2329,38 +2329,6 @@ func (s *TimerLayerChannelStore) Save(ch *model.Channel) (*model.Channel, error)
 	return result, err
 }
 
-func (s *TimerLayerChannelShopStore) FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error) {
-	start := timemodule.Now()
-
-	result, err := s.ChannelShopStore.FilterByOptions(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ChannelShopStore.FilterByOptions", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerChannelShopStore) Save(relation *model.ChannelShopRelation) (*model.ChannelShopRelation, error) {
-	start := timemodule.Now()
-
-	result, err := s.ChannelShopStore.Save(relation)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ChannelShopStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerCheckoutStore) CountCheckouts(options *model.CheckoutFilterOption) (int64, error) {
 	start := timemodule.Now()
 
@@ -6777,7 +6745,7 @@ func (s *TimerLayerShopStore) Upsert(shop *model.Shop) (*model.Shop, error) {
 	return result, err
 }
 
-func (s *TimerLayerShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaffRelation, error) {
+func (s *TimerLayerShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaff, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStaffStore.FilterByOptions(options)
@@ -6793,7 +6761,7 @@ func (s *TimerLayerShopStaffStore) FilterByOptions(options *model.ShopStaffRelat
 	return result, err
 }
 
-func (s *TimerLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaffRelation, error) {
+func (s *TimerLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStaffStore.Get(shopStaffID)
@@ -6809,7 +6777,7 @@ func (s *TimerLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaffRela
 	return result, err
 }
 
-func (s *TimerLayerShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaffRelation, error) {
+func (s *TimerLayerShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaff, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStaffStore.GetByOptions(options)
@@ -6825,7 +6793,7 @@ func (s *TimerLayerShopStaffStore) GetByOptions(options *model.ShopStaffRelation
 	return result, err
 }
 
-func (s *TimerLayerShopStaffStore) Save(shopStaff *model.ShopStaffRelation) (*model.ShopStaffRelation, error) {
+func (s *TimerLayerShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.ShopStaff, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStaffStore.Save(shopStaff)

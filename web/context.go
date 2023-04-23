@@ -23,7 +23,6 @@ type Context struct {
 	GraphQLOperationName string
 	siteURLHeader        string
 
-	CurrentShopID    string
 	CurrentChannelID string
 }
 

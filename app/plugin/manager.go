@@ -23,14 +23,12 @@ var _ interfaces.PluginManagerInterface = (*PluginManager)(nil)
 type PluginManager struct {
 	Srv        *app.Server
 	AllPlugins []interfaces.BasePluginInterface
-	ShopID     string
 }
 
 // NewPluginManager returns a new plugin manager
-func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManagerInterface, *model.AppError) {
+func (s *ServicePlugin) NewPluginManager() (interfaces.PluginManagerInterface, *model.AppError) {
 	manager := &PluginManager{
-		Srv:    s.srv,
-		ShopID: shopID,
+		Srv: s.srv,
 	}
 
 	// find all channels belong to given shop
@@ -80,10 +78,6 @@ func (s *ServicePlugin) NewPluginManager(shopID string) (interfaces.PluginManage
 	}
 
 	return manager, nil
-}
-
-func (m *PluginManager) GetShopID() string {
-	return m.ShopID
 }
 
 func (m *PluginManager) getPlugins(channelID string, active bool) []interfaces.BasePluginInterface {

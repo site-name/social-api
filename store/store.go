@@ -162,10 +162,10 @@ type Store interface {
 // shop
 type (
 	ShopStaffStore interface {
-		Save(shopStaff *model.ShopStaffRelation) (*model.ShopStaffRelation, error)                         // Save inserts given shopStaff into database then returns it with an error
-		Get(shopStaffID string) (*model.ShopStaffRelation, error)                                          // Get finds a shop staff with given id then returns it with an error
-		FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaffRelation, error) // FilterByShopAndStaff finds a relation ship with given shopId and staffId
-		GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaffRelation, error)
+		Save(shopStaff *model.ShopStaff) (*model.ShopStaff, error)                                 // Save inserts given shopStaff into database then returns it with an error
+		Get(shopStaffID string) (*model.ShopStaff, error)                                          // Get finds a shop staff with given id then returns it with an error
+		FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaff, error) // FilterByShopAndStaff finds a relation ship with given shopId and staffId
+		GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaff, error)
 	}
 	ShopStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
@@ -831,8 +831,8 @@ type ChannelStore interface {
 	GetbyOption(option *model.ChannelFilterOption) (*model.Channel, error)      // GetbyOption finds and returns 1 channel filtered using given options
 }
 type ChannelShopStore interface {
-	FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error)
-	Save(relation *model.ChannelShopRelation) (*model.ChannelShopRelation, error)
+	// FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error)
+	// Save(relation *model.ChannelShopRelation) (*model.ChannelShopRelation, error)
 }
 
 // app

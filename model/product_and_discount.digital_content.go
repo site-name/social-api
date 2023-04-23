@@ -22,7 +22,6 @@ var ContentTypeString = map[string]string{
 
 type DigitalContent struct {
 	Id                   string `json:"id"`
-	ShopID               string `json:"shop_id"`               // shop that owns this content
 	UseDefaultSettings   *bool  `json:"use_defaults_settings"` // default true
 	AutomaticFulfillment *bool  `json:"automatic_fulfillment"` // default false
 	ContentType          string `json:"content_type"`
@@ -47,9 +46,6 @@ func (d *DigitalContent) IsValid() *AppError {
 	)
 	if !IsValidId(d.Id) {
 		return outer("id", nil)
-	}
-	if !IsValidId(d.ShopID) {
-		return outer("shop_id", &d.ShopID)
 	}
 	if len(d.ContentType) > DIGITAL_CONTENT_CONTENT_TYPE_MAX_LENGTH {
 		return outer("content_type", &d.Id)

@@ -16,10 +16,7 @@ func TestGetContextValue(t *testing.T) {
 
 	c := context.WithValue(context.Background(), WebCtx, minh)
 
-	p, err := GetContextValue[person](c, WebCtx)
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := GetContextValue[person](c, WebCtx)
 
 	fmt.Println(p.age, p.name)
 }
