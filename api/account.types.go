@@ -513,10 +513,8 @@ func (u *User) Avatar(ctx context.Context, args struct{ Size *int32 }) (*Image, 
 }
 
 func userByUserIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.User] {
-	var (
-		res     = make([]*dataloader.Result[*model.User], len(ids))
-		userMap = map[string]*model.User{} // keys are user ids
-	)
+	res     := make([]*dataloader.Result[*model.User], len(ids))
+	userMap := map[string]*model.User{} // keys are user ids
 
 	var webCtx = GetContextValue[*web.Context](ctx, WebCtx)
 	users, appErr := webCtx.
