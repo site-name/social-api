@@ -148,25 +148,3 @@ func (api *API) APIHandler(h handlerFunc) http.Handler {
 // 	}
 // 	return handler
 // }
-
-// APILocal provides a handler for API endpoints to be used in local
-// mode, this is, through a UNIX socket and without an authenticated
-// session, but with one that has no user set and no permission
-// restrictions
-// func (api *API) APILocal(h handlerFunc) http.Handler {
-// 	handler := &web.Handler{
-// 		Srv:            api.srv,
-// 		HandleFunc:     h,
-// 		HandlerName:    web.GetHandlerName(h),
-// 		RequireSession: false,
-// 		TrustRequester: false,
-// 		RequireMfa:     false,
-// 		IsStatic:       false,
-// 		IsLocal:        true,
-// 	}
-
-// 	if *api.srv.Config().ServiceSettings.WebserverMode == "gzip" {
-// 		return gziphandler.GzipHandler(handler)
-// 	}
-// 	return handler
-// }
