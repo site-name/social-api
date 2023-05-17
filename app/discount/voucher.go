@@ -207,7 +207,7 @@ func (a *ServiceDiscount) ValidateVoucherOnlyForStaff(voucher *model.Voucher, cu
 
 	// try checking if there is a relationship between the shop(owner of this voucher) and the customer
 	// if no reation found, it means this customer cannot have this voucher
-	relation, appErr := a.srv.ShopService().ShopStaffByOptions(&model.ShopStaffRelationFilterOptions{
+	relation, appErr := a.srv.ShopService().ShopStaffByOptions(&model.ShopStaffFilterOptions{
 		StaffID: squirrel.Eq{store.ShopStaffTableName + ".StaffID": customerID},
 	})
 	if appErr != nil {

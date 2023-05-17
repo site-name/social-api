@@ -185,26 +185,16 @@ func (u *User) DefaultShippingAddress(ctx context.Context) (*Address, error) {
 	}
 	currentSession := embedCtx.AppContext.Session()
 
-	canSeeDefaultShippingAddress := currentSession.UserId == u.ID
-
-	if !canSeeDefaultShippingAddress {
-		// check url param current shop is provided
-		if embedCtx.CurrentShopID == "" {
-			embedCtx.SetInvalidUrlParam("shop_id")
-			return nil, embedCtx.Err
-		}
-		canSeeDefaultShippingAddress = embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) &&
-			embedCtx.App.Srv().ShopService().UserIsCustomerOfShop(embedCtx.CurrentShopID, u.ID)
-	}
+	canSeeDefaultShippingAddress := currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
 
 	// check requester belong to shop with user was customer
 	if canSeeDefaultShippingAddress {
 		if u.DefaultShippingAddressID == nil {
 			return nil, nil
 		}
-		address, appErr := embedCtx.App.Srv().AccountService().AddressById(*u.DefaultShippingAddressID)
-		if appErr != nil {
-			return nil, appErr
+		address, err := AddressByIdLoader.Load(ctx, *u.DefaultShippingAddressID)()
+		if err != nil {
+			return nil, err
 		}
 		return SystemAddressToGraphqlAddress(address), nil
 	}
@@ -222,26 +212,17 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 	}
 	currentSession := embedCtx.AppContext.Session()
 
-	canSeeDefaultBillingAddress := currentSession.UserId == u.ID
-
-	if !canSeeDefaultBillingAddress {
-		// check url param current shop is provided
-		if embedCtx.CurrentShopID == "" {
-			embedCtx.SetInvalidUrlParam("shop_id")
-			return nil, embedCtx.Err
-		}
-		canSeeDefaultBillingAddress = embedCtx.App.Srv().ShopService().UserIsStaffOfShop(currentSession.UserId, embedCtx.CurrentShopID) &&
-			embedCtx.App.Srv().ShopService().UserIsCustomerOfShop(embedCtx.CurrentShopID, u.ID)
-	}
+	canSeeDefaultBillingAddress := currentSession.UserId == u.ID ||
+		currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
 
 	// check requester belong to shop at which user was customer
 	if canSeeDefaultBillingAddress {
 		if u.DefaultBillingAddressID == nil {
 			return nil, nil
 		}
-		address, appErr := embedCtx.App.Srv().AccountService().AddressById(*u.DefaultBillingAddressID)
-		if appErr != nil {
-			return nil, appErr
+		address, err := AddressByIdLoader.Load(ctx, *u.DefaultBillingAddressID)()
+		if err != nil {
+			return nil, err
 		}
 		return SystemAddressToGraphqlAddress(address), nil
 	}
@@ -266,7 +247,7 @@ func (u *User) StoredPaymentSources(ctx context.Context, args struct{ Channel *s
 
 // args.Channel is channel id
 func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string }) ([]string, error) {
-	// only user himself or staffs of a shop which has user was customer can see
+	// requester must be current user or staff of shop to see
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
@@ -274,16 +255,7 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string 
 	}
 	currentSession := embedCtx.AppContext.Session()
 
-	canSeeCheckoutToken := currentSession.UserId == u.ID
-	if !canSeeCheckoutToken {
-		if embedCtx.CurrentShopID == "" {
-			embedCtx.SetInvalidUrlParam("shop_id")
-			return nil, embedCtx.Err
-		}
-
-		canSeeCheckoutToken = embedCtx.App.Srv().ShopService().UserIsCustomerOfShop(embedCtx.CurrentShopID, u.ID) &&
-			embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID)
-	}
+	canSeeCheckoutToken := currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
 
 	if canSeeCheckoutToken {
 		var checkouts []*model.Checkout
@@ -298,10 +270,6 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string 
 			return nil, err
 		}
 
-		// in case requester is shop staffs and want to see checkout tokens of a customer
-		if currentSession.UserId != u.ID {
-			checkouts = lo.Filter(checkouts, func(ck *model.Checkout, _ int) bool { return ck.ShopID == embedCtx.CurrentShopID })
-		}
 		return lo.Map(checkouts, func(c *model.Checkout, _ int) string { return c.Token }), nil
 	}
 
@@ -318,15 +286,7 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 	}
 	currentSession := embedCtx.AppContext.Session()
 
-	canSeeUserAddresses := currentSession.UserId == u.ID
-	if !canSeeUserAddresses {
-		if embedCtx.CurrentShopID == "" {
-			embedCtx.SetInvalidUrlParam("shop_id")
-			return nil, embedCtx.Err
-		}
-		canSeeUserAddresses = embedCtx.App.Srv().ShopService().UserIsStaffOfShop(currentSession.UserId, embedCtx.CurrentShopID) &&
-			embedCtx.App.Srv().ShopService().UserIsCustomerOfShop(embedCtx.CurrentShopID, u.ID)
-	}
+	canSeeUserAddresses := currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
 
 	if canSeeUserAddresses {
 		addresses, appErr := embedCtx.
@@ -379,7 +339,6 @@ func (u *User) GiftCards(ctx context.Context, args GraphqlParams) (*GiftCardCoun
 		}
 
 		canSeeUserGiftcards = len(giftcardsIssuedByShopAndUsedByUser) > 0 &&
-			embedCtx.App.Srv().ShopService().UserIsCustomerOfShop(u.ID, embedCtx.CurrentShopID) &&
 			embedCtx.App.Srv().ShopService().UserIsStaffOfShop(currentSession.UserId, embedCtx.CurrentShopID)
 	}
 

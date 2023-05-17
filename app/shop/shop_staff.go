@@ -9,7 +9,15 @@ import (
 	"github.com/sitename/sitename/store"
 )
 
-func (a *ServiceShop) ShopStaffByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaff, *model.AppError) {
+func (a *ServiceShop) StaffsByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, *model.AppError) {
+	staffs, err := a.srv.Store.ShopStaff().FilterByOptions(options)
+	if err != nil {
+		return nil, model.NewAppError("StaffsByOptions", "app.shop.staffs_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return staffs, nil
+}
+
+func (a *ServiceShop) ShopStaffByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, *model.AppError) {
 	relation, err := a.srv.Store.ShopStaff().GetByOptions(options)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -23,14 +31,14 @@ func (a *ServiceShop) ShopStaffByOptions(options *model.ShopStaffRelationFilterO
 }
 
 func (s *ServiceShop) UserIsStaffOfShop(userID string) bool {
-	relation, appErr := s.ShopStaffByOptions(&model.ShopStaffRelationFilterOptions{
+	relation, appErr := s.ShopStaffByOptions(&model.ShopStaffFilterOptions{
 		StaffID: squirrel.Eq{store.ShopStaffTableName + ".StaffID": userID},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {
 			return false
 		}
-		slog.Error("failed to find shop-staff relation and staffId", slog.Err(appErr))
+		slog.Error("failed to find shop-staff", slog.Err(appErr))
 		return false
 	}
 

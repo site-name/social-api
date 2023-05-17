@@ -44,7 +44,7 @@ type PluginService interface {
 	// lock instead.
 	GetPluginsEnvironment() (*plugin.Environment, *model.AppError)
 	// NewPluginManager returns a new plugin manager
-	NewPluginManager(shopID string) (interfaces.PluginManagerInterface, *model.AppError)
+	NewPluginManager() (interfaces.PluginManagerInterface, *model.AppError)
 	// SyncPlugins synchronizes the plugins installed locally
 	// with the plugin bundles available in the file store.
 	SyncPlugins() *model.AppError

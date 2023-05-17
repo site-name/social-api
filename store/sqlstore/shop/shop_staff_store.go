@@ -58,9 +58,6 @@ func (sss *SqlShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.ShopStaff
 
 	query := "INSERT INTO " + store.ShopStaffTableName + "(" + sss.ModelFields("").Join(",") + ") VALUES (" + sss.ModelFields(":").Join(",") + ")"
 	if _, err := sss.GetMasterX().NamedExec(query, shopStaff); err != nil {
-		if sss.IsUniqueConstraintError(err, []string{"ShopID", "StaffID", "shopstaffs_shopid_staffid_key"}) {
-			return nil, store.NewErrInvalidInput(store.ShopStaffTableName, "ShopID/StaffID", "unique values")
-		}
 		return nil, errors.Wrapf(err, "failed to save shop-staff relation with id=%s", shopStaff.Id)
 	}
 
@@ -81,7 +78,7 @@ func (sss *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, error) 
 	return &res, nil
 }
 
-func (s *SqlShopStaffStore) commonQueryBuilder(options *model.ShopStaffRelationFilterOptions) squirrel.SelectBuilder {
+func (s *SqlShopStaffStore) commonQueryBuilder(options *model.ShopStaffFilterOptions) squirrel.SelectBuilder {
 	selectFields := s.ModelFields(store.ShopStaffTableName + ".")
 	if options.SelectRelatedStaff {
 		selectFields = append(selectFields, s.User().ModelFields(store.UserTableName+".")...)
@@ -105,7 +102,7 @@ func (s *SqlShopStaffStore) commonQueryBuilder(options *model.ShopStaffRelationF
 	return query
 }
 
-func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaff, error) {
+func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, error) {
 	queryString, args, err := s.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
@@ -140,7 +137,7 @@ func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilt
 	return res, nil
 }
 
-func (s *SqlShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaff, error) {
+func (s *SqlShopStaffStore) GetByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, error) {
 	queryString, args, err := s.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")

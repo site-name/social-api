@@ -6745,7 +6745,7 @@ func (s *TimerLayerShopStore) Upsert(shop *model.Shop) (*model.Shop, error) {
 	return result, err
 }
 
-func (s *TimerLayerShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaff, error) {
+func (s *TimerLayerShopStaffStore) FilterByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStaffStore.FilterByOptions(options)
@@ -6777,7 +6777,7 @@ func (s *TimerLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, er
 	return result, err
 }
 
-func (s *TimerLayerShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaff, error) {
+func (s *TimerLayerShopStaffStore) GetByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShopStaffStore.GetByOptions(options)

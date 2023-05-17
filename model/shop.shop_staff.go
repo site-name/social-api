@@ -43,7 +43,7 @@ func (r *ShopStaff) SetStaff(u *User) {
 	r.staff = u
 }
 
-type ShopStaffRelationFilterOptions struct {
+type ShopStaffFilterOptions struct {
 	StaffID  squirrel.Sqlizer
 	CreateAt squirrel.Sqlizer
 	EndAt    squirrel.Sqlizer

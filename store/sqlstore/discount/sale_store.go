@@ -114,9 +114,6 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOpti
 		From(store.SaleTableName).
 		OrderBy(store.TableOrderingMap[store.SaleTableName])
 
-	// check shop id
-	query = query.Where(option.ShopID)
-
 	// check sale start date
 	if option.StartDate != nil {
 		query = query.Where(option.StartDate)

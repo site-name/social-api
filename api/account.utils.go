@@ -53,3 +53,29 @@ func GetAllowedFieldsCamelCase(allowedFields util.AnyArray[string]) util.AnyArra
 	}
 	return fields
 }
+
+// func userIsStaffOfShopLoader(ctx context.Context, userIDs []string) []*dataloader.Result[bool] {
+// 	var (
+// 		res      = make([]*dataloader.Result[bool], len(userIDs))
+// 		staffMap map[string]struct{}
+// 	)
+// 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+// 	staffs, appErr := embedCtx.App.Srv().ShopService().StaffsByOptions(&model.ShopStaffFilterOptions{})
+// 	if appErr != nil {
+// 		goto errorLabel
+// 	}
+// 	staffMap = lo.SliceToMap(staffs, func(st *model.ShopStaff) (string, struct{}) { return st.StaffID, struct{}{} })
+
+// 	for idx, id := range userIDs {
+// 		_, ok := staffMap[id]
+// 		res[idx] = &dataloader.Result[bool]{Data: ok}
+// 	}
+// 	return res
+
+// errorLabel:
+// 	for idx := range userIDs {
+// 		res[idx] = &dataloader.Result[bool]{Error: appErr}
+// 	}
+// 	return res
+// }

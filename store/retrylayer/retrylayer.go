@@ -8058,7 +8058,7 @@ func (s *RetryLayerShopStore) Upsert(shop *model.Shop) (*model.Shop, error) {
 
 }
 
-func (s *RetryLayerShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaff, error) {
+func (s *RetryLayerShopStaffStore) FilterByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, error) {
 
 	tries := 0
 	for {
@@ -8098,7 +8098,7 @@ func (s *RetryLayerShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, er
 
 }
 
-func (s *RetryLayerShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaff, error) {
+func (s *RetryLayerShopStaffStore) GetByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, error) {
 
 	tries := 0
 	for {

@@ -7413,7 +7413,7 @@ func (s *OpenTracingLayerShopStore) Upsert(shop *model.Shop) (*model.Shop, error
 	return result, err
 }
 
-func (s *OpenTracingLayerShopStaffStore) FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaff, error) {
+func (s *OpenTracingLayerShopStaffStore) FilterByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStaffStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -7449,7 +7449,7 @@ func (s *OpenTracingLayerShopStaffStore) Get(shopStaffID string) (*model.ShopSta
 	return result, err
 }
 
-func (s *OpenTracingLayerShopStaffStore) GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaff, error) {
+func (s *OpenTracingLayerShopStaffStore) GetByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShopStaffStore.GetByOptions")
 	s.Root.Store.SetContext(newCtx)

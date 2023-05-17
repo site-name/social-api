@@ -162,10 +162,10 @@ type Store interface {
 // shop
 type (
 	ShopStaffStore interface {
-		Save(shopStaff *model.ShopStaff) (*model.ShopStaff, error)                                 // Save inserts given shopStaff into database then returns it with an error
-		Get(shopStaffID string) (*model.ShopStaff, error)                                          // Get finds a shop staff with given id then returns it with an error
-		FilterByOptions(options *model.ShopStaffRelationFilterOptions) ([]*model.ShopStaff, error) // FilterByShopAndStaff finds a relation ship with given shopId and staffId
-		GetByOptions(options *model.ShopStaffRelationFilterOptions) (*model.ShopStaff, error)
+		Save(shopStaff *model.ShopStaff) (*model.ShopStaff, error)                         // Save inserts given shopStaff into database then returns it with an error
+		Get(shopStaffID string) (*model.ShopStaff, error)                                  // Get finds a shop staff with given id then returns it with an error
+		FilterByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, error) // FilterByShopAndStaff finds a relation ship with given shopId and staffId
+		GetByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, error)
 	}
 	ShopStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
