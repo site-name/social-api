@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -81,19 +80,13 @@ func SystemProductToGraphqlProduct(p *model.Product) *Product {
 }
 
 func (p *Product) Channel(ctx context.Context) (*string, error) {
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
+	channelID := GetContextValue[string](ctx, ChannelIdCtx)
 
 	return &channelID, nil
 }
 
 func (p *Product) AvailableForPurchase(ctx context.Context) (*Date, error) {
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
+	channelID := GetContextValue[string](ctx, ChannelIdCtx)
 	if channelID == "" {
 		return nil, nil
 	}
@@ -113,10 +106,7 @@ func (p *Product) AvailableForPurchase(ctx context.Context) (*Date, error) {
 }
 
 func (p *Product) IsAvailableForPurchase(ctx context.Context) (*bool, error) {
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
+	channelID := GetContextValue[string](ctx, ChannelIdCtx)
 	if channelID == "" {
 		return nil, nil
 	}
@@ -147,14 +137,8 @@ func (p *Product) Translation(ctx context.Context, args struct{ LanguageCode Lan
 }
 
 func (p *Product) Collections(ctx context.Context) ([]*Collection, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	channelID := GetContextValue[string](ctx, ChannelIdCtx)
 
 	hasProductPermission := embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.ProductPermissions...)
 
@@ -189,10 +173,7 @@ func (p *Product) Collections(ctx context.Context) ([]*Collection, error) {
 }
 
 func (p *Product) ChannelListings(ctx context.Context) ([]*ProductChannelListing, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
 		return nil, model.NewAppError("Product.ChannelListings", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
@@ -241,14 +222,8 @@ func (p *Product) TaxType(ctx context.Context) (*TaxType, error) {
 }
 
 func (p *Product) Pricing(ctx context.Context, args struct{ Address *AddressInput }) (*ProductPricingInfo, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	channelID := GetContextValue[string](ctx, ChannelIdCtx)
 	if channelID == "" {
 		return nil, nil
 	}
@@ -325,14 +300,8 @@ func (p *Product) Pricing(ctx context.Context, args struct{ Address *AddressInpu
 }
 
 func (p *Product) IsAvailable(ctx context.Context, args struct{ Address *AddressInput }) (*bool, error) {
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	channelID := GetContextValue[string](ctx, ChannelIdCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	var countryCode string
 	if args.Address != nil && args.Address.Country != nil {
@@ -398,18 +367,13 @@ func (p *Product) Media(ctx context.Context) ([]*ProductMedia, error) {
 }
 
 func (p *Product) Variants(ctx context.Context) ([]*ProductVariant, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	channelID := GetContextValue[string](ctx, ChannelIdCtx)
 
 	hasProductPermissions := embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.ProductPermissions...)
 
 	var variants model.ProductVariants
+	var err error
 
 	if hasProductPermissions && channelID == "" {
 		variants, err = ProductVariantsByProductIdLoader.Load(ctx, p.ID)()
@@ -491,10 +455,8 @@ func (p *ProductType) AvailableAttributes(ctx context.Context, args struct {
 	GraphqlParams
 	Filter *AttributeFilterInput
 }) (*AttributeCountableConnection, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
 		return nil, model.NewAppError("ProductType.AvailableAttributes", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}
@@ -532,10 +494,7 @@ func (p *ProductType) ProductAttributes(ctx context.Context) ([]*Attribute, erro
 }
 
 func (p *ProductType) VariantAttributes(ctx context.Context, args struct{ VariantSelection *VariantAttributeScope }) ([]*Attribute, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	attributes, err := VariantAttributesByProductTypeIdLoader.Load(ctx, p.ID)()
 	if err != nil {
 		return nil, err
@@ -596,10 +555,7 @@ func systemCollectionToGraphqlCollection(c *model.Collection) *Collection {
 }
 
 func (c *Collection) Channel(ctx context.Context) (*string, error) {
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, nil
-	}
+	channelID := GetContextValue[string](ctx, ChannelIdCtx)
 
 	return &channelID, nil
 }
@@ -610,14 +566,8 @@ func (c *Collection) Products(ctx context.Context, args struct {
 	// SortBy *ProductOrder
 	GraphqlParams
 }) (*ProductCountableConnection, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil && errors.Is(err, ErrorUnExpectedType) {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	channelID := GetContextValue[string](ctx, ChannelIdCtx)
 
 	products, appErr := embedCtx.App.Srv().ProductService().GetVisibleToUserProducts(embedCtx.AppContext.Session(), channelID)
 	if appErr != nil {
@@ -657,10 +607,7 @@ func (c *Collection) BackgroundImage(ctx context.Context, args struct{ Size *int
 }
 
 func (c *Collection) ChannelListings(ctx context.Context) ([]*CollectionChannelListing, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
 		return nil, model.NewAppError("Collection.ChannelListings", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}

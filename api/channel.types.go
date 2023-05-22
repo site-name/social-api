@@ -51,10 +51,6 @@ func (c Channel) HasOrders(ctx context.Context) (bool, error) {
 	if embedCtx.Err != nil {
 		return false, embedCtx.Err
 	}
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
-		return false, embedCtx.Err
-	}
 
 	if embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) &&
 		embedCtx.App.Srv().ChannelService().ShopSellsInChannel(embedCtx.CurrentShopID, c.ID) {
@@ -301,10 +297,6 @@ func (c *ProductChannelListing) PurchaseCost(ctx context.Context) (*MoneyRange, 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
 		return nil, embedCtx.Err
 	}
 

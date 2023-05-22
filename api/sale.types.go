@@ -114,10 +114,7 @@ func (s *Sale) Variants(ctx context.Context, args GraphqlParams) (*ProductVarian
 }
 
 func (v *Sale) DiscountValue(ctx context.Context) (*float64, error) {
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
+	channelID := GetContextValue[string](ctx, ChannelIdCtx)
 	if channelID == "" {
 		return nil, nil
 	}
@@ -132,10 +129,7 @@ func (v *Sale) DiscountValue(ctx context.Context) (*float64, error) {
 }
 
 func (v *Sale) Currency(ctx context.Context) (*string, error) {
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
+	channelID := GetContextValue[string](ctx, ChannelIdCtx)
 	if channelID == "" {
 		return nil, nil
 	}
@@ -149,10 +143,7 @@ func (v *Sale) Currency(ctx context.Context) (*string, error) {
 }
 
 func (v *Sale) ChannelListings(ctx context.Context) ([]*SaleChannelListing, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	currentSession := embedCtx.AppContext.Session()
 	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageDiscounts) {

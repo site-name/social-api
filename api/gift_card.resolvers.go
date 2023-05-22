@@ -26,10 +26,6 @@ func (r *Resolver) GiftCardActivate(ctx context.Context, args struct{ Id string 
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("GiftCardActivate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
 	}
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
-		return nil, embedCtx.Err
-	}
 
 	giftcard, appErr := r.srv.GiftcardService().GetGiftCard(args.Id)
 	if appErr != nil {

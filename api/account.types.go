@@ -97,19 +97,16 @@ func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 			Id: squirrel.Eq{store.AddressTableName + ".Id": ids},
 		})
 	if appErr != nil {
-		goto errLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.Address]{Error: appErr}
+		}
+		return res
 	}
 
 	addressMap = lo.SliceToMap(addresses, func(a *model.Address) (string, *model.Address) { return a.Id, a })
 
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.Address]{Data: addressMap[id]}
-	}
-	return res
-
-errLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.Address]{Error: appErr}
 	}
 	return res
 }
@@ -322,36 +319,11 @@ func (u *User) GiftCards(ctx context.Context, args GraphqlParams) (*GiftCardCoun
 		return nil, appErr
 	}
 
-	canSeeUserGiftcards := currentSession.UserId == u.ID
-	if !canSeeUserGiftcards {
-		if embedCtx.CurrentShopID == "" {
-			embedCtx.SetInvalidUrlParam("shop_id")
-			return nil, embedCtx.Err
-		}
-
-		// check if there are giftcards issued by current shop and used by current user
-		giftcardsIssuedByShopAndUsedByUser, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(nil, &model.GiftCardFilterOption{
-			UsedByID: squirrel.Eq{store.GiftcardTableName + ".UsedByID": u.ID},
-			ShopID:   squirrel.Eq{store.GiftcardTableName + ".ShopID": embedCtx.CurrentShopID},
-		})
-		if appErr != nil {
-			return nil, appErr
-		}
-
-		canSeeUserGiftcards = len(giftcardsIssuedByShopAndUsedByUser) > 0 &&
-			embedCtx.App.Srv().ShopService().UserIsStaffOfShop(currentSession.UserId, embedCtx.CurrentShopID)
-	}
-
+	canSeeUserGiftcards := currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
 	if canSeeUserGiftcards {
 		giftcards, err := GiftCardsByUserLoader.Load(ctx, u.ID)()
 		if err != nil {
 			return nil, err
-		}
-
-		// in case requester is shop staff seeing user's giftcards,
-		// keep giftcards that issued by current shop only
-		if currentSession.UserId != u.ID {
-			giftcards = lo.Filter(giftcards, func(gc *model.GiftCard, _ int) bool { return gc.ShopID == embedCtx.CurrentShopID })
 		}
 
 		keyFunc := func(gc *model.GiftCard) string { return gc.Code }
@@ -383,26 +355,11 @@ func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableC
 	}
 	currentSession := embedCtx.AppContext.Session()
 
-	requesterCanSeeUserOrders := currentSession.UserId == u.ID
-	if !requesterCanSeeUserOrders {
-		if embedCtx.CurrentShopID == "" {
-			embedCtx.SetInvalidUrlParam("shop_id")
-			return nil, embedCtx.Err
-		}
-
-		requesterCanSeeUserOrders = embedCtx.App.Srv().ShopService().UserIsCustomerOfShop(embedCtx.CurrentShopID, u.ID) &&
-			embedCtx.App.Srv().ShopService().UserIsStaffOfShop(currentSession.UserId, embedCtx.CurrentShopID)
-	}
-
+	requesterCanSeeUserOrders := currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
 	if requesterCanSeeUserOrders {
 		orders, err := OrdersByUserLoader.Load(ctx, u.ID)()
 		if err != nil {
 			return nil, err
-		}
-
-		// in case requester is shop staff, want to see a customer's order history
-		if currentSession.UserId != u.ID {
-			orders = lo.Filter(orders, func(ord *model.Order, _ int) bool { return ord.ShopID == embedCtx.CurrentShopID })
 		}
 
 		keyFunc := func(o *model.Order) int64 { return o.CreateAt }
@@ -425,20 +382,12 @@ func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
 	}
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
-		return nil, embedCtx.Err
-	}
 
-	if embedCtx.App.Srv().ShopService().UserIsCustomerOfShop(embedCtx.CurrentShopID, u.ID) &&
-		embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) {
-
+	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
 		events, err := CustomerEventsByUserLoader.Load(ctx, u.ID)()
 		if err != nil {
 			return nil, err
 		}
-		// keep events that belong to current shop only
-		events = lo.Filter(events, func(ev *model.CustomerEvent, _ int) bool { return ev.ShopID == embedCtx.CurrentShopID })
 		return DataloaderResultMap(events, SystemCustomerEventToGraphqlCustomerEvent), nil
 	}
 
@@ -472,8 +421,7 @@ func (u *User) Avatar(ctx context.Context, args struct{ Size *int32 }) (*Image, 
 }
 
 func userByUserIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.User] {
-	res     := make([]*dataloader.Result[*model.User], len(ids))
-	userMap := map[string]*model.User{} // keys are user ids
+	res := make([]*dataloader.Result[*model.User], len(ids))
 
 	var webCtx = GetContextValue[*web.Context](ctx, WebCtx)
 	users, appErr := webCtx.
@@ -482,21 +430,18 @@ func userByUserIdLoader(ctx context.Context, ids []string) []*dataloader.Result[
 		AccountService().
 		GetUsersByIds(ids, &store.UserGetByIdsOpts{})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.User]{Error: appErr}
+		}
+		return res
 	}
 
-	userMap = lo.SliceToMap(users, func(u *model.User) (string, *model.User) {
+	userMap := lo.SliceToMap(users, func(u *model.User) (string, *model.User) {
 		return u.Id, u
 	})
 
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.User]{Data: userMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.User]{Error: appErr}
 	}
 	return res
 }
@@ -561,10 +506,7 @@ func (c *CustomerEvent) Order(ctx context.Context) (*Order, error) {
 }
 
 func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.CustomerEvent] {
-	var (
-		res               = make([]*dataloader.Result[[]*model.CustomerEvent], len(userIDs))
-		customerEventsMap = map[string][]*model.CustomerEvent{} // keys are user ids
-	)
+	res := make([]*dataloader.Result[[]*model.CustomerEvent], len(userIDs))
 
 	var webCtx = GetContextValue[*web.Context](ctx, WebCtx)
 	customerEvents, appErr := webCtx.
@@ -575,23 +517,20 @@ func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*datalo
 			UserID: squirrel.Eq{store.CustomerEventTableName + ".UserID": userIDs},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range userIDs {
+			res[idx] = &dataloader.Result[[]*model.CustomerEvent]{Error: appErr}
+		}
+		return res
 	}
 
+	var customerEventsMap = map[string][]*model.CustomerEvent{} // keys are user ids
 	for _, event := range customerEvents {
 		if event.UserID != nil {
 			customerEventsMap[*event.UserID] = append(customerEventsMap[*event.UserID], event)
 		}
 	}
-
 	for idx, id := range userIDs {
 		res[idx] = &dataloader.Result[[]*model.CustomerEvent]{Data: customerEventsMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range userIDs {
-		res[idx] = &dataloader.Result[[]*model.CustomerEvent]{Error: appErr}
 	}
 	return res
 }
@@ -602,10 +541,6 @@ func (c *CustomerEvent) User(ctx context.Context) (*User, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
 		return nil, embedCtx.Err
 	}
 
@@ -662,11 +597,6 @@ func (s *StaffNotificationRecipient) User(ctx context.Context) (*User, error) {
 		return nil, embedCtx.Err
 	}
 	currentSession := embedCtx.AppContext.Session()
-
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
-		return nil, embedCtx.Err
-	}
 
 	// requester can see user of current StaffNotificationRecipient if
 	// 1) He is owner of the notification OR

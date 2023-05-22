@@ -446,7 +446,7 @@ func availableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(ctx cont
 		// Return the quantities after capping them at the maximum quantity allowed in
 		// checkout. This prevent users from tracking the store's precise stock levels.
 		for key, value := range quantityMap {
-			quantityMap[key] = util.GetMinMax(value, *embedCtx.App.Config().ServiceSettings.MaxCheckoutLineQuantity).Min
+			quantityMap[key] = util.GetMinMax(value, *embedCtx.App.Config().ShopSettings.MaxCheckoutLineQuantity).Min
 		}
 		return quantityMap, nil
 	}

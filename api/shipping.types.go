@@ -79,10 +79,8 @@ func (s *ShippingMethod) Translation(ctx context.Context, args struct{ LanguageC
 }
 
 func (s *ShippingMethod) ChannelListings(ctx context.Context) ([]*ShippingMethodChannelListing, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
 	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageShipping) {
 		listings, err := ShippingMethodChannelListingByShippingMethodIdLoader.Load(ctx, s.ID)()
 		if err != nil {
@@ -96,10 +94,8 @@ func (s *ShippingMethod) ChannelListings(ctx context.Context) ([]*ShippingMethod
 }
 
 func (s *ShippingMethod) Price(ctx context.Context) (*Money, error) {
-	embedChannel, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedChannel := GetContextValue[string](ctx, ChannelIdCtx)
+
 	if embedChannel == "" {
 		return nil, nil
 	}
@@ -120,10 +116,7 @@ func (s *ShippingMethod) Price(ctx context.Context) (*Money, error) {
 }
 
 func (s *ShippingMethod) MaximumOrderPrice(ctx context.Context) (*Money, error) {
-	embedChannel, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedChannel := GetContextValue[string](ctx, ChannelIdCtx)
 	if embedChannel == "" {
 		return nil, nil
 	}
@@ -143,10 +136,7 @@ func (s *ShippingMethod) MaximumOrderPrice(ctx context.Context) (*Money, error) 
 }
 
 func (s *ShippingMethod) MinimumOrderPrice(ctx context.Context) (*Money, error) {
-	embedChannel, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedChannel := GetContextValue[string](ctx, ChannelIdCtx)
 	if embedChannel == "" {
 		return nil, nil
 	}
@@ -185,10 +175,7 @@ func (s *ShippingMethod) PostalCodeRules(ctx context.Context) ([]*ShippingMethod
 
 // NOTE: products are ordered by their slugs
 func (s *ShippingMethod) ExcludedProducts(ctx context.Context, args GraphqlParams) (*ProductCountableConnection, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageShipping) {
 		return nil, model.NewAppError("ShippingMethod.ExcludedProducts", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
 	}
@@ -253,14 +240,8 @@ func SystemShippingZoneToGraphqlShippingZone(s *model.ShippingZone) *ShippingZon
 }
 
 func (s *ShippingZone) PriceRange(ctx context.Context) (*MoneyRange, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	channelID := GetContextValue[string](ctx, ChannelIdCtx)
 
 	if channelID == "" {
 		return nil, nil
@@ -288,10 +269,8 @@ func (s *ShippingZone) PriceRange(ctx context.Context) (*MoneyRange, error) {
 }
 
 func (s *ShippingZone) ShippingMethods(ctx context.Context) ([]*ShippingMethod, error) {
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
+	channelID := GetContextValue[string](ctx, ChannelIdCtx)
+	var err error
 
 	var shippingMethods []*model.ShippingMethod
 	if model.IsValidId(channelID) {
