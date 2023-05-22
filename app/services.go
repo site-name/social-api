@@ -19,7 +19,6 @@ var (
 	menuService      func(*Server) (sub_app_iface.MenuService, error)
 	pageService      func(*Server) (sub_app_iface.PageService, error)
 	seoService       func(*Server) (sub_app_iface.SeoService, error)
-	shopService      func(*Server) (sub_app_iface.ShopService, error)
 	shippingService  func(*Server) (sub_app_iface.ShippingService, error)
 	discountService  func(*Server) (sub_app_iface.DiscountService, error)
 	csvService       func(*Server) (sub_app_iface.CsvService, error)
@@ -84,10 +83,6 @@ func RegisterPageService(f func(*Server) (sub_app_iface.PageService, error)) {
 
 func RegisterSeoService(f func(*Server) (sub_app_iface.SeoService, error)) {
 	seoService = f
-}
-
-func RegisterShopService(f func(*Server) (sub_app_iface.ShopService, error)) {
-	shopService = f
 }
 
 func RegisterShippingService(f func(*Server) (sub_app_iface.ShippingService, error)) {
@@ -219,14 +214,6 @@ func (s *Server) registerSubServices() error {
 		return err
 	}
 
-	if shopService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "shopService"))
-	}
-	s.shop, err = shopService(s)
-	if err != nil {
-		return err
-	}
-
 	if shippingService == nil {
 		slog.Fatal("service initializer is not registered", slog.String("service", "shippingService"))
 	}
@@ -321,11 +308,6 @@ func (s *Server) PaymentService() sub_app_iface.PaymentService {
 // Giftcard returns giftcard sub app
 func (s *Server) GiftcardService() sub_app_iface.GiftcardService {
 	return s.giftcard
-}
-
-// ShopService returns shop sub app
-func (s *Server) ShopService() sub_app_iface.ShopService {
-	return s.shop
 }
 
 // Seo returns order seo app

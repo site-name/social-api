@@ -229,7 +229,7 @@ func (a *ServiceDiscount) ValidateVoucher(voucher *model.Voucher, totalPrice *go
 		}
 	}
 	if *voucher.OnlyForStaff {
-		notApplicableErr, appErr = a.ValidateVoucherOnlyForStaff(voucher, customerID)
+		notApplicableErr, appErr = a.ValidateOnlyForStaff(voucher, customerID)
 		if appErr != nil || notApplicableErr != nil {
 			return
 		}

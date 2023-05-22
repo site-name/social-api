@@ -45,7 +45,7 @@ func (a *ServiceOrder) GetOrderCountry(ord *model.Order) (model.CountryCode, *mo
 // OrderLineNeedsAutomaticFulfillment Check if given line is digital and should be automatically fulfilled.
 //
 // NOTE: before calling this, caller can attach related data into `orderLine` so this function does not have to call the database
-func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *model.OrderLine, shopDigitalSettings *model.ShopDefaultDigitalContentSettings) (bool, *model.AppError) {
+func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *model.OrderLine) (bool, *model.AppError) {
 	if orderLine.VariantID == nil || orderLine.GetProductVariant() == nil {
 		return false, nil
 	}
@@ -65,7 +65,7 @@ func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *model.Order
 		}
 	}
 
-	if *digitalContent.UseDefaultSettings && *shopDigitalSettings.AutomaticFulfillmentDigitalProducts {
+	if *digitalContent.UseDefaultSettings && *a.srv.Config().ShopSettings.AutomaticFulfillmentDigitalProducts {
 		return true, nil
 	}
 	if *digitalContent.AutomaticFulfillment {
@@ -77,20 +77,13 @@ func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *model.Order
 
 // OrderNeedsAutomaticFulfillment checks if given order has digital products which shoul be automatically fulfilled.
 func (a *ServiceOrder) OrderNeedsAutomaticFulfillment(ord model.Order) (bool, *model.AppError) {
-	// finding shop that hold this order:
-	ownerShopOfOrder, appErr := a.srv.ShopService().ShopById(ord.ShopID)
-	if appErr != nil {
-		return false, appErr
-	}
-	shopDefaultDigitalContentSettings := a.srv.ProductService().GetDefaultDigitalContentSettings(ownerShopOfOrder)
-
 	digitalOrderLinesOfOrder, appErr := a.AllDigitalOrderLinesOfOrder(ord.Id)
 	if appErr != nil {
 		return false, appErr
 	}
 
 	for _, orderLine := range digitalOrderLinesOfOrder {
-		orderLineNeedsAutomaticFulfillment, appErr := a.OrderLineNeedsAutomaticFulfillment(orderLine, shopDefaultDigitalContentSettings)
+		orderLineNeedsAutomaticFulfillment, appErr := a.OrderLineNeedsAutomaticFulfillment(orderLine)
 		if appErr != nil {
 			return false, appErr
 		}

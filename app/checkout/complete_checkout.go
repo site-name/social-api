@@ -493,7 +493,7 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 // which language to use when sending email.
 //
 // NOTE: the unused underscore param originally is `app`, but we are not gonna present the feature in early versions.
-func (s *ServiceCheckout) createOrder(checkoutInfo model.CheckoutInfo, orderData map[string]interface{}, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, siteSettings *model.Shop) (*model.Order, *model.InsufficientStock, *model.AppError) {
+func (s *ServiceCheckout) createOrder(checkoutInfo model.CheckoutInfo, orderData model.StringInterface, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, siteSettings *model.Shop) (*model.Order, *model.InsufficientStock, *model.AppError) {
 	// create transaction
 	transaction, err := s.srv.Store.GetMasterX().Beginx()
 	if err != nil {
@@ -517,20 +517,12 @@ func (s *ServiceCheckout) createOrder(checkoutInfo model.CheckoutInfo, orderData
 		return orders[0], nil, nil
 	}
 
-	totalPriceLeft := orderData["total_price_left"].(*goprices.Money)
-	delete(orderData, "total_price_left")
-	orderLinesInfo := orderData["lines"].([]*model.OrderLineData)
-	delete(orderData, "lines")
+	totalPriceLeft := orderData.Pop("total_price_left").(*goprices.Money)
+	orderLinesInfo := orderData.Pop("lines").([]*model.OrderLineData)
 
 	status := model.UNCONFIRMED
-	if siteSettings == nil {
-		siteSettings, appErr := s.srv.ShopService().ShopById(checkOut.ShopID)
-		if appErr != nil {
-			return nil, nil, appErr
-		}
-		if *siteSettings.AutomaticallyConfirmAllNewOrders {
-			status = model.UNFULFILLED
-		}
+	if *s.srv.Config().ShopSettings.AutomaticallyConfirmAllNewOrders {
+		status = model.UNFULFILLED
 	}
 
 	/*

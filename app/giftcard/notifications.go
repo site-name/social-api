@@ -24,7 +24,7 @@ func (s *ServiceGiftcard) SendGiftcardNotification(requesterUser *model.User, _ 
 		"recipient_email":   email,
 		"resending":         resending,
 		"domain":            s.srv.Config().ServiceSettings.SiteURL,
-		"site_name":         shop.Name,
+		"site_name":         s.srv.Config().ServiceSettings.SiteName,
 	}
 
 	_, appErr := manager.Notify(model.SEND_GIFT_CARD, payload, channelID, "")

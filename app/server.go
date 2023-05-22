@@ -195,7 +195,6 @@ type Server struct {
 	menu      sub_app_iface.MenuService
 	csv       sub_app_iface.CsvService
 	page      sub_app_iface.PageService
-	shop      sub_app_iface.ShopService
 	seo       sub_app_iface.SeoService
 	attribute sub_app_iface.AttributeService
 	channel   sub_app_iface.ChannelService

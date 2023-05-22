@@ -19,6 +19,7 @@ import (
 	"github.com/mattermost/ldap"
 
 	"github.com/sitename/sitename/modules/filestore"
+	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 )
@@ -403,8 +404,6 @@ type ServiceSettings struct {
 	EnablePermalinkPreviews                           *bool   `access:"site_posts"`
 	EnableInlineLatex                                 *bool   `access:"site_posts"`
 
-	MaxCheckoutLineQuantity *int `access:"site_posts"` // default to 50
-
 	DEPRECATED_DO_NOT_USE_ImageProxyType              *string `json:"ImageProxyType" mapstructure:"ImageProxyType"`                           // Deprecated: do not use
 	DEPRECATED_DO_NOT_USE_ImageProxyURL               *string `json:"ImageProxyURL" mapstructure:"ImageProxyURL"`                             // Deprecated: do not use
 	DEPRECATED_DO_NOT_USE_ImageProxyOptions           *string `json:"ImageProxyOptions" mapstructure:"ImageProxyOptions"`                     // Deprecated: do not use
@@ -733,9 +732,6 @@ func (s *ServiceSettings) SetDefaults(isUpdate bool) {
 	if s.DEPRECATED_DO_NOT_USE_AllowEditPost == nil {
 		s.DEPRECATED_DO_NOT_USE_AllowEditPost = NewPrimitive(ALLOW_EDIT_POST_ALWAYS)
 	}
-	if s.MaxCheckoutLineQuantity == nil {
-		s.MaxCheckoutLineQuantity = NewPrimitive(MAX_CHECKOUT_LINE_QUANTITY)
-	}
 
 	if s.ExperimentalEnableAuthenticationTransfer == nil {
 		s.ExperimentalEnableAuthenticationTransfer = NewPrimitive(true)
@@ -869,7 +865,92 @@ func (s *ServiceSettings) SetDefaults(isUpdate bool) {
 	if s.EnableReliableWebSockets == nil {
 		s.EnableReliableWebSockets = NewPrimitive(true)
 	}
+}
 
+type ShopSettings struct {
+	IncludeTaxesInPrice                      *bool                   // default true
+	DisplayGrossPrices                       *bool                   // default true
+	ChargeTaxesOnShipping                    *bool                   // default true
+	TrackInventoryByDefault                  *bool                   // default true
+	DefaultWeightUnit                        *measurement.WeightUnit // default "kg"
+	AutomaticFulfillmentDigitalProducts      *bool                   // default false
+	DefaultDigitalMaxDownloads               *int                    // default 10
+	DefaultDigitalUrlValidDays               *int                    // default 10
+	DefaultMailSenderName                    *string
+	DefaultMailSenderAddress                 *string
+	CustomerSetPasswordUrl                   *string
+	AutomaticallyConfirmAllNewOrders         *bool                       // default true
+	FulfillmentAutoApprove                   *bool                       // default true
+	FulfillmentAllowUnPaid                   *bool                       // default true
+	GiftcardExpiryType                       *GiftCardSettingsExpiryType // default to "never_expire"
+	GiftcardExpiryPeriodType                 *TimePeriodType             // default to "day"
+	GiftcardExpiryPeriod                     *int                        // default 10
+	AutomaticallyFulfillNonShippableGiftcard *bool                       // default true
+	MaxCheckoutLineQuantity                  *int                        // default to 50
+	Address                                  *Address
+}
+
+func (s *ShopSettings) SetDefaults() {
+	if s.Address == nil {
+		s.Address = new(Address)
+	}
+	if s.IncludeTaxesInPrice == nil {
+		s.IncludeTaxesInPrice = NewPrimitive(true)
+	}
+	if s.DisplayGrossPrices == nil {
+		s.DisplayGrossPrices = NewPrimitive(true)
+	}
+	if s.ChargeTaxesOnShipping == nil {
+		s.ChargeTaxesOnShipping = NewPrimitive(true)
+	}
+	if s.TrackInventoryByDefault == nil {
+		s.TrackInventoryByDefault = NewPrimitive(true)
+	}
+	if s.DefaultWeightUnit == nil {
+		s.DefaultWeightUnit = NewPrimitive(measurement.KG)
+	}
+	if s.AutomaticFulfillmentDigitalProducts == nil {
+		s.AutomaticFulfillmentDigitalProducts = NewPrimitive(false)
+	}
+	if s.DefaultDigitalMaxDownloads == nil {
+		s.DefaultDigitalMaxDownloads = NewPrimitive(10)
+	}
+	if s.DefaultDigitalUrlValidDays == nil {
+		s.DefaultDigitalUrlValidDays = NewPrimitive(10)
+	}
+	if s.DefaultMailSenderName == nil {
+		s.DefaultMailSenderName = NewPrimitive("")
+	}
+	if s.DefaultMailSenderAddress == nil {
+		s.DefaultMailSenderAddress = NewPrimitive("")
+	}
+	if s.CustomerSetPasswordUrl == nil {
+		s.CustomerSetPasswordUrl = NewPrimitive("")
+	}
+	if s.AutomaticallyConfirmAllNewOrders == nil {
+		s.AutomaticallyConfirmAllNewOrders = NewPrimitive(true)
+	}
+	if s.FulfillmentAutoApprove == nil {
+		s.FulfillmentAutoApprove = NewPrimitive(true)
+	}
+	if s.FulfillmentAllowUnPaid == nil {
+		s.FulfillmentAllowUnPaid = NewPrimitive(true)
+	}
+	if s.GiftcardExpiryType == nil {
+		s.GiftcardExpiryType = NewPrimitive(NEVER_EXPIRE)
+	}
+	if s.GiftcardExpiryPeriodType == nil {
+		s.GiftcardExpiryPeriodType = NewPrimitive(DAY)
+	}
+	if s.GiftcardExpiryPeriod == nil {
+		s.GiftcardExpiryPeriod = NewPrimitive(10)
+	}
+	if s.AutomaticallyFulfillNonShippableGiftcard == nil {
+		s.AutomaticallyFulfillNonShippableGiftcard = NewPrimitive(true)
+	}
+	if s.MaxCheckoutLineQuantity == nil {
+		s.MaxCheckoutLineQuantity = NewPrimitive(MAX_CHECKOUT_LINE_QUANTITY)
+	}
 }
 
 type ClusterSettings struct {
@@ -2954,6 +3035,7 @@ type Config struct {
 	ImportSettings            ImportSettings // telemetry: none
 	ExportSettings            ExportSettings
 	ThirdPartySettings        ThirdPartySettings
+	ShopSettings              ShopSettings
 }
 
 func (o *Config) Clone() *Config {
@@ -3049,6 +3131,7 @@ func (o *Config) SetDefaults() {
 	o.ImportSettings.SetDefaults()
 	o.ExportSettings.SetDefaults()
 	o.ThirdPartySettings.SetDefaults()
+	o.ShopSettings.SetDefaults()
 }
 
 func (o *Config) IsValid() *AppError {

@@ -32,7 +32,7 @@ func (r *Resolver) UserBulkSetActive(ctx context.Context, args struct {
 }
 
 func (r *Resolver) Me(ctx context.Context) (*User, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
@@ -50,7 +50,7 @@ func (r *Resolver) User(ctx context.Context, args struct {
 	Id    *string
 	Email *string
 }) (*User, error) {
-	embedCtx, _ := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	if args.Id == nil && args.Email == nil {
 		embedCtx.SetInvalidParam("args")
 		return nil, embedCtx.Err

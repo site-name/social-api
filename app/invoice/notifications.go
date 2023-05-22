@@ -33,17 +33,13 @@ func (s *ServiceInvoice) SendInvoice(inVoice model.Invoice, staffUser *model.Use
 		return appErr
 	}
 
-	shop, appErr := s.srv.ShopService().ShopById(manager.GetShopID())
-	if appErr != nil {
-		return appErr
-	}
-
 	payload := map[string]interface{}{
-		"invoice":          GetInvoicePayload(inVoice),
-		"recipient_email":  recipientEmail,
-		"requester_app_id": nil,
-		"domain":           *s.srv.Config().ServiceSettings.SiteURL,
-		"site_name":        shop.Name,
+		"invoice":           GetInvoicePayload(inVoice),
+		"recipient_email":   recipientEmail,
+		"requester_app_id":  nil,
+		"requester_user_id": staffUser.Id,
+		"domain":            *s.srv.Config().ServiceSettings.SiteURL,
+		"site_name":         s.srv.Config().ServiceSettings.SiteName,
 	}
 
 	_, appErr = manager.Notify(model.INVOICE_READY, payload, orDer.ChannelID, "")

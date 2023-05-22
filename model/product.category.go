@@ -61,7 +61,7 @@ type CategoryFilterOption struct {
 
 type Categories []*Category
 
-// set flat to true to recursivel get all ids of child categories to
+// set flat to true to recursively get all ids of child categories to
 func (cs Categories) IDs(flat bool) util.AnyArray[string] {
 	// if !flat {
 	return lo.Map(cs, func(g *Category, _ int) string { return g.Id })

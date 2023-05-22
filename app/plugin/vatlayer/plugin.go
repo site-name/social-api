@@ -4,13 +4,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/plugin"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 )
 
 var manifest = &interfaces.PluginManifest{
@@ -181,17 +179,9 @@ func (vp *VatlayerPlugin) getTaxesForCountry(country string) (any, *model.AppErr
 	if country == "" {
 		country = vp.config.OriginCountry
 		if country == "" {
-			shop, appErr := vp.Manager.Srv.ShopService().ShopByOptions(&model.ShopFilterOptions{
-				Id:                          squirrel.Eq{store.ShopTableName + ".Id": vp.Manager.ShopID},
-				SelectRelatedCompanyAddress: true,
-			})
-			if appErr != nil {
-				return nil, appErr
-			}
+			country := vp.Manager.Srv.Config().ShopSettings.Address.Country.String()
 
-			if companyAddr := shop.GetCompanyAddress(); companyAddr != nil {
-				country = companyAddr.Country.String()
-			} else {
+			if country == "" {
 				country = model.DEFAULT_COUNTRY.String()
 			}
 		}

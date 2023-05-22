@@ -108,8 +108,8 @@ type DiscountService interface {
 	ValidateOncePerCustomer(voucher *model.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
 	// ValidateVoucherForCheckout validates given voucher
 	ValidateVoucherForCheckout(manager interfaces.PluginManagerInterface, voucher *model.Voucher, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (*model.NotApplicable, *model.AppError)
-	// ValidateVoucherOnlyForStaff validate if voucher is only for staff
-	ValidateVoucherOnlyForStaff(voucher *model.Voucher, customerID string) (*model.NotApplicable, *model.AppError)
+	// ValidateOnlyForStaff validate if voucher is only for staff
+	ValidateOnlyForStaff(voucher *model.Voucher, customerID string) (*model.NotApplicable, *model.AppError)
 	// VoucherById finds and returns a voucher with given id
 	VoucherById(voucherID string) (*model.Voucher, *model.AppError)
 	// VoucherByOption returns 1 voucher filtered using given options

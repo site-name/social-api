@@ -15,7 +15,7 @@ func (s *ServiceProduct) FilterCategoriesFromCache(filter func(c *model.Category
 	var res model.Categories
 
 	s.categoryMap.Range(func(id, value any) bool {
-		if category, ok := value.(*model.Category); ok && filter(category) {
+		if category := value.(*model.Category); filter(category) {
 			res = append(res, category)
 		}
 		return true
@@ -88,7 +88,7 @@ func (s *ServiceProduct) DoAnalyticCategories() *model.AppError {
 	slog.Info("Analyzing categories")
 
 	var allCategories model.Categories
-	const limit uint64 = 500
+	const limit = 500
 	var lastCategorySlug string
 
 	for {
@@ -103,12 +103,13 @@ func (s *ServiceProduct) DoAnalyticCategories() *model.AppError {
 		if appErr != nil {
 			return appErr
 		}
-		if len(categories) == 0 {
-			break
-		}
 
 		lastCategorySlug = categories[categories.Len()-1].Slug
 		allCategories = append(allCategories, categories...)
+
+		if len(categories) < limit {
+			break
+		}
 	}
 
 	countObjs, err := s.srv.Store.Product().CountByCategoryIDs(allCategories.IDs(false))

@@ -55,12 +55,7 @@ func (a *ServiceOrder) OrderCreated(ord model.Order, user *model.User, _ interfa
 		}
 	}
 
-	shopSettings, appErr := a.srv.ShopService().ShopById(ord.ShopID)
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	if *shopSettings.AutomaticallyConfirmAllNewOrders {
+	if *a.srv.Config().ShopSettings.AutomaticallyConfirmAllNewOrders {
 		appErr = a.OrderConfirmed(ord, user, nil, manager, false)
 		if appErr != nil {
 			return nil, appErr
@@ -889,20 +884,13 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord model.Order, manager
 		return nil, appErr
 	}
 
-	// finding shop that hold this order:
-	ownerShopOfOrder, appErr := a.srv.ShopService().ShopById(ord.ShopID)
-	if appErr != nil {
-		return nil, appErr
-	}
-	shopDefaultDigitalContentSettings := a.srv.ProductService().GetDefaultDigitalContentSettings(ownerShopOfOrder)
-
 	var (
 		fulfillmentLines []*model.FulfillmentLine
 		orderLineDatas   []*model.OrderLineData
 	)
 
 	for _, orderLine := range digitalOrderLinesOfOrder {
-		orderLineNeedsAutomaticFulfillment, appErr := a.OrderLineNeedsAutomaticFulfillment(orderLine, shopDefaultDigitalContentSettings)
+		orderLineNeedsAutomaticFulfillment, appErr := a.OrderLineNeedsAutomaticFulfillment(orderLine)
 		if appErr != nil {
 			return nil, appErr // must return if error occured
 		}

@@ -31,12 +31,9 @@ func (s *ServicePlugin) NewPluginManager() (interfaces.PluginManagerInterface, *
 		Srv: s.srv,
 	}
 
-	// find all channels belong to given shop
 	channels, appErr := manager.Srv.
 		ChannelService().
-		ChannelsByOption(&model.ChannelFilterOption{
-			ShopID: squirrel.Eq{store.ChannelTableName + ".ShopID": shopID},
-		})
+		ChannelsByOption(&model.ChannelFilterOption{})
 	if appErr != nil {
 		return nil, appErr
 	}

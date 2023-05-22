@@ -9,7 +9,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
@@ -19,11 +18,11 @@ type ServiceShop struct {
 }
 
 func init() {
-	app.RegisterShopService(func(s *app.Server) (sub_app_iface.ShopService, error) {
-		return &ServiceShop{
-			srv: s,
-		}, nil
-	})
+	// app.RegisterShopService(func(s *app.Server) (sub_app_iface.ShopService, error) {
+	// 	return &ServiceShop{
+	// 		srv: s,
+	// 	}, nil
+	// })
 }
 
 // ShopById finds shop by given id

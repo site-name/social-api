@@ -34,14 +34,8 @@ func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *model.DigitalConte
 		maxDownloads *int
 	)
 	if *digitalContent.UseDefaultSettings {
-		shop, appErr := a.srv.ShopService().ShopById(digitalContent.ShopID)
-		if appErr != nil {
-			return false, appErr
-		}
-		shopDigitalContentSetting := a.GetDefaultDigitalContentSettings(shop)
-
-		urlValidDays = shopDigitalContentSetting.DefaultDigitalUrlValidDays
-		maxDownloads = shopDigitalContentSetting.DefaultDigitalMaxDownloads
+		urlValidDays = a.srv.Config().ShopSettings.DefaultDigitalUrlValidDays
+		maxDownloads = a.srv.Config().ShopSettings.DefaultDigitalMaxDownloads
 	} else {
 		urlValidDays = digitalContent.UrlValidDays
 		maxDownloads = digitalContent.MaxDownloads

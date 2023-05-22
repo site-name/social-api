@@ -139,13 +139,8 @@ func (a *ServiceDiscount) GetDiscountAmountFor(voucher *model.Voucher, price int
 
 // ValidateMinSpent validates if the order cost at least a specific amount of money
 func (a *ServiceDiscount) ValidateMinSpent(voucher *model.Voucher, value *goprices.TaxedMoney, channelID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
-	ownerShopOfVoucher, appErr := a.srv.ShopService().ShopById(voucher.ShopID)
-	if appErr != nil {
-		return
-	}
-
 	money := value.Net
-	if *ownerShopOfVoucher.DisplayGrossPrices {
+	if *a.srv.Config().ShopSettings.DisplayGrossPrices {
 		money = value.Gross
 	}
 
@@ -199,25 +194,13 @@ func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *model.Voucher, custom
 	return
 }
 
-// ValidateVoucherOnlyForStaff validate if voucher is only for staff
-func (a *ServiceDiscount) ValidateVoucherOnlyForStaff(voucher *model.Voucher, customerID string) (*model.NotApplicable, *model.AppError) {
+// ValidateOnlyForStaff validate if voucher is only for staff
+func (a *ServiceDiscount) ValidateOnlyForStaff(voucher *model.Voucher, customerID string) (*model.NotApplicable, *model.AppError) {
 	if !*voucher.OnlyForStaff {
 		return nil, nil
 	}
 
-	// try checking if there is a relationship between the shop(owner of this voucher) and the customer
-	// if no reation found, it means this customer cannot have this voucher
-	relation, appErr := a.srv.ShopService().ShopStaffByOptions(&model.ShopStaffFilterOptions{
-		StaffID: squirrel.Eq{store.ShopStaffTableName + ".StaffID": customerID},
-	})
-	if appErr != nil {
-		if appErr.StatusCode == http.StatusNotFound || relation == nil {
-			return &model.NotApplicable{
-				Message: "This offer is valid only for staff customers",
-			}, nil
-		}
-		return nil, appErr
-	}
+	// TODO: add staff relations
 
 	return nil, nil
 }
