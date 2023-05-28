@@ -64,7 +64,7 @@ func (s *SaleChannelListing) PreSave() {
 
 func (s *SaleChannelListing) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"sale_channel_listing.is_valid.%s.app_error",
+		"model.sale_channel_listing.is_valid.%s.app_error",
 		"sale_channel_listing_id=",
 		"SaleChannelListing.IsValid",
 	)

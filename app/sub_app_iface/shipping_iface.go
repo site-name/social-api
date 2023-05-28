@@ -6,6 +6,7 @@ package sub_app_iface
 import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // ShippingService contains methods for working with shippings
@@ -23,10 +24,11 @@ type ShippingService interface {
 	// ShippingMethodByOption returns a shipping method with given options
 	ShippingMethodByOption(option *model.ShippingMethodFilterOption) (*model.ShippingMethod, *model.AppError)
 	// ShippingMethodChannelListingsByOption returns a list of shipping method channel listings by given option
-	ShippingMethodChannelListingsByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, *model.AppError)
+	ShippingMethodChannelListingsByOption(option *model.ShippingMethodChannelListingFilterOption) (model.ShippingMethodChannelListings, *model.AppError)
 	// ShippingMethodsByOptions finds and returns all shipping methods that satisfy given fiter options
 	ShippingMethodsByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, *model.AppError)
 	// ShippingZonesByOption returns all shipping zones that satisfy given options
 	ShippingZonesByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, *model.AppError)
+	DropInvalidShippingMethodsRelationsForGivenChannels(transaction store_iface.SqlxTxExecutor, shippingMethodIds, channelIds []string) *model.AppError
 	ShippingMethodPostalCodeRulesByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, *model.AppError)
 }

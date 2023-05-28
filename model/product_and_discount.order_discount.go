@@ -91,7 +91,7 @@ func (o *OrderDiscount) DeepCopy() *OrderDiscount {
 
 func (o *OrderDiscount) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"order_dicount.is_valid.%s.app_error",
+		"model.order_dicount.is_valid.%s.app_error",
 		"order_discount_id=",
 		"OrderDiscount.IsValid",
 	)

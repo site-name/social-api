@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlChannelStore struct {
@@ -47,21 +48,49 @@ func (cs *SqlChannelStore) ScanFields(ch *model.Channel) []interface{} {
 	}
 }
 
-func (cs *SqlChannelStore) Save(ch *model.Channel) (*model.Channel, error) {
-	ch.PreSave()
-	if err := ch.IsValid(); err != nil {
-		return nil, err
+func (s *SqlChannelStore) Upsert(transaction store_iface.SqlxTxExecutor, channel *model.Channel) (*model.Channel, error) {
+	runner := s.GetMasterX()
+	if transaction != nil {
+		runner = transaction
 	}
 
-	query := "INSERT INTO " + store.ChannelTableName + "(" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
-	if _, err := cs.GetMasterX().NamedExec(query, ch); err != nil {
-		if cs.IsUniqueConstraintError(err, []string{"Slug", "channels_slug_key", "idx_channels_slug_unique"}) {
-			return nil, store.NewErrInvalidInput(store.ChannelTableName, "Slug", ch.Slug)
+	isSaving := false
+	if !model.IsValidId(channel.Id) {
+		channel.Id = ""
+		isSaving = true
+		channel.PreSave()
+	} else {
+		channel.PreUpdate()
+	}
+
+	if appErr := channel.IsValid(); appErr != nil {
+		return nil, appErr
+	}
+
+	var (
+		err    error
+		result sql.Result
+	)
+	if isSaving {
+		query := "INSERT INTO " + store.ChannelTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+		result, err = runner.NamedExec(query, channel)
+	} else {
+		query := "UPDATE " + store.ChannelTableName + " SET " + s.ModelFields(":").Join(",") + " WHERE Id=:Id"
+		result, err = runner.NamedExec(query, channel)
+	}
+
+	if err != nil {
+		if s.IsUniqueConstraintError(err, []string{"Slug", "channels_slug_key", "idx_channels_slug_unique"}) {
+			return nil, store.NewErrInvalidInput(store.ChannelTableName, "Slug", channel.Slug)
 		}
-		return nil, errors.Wrapf(err, "failed to save channel with id=%s", ch.Id)
+		return nil, errors.Wrap(err, "failed to upsert channel")
+	}
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected != 1 {
+		return nil, errors.Errorf("%d rows affected instead of 1", rowsAffected)
 	}
 
-	return ch, nil
+	return channel, nil
 }
 
 func (cs *SqlChannelStore) Get(id string) (*model.Channel, error) {

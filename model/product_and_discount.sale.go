@@ -114,7 +114,7 @@ type SaleTranslation struct {
 
 func (s *SaleTranslation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"sale_translation.is_valid.%s.app_error",
+		"model.sale_translation.is_valid.%s.app_error",
 		"sale_translation_id=",
 		"SaleTranslation.IsValid",
 	)

@@ -120,5 +120,6 @@ func (c *Channel) PreUpdate() {
 
 func (c *Channel) DeepCopy() *Channel {
 	res := *c
+	res.shippingZones = c.shippingZones.DeepCopy()
 	return &res
 }

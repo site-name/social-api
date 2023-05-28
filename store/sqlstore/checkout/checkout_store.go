@@ -83,81 +83,60 @@ func (cs *SqlCheckoutStore) ScanFields(checkOut *model.Checkout) []interface{} {
 }
 
 // Upsert depends on given checkout's Token property to decide to update or insert it
-func (cs *SqlCheckoutStore) Upsert(ckout *model.Checkout) (*model.Checkout, error) {
-	var isSaving bool
-
-	if ckout.Token == "" {
-		isSaving = true
-		ckout.PreSave()
-	} else {
-		ckout.PreUpdate()
+func (cs *SqlCheckoutStore) Upsert(transaction store_iface.SqlxTxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, error) {
+	runner := cs.GetMasterX()
+	if transaction != nil {
+		runner = transaction
 	}
+	saveQuery := "INSERT INTO " + store.CheckoutTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
+	updateQuery := "UPDATE " + store.CheckoutTableName + " SET " + cs.
+		ModelFields("").
+		Map(func(_ int, s string) string {
+			return s + "=:" + s
+		}).
+		Join(",") + " WHERE Token=:Token"
 
-	if err := ckout.IsValid(); err != nil {
-		return nil, err
-	}
+	for _, checkout := range checkouts {
+		isSaving := false
 
-	var (
-		err         error
-		numUpdated  int64
-		oldCheckout *model.Checkout
-	)
-	if isSaving {
-		query := "INSERT INTO " + store.CheckoutTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
-		_, err = cs.GetMasterX().NamedExec(query, ckout)
+		if !model.IsValidId(checkout.Token) {
+			isSaving = true
+			checkout.Token = ""
+			checkout.PreSave()
+		} else {
+			checkout.PreUpdate()
+		}
 
-	} else {
-		// validate if checkout exist
-		oldCheckout, err = cs.Get(ckout.Token)
+		appErr := checkout.IsValid()
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		var err error
+
+		if isSaving {
+			_, err = runner.NamedExec(saveQuery, checkout)
+		} else {
+
+			var oldCheckout model.Checkout
+			eror := runner.Get(&oldCheckout, "SELECT * FROM "+store.CheckoutTableName+" WHERE Token = $1", checkout.Token)
+			if eror != nil {
+				return nil, eror
+			}
+
+			// keep uneditable field intact
+			checkout.BillingAddressID = oldCheckout.BillingAddressID
+			checkout.ShippingAddressID = oldCheckout.ShippingAddressID
+
+			_, err = runner.NamedExec(updateQuery, checkout)
+		}
+
 		if err != nil {
-			return nil, err
-		}
-
-		query := "UPDATE " + store.CheckoutTableName + " SET " + cs.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Token = :Token"
-
-		// set fields that CANNOT be changed
-		ckout.BillingAddressID = oldCheckout.BillingAddressID
-		ckout.ShippingAddressID = oldCheckout.ShippingAddressID
-
-		// update checkout
-		var result sql.Result
-		result, err = cs.GetMasterX().NamedExec(query, ckout)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
+			return nil, errors.Wrap(err, "failed to upsert checkout")
 		}
 	}
 
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to upsert checkout with token=%s", ckout.Token)
-	}
-	if numUpdated > 1 {
-		return nil, errors.Errorf("multiple checkouts were updated: %d instead of 1", numUpdated)
-	}
-
-	return ckout, nil
-}
-
-// Get finds a checkout with given token (checkouts use tokens(uuids) as primary keys)
-func (cs *SqlCheckoutStore) Get(token string) (*model.Checkout, error) {
-	var ckout model.Checkout
-	err := cs.GetReplicaX().Get(
-		&ckout,
-		`SELECT * FROM `+store.CheckoutTableName+` WHERE Token = ?`,
-		token,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CheckoutTableName, token)
-		}
-		return nil, errors.Wrapf(err, "failed to find checkout with token=%s", token)
-	}
-
-	return &ckout, nil
+	return checkouts, nil
 }
 
 type checkoutStatement string
@@ -180,9 +159,11 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *model.CheckoutFilte
 	if option.ChannelID != nil {
 		andCondition = append(andCondition, option.ChannelID)
 	}
-
 	if option.ChannelIsActive != nil {
 		andCondition = append(andCondition, squirrel.Expr("Channels.IsActive = ?", *option.ChannelIsActive))
+	}
+	if option.ShippingMethodID != nil {
+		andCondition = append(andCondition, option.ShippingMethodID)
 	}
 
 	if statementType == slect {

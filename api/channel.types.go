@@ -52,8 +52,7 @@ func (c Channel) HasOrders(ctx context.Context) (bool, error) {
 		return false, embedCtx.Err
 	}
 
-	if embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) &&
-		embedCtx.App.Srv().ChannelService().ShopSellsInChannel(embedCtx.CurrentShopID, c.ID) {
+	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
 		channel, err := ChannelWithHasOrdersByIdLoader.Load(ctx, c.ID)()
 		if err != nil {
 			return false, err
@@ -66,10 +65,7 @@ func (c Channel) HasOrders(ctx context.Context) (bool, error) {
 }
 
 func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Channel] {
-	var (
-		res        = make([]*dataloader.Result[*model.Channel], len(ids))
-		channelMap = map[string]*model.Channel{} // keys are channel ids
-	)
+	res := make([]*dataloader.Result[*model.Channel], len(ids))
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	channels, appErr := embedCtx.App.
@@ -79,28 +75,21 @@ func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 			Id: squirrel.Eq{store.ChannelTableName + ".Id": ids},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.Channel]{Error: appErr}
+		}
+		return res
 	}
 
-	channelMap = lo.SliceToMap(channels, func(c *model.Channel) (string, *model.Channel) { return c.Id, c })
-
+	channelMap := lo.SliceToMap(channels, func(c *model.Channel) (string, *model.Channel) { return c.Id, c })
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.Channel]{Data: channelMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.Channel]{Error: appErr}
 	}
 	return res
 }
 
 func channelBySlugLoader(ctx context.Context, slugs []string) []*dataloader.Result[*model.Channel] {
-	var (
-		res        = make([]*dataloader.Result[*model.Channel], len(slugs))
-		channelMap = map[string]*model.Channel{}
-	)
+	res := make([]*dataloader.Result[*model.Channel], len(slugs))
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	channels, appErr := embedCtx.App.
@@ -110,19 +99,15 @@ func channelBySlugLoader(ctx context.Context, slugs []string) []*dataloader.Resu
 			Slug: squirrel.Eq{store.ChannelTableName + ".Slug": slugs},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range slugs {
+			res[idx] = &dataloader.Result[*model.Channel]{Error: appErr}
+		}
+		return res
 	}
 
-	channelMap = lo.SliceToMap(channels, func(c *model.Channel) (string, *model.Channel) { return c.Slug, c })
-
+	channelMap := lo.SliceToMap(channels, func(c *model.Channel) (string, *model.Channel) { return c.Slug, c })
 	for idx, slug := range slugs {
 		res[idx] = &dataloader.Result[*model.Channel]{Data: channelMap[slug]}
-	}
-	return res
-
-errorLabel:
-	for idx := range slugs {
-		res[idx] = &dataloader.Result[*model.Channel]{Error: appErr}
 	}
 	return res
 }
@@ -210,10 +195,7 @@ errorLabel:
 }
 
 func channelWithHasOrdersByIdLoader(ctx context.Context, channelIDs []string) []*dataloader.Result[*model.Channel] {
-	var (
-		res        = make([]*dataloader.Result[*model.Channel], len(channelIDs))
-		channelMap = map[string]*model.Channel{}
-	)
+	res := make([]*dataloader.Result[*model.Channel], len(channelIDs))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// find all channels that have orders
@@ -224,18 +206,15 @@ func channelWithHasOrdersByIdLoader(ctx context.Context, channelIDs []string) []
 			AnnotateHasOrders: true,
 		})
 	if err != nil {
-		goto errorLabel
+		for range channelIDs {
+			res = append(res, &dataloader.Result[*model.Channel]{Error: err})
+		}
+		return res
 	}
 
-	channelMap = lo.SliceToMap(channels, func(c *model.Channel) (string, *model.Channel) { return c.Id, c })
+	channelMap := lo.SliceToMap(channels, func(c *model.Channel) (string, *model.Channel) { return c.Id, c })
 	for idx, id := range channelIDs {
 		res[idx] = &dataloader.Result[*model.Channel]{Data: channelMap[id]}
-	}
-	return res
-
-errorLabel:
-	for range channelIDs {
-		res = append(res, &dataloader.Result[*model.Channel]{Error: err})
 	}
 	return res
 }
@@ -300,9 +279,7 @@ func (c *ProductChannelListing) PurchaseCost(ctx context.Context) (*MoneyRange, 
 		return nil, embedCtx.Err
 	}
 
-	if !embedCtx.App.Srv().
-		ShopService().
-		UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) {
+	if !embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopAdminRoleId) {
 		return nil, MakeUnauthorizedError("ProductChannelListing.PurchaseCost")
 	}
 

@@ -2612,11 +2612,11 @@ func (s *RetryLayerChannelStore) GetbyOption(option *model.ChannelFilterOption) 
 
 }
 
-func (s *RetryLayerChannelStore) Save(ch *model.Channel) (*model.Channel, error) {
+func (s *RetryLayerChannelStore) Upsert(transaction store_iface.SqlxTxExecutor, channel *model.Channel) (*model.Channel, error) {
 
 	tries := 0
 	for {
-		result, err := s.ChannelStore.Save(ch)
+		result, err := s.ChannelStore.Upsert(transaction, channel)
 		if err == nil {
 			return result, nil
 		}
@@ -2712,26 +2712,6 @@ func (s *RetryLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOpt
 
 }
 
-func (s *RetryLayerCheckoutStore) Get(token string) (*model.Checkout, error) {
-
-	tries := 0
-	for {
-		result, err := s.CheckoutStore.Get(token)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error) {
 
 	tries := 0
@@ -2752,11 +2732,11 @@ func (s *RetryLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption
 
 }
 
-func (s *RetryLayerCheckoutStore) Upsert(ckout *model.Checkout) (*model.Checkout, error) {
+func (s *RetryLayerCheckoutStore) Upsert(transaction store_iface.SqlxTxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, error) {
 
 	tries := 0
 	for {
-		result, err := s.CheckoutStore.Upsert(ckout)
+		result, err := s.CheckoutStore.Upsert(transaction, checkouts)
 		if err == nil {
 			return result, nil
 		}
@@ -5144,11 +5124,11 @@ func (s *RetryLayerOpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, e
 
 }
 
-func (s *RetryLayerOrderStore) BulkUpsert(orders []*model.Order) ([]*model.Order, error) {
+func (s *RetryLayerOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orders []*model.Order) ([]*model.Order, error) {
 
 	tries := 0
 	for {
-		result, err := s.OrderStore.BulkUpsert(orders)
+		result, err := s.OrderStore.BulkUpsert(transaction, orders)
 		if err == nil {
 			return result, nil
 		}
@@ -7758,6 +7738,26 @@ func (s *RetryLayerShippingMethodStore) Upsert(method *model.ShippingMethod) (*m
 
 }
 
+func (s *RetryLayerShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+
+	tries := 0
+	for {
+		err := s.ShippingMethodChannelListingStore.BulkDelete(transaction, ids)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerShippingMethodChannelListingStore) FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error) {
 
 	tries := 0
@@ -7943,6 +7943,46 @@ func (s *RetryLayerShippingZoneStore) Upsert(shippingZone *model.ShippingZone) (
 	tries := 0
 	for {
 		result, err := s.ShippingZoneStore.Upsert(shippingZone)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingZoneChannelStore) BulkDelete(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) error {
+
+	tries := 0
+	for {
+		err := s.ShippingZoneChannelStore.BulkDelete(transaction, relations)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingZoneChannelStore) BulkSave(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShippingZoneChannelStore.BulkSave(transaction, relations)
 		if err == nil {
 			return result, nil
 		}

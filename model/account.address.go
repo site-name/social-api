@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"io"
 	"reflect"
 	"strings"
 	"unicode/utf8"
@@ -101,12 +100,6 @@ func (a *Address) Equal(other *Address) bool {
 
 func (add *Address) ToJSON() string {
 	return ModelToJson(add)
-}
-
-func AddressFromJson(data io.Reader) *Address {
-	var add Address
-	ModelFromJson(&add, data)
-	return &add
 }
 
 // PreSave makes sure the address is perfectly processed before saving into the database

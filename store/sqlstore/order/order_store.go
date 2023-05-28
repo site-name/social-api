@@ -109,7 +109,7 @@ func (os *SqlOrderStore) ScanFields(holder *model.Order) []interface{} {
 }
 
 // BulkUpsert performs bulk upsert given orders
-func (os *SqlOrderStore) BulkUpsert(orders []*model.Order) ([]*model.Order, error) {
+func (os *SqlOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orders []*model.Order) ([]*model.Order, error) {
 	var (
 		saveQuery   = "INSERT INTO " + store.OrderTableName + "(" + os.ModelFields("").Join(",") + ") VALUES (" + os.ModelFields(":").Join(",") + ")"
 		updateQuery = "UPDATE " + store.OrderTableName + " SET " +
@@ -118,7 +118,11 @@ func (os *SqlOrderStore) BulkUpsert(orders []*model.Order) ([]*model.Order, erro
 					return s + "=:" + s
 				}).
 				Join(",") + " WHERE Id=:Id"
+		runner = os.GetMasterX()
 	)
+	if transaction != nil {
+		runner = transaction
+	}
 
 	for _, ord := range orders {
 		var (
@@ -140,7 +144,7 @@ func (os *SqlOrderStore) BulkUpsert(orders []*model.Order) ([]*model.Order, erro
 
 		if isSaving {
 			for {
-				_, err = os.GetMasterX().NamedExec(saveQuery, ord)
+				_, err = runner.NamedExec(saveQuery, ord)
 				if err != nil {
 					if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key"}) {
 						ord.NewToken()
@@ -154,7 +158,7 @@ func (os *SqlOrderStore) BulkUpsert(orders []*model.Order) ([]*model.Order, erro
 		} else {
 			var oldOrder model.Order
 			// try finding if order exist
-			err = os.GetReplicaX().Get(&oldOrder, "SELECT * FROM "+store.OrderTableName+" WHERE Id = ?", ord.Id)
+			err = runner.Get(&oldOrder, "SELECT * FROM "+store.OrderTableName+" WHERE Id = ?", ord.Id)
 			if err != nil {
 				if err == sql.ErrNoRows {
 					return nil, err
@@ -174,7 +178,7 @@ func (os *SqlOrderStore) BulkUpsert(orders []*model.Order) ([]*model.Order, erro
 			ord.ShippingPriceGrossAmount = oldOrder.ShippingPriceGrossAmount
 
 			var result sql.Result
-			result, err = os.GetMasterX().NamedExec(updateQuery, ord)
+			result, err = runner.NamedExec(updateQuery, ord)
 			if err == nil && result != nil {
 				numUpdated, _ = result.RowsAffected()
 			}
@@ -307,6 +311,12 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*mod
 	}
 	if option.UserID != nil {
 		query = query.Where(option.UserID)
+	}
+	if option.ChannelID != nil {
+		query = query.Where(option.ChannelID)
+	}
+	if option.ShippingMethodID != nil {
+		query = query.Where(option.ShippingMethodID)
 	}
 
 	queryString, args, err := query.ToSql()

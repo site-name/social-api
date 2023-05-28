@@ -80,7 +80,7 @@ func (c *Collection) String() string {
 }
 
 func (c *Collection) IsValid() *AppError {
-	outer := CreateAppErrorForModel("collection.is_valid.%s.app_error", "collection_id=", "Collection.IsValid")
+	outer := CreateAppErrorForModel("model.collection.is_valid.%s.app_error", "collection_id=", "Collection.IsValid")
 	if !IsValidId(c.Id) {
 		return outer("id", nil)
 	}
@@ -125,7 +125,7 @@ type CollectionTranslation struct {
 }
 
 func (c *CollectionTranslation) IsValid() *AppError {
-	outer := CreateAppErrorForModel("collection_translation.is_valid.%s.app_error", "collection_translation_id=", "CollectionTranslation.IsValid")
+	outer := CreateAppErrorForModel("model.collection_translation.is_valid.%s.app_error", "collection_translation_id=", "CollectionTranslation.IsValid")
 	if !IsValidId(c.Id) {
 		return outer("id", nil)
 	}

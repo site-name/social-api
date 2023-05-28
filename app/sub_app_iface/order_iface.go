@@ -36,7 +36,7 @@ type OrderService interface {
 	// BulkUpsertOrderLines perform bulk upsert given order lines
 	BulkUpsertOrderLines(transaction store_iface.SqlxTxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, *model.AppError)
 	// BulkUpsertOrders performs bulk upsert given orders
-	BulkUpsertOrders(orders []*model.Order) ([]*model.Order, *model.AppError)
+	BulkUpsertOrders(transaction store_iface.SqlxTxExecutor, orders []*model.Order) ([]*model.Order, *model.AppError)
 	// Calculate discount value depending on voucher and discount types.
 	//
 	// Raise NotApplicable if voucher of given type cannot be applied.

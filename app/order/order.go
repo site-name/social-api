@@ -44,8 +44,8 @@ func (a *ServiceOrder) UpsertOrder(transaction store_iface.SqlxTxExecutor, ord *
 }
 
 // BulkUpsertOrders performs bulk upsert given orders
-func (a *ServiceOrder) BulkUpsertOrders(orders []*model.Order) ([]*model.Order, *model.AppError) {
-	orders, err := a.srv.Store.Order().BulkUpsert(orders)
+func (a *ServiceOrder) BulkUpsertOrders(transaction store_iface.SqlxTxExecutor, orders []*model.Order) ([]*model.Order, *model.AppError) {
+	orders, err := a.srv.Store.Order().BulkUpsert(transaction, orders)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok { // error caused by IsValid()
 			return nil, appErr
@@ -202,7 +202,7 @@ func (a *ServiceOrder) OrderCanCancel(ord *model.Order) (bool, *model.AppError) 
 		return false, model.NewAppError("OrderCanCancel", "app.order.fulfillments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return len(fulfillments) == 0 && ord.Status != model.CANCELED && ord.Status != model.STATUS_DRAFT, nil
+	return len(fulfillments) == 0 && ord.Status != model.ORDER_STATUS_CANCELED && ord.Status != model.ORDER_STATUS_DRAFT, nil
 }
 
 // OrderCanCapture
@@ -220,8 +220,8 @@ func (a *ServiceOrder) OrderCanCapture(ord *model.Order, payment *model.Payment)
 	}
 
 	return payment.CanCapture() &&
-		ord.Status != model.STATUS_DRAFT &&
-		ord.Status != model.CANCELED, nil
+		ord.Status != model.ORDER_STATUS_DRAFT &&
+		ord.Status != model.ORDER_STATUS_CANCELED, nil
 }
 
 // OrderCanVoid

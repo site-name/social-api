@@ -12,6 +12,7 @@ import (
 	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type ServiceChannel struct {
@@ -86,4 +87,19 @@ func (a *ServiceChannel) ChannelsByOption(option *model.ChannelFilterOption) (mo
 	}
 
 	return channels, nil
+}
+
+func (a *ServiceChannel) UpsertChannel(transaction store_iface.SqlxTxExecutor, channel *model.Channel) (*model.Channel, *model.AppError) {
+	channel, err := a.srv.Store.Channel().Upsert(transaction, channel)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return nil, model.NewAppError("UpsertChannel", "app.channel.upsert_channel.app_error", nil, err.Error(), statusCode)
+	}
+	return channel, nil
 }

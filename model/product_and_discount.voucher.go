@@ -180,7 +180,7 @@ type VoucherTranslationFilterOption struct {
 
 func (v *VoucherTranslation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"voucher_translation.is_valid.%s.app_error",
+		"model.voucher_translation.is_valid.%s.app_error",
 		"voucher_trabslation_id=",
 		"VoucherTranslation.IsValid",
 	)

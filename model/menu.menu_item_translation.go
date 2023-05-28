@@ -1,7 +1,6 @@
 package model
 
 import (
-	"io"
 	"strings"
 	"unicode/utf8"
 
@@ -50,10 +49,4 @@ func (m *MenuItemTranslation) PreUpdate() {
 
 func (m *MenuItemTranslation) ToJSON() string {
 	return ModelToJson(m)
-}
-
-func MenuItemTranslationFromJson(data io.Reader) *MenuItemTranslation {
-	var m MenuItemTranslation
-	ModelFromJson(&m, data)
-	return &m
 }

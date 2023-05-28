@@ -38,7 +38,7 @@ type CollectionProductFilterOptions struct {
 }
 
 func (c *CollectionProduct) IsValid() *AppError {
-	outer := CreateAppErrorForModel("collection_product.is_valid.%s.app_error", "collection_product_id=", "CollectionProduct.IsValid")
+	outer := CreateAppErrorForModel("model.collection_product.is_valid.%s.app_error", "collection_product_id=", "CollectionProduct.IsValid")
 	if !IsValidId(c.Id) {
 		return outer("id", nil)
 	}

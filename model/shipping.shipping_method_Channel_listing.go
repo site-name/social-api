@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"golang.org/x/text/currency"
@@ -27,6 +28,18 @@ type ShippingMethodChannelListing struct {
 type ShippingMethodChannelListingFilterOption struct {
 	ShippingMethodID squirrel.Sqlizer
 	ChannelID        squirrel.Sqlizer
+
+	ShippingMethod_ShippingZoneID_Inner squirrel.Sqlizer // INNER JOIN ShippingMethods ON ... INNER JOIN ShippingZones ON ... WHERE ShippingZones.Id ...
+}
+
+type ShippingMethodChannelListings []*ShippingMethodChannelListing
+
+func (ss ShippingMethodChannelListings) IDs() []string {
+	return lo.Map(ss, func(s *ShippingMethodChannelListing, _ int) string { return s.Id })
+}
+
+func (ss ShippingMethodChannelListings) ShippingMethodIDs() []string {
+	return lo.Map(ss, func(s *ShippingMethodChannelListing, _ int) string { return s.ShippingMethodID })
 }
 
 func (s *ShippingMethodChannelListing) IsValid() *AppError {

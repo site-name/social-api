@@ -4,10 +4,12 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
@@ -144,4 +146,39 @@ func (s *ServiceShipping) ShippingMethodsByOptions(options *model.ShippingMethod
 		return nil, model.NewAppError("ShippingMethodsByOptions", "app.shipping.error_finding_shipping_methods.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 	return methods, nil
+}
+
+func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(transaction store_iface.SqlxTxExecutor, shippingMethodIds, channelIds []string) *model.AppError {
+	// unlink shipping methods from order and checkout instances
+	// when method is no longer available in given channels
+	checkouts, appErr := s.srv.CheckoutService().CheckoutsByOption(&model.CheckoutFilterOption{
+		ShippingMethodID: squirrel.Eq{store.CheckoutTableName + ".ShippingMethodID": shippingMethodIds},
+		ChannelID:        squirrel.Eq{store.CheckoutTableName + ".ChannelID": channelIds},
+	})
+	if appErr != nil {
+		return appErr
+	}
+
+	lo.ForEach(checkouts, func(checkout *model.Checkout, _ int) { checkout.ShippingMethodID = nil })
+	_, appErr = s.srv.CheckoutService().UpsertCheckouts(transaction, checkouts)
+	if appErr != nil {
+		return appErr
+	}
+
+	orders, appErr := s.srv.OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
+		Status:           squirrel.Eq{store.OrderTableName + ".Status": []string{string(model.ORDER_STATUS_UNCONFIRMED), string(model.ORDER_STATUS_DRAFT)}},
+		ShippingMethodID: squirrel.Eq{store.OrderTableName + ".ShippingMethodID": shippingMethodIds},
+		ChannelID:        squirrel.Eq{store.OrderTableName + ".ChannelID": channelIds},
+	})
+	if appErr != nil {
+		return appErr
+	}
+
+	lo.ForEach(orders, func(order *model.Order, _ int) { order.ShippingMethodID = nil })
+	_, appErr = s.srv.OrderService().BulkUpsertOrders(transaction, orders)
+	if appErr != nil {
+		return appErr
+	}
+
+	return nil
 }

@@ -98,7 +98,7 @@ type CheckoutService interface {
 	// It prefetch some related value also
 	FetchCheckoutLines(checkOut *model.Checkout) ([]*model.CheckoutLineInfo, *model.AppError)
 	// GetCustomerEmail returns checkout's user's email
-	GetCustomerEmail(ckout *model.Checkout) (string, *model.AppError)
+	GetCustomerEmail(checkout *model.Checkout) (string, *model.AppError)
 	// GetDeliveryMethodInfo takes `deliveryMethod` is either *model.ShippingMethod or *model.Warehouse
 	GetDeliveryMethodInfo(deliveryMethod interface{}, address *model.Address) (model.DeliveryMethodBaseInterface, *model.AppError)
 	// GetPricesOfDiscountedSpecificProduct Get prices of variants belonging to the discounted specific products.
@@ -154,18 +154,18 @@ type CheckoutService interface {
 	// UpdateCheckoutInfoShippingAddress updates given `checkoutInfo` by setting given `address` as its ShippingAddress.
 	// then updates its ValidShippingMethods
 	UpdateCheckoutInfoShippingAddress(checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
-	// UpsertCheckout saves/updates given checkout
-	UpsertCheckout(ckout *model.Checkout) (*model.Checkout, *model.AppError)
+	// UpsertCheckoust saves/updates given checkout
+	UpsertCheckouts(transaction store_iface.SqlxTxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, *model.AppError)
 	BaseOrderLineTotal(orderLine *model.OrderLine) (*goprices.TaxedMoney, *model.AppError)
 	BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Decimal, *model.AppError)
 	BulkCreateCheckoutLines(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, *model.AppError)
 	BulkUpdateCheckoutLines(checkoutLines []*model.CheckoutLine) *model.AppError
 	CalculateCheckoutQuantity(lineInfos []*model.CheckoutLineInfo) (int, *model.AppError)
 	ChangeBillingAddressInCheckout(checkOut *model.Checkout, address *model.Address) *model.AppError
-	CheckoutCountry(ckout *model.Checkout) (model.CountryCode, *model.AppError)
+	CheckoutCountry(checkout *model.Checkout) (model.CountryCode, *model.AppError)
 	CheckoutLineWithVariant(checkout *model.Checkout, productVariantID string) (*model.CheckoutLine, *model.AppError)
 	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model.AppError)
-	CheckoutSetCountry(ckout *model.Checkout, newCountryCode model.CountryCode) *model.AppError
+	CheckoutSetCountry(checkout *model.Checkout, newCountryCode model.CountryCode) *model.AppError
 	CleanBillingAddress(checkoutInfo model.CheckoutInfo) *model.AppError
 	CleanCheckoutPayment(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model.AppError)
 	ClearDeliveryMethod(checkoutInfo model.CheckoutInfo) *model.AppError

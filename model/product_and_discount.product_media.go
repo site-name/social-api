@@ -49,7 +49,7 @@ type ProductMediaFilterOption struct {
 
 func (p *ProductMedia) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"product_media.is_valid.%s.app_error",
+		"model.product_media.is_valid.%s.app_error",
 		"product_media_id=",
 		"ProductMedia.IsValid",
 	)

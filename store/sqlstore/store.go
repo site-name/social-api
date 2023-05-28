@@ -6,6 +6,7 @@ import (
 	dbsql "database/sql"
 	"database/sql/driver"
 	"fmt"
+	"io/fs"
 	"log"
 	"path/filepath"
 	"strconv"
@@ -23,6 +24,7 @@ import (
 	ps "github.com/mattermost/morph/drivers/postgres"
 	mbindata "github.com/mattermost/morph/sources/embedded"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/db"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
@@ -82,8 +84,10 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 		metrics:   metrics,
 	}
 
-	store.initConnection()
-
+	err := store.initConnection()
+	if err != nil {
+		slog.Fatal("Error setting up connections", slog.Err(err))
+	}
 	// check if database version is met requirement
 	ver, err := store.GetDbVersion(true)
 	if err != nil {
@@ -107,27 +111,27 @@ func New(settings model.SqlSettings, metrics einterfaces.MetricsInterface) *SqlS
 }
 
 // setupConnection opens connection to database, check if it works by ping
-func setupConnection(connType string, dataSource string, settings *model.SqlSettings) *dbsql.DB {
+func setupConnection(connType string, dataSource string, settings *model.SqlSettings) (*dbsql.DB, error) {
 	db, err := dbsql.Open(*settings.DriverName, dataSource)
 	if err != nil {
-		slog.Fatal("Failed to open SQL connection to err.", slog.Err(err))
+		return nil, errors.Wrap(err, "failed to open SQL connection")
 	}
 
 	for i := 0; i < DBPingAttempts; i++ {
 		slog.Info("Pinging SQL", slog.String("database", connType))
 		ctx, cancel := context.WithTimeout(context.Background(), DBPingTimeoutSecs*time.Second)
 		defer cancel()
+
 		err = db.PingContext(ctx)
-		if err == nil {
-			break
-		} else {
+		if err != nil {
 			if i == DBPingAttempts-1 {
-				slog.Fatal("Failed to ping DB, server will exit.", slog.Err(err))
-			} else {
-				slog.Error("Failed to ping DB", slog.Err(err), slog.Int("retrying in seconds", DBPingTimeoutSecs))
-				time.Sleep(DBPingTimeoutSecs * time.Second)
+				return nil, err
 			}
+			slog.Error("Failed to ping DB", slog.Err(err), slog.Int("retrying in seconds", DBPingTimeoutSecs))
+			time.Sleep(DBPingTimeoutSecs * time.Second)
+			continue
 		}
+		break
 	}
 
 	if strings.HasPrefix(connType, replicaLagPrefix) {
@@ -147,7 +151,7 @@ func setupConnection(connType string, dataSource string, settings *model.SqlSett
 	db.SetConnMaxLifetime(time.Duration(*settings.ConnMaxLifetimeMilliseconds) * time.Millisecond)
 	db.SetConnMaxIdleTime(time.Duration(*settings.ConnMaxIdleTimeMilliseconds) * time.Millisecond)
 
-	return db
+	return db, nil
 }
 
 func (ss *SqlStore) SetContext(context context.Context) {
@@ -158,17 +162,23 @@ func (ss *SqlStore) Context() context.Context {
 	return ss.context
 }
 
-func (ss *SqlStore) initConnection() {
+func (ss *SqlStore) initConnection() error {
 	dataSource := *ss.settings.DataSource
 
-	handle := setupConnection("master", dataSource, ss.settings)
+	handle, err := setupConnection("master", dataSource, ss.settings)
+	if err != nil {
+		return err
+	}
 	ss.masterX = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
 
 	if len(ss.settings.DataSourceReplicas) > 0 {
 		ss.ReplicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceReplicas))
 		for i, replica := range ss.settings.DataSourceReplicas {
-			handle := setupConnection(fmt.Sprintf("replica-%v", i), replica, ss.settings)
-
+			handle, err := setupConnection(fmt.Sprintf("replica-%v", i), replica, ss.settings)
+			if err != nil {
+				slog.Warn("Failed to setup connection. Skipping..", slog.String("db", fmt.Sprintf("replica-%v", i)), slog.Err(err))
+				continue
+			}
 			ss.ReplicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
 		}
 	}
@@ -176,8 +186,11 @@ func (ss *SqlStore) initConnection() {
 	if len(ss.settings.DataSourceSearchReplicas) > 0 {
 		ss.searchReplicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceSearchReplicas))
 		for i, replica := range ss.settings.DataSourceSearchReplicas {
-			handle := setupConnection(fmt.Sprintf("search-replica-%v", i), replica, ss.settings)
-
+			handle, err := setupConnection(fmt.Sprintf("search-replica-%v", i), replica, ss.settings)
+			if err != nil {
+				slog.Warn("Failed to setup connection. Skipping..", slog.String("db", fmt.Sprintf("replica-%v", i)), slog.Err(err))
+				continue
+			}
 			ss.searchReplicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
 		}
 	}
@@ -188,9 +201,15 @@ func (ss *SqlStore) initConnection() {
 			if src.DataSource == nil {
 				continue
 			}
-			ss.replicaLagHandles[i] = setupConnection(fmt.Sprintf(replicaLagPrefix+"-%d", i), *src.DataSource, ss.settings)
+			ss.replicaLagHandles[i], err = setupConnection(fmt.Sprintf(replicaLagPrefix+"-%d", i), *src.DataSource, ss.settings)
+			if err != nil {
+				slog.Warn("Failed to setup replica lag handle. Skipping..", slog.String("db", fmt.Sprintf(replicaLagPrefix+"-%d", i)), slog.Err(err))
+				continue
+			}
 		}
 	}
+
+	return nil
 }
 
 func (ss *SqlStore) DriverName() string {
@@ -532,60 +551,6 @@ func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {
 	return results
 }
 
-// func (ss *SqlStore) migrate(direction migrationDirection) error {
-// 	assets := db.Assets()
-
-// 	assetsList, err := assets.ReadDir(filepath.Join("migrations", ss.DriverName()))
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	driver, err := postgres.WithInstance(ss.masterX.DB.DB, &postgres.Config{})
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	var assetNamesForDriver []string
-// 	for _, entry := range assetsList {
-// 		assetNamesForDriver = append(assetNamesForDriver, entry.Name())
-// 	}
-
-// 	source := bindata.Resource(assetNamesForDriver, func(name string) ([]byte, error) {
-// 		return assets.ReadFile(filepath.Join("migrations", ss.DriverName(), name))
-// 	})
-
-// 	sourceDriver, err := bindata.WithInstance(source)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	migrations, err := migrate.NewWithInstance(
-// 		"go-bindata",
-// 		sourceDriver,
-// 		ss.DriverName(),
-// 		driver,
-// 	)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer migrations.Close()
-
-// 	switch direction {
-// 	case migrationsDirectionUp:
-// 		err = migrations.Up()
-// 	case migrationsDirectionDown:
-// 		err = migrations.Down()
-// 	default:
-// 		return fmt.Errorf("un supported migration direction %s", direction)
-// 	}
-
-// 	if err != nil && err != migrate.ErrNoChange && !errors.Is(err, os.ErrNotExist) {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
 func (ss *SqlStore) migrate(direction migrationDirection) error {
 	assets := db.Assets()
 
@@ -594,13 +559,8 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 		return err
 	}
 
-	assetNamesForDriver := make([]string, len(assetsList))
-	for i, entry := range assetsList {
-		assetNamesForDriver[i] = entry.Name()
-	}
-
 	src, err := mbindata.WithInstance(&mbindata.AssetSource{
-		Names: assetNamesForDriver,
+		Names: lo.Map(assetsList, func(entry fs.DirEntry, _ int) string { return entry.Name() }),
 		AssetFunc: func(name string) ([]byte, error) {
 			return assets.ReadFile(filepath.Join("migrations", ss.DriverName(), name))
 		},
@@ -621,6 +581,7 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 	opts := []morph.EngineOption{
 		morph.WithLogger(log.New(&morphWriter{}, "", log.Lshortfile)),
 		morph.WithLock("sn-lock-key"),
+		morph.SetStatementTimeoutInSeconds(*ss.settings.MigrationsStatementTimeoutSeconds),
 	}
 	engine, err := morph.New(context.Background(), driver, src, opts...)
 	if err != nil {

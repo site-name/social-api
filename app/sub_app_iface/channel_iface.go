@@ -3,7 +3,10 @@
 
 package sub_app_iface
 
-import "github.com/sitename/sitename/model"
+import (
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store/store_iface"
+)
 
 // ChannelService contains methods for working with channels
 type ChannelService interface {
@@ -17,4 +20,7 @@ type ChannelService interface {
 	ValidateChannel(channelID string) (*model.Channel, *model.AppError)
 	GetDefaultChannel() (*model.Channel, *model.AppError)
 	GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError)
+	UpsertChannel(transaction store_iface.SqlxTxExecutor, channel *model.Channel) (*model.Channel, *model.AppError)
+	BulkUpsertShippingZoneChannels(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, *model.AppError)
+	BulkDeleteShippingZoneChannels(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) *model.AppError
 }

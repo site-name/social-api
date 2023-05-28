@@ -2313,10 +2313,10 @@ func (s *TimerLayerChannelStore) GetbyOption(option *model.ChannelFilterOption) 
 	return result, err
 }
 
-func (s *TimerLayerChannelStore) Save(ch *model.Channel) (*model.Channel, error) {
+func (s *TimerLayerChannelStore) Upsert(transaction store_iface.SqlxTxExecutor, channel *model.Channel) (*model.Channel, error) {
 	start := timemodule.Now()
 
-	result, err := s.ChannelStore.Save(ch)
+	result, err := s.ChannelStore.Upsert(transaction, channel)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -2324,7 +2324,7 @@ func (s *TimerLayerChannelStore) Save(ch *model.Channel) (*model.Channel, error)
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.Save", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -2393,22 +2393,6 @@ func (s *TimerLayerCheckoutStore) FilterByOption(option *model.CheckoutFilterOpt
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) Get(token string) (*model.Checkout, error) {
-	start := timemodule.Now()
-
-	result, err := s.CheckoutStore.Get(token)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error) {
 	start := timemodule.Now()
 
@@ -2425,10 +2409,10 @@ func (s *TimerLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) Upsert(ckout *model.Checkout) (*model.Checkout, error) {
+func (s *TimerLayerCheckoutStore) Upsert(transaction store_iface.SqlxTxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, error) {
 	start := timemodule.Now()
 
-	result, err := s.CheckoutStore.Upsert(ckout)
+	result, err := s.CheckoutStore.Upsert(transaction, checkouts)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4359,10 +4343,10 @@ func (s *TimerLayerOpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, e
 	return result, err
 }
 
-func (s *TimerLayerOrderStore) BulkUpsert(orders []*model.Order) ([]*model.Order, error) {
+func (s *TimerLayerOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orders []*model.Order) ([]*model.Order, error) {
 	start := timemodule.Now()
 
-	result, err := s.OrderStore.BulkUpsert(orders)
+	result, err := s.OrderStore.BulkUpsert(transaction, orders)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6505,6 +6489,22 @@ func (s *TimerLayerShippingMethodStore) Upsert(method *model.ShippingMethod) (*m
 	return result, err
 }
 
+func (s *TimerLayerShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+	start := timemodule.Now()
+
+	err := s.ShippingMethodChannelListingStore.BulkDelete(transaction, ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodChannelListingStore.BulkDelete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerShippingMethodChannelListingStore) FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error) {
 	start := timemodule.Now()
 
@@ -6661,6 +6661,38 @@ func (s *TimerLayerShippingZoneStore) Upsert(shippingZone *model.ShippingZone) (
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShippingZoneChannelStore) BulkDelete(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) error {
+	start := timemodule.Now()
+
+	err := s.ShippingZoneChannelStore.BulkDelete(transaction, relations)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneChannelStore.BulkDelete", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerShippingZoneChannelStore) BulkSave(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingZoneChannelStore.BulkSave(transaction, relations)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingZoneChannelStore.BulkSave", success, elapsed)
 	}
 	return result, err
 }

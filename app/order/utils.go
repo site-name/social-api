@@ -681,15 +681,15 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction store_iface.SqlxTxExecutor,
 	if totalQuantity == 0 {
 		status = ord.Status
 	} else if quantityFulfilled <= 0 {
-		status = model.UNFULFILLED
+		status = model.ORDER_STATUS_UNFULFILLED
 	} else if quantityReturned > 0 && quantityReturned < totalQuantity {
-		status = model.PARTIALLY_RETURNED
+		status = model.ORDER_STATUS_PARTIALLY_RETURNED
 	} else if quantityReturned == totalQuantity {
-		status = model.RETURNED
+		status = model.ORDER_STATUS_RETURNED
 	} else if quantityFulfilled < totalQuantity {
-		status = model.PARTIALLY_FULFILLED
+		status = model.ORDER_STATUS_PARTIALLY_FULFILLED
 	} else {
-		status = model.FULFILLED
+		status = model.ORDER_STATUS_FULFILLED
 	}
 
 	if status != ord.Status {
@@ -1431,7 +1431,7 @@ func (a *ServiceOrder) GetProductsVoucherDiscountForOrder(ord *model.Order) (*go
 
 func (a *ServiceOrder) MatchOrdersWithNewUser(user *model.User) *model.AppError {
 	ordersByOption, appErr := a.FilterOrdersByOptions(&model.OrderFilterOption{
-		Status:    squirrel.NotEq{store.OrderTableName + ".Status": []string{string(model.STATUS_DRAFT), string(model.UNCONFIRMED)}},
+		Status:    squirrel.NotEq{store.OrderTableName + ".Status": []string{string(model.ORDER_STATUS_DRAFT), string(model.ORDER_STATUS_UNCONFIRMED)}},
 		UserEmail: squirrel.Eq{store.OrderTableName + ".UserEmail": user.Email},
 		UserID:    squirrel.Eq{store.OrderTableName + ".UserID": nil},
 	})
@@ -1439,7 +1439,7 @@ func (a *ServiceOrder) MatchOrdersWithNewUser(user *model.User) *model.AppError 
 		return appErr
 	}
 
-	_, appErr = a.BulkUpsertOrders(ordersByOption)
+	_, appErr = a.BulkUpsertOrders(nil, ordersByOption)
 	if appErr != nil {
 		return appErr
 	}
@@ -1627,7 +1627,7 @@ func (a *ServiceOrder) RemoveDiscountFromOrderLine(orderLine model.OrderLine, or
 }
 
 func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
-	if order.Status != model.STATUS_DRAFT {
+	if order.Status != model.ORDER_STATUS_DRAFT {
 		return nil
 	}
 

@@ -430,6 +430,7 @@ type (
 		FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error)
 	}
 	ShippingMethodChannelListingStore interface {
+		BulkDelete(transaction store_iface.SqlxTxExecutor, ids []string) error
 		Upsert(listing *model.ShippingMethodChannelListing) (*model.ShippingMethodChannelListing, error)                      // Upsert depends on given listing's Id to decide whether to save or update the listing
 		Get(listingID string) (*model.ShippingMethodChannelListing, error)                                                    // Get finds a model method channel listing with given listingID
 		FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error) // FilterByOption returns a list of model method channel listings based on given option. result sorted by creation time ASC
@@ -437,6 +438,8 @@ type (
 	ShippingMethodTranslationStore interface {
 	}
 	ShippingZoneChannelStore interface {
+		BulkDelete(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) error
+		BulkSave(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error)
 		FilterByOptions(options *model.ShippingZoneChannelFilterOptions) ([]*model.ShippingZoneChannel, error)
 	}
 	ShippingMethodExcludedProductStore interface {
@@ -600,11 +603,11 @@ type (
 	OrderStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(holder *model.Order) []interface{}
-		Save(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error)   // Save insert an order into database and returns that order if success
-		Get(id string) (*model.Order, error)                                                     // Get find order in database with given id
-		Update(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error) // Update update order
-		FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error)                  // FilterByOption returns a list of orders, filtered by given option
-		BulkUpsert(orders []*model.Order) ([]*model.Order, error)                                // BulkUpsert performs bulk upsert given orders
+		Save(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error)            // Save insert an order into database and returns that order if success
+		Get(id string) (*model.Order, error)                                                              // Get find order in database with given id
+		Update(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error)          // Update update order
+		FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error)                           // FilterByOption returns a list of orders, filtered by given option
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, orders []*model.Order) ([]*model.Order, error) // BulkUpsert performs bulk upsert given orders
 	}
 	OrderEventStore interface {
 		Save(transaction store_iface.SqlxTxExecutor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) // Save inserts given order event into database then returns it
@@ -811,8 +814,7 @@ type (
 	}
 	CheckoutStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
-		Get(token string) (*model.Checkout, error)                                                                // Get finds a model with given token (checkouts use tokens(uuids) as primary keys)
-		Upsert(ckout *model.Checkout) (*model.Checkout, error)                                                    // Upsert depends on given model's Token property to decide to update or insert it
+		Upsert(transaction store_iface.SqlxTxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, error)    // Upsert depends on given model's Token property to decide to update or insert it
 		FetchCheckoutLinesAndPrefetchRelatedValue(ckout *model.Checkout) ([]*model.CheckoutLineInfo, error)       // FetchCheckoutLinesAndPrefetchRelatedValue Fetch model lines as CheckoutLineInfo objects.
 		GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error)                                  // GetByOption finds and returns 1 model based on given option
 		FilterByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, error)                             // FilterByOption finds and returns a list of model based on given option
@@ -825,10 +827,10 @@ type (
 type ChannelStore interface {
 	ModelFields(prefix string) util.AnyArray[string]
 	ScanFields(chanNel *model.Channel) []interface{}
-	Save(ch *model.Channel) (*model.Channel, error)
 	Get(id string) (*model.Channel, error)                                      // Get returns channel by given id
 	FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) // FilterByOption returns a list of channels with given option
 	GetbyOption(option *model.ChannelFilterOption) (*model.Channel, error)      // GetbyOption finds and returns 1 channel filtered using given options
+	Upsert(transaction store_iface.SqlxTxExecutor, channel *model.Channel) (*model.Channel, error)
 }
 type ChannelShopStore interface {
 	// FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error)

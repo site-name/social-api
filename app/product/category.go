@@ -169,8 +169,8 @@ func (s *ServiceProduct) ClassifyCategories(categories model.Categories) model.C
 // asynchronously does category anayltic to update category cache.
 func (s *ServiceProduct) UpsertCategory(cate *model.Category) (*model.Category, *model.AppError) {
 	if !model.IsValidId(cate.Id) && cate.ParentID != nil { // meaning saving category
-		parentCate, _ := s.categoryMap.Load(*cate.ParentID)
-		if parentCate != nil {
+		parentCate, ok := s.categoryMap.Load(*cate.ParentID)
+		if ok && parentCate != nil {
 			cate.Level = parentCate.(*model.Category).Level + 1
 		}
 	}

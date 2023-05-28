@@ -50,14 +50,15 @@ type Checkout struct {
 
 // CheckoutFilterOption is used for bulding sql queries
 type CheckoutFilterOption struct {
-	Token           squirrel.Sqlizer
-	UserID          squirrel.Sqlizer
-	ChannelID       squirrel.Sqlizer
-	Extra           squirrel.Sqlizer
-	ChannelIsActive *bool
+	Token            squirrel.Sqlizer
+	UserID           squirrel.Sqlizer
+	ChannelID        squirrel.Sqlizer
+	Extra            squirrel.Sqlizer
+	ChannelIsActive  *bool
+	ShippingMethodID squirrel.Sqlizer
 
 	SelectRelatedChannel bool
-	Limit                int
+	Limit                int // <= 0 means no limit
 }
 
 func (c *Checkout) IsValid() *AppError {

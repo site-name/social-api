@@ -66,13 +66,12 @@ func (c *Category) Parent(ctx context.Context) (*Category, error) {
 		return nil, nil
 	}
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	categories, appErr := embedCtx.App.Srv().ProductService().CategoryByIds([]string{*c.c.ParentID}, true)
-	if appErr != nil {
-		return nil, appErr
+	category, err := CategoryByIdLoader.Load(ctx, *c.c.ParentID)()
+	if err != nil {
+		return nil, err
 	}
 
-	return systemCategoryToGraphqlCategory(categories[0]), nil
+	return systemCategoryToGraphqlCategory(category), nil
 }
 
 func (c *Category) Ancestors(ctx context.Context, args GraphqlParams) (*CategoryCountableConnection, error) {

@@ -42,13 +42,9 @@ func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 		return nil, embedContext.Err
 	}
 
-	// get requester
-	user, appErr := embedContext.App.
-		Srv().
-		AccountService().
-		UserById(ctx, embedContext.AppContext.Session().UserId)
-	if appErr != nil {
-		return nil, appErr
+	user, err := UserByUserIdLoader.Load(ctx, embedContext.AppContext.Session().UserId)()
+	if err != nil {
+		return nil, err
 	}
 
 	if user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == a.Id {
@@ -66,13 +62,9 @@ func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 		return nil, embedContext.Err
 	}
 
-	// get requester
-	user, appErr := embedContext.App.
-		Srv().
-		AccountService().
-		UserById(ctx, embedContext.AppContext.Session().UserId)
-	if appErr != nil {
-		return nil, appErr
+	user, err := UserByUserIdLoader.Load(ctx, embedContext.AppContext.Session().UserId)()
+	if err != nil {
+		return nil, err
 	}
 
 	if user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == a.Id {
@@ -83,10 +75,7 @@ func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 }
 
 func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Address] {
-	var (
-		res        = make([]*dataloader.Result[*model.Address], len(ids))
-		addressMap = map[string]*model.Address{} // keys are address ids
-	)
+	res := make([]*dataloader.Result[*model.Address], len(ids))
 
 	var webCtx = GetContextValue[*web.Context](ctx, WebCtx)
 
@@ -103,8 +92,7 @@ func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 		return res
 	}
 
-	addressMap = lo.SliceToMap(addresses, func(a *model.Address) (string, *model.Address) { return a.Id, a })
-
+	addressMap := lo.SliceToMap(addresses, func(a *model.Address) (string, *model.Address) { return a.Id, a })
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.Address]{Data: addressMap[id]}
 	}
@@ -182,10 +170,8 @@ func (u *User) DefaultShippingAddress(ctx context.Context) (*Address, error) {
 	}
 	currentSession := embedCtx.AppContext.Session()
 
-	canSeeDefaultShippingAddress := currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
-
 	// check requester belong to shop with user was customer
-	if canSeeDefaultShippingAddress {
+	if currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
 		if u.DefaultShippingAddressID == nil {
 			return nil, nil
 		}
@@ -209,11 +195,9 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 	}
 	currentSession := embedCtx.AppContext.Session()
 
-	canSeeDefaultBillingAddress := currentSession.UserId == u.ID ||
-		currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
-
 	// check requester belong to shop at which user was customer
-	if canSeeDefaultBillingAddress {
+	if currentSession.UserId == u.ID ||
+		currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
 		if u.DefaultBillingAddressID == nil {
 			return nil, nil
 		}
@@ -252,9 +236,7 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string 
 	}
 	currentSession := embedCtx.AppContext.Session()
 
-	canSeeCheckoutToken := currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
-
-	if canSeeCheckoutToken {
+	if currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
 		var checkouts []*model.Checkout
 		var err error
 
@@ -283,9 +265,7 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 	}
 	currentSession := embedCtx.AppContext.Session()
 
-	canSeeUserAddresses := currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
-
-	if canSeeUserAddresses {
+	if currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
 		addresses, appErr := embedCtx.
 			App.
 			Srv().
@@ -319,8 +299,7 @@ func (u *User) GiftCards(ctx context.Context, args GraphqlParams) (*GiftCardCoun
 		return nil, appErr
 	}
 
-	canSeeUserGiftcards := currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
-	if canSeeUserGiftcards {
+	if currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
 		giftcards, err := GiftCardsByUserLoader.Load(ctx, u.ID)()
 		if err != nil {
 			return nil, err
@@ -544,9 +523,10 @@ func (c *CustomerEvent) User(ctx context.Context) (*User, error) {
 		return nil, embedCtx.Err
 	}
 
-	if c.event.UserID != nil &&
-		embedCtx.App.Srv().ShopService().UserIsCustomerOfShop(*c.event.UserID, embedCtx.CurrentShopID) &&
-		embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) {
+	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
+		if c.event.UserID == nil {
+			return nil, nil
+		}
 
 		user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, *c.event.UserID)
 		if appErr != nil {
@@ -596,15 +576,11 @@ func (s *StaffNotificationRecipient) User(ctx context.Context) (*User, error) {
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
 	}
-	currentSession := embedCtx.AppContext.Session()
 
-	// requester can see user of current StaffNotificationRecipient if
-	// 1) He is owner of the notification OR
-	// 2) he is staff of the shop the owner of event was customer at
-	if (s.UserID != nil && *s.UserID == currentSession.UserId) ||
-		(s.UserID != nil &&
-			embedCtx.App.Srv().ShopService().UserIsCustomerOfShop(embedCtx.CurrentShopID, *s.UserID) &&
-			embedCtx.App.Srv().ShopService().UserIsStaffOfShop(currentSession.UserId, embedCtx.CurrentShopID)) {
+	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
+		if s.UserID == nil {
+			return nil, nil
+		}
 
 		user, err := UserByUserIdLoader.Load(ctx, *s.UserID)()
 		if err != nil {

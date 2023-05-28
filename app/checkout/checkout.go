@@ -114,13 +114,13 @@ func (a *ServiceCheckout) CheckoutShippingRequired(checkoutToken string) (bool, 
 func (a *ServiceCheckout) CheckoutSetCountry(ckout *model.Checkout, newCountryCode model.CountryCode) *model.AppError {
 	// no need to validate country code here, since checkout.IsValid() does that
 	ckout.Country = newCountryCode
-	_, appErr := a.UpsertCheckout(ckout)
+	_, appErr := a.UpsertCheckouts(nil, []*model.Checkout{ckout})
 	return appErr
 }
 
 // UpsertCheckout saves/updates given checkout
-func (a *ServiceCheckout) UpsertCheckout(ckout *model.Checkout) (*model.Checkout, *model.AppError) {
-	ckout, err := a.srv.Store.Checkout().Upsert(ckout)
+func (a *ServiceCheckout) UpsertCheckouts(transaction store_iface.SqlxTxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, *model.AppError) {
+	checkouts, err := a.srv.Store.Checkout().Upsert(transaction, checkouts)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -136,7 +136,7 @@ func (a *ServiceCheckout) UpsertCheckout(ckout *model.Checkout) (*model.Checkout
 		return nil, model.NewAppError("UpsertCheckout", errID, nil, err.Error(), statusCode)
 	}
 
-	return ckout, nil
+	return checkouts, nil
 }
 
 func (a *ServiceCheckout) CheckoutCountry(ckout *model.Checkout) (model.CountryCode, *model.AppError) {

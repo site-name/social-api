@@ -40,7 +40,7 @@ type DigitalContentFilterOption struct {
 
 func (d *DigitalContent) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"digital_content.is_valid.%s.app_error",
+		"model.digital_content.is_valid.%s.app_error",
 		"digital_content_id=",
 		"DigitalContent.IsValid",
 	)

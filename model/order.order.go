@@ -46,26 +46,26 @@ type OrderStatus string
 
 // ORDER STATUS VALID VALUES
 const (
-	STATUS_DRAFT        OrderStatus = "draft"               // fully editable, not finalized order created by staff users
-	UNCONFIRMED         OrderStatus = "unconfirmed"         // order created by customers when confirmation is required
-	UNFULFILLED         OrderStatus = "unfulfilled"         // order with no items marked as fulfilled
-	PARTIALLY_FULFILLED OrderStatus = "partially_fulfilled" // order with some items marked as fulfilled
-	FULFILLED           OrderStatus = "fulfilled"           // order with all items marked as fulfilled
-	PARTIALLY_RETURNED  OrderStatus = "partially_returned"  // order with some items marked as returned
-	RETURNED            OrderStatus = "returned"            // order with all items marked as returned
-	CANCELED            OrderStatus = "canceled"            // permanently canceled order
+	ORDER_STATUS_DRAFT               OrderStatus = "draft"               // fully editable, not finalized order created by staff users
+	ORDER_STATUS_UNCONFIRMED         OrderStatus = "unconfirmed"         // order created by customers when confirmation is required
+	ORDER_STATUS_UNFULFILLED         OrderStatus = "unfulfilled"         // order with no items marked as fulfilled
+	ORDER_STATUS_PARTIALLY_FULFILLED OrderStatus = "partially_fulfilled" // order with some items marked as fulfilled
+	ORDER_STATUS_FULFILLED           OrderStatus = "fulfilled"           // order with all items marked as fulfilled
+	ORDER_STATUS_PARTIALLY_RETURNED  OrderStatus = "partially_returned"  // order with some items marked as returned
+	ORDER_STATUS_RETURNED            OrderStatus = "returned"            // order with all items marked as returned
+	ORDER_STATUS_CANCELED            OrderStatus = "canceled"            // permanently canceled order
 )
 
 func (e OrderStatus) IsValid() bool {
 	switch e {
-	case STATUS_DRAFT,
-		UNCONFIRMED,
-		UNFULFILLED,
-		PARTIALLY_FULFILLED,
-		FULFILLED,
-		PARTIALLY_RETURNED,
-		RETURNED,
-		CANCELED:
+	case ORDER_STATUS_DRAFT,
+		ORDER_STATUS_UNCONFIRMED,
+		ORDER_STATUS_UNFULFILLED,
+		ORDER_STATUS_PARTIALLY_FULFILLED,
+		ORDER_STATUS_FULFILLED,
+		ORDER_STATUS_PARTIALLY_RETURNED,
+		ORDER_STATUS_RETURNED,
+		ORDER_STATUS_CANCELED:
 		return true
 	}
 	return false
@@ -74,7 +74,7 @@ func (e OrderStatus) IsValid() bool {
 type Order struct {
 	Id                           string                 `json:"id"`
 	CreateAt                     int64                  `json:"create_at"`           // NOT editable
-	Status                       OrderStatus            `json:"status"`              // default: UNFULFILLED
+	Status                       OrderStatus            `json:"status"`              // default: ORDER_STATUS_UNFULFILLED
 	UserID                       *string                `json:"user_id"`             //
 	LanguageCode                 LanguageCodeEnum       `json:"language_code"`       // default: "en"
 	TrackingClientID             string                 `json:"tracking_client_id"`  // NOT editable
@@ -123,12 +123,14 @@ type Order struct {
 
 // OrderFilterOption is used to buils sql queries for filtering orders
 type OrderFilterOption struct {
-	Id            squirrel.Sqlizer // filter by order's id
-	Status        squirrel.Sqlizer // for filtering order's Status
-	CheckoutToken squirrel.Sqlizer // for filtering order's CheckoutToken
-	ChannelSlug   squirrel.Sqlizer // for comparing the channel of this order's slug
-	UserEmail     squirrel.Sqlizer // for filtering order's UserEmail
-	UserID        squirrel.Sqlizer // for filtering order's UserID
+	Id               squirrel.Sqlizer // filter by order's id
+	Status           squirrel.Sqlizer // for filtering order's Status
+	CheckoutToken    squirrel.Sqlizer // for filtering order's CheckoutToken
+	ChannelSlug      squirrel.Sqlizer // for comparing the channel of this order's slug
+	UserEmail        squirrel.Sqlizer // for filtering order's UserEmail
+	UserID           squirrel.Sqlizer // for filtering order's UserID
+	ChannelID        squirrel.Sqlizer
+	ShippingMethodID squirrel.Sqlizer
 }
 
 // PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.
@@ -323,7 +325,7 @@ func (o *Order) commonPre() {
 	o.CustomerNote = SanitizeUnicode(o.CustomerNote)
 
 	if o.Status == "" {
-		o.Status = UNFULFILLED
+		o.Status = ORDER_STATUS_UNFULFILLED
 	}
 	if o.LanguageCode == "" {
 		o.LanguageCode = DEFAULT_LOCALE
@@ -364,17 +366,17 @@ func (o *Order) IsPartlyPaid() bool {
 
 // IsDraft checks if current order's Status if "draft"
 func (o *Order) IsDraft() bool {
-	return o.Status == STATUS_DRAFT
+	return o.Status == ORDER_STATUS_DRAFT
 }
 
 // IsUnconfirmed checks if current order's Status is "unconfirmed"
 func (o *Order) IsUnconfirmed() bool {
-	return o.Status == UNCONFIRMED
+	return o.Status == ORDER_STATUS_UNCONFIRMED
 }
 
 // IsOpen checks if current order's Status if "draft" OR "partially_fulfilled"
 func (o *Order) IsOpen() bool {
-	return o.Status == STATUS_DRAFT || o.Status == PARTIALLY_FULFILLED
+	return o.Status == ORDER_STATUS_DRAFT || o.Status == ORDER_STATUS_PARTIALLY_FULFILLED
 }
 
 // TotalCaptured returns current order's TotalPaid money

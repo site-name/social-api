@@ -23,9 +23,12 @@ func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
 }) (*CategoryCreate, error) {
 	// check user permissions
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateCategory)
+	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
+	}
+	if !embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
+		return nil, MakeUnauthorizedError("CategoryCreate")
 	}
 
 	// validate parent
@@ -79,9 +82,12 @@ func (r *Resolver) CategoryUpdate(ctx context.Context, args struct {
 }) (*CategoryUpdate, error) {
 	// requester must be authenticated and has category_update permission to do this
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateCategory)
+	embedCtx.SessionRequired()
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
+	}
+	if !embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
+		return nil, MakeUnauthorizedError("CategoryUpdate")
 	}
 
 	// validate given id

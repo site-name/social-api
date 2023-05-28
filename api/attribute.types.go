@@ -319,10 +319,7 @@ func (a *Attribute) Translation(ctx context.Context, args struct{ LanguageCode L
 }
 
 func attributesByAttributeIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Attribute] {
-	var (
-		res          = make([]*dataloader.Result[*model.Attribute], len(ids))
-		attributeMap = map[string]*model.Attribute{} // keys are attribute ids
-	)
+	res := make([]*dataloader.Result[*model.Attribute], len(ids))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	attributes, appErr := embedCtx.
@@ -333,10 +330,13 @@ func attributesByAttributeIdLoader(ctx context.Context, ids []string) []*dataloa
 			Id: squirrel.Eq{store.AttributeTableName + ".Id": ids},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.Attribute]{Error: appErr}
+		}
+		return res
 	}
 
-	attributeMap = lo.SliceToMap(attributes, func(a *model.Attribute) (string, *model.Attribute) {
+	attributeMap := lo.SliceToMap(attributes, func(a *model.Attribute) (string, *model.Attribute) {
 		return a.Id, a
 	})
 
@@ -344,22 +344,10 @@ func attributesByAttributeIdLoader(ctx context.Context, ids []string) []*dataloa
 		res[idx] = &dataloader.Result[*model.Attribute]{Data: attributeMap[attrID]}
 	}
 	return res
-
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.Attribute]{Error: appErr}
-	}
-	return res
 }
 
 func attributeValuesByAttributeIdLoader(ctx context.Context, attributeIDs []string) []*dataloader.Result[[]*model.AttributeValue] {
-	var (
-		res = make([]*dataloader.Result[[]*model.AttributeValue], len(attributeIDs))
-
-		// keys are attribute ids
-		attributeValuesMap = map[string][]*model.AttributeValue{}
-	)
-
+	res := make([]*dataloader.Result[[]*model.AttributeValue], len(attributeIDs))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	attributeValues, appErr := embedCtx.App.
@@ -369,9 +357,14 @@ func attributeValuesByAttributeIdLoader(ctx context.Context, attributeIDs []stri
 			AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": attributeIDs},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range attributeIDs {
+			res[idx] = &dataloader.Result[[]*model.AttributeValue]{Error: appErr}
+		}
+		return res
 	}
 
+	// keys are attribute ids
+	var attributeValuesMap = map[string][]*model.AttributeValue{}
 	for _, value := range attributeValues {
 		attributeValuesMap[value.AttributeID] = append(attributeValuesMap[value.AttributeID], value)
 	}
@@ -380,44 +373,30 @@ func attributeValuesByAttributeIdLoader(ctx context.Context, attributeIDs []stri
 		res[idx] = &dataloader.Result[[]*model.AttributeValue]{Data: attributeValuesMap[id]}
 	}
 	return res
-
-errorLabel:
-	for idx := range attributeIDs {
-		res[idx] = &dataloader.Result[[]*model.AttributeValue]{Error: appErr}
-	}
-	return res
 }
 
 func attributeValueByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.AttributeValue] {
-	var (
-		res               = make([]*dataloader.Result[*model.AttributeValue], len(ids))
-		attributeValueMap = map[string]*model.AttributeValue{} // keys are attribute value ids
-	)
+	res := make([]*dataloader.Result[*model.AttributeValue], len(ids))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	embedCts := GetContextValue[*web.Context](ctx, WebCtx)
-
-	attributeValues, appErr := embedCts.App.
+	attributeValues, appErr := embedCtx.App.
 		Srv().
 		AttributeService().
 		FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
 			Id: squirrel.Eq{store.AttributeValueTableName + ".Id": ids},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.AttributeValue]{Error: appErr}
+		}
+		return res
 	}
 
-	attributeValueMap = lo.SliceToMap(attributeValues, func(a *model.AttributeValue) (string, *model.AttributeValue) {
+	attributeValueMap := lo.SliceToMap(attributeValues, func(a *model.AttributeValue) (string, *model.AttributeValue) {
 		return a.Id, a
 	})
-
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.AttributeValue]{Data: attributeValueMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.AttributeValue]{Error: appErr}
 	}
 	return res
 }

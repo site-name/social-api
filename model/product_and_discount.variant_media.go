@@ -15,7 +15,7 @@ type VariantMediaFilterOptions struct {
 
 func (v *VariantMedia) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"variant_product.is_valid.%s.app_error",
+		"model.variant_product.is_valid.%s.app_error",
 		"variant_product_id=",
 		"VariantProduct.IsValid",
 	)

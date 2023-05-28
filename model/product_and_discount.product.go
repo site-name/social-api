@@ -197,7 +197,7 @@ func SortByAttributeFields() []string {
 
 func (p *Product) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"product.is_valid.%s.app_error",
+		"model.product.is_valid.%s.app_error",
 		"product_id=",
 		"Product.IsValid",
 	)

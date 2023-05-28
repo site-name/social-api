@@ -80,7 +80,7 @@ func (p *ProductType) String() string {
 
 func (p *ProductType) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"product_type.is_valid.%s.app_error",
+		"model.product_type.is_valid.%s.app_error",
 		"product_type_id=",
 		"ProductType.IsValid")
 

@@ -3,10 +3,12 @@ package shipping
 import (
 	"database/sql"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlShippingMethodChannelListingStore struct {
@@ -40,7 +42,8 @@ func (s *SqlShippingMethodChannelListingStore) ModelFields(prefix string) util.A
 // Upsert depends on given listing's Id to decide whether to save or update the listing
 func (s *SqlShippingMethodChannelListingStore) Upsert(listing *model.ShippingMethodChannelListing) (*model.ShippingMethodChannelListing, error) {
 	var isSaving bool
-	if listing.Id == "" {
+	if !model.IsValidId(listing.Id) {
+		listing.Id = ""
 		isSaving = true
 		listing.PreSave()
 	} else {
@@ -107,7 +110,7 @@ func (s *SqlShippingMethodChannelListingStore) Get(listingID string) (*model.Shi
 // FilterByOption returns a list of shipping method channel listings based on given option. result sorted by creation time ASC
 func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error) {
 	query := s.GetQueryBuilder().
-		Select("*").
+		Select(s.ModelFields(store.ShippingMethodChannelListingTableName + ".")...).
 		From(store.ShippingMethodChannelListingTableName).
 		OrderBy(store.TableOrderingMap[store.ShippingMethodChannelListingTableName])
 
@@ -117,6 +120,12 @@ func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *model.Ship
 	}
 	if option.ChannelID != nil {
 		query = query.Where(option.ChannelID)
+	}
+	if option.ShippingMethod_ShippingZoneID_Inner != nil {
+		query = query.
+			InnerJoin(store.ShippingMethodTableName + " ON ShippingMethods.Id = ShippingMethodChannelListings.ShippingMethodID").
+			InnerJoin(store.ShippingZoneTableName + " ON ShippingZones.Id = ShippingMethods.ShippingZoneID").
+			Where(option.ShippingMethod_ShippingZoneID_Inner)
 	}
 
 	queryString, args, err := query.ToSql()
@@ -131,4 +140,26 @@ func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *model.Ship
 	}
 
 	return res, nil
+}
+
+func (s *SqlShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+	runner := s.GetReplicaX()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	query, args, err := s.GetQueryBuilder().
+		Delete(store.ShippingMethodChannelListingTableName).
+		Where(squirrel.Eq{store.ShippingMethodChannelListingTableName + ".Id": ids}).
+		ToSql()
+	if err != nil {
+		return errors.Wrap(err, "BulkDelete_ToSql")
+	}
+
+	_, err = runner.Exec(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete shipping method channel listings")
+	}
+
+	return nil
 }

@@ -164,7 +164,7 @@ func (a *ServiceOrder) CancelOrder(orDer *model.Order, user *model.User, _ inter
 		return appErr
 	}
 
-	orDer.Status = model.CANCELED
+	orDer.Status = model.ORDER_STATUS_CANCELED
 	_, appErr = a.UpsertOrder(transaction, orDer)
 	if appErr != nil {
 		return appErr
@@ -303,7 +303,7 @@ func (a *ServiceOrder) OrderFulfilled(fulfillments []*model.Fulfillment, user *m
 		}
 	}
 
-	if orDer.Status == model.FULFILLED {
+	if orDer.Status == model.ORDER_STATUS_FULFILLED {
 		_, appErr = manager.OrderFulfilled(*orDer)
 		if appErr != nil {
 			return appErr
@@ -695,7 +695,7 @@ func (s *ServiceOrder) ApproveFulfillment(fulfillment *model.Fulfillment, user *
 		return nil, nil, appErr
 	}
 
-	if orDer.Status == model.FULFILLED {
+	if orDer.Status == model.ORDER_STATUS_FULFILLED {
 		_, appErr = manager.OrderFulfilled(*orDer)
 		if appErr != nil {
 			return nil, nil, appErr
@@ -1503,7 +1503,7 @@ func (a *ServiceOrder) CreateRefundFulfillment(
 // If original order has shippingAddress/billingAddress, the new order copy these address(es) and change their IDs
 func (a *ServiceOrder) populateReplaceOrderFields(transaction store_iface.SqlxTxExecutor, originalOrder model.Order) (replaceOrder *model.Order, appErr *model.AppError) {
 	replaceOrder = &model.Order{
-		Status:             model.STATUS_DRAFT,
+		Status:             model.ORDER_STATUS_DRAFT,
 		UserID:             originalOrder.UserID,
 		LanguageCode:       originalOrder.LanguageCode,
 		UserEmail:          originalOrder.UserEmail,

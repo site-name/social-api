@@ -31,7 +31,7 @@ func (p *ProductTranslation) String() string {
 
 func (p *ProductTranslation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"product_translation.is_valid.%s.app_error",
+		"model.product_translation.is_valid.%s.app_error",
 		"product_translation_id=",
 		"ProductTranslation.IsValid",
 	)
