@@ -56,7 +56,7 @@ func (line *CheckoutLine) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
 
 	now := time.Now()
 
-	_, err = DiscountsByDateTimeLoader.Load(ctx, now)()
+	discounts, err = DiscountsByDateTimeLoader.Load(ctx, now)()
 	if err != nil {
 		return nil, err
 	}
@@ -95,14 +95,7 @@ func (line *CheckoutLine) RequiresShipping(ctx context.Context) (*bool, error) {
 }
 
 func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []*dataloader.Result[[]*model.CheckoutLine] {
-	var (
-		res = make([]*dataloader.Result[[]*model.CheckoutLine], len(tokens))
-
-		// checkoutLinesMap has keys are checkout tokens.
-		// values are checkout lines belong to the checkout parent
-		checkoutLinesMap = map[string][]*model.CheckoutLine{}
-	)
-
+	res := make([]*dataloader.Result[[]*model.CheckoutLine], len(tokens))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	checkoutLines, appErr := embedCtx.App.Srv().
@@ -111,9 +104,15 @@ func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []
 			CheckoutID: squirrel.Eq{store.CheckoutLineTableName + ".CheckoutID": tokens},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range tokens {
+			res[idx] = &dataloader.Result[[]*model.CheckoutLine]{Error: appErr}
+		}
+		return res
 	}
 
+	// checkoutLinesMap has keys are checkout tokens.
+	// values are checkout lines belong to the checkout parent
+	var checkoutLinesMap = map[string][]*model.CheckoutLine{}
 	for _, line := range checkoutLines {
 		if line != nil {
 			checkoutLinesMap[line.CheckoutID] = append(checkoutLinesMap[line.CheckoutID], line)
@@ -122,12 +121,6 @@ func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []
 
 	for idx, token := range tokens {
 		res[idx] = &dataloader.Result[[]*model.CheckoutLine]{Data: checkoutLinesMap[token]}
-	}
-	return res
-
-errorLabel:
-	for idx := range tokens {
-		res[idx] = &dataloader.Result[[]*model.CheckoutLine]{Error: appErr}
 	}
 	return res
 }
@@ -145,7 +138,10 @@ func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Res
 			Id: squirrel.Eq{store.CheckoutLineTableName + ".Id": ids},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.CheckoutLine]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, line := range checkoutLines {
@@ -153,12 +149,6 @@ func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Res
 	}
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.CheckoutLine]{Data: checkoutLineMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.CheckoutLine]{Error: appErr}
 	}
 	return res
 }

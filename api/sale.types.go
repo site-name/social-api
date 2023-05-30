@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"unsafe"
 
 	"github.com/sitename/sitename/model"
@@ -114,12 +113,12 @@ func (s *Sale) Variants(ctx context.Context, args GraphqlParams) (*ProductVarian
 }
 
 func (v *Sale) DiscountValue(ctx context.Context) (*float64, error) {
-	channelID := GetContextValue[string](ctx, ChannelIdCtx)
-	if channelID == "" {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	if embedCtx.CurrentChannelID == "" {
 		return nil, nil
 	}
 
-	saleChannelListing, err := SaleChannelListingBySaleIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, channelID))()
+	saleChannelListing, err := SaleChannelListingBySaleIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, embedCtx.CurrentChannelID))()
 	if err != nil {
 		return nil, err
 	}
@@ -129,12 +128,12 @@ func (v *Sale) DiscountValue(ctx context.Context) (*float64, error) {
 }
 
 func (v *Sale) Currency(ctx context.Context) (*string, error) {
-	channelID := GetContextValue[string](ctx, ChannelIdCtx)
-	if channelID == "" {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	if embedCtx.CurrentChannelID == "" {
 		return nil, nil
 	}
 
-	saleChannelListing, err := SaleChannelListingBySaleIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, channelID))()
+	saleChannelListing, err := SaleChannelListingBySaleIdAndChanneSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", v.ID, embedCtx.CurrentChannelID))()
 	if err != nil {
 		return nil, err
 	}
@@ -144,9 +143,13 @@ func (v *Sale) Currency(ctx context.Context) (*string, error) {
 
 func (v *Sale) ChannelListings(ctx context.Context) ([]*SaleChannelListing, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
 
 	currentSession := embedCtx.AppContext.Session()
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageDiscounts) {
+	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionReadSaleChannelListing) {
 		listings, err := SaleChannelListingBySaleIdLoader.Load(ctx, v.ID)()
 		if err != nil {
 			return nil, err
@@ -155,5 +158,5 @@ func (v *Sale) ChannelListings(ctx context.Context) ([]*SaleChannelListing, erro
 		return DataloaderResultMap(listings, systemSaleChannelListingToGraphqlSaleChannelListing), nil
 	}
 
-	return nil, model.NewAppError("Voucher.ChannelListings", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	return nil, MakeUnauthorizedError("Sale.ChannelListings")
 }

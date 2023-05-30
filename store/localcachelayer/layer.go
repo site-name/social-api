@@ -71,6 +71,10 @@ type LocalCacheStore struct {
 
 	user                  *LocalCacheUserStore
 	userProfileByIdsCache cache.Cache
+
+	role                 LocalCacheRoleStore
+	roleCache            cache.Cache
+	rolePermissionsCache cache.Cache
 }
 
 func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterface, cluster einterfaces.ClusterInterface, cacheProvider cache.Provider) (localCacheStore LocalCacheStore, err error) {
@@ -97,7 +101,31 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 		userProfileByIdsInvalidations: make(map[string]bool),
 	}
 
+	// Roles
+	if localCacheStore.roleCache, err = cacheProvider.NewCache(&cache.CacheOptions{
+		Size:                   RoleCacheSize,
+		Name:                   "Role",
+		DefaultExpiry:          RoleCacheSec * time.Second,
+		InvalidateClusterEvent: model.ClusterEventInvalidateCacheForRoles,
+		Striped:                true,
+		StripedBuckets:         util.GetMinMax(runtime.NumCPU()-1, 1).Max,
+	}); err != nil {
+		return
+	}
+	if localCacheStore.rolePermissionsCache, err = cacheProvider.NewCache(&cache.CacheOptions{
+		Size:                   RoleCacheSize,
+		Name:                   "RolePermission",
+		DefaultExpiry:          RoleCacheSec * time.Second,
+		InvalidateClusterEvent: model.ClusterEventInvalidateCacheForRolePermissions,
+	}); err != nil {
+		return
+	}
+	localCacheStore.role = LocalCacheRoleStore{RoleStore: baseStore.Role(), rootStore: &localCacheStore}
+
 	if cluster != nil {
+		cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForRoles, localCacheStore.role.handleClusterInvalidateRole)
+		cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForProfileByIds, localCacheStore.user.handleClusterInvalidateScheme)
+		cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForRolePermissions, localCacheStore.role.handleClusterInvalidateRolePermissions)
 		cluster.RegisterClusterMessageHandler(model.ClusterEventInvalidateCacheForProfileByIds, localCacheStore.user.handleClusterInvalidateScheme)
 	}
 
@@ -106,6 +134,10 @@ func NewLocalCacheLayer(baseStore store.Store, metrics einterfaces.MetricsInterf
 
 func (s LocalCacheStore) User() store.UserStore {
 	return s.user
+}
+
+func (s LocalCacheStore) Role() store.RoleStore {
+	return s.role
 }
 
 func (s LocalCacheStore) DropAllTables() {
@@ -157,4 +189,5 @@ func (s *LocalCacheStore) doClearCacheCluster(cache cache.Cache) {
 
 func (s *LocalCacheStore) Invalidate() {
 	s.doClearCacheCluster(s.userProfileByIdsCache)
+	s.doClearCacheCluster(s.roleCache)
 }

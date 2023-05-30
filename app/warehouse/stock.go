@@ -31,19 +31,8 @@ func (a *ServiceWarehouse) BulkUpsertStocks(transaction store_iface.SqlxTxExecut
 // StocksByOption returns a list of stocks filtered using given options
 func (a *ServiceWarehouse) StocksByOption(transaction store_iface.SqlxTxExecutor, option *model.StockFilterOption) (model.Stocks, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().FilterByOption(transaction, option)
-	var (
-		statusCode   int
-		errorMessage string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errorMessage = err.Error()
-	} else if len(stocks) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("StocksByOption", "app.warehouse.error_finding_stocks_by_option.app_error", nil, errorMessage, statusCode)
+		return nil, model.NewAppError("StocksByOption", "app.warehouse.error_finding_stocks_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return stocks, nil
@@ -58,19 +47,9 @@ func (a *ServiceWarehouse) GetVariantStocksForCountry(transaction store_iface.Sq
 		ChannelSlug:      channelSlug,
 		ProductVariantID: variantID,
 	})
-	var (
-		statusCode   int
-		errorMessage string
-	)
-	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errorMessage = err.Error()
-	} else if len(stocks) == 0 {
-		statusCode = http.StatusNotFound
-	}
 
-	if statusCode != 0 {
-		return nil, model.NewAppError("GetVariantStocksForCountry", "app.warehouse.error_finding_variant_stocks_for_country.app_error", nil, errorMessage, statusCode)
+	if err != nil {
+		return nil, model.NewAppError("GetVariantStocksForCountry", "app.warehouse.error_finding_variant_stocks_for_country.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return stocks, nil
@@ -79,19 +58,8 @@ func (a *ServiceWarehouse) GetVariantStocksForCountry(transaction store_iface.Sq
 // GetProductStocksForCountryAndChannel
 func (a *ServiceWarehouse) GetProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().FilterProductStocksForCountryAndChannel(transaction, options)
-	var (
-		statusCode   int
-		errorMessage string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errorMessage = err.Error()
-	} else if len(stocks) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("GetProductStocksForCountryAndChannel", ErrorFindingStocksId, nil, errorMessage, statusCode)
+		return nil, model.NewAppError("GetProductStocksForCountryAndChannel", ErrorFindingStocksId, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return stocks, nil
@@ -100,19 +68,9 @@ func (a *ServiceWarehouse) GetProductStocksForCountryAndChannel(transaction stor
 // FilterStocksForCountryAndChannel finds stocks by given options
 func (a *ServiceWarehouse) FilterStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().FilterForCountryAndChannel(transaction, options)
-	var (
-		statusCode   int
-		errorMessage string
-	)
-	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errorMessage = err.Error()
-	} else if len(stocks) == 0 {
-		statusCode = http.StatusNotFound
-	}
 
-	if statusCode != 0 {
-		return nil, model.NewAppError("FilterStocksForCountryAndChannel", ErrorFindingStocksId, nil, errorMessage, statusCode)
+	if err != nil {
+		return nil, model.NewAppError("FilterStocksForCountryAndChannel", ErrorFindingStocksId, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return stocks, nil
@@ -135,19 +93,9 @@ func (a *ServiceWarehouse) GetStockById(stockID string) (*model.Stock, *model.Ap
 // FilterStocksForChannel returns a slice of stocks that filtered using given options
 func (a *ServiceWarehouse) FilterStocksForChannel(option *model.StockFilterForChannelOption) ([]*model.Stock, *model.AppError) {
 	_, stocks, err := a.srv.Store.Stock().FilterForChannel(option)
-	var (
-		statusCode   int
-		errorMessage string
-	)
-	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errorMessage = err.Error()
-	} else if len(stocks) == 0 {
-		statusCode = http.StatusNotFound
-	}
 
-	if statusCode != 0 {
-		return nil, model.NewAppError("FilterStocksByChannel", "app.warehouse.error_finding_stocks_for_channel.app_error", nil, errorMessage, statusCode)
+	if err != nil {
+		return nil, model.NewAppError("FilterStocksByChannel", "app.warehouse.error_finding_stocks_for_channel.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return stocks, nil

@@ -31,7 +31,10 @@ func MakeUnauthorizedError(where string) *model.AppError {
 // Unique type to hold our context.
 type CTXKey int
 
-const WebCtx CTXKey = iota
+const (
+	WebCtx CTXKey = iota
+	// ChannelIdCtx
+)
 
 // constructSchema constructs schema from *.graphql files
 func constructSchema() (string, error) {
@@ -55,11 +58,6 @@ func constructSchema() (string, error) {
 
 	return builder.String(), nil
 }
-
-var (
-	ErrorContextHasNoKey = errors.New("context has no given key")
-	ErrorUnExpectedType  = errors.New("can't convert stored value to given type")
-)
 
 // GetContextValue extracts according value of given key in given `ctx` and returns the value.
 func GetContextValue[T any](ctx context.Context, key CTXKey) T {
@@ -200,7 +198,7 @@ func parseGraphqlOperand[C graphqlCursorType](params GraphqlParams) (*C, error) 
 	case uint64:
 		ui64, err := strconv.ParseUint(cursorValue, 10, 64)
 		if err != nil {
-			return nil, nil
+			return nil, err
 		}
 		return (*C)(unsafe.Pointer(&ui64)), nil
 
@@ -294,9 +292,6 @@ func (g *GraphqlParams) Validate(apiName string) *model.AppError {
 	g.validated = true
 	if (g.First != nil && g.Last != nil) || (g.First == nil && g.Last == nil) {
 		return model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "provide either First or Last, not both", http.StatusBadRequest)
-	}
-	if (g.First != nil && *g.First <= 0) || (g.Last != nil && *g.Last <= 0) {
-		return model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "First and Last must be greater than zero", http.StatusBadRequest)
 	}
 	if g.First != nil && g.Before != nil {
 		return model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Before"}, "First and Before can't go together", http.StatusBadRequest)

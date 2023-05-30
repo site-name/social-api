@@ -73,10 +73,7 @@ func (a *ServiceWarehouse) CheckStockQuantity(variant *model.ProductVariant, cou
 	if *variant.TrackInventory {
 		stocks, appErr := a.GetVariantStocksForCountry(nil, countryCode, channelSlug, variant.Id)
 		if appErr != nil {
-			if appErr.StatusCode == http.StatusInternalServerError {
-				return nil, appErr
-			}
-			stocks = []*model.Stock{} // in case stocks is nil
+			return nil, appErr
 		}
 
 		if len(stocks) == 0 {

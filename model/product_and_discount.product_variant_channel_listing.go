@@ -7,6 +7,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/text/currency"
 )
 
@@ -78,6 +79,10 @@ type ProductVariantChannelListings []*ProductVariantChannelListing
 
 func (p ProductVariantChannelListings) IDs() []string {
 	return lo.Map(p, func(l *ProductVariantChannelListing, _ int) string { return l.Id })
+}
+
+func (p ProductVariantChannelListings) VariantIDs() util.AnyArray[string] {
+	return lo.Map(p, func(l *ProductVariantChannelListing, _ int) string { return l.VariantID })
 }
 
 func (ps ProductVariantChannelListings) DeepCopy() ProductVariantChannelListings {

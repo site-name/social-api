@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"encoding/base64"
-	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -98,22 +97,25 @@ func (o *OrderLine) DigitalContentURL(ctx context.Context) (*DigitalContentURL, 
 
 func (o *OrderLine) Allocations(ctx context.Context) ([]*Allocation, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	currentSession := embedCtx.AppContext.Session()
-
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(currentSession, model.PermissionManageProducts, model.PermissionManageOrders) {
-		allocations, err := AllocationsByOrderLineIdLoader.Load(ctx, o.ID)()
-		if err != nil {
-			return nil, err
-		}
-
-		return DataloaderResultMap(allocations, systemAllocationToGraphqlAllocation), nil
+	embedCtx.CheckAuthenticatedAndHasRoles("OrderLine.Allocations", model.ShopStaffRoleId)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
-	return nil, MakeUnauthorizedError("OrderLine.Allocations")
+	allocations, err := AllocationsByOrderLineIdLoader.Load(ctx, o.ID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return DataloaderResultMap(allocations, systemAllocationToGraphqlAllocation), nil
 }
 
 func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
 	currentSession := embedCtx.AppContext.Session()
 
 	if o.variantID == nil {
@@ -127,7 +129,7 @@ func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
 
 	if embedCtx.App.Srv().
 		AccountService().
-		SessionHasPermissionToAny(currentSession, model.PermissionManageOrders, model.PermissionManageDiscounts, model.PermissionManageProducts) {
+		SessionHasPermissionToAny(currentSession, model.PermissionCreateOrder, model.PermissionReadOrder) {
 		return SystemProductVariantToGraphqlProductVariant(variant), nil
 	}
 
@@ -149,10 +151,8 @@ func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
 }
 
 func orderLineByIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*model.OrderLine] {
-	var (
-		res          = make([]*dataloader.Result[*model.OrderLine], len(orderLineIDs))
-		orderLineMap = map[string]*model.OrderLine{} // keys are order line ids
-	)
+	res := make([]*dataloader.Result[*model.OrderLine], len(orderLineIDs))
+
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	orderLines, appErr := embedCtx.App.
 		Srv().
@@ -161,19 +161,15 @@ func orderLineByIdLoader(ctx context.Context, orderLineIDs []string) []*dataload
 			Id: squirrel.Eq{store.OrderLineTableName + ".Id": orderLineIDs},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range orderLineIDs {
+			res[idx] = &dataloader.Result[*model.OrderLine]{Error: appErr}
+		}
+		return res
 	}
 
-	orderLineMap = lo.SliceToMap(orderLines, func(o *model.OrderLine) (string, *model.OrderLine) { return o.Id, o })
-
+	orderLineMap := lo.SliceToMap(orderLines, func(o *model.OrderLine) (string, *model.OrderLine) { return o.Id, o })
 	for idx, id := range orderLineIDs {
 		res[idx] = &dataloader.Result[*model.OrderLine]{Data: orderLineMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range orderLineIDs {
-		res[idx] = &dataloader.Result[*model.OrderLine]{Error: appErr}
 	}
 	return res
 }
@@ -191,21 +187,17 @@ func orderLinesByOrderIdLoader(ctx context.Context, orderIDs []string) []*datalo
 			OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": orderIDs},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range orderIDs {
+			res[idx] = &dataloader.Result[[]*model.OrderLine]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, line := range lines {
 		lineMap[line.OrderID] = append(lineMap[line.OrderID], line)
 	}
-
 	for idx, id := range orderIDs {
 		res[idx] = &dataloader.Result[[]*model.OrderLine]{Data: lineMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.OrderLine]{Error: appErr}
 	}
 	return res
 }
@@ -240,26 +232,22 @@ func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []stri
 			SelectRelatedOrder: true,
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range idPairs {
+			res[idx] = &dataloader.Result[[]*model.OrderLine]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, line := range lines {
 		if line.VariantID == nil {
 			continue
 		}
-
 		key := *line.VariantID + "__" + line.GetOrder().ChannelID
 		lineMap[key] = append(lineMap[key], line)
 	}
 
 	for idx, key := range idPairs {
 		res[idx] = &dataloader.Result[[]*model.OrderLine]{Data: lineMap[key]}
-	}
-	return res
-
-errorLabel:
-	for idx := range idPairs {
-		res[idx] = &dataloader.Result[[]*model.OrderLine]{Error: appErr}
 	}
 	return res
 }
@@ -389,15 +377,8 @@ func (o *Order) BillingAddress(ctx context.Context) (*Address, error) {
 	}
 	var currentSession = embedCtx.AppContext.Session()
 
-	canSeeBillingAddress := o.order.UserID != nil && *o.order.UserID == currentSession.UserId
-
-	if !canSeeBillingAddress {
-		staffs, err := StaffsByShopIDsLoader.Load(ctx, embedCtx.CurrentShopID)()
-		if err != nil {
-			return nil, err
-		}
-		canSeeBillingAddress = lo.SomeBy(staffs, func(u *model.User) bool { return u.Id == currentSession.UserId })
-	}
+	canSeeBillingAddress := (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
+		currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
 
 	if canSeeBillingAddress {
 		address, err := AddressByIdLoader.Load(ctx, *o.order.BillingAddressID)()
@@ -419,15 +400,8 @@ func (o *Order) ShippingAddress(ctx context.Context) (*Address, error) {
 	}
 	var currentSession = embedCtx.AppContext.Session()
 
-	canSeeShippingAddress := o.order.UserID != nil && *o.order.UserID == currentSession.UserId
-
-	if !canSeeShippingAddress {
-		staffs, err := StaffsByShopIDsLoader.Load(ctx, embedCtx.CurrentShopID)()
-		if err != nil {
-			return nil, err
-		}
-		canSeeShippingAddress = lo.SomeBy(staffs, func(u *model.User) bool { return u.Id == currentSession.UserId })
-	}
+	canSeeShippingAddress := (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
+		embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId)
 
 	if canSeeShippingAddress {
 		address, err := AddressByIdLoader.Load(ctx, *o.order.ShippingAddressID)()
@@ -580,10 +554,9 @@ func (o *Order) Lines(ctx context.Context) ([]*OrderLine, error) {
 
 func (o *Order) Events(ctx context.Context) ([]*OrderEvent, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	// check if current user has manage order permission to see order events:
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
-		return nil, model.NewAppError("Order.Events", ErrorUnauthorized, nil, "you are not authorized to see order events", http.StatusUnauthorized)
+	embedCtx.CheckAuthenticatedAndHasRoles("Order.Events", model.ShopStaffRoleId)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
 	events, err := OrderEventsByOrderIdLoader.Load(ctx, o.ID)()
@@ -639,31 +612,27 @@ func (o *Order) PaymentStatusDisplay(ctx context.Context) (string, error) {
 }
 
 func (o *Order) CanFinalize(ctx context.Context) (bool, error) {
-	// if o.Status == OrderStatusDraft {
-	// 	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	// 	if err != nil {
-	// 		return false, err
-	// 	}
+	if o.Status == model.ORDER_STATUS_DRAFT {
+		embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	// 	country, appErr := embedCtx.App.Srv().OrderService().GetOrderCountry(o.order)
-	// 	if appErr != nil {
-	// 		return false, appErr
-	// 	}
-	// }
+		appErr := embedCtx.App.Srv().OrderService().ValidateDraftOrder(o.order)
+		return appErr == nil, appErr
+	}
 
-	// return true, nil
-	panic("not implemented")
+	return true, nil
 }
 
 func (o *Order) UserEmail(ctx context.Context) (*string, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
 
 	var currentSession = embedCtx.AppContext.Session()
 
 	if (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
-		embedCtx.App.Srv().
-			AccountService().
-			SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
+		currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
 
 		return &o.order.UserEmail, nil
 	}
@@ -672,25 +641,22 @@ func (o *Order) UserEmail(ctx context.Context) (*string, error) {
 }
 
 func (o *Order) User(ctx context.Context) (*User, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasRoles("Order.User", model.ShopStaffRoleId)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+
 	if o.order.UserID == nil {
 		return nil, nil
 	}
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	currentSession := embedCtx.AppContext.Session()
-
-	if (o.order.UserID != nil && currentSession.UserId == *o.order.UserID) ||
-		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageUsers) {
-		user, err := UserByUserIdLoader.Load(ctx, *o.order.UserID)()
-		if err != nil {
-			return nil, err
-		}
-
-		return SystemUserToGraphqlUser(user), nil
+	user, err := UserByUserIdLoader.Load(ctx, *o.order.UserID)()
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, model.NewAppError("Order.User", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	return SystemUserToGraphqlUser(user), nil
 }
 
 func (o *Order) DeliveryMethod(ctx context.Context) (DeliveryMethod, error) {
@@ -761,10 +727,14 @@ func (o *Order) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, er
 
 func (o *Order) Invoices(ctx context.Context) ([]*Invoice, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
 	currentSession := embedCtx.AppContext.Session()
 
 	if (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
-		embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionManageOrders) {
+		currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
 		invoices, err := InvoicesByOrderIDLoader.Load(ctx, o.ID)()
 		if err != nil {
 			return nil, err
@@ -773,7 +743,7 @@ func (o *Order) Invoices(ctx context.Context) ([]*Invoice, error) {
 		return DataloaderResultMap(invoices, SystemInvoiceToGraphqlInvoice), nil
 	}
 
-	return nil, model.NewAppError("Order.Invoice", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	return nil, MakeUnauthorizedError("Order.Invoices")
 }
 
 func (o *Order) IsShippingRequired(ctx context.Context) (bool, error) {
@@ -817,33 +787,28 @@ func (o *Order) Original(ctx context.Context) (*string, error) {
 }
 
 func orderByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Order] {
-	var (
-		res      = make([]*dataloader.Result[*model.Order], len(ids))
-		orderMap = map[string]*model.Order{}
-	)
-
+	res := make([]*dataloader.Result[*model.Order], len(ids))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
 	orders, appErr := embedCtx.App.Srv().
 		OrderService().
 		FilterOrdersByOptions(&model.OrderFilterOption{
 			Id: squirrel.Eq{store.OrderTableName + ".Id": ids},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.Order]{Error: appErr}
+		}
+		return res
 	}
 
-	orderMap = lo.SliceToMap(orders, func(o *model.Order) (string, *model.Order) { return o.Id, o })
+	orderMap := lo.SliceToMap(orders, func(o *model.Order) (string, *model.Order) { return o.Id, o })
 
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.Order]{Data: orderMap[id]}
 	}
 	return res
 
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.Order]{Error: appErr}
-	}
-	return res
 }
 
 func ordersByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Result[[]*model.Order] {
@@ -859,7 +824,10 @@ func ordersByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Res
 			UserID: squirrel.Eq{store.OrderTableName + ".UserID": userIDs},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range userIDs {
+			res[idx] = &dataloader.Result[[]*model.Order]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, ord := range orders {
@@ -871,12 +839,6 @@ func ordersByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Res
 
 	for idx, id := range userIDs {
 		res[idx] = &dataloader.Result[[]*model.Order]{Data: orderMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range userIDs {
-		res[idx] = &dataloader.Result[[]*model.Order]{Error: appErr}
 	}
 	return res
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
@@ -1626,6 +1627,13 @@ func (a *ServiceOrder) RemoveDiscountFromOrderLine(orderLine model.OrderLine, or
 	return appErr
 }
 
+// ValidateDraftOrder checks if the given order contains the proper data.
+//
+//	// Has proper customer data,
+//	// Shipping address and method are set up,
+//	// Product variants for order lines still exists in database.
+//	// Product variants are available in requested quantity.
+//	// Product variants are published.
 func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 	if order.Status != model.ORDER_STATUS_DRAFT {
 		return nil
@@ -1652,18 +1660,110 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 		}
 	}
 
-	// validate total quantity
-	totalQuantity, appErr := s.OrderTotalQuantity(order.Id)
+	// validate order lines
+	orderLinesOfOrder, appErr := s.OrderLinesByOption(&model.OrderLineFilterOption{
+		OrderID:              squirrel.Eq{store.OrderLineTableName + ".OrderID": order.Id},
+		SelectRelatedVariant: true,
+	})
 	if appErr != nil {
 		return appErr
 	}
+	countryCode, appErr := s.GetOrderCountry(order)
+	if appErr != nil {
+		return appErr
+	}
+
+	// validate channel is active
+	channel, appErr := s.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
+		Id: squirrel.Eq{store.ChannelTableName + ".Id": order.ChannelID},
+	})
+	if appErr != nil {
+		return appErr
+	}
+	if !channel.IsActive {
+		return model.NewAppError("app.Order.ValidateDraftOrder", "app.channel.in_active.app_error", nil, "channel is inactive", http.StatusNotAcceptable)
+	}
+
+	for _, line := range orderLinesOfOrder {
+		if line.VariantID == nil {
+			return model.NewAppError("app.order.ValidateDraftOrder", "app.order.variant_required_for_order_line.app_error", nil, "can not create orders without product", http.StatusNotAcceptable)
+
+		} else if *line.GetProductVariant().TrackInventory {
+			insufficientStockErr, appErr := s.srv.
+				WarehouseService().
+				CheckStockAndPreorderQuantity(line.GetProductVariant(), countryCode, channel.Slug, line.Quantity)
+
+			if appErr != nil {
+				return appErr
+			}
+			if insufficientStockErr != nil {
+				return model.NewAppError("app.order.ValidateDraftOrder", "app.order.stock_insufficient.app_error", nil, "stock insufficient", http.StatusNotAcceptable)
+			}
+		}
+	}
+
+	// check if there is a selected product variant that belongs to an unpublished product
+	productIDsMap := map[string]bool{} // keys are product ids
+	totalQuantity := 0
+	productVariantIDs := util.AnyArray[string]{}
+
+	for _, line := range orderLinesOfOrder {
+		variant := line.GetProductVariant()
+		totalQuantity += line.Quantity
+		if variant != nil {
+			productIDsMap[variant.ProductID] = true
+			productVariantIDs = append(productVariantIDs, variant.Id)
+		}
+	}
+
+	// validate total quantity must > 0
 	if totalQuantity == 0 {
 		return model.NewAppError("app.order.ValidateDraftOrder", "app.order.total_quantity_zero.app_error", nil, "cannot create order without product", http.StatusNotAcceptable)
 	}
 
-	// validate order lines
+	notPublishedProducts, err := s.srv.Store.Product().NotPublishedProducts(channel.Slug)
+	if err != nil {
+		return model.NewAppError("app.order.ValidateDraftOrder", "app.product.error_finding_not_published_products.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	if lo.SomeBy(notPublishedProducts, func(item *struct {
+		model.Product
+		IsPublished     bool
+		PublicationDate *time.Time
+	}) bool {
+		return productIDsMap[item.Id]
+	}) {
+		return model.NewAppError("app.order.ValidateDraftOrder", "app.order.selected_un_published_product.app_error", nil, "you can't buy unpublished products", http.StatusNotAcceptable)
+	}
 
-	panic("not implemented")
+	// validate product available for purchase
+	productChannelListings, appErr := s.srv.
+		ProductService().
+		ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
+			ChannelID: squirrel.Eq{store.ProductChannelListingTableName + ".ChannelID": order.ChannelID},
+			ProductID: squirrel.Eq{store.ProductChannelListingTableName + ".ProductID": lo.Keys(productIDsMap)},
+		})
+	if appErr != nil {
+		return appErr
+	}
+
+	availableForPurchase := lo.SomeBy(productChannelListings, func(item *model.ProductChannelListing) bool { return item != nil && item.IsAvailableForPurchase() })
+	if !availableForPurchase {
+		return model.NewAppError("app.order.ValidateDraftOrder", "app.order.product_not_avaiable_for_purchase.app_error", nil, "product is not available for purchase", http.StatusNotAcceptable)
+	}
+
+	// validate variants is available:
+	variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
+		VariantID:   squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": productVariantIDs},
+		ChannelID:   squirrel.Eq{store.ProductVariantChannelListingTableName + ".ChannelID": order.ChannelID},
+		PriceAmount: squirrel.Expr(store.ProductVariantChannelListingTableName + ".PriceAmount NOT NULL"),
+	})
+	if appErr != nil {
+		return appErr
+	}
+
+	if productVariantIDs.Dedup().Len() > variantChannelListings.VariantIDs().Dedup().Len() {
+		return model.NewAppError("app.order.ValidateDraftOrder", "app.order.variant_not_available.app_error", nil, "product variant not available for purchase", http.StatusNotAcceptable)
+	}
 
 	return nil
 }

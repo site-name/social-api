@@ -326,13 +326,12 @@ type OrderService interface {
 	UpdateGiftcardBalance(giftCard *model.GiftCard, totalPriceLeft *goprices.Money) model.BalanceObject
 	UpdateTaxesForOrderLine(line model.OrderLine, ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	UpdateTaxesForOrderLines(lines model.OrderLines, ord model.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model.AppError
-	/* Check if the given order contains the proper data.
-    - Has proper customer data,
-    - Shipping address and method are set up,
-    - Product variants for order lines still exists in database.
-    - Product variants are available in requested quantity.
-    - Product variants are published.
-
-    Returns a list of errors if any were found.*/
+	// ValidateDraftOrder checks if the given order contains the proper data.
+	//
+	//	// Has proper customer data,
+	//	// Shipping address and method are set up,
+	//	// Product variants for order lines still exists in database.
+	//	// Product variants are available in requested quantity.
+	//	// Product variants are published.
 	ValidateDraftOrder(order *model.Order) *model.AppError
 }

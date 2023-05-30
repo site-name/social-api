@@ -199,6 +199,9 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 	if option.SelectRelatedOrder {
 		selectFields = append(selectFields, ols.Order().ModelFields(store.OrderTableName+".")...)
 	}
+	if option.SelectRelatedVariant {
+		selectFields = append(selectFields, ols.ProductVariant().ModelFields(store.ProductVariantTableName+".")...)
+	}
 
 	query := ols.GetQueryBuilder().
 		Select(selectFields...).
@@ -222,38 +225,27 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 		query = query.Where(option.VariantID)
 	}
 
-	joinedOrderTable := false
-
-	if option.SelectRelatedOrder {
+	if option.SelectRelatedOrder || option.OrderChannelID != nil {
 		query = query.InnerJoin(store.OrderTableName + " ON Orders.Id = OrderLines.OrderID")
 
-		joinedOrderTable = true
-	}
-
-	if option.OrderChannelID != nil {
-		if !joinedOrderTable {
-			query = query.InnerJoin(store.OrderTableName + " ON Orders.Id = OrderLines.OrderID")
+		if option.OrderChannelID != nil {
+			query = query.Where(option.OrderChannelID)
 		}
-		query = query.Where(option.OrderChannelID)
 	}
 
-	var joined_ProductVariantTableName bool
+	if option.VariantDigitalContentID != nil || option.VariantProductID != nil || option.SelectRelatedVariant {
+		query = query.InnerJoin(store.ProductVariantTableName + " ON Orderlines.VariantID = ProductVariants.Id")
 
-	if option.VariantDigitalContentID != nil {
-		query = query.
-			InnerJoin(store.ProductVariantTableName + " ON Orderlines.VariantID = ProductVariants.Id").
-			InnerJoin(store.DigitalContentTableName + "  ON ProductVariants.Id = DigitalContents.ProductVariantID").
-			Where(option.VariantDigitalContentID)
-
-		joined_ProductVariantTableName = true // indicate joined the table
-	}
-	if option.VariantProductID != nil {
-		if !joined_ProductVariantTableName {
-			query = query.InnerJoin(store.ProductVariantTableName + " ON Orderlines.VariantID = ProductVariants.Id")
+		if option.VariantDigitalContentID != nil {
+			query = query.
+				InnerJoin(store.DigitalContentTableName + "  ON ProductVariants.Id = DigitalContents.ProductVariantID").
+				Where(option.VariantDigitalContentID)
 		}
-		query = query.
-			InnerJoin(store.ProductTableName + " ON ProductVariants.ProductID = Products.Id").
-			Where(option.VariantProductID)
+		if option.VariantProductID != nil {
+			query = query.
+				InnerJoin(store.ProductTableName + " ON ProductVariants.ProductID = Products.Id").
+				Where(option.VariantProductID)
+		}
 	}
 
 	queryString, args, err := query.ToSql()
@@ -268,13 +260,17 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 	defer rows.Close()
 
 	var (
-		orderLines model.OrderLines
-		line       model.OrderLine
-		order      model.Order
-		scanFields = ols.ScanFields(&line)
+		orderLines     model.OrderLines
+		orderLine      model.OrderLine
+		order          model.Order
+		productVariant model.ProductVariant
+		scanFields     = ols.ScanFields(&orderLine)
 	)
 	if option.SelectRelatedOrder {
 		scanFields = append(scanFields, ols.Order().ScanFields(&order)...)
+	}
+	if option.SelectRelatedVariant {
+		scanFields = append(scanFields, ols.ProductVariant().ScanFields(&productVariant)...)
 	}
 
 	for rows.Next() {
@@ -283,13 +279,19 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 			return nil, errors.Wrap(err, "failed to scan a row of order line")
 		}
 
-		if option.SelectRelatedOrder {
-			line.SetOrder(&order) // no need deep copy yet
-		} else {
-			line.SetOrder(nil)
+		switch {
+		case option.SelectRelatedOrder:
+			orderLine.SetOrder(&order) // no need to copy just yet
+			fallthrough
+		case option.SelectRelatedVariant:
+			orderLine.SetProductVariant(&productVariant) // no need to copy just yet
+
+		default:
+			orderLine.SetOrder(nil)
+			orderLine.SetProductVariant(nil)
 		}
 
-		orderLines = append(orderLines, line.DeepCopy())
+		orderLines = append(orderLines, orderLine.DeepCopy())
 	}
 
 	// check if prefetching is needed and order lines have been found to proceed
@@ -347,7 +349,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 			allocations, err = ols.
 				Allocation().
 				FilterByOption(nil, &model.AllocationFilterOption{
-					OrderLineID: squirrel.Eq{store.AllocationTableName + ":OrderLineID": orderLines.IDs()},
+					OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLines.IDs()},
 				})
 			if err != nil {
 				return nil, err

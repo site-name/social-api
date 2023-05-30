@@ -81,7 +81,7 @@ func (s *ShippingMethod) Translation(ctx context.Context, args struct{ LanguageC
 func (s *ShippingMethod) ChannelListings(ctx context.Context) ([]*ShippingMethodChannelListing, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageShipping) {
+	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionReadShippingMethodChannelListing) {
 		listings, err := ShippingMethodChannelListingByShippingMethodIdLoader.Load(ctx, s.ID)()
 		if err != nil {
 			return nil, err

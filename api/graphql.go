@@ -79,10 +79,9 @@ func (api *API) graphql(c *web.Context, w http.ResponseWriter, r *http.Request) 
 
 	c.GraphQLOperationName = params.OperationName
 
-	queryParams := r.URL.Query()
-	c.CurrentChannelID = queryParams.Get("channel_id")
+	c.CurrentChannelID = r.URL.Query().Get("channel_id")
 	if c.CurrentChannelID != "" && !model.IsValidId(c.CurrentChannelID) {
-		err2 := gqlerrors.Errorf("invalid request query param channel_id or shop_id")
+		err2 := gqlerrors.Errorf("invalid request query param channel_id")
 		response = &graphql.Response{Errors: []*gqlerrors.QueryError{err2}}
 		return
 	}

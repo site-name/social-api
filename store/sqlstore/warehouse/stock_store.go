@@ -203,7 +203,10 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 
 		if options.SelectRelatedProductVariant {
 			stock.SetProductVariant(&productVariant)
+		} else {
+			stock.SetProductVariant(nil)
 		}
+
 		returningStocks = append(returningStocks, stock.DeepCopy())
 	}
 
@@ -340,8 +343,6 @@ func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, 
 
 // FilterForCountryAndChannel finds and returns stocks with given options
 func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
-	options.CountryCode = options.CountryCode
-
 	warehouseIDQuery := ss.
 		warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug).
 		PlaceholderFormat(squirrel.Question)
@@ -388,9 +389,9 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.Sqlx
 	}
 	if options.LockForUpdate {
 		query = query.Suffix("FOR UPDATE")
-	}
-	if options.ForUpdateOf != "" && options.LockForUpdate {
-		query = query.Suffix("OF " + options.ForUpdateOf)
+		if options.ForUpdateOf != "" {
+			query = query.Suffix("OF " + options.ForUpdateOf)
+		}
 	}
 
 	queryString, args, err := query.ToSql()

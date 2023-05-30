@@ -11,19 +11,8 @@ import (
 // ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option
 func (a *ServiceProduct) ProductVariantChannelListingsByOption(transaction store_iface.SqlxTxExecutor, option *model.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListings, *model.AppError) {
 	listings, err := a.srv.Store.ProductVariantChannelListing().FilterbyOption(transaction, option)
-	var (
-		statusCode   int
-		errorMessage string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errorMessage = err.Error()
-	} else if len(listings) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("ProductVariantChannelListingsByOption", "app.product_error_finding_product_variant_channel_listings_by_option.app_error", nil, errorMessage, statusCode)
+		return nil, model.NewAppError("ProductVariantChannelListingsByOption", "app.product_error_finding_product_variant_channel_listings_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return listings, nil

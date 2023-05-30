@@ -145,16 +145,8 @@ func (e *GiftCardEvent) User(ctx context.Context) (*User, error) {
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
 	}
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
-		return nil, embedCtx.Err
-	}
 
-	if embedCtx.App.Srv().
-		GiftcardService().
-		GiftcardBelongToShop(e.e.GiftcardID, embedCtx.CurrentShopID) &&
-		embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) {
-
+	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
 		if e.e.UserID == nil {
 			return nil, nil
 		}
@@ -268,14 +260,7 @@ func (g *GiftCard) Events(ctx context.Context) ([]*GiftCardEvent, error) {
 		return nil, embedCtx.Err
 	}
 
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
-		return nil, embedCtx.Err
-	}
-
-	if g.giftcard.ShopID == embedCtx.CurrentShopID &&
-		embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) {
-
+	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
 		events, err := GiftCardEventsByGiftCardIdLoader.Load(ctx, g.ID)()
 		if err != nil {
 			return nil, err
@@ -295,14 +280,7 @@ func (g *GiftCard) CreatedByEmail(ctx context.Context) (*string, error) {
 		return nil, embedCtx.Err
 	}
 
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
-		return nil, embedCtx.Err
-	}
-
-	if g.giftcard.ShopID == embedCtx.CurrentShopID &&
-		embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) {
-
+	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
 		if g.giftcard.CreatedByID != nil {
 			user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, *g.giftcard.CreatedByID)
 			if appErr != nil {
@@ -329,13 +307,7 @@ func (g *GiftCard) UsedByEmail(ctx context.Context) (*string, error) {
 		return nil, embedCtx.Err
 	}
 
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
-		return nil, embedCtx.Err
-	}
-
-	if g.giftcard.ShopID == embedCtx.CurrentShopID &&
-		embedCtx.App.Srv().ShopService().UserIsStaffOfShop(embedCtx.AppContext.Session().UserId, embedCtx.CurrentShopID) {
+	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
 		user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.UsedByID)()
 		if err != nil {
 			return nil, err
@@ -354,38 +326,20 @@ func (g *GiftCard) UsedBy(ctx context.Context) (*User, error) {
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
 	}
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
-		return nil, embedCtx.Err
+
+	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
+		if g.giftcard.UsedByID == nil {
+			return nil, nil
+		}
+
+		user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.UsedByID)()
+		if err != nil {
+			return nil, err
+		}
+		return SystemUserToGraphqlUser(user), nil
 	}
 
-	// checks if current giftcard issued by current shop
-	giftcards, err := GiftcardsByShopIDsLoader.Load(ctx, embedCtx.CurrentShopID)()
-	if err != nil {
-		return nil, err
-	}
-	if !lo.SomeBy(giftcards, func(gc *model.GiftCard) bool { return gc.Id == g.ID }) {
-		return nil, MakeUnauthorizedError("GiftCard.UsedBy")
-	}
-
-	// check if requester is staff of current shop
-	staffs, err := StaffsByShopIDsLoader.Load(ctx, embedCtx.CurrentShopID)()
-	if err != nil {
-		return nil, err
-	}
-	if !lo.SomeBy(staffs, func(u *model.User) bool { return u.Id == embedCtx.AppContext.Session().UserId }) {
-		return nil, MakeUnauthorizedError("GiftCard.UsedBy")
-	}
-	if g.giftcard.UsedByID == nil {
-		return nil, nil
-	}
-
-	user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.UsedByID)()
-	if err != nil {
-		return nil, err
-	}
-
-	return SystemUserToGraphqlUser(user), nil
+	return nil, MakeUnauthorizedError("Giftcard.UsedBy")
 }
 
 func (g *GiftCard) CreatedBy(ctx context.Context) (*User, error) {
@@ -395,39 +349,21 @@ func (g *GiftCard) CreatedBy(ctx context.Context) (*User, error) {
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
 	}
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
-		return nil, embedCtx.Err
+
+	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
+		if g.giftcard.CreatedByID == nil {
+			return nil, nil
+		}
+
+		user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.CreatedByID)()
+		if err != nil {
+			return nil, err
+		}
+
+		return SystemUserToGraphqlUser(user), nil
 	}
 
-	// checks if current giftcard issued by current shop
-	giftcards, err := GiftcardsByShopIDsLoader.Load(ctx, embedCtx.CurrentShopID)()
-	if err != nil {
-		return nil, err
-	}
-	if !lo.SomeBy(giftcards, func(gc *model.GiftCard) bool { return gc.Id == g.ID }) {
-		return nil, MakeUnauthorizedError("GiftCard.CreatedBy")
-	}
-
-	// check if requester is staff of current shop
-	staffs, err := StaffsByShopIDsLoader.Load(ctx, embedCtx.CurrentShopID)()
-	if err != nil {
-		return nil, err
-	}
-	if !lo.SomeBy(staffs, func(u *model.User) bool { return u.Id == embedCtx.AppContext.Session().UserId }) {
-		return nil, MakeUnauthorizedError("GiftCard.CreatedBy")
-	}
-
-	if g.giftcard.CreatedByID == nil {
-		return nil, nil
-	}
-
-	user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.CreatedByID)()
-	if err != nil {
-		return nil, err
-	}
-
-	return SystemUserToGraphqlUser(user), nil
+	return nil, MakeUnauthorizedError("Giftcard.CreatedBy")
 }
 
 func (g *GiftCard) BoughtInChannel(ctx context.Context) (*string, error) {
@@ -490,7 +426,10 @@ func giftCardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.
 			UsedByID: squirrel.Eq{store.GiftcardTableName + ".UsedByID": userIDs},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range userIDs {
+			res[idx] = &dataloader.Result[[]*model.GiftCard]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, gc := range giftcards {
@@ -498,15 +437,8 @@ func giftCardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.
 			giftcardMap[*gc.UsedByID] = append(giftcardMap[*gc.UsedByID], gc)
 		}
 	}
-
 	for idx, id := range userIDs {
 		res[idx] = &dataloader.Result[[]*model.GiftCard]{Data: giftcardMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range userIDs {
-		res[idx] = &dataloader.Result[[]*model.GiftCard]{Error: appErr}
 	}
 	return res
 }
@@ -525,7 +457,10 @@ func giftCardEventsByGiftCardIdLoader(ctx context.Context, giftcardIDs []string)
 			GiftcardID: squirrel.Eq{store.GiftcardTableName + ".GiftcardID": giftcardIDs},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range giftcardIDs {
+			res[idx] = &dataloader.Result[[]*model.GiftCardEvent]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, event := range events {
@@ -534,12 +469,6 @@ func giftCardEventsByGiftCardIdLoader(ctx context.Context, giftcardIDs []string)
 
 	for idx, id := range giftcardIDs {
 		res[idx] = &dataloader.Result[[]*model.GiftCardEvent]{Data: giftcardEventMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range giftcardIDs {
-		res[idx] = &dataloader.Result[[]*model.GiftCardEvent]{Error: appErr}
 	}
 	return res
 }
@@ -593,35 +522,6 @@ func giftcardsByOrderIDsLoader(ctx context.Context, orderIDs []string) []*datalo
 errorLabel:
 	for idx := range orderIDs {
 		res[idx] = &dataloader.Result[[]*model.GiftCard]{Error: err}
-	}
-	return res
-}
-
-func giftcardsByShopIdLoader(ctx context.Context, shopIDs []string) []*dataloader.Result[[]*model.GiftCard] {
-	var (
-		res             = make([]*dataloader.Result[[]*model.GiftCard], len(shopIDs))
-		shopGiftcardMap = map[string][]*model.GiftCard{}
-	)
-
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(nil, &model.GiftCardFilterOption{
-		ShopID: squirrel.Eq{store.GiftcardTableName + ".ShopID": shopIDs},
-	})
-	if appErr != nil {
-		goto errorLabel
-	}
-
-	for _, giftcard := range giftcards {
-		shopGiftcardMap[giftcard.ShopID] = append(shopGiftcardMap[giftcard.ShopID], giftcard)
-	}
-	for idx, shopID := range shopIDs {
-		res[idx] = &dataloader.Result[[]*model.GiftCard]{Data: shopGiftcardMap[shopID]}
-	}
-	return res
-
-errorLabel:
-	for idx := range shopIDs {
-		res[idx] = &dataloader.Result[[]*model.GiftCard]{Error: appErr}
 	}
 	return res
 }

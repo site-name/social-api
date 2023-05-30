@@ -119,7 +119,8 @@ type OrderLineFilterOption struct {
 
 	PrefetchRelated OrderLinePrefetchRelated
 
-	SelectRelatedOrder bool
+	SelectRelatedOrder   bool
+	SelectRelatedVariant bool
 }
 
 func (o *OrderLine) String() string {

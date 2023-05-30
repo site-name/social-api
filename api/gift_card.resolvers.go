@@ -31,9 +31,6 @@ func (r *Resolver) GiftCardActivate(ctx context.Context, args struct{ Id string 
 	if appErr != nil {
 		return nil, appErr
 	}
-	if giftcard.ShopID != embedCtx.CurrentShopID {
-		return nil, MakeUnauthorizedError("GiftcardActivate")
-	}
 
 	if giftcard.IsActive != nil && !*giftcard.IsActive {
 		giftcard.IsActive = model.NewPrimitive(true)
@@ -78,10 +75,6 @@ func (r *Resolver) GiftCardDeactivate(ctx context.Context, args struct{ Id strin
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("GiftcardDeactivate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is invalid id", args.Id), http.StatusBadRequest)
 	}
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
-		return nil, embedCtx.Err
-	}
 
 	giftcard, appErr := r.srv.GiftcardService().GetGiftCard(args.Id)
 	if appErr != nil {
@@ -122,10 +115,6 @@ func (r *Resolver) GiftCardUpdate(ctx context.Context, args struct {
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
 	}
-	if embedCtx.CurrentShopID == "" {
-		embedCtx.SetInvalidUrlParam("shop_id")
-		return nil, embedCtx.Err
-	}
 
 	// valudate input
 	if !model.IsValidId(args.Id) {
@@ -136,9 +125,6 @@ func (r *Resolver) GiftCardUpdate(ctx context.Context, args struct {
 	giftcard, appErr := r.srv.GiftcardService().GetGiftCard(args.Id)
 	if appErr != nil {
 		return nil, appErr
-	}
-	if giftcard.ShopID != embedCtx.CurrentShopID {
-		return nil, MakeUnauthorizedError("GiftcardUpdate")
 	}
 
 	if v := args.Input.Tag; v != nil {

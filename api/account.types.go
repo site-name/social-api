@@ -528,9 +528,9 @@ func (c *CustomerEvent) User(ctx context.Context) (*User, error) {
 			return nil, nil
 		}
 
-		user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, *c.event.UserID)
-		if appErr != nil {
-			return nil, appErr
+		user, err := UserByUserIdLoader.Load(ctx, *c.event.UserID)()
+		if err != nil {
+			return nil, err
 		}
 
 		return SystemUserToGraphqlUser(user), nil

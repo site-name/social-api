@@ -109,16 +109,25 @@ type OrderEvent struct {
 	//  "email_type": string
 	//  "amount": float64
 	//  "payment_id": string
+	//  "payment_gateway": string
 	//  "quantity": int
 	//  "message": string
-	//  "composedID": string
+	//  "composed_id": string
 	//  "oversold_items": []string
 	//  "invoice_number": string
 	//  "transaction_reference": string
 	//  "shipping_costs_included": bool
 	//  "related_order_pk": string
 	//  "warehouse": string
-	//  "fulfilled_items": []string
+	//  "fulfilled_items": []string // ids of fulfillment lines
+	//  "lines": // could be either: []{"quantity": int, "line_pk": string, "item": string, "discount": map[string]any} OR see field "discount" below for more information
+	//  "url": string
+	//  "status": string
+	//  "gateway": string
+	//  "awaiting_fulfillments": []string // ids of fulfillment lines
+	//  "tracking_number": string
+	//  "fulfillment": string
+	//  "discount": map[string]any // items may include: "value": decimal, "amount_value": decimal, "currency": string, "value_type": string, "reason": *string, "old_value": decimal, "old_value_type": string, "old_amount_value": decimal
 	Parameters StringInterface `json:"parameters"`
 	UserID     *string         `json:"user_id"`
 }

@@ -6,6 +6,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
@@ -60,6 +61,17 @@ func (c *Context) CheckAuthenticatedAndHasPermissionToAny(perms ...*model.Permis
 	}
 	if !c.App.Srv().AccountService().SessionHasPermissionToAny(c.AppContext.Session(), perms...) {
 		c.SetPermissionError(perms...)
+	}
+}
+
+func (c *Context) CheckAuthenticatedAndHasRoles(apiName string, roleIDs ...string) {
+	c.SessionRequired()
+	if c.Err != nil {
+		return
+	}
+	commonRoles := lo.Intersect(c.AppContext.Session().GetUserRoles(), roleIDs)
+	if len(commonRoles) == 0 {
+		c.Err = model.NewAppError(apiName, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}
 }
 
