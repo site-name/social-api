@@ -18,13 +18,21 @@ const (
 
 var AllVoucherTypes = util.AnyArray[string]{SHIPPING, ENTIRE_ORDER, SPECIFIC_PRODUCT}
 
+type DiscountType string
+
 // Applicable values for voucher's discount value type
 const (
-	FIXED      = "fixed"
-	PERCENTAGE = "percentage"
+	FIXED      DiscountType = "fixed"
+	PERCENTAGE DiscountType = "percentage"
 )
 
-var SALE_TYPES = util.AnyArray[string]{FIXED, PERCENTAGE}
+func (e DiscountType) IsValid() bool {
+	switch e {
+	case FIXED, PERCENTAGE:
+		return true
+	}
+	return false
+}
 
 // max length values for some fields of voucher
 const (
@@ -35,26 +43,26 @@ const (
 )
 
 var (
-	VOUCHER_DISCOUNT_COUNTRIES_MAX_LENGTH = len(Countries)*3 - 1 // hihi
+	VOUCHER_DISCOUNT_COUNTRIES_MAX_LENGTH = len(Countries)*3 - 1
 )
 
 type Voucher struct {
-	Id                       string  `json:"id"`
-	Type                     string  `json:"type"` // default to "entire_order"
-	Name                     *string `json:"name"`
-	Code                     string  `json:"code"` // UNIQUE
-	UsageLimit               *int    `json:"usage_limit"`
-	Used                     int     `json:"used"` // not editable
-	StartDate                int64   `json:"start_date"`
-	EndDate                  *int64  `json:"end_date"`
-	ApplyOncePerOrder        bool    `json:"apply_once_per_order"`
-	ApplyOncePerCustomer     bool    `json:"apply_once_per_customer"`
-	OnlyForStaff             *bool   `json:"only_for_staff"` // default false
-	DiscountValueType        string  `json:"discount_value_type"`
-	Countries                string  `json:"countries"` // multiple. E.g: "VN US CN"
-	MinCheckoutItemsQuantity int     `json:"min_checkout_items_quantity"`
-	CreateAt                 int64   `json:"create_at"` // this field is for ordering
-	UpdateAt                 int64   `json:"update_at"`
+	Id                       string       `json:"id"`
+	Type                     string       `json:"type"` // default to "entire_order"
+	Name                     *string      `json:"name"`
+	Code                     string       `json:"code"` // UNIQUE
+	UsageLimit               *int         `json:"usage_limit"`
+	Used                     int          `json:"used"` // not editable
+	StartDate                int64        `json:"start_date"`
+	EndDate                  *int64       `json:"end_date"`
+	ApplyOncePerOrder        bool         `json:"apply_once_per_order"`
+	ApplyOncePerCustomer     bool         `json:"apply_once_per_customer"`
+	OnlyForStaff             *bool        `json:"only_for_staff"` // default false
+	DiscountValueType        DiscountType `json:"discount_value_type"`
+	Countries                string       `json:"countries"` // multiple. E.g: "VN US CN"
+	MinCheckoutItemsQuantity int          `json:"min_checkout_items_quantity"`
+	CreateAt                 int64        `json:"create_at"` // this field is for ordering
+	UpdateAt                 int64        `json:"update_at"`
 	ModelMetadata
 }
 
@@ -104,7 +112,8 @@ func (v *Voucher) IsValid() *AppError {
 	if v.StartDate == 0 {
 		return outer("start_date", &v.Id)
 	}
-	if len(v.DiscountValueType) > VOUCHER_DISCOUNT_VALUE_TYPE_MAX_LENGTH || !SALE_TYPES.Contains(v.DiscountValueType) {
+	if len(v.DiscountValueType) > VOUCHER_DISCOUNT_VALUE_TYPE_MAX_LENGTH ||
+		!v.DiscountValueType.IsValid() {
 		return outer("discount_value_type", &v.Id)
 	}
 	if len(v.Countries) > VOUCHER_DISCOUNT_COUNTRIES_MAX_LENGTH {

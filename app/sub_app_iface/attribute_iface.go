@@ -53,6 +53,5 @@ type AttributeService interface {
 	DeleteAttributeValues(ids ...string) (int64, *model.AppError)
 	DeleteAttributes(ids ...string) (int64, *model.AppError)
 	FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model.AppError)
-	GetVisibleToUserAttributes(session *model.Session) (model.Attributes, *model.AppError)
 	PerformReordering(values model.AttributeValues, operations map[string]*int) *model.AppError
 }

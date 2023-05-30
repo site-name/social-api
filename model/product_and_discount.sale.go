@@ -16,13 +16,13 @@ const (
 )
 
 type Sale struct {
-	Id        string     `json:"id"`
-	Name      string     `json:"name"`
-	Type      string     `json:"type"` // DEFAULT `fixed`
-	StartDate time.Time  `json:"start_date"`
-	EndDate   *time.Time `json:"end_date"`
-	CreateAt  int64      `json:"create_at"`
-	UpdateAt  int64      `json:"update_at"`
+	Id        string       `json:"id"`
+	Name      string       `json:"name"`
+	Type      DiscountType `json:"type"` // DEFAULT `fixed`
+	StartDate time.Time    `json:"start_date"`
+	EndDate   *time.Time   `json:"end_date"`
+	CreateAt  int64        `json:"create_at"`
+	UpdateAt  int64        `json:"update_at"`
 	ModelMetadata
 }
 
@@ -61,7 +61,7 @@ func (s *Sale) IsValid() *AppError {
 	if utf8.RuneCountInString(s.Name) > SALE_NAME_MAX_LENGTH {
 		return outer("name", &s.Id)
 	}
-	if len(s.Type) > SALE_TYPE_MAX_LENGTH || !SALE_TYPES.Contains(s.Type) {
+	if len(s.Type) > SALE_TYPE_MAX_LENGTH || !s.Type.IsValid() {
 		return outer("type", &s.Id)
 	}
 	if s.StartDate.IsZero() {
@@ -94,7 +94,7 @@ func (s *Sale) PreSave() {
 }
 
 func (s *Sale) commonPre() {
-	if s.Type == "" || !SALE_TYPES.Contains(s.Type) {
+	if !s.Type.IsValid() {
 		s.Type = FIXED
 	}
 	s.Name = SanitizeUnicode(s.Name)

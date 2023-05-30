@@ -28,16 +28,11 @@ var OrderDiscountTypeStrings = map[string]string{
 	MANUAL:  "Manual",
 }
 
-var OrderDiscountValueTypeStrings = map[string]string{
-	FIXED:      "Fixed",
-	PERCENTAGE: "%",
-}
-
 type OrderDiscount struct {
 	Id             string           `json:"id"`
 	OrderID        *string          `json:"order_id"`
 	Type           string           `json:"type"`
-	ValueType      string           `json:"value_type"`
+	ValueType      DiscountType     `json:"value_type"`
 	Value          *decimal.Decimal `json:"value"`        // default 0
 	AmountValue    *decimal.Decimal `json:"amount_value"` // default 0
 	Amount         *goprices.Money  `json:"amount,omitempty" db:"-"`
@@ -105,7 +100,7 @@ func (o *OrderDiscount) IsValid() *AppError {
 	if OrderDiscountTypeStrings[strings.ToLower(o.Type)] == "" {
 		return outer("type", &o.Id)
 	}
-	if OrderDiscountValueTypeStrings[strings.ToLower(o.ValueType)] == "" {
+	if !o.ValueType.IsValid() {
 		return outer("value_type", &o.Id)
 	}
 	if o.Name != nil && utf8.RuneCountInString(*o.Name) > ORDER_DISCOUNT_NAME_MAX_LENGTH {

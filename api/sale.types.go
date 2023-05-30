@@ -143,20 +143,15 @@ func (v *Sale) Currency(ctx context.Context) (*string, error) {
 
 func (v *Sale) ChannelListings(ctx context.Context) ([]*SaleChannelListing, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionReadSaleChannelListing)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
 	}
 
-	currentSession := embedCtx.AppContext.Session()
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(currentSession, model.PermissionReadSaleChannelListing) {
-		listings, err := SaleChannelListingBySaleIdLoader.Load(ctx, v.ID)()
-		if err != nil {
-			return nil, err
-		}
-
-		return DataloaderResultMap(listings, systemSaleChannelListingToGraphqlSaleChannelListing), nil
+	listings, err := SaleChannelListingBySaleIdLoader.Load(ctx, v.ID)()
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, MakeUnauthorizedError("Sale.ChannelListings")
+	return DataloaderResultMap(listings, systemSaleChannelListingToGraphqlSaleChannelListing), nil
 }

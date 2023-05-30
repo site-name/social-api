@@ -51,6 +51,8 @@ func SystemOrderLineToGraphqlOrderLine(line *model.OrderLine) *OrderLine {
 		return nil
 	}
 
+	line.PopulateNonDbFields() // this call is required
+
 	res := &OrderLine{
 		ID:                    line.Id,
 		ProductName:           line.ProductName,
@@ -77,7 +79,7 @@ func SystemOrderLineToGraphqlOrderLine(line *model.OrderLine) *OrderLine {
 	res.UnitDiscountType = &discountType
 
 	if line.TaxRate != nil {
-		res.TaxRate, _ = line.TaxRate.Float64()
+		res.TaxRate = line.TaxRate.InexactFloat64()
 	}
 
 	return res
@@ -112,11 +114,7 @@ func (o *OrderLine) Allocations(ctx context.Context) ([]*Allocation, error) {
 
 func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-	currentSession := embedCtx.AppContext.Session()
+	embedCtx.CheckAuthenticatedAndHasPermissionToAny(model.PermissionCreateOrder, model.PermissionReadOrder)
 
 	if o.variantID == nil {
 		return nil, nil
@@ -127,9 +125,7 @@ func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
 		return nil, err
 	}
 
-	if embedCtx.App.Srv().
-		AccountService().
-		SessionHasPermissionToAny(currentSession, model.PermissionCreateOrder, model.PermissionReadOrder) {
+	if embedCtx.Err == nil {
 		return SystemProductVariantToGraphqlProductVariant(variant), nil
 	}
 
@@ -716,7 +712,6 @@ func (o *Order) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, er
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	warehouses, appErr := embedCtx.App.Srv().OrderService().GetValidCollectionPointsForOrder(lines, address.Address.Country)
 	if appErr != nil {
 		return nil, appErr

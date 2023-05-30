@@ -122,17 +122,16 @@ type AccountService interface {
 	RevokeSession(session *model.Session) *model.AppError
 	// RevokeSessionById gets session with given sessionID then revokes it
 	RevokeSessionById(sessionID string) *model.AppError
-	RolesGrantPermission(roles []*model.Role, permissionId string) bool
 	// SendAccountDeleteConfirmationNotification Trigger sending a account delete notification for the given user
 	SendAccountDeleteConfirmationNotification(redirectUrl string, user model.User, manager interfaces.PluginManagerInterface, channelID string) *model.AppError
 	// SessionHasPermissionTo checks if this user has given permission to procceed
-	SessionHasPermissionTo(session *model.Session, permission *model.Permission) bool
+	SessionHasPermissionTo(session model.Session, permission *model.Permission) bool
 	// SessionHasPermissionToAll checks if given session has all given permissions
 	SessionHasPermissionToAll(session *model.Session, permissions ...*model.Permission) bool
 	// SessionHasPermissionToAny checks if current user has atleast one of given permissions
-	SessionHasPermissionToAny(session *model.Session, permissions ...*model.Permission) bool
+	SessionHasPermissionToAny(session model.Session, permissions []*model.Permission) bool
 	// SessionHasPermissionToUser checks if current user has permission to perform modifications to another user with Id of given userID
-	SessionHasPermissionToUser(session *model.Session, userID string) bool
+	SessionHasPermissionToUser(session model.Session, userID string) bool
 	// SetSessionExpireInDays sets the session's expiry the specified number of days
 	// relative to either the session creation date or the current time, depending
 	// on the `ExtendSessionOnActivity` config setting.
@@ -220,6 +219,7 @@ type AccountService interface {
 	ReturnSessionToPool(session *model.Session)
 	RevokeSessionsForDeviceId(userID string, deviceID string, currentSessionId string) *model.AppError
 	RevokeUserAccessToken(token *model.UserAccessToken) *model.AppError
+	RolesGrantPermission(roleNames []string, permissionId string) bool
 	SanitizeProfile(user *model.User, asAdmin bool)
 	SaveAndBroadcastStatus(status *model.Status)
 	SearchUserAccessTokens(term string) ([]*model.UserAccessToken, *model.AppError)

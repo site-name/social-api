@@ -51,7 +51,6 @@ func (a *ServiceAttribute) AttributesByOption(option *model.AttributeFilterOptio
 // UpsertAttribute inserts or updates given attribute and returns it
 func (s *ServiceAttribute) UpsertAttribute(attr *model.Attribute) (*model.Attribute, *model.AppError) {
 	attr, err := s.srv.Store.Attribute().Upsert(attr)
-
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr
@@ -61,7 +60,6 @@ func (s *ServiceAttribute) UpsertAttribute(attr *model.Attribute) (*model.Attrib
 		if _, ok := err.(*store.ErrInvalidInput); ok {
 			statusCode = http.StatusBadRequest
 		}
-
 		return nil, model.NewAppError("UpsertAttribute", "app.attribute.error_upserting_attribute.app_error", nil, err.Error(), statusCode)
 	}
 
@@ -75,14 +73,4 @@ func (s *ServiceAttribute) DeleteAttributes(ids ...string) (int64, *model.AppErr
 	}
 
 	return numDeleted, nil
-}
-
-func (s *ServiceAttribute) GetVisibleToUserAttributes(session *model.Session) (model.Attributes, *model.AppError) {
-	if s.srv.AccountService().SessionHasPermissionToAny(session, model.PermissionCreateAttribute, model.PermissionUpdateAttribute, model.PermissionDeleteAttribute) {
-		return s.AttributesByOption(&model.AttributeFilterOption{})
-	}
-
-	return s.AttributesByOption(&model.AttributeFilterOption{
-		VisibleInStoreFront: model.NewPrimitive(true),
-	})
 }

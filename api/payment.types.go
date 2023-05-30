@@ -85,90 +85,75 @@ func (p *Payment) Order(ctx context.Context) (*Order, error) {
 }
 
 func (p *Payment) Metadata(ctx context.Context) ([]*MetadataItem, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
-	session := embedCtx.AppContext.Session()
 
-	currentUserOwnPayment, err := embedCtx.App.Srv().Store.Payment().PaymentOwnedByUser(session.UserId, p.p.Id)
+	currentUserOwnPayment, err := embedCtx.App.Srv().Store.Payment().PaymentOwnedByUser(embedCtx.AppContext.Session().UserId, p.p.Id)
 	if err != nil {
 		return nil, model.NewAppError("Payment.Metadata", "app.payment.checking_user_own_payment.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	if currentUserOwnPayment || embedCtx.App.Srv().
-		AccountService().
-		SessionHasPermissionTo(session, model.PermissionHandlePayments) {
+	if currentUserOwnPayment || embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
 		return MetadataToSlice(p.p.Metadata), nil
 	}
 
-	return nil, model.NewAppError("Payment.Metadata", ErrorUnauthorized, nil, "you are not authorized to perform this action.", http.StatusUnauthorized)
+	return nil, MakeUnauthorizedError("Payment.Metadata")
 }
 
 func (p *Payment) CustomerIPAddress(ctx context.Context) (*string, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasRoles(model.ShopStaffRoleId)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
-		return p.p.CustomerIpAddress, nil
-	}
-	return nil, model.NewAppError("Payment.CustomerIPAddress", ErrorUnauthorized, nil, "you are not authorized to perform this action.", http.StatusUnauthorized)
+	return p.p.CustomerIpAddress, nil
 }
 
 func (p *Payment) Actions(ctx context.Context) ([]OrderAction, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasRoles(model.ShopStaffRoleId)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
 	}
 
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
-		actions := []OrderAction{}
-
-		if p.p.CanCapture() {
-			actions = append(actions, OrderActionCapture)
-		}
-		if p.p.CanRefund() {
-			actions = append(actions, OrderActionRefund)
-		}
-		canVoid, appErr := embedCtx.App.Srv().PaymentService().PaymentCanVoid(p.p)
-		if appErr != nil {
-			return nil, appErr
-		}
-		if canVoid {
-			actions = append(actions, OrderActionVoid)
-		}
-
-		return actions, nil
+	actions := []OrderAction{}
+	if p.p.CanCapture() {
+		actions = append(actions, OrderActionCapture)
 	}
-	return nil, model.NewAppError("Payment.Actions", ErrorUnauthorized, nil, "you are not authorized to perform this action.", http.StatusUnauthorized)
+	if p.p.CanRefund() {
+		actions = append(actions, OrderActionRefund)
+	}
+	canVoid, appErr := embedCtx.App.Srv().PaymentService().PaymentCanVoid(p.p)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if canVoid {
+		actions = append(actions, OrderActionVoid)
+	}
+
+	return actions, nil
 }
 
 func (p *Payment) Transactions(ctx context.Context) ([]*Transaction, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasRoles(model.ShopStaffRoleId)
+	if embedCtx.Err != nil {
+		return nil, embedCtx.Err
+	}
+
+	transactions, err := TransactionsByPaymentIdLoader.Load(ctx, p.p.Id)()
 	if err != nil {
 		return nil, err
 	}
-
-	if embedCtx.App.Srv().AccountService().
-		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
-		transactions, err := TransactionsByPaymentIdLoader.Load(ctx, p.p.Id)()
-		if err != nil {
-			return nil, err
-		}
-
-		return DataloaderResultMap(transactions, systemTransactionToGraphqlTransaction), nil
-	}
-
-	return nil, model.NewAppError("Payment.Transactions", ErrorUnauthorized, nil, "you are not authorized to perform this action.", http.StatusUnauthorized)
+	return DataloaderResultMap(transactions, systemTransactionToGraphqlTransaction), nil
 }
 
 func (p *Payment) AvailableCaptureAmount(ctx context.Context) (*Money, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	if embedCtx.App.Srv().AccountService().
 		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
@@ -186,10 +171,7 @@ func (p *Payment) AvailableCaptureAmount(ctx context.Context) (*Money, error) {
 }
 
 func (p *Payment) AvailableRefundAmount(ctx context.Context) (*Money, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	if embedCtx.App.Srv().AccountService().
 		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
@@ -231,24 +213,21 @@ func (p *Payment) CreditCard(ctx context.Context) (*CreditCard, error) {
 func paymentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataloader.Result[[]*model.Payment] {
 	var (
 		res        = make([]*dataloader.Result[[]*model.Payment], len(orderIDs))
-		payments   []*model.Payment
-		appErr     *model.AppError
 		paymentMap = map[string][]*model.Payment{} // keys are order ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	payments, appErr = embedCtx.App.Srv().
+	payments, appErr := embedCtx.App.Srv().
 		PaymentService().
 		PaymentsByOption(&model.PaymentFilterOption{
 			OrderID: squirrel.Eq{store.PaymentTableName + ".OrderID": orderIDs},
 		})
 	if appErr != nil {
-		err = appErr
-		goto errorLabel
+		for idx := range orderIDs {
+			res[idx] = &dataloader.Result[[]*model.Payment]{Error: err}
+		}
+		return res
 	}
 
 	for _, payment := range payments {
@@ -257,15 +236,8 @@ func paymentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataload
 		}
 		paymentMap[*payment.OrderID] = append(paymentMap[*payment.OrderID], payment)
 	}
-
 	for idx, id := range orderIDs {
 		res[idx] = &dataloader.Result[[]*model.Payment]{Data: paymentMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.Payment]{Error: err}
 	}
 	return res
 }
@@ -273,22 +245,18 @@ errorLabel:
 func paymentsByTokenLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Payment] {
 	var (
 		res        = make([]*dataloader.Result[*model.Payment], len(ids))
-		payments   []*model.Payment
-		appErr     *model.AppError
 		paymentMap = map[string]*model.Payment{} // keys are payment ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	payments, appErr = embedCtx.App.Srv().PaymentService().PaymentsByOption(&model.PaymentFilterOption{
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	payments, appErr := embedCtx.App.Srv().PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		Id: squirrel.Eq{store.PaymentTableName + ".Token": ids},
 	})
 	if appErr != nil {
-		err = appErr
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.Payment]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, pm := range payments {
@@ -296,12 +264,6 @@ func paymentsByTokenLoader(ctx context.Context, ids []string) []*dataloader.Resu
 	}
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.Payment]{Data: paymentMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.Payment]{Error: err}
 	}
 	return res
 }
@@ -351,36 +313,26 @@ func (t *Transaction) Payment(ctx context.Context) (*Payment, error) {
 func transactionsByPaymentIdLoader(ctx context.Context, paymentIDs []string) []*dataloader.Result[[]*model.PaymentTransaction] {
 	var (
 		res            = make([]*dataloader.Result[[]*model.PaymentTransaction], len(paymentIDs))
-		transactions   []*model.PaymentTransaction
-		appErr         *model.AppError
 		transactionMap = map[string][]*model.PaymentTransaction{} // keys are payment ids
 	)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	transactions, appErr = embedCtx.App.Srv().PaymentService().TransactionsByOption(&model.PaymentTransactionFilterOpts{
+	transactions, appErr := embedCtx.App.Srv().PaymentService().TransactionsByOption(&model.PaymentTransactionFilterOpts{
 		PaymentID: squirrel.Eq{store.TransactionTableName + ".PaymentID": paymentIDs},
 	})
 	if appErr != nil {
-		err = appErr
-		goto errorLabel
+		for idx := range paymentIDs {
+			res[idx] = &dataloader.Result[[]*model.PaymentTransaction]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, tran := range transactions {
 		transactionMap[tran.PaymentID] = append(transactionMap[tran.PaymentID], tran)
 	}
-
 	for idx, id := range paymentIDs {
 		res[idx] = &dataloader.Result[[]*model.PaymentTransaction]{Data: transactionMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range paymentIDs {
-		res[idx] = &dataloader.Result[[]*model.PaymentTransaction]{Error: err}
 	}
 	return res
 }

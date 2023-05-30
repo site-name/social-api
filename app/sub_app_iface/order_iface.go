@@ -25,7 +25,7 @@ type OrderService interface {
 	// AnAddressOfOrder returns shipping address of given order if presents
 	AnAddressOfOrder(orderID string, whichAddressID model.WhichOrderAddressID) (*model.Address, *model.AppError)
 	// ApplyDiscountToValue Calculate the price based on the provided values
-	ApplyDiscountToValue(value *decimal.Decimal, valueType string, currency string, priceToDiscount interface{}) (interface{}, error)
+	ApplyDiscountToValue(value *decimal.Decimal, valueType model.DiscountType, currency string, priceToDiscount interface{}) (interface{}, error)
 	// AutomaticallyFulfillDigitalLines
 	// Fulfill all digital lines which have enabled automatic fulfillment setting. Send confirmation email afterward.
 	AutomaticallyFulfillDigitalLines(ord model.Order, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError)
@@ -60,7 +60,7 @@ type OrderService interface {
 	// CreateGiftcardsWhenApprovingFulfillment
 	CreateGiftcardsWhenApprovingFulfillment(orDer *model.Order, linesData []*model.OrderLineData, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, settings *model.Shop) *model.AppError
 	// CreateOrderDiscountForOrder Add new order discount and update the prices
-	CreateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order, reason string, valueType string, value *decimal.Decimal) (*model.OrderDiscount, *model.AppError)
+	CreateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order, reason string, valueType model.DiscountType, value *decimal.Decimal) (*model.OrderDiscount, *model.AppError)
 	// CreateReplaceOrder Create draft order with lines to replace
 	CreateReplaceOrder(user *model.User, _ interface{}, originalOrder model.Order, orderLinesToReplace []*model.OrderLineData, fulfillmentLinesToReplace []*model.FulfillmentLineData) (*model.Order, *model.AppError)
 	// CustomerEmail try finding order's owner's email. If order has no user or error occured during the finding process, returns order's UserEmail property instead
@@ -280,11 +280,11 @@ type OrderService interface {
 	// UpdateDiscountForOrderLine Update discount fields for order line. Apply discount to the price
 	//
 	// `reason`, `valueType` can be empty. `value` can be nil
-	UpdateDiscountForOrderLine(orderLine model.OrderLine, ord model.Order, reason string, valueType string, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
+	UpdateDiscountForOrderLine(orderLine model.OrderLine, ord model.Order, reason string, valueType model.DiscountType, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	// UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices
 	//
 	// `reason`, `valueType` and `value` can be nil
-	UpdateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType string, value *decimal.Decimal) *model.AppError
+	UpdateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType model.DiscountType, value *decimal.Decimal) *model.AppError
 	// UpdateOrderPrices Update prices in order with given discounts and proper taxes.
 	UpdateOrderPrices(ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	// UpdateOrderStatus Update order status depending on fulfillments
@@ -299,6 +299,14 @@ type OrderService interface {
 	UpsertOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order) (*model.Order, *model.AppError)
 	// UpsertOrderLine depends on given orderLine's Id property to decide update order save it
 	UpsertOrderLine(transaction store_iface.SqlxTxExecutor, orderLine *model.OrderLine) (*model.OrderLine, *model.AppError)
+	// ValidateDraftOrder checks if the given order contains the proper data.
+	//
+	//	// Has proper customer data,
+	//	// Shipping address and method are set up,
+	//	// Product variants for order lines still exists in database.
+	//	// Product variants are available in requested quantity.
+	//	// Product variants are published.
+	ValidateDraftOrder(order *model.Order) *model.AppError
 	ApproveFulfillment(fulfillment *model.Fulfillment, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, settings *model.Shop, notifyCustomer bool, allowStockTobeExceeded bool) (*model.Fulfillment, *model.InsufficientStock, *model.AppError)
 	CreateOrderEvent(transaction store_iface.SqlxTxExecutor, orderLine *model.OrderLine, userID string, quantityDiff int) *model.AppError
 	CreateReturnFulfillment(requester *model.User, ord model.Order, orderLineDatas []*model.OrderLineData, fulfillmentLineDatas []*model.FulfillmentLineData, totalRefundAmount *decimal.Decimal, shippingRefundAmount *decimal.Decimal, manager interfaces.PluginManagerInterface) (*model.Fulfillment, *model.AppError)
@@ -326,12 +334,4 @@ type OrderService interface {
 	UpdateGiftcardBalance(giftCard *model.GiftCard, totalPriceLeft *goprices.Money) model.BalanceObject
 	UpdateTaxesForOrderLine(line model.OrderLine, ord model.Order, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError
 	UpdateTaxesForOrderLines(lines model.OrderLines, ord model.Order, manager interfaces.PluginManagerInterface, taxIncludeed bool) *model.AppError
-	// ValidateDraftOrder checks if the given order contains the proper data.
-	//
-	//	// Has proper customer data,
-	//	// Shipping address and method are set up,
-	//	// Product variants for order lines still exists in database.
-	//	// Product variants are available in requested quantity.
-	//	// Product variants are published.
-	ValidateDraftOrder(order *model.Order) *model.AppError
 }

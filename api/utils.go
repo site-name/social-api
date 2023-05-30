@@ -280,10 +280,10 @@ func compareGraphqlOperands[K graphqlCursorType](a, b K) CompareOrder {
 }
 
 type GraphqlParams struct {
-	Before *string
-	After  *string
-	First  *int32
-	Last   *int32
+	Before *string `json:"before"`
+	After  *string `json:"after"`
+	First  *int32  `json:"first"`
+	Last   *int32  `json:"last"`
 
 	validated bool
 }

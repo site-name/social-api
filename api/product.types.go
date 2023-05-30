@@ -555,9 +555,7 @@ func systemCollectionToGraphqlCollection(c *model.Collection) *Collection {
 }
 
 func (c *Collection) Channel(ctx context.Context) (*string, error) {
-	channelID := GetContextValue[string](ctx, ChannelIdCtx)
-
-	return &channelID, nil
+	panic("not implemented")
 }
 
 // TODO: add support filtering
@@ -567,17 +565,20 @@ func (c *Collection) Products(ctx context.Context, args struct {
 	GraphqlParams
 }) (*ProductCountableConnection, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	channelID := GetContextValue[string](ctx, ChannelIdCtx)
 
-	products, appErr := embedCtx.App.Srv().ProductService().GetVisibleToUserProducts(embedCtx.AppContext.Session(), channelID)
+	products, appErr := embedCtx.App.Srv().
+		ProductService().
+		GetVisibleToUserProducts(embedCtx.AppContext.Session(), channelID)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	// filter to get products that belong to current collection:
-	collectionProductRelations, appErr := embedCtx.App.Srv().ProductService().CollectionProductRelationsByOptions(&model.CollectionProductFilterOptions{
-		CollectionID: squirrel.Eq{store.CollectionProductRelationTableName + ".CollectionID": c.ID},
-	})
+	collectionProductRelations, appErr := embedCtx.App.Srv().
+		ProductService().
+		CollectionProductRelationsByOptions(&model.CollectionProductFilterOptions{
+			CollectionID: squirrel.Eq{store.CollectionProductRelationTableName + ".CollectionID": c.ID},
+		})
 	if appErr != nil {
 		return nil, appErr
 	}

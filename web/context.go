@@ -59,7 +59,7 @@ func (c *Context) CheckAuthenticatedAndHasPermissionToAny(perms ...*model.Permis
 	if c.Err != nil {
 		return
 	}
-	if !c.App.Srv().AccountService().SessionHasPermissionToAny(c.AppContext.Session(), perms...) {
+	if !c.App.Srv().AccountService().SessionHasPermissionToAny(*c.AppContext.Session(), perms) {
 		c.SetPermissionError(perms...)
 	}
 }

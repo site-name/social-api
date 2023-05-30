@@ -9,9 +9,8 @@ import "github.com/sitename/sitename/model"
 type ShopService interface {
 	// ShopById finds shop by given id
 	ShopById(shopID string) (*model.Shop, *model.AppError)
-	StaffsByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, *model.AppError)
-	ShopStaffByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, *model.AppError)
-	// UserIsStaffOfShop checks if there is a relationship between given shop and user. And the relationshop is not ended yet
-	UserIsStaffOfShop(userID string) bool
 	ShopByOptions(options *model.ShopFilterOptions) (*model.Shop, *model.AppError)
+	ShopStaffByOptions(options *model.ShopStaffFilterOptions) (*model.ShopStaff, *model.AppError)
+	StaffsByOptions(options *model.ShopStaffFilterOptions) ([]*model.ShopStaff, *model.AppError)
+	UserIsStaffOfShop(userID string) bool
 }

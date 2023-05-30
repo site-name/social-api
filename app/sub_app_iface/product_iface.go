@@ -36,6 +36,8 @@ type ProductService interface {
 	// CollectionProductRelationsByOptions finds and returns a list of product-collection relations based on given filter options
 	CollectionProductRelationsByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, *model.AppError)
 	// CollectionsByOption returns all collections that satisfy given option.
+	//
+	// NOTE: `ShopID` is required.
 	CollectionsByOption(option *model.CollectionFilterOption) (model.Collections, *model.AppError)
 	// CollectionsByProductID finds and returns all collections related to given product
 	CollectionsByProductID(productID string) ([]*model.Collection, *model.AppError)
@@ -125,6 +127,10 @@ type ProductService interface {
 	//
 	// NOTE: discount must be either *Sale or *Voucher
 	UpdateProductsDiscountedPricesOfDiscount(discount interface{}) *model.AppError
+	// UpsertCategory first checks if given category need a Level number.
+	// Performs upsert given category into database.
+	// asynchronously does category anayltic to update category cache.
+	UpsertCategory(cate *model.Category) (*model.Category, *model.AppError)
 	// UpsertDigitalContentURL create a digital content url then returns it
 	UpsertDigitalContentURL(contentURL *model.DigitalContentUrl) (*model.DigitalContentUrl, *model.AppError)
 	// UpsertProductVariant tells store to upsert given product variant and returns it
@@ -142,10 +148,9 @@ type ProductService interface {
 	GetProductAvailability(product model.Product, productChannelListing *model.ProductChannelListing, variants []*model.ProductVariant, variantsChannelListing []*model.ProductVariantChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel, manager interfaces.PluginManagerInterface, countryCode model.CountryCode, localCurrency string) (*model.ProductAvailability, *model.AppError)
 	GetProductPriceRange(product model.Product, variants model.ProductVariants, variantsChannelListing []*model.ProductVariantChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel) (*goprices.MoneyRange, *model.AppError)
 	GetVariantAvailability(variant model.ProductVariant, variantChannelListing model.ProductVariantChannelListing, product model.Product, productChannelListing *model.ProductChannelListing, collections []*model.Collection, discounts []*model.DiscountInfo, chanNel model.Channel, plugins interfaces.PluginManagerInterface, country model.CountryCode, localCurrency string) (*model.VariantAvailability, *model.AppError)
-	GetVisibleToUserProducts(userSession *model.Session, channel_IdOrSlug string) (model.Products, *model.AppError)
+	GetVisibleToUserProducts(channel_IdOrSlug string, userCanSeeAllProducts bool) (model.Products, *model.AppError)
 	IncrementDownloadCount(contentURL *model.DigitalContentUrl) *model.AppError
 	ProductTypesByCheckoutToken(checkoutToken string) ([]*model.ProductType, *model.AppError)
 	ProductTypesByOptions(options *model.ProductTypeFilterOption) ([]*model.ProductType, *model.AppError)
 	UpdateProductsDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError
-	UpsertCategory(cate *model.Category) (*model.Category, *model.AppError)
 }

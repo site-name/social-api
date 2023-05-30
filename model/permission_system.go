@@ -16,81 +16,6 @@ type Permission struct {
 	Scope       string `json:"scope"`
 }
 
-// All permissions from saleor
-var (
-	// PermissionManageUsers                     *Permission
-	// PermissionManageStaff                     *Permission
-	// PermissionManageApps                      *Permission
-	// PermissionManageChannels                  *Permission
-	// PermissionManageDiscounts                 *Permission
-	// PermissionManagePlugins                   *Permission
-	// PermissionManageGiftcard                  *Permission
-	// PermissionManageMenus                     *Permission
-	// PermissionManageCheckouts                 *Permission
-	// PermissionManageOrders                    *Permission
-	// PermissionManagePages                     *Permission
-	// PermissionManagePageTypesAndAttributes    *Permission
-	// PermissionManageProducts                  *Permission
-	// PermissionManageProductTypesAndAttributes *Permission
-	// PermissionManageShipping                  *Permission
-	// PermissionManageSettings                  *Permission
-	// PermissionManageTranslations              *Permission
-	// PermissionHandlePayments                  *Permission
-	// PermissionImpersonateUser                 *Permission
-
-	// SaleorPermissions  []*Permission
-	ProductPermissions Permissions
-)
-
-// init all saleor's permissions
-// func initializeSaleorPermission() {
-// 	PermissionManageUsers = &Permission{"manage_users", "account.manage_users.name", "account.manage_users.description", PermissionScopeSystem}
-// 	PermissionManageStaff = &Permission{"manage_staff", "account.manage_staff.name", "account.manage_staff.description", PermissionScopeSystem}
-// 	PermissionManageApps = &Permission{"manage_apps", "app.manage_apps.name", "app.manage_apps.description", PermissionScopeSystem}
-// 	PermissionManageChannels = &Permission{"manage_channels", "channel.manage_channels.name", "channel.manage_channels.description", PermissionScopeSystem}
-// 	PermissionManageDiscounts = &Permission{"manage_discounts", "discount.manage_discounts.name", "discount.manage_discounts.description", PermissionScopeSystem}
-// 	PermissionManagePlugins = &Permission{"manage_plugins", "plugins.manage_plugins.name", "plugins.manage_plugins.description", PermissionScopeSystem}
-// 	PermissionManageGiftcard = &Permission{"manage_gift_card", "giftcard.manage_gift_card.name", "giftcard.manage_gift_card.description", PermissionScopeSystem}
-// 	PermissionManageMenus = &Permission{"manage_menus", "menu.manage_menus.name", "menu.manage_menus.description", PermissionScopeSystem}
-// 	PermissionManageCheckouts = &Permission{"manage_checkouts", "checkout.manage_checkouts.name", "checkout.manage_checkouts.description", PermissionScopeSystem}
-// 	PermissionManageOrders = &Permission{"manage_orders", "orders.manage_orders.name", "orders.manage_orders.description", PermissionScopeSystem}
-// 	PermissionManagePages = &Permission{"manage_pages", "page.manage_pages.name", "page.manage_pages.description", PermissionScopeSystem}
-// 	PermissionManagePageTypesAndAttributes = &Permission{"manage_page_types_and_attributes", "page.manage_page_types_and_attributes.name", "page.manage_page_types_and_attributes.description", PermissionScopeSystem}
-// 	PermissionManageProducts = &Permission{"manage_products", "product.manage_products.name", "product.manage_products.description", PermissionScopeSystem}
-// 	PermissionManageProductTypesAndAttributes = &Permission{"manage_product_types_and_attributes", "product.manage_product_types_and_attributes.name", "product.manage_product_types_and_attributes.description", PermissionScopeSystem}
-// 	PermissionManageShipping = &Permission{"manage_shipping", "shipping.manage_shipping.name", "shipping.manage_shipping.description", PermissionScopeSystem}
-// 	PermissionManageSettings = &Permission{"manage_settings", "site.manage_settings.name", "site.manage_settings.description", PermissionScopeSystem}
-// 	PermissionManageTranslations = &Permission{"manage_translations", "site.manage_translations.name", "site.manage_translations.description", PermissionScopeSystem}
-// 	PermissionHandlePayments = &Permission{"handle_payments", "payment.handle_payments.name", "payment.handle_payments.description", PermissionScopeSystem}
-// 	PermissionImpersonateUser = &Permission{"impersonate_user", "account.impersonate_user.name", "account.impersonate_user.description", PermissionScopeSystem}
-
-// 	SaleorPermissions = []*Permission{
-// 		PermissionManageUsers,
-// 		PermissionManageStaff,
-// 		PermissionManageApps,
-// 		PermissionManageChannels,
-// 		PermissionManageDiscounts,
-// 		PermissionManagePlugins,
-// 		PermissionManageGiftcard,
-// 		PermissionManageMenus,
-// 		PermissionManageCheckouts,
-// 		PermissionManageOrders,
-// 		PermissionManagePages,
-// 		PermissionManagePageTypesAndAttributes,
-// 		PermissionManageProducts,
-// 		PermissionManageProductTypesAndAttributes,
-// 		PermissionManageShipping,
-// 		PermissionManageSettings,
-// 		PermissionManageTranslations,
-// 		PermissionImpersonateUser,
-// 	}
-// 	ProductPermissions = []*Permission{
-// 		PermissionManageOrders,
-// 		PermissionManageDiscounts,
-// 		PermissionManageProducts,
-// 	}
-// }
-
 var (
 	PermissionInviteUser *Permission
 
@@ -697,7 +622,6 @@ func initializeSystemScopedPermissions() {
 }
 
 func init() {
-	// initializeSaleorPermission()
 	initializeSystemScopedPermissions()
 	initializeShopScopedPermissions()
 }

@@ -1329,13 +1329,13 @@ func (a *ServiceOrder) GetValidShippingMethodsForOrder(ord *model.Order) ([]*mod
 // UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices
 //
 // `reason`, `valueType` and `value` can be nil
-func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType string, value *decimal.Decimal) *model.AppError {
+func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType model.DiscountType, value *decimal.Decimal) *model.AppError {
 	ord.PopulateNonDbFields() // NOTE: call this first
 
 	if value == nil {
 		value = orderDiscountToUpdate.Value
 	}
-	if valueType == "" {
+	if !valueType.IsValid() {
 		valueType = orderDiscountToUpdate.ValueType
 	}
 
@@ -1372,7 +1372,7 @@ func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction store_iface.SqlxT
 }
 
 // ApplyDiscountToValue Calculate the price based on the provided values
-func (a *ServiceOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType string, currency string, priceToDiscount interface{}) (interface{}, error) {
+func (a *ServiceOrder) ApplyDiscountToValue(value *decimal.Decimal, valueType model.DiscountType, currency string, priceToDiscount interface{}) (interface{}, error) {
 	// validate currency
 	money := &goprices.Money{
 		Amount:   *value,
@@ -1488,7 +1488,7 @@ func (a *ServiceOrder) GetOrderDiscounts(ord *model.Order) ([]*model.OrderDiscou
 }
 
 // CreateOrderDiscountForOrder Add new order discount and update the prices
-func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order, reason string, valueType string, value *decimal.Decimal) (*model.OrderDiscount, *model.AppError) {
+func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order, reason string, valueType model.DiscountType, value *decimal.Decimal) (*model.OrderDiscount, *model.AppError) {
 	ord.PopulateNonDbFields()
 
 	netTotal, err := a.ApplyDiscountToValue(value, valueType, ord.Currency, ord.Total.Net)
@@ -1553,7 +1553,7 @@ func (a *ServiceOrder) RemoveOrderDiscountFromOrder(transaction store_iface.Sqlx
 // UpdateDiscountForOrderLine Update discount fields for order line. Apply discount to the price
 //
 // `reason`, `valueType` can be empty. `value` can be nil
-func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine model.OrderLine, ord model.Order, reason string, valueType string, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
+func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine model.OrderLine, ord model.Order, reason string, valueType model.DiscountType, value *decimal.Decimal, manager interfaces.PluginManagerInterface, taxIncluded bool) *model.AppError {
 	ord.PopulateNonDbFields()
 	orderLine.PopulateNonDbFields()
 
@@ -1563,7 +1563,7 @@ func (a *ServiceOrder) UpdateDiscountForOrderLine(orderLine model.OrderLine, ord
 	if value == nil {
 		value = orderLine.UnitDiscountValue
 	}
-	if valueType == "" {
+	if !valueType.IsValid() {
 		valueType = orderLine.UnitDiscountType
 	}
 

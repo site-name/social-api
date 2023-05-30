@@ -255,6 +255,10 @@ func (a *Attribute) ProductVariantTypes(ctx context.Context, args GraphqlParams)
 // if not, user can't
 func (a *Attribute) currentUserHasPermissionToAccess(ctx context.Context, apiName string) error {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.SessionRequired()
+	if embedCtx.Err != nil {
+		return embedCtx.Err
+	}
 
 	var permToCheck = model.PermissionReadProduct
 	if a.Type != nil && *a.Type == model.PAGE_TYPE {
@@ -265,7 +269,7 @@ func (a *Attribute) currentUserHasPermissionToAccess(ctx context.Context, apiNam
 		App.
 		Srv().
 		AccountService().
-		SessionHasPermissionTo(embedCtx.AppContext.Session(), permToCheck) {
+		SessionHasPermissionTo(*embedCtx.AppContext.Session(), permToCheck) {
 		return MakeUnauthorizedError(apiName)
 	}
 

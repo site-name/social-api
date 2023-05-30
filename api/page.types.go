@@ -69,36 +69,23 @@ func (p *Page) Attributes(ctx context.Context) ([]*SelectedAttribute, error) {
 }
 
 func pageByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Page] {
-	var (
-		res     = make([]*dataloader.Result[*model.Page], len(ids))
-		pages   []*model.Page
-		appErr  *model.AppError
-		pageMap = map[string]*model.Page{} // keys are page ids
-	)
+	res := make([]*dataloader.Result[*model.Page], len(ids))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	pages, appErr = embedCtx.App.Srv().PageService().FindPagesByOptions(&model.PageFilterOptions{
+	pages, appErr := embedCtx.App.Srv().PageService().FindPagesByOptions(&model.PageFilterOptions{
 		Id: squirrel.Eq{store.PageTableName + ".Id": ids},
 	})
 	if appErr != nil {
-		err = appErr
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.Page]{Error: appErr}
+		}
+		return res
 	}
 
-	pageMap = lo.SliceToMap(pages, func(p *model.Page) (string, *model.Page) { return p.Id, p })
-
+	pageMap := lo.SliceToMap(pages, func(p *model.Page) (string, *model.Page) { return p.Id, p })
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.Page]{Data: pageMap[id]}
 	}
 	return res
 
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.Page]{Error: err}
-	}
-	return res
 }

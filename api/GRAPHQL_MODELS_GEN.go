@@ -4563,20 +4563,7 @@ func (e DiscountStatusEnum) IsValid() bool {
 	return false
 }
 
-type DiscountValueTypeEnum string
-
-const (
-	DiscountValueTypeEnumFixed      DiscountValueTypeEnum = model.FIXED
-	DiscountValueTypeEnumPercentage DiscountValueTypeEnum = model.PERCENTAGE
-)
-
-func (e DiscountValueTypeEnum) IsValid() bool {
-	switch e {
-	case DiscountValueTypeEnumFixed, DiscountValueTypeEnumPercentage:
-		return true
-	}
-	return false
-}
+type DiscountValueTypeEnum = model.DiscountType
 
 type DistanceUnitsEnum string
 
@@ -5633,20 +5620,7 @@ func (e SaleSortField) IsValid() bool {
 	return false
 }
 
-type SaleType string
-
-const (
-	SaleTypeFixed      SaleType = model.FIXED
-	SaleTypePercentage SaleType = model.PERCENTAGE
-)
-
-func (e SaleType) IsValid() bool {
-	switch e {
-	case SaleTypeFixed, SaleTypePercentage:
-		return true
-	}
-	return false
-}
+type SaleType = model.DiscountType
 
 type ShippingErrorCode string
 
@@ -5885,9 +5859,9 @@ func (e VolumeUnitsEnum) IsValid() bool {
 type VoucherDiscountType string
 
 const (
-	VoucherDiscountTypeFixed      VoucherDiscountType = model.FIXED
-	VoucherDiscountTypePercentage VoucherDiscountType = model.PERCENTAGE
-	VoucherDiscountTypeShipping   VoucherDiscountType = model.SHIPPING
+	VoucherDiscountTypeFixed      VoucherDiscountType = "FIXED"
+	VoucherDiscountTypePercentage VoucherDiscountType = "PERCENTAGE"
+	VoucherDiscountTypeShipping   VoucherDiscountType = "SHIPPING"
 )
 
 func (e VoucherDiscountType) IsValid() bool {

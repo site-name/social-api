@@ -93,13 +93,17 @@ func (c *Category) Children(ctx context.Context, args GraphqlParams) (*CategoryC
 	return (*CategoryCountableConnection)(unsafe.Pointer(res)), nil
 }
 
-// NOTE: channel can be Id or Slug
 func (c *Category) Products(ctx context.Context, args struct {
-	Channel *string
+	Channel *string // NOTE: Channel can be channel id or slug
 	GraphqlParams
 }) (*ProductCountableConnection, error) {
-	var channelIdOrSlug string
+	// if user is staff of shop, he can see all products
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasRoles("Category.Products", model.ShopStaffRoleId)
+	userCanSeeAllProducts := embedCtx.Err == nil
 
+	// validate user input params
+	var channelIdOrSlug string
 	if args.Channel != nil {
 		if !slug.IsSlug(*args.Channel) && !model.IsValidId(*args.Channel) {
 			return nil, model.NewAppError("Category.Products", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, fmt.Sprintf("%s is not a channel slug nor id", *args.Channel), http.StatusBadRequest)
@@ -111,8 +115,9 @@ func (c *Category) Products(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	products, appErr := embedCtx.App.Srv().ProductService().GetVisibleToUserProducts(embedCtx.AppContext.Session(), channelIdOrSlug)
+	products, appErr := embedCtx.App.Srv().
+		ProductService().
+		GetVisibleToUserProducts(channelIdOrSlug, userCanSeeAllProducts)
 	if appErr != nil {
 		return nil, appErr
 	}

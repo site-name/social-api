@@ -23,12 +23,9 @@ func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
 }) (*CategoryCreate, error) {
 	// check user permissions
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
+	embedCtx.CheckAuthenticatedAndHasRoles("CategoryCreate", model.ShopStaffRoleId)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
-	}
-	if !embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		return nil, MakeUnauthorizedError("CategoryCreate")
 	}
 
 	// validate parent
@@ -82,12 +79,9 @@ func (r *Resolver) CategoryUpdate(ctx context.Context, args struct {
 }) (*CategoryUpdate, error) {
 	// requester must be authenticated and has category_update permission to do this
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
+	embedCtx.CheckAuthenticatedAndHasRoles("CategoryUpdate", model.ShopStaffRoleId)
 	if embedCtx.Err != nil {
 		return nil, embedCtx.Err
-	}
-	if !embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		return nil, MakeUnauthorizedError("CategoryUpdate")
 	}
 
 	// validate given id
@@ -140,12 +134,12 @@ func (r *Resolver) Categories(ctx context.Context, args struct {
 	if args.Filter != nil {
 		// parse search
 		if search := args.Filter.Search; search != nil && *search != "" {
-			lowSearch := strings.ToLower(*search)
+			lowerSearch := strings.ToLower(*search)
 
 			searchFilter = func(c *model.Category) bool {
 				lowerSlug := strings.ToLower(c.Slug)
 				lowerName := strings.ToLower(c.Name)
-				return strings.Contains(lowerName, lowSearch) || strings.Contains(lowerSlug, lowSearch)
+				return strings.Contains(lowerName, lowerSearch) || strings.Contains(lowerSlug, lowerSearch)
 			}
 		}
 

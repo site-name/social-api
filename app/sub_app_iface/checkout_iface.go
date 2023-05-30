@@ -28,7 +28,7 @@ type CheckoutService interface {
 	// Otherwise, quantity will be added or replaced (if replace argument is True).
 	//
 	//	skipStockCheck and replace are default to false
-	AddVariantsToCheckout(checkOut *model.Checkout, variants []*model.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*model.Checkout, *model.InsufficientStock, *model.AppError)
+	AddVariantsToCheckout(checkout *model.Checkout, variants []*model.ProductVariant, quantities []int, channelSlug string, skipStockCheck, replace bool) (*model.Checkout, *model.InsufficientStock, *model.AppError)
 	// AddVoucherCodeToCheckout Add voucher data to checkout by code.
 	// Raise InvalidPromoCode() if voucher of given type cannot be applied.
 	AddVoucherCodeToCheckout(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, voucherCode string, discounts []*model.DiscountInfo) (*model.InvalidPromoCode, *model.AppError)
@@ -52,9 +52,9 @@ type CheckoutService interface {
 	// CalculatePriceForShippingMethod Return checkout shipping price
 	CalculatePriceForShippingMethod(checkoutInfo *model.CheckoutInfo, shippingMethodInfo *model.ShippingMethodInfo, lines model.CheckoutLineInfos) (*goprices.TaxedMoney, *model.AppError)
 	// CancelActivePayments set all active payments belong to given checkout
-	CancelActivePayments(checkOut *model.Checkout) *model.AppError
+	CancelActivePayments(checkout *model.Checkout) *model.AppError
 	// CheckVariantInStock
-	CheckVariantInStock(checkOut *model.Checkout, variant *model.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *model.CheckoutLine, *model.InsufficientStock, *model.AppError)
+	CheckVariantInStock(checkout *model.Checkout, variant *model.ProductVariant, channelSlug string, quantity int, replace, checkQuantity bool) (int, *model.CheckoutLine, *model.InsufficientStock, *model.AppError)
 	// CheckoutByOption returns a checkout filtered by given option
 	CheckoutByOption(option *model.CheckoutFilterOption) (*model.Checkout, *model.AppError)
 	// CheckoutLastActivePayment returns the most recent payment made for given checkout
@@ -72,8 +72,6 @@ type CheckoutService interface {
 	// CheckoutShippingRequired checks if given checkout require shipping
 	CheckoutShippingRequired(checkoutToken string) (bool, *model.AppError)
 	// CheckoutSubTotal Return the total cost of all the checkout lines, taxes included.
-	//
-	// It takes in account all plugins.
 	CheckoutSubTotal(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, address *model.Address, discounts []*model.DiscountInfo) (*goprices.TaxedMoney, *model.AppError)
 	// CheckoutTotal Return the total cost of the checkout.
 	//
@@ -98,7 +96,7 @@ type CheckoutService interface {
 	// It prefetch some related value also
 	FetchCheckoutLines(checkOut *model.Checkout) ([]*model.CheckoutLineInfo, *model.AppError)
 	// GetCustomerEmail returns checkout's user's email
-	GetCustomerEmail(checkout *model.Checkout) (string, *model.AppError)
+	GetCustomerEmail(ckout *model.Checkout) (string, *model.AppError)
 	// GetDeliveryMethodInfo takes `deliveryMethod` is either *model.ShippingMethod or *model.Warehouse
 	GetDeliveryMethodInfo(deliveryMethod interface{}, address *model.Address) (model.DeliveryMethodBaseInterface, *model.AppError)
 	// GetPricesOfDiscountedSpecificProduct Get prices of variants belonging to the discounted specific products.
@@ -142,7 +140,7 @@ type CheckoutService interface {
 	// RemoveVoucherCodeFromCheckout Remove voucher data from checkout by code.
 	RemoveVoucherCodeFromCheckout(checkoutInfo model.CheckoutInfo, voucherCode string) *model.AppError
 	// RemoveVoucherFromCheckout removes voucher data from checkout
-	RemoveVoucherFromCheckout(checkOut *model.Checkout) *model.AppError
+	RemoveVoucherFromCheckout(checkout *model.Checkout) *model.AppError
 	// Save shipping address in checkout if changed.
 	//
 	// Remove previously saved address if not connected to any user.
@@ -154,18 +152,18 @@ type CheckoutService interface {
 	// UpdateCheckoutInfoShippingAddress updates given `checkoutInfo` by setting given `address` as its ShippingAddress.
 	// then updates its ValidShippingMethods
 	UpdateCheckoutInfoShippingAddress(checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
-	// UpsertCheckoust saves/updates given checkout
+	// UpsertCheckout saves/updates given checkout
 	UpsertCheckouts(transaction store_iface.SqlxTxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, *model.AppError)
 	BaseOrderLineTotal(orderLine *model.OrderLine) (*goprices.TaxedMoney, *model.AppError)
 	BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Decimal, *model.AppError)
 	BulkCreateCheckoutLines(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, *model.AppError)
 	BulkUpdateCheckoutLines(checkoutLines []*model.CheckoutLine) *model.AppError
 	CalculateCheckoutQuantity(lineInfos []*model.CheckoutLineInfo) (int, *model.AppError)
-	ChangeBillingAddressInCheckout(checkOut *model.Checkout, address *model.Address) *model.AppError
-	CheckoutCountry(checkout *model.Checkout) (model.CountryCode, *model.AppError)
+	ChangeBillingAddressInCheckout(checkout *model.Checkout, address *model.Address) *model.AppError
+	CheckoutCountry(ckout *model.Checkout) (model.CountryCode, *model.AppError)
 	CheckoutLineWithVariant(checkout *model.Checkout, productVariantID string) (*model.CheckoutLine, *model.AppError)
 	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model.AppError)
-	CheckoutSetCountry(checkout *model.Checkout, newCountryCode model.CountryCode) *model.AppError
+	CheckoutSetCountry(ckout *model.Checkout, newCountryCode model.CountryCode) *model.AppError
 	CleanBillingAddress(checkoutInfo model.CheckoutInfo) *model.AppError
 	CleanCheckoutPayment(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model.AppError)
 	ClearDeliveryMethod(checkoutInfo model.CheckoutInfo) *model.AppError

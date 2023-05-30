@@ -109,15 +109,13 @@ func (i *MenuItem) Children(ctx context.Context) ([]*MenuItem, error) {
 }
 
 func (i *MenuItem) Collection(ctx context.Context) (*Collection, error) {
+	if i.m.CollectionID == nil {
+		return nil, nil
+	}
+
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	currentSession := embedCtx.AppContext.Session()
-
-	if embedCtx.App.Srv().AccountService().
-		SessionHasPermissionToAny(currentSession, model.PermissionManageProducts, model.PermissionManageOrders, model.PermissionManageDiscounts) {
-
-		if i.m.CollectionID == nil {
-			return nil, nil
-		}
+	embedCtx.CheckAuthenticatedAndHasRoles("MenuItem.Collection", model.ShopStaffRoleId)
+	if embedCtx.Err == nil { // means user is shop's staff
 
 		collection, err := CollectionByIdLoader.Load(ctx, *i.m.CollectionID)()
 		if err != nil {
@@ -127,7 +125,34 @@ func (i *MenuItem) Collection(ctx context.Context) (*Collection, error) {
 		return systemCollectionToGraphqlCollection(collection), nil
 	}
 
-	panic("not implemented")
+	// check if channelID is passed through context
+	if embedCtx.CurrentChannelID == "" {
+		embedCtx.SetInvalidUrlParam("channel_id")
+		return nil, embedCtx.Err
+	}
+
+	collectionChannelListing, err := CollectionChannelListingByCollectionIdAndChannelSlugLoader.Load(ctx, *i.m.CollectionID+"__"+embedCtx.CurrentChannelID)()
+	if err != nil {
+		return nil, err
+	}
+
+	channel, err := ChannelByIdLoader.Load(ctx, embedCtx.CurrentChannelID)()
+	if err != nil || channel == nil {
+		return nil, err
+	}
+
+	if !channel.IsActive ||
+		collectionChannelListing == nil ||
+		!collectionChannelListing.IsVisible() {
+		return nil, nil
+	}
+
+	collection, err := CollectionByIdLoader.Load(ctx, *i.m.CollectionID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return systemCollectionToGraphqlCollection(collection), nil
 }
 
 func (i *MenuItem) Menu(ctx context.Context) (*Menu, error) {
@@ -153,83 +178,64 @@ func (i *MenuItem) Parent(ctx context.Context) (*MenuItem, error) {
 }
 
 func (i *MenuItem) Page(ctx context.Context) (*Page, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	currentSession := embedCtx.AppContext.Session()
-
-	if embedCtx.App.Srv().
-		AccountService().
-		SessionHasPermissionTo(currentSession, model.PermissionManagePages) {
-		if i.m.PageID == nil {
-			return nil, nil
-		}
-
-		page, err := PageByIdLoader.Load(ctx, *i.m.PageID)()
-		if err != nil {
-			return nil, err
-		}
-		if page.IsVisible() {
-			return systemPageToGraphqlPage(page), nil
-		}
-
+	if i.m.PageID == nil {
 		return nil, nil
+	}
+
+	page, err := PageByIdLoader.Load(ctx, *i.m.PageID)()
+	if err != nil {
+		return nil, err
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasRoles(model.ShopStaffRoleId)
+
+	if embedCtx.Err == nil || page.IsVisible() {
+		return systemPageToGraphqlPage(page), nil
 	}
 
 	return nil, nil
 }
 
 func menuByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Menu] {
-	var (
-		res     = make([]*dataloader.Result[*model.Menu], len(ids))
-		menuMap = map[string]*model.Menu{}
-	)
-
+	res := make([]*dataloader.Result[*model.Menu], len(ids))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	menus, appErr := embedCtx.App.Srv().MenuService().MenusByOptions(&model.MenuFilterOptions{
 		Id: squirrel.Eq{store.MenuTableName + ".Id": ids},
 	})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.Menu]{Error: appErr}
+		}
+		return res
 	}
 
-	menuMap = lo.SliceToMap(menus, func(m *model.Menu) (string, *model.Menu) { return m.Id, m })
-
+	menuMap := lo.SliceToMap(menus, func(m *model.Menu) (string, *model.Menu) { return m.Id, m })
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.Menu]{Data: menuMap[id]}
 	}
 	return res
 
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.Menu]{Error: appErr}
-	}
-	return res
 }
 
 func menuItemByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.MenuItem] {
-	var (
-		res         = make([]*dataloader.Result[*model.MenuItem], len(ids))
-		menuItemMap = map[string]*model.MenuItem{}
-	)
+	res := make([]*dataloader.Result[*model.MenuItem], len(ids))
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	menuItems, appErr := embedCtx.App.Srv().MenuService().MenuItemsByOptions(&model.MenuItemFilterOptions{
 		Id: squirrel.Eq{store.MenuItemTableName + ".Id": ids},
 	})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.MenuItem]{Error: appErr}
+		}
+		return res
 	}
 
-	menuItemMap = lo.SliceToMap(menuItems, func(m *model.MenuItem) (string, *model.MenuItem) { return m.Id, m })
-
+	menuItemMap := lo.SliceToMap(menuItems, func(m *model.MenuItem) (string, *model.MenuItem) { return m.Id, m })
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.MenuItem]{Data: menuItemMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.MenuItem]{Error: appErr}
 	}
 	return res
 }
@@ -241,12 +247,14 @@ func menuItemsByParentMenuLoader(ctx context.Context, menuIDs []string) []*datal
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	menuItems, appErr := embedCtx.App.Srv().MenuService().MenuItemsByOptions(&model.MenuItemFilterOptions{
 		MenuID: squirrel.Eq{store.MenuItemTableName + ".MenuID": menuIDs},
 	})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range menuIDs {
+			res[idx] = &dataloader.Result[[]*model.MenuItem]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, item := range menuItems {
@@ -254,12 +262,6 @@ func menuItemsByParentMenuLoader(ctx context.Context, menuIDs []string) []*datal
 	}
 	for idx, id := range menuIDs {
 		res[idx] = &dataloader.Result[[]*model.MenuItem]{Data: menuItemMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range menuIDs {
-		res[idx] = &dataloader.Result[[]*model.MenuItem]{Error: appErr}
 	}
 	return res
 }
@@ -271,12 +273,14 @@ func menuItemChildrenLoader(ctx context.Context, parentIDs []string) []*dataload
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	menuItems, appErr := embedCtx.App.Srv().MenuService().MenuItemsByOptions(&model.MenuItemFilterOptions{
 		ParentID: squirrel.Eq{store.MenuItemTableName + ".ParentID": parentIDs},
 	})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range parentIDs {
+			res[idx] = &dataloader.Result[[]*model.MenuItem]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, item := range menuItems {
@@ -284,15 +288,8 @@ func menuItemChildrenLoader(ctx context.Context, parentIDs []string) []*dataload
 			menuItemMap[*item.ParentID] = append(menuItemMap[*item.ParentID], item)
 		}
 	}
-
 	for idx, id := range parentIDs {
 		res[idx] = &dataloader.Result[[]*model.MenuItem]{Data: menuItemMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range parentIDs {
-		res[idx] = &dataloader.Result[[]*model.MenuItem]{Error: appErr}
 	}
 	return res
 }

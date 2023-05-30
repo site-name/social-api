@@ -21,11 +21,6 @@ const (
 	ORDER_LINE_UNIT_DISCOUNT_TYPE_MAX_LENGTH = 10
 )
 
-var UnitDiscountTypeStrings = map[string]string{
-	FIXED:      "fixed",
-	PERCENTAGE: "%",
-}
-
 type OrderLine struct {
 	Id                                string               `json:"id"`
 	CreateAt                          int64                `json:"create_at"` // for database ordering
@@ -44,7 +39,7 @@ type OrderLine struct {
 	Currency                          string               `json:"currency"`
 	UnitDiscountAmount                *decimal.Decimal     `json:"unit_discount_amount"` // default 0
 	UnitDiscount                      *goprices.Money      `json:"unit_dsicount" db:"-"`
-	UnitDiscountType                  string               `json:"unit_discount_type"`
+	UnitDiscountType                  DiscountType         `json:"unit_discount_type"` // default 'fixed'
 	UnitDiscountReason                *string              `json:"unit_discount_reason"`
 	UnitPriceNetAmount                *decimal.Decimal     `json:"unit_price_net_amount"` // default 0
 	UnitDiscountValue                 *decimal.Decimal     `json:"unit_discount_value"`   // store the value of the applied discount. Like 20%, default 0
@@ -281,7 +276,7 @@ func (o *OrderLine) commonPre() {
 	if o.UnitDiscountReason != nil {
 		o.UnitDiscountReason = NewPrimitive(SanitizeUnicode(*o.UnitDiscountReason))
 	}
-	if o.UnitDiscountType == "" {
+	if !o.UnitDiscountType.IsValid() {
 		o.UnitDiscountType = FIXED
 	}
 	if o.UnitDiscountValue == nil {
