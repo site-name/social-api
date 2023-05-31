@@ -4930,6 +4930,8 @@ func (e MenuSortField) IsValid() bool {
 	return false
 }
 
+type TransactionKind = model.TransactionKind
+
 type MetadataErrorCode string
 
 const (
@@ -5287,38 +5289,6 @@ func (e PaymentErrorCode) IsValid() bool {
 	return false
 }
 
-type PermissionEnum string
-
-const (
-	PermissionEnumManageUsers                     PermissionEnum = "MANAGE_USERS"
-	PermissionEnumManageStaff                     PermissionEnum = "MANAGE_STAFF"
-	PermissionEnumImpersonateUser                 PermissionEnum = "IMPERSONATE_USER"
-	PermissionEnumManageApps                      PermissionEnum = "MANAGE_APPS"
-	PermissionEnumManageChannels                  PermissionEnum = "MANAGE_CHANNELS"
-	PermissionEnumManageDiscounts                 PermissionEnum = "MANAGE_DISCOUNTS"
-	PermissionEnumManagePlugins                   PermissionEnum = "MANAGE_PLUGINS"
-	PermissionEnumManageGiftCard                  PermissionEnum = "MANAGE_GIFT_CARD"
-	PermissionEnumManageMenus                     PermissionEnum = "MANAGE_MENUS"
-	PermissionEnumManageOrders                    PermissionEnum = "MANAGE_ORDERS"
-	PermissionEnumManagePages                     PermissionEnum = "MANAGE_PAGES"
-	PermissionEnumManagePageTypesAndAttributes    PermissionEnum = "MANAGE_PAGE_TYPES_AND_ATTRIBUTES"
-	PermissionEnumHandlePayments                  PermissionEnum = "HANDLE_PAYMENTS"
-	PermissionEnumManageProducts                  PermissionEnum = "MANAGE_PRODUCTS"
-	PermissionEnumManageProductTypesAndAttributes PermissionEnum = "MANAGE_PRODUCT_TYPES_AND_ATTRIBUTES"
-	PermissionEnumManageShipping                  PermissionEnum = "MANAGE_SHIPPING"
-	PermissionEnumManageSettings                  PermissionEnum = "MANAGE_SETTINGS"
-	PermissionEnumManageTranslations              PermissionEnum = "MANAGE_TRANSLATIONS"
-	PermissionEnumManageCheckouts                 PermissionEnum = "MANAGE_CHECKOUTS"
-)
-
-func (e PermissionEnum) IsValid() bool {
-	switch e {
-	case PermissionEnumManageUsers, PermissionEnumManageStaff, PermissionEnumImpersonateUser, PermissionEnumManageApps, PermissionEnumManageChannels, PermissionEnumManageDiscounts, PermissionEnumManagePlugins, PermissionEnumManageGiftCard, PermissionEnumManageMenus, PermissionEnumManageOrders, PermissionEnumManagePages, PermissionEnumManagePageTypesAndAttributes, PermissionEnumHandlePayments, PermissionEnumManageProducts, PermissionEnumManageProductTypesAndAttributes, PermissionEnumManageShipping, PermissionEnumManageSettings, PermissionEnumManageTranslations, PermissionEnumManageCheckouts:
-		return true
-	}
-	return false
-}
-
 type PermissionGroupErrorCode string
 
 const (
@@ -5332,27 +5302,11 @@ const (
 	PermissionGroupErrorCodeUnique                      PermissionGroupErrorCode = "UNIQUE"
 )
 
-func (e PermissionGroupErrorCode) IsValid() bool {
-	switch e {
-	case PermissionGroupErrorCodeAssignNonStaffMember, PermissionGroupErrorCodeDuplicatedInputItem, PermissionGroupErrorCodeCannotRemoveFromLastGroup, PermissionGroupErrorCodeLeftNotManageablePermission, PermissionGroupErrorCodeOutOfScopePermission, PermissionGroupErrorCodeOutOfScopeUser, PermissionGroupErrorCodeRequired, PermissionGroupErrorCodeUnique:
-		return true
-	}
-	return false
-}
-
 type PermissionGroupSortField string
 
 const (
 	PermissionGroupSortFieldName PermissionGroupSortField = "NAME"
 )
-
-func (e PermissionGroupSortField) IsValid() bool {
-	switch e {
-	case PermissionGroupSortFieldName:
-		return true
-	}
-	return false
-}
 
 type PluginConfigurationType string
 
@@ -5533,13 +5487,13 @@ const (
 	ProductTypeConfigurableSimple       ProductTypeConfigurable = "SIMPLE"
 )
 
-func (e ProductTypeConfigurable) IsValid() bool {
-	switch e {
-	case ProductTypeConfigurableConfigurable, ProductTypeConfigurableSimple:
-		return true
-	}
-	return false
-}
+// func (e ProductTypeConfigurable) IsValid() bool {
+// 	switch e {
+// 	case ProductTypeConfigurableConfigurable, ProductTypeConfigurableSimple:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type ProductTypeEnum string
 
@@ -5548,13 +5502,13 @@ const (
 	ProductTypeEnumShippable ProductTypeEnum = "SHIPPABLE"
 )
 
-func (e ProductTypeEnum) IsValid() bool {
-	switch e {
-	case ProductTypeEnumDigital, ProductTypeEnumShippable:
-		return true
-	}
-	return false
-}
+// func (e ProductTypeEnum) IsValid() bool {
+// 	switch e {
+// 	case ProductTypeEnumDigital, ProductTypeEnumShippable:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type ProductTypeKindEnum string
 
@@ -5563,13 +5517,13 @@ const (
 	ProductTypeKindEnumGiftCard ProductTypeKindEnum = ProductTypeKindEnum(model.GIFT_CARD)
 )
 
-func (e ProductTypeKindEnum) IsValid() bool {
-	switch e {
-	case ProductTypeKindEnumNormal, ProductTypeKindEnumGiftCard:
-		return true
-	}
-	return false
-}
+// func (e ProductTypeKindEnum) IsValid() bool {
+// 	switch e {
+// 	case ProductTypeKindEnumNormal, ProductTypeKindEnumGiftCard:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type ProductTypeSortField string
 
@@ -5579,13 +5533,13 @@ const (
 	ProductTypeSortFieldShippingRequired ProductTypeSortField = "SHIPPING_REQUIRED"
 )
 
-func (e ProductTypeSortField) IsValid() bool {
-	switch e {
-	case ProductTypeSortFieldName, ProductTypeSortFieldDigital, ProductTypeSortFieldShippingRequired:
-		return true
-	}
-	return false
-}
+// func (e ProductTypeSortField) IsValid() bool {
+// 	switch e {
+// 	case ProductTypeSortFieldName, ProductTypeSortFieldDigital, ProductTypeSortFieldShippingRequired:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type ReportingPeriod string
 
@@ -5594,13 +5548,13 @@ const (
 	ReportingPeriodThisMonth ReportingPeriod = "THIS_MONTH"
 )
 
-func (e ReportingPeriod) IsValid() bool {
-	switch e {
-	case ReportingPeriodToday, ReportingPeriodThisMonth:
-		return true
-	}
-	return false
-}
+// func (e ReportingPeriod) IsValid() bool {
+// 	switch e {
+// 	case ReportingPeriodToday, ReportingPeriodThisMonth:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type SaleSortField string
 
@@ -5612,13 +5566,13 @@ const (
 	SaleSortFieldType      SaleSortField = "TYPE"
 )
 
-func (e SaleSortField) IsValid() bool {
-	switch e {
-	case SaleSortFieldName, SaleSortFieldStartDate, SaleSortFieldEndDate, SaleSortFieldValue, SaleSortFieldType:
-		return true
-	}
-	return false
-}
+// func (e SaleSortField) IsValid() bool {
+// 	switch e {
+// 	case SaleSortFieldName, SaleSortFieldStartDate, SaleSortFieldEndDate, SaleSortFieldValue, SaleSortFieldType:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type SaleType = model.DiscountType
 
@@ -5635,13 +5589,13 @@ const (
 	ShippingErrorCodeDuplicatedInputItem ShippingErrorCode = "DUPLICATED_INPUT_ITEM"
 )
 
-func (e ShippingErrorCode) IsValid() bool {
-	switch e {
-	case ShippingErrorCodeAlreadyExists, ShippingErrorCodeGraphqlError, ShippingErrorCodeInvalid, ShippingErrorCodeMaxLessThanMin, ShippingErrorCodeNotFound, ShippingErrorCodeRequired, ShippingErrorCodeUnique, ShippingErrorCodeDuplicatedInputItem:
-		return true
-	}
-	return false
-}
+// func (e ShippingErrorCode) IsValid() bool {
+// 	switch e {
+// 	case ShippingErrorCodeAlreadyExists, ShippingErrorCodeGraphqlError, ShippingErrorCodeInvalid, ShippingErrorCodeMaxLessThanMin, ShippingErrorCodeNotFound, ShippingErrorCodeRequired, ShippingErrorCodeUnique, ShippingErrorCodeDuplicatedInputItem:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type ShippingMethodTypeEnum string
 
@@ -5650,13 +5604,13 @@ const (
 	ShippingMethodTypeEnumWeight ShippingMethodTypeEnum = model.WEIGHT_BASED
 )
 
-func (e ShippingMethodTypeEnum) IsValid() bool {
-	switch e {
-	case ShippingMethodTypeEnumPrice, ShippingMethodTypeEnumWeight:
-		return true
-	}
-	return false
-}
+// func (e ShippingMethodTypeEnum) IsValid() bool {
+// 	switch e {
+// 	case ShippingMethodTypeEnumPrice, ShippingMethodTypeEnumWeight:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type ShopErrorCode string
 
@@ -5670,13 +5624,13 @@ const (
 	ShopErrorCodeUnique              ShopErrorCode = "UNIQUE"
 )
 
-func (e ShopErrorCode) IsValid() bool {
-	switch e {
-	case ShopErrorCodeAlreadyExists, ShopErrorCodeCannotFetchTaxRates, ShopErrorCodeGraphqlError, ShopErrorCodeInvalid, ShopErrorCodeNotFound, ShopErrorCodeRequired, ShopErrorCodeUnique:
-		return true
-	}
-	return false
-}
+// func (e ShopErrorCode) IsValid() bool {
+// 	switch e {
+// 	case ShopErrorCodeAlreadyExists, ShopErrorCodeCannotFetchTaxRates, ShopErrorCodeGraphqlError, ShopErrorCodeInvalid, ShopErrorCodeNotFound, ShopErrorCodeRequired, ShopErrorCodeUnique:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type StaffMemberStatus string
 
@@ -5685,13 +5639,13 @@ const (
 	StaffMemberStatusDeactivated StaffMemberStatus = StaffMemberStatus(model.DEACTIVATED)
 )
 
-func (e StaffMemberStatus) IsValid() bool {
-	switch e {
-	case StaffMemberStatusActive, StaffMemberStatusDeactivated:
-		return true
-	}
-	return false
-}
+// func (e StaffMemberStatus) IsValid() bool {
+// 	switch e {
+// 	case StaffMemberStatusActive, StaffMemberStatusDeactivated:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type StockAvailability string
 
@@ -5700,13 +5654,13 @@ const (
 	StockAvailabilityOutOfStock StockAvailability = model.StockAvailabilityOutOfStock
 )
 
-func (e StockAvailability) IsValid() bool {
-	switch e {
-	case StockAvailabilityInStock, StockAvailabilityOutOfStock:
-		return true
-	}
-	return false
-}
+// func (e StockAvailability) IsValid() bool {
+// 	switch e {
+// 	case StockAvailabilityInStock, StockAvailabilityOutOfStock:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type StockErrorCode string
 
@@ -5719,13 +5673,13 @@ const (
 	StockErrorCodeUnique        StockErrorCode = "UNIQUE"
 )
 
-func (e StockErrorCode) IsValid() bool {
-	switch e {
-	case StockErrorCodeAlreadyExists, StockErrorCodeGraphqlError, StockErrorCodeInvalid, StockErrorCodeNotFound, StockErrorCodeRequired, StockErrorCodeUnique:
-		return true
-	}
-	return false
-}
+// func (e StockErrorCode) IsValid() bool {
+// 	switch e {
+// 	case StockErrorCodeAlreadyExists, StockErrorCodeGraphqlError, StockErrorCodeInvalid, StockErrorCodeNotFound, StockErrorCodeRequired, StockErrorCodeUnique:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type StorePaymentMethodEnum string
 
@@ -5735,13 +5689,13 @@ const (
 	StorePaymentMethodEnumNone       StorePaymentMethodEnum = "NONE"
 )
 
-func (e StorePaymentMethodEnum) IsValid() bool {
-	switch e {
-	case StorePaymentMethodEnumOnSession, StorePaymentMethodEnumOffSession, StorePaymentMethodEnumNone:
-		return true
-	}
-	return false
-}
+// func (e StorePaymentMethodEnum) IsValid() bool {
+// 	switch e {
+// 	case StorePaymentMethodEnumOnSession, StorePaymentMethodEnumOffSession, StorePaymentMethodEnumNone:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type TranslatableKinds string
 
@@ -5759,13 +5713,13 @@ const (
 	TranslatableKindsVoucher        TranslatableKinds = "VOUCHER"
 )
 
-func (e TranslatableKinds) IsValid() bool {
-	switch e {
-	case TranslatableKindsAttribute, TranslatableKindsAttributeValue, TranslatableKindsCategory, TranslatableKindsCollection, TranslatableKindsMenuItem, TranslatableKindsPage, TranslatableKindsProduct, TranslatableKindsSale, TranslatableKindsShippingMethod, TranslatableKindsVariant, TranslatableKindsVoucher:
-		return true
-	}
-	return false
-}
+// func (e TranslatableKinds) IsValid() bool {
+// 	switch e {
+// 	case TranslatableKindsAttribute, TranslatableKindsAttributeValue, TranslatableKindsCategory, TranslatableKindsCollection, TranslatableKindsMenuItem, TranslatableKindsPage, TranslatableKindsProduct, TranslatableKindsSale, TranslatableKindsShippingMethod, TranslatableKindsVariant, TranslatableKindsVoucher:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type TranslationErrorCode string
 
@@ -5775,13 +5729,13 @@ const (
 	TranslationErrorCodeRequired     TranslationErrorCode = "REQUIRED"
 )
 
-func (e TranslationErrorCode) IsValid() bool {
-	switch e {
-	case TranslationErrorCodeGraphqlError, TranslationErrorCodeNotFound, TranslationErrorCodeRequired:
-		return true
-	}
-	return false
-}
+// func (e TranslationErrorCode) IsValid() bool {
+// 	switch e {
+// 	case TranslationErrorCodeGraphqlError, TranslationErrorCodeNotFound, TranslationErrorCodeRequired:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type UploadErrorCode string
 
@@ -5789,13 +5743,13 @@ const (
 	UploadErrorCodeGraphqlError UploadErrorCode = "GRAPHQL_ERROR"
 )
 
-func (e UploadErrorCode) IsValid() bool {
-	switch e {
-	case UploadErrorCodeGraphqlError:
-		return true
-	}
-	return false
-}
+// func (e UploadErrorCode) IsValid() bool {
+// 	switch e {
+// 	case UploadErrorCodeGraphqlError:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type UserSortField string
 
@@ -5806,13 +5760,13 @@ const (
 	UserSortFieldOrderCount UserSortField = "ORDER_COUNT"
 )
 
-func (e UserSortField) IsValid() bool {
-	switch e {
-	case UserSortFieldFirstName, UserSortFieldLastName, UserSortFieldEmail, UserSortFieldOrderCount:
-		return true
-	}
-	return false
-}
+// func (e UserSortField) IsValid() bool {
+// 	switch e {
+// 	case UserSortFieldFirstName, UserSortFieldLastName, UserSortFieldEmail, UserSortFieldOrderCount:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type VariantAttributeScope string
 
@@ -5822,13 +5776,13 @@ const (
 	VariantAttributeScopeNotVariantSelection VariantAttributeScope = "NOT_VARIANT_SELECTION"
 )
 
-func (e VariantAttributeScope) IsValid() bool {
-	switch e {
-	case VariantAttributeScopeAll, VariantAttributeScopeVariantSelection, VariantAttributeScopeNotVariantSelection:
-		return true
-	}
-	return false
-}
+// func (e VariantAttributeScope) IsValid() bool {
+// 	switch e {
+// 	case VariantAttributeScopeAll, VariantAttributeScopeVariantSelection, VariantAttributeScopeNotVariantSelection:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type VolumeUnitsEnum string
 
@@ -5848,13 +5802,13 @@ const (
 	VolumeUnitsEnumAcreFt          VolumeUnitsEnum = measurement.ACRE_FT
 )
 
-func (e VolumeUnitsEnum) IsValid() bool {
-	switch e {
-	case VolumeUnitsEnumCubicMillimeter, VolumeUnitsEnumCubicCentimeter, VolumeUnitsEnumCubicDecimeter, VolumeUnitsEnumCubicMeter, VolumeUnitsEnumLiter, VolumeUnitsEnumCubicFoot, VolumeUnitsEnumCubicInch, VolumeUnitsEnumCubicYard, VolumeUnitsEnumQt, VolumeUnitsEnumPint, VolumeUnitsEnumFlOz, VolumeUnitsEnumAcreIn, VolumeUnitsEnumAcreFt:
-		return true
-	}
-	return false
-}
+// func (e VolumeUnitsEnum) IsValid() bool {
+// 	switch e {
+// 	case VolumeUnitsEnumCubicMillimeter, VolumeUnitsEnumCubicCentimeter, VolumeUnitsEnumCubicDecimeter, VolumeUnitsEnumCubicMeter, VolumeUnitsEnumLiter, VolumeUnitsEnumCubicFoot, VolumeUnitsEnumCubicInch, VolumeUnitsEnumCubicYard, VolumeUnitsEnumQt, VolumeUnitsEnumPint, VolumeUnitsEnumFlOz, VolumeUnitsEnumAcreIn, VolumeUnitsEnumAcreFt:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type VoucherDiscountType string
 
@@ -5864,13 +5818,13 @@ const (
 	VoucherDiscountTypeShipping   VoucherDiscountType = "SHIPPING"
 )
 
-func (e VoucherDiscountType) IsValid() bool {
-	switch e {
-	case VoucherDiscountTypeFixed, VoucherDiscountTypePercentage, VoucherDiscountTypeShipping:
-		return true
-	}
-	return false
-}
+// func (e VoucherDiscountType) IsValid() bool {
+// 	switch e {
+// 	case VoucherDiscountTypeFixed, VoucherDiscountTypePercentage, VoucherDiscountTypeShipping:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type VoucherSortField string
 
@@ -5884,13 +5838,13 @@ const (
 	VoucherSortFieldMinimumSpentAmount VoucherSortField = "MINIMUM_SPENT_AMOUNT"
 )
 
-func (e VoucherSortField) IsValid() bool {
-	switch e {
-	case VoucherSortFieldCode, VoucherSortFieldStartDate, VoucherSortFieldEndDate, VoucherSortFieldValue, VoucherSortFieldType, VoucherSortFieldUsageLimit, VoucherSortFieldMinimumSpentAmount:
-		return true
-	}
-	return false
-}
+// func (e VoucherSortField) IsValid() bool {
+// 	switch e {
+// 	case VoucherSortFieldCode, VoucherSortFieldStartDate, VoucherSortFieldEndDate, VoucherSortFieldValue, VoucherSortFieldType, VoucherSortFieldUsageLimit, VoucherSortFieldMinimumSpentAmount:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type VoucherTypeEnum string
 
@@ -5900,13 +5854,13 @@ const (
 	VoucherTypeEnumSpecificProduct VoucherTypeEnum = model.SPECIFIC_PRODUCT
 )
 
-func (e VoucherTypeEnum) IsValid() bool {
-	switch e {
-	case VoucherTypeEnumShipping, VoucherTypeEnumEntireOrder, VoucherTypeEnumSpecificProduct:
-		return true
-	}
-	return false
-}
+// func (e VoucherTypeEnum) IsValid() bool {
+// 	switch e {
+// 	case VoucherTypeEnumShipping, VoucherTypeEnumEntireOrder, VoucherTypeEnumSpecificProduct:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type WarehouseErrorCode string
 
@@ -5919,13 +5873,13 @@ const (
 	WarehouseErrorCodeUnique        WarehouseErrorCode = "UNIQUE"
 )
 
-func (e WarehouseErrorCode) IsValid() bool {
-	switch e {
-	case WarehouseErrorCodeAlreadyExists, WarehouseErrorCodeGraphqlError, WarehouseErrorCodeInvalid, WarehouseErrorCodeNotFound, WarehouseErrorCodeRequired, WarehouseErrorCodeUnique:
-		return true
-	}
-	return false
-}
+// func (e WarehouseErrorCode) IsValid() bool {
+// 	switch e {
+// 	case WarehouseErrorCodeAlreadyExists, WarehouseErrorCodeGraphqlError, WarehouseErrorCodeInvalid, WarehouseErrorCodeNotFound, WarehouseErrorCodeRequired, WarehouseErrorCodeUnique:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type WarehouseSortField string
 
@@ -5933,13 +5887,13 @@ const (
 	WarehouseSortFieldName WarehouseSortField = "NAME"
 )
 
-func (e WarehouseSortField) IsValid() bool {
-	switch e {
-	case WarehouseSortFieldName:
-		return true
-	}
-	return false
-}
+// func (e WarehouseSortField) IsValid() bool {
+// 	switch e {
+// 	case WarehouseSortFieldName:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type WebhookErrorCode string
 
@@ -5951,13 +5905,13 @@ const (
 	WebhookErrorCodeUnique       WebhookErrorCode = "UNIQUE"
 )
 
-func (e WebhookErrorCode) IsValid() bool {
-	switch e {
-	case WebhookErrorCodeGraphqlError, WebhookErrorCodeInvalid, WebhookErrorCodeNotFound, WebhookErrorCodeRequired, WebhookErrorCodeUnique:
-		return true
-	}
-	return false
-}
+// func (e WebhookErrorCode) IsValid() bool {
+// 	switch e {
+// 	case WebhookErrorCodeGraphqlError, WebhookErrorCodeInvalid, WebhookErrorCodeNotFound, WebhookErrorCodeRequired, WebhookErrorCodeUnique:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type WebhookEventTypeEnum string
 
@@ -6007,13 +5961,13 @@ const (
 	WebhookEventTypeEnumTranslationUpdated        WebhookEventTypeEnum = "TRANSLATION_UPDATED"
 )
 
-func (e WebhookEventTypeEnum) IsValid() bool {
-	switch e {
-	case WebhookEventTypeEnumAnyEvents, WebhookEventTypeEnumOrderCreated, WebhookEventTypeEnumOrderConfirmed, WebhookEventTypeEnumOrderFullyPaid, WebhookEventTypeEnumOrderUpdated, WebhookEventTypeEnumOrderCancelled, WebhookEventTypeEnumOrderFulfilled, WebhookEventTypeEnumDraftOrderCreated, WebhookEventTypeEnumDraftOrderUpdated, WebhookEventTypeEnumDraftOrderDeleted, WebhookEventTypeEnumSaleCreated, WebhookEventTypeEnumSaleUpdated, WebhookEventTypeEnumSaleDeleted, WebhookEventTypeEnumInvoiceRequested, WebhookEventTypeEnumInvoiceDeleted, WebhookEventTypeEnumInvoiceSent, WebhookEventTypeEnumCustomerCreated, WebhookEventTypeEnumCustomerUpdated, WebhookEventTypeEnumProductCreated, WebhookEventTypeEnumProductUpdated, WebhookEventTypeEnumProductDeleted, WebhookEventTypeEnumProductVariantCreated, WebhookEventTypeEnumProductVariantUpdated, WebhookEventTypeEnumProductVariantDeleted, WebhookEventTypeEnumProductVariantOutOfStock, WebhookEventTypeEnumProductVariantBackInStock, WebhookEventTypeEnumCheckoutCreated, WebhookEventTypeEnumCheckoutUpdated, WebhookEventTypeEnumFulfillmentCreated, WebhookEventTypeEnumFulfillmentCanceled, WebhookEventTypeEnumNotifyUser, WebhookEventTypeEnumPageCreated, WebhookEventTypeEnumPageUpdated, WebhookEventTypeEnumPageDeleted, WebhookEventTypeEnumPaymentAuthorize, WebhookEventTypeEnumPaymentCapture, WebhookEventTypeEnumPaymentConfirm, WebhookEventTypeEnumPaymentListGateways, WebhookEventTypeEnumPaymentProcess, WebhookEventTypeEnumPaymentRefund, WebhookEventTypeEnumPaymentVoid, WebhookEventTypeEnumTranslationCreated, WebhookEventTypeEnumTranslationUpdated:
-		return true
-	}
-	return false
-}
+// func (e WebhookEventTypeEnum) IsValid() bool {
+// 	switch e {
+// 	case WebhookEventTypeEnumAnyEvents, WebhookEventTypeEnumOrderCreated, WebhookEventTypeEnumOrderConfirmed, WebhookEventTypeEnumOrderFullyPaid, WebhookEventTypeEnumOrderUpdated, WebhookEventTypeEnumOrderCancelled, WebhookEventTypeEnumOrderFulfilled, WebhookEventTypeEnumDraftOrderCreated, WebhookEventTypeEnumDraftOrderUpdated, WebhookEventTypeEnumDraftOrderDeleted, WebhookEventTypeEnumSaleCreated, WebhookEventTypeEnumSaleUpdated, WebhookEventTypeEnumSaleDeleted, WebhookEventTypeEnumInvoiceRequested, WebhookEventTypeEnumInvoiceDeleted, WebhookEventTypeEnumInvoiceSent, WebhookEventTypeEnumCustomerCreated, WebhookEventTypeEnumCustomerUpdated, WebhookEventTypeEnumProductCreated, WebhookEventTypeEnumProductUpdated, WebhookEventTypeEnumProductDeleted, WebhookEventTypeEnumProductVariantCreated, WebhookEventTypeEnumProductVariantUpdated, WebhookEventTypeEnumProductVariantDeleted, WebhookEventTypeEnumProductVariantOutOfStock, WebhookEventTypeEnumProductVariantBackInStock, WebhookEventTypeEnumCheckoutCreated, WebhookEventTypeEnumCheckoutUpdated, WebhookEventTypeEnumFulfillmentCreated, WebhookEventTypeEnumFulfillmentCanceled, WebhookEventTypeEnumNotifyUser, WebhookEventTypeEnumPageCreated, WebhookEventTypeEnumPageUpdated, WebhookEventTypeEnumPageDeleted, WebhookEventTypeEnumPaymentAuthorize, WebhookEventTypeEnumPaymentCapture, WebhookEventTypeEnumPaymentConfirm, WebhookEventTypeEnumPaymentListGateways, WebhookEventTypeEnumPaymentProcess, WebhookEventTypeEnumPaymentRefund, WebhookEventTypeEnumPaymentVoid, WebhookEventTypeEnumTranslationCreated, WebhookEventTypeEnumTranslationUpdated:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type WebhookSampleEventTypeEnum string
 
@@ -6062,13 +6016,13 @@ const (
 	WebhookSampleEventTypeEnumTranslationUpdated        WebhookSampleEventTypeEnum = "TRANSLATION_UPDATED"
 )
 
-func (e WebhookSampleEventTypeEnum) IsValid() bool {
-	switch e {
-	case WebhookSampleEventTypeEnumOrderCreated, WebhookSampleEventTypeEnumOrderConfirmed, WebhookSampleEventTypeEnumOrderFullyPaid, WebhookSampleEventTypeEnumOrderUpdated, WebhookSampleEventTypeEnumOrderCancelled, WebhookSampleEventTypeEnumOrderFulfilled, WebhookSampleEventTypeEnumDraftOrderCreated, WebhookSampleEventTypeEnumDraftOrderUpdated, WebhookSampleEventTypeEnumDraftOrderDeleted, WebhookSampleEventTypeEnumSaleCreated, WebhookSampleEventTypeEnumSaleUpdated, WebhookSampleEventTypeEnumSaleDeleted, WebhookSampleEventTypeEnumInvoiceRequested, WebhookSampleEventTypeEnumInvoiceDeleted, WebhookSampleEventTypeEnumInvoiceSent, WebhookSampleEventTypeEnumCustomerCreated, WebhookSampleEventTypeEnumCustomerUpdated, WebhookSampleEventTypeEnumProductCreated, WebhookSampleEventTypeEnumProductUpdated, WebhookSampleEventTypeEnumProductDeleted, WebhookSampleEventTypeEnumProductVariantCreated, WebhookSampleEventTypeEnumProductVariantUpdated, WebhookSampleEventTypeEnumProductVariantDeleted, WebhookSampleEventTypeEnumProductVariantOutOfStock, WebhookSampleEventTypeEnumProductVariantBackInStock, WebhookSampleEventTypeEnumCheckoutCreated, WebhookSampleEventTypeEnumCheckoutUpdated, WebhookSampleEventTypeEnumFulfillmentCreated, WebhookSampleEventTypeEnumFulfillmentCanceled, WebhookSampleEventTypeEnumNotifyUser, WebhookSampleEventTypeEnumPageCreated, WebhookSampleEventTypeEnumPageUpdated, WebhookSampleEventTypeEnumPageDeleted, WebhookSampleEventTypeEnumPaymentAuthorize, WebhookSampleEventTypeEnumPaymentCapture, WebhookSampleEventTypeEnumPaymentConfirm, WebhookSampleEventTypeEnumPaymentListGateways, WebhookSampleEventTypeEnumPaymentProcess, WebhookSampleEventTypeEnumPaymentRefund, WebhookSampleEventTypeEnumPaymentVoid, WebhookSampleEventTypeEnumTranslationCreated, WebhookSampleEventTypeEnumTranslationUpdated:
-		return true
-	}
-	return false
-}
+// func (e WebhookSampleEventTypeEnum) IsValid() bool {
+// 	switch e {
+// 	case WebhookSampleEventTypeEnumOrderCreated, WebhookSampleEventTypeEnumOrderConfirmed, WebhookSampleEventTypeEnumOrderFullyPaid, WebhookSampleEventTypeEnumOrderUpdated, WebhookSampleEventTypeEnumOrderCancelled, WebhookSampleEventTypeEnumOrderFulfilled, WebhookSampleEventTypeEnumDraftOrderCreated, WebhookSampleEventTypeEnumDraftOrderUpdated, WebhookSampleEventTypeEnumDraftOrderDeleted, WebhookSampleEventTypeEnumSaleCreated, WebhookSampleEventTypeEnumSaleUpdated, WebhookSampleEventTypeEnumSaleDeleted, WebhookSampleEventTypeEnumInvoiceRequested, WebhookSampleEventTypeEnumInvoiceDeleted, WebhookSampleEventTypeEnumInvoiceSent, WebhookSampleEventTypeEnumCustomerCreated, WebhookSampleEventTypeEnumCustomerUpdated, WebhookSampleEventTypeEnumProductCreated, WebhookSampleEventTypeEnumProductUpdated, WebhookSampleEventTypeEnumProductDeleted, WebhookSampleEventTypeEnumProductVariantCreated, WebhookSampleEventTypeEnumProductVariantUpdated, WebhookSampleEventTypeEnumProductVariantDeleted, WebhookSampleEventTypeEnumProductVariantOutOfStock, WebhookSampleEventTypeEnumProductVariantBackInStock, WebhookSampleEventTypeEnumCheckoutCreated, WebhookSampleEventTypeEnumCheckoutUpdated, WebhookSampleEventTypeEnumFulfillmentCreated, WebhookSampleEventTypeEnumFulfillmentCanceled, WebhookSampleEventTypeEnumNotifyUser, WebhookSampleEventTypeEnumPageCreated, WebhookSampleEventTypeEnumPageUpdated, WebhookSampleEventTypeEnumPageDeleted, WebhookSampleEventTypeEnumPaymentAuthorize, WebhookSampleEventTypeEnumPaymentCapture, WebhookSampleEventTypeEnumPaymentConfirm, WebhookSampleEventTypeEnumPaymentListGateways, WebhookSampleEventTypeEnumPaymentProcess, WebhookSampleEventTypeEnumPaymentRefund, WebhookSampleEventTypeEnumPaymentVoid, WebhookSampleEventTypeEnumTranslationCreated, WebhookSampleEventTypeEnumTranslationUpdated:
+// 		return true
+// 	}
+// 	return false
+// }
 
 type WeightUnitsEnum string
 
@@ -6080,10 +6034,10 @@ const (
 	WeightUnitsEnumTonne WeightUnitsEnum = WeightUnitsEnum(measurement.TONNE)
 )
 
-func (e WeightUnitsEnum) IsValid() bool {
-	switch e {
-	case WeightUnitsEnumG, WeightUnitsEnumLb, WeightUnitsEnumOz, WeightUnitsEnumKg, WeightUnitsEnumTonne:
-		return true
-	}
-	return false
-}
+// func (e WeightUnitsEnum) IsValid() bool {
+// 	switch e {
+// 	case WeightUnitsEnumG, WeightUnitsEnumLb, WeightUnitsEnumOz, WeightUnitsEnumKg, WeightUnitsEnumTonne:
+// 		return true
+// 	}
+// 	return false
+// }

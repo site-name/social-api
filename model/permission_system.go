@@ -1,6 +1,9 @@
 package model
 
-import "github.com/samber/lo"
+import (
+	"github.com/samber/lo"
+	"github.com/sitename/sitename/modules/util"
+)
 
 // scopes for permissions
 const (
@@ -238,7 +241,7 @@ var (
 
 type Permissions []*Permission
 
-func (ps Permissions) IDs() []string {
+func (ps Permissions) IDs() util.AnyArray[string] {
 	return lo.Map(ps, func(item *Permission, _ int) string { return item.Id })
 }
 
@@ -246,6 +249,7 @@ func (ps Permissions) IDs() []string {
 var AllSystemScopedPermissions Permissions
 var SysconsoleReadPermissions Permissions
 var SysconsoleWritePermissions Permissions
+var SystemScopedPermissionsMinusSysconsole Permissions
 
 func initializeSystemScopedPermissions() {
 	PermissionInviteUser = &Permission{"invite_user", "authentication.permissions.team_invite_user.name", "authentication.permissions.team_invite_user.description", PermissionScopeSystem}
@@ -253,9 +257,7 @@ func initializeSystemScopedPermissions() {
 	PermissionManageRoles = &Permission{"manage_roles", "authentication.permissions.manage_roles.name", "authentication.permissions.manage_roles.description", PermissionScopeSystem}
 	PermissionManageSystem = &Permission{"manage_system", "authentication.permissions.manage_system.name", "authentication.permissions.manage_system.description", PermissionScopeSystem}
 	PermissionEditOtherUsers = &Permission{"edit_other_users", "authentication.permissions.edit_other_users.name", "authentication.permissions.edit_other_users.description", PermissionScopeSystem}
-	PermissionAddReaction = &Permission{"add_reaction", "authentication.permissions.add_reaction.name", "authentication.permissions.add_reaction.description", PermissionScopeShop}
-	PermissionRemoveReaction = &Permission{"remove_reaction", "authentication.permissions.remove_reaction.name", "authentication.permissions.remove_reaction.description", PermissionScopeShop}
-	PermissionUploadFile = &Permission{"upload_file", "authentication.permissions.upload_file.name", "authentication.permissions.upload_file.description", PermissionScopeShop}
+
 	PermissionGetPublicLink = &Permission{"get_public_link", "authentication.permissions.get_public_link.name", "authentication.permissions.get_public_link.description", PermissionScopeSystem}
 	PermissionManageIncomingWebhooks = &Permission{"manage_incoming_webhooks", "authentication.permissions.manage_incoming_webhooks.name", "authentication.permissions.manage_incoming_webhooks.description", PermissionScopeSystem}
 	PermissionManageOutgoingWebhooks = &Permission{"manage_outgoing_webhooks", "authentication.permissions.manage_outgoing_webhooks.name", "authentication.permissions.manage_outgoing_webhooks.description", PermissionScopeSystem}
@@ -405,6 +407,71 @@ func initializeSystemScopedPermissions() {
 	PermissionSysconsoleReadExperimentalBleve = &Permission{"sysconsole_read_experimental_bleve", "", "", PermissionScopeSystem}
 	PermissionSysconsoleWriteExperimentalBleve = &Permission{"sysconsole_write_experimental_bleve", "", "", PermissionScopeSystem}
 
+	PermissionCreateShop = &Permission{"create_shop", "", "", PermissionScopeSystem}
+	PermissionCreateCategoryTranslation = &Permission{"create_categorytranslation", "", "", PermissionScopeSystem}
+	PermissionReadCategoryTranslation = &Permission{"read_categorytranslation", "", "", PermissionScopeSystem}
+	PermissionUpdateCategoryTranslation = &Permission{"update_categorytranslation", "", "", PermissionScopeSystem}
+	PermissionDeleteCategoryTranslation = &Permission{"delete_categorytranslation", "", "", PermissionScopeSystem}
+
+	PermissionCreateOpenExchangeRate = &Permission{"create_openexchangerate", "", "", PermissionScopeSystem}
+	PermissionReadOpenExchangeRate = &Permission{"read_openexchangerate", "", "", PermissionScopeSystem}
+	PermissionUpdateOpenExchangeRate = &Permission{"update_openexchangerate", "", "", PermissionScopeSystem}
+	PermissionDeleteOpenExchangeRate = &Permission{"delete_openexchangerate", "", "", PermissionScopeSystem}
+
+	PermissionCreateToken = &Permission{"create_token", "", "", PermissionScopeSystem}
+	PermissionReadToken = &Permission{"read_token", "", "", PermissionScopeSystem}
+	// PermissionUpdateToken = &Permission{"update_token", "", "", PermissionScopeSystem}
+	PermissionDeleteToken = &Permission{"delete_token", "", "", PermissionScopeSystem}
+	PermissionCreateTermsOfService = &Permission{"create_termsofservice", "", "", PermissionScopeSystem}
+	PermissionReadTermsOfService = &Permission{"read_termsofservice", "", "", PermissionScopeSystem}
+	PermissionUpdateTermsOfService = &Permission{"update_termsofservice", "", "", PermissionScopeSystem}
+	PermissionDeleteTermsOfService = &Permission{"delete_termsofservice", "", "", PermissionScopeSystem}
+	PermissionCreateChannel = &Permission{"create_channel", "", "", PermissionScopeSystem}
+	PermissionReadChannel = &Permission{"read_channel", "", "", PermissionScopeSystem}
+	PermissionUpdateChannel = &Permission{"update_channel", "", "", PermissionScopeSystem}
+	PermissionDeleteChannel = &Permission{"delete_channel", "", "", PermissionScopeSystem}
+	PermissionCreateRole = &Permission{"create_role", "", "", PermissionScopeSystem}
+	PermissionReadRole = &Permission{"read_role", "", "", PermissionScopeSystem}
+	PermissionUpdateRole = &Permission{"update_role", "", "", PermissionScopeSystem}
+	PermissionDeleteRole = &Permission{"delete_role", "", "", PermissionScopeSystem}
+
+	PermissionCreateCompliance = &Permission{"create_compliance", "", "", PermissionScopeSystem}
+	PermissionReadCompliance = &Permission{"read_compliance", "", "", PermissionScopeSystem}
+	PermissionUpdateCompliance = &Permission{"update_compliance", "", "", PermissionScopeSystem}
+	PermissionDeleteCompliance = &Permission{"delete_compliance", "", "", PermissionScopeSystem}
+	PermissionCreateClusterDiscovery = &Permission{"create_clusterdiscovery", "", "", PermissionScopeSystem}
+	PermissionReadClusterDiscovery = &Permission{"read_clusterdiscovery", "", "", PermissionScopeSystem}
+	PermissionUpdateClusterDiscovery = &Permission{"update_clusterdiscovery", "", "", PermissionScopeSystem}
+	PermissionDeleteClusterDiscovery = &Permission{"delete_clusterdiscovery", "", "", PermissionScopeSystem}
+	PermissionCreateAudit = &Permission{"create_audit", "", "", PermissionScopeSystem}
+	PermissionReadAudit = &Permission{"read_audit", "", "", PermissionScopeSystem}
+	PermissionUpdateAudit = &Permission{"update_audit", "", "", PermissionScopeSystem}
+	PermissionDeleteAudit = &Permission{"delete_audit", "", "", PermissionScopeSystem}
+	PermissionCreateTransaction = &Permission{"create_transaction", "", "", PermissionScopeSystem}
+	PermissionReadTransaction = &Permission{"read_transaction", "", "", PermissionScopeSystem}
+	PermissionUpdateTransaction = &Permission{"update_transaction", "", "", PermissionScopeSystem}
+	PermissionDeleteTransaction = &Permission{"delete_transaction", "", "", PermissionScopeSystem}
+	PermissionUpdateAttributeValue = &Permission{"update_attributevalue", "", "", PermissionScopeSystem}
+	PermissionDeleteAttributeValue = &Permission{"delete_attributevalue", "", "", PermissionScopeSystem}
+
+	PermissionCreatePreference = &Permission{"create_preference", "", "", PermissionScopeSystem}
+	PermissionReadPreference = &Permission{"read_preference", "", "", PermissionScopeSystem}
+	PermissionUpdatePreference = &Permission{"update_preference", "", "", PermissionScopeSystem}
+	PermissionDeletePreference = &Permission{"delete_preference", "", "", PermissionScopeSystem}
+	PermissionCreateCategory = &Permission{"create_category", "", "", PermissionScopeSystem}
+	PermissionReadCategory = &Permission{"read_category", "", "", PermissionScopeSystem}
+	PermissionUpdateCategory = &Permission{"update_category", "", "", PermissionScopeSystem}
+	PermissionDeleteCategory = &Permission{"delete_category", "", "", PermissionScopeSystem}
+	PermissionCreateAddress = &Permission{"create_address", "", "", PermissionScopeSystem}
+	PermissionReadAddress = &Permission{"read_address", "", "", PermissionScopeSystem}
+	PermissionUpdateAddress = &Permission{"update_address", "", "", PermissionScopeSystem}
+	PermissionDeleteAddress = &Permission{"delete_address", "", "", PermissionScopeSystem}
+	PermissionCreateUser = &Permission{"create_user", "", "", PermissionScopeSystem}
+	PermissionReadUser = &Permission{"read_user", "", "", PermissionScopeSystem}
+	PermissionDeleteUser = &Permission{"delete_user", "", "", PermissionScopeSystem}
+}
+
+func initSystemPermissionGroups() {
 	SysconsoleReadPermissions = Permissions{
 		PermissionSysconsoleReadBilling,
 		PermissionSysconsoleReadReportingSiteStatistics,
@@ -507,7 +574,7 @@ func initializeSystemScopedPermissions() {
 		PermissionSysconsoleWriteExperimentalBleve,
 	}
 
-	SystemScopedPermissionsMinusSysconsole := Permissions{
+	SystemScopedPermissionsMinusSysconsole = Permissions{
 		PermissionAddReaction,
 		PermissionRemoveReaction,
 		PermissionAssignSystemAdminRole,
@@ -565,7 +632,6 @@ func initializeSystemScopedPermissions() {
 		PermissionManageOutgoingWebhooks,
 		PermissionManageOthersIncomingWebhooks,
 		PermissionManageOthersOutgoingWebhooks,
-
 		PermissionCreateCategoryTranslation,
 		PermissionReadCategoryTranslation,
 		PermissionUpdateCategoryTranslation,
@@ -622,6 +688,9 @@ func initializeSystemScopedPermissions() {
 }
 
 func init() {
-	initializeSystemScopedPermissions()
 	initializeShopScopedPermissions()
+	initializeSystemScopedPermissions()
+
+	initSystemPermissionGroups()
+	initShopPermissionGroups()
 }

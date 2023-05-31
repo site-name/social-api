@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/graph-gophers/graphql-go"
+	graphql "github.com/graph-gophers/graphql-go"
 	gqlerrors "github.com/graph-gophers/graphql-go/errors"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/app"
@@ -16,8 +16,8 @@ import (
 
 type graphQLInput struct {
 	Query         string         `json:"query"`
-	Variables     map[string]any `json:"variables"`
 	OperationName string         `json:"operationName"`
+	Variables     map[string]any `json:"variables"`
 }
 
 type Resolver struct {
@@ -35,7 +35,9 @@ func (api *API) InitGraphql() error {
 		graphql.Logger(slog.NewGraphQLLogger(api.srv.Log)),
 		graphql.MaxParallelism(200),
 		graphql.MaxDepth(4),
-		graphql.DisableIntrospection(),
+		graphql.UseStringDescriptions(),
+		graphql.Directives(&HasRolesDirective{}, &HasPermissionsDirective{}, &AuthenticatedDirective{}),
+		// graphql.DisableIntrospection(),
 	}
 
 	api.schema, err = graphql.ParseSchema(schemaString, &Resolver{srv: api.srv}, opts...)

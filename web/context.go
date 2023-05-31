@@ -69,9 +69,13 @@ func (c *Context) CheckAuthenticatedAndHasRoles(apiName string, roleIDs ...strin
 	if c.Err != nil {
 		return
 	}
-	commonRoles := lo.Intersect(c.AppContext.Session().GetUserRoles(), roleIDs)
-	if len(commonRoles) == 0 {
-		c.Err = model.NewAppError(apiName, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+
+	roleIdsMap := lo.SliceToMap(roleIDs, func(r string) (string, bool) { return r, true })
+	for _, role := range c.AppContext.Session().GetUserRoles() {
+		if !roleIdsMap[role] {
+			c.Err = model.NewAppError(apiName, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+			return
+		}
 	}
 }
 

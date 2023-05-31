@@ -40,6 +40,18 @@ type Attribute  {
   withChoices: Boolean!
 }
 
+input AttributeValueInput {
+  id: String
+  values: [String!]!
+  file: String
+  contentType: String
+  references: [String!]!
+  richText: JSONString!
+  boolean: Boolean
+  date: Date
+  dateTime: DateTime
+}
+
 input AttributeValueFilterInput {
   search: String
 }

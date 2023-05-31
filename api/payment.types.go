@@ -225,7 +225,7 @@ func paymentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataload
 		})
 	if appErr != nil {
 		for idx := range orderIDs {
-			res[idx] = &dataloader.Result[[]*model.Payment]{Error: err}
+			res[idx] = &dataloader.Result[[]*model.Payment]{Error: appErr}
 		}
 		return res
 	}

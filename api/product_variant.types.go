@@ -72,10 +72,7 @@ func (p *ProductVariant) QuantityOrdered(ctx context.Context) (*int32, error) {
 }
 
 func (p *ProductVariant) DigitalContent(ctx context.Context) (*DigitalContent, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
 		return nil, model.NewAppError("ProductVariant.DigitalContent", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
@@ -92,10 +89,8 @@ func (p *ProductVariant) Stocks(ctx context.Context, args struct {
 	Address     *AddressInput
 	CountryCode *CountryCode
 }) ([]*Stock, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
 	if !embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageProducts, model.PermissionManageOrders) {
 		return nil, model.NewAppError("ProductVariant.Stocks", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}
@@ -108,12 +103,12 @@ func (p *ProductVariant) Stocks(ctx context.Context, args struct {
 		return nil, model.NewAppError("ProductVariant.Stocks", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "countryCode"}, "", http.StatusBadRequest)
 	}
 
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
+	if embedCtx.CurrentChannelID == "" {
+		embedCtx.SetInvalidUrlParam("channel_id")
+		return nil, embedCtx.Err
 	}
 
-	stocks, err := StocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader.Load(ctx, fmt.Sprintf("%s__%s__%s", p.ID, *args.CountryCode, channelID))()
+	stocks, err := StocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader.Load(ctx, fmt.Sprintf("%s__%s__%s", p.ID, *args.CountryCode, embedCtx.CurrentChannelID))()
 	if err != nil {
 		return nil, err
 	}
@@ -125,24 +120,21 @@ func (p *ProductVariant) QuantityAvailable(ctx context.Context, args struct {
 	Address     *AddressInput
 	CountryCode *CountryCode
 }) (int32, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return 0, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	defaultMaxCheckoutLineQuantity := *embedCtx.App.Config().ServiceSettings.MaxCheckoutLineQuantity
+	defaultMaxCheckoutLineQuantity := *embedCtx.App.Config().ShopSettings.MaxCheckoutLineQuantity
 
 	if args.Address != nil {
 		args.CountryCode = args.Address.Country
 	}
 
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return 0, model.NewAppError("ProductVariant.QuantityAvailable", ErrorChannelIDQueryParamMissing, nil, err.Error(), http.StatusBadRequest)
+	if embedCtx.CurrentChannelID == "" {
+		embedCtx.SetInvalidUrlParam("channel_id")
+		return 0, embedCtx.Err
 	}
 
 	if p.p.IsPreorderActive() {
-		channelListing, err := VariantChannelListingByVariantIdAndChannelLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channelID))()
+		channelListing, err := VariantChannelListingByVariantIdAndChannelLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, embedCtx.CurrentChannelID))()
 		if err != nil {
 			return 0, err
 		}
@@ -173,7 +165,7 @@ func (p *ProductVariant) QuantityAvailable(ctx context.Context, args struct {
 		return int32(defaultMaxCheckoutLineQuantity), nil
 	}
 
-	value, err := AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader.Load(ctx, fmt.Sprintf("%s__%s__%s", p.ID, *args.CountryCode, channelID))()
+	value, err := AvailableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader.Load(ctx, fmt.Sprintf("%s__%s__%s", p.ID, *args.CountryCode, embedCtx.CurrentChannelID))()
 	if err != nil {
 		return 0, err
 	}
@@ -216,14 +208,10 @@ func (p *ProductVariant) ChannelListings(ctx context.Context) ([]*ProductVariant
 }
 
 func (p *ProductVariant) Pricing(ctx context.Context, args struct{ Address *AddressInput }) (*VariantPricingInfo, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil || channelID == "" {
-		return nil, err
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	if embedCtx.CurrentChannelID == "" {
+		embedCtx.SetInvalidUrlParam("channel_id")
+		return nil, embedCtx.Err
 	}
 
 	discountInfos, err := DiscountsByDateTimeLoader.Load(ctx, time.Now())()
@@ -231,12 +219,12 @@ func (p *ProductVariant) Pricing(ctx context.Context, args struct{ Address *Addr
 		return nil, err
 	}
 
-	channel, err := ChannelByIdLoader.Load(ctx, channelID)()
+	channel, err := ChannelByIdLoader.Load(ctx, embedCtx.CurrentChannelID)()
 	if err != nil {
 		return nil, err
 	}
 
-	variantChannelListing, err := VariantChannelListingByVariantIdAndChannelLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channelID))()
+	variantChannelListing, err := VariantChannelListingByVariantIdAndChannelLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, embedCtx.CurrentChannelID))()
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +234,7 @@ func (p *ProductVariant) Pricing(ctx context.Context, args struct{ Address *Addr
 		return nil, err
 	}
 
-	productChannelListing, err := ProductChannelListingByProductIdAndChannelSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", p.p.ProductID, channelID))()
+	productChannelListing, err := ProductChannelListingByProductIdAndChannelSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", p.p.ProductID, embedCtx.CurrentChannelID))()
 	if err != nil {
 		return nil, err
 	}
@@ -348,10 +336,8 @@ func (p *ProductVariant) Product(ctx context.Context) (*Product, error) {
 }
 
 func (p *ProductVariant) Revenue(ctx context.Context, args struct{ Period ReportingPeriod }) (*TaxedMoney, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
 	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
 	if err != nil {
 		return nil, err

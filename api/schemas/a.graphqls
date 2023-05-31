@@ -24,17 +24,6 @@ type AssignNavigation {
   errors: [MenuError!]!
 }
 
-input AttributeValueInput {
-  id: String
-  values: [String!]!
-  file: String
-  contentType: String
-  references: [String!]!
-  richText: JSONString!
-  boolean: Boolean
-  date: Date
-  dateTime: DateTime
-}
 
 enum CategorySortField {
   NAME
