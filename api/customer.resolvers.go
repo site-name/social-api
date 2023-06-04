@@ -27,6 +27,7 @@ func (r *Resolver) CustomerBulkDelete(ctx context.Context, args struct{ Ids []st
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: graphql directive(s) validated before this. Refer to ./schemas/customer.graphqls for details
 func (r *Resolver) Customers(ctx context.Context, args struct {
 	Filter *CustomerFilterInput
 	SortBy *UserSortingInput

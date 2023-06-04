@@ -1,6 +1,7 @@
 package product
 
 import (
+	"context"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -69,7 +70,9 @@ func (a *ServiceProduct) IncrementDownloadCount(contentURL *model.DigitalContent
 		if appErr != nil {
 			return appErr
 		}
-		userByOrderId, appErr := a.srv.AccountService().UserByOrderId(orderLine.OrderID)
+		userByOrderId, appErr := a.srv.AccountService().GetUserByOptions(context.Background(), &model.UserFilterOptions{
+			OrderID: squirrel.Eq{store.OrderTableName + ".Id": orderLine.OrderID},
+		})
 		if appErr != nil {
 			return appErr
 		}

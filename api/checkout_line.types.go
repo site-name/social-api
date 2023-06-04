@@ -126,10 +126,7 @@ func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []
 }
 
 func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.CheckoutLine] {
-	var (
-		res             = make([]*dataloader.Result[*model.CheckoutLine], len(ids))
-		checkoutLineMap = map[string]*model.CheckoutLine{}
-	)
+	res := make([]*dataloader.Result[*model.CheckoutLine], len(ids))
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	checkoutLines, appErr := embedCtx.App.Srv().
@@ -144,6 +141,7 @@ func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Res
 		return res
 	}
 
+	var checkoutLineMap = map[string]*model.CheckoutLine{}
 	for _, line := range checkoutLines {
 		checkoutLineMap[line.Id] = line
 	}

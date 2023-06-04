@@ -18,22 +18,22 @@ type User {
   lastName: String!
   userName: String!
   isActive: Boolean!
-  note: String
+  note: String @hasRoleAny(roles: [shop_staff, shop_admin])
   dateJoined: DateTime!
-  defaultShippingAddress: Address
-  defaultBillingAddress: Address
+  defaultShippingAddress: Address @authenticated
+  defaultBillingAddress: Address @authenticated
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
-  addresses: [Address]!
-  checkoutTokens(channel: String): [String!]!
-  giftCards(before: String, after: String, first: Int, last: Int): GiftCardCountableConnection # giftCards(before: String, after: String, first: Int, last: Int): GiftCardCountableConnection
-  orders(before: String, after: String, first: Int, last: Int): OrderCountableConnection # orders(before: String, after: String, first: Int, last: Int): OrderCountableConnection
+  addresses: [Address]! @authenticated
+  checkoutTokens(channel: String): [String!]! @authenticated
+  giftCards(before: String, after: String, first: Int, last: Int): GiftCardCountableConnection @authenticated
+  orders(before: String, after: String, first: Int, last: Int): OrderCountableConnection
   userPermissions: [UserPermission]!
   permissionGroups: [Group]!
   editableGroups: [Group]!
   avatar(size: Int): Image
-  events: [CustomerEvent]!
-  storedPaymentSources(channel: String): [PaymentSource]!
+  events: [CustomerEvent]! @hasRoleAny(roles: [shop_staff, shop_admin])
+  storedPaymentSources(channel: String): [PaymentSource]! @hasRoleAny(roles: [shop_admin])
   languageCode: LanguageCodeEnum!
   # wishlist: Wishlist
 }
@@ -96,7 +96,7 @@ type CustomerEvent  {
   id: String!
   date: DateTime
   type: CustomerEventsEnum
-  user: User @authenticated(hi: true)
+  user: User @hasRoleAny(roles: [shop_staff, shop_admin])
   app: App
   message: String
   count: Int

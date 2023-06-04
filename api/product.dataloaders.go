@@ -1434,9 +1434,6 @@ func categoryChildrenByCategoryIdLoader(ctx context.Context, ids []string) []*da
 func productAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs []string) []*dataloader.Result[[]*model.Attribute] {
 	var (
 		res                        = make([]*dataloader.Result[[]*model.Attribute], len(productTypeIDs))
-		attributeProducts          []*model.AttributeProduct
-		appErr                     *model.AppError
-		session                    *model.Session
 		productTypeToAttributesMap = map[string][]string{} // keys are product type ids, values are slices of attribute ids
 		attributeIDs               = []string{}
 		meetMap                    = map[string]struct{}{} // keys are attribute ids
@@ -1446,22 +1443,19 @@ func productAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 		err                        error
 	)
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
 	filterOptions := &model.AttributeProductFilterOption{
 		ProductTypeID: squirrel.Eq{store.AttributeProductTableName + ".ProductTypeID": productTypeIDs},
 	}
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	session = embedCtx.AppContext.Session()
-
-	// if current user has no manage product permission:
-	if !embedCtx.App.
-		Srv().
-		AccountService().
-		SessionHasPermissionToAll(session, model.PermissionManageProducts) {
+	// only shop's members can see all
+	embedCtx.CheckAuthenticatedAndHasRoleAny("productAttributesByProductTypeIdLoader", model.ShopStaffRoleId, model.ShopAdminRoleId)
+	if embedCtx.Err != nil {
 		filterOptions.AttributeVisibleInStoreFront = model.NewPrimitive(true)
 	}
 
-	attributeProducts, appErr = embedCtx.App.Srv().AttributeService().AttributeProductsByOption(filterOptions)
+	attributeProducts, appErr := embedCtx.App.Srv().AttributeService().AttributeProductsByOption(filterOptions)
 	if appErr != nil {
 		err = appErr
 		goto errorLabel
@@ -1508,8 +1502,6 @@ errorLabel:
 func variantAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs []string) []*dataloader.Result[[]*model.Attribute] {
 	var (
 		res                        = make([]*dataloader.Result[[]*model.Attribute], len(productTypeIDs))
-		attributeVariants          []*model.AttributeVariant
-		session                    *model.Session
 		productTypeToAttributesMap = map[string][]string{} // keys are product type ids, values are slices of attribute ids
 		attributeIDs               = []string{}
 		meetMap                    = map[string]struct{}{} // keys are attribute ids
@@ -1522,21 +1514,15 @@ func variantAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 		ProductTypeID: squirrel.Eq{store.AttributeVariantTableName + ".ProductTypeID": productTypeIDs},
 	}
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-	session = embedCtx.AppContext.Session()
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasRoleAny("variantAttributesByProductTypeIdLoader", model.ShopStaffRoleId, model.ShopAdminRoleId)
 
 	// if current user has no manage product permission:
-	if !embedCtx.App.
-		Srv().
-		AccountService().
-		SessionHasPermissionTo(session, model.PermissionManageProducts) {
+	if embedCtx.Err != nil {
 		filterOptions.AttributeVisibleInStoreFront = model.NewPrimitive(true)
 	}
 
-	attributeVariants, err = embedCtx.App.Srv().
+	attributeVariants, err := embedCtx.App.Srv().
 		Store.AttributeVariant().
 		FilterByOptions(filterOptions)
 	if err != nil {
@@ -1585,8 +1571,6 @@ errorLabel:
 func attributeProductsByProductTypeIdLoader(ctx context.Context, productTypeIDs []string) []*dataloader.Result[[]*model.AttributeProduct] {
 	var (
 		res                 = make([]*dataloader.Result[[]*model.AttributeProduct], len(productTypeIDs))
-		attributeProducts   []*model.AttributeProduct
-		appErr              *model.AppError
 		attributeProductMap = map[string][]*model.AttributeProduct{} // keys are product type ids
 	)
 
@@ -1595,17 +1579,19 @@ func attributeProductsByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	if !embedCtx.App.Srv().AccountService().
-		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+	embedCtx.CheckAuthenticatedAndHasRoleAny("attributeProductsByProductTypeIdLoader", model.ShopStaffRoleId, model.ShopAdminRoleId)
+	if embedCtx.Err != nil {
 		filterOptions.AttributeVisibleInStoreFront = model.NewPrimitive(true)
 	}
 
-	attributeProducts, appErr = embedCtx.App.Srv().AttributeService().AttributeProductsByOption(filterOptions)
+	attributeProducts, appErr := embedCtx.App.Srv().AttributeService().AttributeProductsByOption(filterOptions)
 	if appErr != nil {
-		err = appErr
-		goto errorLabel
+		for idx := range productTypeIDs {
+			res[idx] = &dataloader.Result[[]*model.AttributeProduct]{Error: appErr}
+		}
+		return res
 	}
+
 	for _, rel := range attributeProducts {
 		attributeProductMap[rel.ProductTypeID] = append(attributeProductMap[rel.ProductTypeID], rel)
 	}
@@ -1613,18 +1599,11 @@ func attributeProductsByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 		res[idx] = &dataloader.Result[[]*model.AttributeProduct]{Data: attributeProductMap[id]}
 	}
 	return res
-
-errorLabel:
-	for idx := range productTypeIDs {
-		res[idx] = &dataloader.Result[[]*model.AttributeProduct]{Error: err}
-	}
-	return res
 }
 
 func attributeVariantsByProductTypeIdLoader(ctx context.Context, productTypeIDs []string) []*dataloader.Result[[]*model.AttributeVariant] {
 	var (
 		res                 = make([]*dataloader.Result[[]*model.AttributeVariant], len(productTypeIDs))
-		attributeVariants   []*model.AttributeVariant
 		attributeProductMap = map[string][]*model.AttributeVariant{} // keys are product type ids
 	)
 
@@ -1632,20 +1611,19 @@ func attributeVariantsByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 		ProductTypeID: squirrel.Eq{store.AttributeVariantTableName + ".ProductTypeID": productTypeIDs},
 	}
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	if !embedCtx.App.Srv().AccountService().
-		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasRoleAny("attributeVariantsByProductTypeIdLoader", model.ShopStaffRoleId, model.ShopAdminRoleId)
+	if embedCtx.Err != nil {
 		filterOptions.AttributeVisibleInStoreFront = model.NewPrimitive(true)
 	}
 
-	attributeVariants, err = embedCtx.App.Srv().Store.AttributeVariant().FilterByOptions(filterOptions)
+	attributeVariants, err := embedCtx.App.Srv().Store.AttributeVariant().FilterByOptions(filterOptions)
 	if err != nil {
 		err = model.NewAppError("attributeVariantsByProductTypeIdLoader", "app.attribute.attribute_variants_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
-		goto errorLabel
+		for idx := range productTypeIDs {
+			res[idx] = &dataloader.Result[[]*model.AttributeVariant]{Error: err}
+		}
+		return res
 	}
 	for _, rel := range attributeVariants {
 		attributeProductMap[rel.ProductTypeID] = append(attributeProductMap[rel.ProductTypeID], rel)
@@ -1654,38 +1632,30 @@ func attributeVariantsByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 		res[idx] = &dataloader.Result[[]*model.AttributeVariant]{Data: attributeProductMap[id]}
 	}
 	return res
-
-errorLabel:
-	for idx := range productTypeIDs {
-		res[idx] = &dataloader.Result[[]*model.AttributeVariant]{Error: err}
-	}
-	return res
 }
 
 func assignedProductAttributesByProductIdLoader(ctx context.Context, productIDs []string) []*dataloader.Result[[]*model.AssignedProductAttribute] {
 	var (
 		res                         = make([]*dataloader.Result[[]*model.AssignedProductAttribute], len(productIDs))
-		assignedProductAttributes   []*model.AssignedProductAttribute
 		assignedProductAttributeMap = map[string][]*model.AssignedProductAttribute{} // keys are product ids
 	)
 	filterOptions := model.AssignedProductAttributeFilterOption{
 		ProductID: squirrel.Eq{store.AssignedProductAttributeTableName + ".ProductID": productIDs},
 	}
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	if !embedCtx.App.Srv().AccountService().
-		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasRoleAny("assignedProductAttributesByProductIdLoader", model.ShopStaffRoleId, model.ShopAdminRoleId)
+	if embedCtx.Err != nil {
 		filterOptions.AttributeProduct_Attribute_VisibleInStoreFront = model.NewPrimitive(true)
 	}
 
-	assignedProductAttributes, err = embedCtx.App.Srv().Store.AssignedProductAttribute().FilterByOptions(&filterOptions)
+	assignedProductAttributes, err := embedCtx.App.Srv().Store.AssignedProductAttribute().FilterByOptions(&filterOptions)
 	if err != nil {
 		err = model.NewAppError("assignedProductAttributesByProductIdLoader", "app.attribute.assigned_product_attribute_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
-		goto errorLabel
+		for idx := range productIDs {
+			res[idx] = &dataloader.Result[[]*model.AssignedProductAttribute]{Error: err}
+		}
+		return res
 	}
 
 	for _, attr := range assignedProductAttributes {
@@ -1695,39 +1665,30 @@ func assignedProductAttributesByProductIdLoader(ctx context.Context, productIDs 
 		res[idx] = &dataloader.Result[[]*model.AssignedProductAttribute]{Data: assignedProductAttributeMap[id]}
 	}
 	return res
-
-errorLabel:
-	for idx := range productIDs {
-		res[idx] = &dataloader.Result[[]*model.AssignedProductAttribute]{Error: err}
-	}
-	return res
 }
 
 func assignedVariantAttributesByProductVariantId(ctx context.Context, variantIDs []string) []*dataloader.Result[[]*model.AssignedVariantAttribute] {
 	var (
 		res                         = make([]*dataloader.Result[[]*model.AssignedVariantAttribute], len(variantIDs))
-		assignedVariantAttributes   []*model.AssignedVariantAttribute
 		assignedVariantAttributeMap = map[string][]*model.AssignedVariantAttribute{} // variant ids are keys
 	)
 
 	filterOptions := &model.AssignedVariantAttributeFilterOption{
 		VariantID: squirrel.Eq{store.AssignedVariantAttributeTableName + ".VariantID": variantIDs},
 	}
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	if !embedCtx.App.Srv().
-		AccountService().
-		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasRoleAny("assignedVariantAttributesByProductVariantId", model.ShopStaffRoleId, model.ShopAdminRoleId)
+	if embedCtx.Err != nil {
 		filterOptions.Assignment_Attribute_VisibleInStoreFront = model.NewPrimitive(true)
 	}
 
-	assignedVariantAttributes, err = embedCtx.App.Srv().Store.AssignedVariantAttribute().FilterByOption(filterOptions)
+	assignedVariantAttributes, err := embedCtx.App.Srv().Store.AssignedVariantAttribute().FilterByOption(filterOptions)
 	if err != nil {
 		err = model.NewAppError("assignedVariantAttributesByProductVariantId", "app.attribute.assigned_variant_attribute_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
-		goto errorLabel
+		for idx := range variantIDs {
+			res[idx] = &dataloader.Result[[]*model.AssignedVariantAttribute]{Error: err}
+		}
+		return res
 	}
 
 	for _, attr := range assignedVariantAttributes {
@@ -1737,31 +1698,20 @@ func assignedVariantAttributesByProductVariantId(ctx context.Context, variantIDs
 		res[idx] = &dataloader.Result[[]*model.AssignedVariantAttribute]{Data: assignedVariantAttributeMap[id]}
 	}
 	return res
-
-errorLabel:
-	for idx := range variantIDs {
-		res[idx] = &dataloader.Result[[]*model.AssignedVariantAttribute]{Error: err}
-	}
-	return res
 }
 
 func attributeValuesByAssignedProductAttributeIdLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.AttributeValue] {
 	var (
-		res                            = make([]*dataloader.Result[[]*model.AttributeValue], len(ids))
-		assignedProductAttributeValues []*model.AssignedProductAttributeValue
-
+		res                = make([]*dataloader.Result[[]*model.AttributeValue], len(ids))
 		attributeValueIDs  []string
 		attributeValues    []*model.AttributeValue
 		attributeValueMap  = map[string]*model.AttributeValue{} // keys are attribute value ids
 		errs               []error
 		assignedProductMap = map[string][]*model.AttributeValue{} // keys are AssignedProductAttribute ids
 	)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	assignedProductAttributeValues, err = embedCtx.App.Srv().
+	assignedProductAttributeValues, err := embedCtx.App.Srv().
 		Store.AssignedProductAttributeValue().
 		FilterByOptions(&model.AssignedProductAttributeValueFilterOptions{
 			AssignmentID: squirrel.Eq{store.AssignedProductAttributeValueTableName + ".AssignmentID": ids},
@@ -1801,20 +1751,16 @@ errorLabel:
 
 func attributeValuesByAssignedVariantAttributeIdLoader(ctx context.Context, ids []string) []*dataloader.Result[[]*model.AttributeValue] {
 	var (
-		assignedVariantAttributeValues []*model.AssignedVariantAttributeValue
-		res                            = make([]*dataloader.Result[[]*model.AttributeValue], len(ids))
-		valueIDs                       []string
-		attributeValues                []*model.AttributeValue
-		attributeValueMap              = map[string]*model.AttributeValue{} // keys are attribute values ids
-		errs                           []error
-		assignedVariantMap             = map[string][]*model.AttributeValue{}
+		res                = make([]*dataloader.Result[[]*model.AttributeValue], len(ids))
+		valueIDs           []string
+		attributeValues    []*model.AttributeValue
+		attributeValueMap  = map[string]*model.AttributeValue{} // keys are attribute values ids
+		errs               []error
+		assignedVariantMap = map[string][]*model.AttributeValue{}
 	)
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	assignedVariantAttributeValues, err = embedCtx.App.Srv().
+	assignedVariantAttributeValues, err := embedCtx.App.Srv().
 		Store.AssignedVariantAttributeValue().
 		FilterByOptions(&model.AssignedVariantAttributeValueFilterOptions{
 			AssignmentID: squirrel.Eq{store.AssignedVariantAttributeValueTableName + ".AssignmentID": ids},
@@ -2048,38 +1994,26 @@ errorLabel:
 }
 
 func digitalContentsByProductVariantIDLoader(ctx context.Context, variantIDs []string) []*dataloader.Result[*model.DigitalContent] {
-	var (
-		res               = make([]*dataloader.Result[*model.DigitalContent], len(variantIDs))
-		digitalContents   []*model.DigitalContent
-		appErr            *model.AppError
-		digitalContentMap = map[string]*model.DigitalContent{} // keys are digital content ids
-	)
+	res := make([]*dataloader.Result[*model.DigitalContent], len(variantIDs))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	digitalContents, appErr = embedCtx.App.Srv().ProductService().
+	digitalContents, appErr := embedCtx.App.Srv().ProductService().
 		DigitalContentsbyOptions(&model.DigitalContentFilterOption{
 			ProductVariantID: squirrel.Eq{store.DigitalContentTableName + ".ProductVariantID": variantIDs},
 		})
 	if appErr != nil {
-		err = appErr
-		goto errorLabel
+		for idx := range variantIDs {
+			res[idx] = &dataloader.Result[*model.DigitalContent]{Error: appErr}
+		}
+		return res
 	}
 
-	digitalContentMap = lo.SliceToMap(digitalContents, func(d *model.DigitalContent) (string, *model.DigitalContent) { return d.Id, d })
+	digitalContentMap := lo.SliceToMap(digitalContents, func(d *model.DigitalContent) (string, *model.DigitalContent) { return d.Id, d })
 	for idx, id := range variantIDs {
 		res[idx] = &dataloader.Result[*model.DigitalContent]{Data: digitalContentMap[id]}
 	}
 	return res
 
-errorLabel:
-	for idx := range variantIDs {
-		res[idx] = &dataloader.Result[*model.DigitalContent]{Error: err}
-	}
-	return res
 }
 
 // keyValuesToMap
@@ -2096,35 +2030,22 @@ func keyValuesToMap[K util.Ordered, V any](keys []K, values []V) map[K]V {
 }
 
 func digitalContentUrlByOrderLineID(ctx context.Context, orderLineIDs []string) []*dataloader.Result[*model.DigitalContentUrl] {
-	var (
-		res           = make([]*dataloader.Result[*model.DigitalContentUrl], len(orderLineIDs))
-		contentURLs   []*model.DigitalContentUrl
-		contentURLMap = map[string]*model.DigitalContentUrl{} // keys are order line ids
-		appErr        *model.AppError
-	)
+	res := make([]*dataloader.Result[*model.DigitalContentUrl], len(orderLineIDs))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		goto errorLabel
-	}
-
-	contentURLs, appErr = embedCtx.App.Srv().ProductService().DigitalContentURLSByOptions(&model.DigitalContentUrlFilterOptions{
+	contentURLs, appErr := embedCtx.App.Srv().ProductService().DigitalContentURLSByOptions(&model.DigitalContentUrlFilterOptions{
 		LineID: squirrel.Eq{store.DigitalContentURLTableName + ".LineID": orderLineIDs},
 	})
 	if appErr != nil {
-		err = appErr
-		goto errorLabel
+		for idx := range orderLineIDs {
+			res[idx] = &dataloader.Result[*model.DigitalContentUrl]{Error: appErr}
+		}
+		return res
 	}
-	contentURLMap = lo.SliceToMap(contentURLs, func(c *model.DigitalContentUrl) (string, *model.DigitalContentUrl) { return *c.LineID, c })
+	contentURLMap := lo.SliceToMap(contentURLs, func(c *model.DigitalContentUrl) (string, *model.DigitalContentUrl) { return *c.LineID, c })
 
 	for idx, id := range orderLineIDs {
 		res[idx] = &dataloader.Result[*model.DigitalContentUrl]{Data: contentURLMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range orderLineIDs {
-		res[idx] = &dataloader.Result[*model.DigitalContentUrl]{Error: err}
 	}
 	return res
 }

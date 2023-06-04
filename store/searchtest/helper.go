@@ -1,6 +1,7 @@
 package searchtest
 
 import (
+	"context"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -189,7 +190,9 @@ func (th *SearchTestHelper) deleteUser(user *model.User) error {
 }
 
 func (th *SearchTestHelper) cleanAllUsers() error {
-	users, err := th.Store.User().GetAll()
+	users, err := th.Store.User().FilterByOptions(context.Background(), &model.UserFilterOptions{
+		OrderBy: "Users.Username ASC",
+	})
 	if err != nil {
 		return err
 	}

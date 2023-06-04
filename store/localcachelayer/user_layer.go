@@ -5,6 +5,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -122,7 +123,9 @@ func (s *LocalCacheUserStore) Get(ctx context.Context, id string) (*model.User, 
 	}
 	s.userProfileByIdsMut.Unlock()
 
-	user, err := s.UserStore.Get(ctx, id)
+	user, err := s.UserStore.GetByOptions(ctx, &model.UserFilterOptions{
+		Id: squirrel.Eq{store.UserTableName + ".Id": id},
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +171,9 @@ func (s *LocalCacheUserStore) GetMany(ctx context.Context, ids []string) ([]*mod
 		if fromMaster {
 			ctx = sqlstore.WithMaster(ctx)
 		}
-		dbUsers, err := s.UserStore.GetMany(ctx, notCachedUserIds)
+		dbUsers, err := s.UserStore.FilterByOptions(ctx, &model.UserFilterOptions{
+			Id: squirrel.Eq{store.UserTableName + ".Id": notCachedUserIds},
+		})
 		if err != nil {
 			return nil, err
 		}

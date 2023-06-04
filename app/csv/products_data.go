@@ -327,7 +327,7 @@ func (s *ServiceCsv) prepareAttributeValue(attributeData AttributeData) string {
 	}
 
 	switch t {
-	case model.FILE_:
+	case model.AttributeInputTypeFile:
 		if url := attributeData.FileUrl; url != nil {
 			if strURL, ok := url.(string); ok {
 				return filepath.Join(*s.srv.Config().ServiceSettings.SiteURL, strURL)
@@ -336,7 +336,7 @@ func (s *ServiceCsv) prepareAttributeValue(attributeData AttributeData) string {
 		}
 		return ""
 
-	case model.REFERENCE:
+	case model.AttributeInputTypeReference:
 		if slug := attributeData.ValueSlug; slug != nil {
 			if strSlug, ok := slug.(string); ok {
 				return fmt.Sprintf("%v_%s", attributeData.EntityType, strings.Split(strSlug, "_")[1])
@@ -345,18 +345,18 @@ func (s *ServiceCsv) prepareAttributeValue(attributeData AttributeData) string {
 		}
 		return ""
 
-	case model.NUMERIC:
+	case model.AttributeInputTypeNumeric:
 		value := fmt.Sprintf("%v", attributeData.ValueName)
 		if attributeData.Unit != nil {
 			value += fmt.Sprintf(" %v", attributeData.Unit)
 		}
 		return value
 
-	case model.RICH_TEXT:
+	case model.AttributeInputTypeRichText:
 		slog.Warn("this case is not implemented yet")
 		return ""
 
-	case model.BOOLEAN:
+	case model.AttributeInputTypeBoolean:
 		if attributeData.Boolean != nil {
 			if b, ok := attributeData.Boolean.(bool); ok {
 				return strconv.FormatBool(b)
@@ -365,19 +365,19 @@ func (s *ServiceCsv) prepareAttributeValue(attributeData AttributeData) string {
 		}
 		return ""
 
-	case model.DATE:
+	case model.AttributeInputTypeDate:
 		if tim, ok := attributeData.DateTime.(time.Time); ok {
 			return tim.Format("2006-01-02")
 		}
 		return ""
 
-	case model.DATE_TIME:
+	case model.AttributeInputTypeDateTime:
 		if tim, ok := attributeData.DateTime.(time.Time); ok {
 			return tim.Format("2006-01-02 15:04:05")
 		}
 		return ""
 
-	case model.SWATCH:
+	case model.AttributeInputTypeSwatch:
 		if attributeData.FileUrl != nil {
 			if strURL, ok := attributeData.FileUrl.(string); ok {
 				return filepath.Join(*s.srv.Config().ServiceSettings.SiteURL, strURL)

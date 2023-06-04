@@ -154,8 +154,6 @@ type AccountService interface {
 	SendAccountConfirmation(redirectUrl string, user model.User, manager interfaces.PluginManagerInterface, channelID string) *model.AppError
 	// UpsertAddress depends on given address's Id to decide update or insert it
 	UpsertAddress(transaction store_iface.SqlxTxExecutor, address *model.Address) (*model.Address, *model.AppError)
-	// UserByOrderId returns an user who owns given order
-	UserByOrderId(orderID string) (*model.User, *model.AppError)
 	ActivateMfa(userID, token string) *model.AppError
 	AddStatusCache(status *model.Status)
 	AddStatusCacheSkipClusterSend(status *model.Status)
@@ -201,8 +199,6 @@ type AccountService interface {
 	GetUserAccessToken(tokenID string, sanitize bool) (*model.UserAccessToken, *model.AppError)
 	GetUserAccessTokens(page, perPage int) ([]*model.UserAccessToken, *model.AppError)
 	GetUserAccessTokensForUser(userID string, page, perPage int) ([]*model.UserAccessToken, *model.AppError)
-	GetUserByAuth(authData *string, authService string) (*model.User, *model.AppError)
-	GetUserByUsername(username string) (*model.User, *model.AppError)
 	GetUserStatusesByIds(userIDs []string) ([]*model.Status, *model.AppError)
 	GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError)
 	GetUsersByIds(userIDs []string, options *store.UserGetByIdsOpts) ([]*model.User, *model.AppError)
@@ -252,9 +248,10 @@ type AccountService interface {
 	UpdateUserAuth(userID string, userAuth *model.UserAuth) (*model.UserAuth, *model.AppError)
 	UpdateUserRoles(userID string, newRoles string, sendWebSocketEvent bool) (*model.User, *model.AppError)
 	UpdateUserRolesWithUser(user *model.User, newRoles string, sendWebSocketEvent bool) (*model.User, *model.AppError)
-	UserByEmail(email string) (*model.User, *model.AppError)
-	UserById(ctx context.Context, userID string) (*model.User, *model.AppError)
 	UserSetDefaultAddress(userID, addressID string, addressType model.AddressTypeEnum) (*model.User, *model.AppError)
 	VerifyEmailFromToken(userSuppliedTokenString string) *model.AppError
 	VerifyUserEmail(userID, email string) *model.AppError
+	GetUserByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, *model.AppError)
+	FidUsersByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, *model.AppError)
+	UserById(ctx context.Context, userID string) (*model.User, *model.AppError)
 }

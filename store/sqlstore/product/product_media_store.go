@@ -110,7 +110,7 @@ func (ps *SqlProductMediaStore) Get(id string) (*model.ProductMedia, error) {
 // FilterByOption finds and returns a list of product medias with given id
 func (ps *SqlProductMediaStore) FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error) {
 	query := ps.GetQueryBuilder().
-		Select("*").
+		Select(ps.ModelFields(store.ProductMediaTableName + ".")...).
 		From(store.ProductMediaTableName)
 
 	// parse options

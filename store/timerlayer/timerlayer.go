@@ -7623,10 +7623,10 @@ func (s *TimerLayerUserStore) Count(options model.UserCountOptions) (int64, erro
 	return result, err
 }
 
-func (s *TimerLayerUserStore) Get(ctx context.Context, id string) (*model.User, error) {
+func (s *TimerLayerUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, error) {
 	start := timemodule.Now()
 
-	result, err := s.UserStore.Get(ctx, id)
+	result, err := s.UserStore.FilterByOptions(ctx, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7634,55 +7634,7 @@ func (s *TimerLayerUserStore) Get(ctx context.Context, id string) (*model.User, 
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserStore) GetAll() ([]*model.User, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.GetAll()
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetAll", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserStore) GetAllAfter(limit int, afterID string) ([]*model.User, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.GetAllAfter(limit, afterID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetAllAfter", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*model.User, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.GetAllNotInAuthService(authServices)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetAllNotInAuthService", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }
@@ -7703,10 +7655,10 @@ func (s *TimerLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetAllUsingAuthService(authService string) ([]*model.User, error) {
+func (s *TimerLayerUserStore) GetByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, error) {
 	start := timemodule.Now()
 
-	result, err := s.UserStore.GetAllUsingAuthService(authService)
+	result, err := s.UserStore.GetByOptions(ctx, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7714,55 +7666,7 @@ func (s *TimerLayerUserStore) GetAllUsingAuthService(authService string) ([]*mod
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetAllUsingAuthService", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserStore) GetByAuth(authData *string, authService string) (*model.User, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.GetByAuth(authData, authService)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetByAuth", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserStore) GetByEmail(email string) (*model.User, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.GetByEmail(email)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetByEmail", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserStore) GetByUsername(username string) (*model.User, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.GetByUsername(username)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetByUsername", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetByOptions", success, elapsed)
 	}
 	return result, err
 }
@@ -7831,22 +7735,6 @@ func (s *TimerLayerUserStore) GetKnownUsers(userID string) ([]string, error) {
 	return result, err
 }
 
-func (s *TimerLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*model.User, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.GetMany(ctx, ids)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetMany", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
 	start := timemodule.Now()
 
@@ -7859,38 +7747,6 @@ func (s *TimerLayerUserStore) GetProfileByIds(ctx context.Context, userIds []str
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetProfileByIds", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserStore) GetProfiles(options *model.UserGetOptions) ([]*model.User, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.GetProfiles(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetProfiles", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserStore) GetProfilesByUsernames(usernames []string) ([]*model.User, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.GetProfilesByUsernames(usernames)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.GetProfilesByUsernames", success, elapsed)
 	}
 	return result, err
 }
@@ -8178,22 +8034,6 @@ func (s *TimerLayerUserStore) UpdateUpdateAt(userID string) (int64, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.UpdateUpdateAt", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserStore) UserByOrderID(orderID string) (*model.User, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserStore.UserByOrderID(orderID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.UserByOrderID", success, elapsed)
 	}
 	return result, err
 }

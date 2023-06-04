@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 )
@@ -17,18 +18,9 @@ func getUsersFromUserArgs(a *app.App, userArgs []string) []*model.User {
 }
 
 func getUserFromUserArg(a *app.App, userArg string) *model.User {
-	user, _ := a.Srv().Store.User().GetByEmail(userArg)
-
-	if user == nil {
-		var err error
-		if user, err = a.Srv().Store.User().GetByUsername(userArg); err == nil {
-			return user
-		}
-	}
-
-	if user == nil {
-		user, _ = a.Srv().Store.User().Get(context.Background(), userArg)
-	}
+	user, _ := a.Srv().Store.User().GetByOptions(context.Background(), &model.UserFilterOptions{
+		Extra: squirrel.Expr("Users.Email = lower(?) OR Users.Username = ? OR Users.Id = ?", userArg, userArg, userArg),
+	})
 
 	return user
 }

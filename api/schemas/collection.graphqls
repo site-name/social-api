@@ -1,5 +1,5 @@
 extend type Mutation {
-  collectionAddProducts(collectionId: String!, products: [String!]!): CollectionAddProducts
+  collectionAddProducts(collectionId: String!, products: [String!]!): CollectionAddProducts @hasRoleAny(roles: [shop_admin, shop_staff])
   collectionCreate(input: CollectionCreateInput!): CollectionCreate
   collectionDelete(id: String!): CollectionDelete
   collectionReorderProducts(collectionId: String!, moves: [MoveProductInput]!): CollectionReorderProducts

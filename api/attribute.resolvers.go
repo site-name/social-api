@@ -27,7 +27,7 @@ func (r *Resolver) AttributeCreate(ctx context.Context, args struct{ Input Attri
 
 	// clean input
 	inputType := args.Input.InputType
-	if inputType != nil && *inputType == model.REFERENCE &&
+	if inputType != nil && *inputType == model.AttributeInputTypeReference &&
 		(args.Input.EntityType == nil || !args.Input.EntityType.IsValid()) {
 		return nil, model.NewAppError("AttributeCreate", "api.attribute.entity_type_missing.app_error", nil, "entity type is required when REFERENCE input type is used", http.StatusBadRequest)
 	}
@@ -289,7 +289,7 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 	}
 
 	// clean input
-	if attribute.InputType == model.SWATCH {
+	if attribute.InputType == model.AttributeInputTypeSwatch {
 		appErr = validateSwatchAttributeValue(&args.Input)
 		if appErr != nil {
 			return nil, appErr

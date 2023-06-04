@@ -49,8 +49,8 @@ type AttributeInputType string
 
 func (e AttributeInputType) IsValid() bool {
 	switch e {
-	case DROPDOWN, MULTISELECT, FILE_, REFERENCE,
-		NUMERIC, RICH_TEXT, SWATCH, BOOLEAN, DATE, DATE_TIME:
+	case AttributeInputTypeDropDown, AttributeInputTypeMultiSelect, AttributeInputTypeFile, AttributeInputTypeReference,
+		AttributeInputTypeNumeric, AttributeInputTypeRichText, AttributeInputTypeSwatch, AttributeInputTypeBoolean, AttributeInputTypeDate, AttributeInputTypeDateTime:
 		return true
 	default:
 		return false
@@ -58,59 +58,59 @@ func (e AttributeInputType) IsValid() bool {
 }
 
 const (
-	DROPDOWN    AttributeInputType = "dropdown"    //
-	MULTISELECT AttributeInputType = "multiselect" //
-	FILE_       AttributeInputType = "file"        //
-	REFERENCE   AttributeInputType = "reference"   //
-	NUMERIC     AttributeInputType = "numeric"     //
-	RICH_TEXT   AttributeInputType = "rich_text"   //
-	SWATCH      AttributeInputType = "swatch"      //
-	BOOLEAN     AttributeInputType = "boolean"     //
-	DATE        AttributeInputType = "date"        //
-	DATE_TIME   AttributeInputType = "date_time"   //
+	AttributeInputTypeDropDown    AttributeInputType = "dropdown"    //
+	AttributeInputTypeMultiSelect AttributeInputType = "multiselect" //
+	AttributeInputTypeFile        AttributeInputType = "file"        //
+	AttributeInputTypeReference   AttributeInputType = "reference"   //
+	AttributeInputTypeNumeric     AttributeInputType = "numeric"     //
+	AttributeInputTypeRichText    AttributeInputType = "rich_text"   //
+	AttributeInputTypeSwatch      AttributeInputType = "swatch"      //
+	AttributeInputTypeBoolean     AttributeInputType = "boolean"     //
+	AttributeInputTypeDate        AttributeInputType = "date"        //
+	AttributeInputTypeDateTime    AttributeInputType = "date_time"   //
 )
 
 var (
-	ALLOWED_IN_VARIANT_SELECTION = util.AnyArray[AttributeInputType]{DROPDOWN, BOOLEAN, SWATCH, NUMERIC}
-	TYPES_WITH_CHOICES           = util.AnyArray[AttributeInputType]{DROPDOWN, MULTISELECT, SWATCH}
-	TYPES_WITH_UNIQUE_VALUES     = util.AnyArray[AttributeInputType]{FILE_, REFERENCE, RICH_TEXT, NUMERIC, DATE, DATE_TIME} // list of the translatable attributes, excluding attributes with choices.
-	TRANSLATABLE_ATTRIBUTES      = util.AnyArray[AttributeInputType]{RICH_TEXT}
+	ALLOWED_IN_VARIANT_SELECTION = util.AnyArray[AttributeInputType]{AttributeInputTypeDropDown, AttributeInputTypeBoolean, AttributeInputTypeSwatch, AttributeInputTypeNumeric}
+	TYPES_WITH_CHOICES           = util.AnyArray[AttributeInputType]{AttributeInputTypeDropDown, AttributeInputTypeMultiSelect, AttributeInputTypeSwatch}
+	TYPES_WITH_UNIQUE_VALUES     = util.AnyArray[AttributeInputType]{AttributeInputTypeFile, AttributeInputTypeReference, AttributeInputTypeRichText, AttributeInputTypeNumeric, AttributeInputTypeDate, AttributeInputTypeDateTime} // list of the translatable attributes, excluding attributes with choices.
+	TRANSLATABLE_ATTRIBUTES      = util.AnyArray[AttributeInputType]{AttributeInputTypeRichText}
 )
 
 var ATTRIBUTE_PROPERTIES_CONFIGURATION = map[string][]AttributeInputType{
 	"filterable_in_storefront": {
-		DROPDOWN,
-		MULTISELECT,
-		NUMERIC,
-		SWATCH,
-		BOOLEAN,
-		DATE,
-		DATE_TIME,
+		AttributeInputTypeDropDown,
+		AttributeInputTypeMultiSelect,
+		AttributeInputTypeNumeric,
+		AttributeInputTypeSwatch,
+		AttributeInputTypeBoolean,
+		AttributeInputTypeDate,
+		AttributeInputTypeDateTime,
 	},
 	"filterable_in_dashboard": {
-		DROPDOWN,
-		MULTISELECT,
-		NUMERIC,
-		SWATCH,
-		BOOLEAN,
-		DATE,
-		DATE_TIME,
+		AttributeInputTypeDropDown,
+		AttributeInputTypeMultiSelect,
+		AttributeInputTypeNumeric,
+		AttributeInputTypeSwatch,
+		AttributeInputTypeBoolean,
+		AttributeInputTypeDate,
+		AttributeInputTypeDateTime,
 	},
 	"available_in_grid": {
-		DROPDOWN,
-		MULTISELECT,
-		NUMERIC,
-		SWATCH,
-		BOOLEAN,
-		DATE,
-		DATE_TIME,
+		AttributeInputTypeDropDown,
+		AttributeInputTypeMultiSelect,
+		AttributeInputTypeNumeric,
+		AttributeInputTypeSwatch,
+		AttributeInputTypeBoolean,
+		AttributeInputTypeDate,
+		AttributeInputTypeDateTime,
 	},
 	"storefront_search_position": {
-		DROPDOWN,
-		MULTISELECT,
-		BOOLEAN,
-		DATE,
-		DATE_TIME,
+		AttributeInputTypeDropDown,
+		AttributeInputTypeMultiSelect,
+		AttributeInputTypeBoolean,
+		AttributeInputTypeDate,
+		AttributeInputTypeDateTime,
 	},
 }
 
@@ -215,7 +215,7 @@ func (a *Attribute) PreSave() {
 		a.Id = NewId()
 	}
 	if a.InputType == "" {
-		a.InputType = DROPDOWN
+		a.InputType = AttributeInputTypeDropDown
 	}
 	a.Name = SanitizeUnicode(a.Name)
 	if a.Slug == "" {

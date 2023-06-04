@@ -136,13 +136,9 @@ func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption)
 	if option.Extra != nil {
 		query = query.Where(option.Extra)
 	}
-
-	if option.ShippingZoneID != nil {
-		joinFun := query.InnerJoin
-		if store.SqlizerIsEqualNull(option.ShippingZoneID) {
-			joinFun = query.LeftJoin
-		}
-		query = joinFun(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ChannelID = Channels.Id").Where(option.ShippingZoneID)
+	if option.ShippingZoneChannels_ShippingZoneID != nil {
+		query = query.InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ChannelID = Channels.Id").
+			Where(option.ShippingZoneChannels_ShippingZoneID)
 	}
 
 	return query.ToSql()

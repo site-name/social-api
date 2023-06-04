@@ -302,12 +302,12 @@ func (p *ProductVariant) Attributes(ctx context.Context, args struct {
 	variantSelectionAttributesMap := map[string]*Attribute{} // keys are sttribute ids
 	for _, selectedAttr := range selectedAttributes {
 		attr := selectedAttr.Attribute
-		ipType := attr.InputType
+		inputType := attr.InputType
 
-		if ipType != nil &&
-			(*ipType == AttributeInputTypeEnumDropdown || *ipType == AttributeInputTypeEnumBoolean || *ipType == AttributeInputTypeEnumSwatch) &&
+		if inputType != nil &&
+			(*inputType == model.AttributeInputTypeDropDown || *inputType == model.AttributeInputTypeBoolean || *inputType == model.AttributeInputTypeSwatch) &&
 			attr.Type != nil &&
-			*attr.Type == AttributeTypeEnumProductType {
+			*attr.Type == model.PRODUCT_TYPE {
 
 			variantSelectionAttributesMap[attr.ID] = attr
 		}
@@ -337,12 +337,7 @@ func (p *ProductVariant) Product(ctx context.Context) (*Product, error) {
 
 func (p *ProductVariant) Revenue(ctx context.Context, args struct{ Period ReportingPeriod }) (*TaxedMoney, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	channelID, err := GetContextValue[string](ctx, ChannelIdCtx)
-	if err != nil {
-		return nil, err
-	}
-	if channelID == "" {
+	if embedCtx.CurrentChannelID == "" {
 		return nil, nil
 	}
 
@@ -350,7 +345,7 @@ func (p *ProductVariant) Revenue(ctx context.Context, args struct{ Period Report
 		return nil, model.NewAppError("ProductVariant.Revenue", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
 	}
 
-	channel, err := ChannelByIdLoader.Load(ctx, channelID)()
+	channel, err := ChannelByIdLoader.Load(ctx, embedCtx.CurrentChannelID)()
 	if err != nil {
 		return nil, err
 	}
@@ -397,11 +392,7 @@ type PreorderData struct {
 }
 
 func (p *PreorderData) GlobalThreshold(ctx context.Context) (*int32, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return nil, err
-	}
-
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
 		return p.globalThreshold, nil
 	}
@@ -410,11 +401,7 @@ func (p *PreorderData) GlobalThreshold(ctx context.Context) (*int32, error) {
 }
 
 func (p *PreorderData) GlobalSoldUnits(ctx context.Context) (int32, error) {
-	embedCtx, err := GetContextValue[*web.Context](ctx, WebCtx)
-	if err != nil {
-		return 0, err
-	}
-
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
 		return p.globalSoldUnits, nil
 	}

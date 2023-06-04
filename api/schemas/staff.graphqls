@@ -24,7 +24,7 @@ type StaffNotificationRecipientCreate {
 }
 
 type StaffNotificationRecipient  {
-  user: User
+  user: User @hasRoles(roles: [shop_admin])
   active: Boolean
   id: String!
   email: String

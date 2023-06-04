@@ -8,8 +8,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -139,7 +141,9 @@ func (r *Resolver) RequestEmailChange(ctx context.Context, args struct {
 	}
 
 	// validate if given email already used
-	userWithEmail, appErr := embedCtx.App.Srv().AccountService().UserByEmail(args.NewEmail)
+	userWithEmail, appErr := embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
+		Email: squirrel.Eq{store.UserTableName + ".Email": args.NewEmail},
+	})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -188,7 +192,9 @@ func (r *Resolver) ConfirmEmailChange(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	userByEmail, appErr := embedCtx.App.Srv().AccountService().UserByEmail(extra.NewEmail)
+	userByEmail, appErr := embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
+		Email: squirrel.Eq{store.UserTableName + ".Email": extra.NewEmail},
+	})
 	if appErr != nil {
 		return nil, appErr
 	}

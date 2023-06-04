@@ -16,7 +16,7 @@ type ShippingZoneChannelFilterOptions struct {
 
 func (s *ShippingZoneChannel) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"shipping_zone_channel.is_valid.%s.app_error",
+		"model.shipping_zone_channel.is_valid.%s.app_error",
 		"shipping_zone_channel_id=",
 		"ShippingZoneChannel.IsValid",
 	)

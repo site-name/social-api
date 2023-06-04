@@ -151,20 +151,19 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 			Where(option.ProductVariantTypes)
 	}
 	if option.Metadata != nil && len(option.Metadata) > 0 {
-		conditions := strings.Builder{}
+		delete(option.Metadata, "")
+		conditions := []string{}
+
 		for key, value := range option.Metadata {
-			if key != "" {
-				if conditions.Len() > 0 {
-					conditions.WriteString(" AND ")
-				}
-				if value != "" {
-					conditions.WriteString(fmt.Sprintf("Attributes.Metadata::jsonb @> '{%q:%q}'", key, value))
-					continue
-				}
-				conditions.WriteString(fmt.Sprintf("Attributes.Metadata::jsonb ? '%s'", key))
+			if value != "" {
+				expr := fmt.Sprintf("Attributes.Metadata::jsonb @> '{%q:%q}'", key, value)
+				conditions = append(conditions, expr)
+				continue
 			}
+			expr := fmt.Sprintf("Attributes.Metadata::jsonb ? '%s'", key)
+			conditions = append(conditions, expr)
 		}
-		query = query.Where(conditions.String())
+		query = query.Where(strings.Join(conditions, " AND "))
 	}
 	if search := option.Search; search != nil && *search != "" {
 		expr := "%" + *search + "%"
@@ -351,10 +350,7 @@ func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unass
 			LeftJoin(store.AttributeProductTableName+" ON AttributeProducts.AttributeID = Attributes.Id").
 			LeftJoin(store.AttributeVariantTableName+" ON Attributes.Id = AttributeVariants.AttributeID").
 			Where("Attributes.Type = ?", model.PRODUCT_TYPE).
-			Where(squirrel.Or{
-				squirrel.Expr("AttributeProducts.ProductTypeID = ?", productTypeID),
-				squirrel.Expr("AttributeVariants.ProductTypeID = ?", productTypeID),
-			})
+			Where("AttributeProducts.ProductTypeID = ? OR AttributeVariants.ProductTypeID = ?", productTypeID)
 	}
 
 	query, args, err := sqQuery.ToSql()
@@ -373,7 +369,8 @@ func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unass
 
 func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error) {
 	// unassigned
-	query := `SELECT * FROM ` + store.AttributeTableName +
+	query := `SELECT * FROM ` +
+		store.AttributeTableName +
 		` A WHERE A.Type = $1
 		AND
 			NOT EXISTS(

@@ -932,15 +932,7 @@ type (
 		ResetAuthDataToEmailForUsers(service string, userIDs []string, includeDeleted bool, dryRun bool) (int, error)
 		UpdateMfaSecret(userID, secret string) error
 		UpdateMfaActive(userID string, active bool) error
-		Get(ctx context.Context, id string) (*model.User, error)
-		GetMany(ctx context.Context, ids []string) ([]*model.User, error)
-		GetAll() ([]*model.User, error)
 		InvalidateProfileCacheForUser(userID string) // InvalidateProfileCacheForUser
-		GetByEmail(email string) (*model.User, error)
-		GetByAuth(authData *string, authService string) (*model.User, error)
-		GetAllUsingAuthService(authService string) ([]*model.User, error)
-		GetAllNotInAuthService(authServices []string) ([]*model.User, error)
-		GetByUsername(username string) (*model.User, error)
 		GetForLogin(loginID string, allowSignInWithUsername, allowSignInWithEmail bool) (*model.User, error)
 		VerifyEmail(userID, email string) (string, error) // VerifyEmail set EmailVerified model of user to true
 		GetEtagForAllProfiles() string
@@ -954,7 +946,6 @@ type (
 		AnalyticsGetGuestCount() (int64, error)
 		ClearAllCustomRoleAssignments() error
 		InferSystemInstallDate() (int64, error)
-		GetAllAfter(limit int, afterID string) ([]*model.User, error)
 		GetUsersBatchForIndexing(startTime, endTime int64, limit int) ([]*model.UserForIndexing, error)
 		GetKnownUsers(userID string) ([]string, error)
 		Count(options model.UserCountOptions) (int64, error)
@@ -963,10 +954,9 @@ type (
 		Search(term string, options *model.UserSearchOptions) ([]*model.User, error)
 		AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error)
 		GetProfileByIds(ctx context.Context, userIds []string, options *UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error)
-		GetProfilesByUsernames(usernames []string) ([]*model.User, error)
-		GetProfiles(options *model.UserGetOptions) ([]*model.User, error)
-		GetUnreadCount(userID string) (int64, error)       // TODO: consider me
-		UserByOrderID(orderID string) (*model.User, error) // UserByOrderID finds and returns an user who whose order is given
+		GetUnreadCount(userID string) (int64, error) // TODO: consider me
+		FilterByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, error)
+		GetByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, error)
 	}
 	TokenStore interface {
 		Save(recovery *model.Token) error

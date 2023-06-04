@@ -6,7 +6,7 @@ extend type Mutation {
 }
 
 extend type Query {
-  customers(filter: CustomerFilterInput, sortBy: UserSortingInput, before: String, after: String, first: Int, last: Int): UserCountableConnection
+  customers(filter: CustomerFilterInput, sortBy: UserSortingInput, before: String, after: String, first: Int, last: Int): UserCountableConnection @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 input UserCreateInput {

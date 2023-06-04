@@ -445,14 +445,3 @@ enum PermissionEnum {
 	delete_sale
 	delete_voucher
 }
-
-enum Role {
-	system_user
-	system_admin
-	system_user_access_token
-	system_user_manager
-	system_read_only_admin
-	system_manager
-	shop_admin
-	shop_staff
-}

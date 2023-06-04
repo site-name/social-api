@@ -101,7 +101,7 @@ func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption)
 		From(store.ProductTableName)
 
 	// parse option
-	if option.Limit != nil {
+	if option.Limit != nil && *option.Limit > 0 {
 		query = query.Limit(*option.Limit)
 	}
 	if option.CreateAt != nil {
@@ -111,14 +111,8 @@ func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption)
 		query = query.Where(option.Id)
 	}
 	if option.ProductVariantID != nil {
-		// decide which type of join to use (LEFT or INNER)
-		joinFunc := query.InnerJoin
-
-		if store.SqlizerIsEqualNull(option.ProductVariantID) {
-			joinFunc = query.LeftJoin
-		}
-
-		query = joinFunc(store.ProductVariantTableName + " ON (Products.Id = ProductVariants.ProductID)").
+		query = query.
+			InnerJoin(store.ProductVariantTableName + " ON Products.Id = ProductVariants.ProductID").
 			Where(option.ProductVariantID)
 	}
 	if option.VoucherID != nil {
@@ -130,6 +124,11 @@ func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption)
 		query = query.
 			InnerJoin(store.SaleProductRelationTableName + " ON Products.Id = SaleProducts.ProductID").
 			Where(option.SaleID)
+	}
+	if option.HasNoProductVariants {
+		query = query.
+			LeftJoin(store.ProductVariantTableName + " ProductVariants.ProductID = Products.Id").
+			Where(store.ProductVariantTableName + ".ProductID IS NULL")
 	}
 
 	return query.ToSql()
@@ -149,11 +148,12 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 	}
 
 	var (
-		productIDs  = products.IDs()
+		productIDs  = make([]string, len(products))
 		productsMap = map[string]*model.Product{} // productsMap has keys are product ids
 	)
-	for _, product := range products {
+	for idx, product := range products {
 		productsMap[product.Id] = product
+		productIDs[idx] = product.Id
 	}
 
 	// check if need prefetch related assigned product attribute
@@ -168,7 +168,7 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 		for _, attr := range assignedAttributes {
 			product, ok := productsMap[attr.ProductID]
 			if ok && product != nil {
-				product.AssignedProductAttributes = append(product.AssignedProductAttributes, attr)
+				product.SetAssignedProductAttributes(append(product.GetAssignedProductAttributes(), attr))
 			}
 		}
 	}
@@ -189,7 +189,7 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 
 		for _, prd := range products {
 			if prd.CategoryID != nil {
-				prd.Category = categoriesMap[*prd.CategoryID]
+				prd.SetCategory(categoriesMap[*prd.CategoryID])
 			}
 		}
 	}
@@ -207,7 +207,7 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 		for _, rel := range collectionProducts {
 			product, ok := productsMap[rel.ProductID]
 			if ok && product != nil {
-				product.Collections = append(product.Collections, rel.GetCollection())
+				product.SetCollections(append(product.GetCollections(), rel.GetCollection()))
 			}
 		}
 	}
@@ -225,7 +225,7 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 		}
 
 		for _, product := range products {
-			product.ProductType = productTypesMap[product.ProductTypeID]
+			product.SetProductType(productTypesMap[product.ProductTypeID])
 		}
 	}
 
@@ -241,7 +241,7 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 		for _, info := range fileInfos {
 			product, ok := productsMap[info.ParentID]
 			if ok && product != nil {
-				product.Medias = append(product.Medias, info)
+				product.SetMedias(append(product.GetMedias(), info))
 			}
 		}
 	}

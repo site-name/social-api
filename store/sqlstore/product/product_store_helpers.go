@@ -463,7 +463,7 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.AttributeTableName).
-		Where(squirrel.Eq{store.AttributeTableName + ".InputType": model.NUMERIC}).
+		Where(squirrel.Eq{store.AttributeTableName + ".InputType": model.AttributeInputTypeNumeric}).
 		Where("Attributes.Id = AttributeValues.AttributeID").
 		Suffix(")").
 		Limit(1)
@@ -590,7 +590,7 @@ func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue 
 	attributes, err := ps.Attribute().FilterbyOption(&model.AttributeFilterOption{
 		PrefetchRelatedAttributeValues: true,
 		Slug:                           squirrel.Eq{store.AttributeTableName + ".Slug": filterValue.Slugs()},
-		InputType:                      squirrel.Eq{store.AttributeTableName + ".InputType": model.BOOLEAN},
+		InputType:                      squirrel.Eq{store.AttributeTableName + ".InputType": model.AttributeInputTypeBoolean},
 	})
 	if err != nil {
 		return err

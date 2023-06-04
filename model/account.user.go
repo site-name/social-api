@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"sort"
 	"strings"
@@ -599,45 +598,6 @@ func (u *UserPatch) SetField(fieldName string, fieldValue string) {
 	case "Username":
 		u.Username = &fieldValue
 	}
-}
-
-// UserFromJson will decode the input and return a User
-func UserFromJson(data io.Reader) *User {
-	var user *User
-	ModelFromJson(&user, data)
-	return user
-}
-
-func UserPatchFromJson(data io.Reader) *UserPatch {
-	var user UserPatch
-	ModelFromJson(&user, data)
-	return &user
-}
-
-func UserAuthFromJson(data io.Reader) *UserAuth {
-	var user UserAuth
-	ModelFromJson(&user, data)
-	return &user
-}
-
-func UserMapToJson(u map[string]*User) string {
-	return ModelToJson(&u)
-}
-
-func UserMapFromJson(data io.Reader) map[string]*User {
-	var users map[string]*User
-	ModelFromJson(&users, data)
-	return users
-}
-
-func UserListToJson(u []*User) string {
-	return ModelToJson(&u)
-}
-
-func UserListFromJson(data io.Reader) []*User {
-	var users []*User
-	ModelFromJson(&users, data)
-	return users
 }
 
 // HashPassword generates a hash using the bcrypt.GenerateFromPassword

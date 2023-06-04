@@ -34,13 +34,10 @@ func (a *Address) Country(ctx context.Context) (*CountryDisplay, error) {
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/address.graphqls for directive used
 func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 	// check requester is authenticated to perform this
 	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
-	embedContext.SessionRequired()
-	if embedContext.Err != nil {
-		return nil, embedContext.Err
-	}
 
 	user, err := UserByUserIdLoader.Load(ctx, embedContext.AppContext.Session().UserId)()
 	if err != nil {
@@ -54,13 +51,10 @@ func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 	return model.NewPrimitive(false), nil
 }
 
+// NOTE: Refer to ./schemas/address.graphqls for directive used
 func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 	// requester must be authenticated
 	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
-	embedContext.SessionRequired()
-	if embedContext.Err != nil {
-		return nil, embedContext.Err
-	}
 
 	user, err := UserByUserIdLoader.Load(ctx, embedContext.AppContext.Session().UserId)()
 	if err != nil {
@@ -160,14 +154,9 @@ func SystemUserToGraphqlUser(u *model.User) *User {
 	return res
 }
 
+// NOTE: Refer to ./schemas/user.graphqls for directive used.
 func (u *User) DefaultShippingAddress(ctx context.Context) (*Address, error) {
-	// +) requester must be current user himself OR
-	// +) requester is staff of shop that has current user was customer of
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 	currentSession := embedCtx.AppContext.Session()
 
 	// check requester belong to shop with user was customer
@@ -185,14 +174,9 @@ func (u *User) DefaultShippingAddress(ctx context.Context) (*Address, error) {
 	return nil, MakeUnauthorizedError("DefaultShippingAddress")
 }
 
+// NOTE: Refer to ./schemas/user.graphqls for directive used.
 func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
-	// +) requester must be current user himself OR
-	// +) requester is staff of shop that has current user was customer of
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 	currentSession := embedCtx.AppContext.Session()
 
 	// check requester belong to shop at which user was customer
@@ -211,13 +195,9 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 	return nil, MakeUnauthorizedError("DefaultBillingAddress")
 }
 
+// NOTE: Refer to ./schemas/user.graphqls for directive used.
 func (u *User) StoredPaymentSources(ctx context.Context, args struct{ Channel *string }) ([]*PaymentSource, error) {
-	// check if current user is this user
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	if u.ID == embedCtx.AppContext.Session().UserId {
 		panic("not implemented")
@@ -226,17 +206,14 @@ func (u *User) StoredPaymentSources(ctx context.Context, args struct{ Channel *s
 	return nil, MakeUnauthorizedError("user.StoredPaymentSources")
 }
 
+// NOTE: Refer to ./schemas/user.graphqls for directive used.
 // args.Channel is channel id
 func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string }) ([]string, error) {
-	// requester must be current user or staff of shop to see
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 	currentSession := embedCtx.AppContext.Session()
 
-	if currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
+	if currentSession.UserId == u.ID ||
+		currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
 		var checkouts []*model.Checkout
 		var err error
 
@@ -255,14 +232,9 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string 
 	return nil, MakeUnauthorizedError("User.CheckoutTokens")
 }
 
+// NOTE: Refer to ./schemas/user.graphqls for directive used.
 func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
-	// +) requester must be current user himself OR
-	// +) requester is staff of shop that has current user was customer of
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 	currentSession := embedCtx.AppContext.Session()
 
 	if currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
@@ -281,25 +253,18 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 	return nil, MakeUnauthorizedError("User.Addresses")
 }
 
+// NOTE: Refer to ./schemas/user.graphqls for directive used.
 // NOTE: giftcards are ordering by code
 func (u *User) GiftCards(ctx context.Context, args GraphqlParams) (*GiftCardCountableConnection, error) {
-	// +) requester must be current user himself OR
-	// +) requester must be staff of current shop that:
-	//   1) has current user was customer of AND
-	//   2) issued at least 1 giftcard used by current user
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 	currentSession := embedCtx.AppContext.Session()
 
-	// validate args
-	if appErr := args.Validate("User.GiftCards"); appErr != nil {
-		return nil, appErr
-	}
-
 	if currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
+		// validate args
+		if appErr := args.Validate("User.GiftCards"); appErr != nil {
+			return nil, appErr
+		}
+
 		giftcards, err := GiftCardsByUserLoader.Load(ctx, u.ID)()
 		if err != nil {
 			return nil, err
@@ -317,25 +282,19 @@ func (u *User) GiftCards(ctx context.Context, args GraphqlParams) (*GiftCardCoun
 	return nil, MakeUnauthorizedError("User.GiftCards")
 }
 
+// NOTE: Refer to ./schemas/user.graphqls for directive used.
 // NOTE: orders are ordering by CreateAt
 func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableConnection, error) {
-	// requester can see orders of current user if:
-	// +) requester is user himself
-	// +) requester is staff of a shop that has current user was customer of
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
+	session := embedCtx.AppContext.Session()
 
-	// validate args
-	if appErr := args.Validate("User.Orders"); appErr != nil {
-		return nil, appErr
-	}
-	currentSession := embedCtx.AppContext.Session()
-
-	requesterCanSeeUserOrders := currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
+	requesterCanSeeUserOrders := session.UserId == u.ID || session.GetUserRoles().Contains(model.ShopStaffRoleId)
 	if requesterCanSeeUserOrders {
+		// validate args
+		if appErr := args.Validate("User.Orders"); appErr != nil {
+			return nil, appErr
+		}
+
 		orders, err := OrdersByUserLoader.Load(ctx, u.ID)()
 		if err != nil {
 			return nil, err
@@ -353,33 +312,17 @@ func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableC
 	return nil, MakeUnauthorizedError("User.Orders")
 }
 
+// NOTE: graphql directive checked. refer to ./schemas/users.graphqls for detail
 func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
-	// requester can see user's event when he is staff of a shop that has current user was customer of
-	// Normal users have nothing to do with customer event, so they can't see them.
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
+	events, err := CustomerEventsByUserLoader.Load(ctx, u.ID)()
+	if err != nil {
+		return nil, err
 	}
-
-	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		events, err := CustomerEventsByUserLoader.Load(ctx, u.ID)()
-		if err != nil {
-			return nil, err
-		}
-		return DataloaderResultMap(events, SystemCustomerEventToGraphqlCustomerEvent), nil
-	}
-
-	return nil, MakeUnauthorizedError("User.Events")
+	return DataloaderResultMap(events, SystemCustomerEventToGraphqlCustomerEvent), nil
 }
 
+// NOTE: graphql directive checked
 func (u *User) Note(ctx context.Context) (*string, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
 	return u.note, nil
 }
 
@@ -514,29 +457,17 @@ func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*datalo
 	return res
 }
 
+// NOTE: graphql directive validated. Refer to ./schemas/user.graphqls for details.
 func (c *CustomerEvent) User(ctx context.Context) (*User, error) {
-	// requester can see user of event only if:
-	// He is staff of the shop that has event owner was customer at
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
+	if c.event.UserID == nil {
+		return nil, nil
+	}
+	user, err := UserByUserIdLoader.Load(ctx, *c.event.UserID)()
+	if err != nil {
+		return nil, err
 	}
 
-	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		if c.event.UserID == nil {
-			return nil, nil
-		}
-
-		user, err := UserByUserIdLoader.Load(ctx, *c.event.UserID)()
-		if err != nil {
-			return nil, err
-		}
-
-		return SystemUserToGraphqlUser(user), nil
-	}
-
-	return nil, MakeUnauthorizedError("CustomerEvent.User")
+	return SystemUserToGraphqlUser(user), nil
 }
 
 func (c *CustomerEvent) OrderLine(ctx context.Context) (*OrderLine, error) {
@@ -553,7 +484,7 @@ func (c *CustomerEvent) OrderLine(ctx context.Context) (*OrderLine, error) {
 	return SystemOrderLineToGraphqlOrderLine(line), nil
 }
 
-// ------------------- StaffNotificationRecipient
+// ------------------- StaffNotificationRecipient---------------
 
 type StaffNotificationRecipient struct {
 	// User   *User   `json:"user"`
@@ -570,27 +501,18 @@ func systemStaffNotificationRecipientToGraphqlStaffNotificationRecipient(s *mode
 	return &StaffNotificationRecipient{*s}
 }
 
+// NOTE: Refer to ./schemas/staff.graphqls for details on directive used
 func (s *StaffNotificationRecipient) User(ctx context.Context) (*User, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
+	if s.UserID == nil {
+		return nil, nil
 	}
 
-	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		if s.UserID == nil {
-			return nil, nil
-		}
-
-		user, err := UserByUserIdLoader.Load(ctx, *s.UserID)()
-		if err != nil {
-			return nil, err
-		}
-
-		return SystemUserToGraphqlUser(user), nil
+	user, err := UserByUserIdLoader.Load(ctx, *s.UserID)()
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, MakeUnauthorizedError("StaffNotificationRecipient.User")
+	return SystemUserToGraphqlUser(user), nil
 }
 
 func (s *StaffNotificationRecipient) Email(ctx context.Context) (*string, error) {

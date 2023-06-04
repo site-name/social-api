@@ -36,13 +36,69 @@ type Product struct {
 	ModelMetadata
 	Seo
 
-	Collections               Collections               `json:"-" db:"-"`
-	ProductType               *ProductType              `json:"-" db:"-"`
-	AssignedProductAttributes AssignedProductAttributes `json:"-" db:"-"`
-	ProductVariants           ProductVariants           `json:"-" db:"-"`
-	Category                  *Category                 `json:"-" db:"-"`
-	Medias                    FileInfos                 `json:"-" db:"-"`
-	ProductChannelListings    ProductChannelListings    `json:"-" db:"-"`
+	collections               Collections               `json:"-" db:"-"`
+	productType               *ProductType              `json:"-" db:"-"`
+	assignedProductAttributes AssignedProductAttributes `json:"-" db:"-"`
+	productVariants           ProductVariants           `json:"-" db:"-"`
+	category                  *Category                 `json:"-" db:"-"`
+	medias                    FileInfos                 `json:"-" db:"-"`
+	productChannelListings    ProductChannelListings    `json:"-" db:"-"`
+}
+
+func (p *Product) GetCollections() Collections {
+	return p.collections
+}
+
+func (p *Product) SetCollections(cs Collections) {
+	p.collections = cs
+}
+
+func (p *Product) GetProductType() *ProductType {
+	return p.productType
+}
+
+func (p *Product) SetProductType(pt *ProductType) {
+	p.productType = pt
+}
+
+func (p *Product) GetAssignedProductAttributes() AssignedProductAttributes {
+	return p.assignedProductAttributes
+}
+
+func (p *Product) SetAssignedProductAttributes(ap AssignedProductAttributes) {
+	p.assignedProductAttributes = ap
+}
+
+func (p *Product) GetProductVariants() ProductVariants {
+	return p.productVariants
+}
+
+func (p *Product) SetProductVariants(pvs ProductVariants) {
+	p.productVariants = pvs
+}
+
+func (p *Product) GetCategory() *Category {
+	return p.category
+}
+
+func (p *Product) SetCategory(c *Category) {
+	p.category = c
+}
+
+func (p *Product) GetMedias() FileInfos {
+	return p.medias
+}
+
+func (p *Product) SetMedias(ms FileInfos) {
+	p.medias = ms
+}
+
+func (p *Product) GetProductChannelListings() ProductChannelListings {
+	return p.productChannelListings
+}
+
+func (p *Product) SetProductChannelListings(pc ProductChannelListings) {
+	p.productChannelListings = pc
 }
 
 type ProductCountByCategoryID struct {
@@ -52,17 +108,16 @@ type ProductCountByCategoryID struct {
 
 // ProductFilterOption is used to compose squirrel sql queries
 type ProductFilterOption struct {
-	Id squirrel.Sqlizer
-
-	// LEFT/INNER JOIN ProductVariants ON (...) WHERE ProductVariants.Id ...
-	//
-	// LEFT JOIN when squirrel.Eq{...: nil}, INNER JOIN otherwise
-	ProductVariantID squirrel.Sqlizer
-	VoucherID        squirrel.Sqlizer // SELECT * FROM Products INNER JOIN ProductVouchers ON (...) WHERE ProductVouchers.VoucherID ...
-	SaleID           squirrel.Sqlizer // SELECT * FROM Products INNER JOIN ProductSales ON (...) WHERE ProductSales.SaleID ...
-	CreateAt         squirrel.Sqlizer
+	// native fields
+	Id       squirrel.Sqlizer
+	CreateAt squirrel.Sqlizer
 
 	Limit *uint64
+
+	HasNoProductVariants bool             // LEFT JOIN ProductVariants ON ... WHERE ProductVariants.ProductID IS NULL
+	ProductVariantID     squirrel.Sqlizer // INNER JOIN ProductVariants ON ... WHERE ProductVariants.Id ...
+	VoucherID            squirrel.Sqlizer // SELECT * FROM Products INNER JOIN ProductVouchers ON (...) WHERE ProductVouchers.VoucherID ...
+	SaleID               squirrel.Sqlizer // SELECT * FROM Products INNER JOIN ProductSales ON (...) WHERE ProductSales.SaleID ...
 
 	PrefetchRelatedAssignedProductAttributes bool
 	PrefetchRelatedVariants                  bool
@@ -134,20 +189,20 @@ func (ps Products) Flat() []StringInterface {
 
 	for _, prd := range ps {
 		maxLength := util.AnyArray[int]{
-			len(prd.Collections),
-			len(prd.Medias),
-			len(prd.AssignedProductAttributes),
-			len(prd.ProductVariants),
+			len(prd.collections),
+			len(prd.medias),
+			len(prd.assignedProductAttributes),
+			len(prd.productVariants),
 		}.GetMinMax().Max
 
 		var categorySlug string
 		var productTypeName string
 
-		if prd.Category != nil {
-			categorySlug = prd.Category.Slug
+		if prd.category != nil {
+			categorySlug = prd.category.Slug
 		}
-		if prd.ProductType != nil {
-			productTypeName = prd.ProductType.Name
+		if prd.productType != nil {
+			productTypeName = prd.productType.Name
 		}
 
 		for i := 0; i < maxLength; i++ {
@@ -161,22 +216,22 @@ func (ps Products) Flat() []StringInterface {
 				"product_weight":     prd.WeightString(),
 			}
 
-			if i < len(prd.Collections) {
-				data["collections__slug"] = prd.Collections[i].Slug
+			if i < len(prd.collections) {
+				data["collections__slug"] = prd.collections[i].Slug
 			}
-			if i < len(prd.Medias) {
-				data["media__image"] = prd.Medias[i].Path
+			if i < len(prd.medias) {
+				data["media__image"] = prd.medias[i].Path
 			}
-			if i < len(prd.AssignedProductAttributes) {
+			if i < len(prd.assignedProductAttributes) {
 				panic("not implemented")
 			}
-			if i < len(prd.ProductVariants) {
-				data["variant_weight"] = prd.ProductVariants[i].WeightString()
-				data["variants__id"] = prd.ProductVariants[i].Id
-				data["variants__sku"] = prd.ProductVariants[i].Sku // can be nil
-				data["variants__is_preorder"] = prd.ProductVariants[i].IsPreOrder
-				data["variants__preorder_global_threshold"] = prd.ProductVariants[i].PreOrderGlobalThreshold // can be nil
-				data["variants__preorder_end_date"] = prd.ProductVariants[i].PreorderEndDate                 // can be nil
+			if i < len(prd.productVariants) {
+				data["variant_weight"] = prd.productVariants[i].WeightString()
+				data["variants__id"] = prd.productVariants[i].Id
+				data["variants__sku"] = prd.productVariants[i].Sku // can be nil
+				data["variants__is_preorder"] = prd.productVariants[i].IsPreOrder
+				data["variants__preorder_global_threshold"] = prd.productVariants[i].PreOrderGlobalThreshold // can be nil
+				data["variants__preorder_end_date"] = prd.productVariants[i].PreorderEndDate                 // can be nil
 			}
 
 			res = append(res, data)
@@ -278,26 +333,26 @@ func (p *Product) DeepCopy() *Product {
 		res.Rating = NewPrimitive(*p.Rating)
 	}
 
-	if p.Collections != nil {
-		res.Collections = p.Collections.DeepCopy()
+	if p.collections != nil {
+		res.collections = p.collections.DeepCopy()
 	}
-	if p.ProductType != nil {
-		res.ProductType = p.ProductType.DeepCopy()
+	if p.productType != nil {
+		res.productType = p.productType.DeepCopy()
 	}
-	if p.AssignedProductAttributes != nil {
-		res.AssignedProductAttributes = p.AssignedProductAttributes.DeepCopy()
+	if p.assignedProductAttributes != nil {
+		res.assignedProductAttributes = p.assignedProductAttributes.DeepCopy()
 	}
-	if p.ProductVariants != nil {
-		res.ProductVariants = p.ProductVariants.DeepCopy()
+	if p.productVariants != nil {
+		res.productVariants = p.productVariants.DeepCopy()
 	}
-	if p.Category != nil {
-		res.Category = p.Category.DeepCopy()
+	if p.category != nil {
+		res.category = p.category.DeepCopy()
 	}
-	if p.Medias != nil {
-		res.Medias = p.Medias.DeepCopy()
+	if p.medias != nil {
+		res.medias = p.medias.DeepCopy()
 	}
-	if p.ProductChannelListings != nil {
-		res.ProductChannelListings = p.ProductChannelListings.DeepCopy()
+	if p.productChannelListings != nil {
+		res.productChannelListings = p.productChannelListings.DeepCopy()
 	}
 
 	return &res

@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
@@ -142,11 +143,15 @@ func (api *PluginAPI) GetUser(userID string) (*model.User, *model.AppError) {
 }
 
 func (api *PluginAPI) GetUserByEmail(email string) (*model.User, *model.AppError) {
-	return api.app.Srv().AccountService().UserByEmail(email)
+	return api.app.Srv().AccountService().GetUserByOptions(context.Background(), &model.UserFilterOptions{
+		Extra: squirrel.Expr("Users.Email = lower(?)", email),
+	})
 }
 
 func (api *PluginAPI) GetUserByUsername(name string) (*model.User, *model.AppError) {
-	return api.app.Srv().AccountService().GetUserByUsername(name)
+	return api.app.Srv().AccountService().GetUserByOptions(context.Background(), &model.UserFilterOptions{
+		Extra: squirrel.Expr("Users.Username = ?", name),
+	})
 }
 
 func (api *PluginAPI) GetUsersByUsernames(usernames []string) ([]*model.User, *model.AppError) {

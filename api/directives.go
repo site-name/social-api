@@ -37,6 +37,21 @@ func (h *HasRolesDirective) Validate(ctx context.Context, _ interface{}) error {
 	return embedCtx.Err
 }
 
+type HasRoleAnyDirective struct {
+	Roles []Role
+}
+
+func (h *HasRoleAnyDirective) ImplementsDirective() string {
+	return "hasRoleAny"
+}
+
+func (h *HasRoleAnyDirective) Validate(ctx context.Context, _ interface{}) error {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	strRoles := lo.Map(h.Roles, func(r Role, _ int) string { return string(r) })
+	embedCtx.CheckAuthenticatedAndHasRoleAny("HasRoleAnyDirective.Validate", strRoles...)
+	return embedCtx.Err
+}
+
 // AuthenticatedDirective checks if user is authenticated or not
 type AuthenticatedDirective struct{}
 
@@ -63,5 +78,21 @@ func (h *HasPermissionsDirective) Validate(ctx context.Context, _ interface{}) e
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	permissions := lo.Map(h.Permissions, func(p PermissionEnum, _ int) *model.Permission { return &model.Permission{Id: string(p)} })
 	embedCtx.CheckAuthenticatedAndHasPermissionToAll(permissions...)
+	return embedCtx.Err
+}
+
+// HasPermissionAnyDirective checks if user is authenticated and has any of given permissions
+type HasPermissionAnyDirective struct {
+	Permissions []PermissionEnum // permission ids
+}
+
+func (h *HasPermissionAnyDirective) ImplementsDirective() string {
+	return "hasPermissionAny"
+}
+
+func (h *HasPermissionAnyDirective) Validate(ctx context.Context, _ interface{}) error {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	permissions := lo.Map(h.Permissions, func(p PermissionEnum, _ int) *model.Permission { return &model.Permission{Id: string(p)} })
+	embedCtx.CheckAuthenticatedAndHasPermissionToAny(permissions...)
 	return embedCtx.Err
 }

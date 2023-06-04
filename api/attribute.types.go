@@ -52,10 +52,10 @@ func SystemAttributeValueToGraphqlAttributeValue(attrValue *model.AttributeValue
 
 	if attr := attrValue.GetAttribute(); attr != nil && attrValue.Datetime != nil {
 		switch attr.InputType {
-		case model.DATE:
+		case model.AttributeInputTypeDate:
 			res.Date = &Date{DateTime{*attrValue.Datetime}}
 
-		case model.DATE_TIME:
+		case model.AttributeInputTypeDateTime:
 			res.DateTime = &DateTime{*attrValue.Datetime}
 		}
 	}
@@ -90,7 +90,7 @@ func (a *AttributeValue) Reference(ctx context.Context) (*string, error) {
 		return nil, err
 	}
 
-	if attribute.InputType != model.REFERENCE {
+	if attribute.InputType != model.AttributeInputTypeReference {
 		return nil, nil
 	}
 

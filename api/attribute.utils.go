@@ -68,14 +68,14 @@ func (a *AttributeMixin[T]) cleanValues(cleanedInput AttributeUpsertInputIface, 
 	}
 
 	if attributeInputType != nil &&
-		(attributeInputType == model.FILE_ ||
-			attributeInputType == model.REFERENCE) {
+		(attributeInputType == model.AttributeInputTypeFile ||
+			attributeInputType == model.AttributeInputTypeReference) {
 		return nil, model.NewAppError("cleanValues", "api.attribute.invalid_input_type_values.app_error", nil, fmt.Sprintf("Values cannot be used with input type %s", attributeInputType), http.StatusBadRequest)
 	}
 
 	validatedAttributeValues := model.AttributeValues{}
 	for _, valueData := range valuesInput {
-		value, appErr := validateValue(attribute, valueData, attributeInputType == model.NUMERIC, attributeInputType == model.SWATCH)
+		value, appErr := validateValue(attribute, valueData, attributeInputType == model.AttributeInputTypeNumeric, attributeInputType == model.AttributeInputTypeSwatch)
 		if appErr != nil {
 			return nil, appErr
 		}

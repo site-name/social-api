@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
@@ -234,7 +235,9 @@ func (a *ServiceAccount) createSessionForUserAccessToken(tokenString string) (*m
 		return nil, model.NewAppError("createSessionForUserAccessToken", "app.user_access_token.invalid_or_missing", nil, "inactive_token", http.StatusUnauthorized)
 	}
 
-	user, nErr := a.srv.Store.User().Get(context.Background(), token.UserId)
+	user, nErr := a.srv.Store.User().GetByOptions(context.Background(), &model.UserFilterOptions{
+		Id: squirrel.Eq{store.UserTableName + ".Id": token.UserId},
+	})
 	if nErr != nil {
 		var nfErr *store.ErrNotFound
 		switch {

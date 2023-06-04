@@ -194,23 +194,16 @@ einterfaces-mocks: ## Creates mock files for einterfaces.
 	$(GOBIN)/mockery --dir einterfaces --all --output einterfaces/mocks --note 'Regenerate this file using `make einterfaces-mocks`.'
 
 gen-serialized: ## Generates serialization methods for hot structs
-	# This tool only works at a file level, not at a package level.
-	# There will be some warnings about "unresolved identifiers",
-	# but that is because of the above problem. Since we are generating
-	# methods for all the relevant files at a package level, all
-	# identifiers will be resolved. An alternative to remove the warnings
-	# would be to temporarily move all the structs to the same file,
-	# but that involves a lot of manual work.
+  #This tool only works at a file level, not at a package level.
+  #There will be some warnings about "unresolved identifiers",
+  #but that is because of the above problem. Since we are generating
+  #methods for all the relevant files at a package level, all
+  #identifiers will be resolved. An alternative to remove the warnings
+  #would be to temporarily move all the structs to the same file,
+  #but that involves a lot of manual work.
 	$(GO) install github.com/tinylib/msgp
 	$(GOBIN)/msgp -file=./model/session.go -tests=false -o=./model/session_serial_gen.go
 	$(GOBIN)/msgp -file=./model/account.user.go -tests=false -o=./model/account.user_serial_gen.go
-
-# gqlgen:
-# 	$(GO) install github.com/99designs/gqlgen@v0.17.9
-# $(GO) get -d -modfile=go.tools.mod github.com/vektah/gqlparser/v2@v2.1.0
-
-# $(GOBIN)/gqlgen
-# @echo Gqlgen has done generating.
 
 update-dependencies: ## Uses go get -u to update all the dependencies while holding back any that require it.
 	@echo Updating Dependencies

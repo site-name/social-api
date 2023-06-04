@@ -6,6 +6,7 @@ import (
 
 	// "github.com/pkg/errors"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/services/searchengine"
@@ -87,7 +88,9 @@ func (s *SearchUserStore) deleteUserIndex(user *model.User) {
 // }
 
 func (s *SearchUserStore) PermanentDelete(userId string) error {
-	user, userErr := s.UserStore.Get(context.Background(), userId)
+	user, userErr := s.UserStore.GetByOptions(context.Background(), &model.UserFilterOptions{
+		Id: squirrel.Eq{store.UserTableName + ".Id": userId},
+	})
 	if userErr != nil {
 		slog.Warn("Encountered error deleting user", slog.String("user_id", userId), slog.Err(userErr))
 	}

@@ -1755,7 +1755,7 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 	variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
 		VariantID:   squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": productVariantIDs},
 		ChannelID:   squirrel.Eq{store.ProductVariantChannelListingTableName + ".ChannelID": order.ChannelID},
-		PriceAmount: squirrel.Expr(store.ProductVariantChannelListingTableName + ".PriceAmount NOT NULL"),
+		PriceAmount: squirrel.Expr(store.ProductVariantChannelListingTableName + ".PriceAmount IS NOT NULL"),
 	})
 	if appErr != nil {
 		return appErr

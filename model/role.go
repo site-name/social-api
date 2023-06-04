@@ -14,7 +14,6 @@ var (
 )
 
 const (
-	// SystemGuestRoleId           = "system_guest"
 	SystemUserRoleId            = "system_user"
 	SystemAdminRoleId           = "system_admin"
 	SystemUserAccessTokenRoleId = "system_user_access_token"

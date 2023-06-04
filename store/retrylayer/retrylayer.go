@@ -9130,71 +9130,11 @@ func (s *RetryLayerUserStore) Count(options model.UserCountOptions) (int64, erro
 
 }
 
-func (s *RetryLayerUserStore) Get(ctx context.Context, id string) (*model.User, error) {
+func (s *RetryLayerUserStore) FilterByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, error) {
 
 	tries := 0
 	for {
-		result, err := s.UserStore.Get(ctx, id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserStore) GetAll() ([]*model.User, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.GetAll()
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserStore) GetAllAfter(limit int, afterID string) ([]*model.User, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.GetAllAfter(limit, afterID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserStore) GetAllNotInAuthService(authServices []string) ([]*model.User, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.GetAllNotInAuthService(authServices)
+		result, err := s.UserStore.FilterByOptions(ctx, options)
 		if err == nil {
 			return result, nil
 		}
@@ -9230,71 +9170,11 @@ func (s *RetryLayerUserStore) GetAllProfiles(options *model.UserGetOptions) ([]*
 
 }
 
-func (s *RetryLayerUserStore) GetAllUsingAuthService(authService string) ([]*model.User, error) {
+func (s *RetryLayerUserStore) GetByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, error) {
 
 	tries := 0
 	for {
-		result, err := s.UserStore.GetAllUsingAuthService(authService)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserStore) GetByAuth(authData *string, authService string) (*model.User, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.GetByAuth(authData, authService)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserStore) GetByEmail(email string) (*model.User, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.GetByEmail(email)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserStore) GetByUsername(username string) (*model.User, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.GetByUsername(username)
+		result, err := s.UserStore.GetByOptions(ctx, options)
 		if err == nil {
 			return result, nil
 		}
@@ -9362,71 +9242,11 @@ func (s *RetryLayerUserStore) GetKnownUsers(userID string) ([]string, error) {
 
 }
 
-func (s *RetryLayerUserStore) GetMany(ctx context.Context, ids []string) ([]*model.User, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.GetMany(ctx, ids)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerUserStore) GetProfileByIds(ctx context.Context, userIds []string, options *store.UserGetByIdsOpts, allowFromCache bool) ([]*model.User, error) {
 
 	tries := 0
 	for {
 		result, err := s.UserStore.GetProfileByIds(ctx, userIds, options, allowFromCache)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserStore) GetProfiles(options *model.UserGetOptions) ([]*model.User, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.GetProfiles(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserStore) GetProfilesByUsernames(usernames []string) ([]*model.User, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.GetProfilesByUsernames(usernames)
 		if err == nil {
 			return result, nil
 		}
@@ -9773,26 +9593,6 @@ func (s *RetryLayerUserStore) UpdateUpdateAt(userID string) (int64, error) {
 	tries := 0
 	for {
 		result, err := s.UserStore.UpdateUpdateAt(userID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserStore) UserByOrderID(orderID string) (*model.User, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserStore.UserByOrderID(orderID)
 		if err == nil {
 			return result, nil
 		}

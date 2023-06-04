@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/email"
@@ -39,19 +40,6 @@ type tokenExtra struct {
 	Email  string
 }
 
-func (a *ServiceAccount) UserById(ctx context.Context, userID string) (*model.User, *model.AppError) {
-	user, err := a.srv.Store.User().Get(ctx, userID)
-	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("UserById", "app.account.user_by_id.app_error", nil, err.Error(), statusCode)
-	}
-
-	return user, nil
-}
-
 func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID string, addressType model.AddressTypeEnum) (*model.User, *model.AppError) {
 	// check if address is owned by user
 	addresses, appErr := a.AddressesByUserId(userID)
@@ -64,7 +52,9 @@ func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID string, address
 	}
 
 	// get user with given id
-	user, appErr := a.UserById(context.Background(), userID)
+	user, appErr := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
+		Id: squirrel.Eq{store.UserTableName + ".Id": userID},
+	})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -102,19 +92,6 @@ func (a *ServiceAccount) UserSetDefaultAddress(userID, addressID string, address
 	}
 
 	return userUpdate.New, nil
-}
-
-func (a *ServiceAccount) UserByEmail(email string) (*model.User, *model.AppError) {
-	user, err := a.srv.Store.User().GetByEmail(email)
-	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("UserByEmail", "app.model.error_finding_user_by_email.app_error", nil, err.Error(), statusCode)
-	}
-
-	return user, nil
 }
 
 func (a *ServiceAccount) CreateUserFromSignup(c *request.Context, user *model.User, redirect string) (*model.User, *model.AppError) {
@@ -315,7 +292,9 @@ func (a *ServiceAccount) VerifyEmailFromToken(userSuppliedTokenString string) *m
 		return model.NewAppError("VerifyEmailFromToken", "api.user.verify_email.token_parse.error", nil, "", http.StatusInternalServerError)
 	}
 
-	user, err := a.UserById(context.Background(), tokenData.UserId)
+	user, err := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
+		Id: squirrel.Eq{store.UserTableName + ".Id": tokenData.UserId},
+	})
 	if err != nil {
 		return err
 	}
@@ -363,24 +342,14 @@ func (a *ServiceAccount) VerifyUserEmail(userID, email string) *model.AppError {
 
 	a.InvalidateCacheForUser(userID)
 
-	_, err := a.UserById(context.Background(), userID)
+	_, err := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
+		Id: squirrel.Eq{store.UserTableName + ".Id": userID},
+	})
 	if err != nil {
-		return nil
+		return err
 	}
 
 	return nil
-}
-
-func (a *ServiceAccount) GetUserByUsername(username string) (*model.User, *model.AppError) {
-	result, err := a.srv.Store.User().GetByUsername(username)
-	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("GetUserByUsername", "app.model.user_by_username.app_error", nil, err.Error(), statusCode)
-	}
-	return result, nil
 }
 
 func (a *ServiceAccount) IsFirstUserAccount() bool {
@@ -406,29 +375,13 @@ func (a *ServiceAccount) IsUsernameTaken(name string) bool {
 		return false
 	}
 
-	if _, err := a.srv.Store.User().GetByUsername(name); err != nil {
+	if _, err := a.srv.Store.User().GetByOptions(context.Background(), &model.UserFilterOptions{
+		Username: squirrel.Eq{store.UserTableName + ".Username": name},
+	}); err != nil {
 		return false
 	}
 
 	return true
-}
-
-func (a *ServiceAccount) GetUserByAuth(authData *string, authService string) (*model.User, *model.AppError) {
-	user, err := a.srv.Store.User().GetByAuth(authData, authService)
-	if err != nil {
-		var invErr *store.ErrInvalidInput
-		var nfErr *store.ErrNotFound
-		switch {
-		case errors.As(err, &invErr):
-			return nil, model.NewAppError("GetUserByAuth", MissingAuthAccountError, nil, invErr.Error(), http.StatusBadRequest)
-		case errors.As(err, &nfErr):
-			return nil, model.NewAppError("GetUserByAuth", MissingAuthAccountError, nil, nfErr.Error(), http.StatusInternalServerError)
-		default:
-			return nil, model.NewAppError("GetUserByAuth", "app.user.get_by_auth.other.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
-	}
-
-	return user, nil
 }
 
 func (a *ServiceAccount) GetUsers(options *model.UserGetOptions) ([]*model.User, *model.AppError) {
@@ -441,7 +394,9 @@ func (a *ServiceAccount) GetUsers(options *model.UserGetOptions) ([]*model.User,
 }
 
 func (a *ServiceAccount) GenerateMfaSecret(userID string) (*model.MfaSecret, *model.AppError) {
-	user, appErr := a.UserById(context.Background(), userID)
+	user, appErr := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
+		Id: squirrel.Eq{store.UserTableName + ".Id": userID},
+	})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -463,15 +418,11 @@ func (a *ServiceAccount) GenerateMfaSecret(userID string) (*model.MfaSecret, *mo
 }
 
 func (a *ServiceAccount) ActivateMfa(userID, token string) *model.AppError {
-	user, err := a.srv.Store.User().Get(context.Background(), userID)
-	if err != nil {
-		var nfErr *store.ErrNotFound
-		switch {
-		case errors.As(err, &nfErr):
-			return model.NewAppError("ActivateMfa", MissingAccountError, nil, nfErr.Error(), http.StatusNotFound)
-		default:
-			return model.NewAppError("ActivateMfa", "app.user.get.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
+	user, appErr := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
+		Id: squirrel.Eq{store.UserTableName + ".Id": userID},
+	})
+	if appErr != nil {
+		return appErr
 	}
 
 	if user.AuthService != "" && user.AuthService != model.USER_AUTH_SERVICE_LDAP {
@@ -697,7 +648,9 @@ func (a *ServiceAccount) UpdateActive(c *request.Context, user *model.User, acti
 }
 
 func (a *ServiceAccount) UpdateHashedPasswordByUserId(userID, newHashedPassword string) *model.AppError {
-	user, err := a.UserById(context.Background(), userID)
+	user, err := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
+		Id: squirrel.Eq{store.UserTableName + ".Id": userID},
+	})
 	if err != nil {
 		return err
 	}
@@ -762,7 +715,9 @@ func (a *ServiceAccount) UpdateUserRolesWithUser(user *model.User, newRoles stri
 }
 
 func (a *ServiceAccount) PermanentDeleteAllUsers(c *request.Context) *model.AppError {
-	users, err := a.srv.Store.User().GetAll()
+	users, err := a.FidUsersByOptions(context.TODO(), &model.UserFilterOptions{
+		OrderBy: "Users.Username ASC",
+	})
 	if err != nil {
 		return model.NewAppError("PermanentDeleteAllUsers", "app.user.get.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -773,10 +728,24 @@ func (a *ServiceAccount) PermanentDeleteAllUsers(c *request.Context) *model.AppE
 	return nil
 }
 
+func (a *ServiceAccount) UserById(ctx context.Context, userID string) (*model.User, *model.AppError) {
+	return a.GetUserByOptions(ctx, &model.UserFilterOptions{
+		Id: squirrel.Eq{store.UserTableName + ".Id": userID},
+	})
+}
+
 func (a *ServiceAccount) UpdateUser(user *model.User, sendNotifications bool) (*model.User, *model.AppError) {
 	prev, appErr := a.UserById(context.Background(), user.Id)
 	if appErr != nil {
 		return nil, appErr
+	}
+
+	if prev.CreateAt != user.CreateAt {
+		user.CreateAt = prev.CreateAt
+	}
+
+	if prev.Username != user.Username {
+		user.Username = prev.Username
 	}
 
 	var newEmail string
@@ -791,7 +760,9 @@ func (a *ServiceAccount) UpdateUser(user *model.User, sendNotifications bool) (*
 			newEmail = user.Email
 			// Don't set new eMail on user account if email verification is required, this will be done as a post-verification action
 			// to avoid users being able to set non-controlled eMails as their account email
-			if _, appErr := a.UserByEmail(newEmail); appErr == nil {
+			if _, appErr := a.GetUserByOptions(context.Background(), &model.UserFilterOptions{
+				Extra: squirrel.Expr("Users.Email = lower(?)", newEmail),
+			}); appErr == nil {
 				return nil, model.NewAppError("UpdateUser", "app.user.save.email_exists.app_error", nil, "user_id="+user.Id, http.StatusBadRequest)
 			}
 
@@ -818,6 +789,8 @@ func (a *ServiceAccount) UpdateUser(user *model.User, sendNotifications bool) (*
 			return nil, model.NewAppError("UpdateUser", "app.user.update.finding.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 	}
+
+	// TODO: consider update default profile image for user
 
 	if sendNotifications {
 		if userUpdate.New.Email != userUpdate.Old.Email || newEmail != "" {
@@ -1120,9 +1093,11 @@ func (a *ServiceAccount) GetUsersByIds(userIDs []string, options *store.UserGetB
 }
 
 func (a *ServiceAccount) GetUsersByUsernames(usernames []string, asAdmin bool) ([]*model.User, *model.AppError) {
-	users, err := a.srv.Store.User().GetProfilesByUsernames(usernames)
+	users, err := a.FidUsersByOptions(context.Background(), &model.UserFilterOptions{
+		Username: squirrel.Eq{store.UserTableName + ".Username": usernames},
+	})
 	if err != nil {
-		return nil, model.NewAppError("GetUsersByUsernames", "app.user.get_profiles.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, err
 	}
 	return a.sanitizeProfiles(users, asAdmin), nil
 }
@@ -1160,9 +1135,11 @@ func (a *ServiceAccount) UpdateUserRoles(userID string, newRoles string, sendWeb
 }
 
 func (a *ServiceAccount) SendPasswordReset(email string, siteURL string) (bool, *model.AppError) {
-	user, err := a.UserByEmail(email)
+	user, err := a.GetUserByOptions(context.TODO(), &model.UserFilterOptions{
+		Email: squirrel.Eq{store.UserTableName + ".Email": email},
+	})
 	if err != nil {
-		return false, nil
+		return false, err
 	}
 
 	if user.AuthData != nil && *user.AuthData != "" {
@@ -1280,20 +1257,6 @@ func (a *ServiceAccount) UpdateUserActive(c *request.Context, userID string, act
 	return nil
 }
 
-// UserByOrderId returns an user who owns given order
-func (a *ServiceAccount) UserByOrderId(orderID string) (*model.User, *model.AppError) {
-	user, err := a.srv.Store.User().UserByOrderID(orderID)
-	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("UserByOrderId", "app.model.error_finding_user_by_order_id.app_error", nil, err.Error(), statusCode)
-	}
-
-	return user, nil
-}
-
 // InvalidateCacheForUser invalidates cache for given user
 func (us *ServiceAccount) InvalidateCacheForUser(userID string) {
 	// us.srv.Store.User().InvalidateProfilesInChannelCacheByUser(userID)
@@ -1316,4 +1279,25 @@ func (us *ServiceAccount) ClearAllUsersSessionCacheLocal() {
 
 func getProfileImagePath(userID string) string {
 	return filepath.Join("users", userID, "profile.png")
+}
+
+func (s *ServiceAccount) FidUsersByOptions(ctx context.Context, options *model.UserFilterOptions) ([]*model.User, *model.AppError) {
+	users, err := s.srv.Store.User().FilterByOptions(ctx, options)
+	if err != nil {
+		return nil, model.NewAppError("FidUsersByOptions", "app.account.users_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return users, nil
+}
+
+func (s *ServiceAccount) GetUserByOptions(ctx context.Context, options *model.UserFilterOptions) (*model.User, *model.AppError) {
+	user, err := s.srv.Store.User().GetByOptions(ctx, options)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+
+		return nil, model.NewAppError("GetUserByOptions", "app.account.user_by_options.app_error", nil, err.Error(), statusCode)
+	}
+	return user, nil
 }

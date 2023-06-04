@@ -20,16 +20,17 @@ type Payment  {
   checkout: Checkout
   order: Order
   paymentMethodType: String!
-  customerIpAddress: String
+  customerIpAddress: String @hasRoleAny(roles: [shop_admin, shop_staff])
   privateMetadata: [MetadataItem]!
-  metadata: [MetadataItem]!
+  # in resolver method, checks if current payment was made by requester
+  metadata: [MetadataItem]! @hasRoleAny(roles: [shop_admin, shop_staff, system_user])
   chargeStatus: PaymentChargeStatusEnum!
-  actions: [OrderAction!]!
+  actions: [OrderAction!]!  @hasRoleAny(roles: [shop_admin, shop_staff])
   total: Money
   capturedAmount: Money
-  transactions: [Transaction]!
-  availableCaptureAmount: Money
-  availableRefundAmount: Money
+  transactions: [Transaction]! @hasRoleAny(roles: [shop_admin, shop_staff])
+  availableCaptureAmount: Money @hasRoleAny(roles: [shop_admin, shop_staff])
+  availableRefundAmount: Money @hasRoleAny(roles: [shop_admin, shop_staff])
   creditCard: CreditCard
 }
 

@@ -84,41 +84,37 @@ func (p *Payment) Order(ctx context.Context) (*Order, error) {
 	return SystemOrderToGraphqlOrder(order), nil
 }
 
+// requester must be owner of payment or a shop's member.
+// Refer to ./schemas/payment.graphqls for details on directive used
 func (p *Payment) Metadata(ctx context.Context) ([]*MetadataItem, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
+
+	userRoles := embedCtx.AppContext.Session().GetUserRoles()
+	if !userRoles.Contains(model.ShopStaffRoleId) {
+
+		// TODO: checks if we need a dataloader for this
+		currentUserOwnPayment, err := embedCtx.App.Srv().Store.Payment().PaymentOwnedByUser(embedCtx.AppContext.Session().UserId, p.p.Id)
+		if err != nil {
+			return nil, model.NewAppError("Payment.Metadata", "app.payment.checking_user_own_payment.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+
+		if currentUserOwnPayment {
+			return MetadataToSlice(p.p.Metadata), nil
+		}
+		return nil, MakeUnauthorizedError("Payment.Metadata")
 	}
 
-	currentUserOwnPayment, err := embedCtx.App.Srv().Store.Payment().PaymentOwnedByUser(embedCtx.AppContext.Session().UserId, p.p.Id)
-	if err != nil {
-		return nil, model.NewAppError("Payment.Metadata", "app.payment.checking_user_own_payment.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	if currentUserOwnPayment || embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		return MetadataToSlice(p.p.Metadata), nil
-	}
-
-	return nil, MakeUnauthorizedError("Payment.Metadata")
+	return MetadataToSlice(p.p.Metadata), nil
 }
 
+// NOTE: Refer to ./schemas/payment.graphqls for derective used on this method.
 func (p *Payment) CustomerIPAddress(ctx context.Context) (*string, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasRoles(model.ShopStaffRoleId)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
 	return p.p.CustomerIpAddress, nil
 }
 
+// NOTE: Refer to ./schemas/payment.graphqls for derective used on this method.
 func (p *Payment) Actions(ctx context.Context) ([]OrderAction, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasRoles(model.ShopStaffRoleId)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	actions := []OrderAction{}
 	if p.p.CanCapture() {
@@ -127,6 +123,8 @@ func (p *Payment) Actions(ctx context.Context) ([]OrderAction, error) {
 	if p.p.CanRefund() {
 		actions = append(actions, OrderActionRefund)
 	}
+
+	// TODO: check if we need a dataloader for this
 	canVoid, appErr := embedCtx.App.Srv().PaymentService().PaymentCanVoid(p.p)
 	if appErr != nil {
 		return nil, appErr
@@ -138,13 +136,8 @@ func (p *Payment) Actions(ctx context.Context) ([]OrderAction, error) {
 	return actions, nil
 }
 
+// NOTE: Refer to ./schemas/payment.graphqls for derective used on this method.
 func (p *Payment) Transactions(ctx context.Context) ([]*Transaction, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasRoles(model.ShopStaffRoleId)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
 	transactions, err := TransactionsByPaymentIdLoader.Load(ctx, p.p.Id)()
 	if err != nil {
 		return nil, err
@@ -152,37 +145,25 @@ func (p *Payment) Transactions(ctx context.Context) ([]*Transaction, error) {
 	return DataloaderResultMap(transactions, systemTransactionToGraphqlTransaction), nil
 }
 
+// NOTE: permissions/roles are checked by directives. Refer to ./schemas/payment.graphqls for details
 func (p *Payment) AvailableCaptureAmount(ctx context.Context) (*Money, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	if embedCtx.App.Srv().AccountService().
-		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
-		if p.p.CanCapture() {
-			return &Money{
-				Amount:   p.p.GetChargeAmount().InexactFloat64(),
-				Currency: p.p.Currency,
-			}, nil
-		}
-
-		return nil, nil
+	if p.p.CanCapture() {
+		return &Money{
+			Amount:   p.p.GetChargeAmount().InexactFloat64(),
+			Currency: p.p.Currency,
+		}, nil
 	}
 
-	return nil, model.NewAppError("Payment.AvailableCaptureAmount", ErrorUnauthorized, nil, "you are not authorized to perform this action.", http.StatusUnauthorized)
+	return nil, nil
 }
 
+// NOTE: permissions/roles are checked by directives. Refer to ./schemas/payment.graphqls for details
 func (p *Payment) AvailableRefundAmount(ctx context.Context) (*Money, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	if embedCtx.App.Srv().AccountService().
-		SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageOrders) {
-		if p.p.CanRefund() {
-			return SystemMoneyToGraphqlMoney(p.p.GetCapturedAmount()), nil
-		}
-
-		return nil, nil
+	if p.p.CanRefund() {
+		return SystemMoneyToGraphqlMoney(p.p.GetCapturedAmount()), nil
 	}
 
-	return nil, model.NewAppError("Payment.AvailableRefundAmount", ErrorUnauthorized, nil, "you are not authorized to perform this action.", http.StatusUnauthorized)
+	return nil, nil
 }
 
 func (p *Payment) CreditCard(ctx context.Context) (*CreditCard, error) {
@@ -231,10 +212,9 @@ func paymentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataload
 	}
 
 	for _, payment := range payments {
-		if payment.OrderID == nil {
-			continue
+		if payment.OrderID != nil {
+			paymentMap[*payment.OrderID] = append(paymentMap[*payment.OrderID], payment)
 		}
-		paymentMap[*payment.OrderID] = append(paymentMap[*payment.OrderID], payment)
 	}
 	for idx, id := range orderIDs {
 		res[idx] = &dataloader.Result[[]*model.Payment]{Data: paymentMap[id]}
@@ -303,11 +283,11 @@ func systemTransactionToGraphqlTransaction(t *model.PaymentTransaction) *Transac
 }
 
 func (t *Transaction) Payment(ctx context.Context) (*Payment, error) {
-	p, err := PaymentsByTokensLoader.Load(ctx, t.t.PaymentID)()
+	payment, err := PaymentsByTokensLoader.Load(ctx, t.t.PaymentID)()
 	if err != nil {
 		return nil, err
 	}
-	return SystemPaymentToGraphqlPayment(p), nil
+	return SystemPaymentToGraphqlPayment(payment), nil
 }
 
 func transactionsByPaymentIdLoader(ctx context.Context, paymentIDs []string) []*dataloader.Result[[]*model.PaymentTransaction] {

@@ -23,8 +23,8 @@ type Address {
   country: CountryDisplay!
   countryArea: String!
   phone: String!
-  isDefaultShippingAddress: Boolean
-  isDefaultBillingAddress: Boolean
+  isDefaultShippingAddress: Boolean @authenticated
+  isDefaultBillingAddress: Boolean @authenticated
 }
 
 input AddressInput {

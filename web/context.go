@@ -79,6 +79,22 @@ func (c *Context) CheckAuthenticatedAndHasRoles(apiName string, roleIDs ...strin
 	}
 }
 
+func (c *Context) CheckAuthenticatedAndHasRoleAny(apiName string, roleIDs ...string) {
+	c.SessionRequired()
+	if c.Err != nil {
+		return
+	}
+
+	roleIdsMap := lo.SliceToMap(roleIDs, func(r string) (string, bool) { return r, true })
+	for _, role := range c.AppContext.Session().GetUserRoles() {
+		if roleIdsMap[role] {
+			return
+		}
+	}
+
+	c.Err = model.NewAppError(apiName, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+}
+
 // MfaRequired must be placed after c's SessionRequired() method
 func (c *Context) MfaRequired() {
 	// OAuth integrations are excepted
@@ -156,9 +172,9 @@ func (c *Context) RemoveSessionCookie(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie)
 }
 
-func (c *Context) SetInvalidParam(parameter string) {
-	c.Err = NewInvalidParamError(parameter)
-}
+// func (c *Context) SetInvalidParam(parameter string) {
+// 	c.Err = NewInvalidParamError(parameter)
+// }
 
 func (c *Context) SetInvalidUrlParam(parameter string) {
 	c.Err = NewInvalidUrlParamError(parameter)
@@ -169,21 +185,21 @@ func (c *Context) SetServerBusyError() {
 	c.Err = NewServerBusyError()
 }
 
-func (c *Context) SetInvalidRemoteIdError(id string) {
-	c.Err = NewInvalidRemoteIdError(id)
-}
+// func (c *Context) SetInvalidRemoteIdError(id string) {
+// 	c.Err = NewInvalidRemoteIdError(id)
+// }
 
-func (c *Context) SetInvalidRemoteClusterTokenError() {
-	c.Err = NewInvalidRemoteClusterTokenError()
-}
+// func (c *Context) SetInvalidRemoteClusterTokenError() {
+// 	c.Err = NewInvalidRemoteClusterTokenError()
+// }
 
 func (c *Context) SetJSONEncodingError() {
 	c.Err = NewJSONEncodingError()
 }
 
-func (c *Context) SetCommandNotFoundError() {
-	c.Err = model.NewAppError("GetCommand", "store.sql_command.save.get.app_error", nil, "", http.StatusNotFound)
-}
+// func (c *Context) SetCommandNotFoundError() {
+// 	c.Err = model.NewAppError("GetCommand", "store.sql_command.save.get.app_error", nil, "", http.StatusNotFound)
+// }
 
 func (c *Context) HandleEtag(etag string, routeName string, w http.ResponseWriter, r *http.Request) bool {
 	metrics := c.App.Metrics()
@@ -211,10 +227,10 @@ func (c *Context) IsSystemAdmin() bool {
 	return c.Err == nil && c.AppContext.Session().GetUserRoles().Contains(model.SystemAdminRoleId)
 }
 
-func NewInvalidParamError(parameter string) *model.AppError {
-	err := model.NewAppError("Context", "api.context.invalid_body_param.app_error", map[string]interface{}{"Name": parameter}, "", http.StatusBadRequest)
-	return err
-}
+//	func NewInvalidParamError(parameter string) *model.AppError {
+//		err := model.NewAppError("Context", "api.context.invalid_body_param.app_error", map[string]interface{}{"Name": parameter}, "", http.StatusBadRequest)
+//		return err
+//	}
 func NewInvalidUrlParamError(parameter string) *model.AppError {
 	err := model.NewAppError("Context", "api.context.invalid_url_param.app_error", map[string]interface{}{"Name": parameter}, "", http.StatusBadRequest)
 	return err
@@ -224,15 +240,15 @@ func NewServerBusyError() *model.AppError {
 	return err
 }
 
-func NewInvalidRemoteIdError(parameter string) *model.AppError {
-	err := model.NewAppError("Context", "api.context.remote_id_invalid.app_error", map[string]interface{}{"RemoteId": parameter}, "", http.StatusBadRequest)
-	return err
-}
+// func NewInvalidRemoteIdError(parameter string) *model.AppError {
+// 	err := model.NewAppError("Context", "api.context.remote_id_invalid.app_error", map[string]interface{}{"RemoteId": parameter}, "", http.StatusBadRequest)
+// 	return err
+// }
 
-func NewInvalidRemoteClusterTokenError() *model.AppError {
-	err := model.NewAppError("Context", "api.context.remote_id_invalid.app_error", nil, "", http.StatusUnauthorized)
-	return err
-}
+// func NewInvalidRemoteClusterTokenError() *model.AppError {
+// 	err := model.NewAppError("Context", "api.context.remote_id_invalid.app_error", nil, "", http.StatusUnauthorized)
+// 	return err
+// }
 
 func NewJSONEncodingError() *model.AppError {
 	err := model.NewAppError("Context", "api.context.json_encoding.app_error", nil, "", http.StatusInternalServerError)

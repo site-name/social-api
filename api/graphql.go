@@ -36,8 +36,16 @@ func (api *API) InitGraphql() error {
 		graphql.MaxParallelism(200),
 		graphql.MaxDepth(4),
 		graphql.UseStringDescriptions(),
-		graphql.Directives(&HasRolesDirective{}, &HasPermissionsDirective{}, &AuthenticatedDirective{}),
-		// graphql.DisableIntrospection(),
+		graphql.Directives(
+			&HasRolesDirective{},
+			&HasPermissionsDirective{},
+			&AuthenticatedDirective{},
+			&HasPermissionAnyDirective{},
+		),
+	}
+
+	if model.BuildNumber != "dev" {
+		opts = append(opts, graphql.DisableIntrospection())
 	}
 
 	api.schema, err = graphql.ParseSchema(schemaString, &Resolver{srv: api.srv}, opts...)
