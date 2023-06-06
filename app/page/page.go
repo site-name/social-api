@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 )
 
@@ -17,10 +16,9 @@ type ServicePage struct {
 }
 
 func init() {
-	app.RegisterPageService(func(s *app.Server) (sub_app_iface.PageService, error) {
-		return &ServicePage{
-			srv: s,
-		}, nil
+	app.RegisterService(func(s *app.Server) error {
+		s.Page = &ServicePage{s}
+		return nil
 	})
 }
 

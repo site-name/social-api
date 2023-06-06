@@ -10,6 +10,10 @@ import (
 
 type ProductTypeKind string
 
+func (p ProductTypeKind) IsValid() bool {
+	return ProductTypeKindStrings[p] != ""
+}
+
 // some valid value for product type kind
 const (
 	NORMAL    ProductTypeKind = "normal"

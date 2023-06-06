@@ -626,7 +626,7 @@ func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue 
 	return nil
 }
 
-func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder, value string, channelIdOrSlug string) squirrel.SelectBuilder {
+func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder, value model.StockAvailability, channelIdOrSlug string) squirrel.SelectBuilder {
 	var prefix string
 
 	switch value {

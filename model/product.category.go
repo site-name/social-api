@@ -16,7 +16,7 @@ const (
 	CATEGORY_BG_IMAGE_ALT_MAX_LENGTH = 128
 
 	CATEGORY_MIN_LEVEL = 0
-	CATEGORY_MAX_LEVEL = 4
+	// CATEGORY_MAX_LEVEL = 4
 
 	CATEGORY_IMAGES_MAX_LENGTH = 1000
 )
@@ -112,7 +112,7 @@ func (c *Category) IsValid() *AppError {
 	if utf8.RuneCountInString(c.Slug) > CATEGORY_SLUG_MAX_LENGTH {
 		return outer("slug", &c.Id)
 	}
-	if c.Level < CATEGORY_MIN_LEVEL || c.Level > CATEGORY_MAX_LEVEL {
+	if c.Level < CATEGORY_MIN_LEVEL {
 		return outer("level", &c.Id)
 	}
 	if c.Images != "" && len(c.Images) > CATEGORY_IMAGES_MAX_LENGTH {

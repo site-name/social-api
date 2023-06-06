@@ -9,7 +9,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
@@ -20,10 +19,9 @@ type ServiceChannel struct {
 }
 
 func init() {
-	app.RegisterChannelService(func(s *app.Server) (sub_app_iface.ChannelService, error) {
-		return &ServiceChannel{
-			srv: s,
-		}, nil
+	app.RegisterService(func(s *app.Server) error {
+		s.Channel = &ServiceChannel{s}
+		return nil
 	})
 }
 

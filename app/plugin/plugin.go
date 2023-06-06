@@ -22,8 +22,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/app/request"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/plugin"
@@ -35,13 +35,27 @@ import (
 const prepackagedPluginsDir = "prepackaged_plugins"
 
 type ServicePlugin struct {
-	srv *app.Server
+	srv           *app.Server
+	pluginManager interfaces.PluginManagerInterface
 }
 
 func init() {
-	app.RegisterPluginService(func(s *app.Server) (sub_app_iface.PluginService, error) {
-		return &ServicePlugin{s}, nil
+	app.RegisterService(func(s *app.Server) error {
+		service := &ServicePlugin{srv: s}
+
+		var appErr *model.AppError
+		service.pluginManager, appErr = service.newPluginManager()
+		if appErr != nil {
+			return appErr
+		}
+
+		s.Plugin = service
+		return nil
 	})
+}
+
+func (s *ServicePlugin) GetPluginManager() interfaces.PluginManagerInterface {
+	return s.pluginManager
 }
 
 type pluginSignaturePath struct {

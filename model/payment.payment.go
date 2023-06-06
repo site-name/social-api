@@ -31,19 +31,25 @@ const (
 	GATE_WAY_MANUAL = "manual"
 )
 
+type PaymentChargeStatus string
+
+func (p PaymentChargeStatus) IsValid() bool {
+	return ChargeStatuString[p] != ""
+}
+
 // Choices for charge status
 const (
-	NOT_CHARGED        = "not_charged"
-	PENDING            = "pending"
-	PARTIALLY_CHARGED  = "partially_charged"
-	FULLY_CHARGED      = "fully_charged"
-	PARTIALLY_REFUNDED = "partially_refunded"
-	FULLY_REFUNDED     = "fully_refunded"
-	REFUSED            = "refused"
-	CANCELLED          = "cancelled"
+	NOT_CHARGED        PaymentChargeStatus = "not_charged"
+	PENDING            PaymentChargeStatus = "pending"
+	PARTIALLY_CHARGED  PaymentChargeStatus = "partially_charged"
+	FULLY_CHARGED      PaymentChargeStatus = "fully_charged"
+	PARTIALLY_REFUNDED PaymentChargeStatus = "partially_refunded"
+	FULLY_REFUNDED     PaymentChargeStatus = "fully_refunded"
+	REFUSED            PaymentChargeStatus = "refused"
+	CANCELLED          PaymentChargeStatus = "cancelled"
 )
 
-var ChargeStatuString = map[string]string{
+var ChargeStatuString = map[PaymentChargeStatus]string{
 	NOT_CHARGED:        "Not charged",
 	PENDING:            "Pending",
 	PARTIALLY_CHARGED:  "Partially charged",
@@ -56,41 +62,41 @@ var ChargeStatuString = map[string]string{
 
 // Payment represents payment from user to shop
 type Payment struct {
-	Id                 string             `json:"id"`
-	GateWay            string             `json:"gate_way"`
-	IsActive           *bool              `json:"is_active"` // default true
-	ToConfirm          bool               `json:"to_confirm"`
-	CreateAt           int64              `json:"create_at"`
-	UpdateAt           int64              `json:"update_at"`
-	ChargeStatus       string             `json:"charge_status"`
-	Token              string             `json:"token"`
-	Total              *decimal.Decimal   `json:"total"`           // DEFAULT decimal(0)
-	CapturedAmount     *decimal.Decimal   `json:"captured_amount"` // DEFAULT decimal(0)
-	Currency           string             `json:"currency"`        // default 'USD'
-	CheckoutID         *string            `json:"checkout_id"`     // foreign key to checkout
-	OrderID            *string            `json:"order_id"`        // foreign key to order
-	BillingEmail       string             `json:"billing_email"`
-	BillingFirstName   string             `json:"billing_first_name"`
-	BillingLastName    string             `json:"billing_last_name"`
-	BillingCompanyName string             `json:"billing_company_name"`
-	BillingAddress1    string             `json:"billing_address_1"`
-	BillingAddress2    string             `json:"billing_address_2"`
-	BillingCity        string             `json:"billing_city"`
-	BillingCityArea    string             `json:"billing_city_area"`
-	BillingPostalCode  string             `json:"billing_postal_code"`
-	BillingCountryCode CountryCode        `json:"billing_country_code"`
-	BillingCountryArea string             `json:"billing_country_area"`
-	CcFirstDigits      string             `json:"cc_first_digits"`
-	CcLastDigits       string             `json:"cc_last_digits"`
-	CcBrand            string             `json:"cc_brand"`
-	CcExpMonth         *uint8             `json:"cc_exp_month"`
-	CcExpYear          *uint16            `json:"cc_exp_year"`
-	PaymentMethodType  string             `json:"payment_method_type"`
-	CustomerIpAddress  *string            `json:"customer_ip_address"`
-	ExtraData          string             `json:"extra_data"`
-	ReturnUrl          *string            `json:"return_url_url"`
-	PspReference       *string            `json:"psp_reference"`        // db index
-	StorePaymentMethod StorePaymentMethod `json:"store_payment_method"` // default to "none"
+	Id                 string              `json:"id"`
+	GateWay            string              `json:"gate_way"`
+	IsActive           *bool               `json:"is_active"` // default true
+	ToConfirm          bool                `json:"to_confirm"`
+	CreateAt           int64               `json:"create_at"`
+	UpdateAt           int64               `json:"update_at"`
+	ChargeStatus       PaymentChargeStatus `json:"charge_status"`
+	Token              string              `json:"token"`
+	Total              *decimal.Decimal    `json:"total"`           // DEFAULT decimal(0)
+	CapturedAmount     *decimal.Decimal    `json:"captured_amount"` // DEFAULT decimal(0)
+	Currency           string              `json:"currency"`        // default 'USD'
+	CheckoutID         *string             `json:"checkout_id"`     // foreign key to checkout
+	OrderID            *string             `json:"order_id"`        // foreign key to order
+	BillingEmail       string              `json:"billing_email"`
+	BillingFirstName   string              `json:"billing_first_name"`
+	BillingLastName    string              `json:"billing_last_name"`
+	BillingCompanyName string              `json:"billing_company_name"`
+	BillingAddress1    string              `json:"billing_address_1"`
+	BillingAddress2    string              `json:"billing_address_2"`
+	BillingCity        string              `json:"billing_city"`
+	BillingCityArea    string              `json:"billing_city_area"`
+	BillingPostalCode  string              `json:"billing_postal_code"`
+	BillingCountryCode CountryCode         `json:"billing_country_code"`
+	BillingCountryArea string              `json:"billing_country_area"`
+	CcFirstDigits      string              `json:"cc_first_digits"`
+	CcLastDigits       string              `json:"cc_last_digits"`
+	CcBrand            string              `json:"cc_brand"`
+	CcExpMonth         *uint8              `json:"cc_exp_month"`
+	CcExpYear          *uint16             `json:"cc_exp_year"`
+	PaymentMethodType  string              `json:"payment_method_type"`
+	CustomerIpAddress  *string             `json:"customer_ip_address"`
+	ExtraData          string              `json:"extra_data"`
+	ReturnUrl          *string             `json:"return_url_url"`
+	PspReference       *string             `json:"psp_reference"`        // db index
+	StorePaymentMethod StorePaymentMethod  `json:"store_payment_method"` // default to "none"
 	ModelMetadata
 }
 
@@ -135,7 +141,7 @@ func (p *Payment) CanCapture() bool {
 	return *p.IsActive && p.NotCharged()
 }
 
-var canRefundChargeStatuses = util.AnyArray[string]{
+var canRefundChargeStatuses = util.AnyArray[PaymentChargeStatus]{
 	PARTIALLY_CHARGED,
 	FULLY_CHARGED,
 	PARTIALLY_REFUNDED,
@@ -195,7 +201,7 @@ func (p *Payment) IsValid() *AppError {
 	if utf8.RuneCountInString(p.GateWay) > MAX_LENGTH_PAYMENT_GATEWAY {
 		return outer("gateway", &p.Id)
 	}
-	if ChargeStatuString[strings.ToLower(p.ChargeStatus)] == "" {
+	if !p.ChargeStatus.IsValid() {
 		return outer("charge_status", &p.Id)
 	}
 	if utf8.RuneCountInString(p.Token) > MAX_LENGTH_PAYMENT_TOKEN {
@@ -293,7 +299,7 @@ func (p *Payment) commonPre() {
 	if p.CapturedAmount == nil || p.CapturedAmount.LessThanOrEqual(decimal.Zero) {
 		p.CapturedAmount = &decimal.Zero
 	}
-	if _, ok := ChargeStatuString[strings.ToLower(p.ChargeStatus)]; !ok {
+	if !p.ChargeStatus.IsValid() {
 		p.ChargeStatus = NOT_CHARGED
 	}
 	if p.IsActive == nil {

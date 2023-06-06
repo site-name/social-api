@@ -16,16 +16,12 @@ import (
 	"github.com/sitename/sitename/web"
 )
 
+// NOTE: Refer to ./schemas/account.graphqls for details on directive used
 func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	Input AddressInput
 	Type  *model.AddressTypeEnum
 }) (*AccountAddressCreate, error) {
-	// get embeded context in current request
 	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
-	embedContext.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateAddress)
-	if embedContext.Err != nil {
-		return nil, embedContext.Err
-	}
 	currentSession := embedContext.AppContext.Session()
 
 	appErr := args.Input.Validate()
@@ -73,17 +69,13 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/account.graphqls for details on directive used
 func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AddressInput
 }) (*AccountAddressUpdate, error) {
-	// check authenticated first
-	embededContext := GetContextValue[*web.Context](ctx, WebCtx)
-	embededContext.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateAddress)
-	if embededContext.Err != nil {
-		return nil, embededContext.Err
-	}
-	currentSession := embededContext.AppContext.Session()
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	currentSession := embedCtx.AppContext.Session()
 
 	// validate given address id
 	if !model.IsValidId(args.Id) {
@@ -96,7 +88,7 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	}
 
 	// check if user really owns the address:
-	addresses, appErr := embededContext.App.Srv().AccountService().AddressesByUserId(currentSession.UserId)
+	addresses, appErr := embedCtx.App.Srv().AccountService().AddressesByUserId(currentSession.UserId)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -108,26 +100,31 @@ func (r *Resolver) AccountAddressUpdate(ctx context.Context, args struct {
 	args.Input.PatchAddress(address)
 
 	// update address
-	savedAddress, appErr := embededContext.App.Srv().AccountService().UpsertAddress(nil, address)
+	savedAddress, appErr := embedCtx.App.Srv().AccountService().UpsertAddress(nil, address)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	panic("not implemented") // TODO: complete plugin manager
+	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+	_, appErr = pluginManager.CustomerUpdated(model.User{Id: currentSession.UserId})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	finalAddress, appErr := pluginManager.ChangeUserAddress(*savedAddress, nil, &model.User{Id: currentSession.UserId})
+	if appErr != nil {
+		return nil, appErr
+	}
 
 	return &AccountAddressUpdate{
-		Address: SystemAddressToGraphqlAddress(savedAddress),
+		Address: SystemAddressToGraphqlAddress(finalAddress),
 		User:    &User{ID: currentSession.UserId},
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/account.graphqls for details on directive used
 func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id string }) (*AccountAddressDelete, error) {
-	// get embed context
 	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
-	embedContext.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAddress)
-	if embedContext.Err != nil {
-		return nil, embedContext.Err
-	}
 	currentSession := embedContext.AppContext.Session()
 
 	if !model.IsValidId(args.Id) {
@@ -135,15 +132,13 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 	}
 
 	// check if current user has this address
-	userAddressRelations, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
-		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": currentSession.UserId},
-		AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
-	})
+	addresses, appErr := embedContext.App.Srv().AccountService().AddressesByUserId(currentSession.UserId)
 	if appErr != nil {
 		return nil, appErr
 	}
-	if len(userAddressRelations) == 0 {
-		return nil, MakeUnauthorizedError("AccountAddressDelete")
+	address, found := lo.Find(addresses, func(addr *model.Address) bool { return addr.Id == args.Id })
+	if !found {
+		return nil, MakeUnauthorizedError("AccountAddressUpdate")
 	}
 
 	// delete user-address relation, keep address
@@ -152,34 +147,30 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 		return nil, appErr
 	}
 
-	panic("not implemented") // TODO : complete plugin manager
+	pluginMng := embedContext.App.Srv().PluginService().GetPluginManager()
+	_, appErr = pluginMng.CustomerUpdated(model.User{Id: currentSession.UserId})
+	if appErr != nil {
+		return nil, appErr
+	}
 
-	return &AccountAddressDelete{true}, nil
+	finalAddress, appErr := pluginMng.ChangeUserAddress(*address, nil, &model.User{Id: currentSession.UserId})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &AccountAddressDelete{
+		Address: SystemAddressToGraphqlAddress(finalAddress),
+		User:    &User{ID: currentSession.UserId},
+	}, nil
 }
 
+// NOTE: Refer to ./schemas/account.graphqls for details on directive used
 func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 	Id   string
 	Type model.AddressTypeEnum
 }) (*AccountSetDefaultAddress, error) {
-	// check if requester is authenticated
-	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
-	embedContext.SessionRequired()
-	if embedContext.Err != nil {
-		return nil, embedContext.Err
-	}
-	currentSession := embedContext.AppContext.Session()
-
-	// check if current user own this address
-	userAddressRelations, appErr := embedContext.App.Srv().AccountService().FilterUserAddressRelations(&model.UserAddressFilterOptions{
-		UserID:    squirrel.Eq{store.UserAddressTableName + ".UserID": currentSession.UserId},
-		AddressID: squirrel.Eq{store.UserAddressTableName + ".AddressID": args.Id},
-	})
-	if appErr != nil {
-		return nil, appErr
-	}
-	if len(userAddressRelations) == 0 {
-		return nil, MakeUnauthorizedError("AccountSetDefaultAddress")
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	currentSession := embedCtx.AppContext.Session()
 
 	// validate arguments
 	if !model.IsValidId(args.Id) {
@@ -189,44 +180,57 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 		return nil, model.NewAppError("api.AccountSetDefaultAddress", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "invalid address type provided", http.StatusBadRequest)
 	}
 
+	// check if current user own this address
+	addresses, appErr := embedCtx.App.Srv().AccountService().AddressesByUserId(currentSession.UserId)
+	if appErr != nil {
+		return nil, appErr
+	}
+	address, found := lo.Find(addresses, func(addr *model.Address) bool { return addr.Id == args.Id })
+	if !found {
+		return nil, MakeUnauthorizedError("AccountAddressUpdate")
+	}
+
+	user, appErr := embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
+		Id: squirrel.Eq{store.UserTableName + ".Id": currentSession.UserId},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+
 	// perform change user default address
-	appErr = embedContext.App.
-		Srv().
+	appErr = embedCtx.App.Srv().
 		AccountService().
 		ChangeUserDefaultAddress(
-			model.User{Id: currentSession.UserId},
-			model.Address{Id: args.Id},
+			*user,
+			*address,
 			args.Type,
-			nil,
+			pluginManager,
 		)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	panic("not implemented") // TODO: complete manager plugin
+	_, appErr = pluginManager.CustomerUpdated(*user)
+	if appErr != nil {
+		return nil, appErr
+	}
 
 	return &AccountSetDefaultAddress{
-		User: &User{
-			ID: currentSession.UserId,
-		},
+		User: SystemUserToGraphqlUser(user),
 	}, nil
 }
 
 func (r *Resolver) AccountRegister(ctx context.Context, args struct{ Input AccountRegisterInput }) (*AccountRegister, error) {
-	// this request does not require user to be authenticated
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/account.graphqls for details on directive used
 func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input AccountInput }) (*AccountUpdate, error) {
-	// check if requester is authenticated
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
-	// find requester
-	user, appErr := r.srv.AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
+	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -241,7 +245,7 @@ func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input Account
 		user.Locale = val.String()
 	}
 	// save user
-	user, appErr = r.srv.AccountService().UpdateUser(user, false)
+	user, appErr = embedCtx.App.Srv().AccountService().UpdateUser(user, false)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -269,6 +273,7 @@ func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input Account
 	return &AccountUpdate{SystemUserToGraphqlUser(user)}, nil
 }
 
+// NOTE: Refer to ./schemas/account.graphqls for details on directive used
 // this create a link (with a token attached), sends to user's email address
 func (r *Resolver) AccountRequestDeletion(ctx context.Context, args struct {
 	Channel     *string
@@ -277,13 +282,9 @@ func (r *Resolver) AccountRequestDeletion(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/account.graphqls for details on directive used
 func (r *Resolver) AccountDelete(ctx context.Context, args struct{ Token string }) (*AccountDelete, error) {
-	// user must be authenticated to deactivate himself
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 	currentSession := embedCtx.AppContext.Session()
 
 	// validate if token is valid

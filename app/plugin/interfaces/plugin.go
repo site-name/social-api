@@ -70,7 +70,7 @@ type BasePluginInterface interface {
 	// Overwrite this method if the plugin is responsible for sending notifications.
 	Notify(event string, payload model.StringInterface, previousValue interface{}) (interface{}, *model.AppError)
 	//
-	ChangeUserAddress(address model.Address, addressType model.AddressTypeEnum, user *model.User, previousValue model.Address) (*model.Address, *model.AppError)
+	ChangeUserAddress(address model.Address, addressType *model.AddressTypeEnum, user *model.User, previousValue model.Address) (*model.Address, *model.AppError)
 	// Calculate the total for checkout.
 	// Overwrite this method if you need to apply specific logic for the calculation
 	// of a checkout total. Return TaxedMoney.

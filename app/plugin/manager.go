@@ -22,11 +22,11 @@ var _ interfaces.PluginManagerInterface = (*PluginManager)(nil)
 
 type PluginManager struct {
 	Srv        *app.Server
-	AllPlugins []interfaces.BasePluginInterface
+	allPlugins []interfaces.BasePluginInterface
 }
 
 // NewPluginManager returns a new plugin manager
-func (s *ServicePlugin) NewPluginManager() (interfaces.PluginManagerInterface, *model.AppError) {
+func (s *ServicePlugin) newPluginManager() (interfaces.PluginManagerInterface, *model.AppError) {
 	manager := &PluginManager{
 		Srv: s.srv,
 	}
@@ -71,7 +71,7 @@ func (s *ServicePlugin) NewPluginManager() (interfaces.PluginManagerInterface, *
 			Manifest:      pluginInitObj.Manifest,
 		})
 
-		manager.AllPlugins = append(manager.AllPlugins, plugin)
+		manager.allPlugins = append(manager.allPlugins, plugin)
 	}
 
 	return manager, nil
@@ -80,7 +80,7 @@ func (s *ServicePlugin) NewPluginManager() (interfaces.PluginManagerInterface, *
 func (m *PluginManager) getPlugins(channelID string, active bool) []interfaces.BasePluginInterface {
 	res := []interfaces.BasePluginInterface{}
 
-	for _, plg := range m.AllPlugins {
+	for _, plg := range m.allPlugins {
 		if plg != nil && active == plg.IsActive() && (channelID == "" || channelID == plg.ChannelId()) {
 			res = append(res, plg)
 		}
@@ -89,7 +89,7 @@ func (m *PluginManager) getPlugins(channelID string, active bool) []interfaces.B
 	return res
 }
 
-func (m *PluginManager) ChangeUserAddress(address model.Address, addressType model.AddressTypeEnum, user *model.User) (*model.Address, *model.AppError) {
+func (m *PluginManager) ChangeUserAddress(address model.Address, addressType *model.AddressTypeEnum, user *model.User) (*model.Address, *model.AppError) {
 	var (
 		appErr        *model.AppError
 		previousValue model.Address = address
@@ -1297,7 +1297,7 @@ func (m *PluginManager) PageDeleted(paGe model.Page) (interface{}, *model.AppErr
 }
 
 func (m *PluginManager) getPlugin(pluginID string, channelID string) interfaces.BasePluginInterface {
-	for _, plg := range m.AllPlugins {
+	for _, plg := range m.allPlugins {
 		if plg != nil && plg.CheckPluginId(pluginID) && (channelID == "" || plg.ChannelId() == channelID) {
 			return plg
 		}
@@ -1576,7 +1576,7 @@ func (m *PluginManager) SavePluginConfiguration(pluginID, channelID string, clea
 	if channelID != "" {
 		pluginList = m.getPlugins(channelID, true)
 	} else {
-		pluginList = m.AllPlugins
+		pluginList = m.allPlugins
 	}
 
 	for _, plg := range pluginList {

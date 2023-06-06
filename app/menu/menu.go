@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
@@ -22,10 +21,9 @@ type ServiceMenuConfig struct {
 }
 
 func init() {
-	app.RegisterMenuService(func(s *app.Server) (sub_app_iface.MenuService, error) {
-		return &ServiceMenu{
-			srv: s,
-		}, nil
+	app.RegisterService(func(s *app.Server) error {
+		s.Menu = &ServiceMenu{s}
+		return nil
 	})
 }
 

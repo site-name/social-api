@@ -295,6 +295,6 @@ enum ProductMediaType {
 }
 
 enum StockAvailability {
-  IN_STOCK
-  OUT_OF_STOCK
+  in_stock
+  out_of_stock
 }

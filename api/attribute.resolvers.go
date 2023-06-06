@@ -18,12 +18,9 @@ import (
 	"github.com/sitename/sitename/web"
 )
 
+// NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeCreate(ctx context.Context, args struct{ Input AttributeCreateInput }) (*AttributeCreate, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateAttribute)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	// clean input
 	inputType := args.Input.InputType
@@ -94,12 +91,9 @@ func (r *Resolver) AttributeCreate(ctx context.Context, args struct{ Input Attri
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeDelete(ctx context.Context, args struct{ Id string }) (*AttributeDelete, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAttribute)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	// validate argument(s)
 	if !model.IsValidId(args.Id) {
@@ -115,15 +109,12 @@ func (r *Resolver) AttributeDelete(ctx context.Context, args struct{ Id string }
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AttributeUpdateInput
 }) (*AttributeUpdate, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateAttribute)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	if !lo.EveryBy(args.Input.RemoveValues, model.IsValidId) {
 		return nil, model.NewAppError("AttributeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "removeValues"}, "please provide valid attribute value ids", http.StatusBadRequest)
@@ -224,13 +215,9 @@ func (r *Resolver) AttributeTranslate(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []string }) (*AttributeBulkDelete, error) {
-	// validate permission(s)
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAttribute)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	if len(args.Ids) == 0 || !lo.EveryBy(args.Ids, model.IsValidId) {
 		return nil, model.NewAppError("AttributeBulkDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid ids", http.StatusBadRequest)
@@ -245,13 +232,9 @@ func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []s
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeValueBulkDelete(ctx context.Context, args struct{ Ids []string }) (*AttributeValueBulkDelete, error) {
-	// validate permission(s)
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAttributeValue)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	if len(args.Ids) == 0 || !lo.EveryBy(args.Ids, model.IsValidId) {
 		return nil, model.NewAppError("AttributeValueBulkDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid ids", http.StatusBadRequest)
@@ -266,16 +249,12 @@ func (r *Resolver) AttributeValueBulkDelete(ctx context.Context, args struct{ Id
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 	AttributeID string
 	Input       AttributeValueCreateInput
 }) (*AttributeValueCreate, error) {
-	// validate permission(s)
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateAttributeValue)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	if !model.IsValidId(args.AttributeID) {
 		return nil, model.NewAppError("AttributeValueCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributeID"}, "id="+args.AttributeID+" is in valid", http.StatusBadRequest)
@@ -326,12 +305,9 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeValueDelete(ctx context.Context, args struct{ Id string }) (*AttributeValueDelete, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteAttributeValue)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AttributeValueDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.Id+" is in valid", http.StatusBadRequest)
@@ -359,16 +335,13 @@ func (r *Resolver) AttributeValueDelete(ctx context.Context, args struct{ Id str
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeValueUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AttributeValueUpdateInput
 }) (*AttributeValueUpdate, error) {
-	// validate permission(s)
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateAttributeValue)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
+
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AttributeValueUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.Id+" is in valid", http.StatusBadRequest)
 	}
@@ -425,12 +398,7 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 	AttributeID string
 	Moves       []*ReorderInput
 }) (*AttributeReorderValues, error) {
-	// validate permission(s)
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateAttribute, model.PermissionUpdateAttribute, model.PermissionCreateAttributeValue, model.PermissionUpdateAttributeValue)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	if !model.IsValidId(args.AttributeID) {
 		return nil, model.NewAppError("AttributeReorderValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.AttributeID+" is in valid", http.StatusBadRequest)
@@ -482,6 +450,8 @@ func (r *Resolver) Attribute(ctx context.Context, args struct {
 	Id   *string
 	Slug *string
 }) (*Attribute, error) {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
 	if args.Id == nil && args.Slug == nil {
 		return nil, model.NewAppError("Attribute", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id/slug"}, "please provide id or slug", http.StatusBadRequest)
 	}
@@ -499,7 +469,7 @@ func (r *Resolver) Attribute(ctx context.Context, args struct {
 		attrFilter.Slug = squirrel.Eq{store.AttributeTableName + ".Slug": *args.Slug}
 	}
 
-	attribute, appErr := r.srv.AttributeService().AttributeByOption(attrFilter)
+	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(attrFilter)
 	if appErr != nil {
 		return nil, appErr
 	}

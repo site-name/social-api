@@ -13,7 +13,6 @@ import (
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
@@ -26,10 +25,9 @@ type ServiceCheckout struct {
 }
 
 func init() {
-	app.RegisterCheckoutService(func(s *app.Server) (sub_app_iface.CheckoutService, error) {
-		return &ServiceCheckout{
-			srv: s,
-		}, nil
+	app.RegisterService(func(s *app.Server) error {
+		s.Checkout = &ServiceCheckout{s}
+		return nil
 	})
 }
 

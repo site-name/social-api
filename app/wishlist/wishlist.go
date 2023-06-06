@@ -5,7 +5,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
@@ -15,10 +14,9 @@ type ServiceWishlist struct {
 }
 
 func init() {
-	app.RegisterWishlistService(func(s *app.Server) (sub_app_iface.WishlistService, error) {
-		return &ServiceWishlist{
-			srv: s,
-		}, nil
+	app.RegisterService(func(s *app.Server) error {
+		s.Wishlist = &ServiceWishlist{s}
+		return nil
 	})
 }
 

@@ -105,7 +105,10 @@ func digitalContentUrlsByDigitalContentIDLoader(ctx context.Context, ids []strin
 			ContentID: squirrel.Eq{store.DigitalContentURLTableName + ".ContentID": ids},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[[]*model.DigitalContentUrl]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, url := range digitalContentURLs {
@@ -113,12 +116,6 @@ func digitalContentUrlsByDigitalContentIDLoader(ctx context.Context, ids []strin
 	}
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[[]*model.DigitalContentUrl]{Data: digitalContentURLMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[[]*model.DigitalContentUrl]{Error: appErr}
 	}
 	return res
 }

@@ -74,16 +74,16 @@ func (a *ServiceAccount) DeleteAddresses(addressIDs ...string) *model.AppError {
 
 // CopyAddress inserts a new address with fields identical to given address except Id field.
 func (a *ServiceAccount) CopyAddress(address *model.Address) (*model.Address, *model.AppError) {
-	copied := address.DeepCopy()
+	copiedAddress := address.DeepCopy()
 
-	copied.Id = ""
-	res, appErr := a.UpsertAddress(nil, copied)
+	copiedAddress.Id = ""
+	res, appErr := a.UpsertAddress(nil, copiedAddress)
 	return res, appErr
 }
 
 // StoreUserAddress Add address to user address book and set as default one.
 func (s *ServiceAccount) StoreUserAddress(user *model.User, address model.Address, addressType model.AddressTypeEnum, manager interfaces.PluginManagerInterface) *model.AppError {
-	address_, appErr := manager.ChangeUserAddress(address, addressType, user)
+	address_, appErr := manager.ChangeUserAddress(address, &addressType, user)
 	if appErr != nil {
 		return appErr
 	}
@@ -171,7 +171,7 @@ func (s *ServiceAccount) SetUserDefaultShippingAddress(user *model.User, default
 // ChangeUserDefaultAddress set default address for given user
 func (s *ServiceAccount) ChangeUserDefaultAddress(user model.User, address model.Address, addressType model.AddressTypeEnum, manager interfaces.PluginManagerInterface) *model.AppError {
 	if manager != nil {
-		_, appErr := manager.ChangeUserAddress(address, addressType, &user)
+		_, appErr := manager.ChangeUserAddress(address, &addressType, &user)
 		if appErr != nil {
 			return appErr
 		}

@@ -15,6 +15,7 @@ import (
 
 // PluginService contains methods for working with plugins
 type PluginService interface {
+	GetPluginManager() interfaces.PluginManagerInterface
 	// AddPublicKey will add plugin public key to the config. Overwrites the previous file
 	AddPublicKey(name string, key io.Reader) *model.AppError
 	// DeletePublicKey will delete plugin public key from the config.
@@ -43,8 +44,6 @@ type PluginService interface {
 	// To get the plugins environment when the plugins are disabled, manually acquire the plugins
 	// lock instead.
 	GetPluginsEnvironment() (*plugin.Environment, *model.AppError)
-	// NewPluginManager returns a new plugin manager
-	NewPluginManager() (interfaces.PluginManagerInterface, *model.AppError)
 	// SyncPlugins synchronizes the plugins installed locally
 	// with the plugin bundles available in the file store.
 	SyncPlugins() *model.AppError

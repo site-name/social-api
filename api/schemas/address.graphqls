@@ -1,13 +1,13 @@
 extend type Mutation {
-  addressCreate(input: AddressInput!): AddressCreate
-  addressUpdate(id: String!, input: AddressInput!): AddressUpdate
-  addressDelete(id: String!): AddressDelete
-  addressSetDefault(addressId: String!, type: AddressTypeEnum!): AddressSetDefault
+  addressCreate(input: AddressInput!): AddressCreate @authenticated
+  addressUpdate(id: String!, input: AddressInput!): AddressUpdate @authenticated
+  addressDelete(id: String!): AddressDelete @authenticated
+  addressSetDefault(addressId: String!, type: AddressTypeEnum!): AddressSetDefault @authenticated
 }
 
 extend type Query {
   addressValidationRules(countryCode: CountryCode!, countryArea: String, city: String, cityArea: String): AddressValidationData
-  address(id: String!): Address
+  address(id: String!): Address @authenticated
 }
 
 type Address {

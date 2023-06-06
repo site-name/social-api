@@ -6,7 +6,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
@@ -16,10 +15,9 @@ type ServiceWarehouse struct {
 }
 
 func init() {
-	app.RegisterWarehouseService(func(s *app.Server) (sub_app_iface.WarehouseService, error) {
-		return &ServiceWarehouse{
-			srv: s,
-		}, nil
+	app.RegisterService(func(s *app.Server) error {
+		s.Warehouse = &ServiceWarehouse{s}
+		return nil
 	})
 }
 

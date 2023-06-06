@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
@@ -18,10 +17,9 @@ type ServiceAttribute struct {
 }
 
 func init() {
-	app.RegisterAttributeService(func(s *app.Server) (sub_app_iface.AttributeService, error) {
-		return &ServiceAttribute{
-			srv: s,
-		}, nil
+	app.RegisterService(func(s *app.Server) error {
+		s.Attribute = &ServiceAttribute{s}
+		return nil
 	})
 }
 

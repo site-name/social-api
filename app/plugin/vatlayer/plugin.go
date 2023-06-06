@@ -56,52 +56,57 @@ type VatlayerPlugin struct {
 	cachedTaxes model.StringInterface
 }
 
+func initFunc(cfg *plugin.PluginConfig) interfaces.BasePluginInterface {
+	vatPlugin := &VatlayerPlugin{
+		BasePlugin: *plugin.NewBasePlugin(cfg),
+	}
+
+	var configuration = model.StringInterface{}
+	for _, item := range vatPlugin.Configuration {
+		configuration[item.Get("name", "").(string)] = item["value"]
+	}
+	var originCountry = configuration.Get("origin_country", "").(string)
+	if upper := strings.ToUpper(originCountry); model.CountryCode(upper).IsValid() {
+		originCountry = upper
+	} else {
+		originCountry = ""
+	}
+
+	var countriesFromOrigin = configuration.Get("countries_to_calculate_taxes_from_origin", "").(string)
+	var splitCountriesFromOrigin = []string{}
+
+	for _, str := range strings.FieldsFunc(countriesFromOrigin, func(r rune) bool { return r == ' ' || r == ',' }) {
+		if upper := strings.ToUpper(str); model.CountryCode(upper).IsValid() {
+			splitCountriesFromOrigin = append(splitCountriesFromOrigin, upper)
+		}
+	}
+
+	var excludedCountries = configuration.Get("excluded_countries", "").(string)
+	var splitExcludedCountries = []string{}
+
+	for _, str := range strings.FieldsFunc(excludedCountries, func(r rune) bool { return r == ' ' || r == ',' }) {
+		if upper := strings.ToUpper(str); model.CountryCode(upper).IsValid() {
+			splitExcludedCountries = append(splitExcludedCountries, upper)
+		}
+	}
+
+	vatPlugin.config = VatlayerConfiguration{
+		AccessKey:           configuration.Get("Access key", "").(string),
+		OriginCountry:       originCountry,
+		ExcludedCountries:   splitExcludedCountries,
+		CountriesFromOrigin: splitCountriesFromOrigin,
+	}
+
+	vatPlugin.cachedTaxes = make(model.StringInterface)
+	return vatPlugin
+
+}
+
 func init() {
-	plugin.RegisterVatlayerPlugin(func(cfg *plugin.PluginConfig) interfaces.BasePluginInterface {
-		vatPlugin := &VatlayerPlugin{
-			BasePlugin: *plugin.NewBasePlugin(cfg),
-		}
-
-		var configuration = model.StringInterface{}
-		for _, item := range vatPlugin.Configuration {
-			configuration[item.Get("name", "").(string)] = item["value"]
-		}
-		var originCountry = configuration.Get("origin_country", "").(string)
-		if upper := strings.ToUpper(originCountry); model.CountryCode(upper).IsValid() {
-			originCountry = upper
-		} else {
-			originCountry = ""
-		}
-
-		var countriesFromOrigin = configuration.Get("countries_to_calculate_taxes_from_origin", "").(string)
-		var splitCountriesFromOrigin = []string{}
-
-		for _, str := range strings.FieldsFunc(countriesFromOrigin, func(r rune) bool { return r == ' ' || r == ',' }) {
-			if upper := strings.ToUpper(str); model.CountryCode(upper).IsValid() {
-				splitCountriesFromOrigin = append(splitCountriesFromOrigin, upper)
-			}
-		}
-
-		var excludedCountries = configuration.Get("excluded_countries", "").(string)
-		var splitExcludedCountries = []string{}
-
-		for _, str := range strings.FieldsFunc(excludedCountries, func(r rune) bool { return r == ' ' || r == ',' }) {
-			if upper := strings.ToUpper(str); model.CountryCode(upper).IsValid() {
-				splitExcludedCountries = append(splitExcludedCountries, upper)
-			}
-		}
-
-		vatPlugin.config = VatlayerConfiguration{
-			AccessKey:           configuration.Get("Access key", "").(string),
-			OriginCountry:       originCountry,
-			ExcludedCountries:   splitExcludedCountries,
-			CountriesFromOrigin: splitCountriesFromOrigin,
-		}
-
-		vatPlugin.cachedTaxes = make(model.StringInterface)
-		return vatPlugin
-
-	}, manifest)
+	plugin.RegisterPlugin(plugin.PluginInitObjType{
+		NewPluginFunc: initFunc,
+		Manifest:      manifest,
+	})
 }
 
 // previousValue must be either *TaxedMoney or *TaxedMoneyRange

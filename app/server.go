@@ -181,26 +181,26 @@ type Server struct {
 	ExchangeRateMap sync.Map // this is cache for storing currency exchange rates. Keys are strings, values are float64
 
 	// these are sub services
-	account   sub_app_iface.AccountService
-	order     sub_app_iface.OrderService
-	payment   sub_app_iface.PaymentService
-	giftcard  sub_app_iface.GiftcardService
-	checkout  sub_app_iface.CheckoutService
-	product   sub_app_iface.ProductService
-	warehouse sub_app_iface.WarehouseService
-	wishlist  sub_app_iface.WishlistService
-	webhook   sub_app_iface.WebhookService
-	shipping  sub_app_iface.ShippingService
-	discount  sub_app_iface.DiscountService
-	menu      sub_app_iface.MenuService
-	csv       sub_app_iface.CsvService
-	page      sub_app_iface.PageService
-	seo       sub_app_iface.SeoService
-	attribute sub_app_iface.AttributeService
-	channel   sub_app_iface.ChannelService
-	invoice   sub_app_iface.InvoiceService
-	file      sub_app_iface.FileService
-	plugin    sub_app_iface.PluginService
+	Account   sub_app_iface.AccountService
+	Order     sub_app_iface.OrderService
+	Payment   sub_app_iface.PaymentService
+	Giftcard  sub_app_iface.GiftcardService
+	Checkout  sub_app_iface.CheckoutService
+	Product   sub_app_iface.ProductService
+	Warehouse sub_app_iface.WarehouseService
+	Wishlist  sub_app_iface.WishlistService
+	Webhook   sub_app_iface.WebhookService
+	Shipping  sub_app_iface.ShippingService
+	Discount  sub_app_iface.DiscountService
+	Menu      sub_app_iface.MenuService
+	Csv       sub_app_iface.CsvService
+	Page      sub_app_iface.PageService
+	Seo       sub_app_iface.SeoService
+	Attribute sub_app_iface.AttributeService
+	Channel   sub_app_iface.ChannelService
+	Invoice   sub_app_iface.InvoiceService
+	File      sub_app_iface.FileService
+	Plugin    sub_app_iface.PluginService
 }
 
 // NewServer create new system server

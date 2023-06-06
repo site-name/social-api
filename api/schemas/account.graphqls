@@ -1,12 +1,12 @@
 extend type Mutation {
-  accountAddressCreate(input: AddressInput!, type: AddressTypeEnum): AccountAddressCreate
-  accountAddressUpdate(id: String!, input: AddressInput!): AccountAddressUpdate
-  accountAddressDelete(id: String!): AccountAddressDelete
-  accountSetDefaultAddress(id: String!, type: AddressTypeEnum!): AccountSetDefaultAddress
+  accountAddressCreate(input: AddressInput!, type: AddressTypeEnum): AccountAddressCreate @authenticated
+  accountAddressUpdate(id: String!, input: AddressInput!): AccountAddressUpdate @authenticated
+  accountAddressDelete(id: String!): AccountAddressDelete @authenticated
+  accountSetDefaultAddress(id: String!, type: AddressTypeEnum!): AccountSetDefaultAddress @authenticated
   accountRegister(input: AccountRegisterInput!): AccountRegister
-  accountUpdate(input: AccountInput!): AccountUpdate
-  accountRequestDeletion(channel: String, redirectUrl: String!): AccountRequestDeletion
-  accountDelete(token: String!): AccountDelete
+  accountUpdate(input: AccountInput!): AccountUpdate @authenticated
+  accountRequestDeletion(channel: String, redirectUrl: String!): AccountRequestDeletion @authenticated
+  accountDelete(token: String!): AccountDelete @authenticated
 }
 
 type AccountAddressCreate {
@@ -22,10 +22,10 @@ type AccountAddressUpdate {
 }
 
 type AccountAddressDelete {
-  ok: Boolean!
-  # user: User
+  # ok: Boolean!
+  user: User
   # errors: [AccountError!]!
-  # address: Address
+  address: Address
 }
 
 type AccountSetDefaultAddress {

@@ -5,9 +5,15 @@ import (
 	"github.com/samber/lo"
 )
 
+type StockAvailability string
+
+func (s StockAvailability) IsValid() bool {
+	return s == StockAvailabilityInStock || s == StockAvailabilityOutOfStock
+}
+
 const (
-	StockAvailabilityInStock    = "in_stock"
-	StockAvailabilityOutOfStock = "out_of_stock"
+	StockAvailabilityInStock    StockAvailability = "in_stock"
+	StockAvailabilityOutOfStock StockAvailability = "out_of_stock"
 )
 
 type Stock struct {

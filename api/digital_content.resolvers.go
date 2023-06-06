@@ -8,6 +8,7 @@ import (
 	"fmt"
 )
 
+// NOTE: Refer to ./schemas/digital_content.graphqls for details on directive used
 func (r *Resolver) DigitalContentCreate(ctx context.Context, args struct {
 	Input     DigitalContentUploadInput
 	VariantID string
@@ -15,10 +16,12 @@ func (r *Resolver) DigitalContentCreate(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/digital_content.graphqls for details on directive used
 func (r *Resolver) DigitalContentDelete(ctx context.Context, args struct{ VariantID string }) (*DigitalContentDelete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/digital_content.graphqls for details on directive used
 func (r *Resolver) DigitalContentUpdate(ctx context.Context, args struct {
 	Input     DigitalContentInput
 	VariantID string
@@ -26,6 +29,7 @@ func (r *Resolver) DigitalContentUpdate(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/digital_content.graphqls for details on directive used
 func (r *Resolver) DigitalContentURLCreate(ctx context.Context, args struct {
 	Input DigitalContentURLCreateInput
 }) (*DigitalContentURLCreate, error) {

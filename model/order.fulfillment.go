@@ -42,6 +42,10 @@ var FulfillmentStrings = map[FulfillmentStatus]string{
 	FULFILLMENT_WAITING_FOR_APPROVAL:  "Waiting for approval",
 }
 
+func (f FulfillmentStatus) IsValid() bool {
+	return FulfillmentStrings[f] != ""
+}
+
 type Fulfillment struct {
 	Id                   string            `json:"id"`
 	FulfillmentOrder     int               `json:"fulfillment_order"`

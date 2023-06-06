@@ -253,7 +253,7 @@ func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []stri
 type Order struct {
 	ID                  string            `json:"id"`
 	Created             DateTime          `json:"created"`
-	Status              model.OrderStatus `json:"status"`
+	Status              OrderStatus       `json:"status"`
 	TrackingClientID    string            `json:"trackingClientId"`
 	ShippingMethodName  *string           `json:"shippingMethodName"`
 	CollectionPointName *string           `json:"collectionPointName"`

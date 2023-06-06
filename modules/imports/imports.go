@@ -26,4 +26,6 @@ import (
 	_ "github.com/sitename/sitename/app/webhook"
 	_ "github.com/sitename/sitename/app/wishlist"
 	_ "github.com/sitename/sitename/model" // for constant initilalization
+
+	_ "github.com/sitename/sitename/app/plugin/vatlayer"
 )

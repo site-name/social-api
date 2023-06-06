@@ -254,26 +254,14 @@ func (a *Attribute) ProductVariantTypes(ctx context.Context, args GraphqlParams)
 // If return error is nil, meaning current user can perform action.
 // if not, user can't
 func (a *Attribute) currentUserHasPermissionToAccess(ctx context.Context, apiName string) error {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return embedCtx.Err
-	}
-
-	var permToCheck = model.PermissionReadProduct
+	var permsToCheck = model.Permissions{model.PermissionReadProduct, model.PermissionCreateProduct, model.PermissionDeleteProduct, model.PermissionUpdateProduct}
 	if a.Type != nil && *a.Type == model.PAGE_TYPE {
-		permToCheck = model.PermissionReadPage
+		permsToCheck = model.Permissions{model.PermissionReadPage, model.PermissionCreatePage, model.PermissionUpdatePage, model.PermissionUpdatePage}
 	}
 
-	if !embedCtx.
-		App.
-		Srv().
-		AccountService().
-		SessionHasPermissionTo(*embedCtx.AppContext.Session(), permToCheck) {
-		return MakeUnauthorizedError(apiName)
-	}
-
-	return nil
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	embedCtx.CheckAuthenticatedAndHasPermissionToAll(permsToCheck...)
+	return embedCtx.Err
 }
 
 func (a *Attribute) VisibleInStorefront(ctx context.Context) (bool, error) {

@@ -92,16 +92,12 @@ func (r *Resolver) SetPassword(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/auth.graphqls for details on directive used
 func (r *Resolver) PasswordChange(ctx context.Context, args struct {
 	NewPassword string
 	OldPassword string
 }) (*PasswordChange, error) {
-	// user must be authenticated to proceed
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	appErr := embedCtx.App.Srv().AccountService().UpdatePasswordAsUser(embedCtx.AppContext.Session().UserId, args.OldPassword, args.NewPassword)
 	if appErr != nil {
@@ -118,17 +114,14 @@ func (r *Resolver) PasswordChange(ctx context.Context, args struct {
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/auth.graphqls for details on directive used
 func (r *Resolver) RequestEmailChange(ctx context.Context, args struct {
-	Channel     *string
+	Channel     string // must be channel id
 	NewEmail    string
 	Password    string
 	RedirectURL string
 }) (*RequestEmailChange, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
 	if appErr != nil {
@@ -163,28 +156,30 @@ func (r *Resolver) RequestEmailChange(ctx context.Context, args struct {
 		UserID:   user.Id,
 	}
 
-	_, appErr = embedCtx.App.Srv().SaveToken(model.TokenTypeRequestChangeEmail, tokenExtra)
+	token, appErr := embedCtx.App.Srv().SaveToken(model.TokenTypeRequestChangeEmail, tokenExtra)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	panic("not implemented") // TODO: finish plugin manager
+	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+	appErr = embedCtx.App.Srv().
+		AccountService().
+		SendRequestUserChangeEmailNotification(args.RedirectURL, *user, args.NewEmail, token.Token, pluginManager, args.Channel)
+	if appErr != nil {
+		return nil, appErr
+	}
 
 	return &RequestEmailChange{
 		User: SystemUserToGraphqlUser(user),
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/auth.graphqls for details on directive used
 func (r *Resolver) ConfirmEmailChange(ctx context.Context, args struct {
-	Channel *string
+	Channel string // must be channel id
 	Token   string
 }) (*ConfirmEmailChange, error) {
-	// user must be authenticated
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	var extra model.RequestEmailChangeTokenExtra
 	dbToken, appErr := embedCtx.App.Srv().ValidateTokenByToken(args.Token, model.TokenTypeRequestChangeEmail, &extra)
@@ -218,7 +213,19 @@ func (r *Resolver) ConfirmEmailChange(ctx context.Context, args struct {
 	if err != nil {
 		return nil, model.NewAppError("ConfirmEmailChange", "app.account.delete_token.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
-	panic("not implemented") // TODO: finish plugin manager
+
+	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+	appErr = embedCtx.App.Srv().
+		AccountService().
+		SendUserChangeEmailNotification(extra.OldEmail, *currentUser, pluginManager, args.Channel)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	_, appErr = pluginManager.CustomerUpdated(*currentUser)
+	if appErr != nil {
+		return nil, appErr
+	}
 
 	return &ConfirmEmailChange{
 		User: SystemUserToGraphqlUser(currentUser),

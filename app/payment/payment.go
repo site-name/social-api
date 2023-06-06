@@ -10,7 +10,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -23,10 +22,9 @@ type ServicePayment struct {
 }
 
 func init() {
-	app.RegisterPaymentService(func(s *app.Server) (sub_app_iface.PaymentService, error) {
-		return &ServicePayment{
-			srv: s,
-		}, nil
+	app.RegisterService(func(s *app.Server) error {
+		s.Payment = &ServicePayment{s}
+		return nil
 	})
 }
 

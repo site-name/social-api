@@ -1,8 +1,8 @@
 extend type Mutation {
-  digitalContentCreate(input: DigitalContentUploadInput!, variantId: String!): DigitalContentCreate
-  digitalContentDelete(variantId: String!): DigitalContentDelete
-  digitalContentUpdate(input: DigitalContentInput!, variantId: String!): DigitalContentUpdate
-  digitalContentUrlCreate(input: DigitalContentUrlCreateInput!): DigitalContentUrlCreate
+  digitalContentCreate(input: DigitalContentUploadInput!, variantId: String!): DigitalContentCreate @hasRoleAny(roles: [shop_admin, shop_staff])
+  digitalContentDelete(variantId: String!): DigitalContentDelete @hasRoleAny(roles: [shop_admin, shop_staff])
+  digitalContentUpdate(input: DigitalContentInput!, variantId: String!): DigitalContentUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
+  digitalContentUrlCreate(input: DigitalContentUrlCreateInput!): DigitalContentUrlCreate @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 extend type Query {

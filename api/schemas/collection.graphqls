@@ -25,9 +25,7 @@ type Collection  {
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   channel: String
-  products(
-    # filter: ProductFilterInput, sortBy: ProductOrder, 
-    before: String, after: String, first: Int, last: Int): ProductCountableConnection
+  products(filter: ProductFilterInput, sortBy: ProductOrder, before: String, after: String, first: Int, last: Int): ProductCountableConnection
   backgroundImage(size: Int): Image
   translation(languageCode: LanguageCodeEnum!): CollectionTranslation
   channelListings: [CollectionChannelListing!]!

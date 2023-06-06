@@ -17,16 +17,12 @@ import (
 	"github.com/sitename/sitename/web"
 )
 
+// NOTE: Refer to ./schemas/category.graphqls for details on directive used.
 func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
 	Input  CategoryInput
 	Parent *string
 }) (*CategoryCreate, error) {
-	// check user permissions
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasRoles("CategoryCreate", model.ShopStaffRoleId)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	// validate parent
 	if pr := args.Parent; pr != nil && !model.IsValidId(*pr) {
@@ -54,18 +50,6 @@ func (r *Resolver) CategoryCreate(ctx context.Context, args struct {
 }
 
 func (r *Resolver) CategoryDelete(ctx context.Context, args struct{ Id string }) (*CategoryDelete, error) {
-	// requester must have delete category permission to delete
-	// embedCtx:= GetContextValue[*web.Context](ctx, WebCtx)
-	// embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionDeleteCategory)
-	// if embedCtx.Err != nil {
-	// 	return nil, embedCtx.Err
-	// }
-
-	// if !model.IsValidId(args.Id) {
-	// 	return nil, model.NewAppError("CategoryDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid category id", http.StatusBadRequest)
-	// }
-
-	// embedCtx.App.Srv().ProductService().DeleteCategories()
 	panic("not implemented")
 }
 
@@ -73,16 +57,12 @@ func (r *Resolver) CategoryBulkDelete(ctx context.Context, args struct{ Ids []st
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/category.graphqls for details on directive used.
 func (r *Resolver) CategoryUpdate(ctx context.Context, args struct {
 	Id    string
 	Input CategoryInput
 }) (*CategoryUpdate, error) {
-	// requester must be authenticated and has category_update permission to do this
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasRoles("CategoryUpdate", model.ShopStaffRoleId)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	// validate given id
 	if !model.IsValidId(args.Id) {
@@ -103,7 +83,7 @@ func (r *Resolver) CategoryUpdate(ctx context.Context, args struct {
 	category := categories[0]
 	args.Input.PatchCategory(category)
 
-	category, appErr = r.srv.ProductService().UpsertCategory(category)
+	category, appErr = embedCtx.App.Srv().ProductService().UpsertCategory(category)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -121,11 +101,10 @@ func (r *Resolver) CategoryTranslate(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
-// TODO: Add support filter by metadata
 func (r *Resolver) Categories(ctx context.Context, args struct {
 	Filter *CategoryFilterInput
 	SortBy CategorySortingInput
-	Level  *int32 // 0 <= level <= 4
+	Level  *int32 // 0 <= level
 	GraphqlParams
 }) (*CategoryCountableConnection, error) {
 	var levelFilter, searchFilter, idFilter, metadataFilter func(c *model.Category) bool
@@ -182,8 +161,8 @@ func (r *Resolver) Categories(ctx context.Context, args struct {
 
 	// parse level
 	if lv := args.Level; lv != nil {
-		if *lv < model.CATEGORY_MIN_LEVEL || *lv > model.CATEGORY_MAX_LEVEL {
-			return nil, model.NewAppError("Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Level"}, fmt.Sprintf("Level must be >= %d and <= %d", model.CATEGORY_MIN_LEVEL, model.CATEGORY_MAX_LEVEL), http.StatusBadRequest)
+		if *lv < model.CATEGORY_MIN_LEVEL {
+			return nil, model.NewAppError("Categories", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Level"}, fmt.Sprintf("Level must be >= %d", model.CATEGORY_MIN_LEVEL), http.StatusBadRequest)
 		}
 		levelFilter = func(c *model.Category) bool {
 			return c.Level == uint8(*lv)
@@ -203,8 +182,9 @@ func (r *Resolver) Categories(ctx context.Context, args struct {
 			(metadataFilter != nil && metadataFilter(c))
 	}
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	// find categories:
-	categories := r.srv.ProductService().FilterCategoriesFromCache(filter)
+	categories := embedCtx.App.Srv().ProductService().FilterCategoriesFromCache(filter)
 
 	// default to sort by english name
 	var res *CountableConnection[*Category]
@@ -246,7 +226,8 @@ func (r *Resolver) Category(ctx context.Context, args struct {
 		return nil, model.NewAppError("Category", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, fmt.Sprint("%s is invalid slug", *args.Slug), http.StatusBadRequest)
 	}
 
-	categories := r.srv.ProductService().FilterCategoriesFromCache(func(c *model.Category) bool {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	categories := embedCtx.App.Srv().ProductService().FilterCategoriesFromCache(func(c *model.Category) bool {
 		if args.Id != nil {
 			return c.Id == *args.Id
 		}

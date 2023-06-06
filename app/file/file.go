@@ -15,7 +15,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/imaging"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/filestore"
 	"github.com/sitename/sitename/modules/slog"
@@ -46,7 +45,7 @@ type ServiceFile struct {
 }
 
 func init() {
-	app.RegisterFileService(func(s *app.Server) (sub_app_iface.FileService, error) {
+	app.RegisterService(func(s *app.Server) error {
 		service := &ServiceFile{
 			srv:           s,
 			uploadLockMap: map[string]bool{},
@@ -57,20 +56,20 @@ func init() {
 			ConcurrencyLevel: runtime.NumCPU(),
 		})
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		service.imgEncoder, err = imaging.NewEncoder(imaging.EncoderOptions{
 			ConcurrencyLevel: runtime.NumCPU(),
 		})
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		// test file backend connection:
 		backend, appErr := service.FileBackend()
 		if appErr != nil {
-			return nil, appErr
+			return appErr
 		}
 
 		nErr := backend.TestConnection()
@@ -79,11 +78,12 @@ func init() {
 				nErr = backend.(*filestore.S3FileBackend).MakeBucket()
 			}
 			if nErr != nil {
-				return nil, nErr
+				return nErr
 			}
 		}
 
-		return service, nil
+		s.File = service
+		return nil
 	})
 }
 

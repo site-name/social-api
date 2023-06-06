@@ -12,6 +12,10 @@ import (
 
 type GiftCardSettingsExpiryType string
 
+func (g GiftCardSettingsExpiryType) IsValid() bool {
+	return GiftCardSettingsExpiryTypeValues[g] != ""
+}
+
 // valid values for shop's giftcard expiry type
 const (
 	NEVER_EXPIRE  GiftCardSettingsExpiryType = "never_expire"

@@ -5,377 +5,125 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 )
 
-// all sub applications of platform
-var (
-	accountService   func(*Server) (sub_app_iface.AccountService, error)
-	giftcardService  func(*Server) (sub_app_iface.GiftcardService, error)
-	paymentService   func(*Server) (sub_app_iface.PaymentService, error)
-	checkoutService  func(*Server) (sub_app_iface.CheckoutService, error)
-	warehouseService func(*Server) (sub_app_iface.WarehouseService, error)
-	productService   func(*Server) (sub_app_iface.ProductService, error)
-	wishlistService  func(*Server) (sub_app_iface.WishlistService, error)
-	orderService     func(*Server) (sub_app_iface.OrderService, error)
-	webhookService   func(*Server) (sub_app_iface.WebhookService, error)
-	menuService      func(*Server) (sub_app_iface.MenuService, error)
-	pageService      func(*Server) (sub_app_iface.PageService, error)
-	seoService       func(*Server) (sub_app_iface.SeoService, error)
-	shippingService  func(*Server) (sub_app_iface.ShippingService, error)
-	discountService  func(*Server) (sub_app_iface.DiscountService, error)
-	csvService       func(*Server) (sub_app_iface.CsvService, error)
-	attributeService func(*Server) (sub_app_iface.AttributeService, error)
-	channelService   func(*Server) (sub_app_iface.ChannelService, error)
-	invoiceService   func(*Server) (sub_app_iface.InvoiceService, error)
-	fileService      func(*Server) (sub_app_iface.FileService, error)
-	pluginService    func(*Server) (sub_app_iface.PluginService, error)
-)
+var serverOpts []func(s *Server) error
 
-// RegisterPluginService
-func RegisterPluginService(f func(*Server) (sub_app_iface.PluginService, error)) {
-	pluginService = f
-}
-
-// RegisterFileService
-func RegisterFileService(f func(*Server) (sub_app_iface.FileService, error)) {
-	fileService = f
-}
-
-// RegisterGiftcardService
-func RegisterGiftcardService(f func(*Server) (sub_app_iface.GiftcardService, error)) {
-	giftcardService = f
-}
-
-// RegisterPaymentService
-func RegisterPaymentService(f func(*Server) (sub_app_iface.PaymentService, error)) {
-	paymentService = f
-}
-
-func RegisterProductService(f func(*Server) (sub_app_iface.ProductService, error)) {
-	productService = f
-}
-
-func RegisterWarehouseService(f func(*Server) (sub_app_iface.WarehouseService, error)) {
-	warehouseService = f
-}
-
-func RegisterWishlistService(f func(*Server) (sub_app_iface.WishlistService, error)) {
-	wishlistService = f
-}
-
-func RegisterCheckoutService(f func(*Server) (sub_app_iface.CheckoutService, error)) {
-	checkoutService = f
-}
-
-func RegisterOrderService(f func(*Server) (sub_app_iface.OrderService, error)) {
-	orderService = f
-}
-
-func RegisterWebhookService(f func(*Server) (sub_app_iface.WebhookService, error)) {
-	webhookService = f
-}
-
-func RegisterMenuService(f func(*Server) (sub_app_iface.MenuService, error)) {
-	menuService = f
-}
-
-func RegisterPageService(f func(*Server) (sub_app_iface.PageService, error)) {
-	pageService = f
-}
-
-func RegisterSeoService(f func(*Server) (sub_app_iface.SeoService, error)) {
-	seoService = f
-}
-
-func RegisterShippingService(f func(*Server) (sub_app_iface.ShippingService, error)) {
-	shippingService = f
-}
-
-func RegisterDiscountService(f func(*Server) (sub_app_iface.DiscountService, error)) {
-	discountService = f
-}
-
-func RegisterCsvService(f func(*Server) (sub_app_iface.CsvService, error)) {
-	csvService = f
-}
-
-func RegisterAttributeService(f func(*Server) (sub_app_iface.AttributeService, error)) {
-	attributeService = f
-}
-
-func RegisterChannelService(f func(*Server) (sub_app_iface.ChannelService, error)) {
-	channelService = f
-}
-
-func RegisterAccountService(f func(*Server) (sub_app_iface.AccountService, error)) {
-	accountService = f
-}
-
-func RegisterInvoiceService(f func(*Server) (sub_app_iface.InvoiceService, error)) {
-	invoiceService = f
+func RegisterService(f func(s *Server) error) {
+	if f == nil {
+		panic("f cannot be nil")
+	}
+	serverOpts = append(serverOpts, f)
 }
 
 // registerSubServices register all sub services to App.
 func (s *Server) registerSubServices() error {
 	slog.Info("Registering all sub services...")
 
-	var err error
-	if accountService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "accountService"))
-	}
-	s.account, err = accountService(s)
-	if err != nil {
-		return err
+	for _, opt := range serverOpts {
+		err := opt(s)
+		if err != nil {
+			return err
+		}
 	}
 
-	if giftcardService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "giftcardService"))
-	}
-	s.giftcard, err = giftcardService(s)
-	if err != nil {
-		return err
-	}
-
-	if paymentService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "paymentService"))
-	}
-	s.payment, err = paymentService(s)
-	if err != nil {
-		return err
-	}
-
-	if checkoutService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "checkoutService"))
-	}
-	s.checkout, err = checkoutService(s)
-	if err != nil {
-		return err
-	}
-
-	if warehouseService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "warehouseService"))
-	}
-	s.warehouse, err = warehouseService(s)
-	if err != nil {
-		return err
-	}
-
-	if productService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "productService"))
-	}
-	s.product, err = productService(s)
-	if err != nil {
-		return err
-	}
-
-	if wishlistService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "wishlistService"))
-	}
-	s.wishlist, err = wishlistService(s)
-	if err != nil {
-		return err
-	}
-
-	if orderService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "orderService"))
-	}
-	s.order, err = orderService(s)
-	if err != nil {
-		return err
-	}
-
-	if webhookService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "webhookService"))
-	}
-	s.webhook, err = webhookService(s)
-	if err != nil {
-		return err
-	}
-
-	if menuService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "menuService"))
-	}
-	s.menu, err = menuService(s)
-	if err != nil {
-		return err
-	}
-
-	if pageService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "pageService"))
-	}
-	s.page, err = pageService(s)
-	if err != nil {
-		return err
-	}
-
-	if seoService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "seoService"))
-	}
-	s.seo, err = seoService(s)
-	if err != nil {
-		return err
-	}
-
-	if shippingService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "shippingService"))
-	}
-	s.shipping, err = shippingService(s)
-	if err != nil {
-		return err
-	}
-
-	if csvService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "csvService"))
-	}
-	s.csv, err = csvService(s)
-	if err != nil {
-		return err
-	}
-
-	if attributeService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "attributeService"))
-	}
-	s.attribute, err = attributeService(s)
-	if err != nil {
-		return err
-	}
-
-	if channelService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "channelService"))
-	}
-	s.channel, err = channelService(s)
-	if err != nil {
-		return err
-	}
-
-	if invoiceService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "invoiceService"))
-	}
-	s.invoice, err = invoiceService(s)
-	if err != nil {
-		return err
-	}
-
-	if fileService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "fileService"))
-	}
-	s.file, err = fileService(s)
-	if err != nil {
-		return err
-	}
-
-	if pluginService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "pluginService"))
-	}
-	s.plugin, err = pluginService(s)
-	if err != nil {
-		return err
-	}
-
-	if discountService == nil {
-		slog.Fatal("service initializer is not registered", slog.String("service", "discountService"))
-	}
-	s.discount, err = discountService(s)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
 // PluginService returns order sub app
 func (s *Server) PluginService() sub_app_iface.PluginService {
-	return s.plugin
+	return s.Plugin
 }
 
 // Order returns order sub app
 func (s *Server) OrderService() sub_app_iface.OrderService {
-	return s.order
+	return s.Order
 }
 
 // Csv returns csv sub app
 func (s *Server) CsvService() sub_app_iface.CsvService {
-	return s.csv
+	return s.Csv
 }
 
 // Product returns product sub app
 func (s *Server) ProductService() sub_app_iface.ProductService {
-	return s.product
+	return s.Product
 }
 
 // Payment returns payment sub app
 func (s *Server) PaymentService() sub_app_iface.PaymentService {
-	return s.payment
+	return s.Payment
 }
 
 // Giftcard returns giftcard sub app
 func (s *Server) GiftcardService() sub_app_iface.GiftcardService {
-	return s.giftcard
+	return s.Giftcard
 }
 
 // Seo returns order seo app
 func (s *Server) SeoService() sub_app_iface.SeoService {
-	return s.seo
+	return s.Seo
 }
 
 // Shipping returns shipping sub app
 func (s *Server) ShippingService() sub_app_iface.ShippingService {
-	return s.shipping
+	return s.Shipping
 }
 
 // Wishlist returns wishlist sub app
 func (s *Server) WishlistService() sub_app_iface.WishlistService {
-	return s.wishlist
+	return s.Wishlist
 }
 
 // Page returns page sub app
 func (s *Server) PageService() sub_app_iface.PageService {
-	return s.page
+	return s.Page
 }
 
 // Menu returns menu sub app
 func (s *Server) MenuService() sub_app_iface.MenuService {
-	return s.menu
+	return s.Menu
 }
 
 // Attribute returns attribute sub app
 func (s *Server) AttributeService() sub_app_iface.AttributeService {
-	return s.attribute
+	return s.Attribute
 }
 
 // Warehouse returns warehouse sub app
 func (s *Server) WarehouseService() sub_app_iface.WarehouseService {
-	return s.warehouse
+	return s.Warehouse
 }
 
 // Checkout returns checkout sub app
 func (s *Server) CheckoutService() sub_app_iface.CheckoutService {
-	return s.checkout
+	return s.Checkout
 }
 
 // Webhook returns webhook sub app
 func (s *Server) WebhookService() sub_app_iface.WebhookService {
-	return s.webhook
+	return s.Webhook
 }
 
 // Channel returns channel sub app
 func (s *Server) ChannelService() sub_app_iface.ChannelService {
-	return s.channel
+	return s.Channel
 }
 
 // Account returns account sub app
 func (s *Server) AccountService() sub_app_iface.AccountService {
-	return s.account
+	return s.Account
 }
 
 // Invoice returns invoice sub app
 func (s *Server) InvoiceService() sub_app_iface.InvoiceService {
-	return s.invoice
+	return s.Invoice
 }
 
 // FileService returns file sub app
 func (s *Server) FileService() sub_app_iface.FileService {
-	return s.file
+	return s.File
 }
 
 // DiscountService returns discount sub app
 func (s *Server) DiscountService() sub_app_iface.DiscountService {
-	return s.discount
+	return s.Discount
 }

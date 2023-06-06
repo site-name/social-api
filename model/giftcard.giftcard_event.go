@@ -7,6 +7,11 @@ import (
 // The different gift card event types
 type GiftcardEventType string
 
+func (t GiftcardEventType) IsValid() bool {
+	return GiftCardEventsString[t] != ""
+}
+
+// valid types for giftcard
 const (
 	ISSUED              GiftcardEventType = "issued"
 	BOUGHT              GiftcardEventType = "bought"

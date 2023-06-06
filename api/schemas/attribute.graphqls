@@ -1,15 +1,15 @@
 extend type Mutation {
-  attributeCreate(input: AttributeCreateInput!): AttributeCreate
-  attributeDelete(id: String!): AttributeDelete
-  attributeUpdate(id: String!, input: AttributeUpdateInput!): AttributeUpdate
-  attributeTranslate(id: String!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): AttributeTranslate
-  attributeBulkDelete(ids: [String!]!): AttributeBulkDelete
-  attributeValueBulkDelete(ids: [String!]!): AttributeValueBulkDelete
-  attributeValueCreate(attributeID: String!, input: AttributeValueCreateInput!): AttributeValueCreate
-  attributeValueDelete(id: String!): AttributeValueDelete
-  attributeValueUpdate(id: String!, input: AttributeValueUpdateInput!): AttributeValueUpdate
-  attributeValueTranslate(id: String!, input: AttributeValueTranslationInput!, languageCode: LanguageCodeEnum!): AttributeValueTranslate
-  attributeReorderValues(attributeId: String!, moves: [ReorderInput]!): AttributeReorderValues
+  attributeCreate(input: AttributeCreateInput!): AttributeCreate @hasRoleAny(roles: [shop_admin, shop_staff])
+  attributeDelete(id: String!): AttributeDelete @hasRoleAny(roles: [shop_admin, shop_staff])
+  attributeUpdate(id: String!, input: AttributeUpdateInput!): AttributeUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
+  attributeTranslate(id: String!, input: NameTranslationInput!, languageCode: LanguageCodeEnum!): AttributeTranslate @authenticated
+  attributeBulkDelete(ids: [String!]!): AttributeBulkDelete @hasRoleAny(roles: [shop_admin, shop_staff])
+  attributeValueBulkDelete(ids: [String!]!): AttributeValueBulkDelete @hasRoleAny(roles: [shop_admin, shop_staff])
+  attributeValueCreate(attributeID: String!, input: AttributeValueCreateInput!): AttributeValueCreate @authenticated
+  attributeValueDelete(id: String!): AttributeValueDelete @hasRoleAny(roles: [shop_admin, shop_staff])
+  attributeValueUpdate(id: String!, input: AttributeValueUpdateInput!): AttributeValueUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
+  attributeValueTranslate(id: String!, input: AttributeValueTranslationInput!, languageCode: LanguageCodeEnum!): AttributeValueTranslate @authenticated
+  attributeReorderValues(attributeId: String!, moves: [ReorderInput]!): AttributeReorderValues @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 extend type Query {

@@ -17,29 +17,35 @@ const (
 	ORDER_DISCOUNT_VALUE_TYPE_MAX_LENGTH = 10
 )
 
+type OrderDiscountType string
+
+func (o OrderDiscountType) IsValid() bool {
+	return OrderDiscountTypeStrings[o] != ""
+}
+
 // order discount type's values
 const (
-	VOUCHER = "voucher"
-	MANUAL  = "manual"
+	VOUCHER OrderDiscountType = "voucher"
+	MANUAL  OrderDiscountType = "manual"
 )
 
-var OrderDiscountTypeStrings = map[string]string{
+var OrderDiscountTypeStrings = map[OrderDiscountType]string{
 	VOUCHER: "Voucher",
 	MANUAL:  "Manual",
 }
 
 type OrderDiscount struct {
-	Id             string           `json:"id"`
-	OrderID        *string          `json:"order_id"`
-	Type           string           `json:"type"`
-	ValueType      DiscountType     `json:"value_type"`
-	Value          *decimal.Decimal `json:"value"`        // default 0
-	AmountValue    *decimal.Decimal `json:"amount_value"` // default 0
-	Amount         *goprices.Money  `json:"amount,omitempty" db:"-"`
-	Currency       string           `json:"currency"`
-	Name           *string          `json:"name"`
-	TranslatedName *string          `json:"translated_name"`
-	Reason         *string          `json:"reason"`
+	Id             string            `json:"id"`
+	OrderID        *string           `json:"order_id"`
+	Type           OrderDiscountType `json:"type"`
+	ValueType      DiscountType      `json:"value_type"`
+	Value          *decimal.Decimal  `json:"value"`        // default 0
+	AmountValue    *decimal.Decimal  `json:"amount_value"` // default 0
+	Amount         *goprices.Money   `json:"amount,omitempty" db:"-"`
+	Currency       string            `json:"currency"`
+	Name           *string           `json:"name"`
+	TranslatedName *string           `json:"translated_name"`
+	Reason         *string           `json:"reason"`
 }
 
 // OrderDiscountFilterOption is used to build sql queries
@@ -97,7 +103,7 @@ func (o *OrderDiscount) IsValid() *AppError {
 	if o.OrderID != nil && !IsValidId(*o.OrderID) {
 		return outer("order_id", &o.Id)
 	}
-	if OrderDiscountTypeStrings[strings.ToLower(o.Type)] == "" {
+	if OrderDiscountTypeStrings[o.Type] == "" {
 		return outer("type", &o.Id)
 	}
 	if !o.ValueType.IsValid() {
@@ -131,7 +137,7 @@ func (o *OrderDiscount) PreSave() {
 }
 
 func (o *OrderDiscount) commonPre() {
-	if o.Type == "" {
+	if !o.Type.IsValid() {
 		o.Type = MANUAL
 	}
 	if o.ValueType == "" {
@@ -163,9 +169,4 @@ func (o *OrderDiscount) commonPre() {
 
 func (o *OrderDiscount) PreUpdate() {
 	o.commonPre()
-}
-
-func (o *OrderDiscount) ToJSON() string {
-	o.PopulateNonDbFields()
-	return ModelToJson(o)
 }

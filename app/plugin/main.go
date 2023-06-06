@@ -2,23 +2,18 @@ package plugin
 
 import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
-	"github.com/sitename/sitename/modules/slog"
 )
 
-type pluginInitObjType struct {
+type PluginInitObjType struct {
 	NewPluginFunc func(cfg *PluginConfig) interfaces.BasePluginInterface
 	Manifest      *interfaces.PluginManifest
 }
 
-var pluginInitObjects []pluginInitObjType
+var pluginInitObjects []PluginInitObjType
 
-func RegisterVatlayerPlugin(f func(cfg *PluginConfig) interfaces.BasePluginInterface, manifest *interfaces.PluginManifest) {
-	if f != nil && manifest != nil {
-		pluginInitObjects = append(pluginInitObjects, pluginInitObjType{
-			NewPluginFunc: f,
-			Manifest:      manifest,
-		})
-		return
+func RegisterPlugin(p PluginInitObjType) {
+	if p.NewPluginFunc == nil || p.Manifest == nil {
+		panic("Both NewPluginFunc and Manifest must be non-nill")
 	}
-	slog.Fatal("RegisterVatlayerPlugin: plugin creation function and manifest must not be nil")
+	pluginInitObjects = append(pluginInitObjects, p)
 }

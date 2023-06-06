@@ -97,7 +97,6 @@ func (c *Category) Products(ctx context.Context, args struct {
 	Channel *string // NOTE: Channel can be channel id or slug
 	GraphqlParams
 }) (*ProductCountableConnection, error) {
-	// if user is staff of shop, he can see all products
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasRoles("Category.Products", model.ShopStaffRoleId)
 	userCanSeeAllProducts := embedCtx.Err == nil

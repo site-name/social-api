@@ -53,7 +53,6 @@ func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 
 // NOTE: Refer to ./schemas/address.graphqls for directive used
 func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
-	// requester must be authenticated
 	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
 
 	user, err := UserByUserIdLoader.Load(ctx, embedContext.AppContext.Session().UserId)()
@@ -312,7 +311,7 @@ func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableC
 	return nil, MakeUnauthorizedError("User.Orders")
 }
 
-// NOTE: graphql directive checked. refer to ./schemas/users.graphqls for detail
+// NOTE: graphql directive checked. refer to ./schemas/user.graphqls for detail
 func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
 	events, err := CustomerEventsByUserLoader.Load(ctx, u.ID)()
 	if err != nil {
@@ -321,7 +320,7 @@ func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
 	return DataloaderResultMap(events, SystemCustomerEventToGraphqlCustomerEvent), nil
 }
 
-// NOTE: graphql directive checked
+// NOTE: graphql directive checked. Refer to ./schemas/user.graphqls for details
 func (u *User) Note(ctx context.Context) (*string, error) {
 	return u.note, nil
 }
@@ -471,7 +470,7 @@ func (c *CustomerEvent) User(ctx context.Context) (*User, error) {
 }
 
 func (c *CustomerEvent) OrderLine(ctx context.Context) (*OrderLine, error) {
-	orderLineID := c.event.Parameters.Get("order_line_pk")
+	orderLineID := c.event.Parameters.Get("order_line_pk", nil)
 	if orderLineID == nil {
 		return nil, nil
 	}

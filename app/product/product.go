@@ -7,7 +7,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 )
@@ -18,17 +17,16 @@ type ServiceProduct struct {
 }
 
 func init() {
-	app.RegisterProductService(func(s *app.Server) (sub_app_iface.ProductService, error) {
-		service := &ServiceProduct{
-			srv: s,
-		}
+	app.RegisterService(func(s *app.Server) error {
+		service := &ServiceProduct{srv: s}
 
 		appErr := service.DoAnalyticCategories()
 		if appErr != nil {
-			return nil, appErr
+			return appErr
 		}
+		s.Product = service
 
-		return service, nil
+		return nil
 	})
 }
 

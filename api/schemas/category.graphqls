@@ -1,9 +1,9 @@
 extend type Mutation {
-  categoryCreate(input: CategoryInput!, parent: String): CategoryCreate
-  categoryDelete(id: String!): CategoryDelete
-  categoryBulkDelete(ids: [String!]!): CategoryBulkDelete
-  categoryUpdate(id: String!, input: CategoryInput!): CategoryUpdate
-  categoryTranslate(id: String!, input: TranslationInput!, languageCode: LanguageCodeEnum!): CategoryTranslate
+  categoryCreate(input: CategoryInput!, parent: String): CategoryCreate @hasRoles(roles: [shop_admin])
+  categoryDelete(id: String!): CategoryDelete @hasRoles(roles: [shop_admin])
+  categoryBulkDelete(ids: [String!]!): CategoryBulkDelete @hasRoles(roles: [shop_admin])
+  categoryUpdate(id: String!, input: CategoryInput!): CategoryUpdate @hasRoles(roles: [shop_admin])
+  categoryTranslate(id: String!, input: TranslationInput!, languageCode: LanguageCodeEnum!): CategoryTranslate @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 extend type Query {

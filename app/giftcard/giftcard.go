@@ -10,7 +10,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -22,10 +21,9 @@ type ServiceGiftcard struct {
 }
 
 func init() {
-	app.RegisterGiftcardService(func(s *app.Server) (sub_app_iface.GiftcardService, error) {
-		return &ServiceGiftcard{
-			srv: s,
-		}, nil
+	app.RegisterService(func(s *app.Server) error {
+		s.Giftcard = &ServiceGiftcard{s}
+		return nil
 	})
 }
 

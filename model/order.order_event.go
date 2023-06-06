@@ -5,6 +5,10 @@ import "github.com/Masterminds/squirrel"
 // OrderEventType represents type of order event
 type OrderEventType string
 
+func (o OrderEventType) IsValid() bool {
+	return OrderEventTypeStrings[o] != ""
+}
+
 // valid values for order event's type
 const (
 	CONFIRMED                            OrderEventType = "confirmed"

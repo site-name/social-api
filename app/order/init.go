@@ -8,7 +8,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/order/types"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -16,14 +15,12 @@ import (
 )
 
 func init() {
-	app.RegisterOrderService(func(s *app.Server) (sub_app_iface.OrderService, error) {
-		sv := &ServiceOrder{
-			srv: s,
-		}
-
+	app.RegisterService(func(s *app.Server) error {
+		sv := &ServiceOrder{srv: s}
 		sv.RecalculateOrderPrices = sv.UpdateVoucherDiscount(sv.decoratedFunc)
+		s.Order = sv
 
-		return sv, nil
+		return nil
 	})
 }
 

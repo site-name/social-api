@@ -8,7 +8,6 @@ import (
 	graphql "github.com/graph-gophers/graphql-go"
 	gqlerrors "github.com/graph-gophers/graphql-go/errors"
 	"github.com/pkg/errors"
-	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/web"
@@ -20,9 +19,7 @@ type graphQLInput struct {
 	Variables     map[string]any `json:"variables"`
 }
 
-type Resolver struct {
-	srv *app.Server
-}
+type Resolver struct{}
 
 func (api *API) InitGraphql() error {
 	schemaString, err := constructSchema()
@@ -48,7 +45,7 @@ func (api *API) InitGraphql() error {
 		opts = append(opts, graphql.DisableIntrospection())
 	}
 
-	api.schema, err = graphql.ParseSchema(schemaString, &Resolver{srv: api.srv}, opts...)
+	api.schema, err = graphql.ParseSchema(schemaString, &Resolver{}, opts...)
 	if err != nil {
 		return errors.Wrap(err, "failed to parse graphql schema")
 	}

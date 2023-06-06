@@ -11,7 +11,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount/types"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/model"
 )
 
@@ -20,10 +19,9 @@ type ServiceDiscount struct {
 }
 
 func init() {
-	app.RegisterDiscountService(func(s *app.Server) (sub_app_iface.DiscountService, error) {
-		return &ServiceDiscount{
-			srv: s,
-		}, nil
+	app.RegisterService(func(s *app.Server) error {
+		s.Discount = &ServiceDiscount{s}
+		return nil
 	})
 }
 

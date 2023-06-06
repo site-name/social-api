@@ -6,13 +6,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"net/http"
-
-	"github.com/Masterminds/squirrel"
-	"github.com/samber/lo"
-	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 )
 
 // NOTE: directives checked. Refer to ./schemas/collections.graphqls for details.
@@ -22,19 +15,23 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 }) (*CollectionAddProducts, error) {
 
 	// validate arguments
-	if !model.IsValidId(args.CollectionID) {
-		return nil, model.NewAppError("CollectionAddProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "collectionID"}, fmt.Sprintf("%s is invalid collection id", args.CollectionID), http.StatusBadRequest)
-	}
-	if lo.EveryBy(args.Products, model.IsValidId) {
-		return nil, model.NewAppError("CollectionAddProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
-	}
+	// if !model.IsValidId(args.CollectionID) {
+	// 	return nil, model.NewAppError("CollectionAddProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "collectionID"}, fmt.Sprintf("%s is invalid collection id", args.CollectionID), http.StatusBadRequest)
+	// }
+	// if lo.EveryBy(args.Products, model.IsValidId) {
+	// 	return nil, model.NewAppError("CollectionAddProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
+	// }
 
-	products, appErr := r.srv.ProductService().ProductsByOption(&model.ProductFilterOption{
-		Id: squirrel.Eq{store.ProductTableName + ".Id": args.Products},
-	})
-	if appErr != nil {
-		return nil, appErr
-	}
+	// products, appErr := r.srv.ProductService().ProductsByOption(&model.ProductFilterOption{
+	// 	Id: squirrel.Eq{store.ProductTableName + ".Id": args.Products},
+	// })
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
+
+	// If there is product that has no variant
+
+	panic("not implemented")
 }
 
 func (r *Resolver) CollectionCreate(ctx context.Context, args struct {

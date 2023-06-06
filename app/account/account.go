@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/sitename/sitename/app"
-	"github.com/sitename/sitename/app/sub_app_iface"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -24,10 +23,10 @@ type ServiceAccount struct {
 }
 
 func init() {
-	app.RegisterAccountService(func(s *app.Server) (sub_app_iface.AccountService, error) {
+	app.RegisterService(func(s *app.Server) error {
 
 		if s.CacheProvider == nil {
-			return nil, errors.New("s.CacheProvider must not be nil")
+			return errors.New("s.CacheProvider must not be nil")
 		}
 
 		sessionCache, err := s.CacheProvider.NewCache(&cache.CacheOptions{
@@ -36,10 +35,10 @@ func init() {
 			StripedBuckets: util.GetMinMax(runtime.NumCPU()-1, 1).Max,
 		})
 		if err != nil {
-			return nil, errors.New("could not create session cache")
+			return errors.New("could not create session cache")
 		}
 
-		return &ServiceAccount{
+		s.Account = &ServiceAccount{
 			srv:          s,
 			sessionCache: sessionCache,
 			metrics:      s.Metrics,
@@ -49,6 +48,8 @@ func init() {
 					return &model.Session{}
 				},
 			},
-		}, nil
+		}
+
+		return nil
 	})
 }

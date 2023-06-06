@@ -16,13 +16,19 @@ const (
 	SHIPPING_METHOD_TYPE_MAX_LENGTH = 30
 )
 
+type ShippingMethodType string
+
+func (s ShippingMethodType) IsValid() bool {
+	return ShippingMethodTypeString[s] != ""
+}
+
 // shipping method valid types
 const (
 	PRICE_BASED  = "price"
 	WEIGHT_BASED = "weight"
 )
 
-var ShippingMethodTypeString = map[string]string{
+var ShippingMethodTypeString = map[ShippingMethodType]string{
 	PRICE_BASED:  "Price based shipping",
 	WEIGHT_BASED: "Weight based shipping",
 }
@@ -30,7 +36,7 @@ var ShippingMethodTypeString = map[string]string{
 type ShippingMethod struct {
 	Id                  string                 `json:"id"`
 	Name                string                 `json:"name"`
-	Type                string                 `json:"type"`
+	Type                ShippingMethodType     `json:"type"`
 	ShippingZoneID      string                 `json:"shipping_zone_id"`
 	MinimumOrderWeight  float32                `json:"minimum_order_weight"` // default0 0
 	MaximumOrderWeight  *float32               `json:"maximum_order_weight"`
@@ -133,7 +139,7 @@ func (s *ShippingMethod) PreSave() {
 
 func (s *ShippingMethod) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"shipping_method.is_valid.%s.app_error",
+		"model.shipping_method.is_valid.%s.app_error",
 		"shipping_method_id=",
 		"ShippingMethod.IsValid",
 	)
@@ -147,7 +153,7 @@ func (s *ShippingMethod) IsValid() *AppError {
 	if utf8.RuneCountInString(s.Name) > SHIPPING_METHOD_NAME_MAX_LENGTH {
 		return outer("name", &s.Id)
 	}
-	if ShippingMethodTypeString[strings.ToLower(s.Type)] == "" || len(s.Type) > SHIPPING_METHOD_TYPE_MAX_LENGTH {
+	if !s.Type.IsValid() || len(s.Type) > SHIPPING_METHOD_TYPE_MAX_LENGTH {
 		return outer("type", &s.Id)
 	}
 	return nil

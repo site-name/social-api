@@ -102,7 +102,7 @@ func (b *BasePlugin) Notify(event string, payload model.StringInterface, previou
 	return nil, model.NewAppError("Notify", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 
-func (b *BasePlugin) ChangeUserAddress(address model.Address, addressType model.AddressTypeEnum, user *model.User, previousValue model.Address) (*model.Address, *model.AppError) {
+func (b *BasePlugin) ChangeUserAddress(address model.Address, addressType *model.AddressTypeEnum, user *model.User, previousValue model.Address) (*model.Address, *model.AppError) {
 	return nil, model.NewAppError("ChangeUserAddress", ErrorPluginbMethodNotImplemented, nil, "", http.StatusNotImplemented)
 }
 

@@ -26,7 +26,7 @@ type ProductFilterInput struct {
 	Categories        []string
 	HasCategory       *bool
 	Attributes        []*AttributeFilter
-	StockAvailability *string // can either be Instock or outOfStock
+	StockAvailability *StockAvailability // can either be Instock or outOfStock
 	Stocks            *struct {
 		WarehouseIds []string
 		Quantity     *struct {
@@ -56,24 +56,37 @@ type ProductFilterInput struct {
 
 // valid values for ProductOrder.Field
 const (
-	ProductOrderFieldName            = "NAME"
-	ProductOrderFieldRank            = "RANK"
-	ProductOrderFieldPrice           = "PRICE"
-	ProductOrderFieldMinimalPrice    = "MINIMAL_PRICE"
-	ProductOrderFieldDate            = "DATE"
-	ProductOrderFieldType            = "TYPE"
-	ProductOrderFieldPublished       = "PUBLISHED"
-	ProductOrderFieldPublicationDate = "PUBLICATION_DATE"
-	ProductOrderFieldCollection      = "COLLECTION"
-	ProductOrderFieldRating          = "RATING"
+	ProductOrderFieldName            ProductOrderField = "NAME"
+	ProductOrderFieldRank            ProductOrderField = "RANK"
+	ProductOrderFieldPrice           ProductOrderField = "PRICE"
+	ProductOrderFieldMinimalPrice    ProductOrderField = "MINIMAL_PRICE"
+	ProductOrderFieldDate            ProductOrderField = "DATE"
+	ProductOrderFieldType            ProductOrderField = "TYPE"
+	ProductOrderFieldPublished       ProductOrderField = "PUBLISHED"
+	ProductOrderFieldPublicationDate ProductOrderField = "PUBLICATION_DATE"
+	ProductOrderFieldCollection      ProductOrderField = "COLLECTION"
+	ProductOrderFieldRating          ProductOrderField = "RATING"
 )
 
-// TODO: add support for field AttributeID
-type ProductOrder struct {
-	Field     *string
-	Direction OrderDirection
+type ProductOrderField string
 
-	// AttributeID *string // TODO: add support filtering by this field
+func (p ProductOrderField) IsValid() bool {
+	switch p {
+	case ProductOrderFieldName, ProductOrderFieldRank,
+		ProductOrderFieldPrice, ProductOrderFieldMinimalPrice,
+		ProductOrderFieldDate, ProductOrderFieldType,
+		ProductOrderFieldPublished, ProductOrderFieldPublicationDate,
+		ProductOrderFieldCollection, ProductOrderFieldRating:
+		return true
+	default:
+		return false
+	}
+}
+
+type ProductOrder struct {
+	Field       *ProductOrderField
+	Direction   OrderDirection
+	AttributeID *string
 }
 
 type ExportProductsFilterOptions struct {

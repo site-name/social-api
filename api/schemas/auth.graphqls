@@ -12,9 +12,10 @@ extend type Mutation {
   requestPasswordReset(channel: String, email: String!, redirectUrl: String!): RequestPasswordReset
   confirmAccount(email: String!, token: String!): ConfirmAccount
   setPassword(email: String!, password: String!, token: String!): SetPassword
-  passwordChange(newPassword: String!, oldPassword: String!): PasswordChange
-  requestEmailChange(channel: String, newEmail: String!, password: String!, redirectUrl: String!): RequestEmailChange
-  confirmEmailChange(channel: String, token: String!): ConfirmEmailChange
+  passwordChange(newPassword: String!, oldPassword: String!): PasswordChange @authenticated
+  # NOTE: channel must be channel id
+  requestEmailChange(channel: String!, newEmail: String!, password: String!, redirectUrl: String!): RequestEmailChange @authenticated
+  confirmEmailChange(channel: String!, token: String!): ConfirmEmailChange @authenticated
 }
 
 # This input type idea is borrowed from Mattermost

@@ -1,8 +1,6 @@
 package model
 
 import (
-	"strings"
-
 	"github.com/Masterminds/squirrel"
 )
 
@@ -11,23 +9,29 @@ const (
 	SHIPPING_METHOD_POSTAL_CODE_RULE_COMMON_MAX_LENGTH = 32
 )
 
+type InclusionType string
+
+func (i InclusionType) IsValid() bool {
+	return PostalCodeRuleInclusionTypeString[i] != ""
+}
+
 // standard choices for inclusion_type
 const (
-	INCLUDE = "include"
-	EXCLUDE = "exclude"
+	INCLUDE InclusionType = "include"
+	EXCLUDE InclusionType = "exclude"
 )
 
-var PostalCodeRuleInclusionTypeString = map[string]string{
+var PostalCodeRuleInclusionTypeString = map[InclusionType]string{
 	INCLUDE: "Shipping method should include postal code rule",
 	EXCLUDE: "Shipping method should exclude postal code rule",
 }
 
 type ShippingMethodPostalCodeRule struct {
-	Id               string `json:"id"`
-	ShippingMethodID string `json:"shipping_method_id"`
-	Start            string `json:"start"`
-	End              string `json:"end"`
-	InclusionType    string `json:"inclusion_type"`
+	Id               string        `json:"id"`
+	ShippingMethodID string        `json:"shipping_method_id"`
+	Start            string        `json:"start"`
+	End              string        `json:"end"`
+	InclusionType    InclusionType `json:"inclusion_type"`
 }
 
 type ShippingMethodPostalCodeRules []*ShippingMethodPostalCodeRule
@@ -56,7 +60,7 @@ func (r *ShippingMethodPostalCodeRule) DeepCopy() *ShippingMethodPostalCodeRule 
 
 func (s *ShippingMethodPostalCodeRule) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"shipping_method_postal_code.is_valid.%s.app_error",
+		"model.shipping_method_postal_code.is_valid.%s.app_error",
 		"shipping_method_postal_code_id=",
 		"ShippingMethodPostalCodeRule.IsValid",
 	)
@@ -72,7 +76,7 @@ func (s *ShippingMethodPostalCodeRule) IsValid() *AppError {
 	if len(s.End) > SHIPPING_METHOD_POSTAL_CODE_RULE_COMMON_MAX_LENGTH {
 		return outer("end", &s.Id)
 	}
-	if PostalCodeRuleInclusionTypeString[strings.ToLower(s.InclusionType)] == "" {
+	if !s.InclusionType.IsValid() {
 		return outer("inclusion_type", &s.Id)
 	}
 
