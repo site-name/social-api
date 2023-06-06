@@ -15,17 +15,15 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 	"github.com/sitename/sitename/web"
 )
 
+// NOTE: Refer to ./schemas/channel.graphqls for directive used
 func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input ChannelCreateInput }) (*ChannelCreate, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateChannel)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
-	// validate ids
+	// validate input
 	if !lo.EveryBy(args.Input.AddShippingZones, model.IsValidId) {
 		return nil, model.NewAppError("ChannelCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "addShippingZones"}, "please provide valid addShippingZones", http.StatusBadRequest)
 	}
@@ -44,7 +42,7 @@ func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input Channel
 		channel.Slug = val
 	}
 
-	// insert
+	// save new channel to db
 	channel, appErr := embedCtx.App.Srv().ChannelService().UpsertChannel(nil, channel)
 	if appErr != nil {
 		return nil, appErr
@@ -52,7 +50,7 @@ func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input Channel
 
 	// save channel shipping zone relations:
 	// begin transaction
-	transaction, err := r.srv.Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, model.NewAppError("ChannelCreate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -64,7 +62,7 @@ func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input Channel
 			ChannelID:      channel.Id,
 		}
 	})
-	_, appErr = r.srv.ChannelService().BulkUpsertShippingZoneChannels(transaction, shippingZoneChannelRelations)
+	_, appErr = embedCtx.App.Srv().ChannelService().BulkUpsertShippingZoneChannels(transaction, shippingZoneChannelRelations)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -79,15 +77,12 @@ func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input Channel
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/channel.graphqls for directive used
 func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 	Id    string
 	Input ChannelUpdateInput
 }) (*ChannelUpdate, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateChannel)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	// validate inputs
 	if !model.IsValidId(args.Id) {
@@ -105,7 +100,7 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 	}
 
 	// validate if channe does exist
-	channel, appErr := r.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
+	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
 		Id: squirrel.Eq{store.ChannelTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
@@ -127,26 +122,28 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 	}
 
 	// update channel in db
-	channel, appErr = r.srv.ChannelService().UpsertChannel(nil, channel)
+	channel, appErr = embedCtx.App.Srv().ChannelService().UpsertChannel(nil, channel)
 	if appErr != nil {
 		return nil, appErr
 	}
 
 	// update m2m relations
 	// begin transaction
-	transaction, err := r.srv.Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
 	if err != nil {
 		return nil, model.NewAppError("ChannelUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	// NOTE: Don't defer transaction.RollBack() here
+	// NOTE: We don't defer transaction.RollBack() here
 
 	// create relations between shipping zones and channel
-	insertRelations := lo.Map(args.Input.AddShippingZones, func(id string, _ int) *model.ShippingZoneChannel {
-		return &model.ShippingZoneChannel{ShippingZoneID: id, ChannelID: channel.Id}
-	})
-	_, appErr = r.srv.ChannelService().BulkUpsertShippingZoneChannels(transaction, insertRelations)
-	if appErr != nil {
-		return nil, appErr
+	if len(args.Input.AddShippingZones) > 0 {
+		insertRelations := lo.Map(args.Input.AddShippingZones, func(id string, _ int) *model.ShippingZoneChannel {
+			return &model.ShippingZoneChannel{ShippingZoneID: id, ChannelID: channel.Id}
+		})
+		_, appErr = embedCtx.App.Srv().ChannelService().BulkUpsertShippingZoneChannels(transaction, insertRelations)
+		if appErr != nil {
+			return nil, appErr
+		}
 	}
 
 	if len(args.Input.RemoveShippingZones) > 0 {
@@ -154,13 +151,13 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 		deleteRelations := lo.Map(args.Input.RemoveShippingZones, func(id string, _ int) *model.ShippingZoneChannel {
 			return &model.ShippingZoneChannel{ShippingZoneID: id, ChannelID: channel.Id}
 		})
-		appErr = r.srv.ChannelService().BulkDeleteShippingZoneChannels(transaction, deleteRelations)
+		appErr = embedCtx.App.Srv().ChannelService().BulkDeleteShippingZoneChannels(transaction, deleteRelations)
 		if appErr != nil {
 			return nil, appErr
 		}
 
 		// delete shipping methods channel listings of shipping methods of deleted shipping zones
-		shippingMethodChannelListings, appErr := r.srv.ShippingService().
+		shippingMethodChannelListings, appErr := embedCtx.App.Srv().ShippingService().
 			ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
 				ChannelID:                           squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": channel.Id},
 				ShippingMethod_ShippingZoneID_Inner: squirrel.Eq{store.ShippingZoneTableName + ".Id": args.Input.RemoveShippingZones},
@@ -169,13 +166,13 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 			return nil, appErr
 		}
 
-		err = r.srv.Store.ShippingMethodChannelListing().BulkDelete(transaction, shippingMethodChannelListings.IDs())
+		err = embedCtx.App.Srv().Store.ShippingMethodChannelListing().BulkDelete(transaction, shippingMethodChannelListings.IDs())
 		if err != nil {
 			return nil, model.NewAppError("ChannelUpdate", "app.shippng.delete_shipping_method_channel_listings.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
 
-		r.srv.Go(func() {
-			appErr := r.srv.ShippingService().DropInvalidShippingMethodsRelationsForGivenChannels(transaction, shippingMethodChannelListings.ShippingMethodIDs(), []string{channel.Id})
+		embedCtx.App.Srv().Go(func() {
+			appErr := embedCtx.App.Srv().ShippingService().DropInvalidShippingMethodsRelationsForGivenChannels(transaction, shippingMethodChannelListings.ShippingMethodIDs(), []string{channel.Id})
 			if appErr != nil {
 				slog.Error("failed to update invalid shipping method", slog.Err(appErr))
 			}
@@ -202,26 +199,96 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/channel.graphqls for directive used
 func (r *Resolver) ChannelDelete(ctx context.Context, args struct {
 	Id    string
 	Input *ChannelDeleteInput
 }) (*ChannelDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// validate input
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("ChannelDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide a valid channel id", http.StatusBadRequest)
+	}
+	if args.Input != nil && !model.IsValidId(args.Input.ChannelID) {
+		return nil, model.NewAppError("ChannelDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide a valid channel id", http.StatusBadRequest)
+	}
+	if args.Input != nil && args.Input.ChannelID == args.Id {
+		return nil, model.NewAppError("ChannelDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "target channel cannot be the channel to be deleted", http.StatusBadRequest)
+	}
+
+	deleteCheckoutsByChannelID := func(channelID string, transaction store_iface.SqlxTxExecutor) *model.AppError {
+		return embedCtx.App.Srv().
+			CheckoutService().
+			DeleteCheckoutsByOption(transaction, &model.CheckoutFilterOption{
+				ChannelID: squirrel.Eq{store.CheckoutTableName + ".ChannelID": args.Id},
+			})
+	}
+
+	orders, appErr := embedCtx.App.Srv().
+		OrderService().
+		FilterOrdersByOptions(&model.OrderFilterOption{
+			ChannelID:       squirrel.Eq{store.OrderTableName + ".ChannelID": args.Id},
+			SelectForUpdate: true,
+		})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// target channel does exist
+	if args.Input != nil && model.IsValidId(args.Input.ChannelID) {
+		transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+		if err != nil {
+			return nil, model.NewAppError("ChannelDelete", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		}
+
+		// delete checkouts of origin channel
+		appErr := deleteCheckoutsByChannelID(args.Id, transaction)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		// migrate orders to target channel
+		for _, order := range orders {
+			order.ChannelID = args.Input.ChannelID
+		}
+
+		_, appErr = embedCtx.App.Srv().OrderService().BulkUpsertOrders(transaction, orders)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		err = transaction.Commit()
+		if err != nil {
+			return nil, model.NewAppError("ChannelDelete", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		}
+		store.FinalizeTransaction(transaction)
+
+	} else {
+		if len(orders) > 0 {
+			return nil, model.NewAppError("ChannelDelete", "api.channel.delete_channel_with_orders.app_error", nil, "you must specify a target channel to migrate orders of given channel to", http.StatusNotAcceptable)
+		}
+
+		appErr := deleteCheckoutsByChannelID(args.Id, nil)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// delete channel
+	panic("not implemented")
 }
 
+// NOTE: Refer to ./schemas/channel.graphqls for directive used
 func (r *Resolver) ChannelActivate(ctx context.Context, args struct{ Id string }) (*ChannelActivate, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateChannel)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	// validate channel
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("ChannelActivate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid channel id", http.StatusBadRequest)
 	}
 
-	channel, appErr := r.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
+	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
 		Id: squirrel.Eq{store.ChannelTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
@@ -230,7 +297,7 @@ func (r *Resolver) ChannelActivate(ctx context.Context, args struct{ Id string }
 
 	if !channel.IsActive {
 		channel.IsActive = true
-		channel, appErr = r.srv.ChannelService().UpsertChannel(nil, channel)
+		channel, appErr = embedCtx.App.Srv().ChannelService().UpsertChannel(nil, channel)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -241,19 +308,16 @@ func (r *Resolver) ChannelActivate(ctx context.Context, args struct{ Id string }
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/channel.graphqls for directive used
 func (r *Resolver) ChannelDeactivate(ctx context.Context, args struct{ Id string }) (*ChannelDeactivate, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateChannel)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	// validate channel
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("ChannelActivate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid channel id", http.StatusBadRequest)
 	}
 
-	channel, appErr := r.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
+	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
 		Id: squirrel.Eq{store.ChannelTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
@@ -262,7 +326,7 @@ func (r *Resolver) ChannelDeactivate(ctx context.Context, args struct{ Id string
 
 	if channel.IsActive {
 		channel.IsActive = false
-		channel, appErr = r.srv.ChannelService().UpsertChannel(nil, channel)
+		channel, appErr = embedCtx.App.Srv().ChannelService().UpsertChannel(nil, channel)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -273,10 +337,29 @@ func (r *Resolver) ChannelDeactivate(ctx context.Context, args struct{ Id string
 	}, nil
 }
 
-func (r *Resolver) Channel(ctx context.Context, args struct{ Id *string }) (*Channel, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *Resolver) Channel(ctx context.Context, args struct{ Id string }) (*Channel, error) {
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("Channel", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is not a valid channel id", args.Id), http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
+		Id: squirrel.Eq{store.ChannelTableName + ".Id": args.Id},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return SystemChannelToGraphqlChannel(channel), nil
 }
 
 func (r *Resolver) Channels(ctx context.Context) ([]*Channel, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	channels, appErr := embedCtx.App.Srv().ChannelService().ChannelsByOption(&model.ChannelFilterOption{})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return systemRecordsToGraphql(channels, SystemChannelToGraphqlChannel), nil
 }

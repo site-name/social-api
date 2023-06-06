@@ -131,6 +131,8 @@ type OrderFilterOption struct {
 	UserID           squirrel.Sqlizer // for filtering order's UserID
 	ChannelID        squirrel.Sqlizer
 	ShippingMethodID squirrel.Sqlizer
+
+	SelectForUpdate bool // if true, add FOR UPDATE to the end of sql queries
 }
 
 // PopulateNonDbFields must be called after fetching order(s) from database or before perform json serialization.

@@ -146,7 +146,7 @@ func (p *Product) Collections(ctx context.Context) ([]*Collection, error) {
 	}
 
 	if hasProductPermission {
-		return DataloaderResultMap(collections, systemCollectionToGraphqlCollection), nil
+		return systemRecordsToGraphql(collections, systemCollectionToGraphqlCollection), nil
 	}
 
 	keys := lo.Map(collections, func(c *model.Collection, _ int) string { return fmt.Sprintf("%s__%s", c.Id, channelID) })
@@ -167,7 +167,7 @@ func (p *Product) Collections(ctx context.Context) ([]*Collection, error) {
 		return ok && listing != nil && listing.IsVisible()
 	})
 
-	return DataloaderResultMap(visibleCollections, systemCollectionToGraphqlCollection), nil
+	return systemRecordsToGraphql(visibleCollections, systemCollectionToGraphqlCollection), nil
 }
 
 func (p *Product) ChannelListings(ctx context.Context) ([]*ProductChannelListing, error) {
@@ -182,7 +182,7 @@ func (p *Product) ChannelListings(ctx context.Context) ([]*ProductChannelListing
 		return nil, err
 	}
 
-	return DataloaderResultMap(channelListings, systemProductChannelListingToGraphqlProductChannelListing), nil
+	return systemRecordsToGraphql(channelListings, systemProductChannelListingToGraphqlProductChannelListing), nil
 }
 
 func (p *Product) Thumbnail(ctx context.Context, args struct{ Size *int32 }) (*Image, error) {
@@ -361,7 +361,7 @@ func (p *Product) Media(ctx context.Context) ([]*ProductMedia, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(medias, systemProductMediaToGraphqlProductMedia), nil
+	return systemRecordsToGraphql(medias, systemProductMediaToGraphqlProductMedia), nil
 }
 
 func (p *Product) Variants(ctx context.Context) ([]*ProductVariant, error) {
@@ -384,7 +384,7 @@ func (p *Product) Variants(ctx context.Context) ([]*ProductVariant, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(variants, SystemProductVariantToGraphqlProductVariant), nil
+	return systemRecordsToGraphql(variants, SystemProductVariantToGraphqlProductVariant), nil
 }
 
 type ProductType struct {
@@ -488,7 +488,7 @@ func (p *ProductType) ProductAttributes(ctx context.Context) ([]*Attribute, erro
 		return nil, err
 	}
 
-	return DataloaderResultMap(attributes, SystemAttributeToGraphqlAttribute), nil
+	return systemRecordsToGraphql(attributes, SystemAttributeToGraphqlAttribute), nil
 }
 
 func (p *ProductType) VariantAttributes(ctx context.Context, args struct{ VariantSelection *VariantAttributeScope }) ([]*Attribute, error) {
@@ -499,12 +499,12 @@ func (p *ProductType) VariantAttributes(ctx context.Context, args struct{ Varian
 	}
 
 	if args.VariantSelection == nil || *args.VariantSelection == VariantAttributeScopeAll {
-		return DataloaderResultMap(attributes, SystemAttributeToGraphqlAttribute), nil
+		return systemRecordsToGraphql(attributes, SystemAttributeToGraphqlAttribute), nil
 	}
 
 	variantSelectionAttributes := embedCtx.App.Srv().ProductService().GetVariantSelectionAttributes(attributes)
 	if *args.VariantSelection == VariantAttributeScopeVariantSelection {
-		return DataloaderResultMap(variantSelectionAttributes, SystemAttributeToGraphqlAttribute), nil
+		return systemRecordsToGraphql(variantSelectionAttributes, SystemAttributeToGraphqlAttribute), nil
 	}
 
 	variantSelectionAttributesMap := lo.SliceToMap(variantSelectionAttributes, func(v *model.Attribute) (string, struct{}) { return v.Id, struct{}{} })
@@ -513,7 +513,7 @@ func (p *ProductType) VariantAttributes(ctx context.Context, args struct{ Varian
 		return !exist
 	})
 
-	return DataloaderResultMap(attributes, SystemAttributeToGraphqlAttribute), nil
+	return systemRecordsToGraphql(attributes, SystemAttributeToGraphqlAttribute), nil
 }
 
 // ------- ProductMedia

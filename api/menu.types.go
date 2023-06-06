@@ -40,7 +40,7 @@ func (m *Menu) Items(ctx context.Context) ([]*MenuItem, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(items, systemMenuItemToGraphqlMenuItem), nil
+	return systemRecordsToGraphql(items, systemMenuItemToGraphqlMenuItem), nil
 }
 
 type MenuItem struct {
@@ -105,7 +105,7 @@ func (i *MenuItem) Children(ctx context.Context) ([]*MenuItem, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(items, systemMenuItemToGraphqlMenuItem), nil
+	return systemRecordsToGraphql(items, systemMenuItemToGraphqlMenuItem), nil
 }
 
 func (i *MenuItem) Collection(ctx context.Context) (*Collection, error) {

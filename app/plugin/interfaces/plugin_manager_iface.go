@@ -64,7 +64,7 @@ type PluginManagerInterface interface {
 	InvoiceRequest(orDer model.Order, inVoice model.Invoice, number string) (interface{}, *model.AppError)
 	InvoiceSent(inVoice model.Invoice, email string) (interface{}, *model.AppError)
 	ListExternalAuthentications(activeOnly bool) ([]model.StringInterface, *model.AppError)
-	ListPaymentGateways(currency string, checkOut *model.Checkout, channelID string, activeOnly bool) []*model.PaymentGateway
+	ListPaymentGateways(currency string, checkOut *model.Checkout, channelID string, activeOnly bool) []*model.PaymentGateway // NOTE: activeOnly should be default to true
 	ListPaymentSources(gateway, customerID, channelID string) ([]*model.CustomerSource, error)
 	Notify(event string, payload model.StringInterface, channelID string, pluginID string) (interface{}, *model.AppError)
 	OrderCancelled(orDer model.Order) (interface{}, *model.AppError)

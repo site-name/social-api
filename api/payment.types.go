@@ -142,7 +142,7 @@ func (p *Payment) Transactions(ctx context.Context) ([]*Transaction, error) {
 	if err != nil {
 		return nil, err
 	}
-	return DataloaderResultMap(transactions, systemTransactionToGraphqlTransaction), nil
+	return systemRecordsToGraphql(transactions, systemTransactionToGraphqlTransaction), nil
 }
 
 // NOTE: permissions/roles are checked by directives. Refer to ./schemas/payment.graphqls for details

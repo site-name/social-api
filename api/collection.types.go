@@ -111,5 +111,5 @@ func (c *Collection) ChannelListings(ctx context.Context) ([]*CollectionChannelL
 		return nil, err
 	}
 
-	return DataloaderResultMap(listings, systemCollectionChannelListingToGraphqlCollectionChannelListing), nil
+	return systemRecordsToGraphql(listings, systemCollectionChannelListingToGraphqlCollectionChannelListing), nil
 }

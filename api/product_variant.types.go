@@ -113,7 +113,7 @@ func (p *ProductVariant) Stocks(ctx context.Context, args struct {
 		return nil, err
 	}
 
-	return DataloaderResultMap(stocks, SystemStockToGraphqlStock), nil
+	return systemRecordsToGraphql(stocks, SystemStockToGraphqlStock), nil
 }
 
 func (p *ProductVariant) QuantityAvailable(ctx context.Context, args struct {
@@ -204,7 +204,7 @@ func (p *ProductVariant) ChannelListings(ctx context.Context) ([]*ProductVariant
 		return nil, err
 	}
 
-	return DataloaderResultMap(variantChannelListings, systemProductVariantChannelListingToGraphqlProductVariantChannelListing), nil
+	return systemRecordsToGraphql(variantChannelListings, systemProductVariantChannelListingToGraphqlProductVariantChannelListing), nil
 }
 
 func (p *ProductVariant) Pricing(ctx context.Context, args struct{ Address *AddressInput }) (*VariantPricingInfo, error) {
@@ -382,7 +382,7 @@ func (p *ProductVariant) Media(ctx context.Context) ([]*ProductMedia, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(medias, systemProductMediaToGraphqlProductMedia), nil
+	return systemRecordsToGraphql(medias, systemProductMediaToGraphqlProductMedia), nil
 }
 
 type PreorderData struct {

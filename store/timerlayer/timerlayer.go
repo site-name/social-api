@@ -4391,38 +4391,6 @@ func (s *TimerLayerOrderStore) Get(id string) (*model.Order, error) {
 	return result, err
 }
 
-func (s *TimerLayerOrderStore) Save(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error) {
-	start := timemodule.Now()
-
-	result, err := s.OrderStore.Save(transaction, order)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerOrderStore) Update(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error) {
-	start := timemodule.Now()
-
-	result, err := s.OrderStore.Update(transaction, order)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("OrderStore.Update", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
 	start := timemodule.Now()
 

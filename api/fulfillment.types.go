@@ -52,7 +52,7 @@ func (f *Fulfillment) Lines(ctx context.Context) ([]*FulfillmentLine, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(lines, SystemFulfillmentLineToGraphqlFulfillmentLine), nil
+	return systemRecordsToGraphql(lines, SystemFulfillmentLineToGraphqlFulfillmentLine), nil
 }
 
 func (f *Fulfillment) StatusDisplay(ctx context.Context) (*string, error) {

@@ -261,7 +261,7 @@ func (o *OrderEvent) FulfilledItems(ctx context.Context) ([]*FulfillmentLine, er
 			return nil, errs[0]
 		}
 
-		return DataloaderResultMap(lines, SystemFulfillmentLineToGraphqlFulfillmentLine), nil
+		return systemRecordsToGraphql(lines, SystemFulfillmentLineToGraphqlFulfillmentLine), nil
 	}
 
 	return nil, nil

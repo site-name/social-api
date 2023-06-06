@@ -109,7 +109,7 @@ func (o *OrderLine) Allocations(ctx context.Context) ([]*Allocation, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(allocations, systemAllocationToGraphqlAllocation), nil
+	return systemRecordsToGraphql(allocations, systemAllocationToGraphqlAllocation), nil
 }
 
 func (o *OrderLine) Variant(ctx context.Context) (*ProductVariant, error) {
@@ -353,7 +353,7 @@ func (o *Order) Discounts(ctx context.Context) ([]*OrderDiscount, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(rels, SystemOrderDiscountToGraphqlOrderDiscount), nil
+	return systemRecordsToGraphql(rels, SystemOrderDiscountToGraphqlOrderDiscount), nil
 }
 
 func (o *Order) IsPaid(ctx context.Context) (bool, error) {
@@ -479,7 +479,7 @@ func (o *Order) Payments(ctx context.Context) ([]*Payment, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(payments, SystemPaymentToGraphqlPayment), nil
+	return systemRecordsToGraphql(payments, SystemPaymentToGraphqlPayment), nil
 }
 
 func (o *Order) TotalAuthorized(ctx context.Context) (*Money, error) {
@@ -536,7 +536,7 @@ func (o *Order) Fulfillments(ctx context.Context) ([]*Fulfillment, error) {
 		TODO: https://github.com/site-name/social-api/issues/11
 	*/
 
-	return DataloaderResultMap(fulfillments, SystemFulfillmentToGraphqlFulfillment), nil
+	return systemRecordsToGraphql(fulfillments, SystemFulfillmentToGraphqlFulfillment), nil
 }
 
 func (o *Order) Lines(ctx context.Context) ([]*OrderLine, error) {
@@ -545,7 +545,7 @@ func (o *Order) Lines(ctx context.Context) ([]*OrderLine, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(lines, SystemOrderLineToGraphqlOrderLine), nil
+	return systemRecordsToGraphql(lines, SystemOrderLineToGraphqlOrderLine), nil
 }
 
 func (o *Order) Events(ctx context.Context) ([]*OrderEvent, error) {
@@ -560,7 +560,7 @@ func (o *Order) Events(ctx context.Context) ([]*OrderEvent, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(events, SystemOrderEventToGraphqlOrderEvent), nil
+	return systemRecordsToGraphql(events, SystemOrderEventToGraphqlOrderEvent), nil
 }
 
 func (o *Order) PaymentStatus(ctx context.Context) (*PaymentChargeStatusEnum, error) {
@@ -717,7 +717,7 @@ func (o *Order) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, er
 		return nil, appErr
 	}
 
-	return DataloaderResultMap(warehouses, SystemWarehouseToGraphqlWarehouse), nil
+	return systemRecordsToGraphql(warehouses, SystemWarehouseToGraphqlWarehouse), nil
 }
 
 func (o *Order) Invoices(ctx context.Context) ([]*Invoice, error) {
@@ -735,7 +735,7 @@ func (o *Order) Invoices(ctx context.Context) ([]*Invoice, error) {
 			return nil, err
 		}
 
-		return DataloaderResultMap(invoices, SystemInvoiceToGraphqlInvoice), nil
+		return systemRecordsToGraphql(invoices, SystemInvoiceToGraphqlInvoice), nil
 	}
 
 	return nil, MakeUnauthorizedError("Order.Invoices")
@@ -756,7 +756,7 @@ func (o *Order) GiftCards(ctx context.Context) ([]*GiftCard, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(giftcards, SystemGiftcardToGraphqlGiftcard), nil
+	return systemRecordsToGraphql(giftcards, SystemGiftcardToGraphqlGiftcard), nil
 }
 
 func (o *Order) Voucher(ctx context.Context) (*Voucher, error) {

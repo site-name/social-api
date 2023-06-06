@@ -153,5 +153,5 @@ func (v *Sale) ChannelListings(ctx context.Context) ([]*SaleChannelListing, erro
 		return nil, err
 	}
 
-	return DataloaderResultMap(listings, systemSaleChannelListingToGraphqlSaleChannelListing), nil
+	return systemRecordsToGraphql(listings, systemSaleChannelListingToGraphqlSaleChannelListing), nil
 }

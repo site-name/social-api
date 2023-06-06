@@ -56,7 +56,7 @@ func (line *CheckoutLine) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
 
 	now := time.Now()
 
-	discounts, err = DiscountsByDateTimeLoader.Load(ctx, now)()
+	discounts, err := DiscountsByDateTimeLoader.Load(ctx, now)()
 	if err != nil {
 		return nil, err
 	}
@@ -71,6 +71,9 @@ func (line *CheckoutLine) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
 		return nil, err
 	}
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+
 	for _, lineInfo := range checkoutLineInfos {
 		if lineInfo.Line.Id == line.ID {
 			address := checkoutInfo.ShippingAddress
@@ -78,7 +81,18 @@ func (line *CheckoutLine) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
 				address = checkoutInfo.BillingAddress
 			}
 
-			panic("not implemented")
+			taxedMoney, appErr := pluginManager.CalculateCheckoutLineTotal(
+				*checkoutInfo,
+				checkoutLineInfos,
+				*lineInfo,
+				address,
+				discounts,
+			)
+			if appErr != nil {
+				return nil, appErr
+			}
+
+			return SystemTaxedMoneyToGraphqlTaxedMoney(taxedMoney), nil
 		}
 	}
 

@@ -2,8 +2,8 @@ package order
 
 import (
 	"database/sql"
-	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -126,12 +126,12 @@ func (os *SqlOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orde
 
 	for _, ord := range orders {
 		var (
-			err        error
-			numUpdated int64
-			isSaving   bool
+			err      error
+			isSaving bool
 		)
 
-		if ord.Id == "" {
+		if !model.IsValidId(ord.Id) {
+			ord.Id = ""
 			isSaving = true
 			ord.PreSave()
 		} else {
@@ -150,9 +150,9 @@ func (os *SqlOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orde
 						ord.NewToken()
 						continue
 					}
-					break
+					break // system error, break right now to return
 				}
-				break
+				break // no error, break
 			}
 
 		} else {
@@ -177,47 +177,15 @@ func (os *SqlOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orde
 			ord.ShippingPriceNetAmount = oldOrder.ShippingPriceNetAmount
 			ord.ShippingPriceGrossAmount = oldOrder.ShippingPriceGrossAmount
 
-			var result sql.Result
-			result, err = runner.NamedExec(updateQuery, ord)
-			if err == nil && result != nil {
-				numUpdated, _ = result.RowsAffected()
-			}
+			_, err = runner.NamedExec(updateQuery, ord)
 		}
 
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to upsert order with id=%s", ord.Id)
 		}
-		if numUpdated > 1 {
-			return nil, errors.Errorf("multiple orders were updated: %d instead of 1", numUpdated)
-		}
 	}
 
 	return orders, nil
-}
-
-func (os *SqlOrderStore) Save(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error) {
-	var executor store_iface.SqlxExecutor = os.GetMasterX()
-	if transaction != nil {
-		executor = transaction
-	}
-
-	order.PreSave()
-	if err := order.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + store.OrderTableName + "(" + os.ModelFields("").Join(",") + ") VALUES (" + os.ModelFields(":").Join(",") + ")"
-	for {
-		if _, err := executor.NamedExec(query, order); err != nil {
-			if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key", "idx_orders_token_unique"}) {
-				order.NewToken()
-				continue
-			}
-			return nil, errors.Wrapf(err, "failed to save order with Id=%s", order.Id)
-		}
-		break
-	}
-	return order, nil
 }
 
 // Get finds and returns 1 order with given id
@@ -233,90 +201,34 @@ func (os *SqlOrderStore) Get(id string) (*model.Order, error) {
 	return &order, nil
 }
 
-func (os *SqlOrderStore) Update(transaction store_iface.SqlxTxExecutor, newOrder *model.Order) (*model.Order, error) {
-	var executor store_iface.SqlxExecutor = os.GetMasterX()
-	if transaction != nil {
-		executor = transaction
-	}
-
-	newOrder.PreUpdate()
-	if err := newOrder.IsValid(); err != nil {
-		return nil, err
-	}
-
-	// check if order exist
-	var oldOrder model.Order
-	err := os.GetMasterX().Get(&oldOrder, newOrder.Id)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get order with Id=%s", newOrder.Id)
-	}
-
-	// set all NOT editable fields for newOrder:
-	// NOTE: order's Token can be updated too
-	newOrder.CreateAt = oldOrder.CreateAt
-	newOrder.TrackingClientID = oldOrder.TrackingClientID
-	newOrder.BillingAddressID = oldOrder.BillingAddressID
-	newOrder.ShippingAddressID = oldOrder.ShippingAddressID
-	newOrder.CollectionPointName = oldOrder.CollectionPointName
-	newOrder.ShippingMethodName = oldOrder.ShippingMethodName
-	newOrder.ShippingPriceNetAmount = oldOrder.ShippingPriceNetAmount
-	newOrder.ShippingPriceGrossAmount = oldOrder.ShippingPriceGrossAmount
-
-	query := "UPDATE " + store.OrderTableName + " SET " + os.
-		ModelFields("").
-		Map(func(_ int, s string) string {
-			return s + "=:" + s
-		}).
-		Join(",") + " WHERE Id=:Id"
-
-	result, err := executor.NamedExec(query, newOrder)
-	if err != nil {
-		if os.IsUniqueConstraintError(err, []string{"Token", "orders_token_key", "idx_orders_token_unique"}) {
-			// this is user's intension to update token, he/she must be notified
-			return nil, store.NewErrInvalidInput(store.OrderTableName, "token", newOrder.Token)
-		}
-		return nil, errors.Wrapf(err, "failed to update order with id=%s", newOrder.Id)
-	}
-
-	if numberOfUpdatedOrder, _ := result.RowsAffected(); numberOfUpdatedOrder > 1 {
-		return nil, fmt.Errorf("multiple orders were updated: orderId=%s, count=%d", newOrder.Id, numberOfUpdatedOrder)
-	}
-
-	return newOrder, nil
-}
-
 // FilterByOption returns a list of orders, filtered by given option
 func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
 	query := os.GetQueryBuilder().
 		Select(os.ModelFields(store.OrderTableName + ".")...).
 		From(store.OrderTableName)
 
-	// parse options:
-	if option.Id != nil {
-		query = query.Where(option.Id)
+		// parse options:
+	for _, cond := range []squirrel.Sqlizer{
+		option.Id,
+		option.Status,
+		option.CheckoutToken,
+		option.UserEmail,
+		option.UserID,
+		option.ChannelID,
+		option.ShippingMethodID,
+	} {
+		if cond != nil {
+			query = query.Where(cond)
+		}
 	}
-	if option.Status != nil {
-		query = query.Where(option.Status)
-	}
-	if option.CheckoutToken != nil {
-		query = query.Where(option.CheckoutToken)
-	}
+
 	if option.ChannelSlug != nil {
 		query = query.
 			InnerJoin(store.ChannelTableName + " ON (Channels.Id = Orders.ChannelID)").
 			Where(option.ChannelSlug)
 	}
-	if option.UserEmail != nil {
-		query = query.Where(option.UserEmail)
-	}
-	if option.UserID != nil {
-		query = query.Where(option.UserID)
-	}
-	if option.ChannelID != nil {
-		query = query.Where(option.ChannelID)
-	}
-	if option.ShippingMethodID != nil {
-		query = query.Where(option.ShippingMethodID)
+	if option.SelectForUpdate {
+		query = query.Suffix("FOR UPDATE")
 	}
 
 	queryString, args, err := query.ToSql()

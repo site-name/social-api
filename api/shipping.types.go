@@ -87,7 +87,7 @@ func (s *ShippingMethod) ChannelListings(ctx context.Context) ([]*ShippingMethod
 			return nil, err
 		}
 
-		return DataloaderResultMap(listings, systemShippingMethodChannelListingToGraphqlShippingMethodChannelListing), nil
+		return systemRecordsToGraphql(listings, systemShippingMethodChannelListingToGraphqlShippingMethodChannelListing), nil
 	}
 
 	return nil, model.NewAppError("ShippingMethod.ChannelListings", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
@@ -283,7 +283,7 @@ func (s *ShippingZone) ShippingMethods(ctx context.Context) ([]*ShippingMethod, 
 		return nil, err
 	}
 
-	return DataloaderResultMap(shippingMethods, SystemShippingMethodToGraphqlShippingMethod), nil
+	return systemRecordsToGraphql(shippingMethods, SystemShippingMethodToGraphqlShippingMethod), nil
 }
 
 func (s *ShippingZone) Warehouses(ctx context.Context) ([]*Warehouse, error) {
@@ -292,7 +292,7 @@ func (s *ShippingZone) Warehouses(ctx context.Context) ([]*Warehouse, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(warehouses, SystemWarehouseToGraphqlWarehouse), nil
+	return systemRecordsToGraphql(warehouses, SystemWarehouseToGraphqlWarehouse), nil
 }
 
 func (s *ShippingZone) Channels(ctx context.Context) ([]*Channel, error) {
@@ -301,7 +301,7 @@ func (s *ShippingZone) Channels(ctx context.Context) ([]*Channel, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(channels, SystemChannelToGraphqlChannel), nil
+	return systemRecordsToGraphql(channels, SystemChannelToGraphqlChannel), nil
 }
 
 // ------------------

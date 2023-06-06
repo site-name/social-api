@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -107,10 +108,10 @@ func (c *Checkout) SubtotalPrice(ctx context.Context) (*TaxedMoney, error) {
 		return nil, err
 	}
 
-	panic("not implemented") // TODO: complete plugin manager
-
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	money, appErr := embedCtx.App.Srv().CheckoutService().CheckoutSubTotal(nil /*TODO: add this manager*/, *checkoutInfo, checkoutLineInfos, address, discountInfos)
+	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	money, appErr := embedCtx.App.Srv().CheckoutService().CheckoutSubTotal(pluginManager, *checkoutInfo, checkoutLineInfos, address, discountInfos)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -147,10 +148,11 @@ func (c *Checkout) TotalPrice(ctx context.Context) (*TaxedMoney, error) {
 	if err != nil {
 		return nil, err
 	}
-	panic("not implemented") // TODO: complete plugin manager
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	taxedMoney, appErr := embedCtx.App.Srv().CheckoutService().CheckoutTotal(nil /*add this*/, *checkoutInfo, lineInfos, address, discountInfos)
+	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	taxedMoney, appErr := embedCtx.App.Srv().CheckoutService().CheckoutTotal(pluginManager, *checkoutInfo, lineInfos, address, discountInfos)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -198,11 +200,20 @@ func (c *Checkout) ShippingPrice(ctx context.Context) (*TaxedMoney, error) {
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
 
-	// embedCtx.App.Srv().CheckoutService().CheckoutShippingPrice()
-	// embedCtx.AppContext
+	taxedMoney, appErr := embedCtx.App.Srv().CheckoutService().CheckoutShippingPrice(
+		pluginManager,
+		*checkoutInfo,
+		lines,
+		address,
+		discounts,
+	)
+	if appErr != nil {
+		return nil, appErr
+	}
 
-	panic("not implemented")
+	return SystemTaxedMoneyToGraphqlTaxedMoney(taxedMoney), nil
 }
 
 func (c *Checkout) User(ctx context.Context) (*User, error) {
@@ -383,14 +394,43 @@ func (c *Checkout) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse,
 			return nil, appErr
 		}
 
-		return DataloaderResultMap(warehouses, SystemWarehouseToGraphqlWarehouse), nil
+		return systemRecordsToGraphql(warehouses, SystemWarehouseToGraphqlWarehouse), nil
 	}
 
 	return nil, nil
 }
 
 func (c *Checkout) AvailablePaymentGateways(ctx context.Context) ([]*PaymentGateway, error) {
-	panic("not implemented")
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	pmGateWays := embedCtx.App.Srv().
+		PluginService().
+		GetPluginManager().
+		ListPaymentGateways(c.checkout.Currency, c.checkout, c.checkout.ChannelID, true)
+
+	res := make([]*PaymentGateway, len(pmGateWays))
+	for idx, gw := range pmGateWays {
+		config := []*GatewayConfigLine{}
+
+		for _, cfg := range gw.Config {
+			for key, value := range cfg {
+				strValue := fmt.Sprintf("%v", value)
+
+				config = append(config, &GatewayConfigLine{
+					Field: key,
+					Value: &strValue,
+				})
+			}
+		}
+
+		res[idx] = &PaymentGateway{
+			ID:         gw.Id,
+			Name:       gw.Name,
+			Currencies: gw.Currencies,
+			Config:     config,
+		}
+	}
+
+	return res, nil
 }
 
 func (c *Checkout) Lines(ctx context.Context) ([]*CheckoutLine, error) {
@@ -399,7 +439,7 @@ func (c *Checkout) Lines(ctx context.Context) ([]*CheckoutLine, error) {
 		return nil, err
 	}
 
-	return DataloaderResultMap(lines, SystemCheckoutLineToGraphqlCheckoutLine), nil
+	return systemRecordsToGraphql(lines, SystemCheckoutLineToGraphqlCheckoutLine), nil
 }
 
 func (c *Checkout) DeliveryMethod(ctx context.Context) (DeliveryMethod, error) {

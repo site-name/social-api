@@ -54,7 +54,7 @@ func (d *DigitalContent) Urls(ctx context.Context) ([]*DigitalContentURL, error)
 	if err != nil {
 		return nil, err
 	}
-	return DataloaderResultMap(contentURLs, systemDigitalContentURLToGraphqlDigitalContentURL), nil
+	return systemRecordsToGraphql(contentURLs, systemDigitalContentURLToGraphqlDigitalContentURL), nil
 }
 
 func (d *DigitalContent) ProductVariant(ctx context.Context) (*ProductVariant, error) {

@@ -410,10 +410,9 @@ func (c *ProductChannelListing) Pricing(ctx context.Context, args struct{ Addres
 
 	localCurrency := util.GetCurrencyForCountry(addressCountry.String())
 
-	// TODO: finish plugin feature
-	panic("not implemented")
+	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
 
-	availability, appErr := embedCtx.App.Srv().ProductService().GetProductAvailability(*product, c.c, variants, variantChannelListings, collections, discountInfos, *channel, nil /*TODO: add this*/, addressCountry, localCurrency)
+	availability, appErr := embedCtx.App.Srv().ProductService().GetProductAvailability(*product, c.c, variants, variantChannelListings, collections, discountInfos, *channel, pluginManager, addressCountry, localCurrency)
 	if appErr != nil {
 		return nil, appErr
 	}

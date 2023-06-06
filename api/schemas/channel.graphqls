@@ -1,13 +1,13 @@
 extend type Mutation {
-  channelCreate(input: ChannelCreateInput!): ChannelCreate
-  channelUpdate(id: String!, input: ChannelUpdateInput!): ChannelUpdate
-  channelDelete(id: String!, input: ChannelDeleteInput): ChannelDelete
-  channelActivate(id: String!): ChannelActivate
-  channelDeactivate(id: String!): ChannelDeactivate
+  channelCreate(input: ChannelCreateInput!): ChannelCreate @hasRoles(roles: [shop_admin])
+  channelUpdate(id: String!, input: ChannelUpdateInput!): ChannelUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
+  channelDelete(id: String!, input: ChannelDeleteInput): ChannelDelete @hasRoles(roles: [shop_admin])
+  channelActivate(id: String!): ChannelActivate @hasRoles(roles: [shop_admin])
+  channelDeactivate(id: String!): ChannelDeactivate @hasRoles(roles: [shop_admin])
 }
 
 extend type Query {
-  channel(id: String): Channel
+  channel(id: String!): Channel
   channels: [Channel]!
 }
 

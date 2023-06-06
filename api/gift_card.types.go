@@ -266,7 +266,7 @@ func (g *GiftCard) Events(ctx context.Context) ([]*GiftCardEvent, error) {
 			return nil, err
 		}
 
-		return DataloaderResultMap(events, SystemGiftcardEventToGraphqlGiftcardEvent), nil
+		return systemRecordsToGraphql(events, SystemGiftcardEventToGraphqlGiftcardEvent), nil
 	}
 
 	return nil, MakeUnauthorizedError("Giftcard.Events")

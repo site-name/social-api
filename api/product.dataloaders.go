@@ -1873,7 +1873,7 @@ func selectedAttributesByProductIdLoader(ctx context.Context, productIDs []strin
 
 			selectedAttributesMap[key] = append(selectedAttributesMap[key], &SelectedAttribute{
 				Attribute: SystemAttributeToGraphqlAttribute(attribute),
-				Values:    DataloaderResultMap(values, SystemAttributeValueToGraphqlAttributeValue),
+				Values:    systemRecordsToGraphql(values, SystemAttributeValueToGraphqlAttributeValue),
 			})
 		}
 	}
@@ -1976,7 +1976,7 @@ func selectedAttributesByProductVariantIdLoader(ctx context.Context, variantIDs 
 
 			selectedAttributesMap[key] = append(selectedAttributesMap[key], &SelectedAttribute{
 				Attribute: SystemAttributeToGraphqlAttribute(attribute),
-				Values:    DataloaderResultMap(values, SystemAttributeValueToGraphqlAttributeValue),
+				Values:    systemRecordsToGraphql(values, SystemAttributeValueToGraphqlAttributeValue),
 			})
 		}
 	}

@@ -439,7 +439,7 @@ func (v *Voucher) ChannelListings(ctx context.Context) ([]*VoucherChannelListing
 		return nil, err
 	}
 
-	return DataloaderResultMap(listings, systemVoucherChannelListingToGraphqlVoucherChannelListing), nil
+	return systemRecordsToGraphql(listings, systemVoucherChannelListingToGraphqlVoucherChannelListing), nil
 }
 
 func voucherByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Voucher] {

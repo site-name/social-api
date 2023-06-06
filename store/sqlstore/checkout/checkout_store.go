@@ -483,7 +483,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 // DeleteCheckoutsByOption deletes checkout row(s) from database, filtered using given option.
 // It returns an error indicating if the operation was performed successfully.
 func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *model.CheckoutFilterOption) error {
-	var runner store_iface.SqlxExecutor = cs.GetMasterX()
+	var runner = cs.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}

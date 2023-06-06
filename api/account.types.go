@@ -246,7 +246,7 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 			return nil, appErr
 		}
 
-		return DataloaderResultMap(addresses, SystemAddressToGraphqlAddress), nil
+		return systemRecordsToGraphql(addresses, SystemAddressToGraphqlAddress), nil
 	}
 
 	return nil, MakeUnauthorizedError("User.Addresses")
@@ -317,7 +317,7 @@ func (u *User) Events(ctx context.Context) ([]*CustomerEvent, error) {
 	if err != nil {
 		return nil, err
 	}
-	return DataloaderResultMap(events, SystemCustomerEventToGraphqlCustomerEvent), nil
+	return systemRecordsToGraphql(events, SystemCustomerEventToGraphqlCustomerEvent), nil
 }
 
 // NOTE: graphql directive checked. Refer to ./schemas/user.graphqls for details

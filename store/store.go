@@ -603,9 +603,7 @@ type (
 	OrderStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(holder *model.Order) []interface{}
-		Save(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error)            // Save insert an order into database and returns that order if success
 		Get(id string) (*model.Order, error)                                                              // Get find order in database with given id
-		Update(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error)          // Update update order
 		FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error)                           // FilterByOption returns a list of orders, filtered by given option
 		BulkUpsert(transaction store_iface.SqlxTxExecutor, orders []*model.Order) ([]*model.Order, error) // BulkUpsert performs bulk upsert given orders
 	}

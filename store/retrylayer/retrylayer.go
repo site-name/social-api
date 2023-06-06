@@ -5184,46 +5184,6 @@ func (s *RetryLayerOrderStore) Get(id string) (*model.Order, error) {
 
 }
 
-func (s *RetryLayerOrderStore) Save(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error) {
-
-	tries := 0
-	for {
-		result, err := s.OrderStore.Save(transaction, order)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerOrderStore) Update(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, error) {
-
-	tries := 0
-	for {
-		result, err := s.OrderStore.Update(transaction, order)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
 
 	tries := 0
