@@ -4,16 +4,19 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
+	"golang.org/x/text/currency"
 )
 
 type GiftCardEvent struct {
@@ -138,26 +141,16 @@ func SystemGiftcardEventToGraphqlGiftcardEvent(evt *model.GiftCardEvent) *GiftCa
 	return res
 }
 
+// NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (e *GiftCardEvent) User(ctx context.Context) (*User, error) {
-	// requester must be staff of current shop that issued the giftcard of this event
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
+	if e.e.UserID == nil {
+		return nil, nil
 	}
-
-	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		if e.e.UserID == nil {
-			return nil, nil
-		}
-		user, err := UserByUserIdLoader.Load(ctx, *e.e.UserID)()
-		if err != nil {
-			return nil, err
-		}
-		return SystemUserToGraphqlUser(user), nil
+	user, err := UserByUserIdLoader.Load(ctx, *e.e.UserID)()
+	if err != nil {
+		return nil, err
 	}
-
-	return nil, MakeUnauthorizedError("Giftcard.User")
+	return SystemUserToGraphqlUser(user), nil
 }
 
 func (e *GiftCardEvent) App(ctx context.Context) (*App, error) {
@@ -252,118 +245,70 @@ func (g *GiftCard) Product(ctx context.Context) (*Product, error) {
 	return SystemProductToGraphqlProduct(product), nil
 }
 
+// NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (g *GiftCard) Events(ctx context.Context) ([]*GiftCardEvent, error) {
-	// requester must be staff of current shop that issued this giftcard
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
+	events, err := GiftCardEventsByGiftCardIdLoader.Load(ctx, g.ID)()
+	if err != nil {
+		return nil, err
 	}
 
-	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		events, err := GiftCardEventsByGiftCardIdLoader.Load(ctx, g.ID)()
-		if err != nil {
-			return nil, err
-		}
-
-		return systemRecordsToGraphql(events, SystemGiftcardEventToGraphqlGiftcardEvent), nil
-	}
-
-	return nil, MakeUnauthorizedError("Giftcard.Events")
+	return systemRecordsToGraphql(events, SystemGiftcardEventToGraphqlGiftcardEvent), nil
 }
 
+// NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (g *GiftCard) CreatedByEmail(ctx context.Context) (*string, error) {
-	// requester must be staff of shop that issued current giftcard to see
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
-	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		if g.giftcard.CreatedByID != nil {
-			user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, *g.giftcard.CreatedByID)
-			if appErr != nil {
-				if appErr.StatusCode == http.StatusInternalServerError {
-					return nil, appErr
-				}
-				return g.giftcard.CreatedByEmail, nil
+	if g.giftcard.CreatedByID != nil {
+		user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, *g.giftcard.CreatedByID)
+		if appErr != nil {
+			if appErr.StatusCode == http.StatusInternalServerError {
+				return nil, appErr
 			}
-
-			return &user.Email, nil
-		}
-
-		return g.giftcard.CreatedByEmail, nil
-	}
-
-	return nil, MakeUnauthorizedError("GiftCard.CreatedByEmail")
-}
-
-func (g *GiftCard) UsedByEmail(ctx context.Context) (*string, error) {
-	// requester must be staff of current shop that issued this giftcard to see
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
-	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.UsedByID)()
-		if err != nil {
-			return nil, err
+			return g.giftcard.CreatedByEmail, nil
 		}
 
 		return &user.Email, nil
 	}
 
-	return nil, MakeUnauthorizedError("GiftCard.UsedByEmail")
+	return g.giftcard.CreatedByEmail, nil
 }
 
+// NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
+func (g *GiftCard) UsedByEmail(ctx context.Context) (*string, error) {
+	user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.UsedByID)()
+	if err != nil {
+		return nil, err
+	}
+
+	return &user.Email, nil
+}
+
+// NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (g *GiftCard) UsedBy(ctx context.Context) (*User, error) {
-	// requester must be staff of the shop that issued this giftcard to see
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
+	if g.giftcard.UsedByID == nil {
+		return nil, nil
 	}
 
-	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		if g.giftcard.UsedByID == nil {
-			return nil, nil
-		}
-
-		user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.UsedByID)()
-		if err != nil {
-			return nil, err
-		}
-		return SystemUserToGraphqlUser(user), nil
+	user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.UsedByID)()
+	if err != nil {
+		return nil, err
 	}
-
-	return nil, MakeUnauthorizedError("Giftcard.UsedBy")
+	return SystemUserToGraphqlUser(user), nil
 }
 
+// NOTE: Refer to ./schemas/gift_card.graphqls for details on directive used.
 func (g *GiftCard) CreatedBy(ctx context.Context) (*User, error) {
-	// requester must be staff of the shop that issued this giftcard
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
+	if g.giftcard.CreatedByID == nil {
+		return nil, nil
 	}
 
-	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		if g.giftcard.CreatedByID == nil {
-			return nil, nil
-		}
-
-		user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.CreatedByID)()
-		if err != nil {
-			return nil, err
-		}
-
-		return SystemUserToGraphqlUser(user), nil
+	user, err := UserByUserIdLoader.Load(ctx, *g.giftcard.CreatedByID)()
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, MakeUnauthorizedError("Giftcard.CreatedBy")
+	return SystemUserToGraphqlUser(user), nil
 }
 
 func (g *GiftCard) BoughtInChannel(ctx context.Context) (*string, error) {
@@ -374,7 +319,7 @@ func (g *GiftCard) BoughtInChannel(ctx context.Context) (*string, error) {
 
 	var boughtEvent *model.GiftCardEvent
 	for _, evt := range events {
-		if evt.Type == model.BOUGHT {
+		if evt.Type == model.GIFT_CARD_EVENT_TYPE_BOUGHT {
 			boughtEvent = evt
 			break
 		}
@@ -422,7 +367,7 @@ func giftCardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.
 		App.
 		Srv().
 		GiftcardService().
-		GiftcardsByOption(nil, &model.GiftCardFilterOption{
+		GiftcardsByOption(&model.GiftCardFilterOption{
 			UsedByID: squirrel.Eq{store.GiftcardTableName + ".UsedByID": userIDs},
 		})
 	if appErr != nil {
@@ -499,7 +444,7 @@ func giftcardsByOrderIDsLoader(ctx context.Context, orderIDs []string) []*datalo
 	giftcards, appErr = embedCtx.App.
 		Srv().
 		GiftcardService().
-		GiftcardsByOption(nil, &model.GiftCardFilterOption{
+		GiftcardsByOption(&model.GiftCardFilterOption{
 			Id: squirrel.Eq{store.OrderGiftCardTableName + ".Id": giftcardIDs},
 		})
 	if appErr != nil {
@@ -523,5 +468,107 @@ errorLabel:
 	for idx := range orderIDs {
 		res[idx] = &dataloader.Result[[]*model.GiftCard]{Error: err}
 	}
+	return res
+}
+
+type GiftCardFilterInput struct {
+	IsActive       *bool            `json:"isActive"`
+	Tag            *string          `json:"tag"`
+	Tags           []string         `json:"tags"`
+	Products       []string         `json:"products"` // product ids
+	UsedBy         []string         `json:"usedBy"`   // user ids
+	Currency       *string          `json:"currency"` // should be upper-cased
+	CurrentBalance *PriceRangeInput `json:"currentBalance"`
+	InitialBalance *PriceRangeInput `json:"initialBalance"`
+}
+
+func (g *GiftCardFilterInput) validate() *model.AppError {
+	if g.Tag != nil && *g.Tag == "" {
+		return model.NewAppError("GiftCardFilterInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "tag"}, "tag must not be empty", http.StatusBadRequest)
+	}
+	if len(g.Products) > 0 && !lo.EveryBy(g.Products, model.IsValidId) {
+		return model.NewAppError("GiftCardFilterInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "products"}, "please provide valid product ids", http.StatusBadRequest)
+	}
+	if len(g.UsedBy) > 0 && !lo.EveryBy(g.UsedBy, model.IsValidId) {
+		return model.NewAppError("GiftCardFilterInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "usedBy"}, "please provide valid user ids", http.StatusBadRequest)
+	}
+	if g.Currency != nil {
+		_, err := currency.ParseISO(*g.Currency)
+		if err != nil {
+			return model.NewAppError("GiftCardFilterInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, *g.Currency+" is not a valid currency", http.StatusBadRequest)
+		}
+	}
+	if g.Currency == nil && (g.CurrentBalance != nil || g.InitialBalance != nil) {
+		return model.NewAppError("GiftCardFilterInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "currency"}, "please provide a currency", http.StatusBadRequest)
+	}
+
+	for idx, priceRange := range [2]*PriceRangeInput{g.CurrentBalance, g.InitialBalance} {
+		// check if gte >= lte
+		if priceRange != nil && priceRange.Gte != nil && priceRange.Lte != nil && *priceRange.Gte >= *priceRange.Lte {
+			errorField := "currentBalance"
+			if idx == 1 {
+				errorField = "initialBalance"
+			}
+			return model.NewAppError("GiftCardFilterInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": errorField}, "Lte must be greater than Gte", http.StatusBadRequest)
+		}
+	}
+
+	return nil
+}
+
+// NOTE: Call me after calling validate()
+func (g *GiftCardFilterInput) ToSystemGiftcardFilter() *model.GiftCardFilterOption {
+	res := &model.GiftCardFilterOption{}
+	if g.IsActive != nil {
+		res.IsActive = squirrel.Eq{store.GiftcardTableName + ".IsActive": *g.IsActive}
+	}
+
+	var tagFilter = squirrel.And{}
+	if g.Tag != nil && *g.Tag != "" {
+		tagFilter = append(tagFilter, squirrel.ILike{store.GiftcardTableName + ".Tag": "%" + *g.Tag + "%"})
+	}
+	if len(g.Tags) > 0 {
+		tagFilter = append(tagFilter, squirrel.Eq{store.GiftcardTableName + ".Tag": g.Tags})
+	}
+	if len(tagFilter) > 0 {
+		res.Tag = tagFilter
+	}
+
+	if len(g.Products) > 0 {
+		res.ProductID = squirrel.Eq{store.GiftcardTableName + ".ProductID": g.Products}
+	}
+	if len(g.UsedBy) > 0 {
+		res.UsedByID = squirrel.Eq{store.GiftcardTableName + ".UsedByID": g.UsedBy}
+	}
+	if g.Currency != nil {
+		res.Currency = squirrel.Eq{store.GiftcardTableName + ".Currency": strings.ToUpper(*g.Currency)}
+	}
+	for idx, priceRange := range [2]*PriceRangeInput{g.CurrentBalance, g.InitialBalance} {
+		if priceRange != nil {
+			conditions := squirrel.And{}
+
+			fieldName := ".CurrentBalanceAmount"
+			if idx == 1 {
+				fieldName = ".InitialBalanceAmount"
+			}
+
+			if gte := priceRange.Gte; gte != nil {
+				conditions = append(conditions, squirrel.GtOrEq{store.GiftcardTableName + fieldName: *gte})
+			}
+			if lte := priceRange.Lte; lte != nil {
+				conditions = append(conditions, squirrel.LtOrEq{store.GiftcardTableName + fieldName: *lte})
+			}
+
+			if len(conditions) > 0 {
+				switch idx {
+				case 0:
+					res.CurrentBalanceAmount = conditions
+				case 1:
+					res.InitialBalanceAmount = conditions
+				}
+			}
+		}
+	}
+
 	return res
 }

@@ -101,3 +101,11 @@ func (a *ServiceChannel) UpsertChannel(transaction store_iface.SqlxTxExecutor, c
 	}
 	return channel, nil
 }
+
+func (s *ServiceChannel) DeleteChannels(transaction store_iface.SqlxTxExecutor, ids ...string) *model.AppError {
+	err := s.srv.Store.Channel().DeleteChannels(transaction, ids)
+	if err != nil {
+		return model.NewAppError("DeleteChannels", "app.channel.channel_delete_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return nil
+}

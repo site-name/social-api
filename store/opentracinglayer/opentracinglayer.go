@@ -2404,6 +2404,24 @@ func (s *OpenTracingLayerCategoryStore) Upsert(category *model.Category) (*model
 	return result, err
 }
 
+func (s *OpenTracingLayerChannelStore) DeleteChannels(transaction store_iface.SqlxTxExecutor, ids []string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelStore.DeleteChannels")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.ChannelStore.DeleteChannels(transaction, ids)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
 func (s *OpenTracingLayerChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelStore.FilterByOption")
@@ -2854,6 +2872,24 @@ func (s *OpenTracingLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.C
 	return err
 }
 
+func (s *OpenTracingLayerCollectionStore) Delete(ids ...string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CollectionStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.CollectionStore.Delete(ids...)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
 func (s *OpenTracingLayerCollectionStore) FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CollectionStore.FilterByOption")
@@ -2918,6 +2954,24 @@ func (s *OpenTracingLayerCollectionChannelListingStore) FilterByOptions(options 
 
 	defer span.Finish()
 	result, err := s.CollectionChannelListingStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerCollectionProductStore) BulkSave(transaction store_iface.SqlxTxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CollectionProductStore.BulkSave")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.CollectionProductStore.BulkSave(transaction, relations)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3996,7 +4050,25 @@ func (s *OpenTracingLayerGiftCardStore) DeactivateOrderGiftcards(orderID string)
 	return result, err
 }
 
-func (s *OpenTracingLayerGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
+func (s *OpenTracingLayerGiftCardStore) DeleteGiftcards(transaction store_iface.SqlxTxExecutor, ids []string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.DeleteGiftcards")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.GiftCardStore.DeleteGiftcards(transaction, ids)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
+func (s *OpenTracingLayerGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -4005,7 +4077,7 @@ func (s *OpenTracingLayerGiftCardStore) FilterByOption(transaction store_iface.S
 	}()
 
 	defer span.Finish()
-	result, err := s.GiftCardStore.FilterByOption(transaction, option)
+	result, err := s.GiftCardStore.FilterByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -5870,7 +5942,7 @@ func (s *OpenTracingLayerProductStore) VisibleToUserProductsQuery(channel_SlugOr
 	return result
 }
 
-func (s *OpenTracingLayerProductChannelListingStore) BulkUpsert(listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
+func (s *OpenTracingLayerProductChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductChannelListingStore.BulkUpsert")
 	s.Root.Store.SetContext(newCtx)
@@ -5879,7 +5951,7 @@ func (s *OpenTracingLayerProductChannelListingStore) BulkUpsert(listings []*mode
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductChannelListingStore.BulkUpsert(listings)
+	result, err := s.ProductChannelListingStore.BulkUpsert(transaction, listings)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

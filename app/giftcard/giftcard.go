@@ -41,14 +41,14 @@ func (a *ServiceGiftcard) GetGiftCard(id string) (*model.GiftCard, *model.AppErr
 }
 
 func (a *ServiceGiftcard) GiftcardsByCheckout(checkoutToken string) ([]*model.GiftCard, *model.AppError) {
-	return a.GiftcardsByOption(nil, &model.GiftCardFilterOption{
+	return a.GiftcardsByOption(&model.GiftCardFilterOption{
 		CheckoutToken: squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": checkoutToken},
 	})
 }
 
 // PromoCodeIsGiftCard checks whether there is giftcard with given code
 func (a *ServiceGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppError) {
-	giftcards, appErr := a.GiftcardsByOption(nil, &model.GiftCardFilterOption{
+	giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
 		Code: squirrel.Eq{store.GiftcardTableName + ".Code": code},
 	})
 	if appErr != nil {
@@ -59,8 +59,8 @@ func (a *ServiceGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppErro
 }
 
 // GiftcardsByOption finds a list of giftcards with given option
-func (a *ServiceGiftcard) GiftcardsByOption(transaction store_iface.SqlxTxExecutor, option *model.GiftCardFilterOption) ([]*model.GiftCard, *model.AppError) {
-	giftcards, err := a.srv.Store.GiftCard().FilterByOption(transaction, option)
+func (a *ServiceGiftcard) GiftcardsByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, *model.AppError) {
+	giftcards, err := a.srv.Store.GiftCard().FilterByOption(option)
 	if err != nil {
 		return nil, model.NewAppError("GiftcardsByOption", "app.giftcard.error_finding_giftcards_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -91,11 +91,20 @@ func (a *ServiceGiftcard) UpsertGiftcards(transaction store_iface.SqlxTxExecutor
 
 // ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
 func (s *ServiceGiftcard) ActiveGiftcards(date time.Time) ([]*model.GiftCard, *model.AppError) {
-	return s.GiftcardsByOption(nil, &model.GiftCardFilterOption{
+	return s.GiftcardsByOption(&model.GiftCardFilterOption{
 		ExpiryDate: squirrel.Or{
 			squirrel.Eq{store.GiftcardTableName + ".ExpiryDate": nil},
 			squirrel.GtOrEq{store.GiftcardTableName + ".ExpiryDate": util.StartOfDay(date)},
 		},
-		IsActive: model.NewPrimitive(true),
+		IsActive: squirrel.Eq{store.GiftcardTableName + ".IsActive": true},
 	})
+}
+
+func (s *ServiceGiftcard) DeleteGiftcards(transaction store_iface.SqlxTxExecutor, ids []string) *model.AppError {
+	err := s.srv.Store.GiftCard().DeleteGiftcards(transaction, ids)
+	if err != nil {
+		return model.NewAppError("DeleteGiftcards", "app.giftcard.error_deleting_giftcards.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }

@@ -13,33 +13,33 @@ func (t GiftcardEventType) IsValid() bool {
 
 // valid types for giftcard
 const (
-	ISSUED              GiftcardEventType = "issued"
-	BOUGHT              GiftcardEventType = "bought"
-	UPDATED             GiftcardEventType = "updated"
-	ACTIVATED           GiftcardEventType = "activated"
-	DEACTIVATED         GiftcardEventType = "deactivated"
-	BALANCE_RESET       GiftcardEventType = "balance_reset"
-	EXPIRY_DATE_UPDATED GiftcardEventType = "expiry_date_updated"
-	TAG_UPDATED         GiftcardEventType = "tag_updated"
-	SENT_TO_CUSTOMER    GiftcardEventType = "sent_to_customer"
-	RESENT              GiftcardEventType = "resent"
-	NOTE_ADDED_         GiftcardEventType = "note_added"
-	USED_IN_ORDER       GiftcardEventType = "used_in_order"
+	GIFT_CARD_EVENT_TYPE_ISSUED              GiftcardEventType = "issued"
+	GIFT_CARD_EVENT_TYPE_BOUGHT              GiftcardEventType = "bought"
+	GIFT_CARD_EVENT_TYPE_UPDATED             GiftcardEventType = "updated"
+	GIFT_CARD_EVENT_TYPE_ACTIVATED           GiftcardEventType = "activated"
+	GIFT_CARD_EVENT_TYPE_DEACTIVATED         GiftcardEventType = "deactivated"
+	GIFT_CARD_EVENT_TYPE_BALANCE_RESET       GiftcardEventType = "balance_reset"
+	GIFT_CARD_EVENT_TYPE_EXPIRY_DATE_UPDATED GiftcardEventType = "expiry_date_updated"
+	GIFT_CARD_EVENT_TYPE_TAG_UPDATED         GiftcardEventType = "tag_updated"
+	GIFT_CARD_EVENT_TYPE_SENT_TO_CUSTOMER    GiftcardEventType = "sent_to_customer"
+	GIFT_CARD_EVENT_TYPE_RESENT              GiftcardEventType = "resent"
+	GIFT_CARD_EVENT_TYPE_NOTE_ADDED          GiftcardEventType = "note_added"
+	GIFT_CARD_EVENT_TYPE_USED_IN_ORDER       GiftcardEventType = "used_in_order"
 )
 
 var GiftCardEventsString = map[GiftcardEventType]string{
-	ISSUED:              "The gift card was created be staff user or app.",
-	BOUGHT:              "The gift card was bought by customer.",
-	UPDATED:             "The gift card was updated.",
-	ACTIVATED:           "The gift card was activated.",
-	DEACTIVATED:         "The gift card was deactivated.",
-	BALANCE_RESET:       "The gift card balance was reset.",
-	EXPIRY_DATE_UPDATED: "The gift card expiry date was updated.",
-	TAG_UPDATED:         "The gift card tag was updated.",
-	SENT_TO_CUSTOMER:    "The gift card was sent to the customer.",
-	RESENT:              "The gift card was resent to the customer.",
-	NOTE_ADDED_:         "A note was added to the gift card.",
-	USED_IN_ORDER:       "The gift card was used in order.",
+	GIFT_CARD_EVENT_TYPE_ISSUED:              "The gift card was created be staff user or app.",
+	GIFT_CARD_EVENT_TYPE_BOUGHT:              "The gift card was bought by customer.",
+	GIFT_CARD_EVENT_TYPE_UPDATED:             "The gift card was updated.",
+	GIFT_CARD_EVENT_TYPE_ACTIVATED:           "The gift card was activated.",
+	GIFT_CARD_EVENT_TYPE_DEACTIVATED:         "The gift card was deactivated.",
+	GIFT_CARD_EVENT_TYPE_BALANCE_RESET:       "The gift card balance was reset.",
+	GIFT_CARD_EVENT_TYPE_EXPIRY_DATE_UPDATED: "The gift card expiry date was updated.",
+	GIFT_CARD_EVENT_TYPE_TAG_UPDATED:         "The gift card tag was updated.",
+	GIFT_CARD_EVENT_TYPE_SENT_TO_CUSTOMER:    "The gift card was sent to the customer.",
+	GIFT_CARD_EVENT_TYPE_RESENT:              "The gift card was resent to the customer.",
+	GIFT_CARD_EVENT_TYPE_NOTE_ADDED:          "A note was added to the gift card.",
+	GIFT_CARD_EVENT_TYPE_USED_IN_ORDER:       "The gift card was used in order.",
 }
 
 // max lengths for some fields of giftcard event
@@ -57,8 +57,11 @@ type GiftCardEvent struct {
 	//  "message": string
 	//  "email": string
 	//  "order_id": string
-	//  "tag": string
-	//  "old_tag": string
+	//  "tag": *string
+	//  "old_tag": *string
+	//  "balance": map[string]any{}
+	//  "expiry_date": *time.Time
+	//  "old_expiry_date": *time.Time
 	Parameters StringInterface `json:"parameters"`  // default map[stirng]string{}
 	UserID     *string         `json:"user_id"`     // ON DELETE SET NULL
 	GiftcardID string          `json:"giftcard_id"` // ON DELETE CASCADE
@@ -88,7 +91,7 @@ func (g *GiftCardEvent) IsValid() *AppError {
 	if g.UserID != nil && !IsValidId(*g.UserID) {
 		return outer("user_id", &g.Id)
 	}
-	if len(g.Type) > GiftCardEventTypeMaxLength || GiftCardEventsString[g.Type] == "" {
+	if !g.Type.IsValid() {
 		return outer("type", &g.Id)
 	}
 	if g.Date <= 0 {

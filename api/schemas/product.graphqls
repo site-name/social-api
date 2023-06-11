@@ -90,8 +90,8 @@ type ProductChannelListing  {
   visibleInListings: Boolean!
   availableForPurchase: Date
   discountedPrice: Money
-  purchaseCost: MoneyRange
-  margin: Margin
+  purchaseCost: MoneyRange @hasRoles(roles: [shop_admin])
+  margin: Margin @hasRoleAny(roles: [shop_admin, shop_admin])
   isAvailableForPurchase: Boolean
   pricing(address: AddressInput): ProductPricingInfo
 }

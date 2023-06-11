@@ -34,3 +34,8 @@ func (r *Resolver) ShopAddressUpdate(ctx context.Context, args struct{ Input *Ad
 func (r *Resolver) Shop(ctx context.Context) (*Shop, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+// NOTE: Refer to ./schemas/shop.graphqls for details on directive used.
+func (r *Resolver) GiftCardSettings(ctx context.Context) (*GiftCardSettings, error) {
+	panic(fmt.Errorf("not implemented"))
+}

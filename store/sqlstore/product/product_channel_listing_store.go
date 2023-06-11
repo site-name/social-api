@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlProductChannelListingStore struct {
@@ -56,12 +57,11 @@ func (ps *SqlProductChannelListingStore) ScanFields(prd *model.ProductChannelLis
 }
 
 // BulkUpsert performs bulk upsert on given product channel listings
-func (ps *SqlProductChannelListingStore) BulkUpsert(listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
-	transaction, err := ps.GetMasterX().Beginx()
-	if err != nil {
-		return nil, errors.Wrap(err, "transaction_begin")
+func (ps *SqlProductChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
+	runner := ps.GetMasterX()
+	if transaction != nil {
+		runner = transaction
 	}
-	defer store.FinalizeTransaction(transaction)
 
 	var (
 		saveQuery   = "INSERT INTO " + store.ProductChannelListingTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
@@ -75,8 +75,8 @@ func (ps *SqlProductChannelListingStore) BulkUpsert(listings []*model.ProductCha
 
 	for _, listing := range listings {
 		var (
-			isSaving   bool  = false
-			numUpdated int64 = 0
+			isSaving bool = false
+			err      error
 		)
 
 		if listing.Id == "" {
@@ -91,14 +91,10 @@ func (ps *SqlProductChannelListingStore) BulkUpsert(listings []*model.ProductCha
 		}
 
 		if isSaving {
-			_, err = transaction.NamedExec(saveQuery, listing)
+			_, err = runner.NamedExec(saveQuery, listing)
 
 		} else {
-			var result sql.Result
-			result, err = transaction.NamedExec(updateQuery, listing)
-			if err == nil && result != nil {
-				numUpdated, _ = result.RowsAffected()
-			}
+			_, err = runner.NamedExec(updateQuery, listing)
 		}
 
 		if err != nil {
@@ -107,13 +103,6 @@ func (ps *SqlProductChannelListingStore) BulkUpsert(listings []*model.ProductCha
 			}
 			return nil, errors.Wrapf(err, "failed to upsert product channel listing with id=%s", listing.Id)
 		}
-		if numUpdated > 1 {
-			return nil, errors.New("multiple listings were updated: %d instead of 1")
-		}
-	}
-
-	if err := transaction.Commit(); err != nil {
-		return nil, errors.Wrap(err, "transaction_commit")
 	}
 
 	return listings, nil

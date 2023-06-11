@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"net/http"
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
@@ -77,10 +76,15 @@ func (c *Collection) Products(ctx context.Context, args struct {
 	}
 
 	// keys are product ids
-	validProductIdMap := lo.SliceToMap(collectionProductRelations, func(rel *model.CollectionProduct) (string, struct{}) { return rel.ProductID, struct{}{} })
+	var validProductIdMap = lo.SliceToMap(collectionProductRelations, func(rel *model.CollectionProduct) (string, struct{}) { return rel.ProductID, struct{}{} })
 	products = lo.Filter(products, func(p *model.Product, _ int) bool {
 		_, exist := validProductIdMap[p.Id]
 		return exist
+	})
+
+	// find all products that have relationshop with current collection.
+	products, appErr = embedCtx.App.Srv().ProductService().ProductsByOption(&model.ProductFilterOption{
+		CollectionID: squirrel.Eq{store.CollectionProductRelationTableName + ".CollectionID": c.ID},
 	})
 
 	keyFunc := func(p *model.Product) string { return p.Slug }
@@ -101,11 +105,6 @@ func (c *Collection) BackgroundImage(ctx context.Context, args struct{ Size *int
 }
 
 func (c *Collection) ChannelListings(ctx context.Context) ([]*CollectionChannelListing, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
-		return nil, model.NewAppError("Collection.ChannelListings", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
-	}
-
 	listings, err := CollectionChannelListingByCollectionIdLoader.Load(ctx, c.ID)()
 	if err != nil {
 		return nil, err

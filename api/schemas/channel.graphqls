@@ -17,7 +17,7 @@ type Channel  {
   isActive: Boolean!
   slug: String!
   currencyCode: String!
-  hasOrders: Boolean!
+  hasOrders: Boolean! @hasRoleAny(roles: [shop_admin, shop_staff])
   defaultCountry: CountryDisplay!
 }
 

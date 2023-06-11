@@ -1,9 +1,9 @@
 extend type Mutation {
   collectionAddProducts(collectionId: String!, products: [String!]!): CollectionAddProducts @hasRoleAny(roles: [shop_admin, shop_staff])
-  collectionCreate(input: CollectionCreateInput!): CollectionCreate
-  collectionDelete(id: String!): CollectionDelete
-  collectionReorderProducts(collectionId: String!, moves: [MoveProductInput]!): CollectionReorderProducts
-  collectionBulkDelete(ids: [String!]!): CollectionBulkDelete
+  collectionCreate(input: CollectionCreateInput!): CollectionCreate @hasRoleAny(roles: [shop_admin, shop_staff])
+  collectionDelete(id: String!): CollectionDelete @hasRoles(roles: [shop_admin])
+  collectionReorderProducts(collectionId: String!, moves: [MoveProductInput]!): CollectionReorderProducts @hasRoles(roles: [shop_admin])
+  collectionBulkDelete(ids: [String!]!): CollectionBulkDelete @hasRoles(roles: [shop_admin])
   collectionRemoveProducts(collectionId: String!, products: [String!]!): CollectionRemoveProducts
   collectionUpdate(id: String!, input: CollectionInput!): CollectionUpdate
   collectionTranslate(id: String!, input: TranslationInput!, languageCode: LanguageCodeEnum!): CollectionTranslate

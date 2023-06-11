@@ -93,7 +93,10 @@ func fulfillmentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*data
 		OrderID: squirrel.Eq{store.FulfillmentTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range orderIDs {
+			res[idx] = &dataloader.Result[[]*model.Fulfillment]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, f := range fulfillments {
@@ -101,12 +104,6 @@ func fulfillmentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*data
 	}
 	for idx, id := range orderIDs {
 		res[idx] = &dataloader.Result[[]*model.Fulfillment]{Data: fulfillmentMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.Fulfillment]{Error: appErr}
 	}
 	return res
 }
@@ -153,19 +150,16 @@ func fulfillmentLinesByIdLoader(ctx context.Context, ids []string) []*dataloader
 		Id: squirrel.Eq{store.FulfillmentLineTableName + ".Id": ids},
 	})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.FulfillmentLine]{Error: appErr}
+		}
+		return res
 	}
 
 	LineMap = lo.SliceToMap(lines, func(l *model.FulfillmentLine) (string, *model.FulfillmentLine) { return l.Id, l })
 
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.FulfillmentLine]{Data: LineMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.FulfillmentLine]{Error: appErr}
 	}
 	return res
 }
@@ -184,7 +178,10 @@ func fulfillmentLinesByFulfillmentIDLoader(ctx context.Context, fulfillmentIDs [
 			FulfillmentID: squirrel.Eq{store.FulfillmentLineTableName + ".FulfillmentID": fulfillmentIDs},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range fulfillmentIDs {
+			res[idx] = &dataloader.Result[[]*model.FulfillmentLine]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, line := range fulfillmentLines {
@@ -192,12 +189,6 @@ func fulfillmentLinesByFulfillmentIDLoader(ctx context.Context, fulfillmentIDs [
 	}
 	for idx, id := range fulfillmentIDs {
 		res[idx] = &dataloader.Result[[]*model.FulfillmentLine]{Data: fulfillmentLineMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range fulfillmentIDs {
-		res[idx] = &dataloader.Result[[]*model.FulfillmentLine]{Error: appErr}
 	}
 	return res
 }

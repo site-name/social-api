@@ -102,7 +102,6 @@ func saleChannelListingBySaleIdAndChanneSlugLoader(ctx context.Context, saleIDCh
 		res        = make([]*dataloader.Result[*model.SaleChannelListing], len(saleIDChannelIDPairs))
 		saleIDs    []string
 		channelIDs []string
-		listingMap = map[string]*model.SaleChannelListing{} // keys are string format of saleID__channelID
 	)
 
 	for _, item := range saleIDChannelIDPairs {
@@ -122,21 +121,18 @@ func saleChannelListingBySaleIdAndChanneSlugLoader(ctx context.Context, saleIDCh
 			// SelectRelatedChannel: true,
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range saleIDChannelIDPairs {
+			res[idx] = &dataloader.Result[*model.SaleChannelListing]{Error: appErr}
+		}
+		return res
 	}
 
-	listingMap = lo.SliceToMap(listings, func(l *model.SaleChannelListing) (string, *model.SaleChannelListing) {
+	listingMap := lo.SliceToMap(listings, func(l *model.SaleChannelListing) (string, *model.SaleChannelListing) {
 		return l.SaleID + "__" + l.ChannelID, l
 	})
 
 	for idx, pair := range saleIDChannelIDPairs {
 		res[idx] = &dataloader.Result[*model.SaleChannelListing]{Data: listingMap[pair]}
-	}
-	return res
-
-errorLabel:
-	for idx := range saleIDChannelIDPairs {
-		res[idx] = &dataloader.Result[*model.SaleChannelListing]{Error: appErr}
 	}
 	return res
 }
@@ -154,7 +150,10 @@ func saleChannelListingBySaleIdLoader(ctx context.Context, saleIDs []string) []*
 			SaleID: squirrel.Eq{store.SaleChannelListingTableName + ".SaleID": saleIDs},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range saleIDs {
+			res[idx] = &dataloader.Result[[]*model.SaleChannelListing]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, listing := range listings {
@@ -163,12 +162,6 @@ func saleChannelListingBySaleIdLoader(ctx context.Context, saleIDs []string) []*
 
 	for idx, saleID := range saleIDs {
 		res[idx] = &dataloader.Result[[]*model.SaleChannelListing]{Data: listingMap[saleID]}
-	}
-	return res
-
-errorLabel:
-	for idx := range saleIDs {
-		res[idx] = &dataloader.Result[[]*model.SaleChannelListing]{Error: appErr}
 	}
 	return res
 }
@@ -224,7 +217,10 @@ func orderDiscountsByOrderIDLoader(ctx context.Context, orderIDs []string) []*da
 		OrderID: squirrel.Eq{store.OrderDiscountTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range orderIDs {
+			res[idx] = &dataloader.Result[[]*model.OrderDiscount]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, rel := range orderDiscounts {
@@ -236,12 +232,6 @@ func orderDiscountsByOrderIDLoader(ctx context.Context, orderIDs []string) []*da
 
 	for idx, id := range orderIDs {
 		res[idx] = &dataloader.Result[[]*model.OrderDiscount]{Data: orderDiscountMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.OrderDiscount]{Error: appErr}
 	}
 	return res
 }
@@ -453,21 +443,17 @@ func voucherByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 		Id: squirrel.Eq{store.VoucherTableName + ".Id": ids},
 	})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.Voucher]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, v := range vouchers {
 		voucherMap[v.Id] = v
 	}
-
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.Voucher]{Data: voucherMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.Voucher]{Error: appErr}
 	}
 	return res
 }
@@ -496,7 +482,10 @@ func voucherChannelListingByVoucherIdAndChanneSlugLoader(ctx context.Context, id
 			ChannelID: squirrel.Eq{store.VoucherChannelListingTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range idPairs {
+			res[idx] = &dataloader.Result[*model.VoucherChannelListing]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, rel := range voucherChannelListings {
@@ -505,12 +494,6 @@ func voucherChannelListingByVoucherIdAndChanneSlugLoader(ctx context.Context, id
 
 	for idx, id := range idPairs {
 		res[idx] = &dataloader.Result[*model.VoucherChannelListing]{Data: voucherChannelListingMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range idPairs {
-		res[idx] = &dataloader.Result[*model.VoucherChannelListing]{Error: appErr}
 	}
 	return res
 }
@@ -527,7 +510,10 @@ func voucherChannelListingByVoucherIdLoader(ctx context.Context, voucherIDs []st
 			VoucherID: squirrel.Eq{store.VoucherChannelListingTableName + ".VoucherID": voucherIDs},
 		})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range voucherIDs {
+			res[idx] = &dataloader.Result[[]*model.VoucherChannelListing]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, rel := range voucherChannelListings {
@@ -536,12 +522,6 @@ func voucherChannelListingByVoucherIdLoader(ctx context.Context, voucherIDs []st
 
 	for idx, id := range voucherIDs {
 		res[idx] = &dataloader.Result[[]*model.VoucherChannelListing]{Data: voucherChannelListingMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range voucherIDs {
-		res[idx] = &dataloader.Result[[]*model.VoucherChannelListing]{Error: appErr}
 	}
 	return res
 }

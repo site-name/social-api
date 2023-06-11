@@ -20,6 +20,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unsafe"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -143,6 +144,15 @@ func (si StringInterface) Value() (driver.Value, error) {
 //	2 => &2 // ^.^
 func NewPrimitive[T util.Ordered | bool | time.Time | decimal.Decimal](value T) *T {
 	return &value
+}
+
+func CopyPointer[T util.Ordered | bool | time.Time | decimal.Decimal](value *T) *T {
+	if value == nil {
+		return nil
+	}
+
+	newPointer := *(*T)(unsafe.Pointer(value))
+	return &newPointer
 }
 
 var translateFunc i18n.TranslateFunc

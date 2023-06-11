@@ -221,3 +221,22 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 
 	return res, nil
 }
+
+func (s *SqlCollectionStore) Delete(ids ...string) error {
+	query, args, err := s.GetQueryBuilder().Delete(store.CollectionTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "Delete_ToSql")
+	}
+
+	result, err := s.GetMasterX().Exec(query, args...)
+	if err != nil {
+		errors.Wrap(err, "failed to delete collection(s) by given ids")
+	}
+
+	numDeleted, _ := result.RowsAffected()
+	if int(numDeleted) != len(ids) {
+		return errors.Errorf("%d collection(s) was/were deleted instead of %d", numDeleted, len(ids))
+	}
+
+	return nil
+}

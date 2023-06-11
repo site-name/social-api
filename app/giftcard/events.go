@@ -60,7 +60,7 @@ func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction store_iface.Sqlx
 		events = append(events, &model.GiftCardEvent{
 			GiftcardID: item.Giftcard.Id,
 			UserID:     userID,
-			Type:       model.USED_IN_ORDER,
+			Type:       model.GIFT_CARD_EVENT_TYPE_USED_IN_ORDER,
 			Parameters: model.StringInterface{
 				"order_id": orderID,
 				"balance": model.StringInterface{
@@ -86,7 +86,7 @@ func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction store_iface.SqlxTxExe
 		events = append(events, &model.GiftCardEvent{
 			GiftcardID: giftCard.Id,
 			UserID:     userID,
-			Type:       model.BOUGHT,
+			Type:       model.GIFT_CARD_EVENT_TYPE_BOUGHT,
 			Parameters: model.StringInterface{
 				"order_id":    orderID,
 				"expiry_date": giftCard.ExpiryDate,

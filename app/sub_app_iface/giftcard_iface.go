@@ -13,6 +13,7 @@ import (
 
 // GiftcardService contains methods for working with giftcards
 type GiftcardService interface {
+	DeleteGiftcards(transaction store_iface.SqlxTxExecutor, ids []string) *model.AppError
 	// ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
 	ActiveGiftcards(date time.Time) ([]*model.GiftCard, *model.AppError)
 	// AddGiftcardCodeToCheckout adds giftcard data to checkout by code. Raise InvalidPromoCode if gift card cannot be applied.
@@ -30,7 +31,7 @@ type GiftcardService interface {
 	// GiftcardEventsByOptions returns a list of giftcard events filtered using given options
 	GiftcardEventsByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, *model.AppError)
 	// GiftcardsByOption finds a list of giftcards with given option
-	GiftcardsByOption(transaction store_iface.SqlxTxExecutor, option *model.GiftCardFilterOption) ([]*model.GiftCard, *model.AppError)
+	GiftcardsByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, *model.AppError)
 	// GiftcardsCreate creates purchased gift cards
 	GiftcardsCreate(orDer *model.Order, giftcardLines model.OrderLines, quantities map[string]int, settings *model.Shop, requestorUser *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.AppError)
 	// GiftcardsUsedInOrderEvent bulk creates giftcard events

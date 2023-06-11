@@ -181,7 +181,7 @@ type ProductVariantChannelListing  {
   channel: Channel!
   price: Money
   costPrice: Money
-  margin: Int
+  margin: Int @hasRoleAny(roles: [shop_admin, shop_staff])
   preorderThreshold: PreorderThreshold
 }
 

@@ -158,7 +158,7 @@ func (s *ServiceCheckout) validateGiftcards(checkout model.Checkout) (*model.Not
 		startOfToday                   = util.StartOfDay(time.Now().UTC())
 	)
 
-	allGiftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(nil, &model.GiftCardFilterOption{
+	allGiftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
 		CheckoutToken: squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": checkout.Token},
 		Distinct:      true,
 	})

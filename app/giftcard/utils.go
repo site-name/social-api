@@ -18,7 +18,7 @@ import (
 func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *model.Checkout, email, promoCode, currency string) (*model.InvalidPromoCode, *model.AppError) {
 	now := time.Now().UTC()
 
-	giftcards, appErr := a.GiftcardsByOption(nil, &model.GiftCardFilterOption{
+	giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
 		Code:     squirrel.Eq{store.GiftcardTableName + ".Code": promoCode},
 		Currency: squirrel.Eq{store.GiftcardTableName + ".Currency": strings.ToUpper(currency)},
 		ExpiryDate: squirrel.Or{
@@ -26,7 +26,7 @@ func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *model.Checkout, email
 			squirrel.Eq{store.GiftcardTableName + ".ExpiryDate": nil},
 		},
 		StartDate: squirrel.LtOrEq{store.GiftcardTableName + ".StartDate": now},
-		IsActive:  model.NewPrimitive(true),
+		IsActive:  squirrel.Eq{store.GiftcardTableName + ".IsActive": true},
 	})
 
 	if appErr != nil {
@@ -47,7 +47,7 @@ func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *model.Checkout, email
 
 // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
 func (a *ServiceGiftcard) RemoveGiftcardCodeFromCheckout(ckout *model.Checkout, giftcardCode string) *model.AppError {
-	giftcards, appErr := a.GiftcardsByOption(nil, &model.GiftCardFilterOption{
+	giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
 		Code: squirrel.Eq{store.GiftcardTableName + ".Code": giftcardCode},
 	})
 
@@ -356,7 +356,7 @@ func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *model.U
 		events = append(events, &model.GiftCardEvent{
 			UserID:     userID,
 			GiftcardID: id,
-			Type:       model.DEACTIVATED,
+			Type:       model.GIFT_CARD_EVENT_TYPE_DEACTIVATED,
 		})
 	}
 

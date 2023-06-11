@@ -67,18 +67,15 @@ func (ss *SqlSaleCollectionRelationStore) Get(relationID string) (*model.SaleCol
 // FilterByOption returns a list of collections filtered based on given option
 func (ss *SqlSaleCollectionRelationStore) FilterByOption(option *model.SaleCollectionRelationFilterOption) ([]*model.SaleCollectionRelation, error) {
 	query := ss.GetQueryBuilder().
-		Select("*").
-		From(store.SaleCollectionRelationTableName).
-		OrderBy(store.TableOrderingMap[store.SaleCollectionRelationTableName])
+		Select(ss.ModelFields(store.SaleCollectionRelationTableName + ".")...).
+		From(store.SaleCollectionRelationTableName)
 
 	if option.Id != nil {
 		query = query.Where(option.Id)
 	}
-
 	if option.SaleID != nil {
 		query = query.Where(option.SaleID)
 	}
-
 	if option.CollectionID != nil {
 		query = query.Where(option.CollectionID)
 	}

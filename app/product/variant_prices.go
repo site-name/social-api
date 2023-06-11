@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // getVariantPricesInChannelsDict
@@ -76,13 +77,12 @@ func (a *ServiceProduct) getProductDiscountedPrice(
 // UpdateProductDiscountedPrice
 //
 // NOTE: `discounts` can be nil
-func (a *ServiceProduct) UpdateProductDiscountedPrice(product model.Product, discounts []*model.DiscountInfo) *model.AppError {
-
-	var functionAppError *model.AppError
+func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction store_iface.SqlxTxExecutor, product model.Product, discounts []*model.DiscountInfo) *model.AppError {
+	var appError *model.AppError
 	if len(discounts) == 0 {
-		discounts, functionAppError = a.srv.DiscountService().FetchActiveDiscounts()
-		if functionAppError != nil {
-			return functionAppError
+		discounts, appError = a.srv.DiscountService().FetchActiveDiscounts()
+		if appError != nil {
+			return appError
 		}
 	}
 
@@ -97,43 +97,37 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(product model.Product, dis
 	syncSetAppErr := func(err *model.AppError) {
 		mut.Lock()
 		defer mut.Unlock()
-		if err != nil && functionAppError == nil {
-			functionAppError = err
+		if err != nil && appError == nil {
+			appError = err
 		}
 	}
 
 	wg.Add(3)
 
 	go func() {
-		mut.Lock()
 		defer wg.Done()
-		defer mut.Unlock()
 
 		res, appErr := a.CollectionsByProductID(product.Id)
 		if appErr != nil {
 			syncSetAppErr(appErr)
-		} else {
-			collectionsContainProduct = res
+			return
 		}
+		collectionsContainProduct = res
 	}()
 
 	go func() {
-		mut.Lock()
 		defer wg.Done()
-		defer mut.Unlock()
 
 		res, appErr := a.getVariantPricesInChannelsDict(product)
 		if appErr != nil {
 			syncSetAppErr(appErr)
-		} else {
-			variantPricesInChannelsDict = res
+			return
 		}
+		variantPricesInChannelsDict = res
 	}()
 
 	go func() {
-		mut.Lock()
 		defer wg.Done()
-		defer mut.Unlock()
 
 		res, appErr := a.ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
 			ProductID:       squirrel.Eq{store.ProductChannelListingTableName + ".ProductID": product.Id},
@@ -141,22 +135,22 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(product model.Product, dis
 		})
 		if appErr != nil {
 			syncSetAppErr(appErr)
-		} else {
-			productChannelListings = res
+			return
 		}
+		productChannelListings = res
 	}()
 
 	wg.Wait()
 
 	// check appError:
-	if functionAppError != nil {
-		return functionAppError
+	if appError != nil {
+		return appError
 	}
 
 	var productChannelListingsToUpdate []*model.ProductChannelListing
 
 	for _, listing := range productChannelListings {
-		listing.PopulateNonDbFields() // this call is crutial
+		listing.PopulateNonDbFields() // this call is needed
 
 		variantPrices := variantPricesInChannelsDict[listing.ChannelID]
 		if len(variantPrices) == 0 {
@@ -187,14 +181,14 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(product model.Product, dis
 	}
 
 	if len(productChannelListingsToUpdate) > 0 {
-		_, functionAppError = a.BulkUpsertProductChannelListings(productChannelListingsToUpdate)
+		_, appError = a.BulkUpsertProductChannelListings(transaction, productChannelListingsToUpdate)
 	}
 
-	return functionAppError
+	return appError
 }
 
 // UpdateProductsDiscountedPrices
-func (a *ServiceProduct) UpdateProductsDiscountedPrices(products []*model.Product, discounts []*model.DiscountInfo) *model.AppError {
+func (a *ServiceProduct) UpdateProductsDiscountedPrices(transaction store_iface.SqlxTxExecutor, products []*model.Product, discounts []*model.DiscountInfo) *model.AppError {
 	var (
 		appError *model.AppError
 		wg       sync.WaitGroup
@@ -221,7 +215,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPrices(products []*model.Produc
 	for _, product := range products {
 		go func(prd *model.Product) {
 			defer wg.Done()
-			syncSetAppError(a.UpdateProductDiscountedPrice(*prd, discounts))
+			syncSetAppError(a.UpdateProductDiscountedPrice(transaction, *prd, discounts))
 		}(product)
 	}
 
@@ -230,19 +224,19 @@ func (a *ServiceProduct) UpdateProductsDiscountedPrices(products []*model.Produc
 	return appError
 }
 
-func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError {
+func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(transaction store_iface.SqlxTxExecutor, productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError {
 	products, err := a.srv.Store.Product().SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs)
 	if err != nil {
 		return model.NewAppError("UpdateProductsDiscountedPricesOfCatalogues", "app.product.error_finding_products_by_given_id_lists.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return a.UpdateProductsDiscountedPrices(products, nil)
+	return a.UpdateProductsDiscountedPrices(transaction, products, nil)
 }
 
 // UpdateProductsDiscountedPricesOfDiscount
 //
 // NOTE: discount must be either *Sale or *Voucher
-func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount interface{}) *model.AppError {
+func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction store_iface.SqlxTxExecutor, discount interface{}) *model.AppError {
 	var (
 		productFilterOption    model.ProductFilterOption
 		categoryFilterOption   model.CategoryFilterOption
@@ -288,32 +282,44 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(discount inter
 	go func() {
 		defer wg.Done()
 		products, appErr := a.ProductsByOption(&productFilterOption)
-		syncSetAppError(appErr)
+		if appErr != nil {
+			syncSetAppError(appErr)
+			return
+		}
 		productIDs = products.IDs()
 	}()
 
 	go func() {
 		defer wg.Done()
 		categories, appErr := a.CategoriesByOption(&categoryFilterOption)
-		syncSetAppError(appErr)
+		if appErr != nil {
+			syncSetAppError(appErr)
+			return
+		}
 		categoryIDs = categories.IDs(false)
 	}()
 
 	go func() {
 		defer wg.Done()
 		collections, appErr := a.CollectionsByOption(&collectionFilterOption)
-		syncSetAppError(appErr)
+		if appErr != nil {
+			syncSetAppError(appErr)
+			return
+		}
 		collectionIDs = collections.IDs()
 	}()
 
 	go func() {
 		defer wg.Done()
 		variants, appErr := a.ProductVariantsByOption(&variantFilterOptions)
-		syncSetAppError(appErr)
+		if appErr != nil {
+			syncSetAppError(appErr)
+			return
+		}
 		variantIDs = variants.IDs()
 	}()
 
 	wg.Wait()
 
-	return a.UpdateProductsDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs)
+	return a.UpdateProductsDiscountedPricesOfCatalogues(transaction, productIDs, categoryIDs, collectionIDs, variantIDs)
 }

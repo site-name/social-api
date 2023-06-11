@@ -1,5 +1,6 @@
 extend type Query {
   shop: Shop!
+  giftCardSettings: GiftCardSettings! @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 extend type Mutation {

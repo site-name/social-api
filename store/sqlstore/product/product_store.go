@@ -101,8 +101,8 @@ func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption)
 		From(store.ProductTableName)
 
 	// parse option
-	if option.Limit != nil && *option.Limit > 0 {
-		query = query.Limit(*option.Limit)
+	if option.Limit > 0 {
+		query = query.Limit(option.Limit)
 	}
 	if option.CreateAt != nil {
 		query = query.Where(option.CreateAt)
@@ -111,6 +111,7 @@ func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption)
 		query = query.Where(option.Id)
 	}
 	if option.ProductVariantID != nil {
+		option.HasNoProductVariants = false //
 		query = query.
 			InnerJoin(store.ProductVariantTableName + " ON Products.Id = ProductVariants.ProductID").
 			Where(option.ProductVariantID)
@@ -127,8 +128,12 @@ func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption)
 	}
 	if option.HasNoProductVariants {
 		query = query.
-			LeftJoin(store.ProductVariantTableName + " ProductVariants.ProductID = Products.Id").
+			LeftJoin(store.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
 			Where(store.ProductVariantTableName + ".ProductID IS NULL")
+	}
+	if option.CollectionID != nil {
+		query = query.InnerJoin(store.CollectionProductRelationTableName + " ON ProductCollections.ProductID = Products.Id").
+			Where(option.CollectionID)
 	}
 
 	return query.ToSql()
@@ -401,7 +406,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 //
 // refer to ./product_store_doc.md (line 157)
 func (ps *SqlProductStore) PublishedWithVariants(channelIdOrSlug string) squirrel.SelectBuilder {
-	channelQuery := ps.channelQuery(channelIdOrSlug, model.NewPrimitive(true), store.ProductChannelListingTableName)
+	channelQuery1 := ps.channelQuery(channelIdOrSlug, model.NewPrimitive(true), store.ProductChannelListingTableName)
 	today := util.StartOfDay(time.Now())
 
 	productChannelListingQuery := ps.
@@ -411,18 +416,18 @@ func (ps *SqlProductStore) PublishedWithVariants(channelIdOrSlug string) squirre
 		From(store.ProductChannelListingTableName).
 		Where("ProductChannelListings.PublicationDate IS NULL OR ProductChannelListings.PublicationDate <= ?", today).
 		Where("ProductChannelListings.IsPublished AND ProductChannelListings.ProductID = Products.Id").
-		Where(channelQuery).
+		Where(channelQuery1).
 		Suffix(")").
 		Limit(1)
 
-	channelQuery = ps.channelQuery(channelIdOrSlug, model.NewPrimitive(true), store.ProductVariantChannelListingTableName)
+	channelQuery2 := ps.channelQuery(channelIdOrSlug, model.NewPrimitive(true), store.ProductVariantChannelListingTableName)
 
 	productVariantChannelListingQuery := ps.
 		GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
 		From(store.ProductVariantChannelListingTableName).
-		Where(channelQuery).
+		Where(channelQuery2).
 		Where("ProductVariantChannelListings.PriceAmount IS NOT NULL AND ProductVariantChannelListings.VariantID = ProductVariants.Id").
 		Suffix(")").
 		Limit(1)
@@ -486,8 +491,7 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields(store.ProductTableName + ".")...).
 		Distinct().
-		From(store.ProductTableName).
-		OrderBy(store.TableOrderingMap[store.ProductTableName])
+		From(store.ProductTableName)
 
 	orCondition := squirrel.Or{}
 
@@ -498,11 +502,11 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 		orCondition = append(orCondition, squirrel.Eq{"Products.CategoryID": categoryIDs})
 	}
 	if len(collectionIDs) > 0 {
-		query = query.LeftJoin(store.CollectionProductRelationTableName + " ON (Products.Id = ProductCollections.ProductID)")
+		query = query.InnerJoin(store.CollectionProductRelationTableName + " ON (Products.Id = ProductCollections.ProductID)")
 		orCondition = append(orCondition, squirrel.Eq{"ProductCollections.CollectionID": collectionIDs})
 	}
 	if len(variantIDs) > 0 {
-		query = query.LeftJoin(store.ProductVariantTableName + " ON Products.Id = ProductVariants.ProductID")
+		query = query.InnerJoin(store.ProductVariantTableName + " ON Products.Id = ProductVariants.ProductID")
 		orCondition = append(orCondition, squirrel.Eq{store.ProductVariantTableName + ".Id": variantIDs})
 	}
 
@@ -592,20 +596,20 @@ func (ps *SqlProductStore) AdvancedFilterQueryBuilder(input *model.ExportProduct
 		query = ps.filterSearch(query, *input.Filter.Search)
 	}
 	if meta := input.Filter.Metadata; len(meta) > 0 {
-		condition := strings.Builder{}
+		conditions := []string{}
+
 		for _, pair := range meta {
 			if pair != nil && pair.Key != "" {
-				if condition.Len() > 0 {
-					condition.WriteString(" AND ")
-				}
 				if pair.Value == "" {
-					condition.WriteString(fmt.Sprintf(`Products.Metadata::jsonb ? '%s'`, pair.Key))
+					expr := fmt.Sprintf(`Products.Metadata::jsonb ? '%s'`, pair.Key)
+					conditions = append(conditions, expr)
 					continue
 				}
-				condition.WriteString(fmt.Sprintf(`Products.Metadata::jsonb @> '{%q:%q}'::jsonb`, pair.Key, pair.Value))
+				expr := fmt.Sprintf(`Products.Metadata::jsonb @> '{%q:%q}'::jsonb`, pair.Key, pair.Value)
+				conditions = append(conditions, expr)
 			}
 		}
-		query = query.Where(condition.String())
+		query = query.Where(strings.Join(conditions, " AND "))
 	}
 
 	// filter by SortBy

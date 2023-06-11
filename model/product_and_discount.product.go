@@ -112,12 +112,13 @@ type ProductFilterOption struct {
 	Id       squirrel.Sqlizer
 	CreateAt squirrel.Sqlizer
 
-	Limit *uint64
+	Limit uint64
 
 	HasNoProductVariants bool             // LEFT JOIN ProductVariants ON ... WHERE ProductVariants.ProductID IS NULL
 	ProductVariantID     squirrel.Sqlizer // INNER JOIN ProductVariants ON ... WHERE ProductVariants.Id ...
-	VoucherID            squirrel.Sqlizer // SELECT * FROM Products INNER JOIN ProductVouchers ON (...) WHERE ProductVouchers.VoucherID ...
-	SaleID               squirrel.Sqlizer // SELECT * FROM Products INNER JOIN ProductSales ON (...) WHERE ProductSales.SaleID ...
+	VoucherID            squirrel.Sqlizer // INNER JOIN ProductVouchers ON (...) WHERE ProductVouchers.VoucherID ...
+	SaleID               squirrel.Sqlizer // INNER JOIN ProductSales ON (...) WHERE ProductSales.SaleID ...
+	CollectionID         squirrel.Sqlizer // INNER JOIN ProductCollections ON ... WHERE ProductCollections.CollectionID ...
 
 	PrefetchRelatedAssignedProductAttributes bool
 	PrefetchRelatedVariants                  bool
@@ -142,18 +143,12 @@ type Products []*Product
 
 func (ps Products) IDs() []string {
 	return lo.Map(ps, func(p *Product, _ int) string {
-		if p == nil {
-			return ""
-		}
 		return p.Id
 	})
 }
 
 func (ps Products) ProductTypeIDs() []string {
 	return lo.Map(ps, func(p *Product, _ int) string {
-		if p == nil {
-			return ""
-		}
 		return p.ProductTypeID
 	})
 }

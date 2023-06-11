@@ -1,20 +1,19 @@
 extend type Mutation {
-  giftCardActivate(id: String!): GiftCardActivate
+  giftCardActivate(id: String!): GiftCardActivate @hasRoleAny(roles: [shop_admin, shop_staff])
   giftCardCreate(input: GiftCardCreateInput!): GiftCardCreate
   giftCardDelete(id: String!): GiftCardDelete
-  giftCardDeactivate(id: String!): GiftCardDeactivate
-  giftCardUpdate(id: String!, input: GiftCardUpdateInput!): GiftCardUpdate
-  giftCardResend(input: GiftCardResendInput!): GiftCardResend
-  giftCardAddNote(id: String!, input: GiftCardAddNoteInput!): GiftCardAddNote
-  giftCardBulkDelete(ids: [String!]!): GiftCardBulkDelete
-  giftCardBulkActivate(ids: [String!]!): GiftCardBulkActivate
-  giftCardBulkDeactivate(ids: [String!]!): GiftCardBulkDeactivate
+  giftCardDeactivate(id: String!): GiftCardDeactivate @hasRoleAny(roles: [shop_admin, shop_staff])
+  giftCardUpdate(id: String!, input: GiftCardUpdateInput!): GiftCardUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
+  giftCardResend(input: GiftCardResendInput!): GiftCardResend @hasRoleAny(roles: [shop_admin, shop_staff])
+  giftCardAddNote(id: String!, input: GiftCardAddNoteInput!): GiftCardAddNote @hasRoleAny(roles: [shop_admin, shop_staff])
+  giftCardBulkDelete(ids: [String!]!): GiftCardBulkDelete @hasRoles(roles: [shop_admin])
+  giftCardBulkActivate(ids: [String!]!): GiftCardBulkActivate @hasRoleAny(roles: [shop_admin, shop_staff])
+  giftCardBulkDeactivate(ids: [String!]!): GiftCardBulkDeactivate @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 extend type Query {
-  giftCard(id: String!): GiftCard
-  giftCardSettings: GiftCardSettings!
-  giftCards(sortBy: GiftCardSortingInput, filter: GiftCardFilterInput, before: String, after: String, first: Int, last: Int): GiftCardCountableConnection
+  giftCard(id: String!): GiftCard @hasRoleAny(roles: [shop_admin, shop_staff])
+  giftCards(sortBy: GiftCardSortingInput, filter: GiftCardFilterInput, before: String, after: String, first: Int, last: Int): GiftCardCountableConnection @hasRoleAny(roles: [shop_admin, shop_staff])
   giftCardCurrencies: [String!]!
 }
 
@@ -31,13 +30,13 @@ type GiftCard  {
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   displayCode: String!
-  createdBy: User
-  usedBy: User
-  createdByEmail: String
-  usedByEmail: String
+  createdBy: User @hasRoleAny(roles: [shop_admin, shop_staff])
+  usedBy: User @hasRoleAny(roles: [shop_admin, shop_staff])
+  createdByEmail: String @hasRoleAny(roles: [shop_admin, shop_staff])
+  usedByEmail: String @hasRoleAny(roles: [shop_admin, shop_staff])
   app: App
   product: Product
-  events: [GiftCardEvent!]!
+  events: [GiftCardEvent!]! @hasRoleAny(roles: [shop_admin, shop_staff])
   boughtInChannel: String
 }
 
@@ -142,7 +141,7 @@ type GiftCardEvent  {
   id: String!
   date: DateTime
   type: GiftCardEventsEnum
-  user: User
+  user: User @hasRoleAny(roles: [shop_admin, shop_staff])
   app: App
   message: String
   email: String
@@ -233,8 +232,8 @@ input GiftCardSettingsUpdateInput {
 
 enum GiftCardSortField {
   TAG
-  PRODUCT
-  USED_BY
+  # PRODUCT
+  # USED_BY
   CURRENT_BALANCE
 }
 

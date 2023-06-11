@@ -1,14 +1,27 @@
 package api
 
-// This file will be automatically regenerated based on the schema, any resolver implementations
-// will be copied through when generating and any unknown code will be moved to the end.
-
 import (
 	"context"
 	"fmt"
 )
 
+// NOTE: Refer to ./schemas/draft_order.graphqls for details on directives used.
 func (r *Resolver) DraftOrderComplete(ctx context.Context, args struct{ Id string }) (*DraftOrderComplete, error) {
+	// if !model.IsValidId(args.Id) {
+	// 	return nil, model.NewAppError("DraftOrderComplete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, args.Id + " is not a valid order id", http.StatusBadRequest)
+	// }
+
+	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// orders, appErr := embedCtx.App.Srv().
+	// OrderService().
+	// FilterOrdersByOptions(&model.OrderFilterOption{
+
+	// })
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
+
 	panic(fmt.Errorf("not implemented"))
 }
 

@@ -6,6 +6,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
+	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/modules/measurement"
 	"golang.org/x/text/language"
 )
@@ -50,6 +52,21 @@ type ShippingMethod struct {
 
 	shippingZones                 ShippingZones                 `db:"-"` // this field is used for holding prefetched related instances
 	shippingMethodPostalCodeRules ShippingMethodPostalCodeRules `db:"-"` // this field is used for holding prefetched related instances
+	price                         *goprices.Money               // this field is populated in some graphql resolvers
+}
+
+func (s *ShippingMethod) GetPrice() *goprices.Money {
+	return s.price
+}
+
+func (s *ShippingMethod) SetPrice(p *goprices.Money) {
+	s.price = p
+}
+
+type ShippingMethods []*ShippingMethod
+
+func (ss ShippingMethods) IDs() []string {
+	return lo.Map(ss, func(item *ShippingMethod, _ int) string { return item.Id })
 }
 
 func (s *ShippingMethod) GetShippingZones() ShippingZones {
@@ -203,7 +220,7 @@ type ShippingMethodTranslation struct {
 
 func (s *ShippingMethodTranslation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
-		"shipping_method_translation.is_valid.%s.app_error",
+		"model.shipping_method_translation.is_valid.%s.app_error",
 		"shipping_method_translation_id=",
 		"ShippingMethodTranslation.IsValid",
 	)

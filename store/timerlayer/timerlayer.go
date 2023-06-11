@@ -2265,6 +2265,22 @@ func (s *TimerLayerCategoryStore) Upsert(category *model.Category) (*model.Categ
 	return result, err
 }
 
+func (s *TimerLayerChannelStore) DeleteChannels(transaction store_iface.SqlxTxExecutor, ids []string) error {
+	start := timemodule.Now()
+
+	err := s.ChannelStore.DeleteChannels(transaction, ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.DeleteChannels", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) {
 	start := timemodule.Now()
 
@@ -2665,6 +2681,22 @@ func (s *TimerLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.Cluster
 	return err
 }
 
+func (s *TimerLayerCollectionStore) Delete(ids ...string) error {
+	start := timemodule.Now()
+
+	err := s.CollectionStore.Delete(ids...)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionStore.Delete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerCollectionStore) FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) {
 	start := timemodule.Now()
 
@@ -2725,6 +2757,22 @@ func (s *TimerLayerCollectionChannelListingStore) FilterByOptions(options *model
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("CollectionChannelListingStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCollectionProductStore) BulkSave(transaction store_iface.SqlxTxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
+	start := timemodule.Now()
+
+	result, err := s.CollectionProductStore.BulkSave(transaction, relations)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionProductStore.BulkSave", success, elapsed)
 	}
 	return result, err
 }
@@ -3687,10 +3735,26 @@ func (s *TimerLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]st
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
+func (s *TimerLayerGiftCardStore) DeleteGiftcards(transaction store_iface.SqlxTxExecutor, ids []string) error {
 	start := timemodule.Now()
 
-	result, err := s.GiftCardStore.FilterByOption(transaction, option)
+	err := s.GiftCardStore.DeleteGiftcards(transaction, ids)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.DeleteGiftcards", success, elapsed)
+	}
+	return err
+}
+
+func (s *TimerLayerGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
+	start := timemodule.Now()
+
+	result, err := s.GiftCardStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -5370,10 +5434,10 @@ func (s *TimerLayerProductStore) VisibleToUserProductsQuery(channel_SlugOrID str
 	return result
 }
 
-func (s *TimerLayerProductChannelListingStore) BulkUpsert(listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
+func (s *TimerLayerProductChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductChannelListingStore.BulkUpsert(listings)
+	result, err := s.ProductChannelListingStore.BulkUpsert(transaction, listings)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

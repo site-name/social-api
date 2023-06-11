@@ -596,7 +596,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 			SaleID: squirrel.Eq{store.SaleCategoryRelationTableName + ".SaleID": instance.Id},
 		})
 		trySetAppError(appErr)
-		categorieIDs = model.Categories(cates).IDs(false)
+		categorieIDs = cates.IDs(false)
 	}()
 
 	go func() {
@@ -606,7 +606,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 			SaleID: squirrel.Eq{store.SaleCollectionRelationTableName + ".SaleID": instance.Id},
 		})
 		trySetAppError(appErr)
-		collectionIDs = model.Collections(collecs).IDs()
+		collectionIDs = collecs.IDs()
 	}()
 
 	go func() {
@@ -616,7 +616,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 			SaleID: squirrel.Eq{store.SaleProductRelationTableName + ".SaleID": instance.Id},
 		})
 		trySetAppError(appErr)
-		productIDs = model.Products(products).IDs()
+		productIDs = products.IDs()
 	}()
 
 	go func() {
@@ -624,7 +624,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 
 		productVariants, appErr := s.srv.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{})
 		trySetAppError(appErr)
-		variantIDs = model.ProductVariants(productVariants).IDs()
+		variantIDs = productVariants.IDs()
 	}()
 
 	wg.Wait()

@@ -94,13 +94,17 @@ func (s *ShippingMethod) ChannelListings(ctx context.Context) ([]*ShippingMethod
 }
 
 func (s *ShippingMethod) Price(ctx context.Context) (*Money, error) {
-	embedChannel := GetContextValue[string](ctx, ChannelIdCtx)
+	price := s.s.GetPrice()
+	if price != nil {
+		return SystemMoneyToGraphqlMoney(price), nil
+	}
 
-	if embedChannel == "" {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	if embedCtx.CurrentChannelID == "" {
 		return nil, nil
 	}
 
-	listing, err := ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+embedChannel)()
+	listing, err := ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+embedCtx.CurrentChannelID)()
 	if err != nil {
 		return nil, err
 	}

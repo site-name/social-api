@@ -1614,17 +1614,6 @@ type GiftCardEventBalance struct {
 	OldCurrentBalance *Money `json:"oldCurrentBalance"`
 }
 
-type GiftCardFilterInput struct {
-	IsActive       *bool            `json:"isActive"`
-	Tag            *string          `json:"tag"`
-	Tags           []string         `json:"tags"`
-	Products       []string         `json:"products"`
-	UsedBy         []string         `json:"usedBy"`
-	Currency       *string          `json:"currency"`
-	CurrentBalance *PriceRangeInput `json:"currentBalance"`
-	InitialBalance *PriceRangeInput `json:"initialBalance"`
-}
-
 type GiftCardResend struct {
 	GiftCard *GiftCard        `json:"giftCard"`
 	Errors   []*GiftCardError `json:"errors"`
@@ -4673,15 +4662,15 @@ type GiftCardSettingsExpiryTypeEnum = model.GiftCardSettingsExpiryType
 type GiftCardSortField string
 
 const (
-	GiftCardSortFieldTag            GiftCardSortField = "TAG"
-	GiftCardSortFieldProduct        GiftCardSortField = "PRODUCT"
-	GiftCardSortFieldUsedBy         GiftCardSortField = "USED_BY"
+	GiftCardSortFieldTag GiftCardSortField = "TAG"
+	// GiftCardSortFieldProduct        GiftCardSortField = "PRODUCT"
+	// GiftCardSortFieldUsedBy         GiftCardSortField = "USED_BY"
 	GiftCardSortFieldCurrentBalance GiftCardSortField = "CURRENT_BALANCE"
 )
 
 func (e GiftCardSortField) IsValid() bool {
 	switch e {
-	case GiftCardSortFieldTag, GiftCardSortFieldProduct, GiftCardSortFieldUsedBy, GiftCardSortFieldCurrentBalance:
+	case GiftCardSortFieldTag, GiftCardSortFieldCurrentBalance:
 		return true
 	}
 	return false

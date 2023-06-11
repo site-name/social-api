@@ -27,7 +27,7 @@ type CheckoutDeliveryMethodUpdate {
 type Checkout  {
   created: DateTime!
   lastChange: DateTime!
-  user: User
+  user: User @hasRoleAny(roles: [shop_admin, shop_staff])
   channel: Channel!
   billingAddress: Address
   shippingAddress: Address

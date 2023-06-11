@@ -76,19 +76,16 @@ func digitalContentByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 		Id: squirrel.Eq{store.DigitalContentTableName + ".Id": ids},
 	})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range ids {
+			res[idx] = &dataloader.Result[*model.DigitalContent]{Error: appErr}
+		}
+		return res
 	}
 	for _, content := range contents {
 		contentMap[content.Id] = content
 	}
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.DigitalContent]{Data: contentMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range ids {
-		res[idx] = &dataloader.Result[*model.DigitalContent]{Error: appErr}
 	}
 	return res
 }

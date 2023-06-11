@@ -216,33 +216,18 @@ func (c *Checkout) ShippingPrice(ctx context.Context) (*TaxedMoney, error) {
 	return SystemTaxedMoneyToGraphqlTaxedMoney(taxedMoney), nil
 }
 
+// Refer to ./schemas/checkout.graphqls for details on directive used.
 func (c *Checkout) User(ctx context.Context) (*User, error) {
-	// requester can see user of checkout only if
-	// current checkout is made by himself OR
-	// requester is staff of the shop that has this checkout
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
-	currentUserCanSeeCheckoutOwner := (c.checkout.UserID != nil && embedCtx.AppContext.Session().UserId == *c.checkout.UserID) ||
-		embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId)
-
-	if currentUserCanSeeCheckoutOwner {
-		if c.checkout.UserID != nil {
-			user, err := UserByUserIdLoader.Load(ctx, *c.checkout.UserID)()
-			if err != nil {
-				return nil, err
-			}
-
-			return SystemUserToGraphqlUser(user), nil
+	if c.checkout.UserID != nil {
+		user, err := UserByUserIdLoader.Load(ctx, *c.checkout.UserID)()
+		if err != nil {
+			return nil, err
 		}
 
-		return nil, nil
+		return SystemUserToGraphqlUser(user), nil
 	}
 
-	return nil, MakeUnauthorizedError("Checkout.User")
+	return nil, nil
 }
 
 func (c *Checkout) Quantity(ctx context.Context) (int32, error) {
@@ -266,7 +251,6 @@ func (c *Checkout) IsShippingRequired(ctx context.Context) (bool, error) {
 	}
 
 	productIDs := lo.Map(infos, func(i *model.CheckoutLineInfo, _ int) string { return i.Product.Id })
-
 	productTypes, errs := ProductTypeByProductIdLoader.LoadMany(ctx, productIDs)()
 	if len(errs) != 0 && errs[0] != nil {
 		return false, errs[0]
@@ -276,7 +260,11 @@ func (c *Checkout) IsShippingRequired(ctx context.Context) (bool, error) {
 }
 
 func (c *Checkout) Channel(ctx context.Context) (*Channel, error) {
-	panic("not implemented")
+	channel, err := ChannelByIdLoader.Load(ctx, c.checkout.ChannelID)()
+	if err != nil {
+		return nil, err
+	}
+	return SystemChannelToGraphqlChannel(channel), nil
 }
 
 func (c *Checkout) BillingAddress(ctx context.Context) (*Address, error) {
@@ -312,7 +300,7 @@ func (c *Checkout) GiftCards(ctx context.Context) ([]*GiftCard, error) {
 		App.
 		Srv().
 		GiftcardService().
-		GiftcardsByOption(nil, &model.GiftCardFilterOption{
+		GiftcardsByOption(&model.GiftCardFilterOption{
 			CheckoutToken: squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": c.Token},
 		})
 	if appErr != nil {
@@ -323,37 +311,94 @@ func (c *Checkout) GiftCards(ctx context.Context) ([]*GiftCard, error) {
 }
 
 func (c *Checkout) AvailableShippingMethods(ctx context.Context) ([]*ShippingMethod, error) {
-	// var address *model.Address
-	// var err error
+	var address *model.Address
+	var err error
 
-	// if c.shippingAddressID != nil {
-	// 	address, err = AddressByIdLoader.Load(ctx, *c.shippingAddressID)()
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
+	if c.checkout.ShippingAddressID != nil {
+		address, err = AddressByIdLoader.Load(ctx, *c.checkout.ShippingAddressID)()
+		if err != nil {
+			return nil, err
+		}
+	}
 
-	// channel, err := ChannelByIdLoader.Load(ctx, c.channelID)()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	if address == nil {
+		return []*ShippingMethod{}, nil
+	}
 
-	// lines, err := CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	channel, err := ChannelByIdLoader.Load(ctx, c.checkout.ChannelID)()
+	if err != nil {
+		return nil, err
+	}
 
-	// checkoutInfo, err := CheckoutInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	lines, err := CheckoutLinesInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	if err != nil {
+		return nil, err
+	}
 
-	// discounts, err := DiscountsByDateTimeLoader.Load(ctx, time.Now().UTC())()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	checkoutInfo, err := CheckoutInfoByCheckoutTokenLoader.Load(ctx, c.Token)()
+	if err != nil {
+		return nil, err
+	}
 
-	panic("not implemented")
+	discounts, err := DiscountsByDateTimeLoader.Load(ctx, time.Now().UTC())()
+	if err != nil {
+		return nil, err
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	subTotal, appErr := pluginMng.CalculateCheckoutSubTotal(*checkoutInfo, lines, address, discounts)
+	if appErr != nil {
+		return nil, appErr
+	}
+	shippingMethods, appErr := embedCtx.App.Srv().CheckoutService().GetValidShippingMethodsForCheckout(*checkoutInfo, lines, subTotal, address.Country)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if len(shippingMethods) == 0 {
+		return []*ShippingMethod{}, nil
+	}
+
+	availableIDs := model.ShippingMethods(shippingMethods).IDs()
+	shippingMethods, errs := ShippingMethodByIdLoader.LoadMany(ctx, availableIDs)()
+	if len(errs) > 0 && errs[0] != nil {
+		return nil, errs[0]
+	}
+
+	shippingMethodIDChannelIDMap := lo.Map(availableIDs, func(item string, _ int) string { return item + "__" + channel.Id })
+	channelListings, errs := ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.LoadMany(ctx, shippingMethodIDChannelIDMap)()
+	if len(errs) > 0 && errs[0] != nil {
+		return nil, err
+	}
+
+	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	channelListingMap := map[string]*model.ShippingMethodChannelListing{}
+	for _, item := range channelListings {
+		channelListingMap[item.ShippingMethodID] = item
+	}
+
+	for _, shippingMethod := range shippingMethods {
+		listing := channelListingMap[shippingMethod.Id]
+		if listing != nil {
+			listing.PopulateNonDbFields() // needed
+
+			taxedPrice, appErr := pluginManager.ApplyTaxesToShipping(*listing.Price, *address, channel.Id)
+			if appErr != nil {
+				return nil, appErr
+			}
+
+			if *embedCtx.App.Config().ShopSettings.DisplayGrossPrices {
+				shippingMethod.SetPrice(taxedPrice.Gross)
+			} else {
+				shippingMethod.SetPrice(taxedPrice.Net)
+			}
+		}
+	}
+
+	return systemRecordsToGraphql(shippingMethods, SystemShippingMethodToGraphqlShippingMethod), nil
 }
 
 func (c *Checkout) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, error) {
@@ -469,12 +514,11 @@ func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*datal
 
 	for _, item := range keys {
 		sepIndex := strings.Index(item, "__")
-		if sepIndex == -1 {
-			continue
+		if sepIndex != -1 {
+			userIDs = append(userIDs, item[:sepIndex])
+			channelIDs = append(channelIDs, item[sepIndex+2:])
 		}
 
-		userIDs = append(userIDs, item[:sepIndex])
-		channelIDs = append(channelIDs, item[sepIndex+2:])
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

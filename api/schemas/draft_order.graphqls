@@ -1,5 +1,5 @@
 extend type Mutation {
-  draftOrderComplete(id: String!): DraftOrderComplete
+  draftOrderComplete(id: String!): DraftOrderComplete @hasRoleAny(roles: [shop_admin, shop_staff])
   draftOrderCreate(input: DraftOrderCreateInput!): DraftOrderCreate
   draftOrderDelete(id: String!): DraftOrderDelete
   draftOrderBulkDelete(ids: [String!]!): DraftOrderBulkDelete

@@ -43,25 +43,14 @@ func SystemChannelToGraphqlChannel(ch *model.Channel) *Channel {
 	}
 }
 
+// NOTE: Refer to ./schemas/channel.graphqls for details on directive used
 func (c Channel) HasOrders(ctx context.Context) (bool, error) {
-	// requester can see if current channel has order(s) only if
-	// he is staff at the shop that sells products in current channel
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return false, embedCtx.Err
+	channel, err := ChannelWithHasOrdersByIdLoader.Load(ctx, c.ID)()
+	if err != nil {
+		return false, err
 	}
 
-	if embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		channel, err := ChannelWithHasOrdersByIdLoader.Load(ctx, c.ID)()
-		if err != nil {
-			return false, err
-		}
-
-		return channel.GetHasOrders(), nil
-	}
-
-	return false, MakeUnauthorizedError("Channel.HasOrders")
+	return channel.GetHasOrders(), nil
 }
 
 func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Channel] {
@@ -130,16 +119,12 @@ func channelByCheckoutLineIDLoader(ctx context.Context, checkoutLineIDs []string
 	}
 
 	checkoutTokens = lo.Map(checkoutLines, func(item *model.CheckoutLine, _ int) string { return item.CheckoutID })
-
-	// find checkouts
 	checkouts, errs = CheckoutByTokenLoader.LoadMany(ctx, checkoutTokens)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
 	channelIDs = lo.Map(checkouts, func(item *model.Checkout, _ int) string { return item.ChannelID })
-
-	// find channels
 	channels, errs = ChannelByIdLoader.LoadMany(ctx, channelIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
@@ -165,19 +150,16 @@ func channelByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) []*d
 		errs       []error
 	)
 
-	// find order lines
 	orderLines, errs = OrderLineByIdLoader.LoadMany(ctx, orderLineIDs)()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
-	// find orders
 	orders, errs = OrderByIdLoader.LoadMany(ctx, orderLines.OrderIDs())()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
 	}
 
-	// find channels
 	channels, errs = ChannelByIdLoader.LoadMany(ctx, orders.ChannelIDs())()
 	if len(errs) > 0 && errs[0] != nil {
 		goto errorLabel
@@ -271,18 +253,8 @@ func (c *ProductChannelListing) Channel(ctx context.Context) (*Channel, error) {
 	return SystemChannelToGraphqlChannel(channel), nil
 }
 
+// Refer to ./schemas/product.graphqls for details on directive used.
 func (c *ProductChannelListing) PurchaseCost(ctx context.Context) (*MoneyRange, error) {
-	// requester can see purchase cost only if he is owner of current shop
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
-	if !embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopAdminRoleId) {
-		return nil, MakeUnauthorizedError("ProductChannelListing.PurchaseCost")
-	}
-
 	productVariants, err := ProductVariantsByProductIdLoader.Load(ctx, c.c.ProductID)()
 	if err != nil {
 		return nil, err
@@ -318,13 +290,8 @@ func (c *ProductChannelListing) IsAvailableForPurchase(ctx context.Context) (*bo
 	return &res, nil
 }
 
+// Refer to ./schemas/product.graphqls for directive used
 func (c *ProductChannelListing) Margin(ctx context.Context) (*Margin, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateProduct, model.PermissionUpdateProduct)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
 	productVariants, err := ProductVariantsByProductIdLoader.Load(ctx, c.c.ProductID)()
 	if err != nil {
 		return nil, err
@@ -409,7 +376,6 @@ func (c *ProductChannelListing) Pricing(ctx context.Context, args struct{ Addres
 	}
 
 	localCurrency := util.GetCurrencyForCountry(addressCountry.String())
-
 	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
 
 	availability, appErr := embedCtx.App.Srv().ProductService().GetProductAvailability(*product, c.c, variants, variantChannelListings, collections, discountInfos, *channel, pluginManager, addressCountry, localCurrency)
@@ -477,13 +443,8 @@ func (p *ProductVariantChannelListing) Channel(ctx context.Context) (*Channel, e
 	return SystemChannelToGraphqlChannel(channel), nil
 }
 
+// Refer to ./schemas/product_variant.graphqls for details on directive used
 func (p *ProductVariantChannelListing) Margin(ctx context.Context) (*int32, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionCreateProduct, model.PermissionUpdateProduct, model.PermissionDeleteProduct)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
 	margin := product.GetMarginForVariantChannelListing(p.p)
 	if margin == nil {
 		return nil, nil

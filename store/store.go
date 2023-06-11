@@ -461,8 +461,10 @@ type (
 		Get(collectionID string) (*model.Collection, error)                               // Get finds and returns collection with given collectionID
 		FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) // FilterByOption finds and returns a list of collections satisfy the given option
 		ScanFields(col *model.Collection) []interface{}
+		Delete(ids ...string) error
 	}
 	CollectionProductStore interface {
+		BulkSave(transaction store_iface.SqlxTxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error)
 		FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error)
 	}
 	VariantMediaStore interface {
@@ -510,9 +512,9 @@ type (
 	}
 	ProductChannelListingStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
-		BulkUpsert(listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error)             // BulkUpsert performs bulk upsert on given product channel listings
-		Get(channelListingID string) (*model.ProductChannelListing, error)                                      // Get try finding a product channel listing, then returns it with an error
-		FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error) // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) // BulkUpsert performs bulk upsert on given product channel listings
+		Get(channelListingID string) (*model.ProductChannelListing, error)                                                                  // Get try finding a product channel listing, then returns it with an error
+		FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error)                             // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
 	}
 	ProductTranslationStore interface {
 		Upsert(translation *model.ProductTranslation) (*model.ProductTranslation, error)                  // Upsert inserts or update given translation
@@ -664,9 +666,10 @@ type (
 // giftcard related stores
 type (
 	GiftCardStore interface {
-		BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error)           // BulkUpsert depends on given giftcards's Id properties then perform according operation
-		GetById(id string) (*model.GiftCard, error)                                                                           // GetById returns a giftcard instance that has id of given id
-		FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.GiftCardFilterOption) ([]*model.GiftCard, error) // FilterByOption finds giftcards wth option
+		DeleteGiftcards(transaction store_iface.SqlxTxExecutor, ids []string) error
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) // BulkUpsert depends on given giftcards's Id properties then perform according operation
+		GetById(id string) (*model.GiftCard, error)                                                                 // GetById returns a giftcard instance that has id of given id
+		FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error)                               // FilterByOption finds giftcards wth option
 		// DeactivateOrderGiftcards update giftcards
 		// which have giftcard events with type == 'bought', parameters.order_id == given order id
 		// by setting their IsActive model to false
@@ -829,6 +832,7 @@ type ChannelStore interface {
 	FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) // FilterByOption returns a list of channels with given option
 	GetbyOption(option *model.ChannelFilterOption) (*model.Channel, error)      // GetbyOption finds and returns 1 channel filtered using given options
 	Upsert(transaction store_iface.SqlxTxExecutor, channel *model.Channel) (*model.Channel, error)
+	DeleteChannels(transaction store_iface.SqlxTxExecutor, ids []string) error
 }
 type ChannelShopStore interface {
 	// FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error)

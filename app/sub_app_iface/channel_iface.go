@@ -23,4 +23,5 @@ type ChannelService interface {
 	GetDefaultChannel() (*model.Channel, *model.AppError)
 	GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError)
 	UpsertChannel(transaction store_iface.SqlxTxExecutor, channel *model.Channel) (*model.Channel, *model.AppError)
+	DeleteChannels(transaction store_iface.SqlxTxExecutor, ids ...string) *model.AppError
 }

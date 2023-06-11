@@ -137,9 +137,11 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 
 	// create relations between shipping zones and channel
 	if len(args.Input.AddShippingZones) > 0 {
-		insertRelations := lo.Map(args.Input.AddShippingZones, func(id string, _ int) *model.ShippingZoneChannel {
-			return &model.ShippingZoneChannel{ShippingZoneID: id, ChannelID: channel.Id}
-		})
+		var insertRelations = make([]*model.ShippingZoneChannel, len(args.Input.AddShippingZones))
+		for idx, shipZoneID := range args.Input.AddShippingZones {
+			insertRelations[idx] = &model.ShippingZoneChannel{ShippingZoneID: shipZoneID, ChannelID: channel.Id}
+		}
+
 		_, appErr = embedCtx.App.Srv().ChannelService().BulkUpsertShippingZoneChannels(transaction, insertRelations)
 		if appErr != nil {
 			return nil, appErr
@@ -148,9 +150,11 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 
 	if len(args.Input.RemoveShippingZones) > 0 {
 		// delete relations between shipping zones and channel
-		deleteRelations := lo.Map(args.Input.RemoveShippingZones, func(id string, _ int) *model.ShippingZoneChannel {
-			return &model.ShippingZoneChannel{ShippingZoneID: id, ChannelID: channel.Id}
-		})
+		var deleteRelations = make([]*model.ShippingZoneChannel, len(args.Input.RemoveShippingZones))
+		for idx, shipZoneID := range args.Input.RemoveShippingZones {
+			deleteRelations[idx] = &model.ShippingZoneChannel{ShippingZoneID: shipZoneID, ChannelID: channel.Id}
+		}
+
 		appErr = embedCtx.App.Srv().ChannelService().BulkDeleteShippingZoneChannels(transaction, deleteRelations)
 		if appErr != nil {
 			return nil, appErr
@@ -276,7 +280,14 @@ func (r *Resolver) ChannelDelete(ctx context.Context, args struct {
 	}
 
 	// delete channel
-	panic("not implemented")
+	appErr = embedCtx.App.Srv().ChannelService().DeleteChannels(nil, args.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &ChannelDelete{
+		Channel: &Channel{ID: args.Id},
+	}, nil
 }
 
 // NOTE: Refer to ./schemas/channel.graphqls for directive used

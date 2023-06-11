@@ -5,6 +5,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlCollectionProductStore struct {
@@ -38,6 +39,39 @@ func (ps *SqlCollectionProductStore) ScanFields(rel *model.CollectionProduct) []
 	}
 }
 
+func (ps *SqlCollectionProductStore) BulkSave(transaction store_iface.SqlxTxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
+	runner := ps.GetMasterX()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	for _, rel := range relations {
+		if !model.IsValidId(rel.Id) {
+			rel.Id = ""
+			rel.PreSave()
+		}
+
+		if err := rel.IsValid(); err != nil {
+			return nil, err
+		}
+
+		result, err := runner.Exec("INSERT INTO "+store.CollectionProductRelationTableName+" (Id, CollectionID, ProductID) VALUES (:Id, :CollectionID, :ProductID)", rel)
+		if err != nil {
+			if ps.IsUniqueConstraintError(err, []string{"productcollections_collectionid_productid_key"}) {
+				return nil, store.NewErrInvalidInput(store.CollectionProductRelationTableName, "CollectionID/ProductID", nil)
+			}
+			return nil, errors.Wrap(err, "failed to insert a collection product relation")
+		}
+
+		rowsAdded, _ := result.RowsAffected()
+		if rowsAdded != 1 {
+			return nil, errors.Errorf("%d relation(s) was/were added instead of 1", rowsAdded)
+		}
+	}
+
+	return relations, nil
+}
+
 func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error) {
 	selectFields := ps.ModelFields(store.CollectionProductRelationTableName + ".")
 	if options.SelectRelatedCollection {
@@ -64,20 +98,6 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 		query = query.InnerJoin(store.ProductTableName + " ON Products.Id = ProductCollections.ProductID")
 	}
 
-	var (
-		res               []*model.CollectionProduct
-		collectionProduct model.CollectionProduct
-		collection        model.Collection
-		product           model.Product
-		scanFields        = ps.ScanFields(&collectionProduct)
-	)
-	if options.SelectRelatedCollection {
-		scanFields = append(scanFields, ps.Collection().ScanFields(&collection)...)
-	}
-	if options.SelectRelatedProduct {
-		scanFields = append(scanFields, ps.Product().ScanFields(&product)...)
-	}
-
 	queryString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
@@ -87,18 +107,35 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 		return nil, errors.Wrap(err, "failed to find product-collection relations")
 	}
 
+	var res []*model.CollectionProduct
+
 	for rows.Next() {
+		var (
+			collectionProduct model.CollectionProduct
+			collection        model.Collection
+			product           model.Product
+			scanFields        = ps.ScanFields(&collectionProduct)
+		)
+		if options.SelectRelatedCollection {
+			scanFields = append(scanFields, ps.Collection().ScanFields(&collection)...)
+		}
+		if options.SelectRelatedProduct {
+			scanFields = append(scanFields, ps.Product().ScanFields(&product)...)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row of product-collection relation")
 		}
 
 		if options.SelectRelatedCollection {
-			collectionProduct.SetCollection(&collection) // no need to deep copy collection here, See Collection_Product relation DeepCopy for detail
-			collectionProduct.SetProduct(&product)       // no need deep copy here
+			collectionProduct.SetCollection(&collection)
+		}
+		if options.SelectRelatedProduct {
+			collectionProduct.SetProduct(&product)
 		}
 
-		res = append(res, collectionProduct.DeepCopy())
+		res = append(res, &collectionProduct)
 	}
 
 	if err = rows.Close(); err != nil {

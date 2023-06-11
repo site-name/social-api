@@ -41,8 +41,8 @@ type GiftCard struct {
 	Tag                  *string          `json:"tag"`
 	ProductID            *string          `json:"product_id"` // foreign key to Product
 	LastUsedOn           *int64           `json:"last_used_on"`
-	IsActive             *bool            `json:"is_active"` // default true
-	Currency             string           `json:"currency"`
+	IsActive             *bool            `json:"is_active"`              // default true
+	Currency             string           `json:"currency"`               // UPPER cased
 	InitialBalanceAmount *decimal.Decimal `json:"initial_balance_amount"` // default 0
 	InitialBalance       *goprices.Money  `json:"initial_balance,omitempty" db:"-"`
 	CurrentBalanceAmount *decimal.Decimal `json:"current_balance_amount"` // default 0
@@ -54,17 +54,21 @@ type GiftCard struct {
 
 // GiftCardFilterOption is used to buil sql queries
 type GiftCardFilterOption struct {
-	Id            squirrel.Sqlizer
-	ExpiryDate    squirrel.Sqlizer
-	StartDate     squirrel.Sqlizer
-	Code          squirrel.Sqlizer
-	Currency      squirrel.Sqlizer
-	CreatedByID   squirrel.Sqlizer
-	UsedByID      squirrel.Sqlizer
-	CheckoutToken squirrel.Sqlizer // SELECT * FROM 'Giftcards' WHERE 'Id' IN (SELECT 'GiftcardID' FROM 'GiftCardCheckouts' WHERE 'GiftCardCheckouts.CheckoutID' ...)
-	IsActive      *bool
-	Distinct      bool             // if true, SELECT DISTINCT
-	OrderID       squirrel.Sqlizer // INNER JOIN OrderGiftCards ON OrderGiftCards.GiftcardID = Giftcards.Id WHERE OrderGiftCards.OrderID ...
+	Id                   squirrel.Sqlizer
+	ExpiryDate           squirrel.Sqlizer
+	StartDate            squirrel.Sqlizer
+	Tag                  squirrel.Sqlizer
+	ProductID            squirrel.Sqlizer
+	Code                 squirrel.Sqlizer
+	Currency             squirrel.Sqlizer // value must be uppser-cased
+	CreatedByID          squirrel.Sqlizer
+	UsedByID             squirrel.Sqlizer
+	CheckoutToken        squirrel.Sqlizer // SELECT * FROM 'Giftcards' WHERE 'Id' IN (SELECT 'GiftcardID' FROM 'GiftCardCheckouts' WHERE 'GiftCardCheckouts.CheckoutID' ...)
+	IsActive             squirrel.Sqlizer
+	Distinct             bool             // if true, SELECT DISTINCT
+	OrderID              squirrel.Sqlizer // INNER JOIN OrderGiftCards ON OrderGiftCards.GiftcardID = Giftcards.Id WHERE OrderGiftCards.OrderID ...
+	CurrentBalanceAmount squirrel.Sqlizer
+	InitialBalanceAmount squirrel.Sqlizer
 
 	OrderBy         string
 	SelectForUpdate bool // if true, concat `FOR UPDATE` to the end of SQL queries
@@ -98,7 +102,7 @@ func (gc *GiftCard) PopulateNonDbFields() {
 		Currency: gc.Currency,
 	}
 
-	if gc.CurrentBalanceAmount == nil {
+	if gc.CurrentBalanceAmount == nil || gc.CurrentBalanceAmount.LessThan(decimal.Zero) {
 		gc.CurrentBalanceAmount = &decimal.Zero
 	}
 	gc.CurrentBalance = &goprices.Money{
@@ -144,7 +148,7 @@ func (gc *GiftCard) IsValid() *AppError {
 	if len(gc.Code) > GiftcardCodeMaxLength {
 		return outer("code", &gc.Id)
 	}
-	if unit, err := currency.ParseISO(gc.Currency); err != nil || !strings.EqualFold(unit.String(), gc.Currency) {
+	if _, err := currency.ParseISO(gc.Currency); err != nil {
 		return outer("currency", &gc.Id)
 	}
 
@@ -190,4 +194,27 @@ func (gc *GiftCard) commonPre() {
 
 func (gc *GiftCard) PreUpdate() {
 	gc.commonPre()
+}
+
+// NOTE: If you want co use *InitialBalance* or *CurrentBalance* after DeepCopy,
+// you have to call PopulateNonDbFields() again.
+func (gc *GiftCard) DeepCopy() *GiftCard {
+	return &GiftCard{
+		Id:                   gc.Id,
+		Code:                 gc.Code,
+		CreatedByID:          CopyPointer(gc.CreatedByID),
+		UsedByID:             CopyPointer(gc.UsedByID),
+		CreatedByEmail:       CopyPointer(gc.CreatedByEmail),
+		UsedByEmail:          CopyPointer(gc.UsedByEmail),
+		CreateAt:             gc.CreateAt,
+		StartDate:            CopyPointer(gc.StartDate),
+		ExpiryDate:           CopyPointer(gc.ExpiryDate),
+		Tag:                  CopyPointer(gc.Tag),
+		ProductID:            CopyPointer(gc.ProductID),
+		LastUsedOn:           CopyPointer(gc.LastUsedOn),
+		IsActive:             CopyPointer(gc.IsActive),
+		InitialBalanceAmount: CopyPointer(gc.InitialBalanceAmount),
+		CurrentBalanceAmount: CopyPointer(gc.CurrentBalanceAmount),
+		ModelMetadata:        gc.ModelMetadata.DeepCopy(),
+	}
 }

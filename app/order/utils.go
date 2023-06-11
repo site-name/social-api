@@ -904,7 +904,7 @@ func (s *ServiceOrder) AddGiftcardsToOrder(transaction store_iface.SqlxTxExecuto
 		giftcardsToUpdate = []*model.GiftCard{}
 	)
 
-	giftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(transaction, &model.GiftCardFilterOption{
+	giftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
 		SelectForUpdate: true,
 		CheckoutToken:   squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": checkoutInfo.Checkout.Token},
 	})

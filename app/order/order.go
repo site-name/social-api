@@ -20,14 +20,8 @@ import (
 )
 
 // UpsertOrder depends on given order's Id property to decide update/save it
-func (a *ServiceOrder) UpsertOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order) (*model.Order, *model.AppError) {
-	var err error
-
-	if ord.Id == "" {
-		ord, err = a.srv.Store.Order().Save(transaction, ord)
-	} else {
-		ord, err = a.srv.Store.Order().Update(transaction, ord)
-	}
+func (a *ServiceOrder) UpsertOrder(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, *model.AppError) {
+	orders, err := a.srv.Store.Order().BulkUpsert(transaction, []*model.Order{order})
 
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -40,7 +34,7 @@ func (a *ServiceOrder) UpsertOrder(transaction store_iface.SqlxTxExecutor, ord *
 		return nil, model.NewAppError("UpsertOrder", "app.order.error_upserting_order.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return ord, nil
+	return orders[0], nil
 }
 
 // BulkUpsertOrders performs bulk upsert given orders

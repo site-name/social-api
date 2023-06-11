@@ -122,12 +122,7 @@ func (gcs *SqlGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 }
 
 // FilterByOption finds giftcards wth option
-func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
-	var selector store_iface.SqlxExecutor = gs.GetReplicaX()
-	if transaction != nil {
-		selector = transaction
-	}
-
+func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
 	query := gs.
 		GetQueryBuilder().
 		Select(store.GiftcardTableName + ".").
@@ -140,31 +135,19 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecuto
 		query = query.OrderBy(store.TableOrderingMap[store.GiftcardTableName])
 	}
 
-	// check code
-	if option.Distinct {
-		query = query.Distinct()
+	for _, opt := range []squirrel.Sqlizer{
+		option.Id, option.CreatedByID,
+		option.UsedByID, option.Code,
+		option.Currency, option.ExpiryDate,
+		option.StartDate, option.IsActive,
+		option.Tag, option.ProductID,
+		option.CurrentBalanceAmount, option.InitialBalanceAmount,
+	} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
 	}
-	if option.Id != nil {
-		query = query.Where(option.Id)
-	}
-	if option.CreatedByID != nil {
-		query = query.Where(option.CreatedByID)
-	}
-	if option.UsedByID != nil {
-		query = query.Where(option.UsedByID)
-	}
-	if option.Code != nil {
-		query = query.Where(option.Code)
-	}
-	if option.Currency != nil {
-		query = query.Where(option.Currency)
-	}
-	if option.ExpiryDate != nil {
-		query = query.Where(option.ExpiryDate)
-	}
-	if option.StartDate != nil {
-		query = query.Where(option.StartDate)
-	}
+
 	if option.OrderID != nil {
 		query = query.InnerJoin(store.OrderGiftCardTableName + " ON OrderGiftCards.GiftCardID = GiftCards.Id").
 			Where(option.OrderID)
@@ -175,13 +158,13 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecuto
 			From(store.GiftcardCheckoutTableName).
 			Where(option.CheckoutToken)
 
-		query = query.Where(squirrel.Expr("Id IN ?", subSelect))
-	}
-	if option.IsActive != nil {
-		query = query.Where(squirrel.Eq{"IsActive": *option.IsActive})
+		query = query.Where(squirrel.Expr("GiftCards.Id IN ?", subSelect))
 	}
 	if option.SelectForUpdate {
 		query = query.Suffix("FOR UPDATE")
+	}
+	if option.Distinct {
+		query = query.Distinct()
 	}
 
 	queryString, args, err := query.ToSql()
@@ -190,7 +173,7 @@ func (gs *SqlGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecuto
 	}
 
 	var giftcards []*model.GiftCard
-	err = selector.Select(&giftcards, queryString, args...)
+	err = gs.GetReplicaX().Select(&giftcards, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds giftcards with code")
 	}
@@ -319,7 +302,7 @@ func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, 
 				LIMIT 1
 			)`,
 			orderID,
-			model.BOUGHT,
+			model.GIFT_CARD_EVENT_TYPE_BOUGHT,
 		).
 		ToSql()
 
@@ -348,4 +331,27 @@ func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, 
 	}
 
 	return giftcardIDs, nil
+}
+
+func (s *SqlGiftCardStore) DeleteGiftcards(transaction store_iface.SqlxTxExecutor, ids []string) error {
+	runner := s.GetMasterX()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	query, args, err := s.GetQueryBuilder().Delete(store.GiftcardTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "DeleteGiftcards_ToSql")
+	}
+
+	result, err := runner.Exec(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete gift cards")
+	}
+	numDeleted, _ := result.RowsAffected()
+	if int(numDeleted) != len(ids) {
+		return errors.Errorf("%d gift card(s) was/were deleted instead of %d", numDeleted, len(ids))
+	}
+
+	return nil
 }

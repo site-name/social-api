@@ -941,11 +941,7 @@ func collectionChannelListingByCollectionIdAndChannelSlugLoader(ctx context.Cont
 }
 
 func categoryByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Category] {
-	var (
-		res         = make([]*dataloader.Result[*model.Category], len(ids))
-		categoryMap = map[string]*model.Category{} // keys are category ids
-	)
-
+	res := make([]*dataloader.Result[*model.Category], len(ids))
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	categories, appErr := embedCtx.App.Srv().ProductService().CategoryByIds(ids, true)
@@ -956,7 +952,7 @@ func categoryByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[
 		return res
 	}
 
-	categoryMap = lo.SliceToMap(categories, func(c *model.Category) (string, *model.Category) { return c.Id, c })
+	categoryMap := lo.SliceToMap(categories, func(c *model.Category) (string, *model.Category) { return c.Id, c })
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.Category]{Data: categoryMap[id]}
 	}

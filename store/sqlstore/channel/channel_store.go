@@ -214,3 +214,24 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 
 	return res, nil
 }
+
+func (s *SqlChannelStore) DeleteChannels(transaction store_iface.SqlxTxExecutor, ids []string) error {
+	runner := s.GetMasterX()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	query, args, err := s.GetQueryBuilder().Delete(store.ChannelTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "DeleteChannels_ToSql")
+	}
+	result, err := runner.Exec(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete channels by given ids")
+	}
+	numOfChannelDeleted, _ := result.RowsAffected()
+	if int(numOfChannelDeleted) != len(ids) {
+		return errors.Errorf("%d channel(s) deleted instead of %d", numOfChannelDeleted, len(ids))
+	}
+	return nil
+}

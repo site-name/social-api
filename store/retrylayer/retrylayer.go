@@ -2552,6 +2552,26 @@ func (s *RetryLayerCategoryStore) Upsert(category *model.Category) (*model.Categ
 
 }
 
+func (s *RetryLayerChannelStore) DeleteChannels(transaction store_iface.SqlxTxExecutor, ids []string) error {
+
+	tries := 0
+	for {
+		err := s.ChannelStore.DeleteChannels(transaction, ids)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) {
 
 	tries := 0
@@ -3052,6 +3072,26 @@ func (s *RetryLayerClusterDiscoveryStore) SetLastPingAt(discovery *model.Cluster
 
 }
 
+func (s *RetryLayerCollectionStore) Delete(ids ...string) error {
+
+	tries := 0
+	for {
+		err := s.CollectionStore.Delete(ids...)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerCollectionStore) FilterByOption(option *model.CollectionFilterOption) ([]*model.Collection, error) {
 
 	tries := 0
@@ -3117,6 +3157,26 @@ func (s *RetryLayerCollectionChannelListingStore) FilterByOptions(options *model
 	tries := 0
 	for {
 		result, err := s.CollectionChannelListingStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerCollectionProductStore) BulkSave(transaction store_iface.SqlxTxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
+
+	tries := 0
+	for {
+		result, err := s.CollectionProductStore.BulkSave(transaction, relations)
 		if err == nil {
 			return result, nil
 		}
@@ -4304,11 +4364,31 @@ func (s *RetryLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]st
 
 }
 
-func (s *RetryLayerGiftCardStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
+func (s *RetryLayerGiftCardStore) DeleteGiftcards(transaction store_iface.SqlxTxExecutor, ids []string) error {
 
 	tries := 0
 	for {
-		result, err := s.GiftCardStore.FilterByOption(transaction, option)
+		err := s.GiftCardStore.DeleteGiftcards(transaction, ids)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
+
+	tries := 0
+	for {
+		result, err := s.GiftCardStore.FilterByOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -6352,11 +6432,11 @@ func (s *RetryLayerProductStore) VisibleToUserProductsQuery(channel_SlugOrID str
 
 }
 
-func (s *RetryLayerProductChannelListingStore) BulkUpsert(listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
+func (s *RetryLayerProductChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductChannelListingStore.BulkUpsert(listings)
+		result, err := s.ProductChannelListingStore.BulkUpsert(transaction, listings)
 		if err == nil {
 			return result, nil
 		}
