@@ -57,7 +57,7 @@ func IsSamlFile(saml *SamlSettings, filename string) bool {
 	return filename == *saml.PublicCertificateFile || filename == *saml.PrivateKeyFile || filename == *saml.IdpCertificateFile
 }
 
-type StringInterface map[string]interface{}
+type StringInterface map[string]any
 
 func (s StringInterface) DeepCopy() StringInterface {
 	if s == nil {
@@ -73,12 +73,7 @@ func (s StringInterface) DeepCopy() StringInterface {
 }
 
 // Get trys finding and returns the value associated with given key.
-// If the key does not exist:
-//
-// 1) Checks if there is any default value given, returns the first given
-//
-// 2) returns nil
-func (s StringInterface) Get(key string, defaultValue ...interface{}) interface{} {
+func (s StringInterface) Get(key string, defaultValue ...any) any {
 	if vl, ok := s[key]; ok {
 		return vl
 	}
@@ -98,8 +93,8 @@ func (s StringInterface) Get(key string, defaultValue ...interface{}) interface{
 // 2) returns nil
 //
 // Also delete the key-value from the map if found
-func (s StringInterface) Pop(key string, defaultValue ...interface{}) interface{} {
-	v := s.Get(key, defaultValue...)
+func (s StringInterface) Pop(key string, defaultValue ...any) any {
+	v := s.Get(key)
 	delete(s, key)
 	return v
 }

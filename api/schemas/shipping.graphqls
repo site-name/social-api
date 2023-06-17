@@ -173,12 +173,12 @@ type ShippingMethod  {
   metadata: [MetadataItem]!
   type: ShippingMethodTypeEnum
   translation(languageCode: LanguageCodeEnum!): ShippingMethodTranslation
-  channelListings: [ShippingMethodChannelListing!]!
+  channelListings: [ShippingMethodChannelListing!]! @hasRoleAny(roles: [shop_admin, shop_staff])
   price: Money
   maximumOrderPrice: Money
   minimumOrderPrice: Money
   postalCodeRules: [ShippingMethodPostalCodeRule]!
-  excludedProducts(before: String, after: String, first: Int, last: Int): ProductCountableConnection
+  excludedProducts(before: String, after: String, first: Int, last: Int): ProductCountableConnection @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 type ShippingError {

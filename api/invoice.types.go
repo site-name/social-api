@@ -54,7 +54,10 @@ func invoicesByOrderIDLoader(ctx context.Context, orderIDs []string) []*dataload
 		OrderID: squirrel.Eq{store.InvoiceTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {
-		goto errorLabel
+		for idx := range orderIDs {
+			res[idx] = &dataloader.Result[[]*model.Invoice]{Error: appErr}
+		}
+		return res
 	}
 
 	for _, iv := range invoices {
@@ -66,12 +69,6 @@ func invoicesByOrderIDLoader(ctx context.Context, orderIDs []string) []*dataload
 
 	for idx, id := range orderIDs {
 		res[idx] = &dataloader.Result[[]*model.Invoice]{Data: invoiceMap[id]}
-	}
-	return res
-
-errorLabel:
-	for idx := range orderIDs {
-		res[idx] = &dataloader.Result[[]*model.Invoice]{Error: appErr}
 	}
 	return res
 }

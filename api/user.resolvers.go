@@ -8,7 +8,9 @@ import (
 	"fmt"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -52,24 +54,26 @@ func (r *Resolver) User(ctx context.Context, args struct {
 }) (*User, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	if args.Id == nil && args.Email == nil {
-		embedCtx.SetInvalidParam("args")
+		embedCtx.SetInvalidUrlParam("id, email")
 		return nil, embedCtx.Err
 	}
 	if args.Id != nil && !model.IsValidId(*args.Id) {
-		embedCtx.SetInvalidParam("args.Id")
+		embedCtx.SetInvalidUrlParam("args.Id")
 		return nil, embedCtx.Err
 	}
 	if args.Email != nil && !model.IsValidEmail(*args.Email) {
-		embedCtx.SetInvalidParam("args.Email")
+		embedCtx.SetInvalidUrlParam("args.Email")
 		return nil, embedCtx.Err
 	}
 
 	var user *model.User
 	var appErr *model.AppError
 	if args.Id != nil {
-		user, appErr = r.srv.AccountService().UserById(ctx, *args.Id)
+		user, appErr = embedCtx.App.Srv().AccountService().UserById(ctx, *args.Id)
 	} else {
-		user, appErr = r.srv.AccountService().UserByEmail(*args.Email)
+		user, appErr = embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
+			Email: squirrel.Eq{store.UserTableName + ".Email": *args.Email},
+		})
 	}
 	if appErr != nil {
 		return nil, appErr

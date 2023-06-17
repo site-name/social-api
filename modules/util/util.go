@@ -289,7 +289,8 @@ func (s AnyArray[T]) GetMinMax() MinMax[T] {
 	for _, item := range s {
 		if item < min {
 			min = item
-		} else if item > max {
+		}
+		if item > max {
 			max = item
 		}
 	}

@@ -67,17 +67,13 @@ func (p *ProductVariant) Translation(ctx context.Context, args struct{ LanguageC
 	panic("not implemented")
 }
 
+// NOTE: Refer to ./schemas/product_variant.graphqls for details on directive used.
 func (p *ProductVariant) QuantityOrdered(ctx context.Context) (*int32, error) {
 	panic("not implemented")
 }
 
+// NOTE: Refer to ./schemas/product_variant.graphqls for details on directive used.
 func (p *ProductVariant) DigitalContent(ctx context.Context) (*DigitalContent, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
-		return nil, model.NewAppError("ProductVariant.DigitalContent", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
-	}
-
 	digitalContent, err := DigitalContentsByProductVariantIDLoader.Load(ctx, p.ID)()
 	if err != nil {
 		return nil, err
@@ -85,17 +81,14 @@ func (p *ProductVariant) DigitalContent(ctx context.Context) (*DigitalContent, e
 	return systemDigitalContentToGraphqlDigitalContent(digitalContent), nil
 }
 
+// NOTE: Refer to ./schemas/product_variant.graphqls for details on directive used.
 func (p *ProductVariant) Stocks(ctx context.Context, args struct {
 	Address     *AddressInput
 	CountryCode *CountryCode
 }) ([]*Stock, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionManageProducts, model.PermissionManageOrders) {
-		return nil, model.NewAppError("ProductVariant.Stocks", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
-	}
-
-	if args.Address != nil && args.CountryCode == nil {
+	if args.Address != nil {
 		args.CountryCode = args.Address.Country
 	}
 
@@ -197,8 +190,8 @@ func (p *ProductVariant) Preorder(ctx context.Context) (*PreorderData, error) {
 	return nil, nil
 }
 
+// NOTE: Refer to ./schemas/product_variant.graphqls for details on directive used.
 func (p *ProductVariant) ChannelListings(ctx context.Context) ([]*ProductVariantChannelListing, error) {
-	// TODO: check staff member required
 	variantChannelListings, err := VariantChannelListingByVariantIdLoader.Load(ctx, p.ID)()
 	if err != nil {
 		return nil, err
@@ -259,8 +252,7 @@ func (p *ProductVariant) Pricing(ctx context.Context, args struct{ Address *Addr
 
 	localCurrency := util.GetCurrencyForCountry(countryCode.String())
 
-	panic("not implemented") // NOTE: plugin manager is not complemented
-
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
 	availability, appErr := embedCtx.App.Srv().ProductService().GetVariantAvailability(
 		*p.p,
 		*variantChannelListing,
@@ -269,7 +261,7 @@ func (p *ProductVariant) Pricing(ctx context.Context, args struct{ Address *Addr
 		collections,
 		discountInfos,
 		*channel,
-		nil,
+		pluginMng,
 		countryCode,
 		localCurrency,
 	)
@@ -335,26 +327,20 @@ func (p *ProductVariant) Product(ctx context.Context) (*Product, error) {
 	return SystemProductToGraphqlProduct(product), nil
 }
 
+// NOTE: Refer to ./schemas/product_variant.graphqls for details on directive used.
 func (p *ProductVariant) Revenue(ctx context.Context, args struct{ Period ReportingPeriod }) (*TaxedMoney, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	if embedCtx.CurrentChannelID == "" {
 		return nil, nil
 	}
 
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
-		return nil, model.NewAppError("ProductVariant.Revenue", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
-	}
-
 	channel, err := ChannelByIdLoader.Load(ctx, embedCtx.CurrentChannelID)()
-	if err != nil {
+	if err != nil || channel == nil {
 		return nil, err
-	}
-	if channel == nil {
-		return nil, nil
 	}
 
 	var orderLines model.OrderLines
-	orderLines, err = OrderLinesByVariantIdAndChannelIdLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channelID))()
+	orderLines, err = OrderLinesByVariantIdAndChannelIdLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, channel.Id))()
 	if err != nil {
 		return nil, err
 	}
@@ -391,20 +377,12 @@ type PreorderData struct {
 	EndDate         *DateTime
 }
 
+// NOTE: Refer to ./schemas/product_variant.graphqls for details on directives used.
 func (p *PreorderData) GlobalThreshold(ctx context.Context) (*int32, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
-		return p.globalThreshold, nil
-	}
-
-	return nil, model.NewAppError("GlobalThreshold", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	return p.globalThreshold, nil
 }
 
+// NOTE: Refer to ./schemas/product_variant.graphqls for details on directives used.
 func (p *PreorderData) GlobalSoldUnits(ctx context.Context) (int32, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageProducts) {
-		return p.globalSoldUnits, nil
-	}
-
-	return 0, model.NewAppError("GlobalSoldUnits", ErrorUnauthorized, nil, "you are not allowed to perform this action", http.StatusUnauthorized)
+	return p.globalSoldUnits, nil
 }

@@ -33,9 +33,6 @@ func MinMaxMoneyInMoneySlice(moneys []*goprices.Money) (min *goprices.Money, max
 	if len(moneys) == 0 {
 		return nil, nil
 	}
-	if len(moneys) == 1 {
-		return moneys[0], moneys[0]
-	}
 
 	moneys = lo.Filter(moneys, func(v *goprices.Money, _ int) bool { return v != nil })
 	sort.Slice(moneys, func(i, j int) bool {

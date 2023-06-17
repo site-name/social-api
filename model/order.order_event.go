@@ -107,7 +107,7 @@ type OrderEvent struct {
 	CreateAt int64          `json:"create_at"`
 	Type     OrderEventType `json:"type"`
 	OrderID  string         `json:"order_id"`
-	// To reduce number of type casting, checking steps, below are
+	// To reduce number of type assertion steps, below are
 	// possible keys and their according values TYPES you must follow when storing things into this field:
 	//  "email": string
 	//  "email_type": string
@@ -124,14 +124,37 @@ type OrderEvent struct {
 	//  "related_order_pk": string
 	//  "warehouse": string
 	//  "fulfilled_items": []string // ids of fulfillment lines
-	//  "lines": // could be either: []{"quantity": int, "line_pk": string, "item": string, "discount": map[string]any} OR see field "discount" below for more information
+	//  "lines": []map[string]any{
+	//      "quantity": int,
+	//      "line_pk": string,
+	//      "item": string,
+	//      "discount": map[string]any{ // NOTE: Remember to check nil
+	//        "value": float64,
+	//        "amount_value": float64,
+	//        "currency": string,
+	//        "value_type": string,
+	//        "reason": string,
+	//        "old_value": float64,
+	//        "old_value_type": string,
+	//        "old_amount_value": float64,
+	//      }
+	//    }
 	//  "url": string
 	//  "status": string
 	//  "gateway": string
 	//  "awaiting_fulfillments": []string // ids of fulfillment lines
 	//  "tracking_number": string
 	//  "fulfillment": string
-	//  "discount": map[string]any // items may include: "value": decimal, "amount_value": decimal, "currency": string, "value_type": string, "reason": *string, "old_value": decimal, "old_value_type": string, "old_amount_value": decimal
+	//  "discount": map[string]any{
+	//    "value": string,
+	//    "amount_value": float64,
+	//    "currency": string,
+	//    "value_type": string,
+	//    "reason": string,
+	//    "old_value": float64,
+	//    "old_value_type": string,
+	//    "old_amount_value": float64,
+	//  }
 	Parameters StringInterface `json:"parameters"`
 	UserID     *string         `json:"user_id"`
 }
@@ -168,7 +191,7 @@ func (o *OrderEvent) IsValid() *AppError {
 	if !IsValidId(o.OrderID) {
 		return outer("order_id", &o.Id)
 	}
-	if len(o.Type) > ORDER_EVENT_TYPE_MAX_LENGTH || OrderEventTypeStrings[o.Type] == "" {
+	if !o.Type.IsValid() {
 		return outer("type", &o.Id)
 	}
 

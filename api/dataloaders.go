@@ -113,6 +113,7 @@ var (
 	// NOTE: keys have format of shippingZoneID__channelID
 	ShippingMethodsByShippingZoneIdAndChannelSlugLoader = dataloader.NewBatchedLoader(shippingMethodsByShippingZoneIdAndChannelSlugLoader, dataloader.WithBatchCapacity[string, []*model.ShippingMethod](batchCapacity))
 	ShippingZonesByWarehouseIDLoader                    = dataloader.NewBatchedLoader(shippingZonesByWarehouseIDLoader, dataloader.WithBatchCapacity[string, model.ShippingZones](batchCapacity))
+	ShippingMethodChannelListingsByChannelIdLoader      = dataloader.NewBatchedLoader(shippingMethodChannelListingsByChannelIdLoader, dataloader.WithBatchCapacity[string, model.ShippingMethodChannelListings](batchCapacity))
 
 	// discount
 	DiscountsByDateTimeLoader = dataloader.NewBatchedLoader(discountsByDateTimeLoader, dataloader.WithBatchCapacity[time.Time, []*model.DiscountInfo](batchCapacity))

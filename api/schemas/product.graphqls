@@ -60,14 +60,14 @@ type Product  {
   channel: String
   thumbnail(size: Int): Image
   pricing(address: AddressInput): ProductPricingInfo
-  isAvailable(address: AddressInput): Boolean
+  isAvailable(address: AddressInput): Boolean @authenticated
   taxType: TaxType
   attributes: [SelectedAttribute!]!
-  channelListings: [ProductChannelListing!]!
+  channelListings: [ProductChannelListing!]! @hasPermissionAny(roles: [shop_admin, shop_staff])
   mediaById(id: String!): ProductMedia
   variants: [ProductVariant]!
   media: [ProductMedia!]!
-  collections: [Collection]!
+  collections: [Collection]! @authenticated
   translation(languageCode: LanguageCodeEnum!): ProductTranslation
   availableForPurchase: Date
   isAvailableForPurchase: Boolean

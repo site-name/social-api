@@ -2,11 +2,11 @@ package api
 
 import (
 	"context"
-	"net/http"
 	"strings"
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
@@ -78,19 +78,14 @@ func (s *ShippingMethod) Translation(ctx context.Context, args struct{ LanguageC
 	panic("not implemented")
 }
 
+// NOTE: Refer to ./schemas/shipping.graphqls for details on directives used.
 func (s *ShippingMethod) ChannelListings(ctx context.Context) ([]*ShippingMethodChannelListing, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	if embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionReadShippingMethodChannelListing) {
-		listings, err := ShippingMethodChannelListingByShippingMethodIdLoader.Load(ctx, s.ID)()
-		if err != nil {
-			return nil, err
-		}
-
-		return systemRecordsToGraphql(listings, systemShippingMethodChannelListingToGraphqlShippingMethodChannelListing), nil
+	listings, err := ShippingMethodChannelListingByShippingMethodIdLoader.Load(ctx, s.ID)()
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, model.NewAppError("ShippingMethod.ChannelListings", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
+	return systemRecordsToGraphql(listings, systemShippingMethodChannelListingToGraphqlShippingMethodChannelListing), nil
 }
 
 func (s *ShippingMethod) Price(ctx context.Context) (*Money, error) {
@@ -120,12 +115,12 @@ func (s *ShippingMethod) Price(ctx context.Context) (*Money, error) {
 }
 
 func (s *ShippingMethod) MaximumOrderPrice(ctx context.Context) (*Money, error) {
-	embedChannel := GetContextValue[string](ctx, ChannelIdCtx)
-	if embedChannel == "" {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	if embedCtx.CurrentChannelID == "" {
 		return nil, nil
 	}
 
-	listing, err := ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+embedChannel)()
+	listing, err := ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+embedCtx.CurrentChannelID)()
 	if err != nil {
 		return nil, err
 	}
@@ -140,12 +135,12 @@ func (s *ShippingMethod) MaximumOrderPrice(ctx context.Context) (*Money, error) 
 }
 
 func (s *ShippingMethod) MinimumOrderPrice(ctx context.Context) (*Money, error) {
-	embedChannel := GetContextValue[string](ctx, ChannelIdCtx)
-	if embedChannel == "" {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	if embedCtx.CurrentChannelID == "" {
 		return nil, nil
 	}
 
-	listing, err := ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+embedChannel)()
+	listing, err := ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+embedCtx.CurrentChannelID)()
 	if err != nil {
 		return nil, err
 	}
@@ -177,13 +172,10 @@ func (s *ShippingMethod) PostalCodeRules(ctx context.Context) ([]*ShippingMethod
 	}), nil
 }
 
+// NOTE: Refer to ./schemas/shipping.graphqls for details on directives used.
+//
 // NOTE: products are ordered by their slugs
 func (s *ShippingMethod) ExcludedProducts(ctx context.Context, args GraphqlParams) (*ProductCountableConnection, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionTo(embedCtx.AppContext.Session(), model.PermissionManageShipping) {
-		return nil, model.NewAppError("ShippingMethod.ExcludedProducts", ErrorUnauthorized, nil, "you are not authorized to perform this action", http.StatusUnauthorized)
-	}
-
 	products, err := ExcludedProductByShippingMethodIDLoader.Load(ctx, s.ID)()
 	if err != nil {
 		return nil, err
@@ -245,18 +237,14 @@ func SystemShippingZoneToGraphqlShippingZone(s *model.ShippingZone) *ShippingZon
 
 func (s *ShippingZone) PriceRange(ctx context.Context) (*MoneyRange, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	channelID := GetContextValue[string](ctx, ChannelIdCtx)
 
-	if channelID == "" {
+	if embedCtx.CurrentChannelID == "" {
 		return nil, nil
 	}
 
-	listings, appErr := embedCtx.App.Srv().ShippingService().
-		ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-			ChannelID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": channelID},
-		})
-	if appErr != nil {
-		return nil, appErr
+	listings, err := ShippingMethodChannelListingsByChannelIdLoader.Load(ctx, embedCtx.CurrentChannelID)()
+	if err != nil {
+		return nil, err
 	}
 	if len(listings) == 0 {
 		return nil, nil
@@ -272,13 +260,38 @@ func (s *ShippingZone) PriceRange(ctx context.Context) (*MoneyRange, error) {
 	}), nil
 }
 
+func shippingMethodChannelListingsByChannelIdLoader(ctx context.Context, channelIDs []string) []*dataloader.Result[model.ShippingMethodChannelListings] {
+	res := make([]*dataloader.Result[model.ShippingMethodChannelListings], len(channelIDs))
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	listings, appErr := embedCtx.App.Srv().ShippingService().
+		ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
+			ChannelID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": channelIDs},
+		})
+	if appErr != nil {
+		for idx := range channelIDs {
+			res[idx] = &dataloader.Result[model.ShippingMethodChannelListings]{Error: appErr}
+		}
+		return res
+	}
+
+	listingMap := map[string]model.ShippingMethodChannelListings{}
+	for _, listing := range listings {
+		listingMap[listing.ChannelID] = append(listingMap[listing.ChannelID], listing)
+	}
+	for idx, id := range channelIDs {
+		res[idx] = &dataloader.Result[model.ShippingMethodChannelListings]{Data: listingMap[id]}
+	}
+	return res
+}
+
 func (s *ShippingZone) ShippingMethods(ctx context.Context) ([]*ShippingMethod, error) {
-	channelID := GetContextValue[string](ctx, ChannelIdCtx)
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	var err error
 
 	var shippingMethods []*model.ShippingMethod
-	if model.IsValidId(channelID) {
-		shippingMethods, err = ShippingMethodsByShippingZoneIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+channelID)()
+	if embedCtx.CurrentChannelID != "" {
+		shippingMethods, err = ShippingMethodsByShippingZoneIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+embedCtx.CurrentChannelID)()
 	} else {
 		shippingMethods, err = ShippingMethodsByShippingZoneIdLoader.Load(ctx, s.ID)()
 	}

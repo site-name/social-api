@@ -89,9 +89,13 @@ func (p *Payment) Order(ctx context.Context) (*Order, error) {
 func (p *Payment) Metadata(ctx context.Context) ([]*MetadataItem, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	userRoles := embedCtx.AppContext.Session().GetUserRoles()
-	if !userRoles.Contains(model.ShopStaffRoleId) {
+	requesterIsShopStaff := embedCtx.AppContext.
+		Session().
+		GetUserRoles().
+		InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
+		Len() > 0
 
+	if !requesterIsShopStaff {
 		// TODO: checks if we need a dataloader for this
 		currentUserOwnPayment, err := embedCtx.App.Srv().Store.Payment().PaymentOwnedByUser(embedCtx.AppContext.Session().UserId, p.p.Id)
 		if err != nil {
@@ -99,11 +103,12 @@ func (p *Payment) Metadata(ctx context.Context) ([]*MetadataItem, error) {
 		}
 
 		if currentUserOwnPayment {
-			return MetadataToSlice(p.p.Metadata), nil
+			goto returnLabel
 		}
 		return nil, MakeUnauthorizedError("Payment.Metadata")
 	}
 
+returnLabel:
 	return MetadataToSlice(p.p.Metadata), nil
 }
 

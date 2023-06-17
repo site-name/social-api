@@ -570,7 +570,7 @@ func (o *Order) PaymentStatus(ctx context.Context) (*PaymentChargeStatusEnum, er
 	}
 
 	if len(payments) == 0 {
-		notCharged := PaymentChargeStatusEnumNotCharged
+		notCharged := model.NOT_CHARGED
 		return &notCharged, nil
 	}
 

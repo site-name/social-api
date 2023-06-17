@@ -237,14 +237,12 @@ func (s *Stock) ProductVariant(ctx context.Context) (*ProductVariant, error) {
 func allocationsByStockIDLoader(ctx context.Context, stockIDs []string) []*dataloader.Result[[]*model.Allocation] {
 	var (
 		res            = make([]*dataloader.Result[[]*model.Allocation], len(stockIDs))
-		appErr         *model.AppError
-		allocations    model.Allocations
 		allocationsMap = map[string]model.Allocations{} // keys are stock ids
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	allocations, appErr = embedCtx.App.Srv().WarehouseService().AllocationsByOption(nil, &model.AllocationFilterOption{
+	allocations, appErr := embedCtx.App.Srv().WarehouseService().AllocationsByOption(nil, &model.AllocationFilterOption{
 		StockID: squirrel.Eq{store.AllocationTableName + ".StockID": stockIDs},
 	})
 	if appErr != nil {
@@ -267,14 +265,12 @@ func allocationsByStockIDLoader(ctx context.Context, stockIDs []string) []*datal
 func stocksByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Stock] {
 	var (
 		res      = make([]*dataloader.Result[*model.Stock], len(ids))
-		stocks   model.Stocks
-		appErr   *model.AppError
 		stockMap = map[string]*model.Stock{} // keys are stock ids
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	stocks, appErr = embedCtx.App.Srv().
+	stocks, appErr := embedCtx.App.Srv().
 		WarehouseService().
 		StocksByOption(nil, &model.StockFilterOption{
 			Id:                     squirrel.Eq{store.StockTableName + ".Id": ids},
@@ -352,14 +348,12 @@ func (a *Allocation) Warehouse(ctx context.Context) (*Warehouse, error) {
 func allocationsByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) []*dataloader.Result[[]*model.Allocation] {
 	var (
 		res           = make([]*dataloader.Result[[]*model.Allocation], len(orderLineIDs))
-		appErr        *model.AppError
 		allocationMap = map[string]model.Allocations{}
-		allocations   model.Allocations
 	)
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	allocations, appErr = embedCtx.App.Srv().WarehouseService().AllocationsByOption(nil, &model.AllocationFilterOption{
+	allocations, appErr := embedCtx.App.Srv().WarehouseService().AllocationsByOption(nil, &model.AllocationFilterOption{
 		OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLineIDs},
 	})
 	if appErr != nil {

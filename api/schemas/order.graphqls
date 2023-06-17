@@ -292,7 +292,7 @@ type OrderEvent  {
   id: String!
   date: DateTime
   type: OrderEventsEnum
-  user: User
+  user: User @hasRoleAny(roles: [shop_admin, shop_staff])
   message: String
   email: String
   emailType: OrderEventsEmailsEnum

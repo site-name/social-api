@@ -29,23 +29,23 @@ type ProductVariant  {
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   channel: String
-  channelListings: [ProductVariantChannelListing]!
+  channelListings: [ProductVariantChannelListing]! @hasRoleAny(roles: [shop_admin, shop_staff])
   pricing(address: AddressInput): VariantPricingInfo
   attributes(variantSelection: VariantAttributeScope): [SelectedAttribute!]!
   margin: Int
-  quantityOrdered: Int
-  revenue(period: ReportingPeriod!): TaxedMoney
+  quantityOrdered: Int @hasRoleAny(roles: [shop_admin, shop_staff])
+  revenue(period: ReportingPeriod!): TaxedMoney @hasRoleAny(roles: [shop_admin, shop_staff])
   media: [ProductMedia]!
   translation(languageCode: LanguageCodeEnum!): ProductVariantTranslation
-  digitalContent: DigitalContent
-  stocks(address: AddressInput, countryCode: CountryCode): [Stock]!
+  digitalContent: DigitalContent @hasRoleAny(roles: [shop_admin, shop_staff])
+  stocks(address: AddressInput, countryCode: CountryCode): [Stock]! @hasRoleAny(roles: [shop_admin, shop_staff])
   quantityAvailable(address: AddressInput, countryCode: CountryCode): Int!
   preorder: PreorderData
 }
 
 type PreorderData {
-  globalThreshold: Int
-  globalSoldUnits: Int!
+  globalThreshold: Int @hasRoleAny(roles: [shop_admin, shop_staff])
+  globalSoldUnits: Int! @hasRoleAny(roles: [shop_admin, shop_staff])
   endDate: DateTime
 }
 

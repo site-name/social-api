@@ -455,7 +455,7 @@ func (a *AttributeFilterInput) ToAttributeFilterOption() *model.AttributeFilterO
 		res.Id = squirrel.Eq{store.AttributeTableName + ".Id": a.Ids}
 	}
 	if a.Type != nil && a.Type.IsValid() {
-		res.Type = squirrel.Eq{store.AttributeTableName + ".Type": string(*a.Type)}
+		res.Type = squirrel.Eq{store.AttributeTableName + ".Type": *a.Type}
 	}
 
 	return res
