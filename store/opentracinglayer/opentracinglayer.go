@@ -1162,7 +1162,7 @@ type OpenTracingLayerWishlistItemProductVariantStore struct {
 	Root *OpenTracingLayer
 }
 
-func (s *OpenTracingLayerAddressStore) DeleteAddresses(addressIDs []string) error {
+func (s *OpenTracingLayerAddressStore) DeleteAddresses(transaction store_iface.SqlxTxExecutor, addressIDs []string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.DeleteAddresses")
 	s.Root.Store.SetContext(newCtx)
@@ -1171,7 +1171,7 @@ func (s *OpenTracingLayerAddressStore) DeleteAddresses(addressIDs []string) erro
 	}()
 
 	defer span.Finish()
-	err := s.AddressStore.DeleteAddresses(addressIDs)
+	err := s.AddressStore.DeleteAddresses(transaction, addressIDs)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

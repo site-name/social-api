@@ -45,7 +45,8 @@ type Checkout struct {
 	LanguageCode           LanguageCodeEnum `json:"language_code"`
 	ModelMetadata
 
-	channel *Channel `db:"-"`
+	channel        *Channel `db:"-"`
+	billingAddress *Address `db:"-"`
 }
 
 // CheckoutFilterOption is used for bulding sql queries
@@ -53,12 +54,14 @@ type CheckoutFilterOption struct {
 	Token            squirrel.Sqlizer
 	UserID           squirrel.Sqlizer
 	ChannelID        squirrel.Sqlizer
-	Extra            squirrel.Sqlizer
-	ChannelIsActive  *bool
+	ChannelIsActive  *bool // INNER JOIN Channels ON ... WHERE Channels.IsActive = ?
 	ShippingMethodID squirrel.Sqlizer
 
-	SelectRelatedChannel bool
-	Limit                int // <= 0 means no limit
+	Extra squirrel.Sqlizer
+
+	SelectRelatedChannel        bool // this will populate the field `channel`
+	SelectRelatedBillingAddress bool // this will populate the field 'billingAddress'
+	Limit                       int  // <= 0 means no limit
 }
 
 func (c *Checkout) IsValid() *AppError {
@@ -139,6 +142,14 @@ func (s *Checkout) SetChannel(c *Channel) {
 
 func (s *Checkout) GetChannel() *Channel {
 	return s.channel
+}
+
+func (s *Checkout) SetBilingAddress(addr *Address) {
+	s.billingAddress = addr
+}
+
+func (s *Checkout) GetBilingAddress() *Address {
+	return s.billingAddress
 }
 
 func (c *Checkout) PreSave() {

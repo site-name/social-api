@@ -916,9 +916,9 @@ type (
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(addr *model.Address) []interface{}
 		Upsert(transaction store_iface.SqlxTxExecutor, address *model.Address) (*model.Address, error)
-		Get(addressID string) (*model.Address, error)                               // Get returns an Address with given addressID is exist
-		DeleteAddresses(addressIDs []string) error                                  // DeleteAddress deletes given address and returns an error
-		FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) // FilterByOption finds and returns a list of address(es) filtered by given option
+		Get(addressID string) (*model.Address, error)                                      // Get returns an Address with given addressID is exist
+		DeleteAddresses(transaction store_iface.SqlxTxExecutor, addressIDs []string) error // DeleteAddress deletes given address and returns an error
+		FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error)        // FilterByOption finds and returns a list of address(es) filtered by given option
 	}
 	UserStore interface {
 		ClearCaches()

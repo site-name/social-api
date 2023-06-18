@@ -174,7 +174,7 @@ type AccountService interface {
 	CreateUserWithToken(c *request.Context, user *model.User, token *model.Token) (*model.User, *model.AppError)
 	CustomerEventsByOptions(option *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, *model.AppError)
 	DeactivateMfa(userID string) *model.AppError
-	DeleteAddresses(addressIDs ...string) *model.AppError
+	DeleteAddresses(transaction store_iface.SqlxTxExecutor, addressIDs ...string) *model.AppError
 	DeletePreferences(userID string, preferences model.Preferences) *model.AppError
 	DeleteToken(token *model.Token) *model.AppError
 	DisableUserAccessToken(token *model.UserAccessToken) *model.AppError

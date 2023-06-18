@@ -144,7 +144,7 @@ type CheckoutService interface {
 	// Save shipping address in checkout if changed.
 	//
 	// Remove previously saved address if not connected to any user.
-	ChangeShippingAddressInCheckout(checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
+	ChangeShippingAddressInCheckout(transaction store_iface.SqlxTxExecutor, checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
 	// UpdateCheckoutInfoDeliveryMethod set CheckoutInfo's ShippingMethod to given shippingMethod
 	// and set new value for checkoutInfo's ShippingMethodChannelListings
 	// deliveryMethod must be either *ShippingMethod or *Warehouse or nil
@@ -159,7 +159,7 @@ type CheckoutService interface {
 	BulkCreateCheckoutLines(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, *model.AppError)
 	BulkUpdateCheckoutLines(checkoutLines []*model.CheckoutLine) *model.AppError
 	CalculateCheckoutQuantity(lineInfos []*model.CheckoutLineInfo) (int, *model.AppError)
-	ChangeBillingAddressInCheckout(checkout *model.Checkout, address *model.Address) *model.AppError
+	ChangeBillingAddressInCheckout(transaction store_iface.SqlxTxExecutor, checkout *model.Checkout, address *model.Address) *model.AppError
 	CheckoutCountry(ckout *model.Checkout) (model.CountryCode, *model.AppError)
 	CheckoutLineWithVariant(checkout *model.Checkout, productVariantID string) (*model.CheckoutLine, *model.AppError)
 	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model.AppError)

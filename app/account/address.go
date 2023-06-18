@@ -63,8 +63,8 @@ func (a *ServiceAccount) AddressDeleteForUser(userID, addressID string) *model.A
 	return nil
 }
 
-func (a *ServiceAccount) DeleteAddresses(addressIDs ...string) *model.AppError {
-	err := a.srv.Store.Address().DeleteAddresses(addressIDs)
+func (a *ServiceAccount) DeleteAddresses(transaction store_iface.SqlxTxExecutor, addressIDs ...string) *model.AppError {
+	err := a.srv.Store.Address().DeleteAddresses(transaction, addressIDs)
 	if err != nil {
 		return model.NewAppError("DeleteAddresses", "app.model.error_deleting_addresses", nil, err.Error(), http.StatusInternalServerError)
 	}

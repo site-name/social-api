@@ -6,8 +6,13 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
 
+	"github.com/Masterminds/squirrel"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/web"
 )
 
 func (r *Resolver) CheckoutAddPromoCode(ctx context.Context, args struct {
@@ -22,7 +27,60 @@ func (r *Resolver) CheckoutBillingAddressUpdate(ctx context.Context, args struct
 	BillingAddress AddressInput
 	Token          string
 }) (*CheckoutBillingAddressUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	if !model.IsValidId(args.Token) {
+		return nil, model.NewAppError("CheckoutBillingAddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
+	}
+	if appErr := args.BillingAddress.Validate(); appErr != nil {
+		return nil, appErr
+	}
+
+	// get checkout
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	checkout, appErr := embedCtx.App.Srv().CheckoutService().CheckoutByOption(&model.CheckoutFilterOption{
+		Token:                       squirrel.Eq{store.CheckoutTableName + ".Token": args.Token},
+		SelectRelatedBillingAddress: true, // this explain below
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	billingAddress := checkout.GetBilingAddress().DeepCopy()
+	args.BillingAddress.PatchAddress(billingAddress)
+
+	// update billing address
+	// create transaction
+	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	if err != nil {
+		return nil, model.NewAppError("CheckoutBillingAddressUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer store.FinalizeTransaction(transaction)
+
+	billingAddress, appErr = embedCtx.App.Srv().AccountService().UpsertAddress(transaction, billingAddress)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	appErr = embedCtx.App.Srv().CheckoutService().ChangeBillingAddressInCheckout(transaction, checkout, billingAddress)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	_, appErr = pluginMng.CheckoutUpdated(*checkout)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit transaction
+	err = transaction.Commit()
+	if err != nil {
+		return nil, model.NewAppError("CheckoutBillingAddressUpdate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &CheckoutBillingAddressUpdate{
+		Checkout: SystemCheckoutToGraphqlCheckout(checkout),
+	}, nil
 }
 
 func (r *Resolver) CheckoutComplete(ctx context.Context, args struct {

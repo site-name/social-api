@@ -1161,10 +1161,10 @@ type TimerLayerWishlistItemProductVariantStore struct {
 	Root *TimerLayer
 }
 
-func (s *TimerLayerAddressStore) DeleteAddresses(addressIDs []string) error {
+func (s *TimerLayerAddressStore) DeleteAddresses(transaction store_iface.SqlxTxExecutor, addressIDs []string) error {
 	start := timemodule.Now()
 
-	err := s.AddressStore.DeleteAddresses(addressIDs)
+	err := s.AddressStore.DeleteAddresses(transaction, addressIDs)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

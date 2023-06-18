@@ -1172,11 +1172,11 @@ func isRepeatableError(err error) bool {
 	return false
 }
 
-func (s *RetryLayerAddressStore) DeleteAddresses(addressIDs []string) error {
+func (s *RetryLayerAddressStore) DeleteAddresses(transaction store_iface.SqlxTxExecutor, addressIDs []string) error {
 
 	tries := 0
 	for {
-		err := s.AddressStore.DeleteAddresses(addressIDs)
+		err := s.AddressStore.DeleteAddresses(transaction, addressIDs)
 		if err == nil {
 			return nil
 		}

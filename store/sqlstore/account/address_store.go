@@ -5,6 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -179,16 +180,16 @@ func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]
 	return res, nil
 }
 
-func (as *SqlAddressStore) DeleteAddresses(addressIDs []string) error {
-	query, args, err := as.GetQueryBuilder().
-		Delete("*").
-		From(store.AddressTableName).
-		Where(squirrel.Eq{store.AddressTableName + ".Id": addressIDs}).ToSql()
-	if err != nil {
-		return errors.Wrap(err, "DeleteAddresses_ToSql")
+func (as *SqlAddressStore) DeleteAddresses(transaction store_iface.SqlxTxExecutor, addressIDs []string) error {
+	runner := as.GetMasterX()
+	if transaction != nil {
+		runner = transaction
 	}
 
-	result, err := as.GetMasterX().Exec(query, args...)
+	query := "DELETE FROM " + store.AddressTableName + " WHERE Id IN (" + squirrel.Placeholders(len(addressIDs)) + ")"
+	args := lo.Map[string, any](addressIDs, func(item string, _ int) any { return item })
+
+	result, err := runner.Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete addresses")
 	}

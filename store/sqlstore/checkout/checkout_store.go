@@ -171,12 +171,14 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *model.CheckoutFilte
 		if option.SelectRelatedChannel {
 			selectFields = append(selectFields, cs.Channel().ModelFields(store.ChannelTableName+".")...)
 		}
+		if option.SelectRelatedBillingAddress {
+			selectFields = append(selectFields, cs.Address().ModelFields(store.AddressTableName+".")...)
+		}
 
 		query := cs.GetQueryBuilder().
 			Select(selectFields...).
 			From(store.CheckoutTableName).
-			Where(andCondition).
-			OrderBy(store.TableOrderingMap[store.CheckoutTableName])
+			Where(andCondition)
 
 		if option.SelectRelatedChannel || option.ChannelIsActive != nil {
 			query = query.InnerJoin(store.ChannelTableName + " ON Checkouts.ChannelID = Channels.Id")
@@ -197,12 +199,16 @@ func (cs *SqlCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*mo
 	option.Limit = 0 // no limit
 
 	var (
-		res        model.Checkout
-		channel    model.Channel
-		scanFields = cs.ScanFields(&res)
+		res            model.Checkout
+		channel        model.Channel
+		billingAddress model.Address
+		scanFields     = cs.ScanFields(&res)
 	)
 	if option.SelectRelatedChannel {
 		scanFields = append(scanFields, cs.Channel().ScanFields(&channel)...)
+	}
+	if option.SelectRelatedBillingAddress {
+		scanFields = append(scanFields, cs.Address().ScanFields(&billingAddress)...)
 	}
 
 	query, args, err := cs.commonFilterQueryBuilder(option, slect).(squirrel.SelectBuilder).ToSql()
@@ -221,6 +227,9 @@ func (cs *SqlCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*mo
 	if option.SelectRelatedChannel {
 		res.SetChannel(&channel)
 	}
+	if option.SelectRelatedBillingAddress {
+		res.SetBilingAddress(&billingAddress)
+	}
 
 	return &res, nil
 }
@@ -237,26 +246,34 @@ func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (
 		return nil, errors.Wrap(err, "failed to find checkouts with given options")
 	}
 
-	var (
-		res        []*model.Checkout
-		checkOut   model.Checkout
-		aChannel   model.Channel
-		scanFields = cs.ScanFields(&checkOut)
-	)
-	if option.SelectRelatedChannel {
-		scanFields = append(scanFields, cs.Channel().ScanFields(&aChannel)...)
-	}
+	var res []*model.Checkout
 
 	for rows.Next() {
+		var (
+			checkout       model.Checkout
+			channel        model.Channel
+			billingAddress model.Address
+			scanFields     = cs.ScanFields(&checkout)
+		)
+		if option.SelectRelatedChannel {
+			scanFields = append(scanFields, cs.Channel().ScanFields(&channel)...)
+		}
+		if option.SelectRelatedBillingAddress {
+			scanFields = append(scanFields, cs.Address().ScanFields(&billingAddress)...)
+		}
+
 		if err := rows.Scan(scanFields...); err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row of checkout")
 		}
 
 		if option.SelectRelatedChannel {
-			checkOut.SetChannel(&aChannel)
+			checkout.SetChannel(&channel)
+		}
+		if option.SelectRelatedBillingAddress {
+			checkout.SetBilingAddress(&billingAddress)
 		}
 
-		res = append(res, checkOut.DeepCopy())
+		res = append(res, &checkout)
 	}
 
 	if err := rows.Close(); err != nil {

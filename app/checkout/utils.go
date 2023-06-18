@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
@@ -15,6 +16,7 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // CheckVariantInStock
@@ -269,52 +271,30 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkout *model.Checkout, varian
 
 // checkNewCheckoutAddress Check if and address in checkout has changed and if to remove old one
 func (a *ServiceCheckout) checkNewCheckoutAddress(checkout *model.Checkout, address *model.Address, addressType model.AddressTypeEnum) (bool, bool, *model.AppError) {
-	// validate if non-nill checkout was provided
-	var invalidArguments string
-	if checkout == nil {
-		invalidArguments = "checkout"
-	}
-	if invalidArguments != "" {
-		return false, false, model.NewAppError("checkNewCheckoutAddress", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": invalidArguments}, "", http.StatusBadRequest)
-	}
-
 	oldAddressId := checkout.ShippingAddressID
 	if addressType == model.ADDRESS_TYPE_BILLING {
 		oldAddressId = checkout.BillingAddressID
 	}
 
-	hasAddressChanged := (address == nil || oldAddressId != nil) ||
+	hasAddressChanged := (address == nil && oldAddressId != nil) ||
 		(address != nil && oldAddressId == nil) ||
 		(address != nil && oldAddressId != nil && address.Id != *oldAddressId)
 
-	if oldAddressId == nil {
-		return hasAddressChanged, false, nil
-	} else {
-		if checkout.UserID == nil {
-			return hasAddressChanged, hasAddressChanged, nil
-		} else {
-			var oldAddressNOTbelongToCheckoutUser bool
-			addressesOfCheckoutUser, appErr := a.srv.AccountService().AddressesByUserId(*checkout.UserID)
-			if appErr != nil {
-				if appErr.StatusCode == http.StatusNotFound { // user owns 0 address
-					oldAddressNOTbelongToCheckoutUser = true
-				}
-				return false, false, appErr // must returns since this is system's error
-			} else {
-				oldAddressNOTbelongToCheckoutUser = true
-				for _, addr := range addressesOfCheckoutUser {
-					if *oldAddressId == addr.Id {
-						oldAddressNOTbelongToCheckoutUser = false
-						break
-					}
-				}
-			}
-			return hasAddressChanged, hasAddressChanged && oldAddressNOTbelongToCheckoutUser, nil
-		}
+	removeOldAddress := hasAddressChanged && oldAddressId != nil
+	if checkout.UserID == nil {
+		return hasAddressChanged, removeOldAddress, nil
 	}
+
+	addresses, appErr := a.srv.AccountService().AddressesByUserId(*checkout.UserID)
+	if appErr != nil {
+		return false, false, appErr
+	}
+
+	removeOldAddress = removeOldAddress && !lo.SomeBy(addresses, func(addr *model.Address) bool { return addr.Id == *oldAddressId })
+	return hasAddressChanged, removeOldAddress, nil
 }
 
-func (a *ServiceCheckout) ChangeBillingAddressInCheckout(checkout *model.Checkout, address *model.Address) *model.AppError {
+func (a *ServiceCheckout) ChangeBillingAddressInCheckout(transaction store_iface.SqlxTxExecutor, checkout *model.Checkout, address *model.Address) *model.AppError {
 	changed, remove, appErr := a.checkNewCheckoutAddress(checkout, address, model.ADDRESS_TYPE_BILLING)
 	if appErr != nil {
 		return appErr
@@ -322,13 +302,13 @@ func (a *ServiceCheckout) ChangeBillingAddressInCheckout(checkout *model.Checkou
 
 	if changed {
 		if remove {
-			appErr = a.srv.AccountService().DeleteAddresses(*checkout.BillingAddressID)
+			appErr = a.srv.AccountService().DeleteAddresses(transaction, *checkout.BillingAddressID)
 			if appErr != nil {
 				return appErr
 			}
 		}
 		checkout.BillingAddressID = &address.Id
-		_, appErr = a.UpsertCheckouts(nil, []*model.Checkout{checkout})
+		_, appErr = a.UpsertCheckouts(transaction, []*model.Checkout{checkout})
 		if appErr != nil {
 			return appErr
 		}
@@ -340,7 +320,7 @@ func (a *ServiceCheckout) ChangeBillingAddressInCheckout(checkout *model.Checkou
 // Save shipping address in checkout if changed.
 //
 // Remove previously saved address if not connected to any user.
-func (a *ServiceCheckout) ChangeShippingAddressInCheckout(checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError {
+func (a *ServiceCheckout) ChangeShippingAddressInCheckout(transaction store_iface.SqlxTxExecutor, checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError {
 	checkout := checkoutInfo.Checkout
 	changed, remove, appErr := a.checkNewCheckoutAddress(&checkout, address, model.ADDRESS_TYPE_SHIPPING)
 	if appErr != nil {
@@ -349,7 +329,7 @@ func (a *ServiceCheckout) ChangeShippingAddressInCheckout(checkoutInfo model.Che
 
 	if changed {
 		if remove && checkout.ShippingAddressID != nil {
-			appErr = a.srv.AccountService().DeleteAddresses(*checkout.ShippingAddressID)
+			appErr = a.srv.AccountService().DeleteAddresses(transaction, *checkout.ShippingAddressID)
 			if appErr != nil {
 				return appErr
 			}
@@ -360,7 +340,7 @@ func (a *ServiceCheckout) ChangeShippingAddressInCheckout(checkoutInfo model.Che
 		if appErr != nil {
 			return appErr
 		}
-		_, appErr = a.UpsertCheckouts(nil, []*model.Checkout{&checkout})
+		_, appErr = a.UpsertCheckouts(transaction, []*model.Checkout{&checkout})
 		if appErr != nil {
 			return appErr
 		}
