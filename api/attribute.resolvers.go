@@ -438,9 +438,9 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 }
 
 func (r *Resolver) Attributes(ctx context.Context, args struct {
-	Filter     *AttributeFilterInput
-	SortBy     *AttributeSortingInput
-	ChanelSlug *string
+	Filter    *AttributeFilterInput
+	SortBy    *AttributeSortingInput
+	ChannelID *string
 	GraphqlParams
 }) (*AttributeCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))

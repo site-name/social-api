@@ -94,9 +94,3 @@ type OrderLineDiscountRemove {
   order: Order
   errors: [OrderError!]!
 }
-
-type Allocation  {
-  id: String!
-  quantity: Int!
-  warehouse: Warehouse!
-}

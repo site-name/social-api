@@ -157,14 +157,14 @@ type AttributeFilterOption struct {
 	FilterableInDashboard  *bool
 	AvailableInGrid        *bool
 	Metadata               StringMAP
-	Search                 *string // Slug or Name ILIKE ...
+	Search                 string // Slug or Name ILIKE ...
 	InCollection           *string
 	InCategory             *string
 	Channel                *string // channel id or slug in which attributes reside
 
-	OrderBy                        string
-	Distinct                       bool
-	UserHasOneOfProductPermissions *bool
+	OrderBy         string
+	Distinct        bool
+	UserIsShopStaff bool // user has role 'shop_admin' or 'shop_staff'
 
 	Extra squirrel.Sqlizer
 

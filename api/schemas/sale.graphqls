@@ -27,7 +27,7 @@ type Sale  {
   products(before: String, after: String, first: Int, last: Int): ProductCountableConnection
   variants(before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
   translation(languageCode: LanguageCodeEnum!): SaleTranslation
-  channelListings: [SaleChannelListing!]!
+  channelListings: [SaleChannelListing!]! @hasRoleAny(roles: [shop_admin, shop_staff])
   discountValue: Float
   currency: String
 }

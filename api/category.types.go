@@ -98,7 +98,7 @@ func (c *Category) Products(ctx context.Context, args struct {
 	GraphqlParams
 }) (*ProductCountableConnection, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasRoles("Category.Products", model.ShopStaffRoleId)
+	embedCtx.CheckAuthenticatedAndHasRoleAny("Category.Products", model.ShopStaffRoleId, model.ShopAdminRoleId)
 	userCanSeeAllProducts := embedCtx.Err == nil
 
 	// validate user input params

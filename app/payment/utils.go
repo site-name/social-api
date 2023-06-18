@@ -594,8 +594,8 @@ func (a *ServicePayment) UpdatePaymentMethodDetails(payMent model.Payment, payme
 	if exprMonth := paymentMethodInfo.ExpMonth; exprMonth != nil {
 		payMent.CcExpMonth = exprMonth
 	}
-	if type_ := paymentMethodInfo.Type; type_ != nil {
-		payMent.PaymentMethodType = *type_
+	if paymentType := paymentMethodInfo.Type; paymentType != nil {
+		payMent.PaymentMethodType = *paymentType
 	}
 
 	return

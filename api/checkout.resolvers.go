@@ -17,9 +17,10 @@ func (r *Resolver) CheckoutAddPromoCode(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/checkout.graphqls for details on directives used.
 func (r *Resolver) CheckoutBillingAddressUpdate(ctx context.Context, args struct {
 	BillingAddress AddressInput
-	Token          *string
+	Token          string
 }) (*CheckoutBillingAddressUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }

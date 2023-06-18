@@ -141,13 +141,8 @@ func (v *Sale) Currency(ctx context.Context) (*string, error) {
 	return &saleChannelListing.Currency, nil
 }
 
+// NOTE: Refer to ./schemas/sale.graphqls for details on directives used.
 func (v *Sale) ChannelListings(ctx context.Context) ([]*SaleChannelListing, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionReadSaleChannelListing)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
 	listings, err := SaleChannelListingBySaleIdLoader.Load(ctx, v.ID)()
 	if err != nil {
 		return nil, err

@@ -118,9 +118,12 @@ func SystemOrderEventToGraphqlOrderEvent(o *model.OrderEvent) *OrderEvent {
 		email = model.NewPrimitive(em.(string))
 	}
 
-	var emailType OrderEventsEmailsEnum
+	var emailType *OrderEventsEmailsEnum
 	if et, ok := o.Parameters["email_type"]; ok && et != nil {
-		emailType = OrderEventsEmailsEnum(strings.ToUpper(et.(string)))
+		mailType := OrderEventsEmailsEnum(strings.ToUpper(et.(string)))
+		if mailType.IsValid() {
+			emailType = &mailType
+		}
 	}
 
 	var amount *float64
@@ -177,7 +180,7 @@ func SystemOrderEventToGraphqlOrderEvent(o *model.OrderEvent) *OrderEvent {
 	res := &OrderEvent{
 		ID:                    o.Id,
 		Email:                 email,
-		EmailType:             &emailType,
+		EmailType:             emailType,
 		Amount:                amount,
 		PaymentID:             paymentID,
 		PaymentGateway:        paymentGateway,

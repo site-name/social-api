@@ -1,6 +1,6 @@
 extend type Mutation {
   checkoutAddPromoCode(promoCode: String!, token: String): CheckoutAddPromoCode
-  checkoutBillingAddressUpdate(billingAddress: AddressInput!, token: String): CheckoutBillingAddressUpdate
+  checkoutBillingAddressUpdate(billingAddress: AddressInput!, token: String!): CheckoutBillingAddressUpdate @authenticated
   checkoutComplete(paymentData: JSONString!, redirectUrl: String, storeSource: Boolean, token: String): CheckoutComplete
   checkoutCreate(input: CheckoutCreateInput!): CheckoutCreate
   checkoutCustomerAttach(customerId: String, token: String): CheckoutCustomerAttach

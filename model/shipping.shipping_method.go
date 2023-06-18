@@ -52,7 +52,7 @@ type ShippingMethod struct {
 
 	shippingZones                 ShippingZones                 `db:"-"` // this field is used for holding prefetched related instances
 	shippingMethodPostalCodeRules ShippingMethodPostalCodeRules `db:"-"` // this field is used for holding prefetched related instances
-	price                         *goprices.Money               // this field is populated in some graphql resolvers
+	price                         *goprices.Money               `db:"-"` // this field is populated in some graphql resolvers
 }
 
 func (s *ShippingMethod) GetPrice() *goprices.Money {

@@ -298,7 +298,7 @@ func (s AnyArray[T]) GetMinMax() MinMax[T] {
 	return MinMax[T]{min, max}
 }
 
-func (s AnyArray[T]) InterSection(other []T) AnyArray[T] {
+func (s AnyArray[T]) InterSection(others ...T) AnyArray[T] {
 	var res AnyArray[T]
 	meetMap := map[T]struct{}{}
 
@@ -306,7 +306,7 @@ func (s AnyArray[T]) InterSection(other []T) AnyArray[T] {
 		meetMap[item] = struct{}{}
 	}
 
-	for _, item := range other {
+	for _, item := range others {
 		_, ok := meetMap[item]
 		if ok {
 			res = append(res, item)

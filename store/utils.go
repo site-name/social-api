@@ -3,12 +3,14 @@ package store
 import (
 	"database/sql"
 	"database/sql/driver"
+	"reflect"
 	"strconv"
 	"strings"
 	"unicode"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/util"
 )
 
 var escapeLikeSearchChar = []string{
@@ -109,4 +111,72 @@ func SqlizerIsEqualNull(expr squirrel.Sqlizer) bool {
 	}
 
 	return false
+}
+
+// Eg:
+//
+//	type Extra struct {
+//	  Embed string
+//	}
+//	type Person struct {
+//	  Name string
+//	  Private string `db:"-"`
+//	  unExported int
+//	  Extra
+//	}
+//
+//	p := &Person{}
+//	ExtractModelFieldPointers(p) == []any{&p.Name, &p.Embed}
+func ExtractModelFieldPointers(modelPointer any) []any {
+	valueOf := reflect.ValueOf(modelPointer)
+
+	if valueOf.Kind() != reflect.Pointer || valueOf.Elem().Kind() != reflect.Struct {
+		panic("obj must be a pointer to a struct model")
+	}
+
+	res := []any{}
+	for _, fieldName := range ExtractModelFieldNames(valueOf.Elem().Interface()) {
+		fieldPointer := valueOf.Elem().FieldByName(fieldName).Addr().Interface()
+		res = append(res, fieldPointer)
+	}
+
+	return res
+}
+
+// Eg:
+//
+//	type Extra struct {
+//	  Embed string
+//	}
+//	type Person struct {
+//	  Name string
+//	  Private string `db:"-"`
+//	  unExported int
+//	  Extra
+//	}
+//
+//	ExtractModelFieldNames(Person{}) == []string{"Name", "Embed"}
+func ExtractModelFieldNames(model any) util.AnyArray[string] {
+	res := []string{}
+	valueOf := reflect.ValueOf(model)
+	typeOf := reflect.TypeOf(model)
+
+	for i := 0; i < valueOf.NumField(); i++ {
+		fieldTypeAtIdx := typeOf.Field(i)
+
+		switch {
+		case !fieldTypeAtIdx.IsExported() ||
+			fieldTypeAtIdx.Tag.Get("db") == "-":
+			continue
+
+		case fieldTypeAtIdx.Type.Kind() == reflect.Struct:
+			fieldValueAtIdx := valueOf.Field(i)
+			res = append(res, ExtractModelFieldNames(fieldValueAtIdx.Interface())...)
+
+		default:
+			res = append(res, fieldTypeAtIdx.Name)
+		}
+	}
+
+	return res
 }

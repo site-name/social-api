@@ -32,10 +32,10 @@ type Order  {
   id: String!
   created: DateTime!
   status: OrderStatus!
-  user: User
+  user: User @hasRoleAny(roles: [shop_admin, shop_staff])
   trackingClientId: String!
-  billingAddress: Address
-  shippingAddress: Address
+  billingAddress: Address @authenticated
+  shippingAddress: Address @authenticated
   shippingMethodName: String
   collectionPointName: String
   channel: Channel!
@@ -50,12 +50,12 @@ type Order  {
   redirectUrl: String
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
-  fulfillments: [Fulfillment]!
+  fulfillments: [Fulfillment]! @hasRoles(roles: [shop_staff])
   lines: [OrderLine]!
   actions: [OrderAction!]!
   availableShippingMethods: [ShippingMethod]!
   availableCollectionPoints: [Warehouse!]!
-  invoices: [Invoice]!
+  invoices: [Invoice]! @authenticated
   number: String
   original: String
   origin: OrderOriginEnum!
@@ -70,9 +70,9 @@ type Order  {
   canFinalize: Boolean! 
   totalAuthorized: Money!
   totalCaptured: Money!
-  events: [OrderEvent]!
+  events: [OrderEvent]! @hasRoleAny(roles: [shop_admin, shop_staff])
   totalBalance: Money!
-  userEmail: String
+  userEmail: String @authenticated
   isShippingRequired: Boolean!
   deliveryMethod: DeliveryMethod
   languageCodeEnum: LanguageCodeEnum!

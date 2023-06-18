@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/base64"
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -364,17 +365,17 @@ func (o *Order) StatusDisplay(ctx context.Context) (*string, error) {
 	panic("not implemented")
 }
 
+// NOTE: Refer to ./schemas/order.graphqls for details on directives used.
 func (o *Order) BillingAddress(ctx context.Context) (*Address, error) {
-	// requester must be owner of order or is staff of the shop to which current order is placed
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 	var currentSession = embedCtx.AppContext.Session()
 
+	// requester must be owner of this order or is shop staff to see
 	canSeeBillingAddress := (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
-		currentSession.GetUserRoles().Contains(model.ShopStaffRoleId)
+		currentSession.
+			GetUserRoles().
+			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			Len() > 0
 
 	if canSeeBillingAddress {
 		address, err := AddressByIdLoader.Load(ctx, *o.order.BillingAddressID)()
@@ -387,17 +388,17 @@ func (o *Order) BillingAddress(ctx context.Context) (*Address, error) {
 	return nil, MakeUnauthorizedError("Order.BillingAddress")
 }
 
+// NOTE: Refer to ./schemas/order.graphqls for details on directives used.
 func (o *Order) ShippingAddress(ctx context.Context) (*Address, error) {
-	// requester must be owner of order or is staff of the shop to which current order is placed
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 	var currentSession = embedCtx.AppContext.Session()
 
+	// requester must be owner of this order or is shop staff to see
 	canSeeShippingAddress := (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
-		embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId)
+		currentSession.
+			GetUserRoles().
+			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			Len() > 0
 
 	if canSeeShippingAddress {
 		address, err := AddressByIdLoader.Load(ctx, *o.order.ShippingAddressID)()
@@ -412,7 +413,7 @@ func (o *Order) ShippingAddress(ctx context.Context) (*Address, error) {
 
 func (o *Order) Actions(ctx context.Context) ([]OrderAction, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	orderSrv := embedCtx.App.Srv().OrderService()
+	orderService := embedCtx.App.Srv().OrderService()
 
 	payments, err := PaymentsByOrderIdLoader.Load(ctx, o.ID)()
 	if err != nil {
@@ -422,7 +423,7 @@ func (o *Order) Actions(ctx context.Context) ([]OrderAction, error) {
 	actions := []OrderAction{}
 	lastPayment := embedCtx.App.Srv().PaymentService().GetLastpayment(payments)
 
-	ok, appErr := orderSrv.OrderCanCapture(o.order, lastPayment)
+	ok, appErr := orderService.OrderCanCapture(o.order, lastPayment)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -430,7 +431,7 @@ func (o *Order) Actions(ctx context.Context) ([]OrderAction, error) {
 		actions = append(actions, OrderActionCapture)
 	}
 
-	ok, appErr = orderSrv.CanMarkOrderAsPaid(o.order, payments)
+	ok, appErr = orderService.CanMarkOrderAsPaid(o.order, payments)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -438,7 +439,7 @@ func (o *Order) Actions(ctx context.Context) ([]OrderAction, error) {
 		actions = append(actions, OrderActionMarkAsPaid)
 	}
 
-	ok, appErr = orderSrv.OrderCanRefund(o.order, lastPayment)
+	ok, appErr = orderService.OrderCanRefund(o.order, lastPayment)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -446,7 +447,7 @@ func (o *Order) Actions(ctx context.Context) ([]OrderAction, error) {
 		actions = append(actions, OrderActionRefund)
 	}
 
-	ok, appErr = orderSrv.OrderCanVoid(o.order, lastPayment)
+	ok, appErr = orderService.OrderCanVoid(o.order, lastPayment)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -520,21 +521,12 @@ func (o *Order) TotalAuthorized(ctx context.Context) (*Money, error) {
 	return SystemMoneyToGraphqlMoney(money), nil
 }
 
+// NOTE: Refer to ./schemas/order.graphqls for details on directives used.
 func (o *Order) Fulfillments(ctx context.Context) ([]*Fulfillment, error) {
-	// requester must be staff of current shop
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
 	fulfillments, err := FulfillmentsByOrderIdLoader.Load(ctx, o.order.Id)()
 	if err != nil {
 		return nil, err
 	}
-	/*
-		TODO: https://github.com/site-name/social-api/issues/11
-	*/
 
 	return systemRecordsToGraphql(fulfillments, SystemFulfillmentToGraphqlFulfillment), nil
 }
@@ -548,13 +540,8 @@ func (o *Order) Lines(ctx context.Context) ([]*OrderLine, error) {
 	return systemRecordsToGraphql(lines, SystemOrderLineToGraphqlOrderLine), nil
 }
 
+// NOTE: Refer to ./schemas/order.graphqls for details on directives used.
 func (o *Order) Events(ctx context.Context) ([]*OrderEvent, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasRoles("Order.Events", model.ShopStaffRoleId)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
 	events, err := OrderEventsByOrderIdLoader.Load(ctx, o.ID)()
 	if err != nil {
 		return nil, err
@@ -618,31 +605,26 @@ func (o *Order) CanFinalize(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
+// NOTE: Refer to ./schemas/order.graphqls for details on directives used.
 func (o *Order) UserEmail(ctx context.Context) (*string, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
 	var currentSession = embedCtx.AppContext.Session()
 
+	// shop staff or owner of current order can see this field
 	if (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
-		currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
+		currentSession.
+			GetUserRoles().
+			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			Len() > 0 {
 
 		return &o.order.UserEmail, nil
 	}
 
-	return model.NewPrimitive(util.ObfuscateEmail(o.order.UserEmail)), nil
+	return nil, nil
 }
 
+// NOTE: Refer to ./schemas/order.graphqls for details on directives used.
 func (o *Order) User(ctx context.Context) (*User, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasRoles("Order.User", model.ShopStaffRoleId)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
 	if o.order.UserID == nil {
 		return nil, nil
 	}
@@ -677,19 +659,57 @@ func (o *Order) DeliveryMethod(ctx context.Context) (DeliveryMethod, error) {
 }
 
 func (o *Order) AvailableShippingMethods(ctx context.Context) ([]*ShippingMethod, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	// NOTE:
+	// For now we don't proceed with orders that have no shipping address
+	if o.order.ShippingAddressID == nil {
+		return nil, model.NewAppError("Order.AvaiableShippingMethods", "app.order.order_has_no_shipping_address.app_error", nil, "please set shipping address for order first", http.StatusNotAcceptable)
+	}
 
-	methods, appErr := embedCtx.App.Srv().OrderService().GetValidShippingMethodsForOrder(o.order)
-	if appErr != nil {
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	if embedCtx.CurrentChannelID == "" {
+		embedCtx.SetInvalidUrlParam("channel_id")
+		return nil, embedCtx.Err
+	}
+
+	available, appErr := embedCtx.App.Srv().OrderService().GetValidShippingMethodsForOrder(o.order)
+	if appErr != nil || len(available) == 0 {
 		return nil, appErr
 	}
 
-	if len(methods) == 0 {
-		return []*ShippingMethod{}, nil
+	orderShippingAddress, err := AddressByIdLoader.Load(ctx, *o.order.ShippingAddressID)()
+	if err != nil {
+		return nil, err
 	}
 
-	// TODO: complete plugin manager
-	panic("not implemented")
+	availableShippingMethods := []*model.ShippingMethod{}
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	displayGrossPrice := *embedCtx.App.Config().ShopSettings.DisplayGrossPrices
+
+	for _, shippingMethod := range available {
+		listing, err := ShippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader.Load(ctx, shippingMethod.Id+"__"+embedCtx.CurrentChannelID)()
+		if err != nil {
+			return nil, err
+		}
+
+		if listing != nil {
+			listing.PopulateNonDbFields() // this is needed
+			taxedPrice, appErr := pluginMng.ApplyTaxesToShipping(*listing.Price, *orderShippingAddress, embedCtx.CurrentChannelID)
+			if appErr != nil {
+				// TODO: check if we need to take care of not implemented plugin method error
+				return nil, appErr
+			}
+
+			if displayGrossPrice {
+				shippingMethod.SetPrice(taxedPrice.Gross)
+			} else {
+				shippingMethod.SetPrice(taxedPrice.Net)
+			}
+
+			availableShippingMethods = append(availableShippingMethods, shippingMethod)
+		}
+	}
+
+	return systemRecordsToGraphql(availableShippingMethods, SystemShippingMethodToGraphqlShippingMethod), nil
 }
 
 func (o *Order) Channel(ctx context.Context) (*Channel, error) {
@@ -720,16 +740,16 @@ func (o *Order) AvailableCollectionPoints(ctx context.Context) ([]*Warehouse, er
 	return systemRecordsToGraphql(warehouses, SystemWarehouseToGraphqlWarehouse), nil
 }
 
+// NOTE: Refer to ./schemas/order.graphqls for details on directives used.
 func (o *Order) Invoices(ctx context.Context) ([]*Invoice, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 	currentSession := embedCtx.AppContext.Session()
 
 	if (o.order.UserID != nil && *o.order.UserID == currentSession.UserId) ||
-		currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
+		currentSession.
+			GetUserRoles().
+			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			Len() > 0 {
 		invoices, err := InvoicesByOrderIDLoader.Load(ctx, o.ID)()
 		if err != nil {
 			return nil, err
@@ -798,7 +818,6 @@ func orderByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*mo
 	}
 
 	orderMap := lo.SliceToMap(orders, func(o *model.Order) (string, *model.Order) { return o.Id, o })
-
 	for idx, id := range ids {
 		res[idx] = &dataloader.Result[*model.Order]{Data: orderMap[id]}
 	}

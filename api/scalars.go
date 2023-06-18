@@ -1,10 +1,8 @@
 package api
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"time"
 
 	"github.com/site-name/decimal"
@@ -33,33 +31,8 @@ func (j *JSONString) UnmarshalGraphQL(input interface{}) error {
 	return nil
 }
 
-// UnmarshalGQL for gqlgen compartible
-func (j *JSONString) UnmarshalGQL(v any) error {
-	return j.UnmarshalGraphQL(v)
-}
-
-// MarshalGQL for gqlgen compartible
-func (j *JSONString) MarshalGQL(w io.Writer) {
-	data, err := json.Marshal(j)
-	if err != nil {
-		w.Write([]byte{'{', '}'})
-		return
-	}
-	w.Write(data)
-}
-
 // PositiveDecimal implements custom graphql scalar type
 type PositiveDecimal decimal.Decimal
-
-// UnmarshalGQL for gqlgen compartible
-func (j *PositiveDecimal) UnmarshalGQL(v any) error {
-	return j.UnmarshalGraphQL(v)
-}
-
-// MarshalGQL for gqlgen compartible
-func (j *PositiveDecimal) MarshalGQL(w io.Writer) {
-	w.Write([]byte(decimal.Decimal(*j).String()))
-}
 
 func (PositiveDecimal) ImplementsGraphQLType(name string) bool {
 	return name == "PositiveDecimal"
@@ -115,16 +88,6 @@ func (Date) ImplementsGraphQLType(name string) bool {
 // DateTime implementes custom graphql scalar DateTime
 type DateTime struct {
 	time.Time
-}
-
-// UnmarshalGQL for gqlgen compartible
-func (j *DateTime) UnmarshalGQL(v any) error {
-	return j.UnmarshalGraphQL(v)
-}
-
-// MarshalGQL for gqlgen compartible
-func (j *DateTime) MarshalGQL(w io.Writer) {
-	w.Write([]byte(j.Format(time.RFC3339)))
 }
 
 func (DateTime) ImplementsGraphQLType(name string) bool {

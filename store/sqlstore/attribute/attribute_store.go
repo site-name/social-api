@@ -7,6 +7,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
@@ -21,25 +22,52 @@ func NewSqlAttributeStore(s store.Store) store.AttributeStore {
 	return &SqlAttributeStore{s}
 }
 
+var attributeFieldNames = util.AnyArray[string]{
+	"Id",
+	"Slug",
+	"Name",
+	"Type",
+	"InputType",
+	"EntityType",
+	"Unit",
+	"ValueRequired",
+	"IsVariantOnly",
+	"VisibleInStoreFront",
+	"FilterableInStorefront",
+	"FilterableInDashboard",
+	"StorefrontSearchPosition",
+	"AvailableInGrid",
+	"Metadata",
+	"PrivateMetadata",
+}
+
 func (as *SqlAttributeStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id", "Slug", "Name", "Type", "InputType", "EntityType", "Unit", "ValueRequired",
-		"IsVariantOnly", "VisibleInStoreFront", "FilterableInStorefront", "FilterableInDashboard",
-		"StorefrontSearchPosition", "AvailableInGrid", "Metadata", "PrivateMetadata",
-	}
 	if prefix == "" {
-		return res
+		return attributeFieldNames
 	}
-	return res.Map(func(_ int, s string) string {
+	return attributeFieldNames.Map(func(_ int, s string) string {
 		return prefix + s
 	})
 }
 
 func (as *SqlAttributeStore) ScanFields(v *model.Attribute) []interface{} {
 	return []interface{}{
-		&v.Id, &v.Slug, &v.Name, &v.Type, &v.InputType, &v.EntityType, &v.Unit, &v.ValueRequired,
-		&v.IsVariantOnly, &v.VisibleInStoreFront, &v.FilterableInStorefront, &v.FilterableInDashboard,
-		&v.StorefrontSearchPosition, &v.AvailableInGrid, &v.Metadata, &v.PrivateMetadata,
+		&v.Id,
+		&v.Slug,
+		&v.Name,
+		&v.Type,
+		&v.InputType,
+		&v.EntityType,
+		&v.Unit,
+		&v.ValueRequired,
+		&v.IsVariantOnly,
+		&v.VisibleInStoreFront,
+		&v.FilterableInStorefront,
+		&v.FilterableInDashboard,
+		&v.StorefrontSearchPosition,
+		&v.AvailableInGrid,
+		&v.Metadata,
+		&v.PrivateMetadata,
 	}
 }
 
@@ -165,15 +193,12 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 		}
 		query = query.Where(strings.Join(conditions, " AND "))
 	}
-	if search := option.Search; search != nil && *search != "" {
-		expr := "%" + *search + "%"
+	if option.Search != "" {
+		expr := "%" + option.Search + "%"
 		query = query.Where("Attributes.Name ILIKE ? OR Attributes.Slug ILIKE ?", expr, expr)
 	}
 
 	if option.InCategory != nil || option.InCollection != nil {
-		if option.UserHasOneOfProductPermissions == nil {
-			option.UserHasOneOfProductPermissions = model.NewPrimitive(false)
-		}
 
 		var channelIdOrSlug string
 		if option.Channel != nil {
@@ -182,12 +207,12 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 
 		productQuery := as.
 			Product().
-			VisibleToUserProductsQuery(channelIdOrSlug, *option.UserHasOneOfProductPermissions)
+			VisibleToUserProductsQuery(channelIdOrSlug, option.UserIsShopStaff)
 
 		if option.InCategory != nil {
 			productQuery = productQuery.Where("Products.CategoryID = ?", *option.InCategory)
 
-			if !*option.UserHasOneOfProductPermissions {
+			if !option.UserIsShopStaff {
 				productQuery = productQuery.Column(`(
 					SELECT PC.VisibleInListings
 					FROM ProductChannelListings PC
@@ -198,7 +223,7 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 					)
 					LIMIT 1
 				) AS VisibleInListings`, channelIdOrSlug, channelIdOrSlug).
-					Where("NOT (NOT VisibleInListings)")
+					Where("VisibleInListings")
 			}
 
 		} else if option.InCollection != nil {
@@ -295,16 +320,10 @@ func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption)
 }
 
 func (as *SqlAttributeStore) Delete(ids ...string) (int64, error) {
-	query, args, err := as.GetQueryBuilder().
-		Delete("*").
-		From(store.AttributeTableName).
-		Where(squirrel.Eq{store.AttributeTableName + ".Id": ids}).
-		ToSql()
-	if err != nil {
-		return 0, errors.Wrap(err, "SqlAttributeStore.Delete_ToSql")
-	}
+	args := lo.Map(ids, func(id string, _ int) any { return id })
+	queryStr := "DELETE FROM " + store.AttributeTableName + " WHERE Id IN (" + squirrel.Placeholders(len(ids)) + ")"
 
-	result, err := as.GetMasterX().Exec(query, args...)
+	result, err := as.GetMasterX().Exec(queryStr, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to delete attributes")
 	}
@@ -321,27 +340,23 @@ func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unass
 	if filter == nil {
 		filter = new(model.AttributeFilterOption)
 	}
-	if filter.Type == nil {
-		filter.Type = squirrel.Eq{store.AttributeTableName + ".Type": model.PRODUCT_TYPE}
-	}
+	filter.Type = squirrel.Eq{store.AttributeTableName + ".Type": model.PRODUCT_TYPE}
 	filter.Distinct = true
 	sqQuery := s.commonQueryBuilder(filter)
 
 	if unassigned {
 		sqQuery = sqQuery.Where(`NOT (
-	(
-		EXISTS(
-			SELECT (1) AS "a"
-			FROM `+store.AttributeProductTableName+` WHERE
-				AttributeProducts.ProductTypeID = ? AND AttributeProducts.AttributeID = Attributes.Id
-			LIMIT 1
-		)
-		OR EXISTS(
-			SELECT (1) AS "a"
-			FROM `+store.AttributeVariantTableName+` WHERE
-				AttributeVariants.ProductTypeID = ? AND AttributeVariants.AttributeID = Attributes.Id
-			LIMIT 1
-		)
+	EXISTS(
+		SELECT (1) AS "a"
+		FROM `+store.AttributeProductTableName+` WHERE
+			AttributeProducts.ProductTypeID = ? AND AttributeProducts.AttributeID = Attributes.Id
+		LIMIT 1
+	)
+	OR EXISTS(
+		SELECT (1) AS "a"
+		FROM `+store.AttributeVariantTableName+` WHERE
+			AttributeVariants.ProductTypeID = ? AND AttributeVariants.AttributeID = Attributes.Id
+		LIMIT 1
 	)
 )`, productTypeID, productTypeID)
 
@@ -372,16 +387,15 @@ func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned 
 	query := `SELECT * FROM ` +
 		store.AttributeTableName +
 		` A WHERE A.Type = $1
-		AND
-			NOT EXISTS(
-				SELECT (1) AS "a"
-				FROM ` + store.AttributePageTableName + ` AP
-				WHERE (
-					AP.PageTypeID = $2
-					AND AP.AttributeID = A.Id
-				)
-				LIMIT 1
-			)`
+		AND NOT EXISTS(
+			SELECT (1) AS "a"
+			FROM ` + store.AttributePageTableName +
+		` AP WHERE (
+				AP.PageTypeID = $2
+				AND AP.AttributeID = A.Id
+			)
+			LIMIT 1
+		)`
 
 	if !unassigned {
 		query = `SELECT ` + s.ModelFields("A.").Join(",") +

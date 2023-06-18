@@ -54,8 +54,8 @@ func (g *GatewayError) Error() string {
 type PaymentMethodInfo struct {
 	First4   *string
 	Last4    *string
-	ExpYear  *uint16
-	ExpMonth *uint8
+	ExpYear  *int32
+	ExpMonth *int32
 	Brand    *string
 	Name     *string
 	Type     *string

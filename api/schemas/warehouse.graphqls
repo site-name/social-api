@@ -22,12 +22,13 @@ input WarehouseCreateInput {
   shippingZones: [String!]!
 }
 
+
 type Stock  {
   warehouse: Warehouse!
   productVariant: ProductVariant!
-  quantity: Int!
+  quantity: Int! @hasRoleAny(roles: [shop_admin, shop_staff])
   id: String!
-  quantityAllocated: Int!
+  quantityAllocated: Int! @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 input StockFilterInput {
@@ -92,6 +93,12 @@ type WarehouseCountableConnection {
 type WarehouseCountableEdge {
   node: Warehouse!
   cursor: String!
+}
+
+type Allocation  {
+  id: String!
+  quantity: Int! @hasRoleAny(roles: [shop_admin, shop_staff])
+  warehouse: Warehouse! @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 input WarehouseFilterInput {

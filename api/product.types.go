@@ -145,7 +145,7 @@ func (p *Product) Collections(ctx context.Context) ([]*Collection, error) {
 
 	requesterIsShopStaff := embedCtx.AppContext.Session().
 		GetUserRoles().
-		InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
+		InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
 		Len() > 0
 	if requesterIsShopStaff {
 		return systemRecordsToGraphql(collections, systemCollectionToGraphqlCollection), nil
@@ -213,7 +213,17 @@ func (p *Product) Category(ctx context.Context) (*Category, error) {
 }
 
 func (p *Product) TaxType(ctx context.Context) (*TaxType, error) {
-	panic("not implemented")
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	taxType, appErr := pluginMng.GetTaxCodeFromObjectMeta(p.p)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &TaxType{
+		Description: &taxType.Descriptiton,
+		TaxCode:     &taxType.Code,
+	}, nil
 }
 
 func (p *Product) Pricing(ctx context.Context, args struct{ Address *AddressInput }) (*ProductPricingInfo, error) {
@@ -308,7 +318,7 @@ func (p *Product) IsAvailable(ctx context.Context, args struct{ Address *Address
 	requesterIsStaffOfShop := embedCtx.AppContext.
 		Session().
 		GetUserRoles().
-		InterSection([]string{model.ShopStaffRoleId, model.ShopAdminRoleId}).
+		InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
 		Len() > 0
 
 	productChannelListing, err := ProductChannelListingByProductIdAndChannelSlugLoader.Load(ctx, fmt.Sprintf("%s__%s", p.ID, embedCtx.CurrentChannelID))()
@@ -436,7 +446,16 @@ func SystemProductTypeToGraphqlProductType(t *model.ProductType) *ProductType {
 }
 
 func (p *ProductType) TaxType(ctx context.Context) (*TaxType, error) {
-	panic("not implemented")
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	taxType, appErr := pluginMng.GetTaxCodeFromObjectMeta(p.p)
+	if appErr != nil {
+		return nil, appErr
+	}
+	return &TaxType{
+		Description: &taxType.Descriptiton,
+		TaxCode:     &taxType.Code,
+	}, nil
 }
 
 func (p *ProductType) Weight(ctx context.Context) (*Weight, error) {
@@ -450,23 +469,21 @@ func (p *ProductType) Weight(ctx context.Context) (*Weight, error) {
 	}, nil
 }
 
-// NOTE: Refer to ./schemas/product_type.graphqls for details on directives used.
-//
-// ORDER BY Slug
+// attributes ORDER BY Slug
 func (p *ProductType) AvailableAttributes(ctx context.Context, args struct {
 	GraphqlParams
 	Filter *AttributeFilterInput
 }) (*AttributeCountableConnection, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	userHasOneOfProductPermission := embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.ProductPermissions...)
+	embedCtx.CheckAuthenticatedAndHasRoleAny("ProductType.AvailableAttributes", model.ShopAdminRoleId, model.ShopStaffRoleId)
 
 	filterOptions := &model.AttributeFilterOption{}
 	if args.Filter != nil {
-		filterOptions = args.Filter.ToAttributeFilterOption()
+		filterOptions = args.Filter.toSystemAttributeFilterOption()
 	}
-	// NOTE: this permission check is necessary
-	filterOptions.UserHasOneOfProductPermissions = &userHasOneOfProductPermission
+
+	// this is needed
+	filterOptions.UserIsShopStaff = embedCtx.Err == nil
 
 	attributes, err := embedCtx.App.Srv().Store.Attribute().GetProductTypeAttributes(p.ID, true, filterOptions)
 	if err != nil {

@@ -70,7 +70,7 @@ func (a *ServiceDiscount) GetProductDiscountOnSale(product model.Product, produc
 	// this checks whether the given product is on sale
 	isProductOnSale := discountInfo.ProductIDs.Contains(product.Id) ||
 		(product.CategoryID != nil && discountInfo.CategoryIDs.Contains(*product.CategoryID)) ||
-		discountInfo.CollectionIDs.InterSection(productCollectionIDs).Len() > 0
+		discountInfo.CollectionIDs.InterSection(productCollectionIDs...).Len() > 0
 
 	isVariantOnSale := model.IsValidId(variantID) && discountInfo.VariantsIDs.Contains(variantID)
 

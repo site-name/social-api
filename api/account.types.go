@@ -36,7 +36,6 @@ func (a *Address) Country(ctx context.Context) (*CountryDisplay, error) {
 
 // NOTE: Refer to ./schemas/address.graphqls for directive used
 func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
-	// check requester is authenticated to perform this
 	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
 
 	user, err := UserByUserIdLoader.Load(ctx, embedContext.AppContext.Session().UserId)()
@@ -110,6 +109,8 @@ type User struct {
 	DefaultBillingAddressID  *string          `json:"defaultBillingAddressID"`
 	note                     *string
 
+	user *model.User
+
 	// DefaultShippingAddress *Address         `json:"defaultShippingAddress"`
 	// DefaultBillingAddress  *Address         `json:"defaultBillingAddress"`
 	// StoredPaymentSources   []*PaymentSource             `json:"storedPaymentSources"`
@@ -144,6 +145,8 @@ func SystemUserToGraphqlUser(u *model.User) *User {
 		Metadata:                 MetadataToSlice(u.Metadata),
 		PrivateMetadata:          MetadataToSlice(u.PrivateMetadata),
 		DateJoined:               DateTime{util.TimeFromMillis(u.CreateAt)},
+
+		user: u,
 	}
 
 	if u.LastActivityAt != 0 {
@@ -158,8 +161,10 @@ func (u *User) DefaultShippingAddress(ctx context.Context) (*Address, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
-	// check requester belong to shop with user was customer
-	if currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
+	if currentSession.UserId == u.ID || currentSession.
+		GetUserRoles().
+		InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+		Len() > 0 {
 		if u.DefaultShippingAddressID == nil {
 			return nil, nil
 		}
@@ -178,9 +183,11 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
-	// check requester belong to shop at which user was customer
 	if currentSession.UserId == u.ID ||
-		currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
+		currentSession.
+			GetUserRoles().
+			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			Len() > 0 {
 		if u.DefaultBillingAddressID == nil {
 			return nil, nil
 		}
@@ -198,8 +205,53 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 func (u *User) StoredPaymentSources(ctx context.Context, args struct{ Channel *string }) ([]*PaymentSource, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
+	// TODO: check if we need channel_id here
+
 	if u.ID == embedCtx.AppContext.Session().UserId {
-		panic("not implemented")
+		pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+		paymentGateWays := embedCtx.App.Srv().PaymentService().ListGateways(pluginManager, embedCtx.CurrentChannelID)
+
+		res := []*PaymentSource{}
+
+		for _, gwt := range paymentGateWays {
+			customerId, appErr := embedCtx.App.Srv().PaymentService().FetchCustomerId(u.user, gwt.Id)
+			if appErr != nil {
+				return nil, appErr
+			}
+
+			if customerId != "" {
+				paymentSources, appErr := embedCtx.App.Srv().PaymentService().ListPaymentSources(gwt.Id, customerId, pluginManager, embedCtx.CurrentChannelID)
+				if appErr != nil {
+					return nil, appErr
+				}
+
+				for _, src := range paymentSources {
+
+					var lastDigits, brand string
+					if src.CreditCardInfo.Last4 != nil {
+						lastDigits = *src.CreditCardInfo.Last4
+					}
+					if src.CreditCardInfo.Brand != nil {
+						brand = *src.CreditCardInfo.Brand
+					}
+
+					res = append(res, &PaymentSource{
+						Gateway:         gwt.Id,
+						PaymentMethodID: &src.Id,
+						CreditCardInfo: &CreditCard{
+							LastDigits:  lastDigits,
+							ExpYear:     src.CreditCardInfo.ExpYear,
+							ExpMonth:    src.CreditCardInfo.ExpMonth,
+							Brand:       brand,
+							FirstDigits: src.CreditCardInfo.First4,
+						},
+						Metadata: MetadataToSlice(src.Metadata),
+					})
+				}
+			}
+		}
+
+		return res, nil
 	}
 
 	return nil, MakeUnauthorizedError("user.StoredPaymentSources")
@@ -212,7 +264,10 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string 
 	currentSession := embedCtx.AppContext.Session()
 
 	if currentSession.UserId == u.ID ||
-		currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
+		currentSession.
+			GetUserRoles().
+			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			Len() > 0 {
 		var checkouts []*model.Checkout
 		var err error
 
@@ -236,7 +291,12 @@ func (u *User) Addresses(ctx context.Context) ([]*Address, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
-	if currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
+	if currentSession.UserId == u.ID ||
+		currentSession.
+			GetUserRoles().
+			InterSection(model.ShopStaffRoleId).
+			Len() > 0 {
+
 		addresses, appErr := embedCtx.
 			App.
 			Srv().
@@ -258,8 +318,11 @@ func (u *User) GiftCards(ctx context.Context, args GraphqlParams) (*GiftCardCoun
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
-	if currentSession.UserId == u.ID || currentSession.GetUserRoles().Contains(model.ShopStaffRoleId) {
-		// validate args
+	if currentSession.UserId == u.ID ||
+		currentSession.
+			GetUserRoles().
+			InterSection(model.ShopStaffRoleId, model.ShopAdminRoleId).
+			Len() > 0 {
 		if appErr := args.Validate("User.GiftCards"); appErr != nil {
 			return nil, appErr
 		}
@@ -287,9 +350,12 @@ func (u *User) Orders(ctx context.Context, args GraphqlParams) (*OrderCountableC
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	session := embedCtx.AppContext.Session()
 
-	requesterCanSeeUserOrders := session.UserId == u.ID || session.GetUserRoles().Contains(model.ShopStaffRoleId)
+	requesterCanSeeUserOrders := session.UserId == u.ID ||
+		session.
+			GetUserRoles().
+			InterSection(model.ShopStaffRoleId).
+			Len() > 0
 	if requesterCanSeeUserOrders {
-		// validate args
 		if appErr := args.Validate("User.Orders"); appErr != nil {
 			return nil, appErr
 		}

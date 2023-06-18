@@ -186,44 +186,27 @@ func (s *Stock) Warehouse(ctx context.Context) (*Warehouse, error) {
 	return SystemWarehouseToGraphqlWarehouse(warehouse), nil
 }
 
+// NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
 func (s *Stock) Quantity(ctx context.Context) (int32, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return 0, embedCtx.Err
-	}
-
-	if !embedCtx.App.Srv().
-		AccountService().
-		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionReadStock) {
-		return 0, MakeUnauthorizedError("Stock.Quantity")
-	}
-
 	return int32(s.stock.Quantity), nil
 }
 
+// NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
 func (s *Stock) QuantityAllocated(ctx context.Context) (int32, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	if embedCtx.App.Srv().
-		AccountService().
-		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionReadStock) {
-		allocations, err := AllocationsByStockIDLoader.Load(ctx, s.ID)()
-		if err != nil {
-			return 0, err
-		}
-
-		var sum int
-		for _, allocation := range allocations {
-			sum += allocation.QuantityAllocated
-		}
-		if sum < 0 {
-			sum = 0
-		}
-		return int32(sum), nil
+	allocations, err := AllocationsByStockIDLoader.Load(ctx, s.ID)()
+	if err != nil {
+		return 0, err
 	}
 
-	return 0, MakeUnauthorizedError("Stock.QuantityAllocated")
+	var sum int
+	for _, allocation := range allocations {
+		sum += allocation.QuantityAllocated
+	}
+	if sum < 0 {
+		sum = 0
+	}
+	return int32(sum), nil
+
 }
 
 func (s *Stock) ProductVariant(ctx context.Context) (*ProductVariant, error) {
@@ -313,25 +296,13 @@ func systemAllocationToGraphqlAllocation(a *model.Allocation) *Allocation {
 	}
 }
 
+// NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
 func (a *Allocation) Quantity(ctx context.Context) (int32, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	if embedCtx.App.Srv().
-		AccountService().
-		SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionReadStock, model.PermissionReadAllocation) {
-		return int32(a.a.QuantityAllocated), nil
-	}
-
-	return 0, MakeUnauthorizedError("Allocation.Quantity")
+	return int32(a.a.QuantityAllocated), nil
 }
 
+// NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
 func (a *Allocation) Warehouse(ctx context.Context) (*Warehouse, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
-	if !embedCtx.App.Srv().AccountService().SessionHasPermissionToAny(embedCtx.AppContext.Session(), model.PermissionReadStock, model.PermissionReadAllocation) {
-		return nil, MakeUnauthorizedError("Allocation.Warehouse")
-	}
-
 	stock, err := StocksByIDLoader.Load(ctx, a.a.StockID)()
 	if err != nil {
 		return nil, err
@@ -366,7 +337,6 @@ func allocationsByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) 
 	for _, all := range allocations {
 		allocationMap[all.OrderLineID] = append(allocationMap[all.OrderLineID], all)
 	}
-
 	for idx, id := range orderLineIDs {
 		res[idx] = &dataloader.Result[[]*model.Allocation]{Data: allocationMap[id]}
 	}

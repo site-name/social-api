@@ -2,12 +2,8 @@ package api
 
 import (
 	"context"
-	"unsafe"
 
-	"github.com/Masterminds/squirrel"
-	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -48,7 +44,8 @@ func systemCollectionToGraphqlCollection(c *model.Collection) *Collection {
 }
 
 func (c *Collection) Channel(ctx context.Context) (*string, error) {
-	panic("not implemented")
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	return &embedCtx.CurrentChannelID, nil
 }
 
 func (c *Collection) Products(ctx context.Context, args struct {
@@ -56,44 +53,45 @@ func (c *Collection) Products(ctx context.Context, args struct {
 	SortBy *ProductOrder
 	GraphqlParams
 }) (*ProductCountableConnection, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	products, appErr := embedCtx.App.Srv().
-		ProductService().
-		GetVisibleToUserProducts(embedCtx.AppContext.Session(), channelID)
-	if appErr != nil {
-		return nil, appErr
-	}
+	// products, appErr := embedCtx.App.Srv().
+	// 	ProductService().
+	// 	GetVisibleToUserProducts(embedCtx.AppContext.Session(), channelID)
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
 
-	// filter to get products that belong to current collection:
-	collectionProductRelations, appErr := embedCtx.App.Srv().
-		ProductService().
-		CollectionProductRelationsByOptions(&model.CollectionProductFilterOptions{
-			CollectionID: squirrel.Eq{store.CollectionProductRelationTableName + ".CollectionID": c.ID},
-		})
-	if appErr != nil {
-		return nil, appErr
-	}
+	// // filter to get products that belong to current collection:
+	// collectionProductRelations, appErr := embedCtx.App.Srv().
+	// 	ProductService().
+	// 	CollectionProductRelationsByOptions(&model.CollectionProductFilterOptions{
+	// 		CollectionID: squirrel.Eq{store.CollectionProductRelationTableName + ".CollectionID": c.ID},
+	// 	})
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
 
-	// keys are product ids
-	var validProductIdMap = lo.SliceToMap(collectionProductRelations, func(rel *model.CollectionProduct) (string, struct{}) { return rel.ProductID, struct{}{} })
-	products = lo.Filter(products, func(p *model.Product, _ int) bool {
-		_, exist := validProductIdMap[p.Id]
-		return exist
-	})
+	// // keys are product ids
+	// var validProductIdMap = lo.SliceToMap(collectionProductRelations, func(rel *model.CollectionProduct) (string, struct{}) { return rel.ProductID, struct{}{} })
+	// products = lo.Filter(products, func(p *model.Product, _ int) bool {
+	// 	_, exist := validProductIdMap[p.Id]
+	// 	return exist
+	// })
 
-	// find all products that have relationshop with current collection.
-	products, appErr = embedCtx.App.Srv().ProductService().ProductsByOption(&model.ProductFilterOption{
-		CollectionID: squirrel.Eq{store.CollectionProductRelationTableName + ".CollectionID": c.ID},
-	})
+	// // find all products that have relationshop with current collection.
+	// products, appErr = embedCtx.App.Srv().ProductService().ProductsByOption(&model.ProductFilterOption{
+	// 	CollectionID: squirrel.Eq{store.CollectionProductRelationTableName + ".CollectionID": c.ID},
+	// })
 
-	keyFunc := func(p *model.Product) string { return p.Slug }
-	res, appErr := newGraphqlPaginator(products, keyFunc, SystemProductToGraphqlProduct, args.GraphqlParams).parse("Collection.Products")
-	if appErr != nil {
-		return nil, appErr
-	}
+	// keyFunc := func(p *model.Product) string { return p.Slug }
+	// res, appErr := newGraphqlPaginator(products, keyFunc, SystemProductToGraphqlProduct, args.GraphqlParams).parse("Collection.Products")
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
 
-	return (*ProductCountableConnection)(unsafe.Pointer(res)), nil
+	// return (*ProductCountableConnection)(unsafe.Pointer(res)), nil
+	panic("not implemented")
 }
 
 func (c *Collection) Translation(ctx context.Context, args struct{ LanguageCode LanguageCodeEnum }) (*CollectionTranslation, error) {

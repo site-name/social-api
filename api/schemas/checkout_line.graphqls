@@ -1,12 +1,12 @@
 extend type Mutation {
-  checkoutLineDelete(lineId: String, token: String): CheckoutLineDelete
+  checkoutLineDelete(lineId: String!, token: String!): CheckoutLineDelete
   checkoutLinesAdd(checkoutId: String, lines: [CheckoutLineInput]!, token: String): CheckoutLinesAdd
   checkoutLinesUpdate(checkoutId: String, lines: [CheckoutLineInput]!, token: String): CheckoutLinesUpdate
 }
 
 extend type Query {
   # checkoutLine(id: String): CheckoutLine
-  checkoutLines(before: String, after: String, first: Int, last: Int): CheckoutLineCountableConnection
+  checkoutLines(before: String, after: String, first: Int, last: Int): CheckoutLineCountableConnection @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 type CheckoutLine  {

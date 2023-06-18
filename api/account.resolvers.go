@@ -51,12 +51,13 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	}
 
 	// change current user's default address to this new one
+	pluginManager := embedContext.App.Srv().PluginService().GetPluginManager()
 	if args.Type != nil && args.Type.IsValid() {
 		appErr = embedContext.App.Srv().AccountService().ChangeUserDefaultAddress(
 			model.User{Id: currentSession.UserId},
 			*savedAddress,
 			*args.Type,
-			nil, // TODO: finish plugin manager
+			pluginManager,
 		)
 		if appErr != nil {
 			return nil, appErr
@@ -274,7 +275,7 @@ func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input Account
 }
 
 // NOTE: Refer to ./schemas/account.graphqls for details on directive used
-// this create a link (with a token attached), sends to user's email address
+// this creates a link (with a token attached), sends to user's email address
 func (r *Resolver) AccountRequestDeletion(ctx context.Context, args struct {
 	Channel     *string
 	RedirectURL string

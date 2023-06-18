@@ -430,7 +430,7 @@ type AttributeFilterInput struct {
 	Channel                *string              `json:"channel"`
 }
 
-func (a *AttributeFilterInput) ToAttributeFilterOption() *model.AttributeFilterOption {
+func (a *AttributeFilterInput) toSystemAttributeFilterOption() *model.AttributeFilterOption {
 	res := &model.AttributeFilterOption{
 		VisibleInStoreFront:    a.VisibleInStorefront,
 		ValueRequired:          a.ValueRequired,

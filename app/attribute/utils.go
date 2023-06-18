@@ -103,7 +103,7 @@ func (a *ServiceAttribute) validateAttributeOwnsValues(attributeID string, value
 		return appErr
 	}
 	attributeActualValueIDs := model.AttributeValues(attributeValues).IDs()
-	foundAssociatedIDs := valueIDs.InterSection(attributeActualValueIDs)
+	foundAssociatedIDs := valueIDs.InterSection(attributeActualValueIDs...)
 
 	for _, associatedID := range foundAssociatedIDs {
 		if !valueIDs.Contains(associatedID) {

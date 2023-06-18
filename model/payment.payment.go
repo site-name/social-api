@@ -89,8 +89,8 @@ type Payment struct {
 	CcFirstDigits      string              `json:"cc_first_digits"`
 	CcLastDigits       string              `json:"cc_last_digits"`
 	CcBrand            string              `json:"cc_brand"`
-	CcExpMonth         *uint8              `json:"cc_exp_month"`
-	CcExpYear          *uint16             `json:"cc_exp_year"`
+	CcExpMonth         *int32              `json:"cc_exp_month"`
+	CcExpYear          *int32              `json:"cc_exp_year"`
 	PaymentMethodType  string              `json:"payment_method_type"`
 	CustomerIpAddress  *string             `json:"customer_ip_address"`
 	ExtraData          string              `json:"extra_data"`
