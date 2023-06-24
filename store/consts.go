@@ -120,6 +120,7 @@ func init() {
 		ShopTableName:            "", // shop
 		ShopTranslationTableName: "", //
 		ShopStaffTableName:       "", //
+		VatTableName:             "", //
 
 		MenuTableName:                "CreateAt ASC",     // menu
 		MenuItemTableName:            "SortOrder ASC",    //
@@ -300,6 +301,7 @@ const (
 	ShopTableName            = "Shops"            //
 	ShopTranslationTableName = "ShopTranslations" //
 	ShopStaffTableName       = "ShopStaffs"       //
+	VatTableName             = "Vats"             //
 )
 
 // menu-related table names

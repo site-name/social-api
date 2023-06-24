@@ -2486,13 +2486,6 @@ type PaymentFilterInput struct {
 	Checkouts []string `json:"checkouts"`
 }
 
-type PaymentGateway struct {
-	Name       string               `json:"name"`
-	ID         string               `json:"id"`
-	Config     []*GatewayConfigLine `json:"config"`
-	Currencies []string             `json:"currencies"`
-}
-
 type PaymentInitialize struct {
 	InitializedPayment *PaymentInitialized `json:"initializedPayment"`
 	Errors             []*PaymentError     `json:"errors"`
@@ -3189,11 +3182,6 @@ type PublishableChannelListingInput struct {
 	PublicationDate *Date  `json:"publicationDate"`
 }
 
-type ReducedRate struct {
-	Rate     float64 `json:"rate"`
-	RateType string  `json:"rateType"`
-}
-
 type RefreshToken struct {
 	Token *string `json:"token"`
 	User  *User   `json:"user"`
@@ -3496,40 +3484,6 @@ type ShippingZoneUpdateInput struct {
 	RemoveChannels   []string `json:"removeChannels"`
 }
 
-type Shop struct {
-	AvailablePaymentGateways            []*PaymentGateway             `json:"availablePaymentGateways"`
-	AvailableExternalAuthentications    []*ExternalAuthentication     `json:"availableExternalAuthentications"`
-	AvailableShippingMethods            []*ShippingMethod             `json:"availableShippingMethods"`
-	ChannelCurrencies                   []string                      `json:"channelCurrencies"`
-	Countries                           []*CountryDisplay             `json:"countries"`
-	DefaultCountry                      *CountryDisplay               `json:"defaultCountry"`
-	DefaultMailSenderName               *string                       `json:"defaultMailSenderName"`
-	DefaultMailSenderAddress            *string                       `json:"defaultMailSenderAddress"`
-	Description                         *string                       `json:"description"`
-	Domain                              *Domain                       `json:"domain"`
-	Languages                           []*LanguageDisplay            `json:"languages"`
-	Name                                string                        `json:"name"`
-	Permissions                         []*Permission                 `json:"permissions"`
-	PhonePrefixes                       []string                      `json:"phonePrefixes"`
-	HeaderText                          *string                       `json:"headerText"`
-	IncludeTaxesInPrices                bool                          `json:"includeTaxesInPrices"`
-	FulfillmentAutoApprove              bool                          `json:"fulfillmentAutoApprove"`
-	FulfillmentAllowUnpaid              bool                          `json:"fulfillmentAllowUnpaid"`
-	DisplayGrossPrices                  bool                          `json:"displayGrossPrices"`
-	ChargeTaxesOnShipping               bool                          `json:"chargeTaxesOnShipping"`
-	TrackInventoryByDefault             *bool                         `json:"trackInventoryByDefault"`
-	DefaultWeightUnit                   *WeightUnitsEnum              `json:"defaultWeightUnit"`
-	Translation                         *ShopTranslation              `json:"translation"`
-	AutomaticFulfillmentDigitalProducts *bool                         `json:"automaticFulfillmentDigitalProducts"`
-	DefaultDigitalMaxDownloads          *int32                        `json:"defaultDigitalMaxDownloads"`
-	DefaultDigitalURLValidDays          *int32                        `json:"defaultDigitalUrlValidDays"`
-	CompanyAddress                      *Address                      `json:"companyAddress"`
-	CustomerSetPasswordURL              *string                       `json:"customerSetPasswordUrl"`
-	StaffNotificationRecipients         []*StaffNotificationRecipient `json:"staffNotificationRecipients"`
-	Limits                              *LimitInfo                    `json:"limits"`
-	Version                             string                        `json:"version"`
-}
-
 type ShopAddressUpdate struct {
 	Shop   *Shop        `json:"shop"`
 	Errors []*ShopError `json:"errors"`
@@ -3690,8 +3644,8 @@ type StockError struct {
 }
 
 type StockFilterInput struct {
-	Quantity *float64 `json:"quantity"`
-	Search   *string  `json:"search"`
+	Quantity *int32  `json:"quantity"`
+	Search   *string `json:"search"`
 }
 
 type StockInput struct {
@@ -3828,12 +3782,6 @@ type UserPermission struct {
 type UserSortingInput struct {
 	Direction OrderDirection `json:"direction"`
 	Field     UserSortField  `json:"field"`
-}
-
-type Vat struct {
-	CountryCode  string         `json:"countryCode"`
-	StandardRate *float64       `json:"standardRate"`
-	ReducedRates []*ReducedRate `json:"reducedRates"`
 }
 
 type VariantMediaAssign struct {

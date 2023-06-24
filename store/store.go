@@ -156,6 +156,7 @@ type Store interface {
 	Shop() ShopStore                                                   // shop
 	ShopTranslation() ShopTranslationStore                             //
 	ShopStaff() ShopStaffStore                                         //
+	Vat() VatStore                                                     //
 	OpenExchangeRate() OpenExchangeRateStore                           // external services
 }
 
@@ -178,6 +179,10 @@ type (
 	ShopTranslationStore interface {
 		Upsert(translation *model.ShopTranslation) (*model.ShopTranslation, error) // Upsert depends on translation's Id then decides to update or insert
 		Get(id string) (*model.ShopTranslation, error)                             // Get finds a shop translation with given id then return it with an error
+	}
+	VatStore interface {
+		Upsert(transaction store_iface.SqlxTxExecutor, vats []*model.Vat) ([]*model.Vat, error)
+		FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error)
 	}
 )
 
@@ -995,7 +1000,7 @@ type (
 	}
 	StaffNotificationRecipientStore interface {
 		Save(notificationRecipient *model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error)
-		Get(id string) (*model.StaffNotificationRecipient, error)
+		FilterByOptions(options *model.StaffNotificationRecipientFilterOptions) ([]*model.StaffNotificationRecipient, error)
 	}
 	CustomerNoteStore interface {
 		ModelFields(prefix string) util.AnyArray[string]

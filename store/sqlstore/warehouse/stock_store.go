@@ -154,8 +154,7 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 	query := ss.GetQueryBuilder().
 		Select(selectFields...).
 		From(store.StockTableName).
-		Where(warehouseShippingZoneQuery).
-		OrderBy(store.TableOrderingMap[store.StockTableName])
+		Where(warehouseShippingZoneQuery)
 
 	// parse options
 	if options.SelectRelatedProductVariant {
@@ -229,8 +228,7 @@ func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, 
 
 	query := ss.GetQueryBuilder().
 		Select(selectFields...). // this selecting fields differ the query from `if` caluse
-		From(store.StockTableName).
-		OrderBy(store.TableOrderingMap[store.StockTableName])
+		From(store.StockTableName)
 
 	// parse options:
 	if options.SelectRelatedProductVariant {

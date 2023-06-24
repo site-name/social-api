@@ -64,6 +64,10 @@ func (c Channels) IDs() []string {
 	return lo.Map(c, func(ch *Channel, _ int) string { return ch.Id })
 }
 
+func (c Channels) Currencies() []string {
+	return lo.Map(c, func(ch *Channel, _ int) string { return ch.Currency })
+}
+
 func (c *Channel) String() string {
 	return c.Name
 }

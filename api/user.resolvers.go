@@ -6,9 +6,11 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Masterminds/squirrel"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
@@ -26,19 +28,51 @@ func (r *Resolver) UserAvatarDelete(ctx context.Context) (*UserAvatarDelete, err
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/user.graphql for details on directives used.
 func (r *Resolver) UserBulkSetActive(ctx context.Context, args struct {
 	Ids      []string
 	IsActive bool
 }) (*UserBulkSetActive, error) {
+	// validate given ids are valid uuids
+	// if !lo.EveryBy(args.Ids, model.IsValidId) {
+	// 	return nil, model.NewAppError("UserBulkSetActive", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid ids", http.StatusBadRequest)
+	// }
+
+	// embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	// currentSession := embedCtx.AppContext.Session()
+	// requesterIsSystemUserManager := currentSession.GetUserRoles().Contains(model.SystemUserManagerRoleId)
+
+	// usersToUpdate, appErr := embedCtx.App.Srv().AccountService().GetUsersByIds(args.Ids, &store.UserGetByIdsOpts{})
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
+	// usersToUpdateMap := lo.SliceToMap(usersToUpdate, func(u *model.User) (string, *model.User) { return u.Id, u })
+
+	// // validate if all given ids are valid,
+	// // NOTE: the rules below are applied:
+	// // 1) system admin can update every users EXCEPT himself.
+	// // 2) system user manager can update every users EXCEPT system admin, himself
+	// for userId, user := range usersToUpdateMap {
+	// 	if currentSession.UserId == userId {
+	// 		return nil, model.NewAppError("UserBulkSetActive", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "you can not update yourself", http.StatusForbidden)
+	// 	}
+	// 	if requesterIsSystemUserManager && user.GetRoles().Contains(model.SystemAdminRoleId) {
+	// 		return nil, model.NewAppError("UserBulkSetActive", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "you can not update system admin", http.StatusForbidden)
+	// 	}
+
+	// 	// update user
+	// 	user.IsActive = args.IsActive
+	// }
+
+	// // update
+	// embedCtx.App.Srv().AccountService().Up
+
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/user.graphql for details on directives used.
 func (r *Resolver) Me(ctx context.Context) (*User, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
 	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
 	if appErr != nil {
@@ -54,16 +88,13 @@ func (r *Resolver) User(ctx context.Context, args struct {
 }) (*User, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	if args.Id == nil && args.Email == nil {
-		embedCtx.SetInvalidUrlParam("id, email")
-		return nil, embedCtx.Err
+		return nil, model.NewAppError("User", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id, email"}, "please provide either email or id", http.StatusBadRequest)
 	}
 	if args.Id != nil && !model.IsValidId(*args.Id) {
-		embedCtx.SetInvalidUrlParam("args.Id")
-		return nil, embedCtx.Err
+		return nil, model.NewAppError("User", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide a valid id", http.StatusBadRequest)
 	}
 	if args.Email != nil && !model.IsValidEmail(*args.Email) {
-		embedCtx.SetInvalidUrlParam("args.Email")
-		return nil, embedCtx.Err
+		return nil, model.NewAppError("User", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "email"}, "please provide a valid email", http.StatusBadRequest)
 	}
 
 	var user *model.User

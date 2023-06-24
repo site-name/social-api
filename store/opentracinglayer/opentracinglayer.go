@@ -122,6 +122,7 @@ type OpenTracingLayer struct {
 	UserAccessTokenStore               store.UserAccessTokenStore
 	UserAddressStore                   store.UserAddressStore
 	VariantMediaStore                  store.VariantMediaStore
+	VatStore                           store.VatStore
 	VoucherCategoryStore               store.VoucherCategoryStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
 	VoucherCollectionStore             store.VoucherCollectionStore
@@ -542,6 +543,10 @@ func (s *OpenTracingLayer) UserAddress() store.UserAddressStore {
 
 func (s *OpenTracingLayer) VariantMedia() store.VariantMediaStore {
 	return s.VariantMediaStore
+}
+
+func (s *OpenTracingLayer) Vat() store.VatStore {
+	return s.VatStore
 }
 
 func (s *OpenTracingLayer) VoucherCategory() store.VoucherCategoryStore {
@@ -1099,6 +1104,11 @@ type OpenTracingLayerUserAddressStore struct {
 
 type OpenTracingLayerVariantMediaStore struct {
 	store.VariantMediaStore
+	Root *OpenTracingLayer
+}
+
+type OpenTracingLayerVatStore struct {
+	store.VatStore
 	Root *OpenTracingLayer
 }
 
@@ -7593,16 +7603,16 @@ func (s *OpenTracingLayerShopTranslationStore) Upsert(translation *model.ShopTra
 	return result, err
 }
 
-func (s *OpenTracingLayerStaffNotificationRecipientStore) Get(id string) (*model.StaffNotificationRecipient, error) {
+func (s *OpenTracingLayerStaffNotificationRecipientStore) FilterByOptions(options *model.StaffNotificationRecipientFilterOptions) ([]*model.StaffNotificationRecipient, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StaffNotificationRecipientStore.Get")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StaffNotificationRecipientStore.FilterByOptions")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.StaffNotificationRecipientStore.Get(id)
+	result, err := s.StaffNotificationRecipientStore.FilterByOptions(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -9152,6 +9162,42 @@ func (s *OpenTracingLayerVariantMediaStore) FilterByOptions(options *model.Varia
 	return result, err
 }
 
+func (s *OpenTracingLayerVatStore) FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VatStore.FilterByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.VatStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerVatStore) Upsert(transaction store_iface.SqlxTxExecutor, vats []*model.Vat) ([]*model.Vat, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VatStore.Upsert")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.VatStore.Upsert(transaction, vats)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerVoucherCategoryStore) FilterByOptions(options *model.VoucherCategoryFilterOption) ([]*model.VoucherCategory, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "VoucherCategoryStore.FilterByOptions")
@@ -10057,6 +10103,7 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.UserAccessTokenStore = &OpenTracingLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
 	newStore.UserAddressStore = &OpenTracingLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
 	newStore.VariantMediaStore = &OpenTracingLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
+	newStore.VatStore = &OpenTracingLayerVatStore{VatStore: childStore.Vat(), Root: &newStore}
 	newStore.VoucherCategoryStore = &OpenTracingLayerVoucherCategoryStore{VoucherCategoryStore: childStore.VoucherCategory(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &OpenTracingLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
 	newStore.VoucherCollectionStore = &OpenTracingLayerVoucherCollectionStore{VoucherCollectionStore: childStore.VoucherCollection(), Root: &newStore}

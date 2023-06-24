@@ -162,7 +162,7 @@ func buildStoreImplement() error {
 				return "attribute"
 			case "FileInfo", "UploadSession":
 				return "file"
-			case "Shop", "ShopTranslation", "ShopStaff":
+			case "Shop", "ShopTranslation", "ShopStaff", "Vat":
 				return "shop"
 			case "OpenExchangeRate":
 				return "external_services"

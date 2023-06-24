@@ -6,6 +6,8 @@ package api
 import (
 	"context"
 	"fmt"
+
+	"github.com/sitename/sitename/web"
 )
 
 func (r *Resolver) ShopDomainUpdate(ctx context.Context, args struct{ Input *SiteDomainInput }) (*ShopDomainUpdate, error) {
@@ -31,11 +33,19 @@ func (r *Resolver) ShopAddressUpdate(ctx context.Context, args struct{ Input *Ad
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) Shop(ctx context.Context) (*Shop, error) {
+func (r *Resolver) Shop(ctx context.Context) (Shop, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 // NOTE: Refer to ./schemas/shop.graphqls for details on directive used.
 func (r *Resolver) GiftCardSettings(ctx context.Context) (*GiftCardSettings, error) {
-	panic(fmt.Errorf("not implemented"))
+	shopSettings := GetContextValue[*web.Context](ctx, WebCtx).App.Config().ShopSettings
+
+	return &GiftCardSettings{
+		ExpiryType: *shopSettings.GiftcardExpiryType,
+		ExpiryPeriod: &TimePeriod{
+			Amount: int32(*shopSettings.GiftcardExpiryPeriod),
+			Type:   *shopSettings.GiftcardExpiryPeriodType,
+		},
+	}, nil
 }

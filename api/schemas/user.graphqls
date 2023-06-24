@@ -2,11 +2,11 @@ extend type Mutation {
   login(input: LoginInput!): LoginResponse!
   userAvatarUpdate(image: Upload!): UserAvatarUpdate
   userAvatarDelete: UserAvatarDelete
-  userBulkSetActive(ids: [String!]!, isActive: Boolean!): UserBulkSetActive
+  userBulkSetActive(ids: [String!]!, isActive: Boolean!): UserBulkSetActive @hasRoleAny(roles: [system_admin, system_user_manager])
 }
 
 extend type Query {
-  me: User
+  me: User @authenticated
   user(id: String, email: String): User
 }
 

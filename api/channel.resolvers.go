@@ -353,12 +353,9 @@ func (r *Resolver) Channel(ctx context.Context, args struct{ Id string }) (*Chan
 		return nil, model.NewAppError("Channel", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, fmt.Sprintf("%s is not a valid channel id", args.Id), http.StatusBadRequest)
 	}
 
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{store.ChannelTableName + ".Id": args.Id},
-	})
-	if appErr != nil {
-		return nil, appErr
+	channel, err := ChannelByIdLoader.Load(ctx, args.Id)()
+	if err != nil {
+		return nil, err
 	}
 
 	return SystemChannelToGraphqlChannel(channel), nil

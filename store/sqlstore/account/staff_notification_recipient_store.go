@@ -1,8 +1,7 @@
 package account
 
 import (
-	"database/sql"
-
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -47,16 +46,29 @@ func (ss *SqlStaffNotificationRecipientStore) Save(record *model.StaffNotificati
 	return record, nil
 }
 
-func (ss *SqlStaffNotificationRecipientStore) Get(id string) (*model.StaffNotificationRecipient, error) {
-	var res model.StaffNotificationRecipient
+func (s *SqlStaffNotificationRecipientStore) FilterByOptions(options *model.StaffNotificationRecipientFilterOptions) ([]*model.StaffNotificationRecipient, error) {
+	query := s.GetQueryBuilder().
+		Select(s.ModelFields(store.StaffNotificationRecipientTableName + ".")...).
+		From(store.StaffNotificationRecipientTableName)
 
-	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.StaffNotificationRecipientTableName+" WHERE Id = ?", id)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.StaffNotificationRecipientTableName, id)
+	for _, opt := range []squirrel.Sqlizer{
+		options.Id, options.Active, options.UserID, options.StaffEmail,
+	} {
+		if opt != nil {
+			query = query.Where(opt)
 		}
-		return nil, errors.Wrapf(err, "failed to find StaffNotificationRecipient with Id=%s", id)
 	}
 
-	return &res, nil
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
+	}
+
+	var res []*model.StaffNotificationRecipient
+	err = s.GetReplicaX().Select(&res, queryString, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to find staff notification recipients")
+	}
+
+	return res, nil
 }

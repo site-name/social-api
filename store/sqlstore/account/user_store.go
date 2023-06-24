@@ -521,7 +521,7 @@ func (us *SqlUserStore) VerifyEmail(userId, email string) (string, error) {
 		Exec("UPDATE "+store.UserTableName+" SET Email = lower(?), EmailVerified = true, UpdateAt = ? WHERE Id = ?",
 			email, now, userId,
 		); err != nil {
-		return "", errors.Wrapf(err, "failed to update Users with userId=%s and email=%s")
+		return "", errors.Wrapf(err, "failed to update Users with userId=%s and email=%s", userId, email)
 	}
 
 	return userId, nil

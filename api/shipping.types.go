@@ -49,26 +49,21 @@ func SystemShippingMethodToGraphqlShippingMethod(m *model.ShippingMethod) *Shipp
 		Description:     JSONString(m.Description),
 		PrivateMetadata: MetadataToSlice(m.PrivateMetadata),
 		Metadata:        MetadataToSlice(m.Metadata),
-		Type:            model.NewPrimitive(ShippingMethodTypeEnum(m.Type)),
+		Type:            &m.Type,
 		s:               m,
 		MinimumOrderWeight: &Weight{
-			Unit:  WeightUnitsEnum(m.WeightUnit),
+			Unit:  m.WeightUnit,
 			Value: float64(m.MinimumOrderWeight),
 		},
+		MaximumDeliveryDays: (*int32)(unsafe.Pointer(m.MaximumDeliveryDays)),
+		MinimumDeliveryDays: (*int32)(unsafe.Pointer(m.MinimumDeliveryDays)),
 	}
 
 	if m.MaximumOrderWeight != nil {
 		res.MaximumOrderWeight = &Weight{
-			Unit:  WeightUnitsEnum(m.WeightUnit),
+			Unit:  m.WeightUnit,
 			Value: float64(*m.MaximumOrderWeight),
 		}
-	}
-
-	if m.MaximumDeliveryDays != nil {
-		res.MaximumDeliveryDays = model.NewPrimitive(int32(*m.MaximumDeliveryDays))
-	}
-	if m.MinimumDeliveryDays != nil {
-		res.MinimumDeliveryDays = model.NewPrimitive(int32(*m.MinimumDeliveryDays))
 	}
 
 	return res
@@ -161,13 +156,11 @@ func (s *ShippingMethod) PostalCodeRules(ctx context.Context) ([]*ShippingMethod
 	}
 
 	return lo.Map(postalCodeRules, func(r *model.ShippingMethodPostalCodeRule, _ int) *ShippingMethodPostalCodeRule {
-		inclusionType := PostalCodeRuleInclusionTypeEnum(r.InclusionType)
-
 		return &ShippingMethodPostalCodeRule{
 			Start:         &r.Start,
 			End:           &r.End,
 			ID:            r.Id,
-			InclusionType: &inclusionType,
+			InclusionType: &r.InclusionType,
 		}
 	}), nil
 }

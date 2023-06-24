@@ -121,6 +121,7 @@ type RetryLayer struct {
 	UserAccessTokenStore               store.UserAccessTokenStore
 	UserAddressStore                   store.UserAddressStore
 	VariantMediaStore                  store.VariantMediaStore
+	VatStore                           store.VatStore
 	VoucherCategoryStore               store.VoucherCategoryStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
 	VoucherCollectionStore             store.VoucherCollectionStore
@@ -541,6 +542,10 @@ func (s *RetryLayer) UserAddress() store.UserAddressStore {
 
 func (s *RetryLayer) VariantMedia() store.VariantMediaStore {
 	return s.VariantMediaStore
+}
+
+func (s *RetryLayer) Vat() store.VatStore {
+	return s.VatStore
 }
 
 func (s *RetryLayer) VoucherCategory() store.VoucherCategoryStore {
@@ -1098,6 +1103,11 @@ type RetryLayerUserAddressStore struct {
 
 type RetryLayerVariantMediaStore struct {
 	store.VariantMediaStore
+	Root *RetryLayer
+}
+
+type RetryLayerVatStore struct {
+	store.VatStore
 	Root *RetryLayer
 }
 
@@ -8258,11 +8268,11 @@ func (s *RetryLayerShopTranslationStore) Upsert(translation *model.ShopTranslati
 
 }
 
-func (s *RetryLayerStaffNotificationRecipientStore) Get(id string) (*model.StaffNotificationRecipient, error) {
+func (s *RetryLayerStaffNotificationRecipientStore) FilterByOptions(options *model.StaffNotificationRecipientFilterOptions) ([]*model.StaffNotificationRecipient, error) {
 
 	tries := 0
 	for {
-		result, err := s.StaffNotificationRecipientStore.Get(id)
+		result, err := s.StaffNotificationRecipientStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}
@@ -9948,6 +9958,46 @@ func (s *RetryLayerVariantMediaStore) FilterByOptions(options *model.VariantMedi
 
 }
 
+func (s *RetryLayerVatStore) FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error) {
+
+	tries := 0
+	for {
+		result, err := s.VatStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerVatStore) Upsert(transaction store_iface.SqlxTxExecutor, vats []*model.Vat) ([]*model.Vat, error) {
+
+	tries := 0
+	for {
+		result, err := s.VatStore.Upsert(transaction, vats)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerVoucherCategoryStore) FilterByOptions(options *model.VoucherCategoryFilterOption) ([]*model.VoucherCategory, error) {
 
 	tries := 0
@@ -10939,6 +10989,7 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.UserAccessTokenStore = &RetryLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
 	newStore.UserAddressStore = &RetryLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
 	newStore.VariantMediaStore = &RetryLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
+	newStore.VatStore = &RetryLayerVatStore{VatStore: childStore.Vat(), Root: &newStore}
 	newStore.VoucherCategoryStore = &RetryLayerVoucherCategoryStore{VoucherCategoryStore: childStore.VoucherCategory(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &RetryLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
 	newStore.VoucherCollectionStore = &RetryLayerVoucherCollectionStore{VoucherCollectionStore: childStore.VoucherCollection(), Root: &newStore}

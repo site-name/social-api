@@ -12,14 +12,14 @@ extend type Mutation {
 }
 
 type Shop {
-  availablePaymentGateways(currency: String, channel: String): [PaymentGateway!]!
+  availablePaymentGateways(currency: String!, channelId: String!): [PaymentGateway!]!
   availableExternalAuthentications: [ExternalAuthentication!]!
   availableShippingMethods(channel: String!, address: AddressInput): [ShippingMethod]!
-  channelCurrencies: [String!]!
+  channelCurrencies: [String!]! @hasRoleAny(roles: [shop_admin, shop_staff])
   countries(languageCode: LanguageCodeEnum): [CountryDisplay!]!
   defaultCountry: CountryDisplay
-  defaultMailSenderName: String
-  defaultMailSenderAddress: String
+  defaultMailSenderName: String @hasRoleAny(roles: [shop_admin, shop_staff])
+  defaultMailSenderAddress: String @hasRoleAny(roles: [shop_admin, shop_staff])
   description: String
   domain: Domain!
   languages: [LanguageDisplay]!
@@ -35,12 +35,12 @@ type Shop {
   trackInventoryByDefault: Boolean
   defaultWeightUnit: WeightUnitsEnum
   translation(languageCode: LanguageCodeEnum!): ShopTranslation
-  automaticFulfillmentDigitalProducts: Boolean
-  defaultDigitalMaxDownloads: Int
-  defaultDigitalUrlValidDays: Int
+  automaticFulfillmentDigitalProducts: Boolean @hasRoleAny(roles: [shop_admin, shop_staff])
+  defaultDigitalMaxDownloads: Int @hasRoleAny(roles: [shop_admin, shop_staff])
+  defaultDigitalUrlValidDays: Int @hasRoleAny(roles: [shop_admin, shop_staff])
   companyAddress: Address
   customerSetPasswordUrl: String
-  staffNotificationRecipients: [StaffNotificationRecipient]!
+  staffNotificationRecipients: [StaffNotificationRecipient]! @hasRoleAny(roles: [shop_admin, shop_staff])
   limits: LimitInfo!
   version: String!
 }

@@ -519,7 +519,7 @@ func (u *User) GetDisplayNameWithPrefix(nameFormat, prefix string) string {
 	return u.getDisplayName(displayName, nameFormat)
 }
 
-func (u *User) GetRoles() []string {
+func (u *User) GetRoles() util.AnyArray[string] {
 	return strings.Fields(u.Roles)
 }
 

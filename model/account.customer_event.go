@@ -119,6 +119,13 @@ type StaffNotificationRecipient struct {
 	Active     *bool   `json:"active"`
 }
 
+type StaffNotificationRecipientFilterOptions struct {
+	Active     squirrel.Sqlizer
+	UserID     squirrel.Sqlizer
+	StaffEmail squirrel.Sqlizer
+	Id         squirrel.Sqlizer
+}
+
 func (c *StaffNotificationRecipient) ToJSON() string {
 	return ModelToJson(c)
 }

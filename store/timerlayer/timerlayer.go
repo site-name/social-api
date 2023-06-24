@@ -121,6 +121,7 @@ type TimerLayer struct {
 	UserAccessTokenStore               store.UserAccessTokenStore
 	UserAddressStore                   store.UserAddressStore
 	VariantMediaStore                  store.VariantMediaStore
+	VatStore                           store.VatStore
 	VoucherCategoryStore               store.VoucherCategoryStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
 	VoucherCollectionStore             store.VoucherCollectionStore
@@ -541,6 +542,10 @@ func (s *TimerLayer) UserAddress() store.UserAddressStore {
 
 func (s *TimerLayer) VariantMedia() store.VariantMediaStore {
 	return s.VariantMediaStore
+}
+
+func (s *TimerLayer) Vat() store.VatStore {
+	return s.VatStore
 }
 
 func (s *TimerLayer) VoucherCategory() store.VoucherCategoryStore {
@@ -1098,6 +1103,11 @@ type TimerLayerUserAddressStore struct {
 
 type TimerLayerVariantMediaStore struct {
 	store.VariantMediaStore
+	Root *TimerLayer
+}
+
+type TimerLayerVatStore struct {
+	store.VatStore
 	Root *TimerLayer
 }
 
@@ -6905,10 +6915,10 @@ func (s *TimerLayerShopTranslationStore) Upsert(translation *model.ShopTranslati
 	return result, err
 }
 
-func (s *TimerLayerStaffNotificationRecipientStore) Get(id string) (*model.StaffNotificationRecipient, error) {
+func (s *TimerLayerStaffNotificationRecipientStore) FilterByOptions(options *model.StaffNotificationRecipientFilterOptions) ([]*model.StaffNotificationRecipient, error) {
 	start := timemodule.Now()
 
-	result, err := s.StaffNotificationRecipientStore.Get(id)
+	result, err := s.StaffNotificationRecipientStore.FilterByOptions(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6916,7 +6926,7 @@ func (s *TimerLayerStaffNotificationRecipientStore) Get(id string) (*model.Staff
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("StaffNotificationRecipientStore.Get", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("StaffNotificationRecipientStore.FilterByOptions", success, elapsed)
 	}
 	return result, err
 }
@@ -8310,6 +8320,38 @@ func (s *TimerLayerVariantMediaStore) FilterByOptions(options *model.VariantMedi
 	return result, err
 }
 
+func (s *TimerLayerVatStore) FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error) {
+	start := timemodule.Now()
+
+	result, err := s.VatStore.FilterByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VatStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerVatStore) Upsert(transaction store_iface.SqlxTxExecutor, vats []*model.Vat) ([]*model.Vat, error) {
+	start := timemodule.Now()
+
+	result, err := s.VatStore.Upsert(transaction, vats)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("VatStore.Upsert", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerVoucherCategoryStore) FilterByOptions(options *model.VoucherCategoryFilterOption) ([]*model.VoucherCategory, error) {
 	start := timemodule.Now()
 
@@ -9130,6 +9172,7 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.UserAccessTokenStore = &TimerLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
 	newStore.UserAddressStore = &TimerLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
 	newStore.VariantMediaStore = &TimerLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
+	newStore.VatStore = &TimerLayerVatStore{VatStore: childStore.Vat(), Root: &newStore}
 	newStore.VoucherCategoryStore = &TimerLayerVoucherCategoryStore{VoucherCategoryStore: childStore.VoucherCategory(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &TimerLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
 	newStore.VoucherCollectionStore = &TimerLayerVoucherCollectionStore{VoucherCollectionStore: childStore.VoucherCollection(), Root: &newStore}

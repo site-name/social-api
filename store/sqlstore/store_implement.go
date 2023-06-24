@@ -140,6 +140,7 @@ type SqlStoreStores struct {
 	userAccessToken               store.UserAccessTokenStore
 	userAddress                   store.UserAddressStore
 	variantMedia                  store.VariantMediaStore
+	vat                           store.VatStore
 	voucherCategory               store.VoucherCategoryStore
 	voucherChannelListing         store.VoucherChannelListingStore
 	voucherCollection             store.VoucherCollectionStore
@@ -259,6 +260,7 @@ func (store *SqlStore) setupTables() {
 		userAccessToken:               account.NewSqlUserAccessTokenStore(store),
 		userAddress:                   account.NewSqlUserAddressStore(store),
 		variantMedia:                  product.NewSqlVariantMediaStore(store),
+		vat:                           shop.NewSqlVatStore(store),
 		voucherCategory:               discount.NewSqlVoucherCategoryStore(store),
 		voucherChannelListing:         discount.NewSqlVoucherChannelListingStore(store),
 		voucherCollection:             discount.NewSqlVoucherCollectionStore(store),
@@ -680,6 +682,10 @@ func (ss *SqlStore) UserAddress() store.UserAddressStore {
 
 func (ss *SqlStore) VariantMedia() store.VariantMediaStore {
 	return ss.stores.variantMedia
+}
+
+func (ss *SqlStore) Vat() store.VatStore {
+	return ss.stores.vat
 }
 
 func (ss *SqlStore) VoucherCategory() store.VoucherCategoryStore {
