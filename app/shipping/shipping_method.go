@@ -13,14 +13,14 @@ import (
 )
 
 // ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
-func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(ckout *model.Checkout, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError) {
-	if ckout.ShippingAddressID == nil || !model.IsValidId(*ckout.ShippingAddressID) {
+func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(checkout *model.Checkout, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError) {
+	if checkout.ShippingAddressID == nil {
 		return nil, nil
 	}
 
 	var appErr *model.AppError
 	if countryCode == "" {
-		countryCode, appErr = a.srv.CheckoutService().CheckoutCountry(ckout)
+		countryCode, appErr = a.srv.CheckoutService().CheckoutCountry(checkout)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -30,7 +30,7 @@ func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(ckout *model.Chec
 
 	// check if checkout line infos are provided
 	if len(lines) == 0 {
-		_, _, products, err := a.srv.Store.CheckoutLine().CheckoutLinesByCheckoutWithPrefetch(ckout.Token)
+		_, _, products, err := a.srv.Store.CheckoutLine().CheckoutLinesByCheckoutWithPrefetch(checkout.Token)
 		if err != nil {
 			return nil, model.NewAppError("ApplicableShippingMethodsForCheckout", "app.shipping.get_applicable_shipping_methods_for_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
 		}
@@ -70,17 +70,21 @@ func (a *ServiceShipping) ApplicableShippingMethodsForCheckout(ckout *model.Chec
 		return nil, model.NewAppError("ApplicableShippingMethodsForCheckout", "app.shipping.shipping_methods_for_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return a.FilterShippingMethodsByPostalCodeRules(shippingMethods, *ckout.ShippingAddressID) // already checked ShippingAddressID == nil
+	checkoutShippingAddress, appErr := a.srv.AccountService().AddressById(*checkout.ShippingAddressID)
+	if appErr != nil {
+		return nil, appErr
+	}
+	return a.FilterShippingMethodsByPostalCodeRules(shippingMethods, checkoutShippingAddress), nil
 }
 
 // ApplicableShippingMethodsForOrder finds all applicable shippingmethods for given order, based on other arguments passed in
-func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *model.Order, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError) {
-	if oder.ShippingAddressID == nil || !model.IsValidId(*oder.ShippingAddressID) {
+func (a *ServiceShipping) ApplicableShippingMethodsForOrder(order *model.Order, channelID string, price *goprices.Money, countryCode model.CountryCode, lines []*model.CheckoutLineInfo) ([]*model.ShippingMethod, *model.AppError) {
+	if order.ShippingAddressID == nil {
 		return nil, nil
 	}
 
 	if !countryCode.IsValid() {
-		address, appErr := a.srv.AccountService().AddressById(*oder.ShippingAddressID)
+		address, appErr := a.srv.AccountService().AddressById(*order.ShippingAddressID)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -90,7 +94,7 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *model.Order, c
 	var orderProductIDs []string
 	if len(lines) == 0 {
 		orderLines, appErr := a.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-			OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": oder.Id},
+			OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": order.Id},
 			PrefetchRelated: model.OrderLinePrefetchRelated{
 				VariantProduct: true, // this tells store to prefetch related product variants, products too
 			},
@@ -113,16 +117,19 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(oder *model.Order, c
 	applicableShippingMethods, err := a.srv.Store.ShippingMethod().ApplicableShippingMethods(
 		price,
 		channelID,
-		oder.GetTotalWeight(),
+		order.GetTotalWeight(),
 		countryCode,
 		orderProductIDs,
 	)
-
 	if err != nil {
 		return nil, model.NewAppError("ApplicableShippingMethodsForOrder", "app.shipping.shipping_methods_for_order.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return a.FilterShippingMethodsByPostalCodeRules(applicableShippingMethods, *oder.ShippingAddressID) // already checked ShippingAddressID == nil
+	orderShippingAddress, appErr := a.srv.AccountService().AddressById(*order.ShippingAddressID)
+	if appErr != nil {
+		return nil, appErr
+	}
+	return a.FilterShippingMethodsByPostalCodeRules(applicableShippingMethods, orderShippingAddress), nil
 }
 
 // ShippingMethodByOption returns a shipping method with given options

@@ -27,7 +27,7 @@ func (a *ServiceCheckout) DeleteCheckoutLines(transaction store_iface.SqlxTxExec
 }
 
 func (a *ServiceCheckout) UpsertCheckoutLine(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, *model.AppError) {
-	checkoutLine, err := a.srv.SqlStore.CheckoutLine().Upsert(checkoutLine)
+	checkoutLine, err := a.srv.Store.CheckoutLine().Upsert(checkoutLine)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
 			return nil, appErr

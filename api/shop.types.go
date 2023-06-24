@@ -6,7 +6,9 @@ import (
 	"net/http"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/gosimple/slug"
 	"github.com/samber/lo"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
@@ -83,16 +85,14 @@ func (s *Shop) AvailablePaymentGateways(ctx context.Context, args struct {
 		gw.Config = lo.Filter(gw.Config, func(cf model.StringInterface, _ int) bool { return cf != nil && len(cf) > 0 })
 
 		resConfig := lo.Map(gw.Config, func(cf model.StringInterface, _ int) *GatewayConfigLine {
-			var key, value string
+			var res GatewayConfigLine
 			for k, v := range cf {
-				key = k
-				value = fmt.Sprintf("%v", v)
+				vStr := fmt.Sprintf("%v", v)
+				res.Field = k
+				res.Value = &vStr
 			}
 
-			return &GatewayConfigLine{
-				Field: key,
-				Value: &value,
-			}
+			return &res
 		})
 
 		return &PaymentGateway{
@@ -115,25 +115,94 @@ func (s *Shop) AvailableExternalAuthentications(ctx context.Context) ([]External
 	auths = lo.Filter(auths, func(auth model.StringInterface, _ int) bool { return auth != nil && len(auth) > 0 })
 
 	return lo.Map(auths, func(auth model.StringInterface, _ int) ExternalAuthentication {
-		var key, value string
-
+		var res ExternalAuthentication
 		for k, v := range auth {
-			key = k
-			value = fmt.Sprintf("%v", v)
+			vStr := fmt.Sprintf("%v", v)
+			res.ID = k
+			res.Name = &vStr
 		}
 
-		return ExternalAuthentication{
-			ID:   key,
-			Name: &value,
-		}
+		return res
 	}), nil
 }
 
 func (s *Shop) AvailableShippingMethods(ctx context.Context, args struct {
-	Channel string
+	Channel string // NOTE: channel slug
 	Address *AddressInput
-}) ([]*PaymentGateway, error) {
-	panic("not implemented")
+}) ([]*ShippingMethod, error) {
+	// validate argument(s)
+	if !slug.IsSlug(args.Channel) {
+		return nil, model.NewAppError("Shop.AvailableShippingMethods", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel"}, args.Channel+" is not a valid channel slug", http.StatusBadRequest)
+	}
+	if args.Address != nil {
+		err := args.Address.Validate()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var (
+		address                  model.Address
+		embedCtx                 = GetContextValue[*web.Context](ctx, WebCtx)
+		shippingMethodFilterOpts = &model.ShippingMethodFilterOption{
+			ShippingZoneChannelSlug:    squirrel.Eq{store.ChannelTableName + ".Slug": args.Channel},
+			ChannelListingsChannelSlug: squirrel.Eq{store.ChannelTableName + ".Slug": args.Channel},
+		}
+	)
+
+	if args.Address != nil && args.Address.Country != nil {
+		shippingMethodFilterOpts.ShippingZoneCountries = squirrel.ILike{store.ShippingZoneTableName + ".Countries": "%" + args.Address.Country.String() + "%"}
+	}
+
+	availableSippingMethods, appErr := embedCtx.
+		App.
+		Srv().
+		ShippingService().
+		ShippingMethodsByOptions(shippingMethodFilterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if args.Address != nil && args.Address.Country != nil {
+		args.Address.PatchAddress(&address)
+		availableSippingMethods = embedCtx.App.Srv().
+			ShippingService().
+			FilterShippingMethodsByPostalCodeRules(availableSippingMethods, &address)
+	}
+
+	if len(availableSippingMethods) == 0 {
+		return []*ShippingMethod{}, nil
+	}
+
+	shippingMapping, appErr := embedCtx.App.Srv().ShippingService().GetShippingMethodToShippingPriceMapping(availableSippingMethods, args.Channel)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
+		Slug: squirrel.Eq{store.ChannelTableName + ".Slug": args.Channel},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	for _, shippingMethod := range availableSippingMethods {
+		shippingPrice := shippingMapping[shippingMethod.Id]
+		taxedPrice, appErr := pluginMng.ApplyTaxesToShipping(*shippingPrice, address, channel.Id)
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		if *embedCtx.App.Config().ShopSettings.DisplayGrossPrices {
+			shippingMethod.SetPrice(taxedPrice.Gross)
+		} else {
+			shippingMethod.SetPrice(taxedPrice.Net)
+		}
+	}
+
+	return systemRecordsToGraphql(availableSippingMethods, SystemShippingMethodToGraphqlShippingMethod), nil
 }
 
 // NOTE: Refer to ./schemas/shop.graphql for details on directives used

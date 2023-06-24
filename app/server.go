@@ -71,7 +71,7 @@ const (
 )
 
 type Server struct {
-	SqlStore *sqlstore.SqlStore
+	sqlStore *sqlstore.SqlStore
 	Store    store.Store
 	// WebSocketRouter *WebSocketRouter
 
@@ -324,10 +324,10 @@ func NewServer(options ...Option) (*Server, error) {
 
 	if s.newStore == nil {
 		s.newStore = func() (store.Store, error) {
-			s.SqlStore = sqlstore.New(s.Config().SqlSettings, s.Metrics)
+			s.sqlStore = sqlstore.New(s.Config().SqlSettings, s.Metrics)
 
 			lcl, err2 := localcachelayer.NewLocalCacheLayer(
-				retrylayer.New(s.SqlStore),
+				retrylayer.New(s.sqlStore),
 				s.Metrics,
 				s.Cluster,
 				s.CacheProvider,

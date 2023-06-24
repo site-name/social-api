@@ -262,7 +262,7 @@ func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos []*model.Checkou
 
 // DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
 func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *model.CheckoutFilterOption) *model.AppError {
-	err := s.srv.SqlStore.Checkout().DeleteCheckoutsByOption(transaction, option)
+	err := s.srv.Store.Checkout().DeleteCheckoutsByOption(transaction, option)
 	if err != nil {
 		return model.NewAppError("DeleteCheckoutsByOption", "app.checkout.error_deleting_checkouts_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

@@ -225,27 +225,28 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 	}
 	defer rows.Close()
 
-	var (
-		shippingMethodMeetMap = map[string]*model.ShippingMethod{}
-		shippingMethod        model.ShippingMethod
-		shippingZone          model.ShippingZone
-		postalCodeRule        model.ShippingMethodPostalCodeRule
-	)
-	scanFields := s.ScanFields(&shippingMethod)
-	scanFields = append(scanFields, s.ShippingZone().ScanFields(&shippingZone)...)
-	scanFields = append(scanFields, s.ShippingMethodPostalCodeRule().ScanFields(&postalCodeRule))
+	var shippingMethodMeetMap = map[string]*model.ShippingMethod{}
 
 	for rows.Next() {
+		var (
+			shippingMethod model.ShippingMethod
+			shippingZone   model.ShippingZone
+			postalCodeRule model.ShippingMethodPostalCodeRule
+			scanFields     = s.ScanFields(&shippingMethod)
+		)
+		scanFields = append(scanFields, s.ShippingZone().ScanFields(&shippingZone)...)
+		scanFields = append(scanFields, s.ShippingMethodPostalCodeRule().ScanFields(&postalCodeRule))
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan row")
 		}
 
 		if _, exist := shippingMethodMeetMap[shippingMethod.Id]; !exist {
-			shippingMethodMeetMap[shippingMethod.Id] = shippingMethod.DeepCopy()
+			shippingMethodMeetMap[shippingMethod.Id] = &shippingMethod
 		}
-		shippingMethodMeetMap[shippingMethod.Id].AppendShippingMethodPostalCodeRule(postalCodeRule.DeepCopy())
-		shippingMethodMeetMap[shippingMethod.Id].AppendShippingZone(shippingZone.DeepCopy())
+		shippingMethodMeetMap[shippingMethod.Id].AppendShippingMethodPostalCodeRule(&postalCodeRule)
+		shippingMethodMeetMap[shippingMethod.Id].AppendShippingZone(&shippingZone)
 	}
 
 	return lo.Values(shippingMethodMeetMap), nil
@@ -256,27 +257,34 @@ func (ss *SqlShippingMethodStore) commonQueryBuilder(options *model.ShippingMeth
 		Select(ss.ModelFields(store.ShippingMethodTableName + ".")...).
 		From(store.ShippingMethodTableName)
 
-	// parse options
-	if options.Id != nil {
-		query = query.Where(options.Id)
+	for _, opt := range []squirrel.Sqlizer{
+		options.Id, options.Type, options.MinimumOrderWeight,
+		options.MaximumOrderWeight, options.ShippingZoneID} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
 	}
-	if options.Type != nil {
-		query = query.Where(options.Type)
-	}
-	if options.MinimumOrderWeight != nil {
-		query = query.Where(options.MinimumOrderWeight)
-	}
-	if options.MaximumOrderWeight != nil {
-		query = query.Where(options.MaximumOrderWeight)
-	}
-	if options.ShippingZoneChannelSlug != nil {
-		query = query.Where(options.ShippingZoneChannelSlug)
+
+	if options.ShippingZoneChannelSlug != nil ||
+		options.ShippingZoneCountries != nil {
+		query = query.InnerJoin(store.ShippingZoneTableName + " ON ShippingZones.Id = ShippingMethods.ShippingZoneID")
+
+		if options.ShippingZoneChannelSlug != nil {
+			query = query.
+				InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id").
+				InnerJoin(store.ChannelTableName + " ON Channels.Id = ShippingZoneChannels.ChannelID").
+				Where(options.ShippingZoneChannelSlug)
+		}
+
+		if options.ShippingZoneCountries != nil {
+			query = query.Where(options.ShippingZoneCountries)
+		}
 	}
 	if options.ChannelListingsChannelSlug != nil {
-		query = query.Where(options.ChannelListingsChannelSlug)
-	}
-	if options.ShippingZoneID != nil {
-		query = query.Where(options.ShippingZoneID)
+		query = query.
+			InnerJoin(store.ShippingMethodChannelListingTableName + " ON ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id").
+			InnerJoin(store.ChannelTableName + " ON Channels.Id = ShippingMethodChannelListings.ChannelID").
+			Where(options.ChannelListingsChannelSlug)
 	}
 
 	return query

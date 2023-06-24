@@ -18,7 +18,7 @@ type ShippingService interface {
 	// DefaultShippingZoneExists returns all shipping zones that have Ids differ than given shippingZoneID and has `Default` properties equal to true
 	DefaultShippingZoneExists(shippingZoneID string) ([]*model.ShippingZone, *model.AppError)
 	// FilterShippingMethodsByPostalCodeRules Filter shipping methods for given address by postal code rules.
-	FilterShippingMethodsByPostalCodeRules(shippingMethods []*model.ShippingMethod, shippingAddressID string) ([]*model.ShippingMethod, *model.AppError)
+	FilterShippingMethodsByPostalCodeRules(shippingMethods []*model.ShippingMethod, shippingAddress *model.Address) []*model.ShippingMethod
 	// GetCountriesWithoutShippingZone Returns country codes that are not assigned to any shipping zone.
 	GetCountriesWithoutShippingZone() ([]model.CountryCode, *model.AppError)
 	// ShippingMethodByOption returns a shipping method with given options
@@ -31,4 +31,5 @@ type ShippingService interface {
 	ShippingZonesByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, *model.AppError)
 	DropInvalidShippingMethodsRelationsForGivenChannels(transaction store_iface.SqlxTxExecutor, shippingMethodIds, channelIds []string) *model.AppError
 	ShippingMethodPostalCodeRulesByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, *model.AppError)
+	GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethods, channelSlug string) (map[string]*goprices.Money, *model.AppError)
 }

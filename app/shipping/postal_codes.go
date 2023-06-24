@@ -109,17 +109,8 @@ func IsShippingMethodApplicableForPostalCode(customerShippingAddress *model.Addr
 }
 
 // FilterShippingMethodsByPostalCodeRules Filter shipping methods for given address by postal code rules.
-func (a *ServiceShipping) FilterShippingMethodsByPostalCodeRules(shippingMethods []*model.ShippingMethod, shippingAddressID string) ([]*model.ShippingMethod, *model.AppError) {
-	shippingAddress, appErr := a.srv.AccountService().AddressById(shippingAddressID)
-	if appErr != nil {
-		return nil, appErr
-	}
-
-	for i, shippingMethod := range shippingMethods {
-		if !IsShippingMethodApplicableForPostalCode(shippingAddress, shippingMethod) {
-			shippingMethods = append(shippingMethods[:i], shippingMethods[i+1:]...)
-		}
-	}
-
-	return shippingMethods, nil
+func (a *ServiceShipping) FilterShippingMethodsByPostalCodeRules(shippingMethods []*model.ShippingMethod, shippingAddress *model.Address) []*model.ShippingMethod {
+	return lo.Filter(shippingMethods, func(method *model.ShippingMethod, _ int) bool {
+		return IsShippingMethodApplicableForPostalCode(shippingAddress, method)
+	})
 }

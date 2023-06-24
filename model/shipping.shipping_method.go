@@ -99,13 +99,29 @@ func (s *ShippingMethod) AppendShippingMethodPostalCodeRule(rule *ShippingMethod
 
 // ShippingMethodFilterOption is used for filtering shipping methods
 type ShippingMethodFilterOption struct {
-	Id                         squirrel.Sqlizer
-	Type                       squirrel.Sqlizer
-	MinimumOrderWeight         squirrel.Sqlizer
-	MaximumOrderWeight         squirrel.Sqlizer
-	ShippingZoneChannelSlug    squirrel.Sqlizer
+	Id                 squirrel.Sqlizer
+	Type               squirrel.Sqlizer
+	MinimumOrderWeight squirrel.Sqlizer
+	MaximumOrderWeight squirrel.Sqlizer
+	// INNER JOIN ShippingZones ON ...
+	//
+	// INNER JOIN ShippingZoneChannels ON ...
+	//
+	// INNER JOIN Channels ON ...
+	//
+	// WHERE Channels.Slug ...
+	ShippingZoneChannelSlug squirrel.Sqlizer
+	// INNER JOIN ShippingMethodChannelListings ON ...
+	//
+	// INNER JOIN Channels ON ...
+	//
+	// WHERE Channels.Slug ...
 	ChannelListingsChannelSlug squirrel.Sqlizer
-	ShippingZoneID             squirrel.Sqlizer
+	// INNER JOIN ShippingZones ON ...
+	//
+	// WHERE ShippingZones.Countries ...
+	ShippingZoneCountries squirrel.Sqlizer
+	ShippingZoneID        squirrel.Sqlizer
 }
 
 func (s *ShippingMethod) PopulateNonDbFields() {
@@ -174,38 +190,6 @@ func (s *ShippingMethod) IsValid() *AppError {
 		return outer("type", &s.Id)
 	}
 	return nil
-}
-
-func (s *ShippingMethod) DeepCopy() *ShippingMethod {
-	if s == nil {
-		return new(ShippingMethod)
-	}
-
-	res := *s
-
-	if s.MaximumOrderWeight != nil {
-		res.MaximumOrderWeight = NewPrimitive(*s.MaximumOrderWeight)
-	}
-
-	if s.MaximumDeliveryDays != nil {
-		res.MaximumDeliveryDays = NewPrimitive(*s.MaximumDeliveryDays)
-	}
-	if s.MinimumDeliveryDays != nil {
-		res.MinimumDeliveryDays = NewPrimitive(*s.MinimumDeliveryDays)
-	}
-	if s.MinOrderWeight != nil {
-		res.MinOrderWeight = &measurement.Weight{Amount: s.MinOrderWeight.Amount, Unit: s.MinOrderWeight.Unit}
-	}
-	if s.MaxOrderWeight != nil {
-		res.MaxOrderWeight = &measurement.Weight{Amount: s.MaxOrderWeight.Amount, Unit: s.MaxOrderWeight.Unit}
-	}
-	res.Description = s.Description.DeepCopy()
-	res.ModelMetadata = s.ModelMetadata.DeepCopy()
-
-	res.shippingZones = s.shippingZones.DeepCopy()
-	res.shippingMethodPostalCodeRules = s.shippingMethodPostalCodeRules.DeepCopy()
-
-	return &res
 }
 
 const SHIPPING_METHOD_TRANSLATION_NAME_MAX_LENGTH = 255

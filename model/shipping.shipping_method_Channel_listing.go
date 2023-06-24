@@ -29,6 +29,8 @@ type ShippingMethodChannelListingFilterOption struct {
 	ShippingMethodID squirrel.Sqlizer
 	ChannelID        squirrel.Sqlizer
 
+	ChannelSlug squirrel.Sqlizer // INNER JOIN Channels ON ... WHERE Channels.Slug ...
+
 	ShippingMethod_ShippingZoneID_Inner squirrel.Sqlizer // INNER JOIN ShippingMethods ON ... INNER JOIN ShippingZones ON ... WHERE ShippingZones.Id ...
 }
 

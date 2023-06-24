@@ -111,15 +111,18 @@ func (s *SqlShippingMethodChannelListingStore) Get(listingID string) (*model.Shi
 func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error) {
 	query := s.GetQueryBuilder().
 		Select(s.ModelFields(store.ShippingMethodChannelListingTableName + ".")...).
-		From(store.ShippingMethodChannelListingTableName).
-		OrderBy(store.TableOrderingMap[store.ShippingMethodChannelListingTableName])
+		From(store.ShippingMethodChannelListingTableName)
 
 	// parse filter option
-	if option.ShippingMethodID != nil {
-		query = query.Where(option.ShippingMethodID)
+	for _, opt := range []squirrel.Sqlizer{option.ShippingMethodID, option.ChannelID} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
 	}
-	if option.ChannelID != nil {
-		query = query.Where(option.ChannelID)
+	if option.ChannelSlug != nil {
+		query = query.
+			InnerJoin(store.ChannelTableName + " ON Channels.Id = ShippingMethodChannelListings.ChannelID").
+			Where(option.ChannelSlug)
 	}
 	if option.ShippingMethod_ShippingZoneID_Inner != nil {
 		query = query.
