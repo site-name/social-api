@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
@@ -12,6 +13,15 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
+)
+
+var (
+	shopLanguages = lo.MapToSlice(model.Languages, func(code model.LanguageCodeEnum, name string) *LanguageDisplay {
+		return &LanguageDisplay{
+			Code:     code,
+			Language: name,
+		}
+	})
 )
 
 type Shop struct {
@@ -55,14 +65,46 @@ type Shop struct {
 	// ChannelCurrencies                   []string                      `json:"channelCurrencies"`
 }
 
-func systemShopSettingsToGraphqlShop(shop *model.ShopSettings) *Shop {
-	if shop == nil {
-		return nil
+func systemConfigToGraphqlShop(cfg *model.Config, vats []*model.Vat) *Shop {
+	taxes := lo.SliceToMap(vats, func(item *model.Vat) (model.CountryCode, *model.Vat) {
+		return item.CountryCode, item
+	})
+
+	shopCountries := lo.MapToSlice(model.Countries, func(code model.CountryCode, name string) *CountryDisplay {
+		return &CountryDisplay{
+			Code:    code.String(),
+			Country: name,
+			Vat:     systemVatToGraphqlVat(taxes[code]),
+		}
+	})
+
+	return &Shop{
+		Countries:                           shopCountries,
+		Languages:                           shopLanguages,
+		DefaultMailSenderName:               cfg.ShopSettings.DefaultMailSenderName,
+		DefaultMailSenderAddress:            cfg.ShopSettings.DefaultMailSenderAddress,
+		AutomaticFulfillmentDigitalProducts: cfg.ShopSettings.AutomaticFulfillmentDigitalProducts,
+		DefaultDigitalMaxDownloads:          (*int32)(unsafe.Pointer(cfg.ShopSettings.DefaultDigitalMaxDownloads)),
+		DefaultDigitalURLValidDays:          (*int32)(unsafe.Pointer(cfg.ShopSettings.DefaultDigitalUrlValidDays)),
+		IncludeTaxesInPrices:                *cfg.ShopSettings.IncludeTaxesInPrice,
+		FulfillmentAutoApprove:              *cfg.ShopSettings.FulfillmentAutoApprove,
+		DisplayGrossPrices:                  *cfg.ShopSettings.DisplayGrossPrices,
+		ChargeTaxesOnShipping:               *cfg.ShopSettings.ChargeTaxesOnShipping,
+		TrackInventoryByDefault:             cfg.ShopSettings.TrackInventoryByDefault,
+		DefaultWeightUnit:                   cfg.ShopSettings.DefaultWeightUnit,
+		CompanyAddress:                      SystemAddressToGraphqlAddress(cfg.ShopSettings.Address),
+		CustomerSetPasswordURL:              cfg.ShopSettings.CustomerSetPasswordUrl,
+		Version:                             model.CurrentVersion,
+		Name:                                *cfg.ServiceSettings.SiteName,
+		PhonePrefixes:                       []string{"84"},
+		Description:                         cfg.ShopSettings.Description,
+
+		Domain:      nil, // TODO: fix me
+		Permissions: nil, // TODO: fix me
+		HeaderText:  nil, // TODO: fix me
+		Limits:      nil, // TODO: fix me
+		Translation: nil, // TODO: fix me
 	}
-
-	res := &Shop{}
-
-	return res
 }
 
 type PaymentGateway struct {

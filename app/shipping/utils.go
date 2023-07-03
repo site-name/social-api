@@ -1,7 +1,6 @@
 package shipping
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -12,16 +11,16 @@ import (
 // DefaultShippingZoneExists returns all shipping zones that have Ids differ than given shippingZoneID and has `Default` properties equal to true
 func (a *ServiceShipping) DefaultShippingZoneExists(shippingZoneID string) ([]*model.ShippingZone, *model.AppError) {
 	return a.ShippingZonesByOption(&model.ShippingZoneFilterOption{
-		Id:           squirrel.NotEq{store.ShippingZoneTableName + ".Id": shippingZoneID},
-		DefaultValue: model.NewPrimitive(true),
+		Id:      squirrel.NotEq{store.ShippingZoneTableName + ".Id": shippingZoneID},
+		Default: squirrel.Eq{store.ShippingZoneTableName + ".Default": true},
 	})
 }
 
 // GetCountriesWithoutShippingZone Returns country codes that are not assigned to any shipping zone.
 func (a *ServiceShipping) GetCountriesWithoutShippingZone() ([]model.CountryCode, *model.AppError) {
-	zones, err := a.srv.Store.ShippingZone().FilterByOption(nil) // nil mean find all
+	zones, err := a.ShippingZonesByOption(&model.ShippingZoneFilterOption{})
 	if err != nil {
-		return nil, model.NewAppError("GetCountriesWithoutShippingZone", "app.shipping.shipping_zones_with_option.app_error", nil, err.Error(), http.StatusInternalServerError)
+		return nil, err
 	}
 
 	meetMap := map[model.CountryCode]struct{}{}

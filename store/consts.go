@@ -14,146 +14,146 @@ type StoreResult struct {
 	NErr error // NErr a temporary field used by the new code for the AppError migration. This will later become Err when the entire store is migrated.
 }
 
-var TableOrderingMap map[string]string
+// var TableOrderingMap map[string]string
 
-func init() {
-	TableOrderingMap = map[string]string{
-		OrderLineTableName:       "CreateAt ASC",  // order
-		OrderTableName:           "CreateAt DESC", //
-		FulfillmentLineTableName: "",              //
-		FulfillmentTableName:     "CreateAt ASC",  //
-		OrderEventTableName:      "CreateAt ASC",  //
+// func init() {
+// 	TableOrderingMap = map[string]string{
+// 		OrderLineTableName:       "CreateAt ASC",  // order
+// 		OrderTableName:           "CreateAt DESC", //
+// 		FulfillmentLineTableName: "",              //
+// 		FulfillmentTableName:     "CreateAt ASC",  //
+// 		OrderEventTableName:      "CreateAt ASC",  //
 
-		CategoryTableName:                     "Name ASC",                    // product
-		CategoryTranslationTableName:          "LanguageCode ASC",            //
-		ProductChannelListingTableName:        "CreateAt ASC",                //
-		CollectionChannelListingTableName:     "CreateAt ASC",                //
-		CollectionProductRelationTableName:    "",                            //
-		CollectionTableName:                   "Slug ASC",                    //
-		CollectionTranslationTableName:        "LanguageCode ASC",            //
-		DigitalContentTableName:               "",                            //
-		DigitalContentURLTableName:            "",                            //
-		ProductMediaTableName:                 "SortOrder ASC, CreateAt ASC", //
-		ProductTableName:                      "Slug ASC",                    //
-		ProductTranslationTableName:           "LanguageCode ASC",            //
-		ProductTypeTableName:                  "Slug ASC",                    //
-		ProductVariantChannelListingTableName: "CreateAt ASC",                //
-		ProductVariantMediaTableName:          "",                            //
-		ProductVariantTableName:               "SortOrder ASC, Sku ASC",      //
-		ProductVariantTranslationTableName:    "Name ASC",                    //
+// 		CategoryTableName:                     "Name ASC",                    // product
+// 		CategoryTranslationTableName:          "LanguageCode ASC",            //
+// 		ProductChannelListingTableName:        "CreateAt ASC",                //
+// 		CollectionChannelListingTableName:     "CreateAt ASC",                //
+// 		CollectionProductRelationTableName:    "",                            //
+// 		CollectionTableName:                   "Slug ASC",                    //
+// 		CollectionTranslationTableName:        "LanguageCode ASC",            //
+// 		DigitalContentTableName:               "",                            //
+// 		DigitalContentURLTableName:            "",                            //
+// 		ProductMediaTableName:                 "SortOrder ASC, CreateAt ASC", //
+// 		ProductTableName:                      "Slug ASC",                    //
+// 		ProductTranslationTableName:           "LanguageCode ASC",            //
+// 		ProductTypeTableName:                  "Slug ASC",                    //
+// 		ProductVariantChannelListingTableName: "CreateAt ASC",                //
+// 		ProductVariantMediaTableName:          "",                            //
+// 		ProductVariantTableName:               "SortOrder ASC, Sku ASC",      //
+// 		ProductVariantTranslationTableName:    "Name ASC",                    //
 
-		CheckoutLineTableName: "CreateAt ASC", // checkout
-		CheckoutTableName:     "CreateAt ASC", //
+// 		CheckoutLineTableName: "CreateAt ASC", // checkout
+// 		CheckoutTableName:     "CreateAt ASC", //
 
-		ChannelTableName: "Slug ASC", //channel
+// 		ChannelTableName: "Slug ASC", //channel
 
-		WishlistItemTableName:               "CreateAt ASC", // wishlist
-		WishlistItemProductVariantTableName: "",             //
-		WishlistTableName:                   "CreateAt ASC", //
+// 		WishlistItemTableName:               "CreateAt ASC", // wishlist
+// 		WishlistItemProductVariantTableName: "",             //
+// 		WishlistTableName:                   "CreateAt ASC", //
 
-		StockTableName:                 "CreateAt ASC", // warehouse
-		WarehouseTableName:             "Slug DESC",    //
-		WarehouseShippingZoneTableName: "",             //
-		AllocationTableName:            "CreateAt ASC", //
-		PreOrderAllocationTableName:    "",             //
+// 		StockTableName:                 "CreateAt ASC", // warehouse
+// 		WarehouseTableName:             "Slug DESC",    //
+// 		WarehouseShippingZoneTableName: "",             //
+// 		AllocationTableName:            "CreateAt ASC", //
+// 		PreOrderAllocationTableName:    "",             //
 
-		AddressTableName:                    "CreateAt ASC",   // account
-		UserTableName:                       "Email ASC",      //
-		CustomerEventTableName:              "Date ASC",       //
-		StaffNotificationRecipientTableName: "StaffEmail ASC", //
-		CustomerNoteTableName:               "Date ASC",       //
-		TokenTableName:                      "",               //
-		UserAddressTableName:                "",               //
-		TermsOfServiceTableName:             "",               //
-		StatusTableName:                     "",               //
-		UserAccessTokenTableName:            "",
+// 		AddressTableName:                    "CreateAt ASC",   // account
+// 		UserTableName:                       "Email ASC",      //
+// 		CustomerEventTableName:              "Date ASC",       //
+// 		StaffNotificationRecipientTableName: "StaffEmail ASC", //
+// 		CustomerNoteTableName:               "Date ASC",       //
+// 		TokenTableName:                      "",               //
+// 		UserAddressTableName:                "",               //
+// 		TermsOfServiceTableName:             "",               //
+// 		StatusTableName:                     "",               //
+// 		UserAccessTokenTableName:            "",
 
-		GiftcardTableName:         "Code ASC", // giftcard
-		GiftcardEventTableName:    "Date ASC", //
-		OrderGiftCardTableName:    "",         //
-		GiftcardCheckoutTableName: "",         //
+// 		GiftcardTableName:         "Code ASC", // giftcard
+// 		GiftcardEventTableName:    "Date ASC", //
+// 		OrderGiftCardTableName:    "",         //
+// 		GiftcardCheckoutTableName: "",         //
 
-		PaymentTableName:     "CreateAt ASC", // payment
-		TransactionTableName: "CreateAt ASC", //
+// 		PaymentTableName:     "CreateAt ASC", // payment
+// 		TransactionTableName: "CreateAt ASC", //
 
-		PluginKeyValueStoreTableName: "", //
+// 		PluginKeyValueStoreTableName: "", //
 
-		PreferenceTableName: "", //
+// 		PreferenceTableName: "", //
 
-		RoleTableName: "", //
+// 		RoleTableName: "", //
 
-		CsvExportEventTableName: "Date ASC", // csv
-		CsvExportFileTableName:  "",         //
+// 		CsvExportEventTableName: "Date ASC", // csv
+// 		CsvExportFileTableName:  "",         //
 
-		BaseAssignedAttributeTableName:         "",                                       // attribute
-		AttributeTableName:                     "StorefrontSearchPosition ASC, Slug ASC", //
-		AttributeTranslationTableName:          "",                                       //
-		AttributeValueTableName:                "SortOrder ASC",                          //
-		AttributeValueTranslationTableName:     "",                                       //
-		AssignedPageAttributeValueTableName:    "",                                       //
-		AssignedPageAttributeTableName:         "",                                       //
-		AttributePageTableName:                 "",                                       //
-		AssignedVariantAttributeValueTableName: "",                                       //
-		AssignedVariantAttributeTableName:      "",                                       //
-		AttributeVariantTableName:              "",                                       //
-		AssignedProductAttributeValueTableName: "",                                       //
-		AssignedProductAttributeTableName:      "",                                       //
-		AttributeProductTableName:              "",                                       //
+// 		BaseAssignedAttributeTableName:         "",                                       // attribute
+// 		AttributeTableName:                     "StorefrontSearchPosition ASC, Slug ASC", //
+// 		AttributeTranslationTableName:          "",                                       //
+// 		AttributeValueTableName:                "SortOrder ASC",                          //
+// 		AttributeValueTranslationTableName:     "",                                       //
+// 		AssignedPageAttributeValueTableName:    "",                                       //
+// 		AssignedPageAttributeTableName:         "",                                       //
+// 		AttributePageTableName:                 "",                                       //
+// 		AssignedVariantAttributeValueTableName: "",                                       //
+// 		AssignedVariantAttributeTableName:      "",                                       //
+// 		AttributeVariantTableName:              "",                                       //
+// 		AssignedProductAttributeValueTableName: "",                                       //
+// 		AssignedProductAttributeTableName:      "",                                       //
+// 		AttributeProductTableName:              "",                                       //
 
-		VoucherTableName:                "Code ASC",                         // discount
-		VoucherCategoryTableName:        "",                                 //
-		VoucherCollectionTableName:      "",                                 //
-		VoucherProductTableName:         "",                                 //
-		VoucherChannelListingTableName:  "CreateAt ASC",                     //
-		VoucherCustomerTableName:        "VoucherID ASC, CustomerEmail ASC", //
-		SaleChannelListingTableName:     "CreateAt ASC",                     //
-		SaleTableName:                   "Name ASC, CreateAt ASC",           //
-		SaleTranslationTableName:        "LanguageCode ASC, Name ASC",       //
-		VoucherTranslationTableName:     "LanguageCode ASC, CreateAt ASC",   //
-		SaleCategoryRelationTableName:   "CreateAt ASC",                     //
-		SaleProductRelationTableName:    "CreateAt ASC",                     //
-		SaleCollectionRelationTableName: "CreateAt ASC",                     //
-		OrderDiscountTableName:          "",                                 //
-		VoucherProductVariantTableName:  "CreateAt ASC",                     //
-		SaleProductVariantTableName:     "CreateAt ASC",                     //
+// 		VoucherTableName:                "Code ASC",                         // discount
+// 		VoucherCategoryTableName:        "",                                 //
+// 		VoucherCollectionTableName:      "",                                 //
+// 		VoucherProductTableName:         "",                                 //
+// 		VoucherChannelListingTableName:  "CreateAt ASC",                     //
+// 		VoucherCustomerTableName:        "VoucherID ASC, CustomerEmail ASC", //
+// 		SaleChannelListingTableName:     "CreateAt ASC",                     //
+// 		SaleTableName:                   "Name ASC, CreateAt ASC",           //
+// 		SaleTranslationTableName:        "LanguageCode ASC, Name ASC",       //
+// 		VoucherTranslationTableName:     "LanguageCode ASC, CreateAt ASC",   //
+// 		SaleCategoryRelationTableName:   "CreateAt ASC",                     //
+// 		SaleProductRelationTableName:    "CreateAt ASC",                     //
+// 		SaleCollectionRelationTableName: "CreateAt ASC",                     //
+// 		OrderDiscountTableName:          "",                                 //
+// 		VoucherProductVariantTableName:  "CreateAt ASC",                     //
+// 		SaleProductVariantTableName:     "CreateAt ASC",                     //
 
-		ShopTableName:            "", // shop
-		ShopTranslationTableName: "", //
-		ShopStaffTableName:       "", //
-		VatTableName:             "", //
+// 		ShopTableName:            "", // shop
+// 		ShopTranslationTableName: "", //
+// 		ShopStaffTableName:       "", //
+// 		VatTableName:             "", //
 
-		MenuTableName:                "CreateAt ASC",     // menu
-		MenuItemTableName:            "SortOrder ASC",    //
-		MenuItemTranslationTableName: "LanguageCode ASC", //
+// 		MenuTableName:                "CreateAt ASC",     // menu
+// 		MenuItemTableName:            "SortOrder ASC",    //
+// 		MenuItemTranslationTableName: "LanguageCode ASC", //
 
-		ShippingMethodTableName:                "",             // shipping
-		ShippingZoneTableName:                  "CreateAt ASC", //
-		ShippingZoneChannelTableName:           "",             //
-		ShippingMethodTranslationTableName:     "",             //
-		ShippingMethodPostalCodeRuleTableName:  "",             //
-		ShippingMethodChannelListingTableName:  "CreateAt ASC", //
-		ShippingMethodExcludedProductTableName: "",             //
+// 		ShippingMethodTableName:                "",             // shipping
+// 		ShippingZoneTableName:                  "CreateAt ASC", //
+// 		ShippingZoneChannelTableName:           "",             //
+// 		ShippingMethodTranslationTableName:     "",             //
+// 		ShippingMethodPostalCodeRuleTableName:  "",             //
+// 		ShippingMethodChannelListingTableName:  "CreateAt ASC", //
+// 		ShippingMethodExcludedProductTableName: "",             //
 
-		JobTableName: "", // job
+// 		JobTableName: "", // job
 
-		FileInfoTableName:      "", // file
-		UploadSessionTableName: "", //
+// 		FileInfoTableName:      "", // file
+// 		UploadSessionTableName: "", //
 
-		PageTableName:            "Slug ASC",         // page
-		PageTranslationTableName: "LanguageCode ASC", //
-		PageTypeTableName:        "Slug ASC",         //
+// 		PageTableName:            "Slug ASC",         // page
+// 		PageTranslationTableName: "LanguageCode ASC", //
+// 		PageTypeTableName:        "Slug ASC",         //
 
-		InvoiceEventTableName: "CreateAt ASC", // invoice
-		InvoiceTableName:      "CreateAt ASC", //
+// 		InvoiceEventTableName: "CreateAt ASC", // invoice
+// 		InvoiceTableName:      "CreateAt ASC", //
 
-		OpenExchangeRateTableName:    "ToCurrency ASC", // external services
-		PluginConfigurationTableName: "",               // plugins
+// 		OpenExchangeRateTableName:    "ToCurrency ASC", // external services
+// 		PluginConfigurationTableName: "",               // plugins
 
-		AuditTableName:            "",
-		ClusterDiscoveryTableName: "",
-		ComplianceTableName:       "",
-	}
-}
+// 		AuditTableName:            "",
+// 		ClusterDiscoveryTableName: "",
+// 		ComplianceTableName:       "",
+// 	}
+// }
 
 // all system product related table names
 const (

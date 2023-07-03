@@ -68,8 +68,7 @@ func (ss *SqlSaleCategoryRelationStore) Get(relationID string) (*model.SaleCateg
 func (ss *SqlSaleCategoryRelationStore) SaleCategoriesByOption(option *model.SaleCategoryRelationFilterOption) ([]*model.SaleCategoryRelation, error) {
 	query := ss.GetQueryBuilder().
 		Select("*").
-		From(store.SaleCategoryRelationTableName).
-		OrderBy(store.TableOrderingMap[store.SaleCategoryRelationTableName])
+		From(store.SaleCategoryRelationTableName)
 
 	// parse options
 	if option.Id != nil {

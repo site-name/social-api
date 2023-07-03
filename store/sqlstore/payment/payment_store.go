@@ -204,8 +204,7 @@ func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) err
 func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error) {
 	query := ps.GetQueryBuilder().
 		Select(ps.ModelFields(store.PaymentTableName + ".")...).
-		From(store.PaymentTableName).
-		OrderBy(store.TableOrderingMap[store.PaymentTableName])
+		From(store.PaymentTableName)
 
 	// parse option
 	if option.Id != nil {

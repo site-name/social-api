@@ -205,8 +205,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 
 	query := ols.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.OrderLineTableName).
-		OrderBy(store.TableOrderingMap[store.OrderLineTableName])
+		From(store.OrderLineTableName)
 
 	// parse option
 	if option.Id != nil {

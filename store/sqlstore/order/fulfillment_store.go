@@ -147,8 +147,7 @@ func (fs *SqlFulfillmentStore) commonQueryBuild(option *model.FulfillmentFilterO
 	// build query:
 	query := fs.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.FulfillmentTableName).
-		OrderBy(store.TableOrderingMap[store.FulfillmentTableName])
+		From(store.FulfillmentTableName)
 
 	// parse option
 	if option.Id != nil {

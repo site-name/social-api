@@ -43,9 +43,10 @@ type StockFilterForChannelOption struct {
 
 // StockFilterOption is used for build squirrel sql queries
 type StockFilterOption struct {
-	Id               squirrel.Sqlizer //
-	WarehouseID      squirrel.Sqlizer //
-	ProductVariantID squirrel.Sqlizer //
+	Id               squirrel.Sqlizer
+	WarehouseID      squirrel.Sqlizer
+	ProductVariantID squirrel.Sqlizer
+	Quantity         squirrel.Sqlizer
 
 	Warehouse_ShippingZone_countries squirrel.Sqlizer // INNER JOIN Warehouses ON ... INNER JOIN WarehouseShippingZones ON ... INNER JOIN ShippingZones ON ... WHERE ShippingZones.Countries ...
 	Warehouse_ShippingZone_ChannelID squirrel.Sqlizer // INNER JOIN Warehouses ON ... INNER JOIN WarehouseShippingZones ON ... INNER JOIN ShippingZones ON ... INNER JOIN ShippingZoneChannels WHERE ShippingZoneChannels.ChannelID ...
@@ -54,6 +55,17 @@ type StockFilterOption struct {
 	SelectRelatedWarehouse      bool // inner join Warehouses and attachs them to returning stocks
 
 	AnnotateAvailabeQuantity bool // if true, store selects another column: `Stocks.Quantity - COALESCE(SUM(Allocations.QuantityAllocated), 0) AS AvailableQuantity`
+
+	// NOTE: If Set, store use OR ILIKEs to check this value against:
+	//
+	// relevant product of this stock's name (INNER JOIN ProductVariants ON ... INNER JOIN Products ON ... WHERE Products.Name ...),
+	//
+	// relevant product variant's name (INNER JOIN ProductVariants ON ... WHERE ProductVariants.Name ...),
+	//
+	// relevent warehouse's name (INNER JOIN Warehouses ON ... WHERE Warehouses.Name ...),
+	//
+	// company name of relevent address of relevent warehouse of this stock (INNER JOIN Warehouses ON ... INNER JOIN Addresses ON ... WHERE Addresses.CompanyName ...)
+	Search string
 
 	// set this to true if you want to lock selected rows for update.
 	// This add `FOR UPDATE` to the end of sql queries

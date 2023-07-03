@@ -219,53 +219,85 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 // FilterByOption finds and returns a slice of stocks that satisfy given option
 func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *model.StockFilterOption) ([]*model.Stock, error) {
 	selectFields := ss.ModelFields(store.StockTableName + ".")
-	if options.SelectRelatedWarehouse {
-		selectFields = append(selectFields, ss.Warehouse().ModelFields(store.WarehouseTableName+".")...)
-	}
 	if options.SelectRelatedProductVariant {
 		selectFields = append(selectFields, ss.ProductVariant().ModelFields(store.ProductVariantTableName+".")...)
+	}
+	if options.SelectRelatedWarehouse {
+		selectFields = append(selectFields, ss.Warehouse().ModelFields(store.WarehouseTableName+".")...)
 	}
 
 	query := ss.GetQueryBuilder().
 		Select(selectFields...). // this selecting fields differ the query from `if` caluse
 		From(store.StockTableName)
 
+	var stockSearchOpts squirrel.Sqlizer = nil
+	if options.Search != "" {
+		expr := "%" + options.Search + "%"
+
+		stockSearchOpts = squirrel.Or{
+			squirrel.ILike{store.ProductTableName + ".Name": expr},
+			squirrel.ILike{store.ProductVariantTableName + ".Name": expr},
+			squirrel.ILike{store.WarehouseTableName + ".Name": expr},
+			squirrel.ILike{store.AddressTableName + ".CompanyName": expr},
+		}
+	}
+
 	// parse options:
-	if options.SelectRelatedProductVariant {
-		query = query.InnerJoin(store.ProductVariantTableName + " ON (ProductVariants.Id = Stocks.ProductVariantID)")
+	for _, opt := range []squirrel.Sqlizer{
+		options.Id,
+		options.WarehouseID,
+		options.ProductVariantID,
+		options.Quantity,
+		options.Warehouse_ShippingZone_countries,
+		options.Warehouse_ShippingZone_ChannelID,
+		stockSearchOpts, //
+	} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
 	}
-	if options.SelectRelatedWarehouse {
-		query = query.InnerJoin(store.WarehouseTableName + " ON (Warehouses.Id = Stocks.WarehouseID)")
-	}
-	if options.Id != nil {
-		query = query.Where(options.Id)
-	}
-	if options.WarehouseID != nil {
-		query = query.Where(options.WarehouseID)
-	}
-	if options.ProductVariantID != nil {
-		query = query.Where(options.ProductVariantID)
-	}
+
 	if options.LockForUpdate {
 		query = query.Suffix("FOR UPDATE")
+
+		if options.ForUpdateOf != "" {
+			query = query.Suffix("OF " + options.ForUpdateOf)
+		}
 	}
-	if options.ForUpdateOf != "" && options.LockForUpdate {
-		query = query.Suffix("OF " + options.ForUpdateOf)
+
+	// NOTE: The order of join must similar to order of select above
+	if options.SelectRelatedProductVariant || options.Search != "" {
+		query = query.InnerJoin(store.ProductVariantTableName + " ON ProductVariants.Id = Stocks.ProductVariantID")
+
+		if options.Search != "" {
+			query = query.InnerJoin(store.ProductTableName + " ON Products.Id = ProductVariants.ProductID")
+		}
 	}
-	if options.Warehouse_ShippingZone_countries != nil ||
+
+	if options.SelectRelatedWarehouse ||
+		options.Search != "" ||
+		options.Warehouse_ShippingZone_countries != nil ||
 		options.Warehouse_ShippingZone_ChannelID != nil {
-		query = query.
-			InnerJoin(store.WarehouseTableName + " ON Warehouses.Id = Stocks.WarehouseID").
-			InnerJoin(store.WarehouseShippingZoneTableName + " ON WarehouseShippingZones.WarehouseID = Warehouses.Id").
-			InnerJoin(store.ShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
-	}
-	if options.Warehouse_ShippingZone_countries != nil {
-		query = query.Where(options.Warehouse_ShippingZone_countries)
-	}
-	if options.Warehouse_ShippingZone_ChannelID != nil {
-		query = query.
-			InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id").
-			Where(options.Warehouse_ShippingZone_ChannelID)
+
+		query = query.InnerJoin(store.WarehouseTableName + " ON Warehouses.Id = Stocks.WarehouseID")
+
+		//
+		if options.Warehouse_ShippingZone_countries != nil ||
+			options.Warehouse_ShippingZone_ChannelID != nil {
+			query = query.
+				InnerJoin(store.WarehouseShippingZoneTableName + " ON WarehouseShippingZones.WarehouseID = Warehouses.Id").
+				InnerJoin(store.ShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
+		}
+
+		//
+		if options.Warehouse_ShippingZone_ChannelID != nil {
+			query = query.InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
+		}
+
+		//
+		if options.Search != "" {
+			query = query.InnerJoin(store.AddressTableName + " ON Addresses.Id = Warehouses.AddressID")
+		}
 	}
 
 	var groupBy string
@@ -286,50 +318,52 @@ func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, 
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	var (
-		returningStocks   []*model.Stock
-		stock             model.Stock
-		variant           model.ProductVariant
-		wareHouse         model.WareHouse
-		queryer           store_iface.SqlxExecutor = ss.GetReplicaX()
-		availableQuantity int
-		scanFields        = ss.ScanFields(&stock)
-	)
+	runner := ss.GetReplicaX()
 	if transaction != nil {
-		queryer = transaction
+		runner = transaction
 	}
-
-	if options.SelectRelatedWarehouse {
-		scanFields = append(scanFields, ss.Warehouse().ScanFields(&wareHouse)...)
-	}
-	if options.SelectRelatedProductVariant {
-		scanFields = append(scanFields, ss.ProductVariant().ScanFields(&variant)...)
-	}
-	if options.AnnotateAvailabeQuantity {
-		scanFields = append(scanFields, &availableQuantity)
-	}
-
-	rows, err := queryer.QueryX(queryString, args...)
+	rows, err := runner.QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks by given options")
 	}
 
+	returningStocks := make(model.Stocks, 0)
+
 	for rows.Next() {
+		var (
+			stock             model.Stock
+			variant           model.ProductVariant
+			wareHouse         model.WareHouse
+			availableQuantity int
+			scanFields        = ss.ScanFields(&stock)
+		)
+
+		// NOTE: The order of scan fields must similar to order of select above
+		if options.SelectRelatedProductVariant {
+			scanFields = append(scanFields, ss.ProductVariant().ScanFields(&variant)...)
+		}
+		if options.SelectRelatedWarehouse {
+			scanFields = append(scanFields, ss.Warehouse().ScanFields(&wareHouse)...)
+		}
+		if options.AnnotateAvailabeQuantity {
+			scanFields = append(scanFields, &availableQuantity)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find stocks with related warehouses and product variants")
 		}
 
-		if options.SelectRelatedWarehouse {
-			stock.SetWarehouse(&wareHouse)
-		}
 		if options.SelectRelatedProductVariant {
 			stock.SetProductVariant(&variant)
+		}
+		if options.SelectRelatedWarehouse {
+			stock.SetWarehouse(&wareHouse)
 		}
 		if options.AnnotateAvailabeQuantity {
 			stock.AvailableQuantity = availableQuantity
 		}
-		returningStocks = append(returningStocks, stock.DeepCopy())
+		returningStocks = append(returningStocks, &stock)
 	}
 
 	if err = rows.Close(); err != nil {
@@ -355,8 +389,7 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.Sqlx
 		From(store.StockTableName).
 		InnerJoin(store.WarehouseTableName + " ON (Warehouses.Id = Stocks.WarehouseID)").
 		InnerJoin(store.ProductVariantTableName + " ON (Stocks.ProductVariantID = ProductVariants.Id)").
-		Where(squirrel.Expr("Stocks.WarehouseID IN ?", warehouseIDQuery)).
-		OrderBy(store.TableOrderingMap[store.StockTableName])
+		Where(squirrel.Expr("Stocks.WarehouseID IN ?", warehouseIDQuery))
 
 	// parse option for FilterVariantStocksForCountry
 	// parse additional options

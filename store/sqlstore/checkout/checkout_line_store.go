@@ -368,8 +368,7 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 func (cls *SqlCheckoutLineStore) CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, error) {
 	query := cls.GetQueryBuilder().
 		Select("*").
-		From(store.CheckoutLineTableName).
-		OrderBy(store.TableOrderingMap[store.CheckoutLineTableName])
+		From(store.CheckoutLineTableName)
 
 	// parse options
 	if option.Id != nil {

@@ -92,9 +92,8 @@ func (ss *SqlDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 	var res model.Sale
 	err := ss.GetReplicaX().Get(
 		&res,
-		"SELECT * FROM "+store.SaleTableName+" WHERE id = ? ORDER BY ?",
+		"SELECT * FROM "+store.SaleTableName+" WHERE id = ? ORDER BY Name ASC, CreateAt ASC",
 		saleID,
-		store.TableOrderingMap[store.SaleTableName],
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -110,15 +109,13 @@ func (ss *SqlDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
 	query := ss.
 		GetQueryBuilder().
-		Select("*").
-		From(store.SaleTableName).
-		OrderBy(store.TableOrderingMap[store.SaleTableName])
+		Select(ss.ModelFields(store.SaleTableName + ".")...).
+		From(store.SaleTableName)
 
 	// check sale start date
 	if option.StartDate != nil {
 		query = query.Where(option.StartDate)
 	}
-
 	// check sale end date
 	if option.EndDate != nil {
 		query = query.Where(option.EndDate)

@@ -107,9 +107,8 @@ func (ps *SqlPaymentTransactionStore) Get(id string) (*model.PaymentTransaction,
 // FilterByOption finds and returns a list of transactions with given option
 func (ps *SqlPaymentTransactionStore) FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
 	query := ps.GetQueryBuilder().
-		Select("*").
-		From(store.TransactionTableName).
-		OrderBy(store.TableOrderingMap[store.TransactionTableName])
+		Select(ps.ModelFields(store.TransactionTableName + ".")...).
+		From(store.TransactionTableName)
 
 	// parse options:
 	if option.Id != nil {

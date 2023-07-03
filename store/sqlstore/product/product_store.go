@@ -357,7 +357,6 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 		From(store.ProductChannelListingTableName).
 		InnerJoin(store.ChannelTableName+" ON (ProductChannelListings.ChannelID = Channels.Id)").
 		Where("ProductChannelListings.ProductID = Products.Id AND Channels.Slug = ?", channelSlug).
-		OrderBy(store.TableOrderingMap[store.ProductChannelListingTableName]).
 		Limit(1)
 
 	publicationDateColumnSelect := ps.GetQueryBuilder(squirrel.Question).
@@ -365,7 +364,6 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 		From(store.ProductChannelListingTableName).
 		InnerJoin(store.ChannelTableName+" ON (Channels.Id = ProductChannelListings.ChannelID)").
 		Where("ProductChannelListings.ProductID = Products.Id AND Channels.Slug = ?", channelSlug).
-		OrderBy(store.TableOrderingMap[store.ProductChannelListingTableName]).
 		Limit(1)
 
 	queryString, args, err := ps.GetQueryBuilder().
@@ -381,7 +379,6 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 			squirrel.Expr("NOT Products.IsPublished"),
 			squirrel.Expr("Products.IsPublished IS NULL"),
 		}).
-		OrderBy(store.TableOrderingMap[store.ProductTableName]).
 		ToSql()
 
 	if err != nil {
@@ -446,8 +443,7 @@ func (ps *SqlProductStore) PublishedWithVariants(channelIdOrSlug string) squirre
 		Select(ps.ModelFields(store.ProductTableName + ".")...).
 		From(store.ProductTableName).
 		Where(productChannelListingQuery).
-		Where(productVariantQuery).
-		OrderBy(store.TableOrderingMap[store.ProductTableName])
+		Where(productVariantQuery)
 }
 
 // 1) If requesting user has any of product-related permissions
@@ -479,8 +475,7 @@ func (ps *SqlProductStore) VisibleToUserProductsQuery(channelSlugOrID string, us
 			GetQueryBuilder().
 			Select(ps.ModelFields(store.ProductTableName + ".")...).
 			From(store.ProductTableName).
-			Where(productChannelListingQuery).
-			OrderBy(store.TableOrderingMap[store.ProductTableName])
+			Where(productChannelListingQuery)
 	}
 
 	return ps.PublishedWithVariants(channelSlugOrID)

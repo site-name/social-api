@@ -51,9 +51,10 @@ func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer *model.VoucherCustomer)
 }
 
 func (vcs *SqlVoucherCustomerStore) commonQueryBuilder(options *model.VoucherCustomerFilterOption) squirrel.SelectBuilder {
-	query := vcs.GetQueryBuilder().Select("*").
-		From(store.VoucherCustomerTableName).
-		OrderBy(store.TableOrderingMap[store.VoucherCustomerTableName])
+	query := vcs.
+		GetQueryBuilder().
+		Select(vcs.ModelFields(store.VoucherCustomerTableName + ".")...).
+		From(store.VoucherCustomerTableName)
 
 	// parse options
 	if options.Id != nil {

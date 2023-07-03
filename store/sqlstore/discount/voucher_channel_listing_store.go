@@ -103,8 +103,7 @@ func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (
 func (vcls *SqlVoucherChannelListingStore) FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) {
 	query := vcls.GetQueryBuilder().
 		Select("*").
-		From(store.VoucherChannelListingTableName).
-		OrderBy(store.TableOrderingMap[store.VoucherChannelListingTableName])
+		From(store.VoucherChannelListingTableName)
 
 	// parse options
 	if option.Id != nil {

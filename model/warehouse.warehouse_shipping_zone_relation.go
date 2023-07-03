@@ -41,7 +41,3 @@ func (w *WarehouseShippingZone) PreSave() {
 		w.Id = NewId()
 	}
 }
-
-func (w *WarehouseShippingZone) ToJSON() string {
-	return ModelToJson(w)
-}

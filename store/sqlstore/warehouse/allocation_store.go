@@ -157,8 +157,7 @@ func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecu
 
 	query := as.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.AllocationTableName).
-		OrderBy(store.TableOrderingMap[store.AllocationTableName])
+		From(store.AllocationTableName)
 
 	var (
 		joined_OrderLines_tableName bool

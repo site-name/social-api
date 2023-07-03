@@ -81,8 +81,7 @@ func (os *SqlOpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, error) 
 	var res []*model.OpenExchangeRate
 	err := os.GetReplicaX().Select(
 		&res,
-		"SELECT * FROM "+store.OpenExchangeRateTableName+" ORDER BY ?",
-		store.TableOrderingMap[store.OpenExchangeRateTableName],
+		"SELECT * FROM "+store.OpenExchangeRateTableName+" ORDER BY ToCurrency ASC",
 	)
 
 	if err != nil {

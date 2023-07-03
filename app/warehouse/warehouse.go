@@ -107,6 +107,20 @@ func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode model.CountryCod
 	})
 }
 
+func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.WareHouse) (*model.WareHouse, *model.AppError) {
+	warehouse, err := s.srv.Store.Warehouse().Save(warehouse)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+
+		return nil, model.NewAppError("UpsertWarehouse", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, err.Error(), statusCode)
+	}
+
+	return warehouse, nil
+}
+
 // ApplicableForClickAndCollectNoQuantityCheck return the queryset of a `Warehouse` which are applicable for click and collect.
 // Note this method does not check stocks quantity for given `CheckoutLine`s.
 // This method should be used only if stocks quantity will be checked in further

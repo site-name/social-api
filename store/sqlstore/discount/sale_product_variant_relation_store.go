@@ -82,8 +82,7 @@ func (ss *SqlSaleProductVariantStore) Upsert(relation *model.SaleProductVariant)
 func (ss *SqlSaleProductVariantStore) FilterByOption(options *model.SaleProductVariantFilterOption) ([]*model.SaleProductVariant, error) {
 	query := ss.GetQueryBuilder().
 		Select("*").
-		From(store.SaleProductVariantTableName).
-		OrderBy(store.TableOrderingMap[store.SaleProductVariantTableName])
+		From(store.SaleProductVariantTableName)
 
 	andCondition := squirrel.And{}
 

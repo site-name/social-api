@@ -142,8 +142,7 @@ func (as *SqlAddressStore) Get(addressID string) (*model.Address, error) {
 func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
 	query := as.GetQueryBuilder().
 		Select(as.ModelFields(store.AddressTableName + ".")...).
-		From(store.AddressTableName).
-		OrderBy(store.TableOrderingMap[store.AddressTableName])
+		From(store.AddressTableName)
 
 	// parse query
 	if option.Id != nil {

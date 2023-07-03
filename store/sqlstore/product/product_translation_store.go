@@ -104,9 +104,8 @@ func (ps *SqlProductTranslationStore) Get(translationID string) (*model.ProductT
 // FilterByOption finds and returns product translations filtered using given options
 func (ps *SqlProductTranslationStore) FilterByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, error) {
 	query := ps.GetQueryBuilder().
-		Select("*").
-		From(store.ProductTranslationTableName).
-		OrderBy(store.TableOrderingMap[store.ProductTranslationTableName])
+		Select(ps.ModelFields(store.ProductTranslationTableName + ".")...).
+		From(store.ProductTranslationTableName)
 
 	// parse options
 	if option.Id != nil {

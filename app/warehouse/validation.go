@@ -15,9 +15,9 @@ import (
 // If not there would be issue with automatically selecting stock for operation.
 func (a *ServiceWarehouse) ValidateWarehouseCount(shippingZones model.ShippingZones, instance *model.WareHouse) (bool, *model.AppError) {
 	shippingZones, appErr := a.srv.ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
-		Id:                       squirrel.Eq{store.ShippingZoneTableName + ".Id": shippingZones.IDs()},
-		WarehouseID:              squirrel.NotEq{store.WarehouseShippingZoneTableName + ".WarehouseID": nil},
-		SelectRelatedThroughData: true, // this tells store to populate `RelativeWarehouseIDs` of returning shipping zones
+		Id:                        squirrel.Eq{store.ShippingZoneTableName + ".Id": shippingZones.IDs()},
+		WarehouseID:               squirrel.NotEq{store.WarehouseShippingZoneTableName + ".WarehouseID": nil},
+		SelectRelatedWarehouseIDs: true,
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -26,8 +26,22 @@ func (a *ServiceWarehouse) ValidateWarehouseCount(shippingZones model.ShippingZo
 		shippingZones = []*model.ShippingZone{}
 	}
 
-	warehouseIDs := shippingZones.RelativeWarehouseIDsFlat(false)
+	warehouseIdMap := map[string]bool{}
+	for _, zone := range shippingZones {
+		for _, warehouseId := range zone.RelativeWarehouseIDs {
+			warehouseIdMap[warehouseId] = true
+		}
+	}
 
-	return len(warehouseIDs) == 0 ||
-		(model.IsValidId(instance.Id) && len(warehouseIDs) == 1 && warehouseIDs[0] == instance.Id), nil
+	if len(warehouseIdMap) == 0 {
+		return true, nil
+	}
+	if len(warehouseIdMap) > 1 {
+		return false, nil
+	}
+	if instance.Id == "" {
+		return false, nil
+	}
+
+	return warehouseIdMap[instance.Id], nil
 }

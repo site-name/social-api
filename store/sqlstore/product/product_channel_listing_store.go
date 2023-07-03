@@ -127,8 +127,7 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *model.ProductCha
 	query := ps.
 		GetQueryBuilder().
 		Select(ps.ModelFields(store.ProductChannelListingTableName + ".")...).
-		From(store.ProductChannelListingTableName).
-		OrderBy(store.TableOrderingMap[store.ProductChannelListingTableName])
+		From(store.ProductChannelListingTableName)
 
 	// parse option
 	if option.Id != nil {

@@ -1,16 +1,16 @@
 extend type Query {
   warehouse(id: String!): Warehouse @hasRoleAny(roles: [shop_admin, shop_staff])
-  warehouses(filter: WarehouseFilterInput, sortBy: WarehouseSortingInput, before: String, after: String, first: Int, last: Int): WarehouseCountableConnection
+  warehouses(filter: WarehouseFilterInput, sortBy: WarehouseSortingInput, before: String, after: String, first: Int, last: Int): WarehouseCountableConnection @hasRoleAny(roles: [shop_admin, shop_staff])
   stock(id: String!): Stock @hasRoleAny(roles: [shop_admin, shop_staff])
   stocks(filter: StockFilterInput, before: String, after: String, first: Int, last: Int): StockCountableConnection @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 extend type Mutation {
-  createWarehouse(input: WarehouseCreateInput!): WarehouseCreate
-  updateWarehouse(id: String!, input: WarehouseUpdateInput!): WarehouseUpdate
-  deleteWarehouse(id: String!): WarehouseDelete
-  assignWarehouseShippingZone(id: String!, shippingZoneIds: [String!]!): WarehouseShippingZoneAssign
-  unassignWarehouseShippingZone(id: String!, shippingZoneIds: [String!]!): WarehouseShippingZoneUnassign
+  createWarehouse(input: WarehouseCreateInput!): WarehouseCreate @hasRoles(roles: [shop_admin])
+  updateWarehouse(id: String!, input: WarehouseUpdateInput!): WarehouseUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
+  deleteWarehouse(id: String!): WarehouseDelete @hasRoles(roles: [shop_admin])
+  assignWarehouseShippingZone(id: String!, shippingZoneIds: [String!]!): WarehouseShippingZoneAssign @hasRoleAny(roles: [shop_admin, shop_staff])
+  unassignWarehouseShippingZone(id: String!, shippingZoneIds: [String!]!): WarehouseShippingZoneUnassign @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 input WarehouseCreateInput {

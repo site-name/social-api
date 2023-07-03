@@ -52,6 +52,7 @@ func (s *SqlShippingZoneStore) ScanFields(shippingZone *model.ShippingZone) []in
 // Upsert depends on given shipping zone's Id to decide update or insert the zone
 func (s *SqlShippingZoneStore) Upsert(shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
 	var isSaving bool
+
 	if shippingZone.Id == "" {
 		isSaving = true
 		shippingZone.PreSave()
@@ -115,7 +116,7 @@ func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*model.ShippingZone, 
 // FilterByOption finds a list of shipping zones based on given option
 func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error) {
 	selectFields := s.ModelFields(store.ShippingZoneTableName + ".")
-	if option.SelectRelatedThroughData {
+	if option.SelectRelatedWarehouseIDs {
 		selectFields = append(selectFields, "WarehouseShippingZones.WarehouseID")
 	}
 
@@ -123,22 +124,23 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 		Select(selectFields...).
 		From(store.ShippingZoneTableName)
 
-	// check option id
-	if option.Id != nil {
-		query = query.Where(option.Id)
+	// parse options
+	for _, opt := range []squirrel.Sqlizer{
+		option.Id,
+		option.Default,
+		option.WarehouseID,
+		option.ChannelID,
+	} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
 	}
-	if option.DefaultValue != nil {
-		query = query.Where(squirrel.Eq{"ShippingZones.Default": *option.DefaultValue})
-	}
-	if option.WarehouseID != nil {
-		query = query.
-			InnerJoin(store.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
-			Where(option.WarehouseID)
+
+	if option.WarehouseID != nil || option.SelectRelatedWarehouseIDs {
+		query = query.InnerJoin(store.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
 	}
 	if option.ChannelID != nil {
-		query = query.
-			InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id").
-			Where(option.ChannelID)
+		query = query.InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
 	}
 
 	queryString, args, err := query.ToSql()
@@ -150,31 +152,31 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 		return nil, errors.Wrap(err, "failed to find shipping zones with given options")
 	}
 	var (
-		shippingZone           model.ShippingZone
 		returningShippingZones model.ShippingZones
-		warehouseID            string
-		shippingZonesMap       = map[string]*model.ShippingZone{} // shippingZonesMap is a map with keys are shipping zones's ids
-		scanFields             = s.ScanFields(&shippingZone)
+		shippingZonesMap       = map[string]*model.ShippingZone{} // keys are shipping zones' ids
 	)
 
-	if option.SelectRelatedThroughData {
-		scanFields = append(scanFields, &warehouseID)
-	}
-
 	for rows.Next() {
+		var (
+			shippingZone model.ShippingZone
+			warehouseID  string
+			scanFields   = s.ScanFields(&shippingZone)
+		)
+		if option.SelectRelatedWarehouseIDs {
+			scanFields = append(scanFields, &warehouseID)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to to scan a row contains shipping zones")
 		}
 
-		copiedShippingZone := shippingZone.DeepCopy()
-
-		if _, exist := shippingZonesMap[copiedShippingZone.Id]; !exist {
-			returningShippingZones = append(returningShippingZones, copiedShippingZone)
-			shippingZonesMap[copiedShippingZone.Id] = copiedShippingZone
+		if _, met := shippingZonesMap[shippingZone.Id]; !met {
+			returningShippingZones = append(returningShippingZones, &shippingZone)
+			shippingZonesMap[shippingZone.Id] = &shippingZone
 		}
-		duplicateWarehouseID := warehouseID
-		shippingZonesMap[copiedShippingZone.Id].RelativeWarehouseIDs = append(shippingZonesMap[copiedShippingZone.Id].RelativeWarehouseIDs, duplicateWarehouseID)
+
+		shippingZonesMap[shippingZone.Id].RelativeWarehouseIDs = append(shippingZonesMap[shippingZone.Id].RelativeWarehouseIDs, warehouseID)
 	}
 
 	if err = rows.Close(); err != nil {
@@ -187,22 +189,23 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 func (s *SqlShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterOption) (int64, error) {
 	query := s.GetQueryBuilder().Select("COUNT(*)").From(store.ShippingZoneTableName)
 
-	// parse option
-	if options.Id != nil {
-		query = query.Where(options.Id)
+	// parse options
+	for _, opt := range []squirrel.Sqlizer{
+		options.Id,
+		options.Default,
+		options.WarehouseID,
+		options.ChannelID,
+	} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
 	}
-	if options.DefaultValue != nil {
-		query = query.Where(squirrel.Eq{"ShippingZones.Default": *options.DefaultValue})
-	}
+
 	if options.WarehouseID != nil {
-		query = query.
-			InnerJoin(store.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
-			Where(options.WarehouseID)
+		query = query.InnerJoin(store.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
 	}
 	if options.ChannelID != nil {
-		query = query.
-			InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id").
-			Where(options.ChannelID)
+		query = query.InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
 	}
 
 	queryStr, args, err := query.ToSql()

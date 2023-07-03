@@ -133,8 +133,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 
 	query := cs.GetQueryBuilder().
 		Select(cs.ModelFields(store.CollectionTableName + ".")...).
-		From(store.CollectionTableName).
-		OrderBy(store.TableOrderingMap[store.CollectionTableName])
+		From(store.CollectionTableName)
 
 	// parse options
 	if option.Id != nil {

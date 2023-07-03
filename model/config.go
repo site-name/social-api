@@ -879,6 +879,7 @@ type ShopSettings struct {
 	DefaultMailSenderName                    *string
 	DefaultMailSenderAddress                 *string
 	CustomerSetPasswordUrl                   *string
+	Description                              *string
 	AutomaticallyConfirmAllNewOrders         *bool                       // default true
 	FulfillmentAutoApprove                   *bool                       // default true
 	FulfillmentAllowUnPaid                   *bool                       // default true
@@ -893,6 +894,9 @@ type ShopSettings struct {
 func (s *ShopSettings) SetDefaults() {
 	if s.Address == nil {
 		s.Address = new(Address)
+	}
+	if s.Description == nil {
+		s.Description = NewPrimitive("")
 	}
 	if s.IncludeTaxesInPrice == nil {
 		s.IncludeTaxesInPrice = NewPrimitive(true)
@@ -3138,11 +3142,9 @@ func (o *Config) IsValid() *AppError {
 	if *o.ServiceSettings.SiteURL == "" && *o.EmailSettings.EnableEmailBatching {
 		return NewAppError("Config.IsValid", "model.config.is_valid.site_url_email_batching.app_error", nil, "", http.StatusBadRequest)
 	}
-
 	if *o.ClusterSettings.Enable && *o.EmailSettings.EnableEmailBatching {
 		return NewAppError("Config.IsValid", "model.config.is_valid.cluster_email_batching.app_error", nil, "", http.StatusBadRequest)
 	}
-
 	if *o.ServiceSettings.SiteURL == "" && *o.ServiceSettings.AllowCookiesForSubdomains {
 		return NewAppError("Config.IsValid", "model.config.is_valid.allow_cookies_for_subdomains.app_error", nil, "", http.StatusBadRequest)
 	}
@@ -3150,66 +3152,52 @@ func (o *Config) IsValid() *AppError {
 	if err := o.SqlSettings.isValid(); err != nil {
 		return err
 	}
-
 	if err := o.FileSettings.isValid(); err != nil {
 		return err
 	}
-
 	if err := o.EmailSettings.isValid(); err != nil {
 		return err
 	}
-
 	if err := o.LdapSettings.isValid(); err != nil {
 		return err
 	}
-
 	if err := o.SamlSettings.isValid(); err != nil {
 		return err
 	}
-
 	if *o.PasswordSettings.MinimumLength < PASSWORD_MINIMUM_LENGTH || *o.PasswordSettings.MinimumLength > PASSWORD_MAXIMUM_LENGTH {
 		return NewAppError("Config.IsValid", "model.config.is_valid.password_length.app_error", map[string]interface{}{"MinLength": PASSWORD_MINIMUM_LENGTH, "MaxLength": PASSWORD_MAXIMUM_LENGTH}, "", http.StatusBadRequest)
 	}
-
 	if err := o.RateLimitSettings.isValid(); err != nil {
 		return err
 	}
-
 	if err := o.ServiceSettings.isValid(); err != nil {
 		return err
 	}
-
 	if err := o.ElasticsearchSettings.isValid(); err != nil {
 		return err
 	}
-
 	if err := o.BleveSettings.isValid(); err != nil {
 		return err
 	}
-
 	if err := o.DataRetentionSettings.isValid(); err != nil {
 		return err
 	}
-
 	if err := o.LocalizationSettings.isValid(); err != nil {
 		return err
 	}
-
 	if err := o.MessageExportSettings.isValid(); err != nil {
 		return err
 	}
-
 	if err := o.DisplaySettings.isValid(); err != nil {
 		return err
 	}
-
 	if err := o.ImageProxySettings.isValid(); err != nil {
 		return err
 	}
-
 	if err := o.ImportSettings.isValid(); err != nil {
 		return err
 	}
+
 	return nil
 }
 

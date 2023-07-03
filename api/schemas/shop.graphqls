@@ -5,10 +5,10 @@ extend type Query {
 
 extend type Mutation {
   shopDomainUpdate(input: SiteDomainInput): ShopDomainUpdate
-  shopSettingsUpdate(input: ShopSettingsInput!): ShopSettingsUpdate
-  shopFetchTaxRates: ShopFetchTaxRates
+  shopSettingsUpdate(input: ShopSettingsInput!): ShopSettingsUpdate @hasRoles(roles: [shop_admin])
+  shopFetchTaxRates: ShopFetchTaxRates @hasRoleAny(roles: [shop_admin, shop_staff])
   shopSettingsTranslate(input: ShopSettingsTranslationInput!, languageCode: LanguageCodeEnum!): ShopSettingsTranslate
-  shopAddressUpdate(input: AddressInput): ShopAddressUpdate
+  shopAddressUpdate(input: AddressInput): ShopAddressUpdate @hasRoles(roles: [shop_admin])
 }
 
 type Shop {

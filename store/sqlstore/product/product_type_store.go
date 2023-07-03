@@ -129,7 +129,6 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 	query := pts.GetQueryBuilder().
 		Select(pts.ModelFields(store.ProductTypeTableName+".")...).
 		From(store.ProductTypeTableName).
-		OrderBy(store.TableOrderingMap[store.ProductTypeTableName]).
 		InnerJoin(store.ProductTableName+" ON (Products.ProductTypeID = ProductTypes.Id)").
 		InnerJoin(store.ProductVariantTableName+" ON (Products.Id = ProductVariants.ProductID)").
 		Where("ProductVariants.Id = ?", variantID)

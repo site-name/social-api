@@ -53,8 +53,7 @@ func (cs *SqlCsvExportEventStore) Save(event *model.ExportEvent) (*model.ExportE
 func (cs *SqlCsvExportEventStore) FilterByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, error) {
 	query := cs.GetQueryBuilder().
 		Select("*").
-		From(store.CsvExportEventTableName).
-		OrderBy(store.TableOrderingMap[store.CsvExportEventTableName])
+		From(store.CsvExportEventTableName)
 
 	// parse options
 	if options.Id != nil {

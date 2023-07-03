@@ -6,7 +6,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/modules/util"
 )
 
 // max length for some fields
@@ -29,12 +28,12 @@ type ShippingZone struct {
 
 // ShippingZoneFilterOption is used to build sql queries to finds shipping zones
 type ShippingZoneFilterOption struct {
-	Id           squirrel.Sqlizer
-	DefaultValue *bool
-	WarehouseID  squirrel.Sqlizer // INNER JOIN WarehouseShippingZones ON ... WHERE WarehouseShippingZones.WarehouseID
-	ChannelID    squirrel.Sqlizer // inner join shippingZoneChannel on ... WHERE shippingZoneChannel.ChannelID ...
+	Id          squirrel.Sqlizer
+	Default     squirrel.Sqlizer
+	WarehouseID squirrel.Sqlizer // INNER JOIN WarehouseShippingZones ON ... WHERE WarehouseShippingZones.WarehouseID
+	ChannelID   squirrel.Sqlizer // inner join shippingZoneChannel on ... WHERE shippingZoneChannel.ChannelID ...
 
-	SelectRelatedThroughData bool // if true, `RelativeWarehouseIDs` property get populated with related data
+	SelectRelatedWarehouseIDs bool // if true, `RelativeWarehouseIDs` property get populated with related data
 }
 
 type ShippingZones []*ShippingZone
@@ -49,21 +48,6 @@ func (s ShippingZones) DeepCopy() ShippingZones {
 		res[idx] = shippingZone.DeepCopy()
 	}
 	return res
-}
-
-// RelativeWarehouseIDsFlat joins all `RelativeWarehouseIDs` fields of all shipping zones into single slice of strings
-//
-// E.g: [["a", "b"], ["c", "d"]] => ["a", "b", "c", "d"]
-func (s ShippingZones) RelativeWarehouseIDsFlat(keepDuplicates bool) []string {
-	var res util.AnyArray[string]
-	for _, item := range s {
-		res = append(res, item.RelativeWarehouseIDs...)
-	}
-
-	if keepDuplicates {
-		return res
-	}
-	return res.Dedup()
 }
 
 func (s *ShippingZone) String() string {

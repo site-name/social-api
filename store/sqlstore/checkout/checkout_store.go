@@ -294,9 +294,8 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 	)
 	err := cs.GetReplicaX().Select(
 		&checkoutLines,
-		"SELECT * FROM "+store.CheckoutLineTableName+" WHERE CheckoutID = ? ORDER BY ?",
+		"SELECT * FROM "+store.CheckoutLineTableName+" WHERE CheckoutID = ? ORDER BY CreateAt ASC",
 		ckout.Token,
-		store.TableOrderingMap[store.CheckoutLineTableName],
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find checkout lines belong to checkout with token=%s", ckout.Token)
@@ -316,7 +315,6 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 		queryString, args, _ := cs.GetQueryBuilder().Select("*").
 			From(store.ProductVariantTableName).
 			Where(squirrel.Eq{store.ProductVariantTableName + ".Id": productVariantIDs}).
-			OrderBy(store.TableOrderingMap[store.ProductVariantTableName]).
 			ToSql()
 
 		err = cs.GetReplicaX().Select(
@@ -344,7 +342,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 		query, args, _ := cs.GetQueryBuilder().Select("*").
 			From(store.ProductTableName).
 			Where(squirrel.Eq{store.ProductTableName + ".Id": productIDs}).
-			OrderBy(store.TableOrderingMap[store.ProductTableName]).ToSql()
+			ToSql()
 
 		err = cs.GetReplicaX().Select(
 			&products,
@@ -376,7 +374,6 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 			Column("ProductCollections.ProductID AS PrefetchRelatedValProductID"). // extra collumn
 			InnerJoin(store.CollectionProductRelationTableName + " ON (ProductCollections.CollectionID = Collections.Id)").
 			Where(squirrel.Eq{"ProductCollections.ProductID": productIDs}).
-			OrderBy(store.TableOrderingMap[store.CollectionTableName]).
 			ToSql()
 
 		err = cs.GetReplicaX().Select(&collectionXs, query, args...)
@@ -400,7 +397,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 		query, args, _ := cs.GetQueryBuilder().Select("*").
 			From(store.ProductVariantChannelListingTableName).
 			Where(squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": productVariantIDs}).
-			OrderBy(store.TableOrderingMap[store.ProductVariantChannelListingTableName]).ToSql()
+			ToSql()
 
 		err = cs.GetReplicaX().Select(
 			&productVariantChannelListings,
@@ -421,9 +418,8 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 	if len(channelIDs) > 0 {
 		err = cs.GetReplicaX().Select(
 			&channels,
-			"SELECT * FROM "+store.ChannelTableName+" WHERE Id in ? ORDER BY ?",
+			"SELECT * FROM "+store.ChannelTableName+" WHERE Id in ? ORDER BY Slug ASC",
 			channelIDs,
-			store.TableOrderingMap[store.ChannelTableName],
 		)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find channels")
@@ -442,7 +438,6 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 			Select("*").
 			From(store.ProductTypeTableName).
 			Where(squirrel.Eq{"Id": productTypeIDs}).
-			OrderBy(store.TableOrderingMap[store.ProductTypeTableName]).
 			ToSql()
 		err = cs.GetReplicaX().Select(
 			&productTypes,

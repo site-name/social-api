@@ -132,7 +132,7 @@ func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (
 		query = query.OrderBy(option.OrderBy)
 	} else {
 		// defaut to code
-		query = query.OrderBy(store.TableOrderingMap[store.GiftcardTableName])
+		query = query.OrderBy("Code ASC")
 	}
 
 	for _, opt := range []squirrel.Sqlizer{
@@ -264,8 +264,7 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 		Select("*").
 		From(store.OrderLineTableName).
 		Where(squirrel.Eq{"Orderlines.Id": orderLineIDs}).
-		Where(productVariantQuery).
-		OrderBy(store.TableOrderingMap[store.OrderLineTableName])
+		Where(productVariantQuery)
 
 	queryString, args, err := orderLineQuery.ToSql()
 	if err != nil {
