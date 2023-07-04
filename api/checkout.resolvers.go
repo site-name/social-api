@@ -31,7 +31,7 @@ func (r *Resolver) CheckoutBillingAddressUpdate(ctx context.Context, args struct
 	if !model.IsValidId(args.Token) {
 		return nil, model.NewAppError("CheckoutBillingAddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
 	}
-	if appErr := args.BillingAddress.Validate(); appErr != nil {
+	if appErr := args.BillingAddress.Validate("CheckoutBillingAddressUpdate"); appErr != nil {
 		return nil, appErr
 	}
 

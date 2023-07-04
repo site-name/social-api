@@ -5,7 +5,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"unsafe"
@@ -38,7 +37,7 @@ func (r *Resolver) CreateWarehouse(ctx context.Context, args struct{ Input Wareh
 	newWarehouse.Name = input.Name
 
 	if input.Address != nil {
-		if err := input.Address.Validate(); err != nil {
+		if err := input.Address.Validate("CreateWarehouse"); err != nil {
 			return nil, err
 		}
 
@@ -99,7 +98,17 @@ func (r *Resolver) CreateWarehouse(ctx context.Context, args struct{ Input Wareh
 		return nil, appErr
 	}
 
-	// embedCtx.App.Srv().Store.WarehouseShippingZone().
+	warehouseShippingZones := lo.Map(input.ShippingZones, func(id string, _ int) *model.WarehouseShippingZone {
+		return &model.WarehouseShippingZone{WarehouseID: savedWarehouse.Id, ShippingZoneID: id}
+	})
+	_, appErr = embedCtx.App.Srv().Warehouse.CreateWarehouseShippingZones(nil, warehouseShippingZones)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &WarehouseCreate{
+		Warehouse: SystemWarehouseToGraphqlWarehouse(savedWarehouse),
+	}, nil
 }
 
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
@@ -107,12 +116,132 @@ func (r *Resolver) UpdateWarehouse(ctx context.Context, args struct {
 	Id    string
 	Input WarehouseUpdateInput
 }) (*WarehouseUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate arguments
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("UpdateWarehouse", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	warehouse, appErr := embedCtx.App.Srv().
+		WarehouseService().
+		WarehouseByOption(&model.WarehouseFilterOption{
+			Id: squirrel.Eq{store.WarehouseTableName + ".Id": args.Id},
+		})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	input := args.Input
+	if input.Email != nil {
+		if !model.IsValidEmail(*input.Email) {
+			return nil, model.NewAppError("UpdateWarehouse", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "email"}, "please provide valid warehouse email", http.StatusBadRequest)
+		}
+		warehouse.Email = *input.Email
+	}
+	if input.Slug != nil {
+		if !slug.IsSlug(*input.Slug) {
+			return nil, model.NewAppError("UpdateWarehouse", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid warehouse slug", http.StatusBadRequest)
+		}
+		warehouse.Slug = *input.Slug
+	}
+	if input.Address != nil {
+		appErr = input.Address.Validate("UpdateWarehouse")
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		// update warehouse's address
+		if warehouse.AddressID != nil {
+			warehouseAddress, appErr := embedCtx.App.Srv().AccountService().AddressById(*warehouse.AddressID)
+			if appErr != nil {
+				return nil, appErr
+			}
+			changed := input.Address.PatchAddress(warehouseAddress)
+			if changed {
+				_, appErr := embedCtx.App.Srv().AccountService().UpsertAddress(nil, warehouseAddress)
+				if appErr != nil {
+					return nil, appErr
+				}
+			}
+		}
+	}
+
+	if input.ClickAndCollectOption != nil {
+		if input.ClickAndCollectOption.IsValid() {
+			return nil, model.NewAppError("UpdateWarehouse", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ClickAndCollectOption"}, "please provide valid click and collect option", http.StatusBadRequest)
+		}
+		warehouse.ClickAndCollectOption = *input.ClickAndCollectOption
+	}
+
+	if input.Name != nil && *input.Name != warehouse.Name {
+		warehouse.Name = *input.Name
+	}
+
+	// update warehouse:
+	updatedWarehouse, err := embedCtx.App.Srv().Store.Warehouse().Update(warehouse)
+	if err != nil {
+		return nil, model.NewAppError("UpdateWarehouse", "app.warehouse.update_ware_house.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &WarehouseUpdate{
+		Warehouse: SystemWarehouseToGraphqlWarehouse(updatedWarehouse),
+	}, nil
 }
 
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
 func (r *Resolver) DeleteWarehouse(ctx context.Context, args struct{ Id string }) (*WarehouseDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate arguments
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("DeleteWarehouse", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	warehouse, appErr := embedCtx.App.Srv().WarehouseService().WarehouseByOption(&model.WarehouseFilterOption{
+		Id: squirrel.Eq{store.WarehouseTableName + ".Id": args.Id},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	if err != nil {
+		return nil, model.NewAppError("DeleteWarehouse", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	err = embedCtx.App.Srv().Store.Warehouse().Delete(transaction, args.Id)
+	if err != nil {
+		return nil, model.NewAppError("DeleteWarehouse", "app.warehouse.delete_warehouse_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// commit transaction
+	err = transaction.Commit()
+	if err != nil {
+		return nil, model.NewAppError("DeleteWarehouse", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	store.FinalizeTransaction(transaction)
+
+	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
+	stocks, appErr := embedCtx.App.Srv().
+		WarehouseService().
+		StocksByOption(&model.StockFilterOption{
+			WarehouseID: squirrel.Eq{store.StockTableName + ".WarehouseID": args.Id},
+		})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// TODO: Take care of me when there
+	for _, stock := range stocks {
+		appErr = pluginManager.ProductVariantOutOfStock(*stock)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	return &WarehouseDelete{
+		Warehouse: SystemWarehouseToGraphqlWarehouse(warehouse),
+	}, nil
 }
 
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
@@ -120,7 +249,39 @@ func (r *Resolver) AssignWarehouseShippingZone(ctx context.Context, args struct 
 	Id              string
 	ShippingZoneIds []string
 }) (*WarehouseShippingZoneAssign, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate arguments
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("AssignWarehouseShippingZone", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
+	}
+	if !lo.EveryBy(args.ShippingZoneIds, model.IsValidId) {
+		return nil, model.NewAppError("AssignWarehouseShippingZone", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone ids"}, "please provide valid shipping zone ids", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	warehouseShippingZoneRelations := lo.Map(args.ShippingZoneIds, func(id string, _ int) *model.WarehouseShippingZone {
+		return &model.WarehouseShippingZone{
+			WarehouseID:    args.Id,
+			ShippingZoneID: id,
+		}
+	})
+	_, appErr := embedCtx.App.Srv().WarehouseService().CreateWarehouseShippingZones(nil, warehouseShippingZoneRelations)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	warehouse, appErr := embedCtx.App.Srv().
+		WarehouseService().
+		WarehouseByOption(&model.WarehouseFilterOption{
+			Id: squirrel.Eq{store.WarehouseTableName + ".Id": args.Id},
+		})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &WarehouseShippingZoneAssign{
+		Warehouse: SystemWarehouseToGraphqlWarehouse(warehouse),
+	}, nil
 }
 
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
@@ -128,7 +289,35 @@ func (r *Resolver) UnassignWarehouseShippingZone(ctx context.Context, args struc
 	Id              string
 	ShippingZoneIds []string
 }) (*WarehouseShippingZoneUnassign, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate arguments
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("AssignWarehouseShippingZone", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
+	}
+	if !lo.EveryBy(args.ShippingZoneIds, model.IsValidId) {
+		return nil, model.NewAppError("AssignWarehouseShippingZone", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone ids"}, "please provide valid shipping zone ids", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	err := embedCtx.App.Srv().Store.WarehouseShippingZone().Delete(nil, &model.WarehouseShippingZoneFilterOption{
+		WarehouseID:    squirrel.Eq{store.WarehouseShippingZoneTableName + ".WarehouseID": args.Id},
+		ShippingZoneID: squirrel.Eq{store.WarehouseShippingZoneTableName + ".ShippingZoneID": args.ShippingZoneIds},
+	})
+	if err != nil {
+		return nil, model.NewAppError("UnassignWarehouseShippingZone", "app.warehouse.error_deleting_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	warehouse, appErr := embedCtx.App.Srv().
+		WarehouseService().
+		WarehouseByOption(&model.WarehouseFilterOption{
+			Id: squirrel.Eq{store.WarehouseTableName + ".Id": args.Id},
+		})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &WarehouseShippingZoneUnassign{
+		Warehouse: SystemWarehouseToGraphqlWarehouse(warehouse),
+	}, nil
 }
 
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
@@ -159,7 +348,7 @@ func (r *Resolver) Warehouses(ctx context.Context, args struct {
 	warehouseFilterOpts := &model.WarehouseFilterOption{}
 
 	if filter := args.Filter; filter != nil {
-		if filter.Search != nil && *filter.Search != "" {
+		if filter.Search != nil && strings.TrimSpace(*filter.Search) != "" {
 			warehouseFilterOpts.Search = *filter.Search
 		}
 		if len(filter.Ids) > 0 {
@@ -227,7 +416,7 @@ func (r *Resolver) Stocks(ctx context.Context, args struct {
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	stocks, appErr := embedCtx.App.Srv().WarehouseService().StocksByOption(nil, stockFilterOptions)
+	stocks, appErr := embedCtx.App.Srv().WarehouseService().StocksByOption(stockFilterOptions)
 	if appErr != nil {
 		return nil, appErr
 	}

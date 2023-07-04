@@ -255,7 +255,7 @@ func stocksByIDLoader(ctx context.Context, ids []string) []*dataloader.Result[*m
 
 	stocks, appErr := embedCtx.App.Srv().
 		WarehouseService().
-		StocksByOption(nil, &model.StockFilterOption{
+		StocksByOption(&model.StockFilterOption{
 			Id:                     squirrel.Eq{store.StockTableName + ".Id": ids},
 			SelectRelatedWarehouse: true,
 		})
@@ -373,7 +373,7 @@ func availableQuantityByProductVariantIdCountryCodeAndChannelSlugLoader(ctx cont
 			stockFilterOptions.WarehouseID = squirrel.Eq{store.StockTableName + ".WarehouseID": lo.Keys(warehouseShippingZonesMap)}
 		}
 
-		stocks, appErr := embedCtx.App.Srv().WarehouseService().StocksByOption(nil, stockFilterOptions)
+		stocks, appErr := embedCtx.App.Srv().WarehouseService().StocksByOption(stockFilterOptions)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -469,7 +469,7 @@ func stocksWithAvailableQuantityByProductVariantIdCountryCodeAndChannelLoader(ct
 			stockFilterOptions.Warehouse_ShippingZone_ChannelID = squirrel.Eq{store.ShippingZoneChannelTableName + ".ChannelID": channelID}
 		}
 
-		stocks, appErr := embedCtx.App.Srv().WarehouseService().StocksByOption(nil, stockFilterOptions)
+		stocks, appErr := embedCtx.App.Srv().WarehouseService().StocksByOption(stockFilterOptions)
 		if appErr != nil {
 			return nil, appErr
 		}

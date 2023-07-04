@@ -64,7 +64,7 @@ type Store interface {
 	AppToken() AppTokenStore                                           //
 	Channel() ChannelStore                                             // channel
 	ChannelShop() ChannelShopStore                                     //
-	Checkout() CheckoutStore                                           // model
+	Checkout() CheckoutStore                                           // checkout
 	CheckoutLine() CheckoutLineStore                                   //
 	CsvExportEvent() CsvExportEventStore                               // csv
 	CsvExportFile() CsvExportFileStore                                 //
@@ -101,7 +101,7 @@ type Store interface {
 	Page() PageStore                                                   // page
 	PageType() PageTypeStore                                           //
 	PageTranslation() PageTranslationStore                             //
-	Payment() PaymentStore                                             // model
+	Payment() PaymentStore                                             // payment
 	PaymentTransaction() PaymentTransactionStore                       //
 	Category() CategoryStore                                           // product
 	CategoryTranslation() CategoryTranslationStore                     //
@@ -120,24 +120,24 @@ type Store interface {
 	Collection() CollectionStore                                       //
 	CollectionChannelListing() CollectionChannelListingStore           //
 	CollectionTranslation() CollectionTranslationStore                 //
-	ShippingMethodTranslation() ShippingMethodTranslationStore         // model
+	ShippingMethodTranslation() ShippingMethodTranslationStore         // shipping
 	ShippingMethodChannelListing() ShippingMethodChannelListingStore   //
 	ShippingMethodPostalCodeRule() ShippingMethodPostalCodeRuleStore   //
 	ShippingMethod() ShippingMethodStore                               //
 	ShippingZone() ShippingZoneStore                                   //
 	ShippingZoneChannel() ShippingZoneChannelStore                     //
 	ShippingMethodExcludedProduct() ShippingMethodExcludedProductStore //
-	Warehouse() WarehouseStore                                         // model
+	Warehouse() WarehouseStore                                         // warehouse
 	Stock() StockStore                                                 //
 	Allocation() AllocationStore                                       //
 	WarehouseShippingZone() WarehouseShippingZoneStore                 //
 	PreorderAllocation() PreorderAllocationStore                       //
-	Wishlist() WishlistStore                                           // model
+	Wishlist() WishlistStore                                           // wishlist
 	WishlistItem() WishlistItemStore                                   //
 	WishlistItemProductVariant() WishlistItemProductVariantStore       //
 	PluginConfiguration() PluginConfigurationStore                     // plugin
 	Compliance() ComplianceStore                                       // Compliance
-	Attribute() AttributeStore                                         // model
+	Attribute() AttributeStore                                         // attribute
 	AttributeTranslation() AttributeTranslationStore                   //
 	AttributeValue() AttributeValueStore                               //
 	AttributeValueTranslation() AttributeValueTranslationStore         //
@@ -366,10 +366,11 @@ type (
 // model
 type (
 	WarehouseStore interface {
+		Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error
+		Update(warehouse *model.WareHouse) (*model.WareHouse, error)
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(wh *model.WareHouse) []interface{}
 		Save(model *model.WareHouse) (*model.WareHouse, error)                          // Save inserts given model into database then returns it.
-		Get(id string) (*model.WareHouse, error)                                        // Get try findings model with given id, returns it. returned error could be wither (nil, *ErrNotFound, error)
 		FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) // FilterByOprion returns a slice of warehouses with given option
 		GetByOption(option *model.WarehouseFilterOption) (*model.WareHouse, error)      // GetByOption finds and returns a model filtered given option
 		WarehouseByStockID(stockID string) (*model.WareHouse, error)                    // WarehouseByStockID returns 1 model by given stock id
@@ -380,14 +381,14 @@ type (
 	StockStore interface {
 		ScanFields(stock *model.Stock) []interface{}
 		ModelFields(prefix string) util.AnyArray[string]
-		Get(stockID string) (*model.Stock, error)                                                                                                               // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
-		FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
-		FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
-		FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
-		ChangeQuantity(stockID string, quantity int) error                                                                                                      // ChangeQuantity reduce or increase the quantity of given stock
-		FilterByOption(transaction store_iface.SqlxTxExecutor, options *model.StockFilterOption) ([]*model.Stock, error)                                        // FilterByOption finds and returns a slice of stocks that satisfy given option
-		BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*model.Stock) ([]*model.Stock, error)                                                       // BulkUpsert performs upserts or inserts given stocks, then returns them
-		FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error)                                                  // FilterForChannel finds and returns stocks that satisfy given options
+		Get(stockID string) (*model.Stock, error)                                                                       // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
+		FilterForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
+		FilterVariantStocksForCountry(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
+		FilterProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
+		ChangeQuantity(stockID string, quantity int) error                                                              // ChangeQuantity reduce or increase the quantity of given stock
+		FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error)                                        // FilterByOption finds and returns a slice of stocks that satisfy given option
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*model.Stock) ([]*model.Stock, error)               // BulkUpsert performs upserts or inserts given stocks, then returns them
+		FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error)          // FilterForChannel finds and returns stocks that satisfy given options
 	}
 	AllocationStore interface {
 		BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*model.Allocation) ([]*model.Allocation, error)          // BulkUpsert performs update, insert given allocations then returns them afterward
@@ -397,8 +398,9 @@ type (
 		CountAvailableQuantityForStock(stock *model.Stock) (int, error)                                                           // CountAvailableQuantityForStock counts and returns available quantity of given stock
 	}
 	WarehouseShippingZoneStore interface {
+		Delete(transaction store_iface.SqlxTxExecutor, options *model.WarehouseShippingZoneFilterOption) error
 		ModelFields(prefix string) util.AnyArray[string]
-		Save(warehouseShippingZone *model.WarehouseShippingZone) (*model.WarehouseShippingZone, error) // Save inserts given model-model zone relation into database
+		Save(transaction store_iface.SqlxTxExecutor, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) // Save inserts given model-model zone relation into database
 		FilterByCountryCodeAndChannelID(countryCode, channelID string) ([]*model.WarehouseShippingZone, error)
 		FilterByOptions(options *model.WarehouseShippingZoneFilterOption) ([]*model.WarehouseShippingZone, error)
 	}

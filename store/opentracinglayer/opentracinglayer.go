@@ -7783,7 +7783,7 @@ func (s *OpenTracingLayerStockStore) ChangeQuantity(stockID string, quantity int
 	return err
 }
 
-func (s *OpenTracingLayerStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *model.StockFilterOption) ([]*model.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -7792,7 +7792,7 @@ func (s *OpenTracingLayerStockStore) FilterByOption(transaction store_iface.Sqlx
 	}()
 
 	defer span.Finish()
-	result, err := s.StockStore.FilterByOption(transaction, options)
+	result, err := s.StockStore.FilterByOption(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -7819,7 +7819,7 @@ func (s *OpenTracingLayerStockStore) FilterForChannel(options *model.StockFilter
 	return result, resultVar1, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterForCountryAndChannel")
 	s.Root.Store.SetContext(newCtx)
@@ -7828,7 +7828,7 @@ func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(transaction stor
 	}()
 
 	defer span.Finish()
-	result, err := s.StockStore.FilterForCountryAndChannel(transaction, options)
+	result, err := s.StockStore.FilterForCountryAndChannel(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -7837,7 +7837,7 @@ func (s *OpenTracingLayerStockStore) FilterForCountryAndChannel(transaction stor
 	return result, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterProductStocksForCountryAndChannel")
 	s.Root.Store.SetContext(newCtx)
@@ -7846,7 +7846,7 @@ func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(tra
 	}()
 
 	defer span.Finish()
-	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(transaction, options)
+	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -7855,7 +7855,7 @@ func (s *OpenTracingLayerStockStore) FilterProductStocksForCountryAndChannel(tra
 	return result, err
 }
 
-func (s *OpenTracingLayerStockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *OpenTracingLayerStockStore) FilterVariantStocksForCountry(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.FilterVariantStocksForCountry")
 	s.Root.Store.SetContext(newCtx)
@@ -7864,7 +7864,7 @@ func (s *OpenTracingLayerStockStore) FilterVariantStocksForCountry(transaction s
 	}()
 
 	defer span.Finish()
-	result, err := s.StockStore.FilterVariantStocksForCountry(transaction, options)
+	result, err := s.StockStore.FilterVariantStocksForCountry(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -9630,6 +9630,24 @@ func (s *OpenTracingLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(
 	return result, err
 }
 
+func (s *OpenTracingLayerWarehouseStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.WarehouseStore.Delete(transaction, ids...)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
 func (s *OpenTracingLayerWarehouseStore) FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.FilterByOprion")
@@ -9640,24 +9658,6 @@ func (s *OpenTracingLayerWarehouseStore) FilterByOprion(option *model.WarehouseF
 
 	defer span.Finish()
 	result, err := s.WarehouseStore.FilterByOprion(option)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerWarehouseStore) Get(id string) (*model.WareHouse, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.Get")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.WarehouseStore.Get(id)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -9702,6 +9702,24 @@ func (s *OpenTracingLayerWarehouseStore) Save(model *model.WareHouse) (*model.Wa
 	return result, err
 }
 
+func (s *OpenTracingLayerWarehouseStore) Update(warehouse *model.WareHouse) (*model.WareHouse, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.Update")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.WarehouseStore.Update(warehouse)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
 func (s *OpenTracingLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseStore.WarehouseByStockID")
@@ -9718,6 +9736,24 @@ func (s *OpenTracingLayerWarehouseStore) WarehouseByStockID(stockID string) (*mo
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerWarehouseShippingZoneStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.WarehouseShippingZoneFilterOption) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseShippingZoneStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.WarehouseShippingZoneStore.Delete(transaction, options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
 }
 
 func (s *OpenTracingLayerWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryCode string, channelID string) ([]*model.WarehouseShippingZone, error) {
@@ -9756,7 +9792,7 @@ func (s *OpenTracingLayerWarehouseShippingZoneStore) FilterByOptions(options *mo
 	return result, err
 }
 
-func (s *OpenTracingLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *model.WarehouseShippingZone) (*model.WarehouseShippingZone, error) {
+func (s *OpenTracingLayerWarehouseShippingZoneStore) Save(transaction store_iface.SqlxTxExecutor, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "WarehouseShippingZoneStore.Save")
 	s.Root.Store.SetContext(newCtx)
@@ -9765,7 +9801,7 @@ func (s *OpenTracingLayerWarehouseShippingZoneStore) Save(warehouseShippingZone 
 	}()
 
 	defer span.Finish()
-	result, err := s.WarehouseShippingZoneStore.Save(warehouseShippingZone)
+	result, err := s.WarehouseShippingZoneStore.Save(transaction, warehouseShippingZones)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

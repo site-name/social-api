@@ -7075,10 +7075,10 @@ func (s *TimerLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 	return err
 }
 
-func (s *TimerLayerStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *model.StockFilterOption) ([]*model.Stock, error) {
+func (s *TimerLayerStockStore) FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error) {
 	start := timemodule.Now()
 
-	result, err := s.StockStore.FilterByOption(transaction, options)
+	result, err := s.StockStore.FilterByOption(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7107,10 +7107,10 @@ func (s *TimerLayerStockStore) FilterForChannel(options *model.StockFilterForCha
 	return result, resultVar1, err
 }
 
-func (s *TimerLayerStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *TimerLayerStockStore) FilterForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	start := timemodule.Now()
 
-	result, err := s.StockStore.FilterForCountryAndChannel(transaction, options)
+	result, err := s.StockStore.FilterForCountryAndChannel(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7123,10 +7123,10 @@ func (s *TimerLayerStockStore) FilterForCountryAndChannel(transaction store_ifac
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	start := timemodule.Now()
 
-	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(transaction, options)
+	result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -7139,10 +7139,10 @@ func (s *TimerLayerStockStore) FilterProductStocksForCountryAndChannel(transacti
 	return result, err
 }
 
-func (s *TimerLayerStockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *TimerLayerStockStore) FilterVariantStocksForCountry(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	start := timemodule.Now()
 
-	result, err := s.StockStore.FilterVariantStocksForCountry(transaction, options)
+	result, err := s.StockStore.FilterVariantStocksForCountry(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -8736,6 +8736,22 @@ func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderL
 	return result, err
 }
 
+func (s *TimerLayerWarehouseStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+	start := timemodule.Now()
+
+	err := s.WarehouseStore.Delete(transaction, ids...)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.Delete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerWarehouseStore) FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) {
 	start := timemodule.Now()
 
@@ -8748,22 +8764,6 @@ func (s *TimerLayerWarehouseStore) FilterByOprion(option *model.WarehouseFilterO
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.FilterByOprion", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerWarehouseStore) Get(id string) (*model.WareHouse, error) {
-	start := timemodule.Now()
-
-	result, err := s.WarehouseStore.Get(id)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.Get", success, elapsed)
 	}
 	return result, err
 }
@@ -8800,6 +8800,22 @@ func (s *TimerLayerWarehouseStore) Save(model *model.WareHouse) (*model.WareHous
 	return result, err
 }
 
+func (s *TimerLayerWarehouseStore) Update(warehouse *model.WareHouse) (*model.WareHouse, error) {
+	start := timemodule.Now()
+
+	result, err := s.WarehouseStore.Update(warehouse)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.Update", success, elapsed)
+	}
+	return result, err
+}
+
 func (s *TimerLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, error) {
 	start := timemodule.Now()
 
@@ -8814,6 +8830,22 @@ func (s *TimerLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.Wa
 		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseStore.WarehouseByStockID", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerWarehouseShippingZoneStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.WarehouseShippingZoneFilterOption) error {
+	start := timemodule.Now()
+
+	err := s.WarehouseShippingZoneStore.Delete(transaction, options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("WarehouseShippingZoneStore.Delete", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryCode string, channelID string) ([]*model.WarehouseShippingZone, error) {
@@ -8848,10 +8880,10 @@ func (s *TimerLayerWarehouseShippingZoneStore) FilterByOptions(options *model.Wa
 	return result, err
 }
 
-func (s *TimerLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *model.WarehouseShippingZone) (*model.WarehouseShippingZone, error) {
+func (s *TimerLayerWarehouseShippingZoneStore) Save(transaction store_iface.SqlxTxExecutor, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
 	start := timemodule.Now()
 
-	result, err := s.WarehouseShippingZoneStore.Save(warehouseShippingZone)
+	result, err := s.WarehouseShippingZoneStore.Save(transaction, warehouseShippingZones)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

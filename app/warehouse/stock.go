@@ -29,8 +29,8 @@ func (a *ServiceWarehouse) BulkUpsertStocks(transaction store_iface.SqlxTxExecut
 }
 
 // StocksByOption returns a list of stocks filtered using given options
-func (a *ServiceWarehouse) StocksByOption(transaction store_iface.SqlxTxExecutor, option *model.StockFilterOption) (model.Stocks, *model.AppError) {
-	stocks, err := a.srv.Store.Stock().FilterByOption(transaction, option)
+func (a *ServiceWarehouse) StocksByOption(option *model.StockFilterOption) (model.Stocks, *model.AppError) {
+	stocks, err := a.srv.Store.Stock().FilterByOption(option)
 	if err != nil {
 		return nil, model.NewAppError("StocksByOption", "app.warehouse.error_finding_stocks_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -41,8 +41,8 @@ func (a *ServiceWarehouse) StocksByOption(transaction store_iface.SqlxTxExecutor
 // GetVariantStocksForCountry Return the stock information about the a stock for a given country.
 //
 // Note it will raise a 'Stock.DoesNotExist' exception if no such stock is found.
-func (a *ServiceWarehouse) GetVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, countryCode model.CountryCode, channelSlug string, variantID string) ([]*model.Stock, *model.AppError) {
-	stocks, err := a.srv.Store.Stock().FilterVariantStocksForCountry(transaction, &model.StockFilterForCountryAndChannel{
+func (a *ServiceWarehouse) GetVariantStocksForCountry(countryCode model.CountryCode, channelSlug string, variantID string) ([]*model.Stock, *model.AppError) {
+	stocks, err := a.srv.Store.Stock().FilterVariantStocksForCountry(&model.StockFilterForCountryAndChannel{
 		CountryCode:      countryCode,
 		ChannelSlug:      channelSlug,
 		ProductVariantID: variantID,
@@ -56,8 +56,8 @@ func (a *ServiceWarehouse) GetVariantStocksForCountry(transaction store_iface.Sq
 }
 
 // GetProductStocksForCountryAndChannel
-func (a *ServiceWarehouse) GetProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, *model.AppError) {
-	stocks, err := a.srv.Store.Stock().FilterProductStocksForCountryAndChannel(transaction, options)
+func (a *ServiceWarehouse) GetProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, *model.AppError) {
+	stocks, err := a.srv.Store.Stock().FilterProductStocksForCountryAndChannel(options)
 	if err != nil {
 		return nil, model.NewAppError("GetProductStocksForCountryAndChannel", ErrorFindingStocksId, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -66,8 +66,8 @@ func (a *ServiceWarehouse) GetProductStocksForCountryAndChannel(transaction stor
 }
 
 // FilterStocksForCountryAndChannel finds stocks by given options
-func (a *ServiceWarehouse) FilterStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, *model.AppError) {
-	stocks, err := a.srv.Store.Stock().FilterForCountryAndChannel(transaction, options)
+func (a *ServiceWarehouse) FilterStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, *model.AppError) {
+	stocks, err := a.srv.Store.Stock().FilterForCountryAndChannel(options)
 
 	if err != nil {
 		return nil, model.NewAppError("FilterStocksForCountryAndChannel", ErrorFindingStocksId, nil, err.Error(), http.StatusInternalServerError)

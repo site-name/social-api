@@ -85,7 +85,7 @@ type WarehouseService interface {
 	// FilterStocksForChannel returns a slice of stocks that filtered using given options
 	FilterStocksForChannel(option *model.StockFilterForChannelOption) ([]*model.Stock, *model.AppError)
 	// FilterStocksForCountryAndChannel finds stocks by given options
-	FilterStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, *model.AppError)
+	FilterStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, *model.AppError)
 	// FindWarehousesForCountry returns a list of warehouses that are available in given country
 	FindWarehousesForCountry(countryCode model.CountryCode) ([]*model.WareHouse, *model.AppError)
 	// GetOrderLinesWithPreOrder returns order lines with variants with preorder flag set to true
@@ -93,13 +93,13 @@ type WarehouseService interface {
 	// GetOrderLinesWithTrackInventory Return order lines with variants with track inventory set to True
 	GetOrderLinesWithTrackInventory(orderLineInfos []*model.OrderLineData) []*model.OrderLineData
 	// GetProductStocksForCountryAndChannel
-	GetProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, *model.AppError)
+	GetProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, *model.AppError)
 	// GetStockById takes options for filtering 1 stock
 	GetStockById(stockID string) (*model.Stock, *model.AppError)
 	// GetVariantStocksForCountry Return the stock information about the a stock for a given country.
 	//
 	// Note it will raise a 'Stock.DoesNotExist' exception if no such stock is found.
-	GetVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, countryCode model.CountryCode, channelSlug string, variantID string) ([]*model.Stock, *model.AppError)
+	GetVariantStocksForCountry(countryCode model.CountryCode, channelSlug string, variantID string) ([]*model.Stock, *model.AppError)
 	// IncreaseAllocations ncrease allocation for order lines with appropriate quantity
 	IncreaseAllocations(lineInfos model.OrderLineDatas, channelSlug string, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError)
 	// IncreaseStock Increse stock quantity for given `order_line` in a given warehouse.
@@ -121,7 +121,7 @@ type WarehouseService interface {
 	// StockIncreaseQuantity Return given quantity of product to a stock.
 	StockIncreaseQuantity(stockID string, quantity int) *model.AppError
 	// StocksByOption returns a list of stocks filtered using given options
-	StocksByOption(transaction store_iface.SqlxTxExecutor, option *model.StockFilterOption) (model.Stocks, *model.AppError)
+	StocksByOption(option *model.StockFilterOption) (model.Stocks, *model.AppError)
 	// Validate if there is stock available for given variant in given country.
 	//
 	// If so - returns None. If there is less stock then required raise InsufficientStock
@@ -146,4 +146,5 @@ type WarehouseService interface {
 	// WarehouseCountries returns countries of given warehouse
 	WarehouseCountries(warehouseID string) ([]string, *model.AppError)
 	CreateWarehouse(warehouse *model.WareHouse) (*model.WareHouse, *model.AppError)
+	CreateWarehouseShippingZones(transaction store_iface.SqlxTxExecutor, relations []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, *model.AppError)
 }

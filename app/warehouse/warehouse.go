@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type ServiceWarehouse struct {
@@ -119,6 +120,19 @@ func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.WareHouse) (*model.W
 	}
 
 	return warehouse, nil
+}
+
+func (s *ServiceWarehouse) CreateWarehouseShippingZones(transaction store_iface.SqlxTxExecutor, relations []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, *model.AppError) {
+	relations, err := s.srv.Store.WarehouseShippingZone().Save(transaction, relations)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return nil, model.NewAppError("CreateWarehouseShippingZones", "app.warehouse.warehouse_shipping_zones_create.app_error", nil, err.Error(), statusCode)
+	}
+
+	return relations, nil
 }
 
 // ApplicableForClickAndCollectNoQuantityCheck return the queryset of a `Warehouse` which are applicable for click and collect.

@@ -57,7 +57,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 		}
 	}
 
-	stocks, appErr := a.FilterStocksForCountryAndChannel(transaction, stockFilterOption)
+	stocks, appErr := a.FilterStocksForCountryAndChannel(stockFilterOption)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr // return immediately if error was caused by system
@@ -124,7 +124,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 
 		stockIDsOfAllocations := allocations.StockIDs()
 
-		stocks, appErr := a.StocksByOption(transaction, &model.StockFilterOption{
+		stocks, appErr := a.StocksByOption(&model.StockFilterOption{
 			Id: squirrel.Eq{store.StockTableName + ".Id": stockIDsOfAllocations},
 		})
 		if appErr != nil {
@@ -345,7 +345,7 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *model.OrderLine, wareHouse *
 
 	var stock *model.Stock
 
-	stocks, appErr := a.StocksByOption(transaction, &model.StockFilterOption{
+	stocks, appErr := a.StocksByOption(&model.StockFilterOption{
 		ProductVariantID: squirrel.Eq{store.ProductVariantTableName + ".Id": *orderLine.VariantID},
 		WarehouseID:      squirrel.Eq{store.WarehouseTableName + ".Id": wareHouse.Id},
 		LockForUpdate:    true,                 // FOR UPDATE
@@ -548,7 +548,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, ma
 		}
 	}
 
-	stocks, appErr := a.StocksByOption(transaction, &model.StockFilterOption{
+	stocks, appErr := a.StocksByOption(&model.StockFilterOption{
 		ProductVariantID:            squirrel.Eq{store.StockTableName + ".ProductVariantID": variantIDs},
 		WarehouseID:                 squirrel.Eq{store.StockTableName + ".WarehouseID": warehouseIDs},
 		SelectRelatedProductVariant: true,
@@ -600,7 +600,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, ma
 	}
 
 	if updateStocks {
-		foundStocks, appErr := a.StocksByOption(nil, &model.StockFilterOption{
+		foundStocks, appErr := a.StocksByOption(&model.StockFilterOption{
 			Id:                       squirrel.Eq{store.StockTableName + ".Id": stocks.IDs()},
 			AnnotateAvailabeQuantity: true, // this tells store to populate AvailableQuantity fields of every returning stocks
 		})
@@ -1118,7 +1118,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 		return nil, model.NewPreorderAllocationError(preorderAllocation.GetOrderLine()), nil
 	}
 
-	stocks, appErr := s.srv.WarehouseService().StocksByOption(transaction, &model.StockFilterOption{
+	stocks, appErr := s.srv.WarehouseService().StocksByOption(&model.StockFilterOption{
 		LockForUpdate:    true,
 		ForUpdateOf:      store.StockTableName,
 		WarehouseID:      squirrel.Eq{store.WarehouseTableName + ".Id": wareHouse.Id},

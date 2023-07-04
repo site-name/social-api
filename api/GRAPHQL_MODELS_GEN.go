@@ -103,57 +103,78 @@ type AddressInput struct {
 	Phone          *string      `json:"phone"`
 }
 
-func (a *AddressInput) Validate() *model.AppError {
+func (a *AddressInput) Validate(where string) *model.AppError {
 	// validate input country
 	if country := a.Country; country == nil || !country.IsValid() {
-		return model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
+		return model.NewAppError(where, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "country"}, "country field is required", http.StatusBadRequest)
 	}
 
 	// validate input phone
 	if phone := a.Phone; phone != nil {
 		_, ok := util.ValidatePhoneNumber(*phone, a.Country.String())
 		if !ok {
-			return model.NewAppError("AccountAddressCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
+			return model.NewAppError(where, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "phone"}, fmt.Sprintf("phone number value %v is invalid", *phone), http.StatusBadRequest)
 		}
 	}
 
 	return nil
 }
 
-// NOTE: should be called after calling Validate()
-func (a *AddressInput) PatchAddress(addr *model.Address) {
-	if a.Phone != nil && *a.Phone != "" {
-		addr.Phone = *a.Phone
-	}
-	addr.Country = *a.Country
+// NOTE: must be called after calling Validate().
+//
+// The returned boolean value indicates if the given address is really changed
+func (a *AddressInput) PatchAddress(addr *model.Address) bool {
+	changed := true
 
-	if v := a.FirstName; v != nil {
-		addr.FirstName = *v
+	switch {
+	case a.Phone != nil && *a.Phone != "" && addr.Phone != *a.Phone:
+		addr.Phone = *a.Phone
+		fallthrough
+
+	case *a.Country != addr.Country:
+		addr.Country = *a.Country
+		fallthrough
+
+	case a.FirstName != nil && *a.FirstName != addr.FirstName:
+		addr.FirstName = *a.FirstName
+		fallthrough
+
+	case a.LastName != nil && *a.LastName != addr.LastName:
+		addr.LastName = *a.LastName
+		fallthrough
+
+	case a.CompanyName != nil && *a.CompanyName != addr.CompanyName:
+		addr.CompanyName = *a.CompanyName
+		fallthrough
+
+	case a.StreetAddress1 != nil && *a.StreetAddress1 != addr.StreetAddress1:
+		addr.StreetAddress1 = *a.StreetAddress1
+		fallthrough
+
+	case a.StreetAddress2 != nil && *a.StreetAddress2 != addr.StreetAddress2:
+		addr.StreetAddress2 = *a.StreetAddress2
+		fallthrough
+
+	case a.City != nil && *a.City != addr.City:
+		addr.City = *a.City
+		fallthrough
+
+	case a.CityArea != nil && *a.CityArea != addr.CityArea:
+		addr.CityArea = *a.CityArea
+		fallthrough
+
+	case a.PostalCode != nil && *a.PostalCode != addr.PostalCode:
+		addr.PostalCode = *a.PostalCode
+		fallthrough
+
+	case a.CountryArea != nil && *a.CountryArea != addr.CountryArea:
+		addr.CountryArea = *a.CountryArea
+
+	default:
+		changed = false
 	}
-	if v := a.LastName; v != nil {
-		addr.LastName = *v
-	}
-	if v := a.CompanyName; v != nil {
-		addr.CompanyName = *v
-	}
-	if v := a.StreetAddress1; v != nil {
-		addr.StreetAddress1 = *v
-	}
-	if v := a.StreetAddress2; v != nil {
-		addr.StreetAddress2 = *v
-	}
-	if v := a.City; v != nil {
-		addr.City = *v
-	}
-	if v := a.CityArea; v != nil {
-		addr.CityArea = *v
-	}
-	if v := a.PostalCode; v != nil {
-		addr.PostalCode = *v
-	}
-	if v := a.CountryArea; v != nil {
-		addr.CountryArea = *v
-	}
+
+	return changed
 }
 
 type AddressSetDefault struct {

@@ -367,7 +367,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 				stocksFilterOpts.ProductVariantID = squirrel.Eq{store.StockTableName + ".ProductVariantID": productVariants.IDs()}
 			}
 
-			stocks, err = ols.Stock().FilterByOption(nil, stocksFilterOpts)
+			stocks, err = ols.Stock().FilterByOption(stocksFilterOpts)
 			if err != nil {
 				return nil, err
 			}

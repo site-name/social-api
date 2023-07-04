@@ -8468,11 +8468,11 @@ func (s *RetryLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 
 }
 
-func (s *RetryLayerStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *model.StockFilterOption) ([]*model.Stock, error) {
+func (s *RetryLayerStockStore) FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error) {
 
 	tries := 0
 	for {
-		result, err := s.StockStore.FilterByOption(transaction, options)
+		result, err := s.StockStore.FilterByOption(options)
 		if err == nil {
 			return result, nil
 		}
@@ -8508,11 +8508,11 @@ func (s *RetryLayerStockStore) FilterForChannel(options *model.StockFilterForCha
 
 }
 
-func (s *RetryLayerStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *RetryLayerStockStore) FilterForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 
 	tries := 0
 	for {
-		result, err := s.StockStore.FilterForCountryAndChannel(transaction, options)
+		result, err := s.StockStore.FilterForCountryAndChannel(options)
 		if err == nil {
 			return result, nil
 		}
@@ -8528,11 +8528,11 @@ func (s *RetryLayerStockStore) FilterForCountryAndChannel(transaction store_ifac
 
 }
 
-func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 
 	tries := 0
 	for {
-		result, err := s.StockStore.FilterProductStocksForCountryAndChannel(transaction, options)
+		result, err := s.StockStore.FilterProductStocksForCountryAndChannel(options)
 		if err == nil {
 			return result, nil
 		}
@@ -8548,11 +8548,11 @@ func (s *RetryLayerStockStore) FilterProductStocksForCountryAndChannel(transacti
 
 }
 
-func (s *RetryLayerStockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (s *RetryLayerStockStore) FilterVariantStocksForCountry(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 
 	tries := 0
 	for {
-		result, err := s.StockStore.FilterVariantStocksForCountry(transaction, options)
+		result, err := s.StockStore.FilterVariantStocksForCountry(options)
 		if err == nil {
 			return result, nil
 		}
@@ -10478,31 +10478,31 @@ func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderL
 
 }
 
-func (s *RetryLayerWarehouseStore) FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
 
 	tries := 0
 	for {
-		result, err := s.WarehouseStore.FilterByOprion(option)
+		err := s.WarehouseStore.Delete(transaction, ids...)
 		if err == nil {
-			return result, nil
+			return nil
 		}
 		if !isRepeatableError(err) {
-			return result, err
+			return err
 		}
 		tries++
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
+			return err
 		}
 	}
 
 }
 
-func (s *RetryLayerWarehouseStore) Get(id string) (*model.WareHouse, error) {
+func (s *RetryLayerWarehouseStore) FilterByOprion(option *model.WarehouseFilterOption) ([]*model.WareHouse, error) {
 
 	tries := 0
 	for {
-		result, err := s.WarehouseStore.Get(id)
+		result, err := s.WarehouseStore.FilterByOprion(option)
 		if err == nil {
 			return result, nil
 		}
@@ -10558,6 +10558,26 @@ func (s *RetryLayerWarehouseStore) Save(model *model.WareHouse) (*model.WareHous
 
 }
 
+func (s *RetryLayerWarehouseStore) Update(warehouse *model.WareHouse) (*model.WareHouse, error) {
+
+	tries := 0
+	for {
+		result, err := s.WarehouseStore.Update(warehouse)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
 func (s *RetryLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, error) {
 
 	tries := 0
@@ -10573,6 +10593,26 @@ func (s *RetryLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.Wa
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerWarehouseShippingZoneStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.WarehouseShippingZoneFilterOption) error {
+
+	tries := 0
+	for {
+		err := s.WarehouseShippingZoneStore.Delete(transaction, options)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
 		}
 	}
 
@@ -10618,11 +10658,11 @@ func (s *RetryLayerWarehouseShippingZoneStore) FilterByOptions(options *model.Wa
 
 }
 
-func (s *RetryLayerWarehouseShippingZoneStore) Save(warehouseShippingZone *model.WarehouseShippingZone) (*model.WarehouseShippingZone, error) {
+func (s *RetryLayerWarehouseShippingZoneStore) Save(transaction store_iface.SqlxTxExecutor, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
 
 	tries := 0
 	for {
-		result, err := s.WarehouseShippingZoneStore.Save(warehouseShippingZone)
+		result, err := s.WarehouseShippingZoneStore.Save(transaction, warehouseShippingZones)
 		if err == nil {
 			return result, nil
 		}

@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlWarehouseShippingZoneStore struct {
@@ -34,22 +35,31 @@ func (ws *SqlWarehouseShippingZoneStore) ModelFields(prefix string) util.AnyArra
 }
 
 // Save inserts given warehouse-shipping zone relation into database
-func (ws *SqlWarehouseShippingZoneStore) Save(warehouseShippingZone *model.WarehouseShippingZone) (*model.WarehouseShippingZone, error) {
-	warehouseShippingZone.PreSave()
-	if err := warehouseShippingZone.IsValid(); err != nil {
-		return nil, err
+func (ws *SqlWarehouseShippingZoneStore) Save(transaction store_iface.SqlxTxExecutor, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
+	runner := ws.GetMasterX()
+	if transaction != nil {
+		runner = transaction
 	}
-
 	query := "INSERT INTO " + store.WarehouseShippingZoneTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
-	_, err := ws.GetMasterX().NamedExec(query, warehouseShippingZone)
-	if err != nil {
-		if ws.IsUniqueConstraintError(err, []string{"WarehouseID", "ShippingZoneID", "warehouseshippingzones_warehouseid_shippingzoneid_key"}) {
-			return nil, store.NewErrInvalidInput(store.WarehouseShippingZoneTableName, "WarehouseID/ShippingZoneID", "duplicate")
+
+	for _, relation := range warehouseShippingZones {
+		relation.PreSave()
+
+		appErr := relation.IsValid()
+		if appErr != nil {
+			return nil, appErr
 		}
-		return nil, errors.Wrapf(err, "failed to save warehouse-shipping zone relation with id=%s", warehouseShippingZone.Id)
+
+		_, err := runner.NamedExec(query, relation)
+		if err != nil {
+			if ws.IsUniqueConstraintError(err, []string{"WarehouseID", "ShippingZoneID", "warehouseshippingzones_warehouseid_shippingzoneid_key"}) {
+				return nil, store.NewErrInvalidInput(store.WarehouseShippingZoneTableName, "WarehouseID/ShippingZoneID", "duplicate")
+			}
+			return nil, errors.Wrapf(err, "failed to save warehouse-shipping zone relation with id=%s", relation.Id)
+		}
 	}
 
-	return warehouseShippingZone, nil
+	return warehouseShippingZones, nil
 }
 
 func (s *SqlWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryCode, channelID string) ([]*model.WarehouseShippingZone, error) {
@@ -112,13 +122,15 @@ func (s *SqlWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryC
 }
 
 func (s *SqlWarehouseShippingZoneStore) FilterByOptions(options *model.WarehouseShippingZoneFilterOption) ([]*model.WarehouseShippingZone, error) {
-	query := s.GetQueryBuilder().Select("*").From(store.WarehouseShippingZoneTableName)
+	query := s.
+		GetQueryBuilder().
+		Select(s.ModelFields(store.WarehouseShippingZoneTableName + ".")...).
+		From(store.WarehouseShippingZoneTableName)
 
-	if options.WarehouseID != nil {
-		query = query.Where(options.WarehouseID)
-	}
-	if options.ShippingZoneID != nil {
-		query = query.Where(options.ShippingZoneID)
+	for _, opt := range []squirrel.Sqlizer{options.WarehouseID, options.ShippingZoneID} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
 	}
 
 	queryString, args, err := query.ToSql()
@@ -133,4 +145,29 @@ func (s *SqlWarehouseShippingZoneStore) FilterByOptions(options *model.Warehouse
 	}
 
 	return res, nil
+}
+
+func (s *SqlWarehouseShippingZoneStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.WarehouseShippingZoneFilterOption) error {
+	query := s.GetQueryBuilder().Delete(store.WarehouseShippingZoneTableName)
+	for _, opt := range []squirrel.Sqlizer{options.ShippingZoneID, options.WarehouseID} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
+	}
+
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "Delete_ToSql")
+	}
+
+	runner := s.GetMasterX()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	_, err = runner.Exec(queryStr, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete warehouse shipping zones by options")
+	}
+	return nil
 }

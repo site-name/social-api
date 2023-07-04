@@ -47,7 +47,7 @@ func (ss *SqlStockStore) ScanFields(stock *model.Stock) []interface{} {
 
 // BulkUpsert performs upserts or inserts given stocks, then returns them
 func (ss *SqlStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*model.Stock) ([]*model.Stock, error) {
-	var executor store_iface.SqlxExecutor = ss.GetMasterX()
+	var executor = ss.GetMasterX()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -217,7 +217,7 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 }
 
 // FilterByOption finds and returns a slice of stocks that satisfy given option
-func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, options *model.StockFilterOption) ([]*model.Stock, error) {
+func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error) {
 	selectFields := ss.ModelFields(store.StockTableName + ".")
 	if options.SelectRelatedProductVariant {
 		selectFields = append(selectFields, ss.ProductVariant().ModelFields(store.ProductVariantTableName+".")...)
@@ -318,11 +318,7 @@ func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, 
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	runner := ss.GetReplicaX()
-	if transaction != nil {
-		runner = transaction
-	}
-	rows, err := runner.QueryX(queryString, args...)
+	rows, err := ss.GetReplicaX().QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks by given options")
 	}
@@ -374,7 +370,7 @@ func (ss *SqlStockStore) FilterByOption(transaction store_iface.SqlxTxExecutor, 
 }
 
 // FilterForCountryAndChannel finds and returns stocks with given options
-func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
 	warehouseIDQuery := ss.
 		warehouseIdSelectQuery(options.CountryCode, options.ChannelSlug).
 		PlaceholderFormat(squirrel.Question)
@@ -435,23 +431,18 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.Sqlx
 		stock             model.Stock
 		wareHouse         model.WareHouse
 		productVariant    model.ProductVariant
-		queryer           store_iface.SqlxExecutor = ss.GetReplicaX()
 		availableQuantity int
 		scanFields        = ss.ScanFields(&stock)
 	)
 	// add some more fields to scan
 	scanFields = append(scanFields, ss.Warehouse().ScanFields(&wareHouse)...)
 	scanFields = append(scanFields, ss.ProductVariant().ScanFields(&productVariant)...)
-	// decide which query to use
-	if transaction != nil {
-		queryer = transaction
-	}
 
 	if options.AnnotateAvailabeQuantity {
 		scanFields = append(scanFields, &availableQuantity)
 	}
 
-	rows, err := queryer.QueryX(queryString, args...)
+	rows, err := ss.GetReplicaX().QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks with given options")
 	}
@@ -477,12 +468,13 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(transaction store_iface.Sqlx
 	return returningStocks, nil
 }
 
-func (ss *SqlStockStore) FilterVariantStocksForCountry(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
-	return ss.FilterForCountryAndChannel(transaction, options)
+func (ss *SqlStockStore) FilterVariantStocksForCountry(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+	return ss.FilterForCountryAndChannel(options)
 }
 
-func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(transaction store_iface.SqlxTxExecutor, options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
-	return ss.FilterForCountryAndChannel(transaction, options)
+func (ss *SqlStockStore) FilterProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) {
+	// TODO: finish me
+	return ss.FilterForCountryAndChannel(options)
 }
 
 func (ss *SqlStockStore) warehouseIdSelectQuery(countryCode model.CountryCode, channelSlug string) squirrel.SelectBuilder {

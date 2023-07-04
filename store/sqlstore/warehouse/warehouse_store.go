@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlWareHouseStore struct {
@@ -71,23 +72,32 @@ func (ws *SqlWareHouseStore) Save(wh *model.WareHouse) (*model.WareHouse, error)
 	return wh, nil
 }
 
-func (ws *SqlWareHouseStore) Get(id string) (*model.WareHouse, error) {
-	var res model.WareHouse
-	err := ws.GetReplicaX().Get(
-		&res,
-		"SELECT * FROM "+store.WarehouseTableName+" WHERE Id = ?",
-		id,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound("Warehouse", id)
-		}
-		return nil, errors.Wrapf(err, "failed to get warehouse with Id=%s", id)
+func (ws *SqlWareHouseStore) Update(warehouse *model.WareHouse) (*model.WareHouse, error) {
+	warehouse.PreUpdate()
+	if err := warehouse.IsValid(); err != nil {
+		return nil, err
 	}
 
-	return &res, nil
+	query := "UPDATE " + store.WarehouseTableName + " SET " + ws.
+		ModelFields("").
+		Map(func(_ int, item string) string {
+			return item + ":=" + item
+		}).
+		Join(",") + " WHERE Id=:Id"
+
+	result, err := ws.GetMasterX().NamedExec(query, warehouse)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to update warehouse")
+	}
+	numUdated, _ := result.RowsAffected()
+	if numUdated != 1 {
+		return nil, errors.Errorf("%d warehouse(s) was/were updated instead of 1", numUdated)
+	}
+
+	return warehouse, nil
 }
 
+// NOTE: if option is nil, all warehouses query is returned.
 func (ws *SqlWareHouseStore) commonQueryBuilder(option *model.WarehouseFilterOption) squirrel.SelectBuilder {
 	if option == nil {
 		return ws.GetQueryBuilder().
@@ -310,7 +320,7 @@ func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.WareHous
 }
 
 func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
-	stocks, err := ws.Stock().FilterByOption(nil, &model.StockFilterOption{
+	stocks, err := ws.Stock().FilterByOption(&model.StockFilterOption{
 		ProductVariantID:            squirrel.Eq{store.StockTableName + ".ProductVariantID": checkoutLines.VariantIDs()},
 		SelectRelatedProductVariant: true,
 	})
@@ -322,8 +332,25 @@ func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkou
 	return ws.forCountryLinesAndStocks(checkoutLines, stocks, country)
 }
 
-func (ws *SqlWareHouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
+func (w *SqlWareHouseStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+	runner := w.GetMasterX()
+	if transaction != nil {
+		runner = transaction
+	}
 
+	result, err := runner.Exec("DELETE FROM " + store.WarehouseTableName + " WHERE Id IN (" + squirrel.Placeholders(len(ids)) + ")")
+	if err != nil {
+		return errors.Wrap(err, "failed to delete warehouse(s) by given ids")
+	}
+	numDeleted, _ := result.RowsAffected()
+	if int(numDeleted) != len(ids) {
+		return errors.Errorf("%d warehouse(s) deleted instead of %d", numDeleted, len(ids))
+	}
+
+	return nil
+}
+
+func (ws *SqlWareHouseStore) ApplicableForClickAndCollectCheckoutLines(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
 	panic("not implemented")
 }
 

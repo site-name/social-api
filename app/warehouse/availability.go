@@ -71,7 +71,7 @@ func (s *ServiceWarehouse) CheckStockAndPreorderQuantity(variant *model.ProductV
 // exception.
 func (a *ServiceWarehouse) CheckStockQuantity(variant *model.ProductVariant, countryCode model.CountryCode, channelSlug string, quantity int) (*model.InsufficientStock, *model.AppError) {
 	if *variant.TrackInventory {
-		stocks, appErr := a.GetVariantStocksForCountry(nil, countryCode, channelSlug, variant.Id)
+		stocks, appErr := a.GetVariantStocksForCountry(countryCode, channelSlug, variant.Id)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -176,7 +176,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 		allVariantStockFilterOption.WarehouseID = additionalFilterLookup["warehouse_id"].(string)
 	}
 
-	allVariantStocks, appErr := a.FilterStocksForCountryAndChannel(nil, allVariantStockFilterOption)
+	allVariantStocks, appErr := a.FilterStocksForCountryAndChannel(allVariantStockFilterOption)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
