@@ -28,7 +28,7 @@ func (s *Server) registerSubServices() error {
 	return nil
 }
 
-// PluginService returns order sub app
+// PluginService returns plugin sub app
 func (s *Server) PluginService() sub_app_iface.PluginService {
 	return s.Plugin
 }

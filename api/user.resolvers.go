@@ -74,9 +74,9 @@ func (r *Resolver) UserBulkSetActive(ctx context.Context, args struct {
 func (r *Resolver) Me(ctx context.Context) (*User, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	user, appErr := embedCtx.App.Srv().AccountService().UserById(ctx, embedCtx.AppContext.Session().UserId)
-	if appErr != nil {
-		return nil, appErr
+	user, err := UserByUserIdLoader.Load(ctx, embedCtx.AppContext.Session().UserId)()
+	if err != nil {
+		return nil, err
 	}
 
 	return SystemUserToGraphqlUser(user), nil

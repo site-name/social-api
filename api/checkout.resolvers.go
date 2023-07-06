@@ -87,7 +87,7 @@ func (r *Resolver) CheckoutComplete(ctx context.Context, args struct {
 	PaymentData model.StringInterface
 	RedirectURL *string
 	StoreSource *bool
-	Token       *string
+	Token       string
 }) (*CheckoutComplete, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -98,7 +98,7 @@ func (r *Resolver) CheckoutCreate(ctx context.Context, args struct{ Input Checko
 
 func (r *Resolver) CheckoutCustomerAttach(ctx context.Context, args struct {
 	CustomerID *string
-	Token      *string
+	Token      string
 }) (*CheckoutCustomerAttach, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -109,48 +109,80 @@ func (r *Resolver) CheckoutCustomerDetach(ctx context.Context, args struct{ Toke
 
 func (r *Resolver) CheckoutEmailUpdate(ctx context.Context, args struct {
 	Email string
-	Token *string
+	Token string
 }) (*CheckoutEmailUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) CheckoutRemovePromoCode(ctx context.Context, args struct {
 	PromoCode string
-	Token     *string
+	Token     string
 }) (*CheckoutRemovePromoCode, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) CheckoutPaymentCreate(ctx context.Context, args struct {
 	Input PaymentInput
-	Token *string
+	Token string
 }) (*CheckoutPaymentCreate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) CheckoutShippingAddressUpdate(ctx context.Context, args struct {
 	ShippingAddress AddressInput
-	Token           *string
+	Token           string
 }) (*CheckoutShippingAddressUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) CheckoutDeliveryMethodUpdate(ctx context.Context, args struct {
 	DeliveryMethodID *string
-	Token            *string
+	Token            string
 }) (*CheckoutDeliveryMethodUpdate, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *Resolver) CheckoutLanguageCodeUpdate(ctx context.Context, args struct {
 	LanguageCode LanguageCodeEnum
-	Token        *string
+	Token        string
 }) (*CheckoutLanguageCodeUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate arguments
+	if !model.IsValidId(args.Token) {
+		return nil, model.NewAppError("CheckoutLanguageCodeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid token", http.StatusBadRequest)
+	}
+	if !args.LanguageCode.IsValid() {
+		return nil, model.NewAppError("CheckoutLanguageCodeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "language code"}, "please provide valid language code", http.StatusBadRequest)
+	}
+
+	// find checkout
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	checkout, err := CheckoutByTokenLoader.Load(ctx, args.Token)()
+	if err != nil {
+		return nil, err
+	}
+
+	checkout.LanguageCode = args.LanguageCode
+	updatedCheckouts, appErr := embedCtx.App.Srv().CheckoutService().UpsertCheckouts(nil, []*model.Checkout{checkout})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &CheckoutLanguageCodeUpdate{
+		Checkout: SystemCheckoutToGraphqlCheckout(updatedCheckouts[0]),
+	}, nil
 }
 
-func (r *Resolver) Checkout(ctx context.Context, args struct{ Token *string }) (*Checkout, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *Resolver) Checkout(ctx context.Context, args struct{ Token string }) (*Checkout, error) {
+	if !model.IsValidId(args.Token) {
+		return nil, model.NewAppError("Checkout", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "token"}, "please provide valid checkout token", http.StatusBadRequest)
+	}
+
+	checkout, err := CheckoutByTokenLoader.Load(ctx, args.Token)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemCheckoutToGraphqlCheckout(checkout), nil
 }
 
 func (r *Resolver) Checkouts(ctx context.Context, args struct {

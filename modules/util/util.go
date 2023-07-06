@@ -262,9 +262,10 @@ func (a AnyArray[T]) Remove(item T) AnyArray[T] {
 	return res
 }
 
+// Dedup keeps each item in current array appears once only.
 func (a AnyArray[T]) Dedup() AnyArray[T] {
 	meetMap := map[T]struct{}{}
-	res := make(AnyArray[T], 0, len(a))
+	res := AnyArray[T]{}
 
 	for _, item := range a {
 		_, ok := meetMap[item]
@@ -281,6 +282,7 @@ type MinMax[T Ordered] struct {
 	Min, Max T
 }
 
+// GetMinMax find min, max values of current array, return them
 func (s AnyArray[T]) GetMinMax() MinMax[T] {
 	if len(s) == 1 {
 		return MinMax[T]{s[0], s[0]}
@@ -298,6 +300,7 @@ func (s AnyArray[T]) GetMinMax() MinMax[T] {
 	return MinMax[T]{min, max}
 }
 
+// InterSection returns items that appear in both current array and given others
 func (s AnyArray[T]) InterSection(others ...T) AnyArray[T] {
 	var res AnyArray[T]
 	meetMap := map[T]struct{}{}
@@ -316,6 +319,7 @@ func (s AnyArray[T]) InterSection(others ...T) AnyArray[T] {
 	return res
 }
 
+// Sum adds up items in current array and returns the result
 func (a AnyArray[T]) Sum() T {
 	var res T
 	for _, item := range a {
@@ -355,7 +359,32 @@ func (sa AnyArray[T]) Contains(input T) bool {
 
 // Equals checks if two arrays of strings have same length and contains the same elements at each index
 func (sa AnyArray[T]) Equals(input []T) bool {
-	return reflect.DeepEqual(sa, input)
+	if len(sa) != len(input) {
+		return false
+	}
+
+	for idx, item := range sa {
+		if item != input[idx] {
+			return false
+		}
+	}
+
+	return true
+}
+
+// HasDuplicates checks if there are duplicates in current array
+func (sa AnyArray[T]) HasDuplicates() bool {
+	meetMap := map[T]struct{}{}
+
+	for _, item := range sa {
+		_, met := meetMap[item]
+		if met {
+			return true
+		}
+		meetMap[item] = struct{}{}
+	}
+
+	return false
 }
 
 // Join

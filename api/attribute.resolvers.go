@@ -93,12 +93,11 @@ func (r *Resolver) AttributeCreate(ctx context.Context, args struct{ Input Attri
 
 // NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeDelete(ctx context.Context, args struct{ Id string }) (*AttributeDelete, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	// validate argument(s)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AttributeDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "id = "+args.Id+" is invalid id", http.StatusBadRequest)
 	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	_, appErr := embedCtx.App.Srv().AttributeService().DeleteAttributes(args.Id)
 	if appErr != nil {
@@ -114,12 +113,11 @@ func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AttributeUpdateInput
 }) (*AttributeUpdate, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	if !lo.EveryBy(args.Input.RemoveValues, model.IsValidId) {
 		return nil, model.NewAppError("AttributeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "removeValues"}, "please provide valid attribute value ids", http.StatusBadRequest)
 	}
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	// get attribute
 	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{
 		Id: squirrel.Eq{store.AttributeTableName + ".Id": args.Id},
@@ -217,12 +215,11 @@ func (r *Resolver) AttributeTranslate(ctx context.Context, args struct {
 
 // NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []string }) (*AttributeBulkDelete, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	if len(args.Ids) == 0 || !lo.EveryBy(args.Ids, model.IsValidId) {
 		return nil, model.NewAppError("AttributeBulkDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid ids", http.StatusBadRequest)
 	}
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	count, appErr := embedCtx.App.Srv().AttributeService().DeleteAttributes(args.Ids...)
 	if appErr != nil {
 		return nil, appErr
@@ -234,12 +231,11 @@ func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []s
 
 // NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeValueBulkDelete(ctx context.Context, args struct{ Ids []string }) (*AttributeValueBulkDelete, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	if len(args.Ids) == 0 || !lo.EveryBy(args.Ids, model.IsValidId) {
 		return nil, model.NewAppError("AttributeValueBulkDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid ids", http.StatusBadRequest)
 	}
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	count, appErr := embedCtx.App.Srv().AttributeService().DeleteAttributeValues(args.Ids...)
 	if appErr != nil {
 		return nil, appErr
@@ -254,12 +250,11 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 	AttributeID string
 	Input       AttributeValueCreateInput
 }) (*AttributeValueCreate, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	if !model.IsValidId(args.AttributeID) {
 		return nil, model.NewAppError("AttributeValueCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributeID"}, "id="+args.AttributeID+" is in valid", http.StatusBadRequest)
 	}
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{
 		Id: squirrel.Eq{store.AttributeTableName + ".Id": args.AttributeID},
 	})
@@ -307,12 +302,11 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 
 // NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeValueDelete(ctx context.Context, args struct{ Id string }) (*AttributeValueDelete, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AttributeValueDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.Id+" is in valid", http.StatusBadRequest)
 	}
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	attrValues, appErr := embedCtx.App.Srv().AttributeService().FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
 		Id: squirrel.Eq{store.AttributeValueTableName + ".Id": args.Id},
 	})
@@ -340,11 +334,10 @@ func (r *Resolver) AttributeValueUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AttributeValueUpdateInput
 }) (*AttributeValueUpdate, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AttributeValueUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.Id+" is in valid", http.StatusBadRequest)
 	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	attrValues, appErr := embedCtx.App.Srv().AttributeService().FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
 		Id: squirrel.Eq{store.AttributeValueTableName + ".Id": args.Id},
@@ -398,8 +391,6 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 	AttributeID string
 	Moves       []*ReorderInput
 }) (*AttributeReorderValues, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	if !model.IsValidId(args.AttributeID) {
 		return nil, model.NewAppError("AttributeReorderValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.AttributeID+" is in valid", http.StatusBadRequest)
 	}
@@ -407,6 +398,7 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 		return nil, model.NewAppError("AttributeReorderValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "moves"}, "one of moves provided has invalid id", http.StatusBadRequest)
 	}
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	// find attribute with given id
 	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{
 		Id:                             squirrel.Eq{store.AttributeTableName + ".Id": args.AttributeID},
@@ -450,8 +442,6 @@ func (r *Resolver) Attribute(ctx context.Context, args struct {
 	Id   *string
 	Slug *string
 }) (*Attribute, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
 	if args.Id == nil && args.Slug == nil {
 		return nil, model.NewAppError("Attribute", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id/slug"}, "please provide id or slug", http.StatusBadRequest)
 	}
@@ -469,6 +459,7 @@ func (r *Resolver) Attribute(ctx context.Context, args struct {
 		attrFilter.Slug = squirrel.Eq{store.AttributeTableName + ".Slug": *args.Slug}
 	}
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(attrFilter)
 	if appErr != nil {
 		return nil, appErr

@@ -1,6 +1,7 @@
 package product
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -57,7 +58,7 @@ func (ps *SqlCollectionProductStore) BulkSave(transaction store_iface.SqlxTxExec
 
 		result, err := runner.Exec("INSERT INTO "+store.CollectionProductRelationTableName+" (Id, CollectionID, ProductID) VALUES (:Id, :CollectionID, :ProductID)", rel)
 		if err != nil {
-			if ps.IsUniqueConstraintError(err, []string{"productcollections_collectionid_productid_key"}) {
+			if ps.IsUniqueConstraintError(err, []string{"ProductID", "CollectionID", "productcollections_collectionid_productid_key"}) {
 				return nil, store.NewErrInvalidInput(store.CollectionProductRelationTableName, "CollectionID/ProductID", nil)
 			}
 			return nil, errors.Wrap(err, "failed to insert a collection product relation")
@@ -143,4 +144,31 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 	}
 
 	return res, nil
+}
+
+func (s *SqlCollectionProductStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.CollectionProductFilterOptions) error {
+	query := s.GetQueryBuilder().Delete(store.CollectionProductRelationTableName)
+
+	for _, opt := range []squirrel.Sqlizer{options.CollectionID, options.ProductID} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "Delete_ToSql")
+	}
+
+	runner := s.GetMasterX()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	_, err = runner.Exec(queryString, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete collection product relations")
+	}
+
+	return nil
 }

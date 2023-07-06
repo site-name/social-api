@@ -4,10 +4,10 @@ extend type Mutation {
   collectionDelete(id: String!): CollectionDelete @hasRoles(roles: [shop_admin])
   collectionReorderProducts(collectionId: String!, moves: [MoveProductInput]!): CollectionReorderProducts @hasRoles(roles: [shop_admin])
   collectionBulkDelete(ids: [String!]!): CollectionBulkDelete @hasRoles(roles: [shop_admin])
-  collectionRemoveProducts(collectionId: String!, products: [String!]!): CollectionRemoveProducts
-  collectionUpdate(id: String!, input: CollectionInput!): CollectionUpdate
+  collectionRemoveProducts(collectionId: String!, products: [String!]!): CollectionRemoveProducts @hasRoles(roles: [shop_admin])
+  collectionUpdate(id: String!, input: CollectionInput!): CollectionUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
   collectionTranslate(id: String!, input: TranslationInput!, languageCode: LanguageCodeEnum!): CollectionTranslate
-  collectionChannelListingUpdate(id: String!, input: CollectionChannelListingUpdateInput!): CollectionChannelListingUpdate
+  collectionChannelListingUpdate(id: String!, input: CollectionChannelListingUpdateInput!): CollectionChannelListingUpdate @hasRoles(roles: [shop_admin])
 }
 
 extend type Query {

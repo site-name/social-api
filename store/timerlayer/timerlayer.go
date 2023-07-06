@@ -2755,6 +2755,22 @@ func (s *TimerLayerCollectionStore) Upsert(collection *model.Collection) (*model
 	return result, err
 }
 
+func (s *TimerLayerCollectionChannelListingStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.CollectionChannelListingFilterOptions) error {
+	start := timemodule.Now()
+
+	err := s.CollectionChannelListingStore.Delete(transaction, options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionChannelListingStore.Delete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerCollectionChannelListingStore) FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error) {
 	start := timemodule.Now()
 
@@ -2767,6 +2783,22 @@ func (s *TimerLayerCollectionChannelListingStore) FilterByOptions(options *model
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("CollectionChannelListingStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerCollectionChannelListingStore) Upsert(transaction store_iface.SqlxTxExecutor, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
+	start := timemodule.Now()
+
+	result, err := s.CollectionChannelListingStore.Upsert(transaction, relations...)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionChannelListingStore.Upsert", success, elapsed)
 	}
 	return result, err
 }
@@ -2785,6 +2817,22 @@ func (s *TimerLayerCollectionProductStore) BulkSave(transaction store_iface.Sqlx
 		s.Root.Metrics.ObserveStoreMethodDuration("CollectionProductStore.BulkSave", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerCollectionProductStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.CollectionProductFilterOptions) error {
+	start := timemodule.Now()
+
+	err := s.CollectionProductStore.Delete(transaction, options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("CollectionProductStore.Delete", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerCollectionProductStore) FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error) {

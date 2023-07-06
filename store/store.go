@@ -460,6 +460,8 @@ type (
 	CollectionTranslationStore interface {
 	}
 	CollectionChannelListingStore interface {
+		Delete(transaction store_iface.SqlxTxExecutor, options *model.CollectionChannelListingFilterOptions) error
+		Upsert(transaction store_iface.SqlxTxExecutor, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error)
 		FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error)
 	}
 	CollectionStore interface {
@@ -471,6 +473,7 @@ type (
 		Delete(ids ...string) error
 	}
 	CollectionProductStore interface {
+		Delete(transaction store_iface.SqlxTxExecutor, options *model.CollectionProductFilterOptions) error
 		BulkSave(transaction store_iface.SqlxTxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error)
 		FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error)
 	}

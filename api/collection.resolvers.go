@@ -7,11 +7,14 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/modules/slog"
+	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
@@ -149,13 +152,59 @@ func (r *Resolver) CollectionBulkDelete(ctx context.Context, args struct{ Ids []
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/collection.graphqls for details on directive used.
 func (r *Resolver) CollectionRemoveProducts(ctx context.Context, args struct {
 	CollectionID string
 	Products     []string
 }) (*CollectionRemoveProducts, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate arguments
+	if !model.IsValidId(args.CollectionID) {
+		return nil, model.NewAppError("CollectionRemoveProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "collection id"}, "please provide valid collection id", http.StatusBadRequest)
+	}
+	if !lo.EveryBy(args.Products, model.IsValidId) {
+		return nil, model.NewAppError("CollectionRemoveProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "product ids"}, "please provide valid product ids", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	err := embedCtx.App.Srv().Store.CollectionProduct().Delete(nil, &model.CollectionProductFilterOptions{
+		CollectionID: squirrel.Eq{store.CollectionProductRelationTableName + ".CollectionID": args.CollectionID},
+		ProductID:    squirrel.Eq{store.CollectionProductRelationTableName + ".ProductID": args.Products},
+	})
+	if err != nil {
+		return nil, model.NewAppError("CollectionRemoveProducts", "app.product.remove_collection_products.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// TODO: check if we need to call plugins' productUpdated methods
+
+	saleCollections, appErr := embedCtx.App.Srv().DiscountService().SaleCollectionsByOptions(&model.SaleCollectionRelationFilterOption{
+		CollectionID: squirrel.Eq{store.SaleCollectionRelationTableName + ".CollectionID": args.CollectionID},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(saleCollections) > 0 {
+		// Updated the db entries, recalculating discounts of affected products
+		embedCtx.App.Srv().Go(func() {
+			appErr := embedCtx.App.Srv().ProductService().UpdateProductsDiscountedPricesOfCatalogues(nil, args.Products, nil, nil, nil)
+			if appErr != nil {
+				slog.Error("failed to update product discounted prices of catalogues", slog.Err(appErr))
+			}
+		})
+	}
+
+	collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(&model.CollectionFilterOption{
+		Id: squirrel.Eq{store.CollectionTableName + ".Id": args.CollectionID},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &CollectionRemoveProducts{
+		Collection: systemCollectionToGraphqlCollection(collections[0]),
+	}, nil
 }
 
+// NOTE: Refer to ./schemas/collection.graphqls for details on directive used.
 func (r *Resolver) CollectionUpdate(ctx context.Context, args struct {
 	Id    string
 	Input CollectionInput
@@ -171,11 +220,95 @@ func (r *Resolver) CollectionTranslate(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/collection.graphqls for details on directive used.
 func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args struct {
 	Id    string
 	Input CollectionChannelListingUpdateInput
 }) (*CollectionChannelListingUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate arguments
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("CollectionChannelListingUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid collection id", http.StatusBadRequest)
+	}
+
+	// validate input
+	var addChannelIds util.AnyArray[string] = lo.Map(args.Input.AddChannels, func(item *PublishableChannelListingInput, _ int) string { return item.ChannelID })
+	var removeChannelIds util.AnyArray[string] = args.Input.RemoveChannels
+
+	if addChannelIds.InterSection(removeChannelIds...).Len() > 0 {
+		return nil, model.NewAppError("CollectionChannelListingUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "input"}, "some channels are both being added and removed", http.StatusBadRequest)
+	}
+	if addChannelIds.HasDuplicates() || !lo.EveryBy(addChannelIds, model.IsValidId) {
+		return nil, model.NewAppError("CollectionChannelListingUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids and avoid duplicating", http.StatusBadRequest)
+	}
+	if removeChannelIds.HasDuplicates() || !lo.EveryBy(removeChannelIds, model.IsValidId) {
+		return nil, model.NewAppError("CollectionChannelListingUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "remove channels"}, "please provide valid channel ids and avoid duplicating", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// begin transaction:
+	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	if err != nil {
+		return nil, model.NewAppError("CollectionChannelListingUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer store.FinalizeTransaction(transaction)
+
+	// delete collection-channel listings
+	err = embedCtx.App.Srv().Store.CollectionChannelListing().Delete(transaction, &model.CollectionChannelListingFilterOptions{
+		CollectionID: squirrel.Eq{store.CollectionChannelListingTableName + ".CollectionID": args.Id},
+		ChannelID:    squirrel.Eq{store.CollectionChannelListingTableName + ".ChannelID": removeChannelIds},
+	})
+	if err != nil {
+		return nil, model.NewAppError("CollectionChannelListingUpdate", "app.product.error_deleting_collection_channel_listings.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// add collection-channel listings
+	now := time.Now()
+	collectionChannelListingsToAdd := lo.Map(args.Input.AddChannels, func(item *PublishableChannelListingInput, _ int) *model.CollectionChannelListing {
+		relation := model.CollectionChannelListing{
+			CollectionID: args.Id,
+			ChannelID:    item.ChannelID,
+		}
+
+		if item.IsPublished != nil && *item.IsPublished {
+			relation.IsPublished = true
+
+			if item.PublicationDate == nil {
+				date := util.StartOfDay(now)
+				relation.PublicationDate = &date
+			} else {
+				relation.PublicationDate = &item.PublicationDate.Time
+			}
+		}
+
+		return &relation
+	})
+
+	_, err = embedCtx.App.Srv().Store.CollectionChannelListing().Upsert(transaction, collectionChannelListingsToAdd...)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return nil, model.NewAppError("CollectionChannelListingUpdate", "app.product.upsert_collection_channel_listings.app_error", nil, err.Error(), statusCode)
+	}
+
+	// commit transaction
+	err = transaction.Commit()
+	if err != nil {
+		return nil, model.NewAppError("CollectionChannelListingUpdate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(&model.CollectionFilterOption{
+		Id: squirrel.Eq{store.CollectionTableName + ".Id": args.Id},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &CollectionChannelListingUpdate{
+		Collection: systemCollectionToGraphqlCollection(collections[0]),
+	}, nil
 }
 
 func (r *Resolver) Collection(ctx context.Context, args struct {

@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
@@ -79,7 +80,27 @@ func (r *Resolver) CheckoutLinesUpdate(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Checkout lines are sorted by CreateAt
 // NOTE: Refer to ./schemas/checkout_line.graphqls for details on directives used.
 func (r *Resolver) CheckoutLines(ctx context.Context, args GraphqlParams) (*CheckoutLineCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate args
+	appErr := args.Validate("CheckoutLines")
+	if appErr != nil {
+		return nil, appErr
+	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	checkoutLines, appErr := embedCtx.App.Srv().CheckoutService().CheckoutLinesByOption(&model.CheckoutLineFilterOption{})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// TODO: Consider filter from database
+	keyFunc := func(line *model.CheckoutLine) int64 { return line.CreateAt }
+	res, appErr := newGraphqlPaginator(checkoutLines, keyFunc, SystemCheckoutLineToGraphqlCheckoutLine, args).parse("CheckoutLines")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return (*CheckoutLineCountableConnection)(unsafe.Pointer(res)), nil
 }

@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 )
 
 type WishlistItem struct {
@@ -21,25 +22,11 @@ type WishlistItemFilterOption struct {
 type WishlistItems []*WishlistItem
 
 func (w WishlistItems) IDs() []string {
-	var res []string
-	for _, item := range w {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
-
-	return res
+	return lo.Map(w, func(item *WishlistItem, _ int) string { return item.Id })
 }
 
 func (w WishlistItems) ProductIDs() []string {
-	var res []string
-	for _, item := range w {
-		if item != nil {
-			res = append(res, item.ProductID)
-		}
-	}
-
-	return res
+	return lo.Map(w, func(item *WishlistItem, _ int) string { return item.ProductID })
 }
 
 func (w *WishlistItem) IsValid() *AppError {
@@ -66,8 +53,4 @@ func (w *WishlistItem) PreSave() {
 		w.Id = NewId()
 	}
 	w.CreateAt = GetMillis()
-}
-
-func (w *WishlistItem) ToJSON() string {
-	return ModelToJson(w)
 }

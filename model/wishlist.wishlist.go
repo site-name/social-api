@@ -40,10 +40,6 @@ func (w *Wishlist) IsValid() *AppError {
 	return nil
 }
 
-func (w *Wishlist) ToJSON() string {
-	return ModelToJson(w)
-}
-
 func (w *Wishlist) PreSave() {
 	if !IsValidId(w.Id) {
 		w.Id = NewId()

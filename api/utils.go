@@ -31,12 +31,9 @@ func MakeUnauthorizedError(where string) *model.AppError {
 // Unique type to hold our context.
 type CTXKey int
 
-const (
-	WebCtx CTXKey = iota
-	// ChannelIdCtx
-)
+const WebCtx CTXKey = iota
 
-// constructSchema constructs schema from *.graphql files
+// constructSchema constructs schema from *.graphql(s) files
 func constructSchema() (string, error) {
 	entries, err := assets.ReadDir("schemas")
 	if err != nil {
@@ -157,17 +154,18 @@ func parseGraphqlOperand[C graphqlCursorType](params GraphqlParams) (*C, error) 
 	}
 
 	// convert base64 cursor to string:
-	var strCursorValue []byte
+	var byteCursorValue []byte
 	var err error
 	if params.Before != nil {
-		strCursorValue, err = base64.StdEncoding.DecodeString(*params.Before)
+		byteCursorValue, err = base64.StdEncoding.DecodeString(*params.Before)
 	} else if params.After != nil {
-		strCursorValue, err = base64.StdEncoding.DecodeString(*params.After)
+		byteCursorValue, err = base64.StdEncoding.DecodeString(*params.After)
 	}
+
 	if err != nil {
 		return nil, err
 	}
-	var cursorValue = string(strCursorValue)
+	var cursorValue = string(byteCursorValue)
 
 	var res C
 	switch any(res).(type) {
@@ -232,19 +230,21 @@ const (
 )
 
 func comparePrimitives[T util.Ordered](a, b T) CompareOrder {
-	if a < b {
+	switch {
+	case a < b:
 		return Lesser
-	} else if a > b {
+	case a > b:
 		return Greater
+	default:
+		return Equal
 	}
-	return Equal
 }
 
 // compareGraphqlOperands compares a and b and returns CompareOrder.
 func compareGraphqlOperands[K graphqlCursorType](a, b K) CompareOrder {
-	anyA, anyB := any(a), any(b)
+	anyB := any(b)
 
-	switch t := anyA.(type) {
+	switch t := any(a).(type) {
 	case time.Time:
 		bTime := anyB.(time.Time)
 		switch {
@@ -335,13 +335,7 @@ func newGraphqlPaginator[RawT any, CurT graphqlCursorType, DestT any](
 	keyFunc func(RawT) CurT,
 	rawTypeToDestTypeFunc func(RawT) DestT,
 	params GraphqlParams) *graphqlPaginator[RawT, CurT, DestT] {
-
-	return &graphqlPaginator[RawT, CurT, DestT]{
-		data:                  data,
-		keyFunc:               keyFunc,
-		rawTypeToDestTypeFunc: rawTypeToDestTypeFunc,
-		GraphqlParams:         params,
-	}
+	return &graphqlPaginator[RawT, CurT, DestT]{data, keyFunc, rawTypeToDestTypeFunc, params}
 }
 
 // CountableConnection shares similar memory layout as all graphql api Connections.

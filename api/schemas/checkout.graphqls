@@ -1,21 +1,21 @@
 extend type Mutation {
-  checkoutAddPromoCode(promoCode: String!, token: String): CheckoutAddPromoCode
+  checkoutAddPromoCode(promoCode: String!, token: String!): CheckoutAddPromoCode
   checkoutBillingAddressUpdate(billingAddress: AddressInput!, token: String!): CheckoutBillingAddressUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
-  checkoutComplete(paymentData: JSONString!, redirectUrl: String, storeSource: Boolean, token: String): CheckoutComplete
+  checkoutComplete(paymentData: JSONString!, redirectUrl: String, storeSource: Boolean, token: String!): CheckoutComplete
   checkoutCreate(input: CheckoutCreateInput!): CheckoutCreate
-  checkoutCustomerAttach(customerId: String, token: String): CheckoutCustomerAttach
-  checkoutCustomerDetach(token: String): CheckoutCustomerDetach
-  checkoutEmailUpdate(email: String!, token: String): CheckoutEmailUpdate
-  checkoutRemovePromoCode(promoCode: String!, token: String): CheckoutRemovePromoCode
-  checkoutPaymentCreate(input: PaymentInput!, token: String): CheckoutPaymentCreate
-  checkoutShippingAddressUpdate(shippingAddress: AddressInput!, token: String): CheckoutShippingAddressUpdate
-  # checkoutShippingMethodUpdate(shippingMethodId: String!, token: String): CheckoutShippingMethodUpdate
-  checkoutDeliveryMethodUpdate(deliveryMethodId: String, token: String): CheckoutDeliveryMethodUpdate
-  checkoutLanguageCodeUpdate(languageCode: LanguageCodeEnum!, token: String): CheckoutLanguageCodeUpdate
+  checkoutCustomerAttach(customerId: String, token: String!): CheckoutCustomerAttach
+  checkoutCustomerDetach(token: String!): CheckoutCustomerDetach
+  checkoutEmailUpdate(email: String!, token: String!): CheckoutEmailUpdate
+  checkoutRemovePromoCode(promoCode: String!, token: String!): CheckoutRemovePromoCode
+  checkoutPaymentCreate(input: PaymentInput!, token: String!): CheckoutPaymentCreate
+  checkoutShippingAddressUpdate(shippingAddress: AddressInput!, token: String!): CheckoutShippingAddressUpdate
+  # checkoutShippingMethodUpdate(shippingMethodId: String!, token: String!): CheckoutShippingMethodUpdate
+  checkoutDeliveryMethodUpdate(deliveryMethodId: String, token: String!): CheckoutDeliveryMethodUpdate
+  checkoutLanguageCodeUpdate(languageCode: LanguageCodeEnum!, token: String!): CheckoutLanguageCodeUpdate
 }
 
 extend type Query {
-  checkout(token: String): Checkout
+  checkout(token: String!): Checkout
   checkouts(channel: String, before: String, after: String, first: Int, last: Int): CheckoutCountableConnection
 }
 
