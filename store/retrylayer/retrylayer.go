@@ -1322,11 +1322,11 @@ func (s *RetryLayerAllocationStore) CountAvailableQuantityForStock(stock *model.
 
 }
 
-func (s *RetryLayerAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.AllocationFilterOption) ([]*model.Allocation, error) {
+func (s *RetryLayerAllocationStore) FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error) {
 
 	tries := 0
 	for {
-		result, err := s.AllocationStore.FilterByOption(transaction, option)
+		result, err := s.AllocationStore.FilterByOption(option)
 		if err == nil {
 			return result, nil
 		}

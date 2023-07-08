@@ -93,7 +93,7 @@ func (a *ServiceOrder) OrderDiscountsAutomaticallyUpdatedEvent(transaction store
 func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction store_iface.SqlxTxExecutor, ord *model.Order, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError) {
 	return a.OrderDiscountEvent(
 		transaction,
-		model.ORDER_DISCOUNT_AUTOMATICALLY_UPDATED,
+		model.ORDER_EVENT_TYPE_ORDER_DISCOUNT_AUTOMATICALLY_UPDATED,
 		ord,
 		nil,
 		orderDiscount,
@@ -119,13 +119,11 @@ func (a *ServiceOrder) OrderDiscountEvent(transaction store_iface.SqlxTxExecutor
 	})
 }
 
-func getPaymentData(amount *decimal.Decimal, payMent model.Payment) map[string]map[string]interface{} {
-	return map[string]map[string]interface{}{
-		"parameters": {
-			"amount":          amount,
-			"payment_id":      payMent.Token,
-			"payment_gateway": payMent.GateWay,
-		},
+func getPaymentData(amount *decimal.Decimal, payMent model.Payment) map[string]interface{} {
+	return map[string]interface{}{
+		"amount":          amount,
+		"payment_id":      payMent.Token,
+		"payment_gateway": payMent.GateWay,
 	}
 }
 
@@ -179,7 +177,7 @@ func (s *ServiceOrder) FulfillmentCanceledEvent(transaction store_iface.SqlxTxEx
 	return s.CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 		OrderID:    orDer.Id,
 		UserID:     userID,
-		Type:       model.FULFILLMENT_CANCELED_,
+		Type:       model.ORDER_EVENT_TYPE_FULFILLMENT_CANCELED,
 		Parameters: params,
 	})
 }
@@ -193,7 +191,7 @@ func (s *ServiceOrder) FulfillmentFulfilledItemsEvent(transaction store_iface.Sq
 	return s.CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 		UserID:  userID,
 		OrderID: orDer.Id,
-		Type:    model.FULFILLMENT_FULFILLED_ITEMS,
+		Type:    model.ORDER_EVENT_TYPE_FULFILLMENT_FULFILLED_ITEMS,
 		Parameters: model.StringInterface{
 			"fulfilled_items": fulfillmentLines.IDs(),
 		},
@@ -202,11 +200,11 @@ func (s *ServiceOrder) FulfillmentFulfilledItemsEvent(transaction store_iface.Sq
 
 func (s *ServiceOrder) OrderCreatedEvent(orDer model.Order, user *model.User, _ interface{}, fromDraft bool) (*model.OrderEvent, *model.AppError) {
 	var (
-		eventType = model.PLACED_FROM_DRAFT
+		eventType = model.ORDER_EVENT_TYPE_PLACED_FROM_DRAFT
 		userID    *string
 	)
 	if !fromDraft {
-		eventType = model.PLACED
+		eventType = model.ORDER_EVENT_TYPE_PLACED
 		_, appErr := s.srv.AccountService().CustomerPlacedOrderEvent(user, orDer)
 		if appErr != nil {
 			return nil, appErr
@@ -232,7 +230,7 @@ func (s *ServiceOrder) OrderConfirmedEvent(orDer model.Order, user *model.User, 
 	return s.CommonCreateOrderEvent(nil, &model.OrderEventOption{
 		UserID:  userID,
 		OrderID: orDer.Id,
-		Type:    model.CONFIRMED,
+		Type:    model.ORDER_EVENT_TYPE_CONFIRMED,
 	})
 }
 
@@ -245,7 +243,7 @@ func (s *ServiceOrder) FulfillmentAwaitsApprovalEvent(transaction store_iface.Sq
 	return s.CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 		OrderID: orDer.Id,
 		UserID:  userID,
-		Type:    model.FULFILLMENT_AWAITS_APPROVAL,
+		Type:    model.ORDER_EVENT_TYPE_FULFILLMENT_AWAITS_APPROVAL,
 		Parameters: model.StringInterface{
 			"awaiting_fulfillments": fulfillmentLines.IDs(),
 		},
@@ -261,7 +259,7 @@ func (s *ServiceOrder) FulfillmentTrackingUpdatedEvent(orDer *model.Order, user 
 	return s.CommonCreateOrderEvent(nil, &model.OrderEventOption{
 		OrderID: orDer.Id,
 		UserID:  userID,
-		Type:    model.TRACKING_UPDATED,
+		Type:    model.ORDER_EVENT_TYPE_TRACKING_UPDATED,
 		Parameters: model.StringInterface{
 			"tracking_number": trackingNumber,
 			"fulfillment":     fulfillment.ComposedId(),
@@ -284,7 +282,7 @@ func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction store_iface.Sq
 	return s.CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 		OrderID:    orDer.Id,
 		UserID:     userID,
-		Type:       model.ORDER_MARKED_AS_PAID,
+		Type:       model.ORDER_EVENT_TYPE_ORDER_MARKED_AS_PAID,
 		Parameters: parameters,
 	})
 }
@@ -297,7 +295,7 @@ func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction store_iface
 
 	return s.CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 		OrderID: draftOrder.Id,
-		Type:    model.DRAFT_CREATED_FROM_REPLACE,
+		Type:    model.ORDER_EVENT_TYPE_DRAFT_CREATED_FROM_REPLACE,
 		UserID:  userID,
 		Parameters: model.StringInterface{
 			"related_order_pk": originalOrder.Id,
@@ -316,7 +314,7 @@ func (s *ServiceOrder) FulfillmentReplacedEvent(transaction store_iface.SqlxTxEx
 	return s.CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 		OrderID: orDer.Id,
 		UserID:  userID,
-		Type:    model.FULFILLMENT_REPLACED_,
+		Type:    model.ORDER_EVENT_TYPE_FULFILLMENT_REPLACED,
 		Parameters: model.StringInterface{
 			"lines": linesPerQuantityToLineObjectList(replacedLines),
 		},
@@ -333,7 +331,7 @@ func (s *ServiceOrder) OrderReplacementCreated(transaction store_iface.SqlxTxExe
 	return s.CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 		OrderID: originalOrder.Id,
 		UserID:  userID,
-		Type:    model.ORDER_REPLACEMENT_CREATED,
+		Type:    model.ORDER_EVENT_TYPE_ORDER_REPLACEMENT_CREATED,
 		Parameters: model.StringInterface{
 			"related_order_pk": replaceOrder.Id,
 		},

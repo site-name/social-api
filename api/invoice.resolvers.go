@@ -204,7 +204,7 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 	_, appErr = embedCtx.App.Srv().OrderService().CommonCreateOrderEvent(nil, &model.OrderEventOption{
 		OrderID: order.Id,
 		UserID:  &embedCtx.AppContext.Session().UserId,
-		Type:    model.INVOICE_GENERATED,
+		Type:    model.ORDER_EVENT_TYPE_INVOICE_GENERATED,
 		Parameters: model.StringInterface{
 			"invoice_number": args.Input.Number,
 		},
@@ -319,7 +319,7 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 
 	orderEventOptions := &model.OrderEventOption{
 		UserID: &embedCtx.AppContext.Session().UserId,
-		Type:   model.INVOICE_UPDATED,
+		Type:   model.ORDER_EVENT_TYPE_INVOICE_UPDATED,
 		Parameters: model.StringInterface{
 			"invoice_number": updatedInvoice.Number,
 			"url":            updatedInvoice.ExternalUrl,

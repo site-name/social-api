@@ -468,9 +468,7 @@ func (a *ServicePayment) ListPaymentSources(
 	customerID string,
 	manager interfaces.PluginManagerInterface,
 	channelID string,
-
 ) ([]*model.CustomerSource, *model.AppError) {
-
 	source, err := manager.ListPaymentSources(gateway, customerID, channelID)
 	if err != nil {
 		return nil, model.NewAppError("ListPaymentSources", "app.payment.error_listing_payment_sources.app_error", nil, err.Error(), http.StatusInternalServerError)

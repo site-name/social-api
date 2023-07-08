@@ -13,7 +13,7 @@ import (
 	"github.com/sitename/sitename/store/store_iface"
 )
 
-func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) ([]*model.AttributeValue, *model.AppError) {
+func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) (model.AttributeValues, *model.AppError) {
 	return a.FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
 		AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": attributeID},
 	})

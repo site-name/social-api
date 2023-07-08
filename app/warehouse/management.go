@@ -64,7 +64,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 		}
 	}
 
-	quantityAllocationList, appErr := a.AllocationsByOption(nil, &model.AllocationFilterOption{
+	quantityAllocationList, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
 		StockID:           squirrel.Eq{store.AllocationTableName + ".StockID": model.Stocks(stocks).IDs()},
 		QuantityAllocated: squirrel.Gt{store.AllocationTableName + ".QuantityAllocated": 0},
 	})
@@ -136,7 +136,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 			stockMap[stock.Id] = stock
 		}
 
-		allocationsOfStocks, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
+		allocationsOfStocks, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
 			StockID: squirrel.Eq{store.AllocationTableName + ".StockID": stockIDsOfAllocations},
 		})
 		if appErr != nil {
@@ -223,13 +223,8 @@ func (a *ServiceWarehouse) createAllocations(lineInfo *model.OrderLineData, stoc
 // quantity for the order line. If there is less quantity in stocks then
 // raise an exception.
 func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, manager interfaces.PluginManagerInterface) (*model.AllocationError, *model.AppError) {
-	transaction, err := a.srv.Store.GetMasterX().Beginx()
-	if err != nil {
-		return nil, model.NewAppError("DeallocateStock", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	linesAllocations, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
+	linesAllocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
 		OrderLineID:          squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLineDatas.OrderLines().IDs()},
 		LockForUpdate:        true,
 		ForUpdateOf:          store.AllocationTableName + ", " + store.StockTableName,
@@ -285,7 +280,7 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 		return &model.AllocationError{OrderLines: notDeallocatedLines}, nil
 	}
 
-	allocationsBeforeUpdate, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
+	allocationsBeforeUpdate, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
 		Id:                             squirrel.Eq{store.AllocationTableName + ".Id": allocationsToUpdate.IDs()},
 		SelectedRelatedStock:           true, // this tells store to attach `Stock` to each of returning allocations
 		AnnotateStockAvailableQuantity: true, // this tells store to populate `StockAvailableQuantity` fields of returning allocations.
@@ -296,6 +291,12 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 		}
 		// ignore not found error
 	}
+
+	transaction, err := a.srv.Store.GetMasterX().Beginx()
+	if err != nil {
+		return nil, model.NewAppError("DeallocateStock", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	_, appErr = a.BulkUpsertAllocations(transaction, allocationsToUpdate)
 	if appErr != nil {
@@ -314,10 +315,10 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 	}
 
 	for _, allocation := range allocationsBeforeUpdate {
-		availableStockNow := util.GetMinMax(allocation.Stock.Quantity-stockAndTotalQuantityAllocatedMap[allocation.StockID], 0).Max
+		availableStockNow := util.GetMinMax(allocation.GetStock().Quantity-stockAndTotalQuantityAllocatedMap[allocation.StockID], 0).Max
 
-		if allocation.StockAvailableQuantity <= 0 && availableStockNow > 0 {
-			if appErr := manager.ProductVariantBackInStock(*allocation.Stock); appErr != nil {
+		if allocation.GetStockAvailableQuantity() <= 0 && availableStockNow > 0 {
+			if appErr := manager.ProductVariantBackInStock(*allocation.GetStock()); appErr != nil {
 				return nil, appErr
 			}
 		}
@@ -381,7 +382,7 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *model.OrderLine, wareHouse *
 	if allocate && stock != nil {
 		var allocation *model.Allocation
 
-		allocations, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
+		allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
 			OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLine.Id},
 			StockID:     squirrel.Eq{store.AllocationTableName + ".StockID": stock.Id},
 		})
@@ -430,7 +431,7 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos model.OrderLineDatas, c
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	allocations, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
+	allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
 		OrderLineID:            squirrel.Eq{store.AllocationTableName + ".OrderLineID": lineInfos.OrderLines().IDs()},
 		LockForUpdate:          true,
 		ForUpdateOf:            fmt.Sprintf("%s, %s", store.AllocationTableName, store.StockTableName),
@@ -528,7 +529,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, ma
 		return nil, appErr
 	}
 	if allocationErr != nil {
-		allocations, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
+		allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
 			OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": allocationErr.OrderLines.IDs()},
 		})
 		if appErr != nil {
@@ -570,7 +571,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, ma
 		variantAndWarehouseToStock[stock.ProductVariantID][stock.WarehouseID] = stock
 	}
 
-	quantityAllocationList, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
+	quantityAllocationList, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
 		StockID:           squirrel.Eq{store.AllocationTableName + ".StockID": stocks.IDs()},
 		QuantityAllocated: squirrel.Gt{store.AllocationTableName + ".QuantityAllocated": 0},
 	})
@@ -701,7 +702,7 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *model.Order, manager int
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	allocations, appErr := a.AllocationsByOption(transaction, &model.AllocationFilterOption{
+	allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
 		QuantityAllocated:              squirrel.Gt{store.AllocationTableName + ".QuantityAllocated": 0},
 		OrderLineOrderID:               squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
 		AnnotateStockAvailableQuantity: true, // this tells store to populate StockAvailableQuantity fields of returning allocations
@@ -720,7 +721,7 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *model.Order, manager int
 
 		allocation.QuantityAllocated = 0
 
-		if allocation.StockAvailableQuantity <= 0 {
+		if allocation.GetStockAvailableQuantity() <= 0 {
 			allocationsToHandleAfterCommit = append(allocationsToHandleAfterCommit, allocation)
 		}
 	}
@@ -736,7 +737,7 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *model.Order, manager int
 	}
 
 	for _, allocation := range allocationsToHandleAfterCommit {
-		appErr = manager.ProductVariantBackInStock(*allocation.Stock)
+		appErr = manager.ProductVariantBackInStock(*allocation.GetStock())
 		if appErr != nil {
 			return appErr
 		}
@@ -1040,7 +1041,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *model.Pr
 // NOTE: `transaction` MUST NOT be nil, otherwise this method'd return error
 func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface.SqlxTxExecutor, preorderAllocation *model.PreorderAllocation, productVariant *model.ProductVariant) (*model.Stock, *model.PreorderAllocationError, *model.AppError) {
 	if transaction == nil {
-		return nil, nil, model.NewAppError("getStockForPreorderAllocation", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "transaction"}, "", http.StatusBadRequest)
+		return nil, nil, model.NewAppError("getStockForPreorderAllocation", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "transaction"}, "please provide a non-nil transaction", http.StatusBadRequest)
 	}
 
 	var orDer *model.Order

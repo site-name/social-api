@@ -71,10 +71,8 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AddressInput
 }) (*AddressUpdate, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	currentSession := embedCtx.AppContext.Session()
-
-	// validate given id
+	// validate params
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}
@@ -83,6 +81,9 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 	if appErr != nil {
 		return nil, appErr
 	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	currentSession := embedCtx.AppContext.Session()
 
 	// check if requester really owns address:
 	addresses, appErr := embedCtx.App.Srv().AccountService().AddressesByUserId(currentSession.UserId)
@@ -125,14 +126,15 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 
 // NOTE: Refer to ./schemas/address.graphqls for details on directive used
 func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) (*AddressDelete, error) {
-	// TODO: investigate if deleting an address affects other parts like shipping/billing address of orders
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	currentSession := embedCtx.AppContext.Session()
-
 	// validate id input
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AddressDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}
+
+	// TODO: investigate if deleting an address affects other parts like shipping/billing address of orders
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	currentSession := embedCtx.AppContext.Session()
 
 	// delete relation between user and address, address stil exists
 	appErr := embedCtx.App.Srv().AccountService().AddressDeleteForUser(currentSession.UserId, args.Id)
@@ -146,6 +148,11 @@ func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) 
 		return nil, appErr
 	}
 
+	address, appErr := embedCtx.App.Srv().AccountService().AddressById(args.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
+
 	pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
 	_, appErr = pluginManager.CustomerUpdated(*user)
 	if appErr != nil {
@@ -153,7 +160,7 @@ func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) 
 	}
 
 	return &AddressDelete{
-		Address: &Address{model.Address{Id: args.Id}},
+		Address: SystemAddressToGraphqlAddress(address),
 		User:    SystemUserToGraphqlUser(user),
 	}, nil
 }
@@ -163,16 +170,17 @@ func (r *Resolver) AddressSetDefault(ctx context.Context, args struct {
 	AddressID string
 	Type      model.AddressTypeEnum
 }) (*AddressSetDefault, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	currentSession := embedCtx.AppContext.Session()
-
-	// validate address id
+	// validate params
+	args.AddressID = decodeBase64String(args.AddressID)
 	if !model.IsValidId(args.AddressID) {
 		return nil, model.NewAppError("AddressSetDefault", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "addressId"}, "please provide valid address id", http.StatusBadRequest)
 	}
 	if !args.Type.IsValid() {
 		return nil, model.NewAppError("AddressSetDefault", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "address type"}, "please provide valid address type", http.StatusBadRequest)
 	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	currentSession := embedCtx.AppContext.Session()
 
 	// check if requester own address
 	updatedUser, appErr := embedCtx.App.Srv().AccountService().UserSetDefaultAddress(currentSession.UserId, args.AddressID, args.Type)
@@ -246,12 +254,13 @@ func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 
 // NOTE: Refer to ./schemas/address.graphqls for details on directive used
 func (r *Resolver) Address(ctx context.Context, args struct{ Id string }) (*Address, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-
+	// validate params:
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("Address", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}
 
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	address, appErr := embedCtx.App.Srv().AccountService().AddressById(args.Id)
 	if appErr != nil {
 		return nil, appErr

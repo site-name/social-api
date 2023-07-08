@@ -102,8 +102,8 @@ type OrderLineFilterOption struct {
 	Id                 squirrel.Sqlizer
 	OrderID            squirrel.Sqlizer
 	OrderChannelID     squirrel.Sqlizer // inner join Orders ON Orders.Id = OrderLines.OrderID WHERE Orders.ChannelID ...
-	IsShippingRequired *bool
-	IsGiftcard         *bool
+	IsShippingRequired squirrel.Sqlizer
+	IsGiftcard         squirrel.Sqlizer
 	VariantID          squirrel.Sqlizer
 
 	VariantProductID squirrel.Sqlizer // INNER JOIN ProductVariants INNER JOIN Products WHERE Products.Id ...

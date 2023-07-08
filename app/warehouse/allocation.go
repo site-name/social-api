@@ -9,21 +9,10 @@ import (
 )
 
 // AllocationsByOption returns all warehouse allocations filtered based on given option
-func (a *ServiceWarehouse) AllocationsByOption(transaction store_iface.SqlxTxExecutor, option *model.AllocationFilterOption) ([]*model.Allocation, *model.AppError) {
-	allocations, err := a.srv.Store.Allocation().FilterByOption(transaction, option)
-	var (
-		statusCode   int
-		errorMessage string
-	)
+func (a *ServiceWarehouse) AllocationsByOption(option *model.AllocationFilterOption) ([]*model.Allocation, *model.AppError) {
+	allocations, err := a.srv.Store.Allocation().FilterByOption(option)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errorMessage = err.Error()
-	} else if len(allocations) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("AllocationByOption", "app.warehouse.error_finding_allocations_by_option.app_error", nil, errorMessage, statusCode)
+		return nil, model.NewAppError("AllocationByOption", "app.warehouse.error_finding_allocations_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return allocations, nil

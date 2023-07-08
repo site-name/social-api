@@ -25,7 +25,7 @@ type User {
   privateMetadata: [MetadataItem]!
   metadata: [MetadataItem]!
   addresses: [Address]! @authenticated
-  checkoutTokens(channel: String): [String!]! @authenticated
+  checkoutTokens(channelId: String): [String!]! @authenticated
   giftCards(before: String, after: String, first: Int, last: Int): GiftCardCountableConnection @authenticated
   orders(before: String, after: String, first: Int, last: Int): OrderCountableConnection
   userPermissions: [UserPermission]!
@@ -33,7 +33,7 @@ type User {
   editableGroups: [Group]!
   avatar(size: Int): Image
   events: [CustomerEvent]! @hasRoleAny(roles: [shop_staff, shop_admin])
-  storedPaymentSources(channel: String): [PaymentSource]! @hasRoleAny(roles: [shop_admin])
+  storedPaymentSources(channelId: String!): [PaymentSource]! @authenticated
   languageCode: LanguageCodeEnum!
   # wishlist: Wishlist
 }

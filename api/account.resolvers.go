@@ -128,6 +128,7 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 	embedContext := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedContext.AppContext.Session()
 
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AccountAddressDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
 	}
@@ -174,6 +175,7 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 	currentSession := embedCtx.AppContext.Session()
 
 	// validate arguments
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("api.AccountSetDefaultAddress", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid address id provided", http.StatusBadRequest)
 	}
@@ -274,8 +276,8 @@ func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input Account
 	return &AccountUpdate{SystemUserToGraphqlUser(user)}, nil
 }
 
-// NOTE: Refer to ./schemas/account.graphqls for details on directive used
-// this creates a link (with a token attached), sends to user's email address
+// NOTE: Refer to ./schemas/account.graphqls for details on directive used.
+// This creates a link (with a token attached), sends to user's email address
 func (r *Resolver) AccountRequestDeletion(ctx context.Context, args struct {
 	Channel     *string
 	RedirectURL string

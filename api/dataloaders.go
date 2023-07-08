@@ -164,7 +164,7 @@ var (
 	// payment
 	PaymentsByOrderIdLoader       = dataloader.NewBatchedLoader(paymentsByOrderIdLoader, dataloader.WithBatchCapacity[string, []*model.Payment](batchCapacity))
 	TransactionsByPaymentIdLoader = dataloader.NewBatchedLoader(transactionsByPaymentIdLoader, dataloader.WithBatchCapacity[string, []*model.PaymentTransaction](batchCapacity))
-	PaymentsByTokensLoader        = dataloader.NewBatchedLoader(paymentsByTokenLoader, dataloader.WithBatchCapacity[string, *model.Payment](batchCapacity))
+	PaymentByIdLoader             = dataloader.NewBatchedLoader(paymentByIdLoader, dataloader.WithBatchCapacity[string, *model.Payment](batchCapacity))
 
 	// invoice
 	InvoicesByOrderIDLoader = dataloader.NewBatchedLoader(invoicesByOrderIDLoader, dataloader.WithBatchCapacity[string, []*model.Invoice](batchCapacity))

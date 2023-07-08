@@ -30,7 +30,7 @@ func (a *ServiceWarehouse) getAvailableQuantity(stocks model.Stocks) (int, *mode
 		}
 	}
 
-	allocations, appErr := a.AllocationsByOption(nil, &model.AllocationFilterOption{
+	allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
 		StockID: squirrel.Eq{store.AllocationTableName + ".StockID": stockIDs},
 	})
 	if appErr != nil {

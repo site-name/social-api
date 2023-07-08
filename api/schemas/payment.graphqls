@@ -6,7 +6,7 @@ extend type Mutation {
 }
 
 extend type Query {
-  payment(id: String!): Payment
+  payment(id: String!): Payment @hasRoleAny(roles: [shop_admin, shop_staff])
   payments(filter: PaymentFilterInput, before: String, after: String, first: Int, last: Int): PaymentCountableConnection
 }
 

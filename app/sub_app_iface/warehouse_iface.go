@@ -23,7 +23,7 @@ type WarehouseService interface {
 	// AllocatePreOrders allocates pre-order variant for given `order_lines` in given channel
 	AllocatePreOrders(orderLinesInfo model.OrderLineDatas, channelSlug string) (*model.InsufficientStock, *model.AppError)
 	// AllocationsByOption returns all warehouse allocations filtered based on given option
-	AllocationsByOption(transaction store_iface.SqlxTxExecutor, option *model.AllocationFilterOption) ([]*model.Allocation, *model.AppError)
+	AllocationsByOption(option *model.AllocationFilterOption) ([]*model.Allocation, *model.AppError)
 	// ApplicableForClickAndCollectNoQuantityCheck return the queryset of a `Warehouse` which are applicable for click and collect.
 	// Note this method does not check stocks quantity for given `CheckoutLine`s.
 	// This method should be used only if stocks quantity will be checked in further

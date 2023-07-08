@@ -391,11 +391,11 @@ type (
 		FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error)          // FilterForChannel finds and returns stocks that satisfy given options
 	}
 	AllocationStore interface {
-		BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*model.Allocation) ([]*model.Allocation, error)          // BulkUpsert performs update, insert given allocations then returns them afterward
-		Get(allocationID string) (*model.Allocation, error)                                                                       // Get find and returns allocation with given id
-		FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.AllocationFilterOption) ([]*model.Allocation, error) // FilterbyOption finds and returns a list of allocations based on given option
-		BulkDelete(transaction store_iface.SqlxTxExecutor, allocationIDs []string) error                                          // BulkDelete perform bulk deletes given allocations.
-		CountAvailableQuantityForStock(stock *model.Stock) (int, error)                                                           // CountAvailableQuantityForStock counts and returns available quantity of given stock
+		BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*model.Allocation) ([]*model.Allocation, error) // BulkUpsert performs update, insert given allocations then returns them afterward
+		Get(allocationID string) (*model.Allocation, error)                                                              // Get find and returns allocation with given id
+		FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error)                                // FilterbyOption finds and returns a list of allocations based on given option
+		BulkDelete(transaction store_iface.SqlxTxExecutor, allocationIDs []string) error                                 // BulkDelete perform bulk deletes given allocations.
+		CountAvailableQuantityForStock(stock *model.Stock) (int, error)                                                  // CountAvailableQuantityForStock counts and returns available quantity of given stock
 	}
 	WarehouseShippingZoneStore interface {
 		Delete(transaction store_iface.SqlxTxExecutor, options *model.WarehouseShippingZoneFilterOption) error

@@ -11,89 +11,89 @@ func (o OrderEventType) IsValid() bool {
 
 // valid values for order event's type
 const (
-	CONFIRMED                            OrderEventType = "confirmed"
-	DRAFT_CREATED                        OrderEventType = "draft_created"
-	DRAFT_CREATED_FROM_REPLACE           OrderEventType = "draft_created_from_replace"
-	ADDED_PRODUCTS                       OrderEventType = "added_products"
-	REMOVED_PRODUCTS                     OrderEventType = "removed_products"
-	PLACED                               OrderEventType = "placed"
-	PLACED_FROM_DRAFT                    OrderEventType = "placed_from_draft"
-	OVERSOLD_ITEMS                       OrderEventType = "oversold_items"
-	CANCELED_                            OrderEventType = "canceled"
-	ORDER_MARKED_AS_PAID                 OrderEventType = "order_marked_as_paid"
-	ORDER_FULLY_PAID                     OrderEventType = "order_fully_paid"
-	ORDER_REPLACEMENT_CREATED            OrderEventType = "order_replacement_created"
-	ORDER_DISCOUNT_ADDED                 OrderEventType = "order_discount_added"
-	ORDER_DISCOUNT_AUTOMATICALLY_UPDATED OrderEventType = "order_discount_automatically_updated"
-	ORDER_DISCOUNT_UPDATED               OrderEventType = "order_discount_updated"
-	ORDER_DISCOUNT_DELETED               OrderEventType = "order_discount_deleted"
-	ORDER_LINE_DISCOUNT_UPDATED          OrderEventType = "order_line_discount_updated"
-	ORDER_LINE_DISCOUNT_REMOVED          OrderEventType = "order_line_discount_removed"
-	UPDATED_ADDRESS                      OrderEventType = "updated_address"
-	EMAIL_SENT                           OrderEventType = "email_sent"
-	PAYMENT_AUTHORIZED                   OrderEventType = "payment_authorized"
-	PAYMENT_CAPTURED                     OrderEventType = "payment_captured"
-	PAYMENT_REFUNDED                     OrderEventType = "payment_refunded"
-	PAYMENT_VOIDED                       OrderEventType = "payment_voided"
-	PAYMENT_FAILED                       OrderEventType = "payment_failed"
-	EXTERNAL_SERVICE_NOTIFICATION        OrderEventType = "external_service_notification"
-	INVOICE_REQUESTED                    OrderEventType = "invoice_requested"
-	INVOICE_GENERATED                    OrderEventType = "invoice_generated"
-	INVOICE_UPDATED                      OrderEventType = "invoice_updated"
-	INVOICE_SENT                         OrderEventType = "invoice_sent"
-	FULFILLMENT_CANCELED_                OrderEventType = "fulfillment_canceled"
-	FULFILLMENT_RESTOCKED_ITEMS          OrderEventType = "fulfillment_restocked_items"
-	FULFILLMENT_FULFILLED_ITEMS          OrderEventType = "fulfillment_fulfilled_items"
-	FULFILLMENT_REFUNDED_                OrderEventType = "fulfillment_refunded"
-	FULFILLMENT_RETURNED_                OrderEventType = "fulfillment_returned"
-	FULFILLMENT_REPLACED_                OrderEventType = "fulfillment_replaced"
-	FULFILLMENT_AWAITS_APPROVAL          OrderEventType = "fulfillment_awaits_approval"
-	TRACKING_UPDATED                     OrderEventType = "tracking_updated"
-	NOTE_ADDED                           OrderEventType = "note_added"
-	OTHER                                OrderEventType = "other" // Used mostly for importing legacy data from before Enum-based events
+	ORDER_EVENT_TYPE_CONFIRMED                            OrderEventType = "confirmed"
+	ORDER_EVENT_TYPE_DRAFT_CREATED                        OrderEventType = "draft_created"
+	ORDER_EVENT_TYPE_DRAFT_CREATED_FROM_REPLACE           OrderEventType = "draft_created_from_replace"
+	ORDER_EVENT_TYPE_ADDED_PRODUCTS                       OrderEventType = "added_products"
+	ORDER_EVENT_TYPE_REMOVED_PRODUCTS                     OrderEventType = "removed_products"
+	ORDER_EVENT_TYPE_PLACED                               OrderEventType = "placed"
+	ORDER_EVENT_TYPE_PLACED_FROM_DRAFT                    OrderEventType = "placed_from_draft"
+	ORDER_EVENT_TYPE_OVERSOLD_ITEMS                       OrderEventType = "oversold_items"
+	ORDER_EVENT_TYPE_CANCELED                             OrderEventType = "canceled"
+	ORDER_EVENT_TYPE_ORDER_MARKED_AS_PAID                 OrderEventType = "order_marked_as_paid"
+	ORDER_EVENT_TYPE_ORDER_FULLY_PAID                     OrderEventType = "order_fully_paid"
+	ORDER_EVENT_TYPE_ORDER_REPLACEMENT_CREATED            OrderEventType = "order_replacement_created"
+	ORDER_EVENT_TYPE_ORDER_DISCOUNT_ADDED                 OrderEventType = "order_discount_added"
+	ORDER_EVENT_TYPE_ORDER_DISCOUNT_AUTOMATICALLY_UPDATED OrderEventType = "order_discount_automatically_updated"
+	ORDER_EVENT_TYPE_ORDER_DISCOUNT_UPDATED               OrderEventType = "order_discount_updated"
+	ORDER_EVENT_TYPE_ORDER_DISCOUNT_DELETED               OrderEventType = "order_discount_deleted"
+	ORDER_EVENT_TYPE_ORDER_LINE_DISCOUNT_UPDATED          OrderEventType = "order_line_discount_updated"
+	ORDER_EVENT_TYPE_ORDER_LINE_DISCOUNT_REMOVED          OrderEventType = "order_line_discount_removed"
+	ORDER_EVENT_TYPE_UPDATED_ADDRESS                      OrderEventType = "updated_address"
+	ORDER_EVENT_TYPE_EMAIL_SENT                           OrderEventType = "email_sent"
+	ORDER_EVENT_TYPE_PAYMENT_AUTHORIZED                   OrderEventType = "payment_authorized"
+	ORDER_EVENT_TYPE_PAYMENT_CAPTURED                     OrderEventType = "payment_captured"
+	ORDER_EVENT_TYPE_PAYMENT_REFUNDED                     OrderEventType = "payment_refunded"
+	ORDER_EVENT_TYPE_PAYMENT_VOIDED                       OrderEventType = "payment_voided"
+	ORDER_EVENT_TYPE_PAYMENT_FAILED                       OrderEventType = "payment_failed"
+	ORDER_EVENT_TYPE_EXTERNAL_SERVICE_NOTIFICATION        OrderEventType = "external_service_notification"
+	ORDER_EVENT_TYPE_INVOICE_REQUESTED                    OrderEventType = "invoice_requested"
+	ORDER_EVENT_TYPE_INVOICE_GENERATED                    OrderEventType = "invoice_generated"
+	ORDER_EVENT_TYPE_INVOICE_UPDATED                      OrderEventType = "invoice_updated"
+	ORDER_EVENT_TYPE_INVOICE_SENT                         OrderEventType = "invoice_sent"
+	ORDER_EVENT_TYPE_FULFILLMENT_CANCELED                 OrderEventType = "fulfillment_canceled"
+	ORDER_EVENT_TYPE_FULFILLMENT_RESTOCKED_ITEMS          OrderEventType = "fulfillment_restocked_items"
+	ORDER_EVENT_TYPE_FULFILLMENT_FULFILLED_ITEMS          OrderEventType = "fulfillment_fulfilled_items"
+	ORDER_EVENT_TYPE_FULFILLMENT_REFUNDED                 OrderEventType = "fulfillment_refunded"
+	ORDER_EVENT_TYPE_FULFILLMENT_RETURNED                 OrderEventType = "fulfillment_returned"
+	ORDER_EVENT_TYPE_FULFILLMENT_REPLACED                 OrderEventType = "fulfillment_replaced"
+	ORDER_EVENT_TYPE_FULFILLMENT_AWAITS_APPROVAL          OrderEventType = "fulfillment_awaits_approval"
+	ORDER_EVENT_TYPE_TRACKING_UPDATED                     OrderEventType = "tracking_updated"
+	ORDER_EVENT_TYPE_NOTE_ADDED                           OrderEventType = "note_added"
+	ORDER_EVENT_TYPE_OTHER                                OrderEventType = "other" // Used mostly for importing legacy data from before Enum-based events
 )
 
 var OrderEventTypeStrings = map[OrderEventType]string{
-	DRAFT_CREATED:                        "The draft order was created",
-	DRAFT_CREATED_FROM_REPLACE:           "The draft order with replace lines was created",
-	ADDED_PRODUCTS:                       "Some products were added to the order",
-	REMOVED_PRODUCTS:                     "Some products were removed from the order",
-	PLACED:                               "The order was placed",
-	PLACED_FROM_DRAFT:                    "The draft order was placed",
-	OVERSOLD_ITEMS:                       "The draft order was placed with oversold items",
-	CANCELED_:                            "The order was canceled",
-	ORDER_MARKED_AS_PAID:                 "The order was manually marked as fully paid",
-	ORDER_FULLY_PAID:                     "The order was fully paid",
-	ORDER_REPLACEMENT_CREATED:            "The draft order was created based on this order.",
-	ORDER_DISCOUNT_ADDED:                 "New order discount applied to this order.",
-	ORDER_DISCOUNT_AUTOMATICALLY_UPDATED: "Order discount was automatically updated after the changes in order.",
-	ORDER_DISCOUNT_UPDATED:               "Order discount was updated for this order.",
-	ORDER_DISCOUNT_DELETED:               "Order discount was deleted for this order.",
-	ORDER_LINE_DISCOUNT_UPDATED:          "Order line was discounted.",
-	ORDER_LINE_DISCOUNT_REMOVED:          "The discount for order line was removed.",
-	UPDATED_ADDRESS:                      "The address from the placed order was updated",
-	EMAIL_SENT:                           "The email was sent",
-	CONFIRMED:                            "Order was confirmed",
-	PAYMENT_AUTHORIZED:                   "The payment was authorized",
-	PAYMENT_CAPTURED:                     "The payment was captured",
-	EXTERNAL_SERVICE_NOTIFICATION:        "Notification from external service",
-	PAYMENT_REFUNDED:                     "The payment was refunded",
-	PAYMENT_VOIDED:                       "The payment was voided",
-	PAYMENT_FAILED:                       "The payment was failed",
-	INVOICE_REQUESTED:                    "An invoice was requested",
-	INVOICE_GENERATED:                    "An invoice was generated",
-	INVOICE_UPDATED:                      "An invoice was updated",
-	INVOICE_SENT:                         "An invoice was sent",
-	FULFILLMENT_CANCELED_:                "A fulfillment was canceled",
-	FULFILLMENT_RESTOCKED_ITEMS:          "The items of the fulfillment were restocked",
-	FULFILLMENT_FULFILLED_ITEMS:          "Some items were fulfilled",
-	FULFILLMENT_REFUNDED_:                "Some items were refunded",
-	FULFILLMENT_RETURNED_:                "Some items were returned",
-	FULFILLMENT_REPLACED_:                "Some items were replaced",
-	FULFILLMENT_AWAITS_APPROVAL:          "Fulfillments awaits approval",
-	TRACKING_UPDATED:                     "The fulfillment's tracking code was updated",
-	NOTE_ADDED:                           "A note was added to the order",
-	OTHER:                                "An unknown order event containing a message",
+	ORDER_EVENT_TYPE_DRAFT_CREATED:                        "The draft order was created",
+	ORDER_EVENT_TYPE_DRAFT_CREATED_FROM_REPLACE:           "The draft order with replace lines was created",
+	ORDER_EVENT_TYPE_ADDED_PRODUCTS:                       "Some products were added to the order",
+	ORDER_EVENT_TYPE_REMOVED_PRODUCTS:                     "Some products were removed from the order",
+	ORDER_EVENT_TYPE_PLACED:                               "The order was placed",
+	ORDER_EVENT_TYPE_PLACED_FROM_DRAFT:                    "The draft order was placed",
+	ORDER_EVENT_TYPE_OVERSOLD_ITEMS:                       "The draft order was placed with oversold items",
+	ORDER_EVENT_TYPE_CANCELED:                             "The order was canceled",
+	ORDER_EVENT_TYPE_ORDER_MARKED_AS_PAID:                 "The order was manually marked as fully paid",
+	ORDER_EVENT_TYPE_ORDER_FULLY_PAID:                     "The order was fully paid",
+	ORDER_EVENT_TYPE_ORDER_REPLACEMENT_CREATED:            "The draft order was created based on this order.",
+	ORDER_EVENT_TYPE_ORDER_DISCOUNT_ADDED:                 "New order discount applied to this order.",
+	ORDER_EVENT_TYPE_ORDER_DISCOUNT_AUTOMATICALLY_UPDATED: "Order discount was automatically updated after the changes in order.",
+	ORDER_EVENT_TYPE_ORDER_DISCOUNT_UPDATED:               "Order discount was updated for this order.",
+	ORDER_EVENT_TYPE_ORDER_DISCOUNT_DELETED:               "Order discount was deleted for this order.",
+	ORDER_EVENT_TYPE_ORDER_LINE_DISCOUNT_UPDATED:          "Order line was discounted.",
+	ORDER_EVENT_TYPE_ORDER_LINE_DISCOUNT_REMOVED:          "The discount for order line was removed.",
+	ORDER_EVENT_TYPE_UPDATED_ADDRESS:                      "The address from the placed order was updated",
+	ORDER_EVENT_TYPE_EMAIL_SENT:                           "The email was sent",
+	ORDER_EVENT_TYPE_CONFIRMED:                            "Order was confirmed",
+	ORDER_EVENT_TYPE_PAYMENT_AUTHORIZED:                   "The payment was authorized",
+	ORDER_EVENT_TYPE_PAYMENT_CAPTURED:                     "The payment was captured",
+	ORDER_EVENT_TYPE_EXTERNAL_SERVICE_NOTIFICATION:        "Notification from external service",
+	ORDER_EVENT_TYPE_PAYMENT_REFUNDED:                     "The payment was refunded",
+	ORDER_EVENT_TYPE_PAYMENT_VOIDED:                       "The payment was voided",
+	ORDER_EVENT_TYPE_PAYMENT_FAILED:                       "The payment was failed",
+	ORDER_EVENT_TYPE_INVOICE_REQUESTED:                    "An invoice was requested",
+	ORDER_EVENT_TYPE_INVOICE_GENERATED:                    "An invoice was generated",
+	ORDER_EVENT_TYPE_INVOICE_UPDATED:                      "An invoice was updated",
+	ORDER_EVENT_TYPE_INVOICE_SENT:                         "An invoice was sent",
+	ORDER_EVENT_TYPE_FULFILLMENT_CANCELED:                 "A fulfillment was canceled",
+	ORDER_EVENT_TYPE_FULFILLMENT_RESTOCKED_ITEMS:          "The items of the fulfillment were restocked",
+	ORDER_EVENT_TYPE_FULFILLMENT_FULFILLED_ITEMS:          "Some items were fulfilled",
+	ORDER_EVENT_TYPE_FULFILLMENT_REFUNDED:                 "Some items were refunded",
+	ORDER_EVENT_TYPE_FULFILLMENT_RETURNED:                 "Some items were returned",
+	ORDER_EVENT_TYPE_FULFILLMENT_REPLACED:                 "Some items were replaced",
+	ORDER_EVENT_TYPE_FULFILLMENT_AWAITS_APPROVAL:          "Fulfillments awaits approval",
+	ORDER_EVENT_TYPE_TRACKING_UPDATED:                     "The fulfillment's tracking code was updated",
+	ORDER_EVENT_TYPE_NOTE_ADDED:                           "A note was added to the order",
+	ORDER_EVENT_TYPE_OTHER:                                "An unknown order event containing a message",
 }
 
 // max lengths for some order event's type

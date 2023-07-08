@@ -95,7 +95,7 @@ func (a *ServiceOrder) HandleFullyPaidOrder(manager interfaces.PluginManagerInte
 
 	_, appErr := a.CommonCreateOrderEvent(nil, &model.OrderEventOption{
 		OrderID: orDer.Id,
-		Type:    model.ORDER_FULLY_PAID,
+		Type:    model.ORDER_EVENT_TYPE_ORDER_FULLY_PAID,
 		UserID:  userID,
 	})
 	if appErr != nil {
@@ -153,7 +153,7 @@ func (a *ServiceOrder) CancelOrder(orDer *model.Order, user *model.User, _ inter
 	_, appErr := a.CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 		OrderID: orDer.Id,
 		UserID:  userID,
-		Type:    model.CANCELED_,
+		Type:    model.ORDER_EVENT_TYPE_CANCELED,
 	})
 	if appErr != nil {
 		return appErr
@@ -197,9 +197,9 @@ func (a *ServiceOrder) OrderRefunded(ord model.Order, user *model.User, _ interf
 	}
 	_, appErr := a.CommonCreateOrderEvent(nil, &model.OrderEventOption{
 		OrderID:    ord.Id,
-		Type:       model.PAYMENT_REFUNDED,
+		Type:       model.ORDER_EVENT_TYPE_PAYMENT_REFUNDED,
 		UserID:     userID,
-		Parameters: getPaymentData(&amount, payMent)["parameters"],
+		Parameters: getPaymentData(&amount, payMent),
 	})
 	if appErr != nil {
 		return appErr
@@ -223,8 +223,8 @@ func (a *ServiceOrder) OrderVoided(ord model.Order, user *model.User, _ interfac
 	_, appErr := a.CommonCreateOrderEvent(nil, &model.OrderEventOption{
 		OrderID:    ord.Id,
 		UserID:     userID,
-		Type:       model.PAYMENT_VOIDED,
-		Parameters: getPaymentData(nil, *payMent)["parameters"],
+		Type:       model.ORDER_EVENT_TYPE_PAYMENT_VOIDED,
+		Parameters: getPaymentData(nil, *payMent),
 	})
 	if appErr != nil {
 		return appErr
@@ -243,7 +243,7 @@ func (a *ServiceOrder) OrderReturned(transaction store_iface.SqlxTxExecutor, ord
 
 	_, appErr := a.CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 		OrderID: ord.Id,
-		Type:    model.FULFILLMENT_RETURNED_,
+		Type:    model.ORDER_EVENT_TYPE_FULFILLMENT_RETURNED,
 		UserID:  userID,
 		Parameters: model.StringInterface{
 			"lines": linesPerQuantityToLineObjectList(returnedLines),
@@ -379,10 +379,10 @@ func (a *ServiceOrder) OrderAuthorized(ord model.Order, user *model.User, _ inte
 	}
 
 	_, appErr := a.CommonCreateOrderEvent(nil, &model.OrderEventOption{
-		Type:       model.PAYMENT_AUTHORIZED,
+		Type:       model.ORDER_EVENT_TYPE_PAYMENT_AUTHORIZED,
 		UserID:     userID,
 		OrderID:    ord.Id,
-		Parameters: getPaymentData(amount, payMent)["parameters"],
+		Parameters: getPaymentData(amount, payMent),
 	})
 	if appErr != nil {
 		return appErr
@@ -401,8 +401,8 @@ func (a *ServiceOrder) OrderCaptured(ord model.Order, user *model.User, _ interf
 	_, appErr := a.CommonCreateOrderEvent(nil, &model.OrderEventOption{
 		OrderID:    ord.Id,
 		UserID:     userID,
-		Type:       model.PAYMENT_CAPTURED,
-		Parameters: getPaymentData(amount, payMent)["parameters"],
+		Type:       model.ORDER_EVENT_TYPE_PAYMENT_CAPTURED,
+		Parameters: getPaymentData(amount, payMent),
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -484,7 +484,7 @@ func (a *ServiceOrder) CancelFulfillment(fulfillment model.Fulfillment, user *mo
 		_, appErr = a.CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 			OrderID: fulfillment.OrderID,
 			UserID:  userID,
-			Type:    model.FULFILLMENT_RESTOCKED_ITEMS,
+			Type:    model.ORDER_EVENT_TYPE_FULFILLMENT_RESTOCKED_ITEMS,
 			Parameters: model.StringInterface{
 				"quantity":  orderTotalQuantity,
 				"warehouse": warehouse.Id,
@@ -633,7 +633,7 @@ func (s *ServiceOrder) ApproveFulfillment(fulfillment *model.Fulfillment, user *
 		return nil, nil, appErr
 	}
 
-	stocks, appErr := s.srv.WarehouseService().StocksByOption(transaction, &model.StockFilterOption{
+	stocks, appErr := s.srv.WarehouseService().StocksByOption(&model.StockFilterOption{
 		Id: squirrel.Eq{store.StockTableName + ".Id": fulfillmentLines.StockIDs()},
 	})
 	if appErr != nil {
@@ -863,7 +863,7 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord model.Order, manager
 	// 2) has ProductVariant attached AND that productVariant has a digitalContent accompanies
 	digitalOrderLinesOfOrder, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
 		OrderID:                 squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
-		IsShippingRequired:      model.NewPrimitive(false),
+		IsShippingRequired:      squirrel.Eq{store.OrderLineTableName + ".IsShippingRequired": false},
 		VariantDigitalContentID: squirrel.NotEq{store.DigitalContentTableName + ".Id": nil},
 		PrefetchRelated: model.OrderLinePrefetchRelated{
 			VariantDigitalContent: true, // this tell store to prefetch related product variants, digital contents too
@@ -913,7 +913,7 @@ func (a *ServiceOrder) AutomaticallyFulfillDigitalLines(ord model.Order, manager
 			Quantity:      orderLine.Quantity,
 		})
 
-		allocationsOfOrderLine, appErr := a.srv.WarehouseService().AllocationsByOption(transaction, &model.AllocationFilterOption{
+		allocationsOfOrderLine, appErr := a.srv.WarehouseService().AllocationsByOption(&model.AllocationFilterOption{
 			OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLine.Id},
 		})
 		if appErr != nil {
@@ -1291,7 +1291,7 @@ func (a *ServiceOrder) moveOrderLinesToTargetFulfillment(orderLinesToMove []*mod
 			Quantity:      unFulfilledToMove,
 		})
 
-		allocationsOfOrderLine, appErr := a.srv.WarehouseService().AllocationsByOption(transaction, &model.AllocationFilterOption{
+		allocationsOfOrderLine, appErr := a.srv.WarehouseService().AllocationsByOption(&model.AllocationFilterOption{
 			OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": lineData.Line.Id},
 		})
 		if appErr != nil {
@@ -2168,9 +2168,7 @@ func (a *ServiceOrder) processRefund(
 	amount *decimal.Decimal,
 	refundShippingCosts bool,
 	manager interfaces.PluginManagerInterface,
-
 ) (*decimal.Decimal, *model.PaymentError, *model.AppError) {
-
 	// transaction begin
 	transaction, err := a.srv.Store.GetMasterX().Beginx()
 	if err != nil {
@@ -2181,22 +2179,28 @@ func (a *ServiceOrder) processRefund(
 	linesToRefund := map[string]*model.QuantityOrderLine{}
 
 	if amount == nil {
-		amount, appErr := a.calculateRefundAmount(orderLinesToRefund, fulfillmentLinesToRefund, linesToRefund)
+		var appErr *model.AppError
+		amount, appErr = a.calculateRefundAmount(orderLinesToRefund, fulfillmentLinesToRefund, linesToRefund)
 		if appErr != nil {
 			return nil, nil, appErr
 		}
 		// we take into consideration the shipping costs only when amount is not provided.
 		if refundShippingCosts && ord.ShippingPriceGrossAmount != nil {
-			amount = model.NewPrimitive(amount.Add(*ord.ShippingPriceGrossAmount))
+			addResult := amount.Add(*ord.ShippingPriceGrossAmount)
+			amount = &addResult
 		}
 	}
 
 	var (
-		createPaymentRefundedEvent   = false
-		sendOrderRefunddConfirmation = false
+		createPaymentRefundedEvent   bool
+		sendOrderRefunddConfirmation bool
 	)
 
 	if amount != nil && !amount.Equal(decimal.Zero) {
+		if payMent.CapturedAmount.LessThan(*amount) {
+			amount = payMent.CapturedAmount
+		}
+
 		_, paymentErr, appErr := a.srv.PaymentService().Refund(payMent, manager, ord.ChannelID, amount)
 		if paymentErr != nil || appErr != nil {
 			return nil, paymentErr, appErr
@@ -2220,8 +2224,8 @@ func (a *ServiceOrder) processRefund(
 		_, appErr := a.CommonCreateOrderEvent(nil, &model.OrderEventOption{
 			OrderID:    ord.Id,
 			UserID:     userID,
-			Type:       model.PAYMENT_REFUNDED,
-			Parameters: getPaymentData(amount, payMent)["Parameters"],
+			Type:       model.ORDER_EVENT_TYPE_PAYMENT_REFUNDED,
+			Parameters: getPaymentData(amount, payMent),
 		})
 		if appErr != nil {
 			return nil, nil, appErr
@@ -2235,17 +2239,12 @@ func (a *ServiceOrder) processRefund(
 		}
 	}
 
-	var sliceOfQuantityOrderLines model.QuantityOrderLines
-	for _, value := range linesToRefund {
-		sliceOfQuantityOrderLines = append(sliceOfQuantityOrderLines, value)
-	}
-
 	_, appErr := a.CommonCreateOrderEvent(nil, &model.OrderEventOption{
 		OrderID: ord.Id,
-		Type:    model.FULFILLMENT_REFUNDED_,
+		Type:    model.ORDER_EVENT_TYPE_FULFILLMENT_REFUNDED,
 		UserID:  userID,
 		Parameters: model.StringInterface{
-			"lines":                   linesPerQuantityToLineObjectList(sliceOfQuantityOrderLines),
+			"lines":                   linesPerQuantityToLineObjectList(lo.Values(linesToRefund)),
 			"amount":                  amount,
 			"shipping_costs_included": refundShippingCosts,
 		},

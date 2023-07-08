@@ -14,9 +14,33 @@ type Allocation struct {
 	StockID           string `json:"stock_id"`           // NOT NULL
 	QuantityAllocated int    `json:"quantity_allocated"` // default 0
 
-	StockAvailableQuantity int        `json:"-" db:"-"` // this field is set when AllocationFilterOption's `AnnotateStockAvailableQuantity` is true
-	Stock                  *Stock     `json:"-" db:"-"` // this field is populated with related stock
-	OrderLine              *OrderLine `json:"-" db:"-"`
+	stockAvailableQuantity int        // this field is set when AllocationFilterOption's `AnnotateStockAvailableQuantity` is true
+	stock                  *Stock     // this field is populated with related stock
+	orderLine              *OrderLine //
+}
+
+func (s *Allocation) SetStock(stk *Stock) {
+	s.stock = stk
+}
+
+func (s *Allocation) GetStock() *Stock {
+	return s.stock
+}
+
+func (s *Allocation) SetOrderLine(line *OrderLine) {
+	s.orderLine = line
+}
+
+func (s *Allocation) GetOrderLine() *OrderLine {
+	return s.orderLine
+}
+
+func (s *Allocation) SetStockAvailableQuantity(value int) {
+	s.stockAvailableQuantity = value
+}
+
+func (s *Allocation) GetStockAvailableQuantity() int {
+	return s.stockAvailableQuantity
 }
 
 // AllocationFilterOption is used to build sql queries to filtering warehouse allocations
@@ -72,10 +96,6 @@ func (a *Allocation) IsValid() *AppError {
 	return nil
 }
 
-func (a *Allocation) ToJSON() string {
-	return ModelToJson(a)
-}
-
 func (a *Allocation) PreSave() {
 	if a.Id == "" {
 		a.Id = NewId()
@@ -118,11 +138,11 @@ func (a *AllocationError) Error() string {
 func (a *Allocation) DeepCopy() *Allocation {
 	res := *a
 
-	if a.Stock != nil {
-		res.Stock = a.Stock.DeepCopy()
+	if a.stock != nil {
+		res.stock = a.stock.DeepCopy()
 	}
-	if a.OrderLine != nil {
-		res.OrderLine = a.OrderLine.DeepCopy()
+	if a.orderLine != nil {
+		res.orderLine = a.orderLine.DeepCopy()
 	}
 	return &res
 }

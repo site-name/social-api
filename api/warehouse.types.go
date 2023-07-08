@@ -225,7 +225,7 @@ func allocationsByStockIDLoader(ctx context.Context, stockIDs []string) []*datal
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	allocations, appErr := embedCtx.App.Srv().WarehouseService().AllocationsByOption(nil, &model.AllocationFilterOption{
+	allocations, appErr := embedCtx.App.Srv().WarehouseService().AllocationsByOption(&model.AllocationFilterOption{
 		StockID: squirrel.Eq{store.AllocationTableName + ".StockID": stockIDs},
 	})
 	if appErr != nil {
@@ -324,7 +324,7 @@ func allocationsByOrderLineIdLoader(ctx context.Context, orderLineIDs []string) 
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	allocations, appErr := embedCtx.App.Srv().WarehouseService().AllocationsByOption(nil, &model.AllocationFilterOption{
+	allocations, appErr := embedCtx.App.Srv().WarehouseService().AllocationsByOption(&model.AllocationFilterOption{
 		OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLineIDs},
 	})
 	if appErr != nil {

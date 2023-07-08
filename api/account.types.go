@@ -2,11 +2,13 @@ package api
 
 import (
 	"context"
+	"net/http"
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -17,6 +19,7 @@ import (
 
 type Address struct {
 	model.Address
+	Country *CountryDisplay
 }
 
 // SystemAddressToGraphqlAddress convert single database address to single graphql address
@@ -24,14 +27,13 @@ func SystemAddressToGraphqlAddress(address *model.Address) *Address {
 	if address == nil {
 		return nil
 	}
-	return &Address{*address}
-}
-
-func (a *Address) Country(ctx context.Context) (*CountryDisplay, error) {
-	return &CountryDisplay{
-		Code:    a.Address.Country.String(),
-		Country: model.Countries[a.Address.Country],
-	}, nil
+	return &Address{
+		Address: *address,
+		Country: &CountryDisplay{
+			Code:    address.Country.String(),
+			Country: model.Countries[address.Country],
+		},
+	}
 }
 
 // NOTE: Refer to ./schemas/address.graphqls for directive used
@@ -43,11 +45,8 @@ func (a *Address) IsDefaultShippingAddress(ctx context.Context) (*bool, error) {
 		return nil, err
 	}
 
-	if user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == a.Id {
-		return model.NewPrimitive(true), nil
-	}
-
-	return model.NewPrimitive(false), nil
+	isDefaultShippingAddr := user.DefaultShippingAddressID != nil && *user.DefaultShippingAddressID == a.Id
+	return &isDefaultShippingAddr, nil
 }
 
 // NOTE: Refer to ./schemas/address.graphqls for directive used
@@ -59,11 +58,8 @@ func (a *Address) IsDefaultBillingAddress(ctx context.Context) (*bool, error) {
 		return nil, err
 	}
 
-	if user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == a.Id {
-		return model.NewPrimitive(true), nil
-	}
-
-	return model.NewPrimitive(false), nil
+	isDefaultBillingAddr := user.DefaultBillingAddressID != nil && *user.DefaultBillingAddressID == a.Id
+	return &isDefaultBillingAddr, nil
 }
 
 func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Address] {
@@ -202,11 +198,15 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 }
 
 // NOTE: Refer to ./schemas/user.graphqls for directive used.
-func (u *User) StoredPaymentSources(ctx context.Context, args struct{ Channel *string }) ([]*PaymentSource, error) {
+func (u *User) StoredPaymentSources(ctx context.Context, args struct{ ChannelID string }) ([]*PaymentSource, error) {
+	args.ChannelID = decodeBase64String(args.ChannelID)
+	if !model.IsValidId(args.ChannelID) {
+		return nil, model.NewAppError("User.StoredPaymentSources", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
+	}
+
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	// TODO: check if we need channel_id here
-
+	// ONLY customers can see their own payment sources.
 	if u.ID == embedCtx.AppContext.Session().UserId {
 		pluginManager := embedCtx.App.Srv().PluginService().GetPluginManager()
 		paymentGateWays := embedCtx.App.Srv().PaymentService().ListGateways(pluginManager, embedCtx.CurrentChannelID)
@@ -220,7 +220,7 @@ func (u *User) StoredPaymentSources(ctx context.Context, args struct{ Channel *s
 			}
 
 			if customerId != "" {
-				paymentSources, appErr := embedCtx.App.Srv().PaymentService().ListPaymentSources(gwt.Id, customerId, pluginManager, embedCtx.CurrentChannelID)
+				paymentSources, appErr := embedCtx.App.Srv().PaymentService().ListPaymentSources(gwt.Id, customerId, pluginManager, args.ChannelID)
 				if appErr != nil {
 					return nil, appErr
 				}
@@ -259,7 +259,7 @@ func (u *User) StoredPaymentSources(ctx context.Context, args struct{ Channel *s
 
 // NOTE: Refer to ./schemas/user.graphqls for directive used.
 // args.Channel is channel id
-func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string }) ([]string, error) {
+func (u *User) CheckoutTokens(ctx context.Context, args struct{ ChannelID *string }) ([]string, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	currentSession := embedCtx.AppContext.Session()
 
@@ -271,10 +271,14 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ Channel *string 
 		var checkouts []*model.Checkout
 		var err error
 
-		if args.Channel == nil || *args.Channel == "" {
+		if args.ChannelID == nil {
 			checkouts, err = CheckoutByUserLoader.Load(ctx, u.ID)()
 		} else {
-			checkouts, err = CheckoutByUserAndChannelLoader.Load(ctx, u.ID+"__"+*args.Channel)()
+			channelID := decodeBase64String(*args.ChannelID)
+			if !model.IsValidId(channelID) {
+				return nil, model.NewAppError("User.CheckoutTokens", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
+			}
+			checkouts, err = CheckoutByUserAndChannelLoader.Load(ctx, u.ID+"__"+channelID)()
 		}
 		if err != nil {
 			return nil, err
@@ -536,10 +540,7 @@ func (c *CustomerEvent) User(ctx context.Context) (*User, error) {
 }
 
 func (c *CustomerEvent) OrderLine(ctx context.Context) (*OrderLine, error) {
-	orderLineID := c.event.Parameters.Get("order_line_pk", nil)
-	if orderLineID == nil {
-		return nil, nil
-	}
+	orderLineID := c.event.Parameters.Get("order_line_pk", "")
 
 	line, err := OrderLineByIdLoader.Load(ctx, orderLineID.(string))()
 	if err != nil {

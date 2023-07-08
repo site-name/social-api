@@ -227,7 +227,7 @@ func paymentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*dataload
 	return res
 }
 
-func paymentsByTokenLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Payment] {
+func paymentByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*model.Payment] {
 	var (
 		res        = make([]*dataloader.Result[*model.Payment], len(ids))
 		paymentMap = map[string]*model.Payment{} // keys are payment ids
@@ -235,7 +235,7 @@ func paymentsByTokenLoader(ctx context.Context, ids []string) []*dataloader.Resu
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	payments, appErr := embedCtx.App.Srv().PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		Id: squirrel.Eq{store.PaymentTableName + ".Token": ids},
+		Id: squirrel.Eq{store.PaymentTableName + ".Id": ids},
 	})
 	if appErr != nil {
 		for idx := range ids {
@@ -288,7 +288,7 @@ func systemTransactionToGraphqlTransaction(t *model.PaymentTransaction) *Transac
 }
 
 func (t *Transaction) Payment(ctx context.Context) (*Payment, error) {
-	payment, err := PaymentsByTokensLoader.Load(ctx, t.t.PaymentID)()
+	payment, err := PaymentByIdLoader.Load(ctx, t.t.PaymentID)()
 	if err != nil {
 		return nil, err
 	}

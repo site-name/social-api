@@ -43,10 +43,9 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 	}
 	productsWithVariantsMap := lo.SliceToMap(productVariants, func(v *model.ProductVariant) (string, bool) { return v.ProductID, true })
 
-	for _, prdId := range args.Products {
-		if !productsWithVariantsMap[prdId] { // meaning one of given products has no related productvariants
-			return nil, model.NewAppError("CollectionAddProducts", "api.collection.cannot_add_products_without_variants.app_error", nil, "Cannot manage products without variants.", http.StatusBadRequest)
-		}
+	if !lo.SomeBy(args.Products, func(pid string) bool { return !productsWithVariantsMap[pid] }) {
+		// meaning one of given products has no related productvariants
+		return nil, model.NewAppError("CollectionAddProducts", "api.collection.cannot_add_products_without_variants.app_error", nil, "Cannot manage products without variants.", http.StatusBadRequest)
 	}
 
 	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
@@ -55,8 +54,8 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 	}
 
 	// add collection-product relations:
-	collectionProductRels := lo.Map(args.Products, func(p string, _ int) *model.CollectionProduct {
-		return &model.CollectionProduct{CollectionID: args.CollectionID, ProductID: p}
+	collectionProductRels := lo.Map(args.Products, func(pid string, _ int) *model.CollectionProduct {
+		return &model.CollectionProduct{CollectionID: args.CollectionID, ProductID: pid}
 	})
 	_, appErr = embedCtx.App.Srv().ProductService().CreateCollectionProductRelations(transaction, collectionProductRels)
 	if appErr != nil {
@@ -130,7 +129,10 @@ func (r *Resolver) CollectionReorderProducts(ctx context.Context, args struct {
 	CollectionID string
 	Moves        []*MoveProductInput
 }) (*CollectionReorderProducts, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	if !model.IsValidId(args.CollectionID) {
+		return nil, model.NewAppError("CollectionReorderProducts", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "CollectionID"}, "please provide valid collection id", http.StatusBadRequest)
+	}
 }
 
 // NOTE: Refer to ./schemas/collection.graphqls for details on directive used.
@@ -209,6 +211,11 @@ func (r *Resolver) CollectionUpdate(ctx context.Context, args struct {
 	Id    string
 	Input CollectionInput
 }) (*CollectionUpdate, error) {
+	// validate arguments
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("CollectionUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid collection id", http.StatusBadRequest)
+	}
+
 	panic(fmt.Errorf("not implemented"))
 }
 

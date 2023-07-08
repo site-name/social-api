@@ -146,6 +146,19 @@ func convertGraphqlOperandToString[C graphqlCursorType](operand C) string {
 	}
 }
 
+// decodeBase64String uses base64 to decode given string to its original value.
+//
+// NOTE: given value MUST be base64 encoded, otherwise an empty string "" is returned.
+func decodeBase64String(value string) string {
+	decoded, _ := base64.StdEncoding.DecodeString(value)
+	return string(decoded)
+}
+
+// NOTE: You must be sure that given values are base64 encoded.
+func decodeBase64Strings(values ...string) []string {
+	return lo.Map(values, func(v string, _ int) string { return decodeBase64String(v) })
+}
+
 // parseGraphqlOperand can possibly returns (nil, nil)
 func parseGraphqlOperand[C graphqlCursorType](params GraphqlParams) (*C, error) {
 	// in case users query resuts for the first time
@@ -445,9 +458,7 @@ func reportingPeriodToDate(period ReportingPeriod) time.Time {
 	switch period {
 	case ReportingPeriodToday:
 		return util.StartOfDay(now)
-	case ReportingPeriodThisMonth:
-		return util.StartOfMonth(now)
 	default:
-		return now
+		return util.StartOfMonth(now)
 	}
 }

@@ -6,8 +6,10 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/site-name/decimal"
+	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 )
 
@@ -37,8 +39,18 @@ func (r *Resolver) PaymentInitialize(ctx context.Context, args struct {
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/payment.graphqls for details on directives used.
 func (r *Resolver) Payment(ctx context.Context, args struct{ Id string }) (*Payment, error) {
-	panic(fmt.Errorf("not implemented"))
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("Payment", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid payment id", http.StatusBadRequest)
+	}
+
+	payment, err := PaymentByIdLoader.Load(ctx, args.Id)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemPaymentToGraphqlPayment(payment), nil
 }
 
 func (r *Resolver) Payments(ctx context.Context, args struct {

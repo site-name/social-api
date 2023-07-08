@@ -7,10 +7,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/gosimple/slug"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
@@ -94,6 +94,7 @@ func (r *Resolver) AttributeCreate(ctx context.Context, args struct{ Input Attri
 // NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeDelete(ctx context.Context, args struct{ Id string }) (*AttributeDelete, error) {
 	// validate argument(s)
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AttributeDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "id = "+args.Id+" is invalid id", http.StatusBadRequest)
 	}
@@ -113,6 +114,13 @@ func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AttributeUpdateInput
 }) (*AttributeUpdate, error) {
+	// validate params:
+	args.Id = decodeBase64String(args.Id)
+	args.Input.RemoveValues = decodeBase64Strings(args.Input.RemoveValues...)
+
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("AttributeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid attribute id", http.StatusBadRequest)
+	}
 	if !lo.EveryBy(args.Input.RemoveValues, model.IsValidId) {
 		return nil, model.NewAppError("AttributeUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "removeValues"}, "please provide valid attribute value ids", http.StatusBadRequest)
 	}
@@ -215,7 +223,9 @@ func (r *Resolver) AttributeTranslate(ctx context.Context, args struct {
 
 // NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []string }) (*AttributeBulkDelete, error) {
-	if len(args.Ids) == 0 || !lo.EveryBy(args.Ids, model.IsValidId) {
+	// validate params
+	args.Ids = decodeBase64Strings(args.Ids...)
+	if !lo.EveryBy(args.Ids, model.IsValidId) {
 		return nil, model.NewAppError("AttributeBulkDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid ids", http.StatusBadRequest)
 	}
 
@@ -231,7 +241,9 @@ func (r *Resolver) AttributeBulkDelete(ctx context.Context, args struct{ Ids []s
 
 // NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeValueBulkDelete(ctx context.Context, args struct{ Ids []string }) (*AttributeValueBulkDelete, error) {
-	if len(args.Ids) == 0 || !lo.EveryBy(args.Ids, model.IsValidId) {
+	// valdate params
+	args.Ids = decodeBase64Strings(args.Ids...)
+	if !lo.EveryBy(args.Ids, model.IsValidId) {
 		return nil, model.NewAppError("AttributeValueBulkDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid ids", http.StatusBadRequest)
 	}
 
@@ -250,6 +262,8 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 	AttributeID string
 	Input       AttributeValueCreateInput
 }) (*AttributeValueCreate, error) {
+	// validate params
+	args.AttributeID = decodeBase64String(args.AttributeID)
 	if !model.IsValidId(args.AttributeID) {
 		return nil, model.NewAppError("AttributeValueCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "attributeID"}, "id="+args.AttributeID+" is in valid", http.StatusBadRequest)
 	}
@@ -302,6 +316,8 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 
 // NOTE: Refer to ./schemas/attribute.graphqls for details on directive used
 func (r *Resolver) AttributeValueDelete(ctx context.Context, args struct{ Id string }) (*AttributeValueDelete, error) {
+	// validate params
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AttributeValueDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.Id+" is in valid", http.StatusBadRequest)
 	}
@@ -334,6 +350,8 @@ func (r *Resolver) AttributeValueUpdate(ctx context.Context, args struct {
 	Id    string
 	Input AttributeValueUpdateInput
 }) (*AttributeValueUpdate, error) {
+	// validate params
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AttributeValueUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.Id+" is in valid", http.StatusBadRequest)
 	}
@@ -391,11 +409,10 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 	AttributeID string
 	Moves       []*ReorderInput
 }) (*AttributeReorderValues, error) {
+	// validate params
+	args.AttributeID = decodeBase64String(args.AttributeID)
 	if !model.IsValidId(args.AttributeID) {
 		return nil, model.NewAppError("AttributeReorderValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "Id"}, "id="+args.AttributeID+" is in valid", http.StatusBadRequest)
-	}
-	if !lo.EveryBy(args.Moves, func(ro *ReorderInput) bool { return model.IsValidId(ro.ID) }) {
-		return nil, model.NewAppError("AttributeReorderValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "moves"}, "one of moves provided has invalid id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -435,6 +452,15 @@ func (r *Resolver) Attributes(ctx context.Context, args struct {
 	ChannelID *string
 	GraphqlParams
 }) (*AttributeCountableConnection, error) {
+	// validate params
+	var channelID string
+	if args.ChannelID != nil {
+		channelID = decodeBase64String(*args.ChannelID)
+		if !model.IsValidId(channelID) {
+			return nil, model.NewAppError("Attributes", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
+		}
+	}
+
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -442,18 +468,22 @@ func (r *Resolver) Attribute(ctx context.Context, args struct {
 	Id   *string
 	Slug *string
 }) (*Attribute, error) {
-	if args.Id == nil && args.Slug == nil {
-		return nil, model.NewAppError("Attribute", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id/slug"}, "please provide id or slug", http.StatusBadRequest)
+	if (args.Id == nil && args.Slug == nil) || (args.Id != nil && args.Slug != nil) {
+		return nil, model.NewAppError("Attribute", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id/slug"}, "please provide id or slug, not both", http.StatusBadRequest)
 	}
-	if args.Id != nil && !model.IsValidId(*args.Id) {
-		return nil, model.NewAppError("Attribute", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+	var attrId string
+	if args.Id != nil {
+		attrId = decodeBase64String(*args.Id)
+		if !model.IsValidId(attrId) {
+			return nil, model.NewAppError("Attribute", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+		}
 	}
-	if args.Slug != nil && strings.TrimSpace(*args.Slug) == "" {
+	if args.Slug != nil && !slug.IsSlug(*args.Slug) {
 		return nil, model.NewAppError("Attribute", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "slug"}, "please provide valid slug", http.StatusBadRequest)
 	}
 
 	attrFilter := &model.AttributeFilterOption{}
-	if args.Id != nil {
+	if attrId != "" {
 		attrFilter.Id = squirrel.Eq{store.AttributeTableName + ".Id": *args.Id}
 	} else {
 		attrFilter.Slug = squirrel.Eq{store.AttributeTableName + ".Slug": *args.Slug}

@@ -78,7 +78,7 @@ type AddressFilterOrderOption struct {
 type AddressFilterOption struct {
 	Id      squirrel.Sqlizer
 	OrderID *AddressFilterOrderOption
-	UserID  squirrel.Sqlizer // SELECT * FROM Addresses WHERE Id IN (SELECT Id FROM UserAddresses WHERE UserAddresses.UserID ...)
+	UserID  squirrel.Sqlizer // Id IN (SELECT AddressID FROM UserAddresses ON ... WHERE UserAddresses.UserID ...)
 	Other   squirrel.Sqlizer
 }
 

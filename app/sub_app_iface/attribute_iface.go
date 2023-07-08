@@ -27,7 +27,7 @@ type AttributeService interface {
 	// `attributeID` must be ID of processing `Attribute`
 	//
 	// Returned interface{} must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
-	AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values []*model.AttributeValue) (interface{}, *model.AppError)
+	AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values model.AttributeValues) (interface{}, *model.AppError)
 	// AttributePageByOption returns an attribute page filtered using given option
 	AttributePageByOption(option *model.AttributePageFilterOption) (*model.AttributePage, *model.AppError)
 	// AttributeProductByOption returns an attribute product filtered using given option
@@ -48,7 +48,7 @@ type AttributeService interface {
 	UpsertAttributeValue(attrValue *model.AttributeValue) (*model.AttributeValue, *model.AppError)
 	AttributeByOption(option *model.AttributeFilterOption) (*model.Attribute, *model.AppError)
 	AttributeProductsByOption(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, *model.AppError)
-	AttributeValuesOfAttribute(attributeID string) ([]*model.AttributeValue, *model.AppError)
+	AttributeValuesOfAttribute(attributeID string) (model.AttributeValues, *model.AppError)
 	BulkUpsertAttributeValue(transaction store_iface.SqlxTxExecutor, values model.AttributeValues) (model.AttributeValues, *model.AppError)
 	DeleteAttributeValues(ids ...string) (int64, *model.AppError)
 	DeleteAttributes(ids ...string) (int64, *model.AppError)

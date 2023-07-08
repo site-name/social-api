@@ -20,7 +20,7 @@ import (
 // `attributeID` must be ID of processing `Attribute`
 //
 // Returned interface{} must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
-func (a *ServiceAttribute) AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values []*model.AttributeValue) (interface{}, *model.AppError) {
+func (a *ServiceAttribute) AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values model.AttributeValues) (interface{}, *model.AppError) {
 
 	// validate if valid `instance` was provided
 	switch instance.(type) {
@@ -29,7 +29,7 @@ func (a *ServiceAttribute) AssociateAttributeValuesToInstance(instance interface
 		return nil, model.NewAppError("AssociateAttributeValuesToInstance", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "instance"}, "", http.StatusBadRequest)
 	}
 
-	valueIDs := model.AttributeValues(values).IDs()
+	valueIDs := values.IDs()
 
 	// Ensure the values are actually form the given attribute:
 	if appErr := a.validateAttributeOwnsValues(attributeID, valueIDs); appErr != nil {
@@ -102,7 +102,7 @@ func (a *ServiceAttribute) validateAttributeOwnsValues(attributeID string, value
 	if appErr != nil {
 		return appErr
 	}
-	attributeActualValueIDs := model.AttributeValues(attributeValues).IDs()
+	attributeActualValueIDs := attributeValues.IDs()
 	foundAssociatedIDs := valueIDs.InterSection(attributeActualValueIDs...)
 
 	for _, associatedID := range foundAssociatedIDs {
@@ -184,7 +184,6 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 //
 //	+) *Page           - *AssignedPageAttribute
 func (a *ServiceAttribute) sortAssignedAttributeValues(instance interface{}, assignment interface{}, valueIDs []string) *model.AppError {
-
 	if instance == nil || assignment == nil || len(valueIDs) == 0 {
 		return model.NewAppError("sortAssignedAttributeValues", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "assignment or instance or valuesIDs"}, "", http.StatusBadRequest)
 	}

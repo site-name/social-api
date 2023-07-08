@@ -1058,7 +1058,7 @@ func (a *ServiceOrder) CreateOrderEvent(transaction store_iface.SqlxTxExecutor, 
 		_, appErr = a.CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 			OrderID: orderLine.OrderID,
 			UserID:  savingUserID,
-			Type:    model.REMOVED_PRODUCTS,
+			Type:    model.ORDER_EVENT_TYPE_REMOVED_PRODUCTS,
 			Parameters: model.StringInterface{
 				"lines": linesPerQuantityToLineObjectList([]*model.QuantityOrderLine{
 					{
@@ -1072,7 +1072,7 @@ func (a *ServiceOrder) CreateOrderEvent(transaction store_iface.SqlxTxExecutor, 
 		_, appErr = a.CommonCreateOrderEvent(transaction, &model.OrderEventOption{
 			OrderID: orderLine.OrderID,
 			UserID:  savingUserID,
-			Type:    model.ADDED_PRODUCTS,
+			Type:    model.ORDER_EVENT_TYPE_ADDED_PRODUCTS,
 			Parameters: model.StringInterface{
 				"lines": linesPerQuantityToLineObjectList([]*model.QuantityOrderLine{
 					{
@@ -1112,7 +1112,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *model.Order, manager interfaces.Pl
 	}
 
 	warehouses, appError := a.srv.WarehouseService().WarehousesByOption(&model.WarehouseFilterOption{
-		ShippingZonesCountries: squirrel.Like{store.ShippingZoneTableName + ".Countries": countryCode},
+		ShippingZonesCountries: squirrel.Like{store.ShippingZoneTableName + ".Countries": "%" + countryCode + "%"},
 	})
 	if appError != nil {
 		return appError
@@ -1151,48 +1151,49 @@ func (a *ServiceOrder) RestockOrderLines(ord *model.Order, manager interfaces.Pl
 				productVariant, appErr := a.srv.ProductService().ProductVariantById(*anOrderLine.VariantID)
 				if appErr != nil {
 					setAppError(appErr)
-				} else {
-					if *productVariant.TrackInventory {
-						if anOrderLine.QuantityUnFulfilled() > 0 {
+					return
+				}
 
-							mut.Lock()
-							dellocatingStockLines = append(dellocatingStockLines, &model.OrderLineData{
-								Line:     *anOrderLine,
-								Quantity: anOrderLine.QuantityUnFulfilled(),
-							})
-							mut.Unlock()
+				if *productVariant.TrackInventory {
+					if anOrderLine.QuantityUnFulfilled() > 0 {
 
-						}
+						mut.Lock()
+						dellocatingStockLines = append(dellocatingStockLines, &model.OrderLineData{
+							Line:     *anOrderLine,
+							Quantity: anOrderLine.QuantityUnFulfilled(),
+						})
+						mut.Unlock()
 
-						if anOrderLine.QuantityFulfilled > 0 {
-							allocations, appErr := a.srv.WarehouseService().AllocationsByOption(nil, &model.AllocationFilterOption{
-								OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": anOrderLine.Id},
-							})
-							if appErr != nil {
-								setAppError(appErr)
-							} else {
-								warehouse := defaultWarehouse
-								if len(allocations) > 0 {
-									warehouseOfOrderLine, appErr := a.srv.WarehouseService().WarehouseByStockID(allocations[0].StockID)
-									if appErr != nil {
-										setAppError(appErr)
-									} else {
-										warehouse = warehouseOfOrderLine
-									}
-								}
-
-								appErr = a.srv.WarehouseService().IncreaseStock(anOrderLine, warehouse, anOrderLine.QuantityFulfilled, false)
-								setAppError(appErr)
-							}
-						}
 					}
 
 					if anOrderLine.QuantityFulfilled > 0 {
-						anOrderLine.QuantityFulfilled = 0
+						allocations, appErr := a.srv.WarehouseService().AllocationsByOption(&model.AllocationFilterOption{
+							OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": anOrderLine.Id},
+						})
+						if appErr != nil {
+							setAppError(appErr)
+						} else {
+							warehouse := defaultWarehouse
+							if len(allocations) > 0 {
+								warehouseOfOrderLine, appErr := a.srv.WarehouseService().WarehouseByStockID(allocations[0].StockID)
+								if appErr != nil {
+									setAppError(appErr)
+								} else {
+									warehouse = warehouseOfOrderLine
+								}
+							}
 
-						_, appErr = a.UpsertOrderLine(nil, anOrderLine)
-						setAppError(appErr)
+							appErr = a.srv.WarehouseService().IncreaseStock(anOrderLine, warehouse, anOrderLine.QuantityFulfilled, false)
+							setAppError(appErr)
+						}
 					}
+				}
+
+				if anOrderLine.QuantityFulfilled > 0 {
+					anOrderLine.QuantityFulfilled = 0
+
+					_, appErr = a.UpsertOrderLine(nil, anOrderLine)
+					setAppError(appErr)
 				}
 
 				wg.Done()

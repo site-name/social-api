@@ -145,7 +145,7 @@ GROUP BY
   "warehouse_stock"."quantity";
 */
 // FilterByOption finds and returns a list of allocation based on given option
-func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.AllocationFilterOption) ([]*model.Allocation, error) {
+func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error) {
 	// define fields to select:
 	selectFields := as.ModelFields(store.AllocationTableName + ".")
 	if option.SelectedRelatedStock {
@@ -159,48 +159,34 @@ func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecu
 		Select(selectFields...).
 		From(store.AllocationTableName)
 
-	var (
-		joined_OrderLines_tableName bool
-		joined_Stock_table          bool
-	)
-
-	// parse option
-	if option.AnnotateStockAvailableQuantity {
-		query.
-			Column(`Stocks.Quantity - COALESCE( SUM( T3.QuantityAllocated ), 0 ) AS StockAvailableQuantity`). // NOTE: `T3` alias of `Allocations`
-			InnerJoin("Stocks ON (Stocks.Id = Allocations.StockID)").
-			LeftJoin(store.AllocationTableName+" AS T3 ON (T3.StockID = Stocks.Id)").
-			GroupBy("Allocations.Id", "Stocks.Quantity")
-
-		joined_Stock_table = true // indicate for later check
-	}
-
-	if option.SelectRelatedOrderLine {
-		query = query.InnerJoin(store.OrderLineTableName + " ON Orderlines.Id = Allocations.OrderLineID")
-
-		joined_OrderLines_tableName = true // indicate for later check
-	}
-	if option.SelectedRelatedStock && !joined_Stock_table {
+	if option.AnnotateStockAvailableQuantity || option.SelectedRelatedStock {
 		query = query.InnerJoin(store.StockTableName + " ON Stocks.Id = Allocations.StockID")
-	}
-	if option.Id != nil {
-		query = query.Where(option.Id)
-	}
-	if option.OrderLineID != nil {
-		query = query.Where(option.OrderLineID)
-	}
-	if option.StockID != nil {
-		query = query.Where(option.StockID)
-	}
-	if option.QuantityAllocated != nil {
-		query = query.Where(option.QuantityAllocated)
-	}
-	if option.OrderLineOrderID != nil {
-		if !joined_OrderLines_tableName { // check if have joined Orderlines table
-			query = query.InnerJoin(store.OrderLineTableName + " ON Orderlines.Id = Allocations.OrderLineID")
+
+		if option.AnnotateStockAvailableQuantity {
+			query = query.
+				Column(`Stocks.Quantity - COALESCE( SUM( Allocations.QuantityAllocated ), 0 ) AS StockAvailableQuantity`).
+				LeftJoin(store.AllocationTableName+" ON Allocations.StockID = Stocks.Id").
+				GroupBy("Allocations.Id", "Stocks.Quantity")
 		}
-		query = query.Where(option.OrderLineOrderID)
 	}
+
+	// parse options
+	if option.SelectRelatedOrderLine || option.OrderLineOrderID != nil {
+		query = query.InnerJoin(store.OrderLineTableName + " ON Orderlines.Id = Allocations.OrderLineID")
+	}
+
+	for _, opt := range []squirrel.Sqlizer{
+		option.Id,
+		option.OrderLineID,
+		option.StockID,
+		option.QuantityAllocated,
+		option.OrderLineOrderID,
+	} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
+	}
+
 	if option.LockForUpdate {
 		suf := "FOR UPDATE"
 		if option.ForUpdateOf != "" {
@@ -214,54 +200,48 @@ func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecu
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	var (
-		returnAllocations      []*model.Allocation
-		allocation             model.Allocation
-		orderLine              model.OrderLine
-		stock                  model.Stock
-		stockAvailableQuantity int
-		scanFields             = as.ScanFields(&allocation)
-
-		queryer store_iface.SqlxExecutor = as.GetReplicaX()
-	)
-
-	// check if transaction is non-nil to promote it to be actual queryer:
-	if transaction != nil {
-		queryer = transaction
-	}
-
-	// check if we need to modify scan list:
-	if option.SelectRelatedOrderLine {
-		scanFields = append(scanFields, as.OrderLine().ScanFields(&orderLine)...)
-	}
-	if option.SelectedRelatedStock {
-		scanFields = append(scanFields, as.Stock().ScanFields(&stock)...)
-	}
-	if option.AnnotateStockAvailableQuantity {
-		scanFields = append(scanFields, &stockAvailableQuantity)
-	}
-
-	rows, err := queryer.QueryX(queryString, args...)
+	rows, err := as.GetReplicaX().QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find allocations with given option")
 	}
 
+	var returnAllocations model.Allocations
+
 	for rows.Next() {
+		var (
+			allocation             model.Allocation
+			orderLine              model.OrderLine
+			stock                  model.Stock
+			stockAvailableQuantity int
+			scanFields             = as.ScanFields(&allocation)
+		)
+
+		// NOTE: scan order must be identical to select order (like above)
+		if option.SelectedRelatedStock {
+			scanFields = append(scanFields, as.Stock().ScanFields(&stock)...)
+		}
+		if option.SelectRelatedOrderLine {
+			scanFields = append(scanFields, as.OrderLine().ScanFields(&orderLine)...)
+		}
+		if option.AnnotateStockAvailableQuantity {
+			scanFields = append(scanFields, &stockAvailableQuantity)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row")
 		}
 
 		if option.SelectRelatedOrderLine {
-			allocation.OrderLine = orderLine.DeepCopy()
+			allocation.SetOrderLine(&orderLine)
 		}
 		if option.SelectedRelatedStock {
-			allocation.Stock = stock.DeepCopy()
+			allocation.SetStock(&stock)
 		}
 		if option.AnnotateStockAvailableQuantity {
-			allocation.StockAvailableQuantity = stockAvailableQuantity
+			allocation.SetStockAvailableQuantity(stockAvailableQuantity)
 		}
-		returnAllocations = append(returnAllocations, allocation.DeepCopy())
+		returnAllocations = append(returnAllocations, &allocation)
 	}
 
 	if err = rows.Close(); err != nil {
@@ -273,9 +253,7 @@ func (as *SqlAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecu
 
 // BulkDelete perform bulk deletes given allocations.
 func (as *SqlAllocationStore) BulkDelete(transaction store_iface.SqlxTxExecutor, allocationIDs []string) error {
-	var (
-		executor store_iface.SqlxExecutor = as.GetMasterX()
-	)
+	var executor = as.GetMasterX()
 	if transaction != nil {
 		executor = transaction
 	}

@@ -1283,10 +1283,10 @@ func (s *TimerLayerAllocationStore) CountAvailableQuantityForStock(stock *model.
 	return result, err
 }
 
-func (s *TimerLayerAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.AllocationFilterOption) ([]*model.Allocation, error) {
+func (s *TimerLayerAllocationStore) FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error) {
 	start := timemodule.Now()
 
-	result, err := s.AllocationStore.FilterByOption(transaction, option)
+	result, err := s.AllocationStore.FilterByOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {

@@ -1298,7 +1298,7 @@ func (s *OpenTracingLayerAllocationStore) CountAvailableQuantityForStock(stock *
 	return result, err
 }
 
-func (s *OpenTracingLayerAllocationStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.AllocationFilterOption) ([]*model.Allocation, error) {
+func (s *OpenTracingLayerAllocationStore) FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AllocationStore.FilterByOption")
 	s.Root.Store.SetContext(newCtx)
@@ -1307,7 +1307,7 @@ func (s *OpenTracingLayerAllocationStore) FilterByOption(transaction store_iface
 	}()
 
 	defer span.Finish()
-	result, err := s.AllocationStore.FilterByOption(transaction, option)
+	result, err := s.AllocationStore.FilterByOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

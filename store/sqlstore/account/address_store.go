@@ -78,48 +78,45 @@ func (as *SqlAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, addres
 	if !model.IsValidId(address.Id) {
 		address.Id = ""
 		isSaving = true
+		address.PreSave()
+	} else {
+		address.PreUpdate()
 	}
-
-	address.PreSave()
 
 	if err := address.IsValid(); err != nil {
 		return nil, err
 	}
 
 	var (
-		errorUpsert          error
-		errCheckRowsAffected error
-		rowsAffected         int64
+		errorUpsert error
+		result      sql.Result
 	)
 	if isSaving {
 		query := "INSERT INTO " + store.AddressTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-		_, errorUpsert = executor.NamedExec(query, address)
+		result, errorUpsert = executor.NamedExec(query, address)
 
 	} else {
 		query := "UPDATE " + store.AddressTableName + " SET " + as.
 			ModelFields("").
 			Map(func(_ int, item string) string {
-				return item + "=:" + item // Id=:Id
+				return item + "=:" + item
 			}).
 			Join(",") + "WHERE Id=:Id"
 
-		var res sql.Result
-		res, errorUpsert = executor.NamedExec(query, address)
-		if errorUpsert == nil {
-			rowsAffected, errCheckRowsAffected = res.RowsAffected()
-		}
+		result, errorUpsert = executor.NamedExec(query, address)
 	}
 
 	if errorUpsert != nil {
 		return nil, errors.Wrap(errorUpsert, "failed to upsert address to database")
 	}
 
+	rowsAffected, errCheckRowsAffected := result.RowsAffected()
 	if errCheckRowsAffected != nil {
 		return nil, errors.Wrap(errCheckRowsAffected, "failed to get number of address(es) updated")
 	}
 
 	if rowsAffected != 1 {
-		return nil, errors.Errorf("%d address(es) updated instead of 1", rowsAffected)
+		return nil, errors.Errorf("%d address(es) upserted instead of 1", rowsAffected)
 	}
 
 	return address, nil
@@ -150,8 +147,7 @@ func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]
 	}
 	if option.OrderID != nil &&
 		option.OrderID.Id != nil &&
-		util.AnyArray[string]([]string{"BillingAddressID", "ShippingAddressID"}).
-			Contains(string(option.OrderID.On)) {
+		(option.OrderID.On == "BillingAddressID" || option.OrderID.On == "ShippingAddressID") {
 
 		query = query.
 			InnerJoin(store.OrderTableName+" ON (Orders.? = Addresses.Id)", option.OrderID.On).
@@ -186,7 +182,7 @@ func (as *SqlAddressStore) DeleteAddresses(transaction store_iface.SqlxTxExecuto
 	}
 
 	query := "DELETE FROM " + store.AddressTableName + " WHERE Id IN (" + squirrel.Placeholders(len(addressIDs)) + ")"
-	args := lo.Map[string, any](addressIDs, func(item string, _ int) any { return item })
+	args := lo.Map(addressIDs, func(item string, _ int) any { return item })
 
 	result, err := runner.Exec(query, args...)
 	if err != nil {

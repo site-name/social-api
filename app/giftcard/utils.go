@@ -118,7 +118,7 @@ func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines model.OrderLines) (
 	giftcardLines := GetGiftcardLines(lines)
 	nonShippableLines, appErr := s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
 		Id:                 squirrel.Eq{store.OrderLineTableName + ".Id": giftcardLines.IDs()},
-		IsShippingRequired: model.NewPrimitive(true),
+		IsShippingRequired: squirrel.Eq{store.OrderLineTableName + ".IsShippingRequired": true},
 	})
 
 	if appErr != nil {
@@ -259,8 +259,8 @@ func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLines, r
 
 				if allocation.QuantityAllocated > 0 {
 
-					linesForWarehouses[allocation.Stock.WarehouseID] = append(
-						linesForWarehouses[allocation.Stock.WarehouseID],
+					linesForWarehouses[allocation.GetStock().WarehouseID] = append(
+						linesForWarehouses[allocation.GetStock().WarehouseID],
 						&model.QuantityOrderLine{
 							OrderLine: orderLine,
 							Quantity:  allocation.QuantityAllocated,
@@ -367,7 +367,7 @@ func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *model.U
 func (s *ServiceGiftcard) OrderHasGiftcardLines(orDer *model.Order) (bool, *model.AppError) {
 	orderLines, appErr := s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
 		OrderID:    squirrel.Eq{store.OrderLineTableName + ".OrderID": orDer.Id},
-		IsGiftcard: model.NewPrimitive(true),
+		IsGiftcard: squirrel.Eq{store.OrderLineTableName + ".IsGiftcard": true},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

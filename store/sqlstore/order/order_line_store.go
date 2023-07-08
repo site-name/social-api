@@ -208,31 +208,26 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 		From(store.OrderLineTableName)
 
 	// parse option
-	if option.Id != nil {
-		query = query.Where(option.Id)
-	}
-	if option.OrderID != nil {
-		query = query.Where(option.OrderID)
-	}
-	if option.IsShippingRequired != nil {
-		query = query.Where(squirrel.Eq{"Orderlines.IsShippingRequired": *option.IsShippingRequired})
-	}
-	if option.IsGiftcard != nil {
-		query = query.Where(squirrel.Eq{"Orderlines.IsGiftcard": *option.IsGiftcard})
-	}
-	if option.VariantID != nil {
-		query = query.Where(option.VariantID)
+	for _, opt := range []squirrel.Sqlizer{
+		option.Id,
+		option.OrderID,
+		option.IsShippingRequired,
+		option.IsGiftcard,
+		option.OrderChannelID,
+		option.OrderChannelID,
+	} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
 	}
 
 	if option.SelectRelatedOrder || option.OrderChannelID != nil {
 		query = query.InnerJoin(store.OrderTableName + " ON Orders.Id = OrderLines.OrderID")
-
-		if option.OrderChannelID != nil {
-			query = query.Where(option.OrderChannelID)
-		}
 	}
 
-	if option.VariantDigitalContentID != nil || option.VariantProductID != nil || option.SelectRelatedVariant {
+	if option.VariantDigitalContentID != nil ||
+		option.VariantProductID != nil ||
+		option.SelectRelatedVariant {
 		query = query.InnerJoin(store.ProductVariantTableName + " ON Orderlines.VariantID = ProductVariants.Id")
 
 		if option.VariantDigitalContentID != nil {
@@ -258,39 +253,35 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 	}
 	defer rows.Close()
 
-	var (
-		orderLines     model.OrderLines
-		orderLine      model.OrderLine
-		order          model.Order
-		productVariant model.ProductVariant
-		scanFields     = ols.ScanFields(&orderLine)
-	)
-	if option.SelectRelatedOrder {
-		scanFields = append(scanFields, ols.Order().ScanFields(&order)...)
-	}
-	if option.SelectRelatedVariant {
-		scanFields = append(scanFields, ols.ProductVariant().ScanFields(&productVariant)...)
-	}
+	var orderLines model.OrderLines
 
 	for rows.Next() {
+		var (
+			orderLine      model.OrderLine
+			order          model.Order
+			productVariant model.ProductVariant
+			scanFields     = ols.ScanFields(&orderLine)
+		)
+		if option.SelectRelatedOrder {
+			scanFields = append(scanFields, ols.Order().ScanFields(&order)...)
+		}
+		if option.SelectRelatedVariant {
+			scanFields = append(scanFields, ols.ProductVariant().ScanFields(&productVariant)...)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row of order line")
 		}
 
-		switch {
-		case option.SelectRelatedOrder:
-			orderLine.SetOrder(&order) // no need to copy just yet
-			fallthrough
-		case option.SelectRelatedVariant:
-			orderLine.SetProductVariant(&productVariant) // no need to copy just yet
-
-		default:
-			orderLine.SetOrder(nil)
-			orderLine.SetProductVariant(nil)
+		if option.SelectRelatedOrder {
+			orderLine.SetOrder(&order)
+		}
+		if option.SelectRelatedVariant {
+			orderLine.SetProductVariant(&productVariant)
 		}
 
-		orderLines = append(orderLines, orderLine.DeepCopy())
+		orderLines = append(orderLines, &orderLine)
 	}
 
 	// check if prefetching is needed and order lines have been found to proceed
@@ -347,7 +338,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 		if option.PrefetchRelated.AllocationsStock && len(orderLines) > 0 {
 			allocations, err = ols.
 				Allocation().
-				FilterByOption(nil, &model.AllocationFilterOption{
+				FilterByOption(&model.AllocationFilterOption{
 					OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLines.IDs()},
 				})
 			if err != nil {
@@ -361,7 +352,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 			stocksFilterOpts := new(model.StockFilterOption)
 
 			if option.PrefetchRelated.AllocationsStock {
-				stocksFilterOpts.Id = squirrel.Eq{store.StockTableName + ".Id": allocations.IDs()}
+				stocksFilterOpts.Id = squirrel.Eq{store.StockTableName + ".Id": allocations.StockIDs()}
 
 			} else if option.PrefetchRelated.VariantStocks {
 				stocksFilterOpts.ProductVariantID = squirrel.Eq{store.StockTableName + ".ProductVariantID": productVariants.IDs()}
@@ -428,7 +419,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 			var allocationsMap = map[string]model.Allocations{}
 			for _, allocation := range allocations {
 				if stock := stocksMap[allocation.StockID]; stock != nil {
-					allocation.Stock = stock
+					allocation.SetStock(stock)
 				}
 
 				allocationsMap[allocation.OrderLineID] = append(allocationsMap[allocation.OrderLineID], allocation)

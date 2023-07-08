@@ -25,19 +25,8 @@ func init() {
 // WarehouseByOption returns a list of warehouses based on given option
 func (a *ServiceWarehouse) WarehousesByOption(option *model.WarehouseFilterOption) ([]*model.WareHouse, *model.AppError) {
 	warehouses, err := a.srv.Store.Warehouse().FilterByOprion(option)
-	var (
-		statusCode   int
-		errorMessage string
-	)
 	if err != nil {
-		statusCode = http.StatusInternalServerError
-		errorMessage = err.Error()
-	} else if len(warehouses) == 0 {
-		statusCode = http.StatusNotFound
-	}
-
-	if statusCode != 0 {
-		return nil, model.NewAppError("WarehousesByOption", "app.warehouse.error_finding_warehouses_by_option.app_error", nil, errorMessage, statusCode)
+		return nil, model.NewAppError("WarehousesByOption", "app.warehouse.error_finding_warehouses_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return warehouses, nil
