@@ -226,6 +226,7 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find warehouses with given option")
 	}
+	defer rows.Close()
 
 	var returningWarehouses model.Warehouses
 
@@ -250,10 +251,6 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 		returningWarehouses = append(returningWarehouses, &wareHouse)
 	}
 
-	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed closing rows of warehouses and addresses")
-	}
-
 	// check if we need prefetch related shipping zones:
 	if option.PrefetchShippingZones && len(returningWarehouses) > 0 {
 		query, args, err = wh.GetQueryBuilder().
@@ -271,6 +268,7 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find shipping zones of warehouses")
 		}
+		defer rows.Close()
 		var warehousesMap = lo.SliceToMap(returningWarehouses, func(w *model.WareHouse) (string, *model.WareHouse) { return w.Id, w })
 
 		for rows.Next() {
@@ -288,10 +286,6 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 			if warehousesMap[relatedWarehouseID] != nil {
 				warehousesMap[relatedWarehouseID].AppendShippingZone(&shippingZone)
 			}
-		}
-
-		if err = rows.Close(); err != nil {
-			return nil, errors.Wrap(err, "failed closing rows of shipping zones")
 		}
 	}
 

@@ -179,27 +179,27 @@ func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID stri
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to find assigned product attribute values")
 	}
+	defer rows.Close()
 
 	var (
 		assignedProductAttributeValues []*model.AssignedProductAttributeValue
 		attributeValues                []*model.AttributeValue
-		assignedProductAttributeValue  model.AssignedProductAttributeValue
-		attributeValue                 model.AttributeValue
-		scanFields                     = append(as.ScanFields(&assignedProductAttributeValue), as.AttributeValue().ScanFields(&attributeValue)...)
 	)
 
 	for rows.Next() {
+		var (
+			assignedProductAttributeValue model.AssignedProductAttributeValue
+			attributeValue                model.AttributeValue
+			scanFields                    = append(as.ScanFields(&assignedProductAttributeValue), as.AttributeValue().ScanFields(&attributeValue)...)
+		)
+
 		scanErr := rows.Scan(scanFields...)
 		if scanErr != nil {
 			return nil, nil, errors.Wrapf(scanErr, "error scanning values")
 		}
 
-		assignedProductAttributeValues = append(assignedProductAttributeValues, assignedProductAttributeValue.DeepCopy())
-		attributeValues = append(attributeValues, attributeValue.DeepCopy())
-	}
-
-	if err = rows.Close(); err != nil {
-		return nil, nil, errors.Wrap(err, "error closing rows")
+		assignedProductAttributeValues = append(assignedProductAttributeValues, &assignedProductAttributeValue)
+		attributeValues = append(attributeValues, &attributeValue)
 	}
 
 	return assignedProductAttributeValues, attributeValues, nil

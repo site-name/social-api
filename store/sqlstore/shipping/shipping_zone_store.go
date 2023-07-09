@@ -151,6 +151,8 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping zones with given options")
 	}
+	defer rows.Close()
+
 	var (
 		returningShippingZones model.ShippingZones
 		shippingZonesMap       = map[string]*model.ShippingZone{} // keys are shipping zones' ids
@@ -175,12 +177,9 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 			returningShippingZones = append(returningShippingZones, &shippingZone)
 			shippingZonesMap[shippingZone.Id] = &shippingZone
 		}
-
-		shippingZonesMap[shippingZone.Id].RelativeWarehouseIDs = append(shippingZonesMap[shippingZone.Id].RelativeWarehouseIDs, warehouseID)
-	}
-
-	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed to close rows of shipping zones")
+		if option.SelectRelatedWarehouseIDs {
+			shippingZonesMap[shippingZone.Id].RelativeWarehouseIDs = append(shippingZonesMap[shippingZone.Id].RelativeWarehouseIDs, warehouseID)
+		}
 	}
 
 	return returningShippingZones, nil

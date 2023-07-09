@@ -5,6 +5,8 @@ package api
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
 	"net/http"
 	"strings"
 	"unsafe"
@@ -117,6 +119,7 @@ func (r *Resolver) UpdateWarehouse(ctx context.Context, args struct {
 	Input WarehouseUpdateInput
 }) (*WarehouseUpdate, error) {
 	// validate arguments
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("UpdateWarehouse", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
 	}
@@ -191,6 +194,7 @@ func (r *Resolver) UpdateWarehouse(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
 func (r *Resolver) DeleteWarehouse(ctx context.Context, args struct{ Id string }) (*WarehouseDelete, error) {
 	// validate arguments
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("DeleteWarehouse", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
 	}
@@ -250,9 +254,11 @@ func (r *Resolver) AssignWarehouseShippingZone(ctx context.Context, args struct 
 	ShippingZoneIds []string
 }) (*WarehouseShippingZoneAssign, error) {
 	// validate arguments
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AssignWarehouseShippingZone", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
 	}
+	args.ShippingZoneIds = decodeBase64Strings(args.ShippingZoneIds...)
 	if !lo.EveryBy(args.ShippingZoneIds, model.IsValidId) {
 		return nil, model.NewAppError("AssignWarehouseShippingZone", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone ids"}, "please provide valid shipping zone ids", http.StatusBadRequest)
 	}
@@ -290,9 +296,11 @@ func (r *Resolver) UnassignWarehouseShippingZone(ctx context.Context, args struc
 	ShippingZoneIds []string
 }) (*WarehouseShippingZoneUnassign, error) {
 	// validate arguments
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AssignWarehouseShippingZone", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
 	}
+	args.ShippingZoneIds = decodeBase64Strings(args.ShippingZoneIds...)
 	if !lo.EveryBy(args.ShippingZoneIds, model.IsValidId) {
 		return nil, model.NewAppError("AssignWarehouseShippingZone", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone ids"}, "please provide valid shipping zone ids", http.StatusBadRequest)
 	}
@@ -361,7 +369,7 @@ func (r *Resolver) Warehouses(ctx context.Context, args struct {
 			warehouseFilterOpts.IsPrivate = squirrel.Eq{store.WarehouseTableName + ".IsPrivate": *filter.IsPrivate}
 		}
 		if filter.ClickAndCollectOption != nil && filter.ClickAndCollectOption.IsValid() {
-			warehouseFilterOpts.ClickAndCollectOption = squirrel.Eq{store.WarehouseTableName + ".ClickAndCollectOption": filter.ClickAndCollectOption}
+			warehouseFilterOpts.ClickAndCollectOption = squirrel.Eq{store.WarehouseTableName + ".ClickAndCollectOption": *filter.ClickAndCollectOption}
 		}
 	}
 
@@ -383,6 +391,7 @@ func (r *Resolver) Warehouses(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
 func (r *Resolver) Stock(ctx context.Context, args struct{ Id string }) (*Stock, error) {
 	// validate arguments:
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("Stock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid stock id", http.StatusBadRequest)
 	}
@@ -395,18 +404,21 @@ func (r *Resolver) Stock(ctx context.Context, args struct{ Id string }) (*Stock,
 }
 
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
+//
+// NOTE: Stocks order by CreateAt (int64)
 func (r *Resolver) Stocks(ctx context.Context, args struct {
 	Filter *StockFilterInput
 	GraphqlParams
 }) (*StockCountableConnection, error) {
-	// validate arguments
-	if err := args.GraphqlParams.Validate("Stocks"); err != nil {
-		return nil, err
+	pagination, appErr := parseGraphqlParams[int64](&args.GraphqlParams, "Stocks", store.StockTableName+".CreateAt")
+	if appErr != nil {
+		return nil, appErr
 	}
 
-	stockFilterOptions := &model.StockFilterOption{}
+	stockFilterOptions := &model.StockFilterOption{
+		PaginationValues: *pagination,
+	}
 	if filter := args.Filter; filter != nil {
-
 		if filter.Search != nil && strings.TrimSpace(*filter.Search) != "" {
 			stockFilterOptions.Search = *filter.Search
 		}
@@ -421,11 +433,32 @@ func (r *Resolver) Stocks(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	keyFunc := func(s *model.Stock) int64 { return s.CreateAt }
-	res, appErr := newGraphqlPaginator(stocks, keyFunc, SystemStockToGraphqlStock, args.GraphqlParams).parse("Stocks")
-	if appErr != nil {
-		return nil, appErr
+	numOfStocks, err := embedCtx.App.Srv().Store.Stock().CountByOptions(stockFilterOptions)
+	if err != nil {
+		return nil, model.NewAppError("Stocks", "app.warehouse.error_countring_stocks.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	return (*StockCountableConnection)(unsafe.Pointer(res)), nil
+	hasPrevPage := args.GraphqlParams.Before != nil || args.GraphqlParams.After != nil
+	hasNextPage := int(pagination.QueryLimit()) == len(stocks)
+	if hasNextPage {
+		stocks = stocks[:len(stocks)-1]
+	}
+
+	res := &StockCountableConnection{
+		TotalCount: &numOfStocks,
+		Edges: lo.Map(stocks, func(st *model.Stock, _ int) *StockCountableEdge {
+			return &StockCountableEdge{
+				Node:   SystemStockToGraphqlStock(st),
+				Cursor: base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%v", st.CreateAt))),
+			}
+		}),
+	}
+	res.PageInfo = &PageInfo{
+		HasNextPage:     hasNextPage,
+		HasPreviousPage: hasPrevPage,
+		StartCursor:     &res.Edges[0].Cursor,
+		EndCursor:       &res.Edges[len(stocks)-1].Cursor,
+	}
+
+	return res, nil
 }

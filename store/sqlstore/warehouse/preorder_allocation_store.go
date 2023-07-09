@@ -81,19 +81,15 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllo
 
 	query := ws.GetQueryBuilder().Select(selectFields...).From(store.PreOrderAllocationTableName)
 
-	andConditions := squirrel.And{}
-	// parse options
-	if options.Id != nil {
-		andConditions = append(andConditions, options.Id)
-	}
-	if options.OrderLineID != nil {
-		andConditions = append(andConditions, options.OrderLineID)
-	}
-	if options.Quantity != nil {
-		andConditions = append(andConditions, options.Quantity)
-	}
-	if options.ProductVariantChannelListingID != nil {
-		andConditions = append(andConditions, options.ProductVariantChannelListingID)
+	for _, opt := range []squirrel.Sqlizer{
+		options.Id,
+		options.OrderLineID,
+		options.Quantity,
+		options.ProductVariantChannelListingID,
+	} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
 	}
 
 	if options.SelectRelated_OrderLine {
@@ -112,22 +108,24 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllo
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find preorder allocations with given options")
 	}
+	defer rows.Close()
 
-	var (
-		res                []*model.PreorderAllocation
-		preorderAllocation model.PreorderAllocation
-		orderLine          model.OrderLine
-		orDer              model.Order
-		scanFields         = ws.ScanFields(&preorderAllocation)
-	)
-	if options.SelectRelated_OrderLine {
-		scanFields = append(scanFields, ws.OrderLine().ScanFields(&orderLine)...)
-	}
-	if options.SelectRelated_OrderLine && options.SelectRelated_OrderLine_Order {
-		scanFields = append(scanFields, ws.Order().ScanFields(&orDer)...)
-	}
+	var res model.PreorderAllocations
 
 	for rows.Next() {
+		var (
+			preorderAllocation model.PreorderAllocation
+			orderLine          model.OrderLine
+			orDer              model.Order
+			scanFields         = ws.ScanFields(&preorderAllocation)
+		)
+		if options.SelectRelated_OrderLine {
+			scanFields = append(scanFields, ws.OrderLine().ScanFields(&orderLine)...)
+		}
+		if options.SelectRelated_OrderLine && options.SelectRelated_OrderLine_Order {
+			scanFields = append(scanFields, ws.Order().ScanFields(&orDer)...)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row of preorder allocation")
@@ -141,11 +139,7 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllo
 			preorderAllocation.SetOrderLine(&orderLine) // no need deep copy here, line 143 takes care of that
 		}
 
-		res = append(res, preorderAllocation.DeepCopy())
-	}
-
-	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed to close rows of preorder allocations")
+		res = append(res, &preorderAllocation)
 	}
 
 	return res, nil

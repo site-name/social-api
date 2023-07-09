@@ -84,33 +84,30 @@ func (s *SqlShippingMethodExcludedProductStore) FilterByOptions(options *model.S
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping method excluded products by given options")
 	}
+	defer rows.Close()
 
-	var (
-		res        []*model.ShippingMethodExcludedProduct
-		rel        model.ShippingMethodExcludedProduct
-		prd        model.Product
-		scanFields = s.ScanFields(&rel)
-	)
-	if options.SelectRelatedProduct {
-		scanFields = append(scanFields, s.Product().ScanFields(&prd)...)
-	}
+	var res []*model.ShippingMethodExcludedProduct
 
 	for rows.Next() {
+		var (
+			rel        model.ShippingMethodExcludedProduct
+			prd        model.Product
+			scanFields = s.ScanFields(&rel)
+		)
+		if options.SelectRelatedProduct {
+			scanFields = append(scanFields, s.Product().ScanFields(&prd)...)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row of shipping method excluded product")
 		}
 
 		if options.SelectRelatedProduct {
-			rel.SetProduct(&prd) // no need to deepcopy prodict here
+			rel.SetProduct(&prd)
 		}
 
-		res = append(res, rel.DeepCopy())
-	}
-
-	err = rows.Close()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to close rows of shipping method excluded products")
+		res = append(res, &rel)
 	}
 
 	return res, nil

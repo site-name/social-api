@@ -115,15 +115,15 @@ func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffFilterOption
 	defer rows.Close()
 
 	var res []*model.ShopStaff
-	var relation model.ShopStaff
-	var staff model.User
-	var scanFields = s.ScanFields(&relation)
-
-	if options.SelectRelatedStaff {
-		scanFields = append(scanFields, s.User().ScanFields(&staff)...)
-	}
 
 	for rows.Next() {
+		var relation model.ShopStaff
+		var staff model.User
+		var scanFields = s.ScanFields(&relation)
+		if options.SelectRelatedStaff {
+			scanFields = append(scanFields, s.User().ScanFields(&staff)...)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row of shop-staff relation")
@@ -132,7 +132,7 @@ func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffFilterOption
 		if options.SelectRelatedStaff {
 			relation.SetStaff(&staff)
 		}
-		res = append(res, relation.DeepCopy())
+		res = append(res, &relation)
 	}
 	return res, nil
 }

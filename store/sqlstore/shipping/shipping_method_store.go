@@ -11,6 +11,7 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlShippingMethodStore struct {
@@ -246,45 +247,52 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 			shippingMethodMeetMap[shippingMethod.Id] = &shippingMethod
 		}
 		shippingMethodMeetMap[shippingMethod.Id].AppendShippingMethodPostalCodeRule(&postalCodeRule)
-		shippingMethodMeetMap[shippingMethod.Id].AppendShippingZone(&shippingZone)
+		shippingMethodMeetMap[shippingMethod.Id].SetShippingZone(&shippingZone)
 	}
 
 	return lo.Values(shippingMethodMeetMap), nil
 }
 
 func (ss *SqlShippingMethodStore) commonQueryBuilder(options *model.ShippingMethodFilterOption) squirrel.SelectBuilder {
+	selectFields := ss.ModelFields(store.ShippingMethodTableName + ".")
+	if options.SelectRelatedShippingZone {
+		selectFields = append(selectFields, ss.ShippingZone().ModelFields(store.ShippingZoneTableName+".")...)
+	}
+
 	query := ss.GetQueryBuilder().
-		Select(ss.ModelFields(store.ShippingMethodTableName + ".")...).
+		Select(selectFields...).
 		From(store.ShippingMethodTableName)
 
 	for _, opt := range []squirrel.Sqlizer{
-		options.Id, options.Type, options.MinimumOrderWeight,
-		options.MaximumOrderWeight, options.ShippingZoneID} {
+		options.Id,
+		options.Type,
+		options.MinimumOrderWeight,
+		options.MaximumOrderWeight,
+		options.ShippingZoneID,
+		options.ShippingZoneChannelSlug,
+		options.ShippingZoneCountries,
+		options.ChannelListingsChannelSlug,
+	} {
 		if opt != nil {
 			query = query.Where(opt)
 		}
 	}
 
 	if options.ShippingZoneChannelSlug != nil ||
-		options.ShippingZoneCountries != nil {
+		options.ShippingZoneCountries != nil ||
+		options.SelectRelatedShippingZone {
 		query = query.InnerJoin(store.ShippingZoneTableName + " ON ShippingZones.Id = ShippingMethods.ShippingZoneID")
 
 		if options.ShippingZoneChannelSlug != nil {
 			query = query.
 				InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id").
-				InnerJoin(store.ChannelTableName + " ON Channels.Id = ShippingZoneChannels.ChannelID").
-				Where(options.ShippingZoneChannelSlug)
-		}
-
-		if options.ShippingZoneCountries != nil {
-			query = query.Where(options.ShippingZoneCountries)
+				InnerJoin(store.ChannelTableName + " ON Channels.Id = ShippingZoneChannels.ChannelID")
 		}
 	}
 	if options.ChannelListingsChannelSlug != nil {
 		query = query.
 			InnerJoin(store.ShippingMethodChannelListingTableName + " ON ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id").
-			InnerJoin(store.ChannelTableName + " ON Channels.Id = ShippingMethodChannelListings.ChannelID").
-			Where(options.ChannelListingsChannelSlug)
+			InnerJoin(store.ChannelTableName + " ON Channels.Id = ShippingMethodChannelListings.ChannelID")
 	}
 
 	return query
@@ -297,13 +305,25 @@ func (ss *SqlShippingMethodStore) GetbyOption(options *model.ShippingMethodFilte
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
 
-	var res model.ShippingMethod
-	err = ss.GetReplicaX().Get(&res, queryString, args...)
+	var (
+		res          model.ShippingMethod
+		shippingZone model.ShippingZone
+		scanFields   = ss.ScanFields(&res)
+	)
+	if options.SelectRelatedShippingZone {
+		scanFields = append(scanFields, ss.ShippingZone().ScanFields(&shippingZone)...)
+	}
+
+	err = ss.GetReplicaX().QueryRowX(queryString, args...).Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(store.ShippingMethodTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find shipping method by given options")
+	}
+
+	if options.SelectRelatedShippingZone {
+		res.SetShippingZone(&shippingZone)
 	}
 
 	return &res, nil
@@ -315,11 +335,54 @@ func (ss *SqlShippingMethodStore) FilterByOptions(options *model.ShippingMethodF
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
 
-	var res []*model.ShippingMethod
-	err = ss.GetReplicaX().Select(&res, queryString, args...)
+	rows, err := ss.GetReplicaX().QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping methods with given options.")
 	}
+	defer rows.Close()
 
-	return res, nil
+	var shippingMethodMap = map[string]*model.ShippingMethod{}
+
+	for rows.Next() {
+		var (
+			method     model.ShippingMethod
+			zone       model.ShippingZone
+			scanFields = ss.ScanFields(&method)
+		)
+		if options.SelectRelatedShippingZone {
+			scanFields = append(scanFields, ss.ShippingZone().ScanFields(&zone)...)
+		}
+
+		err = rows.Scan(scanFields...)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to scan row of shipping method")
+		}
+
+		if options.SelectRelatedShippingZone {
+			method.SetShippingZone(&zone)
+		}
+
+		shippingMethodMap[method.Id] = &method
+	}
+
+	return lo.Values(shippingMethodMap), nil
+}
+
+func (s *SqlShippingMethodStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+	query := "DELETE FROM " + store.ShippingMethodTableName + " WHERE Id IN (" + squirrel.Placeholders(len(ids)) + ")"
+	runner := s.GetMasterX()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	result, err := runner.Exec(query, lo.Map(ids, func(id string, _ int) any { return id })...)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete shipping methods")
+	}
+	rowsAfft, _ := result.RowsAffected()
+	if int(rowsAfft) != len(ids) {
+		return errors.Errorf("%d shipping methods deleted instead of %d", rowsAfft, len(ids))
+	}
+
+	return nil
 }

@@ -90,8 +90,12 @@ func (r *Resolver) User(ctx context.Context, args struct {
 	if args.Id == nil && args.Email == nil {
 		return nil, model.NewAppError("User", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id, email"}, "please provide either email or id", http.StatusBadRequest)
 	}
-	if args.Id != nil && !model.IsValidId(*args.Id) {
-		return nil, model.NewAppError("User", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide a valid id", http.StatusBadRequest)
+	var userID string
+	if args.Id != nil {
+		userID = decodeBase64String(*args.Id)
+		if !model.IsValidId(userID) {
+			return nil, model.NewAppError("User", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide a valid id", http.StatusBadRequest)
+		}
 	}
 	if args.Email != nil && !model.IsValidEmail(*args.Email) {
 		return nil, model.NewAppError("User", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "email"}, "please provide a valid email", http.StatusBadRequest)
@@ -99,8 +103,8 @@ func (r *Resolver) User(ctx context.Context, args struct {
 
 	var user *model.User
 	var appErr *model.AppError
-	if args.Id != nil {
-		user, appErr = embedCtx.App.Srv().AccountService().UserById(ctx, *args.Id)
+	if userID != "" {
+		user, appErr = embedCtx.App.Srv().AccountService().UserById(ctx, userID)
 	} else {
 		user, appErr = embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
 			Email: squirrel.Eq{store.UserTableName + ".Email": *args.Email},

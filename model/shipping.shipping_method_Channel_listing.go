@@ -117,8 +117,3 @@ func (s *ShippingMethodChannelListing) GetTotal() *goprices.Money {
 	s.PopulateNonDbFields()
 	return s.Price
 }
-
-func (s *ShippingMethodChannelListing) ToJSON() string {
-	s.PopulateNonDbFields()
-	return ModelToJson(s)
-}

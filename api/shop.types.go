@@ -25,37 +25,31 @@ var (
 )
 
 type Shop struct {
-	Countries []*CountryDisplay `json:"countries"`
-	// NOTE: Refer to ./schemas/shop.graphql for details on directives used
-	DefaultMailSenderName *string `json:"defaultMailSenderName"`
-	// NOTE: Refer to ./schemas/shop.graphql for details on directives used
-	DefaultMailSenderAddress *string `json:"defaultMailSenderAddress"`
-	// NOTE: Refer to ./schemas/shop.graphql for details on directives used
-	AutomaticFulfillmentDigitalProducts *bool `json:"automaticFulfillmentDigitalProducts"`
-	// NOTE: Refer to ./schemas/shop.graphql for details on directives used
-	DefaultDigitalMaxDownloads *int32 `json:"defaultDigitalMaxDownloads"`
-	// NOTE: Refer to ./schemas/shop.graphql for details on directives used
-	DefaultDigitalURLValidDays *int32 `json:"defaultDigitalUrlValidDays"`
-
-	Description             *string            `json:"description"`
-	Domain                  *Domain            `json:"domain"`
-	Languages               []*LanguageDisplay `json:"languages"`
-	Name                    string             `json:"name"`
-	Permissions             []*Permission      `json:"permissions"`
-	PhonePrefixes           []string           `json:"phonePrefixes"`
-	HeaderText              *string            `json:"headerText"`
-	IncludeTaxesInPrices    bool               `json:"includeTaxesInPrices"`
-	FulfillmentAutoApprove  bool               `json:"fulfillmentAutoApprove"`
-	FulfillmentAllowUnpaid  bool               `json:"fulfillmentAllowUnpaid"`
-	DisplayGrossPrices      bool               `json:"displayGrossPrices"`
-	ChargeTaxesOnShipping   bool               `json:"chargeTaxesOnShipping"`
-	TrackInventoryByDefault *bool              `json:"trackInventoryByDefault"`
-	DefaultWeightUnit       *WeightUnitsEnum   `json:"defaultWeightUnit"`
-	Translation             *ShopTranslation   `json:"translation"`
-	CompanyAddress          *Address           `json:"companyAddress"`
-	CustomerSetPasswordURL  *string            `json:"customerSetPasswordUrl"`
-	Limits                  *LimitInfo         `json:"limits"`
-	Version                 string             `json:"version"`
+	Countries                           []*CountryDisplay  `json:"countries"`
+	DefaultMailSenderName               *string            `json:"defaultMailSenderName"`               // NOTE: Refer to ./schemas/shop.graphql for details on directives used
+	DefaultMailSenderAddress            *string            `json:"defaultMailSenderAddress"`            // NOTE: Refer to ./schemas/shop.graphql for details on directives used
+	AutomaticFulfillmentDigitalProducts *bool              `json:"automaticFulfillmentDigitalProducts"` // NOTE: Refer to ./schemas/shop.graphql for details on directives used
+	DefaultDigitalMaxDownloads          *int32             `json:"defaultDigitalMaxDownloads"`          // NOTE: Refer to ./schemas/shop.graphql for details on directives used
+	DefaultDigitalURLValidDays          *int32             `json:"defaultDigitalUrlValidDays"`          // NOTE: Refer to ./schemas/shop.graphql for details on directives used
+	Description                         *string            `json:"description"`
+	Domain                              *Domain            `json:"domain"`
+	Languages                           []*LanguageDisplay `json:"languages"`
+	Name                                string             `json:"name"`
+	Permissions                         []*Permission      `json:"permissions"`
+	PhonePrefixes                       []string           `json:"phonePrefixes"`
+	HeaderText                          *string            `json:"headerText"`
+	IncludeTaxesInPrices                bool               `json:"includeTaxesInPrices"`
+	FulfillmentAutoApprove              bool               `json:"fulfillmentAutoApprove"`
+	FulfillmentAllowUnpaid              bool               `json:"fulfillmentAllowUnpaid"`
+	DisplayGrossPrices                  bool               `json:"displayGrossPrices"`
+	ChargeTaxesOnShipping               bool               `json:"chargeTaxesOnShipping"`
+	TrackInventoryByDefault             *bool              `json:"trackInventoryByDefault"`
+	DefaultWeightUnit                   *WeightUnitsEnum   `json:"defaultWeightUnit"`
+	Translation                         *ShopTranslation   `json:"translation"`
+	CompanyAddress                      *Address           `json:"companyAddress"`
+	CustomerSetPasswordURL              *string            `json:"customerSetPasswordUrl"`
+	Limits                              *LimitInfo         `json:"limits"`
+	Version                             string             `json:"version"`
 
 	// DefaultCountry                      *CountryDisplay    `json:"defaultCountry"`
 	// StaffNotificationRecipients         []*StaffNotificationRecipient `json:"staffNotificationRecipients"`
@@ -116,12 +110,18 @@ type PaymentGateway struct {
 
 func (s *Shop) AvailablePaymentGateways(ctx context.Context, args struct {
 	Currency  string
-	ChannelId string
+	ChannelID string
 }) ([]*PaymentGateway, error) {
+	// validate params
+	args.ChannelID = decodeBase64String(args.ChannelID)
+	if !model.IsValidId(args.ChannelID) {
+		return nil, model.NewAppError("Shop.AvailablePaymentGateways", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
+	}
+
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
 
-	paymentGateWays := pluginMng.ListPaymentGateways(args.Currency, nil, args.ChannelId, true)
+	paymentGateWays := pluginMng.ListPaymentGateways(args.Currency, nil, args.ChannelID, true)
 
 	return lo.Map(paymentGateWays, func(gw *model.PaymentGateway, _ int) *PaymentGateway {
 		gw.Config = lo.Filter(gw.Config, func(cf model.StringInterface, _ int) bool { return cf != nil && len(cf) > 0 })

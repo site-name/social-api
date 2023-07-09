@@ -280,9 +280,10 @@ func shippingMethodChannelListingsByChannelIdLoader(ctx context.Context, channel
 
 func (s *ShippingZone) ShippingMethods(ctx context.Context) ([]*ShippingMethod, error) {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	var err error
 
-	var shippingMethods []*model.ShippingMethod
+	var err error
+	var shippingMethods model.ShippingMethods
+
 	if embedCtx.CurrentChannelID != "" {
 		shippingMethods, err = ShippingMethodsByShippingZoneIdAndChannelSlugLoader.Load(ctx, s.ID+"__"+embedCtx.CurrentChannelID)()
 	} else {

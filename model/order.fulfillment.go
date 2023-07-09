@@ -57,8 +57,11 @@ type Fulfillment struct {
 	TotalRefundAmount    *decimal.Decimal  `json:"total_refund_amount"`
 	ModelMetadata
 
-	Order *Order `json:"-" db:"-"` // this field get populated in queries that require select related data
+	order *Order // this field get populated in queries that require select related data
 }
+
+func (f *Fulfillment) GetOrder() *Order  { return f.order }
+func (f *Fulfillment) SetOrder(o *Order) { f.order = o }
 
 // FulfillmentFilterOption is used to build squirrel sql queries
 type FulfillmentFilterOption struct {
@@ -145,8 +148,8 @@ func (f *Fulfillment) DeepCopy() *Fulfillment {
 		res.TotalRefundAmount = NewPrimitive(*f.TotalRefundAmount)
 	}
 	res.ModelMetadata = f.ModelMetadata.DeepCopy()
-	if f.Order != nil {
-		res.Order = f.Order.DeepCopy()
+	if f.order != nil {
+		res.order = f.order.DeepCopy()
 	}
 	return &res
 }

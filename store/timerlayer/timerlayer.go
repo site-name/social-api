@@ -4017,10 +4017,10 @@ func (s *TimerLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.
 	return result, err
 }
 
-func (s *TimerLayerInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+func (s *TimerLayerInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
 	start := timemodule.Now()
 
-	err := s.InvoiceStore.Delete(transaction, ids)
+	err := s.InvoiceStore.Delete(transaction, ids...)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4049,10 +4049,10 @@ func (s *TimerLayerInvoiceStore) FilterByOptions(options *model.InvoiceFilterOpt
 	return result, err
 }
 
-func (s *TimerLayerInvoiceStore) Get(invoiceID string) (*model.Invoice, error) {
+func (s *TimerLayerInvoiceStore) GetbyOptions(options *model.InvoiceFilterOptions) (*model.Invoice, error) {
 	start := timemodule.Now()
 
-	result, err := s.InvoiceStore.Get(invoiceID)
+	result, err := s.InvoiceStore.GetbyOptions(options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -4060,7 +4060,7 @@ func (s *TimerLayerInvoiceStore) Get(invoiceID string) (*model.Invoice, error) {
 		if err == nil {
 			success = "true"
 		}
-		s.Root.Metrics.ObserveStoreMethodDuration("InvoiceStore.Get", success, elapsed)
+		s.Root.Metrics.ObserveStoreMethodDuration("InvoiceStore.GetbyOptions", success, elapsed)
 	}
 	return result, err
 }
@@ -5860,10 +5860,10 @@ func (s *TimerLayerProductVariantChannelListingStore) BulkUpsert(transaction sto
 	return result, err
 }
 
-func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(transaction store_iface.SqlxTxExecutor, option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
+func (s *TimerLayerProductVariantChannelListingStore) FilterbyOption(option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
 	start := timemodule.Now()
 
-	result, err := s.ProductVariantChannelListingStore.FilterbyOption(transaction, option)
+	result, err := s.ProductVariantChannelListingStore.FilterbyOption(option)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6515,6 +6515,22 @@ func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprice
 	return result, err
 }
 
+func (s *TimerLayerShippingMethodStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+	start := timemodule.Now()
+
+	err := s.ShippingMethodStore.Delete(transaction, ids...)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodStore.Delete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerShippingMethodStore) FilterByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, error) {
 	start := timemodule.Now()
 
@@ -7121,6 +7137,22 @@ func (s *TimerLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.ChangeQuantity", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerStockStore) CountByOptions(options *model.StockFilterOption) (int32, error) {
+	start := timemodule.Now()
+
+	result, err := s.StockStore.CountByOptions(options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("StockStore.CountByOptions", success, elapsed)
+	}
+	return result, err
 }
 
 func (s *TimerLayerStockStore) FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error) {

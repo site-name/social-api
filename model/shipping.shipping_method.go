@@ -50,7 +50,7 @@ type ShippingMethod struct {
 	Description         StringInterface        `json:"description"`
 	ModelMetadata
 
-	shippingZones                 ShippingZones                 `db:"-"` // this field is used for holding prefetched related instances
+	shippingZone                  *ShippingZone                 `db:"-"` // this field is used for holding prefetched related instances
 	shippingMethodPostalCodeRules ShippingMethodPostalCodeRules `db:"-"` // this field is used for holding prefetched related instances
 	price                         *goprices.Money               `db:"-"` // this field is populated in some graphql resolvers
 }
@@ -69,18 +69,12 @@ func (ss ShippingMethods) IDs() []string {
 	return lo.Map(ss, func(item *ShippingMethod, _ int) string { return item.Id })
 }
 
-func (s *ShippingMethod) GetShippingZones() ShippingZones {
-	return s.shippingZones
+func (s *ShippingMethod) GetShippingZone() *ShippingZone {
+	return s.shippingZone
 }
 
-func (s *ShippingMethod) SetShippingZones(zones ShippingZones) {
-	s.shippingZones = zones
-}
-
-func (s *ShippingMethod) AppendShippingZone(zone *ShippingZone) {
-	if zone != nil {
-		s.shippingZones = append(s.shippingZones, zone)
-	}
+func (s *ShippingMethod) SetShippingZone(zone *ShippingZone) {
+	s.shippingZone = zone
 }
 
 func (s *ShippingMethod) GetshippingMethodPostalCodeRules() ShippingMethodPostalCodeRules {
@@ -92,9 +86,7 @@ func (s *ShippingMethod) SetshippingMethodPostalCodeRules(r ShippingMethodPostal
 }
 
 func (s *ShippingMethod) AppendShippingMethodPostalCodeRule(rule *ShippingMethodPostalCodeRule) {
-	if rule != nil {
-		s.shippingMethodPostalCodeRules = append(s.shippingMethodPostalCodeRules, rule)
-	}
+	s.shippingMethodPostalCodeRules = append(s.shippingMethodPostalCodeRules, rule)
 }
 
 // ShippingMethodFilterOption is used for filtering shipping methods
@@ -120,8 +112,9 @@ type ShippingMethodFilterOption struct {
 	// INNER JOIN ShippingZones ON ...
 	//
 	// WHERE ShippingZones.Countries ...
-	ShippingZoneCountries squirrel.Sqlizer
-	ShippingZoneID        squirrel.Sqlizer
+	ShippingZoneCountries     squirrel.Sqlizer
+	ShippingZoneID            squirrel.Sqlizer
+	SelectRelatedShippingZone bool
 }
 
 func (s *ShippingMethod) PopulateNonDbFields() {

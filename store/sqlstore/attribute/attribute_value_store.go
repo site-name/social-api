@@ -169,34 +169,30 @@ func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFi
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attribute values")
 	}
+	defer rows.Close()
 
-	var (
-		res            model.AttributeValues
-		attributeValue model.AttributeValue
-		attribute      model.Attribute
-		scanFields     = as.ScanFields(&attributeValue)
-	)
-	if options.SelectRelatedAttribute {
-		scanFields = append(scanFields, as.Attribute().ScanFields(&attribute)...)
-	}
+	var res model.AttributeValues
 
 	for rows.Next() {
+		var (
+			attributeValue model.AttributeValue
+			attribute      model.Attribute
+			scanFields     = as.ScanFields(&attributeValue)
+		)
+		if options.SelectRelatedAttribute {
+			scanFields = append(scanFields, as.Attribute().ScanFields(&attribute)...)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row of attribute value")
 		}
 
-		// don't worry when we assign directly value here.
-		// The Attribute will be deep copied later
 		if options.SelectRelatedAttribute {
 			attributeValue.SetAttribute(&attribute)
 		}
 
-		res = append(res, attributeValue.DeepCopy())
-	}
-
-	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed to close rows of attribute values")
+		res = append(res, &attributeValue)
 	}
 
 	return res, nil

@@ -136,25 +136,25 @@ func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID stri
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "failed to find values with AssignmentID=%s", assignmentID)
 	}
+	defer rows.Close()
+
 	var (
 		assignedVariantAttributeValues []*model.AssignedVariantAttributeValue
 		attributeValues                []*model.AttributeValue
-		assignedVariantAttributeValue  model.AssignedVariantAttributeValue
-		attributeValue                 model.AttributeValue
-		scanFields                     = append(as.ScanFields(&assignedVariantAttributeValue), as.AttributeValue().ScanFields(&attributeValue)...)
 	)
 	for rows.Next() {
+		var (
+			assignedVariantAttributeValue model.AssignedVariantAttributeValue
+			attributeValue                model.AttributeValue
+			scanFields                    = append(as.ScanFields(&assignedVariantAttributeValue), as.AttributeValue().ScanFields(&attributeValue)...)
+		)
 		scanErr := rows.Scan(scanFields...)
 		if scanErr != nil {
 			return nil, nil, errors.Wrapf(scanErr, "error scanning values")
 		}
 
-		assignedVariantAttributeValues = append(assignedVariantAttributeValues, assignedVariantAttributeValue.DeepCopy())
-		attributeValues = append(attributeValues, attributeValue.DeepCopy())
-	}
-
-	if err = rows.Close(); err != nil {
-		return nil, nil, errors.Wrap(err, "error closing rows")
+		assignedVariantAttributeValues = append(assignedVariantAttributeValues, &assignedVariantAttributeValue)
+		attributeValues = append(attributeValues, &attributeValue)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -165,12 +165,6 @@ func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID stri
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedVariantAttributeValue) error {
-	tx, err := as.GetMasterX().Beginx()
-	if err != nil {
-		return errors.Wrapf(err, "begin_transaction")
-	}
-	defer store.FinalizeTransaction(tx)
-
 	query := "UPDATE " + store.AssignedVariantAttributeValueTableName + " SET " +
 		as.ModelFields("").
 			Map(func(_ int, s string) string {
@@ -185,7 +179,7 @@ func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []
 			return err
 		}
 
-		result, err := tx.NamedExec(query, value)
+		result, err := as.GetMasterX().NamedExec(query, value)
 		if err != nil {
 			// check if error is duplicate conflict error:
 			if as.IsUniqueConstraintError(err, assignedVariantAttrValueDuplicateKeys) {
@@ -196,10 +190,6 @@ func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []
 		if numUpdated, _ := result.RowsAffected(); numUpdated > 1 {
 			return errors.Errorf("more than one value with id=%s were updated(%d)", value.Id, numUpdated)
 		}
-	}
-
-	if err = tx.Commit(); err != nil {
-		return errors.Wrap(err, "commit_transaction")
 	}
 
 	return nil

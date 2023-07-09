@@ -56,17 +56,17 @@ func (s *SqlInvoiceStore) ModelFields(prefix string) util.AnyArray[string] {
 	})
 }
 
-// Upsert depends on given inVoice's Id to decide update or delete it
-func (is *SqlInvoiceStore) Upsert(inVoice *model.Invoice) (*model.Invoice, error) {
+// Upsert depends on given invoice's Id to decide update or delete it
+func (is *SqlInvoiceStore) Upsert(invoice *model.Invoice) (*model.Invoice, error) {
 	var isSaving bool
-	if inVoice.Id == "" || !model.IsValidId(inVoice.Id) {
-		inVoice.Id = ""
+	if invoice.Id == "" {
 		isSaving = true
-		inVoice.PreSave()
+		invoice.PreSave()
 	} else {
-		inVoice.PreUpdate()
+		invoice.PreUpdate()
 	}
-	if err := inVoice.IsValid(); err != nil {
+
+	if err := invoice.IsValid(); err != nil {
 		return nil, err
 	}
 
@@ -76,87 +76,103 @@ func (is *SqlInvoiceStore) Upsert(inVoice *model.Invoice) (*model.Invoice, error
 	)
 	if isSaving {
 		query := "INSERT INTO " + store.InvoiceTableName + "(" + is.ModelFields("").Join(",") + ") VALUES (" + is.ModelFields(":").Join(",") + ")"
-		_, err = is.GetMasterX().NamedExec(query, inVoice)
+		_, err = is.GetMasterX().NamedExec(query, invoice)
 
 	} else {
-		oldInvoice, err := is.Get(inVoice.Id)
+		oldInvoice, err := is.GetbyOptions(&model.InvoiceFilterOptions{
+			Id: squirrel.Eq{store.InvoiceTableName + ".Id": invoice.Id},
+		})
 		if err != nil {
 			return nil, err
 		}
 
-		inVoice.CreateAt = oldInvoice.CreateAt
+		// keep
+		invoice.CreateAt = oldInvoice.CreateAt
 
 		query := "UPDATE " + store.InvoiceEventTableName + " SET " + is.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
 			}).
-			Join(",") + " WHERE Id = :Id"
+			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = is.GetMasterX().NamedExec(query, inVoice)
+		result, err = is.GetMasterX().NamedExec(query, invoice)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
 	}
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to upsert invoice with id=%s", inVoice.Id)
+		return nil, errors.Wrapf(err, "failed to upsert invoice with id=%s", invoice.Id)
 	}
 
 	if numUpdated > 1 {
 		return nil, errors.Errorf("multiple invoices were updated: %d instead of 1", numUpdated)
 	}
 
-	return inVoice, nil
+	return invoice, nil
+}
+
+func (s *SqlInvoiceStore) commonQueryBuilder(options *model.InvoiceFilterOptions) squirrel.SelectBuilder {
+	selectFields := s.ModelFields(store.InvoiceTableName + ".")
+	if options.SelectRelatedOrder {
+		selectFields = append(selectFields, s.Order().ModelFields(store.OrderTableName+".")...)
+	}
+
+	query := s.GetQueryBuilder().Select(selectFields...).From(store.InvoiceTableName)
+
+	if options.SelectRelatedOrder {
+		query = query.InnerJoin(store.OrderTableName + " ON Orders.Id = Invoices.OrderID")
+	}
+	if options.Limit > 0 {
+		query = query.Limit(options.Limit)
+	}
+
+	for _, opt := range []squirrel.Sqlizer{options.Id, options.OrderID} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
+	}
+
+	return query
 }
 
 // Get finds and returns an invoice with given id
-func (is *SqlInvoiceStore) Get(invoiceID string) (*model.Invoice, error) {
+func (is *SqlInvoiceStore) GetbyOptions(options *model.InvoiceFilterOptions) (*model.Invoice, error) {
+	options.Limit = 0
+	query, args, err := is.commonQueryBuilder(options).ToSql()
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByOptions_ToSql")
+	}
+
 	var res model.Invoice
-	err := is.GetReplicaX().Get(&res, "SELECT * FROM "+store.InvoiceTableName+" WHERE Id = ?", invoiceID)
+	var order model.Order
+
+	scanFields := is.ScanFields(&res)
+	if options.SelectRelatedOrder {
+		scanFields = append(scanFields, is.Order().ScanFields(&order)...)
+	}
+
+	err = is.GetReplicaX().QueryRowX(query, args...).Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.InvoiceTableName, invoiceID)
+			return nil, store.NewErrNotFound(store.InvoiceTableName, "options")
 		}
-		return nil, errors.Wrapf(err, "failed to find invoice with id=%s", invoiceID)
+		return nil, errors.Wrap(err, "failed to find invoice with given options")
+	}
+
+	if options.SelectRelatedOrder {
+		res.SetOrder(&order)
 	}
 
 	return &res, nil
 }
 
 func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, error) {
-	selectFields := is.ModelFields(store.InvoiceTableName + ".")
-	if options.SelectRelatedOrder {
-		selectFields = append(selectFields, is.Order().ModelFields(store.OrderTableName+".")...)
-	}
-	query := is.GetQueryBuilder().Select(selectFields...).
-		From(store.InvoiceTableName)
-
-	if options.Id != nil {
-		query = query.Where(options.Id)
-	}
-	if options.Id != nil {
-		query = query.Where(options.Id)
-	}
-	if options.Limit > 0 {
-		query = query.Limit(options.Limit)
-	}
-	if options.SelectRelatedOrder {
-		query = query.InnerJoin(store.OrderTableName + " ON Orders.Id = Invoices.OrderID")
-	}
-
-	queryStr, args, err := query.ToSql()
+	queryStr, args, err := is.commonQueryBuilder(options).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
-	}
-
-	var res []*model.Invoice
-	var invoice model.Invoice
-	var order model.Order
-	scanFields := is.ScanFields(&invoice)
-	if options.SelectRelatedOrder {
-		scanFields = append(scanFields, is.Order().ScanFields(&order)...)
 	}
 
 	rows, err := is.GetReplicaX().QueryX(queryStr, args...)
@@ -165,7 +181,18 @@ func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) 
 	}
 	defer rows.Close()
 
+	var res []*model.Invoice
+
 	for rows.Next() {
+		var (
+			invoice    model.Invoice
+			order      model.Order
+			scanFields = is.ScanFields(&invoice)
+		)
+		if options.SelectRelatedOrder {
+			scanFields = append(scanFields, is.Order().ScanFields(&order)...)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan an invoice row")
@@ -174,13 +201,13 @@ func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) 
 		if options.SelectRelatedOrder {
 			invoice.SetOrder(&order)
 		}
-		res = append(res, invoice.DeepCopy())
+		res = append(res, &invoice)
 	}
 
 	return res, nil
 }
 
-func (s *SqlInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+func (s *SqlInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
 	var runner store_iface.SqlxExecutor = s.GetMasterX()
 	if transaction != nil {
 		runner = transaction

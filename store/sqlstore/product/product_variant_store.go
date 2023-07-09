@@ -231,17 +231,23 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 		From(store.ProductVariantTableName)
 
 	// parse option
+	for _, opt := range []squirrel.Sqlizer{
+		option.Id,
+		option.Name,
+		option.ProductID,
+		option.ProductVariantChannelListingPriceAmount,
+		option.ProductVariantChannelListingChannelID,
+		option.ProductVariantChannelListingChannelSlug,
+		option.WishlistItemID,
+		option.WishlistID,
+	} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
+	}
+
 	if option.Distinct {
 		query = query.Distinct()
-	}
-	if option.Id != nil {
-		query = query.Where(option.Id)
-	}
-	if option.Name != nil {
-		query = query.Where(option.Name)
-	}
-	if option.ProductID != nil {
-		query = query.Where(option.ProductID)
 	}
 
 	// catch all inner join
@@ -249,31 +255,19 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 		option.ProductVariantChannelListingChannelID != nil ||
 		option.ProductVariantChannelListingChannelSlug != nil {
 		query = query.InnerJoin(store.ProductVariantChannelListingTableName + " ON ProductVariantChannelListings.VariantID = ProductVariants.Id")
-	}
-	if option.ProductVariantChannelListingPriceAmount != nil {
-		query = query.Where(option.ProductVariantChannelListingPriceAmount)
-	}
-	if option.ProductVariantChannelListingChannelID != nil {
-		query = query.Where(option.ProductVariantChannelListingChannelID)
-	}
-	if option.ProductVariantChannelListingChannelSlug != nil {
-		query = query.
-			InnerJoin(store.ChannelTableName + " ON Channels.Id = ProductVariantChannelListings.ChannelID").
-			Where(option.ProductVariantChannelListingChannelSlug)
+
+		if option.ProductVariantChannelListingChannelSlug != nil {
+			query = query.InnerJoin(store.ChannelTableName + " ON Channels.Id = ProductVariantChannelListings.ChannelID")
+		}
 	}
 
-	// catch all inner join
 	if option.WishlistItemID != nil ||
 		option.WishlistID != nil {
 		query = query.InnerJoin(store.WishlistItemProductVariantTableName + " ON WishlistItemProductVariants.ProductVariantID = ProductVariants.Id")
-	}
-	if option.WishlistItemID != nil {
-		query = query.Where(option.WishlistItemID)
-	}
-	if option.WishlistID != nil {
-		query = query.
-			InnerJoin(store.WishlistItemTableName + " ON WishlistItemProductVariants.WishlistItemID = WishlistItems.Id").
-			Where(option.WishlistID)
+
+		if option.WishlistID != nil {
+			query = query.InnerJoin(store.WishlistItemTableName + " ON WishlistItemProductVariants.WishlistItemID = WishlistItems.Id")
+		}
 	}
 
 	if option.SelectRelatedDigitalContent {
@@ -289,18 +283,20 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product variants by options")
 	}
+	defer rows.Close()
 
-	var (
-		res            []*model.ProductVariant
-		variant        model.ProductVariant
-		digitalContent model.DigitalContent
-		scanFields     = vs.ScanFields(&variant)
-	)
-	if option.SelectRelatedDigitalContent {
-		scanFields = append(scanFields, vs.DigitalContent().ScanFields(&digitalContent)...)
-	}
+	var res model.ProductVariants
 
 	for rows.Next() {
+		var (
+			variant        model.ProductVariant
+			digitalContent model.DigitalContent
+			scanFields     = vs.ScanFields(&variant)
+		)
+		if option.SelectRelatedDigitalContent {
+			scanFields = append(scanFields, vs.DigitalContent().ScanFields(&digitalContent)...)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row of product")
@@ -309,11 +305,7 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 		if option.SelectRelatedDigitalContent {
 			variant.SetDigitalContent(&digitalContent)
 		}
-		res = append(res, variant.DeepCopy())
-	}
-
-	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed to close rows")
+		res = append(res, &variant)
 	}
 
 	return res, nil

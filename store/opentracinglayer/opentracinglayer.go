@@ -4366,7 +4366,7 @@ func (s *OpenTracingLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*
 	return result, err
 }
 
-func (s *OpenTracingLayerInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+func (s *OpenTracingLayerInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "InvoiceStore.Delete")
 	s.Root.Store.SetContext(newCtx)
@@ -4375,7 +4375,7 @@ func (s *OpenTracingLayerInvoiceStore) Delete(transaction store_iface.SqlxTxExec
 	}()
 
 	defer span.Finish()
-	err := s.InvoiceStore.Delete(transaction, ids)
+	err := s.InvoiceStore.Delete(transaction, ids...)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -4402,16 +4402,16 @@ func (s *OpenTracingLayerInvoiceStore) FilterByOptions(options *model.InvoiceFil
 	return result, err
 }
 
-func (s *OpenTracingLayerInvoiceStore) Get(invoiceID string) (*model.Invoice, error) {
+func (s *OpenTracingLayerInvoiceStore) GetbyOptions(options *model.InvoiceFilterOptions) (*model.Invoice, error) {
 	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "InvoiceStore.Get")
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "InvoiceStore.GetbyOptions")
 	s.Root.Store.SetContext(newCtx)
 	defer func() {
 		s.Root.Store.SetContext(origCtx)
 	}()
 
 	defer span.Finish()
-	result, err := s.InvoiceStore.Get(invoiceID)
+	result, err := s.InvoiceStore.GetbyOptions(options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -6420,7 +6420,7 @@ func (s *OpenTracingLayerProductVariantChannelListingStore) BulkUpsert(transacti
 	return result, err
 }
 
-func (s *OpenTracingLayerProductVariantChannelListingStore) FilterbyOption(transaction store_iface.SqlxTxExecutor, option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
+func (s *OpenTracingLayerProductVariantChannelListingStore) FilterbyOption(option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ProductVariantChannelListingStore.FilterbyOption")
 	s.Root.Store.SetContext(newCtx)
@@ -6429,7 +6429,7 @@ func (s *OpenTracingLayerProductVariantChannelListingStore) FilterbyOption(trans
 	}()
 
 	defer span.Finish()
-	result, err := s.ProductVariantChannelListingStore.FilterbyOption(transaction, option)
+	result, err := s.ProductVariantChannelListingStore.FilterbyOption(option)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -7153,6 +7153,24 @@ func (s *OpenTracingLayerShippingMethodStore) ApplicableShippingMethods(price *g
 	return result, err
 }
 
+func (s *OpenTracingLayerShippingMethodStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.ShippingMethodStore.Delete(transaction, ids...)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
 func (s *OpenTracingLayerShippingMethodStore) FilterByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.FilterByOptions")
@@ -7835,6 +7853,24 @@ func (s *OpenTracingLayerStockStore) ChangeQuantity(stockID string, quantity int
 	}
 
 	return err
+}
+
+func (s *OpenTracingLayerStockStore) CountByOptions(options *model.StockFilterOption) (int32, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "StockStore.CountByOptions")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.StockStore.CountByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
 }
 
 func (s *OpenTracingLayerStockStore) FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error) {

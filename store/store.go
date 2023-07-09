@@ -381,6 +381,7 @@ type (
 	StockStore interface {
 		ScanFields(stock *model.Stock) []interface{}
 		ModelFields(prefix string) util.AnyArray[string]
+		CountByOptions(options *model.StockFilterOption) (int32, error)
 		Get(stockID string) (*model.Stock, error)                                                                       // Get finds and returns stock with given stockID. Returned error could be either (nil, *ErrNotFound, error)
 		FilterForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error)              // FilterForCountryAndChannel finds and returns stocks with given options
 		FilterVariantStocksForCountry(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error)           // FilterVariantStocksForCountry finds and returns stocks with given options
@@ -430,6 +431,7 @@ type (
 		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) // ApplicableShippingMethods finds all model methods with given conditions
 		GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error)                                                                                               // GetbyOption finds and returns a model method that satisfy given options
 		FilterByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, error)
+		Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error
 	}
 	ShippingMethodPostalCodeRuleStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
@@ -502,7 +504,7 @@ type (
 		ScanFields(listing *model.ProductVariantChannelListing) []interface{}
 		Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error)                                                    // Save insert given value into database then returns it with an error
 		Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error)                                                                                // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
-		FilterbyOption(transaction store_iface.SqlxTxExecutor, option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error)   // FilterbyOption finds and returns all product variant channel listings filterd using given option
+		FilterbyOption(option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error)                                           // FilterbyOption finds and returns all product variant channel listings filterd using given option
 		BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) // BulkUpsert performs bulk upsert given product variant channel listings then returns them
 	}
 	ProductVariantTranslationStore interface {
@@ -666,10 +668,10 @@ type (
 		Get(invoiceEventID string) (*model.InvoiceEvent, error)               // Get finds and returns 1 invoice event
 	}
 	InvoiceStore interface {
-		Upsert(invoice *model.Invoice) (*model.Invoice, error) // Upsert depends on given invoice Id to update/insert it
-		Get(invoiceID string) (*model.Invoice, error)          // Get finds and returns 1 invoice
+		Upsert(invoice *model.Invoice) (*model.Invoice, error)                    // Upsert depends on given invoice Id to update/insert it
+		GetbyOptions(options *model.InvoiceFilterOptions) (*model.Invoice, error) // Get finds and returns 1 invoice
 		FilterByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, error)
-		Delete(transaction store_iface.SqlxTxExecutor, ids []string) error
+		Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error
 	}
 )
 

@@ -183,18 +183,20 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to find stocks with given channel slug")
 	}
+	defer rows.Close()
 
-	var (
-		returningStocks []*model.Stock
-		stock           model.Stock
-		productVariant  model.ProductVariant
-		scanFields      = ss.ScanFields(&stock)
-	)
-	if options.SelectRelatedProductVariant {
-		scanFields = append(scanFields, ss.ProductVariant().ScanFields(&productVariant)...)
-	}
+	var returningStocks []*model.Stock
 
 	for rows.Next() {
+		var (
+			stock          model.Stock
+			productVariant model.ProductVariant
+			scanFields     = ss.ScanFields(&stock)
+		)
+		if options.SelectRelatedProductVariant {
+			scanFields = append(scanFields, ss.ProductVariant().ScanFields(&productVariant)...)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, nil, errors.Wrap(err, "failed to scan a row contains stock")
@@ -202,18 +204,78 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 
 		if options.SelectRelatedProductVariant {
 			stock.SetProductVariant(&productVariant)
-		} else {
-			stock.SetProductVariant(nil)
 		}
 
-		returningStocks = append(returningStocks, stock.DeepCopy())
-	}
-
-	if err = rows.Close(); err != nil {
-		return nil, nil, errors.Wrap(err, "failed to close rows of stocks")
+		returningStocks = append(returningStocks, &stock)
 	}
 
 	return nil, returningStocks, nil
+}
+
+func (s *SqlStockStore) CountByOptions(options *model.StockFilterOption) (int32, error) {
+	query := s.GetQueryBuilder().Select("COUNT(Stocks.Id)").From(store.StockTableName)
+
+	var stockSearchOpts squirrel.Sqlizer = nil
+	if options.Search != "" {
+		expr := "%" + options.Search + "%"
+
+		stockSearchOpts = squirrel.Or{
+			squirrel.ILike{store.ProductTableName + ".Name": expr},
+			squirrel.ILike{store.ProductVariantTableName + ".Name": expr},
+			squirrel.ILike{store.WarehouseTableName + ".Name": expr},
+			squirrel.ILike{store.AddressTableName + ".CompanyName": expr},
+		}
+	}
+
+	// parse options:
+	for _, opt := range []squirrel.Sqlizer{
+		options.Id,
+		options.WarehouseID,
+		options.ProductVariantID,
+		options.Quantity,
+		options.Warehouse_ShippingZone_countries,
+		options.Warehouse_ShippingZone_ChannelID,
+		stockSearchOpts, //
+	} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
+	}
+
+	if options.Search != "" ||
+		options.Warehouse_ShippingZone_countries != nil ||
+		options.Warehouse_ShippingZone_ChannelID != nil {
+
+		query = query.InnerJoin(store.WarehouseTableName + " ON Warehouses.Id = Stocks.WarehouseID")
+
+		if options.Warehouse_ShippingZone_countries != nil ||
+			options.Warehouse_ShippingZone_ChannelID != nil {
+			query = query.
+				InnerJoin(store.WarehouseShippingZoneTableName + " ON WarehouseShippingZones.WarehouseID = Warehouses.Id").
+				InnerJoin(store.ShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
+
+			if options.Warehouse_ShippingZone_ChannelID != nil {
+				query = query.InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
+			}
+		}
+
+		if options.Search != "" {
+			query = query.InnerJoin(store.AddressTableName + " ON Addresses.Id = Warehouses.AddressID")
+		}
+	}
+
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		return 0, errors.Wrap(err, "CountByOptions_ToSql")
+	}
+
+	var res int32
+	err = s.GetReplicaX().Select(&res, queryStr, args...)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to count stocks by given options")
+	}
+
+	return res, nil
 }
 
 // FilterByOption finds and returns a slice of stocks that satisfy given option
@@ -258,11 +320,12 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 	}
 
 	if options.LockForUpdate {
-		query = query.Suffix("FOR UPDATE")
-
+		forUpdate := "FOR UPDATE"
 		if options.ForUpdateOf != "" {
-			query = query.Suffix("OF " + options.ForUpdateOf)
+			forUpdate += " OF " + options.ForUpdateOf
 		}
+
+		query = query.Suffix(forUpdate)
 	}
 
 	// NOTE: The order of join must similar to order of select above
@@ -281,20 +344,17 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 
 		query = query.InnerJoin(store.WarehouseTableName + " ON Warehouses.Id = Stocks.WarehouseID")
 
-		//
 		if options.Warehouse_ShippingZone_countries != nil ||
 			options.Warehouse_ShippingZone_ChannelID != nil {
 			query = query.
 				InnerJoin(store.WarehouseShippingZoneTableName + " ON WarehouseShippingZones.WarehouseID = Warehouses.Id").
 				InnerJoin(store.ShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
+
+			if options.Warehouse_ShippingZone_ChannelID != nil {
+				query = query.InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
+			}
 		}
 
-		//
-		if options.Warehouse_ShippingZone_ChannelID != nil {
-			query = query.InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
-		}
-
-		//
 		if options.Search != "" {
 			query = query.InnerJoin(store.AddressTableName + " ON Addresses.Id = Warehouses.AddressID")
 		}
@@ -309,9 +369,11 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 		groupBy = "Stocks.Id"
 	}
 
-	if len(groupBy) > 0 {
+	if groupBy != "" {
 		query = query.GroupBy(groupBy)
 	}
+
+	query = options.AddPaginationToSelectBuilderIfNeeded(query)
 
 	queryString, args, err := query.ToSql()
 	if err != nil {
@@ -322,6 +384,7 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks by given options")
 	}
+	defer rows.Close()
 
 	returningStocks := make(model.Stocks, 0)
 
@@ -362,10 +425,6 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 		returningStocks = append(returningStocks, &stock)
 	}
 
-	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed to close rows")
-	}
-
 	return returningStocks, nil
 }
 
@@ -402,7 +461,7 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterFo
 	// parse option for FilterProductStocksForCountryAndChannel
 	if options.ProductID != "" {
 		query = query.
-			InnerJoin(store.ProductTableName+" ON (Products.Id = ProductVariants.ProductID)").
+			InnerJoin(store.ProductTableName+" ON (roducts.Id = ProductVariants.ProductID").
 			Where("Products.Id = ?", options.ProductID)
 	}
 	if options.Id != nil {
@@ -415,10 +474,12 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterFo
 		query = query.Where(options.ProductVariantIDFilter)
 	}
 	if options.LockForUpdate {
-		query = query.Suffix("FOR UPDATE")
+		suffix := "FPR UPDATE"
 		if options.ForUpdateOf != "" {
-			query = query.Suffix("OF " + options.ForUpdateOf)
+			suffix += " OF " + options.ForUpdateOf
 		}
+
+		query = query.Suffix(suffix)
 	}
 
 	queryString, args, err := query.ToSql()
@@ -426,27 +487,29 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterFo
 		return nil, errors.Wrap(err, "FilterForCountryAndChannel_ToSql")
 	}
 
-	var (
-		returningStocks   []*model.Stock
-		stock             model.Stock
-		wareHouse         model.WareHouse
-		productVariant    model.ProductVariant
-		availableQuantity int
-		scanFields        = ss.ScanFields(&stock)
-	)
-	// add some more fields to scan
-	scanFields = append(scanFields, ss.Warehouse().ScanFields(&wareHouse)...)
-	scanFields = append(scanFields, ss.ProductVariant().ScanFields(&productVariant)...)
-
-	if options.AnnotateAvailabeQuantity {
-		scanFields = append(scanFields, &availableQuantity)
-	}
+	var returningStocks model.Stocks
 
 	rows, err := ss.GetReplicaX().QueryX(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks with given options")
 	}
+	defer rows.Close()
+
 	for rows.Next() {
+		var (
+			stock             model.Stock
+			wareHouse         model.WareHouse
+			productVariant    model.ProductVariant
+			availableQuantity int
+			scanFields        = ss.ScanFields(&stock)
+		)
+		scanFields = append(scanFields, ss.Warehouse().ScanFields(&wareHouse)...)
+		scanFields = append(scanFields, ss.ProductVariant().ScanFields(&productVariant)...)
+
+		if options.AnnotateAvailabeQuantity {
+			scanFields = append(scanFields, &availableQuantity)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row of stock, warehouse, product variant")
@@ -454,7 +517,8 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterFo
 
 		stock.SetWarehouse(&wareHouse)
 		stock.SetProductVariant(&productVariant)
-		returningStocks = append(returningStocks, stock.DeepCopy())
+
+		returningStocks = append(returningStocks, &stock)
 
 		if options.AnnotateAvailabeQuantity {
 			stock.AvailableQuantity = availableQuantity

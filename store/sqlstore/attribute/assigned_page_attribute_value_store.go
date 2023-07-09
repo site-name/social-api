@@ -113,34 +113,32 @@ func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to find assignment attribute values with given assignment Id")
 	}
+	defer rows.Close()
 
 	var (
 		assignedPageAttributeValues []*model.AssignedPageAttributeValue
 		attributeValues             []*model.AttributeValue
-		assignedPageAttributeValue  model.AssignedPageAttributeValue
-		attributeValue              model.AttributeValue
-		scanFields                  = append(as.ScanFields(&assignedPageAttributeValue), as.AttributeValue().ScanFields(&attributeValue)...)
 	)
 
 	for rows.Next() {
+		var (
+			assignedPageAttributeValue model.AssignedPageAttributeValue
+			attributeValue             model.AttributeValue
+			scanFields                 = append(as.ScanFields(&assignedPageAttributeValue), as.AttributeValue().ScanFields(&attributeValue)...)
+		)
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, nil, errors.Wrapf(err, "error scanning a row of assigned page attribute value")
 		}
 
-		assignedPageAttributeValues = append(assignedPageAttributeValues, assignedPageAttributeValue.DeepCopy())
-		attributeValues = append(attributeValues, attributeValue.DeepCopy())
-	}
-
-	if err = rows.Close(); err != nil {
-		return nil, nil, errors.Wrap(err, "error closing rows")
+		assignedPageAttributeValues = append(assignedPageAttributeValues, &assignedPageAttributeValue)
+		attributeValues = append(attributeValues, &attributeValue)
 	}
 
 	return assignedPageAttributeValues, attributeValues, nil
 }
 
 func (as *SqlAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedPageAttributeValue) error {
-
 	query := "UPDATE " + store.AssignedPageAttributeValueTableName + " SET " + as.
 		ModelFields("").
 		Map(func(_ int, s string) string {

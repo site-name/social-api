@@ -200,9 +200,9 @@ func (s *SqlRoleStore) GetByNames(names []string) ([]*model.Role, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find Roles")
 	}
+	defer rows.Close()
 
 	roles := []*model.Role{}
-	defer rows.Close()
 	for rows.Next() {
 		var role Role
 		err = rows.Scan(

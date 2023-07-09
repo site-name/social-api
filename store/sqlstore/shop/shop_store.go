@@ -187,30 +187,27 @@ func (ss *SqlShopStore) FilterByOptions(options *model.ShopFilterOptions) ([]*mo
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shops with given options")
 	}
+	defer rows.Close()
 
 	var res []*model.Shop
-	var shop model.Shop
-	var address model.Address
-	var scanFields = ss.ScanFields(&shop)
-	if options.SelectRelatedCompanyAddress {
-		scanFields = append(scanFields, ss.Address().ScanFields(&address)...)
-	}
 
 	for rows.Next() {
+		var shop model.Shop
+		var address model.Address
+		var scanFields = ss.ScanFields(&shop)
+		if options.SelectRelatedCompanyAddress {
+			scanFields = append(scanFields, ss.Address().ScanFields(&address)...)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "error scanning shops")
 		}
 
 		if options.SelectRelatedCompanyAddress {
-			shop.SetCompanyAddress(&address) // no need deepcopy here
+			shop.SetCompanyAddress(&address)
 		}
-		res = append(res, shop.DeepCopy())
-	}
-
-	err = rows.Close()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to close rows of shops")
+		res = append(res, &shop)
 	}
 
 	return res, nil

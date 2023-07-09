@@ -124,14 +124,14 @@ func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *mo
 
 	var res []*model.SaleChannelListing
 
-	var listing model.SaleChannelListing
-	var channel model.Channel
-	var scanFields = scls.ScanFields(&listing)
-	if option.SelectRelatedChannel {
-		scanFields = append(scanFields, scls.Channel().ScanFields(&channel)...)
-	}
-
 	for rows.Next() {
+		var listing model.SaleChannelListing
+		var channel model.Channel
+		var scanFields = scls.ScanFields(&listing)
+		if option.SelectRelatedChannel {
+			scanFields = append(scanFields, scls.Channel().ScanFields(&channel)...)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan sale channel listing")
@@ -139,10 +139,8 @@ func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *mo
 
 		if option.SelectRelatedChannel {
 			listing.SetChannel(&channel)
-		} else {
-			listing.SetChannel(nil)
 		}
-		res = append(res, listing.DeepCopy())
+		res = append(res, &listing)
 	}
 
 	return res, nil

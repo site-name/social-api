@@ -45,3 +45,17 @@ func (s *ServiceInvoice) UpsertInvoice(invoice *model.Invoice) (*model.Invoice, 
 	}
 	return res, nil
 }
+
+func (s *ServiceInvoice) GetInvoiceByOptions(options *model.InvoiceFilterOptions) (*model.Invoice, *model.AppError) {
+	invoice, err := s.srv.Store.Invoice().GetbyOptions(options)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrNotFound); ok {
+			statusCode = http.StatusNotFound
+		}
+
+		return nil, model.NewAppError("GetInvoiceByOptions", "app.invoice.invoice_by_options.app_error", nil, err.Error(), statusCode)
+	}
+
+	return invoice, nil
+}

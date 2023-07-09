@@ -214,9 +214,8 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecuto
 		return nil, errors.Wrap(err, "failed to find fulfillment based on given option")
 	}
 
-	// populate `Order` field for fulfillment
 	if option.SelectForUpdate {
-		fulfillment.Order = &order
+		fulfillment.SetOrder(&order)
 	}
 
 	return &fulfillment, nil
@@ -238,30 +237,29 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExec
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find fulfillments with given option")
 	}
-	var (
-		res         []*model.Fulfillment
-		fulfillment model.Fulfillment
-		order       model.Order
-		scanFields  = fs.ScanFields(&fulfillment)
-	)
-	if option.SelectRelatedOrder {
-		scanFields = append(scanFields, fs.Order().ScanFields(&order)...)
-	}
+	defer rows.Close()
+
+	var res model.Fulfillments
 
 	for rows.Next() {
+		var (
+			fulfillment model.Fulfillment
+			order       model.Order
+			scanFields  = fs.ScanFields(&fulfillment)
+		)
+		if option.SelectRelatedOrder {
+			scanFields = append(scanFields, fs.Order().ScanFields(&order)...)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan a row on fulfillment and related order")
 		}
 
 		if option.SelectRelatedOrder {
-			fulfillment.Order = order.DeepCopy()
+			fulfillment.SetOrder(&order)
 		}
-		res = append(res, fulfillment.DeepCopy())
-	}
-
-	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed to close rows of fulfillments and related orders")
+		res = append(res, &fulfillment)
 	}
 
 	return res, nil

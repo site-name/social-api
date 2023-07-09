@@ -107,6 +107,7 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product-collection relations")
 	}
+	defer rows.Close()
 
 	var res []*model.CollectionProduct
 
@@ -137,10 +138,6 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 		}
 
 		res = append(res, &collectionProduct)
-	}
-
-	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed to close rows")
 	}
 
 	return res, nil

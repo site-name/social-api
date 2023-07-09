@@ -204,6 +204,7 @@ func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOptio
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find allocations with given option")
 	}
+	defer rows.Close()
 
 	var returnAllocations model.Allocations
 
@@ -242,10 +243,6 @@ func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOptio
 			allocation.SetStockAvailableQuantity(stockAvailableQuantity)
 		}
 		returnAllocations = append(returnAllocations, &allocation)
-	}
-
-	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed to close rows")
 	}
 
 	return returnAllocations, nil

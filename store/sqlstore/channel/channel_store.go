@@ -190,17 +190,18 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 	}
 	defer rows.Close()
 
-	var (
-		res        model.Channels
-		hasOrder   bool
-		channel    model.Channel
-		scanFields = cs.ScanFields(&channel)
-	)
-	if option.AnnotateHasOrders {
-		scanFields = append(scanFields, &hasOrder)
-	}
+	var res model.Channels
 
 	for rows.Next() {
+		var (
+			hasOrder   bool
+			channel    model.Channel
+			scanFields = cs.ScanFields(&channel)
+		)
+		if option.AnnotateHasOrders {
+			scanFields = append(scanFields, &hasOrder)
+		}
+
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to scan channel row")
@@ -209,7 +210,7 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 		if option.AnnotateHasOrders {
 			channel.SetHasOrders(hasOrder)
 		}
-		res = append(res, channel.DeepCopy())
+		res = append(res, &channel)
 	}
 
 	return res, nil

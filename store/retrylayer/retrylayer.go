@@ -4714,11 +4714,11 @@ func (s *RetryLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.
 
 }
 
-func (s *RetryLayerInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+func (s *RetryLayerInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
 
 	tries := 0
 	for {
-		err := s.InvoiceStore.Delete(transaction, ids)
+		err := s.InvoiceStore.Delete(transaction, ids...)
 		if err == nil {
 			return nil
 		}
@@ -4754,11 +4754,11 @@ func (s *RetryLayerInvoiceStore) FilterByOptions(options *model.InvoiceFilterOpt
 
 }
 
-func (s *RetryLayerInvoiceStore) Get(invoiceID string) (*model.Invoice, error) {
+func (s *RetryLayerInvoiceStore) GetbyOptions(options *model.InvoiceFilterOptions) (*model.Invoice, error) {
 
 	tries := 0
 	for {
-		result, err := s.InvoiceStore.Get(invoiceID)
+		result, err := s.InvoiceStore.GetbyOptions(options)
 		if err == nil {
 			return result, nil
 		}
@@ -6962,11 +6962,11 @@ func (s *RetryLayerProductVariantChannelListingStore) BulkUpsert(transaction sto
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(transaction store_iface.SqlxTxExecutor, option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantChannelListingStore) FilterbyOption(option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
 
 	tries := 0
 	for {
-		result, err := s.ProductVariantChannelListingStore.FilterbyOption(transaction, option)
+		result, err := s.ProductVariantChannelListingStore.FilterbyOption(option)
 		if err == nil {
 			return result, nil
 		}
@@ -7768,6 +7768,26 @@ func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprice
 
 }
 
+func (s *RetryLayerShippingMethodStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+
+	tries := 0
+	for {
+		err := s.ShippingMethodStore.Delete(transaction, ids...)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerShippingMethodStore) FilterByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, error) {
 
 	tries := 0
@@ -8523,6 +8543,26 @@ func (s *RetryLayerStockStore) ChangeQuantity(stockID string, quantity int) erro
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return err
+		}
+	}
+
+}
+
+func (s *RetryLayerStockStore) CountByOptions(options *model.StockFilterOption) (int32, error) {
+
+	tries := 0
+	for {
+		result, err := s.StockStore.CountByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
 		}
 	}
 

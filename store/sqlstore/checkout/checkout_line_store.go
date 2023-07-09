@@ -248,36 +248,35 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 	if err != nil {
 		return nil, nil, nil, errors.Wrapf(err, "failed to find checkout lines and prefetch related values, with checkoutToken=%s", checkoutToken)
 	}
+	defer rows.Close()
 
 	var (
-		checkoutLines   []*model.CheckoutLine
-		productVariants []*model.ProductVariant
-		products        []*model.Product
-		checkoutLine    model.CheckoutLine
-		productVariant  model.ProductVariant
-		product         model.Product
-		scanFields      = append(
-			cls.ScanFields(&checkoutLine),
-			append(
-				cls.ProductVariant().ScanFields(&productVariant),
-				cls.Product().ScanFields(&product)...,
-			)...,
-		)
+		checkoutLines   model.CheckoutLines
+		productVariants model.ProductVariants
+		products        model.Products
 	)
 
 	for rows.Next() {
+		var (
+			checkoutLine   model.CheckoutLine
+			productVariant model.ProductVariant
+			product        model.Product
+			scanFields     = append(
+				cls.ScanFields(&checkoutLine),
+				append(
+					cls.ProductVariant().ScanFields(&productVariant),
+					cls.Product().ScanFields(&product)...,
+				)...,
+			)
+		)
 		err = rows.Scan(scanFields...)
 		if err != nil {
 			return nil, nil, nil, errors.Wrap(err, "failed to scan a row")
 		}
 
-		checkoutLines = append(checkoutLines, checkoutLine.DeepCopy())
-		productVariants = append(productVariants, productVariant.DeepCopy())
-		products = append(products, product.DeepCopy())
-	}
-
-	if err = rows.Close(); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "failed to close rows")
+		checkoutLines = append(checkoutLines, &checkoutLine)
+		productVariants = append(productVariants, &productVariant)
+		products = append(products, &product)
 	}
 
 	return checkoutLines, productVariants, products, nil
@@ -310,6 +309,7 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find values")
 	}
+	defer rows.Close()
 
 	var (
 		totalWeight  = measurement.ZeroWeight
@@ -357,17 +357,13 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 		}
 	}
 
-	if err = rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "error closing rows")
-	}
-
 	return totalWeight, nil
 }
 
 // CheckoutLinesByOption finds and returns checkout lines filtered using given option
 func (cls *SqlCheckoutLineStore) CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, error) {
 	query := cls.GetQueryBuilder().
-		Select("*").
+		Select(cls.ModelFields(store.CheckoutLineTableName + ".")...).
 		From(store.CheckoutLineTableName)
 
 	// parse options

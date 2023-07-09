@@ -13,6 +13,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
@@ -160,7 +161,7 @@ func decodeBase64Strings(values ...string) []string {
 }
 
 // parseGraphqlOperand can possibly returns (nil, nil)
-func parseGraphqlOperand[C graphqlCursorType](params GraphqlParams) (*C, error) {
+func parseGraphqlOperand[C graphqlCursorType](params GraphqlParams) (*C, *model.AppError) {
 	// in case users query resuts for the first time
 	if params.Before == nil && params.After == nil {
 		return nil, nil
@@ -176,7 +177,7 @@ func parseGraphqlOperand[C graphqlCursorType](params GraphqlParams) (*C, error) 
 	}
 
 	if err != nil {
-		return nil, err
+		return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not valid base64 encoded string", http.StatusBadRequest)
 	}
 	var cursorValue = string(byteCursorValue)
 
@@ -188,42 +189,42 @@ func parseGraphqlOperand[C graphqlCursorType](params GraphqlParams) (*C, error) 
 	case float64:
 		float, err := strconv.ParseFloat(cursorValue, 64)
 		if err != nil {
-			return nil, err
+			return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not float64 based string", http.StatusBadRequest)
 		}
 		return (*C)(unsafe.Pointer(&float)), nil
 
 	case int:
 		i32, err := strconv.ParseInt(cursorValue, 10, 32)
 		if err != nil {
-			return nil, err
+			return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not int based string", http.StatusBadRequest)
 		}
 		return (*C)(unsafe.Pointer(&i32)), nil
 
 	case int64:
 		i64, err := strconv.ParseInt(cursorValue, 10, 64)
 		if err != nil {
-			return nil, err
+			return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not int64 based string", http.StatusBadRequest)
 		}
 		return (*C)(unsafe.Pointer(&i64)), nil
 
 	case uint64:
 		ui64, err := strconv.ParseUint(cursorValue, 10, 64)
 		if err != nil {
-			return nil, err
+			return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not uint64 based string", http.StatusBadRequest)
 		}
 		return (*C)(unsafe.Pointer(&ui64)), nil
 
 	case time.Time:
 		tim, err := time.Parse(time.RFC3339, cursorValue)
 		if err != nil {
-			return nil, err
+			return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not RFC3339 time based string", http.StatusBadRequest)
 		}
 		return (*C)(unsafe.Pointer(&tim)), nil
 
 	default:
 		deci, err := decimal.NewFromString(cursorValue)
 		if err != nil {
-			return nil, err
+			return nil, model.NewAppError("parseGraphqlOperand", PaginationError, map[string]interface{}{"Fields": "before / after"}, "before or after is not decimal based string", http.StatusBadRequest)
 		}
 		return (*C)(unsafe.Pointer(&deci)), nil
 	}
@@ -234,50 +235,30 @@ type graphqlCursorType interface {
 	string | float64 | int | int64 | uint64 | time.Time | decimal.Decimal
 }
 
-type CompareOrder int8
-
-const (
-	Lesser CompareOrder = iota
-	Equal
-	Greater
-)
-
-func comparePrimitives[T util.Ordered](a, b T) CompareOrder {
+// It returns -1 if a < b, 0 if a == b and +1 if a > b
+func comparePrimitives[T util.Ordered](a, b T) int {
 	switch {
 	case a < b:
-		return Lesser
+		return -1
 	case a > b:
-		return Greater
+		return 1
 	default:
-		return Equal
+		return 0
 	}
 }
 
-// compareGraphqlOperands compares a and b and returns CompareOrder.
-func compareGraphqlOperands[K graphqlCursorType](a, b K) CompareOrder {
+// compareGraphqlOperands compares a and b and returns int.
+//
+// It returns -1 if a < b, 0 if a == b and +1 if a > b
+func compareGraphqlOperands[K graphqlCursorType](a, b K) int {
 	anyB := any(b)
+	anyA := any(a)
 
-	switch t := any(a).(type) {
+	switch t := anyA.(type) {
 	case time.Time:
-		bTime := anyB.(time.Time)
-		switch {
-		case t.Before(bTime):
-			return Lesser
-		case t.After(bTime):
-			return Greater
-		}
-		return Equal
-
+		return t.Compare(anyB.(time.Time))
 	case decimal.Decimal:
-		deciB := anyB.(decimal.Decimal)
-		switch {
-		case t.LessThan(deciB):
-			return Lesser
-		case t.GreaterThan(deciB):
-			return Greater
-		}
-		return Equal
-
+		return t.Cmp(anyB.(decimal.Decimal))
 	case string:
 		return comparePrimitives(t, anyB.(string))
 	case int:
@@ -292,6 +273,7 @@ func compareGraphqlOperands[K graphqlCursorType](a, b K) CompareOrder {
 	}
 }
 
+// GraphqlParams is provided in some resolver methods
 type GraphqlParams struct {
 	Before *string `json:"before"`
 	After  *string `json:"after"`
@@ -301,8 +283,46 @@ type GraphqlParams struct {
 	validated bool
 }
 
+// ParseGraphqlParams parse given graphql params to produce *model.PaginationValues for used in database query pagination
+func parseGraphqlParams[C graphqlCursorType](params *GraphqlParams, api, orderKey string) (*model.PaginationValues, *model.AppError) {
+	if !params.validated {
+		appErr := params.Validate(api)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	res := &model.PaginationValues{}
+
+	operand, appErr := parseGraphqlOperand[C](*params)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	switch {
+	case params.First != nil:
+		res.OrderBy = orderKey + " ASC"
+		res.Limit = *(*uint64)(unsafe.Pointer(params.First))
+		if operand != nil {
+			res.Condition = squirrel.Gt{orderKey: *operand}
+		}
+
+	default:
+		res.OrderBy = orderKey + " DESC"
+		res.Limit = *(*uint64)(unsafe.Pointer(params.Last))
+		if operand != nil {
+			res.Condition = squirrel.Lt{orderKey: *operand}
+		}
+	}
+
+	return res, nil
+}
+
 func (g *GraphqlParams) Validate(apiName string) *model.AppError {
 	g.validated = true
+	if (g.First != nil && *g.First < 0) || (g.Last != nil && *g.Last < 0) {
+		return model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "first and last cannot be negative", http.StatusBadRequest)
+	}
 	if (g.First != nil && g.Last != nil) || (g.First == nil && g.Last == nil) {
 		return model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "First / Last"}, "provide either First or Last, not both", http.StatusBadRequest)
 	}
@@ -324,7 +344,7 @@ func (s *graphqlPaginator[R, C, D]) Len() int {
 }
 
 func (s *graphqlPaginator[R, C, D]) Less(i, j int) bool {
-	return compareGraphqlOperands(s.keyFunc(s.data[i]), s.keyFunc(s.data[j])) == Lesser
+	return compareGraphqlOperands(s.keyFunc(s.data[i]), s.keyFunc(s.data[j])) == -1
 }
 
 func (s *graphqlPaginator[R, C, D]) Swap(i, j int) {
@@ -411,13 +431,11 @@ func (g *graphqlPaginator[R, C, D]) parse(apiName string) (*CountableConnection[
 		value := g.keyFunc(g.data[i])
 		cmp := compareGraphqlOperands(value, *operand)
 
-		if orderASC {
-			return cmp == Greater || cmp == Equal // >=
-		}
-		return cmp == Lesser || cmp == Equal // <=
+		// order ASC && >= || order DESC && <=
+		return (orderASC && cmp >= 0) || cmp <= 0
 	})
 
-	// if not found, sort.Search returns exactly First int argument passed. We need to check it here
+	// if not found, sort.Search returns exactly first int argument passed. We need to check it here
 	if index >= totalCount {
 		return nil, model.NewAppError(apiName, PaginationError, map[string]interface{}{"Fields": "before / after"}, "invalid before or after provided", http.StatusBadRequest)
 	}

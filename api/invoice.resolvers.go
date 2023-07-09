@@ -14,18 +14,18 @@ import (
 	"github.com/sitename/sitename/web"
 )
 
+// NOTE: Refer to ./schemas/invoice.graphqls for details on directives used.
 func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
-	Number  *string
+	Number  string
 	OrderID string
 }) (*InvoiceRequest, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.CheckAuthenticatedAndHasPermissionToAll(model.PermissionUpdateOrder)
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
+	// validate params
+	args.OrderID = decodeBase64String(args.OrderID)
 	if !model.IsValidId(args.OrderID) {
 		return nil, model.NewAppError("InvoiceRequest", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderID"}, "invalid id provided", http.StatusBadRequest)
 	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// clean order
 	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.OrderID)
@@ -39,21 +39,34 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 	shallowInvoice := &model.Invoice{
 		OrderID: &order.Id,
 	}
-	if args.Number != nil && *args.Number != "" {
-		shallowInvoice.Number = *args.Number
-	}
+	shallowInvoice.Number = args.Number
 
 	shallowInvoice, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoice(shallowInvoice)
 	if appErr != nil {
 		return nil, appErr
 	}
 
-	panic("not implemented") // todo: complete plugin
-	var invoice *model.Invoice
+	var invoice = &model.Invoice{}
+
+	// TODO: try making InvoiceRequest return *model.Invoice directly
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	invoiceIface, appErr := pluginMng.InvoiceRequest(*order, *shallowInvoice, args.Number)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if invoiceIface != nil {
+		switch t := invoiceIface.(type) {
+		case *model.Invoice:
+			invoice = t
+		case model.Invoice:
+			invoice = &t
+		}
+	}
 
 	newOrderEventOptions := &model.OrderEventOption{
-		OrderID: order.Id,
-		UserID:  &embedCtx.AppContext.Session().UserId,
+		OrderID:    order.Id,
+		UserID:     &embedCtx.AppContext.Session().UserId,
+		Parameters: model.StringInterface{},
 	}
 	if invoice.Status == model.JobStatusSuccess {
 		newOrderEventOptions.Parameters["invoice_number"] = invoice.Number
@@ -64,14 +77,11 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	invoiceEventOpts := &model.InvoiceEventOption{
-		UserID:  &embedCtx.AppContext.Session().UserId,
-		OrderID: &order.Id,
-	}
-	if args.Number != nil {
-		invoiceEventOpts.Parameters["number"] = *args.Number
-	}
-	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(invoiceEventOpts)
+	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventOption{
+		UserID:     &embedCtx.AppContext.Session().UserId,
+		OrderID:    &order.Id,
+		Parameters: model.StringMAP{"number": args.Number},
+	})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -82,31 +92,23 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/invoice.graphqls for details on directives used.
 func (r *Resolver) InvoiceRequestDelete(ctx context.Context, args struct{ Id string }) (*InvoiceRequestDelete, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-
-	if !embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		return nil, MakeUnauthorizedError("InvoiceRequestDelete")
-	}
-
+	// validate params
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("InvoiceRequestDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
 	}
-	invoices, appErr := embedCtx.App.Srv().InvoiceService().FilterInvoicesByOptions(&model.InvoiceFilterOptions{
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	invoice, appErr := embedCtx.App.Srv().InvoiceService().GetInvoiceByOptions(&model.InvoiceFilterOptions{
 		Id: squirrel.Eq{store.InvoiceTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
-	if len(invoices) == 0 {
-		return nil, model.NewAppError("InvoiceRequestDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
-	}
 
-	invoice := invoices[0]
 	invoice.Status = model.JobStatusPending
 
 	updatedInvoice, appErr := embedCtx.App.Srv().InvoiceService().UpsertInvoice(invoice)
@@ -114,13 +116,17 @@ func (r *Resolver) InvoiceRequestDelete(ctx context.Context, args struct{ Id str
 		return nil, appErr
 	}
 
-	panic("not implemented") // complete plugin module
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	_, appErr = pluginMng.InvoiceDelete(*invoice)
+	if appErr != nil {
+		return nil, appErr
+	}
 
 	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventOption{
 		UserID:    &embedCtx.AppContext.Session().UserId,
 		InvoiceID: &updatedInvoice.Id,
 		OrderID:   updatedInvoice.OrderID,
-		Type:      model.REQUESTED_DELETION,
+		Type:      model.INVOICE_EVENT_TYPE_REQUESTED_DELETION,
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -146,19 +152,18 @@ func commonCleanOrder(order *model.Order) *model.AppError {
 	return nil
 }
 
+// NOTE: Refer to ./schemas/invoice.graphqls for details on directives used.
 func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 	Input   InvoiceCreateInput
 	OrderID string
 }) (*InvoiceCreate, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
+	// validate args
+	args.OrderID = decodeBase64String(args.OrderID)
+	if !model.IsValidId(args.OrderID) {
+		return nil, model.NewAppError("InvoiceCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order id"}, "please provide valid order id", http.StatusBadRequest)
 	}
 
-	if !embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		return nil, MakeUnauthorizedError("InvoiceCreate")
-	}
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// try finding order in db
 	order, appErr := embedCtx.App.Srv().OrderService().OrderById(args.OrderID)
@@ -191,7 +196,7 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventOption{
 		UserID:    &embedCtx.AppContext.Session().UserId,
 		InvoiceID: &savedInvoice.Id,
-		Type:      model.CREATED,
+		Type:      model.INVOICE_EVENT_TYPE_CREATED,
 		Parameters: model.StringMAP{
 			"number": args.Input.Number,
 			"url":    args.Input.URL,
@@ -218,42 +223,26 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/invoice.graphqls for details on directives used.
 func (r *Resolver) InvoiceDelete(ctx context.Context, args struct{ Id string }) (*InvoiceDelete, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-	if !embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		return nil, MakeUnauthorizedError("InvoiceDelete")
-	}
-
-	if !model.IsValidId(args.Id) {
+	// validate params
+	invoiceId := decodeBase64String(args.Id)
+	if !model.IsValidId(invoiceId) {
 		return nil, model.NewAppError("InvoiceDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
-	invoices, appErr := embedCtx.App.Srv().InvoiceService().FilterInvoicesByOptions(&model.InvoiceFilterOptions{
-		Id:    squirrel.Eq{store.InvoiceTableName + ".Id": args.Id},
-		Limit: 1,
-	})
-	if appErr != nil {
-		return nil, appErr
-	}
-	if len(invoices) == 0 {
-		return nil, model.NewAppError("InvoiceDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invoice with given id does not exist", http.StatusBadRequest)
-	}
-	invoice := invoices[0]
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	err := embedCtx.App.Srv().Store.Invoice().Delete(nil, []string{invoice.Id})
+	err := embedCtx.App.Srv().Store.Invoice().Delete(nil, invoiceId)
 	if err != nil {
 		return nil, model.NewAppError("InvoiceDelete", "app.invoice.delete_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventOption{
-		Type:   model.DELETED,
+	_, appErr := embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventOption{
+		Type:   model.INVOICE_EVENT_TYPE_DELETED,
 		UserID: &embedCtx.AppContext.Session().UserId,
 		Parameters: model.StringMAP{
-			"invoice_id": invoice.Id,
+			"invoice_id": invoiceId,
 		},
 	})
 	if appErr != nil {
@@ -261,39 +250,31 @@ func (r *Resolver) InvoiceDelete(ctx context.Context, args struct{ Id string }) 
 	}
 
 	return &InvoiceDelete{
-		Invoice: SystemInvoiceToGraphqlInvoice(invoice),
+		Invoice: &Invoice{ID: args.Id},
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/invoice.graphqls for details on directives used.
 func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 	Id    string
 	Input UpdateInvoiceInput
 }) (*InvoiceUpdate, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
 
-	if !embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		return nil, MakeUnauthorizedError("InvoiceUpdate")
-	}
-
+	// validate params
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("InvoiceUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
-	invoices, appErr := embedCtx.App.Srv().InvoiceService().FilterInvoicesByOptions(&model.InvoiceFilterOptions{
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	invoice, appErr := embedCtx.App.Srv().InvoiceService().GetInvoiceByOptions(&model.InvoiceFilterOptions{
 		Id:    squirrel.Eq{store.InvoiceTableName + ".Id": args.Id},
 		Limit: 1,
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
-	if len(invoices) == 0 {
-		return nil, model.NewAppError("InvoiceUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invoice with given id does not exist", http.StatusBadRequest)
-	}
-	invoice := invoices[0]
 
 	// clean input
 	var number = invoice.Number
@@ -339,32 +320,23 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/invoice.graphqls for details on directives used.
 func (r *Resolver) InvoiceSendNotification(ctx context.Context, args struct{ Id string }) (*InvoiceSendNotification, error) {
-	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
-	embedCtx.SessionRequired()
-	if embedCtx.Err != nil {
-		return nil, embedCtx.Err
-	}
-	if !embedCtx.AppContext.Session().GetUserRoles().Contains(model.ShopStaffRoleId) {
-		return nil, MakeUnauthorizedError("InvoiceSendNotification")
-	}
-
+	// validate params
+	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("InvoiceSendNotification", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
-	invoices, appErr := embedCtx.App.Srv().InvoiceService().FilterInvoicesByOptions(&model.InvoiceFilterOptions{
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	invoice, appErr := embedCtx.App.Srv().InvoiceService().GetInvoiceByOptions(&model.InvoiceFilterOptions{
 		Id:                 squirrel.Eq{store.InvoiceTableName + ".Id": args.Id},
-		Limit:              1,
 		SelectRelatedOrder: true,
 	})
 	if appErr != nil {
 		return nil, appErr
 	}
-	if len(invoices) == 0 {
-		return nil, model.NewAppError("InvoiceSendNotification", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invoice with given id does not exist", http.StatusBadRequest)
-	}
-	invoice := invoices[0]
 
 	// clean instance
 	switch {
@@ -386,8 +358,8 @@ func (r *Resolver) InvoiceSendNotification(ctx context.Context, args struct{ Id 
 		return nil, model.NewAppError("InvoiceSendNotification", "app.order.order_email_not_set.app_error", nil, "provided invoice order needs an email address", http.StatusNotAcceptable)
 	}
 
-	panic("not implemented") // TODO: compete plugin manager first
-	appErr = embedCtx.App.Srv().InvoiceService().SendInvoice(*invoice, &model.User{Id: embedCtx.AppContext.Session().UserId}, nil, nil)
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	appErr = embedCtx.App.Srv().InvoiceService().SendInvoice(*invoice, &model.User{Id: embedCtx.AppContext.Session().UserId}, nil, pluginMng)
 	if appErr != nil {
 		return nil, appErr
 	}

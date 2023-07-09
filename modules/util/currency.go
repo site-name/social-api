@@ -3,7 +3,6 @@ package util
 import (
 	"sort"
 
-	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
@@ -34,7 +33,6 @@ func MinMaxMoneyInMoneySlice(moneys []*goprices.Money) (min *goprices.Money, max
 		return nil, nil
 	}
 
-	moneys = lo.Filter(moneys, func(v *goprices.Money, _ int) bool { return v != nil })
 	sort.Slice(moneys, func(i, j int) bool {
 		return moneys[i].LessThan(moneys[j])
 	})

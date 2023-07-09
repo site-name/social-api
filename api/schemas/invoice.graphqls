@@ -1,10 +1,10 @@
 extend type Mutation {
-  invoiceRequest(number: String, orderId: String!): InvoiceRequest
-  invoiceRequestDelete(id: String!): InvoiceRequestDelete
-  invoiceCreate(input: InvoiceCreateInput!, orderId: String!): InvoiceCreate
-  invoiceDelete(id: String!): InvoiceDelete
-  invoiceUpdate(id: String!, input: UpdateInvoiceInput!): InvoiceUpdate
-  invoiceSendNotification(id: String!): InvoiceSendNotification
+  invoiceRequest(number: String!, orderId: String!): InvoiceRequest @hasRoleAny(roles: [shop_admin, shop_staff])
+  invoiceRequestDelete(id: String!): InvoiceRequestDelete @hasRoleAny(roles: [shop_admin, shop_staff])
+  invoiceCreate(input: InvoiceCreateInput!, orderId: String!): InvoiceCreate @hasRoles(roles: [shop_admin])
+  invoiceDelete(id: String!): InvoiceDelete @hasRoles(roles: [shop_admin])
+  invoiceUpdate(id: String!, input: UpdateInvoiceInput!): InvoiceUpdate  @hasRoleAny(roles: [shop_admin, shop_staff])
+  invoiceSendNotification(id: String!): InvoiceSendNotification @hasRoleAny(roles: [shop_admin, shop_staff])
 }
 
 type Invoice {

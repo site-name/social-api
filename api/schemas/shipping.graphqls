@@ -1,8 +1,8 @@
 extend type Mutation {
   shippingMethodChannelListingUpdate(id: String!, input: ShippingMethodChannelListingInput!): ShippingMethodChannelListingUpdate
   shippingPriceCreate(input: ShippingPriceInput!): ShippingPriceCreate
-  shippingPriceDelete(id: String!): ShippingPriceDelete
-  shippingPriceBulkDelete(ids: [String!]!): ShippingPriceBulkDelete
+  shippingPriceDelete(id: String!): ShippingPriceDelete @hasRoles(roles: [shop_admin])
+  shippingPriceBulkDelete(ids: [String!]!): ShippingPriceBulkDelete @hasRoles(roles: [shop_admin])
   shippingPriceUpdate(id: String!, input: ShippingPriceInput!): ShippingPriceUpdate
   shippingPriceTranslate(id: String!, input: ShippingPriceTranslationInput!, languageCode: LanguageCodeEnum!): ShippingPriceTranslate
   shippingPriceExcludeProducts(id: String!, input: ShippingPriceExcludeProductsInput!): ShippingPriceExcludeProducts

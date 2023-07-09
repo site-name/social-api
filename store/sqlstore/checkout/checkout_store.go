@@ -245,6 +245,7 @@ func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find checkouts with given options")
 	}
+	defer rows.Close()
 
 	var res []*model.Checkout
 
@@ -274,10 +275,6 @@ func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (
 		}
 
 		res = append(res, &checkout)
-	}
-
-	if err := rows.Close(); err != nil {
-		return nil, errors.Wrap(err, "failed to close rows")
 	}
 
 	return res, nil

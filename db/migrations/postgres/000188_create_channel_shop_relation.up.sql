@@ -4,8 +4,5 @@ CREATE TABLE IF NOT EXISTS channelshops (
   createat BIGINT,
   endat BIGINT
 );
-
-
 ALTER TABLE ONLY channelshops
-  ADD CONSTRAINT fk_channelshops_channel FOREIGN KEY (channelid) REFERENCES channels(id);
-
+ADD CONSTRAINT fk_channelshops_channel FOREIGN KEY (channelid) REFERENCES channels(id);

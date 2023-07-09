@@ -77,6 +77,8 @@ type StockFilterOption struct {
 	//
 	// NOTE: Remember to set `LockForUpdate` to true before setting this.
 	ForUpdateOf string
+
+	PaginationValues
 }
 
 type StockFilterForCountryAndChannel struct {
