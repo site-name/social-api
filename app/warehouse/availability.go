@@ -254,7 +254,7 @@ type structObject struct {
 // CheckPreorderThresholdBulk Validate if there is enough preordered variants according to thresholds.
 // :raises InsufficientStock: when there is not enough available items for a variant.
 func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants model.ProductVariants, quantities []int, channelSlug string) (*model.InsufficientStock, *model.AppError) {
-	allVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
+	allVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
 		VariantID:                         squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
 		SelectRelatedChannel:              true,
 		AnnotatePreorderQuantityAllocated: true,

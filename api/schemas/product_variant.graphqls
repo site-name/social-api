@@ -58,7 +58,7 @@ input ProductVariantCreateInput {
   attributes: [AttributeValueInput!]!
   sku: String
   trackInventory: Boolean
-  weight: WeightScalar
+  weight: Weight
   product: String!
   stocks: [StockInput!]!
 }
@@ -77,7 +77,7 @@ input ProductVariantBulkCreateInput {
   attributes: [BulkAttributeValueInput!]!
   sku: String
   trackInventory: Boolean
-  weight: WeightScalar
+  weight: Weight
   stocks: [StockInput!]!
   channelListings: [ProductVariantChannelListingAddInput!]!
 }
@@ -126,7 +126,7 @@ input ProductVariantInput {
   attributes: [AttributeValueInput!]!
   sku: String
   trackInventory: Boolean
-  weight: WeightScalar
+  weight: Weight
 }
 
 type ProductVariantUpdate {

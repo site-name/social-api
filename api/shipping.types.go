@@ -316,6 +316,7 @@ func (s *ShippingZone) Channels(ctx context.Context) ([]*Channel, error) {
 }
 
 // ------------------
+
 type ShippingMethodChannelListing struct {
 	ID                string `json:"id"`
 	MinimumOrderPrice *Money `json:"minimumOrderPrice"`

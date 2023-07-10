@@ -1307,7 +1307,7 @@ type Weight {
   value: Float!
 }
 
-scalar WeightScalar
+# scalar WeightScalar
 
 enum WeightUnitsEnum {
   g

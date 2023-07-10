@@ -189,3 +189,11 @@ func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(tr
 
 	return nil
 }
+
+func (s *ServiceShipping) UpsertShippingMethod(transaction store_iface.SqlxTxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, *model.AppError) {
+	method, err := s.srv.Store.ShippingMethod().Upsert(transaction, method)
+	if err != nil {
+		return nil, model.NewAppError("UpsertShippingMethod", "app.shipping.error_upserting_shipping_method.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return method, nil
+}

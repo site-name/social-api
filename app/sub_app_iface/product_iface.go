@@ -95,7 +95,7 @@ type ProductService interface {
 	// ProductVariantByOrderLineID returns a product variant by given order line id
 	ProductVariantByOrderLineID(orderLineID string) (*model.ProductVariant, *model.AppError)
 	// ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option
-	ProductVariantChannelListingsByOption(transaction store_iface.SqlxTxExecutor, option *model.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListings, *model.AppError)
+	ProductVariantChannelListingsByOption(option *model.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListings, *model.AppError)
 	// ProductVariantGetPrice returns price
 	ProductVariantGetPrice(productVariant *model.ProductVariant, product model.Product, collections []*model.Collection, channel model.Channel, channelListing *model.ProductVariantChannelListing, discounts []*model.DiscountInfo) (*goprices.Money, *model.AppError)
 	// ProductVariantGetWeight returns weight of given product variant

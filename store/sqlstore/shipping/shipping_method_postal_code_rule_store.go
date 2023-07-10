@@ -1,10 +1,12 @@
 package shipping
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlShippingMethodPostalCodeRuleStore struct {
@@ -64,4 +66,54 @@ func (s *SqlShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.Sh
 	}
 
 	return res, nil
+}
+
+func (s *SqlShippingMethodPostalCodeRuleStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+	query, args, err := s.GetQueryBuilder().Delete(store.ShippingMethodPostalCodeRuleTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "Delete_ToSql")
+	}
+
+	runner := s.GetMasterX()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	result, err := runner.Exec(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete shipping method postal code rules")
+	}
+	numDeleted, _ := result.RowsAffected()
+	if int(numDeleted) != len(ids) {
+		return errors.Errorf("%d records deleted instead of %d", numDeleted, len(ids))
+	}
+
+	return nil
+}
+
+func (s *SqlShippingMethodPostalCodeRuleStore) Save(transaction store_iface.SqlxTxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
+	query := "INSERT INTO " + store.ShippingMethodPostalCodeRuleTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+
+	runner := s.GetMasterX()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	for _, rule := range rules {
+		rule.PreSave()
+
+		if err := rule.IsValid(); err != nil {
+			return nil, err
+		}
+
+		_, err := runner.NamedExec(query, rule)
+		if err != nil {
+			if s.IsUniqueConstraintError(err, []string{"shippingmethodpostalcoderules_shippingmethodid_start_end_key", "Start", "End", "ShippingMethodID"}) {
+				return nil, store.NewErrInvalidInput(store.ShippingMethodPostalCodeRuleTableName, "", "")
+			}
+			return nil, errors.Wrap(err, "failed to save shipping method postal code rule")
+		}
+	}
+
+	return rules, nil
 }

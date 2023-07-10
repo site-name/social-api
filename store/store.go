@@ -426,7 +426,7 @@ type (
 	}
 	ShippingMethodStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
-		Upsert(method *model.ShippingMethod) (*model.ShippingMethod, error)                                                                                                                 // Upsert bases on given method's Id to decide update or insert it
+		Upsert(transaction store_iface.SqlxTxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, error)                                                                         // Upsert bases on given method's Id to decide update or insert it
 		Get(methodID string) (*model.ShippingMethod, error)                                                                                                                                 // Get finds and returns a model method with given id
 		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) // ApplicableShippingMethods finds all model methods with given conditions
 		GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error)                                                                                               // GetbyOption finds and returns a model method that satisfy given options
@@ -434,6 +434,8 @@ type (
 		Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error
 	}
 	ShippingMethodPostalCodeRuleStore interface {
+		Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error
+		Save(transaction store_iface.SqlxTxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error)
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(rule *model.ShippingMethodPostalCodeRule) []interface{}
 		FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error)

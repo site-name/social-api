@@ -32,4 +32,6 @@ type ShippingService interface {
 	DropInvalidShippingMethodsRelationsForGivenChannels(transaction store_iface.SqlxTxExecutor, shippingMethodIds, channelIds []string) *model.AppError
 	ShippingMethodPostalCodeRulesByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, *model.AppError)
 	GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethods, channelSlug string) (map[string]*goprices.Money, *model.AppError)
+	CreateShippingMethodPostalCodeRules(transaction store_iface.SqlxTxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, *model.AppError)
+	UpsertShippingMethod(transaction store_iface.SqlxTxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, *model.AppError)
 }

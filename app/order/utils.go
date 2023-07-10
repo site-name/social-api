@@ -759,7 +759,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer model.Order, variant model.Produc
 			return nil, nil, appErr
 		}
 
-		variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(transaction, &model.ProductVariantChannelListingFilterOption{
+		variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
 			VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variant.Id},
 			ChannelID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".ChannelID": chanNel.Id},
 		})
@@ -1753,7 +1753,7 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 	}
 
 	// validate variants is available:
-	variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
+	variantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
 		VariantID:   squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": productVariantIDs},
 		ChannelID:   squirrel.Eq{store.ProductVariantChannelListingTableName + ".ChannelID": order.ChannelID},
 		PriceAmount: squirrel.Expr(store.ProductVariantChannelListingTableName + ".PriceAmount IS NOT NULL"),

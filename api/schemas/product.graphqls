@@ -135,7 +135,7 @@ input ProductCreateInput {
   slug: String
   taxCode: String
   seo: SeoInput
-  weight: WeightScalar
+  weight: Weight
   rating: Float
   productType: String!
 }
@@ -165,7 +165,7 @@ input ProductInput {
   slug: String
   taxCode: String
   seo: SeoInput
-  weight: WeightScalar
+  weight: Weight
   rating: Float
 }
 

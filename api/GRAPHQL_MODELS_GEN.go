@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"unsafe"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Masterminds/squirrel"
@@ -3417,8 +3418,8 @@ type ShippingPriceExcludeProductsInput struct {
 type ShippingPriceInput struct {
 	Name                  *string                                    `json:"name"`
 	Description           JSONString                                 `json:"description"`
-	MinimumOrderWeight    *string                                    `json:"minimumOrderWeight"`
-	MaximumOrderWeight    *string                                    `json:"maximumOrderWeight"`
+	MinimumOrderWeight    *Weight                                    `json:"minimumOrderWeight"`
+	MaximumOrderWeight    *Weight                                    `json:"maximumOrderWeight"`
 	MaximumDeliveryDays   *int32                                     `json:"maximumDeliveryDays"`
 	MinimumDeliveryDays   *int32                                     `json:"minimumDeliveryDays"`
 	Type                  *ShippingMethodTypeEnum                    `json:"type"`
@@ -3426,6 +3427,115 @@ type ShippingPriceInput struct {
 	AddPostalCodeRules    []*ShippingPostalCodeRulesCreateInputRange `json:"addPostalCodeRules"`
 	DeletePostalCodeRules []string                                   `json:"deletePostalCodeRules"`
 	InclusionType         *PostalCodeRuleInclusionTypeEnum           `json:"inclusionType"`
+}
+
+// NOTE: Patch must be called after calling Validate().
+//
+// returned `updated` boolean value indicates wether given `method` is modified.
+func (s *ShippingPriceInput) Patch(method *model.ShippingMethod) (updated bool) {
+	updated = true
+
+	switch {
+	case s.Name != nil && *s.Name != method.Name:
+		method.Name = *s.Name
+		fallthrough
+
+	case s.Description != nil:
+		for key, value := range s.Description {
+			method.Description[key] = value
+		}
+		fallthrough
+
+	case s.MinimumOrderWeight != nil:
+		method.MinimumOrderWeight = float32(s.MinimumOrderWeight.Value)
+		fallthrough
+
+	case s.MaximumOrderWeight != nil:
+		method.MaximumOrderWeight = (*float32)(unsafe.Pointer(&s.MaximumOrderWeight.Value))
+		fallthrough
+
+	case s.MinimumDeliveryDays != nil:
+		method.MinimumDeliveryDays = (*int)(unsafe.Pointer(s.MinimumDeliveryDays))
+		fallthrough
+
+	case s.MaximumDeliveryDays != nil:
+		method.MaximumDeliveryDays = (*int)(unsafe.Pointer(s.MaximumDeliveryDays))
+		fallthrough
+
+	case s.Type != nil && s.Type.IsValid() && *s.Type != method.Type:
+		method.Type = *s.Type
+		fallthrough
+
+	case s.ShippingZone != nil && *s.ShippingZone != method.ShippingZoneID: // NOTE: s.ShippingZone is already converted and validated
+		method.ShippingZoneID = *s.ShippingZone
+
+	default:
+		updated = false
+	}
+
+	return updated
+}
+
+func (s *ShippingPriceInput) Validate(api string) *model.AppError {
+	// clean weights:
+	if s.MinimumOrderWeight != nil {
+		if s.MinimumOrderWeight.Value < 0 {
+			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumOrderWeight"}, "shipping cannot have negative weight", http.StatusBadRequest)
+		}
+		if measurement.WEIGHT_UNIT_STRINGS[s.MinimumOrderWeight.Unit] == "" { // invalid unit
+			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumOrderWeight"}, "weight unit is invalid", http.StatusBadRequest)
+		}
+	}
+	if s.MaximumOrderWeight != nil {
+		if s.MaximumOrderWeight.Value < 0 {
+			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight"}, "shipping cannot have negative weight", http.StatusBadRequest)
+		}
+		if measurement.WEIGHT_UNIT_STRINGS[s.MaximumOrderWeight.Unit] == "" { // invalid unit
+			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight"}, "weight unit is invalid", http.StatusBadRequest)
+		}
+	}
+
+	if s.MinimumOrderWeight != nil &&
+		s.MaximumOrderWeight != nil &&
+		(s.MinimumOrderWeight.Unit == s.MaximumOrderWeight.Unit || s.MinimumOrderWeight.Value >= s.MaximumOrderWeight.Value) {
+		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumOrderWeight / MinimumOrderWeight"}, "weight units must be the same and min weight must less than (<) max weight", http.StatusBadRequest)
+	}
+
+	// clean delivery time
+	// - check if minimum_delivery_days is not higher than maximum_delivery_days
+	// - check if minimum_delivery_days and maximum_delivery_days are positive values
+	if s.MinimumDeliveryDays != nil && *s.MinimumDeliveryDays < 0 {
+		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumDeliveryDays"}, "delivery days cannot be negative", http.StatusBadRequest)
+	}
+	if s.MaximumDeliveryDays != nil && *s.MaximumDeliveryDays < 0 {
+		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MaximumDeliveryDays"}, "delivery days cannot be negative", http.StatusBadRequest)
+	}
+	if s.MinimumDeliveryDays != nil && s.MaximumDeliveryDays != nil && *s.MinimumDeliveryDays >= *s.MaximumDeliveryDays {
+		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MinimumDeliveryDays, MaximumDeliveryDays"}, "min delivery day must less than max delivery days", http.StatusBadRequest)
+	}
+
+	// clean postal code rules
+	s.DeletePostalCodeRules = decodeBase64Strings(s.DeletePostalCodeRules...)
+	if !lo.EveryBy(s.DeletePostalCodeRules, model.IsValidId) {
+		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "delete postal code rules"}, "please provide valid delete postal code rule ids", http.StatusBadRequest)
+	}
+	if len(s.AddPostalCodeRules) > 0 && (s.InclusionType == nil || !s.InclusionType.IsValid()) {
+		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "inclusion type"}, "inclusion type is required when add postal code rules are provided", http.StatusBadRequest)
+	}
+
+	if s.Type != nil && !s.Type.IsValid() {
+		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid type", http.StatusBadRequest)
+	}
+
+	if s.ShippingZone != nil {
+		shippingZoneID := decodeBase64String(*s.ShippingZone)
+		if !model.IsValidId(shippingZoneID) {
+			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone"}, "please provide valid shipping zone id", http.StatusBadRequest)
+		}
+		s.ShippingZone = &shippingZoneID // NOTE: no need to convert later (in case nil error is returned)
+	}
+
+	return nil
 }
 
 type ShippingPriceRemoveProductFromExclude struct {

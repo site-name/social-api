@@ -7848,11 +7848,11 @@ func (s *RetryLayerShippingMethodStore) GetbyOption(options *model.ShippingMetho
 
 }
 
-func (s *RetryLayerShippingMethodStore) Upsert(method *model.ShippingMethod) (*model.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) Upsert(transaction store_iface.SqlxTxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShippingMethodStore.Upsert(method)
+		result, err := s.ShippingMethodStore.Upsert(transaction, method)
 		if err == nil {
 			return result, nil
 		}
@@ -7988,11 +7988,51 @@ func (s *RetryLayerShippingMethodExcludedProductStore) Save(instance *model.Ship
 
 }
 
+func (s *RetryLayerShippingMethodPostalCodeRuleStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+
+	tries := 0
+	for {
+		err := s.ShippingMethodPostalCodeRuleStore.Delete(transaction, ids...)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error) {
 
 	tries := 0
 	for {
 		result, err := s.ShippingMethodPostalCodeRuleStore.FilterByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingMethodPostalCodeRuleStore) Save(transaction store_iface.SqlxTxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShippingMethodPostalCodeRuleStore.Save(transaction, rules)
 		if err == nil {
 			return result, nil
 		}

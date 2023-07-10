@@ -64,16 +64,48 @@ func (s *SqlShippingMethodStore) ScanFields(shippingMethod *model.ShippingMethod
 }
 
 // Upsert bases on given method's Id to decide update or insert it
-func (s *SqlShippingMethodStore) Upsert(method *model.ShippingMethod) (*model.ShippingMethod, error) {
-	method.PreSave()
+func (s *SqlShippingMethodStore) Upsert(transaction store_iface.SqlxTxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, error) {
+	isSaving := false
+	if method.Id == "" {
+		isSaving = true
+		method.PreSave()
+	}
+
 	if err := method.IsValid(); err != nil {
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.ShippingMethodTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
-	_, err := s.GetMasterX().NamedExec(query, method)
+	runner := s.GetMasterX()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	var (
+		result sql.Result
+		err    error
+	)
+
+	if isSaving {
+		query := "INSERT INTO " + store.ShippingMethodTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+		result, err = runner.NamedExec(query, method)
+
+	} else {
+		query := "UPDATE " + store.ShippingMethodTableName + " SET " +
+			s.ModelFields("").
+				Map(func(_ int, item string) string {
+					return item + ":=" + item
+				}).
+				Join(",") + " WHERE Id:=Id"
+
+		result, err = runner.NamedExec(query, method)
+	}
+
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to upsert shipping method with id=%s", method.Id)
+	}
+	numUpserted, _ := result.RowsAffected()
+	if numUpserted != 1 {
+		return nil, errors.Errorf("%d shipping method(s) upserted instead of 1", numUpserted)
 	}
 
 	return method, nil

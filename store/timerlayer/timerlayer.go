@@ -6579,10 +6579,10 @@ func (s *TimerLayerShippingMethodStore) GetbyOption(options *model.ShippingMetho
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) Upsert(method *model.ShippingMethod) (*model.ShippingMethod, error) {
+func (s *TimerLayerShippingMethodStore) Upsert(transaction store_iface.SqlxTxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, error) {
 	start := timemodule.Now()
 
-	result, err := s.ShippingMethodStore.Upsert(method)
+	result, err := s.ShippingMethodStore.Upsert(transaction, method)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6691,6 +6691,22 @@ func (s *TimerLayerShippingMethodExcludedProductStore) Save(instance *model.Ship
 	return result, err
 }
 
+func (s *TimerLayerShippingMethodPostalCodeRuleStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+	start := timemodule.Now()
+
+	err := s.ShippingMethodPostalCodeRuleStore.Delete(transaction, ids...)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodPostalCodeRuleStore.Delete", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error) {
 	start := timemodule.Now()
 
@@ -6703,6 +6719,22 @@ func (s *TimerLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *m
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodPostalCodeRuleStore.FilterByOptions", success, elapsed)
+	}
+	return result, err
+}
+
+func (s *TimerLayerShippingMethodPostalCodeRuleStore) Save(transaction store_iface.SqlxTxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
+	start := timemodule.Now()
+
+	result, err := s.ShippingMethodPostalCodeRuleStore.Save(transaction, rules)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodPostalCodeRuleStore.Save", success, elapsed)
 	}
 	return result, err
 }

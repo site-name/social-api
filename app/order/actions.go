@@ -269,7 +269,7 @@ func (a *ServiceOrder) OrderFulfilled(fulfillments []*model.Fulfillment, user *m
 	}
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
-	var orDer = fulfillments[0].Order
+	var orDer = fulfillments[0].GetOrder()
 	if orDer == nil {
 		ord, appErr := a.OrderById(fulfillments[0].OrderID)
 		if appErr != nil {
@@ -331,7 +331,7 @@ func (s *ServiceOrder) OrderAwaitsFulfillmentApproval(fulfillments []*model.Fulf
 	defer s.srv.Store.FinalizeTransaction(transaction)
 
 	var orDer *model.Order
-	if ord := fulfillments[0].Order; ord != nil {
+	if ord := fulfillments[0].GetOrder(); ord != nil {
 		orDer = ord
 	} else {
 		ord, appErr := s.OrderById(fulfillments[0].OrderID)
@@ -425,7 +425,7 @@ func (a *ServiceOrder) OrderCaptured(ord model.Order, user *model.User, _ interf
 
 // FulfillmentTrackingUpdated
 func (a *ServiceOrder) FulfillmentTrackingUpdated(fulfillment *model.Fulfillment, user *model.User, _ interface{}, trackingNumber string, manager interfaces.PluginManagerInterface) *model.AppError {
-	var orDer = fulfillment.Order
+	var orDer = fulfillment.GetOrder()
 	if orDer == nil {
 		ord, appErr := a.OrderById(fulfillment.OrderID)
 		if appErr != nil {
@@ -465,7 +465,7 @@ func (a *ServiceOrder) CancelFulfillment(fulfillment model.Fulfillment, user *mo
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
 	}
-	_, appErr = a.FulfillmentCanceledEvent(transaction, fulfillment_.Order, user, nil, fulfillment_)
+	_, appErr = a.FulfillmentCanceledEvent(transaction, fulfillment_.GetOrder(), user, nil, fulfillment_)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -501,7 +501,7 @@ func (a *ServiceOrder) CancelFulfillment(fulfillment model.Fulfillment, user *mo
 		return nil, appErr
 	}
 
-	appErr = a.UpdateOrderStatus(transaction, *fulfillment.Order) // you can access order here since store attached it to fulfillment above
+	appErr = a.UpdateOrderStatus(transaction, *fulfillment.GetOrder()) // you can access order here since store attached it to fulfillment above
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -516,7 +516,7 @@ func (a *ServiceOrder) CancelFulfillment(fulfillment model.Fulfillment, user *mo
 		return nil, appErr
 	}
 
-	_, appErr = manager.OrderUpdated(*fulfillment_.Order)
+	_, appErr = manager.OrderUpdated(*fulfillment_.GetOrder())
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -541,7 +541,7 @@ func (s *ServiceOrder) CancelWaitingFulfillment(fulfillment model.Fulfillment, u
 		return appErr
 	}
 
-	_, appErr = s.FulfillmentCanceledEvent(transaction, fulfillment_.Order, user, nil, fulfillment_)
+	_, appErr = s.FulfillmentCanceledEvent(transaction, fulfillment_.GetOrder(), user, nil, fulfillment_)
 	if appErr != nil {
 		return appErr
 	}
@@ -573,7 +573,7 @@ func (s *ServiceOrder) CancelWaitingFulfillment(fulfillment model.Fulfillment, u
 		return appErr
 	}
 
-	appErr = s.UpdateOrderStatus(transaction, *fulfillment_.Order)
+	appErr = s.UpdateOrderStatus(transaction, *fulfillment_.GetOrder())
 	if appErr != nil {
 		return appErr
 	}
@@ -587,7 +587,7 @@ func (s *ServiceOrder) CancelWaitingFulfillment(fulfillment model.Fulfillment, u
 		return appErr
 	}
 
-	_, appErr = manager.OrderUpdated(*fulfillment_.Order)
+	_, appErr = manager.OrderUpdated(*fulfillment_.GetOrder())
 	return appErr
 }
 

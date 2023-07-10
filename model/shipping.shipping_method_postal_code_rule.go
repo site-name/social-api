@@ -49,6 +49,15 @@ type ShippingMethodPostalCodeRuleFilterOptions struct {
 	ShippingMethodID squirrel.Sqlizer
 }
 
+func (r *ShippingMethodPostalCodeRule) PreSave() {
+	if r.Id == "" {
+		r.Id = NewId()
+	}
+	if !r.InclusionType.IsValid() {
+		r.InclusionType = EXCLUDE
+	}
+}
+
 func (r *ShippingMethodPostalCodeRule) DeepCopy() *ShippingMethodPostalCodeRule {
 	if r == nil {
 		return new(ShippingMethodPostalCodeRule)

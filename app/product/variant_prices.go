@@ -16,7 +16,7 @@ import (
 
 // getVariantPricesInChannelsDict
 func (a *ServiceProduct) getVariantPricesInChannelsDict(product model.Product) (map[string][]*goprices.Money, *model.AppError) {
-	variantChannelListings, appErr := a.ProductVariantChannelListingsByOption(nil, &model.ProductVariantChannelListingFilterOption{
+	variantChannelListings, appErr := a.ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
 		VariantProductID: squirrel.Eq{store.ProductVariantTableName + ".ProductID": product.Id},
 		PriceAmount:      squirrel.NotEq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
 	})

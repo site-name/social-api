@@ -37,7 +37,7 @@ input ProductTypeInput {
   variantAttributes: [String!]!
   isShippingRequired: Boolean
   isDigital: Boolean
-  weight: WeightScalar
+  weight: Weight
   taxCode: String
 }
 

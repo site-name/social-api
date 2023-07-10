@@ -23,8 +23,47 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 	panic(fmt.Errorf("not implemented"))
 }
 
+// NOTE: Refer to ./schemas/collection.graphqls for details on directive used.
 func (r *Resolver) ShippingPriceCreate(ctx context.Context, args struct{ Input ShippingPriceInput }) (*ShippingPriceCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	appErr := args.Input.Validate("ShippingPriceCreate")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	shippingMethod := new(model.ShippingMethod)
+	args.Input.Patch(shippingMethod)
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// start transaction:
+	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	if err != nil {
+		return nil, model.NewAppError("ShippingPriceCreate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer store.FinalizeTransaction(transaction)
+
+	shippingMethod, appErr = embedCtx.App.Srv().ShippingService().UpsertShippingMethod(transaction, shippingMethod)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	shippingZones, appErr := embedCtx.App.Srv().ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
+		Id: squirrel.Eq{store.ShippingZoneTableName + ".Id": shippingMethod.ShippingZoneID},
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// commit transaction
+	err = transaction.Commit()
+	if err != nil {
+		return nil, model.NewAppError("ShippingPriceCreate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &ShippingPriceCreate{
+		ShippingMethod: SystemShippingMethodToGraphqlShippingMethod(shippingMethod),
+		ShippingZone:   SystemShippingZoneToGraphqlShippingZone(shippingZones[0]),
+	}, nil
 }
 
 // NOTE: Refer to ./schemas/shipping.graphqls for details on directives used.
@@ -74,11 +113,86 @@ func (r *Resolver) ShippingPriceBulkDelete(ctx context.Context, args struct{ Ids
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/shipping.graphqls for details on directives used.
 func (r *Resolver) ShippingPriceUpdate(ctx context.Context, args struct {
 	Id    string
 	Input ShippingPriceInput
 }) (*ShippingPriceUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	args.Id = decodeBase64String(args.Id)
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("ShippingPriceUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
+	}
+
+	appErr := args.Input.Validate("ShippingPriceUpdate")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// start transaction:
+	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	if err != nil {
+		return nil, model.NewAppError("ShippingPriceUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer store.FinalizeTransaction(transaction)
+
+	shippingMethod, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodByOption(&model.ShippingMethodFilterOption{
+		Id:                        squirrel.Eq{store.ShippingMethodTableName + ".Id": args.Id},
+		SelectRelatedShippingZone: true, //
+	})
+	if appErr != nil {
+		return nil, appErr
+	}
+	if args.Input.Patch(shippingMethod) {
+		shippingMethod, appErr = embedCtx.App.Srv().Shipping.UpsertShippingMethod(transaction, shippingMethod)
+		if err != nil {
+			return nil, appErr
+		}
+	}
+
+	if len(args.Input.DeletePostalCodeRules) > 0 {
+		err = embedCtx.App.Srv().Store.ShippingMethodPostalCodeRule().Delete(transaction, args.Input.DeletePostalCodeRules...)
+		if err != nil {
+			return nil, model.NewAppError("ShippingPriceUpdate", "app.shipping.error_delete_shipping_method_postal_code_rules.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	if len(args.Input.AddPostalCodeRules) > 0 {
+		rules := lo.Map(args.Input.AddPostalCodeRules, func(item *ShippingPostalCodeRulesCreateInputRange, _ int) *model.ShippingMethodPostalCodeRule {
+			rule := &model.ShippingMethodPostalCodeRule{
+				ShippingMethodID: args.Id,
+				Start:            item.Start,
+			}
+			if item.End != nil {
+				rule.End = *item.End
+			}
+			if args.Input.InclusionType != nil {
+				rule.InclusionType = *args.Input.InclusionType
+			}
+
+			return rule
+		})
+
+		_, appErr = embedCtx.App.Srv().ShippingService().CreateShippingMethodPostalCodeRules(transaction, rules)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// commit transaction
+	err = transaction.Commit()
+	if err != nil {
+		return nil, model.NewAppError("ShippingPriceUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// NOTE: The returning shipping zone below is old version of parent shipping zone of shipping method
+
+	return &ShippingPriceUpdate{
+		ShippingMethod: SystemShippingMethodToGraphqlShippingMethod(shippingMethod),
+		ShippingZone:   SystemShippingZoneToGraphqlShippingZone(shippingMethod.GetShippingZone()),
+	}, nil
 }
 
 func (r *Resolver) ShippingPriceTranslate(ctx context.Context, args struct {

@@ -7225,7 +7225,7 @@ func (s *OpenTracingLayerShippingMethodStore) GetbyOption(options *model.Shippin
 	return result, err
 }
 
-func (s *OpenTracingLayerShippingMethodStore) Upsert(method *model.ShippingMethod) (*model.ShippingMethod, error) {
+func (s *OpenTracingLayerShippingMethodStore) Upsert(transaction store_iface.SqlxTxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
@@ -7234,7 +7234,7 @@ func (s *OpenTracingLayerShippingMethodStore) Upsert(method *model.ShippingMetho
 	}()
 
 	defer span.Finish()
-	result, err := s.ShippingMethodStore.Upsert(method)
+	result, err := s.ShippingMethodStore.Upsert(transaction, method)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -7351,6 +7351,24 @@ func (s *OpenTracingLayerShippingMethodExcludedProductStore) Save(instance *mode
 	return result, err
 }
 
+func (s *OpenTracingLayerShippingMethodPostalCodeRuleStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodPostalCodeRuleStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.ShippingMethodPostalCodeRuleStore.Delete(transaction, ids...)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
+}
+
 func (s *OpenTracingLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodPostalCodeRuleStore.FilterByOptions")
@@ -7361,6 +7379,24 @@ func (s *OpenTracingLayerShippingMethodPostalCodeRuleStore) FilterByOptions(opti
 
 	defer span.Finish()
 	result, err := s.ShippingMethodPostalCodeRuleStore.FilterByOptions(options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return result, err
+}
+
+func (s *OpenTracingLayerShippingMethodPostalCodeRuleStore) Save(transaction store_iface.SqlxTxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodPostalCodeRuleStore.Save")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result, err := s.ShippingMethodPostalCodeRuleStore.Save(transaction, rules)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)

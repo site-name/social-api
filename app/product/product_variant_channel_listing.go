@@ -9,8 +9,8 @@ import (
 )
 
 // ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option
-func (a *ServiceProduct) ProductVariantChannelListingsByOption(transaction store_iface.SqlxTxExecutor, option *model.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListings, *model.AppError) {
-	listings, err := a.srv.Store.ProductVariantChannelListing().FilterbyOption(transaction, option)
+func (a *ServiceProduct) ProductVariantChannelListingsByOption(options *model.ProductVariantChannelListingFilterOption) (model.ProductVariantChannelListings, *model.AppError) {
+	listings, err := a.srv.Store.ProductVariantChannelListing().FilterbyOption(options)
 	if err != nil {
 		return nil, model.NewAppError("ProductVariantChannelListingsByOption", "app.product_error_finding_product_variant_channel_listings_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
