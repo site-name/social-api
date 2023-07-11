@@ -56,7 +56,6 @@ func (a *ServiceChannel) ValidateChannel(channelID string) (*model.Channel, *mod
 	return channel, nil
 }
 
-// CleanChannel
 func (a *ServiceChannel) CleanChannel(channelID *string) (*model.Channel, *model.AppError) {
 	var (
 		channel *model.Channel
@@ -67,7 +66,7 @@ func (a *ServiceChannel) CleanChannel(channelID *string) (*model.Channel, *model
 		channel, appErr = a.ValidateChannel(*channelID)
 	} else {
 		channel, appErr = a.ChannelByOption(&model.ChannelFilterOption{
-			IsActive: model.NewPrimitive(true),
+			IsActive: squirrel.Eq{store.ChannelTableName + ".IsActive": true},
 		})
 	}
 	if appErr != nil {

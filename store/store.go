@@ -441,10 +441,10 @@ type (
 		FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error)
 	}
 	ShippingMethodChannelListingStore interface {
-		BulkDelete(transaction store_iface.SqlxTxExecutor, ids []string) error
-		Upsert(listing *model.ShippingMethodChannelListing) (*model.ShippingMethodChannelListing, error)                      // Upsert depends on given listing's Id to decide whether to save or update the listing
-		Get(listingID string) (*model.ShippingMethodChannelListing, error)                                                    // Get finds a model method channel listing with given listingID
-		FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error) // FilterByOption returns a list of model method channel listings based on given option. result sorted by creation time ASC
+		BulkDelete(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodChannelListingFilterOption) error
+		Upsert(transaction store_iface.SqlxTxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) // Upsert depends on given listing's Id to decide whether to save or update the listing
+		Get(listingID string) (*model.ShippingMethodChannelListing, error)                                                                        // Get finds a model method channel listing with given listingID
+		FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error)                     // FilterByOption returns a list of model method channel listings based on given option. result sorted by creation time ASC
 	}
 	ShippingMethodTranslationStore interface {
 	}
@@ -454,6 +454,7 @@ type (
 		FilterByOptions(options *model.ShippingZoneChannelFilterOptions) ([]*model.ShippingZoneChannel, error)
 	}
 	ShippingMethodExcludedProductStore interface {
+		Delete(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodExcludedProductFilterOptions) error
 		Save(instance *model.ShippingMethodExcludedProduct) (*model.ShippingMethodExcludedProduct, error) // Save inserts given ShippingMethodExcludedProduct into database then returns it
 		FilterByOptions(options *model.ShippingMethodExcludedProductFilterOptions) ([]*model.ShippingMethodExcludedProduct, error)
 	}

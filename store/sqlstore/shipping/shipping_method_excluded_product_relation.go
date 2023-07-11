@@ -1,10 +1,12 @@
 package shipping
 
 import (
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlShippingMethodExcludedProductStore struct {
@@ -38,6 +40,9 @@ func (s *SqlShippingMethodExcludedProductStore) ModelFields(prefix string) util.
 	})
 }
 
+// this constraint is defined in db/migrations/postgres/000075_create_shippingmethodexcludedproducts.up.sql
+const shippingMethodExcludedProductUniqueConstraint = "shippingmethodexcludedproducts_shippingmethodid_productid_key"
+
 // Save inserts given ShippingMethodExcludedProduct into database then returns it
 func (ss *SqlShippingMethodExcludedProductStore) Save(instance *model.ShippingMethodExcludedProduct) (*model.ShippingMethodExcludedProduct, error) {
 	instance.PreSave()
@@ -45,10 +50,10 @@ func (ss *SqlShippingMethodExcludedProductStore) Save(instance *model.ShippingMe
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.ShippingMethodExcludedProductTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + store.ShippingMethodExcludedProductTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ") ON CONFLICT ON CONSTRAINT " + shippingMethodExcludedProductUniqueConstraint + " DO NOTHING"
 	_, err := ss.GetMasterX().NamedExec(query, instance)
 	if err != nil {
-		if ss.IsUniqueConstraintError(err, []string{"ShippingMethodID", "ProductID", "shippingmethodexcludedproducts_shippingmethodid_productid_key"}) {
+		if ss.IsUniqueConstraintError(err, []string{"ShippingMethodID", "ProductID", shippingMethodExcludedProductUniqueConstraint}) {
 			return nil, store.NewErrInvalidInput(store.ShippingMethodExcludedProductTableName, "ShippingMethodID/ProductID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to save shipping method excluded product with id=%s", instance.Id)
@@ -65,11 +70,14 @@ func (s *SqlShippingMethodExcludedProductStore) FilterByOptions(options *model.S
 
 	query := s.GetQueryBuilder().Select(selectFields...).From(store.ShippingMethodExcludedProductTableName)
 
-	if options.ProductID != nil {
-		query = query.Where(options.ProductID)
-	}
-	if options.ShippingMethodID != nil {
-		query = query.Where(options.ShippingMethodID)
+	for _, opt := range []squirrel.Sqlizer{
+		options.Id,
+		options.ProductID,
+		options.ShippingMethodID,
+	} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
 	}
 	if options.SelectRelatedProduct {
 		query = query.InnerJoin(store.ProductTableName + " ON Products.Id = ShippingMethodExcludedProducts.ProductID")
@@ -111,4 +119,35 @@ func (s *SqlShippingMethodExcludedProductStore) FilterByOptions(options *model.S
 	}
 
 	return res, nil
+}
+
+func (s *SqlShippingMethodExcludedProductStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodExcludedProductFilterOptions) error {
+	query := s.GetQueryBuilder().Delete(store.ShippingMethodExcludedProductTableName)
+
+	for _, opt := range []squirrel.Sqlizer{
+		options.Id,
+		options.ProductID,
+		options.ShippingMethodID,
+	} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
+	}
+
+	queryString, args, err := query.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "Delete_ToSql")
+	}
+
+	runner := s.GetMasterX()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	_, err = runner.Exec(queryString, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete shipping method excluded products")
+	}
+
+	return nil
 }

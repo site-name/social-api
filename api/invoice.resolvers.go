@@ -20,7 +20,6 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 	OrderID string
 }) (*InvoiceRequest, error) {
 	// validate params
-	args.OrderID = decodeBase64String(args.OrderID)
 	if !model.IsValidId(args.OrderID) {
 		return nil, model.NewAppError("InvoiceRequest", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "orderID"}, "invalid id provided", http.StatusBadRequest)
 	}
@@ -95,7 +94,6 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/invoice.graphqls for details on directives used.
 func (r *Resolver) InvoiceRequestDelete(ctx context.Context, args struct{ Id string }) (*InvoiceRequestDelete, error) {
 	// validate params
-	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("InvoiceRequestDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "invalid id provided", http.StatusBadRequest)
 	}
@@ -158,7 +156,6 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 	OrderID string
 }) (*InvoiceCreate, error) {
 	// validate args
-	args.OrderID = decodeBase64String(args.OrderID)
 	if !model.IsValidId(args.OrderID) {
 		return nil, model.NewAppError("InvoiceCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "order id"}, "please provide valid order id", http.StatusBadRequest)
 	}
@@ -226,14 +223,13 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/invoice.graphqls for details on directives used.
 func (r *Resolver) InvoiceDelete(ctx context.Context, args struct{ Id string }) (*InvoiceDelete, error) {
 	// validate params
-	invoiceId := decodeBase64String(args.Id)
-	if !model.IsValidId(invoiceId) {
+	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("InvoiceDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	err := embedCtx.App.Srv().Store.Invoice().Delete(nil, invoiceId)
+	err := embedCtx.App.Srv().Store.Invoice().Delete(nil, args.Id)
 	if err != nil {
 		return nil, model.NewAppError("InvoiceDelete", "app.invoice.delete_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -242,7 +238,7 @@ func (r *Resolver) InvoiceDelete(ctx context.Context, args struct{ Id string }) 
 		Type:   model.INVOICE_EVENT_TYPE_DELETED,
 		UserID: &embedCtx.AppContext.Session().UserId,
 		Parameters: model.StringMAP{
-			"invoice_id": invoiceId,
+			"invoice_id": args.Id,
 		},
 	})
 	if appErr != nil {
@@ -261,7 +257,6 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 }) (*InvoiceUpdate, error) {
 
 	// validate params
-	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("InvoiceUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}
@@ -323,7 +318,6 @@ func (r *Resolver) InvoiceUpdate(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/invoice.graphqls for details on directives used.
 func (r *Resolver) InvoiceSendNotification(ctx context.Context, args struct{ Id string }) (*InvoiceSendNotification, error) {
 	// validate params
-	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("InvoiceSendNotification", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid id", http.StatusBadRequest)
 	}

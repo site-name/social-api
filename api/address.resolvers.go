@@ -72,7 +72,6 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 	Input AddressInput
 }) (*AddressUpdate, error) {
 	// validate params
-	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AddressUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}
@@ -127,7 +126,6 @@ func (r *Resolver) AddressUpdate(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/address.graphqls for details on directive used
 func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) (*AddressDelete, error) {
 	// validate id input
-	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AddressDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}
@@ -171,7 +169,6 @@ func (r *Resolver) AddressSetDefault(ctx context.Context, args struct {
 	Type      model.AddressTypeEnum
 }) (*AddressSetDefault, error) {
 	// validate params
-	args.AddressID = decodeBase64String(args.AddressID)
 	if !model.IsValidId(args.AddressID) {
 		return nil, model.NewAppError("AddressSetDefault", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "addressId"}, "please provide valid address id", http.StatusBadRequest)
 	}
@@ -255,7 +252,6 @@ func (r *Resolver) AddressValidationRules(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/address.graphqls for details on directive used
 func (r *Resolver) Address(ctx context.Context, args struct{ Id string }) (*Address, error) {
 	// validate params:
-	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("Address", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid address id", http.StatusBadRequest)
 	}

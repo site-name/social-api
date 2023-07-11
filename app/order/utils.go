@@ -21,18 +21,18 @@ import (
 )
 
 // GetOrderCountry Return country to which order will be shipped
-func (a *ServiceOrder) GetOrderCountry(ord *model.Order) (model.CountryCode, *model.AppError) {
-	addressID := ord.BillingAddressID
-	orderRequireShipping, appErr := a.OrderShippingIsRequired(ord.Id)
+func (a *ServiceOrder) GetOrderCountry(order *model.Order) (model.CountryCode, *model.AppError) {
+	addressID := order.BillingAddressID
+	orderRequireShipping, appErr := a.OrderShippingIsRequired(order.Id)
 	if appErr != nil {
 		return "", appErr
 	}
 	if orderRequireShipping {
-		addressID = ord.ShippingAddressID
+		addressID = order.ShippingAddressID
 	}
 
 	if addressID == nil {
-		return *a.srv.Config().LocalizationSettings.DefaultCountryCode, nil
+		return model.DEFAULT_COUNTRY, nil
 	}
 
 	address, appErr := a.srv.AccountService().AddressById(*addressID)
@@ -52,9 +52,9 @@ func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *model.Order
 	}
 
 	digitalContent := orderLine.GetProductVariant().GetDigitalContent()
-	var appErr *model.AppError
 
 	if digitalContent == nil {
+		var appErr *model.AppError
 		digitalContent, appErr = a.srv.ProductService().DigitalContentbyOption(&model.DigitalContentFilterOption{
 			ProductVariantID: squirrel.Eq{store.DigitalContentTableName + ".ProductVariantID": *orderLine.VariantID},
 		})
@@ -77,8 +77,8 @@ func (a *ServiceOrder) OrderLineNeedsAutomaticFulfillment(orderLine *model.Order
 }
 
 // OrderNeedsAutomaticFulfillment checks if given order has digital products which shoul be automatically fulfilled.
-func (a *ServiceOrder) OrderNeedsAutomaticFulfillment(ord model.Order) (bool, *model.AppError) {
-	digitalOrderLinesOfOrder, appErr := a.AllDigitalOrderLinesOfOrder(ord.Id)
+func (a *ServiceOrder) OrderNeedsAutomaticFulfillment(order model.Order) (bool, *model.AppError) {
+	digitalOrderLinesOfOrder, appErr := a.AllDigitalOrderLinesOfOrder(order.Id)
 	if appErr != nil {
 		return false, appErr
 	}
@@ -96,10 +96,11 @@ func (a *ServiceOrder) OrderNeedsAutomaticFulfillment(ord model.Order) (bool, *m
 	return false, nil
 }
 
-func (a *ServiceOrder) GetVoucherDiscountAssignedToOrder(ord *model.Order) (*model.OrderDiscount, *model.AppError) {
+func (a *ServiceOrder) GetVoucherDiscountAssignedToOrder(order *model.Order) (*model.OrderDiscount, *model.AppError) {
 	orderDiscountsOfOrder, appErr := a.srv.DiscountService().
 		OrderDiscountsByOption(&model.OrderDiscountFilterOption{
-			Type: squirrel.Eq{store.OrderDiscountTableName + ".Type": model.VOUCHER},
+			Type:    squirrel.Eq{store.OrderDiscountTableName + ".Type": model.VOUCHER},
+			OrderID: squirrel.Eq{store.OrderDiscountTableName + ".OrderID": order.Id},
 		})
 
 	if appErr != nil {
@@ -113,11 +114,11 @@ func (a *ServiceOrder) GetVoucherDiscountAssignedToOrder(ord *model.Order) (*mod
 // Recalculate all order discounts assigned to order.
 //
 // It returns the list of tuples which contains order discounts where the amount has been changed.
-func (a *ServiceOrder) RecalculateOrderDiscounts(transaction store_iface.SqlxTxExecutor, ord *model.Order) ([][2]*model.OrderDiscount, *model.AppError) {
+func (a *ServiceOrder) RecalculateOrderDiscounts(transaction store_iface.SqlxTxExecutor, order *model.Order) ([][2]*model.OrderDiscount, *model.AppError) {
 	var changedOrderDiscounts [][2]*model.OrderDiscount
 
 	orderDiscounts, appErr := a.srv.DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
-		OrderID: squirrel.Eq{store.OrderDiscountTableName + ".OrderID": ord.Id},
+		OrderID: squirrel.Eq{store.OrderDiscountTableName + ".OrderID": order.Id},
 		Type:    squirrel.Eq{store.OrderDiscountTableName + ".Type": model.MANUAL},
 	})
 
@@ -128,9 +129,9 @@ func (a *ServiceOrder) RecalculateOrderDiscounts(transaction store_iface.SqlxTxE
 	for _, orderDiscount := range orderDiscounts {
 
 		previousOrderDiscount := orderDiscount.DeepCopy()
-		currentTotal := ord.Total.Gross.Amount
+		currentTotal := order.Total.Gross.Amount
 
-		appErr = a.UpdateOrderDiscountForOrder(transaction, ord, orderDiscount, "", "", nil)
+		appErr = a.UpdateOrderDiscountForOrder(transaction, order, orderDiscount, "", "", nil)
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -159,34 +160,34 @@ func (a *ServiceOrder) RecalculateOrderDiscounts(transaction store_iface.SqlxTxE
 // update_voucher_discount argument set to False.
 //
 // NOTE: `kwargs` can be nil
-func (a *ServiceOrder) RecalculateOrder(transaction store_iface.SqlxTxExecutor, ord *model.Order, kwargs map[string]interface{}) *model.AppError {
-	appErr := a.RecalculateOrderPrices(transaction, ord, kwargs)
+func (a *ServiceOrder) RecalculateOrder(transaction store_iface.SqlxTxExecutor, order *model.Order, kwargs map[string]interface{}) *model.AppError {
+	appErr := a.RecalculateOrderPrices(transaction, order, kwargs)
 	if appErr != nil {
 		return appErr
 	}
 
-	changedOrderDiscounts, appErr := a.RecalculateOrderDiscounts(transaction, ord)
+	changedOrderDiscounts, appErr := a.RecalculateOrderDiscounts(transaction, order)
 	if appErr != nil {
 		return appErr
 	}
 
-	appErr = a.OrderDiscountsAutomaticallyUpdatedEvent(transaction, ord, changedOrderDiscounts)
+	appErr = a.OrderDiscountsAutomaticallyUpdatedEvent(transaction, order, changedOrderDiscounts)
 	if appErr != nil {
 		return appErr
 	}
 
-	ord, appErr = a.UpsertOrder(transaction, ord)
+	order, appErr = a.UpsertOrder(transaction, order)
 	if appErr != nil {
 		return appErr
 	}
 
-	return a.ReCalculateOrderWeight(transaction, ord)
+	return a.ReCalculateOrderWeight(transaction, order)
 }
 
 // ReCalculateOrderWeight
-func (a *ServiceOrder) ReCalculateOrderWeight(transaction store_iface.SqlxTxExecutor, ord *model.Order) *model.AppError {
+func (a *ServiceOrder) ReCalculateOrderWeight(transaction store_iface.SqlxTxExecutor, order *model.Order) *model.AppError {
 	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
+		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": order.Id},
 	})
 	if appErr != nil {
 		return appErr
@@ -209,14 +210,15 @@ func (a *ServiceOrder) ReCalculateOrderWeight(transaction store_iface.SqlxTxExec
 
 	setAppError := func(err *model.AppError) {
 		mut.Lock()
+		defer mut.Unlock()
+
 		if err != nil && appError == nil {
 			appError = err
 		}
-		mut.Unlock()
 	}
 
 	for _, orderLine := range orderLines {
-		if orderLine.VariantID != nil && model.IsValidId(*orderLine.VariantID) {
+		if orderLine.VariantID != nil {
 
 			hasGoRoutines = true
 			wg.Add(1)
@@ -226,14 +228,12 @@ func (a *ServiceOrder) ReCalculateOrderWeight(transaction store_iface.SqlxTxExec
 				if appErr != nil {
 					setAppError(appErr)
 				} else {
-					mut.Lock()
 					addedWeight, err := weight.Add(productVariantWeight.Mul(float32(anOrderLine.Quantity)))
 					if err != nil {
 						setAppError(model.NewAppError("ReCalculateOrderWeight", app.ErrorCalculatingMeasurementID, nil, err.Error(), http.StatusInternalServerError))
 					} else {
 						setWeight(*addedWeight)
 					}
-					mut.Unlock()
 				}
 
 				wg.Done()
@@ -250,10 +250,10 @@ func (a *ServiceOrder) ReCalculateOrderWeight(transaction store_iface.SqlxTxExec
 		return appError
 	}
 
-	weight, _ = weight.ConvertTo(ord.WeightUnit)
-	ord.WeightAmount = weight.Amount
+	weight, _ = weight.ConvertTo(order.WeightUnit)
+	order.WeightAmount = weight.Amount
 
-	_, appError = a.UpsertOrder(transaction, ord)
+	_, appError = a.UpsertOrder(transaction, order)
 	return appError
 }
 

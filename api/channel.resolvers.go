@@ -13,7 +13,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 	"github.com/sitename/sitename/web"
@@ -133,7 +132,7 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 	if err != nil {
 		return nil, model.NewAppError("ChannelUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	// NOTE: We don't defer transaction.RollBack() here
+	defer store.FinalizeTransaction(transaction)
 
 	// create relations between shipping zones and channel
 	if len(args.Input.AddShippingZones) > 0 {
@@ -170,32 +169,23 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 			return nil, appErr
 		}
 
-		err = embedCtx.App.Srv().Store.ShippingMethodChannelListing().BulkDelete(transaction, shippingMethodChannelListings.IDs())
-		if err != nil {
-			return nil, model.NewAppError("ChannelUpdate", "app.shippng.delete_shipping_method_channel_listings.app_error", nil, err.Error(), http.StatusInternalServerError)
-		}
-
-		embedCtx.App.Srv().Go(func() {
-			appErr := embedCtx.App.Srv().ShippingService().DropInvalidShippingMethodsRelationsForGivenChannels(transaction, shippingMethodChannelListings.ShippingMethodIDs(), []string{channel.Id})
-			if appErr != nil {
-				slog.Error("failed to update invalid shipping method", slog.Err(appErr))
-			}
-
-			err := transaction.Commit()
-			if err != nil {
-				slog.Error("failed to commit transaction", slog.Err(err))
-			}
-
-			store.FinalizeTransaction(transaction)
+		appErr = embedCtx.App.Srv().ShippingService().DeleteShippingMethodChannelListings(transaction, &model.ShippingMethodChannelListingFilterOption{
+			Id: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".Id": shippingMethodChannelListings.IDs()},
 		})
-
-	} else {
-		err := transaction.Commit()
-		if err != nil {
-			return nil, model.NewAppError("ChannelUpdate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+		if appErr != nil {
+			return nil, appErr
 		}
 
-		store.FinalizeTransaction(transaction)
+		appErr = embedCtx.App.Srv().ShippingService().DropInvalidShippingMethodsRelationsForGivenChannels(transaction, shippingMethodChannelListings.ShippingMethodIDs(), []string{channel.Id})
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// commit transaction
+	err = transaction.Commit()
+	if err != nil {
+		return nil, model.NewAppError("ChannelUpdate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return &ChannelUpdate{

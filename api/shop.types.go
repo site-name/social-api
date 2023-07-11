@@ -113,7 +113,6 @@ func (s *Shop) AvailablePaymentGateways(ctx context.Context, args struct {
 	ChannelID string
 }) ([]*PaymentGateway, error) {
 	// validate params
-	args.ChannelID = decodeBase64String(args.ChannelID)
 	if !model.IsValidId(args.ChannelID) {
 		return nil, model.NewAppError("Shop.AvailablePaymentGateways", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
 	}

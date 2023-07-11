@@ -3347,7 +3347,7 @@ type ShippingError struct {
 }
 
 type ShippingMethodChannelListingAddInput struct {
-	ChannelID         string           `json:"channelId"`
+	ChannelID         string           `json:"channelId"` // base64 encoded uuid
 	Price             *PositiveDecimal `json:"price"`
 	MinimumOrderPrice *PositiveDecimal `json:"minimumOrderPrice"`
 	MaximumOrderPrice *PositiveDecimal `json:"maximumOrderPrice"`
@@ -3355,7 +3355,7 @@ type ShippingMethodChannelListingAddInput struct {
 
 type ShippingMethodChannelListingInput struct {
 	AddChannels    []*ShippingMethodChannelListingAddInput `json:"addChannels"`
-	RemoveChannels []string                                `json:"removeChannels"`
+	RemoveChannels []string                                `json:"removeChannels"` // base64 encoded uuids
 }
 
 type ShippingMethodChannelListingUpdate struct {
@@ -3515,7 +3515,6 @@ func (s *ShippingPriceInput) Validate(api string) *model.AppError {
 	}
 
 	// clean postal code rules
-	s.DeletePostalCodeRules = decodeBase64Strings(s.DeletePostalCodeRules...)
 	if !lo.EveryBy(s.DeletePostalCodeRules, model.IsValidId) {
 		return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "delete postal code rules"}, "please provide valid delete postal code rule ids", http.StatusBadRequest)
 	}
@@ -3528,11 +3527,9 @@ func (s *ShippingPriceInput) Validate(api string) *model.AppError {
 	}
 
 	if s.ShippingZone != nil {
-		shippingZoneID := decodeBase64String(*s.ShippingZone)
-		if !model.IsValidId(shippingZoneID) {
+		if !model.IsValidId(*s.ShippingZone) {
 			return model.NewAppError(api, app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone"}, "please provide valid shipping zone id", http.StatusBadRequest)
 		}
-		s.ShippingZone = &shippingZoneID // NOTE: no need to convert later (in case nil error is returned)
 	}
 
 	return nil

@@ -14,6 +14,7 @@ type ShippingMethodExcludedProduct struct {
 type ShippingMethodExcludedProductFilterOptions struct {
 	ShippingMethodID squirrel.Sqlizer
 	ProductID        squirrel.Sqlizer
+	Id               squirrel.Sqlizer
 
 	SelectRelatedProduct bool
 }

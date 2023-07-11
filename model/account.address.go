@@ -122,7 +122,7 @@ func (add *Address) PreSave() {
 func (a *Address) commonPre() {
 	a.FirstName = SanitizeUnicode(CleanNamePart(a.FirstName, FirstName))
 	a.LastName = SanitizeUnicode(CleanNamePart(a.LastName, LastName))
-	if a.Country == "" {
+	if !a.Country.IsValid() {
 		a.Country = DEFAULT_COUNTRY
 	}
 }

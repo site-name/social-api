@@ -7243,7 +7243,7 @@ func (s *OpenTracingLayerShippingMethodStore) Upsert(transaction store_iface.Sql
 	return result, err
 }
 
-func (s *OpenTracingLayerShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+func (s *OpenTracingLayerShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodChannelListingFilterOption) error {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodChannelListingStore.BulkDelete")
 	s.Root.Store.SetContext(newCtx)
@@ -7252,7 +7252,7 @@ func (s *OpenTracingLayerShippingMethodChannelListingStore) BulkDelete(transacti
 	}()
 
 	defer span.Finish()
-	err := s.ShippingMethodChannelListingStore.BulkDelete(transaction, ids)
+	err := s.ShippingMethodChannelListingStore.BulkDelete(transaction, options)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -7297,7 +7297,7 @@ func (s *OpenTracingLayerShippingMethodChannelListingStore) Get(listingID string
 	return result, err
 }
 
-func (s *OpenTracingLayerShippingMethodChannelListingStore) Upsert(listing *model.ShippingMethodChannelListing) (*model.ShippingMethodChannelListing, error) {
+func (s *OpenTracingLayerShippingMethodChannelListingStore) Upsert(transaction store_iface.SqlxTxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodChannelListingStore.Upsert")
 	s.Root.Store.SetContext(newCtx)
@@ -7306,13 +7306,31 @@ func (s *OpenTracingLayerShippingMethodChannelListingStore) Upsert(listing *mode
 	}()
 
 	defer span.Finish()
-	result, err := s.ShippingMethodChannelListingStore.Upsert(listing)
+	result, err := s.ShippingMethodChannelListingStore.Upsert(transaction, listings)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
 	}
 
 	return result, err
+}
+
+func (s *OpenTracingLayerShippingMethodExcludedProductStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodExcludedProductFilterOptions) error {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ShippingMethodExcludedProductStore.Delete")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	err := s.ShippingMethodExcludedProductStore.Delete(transaction, options)
+	if err != nil {
+		span.LogFields(spanlog.Error(err))
+		ext.Error.Set(span, true)
+	}
+
+	return err
 }
 
 func (s *OpenTracingLayerShippingMethodExcludedProductStore) FilterByOptions(options *model.ShippingMethodExcludedProductFilterOptions) ([]*model.ShippingMethodExcludedProduct, error) {

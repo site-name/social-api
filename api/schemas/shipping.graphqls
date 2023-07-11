@@ -1,14 +1,14 @@
 extend type Mutation {
-  shippingMethodChannelListingUpdate(id: String!, input: ShippingMethodChannelListingInput!): ShippingMethodChannelListingUpdate
+  shippingMethodChannelListingUpdate(id: String!, input: ShippingMethodChannelListingInput!): ShippingMethodChannelListingUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
   shippingPriceCreate(input: ShippingPriceInput!): ShippingPriceCreate @hasRoleAny(roles: [shop_admin, shop_staff])
   shippingPriceDelete(id: String!): ShippingPriceDelete @hasRoles(roles: [shop_admin])
   shippingPriceBulkDelete(ids: [String!]!): ShippingPriceBulkDelete @hasRoles(roles: [shop_admin])
   shippingPriceUpdate(id: String!, input: ShippingPriceInput!): ShippingPriceUpdate @hasRoleAny(roles: [shop_admin, shop_staff])
   shippingPriceTranslate(id: String!, input: ShippingPriceTranslationInput!, languageCode: LanguageCodeEnum!): ShippingPriceTranslate
-  shippingPriceExcludeProducts(id: String!, input: ShippingPriceExcludeProductsInput!): ShippingPriceExcludeProducts
-  shippingPriceRemoveProductFromExclude(id: String!, products: [String!]!): ShippingPriceRemoveProductFromExclude
+  shippingPriceExcludeProducts(id: String!, input: ShippingPriceExcludeProductsInput!): ShippingPriceExcludeProducts @hasRoleAny(roles: [shop_admin, shop_staff])
+  shippingPriceRemoveProductFromExclude(id: String!, products: [String!]!): ShippingPriceRemoveProductFromExclude @hasRoleAny(roles: [shop_admin, shop_staff])
   shippingZoneCreate(input: ShippingZoneCreateInput!): ShippingZoneCreate
-  shippingZoneDelete(id: String!): ShippingZoneDelete
+  shippingZoneDelete(id: String!): ShippingZoneDelete @hasRoles(roles: [shop_admin])
   shippingZoneBulkDelete(ids: [String!]!): ShippingZoneBulkDelete
   shippingZoneUpdate(id: String!, input: ShippingZoneUpdateInput!): ShippingZoneUpdate
 }

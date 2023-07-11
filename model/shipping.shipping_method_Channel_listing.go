@@ -7,6 +7,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
+	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/text/currency"
 )
 
@@ -26,6 +27,7 @@ type ShippingMethodChannelListing struct {
 
 // ShippingMethodChannelListingFilterOption is used to build sql queries
 type ShippingMethodChannelListingFilterOption struct {
+	Id               squirrel.Sqlizer
 	ShippingMethodID squirrel.Sqlizer
 	ChannelID        squirrel.Sqlizer
 
@@ -36,12 +38,16 @@ type ShippingMethodChannelListingFilterOption struct {
 
 type ShippingMethodChannelListings []*ShippingMethodChannelListing
 
-func (ss ShippingMethodChannelListings) IDs() []string {
+func (ss ShippingMethodChannelListings) IDs() util.AnyArray[string] {
 	return lo.Map(ss, func(s *ShippingMethodChannelListing, _ int) string { return s.Id })
 }
 
-func (ss ShippingMethodChannelListings) ShippingMethodIDs() []string {
+func (ss ShippingMethodChannelListings) ShippingMethodIDs() util.AnyArray[string] {
 	return lo.Map(ss, func(s *ShippingMethodChannelListing, _ int) string { return s.ShippingMethodID })
+}
+
+func (ss ShippingMethodChannelListings) ChannelIDs() util.AnyArray[string] {
+	return lo.Map(ss, func(s *ShippingMethodChannelListing, _ int) string { return s.ChannelID })
 }
 
 func (s *ShippingMethodChannelListing) IsValid() *AppError {

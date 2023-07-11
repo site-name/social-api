@@ -40,56 +40,59 @@ func (s *SqlShippingMethodChannelListingStore) ModelFields(prefix string) util.A
 }
 
 // Upsert depends on given listing's Id to decide whether to save or update the listing
-func (s *SqlShippingMethodChannelListingStore) Upsert(listing *model.ShippingMethodChannelListing) (*model.ShippingMethodChannelListing, error) {
-	var isSaving bool
-	if !model.IsValidId(listing.Id) {
-		listing.Id = ""
-		isSaving = true
-		listing.PreSave()
-	} else {
-		listing.PreUpdate()
-	}
-
-	if err := listing.IsValid(); err != nil {
-		return nil, err
-	}
-
+func (s *SqlShippingMethodChannelListingStore) Upsert(transaction store_iface.SqlxTxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) {
 	var (
-		err        error
-		numUpdated int64
-	)
-	if isSaving {
-		query := "INSERT INTO " + store.ShippingMethodChannelListingTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
-		_, err = s.GetMasterX().NamedExec(query, listing)
-
-	} else {
-		query := "UPDATE " + store.ShippingMethodChannelListingTableName + " SET " + s.
-			ModelFields("").
-			Map(func(_ int, s string) string {
+		saveQuery   = "INSERT INTO " + store.ShippingMethodChannelListingTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+		updateQuery = "UPDATE " + store.ShippingMethodChannelListingTableName + " SET " + s.
+				ModelFields("").
+				Map(func(_ int, s string) string {
 				return s + "=:" + s
 			}).
 			Join(",") + " WHERE Id=:Id"
-		var result sql.Result
+		runner = s.GetMasterX()
+	)
+	if transaction != nil {
+		runner = transaction
+	}
 
-		result, err = s.GetMasterX().NamedExec(query, listing)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
+	for _, listing := range listings {
+		var isSaving bool
+
+		if listing.Id == "" {
+			isSaving = true
+			listing.PreSave()
+		} else {
+			listing.PreUpdate()
+		}
+
+		if err := listing.IsValid(); err != nil {
+			return nil, err
+		}
+
+		var (
+			err    error
+			result sql.Result
+		)
+		if isSaving {
+			result, err = runner.NamedExec(saveQuery, listing)
+		} else {
+			result, err = runner.NamedExec(updateQuery, listing)
+		}
+
+		if err != nil {
+			if s.IsUniqueConstraintError(err, []string{"ShippingMethodID", "ChannelID", "shippingmethodchannellistings_shippingmethodid_channelid_key"}) {
+				return nil, store.NewErrInvalidInput(store.ShippingMethodChannelListingTableName, "ShippingMethodID/ChannelID", listing.ShippingMethodID+"/"+listing.ChannelID)
+			}
+			return nil, errors.Wrapf(err, "failed to upsert shipping method channel listing with id=%s", listing.Id)
+		}
+
+		numUpserted, _ := result.RowsAffected()
+		if numUpserted > 1 {
+			return nil, errors.Errorf("%d shipping method channel listing(s) upserted instead of 1", numUpserted)
 		}
 	}
 
-	if err != nil {
-		if s.IsUniqueConstraintError(err, []string{"ShippingMethodID", "ChannelID", "shippingmethodchannellistings_shippingmethodid_channelid_key"}) {
-			return nil, store.NewErrInvalidInput(store.ShippingMethodChannelListingTableName, "ShippingMethodID/ChannelID", listing.ShippingMethodID+"/"+listing.ChannelID)
-		}
-		return nil, errors.Wrapf(err, "failed to upsert shipping method channel listing with id=%s", listing.Id)
-	}
-
-	if numUpdated > 1 {
-		return nil, errors.Errorf("multiple shipping method channel listings were updated: %d instead of 1", numUpdated)
-	}
-
-	listing.PopulateNonDbFields()
-	return listing, nil
+	return listings, nil
 }
 
 // Get finds a shipping method channel listing with given listingID
@@ -114,7 +117,7 @@ func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *model.Ship
 		From(store.ShippingMethodChannelListingTableName)
 
 	// parse filter option
-	for _, opt := range []squirrel.Sqlizer{option.ShippingMethodID, option.ChannelID} {
+	for _, opt := range []squirrel.Sqlizer{option.ShippingMethodID, option.ChannelID, option.Id} {
 		if opt != nil {
 			query = query.Where(opt)
 		}
@@ -145,21 +148,25 @@ func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *model.Ship
 	return res, nil
 }
 
-func (s *SqlShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+func (s *SqlShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodChannelListingFilterOption) error {
+	query := s.GetQueryBuilder().Delete(store.ShippingMethodChannelListingTableName)
+	for _, opt := range []squirrel.Sqlizer{options.ShippingMethodID, options.ChannelID, options.Id} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
+	}
+
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "BulkDelete_ToSql")
+	}
+
 	runner := s.GetReplicaX()
 	if transaction != nil {
 		runner = transaction
 	}
 
-	query, args, err := s.GetQueryBuilder().
-		Delete(store.ShippingMethodChannelListingTableName).
-		Where(squirrel.Eq{store.ShippingMethodChannelListingTableName + ".Id": ids}).
-		ToSql()
-	if err != nil {
-		return errors.Wrap(err, "BulkDelete_ToSql")
-	}
-
-	_, err = runner.Exec(query, args...)
+	_, err = runner.Exec(queryStr, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete shipping method channel listings")
 	}

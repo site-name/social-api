@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"unsafe"
 
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
@@ -73,6 +74,18 @@ func (j *PositiveDecimal) UnmarshalGraphQL(input interface{}) error {
 	*j = PositiveDecimal(deci)
 
 	return nil
+}
+
+// LessThanOrEqual checks if current decimal <= given other.
+//
+// NOTE: LessThanOrEqual returns false if given other is nil
+func (p *PositiveDecimal) LessThanOrEqual(other *PositiveDecimal) bool {
+	if other == nil {
+		return false
+	}
+
+	return (*decimal.Decimal)(unsafe.Pointer(p)).
+		LessThanOrEqual(*(*decimal.Decimal)(unsafe.Pointer(other)))
 }
 
 // Date implementes custom graphql scalar Date

@@ -7868,11 +7868,11 @@ func (s *RetryLayerShippingMethodStore) Upsert(transaction store_iface.SqlxTxExe
 
 }
 
-func (s *RetryLayerShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+func (s *RetryLayerShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodChannelListingFilterOption) error {
 
 	tries := 0
 	for {
-		err := s.ShippingMethodChannelListingStore.BulkDelete(transaction, ids)
+		err := s.ShippingMethodChannelListingStore.BulkDelete(transaction, options)
 		if err == nil {
 			return nil
 		}
@@ -7928,11 +7928,11 @@ func (s *RetryLayerShippingMethodChannelListingStore) Get(listingID string) (*mo
 
 }
 
-func (s *RetryLayerShippingMethodChannelListingStore) Upsert(listing *model.ShippingMethodChannelListing) (*model.ShippingMethodChannelListing, error) {
+func (s *RetryLayerShippingMethodChannelListingStore) Upsert(transaction store_iface.SqlxTxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShippingMethodChannelListingStore.Upsert(listing)
+		result, err := s.ShippingMethodChannelListingStore.Upsert(transaction, listings)
 		if err == nil {
 			return result, nil
 		}
@@ -7943,6 +7943,26 @@ func (s *RetryLayerShippingMethodChannelListingStore) Upsert(listing *model.Ship
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingMethodExcludedProductStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodExcludedProductFilterOptions) error {
+
+	tries := 0
+	for {
+		err := s.ShippingMethodExcludedProductStore.Delete(transaction, options)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
 		}
 	}
 

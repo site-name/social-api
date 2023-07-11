@@ -118,27 +118,22 @@ func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption)
 		From(store.ChannelTableName)
 
 	// parse options
-	if option.Id != nil {
-		query = query.Where(option.Id)
+	for _, opt := range []squirrel.Sqlizer{
+		option.Id,
+		option.Name,
+		option.IsActive,
+		option.Slug,
+		option.Currency,
+		option.Extra,
+		option.ShippingZoneChannels_ShippingZoneID, //
+	} {
+		if opt != nil {
+			query = query.Where(opt)
+		}
 	}
-	if option.Name != nil {
-		query = query.Where(option.Name)
-	}
-	if option.IsActive != nil {
-		query = query.Where(squirrel.Eq{"Channels.IsActive": *option.IsActive})
-	}
-	if option.Slug != nil {
-		query = query.Where(option.Slug)
-	}
-	if option.Currency != nil {
-		query = query.Where(option.Currency)
-	}
-	if option.Extra != nil {
-		query = query.Where(option.Extra)
-	}
+
 	if option.ShippingZoneChannels_ShippingZoneID != nil {
-		query = query.InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ChannelID = Channels.Id").
-			Where(option.ShippingZoneChannels_ShippingZoneID)
+		query = query.InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ChannelID = Channels.Id")
 	}
 
 	return query.ToSql()

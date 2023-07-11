@@ -92,7 +92,6 @@ func (r *Resolver) User(ctx context.Context, args struct {
 	}
 	var userID string
 	if args.Id != nil {
-		userID = decodeBase64String(*args.Id)
 		if !model.IsValidId(userID) {
 			return nil, model.NewAppError("User", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide a valid id", http.StatusBadRequest)
 		}

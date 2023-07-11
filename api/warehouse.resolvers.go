@@ -119,7 +119,6 @@ func (r *Resolver) UpdateWarehouse(ctx context.Context, args struct {
 	Input WarehouseUpdateInput
 }) (*WarehouseUpdate, error) {
 	// validate arguments
-	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("UpdateWarehouse", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
 	}
@@ -194,7 +193,6 @@ func (r *Resolver) UpdateWarehouse(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
 func (r *Resolver) DeleteWarehouse(ctx context.Context, args struct{ Id string }) (*WarehouseDelete, error) {
 	// validate arguments
-	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("DeleteWarehouse", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
 	}
@@ -254,11 +252,9 @@ func (r *Resolver) AssignWarehouseShippingZone(ctx context.Context, args struct 
 	ShippingZoneIds []string
 }) (*WarehouseShippingZoneAssign, error) {
 	// validate arguments
-	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AssignWarehouseShippingZone", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
 	}
-	args.ShippingZoneIds = decodeBase64Strings(args.ShippingZoneIds...)
 	if !lo.EveryBy(args.ShippingZoneIds, model.IsValidId) {
 		return nil, model.NewAppError("AssignWarehouseShippingZone", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone ids"}, "please provide valid shipping zone ids", http.StatusBadRequest)
 	}
@@ -296,11 +292,9 @@ func (r *Resolver) UnassignWarehouseShippingZone(ctx context.Context, args struc
 	ShippingZoneIds []string
 }) (*WarehouseShippingZoneUnassign, error) {
 	// validate arguments
-	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("AssignWarehouseShippingZone", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid warehouse id", http.StatusBadRequest)
 	}
-	args.ShippingZoneIds = decodeBase64Strings(args.ShippingZoneIds...)
 	if !lo.EveryBy(args.ShippingZoneIds, model.IsValidId) {
 		return nil, model.NewAppError("AssignWarehouseShippingZone", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "shipping zone ids"}, "please provide valid shipping zone ids", http.StatusBadRequest)
 	}
@@ -391,7 +385,6 @@ func (r *Resolver) Warehouses(ctx context.Context, args struct {
 // NOTE: Refer to ./schemas/warehouse.graphqls for details on directives used.
 func (r *Resolver) Stock(ctx context.Context, args struct{ Id string }) (*Stock, error) {
 	// validate arguments:
-	args.Id = decodeBase64String(args.Id)
 	if !model.IsValidId(args.Id) {
 		return nil, model.NewAppError("Stock", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid stock id", http.StatusBadRequest)
 	}

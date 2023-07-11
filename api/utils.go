@@ -150,15 +150,15 @@ func convertGraphqlOperandToString[C graphqlCursorType](operand C) string {
 // decodeBase64String uses base64 to decode given string to its original value.
 //
 // NOTE: given value MUST be base64 encoded, otherwise an empty string "" is returned.
-func decodeBase64String(value string) string {
-	decoded, _ := base64.StdEncoding.DecodeString(value)
-	return string(decoded)
-}
+// func decodeBase64String(value string) string {
+// 	decoded, _ := base64.StdEncoding.DecodeString(value)
+// 	return string(decoded)
+// }
 
-// NOTE: You must be sure that given values are base64 encoded.
-func decodeBase64Strings(values ...string) []string {
-	return lo.Map(values, func(v string, _ int) string { return decodeBase64String(v) })
-}
+// // NOTE: You must be sure that given values are base64 encoded.
+// func decodeBase64Strings(values ...string) []string {
+// 	return lo.Map(values, func(v string, _ int) string { return decodeBase64String(v) })
+// }
 
 // parseGraphqlOperand can possibly returns (nil, nil)
 func parseGraphqlOperand[C graphqlCursorType](params GraphqlParams) (*C, *model.AppError) {

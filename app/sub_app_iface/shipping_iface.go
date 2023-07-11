@@ -34,4 +34,6 @@ type ShippingService interface {
 	GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethods, channelSlug string) (map[string]*goprices.Money, *model.AppError)
 	CreateShippingMethodPostalCodeRules(transaction store_iface.SqlxTxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, *model.AppError)
 	UpsertShippingMethod(transaction store_iface.SqlxTxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, *model.AppError)
+	UpsertShippingMethodChannelListings(transaction store_iface.SqlxTxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model.AppError)
+	DeleteShippingMethodChannelListings(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodChannelListingFilterOption) *model.AppError
 }

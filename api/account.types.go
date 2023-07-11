@@ -199,7 +199,6 @@ func (u *User) DefaultBillingAddress(ctx context.Context) (*Address, error) {
 
 // NOTE: Refer to ./schemas/user.graphqls for directive used.
 func (u *User) StoredPaymentSources(ctx context.Context, args struct{ ChannelID string }) ([]*PaymentSource, error) {
-	args.ChannelID = decodeBase64String(args.ChannelID)
 	if !model.IsValidId(args.ChannelID) {
 		return nil, model.NewAppError("User.StoredPaymentSources", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "please provide valid channel id", http.StatusBadRequest)
 	}
@@ -274,11 +273,10 @@ func (u *User) CheckoutTokens(ctx context.Context, args struct{ ChannelID *strin
 		if args.ChannelID == nil {
 			checkouts, err = CheckoutByUserLoader.Load(ctx, u.ID)()
 		} else {
-			channelID := decodeBase64String(*args.ChannelID)
-			if !model.IsValidId(channelID) {
+			if !model.IsValidId(*args.ChannelID) {
 				return nil, model.NewAppError("User.CheckoutTokens", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
 			}
-			checkouts, err = CheckoutByUserAndChannelLoader.Load(ctx, u.ID+"__"+channelID)()
+			checkouts, err = CheckoutByUserAndChannelLoader.Load(ctx, u.ID+"__"+*args.ChannelID)()
 		}
 		if err != nil {
 			return nil, err

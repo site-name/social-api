@@ -48,7 +48,7 @@ func (c *Channel) SetHasOrders(b bool) {
 type ChannelFilterOption struct {
 	Id       squirrel.Sqlizer
 	Name     squirrel.Sqlizer
-	IsActive *bool
+	IsActive squirrel.Sqlizer
 	Slug     squirrel.Sqlizer
 	Currency squirrel.Sqlizer
 
@@ -117,7 +117,6 @@ func (c *Channel) commonPre() {
 	if !c.DefaultCountry.IsValid() {
 		c.DefaultCountry = DEFAULT_COUNTRY
 	}
-	// c.DefaultCountry = strings.ToUpper(c.DefaultCountry)
 }
 
 func (c *Channel) PreUpdate() {

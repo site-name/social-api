@@ -6595,10 +6595,10 @@ func (s *TimerLayerShippingMethodStore) Upsert(transaction store_iface.SqlxTxExe
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxTxExecutor, ids []string) error {
+func (s *TimerLayerShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodChannelListingFilterOption) error {
 	start := timemodule.Now()
 
-	err := s.ShippingMethodChannelListingStore.BulkDelete(transaction, ids)
+	err := s.ShippingMethodChannelListingStore.BulkDelete(transaction, options)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6643,10 +6643,10 @@ func (s *TimerLayerShippingMethodChannelListingStore) Get(listingID string) (*mo
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodChannelListingStore) Upsert(listing *model.ShippingMethodChannelListing) (*model.ShippingMethodChannelListing, error) {
+func (s *TimerLayerShippingMethodChannelListingStore) Upsert(transaction store_iface.SqlxTxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) {
 	start := timemodule.Now()
 
-	result, err := s.ShippingMethodChannelListingStore.Upsert(listing)
+	result, err := s.ShippingMethodChannelListingStore.Upsert(transaction, listings)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -6657,6 +6657,22 @@ func (s *TimerLayerShippingMethodChannelListingStore) Upsert(listing *model.Ship
 		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodChannelListingStore.Upsert", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerShippingMethodExcludedProductStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodExcludedProductFilterOptions) error {
+	start := timemodule.Now()
+
+	err := s.ShippingMethodExcludedProductStore.Delete(transaction, options)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ShippingMethodExcludedProductStore.Delete", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerShippingMethodExcludedProductStore) FilterByOptions(options *model.ShippingMethodExcludedProductFilterOptions) ([]*model.ShippingMethodExcludedProduct, error) {
