@@ -63,7 +63,7 @@ func (ps *SqlProductTypeStore) Save(productType *model.ProductType) (*model.Prod
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.ProductTypeTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.ProductTypeTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
 	if _, err := ps.GetMasterX().NamedExec(query, productType); err != nil {
 		return nil, errors.Wrapf(err, "failed to save product type withh id=%s", productType.Id)
 	}
@@ -81,12 +81,12 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken s
 	*/
 
 	queryString, args, err := ps.GetQueryBuilder().
-		Select(ps.ModelFields(store.ProductTypeTableName+".")...).
-		From(store.ProductTypeTableName).
-		InnerJoin(store.ProductTableName+" ON (ProductTypes.Id = Products.ProductTypeID)").
-		InnerJoin(store.ProductVariantTableName+" ON (ProductVariants.ProductID = Products.Id)").
-		InnerJoin(store.CheckoutLineTableName+" ON (CheckoutLines.VariantID = ProductVariants.Id)").
-		InnerJoin(store.CheckoutTableName+" ON (Checkouts.Token = CheckoutLines.CheckoutID)").
+		Select(ps.ModelFields(model.ProductTypeTableName+".")...).
+		From(model.ProductTypeTableName).
+		InnerJoin(model.ProductTableName+" ON (ProductTypes.Id = Products.ProductTypeID)").
+		InnerJoin(model.ProductVariantTableName+" ON (ProductVariants.ProductID = Products.Id)").
+		InnerJoin(model.CheckoutLineTableName+" ON (CheckoutLines.VariantID = ProductVariants.Id)").
+		InnerJoin(model.CheckoutTableName+" ON (Checkouts.Token = CheckoutLines.CheckoutID)").
 		Where("Checkouts.Token = ?", checkoutToken).
 		ToSql()
 
@@ -108,8 +108,8 @@ func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([
 	queryString, args, err := pts.
 		GetQueryBuilder().
 		Select("pt.*").
-		From(store.ProductTypeTableName + " pt").
-		InnerJoin(store.ProductTableName + " p ON pt.Id = p.ProductTypeID").
+		From(model.ProductTypeTableName + " pt").
+		InnerJoin(model.ProductTableName + " p ON pt.Id = p.ProductTypeID").
 		Where(squirrel.Eq{"p.Id": productIDs}).
 		ToSql()
 	if err != nil {
@@ -127,10 +127,10 @@ func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([
 // ProductTypeByProductVariantID finds and returns 1 product type that is related to given product variant
 func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) (*model.ProductType, error) {
 	query := pts.GetQueryBuilder().
-		Select(pts.ModelFields(store.ProductTypeTableName+".")...).
-		From(store.ProductTypeTableName).
-		InnerJoin(store.ProductTableName+" ON (Products.ProductTypeID = ProductTypes.Id)").
-		InnerJoin(store.ProductVariantTableName+" ON (Products.Id = ProductVariants.ProductID)").
+		Select(pts.ModelFields(model.ProductTypeTableName+".")...).
+		From(model.ProductTypeTableName).
+		InnerJoin(model.ProductTableName+" ON (Products.ProductTypeID = ProductTypes.Id)").
+		InnerJoin(model.ProductVariantTableName+" ON (Products.Id = ProductVariants.ProductID)").
 		Where("ProductVariants.Id = ?", variantID)
 
 	queryString, args, err := query.ToSql()
@@ -142,7 +142,7 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 	err = pts.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductTypeTableName, "variantID="+variantID)
+			return nil, store.NewErrNotFound(model.ProductTypeTableName, "variantID="+variantID)
 		}
 		return nil, errors.Wrapf(err, "failed to find product type with product variant id=%s", variantID)
 	}
@@ -152,8 +152,8 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 
 func (pts *SqlProductTypeStore) commonQueryBuilder(options *model.ProductTypeFilterOption) squirrel.SelectBuilder {
 	query := pts.GetQueryBuilder().
-		Select(pts.ModelFields(store.ProductTypeTableName + ".")...).
-		From(store.ProductTypeTableName)
+		Select(pts.ModelFields(model.ProductTypeTableName + ".")...).
+		From(model.ProductTypeTableName)
 
 	if options.Id != nil {
 		query = query.Where(options.Id)
@@ -162,11 +162,11 @@ func (pts *SqlProductTypeStore) commonQueryBuilder(options *model.ProductTypeFil
 		query = query.Where(options.Name)
 	}
 	if options.AttributeProducts_AttributeID != nil {
-		query = query.InnerJoin(store.AttributeProductTableName + " ON AttributeProducts.ProductTypeID = ProductTypes.Id").
+		query = query.InnerJoin(model.AttributeProductTableName + " ON AttributeProducts.ProductTypeID = ProductTypes.Id").
 			Where(options.AttributeProducts_AttributeID)
 	}
 	if options.AttributeVariants_AttributeID != nil {
-		query = query.InnerJoin(store.AttributeVariantTableName + " ON AttributeVariants.ProductTypeID = ProductTypes.Id").
+		query = query.InnerJoin(model.AttributeVariantTableName + " ON AttributeVariants.ProductTypeID = ProductTypes.Id").
 			Where(options.AttributeVariants_AttributeID)
 	}
 	if options.Extra != nil {
@@ -187,7 +187,7 @@ func (pts *SqlProductTypeStore) GetByOption(options *model.ProductTypeFilterOpti
 	err = pts.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductTypeTableName, "options")
+			return nil, store.NewErrNotFound(model.ProductTypeTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find product type with given options")
 	}

@@ -6,7 +6,9 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"golang.org/x/text/language"
+	"gorm.io/gorm"
 )
 
 // max lengths for some fields
@@ -16,14 +18,50 @@ const (
 )
 
 type Sale struct {
-	Id        string       `json:"id"`
-	Name      string       `json:"name"`
-	Type      DiscountType `json:"type"` // DEFAULT `fixed`
+	Id        string       `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	Name      string       `json:"name" gorm:"type:varchar(255)"`
+	Type      DiscountType `json:"type" gorm:"type:varchar(10)"` // DEFAULT `fixed`
 	StartDate time.Time    `json:"start_date"`
 	EndDate   *time.Time   `json:"end_date"`
-	CreateAt  int64        `json:"create_at"`
-	UpdateAt  int64        `json:"update_at"`
+	CreateAt  int64        `json:"create_at" gorm:"autoCreateTime:milli"`
+	UpdateAt  int64        `json:"update_at" gorm:"autoUpdateTime:milli"`
 	ModelMetadata
+
+	Categories      Categories      `json:"-" gorm:"many2many:sale_categories"`
+	Products        Products        `json:"-" gorm:"many2many:sale_products"`
+	ProductVariants ProductVariants `json:"-" gorm:"many2many:sale_productvariants"`
+	Collections     Collections     `json:"-" gorm:"many2many:sale_collections"`
+}
+
+type SaleCollection struct {
+	SaleID       string
+	CollectionID string
+}
+
+type SaleProduct struct {
+	SaleID    string
+	ProductID string
+}
+
+type SaleCategory struct {
+	SaleID     string
+	CategoryID string
+}
+
+type SaleProductVariant struct {
+	SaleID           string
+	ProductVariantID string
+}
+
+// BeforeCreate is gorm hook
+func (s *Sale) BeforeCreate(_ *gorm.DB) error {
+	s.commonPre()
+	return nil
+}
+
+func (s *Sale) BeforeUpdate() error {
+	s.commonPre()
+	return nil
 }
 
 // SaleFilterOption can be used to
@@ -35,14 +73,7 @@ type SaleFilterOption struct {
 type Sales []*Sale
 
 func (s Sales) IDs() []string {
-	res := []string{}
-	for _, item := range s {
-		if item != nil {
-			res = append(res, item.Id)
-		}
-	}
-
-	return res
+	return lo.Map(s, func(sa *Sale, _ int) string { return sa.Id })
 }
 
 func (s *Sale) String() string {
@@ -86,14 +117,13 @@ func (s *Sale) PreSave() {
 	}
 	s.CreateAt = GetMillis()
 	s.UpdateAt = s.CreateAt
-
-	if s.StartDate.IsZero() {
-		s.StartDate = time.Now()
-	}
 	s.commonPre()
 }
 
 func (s *Sale) commonPre() {
+	if s.StartDate.IsZero() {
+		s.StartDate = time.Now()
+	}
 	if !s.Type.IsValid() {
 		s.Type = FIXED
 	}

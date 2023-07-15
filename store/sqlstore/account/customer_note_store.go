@@ -42,7 +42,7 @@ func (cs *SqlCustomerNoteStore) Save(note *model.CustomerNote) (*model.CustomerN
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.CustomerNoteTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.CustomerNoteTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
 	if _, err := cs.GetMasterX().NamedExec(query, note); err != nil {
 		return nil, errors.Wrapf(err, "failed to save customer note with id=%s", note.Id)
 	}
@@ -53,9 +53,9 @@ func (cs *SqlCustomerNoteStore) Save(note *model.CustomerNote) (*model.CustomerN
 func (cs *SqlCustomerNoteStore) Get(id string) (*model.CustomerNote, error) {
 	var res model.CustomerNote
 
-	if err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+store.CustomerNoteTableName+" WHERE Id = ?", id); err != nil {
+	if err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+model.CustomerNoteTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CustomerNoteTableName, id)
+			return nil, store.NewErrNotFound(model.CustomerNoteTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find customer note with id=%s", id)
 	}

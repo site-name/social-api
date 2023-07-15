@@ -5,12 +5,14 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 func (a *ServiceDiscount) GetSaleDiscount(sale *model.Sale, saleChannelListing *model.SaleChannelListing) (types.DiscountCalculator, *model.AppError) {
@@ -54,10 +56,10 @@ func (a *ServiceDiscount) ActiveSales(date *time.Time) (model.Sales, *model.AppE
 	activeSalesByDate, err := a.srv.Store.DiscountSale().
 		FilterSalesByOption(&model.SaleFilterOption{
 			EndDate: squirrel.Or{
-				squirrel.Eq{store.SaleTableName + ".EndDate": nil},
-				squirrel.GtOrEq{store.SaleTableName + ".EndDate": *date},
+				squirrel.Eq{model.SaleTableName + ".EndDate": nil},
+				squirrel.GtOrEq{model.SaleTableName + ".EndDate": *date},
 			},
-			StartDate: squirrel.LtOrEq{store.SaleTableName + ".StartDate": *date},
+			StartDate: squirrel.LtOrEq{model.SaleTableName + ".StartDate": *date},
 		})
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -80,8 +82,8 @@ func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model.A
 
 	expiredSalesByDate, err := a.srv.Store.DiscountSale().
 		FilterSalesByOption(&model.SaleFilterOption{
-			EndDate:   squirrel.Lt{store.SaleTableName + ".EndDate": *date},
-			StartDate: squirrel.Lt{store.SaleTableName + ".StartDate": *date},
+			EndDate:   squirrel.Lt{model.SaleTableName + ".EndDate": *date},
+			StartDate: squirrel.Lt{model.SaleTableName + ".StartDate": *date},
 		})
 
 	if err != nil {
@@ -93,4 +95,40 @@ func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model.A
 	}
 
 	return expiredSalesByDate, nil
+}
+
+func (s *ServiceDiscount) AddSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string) *model.AppError {
+	if len(productIDs) > 0 {
+		products := lo.Map(productIDs, func(id string, _ int) *model.Product { return &model.Product{Id: id} })
+		err := s.srv.Store.DiscountSale().AddSaleRelations(transaction, model.Sales{{Id: saleID}}, products)
+		if err != nil {
+			return model.NewAppError("UpsertSaleRelations", "app.discount.insert_sale_relations.app_error", nil, "failed to insert sale-product relations", http.StatusInternalServerError)
+		}
+	}
+
+	if len(variantIDs) > 0 {
+		variants := lo.Map(variantIDs, func(id string, _ int) *model.ProductVariant { return &model.ProductVariant{Id: id} })
+		err := s.srv.Store.DiscountSale().AddSaleRelations(transaction, model.Sales{{Id: saleID}}, variants)
+		if err != nil {
+			return model.NewAppError("UpsertSaleRelations", "app.discount.insert_sale_relations.app_error", nil, "failed to insert sale-variant relations", http.StatusInternalServerError)
+		}
+	}
+
+	if len(collectionIDs) > 0 {
+		collections := lo.Map(collectionIDs, func(id string, _ int) *model.Collection { return &model.Collection{Id: id} })
+		err := s.srv.Store.DiscountSale().AddSaleRelations(transaction, model.Sales{{Id: saleID}}, collections)
+		if err != nil {
+			return model.NewAppError("UpsertSaleRelations", "app.discount.insert_sale_relations.app_error", nil, "failed to insert sale-collection relations", http.StatusInternalServerError)
+		}
+	}
+
+	if len(categoryIDs) > 0 {
+		categories := lo.Map(categoryIDs, func(id string, _ int) *model.Category { return &model.Category{Id: id} })
+		err := s.srv.Store.DiscountSale().AddSaleRelations(transaction, model.Sales{{Id: saleID}}, categories)
+		if err != nil {
+			return model.NewAppError("UpsertSaleRelations", "app.discount.insert_sale_relations.app_error", nil, "failed to insert sale-collection relations", http.StatusInternalServerError)
+		}
+	}
+
+	return nil
 }

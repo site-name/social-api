@@ -30,6 +30,8 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type migrationDirection string
@@ -62,8 +64,12 @@ type SqlStore struct {
 	rrCounter int64
 	srCounter int64
 
+	master         *gorm.DB
+	replicas       []*gorm.DB
+	searchReplicas []*gorm.DB
+
 	masterX         *sqlxDBWrapper
-	ReplicaXs       []*sqlxDBWrapper
+	replicaXs       []*sqlxDBWrapper
 	searchReplicaXs []*sqlxDBWrapper
 
 	replicaLagHandles []*dbsql.DB
@@ -171,20 +177,35 @@ func (ss *SqlStore) initConnection() error {
 	}
 	ss.masterX = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
 
+	// gorm master
+	ss.master, err = gorm.Open(postgres.New(postgres.Config{Conn: handle}), &gorm.Config{})
+	if err != nil {
+		return err
+	}
+
 	if len(ss.settings.DataSourceReplicas) > 0 {
-		ss.ReplicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceReplicas))
+		ss.replicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceReplicas))
+
+		// gorm dbs
+		ss.replicas = make([]*gorm.DB, len(ss.settings.DataSourceReplicas))
+
 		for i, replica := range ss.settings.DataSourceReplicas {
 			handle, err := setupConnection(fmt.Sprintf("replica-%v", i), replica, ss.settings)
 			if err != nil {
 				slog.Warn("Failed to setup connection. Skipping..", slog.String("db", fmt.Sprintf("replica-%v", i)), slog.Err(err))
 				continue
 			}
-			ss.ReplicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
+			ss.replicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
+
+			ss.replicas[i], _ = gorm.Open(postgres.New(postgres.Config{Conn: handle}))
 		}
 	}
 
 	if len(ss.settings.DataSourceSearchReplicas) > 0 {
 		ss.searchReplicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceSearchReplicas))
+		// gorm dbs
+		ss.searchReplicas = make([]*gorm.DB, len(ss.settings.DataSourceSearchReplicas))
+
 		for i, replica := range ss.settings.DataSourceSearchReplicas {
 			handle, err := setupConnection(fmt.Sprintf("search-replica-%v", i), replica, ss.settings)
 			if err != nil {
@@ -192,6 +213,8 @@ func (ss *SqlStore) initConnection() error {
 				continue
 			}
 			ss.searchReplicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
+
+			ss.searchReplicas[i], _ = gorm.Open(postgres.New(postgres.Config{Conn: handle}))
 		}
 	}
 
@@ -250,6 +273,18 @@ func (ss *SqlStore) GetMasterX() store_iface.SqlxExecutor {
 	return ss.masterX
 }
 
+func (ss *SqlStore) GetMaster() *gorm.DB {
+	return ss.master
+}
+
+func (ss *SqlStore) GetReplica() *gorm.DB {
+	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
+		return ss.GetMaster()
+	}
+	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.replicaXs))
+	return ss.replicas[rrNum]
+}
+
 func (ss *SqlStore) SetMasterX(db *sql.DB) {
 	ss.masterX = newSqlxDBWrapper(
 		sqlx.NewDb(db, ss.DriverName()),
@@ -257,10 +292,6 @@ func (ss *SqlStore) SetMasterX(db *sql.DB) {
 		*ss.settings.Trace,
 	)
 }
-
-// func (ss *SqlStore) GetInternalMasterDB() *sql.DB {
-// 	return ss.GetMasterX().DB.DB
-// }
 
 func (ss *SqlStore) GetSearchReplicaX() store_iface.SqlxExecutor {
 	if len(ss.settings.DataSourceSearchReplicas) == 0 {
@@ -275,23 +306,8 @@ func (ss *SqlStore) GetReplicaX() store_iface.SqlxExecutor {
 	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
 		return ss.GetMasterX()
 	}
-	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.ReplicaXs))
-	return ss.ReplicaXs[rrNum]
-}
-
-func (ss *SqlStore) GetInternalReplicaDBs() []*sql.DB {
-	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
-		return []*sql.DB{
-			ss.masterX.DB.DB,
-		}
-	}
-
-	dbs := make([]*sql.DB, len(ss.ReplicaXs))
-	for i, rx := range ss.ReplicaXs {
-		dbs[i] = rx.DB.DB
-	}
-
-	return dbs
+	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.replicaXs))
+	return ss.replicaXs[rrNum]
 }
 
 // returns number of connections to master database
@@ -343,7 +359,7 @@ func (ss *SqlStore) TotalReadDbConnections() int {
 	}
 
 	count := 0
-	for _, db := range ss.ReplicaXs {
+	for _, db := range ss.replicaXs {
 		count = count + db.Stats().OpenConnections
 	}
 
@@ -478,9 +494,9 @@ func (ss *SqlStore) IsUniqueConstraintError(err error, indexName []string) bool 
 
 // Get all databases connections
 func (ss *SqlStore) GetAllConns() []*sqlxDBWrapper {
-	all := make([]*sqlxDBWrapper, len(ss.ReplicaXs)+1)
-	copy(all, ss.ReplicaXs)
-	all[len(ss.ReplicaXs)] = ss.masterX
+	all := make([]*sqlxDBWrapper, len(ss.replicaXs)+1)
+	copy(all, ss.replicaXs)
+	all[len(ss.replicaXs)] = ss.masterX
 	return all
 }
 
@@ -491,25 +507,29 @@ func (ss *SqlStore) RecycleDBConnections(d time.Duration) {
 	originalDuration := time.Duration(*ss.settings.ConnMaxLifetimeMilliseconds) * time.Millisecond
 	// Set the max lifetimes for all connections.
 	for _, conn := range ss.GetAllConns() {
-		conn.SetConnMaxLifetime(d)
+		if db, ok := conn.DB.(*sqlx.DB); ok {
+			db.SetConnMaxLifetime(d)
+		}
 	}
 	// Wait for that period with an additional 2 seconds of scheduling delay.
 	time.Sleep(d + 2*time.Second)
 	// Reset max lifetime back to original value.
 	for _, conn := range ss.GetAllConns() {
-		conn.SetConnMaxLifetime(originalDuration)
+		if db, ok := conn.DB.(*sqlx.DB); ok {
+			db.SetConnMaxLifetime(originalDuration)
+		}
 	}
 }
 
 // close all database connections
 func (ss *SqlStore) Close() {
-	ss.masterX.Close()
-	for _, replica := range ss.ReplicaXs {
-		replica.Close()
-	}
+	connections := append(ss.replicaXs, ss.searchReplicaXs...)
+	connections = append(connections, ss.masterX)
 
-	for _, replica := range ss.searchReplicaXs {
-		replica.Close()
+	for _, conn := range connections {
+		if db, ok := conn.DB.(*sqlx.DB); ok {
+			db.Close()
+		}
 	}
 }
 
@@ -569,7 +589,7 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 		return err
 	}
 
-	driver, err := ps.WithInstance(ss.masterX.DB.DB, &ps.Config{
+	driver, err := ps.WithInstance(ss.masterX.DB.(*sqlx.DB).DB, &ps.Config{
 		Config: drivers.Config{
 			StatementTimeoutInSecs: *ss.settings.MigrationsStatementTimeoutSeconds,
 		},

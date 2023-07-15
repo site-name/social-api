@@ -37,12 +37,12 @@ func (as *SqlAttributeProductStore) Save(attributeProduct *model.AttributeProduc
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.AttributeProductTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.AttributeProductTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 
 	_, err := as.GetMasterX().NamedExec(query, attributeProduct)
 	if err != nil {
 		if as.IsUniqueConstraintError(err, []string{"attributeproducts_attributeid_producttypeid_key", "AttributeID", "ProductTypeID"}) {
-			return nil, store.NewErrInvalidInput(store.AttributeProductTableName, "AttributeID/ProductTypeID", attributeProduct.AttributeID+"/"+attributeProduct.ProductTypeID)
+			return nil, store.NewErrInvalidInput(model.AttributeProductTableName, "AttributeID/ProductTypeID", attributeProduct.AttributeID+"/"+attributeProduct.ProductTypeID)
 		}
 		return nil, errors.Wrapf(err, "failed to save new attributeProduct with id=%s", attributeProduct.Id)
 	}
@@ -53,10 +53,10 @@ func (as *SqlAttributeProductStore) Save(attributeProduct *model.AttributeProduc
 func (as *SqlAttributeProductStore) Get(id string) (*model.AttributeProduct, error) {
 	var res model.AttributeProduct
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AttributeProductTableName+" WHERE Id = ?", id)
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AttributeProductTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AttributeProductTableName, id)
+			return nil, store.NewErrNotFound(model.AttributeProductTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find attribute product with id=%s", id)
 	}
@@ -67,7 +67,7 @@ func (as *SqlAttributeProductStore) Get(id string) (*model.AttributeProduct, err
 func (s *SqlAttributeProductStore) commonQueryBuilder(option *model.AttributeProductFilterOption) squirrel.SelectBuilder {
 	query := s.GetQueryBuilder().
 		Select("*").
-		From(store.AttributeProductTableName)
+		From(model.AttributeProductTableName)
 
 	// parse option
 	if option.AttributeID != nil {
@@ -78,8 +78,8 @@ func (s *SqlAttributeProductStore) commonQueryBuilder(option *model.AttributePro
 	}
 	if option.AttributeVisibleInStoreFront != nil {
 		query = query.
-			InnerJoin(store.AttributeTableName + " ON Attributes.Id = AttributeProducts.AttributeID").
-			Where(squirrel.Eq{store.AttributeTableName + ".VisibleInStoreFront": *option.AttributeVisibleInStoreFront})
+			InnerJoin(model.AttributeTableName + " ON Attributes.Id = AttributeProducts.AttributeID").
+			Where(squirrel.Eq{model.AttributeTableName + ".VisibleInStoreFront": *option.AttributeVisibleInStoreFront})
 	}
 	return query
 }
@@ -98,7 +98,7 @@ func (as *SqlAttributeProductStore) GetByOption(option *model.AttributeProductFi
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AttributeProductTableName, "")
+			return nil, store.NewErrNotFound(model.AttributeProductTableName, "")
 		}
 		return nil, errors.Wrapf(err, "failed to find attribute product with AttributeID = %s, ProductTypeID = %s", option.AttributeID, option.ProductTypeID)
 	}

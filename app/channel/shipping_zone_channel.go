@@ -8,7 +8,7 @@ import (
 	"github.com/sitename/sitename/store/store_iface"
 )
 
-func (s *ServiceChannel) BulkUpsertShippingZoneChannels(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, *model.AppError) {
+func (s *ServiceChannel) BulkUpsertShippingZoneChannels(transaction store_iface.SqlxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, *model.AppError) {
 	savedRelations, err := s.srv.Store.ShippingZoneChannel().BulkSave(transaction, relations)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -24,8 +24,8 @@ func (s *ServiceChannel) BulkUpsertShippingZoneChannels(transaction store_iface.
 	return savedRelations, nil
 }
 
-func (s *ServiceChannel) BulkDeleteShippingZoneChannels(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) *model.AppError {
-	err := s.srv.Store.ShippingZoneChannel().BulkDelete(transaction, relations)
+func (s *ServiceChannel) BulkDeleteShippingZoneChannels(transaction store_iface.SqlxExecutor, options *model.ShippingZoneChannelFilterOptions) *model.AppError {
+	err := s.srv.Store.ShippingZoneChannel().BulkDelete(transaction, options)
 	if err != nil {
 		return model.NewAppError("BulkDeleteShippingZoneChannels", "app.channel.bulk_delete_shipping_zone_channels.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

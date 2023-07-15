@@ -71,7 +71,9 @@ func (r *Resolver) CreateWarehouse(ctx context.Context, args struct{ Input Wareh
 
 		shippingZones, appErr := embedCtx.App.Srv().
 			ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
-			Id: squirrel.Eq{store.ShippingZoneTableName + ".Id": input.ShippingZones},
+			Conditions: squirrel.And{
+				squirrel.Eq{model.ShippingZoneTableName + ".Id": input.ShippingZones},
+			},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -127,7 +129,7 @@ func (r *Resolver) UpdateWarehouse(ctx context.Context, args struct {
 	warehouse, appErr := embedCtx.App.Srv().
 		WarehouseService().
 		WarehouseByOption(&model.WarehouseFilterOption{
-			Id: squirrel.Eq{store.WarehouseTableName + ".Id": args.Id},
+			Id: squirrel.Eq{model.WarehouseTableName + ".Id": args.Id},
 		})
 	if appErr != nil {
 		return nil, appErr
@@ -200,7 +202,7 @@ func (r *Resolver) DeleteWarehouse(ctx context.Context, args struct{ Id string }
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	warehouse, appErr := embedCtx.App.Srv().WarehouseService().WarehouseByOption(&model.WarehouseFilterOption{
-		Id: squirrel.Eq{store.WarehouseTableName + ".Id": args.Id},
+		Id: squirrel.Eq{model.WarehouseTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -227,7 +229,7 @@ func (r *Resolver) DeleteWarehouse(ctx context.Context, args struct{ Id string }
 	stocks, appErr := embedCtx.App.Srv().
 		WarehouseService().
 		StocksByOption(&model.StockFilterOption{
-			WarehouseID: squirrel.Eq{store.StockTableName + ".WarehouseID": args.Id},
+			Conditions: squirrel.Eq{model.StockTableName + ".WarehouseID": args.Id},
 		})
 	if appErr != nil {
 		return nil, appErr
@@ -275,7 +277,7 @@ func (r *Resolver) AssignWarehouseShippingZone(ctx context.Context, args struct 
 	warehouse, appErr := embedCtx.App.Srv().
 		WarehouseService().
 		WarehouseByOption(&model.WarehouseFilterOption{
-			Id: squirrel.Eq{store.WarehouseTableName + ".Id": args.Id},
+			Id: squirrel.Eq{model.WarehouseTableName + ".Id": args.Id},
 		})
 	if appErr != nil {
 		return nil, appErr
@@ -301,8 +303,10 @@ func (r *Resolver) UnassignWarehouseShippingZone(ctx context.Context, args struc
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	err := embedCtx.App.Srv().Store.WarehouseShippingZone().Delete(nil, &model.WarehouseShippingZoneFilterOption{
-		WarehouseID:    squirrel.Eq{store.WarehouseShippingZoneTableName + ".WarehouseID": args.Id},
-		ShippingZoneID: squirrel.Eq{store.WarehouseShippingZoneTableName + ".ShippingZoneID": args.ShippingZoneIds},
+		Conditions: squirrel.And{
+			squirrel.Eq{model.WarehouseShippingZoneTableName + ".WarehouseID": args.Id},
+			squirrel.Eq{model.WarehouseShippingZoneTableName + ".ShippingZoneID": args.ShippingZoneIds},
+		},
 	})
 	if err != nil {
 		return nil, model.NewAppError("UnassignWarehouseShippingZone", "app.warehouse.error_deleting_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -311,7 +315,7 @@ func (r *Resolver) UnassignWarehouseShippingZone(ctx context.Context, args struc
 	warehouse, appErr := embedCtx.App.Srv().
 		WarehouseService().
 		WarehouseByOption(&model.WarehouseFilterOption{
-			Id: squirrel.Eq{store.WarehouseTableName + ".Id": args.Id},
+			Id: squirrel.Eq{model.WarehouseTableName + ".Id": args.Id},
 		})
 	if appErr != nil {
 		return nil, appErr
@@ -357,13 +361,13 @@ func (r *Resolver) Warehouses(ctx context.Context, args struct {
 			if !lo.EveryBy(filter.Ids, model.IsValidId) {
 				return nil, model.NewAppError("Warehouses", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid warehouse ids", http.StatusBadRequest)
 			}
-			warehouseFilterOpts.Id = squirrel.Eq{store.WarehouseTableName + ".Id": filter.Ids}
+			warehouseFilterOpts.Id = squirrel.Eq{model.WarehouseTableName + ".Id": filter.Ids}
 		}
 		if filter.IsPrivate != nil {
-			warehouseFilterOpts.IsPrivate = squirrel.Eq{store.WarehouseTableName + ".IsPrivate": *filter.IsPrivate}
+			warehouseFilterOpts.IsPrivate = squirrel.Eq{model.WarehouseTableName + ".IsPrivate": *filter.IsPrivate}
 		}
 		if filter.ClickAndCollectOption != nil && filter.ClickAndCollectOption.IsValid() {
-			warehouseFilterOpts.ClickAndCollectOption = squirrel.Eq{store.WarehouseTableName + ".ClickAndCollectOption": *filter.ClickAndCollectOption}
+			warehouseFilterOpts.ClickAndCollectOption = squirrel.Eq{model.WarehouseTableName + ".ClickAndCollectOption": *filter.ClickAndCollectOption}
 		}
 	}
 
@@ -403,7 +407,7 @@ func (r *Resolver) Stocks(ctx context.Context, args struct {
 	Filter *StockFilterInput
 	GraphqlParams
 }) (*StockCountableConnection, error) {
-	pagination, appErr := parseGraphqlParams[int64](&args.GraphqlParams, "Stocks", store.StockTableName+".CreateAt")
+	pagination, appErr := parseGraphqlParams[int64](&args.GraphqlParams, "Stocks", model.StockTableName+".CreateAt")
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -416,7 +420,7 @@ func (r *Resolver) Stocks(ctx context.Context, args struct {
 			stockFilterOptions.Search = *filter.Search
 		}
 		if filter.Quantity != nil {
-			stockFilterOptions.Quantity = squirrel.Eq{store.StockTableName + ".Quantity": *filter.Quantity}
+			stockFilterOptions.Conditions = squirrel.Eq{model.StockTableName + ".Quantity": *filter.Quantity}
 		}
 	}
 

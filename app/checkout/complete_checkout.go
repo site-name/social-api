@@ -12,7 +12,6 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 )
 
 // getVoucherDataForOrder Fetch, process and return voucher/discount data from checkout.
@@ -66,8 +65,8 @@ func (s *ServiceCheckout) processShippingDataForOrder(checkoutInfo model.Checkou
 		}
 
 		addressesOfUser, appErr := s.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
-			Id:     squirrel.Eq{store.AddressTableName + ".Id": shippingAddress.Id},
-			UserID: squirrel.Eq{store.UserAddressTableName + ".UserID": checkoutInfo.User.Id},
+			Id:     squirrel.Eq{model.AddressTableName + ".Id": shippingAddress.Id},
+			UserID: squirrel.Eq{model.UserAddressTableName + ".UserID": checkoutInfo.User.Id},
 		})
 		if appErr != nil {
 			if appErr.StatusCode != http.StatusNotFound {
@@ -123,8 +122,8 @@ func (s *ServiceCheckout) processUserDataForOrder(checkoutInfo model.CheckoutInf
 		}
 
 		billingAddressOfUser, appErr := s.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
-			UserID: squirrel.Eq{store.UserAddressTableName + ".UserID": checkoutInfo.User.Id},
-			Id:     squirrel.Eq{store.AddressTableName + ".Id": billingAddress.Id},
+			UserID: squirrel.Eq{model.UserAddressTableName + ".UserID": checkoutInfo.User.Id},
+			Id:     squirrel.Eq{model.AddressTableName + ".Id": billingAddress.Id},
 		})
 		if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
@@ -159,7 +158,7 @@ func (s *ServiceCheckout) validateGiftcards(checkout model.Checkout) (*model.Not
 	)
 
 	allGiftcards, appErr := s.srv.GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
-		CheckoutToken: squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": checkout.Token},
+		CheckoutToken: squirrel.Eq{model.GiftcardCheckoutTableName + ".CheckoutID": checkout.Token},
 		Distinct:      true,
 	})
 	if appErr != nil {
@@ -283,8 +282,8 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 	}
 
 	productTranslations, appErr := s.srv.ProductService().ProductTranslationsByOption(&model.ProductTranslationFilterOption{
-		ProductID:    squirrel.Eq{store.ProductTranslationTableName + ".ProductID": products.IDs()},
-		LanguageCode: squirrel.Eq{store.ProductTranslationTableName + ".LanguageCode": translationLanguageCode},
+		ProductID:    squirrel.Eq{model.ProductTranslationTableName + ".ProductID": products.IDs()},
+		LanguageCode: squirrel.Eq{model.ProductTranslationTableName + ".LanguageCode": translationLanguageCode},
 	})
 	if appErr != nil && appErr.StatusCode != http.StatusNotFound {
 		return nil, nil, appErr
@@ -300,8 +299,8 @@ func (s *ServiceCheckout) createLinesForOrder(manager interfaces.PluginManagerIn
 	}
 
 	variantTranslations, appErr := s.srv.ProductService().ProductVariantTranslationsByOption(&model.ProductVariantTranslationFilterOption{
-		ProductVariantID: squirrel.Eq{store.ProductVariantTranslationTableName + ".ProductVariantID": variants.IDs()},
-		LanguageCode:     squirrel.Eq{store.ProductVariantTranslationTableName + ".LanguageCode": translationLanguageCode},
+		ProductVariantID: squirrel.Eq{model.ProductVariantTranslationTableName + ".ProductVariantID": variants.IDs()},
+		LanguageCode:     squirrel.Eq{model.ProductVariantTranslationTableName + ".LanguageCode": translationLanguageCode},
 	})
 	if appErr != nil && appErr.StatusCode != http.StatusNotFound {
 		return nil, nil, appErr
@@ -505,7 +504,7 @@ func (s *ServiceCheckout) createOrder(checkoutInfo model.CheckoutInfo, orderData
 	// checkout.PopulateNonDbFields() // this call is important
 
 	orders, appErr := s.srv.OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
-		CheckoutToken: squirrel.Eq{store.OrderTableName + ".CheckoutToken": checkout.Token},
+		CheckoutToken: squirrel.Eq{model.OrderTableName + ".CheckoutToken": checkout.Token},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -916,7 +915,7 @@ func (s *ServiceCheckout) CompleteCheckout(
 
 		// if not appError nor insufficient stock error, remove checkout after order is successfully created:
 		appErr = s.DeleteCheckoutsByOption(nil, &model.CheckoutFilterOption{
-			Token: squirrel.Eq{store.CheckoutTableName + ".Token": checkout.Token},
+			Token: squirrel.Eq{model.CheckoutTableName + ".Token": checkout.Token},
 		})
 		if appErr != nil {
 			return nil, false, nil, nil, appErr

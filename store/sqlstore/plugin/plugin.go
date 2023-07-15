@@ -39,7 +39,7 @@ func (ps *SqlPluginStore) SaveOrUpdate(kv *model.PluginKeyValue) (*model.PluginK
 	}
 
 	query := ps.GetQueryBuilder().
-		Insert(store.PluginKeyValueStoreTableName).
+		Insert(model.PluginKeyValueStoreTableName).
 		Columns("PluginId", "PKey", "PValue", "ExpireAt").
 		Values(kv.PluginId, kv.Key, kv.Value, kv.ExpireAt).
 		SuffixExpr(

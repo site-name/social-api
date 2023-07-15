@@ -24,8 +24,8 @@ func (a *ServiceShipping) ShippingMethodChannelListingsByOption(option *model.Sh
 // Prepare mapping shipping method to price from channel listings
 func (a *ServiceShipping) GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethods, channelSlug string) (map[string]*goprices.Money, *model.AppError) {
 	listings, appErr := a.ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-		ShippingMethodID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethods.IDs()},
-		ChannelSlug:      squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug},
+		ShippingMethodID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethods.IDs()},
+		ChannelSlug:      squirrel.Eq{model.ChannelTableName + ".Slug": channelSlug},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -37,7 +37,7 @@ func (a *ServiceShipping) GetShippingMethodToShippingPriceMapping(shippingMethod
 	}), nil
 }
 
-func (s *ServiceShipping) UpsertShippingMethodChannelListings(transaction store_iface.SqlxTxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model.AppError) {
+func (s *ServiceShipping) UpsertShippingMethodChannelListings(transaction store_iface.SqlxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model.AppError) {
 	listings, err := s.srv.Store.ShippingMethodChannelListing().Upsert(transaction, listings)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -51,7 +51,7 @@ func (s *ServiceShipping) UpsertShippingMethodChannelListings(transaction store_
 	return listings, nil
 }
 
-func (s *ServiceShipping) DeleteShippingMethodChannelListings(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodChannelListingFilterOption) *model.AppError {
+func (s *ServiceShipping) DeleteShippingMethodChannelListings(transaction store_iface.SqlxExecutor, options *model.ShippingMethodChannelListingFilterOption) *model.AppError {
 	err := s.srv.Store.ShippingMethodChannelListing().BulkDelete(transaction, options)
 	if err != nil {
 		model.NewAppError("ShippingMethodChannelListingUpdate", "app.shipping.delete_shipping_method_channel_listings.app_error", nil, err.Error(), http.StatusInternalServerError)

@@ -56,7 +56,7 @@ func (sss *SqlShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.ShopStaff
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.ShopStaffTableName + "(" + sss.ModelFields("").Join(",") + ") VALUES (" + sss.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.ShopStaffTableName + "(" + sss.ModelFields("").Join(",") + ") VALUES (" + sss.ModelFields(":").Join(",") + ")"
 	if _, err := sss.GetMasterX().NamedExec(query, shopStaff); err != nil {
 		return nil, errors.Wrapf(err, "failed to save shop-staff relation with id=%s", shopStaff.Id)
 	}
@@ -67,10 +67,10 @@ func (sss *SqlShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.ShopStaff
 // Get finds a shop staff with given id then returns it with an error
 func (sss *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, error) {
 	var res model.ShopStaff
-	err := sss.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShopStaffTableName+" WHERE Id = ?", shopStaffID)
+	err := sss.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShopStaffTableName+" WHERE Id = ?", shopStaffID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ShopStaffTableName, shopStaffID)
+			return nil, store.NewErrNotFound(model.ShopStaffTableName, shopStaffID)
 		}
 		return nil, errors.Wrapf(err, "failed to finds shop staff relation with id=%s", shopStaffID)
 	}
@@ -79,12 +79,12 @@ func (sss *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, error) 
 }
 
 func (s *SqlShopStaffStore) commonQueryBuilder(options *model.ShopStaffFilterOptions) squirrel.SelectBuilder {
-	selectFields := s.ModelFields(store.ShopStaffTableName + ".")
+	selectFields := s.ModelFields(model.ShopStaffTableName + ".")
 	if options.SelectRelatedStaff {
-		selectFields = append(selectFields, s.User().ModelFields(store.UserTableName+".")...)
+		selectFields = append(selectFields, s.User().ModelFields(model.UserTableName+".")...)
 	}
 
-	query := s.GetQueryBuilder().Select(selectFields...).From(store.ShopStaffTableName)
+	query := s.GetQueryBuilder().Select(selectFields...).From(model.ShopStaffTableName)
 
 	if options.StaffID != nil {
 		query = query.Where(options.StaffID)
@@ -96,7 +96,7 @@ func (s *SqlShopStaffStore) commonQueryBuilder(options *model.ShopStaffFilterOpt
 		query = query.Where(options.EndAt)
 	}
 	if options.SelectRelatedStaff {
-		query = query.InnerJoin(store.UserTableName + " ON Users.Id = ShopStaffs.StaffID")
+		query = query.InnerJoin(model.UserTableName + " ON Users.Id = ShopStaffs.StaffID")
 	}
 
 	return query

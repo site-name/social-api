@@ -54,12 +54,12 @@ func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *model.DigitalContentUrl)
 	)
 	for {
 		if isSaving {
-			query := "INSERT INTO " + store.DigitalContentURLTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+			query := "INSERT INTO " + model.DigitalContentURLTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
 			_, err = ps.GetMasterX().NamedExec(query, contentURL)
 
 		} else {
 
-			query := "UPDATE " + store.DigitalContentURLTableName + " SET " + ps.
+			query := "UPDATE " + model.DigitalContentURLTableName + " SET " + ps.
 				ModelFields("").
 				Map(func(_ int, s string) string {
 					return s + "=:" + s
@@ -79,7 +79,7 @@ func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *model.DigitalContentUrl)
 				continue
 			}
 			if ps.IsUniqueConstraintError(err, []string{"LineID", "digitalcontenturls_lineid_key"}) {
-				return nil, store.NewErrInvalidInput(store.DigitalContentURLTableName, "LineID", contentURL.LineID)
+				return nil, store.NewErrInvalidInput(model.DigitalContentURLTableName, "LineID", contentURL.LineID)
 			}
 			return nil, errors.Wrapf(err, "failed to upsert content url with id=%s", contentURL.Id)
 		}
@@ -95,10 +95,10 @@ func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *model.DigitalContentUrl)
 func (ps *SqlDigitalContentUrlStore) Get(id string) (*model.DigitalContentUrl, error) {
 	var res model.DigitalContentUrl
 
-	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.DigitalContentURLTableName+" WHERE Id = ?", id)
+	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.DigitalContentURLTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.DigitalContentURLTableName, id)
+			return nil, store.NewErrNotFound(model.DigitalContentURLTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find digital content url with id=%s", id)
 	}
@@ -107,7 +107,7 @@ func (ps *SqlDigitalContentUrlStore) Get(id string) (*model.DigitalContentUrl, e
 }
 
 func (s *SqlDigitalContentUrlStore) FilterByOptions(options *model.DigitalContentUrlFilterOptions) ([]*model.DigitalContentUrl, error) {
-	query := s.GetQueryBuilder().Select("*").From(store.DigitalContentURLTableName)
+	query := s.GetQueryBuilder().Select("*").From(model.DigitalContentURLTableName)
 
 	if options.Id != nil {
 		query = query.Where(options.Id)

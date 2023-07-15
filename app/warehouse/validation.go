@@ -5,7 +5,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 )
 
 // ValidateWarehouseCount
@@ -15,9 +14,11 @@ import (
 // If not there would be issue with automatically selecting stock for operation.
 func (a *ServiceWarehouse) ValidateWarehouseCount(shippingZones model.ShippingZones, instance *model.WareHouse) (bool, *model.AppError) {
 	shippingZones, appErr := a.srv.ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
-		Id:                        squirrel.Eq{store.ShippingZoneTableName + ".Id": shippingZones.IDs()},
-		WarehouseID:               squirrel.NotEq{store.WarehouseShippingZoneTableName + ".WarehouseID": nil},
 		SelectRelatedWarehouseIDs: true,
+		Conditions: squirrel.And{
+			squirrel.Eq{model.ShippingZoneTableName + ".Id": shippingZones.IDs()},
+			squirrel.NotEq{model.WarehouseShippingZoneTableName + ".WarehouseID": nil},
+		},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

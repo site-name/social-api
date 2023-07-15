@@ -48,8 +48,8 @@ func (a *ServiceDiscount) VoucherById(voucherID string) (*model.Voucher, *model.
 // GetVoucherDiscount
 func (a *ServiceDiscount) GetVoucherDiscount(voucher *model.Voucher, channelID string) (types.DiscountCalculator, *model.AppError) {
 	voucherChannelListings, appErr := a.VoucherChannelListingsByOption(&model.VoucherChannelListingFilterOption{
-		VoucherID: squirrel.Eq{store.VoucherChannelListingTableName + ".VoucherID": voucher.Id},
-		ChannelID: squirrel.Eq{store.VoucherChannelListingTableName + ".ChannelID": channelID},
+		VoucherID: squirrel.Eq{model.VoucherChannelListingTableName + ".VoucherID": voucher.Id},
+		ChannelID: squirrel.Eq{model.VoucherChannelListingTableName + ".ChannelID": channelID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -145,8 +145,8 @@ func (a *ServiceDiscount) ValidateMinSpent(voucher *model.Voucher, value *gopric
 	}
 
 	voucherChannelListings, appErr := a.VoucherChannelListingsByOption(&model.VoucherChannelListingFilterOption{
-		VoucherID: squirrel.Eq{store.VoucherChannelListingTableName + ".VoucherID": voucher.Id},
-		ChannelID: squirrel.Eq{store.VoucherChannelListingTableName + ".ChannelID": channelID},
+		VoucherID: squirrel.Eq{model.VoucherChannelListingTableName + ".VoucherID": voucher.Id},
+		ChannelID: squirrel.Eq{model.VoucherChannelListingTableName + ".ChannelID": channelID},
 	})
 	if appErr != nil {
 		return
@@ -177,8 +177,8 @@ func (a *ServiceDiscount) ValidateMinSpent(voucher *model.Voucher, value *gopric
 // ValidateOncePerCustomer checks to make sure each customer has ONLY 1 time usage with 1 voucher
 func (a *ServiceDiscount) ValidateOncePerCustomer(voucher *model.Voucher, customerEmail string) (notApplicableErr *model.NotApplicable, appErr *model.AppError) {
 	voucherCustomers, appErr := a.VoucherCustomersByOption(&model.VoucherCustomerFilterOption{
-		VoucherID:     squirrel.Eq{store.VoucherCustomerTableName + ".VoucherID": voucher.Id},
-		CustomerEmail: squirrel.Eq{store.VoucherCustomerTableName + ".CustomerEmail": customerEmail},
+		VoucherID:     squirrel.Eq{model.VoucherCustomerTableName + ".VoucherID": voucher.Id},
+		CustomerEmail: squirrel.Eq{model.VoucherCustomerTableName + ".CustomerEmail": customerEmail},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError { // must returns here since it's system error
@@ -231,7 +231,7 @@ func (s *ServiceDiscount) VoucherByOption(options *model.VoucherFilterOption) (*
 // PromoCodeIsVoucher checks if given code is belong to a voucher
 func (a *ServiceDiscount) PromoCodeIsVoucher(code string) (bool, *model.AppError) {
 	vouchers, appErr := a.VouchersByOption(&model.VoucherFilterOption{
-		Code: squirrel.Eq{store.VoucherTableName + ".Code": code},
+		Code: squirrel.Eq{model.VoucherTableName + ".Code": code},
 	})
 	if appErr != nil {
 		return false, appErr
@@ -246,18 +246,18 @@ func (a *ServiceDiscount) PromoCodeIsVoucher(code string) (bool, *model.AppError
 func (s *ServiceDiscount) FilterActiveVouchers(date time.Time, channelSlug string) ([]*model.Voucher, *model.AppError) {
 	filterOptions := &model.VoucherFilterOption{
 		UsageLimit: squirrel.Or{
-			squirrel.Eq{store.VoucherTableName + ".UsageLimit": nil},
-			squirrel.Gt{store.VoucherTableName + ".UsageLimit": store.VoucherTableName + ".Used"},
+			squirrel.Eq{model.VoucherTableName + ".UsageLimit": nil},
+			squirrel.Gt{model.VoucherTableName + ".UsageLimit": model.VoucherTableName + ".Used"},
 		},
 		EndDate: squirrel.Or{
-			squirrel.Eq{store.VoucherTableName + ".EndDate": nil},
-			squirrel.GtOrEq{store.VoucherTableName + ".EndDate": util.StartOfDay(date)},
+			squirrel.Eq{model.VoucherTableName + ".EndDate": nil},
+			squirrel.GtOrEq{model.VoucherTableName + ".EndDate": util.StartOfDay(date)},
 		},
-		StartDate: squirrel.LtOrEq{store.VoucherTableName + ".StartDate": util.StartOfDay(date)},
+		StartDate: squirrel.LtOrEq{model.VoucherTableName + ".StartDate": util.StartOfDay(date)},
 	}
 
 	if channelSlug != "" {
-		filterOptions.ChannelListingSlug = squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug}
+		filterOptions.ChannelListingSlug = squirrel.Eq{model.ChannelTableName + ".Slug": channelSlug}
 		filterOptions.ChannelListingActive = model.NewPrimitive(true)
 	}
 

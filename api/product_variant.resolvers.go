@@ -6,7 +6,130 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
+
+	"github.com/Masterminds/squirrel"
+	"github.com/sitename/sitename/app"
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/web"
 )
+
+// NOTE: Refer to ./schemas/product_variant.graphqls for details on directives used.
+func (r *Resolver) VariantMediaUnassign(ctx context.Context, args struct {
+	MediaID   string
+	VariantID string
+}) (*VariantMediaUnassign, error) {
+	// validate params
+	if !model.IsValidId(args.MediaID) {
+		return nil, model.NewAppError("VariantMediaUnassign", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MediaID"}, "please provide valid media id", http.StatusBadRequest)
+	}
+	if !model.IsValidId(args.VariantID) {
+		return nil, model.NewAppError("VariantMediaUnassign", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// create transaction:
+	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	if err != nil {
+		return nil, model.NewAppError("VariantMediaUnassign", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer store.FinalizeTransaction(transaction)
+
+	// NOTE: delete does not return error on wrong values provided.
+	err = embedCtx.App.Srv().Store.VariantMedia().Delete(transaction, &model.VariantMediaFilterOptions{
+		Conditions: squirrel.And{
+			squirrel.Eq{model.ProductVariantMediaTableName + ".VariantID": args.VariantID},
+			squirrel.Eq{model.ProductVariantMediaTableName + ".MediaID": args.MediaID},
+		},
+	})
+	if err != nil {
+		return nil, model.NewAppError("VariantMediaUnassign", "app.product.delete_variant_media_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// TODO: check if this logic is needed, since the system doesn't have support for wekhook yet
+
+	// pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	// _, appErr = pluginMng.ProductVariantUpdated(*productVariant)
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
+
+	return &VariantMediaUnassign{
+		ProductVariant: &ProductVariant{ID: args.VariantID},
+		Media:          &ProductMedia{ID: args.MediaID},
+	}, nil
+}
+
+// NOTE: Refer to ./schemas/product_variant.graphqls for details on directives used.
+func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
+	MediaID   string
+	VariantID string
+}) (*VariantMediaAssign, error) {
+	// validate params
+	if !model.IsValidId(args.MediaID) {
+		return nil, model.NewAppError("VariantMediaAssign", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "MediaID"}, "please provide valid media id", http.StatusBadRequest)
+	}
+	if !model.IsValidId(args.VariantID) {
+		return nil, model.NewAppError("VariantMediaAssign", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "VariantID"}, "please provide valid variant id", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	productVariant, appErr := embedCtx.App.Srv().ProductService().ProductVariantById(args.VariantID)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	productMedias, appErr := embedCtx.App.Srv().ProductService().ProductMediasByOption(&model.ProductMediaFilterOption{
+		Conditions: squirrel.Eq{model.ProductMediaTableName + ".Id": args.MediaID},
+	})
+	if appErr != nil {
+		// NOTE: This appError covers 404 code also so no need to worry if productMedias is empty
+		return nil, appErr
+	}
+	media := productMedias[0]
+
+	// create transaction:
+	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	if err != nil {
+		return nil, model.NewAppError("VariantMediaAssign", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer store.FinalizeTransaction(transaction)
+
+	if media != nil && productVariant != nil {
+		// check if the given image and variant can be matched together
+		if media.ProductID == productVariant.ProductID {
+			_, err := embedCtx.App.Srv().Store.VariantMedia().Upsert(transaction, &model.VariantMedia{VariantID: args.VariantID, MediaID: args.MediaID})
+			if err != nil {
+				// NOTE: SQL logic for handle uniqueness violation is added in upsert process.
+				// So this error is internal system error
+				return nil, model.NewAppError("VariantMediaAssign", "app.product.upsert_variant_media.app_error", nil, err.Error(), http.StatusInternalServerError)
+			}
+		} else {
+			return nil, model.NewAppError("VariantMediaAssign", "app.product.product_does_not_own_media.app_error", nil, "This media doesn't belong to that product.", http.StatusNotAcceptable)
+		}
+	}
+
+	// commit transaction
+	err = transaction.Commit()
+	if err != nil {
+		return nil, model.NewAppError("VariantMediaAssign", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	// TODO: check if this logic is needed, since the system doesn't have support for wekhook yet
+
+	// pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+	// _, appErr = pluginMng.ProductVariantUpdated(*productVariant)
+	// if appErr != nil {
+	// 	return nil, appErr
+	// }
+
+	return &VariantMediaAssign{
+		ProductVariant: SystemProductVariantToGraphqlProductVariant(productVariant),
+		Media:          systemProductMediaToGraphqlProductMedia(media),
+	}, nil
+}
 
 func (r *Resolver) ProductVariantReorder(ctx context.Context, args struct {
 	Moves     []*ReorderInput

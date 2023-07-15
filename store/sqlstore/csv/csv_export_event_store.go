@@ -40,7 +40,7 @@ func (cs *SqlCsvExportEventStore) Save(event *model.ExportEvent) (*model.ExportE
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.CsvExportEventTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.CsvExportEventTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
 
 	if _, err := cs.GetMasterX().NamedExec(query, event); err != nil {
 		return nil, errors.Wrapf(err, "failed to save ExportEvent with ExportEventId=%s", event.Id)
@@ -53,7 +53,7 @@ func (cs *SqlCsvExportEventStore) Save(event *model.ExportEvent) (*model.ExportE
 func (cs *SqlCsvExportEventStore) FilterByOption(options *model.ExportEventFilterOption) ([]*model.ExportEvent, error) {
 	query := cs.GetQueryBuilder().
 		Select("*").
-		From(store.CsvExportEventTableName)
+		From(model.CsvExportEventTableName)
 
 	// parse options
 	if options.Id != nil {

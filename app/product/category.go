@@ -40,7 +40,7 @@ func (s *ServiceProduct) CategoryByIds(ids []string, allowFromCache bool) (model
 
 		if len(notFoundCategoryIdMap) > 0 {
 			categories, appErr := s.CategoriesByOption(&model.CategoryFilterOption{
-				Id: squirrel.Eq{store.CategoryTableName + ".Id": lo.Keys(notFoundCategoryIdMap)},
+				Conditions: squirrel.Eq{model.CategoryTableName + ".id": lo.Keys(notFoundCategoryIdMap)},
 			})
 			if appErr != nil {
 				return nil, appErr
@@ -52,7 +52,7 @@ func (s *ServiceProduct) CategoryByIds(ids []string, allowFromCache bool) (model
 	}
 
 	return s.CategoriesByOption(&model.CategoryFilterOption{
-		Id: squirrel.Eq{store.CategoryTableName + ".Id": ids},
+		Conditions: squirrel.Eq{model.CategoryTableName + ".id": ids},
 	})
 }
 
@@ -94,10 +94,10 @@ func (s *ServiceProduct) DoAnalyticCategories() *model.AppError {
 	for {
 		filterOpts := &model.CategoryFilterOption{
 			Limit:   limit,
-			OrderBy: store.CategoryTableName + ".Slug ASC",
+			OrderBy: model.CategoryTableName + ".Slug ASC",
 		}
 		if lastCategorySlug != "" {
-			filterOpts.Slug = squirrel.Gt{store.CategoryTableName + ".Slug": lastCategorySlug}
+			filterOpts.Conditions = squirrel.Gt{model.CategoryTableName + ".Slug": lastCategorySlug}
 		}
 		categories, appErr := s.CategoriesByOption(filterOpts)
 		if appErr != nil {

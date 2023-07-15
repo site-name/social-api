@@ -27,10 +27,10 @@ func (a *ServiceAttribute) GetOrCreateAssignedProductAttribute(assignedProductAt
 	// try get first:
 	option := new(model.AssignedProductAttributeFilterOption)
 	if assignedProductAttribute.ProductID != "" {
-		option.ProductID = squirrel.Eq{store.AssignedProductAttributeTableName + ".ProductID": assignedProductAttribute.ProductID}
+		option.ProductID = squirrel.Eq{model.AssignedProductAttributeTableName + ".ProductID": assignedProductAttribute.ProductID}
 	}
 	if assignedProductAttribute.AssignmentID != "" {
-		option.AssignmentID = squirrel.Eq{store.AssignedProductAttributeTableName + ".AssignmentID": assignedProductAttribute.AssignmentID}
+		option.AssignmentID = squirrel.Eq{model.AssignedProductAttributeTableName + ".AssignmentID": assignedProductAttribute.AssignmentID}
 	}
 
 	assignedProductAttr, appErr := a.AssignedProductAttributeByOption(option)

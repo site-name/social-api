@@ -67,7 +67,7 @@ func (as *SqlAddressStore) ScanFields(addr *model.Address) []interface{} {
 	}
 }
 
-func (as *SqlAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, address *model.Address) (*model.Address, error) {
+func (as *SqlAddressStore) Upsert(transaction store_iface.SqlxExecutor, address *model.Address) (*model.Address, error) {
 	var executor store_iface.SqlxExecutor = as.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -92,11 +92,11 @@ func (as *SqlAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, addres
 		result      sql.Result
 	)
 	if isSaving {
-		query := "INSERT INTO " + store.AddressTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.AddressTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 		result, errorUpsert = executor.NamedExec(query, address)
 
 	} else {
-		query := "UPDATE " + store.AddressTableName + " SET " + as.
+		query := "UPDATE " + model.AddressTableName + " SET " + as.
 			ModelFields("").
 			Map(func(_ int, item string) string {
 				return item + "=:" + item
@@ -124,12 +124,12 @@ func (as *SqlAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, addres
 
 func (as *SqlAddressStore) Get(addressID string) (*model.Address, error) {
 	var res model.Address
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AddressTableName+" WHERE Id = ?", addressID)
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AddressTableName+" WHERE Id = ?", addressID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AddressTableName, addressID)
+			return nil, store.NewErrNotFound(model.AddressTableName, addressID)
 		}
-		return nil, errors.Wrapf(err, "failed to get %s with Id=%s", store.AddressTableName, addressID)
+		return nil, errors.Wrapf(err, "failed to get %s with Id=%s", model.AddressTableName, addressID)
 	}
 
 	return &res, nil
@@ -138,8 +138,8 @@ func (as *SqlAddressStore) Get(addressID string) (*model.Address, error) {
 // FilterByOption finds and returns a list of address(es) filtered by given option
 func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
 	query := as.GetQueryBuilder().
-		Select(as.ModelFields(store.AddressTableName + ".")...).
-		From(store.AddressTableName)
+		Select(as.ModelFields(model.AddressTableName + ".")...).
+		From(model.AddressTableName)
 
 	// parse query
 	if option.Id != nil {
@@ -150,13 +150,13 @@ func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]
 		(option.OrderID.On == "BillingAddressID" || option.OrderID.On == "ShippingAddressID") {
 
 		query = query.
-			InnerJoin(store.OrderTableName+" ON (Orders.? = Addresses.Id)", option.OrderID.On).
+			InnerJoin(model.OrderTableName+" ON (Orders.? = Addresses.Id)", option.OrderID.On).
 			Where(option.OrderID.Id)
 	}
 	if option.UserID != nil {
 		addressIDSelect := as.GetQueryBuilder(squirrel.Question).
 			Select("AddressID").
-			From(store.UserAddressTableName).
+			From(model.UserAddressTableName).
 			Where(option.UserID)
 
 		query = query.Where(squirrel.Expr("Addresses.Id IN ?", addressIDSelect))
@@ -175,13 +175,13 @@ func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]
 	return res, nil
 }
 
-func (as *SqlAddressStore) DeleteAddresses(transaction store_iface.SqlxTxExecutor, addressIDs []string) error {
+func (as *SqlAddressStore) DeleteAddresses(transaction store_iface.SqlxExecutor, addressIDs []string) error {
 	runner := as.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
 
-	query := "DELETE FROM " + store.AddressTableName + " WHERE Id IN (" + squirrel.Placeholders(len(addressIDs)) + ")"
+	query := "DELETE FROM " + model.AddressTableName + " WHERE Id IN (" + squirrel.Placeholders(len(addressIDs)) + ")"
 	args := lo.Map(addressIDs, func(item string, _ int) any { return item })
 
 	result, err := runner.Exec(query, args...)

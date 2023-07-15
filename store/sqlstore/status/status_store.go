@@ -75,7 +75,7 @@ func (s *SqlStatusStore) Get(userId string) (*model.Status, error) {
 }
 
 func (s *SqlStatusStore) GetByIds(userIds []string) ([]*model.Status, error) {
-	query, args, err := s.GetQueryBuilder().Select("*").From(store.StatusTableName).Where(squirrel.Eq{"UserId": userIds}).ToSql()
+	query, args, err := s.GetQueryBuilder().Select("*").From(model.StatusTableName).Where(squirrel.Eq{"UserId": userIds}).ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByIds_ToSql")
 	}

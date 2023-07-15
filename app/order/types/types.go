@@ -6,4 +6,4 @@ import (
 )
 
 // RecalculateOrderPricesFunc
-type RecalculateOrderPricesFunc func(store_iface.SqlxTxExecutor, *model.Order, map[string]interface{}) *model.AppError
+type RecalculateOrderPricesFunc func(store_iface.SqlxExecutor, *model.Order, map[string]interface{}) *model.AppError

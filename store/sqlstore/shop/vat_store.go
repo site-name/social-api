@@ -31,14 +31,14 @@ func (s *sqlVatStore) ModelFields(prefix string) util.AnyArray[string] {
 	})
 }
 
-func (s *sqlVatStore) Upsert(transaction store_iface.SqlxTxExecutor, vats []*model.Vat) ([]*model.Vat, error) {
+func (s *sqlVatStore) Upsert(transaction store_iface.SqlxExecutor, vats []*model.Vat) ([]*model.Vat, error) {
 	runner := s.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
 
-	saveQuery := "INSERT INTO " + store.VatTableName + "(Id, CountryCode, Data) VALUES (" + s.ModelFields(":").Join(",") + ")"
-	updateQuery := "UPDATE " + store.VatTableName + " SET " + s.ModelFields("").
+	saveQuery := "INSERT INTO " + model.VatTableName + "(Id, CountryCode, Data) VALUES (" + s.ModelFields(":").Join(",") + ")"
+	updateQuery := "UPDATE " + model.VatTableName + " SET " + s.ModelFields("").
 		Map(func(_ int, item string) string {
 			return item + ":=" + item
 		}).
@@ -83,8 +83,8 @@ func (s *sqlVatStore) Upsert(transaction store_iface.SqlxTxExecutor, vats []*mod
 func (s *sqlVatStore) FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error) {
 	query := s.
 		GetQueryBuilder().
-		Select(s.ModelFields(store.VatTableName + ".")...).
-		From(store.VatTableName)
+		Select(s.ModelFields(model.VatTableName + ".")...).
+		From(model.VatTableName)
 
 	if options == nil {
 		options = new(model.VatFilterOptions)

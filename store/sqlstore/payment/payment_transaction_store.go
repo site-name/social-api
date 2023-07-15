@@ -46,7 +46,7 @@ func (s *SqlPaymentTransactionStore) ModelFields(prefix string) util.AnyArray[st
 }
 
 // Save insert given transaction into database then returns it
-func (ps *SqlPaymentTransactionStore) Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
+func (ps *SqlPaymentTransactionStore) Save(transaction store_iface.SqlxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
 	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -57,7 +57,7 @@ func (ps *SqlPaymentTransactionStore) Save(transaction store_iface.SqlxTxExecuto
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.TransactionTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.TransactionTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
 	if _, err := executor.NamedExec(query, paymentTransaction); err != nil {
 		return nil, errors.Wrapf(err, "failed to save payment paymentTransaction with id=%s", paymentTransaction.Id)
 	}
@@ -72,7 +72,7 @@ func (ps *SqlPaymentTransactionStore) Update(transaction *model.PaymentTransacti
 		return nil, err
 	}
 
-	query := "UPDATE " + store.TransactionTableName + " SET " + ps.
+	query := "UPDATE " + model.TransactionTableName + " SET " + ps.
 		ModelFields("").
 		Map(func(_ int, s string) string {
 			return s + "=:" + s
@@ -93,10 +93,10 @@ func (ps *SqlPaymentTransactionStore) Update(transaction *model.PaymentTransacti
 
 func (ps *SqlPaymentTransactionStore) Get(id string) (*model.PaymentTransaction, error) {
 	var res model.PaymentTransaction
-	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.TransactionTableName+" WHERE Id = ?", id)
+	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.TransactionTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.TransactionTableName, id)
+			return nil, store.NewErrNotFound(model.TransactionTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find payment transaction withh id=%s", id)
 	}
@@ -107,8 +107,8 @@ func (ps *SqlPaymentTransactionStore) Get(id string) (*model.PaymentTransaction,
 // FilterByOption finds and returns a list of transactions with given option
 func (ps *SqlPaymentTransactionStore) FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields(store.TransactionTableName + ".")...).
-		From(store.TransactionTableName)
+		Select(ps.ModelFields(model.TransactionTableName + ".")...).
+		From(model.TransactionTableName)
 
 	// parse options:
 	if option.Id != nil {

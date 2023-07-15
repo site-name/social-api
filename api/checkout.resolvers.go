@@ -38,7 +38,7 @@ func (r *Resolver) CheckoutBillingAddressUpdate(ctx context.Context, args struct
 	// get checkout
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	checkout, appErr := embedCtx.App.Srv().CheckoutService().CheckoutByOption(&model.CheckoutFilterOption{
-		Token:                       squirrel.Eq{store.CheckoutTableName + ".Token": args.Token},
+		Token:                       squirrel.Eq{model.CheckoutTableName + ".Token": args.Token},
 		SelectRelatedBillingAddress: true, // this explain below
 	})
 	if appErr != nil {

@@ -1,112 +1,118 @@
 package discount
 
-import (
-	"database/sql"
+// import (
+// 	"github.com/Masterminds/squirrel"
+// 	"github.com/pkg/errors"
+// 	"github.com/sitename/sitename/model"
+// 	"github.com/sitename/sitename/modules/util"
+// 	"github.com/sitename/sitename/store"
+// )
 
-	"github.com/Masterminds/squirrel"
-	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
-)
+// type SqlSaleProductVariantStore struct {
+// 	store.Store
+// }
 
-type SqlSaleProductVariantStore struct {
-	store.Store
-}
+// func NewSqlSaleProductVariantStore(s store.Store) store.SaleProductVariantStore {
+// 	return &SqlSaleProductVariantStore{s}
+// }
 
-func NewSqlSaleProductVariantStore(s store.Store) store.SaleProductVariantStore {
-	return &SqlSaleProductVariantStore{s}
-}
+// func (s *SqlSaleProductVariantStore) ModelFields(prefix string) util.AnyArray[string] {
+// 	res := util.AnyArray[string]{
+// 		"Id", "SaleID", "ProductVariantID", "CreateAt",
+// 	}
+// 	if prefix == "" {
+// 		return res
+// 	}
 
-func (s *SqlSaleProductVariantStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id", "SaleID", "ProductVariantID", "CreateAt",
-	}
-	if prefix == "" {
-		return res
-	}
+// 	return res.Map(func(_ int, s string) string {
+// 		return prefix + s
+// 	})
+// }
 
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
+// // Upsert inserts/updates given sale-product variant relation into database, then returns it
+// func (ss *SqlSaleProductVariantStore) Upsert(relation *model.SaleProductVariant) (*model.SaleProductVariant, error) {
+// 	var isSaving bool
 
-// Upsert inserts/updates given sale-product variant relation into database, then returns it
-func (ss *SqlSaleProductVariantStore) Upsert(relation *model.SaleProductVariant) (*model.SaleProductVariant, error) {
-	var isSaving bool
+// 	if relation.Id == "" {
+// 		isSaving = true
+// 	}
 
-	if !model.IsValidId(relation.Id) {
-		relation.Id = ""
-		isSaving = true
-	}
-	relation.PreSave()
-	if err := relation.IsValid(); err != nil {
-		return nil, err
-	}
+// 	if isSaving {
+// 		ss.GetMasterX().Updates(relation)
+// 	} else {
+// 		ss.GetMaster().Begin()
+// 	}
 
-	var (
-		numUpdated int64
-		err        error
-	)
-	if isSaving {
-		query := "INSERT INTO " + store.SaleProductVariantTableName + " (" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
-		_, err = ss.GetMasterX().NamedExec(query, relation)
+// 	// ss.GetMaster().Con()
 
-	} else {
+// 	// if !model.IsValidId(relation.Id) {
+// 	// 	relation.Id = ""
+// 	// 	isSaving = true
+// 	// }
+// 	// relation.PreSave()
+// 	// if err := relation.IsValid(); err != nil {
+// 	// 	return nil, err
+// 	// }
 
-		query := "UPDATE " + store.SaleProductVariantTableName + " SET " + ss.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id = :Id"
+// 	// var (
+// 	// 	numUpdated int64
+// 	// 	err        error
+// 	// )
+// 	// if isSaving {
+// 	// 	query := "INSERT INTO " + store.SaleProductVariantTableName + " (" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
+// 	// 	_, err = ss.GetMasterX().NamedExec(query, relation)
 
-		var result sql.Result
-		result, err = ss.GetMasterX().NamedExec(query, relation)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
-		}
-	}
+// 	// } else {
 
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to upsert sale-product variant relation with id=%s", relation.Id)
-	}
-	if numUpdated != 1 {
-		return nil, errors.Errorf("%d sale-product variant relation were/was updated instead of 1", numUpdated)
-	}
+// 	// 	query := "UPDATE " + store.SaleProductVariantTableName + " SET " + ss.
+// 	// 		ModelFields("").
+// 	// 		Map(func(_ int, s string) string {
+// 	// 			return s + "=:" + s
+// 	// 		}).
+// 	// 		Join(",") + " WHERE Id = :Id"
 
-	return relation, nil
-}
+// 	// 	var result sql.Result
+// 	// 	result, err = ss.GetMasterX().NamedExec(query, relation)
+// 	// 	if err == nil && result != nil {
+// 	// 		numUpdated, _ = result.RowsAffected()
+// 	// 	}
+// 	// }
 
-// FilterByOption finds and returns a list of sale-product variants filtered using given options
-func (ss *SqlSaleProductVariantStore) FilterByOption(options *model.SaleProductVariantFilterOption) ([]*model.SaleProductVariant, error) {
-	query := ss.GetQueryBuilder().
-		Select("*").
-		From(store.SaleProductVariantTableName)
+// 	// if err != nil {
+// 	// 	return nil, errors.Wrapf(err, "failed to upsert sale-product variant relation with id=%s", relation.Id)
+// 	// }
+// 	// if numUpdated != 1 {
+// 	// 	return nil, errors.Errorf("%d sale-product variant relation were/was updated instead of 1", numUpdated)
+// 	// }
 
-	andCondition := squirrel.And{}
+// 	// return relation, nil
+// }
 
-	// parse options
-	if options.Id != nil {
-		andCondition = append(andCondition, options.Id)
-	}
-	if options.SaleID != nil {
-		andCondition = append(andCondition, options.SaleID)
-	}
-	if options.ProductVariantID != nil {
-		andCondition = append(andCondition, options.ProductVariantID)
-	}
+// // FilterByOption finds and returns a list of sale-product variants filtered using given options
+// func (ss *SqlSaleProductVariantStore) FilterByOption(options *model.SaleProductVariantFilterOption) ([]*model.SaleProductVariant, error) {
+// 	conds, err := build(options.Conditions)
+// 	if err != nil {
+// 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+// 	}
 
-	queryString, args, err := query.Where(andCondition).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
-	}
+// 	var res []*model.SaleProductVariant
+// 	err = ss.GetReplica().Find(&res, conds...).Error
+// 	if err != nil {
+// 		return nil, errors.Wrap(err, "failed to find sale product variants by given options")
+// 	}
 
-	var res []*model.SaleProductVariant
-	err = ss.GetReplicaX().Select(&res, queryString, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find sale-product variant relations with given options")
-	}
+// 	return res, nil
+// }
 
-	return res, nil
-}
+// func build(conds squirrel.Sqlizer) ([]any, error) {
+// 	if conds == nil {
+// 		return []any{}, nil
+// 	}
+
+// 	cond, args, err := conds.ToSql()
+// 	if err != nil {
+// 		return []any{}, err
+// 	}
+
+// 	return append([]any{cond}, args...), nil
+// }

@@ -47,15 +47,15 @@ func (as *SqlAllocationStore) ScanFields(allocation *model.Allocation) []interfa
 }
 
 // BulkUpsert performs update, insert given allocations then returns them afterward
-func (as *SqlAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*model.Allocation) ([]*model.Allocation, error) {
+func (as *SqlAllocationStore) BulkUpsert(transaction store_iface.SqlxExecutor, allocations []*model.Allocation) ([]*model.Allocation, error) {
 	var executor store_iface.SqlxExecutor = as.GetMasterX()
 	if transaction != nil {
 		executor = transaction
 	}
 
 	var (
-		saveQuery   = "INSERT INTO " + store.AllocationTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-		updateQuery = "UPDATE " + store.AllocationTableName + " SET " + as.
+		saveQuery   = "INSERT INTO " + model.AllocationTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+		updateQuery = "UPDATE " + model.AllocationTableName + " SET " + as.
 				ModelFields("").
 				Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -94,7 +94,7 @@ func (as *SqlAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor,
 
 		if err != nil {
 			if as.IsUniqueConstraintError(err, []string{"OrderLineID", "StockID", "allocations_orderlineid_stockid_key"}) {
-				return nil, store.NewErrInvalidInput(store.AllocationTableName, "OrderLineID/StockID", "duplicate")
+				return nil, store.NewErrInvalidInput(model.AllocationTableName, "OrderLineID/StockID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to upsert allocation with id=%s", allocation.Id)
 		}
@@ -110,10 +110,10 @@ func (as *SqlAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor,
 // Get finds an allocation with given id then returns it with an error
 func (as *SqlAllocationStore) Get(id string) (*model.Allocation, error) {
 	var res model.Allocation
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AllocationTableName+" WHERE Id = ?", id)
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AllocationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AllocationTableName, id)
+			return nil, store.NewErrNotFound(model.AllocationTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find allocation with id=%s", id)
 	}
@@ -147,32 +147,32 @@ GROUP BY
 // FilterByOption finds and returns a list of allocation based on given option
 func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error) {
 	// define fields to select:
-	selectFields := as.ModelFields(store.AllocationTableName + ".")
+	selectFields := as.ModelFields(model.AllocationTableName + ".")
 	if option.SelectedRelatedStock {
-		selectFields = append(selectFields, as.Stock().ModelFields(store.StockTableName+".")...)
+		selectFields = append(selectFields, as.Stock().ModelFields(model.StockTableName+".")...)
 	}
 	if option.SelectRelatedOrderLine {
-		selectFields = append(selectFields, as.OrderLine().ModelFields(store.OrderLineTableName+".")...)
+		selectFields = append(selectFields, as.OrderLine().ModelFields(model.OrderLineTableName+".")...)
 	}
 
 	query := as.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.AllocationTableName)
+		From(model.AllocationTableName)
 
 	if option.AnnotateStockAvailableQuantity || option.SelectedRelatedStock {
-		query = query.InnerJoin(store.StockTableName + " ON Stocks.Id = Allocations.StockID")
+		query = query.InnerJoin(model.StockTableName + " ON Stocks.Id = Allocations.StockID")
 
 		if option.AnnotateStockAvailableQuantity {
 			query = query.
 				Column(`Stocks.Quantity - COALESCE( SUM( Allocations.QuantityAllocated ), 0 ) AS StockAvailableQuantity`).
-				LeftJoin(store.AllocationTableName+" ON Allocations.StockID = Stocks.Id").
+				LeftJoin(model.AllocationTableName+" ON Allocations.StockID = Stocks.Id").
 				GroupBy("Allocations.Id", "Stocks.Quantity")
 		}
 	}
 
 	// parse options
 	if option.SelectRelatedOrderLine || option.OrderLineOrderID != nil {
-		query = query.InnerJoin(store.OrderLineTableName + " ON Orderlines.Id = Allocations.OrderLineID")
+		query = query.InnerJoin(model.OrderLineTableName + " ON Orderlines.Id = Allocations.OrderLineID")
 	}
 
 	for _, opt := range []squirrel.Sqlizer{
@@ -249,13 +249,13 @@ func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOptio
 }
 
 // BulkDelete perform bulk deletes given allocations.
-func (as *SqlAllocationStore) BulkDelete(transaction store_iface.SqlxTxExecutor, allocationIDs []string) error {
+func (as *SqlAllocationStore) BulkDelete(transaction store_iface.SqlxExecutor, allocationIDs []string) error {
 	var executor = as.GetMasterX()
 	if transaction != nil {
 		executor = transaction
 	}
 
-	query, args, err := as.GetQueryBuilder().Delete(store.AllocationTableName).Where(squirrel.Eq{"Id": allocationIDs}).ToSql()
+	query, args, err := as.GetQueryBuilder().Delete(model.AllocationTableName).Where(squirrel.Eq{"Id": allocationIDs}).ToSql()
 	if err != nil {
 		return errors.Wrap(err, "BulkDelete_ToSql")
 	}

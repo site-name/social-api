@@ -180,3 +180,19 @@ func ExtractModelFieldNames(model any) util.AnyArray[string] {
 
 	return res
 }
+
+func BuildSqlizer(option squirrel.Sqlizer) []any {
+	if option == nil {
+		return []any{}
+	}
+
+	query, args, err := option.ToSql()
+	if err != nil {
+		slog.Error("BuildSqlizer failed to build Sqlizer", slog.Err(err))
+		return []any{}
+	}
+
+	res := make([]any, 0, len(args)+1)
+	res[0] = query
+	return append(res, args...)
+}

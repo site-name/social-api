@@ -75,11 +75,11 @@ func (cs *SqlCollectionStore) Upsert(collection *model.Collection) (*model.Colle
 		numUpdated int64
 	)
 	if isSaving {
-		query := "INSERT INTO " + store.CollectionTableName + "(" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.CollectionTableName + "(" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
 		_, err = cs.GetMasterX().NamedExec(query, collection)
 
 	} else {
-		query := "UPDATE " + store.CollectionTableName + " SET " + cs.
+		query := "UPDATE " + model.CollectionTableName + " SET " + cs.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -106,10 +106,10 @@ func (cs *SqlCollectionStore) Upsert(collection *model.Collection) (*model.Colle
 // Get finds and returns collection with given collectionID
 func (cs *SqlCollectionStore) Get(collectionID string) (*model.Collection, error) {
 	var res model.Collection
-	err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+store.CollectionTableName+" WHERE Id = ?", collectionID)
+	err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+model.CollectionTableName+" WHERE Id = ?", collectionID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CollectionTableName, collectionID)
+			return nil, store.NewErrNotFound(model.CollectionTableName, collectionID)
 		}
 		return nil, errors.Wrapf(err, "failed to find collection with id=%s", collectionID)
 	}
@@ -124,7 +124,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 	var res []*model.Collection
 
 	if option.SelectAll {
-		err := cs.GetReplicaX().Select(&res, "SELECT * FROM "+store.CollectionTableName)
+		err := cs.GetReplicaX().Select(&res, "SELECT * FROM "+model.CollectionTableName)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find collections of given shop")
 		}
@@ -132,8 +132,8 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 	}
 
 	query := cs.GetQueryBuilder().
-		Select(cs.ModelFields(store.CollectionTableName + ".")...).
-		From(store.CollectionTableName)
+		Select(cs.ModelFields(model.CollectionTableName + ".")...).
+		From(model.CollectionTableName)
 
 	// parse options
 	if option.Id != nil {
@@ -147,7 +147,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 	}
 	if option.ProductID != nil {
 		query = query.
-			InnerJoin(store.CollectionProductRelationTableName + " ON Collections.Id = ProductCollections.CollectionID").
+			InnerJoin(model.CollectionProductRelationTableName + " ON Collections.Id = ProductCollections.CollectionID").
 			Where(option.ProductID)
 	}
 	if option.VoucherID != nil {
@@ -167,7 +167,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 	)
 	if option.ChannelListingPublicationDate != nil {
 		query = query.
-			InnerJoin(store.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)").
+			InnerJoin(model.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)").
 			Where(option.ChannelListingPublicationDate)
 
 		joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
@@ -175,7 +175,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 
 	if option.ChannelListingIsPublished != nil {
 		if !joined_CollectionChannelListingTable {
-			query = query.InnerJoin(store.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
+			query = query.InnerJoin(model.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
 
 			joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
 		}
@@ -184,12 +184,12 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 
 	if option.ChannelListingChannelSlug != nil {
 		if !joined_CollectionChannelListingTable {
-			query = query.InnerJoin(store.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
+			query = query.InnerJoin(model.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
 
 			joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
 		}
 		query = query.
-			InnerJoin(store.ChannelTableName + " ON (Channels.Id = CollectionChannelListings.ChannelID)").
+			InnerJoin(model.ChannelTableName + " ON (Channels.Id = CollectionChannelListings.ChannelID)").
 			Where(option.ChannelListingChannelSlug)
 
 		joined_ChannelTable = true // indicate joined channel table
@@ -197,12 +197,12 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 
 	if option.ChannelListingChannelIsActive != nil {
 		if !joined_CollectionChannelListingTable {
-			query = query.InnerJoin(store.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
+			query = query.InnerJoin(model.CollectionChannelListingTableName + " ON (Collections.Id = CollectionChannelListings.CollectionID)")
 
 			joined_CollectionChannelListingTable = true // indicate joined collection channel listing table
 		}
 		if !joined_ChannelTable {
-			query = query.InnerJoin(store.ChannelTableName + " ON (Channels.Id = CollectionChannelListings.ChannelID)")
+			query = query.InnerJoin(model.ChannelTableName + " ON (Channels.Id = CollectionChannelListings.ChannelID)")
 			joined_ChannelTable = true //
 		}
 		query = query.Where(squirrel.Eq{"Channels.IsActive": *option.ChannelListingChannelIsActive})
@@ -222,7 +222,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 }
 
 func (s *SqlCollectionStore) Delete(ids ...string) error {
-	query, args, err := s.GetQueryBuilder().Delete(store.CollectionTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
+	query, args, err := s.GetQueryBuilder().Delete(model.CollectionTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
 	if err != nil {
 		return errors.Wrap(err, "Delete_ToSql")
 	}

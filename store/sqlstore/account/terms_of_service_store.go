@@ -44,7 +44,7 @@ func (s *SqlTermsOfServiceStore) Save(termsOfService *model.TermsOfService) (*mo
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.TermsOfServiceTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.TermsOfServiceTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
 	if _, err := s.GetMasterX().NamedExec(query, termsOfService); err != nil {
 		return nil, errors.Wrapf(err, "failed to save save a new TermsOfService")
 	}
@@ -79,7 +79,7 @@ func (s *SqlTermsOfServiceStore) GetLatest(allowFromCache bool) (*model.TermsOfS
 func (s *SqlTermsOfServiceStore) Get(id string, allowFromCache bool) (*model.TermsOfService, error) {
 	var res model.TermsOfService
 
-	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+store.TermsOfServiceTableName+" WHERE Id = ?", id)
+	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+model.TermsOfServiceTableName+" WHERE Id = ?", id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not find TermsOfService with id=%s", id)
 	}

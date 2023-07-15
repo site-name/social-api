@@ -93,7 +93,7 @@ func (ols *SqlOrderLineStore) ScanFields(orderLine *model.OrderLine) []interface
 }
 
 // Upsert depends on given orderLine's Id to decide to update or save it
-func (ols *SqlOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, orderLine *model.OrderLine) (*model.OrderLine, error) {
+func (ols *SqlOrderLineStore) Upsert(transaction store_iface.SqlxExecutor, orderLine *model.OrderLine) (*model.OrderLine, error) {
 	var upsertor store_iface.SqlxExecutor = ols.GetMasterX()
 	if transaction != nil {
 		upsertor = transaction
@@ -117,11 +117,11 @@ func (ols *SqlOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, ord
 		numUpdated int64
 	)
 	if isSaving {
-		query := "INSERT INTO " + store.OrderLineTableName + "(" + ols.ModelFields("").Join(",") + ") VALUES (" + ols.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.OrderLineTableName + "(" + ols.ModelFields("").Join(",") + ") VALUES (" + ols.ModelFields(":").Join(",") + ")"
 		_, err = upsertor.NamedExec(query, orderLine)
 
 	} else {
-		query := "UPDATE " + store.OrderLineTableName + " SET " + ols.
+		query := "UPDATE " + model.OrderLineTableName + " SET " + ols.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -146,7 +146,7 @@ func (ols *SqlOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, ord
 }
 
 // BulkUpsert performs upsert multiple order lines in once
-func (ols *SqlOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
+func (ols *SqlOrderLineStore) BulkUpsert(transaction store_iface.SqlxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
 	for _, orderLine := range orderLines {
 		_, err := ols.Upsert(transaction, orderLine)
 		if err != nil {
@@ -159,10 +159,10 @@ func (ols *SqlOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor,
 
 func (ols *SqlOrderLineStore) Get(id string) (*model.OrderLine, error) {
 	var odl model.OrderLine
-	err := ols.GetReplicaX().Get(&odl, "SELECT * FROM "+store.OrderLineTableName+" WHERE Id = ?", id)
+	err := ols.GetReplicaX().Get(&odl, "SELECT * FROM "+model.OrderLineTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.OrderLineTableName, id)
+			return nil, store.NewErrNotFound(model.OrderLineTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find order line with id=%s", id)
 	}
@@ -172,7 +172,7 @@ func (ols *SqlOrderLineStore) Get(id string) (*model.OrderLine, error) {
 
 // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
 func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
-	query, args, err := ols.GetQueryBuilder().Delete("*").From(store.OrderLineTableName).Where(squirrel.Eq{"Id": orderLineIDs}).ToSql()
+	query, args, err := ols.GetQueryBuilder().Delete("*").From(model.OrderLineTableName).Where(squirrel.Eq{"Id": orderLineIDs}).ToSql()
 	if err != nil {
 		return errors.Wrap(err, "BulkDelete_ToSql")
 	}
@@ -195,17 +195,17 @@ func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
 //     +) find all order lines that satisfy given option
 //     +) if above operation founds order lines, prefetch the product variants, digital products that are related to found order lines
 func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption) ([]*model.OrderLine, error) {
-	selectFields := ols.ModelFields(store.OrderLineTableName + ".")
+	selectFields := ols.ModelFields(model.OrderLineTableName + ".")
 	if option.SelectRelatedOrder {
-		selectFields = append(selectFields, ols.Order().ModelFields(store.OrderTableName+".")...)
+		selectFields = append(selectFields, ols.Order().ModelFields(model.OrderTableName+".")...)
 	}
 	if option.SelectRelatedVariant {
-		selectFields = append(selectFields, ols.ProductVariant().ModelFields(store.ProductVariantTableName+".")...)
+		selectFields = append(selectFields, ols.ProductVariant().ModelFields(model.ProductVariantTableName+".")...)
 	}
 
 	query := ols.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.OrderLineTableName)
+		From(model.OrderLineTableName)
 
 	// parse option
 	for _, opt := range []squirrel.Sqlizer{
@@ -222,22 +222,22 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 	}
 
 	if option.SelectRelatedOrder || option.OrderChannelID != nil {
-		query = query.InnerJoin(store.OrderTableName + " ON Orders.Id = OrderLines.OrderID")
+		query = query.InnerJoin(model.OrderTableName + " ON Orders.Id = OrderLines.OrderID")
 	}
 
 	if option.VariantDigitalContentID != nil ||
 		option.VariantProductID != nil ||
 		option.SelectRelatedVariant {
-		query = query.InnerJoin(store.ProductVariantTableName + " ON Orderlines.VariantID = ProductVariants.Id")
+		query = query.InnerJoin(model.ProductVariantTableName + " ON Orderlines.VariantID = ProductVariants.Id")
 
 		if option.VariantDigitalContentID != nil {
 			query = query.
-				InnerJoin(store.DigitalContentTableName + "  ON ProductVariants.Id = DigitalContents.ProductVariantID").
+				InnerJoin(model.DigitalContentTableName + "  ON ProductVariants.Id = DigitalContents.ProductVariantID").
 				Where(option.VariantDigitalContentID)
 		}
 		if option.VariantProductID != nil {
 			query = query.
-				InnerJoin(store.ProductTableName + " ON ProductVariants.ProductID = Products.Id").
+				InnerJoin(model.ProductTableName + " ON ProductVariants.ProductID = Products.Id").
 				Where(option.VariantProductID)
 		}
 	}
@@ -303,7 +303,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 			productVariants, err = ols.
 				ProductVariant().
 				FilterByOption(&model.ProductVariantFilterOption{
-					Id: squirrel.Eq{store.ProductVariantTableName + ".Id": orderLines.ProductVariantIDs()},
+					Id: squirrel.Eq{model.ProductVariantTableName + ".Id": orderLines.ProductVariantIDs()},
 				})
 			if err != nil {
 				return nil, err
@@ -315,7 +315,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 			digitalContents, err = ols.
 				DigitalContent().
 				FilterByOption(&model.DigitalContentFilterOption{
-					ProductVariantID: squirrel.Eq{store.DigitalContentTableName + ".ProductVariantID": productVariants.IDs()},
+					ProductVariantID: squirrel.Eq{model.DigitalContentTableName + ".ProductVariantID": productVariants.IDs()},
 				})
 			if err != nil {
 				return nil, err
@@ -327,7 +327,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 			products, err = ols.
 				Product().
 				FilterByOption(&model.ProductFilterOption{
-					Id: squirrel.Eq{store.ProductTableName + ".Id": productVariants.ProductIDs()},
+					Id: squirrel.Eq{model.ProductTableName + ".Id": productVariants.ProductIDs()},
 				})
 			if err != nil {
 				return nil, err
@@ -339,7 +339,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 			allocations, err = ols.
 				Allocation().
 				FilterByOption(&model.AllocationFilterOption{
-					OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLines.IDs()},
+					OrderLineID: squirrel.Eq{model.AllocationTableName + ".OrderLineID": orderLines.IDs()},
 				})
 			if err != nil {
 				return nil, err
@@ -349,16 +349,18 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 		// prefetch related stocks of allocations of order lines
 		if (option.PrefetchRelated.AllocationsStock && len(allocations) > 0) ||
 			(option.PrefetchRelated.VariantStocks && len(productVariants) > 0) {
-			stocksFilterOpts := new(model.StockFilterOption)
+			andConditions := squirrel.And{}
 
 			if option.PrefetchRelated.AllocationsStock {
-				stocksFilterOpts.Id = squirrel.Eq{store.StockTableName + ".Id": allocations.StockIDs()}
-
-			} else if option.PrefetchRelated.VariantStocks {
-				stocksFilterOpts.ProductVariantID = squirrel.Eq{store.StockTableName + ".ProductVariantID": productVariants.IDs()}
+				andConditions = append(andConditions, squirrel.Eq{model.StockTableName + ".Id": allocations.StockIDs()})
+			}
+			if option.PrefetchRelated.VariantStocks {
+				andConditions = append(andConditions, squirrel.Eq{model.StockTableName + ".ProductVariantID": productVariants.IDs()})
 			}
 
-			stocks, err = ols.Stock().FilterByOption(stocksFilterOpts)
+			stocks, err = ols.Stock().FilterByOption(&model.StockFilterOption{
+				Conditions: andConditions,
+			})
 			if err != nil {
 				return nil, err
 			}

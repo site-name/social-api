@@ -18,7 +18,7 @@ func (a *ServiceDiscount) OrderDiscountsByOption(option *model.OrderDiscountFilt
 }
 
 // UpsertOrderDiscount updates or inserts given order discount
-func (a *ServiceDiscount) UpsertOrderDiscount(transaction store_iface.SqlxTxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, *model.AppError) {
+func (a *ServiceDiscount) UpsertOrderDiscount(transaction store_iface.SqlxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, *model.AppError) {
 	orderDiscount, err := a.srv.Store.OrderDiscount().Upsert(transaction, orderDiscount)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

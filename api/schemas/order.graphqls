@@ -20,6 +20,7 @@ extend type Mutation {
 }
 
 extend type Query {
+  homepageEvents(before: String, after: String, first: Int, last: Int): OrderEventCountableConnection
   orderSettings: OrderSettings
   order(id: String!): Order
   orders(sortBy: OrderSortingInput, filter: OrderFilterInput, channel: String, before: String, after: String, first: Int, last: Int): OrderCountableConnection

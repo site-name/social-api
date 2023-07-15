@@ -109,10 +109,10 @@ func (os *SqlOrderStore) ScanFields(holder *model.Order) []interface{} {
 }
 
 // BulkUpsert performs bulk upsert given orders
-func (os *SqlOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orders []*model.Order) ([]*model.Order, error) {
+func (os *SqlOrderStore) BulkUpsert(transaction store_iface.SqlxExecutor, orders []*model.Order) ([]*model.Order, error) {
 	var (
-		saveQuery   = "INSERT INTO " + store.OrderTableName + "(" + os.ModelFields("").Join(",") + ") VALUES (" + os.ModelFields(":").Join(",") + ")"
-		updateQuery = "UPDATE " + store.OrderTableName + " SET " +
+		saveQuery   = "INSERT INTO " + model.OrderTableName + "(" + os.ModelFields("").Join(",") + ") VALUES (" + os.ModelFields(":").Join(",") + ")"
+		updateQuery = "UPDATE " + model.OrderTableName + " SET " +
 			os.ModelFields("").
 				Map(func(_ int, s string) string {
 					return s + "=:" + s
@@ -158,7 +158,7 @@ func (os *SqlOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orde
 		} else {
 			var oldOrder model.Order
 			// try finding if order exist
-			err = runner.Get(&oldOrder, "SELECT * FROM "+store.OrderTableName+" WHERE Id = ?", ord.Id)
+			err = runner.Get(&oldOrder, "SELECT * FROM "+model.OrderTableName+" WHERE Id = ?", ord.Id)
 			if err != nil {
 				if err == sql.ErrNoRows {
 					return nil, err
@@ -191,10 +191,10 @@ func (os *SqlOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orde
 // Get finds and returns 1 order with given id
 func (os *SqlOrderStore) Get(id string) (*model.Order, error) {
 	var order model.Order
-	err := os.GetReplicaX().Get(&order, "SELECT * FROM "+store.OrderTableName+" WHERE Id = ?", id)
+	err := os.GetReplicaX().Get(&order, "SELECT * FROM "+model.OrderTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.OrderTableName, id)
+			return nil, store.NewErrNotFound(model.OrderTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find order with Id=%s", id)
 	}
@@ -204,8 +204,8 @@ func (os *SqlOrderStore) Get(id string) (*model.Order, error) {
 // FilterByOption returns a list of orders, filtered by given option
 func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error) {
 	query := os.GetQueryBuilder().
-		Select(os.ModelFields(store.OrderTableName + ".")...).
-		From(store.OrderTableName)
+		Select(os.ModelFields(model.OrderTableName + ".")...).
+		From(model.OrderTableName)
 
 		// parse options:
 	for _, cond := range []squirrel.Sqlizer{
@@ -224,7 +224,7 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*mod
 
 	if option.ChannelSlug != nil {
 		query = query.
-			InnerJoin(store.ChannelTableName + " ON (Channels.Id = Orders.ChannelID)").
+			InnerJoin(model.ChannelTableName + " ON (Channels.Id = Orders.ChannelID)").
 			Where(option.ChannelSlug)
 	}
 	if option.SelectForUpdate {

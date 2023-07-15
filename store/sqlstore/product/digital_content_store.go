@@ -61,7 +61,7 @@ func (ds *SqlDigitalContentStore) Save(content *model.DigitalContent) (*model.Di
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.DigitalContentTableName + "(" + ds.ModelFields("").Join(",") + ") VALUES (" + ds.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.DigitalContentTableName + "(" + ds.ModelFields("").Join(",") + ") VALUES (" + ds.ModelFields(":").Join(",") + ")"
 	_, err := ds.GetMasterX().NamedExec(query, content)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to save digital content with id=%s", content.Id)
@@ -72,8 +72,8 @@ func (ds *SqlDigitalContentStore) Save(content *model.DigitalContent) (*model.Di
 
 func (ds *SqlDigitalContentStore) commonQueryBuilder(option *model.DigitalContentFilterOption) (string, []interface{}, error) {
 	query := ds.GetQueryBuilder().
-		Select(ds.ModelFields(store.DigitalContentTableName + ".")...).
-		From(store.DigitalContentTableName)
+		Select(ds.ModelFields(model.DigitalContentTableName + ".")...).
+		From(model.DigitalContentTableName)
 
 	// parse option
 	if option.Id != nil {
@@ -97,7 +97,7 @@ func (ds *SqlDigitalContentStore) GetByOption(option *model.DigitalContentFilter
 	err = ds.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.DigitalContentTableName, "option")
+			return nil, store.NewErrNotFound(model.DigitalContentTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to find digital content with given option")
 	}

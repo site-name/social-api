@@ -153,7 +153,7 @@ type AccountService interface {
 	// Trigger sending an account confirmation notification for the given user
 	SendAccountConfirmation(redirectUrl string, user model.User, manager interfaces.PluginManagerInterface, channelID string) *model.AppError
 	// UpsertAddress depends on given address's Id to decide update or insert it
-	UpsertAddress(transaction store_iface.SqlxTxExecutor, address *model.Address) (*model.Address, *model.AppError)
+	UpsertAddress(transaction store_iface.SqlxExecutor, address *model.Address) (*model.Address, *model.AppError)
 	ActivateMfa(userID, token string) *model.AppError
 	AddStatusCache(status *model.Status)
 	AddStatusCacheSkipClusterSend(status *model.Status)
@@ -174,7 +174,7 @@ type AccountService interface {
 	CreateUserWithToken(c *request.Context, user *model.User, token *model.Token) (*model.User, *model.AppError)
 	CustomerEventsByOptions(option *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, *model.AppError)
 	DeactivateMfa(userID string) *model.AppError
-	DeleteAddresses(transaction store_iface.SqlxTxExecutor, addressIDs ...string) *model.AppError
+	DeleteAddresses(transaction store_iface.SqlxExecutor, addressIDs ...string) *model.AppError
 	DeletePreferences(userID string, preferences model.Preferences) *model.AppError
 	DeleteToken(token *model.Token) *model.AppError
 	DisableUserAccessToken(token *model.UserAccessToken) *model.AppError

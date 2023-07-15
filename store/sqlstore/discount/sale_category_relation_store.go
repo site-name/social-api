@@ -1,96 +1,99 @@
 package discount
 
-import (
-	"database/sql"
+// import (
+// 	"database/sql"
 
-	"github.com/pkg/errors"
-	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
-)
+// 	"github.com/pkg/errors"
+// 	"github.com/sitename/sitename/model"
+// 	"github.com/sitename/sitename/modules/util"
+// 	"github.com/sitename/sitename/store"
+// )
 
-type SqlSaleCategoryRelationStore struct {
-	store.Store
-}
+// type SqlSaleCategoryRelationStore struct {
+// 	store.Store
+// }
 
-func NewSqlSaleCategoryRelationStore(s store.Store) store.SaleCategoryRelationStore {
-	return &SqlSaleCategoryRelationStore{s}
-}
+// func NewSqlSaleCategoryRelationStore(s store.Store) store.SaleCategoryRelationStore {
+// 	return &SqlSaleCategoryRelationStore{s}
+// }
 
-func (s *SqlSaleCategoryRelationStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id", "SaleID", "CategoryID", "CreateAt",
-	}
-	if prefix == "" {
-		return res
-	}
+// func (s *SqlSaleCategoryRelationStore) ModelFields(prefix string) util.AnyArray[string] {
+// 	res := util.AnyArray[string]{
+// 		"Id", "SaleID", "CategoryID", "CreateAt",
+// 	}
+// 	if prefix == "" {
+// 		return res
+// 	}
 
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
+// 	return res.Map(func(_ int, s string) string {
+// 		return prefix + s
+// 	})
+// }
 
-// Save inserts given sale-category relation into database
-func (ss *SqlSaleCategoryRelationStore) Save(relation *model.SaleCategoryRelation) (*model.SaleCategoryRelation, error) {
-	relation.PreSave()
-	if err := relation.IsValid(); err != nil {
-		return nil, err
-	}
+// const saleCategoryUniqueConstraint = "salecategories_saleid_categoryid_key"
 
-	query := "INSERT INTO " + store.SaleCategoryRelationTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
+// // Save inserts given sale-category relation into database
+// func (ss *SqlSaleCategoryRelationStore) Save(relation *model.SaleCategoryRelation) (*model.SaleCategoryRelation, error) {
+// 	relation.PreSave()
+// 	if err := relation.IsValid(); err != nil {
+// 		return nil, err
+// 	}
 
-	if _, err := ss.GetMasterX().NamedExec(query, relation); err != nil {
-		if ss.IsUniqueConstraintError(err, []string{"SaleID", "CategoryID", "salecategories_saleid_categoryid_key"}) {
-			return nil, store.NewErrInvalidInput(store.SaleCategoryRelationTableName, "SaleID/CategoryID", "duplicate")
-		}
-		return nil, errors.Wrapf(err, "failed to save sale-category relation with id=%s", relation.Id)
-	}
+// 	query := "INSERT INTO " + store.SaleCategoryRelationTableName +
+// 		"(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ") ON CONFLICT ON CONSTRAINT " + saleCategoryUniqueConstraint + " DO NOTHING"
 
-	return relation, nil
-}
+// 	if _, err := ss.GetMasterX().NamedExec(query, relation); err != nil {
+// 		if ss.IsUniqueConstraintError(err, []string{"SaleID", "CategoryID", saleCategoryUniqueConstraint}) {
+// 			return nil, store.NewErrInvalidInput(store.SaleCategoryRelationTableName, "SaleID/CategoryID", "duplicate")
+// 		}
+// 		return nil, errors.Wrapf(err, "failed to save sale-category relation with id=%s", relation.Id)
+// 	}
 
-// Get returns 1 sale-category relation with given id
-func (ss *SqlSaleCategoryRelationStore) Get(relationID string) (*model.SaleCategoryRelation, error) {
-	var res model.SaleCategoryRelation
+// 	return relation, nil
+// }
 
-	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.SaleCategoryRelationTableName+" WHERE Id = ?", relationID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.SaleCategoryRelationTableName, relationID)
-		}
-		return nil, errors.Wrapf(err, "failed to find sale-category relation with id=%s", relationID)
-	}
+// // Get returns 1 sale-category relation with given id
+// func (ss *SqlSaleCategoryRelationStore) Get(relationID string) (*model.SaleCategoryRelation, error) {
+// 	var res model.SaleCategoryRelation
 
-	return &res, nil
-}
+// 	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.SaleCategoryRelationTableName+" WHERE Id = ?", relationID)
+// 	if err != nil {
+// 		if err == sql.ErrNoRows {
+// 			return nil, store.NewErrNotFound(store.SaleCategoryRelationTableName, relationID)
+// 		}
+// 		return nil, errors.Wrapf(err, "failed to find sale-category relation with id=%s", relationID)
+// 	}
 
-// SaleCategoriesByOption returns a slice of sale-category relations with given option
-func (ss *SqlSaleCategoryRelationStore) SaleCategoriesByOption(option *model.SaleCategoryRelationFilterOption) ([]*model.SaleCategoryRelation, error) {
-	query := ss.GetQueryBuilder().
-		Select("*").
-		From(store.SaleCategoryRelationTableName)
+// 	return &res, nil
+// }
 
-	// parse options
-	if option.Id != nil {
-		query = query.Where(option.Id)
-	}
-	if option.SaleID != nil {
-		query = query.Where(option.SaleID)
-	}
-	if option.CategoryID != nil {
-		query = query.Where(option.CategoryID)
-	}
+// // SaleCategoriesByOption returns a slice of sale-category relations with given option
+// func (ss *SqlSaleCategoryRelationStore) SaleCategoriesByOption(option *model.SaleCategoryRelationFilterOption) ([]*model.SaleCategoryRelation, error) {
+// 	query := ss.GetQueryBuilder().
+// 		Select(ss.ModelFields(store.SaleCategoryRelationTableName + ".")...).
+// 		From(store.SaleCategoryRelationTableName)
 
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "SaleCategoriesByOption_ToSql")
-	}
+// 	// parse options
+// 	if option.Id != nil {
+// 		query = query.Where(option.Id)
+// 	}
+// 	if option.SaleID != nil {
+// 		query = query.Where(option.SaleID)
+// 	}
+// 	if option.CategoryID != nil {
+// 		query = query.Where(option.CategoryID)
+// 	}
 
-	var res []*model.SaleCategoryRelation
-	err = ss.GetReplicaX().Select(&res, queryString, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find sale-category relations with given option")
-	}
+// 	queryString, args, err := query.ToSql()
+// 	if err != nil {
+// 		return nil, errors.Wrap(err, "SaleCategoriesByOption_ToSql")
+// 	}
 
-	return res, nil
-}
+// 	var res []*model.SaleCategoryRelation
+// 	err = ss.GetReplicaX().Select(&res, queryString, args...)
+// 	if err != nil {
+// 		return nil, errors.Wrap(err, "failed to find sale-category relations with given option")
+// 	}
+
+// 	return res, nil
+// }

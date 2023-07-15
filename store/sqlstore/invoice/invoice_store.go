@@ -75,12 +75,12 @@ func (is *SqlInvoiceStore) Upsert(invoice *model.Invoice) (*model.Invoice, error
 		numUpdated int64
 	)
 	if isSaving {
-		query := "INSERT INTO " + store.InvoiceTableName + "(" + is.ModelFields("").Join(",") + ") VALUES (" + is.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.InvoiceTableName + "(" + is.ModelFields("").Join(",") + ") VALUES (" + is.ModelFields(":").Join(",") + ")"
 		_, err = is.GetMasterX().NamedExec(query, invoice)
 
 	} else {
 		oldInvoice, err := is.GetbyOptions(&model.InvoiceFilterOptions{
-			Id: squirrel.Eq{store.InvoiceTableName + ".Id": invoice.Id},
+			Id: squirrel.Eq{model.InvoiceTableName + ".Id": invoice.Id},
 		})
 		if err != nil {
 			return nil, err
@@ -89,7 +89,7 @@ func (is *SqlInvoiceStore) Upsert(invoice *model.Invoice) (*model.Invoice, error
 		// keep
 		invoice.CreateAt = oldInvoice.CreateAt
 
-		query := "UPDATE " + store.InvoiceEventTableName + " SET " + is.
+		query := "UPDATE " + model.InvoiceEventTableName + " SET " + is.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -115,15 +115,15 @@ func (is *SqlInvoiceStore) Upsert(invoice *model.Invoice) (*model.Invoice, error
 }
 
 func (s *SqlInvoiceStore) commonQueryBuilder(options *model.InvoiceFilterOptions) squirrel.SelectBuilder {
-	selectFields := s.ModelFields(store.InvoiceTableName + ".")
+	selectFields := s.ModelFields(model.InvoiceTableName + ".")
 	if options.SelectRelatedOrder {
-		selectFields = append(selectFields, s.Order().ModelFields(store.OrderTableName+".")...)
+		selectFields = append(selectFields, s.Order().ModelFields(model.OrderTableName+".")...)
 	}
 
-	query := s.GetQueryBuilder().Select(selectFields...).From(store.InvoiceTableName)
+	query := s.GetQueryBuilder().Select(selectFields...).From(model.InvoiceTableName)
 
 	if options.SelectRelatedOrder {
-		query = query.InnerJoin(store.OrderTableName + " ON Orders.Id = Invoices.OrderID")
+		query = query.InnerJoin(model.OrderTableName + " ON Orders.Id = Invoices.OrderID")
 	}
 	if options.Limit > 0 {
 		query = query.Limit(options.Limit)
@@ -157,7 +157,7 @@ func (is *SqlInvoiceStore) GetbyOptions(options *model.InvoiceFilterOptions) (*m
 	err = is.GetReplicaX().QueryRowX(query, args...).Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.InvoiceTableName, "options")
+			return nil, store.NewErrNotFound(model.InvoiceTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find invoice with given options")
 	}
@@ -207,13 +207,13 @@ func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) 
 	return res, nil
 }
 
-func (s *SqlInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+func (s *SqlInvoiceStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
 	var runner store_iface.SqlxExecutor = s.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
 
-	query, args, err := s.GetQueryBuilder().Delete(store.InvoiceTableName).Where(squirrel.Eq{store.InvoiceTableName + ".Id": ids}).ToSql()
+	query, args, err := s.GetQueryBuilder().Delete(model.InvoiceTableName).Where(squirrel.Eq{model.InvoiceTableName + ".Id": ids}).ToSql()
 	if err != nil {
 		return errors.Wrap(err, "Delete_ToSql")
 	}

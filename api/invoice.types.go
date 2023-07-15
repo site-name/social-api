@@ -7,7 +7,6 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -51,7 +50,7 @@ func invoicesByOrderIDLoader(ctx context.Context, orderIDs []string) []*dataload
 
 	invoices, appErr := embedCtx.App.Srv().
 		InvoiceService().FilterInvoicesByOptions(&model.InvoiceFilterOptions{
-		OrderID: squirrel.Eq{store.InvoiceTableName + ".OrderID": orderIDs},
+		OrderID: squirrel.Eq{model.InvoiceTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {
 		for idx := range orderIDs {

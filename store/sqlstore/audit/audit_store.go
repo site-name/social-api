@@ -42,7 +42,7 @@ func (s *SqlAuditStore) Save(audit *model.Audit) error {
 		return err
 	}
 
-	query := "INSERT INTO " + store.AuditTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.AuditTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
 	if _, err := s.GetMasterX().NamedExec(query, audit); err != nil {
 		return errors.Wrapf(err, "failed to save Audit with userId=%s and action=%s", audit.UserId, audit.Action)
 	}

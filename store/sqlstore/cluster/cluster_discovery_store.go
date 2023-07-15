@@ -43,7 +43,7 @@ func (s sqlClusterDiscoveryStore) Save(ClusterDiscovery *model.ClusterDiscovery)
 		return err
 	}
 
-	query := "INSERT INTO " + store.ClusterDiscoveryTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.ClusterDiscoveryTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
 
 	if _, err := s.GetMasterX().NamedExec(query, ClusterDiscovery); err != nil {
 		return errors.Wrap(err, "failed to save ClusterDiscovery")
@@ -53,7 +53,7 @@ func (s sqlClusterDiscoveryStore) Save(ClusterDiscovery *model.ClusterDiscovery)
 
 func (s sqlClusterDiscoveryStore) Delete(ClusterDiscovery *model.ClusterDiscovery) (bool, error) {
 	query := s.GetQueryBuilder().
-		Delete(store.ClusterDiscoveryTableName).
+		Delete(model.ClusterDiscoveryTableName).
 		Where(sq.Eq{"Type": ClusterDiscovery.Type}).
 		Where(sq.Eq{"ClusterName": ClusterDiscovery.ClusterName}).
 		Where(sq.Eq{"Hostname": ClusterDiscovery.Hostname})
@@ -77,7 +77,7 @@ func (s sqlClusterDiscoveryStore) Delete(ClusterDiscovery *model.ClusterDiscover
 func (s sqlClusterDiscoveryStore) Exists(ClusterDiscovery *model.ClusterDiscovery) (bool, error) {
 	query := s.GetQueryBuilder().
 		Select("COUNT(*)").
-		From(store.ClusterDiscoveryTableName).
+		From(model.ClusterDiscoveryTableName).
 		Where(sq.Eq{"Type": ClusterDiscovery.Type}).
 		Where(sq.Eq{"ClusterName": ClusterDiscovery.ClusterName}).
 		Where(sq.Eq{"Hostname": ClusterDiscovery.Hostname})
@@ -101,7 +101,7 @@ func (s sqlClusterDiscoveryStore) Exists(ClusterDiscovery *model.ClusterDiscover
 func (s sqlClusterDiscoveryStore) GetAll(ClusterDiscoveryType, clusterName string) ([]*model.ClusterDiscovery, error) {
 	query := s.GetQueryBuilder().
 		Select("*").
-		From(store.ClusterDiscoveryTableName).
+		From(model.ClusterDiscoveryTableName).
 		Where(sq.Eq{"Type": ClusterDiscoveryType}).
 		Where(sq.Eq{"ClusterName": clusterName}).
 		Where(sq.Gt{"LastPingAt": model.GetMillis() - model.CDS_OFFLINE_AFTER_MILLIS})
@@ -120,7 +120,7 @@ func (s sqlClusterDiscoveryStore) GetAll(ClusterDiscoveryType, clusterName strin
 
 func (s sqlClusterDiscoveryStore) SetLastPingAt(ClusterDiscovery *model.ClusterDiscovery) error {
 	query := s.GetQueryBuilder().
-		Update(store.ClusterDiscoveryTableName).
+		Update(model.ClusterDiscoveryTableName).
 		Set("LastPingAt", model.GetMillis()).
 		Where(sq.Eq{"Type": ClusterDiscovery.Type}).
 		Where(sq.Eq{"ClusterName": ClusterDiscovery.ClusterName}).
@@ -139,7 +139,7 @@ func (s sqlClusterDiscoveryStore) SetLastPingAt(ClusterDiscovery *model.ClusterD
 
 func (s sqlClusterDiscoveryStore) Cleanup() error {
 	query := s.GetQueryBuilder().
-		Delete(store.ClusterDiscoveryTableName).
+		Delete(model.ClusterDiscoveryTableName).
 		Where(sq.Lt{"LastPingAt": model.GetMillis() - model.CDS_OFFLINE_AFTER_MILLIS})
 
 	queryString, args, err := query.ToSql()

@@ -38,11 +38,11 @@ func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer *model.VoucherCustomer)
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.VoucherCustomerTableName + "(" + vcs.ModelFields("").Join(",") + ") VALUES (" + vcs.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.VoucherCustomerTableName + "(" + vcs.ModelFields("").Join(",") + ") VALUES (" + vcs.ModelFields(":").Join(",") + ")"
 
 	if _, err := vcs.GetMasterX().NamedExec(query, voucherCustomer); err != nil {
 		if vcs.IsUniqueConstraintError(err, []string{"VoucherID", "CustomerEmail", "vouchercustomers_voucherid_customeremail_key"}) {
-			return nil, store.NewErrInvalidInput(store.VoucherCustomerTableName, "VoucherID/CustomerEmail", "uniqe constraint")
+			return nil, store.NewErrInvalidInput(model.VoucherCustomerTableName, "VoucherID/CustomerEmail", "uniqe constraint")
 		}
 		return nil, errors.Wrapf(err, "failed to save voucher customer relationship with is=%s", voucherCustomer.Id)
 	}
@@ -53,8 +53,8 @@ func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer *model.VoucherCustomer)
 func (vcs *SqlVoucherCustomerStore) commonQueryBuilder(options *model.VoucherCustomerFilterOption) squirrel.SelectBuilder {
 	query := vcs.
 		GetQueryBuilder().
-		Select(vcs.ModelFields(store.VoucherCustomerTableName + ".")...).
-		From(store.VoucherCustomerTableName)
+		Select(vcs.ModelFields(model.VoucherCustomerTableName + ".")...).
+		From(model.VoucherCustomerTableName)
 
 	// parse options
 	if options.Id != nil {
@@ -81,7 +81,7 @@ func (vcs *SqlVoucherCustomerStore) GetByOption(options *model.VoucherCustomerFi
 	err = vcs.GetMasterX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.VoucherCustomerTableName, "options")
+			return nil, store.NewErrNotFound(model.VoucherCustomerTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to finds voucher-customer relation with options")
 	}
@@ -107,7 +107,7 @@ func (vcs *SqlVoucherCustomerStore) FilterByOptions(options *model.VoucherCustom
 
 // DeleteInBulk deletes given voucher-customers with given id
 func (vcs *SqlVoucherCustomerStore) DeleteInBulk(options *model.VoucherCustomerFilterOption) error {
-	deleteQuery := vcs.GetQueryBuilder().Delete(store.VoucherCustomerTableName)
+	deleteQuery := vcs.GetQueryBuilder().Delete(model.VoucherCustomerTableName)
 
 	// parse options
 	if options.Id != nil {

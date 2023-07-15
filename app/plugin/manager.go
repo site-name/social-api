@@ -15,7 +15,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 )
 
 var _ interfaces.PluginManagerInterface = (*PluginManager)(nil)
@@ -42,7 +41,7 @@ func (s *ServicePlugin) newPluginManager() (interfaces.PluginManagerInterface, *
 	pluginConfigsOfChannels, appErr := manager.Srv.
 		PluginService().
 		FilterPluginConfigurations(&model.PluginConfigurationFilterOptions{
-			ChannelID: squirrel.Eq{store.PluginConfigurationTableName + ".ChannelID": channels.IDs()},
+			ChannelID: squirrel.Eq{model.PluginConfigurationTableName + ".ChannelID": channels.IDs()},
 		})
 	if appErr != nil {
 		return nil, appErr
@@ -232,8 +231,8 @@ func (m *PluginManager) CalculateOrderShipping(orDer model.Order) (*goprices.Tax
 	}
 
 	shippingMethodChannelListings, appErr := m.Srv.ShippingService().ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-		ShippingMethodID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ShippingMethodID": orDer.ShippingMethodID},
-		ChannelID:        squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": orDer.ChannelID},
+		ShippingMethodID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": orDer.ShippingMethodID},
+		ChannelID:        squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": orDer.ChannelID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -1585,8 +1584,8 @@ func (m *PluginManager) SavePluginConfiguration(pluginID, channelID string, clea
 
 			// try get or create plugin configuration
 			pluginConfig, appErr := m.Srv.PluginService().GetPluginConfiguration(&model.PluginConfigurationFilterOptions{
-				Identifier: squirrel.Eq{store.PluginConfigurationTableName + ".Identifier": pluginID},
-				ChannelID:  squirrel.Eq{store.PluginConfigurationTableName + ".ChannelID": channelID},
+				Identifier: squirrel.Eq{model.PluginConfigurationTableName + ".Identifier": pluginID},
+				ChannelID:  squirrel.Eq{model.PluginConfigurationTableName + ".ChannelID": channelID},
 			})
 			if appErr != nil {
 				if appErr.StatusCode == http.StatusInternalServerError {

@@ -34,7 +34,7 @@ func (a *ServiceWishlist) WishlistItemByOption(option *model.WishlistItemFilterO
 }
 
 // BulkUpsertWishlistItems updates or inserts given wishlist item into database then returns it
-func (a *ServiceWishlist) BulkUpsertWishlistItems(transaction store_iface.SqlxTxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, *model.AppError) {
+func (a *ServiceWishlist) BulkUpsertWishlistItems(transaction store_iface.SqlxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, *model.AppError) {
 	wishlistItems, err := a.srv.Store.WishlistItem().BulkUpsert(transaction, wishlistItems)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -58,13 +58,13 @@ func (a *ServiceWishlist) GetOrCreateWishlistItem(wishlistItem *model.WishlistIt
 	option := &model.WishlistItemFilterOption{}
 
 	if model.IsValidId(wishlistItem.Id) {
-		option.Id = squirrel.Eq{store.WishlistItemTableName + ".Id": wishlistItem.Id}
+		option.Id = squirrel.Eq{model.WishlistItemTableName + ".Id": wishlistItem.Id}
 	}
 	if model.IsValidId(wishlistItem.WishlistID) {
-		option.WishlistID = squirrel.Eq{store.WishlistItemTableName + ".WishlistID": wishlistItem.WishlistID}
+		option.WishlistID = squirrel.Eq{model.WishlistItemTableName + ".WishlistID": wishlistItem.WishlistID}
 	}
 	if model.IsValidId(wishlistItem.ProductID) {
-		option.ProductID = squirrel.Eq{store.WishlistItemTableName + ".ProductID": wishlistItem.ProductID}
+		option.ProductID = squirrel.Eq{model.WishlistItemTableName + ".ProductID": wishlistItem.ProductID}
 	}
 
 	item, appErr := a.WishlistItemByOption(option)
@@ -84,7 +84,7 @@ func (a *ServiceWishlist) GetOrCreateWishlistItem(wishlistItem *model.WishlistIt
 }
 
 // DeleteWishlistItemsByOption tell store to delete wishlist items that satisfy given option, then returns a number of items deleted
-func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction store_iface.SqlxTxExecutor, option *model.WishlistItemFilterOption) (int64, *model.AppError) {
+func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction store_iface.SqlxExecutor, option *model.WishlistItemFilterOption) (int64, *model.AppError) {
 	numDeleted, err := a.srv.Store.WishlistItem().DeleteItemsByOption(transaction, option)
 	if err != nil {
 		return 0, model.NewAppError("DeleteWishlistItemsByOption", "app.wishlist.error_deleting_wishlist_items_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -102,7 +102,7 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *model.Wishlist,
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	itemsFromBothWishlists, appErr := a.WishlistItemsByOption(&model.WishlistItemFilterOption{
-		WishlistID: squirrel.Eq{store.WishlistItemTableName + ".WishlistID": []string{srcWishlist.Id, dstWishlist.Id}},
+		WishlistID: squirrel.Eq{model.WishlistItemTableName + ".WishlistID": []string{srcWishlist.Id, dstWishlist.Id}},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -129,7 +129,7 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *model.Wishlist,
 	// this function will not execute if not triggered
 	populate_productVariantsOfSourceWishlistMap := func() *model.AppError {
 		productVariantsOfSourceWishlist, appErr := a.srv.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
-			WishlistItemID: squirrel.Eq{store.WishlistItemProductVariantTableName + ".WishlistItemID": itemsOfSourceWishlist.IDs()},
+			WishlistItemID: squirrel.Eq{model.WishlistItemProductVariantTableName + ".WishlistItemID": itemsOfSourceWishlist.IDs()},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -181,7 +181,7 @@ func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *model.Wishlist,
 			}
 
 			_, appErr = a.DeleteWishlistItemsByOption(transaction, &model.WishlistItemFilterOption{
-				Id: squirrel.Eq{store.WishlistItemTableName + ".Id": srcItem.Id},
+				Id: squirrel.Eq{model.WishlistItemTableName + ".Id": srcItem.Id},
 			})
 			if appErr != nil {
 				return appErr

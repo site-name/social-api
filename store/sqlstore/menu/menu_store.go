@@ -42,14 +42,14 @@ func (ms *SqlMenuStore) Save(mnu *model.Menu) (*model.Menu, error) {
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.MenuTableName + "(" + ms.ModelFields("").Join(",") + ") VALUES (" + ms.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.MenuTableName + "(" + ms.ModelFields("").Join(",") + ") VALUES (" + ms.ModelFields(":").Join(",") + ")"
 
 	if _, err := ms.GetMasterX().NamedExec(query, mnu); err != nil {
 		if ms.IsUniqueConstraintError(err, []string{"Name", "menus_name_key", "idx_menus_name_unique"}) {
-			return nil, store.NewErrInvalidInput(store.MenuTableName, "Name", mnu.Name)
+			return nil, store.NewErrInvalidInput(model.MenuTableName, "Name", mnu.Name)
 		}
 		if ms.IsUniqueConstraintError(err, []string{"Slug", "menus_slug_key", "idx_menus_slug_unique"}) {
-			return nil, store.NewErrInvalidInput(store.MenuTableName, "Slug", mnu.Slug)
+			return nil, store.NewErrInvalidInput(model.MenuTableName, "Slug", mnu.Slug)
 		}
 		return nil, errors.Wrapf(err, "failed to save menu with id=%s", mnu.Id)
 	}
@@ -59,8 +59,8 @@ func (ms *SqlMenuStore) Save(mnu *model.Menu) (*model.Menu, error) {
 
 func (ms *SqlMenuStore) commonQueryBuilder(options *model.MenuFilterOptions) squirrel.SelectBuilder {
 	query := ms.GetQueryBuilder().
-		Select(ms.ModelFields(store.MenuTableName + ".")...).
-		From(store.MenuTableName)
+		Select(ms.ModelFields(model.MenuTableName + ".")...).
+		From(model.MenuTableName)
 
 	if options.Id != nil {
 		query = query.Where(options.Id)
@@ -85,7 +85,7 @@ func (ms *SqlMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.M
 	err = ms.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.MenuTableName, "")
+			return nil, store.NewErrNotFound(model.MenuTableName, "")
 		}
 		return nil, errors.Wrap(err, "failed to find menu with given options")
 	}

@@ -36,7 +36,7 @@ func (uas *SqlUserAddressStore) Save(userAddress *model.UserAddress) (*model.Use
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.UserAddressTableName + " (" + uas.ModelFields("").Join(",") + ") VALUES (" + uas.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.UserAddressTableName + " (" + uas.ModelFields("").Join(",") + ") VALUES (" + uas.ModelFields(":").Join(",") + ")"
 	if _, err := uas.GetMasterX().NamedExec(query, userAddress); err != nil {
 		if uas.IsUniqueConstraintError(err, []string{"UserID", "AddressID", "useraddresses_userid_addressid_key"}) {
 			return nil, store.NewErrInvalidInput("UserAddress", "UserID or AddressID", "duplicate")
@@ -49,7 +49,7 @@ func (uas *SqlUserAddressStore) Save(userAddress *model.UserAddress) (*model.Use
 
 func (uas *SqlUserAddressStore) DeleteForUser(userID, addressID string) error {
 	result, err := uas.GetMasterX().Exec(
-		`DELETE FROM `+store.UserAddressTableName+` WHERE UserID = ? AND AddressID = ?`,
+		`DELETE FROM `+model.UserAddressTableName+` WHERE UserID = ? AND AddressID = ?`,
 		userID, addressID,
 	)
 
@@ -67,7 +67,7 @@ func (uas *SqlUserAddressStore) DeleteForUser(userID, addressID string) error {
 
 // FilterByOptions finds and returns a list of user-address relations with given options
 func (uas *SqlUserAddressStore) FilterByOptions(options *model.UserAddressFilterOptions) ([]*model.UserAddress, error) {
-	query := uas.GetQueryBuilder().Select("*").From(store.UserAddressTableName)
+	query := uas.GetQueryBuilder().Select("*").From(model.UserAddressTableName)
 
 	if options.Id != nil {
 		query = query.Where(options.Id)

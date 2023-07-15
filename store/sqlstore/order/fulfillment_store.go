@@ -58,7 +58,7 @@ func (fs *SqlFulfillmentStore) ScanFields(holder *model.Fulfillment) []interface
 }
 
 // Upsert depends on given fulfillment's Id to decide update or insert it
-func (fs *SqlFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
+func (fs *SqlFulfillmentStore) Upsert(transaction store_iface.SqlxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
 	var (
 		isSaving bool
 		upsertor store_iface.SqlxExecutor = fs.GetMasterX()
@@ -83,7 +83,7 @@ func (fs *SqlFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fu
 		numUpdated int64
 	)
 	if isSaving {
-		query := "INSERT INTO " + store.FulfillmentTableName + "(" + fs.ModelFields("").Join(",") + ") VALUES (" + fs.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.FulfillmentTableName + "(" + fs.ModelFields("").Join(",") + ") VALUES (" + fs.ModelFields(":").Join(",") + ")"
 		_, err = upsertor.NamedExec(query, fulfillment)
 
 	} else {
@@ -96,7 +96,7 @@ func (fs *SqlFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fu
 		fulfillment.OrderID = oldFulfillment.OrderID
 		fulfillment.CreateAt = oldFulfillment.CreateAt
 
-		query := "UPDATE " + store.FulfillmentTableName + " SET " + fs.
+		query := "UPDATE " + model.FulfillmentTableName + " SET " + fs.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -125,11 +125,11 @@ func (fs *SqlFulfillmentStore) Get(id string) (*model.Fulfillment, error) {
 	var ffm model.Fulfillment
 	if err := fs.GetReplicaX().Get(
 		&ffm,
-		"SELECT * FROM "+store.FulfillmentTableName+" WHERE Id = ?",
+		"SELECT * FROM "+model.FulfillmentTableName+" WHERE Id = ?",
 		id,
 	); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.FulfillmentTableName, id)
+			return nil, store.NewErrNotFound(model.FulfillmentTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find fulfillment with id=%s", id)
 	}
@@ -139,15 +139,15 @@ func (fs *SqlFulfillmentStore) Get(id string) (*model.Fulfillment, error) {
 
 func (fs *SqlFulfillmentStore) commonQueryBuild(option *model.FulfillmentFilterOption) squirrel.SelectBuilder {
 	// decide which fiedlds to select
-	selectFields := fs.ModelFields(store.FulfillmentTableName + ".")
+	selectFields := fs.ModelFields(model.FulfillmentTableName + ".")
 	if option.SelectRelatedOrder {
-		selectFields = append(selectFields, fs.Order().ModelFields(store.OrderTableName+".")...)
+		selectFields = append(selectFields, fs.Order().ModelFields(model.OrderTableName+".")...)
 	}
 
 	// build query:
 	query := fs.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.FulfillmentTableName)
+		From(model.FulfillmentTableName)
 
 	// parse option
 	if option.Id != nil {
@@ -172,11 +172,11 @@ func (fs *SqlFulfillmentStore) commonQueryBuild(option *model.FulfillmentFilterO
 			}
 		}
 
-		query = joinFunc(store.FulfillmentLineTableName + " ON (FulfillmentLines.FulfillmentID = Fulfillments.Id)").
+		query = joinFunc(model.FulfillmentLineTableName + " ON (FulfillmentLines.FulfillmentID = Fulfillments.Id)").
 			Where(option.FulfillmentLineID)
 	}
 	if option.SelectRelatedOrder {
-		query = query.InnerJoin(store.OrderTableName + " ON (Orders.Id = Fulfillments.OrderID)")
+		query = query.InnerJoin(model.OrderTableName + " ON (Orders.Id = Fulfillments.OrderID)")
 	}
 	if option.SelectForUpdate {
 		query = query.Suffix("FOR UPDATE")
@@ -186,7 +186,7 @@ func (fs *SqlFulfillmentStore) commonQueryBuild(option *model.FulfillmentFilterO
 }
 
 // GetByOption returns 1 fulfillment, filtered by given option
-func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
+func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
 	var runner store_iface.SqlxExecutor = fs.GetReplicaX()
 	if transaction != nil {
 		runner = transaction
@@ -209,7 +209,7 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecuto
 	err = runner.QueryRowX(queryString, args...).Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.FulfillmentTableName, "option")
+			return nil, store.NewErrNotFound(model.FulfillmentTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to find fulfillment based on given option")
 	}
@@ -222,7 +222,7 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecuto
 }
 
 // FilterByOption finds and returns a slice of fulfillments by given option
-func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
+func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
 	var runner store_iface.SqlxExecutor = fs.GetReplicaX()
 	if transaction != nil {
 		runner = transaction
@@ -266,13 +266,13 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExec
 }
 
 // BulkDeleteFulfillments deletes given fulfillments
-func (fs *SqlFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments model.Fulfillments) error {
+func (fs *SqlFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxExecutor, fulfillments model.Fulfillments) error {
 	var exeFunc func(query string, args ...interface{}) (sql.Result, error) = fs.GetMasterX().Exec
 	if transaction != nil {
 		exeFunc = transaction.Exec
 	}
 
-	res, err := exeFunc("DELETE * FROM "+store.FulfillmentTableName+" WHERE Id in ?", fulfillments.IDs())
+	res, err := exeFunc("DELETE * FROM "+model.FulfillmentTableName+" WHERE Id in ?", fulfillments.IDs())
 	if err != nil {
 		return errors.Wrap(err, "failed to delete fulfillments")
 	}

@@ -15,7 +15,7 @@ func NewSqlPageStore(s store.Store) store.PageStore {
 }
 
 func (s *SqlPageStore) FilterByOptions(options *model.PageFilterOptions) ([]*model.Page, error) {
-	query := s.GetQueryBuilder().Select("*").From(store.PageTableName)
+	query := s.GetQueryBuilder().Select("*").From(model.PageTableName)
 
 	if options.Id != nil {
 		query = query.Where(options.Id)

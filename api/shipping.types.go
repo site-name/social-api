@@ -11,7 +11,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -259,7 +258,7 @@ func shippingMethodChannelListingsByChannelIdLoader(ctx context.Context, channel
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	listings, appErr := embedCtx.App.Srv().ShippingService().
 		ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-			ChannelID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": channelIDs},
+			ChannelID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
 		for idx := range channelIDs {

@@ -37,14 +37,17 @@ type ProductMedia struct {
 	ExternalUrl *string         `json:"external_url"`
 	OembedData  StringInterface `json:"oembed_data"`
 	Sortable
+
+	ProductVariants ProductVariants `json:"-" gorm:"many2many:variant_medias"`
 }
+
+type ProductMedias []*ProductMedia
 
 // ProductMediaFilterOption is used for building squirrel sql queries
 type ProductMediaFilterOption struct {
-	Id        squirrel.Sqlizer
-	ProductID squirrel.Sqlizer
-	VariantID squirrel.Sqlizer // INNER/LEFT JOIN VariantMedias ON VariantMedias.MediaID = ProductMedias.Id Where VariantMedias.VariantID ...
-	Type      squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
+
+	VariantID squirrel.Sqlizer // INNER JOIN VariantMedias ON VariantMedias.MediaID = ProductMedias.Id Where VariantMedias.VariantID ...
 }
 
 func (p *ProductMedia) IsValid() *AppError {

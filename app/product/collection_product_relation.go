@@ -18,7 +18,7 @@ func (s *ServiceProduct) CollectionProductRelationsByOptions(options *model.Coll
 	return relations, nil
 }
 
-func (s *ServiceProduct) CreateCollectionProductRelations(transaction store_iface.SqlxTxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, *model.AppError) {
+func (s *ServiceProduct) CreateCollectionProductRelations(transaction store_iface.SqlxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, *model.AppError) {
 	relations, err := s.srv.Store.CollectionProduct().BulkSave(transaction, relations)
 	if err != nil {
 		statusCode := http.StatusInternalServerError

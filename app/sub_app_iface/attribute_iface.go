@@ -49,7 +49,7 @@ type AttributeService interface {
 	AttributeByOption(option *model.AttributeFilterOption) (*model.Attribute, *model.AppError)
 	AttributeProductsByOption(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, *model.AppError)
 	AttributeValuesOfAttribute(attributeID string) (model.AttributeValues, *model.AppError)
-	BulkUpsertAttributeValue(transaction store_iface.SqlxTxExecutor, values model.AttributeValues) (model.AttributeValues, *model.AppError)
+	BulkUpsertAttributeValue(transaction store_iface.SqlxExecutor, values model.AttributeValues) (model.AttributeValues, *model.AppError)
 	DeleteAttributeValues(ids ...string) (int64, *model.AppError)
 	DeleteAttributes(ids ...string) (int64, *model.AppError)
 	FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model.AppError)

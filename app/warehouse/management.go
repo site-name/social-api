@@ -10,7 +10,6 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
@@ -43,9 +42,9 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 	stockFilterOption := &model.StockFilterForCountryAndChannel{
 		CountryCode:            countryCode,
 		ChannelSlug:            channelSlug,
-		ProductVariantIDFilter: squirrel.Eq{store.StockTableName + ".ProductVariantID": orderLineInfos.Variants().IDs()},
+		ProductVariantIDFilter: squirrel.Eq{model.StockTableName + ".ProductVariantID": orderLineInfos.Variants().IDs()},
 		LockForUpdate:          true,                 // FOR UPDATE
-		ForUpdateOf:            store.StockTableName, // FOR UPDATE OF Stocks
+		ForUpdateOf:            model.StockTableName, // FOR UPDATE OF Stocks
 	}
 
 	// update lookup options:
@@ -65,8 +64,8 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 	}
 
 	quantityAllocationList, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
-		StockID:           squirrel.Eq{store.AllocationTableName + ".StockID": model.Stocks(stocks).IDs()},
-		QuantityAllocated: squirrel.Gt{store.AllocationTableName + ".QuantityAllocated": 0},
+		StockID:           squirrel.Eq{model.AllocationTableName + ".StockID": model.Stocks(stocks).IDs()},
+		QuantityAllocated: squirrel.Gt{model.AllocationTableName + ".QuantityAllocated": 0},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -125,7 +124,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 		stockIDsOfAllocations := allocations.StockIDs()
 
 		stocks, appErr := a.StocksByOption(&model.StockFilterOption{
-			Id: squirrel.Eq{store.StockTableName + ".Id": stockIDsOfAllocations},
+			Conditions: squirrel.Eq{model.StockTableName + ".Id": stockIDsOfAllocations},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -137,7 +136,7 @@ func (a *ServiceWarehouse) AllocateStocks(orderLineInfos model.OrderLineDatas, c
 		}
 
 		allocationsOfStocks, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
-			StockID: squirrel.Eq{store.AllocationTableName + ".StockID": stockIDsOfAllocations},
+			StockID: squirrel.Eq{model.AllocationTableName + ".StockID": stockIDsOfAllocations},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -225,9 +224,9 @@ func (a *ServiceWarehouse) createAllocations(lineInfo *model.OrderLineData, stoc
 func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, manager interfaces.PluginManagerInterface) (*model.AllocationError, *model.AppError) {
 
 	linesAllocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
-		OrderLineID:          squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLineDatas.OrderLines().IDs()},
+		OrderLineID:          squirrel.Eq{model.AllocationTableName + ".OrderLineID": orderLineDatas.OrderLines().IDs()},
 		LockForUpdate:        true,
-		ForUpdateOf:          store.AllocationTableName + ", " + store.StockTableName,
+		ForUpdateOf:          model.AllocationTableName + ", " + model.StockTableName,
 		SelectedRelatedStock: true, //
 	})
 	if appErr != nil {
@@ -281,7 +280,7 @@ func (a *ServiceWarehouse) DeallocateStock(orderLineDatas model.OrderLineDatas, 
 	}
 
 	allocationsBeforeUpdate, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
-		Id:                             squirrel.Eq{store.AllocationTableName + ".Id": allocationsToUpdate.IDs()},
+		Id:                             squirrel.Eq{model.AllocationTableName + ".Id": allocationsToUpdate.IDs()},
 		SelectedRelatedStock:           true, // this tells store to attach `Stock` to each of returning allocations
 		AnnotateStockAvailableQuantity: true, // this tells store to populate `StockAvailableQuantity` fields of returning allocations.
 	})
@@ -347,10 +346,12 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *model.OrderLine, wareHouse *
 	var stock *model.Stock
 
 	stocks, appErr := a.StocksByOption(&model.StockFilterOption{
-		ProductVariantID: squirrel.Eq{store.ProductVariantTableName + ".Id": *orderLine.VariantID},
-		WarehouseID:      squirrel.Eq{store.WarehouseTableName + ".Id": wareHouse.Id},
-		LockForUpdate:    true,                 // FOR UPDATE
-		ForUpdateOf:      store.StockTableName, // FOR UPDATE Stocks
+		Conditions: squirrel.And{
+			squirrel.Eq{model.ProductVariantTableName + ".Id": *orderLine.VariantID},
+			squirrel.Eq{model.WarehouseTableName + ".Id": wareHouse.Id},
+		},
+		LockForUpdate: true,                 // FOR UPDATE
+		ForUpdateOf:   model.StockTableName, // FOR UPDATE Stocks
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -383,8 +384,8 @@ func (a *ServiceWarehouse) IncreaseStock(orderLine *model.OrderLine, wareHouse *
 		var allocation *model.Allocation
 
 		allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
-			OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": orderLine.Id},
-			StockID:     squirrel.Eq{store.AllocationTableName + ".StockID": stock.Id},
+			OrderLineID: squirrel.Eq{model.AllocationTableName + ".OrderLineID": orderLine.Id},
+			StockID:     squirrel.Eq{model.AllocationTableName + ".StockID": stock.Id},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -432,9 +433,9 @@ func (a *ServiceWarehouse) IncreaseAllocations(lineInfos model.OrderLineDatas, c
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
-		OrderLineID:            squirrel.Eq{store.AllocationTableName + ".OrderLineID": lineInfos.OrderLines().IDs()},
+		OrderLineID:            squirrel.Eq{model.AllocationTableName + ".OrderLineID": lineInfos.OrderLines().IDs()},
 		LockForUpdate:          true,
-		ForUpdateOf:            fmt.Sprintf("%s, %s", store.AllocationTableName, store.StockTableName),
+		ForUpdateOf:            fmt.Sprintf("%s, %s", model.AllocationTableName, model.StockTableName),
 		SelectedRelatedStock:   true,
 		SelectRelatedOrderLine: true,
 	})
@@ -530,7 +531,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, ma
 	}
 	if allocationErr != nil {
 		allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
-			OrderLineID: squirrel.Eq{store.AllocationTableName + ".OrderLineID": allocationErr.OrderLines.IDs()},
+			OrderLineID: squirrel.Eq{model.AllocationTableName + ".OrderLineID": allocationErr.OrderLines.IDs()},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -550,12 +551,14 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, ma
 	}
 
 	stocks, appErr := a.StocksByOption(&model.StockFilterOption{
-		ProductVariantID:            squirrel.Eq{store.StockTableName + ".ProductVariantID": variantIDs},
-		WarehouseID:                 squirrel.Eq{store.StockTableName + ".WarehouseID": warehouseIDs},
+		Conditions: squirrel.And{
+			squirrel.Eq{model.StockTableName + ".ProductVariantID": variantIDs},
+			squirrel.Eq{model.StockTableName + ".WarehouseID": warehouseIDs},
+		},
 		SelectRelatedProductVariant: true,
 		SelectRelatedWarehouse:      true,
 		LockForUpdate:               true,                 // add FOR UPDATE
-		ForUpdateOf:                 store.StockTableName, // FOR UPDATE OF Stocks
+		ForUpdateOf:                 model.StockTableName, // FOR UPDATE OF Stocks
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -572,8 +575,8 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, ma
 	}
 
 	quantityAllocationList, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
-		StockID:           squirrel.Eq{store.AllocationTableName + ".StockID": stocks.IDs()},
-		QuantityAllocated: squirrel.Gt{store.AllocationTableName + ".QuantityAllocated": 0},
+		StockID:           squirrel.Eq{model.AllocationTableName + ".StockID": stocks.IDs()},
+		QuantityAllocated: squirrel.Gt{model.AllocationTableName + ".QuantityAllocated": 0},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -602,7 +605,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, ma
 
 	if updateStocks {
 		foundStocks, appErr := a.StocksByOption(&model.StockFilterOption{
-			Id:                       squirrel.Eq{store.StockTableName + ".Id": stocks.IDs()},
+			Conditions:               squirrel.Eq{model.StockTableName + ".Id": stocks.IDs()},
 			AnnotateAvailabeQuantity: true, // this tells store to populate AvailableQuantity fields of every returning stocks
 		})
 		if appErr != nil {
@@ -626,7 +629,7 @@ func (a *ServiceWarehouse) DecreaseStock(orderLineInfos model.OrderLineDatas, ma
 }
 
 // decreaseStocksQuantity
-func (a *ServiceWarehouse) decreaseStocksQuantity(transaction store_iface.SqlxTxExecutor, orderLinesInfo model.OrderLineDatas, variantAndwarehouseToStock map[string]map[string]*model.Stock, quantityAllocationForStocks map[string]int) (*model.InsufficientStock, *model.AppError) {
+func (a *ServiceWarehouse) decreaseStocksQuantity(transaction store_iface.SqlxExecutor, orderLinesInfo model.OrderLineDatas, variantAndwarehouseToStock map[string]map[string]*model.Stock, quantityAllocationForStocks map[string]int) (*model.InsufficientStock, *model.AppError) {
 
 	var (
 		insufficientStocks []*model.InsufficientStockData
@@ -703,8 +706,8 @@ func (a *ServiceWarehouse) DeAllocateStockForOrder(ord *model.Order, manager int
 	defer a.srv.Store.FinalizeTransaction(transaction)
 
 	allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
-		QuantityAllocated:              squirrel.Gt{store.AllocationTableName + ".QuantityAllocated": 0},
-		OrderLineOrderID:               squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
+		QuantityAllocated:              squirrel.Gt{model.AllocationTableName + ".QuantityAllocated": 0},
+		OrderLineOrderID:               squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
 		AnnotateStockAvailableQuantity: true, // this tells store to populate StockAvailableQuantity fields of returning allocations
 		SelectedRelatedStock:           true, //
 	})
@@ -764,10 +767,10 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo model.OrderLineDatas
 
 	allVariantChannelListings, appErr := s.srv.ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			VariantID:            squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
+			VariantID:            squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
 			SelectRelatedChannel: true,
 			SelectForUpdate:      true,
-			SelectForUpdateOf:    store.ProductVariantChannelListingTableName,
+			SelectForUpdateOf:    model.ProductVariantChannelListingTableName,
 		})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -776,8 +779,8 @@ func (s *ServiceWarehouse) AllocatePreOrders(orderLinesInfo model.OrderLineDatas
 	}
 
 	quantityAllocationList, appErr := s.PreOrderAllocationsByOptions(&model.PreorderAllocationFilterOption{
-		ProductVariantChannelListingID: squirrel.Eq{store.PreOrderAllocationTableName + ".ProductVariantChannelListingID": allVariantChannelListings.IDs()},
-		Quantity:                       squirrel.Gt{store.PreOrderAllocationTableName + ".Quantity": 0},
+		ProductVariantChannelListingID: squirrel.Eq{model.PreOrderAllocationTableName + ".ProductVariantChannelListingID": allVariantChannelListings.IDs()},
+		Quantity:                       squirrel.Gt{model.PreOrderAllocationTableName + ".Quantity": 0},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -938,7 +941,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *model.Pr
 
 	variantChannelListings, appErr := s.srv.ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": productVariant.Id},
+			VariantID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": productVariant.Id},
 		})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -947,7 +950,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *model.Pr
 	}
 
 	preorderAllocations, appErr := s.srv.WarehouseService().PreOrderAllocationsByOptions(&model.PreorderAllocationFilterOption{
-		ProductVariantChannelListingID: squirrel.Eq{store.PreOrderAllocationTableName + ".ProductVariantChannelListingID": variantChannelListings.IDs()},
+		ProductVariantChannelListingID: squirrel.Eq{model.PreOrderAllocationTableName + ".ProductVariantChannelListingID": variantChannelListings.IDs()},
 		SelectRelated_OrderLine:        true,
 		SelectRelated_OrderLine_Order:  true,
 	})
@@ -1008,7 +1011,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *model.Pr
 	// NOTE: call the same query as above
 	// the found result may difer the above since some row(s) may have been added during the period prior to this moment.
 	productVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-		VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": productVariant.Id},
+		VariantID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": productVariant.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -1039,7 +1042,7 @@ func (s *ServiceWarehouse) DeactivatePreorderForVariant(productVariant *model.Pr
 // no warehouse assigned to any shipping zone handles order's country.
 //
 // NOTE: `transaction` MUST NOT be nil, otherwise this method'd return error
-func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface.SqlxTxExecutor, preorderAllocation *model.PreorderAllocation, productVariant *model.ProductVariant) (*model.Stock, *model.PreorderAllocationError, *model.AppError) {
+func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface.SqlxExecutor, preorderAllocation *model.PreorderAllocation, productVariant *model.ProductVariant) (*model.Stock, *model.PreorderAllocationError, *model.AppError) {
 	if transaction == nil {
 		return nil, nil, model.NewAppError("getStockForPreorderAllocation", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "transaction"}, "please provide a non-nil transaction", http.StatusBadRequest)
 	}
@@ -1056,7 +1059,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 			PreOrderAllocationsByOptions(&model.PreorderAllocationFilterOption{
 				SelectRelated_OrderLine:       true,
 				SelectRelated_OrderLine_Order: true,
-				Id:                            squirrel.Eq{store.PreOrderAllocationTableName + ".Id": preorderAllocation.Id},
+				Id:                            squirrel.Eq{model.PreOrderAllocationTableName + ".Id": preorderAllocation.Id},
 			})
 		if appErr != nil {
 			return nil, nil, appErr
@@ -1072,7 +1075,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 			ShippingService().
 			ShippingMethodByOption(&model.ShippingMethodFilterOption{
 				Id: squirrel.Eq{
-					store.ShippingMethodTableName + ".Id": *orDer.ShippingMethodID,
+					model.ShippingMethodTableName + ".Id": *orDer.ShippingMethodID,
 				},
 			})
 		if appErr != nil {
@@ -1082,7 +1085,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 		warehouses, appErr := s.srv.
 			WarehouseService().
 			WarehousesByOption(&model.WarehouseFilterOption{
-				ShippingZonesId: squirrel.Eq{store.ShippingZoneTableName + ".Id": orderShippingMethod.ShippingZoneID},
+				ShippingZonesId: squirrel.Eq{model.ShippingZoneTableName + ".Id": orderShippingMethod.ShippingZoneID},
 			})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -1102,7 +1105,7 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 		warehouses, appErr := s.srv.
 			WarehouseService().
 			WarehousesByOption(&model.WarehouseFilterOption{
-				ShippingZonesCountries: squirrel.Like{store.ShippingMethodTableName + ".Countries": orderCountry},
+				ShippingZonesCountries: squirrel.Like{model.ShippingMethodTableName + ".Countries": orderCountry},
 			})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError {
@@ -1120,10 +1123,12 @@ func (s *ServiceWarehouse) getStockForPreorderAllocation(transaction store_iface
 	}
 
 	stocks, appErr := s.srv.WarehouseService().StocksByOption(&model.StockFilterOption{
-		LockForUpdate:    true,
-		ForUpdateOf:      store.StockTableName,
-		WarehouseID:      squirrel.Eq{store.WarehouseTableName + ".Id": wareHouse.Id},
-		ProductVariantID: squirrel.Eq{store.ProductVariantTableName + ".Id": productVariant.Id},
+		LockForUpdate: true,
+		ForUpdateOf:   model.StockTableName,
+		Conditions: squirrel.And{
+			squirrel.Eq{model.ProductVariantTableName + ".Id": productVariant.Id},
+			squirrel.Eq{model.WarehouseTableName + ".Id": wareHouse.Id},
+		},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

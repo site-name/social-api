@@ -43,7 +43,7 @@ func (s *SqlOrderDiscountStore) ModelFields(prefix string) util.AnyArray[string]
 }
 
 // Upsert depends on given order discount's Id property to decide to update/insert it
-func (ods *SqlOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
+func (ods *SqlOrderDiscountStore) Upsert(transaction store_iface.SqlxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
 	var executor store_iface.SqlxExecutor = ods.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -68,11 +68,11 @@ func (ods *SqlOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor,
 		numUpdated int64
 	)
 	if isSaving {
-		query := "INSERT INTO " + store.OrderDiscountTableName + "(" + ods.ModelFields("").Join(",") + ") VALUES (" + ods.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.OrderDiscountTableName + "(" + ods.ModelFields("").Join(",") + ") VALUES (" + ods.ModelFields(":").Join(",") + ")"
 		_, err = executor.NamedExec(query, orderDiscount)
 
 	} else {
-		query := "UPDATE " + store.OrderDiscountTableName + " SET " + ods.
+		query := "UPDATE " + model.OrderDiscountTableName + " SET " + ods.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -101,10 +101,10 @@ func (ods *SqlOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor,
 func (ods *SqlOrderDiscountStore) Get(orderDiscountID string) (*model.OrderDiscount, error) {
 	var res model.OrderDiscount
 
-	err := ods.GetReplicaX().Get(&res, "SELECT * FROM "+store.OrderDiscountTableName+" WHERE Id = ?", orderDiscountID)
+	err := ods.GetReplicaX().Get(&res, "SELECT * FROM "+model.OrderDiscountTableName+" WHERE Id = ?", orderDiscountID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.OrderDiscountTableName, orderDiscountID)
+			return nil, store.NewErrNotFound(model.OrderDiscountTableName, orderDiscountID)
 		}
 		return nil, errors.Wrapf(err, "failed to save order discount with id=%s", orderDiscountID)
 	}
@@ -116,7 +116,7 @@ func (ods *SqlOrderDiscountStore) Get(orderDiscountID string) (*model.OrderDisco
 func (ods *SqlOrderDiscountStore) FilterbyOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, error) {
 	query := ods.GetQueryBuilder().
 		Select("*").
-		From(store.OrderDiscountTableName)
+		From(model.OrderDiscountTableName)
 
 	if option.Id != nil {
 		query = query.Where(option.Id)
@@ -144,7 +144,7 @@ func (ods *SqlOrderDiscountStore) FilterbyOption(option *model.OrderDiscountFilt
 
 // BulkDelete perform bulk delete all given order discount ids
 func (ods *SqlOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
-	query, args, _ := ods.GetQueryBuilder().Delete("*").From(store.OrderDiscountTableName).Where(squirrel.Eq{"Id": orderDiscountIDs}).ToSql()
+	query, args, _ := ods.GetQueryBuilder().Delete("*").From(model.OrderDiscountTableName).Where(squirrel.Eq{"Id": orderDiscountIDs}).ToSql()
 	result, err := ods.GetMasterX().Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete order discounts by given ids")

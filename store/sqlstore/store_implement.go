@@ -114,10 +114,6 @@ type SqlStoreStores struct {
 	productVariantChannelListing  store.ProductVariantChannelListingStore
 	productVariantTranslation     store.ProductVariantTranslationStore
 	role                          store.RoleStore
-	saleCategoryRelation          store.SaleCategoryRelationStore
-	saleCollectionRelation        store.SaleCollectionRelationStore
-	saleProductRelation           store.SaleProductRelationStore
-	saleProductVariant            store.SaleProductVariantStore
 	session                       store.SessionStore
 	shippingMethod                store.ShippingMethodStore
 	shippingMethodChannelListing  store.ShippingMethodChannelListingStore
@@ -139,14 +135,9 @@ type SqlStoreStores struct {
 	user                          store.UserStore
 	userAccessToken               store.UserAccessTokenStore
 	userAddress                   store.UserAddressStore
-	variantMedia                  store.VariantMediaStore
 	vat                           store.VatStore
-	voucherCategory               store.VoucherCategoryStore
 	voucherChannelListing         store.VoucherChannelListingStore
-	voucherCollection             store.VoucherCollectionStore
 	voucherCustomer               store.VoucherCustomerStore
-	voucherProduct                store.VoucherProductStore
-	voucherProductVariant         store.VoucherProductVariantStore
 	voucherTranslation            store.VoucherTranslationStore
 	warehouse                     store.WarehouseStore
 	warehouseShippingZone         store.WarehouseShippingZoneStore
@@ -234,10 +225,6 @@ func (store *SqlStore) setupTables() {
 		productVariantChannelListing:  product.NewSqlProductVariantChannelListingStore(store),
 		productVariantTranslation:     product.NewSqlProductVariantTranslationStore(store),
 		role:                          role.NewSqlRoleStore(store),
-		saleCategoryRelation:          discount.NewSqlSaleCategoryRelationStore(store),
-		saleCollectionRelation:        discount.NewSqlSaleCollectionRelationStore(store),
-		saleProductRelation:           discount.NewSqlSaleProductRelationStore(store),
-		saleProductVariant:            discount.NewSqlSaleProductVariantStore(store),
 		session:                       session.NewSqlSessionStore(store),
 		shippingMethod:                shipping.NewSqlShippingMethodStore(store),
 		shippingMethodChannelListing:  shipping.NewSqlShippingMethodChannelListingStore(store),
@@ -259,14 +246,9 @@ func (store *SqlStore) setupTables() {
 		user:                          account.NewSqlUserStore(store, store.metrics),
 		userAccessToken:               account.NewSqlUserAccessTokenStore(store),
 		userAddress:                   account.NewSqlUserAddressStore(store),
-		variantMedia:                  product.NewSqlVariantMediaStore(store),
 		vat:                           shop.NewSqlVatStore(store),
-		voucherCategory:               discount.NewSqlVoucherCategoryStore(store),
 		voucherChannelListing:         discount.NewSqlVoucherChannelListingStore(store),
-		voucherCollection:             discount.NewSqlVoucherCollectionStore(store),
 		voucherCustomer:               discount.NewSqlVoucherCustomerStore(store),
-		voucherProduct:                discount.NewSqlVoucherProductStore(store),
-		voucherProductVariant:         discount.NewSqlVoucherProductVariantStore(store),
 		voucherTranslation:            discount.NewSqlVoucherTranslationStore(store),
 		warehouse:                     warehouse.NewSqlWarehouseStore(store),
 		warehouseShippingZone:         warehouse.NewSqlWarehouseShippingZoneStore(store),
@@ -580,22 +562,6 @@ func (ss *SqlStore) Role() store.RoleStore {
 	return ss.stores.role
 }
 
-func (ss *SqlStore) SaleCategoryRelation() store.SaleCategoryRelationStore {
-	return ss.stores.saleCategoryRelation
-}
-
-func (ss *SqlStore) SaleCollectionRelation() store.SaleCollectionRelationStore {
-	return ss.stores.saleCollectionRelation
-}
-
-func (ss *SqlStore) SaleProductRelation() store.SaleProductRelationStore {
-	return ss.stores.saleProductRelation
-}
-
-func (ss *SqlStore) SaleProductVariant() store.SaleProductVariantStore {
-	return ss.stores.saleProductVariant
-}
-
 func (ss *SqlStore) Session() store.SessionStore {
 	return ss.stores.session
 }
@@ -680,36 +646,16 @@ func (ss *SqlStore) UserAddress() store.UserAddressStore {
 	return ss.stores.userAddress
 }
 
-func (ss *SqlStore) VariantMedia() store.VariantMediaStore {
-	return ss.stores.variantMedia
-}
-
 func (ss *SqlStore) Vat() store.VatStore {
 	return ss.stores.vat
-}
-
-func (ss *SqlStore) VoucherCategory() store.VoucherCategoryStore {
-	return ss.stores.voucherCategory
 }
 
 func (ss *SqlStore) VoucherChannelListing() store.VoucherChannelListingStore {
 	return ss.stores.voucherChannelListing
 }
 
-func (ss *SqlStore) VoucherCollection() store.VoucherCollectionStore {
-	return ss.stores.voucherCollection
-}
-
 func (ss *SqlStore) VoucherCustomer() store.VoucherCustomerStore {
 	return ss.stores.voucherCustomer
-}
-
-func (ss *SqlStore) VoucherProduct() store.VoucherProductStore {
-	return ss.stores.voucherProduct
-}
-
-func (ss *SqlStore) VoucherProductVariant() store.VoucherProductVariantStore {
-	return ss.stores.voucherProductVariant
 }
 
 func (ss *SqlStore) VoucherTranslation() store.VoucherTranslationStore {

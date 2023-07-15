@@ -13,8 +13,7 @@ type WarehouseShippingZone struct {
 
 // WarehouseShippingZoneFilterOption is used to build squirrel sql queries
 type WarehouseShippingZoneFilterOption struct {
-	WarehouseID    squirrel.Sqlizer
-	ShippingZoneID squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
 func (w *WarehouseShippingZone) IsValid() *AppError {

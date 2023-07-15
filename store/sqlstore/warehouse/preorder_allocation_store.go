@@ -42,13 +42,13 @@ func (ws *SqlPreorderAllocationStore) ScanFields(preorderAllocation *model.Preor
 }
 
 // BulkCreate bulk inserts given preorderAllocations and returns them
-func (ws *SqlPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
+func (ws *SqlPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxExecutor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
 	var upsertor store_iface.SqlxExecutor = ws.GetMasterX()
 	if transaction != nil {
 		upsertor = transaction
 	}
 
-	query := "INSERT INTO " + store.PreOrderAllocationTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.PreOrderAllocationTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
 	for _, allocation := range preorderAllocations {
 		allocation.PreSave()
 
@@ -59,7 +59,7 @@ func (ws *SqlPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxE
 		_, err := upsertor.NamedExec(query, allocation)
 		if err != nil {
 			if ws.IsUniqueConstraintError(err, []string{"OrderLineID", "ProductVariantChannelListingID", "preorderallocations_orderlineid_productvariantchannellistingid_key"}) {
-				return nil, store.NewErrInvalidInput(store.PreOrderAllocationTableName, "OrderLineID/ProductVariantChannelListingID", "duplicate")
+				return nil, store.NewErrInvalidInput(model.PreOrderAllocationTableName, "OrderLineID/ProductVariantChannelListingID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to insert preorder allocation with id=%s", allocation.Id)
 		}
@@ -70,16 +70,16 @@ func (ws *SqlPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxE
 
 // FilterByOption finds and returns a list of preorder allocations filtered using given options
 func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllocationFilterOption) ([]*model.PreorderAllocation, error) {
-	selectFields := ws.ModelFields(store.PreOrderAllocationTableName + ".")
+	selectFields := ws.ModelFields(model.PreOrderAllocationTableName + ".")
 
 	if options.SelectRelated_OrderLine {
-		selectFields = append(selectFields, ws.OrderLine().ModelFields(store.OrderLineTableName+".")...)
+		selectFields = append(selectFields, ws.OrderLine().ModelFields(model.OrderLineTableName+".")...)
 	}
 	if options.SelectRelated_OrderLine_Order && options.SelectRelated_OrderLine {
-		selectFields = append(selectFields, ws.Order().ModelFields(store.OrderTableName+".")...)
+		selectFields = append(selectFields, ws.Order().ModelFields(model.OrderTableName+".")...)
 	}
 
-	query := ws.GetQueryBuilder().Select(selectFields...).From(store.PreOrderAllocationTableName)
+	query := ws.GetQueryBuilder().Select(selectFields...).From(model.PreOrderAllocationTableName)
 
 	for _, opt := range []squirrel.Sqlizer{
 		options.Id,
@@ -93,10 +93,10 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllo
 	}
 
 	if options.SelectRelated_OrderLine {
-		query = query.InnerJoin(store.OrderLineTableName + " ON PreorderAllocations.OrderLineID = Orderlines.Id")
+		query = query.InnerJoin(model.OrderLineTableName + " ON PreorderAllocations.OrderLineID = Orderlines.Id")
 	}
 	if options.SelectRelated_OrderLine_Order && options.SelectRelated_OrderLine {
-		query = query.InnerJoin(store.OrderTableName + " ON Orderlines.OrderID = Orders.Id")
+		query = query.InnerJoin(model.OrderTableName + " ON Orderlines.OrderID = Orders.Id")
 	}
 
 	queryString, args, err := query.ToSql()
@@ -146,13 +146,13 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllo
 }
 
 // Delete deletes preorder-allocations by given ids
-func (ws *SqlPreorderAllocationStore) Delete(transaction store_iface.SqlxTxExecutor, preorderAllocationIDs ...string) error {
+func (ws *SqlPreorderAllocationStore) Delete(transaction store_iface.SqlxExecutor, preorderAllocationIDs ...string) error {
 	var runner store_iface.SqlxExecutor = ws.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
 
-	query, args, err := ws.GetQueryBuilder().Delete(store.PreOrderAllocationTableName).Where(squirrel.Eq{"Id": preorderAllocationIDs}).ToSql()
+	query, args, err := ws.GetQueryBuilder().Delete(model.PreOrderAllocationTableName).Where(squirrel.Eq{"Id": preorderAllocationIDs}).ToSql()
 	if err != nil {
 		return errors.Wrap(err, "Delete_ToSql")
 	}

@@ -37,10 +37,10 @@ func (s *SqlChannelShopStore) Save(relation *model.ChannelShopRelation) (*model.
 		return nil, appErr
 	}
 
-	_, err := s.GetMasterX().NamedExec("INSERT INTO "+store.ChannelShopRelationTableName+"("+s.ModelFields("").Join(",")+") VALUES ("+s.ModelFields(":").Join(",")+")", relation)
+	_, err := s.GetMasterX().NamedExec("INSERT INTO "+model.ChannelShopRelationTableName+"("+s.ModelFields("").Join(",")+") VALUES ("+s.ModelFields(":").Join(",")+")", relation)
 	if err != nil {
 		if s.IsUniqueConstraintError(err, []string{"ChannelID", "channelshops_shopid_channelid_key"}) {
-			return nil, store.NewErrInvalidInput(store.ChannelShopRelationTableName, "channelID / shopID", "")
+			return nil, store.NewErrInvalidInput(model.ChannelShopRelationTableName, "channelID / shopID", "")
 		}
 		return nil, errors.Wrapf(err, "failed to insert channel-shop relation with id=%s", relation.Id)
 	}
@@ -49,8 +49,8 @@ func (s *SqlChannelShopStore) Save(relation *model.ChannelShopRelation) (*model.
 
 func (s *SqlChannelShopStore) FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error) {
 	query := s.GetQueryBuilder().
-		Select(s.ModelFields(store.ChannelShopRelationTableName + ".")...).
-		From(store.ChannelShopRelationTableName)
+		Select(s.ModelFields(model.ChannelShopRelationTableName + ".")...).
+		From(model.ChannelShopRelationTableName)
 
 	if options == nil {
 		options = new(model.ChannelShopRelationFilterOptions)

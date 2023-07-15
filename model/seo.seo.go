@@ -11,8 +11,8 @@ const (
 )
 
 type Seo struct {
-	SeoTitle       string `json:"seo_title,omitempty"`
-	SeoDescription string `json:"seo_description,omitempty"`
+	SeoTitle       string `json:"seo_title,omitempty" gorm:"type:varchar(70)"`
+	SeoDescription string `json:"seo_description,omitempty" gorm:"type:varchar(300)"`
 }
 
 func (s *Seo) IsValid() *AppError {

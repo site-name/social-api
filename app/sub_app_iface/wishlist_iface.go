@@ -17,13 +17,13 @@ type WishlistService interface {
 	// AddWishlistItemProductVariantRelation adds given wishlist item-product variant relation into database and returns it
 	AddWishlistItemProductVariantRelation(relation *model.WishlistItemProductVariant) (*model.WishlistItemProductVariant, *model.AppError)
 	// BulkUpsertWishlistItemProductVariantRelations
-	BulkUpsertWishlistItemProductVariantRelations(transaction store_iface.SqlxTxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, *model.AppError)
+	BulkUpsertWishlistItemProductVariantRelations(transaction store_iface.SqlxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, *model.AppError)
 	// BulkUpsertWishlistItems updates or inserts given wishlist item into database then returns it
-	BulkUpsertWishlistItems(transaction store_iface.SqlxTxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, *model.AppError)
+	BulkUpsertWishlistItems(transaction store_iface.SqlxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, *model.AppError)
 	// DeleteWishlistItemProductVariantRelation deletes a wishlist item-product variant relation and returns a number of remaining relations in database
 	DeleteWishlistItemProductVariantRelation(relation *model.WishlistItemProductVariant) (int64, *model.AppError)
 	// DeleteWishlistItemsByOption tell store to delete wishlist items that satisfy given option, then returns a number of items deleted
-	DeleteWishlistItemsByOption(transaction store_iface.SqlxTxExecutor, option *model.WishlistItemFilterOption) (int64, *model.AppError)
+	DeleteWishlistItemsByOption(transaction store_iface.SqlxExecutor, option *model.WishlistItemFilterOption) (int64, *model.AppError)
 	// GetAllVariants returns all product variants in child wishlist items of given wishlist
 	GetAllVariants(wishlistID string) ([]*model.ProductVariant, *model.AppError)
 	// GetOrCreateWishlistItem insert or get wishlist items

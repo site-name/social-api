@@ -8,7 +8,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -90,7 +89,7 @@ func fulfillmentsByOrderIdLoader(ctx context.Context, orderIDs []string) []*data
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	fulfillments, appErr := embedCtx.App.Srv().OrderService().FulfillmentsByOption(nil, &model.FulfillmentFilterOption{
-		OrderID: squirrel.Eq{store.FulfillmentTableName + ".OrderID": orderIDs},
+		OrderID: squirrel.Eq{model.FulfillmentTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {
 		for idx := range orderIDs {
@@ -147,7 +146,7 @@ func fulfillmentLinesByIdLoader(ctx context.Context, ids []string) []*dataloader
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	lines, appErr := embedCtx.App.Srv().OrderService().FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
-		Id: squirrel.Eq{store.FulfillmentLineTableName + ".Id": ids},
+		Id: squirrel.Eq{model.FulfillmentLineTableName + ".Id": ids},
 	})
 	if appErr != nil {
 		for idx := range ids {
@@ -175,7 +174,7 @@ func fulfillmentLinesByFulfillmentIDLoader(ctx context.Context, fulfillmentIDs [
 		Srv().
 		OrderService().
 		FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
-			FulfillmentID: squirrel.Eq{store.FulfillmentLineTableName + ".FulfillmentID": fulfillmentIDs},
+			FulfillmentID: squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": fulfillmentIDs},
 		})
 	if appErr != nil {
 		for idx := range fulfillmentIDs {

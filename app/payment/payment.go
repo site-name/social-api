@@ -29,7 +29,7 @@ func init() {
 }
 
 // PaymentByID returns a payment with given id
-func (a *ServicePayment) PaymentByID(transaction store_iface.SqlxTxExecutor, paymentID string, lockForUpdate bool) (*model.Payment, *model.AppError) {
+func (a *ServicePayment) PaymentByID(transaction store_iface.SqlxExecutor, paymentID string, lockForUpdate bool) (*model.Payment, *model.AppError) {
 	payMent, err := a.srv.Store.Payment().Get(transaction, paymentID, lockForUpdate)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -64,7 +64,7 @@ func (a *ServicePayment) PaymentsByOption(option *model.PaymentFilterOption) ([]
 
 func (a *ServicePayment) GetLastOrderPayment(orderID string) (*model.Payment, *model.AppError) {
 	payments, appError := a.PaymentsByOption(&model.PaymentFilterOption{
-		OrderID: squirrel.Eq{store.PaymentTableName + ".OrderID": orderID},
+		OrderID: squirrel.Eq{model.PaymentTableName + ".OrderID": orderID},
 	})
 	if appError != nil {
 		return nil, appError
@@ -141,7 +141,7 @@ func (a *ServicePayment) PaymentCanVoid(payMent *model.Payment) (bool, *model.Ap
 }
 
 // UpsertPayment updates or insert given payment, depends on the validity of its Id
-func (a *ServicePayment) UpsertPayment(transaction store_iface.SqlxTxExecutor, payMent *model.Payment) (*model.Payment, *model.AppError) {
+func (a *ServicePayment) UpsertPayment(transaction store_iface.SqlxExecutor, payMent *model.Payment) (*model.Payment, *model.AppError) {
 	var err error
 
 	if !model.IsValidId(payMent.Id) {
@@ -166,7 +166,7 @@ func (a *ServicePayment) UpsertPayment(transaction store_iface.SqlxTxExecutor, p
 // GetAllPaymentsByCheckout returns all payments that belong to given checkout
 func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*model.Payment, *model.AppError) {
 	payments, appErr := a.PaymentsByOption(&model.PaymentFilterOption{
-		CheckoutID: squirrel.Eq{store.PaymentTableName + ".CheckoutID": checkoutToken},
+		CheckoutID: squirrel.Eq{model.PaymentTableName + ".CheckoutID": checkoutToken},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -175,7 +175,7 @@ func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*mode
 }
 
 // UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
-func (s *ServicePayment) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *model.PaymentPatch) *model.AppError {
+func (s *ServicePayment) UpdatePaymentsOfCheckout(transaction store_iface.SqlxExecutor, checkoutToken string, option *model.PaymentPatch) *model.AppError {
 	err := s.srv.Store.Payment().UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
 	if err != nil {
 		return model.NewAppError("UpdatePaymentsOfCheckout", "app.payment.error_updating_payments_of_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)

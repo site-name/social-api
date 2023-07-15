@@ -58,11 +58,11 @@ func (p *SqlPluginConfigurationStore) Upsert(config *model.PluginConfiguration) 
 		numUpdated int64
 	)
 	if isSaving {
-		query := "INSERT INTO " + store.PluginConfigurationTableName + "(" + p.ModelFields("").Join(",") + ") VALUES (" + p.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.PluginConfigurationTableName + "(" + p.ModelFields("").Join(",") + ") VALUES (" + p.ModelFields(":").Join(",") + ")"
 		_, err = p.GetMasterX().NamedExec(query, config)
 
 	} else {
-		query := "UPDATE " + store.PluginConfigurationTableName + " SET " + p.
+		query := "UPDATE " + model.PluginConfigurationTableName + " SET " + p.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -78,7 +78,7 @@ func (p *SqlPluginConfigurationStore) Upsert(config *model.PluginConfiguration) 
 
 	if err != nil {
 		if p.IsUniqueConstraintError(err, []string{"Identifier", "ChannelID", "pluginconfigurations_identifier_channelid_key"}) {
-			return nil, store.NewErrInvalidInput(store.PluginConfigurationTableName, "Identifier/ChannelID", "duplicate")
+			return nil, store.NewErrInvalidInput(model.PluginConfigurationTableName, "Identifier/ChannelID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to upsert plugin configuration with id=%s", config.Id)
 	}
@@ -92,10 +92,10 @@ func (p *SqlPluginConfigurationStore) Upsert(config *model.PluginConfiguration) 
 // Get finds a plugin configuration with given id then returns it
 func (p *SqlPluginConfigurationStore) Get(id string) (*model.PluginConfiguration, error) {
 	var res model.PluginConfiguration
-	err := p.GetReplicaX().Get(&res, "SELECT * FROM "+store.PluginConfigurationTableName+" WHERE Id = ?", id)
+	err := p.GetReplicaX().Get(&res, "SELECT * FROM "+model.PluginConfigurationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.PluginConfigurationTableName, id)
+			return nil, store.NewErrNotFound(model.PluginConfigurationTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find plugon configuration with id=%s", id)
 	}
@@ -106,7 +106,7 @@ func (p *SqlPluginConfigurationStore) Get(id string) (*model.PluginConfiguration
 func (p *SqlPluginConfigurationStore) optionsParse(options *model.PluginConfigurationFilterOptions) (string, []interface{}, error) {
 	query := p.GetQueryBuilder().
 		Select("*").
-		From(store.PluginConfigurationTableName)
+		From(model.PluginConfigurationTableName)
 
 	// parse options
 	if options.Id != nil {
@@ -138,7 +138,7 @@ func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options model.P
 	// check if we need to prefetch
 	if options.PrefetchRelatedChannel && len(configs) != 0 {
 		channels, err := p.Channel().FilterByOption(&model.ChannelFilterOption{
-			Id: squirrel.Eq{store.PluginConfigurationTableName + ".Id": configs.ChannelIDs()},
+			Id: squirrel.Eq{model.PluginConfigurationTableName + ".Id": configs.ChannelIDs()},
 		})
 
 		if err != nil {
@@ -168,7 +168,7 @@ func (p *SqlPluginConfigurationStore) GetByOptions(options *model.PluginConfigur
 	err = p.GetReplicaX().Get(&res, queryStr, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.PluginConfigurationTableName, "options")
+			return nil, store.NewErrNotFound(model.PluginConfigurationTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find plugin configuration with given options")
 	}

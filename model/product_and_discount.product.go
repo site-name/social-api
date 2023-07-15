@@ -19,19 +19,19 @@ const (
 
 // ordering slug
 type Product struct {
-	Id                   string                 `json:"id"`
-	ProductTypeID        string                 `json:"product_type_id"`
-	Name                 string                 `json:"name"`
-	Slug                 string                 `json:"slug"`
+	Id                   string                 `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	ProductTypeID        string                 `json:"product_type_id" gorm:"type:uuid;index:"`
+	Name                 string                 `json:"name" gorm:"type:varchar(250)"`
+	Slug                 string                 `json:"slug" gorm:"type:varchar(255);uniqueIndex:product_slug_unique_key"`
 	Description          StringInterface        `json:"description"`
 	DescriptionPlainText string                 `json:"description_plaintext"`
-	CategoryID           *string                `json:"category_id"`
+	CategoryID           *string                `json:"category_id" gorm:"type:uuid;index:"`
 	CreateAt             int64                  `json:"create_at"`
 	UpdateAt             int64                  `json:"update_at"`
 	ChargeTaxes          *bool                  `json:"charge_taxes"` // default true
 	Weight               *float32               `json:"weight"`
 	WeightUnit           measurement.WeightUnit `json:"weight_unit"`
-	DefaultVariantID     *string                `json:"default_variant_id"`
+	DefaultVariantID     *string                `json:"default_variant_id" gorm:"type:uuid;index"`
 	Rating               *float32               `json:"rating"`
 	ModelMetadata
 	Seo
@@ -43,6 +43,9 @@ type Product struct {
 	category                  *Category                 `json:"-" db:"-"`
 	medias                    FileInfos                 `json:"-" db:"-"`
 	productChannelListings    ProductChannelListings    `json:"-" db:"-"`
+
+	Sales    Sales    `json:"-" gorm:"many2many:sale_products"`
+	Vouchers Vouchers `json:"-" gorm:"many2many:voucher_products"`
 }
 
 func (p *Product) GetCollections() Collections {

@@ -52,8 +52,8 @@ type AttributeValueFilterOptions struct {
 
 	SelectRelatedAttribute bool
 
-	Transaction     store_iface.SqlxTxExecutor // if provided, this will be responsible for perform queries
-	SelectForUpdate bool                       // is true, add `FOR UPDATE` suffic to the end of sql query
+	Transaction     store_iface.SqlxExecutor // if provided, this will be responsible for perform queries
+	SelectForUpdate bool                     // is true, add `FOR UPDATE` suffic to the end of sql query
 
 	Ordering string
 }

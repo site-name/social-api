@@ -45,7 +45,7 @@ func (s *SqlShippingMethodPostalCodeRuleStore) ScanFields(rule *model.ShippingMe
 }
 
 func (s *SqlShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error) {
-	query := s.GetQueryBuilder().Select("*").From(store.ShippingMethodPostalCodeRuleTableName)
+	query := s.GetQueryBuilder().Select("*").From(model.ShippingMethodPostalCodeRuleTableName)
 
 	if options.Id != nil {
 		query = query.Where(options.Id)
@@ -68,8 +68,8 @@ func (s *SqlShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.Sh
 	return res, nil
 }
 
-func (s *SqlShippingMethodPostalCodeRuleStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
-	query, args, err := s.GetQueryBuilder().Delete(store.ShippingMethodPostalCodeRuleTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
+func (s *SqlShippingMethodPostalCodeRuleStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
+	query, args, err := s.GetQueryBuilder().Delete(model.ShippingMethodPostalCodeRuleTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
 	if err != nil {
 		return errors.Wrap(err, "Delete_ToSql")
 	}
@@ -91,8 +91,8 @@ func (s *SqlShippingMethodPostalCodeRuleStore) Delete(transaction store_iface.Sq
 	return nil
 }
 
-func (s *SqlShippingMethodPostalCodeRuleStore) Save(transaction store_iface.SqlxTxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
-	query := "INSERT INTO " + store.ShippingMethodPostalCodeRuleTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+func (s *SqlShippingMethodPostalCodeRuleStore) Save(transaction store_iface.SqlxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
+	query := "INSERT INTO " + model.ShippingMethodPostalCodeRuleTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
 
 	runner := s.GetMasterX()
 	if transaction != nil {
@@ -109,7 +109,7 @@ func (s *SqlShippingMethodPostalCodeRuleStore) Save(transaction store_iface.Sqlx
 		_, err := runner.NamedExec(query, rule)
 		if err != nil {
 			if s.IsUniqueConstraintError(err, []string{"shippingmethodpostalcoderules_shippingmethodid_start_end_key", "Start", "End", "ShippingMethodID"}) {
-				return nil, store.NewErrInvalidInput(store.ShippingMethodPostalCodeRuleTableName, "", "")
+				return nil, store.NewErrInvalidInput(model.ShippingMethodPostalCodeRuleTableName, "", "")
 			}
 			return nil, errors.Wrap(err, "failed to save shipping method postal code rule")
 		}

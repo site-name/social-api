@@ -11,7 +11,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -186,13 +185,13 @@ func (s *Shop) AvailableShippingMethods(ctx context.Context, args struct {
 		address                  model.Address
 		embedCtx                 = GetContextValue[*web.Context](ctx, WebCtx)
 		shippingMethodFilterOpts = &model.ShippingMethodFilterOption{
-			ShippingZoneChannelSlug:    squirrel.Eq{store.ChannelTableName + ".Slug": args.Channel},
-			ChannelListingsChannelSlug: squirrel.Eq{store.ChannelTableName + ".Slug": args.Channel},
+			ShippingZoneChannelSlug:    squirrel.Eq{model.ChannelTableName + ".Slug": args.Channel},
+			ChannelListingsChannelSlug: squirrel.Eq{model.ChannelTableName + ".Slug": args.Channel},
 		}
 	)
 
 	if args.Address != nil && args.Address.Country != nil {
-		shippingMethodFilterOpts.ShippingZoneCountries = squirrel.ILike{store.ShippingZoneTableName + ".Countries": "%" + args.Address.Country.String() + "%"}
+		shippingMethodFilterOpts.ShippingZoneCountries = squirrel.ILike{model.ShippingZoneTableName + ".Countries": "%" + args.Address.Country.String() + "%"}
 	}
 
 	availableSippingMethods, appErr := embedCtx.
@@ -221,7 +220,7 @@ func (s *Shop) AvailableShippingMethods(ctx context.Context, args struct {
 	}
 
 	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
-		Slug: squirrel.Eq{store.ChannelTableName + ".Slug": args.Channel},
+		Slug: squirrel.Eq{model.ChannelTableName + ".Slug": args.Channel},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -264,7 +263,7 @@ func (s *Shop) DefaultCountry(ctx context.Context) (*CountryDisplay, error) {
 
 	if defaultCountryName != "" {
 		vats, err := embedCtx.App.Srv().Store.Vat().FilterByOptions(&model.VatFilterOptions{
-			CountryCode: squirrel.Eq{store.VatTableName + ".CountryCode": model.DEFAULT_COUNTRY},
+			CountryCode: squirrel.Eq{model.VatTableName + ".CountryCode": model.DEFAULT_COUNTRY},
 		})
 		if err != nil {
 			return nil, model.NewAppError("Shop.DefaultCountry", "app.shop.error_finding_vats.app_error", nil, err.Error(), http.StatusInternalServerError)

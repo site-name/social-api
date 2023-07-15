@@ -35,7 +35,7 @@ func (s *SqlWishlistItemStore) ModelFields(prefix string) util.AnyArray[string] 
 }
 
 // BulkUpsert inserts or updates given wishlist items then returns it
-func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, error) {
+func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, error) {
 	var (
 		upsertor store_iface.SqlxExecutor = ws.GetMasterX()
 	)
@@ -44,8 +44,8 @@ func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecuto
 	}
 
 	var (
-		saveQuery   = "INSERT INTO " + store.WishlistItemTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
-		updateQuery = "UPDATE " + store.WishlistItemTableName + " SET " + ws.
+		saveQuery   = "INSERT INTO " + model.WishlistItemTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
+		updateQuery = "UPDATE " + model.WishlistItemTableName + " SET " + ws.
 				ModelFields("").
 				Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -81,7 +81,7 @@ func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecuto
 
 		if err != nil {
 			if ws.IsUniqueConstraintError(err, []string{"WishlistID", "ProductID", "wishlistitems_wishlistid_productid_key"}) {
-				return nil, store.NewErrInvalidInput(store.WishlistItemTableName, "WishlistID/ProductID", "duplicate")
+				return nil, store.NewErrInvalidInput(model.WishlistItemTableName, "WishlistID/ProductID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to upsert wishlist item with id=%s", wishlistItem.Id)
 		}
@@ -94,16 +94,16 @@ func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecuto
 }
 
 // GetById finds and returns a wishlist item by given id
-func (ws *SqlWishlistItemStore) GetById(transaction store_iface.SqlxTxExecutor, id string) (*model.WishlistItem, error) {
+func (ws *SqlWishlistItemStore) GetById(transaction store_iface.SqlxExecutor, id string) (*model.WishlistItem, error) {
 	var executor store_iface.SqlxExecutor = ws.GetReplicaX()
 	if transaction != nil {
 		executor = transaction
 	}
 
 	var res model.WishlistItem
-	if err := executor.Get(&res, "SELECT * FROM "+store.WishlistItemTableName+" WHERE Id = ?", id); err != nil {
+	if err := executor.Get(&res, "SELECT * FROM "+model.WishlistItemTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.WishlistItemTableName, id)
+			return nil, store.NewErrNotFound(model.WishlistItemTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find wishlist item with id=%s", id)
 	} else {
@@ -114,7 +114,7 @@ func (ws *SqlWishlistItemStore) GetById(transaction store_iface.SqlxTxExecutor, 
 func (ws *SqlWishlistItemStore) commonQueryBuilder(option *model.WishlistItemFilterOption) (string, []interface{}, error) {
 	query := ws.GetQueryBuilder().
 		Select("*").
-		From(store.WishlistItemTableName)
+		From(model.WishlistItemTableName)
 
 	// parse option
 	if option.Id != nil {
@@ -156,7 +156,7 @@ func (ws *SqlWishlistItemStore) GetByOption(option *model.WishlistItemFilterOpti
 	err = ws.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.WishlistItemTableName, "option")
+			return nil, store.NewErrNotFound(model.WishlistItemTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to find wishlist item by given option")
 	}
@@ -165,13 +165,13 @@ func (ws *SqlWishlistItemStore) GetByOption(option *model.WishlistItemFilterOpti
 }
 
 // DeleteItemsByOption finds and deletes wishlist items that satisfy given filtering options
-func (ws *SqlWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *model.WishlistItemFilterOption) (int64, error) {
+func (ws *SqlWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxExecutor, option *model.WishlistItemFilterOption) (int64, error) {
 	var runner store_iface.SqlxExecutor = ws.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
 
-	query := ws.GetQueryBuilder().Delete(store.WishlistItemTableName)
+	query := ws.GetQueryBuilder().Delete(model.WishlistItemTableName)
 
 	// parse options
 	if option.Id != nil {

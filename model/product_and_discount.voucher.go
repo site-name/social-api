@@ -64,6 +64,11 @@ type Voucher struct {
 	CreateAt                 int64        `json:"create_at"` // this field is for ordering
 	UpdateAt                 int64        `json:"update_at"`
 	ModelMetadata
+
+	Products        Products        `json:"-" gorm:"many2many:voucher_products"`
+	Categories      Categories      `json:"-" gorm:"many2many:voucher_categories"`
+	ProductVariants ProductVariants `json:"-" gorm:"many2many:voucher_productvariants"`
+	Collections     Collections     `json:"-" gorm:"many2many:voucher_collections"`
 }
 
 // VoucherFilterOption
@@ -89,6 +94,8 @@ func (voucher *Voucher) ValidateMinCheckoutItemsQuantity(quantity int) *NotAppli
 	}
 	return nil
 }
+
+type Vouchers []*Voucher
 
 func (v *Voucher) IsValid() *AppError {
 	outer := CreateAppErrorForModel(

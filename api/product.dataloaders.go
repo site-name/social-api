@@ -67,7 +67,7 @@ func productByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 		Srv().
 		ProductService().
 		ProductsByOption(&model.ProductFilterOption{
-			Id: squirrel.Eq{store.ProductTableName + ".Id": ids},
+			Id: squirrel.Eq{model.ProductTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -106,7 +106,7 @@ func productChannelListingByProductIDAnhChannelSlugLoader(ctx context.Context, i
 
 	productChannelListings, appErr := embedCtx.App.Srv().ProductService().
 		ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
-			ProductID: squirrel.Eq{store.ProductChannelListingTableName + ".ProductID": productIDs},
+			ProductID: squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": productIDs},
 		})
 	if appErr != nil {
 		for idx := range idPairs {
@@ -136,7 +136,7 @@ func mediaByProductIdLoader(ctx context.Context, productIds []string) []*dataloa
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	medias, appErr := embedCtx.App.Srv().ProductService().ProductMediasByOption(&model.ProductMediaFilterOption{
-		ProductID: squirrel.Eq{store.ProductMediaTableName + ".ProductID": productIds},
+		Conditions: squirrel.Eq{model.ProductMediaTableName + ".ProductID": productIds},
 	})
 	if appErr != nil {
 		for idx := range productIds {
@@ -297,7 +297,7 @@ func collectionsByProductIdLoader(ctx context.Context, productIDs []string) []*d
 	collectionProductRelations, appErr := embedCtx.App.Srv().
 		ProductService().
 		CollectionProductRelationsByOptions(&model.CollectionProductFilterOptions{
-			ProductID:               squirrel.Eq{store.CollectionProductRelationTableName + ".ProductID": productIDs},
+			ProductID:               squirrel.Eq{model.CollectionProductRelationTableName + ".ProductID": productIDs},
 			SelectRelatedCollection: true,
 		})
 	if appErr != nil {
@@ -334,7 +334,7 @@ func collectionByIdLoader(ctx context.Context, collectionIDs []string) []*datalo
 	collections, appErr := embedCtx.App.Srv().
 		ProductService().
 		CollectionsByOption(&model.CollectionFilterOption{
-			Id: squirrel.Eq{store.CollectionTableName + ".Id": collectionIDs},
+			Id: squirrel.Eq{model.CollectionTableName + ".Id": collectionIDs},
 		})
 	if appErr != nil {
 		for idx := range collectionIDs {
@@ -375,8 +375,8 @@ func variantChannelListingByVariantIdAndChannelIdLoader(ctx context.Context, var
 	variantChannelListings, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			VariantID:                         squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variantIDs},
-			PriceAmount:                       squirrel.NotEq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+			VariantID:                         squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variantIDs},
+			PriceAmount:                       squirrel.NotEq{model.ProductVariantChannelListingTableName + ".PriceAmount": nil},
 			AnnotatePreorderQuantityAllocated: true,
 		})
 	if appErr != nil {
@@ -419,8 +419,8 @@ func variantsChannelListingByProductIdAndChannelSlugLoader(ctx context.Context, 
 	variantChannelListings, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			VariantProductID:            squirrel.Eq{store.ProductVariantTableName + ".ProductID": productIDs},
-			PriceAmount:                 squirrel.NotEq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+			VariantProductID:            squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
+			PriceAmount:                 squirrel.NotEq{model.ProductVariantChannelListingTableName + ".PriceAmount": nil},
 			SelectRelatedProductVariant: true,
 		})
 	if appErr != nil {
@@ -452,7 +452,7 @@ func productMediaByIdLoader(ctx context.Context, ids []string) []*dataloader.Res
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	medias, appErr := embedCtx.App.Srv().ProductService().
 		ProductMediasByOption(&model.ProductMediaFilterOption{
-			Id: squirrel.Eq{store.ProductMediaTableName + ".Id": ids},
+			Conditions: squirrel.Eq{model.ProductMediaTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -499,7 +499,7 @@ func productChannelListingByIdLoader(ctx context.Context, ids []string) []*datal
 
 	productChannelListings, appErr := embedCtx.App.Srv().ProductService().
 		ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
-			Id: squirrel.Eq{store.ProductChannelListingTableName + ".Id": ids},
+			Id: squirrel.Eq{model.ProductChannelListingTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -527,7 +527,7 @@ func productChannelListingByProductIdLoader(ctx context.Context, productIDs []st
 	productChannelListings, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
-			ProductID: squirrel.Eq{store.ProductChannelListingTableName + ".ProductID": productIDs},
+			ProductID: squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": productIDs},
 		})
 	if appErr != nil {
 		for idx := range productIDs {
@@ -553,7 +553,7 @@ func productTypeByIdLoader(ctx context.Context, ids []string) []*dataloader.Resu
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	productTypes, appErr := embedCtx.App.Srv().ProductService().ProductTypesByOptions(&model.ProductTypeFilterOption{
-		Id: squirrel.Eq{store.ProductTypeTableName + ".Id": ids},
+		Id: squirrel.Eq{model.ProductTypeTableName + ".Id": ids},
 	})
 	if appErr != nil {
 		for idx := range ids {
@@ -579,7 +579,7 @@ func productVariantsByProductIdLoader(ctx context.Context, productIDs []string) 
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	variants, appErr := embedCtx.App.Srv().ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
-		ProductID: squirrel.Eq{store.ProductVariantTableName + ".ProductID": productIDs},
+		ProductID: squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
 	})
 	if appErr != nil {
 		for idx := range productIDs {
@@ -607,7 +607,7 @@ func productVariantChannelListingByIdLoader(ctx context.Context, ids []string) [
 	listings, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			Id: squirrel.Eq{store.ProductVariantChannelListingTableName + ".Id": ids},
+			Id: squirrel.Eq{model.ProductVariantChannelListingTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -649,8 +649,8 @@ func productVariantsByProductIdAndChannelIdLoader(ctx context.Context, idPairs [
 	variants, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductVariantsByOption(&model.ProductVariantFilterOption{
-			ProductID:                             squirrel.Eq{store.ProductVariantTableName + ".ProductID": productIDs},
-			ProductVariantChannelListingChannelID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
+			ProductID:                             squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
+			ProductVariantChannelListingChannelID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
 		goto errorLabel
@@ -659,9 +659,9 @@ func productVariantsByProductIdAndChannelIdLoader(ctx context.Context, idPairs [
 	variantChannelListings, appErr = embedCtx.App.Srv().
 		ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
+			VariantID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
 			// TODO: check if below condition needed
-			ChannelID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
+			ChannelID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
 		goto errorLabel
@@ -711,9 +711,9 @@ func availableProductVariantsByProductIdAndChannelIdLoader(ctx context.Context, 
 	variants, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductVariantsByOption(&model.ProductVariantFilterOption{
-			ProductID:                               squirrel.Eq{store.ProductVariantTableName + ".ProductID": productIDs},
-			ProductVariantChannelListingChannelID:   squirrel.Eq{store.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
-			ProductVariantChannelListingPriceAmount: squirrel.NotEq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+			ProductID:                               squirrel.Eq{model.ProductVariantTableName + ".ProductID": productIDs},
+			ProductVariantChannelListingChannelID:   squirrel.Eq{model.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
+			ProductVariantChannelListingPriceAmount: squirrel.NotEq{model.ProductVariantChannelListingTableName + ".PriceAmount": nil},
 		})
 	if appErr != nil {
 		goto errorLabel
@@ -722,9 +722,9 @@ func availableProductVariantsByProductIdAndChannelIdLoader(ctx context.Context, 
 	variantChannelListings, appErr = embedCtx.App.Srv().
 		ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			VariantID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
+			VariantID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
 			// TODO: check if below condition needed
-			ChannelID: squirrel.Eq{store.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
+			ChannelID: squirrel.Eq{model.ProductVariantChannelListingTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
 		goto errorLabel
@@ -762,7 +762,7 @@ func variantChannelListingByVariantIdLoader(ctx context.Context, variantIDs []st
 	variantChannelListings, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-			VariantID:                         squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variantIDs},
+			VariantID:                         squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variantIDs},
 			AnnotatePreorderQuantityAllocated: true,
 		})
 	if appErr != nil {
@@ -794,7 +794,7 @@ func mediaByProductVariantIdLoader(ctx context.Context, variantIDs []string) []*
 	variantMedias, err := embedCtx.App.Srv().Store.
 		VariantMedia().
 		FilterByOptions(&model.VariantMediaFilterOptions{
-			VariantID: squirrel.Eq{store.ProductVariantMediaTableName + ".VariantID": variantIDs},
+			Conditions: squirrel.Eq{model.ProductVariantMediaTableName + ".VariantID": variantIDs},
 		})
 	if err != nil {
 		appErr = model.NewAppError("mediaByProductVariantIdLoader", "app.product.variant_medias_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -803,7 +803,7 @@ func mediaByProductVariantIdLoader(ctx context.Context, variantIDs []string) []*
 
 	medias, appErr = embedCtx.App.Srv().ProductService().
 		ProductMediasByOption(&model.ProductMediaFilterOption{
-			VariantID: squirrel.Eq{store.ProductVariantMediaTableName + ".VariantID": variantIDs},
+			VariantID: squirrel.Eq{model.ProductVariantMediaTableName + ".VariantID": variantIDs},
 		})
 	if appErr != nil {
 		goto errorLabel
@@ -851,7 +851,7 @@ func collectionChannelListingByIdLoader(ctx context.Context, ids []string) []*da
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	collectionChannelListings, appErr := embedCtx.App.Srv().ProductService().
 		CollectionChannelListingsByOptions(&model.CollectionChannelListingFilterOptions{
-			Id: squirrel.Eq{store.CollectionChannelListingTableName + ".Id": ids},
+			Id: squirrel.Eq{model.CollectionChannelListingTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -879,7 +879,7 @@ func collectionChannelListingByCollectionIdLoader(ctx context.Context, ids []str
 
 	collectionChannelListings, appErr := embedCtx.App.Srv().ProductService().
 		CollectionChannelListingsByOptions(&model.CollectionChannelListingFilterOptions{
-			CollectionID: squirrel.Eq{store.CollectionChannelListingTableName + ".CollectionID": ids},
+			CollectionID: squirrel.Eq{model.CollectionChannelListingTableName + ".CollectionID": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -917,8 +917,8 @@ func collectionChannelListingByCollectionIdAndChannelSlugLoader(ctx context.Cont
 
 	collectionChannelListings, appErr := embedCtx.App.Srv().ProductService().
 		CollectionChannelListingsByOptions(&model.CollectionChannelListingFilterOptions{
-			CollectionID: squirrel.Eq{store.CollectionChannelListingTableName + ".CollectionID": collectionIDs},
-			ChannelID:    squirrel.Eq{store.CollectionChannelListingTableName + ".ChannelID": channelIDs},
+			CollectionID: squirrel.Eq{model.CollectionChannelListingTableName + ".CollectionID": collectionIDs},
+			ChannelID:    squirrel.Eq{model.CollectionChannelListingTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
 		for idx := range idPairs {
@@ -1072,14 +1072,14 @@ func productsByVoucherIDLoader(ctx context.Context, voucherIDs []string) []*data
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	products, appErr := embedCtx.App.Srv().ProductService().ProductsByOption(&model.ProductFilterOption{
-		VoucherID: squirrel.Eq{store.VoucherProductTableName + ".VoucherID": voucherIDs},
+		VoucherID: squirrel.Eq{model.VoucherProductTableName + ".VoucherID": voucherIDs},
 	})
 	if appErr != nil {
 		goto errorLabel
 	}
 
 	voucherProducts, err = embedCtx.App.Srv().Store.VoucherProduct().FilterByOptions(&model.VoucherProductFilterOptions{
-		VoucherID: squirrel.Eq{store.VoucherProductTableName + ".VoucherID": voucherIDs},
+		VoucherID: squirrel.Eq{model.VoucherProductTableName + ".VoucherID": voucherIDs},
 	})
 	if err != nil {
 		appErr = model.NewAppError("productsByVoucherIDLoader", "app.discount.voucher_products_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -1347,7 +1347,7 @@ func productVariantsBySaleIDLoader(ctx context.Context, saleIDs []string) []*dat
 	saleVariants, appErr = embedCtx.App.Srv().
 		DiscountService().
 		SaleProductVariantsByOptions(&model.SaleProductVariantFilterOption{
-			SaleID: squirrel.Eq{store.SaleProductVariantTableName + ".SaleID": saleIDs},
+			Conditions: squirrel.Eq{store.SaleProductVariantTableName + ".SaleID": saleIDs},
 		})
 	if appErr != nil {
 		err = appErr
@@ -1384,7 +1384,7 @@ func productVariantByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 		Srv().
 		ProductService().
 		ProductVariantsByOption(&model.ProductVariantFilterOption{
-			Id: squirrel.Eq{store.ProductVariantTableName + ".Id": ids},
+			Id: squirrel.Eq{model.ProductVariantTableName + ".Id": ids},
 		})
 
 	if appErr != nil {
@@ -1438,7 +1438,7 @@ func productAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	filterOptions := &model.AttributeProductFilterOption{
-		ProductTypeID: squirrel.Eq{store.AttributeProductTableName + ".ProductTypeID": productTypeIDs},
+		ProductTypeID: squirrel.Eq{model.AttributeProductTableName + ".ProductTypeID": productTypeIDs},
 	}
 
 	// only shop's members can see all
@@ -1503,7 +1503,7 @@ func variantAttributesByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	)
 
 	filterOptions := &model.AttributeVariantFilterOption{
-		ProductTypeID: squirrel.Eq{store.AttributeVariantTableName + ".ProductTypeID": productTypeIDs},
+		ProductTypeID: squirrel.Eq{model.AttributeVariantTableName + ".ProductTypeID": productTypeIDs},
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -1567,7 +1567,7 @@ func attributeProductsByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	)
 
 	filterOptions := &model.AttributeProductFilterOption{
-		ProductTypeID: squirrel.Eq{store.AttributeProductTableName + ".ProductTypeID": productTypeIDs},
+		ProductTypeID: squirrel.Eq{model.AttributeProductTableName + ".ProductTypeID": productTypeIDs},
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -1600,7 +1600,7 @@ func attributeVariantsByProductTypeIdLoader(ctx context.Context, productTypeIDs 
 	)
 
 	filterOptions := &model.AttributeVariantFilterOption{
-		ProductTypeID: squirrel.Eq{store.AttributeVariantTableName + ".ProductTypeID": productTypeIDs},
+		ProductTypeID: squirrel.Eq{model.AttributeVariantTableName + ".ProductTypeID": productTypeIDs},
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -1632,7 +1632,7 @@ func assignedProductAttributesByProductIdLoader(ctx context.Context, productIDs 
 		assignedProductAttributeMap = map[string][]*model.AssignedProductAttribute{} // keys are product ids
 	)
 	filterOptions := model.AssignedProductAttributeFilterOption{
-		ProductID: squirrel.Eq{store.AssignedProductAttributeTableName + ".ProductID": productIDs},
+		ProductID: squirrel.Eq{model.AssignedProductAttributeTableName + ".ProductID": productIDs},
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
@@ -1666,7 +1666,7 @@ func assignedVariantAttributesByProductVariantId(ctx context.Context, variantIDs
 	)
 
 	filterOptions := &model.AssignedVariantAttributeFilterOption{
-		VariantID: squirrel.Eq{store.AssignedVariantAttributeTableName + ".VariantID": variantIDs},
+		VariantID: squirrel.Eq{model.AssignedVariantAttributeTableName + ".VariantID": variantIDs},
 	}
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	embedCtx.CheckAuthenticatedAndHasRoleAny("assignedVariantAttributesByProductVariantId", model.ShopStaffRoleId, model.ShopAdminRoleId)
@@ -1706,7 +1706,7 @@ func attributeValuesByAssignedProductAttributeIdLoader(ctx context.Context, ids 
 	assignedProductAttributeValues, err := embedCtx.App.Srv().
 		Store.AssignedProductAttributeValue().
 		FilterByOptions(&model.AssignedProductAttributeValueFilterOptions{
-			AssignmentID: squirrel.Eq{store.AssignedProductAttributeValueTableName + ".AssignmentID": ids},
+			AssignmentID: squirrel.Eq{model.AssignedProductAttributeValueTableName + ".AssignmentID": ids},
 		})
 	if err != nil {
 		err = model.NewAppError("attributeValuesByAssignedProductAttributeIdLoader", "app.attribute.assigned_product_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -1755,7 +1755,7 @@ func attributeValuesByAssignedVariantAttributeIdLoader(ctx context.Context, ids 
 	assignedVariantAttributeValues, err := embedCtx.App.Srv().
 		Store.AssignedVariantAttributeValue().
 		FilterByOptions(&model.AssignedVariantAttributeValueFilterOptions{
-			AssignmentID: squirrel.Eq{store.AssignedVariantAttributeValueTableName + ".AssignmentID": ids},
+			AssignmentID: squirrel.Eq{model.AssignedVariantAttributeValueTableName + ".AssignmentID": ids},
 		})
 	if err != nil {
 		err = model.NewAppError("attributeValuesByAssignedVariantAttributeIdLoader", "app.attribute.assigned_variant_attribute_values_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -1991,7 +1991,7 @@ func digitalContentsByProductVariantIDLoader(ctx context.Context, variantIDs []s
 
 	digitalContents, appErr := embedCtx.App.Srv().ProductService().
 		DigitalContentsbyOptions(&model.DigitalContentFilterOption{
-			ProductVariantID: squirrel.Eq{store.DigitalContentTableName + ".ProductVariantID": variantIDs},
+			ProductVariantID: squirrel.Eq{model.DigitalContentTableName + ".ProductVariantID": variantIDs},
 		})
 	if appErr != nil {
 		for idx := range variantIDs {
@@ -2026,7 +2026,7 @@ func digitalContentUrlByOrderLineID(ctx context.Context, orderLineIDs []string) 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	contentURLs, appErr := embedCtx.App.Srv().ProductService().DigitalContentURLSByOptions(&model.DigitalContentUrlFilterOptions{
-		LineID: squirrel.Eq{store.DigitalContentURLTableName + ".LineID": orderLineIDs},
+		LineID: squirrel.Eq{model.DigitalContentURLTableName + ".LineID": orderLineIDs},
 	})
 	if appErr != nil {
 		for idx := range orderLineIDs {

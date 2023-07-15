@@ -10,7 +10,7 @@ import (
 )
 
 // UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
-func (a *ServiceGiftcard) UpsertOrderGiftcardRelations(transaction store_iface.SqlxTxExecutor, orderGiftCards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, *model.AppError) {
+func (a *ServiceGiftcard) UpsertOrderGiftcardRelations(transaction store_iface.SqlxExecutor, orderGiftCards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, *model.AppError) {
 	orderGiftCards, err := a.srv.Store.GiftCardOrder().BulkUpsert(transaction, orderGiftCards...)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

@@ -122,7 +122,7 @@ func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
 	return dbRole.ToModel(), nil
 }
 
-func (s *SqlRoleStore) createRole(role *model.Role, transaction store_iface.SqlxTxExecutor) (*model.Role, error) {
+func (s *SqlRoleStore) createRole(role *model.Role, transaction store_iface.SqlxExecutor) (*model.Role, error) {
 	// Check the role is valid before proceeding.
 	if !role.IsValidWithoutId() {
 		return nil, store.NewErrInvalidInput("Role", "<any>", fmt.Sprintf("%v", role))
@@ -148,7 +148,7 @@ func (s *SqlRoleStore) Get(roleId string) (*model.Role, error) {
 	var role Role
 	if err := s.GetReplicaX().Get(&role, "SELECT * from Roles WHERE Id = ?", roleId); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.RoleTableName, roleId)
+			return nil, store.NewErrNotFound(model.RoleTableName, roleId)
 		}
 		return nil, errors.Wrap(err, "failed to get Role")
 	}

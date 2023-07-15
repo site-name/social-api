@@ -12,7 +12,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -192,7 +191,7 @@ func (r *Resolver) AccountSetDefaultAddress(ctx context.Context, args struct {
 	}
 
 	user, appErr := embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
-		Id: squirrel.Eq{store.UserTableName + ".Id": currentSession.UserId},
+		Id: squirrel.Eq{model.UserTableName + ".Id": currentSession.UserId},
 	})
 	if appErr != nil {
 		return nil, appErr

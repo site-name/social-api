@@ -13,7 +13,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -49,7 +48,7 @@ func (r *Resolver) CheckoutLineDelete(ctx context.Context, args struct {
 	}
 
 	checkout, appErr := checkoutService.CheckoutByOption(&model.CheckoutFilterOption{
-		Token: squirrel.Eq{store.CheckoutTableName + ".Token": args.Token},
+		Token: squirrel.Eq{model.CheckoutTableName + ".Token": args.Token},
 	})
 	if appErr != nil {
 		return nil, appErr

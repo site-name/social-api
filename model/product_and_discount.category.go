@@ -7,6 +7,7 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/util"
+	"gorm.io/gorm"
 )
 
 // max length for some fields
@@ -22,15 +23,15 @@ const (
 )
 
 type Category struct {
-	Id                 string          `json:"id"`
-	Name               string          `json:"name"` // unique, English
-	Slug               string          `json:"slug"` // unique
+	Id                 string          `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	Name               string          `json:"name" gorm:"unique;type:varchar(250)"`                               // unique, English
+	Slug               string          `json:"slug" gorm:"uniqueIndex:category_slug_unique_key;type:varchar(255)"` // unique
 	Description        StringInterface `json:"description,omitempty"`
 	ParentID           *string         `json:"parent_id,omitempty"`
-	Level              uint8           `json:"level"` // 0, 1, 2, 3, 4
-	BackgroundImage    *string         `json:"background_image,omitempty"`
-	BackgroundImageAlt string          `json:"background_image_alt"`
-	Images             string          `json:"images"` // space-seperated urls
+	Level              uint8           `json:"level" gorm:"type:smallint;check:level >= 0"` // 0, 1, 2, 3, 4
+	BackgroundImage    *string         `json:"background_image,omitempty" gorm:"type:varchar(1000)"`
+	BackgroundImageAlt string          `json:"background_image_alt" gorm:"type:varchar(128)"`
+	Images             string          `json:"images" gorm:"type:varchar(1000)"` // space-seperated urls
 	Seo
 	NameTranslation StringMAP `json:"name_translation,omitempty"` // e.g {"vi": "Xin Chao"}
 	ModelMetadata
@@ -38,16 +39,24 @@ type Category struct {
 	NumOfProducts uint64 `json:"num_of_products" db:"-"` // this field gets fulfilled in some db quesries
 	// Children      Categories `json:"children,omitempty" db:"-"` // this field gets populated sometimes
 	NumOfChildren int `json:"num_of_children" db:"-"`
+
+	Sales    Sales    `json:"-" gorm:"many2many:sale_categories"`
+	Vouchers Vouchers `json:"-" gorm:"many2many:voucher_categories"`
+}
+
+func (c *Category) BeforeCreate(_ *gorm.DB) error {
+	c.commonPre()
+	return nil
+}
+
+func (c *Category) BeforeUpdate() error {
+	c.commonPre()
+	return nil
 }
 
 // CategoryFilterOption is used for building sql queries
 type CategoryFilterOption struct {
-	All   bool // if true, select all categories
-	Id    squirrel.Sqlizer
-	Name  squirrel.Sqlizer
-	Level squirrel.Sqlizer
-	Slug  squirrel.Sqlizer
-	Extra squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 
 	SaleID    squirrel.Sqlizer // SELECT * FROM Categories INNER JOIN SaleCategories ON (Categories.Id = SaleCategories.CategoryID) WHERE SaleCategories.SaleID ...
 	VoucherID squirrel.Sqlizer // SELECT * FROM Categories INNER JOIN VoucherCategories ON (VoucherCategories.CategoryID = Categories.Id) WHERE VoucherCategories.VoucherID ...
@@ -150,6 +159,10 @@ func (c *Category) PreSave() {
 	if c.Id == "" {
 		c.Id = NewId()
 	}
+	c.commonPre()
+}
+
+func (c *Category) commonPre() {
 	c.Name = SanitizeUnicode(c.Name)
 	if c.Slug == "" {
 		c.Slug = slug.Make(c.Name)
@@ -158,6 +171,7 @@ func (c *Category) PreSave() {
 
 func (c *Category) PreUpdate() {
 	c.Name = SanitizeUnicode(c.Name)
+	c.commonPre()
 }
 
 func (c *Category) ToJSON() string {

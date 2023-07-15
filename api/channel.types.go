@@ -10,7 +10,6 @@ import (
 	"github.com/sitename/sitename/app/product"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -61,7 +60,7 @@ func channelByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 		Srv().
 		ChannelService().
 		ChannelsByOption(&model.ChannelFilterOption{
-			Id: squirrel.Eq{store.ChannelTableName + ".Id": ids},
+			Id: squirrel.Eq{model.ChannelTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -85,7 +84,7 @@ func channelBySlugLoader(ctx context.Context, slugs []string) []*dataloader.Resu
 		Srv().
 		ChannelService().
 		ChannelsByOption(&model.ChannelFilterOption{
-			Slug: squirrel.Eq{store.ChannelTableName + ".Slug": slugs},
+			Slug: squirrel.Eq{model.ChannelTableName + ".Slug": slugs},
 		})
 	if appErr != nil {
 		for idx := range slugs {

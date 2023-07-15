@@ -36,10 +36,10 @@ func (as *SqlAssignedPageAttributeStore) Save(pageAttr *model.AssignedPageAttrib
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.AssignedPageAttributeTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.AssignedPageAttributeTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 	if _, err := as.GetMasterX().NamedExec(query, pageAttr); err != nil {
 		if as.IsUniqueConstraintError(err, []string{"PageID", "AssignmentID", "assignedpageattributes_pageid_assignmentid_key"}) {
-			return nil, store.NewErrInvalidInput(store.AssignedPageAttributeTableName, "PageID/AssignmentID", pageAttr.PageID+"/"+pageAttr.AssignmentID)
+			return nil, store.NewErrInvalidInput(model.AssignedPageAttributeTableName, "PageID/AssignmentID", pageAttr.PageID+"/"+pageAttr.AssignmentID)
 		}
 		return nil, errors.Wrapf(err, "failed to save assigned page attribute with id=%s", pageAttr.Id)
 	}
@@ -50,10 +50,10 @@ func (as *SqlAssignedPageAttributeStore) Save(pageAttr *model.AssignedPageAttrib
 func (as *SqlAssignedPageAttributeStore) Get(id string) (*model.AssignedPageAttribute, error) {
 	var res model.AssignedPageAttribute
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedPageAttributeTableName+" WHERE Id = ?", id)
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedPageAttributeTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AssignedPageAttributeTableName, id)
+			return nil, store.NewErrNotFound(model.AssignedPageAttributeTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned page attribute with id=%s", id)
 	}
@@ -62,7 +62,7 @@ func (as *SqlAssignedPageAttributeStore) Get(id string) (*model.AssignedPageAttr
 }
 
 func (as *SqlAssignedPageAttributeStore) GetByOption(option *model.AssignedPageAttributeFilterOption) (*model.AssignedPageAttribute, error) {
-	query := as.GetQueryBuilder().Select("*").From(store.AssignedPageAttributeTableName)
+	query := as.GetQueryBuilder().Select("*").From(model.AssignedPageAttributeTableName)
 
 	// parse option
 	if option.AssignmentID != nil {
@@ -86,7 +86,7 @@ func (as *SqlAssignedPageAttributeStore) GetByOption(option *model.AssignedPageA
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AssignedPageAttributeTableName, "option")
+			return nil, store.NewErrNotFound(model.AssignedPageAttributeTableName, "option")
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned page attribute with given option")
 	}

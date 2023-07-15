@@ -7,7 +7,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 )
 
 // Get export fields, all headers and headers mapping.
@@ -88,8 +87,8 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 
 		attributes, appErr := a.srv.AttributeService().AttributesByOption(&model.AttributeFilterOption{
 			Distinct:     true,
-			Id:           squirrel.Eq{store.AttributeTableName + ".Id": exportInfo.Attributes},
-			ProductTypes: squirrel.NotEq{store.AttributeProductTableName + ".ProductTypeID": nil},
+			Id:           squirrel.Eq{model.AttributeTableName + ".Id": exportInfo.Attributes},
+			ProductTypes: squirrel.NotEq{model.AttributeProductTableName + ".ProductTypeID": nil},
 		})
 		if appErr != nil {
 			syncSetAppError(appErr)
@@ -103,8 +102,8 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 
 		attributes, appErr := a.srv.AttributeService().AttributesByOption(&model.AttributeFilterOption{
 			Distinct:            true,
-			Id:                  squirrel.Eq{store.AttributeTableName + ".Id": exportInfo.Attributes},
-			ProductVariantTypes: squirrel.NotEq{store.AttributeVariantTableName + ".ProductTypeID": nil},
+			Id:                  squirrel.Eq{model.AttributeTableName + ".Id": exportInfo.Attributes},
+			ProductVariantTypes: squirrel.NotEq{model.AttributeVariantTableName + ".ProductTypeID": nil},
 		})
 		if appErr != nil {
 			syncSetAppError(appErr)
@@ -145,7 +144,7 @@ func (a *ServiceCsv) GetWarehousesHeaders(exportInfo struct {
 	}
 
 	warehouses, appErr := a.srv.WarehouseService().WarehousesByOption(&model.WarehouseFilterOption{
-		Id: squirrel.Eq{store.WarehouseTableName + ".Id": exportInfo.Warehouses},
+		Id: squirrel.Eq{model.WarehouseTableName + ".Id": exportInfo.Warehouses},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -178,7 +177,7 @@ func (a *ServiceCsv) GetChannelsHeaders(exportInfo struct {
 	}
 
 	channels, appErr := a.srv.ChannelService().ChannelsByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{store.ChannelTableName + ".Id": exportInfo.Channels},
+		Id: squirrel.Eq{model.ChannelTableName + ".Id": exportInfo.Channels},
 	})
 	if appErr != nil {
 		return nil, appErr

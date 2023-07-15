@@ -93,11 +93,11 @@ func (as *SqlAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, er
 	)
 
 	if isSaving {
-		query := "INSERT INTO " + store.AttributeTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.AttributeTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 		_, err = as.GetMasterX().NamedExec(query, attr)
 
 	} else {
-		query := "UPDATE " + store.AttributeTableName + " SET " +
+		query := "UPDATE " + model.AttributeTableName + " SET " +
 			as.ModelFields("").
 				Map(func(_ int, s string) string {
 					return s + "=:" + s
@@ -127,8 +127,8 @@ func (as *SqlAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, er
 
 func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOption) squirrel.SelectBuilder {
 	query := as.GetQueryBuilder().
-		Select(as.ModelFields(store.AttributeTableName + ".")...).
-		From(store.AttributeTableName)
+		Select(as.ModelFields(model.AttributeTableName + ".")...).
+		From(model.AttributeTableName)
 
 	// parse options
 	if option.OrderBy != "" {
@@ -170,12 +170,12 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 	}
 	if option.ProductTypes != nil {
 		query = query.
-			InnerJoin(store.AttributeProductTableName + " ON (AttributeProducts.AttributeID = Attributes.Id)").
+			InnerJoin(model.AttributeProductTableName + " ON (AttributeProducts.AttributeID = Attributes.Id)").
 			Where(option.ProductTypes)
 	}
 	if option.ProductVariantTypes != nil {
 		query = query.
-			InnerJoin(store.AttributeVariantTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)").
+			InnerJoin(model.AttributeVariantTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)").
 			Where(option.ProductVariantTypes)
 	}
 	if option.Metadata != nil && len(option.Metadata) > 0 {
@@ -228,7 +228,7 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 
 		} else if option.InCollection != nil {
 			productQuery = productQuery.
-				InnerJoin(store.CollectionProductRelationTableName+" PC ON PC.ProductID = Products.Id").
+				InnerJoin(model.CollectionProductRelationTableName+" PC ON PC.ProductID = Products.Id").
 				Where("PC.CollectionID = ?", *option.InCollection)
 		}
 		//
@@ -240,8 +240,8 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 
 		productTypeIDs := products.ProductTypeIDs()
 		query = query.
-			LeftJoin(store.AttributeVariantTableName + " AV ON AV.AttributeID = Attributes.Id").
-			LeftJoin(store.AttributeProductTableName + " AP ON AP.AttributeID = Attributes.Id").
+			LeftJoin(model.AttributeVariantTableName + " AV ON AV.AttributeID = Attributes.Id").
+			LeftJoin(model.AttributeProductTableName + " AP ON AP.AttributeID = Attributes.Id").
 			Where(squirrel.Or{
 				squirrel.Eq{"AV.ProductTypeID": productTypeIDs},
 				squirrel.Eq{"AP.ProductTypeID": productTypeIDs},
@@ -261,7 +261,7 @@ func (as *SqlAttributeStore) GetByOption(option *model.AttributeFilterOption) (*
 	err = as.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AttributeTableName, "options")
+			return nil, store.NewErrNotFound(model.AttributeTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find attribute by option")
 	}
@@ -269,7 +269,7 @@ func (as *SqlAttributeStore) GetByOption(option *model.AttributeFilterOption) (*
 	// check if we need to prefetch related attribute values of found attributes
 	if option.PrefetchRelatedAttributeValues {
 		attributeValues, err := as.AttributeValue().FilterByOptions(model.AttributeValueFilterOptions{
-			AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": res.Id},
+			AttributeID: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": res.Id},
 		})
 		if err != nil {
 			return nil, err
@@ -297,7 +297,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption)
 	// check if we need to prefetch related attribute values of found attributes
 	if option.PrefetchRelatedAttributeValues && len(attributes) > 0 {
 		attributeValues, err := as.AttributeValue().FilterByOptions(model.AttributeValueFilterOptions{
-			AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": attributes.IDs()},
+			AttributeID: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attributes.IDs()},
 		})
 		if err != nil {
 			return nil, err
@@ -321,7 +321,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption)
 
 func (as *SqlAttributeStore) Delete(ids ...string) (int64, error) {
 	args := lo.Map(ids, func(id string, _ int) any { return id })
-	queryStr := "DELETE FROM " + store.AttributeTableName + " WHERE Id IN (" + squirrel.Placeholders(len(ids)) + ")"
+	queryStr := "DELETE FROM " + model.AttributeTableName + " WHERE Id IN (" + squirrel.Placeholders(len(ids)) + ")"
 
 	result, err := as.GetMasterX().Exec(queryStr, args...)
 	if err != nil {
@@ -340,7 +340,7 @@ func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unass
 	if filter == nil {
 		filter = new(model.AttributeFilterOption)
 	}
-	filter.Type = squirrel.Eq{store.AttributeTableName + ".Type": model.PRODUCT_TYPE}
+	filter.Type = squirrel.Eq{model.AttributeTableName + ".Type": model.PRODUCT_TYPE}
 	filter.Distinct = true
 	sqQuery := s.commonQueryBuilder(filter)
 
@@ -348,13 +348,13 @@ func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unass
 		sqQuery = sqQuery.Where(`NOT (
 	EXISTS(
 		SELECT (1) AS "a"
-		FROM `+store.AttributeProductTableName+` WHERE
+		FROM `+model.AttributeProductTableName+` WHERE
 			AttributeProducts.ProductTypeID = ? AND AttributeProducts.AttributeID = Attributes.Id
 		LIMIT 1
 	)
 	OR EXISTS(
 		SELECT (1) AS "a"
-		FROM `+store.AttributeVariantTableName+` WHERE
+		FROM `+model.AttributeVariantTableName+` WHERE
 			AttributeVariants.ProductTypeID = ? AND AttributeVariants.AttributeID = Attributes.Id
 		LIMIT 1
 	)
@@ -362,8 +362,8 @@ func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unass
 
 	} else {
 		sqQuery = sqQuery.
-			LeftJoin(store.AttributeProductTableName+" ON AttributeProducts.AttributeID = Attributes.Id").
-			LeftJoin(store.AttributeVariantTableName+" ON Attributes.Id = AttributeVariants.AttributeID").
+			LeftJoin(model.AttributeProductTableName+" ON AttributeProducts.AttributeID = Attributes.Id").
+			LeftJoin(model.AttributeVariantTableName+" ON Attributes.Id = AttributeVariants.AttributeID").
 			Where("Attributes.Type = ?", model.PRODUCT_TYPE).
 			Where("AttributeProducts.ProductTypeID = ? OR AttributeVariants.ProductTypeID = ?", productTypeID)
 	}
@@ -385,11 +385,11 @@ func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unass
 func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error) {
 	// unassigned
 	query := `SELECT * FROM ` +
-		store.AttributeTableName +
+		model.AttributeTableName +
 		` A WHERE A.Type = $1
 		AND NOT EXISTS(
 			SELECT (1) AS "a"
-			FROM ` + store.AttributePageTableName +
+			FROM ` + model.AttributePageTableName +
 		` AP WHERE (
 				AP.PageTypeID = $2
 				AND AP.AttributeID = A.Id
@@ -399,8 +399,8 @@ func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned 
 
 	if !unassigned {
 		query = `SELECT ` + s.ModelFields("A.").Join(",") +
-			` FROM ` + store.AttributeTableName +
-			` A INNER JOIN ` + store.AttributePageTableName +
+			` FROM ` + model.AttributeTableName +
+			` A INNER JOIN ` + model.AttributePageTableName +
 			` AP ON AP.AttributeID = A.Id
 			WHERE A.Type = $1
 			AND AP.PageTypeID = $2`

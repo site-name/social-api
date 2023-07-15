@@ -11,7 +11,7 @@ import (
 )
 
 // FulfillmentsByOption returns a list of fulfillments be given options
-func (a *ServiceOrder) FulfillmentsByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (model.Fulfillments, *model.AppError) {
+func (a *ServiceOrder) FulfillmentsByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentFilterOption) (model.Fulfillments, *model.AppError) {
 	fulfillments, err := a.srv.Store.Fulfillment().FilterByOption(transaction, option)
 	if err != nil {
 		return nil, model.NewAppError("FulfillmentsByOption", "app.model.error_finding_fulfillments_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -21,11 +21,11 @@ func (a *ServiceOrder) FulfillmentsByOption(transaction store_iface.SqlxTxExecut
 }
 
 // UpsertFulfillment performs some actions then save given fulfillment
-func (a *ServiceOrder) UpsertFulfillment(transaction store_iface.SqlxTxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, *model.AppError) {
+func (a *ServiceOrder) UpsertFulfillment(transaction store_iface.SqlxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, *model.AppError) {
 	// Assign an auto incremented value as a fulfillment order.
 	if fulfillment.Id == "" {
 		fulfillmentsByOrder, appErr := a.FulfillmentsByOption(nil, &model.FulfillmentFilterOption{
-			OrderID: squirrel.Eq{store.FulfillmentTableName + ".OrderID": fulfillment.OrderID},
+			OrderID: squirrel.Eq{model.FulfillmentTableName + ".OrderID": fulfillment.OrderID},
 		})
 		if appErr != nil {
 			if appErr.StatusCode == http.StatusInternalServerError { // returns immediately if error was caused by system
@@ -60,7 +60,7 @@ func (a *ServiceOrder) UpsertFulfillment(transaction store_iface.SqlxTxExecutor,
 }
 
 // FulfillmentByOption returns 1 fulfillment filtered using given options
-func (a *ServiceOrder) FulfillmentByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, *model.AppError) {
+func (a *ServiceOrder) FulfillmentByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, *model.AppError) {
 	fulfillment, err := a.srv.Store.Fulfillment().GetByOption(transaction, option)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -75,7 +75,7 @@ func (a *ServiceOrder) FulfillmentByOption(transaction store_iface.SqlxTxExecuto
 
 // GetOrCreateFulfillment take a filtering option, trys finding a fulfillment with given option.
 // If a fulfillment found, returns it. Otherwise, creates a new one then returns it.
-func (a *ServiceOrder) GetOrCreateFulfillment(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, *model.AppError) {
+func (a *ServiceOrder) GetOrCreateFulfillment(transaction store_iface.SqlxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, *model.AppError) {
 	fulfillmentByOption, appErr := a.FulfillmentByOption(transaction, option)
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -88,7 +88,7 @@ func (a *ServiceOrder) GetOrCreateFulfillment(transaction store_iface.SqlxTxExec
 		if option.Id != nil {
 			eq, isEqual := option.Id.(squirrel.Eq)
 			if isEqual && eq != nil {
-				eqExpr := eq[store.FulfillmentTableName+".Id"]
+				eqExpr := eq[model.FulfillmentTableName+".Id"]
 				if eqExpr != nil {
 					if strID, ok := eqExpr.(string); ok {
 						upsertFulfillment.Id = strID
@@ -99,7 +99,7 @@ func (a *ServiceOrder) GetOrCreateFulfillment(transaction store_iface.SqlxTxExec
 
 		if option.OrderID != nil {
 			if eq, isEqual := option.OrderID.(squirrel.Eq); isEqual && eq != nil {
-				if eqExpr := eq[store.FulfillmentTableName+".OrderID"]; eqExpr != nil {
+				if eqExpr := eq[model.FulfillmentTableName+".OrderID"]; eqExpr != nil {
 					if strEq, ok := eqExpr.(string); ok {
 						upsertFulfillment.OrderID = strEq
 					}
@@ -109,7 +109,7 @@ func (a *ServiceOrder) GetOrCreateFulfillment(transaction store_iface.SqlxTxExec
 
 		if option.Status != nil {
 			if eq, isEqual := option.Status.(squirrel.Eq); isEqual && eq != nil {
-				if eqExpr := eq[store.FulfillmentTableName+".Status"]; eqExpr != nil {
+				if eqExpr := eq[model.FulfillmentTableName+".Status"]; eqExpr != nil {
 					if strEq, ok := eqExpr.(string); ok {
 						upsertFulfillment.Status = model.FulfillmentStatus(strEq)
 					}
@@ -129,7 +129,7 @@ func (a *ServiceOrder) GetOrCreateFulfillment(transaction store_iface.SqlxTxExec
 }
 
 // BulkDeleteFulfillments tells store to delete fulfillments that satisfy given option
-func (a *ServiceOrder) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments model.Fulfillments) *model.AppError {
+func (a *ServiceOrder) BulkDeleteFulfillments(transaction store_iface.SqlxExecutor, fulfillments model.Fulfillments) *model.AppError {
 	err := a.srv.Store.Fulfillment().BulkDeleteFulfillments(transaction, fulfillments)
 	if err != nil {
 		return model.NewAppError("BulkDeleteFulfillments", "app.order.error_deleting_fulfillments.app_error", nil, err.Error(), http.StatusInternalServerError)

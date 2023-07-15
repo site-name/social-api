@@ -13,7 +13,6 @@ import (
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 )
 
 const (
@@ -415,7 +414,7 @@ func (a *ServicePayment) Confirm(
 	}
 
 	transactionsOfPayment, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
-		Kind:      squirrel.Eq{store.TransactionTableName + ".Kind": model.ACTION_TO_CONFIRM},
+		Kind:      squirrel.Eq{model.TransactionTableName + ".Kind": model.ACTION_TO_CONFIRM},
 		IsSuccess: model.NewPrimitive(true),
 	})
 	if appErr != nil {
@@ -497,8 +496,8 @@ func (a *ServicePayment) fetchGatewayResponse(paymentFunc interfaces.PaymentMeth
 
 func (a *ServicePayment) getPastTransactionToken(payMent *model.Payment, kind model.TransactionKind) (string, *model.PaymentError, *model.AppError) {
 	transactions, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
-		PaymentID: squirrel.Eq{store.TransactionTableName + ".PaymentID": payMent.Id},
-		Kind:      squirrel.Eq{store.TransactionTableName + ".Kind": kind},
+		PaymentID: squirrel.Eq{model.TransactionTableName + ".PaymentID": payMent.Id},
+		Kind:      squirrel.Eq{model.TransactionTableName + ".Kind": kind},
 		IsSuccess: model.NewPrimitive(true),
 	})
 	if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {

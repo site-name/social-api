@@ -7,7 +7,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 )
 
 func (a *ServiceProduct) GetDefaultDigitalContentSettings(aShop *model.Shop) *model.ShopDefaultDigitalContentSettings {
@@ -24,7 +23,7 @@ func (a *ServiceProduct) GetDefaultDigitalContentSettings(aShop *model.Shop) *mo
 // to check if url is still valid.
 func (a *ServiceProduct) DigitalContentUrlIsValid(contentURL *model.DigitalContentUrl) (bool, *model.AppError) {
 	digitalContent, appErr := a.DigitalContentbyOption(&model.DigitalContentFilterOption{
-		Id: squirrel.Eq{store.DigitalContentTableName + ".Id": contentURL.ContentID},
+		Id: squirrel.Eq{model.DigitalContentTableName + ".Id": contentURL.ContentID},
 	})
 	if appErr != nil {
 		return false, appErr
@@ -71,7 +70,7 @@ func (a *ServiceProduct) IncrementDownloadCount(contentURL *model.DigitalContent
 			return appErr
 		}
 		userByOrderId, appErr := a.srv.AccountService().GetUserByOptions(context.Background(), &model.UserFilterOptions{
-			OrderID: squirrel.Eq{store.OrderTableName + ".Id": orderLine.OrderID},
+			OrderID: squirrel.Eq{model.OrderTableName + ".Id": orderLine.OrderID},
 		})
 		if appErr != nil {
 			return appErr

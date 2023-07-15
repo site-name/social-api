@@ -56,11 +56,11 @@ func (ps *SqlProductTranslationStore) Upsert(translation *model.ProductTranslati
 		numUpdated int64
 	)
 	if isSaving {
-		query := "INSERT INTO " + store.ProductTranslationTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.ProductTranslationTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
 		_, err = ps.GetMasterX().NamedExec(query, translation)
 
 	} else {
-		query := "UPDATE " + store.ProductTranslationTableName + " SET " + ps.
+		query := "UPDATE " + model.ProductTranslationTableName + " SET " + ps.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -76,7 +76,7 @@ func (ps *SqlProductTranslationStore) Upsert(translation *model.ProductTranslati
 
 	if err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"LanguageCode", "ProductID", "producttranslations_languagecode_productid_key"}) {
-			return nil, store.NewErrInvalidInput(store.ProductTranslationTableName, "LanguageCode/ProductID", "duplicate")
+			return nil, store.NewErrInvalidInput(model.ProductTranslationTableName, "LanguageCode/ProductID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to upsert product translation with id=%s", translation.Id)
 	}
@@ -90,10 +90,10 @@ func (ps *SqlProductTranslationStore) Upsert(translation *model.ProductTranslati
 // Get finds and returns a product translation by given id
 func (ps *SqlProductTranslationStore) Get(translationID string) (*model.ProductTranslation, error) {
 	var res model.ProductTranslation
-	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.ProductTranslationTableName+" WHERE Id = ?", translationID)
+	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.ProductTranslationTableName+" WHERE Id = ?", translationID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductTranslationTableName, translationID)
+			return nil, store.NewErrNotFound(model.ProductTranslationTableName, translationID)
 		}
 		return nil, errors.Wrapf(err, "failed to find product translation with id=%s", translationID)
 	}
@@ -104,8 +104,8 @@ func (ps *SqlProductTranslationStore) Get(translationID string) (*model.ProductT
 // FilterByOption finds and returns product translations filtered using given options
 func (ps *SqlProductTranslationStore) FilterByOption(option *model.ProductTranslationFilterOption) ([]*model.ProductTranslation, error) {
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields(store.ProductTranslationTableName + ".")...).
-		From(store.ProductTranslationTableName)
+		Select(ps.ModelFields(model.ProductTranslationTableName + ".")...).
+		From(model.ProductTranslationTableName)
 
 	// parse options
 	if option.Id != nil {

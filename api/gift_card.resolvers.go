@@ -222,7 +222,7 @@ func (r *Resolver) GiftCardResend(ctx context.Context, args struct{ Input GiftCa
 	}
 
 	receiver, appErr := embedCtx.App.Srv().AccountService().GetUserByOptions(ctx, &model.UserFilterOptions{
-		Email: squirrel.Eq{store.UserTableName + ".Email": targetEmail},
+		Email: squirrel.Eq{model.UserTableName + ".Email": targetEmail},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -314,8 +314,8 @@ func (r *Resolver) GiftCardBulkActivate(ctx context.Context, args struct{ Ids []
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
-		IsActive: squirrel.Eq{store.GiftcardTableName + ".IsActive": false},
-		Id:       squirrel.Eq{store.GiftcardTableName + ".Id": args.Ids},
+		IsActive: squirrel.Eq{model.GiftcardTableName + ".IsActive": false},
+		Id:       squirrel.Eq{model.GiftcardTableName + ".Id": args.Ids},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -355,8 +355,8 @@ func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids 
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	giftcards, appErr := embedCtx.App.Srv().GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
-		IsActive: squirrel.Eq{store.GiftcardTableName + ".IsActive": true},
-		Id:       squirrel.Eq{store.GiftcardTableName + ".Id": args.Ids},
+		IsActive: squirrel.Eq{model.GiftcardTableName + ".IsActive": true},
+		Id:       squirrel.Eq{model.GiftcardTableName + ".Id": args.Ids},
 	})
 	if appErr != nil {
 		return nil, appErr

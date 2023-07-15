@@ -3,7 +3,6 @@ package product
 import (
 	"database/sql"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -60,11 +59,11 @@ func (ps *SqlProductMediaStore) Upsert(media *model.ProductMedia) (*model.Produc
 		numUpdated int64
 	)
 	if isSaving {
-		query := "INSERT INTO " + store.ProductMediaTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.ProductMediaTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
 		_, err = ps.GetMasterX().NamedExec(query, media)
 
 	} else {
-		query := "UPDATE " + store.ProductMediaTableName + " SET " + ps.
+		query := "UPDATE " + model.ProductMediaTableName + " SET " + ps.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -93,13 +92,13 @@ func (ps *SqlProductMediaStore) Get(id string) (*model.ProductMedia, error) {
 	var res model.ProductMedia
 	err := ps.GetReplicaX().Get(
 		&res,
-		"SELECT * FROM "+store.ProductMediaTableName+" WHERE Id = ?",
+		"SELECT * FROM "+model.ProductMediaTableName+" WHERE Id = ?",
 		id,
 	)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductMediaTableName, id)
+			return nil, store.NewErrNotFound(model.ProductMediaTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find product media with id=%s", id)
 	}
@@ -110,30 +109,17 @@ func (ps *SqlProductMediaStore) Get(id string) (*model.ProductMedia, error) {
 // FilterByOption finds and returns a list of product medias with given id
 func (ps *SqlProductMediaStore) FilterByOption(option *model.ProductMediaFilterOption) ([]*model.ProductMedia, error) {
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields(store.ProductMediaTableName + ".")...).
-		From(store.ProductMediaTableName)
+		Select(ps.ModelFields(model.ProductMediaTableName + ".")...).
+		From(model.ProductMediaTableName)
 
 	// parse options
-	if option.Id != nil {
-		query = query.Where(option.Id)
-	}
-	if option.ProductID != nil {
-		query = query.Where(option.ProductID)
-	}
-	if option.Type != nil {
-		query = query.Where(option.Type)
+	if option.Conditions != nil {
+		query = query.Where(option.Conditions)
 	}
 	if option.VariantID != nil {
-		if eq, ok := option.VariantID.(squirrel.Eq); ok {
-			if val, ok := eq["VariantMedias.VariantID"]; ok && val == nil {
-				query = query.
-					LeftJoin("VariantMedias ON VariantMedias.MediaID = ProductMedias.Id").
-					Where(option.VariantID)
-			}
-		} else {
-			query = query.InnerJoin("VariantMedias ON VariantMedias.MediaID = ProductMedias.Id").
-				Where(option.VariantID)
-		}
+		query = query.
+			LeftJoin("VariantMedias ON VariantMedias.MediaID = ProductMedias.Id").
+			Where(option.VariantID)
 	}
 
 	queryString, args, err := query.ToSql()

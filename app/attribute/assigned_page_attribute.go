@@ -26,10 +26,10 @@ func (a *ServiceAttribute) AssignedPageAttributeByOption(option *model.AssignedP
 func (a *ServiceAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribute *model.AssignedPageAttribute) (*model.AssignedPageAttribute, *model.AppError) {
 	option := new(model.AssignedPageAttributeFilterOption)
 	if assignedPageAttribute.PageID != "" {
-		option.PageID = squirrel.Eq{store.AssignedPageAttributeTableName + ".PageID": assignedPageAttribute.PageID}
+		option.PageID = squirrel.Eq{model.AssignedPageAttributeTableName + ".PageID": assignedPageAttribute.PageID}
 	}
 	if assignedPageAttribute.AssignmentID != "" {
-		option.AssignmentID = squirrel.Eq{store.AssignedPageAttributeTableName + ".AssignmentID": assignedPageAttribute.AssignmentID}
+		option.AssignmentID = squirrel.Eq{model.AssignedPageAttributeTableName + ".AssignmentID": assignedPageAttribute.AssignmentID}
 	}
 
 	assignedPageAttr, appErr := a.AssignedPageAttributeByOption(option)

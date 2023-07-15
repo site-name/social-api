@@ -73,6 +73,9 @@ type User struct {
 	TermsOfServiceCreateAt   int64     `json:"terms_of_service_create_at,omitempty"`
 	DisableWelcomeEmail      bool      `json:"disable_welcome_email"`
 	ModelMetadata
+
+	Addresses      []*Address       `json:"-" gorm:"many2many:user_addresses"`
+	CustomerEvents []*CustomerEvent `json:"-"`
 }
 
 // UserMap is a map from a userId to a user object.
@@ -735,8 +738,8 @@ func (m StringMAP) Value() (driver.Value, error) {
 
 // Common abstract model for other models to inherit from
 type ModelMetadata struct {
-	Metadata        StringMAP `json:"metadata,omitempty"`
-	PrivateMetadata StringMAP `json:"private_metadata,omitempty"`
+	Metadata        StringMAP `json:"metadata,omitempty" gorm:"type:jsonb"`
+	PrivateMetadata StringMAP `json:"private_metadata,omitempty" gorm:"type:jsonb"`
 }
 
 func (m *ModelMetadata) PopulateFields() {

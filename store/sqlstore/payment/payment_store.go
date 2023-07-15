@@ -111,7 +111,7 @@ func (ps *SqlPaymentStore) ScanFields(payMent *model.Payment) []interface{} {
 }
 
 // Save inserts given payment into database then returns it
-func (ps *SqlPaymentStore) Save(transaction store_iface.SqlxTxExecutor, payment *model.Payment) (*model.Payment, error) {
+func (ps *SqlPaymentStore) Save(transaction store_iface.SqlxExecutor, payment *model.Payment) (*model.Payment, error) {
 	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -122,7 +122,7 @@ func (ps *SqlPaymentStore) Save(transaction store_iface.SqlxTxExecutor, payment 
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.PaymentTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.PaymentTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
 	if _, err := executor.NamedExec(query, payment); err != nil {
 		return nil, errors.Wrapf(err, "failed to insert new payment with id=%s", payment.Id)
 	}
@@ -131,7 +131,7 @@ func (ps *SqlPaymentStore) Save(transaction store_iface.SqlxTxExecutor, payment 
 }
 
 // Update updates given payment and returns the updated value
-func (ps *SqlPaymentStore) Update(transaction store_iface.SqlxTxExecutor, payment *model.Payment) (*model.Payment, error) {
+func (ps *SqlPaymentStore) Update(transaction store_iface.SqlxExecutor, payment *model.Payment) (*model.Payment, error) {
 	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -142,7 +142,7 @@ func (ps *SqlPaymentStore) Update(transaction store_iface.SqlxTxExecutor, paymen
 		return nil, err
 	}
 
-	query := "UPDATE " + store.PaymentTableName + " SET " + ps.
+	query := "UPDATE " + model.PaymentTableName + " SET " + ps.
 		ModelFields("").
 		Map(func(_ int, s string) string {
 			return s + "=:" + s
@@ -161,7 +161,7 @@ func (ps *SqlPaymentStore) Update(transaction store_iface.SqlxTxExecutor, paymen
 }
 
 // Get finds and returns the payment with given id
-func (ps *SqlPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*model.Payment, error) {
+func (ps *SqlPaymentStore) Get(transaction store_iface.SqlxExecutor, id string, lockForUpdate bool) (*model.Payment, error) {
 	var selector store_iface.SqlxExecutor = ps.GetReplicaX()
 	if transaction != nil {
 		selector = transaction
@@ -177,12 +177,12 @@ func (ps *SqlPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string
 
 	err := selector.Get(
 		&res,
-		"SELECT * FROM "+store.PaymentTableName+" WHERE Id = ?"+forUpdateSql,
+		"SELECT * FROM "+model.PaymentTableName+" WHERE Id = ?"+forUpdateSql,
 		id,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.PaymentTableName, id)
+			return nil, store.NewErrNotFound(model.PaymentTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find payment with id=%s", id)
 	}
@@ -192,7 +192,7 @@ func (ps *SqlPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string
 
 // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
 func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) error {
-	_, err := ps.GetMasterX().Exec("UPDATE "+store.PaymentTableName+" SET IsActive = false WHERE CheckoutID = ? AND IsActive = true", checkoutID)
+	_, err := ps.GetMasterX().Exec("UPDATE "+model.PaymentTableName+" SET IsActive = false WHERE CheckoutID = ? AND IsActive = true", checkoutID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to deactivate payments that are active and belong to checkout with id=%s", checkoutID)
 	}
@@ -203,8 +203,8 @@ func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) err
 // FilterByOption finds and returns a list of payments that satisfy given option
 func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error) {
 	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields(store.PaymentTableName + ".")...).
-		From(store.PaymentTableName)
+		Select(ps.ModelFields(model.PaymentTableName + ".")...).
+		From(model.PaymentTableName)
 
 	// parse option
 	if option.Id != nil {
@@ -224,20 +224,20 @@ func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]
 
 	if option.TransactionsKind != nil {
 		query = query.
-			InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)").
+			InnerJoin(model.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)").
 			Where(option.TransactionsKind)
 
 		joinedTransactionTable = true // indicate that we have joined transaction table
 	}
 	if option.TransactionsActionRequired != nil {
 		if !joinedTransactionTable {
-			query = query.InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
+			query = query.InnerJoin(model.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
 		}
 		query = query.Where(squirrel.Eq{"Transactions.ActionRequired": *option.TransactionsActionRequired})
 	}
 	if option.TransactionsIsSuccess != nil {
 		if !joinedTransactionTable {
-			query = query.InnerJoin(store.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
+			query = query.InnerJoin(model.TransactionTableName + " ON (Transactions.PaymentID = Payments.Id)")
 		}
 		query = query.Where(squirrel.Eq{"Transactions.IsSuccess": *option.TransactionsIsSuccess})
 	}
@@ -257,13 +257,13 @@ func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]
 }
 
 // UpdatePaymentsOfCheckout updates payments of given checkout
-func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *model.PaymentPatch) error {
+func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxExecutor, checkoutToken string, option *model.PaymentPatch) error {
 	var executor store_iface.SqlxExecutor = ps.GetMasterX()
 	if transaction != nil {
 		executor = transaction
 	}
 
-	query := ps.GetQueryBuilder().Update(store.PaymentTableName).Where("CheckoutID = ?", checkoutToken)
+	query := ps.GetQueryBuilder().Update(model.PaymentTableName).Where("CheckoutID = ?", checkoutToken)
 
 	// parse option
 	if model.IsValidEmail(option.BillingEmail) {
@@ -288,11 +288,11 @@ func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.Sqlx
 
 func (ps *SqlPaymentStore) PaymentOwnedByUser(userID, paymentID string) (bool, error) {
 	query := `SELECT * FROM ` +
-		store.PaymentTableName +
+		model.PaymentTableName +
 		` P INNER JOIN ` +
-		store.OrderTableName +
+		model.OrderTableName +
 		` O ON O.Id = P.OrderID INNER JOIN ` +
-		store.CheckoutTableName +
+		model.CheckoutTableName +
 		` C ON C.Id = P.CheckoutID WHERE (O.UserID = $1 OR C.UserID = $2) AND (P.Id = $3 OR P.Token = $4)`
 
 	var payments []*model.Payment

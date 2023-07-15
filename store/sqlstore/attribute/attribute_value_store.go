@@ -79,11 +79,11 @@ func (as *SqlAttributeValueStore) Upsert(av *model.AttributeValue) (*model.Attri
 		numUpdated int64
 	)
 	if isSaving {
-		query := "INSERT INTO " + store.AttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.AttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 		_, err = as.GetMasterX().NamedExec(query, av)
 
 	} else {
-		query := "UPDATE " + store.AttributeValueTableName + " SET " +
+		query := "UPDATE " + model.AttributeValueTableName + " SET " +
 			as.ModelFields("").
 				Map(func(_ int, s string) string {
 					return s + "=:" + s
@@ -99,7 +99,7 @@ func (as *SqlAttributeValueStore) Upsert(av *model.AttributeValue) (*model.Attri
 
 	if err != nil {
 		if as.IsUniqueConstraintError(err, []string{"Slug", "AttributeID", "attributevalues_slug_attributeid_key"}) {
-			return nil, store.NewErrInvalidInput(store.AttributeValueTableName, "Slug/AttributeID", av.Slug+"/"+av.AttributeID)
+			return nil, store.NewErrInvalidInput(model.AttributeValueTableName, "Slug/AttributeID", av.Slug+"/"+av.AttributeID)
 		}
 		return nil, errors.Wrapf(err, "failed to upsert attribute value with id=%s", av.Id)
 	}
@@ -114,10 +114,10 @@ func (as *SqlAttributeValueStore) Upsert(av *model.AttributeValue) (*model.Attri
 func (as *SqlAttributeValueStore) Get(id string) (*model.AttributeValue, error) {
 	var res model.AttributeValue
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AttributeValueTableName, id)
+			return nil, store.NewErrNotFound(model.AttributeValueTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find attribute value with id=%s", id)
 	}
@@ -132,14 +132,14 @@ func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFi
 		executor = options.Transaction
 	}
 
-	selectFields := as.ModelFields(store.AttributeValueTableName + ".")
+	selectFields := as.ModelFields(model.AttributeValueTableName + ".")
 	if options.SelectRelatedAttribute {
-		selectFields = append(selectFields, as.Attribute().ModelFields(store.AttributeTableName+".")...)
+		selectFields = append(selectFields, as.Attribute().ModelFields(model.AttributeTableName+".")...)
 	}
 
 	query := as.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.AttributeValueTableName)
+		From(model.AttributeValueTableName)
 
 	if options.SelectForUpdate {
 		query = query.Suffix("FOR UPDATE")
@@ -148,7 +148,7 @@ func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFi
 		query = query.OrderBy(options.Ordering)
 	}
 	if options.SelectRelatedAttribute {
-		query = query.InnerJoin(store.AttributeTableName + " ON AttributeValues.AttributeID = Attributes.Id")
+		query = query.InnerJoin(model.AttributeTableName + " ON AttributeValues.AttributeID = Attributes.Id")
 	}
 	if options.Id != nil {
 		query = query.Where(options.Id)
@@ -201,8 +201,8 @@ func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFi
 func (as *SqlAttributeValueStore) Delete(ids ...string) (int64, error) {
 	query, args, err := as.GetQueryBuilder().
 		Delete("*").
-		From(store.AttributeValueTableName).
-		Where(squirrel.Eq{store.AttributeValueTableName + ".Id": ids}).
+		From(model.AttributeValueTableName).
+		Where(squirrel.Eq{model.AttributeValueTableName + ".Id": ids}).
 		ToSql()
 	if err != nil {
 		return 0, errors.Wrap(err, "Delete_ToSql")
@@ -220,7 +220,7 @@ func (as *SqlAttributeValueStore) Delete(ids ...string) (int64, error) {
 	return numDeleted, nil
 }
 
-func (as *SqlAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values model.AttributeValues) (model.AttributeValues, error) {
+func (as *SqlAttributeValueStore) BulkUpsert(transaction store_iface.SqlxExecutor, values model.AttributeValues) (model.AttributeValues, error) {
 	var executor store_iface.SqlxExecutor = as.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -246,10 +246,10 @@ func (as *SqlAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecu
 		}
 
 		if isSaving {
-			query := "INSERT INTO " + store.AttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+			query := "INSERT INTO " + model.AttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 			_, err = executor.NamedExec(query, value)
 		} else {
-			query := "UPDATE " + store.AttributeValueTableName + " SET " + as.ModelFields("").
+			query := "UPDATE " + model.AttributeValueTableName + " SET " + as.ModelFields("").
 				Map(func(_ int, s string) string {
 					return s + "=:" + s
 				}).
@@ -264,8 +264,8 @@ func (as *SqlAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecu
 		}
 
 		if err != nil {
-			if as.IsUniqueConstraintError(err, []string{"Slug", "AttributeID", strings.ToLower(store.AttributeValueTableName) + "_slug_attributeid_key"}) {
-				return nil, store.NewErrInvalidInput(store.AttributeValueTableName, "Slug/AttributeID", value.Slug+"/"+value.AttributeID)
+			if as.IsUniqueConstraintError(err, []string{"Slug", "AttributeID", strings.ToLower(model.AttributeValueTableName) + "_slug_attributeid_key"}) {
+				return nil, store.NewErrInvalidInput(model.AttributeValueTableName, "Slug/AttributeID", value.Slug+"/"+value.AttributeID)
 			}
 			return nil, errors.Wrapf(err, "failed to upsert attribute value with id=%s", value.Id)
 		}
@@ -281,7 +281,7 @@ func (as *SqlAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecu
 func (as *SqlAttributeValueStore) Count(options *model.AttributeValueFilterOptions) (int64, error) {
 	query := as.GetQueryBuilder().
 		Select("COUNT (*)").
-		From(store.AttributeValueTableName)
+		From(model.AttributeValueTableName)
 
 	if options.Id != nil {
 		query = query.Where(options.Id)

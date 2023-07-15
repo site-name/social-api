@@ -6,11 +6,13 @@ package sub_app_iface
 import (
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // DiscountService contains methods for working with discounts
@@ -91,15 +93,15 @@ type DiscountService interface {
 	// RemoveVoucherUsageByCustomer deletes voucher customers for given voucher
 	RemoveVoucherUsageByCustomer(voucher *model.Voucher, customerEmail string) *model.AppError
 	// SaleCategoriesByOption returns sale-category relations with an app error
-	SaleCategoriesByOption(option *model.SaleCategoryRelationFilterOption) ([]*model.SaleCategoryRelation, *model.AppError)
+	SaleCategoriesByOption(option squirrel.Sqlizer) ([]*model.SaleCategory, *model.AppError)
 	// SaleCollectionsByOptions returns a slice of sale-collection relations filtered using given options
-	SaleCollectionsByOptions(options *model.SaleCollectionRelationFilterOption) ([]*model.SaleCollectionRelation, *model.AppError)
+	SaleCollectionsByOptions(options squirrel.Sqlizer) ([]*model.SaleCollection, *model.AppError)
 	// SaleProductVariantsByOptions returns a list of sale-product variant relations filtered using given options
-	SaleProductVariantsByOptions(options *model.SaleProductVariantFilterOption) ([]*model.SaleProductVariant, *model.AppError)
+	SaleProductVariantsByOptions(options squirrel.Sqlizer) ([]*model.SaleProductVariant, *model.AppError)
 	// SaleProductsByOptions returns a slice of sale-product relations filtered using given options
-	SaleProductsByOptions(options *model.SaleProductRelationFilterOption) ([]*model.SaleProductRelation, *model.AppError)
+	SaleProductsByOptions(options squirrel.Sqlizer) ([]*model.SaleProduct, *model.AppError)
 	// UpsertOrderDiscount updates or inserts given order discount
-	UpsertOrderDiscount(transaction store_iface.SqlxTxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, *model.AppError)
+	UpsertOrderDiscount(transaction store_iface.SqlxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, *model.AppError)
 	// UpsertVoucher update or insert given voucher
 	UpsertVoucher(voucher *model.Voucher) (*model.Voucher, *model.AppError)
 	// ValidateMinSpent validates if the order cost at least a specific amount of money
@@ -130,4 +132,5 @@ type DiscountService interface {
 	ValidateVoucher(voucher *model.Voucher, totalPrice *goprices.TaxedMoney, quantity int, customerEmail string, channelID string, customerID string) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
 	ValidateVoucherInOrder(ord *model.Order) (notApplicableErr *model.NotApplicable, appErr *model.AppError)
 	FilterVats(options *model.VatFilterOptions) ([]*model.Vat, *model.AppError)
+	AddSaleRelations(transaction *gorm.DB, saleID string, productIDs, variantIDs, categoryIDs, collectionIDs []string) *model.AppError
 }

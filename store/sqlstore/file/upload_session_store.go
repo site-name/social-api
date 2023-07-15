@@ -43,7 +43,7 @@ func (us *SqlUploadSessionStore) Save(session *model.UploadSession) (*model.Uplo
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.UploadSessionTableName + "(" + us.ModelFields("").Join(",") + ") VALUES (" + us.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.UploadSessionTableName + "(" + us.ModelFields("").Join(",") + ") VALUES (" + us.ModelFields(":").Join(",") + ")"
 	if _, err := us.GetMasterX().NamedExec(query, session); err != nil {
 		return nil, errors.Wrap(err, "SqlUploadSessionStore.Save: failed to insert")
 	}
@@ -55,7 +55,7 @@ func (us *SqlUploadSessionStore) Update(session *model.UploadSession) error {
 		return err
 	}
 
-	query := "UPDATE " + store.UploadSessionTableName + " SET " + us.
+	query := "UPDATE " + model.UploadSessionTableName + " SET " + us.
 		ModelFields("").
 		Map(func(_ int, s string) string {
 			return s + "=:" + s
@@ -70,9 +70,9 @@ func (us *SqlUploadSessionStore) Update(session *model.UploadSession) error {
 
 func (us SqlUploadSessionStore) Get(id string) (*model.UploadSession, error) {
 	var session *model.UploadSession
-	if err := us.GetReplicaX().Get(&session, "SELECT * FROM "+store.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
+	if err := us.GetReplicaX().Get(&session, "SELECT * FROM "+model.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.UploadSessionTableName, id)
+			return nil, store.NewErrNotFound(model.UploadSessionTableName, id)
 		}
 		return nil, errors.Wrapf(err, "SqlUploadSessionStore.Get: failed to select session with id=%s", id)
 	}
@@ -84,7 +84,7 @@ func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*model.UploadSessi
 
 	if err := us.GetReplicaX().Select(
 		&sessions,
-		"SELECT * FROM "+store.UploadSessionTableName+" WHERE UserId = ? ORDER BY CreateAt ASC",
+		"SELECT * FROM "+model.UploadSessionTableName+" WHERE UserId = ? ORDER BY CreateAt ASC",
 		userId,
 	); err != nil {
 		return nil, errors.Wrap(err, "failed to find upload session for user id="+userId)
@@ -93,7 +93,7 @@ func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*model.UploadSessi
 }
 
 func (us *SqlUploadSessionStore) Delete(id string) error {
-	if _, err := us.GetMasterX().Exec("DELETE FROM "+store.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
+	if _, err := us.GetMasterX().Exec("DELETE FROM "+model.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
 		return errors.Wrap(err, "failed to delete upload session with id="+id)
 	}
 

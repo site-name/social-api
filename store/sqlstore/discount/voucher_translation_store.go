@@ -42,7 +42,7 @@ func (vts *SqlVoucherTranslationStore) Save(translation *model.VoucherTranslatio
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.VoucherTranslationTableName + "(" + vts.ModelFields("").Join(",") + ") VALUES (" + vts.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.VoucherTranslationTableName + "(" + vts.ModelFields("").Join(",") + ") VALUES (" + vts.ModelFields(":").Join(",") + ")"
 	_, err := vts.GetMasterX().NamedExec(query, translation)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to save voucher translation with id=%s", translation.Id)
@@ -54,10 +54,10 @@ func (vts *SqlVoucherTranslationStore) Save(translation *model.VoucherTranslatio
 // Get finds and returns a voucher translation with given id
 func (vts *SqlVoucherTranslationStore) Get(id string) (*model.VoucherTranslation, error) {
 	var res model.VoucherTranslation
-	err := vts.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherTranslationTableName+" WHERE Id = ?", id)
+	err := vts.GetReplicaX().Get(&res, "SELECT * FROM "+model.VoucherTranslationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.VoucherTranslationTableName, id)
+			return nil, store.NewErrNotFound(model.VoucherTranslationTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find voucher translation with id=%s", id)
 	}
@@ -66,7 +66,7 @@ func (vts *SqlVoucherTranslationStore) Get(id string) (*model.VoucherTranslation
 }
 
 func (vts *SqlVoucherTranslationStore) commonQueryBuilder(option *model.VoucherTranslationFilterOption) squirrel.SelectBuilder {
-	query := vts.GetQueryBuilder().Select("*").From(store.VoucherTranslationTableName)
+	query := vts.GetQueryBuilder().Select("*").From(model.VoucherTranslationTableName)
 
 	// parse option
 	if option.Id != nil {
@@ -113,7 +113,7 @@ func (vts *SqlVoucherTranslationStore) GetByOption(option *model.VoucherTranslat
 	err = vts.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.VoucherTranslationTableName, "options")
+			return nil, store.NewErrNotFound(model.VoucherTranslationTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find a voucher translation by given option")
 	}

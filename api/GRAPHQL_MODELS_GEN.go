@@ -13,7 +13,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 )
 
 type AccountAddressCreate struct {
@@ -474,10 +473,10 @@ func (a *AttributeFilterInput) toSystemAttributeFilterOption() *model.AttributeF
 		}
 	}
 	if len(a.Ids) > 0 {
-		res.Id = squirrel.Eq{store.AttributeTableName + ".Id": a.Ids}
+		res.Id = squirrel.Eq{model.AttributeTableName + ".Id": a.Ids}
 	}
 	if a.Type != nil && a.Type.IsValid() {
-		res.Type = squirrel.Eq{store.AttributeTableName + ".Type": *a.Type}
+		res.Type = squirrel.Eq{model.AttributeTableName + ".Type": *a.Type}
 	}
 
 	return res
@@ -3288,6 +3287,51 @@ type SaleInput struct {
 	EndDate     *DateTime              `json:"endDate"`
 }
 
+func (s *SaleInput) Validate() *model.AppError {
+	if s.Type != nil && !s.Type.IsValid() {
+		return model.NewAppError("SaleInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "type"}, "please provide valid type", http.StatusBadRequest)
+	}
+	if s.StartDate != nil && s.EndDate != nil && s.EndDate.Before(s.StartDate.Time) {
+		return model.NewAppError("SaleInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "end date / start date"}, "end date must be greater than start date", http.StatusBadRequest)
+	}
+	for key, value := range map[string][]string{
+		"Products":    s.Products,
+		"Variants":    s.Variants,
+		"Categories":  s.Categories,
+		"Collections": s.Collections,
+	} {
+		if !lo.EveryBy(value, model.IsValidId) {
+			return model.NewAppError("SaleInput.Validate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": key}, "please provide valid "+key+" ids", http.StatusBadRequest)
+		}
+	}
+
+	return nil
+}
+
+// PatchSale must be called after calling Validate()
+func (s *SaleInput) PatchSale(sale *model.Sale) (changed bool) {
+	changed = true
+
+	switch {
+	case s.Name != nil && sale.Name != *s.Name:
+		sale.Name = *s.Name
+		fallthrough
+	case s.Type != nil && *s.Type != sale.Type:
+		sale.Type = *s.Type
+		fallthrough
+	case s.StartDate != nil && !s.StartDate.Equal(sale.StartDate):
+		sale.StartDate = s.StartDate.Time
+		fallthrough
+	case s.EndDate != nil:
+		sale.EndDate = &s.EndDate.Time
+
+	default:
+		changed = false
+	}
+
+	return
+}
+
 type SaleRemoveCatalogues struct {
 	Sale   *Sale            `json:"sale"`
 	Errors []*DiscountError `json:"errors"`
@@ -3593,7 +3637,7 @@ type ShippingZoneDelete struct {
 
 type ShippingZoneFilterInput struct {
 	Search   *string  `json:"search"`
-	Channels []string `json:"channels"`
+	Channels []string `json:"channels"` // channel ids
 }
 
 type ShippingZoneUpdate struct {
@@ -3779,11 +3823,6 @@ type StockFilterInput struct {
 type StockInput struct {
 	Warehouse string `json:"warehouse"`
 	Quantity  int32  `json:"quantity"`
-}
-
-type TaxType struct {
-	Description *string `json:"description"`
-	TaxCode     *string `json:"taxCode"`
 }
 
 type TaxedMoney struct {

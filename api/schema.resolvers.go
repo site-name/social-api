@@ -8,28 +8,10 @@ import (
 	"fmt"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/samber/lo"
+	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/web"
 )
-
-func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
-	MediaID   string
-	VariantID string
-}) (*VariantMediaAssign, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *Resolver) VariantMediaUnassign(ctx context.Context, args struct {
-	MediaID   string
-	VariantID string
-}) (*VariantMediaUnassign, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *Resolver) AssignNavigation(ctx context.Context, args struct {
-	Menu           *string
-	NavigationType NavigationType
-}) (*AssignNavigation, error) {
-	panic(fmt.Errorf("not implemented"))
-}
 
 func (r *Resolver) FileUpload(ctx context.Context, args struct{ File graphql.Upload }) (*FileUpload, error) {
 	panic(fmt.Errorf("not implemented"))
@@ -43,18 +25,24 @@ func (r *Resolver) ExternalNotificationTrigger(ctx context.Context, args struct 
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *Resolver) ReportProductSales(ctx context.Context, args struct {
-	Period  ReportingPeriod
-	Channel string
-	GraphqlParams
-}) (*ProductVariantCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *Resolver) HomepageEvents(ctx context.Context, args GraphqlParams) (*OrderEventCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+type TaxType struct {
+	Description *string `json:"description"`
+	TaxCode     *string `json:"taxCode"`
 }
 
 func (r *Resolver) TaxTypes(ctx context.Context) ([]*TaxType, error) {
-	panic(fmt.Errorf("not implemented"))
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	pluginMng := embedCtx.App.Srv().PluginService().GetPluginManager()
+
+	taxTypes, appErr := pluginMng.GetTaxRateTypeChoices()
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return lo.Map(taxTypes, func(item *model.TaxType, _ int) *TaxType {
+		return &TaxType{
+			Description: &item.Descriptiton,
+			TaxCode:     &item.Code,
+		}
+	}), nil
 }

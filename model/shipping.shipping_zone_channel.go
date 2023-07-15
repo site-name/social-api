@@ -10,8 +10,7 @@ type ShippingZoneChannel struct {
 }
 
 type ShippingZoneChannelFilterOptions struct {
-	ShippingZoneID squirrel.Sqlizer
-	ChannelID      squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
 func (s *ShippingZoneChannel) IsValid() *AppError {

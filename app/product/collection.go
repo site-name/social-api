@@ -32,7 +32,7 @@ func (a *ServiceProduct) CollectionsByVoucherID(voucherID string) ([]*model.Coll
 // CollectionsByProductID finds and returns all collections related to given product
 func (a *ServiceProduct) CollectionsByProductID(productID string) ([]*model.Collection, *model.AppError) {
 	return a.CollectionsByOption(&model.CollectionFilterOption{
-		ProductID: squirrel.Eq{store.CollectionProductRelationTableName + ".ProductID": productID},
+		ProductID: squirrel.Eq{model.CollectionProductRelationTableName + ".ProductID": productID},
 	})
 }
 
@@ -42,11 +42,11 @@ func (a *ServiceProduct) PublishedCollections(channelSlug string) ([]*model.Coll
 
 	return a.CollectionsByOption(&model.CollectionFilterOption{
 		ChannelListingPublicationDate: squirrel.Or{
-			squirrel.LtOrEq{store.CollectionChannelListingTableName + ".PublicationDate": today},
-			squirrel.Eq{store.CollectionChannelListingTableName + ".PublicationDate": nil},
+			squirrel.LtOrEq{model.CollectionChannelListingTableName + ".PublicationDate": today},
+			squirrel.Eq{model.CollectionChannelListingTableName + ".PublicationDate": nil},
 		},
 		ChannelListingIsPublished:     model.NewPrimitive(true),
-		ChannelListingChannelSlug:     squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug},
+		ChannelListingChannelSlug:     squirrel.Eq{model.ChannelTableName + ".Slug": channelSlug},
 		ChannelListingChannelIsActive: model.NewPrimitive(true),
 	})
 }
@@ -55,7 +55,7 @@ func (a *ServiceProduct) PublishedCollections(channelSlug string) ([]*model.Coll
 func (a *ServiceProduct) VisibleCollectionsToUser(userID, channelSlug string) ([]*model.Collection, *model.AppError) {
 	if channelSlug != "" {
 		return a.CollectionsByOption(&model.CollectionFilterOption{
-			ChannelListingChannelSlug: squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug},
+			ChannelListingChannelSlug: squirrel.Eq{model.ChannelTableName + ".Slug": channelSlug},
 		})
 	}
 

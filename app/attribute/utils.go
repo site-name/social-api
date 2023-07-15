@@ -129,8 +129,8 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 	switch v := instance.(type) {
 	case *model.Product:
 		attributeProduct, appErr := a.AttributeProductByOption(&model.AttributeProductFilterOption{
-			ProductTypeID: squirrel.Eq{store.AttributeProductTableName + ".ProductTypeID": v.ProductTypeID},
-			AttributeID:   squirrel.Eq{store.AttributeProductTableName + ".AttributeID": attributeID},
+			ProductTypeID: squirrel.Eq{model.AttributeProductTableName + ".ProductTypeID": v.ProductTypeID},
+			AttributeID:   squirrel.Eq{model.AttributeProductTableName + ".AttributeID": attributeID},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -143,8 +143,8 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 
 	case *model.ProductVariant:
 		attrVariant, appErr := a.AttributeVariantByOption(&model.AttributeVariantFilterOption{
-			ProductTypeID: squirrel.Eq{store.AttributeVariantTableName + ".ProductTypeID": v.ProductID},
-			AttributeID:   squirrel.Eq{store.AttributeVariantTableName + ".AttributeID": attributeID},
+			ProductTypeID: squirrel.Eq{model.AttributeVariantTableName + ".ProductTypeID": v.ProductID},
+			AttributeID:   squirrel.Eq{model.AttributeVariantTableName + ".AttributeID": attributeID},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -157,8 +157,8 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 
 	case *model.Page:
 		attributePage, appErr := a.AttributePageByOption(&model.AttributePageFilterOption{
-			AttributeID: squirrel.Eq{store.AttributePageTableName + ".AttributeID": attributeID},
-			PageTypeID:  squirrel.Eq{store.AttributePageTableName + ".PageTypeID": v.PageTypeID},
+			AttributeID: squirrel.Eq{model.AttributePageTableName + ".AttributeID": attributeID},
+			PageTypeID:  squirrel.Eq{model.AttributePageTableName + ".PageTypeID": v.PageTypeID},
 		})
 		if appErr != nil {
 			return nil, appErr

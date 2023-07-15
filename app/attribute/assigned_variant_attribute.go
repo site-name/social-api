@@ -26,10 +26,10 @@ func (a *ServiceAttribute) AssignedVariantAttributeByOption(option *model.Assign
 func (a *ServiceAttribute) GetOrCreateAssignedVariantAttribute(assignedVariantAttr *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, *model.AppError) {
 	option := new(model.AssignedVariantAttributeFilterOption)
 	if assignedVariantAttr.VariantID != "" {
-		option.VariantID = squirrel.Eq{store.AssignedVariantAttributeTableName + ".VariantID": assignedVariantAttr.VariantID}
+		option.VariantID = squirrel.Eq{model.AssignedVariantAttributeTableName + ".VariantID": assignedVariantAttr.VariantID}
 	}
 	if assignedVariantAttr.AssignmentID != "" {
-		option.AssignmentID = squirrel.Eq{store.AssignedVariantAttributeTableName + ".AssignmentID": assignedVariantAttr.AssignmentID}
+		option.AssignmentID = squirrel.Eq{model.AssignedVariantAttributeTableName + ".AssignmentID": assignedVariantAttr.AssignmentID}
 	}
 	assignedVariantAttribute, appErr := a.AssignedVariantAttributeByOption(option)
 	if appErr != nil {

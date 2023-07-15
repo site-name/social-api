@@ -8,7 +8,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -73,7 +72,7 @@ func pageByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*mod
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	pages, appErr := embedCtx.App.Srv().PageService().FindPagesByOptions(&model.PageFilterOptions{
-		Id: squirrel.Eq{store.PageTableName + ".Id": ids},
+		Id: squirrel.Eq{model.PageTableName + ".Id": ids},
 	})
 	if appErr != nil {
 		for idx := range ids {

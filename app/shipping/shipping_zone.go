@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 // ShippingZonesByOption returns all shipping zones that satisfy given options
@@ -14,4 +15,23 @@ func (a *ServiceShipping) ShippingZonesByOption(option *model.ShippingZoneFilter
 	}
 
 	return shippingZones, nil
+}
+
+func (s *ServiceShipping) UpsertShippingZone(transaction store_iface.SqlxExecutor, zone *model.ShippingZone) (*model.ShippingZone, *model.AppError) {
+	zone, err := s.srv.Store.ShippingZone().Upsert(transaction, zone)
+	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+		return nil, model.NewAppError("UpsertShippingZone", "app.shipping.upsert_shipping_zone.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return zone, nil
+}
+
+func (s *ServiceShipping) DeleteShippingZones(transaction store_iface.SqlxExecutor, conditions *model.ShippingZoneFilterOption) (int64, *model.AppError) {
+	numDeleted, err := s.srv.Store.ShippingZone().Delete(transaction, conditions)
+	if err != nil {
+		return 0, model.NewAppError("DeleteShippingZones", "app.shipping.delete_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+	return numDeleted, nil
 }

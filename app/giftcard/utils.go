@@ -11,7 +11,6 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 )
 
 // AddGiftcardCodeToCheckout adds giftcard data to checkout by code. Raise InvalidPromoCode if gift card cannot be applied.
@@ -19,14 +18,14 @@ func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *model.Checkout, email
 	now := time.Now().UTC()
 
 	giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
-		Code:     squirrel.Eq{store.GiftcardTableName + ".Code": promoCode},
-		Currency: squirrel.Eq{store.GiftcardTableName + ".Currency": strings.ToUpper(currency)},
+		Code:     squirrel.Eq{model.GiftcardTableName + ".Code": promoCode},
+		Currency: squirrel.Eq{model.GiftcardTableName + ".Currency": strings.ToUpper(currency)},
 		ExpiryDate: squirrel.Or{
-			squirrel.GtOrEq{store.GiftcardTableName + ".ExpiryDate": now},
-			squirrel.Eq{store.GiftcardTableName + ".ExpiryDate": nil},
+			squirrel.GtOrEq{model.GiftcardTableName + ".ExpiryDate": now},
+			squirrel.Eq{model.GiftcardTableName + ".ExpiryDate": nil},
 		},
-		StartDate: squirrel.LtOrEq{store.GiftcardTableName + ".StartDate": now},
-		IsActive:  squirrel.Eq{store.GiftcardTableName + ".IsActive": true},
+		StartDate: squirrel.LtOrEq{model.GiftcardTableName + ".StartDate": now},
+		IsActive:  squirrel.Eq{model.GiftcardTableName + ".IsActive": true},
 	})
 
 	if appErr != nil {
@@ -48,7 +47,7 @@ func (a *ServiceGiftcard) AddGiftcardCodeToCheckout(ckout *model.Checkout, email
 // RemoveGiftcardCodeFromCheckout drops a relation between giftcard and checkout
 func (a *ServiceGiftcard) RemoveGiftcardCodeFromCheckout(ckout *model.Checkout, giftcardCode string) *model.AppError {
 	giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
-		Code: squirrel.Eq{store.GiftcardTableName + ".Code": giftcardCode},
+		Code: squirrel.Eq{model.GiftcardTableName + ".Code": giftcardCode},
 	})
 
 	if appErr != nil {
@@ -117,8 +116,8 @@ func (s *ServiceGiftcard) FulfillNonShippableGiftcards(orDer *model.Order, order
 func (s *ServiceGiftcard) GetNonShippableGiftcardLines(lines model.OrderLines) (model.OrderLines, *model.AppError) {
 	giftcardLines := GetGiftcardLines(lines)
 	nonShippableLines, appErr := s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-		Id:                 squirrel.Eq{store.OrderLineTableName + ".Id": giftcardLines.IDs()},
-		IsShippingRequired: squirrel.Eq{store.OrderLineTableName + ".IsShippingRequired": true},
+		Id:                 squirrel.Eq{model.OrderLineTableName + ".Id": giftcardLines.IDs()},
+		IsShippingRequired: squirrel.Eq{model.OrderLineTableName + ".IsShippingRequired": true},
 	})
 
 	if appErr != nil {
@@ -154,7 +153,7 @@ func (s *ServiceGiftcard) GiftcardsCreate(orDer *model.Order, giftcardLines mode
 
 	// refetch order lines with prefetching options
 	giftcardLines, appErr = s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-		Id: squirrel.Eq{store.OrderLineTableName + ".Id": giftcardLines.IDs()},
+		Id: squirrel.Eq{model.OrderLineTableName + ".Id": giftcardLines.IDs()},
 		PrefetchRelated: model.OrderLinePrefetchRelated{
 			VariantProduct: true,
 		},
@@ -203,7 +202,7 @@ func (s *ServiceGiftcard) GiftcardsCreate(orDer *model.Order, giftcardLines mode
 	}
 
 	channelOfOrder, appErr := s.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{store.ChannelTableName + ".Id": orDer.ChannelID},
+		Id: squirrel.Eq{model.ChannelTableName + ".Id": orDer.ChannelID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -240,7 +239,7 @@ func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLines, r
 
 		var appErr *model.AppError
 		giftcardLines, appErr = s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-			Id: squirrel.Eq{store.OrderLineTableName + ".Id": giftcardLines.IDs()},
+			Id: squirrel.Eq{model.OrderLineTableName + ".Id": giftcardLines.IDs()},
 			PrefetchRelated: model.OrderLinePrefetchRelated{
 				AllocationsStock: true,
 				VariantStocks:    true,
@@ -271,7 +270,7 @@ func (s *ServiceGiftcard) FulfillGiftcardLines(giftcardLines model.OrderLines, r
 		} else {
 
 			stocks, appErr := s.srv.WarehouseService().FilterStocksForChannel(&model.StockFilterForChannelOption{
-				Id:        squirrel.Eq{store.StockTableName + ".Id": orderLine.GetProductVariant().GetStocks().IDs()},
+				Id:        squirrel.Eq{model.StockTableName + ".Id": orderLine.GetProductVariant().GetStocks().IDs()},
 				ChannelID: order.ChannelID,
 			})
 			if appErr != nil {
@@ -366,8 +365,8 @@ func (s *ServiceGiftcard) DeactivateOrderGiftcards(orderID string, user *model.U
 
 func (s *ServiceGiftcard) OrderHasGiftcardLines(orDer *model.Order) (bool, *model.AppError) {
 	orderLines, appErr := s.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID:    squirrel.Eq{store.OrderLineTableName + ".OrderID": orDer.Id},
-		IsGiftcard: squirrel.Eq{store.OrderLineTableName + ".IsGiftcard": true},
+		OrderID:    squirrel.Eq{model.OrderLineTableName + ".OrderID": orDer.Id},
+		IsGiftcard: squirrel.Eq{model.OrderLineTableName + ".IsGiftcard": true},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

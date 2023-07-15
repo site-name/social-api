@@ -65,11 +65,11 @@ func (cls *SqlCheckoutLineStore) Upsert(checkoutLine *model.CheckoutLine) (*mode
 		err        error
 	)
 	if isSave {
-		query := "INSERT INTO " + store.CheckoutLineTableName + "(" + cls.ModelFields("").Join(",") + ") VALUES (" + cls.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.CheckoutLineTableName + "(" + cls.ModelFields("").Join(",") + ") VALUES (" + cls.ModelFields(":").Join(",") + ")"
 		_, err = cls.GetMasterX().NamedExec(query, checkoutLine)
 
 	} else {
-		query := "UPDATE " + store.CheckoutLineTableName + " SET " + cls.
+		query := "UPDATE " + model.CheckoutLineTableName + " SET " + cls.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -96,10 +96,10 @@ func (cls *SqlCheckoutLineStore) Upsert(checkoutLine *model.CheckoutLine) (*mode
 func (cls *SqlCheckoutLineStore) Get(id string) (*model.CheckoutLine, error) {
 	var res model.CheckoutLine
 
-	err := cls.GetReplicaX().Get(&res, "SELECT * FROM "+store.CheckoutLineTableName+" WHERE Id = ?", id)
+	err := cls.GetReplicaX().Get(&res, "SELECT * FROM "+model.CheckoutLineTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CheckoutLineTableName, id)
+			return nil, store.NewErrNotFound(model.CheckoutLineTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to to find checkout line with id=%s", id)
 	}
@@ -112,8 +112,8 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutToken string)
 
 	err := cls.GetReplicaX().Select(
 		&res,
-		`SELECT * FROM `+store.CheckoutLineTableName+`
-		INNER JOIN `+store.CheckoutTableName+` ON	Checkouts.Id = CheckoutLines.CheckoutID
+		`SELECT * FROM `+model.CheckoutLineTableName+`
+		INNER JOIN `+model.CheckoutTableName+` ON	Checkouts.Id = CheckoutLines.CheckoutID
 		WHERE	CheckoutLines.CheckoutID = ?
 		ORDER BY Checkouts.CreateAt ASC`,
 		checkoutToken,
@@ -125,15 +125,15 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutToken string)
 	return res, nil
 }
 
-func (cls *SqlCheckoutLineStore) DeleteLines(transaction store_iface.SqlxTxExecutor, ids []string) error {
+func (cls *SqlCheckoutLineStore) DeleteLines(transaction store_iface.SqlxExecutor, ids []string) error {
 	var executor store_iface.SqlxExecutor = cls.GetMasterX()
 	if transaction != nil {
 		executor = transaction
 	}
 
 	query, args, err := cls.GetQueryBuilder().Delete("*").
-		From(store.CheckoutLineTableName).
-		Where(squirrel.Eq{store.CheckoutLineTableName + ".Id": ids}).
+		From(model.CheckoutLineTableName).
+		Where(squirrel.Eq{model.CheckoutLineTableName + ".Id": ids}).
 		ToSql()
 	if err != nil {
 		return errors.Wrap(err, "DeleteLines_ToSql")
@@ -158,7 +158,7 @@ func (cls *SqlCheckoutLineStore) BulkUpdate(lines []*model.CheckoutLine) error {
 	}
 	defer store.FinalizeTransaction(tx)
 
-	updateQuery := "UPDATE " + store.CheckoutLineTableName + " SET " + cls.
+	updateQuery := "UPDATE " + model.CheckoutLineTableName + " SET " + cls.
 		ModelFields("").
 		Map(func(_ int, s string) string {
 			return s + "=:" + s
@@ -194,7 +194,7 @@ func (cls *SqlCheckoutLineStore) BulkCreate(lines []*model.CheckoutLine) ([]*mod
 	}
 	defer store.FinalizeTransaction(tx)
 
-	query := "INSERT INTO " + store.CheckoutLineTableName + "(" + cls.ModelFields("").Join(",") + ") VALUES (" + cls.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.CheckoutLineTableName + "(" + cls.ModelFields("").Join(",") + ") VALUES (" + cls.ModelFields(":").Join(",") + ")"
 
 	for _, line := range lines {
 		if line != nil {
@@ -224,19 +224,19 @@ func (cls *SqlCheckoutLineStore) BulkCreate(lines []*model.CheckoutLine) ([]*mod
 // this borrows the idea from Django's prefetch_related() method
 func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutToken string) ([]*model.CheckoutLine, []*model.ProductVariant, []*model.Product, error) {
 	selectFields := append(
-		cls.ModelFields(store.CheckoutLineTableName+"."),
+		cls.ModelFields(model.CheckoutLineTableName+"."),
 		append(
-			cls.ProductVariant().ModelFields(store.ProductVariantTableName+"."),
-			cls.Product().ModelFields(store.ProductTableName+".")...,
+			cls.ProductVariant().ModelFields(model.ProductVariantTableName+"."),
+			cls.Product().ModelFields(model.ProductTableName+".")...,
 		)...,
 	)
 
 	query, args, err := cls.
 		GetQueryBuilder().
 		Select(selectFields...).
-		From(store.CheckoutLineTableName).
-		InnerJoin(store.ProductVariantTableName + " ON CheckoutLines.VariantID = ProductVariants.Id").
-		InnerJoin(store.ProductTableName + " ON ProductVariants.ProductID = Products.Id").
+		From(model.CheckoutLineTableName).
+		InnerJoin(model.ProductVariantTableName + " ON CheckoutLines.VariantID = ProductVariants.Id").
+		InnerJoin(model.ProductTableName + " ON ProductVariants.ProductID = Products.Id").
 		Where(squirrel.Eq{"CheckoutLines.CheckoutID": checkoutToken}).
 		ToSql()
 
@@ -295,10 +295,10 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 			"ProductTypes.Weight",
 			"ProductTypes.WeightUnit",
 		).
-		From(store.CheckoutLineTableName).
-		InnerJoin(store.ProductVariantTableName + " ON (CheckoutLines.VariantID = ProductVariants.Id)").
-		InnerJoin(store.ProductTableName + " ON (Products.Id = ProductVariants.ProductID)").
-		InnerJoin(store.ProductTypeTableName + " ON (ProductTypes.Id = Products.ProductTypeID)").
+		From(model.CheckoutLineTableName).
+		InnerJoin(model.ProductVariantTableName + " ON (CheckoutLines.VariantID = ProductVariants.Id)").
+		InnerJoin(model.ProductTableName + " ON (Products.Id = ProductVariants.ProductID)").
+		InnerJoin(model.ProductTypeTableName + " ON (ProductTypes.Id = Products.ProductTypeID)").
 		Where(squirrel.Eq{"CheckoutLines.Id": checkoutLineIDs}).
 		ToSql()
 	if err != nil {
@@ -363,8 +363,8 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 // CheckoutLinesByOption finds and returns checkout lines filtered using given option
 func (cls *SqlCheckoutLineStore) CheckoutLinesByOption(option *model.CheckoutLineFilterOption) ([]*model.CheckoutLine, error) {
 	query := cls.GetQueryBuilder().
-		Select(cls.ModelFields(store.CheckoutLineTableName + ".")...).
-		From(store.CheckoutLineTableName)
+		Select(cls.ModelFields(model.CheckoutLineTableName + ".")...).
+		From(model.CheckoutLineTableName)
 
 	// parse options
 	if option.Id != nil {

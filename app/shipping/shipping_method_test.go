@@ -6,7 +6,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
-	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/model"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,11 +14,11 @@ func applicableShippingMethodsByChannel(channelID string) squirrel.SelectBuilder
 	subQuery := squirrel.
 		StatementBuilder.
 		PlaceholderFormat(squirrel.Dollar).
-		Select("A", "B", fmt.Sprintf("%s.PriceAmount", store.ShippingMethodChannelListingTableName)).
-		From(store.ShippingMethodChannelListingTableName).
+		Select("A", "B", fmt.Sprintf("%s.PriceAmount", model.ShippingMethodChannelListingTableName)).
+		From(model.ShippingMethodChannelListingTableName).
 		Where(squirrel.And{
-			squirrel.Eq{fmt.Sprintf("%s.ChannelID", store.ShippingMethodChannelListingTableName): channelID},
-			squirrel.Eq{fmt.Sprintf("%s.ShippingMethodID", store.ShippingMethodChannelListingTableName): fmt.Sprintf("%s.Id", store.ShippingMethodTableName)},
+			squirrel.Eq{fmt.Sprintf("%s.ChannelID", model.ShippingMethodChannelListingTableName): channelID},
+			squirrel.Eq{fmt.Sprintf("%s.ShippingMethodID", model.ShippingMethodChannelListingTableName): fmt.Sprintf("%s.Id", model.ShippingMethodTableName)},
 		})
 
 	return subQuery

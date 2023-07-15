@@ -110,11 +110,11 @@ func (ss *SqlShopStore) Upsert(shopInstance *model.Shop) (*model.Shop, error) {
 		numUpdated int64
 	)
 	if saving {
-		query := "INSERT INTO " + store.ShopTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.ShopTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
 		_, err = ss.GetMasterX().NamedExec(query, shopInstance)
 
 	} else {
-		query := "UPDATE " + store.ShopTableName + " SET " + ss.
+		query := "UPDATE " + model.ShopTableName + " SET " + ss.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -142,10 +142,10 @@ func (ss *SqlShopStore) Upsert(shopInstance *model.Shop) (*model.Shop, error) {
 // Get finds a shop with given id and returns it
 func (ss *SqlShopStore) Get(shopID string) (*model.Shop, error) {
 	var res model.Shop
-	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShopTableName+" WHERE Id = ?", shopID)
+	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShopTableName+" WHERE Id = ?", shopID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ShopTableName, shopID)
+			return nil, store.NewErrNotFound(model.ShopTableName, shopID)
 		}
 		return nil, errors.Wrapf(err, "failed to find shop with id=%s", shopID)
 	}
@@ -158,7 +158,7 @@ func (ss *SqlShopStore) commonQueryBuilder(options *model.ShopFilterOptions) (st
 	if options.SelectRelatedCompanyAddress {
 		selectFields = append(selectFields, ss.Address().ModelFields("Addresses.")...)
 	}
-	query := ss.GetQueryBuilder().Select(selectFields...).From(store.ShopTableName)
+	query := ss.GetQueryBuilder().Select(selectFields...).From(model.ShopTableName)
 
 	if options.Id != nil {
 		query = query.Where(options.Id)
@@ -170,7 +170,7 @@ func (ss *SqlShopStore) commonQueryBuilder(options *model.ShopFilterOptions) (st
 		query = query.Where(options.Name)
 	}
 	if options.SelectRelatedCompanyAddress {
-		query = query.InnerJoin(store.AddressTableName + " ON Addresses.Id = Shops.CompanyAddressID")
+		query = query.InnerJoin(model.AddressTableName + " ON Addresses.Id = Shops.CompanyAddressID")
 	}
 
 	return query.ToSql()
@@ -232,7 +232,7 @@ func (ss *SqlShopStore) GetByOptions(options *model.ShopFilterOptions) (*model.S
 	err = row.Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ShopTableName, "options")
+			return nil, store.NewErrNotFound(model.ShopTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find shop with given options")
 	}

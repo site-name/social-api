@@ -3,6 +3,7 @@ package model
 import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/modules/util"
+	"gorm.io/gorm"
 )
 
 // max length values
@@ -48,28 +49,48 @@ var CustomerEventTypes = util.AnyArray[string]{
 }
 
 // Model used to store events that happened during the customer lifecycle
+// type CustomerEvent struct {
+// 	Id      string  `json:"id"`
+// 	Date    int64   `json:"date"`
+// 	Type    string  `json:"type"`
+// 	OrderID *string `json:"order_id"`
+// 	UserID  *string `json:"user_id"`
+// 	// To reduce number of type checking steps,
+// 	// below are possible keys and their according values's Types you must follow
+// 	//  "message": string
+// 	//  "count": int
+// 	//  "order_line_pk": string
+// 	Parameters StringInterface `json:"parameters"`
+// }
+
 type CustomerEvent struct {
-	Id      string  `json:"id"`
-	Date    int64   `json:"date"`
-	Type    string  `json:"type"`
-	OrderID *string `json:"order_id"`
-	UserID  *string `json:"user_id"`
+	Id      string  `json:"id" gorm:"primaryKey;type:uuid;defautl:gen_random_uuid()"`
+	Date    int64   `json:"date" gorm:"type:bigint;autoCreateTime:milli"`
+	Type    string  `json:"type" gorm:"type:varchar(255)"`
+	OrderID *string `json:"order_id" gorm:"type:uuid;index"`
+	UserID  *string `json:"user_id" gorm:"type:uuid;index"`
 	// To reduce number of type checking steps,
 	// below are possible keys and their according values's Types you must follow
 	//  "message": string
 	//  "count": int
 	//  "order_line_pk": string
-	Parameters StringInterface `json:"parameters"`
+	Parameters StringInterface `json:"parameters" gorm:"type:jsonb"`
+}
+
+func (c *CustomerEvent) BeforeCreate(_ *gorm.DB) error {
+	c.commonPre()
+	return c.IsValid()
+}
+
+func (c *CustomerEvent) BeforeUpdate(_ *gorm.DB) error {
+	c.commonPre()
+	return c.IsValid()
 }
 
 // CustomerEventFilterOptions used to filter customerEvent(s)
 type CustomerEventFilterOptions struct {
 	Id     squirrel.Sqlizer
 	UserID squirrel.Sqlizer
-}
-
-func (c *CustomerEvent) ToJSON() string {
-	return ModelToJson(c)
 }
 
 func (ce *CustomerEvent) IsValid() *AppError {
@@ -105,6 +126,10 @@ func (c *CustomerEvent) PreSave() {
 	if c.Date == 0 {
 		c.Date = GetMillis()
 	}
+	c.commonPre()
+}
+
+func (c *CustomerEvent) commonPre() {
 	_, ok1 := c.Parameters["currency"]
 	_, ok2 := c.Parameters["amount"]
 	if ok1 && ok2 {
@@ -124,10 +149,6 @@ type StaffNotificationRecipientFilterOptions struct {
 	UserID     squirrel.Sqlizer
 	StaffEmail squirrel.Sqlizer
 	Id         squirrel.Sqlizer
-}
-
-func (c *StaffNotificationRecipient) ToJSON() string {
-	return ModelToJson(c)
 }
 
 func (ce *StaffNotificationRecipient) IsValid() *AppError {

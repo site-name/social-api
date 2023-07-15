@@ -17,7 +17,7 @@ const (
 type ShippingZone struct {
 	Id          string `json:"id"`
 	Name        string `json:"name"`
-	Countries   string `json:"countries"` // multiple allowed, a, b, b, ...
+	Countries   string `json:"countries"` // multiple allowed. E.g: VN USA CN
 	Default     *bool  `json:"default"`   // default false
 	Description string `json:"description"`
 	CreateAt    int64  `json:"create_at"`
@@ -28,8 +28,8 @@ type ShippingZone struct {
 
 // ShippingZoneFilterOption is used to build sql queries to finds shipping zones
 type ShippingZoneFilterOption struct {
-	Id          squirrel.Sqlizer
-	Default     squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
+
 	WarehouseID squirrel.Sqlizer // INNER JOIN WarehouseShippingZones ON ... WHERE WarehouseShippingZones.WarehouseID
 	ChannelID   squirrel.Sqlizer // inner join shippingZoneChannel on ... WHERE shippingZoneChannel.ChannelID ...
 

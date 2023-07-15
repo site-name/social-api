@@ -51,11 +51,11 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *model.V
 	var numUpdated int64
 
 	if saving {
-		query := "INSERT INTO " + store.VoucherChannelListingTableName + "(" + vcls.ModelFields("").Join(",") + ") VALUES (" + vcls.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.VoucherChannelListingTableName + "(" + vcls.ModelFields("").Join(",") + ") VALUES (" + vcls.ModelFields(":").Join(",") + ")"
 		_, err = vcls.GetMasterX().NamedExec(query, voucherChannelListing)
 
 	} else {
-		query := "UPDATE " + store.VoucherChannelListingTableName + " SET " + vcls.
+		query := "UPDATE " + model.VoucherChannelListingTableName + " SET " + vcls.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -71,7 +71,7 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *model.V
 
 	if err != nil {
 		if vcls.IsUniqueConstraintError(err, VoucherChannelListingDuplicateList) {
-			return nil, store.NewErrInvalidInput(store.VoucherChannelListingTableName, "VoucherID/ChannelID", "duplicate values")
+			return nil, store.NewErrInvalidInput(model.VoucherChannelListingTableName, "VoucherID/ChannelID", "duplicate values")
 		}
 		return nil, errors.Wrapf(err, "failed to upsert voucher channel listing with id=%s", voucherChannelListing.Id)
 	}
@@ -87,10 +87,10 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *model.V
 func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (*model.VoucherChannelListing, error) {
 	var res model.VoucherChannelListing
 
-	err := vcls.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherChannelListingTableName+" WHERE Id = ?", voucherChannelListingID)
+	err := vcls.GetReplicaX().Get(&res, "SELECT * FROM "+model.VoucherChannelListingTableName+" WHERE Id = ?", voucherChannelListingID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.VoucherChannelListingTableName, voucherChannelListingID)
+			return nil, store.NewErrNotFound(model.VoucherChannelListingTableName, voucherChannelListingID)
 		}
 		return nil, errors.Wrapf(err, "failed to find voucher channel listing with id=%s", voucherChannelListingID)
 	}
@@ -103,7 +103,7 @@ func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (
 func (vcls *SqlVoucherChannelListingStore) FilterbyOption(option *model.VoucherChannelListingFilterOption) ([]*model.VoucherChannelListing, error) {
 	query := vcls.GetQueryBuilder().
 		Select("*").
-		From(store.VoucherChannelListingTableName)
+		From(model.VoucherChannelListingTableName)
 
 	// parse options
 	if option.Id != nil {

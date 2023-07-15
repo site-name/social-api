@@ -40,10 +40,10 @@ func (w *SqlWishlistItemProductVariantStore) Save(item *model.WishlistItemProduc
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.WishlistItemProductVariantTableName + "(" + w.ModelFields("").Join(",") + ") VALUES (" + w.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.WishlistItemProductVariantTableName + "(" + w.ModelFields("").Join(",") + ") VALUES (" + w.ModelFields(":").Join(",") + ")"
 	if _, err := w.GetMasterX().NamedExec(query, item); err != nil {
 		if w.IsUniqueConstraintError(err, []string{"WishlistItemID", "ProductVariantID", "wishlistitemproductvariants_wishlistitemid_productvariantid_key"}) {
-			return nil, store.NewErrInvalidInput(store.WishlistItemProductVariantTableName, "WishlistItemID/ProductVariantID", item.WishlistItemID+"/"+item.ProductVariantID)
+			return nil, store.NewErrInvalidInput(model.WishlistItemProductVariantTableName, "WishlistItemID/ProductVariantID", item.WishlistItemID+"/"+item.ProductVariantID)
 		}
 		return nil, errors.Wrapf(err, "failed to save wishlist product variant with id=%s", item.Id)
 	}
@@ -51,11 +51,11 @@ func (w *SqlWishlistItemProductVariantStore) Save(item *model.WishlistItemProduc
 	return item, nil
 }
 
-func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
+func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
 	var (
 		executor    store_iface.SqlxExecutor = w.GetMasterX()
-		saveQuery                            = "INSERT INTO " + store.WishlistItemProductVariantTableName + "(" + w.ModelFields("").Join(",") + ") VALUES (" + w.ModelFields(":").Join(",") + ")"
-		updateQuery                          = "UPDATE " + store.WishlistItemProductVariantTableName + " SET " + w.
+		saveQuery                            = "INSERT INTO " + model.WishlistItemProductVariantTableName + "(" + w.ModelFields("").Join(",") + ") VALUES (" + w.ModelFields(":").Join(",") + ")"
+		updateQuery                          = "UPDATE " + model.WishlistItemProductVariantTableName + " SET " + w.
 				ModelFields("").
 				Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -95,7 +95,7 @@ func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.
 
 		if err != nil {
 			if w.IsUniqueConstraintError(err, []string{"WishlistItemID", "ProductVariantID", "wishlistitemproductvariants_wishlistitemid_productvariantid_key"}) {
-				return nil, store.NewErrInvalidInput(store.WishlistItemProductVariantTableName, "WishlistItemID/ProductVariantID", "duplicate")
+				return nil, store.NewErrInvalidInput(model.WishlistItemProductVariantTableName, "WishlistItemID/ProductVariantID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to upsert relation with id=%s", relation.Id)
 		}
@@ -108,16 +108,16 @@ func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.
 }
 
 // GetById finds and returns a product variant-wishlist item relation and returns it
-func (w *SqlWishlistItemProductVariantStore) GetById(transaction store_iface.SqlxTxExecutor, id string) (*model.WishlistItemProductVariant, error) {
+func (w *SqlWishlistItemProductVariantStore) GetById(transaction store_iface.SqlxExecutor, id string) (*model.WishlistItemProductVariant, error) {
 	var selector store_iface.SqlxExecutor = w.GetReplicaX()
 	if transaction != nil {
 		selector = transaction
 	}
 
 	var res model.WishlistItemProductVariant
-	if err := selector.Get(&res, "SELECT * FROM "+store.WishlistItemProductVariantTableName+" WHERE Id = ?", id); err != nil {
+	if err := selector.Get(&res, "SELECT * FROM "+model.WishlistItemProductVariantTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.WishlistItemProductVariantTableName, id)
+			return nil, store.NewErrNotFound(model.WishlistItemProductVariantTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find item with Id=%s", id)
 	}
@@ -127,7 +127,7 @@ func (w *SqlWishlistItemProductVariantStore) GetById(transaction store_iface.Sql
 // DeleteRelation deletes a product variant-wishlist item relation and counts numeber of relations left in database
 func (w *SqlWishlistItemProductVariantStore) DeleteRelation(relation *model.WishlistItemProductVariant) (int64, error) {
 	query := w.GetQueryBuilder().
-		Delete(store.WishlistItemProductVariantTableName)
+		Delete(model.WishlistItemProductVariantTableName)
 	if model.IsValidId(relation.Id) {
 		query = query.Where("Id = ?", relation.Id)
 	}
@@ -156,7 +156,7 @@ func (w *SqlWishlistItemProductVariantStore) DeleteRelation(relation *model.Wish
 	}
 
 	var numOfRelationsLeft int64
-	err = w.GetMasterX().Get(&numOfRelationsLeft, "SELECT COUNT(Id) FROM "+store.WishlistItemProductVariantTableName)
+	err = w.GetMasterX().Get(&numOfRelationsLeft, "SELECT COUNT(Id) FROM "+model.WishlistItemProductVariantTableName)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count number of wishlist item-product variant left")
 	}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/modules/util"
+	"gorm.io/gorm"
 )
 
 // types for addresses, can only be "shipping" or "billing"
@@ -47,20 +48,32 @@ const (
 
 // Address contains information that tells details about an address
 type Address struct {
-	Id             string      `json:"id"`
-	FirstName      string      `json:"first_name"`
-	LastName       string      `json:"last_name"`
-	CompanyName    string      `json:"company_name,omitempty"`
-	StreetAddress1 string      `json:"street_address_1,omitempty"`
-	StreetAddress2 string      `json:"street_address_2,omitempty"`
-	City           string      `json:"city"`
-	CityArea       string      `json:"city_area,omitempty"`
-	PostalCode     string      `json:"postal_code"`
-	Country        CountryCode `json:"country"` // single value
-	CountryArea    string      `json:"country_area"`
-	Phone          string      `json:"phone"` // db_index
-	CreateAt       int64       `json:"create_at,omitempty"`
-	UpdateAt       int64       `json:"update_at,omitempty"`
+	Id             string      `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
+	FirstName      string      `json:"first_name" gorm:"type:varchar(64)"`
+	LastName       string      `json:"last_name" gorm:"type:varchar(64)"`
+	CompanyName    string      `json:"company_name,omitempty" gorm:"type:varchar(256)"`
+	StreetAddress1 string      `json:"street_address_1,omitempty" gorm:"type:varchar(256)"`
+	StreetAddress2 string      `json:"street_address_2,omitempty" gorm:"type:varchar(256)"`
+	City           string      `json:"city" gorm:"type:varchar(256)"`
+	CityArea       string      `json:"city_area,omitempty" gorm:"type:varchar(128)"`
+	PostalCode     string      `json:"postal_code" gorm:"type:varchar(20)"`
+	Country        CountryCode `json:"country" gorm:"type:varchar(3)"`
+	CountryArea    string      `json:"country_area,omitempty" gorm:"type:varchar(128)"`
+	Phone          string      `json:"phone" gorm:"db_index;type:varchar(20);index:addresses_phone_idx"`
+	CreateAt       int64       `json:"create_at,omitempty" gorm:"autoCreateTime:milli"`
+	UpdateAt       int64       `json:"update_at,omitempty" gorm:"autoUpdateTime:milli"`
+
+	Users []*User `json:"-" gorm:"many2many:user_addresses"`
+}
+
+func (a *Address) BeforeCreate(_ *gorm.DB) error {
+	a.commonPre()
+	return a.IsValid()
+}
+
+func (a *Address) BeforeUpdate(_ *gorm.DB) error {
+	a.commonPre()
+	return a.IsValid()
 }
 
 type AddressFilterOrderOption struct {
@@ -95,7 +108,7 @@ func (a *Address) String() string {
 }
 
 func (a *Address) Equal(other *Address) bool {
-	return reflect.DeepEqual(a, other)
+	return reflect.DeepEqual(*a, *other)
 }
 
 func (add *Address) ToJSON() string {
@@ -107,12 +120,6 @@ func (add *Address) PreSave() {
 	if add.Id == "" {
 		add.Id = NewId()
 	}
-	if add.FirstName == "" {
-		add.FirstName = "first_name"
-	}
-	if add.LastName == "" {
-		add.LastName = "last_name"
-	}
 
 	add.CreateAt = GetMillis()
 	add.UpdateAt = add.CreateAt
@@ -120,6 +127,12 @@ func (add *Address) PreSave() {
 }
 
 func (a *Address) commonPre() {
+	if a.FirstName == "" {
+		a.FirstName = "first_name"
+	}
+	if a.LastName == "" {
+		a.LastName = "last_name"
+	}
 	a.FirstName = SanitizeUnicode(CleanNamePart(a.FirstName, FirstName))
 	a.LastName = SanitizeUnicode(CleanNamePart(a.LastName, LastName))
 	if !a.Country.IsValid() {

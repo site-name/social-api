@@ -43,10 +43,12 @@ type StockFilterForChannelOption struct {
 
 // StockFilterOption is used for build squirrel sql queries
 type StockFilterOption struct {
-	Id               squirrel.Sqlizer
-	WarehouseID      squirrel.Sqlizer
-	ProductVariantID squirrel.Sqlizer
-	Quantity         squirrel.Sqlizer
+	// Id               squirrel.Sqlizer
+	// WarehouseID      squirrel.Sqlizer
+	// ProductVariantID squirrel.Sqlizer
+	// Quantity         squirrel.Sqlizer
+
+	Conditions squirrel.Sqlizer // all stock's native field lookup should be put here
 
 	Warehouse_ShippingZone_countries squirrel.Sqlizer // INNER JOIN Warehouses ON ... INNER JOIN WarehouseShippingZones ON ... INNER JOIN ShippingZones ON ... WHERE ShippingZones.Countries ...
 	Warehouse_ShippingZone_ChannelID squirrel.Sqlizer // INNER JOIN Warehouses ON ... INNER JOIN WarehouseShippingZones ON ... INNER JOIN ShippingZones ON ... INNER JOIN ShippingZoneChannels WHERE ShippingZoneChannels.ChannelID ...
@@ -78,7 +80,7 @@ type StockFilterOption struct {
 	// NOTE: Remember to set `LockForUpdate` to true before setting this.
 	ForUpdateOf string
 
-	PaginationValues
+	PaginationValues PaginationValues
 }
 
 type StockFilterForCountryAndChannel struct {

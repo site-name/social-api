@@ -34,7 +34,7 @@ func (a *ServiceAccount) AddressesByOption(option *model.AddressFilterOption) ([
 }
 
 // UpsertAddress depends on given address's Id to decide update or insert it
-func (a *ServiceAccount) UpsertAddress(transaction store_iface.SqlxTxExecutor, address *model.Address) (*model.Address, *model.AppError) {
+func (a *ServiceAccount) UpsertAddress(transaction store_iface.SqlxExecutor, address *model.Address) (*model.Address, *model.AppError) {
 	_, err := a.srv.Store.Address().Upsert(transaction, address)
 
 	if err != nil {
@@ -49,7 +49,7 @@ func (a *ServiceAccount) UpsertAddress(transaction store_iface.SqlxTxExecutor, a
 
 func (a *ServiceAccount) AddressesByUserId(userID string) ([]*model.Address, *model.AppError) {
 	return a.AddressesByOption(&model.AddressFilterOption{
-		UserID: squirrel.Eq{store.UserAddressTableName + ".UserID": userID},
+		UserID: squirrel.Eq{model.UserAddressTableName + ".UserID": userID},
 	})
 }
 
@@ -63,7 +63,7 @@ func (a *ServiceAccount) AddressDeleteForUser(userID, addressID string) *model.A
 	return nil
 }
 
-func (a *ServiceAccount) DeleteAddresses(transaction store_iface.SqlxTxExecutor, addressIDs ...string) *model.AppError {
+func (a *ServiceAccount) DeleteAddresses(transaction store_iface.SqlxExecutor, addressIDs ...string) *model.AppError {
 	err := a.srv.Store.Address().DeleteAddresses(transaction, addressIDs)
 	if err != nil {
 		return model.NewAppError("DeleteAddresses", "app.model.error_deleting_addresses", nil, err.Error(), http.StatusInternalServerError)
@@ -90,26 +90,26 @@ func (s *ServiceAccount) StoreUserAddress(user *model.User, address model.Addres
 
 	addressFilterOptions := squirrel.And{}
 	if address_.FirstName != "" {
-		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{store.AddressTableName + ".FirstName": address_.FirstName})
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{model.AddressTableName + ".FirstName": address_.FirstName})
 	}
 	if address_.LastName != "" {
-		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{store.AddressTableName + ".LastName": address_.LastName})
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{model.AddressTableName + ".LastName": address_.LastName})
 	}
 	if address_.CompanyName != "" {
-		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{store.AddressTableName + ".CompanyName": address_.CompanyName})
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{model.AddressTableName + ".CompanyName": address_.CompanyName})
 	}
 	if address_.Phone != "" {
-		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{store.AddressTableName + ".Phone": address_.Phone})
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{model.AddressTableName + ".Phone": address_.Phone})
 	}
 	if address_.PostalCode != "" {
-		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{store.AddressTableName + ".PostalCode": address_.PostalCode})
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{model.AddressTableName + ".PostalCode": address_.PostalCode})
 	}
 	if address_.Country != "" {
-		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{store.AddressTableName + ".Country": address_.Country})
+		addressFilterOptions = append(addressFilterOptions, squirrel.Eq{model.AddressTableName + ".Country": address_.Country})
 	}
 
 	addresses, appErr := s.AddressesByOption(&model.AddressFilterOption{
-		UserID: squirrel.Eq{store.UserAddressTableName + ".UserID": user.Id},
+		UserID: squirrel.Eq{model.UserAddressTableName + ".UserID": user.Id},
 		Other:  addressFilterOptions,
 	})
 	if appErr != nil {

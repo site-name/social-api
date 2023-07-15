@@ -11,7 +11,6 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 
 	"github.com/sitename/sitename/modules/config"
 	"github.com/sitename/sitename/modules/slog"
@@ -195,7 +194,7 @@ func populateCategoriesCmdF(command *cobra.Command, args []string) error {
 
 	slog.Info("Populating categories for the first time...")
 
-	_, err = sqlStore.GetMasterX().Exec("DELETE FROM " + store.CategoryTableName)
+	_, err = sqlStore.GetMasterX().Exec("DELETE FROM " + model.CategoryTableName)
 	if err != nil {
 		slog.Error("failed to delete categories from db")
 		return err

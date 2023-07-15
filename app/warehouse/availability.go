@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 )
 
 // getAvailableQuantity get all stocks quantity (both in stocks and their allocations) not exported
@@ -31,7 +30,7 @@ func (a *ServiceWarehouse) getAvailableQuantity(stocks model.Stocks) (int, *mode
 	}
 
 	allocations, appErr := a.AllocationsByOption(&model.AllocationFilterOption{
-		StockID: squirrel.Eq{store.AllocationTableName + ".StockID": stockIDs},
+		StockID: squirrel.Eq{model.AllocationTableName + ".StockID": stockIDs},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -167,7 +166,7 @@ func (a *ServiceWarehouse) CheckStockQuantityBulk(
 	allVariantStockFilterOption := &model.StockFilterForCountryAndChannel{
 		CountryCode:              countryCode,
 		ChannelSlug:              channelSlug,
-		ProductVariantIDFilter:   squirrel.Eq{store.StockTableName + ".ProductVariantID": variants.IDs()},
+		ProductVariantIDFilter:   squirrel.Eq{model.StockTableName + ".ProductVariantID": variants.IDs()},
 		AnnotateAvailabeQuantity: true,
 	}
 
@@ -255,7 +254,7 @@ type structObject struct {
 // :raises InsufficientStock: when there is not enough available items for a variant.
 func (s *ServiceWarehouse) CheckPreorderThresholdBulk(variants model.ProductVariants, quantities []int, channelSlug string) (*model.InsufficientStock, *model.AppError) {
 	allVariantChannelListings, appErr := s.srv.ProductService().ProductVariantChannelListingsByOption(&model.ProductVariantChannelListingFilterOption{
-		VariantID:                         squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
+		VariantID:                         squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": variants.IDs()},
 		SelectRelatedChannel:              true,
 		AnnotatePreorderQuantityAllocated: true,
 		AnnotateAvailablePreorderQuantity: true,

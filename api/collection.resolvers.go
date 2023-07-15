@@ -36,7 +36,7 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 
 	/* check if there is at least 1 product that has no variant */
 	productVariants, appErr := embedCtx.App.Srv().ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
-		ProductID: squirrel.Eq{store.ProductVariantTableName + ".ProductID": args.Products},
+		ProductID: squirrel.Eq{model.ProductVariantTableName + ".ProductID": args.Products},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -169,8 +169,8 @@ func (r *Resolver) CollectionRemoveProducts(ctx context.Context, args struct {
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	err := embedCtx.App.Srv().Store.CollectionProduct().Delete(nil, &model.CollectionProductFilterOptions{
-		CollectionID: squirrel.Eq{store.CollectionProductRelationTableName + ".CollectionID": args.CollectionID},
-		ProductID:    squirrel.Eq{store.CollectionProductRelationTableName + ".ProductID": args.Products},
+		CollectionID: squirrel.Eq{model.CollectionProductRelationTableName + ".CollectionID": args.CollectionID},
+		ProductID:    squirrel.Eq{model.CollectionProductRelationTableName + ".ProductID": args.Products},
 	})
 	if err != nil {
 		return nil, model.NewAppError("CollectionRemoveProducts", "app.product.remove_collection_products.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -195,7 +195,7 @@ func (r *Resolver) CollectionRemoveProducts(ctx context.Context, args struct {
 	}
 
 	collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(&model.CollectionFilterOption{
-		Id: squirrel.Eq{store.CollectionTableName + ".Id": args.CollectionID},
+		Id: squirrel.Eq{model.CollectionTableName + ".Id": args.CollectionID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -262,8 +262,8 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args stru
 
 	// delete collection-channel listings
 	err = embedCtx.App.Srv().Store.CollectionChannelListing().Delete(transaction, &model.CollectionChannelListingFilterOptions{
-		CollectionID: squirrel.Eq{store.CollectionChannelListingTableName + ".CollectionID": args.Id},
-		ChannelID:    squirrel.Eq{store.CollectionChannelListingTableName + ".ChannelID": removeChannelIds},
+		CollectionID: squirrel.Eq{model.CollectionChannelListingTableName + ".CollectionID": args.Id},
+		ChannelID:    squirrel.Eq{model.CollectionChannelListingTableName + ".ChannelID": removeChannelIds},
 	})
 	if err != nil {
 		return nil, model.NewAppError("CollectionChannelListingUpdate", "app.product.error_deleting_collection_channel_listings.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -307,7 +307,7 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args stru
 	}
 
 	collections, appErr := embedCtx.App.Srv().ProductService().CollectionsByOption(&model.CollectionFilterOption{
-		Id: squirrel.Eq{store.CollectionTableName + ".Id": args.Id},
+		Id: squirrel.Eq{model.CollectionTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr

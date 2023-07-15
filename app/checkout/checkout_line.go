@@ -17,7 +17,7 @@ func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]
 	return lines, nil
 }
 
-func (a *ServiceCheckout) DeleteCheckoutLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) *model.AppError {
+func (a *ServiceCheckout) DeleteCheckoutLines(transaction store_iface.SqlxExecutor, checkoutLineIDs []string) *model.AppError {
 	err := a.srv.Store.CheckoutLine().DeleteLines(transaction, checkoutLineIDs)
 	if err != nil {
 		return model.NewAppError("DeleteCheckoutLines", "app.checkout.error_deleting_checkoutlines.app_error", nil, err.Error(), http.StatusInternalServerError)

@@ -20,7 +20,7 @@ import (
 )
 
 // UpsertOrder depends on given order's Id property to decide update/save it
-func (a *ServiceOrder) UpsertOrder(transaction store_iface.SqlxTxExecutor, order *model.Order) (*model.Order, *model.AppError) {
+func (a *ServiceOrder) UpsertOrder(transaction store_iface.SqlxExecutor, order *model.Order) (*model.Order, *model.AppError) {
 	orders, err := a.srv.Store.Order().BulkUpsert(transaction, []*model.Order{order})
 
 	if err != nil {
@@ -38,7 +38,7 @@ func (a *ServiceOrder) UpsertOrder(transaction store_iface.SqlxTxExecutor, order
 }
 
 // BulkUpsertOrders performs bulk upsert given orders
-func (a *ServiceOrder) BulkUpsertOrders(transaction store_iface.SqlxTxExecutor, orders []*model.Order) ([]*model.Order, *model.AppError) {
+func (a *ServiceOrder) BulkUpsertOrders(transaction store_iface.SqlxExecutor, orders []*model.Order) ([]*model.Order, *model.AppError) {
 	orders, err := a.srv.Store.Order().BulkUpsert(transaction, orders)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok { // error caused by IsValid()
@@ -82,7 +82,7 @@ func (a *ServiceOrder) OrderById(id string) (*model.Order, *model.AppError) {
 // OrderShippingIsRequired returns a boolean value indicating that given order requires shipping or not
 func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": orderID},
+		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderID},
 	})
 	if appErr != nil {
 		return false, appErr
@@ -94,7 +94,7 @@ func (a *ServiceOrder) OrderShippingIsRequired(orderID string) (bool, *model.App
 // OrderTotalQuantity return total quantity of given order
 func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": orderID},
+		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderID},
 	})
 	if appErr != nil {
 		return 0, appErr
@@ -109,9 +109,9 @@ func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError)
 }
 
 // UpdateOrderTotalPaid update given order's total paid amount
-func (a *ServiceOrder) UpdateOrderTotalPaid(transaction store_iface.SqlxTxExecutor, orDer *model.Order) *model.AppError {
+func (a *ServiceOrder) UpdateOrderTotalPaid(transaction store_iface.SqlxExecutor, orDer *model.Order) *model.AppError {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		OrderID: squirrel.Eq{store.PaymentTableName + ".OrderID": orDer.Id},
+		OrderID: squirrel.Eq{model.PaymentTableName + ".OrderID": orDer.Id},
 	})
 	if appErr != nil {
 		return appErr
@@ -137,9 +137,9 @@ func (a *ServiceOrder) UpdateOrderTotalPaid(transaction store_iface.SqlxTxExecut
 // OrderIsPreAuthorized checks if order is pre-authorized
 func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		OrderID:                    squirrel.Eq{store.PaymentTableName + ".OrderID": orderID},
+		OrderID:                    squirrel.Eq{model.PaymentTableName + ".OrderID": orderID},
 		IsActive:                   model.NewPrimitive(true),
-		TransactionsKind:           squirrel.Eq{store.TransactionTableName + ".Kind": model.AUTH},
+		TransactionsKind:           squirrel.Eq{model.TransactionTableName + ".Kind": model.AUTH},
 		TransactionsActionRequired: model.NewPrimitive(false),
 		TransactionsIsSuccess:      model.NewPrimitive(true),
 	})
@@ -153,9 +153,9 @@ func (a *ServiceOrder) OrderIsPreAuthorized(orderID string) (bool, *model.AppErr
 // OrderIsCaptured checks if given order is captured
 func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		OrderID:                    squirrel.Eq{store.PaymentTableName + ".OrderID": orderID},
+		OrderID:                    squirrel.Eq{model.PaymentTableName + ".OrderID": orderID},
 		IsActive:                   model.NewPrimitive(true),
-		TransactionsKind:           squirrel.Eq{store.TransactionTableName + ".Kind": model.CAPTURE},
+		TransactionsKind:           squirrel.Eq{model.TransactionTableName + ".Kind": model.CAPTURE},
 		TransactionsActionRequired: model.NewPrimitive(false),
 		TransactionsIsSuccess:      model.NewPrimitive(true),
 	})
@@ -169,7 +169,7 @@ func (a *ServiceOrder) OrderIsCaptured(orderID string) (bool, *model.AppError) {
 // OrderSubTotal returns sum of TotalPrice of all order lines that belong to given order
 func (a *ServiceOrder) OrderSubTotal(ord *model.Order) (*goprices.TaxedMoney, *model.AppError) {
 	lines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
+		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -181,8 +181,8 @@ func (a *ServiceOrder) OrderSubTotal(ord *model.Order) (*goprices.TaxedMoney, *m
 // OrderCanCalcel checks if given order can be canceled
 func (a *ServiceOrder) OrderCanCancel(ord *model.Order) (bool, *model.AppError) {
 	fulfillments, err := a.FulfillmentsByOption(nil, &model.FulfillmentFilterOption{
-		OrderID: squirrel.Eq{store.FulfillmentTableName + ".OrderID": ord.Id},
-		Status: squirrel.NotEq{store.FulfillmentTableName + ".Status": []string{
+		OrderID: squirrel.Eq{model.FulfillmentTableName + ".OrderID": ord.Id},
+		Status: squirrel.NotEq{model.FulfillmentTableName + ".Status": []string{
 			string(model.FULFILLMENT_CANCELED),
 			string(model.FULFILLMENT_REFUNDED),
 			string(model.FULFILLMENT_RETURNED),
@@ -263,7 +263,7 @@ func (a *ServiceOrder) CanMarkOrderAsPaid(ord *model.Order, payments []*model.Pa
 	var appErr *model.AppError
 	if len(payments) == 0 {
 		payments, appErr = a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-			OrderID: squirrel.Eq{store.PaymentTableName + ".OrderID": ord.Id},
+			OrderID: squirrel.Eq{model.PaymentTableName + ".OrderID": ord.Id},
 		})
 	}
 
@@ -310,7 +310,7 @@ func (a *ServiceOrder) CustomerEmail(ord *model.Order) (string, *model.AppError)
 func (a *ServiceOrder) AnAddressOfOrder(orderID string, whichAddressID model.WhichOrderAddressID) (*model.Address, *model.AppError) {
 	addresses, appErr := a.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
 		OrderID: &model.AddressFilterOrderOption{
-			Id: squirrel.Eq{store.OrderTableName + ".Id": orderID},
+			Id: squirrel.Eq{model.OrderTableName + ".Id": orderID},
 			On: whichAddressID,
 		},
 	})

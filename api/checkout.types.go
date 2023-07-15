@@ -11,7 +11,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -301,7 +300,7 @@ func (c *Checkout) GiftCards(ctx context.Context) ([]*GiftCard, error) {
 		Srv().
 		GiftcardService().
 		GiftcardsByOption(&model.GiftCardFilterOption{
-			CheckoutToken: squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": c.Token},
+			CheckoutToken: squirrel.Eq{model.GiftcardCheckoutTableName + ".CheckoutID": c.Token},
 		})
 	if appErr != nil {
 		return nil, appErr
@@ -529,8 +528,8 @@ func checkoutByUserAndChannelLoader(ctx context.Context, keys []string) []*datal
 		CheckoutService().
 		CheckoutsByOption(&model.CheckoutFilterOption{
 			ChannelIsActive: model.NewPrimitive(true),
-			UserID:          squirrel.Eq{store.CheckoutTableName + ".UserID": userIDs},
-			ChannelID:       squirrel.Eq{store.CheckoutTableName + ".ChannelID": channelIDs},
+			UserID:          squirrel.Eq{model.CheckoutTableName + ".UserID": userIDs},
+			ChannelID:       squirrel.Eq{model.CheckoutTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
 		for idx := range keys {
@@ -565,7 +564,7 @@ func checkoutByUserLoader(ctx context.Context, userIDs []string) []*dataloader.R
 		CheckoutService().
 		CheckoutsByOption(&model.CheckoutFilterOption{
 			ChannelIsActive: model.NewPrimitive(true),
-			UserID:          squirrel.Eq{store.CheckoutTableName + ".UserID": userIDs},
+			UserID:          squirrel.Eq{model.CheckoutTableName + ".UserID": userIDs},
 		})
 	if appErr != nil {
 		for idx := range userIDs {
@@ -594,7 +593,7 @@ func checkoutByTokenLoader(ctx context.Context, tokens []string) []*dataloader.R
 		Srv().
 		CheckoutService().
 		CheckoutsByOption(&model.CheckoutFilterOption{
-			Token: squirrel.Eq{store.CheckoutTableName + ".Token": tokens},
+			Token: squirrel.Eq{model.CheckoutTableName + ".Token": tokens},
 		})
 	if appErr != nil {
 		for idx := range tokens {

@@ -80,3 +80,11 @@ func (r *Resolver) Products(ctx context.Context, args struct {
 }) (*ProductCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+func (r *Resolver) ReportProductSales(ctx context.Context, args struct {
+	Period  ReportingPeriod
+	Channel string
+	GraphqlParams
+}) (*ProductVariantCountableConnection, error) {
+	panic(fmt.Errorf("not implemented"))
+}

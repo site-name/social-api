@@ -52,10 +52,10 @@ func (as *SqlAssignedPageAttributeValueStore) Save(assignedPageAttrValue *model.
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.AssignedPageAttributeValueTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.AssignedPageAttributeValueTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 	if _, err := as.GetMasterX().NamedExec(query, assignedPageAttrValue); err != nil {
 		if as.IsUniqueConstraintError(err, assignedPageAttrValueDuplicateKeys) {
-			return nil, store.NewErrInvalidInput(store.AssignedPageAttributeValueTableName, "ValueID/AssignmentID", assignedPageAttrValue.ValueID+"/"+assignedPageAttrValue.AssignmentID)
+			return nil, store.NewErrInvalidInput(model.AssignedPageAttributeValueTableName, "ValueID/AssignmentID", assignedPageAttrValue.ValueID+"/"+assignedPageAttrValue.AssignmentID)
 		}
 		return nil, errors.Wrapf(err, "failed to save assigned page attribute value with id=%s", assignedPageAttrValue.Id)
 	}
@@ -66,10 +66,10 @@ func (as *SqlAssignedPageAttributeValueStore) Save(assignedPageAttrValue *model.
 func (as *SqlAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string) (*model.AssignedPageAttributeValue, error) {
 	var res model.AssignedPageAttributeValue
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedPageAttributeValueTableName+" WHERE Id = ?", assignedPageAttrValueID)
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedPageAttributeValueTableName+" WHERE Id = ?", assignedPageAttrValueID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AssignedPageAttributeValueTableName, assignedPageAttrValueID)
+			return nil, store.NewErrNotFound(model.AssignedPageAttributeValueTableName, assignedPageAttrValueID)
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned page attribute value with id=%s", assignedPageAttrValueID)
 	}
@@ -99,9 +99,9 @@ func (as *SqlAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, at
 
 func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedPageAttributeValue, []*model.AttributeValue, error) {
 	query, args, err := as.GetQueryBuilder().
-		Select(append(as.ModelFields(store.AssignedPageAttributeValueTableName+"."), as.AttributeValue().ModelFields(store.AttributeValueTableName+".")...)...).
-		From(store.AssignedPageAttributeValueTableName).
-		InnerJoin(store.AttributeValueTableName + " ON (AttributeValues.Id = AssignedPageAttributeValues.ValueID)").
+		Select(append(as.ModelFields(model.AssignedPageAttributeValueTableName+"."), as.AttributeValue().ModelFields(model.AttributeValueTableName+".")...)...).
+		From(model.AssignedPageAttributeValueTableName).
+		InnerJoin(model.AttributeValueTableName + " ON (AttributeValues.Id = AssignedPageAttributeValues.ValueID)").
 		Where(squirrel.Eq{"AssignedPageAttributeValues.AssignmentID": assignmentID}).
 		ToSql()
 
@@ -139,7 +139,7 @@ func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string)
 }
 
 func (as *SqlAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedPageAttributeValue) error {
-	query := "UPDATE " + store.AssignedPageAttributeValueTableName + " SET " + as.
+	query := "UPDATE " + model.AssignedPageAttributeValueTableName + " SET " + as.
 		ModelFields("").
 		Map(func(_ int, s string) string {
 			return s + "=:" + s
@@ -151,7 +151,7 @@ func (as *SqlAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*mo
 		if err != nil {
 			// check if error is duplicate conflict error:
 			if as.IsUniqueConstraintError(err, assignedPageAttrValueDuplicateKeys) {
-				return store.NewErrInvalidInput(store.AssignedPageAttributeValueTableName, "ValueID/AssignmentID", value.ValueID+"/"+value.AssignmentID)
+				return store.NewErrInvalidInput(model.AssignedPageAttributeValueTableName, "ValueID/AssignmentID", value.ValueID+"/"+value.AssignmentID)
 			}
 			return errors.Wrapf(err, "failed to update value with id=%s", value.Id)
 		}

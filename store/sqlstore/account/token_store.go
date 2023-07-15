@@ -40,7 +40,7 @@ func (s *SqlTokenStore) Save(token *model.Token) error {
 		return err
 	}
 
-	query := "INSERT INTO " + store.TokenTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.TokenTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
 	if _, err := s.GetMasterX().NamedExec(query, token); err != nil {
 		return errors.Wrap(err, "failed to save token")
 	}
@@ -49,7 +49,7 @@ func (s *SqlTokenStore) Save(token *model.Token) error {
 }
 
 func (s *SqlTokenStore) Delete(token string) error {
-	if _, err := s.GetMasterX().Exec("DELETE FROM "+store.TokenTableName+" WHERE Token = ?", token); err != nil {
+	if _, err := s.GetMasterX().Exec("DELETE FROM "+model.TokenTableName+" WHERE Token = ?", token); err != nil {
 		return errors.Wrapf(err, "failed to delete Token with value %s", token)
 	}
 	return nil
@@ -58,7 +58,7 @@ func (s *SqlTokenStore) Delete(token string) error {
 func (s *SqlTokenStore) GetByToken(tokenString string) (*model.Token, error) {
 	var token model.Token
 
-	if err := s.GetReplicaX().Get(token, "SELECT * FROM "+store.TokenTableName+" WHERE Token = ?", token); err != nil {
+	if err := s.GetReplicaX().Get(token, "SELECT * FROM "+model.TokenTableName+" WHERE Token = ?", token); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound("Token", fmt.Sprintf("Token=%s", tokenString))
 		}
@@ -72,7 +72,7 @@ func (s *SqlTokenStore) Cleanup() {
 	slog.Debug("Cleaning up token store.")
 
 	deltime := model.GetMillis() - model.MAX_TOKEN_EXIPRY_TIME
-	if _, err := s.GetMasterX().Exec("DELETE FROM "+store.TokenTableName+" WHERE CreateAt < ?", deltime); err != nil {
+	if _, err := s.GetMasterX().Exec("DELETE FROM "+model.TokenTableName+" WHERE CreateAt < ?", deltime); err != nil {
 		slog.Error("Unable to cleanup token store.")
 	}
 }
@@ -87,7 +87,7 @@ func (s *SqlTokenStore) RemoveAllTokensByType(tokenType string) error {
 
 func (s *SqlTokenStore) GetAllTokensByType(tokenType string) ([]*model.Token, error) {
 	var tokens []*model.Token
-	if err := s.GetReplicaX().Select(&tokens, "SELECT * FROM "+store.TokenTableName+" WHERE Type = ?", tokenType); err != nil {
+	if err := s.GetReplicaX().Select(&tokens, "SELECT * FROM "+model.TokenTableName+" WHERE Type = ?", tokenType); err != nil {
 		return nil, errors.Wrapf(err, "failed to find tokens with type=%s", tokenType)
 	}
 

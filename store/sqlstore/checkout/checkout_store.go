@@ -83,13 +83,13 @@ func (cs *SqlCheckoutStore) ScanFields(checkOut *model.Checkout) []interface{} {
 }
 
 // Upsert depends on given checkout's Token property to decide to update or insert it
-func (cs *SqlCheckoutStore) Upsert(transaction store_iface.SqlxTxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, error) {
+func (cs *SqlCheckoutStore) Upsert(transaction store_iface.SqlxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, error) {
 	runner := cs.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
-	saveQuery := "INSERT INTO " + store.CheckoutTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
-	updateQuery := "UPDATE " + store.CheckoutTableName + " SET " + cs.
+	saveQuery := "INSERT INTO " + model.CheckoutTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
+	updateQuery := "UPDATE " + model.CheckoutTableName + " SET " + cs.
 		ModelFields("").
 		Map(func(_ int, s string) string {
 			return s + "=:" + s
@@ -119,7 +119,7 @@ func (cs *SqlCheckoutStore) Upsert(transaction store_iface.SqlxTxExecutor, check
 		} else {
 
 			var oldCheckout model.Checkout
-			eror := runner.Get(&oldCheckout, "SELECT * FROM "+store.CheckoutTableName+" WHERE Token = $1", checkout.Token)
+			eror := runner.Get(&oldCheckout, "SELECT * FROM "+model.CheckoutTableName+" WHERE Token = $1", checkout.Token)
 			if eror != nil {
 				return nil, eror
 			}
@@ -167,21 +167,21 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *model.CheckoutFilte
 	}
 
 	if statementType == slect {
-		selectFields := cs.ModelFields(store.CheckoutTableName + ".")
+		selectFields := cs.ModelFields(model.CheckoutTableName + ".")
 		if option.SelectRelatedChannel {
-			selectFields = append(selectFields, cs.Channel().ModelFields(store.ChannelTableName+".")...)
+			selectFields = append(selectFields, cs.Channel().ModelFields(model.ChannelTableName+".")...)
 		}
 		if option.SelectRelatedBillingAddress {
-			selectFields = append(selectFields, cs.Address().ModelFields(store.AddressTableName+".")...)
+			selectFields = append(selectFields, cs.Address().ModelFields(model.AddressTableName+".")...)
 		}
 
 		query := cs.GetQueryBuilder().
 			Select(selectFields...).
-			From(store.CheckoutTableName).
+			From(model.CheckoutTableName).
 			Where(andCondition)
 
 		if option.SelectRelatedChannel || option.ChannelIsActive != nil {
-			query = query.InnerJoin(store.ChannelTableName + " ON Checkouts.ChannelID = Channels.Id")
+			query = query.InnerJoin(model.ChannelTableName + " ON Checkouts.ChannelID = Channels.Id")
 		}
 
 		if option.Limit > 0 {
@@ -191,7 +191,7 @@ func (cs *SqlCheckoutStore) commonFilterQueryBuilder(option *model.CheckoutFilte
 		return query
 	}
 
-	return cs.GetQueryBuilder().Delete(store.CheckoutTableName).Where(andCondition)
+	return cs.GetQueryBuilder().Delete(model.CheckoutTableName).Where(andCondition)
 }
 
 // GetByOption finds and returns 1 checkout based on given option
@@ -219,7 +219,7 @@ func (cs *SqlCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*mo
 	err = cs.GetReplicaX().QueryRowX(query, args...).Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CheckoutTableName, "option")
+			return nil, store.NewErrNotFound(model.CheckoutTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to scan a checkout")
 	}
@@ -291,7 +291,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 	)
 	err := cs.GetReplicaX().Select(
 		&checkoutLines,
-		"SELECT * FROM "+store.CheckoutLineTableName+" WHERE CheckoutID = ? ORDER BY CreateAt ASC",
+		"SELECT * FROM "+model.CheckoutLineTableName+" WHERE CheckoutID = ? ORDER BY CreateAt ASC",
 		ckout.Token,
 	)
 	if err != nil {
@@ -310,8 +310,8 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 	if len(productVariantIDs) > 0 {
 
 		queryString, args, _ := cs.GetQueryBuilder().Select("*").
-			From(store.ProductVariantTableName).
-			Where(squirrel.Eq{store.ProductVariantTableName + ".Id": productVariantIDs}).
+			From(model.ProductVariantTableName).
+			Where(squirrel.Eq{model.ProductVariantTableName + ".Id": productVariantIDs}).
 			ToSql()
 
 		err = cs.GetReplicaX().Select(
@@ -337,8 +337,8 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 	// check if we can proceed:
 	if len(productIDs) > 0 {
 		query, args, _ := cs.GetQueryBuilder().Select("*").
-			From(store.ProductTableName).
-			Where(squirrel.Eq{store.ProductTableName + ".Id": productIDs}).
+			From(model.ProductTableName).
+			Where(squirrel.Eq{model.ProductTableName + ".Id": productIDs}).
 			ToSql()
 
 		err = cs.GetReplicaX().Select(
@@ -366,10 +366,10 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 	// check if we can proceed
 	if len(productIDs) > 0 {
 		query, args, _ := cs.GetQueryBuilder().
-			Select(cs.Collection().ModelFields(store.CollectionTableName + ".")...).
-			From(store.CollectionTableName).
+			Select(cs.Collection().ModelFields(model.CollectionTableName + ".")...).
+			From(model.CollectionTableName).
 			Column("ProductCollections.ProductID AS PrefetchRelatedValProductID"). // extra collumn
-			InnerJoin(store.CollectionProductRelationTableName + " ON (ProductCollections.CollectionID = Collections.Id)").
+			InnerJoin(model.CollectionProductRelationTableName + " ON (ProductCollections.CollectionID = Collections.Id)").
 			Where(squirrel.Eq{"ProductCollections.ProductID": productIDs}).
 			ToSql()
 
@@ -392,8 +392,8 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 	// check if we can proceed:
 	if len(productVariantIDs) > 0 {
 		query, args, _ := cs.GetQueryBuilder().Select("*").
-			From(store.ProductVariantChannelListingTableName).
-			Where(squirrel.Eq{store.ProductVariantChannelListingTableName + ".VariantID": productVariantIDs}).
+			From(model.ProductVariantChannelListingTableName).
+			Where(squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": productVariantIDs}).
 			ToSql()
 
 		err = cs.GetReplicaX().Select(
@@ -415,7 +415,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 	if len(channelIDs) > 0 {
 		err = cs.GetReplicaX().Select(
 			&channels,
-			"SELECT * FROM "+store.ChannelTableName+" WHERE Id in ? ORDER BY Slug ASC",
+			"SELECT * FROM "+model.ChannelTableName+" WHERE Id in ? ORDER BY Slug ASC",
 			channelIDs,
 		)
 		if err != nil {
@@ -433,7 +433,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 	if len(productTypeIDs) > 0 {
 		query, args, _ := cs.GetQueryBuilder().
 			Select("*").
-			From(store.ProductTypeTableName).
+			From(model.ProductTypeTableName).
 			Where(squirrel.Eq{"Id": productTypeIDs}).
 			ToSql()
 		err = cs.GetReplicaX().Select(
@@ -491,7 +491,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 
 // DeleteCheckoutsByOption deletes checkout row(s) from database, filtered using given option.
 // It returns an error indicating if the operation was performed successfully.
-func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *model.CheckoutFilterOption) error {
+func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxExecutor, option *model.CheckoutFilterOption) error {
 	var runner = cs.GetMasterX()
 	if transaction != nil {
 		runner = transaction

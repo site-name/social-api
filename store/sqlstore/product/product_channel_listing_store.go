@@ -57,15 +57,15 @@ func (ps *SqlProductChannelListingStore) ScanFields(prd *model.ProductChannelLis
 }
 
 // BulkUpsert performs bulk upsert on given product channel listings
-func (ps *SqlProductChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
+func (ps *SqlProductChannelListingStore) BulkUpsert(transaction store_iface.SqlxExecutor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
 	runner := ps.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
 
 	var (
-		saveQuery   = "INSERT INTO " + store.ProductChannelListingTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
-		updateQuery = "UPDATE " + store.ProductChannelListingTableName + " SET " + ps.
+		saveQuery   = "INSERT INTO " + model.ProductChannelListingTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+		updateQuery = "UPDATE " + model.ProductChannelListingTableName + " SET " + ps.
 				ModelFields("").
 				Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -99,7 +99,7 @@ func (ps *SqlProductChannelListingStore) BulkUpsert(transaction store_iface.Sqlx
 
 		if err != nil {
 			if ps.IsUniqueConstraintError(err, []string{"ProductID", "ChannelID", "productchannellistings_productid_channelid_key"}) {
-				return nil, store.NewErrInvalidInput(store.ProductChannelListingTableName, "ProductID/ChannelID", "duplicate")
+				return nil, store.NewErrInvalidInput(model.ProductChannelListingTableName, "ProductID/ChannelID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to upsert product channel listing with id=%s", listing.Id)
 		}
@@ -111,10 +111,10 @@ func (ps *SqlProductChannelListingStore) BulkUpsert(transaction store_iface.Sqlx
 func (ps *SqlProductChannelListingStore) Get(listingID string) (*model.ProductChannelListing, error) {
 	var res model.ProductChannelListing
 
-	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.ProductChannelListingTableName+" WHERE Id = ?", listingID)
+	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.ProductChannelListingTableName+" WHERE Id = ?", listingID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductChannelListingTableName, listingID)
+			return nil, store.NewErrNotFound(model.ProductChannelListingTableName, listingID)
 		}
 		return nil, errors.Wrapf(err, "failed to find product channel listing with id=%s", listingID)
 	}
@@ -126,8 +126,8 @@ func (ps *SqlProductChannelListingStore) Get(listingID string) (*model.ProductCh
 func (ps *SqlProductChannelListingStore) FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error) {
 	query := ps.
 		GetQueryBuilder().
-		Select(ps.ModelFields(store.ProductChannelListingTableName + ".")...).
-		From(store.ProductChannelListingTableName)
+		Select(ps.ModelFields(model.ProductChannelListingTableName + ".")...).
+		From(model.ProductChannelListingTableName)
 
 	// parse option
 	if option.Id != nil {
@@ -141,7 +141,7 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *model.ProductCha
 	}
 	if option.ChannelSlug != nil && *option.ChannelSlug != "" {
 		query = query.
-			InnerJoin(store.ChannelTableName + " ON Channels.Id = ProductChannelListings.ChannelID").
+			InnerJoin(model.ChannelTableName + " ON Channels.Id = ProductChannelListings.ChannelID").
 			Where(squirrel.Eq{"Channels.ChannelSlug": *option.ChannelSlug})
 	}
 	if option.VisibleInListings != nil {
@@ -156,8 +156,8 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *model.ProductCha
 
 	if option.ProductVariantsId != nil {
 		query = query.
-			InnerJoin(store.ProductTableName + " ON Products.Id = ProductChannelListings.ProductID").
-			InnerJoin(store.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
+			InnerJoin(model.ProductTableName + " ON Products.Id = ProductChannelListings.ProductID").
+			InnerJoin(model.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
 			Where(option.ProductVariantsId)
 	}
 	if option.PublicationDate != nil {
@@ -183,7 +183,7 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *model.ProductCha
 		channelIDs := listings.ChannelIDs()
 		if len(channelIDs) > 0 {
 			channels, err := ps.Channel().FilterByOption(&model.ChannelFilterOption{
-				Id: squirrel.Eq{store.ChannelTableName + ".Id": channelIDs},
+				Id: squirrel.Eq{model.ChannelTableName + ".Id": channelIDs},
 			})
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to find channels by IDs")

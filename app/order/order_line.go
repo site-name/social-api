@@ -11,7 +11,7 @@ import (
 )
 
 // UpsertOrderLine depends on given orderLine's Id property to decide update order save it
-func (a *ServiceOrder) UpsertOrderLine(transaction store_iface.SqlxTxExecutor, orderLine *model.OrderLine) (*model.OrderLine, *model.AppError) {
+func (a *ServiceOrder) UpsertOrderLine(transaction store_iface.SqlxExecutor, orderLine *model.OrderLine) (*model.OrderLine, *model.AppError) {
 	orderLine, err := a.srv.Store.OrderLine().Upsert(transaction, orderLine)
 	if err != nil {
 		status := http.StatusInternalServerError
@@ -58,7 +58,7 @@ func (a *ServiceOrder) OrderLinesByOption(option *model.OrderLineFilterOption) (
 // AllDigitalOrderLinesOfOrder finds all order lines belong to given order, and are digital products
 func (a *ServiceOrder) AllDigitalOrderLinesOfOrder(orderID string) ([]*model.OrderLine, *model.AppError) {
 	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": orderID},
+		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -139,7 +139,7 @@ func (a *ServiceOrder) OrderLineIsDigital(orderLine *model.OrderLine) (bool, *mo
 
 	// check if there is a digital content accompanies order line's product variant:
 	digitalContent, appErr := a.srv.ProductService().DigitalContentbyOption(&model.DigitalContentFilterOption{
-		ProductVariantID: squirrel.Eq{store.DigitalContentTableName + ".ProductVariantID": *orderLine.VariantID},
+		ProductVariantID: squirrel.Eq{model.DigitalContentTableName + ".ProductVariantID": *orderLine.VariantID},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {
@@ -157,7 +157,7 @@ func (a *ServiceOrder) OrderLineIsDigital(orderLine *model.OrderLine) (bool, *mo
 }
 
 // BulkUpsertOrderLines perform bulk upsert given order lines
-func (a *ServiceOrder) BulkUpsertOrderLines(transaction store_iface.SqlxTxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, *model.AppError) {
+func (a *ServiceOrder) BulkUpsertOrderLines(transaction store_iface.SqlxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, *model.AppError) {
 	orderLines, err := a.srv.Store.OrderLine().BulkUpsert(transaction, orderLines)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

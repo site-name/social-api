@@ -5,7 +5,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
@@ -31,7 +30,7 @@ func (a *ServicePayment) TransactionsByOption(option *model.PaymentTransactionFi
 
 func (a *ServicePayment) GetAllPaymentTransactions(paymentID string) ([]*model.PaymentTransaction, *model.AppError) {
 	transactions, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
-		PaymentID: squirrel.Eq{store.TransactionTableName + ".PaymentID": paymentID},
+		PaymentID: squirrel.Eq{model.TransactionTableName + ".PaymentID": paymentID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -60,7 +59,7 @@ func (a *ServicePayment) GetLastPaymentTransaction(paymentID string) (*model.Pay
 	return lastTran, nil
 }
 
-func (a *ServicePayment) SaveTransaction(transaction store_iface.SqlxTxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model.AppError) {
+func (a *ServicePayment) SaveTransaction(transaction store_iface.SqlxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model.AppError) {
 	paymentTransaction, err := a.srv.Store.PaymentTransaction().Save(transaction, paymentTransaction)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

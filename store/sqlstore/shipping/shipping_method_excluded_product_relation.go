@@ -50,11 +50,11 @@ func (ss *SqlShippingMethodExcludedProductStore) Save(instance *model.ShippingMe
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.ShippingMethodExcludedProductTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ") ON CONFLICT ON CONSTRAINT " + shippingMethodExcludedProductUniqueConstraint + " DO NOTHING"
+	query := "INSERT INTO " + model.ShippingMethodExcludedProductTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ") ON CONFLICT ON CONSTRAINT " + shippingMethodExcludedProductUniqueConstraint + " DO NOTHING"
 	_, err := ss.GetMasterX().NamedExec(query, instance)
 	if err != nil {
 		if ss.IsUniqueConstraintError(err, []string{"ShippingMethodID", "ProductID", shippingMethodExcludedProductUniqueConstraint}) {
-			return nil, store.NewErrInvalidInput(store.ShippingMethodExcludedProductTableName, "ShippingMethodID/ProductID", "duplicate")
+			return nil, store.NewErrInvalidInput(model.ShippingMethodExcludedProductTableName, "ShippingMethodID/ProductID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to save shipping method excluded product with id=%s", instance.Id)
 	}
@@ -63,12 +63,12 @@ func (ss *SqlShippingMethodExcludedProductStore) Save(instance *model.ShippingMe
 }
 
 func (s *SqlShippingMethodExcludedProductStore) FilterByOptions(options *model.ShippingMethodExcludedProductFilterOptions) ([]*model.ShippingMethodExcludedProduct, error) {
-	selectFields := s.ModelFields(store.ShippingMethodExcludedProductTableName + ".")
+	selectFields := s.ModelFields(model.ShippingMethodExcludedProductTableName + ".")
 	if options.SelectRelatedProduct {
-		selectFields = append(selectFields, s.Product().ModelFields(store.ProductTableName+".")...)
+		selectFields = append(selectFields, s.Product().ModelFields(model.ProductTableName+".")...)
 	}
 
-	query := s.GetQueryBuilder().Select(selectFields...).From(store.ShippingMethodExcludedProductTableName)
+	query := s.GetQueryBuilder().Select(selectFields...).From(model.ShippingMethodExcludedProductTableName)
 
 	for _, opt := range []squirrel.Sqlizer{
 		options.Id,
@@ -80,7 +80,7 @@ func (s *SqlShippingMethodExcludedProductStore) FilterByOptions(options *model.S
 		}
 	}
 	if options.SelectRelatedProduct {
-		query = query.InnerJoin(store.ProductTableName + " ON Products.Id = ShippingMethodExcludedProducts.ProductID")
+		query = query.InnerJoin(model.ProductTableName + " ON Products.Id = ShippingMethodExcludedProducts.ProductID")
 	}
 
 	queryString, args, err := query.ToSql()
@@ -121,8 +121,8 @@ func (s *SqlShippingMethodExcludedProductStore) FilterByOptions(options *model.S
 	return res, nil
 }
 
-func (s *SqlShippingMethodExcludedProductStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodExcludedProductFilterOptions) error {
-	query := s.GetQueryBuilder().Delete(store.ShippingMethodExcludedProductTableName)
+func (s *SqlShippingMethodExcludedProductStore) Delete(transaction store_iface.SqlxExecutor, options *model.ShippingMethodExcludedProductFilterOptions) error {
+	query := s.GetQueryBuilder().Delete(model.ShippingMethodExcludedProductTableName)
 
 	for _, opt := range []squirrel.Sqlizer{
 		options.Id,

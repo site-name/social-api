@@ -47,7 +47,7 @@ func (is *SqlMenuItemStore) Save(item *model.MenuItem) (*model.MenuItem, error) 
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.MenuItemTableName + "(" + is.ModelFields("").Join(",") + ") VALUES (" + is.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.MenuItemTableName + "(" + is.ModelFields("").Join(",") + ") VALUES (" + is.ModelFields(":").Join(",") + ")"
 	if _, err := is.GetMasterX().NamedExec(query, item); err != nil {
 		return nil, errors.Wrapf(err, "failed to save menu item with id=%s", item.Id)
 	}
@@ -56,8 +56,8 @@ func (is *SqlMenuItemStore) Save(item *model.MenuItem) (*model.MenuItem, error) 
 
 func (is *SqlMenuItemStore) commonQueryBuilder(options *model.MenuItemFilterOptions) squirrel.SelectBuilder {
 	query := is.GetQueryBuilder().
-		Select(is.ModelFields(store.MenuItemTableName + ".")...).
-		From(store.MenuItemTableName)
+		Select(is.ModelFields(model.MenuItemTableName + ".")...).
+		From(model.MenuItemTableName)
 
 	// parse options
 	if options.Id != nil {
@@ -84,7 +84,7 @@ func (is *SqlMenuItemStore) GetByOptions(options *model.MenuItemFilterOptions) (
 	err = is.GetReplicaX().Get(&menuItem, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.MenuItemTableName, "")
+			return nil, store.NewErrNotFound(model.MenuItemTableName, "")
 		}
 		return nil, errors.Wrap(err, "failed to find menu item with given options")
 	}

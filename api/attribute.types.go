@@ -11,7 +11,6 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -215,7 +214,7 @@ func (a *Attribute) ProductTypes(ctx context.Context, args GraphqlParams) (*Prod
 	productTypes, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductTypesByOptions(&model.ProductTypeFilterOption{
-			AttributeProducts_AttributeID: squirrel.Eq{store.AttributeProductTableName + ".AttributeID": a.ID},
+			AttributeProducts_AttributeID: squirrel.Eq{model.AttributeProductTableName + ".AttributeID": a.ID},
 		})
 	if appErr != nil {
 		return nil, appErr
@@ -236,7 +235,7 @@ func (a *Attribute) ProductVariantTypes(ctx context.Context, args GraphqlParams)
 	productTypes, appErr := embedCtx.App.Srv().
 		ProductService().
 		ProductTypesByOptions(&model.ProductTypeFilterOption{
-			AttributeVariants_AttributeID: squirrel.Eq{store.AttributeVariantTableName + ".AttributeID": a.ID},
+			AttributeVariants_AttributeID: squirrel.Eq{model.AttributeVariantTableName + ".AttributeID": a.ID},
 		})
 	if appErr != nil {
 		return nil, appErr
@@ -319,7 +318,7 @@ func attributesByAttributeIdLoader(ctx context.Context, ids []string) []*dataloa
 		Srv().
 		AttributeService().
 		AttributesByOption(&model.AttributeFilterOption{
-			Id: squirrel.Eq{store.AttributeTableName + ".Id": ids},
+			Id: squirrel.Eq{model.AttributeTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -346,7 +345,7 @@ func attributeValuesByAttributeIdLoader(ctx context.Context, attributeIDs []stri
 		Srv().
 		AttributeService().
 		FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-			AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": attributeIDs},
+			AttributeID: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attributeIDs},
 		})
 	if appErr != nil {
 		for idx := range attributeIDs {
@@ -375,7 +374,7 @@ func attributeValueByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 		Srv().
 		AttributeService().
 		FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-			Id: squirrel.Eq{store.AttributeValueTableName + ".Id": ids},
+			Id: squirrel.Eq{model.AttributeValueTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {

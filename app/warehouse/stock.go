@@ -9,7 +9,7 @@ import (
 )
 
 // BulkUpsertStocks updates or insderts given stock based on its Id property
-func (a *ServiceWarehouse) BulkUpsertStocks(transaction store_iface.SqlxTxExecutor, stocks []*model.Stock) ([]*model.Stock, *model.AppError) {
+func (a *ServiceWarehouse) BulkUpsertStocks(transaction store_iface.SqlxExecutor, stocks []*model.Stock) ([]*model.Stock, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().BulkUpsert(transaction, stocks)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

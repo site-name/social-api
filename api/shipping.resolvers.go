@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"unsafe"
 
 	"github.com/Masterminds/squirrel"
@@ -43,13 +44,13 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 
 	// find channels that requester want to add
 	channels, appErr := embedCtx.App.Srv().ChannelService().ChannelsByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{store.ChannelTableName + ".Id": channelIdsRequesterWantToAdd},
+		Id: squirrel.Eq{model.ChannelTableName + ".Id": channelIdsRequesterWantToAdd},
 	})
 	channelsAboutToAddMap := lo.SliceToMap(channels, func(ch *model.Channel) (string, *model.Channel) { return ch.Id, ch })
 
 	// find shipping method given by user
 	shippingMethod, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodByOption(&model.ShippingMethodFilterOption{
-		Id: squirrel.Eq{store.ShippingMethodTableName + ".Id": args.Id},
+		Id: squirrel.Eq{model.ShippingMethodTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -57,7 +58,7 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 
 	// check if channels to add are assigned to given shipping method:
 	channelsOfShippingMethod, appErr := embedCtx.App.Srv().ChannelService().ChannelsByOption(&model.ChannelFilterOption{
-		ShippingZoneChannels_ShippingZoneID: squirrel.Eq{store.ShippingZoneChannelTableName + ".ShippingZoneID": shippingMethod.ShippingZoneID},
+		ShippingZoneChannels_ShippingZoneID: squirrel.Eq{model.ShippingZoneChannelTableName + ".ShippingZoneID": shippingMethod.ShippingZoneID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -70,8 +71,8 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 
 	// keep only add channels that have ShippingMethodChannelListing relations with shipping method
 	shippingMethodChannelListings, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-		ShippingMethodID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ShippingMethodID": args.Id},
-		ChannelID:        squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": channelIdsRequesterWantToAdd},
+		ShippingMethodID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": args.Id},
+		ChannelID:        squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": channelIdsRequesterWantToAdd},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -145,8 +146,8 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 
 	// remove:
 	appErr = embedCtx.App.Srv().ShippingService().DeleteShippingMethodChannelListings(transaction, &model.ShippingMethodChannelListingFilterOption{
-		ChannelID:        squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": args.Input.RemoveChannels},
-		ShippingMethodID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ShippingMethodID": args.Id},
+		ChannelID:        squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": args.Input.RemoveChannels},
+		ShippingMethodID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -188,7 +189,9 @@ func (r *Resolver) ShippingPriceCreate(ctx context.Context, args struct{ Input S
 	}
 
 	shippingZones, appErr := embedCtx.App.Srv().ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
-		Id: squirrel.Eq{store.ShippingZoneTableName + ".Id": shippingMethod.ShippingZoneID},
+		Conditions: squirrel.And{
+			squirrel.Eq{model.ShippingZoneTableName + ".Id": shippingMethod.ShippingZoneID},
+		},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -215,7 +218,7 @@ func (r *Resolver) ShippingPriceDelete(ctx context.Context, args struct{ Id stri
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	shippingMethod, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodByOption(&model.ShippingMethodFilterOption{
-		Id:                        squirrel.Eq{store.ShippingMethodTableName + ".Id": args.Id},
+		Id:                        squirrel.Eq{model.ShippingMethodTableName + ".Id": args.Id},
 		SelectRelatedShippingZone: true,
 	})
 	if appErr != nil {
@@ -276,7 +279,7 @@ func (r *Resolver) ShippingPriceUpdate(ctx context.Context, args struct {
 	defer store.FinalizeTransaction(transaction)
 
 	shippingMethod, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodByOption(&model.ShippingMethodFilterOption{
-		Id:                        squirrel.Eq{store.ShippingMethodTableName + ".Id": args.Id},
+		Id:                        squirrel.Eq{model.ShippingMethodTableName + ".Id": args.Id},
 		SelectRelatedShippingZone: true, //
 	})
 	if appErr != nil {
@@ -388,8 +391,8 @@ func (r *Resolver) ShippingPriceRemoveProductFromExclude(ctx context.Context, ar
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	err := embedCtx.App.Srv().Store.ShippingMethodExcludedProduct().Delete(nil, &model.ShippingMethodExcludedProductFilterOptions{
-		ShippingMethodID: squirrel.Eq{store.ShippingMethodExcludedProductTableName + ".ShippingMethodID": args.Id},
-		ProductID:        squirrel.Eq{store.ShippingMethodExcludedProductTableName + ".ProductID": args.Products},
+		ShippingMethodID: squirrel.Eq{model.ShippingMethodExcludedProductTableName + ".ShippingMethodID": args.Id},
+		ProductID:        squirrel.Eq{model.ShippingMethodExcludedProductTableName + ".ProductID": args.Products},
 	})
 	if err != nil {
 		return nil, model.NewAppError("ShippingPriceRemoveProductFromExclude", "app.shipping.delete_shipping_method_excluded_products.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -400,45 +403,371 @@ func (r *Resolver) ShippingPriceRemoveProductFromExclude(ctx context.Context, ar
 	}, nil
 }
 
+// NOTE: Refer to ./schemas/shipping.graphqls for details on directives used.
 func (r *Resolver) ShippingZoneCreate(ctx context.Context, args struct {
 	Input ShippingZoneCreateInput
 }) (*ShippingZoneCreate, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	if !lo.EveryBy(args.Input.AddWarehouses, model.IsValidId) {
+		return nil, model.NewAppError("ShippingZoneCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add warehouses"}, "please provide valid warehouse ids", http.StatusBadRequest)
+	}
+	if !lo.EveryBy(args.Input.AddChannels, model.IsValidId) {
+		return nil, model.NewAppError("ShippingZoneCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "add channels"}, "please provide valid channel ids", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	// begin transaction
+	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	if err != nil {
+		return nil, model.NewAppError("ShippingZoneCreate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer store.FinalizeTransaction(transaction)
+
+	shippingZone := &model.ShippingZone{
+		Default:   args.Input.Default,
+		Countries: strings.Join(args.Input.Countries, " "),
+	}
+	if val := args.Input.Name; val != nil {
+		shippingZone.Name = *val
+	}
+	if val := args.Input.Description; val != nil {
+		shippingZone.Description = *val
+	}
+
+	shippingZone, appErr := embedCtx.App.Srv().Shipping.UpsertShippingZone(transaction, shippingZone)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// save m2m warehouse shipping zones
+	if len(args.Input.AddWarehouses) > 0 {
+		warehouseShippingZonesToCreate := lo.Map(args.Input.AddWarehouses, func(id string, _ int) *model.WarehouseShippingZone {
+			return &model.WarehouseShippingZone{
+				WarehouseID:    id,
+				ShippingZoneID: shippingZone.Id,
+			}
+		})
+		warehouseShippingZonesToCreate, appErr = embedCtx.App.Srv().WarehouseService().CreateWarehouseShippingZones(transaction, warehouseShippingZonesToCreate)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// save m2m shipping zone channels
+	if len(args.Input.AddChannels) > 0 {
+		shippingZoneChannelsToSave := lo.Map(args.Input.AddChannels, func(id string, _ int) *model.ShippingZoneChannel {
+			return &model.ShippingZoneChannel{
+				ShippingZoneID: shippingZone.Id,
+				ChannelID:      id,
+			}
+		})
+		shippingZoneChannelsToSave, appErr = embedCtx.App.Srv().ChannelService().BulkUpsertShippingZoneChannels(transaction, shippingZoneChannelsToSave)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// commit transaction
+	err = transaction.Commit()
+	if err != nil {
+		return nil, model.NewAppError("ShippingZoneCreate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &ShippingZoneCreate{
+		ShippingZone: SystemShippingZoneToGraphqlShippingZone(shippingZone),
+	}, nil
 }
 
 // NOTE: Refer to ./schemas/shipping.graphqls for details on directives used.
 func (r *Resolver) ShippingZoneDelete(ctx context.Context, args struct{ Id string }) (*ShippingZoneDelete, error) {
 	// validate params
 	if !model.IsValidId(args.Id) {
-		return nil, model.NewAppError("ShippingZoneDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping method id", http.StatusBadRequest)
+		return nil, model.NewAppError("ShippingZoneDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping zone id", http.StatusBadRequest)
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	_, err := embedCtx.App.Srv().ShippingService().DeleteShippingZones(nil, &model.ShippingZoneFilterOption{
+		Conditions: squirrel.Eq{model.ShippingZoneTableName + ".Id": args.Id},
+	})
+	if err != nil {
+		return nil, err
+	}
 
+	// NOTE: ShippingZoneChannels and WarehouseShippingZones are auto deleted thanks to ON DELETE CASCADE options
+
+	return &ShippingZoneDelete{
+		ShippingZone: &ShippingZone{ID: args.Id},
+	}, nil
 }
 
+// NOTE: Refer to ./schemas/shipping.graphqls for details on directives used.
 func (r *Resolver) ShippingZoneBulkDelete(ctx context.Context, args struct{ Ids []string }) (*ShippingZoneBulkDelete, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	if !lo.EveryBy(args.Ids, model.IsValidId) {
+		return nil, model.NewAppError("ShippingZoneCreate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "ids"}, "please provide valid shipping zone ids", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+	numDeleted, err := embedCtx.App.Srv().ShippingService().DeleteShippingZones(nil, &model.ShippingZoneFilterOption{
+		Conditions: squirrel.Eq{model.ShippingZoneTableName + ".Id": args.Ids},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// NOTE: ShippingZoneChannels and WarehouseShippingZones are auto deleted thanks to ON DELETE CASCADE options
+
+	return &ShippingZoneBulkDelete{
+		Count: int32(numDeleted),
+	}, nil
 }
 
+// NOTE: Refer to ./schemas/shipping.graphqls for details on directives used.
 func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 	Id    string
 	Input ShippingZoneUpdateInput
 }) (*ShippingZoneUpdate, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("ShippingZoneUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping zone id", http.StatusBadRequest)
+	}
+	if !lo.EveryBy(args.Input.AddWarehouses, model.IsValidId) {
+		return nil, model.NewAppError("ShippingZoneUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AddWarehouses"}, "please provide valid add warehouse ids", http.StatusBadRequest)
+	}
+	if !lo.EveryBy(args.Input.RemoveWarehouses, model.IsValidId) {
+		return nil, model.NewAppError("ShippingZoneUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "RemoveWarehouses"}, "please provide valid remove warehouse zone ids", http.StatusBadRequest)
+	}
+	if !lo.EveryBy(args.Input.AddChannels, model.IsValidId) {
+		return nil, model.NewAppError("ShippingZoneUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AddChannels"}, "please provide valid add channel ids", http.StatusBadRequest)
+	}
+	if !lo.EveryBy(args.Input.RemoveChannels, model.IsValidId) {
+		return nil, model.NewAppError("ShippingZoneUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "RemoveChannels"}, "please provide valid remove channel ids", http.StatusBadRequest)
+	}
+
+	if len(lo.Intersect(args.Input.AddWarehouses, args.Input.RemoveWarehouses)) > 0 {
+		return nil, model.NewAppError("ShippingZoneUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AddWarehouses / RemoveWarehouses"}, "add warehouses must differ from remove warehouses", http.StatusBadRequest)
+	}
+	if len(lo.Intersect(args.Input.AddChannels, args.Input.RemoveChannels)) > 0 {
+		return nil, model.NewAppError("ShippingZoneUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "AddChannels / RemoveChannels"}, "add channels must differ from remove channels", http.StatusBadRequest)
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	if err != nil {
+		return nil, model.NewAppError("ShippingZoneUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+	defer store.FinalizeTransaction(transaction)
+
+	// find all shipping zones
+	allShippingZones, appErr := embedCtx.App.Srv().ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{})
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(allShippingZones) == 0 {
+		return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.no_shipping_zone.app_error", nil, "system has no shipping zone", http.StatusNotImplemented)
+	}
+	shippingZoneToUpdate, found := lo.Find(allShippingZones, func(sp *model.ShippingZone) bool { return sp.Id == args.Id })
+	if !found {
+		return nil, model.NewAppError("ShippingZoneUpdate", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping zone id", http.StatusBadRequest)
+	}
+
+	// clean default:
+	// Check if there are some shipping zone that isn't given shipping zone but is set to default.
+	// And requester want to update given shipping zone to default.
+	if val := args.Input.Default; val != nil && *val {
+		if lo.SomeBy(allShippingZones, func(sp *model.ShippingZone) bool { return sp.Id != args.Id && sp.Default != nil && *sp.Default }) {
+			return nil, model.NewAppError("ShippingZoneUpdate", "app.shipping.default_shipping_zone_exists.app_error", nil, "default shipping zone exists", http.StatusNotModified)
+		} else {
+			// find all countries code that are not used by any shipping zones
+			usedCountriesByShippingZones := map[string]struct{}{}
+			for _, spz := range allShippingZones {
+				for _, country := range strings.Fields(spz.Countries) {
+					usedCountriesByShippingZones[country] = struct{}{}
+				}
+			}
+
+			countriesNotUsedByShippingZones := []string{}
+			for country := range model.Countries {
+				countryCode := string(country)
+				_, used := usedCountriesByShippingZones[countryCode]
+				if !used {
+					countriesNotUsedByShippingZones = append(countriesNotUsedByShippingZones, countryCode)
+				}
+			}
+
+			args.Input.Countries = countriesNotUsedByShippingZones
+		}
+	}
+
+	// update shipping zone:
+	if val := args.Input.Name; val != nil {
+		shippingZoneToUpdate.Name = *val
+	}
+	if val := args.Input.Description; val != nil {
+		shippingZoneToUpdate.Description = *val
+	}
+	shippingZoneToUpdate.Default = args.Input.Default
+	shippingZoneToUpdate.Countries = strings.Join(args.Input.Countries, " ")
+
+	shippingZoneToUpdate, appErr = embedCtx.App.Srv().Shipping.UpsertShippingZone(transaction, shippingZoneToUpdate)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	// save m2m warehouse shipping zones
+	if len(args.Input.AddWarehouses) > 0 {
+		warehouseShippingZonesToCreate := lo.Map(args.Input.AddWarehouses, func(id string, _ int) *model.WarehouseShippingZone {
+			return &model.WarehouseShippingZone{
+				WarehouseID:    id,
+				ShippingZoneID: args.Id,
+			}
+		})
+		warehouseShippingZonesToCreate, appErr = embedCtx.App.Srv().WarehouseService().CreateWarehouseShippingZones(transaction, warehouseShippingZonesToCreate)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+	if len(args.Input.RemoveWarehouses) > 0 {
+		err = embedCtx.App.Srv().Store.WarehouseShippingZone().Delete(transaction, &model.WarehouseShippingZoneFilterOption{
+			Conditions: squirrel.And{
+				squirrel.Eq{model.WarehouseShippingZoneTableName + ".ShippingZoneID": args.Id},
+				squirrel.Eq{model.WarehouseShippingZoneTableName + ".WarehouseID": args.Input.RemoveWarehouses},
+			},
+		})
+		if err != nil {
+			return nil, model.NewAppError("ShippingZoneUpdate", "app.warehouse.error_deleting_warehouse_shipping_zones.app_error", nil, err.Error(), http.StatusInternalServerError)
+		}
+	}
+
+	// save m2m shipping zone channels
+	if len(args.Input.AddChannels) > 0 {
+		shippingZoneChannelsToSave := lo.Map(args.Input.AddChannels, func(id string, _ int) *model.ShippingZoneChannel {
+			return &model.ShippingZoneChannel{
+				ShippingZoneID: args.Id,
+				ChannelID:      id,
+			}
+		})
+		shippingZoneChannelsToSave, appErr = embedCtx.App.Srv().ChannelService().BulkUpsertShippingZoneChannels(transaction, shippingZoneChannelsToSave)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+	if len(args.Input.RemoveChannels) > 0 {
+		appErr = embedCtx.App.Srv().ChannelService().BulkDeleteShippingZoneChannels(transaction, &model.ShippingZoneChannelFilterOptions{
+			Conditions: squirrel.And{
+				squirrel.Eq{model.ShippingZoneChannelTableName + ".ShippingZoneID": args.Id},
+				squirrel.Eq{model.ShippingZoneChannelTableName + ".ChannelID": args.Input.RemoveChannels},
+			},
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		shippingChannelListings, appErr := embedCtx.App.Srv().ShippingService().ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
+			ShippingMethod_ShippingZoneID_Inner: squirrel.Eq{model.ShippingZoneTableName + ".Id": args.Id},
+			ChannelID:                           squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": args.Input.RemoveChannels},
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		appErr = embedCtx.App.Srv().ShippingService().DeleteShippingMethodChannelListings(transaction, &model.ShippingMethodChannelListingFilterOption{
+			Id: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".Id": shippingChannelListings.IDs()},
+		})
+		if appErr != nil {
+			return nil, appErr
+		}
+
+		appErr = embedCtx.App.Srv().ShippingService().DropInvalidShippingMethodsRelationsForGivenChannels(transaction, shippingChannelListings.ShippingMethodIDs(), args.Input.RemoveChannels)
+		if appErr != nil {
+			return nil, appErr
+		}
+	}
+
+	// commit transaction
+	err = transaction.Commit()
+	if err != nil {
+		return nil, model.NewAppError("ShippingZoneUpdate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return &ShippingZoneUpdate{
+		ShippingZone: SystemShippingZoneToGraphqlShippingZone(shippingZoneToUpdate),
+	}, nil
 }
 
+// NOTE: Refer to ./schemas/shipping.graphqls for details on directives used.
 func (r *Resolver) ShippingZone(ctx context.Context, args struct {
 	Id      string
-	Channel *string
+	Channel *string // TODO: Check if we need this
 }) (*ShippingZone, error) {
-	panic(fmt.Errorf("not implemented"))
+	// validate params
+	if !model.IsValidId(args.Id) {
+		return nil, model.NewAppError("ShippingZone", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "id"}, "please provide valid shipping zone id", http.StatusBadRequest)
+	}
+
+	zone, err := ShippingZoneByIdLoader.Load(ctx, args.Id)()
+	if err != nil {
+		return nil, err
+	}
+
+	return SystemShippingZoneToGraphqlShippingZone(zone), nil
 }
 
+// NOTE: shipping zones order by Names
+//
+// NOTE: Refer to ./schemas/shipping.graphqls for details on directives used.
 func (r *Resolver) ShippingZones(ctx context.Context, args struct {
-	Filter  *ShippingZoneFilterInput
-	Channel *string
+	Filter    *ShippingZoneFilterInput
+	ChannelID *string
 	GraphqlParams
 }) (*ShippingZoneCountableConnection, error) {
-	panic(fmt.Errorf("not implemented"))
+	channelIDs := []string{}
+
+	shippingZoneFilterOpts := &model.ShippingZoneFilterOption{}
+
+	if args.ChannelID != nil {
+		if !model.IsValidId(*args.ChannelID) {
+			return nil, model.NewAppError("ShippingZones", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channel id"}, "please provide valid channel id", http.StatusBadRequest)
+		}
+		channelIDs = append(channelIDs, *args.ChannelID)
+	}
+
+	appErr := args.GraphqlParams.Validate("ShippingZones")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	if args.Filter != nil {
+		if !lo.EveryBy(args.Filter.Channels, model.IsValidId) {
+			return nil, model.NewAppError("ShippingZones", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channels"}, "please provide valid channel id", http.StatusBadRequest)
+		}
+		channelIDs = append(channelIDs, args.Filter.Channels...)
+
+		if search := args.Filter.Search; search != nil &&
+			*search != "" &&
+			!stringsContainSqlExpr.MatchString(*search) { // NOTE: this check is needed
+			shippingZoneFilterOpts.Conditions = squirrel.ILike{model.ShippingZoneTableName + ".Name": "%" + *search + "%"}
+		}
+	}
+
+	if len(channelIDs) > 0 {
+		shippingZoneFilterOpts.ChannelID = squirrel.Eq{model.ShippingZoneChannelTableName + ".ChannelID": *args.ChannelID}
+	}
+
+	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
+
+	shippingZones, appErr := embedCtx.App.Srv().ShippingService().ShippingZonesByOption(shippingZoneFilterOpts)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	keyFunc := func(sz *model.ShippingZone) string { return sz.Name }
+	res, appErr := newGraphqlPaginator(shippingZones, keyFunc, SystemShippingZoneToGraphqlShippingZone, args.GraphqlParams).parse("ShippingZones")
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return (*ShippingZoneCountableConnection)(unsafe.Pointer(res)), nil
 }

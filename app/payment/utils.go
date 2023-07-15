@@ -13,7 +13,6 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
@@ -34,7 +33,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymen
 
 	if payMent.CheckoutID != nil {
 		checkoutOfPayment, appErr := a.srv.CheckoutService().CheckoutByOption(&model.CheckoutFilterOption{
-			Token: squirrel.Eq{store.CheckoutTableName + ".Token": *payMent.CheckoutID},
+			Token: squirrel.Eq{model.CheckoutTableName + ".Token": *payMent.CheckoutID},
 		})
 		if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr // ignore not found error
@@ -80,7 +79,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymen
 
 	if billingAddressID != "" || shippingAddressID != "" {
 		addresses, appErr := a.srv.AccountService().AddressesByOption(&model.AddressFilterOption{
-			Id: squirrel.Eq{store.AddressTableName + ".Id": []string{billingAddressID, shippingAddressID}},
+			Id: squirrel.Eq{model.AddressTableName + ".Id": []string{billingAddressID, shippingAddressID}},
 		})
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr
@@ -158,7 +157,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymen
 //
 // `storePaymentMethod` default to model.StorePaymentMethod.NONE
 func (a *ServicePayment) CreatePayment(
-	transaction store_iface.SqlxTxExecutor,
+	transaction store_iface.SqlxExecutor,
 	gateway string,
 	total *decimal.Decimal,
 	currency string,
@@ -603,7 +602,7 @@ func (a *ServicePayment) UpdatePaymentMethodDetails(payMent model.Payment, payme
 
 func (a *ServicePayment) GetPaymentToken(payMent *model.Payment) (string, *model.PaymentError, *model.AppError) {
 	authTransactions, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
-		Kind:      squirrel.Eq{store.TransactionTableName + ".Kind": model.AUTH},
+		Kind:      squirrel.Eq{model.TransactionTableName + ".Kind": model.AUTH},
 		IsSuccess: model.NewPrimitive(true),
 	})
 	if appErr != nil {

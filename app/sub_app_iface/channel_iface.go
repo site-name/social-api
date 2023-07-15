@@ -18,10 +18,10 @@ type ChannelService interface {
 	CleanChannel(channelID *string) (*model.Channel, *model.AppError)
 	// ValidateChannel check if a channel with given id is active
 	ValidateChannel(channelID string) (*model.Channel, *model.AppError)
-	BulkDeleteShippingZoneChannels(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) *model.AppError
-	BulkUpsertShippingZoneChannels(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, *model.AppError)
+	BulkDeleteShippingZoneChannels(transaction store_iface.SqlxExecutor, options *model.ShippingZoneChannelFilterOptions) *model.AppError
+	BulkUpsertShippingZoneChannels(transaction store_iface.SqlxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, *model.AppError)
 	GetDefaultChannel() (*model.Channel, *model.AppError)
 	GetDefaultChannelSlugOrGraphqlError() (string, *model.AppError)
-	UpsertChannel(transaction store_iface.SqlxTxExecutor, channel *model.Channel) (*model.Channel, *model.AppError)
-	DeleteChannels(transaction store_iface.SqlxTxExecutor, ids ...string) *model.AppError
+	UpsertChannel(transaction store_iface.SqlxExecutor, channel *model.Channel) (*model.Channel, *model.AppError)
+	DeleteChannels(transaction store_iface.SqlxExecutor, ids ...string) *model.AppError
 }

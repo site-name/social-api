@@ -9,8 +9,7 @@ type VariantMedia struct {
 }
 
 type VariantMediaFilterOptions struct {
-	VariantID squirrel.Sqlizer
-	MediaID   squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
 func (v *VariantMedia) IsValid() *AppError {

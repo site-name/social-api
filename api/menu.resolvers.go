@@ -94,3 +94,10 @@ func (r *Resolver) MenuItems(ctx context.Context, args struct {
 }) (*MenuItemCountableConnection, error) {
 	panic(fmt.Errorf("not implemented"))
 }
+
+func (r *Resolver) AssignNavigation(ctx context.Context, args struct {
+	Menu           *string
+	NavigationType NavigationType
+}) (*AssignNavigation, error) {
+	panic(fmt.Errorf("not implemented"))
+}

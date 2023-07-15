@@ -11,6 +11,7 @@ extend type Mutation {
 }
 
 extend type Query {
+  reportProductSales(period: ReportingPeriod!, channel: String!, before: String, after: String, first: Int, last: Int): ProductVariantCountableConnection
   product(id: String, slug: String, channel: String): Product
   products(filter: ProductFilterInput, sortBy: ProductOrder, channel: String, before: String, after: String, first: Int, last: Int): ProductCountableConnection
 }

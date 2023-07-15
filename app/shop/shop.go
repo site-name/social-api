@@ -28,7 +28,7 @@ func init() {
 // ShopById finds shop by given id
 func (a *ServiceShop) ShopById(shopID string) (*model.Shop, *model.AppError) {
 	return a.ShopByOptions(&model.ShopFilterOptions{
-		Id: squirrel.Eq{store.ShopTableName + ".Id": shopID},
+		Id: squirrel.Eq{model.ShopTableName + ".Id": shopID},
 	})
 }
 

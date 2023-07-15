@@ -36,7 +36,7 @@ func (s *SqlOrderEventStore) ModelFields(prefix string) util.AnyArray[string] {
 	})
 }
 
-func (oes *SqlOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
+func (oes *SqlOrderEventStore) Save(transaction store_iface.SqlxExecutor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
 	var executor store_iface.SqlxExecutor = oes.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -47,7 +47,7 @@ func (oes *SqlOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orde
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.OrderEventTableName + "(" + oes.ModelFields("").Join(",") + ") VALUES (" + oes.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.OrderEventTableName + "(" + oes.ModelFields("").Join(",") + ") VALUES (" + oes.ModelFields(":").Join(",") + ")"
 	if _, err := executor.NamedExec(query, orderEvent); err != nil {
 		return nil, errors.Wrapf(err, "failed to save order event with id=%s", orderEvent.Id)
 	}
@@ -57,10 +57,10 @@ func (oes *SqlOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orde
 
 func (oes *SqlOrderEventStore) Get(orderEventID string) (*model.OrderEvent, error) {
 	var res model.OrderEvent
-	err := oes.GetReplicaX().Get(&res, "SELECT * FROM "+store.OrderEventTableName+" WHERE Id = ?", orderEventID)
+	err := oes.GetReplicaX().Get(&res, "SELECT * FROM "+model.OrderEventTableName+" WHERE Id = ?", orderEventID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.OrderEventTableName, orderEventID)
+			return nil, store.NewErrNotFound(model.OrderEventTableName, orderEventID)
 		}
 		return nil, errors.Wrapf(err, "failed to find order event iwth id=%s", orderEventID)
 	}
@@ -70,8 +70,8 @@ func (oes *SqlOrderEventStore) Get(orderEventID string) (*model.OrderEvent, erro
 
 func (s *SqlOrderEventStore) FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error) {
 	query := s.GetQueryBuilder().
-		Select(s.ModelFields(store.OrderEventTableName + ".")...).
-		From(store.OrderEventTableName)
+		Select(s.ModelFields(model.OrderEventTableName + ".")...).
+		From(model.OrderEventTableName)
 
 	// parse options
 	if options.Id != nil {

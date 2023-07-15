@@ -7,7 +7,6 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -73,7 +72,7 @@ func digitalContentByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	contents, appErr := embedCtx.App.Srv().ProductService().DigitalContentsbyOptions(&model.DigitalContentFilterOption{
-		Id: squirrel.Eq{store.DigitalContentTableName + ".Id": ids},
+		Id: squirrel.Eq{model.DigitalContentTableName + ".Id": ids},
 	})
 	if appErr != nil {
 		for idx := range ids {
@@ -99,7 +98,7 @@ func digitalContentUrlsByDigitalContentIDLoader(ctx context.Context, ids []strin
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	digitalContentURLs, appErr := embedCtx.App.Srv().ProductService().
 		DigitalContentURLSByOptions(&model.DigitalContentUrlFilterOptions{
-			ContentID: squirrel.Eq{store.DigitalContentURLTableName + ".ContentID": ids},
+			ContentID: squirrel.Eq{model.DigitalContentURLTableName + ".ContentID": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {

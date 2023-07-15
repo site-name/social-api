@@ -1,4 +1,5 @@
 extend type Mutation {
+  assignNavigation(menu: String, navigationType: NavigationType!): AssignNavigation @hasRoles(roles: [shop_admin])
   menuCreate(input: MenuCreateInput!): MenuCreate
   menuDelete(id: String!): MenuDelete
   menuBulkDelete(ids: [String!]!): MenuBulkDelete

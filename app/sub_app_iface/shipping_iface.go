@@ -29,11 +29,13 @@ type ShippingService interface {
 	ShippingMethodsByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, *model.AppError)
 	// ShippingZonesByOption returns all shipping zones that satisfy given options
 	ShippingZonesByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, *model.AppError)
-	DropInvalidShippingMethodsRelationsForGivenChannels(transaction store_iface.SqlxTxExecutor, shippingMethodIds, channelIds []string) *model.AppError
+	DropInvalidShippingMethodsRelationsForGivenChannels(transaction store_iface.SqlxExecutor, shippingMethodIds, channelIds []string) *model.AppError
 	ShippingMethodPostalCodeRulesByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, *model.AppError)
 	GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethods, channelSlug string) (map[string]*goprices.Money, *model.AppError)
-	CreateShippingMethodPostalCodeRules(transaction store_iface.SqlxTxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, *model.AppError)
-	UpsertShippingMethod(transaction store_iface.SqlxTxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, *model.AppError)
-	UpsertShippingMethodChannelListings(transaction store_iface.SqlxTxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model.AppError)
-	DeleteShippingMethodChannelListings(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodChannelListingFilterOption) *model.AppError
+	CreateShippingMethodPostalCodeRules(transaction store_iface.SqlxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, *model.AppError)
+	UpsertShippingMethod(transaction store_iface.SqlxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, *model.AppError)
+	UpsertShippingMethodChannelListings(transaction store_iface.SqlxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model.AppError)
+	DeleteShippingMethodChannelListings(transaction store_iface.SqlxExecutor, options *model.ShippingMethodChannelListingFilterOption) *model.AppError
+	UpsertShippingZone(transaction store_iface.SqlxExecutor, zone *model.ShippingZone) (*model.ShippingZone, *model.AppError)
+	DeleteShippingZones(transaction store_iface.SqlxExecutor, conditions *model.ShippingZoneFilterOption) (int64, *model.AppError)
 }

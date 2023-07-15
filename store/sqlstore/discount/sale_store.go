@@ -1,12 +1,11 @@
 package discount
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlDiscountSaleStore struct {
@@ -39,49 +38,14 @@ func (s *SqlDiscountSaleStore) ModelFields(prefix string) util.AnyArray[string] 
 }
 
 // Upsert bases on sale's Id to decide to update or insert given sale
-func (ss *SqlDiscountSaleStore) Upsert(sale *model.Sale) (*model.Sale, error) {
-	var saving bool
-
-	if !model.IsValidId(sale.Id) {
-		saving = true
-		sale.PreSave()
-	} else {
-		sale.PreUpdate()
+func (ss *SqlDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (*model.Sale, error) {
+	if transaction == nil {
+		transaction = ss.GetMaster()
 	}
 
-	if err := sale.IsValid(); err != nil {
-		return nil, err
-	}
-
-	var (
-		err           error
-		numberUpdated int64
-	)
-
-	if saving {
-		query := "INSERT INTO " + store.SaleTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
-		_, err = ss.GetMasterX().NamedExec(query, sale)
-
-	} else {
-		query := "UPDATE " + store.SaleTableName + " SET " + ss.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id = :Id"
-
-		var result sql.Result
-		result, err = ss.GetMasterX().NamedExec(query, sale)
-		if err == nil && result != nil {
-			numberUpdated, _ = result.RowsAffected()
-		}
-	}
-
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to upsert sale with id=%s", sale.Id)
-	}
-	if numberUpdated > 1 {
-		return nil, errors.Errorf("multiple sales were updated: %d instead of 1", numberUpdated)
+	result := transaction.Save(sale)
+	if result.Error != nil {
+		return nil, errors.Wrap(result.Error, "failed to upsert sale")
 	}
 
 	return sale, nil
@@ -89,28 +53,23 @@ func (ss *SqlDiscountSaleStore) Upsert(sale *model.Sale) (*model.Sale, error) {
 
 // Get finds and returns a sale with given saleID
 func (ss *SqlDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
-	var res model.Sale
-	err := ss.GetReplicaX().Get(
-		&res,
-		"SELECT * FROM "+store.SaleTableName+" WHERE id = ? ORDER BY Name ASC, CreateAt ASC",
-		saleID,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.SaleTableName, saleID)
+	var sale model.Sale
+	result := ss.GetReplica().First(&sale, "id = ?", saleID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, store.NewErrNotFound("sales", saleID)
 		}
-		return nil, errors.Wrapf(err, "failed to finds sale with id=%s", saleID)
+		return nil, errors.Wrap(result.Error, "failed to find sale by id")
 	}
-
-	return &res, nil
+	return &sale, nil
 }
 
 // FilterSalesByOption filter sales by option
 func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
 	query := ss.
 		GetQueryBuilder().
-		Select(ss.ModelFields(store.SaleTableName + ".")...).
-		From(store.SaleTableName)
+		Select(ss.ModelFields(model.SaleTableName + ".")...).
+		From(model.SaleTableName)
 
 	// check sale start date
 	if option.StartDate != nil {
@@ -133,4 +92,38 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOpti
 	}
 
 	return sales, nil
+}
+
+func (s *SqlDiscountSaleStore) AddSaleRelations(transaction *gorm.DB, sales model.Sales, relations any) error {
+	if relations == nil || len(sales) == 0 {
+		return errors.New("please specify relations")
+	}
+
+	if transaction == nil {
+		transaction = s.GetMaster()
+	}
+
+	var association string
+
+	switch relations.(type) {
+	case model.Products:
+		association = "Products"
+	case model.Categories:
+		association = "Categories"
+	case model.Collections:
+		association = "Collections"
+	case model.ProductVariants:
+		association = "ProductVariants"
+	default:
+		return errors.New("only *model.(Product|Category|ProductVariant|Collection) types are supported")
+	}
+
+	for _, sale := range sales {
+		err := transaction.Model(sale).Association(association).Append(relations)
+		if err != nil {
+			return errors.Wrap(err, "failed to insert sale-collection relations")
+		}
+	}
+
+	return nil
 }

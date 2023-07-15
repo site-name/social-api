@@ -71,7 +71,7 @@ func addressByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*
 		Srv().
 		AccountService().
 		AddressesByOption(&model.AddressFilterOption{
-			Id: squirrel.Eq{store.AddressTableName + ".Id": ids},
+			Id: squirrel.Eq{model.AddressTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -503,7 +503,7 @@ func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*datalo
 		Srv().
 		AccountService().
 		CustomerEventsByOptions(&model.CustomerEventFilterOptions{
-			UserID: squirrel.Eq{store.CustomerEventTableName + ".UserID": userIDs},
+			UserID: squirrel.Eq{model.CustomerEventTableName + ".UserID": userIDs},
 		})
 	if appErr != nil {
 		for idx := range userIDs {

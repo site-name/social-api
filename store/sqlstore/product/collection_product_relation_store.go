@@ -40,7 +40,7 @@ func (ps *SqlCollectionProductStore) ScanFields(rel *model.CollectionProduct) []
 	}
 }
 
-func (ps *SqlCollectionProductStore) BulkSave(transaction store_iface.SqlxTxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
+func (ps *SqlCollectionProductStore) BulkSave(transaction store_iface.SqlxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
 	runner := ps.GetMasterX()
 	if transaction != nil {
 		runner = transaction
@@ -56,10 +56,10 @@ func (ps *SqlCollectionProductStore) BulkSave(transaction store_iface.SqlxTxExec
 			return nil, err
 		}
 
-		result, err := runner.Exec("INSERT INTO "+store.CollectionProductRelationTableName+" (Id, CollectionID, ProductID) VALUES (:Id, :CollectionID, :ProductID)", rel)
+		result, err := runner.Exec("INSERT INTO "+model.CollectionProductRelationTableName+" (Id, CollectionID, ProductID) VALUES (:Id, :CollectionID, :ProductID)", rel)
 		if err != nil {
 			if ps.IsUniqueConstraintError(err, []string{"ProductID", "CollectionID", "productcollections_collectionid_productid_key"}) {
-				return nil, store.NewErrInvalidInput(store.CollectionProductRelationTableName, "CollectionID/ProductID", nil)
+				return nil, store.NewErrInvalidInput(model.CollectionProductRelationTableName, "CollectionID/ProductID", nil)
 			}
 			return nil, errors.Wrap(err, "failed to insert a collection product relation")
 		}
@@ -74,17 +74,17 @@ func (ps *SqlCollectionProductStore) BulkSave(transaction store_iface.SqlxTxExec
 }
 
 func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error) {
-	selectFields := ps.ModelFields(store.CollectionProductRelationTableName + ".")
+	selectFields := ps.ModelFields(model.CollectionProductRelationTableName + ".")
 	if options.SelectRelatedCollection {
-		selectFields = append(selectFields, ps.Collection().ModelFields(store.CollectionTableName+".")...)
+		selectFields = append(selectFields, ps.Collection().ModelFields(model.CollectionTableName+".")...)
 	}
 	if options.SelectRelatedProduct {
-		selectFields = append(selectFields, ps.Product().ModelFields(store.ProductTableName+".")...)
+		selectFields = append(selectFields, ps.Product().ModelFields(model.ProductTableName+".")...)
 	}
 
 	query := ps.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.CollectionProductRelationTableName)
+		From(model.CollectionProductRelationTableName)
 
 	if options.ProductID != nil {
 		query = query.Where(options.ProductID)
@@ -93,10 +93,10 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 		query = query.Where(options.CollectionID)
 	}
 	if options.SelectRelatedCollection {
-		query = query.InnerJoin(store.CollectionTableName + " ON Collections.Id = ProductCollections.CollectionID")
+		query = query.InnerJoin(model.CollectionTableName + " ON Collections.Id = ProductCollections.CollectionID")
 	}
 	if options.SelectRelatedProduct {
-		query = query.InnerJoin(store.ProductTableName + " ON Products.Id = ProductCollections.ProductID")
+		query = query.InnerJoin(model.ProductTableName + " ON Products.Id = ProductCollections.ProductID")
 	}
 
 	queryString, args, err := query.ToSql()
@@ -143,8 +143,8 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 	return res, nil
 }
 
-func (s *SqlCollectionProductStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.CollectionProductFilterOptions) error {
-	query := s.GetQueryBuilder().Delete(store.CollectionProductRelationTableName)
+func (s *SqlCollectionProductStore) Delete(transaction store_iface.SqlxExecutor, options *model.CollectionProductFilterOptions) error {
+	query := s.GetQueryBuilder().Delete(model.CollectionProductRelationTableName)
 
 	for _, opt := range []squirrel.Sqlizer{options.CollectionID, options.ProductID} {
 		if opt != nil {

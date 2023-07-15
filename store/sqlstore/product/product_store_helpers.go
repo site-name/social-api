@@ -13,7 +13,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 )
 
 func (ps *SqlProductStore) filterCategories(query squirrel.SelectBuilder, categoryIDs []string) squirrel.SelectBuilder {
@@ -21,7 +20,7 @@ func (ps *SqlProductStore) filterCategories(query squirrel.SelectBuilder, catego
 		return query
 	}
 
-	return query.Where(squirrel.Eq{store.ProductTableName + ".CategoryID": categoryIDs})
+	return query.Where(squirrel.Eq{model.ProductTableName + ".CategoryID": categoryIDs})
 }
 
 func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, collectionIDs []string) squirrel.SelectBuilder {
@@ -33,7 +32,7 @@ func (ps *SqlProductStore) filterCollections(query squirrel.SelectBuilder, colle
 		Select(`(1) as "a"`).
 		Prefix("EXISTS (").
 		Suffix(")").
-		From(store.CollectionProductRelationTableName).
+		From(model.CollectionProductRelationTableName).
 		Where(squirrel.Eq{"ProductCollections.CollectionID": collectionIDs}).
 		Where("ProductCollections.ProductID = Products.Id").
 		Limit(1)
@@ -47,14 +46,14 @@ func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPub
 			SELECT
 				(1) AS "a"
 			FROM 
-				`+store.ProductChannelListingTableName+` PCL
+				`+model.ProductChannelListingTableName+` PCL
 			WHERE
 				(
 					EXISTS (
 						SELECT 
 							(1) AS "a"
 						FROM
-							`+store.ChannelTableName+` C
+							`+model.ChannelTableName+` C
 						WHERE
 							(
 								PCL.ChannelID = C.Id
@@ -71,21 +70,21 @@ func (ps *SqlProductStore) filterIsPublished(query squirrel.SelectBuilder, isPub
 			SELECT
 				(1) AS "a"
 			FROM
-				`+store.ProductVariantTableName+` PV
+				`+model.ProductVariantTableName+` PV
 			WHERE
 				(
 					EXISTS (
 						SELECT
 							(1) AS "a"
 						FROM
-							`+store.ProductVariantChannelListingTableName+` PVCL
+							`+model.ProductVariantChannelListingTableName+` PVCL
 						WHERE
 							(
 								EXISTS (
 									SELECT
 										(1) AS "a"
 									FROM
-										`+store.ChannelTableName+` C
+										`+model.ChannelTableName+` C
 									WHERE
 										(
 											(C.Id = ? OR C.Slug = ?)
@@ -120,7 +119,7 @@ func (ps *SqlProductStore) filterVariantPrice(
 	channelQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(store.ChannelTableName).
+		From(model.ChannelTableName).
 		Where("(Channels.Id = ? OR Channels.Slug = ?) AND Channels.Id = ProductVariantChannelListings.ChannelID", channelIdOrSlug, channelIdOrSlug).
 		Limit(1).
 		Suffix(")")
@@ -128,7 +127,7 @@ func (ps *SqlProductStore) filterVariantPrice(
 	productVariantChannelListingQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(store.ProductVariantChannelListingTableName).
+		From(model.ProductVariantChannelListingTableName).
 		Where(channelQuery).
 		Where("ProductVariantChannelListings.VariantID = ProductVariants.Id").
 		Limit(1).
@@ -145,7 +144,7 @@ func (ps *SqlProductStore) filterVariantPrice(
 
 	productVariantQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
-		From(store.ProductVariantTableName).
+		From(model.ProductVariantTableName).
 		Prefix("EXISTS (").
 		Where(productVariantChannelListingQuery).
 		Where("ProductVariants.ProductID = Products.Id").
@@ -166,7 +165,7 @@ func (ps *SqlProductStore) filterMinimalPrice(
 	channelQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(store.ChannelTableName).
+		From(model.ChannelTableName).
 		Where("(Channels.Id = ? OR Channels.Slug = ?) AND Channels.Id = ProductChannelListings.ChannelID", channelIdOrSlug, channelIdOrSlug).
 		Limit(1).
 		Suffix(")")
@@ -174,7 +173,7 @@ func (ps *SqlProductStore) filterMinimalPrice(
 	productChannelListingQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(store.ProductChannelListingTableName).
+		From(model.ProductChannelListingTableName).
 		Where(channelQuery).
 		Where("ProductChannelListings.ProductID = Products.Id").
 		Limit(1).
@@ -359,7 +358,7 @@ func (ps *SqlProductStore) filterProductsByAttributesValues(query squirrel.Selec
 		assignedProductAttributeValues := ps.GetQueryBuilder(squirrel.Question).
 			Select(`(1) AS "a"`).
 			Prefix("EXISTS (").
-			From(store.AssignedProductAttributeValueTableName).
+			From(model.AssignedProductAttributeValueTableName).
 			Where(squirrel.Eq{"AssignedProductAttributeValues.ValueID": values}).
 			Where("AssignedProductAttributeValues.AssignmentID = AssignedProductAttributes.Id").
 			Limit(1).
@@ -368,7 +367,7 @@ func (ps *SqlProductStore) filterProductsByAttributesValues(query squirrel.Selec
 		assignedProductAttributes := ps.GetQueryBuilder(squirrel.Question).
 			Select(`(1) AS "a"`).
 			Prefix("EXISTS (").
-			From(store.AssignedProductAttributeTableName).
+			From(model.AssignedProductAttributeTableName).
 			Where(assignedProductAttributeValues).
 			Where("AssignedProductAttributes.ProductID = Products.Id").
 			Limit(1).
@@ -378,7 +377,7 @@ func (ps *SqlProductStore) filterProductsByAttributesValues(query squirrel.Selec
 
 		ssignedVariantAttributeValues := ps.GetQueryBuilder(squirrel.Question).
 			Select(`(1) AS "a"`).
-			From(store.AssignedVariantAttributeValueTableName).
+			From(model.AssignedVariantAttributeValueTableName).
 			Prefix("EXISTS (").
 			Where(squirrel.Eq{"AssignedVariantAttributeValues.ValueID": values}).
 			Where("AssignedVariantAttributeValues.AssignmentID = AssignedVariantAttributes.Id").
@@ -387,7 +386,7 @@ func (ps *SqlProductStore) filterProductsByAttributesValues(query squirrel.Selec
 
 		assignedVariantAttributes := ps.GetQueryBuilder(squirrel.Question).
 			Select(`(1) AS "a"`).
-			From(store.AssignedVariantAttributeTableName).
+			From(model.AssignedVariantAttributeTableName).
 			Prefix("EXISTS (").
 			Where(ssignedVariantAttributeValues).
 			Where("AssignedVariantAttributes.VariantID = ProductVariants.Id").
@@ -396,7 +395,7 @@ func (ps *SqlProductStore) filterProductsByAttributesValues(query squirrel.Selec
 
 		productVariants := ps.GetQueryBuilder(squirrel.Question).
 			Select(`(1) AS "a"`).
-			From(store.ProductVariantTableName).
+			From(model.ProductVariantTableName).
 			Prefix("EXISTS (").
 			Where(assignedVariantAttributes).
 			Where("ProductVariants.ProductID = Products.Id").
@@ -427,7 +426,7 @@ func (ps *SqlProductStore) cleanProductAttributesFilterInput(filterValue valueLi
 	}
 
 	var attributeValues model.AttributeValues
-	err = ps.GetReplicaX().Select(&attributeValues, "SELECT * FROM "+store.AttributeValueTableName)
+	err = ps.GetReplicaX().Select(&attributeValues, "SELECT * FROM "+model.AttributeValueTableName)
 	if err != nil {
 		return errors.Wrap(err, "failed to find all attribute values")
 	}
@@ -462,8 +461,8 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 	attributeQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(store.AttributeTableName).
-		Where(squirrel.Eq{store.AttributeTableName + ".InputType": model.AttributeInputTypeNumeric}).
+		From(model.AttributeTableName).
+		Where(squirrel.Eq{model.AttributeTableName + ".InputType": model.AttributeInputTypeNumeric}).
 		Where("Attributes.Id = AttributeValues.AttributeID").
 		Suffix(")").
 		Limit(1)
@@ -527,7 +526,7 @@ func (ps *SqlProductStore) cleanProductAttributesRangeFilterInput(filterValue va
 
 func (ps *SqlProductStore) cleanProductAttributesDateTimeRangeFilterInput(filterRange timeRangeList, queries *safeMap, isDate bool) error {
 	attributes, err := ps.Attribute().FilterbyOption(&model.AttributeFilterOption{
-		Slug:                           squirrel.Eq{store.AttributeTableName + ".Slug": filterRange.Slugs()},
+		Slug:                           squirrel.Eq{model.AttributeTableName + ".Slug": filterRange.Slugs()},
 		PrefetchRelatedAttributeValues: true,
 	})
 	if err != nil {
@@ -589,8 +588,8 @@ func (ps *SqlProductStore) cleanProductAttributesDateTimeRangeFilterInput(filter
 func (ps *SqlProductStore) cleanProductAttributesBooleanFilterInput(filterValue booleanList, queries *safeMap) error {
 	attributes, err := ps.Attribute().FilterbyOption(&model.AttributeFilterOption{
 		PrefetchRelatedAttributeValues: true,
-		Slug:                           squirrel.Eq{store.AttributeTableName + ".Slug": filterValue.Slugs()},
-		InputType:                      squirrel.Eq{store.AttributeTableName + ".InputType": model.AttributeInputTypeBoolean},
+		Slug:                           squirrel.Eq{model.AttributeTableName + ".Slug": filterValue.Slugs()},
+		InputType:                      squirrel.Eq{model.AttributeTableName + ".InputType": model.AttributeInputTypeBoolean},
 	})
 	if err != nil {
 		return err
@@ -647,7 +646,7 @@ func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder,
 	productVariantIDsQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select("Stocks.ProductVariantID").
 		Prefix("ProductVariants.Id IN (").
-		From(store.StockTableName).
+		From(model.StockTableName).
 		Where(channelQuery).
 		Where(`Stocks.Quantity > COALESCE (
 			(
@@ -667,7 +666,7 @@ func (ps *SqlProductStore) filterStockAvailability(query squirrel.SelectBuilder,
 	productVariantSelect := ps.GetQueryBuilder(squirrel.Question).
 		Select("ProductVariants.ProductID").
 		Prefix(prefix).
-		From(store.ProductVariantTableName).
+		From(model.ProductVariantTableName).
 		Where(productVariantIDsQuery).
 		Where("ProductVariants.ProductID = Products.Id").
 		Limit(1).
@@ -696,8 +695,8 @@ func (ps *SqlProductStore) filterStocks(
 ) squirrel.SelectBuilder {
 	if len(value.WarehouseIds) > 0 && value.Quantity == nil {
 		return query.
-			InnerJoin(store.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
-			InnerJoin(store.StockTableName + " ON Stocks.ProductVariantID = ProductVariants.Id").
+			InnerJoin(model.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
+			InnerJoin(model.StockTableName + " ON Stocks.ProductVariantID = ProductVariants.Id").
 			Where(squirrel.Eq{"Stocks.WarehouseID": value.WarehouseIds}).
 			Distinct()
 	}
@@ -736,8 +735,8 @@ func (ps *SqlProductStore) filterQuantity(
 	}
 
 	productVariantQuery := ps.GetQueryBuilder().
-		Select(ps.ProductVariant().ModelFields(store.ProductVariantTableName + ".")...).
-		From(store.ProductVariantTableName).
+		Select(ps.ProductVariant().ModelFields(model.ProductVariantTableName + ".")...).
+		From(model.ProductVariantTableName).
 		Where(squirrel.Eq{"ProductVariants.ProductID": products.IDs()})
 
 	if len(warehouseIDs) > 0 {
@@ -751,7 +750,7 @@ func (ps *SqlProductStore) filterQuantity(
 	}
 
 	productVariantQuery = productVariantQuery.
-		LeftJoin(store.StockTableName + " ON Stocks.ProductVariantID = ProductVariants.Id").
+		LeftJoin(model.StockTableName + " ON Stocks.ProductVariantID = ProductVariants.Id").
 		GroupBy("ProductVariants.Id")
 
 	// parse quantity range
@@ -776,7 +775,7 @@ func (ps *SqlProductStore) filterQuantity(
 	}
 
 	return query.
-		InnerJoin(store.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
+		InnerJoin(model.ProductVariantTableName + " ON ProductVariants.ProductID = Products.Id").
 		Where(squirrel.Eq{"ProductVariants.Id": variants.IDs()})
 }
 
@@ -788,7 +787,7 @@ func (ps *SqlProductStore) filterGiftCard(query squirrel.SelectBuilder, value bo
 	productTypeFilter := ps.GetQueryBuilder().
 		Select(`(1) AS "a"`).
 		Prefix(prefix).
-		From(store.ProductTypeTableName).
+		From(model.ProductTypeTableName).
 		Where("ProductTypes.Kind = ?", model.GIFT_CARD).
 		Where("ProductTypes.Id = Products.ProductTypeID").
 		Limit(1).
@@ -813,7 +812,7 @@ func (ps *SqlProductStore) filterHasPreorderedVariants(query squirrel.SelectBuil
 	variantQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix(prefix).
-		From(store.ProductVariantTableName).
+		From(model.ProductVariantTableName).
 		Where(
 			`ProductVariants.IsPreOrder
 			AND (
@@ -834,7 +833,7 @@ func (ps *SqlProductStore) filterSearch(query squirrel.SelectBuilder, value stri
 	variantQuery := ps.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
 		Prefix("EXISTS (").
-		From(store.ProductVariantTableName+" PV").
+		From(model.ProductVariantTableName+" PV").
 		Where("PV.Sku = ? AND PV.ProductID = Products.Id", value).
 		Suffix(")")
 

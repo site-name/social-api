@@ -40,10 +40,10 @@ func (as *SqlAssignedVariantAttributeStore) Save(variant *model.AssignedVariantA
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.AssignedVariantAttributeTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.AssignedVariantAttributeTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 	if _, err := as.GetMasterX().NamedExec(query, variant); err != nil {
-		if as.IsUniqueConstraintError(err, []string{"VariantID", "AssignmentID", strings.ToLower(store.AssignedVariantAttributeTableName) + "_variantid_assignmentid_key"}) {
-			return nil, store.NewErrInvalidInput(store.AssignedVariantAttributeTableName, "VariantID/AssignmentID", variant.VariantID+"/"+variant.AssignmentID)
+		if as.IsUniqueConstraintError(err, []string{"VariantID", "AssignmentID", strings.ToLower(model.AssignedVariantAttributeTableName) + "_variantid_assignmentid_key"}) {
+			return nil, store.NewErrInvalidInput(model.AssignedVariantAttributeTableName, "VariantID/AssignmentID", variant.VariantID+"/"+variant.AssignmentID)
 		}
 		return nil, errors.Wrapf(err, "failed to save assigned variant attribute with id=%s", variant.Id)
 	}
@@ -54,10 +54,10 @@ func (as *SqlAssignedVariantAttributeStore) Save(variant *model.AssignedVariantA
 func (as *SqlAssignedVariantAttributeStore) Get(variantID string) (*model.AssignedVariantAttribute, error) {
 	var res model.AssignedVariantAttribute
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedVariantAttributeTableName+" WHERE Id = ?", variantID)
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedVariantAttributeTableName+" WHERE Id = ?", variantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AssignedVariantAttributeTableName, variantID)
+			return nil, store.NewErrNotFound(model.AssignedVariantAttributeTableName, variantID)
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned variant attribute with id=%s", variantID)
 	}
@@ -68,8 +68,8 @@ func (as *SqlAssignedVariantAttributeStore) Get(variantID string) (*model.Assign
 // builFilterQuery is common method for building filter queries
 func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *model.AssignedVariantAttributeFilterOption) (string, []interface{}, error) {
 	query := as.GetQueryBuilder().
-		Select(as.ModelFields(store.AssignedVariantAttributeTableName + ".")...).
-		From(store.AssignedVariantAttributeTableName)
+		Select(as.ModelFields(model.AssignedVariantAttributeTableName + ".")...).
+		From(model.AssignedVariantAttributeTableName)
 
 	// parse option
 	if option.AssignmentID != nil {
@@ -83,8 +83,8 @@ func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *model.Assign
 		option.Assignment_Attribute_VisibleInStoreFront != nil ||
 		option.AssignmentAttributeType != nil {
 		query = query.
-			InnerJoin(store.AttributeVariantTableName + " ON (AssignedVariantAttributes.AssignmentID = AttributeVariants.Id)").
-			InnerJoin(store.AttributeTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)")
+			InnerJoin(model.AttributeVariantTableName + " ON (AssignedVariantAttributes.AssignmentID = AttributeVariants.Id)").
+			InnerJoin(model.AttributeTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)")
 	}
 
 	if option.AssignmentAttributeInputType != nil {
@@ -94,7 +94,7 @@ func (as *SqlAssignedVariantAttributeStore) builFilterQuery(option *model.Assign
 		query = query.Where(option.AssignmentAttributeType)
 	}
 	if value := option.Assignment_Attribute_VisibleInStoreFront; value != nil {
-		query = query.Where(squirrel.Eq{store.AttributeTableName + ".VisibleInStoreFront": *value})
+		query = query.Where(squirrel.Eq{model.AttributeTableName + ".VisibleInStoreFront": *value})
 	}
 
 	return query.ToSql()
@@ -115,7 +115,7 @@ func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *model.Assigned
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AssignedVariantAttributeTableName, "option")
+			return nil, store.NewErrNotFound(model.AssignedVariantAttributeTableName, "option")
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned variant attribute with VariantID = %s, AssignmentID = %s", option.VariantID, option.AssignmentID)
 	}

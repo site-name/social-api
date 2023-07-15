@@ -100,11 +100,11 @@ func (fs *SqlFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error
 	)
 
 	if isSaving {
-		query := "INSERT INTO " + store.FileInfoTableName + "(" + fs.ModelFields("").Join(",") + ") VALUES (" + fs.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.FileInfoTableName + "(" + fs.ModelFields("").Join(",") + ") VALUES (" + fs.ModelFields(":").Join(",") + ")"
 		_, err = fs.GetMasterX().NamedExec(query, info)
 
 	} else {
-		query := "UPDATE " + store.FileInfoTableName + " SET " + fs.
+		query := "UPDATE " + model.FileInfoTableName + " SET " + fs.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -132,7 +132,7 @@ func (fs *SqlFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error
 func (fs *SqlFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
 	var infos []*model.FileInfo
 	query, args, err := fs.GetQueryBuilder().
-		Select(fs.queryFields...).From(store.FileInfoTableName).
+		Select(fs.queryFields...).From(model.FileInfoTableName).
 		Where(squirrel.Eq{"Id": ids}).
 		Where("DeleteAt = 0").
 		OrderBy("CreateAt DESC").
@@ -151,7 +151,7 @@ func (fs *SqlFileInfoStore) get(id string, fromMaster bool) (*model.FileInfo, er
 
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).
-		From(store.FileInfoTableName).
+		From(model.FileInfoTableName).
 		Where(squirrel.Eq{"Id": id}).
 		Where(squirrel.Eq{"DeleteAt": 0})
 	queryString, args, err := query.ToSql()
@@ -199,7 +199,7 @@ func (fs *SqlFileInfoStore) GetWithOptions(page, perPage *int, opt *model.GetFil
 
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).
-		From(store.FileInfoTableName)
+		From(model.FileInfoTableName)
 
 	if len(opt.UserIds) > 0 {
 		query = query.Where(squirrel.Eq{"FileInfos.CreatorId": opt.UserIds})
@@ -255,7 +255,7 @@ func (fs *SqlFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
 
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).
-		From(store.FileInfoTableName).
+		From(model.FileInfoTableName).
 		Where(squirrel.Eq{"Path": path}).
 		Where(squirrel.Eq{"DeleteAt": 0}).
 		Limit(1)
@@ -283,7 +283,7 @@ func (fs *SqlFileInfoStore) GetForUser(userId string) ([]*model.FileInfo, error)
 
 	query := fs.GetQueryBuilder().
 		Select(fs.queryFields...).
-		From(store.FileInfoTableName).
+		From(model.FileInfoTableName).
 		Where(squirrel.Eq{"CreatorId": userId}).
 		Where(squirrel.Eq{"DeleteAt": 0}).
 		OrderBy("CreateAt")
@@ -300,7 +300,7 @@ func (fs *SqlFileInfoStore) GetForUser(userId string) ([]*model.FileInfo, error)
 }
 
 func (fs *SqlFileInfoStore) SetContent(fileId, content string) error {
-	_, err := fs.GetMasterX().Exec("UPDATE "+store.FileInfoTableName+" SET Content=? WHERE Id=?", content, fileId)
+	_, err := fs.GetMasterX().Exec("UPDATE "+model.FileInfoTableName+" SET Content=? WHERE Id=?", content, fileId)
 	if err != nil {
 		return errors.Wrapf(err, "failed to update FileInfos content with id=%s", fileId)
 	}
@@ -367,7 +367,7 @@ func (fs SqlFileInfoStore) PermanentDeleteByUser(userId string) (int64, error) {
 func (fs *SqlFileInfoStore) CountAll() (int64, error) {
 	query := fs.GetQueryBuilder().
 		Select("COUNT(*)").
-		From(store.FileInfoTableName).
+		From(model.FileInfoTableName).
 		Where("DeleteAt = 0")
 
 	queryString, args, err := query.ToSql()

@@ -10,6 +10,10 @@ import (
 	"github.com/site-name/decimal"
 )
 
+func (r *Resolver) HomepageEvents(ctx context.Context, args GraphqlParams) (*OrderEventCountableConnection, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *Resolver) OrderSettingsUpdate(ctx context.Context, args struct {
 	Input OrderSettingsUpdateInput
 }) (*OrderSettingsUpdate, error) {

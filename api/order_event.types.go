@@ -12,7 +12,6 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -330,7 +329,7 @@ func orderEventsByOrderIdLoader(ctx context.Context, orderIDs []string) []*datal
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	events, appErr := embedCtx.App.Srv().OrderService().FilterOrderEventsByOptions(&model.OrderEventFilterOptions{
-		OrderID: squirrel.Eq{store.OrderEventTableName + ".OrderID": orderIDs},
+		OrderID: squirrel.Eq{model.OrderEventTableName + ".OrderID": orderIDs},
 	})
 	if appErr != nil {
 		for idx := range orderIDs {

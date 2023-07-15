@@ -15,14 +15,14 @@ func NewSqlShippingZoneChannelStore(s store.Store) store.ShippingZoneChannelStor
 	return &SqlShippingZoneChannelStore{s}
 }
 
-func (s *SqlShippingZoneChannelStore) BulkSave(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error) {
+func (s *SqlShippingZoneChannelStore) BulkSave(transaction store_iface.SqlxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error) {
 	runner := s.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
 
 	res := []*model.ShippingZoneChannel{}
-	query := "INSERT INTO " + store.ShippingZoneChannelTableName + "(Id, ShippingZoneID, ChannelID) VALUES (Id=:Id, ShippingZoneID=:ShippingZoneID, ChannelID=:ChannelID)"
+	query := "INSERT INTO " + model.ShippingZoneChannelTableName + "(Id, ShippingZoneID, ChannelID) VALUES (Id=:Id, ShippingZoneID=:ShippingZoneID, ChannelID=:ChannelID)"
 
 	for _, rel := range relations {
 		rel.PreSave()
@@ -34,7 +34,7 @@ func (s *SqlShippingZoneChannelStore) BulkSave(transaction store_iface.SqlxTxExe
 		_, err := runner.NamedExec(query, rel)
 		if err != nil {
 			if s.IsUniqueConstraintError(err, []string{"shippingzonechannels_shippingzoneid_channelid_key"}) {
-				return nil, store.NewErrInvalidInput(store.ShippingZoneChannelTableName, "ShippingZoneID/ChannelID", "")
+				return nil, store.NewErrInvalidInput(model.ShippingZoneChannelTableName, "ShippingZoneID/ChannelID", "")
 			}
 			return nil, errors.Wrap(err, "failed to save shipping zone channel relation")
 		}
@@ -44,31 +44,33 @@ func (s *SqlShippingZoneChannelStore) BulkSave(transaction store_iface.SqlxTxExe
 	return res, nil
 }
 
-func (s *SqlShippingZoneChannelStore) BulkDelete(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) error {
+func (s *SqlShippingZoneChannelStore) BulkDelete(transaction store_iface.SqlxExecutor, options *model.ShippingZoneChannelFilterOptions) error {
+	if options == nil || options.Conditions == nil {
+		return errors.New("please provide valid conditions")
+	}
+
+	query, args, err := s.GetQueryBuilder().Delete(model.ShippingZoneChannelTableName).Where(options.Conditions).ToSql()
+	if err != nil {
+		return errors.Wrap(err, "BulkDelete_ToSql")
+	}
+
 	runner := s.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
-	query := "DELETE FROM " + store.ShippingZoneChannelTableName + " WHERE ChannelID=$1 AND ShippingZoneID=$2"
 
-	for _, rel := range relations {
-		_, err := runner.Exec(query, rel.ChannelID, rel.ShippingZoneID)
-		if err != nil {
-			return errors.Wrapf(err, "failed to delete channel-shipping zone relations with channelID=%s, shippingZoneID=%s", rel.ChannelID, rel.ShippingZoneID)
-		}
+	_, err = runner.Exec(query, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete shipping zone channel reltions")
 	}
-
 	return nil
 }
 
 func (s *SqlShippingZoneChannelStore) FilterByOptions(options *model.ShippingZoneChannelFilterOptions) ([]*model.ShippingZoneChannel, error) {
-	query := s.GetQueryBuilder().Select("*").From(store.ShippingZoneChannelTableName)
+	query := s.GetQueryBuilder().Select("*").From(model.ShippingZoneChannelTableName)
 
-	if options.ChannelID != nil {
-		query = query.Where(options.ChannelID)
-	}
-	if options.ShippingZoneID != nil {
-		query = query.Where(options.ShippingZoneID)
+	if options.Conditions != nil {
+		query = query.Where(options.Conditions)
 	}
 
 	queryStr, args, err := query.ToSql()

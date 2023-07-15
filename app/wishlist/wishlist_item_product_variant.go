@@ -9,7 +9,7 @@ import (
 )
 
 // BulkUpsertWishlistItemProductVariantRelations
-func (a *ServiceWishlist) BulkUpsertWishlistItemProductVariantRelations(transaction store_iface.SqlxTxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, *model.AppError) {
+func (a *ServiceWishlist) BulkUpsertWishlistItemProductVariantRelations(transaction store_iface.SqlxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, *model.AppError) {
 	relations, err := a.srv.Store.WishlistItemProductVariant().BulkUpsert(transaction, relations)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

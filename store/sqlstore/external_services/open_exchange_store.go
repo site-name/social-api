@@ -32,7 +32,7 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) 
 		// try lookup:
 		err := transaction.
 			QueryRowX(
-				"SELECT * FROM "+store.OpenExchangeRateTableName+" WHERE ToCurrency = $1 FOR UPDATE",
+				"SELECT * FROM "+model.OpenExchangeRateTableName+" WHERE ToCurrency = $1 FOR UPDATE",
 				rate.ToCurrency,
 			).
 			Scan(&oldRate.Id, &oldRate.ToCurrency, &oldRate.Rate)
@@ -55,12 +55,12 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) 
 		}
 
 		if isSaving {
-			_, err = transaction.NamedExec("INSERT INTO "+store.OpenExchangeRateTableName+"(Id, ToCurrency, Rate) VALUES (:Id, :ToCurrency, :Rate)", rate)
+			_, err = transaction.NamedExec("INSERT INTO "+model.OpenExchangeRateTableName+"(Id, ToCurrency, Rate) VALUES (:Id, :ToCurrency, :Rate)", rate)
 		} else {
 			// check if rates are different then update
 			if !rate.Rate.Equal(*oldRate.Rate) {
 				rate.Id = oldRate.Id
-				_, err = transaction.NamedExec("UPDATE "+store.OpenExchangeRateTableName+" SET Rate=:Rate WHERE Id=:Id", rate)
+				_, err = transaction.NamedExec("UPDATE "+model.OpenExchangeRateTableName+" SET Rate=:Rate WHERE Id=:Id", rate)
 			}
 		}
 
@@ -81,7 +81,7 @@ func (os *SqlOpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, error) 
 	var res []*model.OpenExchangeRate
 	err := os.GetReplicaX().Select(
 		&res,
-		"SELECT * FROM "+store.OpenExchangeRateTableName+" ORDER BY ToCurrency ASC",
+		"SELECT * FROM "+model.OpenExchangeRateTableName+" ORDER BY ToCurrency ASC",
 	)
 
 	if err != nil {

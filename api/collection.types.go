@@ -66,7 +66,7 @@ func (c *Collection) Products(ctx context.Context, args struct {
 	// collectionProductRelations, appErr := embedCtx.App.Srv().
 	// 	ProductService().
 	// 	CollectionProductRelationsByOptions(&model.CollectionProductFilterOptions{
-	// 		CollectionID: squirrel.Eq{store.CollectionProductRelationTableName + ".CollectionID": c.ID},
+	// 		CollectionID: squirrel.Eq{model.CollectionProductRelationTableName + ".CollectionID": c.ID},
 	// 	})
 	// if appErr != nil {
 	// 	return nil, appErr
@@ -81,7 +81,7 @@ func (c *Collection) Products(ctx context.Context, args struct {
 
 	// // find all products that have relationshop with current collection.
 	// products, appErr = embedCtx.App.Srv().ProductService().ProductsByOption(&model.ProductFilterOption{
-	// 	CollectionID: squirrel.Eq{store.CollectionProductRelationTableName + ".CollectionID": c.ID},
+	// 	CollectionID: squirrel.Eq{model.CollectionProductRelationTableName + ".CollectionID": c.ID},
 	// })
 
 	// keyFunc := func(p *model.Product) string { return p.Slug }

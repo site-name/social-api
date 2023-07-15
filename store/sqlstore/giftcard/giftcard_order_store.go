@@ -35,10 +35,10 @@ func (gs *SqlGiftCardOrderStore) Save(giftCardOrder *model.OrderGiftCard) (*mode
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.OrderGiftCardTableName + "(" + gs.ModelFields("").Join(",") + ") VALUES (" + gs.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.OrderGiftCardTableName + "(" + gs.ModelFields("").Join(",") + ") VALUES (" + gs.ModelFields(":").Join(",") + ")"
 	if _, err := gs.GetMasterX().NamedExec(query, giftCardOrder); err != nil {
 		if gs.IsUniqueConstraintError(err, []string{"GiftCardID", "OrderID", "ordergiftcards_giftcardid_orderid_key"}) {
-			return nil, store.NewErrInvalidInput(store.OrderGiftCardTableName, "GiftCardID/OrderID", giftCardOrder.GiftCardID+"/"+giftCardOrder.OrderID)
+			return nil, store.NewErrInvalidInput(model.OrderGiftCardTableName, "GiftCardID/OrderID", giftCardOrder.GiftCardID+"/"+giftCardOrder.OrderID)
 		}
 		return nil, errors.Wrapf(err, "failed to save giftcard-order relation with id=%s", giftCardOrder.Id)
 	}
@@ -48,10 +48,10 @@ func (gs *SqlGiftCardOrderStore) Save(giftCardOrder *model.OrderGiftCard) (*mode
 
 func (gs *SqlGiftCardOrderStore) Get(id string) (*model.OrderGiftCard, error) {
 	var res model.OrderGiftCard
-	err := gs.GetReplicaX().Get(&res, "SELECT * FROM "+store.OrderGiftCardTableName+" WHERE Id = ?", id)
+	err := gs.GetReplicaX().Get(&res, "SELECT * FROM "+model.OrderGiftCardTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.OrderGiftCardTableName, id)
+			return nil, store.NewErrNotFound(model.OrderGiftCardTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to get order-giftcard with id=%s", id)
 	}
@@ -60,7 +60,7 @@ func (gs *SqlGiftCardOrderStore) Get(id string) (*model.OrderGiftCard, error) {
 }
 
 // BulkUpsert upserts given order-giftcard relations and returns it
-func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
+func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxExecutor, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
 	var executor store_iface.SqlxExecutor = gs.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -83,11 +83,11 @@ func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecut
 			numUpdated int64
 		)
 		if isSaving {
-			query := "INSERT INTO " + store.OrderGiftCardTableName + "(" + gs.ModelFields("").Join(",") + ") VALUES (" + gs.ModelFields(":").Join(",") + ")"
+			query := "INSERT INTO " + model.OrderGiftCardTableName + "(" + gs.ModelFields("").Join(",") + ") VALUES (" + gs.ModelFields(":").Join(",") + ")"
 			_, err = executor.NamedExec(query, relation)
 
 		} else {
-			query := "UPDATE " + store.OrderGiftCardTableName + " SET " + gs.
+			query := "UPDATE " + model.OrderGiftCardTableName + " SET " + gs.
 				ModelFields("").
 				Map(func(_ int, s string) string {
 					return s + "=:" + s
@@ -103,7 +103,7 @@ func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecut
 
 		if err != nil {
 			if gs.IsUniqueConstraintError(err, []string{"GiftCardID", "OrderID", "ordergiftcards_giftcardid_orderid_key"}) {
-				return nil, store.NewErrInvalidInput(store.OrderGiftCardTableName, "GiftCardID/OrderID", "duplicate")
+				return nil, store.NewErrInvalidInput(model.OrderGiftCardTableName, "GiftCardID/OrderID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to upsert order-giftcard relation with id=%s", relation.Id)
 		}
@@ -117,7 +117,7 @@ func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecut
 }
 
 func (s *SqlGiftCardOrderStore) FilterByOptions(options *model.OrderGiftCardFilterOptions) ([]*model.OrderGiftCard, error) {
-	query := s.GetQueryBuilder().Select("Id", "GiftCardID", "OrderID").From(store.OrderGiftCardTableName)
+	query := s.GetQueryBuilder().Select("Id", "GiftCardID", "OrderID").From(model.OrderGiftCardTableName)
 
 	if options.GiftCardID != nil {
 		query = query.Where(options.GiftCardID)

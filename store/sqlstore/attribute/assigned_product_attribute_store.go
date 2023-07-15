@@ -37,11 +37,11 @@ func (as *SqlAssignedProductAttributeStore) Save(newInstance *model.AssignedProd
 	}
 
 	if _, err := as.GetMasterX().Exec(
-		"INSERT INTO "+store.AssignedPageAttributeTableName+" (Id, ProductID, AssignmentID) VALUES (?, ?, ?)",
+		"INSERT INTO "+model.AssignedPageAttributeTableName+" (Id, ProductID, AssignmentID) VALUES (?, ?, ?)",
 		newInstance.Id, newInstance.ProductID, newInstance.AssignmentID,
 	); err != nil {
-		if as.IsUniqueConstraintError(err, []string{"ProductID", "AssignmentID", strings.ToLower(store.AssignedProductAttributeTableName) + "_productid_assignmentid_key"}) {
-			return nil, store.NewErrInvalidInput(store.AssignedProductAttributeTableName, "ProductID/AssignmentID", newInstance.ProductID+"/"+newInstance.AssignmentID)
+		if as.IsUniqueConstraintError(err, []string{"ProductID", "AssignmentID", strings.ToLower(model.AssignedProductAttributeTableName) + "_productid_assignmentid_key"}) {
+			return nil, store.NewErrInvalidInput(model.AssignedProductAttributeTableName, "ProductID/AssignmentID", newInstance.ProductID+"/"+newInstance.AssignmentID)
 		}
 		return nil, errors.Wrapf(err, "failed to insert new assigned product attribute with id=%s", newInstance.Id)
 	}
@@ -52,10 +52,10 @@ func (as *SqlAssignedProductAttributeStore) Save(newInstance *model.AssignedProd
 func (as *SqlAssignedProductAttributeStore) Get(id string) (*model.AssignedProductAttribute, error) {
 	var res model.AssignedProductAttribute
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedProductAttributeTableName+" WHERE Id = ?", id)
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedProductAttributeTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AssignedProductAttributeTableName, id)
+			return nil, store.NewErrNotFound(model.AssignedProductAttributeTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned product attribute with id=%s", id)
 	}
@@ -64,7 +64,7 @@ func (as *SqlAssignedProductAttributeStore) Get(id string) (*model.AssignedProdu
 }
 
 func (as *SqlAssignedProductAttributeStore) commonQueryBuilder(options *model.AssignedProductAttributeFilterOption) squirrel.SelectBuilder {
-	query := as.GetQueryBuilder().Select("*").From(store.AssignedProductAttributeTableName)
+	query := as.GetQueryBuilder().Select("*").From(model.AssignedProductAttributeTableName)
 
 	// parse option
 	if options.AssignmentID != nil {
@@ -75,9 +75,9 @@ func (as *SqlAssignedProductAttributeStore) commonQueryBuilder(options *model.As
 	}
 	if value := options.AttributeProduct_Attribute_VisibleInStoreFront; value != nil {
 		query = query.
-			InnerJoin(store.AttributeProductTableName + " ON AttributeProducts.Id = AssignedProductAttributes.AssignmentID").
-			InnerJoin(store.AttributeTableName + " ON AttributeProducts.AttributeID = Attributes.Id").
-			Where(squirrel.Eq{store.AttributeTableName + ".VisibleInStoreFront": *value})
+			InnerJoin(model.AttributeProductTableName + " ON AttributeProducts.Id = AssignedProductAttributes.AssignmentID").
+			InnerJoin(model.AttributeTableName + " ON AttributeProducts.AttributeID = Attributes.Id").
+			Where(squirrel.Eq{model.AttributeTableName + ".VisibleInStoreFront": *value})
 	}
 
 	return query
@@ -93,7 +93,7 @@ func (as *SqlAssignedProductAttributeStore) GetWithOption(option *model.Assigned
 	err = as.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AssignedProductAttributeTableName, "option")
+			return nil, store.NewErrNotFound(model.AssignedProductAttributeTableName, "option")
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned product attribute with given options")
 	}

@@ -88,8 +88,8 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *model.CheckoutInfo,
 
 	checkout := checkoutInfo.Checkout
 	productChannelListings, appErr := a.srv.ProductService().ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
-		ChannelID: squirrel.Eq{store.ProductChannelListingTableName + ".ChannelID": checkout.ChannelID},
-		ProductID: squirrel.Eq{store.ProductChannelListingTableName + ".ProductID": variant.ProductID},
+		ChannelID: squirrel.Eq{model.ProductChannelListingTableName + ".ChannelID": checkout.ChannelID},
+		ProductID: squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": variant.ProductID},
 	})
 	if appErr != nil {
 		return nil, nil, appErr
@@ -106,8 +106,8 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *model.CheckoutInfo,
 
 	if line == nil {
 		checkoutLines, appErr := a.CheckoutLinesByOption(&model.CheckoutLineFilterOption{
-			CheckoutID: squirrel.Eq{store.CheckoutLineTableName + ".CheckoutID": checkout.Token},
-			VariantID:  squirrel.Eq{store.CheckoutLineTableName + ".VariantID": variant.Id},
+			CheckoutID: squirrel.Eq{model.CheckoutLineTableName + ".CheckoutID": checkout.Token},
+			VariantID:  squirrel.Eq{model.CheckoutLineTableName + ".VariantID": variant.Id},
 		})
 		if appErr != nil && appErr.StatusCode != http.StatusNotFound { // ignore not found error
 			return nil, nil, appErr
@@ -189,8 +189,8 @@ func (a *ServiceCheckout) AddVariantsToCheckout(checkout *model.Checkout, varian
 	}
 	channelListings, appErr := a.srv.ProductService().
 		ProductChannelListingsByOption(&model.ProductChannelListingFilterOption{
-			ChannelID: squirrel.Eq{store.ProductChannelListingTableName + ".ChannelID": checkout.ChannelID},
-			ProductID: squirrel.Eq{store.ProductChannelListingTableName + ".ProductID": productIDs},
+			ChannelID: squirrel.Eq{model.ProductChannelListingTableName + ".ChannelID": checkout.ChannelID},
+			ProductID: squirrel.Eq{model.ProductChannelListingTableName + ".ProductID": productIDs},
 		})
 	if appErr != nil {
 		return nil, nil, appErr
@@ -294,7 +294,7 @@ func (a *ServiceCheckout) checkNewCheckoutAddress(checkout *model.Checkout, addr
 	return hasAddressChanged, removeOldAddress, nil
 }
 
-func (a *ServiceCheckout) ChangeBillingAddressInCheckout(transaction store_iface.SqlxTxExecutor, checkout *model.Checkout, address *model.Address) *model.AppError {
+func (a *ServiceCheckout) ChangeBillingAddressInCheckout(transaction store_iface.SqlxExecutor, checkout *model.Checkout, address *model.Address) *model.AppError {
 	changed, remove, appErr := a.checkNewCheckoutAddress(checkout, address, model.ADDRESS_TYPE_BILLING)
 	if appErr != nil {
 		return appErr
@@ -320,7 +320,7 @@ func (a *ServiceCheckout) ChangeBillingAddressInCheckout(transaction store_iface
 // Save shipping address in checkout if changed.
 //
 // Remove previously saved address if not connected to any user.
-func (a *ServiceCheckout) ChangeShippingAddressInCheckout(transaction store_iface.SqlxTxExecutor, checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError {
+func (a *ServiceCheckout) ChangeShippingAddressInCheckout(transaction store_iface.SqlxExecutor, checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError {
 	checkout := checkoutInfo.Checkout
 	changed, remove, appErr := a.checkNewCheckoutAddress(&checkout, address, model.ADDRESS_TYPE_SHIPPING)
 	if appErr != nil {
@@ -586,15 +586,15 @@ func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo model.CheckoutInfo,
 
 	voucherFilterOption := &model.VoucherFilterOption{
 		UsageLimit: squirrel.Or{
-			squirrel.Eq{store.VoucherTableName + ".UsageLimit": nil},
-			squirrel.Gt{store.VoucherTableName + ".UsageLimit": store.VoucherTableName + ".Used"},
+			squirrel.Eq{model.VoucherTableName + ".UsageLimit": nil},
+			squirrel.Gt{model.VoucherTableName + ".UsageLimit": model.VoucherTableName + ".Used"},
 		},
 		EndDate: squirrel.Or{
-			squirrel.Eq{store.VoucherTableName + ".EndDate": nil},
-			squirrel.GtOrEq{store.VoucherTableName + ".EndDate": now},
+			squirrel.Eq{model.VoucherTableName + ".EndDate": nil},
+			squirrel.GtOrEq{model.VoucherTableName + ".EndDate": now},
 		},
-		StartDate:            squirrel.LtOrEq{store.VoucherTableName + ".StartDate": now},
-		ChannelListingSlug:   squirrel.Eq{store.ChannelTableName + ".Slug": checkoutInfo.Channel.Slug},
+		StartDate:            squirrel.LtOrEq{model.VoucherTableName + ".StartDate": now},
+		ChannelListingSlug:   squirrel.Eq{model.ChannelTableName + ".Slug": checkoutInfo.Channel.Slug},
 		ChannelListingActive: model.NewPrimitive(true),
 	}
 
@@ -667,8 +667,8 @@ func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginM
 		// check if the owner of this checkout has ther primary language:
 		if checkoutInfo.User != nil && model.Languages[model.LanguageCodeEnum(checkoutInfo.User.Locale)] != "" {
 			voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&model.VoucherTranslationFilterOption{
-				LanguageCode: squirrel.Eq{store.VoucherTranslationTableName + ".LanguageCode": checkoutInfo.User.Locale},
-				VoucherID:    squirrel.Eq{store.VoucherTranslationTableName + ".VoucherID": voucher.Id},
+				LanguageCode: squirrel.Eq{model.VoucherTranslationTableName + ".LanguageCode": checkoutInfo.User.Locale},
+				VoucherID:    squirrel.Eq{model.VoucherTranslationTableName + ".VoucherID": voucher.Id},
 			})
 			if appErr != nil {
 				if appErr.StatusCode == http.StatusInternalServerError {
@@ -762,7 +762,7 @@ func (s *ServiceCheckout) AddVoucherToCheckout(manager interfaces.PluginManagerI
 
 	if user := checkoutInfo.User; user != nil && model.Languages[model.LanguageCodeEnum(user.Locale)] != "" {
 		voucherTranslation, appErr := s.srv.DiscountService().GetVoucherTranslationByOption(&model.VoucherTranslationFilterOption{
-			LanguageCode: squirrel.Eq{store.VoucherTranslationTableName + ".LanguageCode": user.Locale},
+			LanguageCode: squirrel.Eq{model.VoucherTranslationTableName + ".LanguageCode": user.Locale},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -875,7 +875,7 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines model.Checko
 		return model.Warehouses{}, nil
 	}
 	checkoutLines, appErr := s.CheckoutLinesByOption(&model.CheckoutLineFilterOption{
-		Id: squirrel.Eq{store.CheckoutLineTableName + ".Id": lines.CheckoutLines().IDs()},
+		Id: squirrel.Eq{model.CheckoutLineTableName + ".Id": lines.CheckoutLines().IDs()},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -921,7 +921,7 @@ func (s *ServiceCheckout) IsFullyPaid(manager interfaces.PluginManagerInterface,
 	checkout := checkoutInfo.Checkout
 	payments, appErr := s.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		IsActive:   model.NewPrimitive(true),
-		CheckoutID: squirrel.Eq{store.PaymentTableName + ".CheckoutID": checkout.Token},
+		CheckoutID: squirrel.Eq{model.PaymentTableName + ".CheckoutID": checkout.Token},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

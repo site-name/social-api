@@ -15,6 +15,7 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type RetryLayer struct {
@@ -95,10 +96,6 @@ type RetryLayer struct {
 	ProductVariantChannelListingStore  store.ProductVariantChannelListingStore
 	ProductVariantTranslationStore     store.ProductVariantTranslationStore
 	RoleStore                          store.RoleStore
-	SaleCategoryRelationStore          store.SaleCategoryRelationStore
-	SaleCollectionRelationStore        store.SaleCollectionRelationStore
-	SaleProductRelationStore           store.SaleProductRelationStore
-	SaleProductVariantStore            store.SaleProductVariantStore
 	SessionStore                       store.SessionStore
 	ShippingMethodStore                store.ShippingMethodStore
 	ShippingMethodChannelListingStore  store.ShippingMethodChannelListingStore
@@ -120,14 +117,9 @@ type RetryLayer struct {
 	UserStore                          store.UserStore
 	UserAccessTokenStore               store.UserAccessTokenStore
 	UserAddressStore                   store.UserAddressStore
-	VariantMediaStore                  store.VariantMediaStore
 	VatStore                           store.VatStore
-	VoucherCategoryStore               store.VoucherCategoryStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
-	VoucherCollectionStore             store.VoucherCollectionStore
 	VoucherCustomerStore               store.VoucherCustomerStore
-	VoucherProductStore                store.VoucherProductStore
-	VoucherProductVariantStore         store.VoucherProductVariantStore
 	VoucherTranslationStore            store.VoucherTranslationStore
 	WarehouseStore                     store.WarehouseStore
 	WarehouseShippingZoneStore         store.WarehouseShippingZoneStore
@@ -440,22 +432,6 @@ func (s *RetryLayer) Role() store.RoleStore {
 	return s.RoleStore
 }
 
-func (s *RetryLayer) SaleCategoryRelation() store.SaleCategoryRelationStore {
-	return s.SaleCategoryRelationStore
-}
-
-func (s *RetryLayer) SaleCollectionRelation() store.SaleCollectionRelationStore {
-	return s.SaleCollectionRelationStore
-}
-
-func (s *RetryLayer) SaleProductRelation() store.SaleProductRelationStore {
-	return s.SaleProductRelationStore
-}
-
-func (s *RetryLayer) SaleProductVariant() store.SaleProductVariantStore {
-	return s.SaleProductVariantStore
-}
-
 func (s *RetryLayer) Session() store.SessionStore {
 	return s.SessionStore
 }
@@ -540,36 +516,16 @@ func (s *RetryLayer) UserAddress() store.UserAddressStore {
 	return s.UserAddressStore
 }
 
-func (s *RetryLayer) VariantMedia() store.VariantMediaStore {
-	return s.VariantMediaStore
-}
-
 func (s *RetryLayer) Vat() store.VatStore {
 	return s.VatStore
-}
-
-func (s *RetryLayer) VoucherCategory() store.VoucherCategoryStore {
-	return s.VoucherCategoryStore
 }
 
 func (s *RetryLayer) VoucherChannelListing() store.VoucherChannelListingStore {
 	return s.VoucherChannelListingStore
 }
 
-func (s *RetryLayer) VoucherCollection() store.VoucherCollectionStore {
-	return s.VoucherCollectionStore
-}
-
 func (s *RetryLayer) VoucherCustomer() store.VoucherCustomerStore {
 	return s.VoucherCustomerStore
-}
-
-func (s *RetryLayer) VoucherProduct() store.VoucherProductStore {
-	return s.VoucherProductStore
-}
-
-func (s *RetryLayer) VoucherProductVariant() store.VoucherProductVariantStore {
-	return s.VoucherProductVariantStore
 }
 
 func (s *RetryLayer) VoucherTranslation() store.VoucherTranslationStore {
@@ -976,26 +932,6 @@ type RetryLayerRoleStore struct {
 	Root *RetryLayer
 }
 
-type RetryLayerSaleCategoryRelationStore struct {
-	store.SaleCategoryRelationStore
-	Root *RetryLayer
-}
-
-type RetryLayerSaleCollectionRelationStore struct {
-	store.SaleCollectionRelationStore
-	Root *RetryLayer
-}
-
-type RetryLayerSaleProductRelationStore struct {
-	store.SaleProductRelationStore
-	Root *RetryLayer
-}
-
-type RetryLayerSaleProductVariantStore struct {
-	store.SaleProductVariantStore
-	Root *RetryLayer
-}
-
 type RetryLayerSessionStore struct {
 	store.SessionStore
 	Root *RetryLayer
@@ -1101,18 +1037,8 @@ type RetryLayerUserAddressStore struct {
 	Root *RetryLayer
 }
 
-type RetryLayerVariantMediaStore struct {
-	store.VariantMediaStore
-	Root *RetryLayer
-}
-
 type RetryLayerVatStore struct {
 	store.VatStore
-	Root *RetryLayer
-}
-
-type RetryLayerVoucherCategoryStore struct {
-	store.VoucherCategoryStore
 	Root *RetryLayer
 }
 
@@ -1121,23 +1047,8 @@ type RetryLayerVoucherChannelListingStore struct {
 	Root *RetryLayer
 }
 
-type RetryLayerVoucherCollectionStore struct {
-	store.VoucherCollectionStore
-	Root *RetryLayer
-}
-
 type RetryLayerVoucherCustomerStore struct {
 	store.VoucherCustomerStore
-	Root *RetryLayer
-}
-
-type RetryLayerVoucherProductStore struct {
-	store.VoucherProductStore
-	Root *RetryLayer
-}
-
-type RetryLayerVoucherProductVariantStore struct {
-	store.VoucherProductVariantStore
 	Root *RetryLayer
 }
 
@@ -1182,7 +1093,7 @@ func isRepeatableError(err error) bool {
 	return false
 }
 
-func (s *RetryLayerAddressStore) DeleteAddresses(transaction store_iface.SqlxTxExecutor, addressIDs []string) error {
+func (s *RetryLayerAddressStore) DeleteAddresses(transaction store_iface.SqlxExecutor, addressIDs []string) error {
 
 	tries := 0
 	for {
@@ -1242,7 +1153,7 @@ func (s *RetryLayerAddressStore) Get(addressID string) (*model.Address, error) {
 
 }
 
-func (s *RetryLayerAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, address *model.Address) (*model.Address, error) {
+func (s *RetryLayerAddressStore) Upsert(transaction store_iface.SqlxExecutor, address *model.Address) (*model.Address, error) {
 
 	tries := 0
 	for {
@@ -1262,7 +1173,7 @@ func (s *RetryLayerAddressStore) Upsert(transaction store_iface.SqlxTxExecutor, 
 
 }
 
-func (s *RetryLayerAllocationStore) BulkDelete(transaction store_iface.SqlxTxExecutor, allocationIDs []string) error {
+func (s *RetryLayerAllocationStore) BulkDelete(transaction store_iface.SqlxExecutor, allocationIDs []string) error {
 
 	tries := 0
 	for {
@@ -1282,7 +1193,7 @@ func (s *RetryLayerAllocationStore) BulkDelete(transaction store_iface.SqlxTxExe
 
 }
 
-func (s *RetryLayerAllocationStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, allocations []*model.Allocation) ([]*model.Allocation, error) {
+func (s *RetryLayerAllocationStore) BulkUpsert(transaction store_iface.SqlxExecutor, allocations []*model.Allocation) ([]*model.Allocation, error) {
 
 	tries := 0
 	for {
@@ -2222,7 +2133,7 @@ func (s *RetryLayerAttributeProductStore) Save(attributeProduct *model.Attribute
 
 }
 
-func (s *RetryLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, values model.AttributeValues) (model.AttributeValues, error) {
+func (s *RetryLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxExecutor, values model.AttributeValues) (model.AttributeValues, error) {
 
 	tries := 0
 	for {
@@ -2562,7 +2473,7 @@ func (s *RetryLayerCategoryStore) Upsert(category *model.Category) (*model.Categ
 
 }
 
-func (s *RetryLayerChannelStore) DeleteChannels(transaction store_iface.SqlxTxExecutor, ids []string) error {
+func (s *RetryLayerChannelStore) DeleteChannels(transaction store_iface.SqlxExecutor, ids []string) error {
 
 	tries := 0
 	for {
@@ -2642,7 +2553,7 @@ func (s *RetryLayerChannelStore) GetbyOption(option *model.ChannelFilterOption) 
 
 }
 
-func (s *RetryLayerChannelStore) Upsert(transaction store_iface.SqlxTxExecutor, channel *model.Channel) (*model.Channel, error) {
+func (s *RetryLayerChannelStore) Upsert(transaction store_iface.SqlxExecutor, channel *model.Channel) (*model.Channel, error) {
 
 	tries := 0
 	for {
@@ -2682,7 +2593,7 @@ func (s *RetryLayerCheckoutStore) CountCheckouts(options *model.CheckoutFilterOp
 
 }
 
-func (s *RetryLayerCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *model.CheckoutFilterOption) error {
+func (s *RetryLayerCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxExecutor, option *model.CheckoutFilterOption) error {
 
 	tries := 0
 	for {
@@ -2762,7 +2673,7 @@ func (s *RetryLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption
 
 }
 
-func (s *RetryLayerCheckoutStore) Upsert(transaction store_iface.SqlxTxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, error) {
+func (s *RetryLayerCheckoutStore) Upsert(transaction store_iface.SqlxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, error) {
 
 	tries := 0
 	for {
@@ -2882,7 +2793,7 @@ func (s *RetryLayerCheckoutLineStore) CheckoutLinesByOption(option *model.Checko
 
 }
 
-func (s *RetryLayerCheckoutLineStore) DeleteLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) error {
+func (s *RetryLayerCheckoutLineStore) DeleteLines(transaction store_iface.SqlxExecutor, checkoutLineIDs []string) error {
 
 	tries := 0
 	for {
@@ -3162,7 +3073,7 @@ func (s *RetryLayerCollectionStore) Upsert(collection *model.Collection) (*model
 
 }
 
-func (s *RetryLayerCollectionChannelListingStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.CollectionChannelListingFilterOptions) error {
+func (s *RetryLayerCollectionChannelListingStore) Delete(transaction store_iface.SqlxExecutor, options *model.CollectionChannelListingFilterOptions) error {
 
 	tries := 0
 	for {
@@ -3202,7 +3113,7 @@ func (s *RetryLayerCollectionChannelListingStore) FilterByOptions(options *model
 
 }
 
-func (s *RetryLayerCollectionChannelListingStore) Upsert(transaction store_iface.SqlxTxExecutor, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
+func (s *RetryLayerCollectionChannelListingStore) Upsert(transaction store_iface.SqlxExecutor, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
 
 	tries := 0
 	for {
@@ -3222,7 +3133,7 @@ func (s *RetryLayerCollectionChannelListingStore) Upsert(transaction store_iface
 
 }
 
-func (s *RetryLayerCollectionProductStore) BulkSave(transaction store_iface.SqlxTxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
+func (s *RetryLayerCollectionProductStore) BulkSave(transaction store_iface.SqlxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
 
 	tries := 0
 	for {
@@ -3242,7 +3153,7 @@ func (s *RetryLayerCollectionProductStore) BulkSave(transaction store_iface.Sqlx
 
 }
 
-func (s *RetryLayerCollectionProductStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.CollectionProductFilterOptions) error {
+func (s *RetryLayerCollectionProductStore) Delete(transaction store_iface.SqlxExecutor, options *model.CollectionProductFilterOptions) error {
 
 	tries := 0
 	for {
@@ -3722,6 +3633,26 @@ func (s *RetryLayerDigitalContentUrlStore) Upsert(contentURL *model.DigitalConte
 
 }
 
+func (s *RetryLayerDiscountSaleStore) AddSaleRelations(transaction *gorm.DB, sales model.Sales, relations any) error {
+
+	tries := 0
+	for {
+		err := s.DiscountSaleStore.AddSaleRelations(transaction, sales, relations)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
 
 	tries := 0
@@ -3762,11 +3693,11 @@ func (s *RetryLayerDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 
 }
 
-func (s *RetryLayerDiscountSaleStore) Upsert(sale *model.Sale) (*model.Sale, error) {
+func (s *RetryLayerDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (*model.Sale, error) {
 
 	tries := 0
 	for {
-		result, err := s.DiscountSaleStore.Upsert(sale)
+		result, err := s.DiscountSaleStore.Upsert(transaction, sale)
 		if err == nil {
 			return result, nil
 		}
@@ -3837,6 +3768,26 @@ func (s *RetryLayerDiscountSaleChannelListingStore) Save(saleChannelListing *mod
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerDiscountVoucherStore) AddVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, relations any) error {
+
+	tries := 0
+	for {
+		err := s.DiscountVoucherStore.AddVoucherRelations(transaction, vouchers, relations)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
 		}
 	}
 
@@ -4194,7 +4145,7 @@ func (s *RetryLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo,
 
 }
 
-func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxTxExecutor, fulfillments model.Fulfillments) error {
+func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxExecutor, fulfillments model.Fulfillments) error {
 
 	tries := 0
 	for {
@@ -4214,7 +4165,7 @@ func (s *RetryLayerFulfillmentStore) BulkDeleteFulfillments(transaction store_if
 
 }
 
-func (s *RetryLayerFulfillmentStore) FilterByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) FilterByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
 
 	tries := 0
 	for {
@@ -4254,7 +4205,7 @@ func (s *RetryLayerFulfillmentStore) Get(id string) (*model.Fulfillment, error) 
 
 }
 
-func (s *RetryLayerFulfillmentStore) GetByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) GetByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
 
 	tries := 0
 	for {
@@ -4274,7 +4225,7 @@ func (s *RetryLayerFulfillmentStore) GetByOption(transaction store_iface.SqlxTxE
 
 }
 
-func (s *RetryLayerFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
+func (s *RetryLayerFulfillmentStore) Upsert(transaction store_iface.SqlxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
 
 	tries := 0
 	for {
@@ -4294,7 +4245,7 @@ func (s *RetryLayerFulfillmentStore) Upsert(transaction store_iface.SqlxTxExecut
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
+func (s *RetryLayerFulfillmentLineStore) BulkUpsert(transaction store_iface.SqlxExecutor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
 
 	tries := 0
 	for {
@@ -4314,7 +4265,7 @@ func (s *RetryLayerFulfillmentLineStore) BulkUpsert(transaction store_iface.Sqlx
 
 }
 
-func (s *RetryLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction store_iface.SqlxTxExecutor, option *model.FulfillmentLineFilterOption) error {
+func (s *RetryLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentLineFilterOption) error {
 
 	tries := 0
 	for {
@@ -4394,7 +4345,7 @@ func (s *RetryLayerFulfillmentLineStore) Save(fulfillmentLine *model.Fulfillment
 
 }
 
-func (s *RetryLayerGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
+func (s *RetryLayerGiftCardStore) BulkUpsert(transaction store_iface.SqlxExecutor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
 
 	tries := 0
 	for {
@@ -4434,7 +4385,7 @@ func (s *RetryLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]st
 
 }
 
-func (s *RetryLayerGiftCardStore) DeleteGiftcards(transaction store_iface.SqlxTxExecutor, ids []string) error {
+func (s *RetryLayerGiftCardStore) DeleteGiftcards(transaction store_iface.SqlxExecutor, ids []string) error {
 
 	tries := 0
 	for {
@@ -4554,7 +4505,7 @@ func (s *RetryLayerGiftCardCheckoutStore) Save(giftcardOrder *model.GiftCardChec
 
 }
 
-func (s *RetryLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
+func (s *RetryLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxExecutor, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
 
 	tries := 0
 	for {
@@ -4634,7 +4585,7 @@ func (s *RetryLayerGiftCardOrderStore) Save(giftcardOrder *model.OrderGiftCard) 
 
 }
 
-func (s *RetryLayerGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
+func (s *RetryLayerGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxExecutor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
 
 	tries := 0
 	for {
@@ -4714,7 +4665,7 @@ func (s *RetryLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.
 
 }
 
-func (s *RetryLayerInvoiceStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+func (s *RetryLayerInvoiceStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
 
 	tries := 0
 	for {
@@ -5274,7 +5225,7 @@ func (s *RetryLayerOpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, e
 
 }
 
-func (s *RetryLayerOrderStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orders []*model.Order) ([]*model.Order, error) {
+func (s *RetryLayerOrderStore) BulkUpsert(transaction store_iface.SqlxExecutor, orders []*model.Order) ([]*model.Order, error) {
 
 	tries := 0
 	for {
@@ -5394,7 +5345,7 @@ func (s *RetryLayerOrderDiscountStore) Get(orderDiscountID string) (*model.Order
 
 }
 
-func (s *RetryLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxTxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
+func (s *RetryLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
 
 	tries := 0
 	for {
@@ -5454,7 +5405,7 @@ func (s *RetryLayerOrderEventStore) Get(orderEventID string) (*model.OrderEvent,
 
 }
 
-func (s *RetryLayerOrderEventStore) Save(transaction store_iface.SqlxTxExecutor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
+func (s *RetryLayerOrderEventStore) Save(transaction store_iface.SqlxExecutor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
 
 	tries := 0
 	for {
@@ -5494,7 +5445,7 @@ func (s *RetryLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
 
 }
 
-func (s *RetryLayerOrderLineStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) BulkUpsert(transaction store_iface.SqlxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
 
 	tries := 0
 	for {
@@ -5554,7 +5505,7 @@ func (s *RetryLayerOrderLineStore) Get(id string) (*model.OrderLine, error) {
 
 }
 
-func (s *RetryLayerOrderLineStore) Upsert(transaction store_iface.SqlxTxExecutor, orderLine *model.OrderLine) (*model.OrderLine, error) {
+func (s *RetryLayerOrderLineStore) Upsert(transaction store_iface.SqlxExecutor, orderLine *model.OrderLine) (*model.OrderLine, error) {
 
 	tries := 0
 	for {
@@ -5634,7 +5585,7 @@ func (s *RetryLayerPaymentStore) FilterByOption(option *model.PaymentFilterOptio
 
 }
 
-func (s *RetryLayerPaymentStore) Get(transaction store_iface.SqlxTxExecutor, id string, lockForUpdate bool) (*model.Payment, error) {
+func (s *RetryLayerPaymentStore) Get(transaction store_iface.SqlxExecutor, id string, lockForUpdate bool) (*model.Payment, error) {
 
 	tries := 0
 	for {
@@ -5674,7 +5625,7 @@ func (s *RetryLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID str
 
 }
 
-func (s *RetryLayerPaymentStore) Save(transaction store_iface.SqlxTxExecutor, model *model.Payment) (*model.Payment, error) {
+func (s *RetryLayerPaymentStore) Save(transaction store_iface.SqlxExecutor, model *model.Payment) (*model.Payment, error) {
 
 	tries := 0
 	for {
@@ -5694,7 +5645,7 @@ func (s *RetryLayerPaymentStore) Save(transaction store_iface.SqlxTxExecutor, mo
 
 }
 
-func (s *RetryLayerPaymentStore) Update(transaction store_iface.SqlxTxExecutor, model *model.Payment) (*model.Payment, error) {
+func (s *RetryLayerPaymentStore) Update(transaction store_iface.SqlxExecutor, model *model.Payment) (*model.Payment, error) {
 
 	tries := 0
 	for {
@@ -5714,7 +5665,7 @@ func (s *RetryLayerPaymentStore) Update(transaction store_iface.SqlxTxExecutor, 
 
 }
 
-func (s *RetryLayerPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *model.PaymentPatch) error {
+func (s *RetryLayerPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxExecutor, checkoutToken string, option *model.PaymentPatch) error {
 
 	tries := 0
 	for {
@@ -5774,7 +5725,7 @@ func (s *RetryLayerPaymentTransactionStore) Get(id string) (*model.PaymentTransa
 
 }
 
-func (s *RetryLayerPaymentTransactionStore) Save(transaction store_iface.SqlxTxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
+func (s *RetryLayerPaymentTransactionStore) Save(transaction store_iface.SqlxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
 
 	tries := 0
 	for {
@@ -6260,7 +6211,7 @@ func (s *RetryLayerPreferenceStore) Save(preferences model.Preferences) error {
 
 }
 
-func (s *RetryLayerPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxTxExecutor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
+func (s *RetryLayerPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxExecutor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
 
 	tries := 0
 	for {
@@ -6280,7 +6231,7 @@ func (s *RetryLayerPreorderAllocationStore) BulkCreate(transaction store_iface.S
 
 }
 
-func (s *RetryLayerPreorderAllocationStore) Delete(transaction store_iface.SqlxTxExecutor, preorderAllocationIDs ...string) error {
+func (s *RetryLayerPreorderAllocationStore) Delete(transaction store_iface.SqlxExecutor, preorderAllocationIDs ...string) error {
 
 	tries := 0
 	for {
@@ -6502,7 +6453,7 @@ func (s *RetryLayerProductStore) VisibleToUserProductsQuery(channel_SlugOrID str
 
 }
 
-func (s *RetryLayerProductChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
+func (s *RetryLayerProductChannelListingStore) BulkUpsert(transaction store_iface.SqlxExecutor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
 
 	tries := 0
 	for {
@@ -6822,6 +6773,26 @@ func (s *RetryLayerProductTypeStore) Save(productType *model.ProductType) (*mode
 
 }
 
+func (s *RetryLayerProductVariantStore) AddProductVariantMedias(transaction *gorm.DB, variants model.ProductVariants, medias model.ProductMedias) error {
+
+	tries := 0
+	for {
+		err := s.ProductVariantStore.AddProductVariantMedias(transaction, variants, medias)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerProductVariantStore) FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error) {
 
 	tries := 0
@@ -6902,7 +6873,7 @@ func (s *RetryLayerProductVariantStore) GetWeight(productVariantID string) (*mea
 
 }
 
-func (s *RetryLayerProductVariantStore) Save(transaction store_iface.SqlxTxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
+func (s *RetryLayerProductVariantStore) Save(transaction store_iface.SqlxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
 
 	tries := 0
 	for {
@@ -6922,7 +6893,7 @@ func (s *RetryLayerProductVariantStore) Save(transaction store_iface.SqlxTxExecu
 
 }
 
-func (s *RetryLayerProductVariantStore) Update(transaction store_iface.SqlxTxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
+func (s *RetryLayerProductVariantStore) Update(transaction store_iface.SqlxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
 
 	tries := 0
 	for {
@@ -6942,7 +6913,7 @@ func (s *RetryLayerProductVariantStore) Update(transaction store_iface.SqlxTxExe
 
 }
 
-func (s *RetryLayerProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
+func (s *RetryLayerProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxExecutor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
 
 	tries := 0
 	for {
@@ -7207,226 +7178,6 @@ func (s *RetryLayerRoleStore) Save(role *model.Role) (*model.Role, error) {
 	tries := 0
 	for {
 		result, err := s.RoleStore.Save(role)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerSaleCategoryRelationStore) Get(relationID string) (*model.SaleCategoryRelation, error) {
-
-	tries := 0
-	for {
-		result, err := s.SaleCategoryRelationStore.Get(relationID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerSaleCategoryRelationStore) SaleCategoriesByOption(option *model.SaleCategoryRelationFilterOption) ([]*model.SaleCategoryRelation, error) {
-
-	tries := 0
-	for {
-		result, err := s.SaleCategoryRelationStore.SaleCategoriesByOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerSaleCategoryRelationStore) Save(relation *model.SaleCategoryRelation) (*model.SaleCategoryRelation, error) {
-
-	tries := 0
-	for {
-		result, err := s.SaleCategoryRelationStore.Save(relation)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerSaleCollectionRelationStore) FilterByOption(option *model.SaleCollectionRelationFilterOption) ([]*model.SaleCollectionRelation, error) {
-
-	tries := 0
-	for {
-		result, err := s.SaleCollectionRelationStore.FilterByOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerSaleCollectionRelationStore) Get(relationID string) (*model.SaleCollectionRelation, error) {
-
-	tries := 0
-	for {
-		result, err := s.SaleCollectionRelationStore.Get(relationID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerSaleCollectionRelationStore) Save(relation *model.SaleCollectionRelation) (*model.SaleCollectionRelation, error) {
-
-	tries := 0
-	for {
-		result, err := s.SaleCollectionRelationStore.Save(relation)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerSaleProductRelationStore) Get(relationID string) (*model.SaleProductRelation, error) {
-
-	tries := 0
-	for {
-		result, err := s.SaleProductRelationStore.Get(relationID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerSaleProductRelationStore) SaleProductsByOption(option *model.SaleProductRelationFilterOption) ([]*model.SaleProductRelation, error) {
-
-	tries := 0
-	for {
-		result, err := s.SaleProductRelationStore.SaleProductsByOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerSaleProductRelationStore) Save(relation *model.SaleProductRelation) (*model.SaleProductRelation, error) {
-
-	tries := 0
-	for {
-		result, err := s.SaleProductRelationStore.Save(relation)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerSaleProductVariantStore) FilterByOption(options *model.SaleProductVariantFilterOption) ([]*model.SaleProductVariant, error) {
-
-	tries := 0
-	for {
-		result, err := s.SaleProductVariantStore.FilterByOption(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerSaleProductVariantStore) Upsert(relation *model.SaleProductVariant) (*model.SaleProductVariant, error) {
-
-	tries := 0
-	for {
-		result, err := s.SaleProductVariantStore.Upsert(relation)
 		if err == nil {
 			return result, nil
 		}
@@ -7768,7 +7519,7 @@ func (s *RetryLayerShippingMethodStore) ApplicableShippingMethods(price *goprice
 
 }
 
-func (s *RetryLayerShippingMethodStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+func (s *RetryLayerShippingMethodStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
 
 	tries := 0
 	for {
@@ -7848,7 +7599,7 @@ func (s *RetryLayerShippingMethodStore) GetbyOption(options *model.ShippingMetho
 
 }
 
-func (s *RetryLayerShippingMethodStore) Upsert(transaction store_iface.SqlxTxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, error) {
+func (s *RetryLayerShippingMethodStore) Upsert(transaction store_iface.SqlxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, error) {
 
 	tries := 0
 	for {
@@ -7868,7 +7619,7 @@ func (s *RetryLayerShippingMethodStore) Upsert(transaction store_iface.SqlxTxExe
 
 }
 
-func (s *RetryLayerShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodChannelListingFilterOption) error {
+func (s *RetryLayerShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxExecutor, options *model.ShippingMethodChannelListingFilterOption) error {
 
 	tries := 0
 	for {
@@ -7928,7 +7679,7 @@ func (s *RetryLayerShippingMethodChannelListingStore) Get(listingID string) (*mo
 
 }
 
-func (s *RetryLayerShippingMethodChannelListingStore) Upsert(transaction store_iface.SqlxTxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) {
+func (s *RetryLayerShippingMethodChannelListingStore) Upsert(transaction store_iface.SqlxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) {
 
 	tries := 0
 	for {
@@ -7948,7 +7699,7 @@ func (s *RetryLayerShippingMethodChannelListingStore) Upsert(transaction store_i
 
 }
 
-func (s *RetryLayerShippingMethodExcludedProductStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.ShippingMethodExcludedProductFilterOptions) error {
+func (s *RetryLayerShippingMethodExcludedProductStore) Delete(transaction store_iface.SqlxExecutor, options *model.ShippingMethodExcludedProductFilterOptions) error {
 
 	tries := 0
 	for {
@@ -8008,7 +7759,7 @@ func (s *RetryLayerShippingMethodExcludedProductStore) Save(instance *model.Ship
 
 }
 
-func (s *RetryLayerShippingMethodPostalCodeRuleStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+func (s *RetryLayerShippingMethodPostalCodeRuleStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
 
 	tries := 0
 	for {
@@ -8048,7 +7799,7 @@ func (s *RetryLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *m
 
 }
 
-func (s *RetryLayerShippingMethodPostalCodeRuleStore) Save(transaction store_iface.SqlxTxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
+func (s *RetryLayerShippingMethodPostalCodeRuleStore) Save(transaction store_iface.SqlxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
 
 	tries := 0
 	for {
@@ -8073,6 +7824,26 @@ func (s *RetryLayerShippingZoneStore) CountByOptions(options *model.ShippingZone
 	tries := 0
 	for {
 		result, err := s.ShippingZoneStore.CountByOptions(options)
+		if err == nil {
+			return result, nil
+		}
+		if !isRepeatableError(err) {
+			return result, err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerShippingZoneStore) Delete(transaction store_iface.SqlxExecutor, conditions *model.ShippingZoneFilterOption) (int64, error) {
+
+	tries := 0
+	for {
+		result, err := s.ShippingZoneStore.Delete(transaction, conditions)
 		if err == nil {
 			return result, nil
 		}
@@ -8128,11 +7899,11 @@ func (s *RetryLayerShippingZoneStore) Get(shippingZoneID string) (*model.Shippin
 
 }
 
-func (s *RetryLayerShippingZoneStore) Upsert(shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
+func (s *RetryLayerShippingZoneStore) Upsert(transaction store_iface.SqlxExecutor, shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
 
 	tries := 0
 	for {
-		result, err := s.ShippingZoneStore.Upsert(shippingZone)
+		result, err := s.ShippingZoneStore.Upsert(transaction, shippingZone)
 		if err == nil {
 			return result, nil
 		}
@@ -8148,11 +7919,11 @@ func (s *RetryLayerShippingZoneStore) Upsert(shippingZone *model.ShippingZone) (
 
 }
 
-func (s *RetryLayerShippingZoneChannelStore) BulkDelete(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) error {
+func (s *RetryLayerShippingZoneChannelStore) BulkDelete(transaction store_iface.SqlxExecutor, options *model.ShippingZoneChannelFilterOptions) error {
 
 	tries := 0
 	for {
-		err := s.ShippingZoneChannelStore.BulkDelete(transaction, relations)
+		err := s.ShippingZoneChannelStore.BulkDelete(transaction, options)
 		if err == nil {
 			return nil
 		}
@@ -8168,7 +7939,7 @@ func (s *RetryLayerShippingZoneChannelStore) BulkDelete(transaction store_iface.
 
 }
 
-func (s *RetryLayerShippingZoneChannelStore) BulkSave(transaction store_iface.SqlxTxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error) {
+func (s *RetryLayerShippingZoneChannelStore) BulkSave(transaction store_iface.SqlxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error) {
 
 	tries := 0
 	for {
@@ -8568,7 +8339,7 @@ func (s *RetryLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 
 }
 
-func (s *RetryLayerStockStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, stocks []*model.Stock) ([]*model.Stock, error) {
+func (s *RetryLayerStockStore) BulkUpsert(transaction store_iface.SqlxExecutor, stocks []*model.Stock) ([]*model.Stock, error) {
 
 	tries := 0
 	for {
@@ -10098,26 +9869,6 @@ func (s *RetryLayerUserAddressStore) Save(userAddress *model.UserAddress) (*mode
 
 }
 
-func (s *RetryLayerVariantMediaStore) FilterByOptions(options *model.VariantMediaFilterOptions) ([]*model.VariantMedia, error) {
-
-	tries := 0
-	for {
-		result, err := s.VariantMediaStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerVatStore) FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error) {
 
 	tries := 0
@@ -10138,71 +9889,11 @@ func (s *RetryLayerVatStore) FilterByOptions(options *model.VatFilterOptions) ([
 
 }
 
-func (s *RetryLayerVatStore) Upsert(transaction store_iface.SqlxTxExecutor, vats []*model.Vat) ([]*model.Vat, error) {
+func (s *RetryLayerVatStore) Upsert(transaction store_iface.SqlxExecutor, vats []*model.Vat) ([]*model.Vat, error) {
 
 	tries := 0
 	for {
 		result, err := s.VatStore.Upsert(transaction, vats)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerVoucherCategoryStore) FilterByOptions(options *model.VoucherCategoryFilterOption) ([]*model.VoucherCategory, error) {
-
-	tries := 0
-	for {
-		result, err := s.VoucherCategoryStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerVoucherCategoryStore) Get(voucherCategoryID string) (*model.VoucherCategory, error) {
-
-	tries := 0
-	for {
-		result, err := s.VoucherCategoryStore.Get(voucherCategoryID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerVoucherCategoryStore) Upsert(voucherCategory *model.VoucherCategory) (*model.VoucherCategory, error) {
-
-	tries := 0
-	for {
-		result, err := s.VoucherCategoryStore.Upsert(voucherCategory)
 		if err == nil {
 			return result, nil
 		}
@@ -10263,66 +9954,6 @@ func (s *RetryLayerVoucherChannelListingStore) Upsert(voucherChannelListing *mod
 	tries := 0
 	for {
 		result, err := s.VoucherChannelListingStore.Upsert(voucherChannelListing)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerVoucherCollectionStore) FilterByOptions(options *model.VoucherCollectionFilterOptions) ([]*model.VoucherCollection, error) {
-
-	tries := 0
-	for {
-		result, err := s.VoucherCollectionStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerVoucherCollectionStore) Get(voucherCollectionID string) (*model.VoucherCollection, error) {
-
-	tries := 0
-	for {
-		result, err := s.VoucherCollectionStore.Get(voucherCollectionID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerVoucherCollectionStore) Upsert(voucherCollection *model.VoucherCollection) (*model.VoucherCollection, error) {
-
-	tries := 0
-	for {
-		result, err := s.VoucherCollectionStore.Upsert(voucherCollection)
 		if err == nil {
 			return result, nil
 		}
@@ -10403,86 +10034,6 @@ func (s *RetryLayerVoucherCustomerStore) Save(voucherCustomer *model.VoucherCust
 	tries := 0
 	for {
 		result, err := s.VoucherCustomerStore.Save(voucherCustomer)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerVoucherProductStore) FilterByOptions(options *model.VoucherProductFilterOptions) ([]*model.VoucherProduct, error) {
-
-	tries := 0
-	for {
-		result, err := s.VoucherProductStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerVoucherProductStore) Get(voucherProductID string) (*model.VoucherProduct, error) {
-
-	tries := 0
-	for {
-		result, err := s.VoucherProductStore.Get(voucherProductID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerVoucherProductStore) Upsert(voucherProduct *model.VoucherProduct) (*model.VoucherProduct, error) {
-
-	tries := 0
-	for {
-		result, err := s.VoucherProductStore.Upsert(voucherProduct)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerVoucherProductVariantStore) FilterByOptions(options *model.VoucherProductVariantFilterOption) ([]*model.VoucherProductVariant, error) {
-
-	tries := 0
-	for {
-		result, err := s.VoucherProductVariantStore.FilterByOptions(options)
 		if err == nil {
 			return result, nil
 		}
@@ -10638,7 +10189,7 @@ func (s *RetryLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderL
 
 }
 
-func (s *RetryLayerWarehouseStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+func (s *RetryLayerWarehouseStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
 
 	tries := 0
 	for {
@@ -10758,7 +10309,7 @@ func (s *RetryLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.Wa
 
 }
 
-func (s *RetryLayerWarehouseShippingZoneStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.WarehouseShippingZoneFilterOption) error {
+func (s *RetryLayerWarehouseShippingZoneStore) Delete(transaction store_iface.SqlxExecutor, options *model.WarehouseShippingZoneFilterOption) error {
 
 	tries := 0
 	for {
@@ -10818,7 +10369,7 @@ func (s *RetryLayerWarehouseShippingZoneStore) FilterByOptions(options *model.Wa
 
 }
 
-func (s *RetryLayerWarehouseShippingZoneStore) Save(transaction store_iface.SqlxTxExecutor, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
+func (s *RetryLayerWarehouseShippingZoneStore) Save(transaction store_iface.SqlxExecutor, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
 
 	tries := 0
 	for {
@@ -10878,7 +10429,7 @@ func (s *RetryLayerWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishl
 
 }
 
-func (s *RetryLayerWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, error) {
+func (s *RetryLayerWishlistItemStore) BulkUpsert(transaction store_iface.SqlxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, error) {
 
 	tries := 0
 	for {
@@ -10898,7 +10449,7 @@ func (s *RetryLayerWishlistItemStore) BulkUpsert(transaction store_iface.SqlxTxE
 
 }
 
-func (s *RetryLayerWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxTxExecutor, option *model.WishlistItemFilterOption) (int64, error) {
+func (s *RetryLayerWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxExecutor, option *model.WishlistItemFilterOption) (int64, error) {
 
 	tries := 0
 	for {
@@ -10938,7 +10489,7 @@ func (s *RetryLayerWishlistItemStore) FilterByOption(option *model.WishlistItemF
 
 }
 
-func (s *RetryLayerWishlistItemStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*model.WishlistItem, error) {
+func (s *RetryLayerWishlistItemStore) GetById(selector store_iface.SqlxExecutor, id string) (*model.WishlistItem, error) {
 
 	tries := 0
 	for {
@@ -10978,7 +10529,7 @@ func (s *RetryLayerWishlistItemStore) GetByOption(option *model.WishlistItemFilt
 
 }
 
-func (s *RetryLayerWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
+func (s *RetryLayerWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
 
 	tries := 0
 	for {
@@ -11018,7 +10569,7 @@ func (s *RetryLayerWishlistItemProductVariantStore) DeleteRelation(relation *mod
 
 }
 
-func (s *RetryLayerWishlistItemProductVariantStore) GetById(selector store_iface.SqlxTxExecutor, id string) (*model.WishlistItemProductVariant, error) {
+func (s *RetryLayerWishlistItemProductVariantStore) GetById(selector store_iface.SqlxExecutor, id string) (*model.WishlistItemProductVariant, error) {
 
 	tries := 0
 	for {
@@ -11163,10 +10714,6 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.ProductVariantChannelListingStore = &RetryLayerProductVariantChannelListingStore{ProductVariantChannelListingStore: childStore.ProductVariantChannelListing(), Root: &newStore}
 	newStore.ProductVariantTranslationStore = &RetryLayerProductVariantTranslationStore{ProductVariantTranslationStore: childStore.ProductVariantTranslation(), Root: &newStore}
 	newStore.RoleStore = &RetryLayerRoleStore{RoleStore: childStore.Role(), Root: &newStore}
-	newStore.SaleCategoryRelationStore = &RetryLayerSaleCategoryRelationStore{SaleCategoryRelationStore: childStore.SaleCategoryRelation(), Root: &newStore}
-	newStore.SaleCollectionRelationStore = &RetryLayerSaleCollectionRelationStore{SaleCollectionRelationStore: childStore.SaleCollectionRelation(), Root: &newStore}
-	newStore.SaleProductRelationStore = &RetryLayerSaleProductRelationStore{SaleProductRelationStore: childStore.SaleProductRelation(), Root: &newStore}
-	newStore.SaleProductVariantStore = &RetryLayerSaleProductVariantStore{SaleProductVariantStore: childStore.SaleProductVariant(), Root: &newStore}
 	newStore.SessionStore = &RetryLayerSessionStore{SessionStore: childStore.Session(), Root: &newStore}
 	newStore.ShippingMethodStore = &RetryLayerShippingMethodStore{ShippingMethodStore: childStore.ShippingMethod(), Root: &newStore}
 	newStore.ShippingMethodChannelListingStore = &RetryLayerShippingMethodChannelListingStore{ShippingMethodChannelListingStore: childStore.ShippingMethodChannelListing(), Root: &newStore}
@@ -11188,14 +10735,9 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.UserStore = &RetryLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &RetryLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
 	newStore.UserAddressStore = &RetryLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
-	newStore.VariantMediaStore = &RetryLayerVariantMediaStore{VariantMediaStore: childStore.VariantMedia(), Root: &newStore}
 	newStore.VatStore = &RetryLayerVatStore{VatStore: childStore.Vat(), Root: &newStore}
-	newStore.VoucherCategoryStore = &RetryLayerVoucherCategoryStore{VoucherCategoryStore: childStore.VoucherCategory(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &RetryLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
-	newStore.VoucherCollectionStore = &RetryLayerVoucherCollectionStore{VoucherCollectionStore: childStore.VoucherCollection(), Root: &newStore}
 	newStore.VoucherCustomerStore = &RetryLayerVoucherCustomerStore{VoucherCustomerStore: childStore.VoucherCustomer(), Root: &newStore}
-	newStore.VoucherProductStore = &RetryLayerVoucherProductStore{VoucherProductStore: childStore.VoucherProduct(), Root: &newStore}
-	newStore.VoucherProductVariantStore = &RetryLayerVoucherProductVariantStore{VoucherProductVariantStore: childStore.VoucherProductVariant(), Root: &newStore}
 	newStore.VoucherTranslationStore = &RetryLayerVoucherTranslationStore{VoucherTranslationStore: childStore.VoucherTranslation(), Root: &newStore}
 	newStore.WarehouseStore = &RetryLayerWarehouseStore{WarehouseStore: childStore.Warehouse(), Root: &newStore}
 	newStore.WarehouseShippingZoneStore = &RetryLayerWarehouseShippingZoneStore{WarehouseShippingZoneStore: childStore.WarehouseShippingZone(), Root: &newStore}

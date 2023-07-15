@@ -42,7 +42,7 @@ func (cs *SqlCustomerEventStore) Save(event *model.CustomerEvent) (*model.Custom
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.CustomerEventTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.CustomerEventTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
 	if _, err := cs.GetMasterX().NamedExec(query, event); err != nil {
 		return nil, errors.Wrapf(err, "failed to save CustomerEvent with Id=%s", event.Id)
 	}
@@ -52,10 +52,10 @@ func (cs *SqlCustomerEventStore) Save(event *model.CustomerEvent) (*model.Custom
 
 func (cs *SqlCustomerEventStore) Get(id string) (*model.CustomerEvent, error) {
 	var res model.CustomerEvent
-	err := cs.GetMasterX().Get(&res, "SELECT * FROM "+store.CustomerEventTableName+" WHERE Id = ?", id)
+	err := cs.GetMasterX().Get(&res, "SELECT * FROM "+model.CustomerEventTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.CustomerEventTableName, id)
+			return nil, store.NewErrNotFound(model.CustomerEventTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find CustomerEvent with Id=%s", id)
 	}
@@ -65,9 +65,9 @@ func (cs *SqlCustomerEventStore) Get(id string) (*model.CustomerEvent, error) {
 
 func (cs *SqlCustomerEventStore) Count() (int64, error) {
 	var count int64
-	err := cs.GetReplicaX().Select(&count, "SELECT COUNT(Id) FROM "+store.CustomerEventTableName)
+	err := cs.GetReplicaX().Select(&count, "SELECT COUNT(Id) FROM "+model.CustomerEventTableName)
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to count number of "+store.CustomerEventTableName)
+		return 0, errors.Wrap(err, "failed to count number of "+model.CustomerEventTableName)
 	}
 
 	return count, nil
@@ -78,7 +78,7 @@ func (cs *SqlCustomerEventStore) FilterByOptions(options *model.CustomerEventFil
 		options = new(model.CustomerEventFilterOptions)
 	}
 
-	query := cs.GetQueryBuilder().Select(store.CustomerEventTableName + ".").From(store.CustomerEventTableName)
+	query := cs.GetQueryBuilder().Select(model.CustomerEventTableName + ".").From(model.CustomerEventTableName)
 
 	if options.Id != nil {
 		query = query.Where(options.Id)

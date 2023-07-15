@@ -10,7 +10,6 @@ import (
 	"github.com/sitename/sitename/app/order/types"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
 )
 
@@ -32,7 +31,7 @@ type ServiceOrder struct {
 
 // UpdateVoucherDiscount Recalculate order discount amount based on order voucher
 func (a *ServiceOrder) UpdateVoucherDiscount(fun types.RecalculateOrderPricesFunc) types.RecalculateOrderPricesFunc {
-	return func(transaction store_iface.SqlxTxExecutor, ord *model.Order, kwargs map[string]interface{}) *model.AppError {
+	return func(transaction store_iface.SqlxExecutor, ord *model.Order, kwargs map[string]interface{}) *model.AppError {
 		if kwargs == nil {
 			kwargs = make(map[string]interface{})
 		}
@@ -69,12 +68,12 @@ func (a *ServiceOrder) UpdateVoucherDiscount(fun types.RecalculateOrderPricesFun
 	}
 }
 
-func (a *ServiceOrder) decoratedFunc(transaction store_iface.SqlxTxExecutor, ord *model.Order, kwargs map[string]interface{}) *model.AppError {
+func (a *ServiceOrder) decoratedFunc(transaction store_iface.SqlxExecutor, ord *model.Order, kwargs map[string]interface{}) *model.AppError {
 	ord.PopulateNonDbFields() // NOTE: must call this func before doing money calculations
 
 	// avoid using prefetched order lines
 	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": ord.Id},
+		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return appErr

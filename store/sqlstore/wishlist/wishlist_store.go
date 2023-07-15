@@ -52,7 +52,7 @@ func (ws *SqlWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishlist, e
 		numUpdated int64
 	)
 	if isSaving {
-		query := "INSERT INTO " + store.WishlistTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.WishlistTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
 		for {
 			_, err = ws.GetMasterX().NamedExec(query, wishList)
 			if err != nil {
@@ -65,7 +65,7 @@ func (ws *SqlWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishlist, e
 		}
 
 	} else {
-		query := "UPDATE " + store.WishlistTableName + " SET " + ws.
+		query := "UPDATE " + model.WishlistTableName + " SET " + ws.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -81,7 +81,7 @@ func (ws *SqlWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishlist, e
 
 	if err != nil {
 		if ws.IsUniqueConstraintError(err, []string{"UserID", "wishlists_userid_key"}) {
-			return nil, store.NewErrInvalidInput(store.WishlistTableName, "UserID", wishList.UserID)
+			return nil, store.NewErrInvalidInput(model.WishlistTableName, "UserID", wishList.UserID)
 		}
 		return nil, errors.Wrapf(err, "failed to upsert wishlist with id=%s", wishList.Id)
 	}
@@ -96,7 +96,7 @@ func (ws *SqlWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishlist, e
 func (ws *SqlWishlistStore) GetByOption(option *model.WishlistFilterOption) (*model.Wishlist, error) {
 	query := ws.GetQueryBuilder().
 		Select("*").
-		From(store.WishlistItemTableName)
+		From(model.WishlistItemTableName)
 
 	// parse options
 	if option.Id != nil {
@@ -117,7 +117,7 @@ func (ws *SqlWishlistStore) GetByOption(option *model.WishlistFilterOption) (*mo
 	err = ws.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.WishlistTableName, "option")
+			return nil, store.NewErrNotFound(model.WishlistTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to find a wishlist by given options")
 	}

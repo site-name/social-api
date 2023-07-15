@@ -1,4 +1,6 @@
 extend type Mutation {
+  variantMediaAssign(mediaId: String!, variantId: String!): VariantMediaAssign @hasRoleAny(roles: [shop_admin, shop_staff])
+  variantMediaUnassign(mediaId: String!, variantId: String!): VariantMediaUnassign @hasRoleAny(roles: [shop_admin, shop_staff])
   productVariantReorder(moves: [ReorderInput]!, productId: String!): ProductVariantReorder
   productVariantCreate(input: ProductVariantCreateInput!): ProductVariantCreate
   productVariantDelete(id: String!): ProductVariantDelete

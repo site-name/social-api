@@ -2,6 +2,7 @@ package discount
 
 import (
 	"database/sql"
+	"strings"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -9,6 +10,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlVoucherStore struct {
@@ -94,7 +96,7 @@ func (vs *SqlVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error
 	)
 
 	if saving {
-		query := "INSERT INTO " + store.VoucherTableName + "(" + vs.ModelFields("").Join(",") + ") VALUES (" + vs.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.VoucherTableName + "(" + vs.ModelFields("").Join(",") + ") VALUES (" + vs.ModelFields(":").Join(",") + ")"
 		_, err = vs.GetMasterX().NamedExec(query, voucher)
 	} else {
 
@@ -105,7 +107,7 @@ func (vs *SqlVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error
 
 		voucher.Used = oldVoucher.Used
 
-		query := "UPDATE " + store.VoucherTableName + " SET " + vs.
+		query := "UPDATE " + model.VoucherTableName + " SET " + vs.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -121,7 +123,7 @@ func (vs *SqlVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error
 
 	if err != nil {
 		if vs.IsUniqueConstraintError(err, []string{"Code", "vouchers_code_key"}) {
-			return nil, store.NewErrInvalidInput(store.VoucherTableName, "code", voucher.Code)
+			return nil, store.NewErrInvalidInput(model.VoucherTableName, "code", voucher.Code)
 		}
 		return nil, errors.Wrapf(err, "failed to upsert voucher with id=%s", voucher.Id)
 	}
@@ -135,10 +137,10 @@ func (vs *SqlVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error
 // Get finds a voucher with given id, then returns it with an error
 func (vs *SqlVoucherStore) Get(voucherID string) (*model.Voucher, error) {
 	var res model.Voucher
-	err := vs.GetReplicaX().Get(&res, "SELECT * FROM "+store.VoucherTableName+" WHERE Id = ?", voucherID)
+	err := vs.GetReplicaX().Get(&res, "SELECT * FROM "+model.VoucherTableName+" WHERE Id = ?", voucherID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.VoucherTableName, voucherID)
+			return nil, store.NewErrNotFound(model.VoucherTableName, voucherID)
 		}
 		return nil, errors.Wrapf(err, "failed to find voucher with id=%s", voucherID)
 	}
@@ -149,8 +151,8 @@ func (vs *SqlVoucherStore) Get(voucherID string) (*model.Voucher, error) {
 func (vs *SqlVoucherStore) commonQueryBuilder(option *model.VoucherFilterOption) squirrel.SelectBuilder {
 	query := vs.
 		GetQueryBuilder().
-		Select(vs.ModelFields(store.VoucherTableName + ".")...).
-		From(store.VoucherTableName)
+		Select(vs.ModelFields(model.VoucherTableName + ".")...).
+		From(model.VoucherTableName)
 
 	// parse options:
 	if option.UsageLimit != nil {
@@ -170,8 +172,8 @@ func (vs *SqlVoucherStore) commonQueryBuilder(option *model.VoucherFilterOption)
 	}
 	if option.ChannelListingSlug != nil || option.ChannelListingActive != nil {
 		query = query.
-			InnerJoin(store.VoucherChannelListingTableName + " ON (VoucherChannelListings.VoucherID = Vouchers.Id)").
-			InnerJoin(store.ChannelTableName + " ON (Channels.Id = VoucherChannelListings.ChannelID)")
+			InnerJoin(model.VoucherChannelListingTableName + " ON (VoucherChannelListings.VoucherID = Vouchers.Id)").
+			InnerJoin(model.ChannelTableName + " ON (Channels.Id = VoucherChannelListings.ChannelID)")
 
 		if option.ChannelListingSlug != nil {
 			query = query.Where(option.ChannelListingSlug)
@@ -215,7 +217,7 @@ func (vs *SqlVoucherStore) GetByOptions(options *model.VoucherFilterOption) (*mo
 	err = vs.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.VoucherTableName, "options")
+			return nil, store.NewErrNotFound(model.VoucherTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed voucher with given options")
 	}
@@ -231,10 +233,43 @@ func (vs *SqlVoucherStore) ExpiredVouchers(date *time.Time) ([]*model.Voucher, e
 	beginOfDate := util.StartOfDay(*date)
 
 	var res []*model.Voucher
-	err := vs.GetReplicaX().Select(&res, "SELECT * FROM "+store.VoucherTableName+" WHERE (Used >= UsageLimit OR EndDate < $1) AND StartDate < $2", beginOfDate, beginOfDate)
+	err := vs.GetReplicaX().Select(&res, "SELECT * FROM "+model.VoucherTableName+" WHERE (Used >= UsageLimit OR EndDate < $1) AND StartDate < $2", beginOfDate, beginOfDate)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find expired vouchers with given date")
 	}
 
 	return res, nil
+}
+
+func (s *SqlVoucherStore) AddVoucherRelations(transaction *gorm.DB, vouchers model.Vouchers, relations any) error {
+	if len(vouchers) == 0 || relations == nil {
+		return errors.New("please speficy relations")
+	}
+	if transaction == nil {
+		transaction = s.GetMaster()
+	}
+
+	var association string
+
+	switch relations.(type) {
+	case model.Collections:
+		association = "Collections"
+	case model.Products:
+		association = "Products"
+	case model.ProductVariants:
+		association = "ProductVariants"
+	case model.Categories:
+		association = "Categories"
+	default:
+		return errors.New("only *model.(Product|Category|ProductVariant|Collection) types are supported")
+	}
+
+	for _, voucher := range vouchers {
+		err := transaction.Model(voucher).Association(association).Append(relations)
+		if err != nil {
+			return errors.Wrap(err, "failed to insert voucher "+strings.ToLower(association)+" relations")
+		}
+	}
+
+	return nil
 }

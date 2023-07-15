@@ -94,7 +94,7 @@ func (a *ServiceShipping) ApplicableShippingMethodsForOrder(order *model.Order, 
 	var orderProductIDs []string
 	if len(lines) == 0 {
 		orderLines, appErr := a.srv.OrderService().OrderLinesByOption(&model.OrderLineFilterOption{
-			OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": order.Id},
+			OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
 			PrefetchRelated: model.OrderLinePrefetchRelated{
 				VariantProduct: true, // this tells store to prefetch related product variants, products too
 			},
@@ -155,12 +155,12 @@ func (s *ServiceShipping) ShippingMethodsByOptions(options *model.ShippingMethod
 	return methods, nil
 }
 
-func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(transaction store_iface.SqlxTxExecutor, shippingMethodIds, channelIds []string) *model.AppError {
+func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(transaction store_iface.SqlxExecutor, shippingMethodIds, channelIds []string) *model.AppError {
 	// unlink shipping methods from order and checkout instances
 	// when method is no longer available in given channels
 	checkouts, appErr := s.srv.CheckoutService().CheckoutsByOption(&model.CheckoutFilterOption{
-		ShippingMethodID: squirrel.Eq{store.CheckoutTableName + ".ShippingMethodID": shippingMethodIds},
-		ChannelID:        squirrel.Eq{store.CheckoutTableName + ".ChannelID": channelIds},
+		ShippingMethodID: squirrel.Eq{model.CheckoutTableName + ".ShippingMethodID": shippingMethodIds},
+		ChannelID:        squirrel.Eq{model.CheckoutTableName + ".ChannelID": channelIds},
 	})
 	if appErr != nil {
 		return appErr
@@ -173,9 +173,9 @@ func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(tr
 	}
 
 	orders, appErr := s.srv.OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
-		Status:           squirrel.Eq{store.OrderTableName + ".Status": []string{string(model.ORDER_STATUS_UNCONFIRMED), string(model.ORDER_STATUS_DRAFT)}},
-		ShippingMethodID: squirrel.Eq{store.OrderTableName + ".ShippingMethodID": shippingMethodIds},
-		ChannelID:        squirrel.Eq{store.OrderTableName + ".ChannelID": channelIds},
+		Status:           squirrel.Eq{model.OrderTableName + ".Status": []string{string(model.ORDER_STATUS_UNCONFIRMED), string(model.ORDER_STATUS_DRAFT)}},
+		ShippingMethodID: squirrel.Eq{model.OrderTableName + ".ShippingMethodID": shippingMethodIds},
+		ChannelID:        squirrel.Eq{model.OrderTableName + ".ChannelID": channelIds},
 	})
 	if appErr != nil {
 		return appErr
@@ -190,7 +190,7 @@ func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(tr
 	return nil
 }
 
-func (s *ServiceShipping) UpsertShippingMethod(transaction store_iface.SqlxTxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, *model.AppError) {
+func (s *ServiceShipping) UpsertShippingMethod(transaction store_iface.SqlxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, *model.AppError) {
 	method, err := s.srv.Store.ShippingMethod().Upsert(transaction, method)
 	if err != nil {
 		return nil, model.NewAppError("UpsertShippingMethod", "app.shipping.error_upserting_shipping_method.app_error", nil, err.Error(), http.StatusInternalServerError)

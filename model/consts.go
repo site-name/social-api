@@ -2218,3 +2218,198 @@ type TaxType struct {
 	Code         string
 	Descriptiton string
 }
+
+// all system product related table names
+const (
+	CategoryTableName                     = "Categories"                    //
+	CategoryTranslationTableName          = "CategoryTranslations"          //
+	ProductChannelListingTableName        = "ProductChannelListings"        //
+	CollectionChannelListingTableName     = "CollectionChannelListings"     //
+	CollectionProductRelationTableName    = "ProductCollections"            //
+	CollectionTableName                   = "Collections"                   //
+	CollectionTranslationTableName        = "CollectionTranslations"        //
+	DigitalContentTableName               = "DigitalContents"               //
+	DigitalContentURLTableName            = "DigitalContentURLs"            //
+	ProductMediaTableName                 = "ProductMedias"                 //
+	ProductTableName                      = "Products"                      //
+	ProductTranslationTableName           = "ProductTranslations"           //
+	ProductTypeTableName                  = "ProductTypes"                  //
+	ProductVariantChannelListingTableName = "ProductVariantChannelListings" //
+	ProductVariantMediaTableName          = "VariantMedias"                 //
+	ProductVariantTableName               = "ProductVariants"               //
+	ProductVariantTranslationTableName    = "ProductVariantTranslations"    //
+)
+
+// wishlist-related table names
+const (
+	WishlistItemTableName               = "WishlistItems"               //
+	WishlistItemProductVariantTableName = "WishlistItemProductVariants" //
+	WishlistTableName                   = "Wishlists"                   //
+)
+
+// warehouse-related table names
+const (
+	StockTableName                 = "Stocks"                 //
+	WarehouseTableName             = "Warehouses"             //
+	WarehouseShippingZoneTableName = "WarehouseShippingZones" //
+	AllocationTableName            = "Allocations"            //
+	PreOrderAllocationTableName    = "PreorderAllocations"    //
+)
+
+// checkout-related table names
+const (
+	CheckoutLineTableName = "CheckoutLines" //
+	CheckoutTableName     = "Checkouts"     //
+)
+
+// order-related table names
+const (
+	OrderLineTableName       = "Orderlines"       //
+	OrderTableName           = "Orders"           //
+	FulfillmentLineTableName = "FulfillmentLines" //
+	FulfillmentTableName     = "Fulfillments"     //
+	OrderEventTableName      = "OrderEvents"      //
+)
+
+// account-related table names
+const (
+	UserAccessTokenTableName            = "UserAccessTokens"
+	AddressTableName                    = "Addresses"                   //
+	UserTableName                       = "Users"                       //
+	CustomerEventTableName              = "CustomerEvents"              //
+	StaffNotificationRecipientTableName = "StaffNotificationRecipients" //
+	CustomerNoteTableName               = "CustomerNotes"               //
+	TokenTableName                      = "Tokens"                      //
+	UserAddressTableName                = "UserAddresses"               //
+	TermsOfServiceTableName             = "TermsOfServices"             //
+	StatusTableName                     = "Status"                      //
+)
+
+// channel-related table names
+const (
+	ChannelTableName             = "Channels"
+	ChannelShopRelationTableName = "ChannelShops"
+)
+
+// giftcard-related table names
+const (
+	GiftcardTableName         = "GiftCards"         //
+	GiftcardEventTableName    = "GiftcardEvents"    //
+	OrderGiftCardTableName    = "OrderGiftCards"    //
+	GiftcardCheckoutTableName = "GiftcardCheckouts" //
+)
+
+// payment-related table names
+const (
+	PaymentTableName     = "Payments"     //
+	TransactionTableName = "Transactions" //
+)
+
+// plugin-related table names
+const (
+	PluginKeyValueStoreTableName = "PluginKeyValueStore"
+)
+
+// preference table names
+const PreferenceTableName = "Preferences"
+
+// role related table names
+const RoleTableName = "Roles"
+
+// csv-related table names
+const (
+	CsvExportEventTableName = "ExportEvents" //
+	CsvExportFileTableName  = "ExportFiles"  //
+)
+
+// attribute-related table names
+const (
+	BaseAssignedAttributeTableName         = "BaseAssignedAttributes"         //
+	AttributeTableName                     = "Attributes"                     //
+	AttributeTranslationTableName          = "AttributeTranslations"          //
+	AttributeValueTableName                = "AttributeValues"                //
+	AttributeValueTranslationTableName     = "AttributeValueTranslations"     //
+	AssignedPageAttributeValueTableName    = "AssignedPageAttributeValues"    //
+	AssignedPageAttributeTableName         = "AssignedPageAttributes"         //
+	AttributePageTableName                 = "AttributePages"                 //
+	AssignedVariantAttributeValueTableName = "AssignedVariantAttributeValues" //
+	AssignedVariantAttributeTableName      = "AssignedVariantAttributes"      //
+	AttributeVariantTableName              = "AttributeVariants"              //
+	AssignedProductAttributeValueTableName = "AssignedProductAttributeValues" //
+	AssignedProductAttributeTableName      = "AssignedProductAttributes"      //
+	AttributeProductTableName              = "AttributeProducts"              //
+)
+
+// discount-related table names
+const (
+	VoucherTableName               = "Vouchers"               //
+	VoucherChannelListingTableName = "VoucherChannelListings" //
+	VoucherCustomerTableName       = "VoucherCustomers"       //
+	SaleChannelListingTableName    = "SaleChannelListings"    //
+	SaleTableName                  = "Sales"                  //
+	SaleTranslationTableName       = "SaleTranslations"       //
+	VoucherTranslationTableName    = "VoucherTranslations"    //
+	OrderDiscountTableName         = "OrderDiscounts"         //
+)
+
+// shop-related table names
+const (
+	ShopTableName            = "Shops"            //
+	ShopTranslationTableName = "ShopTranslations" //
+	ShopStaffTableName       = "ShopStaffs"       //
+	VatTableName             = "Vats"             //
+)
+
+// menu-related table names
+const (
+	MenuTableName                = "Menus"
+	MenuItemTableName            = "MenuItems"
+	MenuItemTranslationTableName = "MenuItemTranslations"
+)
+
+// shipping-related table names
+const (
+	ShippingMethodTableName                = "ShippingMethods"                //
+	ShippingZoneTableName                  = "ShippingZones"                  //
+	ShippingZoneChannelTableName           = "ShippingZoneChannels"           //
+	ShippingMethodTranslationTableName     = "ShippingMethodTranslations"     //
+	ShippingMethodPostalCodeRuleTableName  = "ShippingMethodPostalCodeRules"  //
+	ShippingMethodChannelListingTableName  = "ShippingMethodChannelListings"  //
+	ShippingMethodExcludedProductTableName = "ShippingMethodExcludedProducts" //
+)
+
+// job-related table names
+const (
+	JobTableName = "Jobs"
+)
+
+// file-related table names
+const (
+	FileInfoTableName      = "FileInfos"      //
+	UploadSessionTableName = "UploadSessions" //
+)
+
+// page-related table names
+const (
+	PageTableName            = "Pages"            //
+	PageTranslationTableName = "PageTranslations" //
+	PageTypeTableName        = "PageTypes"        //
+)
+
+// invoice-related table names
+const (
+	InvoiceEventTableName = "InvoiceEvents" // invoice
+	InvoiceTableName      = "Invoices"      //
+)
+
+const (
+	OpenExchangeRateTableName = "OpenExchangeRates" // external services
+)
+
+const PluginConfigurationTableName = "PluginConfigurations"
+
+const AuditTableName = "Audits" // audit
+
+const ClusterDiscoveryTableName = "ClusterDiscoveries"
+
+const ComplianceTableName = "Compliances"

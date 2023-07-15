@@ -62,7 +62,7 @@ func (a *ServiceWishlist) SetUserForWishlist(wishList *model.Wishlist, userID st
 // GetAllVariants returns all product variants in child wishlist items of given wishlist
 func (a *ServiceWishlist) GetAllVariants(wishlistID string) ([]*model.ProductVariant, *model.AppError) {
 	productVariants, appErr := a.srv.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
-		WishlistID: squirrel.Eq{store.WishlistItemTableName + ".WishlistID": wishlistID},
+		WishlistID: squirrel.Eq{model.WishlistItemTableName + ".WishlistID": wishlistID},
 		Distinct:   true,
 	})
 	if appErr != nil {
@@ -85,8 +85,8 @@ func (a *ServiceWishlist) AddProduct(wishlistID string, productID string) (*mode
 // RemoveProduct removes a wishlist item of given wishlist that have ProductID property is given productID
 func (a *ServiceWishlist) RemoveProduct(wishlistID string, productID string) *model.AppError {
 	_, appErr := a.DeleteWishlistItemsByOption(nil, &model.WishlistItemFilterOption{
-		WishlistID: squirrel.Eq{store.WishlistItemTableName + ".WishlistID": wishlistID},
-		ProductID:  squirrel.Eq{store.WishlistItemTableName + ".ProductID": productID},
+		WishlistID: squirrel.Eq{model.WishlistItemTableName + ".WishlistID": wishlistID},
+		ProductID:  squirrel.Eq{model.WishlistItemTableName + ".ProductID": productID},
 	})
 
 	return appErr
@@ -113,8 +113,8 @@ func (a *ServiceWishlist) AddProductVariant(wishlistID string, productVariant *m
 // RemoveProductVariant remove a wishlist item from given wishlist
 func (a *ServiceWishlist) RemoveProductVariant(wishlistID string, productVariant *model.ProductVariant) *model.AppError {
 	wishlistItem, appErr := a.WishlistItemByOption(&model.WishlistItemFilterOption{
-		WishlistID: squirrel.Eq{store.WishlistItemTableName + ".WishlistID": wishlistID},
-		ProductID:  squirrel.Eq{store.WishlistItemTableName + ".ProductID": productVariant.ProductID},
+		WishlistID: squirrel.Eq{model.WishlistItemTableName + ".WishlistID": wishlistID},
+		ProductID:  squirrel.Eq{model.WishlistItemTableName + ".ProductID": productVariant.ProductID},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -133,7 +133,7 @@ func (a *ServiceWishlist) RemoveProductVariant(wishlistID string, productVariant
 
 	if numOfRelationsLeft == 0 {
 		_, appErr = a.DeleteWishlistItemsByOption(nil, &model.WishlistItemFilterOption{
-			Id: squirrel.Eq{store.WishlistItemTableName + ".Id": wishlistItem.Id},
+			Id: squirrel.Eq{model.WishlistItemTableName + ".Id": wishlistItem.Id},
 		})
 	}
 

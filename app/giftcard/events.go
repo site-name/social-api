@@ -30,7 +30,7 @@ func (s *ServiceGiftcard) GiftcardEventsByOptions(options *model.GiftCardEventFi
 }
 
 // BulkUpsertGiftcardEvents tells store to upsert given giftcard events into database then returns them
-func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction store_iface.SqlxTxExecutor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction store_iface.SqlxExecutor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, *model.AppError) {
 	events, err := s.srv.Store.GiftcardEvent().BulkUpsert(transaction, events...)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -49,7 +49,7 @@ func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction store_iface.SqlxT
 }
 
 // GiftcardsUsedInOrderEvent bulk creates giftcard events
-func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction store_iface.SqlxTxExecutor, balanceData model.BalanceData, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction store_iface.SqlxExecutor, balanceData model.BalanceData, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -75,7 +75,7 @@ func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction store_iface.Sqlx
 	return s.BulkUpsertGiftcardEvents(transaction, events...)
 }
 
-func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction store_iface.SqlxTxExecutor, giftcards []*model.GiftCard, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction store_iface.SqlxExecutor, giftcards []*model.GiftCard, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id

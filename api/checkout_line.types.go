@@ -9,7 +9,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -115,7 +114,7 @@ func checkoutLinesByCheckoutTokenLoader(ctx context.Context, tokens []string) []
 	checkoutLines, appErr := embedCtx.App.Srv().
 		CheckoutService().
 		CheckoutLinesByOption(&model.CheckoutLineFilterOption{
-			CheckoutID: squirrel.Eq{store.CheckoutLineTableName + ".CheckoutID": tokens},
+			CheckoutID: squirrel.Eq{model.CheckoutLineTableName + ".CheckoutID": tokens},
 		})
 	if appErr != nil {
 		for idx := range tokens {
@@ -146,7 +145,7 @@ func checkoutLineByIdLoader(ctx context.Context, ids []string) []*dataloader.Res
 	checkoutLines, appErr := embedCtx.App.Srv().
 		CheckoutService().
 		CheckoutLinesByOption(&model.CheckoutLineFilterOption{
-			Id: squirrel.Eq{store.CheckoutLineTableName + ".Id": ids},
+			Id: squirrel.Eq{model.CheckoutLineTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {

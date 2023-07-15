@@ -54,11 +54,11 @@ func (sts *SqlShopTranslationStore) Upsert(translation *model.ShopTranslation) (
 		numUpdated int64
 	)
 	if saving {
-		query := "INSERT INTO " + store.ShopTranslationTableName + "(" + sts.ModelFields("").Join(",") + ") VALUES (" + sts.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.ShopTranslationTableName + "(" + sts.ModelFields("").Join(",") + ") VALUES (" + sts.ModelFields(":").Join(",") + ")"
 		_, err = sts.GetMasterX().NamedExec(query, translation)
 
 	} else {
-		query := "UPDATE " + store.ShopTranslationTableName + " SET " + sts.
+		query := "UPDATE " + model.ShopTranslationTableName + " SET " + sts.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -74,7 +74,7 @@ func (sts *SqlShopTranslationStore) Upsert(translation *model.ShopTranslation) (
 
 	if err != nil {
 		if sts.IsUniqueConstraintError(err, []string{"LanguageCode", "shoptranslations_languagecode_shopid_key"}) {
-			return nil, store.NewErrInvalidInput(store.ShopTranslationTableName, "LanguageCode/ShopID", "duplicate value")
+			return nil, store.NewErrInvalidInput(model.ShopTranslationTableName, "LanguageCode/ShopID", "duplicate value")
 		}
 		return nil, errors.Wrapf(err, "failed to upsert shop translation with id=%s", translation.Id)
 	}
@@ -89,10 +89,10 @@ func (sts *SqlShopTranslationStore) Upsert(translation *model.ShopTranslation) (
 // Get finds a shop translation with given id then return it with an error
 func (sts *SqlShopTranslationStore) Get(id string) (*model.ShopTranslation, error) {
 	var res model.ShopTranslation
-	err := sts.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShopTranslationTableName+" WHERE Id = ?", id)
+	err := sts.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShopTranslationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ShopTranslationTableName, id)
+			return nil, store.NewErrNotFound(model.ShopTranslationTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find shop translation with id=%s", id)
 	}

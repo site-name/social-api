@@ -1,5 +1,5 @@
 extend type Mutation {
-  saleCreate(input: SaleInput!): SaleCreate
+  saleCreate(input: SaleInput!): SaleCreate @hasRoleAny(roles: [shop_admin, shop_staff])
   saleDelete(id: String!): SaleDelete
   saleBulkDelete(ids: [String!]!): SaleBulkDelete
   saleUpdate(id: String!, input: SaleInput!): SaleUpdate

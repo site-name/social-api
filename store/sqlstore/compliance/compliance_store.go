@@ -47,7 +47,7 @@ func (s *SqlComplianceStore) Save(compliance *model.Compliance) (*model.Complian
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.ComplianceTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.ComplianceTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
 
 	if _, err := s.GetMasterX().NamedExec(query, compliance); err != nil {
 		return nil, errors.Wrap(err, "failed to save Compliance")
@@ -61,7 +61,7 @@ func (s *SqlComplianceStore) Update(compliance *model.Compliance) (*model.Compli
 		return nil, err
 	}
 
-	query := "UPDATE " + store.ComplianceTableName + " SET " + s.
+	query := "UPDATE " + model.ComplianceTableName + " SET " + s.
 		ModelFields("").
 		Map(func(_ int, s string) string {
 			return s + "=:" + s
@@ -87,10 +87,10 @@ func (s *SqlComplianceStore) GetAll(offset, limit int) (model.Compliances, error
 func (s *SqlComplianceStore) Get(id string) (*model.Compliance, error) {
 	var res model.Compliance
 
-	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+store.ComplianceTableName+" WHERE Id = ?", id)
+	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+model.ComplianceTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ComplianceTableName, id)
+			return nil, store.NewErrNotFound(model.ComplianceTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to get Compliance with id=%s", id)
 	}

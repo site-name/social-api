@@ -59,11 +59,11 @@ func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *mode
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.ProductVariantChannelListingTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.ProductVariantChannelListingTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
 	_, err := ps.GetMasterX().NamedExec(query, variantChannelListing)
 	if err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"VariantID", "ChannelID", "productvariantchannellistings_variantid_channelid_key"}) {
-			return nil, store.NewErrNotFound(store.ProductVariantChannelListingTableName, variantChannelListing.Id)
+			return nil, store.NewErrNotFound(model.ProductVariantChannelListingTableName, variantChannelListing.Id)
 		}
 		return nil, errors.Wrapf(err, "failed to save product variant channel listing with id=%s", variantChannelListing.Id)
 	}
@@ -75,10 +75,10 @@ func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *mode
 func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error) {
 	var res model.ProductVariantChannelListing
 
-	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+store.ProductVariantChannelListingTableName+" WHERE Id = ?", variantChannelListingID)
+	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.ProductVariantChannelListingTableName+" WHERE Id = ?", variantChannelListingID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ProductVariantChannelListingTableName, variantChannelListingID)
+			return nil, store.NewErrNotFound(model.ProductVariantChannelListingTableName, variantChannelListingID)
 		}
 		return nil, errors.Wrapf(err, "failed to find product variant channel listing with id=%s", variantChannelListingID)
 	}
@@ -89,12 +89,12 @@ func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID stri
 // FilterbyOption finds and returns all product variant channel listings filterd using given option
 func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error) {
 	// NOTE: In the scan fields creation below, the order of fields must be identical to the order of select fiels
-	selectFields := ps.ModelFields(store.ProductVariantChannelListingTableName + ".")
+	selectFields := ps.ModelFields(model.ProductVariantChannelListingTableName + ".")
 	if option.SelectRelatedChannel {
-		selectFields = append(selectFields, ps.Channel().ModelFields(store.ChannelTableName+".")...)
+		selectFields = append(selectFields, ps.Channel().ModelFields(model.ChannelTableName+".")...)
 	}
 	if option.SelectRelatedProductVariant {
-		selectFields = append(selectFields, ps.ProductVariant().ModelFields(store.ProductVariantTableName+".")...)
+		selectFields = append(selectFields, ps.ProductVariant().ModelFields(model.ProductVariantTableName+".")...)
 	}
 	if option.AnnotateAvailablePreorderQuantity {
 		selectFields = append(selectFields, `ProductVariantChannelListings.PreorderQuantityThreshold - COALESCE( SUM( PreorderAllocations.Quantity ), 0) AS availablePreorderQuantity`)
@@ -105,7 +105,7 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *model.Pro
 
 	query := ps.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.ProductVariantChannelListingTableName)
+		From(model.ProductVariantChannelListingTableName)
 
 	var groupBy []string
 
@@ -132,17 +132,17 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *model.Pro
 
 	if option.SelectRelatedChannel {
 		query = query.
-			InnerJoin(store.ChannelTableName + " ON Channels.Id = ProductVariantChannelListings.ChannelID")
+			InnerJoin(model.ChannelTableName + " ON Channels.Id = ProductVariantChannelListings.ChannelID")
 		groupBy = append(groupBy, "Channels.Id")
 	}
 	if option.SelectRelatedProductVariant || option.VariantProductID != nil {
 		query = query.
-			InnerJoin(store.ProductVariantTableName + " ON ProductVariants.Id = ProductVariantChannelListings.variantID")
+			InnerJoin(model.ProductVariantTableName + " ON ProductVariants.Id = ProductVariantChannelListings.variantID")
 	}
 
 	if option.AnnotateAvailablePreorderQuantity ||
 		option.AnnotatePreorderQuantityAllocated {
-		query = query.LeftJoin(store.PreOrderAllocationTableName + " ON PreorderAllocations.ProductVariantChannelListingID = ProductVariantChannelListings.Id")
+		query = query.LeftJoin(model.PreOrderAllocationTableName + " ON PreorderAllocations.ProductVariantChannelListingID = ProductVariantChannelListings.Id")
 		groupBy = append(groupBy, "ProductVariantChannelListings.Id")
 	}
 
@@ -209,11 +209,11 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *model.Pro
 }
 
 // BulkUpsert performs bulk upsert given product variant channel listings then returns them
-func (ps *SqlProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
+func (ps *SqlProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxExecutor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
 	var (
 		executor    store_iface.SqlxExecutor = ps.GetMasterX()
-		saveQuery                            = "INSERT INTO " + store.ProductVariantChannelListingTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
-		updateQuery                          = "UPDATE " + store.ProductVariantChannelListingTableName + " SET " + ps.
+		saveQuery                            = "INSERT INTO " + model.ProductVariantChannelListingTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+		updateQuery                          = "UPDATE " + model.ProductVariantChannelListingTableName + " SET " + ps.
 				ModelFields("").
 				Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -253,7 +253,7 @@ func (ps *SqlProductVariantChannelListingStore) BulkUpsert(transaction store_ifa
 
 		if err != nil {
 			if ps.IsUniqueConstraintError(err, []string{"VariantID", "ChannelID", "productvariantchannellistings_variantid_channelid_key"}) {
-				return nil, store.NewErrInvalidInput(store.ProductVariantChannelListingTableName, "VariantID/ChannelID", "duplicate")
+				return nil, store.NewErrInvalidInput(model.ProductVariantChannelListingTableName, "VariantID/ChannelID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to upsert a product variant channel listing with id=%s", listing.Id)
 		}

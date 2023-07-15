@@ -16,6 +16,31 @@ import (
 	"github.com/sitename/sitename/store/store_iface"
 )
 
+// SqlxCommonIface contains common methods implemented by sqlx's *DB, *Tx types.
+type SqlxDBIface interface {
+	BindNamed(query string, arg interface{}) (string, []interface{}, error)
+	DriverName() string
+	Get(dest interface{}, query string, args ...interface{}) error
+	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	NamedExec(query string, arg interface{}) (sql.Result, error)
+	NamedExecContext(ctx context.Context, query string, arg interface{}) (sql.Result, error)
+	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
+	QueryRowx(query string, args ...interface{}) *sqlx.Row
+	QueryRowxContext(ctx context.Context, query string, args ...interface{}) *sqlx.Row
+	Queryx(query string, args ...interface{}) (*sqlx.Rows, error)
+	QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error)
+	Select(dest interface{}, query string, args ...interface{}) error
+	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	Rebind(query string) string
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+}
+
+// SqlxTxCreator contains methods exclusively implemented by sqlx's *DB type.
+type SqlxTxCreator interface {
+	BeginTxx(ctx context.Context, opts *sql.TxOptions) (*sqlx.Tx, error)
+	Beginx() (*sqlx.Tx, error)
+}
+
 // namedParamRegex is used to capture all named parameters and convert them
 // to lowercase. This is necessary to be able to use a single query for both
 // Postgres and MySQL.
@@ -24,11 +49,12 @@ import (
 var namedParamRegex = regexp.MustCompile(`:\w+`)
 
 type sqlxDBWrapper struct {
-	*sqlx.DB
+	DB           SqlxDBIface
 	queryTimeout time.Duration
 	trace        bool
 }
 
+// type check
 var _ store_iface.SqlxExecutor = (*sqlxDBWrapper)(nil)
 
 func newSqlxDBWrapper(db *sqlx.DB, timeout time.Duration, trace bool) *sqlxDBWrapper {
@@ -40,47 +66,67 @@ func newSqlxDBWrapper(db *sqlx.DB, timeout time.Duration, trace bool) *sqlxDBWra
 }
 
 func (w *sqlxDBWrapper) Stats() sql.DBStats {
-	return w.DB.Stats()
+	if db, ok := w.DB.(*sqlx.DB); ok {
+		return db.Stats()
+	}
+	return sql.DBStats{}
 }
 
 func (w *sqlxDBWrapper) Conn(ctx context.Context) (*sql.Conn, error) {
-	return w.DB.Conn(ctx)
+	if db, ok := w.DB.(*sqlx.DB); ok {
+		return db.Conn(ctx)
+	}
+	return nil, errors.New("underlying type is not a db type")
 }
 
-func (w *sqlxDBWrapper) ExecBuilder(builder store_iface.Builder) (sql.Result, error) {
-	query, args, err := builder.ToSql()
-	if err != nil {
-		return nil, err
+func (w *sqlxDBWrapper) Commit() error {
+	tx, ok := w.DB.(*sqlx.Tx)
+	if ok {
+		return tx.Commit()
 	}
 
-	return w.Exec(query, args...)
+	return errors.New("the underlying type is not a transaction")
 }
 
-func (w *sqlxDBWrapper) GetBuilder(dest interface{}, builder store_iface.Builder) error {
-	query, args, err := builder.ToSql()
-	if err != nil {
-		return err
+func (w *sqlxDBWrapper) Rollback() error {
+	if tx, ok := w.DB.(*sqlx.Tx); ok {
+		return tx.Rollback()
 	}
-
-	return w.Get(dest, query, args...)
+	return errors.New("the underlying type is not a transaction")
 }
 
-func (w *sqlxDBWrapper) Beginx() (store_iface.SqlxTxExecutor, error) {
-	tx, err := w.DB.Beginx()
-	if err != nil {
-		return nil, err
+func (w *sqlxDBWrapper) Beginx() (store_iface.SqlxExecutor, error) {
+	if db, ok := w.DB.(*sqlx.DB); ok {
+		tx, err := db.Beginx()
+		if err != nil {
+			return nil, err
+		}
+
+		return &sqlxDBWrapper{
+			queryTimeout: w.queryTimeout,
+			trace:        w.trace,
+			DB:           tx,
+		}, nil
 	}
 
-	return newSqlxTxWrapper(tx, w.queryTimeout, w.trace), nil
+	return w, nil
 }
 
-func (w *sqlxDBWrapper) BeginXWithIsolation(opts *sql.TxOptions) (*sqlxTxWrapper, error) {
-	tx, err := w.DB.BeginTxx(context.Background(), opts)
-	if err != nil {
-		return nil, err
+func (w *sqlxDBWrapper) BeginXWithIsolation(opts *sql.TxOptions) (store_iface.SqlxExecutor, error) {
+	if db, ok := w.DB.(*sqlx.DB); ok {
+		tx, err := db.BeginTxx(context.Background(), opts)
+		if err != nil {
+			return nil, err
+		}
+
+		return &sqlxDBWrapper{
+			queryTimeout: w.queryTimeout,
+			trace:        w.trace,
+			DB:           tx,
+		}, nil
 	}
 
-	return newSqlxTxWrapper(tx, w.queryTimeout, w.trace), nil
+	return nil, errors.New("already on a transaction")
 }
 
 func (w *sqlxDBWrapper) Get(dest interface{}, query string, args ...interface{}) error {
@@ -159,7 +205,41 @@ func (w *sqlxDBWrapper) NamedQuery(query string, arg interface{}) (*sqlx.Rows, e
 		}(time.Now())
 	}
 
-	return w.DB.NamedQueryContext(ctx, query, arg)
+	switch dbOrTx := w.DB.(type) {
+	case *sqlx.DB:
+		return dbOrTx.NamedQueryContext(ctx, query, arg)
+
+	default: // NOTE: only *sqlx.Tx for this case
+		// There is no tx.NamedQueryContext support in the sqlx API. (https://github.com/jmoiron/sqlx/issues/447)
+		// So we need to implement this ourselves.
+		type result struct {
+			rows *sqlx.Rows
+			err  error
+		}
+
+		// Need to add a buffer of 1 to prevent goroutine leak.
+		resChan := make(chan *result, 1)
+		go func() {
+			rows, err := dbOrTx.NamedQuery(query, arg)
+			resChan <- &result{
+				rows: rows,
+				err:  err,
+			}
+		}()
+
+		// staticcheck fails to check that res gets re-assigned later.
+		res := &result{} //nolint:staticcheck
+		select {
+		case res = <-resChan:
+		case <-ctx.Done():
+			res = &result{
+				rows: nil,
+				err:  ctx.Err(),
+			}
+		}
+
+		return res.rows, res.err
+	}
 }
 
 func (w *sqlxDBWrapper) QueryRowX(query string, args ...interface{}) *sqlx.Row {
@@ -202,216 +282,6 @@ func (w *sqlxDBWrapper) Select(dest interface{}, query string, args ...interface
 	}
 
 	return w.DB.SelectContext(ctx, dest, query, args...)
-}
-
-type sqlxTxWrapper struct {
-	*sqlx.Tx
-	queryTimeout time.Duration
-	trace        bool
-}
-
-// checking
-var _ store_iface.SqlxExecutor = (*sqlxTxWrapper)(nil)
-
-func newSqlxTxWrapper(tx *sqlx.Tx, timeout time.Duration, trace bool) *sqlxTxWrapper {
-	return &sqlxTxWrapper{
-		Tx:           tx,
-		queryTimeout: timeout,
-		trace:        trace,
-	}
-}
-
-func (w *sqlxTxWrapper) Beginx() (store_iface.SqlxTxExecutor, error) {
-	return w, nil
-}
-
-func (w *sqlxTxWrapper) Get(dest interface{}, query string, args ...interface{}) error {
-	query = w.Tx.Rebind(query)
-	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
-	defer cancel()
-
-	if w.trace {
-		defer func(then time.Time) {
-			printArgs(query, time.Since(then), args)
-		}(time.Now())
-	}
-
-	return w.Tx.GetContext(ctx, dest, query, args...)
-}
-
-func (w *sqlxTxWrapper) ExecNoTimeout(query string, args ...interface{}) (sql.Result, error) {
-	query = w.Tx.Rebind(query)
-
-	if w.trace {
-		defer func(then time.Time) {
-			printArgs(query, time.Since(then), args)
-		}(time.Now())
-	}
-
-	return w.Tx.ExecContext(context.Background(), query, args...)
-}
-
-func (w *sqlxTxWrapper) Exec(query string, args ...interface{}) (sql.Result, error) {
-	query = w.Tx.Rebind(query)
-
-	return w.ExecRaw(query, args...)
-}
-
-// ExecRaw is like Exec but without any rebinding of params. You need to pass
-// the exact param types of your target database.
-func (w *sqlxTxWrapper) ExecRaw(query string, args ...interface{}) (sql.Result, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
-	defer cancel()
-
-	if w.trace {
-		defer func(then time.Time) {
-			printArgs(query, time.Since(then), args)
-		}(time.Now())
-	}
-
-	return w.Tx.ExecContext(ctx, query, args...)
-}
-
-func (w *sqlxTxWrapper) NamedExec(query string, arg interface{}) (sql.Result, error) {
-	if w.Tx.DriverName() == model.DATABASE_DRIVER_POSTGRES {
-		query = namedParamRegex.ReplaceAllStringFunc(query, strings.ToLower)
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
-	defer cancel()
-
-	if w.trace {
-		defer func(then time.Time) {
-			printArgs(query, time.Since(then), arg)
-		}(time.Now())
-	}
-
-	return w.Tx.NamedExecContext(ctx, query, arg)
-}
-
-func (w *sqlxTxWrapper) NamedQuery(query string, arg interface{}) (*sqlx.Rows, error) {
-	if w.Tx.DriverName() == model.DATABASE_DRIVER_POSTGRES {
-		query = namedParamRegex.ReplaceAllStringFunc(query, strings.ToLower)
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
-	defer cancel()
-
-	if w.trace {
-		defer func(then time.Time) {
-			printArgs(query, time.Since(then), arg)
-		}(time.Now())
-	}
-
-	// There is no tx.NamedQueryContext support in the sqlx API. (https://github.com/jmoiron/sqlx/issues/447)
-	// So we need to implement this ourselves.
-	type result struct {
-		rows *sqlx.Rows
-		err  error
-	}
-
-	// Need to add a buffer of 1 to prevent goroutine leak.
-	resChan := make(chan *result, 1)
-	go func() {
-		rows, err := w.Tx.NamedQuery(query, arg)
-		resChan <- &result{
-			rows: rows,
-			err:  err,
-		}
-	}()
-
-	// staticcheck fails to check that res gets re-assigned later.
-	res := &result{} //nolint:staticcheck
-	select {
-	case res = <-resChan:
-	case <-ctx.Done():
-		res = &result{
-			rows: nil,
-			err:  ctx.Err(),
-		}
-	}
-
-	return res.rows, res.err
-}
-
-func (w *sqlxTxWrapper) QueryRowX(query string, args ...interface{}) *sqlx.Row {
-	query = w.Tx.Rebind(query)
-	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
-	defer cancel()
-
-	if w.trace {
-		defer func(then time.Time) {
-			printArgs(query, time.Since(then), args)
-		}(time.Now())
-	}
-
-	return w.Tx.QueryRowxContext(ctx, query, args...)
-}
-
-func (w *sqlxTxWrapper) QueryX(query string, args ...interface{}) (*sqlx.Rows, error) {
-	query = w.Tx.Rebind(query)
-	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
-	defer cancel()
-
-	if w.trace {
-		defer func(then time.Time) {
-			printArgs(query, time.Since(then), args)
-		}(time.Now())
-	}
-
-	return w.Tx.QueryxContext(ctx, query, args)
-}
-
-func (w *sqlxTxWrapper) ExecBuilder(builder store_iface.Builder) (sql.Result, error) {
-	query, args, err := builder.ToSql()
-	if err != nil {
-		return nil, err
-	}
-
-	return w.Exec(query, args...)
-}
-
-func (w *sqlxTxWrapper) Select(dest interface{}, query string, args ...interface{}) error {
-	query = w.Tx.Rebind(query)
-	ctx, cancel := context.WithTimeout(context.Background(), w.queryTimeout)
-	defer cancel()
-
-	if w.trace {
-		defer func(then time.Time) {
-			printArgs(query, time.Since(then), args)
-		}(time.Now())
-	}
-
-	return w.Tx.SelectContext(ctx, dest, query, args...)
-}
-
-func (w *sqlxTxWrapper) GetBuilder(dest interface{}, builder store_iface.Builder) error {
-	query, args, err := builder.ToSql()
-	if err != nil {
-		return err
-	}
-
-	return w.Get(dest, query, args...)
-}
-
-func (w *sqlxDBWrapper) SelectBuilder(dest interface{}, builder store_iface.Builder) error {
-	query, args, err := builder.ToSql()
-	if err != nil {
-		return err
-	}
-
-	return w.Select(dest, query, args...)
-}
-
-func (w *sqlxTxWrapper) SelectBuilder(dest interface{}, builder store_iface.Builder) error {
-	query, args, err := builder.ToSql()
-	if err != nil {
-		return err
-	}
-
-	return w.Select(dest, query, args...)
-}
-
-func (w *sqlxTxWrapper) Conn(ctx context.Context) (*sql.Conn, error) {
-	return nil, errors.New("sqlxTxWrapper has no conn")
 }
 
 func removeSpace(r rune) rune {

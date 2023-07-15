@@ -50,7 +50,7 @@ func (s *SqlGiftCardStore) ModelFields(prefix string) util.AnyArray[string] {
 }
 
 // BulkUpsert depends on given giftcards's Id properties then perform according operation
-func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
+func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxExecutor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
 	var executor store_iface.SqlxExecutor = gcs.GetMasterX()
 	if transaction != nil {
 		executor = transaction
@@ -73,15 +73,15 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, 
 
 		var err error
 		if saving {
-			query := "INSERT INTO " + store.GiftcardTableName + "(" + gcs.ModelFields("").Join(",") + ") VALUES (" + gcs.ModelFields(":").Join(",") + ")"
+			query := "INSERT INTO " + model.GiftcardTableName + "(" + gcs.ModelFields("").Join(",") + ") VALUES (" + gcs.ModelFields(":").Join(",") + ")"
 			_, err = executor.NamedExec(query, giftCard)
 
 		} else {
 			var oldGiftcard model.GiftCard
-			err = executor.Get(&oldGiftcard, "SELECT * FROM "+store.GiftcardTableName+" WHERE Id = ?", giftCard.Id)
+			err = executor.Get(&oldGiftcard, "SELECT * FROM "+model.GiftcardTableName+" WHERE Id = ?", giftCard.Id)
 			if err != nil {
 				if err == sql.ErrNoRows {
-					return nil, store.NewErrNotFound(store.GiftcardTableName, giftCard.Id)
+					return nil, store.NewErrNotFound(model.GiftcardTableName, giftCard.Id)
 				}
 				return nil, err
 			}
@@ -89,7 +89,7 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, 
 			giftCard.CreateAt = oldGiftcard.CreateAt
 			giftCard.Code = oldGiftcard.Code
 
-			query := "UPDATE " + store.GiftcardTableName + " SET " + gcs.
+			query := "UPDATE " + model.GiftcardTableName + " SET " + gcs.
 				ModelFields("").
 				Map(func(_ int, s string) string {
 					return s + "=:" + s
@@ -101,7 +101,7 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, 
 
 		if err != nil {
 			if gcs.IsUniqueConstraintError(err, []string{"Code", "giftcards_code_key", "idx_giftcards_code_unique"}) {
-				return nil, store.NewErrInvalidInput(store.GiftcardTableName, "Code", giftCard.Code)
+				return nil, store.NewErrInvalidInput(model.GiftcardTableName, "Code", giftCard.Code)
 			}
 			return nil, errors.Wrapf(err, "failed to upsert giftcard with id=%s", giftCard.Id)
 		}
@@ -112,9 +112,9 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxTxExecutor, 
 
 func (gcs *SqlGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 	var res model.GiftCard
-	if err := gcs.GetReplicaX().Get(&res, "SELECT * FROM "+store.GiftcardTableName+" WHERE Id = ?", id); err != nil {
+	if err := gcs.GetReplicaX().Get(&res, "SELECT * FROM "+model.GiftcardTableName+" WHERE Id = ?", id); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.GiftcardTableName, id)
+			return nil, store.NewErrNotFound(model.GiftcardTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find giftcard with id=%s", id)
 	}
@@ -125,8 +125,8 @@ func (gcs *SqlGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error) {
 	query := gs.
 		GetQueryBuilder().
-		Select(store.GiftcardTableName + ".").
-		From(store.GiftcardTableName)
+		Select(model.GiftcardTableName + ".").
+		From(model.GiftcardTableName)
 
 	if option.OrderBy != "" {
 		query = query.OrderBy(option.OrderBy)
@@ -149,13 +149,13 @@ func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (
 	}
 
 	if option.OrderID != nil {
-		query = query.InnerJoin(store.OrderGiftCardTableName + " ON OrderGiftCards.GiftCardID = GiftCards.Id").
+		query = query.InnerJoin(model.OrderGiftCardTableName + " ON OrderGiftCards.GiftCardID = GiftCards.Id").
 			Where(option.OrderID)
 	}
 	if option.CheckoutToken != nil {
 		subSelect := gs.GetQueryBuilder(squirrel.Question).
 			Select("GiftcardID").
-			From(store.GiftcardCheckoutTableName).
+			From(model.GiftcardCheckoutTableName).
 			Where(option.CheckoutToken)
 
 		query = query.Where(squirrel.Expr("GiftCards.Id IN ?", subSelect))
@@ -238,7 +238,7 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 	// select exists product type with kind == "gift_card":
 	productTypeQuery := gs.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
-		From(store.ProductTypeTableName).
+		From(model.ProductTypeTableName).
 		Where("ProductTypes.Kind = ?", model.GIFT_CARD).
 		Where("ProductTypes.Id = Products.ProductTypeID").
 		Prefix("EXISTS (").Suffix(")").
@@ -246,7 +246,7 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 
 	productQuery := gs.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
-		From(store.ProductTableName).
+		From(model.ProductTableName).
 		Where(productTypeQuery).
 		Where("Products.Id = ProductVariants.ProductID").
 		Prefix("EXISTS (").Suffix(")").
@@ -254,7 +254,7 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 
 	productVariantQuery := gs.GetQueryBuilder(squirrel.Question).
 		Select(`(1) AS "a"`).
-		From(store.ProductVariantTableName).
+		From(model.ProductVariantTableName).
 		Where(productQuery).
 		Where("ProductVariants.Id = Orderlines.VariantID").
 		Prefix("EXISTS (").Suffix(")").
@@ -262,7 +262,7 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 
 	orderLineQuery := gs.GetQueryBuilder().
 		Select("*").
-		From(store.OrderLineTableName).
+		From(model.OrderLineTableName).
 		Where(squirrel.Eq{"Orderlines.Id": orderLineIDs}).
 		Where(productVariantQuery)
 
@@ -286,7 +286,7 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, error) {
 	query, args, err := gs.GetQueryBuilder().
 		Select("*").
-		From(store.GiftcardTableName).
+		From(model.GiftcardTableName).
 		Where(
 			`EXISTS (
 				SELECT
@@ -317,7 +317,7 @@ func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, 
 
 	giftcardIDs := giftcards.IDs()
 	query, args, _ = gs.GetQueryBuilder().
-		Update(store.GiftcardTableName).
+		Update(model.GiftcardTableName).
 		Set("IsActive", false).
 		Where(squirrel.Eq{"Id": giftcardIDs}).
 		ToSql()
@@ -332,13 +332,13 @@ func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, 
 	return giftcardIDs, nil
 }
 
-func (s *SqlGiftCardStore) DeleteGiftcards(transaction store_iface.SqlxTxExecutor, ids []string) error {
+func (s *SqlGiftCardStore) DeleteGiftcards(transaction store_iface.SqlxExecutor, ids []string) error {
 	runner := s.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
 
-	query, args, err := s.GetQueryBuilder().Delete(store.GiftcardTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
+	query, args, err := s.GetQueryBuilder().Delete(model.GiftcardTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
 	if err != nil {
 		return errors.Wrap(err, "DeleteGiftcards_ToSql")
 	}

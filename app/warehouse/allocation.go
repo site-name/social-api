@@ -19,7 +19,7 @@ func (a *ServiceWarehouse) AllocationsByOption(option *model.AllocationFilterOpt
 }
 
 // BulkUpsertAllocations upserts or inserts given allocations into database then returns them
-func (a *ServiceWarehouse) BulkUpsertAllocations(transaction store_iface.SqlxTxExecutor, allocations []*model.Allocation) ([]*model.Allocation, *model.AppError) {
+func (a *ServiceWarehouse) BulkUpsertAllocations(transaction store_iface.SqlxExecutor, allocations []*model.Allocation) ([]*model.Allocation, *model.AppError) {
 	allocations, err := a.srv.Store.Allocation().BulkUpsert(transaction, allocations)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -41,7 +41,7 @@ func (a *ServiceWarehouse) BulkUpsertAllocations(transaction store_iface.SqlxTxE
 
 // BulkDeleteAllocations performs bulk delete given allocations.
 // If non-nil transaction is provided, perform bulk delete operation within it.
-func (a *ServiceWarehouse) BulkDeleteAllocations(transaction store_iface.SqlxTxExecutor, allocationIDs []string) *model.AppError {
+func (a *ServiceWarehouse) BulkDeleteAllocations(transaction store_iface.SqlxExecutor, allocationIDs []string) *model.AppError {
 	err := a.srv.Store.Allocation().BulkDelete(transaction, allocationIDs)
 	if err != nil {
 		return model.NewAppError("BulkDeleteAllocations", "app.warehouse.error_deleting_allocations.app_error", nil, err.Error(), http.StatusInternalServerError)

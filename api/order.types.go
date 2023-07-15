@@ -11,7 +11,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -155,7 +154,7 @@ func orderLineByIdLoader(ctx context.Context, orderLineIDs []string) []*dataload
 		Srv().
 		OrderService().
 		OrderLinesByOption(&model.OrderLineFilterOption{
-			Id: squirrel.Eq{store.OrderLineTableName + ".Id": orderLineIDs},
+			Id: squirrel.Eq{model.OrderLineTableName + ".Id": orderLineIDs},
 		})
 	if appErr != nil {
 		for idx := range orderLineIDs {
@@ -181,7 +180,7 @@ func orderLinesByOrderIdLoader(ctx context.Context, orderIDs []string) []*datalo
 	lines, appErr := embedCtx.App.Srv().
 		OrderService().
 		OrderLinesByOption(&model.OrderLineFilterOption{
-			OrderID: squirrel.Eq{store.OrderLineTableName + ".OrderID": orderIDs},
+			OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": orderIDs},
 		})
 	if appErr != nil {
 		for idx := range orderIDs {
@@ -224,8 +223,8 @@ func orderLinesByVariantIdAndChannelIdLoader(ctx context.Context, idPairs []stri
 	lines, appErr := embedCtx.App.Srv().
 		OrderService().
 		OrderLinesByOption(&model.OrderLineFilterOption{
-			VariantID:          squirrel.Eq{store.OrderLineTableName + ".VariantID": variantIDs},
-			OrderChannelID:     squirrel.Eq{store.OrderTableName + ".ChannelID": channelIDs},
+			VariantID:          squirrel.Eq{model.OrderLineTableName + ".VariantID": variantIDs},
+			OrderChannelID:     squirrel.Eq{model.OrderTableName + ".ChannelID": channelIDs},
 			SelectRelatedOrder: true,
 		})
 	if appErr != nil {
@@ -808,7 +807,7 @@ func orderByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*mo
 	orders, appErr := embedCtx.App.Srv().
 		OrderService().
 		FilterOrdersByOptions(&model.OrderFilterOption{
-			Id: squirrel.Eq{store.OrderTableName + ".Id": ids},
+			Id: squirrel.Eq{model.OrderTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for idx := range ids {
@@ -835,7 +834,7 @@ func ordersByUserLoader(ctx context.Context, userIDs []string) []*dataloader.Res
 	orders, appErr := embedCtx.App.Srv().
 		OrderService().
 		FilterOrdersByOptions(&model.OrderFilterOption{
-			UserID: squirrel.Eq{store.OrderTableName + ".UserID": userIDs},
+			UserID: squirrel.Eq{model.OrderTableName + ".UserID": userIDs},
 		})
 	if appErr != nil {
 		for idx := range userIDs {

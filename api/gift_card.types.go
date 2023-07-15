@@ -14,7 +14,6 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 	"golang.org/x/text/currency"
 )
@@ -368,7 +367,7 @@ func giftCardsByUserLoader(ctx context.Context, userIDs []string) []*dataloader.
 		Srv().
 		GiftcardService().
 		GiftcardsByOption(&model.GiftCardFilterOption{
-			UsedByID: squirrel.Eq{store.GiftcardTableName + ".UsedByID": userIDs},
+			UsedByID: squirrel.Eq{model.GiftcardTableName + ".UsedByID": userIDs},
 		})
 	if appErr != nil {
 		for idx := range userIDs {
@@ -399,7 +398,7 @@ func giftCardEventsByGiftCardIdLoader(ctx context.Context, giftcardIDs []string)
 	events, appErr := embedCtx.App.Srv().
 		GiftcardService().
 		GiftcardEventsByOptions(&model.GiftCardEventFilterOption{
-			GiftcardID: squirrel.Eq{store.GiftcardTableName + ".GiftcardID": giftcardIDs},
+			GiftcardID: squirrel.Eq{model.GiftcardTableName + ".GiftcardID": giftcardIDs},
 		})
 	if appErr != nil {
 		for idx := range giftcardIDs {
@@ -432,7 +431,7 @@ func giftcardsByOrderIDsLoader(ctx context.Context, orderIDs []string) []*datalo
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	orderGiftcardRelations, err := embedCtx.App.Srv().Store.GiftCardOrder().FilterByOptions(&model.OrderGiftCardFilterOptions{
-		OrderID: squirrel.Eq{store.OrderGiftCardTableName + ".OrderID": orderIDs},
+		OrderID: squirrel.Eq{model.OrderGiftCardTableName + ".OrderID": orderIDs},
 	})
 	if err != nil {
 		err = model.NewAppError("giftcardsByOrderIDsLoader", "app.giftcard.giftcard-order-relations_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -445,7 +444,7 @@ func giftcardsByOrderIDsLoader(ctx context.Context, orderIDs []string) []*datalo
 		Srv().
 		GiftcardService().
 		GiftcardsByOption(&model.GiftCardFilterOption{
-			Id: squirrel.Eq{store.OrderGiftCardTableName + ".Id": giftcardIDs},
+			Id: squirrel.Eq{model.OrderGiftCardTableName + ".Id": giftcardIDs},
 		})
 	if appErr != nil {
 		err = appErr
@@ -520,28 +519,28 @@ func (g *GiftCardFilterInput) validate() *model.AppError {
 func (g *GiftCardFilterInput) ToSystemGiftcardFilter() *model.GiftCardFilterOption {
 	res := &model.GiftCardFilterOption{}
 	if g.IsActive != nil {
-		res.IsActive = squirrel.Eq{store.GiftcardTableName + ".IsActive": *g.IsActive}
+		res.IsActive = squirrel.Eq{model.GiftcardTableName + ".IsActive": *g.IsActive}
 	}
 
 	var tagFilter = squirrel.And{}
 	if g.Tag != nil && *g.Tag != "" {
-		tagFilter = append(tagFilter, squirrel.ILike{store.GiftcardTableName + ".Tag": "%" + *g.Tag + "%"})
+		tagFilter = append(tagFilter, squirrel.ILike{model.GiftcardTableName + ".Tag": "%" + *g.Tag + "%"})
 	}
 	if len(g.Tags) > 0 {
-		tagFilter = append(tagFilter, squirrel.Eq{store.GiftcardTableName + ".Tag": g.Tags})
+		tagFilter = append(tagFilter, squirrel.Eq{model.GiftcardTableName + ".Tag": g.Tags})
 	}
 	if len(tagFilter) > 0 {
 		res.Tag = tagFilter
 	}
 
 	if len(g.Products) > 0 {
-		res.ProductID = squirrel.Eq{store.GiftcardTableName + ".ProductID": g.Products}
+		res.ProductID = squirrel.Eq{model.GiftcardTableName + ".ProductID": g.Products}
 	}
 	if len(g.UsedBy) > 0 {
-		res.UsedByID = squirrel.Eq{store.GiftcardTableName + ".UsedByID": g.UsedBy}
+		res.UsedByID = squirrel.Eq{model.GiftcardTableName + ".UsedByID": g.UsedBy}
 	}
 	if g.Currency != nil {
-		res.Currency = squirrel.Eq{store.GiftcardTableName + ".Currency": strings.ToUpper(*g.Currency)}
+		res.Currency = squirrel.Eq{model.GiftcardTableName + ".Currency": strings.ToUpper(*g.Currency)}
 	}
 	for idx, priceRange := range [2]*PriceRangeInput{g.CurrentBalance, g.InitialBalance} {
 		if priceRange != nil {
@@ -553,10 +552,10 @@ func (g *GiftCardFilterInput) ToSystemGiftcardFilter() *model.GiftCardFilterOpti
 			}
 
 			if gte := priceRange.Gte; gte != nil {
-				conditions = append(conditions, squirrel.GtOrEq{store.GiftcardTableName + fieldName: *gte})
+				conditions = append(conditions, squirrel.GtOrEq{model.GiftcardTableName + fieldName: *gte})
 			}
 			if lte := priceRange.Lte; lte != nil {
-				conditions = append(conditions, squirrel.LtOrEq{store.GiftcardTableName + fieldName: *lte})
+				conditions = append(conditions, squirrel.LtOrEq{model.GiftcardTableName + fieldName: *lte})
 			}
 
 			if len(conditions) > 0 {

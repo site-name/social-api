@@ -39,11 +39,11 @@ func (as *SqlAttributePageStore) Save(page *model.AttributePage) (*model.Attribu
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.AttributePageTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.AttributePageTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 
 	if _, err := as.GetMasterX().NamedExec(query, page); err != nil {
-		if as.IsUniqueConstraintError(err, []string{"AttributeID", "PageTypeID", strings.ToLower(store.AttributePageTableName) + "_attributeid_pagetypeid_key"}) {
-			return nil, store.NewErrInvalidInput(store.AttributePageTableName, "AttributeID/PageTypeID", page.AttributeID+"/"+page.PageTypeID)
+		if as.IsUniqueConstraintError(err, []string{"AttributeID", "PageTypeID", strings.ToLower(model.AttributePageTableName) + "_attributeid_pagetypeid_key"}) {
+			return nil, store.NewErrInvalidInput(model.AttributePageTableName, "AttributeID/PageTypeID", page.AttributeID+"/"+page.PageTypeID)
 		}
 		return nil, errors.Wrapf(err, "failed to save attribute page with id=%s", page.Id)
 	}
@@ -53,10 +53,10 @@ func (as *SqlAttributePageStore) Save(page *model.AttributePage) (*model.Attribu
 
 func (as *SqlAttributePageStore) Get(pageID string) (*model.AttributePage, error) {
 	var res model.AttributePage
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AttributePageTableName+" WHERE Id = ?", pageID)
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AttributePageTableName+" WHERE Id = ?", pageID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AttributePageTableName, pageID)
+			return nil, store.NewErrNotFound(model.AttributePageTableName, pageID)
 		}
 		return nil, errors.Wrapf(err, "failed to find attribute page with id=%s", pageID)
 	}
@@ -65,7 +65,7 @@ func (as *SqlAttributePageStore) Get(pageID string) (*model.AttributePage, error
 }
 
 func (as *SqlAttributePageStore) GetByOption(option *model.AttributePageFilterOption) (*model.AttributePage, error) {
-	query := as.GetQueryBuilder().Select("*").From(store.AttributePageTableName)
+	query := as.GetQueryBuilder().Select("*").From(model.AttributePageTableName)
 
 	// parse option
 	if option.PageTypeID != nil {
@@ -88,7 +88,7 @@ func (as *SqlAttributePageStore) GetByOption(option *model.AttributePageFilterOp
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AttributePageTableName, "option")
+			return nil, store.NewErrNotFound(model.AttributePageTableName, "option")
 		}
 		return nil, errors.Wrapf(err, "failed to find attribute product with given option")
 	}

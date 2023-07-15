@@ -9,7 +9,6 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -20,7 +19,7 @@ func shippingMethodByIdLoader(ctx context.Context, ids []string) []*dataloader.R
 	methods, appErr := embedCtx.App.Srv().
 		ShippingService().
 		ShippingMethodsByOptions(&model.ShippingMethodFilterOption{
-			Id: squirrel.Eq{store.ShippingMethodTableName + ".Id": ids},
+			Id: squirrel.Eq{model.ShippingMethodTableName + ".Id": ids},
 		})
 	if appErr != nil {
 		for i := range ids {
@@ -60,8 +59,8 @@ func shippingMethodChannelListingByShippingMethodIdAndChannelSlugLoader(ctx cont
 	shippingMethodChannelListings, appErr := embedCtx.App.Srv().
 		ShippingService().
 		ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-			ShippingMethodID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethodIDs},
-			ChannelID:        squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": channelIDs},
+			ShippingMethodID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethodIDs},
+			ChannelID:        squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": channelIDs},
 		})
 	if appErr != nil {
 		for idx := range idPairs {
@@ -87,7 +86,7 @@ func shippingZonesByChannelIdLoader(ctx context.Context, ids []string) []*datalo
 	relations, err := embedCtx.App.Srv().Store.
 		ShippingZoneChannel().
 		FilterByOptions(&model.ShippingZoneChannelFilterOptions{
-			ChannelID: squirrel.Eq{store.ShippingZoneChannelTableName + ".ChannelID": ids},
+			Conditions: squirrel.Eq{model.ShippingZoneChannelTableName + ".ChannelID": ids},
 		})
 	if err != nil {
 		err = model.NewAppError("ShippingZoneChanenlByOptions", "app.shipping.shippingzone-channel-relations_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -136,7 +135,9 @@ func shippingZoneByIdLoader(ctx context.Context, ids []string) []*dataloader.Res
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	shippingZones, appErr := embedCtx.App.Srv().ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
-		Id: squirrel.Eq{store.ShippingZoneTableName + ".Id": ids},
+		Conditions: squirrel.And{
+			squirrel.Eq{model.ShippingZoneTableName + ".Id": ids},
+		},
 	})
 	if appErr != nil {
 		for idx := range ids {
@@ -159,7 +160,7 @@ func shippingMethodsByShippingZoneIdLoader(ctx context.Context, shippingZoneIDs 
 	shippingMethods, appErr := embedCtx.App.Srv().
 		ShippingService().
 		ShippingMethodsByOptions(&model.ShippingMethodFilterOption{
-			ShippingZoneID: squirrel.Eq{store.ShippingMethodTableName + ".ShippingZoneID": shippingZoneIDs},
+			ShippingZoneID: squirrel.Eq{model.ShippingMethodTableName + ".ShippingZoneID": shippingZoneIDs},
 		})
 	if appErr != nil {
 		for idx := range shippingZoneIDs {
@@ -186,7 +187,7 @@ func postalCodeRulesByShippingMethodIdLoader(ctx context.Context, shippingMethod
 	rules, appErr := embedCtx.App.Srv().
 		ShippingService().
 		ShippingMethodPostalCodeRulesByOptions(&model.ShippingMethodPostalCodeRuleFilterOptions{
-			ShippingMethodID: squirrel.Eq{store.ShippingMethodPostalCodeRuleTableName + ".ShippingMethodID": shippingMethodIDs},
+			ShippingMethodID: squirrel.Eq{model.ShippingMethodPostalCodeRuleTableName + ".ShippingMethodID": shippingMethodIDs},
 		})
 	if appErr != nil {
 		for idx := range shippingMethodIDs {
@@ -217,7 +218,7 @@ func excludedProductByShippingMethodIDLoader(ctx context.Context, ids []string) 
 		ShippingMethodExcludedProduct().
 		FilterByOptions(&model.ShippingMethodExcludedProductFilterOptions{
 			SelectRelatedProduct: true,
-			ShippingMethodID:     squirrel.Eq{store.ShippingMethodExcludedProductTableName + ".ShippingMethodID": ids},
+			ShippingMethodID:     squirrel.Eq{model.ShippingMethodExcludedProductTableName + ".ShippingMethodID": ids},
 		})
 	if err != nil {
 		err = model.NewAppError("excludedProductByShippingMethodIDLoader", "app.shipping.shipping_method_excluded_product_relations_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -255,7 +256,7 @@ func channelsByShippingZoneIdLoader(ctx context.Context, shippingZoneIDs []strin
 		Store.
 		ShippingZoneChannel().
 		FilterByOptions(&model.ShippingZoneChannelFilterOptions{
-			ShippingZoneID: squirrel.Eq{store.ShippingZoneChannelTableName + ".ShippingZoneID": shippingZoneIDs},
+			Conditions: squirrel.Eq{model.ShippingZoneChannelTableName + ".ShippingZoneID": shippingZoneIDs},
 		})
 	if err != nil {
 		err = model.NewAppError("channelsByShippingZoneIdLoader", "app.shipping.shipping_zone_channels_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -315,7 +316,7 @@ func shippingMethodsByShippingZoneIdAndChannelSlugLoader(ctx context.Context, id
 	shippingMethods, appErr := embedCtx.App.Srv().
 		ShippingService().
 		ShippingMethodsByOptions(&model.ShippingMethodFilterOption{
-			ShippingZoneID: squirrel.Eq{store.ShippingMethodTableName + ".ShippingZoneID": shippingZoneIDs},
+			ShippingZoneID: squirrel.Eq{model.ShippingMethodTableName + ".ShippingZoneID": shippingZoneIDs},
 		})
 	if appErr != nil {
 		goto errorLabel
@@ -327,7 +328,7 @@ func shippingMethodsByShippingZoneIdAndChannelSlugLoader(ctx context.Context, id
 	})
 	shippingMethodChannelListings, appErr = embedCtx.App.Srv().ShippingService().
 		ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-			ShippingMethodID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethodIDs},
+			ShippingMethodID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethodIDs},
 		})
 	if appErr != nil {
 		goto errorLabel
@@ -358,7 +359,7 @@ func shippingMethodChannelListingByShippingMethodIdLoader(ctx context.Context, s
 
 	shippingMethodChannelListings, appErr := embedCtx.App.Srv().ShippingService().
 		ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-			ShippingMethodID: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethodIDs},
+			ShippingMethodID: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ShippingMethodID": shippingMethodIDs},
 		})
 	if appErr != nil {
 		for idx := range shippingMethodIDs {
@@ -394,7 +395,7 @@ func shippingZonesByWarehouseIDLoader(ctx context.Context, warehouseIDs []string
 		Store.
 		WarehouseShippingZone().
 		FilterByOptions(&model.WarehouseShippingZoneFilterOption{
-			WarehouseID: squirrel.Eq{store.WarehouseShippingZoneTableName + ".WarehouseID": warehouseIDs},
+			Conditions: squirrel.Eq{model.WarehouseShippingZoneTableName + ".WarehouseID": warehouseIDs},
 		})
 	if err != nil {
 		appErr = model.NewAppError("shippingZonesByWarehouseIDLoader", "app.shipping.warehouse_shipping_zones_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -403,7 +404,9 @@ func shippingZonesByWarehouseIDLoader(ctx context.Context, warehouseIDs []string
 
 	shippingZoneIDs = lo.Map(warehouseShippingZones, func(r *model.WarehouseShippingZone, _ int) string { return r.ShippingZoneID })
 	shippingZones, appErr = embedCtx.App.Srv().ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
-		Id: squirrel.Eq{store.ShippingZoneTableName + ".Id": shippingZoneIDs},
+		Conditions: squirrel.And{
+			squirrel.Eq{model.ShippingZoneTableName + ".Id": shippingZoneIDs},
+		},
 	})
 	if appErr != nil {
 		goto errorLabel

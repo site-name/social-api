@@ -48,7 +48,7 @@ func (cs *SqlChannelStore) ScanFields(ch *model.Channel) []interface{} {
 	}
 }
 
-func (s *SqlChannelStore) Upsert(transaction store_iface.SqlxTxExecutor, channel *model.Channel) (*model.Channel, error) {
+func (s *SqlChannelStore) Upsert(transaction store_iface.SqlxExecutor, channel *model.Channel) (*model.Channel, error) {
 	runner := s.GetMasterX()
 	if transaction != nil {
 		runner = transaction
@@ -72,16 +72,16 @@ func (s *SqlChannelStore) Upsert(transaction store_iface.SqlxTxExecutor, channel
 		result sql.Result
 	)
 	if isSaving {
-		query := "INSERT INTO " + store.ChannelTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.ChannelTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
 		result, err = runner.NamedExec(query, channel)
 	} else {
-		query := "UPDATE " + store.ChannelTableName + " SET " + s.ModelFields(":").Join(",") + " WHERE Id=:Id"
+		query := "UPDATE " + model.ChannelTableName + " SET " + s.ModelFields(":").Join(",") + " WHERE Id=:Id"
 		result, err = runner.NamedExec(query, channel)
 	}
 
 	if err != nil {
 		if s.IsUniqueConstraintError(err, []string{"Slug", "channels_slug_key", "idx_channels_slug_unique"}) {
-			return nil, store.NewErrInvalidInput(store.ChannelTableName, "Slug", channel.Slug)
+			return nil, store.NewErrInvalidInput(model.ChannelTableName, "Slug", channel.Slug)
 		}
 		return nil, errors.Wrap(err, "failed to upsert channel")
 	}
@@ -96,10 +96,10 @@ func (s *SqlChannelStore) Upsert(transaction store_iface.SqlxTxExecutor, channel
 func (cs *SqlChannelStore) Get(id string) (*model.Channel, error) {
 	var channel model.Channel
 
-	err := cs.GetReplicaX().Get(&channel, "SELECT * FROM "+store.ChannelTableName+" WHERE Id = ?", id)
+	err := cs.GetReplicaX().Get(&channel, "SELECT * FROM "+model.ChannelTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ChannelTableName, id)
+			return nil, store.NewErrNotFound(model.ChannelTableName, id)
 		}
 		return nil, errors.Wrapf(err, "Failed to get Channel with ChannelID=%s", id)
 	}
@@ -108,14 +108,14 @@ func (cs *SqlChannelStore) Get(id string) (*model.Channel, error) {
 }
 
 func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption) (string, []interface{}, error) {
-	selectFields := cs.ModelFields(store.ChannelTableName + ".")
+	selectFields := cs.ModelFields(model.ChannelTableName + ".")
 	if option.AnnotateHasOrders {
 		selectFields = append(selectFields, `EXISTS ( SELECT (1) AS "a" FROM Orders WHERE Orders.ChannelID = Channels.Id LIMIT 1 ) AS HasOrders`)
 	}
 
 	query := cs.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.ChannelTableName)
+		From(model.ChannelTableName)
 
 	// parse options
 	for _, opt := range []squirrel.Sqlizer{
@@ -133,7 +133,7 @@ func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption)
 	}
 
 	if option.ShippingZoneChannels_ShippingZoneID != nil {
-		query = query.InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ChannelID = Channels.Id")
+		query = query.InnerJoin(model.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ChannelID = Channels.Id")
 	}
 
 	return query.ToSql()
@@ -160,7 +160,7 @@ func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*mode
 	err = row.Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ChannelTableName, "options")
+			return nil, store.NewErrNotFound(model.ChannelTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find channel by given options")
 	}
@@ -211,13 +211,13 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 	return res, nil
 }
 
-func (s *SqlChannelStore) DeleteChannels(transaction store_iface.SqlxTxExecutor, ids []string) error {
+func (s *SqlChannelStore) DeleteChannels(transaction store_iface.SqlxExecutor, ids []string) error {
 	runner := s.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
 
-	query, args, err := s.GetQueryBuilder().Delete(store.ChannelTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
+	query, args, err := s.GetQueryBuilder().Delete(model.ChannelTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
 	if err != nil {
 		return errors.Wrap(err, "DeleteChannels_ToSql")
 	}

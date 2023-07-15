@@ -11,7 +11,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 )
 
 // AttributeUpsertInputIface represents AttributeUpdateInput | AttributeCreateInput
@@ -88,7 +87,7 @@ func (a *AttributeMixin[T]) cleanValues(cleanedInput AttributeUpsertInputIface, 
 
 func (a *AttributeMixin[T]) checkValuesAreUnique(valuesInput []attributeValueInputIface, attribute *model.Attribute) *model.AppError {
 	attributeValues, appErr := a.srv.AttributeService().FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-		AttributeID: squirrel.Eq{store.AttributeValueTableName + ".AttributeID": attribute.Id},
+		AttributeID: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attribute.Id},
 	})
 	if appErr != nil {
 		return appErr

@@ -38,7 +38,7 @@ func (ss *SqlStaffNotificationRecipientStore) Save(record *model.StaffNotificati
 	if err := record.IsValid(); err != nil {
 		return nil, err
 	}
-	query := "INSERT INTO " + store.StaffNotificationRecipientTableName + " (" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.StaffNotificationRecipientTableName + " (" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
 	if _, err := ss.GetMasterX().NamedExec(query, record); err != nil {
 		return nil, errors.Wrapf(err, "failed to save StaffNotificationRecipient with Id=%s", record.Id)
 	}
@@ -48,8 +48,8 @@ func (ss *SqlStaffNotificationRecipientStore) Save(record *model.StaffNotificati
 
 func (s *SqlStaffNotificationRecipientStore) FilterByOptions(options *model.StaffNotificationRecipientFilterOptions) ([]*model.StaffNotificationRecipient, error) {
 	query := s.GetQueryBuilder().
-		Select(s.ModelFields(store.StaffNotificationRecipientTableName + ".")...).
-		From(store.StaffNotificationRecipientTableName)
+		Select(s.ModelFields(model.StaffNotificationRecipientTableName + ".")...).
+		From(model.StaffNotificationRecipientTableName)
 
 	for _, opt := range []squirrel.Sqlizer{
 		options.Id, options.Active, options.UserID, options.StaffEmail,

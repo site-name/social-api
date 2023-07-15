@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -24,6 +25,9 @@ import (
 
 //go:embed schemas
 var assets embed.FS
+
+// stringsContainSqlExpr is used to validate strings values contain sql statements or not
+var stringsContainSqlExpr = regexp.MustCompile(`(?i)\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER)\b`)
 
 func MakeUnauthorizedError(where string) *model.AppError {
 	return model.NewAppError(where, "api.unauthorized.app_error", nil, "you are not allowed to perform this action", http.StatusUnauthorized)
@@ -412,6 +416,11 @@ func (g *graphqlPaginator[R, C, D]) parse(apiName string) (*CountableConnection[
 		totalCount                   = g.Len()
 	)
 
+	// return immediately when no data passed
+	if totalCount == 0 {
+		goto returnLabel
+	}
+
 	if limit == nil {
 		limit = g.Last
 	}
@@ -463,8 +472,10 @@ returnLabel:
 	res.PageInfo = &PageInfo{
 		HasNextPage:     hasNextPage,
 		HasPreviousPage: hasPreviousPage,
-		StartCursor:     &res.Edges[0].Cursor,
-		EndCursor:       &res.Edges[len(res.Edges)-1].Cursor,
+	}
+	if len(res.Edges) > 0 {
+		res.PageInfo.StartCursor = &res.Edges[0].Cursor
+		res.PageInfo.EndCursor = &res.Edges[len(res.Edges)-1].Cursor
 	}
 
 	return res, nil

@@ -7,6 +7,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/measurement"
+	"gorm.io/gorm"
 )
 
 // max lengths for some fields of product variant
@@ -17,10 +18,10 @@ const (
 
 // sort by sku
 type ProductVariant struct {
-	Id                      string                 `json:"id"`
-	Name                    string                 `json:"name"`
+	Id                      string                 `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	Name                    string                 `json:"name" gorm:"type:varchar(255)"`
 	ProductID               string                 `json:"product_id"`
-	Sku                     string                 `json:"sku"`
+	Sku                     string                 `json:"sku" gorm:"type:varchar(255)"`
 	Weight                  *float32               `json:"weight"`
 	WeightUnit              measurement.WeightUnit `json:"weight_unit"`
 	TrackInventory          *bool                  `json:"track_inventory"` // default *true
@@ -34,6 +35,15 @@ type ProductVariant struct {
 	product                *Product                      `db:"-"`
 	stocks                 Stocks                        `db:"-"`
 	variantChannelListings ProductVariantChannelListings `db:"-"`
+
+	Sales         Sales         `json:"-" gorm:"many2many:sale_productvariants"`
+	Vouchers      Vouchers      `json:"-" gorm:"many2many:voucherproductvariants"`
+	ProductMedias ProductMedias `json:"-" gorm:"many2many:variant_medias"`
+}
+
+func (p *ProductVariant) BeforeCreate(_ *gorm.DB) error {
+	p.commonPre()
+	return nil
 }
 
 // ProductVariantFilterOption is used to build sql queries

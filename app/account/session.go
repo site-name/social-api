@@ -236,7 +236,7 @@ func (a *ServiceAccount) createSessionForUserAccessToken(tokenString string) (*m
 	}
 
 	user, nErr := a.srv.Store.User().GetByOptions(context.Background(), &model.UserFilterOptions{
-		Id: squirrel.Eq{store.UserTableName + ".Id": token.UserId},
+		Id: squirrel.Eq{model.UserTableName + ".Id": token.UserId},
 	})
 	if nErr != nil {
 		var nfErr *store.ErrNotFound

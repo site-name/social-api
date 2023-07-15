@@ -100,7 +100,7 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 
 	// validate if channe does exist
 	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{store.ChannelTableName + ".Id": args.Id},
+		Id: squirrel.Eq{model.ChannelTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -154,7 +154,12 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 			deleteRelations[idx] = &model.ShippingZoneChannel{ShippingZoneID: shipZoneID, ChannelID: channel.Id}
 		}
 
-		appErr = embedCtx.App.Srv().ChannelService().BulkDeleteShippingZoneChannels(transaction, deleteRelations)
+		appErr = embedCtx.App.Srv().ChannelService().BulkDeleteShippingZoneChannels(transaction, &model.ShippingZoneChannelFilterOptions{
+			Conditions: squirrel.And{
+				squirrel.Eq{model.ShippingZoneChannelTableName + ".ShippingZoneID": args.Input.AddShippingZones},
+				squirrel.Eq{model.ShippingZoneChannelTableName + ".ChannelID": args.Id},
+			},
+		})
 		if appErr != nil {
 			return nil, appErr
 		}
@@ -162,15 +167,15 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 		// delete shipping methods channel listings of shipping methods of deleted shipping zones
 		shippingMethodChannelListings, appErr := embedCtx.App.Srv().ShippingService().
 			ShippingMethodChannelListingsByOption(&model.ShippingMethodChannelListingFilterOption{
-				ChannelID:                           squirrel.Eq{store.ShippingMethodChannelListingTableName + ".ChannelID": channel.Id},
-				ShippingMethod_ShippingZoneID_Inner: squirrel.Eq{store.ShippingZoneTableName + ".Id": args.Input.RemoveShippingZones},
+				ChannelID:                           squirrel.Eq{model.ShippingMethodChannelListingTableName + ".ChannelID": channel.Id},
+				ShippingMethod_ShippingZoneID_Inner: squirrel.Eq{model.ShippingZoneTableName + ".Id": args.Input.RemoveShippingZones},
 			})
 		if appErr != nil {
 			return nil, appErr
 		}
 
 		appErr = embedCtx.App.Srv().ShippingService().DeleteShippingMethodChannelListings(transaction, &model.ShippingMethodChannelListingFilterOption{
-			Id: squirrel.Eq{store.ShippingMethodChannelListingTableName + ".Id": shippingMethodChannelListings.IDs()},
+			Id: squirrel.Eq{model.ShippingMethodChannelListingTableName + ".Id": shippingMethodChannelListings.IDs()},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -211,18 +216,18 @@ func (r *Resolver) ChannelDelete(ctx context.Context, args struct {
 		return nil, model.NewAppError("ChannelDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "target channel cannot be the channel to be deleted", http.StatusBadRequest)
 	}
 
-	deleteCheckoutsByChannelID := func(channelID string, transaction store_iface.SqlxTxExecutor) *model.AppError {
+	deleteCheckoutsByChannelID := func(channelID string, transaction store_iface.SqlxExecutor) *model.AppError {
 		return embedCtx.App.Srv().
 			CheckoutService().
 			DeleteCheckoutsByOption(transaction, &model.CheckoutFilterOption{
-				ChannelID: squirrel.Eq{store.CheckoutTableName + ".ChannelID": args.Id},
+				ChannelID: squirrel.Eq{model.CheckoutTableName + ".ChannelID": args.Id},
 			})
 	}
 
 	orders, appErr := embedCtx.App.Srv().
 		OrderService().
 		FilterOrdersByOptions(&model.OrderFilterOption{
-			ChannelID:       squirrel.Eq{store.OrderTableName + ".ChannelID": args.Id},
+			ChannelID:       squirrel.Eq{model.OrderTableName + ".ChannelID": args.Id},
 			SelectForUpdate: true,
 		})
 	if appErr != nil {
@@ -290,7 +295,7 @@ func (r *Resolver) ChannelActivate(ctx context.Context, args struct{ Id string }
 	}
 
 	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{store.ChannelTableName + ".Id": args.Id},
+		Id: squirrel.Eq{model.ChannelTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -319,7 +324,7 @@ func (r *Resolver) ChannelDeactivate(ctx context.Context, args struct{ Id string
 	}
 
 	channel, appErr := embedCtx.App.Srv().ChannelService().ChannelByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{store.ChannelTableName + ".Id": args.Id},
+		Id: squirrel.Eq{model.ChannelTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr

@@ -59,7 +59,7 @@ func (jss *SqlJobStore) Save(job *model.Job) (*model.Job, error) {
 	}
 
 	query, args, err := jss.GetQueryBuilder().
-		Insert(store.JobTableName).
+		Insert(model.JobTableName).
 		Columns(jss.ModelFields("")...).
 		Values(job.Id, job.Type, job.Priority, job.CreateAt, job.StartAt, job.LastActivityAt, job.Status, job.Progress, jsonData).
 		ToSql()
@@ -75,7 +75,7 @@ func (jss *SqlJobStore) Save(job *model.Job) (*model.Job, error) {
 
 func (jss *SqlJobStore) UpdateOptimistically(job *model.Job, currentStatus string) (bool, error) {
 	sqlResult, err := jss.GetMasterX().Exec(
-		`UPDATE `+store.JobTableName+`
+		`UPDATE `+model.JobTableName+`
 		SET
 			LastActivityAt = ?,
 			Status = ?,
@@ -124,7 +124,7 @@ func (jss *SqlJobStore) UpdateStatus(id string, status string) (*model.Job, erro
 
 func (jss *SqlJobStore) UpdateStatusOptimistically(id string, currentStatus string, newStatus string) (bool, error) {
 	sqlResult, err := jss.GetMasterX().Exec(
-		`UPDATE `+store.JobTableName+`
+		`UPDATE `+model.JobTableName+`
 		SET
 			LastActivityAt = ?,
 			Status = ?
@@ -153,7 +153,7 @@ func (jss *SqlJobStore) Get(id string) (*model.Job, error) {
 		Data: map[string]string{},
 	}
 
-	var row = jss.GetReplicaX().QueryRowX("SELECT * FROM "+store.JobTableName+" WHERE Id = ?", id)
+	var row = jss.GetReplicaX().QueryRowX("SELECT * FROM "+model.JobTableName+" WHERE Id = ?", id)
 	var jobData []byte
 
 	var err = row.Scan(
@@ -183,7 +183,7 @@ func (jss *SqlJobStore) Get(id string) (*model.Job, error) {
 
 func (jss *SqlJobStore) GetAllPage(offset int, limit int) ([]*model.Job, error) {
 	var statuses []*model.Job
-	if err := jss.GetReplicaX().Select(&statuses, "SELECT * FROM "+store.JobTableName+" LIMIT ? OFFSET ? ORDER BY CreateAt DESC", uint64(limit), uint64(offset)); err != nil {
+	if err := jss.GetReplicaX().Select(&statuses, "SELECT * FROM "+model.JobTableName+" LIMIT ? OFFSET ? ORDER BY CreateAt DESC", uint64(limit), uint64(offset)); err != nil {
 		return nil, errors.Wrap(err, "failed to find Jobs")
 	}
 	return statuses, nil
@@ -193,7 +193,7 @@ func (jss *SqlJobStore) GetAllByTypesPage(jobTypes []string, offset int, limit i
 	var jobs []*model.Job
 	query, args, err := jss.GetQueryBuilder().
 		Select("*").
-		From(store.JobTableName).
+		From(model.JobTableName).
 		Where(squirrel.Eq{"Type": jobTypes}).
 		Offset(uint64(offset)).
 		Limit(uint64(limit)).
@@ -209,7 +209,7 @@ func (jss *SqlJobStore) GetAllByTypesPage(jobTypes []string, offset int, limit i
 
 func (jss *SqlJobStore) GetAllByType(jobType string) ([]*model.Job, error) {
 	var statuses []*model.Job
-	if err := jss.GetReplicaX().Select(&statuses, "SELECT * FROM "+store.JobTableName+" WHERE Type = ? ORDER BY CreateAt DESC", jobType); err != nil {
+	if err := jss.GetReplicaX().Select(&statuses, "SELECT * FROM "+model.JobTableName+" WHERE Type = ? ORDER BY CreateAt DESC", jobType); err != nil {
 		return nil, errors.Wrapf(err, "failed to find Jobs with type=%s", jobType)
 	}
 	return statuses, nil
@@ -217,7 +217,7 @@ func (jss *SqlJobStore) GetAllByType(jobType string) ([]*model.Job, error) {
 
 func (jss *SqlJobStore) GetAllByTypePage(jobType string, offset int, limit int) ([]*model.Job, error) {
 	var statuses []*model.Job
-	if err := jss.GetReplicaX().Select(&statuses, "SELECT * FROM "+store.JobTableName+" WHERE Type = ? LIMIT ? OFFSET ? ORDER BY CreateAt DESC", jobType, uint64(limit), uint64(offset)); err != nil {
+	if err := jss.GetReplicaX().Select(&statuses, "SELECT * FROM "+model.JobTableName+" WHERE Type = ? LIMIT ? OFFSET ? ORDER BY CreateAt DESC", jobType, uint64(limit), uint64(offset)); err != nil {
 		return nil, errors.Wrapf(err, "failed to find Jobs with type=%s", jobType)
 	}
 	return statuses, nil
@@ -226,7 +226,7 @@ func (jss *SqlJobStore) GetAllByTypePage(jobType string, offset int, limit int) 
 func (jss *SqlJobStore) GetAllByStatus(status string) ([]*model.Job, error) {
 	var statuses []*model.Job
 
-	if err := jss.GetReplicaX().Select(&statuses, "SELECT * FROM "+store.JobTableName+" WHERE Status = ? ORDER By CreateAt ASC", status); err != nil {
+	if err := jss.GetReplicaX().Select(&statuses, "SELECT * FROM "+model.JobTableName+" WHERE Status = ? ORDER By CreateAt ASC", status); err != nil {
 		return nil, errors.Wrapf(err, "failed to find Jobs with status=%s", status)
 	}
 	return statuses, nil
@@ -242,7 +242,7 @@ func (jss *SqlJobStore) GetNewestJobByStatusesAndType(statuses []string, jobType
 	var job model.Job
 	queryString, args, err := jss.GetQueryBuilder().
 		Select("*").
-		From(store.JobTableName).
+		From(model.JobTableName).
 		Where(squirrel.Eq{"Status": statuses, "Type": jobType}).
 		Limit(1).
 		OrderBy("CreateAt DESC").
@@ -263,7 +263,7 @@ func (jss *SqlJobStore) GetNewestJobByStatusesAndType(statuses []string, jobType
 
 func (jss *SqlJobStore) GetCountByStatusAndType(status string, jobType string) (int64, error) {
 	var count int64
-	err := jss.GetReplicaX().Get(&count, "SELECT COUNT(*) FROM "+store.JobTableName+" WHERE Status = ? AND Type = ?", status, jobType)
+	err := jss.GetReplicaX().Get(&count, "SELECT COUNT(*) FROM "+model.JobTableName+" WHERE Status = ? AND Type = ?", status, jobType)
 	if err != nil {
 		return int64(0), errors.Wrapf(err, "failed to count Jobs with status=%s and type=%s", status, jobType)
 	}
@@ -271,7 +271,7 @@ func (jss *SqlJobStore) GetCountByStatusAndType(status string, jobType string) (
 }
 
 func (jss *SqlJobStore) Delete(id string) (string, error) {
-	if _, err := jss.GetMasterX().Exec("DELETE FROM "+store.JobTableName+" WHERE Id = ?", id); err != nil {
+	if _, err := jss.GetMasterX().Exec("DELETE FROM "+model.JobTableName+" WHERE Id = ?", id); err != nil {
 		return "", errors.Wrapf(err, "failed to delete Job with id=%s", id)
 	}
 	return id, nil

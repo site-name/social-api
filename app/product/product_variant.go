@@ -99,8 +99,8 @@ func (a *ServiceProduct) DisplayProduct(productVariant *model.ProductVariant, tr
 // ProductVariantsAvailableInChannel returns product variants based on given channel slug
 func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) ([]*model.ProductVariant, *model.AppError) {
 	productVariants, appErr := a.ProductVariantsByOption(&model.ProductVariantFilterOption{
-		ProductVariantChannelListingPriceAmount: squirrel.NotEq{store.ProductVariantChannelListingTableName + ".PriceAmount": nil},
-		ProductVariantChannelListingChannelSlug: squirrel.Eq{store.ChannelTableName + ".Slug": channelSlug},
+		ProductVariantChannelListingPriceAmount: squirrel.NotEq{model.ProductVariantChannelListingTableName + ".PriceAmount": nil},
+		ProductVariantChannelListingChannelSlug: squirrel.Eq{model.ChannelTableName + ".Slug": channelSlug},
 	})
 
 	if appErr != nil {
@@ -111,7 +111,7 @@ func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) (
 }
 
 // UpsertProductVariant tells store to upsert given product variant and returns it
-func (s *ServiceProduct) UpsertProductVariant(transaction store_iface.SqlxTxExecutor, variant *model.ProductVariant) (*model.ProductVariant, *model.AppError) {
+func (s *ServiceProduct) UpsertProductVariant(transaction store_iface.SqlxExecutor, variant *model.ProductVariant) (*model.ProductVariant, *model.AppError) {
 	var (
 		upsertedVariant *model.ProductVariant
 		err             error

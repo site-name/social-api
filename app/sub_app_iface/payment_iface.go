@@ -76,7 +76,7 @@ type PaymentService interface {
 	// `extraData`, `ckout`, `ord` can be nil
 	//
 	// `storePaymentMethod` default to model.StorePaymentMethod.NONE
-	CreatePayment(transaction store_iface.SqlxTxExecutor, gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, checkOut *model.Checkout, orDer *model.Order, returnUrl string, externalReference string, storePaymentMethod model.StorePaymentMethod, metadata model.StringMap) (*model.Payment, *model.PaymentError, *model.AppError)
+	CreatePayment(transaction store_iface.SqlxExecutor, gateway string, total *decimal.Decimal, currency string, email string, customerIpAddress string, paymentToken string, extraData map[string]string, checkOut *model.Checkout, orDer *model.Order, returnUrl string, externalReference string, storePaymentMethod model.StorePaymentMethod, metadata model.StringMap) (*model.Payment, *model.PaymentError, *model.AppError)
 	// CreatePaymentInformation Extract order information along with payment details.
 	//
 	// Returns information required to process payment and additional
@@ -98,7 +98,7 @@ type PaymentService interface {
 	// IsCurrencySupported Return true if the given gateway supports given currency.
 	IsCurrencySupported(currency string, gatewayID string, manager interfaces.PluginManagerInterface) bool
 	// PaymentByID returns a payment with given id
-	PaymentByID(transaction store_iface.SqlxTxExecutor, paymentID string, lockForUpdate bool) (*model.Payment, *model.AppError)
+	PaymentByID(transaction store_iface.SqlxExecutor, paymentID string, lockForUpdate bool) (*model.Payment, *model.AppError)
 	// PaymentCanVoid checks if given payment is: Active && not charged and authorized
 	PaymentCanVoid(payMent *model.Payment) (bool, *model.AppError)
 	// PaymentRefundOrVoid
@@ -112,9 +112,9 @@ type PaymentService interface {
 	// UpdatePayment
 	UpdatePayment(payMent model.Payment, gatewayResponse *model.GatewayResponse) *model.AppError
 	// UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
-	UpdatePaymentsOfCheckout(transaction store_iface.SqlxTxExecutor, checkoutToken string, option *model.PaymentPatch) *model.AppError
+	UpdatePaymentsOfCheckout(transaction store_iface.SqlxExecutor, checkoutToken string, option *model.PaymentPatch) *model.AppError
 	// UpsertPayment updates or insert given payment, depends on the validity of its Id
-	UpsertPayment(transaction store_iface.SqlxTxExecutor, payMent *model.Payment) (*model.Payment, *model.AppError)
+	UpsertPayment(transaction store_iface.SqlxExecutor, payMent *model.Payment) (*model.Payment, *model.AppError)
 	// ValidateGatewayResponse Validate response to be a correct format for Saleor to process.
 	ValidateGatewayResponse(response *model.GatewayResponse) *model.GatewayError
 	GetAllPaymentTransactions(paymentID string) ([]*model.PaymentTransaction, *model.AppError)
@@ -128,7 +128,7 @@ type PaymentService interface {
 	ListPaymentSources(gateway string, customerID string, manager interfaces.PluginManagerInterface, channelID string) ([]*model.CustomerSource, *model.AppError)
 	PaymentGetAuthorizedAmount(pm *model.Payment) (*goprices.Money, *model.AppError)
 	PaymentIsAuthorized(paymentID string) (bool, *model.AppError)
-	SaveTransaction(transaction store_iface.SqlxTxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model.AppError)
+	SaveTransaction(transaction store_iface.SqlxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model.AppError)
 	UpdatePaymentMethodDetails(payMent model.Payment, paymentMethodInfo *model.PaymentMethodInfo) (changed bool)
 	UpdateTransaction(transaction *model.PaymentTransaction) (*model.PaymentTransaction, *model.AppError)
 }

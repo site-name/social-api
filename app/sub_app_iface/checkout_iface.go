@@ -89,7 +89,7 @@ type CheckoutService interface {
 	// CleanCheckoutShipping
 	CleanCheckoutShipping(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos) *model.AppError
 	// DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
-	DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *model.CheckoutFilterOption) *model.AppError
+	DeleteCheckoutsByOption(transaction store_iface.SqlxExecutor, option *model.CheckoutFilterOption) *model.AppError
 	// FetchCheckoutInfo Fetch checkout as CheckoutInfo object
 	FetchCheckoutInfo(checkOut *model.Checkout, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) (*model.CheckoutInfo, *model.AppError)
 	// FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
@@ -144,7 +144,7 @@ type CheckoutService interface {
 	// Save shipping address in checkout if changed.
 	//
 	// Remove previously saved address if not connected to any user.
-	ChangeShippingAddressInCheckout(transaction store_iface.SqlxTxExecutor, checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
+	ChangeShippingAddressInCheckout(transaction store_iface.SqlxExecutor, checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
 	// UpdateCheckoutInfoDeliveryMethod set CheckoutInfo's ShippingMethod to given shippingMethod
 	// and set new value for checkoutInfo's ShippingMethodChannelListings
 	// deliveryMethod must be either *ShippingMethod or *Warehouse or nil
@@ -153,13 +153,13 @@ type CheckoutService interface {
 	// then updates its ValidShippingMethods
 	UpdateCheckoutInfoShippingAddress(checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError
 	// UpsertCheckout saves/updates given checkout
-	UpsertCheckouts(transaction store_iface.SqlxTxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, *model.AppError)
+	UpsertCheckouts(transaction store_iface.SqlxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, *model.AppError)
 	BaseOrderLineTotal(orderLine *model.OrderLine) (*goprices.TaxedMoney, *model.AppError)
 	BaseTaxRate(price *goprices.TaxedMoney) (*decimal.Decimal, *model.AppError)
 	BulkCreateCheckoutLines(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, *model.AppError)
 	BulkUpdateCheckoutLines(checkoutLines []*model.CheckoutLine) *model.AppError
 	CalculateCheckoutQuantity(lineInfos []*model.CheckoutLineInfo) (int, *model.AppError)
-	ChangeBillingAddressInCheckout(transaction store_iface.SqlxTxExecutor, checkout *model.Checkout, address *model.Address) *model.AppError
+	ChangeBillingAddressInCheckout(transaction store_iface.SqlxExecutor, checkout *model.Checkout, address *model.Address) *model.AppError
 	CheckoutCountry(ckout *model.Checkout) (model.CountryCode, *model.AppError)
 	CheckoutLineWithVariant(checkout *model.Checkout, productVariantID string) (*model.CheckoutLine, *model.AppError)
 	CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model.AppError)
@@ -167,7 +167,7 @@ type CheckoutService interface {
 	CleanBillingAddress(checkoutInfo model.CheckoutInfo) *model.AppError
 	CleanCheckoutPayment(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model.AppError)
 	ClearDeliveryMethod(checkoutInfo model.CheckoutInfo) *model.AppError
-	DeleteCheckoutLines(transaction store_iface.SqlxTxExecutor, checkoutLineIDs []string) *model.AppError
+	DeleteCheckoutLines(transaction store_iface.SqlxExecutor, checkoutLineIDs []string) *model.AppError
 	GetDiscountedLines(checkoutLineInfos []*model.CheckoutLineInfo, voucher *model.Voucher) ([]*model.CheckoutLineInfo, *model.AppError)
 	GetValidCollectionPointsForCheckoutInfo(shippingAddress *model.Address, lines []*model.CheckoutLineInfo, checkoutInfo *model.CheckoutInfo) ([]*model.WareHouse, *model.AppError)
 	UpsertCheckoutLine(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, *model.AppError)

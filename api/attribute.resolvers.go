@@ -14,7 +14,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -125,7 +124,7 @@ func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	// get attribute
 	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{
-		Id: squirrel.Eq{store.AttributeTableName + ".Id": args.Id},
+		Id: squirrel.Eq{model.AttributeTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -150,7 +149,7 @@ func (r *Resolver) AttributeUpdate(ctx context.Context, args struct {
 	// clean remove values
 	if len(args.Input.RemoveValues) > 0 {
 		removeValues, appErr := embedCtx.App.Srv().AttributeService().FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-			Id: squirrel.Eq{store.AttributeValueTableName + ".Id": args.Input.RemoveValues},
+			Id: squirrel.Eq{model.AttributeValueTableName + ".Id": args.Input.RemoveValues},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -264,7 +263,7 @@ func (r *Resolver) AttributeValueCreate(ctx context.Context, args struct {
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{
-		Id: squirrel.Eq{store.AttributeTableName + ".Id": args.AttributeID},
+		Id: squirrel.Eq{model.AttributeTableName + ".Id": args.AttributeID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -317,7 +316,7 @@ func (r *Resolver) AttributeValueDelete(ctx context.Context, args struct{ Id str
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	attrValues, appErr := embedCtx.App.Srv().AttributeService().FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-		Id: squirrel.Eq{store.AttributeValueTableName + ".Id": args.Id},
+		Id: squirrel.Eq{model.AttributeValueTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -350,7 +349,7 @@ func (r *Resolver) AttributeValueUpdate(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	attrValues, appErr := embedCtx.App.Srv().AttributeService().FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-		Id: squirrel.Eq{store.AttributeValueTableName + ".Id": args.Id},
+		Id: squirrel.Eq{model.AttributeValueTableName + ".Id": args.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -409,7 +408,7 @@ func (r *Resolver) AttributeReorderValues(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	// find attribute with given id
 	attribute, appErr := embedCtx.App.Srv().AttributeService().AttributeByOption(&model.AttributeFilterOption{
-		Id:                             squirrel.Eq{store.AttributeTableName + ".Id": args.AttributeID},
+		Id:                             squirrel.Eq{model.AttributeTableName + ".Id": args.AttributeID},
 		PrefetchRelatedAttributeValues: true,
 	})
 	if appErr != nil {
@@ -473,9 +472,9 @@ func (r *Resolver) Attribute(ctx context.Context, args struct {
 
 	attrFilter := &model.AttributeFilterOption{}
 	if attrId != "" {
-		attrFilter.Id = squirrel.Eq{store.AttributeTableName + ".Id": *args.Id}
+		attrFilter.Id = squirrel.Eq{model.AttributeTableName + ".Id": *args.Id}
 	} else {
-		attrFilter.Slug = squirrel.Eq{store.AttributeTableName + ".Slug": *args.Slug}
+		attrFilter.Slug = squirrel.Eq{model.AttributeTableName + ".Slug": *args.Slug}
 	}
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)

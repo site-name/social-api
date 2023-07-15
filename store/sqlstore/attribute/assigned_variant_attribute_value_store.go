@@ -55,10 +55,10 @@ func (as *SqlAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.AssignedVariantAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.AssignedVariantAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 	if _, err := as.GetMasterX().NamedExec(query, assignedVariantAttrValue); err != nil {
 		if as.IsUniqueConstraintError(err, assignedVariantAttrValueDuplicateKeys) {
-			return nil, store.NewErrInvalidInput(store.AssignedVariantAttributeValueTableName, "ValueID/AssignmentID", assignedVariantAttrValue.ValueID+"/"+assignedVariantAttrValue.AssignmentID)
+			return nil, store.NewErrInvalidInput(model.AssignedVariantAttributeValueTableName, "ValueID/AssignmentID", assignedVariantAttrValue.ValueID+"/"+assignedVariantAttrValue.AssignmentID)
 		}
 		return nil, errors.Wrapf(err, "failed to save assigned variant attribute value with id=%s", assignedVariantAttrValue.Id)
 	}
@@ -69,10 +69,10 @@ func (as *SqlAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *
 func (as *SqlAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*model.AssignedVariantAttributeValue, error) {
 	var res model.AssignedVariantAttributeValue
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedVariantAttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": assignedVariantAttrValueID})
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedVariantAttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": assignedVariantAttrValueID})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AssignedVariantAttributeValueTableName, assignedVariantAttrValueID)
+			return nil, store.NewErrNotFound(model.AssignedVariantAttributeValueTableName, assignedVariantAttrValueID)
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned variant attribute value with id=%s", assignedVariantAttrValueID)
 	}
@@ -90,7 +90,7 @@ func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string,
 	// return value:
 	res := []*model.AssignedVariantAttributeValue{}
 
-	query := "INSERT INTO " + store.AssignedVariantAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.AssignedVariantAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 
 	for _, id := range attributeValueIDs {
 		newValue := &model.AssignedVariantAttributeValue{
@@ -105,7 +105,7 @@ func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string,
 		_, err = tx.NamedExec(query, newValue)
 		if err != nil {
 			if as.IsUniqueConstraintError(err, assignedVariantAttrValueDuplicateKeys) {
-				return nil, store.NewErrInvalidInput(store.AssignedVariantAttributeValueTableName, "ValueID/AssignmentID", newValue.ValueID+"/"+newValue.AssignmentID)
+				return nil, store.NewErrInvalidInput(model.AssignedVariantAttributeValueTableName, "ValueID/AssignmentID", newValue.ValueID+"/"+newValue.AssignmentID)
 			}
 			return nil, errors.Wrapf(err, "failed to save assigned variant attribute value with id=%s", newValue.Id)
 		}
@@ -122,9 +122,9 @@ func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string,
 
 func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedVariantAttributeValue, []*model.AttributeValue, error) {
 	query, args, err := as.GetQueryBuilder().
-		Select(append(as.ModelFields(store.AssignedVariantAttributeValueTableName+"."), as.AttributeValue().ModelFields(store.AttributeValueTableName+".")...)...).
-		From(store.AssignedVariantAttributeValueTableName).
-		InnerJoin(store.AttributeValueTableName + " ON (AttributeValues.Id = AssignedVariantAttributeValues.ValueID)").
+		Select(append(as.ModelFields(model.AssignedVariantAttributeValueTableName+"."), as.AttributeValue().ModelFields(model.AttributeValueTableName+".")...)...).
+		From(model.AssignedVariantAttributeValueTableName).
+		InnerJoin(model.AttributeValueTableName + " ON (AttributeValues.Id = AssignedVariantAttributeValues.ValueID)").
 		Where(squirrel.Eq{"AssignedVariantAttributeValues.AssignmentID": assignmentID}).
 		ToSql()
 
@@ -165,7 +165,7 @@ func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID stri
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedVariantAttributeValue) error {
-	query := "UPDATE " + store.AssignedVariantAttributeValueTableName + " SET " +
+	query := "UPDATE " + model.AssignedVariantAttributeValueTableName + " SET " +
 		as.ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -183,7 +183,7 @@ func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []
 		if err != nil {
 			// check if error is duplicate conflict error:
 			if as.IsUniqueConstraintError(err, assignedVariantAttrValueDuplicateKeys) {
-				return store.NewErrInvalidInput(store.AssignedVariantAttributeValueTableName, "ValueID/AssignmentID", value.ValueID+"/"+value.AssignmentID)
+				return store.NewErrInvalidInput(model.AssignedVariantAttributeValueTableName, "ValueID/AssignmentID", value.ValueID+"/"+value.AssignmentID)
 			}
 			return errors.Wrapf(err, "failed to update value with id=%s", value.Id)
 		}
@@ -196,7 +196,7 @@ func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []
 }
 
 func (s *SqlAssignedVariantAttributeValueStore) FilterByOptions(options *model.AssignedVariantAttributeValueFilterOptions) ([]*model.AssignedVariantAttributeValue, error) {
-	query := s.GetQueryBuilder().Select("*").From(store.AssignedVariantAttributeValueTableName)
+	query := s.GetQueryBuilder().Select("*").From(model.AssignedVariantAttributeValueTableName)
 	if options.AssignmentID != nil {
 		query = query.Where(options.AssignmentID)
 	}

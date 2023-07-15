@@ -53,7 +53,7 @@ func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (*mode
 		numUpdated int64
 	)
 	if isSaing {
-		query := "INSERT INTO " + store.InvoiceEventTableName + "(" + ies.ModelFields("").Join(",") + ") VALUES (" + ies.ModelFields(":").Join(",") + ")"
+		query := "INSERT INTO " + model.InvoiceEventTableName + "(" + ies.ModelFields("").Join(",") + ") VALUES (" + ies.ModelFields(":").Join(",") + ")"
 		_, err = ies.GetMasterX().NamedExec(query, invoiceEvent)
 
 	} else {
@@ -64,7 +64,7 @@ func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (*mode
 
 		invoiceEvent.CreateAt = oldEvent.CreateAt
 
-		query := "UPDATE " + store.InvoiceEventTableName + " SET " + ies.
+		query := "UPDATE " + model.InvoiceEventTableName + " SET " + ies.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -92,10 +92,10 @@ func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (*mode
 // Get finds and returns 1 invoice event
 func (ies *SqlInvoiceEventStore) Get(invoiceEventID string) (*model.InvoiceEvent, error) {
 	var res model.InvoiceEvent
-	err := ies.GetReplicaX().Get(&res, "SELECT * FROM "+store.InvoiceEventTableName+" WHERE Id = ?", invoiceEventID)
+	err := ies.GetReplicaX().Get(&res, "SELECT * FROM "+model.InvoiceEventTableName+" WHERE Id = ?", invoiceEventID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.InvoiceEventTableName, invoiceEventID)
+			return nil, store.NewErrNotFound(model.InvoiceEventTableName, invoiceEventID)
 		}
 		return nil, errors.Wrapf(err, "failed to find invoice event with id=%s", invoiceEventID)
 	}

@@ -117,7 +117,7 @@ func (a *ServiceCheckout) CheckoutSetCountry(ckout *model.Checkout, newCountryCo
 }
 
 // UpsertCheckout saves/updates given checkout
-func (a *ServiceCheckout) UpsertCheckouts(transaction store_iface.SqlxTxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, *model.AppError) {
+func (a *ServiceCheckout) UpsertCheckouts(transaction store_iface.SqlxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, *model.AppError) {
 	checkouts, err := a.srv.Store.Checkout().Upsert(transaction, checkouts)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -173,12 +173,12 @@ func (a *ServiceCheckout) CheckoutCountry(ckout *model.Checkout) (model.CountryC
 // CheckoutTotalGiftCardsBalance Return the total balance of the gift cards assigned to the checkout
 func (a *ServiceCheckout) CheckoutTotalGiftCardsBalance(checkOut *model.Checkout) (*goprices.Money, *model.AppError) {
 	giftcards, appErr := a.srv.GiftcardService().GiftcardsByOption(&model.GiftCardFilterOption{
-		CheckoutToken: squirrel.Eq{store.GiftcardCheckoutTableName + ".CheckoutID": checkOut.Token},
+		CheckoutToken: squirrel.Eq{model.GiftcardCheckoutTableName + ".CheckoutID": checkOut.Token},
 		ExpiryDate: squirrel.Or{
-			squirrel.Eq{store.GiftcardTableName + ".ExpiryDate": nil},
-			squirrel.GtOrEq{store.GiftcardTableName + ".ExpiryDate": util.StartOfDay(time.Now().UTC())},
+			squirrel.Eq{model.GiftcardTableName + ".ExpiryDate": nil},
+			squirrel.GtOrEq{model.GiftcardTableName + ".ExpiryDate": util.StartOfDay(time.Now().UTC())},
 		},
-		IsActive: squirrel.Eq{store.GiftcardTableName + ".IsActive": true},
+		IsActive: squirrel.Eq{model.GiftcardTableName + ".IsActive": true},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -219,7 +219,7 @@ func (a *ServiceCheckout) CheckoutLineWithVariant(checkout *model.Checkout, prod
 // CheckoutLastActivePayment returns the most recent payment made for given checkout
 func (a *ServiceCheckout) CheckoutLastActivePayment(checkout *model.Checkout) (*model.Payment, *model.AppError) {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
-		CheckoutID: squirrel.Eq{store.PaymentTableName + ".CheckoutID": checkout.Token},
+		CheckoutID: squirrel.Eq{model.PaymentTableName + ".CheckoutID": checkout.Token},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusNotFound {
@@ -261,7 +261,7 @@ func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos []*model.Checkou
 }
 
 // DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
-func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction store_iface.SqlxTxExecutor, option *model.CheckoutFilterOption) *model.AppError {
+func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction store_iface.SqlxExecutor, option *model.CheckoutFilterOption) *model.AppError {
 	err := s.srv.Store.Checkout().DeleteCheckoutsByOption(transaction, option)
 	if err != nil {
 		return model.NewAppError("DeleteCheckoutsByOption", "app.checkout.error_deleting_checkouts_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)

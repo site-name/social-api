@@ -55,11 +55,11 @@ func (as *SqlAssignedProductAttributeValueStore) Save(assignedProductAttrValue *
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.AssignedProductAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.AssignedProductAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 
 	if _, err := as.GetMasterX().NamedExec(query, assignedProductAttrValue); err != nil {
 		if as.IsUniqueConstraintError(err, assignedProductAttrValueDuplicateKeys) {
-			return nil, store.NewErrInvalidInput(store.AssignedProductAttributeValueTableName, "ValueID/AssignmentID", assignedProductAttrValue.ValueID+"/"+assignedProductAttrValue.AssignmentID)
+			return nil, store.NewErrInvalidInput(model.AssignedProductAttributeValueTableName, "ValueID/AssignmentID", assignedProductAttrValue.ValueID+"/"+assignedProductAttrValue.AssignmentID)
 		}
 		return nil, errors.Wrapf(err, "failed to save assigned product attribute value with id=%s", assignedProductAttrValue.Id)
 	}
@@ -70,10 +70,10 @@ func (as *SqlAssignedProductAttributeValueStore) Save(assignedProductAttrValue *
 func (as *SqlAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error) {
 	var res model.AssignedProductAttributeValue
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+store.AssignedProductAttributeValueTableName+" WHERE Id = ?", assignedProductAttrValueID)
+	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedProductAttributeValueTableName+" WHERE Id = ?", assignedProductAttrValueID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.AssignedProductAttributeValueTableName, assignedProductAttrValueID)
+			return nil, store.NewErrNotFound(model.AssignedProductAttributeValueTableName, assignedProductAttrValueID)
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned product attribute value with id=%s", assignedProductAttrValueID)
 	}
@@ -91,7 +91,7 @@ func (as *SqlAssignedProductAttributeValueStore) SaveInBulk(assignmentID string,
 	// return value:
 	res := []*model.AssignedProductAttributeValue{}
 
-	insertQuery := "INSERT INTO " + store.AssignedProductAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
+	insertQuery := "INSERT INTO " + model.AssignedProductAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 
 	for _, id := range attributeValueIDs {
 		newValue := &model.AssignedProductAttributeValue{
@@ -107,7 +107,7 @@ func (as *SqlAssignedProductAttributeValueStore) SaveInBulk(assignmentID string,
 		_, err = tx.NamedExec(insertQuery, newValue)
 		if err != nil {
 			if as.IsUniqueConstraintError(err, assignedProductAttrValueDuplicateKeys) {
-				return nil, store.NewErrInvalidInput(store.AssignedProductAttributeValueTableName, "ValueID/AssignmentID", newValue.ValueID+"/"+newValue.AssignmentID)
+				return nil, store.NewErrInvalidInput(model.AssignedProductAttributeValueTableName, "ValueID/AssignmentID", newValue.ValueID+"/"+newValue.AssignmentID)
 			}
 			return nil, errors.Wrapf(err, "failed to save assigned product attribute value with id=%s", newValue.Id)
 		}
@@ -129,7 +129,7 @@ func (as *SqlAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []
 	}
 	defer store.FinalizeTransaction(tx)
 
-	updateQuery := "UPDATE " + store.AssignedProductAttributeValueTableName + " SET " +
+	updateQuery := "UPDATE " + model.AssignedProductAttributeValueTableName + " SET " +
 		as.ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -146,7 +146,7 @@ func (as *SqlAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []
 		if err != nil {
 			// check if error is duplicate conflict error:
 			if as.IsUniqueConstraintError(err, assignedProductAttrValueDuplicateKeys) {
-				return store.NewErrInvalidInput(store.AssignedProductAttributeValueTableName, "ValueID/AssignmentID", value.ValueID+"/"+value.AssignmentID)
+				return store.NewErrInvalidInput(model.AssignedProductAttributeValueTableName, "ValueID/AssignmentID", value.ValueID+"/"+value.AssignmentID)
 			}
 			return errors.Wrapf(err, "failed to update value with id=%s", value.Id)
 		}
@@ -165,9 +165,9 @@ func (as *SqlAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []
 
 func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedProductAttributeValue, []*model.AttributeValue, error) {
 	query, args, err := as.GetQueryBuilder().
-		Select(append(as.ModelFields(store.AssignedProductAttributeValueTableName+"."), as.AttributeValue().ModelFields(store.AttributeValueTableName+".")...)...).
-		From(store.AssignedProductAttributeValueTableName).
-		InnerJoin(store.AttributeValueTableName + " ON (AssignedProductAttributeValues.Id = AttributeValues.ValueID)").
+		Select(append(as.ModelFields(model.AssignedProductAttributeValueTableName+"."), as.AttributeValue().ModelFields(model.AttributeValueTableName+".")...)...).
+		From(model.AssignedProductAttributeValueTableName).
+		InnerJoin(model.AttributeValueTableName + " ON (AssignedProductAttributeValues.Id = AttributeValues.ValueID)").
 		Where(squirrel.Eq{"AssignedProductAttributeValues.AssignmentID": assignmentID}).
 		ToSql()
 
@@ -208,7 +208,7 @@ func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID stri
 func (s *SqlAssignedProductAttributeValueStore) FilterByOptions(options *model.AssignedProductAttributeValueFilterOptions) ([]*model.AssignedProductAttributeValue, error) {
 	query := s.GetQueryBuilder().
 		Select("*").
-		From(store.AssignedProductAttributeValueTableName)
+		From(model.AssignedProductAttributeValueTableName)
 
 	if options.AssignmentID != nil {
 		query = query.Where(options.AssignmentID)

@@ -34,8 +34,8 @@ func (a *ServiceDiscount) DecreaseVoucherUsage(voucher *model.Voucher) *model.Ap
 // AddVoucherUsageByCustomer adds an usage for given voucher, by given customer
 func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *model.Voucher, customerEmail string) (*model.NotApplicable, *model.AppError) {
 	_, appErr := a.VoucherCustomerByOptions(&model.VoucherCustomerFilterOption{
-		VoucherID:     squirrel.Eq{store.VoucherCustomerTableName + ".VoucherID": voucher.Id},
-		CustomerEmail: squirrel.Eq{store.VoucherCustomerTableName + ".CustomerEmail": customerEmail},
+		VoucherID:     squirrel.Eq{model.VoucherCustomerTableName + ".VoucherID": voucher.Id},
+		CustomerEmail: squirrel.Eq{model.VoucherCustomerTableName + ".CustomerEmail": customerEmail},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -55,8 +55,8 @@ func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *model.Voucher, cust
 // RemoveVoucherUsageByCustomer deletes voucher customers for given voucher
 func (a *ServiceDiscount) RemoveVoucherUsageByCustomer(voucher *model.Voucher, customerEmail string) *model.AppError {
 	err := a.srv.Store.VoucherCustomer().DeleteInBulk(&model.VoucherCustomerFilterOption{
-		VoucherID:     squirrel.Eq{store.VoucherCustomerTableName + ".VoucherID": voucher.Id},
-		CustomerEmail: squirrel.Eq{store.VoucherCustomerTableName + ".CustomerEmail": customerEmail},
+		VoucherID:     squirrel.Eq{model.VoucherCustomerTableName + ".VoucherID": voucher.Id},
+		CustomerEmail: squirrel.Eq{model.VoucherCustomerTableName + ".CustomerEmail": customerEmail},
 	})
 	if err != nil {
 		return model.NewAppError("RemoveVoucherUsageByCustomer", "app.discount.error_delating_voucher_customer_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -325,9 +325,7 @@ func (a *ServiceDiscount) GetProductsVoucherDiscount(voucher *model.Voucher, pri
 
 // FetchCategories returns a map with keys are sale ids, values are slices of category ids
 func (a *ServiceDiscount) FetchCategories(saleIDs []string) (map[string][]string, *model.AppError) {
-	saleCategories, appErr := a.SaleCategoriesByOption(&model.SaleCategoryRelationFilterOption{
-		SaleID: squirrel.Eq{store.SaleCategoryRelationTableName + ".SaleID": saleIDs},
-	})
+	saleCategories, appErr := a.SaleCategoriesByOption(squirrel.Eq{"sale_id": saleIDs})
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -355,14 +353,9 @@ func (a *ServiceDiscount) FetchCategories(saleIDs []string) (map[string][]string
 
 // FetchCollections returns a map with keys are sale ids, values are slices of UNIQUE collection ids
 func (a *ServiceDiscount) FetchCollections(saleIDs []string) (map[string][]string, *model.AppError) {
-	saleCollections, appErr := a.SaleCollectionsByOptions(&model.SaleCollectionRelationFilterOption{
-		SaleID: squirrel.Eq{store.SaleCollectionRelationTableName + ".SaleID": saleIDs},
-	})
+	saleCollections, appErr := a.SaleCollectionsByOptions(squirrel.Eq{"sale_id": saleIDs})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return nil, appErr
-		}
-		return make(map[string][]string), nil
+		return nil, appErr
 	}
 
 	var (
@@ -387,14 +380,9 @@ func (a *ServiceDiscount) FetchCollections(saleIDs []string) (map[string][]strin
 
 // FetchProducts returns a map with keys are sale ids, values are slices of UNIQUE product ids
 func (a *ServiceDiscount) FetchProducts(saleIDs []string) (map[string][]string, *model.AppError) {
-	saleProducts, appErr := a.SaleProductsByOptions(&model.SaleProductRelationFilterOption{
-		SaleID: squirrel.Eq{store.SaleProductRelationTableName + ".SaleID": saleIDs},
-	})
+	saleProducts, appErr := a.SaleProductsByOptions(squirrel.Eq{"sale_id": saleIDs})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return nil, appErr
-		}
-		return make(map[string][]string), nil
+		return nil, appErr
 	}
 
 	var (
@@ -418,15 +406,10 @@ func (a *ServiceDiscount) FetchProducts(saleIDs []string) (map[string][]string, 
 }
 
 // FetchVariants returns a map with keys are sale ids and values are slice of UNIQUE product variant ids
-func (s *ServiceDiscount) FetchVariants(salePKs []string) (map[string][]string, *model.AppError) {
-	saleProductVariants, appErr := s.SaleProductVariantsByOptions(&model.SaleProductVariantFilterOption{
-		SaleID: squirrel.Eq{store.SaleProductVariantTableName + ".SaleID": salePKs},
-	})
+func (s *ServiceDiscount) FetchVariants(saleIDs []string) (map[string][]string, *model.AppError) {
+	saleProductVariants, appErr := s.SaleProductVariantsByOptions(squirrel.Eq{"sale_id": saleIDs})
 	if appErr != nil {
-		if appErr.StatusCode == http.StatusInternalServerError {
-			return nil, appErr
-		}
-		return make(map[string][]string), nil
+		return nil, appErr
 	}
 
 	var (
@@ -454,7 +437,7 @@ func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string
 	channelListings, err := a.srv.Store.
 		DiscountSaleChannelListing().
 		SaleChannelListingsWithOption(&model.SaleChannelListingFilterOption{
-			SaleID:               squirrel.Eq{store.SaleChannelListingTableName + ".SaleID": saleIDs},
+			SaleID:               squirrel.Eq{model.SaleChannelListingTableName + ".SaleID": saleIDs},
 			SelectRelatedChannel: true,
 		})
 	if err != nil {
@@ -566,7 +549,6 @@ func (a *ServiceDiscount) FetchActiveDiscounts() ([]*model.DiscountInfo, *model.
 //
 // values are slices of uuid strings
 func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]string, *model.AppError) {
-
 	var (
 		wg       sync.WaitGroup
 		mut      sync.Mutex
@@ -622,7 +604,9 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 	go func() {
 		defer wg.Done()
 
-		productVariants, appErr := s.srv.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{})
+		productVariants, appErr := s.srv.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
+			SaleID: squirrel.Eq{store.VoucherProductVariantTableName + ".SaleID": instance.Id},
+		})
 		trySetAppError(appErr)
 		variantIDs = productVariants.IDs()
 	}()

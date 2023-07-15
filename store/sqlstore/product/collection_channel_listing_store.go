@@ -33,7 +33,7 @@ func (s *SqlCollectionChannelListingStore) ModelFields(prefix string) util.AnyAr
 }
 
 func (s *SqlCollectionChannelListingStore) FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error) {
-	query := s.GetQueryBuilder().Select(s.ModelFields(store.CollectionChannelListingTableName + ".")...).From(store.CollectionChannelListingTableName)
+	query := s.GetQueryBuilder().Select(s.ModelFields(model.CollectionChannelListingTableName + ".")...).From(model.CollectionChannelListingTableName)
 
 	for _, opt := range []squirrel.Sqlizer{options.Id, options.ChannelID, options.CollectionID} {
 		if opt != nil {
@@ -55,8 +55,8 @@ func (s *SqlCollectionChannelListingStore) FilterByOptions(options *model.Collec
 	return res, nil
 }
 
-func (s *SqlCollectionChannelListingStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.CollectionChannelListingFilterOptions) error {
-	query := s.GetQueryBuilder().Delete(store.CollectionChannelListingTableName)
+func (s *SqlCollectionChannelListingStore) Delete(transaction store_iface.SqlxExecutor, options *model.CollectionChannelListingFilterOptions) error {
+	query := s.GetQueryBuilder().Delete(model.CollectionChannelListingTableName)
 
 	for _, opt := range []squirrel.Sqlizer{options.Id, options.ChannelID, options.CollectionID} {
 		if opt != nil {
@@ -82,9 +82,9 @@ func (s *SqlCollectionChannelListingStore) Delete(transaction store_iface.SqlxTx
 	return nil
 }
 
-func (s *SqlCollectionChannelListingStore) Upsert(transaction store_iface.SqlxTxExecutor, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
-	saveQuery := "INSERT INTO " + store.CollectionChannelListingTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
-	updateQuery := "UPDATE " + store.CollectionChannelListingTableName + " SET " + s.ModelFields("").Map(func(_ int, item string) string { return item + ":=" + item }).Join(",") + " WHERE Id=:Id"
+func (s *SqlCollectionChannelListingStore) Upsert(transaction store_iface.SqlxExecutor, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
+	saveQuery := "INSERT INTO " + model.CollectionChannelListingTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+	updateQuery := "UPDATE " + model.CollectionChannelListingTableName + " SET " + s.ModelFields("").Map(func(_ int, item string) string { return item + ":=" + item }).Join(",") + " WHERE Id=:Id"
 	runner := s.GetMasterX()
 	if transaction != nil {
 		runner = transaction

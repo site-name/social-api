@@ -61,7 +61,7 @@ func (ws *SqlWareHouseStore) Save(wh *model.WareHouse) (*model.WareHouse, error)
 		return nil, err
 	}
 
-	query := "INSERT INTO " + store.WarehouseTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.WarehouseTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
 	if _, err := ws.GetMasterX().NamedExec(query, wh); err != nil {
 		if ws.IsUniqueConstraintError(err, []string{"Slug", "warehouses_slug_key", "idx_warehouses_slug_unique"}) {
 			return nil, store.NewErrInvalidInput("Warehouses", "Slug", wh.Slug)
@@ -78,7 +78,7 @@ func (ws *SqlWareHouseStore) Update(warehouse *model.WareHouse) (*model.WareHous
 		return nil, err
 	}
 
-	query := "UPDATE " + store.WarehouseTableName + " SET " + ws.
+	query := "UPDATE " + model.WarehouseTableName + " SET " + ws.
 		ModelFields("").
 		Map(func(_ int, item string) string {
 			return item + ":=" + item
@@ -87,6 +87,9 @@ func (ws *SqlWareHouseStore) Update(warehouse *model.WareHouse) (*model.WareHous
 
 	result, err := ws.GetMasterX().NamedExec(query, warehouse)
 	if err != nil {
+		if ws.IsUniqueConstraintError(err, []string{"Slug", "warehouses_slug_key", "idx_warehouses_slug_unique"}) {
+			return nil, store.NewErrInvalidInput("Warehouses", "Slug", warehouse.Slug)
+		}
 		return nil, errors.Wrap(err, "failed to update warehouse")
 	}
 	numUdated, _ := result.RowsAffected()
@@ -101,18 +104,18 @@ func (ws *SqlWareHouseStore) Update(warehouse *model.WareHouse) (*model.WareHous
 func (ws *SqlWareHouseStore) commonQueryBuilder(option *model.WarehouseFilterOption) squirrel.SelectBuilder {
 	if option == nil {
 		return ws.GetQueryBuilder().
-			Select(ws.ModelFields(store.WarehouseTableName + ".")...).
-			From(store.WarehouseTableName)
+			Select(ws.ModelFields(model.WarehouseTableName + ".")...).
+			From(model.WarehouseTableName)
 	}
 
-	selectFields := ws.ModelFields(store.WarehouseTableName + ".")
+	selectFields := ws.ModelFields(model.WarehouseTableName + ".")
 	if option.SelectRelatedAddress {
-		selectFields = append(selectFields, ws.Address().ModelFields(store.AddressTableName+".")...)
+		selectFields = append(selectFields, ws.Address().ModelFields(model.AddressTableName+".")...)
 	}
 
 	query := ws.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.WarehouseTableName)
+		From(model.WarehouseTableName)
 
 	for _, opt := range []squirrel.Sqlizer{
 		option.Id,
@@ -132,25 +135,25 @@ func (ws *SqlWareHouseStore) commonQueryBuilder(option *model.WarehouseFilterOpt
 
 	if option.ShippingZonesCountries != nil || option.ShippingZonesId != nil {
 		query = query.
-			InnerJoin(store.WarehouseShippingZoneTableName + " ON Warehouses.Id = WarehouseShippingZones.WarehouseID").
-			InnerJoin(store.ShippingZoneTableName + " ON WarehouseShippingZones.ShippingZoneID = ShippingZones.Id")
+			InnerJoin(model.WarehouseShippingZoneTableName + " ON Warehouses.Id = WarehouseShippingZones.WarehouseID").
+			InnerJoin(model.ShippingZoneTableName + " ON WarehouseShippingZones.ShippingZoneID = ShippingZones.Id")
 	}
 	if option.SelectRelatedAddress || option.Search != "" {
-		query = query.InnerJoin(store.AddressTableName + " ON (Addresses.Id = Warehouses.AddressID)")
+		query = query.InnerJoin(model.AddressTableName + " ON (Addresses.Id = Warehouses.AddressID)")
 
 		if option.Search != "" {
 			expr := "%" + option.Search + "%"
 
 			query = query.Where(squirrel.Or{
-				squirrel.ILike{store.WarehouseTableName + ".Name": expr},
-				squirrel.ILike{store.WarehouseTableName + ".Email": expr},
+				squirrel.ILike{model.WarehouseTableName + ".Name": expr},
+				squirrel.ILike{model.WarehouseTableName + ".Email": expr},
 
-				squirrel.ILike{store.AddressTableName + ".CompanyName": expr},
-				squirrel.ILike{store.AddressTableName + ".StreetAddress1": expr},
-				squirrel.ILike{store.AddressTableName + ".StreetAddress2": expr},
-				squirrel.ILike{store.AddressTableName + ".City": expr},
-				squirrel.ILike{store.AddressTableName + ".PostalCode": expr},
-				squirrel.ILike{store.AddressTableName + ".Phone": expr},
+				squirrel.ILike{model.AddressTableName + ".CompanyName": expr},
+				squirrel.ILike{model.AddressTableName + ".StreetAddress1": expr},
+				squirrel.ILike{model.AddressTableName + ".StreetAddress2": expr},
+				squirrel.ILike{model.AddressTableName + ".City": expr},
+				squirrel.ILike{model.AddressTableName + ".PostalCode": expr},
+				squirrel.ILike{model.AddressTableName + ".Phone": expr},
 			})
 		}
 	}
@@ -180,7 +183,7 @@ func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*
 	err = ws.GetReplicaX().QueryRowX(query, args...).Scan(scanFields...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.WarehouseTableName, "options")
+			return nil, store.NewErrNotFound(model.WarehouseTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find warehouse with given option")
 	}
@@ -194,9 +197,9 @@ func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*
 	// 2) returning warehouse is valid
 	if option.PrefetchShippingZones {
 		queryString, args, err := ws.GetQueryBuilder().
-			Select(ws.ShippingZone().ModelFields(store.ShippingZoneTableName+".")...).
-			From(store.ShippingZoneTableName).
-			InnerJoin(store.WarehouseShippingZoneTableName+" ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
+			Select(ws.ShippingZone().ModelFields(model.ShippingZoneTableName+".")...).
+			From(model.ShippingZoneTableName).
+			InnerJoin(model.WarehouseShippingZoneTableName+" ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
 			Where("WarehouseShippingZones.WarehouseID = ?", res.Id).
 			ToSql()
 
@@ -254,10 +257,10 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 	// check if we need prefetch related shipping zones:
 	if option.PrefetchShippingZones && len(returningWarehouses) > 0 {
 		query, args, err = wh.GetQueryBuilder().
-			Select(wh.ShippingZone().ModelFields(store.ShippingZoneTableName + ".")...).
+			Select(wh.ShippingZone().ModelFields(model.ShippingZoneTableName + ".")...).
 			Column("WarehouseShippingZones.WarehouseID AS PrefetchRelatedWarehouseID"). // <- this column selection helps determine which shipping zone is related to which warehouse
-			From(store.ShippingZoneTableName).
-			InnerJoin(store.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
+			From(model.ShippingZoneTableName).
+			InnerJoin(model.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
 			Where(squirrel.Eq{"PrefetchRelatedWarehouseID": returningWarehouses.IDs()}).
 			ToSql()
 		if err != nil {
@@ -296,16 +299,16 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, error) {
 	var res model.WareHouse
 	err := ws.GetReplicaX().QueryRowX(
-		`SELECT `+ws.ModelFields(store.WarehouseTableName+".").Join(",")+`
-		FROM `+store.WarehouseTableName+`
-		INNER JOIN `+store.StockTableName+` ON Stocks.WarehouseID = Warehouses.Id
+		`SELECT `+ws.ModelFields(model.WarehouseTableName+".").Join(",")+`
+		FROM `+model.WarehouseTableName+`
+		INNER JOIN `+model.StockTableName+` ON Stocks.WarehouseID = Warehouses.Id
 		WHERE Stocks.Id = ?`,
 		stockID,
 	).
 		Scan(ws.ScanFields(&res)...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.WarehouseTableName, "StockID="+stockID)
+			return nil, store.NewErrNotFound(model.WarehouseTableName, "StockID="+stockID)
 		}
 		return nil, errors.Wrapf(err, "failed to find warehouse with StockID=%s", stockID)
 	}
@@ -315,8 +318,8 @@ func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.WareHous
 
 func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country model.CountryCode) (model.Warehouses, error) {
 	stocks, err := ws.Stock().FilterByOption(&model.StockFilterOption{
-		ProductVariantID:            squirrel.Eq{store.StockTableName + ".ProductVariantID": checkoutLines.VariantIDs()},
 		SelectRelatedProductVariant: true,
+		Conditions:                  squirrel.Eq{model.StockTableName + ".ProductVariantID": checkoutLines.VariantIDs()},
 	})
 
 	if err != nil {
@@ -326,13 +329,13 @@ func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkou
 	return ws.forCountryLinesAndStocks(checkoutLines, stocks, country)
 }
 
-func (w *SqlWareHouseStore) Delete(transaction store_iface.SqlxTxExecutor, ids ...string) error {
+func (w *SqlWareHouseStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
 	runner := w.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
 
-	result, err := runner.Exec("DELETE FROM " + store.WarehouseTableName + " WHERE Id IN (" + squirrel.Placeholders(len(ids)) + ")")
+	result, err := runner.Exec("DELETE FROM " + model.WarehouseTableName + " WHERE Id IN (" + squirrel.Placeholders(len(ids)) + ")")
 	if err != nil {
 		return errors.Wrap(err, "failed to delete warehouse(s) by given ids")
 	}

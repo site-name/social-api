@@ -63,7 +63,7 @@ func (a *ServiceWarehouse) WarehouseByStockID(stockID string) (*model.WareHouse,
 // WarehouseCountries returns countries of given warehouse
 func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *model.AppError) {
 	shippingZonesOfWarehouse, appErr := a.srv.ShippingService().ShippingZonesByOption(&model.ShippingZoneFilterOption{
-		WarehouseID: squirrel.Eq{store.ShippingZoneTableName + ".WarehouseID": warehouseID},
+		WarehouseID: squirrel.Eq{model.ShippingZoneTableName + ".WarehouseID": warehouseID},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -91,7 +91,7 @@ func (a *ServiceWarehouse) WarehouseCountries(warehouseID string) ([]string, *mo
 // FindWarehousesForCountry returns a list of warehouses that are available in given country
 func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode model.CountryCode) ([]*model.WareHouse, *model.AppError) {
 	return a.WarehousesByOption(&model.WarehouseFilterOption{
-		ShippingZonesCountries: squirrel.Like{store.ShippingZoneTableName + ".Countries": countryCode},
+		ShippingZonesCountries: squirrel.Like{model.ShippingZoneTableName + ".Countries": countryCode},
 		SelectRelatedAddress:   true,
 		PrefetchShippingZones:  true,
 	})
@@ -100,6 +100,9 @@ func (a *ServiceWarehouse) FindWarehousesForCountry(countryCode model.CountryCod
 func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.WareHouse) (*model.WareHouse, *model.AppError) {
 	warehouse, err := s.srv.Store.Warehouse().Save(warehouse)
 	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrInvalidInput); ok {
 			statusCode = http.StatusBadRequest
@@ -111,9 +114,13 @@ func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.WareHouse) (*model.W
 	return warehouse, nil
 }
 
-func (s *ServiceWarehouse) CreateWarehouseShippingZones(transaction store_iface.SqlxTxExecutor, relations []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, *model.AppError) {
+func (s *ServiceWarehouse) CreateWarehouseShippingZones(transaction store_iface.SqlxExecutor, relations []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, *model.AppError) {
 	relations, err := s.srv.Store.WarehouseShippingZone().Save(transaction, relations)
 	if err != nil {
+		if appErr, ok := err.(*model.AppError); ok {
+			return nil, appErr
+		}
+
 		statusCode := http.StatusInternalServerError
 		if _, ok := err.(*store.ErrInvalidInput); ok {
 			statusCode = http.StatusBadRequest

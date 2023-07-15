@@ -35,12 +35,12 @@ func (ws *SqlWarehouseShippingZoneStore) ModelFields(prefix string) util.AnyArra
 }
 
 // Save inserts given warehouse-shipping zone relation into database
-func (ws *SqlWarehouseShippingZoneStore) Save(transaction store_iface.SqlxTxExecutor, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
+func (ws *SqlWarehouseShippingZoneStore) Save(transaction store_iface.SqlxExecutor, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
 	runner := ws.GetMasterX()
 	if transaction != nil {
 		runner = transaction
 	}
-	query := "INSERT INTO " + store.WarehouseShippingZoneTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
+	query := "INSERT INTO " + model.WarehouseShippingZoneTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
 
 	for _, relation := range warehouseShippingZones {
 		relation.PreSave()
@@ -53,7 +53,7 @@ func (ws *SqlWarehouseShippingZoneStore) Save(transaction store_iface.SqlxTxExec
 		_, err := runner.NamedExec(query, relation)
 		if err != nil {
 			if ws.IsUniqueConstraintError(err, []string{"WarehouseID", "ShippingZoneID", "warehouseshippingzones_warehouseid_shippingzoneid_key"}) {
-				return nil, store.NewErrInvalidInput(store.WarehouseShippingZoneTableName, "WarehouseID/ShippingZoneID", "duplicate")
+				return nil, store.NewErrInvalidInput(model.WarehouseShippingZoneTableName, "WarehouseID/ShippingZoneID", "duplicate")
 			}
 			return nil, errors.Wrapf(err, "failed to save warehouse-shipping zone relation with id=%s", relation.Id)
 		}
@@ -67,7 +67,7 @@ func (s *SqlWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryC
 
 	query := s.
 		GetQueryBuilder().
-		Select(s.ModelFields(store.WarehouseShippingZoneTableName + ".")...)
+		Select(s.ModelFields(model.WarehouseShippingZoneTableName + ".")...)
 
 	if countryCode != "" {
 		shippingZoneQuery := s.
@@ -75,7 +75,7 @@ func (s *SqlWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryC
 			Select(`(1) AS "a"`).
 			Prefix("EXISTS (").
 			Suffix(")").
-			From(store.ShippingZoneTableName).
+			From(model.ShippingZoneTableName).
 			Where("ShippingZones.Countries::text LIKE ?", "%"+countryCode+"%").
 			Where("ShippingZones.Id = WarehouseShippingZones.ShippingZoneID").
 			Limit(1)
@@ -89,7 +89,7 @@ func (s *SqlWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryC
 			Select(`(1) AS "a"`).
 			Prefix("EXISTS (").
 			Suffix(")").
-			From(store.ChannelTableName).
+			From(model.ChannelTableName).
 			Where("Channels.Id = ?", channelID).
 			Where("Channels.Id = ShippingZoneChannels.ChannelID").
 			Limit(1)
@@ -99,7 +99,7 @@ func (s *SqlWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryC
 			Select(`(1) AS "a"`).
 			Prefix("EXISTS (").
 			Suffix(")").
-			From(store.ShippingZoneChannelTableName).
+			From(model.ShippingZoneChannelTableName).
 			Where(channelQuery).
 			Where("ShippingZoneChannels.ShippingZoneID = WarehouseShippingZones.ShippingZoneID").
 			Limit(1)
@@ -124,13 +124,11 @@ func (s *SqlWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryC
 func (s *SqlWarehouseShippingZoneStore) FilterByOptions(options *model.WarehouseShippingZoneFilterOption) ([]*model.WarehouseShippingZone, error) {
 	query := s.
 		GetQueryBuilder().
-		Select(s.ModelFields(store.WarehouseShippingZoneTableName + ".")...).
-		From(store.WarehouseShippingZoneTableName)
+		Select(s.ModelFields(model.WarehouseShippingZoneTableName + ".")...).
+		From(model.WarehouseShippingZoneTableName)
 
-	for _, opt := range []squirrel.Sqlizer{options.WarehouseID, options.ShippingZoneID} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
+	if options.Conditions != nil {
+		query = query.Where(options.Conditions)
 	}
 
 	queryString, args, err := query.ToSql()
@@ -147,15 +145,11 @@ func (s *SqlWarehouseShippingZoneStore) FilterByOptions(options *model.Warehouse
 	return res, nil
 }
 
-func (s *SqlWarehouseShippingZoneStore) Delete(transaction store_iface.SqlxTxExecutor, options *model.WarehouseShippingZoneFilterOption) error {
-	query := s.GetQueryBuilder().Delete(store.WarehouseShippingZoneTableName)
-	for _, opt := range []squirrel.Sqlizer{options.ShippingZoneID, options.WarehouseID} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
+func (s *SqlWarehouseShippingZoneStore) Delete(transaction store_iface.SqlxExecutor, options *model.WarehouseShippingZoneFilterOption) error {
+	if options == nil || options.Conditions == nil {
+		return errors.New("please provide valid options to delete")
 	}
-
-	queryStr, args, err := query.ToSql()
+	query, args, err := s.GetQueryBuilder().Delete(model.WarehouseShippingZoneTableName).Where(options.Conditions).ToSql()
 	if err != nil {
 		return errors.Wrap(err, "Delete_ToSql")
 	}
@@ -165,7 +159,7 @@ func (s *SqlWarehouseShippingZoneStore) Delete(transaction store_iface.SqlxTxExe
 		runner = transaction
 	}
 
-	_, err = runner.Exec(queryStr, args...)
+	_, err = runner.Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete warehouse shipping zones by options")
 	}

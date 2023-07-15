@@ -19,7 +19,7 @@ func (a *ServiceProduct) ProductVariantChannelListingsByOption(options *model.Pr
 }
 
 // BulkUpsertProductVariantChannelListings tells store to bulk upserts given product variant channel listings
-func (s *ServiceProduct) BulkUpsertProductVariantChannelListings(transaction store_iface.SqlxTxExecutor, listings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, *model.AppError) {
+func (s *ServiceProduct) BulkUpsertProductVariantChannelListings(transaction store_iface.SqlxExecutor, listings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, *model.AppError) {
 	variantChannelListings, err := s.srv.Store.ProductVariantChannelListing().BulkUpsert(transaction, listings)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

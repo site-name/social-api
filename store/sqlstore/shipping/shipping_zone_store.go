@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"github.com/sitename/sitename/store/store_iface"
 )
 
 type SqlShippingZoneStore struct {
@@ -50,7 +51,7 @@ func (s *SqlShippingZoneStore) ScanFields(shippingZone *model.ShippingZone) []in
 }
 
 // Upsert depends on given shipping zone's Id to decide update or insert the zone
-func (s *SqlShippingZoneStore) Upsert(shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
+func (s *SqlShippingZoneStore) Upsert(tran store_iface.SqlxExecutor, shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
 	var isSaving bool
 
 	if shippingZone.Id == "" {
@@ -65,35 +66,36 @@ func (s *SqlShippingZoneStore) Upsert(shippingZone *model.ShippingZone) (*model.
 	}
 
 	var (
-		err        error
-		numUpdated int64
+		err    error
+		result sql.Result
+		runner = s.GetMasterX()
 	)
+	if tran != nil {
+		runner = tran
+	}
+
 	if isSaving {
-		query := "INSERT INTO " + store.ShippingZoneTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
-		_, err = s.GetMasterX().NamedExec(query, shippingZone)
+		query := "INSERT INTO " + model.ShippingZoneTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
+		result, err = runner.NamedExec(query, shippingZone)
 
 	} else {
-		query := "UPDATE " + store.ShippingZoneTableName + " SET " + s.
+		query := "UPDATE " + model.ShippingZoneTableName + " SET " + s.
 			ModelFields("").
 			Map(func(_ int, s string) string {
 				return s + "=:" + s
 			}).
 			Join(",") + " WHERE Id=:Id"
 
-		var result sql.Result
-
-		result, err = s.GetMasterX().NamedExec(query, shippingZone)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
-		}
+		result, err = runner.NamedExec(query, shippingZone)
 	}
 
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to upsert shipping zone with id=%s", shippingZone.Id)
 	}
+	numUpserted, _ := result.RowsAffected()
 
-	if numUpdated > 1 {
-		return nil, errors.Errorf("multiple shipping zones were updated: %d instead of 1", numUpdated)
+	if numUpserted > 1 {
+		return nil, errors.Errorf("%d shipping zone(s) upserted instead of 1", numUpserted)
 	}
 
 	return shippingZone, nil
@@ -102,10 +104,10 @@ func (s *SqlShippingZoneStore) Upsert(shippingZone *model.ShippingZone) (*model.
 // Get finds 1 shipping zone for given shippingZoneID
 func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*model.ShippingZone, error) {
 	var res model.ShippingZone
-	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+store.ShippingZoneTableName+" WHERE Id = ?", shippingZoneID)
+	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShippingZoneTableName+" WHERE Id = ?", shippingZoneID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(store.ShippingZoneTableName, shippingZoneID)
+			return nil, store.NewErrNotFound(model.ShippingZoneTableName, shippingZoneID)
 		}
 		return nil, errors.Wrapf(err, "failed to find shipping zone with id=%s", shippingZoneID)
 	}
@@ -115,19 +117,18 @@ func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*model.ShippingZone, 
 
 // FilterByOption finds a list of shipping zones based on given option
 func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error) {
-	selectFields := s.ModelFields(store.ShippingZoneTableName + ".")
+	selectFields := s.ModelFields(model.ShippingZoneTableName + ".")
 	if option.SelectRelatedWarehouseIDs {
 		selectFields = append(selectFields, "WarehouseShippingZones.WarehouseID")
 	}
 
 	query := s.GetQueryBuilder().
 		Select(selectFields...).
-		From(store.ShippingZoneTableName)
+		From(model.ShippingZoneTableName)
 
 	// parse options
 	for _, opt := range []squirrel.Sqlizer{
-		option.Id,
-		option.Default,
+		option.Conditions,
 		option.WarehouseID,
 		option.ChannelID,
 	} {
@@ -137,10 +138,10 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 	}
 
 	if option.WarehouseID != nil || option.SelectRelatedWarehouseIDs {
-		query = query.InnerJoin(store.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
+		query = query.InnerJoin(model.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
 	}
 	if option.ChannelID != nil {
-		query = query.InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
+		query = query.InnerJoin(model.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
 	}
 
 	queryString, args, err := query.ToSql()
@@ -186,12 +187,11 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 }
 
 func (s *SqlShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterOption) (int64, error) {
-	query := s.GetQueryBuilder().Select("COUNT(*)").From(store.ShippingZoneTableName)
+	query := s.GetQueryBuilder().Select("COUNT( DISTINCT ShippingZones.Id)").From(model.ShippingZoneTableName)
 
 	// parse options
 	for _, opt := range []squirrel.Sqlizer{
-		options.Id,
-		options.Default,
+		options.Conditions,
 		options.WarehouseID,
 		options.ChannelID,
 	} {
@@ -201,10 +201,10 @@ func (s *SqlShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterO
 	}
 
 	if options.WarehouseID != nil {
-		query = query.InnerJoin(store.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
+		query = query.InnerJoin(model.WarehouseShippingZoneTableName + " ON ShippingZones.Id = WarehouseShippingZones.ShippingZoneID")
 	}
 	if options.ChannelID != nil {
-		query = query.InnerJoin(store.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
+		query = query.InnerJoin(model.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ShippingZoneID = ShippingZones.Id")
 	}
 
 	queryStr, args, err := query.ToSql()
@@ -219,4 +219,29 @@ func (s *SqlShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterO
 	}
 
 	return res, nil
+}
+
+func (s *SqlShippingZoneStore) Delete(transaction store_iface.SqlxExecutor, conditions *model.ShippingZoneFilterOption) (int64, error) {
+	if conditions.Conditions == nil {
+		return 0, errors.New("please provide conditions to delete")
+	}
+
+	query, args, err := s.GetQueryBuilder().Delete(model.ShippingZoneTableName).Where(conditions.Conditions).ToSql()
+	if err != nil {
+		return 0, errors.Wrap(err, "Delete_ToSql")
+	}
+
+	runner := s.GetMasterX()
+	if transaction != nil {
+		runner = transaction
+	}
+
+	result, err := runner.Exec(query, args...)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to delete shipping zones by given options")
+	}
+
+	numDeleted, _ := result.RowsAffected()
+
+	return numDeleted, nil
 }

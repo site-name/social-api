@@ -42,7 +42,7 @@ func (s *ServiceChannel) ChannelByOption(option *model.ChannelFilterOption) (*mo
 // ValidateChannel check if a channel with given id is active
 func (a *ServiceChannel) ValidateChannel(channelID string) (*model.Channel, *model.AppError) {
 	channel, appErr := a.ChannelByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{store.ChannelTableName + ".Id": channelID},
+		Id: squirrel.Eq{model.ChannelTableName + ".Id": channelID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -66,7 +66,7 @@ func (a *ServiceChannel) CleanChannel(channelID *string) (*model.Channel, *model
 		channel, appErr = a.ValidateChannel(*channelID)
 	} else {
 		channel, appErr = a.ChannelByOption(&model.ChannelFilterOption{
-			IsActive: squirrel.Eq{store.ChannelTableName + ".IsActive": true},
+			IsActive: squirrel.Eq{model.ChannelTableName + ".IsActive": true},
 		})
 	}
 	if appErr != nil {
@@ -86,7 +86,7 @@ func (a *ServiceChannel) ChannelsByOption(option *model.ChannelFilterOption) (mo
 	return channels, nil
 }
 
-func (a *ServiceChannel) UpsertChannel(transaction store_iface.SqlxTxExecutor, channel *model.Channel) (*model.Channel, *model.AppError) {
+func (a *ServiceChannel) UpsertChannel(transaction store_iface.SqlxExecutor, channel *model.Channel) (*model.Channel, *model.AppError) {
 	channel, err := a.srv.Store.Channel().Upsert(transaction, channel)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -101,7 +101,7 @@ func (a *ServiceChannel) UpsertChannel(transaction store_iface.SqlxTxExecutor, c
 	return channel, nil
 }
 
-func (s *ServiceChannel) DeleteChannels(transaction store_iface.SqlxTxExecutor, ids ...string) *model.AppError {
+func (s *ServiceChannel) DeleteChannels(transaction store_iface.SqlxExecutor, ids ...string) *model.AppError {
 	err := s.srv.Store.Channel().DeleteChannels(transaction, ids)
 	if err != nil {
 		return model.NewAppError("DeleteChannels", "app.channel.channel_delete_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)

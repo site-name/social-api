@@ -7,7 +7,6 @@ import (
 	"github.com/graph-gophers/dataloader/v7"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -202,7 +201,7 @@ func menuByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[*mod
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	menus, appErr := embedCtx.App.Srv().MenuService().MenusByOptions(&model.MenuFilterOptions{
-		Id: squirrel.Eq{store.MenuTableName + ".Id": ids},
+		Id: squirrel.Eq{model.MenuTableName + ".Id": ids},
 	})
 	if appErr != nil {
 		for idx := range ids {
@@ -224,7 +223,7 @@ func menuItemByIdLoader(ctx context.Context, ids []string) []*dataloader.Result[
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	menuItems, appErr := embedCtx.App.Srv().MenuService().MenuItemsByOptions(&model.MenuItemFilterOptions{
-		Id: squirrel.Eq{store.MenuItemTableName + ".Id": ids},
+		Id: squirrel.Eq{model.MenuItemTableName + ".Id": ids},
 	})
 	if appErr != nil {
 		for idx := range ids {
@@ -248,7 +247,7 @@ func menuItemsByParentMenuLoader(ctx context.Context, menuIDs []string) []*datal
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	menuItems, appErr := embedCtx.App.Srv().MenuService().MenuItemsByOptions(&model.MenuItemFilterOptions{
-		MenuID: squirrel.Eq{store.MenuItemTableName + ".MenuID": menuIDs},
+		MenuID: squirrel.Eq{model.MenuItemTableName + ".MenuID": menuIDs},
 	})
 	if appErr != nil {
 		for idx := range menuIDs {
@@ -274,7 +273,7 @@ func menuItemChildrenLoader(ctx context.Context, parentIDs []string) []*dataload
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 	menuItems, appErr := embedCtx.App.Srv().MenuService().MenuItemsByOptions(&model.MenuItemFilterOptions{
-		ParentID: squirrel.Eq{store.MenuItemTableName + ".ParentID": parentIDs},
+		ParentID: squirrel.Eq{model.MenuItemTableName + ".ParentID": parentIDs},
 	})
 	if appErr != nil {
 		for idx := range parentIDs {

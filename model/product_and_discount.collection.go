@@ -18,14 +18,17 @@ const (
 )
 
 type Collection struct {
-	Id                 string          `json:"id"`
-	Name               string          `json:"name"`
-	Slug               string          `json:"slug"`
-	BackgroundImage    *string         `json:"background_image"`
-	BackgroundImageAlt string          `json:"background_image_alt"`
+	Id                 string          `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	Name               string          `json:"name" gorm:"type:varchar(250);unique;not null"`
+	Slug               string          `json:"slug" gorm:"type:varchar(255);uniqueIndex:collections_slug_unique_key"`
+	BackgroundImage    *string         `json:"background_image" gorm:"type:varchar(200)"`
+	BackgroundImageAlt string          `json:"background_image_alt" gorm:"type:varchar(128)"`
 	Description        StringInterface `json:"description"`
 	ModelMetadata
 	Seo
+
+	Sales    Sales    `json:"-" gorm:"many2many:sale_collections"`
+	Vouchers Vouchers `json:"-" gorm:"many2many:voucher_collections"`
 }
 
 // CollectionFilterOption is used to build sql queries.
