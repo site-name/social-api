@@ -1,8 +1,9 @@
 package model
 
 import (
-	"io"
 	"unicode/utf8"
+
+	"gorm.io/gorm"
 )
 
 const (
@@ -12,10 +13,22 @@ const (
 )
 
 type TermsOfService struct {
-	Id       string `json:"id"`
-	CreateAt int64  `json:"create_at"`
-	UserId   string `json:"user_id"`
-	Text     string `json:"text"`
+	Id       string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt int64  `json:"create_at" gorm:"autoCreateTime:milli;type:bigint;column:CreateAt"`
+	UserId   string `json:"user_id" gorm:"type:uuid;index:termofservices_userid_key;column:UserId"`
+	Text     string `json:"text" gorm:"column:Text;type:varchar(16383)"`
+}
+
+func (t *TermsOfService) BeforeCreate(_ *gorm.DB) error {
+	return t.IsValid()
+}
+
+func (t *TermsOfService) BeforeUpdate(_ *gorm.DB) error {
+	return t.IsValid()
+}
+
+func (t *TermsOfService) TableName() string {
+	return TermsOfServiceTableName
 }
 
 func (t *TermsOfService) IsValid() *AppError {
@@ -24,12 +37,6 @@ func (t *TermsOfService) IsValid() *AppError {
 		"terms_of_service_id=",
 		"TermsOfService.IsValid",
 	)
-	if !IsValidId(t.Id) {
-		return outer("id", nil)
-	}
-	if t.CreateAt == 0 {
-		return outer("create_at", &t.Id)
-	}
 	if !IsValidId(t.UserId) {
 		return outer("user_id", &t.Id)
 	}
@@ -38,22 +45,4 @@ func (t *TermsOfService) IsValid() *AppError {
 	}
 
 	return nil
-}
-
-func (t *TermsOfService) ToJSON() string {
-	return ModelToJson(t)
-}
-
-func TermsOfServiceFromJson(data io.Reader) *TermsOfService {
-	var termsOfService TermsOfService
-	ModelFromJson(&termsOfService, data)
-	return &termsOfService
-}
-
-func (t *TermsOfService) PreSave() {
-	if t.Id == "" {
-		t.Id = NewId()
-	}
-
-	t.CreateAt = GetMillis()
 }

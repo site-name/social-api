@@ -1,16 +1,26 @@
 package model
 
+import "gorm.io/gorm"
+
 type CustomerNote struct {
-	Id         string  `json:"id"`
-	UserID     *string `json:"user_id"`
-	Date       int64   `json:"date"`
-	Content    string  `json:"content"`
-	IsPublic   *bool   `json:"is_public"`
-	CustomerID string  `json:"customer_id"`
+	Id         string  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	UserID     *string `json:"user_id" gorm:"type:uuid;index:customernotes_userid_key;column:UserID"`
+	Date       int64   `json:"date" gorm:"autoCreateTime:milli;column:Date"` // default now()
+	Content    string  `json:"content" gorm:"type:text;column:Content"`
+	IsPublic   *bool   `json:"is_public" gorm:"default:true;column:IsPublic"`
+	CustomerID string  `json:"customer_id" gorm:"type:uuid;index:customernotes_customerid_key;column:CustomerID"`
 }
 
-func (c *CustomerNote) ToJSON() string {
-	return ModelToJson(c)
+func (c *CustomerNote) BeforeCreate(_ *gorm.DB) error {
+	return c.IsValid()
+}
+
+func (c *CustomerNote) BeforeUpdate(_ *gorm.DB) error {
+	return c.IsValid()
+}
+
+func (*CustomerNote) TableName() string {
+	return CustomerNoteTableName
 }
 
 func (c *CustomerNote) IsValid() *AppError {
@@ -19,29 +29,11 @@ func (c *CustomerNote) IsValid() *AppError {
 		"customer_note_id=",
 		"CustomerNote.IsValid",
 	)
-	if !IsValidId(c.Id) {
-		return outer("id", nil)
-	}
 	if c.UserID != nil && !IsValidId(*c.UserID) {
 		return outer("user_id", &c.Id)
 	}
 	if !IsValidId(c.CustomerID) {
-		return outer("user_id", &c.Id)
-	}
-	if c.Date == 0 {
-		return outer("date", &c.Id)
+		return outer("customer_id", &c.Id)
 	}
 	return nil
-}
-
-func (cn *CustomerNote) PreSave() {
-	if cn.Id == "" {
-		cn.Id = NewId()
-	}
-	if cn.Date == 0 {
-		cn.Date = GetMillis()
-	}
-	if cn.IsPublic == nil {
-		cn.IsPublic = NewPrimitive(true)
-	}
 }

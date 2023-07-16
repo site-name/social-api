@@ -1,8 +1,7 @@
 package account
 
 import (
-	"database/sql"
-
+	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -37,14 +36,9 @@ func (cs *SqlCustomerEventStore) ModelFields(prefix string) util.AnyArray[string
 }
 
 func (cs *SqlCustomerEventStore) Save(event *model.CustomerEvent) (*model.CustomerEvent, error) {
-	event.PreSave()
-	if err := event.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.CustomerEventTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
-	if _, err := cs.GetMasterX().NamedExec(query, event); err != nil {
-		return nil, errors.Wrapf(err, "failed to save CustomerEvent with Id=%s", event.Id)
+	err := cs.GetMaster().Create(event).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to save customer event")
 	}
 
 	return event, nil
@@ -52,12 +46,10 @@ func (cs *SqlCustomerEventStore) Save(event *model.CustomerEvent) (*model.Custom
 
 func (cs *SqlCustomerEventStore) Get(id string) (*model.CustomerEvent, error) {
 	var res model.CustomerEvent
-	err := cs.GetMasterX().Get(&res, "SELECT * FROM "+model.CustomerEventTableName+" WHERE Id = ?", id)
+
+	err := cs.GetReplica().First(&res, "Id = ?", id).Error
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(model.CustomerEventTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find CustomerEvent with Id=%s", id)
+		return nil, err
 	}
 
 	return &res, nil
@@ -65,38 +57,15 @@ func (cs *SqlCustomerEventStore) Get(id string) (*model.CustomerEvent, error) {
 
 func (cs *SqlCustomerEventStore) Count() (int64, error) {
 	var count int64
-	err := cs.GetReplicaX().Select(&count, "SELECT COUNT(Id) FROM "+model.CustomerEventTableName)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to count number of "+model.CustomerEventTableName)
-	}
-
-	return count, nil
+	err := cs.GetReplica().Table(model.CustomerEventTableName).Count(&count).Error
+	return count, err
 }
 
-func (cs *SqlCustomerEventStore) FilterByOptions(options *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, error) {
-	if options == nil {
-		options = new(model.CustomerEventFilterOptions)
-	}
-
-	query := cs.GetQueryBuilder().Select(model.CustomerEventTableName + ".").From(model.CustomerEventTableName)
-
-	if options.Id != nil {
-		query = query.Where(options.Id)
-	}
-	if options.UserID != nil {
-		query = query.Where(options.UserID)
-	}
-
-	str, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
-	}
-
+func (cs *SqlCustomerEventStore) FilterByOptions(options squirrel.Sqlizer) ([]*model.CustomerEvent, error) {
 	var res []*model.CustomerEvent
-	err = cs.GetReplicaX().Select(&res, str, args...)
+	err := cs.GetReplica().Find(&res, store.BuildSqlizer(options)...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find customer events by given options")
 	}
-
 	return res, nil
 }

@@ -1,16 +1,28 @@
 package model
 
+import "gorm.io/gorm"
+
 type UserAccessToken struct {
-	Id          string `json:"id"`
-	Token       string `json:"token,omitempty"`
-	UserId      string `json:"user_id"`
-	Description string `json:"description"`
-	IsActive    bool   `json:"is_active"`
+	Id          string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Token       string `json:"token,omitempty" gorm:"type:uuid;column:Token"`
+	UserId      string `json:"user_id" gorm:"type:uuid;index:useraccesstokens_userid_key;column:UserId"`
+	Description string `json:"description" gorm:"type:varchar(255);column:Description"`
+	IsActive    *bool  `json:"is_active" gorm:"default:true;column:IsActive"`
 }
 
-const (
-	USER_ACCESS_TOKEN_DESCRIPTION_MAX_LENGTH = 255
-)
+func (c *UserAccessToken) BeforeCreate(_ *gorm.DB) error {
+	c.commonPre()
+	return c.IsValid()
+}
+
+func (c *UserAccessToken) BeforeUpdate(_ *gorm.DB) error {
+	c.commonPre()
+	return c.IsValid()
+}
+
+func (*UserAccessToken) TableName() string {
+	return UserAccessTokenTableName
+}
 
 func (t *UserAccessToken) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
@@ -18,36 +30,17 @@ func (t *UserAccessToken) IsValid() *AppError {
 		"user_access_token_id=",
 		"UserAccessToken.IsValid",
 	)
-	if !IsValidId(t.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(t.Token) {
 		return outer("token", &t.Id)
 	}
 	if !IsValidId(t.UserId) {
 		return outer("user_id", &t.Id)
 	}
-	if len(t.Description) > USER_ACCESS_TOKEN_DESCRIPTION_MAX_LENGTH {
-		return outer("description", &t.Id)
-	}
-
 	return nil
 }
 
-func (t *UserAccessToken) PreSave() {
-	if t.Id == "" {
-		t.Id = NewId()
-	}
+func (t *UserAccessToken) commonPre() {
 	if t.Token == "" {
 		t.Token = NewId()
 	}
-	t.IsActive = true
-}
-
-func (t *UserAccessToken) ToJSON() string {
-	return ModelToJson(t)
-}
-
-func UserAccessTokenListToJson(t []*UserAccessToken) string {
-	return ModelToJson(&t)
 }

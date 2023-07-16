@@ -1,44 +1,51 @@
 package model
 
 import (
-	"strings"
-	"unicode/utf8"
+	"gorm.io/gorm"
 )
 
-// max lengths for some fields
-const (
-	APP_NAME_MAX_LENGTH       = 60
-	APP_IDENTIFIER_MAX_LENGTH = 256
-	APP_VERSION_MAX_LENGTH    = 60
-)
+type AppType string
+
+func (a *AppType) IsValid() bool {
+	return *a == APP_TYPE_LOCAL || *a == APP_TYPE_THIRDPARTY
+}
 
 // app type's choices
 const (
-	LOCAL      = "local"
-	THIRDPARTY = "thirdparty"
+	APP_TYPE_LOCAL      AppType = "local"
+	APP_TYPE_THIRDPARTY AppType = "thirdparty"
 )
 
-var AppTypeChoiceStrings = map[string]string{
-	LOCAL:      "local",
-	THIRDPARTY: "thirdparty",
+type App struct {
+	Id               string        `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Name             string        `json:"name" gorm:"type:varchar(60);column:Name"`
+	CreateAt         int64         `json:"create_at" gorm:"autoCreateTime:milli;type:bigint;column:CreateAt"`
+	IsActive         *bool         `json:"is_active" gorm:"default:true;column:IsActive"` // default true
+	Type             AppType       `json:"type" gorm:"type:varchar(15);column:Type"`
+	Identifier       *string       `json:"identifier" gorm:"type:varchar(256);column:Identifier"`
+	Permissions      []*Permission `json:"permissions" gorm:"-"`
+	AboutApp         *string       `json:"about_app" gorm:"column:AboutApp"`
+	DataPrivacy      *string       `json:"data_privacy" gorm:"column:DataPrivacy"`
+	DataPrivacyUrl   *string       `json:"data_privacy_url" gorm:"column:DataPrivacyUrl"`
+	HomePageUrl      *string       `json:"homepage_url" gorm:"column:HomePageUrl"`
+	SupportUrl       *string       `json:"support_url" gorm:"column:SupportUrl"`
+	ConfigurationUrl *string       `json:"configuration_url" gorm:"column:ConfigurationUrl"`
+	AppUrl           *string       `json:"app_url" gorm:"column:AppUrl"`
+	Version          *string       `json:"version" gorm:"type:varchar(60);column:Version"`
 }
 
-type App struct {
-	Id               string        `json:"id"`
-	Name             string        `json:"name"`
-	CreateAt         int64         `json:"create_at"`
-	IsActive         *bool         `json:"is_active"`
-	Type             string        `json:"type"`
-	Identifier       *string       `json:"identifier"`
-	Permissions      []*Permission `json:"permissions" db:"-"`
-	AboutApp         *string       `json:"about_app"`
-	DataPrivacy      *string       `json:"data_privacy"`
-	DataPrivacyUrl   *string       `json:"data_privacy_url"`
-	HomePageUrl      *string       `json:"homepage_url"`
-	SupportUrl       *string       `json:"support_url"`
-	ConfigurationUrl *string       `json:"configuration_url"`
-	AppUrl           *string       `json:"app_url"`
-	Version          *string       `json:"version"`
+func (a *App) BeforeCreate(_ *gorm.DB) error {
+	a.commonPre()
+	return a.IsValid()
+}
+
+func (a *App) BeforeUpdate(_ *gorm.DB) error {
+	a.commonPre()
+	return a.IsValid()
+}
+
+func (*App) TableName() string {
+	return "Apps"
 }
 
 func (a *App) IsValid() *AppError {
@@ -47,20 +54,8 @@ func (a *App) IsValid() *AppError {
 		"app_id=",
 		"App.IsValid",
 	)
-	if !IsValidId(a.Id) {
-		return outer("id", nil)
-	}
-	if utf8.RuneCountInString(a.Name) > APP_NAME_MAX_LENGTH {
-		return outer("name", &a.Id)
-	}
-	if AppTypeChoiceStrings[strings.ToLower(a.Type)] == "" {
+	if !a.Type.IsValid() {
 		return outer("type", &a.Id)
-	}
-	if a.Identifier != nil && utf8.RuneCountInString(*a.Identifier) > APP_IDENTIFIER_MAX_LENGTH {
-		return outer("identifier", &a.Id)
-	}
-	if a.Version != nil && len(*a.Version) > APP_VERSION_MAX_LENGTH {
-		return outer("version", &a.Id)
 	}
 	if a.CreateAt == 0 {
 		return outer("create_at", &a.Id)
@@ -69,33 +64,12 @@ func (a *App) IsValid() *AppError {
 	return nil
 }
 
-func (a *App) ToJSON() string {
-	return ModelToJson(a)
-}
-
-func (a *App) PreSave() {
-	if a.Id == "" {
-		a.Id = NewId()
-	}
-	a.CreateAt = GetMillis()
+func (a *App) commonPre() {
 	a.Name = SanitizeUnicode(a.Name)
 	if a.Identifier != nil {
-		a.Identifier = NewPrimitive(SanitizeUnicode(*a.Identifier))
-	}
-	if a.IsActive == nil {
-		a.IsActive = NewPrimitive(true)
+		*a.Identifier = SanitizeUnicode(*a.Identifier)
 	}
 	if a.AboutApp != nil {
-		a.AboutApp = NewPrimitive(SanitizeUnicode(*a.AboutApp))
-	}
-}
-
-func (a *App) PreUpdate() {
-	a.Name = SanitizeUnicode(a.Name)
-	if a.Identifier != nil {
-		a.Identifier = NewPrimitive(SanitizeUnicode(*a.Identifier))
-	}
-	if a.AboutApp != nil {
-		a.AboutApp = NewPrimitive(SanitizeUnicode(*a.AboutApp))
+		*a.AboutApp = SanitizeUnicode(*a.AboutApp)
 	}
 }

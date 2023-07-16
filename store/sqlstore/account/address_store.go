@@ -1,15 +1,12 @@
 package account
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
-	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlAddressStore struct {
@@ -67,56 +64,17 @@ func (as *SqlAddressStore) ScanFields(addr *model.Address) []interface{} {
 	}
 }
 
-func (as *SqlAddressStore) Upsert(transaction store_iface.SqlxExecutor, address *model.Address) (*model.Address, error) {
-	var executor store_iface.SqlxExecutor = as.GetMasterX()
-	if transaction != nil {
-		executor = transaction
+func (as *SqlAddressStore) Upsert(transaction *gorm.DB, address *model.Address) (*model.Address, error) {
+	if transaction == nil {
+		transaction = as.GetMaster()
 	}
 
-	// to check is saving or updating
-	var isSaving = false
-	if !model.IsValidId(address.Id) {
-		address.Id = ""
-		isSaving = true
-		address.PreSave()
-	} else {
-		address.PreUpdate()
+	var result = transaction.Save(address)
+	if result.Error != nil {
+		return nil, errors.Wrap(result.Error, "failed to upsert address")
 	}
-
-	if err := address.IsValid(); err != nil {
-		return nil, err
-	}
-
-	var (
-		errorUpsert error
-		result      sql.Result
-	)
-	if isSaving {
-		query := "INSERT INTO " + model.AddressTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-		result, errorUpsert = executor.NamedExec(query, address)
-
-	} else {
-		query := "UPDATE " + model.AddressTableName + " SET " + as.
-			ModelFields("").
-			Map(func(_ int, item string) string {
-				return item + "=:" + item
-			}).
-			Join(",") + "WHERE Id=:Id"
-
-		result, errorUpsert = executor.NamedExec(query, address)
-	}
-
-	if errorUpsert != nil {
-		return nil, errors.Wrap(errorUpsert, "failed to upsert address to database")
-	}
-
-	rowsAffected, errCheckRowsAffected := result.RowsAffected()
-	if errCheckRowsAffected != nil {
-		return nil, errors.Wrap(errCheckRowsAffected, "failed to get number of address(es) updated")
-	}
-
-	if rowsAffected != 1 {
-		return nil, errors.Errorf("%d address(es) upserted instead of 1", rowsAffected)
+	if result.RowsAffected != 1 {
+		return nil, errors.Errorf("%d address(es) upserted instead of 1", result.RowsAffected)
 	}
 
 	return address, nil
@@ -124,76 +82,52 @@ func (as *SqlAddressStore) Upsert(transaction store_iface.SqlxExecutor, address 
 
 func (as *SqlAddressStore) Get(addressID string) (*model.Address, error) {
 	var res model.Address
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AddressTableName+" WHERE Id = ?", addressID)
+	err := as.GetReplica().First(&res, "Id = ?", addressID).Error
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AddressTableName, addressID)
 		}
-		return nil, errors.Wrapf(err, "failed to get %s with Id=%s", model.AddressTableName, addressID)
+		return nil, errors.Wrap(err, "failed to find address with id="+addressID)
 	}
-
 	return &res, nil
 }
 
 // FilterByOption finds and returns a list of address(es) filtered by given option
 func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
-	query := as.GetQueryBuilder().
-		Select(as.ModelFields(model.AddressTableName + ".")...).
-		From(model.AddressTableName)
-
-	// parse query
-	if option.Id != nil {
-		query = query.Where(option.Id)
+	var res []*model.Address
+	db := as.GetReplica().Table(model.AddressTableName)
+	andConds := squirrel.And{}
+	for _, opt := range []squirrel.Sqlizer{
+		option.Id,
+		option.UserID,
+		option.Other,
+	} {
+		if opt != nil {
+			andConds = append(andConds, opt)
+		}
 	}
-	if option.OrderID != nil &&
-		option.OrderID.Id != nil &&
-		(option.OrderID.On == "BillingAddressID" || option.OrderID.On == "ShippingAddressID") {
-
-		query = query.
-			InnerJoin(model.OrderTableName+" ON (Orders.? = Addresses.Id)", option.OrderID.On).
-			Where(option.OrderID.Id)
+	if option.OrderID != nil {
+		andConds = append(andConds, option.OrderID.Id) //
+		db = db.Joins("INNER JOIN "+model.OrderTableName+" ON Orders.? = Addresses.Id", option.OrderID.On)
 	}
 	if option.UserID != nil {
-		addressIDSelect := as.GetQueryBuilder(squirrel.Question).
-			Select("AddressID").
-			From(model.UserAddressTableName).
-			Where(option.UserID)
-
-		query = query.Where(squirrel.Expr("Addresses.Id IN ?", addressIDSelect))
+		db = db.Joins("INNER JOIN " + model.UserAddressTableName + " ON UserAddresses.address_id = Addresses.Id")
 	}
+	err := db.Find(&res, store.BuildSqlizer(andConds)...).Error
 
-	queryString, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
+		return nil, errors.Wrap(err, "failed to find addresses by given options")
 	}
-	var res []*model.Address
-	err = as.GetReplicaX().Select(&res, queryString, args...)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to find addresses based on given option")
-	}
-
 	return res, nil
 }
 
-func (as *SqlAddressStore) DeleteAddresses(transaction store_iface.SqlxExecutor, addressIDs []string) error {
-	runner := as.GetMasterX()
-	if transaction != nil {
-		runner = transaction
+func (as *SqlAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) error {
+	if transaction == nil {
+		transaction = as.GetMaster()
 	}
-
-	query := "DELETE FROM " + model.AddressTableName + " WHERE Id IN (" + squirrel.Placeholders(len(addressIDs)) + ")"
-	args := lo.Map(addressIDs, func(item string, _ int) any { return item })
-
-	result, err := runner.Exec(query, args...)
+	err := transaction.Delete(&model.Address{}, "Id IN ?", addressIDs).Error
 	if err != nil {
-		return errors.Wrap(err, "failed to delete addresses")
-	}
-	numDeleted, err := result.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "failed to count number of addresses were deleted")
-	}
-	if numDeleted != int64(len(addressIDs)) {
-		return errors.Errorf("%d addresses were deleted instead of %d", numDeleted, len(addressIDs))
+		return errors.Wrap(err, "failed to delete addresses with given ids")
 	}
 
 	return nil

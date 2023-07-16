@@ -38,15 +38,9 @@ func (s *SqlUserAccessTokenStore) ModelFields(prefix string) util.AnyArray[strin
 }
 
 func (s *SqlUserAccessTokenStore) Save(token *model.UserAccessToken) (*model.UserAccessToken, error) {
-	token.PreSave()
-
-	if err := token.IsValid(); err != nil {
+	err := s.GetMaster().Create(token).Error
+	if err != nil {
 		return nil, err
-	}
-
-	query := "INSERT INTO " + model.UserAccessTokenTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
-	if _, err := s.GetMasterX().NamedExec(query, token); err != nil {
-		return nil, errors.Wrap(err, "failed to save UserAccessToken")
 	}
 	return token, nil
 }

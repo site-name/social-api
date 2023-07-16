@@ -116,7 +116,6 @@ type TimerLayer struct {
 	UploadSessionStore                 store.UploadSessionStore
 	UserStore                          store.UserStore
 	UserAccessTokenStore               store.UserAccessTokenStore
-	UserAddressStore                   store.UserAddressStore
 	VatStore                           store.VatStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
 	VoucherCustomerStore               store.VoucherCustomerStore
@@ -510,10 +509,6 @@ func (s *TimerLayer) User() store.UserStore {
 
 func (s *TimerLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
-}
-
-func (s *TimerLayer) UserAddress() store.UserAddressStore {
-	return s.UserAddressStore
 }
 
 func (s *TimerLayer) Vat() store.VatStore {
@@ -1032,11 +1027,6 @@ type TimerLayerUserAccessTokenStore struct {
 	Root *TimerLayer
 }
 
-type TimerLayerUserAddressStore struct {
-	store.UserAddressStore
-	Root *TimerLayer
-}
-
 type TimerLayerVatStore struct {
 	store.VatStore
 	Root *TimerLayer
@@ -1082,7 +1072,7 @@ type TimerLayerWishlistItemProductVariantStore struct {
 	Root *TimerLayer
 }
 
-func (s *TimerLayerAddressStore) DeleteAddresses(transaction store_iface.SqlxExecutor, addressIDs []string) error {
+func (s *TimerLayerAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) error {
 	start := timemodule.Now()
 
 	err := s.AddressStore.DeleteAddresses(transaction, addressIDs)
@@ -1130,7 +1120,7 @@ func (s *TimerLayerAddressStore) Get(addressID string) (*model.Address, error) {
 	return result, err
 }
 
-func (s *TimerLayerAddressStore) Upsert(transaction store_iface.SqlxExecutor, address *model.Address) (*model.Address, error) {
+func (s *TimerLayerAddressStore) Upsert(transaction *gorm.DB, address *model.Address) (*model.Address, error) {
 	start := timemodule.Now()
 
 	result, err := s.AddressStore.Upsert(transaction, address)
@@ -2938,7 +2928,7 @@ func (s *TimerLayerCustomerEventStore) Count() (int64, error) {
 	return result, err
 }
 
-func (s *TimerLayerCustomerEventStore) FilterByOptions(options *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, error) {
+func (s *TimerLayerCustomerEventStore) FilterByOptions(options squirrel.Sqlizer) ([]*model.CustomerEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.CustomerEventStore.FilterByOptions(options)
@@ -7305,7 +7295,7 @@ func (s *TimerLayerTokenStore) Delete(token string) error {
 	return err
 }
 
-func (s *TimerLayerTokenStore) GetAllTokensByType(tokenType string) ([]*model.Token, error) {
+func (s *TimerLayerTokenStore) GetAllTokensByType(tokenType model.TokenType) ([]*model.Token, error) {
 	start := timemodule.Now()
 
 	result, err := s.TokenStore.GetAllTokensByType(tokenType)
@@ -8183,54 +8173,6 @@ func (s *TimerLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string) error
 	return err
 }
 
-func (s *TimerLayerUserAddressStore) DeleteForUser(userID string, addressID string) error {
-	start := timemodule.Now()
-
-	err := s.UserAddressStore.DeleteForUser(userID, addressID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.DeleteForUser", success, elapsed)
-	}
-	return err
-}
-
-func (s *TimerLayerUserAddressStore) FilterByOptions(options *model.UserAddressFilterOptions) ([]*model.UserAddress, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserAddressStore.FilterByOptions(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.FilterByOptions", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerUserAddressStore) Save(userAddress *model.UserAddress) (*model.UserAddress, error) {
-	start := timemodule.Now()
-
-	result, err := s.UserAddressStore.Save(userAddress)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("UserAddressStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerVatStore) FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error) {
 	start := timemodule.Now()
 
@@ -8949,7 +8891,6 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.UploadSessionStore = &TimerLayerUploadSessionStore{UploadSessionStore: childStore.UploadSession(), Root: &newStore}
 	newStore.UserStore = &TimerLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &TimerLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
-	newStore.UserAddressStore = &TimerLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
 	newStore.VatStore = &TimerLayerVatStore{VatStore: childStore.Vat(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &TimerLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
 	newStore.VoucherCustomerStore = &TimerLayerVoucherCustomerStore{VoucherCustomerStore: childStore.VoucherCustomer(), Root: &newStore}

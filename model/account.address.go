@@ -27,43 +27,24 @@ func (e AddressTypeEnum) IsValid() bool {
 	return false
 }
 
-// length limits for address fields
-const (
-	ADDRESS_COMPANY_NAME_MAX_LENGTH   = 256
-	ADDRESS_STREET_ADDRESS_MAX_LENGTH = 256
-	ADDRESS_CITY_NAME_MAX_LENGTH      = 256
-	ADDRESS_CITY_AREA_MAX_LENGTH      = 128
-	ADDRESS_POSTAL_CODE_MAX_LENGTH    = 20
-	ADDRESS_COUNTRY_MAX_LENGTH        = 3
-	ADDRESS_COUNTRY_AREA_MAX_LENGTH   = 128
-	ADDRESS_PHONE_MAX_LENGTH          = 20
-)
-
-type WhichOrderAddressID string
-
-const (
-	ShippingAddressID WhichOrderAddressID = "ShippingAddressID"
-	BillingAddressID  WhichOrderAddressID = "BillingAddressID"
-)
-
 // Address contains information that tells details about an address
 type Address struct {
-	Id             string      `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
-	FirstName      string      `json:"first_name" gorm:"type:varchar(64)"`
-	LastName       string      `json:"last_name" gorm:"type:varchar(64)"`
-	CompanyName    string      `json:"company_name,omitempty" gorm:"type:varchar(256)"`
-	StreetAddress1 string      `json:"street_address_1,omitempty" gorm:"type:varchar(256)"`
-	StreetAddress2 string      `json:"street_address_2,omitempty" gorm:"type:varchar(256)"`
-	City           string      `json:"city" gorm:"type:varchar(256)"`
-	CityArea       string      `json:"city_area,omitempty" gorm:"type:varchar(128)"`
-	PostalCode     string      `json:"postal_code" gorm:"type:varchar(20)"`
-	Country        CountryCode `json:"country" gorm:"type:varchar(3)"`
-	CountryArea    string      `json:"country_area,omitempty" gorm:"type:varchar(128)"`
-	Phone          string      `json:"phone" gorm:"db_index;type:varchar(20);index:addresses_phone_idx"`
-	CreateAt       int64       `json:"create_at,omitempty" gorm:"autoCreateTime:milli"`
-	UpdateAt       int64       `json:"update_at,omitempty" gorm:"autoUpdateTime:milli"`
+	Id             string      `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	FirstName      string      `json:"first_name" gorm:"type:varchar(64);column:FirstName"`
+	LastName       string      `json:"last_name" gorm:"type:varchar(64);column:LastName"`
+	CompanyName    string      `json:"company_name,omitempty" gorm:"type:varchar(256);column:CompanyName"`
+	StreetAddress1 string      `json:"street_address_1,omitempty" gorm:"type:varchar(256);column:StreetAddress1"`
+	StreetAddress2 string      `json:"street_address_2,omitempty" gorm:"type:varchar(256);column:StreetAddress2"`
+	City           string      `json:"city" gorm:"type:varchar(256);column:City"`
+	CityArea       string      `json:"city_area,omitempty" gorm:"type:varchar(128);column:CityArea"`
+	PostalCode     string      `json:"postal_code" gorm:"type:varchar(20);column:PostalCode"`
+	Country        CountryCode `json:"country" gorm:"type:varchar(3);column:Country"`
+	CountryArea    string      `json:"country_area,omitempty" gorm:"type:varchar(128);column:CountryArea"`
+	Phone          string      `json:"phone" gorm:"db_index;type:varchar(20);index:addresses_phone_idx;column:Phone"`
+	CreateAt       int64       `json:"create_at,omitempty" gorm:"autoCreateTime:milli;column:CreateAt"`
+	UpdateAt       int64       `json:"update_at,omitempty" gorm:"autoUpdateTime:milli;column:UpdateAt"`
 
-	Users []*User `json:"-" gorm:"many2many:user_addresses"`
+	Users []*User `json:"-" gorm:"many2many:UserAddresses"`
 }
 
 func (a *Address) BeforeCreate(_ *gorm.DB) error {
@@ -76,14 +57,25 @@ func (a *Address) BeforeUpdate(_ *gorm.DB) error {
 	return a.IsValid()
 }
 
+func (*Address) TableName() string {
+	return AddressTableName
+}
+
+type WhichOrderAddressID string
+
+const (
+	ShippingAddressID WhichOrderAddressID = "shipping_address_id"
+	BillingAddressID  WhichOrderAddressID = "shipping_address_id"
+)
+
 type AddressFilterOrderOption struct {
 	Id squirrel.Sqlizer
-	// Either `ShippingAddressID` or `BillingAddressID`.
+	// Either `shipping_address_id` or `shipping_address_id`.
 	//
-	// since `Orders` have `ShippingAddressID` and `BillingAddressID`.
+	// since `Orders` have `shipping_address_id` and `shipping_address_id`.
 	// This `On` specifies which Id to put in the ON () conditions:
 	//
-	// E.g: On = "ShippingAddressID" => ON (Orders.ShippingAddressID = Addresses.Id)
+	// E.g: On = "shipping_address_id" => ON (Orders.shipping_address_id = Addresses.id)
 	On WhichOrderAddressID
 }
 
@@ -111,21 +103,6 @@ func (a *Address) Equal(other *Address) bool {
 	return reflect.DeepEqual(*a, *other)
 }
 
-func (add *Address) ToJSON() string {
-	return ModelToJson(add)
-}
-
-// PreSave makes sure the address is perfectly processed before saving into the database
-func (add *Address) PreSave() {
-	if add.Id == "" {
-		add.Id = NewId()
-	}
-
-	add.CreateAt = GetMillis()
-	add.UpdateAt = add.CreateAt
-	add.commonPre()
-}
-
 func (a *Address) commonPre() {
 	if a.FirstName == "" {
 		a.FirstName = "first_name"
@@ -140,11 +117,6 @@ func (a *Address) commonPre() {
 	}
 }
 
-func (a *Address) PreUpdate() {
-	a.UpdateAt = GetMillis()
-	a.commonPre()
-}
-
 // IsValid validates address and returns an error if data is not processed
 func (a *Address) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
@@ -152,9 +124,6 @@ func (a *Address) IsValid() *AppError {
 		"address_id=",
 		"Address.IsValid",
 	)
-	if !IsValidId(a.Id) {
-		return outer("id", nil)
-	}
 	if a.CreateAt == 0 {
 		return outer("create_at", &a.Id)
 	}
@@ -167,32 +136,11 @@ func (a *Address) IsValid() *AppError {
 	if !IsValidNamePart(a.LastName, LastName) {
 		return outer("last_name", &a.Id)
 	}
-	if utf8.RuneCountInString(a.CompanyName) > ADDRESS_COMPANY_NAME_MAX_LENGTH {
-		return outer("company_name", &a.Id)
-	}
-	if utf8.RuneCountInString(a.StreetAddress1) > ADDRESS_STREET_ADDRESS_MAX_LENGTH {
-		return outer("street_address_1", &a.Id)
-	}
-	if utf8.RuneCountInString(a.StreetAddress2) > ADDRESS_STREET_ADDRESS_MAX_LENGTH {
-		return outer("street_address_2", &a.Id)
-	}
-	if utf8.RuneCountInString(a.City) > ADDRESS_CITY_NAME_MAX_LENGTH {
-		return outer("city", &a.Id)
-	}
-	if utf8.RuneCountInString(a.CityArea) > ADDRESS_CITY_AREA_MAX_LENGTH {
-		return outer("city_area", &a.Id)
-	}
-	if utf8.RuneCountInString(a.PostalCode) > ADDRESS_POSTAL_CODE_MAX_LENGTH || !IsAllNumbers(a.PostalCode) {
+	if !IsAllNumbers(a.PostalCode) {
 		return outer("postal_code", &a.Id)
 	}
 	if !a.Country.IsValid() {
 		return outer("country", &a.Id)
-	}
-	if utf8.RuneCountInString(a.CountryArea) > ADDRESS_COUNTRY_AREA_MAX_LENGTH {
-		return outer("country_area", &a.Id)
-	}
-	if utf8.RuneCountInString(a.Phone) > ADDRESS_PHONE_MAX_LENGTH {
-		return outer("phone", &a.Id)
 	}
 	if str, ok := util.ValidatePhoneNumber(a.Phone, a.Country.String()); !ok {
 		return outer("phone", &a.Id)

@@ -134,7 +134,6 @@ type SqlStoreStores struct {
 	uploadSession                 store.UploadSessionStore
 	user                          store.UserStore
 	userAccessToken               store.UserAccessTokenStore
-	userAddress                   store.UserAddressStore
 	vat                           store.VatStore
 	voucherChannelListing         store.VoucherChannelListingStore
 	voucherCustomer               store.VoucherCustomerStore
@@ -245,7 +244,6 @@ func (store *SqlStore) setupTables() {
 		uploadSession:                 file.NewSqlUploadSessionStore(store),
 		user:                          account.NewSqlUserStore(store, store.metrics),
 		userAccessToken:               account.NewSqlUserAccessTokenStore(store),
-		userAddress:                   account.NewSqlUserAddressStore(store),
 		vat:                           shop.NewSqlVatStore(store),
 		voucherChannelListing:         discount.NewSqlVoucherChannelListingStore(store),
 		voucherCustomer:               discount.NewSqlVoucherCustomerStore(store),
@@ -640,10 +638,6 @@ func (ss *SqlStore) User() store.UserStore {
 
 func (ss *SqlStore) UserAccessToken() store.UserAccessTokenStore {
 	return ss.stores.userAccessToken
-}
-
-func (ss *SqlStore) UserAddress() store.UserAddressStore {
-	return ss.stores.userAddress
 }
 
 func (ss *SqlStore) Vat() store.VatStore {

@@ -2,49 +2,70 @@ package model
 
 import (
 	"net/http"
+
+	"gorm.io/gorm"
 )
 
 const (
 	TOKEN_SIZE            = 64
 	MAX_TOKEN_EXIPRY_TIME = 1000 * 60 * 60 * 48 // 48 hour
 	TOKEN_TYPE_OAUTH      = "oauth"
-	MAX_EXTRA             = 2048
+	// MAX_EXTRA             = 2048
 )
 
 // all possible token types
 const (
-	TokenTypePasswordRecovery   = "password_recovery"
-	TokenTypeVerifyEmail        = "verify_email"
-	TokenTypeTeamInvitation     = "team_invitation"
-	TokenTypeGuestInvitation    = "guest_invitation"
-	TokenTypeCWSAccess          = "cws_access_token"
-	TokenTypeRequestChangeEmail = "request_change_email"
-	TokenTypeDeactivateAccount  = "deactivate_account"
+	TokenTypePasswordRecovery   TokenType = "password_recovery"
+	TokenTypeVerifyEmail        TokenType = "verify_email"
+	TokenTypeTeamInvitation     TokenType = "team_invitation"
+	TokenTypeGuestInvitation    TokenType = "guest_invitation"
+	TokenTypeCWSAccess          TokenType = "cws_access_token"
+	TokenTypeRequestChangeEmail TokenType = "request_change_email"
+	TokenTypeDeactivateAccount  TokenType = "deactivate_account"
 )
 
-type Token struct {
-	Token    string
-	CreateAt int64
-	Type     string
-	Extra    string
+type TokenType string
+
+func (t TokenType) IsValid() bool {
+	return t == TokenTypePasswordRecovery ||
+		t == TokenTypeVerifyEmail ||
+		t == TokenTypeTeamInvitation ||
+		t == TokenTypeGuestInvitation ||
+		t == TokenTypeCWSAccess ||
+		t == TokenTypeRequestChangeEmail ||
+		t == TokenTypeDeactivateAccount
 }
 
-func NewToken(tokentype, extra string) *Token {
+type Token struct {
+	Token    string    `json:"token" gorm:"type:varchar(64);column:Token"`
+	CreateAt int64     `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	Type     TokenType `json:"type" gorm:"type:varchar(50);column:Type"`
+	Extra    string    `json:"extra" gorm:"type:varchar(2048);column:Extra"`
+}
+
+func (t *Token) TableName() string {
+	return TokenTableName
+}
+
+func (t *Token) BeforeCreate(_ *gorm.DB) error {
+	return t.IsValid()
+}
+
+func (t *Token) BeforeUpdate(_ *gorm.DB) error {
+	return t.IsValid()
+}
+
+func NewToken(tokentype TokenType, extra string) *Token {
 	return &Token{
-		Token:    NewRandomString(TOKEN_SIZE),
-		CreateAt: GetMillis(),
-		Type:     tokentype,
-		Extra:    extra,
+		Token: NewRandomString(TOKEN_SIZE),
+		Type:  tokentype,
+		Extra: extra,
 	}
 }
 
 func (t *Token) IsValid() *AppError {
-	if len(t.Token) != TOKEN_SIZE {
+	if len(t.Token) >= TOKEN_SIZE {
 		return NewAppError("Token.IsValid", "model.token.is_valid.size", nil, "", http.StatusInternalServerError)
-	}
-
-	if t.CreateAt == 0 {
-		return NewAppError("Token.IsValid", "model.token.is_valid.expiry", nil, "", http.StatusInternalServerError)
 	}
 
 	return nil

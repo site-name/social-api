@@ -47,7 +47,6 @@ type Store interface {
 
 	User() UserStore                                                   // account
 	Address() AddressStore                                             //
-	UserAddress() UserAddressStore                                     //
 	CustomerEvent() CustomerEventStore                                 //
 	StaffNotificationRecipient() StaffNotificationRecipientStore       //
 	CustomerNote() CustomerNoteStore                                   //
@@ -886,10 +885,10 @@ type (
 	AddressStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(addr *model.Address) []interface{}
-		Upsert(transaction store_iface.SqlxExecutor, address *model.Address) (*model.Address, error)
-		Get(addressID string) (*model.Address, error)                                    // Get returns an Address with given addressID is exist
-		DeleteAddresses(transaction store_iface.SqlxExecutor, addressIDs []string) error // DeleteAddress deletes given address and returns an error
-		FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error)      // FilterByOption finds and returns a list of address(es) filtered by given option
+		Upsert(transaction *gorm.DB, address *model.Address) (*model.Address, error)
+		Get(addressID string) (*model.Address, error)                               // Get returns an Address with given addressID is exist
+		DeleteAddresses(transaction *gorm.DB, addressIDs []string) error            // DeleteAddress deletes given address and returns an error
+		FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) // FilterByOption finds and returns a list of address(es) filtered by given option
 	}
 	UserStore interface {
 		ClearCaches()
@@ -937,7 +936,7 @@ type (
 		GetByToken(token string) (*model.Token, error)
 		Cleanup()
 		RemoveAllTokensByType(tokenType string) error
-		GetAllTokensByType(tokenType string) ([]*model.Token, error)
+		GetAllTokensByType(tokenType model.TokenType) ([]*model.Token, error)
 	}
 	UserAccessTokenStore interface {
 		Save(token *model.UserAccessToken) (*model.UserAccessToken, error)
@@ -951,18 +950,12 @@ type (
 		UpdateTokenEnable(tokenID string) error
 		UpdateTokenDisable(tokenID string) error
 	}
-	UserAddressStore interface {
-		Save(userAddress *model.UserAddress) (*model.UserAddress, error)
-		DeleteForUser(userID string, addressID string) error // DeleteForUser delete the relationship between user & address
-		// FilterByOptions finds and returns a list of user-address relations with given options
-		FilterByOptions(options *model.UserAddressFilterOptions) ([]*model.UserAddress, error)
-	}
 	CustomerEventStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
 		Save(customemrEvent *model.CustomerEvent) (*model.CustomerEvent, error)
 		Get(id string) (*model.CustomerEvent, error)
 		Count() (int64, error)
-		FilterByOptions(options *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, error)
+		FilterByOptions(options squirrel.Sqlizer) ([]*model.CustomerEvent, error)
 	}
 	StaffNotificationRecipientStore interface {
 		Save(notificationRecipient *model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error)

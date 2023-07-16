@@ -1,9 +1,6 @@
 package account
 
 import (
-	"database/sql"
-
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -37,28 +34,18 @@ func (cs *SqlCustomerNoteStore) ModelFields(prefix string) util.AnyArray[string]
 }
 
 func (cs *SqlCustomerNoteStore) Save(note *model.CustomerNote) (*model.CustomerNote, error) {
-	note.PreSave()
-	if err := note.IsValid(); err != nil {
+	err := cs.GetMaster().Create(note).Error
+	if err != nil {
 		return nil, err
 	}
-
-	query := "INSERT INTO " + model.CustomerNoteTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
-	if _, err := cs.GetMasterX().NamedExec(query, note); err != nil {
-		return nil, errors.Wrapf(err, "failed to save customer note with id=%s", note.Id)
-	}
-
-	return note, nil
+	return note, err
 }
 
 func (cs *SqlCustomerNoteStore) Get(id string) (*model.CustomerNote, error) {
 	var res model.CustomerNote
-
-	if err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+model.CustomerNoteTableName+" WHERE Id = ?", id); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.NewErrNotFound(model.CustomerNoteTableName, id)
-		}
-		return nil, errors.Wrapf(err, "failed to find customer note with id=%s", id)
+	err := cs.GetReplica().First(&res, "Id = ?", id).Error
+	if err != nil {
+		return nil, err
 	}
-
 	return &res, nil
 }

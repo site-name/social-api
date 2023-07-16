@@ -1,8 +1,6 @@
 package account
 
 import (
-	"github.com/Masterminds/squirrel"
-	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
@@ -34,41 +32,18 @@ func NewSqlStaffNotificationRecipientStore(s store.Store) store.StaffNotificatio
 }
 
 func (ss *SqlStaffNotificationRecipientStore) Save(record *model.StaffNotificationRecipient) (*model.StaffNotificationRecipient, error) {
-	record.PreSave()
-	if err := record.IsValid(); err != nil {
+	err := ss.GetMaster().Create(record).Error
+	if err != nil {
 		return nil, err
 	}
-	query := "INSERT INTO " + model.StaffNotificationRecipientTableName + " (" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
-	if _, err := ss.GetMasterX().NamedExec(query, record); err != nil {
-		return nil, errors.Wrapf(err, "failed to save StaffNotificationRecipient with Id=%s", record.Id)
-	}
-
 	return record, nil
 }
 
 func (s *SqlStaffNotificationRecipientStore) FilterByOptions(options *model.StaffNotificationRecipientFilterOptions) ([]*model.StaffNotificationRecipient, error) {
-	query := s.GetQueryBuilder().
-		Select(s.ModelFields(model.StaffNotificationRecipientTableName + ".")...).
-		From(model.StaffNotificationRecipientTableName)
-
-	for _, opt := range []squirrel.Sqlizer{
-		options.Id, options.Active, options.UserID, options.StaffEmail,
-	} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
-	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
-	}
-
 	var res []*model.StaffNotificationRecipient
-	err = s.GetReplicaX().Select(&res, queryString, args...)
+	err := s.GetReplica().Select(&res, store.BuildSqlizer(options.Conditions)...).Error
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to find staff notification recipients")
+		return nil, err
 	}
-
 	return res, nil
 }

@@ -1,6 +1,8 @@
 package model
 
-import "io"
+import (
+	"io"
+)
 
 const (
 	STATUS_OUT_OF_OFFICE   = "ooo"
@@ -12,16 +14,14 @@ const (
 )
 
 type Status struct {
-	UserId         string `json:"user_id"`
-	Status         string `json:"status"`
-	Manual         bool   `json:"manual"`
-	LastActivityAt int64  `json:"last_activity_at"`
-	// ActiveChannel  string `json:"active_channel,omitempty" db:"-"`
+	UserId         string `json:"user_id" gorm:"type:uuid;index:statuses_userid_key;column:UserId"`
+	Status         string `json:"status" gorm:"type:varchar(10);column:Status"`
+	Manual         bool   `json:"manual" gorm:"column:Manual"`
+	LastActivityAt int64  `json:"last_activity_at" gorm:"type:bigint;column:LastActivityAt"`
 }
 
-func (o *Status) ToJSON() string {
-	oCopy := *o
-	return ModelToJson(&oCopy)
+func (*Status) TableName() string {
+	return StatusTableName
 }
 
 func (o *Status) ToClusterJson() string {

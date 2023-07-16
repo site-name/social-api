@@ -116,7 +116,6 @@ type RetryLayer struct {
 	UploadSessionStore                 store.UploadSessionStore
 	UserStore                          store.UserStore
 	UserAccessTokenStore               store.UserAccessTokenStore
-	UserAddressStore                   store.UserAddressStore
 	VatStore                           store.VatStore
 	VoucherChannelListingStore         store.VoucherChannelListingStore
 	VoucherCustomerStore               store.VoucherCustomerStore
@@ -510,10 +509,6 @@ func (s *RetryLayer) User() store.UserStore {
 
 func (s *RetryLayer) UserAccessToken() store.UserAccessTokenStore {
 	return s.UserAccessTokenStore
-}
-
-func (s *RetryLayer) UserAddress() store.UserAddressStore {
-	return s.UserAddressStore
 }
 
 func (s *RetryLayer) Vat() store.VatStore {
@@ -1032,11 +1027,6 @@ type RetryLayerUserAccessTokenStore struct {
 	Root *RetryLayer
 }
 
-type RetryLayerUserAddressStore struct {
-	store.UserAddressStore
-	Root *RetryLayer
-}
-
 type RetryLayerVatStore struct {
 	store.VatStore
 	Root *RetryLayer
@@ -1093,7 +1083,7 @@ func isRepeatableError(err error) bool {
 	return false
 }
 
-func (s *RetryLayerAddressStore) DeleteAddresses(transaction store_iface.SqlxExecutor, addressIDs []string) error {
+func (s *RetryLayerAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) error {
 
 	tries := 0
 	for {
@@ -1153,7 +1143,7 @@ func (s *RetryLayerAddressStore) Get(addressID string) (*model.Address, error) {
 
 }
 
-func (s *RetryLayerAddressStore) Upsert(transaction store_iface.SqlxExecutor, address *model.Address) (*model.Address, error) {
+func (s *RetryLayerAddressStore) Upsert(transaction *gorm.DB, address *model.Address) (*model.Address, error) {
 
 	tries := 0
 	for {
@@ -3413,7 +3403,7 @@ func (s *RetryLayerCustomerEventStore) Count() (int64, error) {
 
 }
 
-func (s *RetryLayerCustomerEventStore) FilterByOptions(options *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, error) {
+func (s *RetryLayerCustomerEventStore) FilterByOptions(options squirrel.Sqlizer) ([]*model.CustomerEvent, error) {
 
 	tries := 0
 	for {
@@ -8765,7 +8755,7 @@ func (s *RetryLayerTokenStore) Delete(token string) error {
 
 }
 
-func (s *RetryLayerTokenStore) GetAllTokensByType(tokenType string) ([]*model.Token, error) {
+func (s *RetryLayerTokenStore) GetAllTokensByType(tokenType model.TokenType) ([]*model.Token, error) {
 
 	tries := 0
 	for {
@@ -9809,66 +9799,6 @@ func (s *RetryLayerUserAccessTokenStore) UpdateTokenEnable(tokenID string) error
 
 }
 
-func (s *RetryLayerUserAddressStore) DeleteForUser(userID string, addressID string) error {
-
-	tries := 0
-	for {
-		err := s.UserAddressStore.DeleteForUser(userID, addressID)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserAddressStore) FilterByOptions(options *model.UserAddressFilterOptions) ([]*model.UserAddress, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserAddressStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerUserAddressStore) Save(userAddress *model.UserAddress) (*model.UserAddress, error) {
-
-	tries := 0
-	for {
-		result, err := s.UserAddressStore.Save(userAddress)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerVatStore) FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error) {
 
 	tries := 0
@@ -10734,7 +10664,6 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.UploadSessionStore = &RetryLayerUploadSessionStore{UploadSessionStore: childStore.UploadSession(), Root: &newStore}
 	newStore.UserStore = &RetryLayerUserStore{UserStore: childStore.User(), Root: &newStore}
 	newStore.UserAccessTokenStore = &RetryLayerUserAccessTokenStore{UserAccessTokenStore: childStore.UserAccessToken(), Root: &newStore}
-	newStore.UserAddressStore = &RetryLayerUserAddressStore{UserAddressStore: childStore.UserAddress(), Root: &newStore}
 	newStore.VatStore = &RetryLayerVatStore{VatStore: childStore.Vat(), Root: &newStore}
 	newStore.VoucherChannelListingStore = &RetryLayerVoucherChannelListingStore{VoucherChannelListingStore: childStore.VoucherChannelListing(), Root: &newStore}
 	newStore.VoucherCustomerStore = &RetryLayerVoucherCustomerStore{VoucherCustomerStore: childStore.VoucherCustomer(), Root: &newStore}

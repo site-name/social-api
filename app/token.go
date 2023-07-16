@@ -10,7 +10,7 @@ import (
 )
 
 // SaveToken makes new Token and inserts it into database
-func (s *Server) SaveToken(tokenType string, extraData interface{}) (*model.Token, *model.AppError) {
+func (s *Server) SaveToken(tokenType model.TokenType, extraData interface{}) (*model.Token, *model.AppError) {
 	data, err := json.Marshal(extraData)
 	if err != nil {
 		return nil, model.NewAppError("SaveToken", ErrorMarshallingDataID, nil, err.Error(), http.StatusInternalServerError)
@@ -31,7 +31,7 @@ func (s *Server) SaveToken(tokenType string, extraData interface{}) (*model.Toke
 
 // ValidateTokenByToken finds and checks if token is expired.
 // NOTE: extraHolder must be pointer
-func (s *Server) ValidateTokenByToken(token, tokenType string, extraHolder any) (*model.Token, *model.AppError) {
+func (s *Server) ValidateTokenByToken(token string, tokenType model.TokenType, extraHolder any) (*model.Token, *model.AppError) {
 	tkn, err := s.Store.Token().GetByToken(token)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
