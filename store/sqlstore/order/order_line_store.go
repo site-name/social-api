@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlOrderLineStore struct {
@@ -161,7 +162,7 @@ func (ols *SqlOrderLineStore) Get(id string) (*model.OrderLine, error) {
 	var odl model.OrderLine
 	err := ols.GetReplicaX().Get(&odl, "SELECT * FROM "+model.OrderLineTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderLineTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find order line with id=%s", id)

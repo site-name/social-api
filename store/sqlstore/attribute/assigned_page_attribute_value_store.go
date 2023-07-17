@@ -1,13 +1,12 @@
 package attribute
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlAssignedPageAttributeValueStore struct {
@@ -68,7 +67,7 @@ func (as *SqlAssignedPageAttributeValueStore) Get(assignedPageAttrValueID string
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedPageAttributeValueTableName+" WHERE Id = ?", assignedPageAttrValueID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedPageAttributeValueTableName, assignedPageAttrValueID)
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned page attribute value with id=%s", assignedPageAttrValueID)

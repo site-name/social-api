@@ -1,14 +1,13 @@
 package payment
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlPaymentTransactionStore struct {
@@ -95,7 +94,7 @@ func (ps *SqlPaymentTransactionStore) Get(id string) (*model.PaymentTransaction,
 	var res model.PaymentTransaction
 	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.TransactionTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.TransactionTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find payment transaction withh id=%s", id)

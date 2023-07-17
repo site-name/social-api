@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlProductMediaStore struct {
@@ -97,7 +98,7 @@ func (ps *SqlProductMediaStore) Get(id string) (*model.ProductMedia, error) {
 	)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductMediaTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find product media with id=%s", id)

@@ -1,6 +1,8 @@
 package account
 
 import (
+	"net/http"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
@@ -121,13 +123,13 @@ func (as *SqlAddressStore) FilterByOption(option *model.AddressFilterOption) ([]
 	return res, nil
 }
 
-func (as *SqlAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) error {
+func (as *SqlAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) *model.AppError {
 	if transaction == nil {
 		transaction = as.GetMaster()
 	}
 	err := transaction.Delete(&model.Address{}, "Id IN ?", addressIDs).Error
 	if err != nil {
-		return errors.Wrap(err, "failed to delete addresses with given ids")
+		return model.NewAppError("store.DeleteAddresses", "app.account.delete_addresses.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
 	return nil

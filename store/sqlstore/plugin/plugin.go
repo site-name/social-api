@@ -1,7 +1,6 @@
 package plugin
 
 import (
-	"database/sql"
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
@@ -9,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 const (
@@ -219,7 +219,7 @@ func (ps SqlPluginStore) Get(pluginId, key string) (*model.PluginKeyValue, error
 	row := ps.GetReplicaX().QueryRowX(queryString, args...)
 	var kv model.PluginKeyValue
 	if err := row.Scan(&kv.PluginId, &kv.Key, &kv.Value, &kv.ExpireAt); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("PluginKeyValue", fmt.Sprintf("pluginId=%s, key=%s", pluginId, key))
 		}
 		return nil, errors.Wrapf(err, "failed to get PluginKeyValue with pluginId=%s and key=%s", pluginId, key)

@@ -1,7 +1,6 @@
 package attribute
 
 import (
-	"database/sql"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -9,6 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlAssignedProductAttributeStore struct {
@@ -54,7 +54,7 @@ func (as *SqlAssignedProductAttributeStore) Get(id string) (*model.AssignedProdu
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedProductAttributeTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedProductAttributeTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned product attribute with id=%s", id)
@@ -92,7 +92,7 @@ func (as *SqlAssignedProductAttributeStore) GetWithOption(option *model.Assigned
 	var res model.AssignedProductAttribute
 	err = as.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedProductAttributeTableName, "option")
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned product attribute with given options")

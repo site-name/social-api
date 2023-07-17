@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlDigitalContentUrlStore struct {
@@ -97,7 +98,7 @@ func (ps *SqlDigitalContentUrlStore) Get(id string) (*model.DigitalContentUrl, e
 
 	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.DigitalContentURLTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.DigitalContentURLTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find digital content url with id=%s", id)

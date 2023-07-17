@@ -1,13 +1,13 @@
 package attribute
 
 import (
-	"database/sql"
 	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlAttributePageStore struct {
@@ -55,7 +55,7 @@ func (as *SqlAttributePageStore) Get(pageID string) (*model.AttributePage, error
 	var res model.AttributePage
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AttributePageTableName+" WHERE Id = ?", pageID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributePageTableName, pageID)
 		}
 		return nil, errors.Wrapf(err, "failed to find attribute page with id=%s", pageID)
@@ -87,7 +87,7 @@ func (as *SqlAttributePageStore) GetByOption(option *model.AttributePageFilterOp
 		args...,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributePageTableName, "option")
 		}
 		return nil, errors.Wrapf(err, "failed to find attribute product with given option")

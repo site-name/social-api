@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlShippingZoneStore struct {
@@ -106,7 +107,7 @@ func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*model.ShippingZone, 
 	var res model.ShippingZone
 	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShippingZoneTableName+" WHERE Id = ?", shippingZoneID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShippingZoneTableName, shippingZoneID)
 		}
 		return nil, errors.Wrapf(err, "failed to find shipping zone with id=%s", shippingZoneID)

@@ -1,12 +1,11 @@
 package giftcard
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlGiftCardCheckoutStore struct {
@@ -49,7 +48,7 @@ func (gs *SqlGiftCardCheckoutStore) Get(id string) (*model.GiftCardCheckout, err
 	var res model.GiftCardCheckout
 	err := gs.GetReplicaX().Get(&res, "SELECT * FROM "+model.GiftcardCheckoutTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.GiftcardCheckoutTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to get order-checkout with id=%s", id)

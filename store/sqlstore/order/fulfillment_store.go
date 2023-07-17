@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlFulfillmentStore struct {
@@ -128,7 +129,7 @@ func (fs *SqlFulfillmentStore) Get(id string) (*model.Fulfillment, error) {
 		"SELECT * FROM "+model.FulfillmentTableName+" WHERE Id = ?",
 		id,
 	); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.FulfillmentTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find fulfillment with id=%s", id)
@@ -208,7 +209,7 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxExecutor,
 
 	err = runner.QueryRowX(queryString, args...).Scan(scanFields...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.FulfillmentTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to find fulfillment based on given option")

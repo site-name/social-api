@@ -1,13 +1,12 @@
 package discount
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlVoucherCustomerStore struct {
@@ -80,7 +79,7 @@ func (vcs *SqlVoucherCustomerStore) GetByOption(options *model.VoucherCustomerFi
 	var res model.VoucherCustomer
 	err = vcs.GetMasterX().Get(&res, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherCustomerTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to finds voucher-customer relation with options")

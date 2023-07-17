@@ -1,8 +1,6 @@
 package product
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
@@ -128,7 +126,7 @@ func (ps *SqlProductVariantStore) Get(id string) (*model.ProductVariant, error) 
 	)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductVariantTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find product variant with id=%s", id)
@@ -180,7 +178,7 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 			&productTypeWeightUnit,
 		)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductVariantTableName, productVariantID)
 		}
 		return nil, errors.Wrapf(err, "failed to scan result for productVariantId=%s", productVariantID)
@@ -211,7 +209,7 @@ func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*model.P
 
 	err := vs.GetReplicaX().Get(&res, query, orderLineID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductVariantTableName, "orderLineID="+orderLineID)
 		}
 		return nil, errors.Wrapf(err, "failed to find product variant with order line id=%s", orderLineID)

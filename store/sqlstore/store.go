@@ -17,6 +17,8 @@ import (
 	"github.com/Masterminds/squirrel"
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	jackcpgconn "github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	"github.com/mattermost/morph"
@@ -475,21 +477,20 @@ func IsConstraintAlreadyExistsError(err error) bool {
 	return false
 }
 
-func (ss *SqlStore) IsUniqueConstraintError(err error, indexName []string) bool {
+func (ss *SqlStore) IsUniqueConstraintError(err error, indexNames []string) bool {
 	unique := false
-	if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
-		unique = true
+
+	switch errT := err.(type) {
+	case *pq.Error:
+		unique = errT.Code == "23505"
+	case *pgconn.PgError:
+		unique = errT.Code == "23505"
+	case *jackcpgconn.PgError:
+		unique = errT.Code == "23505"
 	}
 
-	field := false
-	for _, contain := range indexName {
-		if strings.Contains(err.Error(), contain) {
-			field = true
-			break
-		}
-	}
-
-	return unique && field
+	strErr := err.Error()
+	return unique && lo.SomeBy(indexNames, func(index string) bool { return strings.Contains(strErr, index) })
 }
 
 // Get all databases connections

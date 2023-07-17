@@ -1,13 +1,12 @@
 package attribute
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlAssignedProductAttributeValueStore struct {
@@ -72,7 +71,7 @@ func (as *SqlAssignedProductAttributeValueStore) Get(assignedProductAttrValueID 
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedProductAttributeValueTableName+" WHERE Id = ?", assignedProductAttrValueID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedProductAttributeValueTableName, assignedProductAttrValueID)
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned product attribute value with id=%s", assignedProductAttrValueID)

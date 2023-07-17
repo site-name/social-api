@@ -1,12 +1,11 @@
 package product
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlDigitalContentStore struct {
@@ -96,7 +95,7 @@ func (ds *SqlDigitalContentStore) GetByOption(option *model.DigitalContentFilter
 	var res model.DigitalContent
 	err = ds.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.DigitalContentTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to find digital content with given option")

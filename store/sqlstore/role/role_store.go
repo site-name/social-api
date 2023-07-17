@@ -2,12 +2,12 @@ package role
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
@@ -147,7 +147,7 @@ func (s *SqlRoleStore) createRole(role *model.Role, transaction store_iface.Sqlx
 func (s *SqlRoleStore) Get(roleId string) (*model.Role, error) {
 	var role Role
 	if err := s.GetReplicaX().Get(&role, "SELECT * from Roles WHERE Id = ?", roleId); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.RoleTableName, roleId)
 		}
 		return nil, errors.Wrap(err, "failed to get Role")
@@ -173,7 +173,7 @@ func (s *SqlRoleStore) GetAll() ([]*model.Role, error) {
 func (s *SqlRoleStore) GetByName(ctx context.Context, name string) (*model.Role, error) {
 	dbRole := Role{}
 	if err := s.DBXFromContext(ctx).Get(&dbRole, "SELECT * from Roles WHERE Name = ?", name); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("Role", fmt.Sprintf("name=%s", name))
 		}
 		return nil, errors.Wrapf(err, "failed to find Roles with name=%s", name)
@@ -225,7 +225,7 @@ func (s *SqlRoleStore) Delete(roleId string) (*model.Role, error) {
 	// Get the role.
 	var role Role
 	if err := s.GetReplicaX().Get(&role, "SELECT * from Roles WHERE Id = ?", roleId); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("Role", roleId)
 		}
 		return nil, errors.Wrapf(err, "failed to get Role with id=%s", roleId)

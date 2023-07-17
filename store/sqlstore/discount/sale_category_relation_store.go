@@ -58,7 +58,7 @@ package discount
 
 // 	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.SaleCategoryRelationTableName+" WHERE Id = ?", relationID)
 // 	if err != nil {
-// 		if err == sql.ErrNoRows {
+// 		if errors.Is(err, gorm.ErrRecordNotFound) {
 // 			return nil, store.NewErrNotFound(store.SaleCategoryRelationTableName, relationID)
 // 		}
 // 		return nil, errors.Wrapf(err, "failed to find sale-category relation with id=%s", relationID)

@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlInvoiceEventStore struct {
@@ -94,7 +95,7 @@ func (ies *SqlInvoiceEventStore) Get(invoiceEventID string) (*model.InvoiceEvent
 	var res model.InvoiceEvent
 	err := ies.GetReplicaX().Get(&res, "SELECT * FROM "+model.InvoiceEventTableName+" WHERE Id = ?", invoiceEventID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.InvoiceEventTableName, invoiceEventID)
 		}
 		return nil, errors.Wrapf(err, "failed to find invoice event with id=%s", invoiceEventID)

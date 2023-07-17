@@ -2,8 +2,8 @@ package account
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -13,6 +13,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 var (
@@ -140,37 +141,21 @@ func (us *SqlUserStore) GetUnreadCount(userID string) (int64, error) {
 // DeactivateGuests
 func (us *SqlUserStore) DeactivateGuests() ([]string, error) {
 	curTime := model.GetMillis()
-	updateQuery := us.
-		GetQueryBuilder().
-		Update(model.UserTableName).
-		Set("UpdateAt", curTime).
-		Set("DeleteAt", curTime).
-		Where(squirrel.Eq{"Roles": "system_guest"}).
-		Where(squirrel.Eq{"DeleteAt": 0})
 
-	queryString, args, err := updateQuery.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "deactivate_guests_tosql")
-	}
-
-	_, err = us.GetMasterX().Exec(queryString, args...)
+	err := us.GetMaster().
+		Table(model.UserTableName).
+		Where("Roles = ? AND DeleteAt = 0", "system_guest").
+		Updates(map[string]any{"DeleteAt": curTime}).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to update Users with roles=system_guest")
 	}
 
-	selectQuery := us.
-		GetQueryBuilder().
-		Select("Id").
-		From(model.UserTableName).
-		Where(squirrel.Eq{"DeleteAt": curTime})
-
-	queryString, args, err = selectQuery.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "deactivate_guests_tosql")
-	}
-
 	userIds := []string{}
-	err = us.GetMasterX().Select(&userIds, queryString, args...)
+	err = us.GetMaster().
+		Table(model.UserTableName).
+		Where("DeleteAt = ?", curTime).
+		Select("Id").
+		Find(&userIds).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find Users")
 	}
@@ -202,7 +187,7 @@ func (us *SqlUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []s
 			return 0, errors.Wrap(err, "select_count_users_tosql")
 		}
 		var numAffected int
-		err = us.GetReplicaX().Get(&numAffected, query, args...)
+		err = us.GetReplica().Se(&numAffected, query, args...)
 		return numAffected, err
 	}
 	builder := us.GetQueryBuilder().
@@ -229,7 +214,7 @@ func (us *SqlUserStore) GetEtagForProfiles(teamId string) string {
 
 func (us *SqlUserStore) GetEtagForAllProfiles() string {
 	var updateAt int64
-	err := us.GetReplicaX().Get(&updateAt, "SELECT UpdateAt FROM "+model.UserTableName+" ORDER BY UpdateAt DESC LIMIT 1")
+	err := us.GetReplica().Table(model.UserTableName).Select("UpdateAt").Order("UpdateAt DESC").First(&updateAt).Error
 	if err != nil {
 		return fmt.Sprintf("%v.%v", model.CurrentVersion, model.GetMillis())
 	}
@@ -237,14 +222,9 @@ func (us *SqlUserStore) GetEtagForAllProfiles() string {
 }
 
 func (us *SqlUserStore) Save(user *model.User) (*model.User, error) {
-	user.PreSave()
-	if err := user.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.UserTableName + " (" + us.ModelFields("").Join(",") + ") VALUES (" + us.ModelFields(":").Join(",") + ")"
-	if _, err := us.GetMasterX().NamedExec(query, user); err != nil {
-		if us.IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique"}) {
+	err := us.GetMaster().Create(user).Error
+	if err != nil {
+		if us.IsUniqueConstraintError(err, []string{"Email", "users_email_key", "users_email_index_key"}) {
 			return nil, store.NewErrInvalidInput("User", "email", user.Email)
 		}
 		if us.IsUniqueConstraintError(err, []string{"Username", "users_username_key", "idx_users_username_unique"}) {
@@ -264,9 +244,9 @@ func (us *SqlUserStore) Update(user *model.User, trustedUpdateData bool) (*model
 	}
 	var oldUser model.User
 
-	err := us.GetMasterX().Get(&oldUser, "SELECT * FROM "+model.UserTableName+" WHERE Id = ?", user.Id)
+	err := us.GetMaster().First(&oldUser, "Id = ?", user.Id).Error
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.UserTableName, user.Id)
 		}
 		return nil, errors.Wrapf(err, "failed to get user with userId=%s", user.Id)
@@ -302,15 +282,7 @@ func (us *SqlUserStore) Update(user *model.User, trustedUpdateData bool) (*model
 		user.UpdateMentionKeysFromUsername(oldUser.Username)
 	}
 
-	query := "UPDATE " + model.UserTableName + " SET " +
-		us.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id=:Id"
-
-	result, err := us.GetMasterX().NamedExec(query, user)
+	err = us.GetMaster().Save(user).Error
 	if err != nil {
 		if us.IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique"}) {
 			return nil, store.NewErrInvalidInput("User", "id", user.Id)
@@ -319,11 +291,6 @@ func (us *SqlUserStore) Update(user *model.User, trustedUpdateData bool) (*model
 			return nil, store.NewErrInvalidInput("User", "id", user.Id)
 		}
 		return nil, errors.Wrapf(err, "failed to update User with userId=%s", user.Id)
-	}
-
-	count, _ := result.RowsAffected()
-	if count > 1 {
-		return nil, fmt.Errorf("multiple users were update: userId=%s, count=%d", user.Id, count)
 	}
 
 	user.Sanitize(map[string]bool{})
@@ -891,11 +858,69 @@ func (s *SqlUserStore) GetByOptions(ctx context.Context, options *model.UserFilt
 	var user model.User
 	err = s.DBXFromContext(ctx).Get(&user, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.UserTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find users with given options")
 	}
 
 	return &user, nil
+}
+
+func (s *SqlUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+	if transaction == nil {
+		transaction = s.GetMaster()
+	}
+	var association string
+
+	switch relations.(type) {
+	case []*model.Address:
+		association = "Addresses"
+	case []*model.CustomerEvent:
+		association = "CustomerEvents"
+	case []*model.CustomerNote:
+		if customerNoteOnUser {
+			association = "NotesOnMe"
+		} else {
+			association = "CustomerNotes"
+		}
+	case []*model.StaffNotificationRecipient:
+		association = "StaffNotificationRecipients"
+	}
+
+	err := s.GetMaster().Model(&model.User{Id: userID}).Association(association).Append(relations)
+	if err != nil {
+		return model.NewAppError("UserStore.AddRelations", "app.account.add_user_relations.app_error", map[string]interface{}{"relation": "user-" + association}, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
+}
+
+func (s *SqlUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+	if transaction == nil {
+		transaction = s.GetMaster()
+	}
+	var association string
+
+	switch relations.(type) {
+	case []*model.Address:
+		association = "Addresses"
+	case []*model.CustomerEvent:
+		association = "CustomerEvents"
+	case []*model.CustomerNote:
+		if customerNoteOnUser {
+			association = "NotesOnMe"
+		} else {
+			association = "CustomerNotes"
+		}
+	case []*model.StaffNotificationRecipient:
+		association = "StaffNotificationRecipients"
+	}
+
+	err := s.GetMaster().Model(&model.User{Id: userID}).Association(association).Delete(relations)
+	if err != nil {
+		return model.NewAppError("UserStore.AddRelations", "app.account.remove_user_relations.app_error", map[string]interface{}{"relation": "user-" + association}, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
 }

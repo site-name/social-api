@@ -51,10 +51,7 @@ func (r *Resolver) AddressCreate(ctx context.Context, args struct {
 	}
 
 	// add user-address relation:
-	_, appErr = embedCtx.App.Srv().AccountService().AddUserAddress(&model.UserAddress{
-		UserID:    currentSession.UserId,
-		AddressID: finalAddress.Id,
-	})
+	appErr = embedCtx.App.Srv().Store.User().AddRelations(nil, currentSession.UserId, []*model.Address{{Id: finalAddress.Id}}, false)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -135,7 +132,7 @@ func (r *Resolver) AddressDelete(ctx context.Context, args struct{ Id string }) 
 	currentSession := embedCtx.AppContext.Session()
 
 	// delete relation between user and address, address stil exists
-	appErr := embedCtx.App.Srv().AccountService().AddressDeleteForUser(currentSession.UserId, args.Id)
+	appErr := embedCtx.App.Srv().Store.User().RemoveRelations(nil, currentSession.UserId, []*model.Address{{Id: args.Id}}, false)
 	if appErr != nil {
 		return nil, appErr
 	}

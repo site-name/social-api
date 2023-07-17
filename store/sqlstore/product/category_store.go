@@ -2,13 +2,13 @@ package product
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlCategoryStore struct {
@@ -110,7 +110,7 @@ func (cs *SqlCategoryStore) Get(ctx context.Context, categoryID string, allowFro
 	var res model.Category
 	err := cs.DBXFromContext(ctx).Get(&res, "SELECT * FROM "+model.CategoryTableName+" WHERE Id = ?", categoryID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.CategoryTableName, categoryID)
 		}
 		return nil, errors.Wrapf(err, "failed to find category with id=%s", categoryID)
@@ -190,7 +190,7 @@ func (cs *SqlCategoryStore) GetByOption(option *model.CategoryFilterOption) (*mo
 		QueryRowX(queryString, args...).
 		Scan(cs.ScanFields(&cate)...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.CategoryTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to find category with given option")

@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlProductVariantChannelListingStore struct {
@@ -77,7 +78,7 @@ func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID stri
 
 	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.ProductVariantChannelListingTableName+" WHERE Id = ?", variantChannelListingID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductVariantChannelListingTableName, variantChannelListingID)
 		}
 		return nil, errors.Wrapf(err, "failed to find product variant channel listing with id=%s", variantChannelListingID)

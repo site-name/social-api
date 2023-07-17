@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlShippingMethodChannelListingStore struct {
@@ -100,7 +101,7 @@ func (s *SqlShippingMethodChannelListingStore) Get(listingID string) (*model.Shi
 	var res model.ShippingMethodChannelListing
 	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShippingMethodChannelListingTableName+" WHERE Id = ?", listingID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShippingMethodChannelListingTableName, listingID)
 		}
 		return nil, errors.Wrapf(err, "failed to find shipping method channel listing with id=%s", listingID)

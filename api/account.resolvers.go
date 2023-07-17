@@ -41,10 +41,7 @@ func (r *Resolver) AccountAddressCreate(ctx context.Context, args struct {
 	}
 
 	// add user-address relation
-	_, appErr = embedContext.App.Srv().AccountService().AddUserAddress(&model.UserAddress{
-		UserID:    currentSession.UserId,
-		AddressID: savedAddress.Id,
-	})
+	appErr = embedContext.App.Srv().Store.User().AddRelations(nil, currentSession.UserId, []*model.Address{{Id: savedAddress.Id}}, false)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -142,7 +139,7 @@ func (r *Resolver) AccountAddressDelete(ctx context.Context, args struct{ Id str
 	}
 
 	// delete user-address relation, keep address
-	appErr = embedContext.App.Srv().AccountService().DeleteUserAddressRelation(currentSession.UserId, args.Id)
+	appErr = embedContext.App.Srv().Store.User().RemoveRelations(nil, currentSession.UserId, []*model.Address{{Id: args.Id}}, false)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -242,7 +239,7 @@ func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input Account
 		user.LastName = *val
 	}
 	if val := args.Input.LanguageCode; val != nil && val.IsValid() {
-		user.Locale = val.String()
+		user.Locale = *val
 	}
 	// save user
 	user, appErr = embedCtx.App.Srv().AccountService().UpdateUser(user, false)

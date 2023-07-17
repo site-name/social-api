@@ -28,9 +28,10 @@ type Store interface {
 	CheckIntegrity() <-chan model.IntegrityCheckResult
 	DropAllTables()                              // DropAllTables drop all tables in databases
 	GetDbVersion(numerical bool) (string, error) // GetDbVersion returns version in use of database
-	GetMasterX() store_iface.SqlxExecutor        // GetMaster get master datasource
-	GetReplicaX() store_iface.SqlxExecutor       // GetMaster gets slave datasource
+
+	// GetMaster returns a gorm wrapper
 	GetMaster() *gorm.DB
+	// GetReplica returns a gorm wrapper
 	GetReplica() *gorm.DB
 
 	// GetQueryBuilder create squirrel sql query builder.
@@ -887,10 +888,14 @@ type (
 		ScanFields(addr *model.Address) []interface{}
 		Upsert(transaction *gorm.DB, address *model.Address) (*model.Address, error)
 		Get(addressID string) (*model.Address, error)                               // Get returns an Address with given addressID is exist
-		DeleteAddresses(transaction *gorm.DB, addressIDs []string) error            // DeleteAddress deletes given address and returns an error
+		DeleteAddresses(transaction *gorm.DB, addressIDs []string) *model.AppError  // DeleteAddress deletes given address and returns an error
 		FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) // FilterByOption finds and returns a list of address(es) filtered by given option
 	}
 	UserStore interface {
+		// relations must be either: []*Address, []*CustomerNote, []*StaffNotificationRecipient, []*CustomerEvent
+		RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError
+		// relations must be either: []*Address, []*CustomerNote, []*StaffNotificationRecipient, []*CustomerEvent
+		AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError
 		ClearCaches()
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(user *model.User) []interface{}

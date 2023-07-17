@@ -1,7 +1,6 @@
 package job
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlJobStore struct {
@@ -168,7 +168,7 @@ func (jss *SqlJobStore) Get(id string) (*model.Job, error) {
 		&jobData,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("Job", id)
 		}
 		return nil, errors.Wrapf(err, "failed to get Job with id=%s", id)
@@ -252,7 +252,7 @@ func (jss *SqlJobStore) GetNewestJobByStatusesAndType(statuses []string, jobType
 	}
 
 	if err := jss.GetReplicaX().Get(&job, queryString, args...); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("Job", fmt.Sprintf("<status, type>=<%s, %s>", strings.Join(statuses, ","), jobType))
 		}
 		return nil, errors.Wrapf(err, "failed to find Job with statuses=%s and type=%s", strings.Join(statuses, ","), jobType)

@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlPluginConfigurationStore struct {
@@ -94,7 +95,7 @@ func (p *SqlPluginConfigurationStore) Get(id string) (*model.PluginConfiguration
 	var res model.PluginConfiguration
 	err := p.GetReplicaX().Get(&res, "SELECT * FROM "+model.PluginConfigurationTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.PluginConfigurationTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find plugon configuration with id=%s", id)
@@ -167,7 +168,7 @@ func (p *SqlPluginConfigurationStore) GetByOptions(options *model.PluginConfigur
 	var res model.PluginConfiguration
 	err = p.GetReplicaX().Get(&res, queryStr, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.PluginConfigurationTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find plugin configuration with given options")

@@ -1,13 +1,12 @@
 package shop
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlShopStaffStore struct {
@@ -69,7 +68,7 @@ func (sss *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, error) 
 	var res model.ShopStaff
 	err := sss.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShopStaffTableName+" WHERE Id = ?", shopStaffID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShopStaffTableName, shopStaffID)
 		}
 		return nil, errors.Wrapf(err, "failed to finds shop staff relation with id=%s", shopStaffID)
@@ -153,7 +152,7 @@ func (s *SqlShopStaffStore) GetByOptions(options *model.ShopStaffFilterOptions) 
 
 	err = s.GetReplicaX().QueryRowX(queryString, args...).Scan(scanFields...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("ShopStaffs", "options")
 		}
 		return nil, errors.Wrap(err, "failed to scan shop-staff relation with given options")

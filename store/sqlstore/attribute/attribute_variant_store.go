@@ -1,13 +1,12 @@
 package attribute
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlAttributeVariantStore struct {
@@ -53,7 +52,7 @@ func (as *SqlAttributeVariantStore) Get(attributeVariantID string) (*model.Attri
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AttributeVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": attributeVariantID})
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributeVariantTableName, attributeVariantID)
 		}
 		return nil, errors.Wrapf(err, "failed to find attribute variant with id=%s", attributeVariantID)
@@ -93,7 +92,7 @@ func (as *SqlAttributeVariantStore) GetByOption(option *model.AttributeVariantFi
 
 	err = as.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributeVariantTableName, "")
 		}
 		return nil, errors.Wrap(err, "failed to find attribute variant with given options")

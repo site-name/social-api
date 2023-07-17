@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlWishlistItemStore struct {
@@ -102,7 +103,7 @@ func (ws *SqlWishlistItemStore) GetById(transaction store_iface.SqlxExecutor, id
 
 	var res model.WishlistItem
 	if err := executor.Get(&res, "SELECT * FROM "+model.WishlistItemTableName+" WHERE Id = ?", id); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.WishlistItemTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find wishlist item with id=%s", id)
@@ -155,7 +156,7 @@ func (ws *SqlWishlistItemStore) GetByOption(option *model.WishlistItemFilterOpti
 	var res model.WishlistItem
 	err = ws.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.WishlistItemTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to find wishlist item by given option")

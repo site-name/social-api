@@ -16,7 +16,7 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // CheckVariantInStock
@@ -294,15 +294,15 @@ func (a *ServiceCheckout) checkNewCheckoutAddress(checkout *model.Checkout, addr
 	return hasAddressChanged, removeOldAddress, nil
 }
 
-func (a *ServiceCheckout) ChangeBillingAddressInCheckout(transaction store_iface.SqlxExecutor, checkout *model.Checkout, address *model.Address) *model.AppError {
+func (a *ServiceCheckout) ChangeBillingAddressInCheckout(transaction *gorm.DB, checkout *model.Checkout, address *model.Address) *model.AppError {
 	changed, remove, appErr := a.checkNewCheckoutAddress(checkout, address, model.ADDRESS_TYPE_BILLING)
 	if appErr != nil {
 		return appErr
 	}
 
 	if changed {
-		if remove {
-			appErr = a.srv.AccountService().DeleteAddresses(transaction, *checkout.BillingAddressID)
+		if remove && checkout.BillingAddressID != nil {
+			appErr = a.srv.Store.Address().DeleteAddresses(transaction, []string{*checkout.BillingAddressID})
 			if appErr != nil {
 				return appErr
 			}
@@ -320,7 +320,7 @@ func (a *ServiceCheckout) ChangeBillingAddressInCheckout(transaction store_iface
 // Save shipping address in checkout if changed.
 //
 // Remove previously saved address if not connected to any user.
-func (a *ServiceCheckout) ChangeShippingAddressInCheckout(transaction store_iface.SqlxExecutor, checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError {
+func (a *ServiceCheckout) ChangeShippingAddressInCheckout(transaction *gorm.DB, checkoutInfo model.CheckoutInfo, address *model.Address, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) *model.AppError {
 	checkout := checkoutInfo.Checkout
 	changed, remove, appErr := a.checkNewCheckoutAddress(&checkout, address, model.ADDRESS_TYPE_SHIPPING)
 	if appErr != nil {
@@ -329,7 +329,7 @@ func (a *ServiceCheckout) ChangeShippingAddressInCheckout(transaction store_ifac
 
 	if changed {
 		if remove && checkout.ShippingAddressID != nil {
-			appErr = a.srv.AccountService().DeleteAddresses(transaction, *checkout.ShippingAddressID)
+			appErr = a.srv.Store.Address().DeleteAddresses(transaction, []string{*checkout.ShippingAddressID})
 			if appErr != nil {
 				return appErr
 			}

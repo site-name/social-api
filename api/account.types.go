@@ -502,9 +502,7 @@ func customerEventsByUserLoader(ctx context.Context, userIDs []string) []*datalo
 		App.
 		Srv().
 		AccountService().
-		CustomerEventsByOptions(&model.CustomerEventFilterOptions{
-			UserID: squirrel.Eq{model.CustomerEventTableName + ".UserID": userIDs},
-		})
+		CustomerEventsByOptions(squirrel.Eq{model.CustomerEventTableName + ".UserID": userIDs})
 	if appErr != nil {
 		for idx := range userIDs {
 			res[idx] = &dataloader.Result[[]*model.CustomerEvent]{Error: appErr}

@@ -7,7 +7,7 @@ type UserAccessToken struct {
 	Token       string `json:"token,omitempty" gorm:"type:uuid;column:Token"`
 	UserId      string `json:"user_id" gorm:"type:uuid;index:useraccesstokens_userid_key;column:UserId"`
 	Description string `json:"description" gorm:"type:varchar(255);column:Description"`
-	IsActive    *bool  `json:"is_active" gorm:"default:true;column:IsActive"`
+	IsActive    *bool  `json:"is_active" gorm:"default:true;column:IsActive"` // defaut true
 }
 
 func (c *UserAccessToken) BeforeCreate(_ *gorm.DB) error {
@@ -42,5 +42,8 @@ func (t *UserAccessToken) IsValid() *AppError {
 func (t *UserAccessToken) commonPre() {
 	if t.Token == "" {
 		t.Token = NewId()
+	}
+	if t.IsActive == nil {
+		t.IsActive = NewPrimitive(true)
 	}
 }

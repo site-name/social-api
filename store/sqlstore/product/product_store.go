@@ -1,7 +1,6 @@
 package product
 
 import (
-	"database/sql"
 	"fmt"
 	"strings"
 	"time"
@@ -11,6 +10,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlProductStore struct {
@@ -264,7 +264,7 @@ func (ps *SqlProductStore) GetByOption(option *model.ProductFilterOption) (*mode
 	var res model.Product
 	err = ps.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to find product by given option")

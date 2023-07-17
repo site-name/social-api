@@ -1073,7 +1073,7 @@ type OpenTracingLayerWishlistItemProductVariantStore struct {
 	Root *OpenTracingLayer
 }
 
-func (s *OpenTracingLayerAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) error {
+func (s *OpenTracingLayerAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) *model.AppError {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AddressStore.DeleteAddresses")
 	s.Root.Store.SetContext(newCtx)
@@ -1082,13 +1082,8 @@ func (s *OpenTracingLayerAddressStore) DeleteAddresses(transaction *gorm.DB, add
 	}()
 
 	defer span.Finish()
-	err := s.AddressStore.DeleteAddresses(transaction, addressIDs)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
+	result := s.AddressStore.DeleteAddresses(transaction, addressIDs)
+	return result
 }
 
 func (s *OpenTracingLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
@@ -8201,6 +8196,19 @@ func (s *OpenTracingLayerUploadSessionStore) Update(session *model.UploadSession
 	return err
 }
 
+func (s *OpenTracingLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.AddRelations")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result := s.UserStore.AddRelations(transaction, userID, relations, customerNoteOnUser)
+	return result
+}
+
 func (s *OpenTracingLayerUserStore) AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.AnalyticsActiveCount")
@@ -8593,6 +8601,19 @@ func (s *OpenTracingLayerUserStore) PermanentDelete(userID string) error {
 	}
 
 	return err
+}
+
+func (s *OpenTracingLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+	origCtx := s.Root.Store.Context()
+	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "UserStore.RemoveRelations")
+	s.Root.Store.SetContext(newCtx)
+	defer func() {
+		s.Root.Store.SetContext(origCtx)
+	}()
+
+	defer span.Finish()
+	result := s.UserStore.RemoveRelations(transaction, userID, relations, customerNoteOnUser)
+	return result
 }
 
 func (s *OpenTracingLayerUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []string, includeDeleted bool, dryRun bool) (int, error) {

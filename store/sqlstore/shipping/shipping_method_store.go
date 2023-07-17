@@ -12,6 +12,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlShippingMethodStore struct {
@@ -348,7 +349,7 @@ func (ss *SqlShippingMethodStore) GetbyOption(options *model.ShippingMethodFilte
 
 	err = ss.GetReplicaX().QueryRowX(queryString, args...).Scan(scanFields...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShippingMethodTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find shipping method by given options")

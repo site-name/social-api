@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlAllocationStore struct {
@@ -112,7 +113,7 @@ func (as *SqlAllocationStore) Get(id string) (*model.Allocation, error) {
 	var res model.Allocation
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AllocationTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AllocationTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find allocation with id=%s", id)

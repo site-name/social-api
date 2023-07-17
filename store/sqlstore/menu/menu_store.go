@@ -1,13 +1,12 @@
 package menu
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlMenuStore struct {
@@ -84,7 +83,7 @@ func (ms *SqlMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.M
 	var res model.Menu
 	err = ms.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.MenuTableName, "")
 		}
 		return nil, errors.Wrap(err, "failed to find menu with given options")

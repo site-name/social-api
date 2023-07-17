@@ -139,7 +139,7 @@ func (vs *SqlVoucherStore) Get(voucherID string) (*model.Voucher, error) {
 	var res model.Voucher
 	err := vs.GetReplicaX().Get(&res, "SELECT * FROM "+model.VoucherTableName+" WHERE Id = ?", voucherID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherTableName, voucherID)
 		}
 		return nil, errors.Wrapf(err, "failed to find voucher with id=%s", voucherID)
@@ -216,7 +216,7 @@ func (vs *SqlVoucherStore) GetByOptions(options *model.VoucherFilterOption) (*mo
 	var res model.Voucher
 	err = vs.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed voucher with given options")

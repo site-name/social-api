@@ -1,12 +1,11 @@
 package file
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlUploadSessionStore struct {
@@ -71,7 +70,7 @@ func (us *SqlUploadSessionStore) Update(session *model.UploadSession) error {
 func (us SqlUploadSessionStore) Get(id string) (*model.UploadSession, error) {
 	var session *model.UploadSession
 	if err := us.GetReplicaX().Get(&session, "SELECT * FROM "+model.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.UploadSessionTableName, id)
 		}
 		return nil, errors.Wrapf(err, "SqlUploadSessionStore.Get: failed to select session with id=%s", id)

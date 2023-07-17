@@ -231,7 +231,7 @@ func (a *ServiceAccount) createSessionForUserAccessToken(tokenString string) (*m
 		return nil, model.NewAppError("createSessionForUserAccessToken", "app.user_access_token.invalid_or_missing", nil, nErr.Error(), http.StatusUnauthorized)
 	}
 
-	if !token.IsActive {
+	if !*token.IsActive {
 		return nil, model.NewAppError("createSessionForUserAccessToken", "app.user_access_token.invalid_or_missing", nil, "inactive_token", http.StatusUnauthorized)
 	}
 

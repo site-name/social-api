@@ -4600,31 +4600,7 @@ func (e ConfigurationTypeFieldEnum) IsValid() bool {
 
 type CountryCode = model.CountryCode
 
-type CustomerEventsEnum string
-
-const (
-	CustomerEventsEnumAccountCreated        CustomerEventsEnum = "ACCOUNT_CREATED"
-	CustomerEventsEnumPasswordResetLinkSent CustomerEventsEnum = "PASSWORD_RESET_LINK_SENT"
-	CustomerEventsEnumPasswordReset         CustomerEventsEnum = "PASSWORD_RESET"
-	CustomerEventsEnumEmailChangedRequest   CustomerEventsEnum = "EMAIL_CHANGED_REQUEST"
-	CustomerEventsEnumPasswordChanged       CustomerEventsEnum = "PASSWORD_CHANGED"
-	CustomerEventsEnumEmailChanged          CustomerEventsEnum = "EMAIL_CHANGED"
-	CustomerEventsEnumPlacedOrder           CustomerEventsEnum = "PLACED_ORDER"
-	CustomerEventsEnumNoteAddedToOrder      CustomerEventsEnum = "NOTE_ADDED_TO_ORDER"
-	CustomerEventsEnumDigitalLinkDownloaded CustomerEventsEnum = "DIGITAL_LINK_DOWNLOADED"
-	CustomerEventsEnumCustomerDeleted       CustomerEventsEnum = "CUSTOMER_DELETED"
-	CustomerEventsEnumNameAssigned          CustomerEventsEnum = "NAME_ASSIGNED"
-	CustomerEventsEnumEmailAssigned         CustomerEventsEnum = "EMAIL_ASSIGNED"
-	CustomerEventsEnumNoteAdded             CustomerEventsEnum = "NOTE_ADDED"
-)
-
-func (e CustomerEventsEnum) IsValid() bool {
-	switch e {
-	case CustomerEventsEnumAccountCreated, CustomerEventsEnumPasswordResetLinkSent, CustomerEventsEnumPasswordReset, CustomerEventsEnumEmailChangedRequest, CustomerEventsEnumPasswordChanged, CustomerEventsEnumEmailChanged, CustomerEventsEnumPlacedOrder, CustomerEventsEnumNoteAddedToOrder, CustomerEventsEnumDigitalLinkDownloaded, CustomerEventsEnumCustomerDeleted, CustomerEventsEnumNameAssigned, CustomerEventsEnumEmailAssigned, CustomerEventsEnumNoteAdded:
-		return true
-	}
-	return false
-}
+type CustomerEventsEnum = model.CustomerEventType
 
 type DiscountErrorCode string
 

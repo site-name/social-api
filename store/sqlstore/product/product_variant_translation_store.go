@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlProductVariantTranslationStore struct {
@@ -90,7 +91,7 @@ func (ps *SqlProductVariantTranslationStore) Get(translationID string) (*model.P
 	var res model.ProductVariantTranslation
 	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.ProductVariantTranslationTableName+" WHERE Id = ?", translationID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductVariantTranslationTableName, translationID)
 		}
 		return nil, errors.Wrapf(err, "failed to find product variant translation with id=%s", translationID)

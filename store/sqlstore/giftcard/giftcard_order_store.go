@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlGiftCardOrderStore struct {
@@ -50,7 +51,7 @@ func (gs *SqlGiftCardOrderStore) Get(id string) (*model.OrderGiftCard, error) {
 	var res model.OrderGiftCard
 	err := gs.GetReplicaX().Get(&res, "SELECT * FROM "+model.OrderGiftCardTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderGiftCardTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to get order-giftcard with id=%s", id)

@@ -1,12 +1,11 @@
 package csv
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlCsvExportFileStore struct {
@@ -55,7 +54,7 @@ func (cs *SqlCsvExportFileStore) Get(id string) (*model.ExportFile, error) {
 
 	err := cs.GetMasterX().Get(&res, "SELECT * FROM "+model.CsvExportFileTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.CsvExportFileTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to get CsvExportFile with Id=%s", id)

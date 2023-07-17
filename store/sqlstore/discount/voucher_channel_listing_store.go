@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlVoucherChannelListingStore struct {
@@ -89,7 +90,7 @@ func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (
 
 	err := vcls.GetReplicaX().Get(&res, "SELECT * FROM "+model.VoucherChannelListingTableName+" WHERE Id = ?", voucherChannelListingID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherChannelListingTableName, voucherChannelListingID)
 		}
 		return nil, errors.Wrapf(err, "failed to find voucher channel listing with id=%s", voucherChannelListingID)

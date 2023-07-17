@@ -9,6 +9,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -89,7 +90,7 @@ func (s *SqlSystemStore) Get() (model.StringMap, error) {
 func (s *SqlSystemStore) GetByName(name string) (*model.System, error) {
 	var system model.System
 	if err := s.GetMasterX().Get(&system, "SELECT * FROM Systems WHERE Name = ?", name); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("System", fmt.Sprintf("name=%s", system.Name))
 		}
 		return nil, errors.Wrapf(err, "failed to get system property with name=%s", system.Name)

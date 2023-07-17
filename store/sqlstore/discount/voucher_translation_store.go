@@ -1,13 +1,12 @@
 package discount
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlVoucherTranslationStore struct {
@@ -56,7 +55,7 @@ func (vts *SqlVoucherTranslationStore) Get(id string) (*model.VoucherTranslation
 	var res model.VoucherTranslation
 	err := vts.GetReplicaX().Get(&res, "SELECT * FROM "+model.VoucherTranslationTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherTranslationTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find voucher translation with id=%s", id)
@@ -112,7 +111,7 @@ func (vts *SqlVoucherTranslationStore) GetByOption(option *model.VoucherTranslat
 	var res model.VoucherTranslation
 	err = vts.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherTranslationTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find a voucher translation by given option")

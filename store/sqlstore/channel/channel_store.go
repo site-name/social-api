@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlChannelStore struct {
@@ -98,7 +99,7 @@ func (cs *SqlChannelStore) Get(id string) (*model.Channel, error) {
 
 	err := cs.GetReplicaX().Get(&channel, "SELECT * FROM "+model.ChannelTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ChannelTableName, id)
 		}
 		return nil, errors.Wrapf(err, "Failed to get Channel with ChannelID=%s", id)
@@ -149,7 +150,6 @@ func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*mode
 	var (
 		res        model.Channel
 		hasOrder   bool
-		row        = cs.GetReplicaX().QueryRowX(queryString, args...)
 		scanFields = cs.ScanFields(&res)
 	)
 
@@ -157,9 +157,9 @@ func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*mode
 		scanFields = append(scanFields, &hasOrder)
 	}
 
-	err = row.Scan(scanFields...)
+	err = cs.GetReplicaX().QueryRowX(queryString, args...).Scan(scanFields...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ChannelTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find channel by given options")

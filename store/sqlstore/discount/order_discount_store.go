@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlOrderDiscountStore struct {
@@ -103,7 +104,7 @@ func (ods *SqlOrderDiscountStore) Get(orderDiscountID string) (*model.OrderDisco
 
 	err := ods.GetReplicaX().Get(&res, "SELECT * FROM "+model.OrderDiscountTableName+" WHERE Id = ?", orderDiscountID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderDiscountTableName, orderDiscountID)
 		}
 		return nil, errors.Wrapf(err, "failed to save order discount with id=%s", orderDiscountID)

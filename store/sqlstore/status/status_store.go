@@ -1,12 +1,12 @@
 package status
 
 import (
-	"database/sql"
 	"fmt"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -66,7 +66,7 @@ func (s *SqlStatusStore) Get(userId string) (*model.Status, error) {
 	var status model.Status
 
 	if err := s.GetReplicaX().Get(&status, `SELECT	* FROM Status WHERE UserId = ?`, userId); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("Status", fmt.Sprintf("userId=%s", userId))
 		}
 		return nil, errors.Wrapf(err, "failed to get Status with userId=%s", userId)

@@ -1,7 +1,6 @@
 package attribute
 
 import (
-	"database/sql"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -9,6 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlAssignedVariantAttributeStore struct {
@@ -56,7 +56,7 @@ func (as *SqlAssignedVariantAttributeStore) Get(variantID string) (*model.Assign
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedVariantAttributeTableName+" WHERE Id = ?", variantID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedVariantAttributeTableName, variantID)
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned variant attribute with id=%s", variantID)
@@ -114,7 +114,7 @@ func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *model.Assigned
 		args...,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedVariantAttributeTableName, "option")
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned variant attribute with VariantID = %s, AssignmentID = %s", option.VariantID, option.AssignmentID)

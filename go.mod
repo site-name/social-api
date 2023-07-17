@@ -77,6 +77,12 @@ require (
 )
 
 require (
+	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
+	github.com/jackc/pgio v1.0.0 // indirect
+	github.com/jackc/pgproto3/v2 v2.3.2 // indirect
+)
+
+require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/JalfResi/justext v0.0.0-20221106200834-be571e3e3052 // indirect
 	github.com/PuerkitoBio/goquery v1.8.1 // indirect
@@ -126,6 +132,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/jackc/pgconn v1.14.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.4.2 // indirect

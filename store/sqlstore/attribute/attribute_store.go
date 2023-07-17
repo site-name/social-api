@@ -12,6 +12,7 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlAttributeStore struct {
@@ -260,7 +261,7 @@ func (as *SqlAttributeStore) GetByOption(option *model.AttributeFilterOption) (*
 	var res model.Attribute
 	err = as.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributeTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find attribute by option")

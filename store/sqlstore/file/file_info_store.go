@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlFileInfoStore struct {
@@ -165,7 +166,7 @@ func (fs *SqlFileInfoStore) get(id string, fromMaster bool) (*model.FileInfo, er
 	}
 
 	if err := db.Get(info, queryString, args...); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("FileInfos", id)
 		}
 		return nil, errors.Wrapf(err, "failed to get FileInfo with id=%s", id)
@@ -266,7 +267,7 @@ func (fs *SqlFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
 	}
 
 	if err := fs.GetReplicaX().Get(info, queryString, args...); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("FileInfos", fmt.Sprintf("path=%s", path))
 		}
 

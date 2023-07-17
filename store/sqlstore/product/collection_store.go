@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlCollectionStore struct {
@@ -108,7 +109,7 @@ func (cs *SqlCollectionStore) Get(collectionID string) (*model.Collection, error
 	var res model.Collection
 	err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+model.CollectionTableName+" WHERE Id = ?", collectionID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.CollectionTableName, collectionID)
 		}
 		return nil, errors.Wrapf(err, "failed to find collection with id=%s", collectionID)

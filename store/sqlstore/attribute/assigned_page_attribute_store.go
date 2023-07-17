@@ -1,12 +1,11 @@
 package attribute
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlAssignedPageAttributeStore struct {
@@ -52,7 +51,7 @@ func (as *SqlAssignedPageAttributeStore) Get(id string) (*model.AssignedPageAttr
 
 	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedPageAttributeTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedPageAttributeTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned page attribute with id=%s", id)
@@ -85,7 +84,7 @@ func (as *SqlAssignedPageAttributeStore) GetByOption(option *model.AssignedPageA
 		args...,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedPageAttributeTableName, "option")
 		}
 		return nil, errors.Wrapf(err, "failed to find assigned page attribute with given option")

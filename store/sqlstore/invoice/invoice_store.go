@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlInvoiceStore struct {
@@ -156,7 +157,7 @@ func (is *SqlInvoiceStore) GetbyOptions(options *model.InvoiceFilterOptions) (*m
 
 	err = is.GetReplicaX().QueryRowX(query, args...).Scan(scanFields...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.InvoiceTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find invoice with given options")

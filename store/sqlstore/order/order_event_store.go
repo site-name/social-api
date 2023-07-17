@@ -1,13 +1,12 @@
 package order
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlOrderEventStore struct {
@@ -59,7 +58,7 @@ func (oes *SqlOrderEventStore) Get(orderEventID string) (*model.OrderEvent, erro
 	var res model.OrderEvent
 	err := oes.GetReplicaX().Get(&res, "SELECT * FROM "+model.OrderEventTableName+" WHERE Id = ?", orderEventID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderEventTableName, orderEventID)
 		}
 		return nil, errors.Wrapf(err, "failed to find order event iwth id=%s", orderEventID)

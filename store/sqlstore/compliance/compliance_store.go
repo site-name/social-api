@@ -1,13 +1,13 @@
 package compliance
 
 import (
-	"database/sql"
 	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlComplianceStore struct {
@@ -89,7 +89,7 @@ func (s *SqlComplianceStore) Get(id string) (*model.Compliance, error) {
 
 	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+model.ComplianceTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ComplianceTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to get Compliance with id=%s", id)

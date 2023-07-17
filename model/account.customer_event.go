@@ -7,6 +7,10 @@ import (
 
 type CustomerEventType string
 
+func (t CustomerEventType) IsValid() bool {
+	return CustomerEventTypes[t]
+}
+
 // some available types for CustomerEvent's Type attribute
 const (
 	CUSTOMER_EVENT_TYPE_ACCOUNT_CREATED          CustomerEventType = "account_created"
@@ -45,7 +49,7 @@ type CustomerEvent struct {
 	Date    int64             `json:"date" gorm:"type:bigint;autoCreateTime:milli;column:Date"`
 	Type    CustomerEventType `json:"type" gorm:"type:varchar(255);column:Type"`
 	OrderID *string           `json:"order_id" gorm:"type:uuid;index;column:OrderID"`
-	UserID  *string           `json:"user_id" gorm:"type:uuid;index;column:UserID"`
+	UserID  *string           `json:"user_id" gorm:"type:uuid;index:customerevents_userid_key;column:UserID"`
 	// To reduce number of type checking steps,
 	// below are possible keys and their according values's Types you must follow
 	//  "message": string
@@ -100,7 +104,7 @@ func (c *CustomerEvent) commonPre() {
 
 type StaffNotificationRecipient struct {
 	Id         string  `json:"id" gorm:"primaryKey;type:uuid;defautl:gen_random_uuid();column:Id"`
-	UserID     *string `json:"user_id" gorm:"type:uuid;column:UserID"`
+	UserID     *string `json:"user_id" gorm:"type:uuid;column:UserID;index:staffnotificationrecipients_userid_key"`
 	StaffEmail *string `json:"staff_email" gorm:"uniqueIndex:staff_notification_recipients_staff_email_unique_key;column:StaffEmail"`
 	Active     *bool   `json:"active" gorm:"default:true;column:Active"`
 }

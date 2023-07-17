@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlShopStore struct {
@@ -144,7 +145,7 @@ func (ss *SqlShopStore) Get(shopID string) (*model.Shop, error) {
 	var res model.Shop
 	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShopTableName+" WHERE Id = ?", shopID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShopTableName, shopID)
 		}
 		return nil, errors.Wrapf(err, "failed to find shop with id=%s", shopID)
@@ -231,7 +232,7 @@ func (ss *SqlShopStore) GetByOptions(options *model.ShopFilterOptions) (*model.S
 
 	err = row.Scan(scanFields...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShopTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find shop with given options")

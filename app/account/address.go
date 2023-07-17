@@ -53,25 +53,6 @@ func (a *ServiceAccount) AddressesByUserId(userID string) ([]*model.Address, *mo
 	})
 }
 
-// AddressDeleteForUser just remove the relationship between user and address. Address still exist
-func (a *ServiceAccount) AddressDeleteForUser(userID, addressID string) *model.AppError {
-	err := a.srv.Store.UserAddress().DeleteForUser(userID, addressID)
-	if err != nil {
-		return model.NewAppError("AddressDeleteForUser", "app.model.user_address_delete.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	return nil
-}
-
-func (a *ServiceAccount) DeleteAddresses(transaction store_iface.SqlxExecutor, addressIDs ...string) *model.AppError {
-	err := a.srv.Store.Address().DeleteAddresses(transaction, addressIDs)
-	if err != nil {
-		return model.NewAppError("DeleteAddresses", "app.model.error_deleting_addresses", nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	return nil
-}
-
 // CopyAddress inserts a new address with fields identical to given address except Id field.
 func (a *ServiceAccount) CopyAddress(address *model.Address) (*model.Address, *model.AppError) {
 	copiedAddress := address.DeepCopy()
@@ -127,10 +108,7 @@ func (s *ServiceAccount) StoreUserAddress(user *model.User, address model.Addres
 			return appErr
 		}
 
-		_, appErr = s.AddUserAddress(&model.UserAddress{
-			UserID:    user.Id,
-			AddressID: address_.Id,
-		})
+		appErr = s.srv.Store.User().AddRelations(nil, user.Id, []*model.Address{{Id: address_.Id}}, false)
 		if appErr != nil {
 			return appErr
 		}
@@ -180,10 +158,7 @@ func (s *ServiceAccount) ChangeUserDefaultAddress(user model.User, address model
 	switch addressType {
 	case model.ADDRESS_TYPE_BILLING:
 		if user.DefaultBillingAddressID != nil {
-			_, appErr := s.AddUserAddress(&model.UserAddress{
-				UserID:    user.Id,
-				AddressID: *user.DefaultBillingAddressID,
-			})
+			appErr := s.srv.Store.User().AddRelations(nil, user.Id, []*model.Address{{Id: *user.DefaultBillingAddressID}}, false)
 			if appErr != nil {
 				return appErr
 			}
@@ -192,10 +167,7 @@ func (s *ServiceAccount) ChangeUserDefaultAddress(user model.User, address model
 
 	default:
 		if user.DefaultShippingAddressID != nil {
-			_, appErr := s.AddUserAddress(&model.UserAddress{
-				UserID:    user.Id,
-				AddressID: *user.DefaultShippingAddressID,
-			})
+			appErr := s.srv.Store.User().AddRelations(nil, user.Id, []*model.Address{{Id: *user.DefaultShippingAddressID}}, false)
 			if appErr != nil {
 				return appErr
 			}

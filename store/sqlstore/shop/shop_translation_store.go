@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlShopTranslationStore struct {
@@ -91,7 +92,7 @@ func (sts *SqlShopTranslationStore) Get(id string) (*model.ShopTranslation, erro
 	var res model.ShopTranslation
 	err := sts.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShopTranslationTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShopTranslationTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find shop translation with id=%s", id)

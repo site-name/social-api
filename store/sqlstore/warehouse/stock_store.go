@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlStockStore struct {
@@ -108,7 +109,7 @@ func (ss *SqlStockStore) BulkUpsert(transaction store_iface.SqlxExecutor, stocks
 func (ss *SqlStockStore) Get(stockID string) (*model.Stock, error) {
 	var res model.Stock
 	if err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+model.StockTableName+" WHERE Id = ?", stockID); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.StockTableName, stockID)
 		}
 		return nil, errors.Wrapf(err, "failed to find stock with id=%s", stockID)

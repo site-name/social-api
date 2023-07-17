@@ -1,14 +1,13 @@
 package giftcard
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlGiftCardStore struct {
@@ -80,7 +79,7 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxExecutor, gi
 			var oldGiftcard model.GiftCard
 			err = executor.Get(&oldGiftcard, "SELECT * FROM "+model.GiftcardTableName+" WHERE Id = ?", giftCard.Id)
 			if err != nil {
-				if err == sql.ErrNoRows {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
 					return nil, store.NewErrNotFound(model.GiftcardTableName, giftCard.Id)
 				}
 				return nil, err
@@ -113,7 +112,7 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxExecutor, gi
 func (gcs *SqlGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 	var res model.GiftCard
 	if err := gcs.GetReplicaX().Get(&res, "SELECT * FROM "+model.GiftcardTableName+" WHERE Id = ?", id); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.GiftcardTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find giftcard with id=%s", id)

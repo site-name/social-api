@@ -1,14 +1,13 @@
 package product
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlProductChannelListingStore struct {
@@ -113,7 +112,7 @@ func (ps *SqlProductChannelListingStore) Get(listingID string) (*model.ProductCh
 
 	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.ProductChannelListingTableName+" WHERE Id = ?", listingID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductChannelListingTableName, listingID)
 		}
 		return nil, errors.Wrapf(err, "failed to find product channel listing with id=%s", listingID)

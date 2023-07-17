@@ -1,13 +1,12 @@
 package product
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlProductTypeStore struct {
@@ -141,7 +140,7 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 	var res model.ProductType
 	err = pts.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductTypeTableName, "variantID="+variantID)
 		}
 		return nil, errors.Wrapf(err, "failed to find product type with product variant id=%s", variantID)
@@ -186,7 +185,7 @@ func (pts *SqlProductTypeStore) GetByOption(options *model.ProductTypeFilterOpti
 	var res model.ProductType
 	err = pts.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductTypeTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find product type with given options")

@@ -1,8 +1,6 @@
 package warehouse
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
@@ -10,6 +8,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlWareHouseStore struct {
@@ -182,7 +181,7 @@ func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*
 
 	err = ws.GetReplicaX().QueryRowX(query, args...).Scan(scanFields...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.WarehouseTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find warehouse with given option")
@@ -307,7 +306,7 @@ func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.WareHous
 	).
 		Scan(ws.ScanFields(&res)...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.WarehouseTableName, "StockID="+stockID)
 		}
 		return nil, errors.Wrapf(err, "failed to find warehouse with StockID=%s", stockID)

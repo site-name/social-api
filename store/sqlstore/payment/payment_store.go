@@ -1,14 +1,13 @@
 package payment
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlPaymentStore struct {
@@ -181,7 +180,7 @@ func (ps *SqlPaymentStore) Get(transaction store_iface.SqlxExecutor, id string, 
 		id,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.PaymentTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find payment with id=%s", id)

@@ -8,6 +8,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlGiftcardEventStore struct {
@@ -68,7 +69,7 @@ func (gs *SqlGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxExecutor
 			var oldEvent model.GiftCardEvent
 			err = executor.Get(&oldEvent, "SELECT * FROM "+model.GiftcardEventTableName+" WHERE Id = ?", event.Id)
 			if err != nil {
-				if err == sql.ErrNoRows {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
 					return nil, store.NewErrNotFound(model.GiftcardEventTableName, event.Id)
 				}
 				return nil, errors.Wrapf(err, "failed to find giftcard event with id=%s", event.Id)
@@ -122,7 +123,7 @@ func (gs *SqlGiftcardEventStore) Get(eventId string) (*model.GiftCardEvent, erro
 	var res model.GiftCardEvent
 	err := gs.GetReplicaX().Get(&res, "SELECT * FROM "+model.GiftcardEventTableName+" WHERE Id = ?", eventId)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.GiftcardEventTableName, eventId)
 		}
 		return nil, errors.Wrapf(err, "failed to find giftcard event with id=%s", eventId)

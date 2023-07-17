@@ -10,21 +10,19 @@ import (
 	"mime/multipart"
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/app/request"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // AccountService contains methods for working with accounts
 type AccountService interface {
 	// AddSessionToCache add given session `s` to server's sessionCache, key is session's Token, expiry time as in config
 	AddSessionToCache(s *model.Session)
-	// AddUserAddress add 1 user-address relation to database then returns it
-	AddUserAddress(relation *model.UserAddress) (*model.UserAddress, *model.AppError)
-	// AddressDeleteForUser just remove the relationship between user and address. Address still exist
-	AddressDeleteForUser(userID, addressID string) *model.AppError
 	// AddressesByOption returns a list of addresses by given option
 	AddressesByOption(option *model.AddressFilterOption) ([]*model.Address, *model.AppError)
 	// AttachSessionCookies sets:
@@ -81,8 +79,6 @@ type AccountService interface {
 	CreateSession(session *model.Session) (*model.Session, *model.AppError)
 	// CustomerPlacedOrderEvent creates an customer event, if given user is not valid, it returns immediately.
 	CustomerPlacedOrderEvent(user *model.User, orDer model.Order) (*model.CustomerEvent, *model.AppError)
-	// DeleteUserAddressRelation deletes 1 user-address relation from database
-	DeleteUserAddressRelation(userID, addressID string) *model.AppError
 	// DoubleCheckPassword performs:
 	//
 	// 1) check if number of failed login is not exceed the limit. If yes returns an error
@@ -95,8 +91,6 @@ type AccountService interface {
 	// A new ExpiresAt is only written if enough time has elapsed since last update.
 	// Returns true only if the session was extended.
 	ExtendSessionExpiryIfNeeded(session *model.Session) bool
-	// FilterUserAddressRelations finds and returns a list of user-address relations with given options
-	FilterUserAddressRelations(options *model.UserAddressFilterOptions) ([]*model.UserAddress, *model.AppError)
 	// GetRole get 1 model.Role from database, returns nil and concret error if a problem occur
 	GetRole(id string) (*model.Role, *model.AppError)
 	// GetRoleByName gets a model.Role from database with given name, returns nil and concret error if a problem occur
@@ -153,7 +147,7 @@ type AccountService interface {
 	// Trigger sending an account confirmation notification for the given user
 	SendAccountConfirmation(redirectUrl string, user model.User, manager interfaces.PluginManagerInterface, channelID string) *model.AppError
 	// UpsertAddress depends on given address's Id to decide update or insert it
-	UpsertAddress(transaction store_iface.SqlxExecutor, address *model.Address) (*model.Address, *model.AppError)
+	UpsertAddress(transaction *gorm.DB, address *model.Address) (*model.Address, *model.AppError)
 	ActivateMfa(userID, token string) *model.AppError
 	AddStatusCache(status *model.Status)
 	AddStatusCacheSkipClusterSend(status *model.Status)
@@ -165,16 +159,15 @@ type AccountService interface {
 	CheckProviderAttributes(user *model.User, patch *model.UserPatch) string
 	CheckUserAllAuthenticationCriteria(user *model.User, mfaToken string) *model.AppError
 	ClearUserSessionCacheLocal(userID string)
-	CommonCustomerCreateEvent(userID *string, orderID *string, eventType string, params model.StringInterface) (*model.CustomerEvent, *model.AppError)
+	CommonCustomerCreateEvent(userID *string, orderID *string, eventType model.CustomerEventType, params model.StringInterface) (*model.CustomerEvent, *model.AppError)
 	CreatePasswordRecoveryToken(userID, eMail string) (*model.Token, *model.AppError)
 	CreateUser(c *request.Context, user *model.User) (*model.User, *model.AppError)
 	CreateUserAccessToken(token *model.UserAccessToken) (*model.UserAccessToken, *model.AppError)
 	CreateUserAsAdmin(c *request.Context, user *model.User, redirect string) (*model.User, *model.AppError)
 	CreateUserFromSignup(c *request.Context, user *model.User, redirect string) (*model.User, *model.AppError)
 	CreateUserWithToken(c *request.Context, user *model.User, token *model.Token) (*model.User, *model.AppError)
-	CustomerEventsByOptions(option *model.CustomerEventFilterOptions) ([]*model.CustomerEvent, *model.AppError)
+	CustomerEventsByOptions(option squirrel.Sqlizer) ([]*model.CustomerEvent, *model.AppError)
 	DeactivateMfa(userID string) *model.AppError
-	DeleteAddresses(transaction store_iface.SqlxExecutor, addressIDs ...string) *model.AppError
 	DeletePreferences(userID string, preferences model.Preferences) *model.AppError
 	DeleteToken(token *model.Token) *model.AppError
 	DisableUserAccessToken(token *model.UserAccessToken) *model.AppError

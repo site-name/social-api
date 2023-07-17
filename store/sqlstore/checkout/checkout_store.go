@@ -1,14 +1,13 @@
 package checkout
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlCheckoutStore struct {
@@ -218,7 +217,7 @@ func (cs *SqlCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*mo
 
 	err = cs.GetReplicaX().QueryRowX(query, args...).Scan(scanFields...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.CheckoutTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to scan a checkout")

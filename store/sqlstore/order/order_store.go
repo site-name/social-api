@@ -1,14 +1,13 @@
 package order
 
 import (
-	"database/sql"
-
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlOrderStore struct {
@@ -160,7 +159,7 @@ func (os *SqlOrderStore) BulkUpsert(transaction store_iface.SqlxExecutor, orders
 			// try finding if order exist
 			err = runner.Get(&oldOrder, "SELECT * FROM "+model.OrderTableName+" WHERE Id = ?", ord.Id)
 			if err != nil {
-				if err == sql.ErrNoRows {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
 					return nil, err
 				}
 				return nil, errors.Wrapf(err, "failed to find order with id=%s", ord.Id)
@@ -193,7 +192,7 @@ func (os *SqlOrderStore) Get(id string) (*model.Order, error) {
 	var order model.Order
 	err := os.GetReplicaX().Get(&order, "SELECT * FROM "+model.OrderTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find order with Id=%s", id)

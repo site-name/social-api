@@ -1083,23 +1083,9 @@ func isRepeatableError(err error) bool {
 	return false
 }
 
-func (s *RetryLayerAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) error {
+func (s *RetryLayerAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) *model.AppError {
 
-	tries := 0
-	for {
-		err := s.AddressStore.DeleteAddresses(transaction, addressIDs)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
+	return s.AddressStore.DeleteAddresses(transaction, addressIDs)
 
 }
 
@@ -8935,6 +8921,12 @@ func (s *RetryLayerUploadSessionStore) Update(session *model.UploadSession) erro
 
 }
 
+func (s *RetryLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+
+	return s.UserStore.AddRelations(transaction, userID, relations, customerNoteOnUser)
+
+}
+
 func (s *RetryLayerUserStore) AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error) {
 
 	tries := 0
@@ -9336,6 +9328,12 @@ func (s *RetryLayerUserStore) PermanentDelete(userID string) error {
 			return err
 		}
 	}
+
+}
+
+func (s *RetryLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+
+	return s.UserStore.RemoveRelations(transaction, userID, relations, customerNoteOnUser)
 
 }
 

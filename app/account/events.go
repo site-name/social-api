@@ -6,7 +6,7 @@ import (
 	"github.com/sitename/sitename/model"
 )
 
-func (a *ServiceAccount) CommonCustomerCreateEvent(userID *string, orderID *string, eventType string, params model.StringInterface) (*model.CustomerEvent, *model.AppError) {
+func (a *ServiceAccount) CommonCustomerCreateEvent(userID *string, orderID *string, eventType model.CustomerEventType, params model.StringInterface) (*model.CustomerEvent, *model.AppError) {
 	event := &model.CustomerEvent{
 		Type:       eventType,
 		Parameters: params,
@@ -31,5 +31,5 @@ func (s *ServiceAccount) CustomerPlacedOrderEvent(user *model.User, orDer model.
 		return nil, nil
 	}
 
-	return s.CommonCustomerCreateEvent(&user.Id, &orDer.Id, model.PLACED_ORDER, nil)
+	return s.CommonCustomerCreateEvent(&user.Id, &orDer.Id, model.CUSTOMER_EVENT_TYPE_PLACED_ORDER, nil)
 }

@@ -1,12 +1,11 @@
 package discount
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlSaleChannelListingStore struct {
@@ -75,7 +74,7 @@ func (scls *SqlSaleChannelListingStore) Get(saleChannelListingID string) (*model
 		saleChannelListingID,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.SaleChannelListingTableName, saleChannelListingID)
 		}
 		return nil, errors.Wrapf(err, "failed to find sale channel listing with id=%s", saleChannelListingID)

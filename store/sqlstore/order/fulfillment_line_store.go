@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlFulfillmentLineStore struct {
@@ -62,7 +63,7 @@ func (fls *SqlFulfillmentLineStore) Save(ffml *model.FulfillmentLine) (*model.Fu
 func (fls *SqlFulfillmentLineStore) Get(id string) (*model.FulfillmentLine, error) {
 	var res model.FulfillmentLine
 	if err := fls.GetReplicaX().Get(&res, "SELECT * FROM "+model.FulfillmentLineTableName+" WHERE Id = ?", id); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.FulfillmentLineTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to find fulfillment line with id=%s", id)

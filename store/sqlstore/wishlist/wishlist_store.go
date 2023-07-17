@@ -7,6 +7,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlWishlistStore struct {
@@ -116,7 +117,7 @@ func (ws *SqlWishlistStore) GetByOption(option *model.WishlistFilterOption) (*mo
 	var res model.Wishlist
 	err = ws.GetReplicaX().Get(&res, queryString, args...)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.WishlistTableName, "option")
 		}
 		return nil, errors.Wrap(err, "failed to find a wishlist by given options")

@@ -10,6 +10,7 @@ import (
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlCheckoutLineStore struct {
@@ -98,7 +99,7 @@ func (cls *SqlCheckoutLineStore) Get(id string) (*model.CheckoutLine, error) {
 
 	err := cls.GetReplicaX().Get(&res, "SELECT * FROM "+model.CheckoutLineTableName+" WHERE Id = ?", id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.CheckoutLineTableName, id)
 		}
 		return nil, errors.Wrapf(err, "failed to to find checkout line with id=%s", id)

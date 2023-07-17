@@ -1072,20 +1072,20 @@ type TimerLayerWishlistItemProductVariantStore struct {
 	Root *TimerLayer
 }
 
-func (s *TimerLayerAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) error {
+func (s *TimerLayerAddressStore) DeleteAddresses(transaction *gorm.DB, addressIDs []string) *model.AppError {
 	start := timemodule.Now()
 
-	err := s.AddressStore.DeleteAddresses(transaction, addressIDs)
+	result := s.AddressStore.DeleteAddresses(transaction, addressIDs)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
 		success := "false"
-		if err == nil {
+		if true {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("AddressStore.DeleteAddresses", success, elapsed)
 	}
-	return err
+	return result
 }
 
 func (s *TimerLayerAddressStore) FilterByOption(option *model.AddressFilterOption) ([]*model.Address, error) {
@@ -7439,6 +7439,22 @@ func (s *TimerLayerUploadSessionStore) Update(session *model.UploadSession) erro
 	return err
 }
 
+func (s *TimerLayerUserStore) AddRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+	start := timemodule.Now()
+
+	result := s.UserStore.AddRelations(transaction, userID, relations, customerNoteOnUser)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.AddRelations", success, elapsed)
+	}
+	return result
+}
+
 func (s *TimerLayerUserStore) AnalyticsActiveCount(time int64, options model.UserCountOptions) (int64, error) {
 	start := timemodule.Now()
 
@@ -7803,6 +7819,22 @@ func (s *TimerLayerUserStore) PermanentDelete(userID string) error {
 		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.PermanentDelete", success, elapsed)
 	}
 	return err
+}
+
+func (s *TimerLayerUserStore) RemoveRelations(transaction *gorm.DB, userID string, relations any, customerNoteOnUser bool) *model.AppError {
+	start := timemodule.Now()
+
+	result := s.UserStore.RemoveRelations(transaction, userID, relations, customerNoteOnUser)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if true {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("UserStore.RemoveRelations", success, elapsed)
+	}
+	return result
 }
 
 func (s *TimerLayerUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []string, includeDeleted bool, dryRun bool) (int, error) {
