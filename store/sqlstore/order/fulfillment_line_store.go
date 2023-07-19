@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -54,7 +53,7 @@ func (fls *SqlFulfillmentLineStore) Save(ffml *model.FulfillmentLine) (*model.Fu
 	}
 
 	query := "INSERT INTO " + model.FulfillmentLineTableName + "(" + fls.ModelFields("").Join(",") + ") VALUES (" + fls.ModelFields(":").Join(",") + ")"
-	if _, err := fls.GetMasterX().NamedExec(query, ffml); err != nil {
+	if _, err := fls.GetMaster().NamedExec(query, ffml); err != nil {
 		return nil, errors.Wrapf(err, "failed to save fulfillment line with id=%s", ffml.Id)
 	}
 	return ffml, nil
@@ -62,7 +61,7 @@ func (fls *SqlFulfillmentLineStore) Save(ffml *model.FulfillmentLine) (*model.Fu
 
 func (fls *SqlFulfillmentLineStore) Get(id string) (*model.FulfillmentLine, error) {
 	var res model.FulfillmentLine
-	if err := fls.GetReplicaX().Get(&res, "SELECT * FROM "+model.FulfillmentLineTableName+" WHERE Id = ?", id); err != nil {
+	if err := fls.GetReplica().Get(&res, "SELECT * FROM "+model.FulfillmentLineTableName+" WHERE Id = ?", id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.FulfillmentLineTableName, id)
 		}
@@ -73,8 +72,8 @@ func (fls *SqlFulfillmentLineStore) Get(id string) (*model.FulfillmentLine, erro
 }
 
 // BulkUpsert upsert given fulfillment lines
-func (fls *SqlFulfillmentLineStore) BulkUpsert(transaction store_iface.SqlxExecutor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
-	var selectUpsertor store_iface.SqlxExecutor = fls.GetMasterX()
+func (fls *SqlFulfillmentLineStore) BulkUpsert(transaction *gorm.DB, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
+	var selectUpsertor *gorm.DB = fls.GetMaster()
 	if transaction != nil {
 		selectUpsertor = transaction
 	}
@@ -171,7 +170,7 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLine
 	}
 
 	var fulfillmentLines model.FulfillmentLines
-	err = fls.GetReplicaX().Select(&fulfillmentLines, queryString, args...)
+	err = fls.GetReplica().Select(&fulfillmentLines, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find fulfillment lines by given options")
 	}
@@ -180,7 +179,7 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLine
 	if orderLineIDs := fulfillmentLines.OrderLineIDs(); option.PrefetchRelatedOrderLine && len(orderLineIDs) > 0 {
 		var orderLines model.OrderLines
 		queryString, args, _ = fls.GetQueryBuilder().Select("*").From(model.OrderLineTableName).Where(squirrel.Eq{"Id": orderLineIDs}).ToSql()
-		err = fls.GetReplicaX().Select(&orderLines, queryString, args...)
+		err = fls.GetReplica().Select(&orderLines, queryString, args...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to prefetch related order lines of fulfillment lines")
 		}
@@ -196,7 +195,7 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLine
 		if productVariantIDs := orderLines.ProductVariantIDs(); option.PrefetchRelatedOrderLine_ProductVariant && len(productVariantIDs) > 0 {
 			var productVariants model.ProductVariants
 			queryString, args, _ := fls.GetQueryBuilder().Select("*").From(model.ProductVariantTableName).Where(squirrel.Eq{"Id": productVariantIDs}).ToSql()
-			err = fls.GetReplicaX().Select(&productVariants, queryString, args...)
+			err = fls.GetReplica().Select(&productVariants, queryString, args...)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to prefetch related product variants of related order lines of fulfillment lines")
 			}
@@ -227,8 +226,8 @@ func (fls *SqlFulfillmentLineStore) FilterbyOption(option *model.FulfillmentLine
 }
 
 // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
-func (fls *SqlFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentLineFilterOption) error {
-	var executor store_iface.SqlxExecutor = fls.GetMasterX()
+func (fls *SqlFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *gorm.DB, option *model.FulfillmentLineFilterOption) error {
+	var executor *gorm.DB = fls.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}

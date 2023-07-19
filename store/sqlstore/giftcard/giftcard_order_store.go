@@ -7,7 +7,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -37,7 +36,7 @@ func (gs *SqlGiftCardOrderStore) Save(giftCardOrder *model.OrderGiftCard) (*mode
 	}
 
 	query := "INSERT INTO " + model.OrderGiftCardTableName + "(" + gs.ModelFields("").Join(",") + ") VALUES (" + gs.ModelFields(":").Join(",") + ")"
-	if _, err := gs.GetMasterX().NamedExec(query, giftCardOrder); err != nil {
+	if _, err := gs.GetMaster().NamedExec(query, giftCardOrder); err != nil {
 		if gs.IsUniqueConstraintError(err, []string{"GiftCardID", "OrderID", "ordergiftcards_giftcardid_orderid_key"}) {
 			return nil, store.NewErrInvalidInput(model.OrderGiftCardTableName, "GiftCardID/OrderID", giftCardOrder.GiftCardID+"/"+giftCardOrder.OrderID)
 		}
@@ -49,7 +48,7 @@ func (gs *SqlGiftCardOrderStore) Save(giftCardOrder *model.OrderGiftCard) (*mode
 
 func (gs *SqlGiftCardOrderStore) Get(id string) (*model.OrderGiftCard, error) {
 	var res model.OrderGiftCard
-	err := gs.GetReplicaX().Get(&res, "SELECT * FROM "+model.OrderGiftCardTableName+" WHERE Id = ?", id)
+	err := gs.GetReplica().Get(&res, "SELECT * FROM "+model.OrderGiftCardTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderGiftCardTableName, id)
@@ -61,8 +60,8 @@ func (gs *SqlGiftCardOrderStore) Get(id string) (*model.OrderGiftCard, error) {
 }
 
 // BulkUpsert upserts given order-giftcard relations and returns it
-func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxExecutor, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
-	var executor store_iface.SqlxExecutor = gs.GetMasterX()
+func (gs *SqlGiftCardOrderStore) BulkUpsert(transaction *gorm.DB, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
+	var executor *gorm.DB = gs.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -133,7 +132,7 @@ func (s *SqlGiftCardOrderStore) FilterByOptions(options *model.OrderGiftCardFilt
 	}
 
 	var res []*model.OrderGiftCard
-	err = s.GetReplicaX().Select(&res, queryStr, args...)
+	err = s.GetReplica().Select(&res, queryStr, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order-giftcard relations with given options")
 	}

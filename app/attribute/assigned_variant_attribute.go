@@ -24,14 +24,17 @@ func (a *ServiceAttribute) AssignedVariantAttributeByOption(option *model.Assign
 
 // GetOrCreateAssignedVariantAttribute get or create new assigned variant attribute with given option then returns it
 func (a *ServiceAttribute) GetOrCreateAssignedVariantAttribute(assignedVariantAttr *model.AssignedVariantAttribute) (*model.AssignedVariantAttribute, *model.AppError) {
-	option := new(model.AssignedVariantAttributeFilterOption)
+	eqConds := squirrel.Eq{}
+
 	if assignedVariantAttr.VariantID != "" {
-		option.VariantID = squirrel.Eq{model.AssignedVariantAttributeTableName + ".VariantID": assignedVariantAttr.VariantID}
+		eqConds[model.AssignedVariantAttributeTableName+".VariantID"] = assignedVariantAttr.VariantID
 	}
 	if assignedVariantAttr.AssignmentID != "" {
-		option.AssignmentID = squirrel.Eq{model.AssignedVariantAttributeTableName + ".AssignmentID": assignedVariantAttr.AssignmentID}
+		eqConds[model.AssignedVariantAttributeTableName+".AssignmentID"] = assignedVariantAttr.AssignmentID
 	}
-	assignedVariantAttribute, appErr := a.AssignedVariantAttributeByOption(option)
+	assignedVariantAttribute, appErr := a.AssignedVariantAttributeByOption(&model.AssignedVariantAttributeFilterOption{
+		Conditions: eqConds,
+	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr // returns immediately if error is system caused

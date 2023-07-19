@@ -10,19 +10,9 @@ type UserAccessToken struct {
 	IsActive    *bool  `json:"is_active" gorm:"default:true;column:IsActive"` // defaut true
 }
 
-func (c *UserAccessToken) BeforeCreate(_ *gorm.DB) error {
-	c.commonPre()
-	return c.IsValid()
-}
-
-func (c *UserAccessToken) BeforeUpdate(_ *gorm.DB) error {
-	c.commonPre()
-	return c.IsValid()
-}
-
-func (*UserAccessToken) TableName() string {
-	return UserAccessTokenTableName
-}
+func (c *UserAccessToken) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *UserAccessToken) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (*UserAccessToken) TableName() string               { return UserAccessTokenTableName }
 
 func (t *UserAccessToken) IsValid() *AppError {
 	outer := CreateAppErrorForModel(

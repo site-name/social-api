@@ -208,7 +208,7 @@ func (r *Resolver) DeleteWarehouse(ctx context.Context, args struct{ Id string }
 		return nil, appErr
 	}
 
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("DeleteWarehouse", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

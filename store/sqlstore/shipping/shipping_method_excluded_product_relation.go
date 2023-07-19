@@ -6,7 +6,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlShippingMethodExcludedProductStore struct {
@@ -51,7 +51,7 @@ func (ss *SqlShippingMethodExcludedProductStore) Save(instance *model.ShippingMe
 	}
 
 	query := "INSERT INTO " + model.ShippingMethodExcludedProductTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ") ON CONFLICT ON CONSTRAINT " + shippingMethodExcludedProductUniqueConstraint + " DO NOTHING"
-	_, err := ss.GetMasterX().NamedExec(query, instance)
+	_, err := ss.GetMaster().NamedExec(query, instance)
 	if err != nil {
 		if ss.IsUniqueConstraintError(err, []string{"ShippingMethodID", "ProductID", shippingMethodExcludedProductUniqueConstraint}) {
 			return nil, store.NewErrInvalidInput(model.ShippingMethodExcludedProductTableName, "ShippingMethodID/ProductID", "duplicate")
@@ -88,7 +88,7 @@ func (s *SqlShippingMethodExcludedProductStore) FilterByOptions(options *model.S
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	rows, err := s.GetReplicaX().QueryX(queryString, args...)
+	rows, err := s.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping method excluded products by given options")
 	}
@@ -121,7 +121,7 @@ func (s *SqlShippingMethodExcludedProductStore) FilterByOptions(options *model.S
 	return res, nil
 }
 
-func (s *SqlShippingMethodExcludedProductStore) Delete(transaction store_iface.SqlxExecutor, options *model.ShippingMethodExcludedProductFilterOptions) error {
+func (s *SqlShippingMethodExcludedProductStore) Delete(transaction *gorm.DB, options *model.ShippingMethodExcludedProductFilterOptions) error {
 	query := s.GetQueryBuilder().Delete(model.ShippingMethodExcludedProductTableName)
 
 	for _, opt := range []squirrel.Sqlizer{
@@ -139,7 +139,7 @@ func (s *SqlShippingMethodExcludedProductStore) Delete(transaction store_iface.S
 		return errors.Wrap(err, "Delete_ToSql")
 	}
 
-	runner := s.GetMasterX()
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}

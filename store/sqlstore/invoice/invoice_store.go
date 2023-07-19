@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -77,7 +76,7 @@ func (is *SqlInvoiceStore) Upsert(invoice *model.Invoice) (*model.Invoice, error
 	)
 	if isSaving {
 		query := "INSERT INTO " + model.InvoiceTableName + "(" + is.ModelFields("").Join(",") + ") VALUES (" + is.ModelFields(":").Join(",") + ")"
-		_, err = is.GetMasterX().NamedExec(query, invoice)
+		_, err = is.GetMaster().NamedExec(query, invoice)
 
 	} else {
 		oldInvoice, err := is.GetbyOptions(&model.InvoiceFilterOptions{
@@ -98,7 +97,7 @@ func (is *SqlInvoiceStore) Upsert(invoice *model.Invoice) (*model.Invoice, error
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = is.GetMasterX().NamedExec(query, invoice)
+		result, err = is.GetMaster().NamedExec(query, invoice)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -155,7 +154,7 @@ func (is *SqlInvoiceStore) GetbyOptions(options *model.InvoiceFilterOptions) (*m
 		scanFields = append(scanFields, is.Order().ScanFields(&order)...)
 	}
 
-	err = is.GetReplicaX().QueryRowX(query, args...).Scan(scanFields...)
+	err = is.GetReplica().QueryRow(query, args...).Scan(scanFields...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.InvoiceTableName, "options")
@@ -176,7 +175,7 @@ func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) 
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	rows, err := is.GetReplicaX().QueryX(queryStr, args...)
+	rows, err := is.GetReplica().Query(queryStr, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find invoices by given options")
 	}
@@ -208,8 +207,8 @@ func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) 
 	return res, nil
 }
 
-func (s *SqlInvoiceStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
-	var runner store_iface.SqlxExecutor = s.GetMasterX()
+func (s *SqlInvoiceStore) Delete(transaction *gorm.DB, ids ...string) error {
+	var runner *gorm.DB = s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}

@@ -27,8 +27,8 @@ type Collection struct {
 	ModelMetadata
 	Seo
 
-	Sales    Sales    `json:"-" gorm:"many2many:sale_collections"`
-	Vouchers Vouchers `json:"-" gorm:"many2many:voucher_collections"`
+	Sales    Sales    `json:"-" gorm:"many2many:SaleCollections"`
+	Vouchers Vouchers `json:"-" gorm:"many2many:VoucherCollections"`
 }
 
 // CollectionFilterOption is used to build sql queries.

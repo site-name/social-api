@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -47,8 +46,8 @@ func (ss *SqlStockStore) ScanFields(stock *model.Stock) []interface{} {
 }
 
 // BulkUpsert performs upserts or inserts given stocks, then returns them
-func (ss *SqlStockStore) BulkUpsert(transaction store_iface.SqlxExecutor, stocks []*model.Stock) ([]*model.Stock, error) {
-	var executor = ss.GetMasterX()
+func (ss *SqlStockStore) BulkUpsert(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, error) {
+	var executor = ss.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -108,7 +107,7 @@ func (ss *SqlStockStore) BulkUpsert(transaction store_iface.SqlxExecutor, stocks
 
 func (ss *SqlStockStore) Get(stockID string) (*model.Stock, error) {
 	var res model.Stock
-	if err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+model.StockTableName+" WHERE Id = ?", stockID); err != nil {
+	if err := ss.GetReplica().Get(&res, "SELECT * FROM "+model.StockTableName+" WHERE Id = ?", stockID); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.StockTableName, stockID)
 		}
@@ -180,7 +179,7 @@ func (ss *SqlStockStore) FilterForChannel(options *model.StockFilterForChannelOp
 		return nil, nil, errors.Wrap(err, "FilterForChannel_ToSql")
 	}
 
-	rows, err := ss.GetReplicaX().QueryX(queryString, args...)
+	rows, err := ss.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to find stocks with given channel slug")
 	}
@@ -268,7 +267,7 @@ func (s *SqlStockStore) CountByOptions(options *model.StockFilterOption) (int32,
 	}
 
 	var res int32
-	err = s.GetReplicaX().Select(&res, queryStr, args...)
+	err = s.GetReplica().Select(&res, queryStr, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count stocks by given options")
 	}
@@ -375,7 +374,7 @@ func (ss *SqlStockStore) FilterByOption(options *model.StockFilterOption) ([]*mo
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	rows, err := ss.GetReplicaX().QueryX(queryString, args...)
+	rows, err := ss.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks by given options")
 	}
@@ -484,7 +483,7 @@ func (ss *SqlStockStore) FilterForCountryAndChannel(options *model.StockFilterFo
 
 	var returningStocks model.Stocks
 
-	rows, err := ss.GetReplicaX().QueryX(queryString, args...)
+	rows, err := ss.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find stocks with given options")
 	}
@@ -559,7 +558,7 @@ func (ss *SqlStockStore) warehouseIdSelectQuery(countryCode model.CountryCode, c
 
 // ChangeQuantity reduce or increase the quantity of given stock
 func (ss *SqlStockStore) ChangeQuantity(stockID string, quantity int) error {
-	_, err := ss.GetMasterX().Exec("UPDATE Stocks SET Quantity = Quantity + ? WHERE Id = ?", quantity, stockID)
+	_, err := ss.GetMaster().Exec("UPDATE Stocks SET Quantity = Quantity + ? WHERE Id = ?", quantity, stockID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to change stock quantity for stock with id=%s", stockID)
 	}

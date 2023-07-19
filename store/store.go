@@ -4,7 +4,6 @@ package store
 
 import (
 	"context"
-	"database/sql/driver"
 	timemodule "time"
 
 	"github.com/Masterminds/squirrel"
@@ -12,7 +11,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -29,10 +27,8 @@ type Store interface {
 	DropAllTables()                              // DropAllTables drop all tables in databases
 	GetDbVersion(numerical bool) (string, error) // GetDbVersion returns version in use of database
 
-	// GetMaster returns a gorm wrapper
-	GetMaster() *gorm.DB
-	// GetReplica returns a gorm wrapper
-	GetReplica() *gorm.DB
+	GetMaster(noTimeout ...bool) *gorm.DB  // GetMaster returns a gorm wrapper
+	GetReplica(noTimeout ...bool) *gorm.DB // GetReplica returns a gorm wrapper
 
 	// GetQueryBuilder create squirrel sql query builder.
 	//
@@ -43,8 +39,7 @@ type Store interface {
 	GetQueryBuilder(placeholderFormats ...squirrel.PlaceholderFormat) squirrel.StatementBuilderType
 	IsUniqueConstraintError(err error, indexName []string) bool //
 	MarkSystemRanUnitTests()                                    //
-	FinalizeTransaction(transaction driver.Tx)                  // FinalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
-	DBXFromContext(ctx context.Context) store_iface.SqlxExecutor
+	DBXFromContext(ctx context.Context) *gorm.DB
 
 	User() UserStore                                                   // account
 	Address() AddressStore                                             //
@@ -174,7 +169,7 @@ type (
 		Get(id string) (*model.ShopTranslation, error)                             // Get finds a shop translation with given id then return it with an error
 	}
 	VatStore interface {
-		Upsert(transaction store_iface.SqlxExecutor, vats []*model.Vat) ([]*model.Vat, error)
+		Upsert(transaction *gorm.DB, vats []*model.Vat) ([]*model.Vat, error)
 		FilterByOptions(options *model.VatFilterOptions) ([]*model.Vat, error)
 	}
 )
@@ -244,7 +239,7 @@ type (
 		Count(options *model.AttributeValueFilterOptions) (int64, error)
 		Delete(ids ...string) (int64, error)
 		Upsert(av *model.AttributeValue) (*model.AttributeValue, error)
-		BulkUpsert(transaction store_iface.SqlxExecutor, values model.AttributeValues) (model.AttributeValues, error)
+		BulkUpsert(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, error)
 		Get(attributeID string) (*model.AttributeValue, error)                                    // Get finds an model value with given id then returns it with an error
 		FilterByOptions(options model.AttributeValueFilterOptions) (model.AttributeValues, error) // FilterByOptions finds and returns all matched model values based on given options
 	}
@@ -342,24 +337,24 @@ type (
 		GetByOption(option *model.WishlistFilterOption) (*model.Wishlist, error) // GetByOption finds and returns a slice of wishlists by given option
 	}
 	WishlistItemStore interface {
-		GetById(selector store_iface.SqlxExecutor, id string) (*model.WishlistItem, error)                               // GetById returns a model item wish given id
-		BulkUpsert(transaction store_iface.SqlxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, error) // Upsert inserts or updates given model item then returns it
-		FilterByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, error)                            // FilterByOption finds and returns a slice of model items filtered using given options
-		GetByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, error)                                 // GetByOption finds and returns a model item filtered by given option
-		DeleteItemsByOption(transaction store_iface.SqlxExecutor, option *model.WishlistItemFilterOption) (int64, error) // DeleteItemsByOption finds and deletes model items that satisfy given filtering options and returns number of items deleted
+		GetById(selector *gorm.DB, id string) (*model.WishlistItem, error)                               // GetById returns a model item wish given id
+		BulkUpsert(transaction *gorm.DB, wishlistItems model.WishlistItems) (model.WishlistItems, error) // Upsert inserts or updates given model item then returns it
+		FilterByOption(option *model.WishlistItemFilterOption) ([]*model.WishlistItem, error)            // FilterByOption finds and returns a slice of model items filtered using given options
+		GetByOption(option *model.WishlistItemFilterOption) (*model.WishlistItem, error)                 // GetByOption finds and returns a model item filtered by given option
+		DeleteItemsByOption(transaction *gorm.DB, option *model.WishlistItemFilterOption) (int64, error) // DeleteItemsByOption finds and deletes model items that satisfy given filtering options and returns number of items deleted
 	}
 	WishlistItemProductVariantStore interface {
-		Save(wishlistVariant *model.WishlistItemProductVariant) (*model.WishlistItemProductVariant, error)                                           // Save inserts new model product variant relation into database and returns it
-		BulkUpsert(transaction store_iface.SqlxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) // BulkUpsert does bulk update/insert given relations
-		GetById(selector store_iface.SqlxExecutor, id string) (*model.WishlistItemProductVariant, error)                                             // GetByID returns a model item product variant with given id
-		DeleteRelation(relation *model.WishlistItemProductVariant) (int64, error)                                                                    // DeleteRelation deletes a product variant-model item relation and counts numeber of relations left in database
+		Save(wishlistVariant *model.WishlistItemProductVariant) (*model.WishlistItemProductVariant, error)                           // Save inserts new model product variant relation into database and returns it
+		BulkUpsert(transaction *gorm.DB, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) // BulkUpsert does bulk update/insert given relations
+		GetById(selector *gorm.DB, id string) (*model.WishlistItemProductVariant, error)                                             // GetByID returns a model item product variant with given id
+		DeleteRelation(relation *model.WishlistItemProductVariant) (int64, error)                                                    // DeleteRelation deletes a product variant-model item relation and counts numeber of relations left in database
 	}
 )
 
 // model
 type (
 	WarehouseStore interface {
-		Delete(transaction store_iface.SqlxExecutor, ids ...string) error
+		Delete(transaction *gorm.DB, ids ...string) error
 		Update(warehouse *model.WareHouse) (*model.WareHouse, error)
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(wh *model.WareHouse) []interface{}
@@ -381,29 +376,29 @@ type (
 		FilterProductStocksForCountryAndChannel(options *model.StockFilterForCountryAndChannel) ([]*model.Stock, error) // FilterProductStocksForCountryAndChannel finds and returns stocks with given options
 		ChangeQuantity(stockID string, quantity int) error                                                              // ChangeQuantity reduce or increase the quantity of given stock
 		FilterByOption(options *model.StockFilterOption) ([]*model.Stock, error)                                        // FilterByOption finds and returns a slice of stocks that satisfy given option
-		BulkUpsert(transaction store_iface.SqlxExecutor, stocks []*model.Stock) ([]*model.Stock, error)                 // BulkUpsert performs upserts or inserts given stocks, then returns them
+		BulkUpsert(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, error)                                 // BulkUpsert performs upserts or inserts given stocks, then returns them
 		FilterForChannel(options *model.StockFilterForChannelOption) (squirrel.Sqlizer, []*model.Stock, error)          // FilterForChannel finds and returns stocks that satisfy given options
 	}
 	AllocationStore interface {
-		BulkUpsert(transaction store_iface.SqlxExecutor, allocations []*model.Allocation) ([]*model.Allocation, error) // BulkUpsert performs update, insert given allocations then returns them afterward
-		Get(allocationID string) (*model.Allocation, error)                                                            // Get find and returns allocation with given id
-		FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error)                              // FilterbyOption finds and returns a list of allocations based on given option
-		BulkDelete(transaction store_iface.SqlxExecutor, allocationIDs []string) error                                 // BulkDelete perform bulk deletes given allocations.
-		CountAvailableQuantityForStock(stock *model.Stock) (int, error)                                                // CountAvailableQuantityForStock counts and returns available quantity of given stock
+		BulkUpsert(transaction *gorm.DB, allocations []*model.Allocation) ([]*model.Allocation, error) // BulkUpsert performs update, insert given allocations then returns them afterward
+		Get(allocationID string) (*model.Allocation, error)                                            // Get find and returns allocation with given id
+		FilterByOption(option *model.AllocationFilterOption) ([]*model.Allocation, error)              // FilterbyOption finds and returns a list of allocations based on given option
+		BulkDelete(transaction *gorm.DB, allocationIDs []string) error                                 // BulkDelete perform bulk deletes given allocations.
+		CountAvailableQuantityForStock(stock *model.Stock) (int, error)                                // CountAvailableQuantityForStock counts and returns available quantity of given stock
 	}
 	WarehouseShippingZoneStore interface {
-		Delete(transaction store_iface.SqlxExecutor, options *model.WarehouseShippingZoneFilterOption) error
+		Delete(transaction *gorm.DB, options *model.WarehouseShippingZoneFilterOption) error
 		ModelFields(prefix string) util.AnyArray[string]
-		Save(transaction store_iface.SqlxExecutor, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) // Save inserts given model-model zone relation into database
+		Save(transaction *gorm.DB, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) // Save inserts given model-model zone relation into database
 		FilterByCountryCodeAndChannelID(countryCode, channelID string) ([]*model.WarehouseShippingZone, error)
 		FilterByOptions(options *model.WarehouseShippingZoneFilterOption) ([]*model.WarehouseShippingZone, error)
 	}
 	PreorderAllocationStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
-		BulkCreate(transaction store_iface.SqlxExecutor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) // BulkCreate bulk inserts given preorderAllocations and returns them
+		BulkCreate(transaction *gorm.DB, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) // BulkCreate bulk inserts given preorderAllocations and returns them
 		ScanFields(preorderAllocation *model.PreorderAllocation) []interface{}
 		FilterByOption(options *model.PreorderAllocationFilterOption) ([]*model.PreorderAllocation, error) // FilterByOption finds and returns a list of preorder allocations filtered using given options
-		Delete(transaction store_iface.SqlxExecutor, preorderAllocationIDs ...string) error                // Delete deletes preorder-allocations by given ids
+		Delete(transaction *gorm.DB, preorderAllocationIDs ...string) error                                // Delete deletes preorder-allocations by given ids
 	}
 )
 
@@ -412,43 +407,43 @@ type (
 	ShippingZoneStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(shippingZone *model.ShippingZone) []interface{}
-		Delete(transaction store_iface.SqlxExecutor, conditions *model.ShippingZoneFilterOption) (int64, error)
-		Upsert(transaction store_iface.SqlxExecutor, shippingZone *model.ShippingZone) (*model.ShippingZone, error) // Upsert depends on given model zone's Id to decide update or insert the zone
-		Get(shippingZoneID string) (*model.ShippingZone, error)                                                     // Get finds 1 model zone for given shippingZoneID
-		FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error)                       // FilterByOption finds a list of model zones based on given option
+		Delete(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, error)
+		Upsert(transaction *gorm.DB, shippingZone *model.ShippingZone) (*model.ShippingZone, error) // Upsert depends on given model zone's Id to decide update or insert the zone
+		Get(shippingZoneID string) (*model.ShippingZone, error)                                     // Get finds 1 model zone for given shippingZoneID
+		FilterByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, error)       // FilterByOption finds a list of model zones based on given option
 		CountByOptions(options *model.ShippingZoneFilterOption) (int64, error)
 	}
 	ShippingMethodStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
-		Upsert(transaction store_iface.SqlxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, error)                                                                           // Upsert bases on given method's Id to decide update or insert it
+		Upsert(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, error)                                                                                           // Upsert bases on given method's Id to decide update or insert it
 		Get(methodID string) (*model.ShippingMethod, error)                                                                                                                                 // Get finds and returns a model method with given id
 		ApplicableShippingMethods(price *goprices.Money, channelID string, weight *measurement.Weight, countryCode model.CountryCode, productIDs []string) ([]*model.ShippingMethod, error) // ApplicableShippingMethods finds all model methods with given conditions
 		GetbyOption(options *model.ShippingMethodFilterOption) (*model.ShippingMethod, error)                                                                                               // GetbyOption finds and returns a model method that satisfy given options
 		FilterByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, error)
-		Delete(transaction store_iface.SqlxExecutor, ids ...string) error
+		Delete(transaction *gorm.DB, ids ...string) error
 	}
 	ShippingMethodPostalCodeRuleStore interface {
-		Delete(transaction store_iface.SqlxExecutor, ids ...string) error
-		Save(transaction store_iface.SqlxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error)
+		Delete(transaction *gorm.DB, ids ...string) error
+		Save(transaction *gorm.DB, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error)
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(rule *model.ShippingMethodPostalCodeRule) []interface{}
 		FilterByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, error)
 	}
 	ShippingMethodChannelListingStore interface {
-		BulkDelete(transaction store_iface.SqlxExecutor, options *model.ShippingMethodChannelListingFilterOption) error
-		Upsert(transaction store_iface.SqlxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) // Upsert depends on given listing's Id to decide whether to save or update the listing
-		Get(listingID string) (*model.ShippingMethodChannelListing, error)                                                                      // Get finds a model method channel listing with given listingID
-		FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error)                   // FilterByOption returns a list of model method channel listings based on given option. result sorted by creation time ASC
+		BulkDelete(transaction *gorm.DB, options *model.ShippingMethodChannelListingFilterOption) error
+		Upsert(transaction *gorm.DB, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) // Upsert depends on given listing's Id to decide whether to save or update the listing
+		Get(listingID string) (*model.ShippingMethodChannelListing, error)                                                      // Get finds a model method channel listing with given listingID
+		FilterByOption(option *model.ShippingMethodChannelListingFilterOption) ([]*model.ShippingMethodChannelListing, error)   // FilterByOption returns a list of model method channel listings based on given option. result sorted by creation time ASC
 	}
 	ShippingMethodTranslationStore interface {
 	}
 	ShippingZoneChannelStore interface {
-		BulkDelete(transaction store_iface.SqlxExecutor, options *model.ShippingZoneChannelFilterOptions) error
-		BulkSave(transaction store_iface.SqlxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error)
+		BulkDelete(transaction *gorm.DB, options *model.ShippingZoneChannelFilterOptions) error
+		BulkSave(transaction *gorm.DB, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error)
 		FilterByOptions(options *model.ShippingZoneChannelFilterOptions) ([]*model.ShippingZoneChannel, error)
 	}
 	ShippingMethodExcludedProductStore interface {
-		Delete(transaction store_iface.SqlxExecutor, options *model.ShippingMethodExcludedProductFilterOptions) error
+		Delete(transaction *gorm.DB, options *model.ShippingMethodExcludedProductFilterOptions) error
 		Save(instance *model.ShippingMethodExcludedProduct) (*model.ShippingMethodExcludedProduct, error) // Save inserts given ShippingMethodExcludedProduct into database then returns it
 		FilterByOptions(options *model.ShippingMethodExcludedProductFilterOptions) ([]*model.ShippingMethodExcludedProduct, error)
 	}
@@ -459,8 +454,8 @@ type (
 	CollectionTranslationStore interface {
 	}
 	CollectionChannelListingStore interface {
-		Delete(transaction store_iface.SqlxExecutor, options *model.CollectionChannelListingFilterOptions) error
-		Upsert(transaction store_iface.SqlxExecutor, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error)
+		Delete(transaction *gorm.DB, options *model.CollectionChannelListingFilterOptions) error
+		Upsert(transaction *gorm.DB, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error)
 		FilterByOptions(options *model.CollectionChannelListingFilterOptions) ([]*model.CollectionChannelListing, error)
 	}
 	CollectionStore interface {
@@ -472,8 +467,8 @@ type (
 		Delete(ids ...string) error
 	}
 	CollectionProductStore interface {
-		Delete(transaction store_iface.SqlxExecutor, options *model.CollectionProductFilterOptions) error
-		BulkSave(transaction store_iface.SqlxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error)
+		Delete(transaction *gorm.DB, options *model.CollectionProductFilterOptions) error
+		BulkSave(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error)
 		FilterByOptions(options *model.CollectionProductFilterOptions) ([]*model.CollectionProduct, error)
 	}
 	ProductMediaStore interface {
@@ -496,10 +491,10 @@ type (
 	ProductVariantChannelListingStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(listing *model.ProductVariantChannelListing) []interface{}
-		Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error)                                                  // Save insert given value into database then returns it with an error
-		Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error)                                                                              // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
-		FilterbyOption(option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error)                                         // FilterbyOption finds and returns all product variant channel listings filterd using given option
-		BulkUpsert(transaction store_iface.SqlxExecutor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) // BulkUpsert performs bulk upsert given product variant channel listings then returns them
+		Save(variantChannelListing *model.ProductVariantChannelListing) (*model.ProductVariantChannelListing, error)                                  // Save insert given value into database then returns it with an error
+		Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error)                                                              // Get finds and returns 1 product variant channel listing based on given variantChannelListingID
+		FilterbyOption(option *model.ProductVariantChannelListingFilterOption) ([]*model.ProductVariantChannelListing, error)                         // FilterbyOption finds and returns all product variant channel listings filterd using given option
+		BulkUpsert(transaction *gorm.DB, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) // BulkUpsert performs bulk upsert given product variant channel listings then returns them
 	}
 	ProductVariantTranslationStore interface {
 		Upsert(translation *model.ProductVariantTranslation) (*model.ProductVariantTranslation, error)                  // Upsert inserts or updates given translation then returns it
@@ -509,19 +504,19 @@ type (
 	ProductVariantStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(variant *model.ProductVariant) []interface{}
-		Save(transaction store_iface.SqlxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error)   // Save inserts product variant instance to database
-		Get(id string) (*model.ProductVariant, error)                                                              // Get returns a product variant with given id
-		GetWeight(productVariantID string) (*measurement.Weight, error)                                            // GetWeight returns weight of given product variant
-		GetByOrderLineID(orderLineID string) (*model.ProductVariant, error)                                        // GetByOrderLineID finds and returns a product variant by given orderLineID
-		FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error)                  // FilterByOption finds and returns product variants based on given option
-		Update(transaction store_iface.SqlxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) // Update updates given product variant and returns it
+		Save(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error)   // Save inserts product variant instance to database
+		Get(id string) (*model.ProductVariant, error)                                              // Get returns a product variant with given id
+		GetWeight(productVariantID string) (*measurement.Weight, error)                            // GetWeight returns weight of given product variant
+		GetByOrderLineID(orderLineID string) (*model.ProductVariant, error)                        // GetByOrderLineID finds and returns a product variant by given orderLineID
+		FilterByOption(option *model.ProductVariantFilterOption) ([]*model.ProductVariant, error)  // FilterByOption finds and returns product variants based on given option
+		Update(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) // Update updates given product variant and returns it
 		AddProductVariantMedias(transaction *gorm.DB, variants model.ProductVariants, medias model.ProductMedias) error
 	}
 	ProductChannelListingStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
-		BulkUpsert(transaction store_iface.SqlxExecutor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) // BulkUpsert performs bulk upsert on given product channel listings
-		Get(channelListingID string) (*model.ProductChannelListing, error)                                                                // Get try finding a product channel listing, then returns it with an error
-		FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error)                           // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
+		BulkUpsert(transaction *gorm.DB, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) // BulkUpsert performs bulk upsert on given product channel listings
+		Get(channelListingID string) (*model.ProductChannelListing, error)                                                // Get try finding a product channel listing, then returns it with an error
+		FilterByOption(option *model.ProductChannelListingFilterOption) ([]*model.ProductChannelListing, error)           // FilterByOption filter a list of product channel listings by given option. Then returns them with an error
 	}
 	ProductTranslationStore interface {
 		Upsert(translation *model.ProductTranslation) (*model.ProductTranslation, error)                  // Upsert inserts or update given translation
@@ -571,19 +566,19 @@ type (
 type (
 	PaymentStore interface {
 		ScanFields(payMent *model.Payment) []interface{}
-		Save(transaction store_iface.SqlxExecutor, model *model.Payment) (*model.Payment, error)                               // Save save model instance into database
-		Get(transaction store_iface.SqlxExecutor, id string, lockForUpdate bool) (*model.Payment, error)                       // Get returns a model with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
-		Update(transaction store_iface.SqlxExecutor, model *model.Payment) (*model.Payment, error)                             // Update updates given model and returns new updated model
-		CancelActivePaymentsOfCheckout(checkoutToken string) error                                                             // CancelActivePaymentsOfCheckout inactivate all payments that belong to given model and in active status
-		FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error)                                            // FilterByOption finds and returns a list of payments that satisfy given option
-		UpdatePaymentsOfCheckout(transaction store_iface.SqlxExecutor, checkoutToken string, option *model.PaymentPatch) error // UpdatePaymentsOfCheckout updates payments of given model
+		Save(transaction *gorm.DB, model *model.Payment) (*model.Payment, error)                               // Save save model instance into database
+		Get(transaction *gorm.DB, id string, lockForUpdate bool) (*model.Payment, error)                       // Get returns a model with given id. `lockForUpdate` is true if you want to add "FOR UPDATE" to sql
+		Update(transaction *gorm.DB, model *model.Payment) (*model.Payment, error)                             // Update updates given model and returns new updated model
+		CancelActivePaymentsOfCheckout(checkoutToken string) error                                             // CancelActivePaymentsOfCheckout inactivate all payments that belong to given model and in active status
+		FilterByOption(option *model.PaymentFilterOption) ([]*model.Payment, error)                            // FilterByOption finds and returns a list of payments that satisfy given option
+		UpdatePaymentsOfCheckout(transaction *gorm.DB, checkoutToken string, option *model.PaymentPatch) error // UpdatePaymentsOfCheckout updates payments of given model
 		PaymentOwnedByUser(userID, paymentID string) (bool, error)
 	}
 	PaymentTransactionStore interface {
-		Save(transaction store_iface.SqlxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) // Save inserts new model transaction into database
-		Get(id string) (*model.PaymentTransaction, error)                                                                           // Get returns a model transaction with given id
-		Update(transaction *model.PaymentTransaction) (*model.PaymentTransaction, error)                                            // Update updates given transaction and returns updated one
-		FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error)                             // FilterByOption finds and returns a list of transactions with given option
+		Save(transaction *gorm.DB, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) // Save inserts new model transaction into database
+		Get(id string) (*model.PaymentTransaction, error)                                                           // Get returns a model transaction with given id
+		Update(transaction *model.PaymentTransaction) (*model.PaymentTransaction, error)                            // Update updates given transaction and returns updated one
+		FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error)             // FilterByOption finds and returns a list of transactions with given option
 	}
 )
 
@@ -603,40 +598,40 @@ type (
 	OrderLineStore interface {
 		ScanFields(orderLine *model.OrderLine) []interface{}
 		ModelFields(prefix string) util.AnyArray[string]
-		Upsert(transaction store_iface.SqlxExecutor, orderLine *model.OrderLine) (*model.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
-		Get(id string) (*model.OrderLine, error)                                                                    // Get returns a order line with id of given id
-		BulkDelete(orderLineIDs []string) error                                                                     // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
-		FilterbyOption(option *model.OrderLineFilterOption) ([]*model.OrderLine, error)                             // FilterbyOption finds and returns order lines by given option
-		BulkUpsert(transaction store_iface.SqlxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) // BulkUpsert performs upsert multiple order lines in once
+		Upsert(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, error)          // Upsert depends on given orderLine's Id to decide to update or save it
+		Get(id string) (*model.OrderLine, error)                                                    // Get returns a order line with id of given id
+		BulkDelete(orderLineIDs []string) error                                                     // BulkDelete delete all given order lines. NOTE: validate given ids are valid uuids before calling me
+		FilterbyOption(option *model.OrderLineFilterOption) ([]*model.OrderLine, error)             // FilterbyOption finds and returns order lines by given option
+		BulkUpsert(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, error) // BulkUpsert performs upsert multiple order lines in once
 	}
 	OrderStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(holder *model.Order) []interface{}
-		Get(id string) (*model.Order, error)                                                            // Get find order in database with given id
-		FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error)                         // FilterByOption returns a list of orders, filtered by given option
-		BulkUpsert(transaction store_iface.SqlxExecutor, orders []*model.Order) ([]*model.Order, error) // BulkUpsert performs bulk upsert given orders
+		Get(id string) (*model.Order, error)                                            // Get find order in database with given id
+		FilterByOption(option *model.OrderFilterOption) ([]*model.Order, error)         // FilterByOption returns a list of orders, filtered by given option
+		BulkUpsert(transaction *gorm.DB, orders []*model.Order) ([]*model.Order, error) // BulkUpsert performs bulk upsert given orders
 	}
 	OrderEventStore interface {
-		Save(transaction store_iface.SqlxExecutor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) // Save inserts given order event into database then returns it
-		Get(orderEventID string) (*model.OrderEvent, error)                                                 // Get finds order event with given id then returns it
+		Save(transaction *gorm.DB, orderEvent *model.OrderEvent) (*model.OrderEvent, error) // Save inserts given order event into database then returns it
+		Get(orderEventID string) (*model.OrderEvent, error)                                 // Get finds order event with given id then returns it
 		FilterByOptions(options *model.OrderEventFilterOptions) ([]*model.OrderEvent, error)
 	}
 	FulfillmentLineStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
 		Save(fulfillmentLine *model.FulfillmentLine) (*model.FulfillmentLine, error)
 		Get(id string) (*model.FulfillmentLine, error)
-		FilterbyOption(option *model.FulfillmentLineFilterOption) ([]*model.FulfillmentLine, error)                                   // FilterbyOption finds and returns a list of fulfillment lines by given option
-		BulkUpsert(transaction store_iface.SqlxExecutor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) // BulkUpsert upsert given fulfillment lines
-		DeleteFulfillmentLinesByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentLineFilterOption) error         // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
+		FilterbyOption(option *model.FulfillmentLineFilterOption) ([]*model.FulfillmentLine, error)                   // FilterbyOption finds and returns a list of fulfillment lines by given option
+		BulkUpsert(transaction *gorm.DB, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) // BulkUpsert upsert given fulfillment lines
+		DeleteFulfillmentLinesByOption(transaction *gorm.DB, option *model.FulfillmentLineFilterOption) error         // DeleteFulfillmentLinesByOption filters fulfillment lines by given option, then deletes them
 	}
 	FulfillmentStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(holder *model.Fulfillment) []interface{}
-		Upsert(transaction store_iface.SqlxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, error)                  // Upsert depends on given fulfillment's Id to decide update or insert it
-		Get(id string) (*model.Fulfillment, error)                                                                                // Get finds and return a fulfillment by given id
-		GetByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, error)      // GetByOption returns 1 fulfillment, filtered by given option
-		FilterByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) // FilterByOption finds and returns a slice of fulfillments by given option
-		BulkDeleteFulfillments(transaction store_iface.SqlxExecutor, fulfillments model.Fulfillments) error                       // BulkDeleteFulfillments deletes given fulfillments
+		Upsert(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, error)                  // Upsert depends on given fulfillment's Id to decide update or insert it
+		Get(id string) (*model.Fulfillment, error)                                                                // Get finds and return a fulfillment by given id
+		GetByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) (*model.Fulfillment, error)      // GetByOption returns 1 fulfillment, filtered by given option
+		FilterByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) // FilterByOption finds and returns a slice of fulfillments by given option
+		BulkDeleteFulfillments(transaction *gorm.DB, fulfillments model.Fulfillments) error                       // BulkDeleteFulfillments deletes given fulfillments
 	}
 )
 
@@ -666,32 +661,32 @@ type (
 		Upsert(invoice *model.Invoice) (*model.Invoice, error)                    // Upsert depends on given invoice Id to update/insert it
 		GetbyOptions(options *model.InvoiceFilterOptions) (*model.Invoice, error) // Get finds and returns 1 invoice
 		FilterByOptions(options *model.InvoiceFilterOptions) ([]*model.Invoice, error)
-		Delete(transaction store_iface.SqlxExecutor, ids ...string) error
+		Delete(transaction *gorm.DB, ids ...string) error
 	}
 )
 
 // giftcard related stores
 type (
 	GiftCardStore interface {
-		DeleteGiftcards(transaction store_iface.SqlxExecutor, ids []string) error
-		BulkUpsert(transaction store_iface.SqlxExecutor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) // BulkUpsert depends on given giftcards's Id properties then perform according operation
-		GetById(id string) (*model.GiftCard, error)                                                               // GetById returns a giftcard instance that has id of given id
-		FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error)                             // FilterByOption finds giftcards wth option
+		DeleteGiftcards(transaction *gorm.DB, ids []string) error
+		BulkUpsert(transaction *gorm.DB, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) // BulkUpsert depends on given giftcards's Id properties then perform according operation
+		GetById(id string) (*model.GiftCard, error)                                               // GetById returns a giftcard instance that has id of given id
+		FilterByOption(option *model.GiftCardFilterOption) ([]*model.GiftCard, error)             // FilterByOption finds giftcards wth option
 		// DeactivateOrderGiftcards update giftcards
 		// which have giftcard events with type == 'bought', parameters.order_id == given order id
 		// by setting their IsActive model to false
 		DeactivateOrderGiftcards(orderID string) ([]string, error)
 	}
 	GiftcardEventStore interface {
-		Save(event *model.GiftCardEvent) (*model.GiftCardEvent, error)                                                   // Save insdert given giftcard event into database then returns it
-		Get(id string) (*model.GiftCardEvent, error)                                                                     // Get finds and returns a giftcard event found by given id
-		BulkUpsert(transaction store_iface.SqlxExecutor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) // BulkUpsert upserts and returns given giftcard events
-		FilterByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, error)                        // FilterByOptions finds and returns a list of giftcard events with given options
+		Save(event *model.GiftCardEvent) (*model.GiftCardEvent, error)                                   // Save insdert given giftcard event into database then returns it
+		Get(id string) (*model.GiftCardEvent, error)                                                     // Get finds and returns a giftcard event found by given id
+		BulkUpsert(transaction *gorm.DB, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) // BulkUpsert upserts and returns given giftcard events
+		FilterByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, error)        // FilterByOptions finds and returns a list of giftcard events with given options
 	}
 	GiftCardOrderStore interface {
-		Save(giftcardOrder *model.OrderGiftCard) (*model.OrderGiftCard, error)                                                   // Save inserts new giftcard-order relation into database then returns it
-		Get(id string) (*model.OrderGiftCard, error)                                                                             // Get returns giftcard-order relation table with given id
-		BulkUpsert(transaction store_iface.SqlxExecutor, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) // BulkUpsert upserts given order-giftcard relations and returns it
+		Save(giftcardOrder *model.OrderGiftCard) (*model.OrderGiftCard, error)                                   // Save inserts new giftcard-order relation into database then returns it
+		Get(id string) (*model.OrderGiftCard, error)                                                             // Get returns giftcard-order relation table with given id
+		BulkUpsert(transaction *gorm.DB, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) // BulkUpsert upserts given order-giftcard relations and returns it
 		FilterByOptions(options *model.OrderGiftCardFilterOptions) ([]*model.OrderGiftCard, error)
 	}
 	GiftCardCheckoutStore interface {
@@ -704,10 +699,10 @@ type (
 // discount
 type (
 	OrderDiscountStore interface {
-		Upsert(transaction store_iface.SqlxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) // Upsert depends on given order discount's Id property to decide to update/insert it
-		Get(orderDiscountID string) (*model.OrderDiscount, error)                                                      // Get finds and returns an order discount with given id
-		FilterbyOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, error)                        // FilterbyOption filters order discounts that satisfy given option, then returns them
-		BulkDelete(orderDiscountIDs []string) error                                                                    // BulkDelete perform bulk delete all given order discount ids
+		Upsert(transaction *gorm.DB, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) // Upsert depends on given order discount's Id property to decide to update/insert it
+		Get(orderDiscountID string) (*model.OrderDiscount, error)                                      // Get finds and returns an order discount with given id
+		FilterbyOption(option *model.OrderDiscountFilterOption) ([]*model.OrderDiscount, error)        // FilterbyOption filters order discounts that satisfy given option, then returns them
+		BulkDelete(orderDiscountIDs []string) error                                                    // BulkDelete perform bulk delete all given order discount ids
 	}
 	DiscountSaleTranslationStore interface {
 	}
@@ -769,12 +764,12 @@ type (
 	CheckoutLineStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
 		ScanFields(line *model.CheckoutLine) []interface{}
-		Upsert(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, error)             // Upsert checks whether to update or insert given model line then performs according operation
-		Get(id string) (*model.CheckoutLine, error)                                       // Get returns a model line with given id
-		CheckoutLinesByCheckoutID(checkoutID string) ([]*model.CheckoutLine, error)       // CheckoutLinesByCheckoutID returns a list of model lines that belong to given model
-		DeleteLines(transaction store_iface.SqlxExecutor, checkoutLineIDs []string) error // DeleteLines deletes all model lines with given uuids
-		BulkUpdate(checkoutLines []*model.CheckoutLine) error                             // BulkUpdate receives a list of modified model lines, updates them in bulk.
-		BulkCreate(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, error)    // BulkCreate takes a list of raw model lines, save them into database then returns them fully with an error
+		Upsert(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, error)          // Upsert checks whether to update or insert given model line then performs according operation
+		Get(id string) (*model.CheckoutLine, error)                                    // Get returns a model line with given id
+		CheckoutLinesByCheckoutID(checkoutID string) ([]*model.CheckoutLine, error)    // CheckoutLinesByCheckoutID returns a list of model lines that belong to given model
+		DeleteLines(transaction *gorm.DB, checkoutLineIDs []string) error              // DeleteLines deletes all model lines with given uuids
+		BulkUpdate(checkoutLines []*model.CheckoutLine) error                          // BulkUpdate receives a list of modified model lines, updates them in bulk.
+		BulkCreate(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, error) // BulkCreate takes a list of raw model lines, save them into database then returns them fully with an error
 		// CheckoutLinesByCheckoutWithPrefetch finds all model lines belong to given model
 		//
 		// and prefetch all related product variants, products
@@ -786,11 +781,11 @@ type (
 	}
 	CheckoutStore interface {
 		ModelFields(prefix string) util.AnyArray[string]
-		Upsert(transaction store_iface.SqlxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, error)    // Upsert depends on given model's Token property to decide to update or insert it
-		FetchCheckoutLinesAndPrefetchRelatedValue(ckout *model.Checkout) ([]*model.CheckoutLineInfo, error)     // FetchCheckoutLinesAndPrefetchRelatedValue Fetch model lines as CheckoutLineInfo objects.
-		GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error)                                // GetByOption finds and returns 1 model based on given option
-		FilterByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, error)                           // FilterByOption finds and returns a list of model based on given option
-		DeleteCheckoutsByOption(transaction store_iface.SqlxExecutor, option *model.CheckoutFilterOption) error // DeleteCheckoutsByOption deletes model row(s) from database, filtered using given option.  It returns an error indicating if the operation was performed successfully.
+		Upsert(transaction *gorm.DB, checkouts []*model.Checkout) ([]*model.Checkout, error)                // Upsert depends on given model's Token property to decide to update or insert it
+		FetchCheckoutLinesAndPrefetchRelatedValue(ckout *model.Checkout) ([]*model.CheckoutLineInfo, error) // FetchCheckoutLinesAndPrefetchRelatedValue Fetch model lines as CheckoutLineInfo objects.
+		GetByOption(option *model.CheckoutFilterOption) (*model.Checkout, error)                            // GetByOption finds and returns 1 model based on given option
+		FilterByOption(option *model.CheckoutFilterOption) ([]*model.Checkout, error)                       // FilterByOption finds and returns a list of model based on given option
+		DeleteCheckoutsByOption(transaction *gorm.DB, option *model.CheckoutFilterOption) error             // DeleteCheckoutsByOption deletes model row(s) from database, filtered using given option.  It returns an error indicating if the operation was performed successfully.
 		CountCheckouts(options *model.CheckoutFilterOption) (int64, error)
 	}
 )
@@ -802,8 +797,8 @@ type ChannelStore interface {
 	Get(id string) (*model.Channel, error)                                      // Get returns channel by given id
 	FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) // FilterByOption returns a list of channels with given option
 	GetbyOption(option *model.ChannelFilterOption) (*model.Channel, error)      // GetbyOption finds and returns 1 channel filtered using given options
-	Upsert(transaction store_iface.SqlxExecutor, channel *model.Channel) (*model.Channel, error)
-	DeleteChannels(transaction store_iface.SqlxExecutor, ids []string) error
+	Upsert(transaction *gorm.DB, channel *model.Channel) (*model.Channel, error)
+	DeleteChannels(transaction *gorm.DB, ids []string) error
 }
 type ChannelShopStore interface {
 	// FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error)

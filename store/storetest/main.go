@@ -9,6 +9,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/store/sqlstore"
+	"gorm.io/gorm"
 )
 
 const (
@@ -23,8 +24,8 @@ func NewStoreTestWrapper(orig store.Store) *StoreTestWrapper {
 	return &StoreTestWrapper{orig}
 }
 
-func (w *StoreTestWrapper) GetMasterX() SqlXExecutor {
-	return w.orig.GetMasterX()
+func (w *StoreTestWrapper) GetMaster() *gorm.DB {
+	return w.orig.GetMaster()
 }
 
 func (w *StoreTestWrapper) DriverName() string {

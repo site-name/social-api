@@ -56,7 +56,7 @@ func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *model.DigitalContentUrl)
 	for {
 		if isSaving {
 			query := "INSERT INTO " + model.DigitalContentURLTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
-			_, err = ps.GetMasterX().NamedExec(query, contentURL)
+			_, err = ps.GetMaster().NamedExec(query, contentURL)
 
 		} else {
 
@@ -68,7 +68,7 @@ func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *model.DigitalContentUrl)
 				Join(",") + " WHERE Id=:Id"
 
 			var result sql.Result
-			result, err = ps.GetMasterX().NamedExec(query, contentURL)
+			result, err = ps.GetMaster().NamedExec(query, contentURL)
 			if err == nil && result != nil {
 				numUpdated, _ = result.RowsAffected()
 			}
@@ -96,7 +96,7 @@ func (ps *SqlDigitalContentUrlStore) Upsert(contentURL *model.DigitalContentUrl)
 func (ps *SqlDigitalContentUrlStore) Get(id string) (*model.DigitalContentUrl, error) {
 	var res model.DigitalContentUrl
 
-	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.DigitalContentURLTableName+" WHERE Id = ?", id)
+	err := ps.GetReplica().Get(&res, "SELECT * FROM "+model.DigitalContentURLTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.DigitalContentURLTableName, id)
@@ -129,7 +129,7 @@ func (s *SqlDigitalContentUrlStore) FilterByOptions(options *model.DigitalConten
 	}
 
 	var res []*model.DigitalContentUrl
-	err = s.GetReplicaX().Select(&res, queryString, args...)
+	err = s.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find digital content urls by options")
 	}

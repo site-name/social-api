@@ -5,7 +5,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 func (s *ServiceShipping) ShippingMethodPostalCodeRulesByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, *model.AppError) {
@@ -16,7 +16,7 @@ func (s *ServiceShipping) ShippingMethodPostalCodeRulesByOptions(options *model.
 	return rules, nil
 }
 
-func (s *ServiceShipping) CreateShippingMethodPostalCodeRules(transaction store_iface.SqlxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, *model.AppError) {
+func (s *ServiceShipping) CreateShippingMethodPostalCodeRules(transaction *gorm.DB, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, *model.AppError) {
 	rules, err := s.srv.Store.ShippingMethodPostalCodeRule().Save(transaction, rules)
 	if err != nil {
 		statusCode := http.StatusInternalServerError

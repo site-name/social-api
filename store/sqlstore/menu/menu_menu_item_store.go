@@ -47,7 +47,7 @@ func (is *SqlMenuItemStore) Save(item *model.MenuItem) (*model.MenuItem, error) 
 	}
 
 	query := "INSERT INTO " + model.MenuItemTableName + "(" + is.ModelFields("").Join(",") + ") VALUES (" + is.ModelFields(":").Join(",") + ")"
-	if _, err := is.GetMasterX().NamedExec(query, item); err != nil {
+	if _, err := is.GetMaster().NamedExec(query, item); err != nil {
 		return nil, errors.Wrapf(err, "failed to save menu item with id=%s", item.Id)
 	}
 	return item, nil
@@ -80,7 +80,7 @@ func (is *SqlMenuItemStore) GetByOptions(options *model.MenuItemFilterOptions) (
 
 	var menuItem model.MenuItem
 
-	err = is.GetReplicaX().Get(&menuItem, queryString, args...)
+	err = is.GetReplica().Get(&menuItem, queryString, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.MenuItemTableName, "")
@@ -98,7 +98,7 @@ func (is *SqlMenuItemStore) FilterByOptions(options *model.MenuItemFilterOptions
 	}
 
 	var res []*model.MenuItem
-	err = is.GetReplicaX().Select(&res, queryString, args...)
+	err = is.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find menu items by given options")
 	}

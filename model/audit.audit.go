@@ -5,14 +5,16 @@ import (
 )
 
 type Audit struct {
-	Id        string `json:"id"`
-	CreateAt  int64  `json:"create_at"`
-	UserId    string `json:"user_id"`
-	Action    string `json:"action"`
-	ExtraInfo string `json:"extra_info"`
-	IpAddress string `json:"ip_address"`
-	SessionId string `json:"session_id"`
+	Id        string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt  int64  `json:"create_at" gorm:"type:bigint;default:autoCreateTime:milli;column:CreateAt"`
+	UserId    string `json:"user_id" gorm:"type:uuid;column:UserId"`
+	Action    string `json:"action" gorm:"type:varchar(512);column:Action"`         // varchar(512)
+	ExtraInfo string `json:"extra_info" gorm:"type:varchar(1024);column:ExtraInfo"` // varchar(1024)
+	IpAddress string `json:"ip_address" gorm:"type:varchar(64);column:IpAddress"`   // varchar(64)
+	SessionId string `json:"session_id" gorm:"type:uuid;column:SessionId"`
 }
+
+func (*Audit) TableName() string { return AuditTableName }
 
 func (a *Audit) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
@@ -20,31 +22,13 @@ func (a *Audit) IsValid() *AppError {
 		"audit_id=",
 		"Audit.IsValid",
 	)
-	if !IsValidId(a.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(a.UserId) {
 		return outer("user_id", &a.Id)
 	}
 	if !IsValidId(a.SessionId) {
 		return outer("session_id", &a.Id)
 	}
-	if a.CreateAt == 0 {
-		return outer("create_at", &a.Id)
-	}
-
 	return nil
-}
-
-func (a *Audit) PreSave() {
-	if a.Id == "" {
-		a.Id = NewId()
-	}
-	a.CreateAt = GetMillis()
-}
-
-func (a *Audit) ToJSON() string {
-	return ModelToJson(a)
 }
 
 func AuditFromJson(data io.Reader) *Audit {

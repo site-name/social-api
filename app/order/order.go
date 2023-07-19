@@ -16,11 +16,11 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // UpsertOrder depends on given order's Id property to decide update/save it
-func (a *ServiceOrder) UpsertOrder(transaction store_iface.SqlxExecutor, order *model.Order) (*model.Order, *model.AppError) {
+func (a *ServiceOrder) UpsertOrder(transaction *gorm.DB, order *model.Order) (*model.Order, *model.AppError) {
 	orders, err := a.srv.Store.Order().BulkUpsert(transaction, []*model.Order{order})
 
 	if err != nil {
@@ -38,7 +38,7 @@ func (a *ServiceOrder) UpsertOrder(transaction store_iface.SqlxExecutor, order *
 }
 
 // BulkUpsertOrders performs bulk upsert given orders
-func (a *ServiceOrder) BulkUpsertOrders(transaction store_iface.SqlxExecutor, orders []*model.Order) ([]*model.Order, *model.AppError) {
+func (a *ServiceOrder) BulkUpsertOrders(transaction *gorm.DB, orders []*model.Order) ([]*model.Order, *model.AppError) {
 	orders, err := a.srv.Store.Order().BulkUpsert(transaction, orders)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok { // error caused by IsValid()
@@ -109,7 +109,7 @@ func (a *ServiceOrder) OrderTotalQuantity(orderID string) (int, *model.AppError)
 }
 
 // UpdateOrderTotalPaid update given order's total paid amount
-func (a *ServiceOrder) UpdateOrderTotalPaid(transaction store_iface.SqlxExecutor, orDer *model.Order) *model.AppError {
+func (a *ServiceOrder) UpdateOrderTotalPaid(transaction *gorm.DB, orDer *model.Order) *model.AppError {
 	payments, appErr := a.srv.PaymentService().PaymentsByOption(&model.PaymentFilterOption{
 		OrderID: squirrel.Eq{model.PaymentTableName + ".OrderID": orDer.Id},
 	})

@@ -7,7 +7,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // WishlistItemsByOption returns a slice of wishlist items filtered using given option
@@ -34,7 +34,7 @@ func (a *ServiceWishlist) WishlistItemByOption(option *model.WishlistItemFilterO
 }
 
 // BulkUpsertWishlistItems updates or inserts given wishlist item into database then returns it
-func (a *ServiceWishlist) BulkUpsertWishlistItems(transaction store_iface.SqlxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, *model.AppError) {
+func (a *ServiceWishlist) BulkUpsertWishlistItems(transaction *gorm.DB, wishlistItems model.WishlistItems) (model.WishlistItems, *model.AppError) {
 	wishlistItems, err := a.srv.Store.WishlistItem().BulkUpsert(transaction, wishlistItems)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -84,7 +84,7 @@ func (a *ServiceWishlist) GetOrCreateWishlistItem(wishlistItem *model.WishlistIt
 }
 
 // DeleteWishlistItemsByOption tell store to delete wishlist items that satisfy given option, then returns a number of items deleted
-func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction store_iface.SqlxExecutor, option *model.WishlistItemFilterOption) (int64, *model.AppError) {
+func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction *gorm.DB, option *model.WishlistItemFilterOption) (int64, *model.AppError) {
 	numDeleted, err := a.srv.Store.WishlistItem().DeleteItemsByOption(transaction, option)
 	if err != nil {
 		return 0, model.NewAppError("DeleteWishlistItemsByOption", "app.wishlist.error_deleting_wishlist_items_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -95,7 +95,7 @@ func (a *ServiceWishlist) DeleteWishlistItemsByOption(transaction store_iface.Sq
 
 // MoveItemsBetweenWishlists moves items from given srcWishlist to given dstWishlist
 func (a *ServiceWishlist) MoveItemsBetweenWishlists(srcWishlist *model.Wishlist, dstWishlist *model.Wishlist) *model.AppError {
-	transaction, err := a.srv.Store.GetMasterX().Beginx()
+	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return model.NewAppError("MoveItemsBetweenWishlists", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

@@ -63,7 +63,7 @@ func (ps *SqlProductTypeStore) Save(productType *model.ProductType) (*model.Prod
 	}
 
 	query := "INSERT INTO " + model.ProductTypeTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
-	if _, err := ps.GetMasterX().NamedExec(query, productType); err != nil {
+	if _, err := ps.GetMaster().NamedExec(query, productType); err != nil {
 		return nil, errors.Wrapf(err, "failed to save product type withh id=%s", productType.Id)
 	}
 
@@ -95,7 +95,7 @@ func (ps *SqlProductTypeStore) FilterProductTypesByCheckoutToken(checkoutToken s
 
 	var productTypes []*model.ProductType
 
-	err = ps.GetReplicaX().Select(&productTypes, queryString, args...)
+	err = ps.GetReplica().Select(&productTypes, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find product types related to checkout with token=%s", checkoutToken)
 	}
@@ -115,7 +115,7 @@ func (pts *SqlProductTypeStore) ProductTypesByProductIDs(productIDs []string) ([
 		return nil, errors.Wrap(err, "ProductTypesByProductIDs_ToSql")
 	}
 
-	err = pts.GetReplicaX().Select(&productTypes, queryString, args...)
+	err = pts.GetReplica().Select(&productTypes, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product types with given product ids")
 	}
@@ -138,7 +138,7 @@ func (pts *SqlProductTypeStore) ProductTypeByProductVariantID(variantID string) 
 	}
 
 	var res model.ProductType
-	err = pts.GetReplicaX().Get(&res, queryString, args...)
+	err = pts.GetReplica().Get(&res, queryString, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductTypeTableName, "variantID="+variantID)
@@ -183,7 +183,7 @@ func (pts *SqlProductTypeStore) GetByOption(options *model.ProductTypeFilterOpti
 	}
 
 	var res model.ProductType
-	err = pts.GetReplicaX().Get(&res, queryString, args...)
+	err = pts.GetReplica().Get(&res, queryString, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductTypeTableName, "options")
@@ -202,7 +202,7 @@ func (pts *SqlProductTypeStore) FilterbyOption(options *model.ProductTypeFilterO
 	}
 
 	var res []*model.ProductType
-	err = pts.GetReplicaX().Select(&res, queryString, args...)
+	err = pts.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product types with given option")
 	}
@@ -219,7 +219,7 @@ func (pts *SqlProductTypeStore) Count(options *model.ProductTypeFilterOption) (i
 	}
 
 	var count int64
-	err = pts.GetReplicaX().Get(&count, queryStr, args...)
+	err = pts.GetReplica().Get(&count, queryStr, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count number of product types by options")
 	}

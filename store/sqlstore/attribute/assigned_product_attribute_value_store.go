@@ -16,7 +16,7 @@ type SqlAssignedProductAttributeValueStore struct {
 var assignedProductAttrValueDuplicateKeys = []string{
 	"ValueID",
 	"AssignmentID",
-	"assignedproductattributevalues_valueid_assignmentid_key",
+	"valueid_assignmentid_key",
 }
 
 func NewSqlAssignedProductAttributeValueStore(s store.Store) store.AssignedProductAttributeValueStore {
@@ -25,7 +25,6 @@ func NewSqlAssignedProductAttributeValueStore(s store.Store) store.AssignedProdu
 
 func (as *SqlAssignedProductAttributeValueStore) ModelFields(prefix string) util.AnyArray[string] {
 	res := util.AnyArray[string]{
-		"Id",
 		"ValueID",
 		"AssignmentID",
 		"SortOrder",
@@ -41,7 +40,6 @@ func (as *SqlAssignedProductAttributeValueStore) ModelFields(prefix string) util
 
 func (as *SqlAssignedProductAttributeValueStore) ScanFields(assignedProductAttributeValue *model.AssignedProductAttributeValue) []interface{} {
 	return []interface{}{
-		&assignedProductAttributeValue.Id,
 		&assignedProductAttributeValue.ValueID,
 		&assignedProductAttributeValue.AssignmentID,
 		&assignedProductAttributeValue.SortOrder,
@@ -49,18 +47,11 @@ func (as *SqlAssignedProductAttributeValueStore) ScanFields(assignedProductAttri
 }
 
 func (as *SqlAssignedProductAttributeValueStore) Save(assignedProductAttrValue *model.AssignedProductAttributeValue) (*model.AssignedProductAttributeValue, error) {
-	assignedProductAttrValue.PreSave()
-	if err := assignedProductAttrValue.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.AssignedProductAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-
-	if _, err := as.GetMasterX().NamedExec(query, assignedProductAttrValue); err != nil {
+	if err := as.GetMaster().Create(assignedProductAttrValue).Error; err != nil {
 		if as.IsUniqueConstraintError(err, assignedProductAttrValueDuplicateKeys) {
 			return nil, store.NewErrInvalidInput(model.AssignedProductAttributeValueTableName, "ValueID/AssignmentID", assignedProductAttrValue.ValueID+"/"+assignedProductAttrValue.AssignmentID)
 		}
-		return nil, errors.Wrapf(err, "failed to save assigned product attribute value with id=%s", assignedProductAttrValue.Id)
+		return nil, errors.Wrap(err, "failed to save assigned product attribute value")
 	}
 
 	return assignedProductAttrValue, nil
@@ -69,7 +60,7 @@ func (as *SqlAssignedProductAttributeValueStore) Save(assignedProductAttrValue *
 func (as *SqlAssignedProductAttributeValueStore) Get(assignedProductAttrValueID string) (*model.AssignedProductAttributeValue, error) {
 	var res model.AssignedProductAttributeValue
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedProductAttributeValueTableName+" WHERE Id = ?", assignedProductAttrValueID)
+	err := as.GetReplica().Get(&res, "SELECT * FROM "+model.AssignedProductAttributeValueTableName+" WHERE Id = ?", assignedProductAttrValueID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedProductAttributeValueTableName, assignedProductAttrValueID)
@@ -81,7 +72,7 @@ func (as *SqlAssignedProductAttributeValueStore) Get(assignedProductAttrValueID 
 }
 
 func (as *SqlAssignedProductAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedProductAttributeValue, error) {
-	tx, err := as.GetMasterX().Beginx()
+	tx, err := as.GetMaster().Begin()
 	if err != nil {
 		return nil, errors.Wrapf(err, "begin_transaction")
 	}
@@ -122,7 +113,7 @@ func (as *SqlAssignedProductAttributeValueStore) SaveInBulk(assignmentID string,
 }
 
 func (as *SqlAssignedProductAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedProductAttributeValue) error {
-	tx, err := as.GetMasterX().Beginx()
+	tx, err := as.GetMaster().Begin()
 	if err != nil {
 		return errors.Wrapf(err, "begin_transaction")
 	}
@@ -174,7 +165,7 @@ func (as *SqlAssignedProductAttributeValueStore) SelectForSort(assignmentID stri
 		return nil, nil, errors.Wrap(err, "SelectForSort_ToSql")
 	}
 
-	rows, err := as.GetReplicaX().QueryX(query, args...)
+	rows, err := as.GetReplica().Query(query, args...)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to find assigned product attribute values")
 	}
@@ -222,7 +213,7 @@ func (s *SqlAssignedProductAttributeValueStore) FilterByOptions(options *model.A
 	}
 
 	var res []*model.AssignedProductAttributeValue
-	err = s.GetReplicaX().Select(&res, queryString, args...)
+	err = s.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find assigned product attributes by given options")
 	}

@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -44,8 +43,8 @@ func (s *SqlOrderDiscountStore) ModelFields(prefix string) util.AnyArray[string]
 }
 
 // Upsert depends on given order discount's Id property to decide to update/insert it
-func (ods *SqlOrderDiscountStore) Upsert(transaction store_iface.SqlxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
-	var executor store_iface.SqlxExecutor = ods.GetMasterX()
+func (ods *SqlOrderDiscountStore) Upsert(transaction *gorm.DB, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
+	var executor *gorm.DB = ods.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -102,7 +101,7 @@ func (ods *SqlOrderDiscountStore) Upsert(transaction store_iface.SqlxExecutor, o
 func (ods *SqlOrderDiscountStore) Get(orderDiscountID string) (*model.OrderDiscount, error) {
 	var res model.OrderDiscount
 
-	err := ods.GetReplicaX().Get(&res, "SELECT * FROM "+model.OrderDiscountTableName+" WHERE Id = ?", orderDiscountID)
+	err := ods.GetReplica().Get(&res, "SELECT * FROM "+model.OrderDiscountTableName+" WHERE Id = ?", orderDiscountID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderDiscountTableName, orderDiscountID)
@@ -135,7 +134,7 @@ func (ods *SqlOrderDiscountStore) FilterbyOption(option *model.OrderDiscountFilt
 	}
 
 	var res []*model.OrderDiscount
-	err = ods.GetReplicaX().Select(&res, queryString, args...)
+	err = ods.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order discounts with given option")
 	}
@@ -146,7 +145,7 @@ func (ods *SqlOrderDiscountStore) FilterbyOption(option *model.OrderDiscountFilt
 // BulkDelete perform bulk delete all given order discount ids
 func (ods *SqlOrderDiscountStore) BulkDelete(orderDiscountIDs []string) error {
 	query, args, _ := ods.GetQueryBuilder().Delete("*").From(model.OrderDiscountTableName).Where(squirrel.Eq{"Id": orderDiscountIDs}).ToSql()
-	result, err := ods.GetMasterX().Exec(query, args...)
+	result, err := ods.GetMaster().Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete order discounts by given ids")
 	}

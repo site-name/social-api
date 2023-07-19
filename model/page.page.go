@@ -23,6 +23,9 @@ type Page struct {
 	ModelMetadata
 	Publishable
 	Seo
+
+	Attributes       []*AssignedPageAttribute `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
+	AttributesRelate []*AttributePage         `json:"-" gorm:"many2many:AssignedPageAttributes"`
 }
 
 type PageFilterOptions struct {

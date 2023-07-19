@@ -10,7 +10,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // getVariantPricesInChannelsDict
@@ -76,7 +76,7 @@ func (a *ServiceProduct) getProductDiscountedPrice(
 // UpdateProductDiscountedPrice
 //
 // NOTE: `discounts` can be nil
-func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction store_iface.SqlxExecutor, product model.Product, discounts []*model.DiscountInfo) *model.AppError {
+func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction *gorm.DB, product model.Product, discounts []*model.DiscountInfo) *model.AppError {
 	var appError *model.AppError
 	if len(discounts) == 0 {
 		discounts, appError = a.srv.DiscountService().FetchActiveDiscounts()
@@ -187,7 +187,7 @@ func (a *ServiceProduct) UpdateProductDiscountedPrice(transaction store_iface.Sq
 }
 
 // UpdateProductsDiscountedPrices
-func (a *ServiceProduct) UpdateProductsDiscountedPrices(transaction store_iface.SqlxExecutor, products []*model.Product, discounts []*model.DiscountInfo) *model.AppError {
+func (a *ServiceProduct) UpdateProductsDiscountedPrices(transaction *gorm.DB, products []*model.Product, discounts []*model.DiscountInfo) *model.AppError {
 	var (
 		appError *model.AppError
 		wg       sync.WaitGroup
@@ -223,7 +223,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPrices(transaction store_iface.
 	return appError
 }
 
-func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(transaction store_iface.SqlxExecutor, productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError {
+func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(transaction *gorm.DB, productIDs, categoryIDs, collectionIDs, variantIDs []string) *model.AppError {
 	products, err := a.srv.Store.Product().SelectForUpdateDiscountedPricesOfCatalogues(productIDs, categoryIDs, collectionIDs, variantIDs)
 	if err != nil {
 		return model.NewAppError("UpdateProductsDiscountedPricesOfCatalogues", "app.product.error_finding_products_by_given_id_lists.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -235,7 +235,7 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfCatalogues(transaction 
 // UpdateProductsDiscountedPricesOfDiscount
 //
 // NOTE: discount must be either *Sale or *Voucher
-func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction store_iface.SqlxExecutor, discount interface{}) *model.AppError {
+func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction *gorm.DB, discount interface{}) *model.AppError {
 	var (
 		productFilterOption    model.ProductFilterOption
 		categoryFilterOption   model.CategoryFilterOption
@@ -244,9 +244,9 @@ func (a *ServiceProduct) UpdateProductsDiscountedPricesOfDiscount(transaction st
 	)
 	switch t := discount.(type) {
 	case *model.Sale:
-		productFilterOption.SaleID = squirrel.Eq{model.SaleProductRelationTableName + ".SaleID": t.Id}
-		categoryFilterOption.SaleID = squirrel.Eq{model.SaleCategoryRelationTableName + ".SaleID": t.Id}
-		collectionFilterOption.SaleID = squirrel.Eq{model.SaleCollectionRelationTableName + ".SaleID": t.Id}
+		productFilterOption.SaleID = squirrel.Eq{model.SaleProductTableName + ".SaleID": t.Id}
+		categoryFilterOption.SaleID = squirrel.Eq{model.SaleCategoryTableName + ".SaleID": t.Id}
+		collectionFilterOption.SaleID = squirrel.Eq{model.SaleCollectionTableName + ".SaleID": t.Id}
 		variantFilterOptions.SaleID = squirrel.Eq{model.SaleProductVariantTableName + ".SaleID": t.Id}
 	case *model.Voucher:
 		productFilterOption.VoucherID = squirrel.Eq{model.VoucherProductTableName + ".VoucherID": t.Id}

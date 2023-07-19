@@ -38,7 +38,7 @@ package discount
 // 	}
 
 // 	if isSaving {
-// 		ss.GetMasterX().Updates(relation)
+// 		ss.GetMaster().Updates(relation)
 // 	} else {
 // 		ss.GetMaster().Begin()
 // 	}
@@ -60,7 +60,7 @@ package discount
 // 	// )
 // 	// if isSaving {
 // 	// 	query := "INSERT INTO " + store.SaleProductVariantTableName + " (" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
-// 	// 	_, err = ss.GetMasterX().NamedExec(query, relation)
+// 	// 	_, err = ss.GetMaster().NamedExec(query, relation)
 
 // 	// } else {
 
@@ -72,7 +72,7 @@ package discount
 // 	// 		Join(",") + " WHERE Id = :Id"
 
 // 	// 	var result sql.Result
-// 	// 	result, err = ss.GetMasterX().NamedExec(query, relation)
+// 	// 	result, err = ss.GetMaster().NamedExec(query, relation)
 // 	// 	if err == nil && result != nil {
 // 	// 		numUpdated, _ = result.RowsAffected()
 // 	// 	}

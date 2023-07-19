@@ -59,7 +59,8 @@ func (s *SqlUserAccessTokenStore) Delete(tokenId string) error {
 }
 
 func (s *SqlUserAccessTokenStore) deleteSessionsAndTokensById(transaction *gorm.DB, tokenId string) error {
-	if err := transaction.Exec("DELETE FROM Sessions s USING UserAccessTokens o WHERE o.Token = s.Token AND o.Id = ?", tokenId).Error; err != nil {
+	err := transaction.Raw("DELETE FROM Sessions s USING UserAccessTokens o WHERE o.Token = s.Token AND o.Id = ?", tokenId).Error
+	if err != nil {
 		return errors.Wrapf(err, "failed to delete Sessions with UserAccessToken id=%s", tokenId)
 	}
 
@@ -67,7 +68,8 @@ func (s *SqlUserAccessTokenStore) deleteSessionsAndTokensById(transaction *gorm.
 }
 
 func (s *SqlUserAccessTokenStore) deleteTokensById(transaction *gorm.DB, tokenId string) error {
-	if err := transaction.Exec("DELETE FROM UserAccessTokens WHERE Id = ?", tokenId).Error; err != nil {
+	err := transaction.Raw("DELETE FROM UserAccessTokens WHERE Id = ?", tokenId).Error
+	if err != nil {
 		return errors.Wrapf(err, "failed to delete UserAccessToken id=%s", tokenId)
 	}
 
@@ -90,9 +92,8 @@ func (s *SqlUserAccessTokenStore) DeleteAllForUser(userId string) error {
 }
 
 func (s *SqlUserAccessTokenStore) deleteSessionsandTokensByUser(transaction *gorm.DB, userId string) error {
-	query := "DELETE FROM Sessions s USING UserAccessTokens o WHERE o.Token = s.Token AND o.UserId = ?"
-
-	if err := transaction.Exec(query, userId).Error; err != nil {
+	err := transaction.Raw("DELETE FROM Sessions s USING UserAccessTokens o WHERE o.Token = s.Token AND o.UserId = ?", userId).Error
+	if err != nil {
 		return errors.Wrapf(err, "failed to delete Sessions with UserAccessToken userId=%s", userId)
 	}
 
@@ -100,7 +101,8 @@ func (s *SqlUserAccessTokenStore) deleteSessionsandTokensByUser(transaction *gor
 }
 
 func (s *SqlUserAccessTokenStore) deleteTokensByUser(transaction *gorm.DB, userId string) error {
-	if err := transaction.Exec("DELETE FROM UserAccessTokens WHERE UserId = ?", userId).Error; err != nil {
+	err := transaction.Raw("DELETE FROM UserAccessTokens WHERE UserId = ?", userId).Error
+	if err != nil {
 		return errors.Wrapf(err, "failed to delete UserAccessToken userId=%s", userId)
 	}
 
@@ -123,7 +125,7 @@ func (s *SqlUserAccessTokenStore) Get(tokenId string) (*model.UserAccessToken, e
 func (s *SqlUserAccessTokenStore) GetAll(offset, limit int) ([]*model.UserAccessToken, error) {
 	tokens := []*model.UserAccessToken{}
 
-	if err := s.GetReplica().Find(&tokens, "LIMIT ? OFFSET ?", limit, offset).Error; err != nil {
+	if err := s.GetReplica().Raw("SELECT * FROM "+model.UserAccessTokenTableName+" OFFSET ? LIMIT ?", offset, limit).Scan(&tokens).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to find UserAccessTokens")
 	}
 
@@ -133,7 +135,7 @@ func (s *SqlUserAccessTokenStore) GetAll(offset, limit int) ([]*model.UserAccess
 func (s *SqlUserAccessTokenStore) GetByToken(tokenString string) (*model.UserAccessToken, error) {
 	var token model.UserAccessToken
 
-	if err := s.GetReplica().First(&token, "Token = ?", token).Error; err != nil {
+	if err := s.GetReplica().First(&token, "Token = ?", tokenString).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("UserAccessToken", fmt.Sprintf("token=%s", tokenString))
 		}
@@ -146,7 +148,7 @@ func (s *SqlUserAccessTokenStore) GetByToken(tokenString string) (*model.UserAcc
 func (s *SqlUserAccessTokenStore) GetByUser(userId string, offset, limit int) ([]*model.UserAccessToken, error) {
 	tokens := []*model.UserAccessToken{}
 
-	if err := s.GetReplica().Find(&tokens, "UserId = ? LIMIT ? OFFSET ?", userId, limit, offset).Error; err != nil {
+	if err := s.GetReplica().Offset(offset).Limit(limit).Find(&tokens, "UserId = ?", userId).Error; err != nil {
 		return nil, errors.Wrapf(err, "failed to find UserAccessTokens with userId=%s", userId)
 	}
 

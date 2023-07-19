@@ -31,14 +31,14 @@ func (r *Resolver) VariantMediaUnassign(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// create transaction:
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("VariantMediaUnassign", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 	defer store.FinalizeTransaction(transaction)
 
 	// NOTE: delete does not return error on wrong values provided.
-	err = embedCtx.App.Srv().Store.VariantMedia().Delete(transaction, &model.VariantMediaFilterOptions{
+	err = embedCtx.App.Srv().Store.ProductVariant().AddProductVariantMedias()(transaction, &model.VariantMediaFilterOptions{
 		Conditions: squirrel.And{
 			squirrel.Eq{model.ProductVariantMediaTableName + ".VariantID": args.VariantID},
 			squirrel.Eq{model.ProductVariantMediaTableName + ".MediaID": args.MediaID},
@@ -91,7 +91,7 @@ func (r *Resolver) VariantMediaAssign(ctx context.Context, args struct {
 	media := productMedias[0]
 
 	// create transaction:
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("VariantMediaAssign", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

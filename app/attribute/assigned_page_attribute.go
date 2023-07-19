@@ -24,15 +24,15 @@ func (a *ServiceAttribute) AssignedPageAttributeByOption(option *model.AssignedP
 
 // GetOrCreateAssignedPageAttribute gets or create an assigned page attribute, then returns it
 func (a *ServiceAttribute) GetOrCreateAssignedPageAttribute(assignedPageAttribute *model.AssignedPageAttribute) (*model.AssignedPageAttribute, *model.AppError) {
-	option := new(model.AssignedPageAttributeFilterOption)
+	eqConds := squirrel.Eq{}
 	if assignedPageAttribute.PageID != "" {
-		option.PageID = squirrel.Eq{model.AssignedPageAttributeTableName + ".PageID": assignedPageAttribute.PageID}
+		eqConds[model.AssignedPageAttributeTableName+".PageID"] = assignedPageAttribute.PageID
 	}
 	if assignedPageAttribute.AssignmentID != "" {
-		option.AssignmentID = squirrel.Eq{model.AssignedPageAttributeTableName + ".AssignmentID": assignedPageAttribute.AssignmentID}
+		eqConds[model.AssignedPageAttributeTableName+".AssignmentID"] = assignedPageAttribute.AssignmentID
 	}
 
-	assignedPageAttr, appErr := a.AssignedPageAttributeByOption(option)
+	assignedPageAttr, appErr := a.AssignedPageAttributeByOption(&model.AssignedPageAttributeFilterOption{Conditions: eqConds})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr

@@ -5,7 +5,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // GiftcardEventsByOptions returns a list of giftcard events filtered using given options
@@ -30,7 +30,7 @@ func (s *ServiceGiftcard) GiftcardEventsByOptions(options *model.GiftCardEventFi
 }
 
 // BulkUpsertGiftcardEvents tells store to upsert given giftcard events into database then returns them
-func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction store_iface.SqlxExecutor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction *gorm.DB, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, *model.AppError) {
 	events, err := s.srv.Store.GiftcardEvent().BulkUpsert(transaction, events...)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -49,7 +49,7 @@ func (s *ServiceGiftcard) BulkUpsertGiftcardEvents(transaction store_iface.SqlxE
 }
 
 // GiftcardsUsedInOrderEvent bulk creates giftcard events
-func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction store_iface.SqlxExecutor, balanceData model.BalanceData, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction *gorm.DB, balanceData model.BalanceData, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -75,7 +75,7 @@ func (s *ServiceGiftcard) GiftcardsUsedInOrderEvent(transaction store_iface.Sqlx
 	return s.BulkUpsertGiftcardEvents(transaction, events...)
 }
 
-func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction store_iface.SqlxExecutor, giftcards []*model.GiftCard, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError) {
+func (s *ServiceGiftcard) GiftcardsBoughtEvent(transaction *gorm.DB, giftcards []*model.GiftCard, orderID string, user *model.User, _ interface{}) ([]*model.GiftCardEvent, *model.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id

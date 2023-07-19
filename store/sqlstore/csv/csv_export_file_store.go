@@ -42,7 +42,7 @@ func (cs *SqlCsvExportFileStore) Save(file *model.ExportFile) (*model.ExportFile
 
 	query := "INSERT INTO " + model.CsvExportFileTableName + " (" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
 
-	if _, err := cs.GetMasterX().NamedExec(query, file); err != nil {
+	if _, err := cs.GetMaster().NamedExec(query, file); err != nil {
 		return nil, errors.Wrapf(err, "failed to save ExportFile with Id=%s", file.Id)
 	}
 	return file, nil
@@ -52,7 +52,7 @@ func (cs *SqlCsvExportFileStore) Save(file *model.ExportFile) (*model.ExportFile
 func (cs *SqlCsvExportFileStore) Get(id string) (*model.ExportFile, error) {
 	var res model.ExportFile
 
-	err := cs.GetMasterX().Get(&res, "SELECT * FROM "+model.CsvExportFileTableName+" WHERE Id = ?", id)
+	err := cs.GetMaster().Get(&res, "SELECT * FROM "+model.CsvExportFileTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.CsvExportFileTableName, id)

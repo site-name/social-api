@@ -13,7 +13,8 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store/store_iface"
+	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 // CreatePaymentInformation Extract order information along with payment details.
@@ -157,7 +158,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymen
 //
 // `storePaymentMethod` default to model.StorePaymentMethod.NONE
 func (a *ServicePayment) CreatePayment(
-	transaction store_iface.SqlxExecutor,
+	transaction *gorm.DB,
 	gateway string,
 	total *decimal.Decimal,
 	currency string,
@@ -383,11 +384,11 @@ func (a *ServicePayment) ValidateGatewayResponse(response *model.GatewayResponse
 // GatewayPostProcess
 func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTransaction, payMent *model.Payment) *model.AppError {
 	// create transaction
-	transaction, err := a.srv.Store.GetMasterX().Beginx()
+	transaction, err := a.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return model.NewAppError("GatewayPostProcess", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	defer a.srv.Store.FinalizeTransaction(transaction)
+	defer store.FinalizeTransaction(transaction)
 
 	var (
 		changedFields util.AnyArray[string]

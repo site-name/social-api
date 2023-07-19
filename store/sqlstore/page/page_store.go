@@ -31,7 +31,7 @@ func (s *SqlPageStore) FilterByOptions(options *model.PageFilterOptions) ([]*mod
 
 	var res []*model.Page
 
-	err = s.GetReplicaX().Select(&res, queryStr, args...)
+	err = s.GetReplica().Select(&res, queryStr, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find pages by options")
 	}

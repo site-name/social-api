@@ -77,7 +77,7 @@ func (cs *SqlCollectionStore) Upsert(collection *model.Collection) (*model.Colle
 	)
 	if isSaving {
 		query := "INSERT INTO " + model.CollectionTableName + "(" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
-		_, err = cs.GetMasterX().NamedExec(query, collection)
+		_, err = cs.GetMaster().NamedExec(query, collection)
 
 	} else {
 		query := "UPDATE " + model.CollectionTableName + " SET " + cs.
@@ -88,7 +88,7 @@ func (cs *SqlCollectionStore) Upsert(collection *model.Collection) (*model.Colle
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = cs.GetMasterX().NamedExec(query, collection)
+		result, err = cs.GetMaster().NamedExec(query, collection)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -107,7 +107,7 @@ func (cs *SqlCollectionStore) Upsert(collection *model.Collection) (*model.Colle
 // Get finds and returns collection with given collectionID
 func (cs *SqlCollectionStore) Get(collectionID string) (*model.Collection, error) {
 	var res model.Collection
-	err := cs.GetReplicaX().Get(&res, "SELECT * FROM "+model.CollectionTableName+" WHERE Id = ?", collectionID)
+	err := cs.GetReplica().Get(&res, "SELECT * FROM "+model.CollectionTableName+" WHERE Id = ?", collectionID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.CollectionTableName, collectionID)
@@ -125,7 +125,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 	var res []*model.Collection
 
 	if option.SelectAll {
-		err := cs.GetReplicaX().Select(&res, "SELECT * FROM "+model.CollectionTableName)
+		err := cs.GetReplica().Select(&res, "SELECT * FROM "+model.CollectionTableName)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find collections of given shop")
 		}
@@ -153,12 +153,12 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 	}
 	if option.VoucherID != nil {
 		query = query.
-			InnerJoin(store.VoucherCollectionTableName + " ON Collections.Id = VoucherCollections.CollectionID").
+			InnerJoin(model.VoucherCollectionTableName + " ON Collections.Id = VoucherCollections.CollectionID").
 			Where(option.VoucherID)
 	}
 	if option.SaleID != nil {
 		query = query.
-			InnerJoin(store.SaleCollectionRelationTableName + " ON Collections.Id = SaleCollections.CollectionID").
+			InnerJoin(model.SaleCollectionTableName + " ON Collections.Id = SaleCollections.CollectionID").
 			Where(option.SaleID)
 	}
 
@@ -214,7 +214,7 @@ func (cs *SqlCollectionStore) FilterByOption(option *model.CollectionFilterOptio
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	err = cs.GetReplicaX().Select(&res, queryString, args...)
+	err = cs.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find collections with given options")
 	}
@@ -228,7 +228,7 @@ func (s *SqlCollectionStore) Delete(ids ...string) error {
 		return errors.Wrap(err, "Delete_ToSql")
 	}
 
-	result, err := s.GetMasterX().Exec(query, args...)
+	result, err := s.GetMaster().Exec(query, args...)
 	if err != nil {
 		errors.Wrap(err, "failed to delete collection(s) by given ids")
 	}

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // OrderDiscountsByOption filters and returns order discounts with given option
@@ -18,7 +18,7 @@ func (a *ServiceDiscount) OrderDiscountsByOption(option *model.OrderDiscountFilt
 }
 
 // UpsertOrderDiscount updates or inserts given order discount
-func (a *ServiceDiscount) UpsertOrderDiscount(transaction store_iface.SqlxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, *model.AppError) {
+func (a *ServiceDiscount) UpsertOrderDiscount(transaction *gorm.DB, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, *model.AppError) {
 	orderDiscount, err := a.srv.Store.OrderDiscount().Upsert(transaction, orderDiscount)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

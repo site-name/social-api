@@ -17,6 +17,8 @@ type PageType struct {
 	Name string `json:"name"`
 	Slug string `json:"alug"`
 	ModelMetadata
+
+	AttributePages []*AttributePage `json:"-" gorm:"foreignKey:PageTypeID;constraint:OnDelete:CASCADE;"`
 }
 
 func (pt *PageType) IsValid() *AppError {

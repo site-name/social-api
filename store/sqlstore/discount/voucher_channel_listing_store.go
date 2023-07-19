@@ -53,7 +53,7 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *model.V
 
 	if saving {
 		query := "INSERT INTO " + model.VoucherChannelListingTableName + "(" + vcls.ModelFields("").Join(",") + ") VALUES (" + vcls.ModelFields(":").Join(",") + ")"
-		_, err = vcls.GetMasterX().NamedExec(query, voucherChannelListing)
+		_, err = vcls.GetMaster().NamedExec(query, voucherChannelListing)
 
 	} else {
 		query := "UPDATE " + model.VoucherChannelListingTableName + " SET " + vcls.
@@ -64,7 +64,7 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *model.V
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = vcls.GetMasterX().NamedExec(query, voucherChannelListing)
+		result, err = vcls.GetMaster().NamedExec(query, voucherChannelListing)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -88,7 +88,7 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *model.V
 func (vcls *SqlVoucherChannelListingStore) Get(voucherChannelListingID string) (*model.VoucherChannelListing, error) {
 	var res model.VoucherChannelListing
 
-	err := vcls.GetReplicaX().Get(&res, "SELECT * FROM "+model.VoucherChannelListingTableName+" WHERE Id = ?", voucherChannelListingID)
+	err := vcls.GetReplica().Get(&res, "SELECT * FROM "+model.VoucherChannelListingTableName+" WHERE Id = ?", voucherChannelListingID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherChannelListingTableName, voucherChannelListingID)
@@ -123,7 +123,7 @@ func (vcls *SqlVoucherChannelListingStore) FilterbyOption(option *model.VoucherC
 	}
 
 	var res []*model.VoucherChannelListing
-	err = vcls.GetReplicaX().Select(&res, queryString, args...)
+	err = vcls.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find voucher channel listing relationship instances with given option")
 	}

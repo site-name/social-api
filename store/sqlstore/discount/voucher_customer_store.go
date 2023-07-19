@@ -39,7 +39,7 @@ func (vcs *SqlVoucherCustomerStore) Save(voucherCustomer *model.VoucherCustomer)
 
 	query := "INSERT INTO " + model.VoucherCustomerTableName + "(" + vcs.ModelFields("").Join(",") + ") VALUES (" + vcs.ModelFields(":").Join(",") + ")"
 
-	if _, err := vcs.GetMasterX().NamedExec(query, voucherCustomer); err != nil {
+	if _, err := vcs.GetMaster().NamedExec(query, voucherCustomer); err != nil {
 		if vcs.IsUniqueConstraintError(err, []string{"VoucherID", "CustomerEmail", "vouchercustomers_voucherid_customeremail_key"}) {
 			return nil, store.NewErrInvalidInput(model.VoucherCustomerTableName, "VoucherID/CustomerEmail", "uniqe constraint")
 		}
@@ -77,7 +77,7 @@ func (vcs *SqlVoucherCustomerStore) GetByOption(options *model.VoucherCustomerFi
 	}
 
 	var res model.VoucherCustomer
-	err = vcs.GetMasterX().Get(&res, queryString, args...)
+	err = vcs.GetMaster().Get(&res, queryString, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherCustomerTableName, "options")
@@ -96,7 +96,7 @@ func (vcs *SqlVoucherCustomerStore) FilterByOptions(options *model.VoucherCustom
 	}
 
 	var res []*model.VoucherCustomer
-	err = vcs.GetReplicaX().Select(&res, queryString, args...)
+	err = vcs.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find voucher customers by options")
 	}
@@ -124,7 +124,7 @@ func (vcs *SqlVoucherCustomerStore) DeleteInBulk(options *model.VoucherCustomerF
 		return errors.Wrap(err, "DeleteInBulk_ToSql")
 	}
 
-	res, err := vcs.GetMasterX().Exec(query, args...)
+	res, err := vcs.GetMaster().Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete voucher-customer relations by given options")
 	}

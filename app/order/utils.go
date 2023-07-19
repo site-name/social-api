@@ -17,7 +17,7 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // GetOrderCountry Return country to which order will be shipped
@@ -114,7 +114,7 @@ func (a *ServiceOrder) GetVoucherDiscountAssignedToOrder(order *model.Order) (*m
 // Recalculate all order discounts assigned to order.
 //
 // It returns the list of tuples which contains order discounts where the amount has been changed.
-func (a *ServiceOrder) RecalculateOrderDiscounts(transaction store_iface.SqlxExecutor, order *model.Order) ([][2]*model.OrderDiscount, *model.AppError) {
+func (a *ServiceOrder) RecalculateOrderDiscounts(transaction *gorm.DB, order *model.Order) ([][2]*model.OrderDiscount, *model.AppError) {
 	var changedOrderDiscounts [][2]*model.OrderDiscount
 
 	orderDiscounts, appErr := a.srv.DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
@@ -160,7 +160,7 @@ func (a *ServiceOrder) RecalculateOrderDiscounts(transaction store_iface.SqlxExe
 // update_voucher_discount argument set to False.
 //
 // NOTE: `kwargs` can be nil
-func (a *ServiceOrder) RecalculateOrder(transaction store_iface.SqlxExecutor, order *model.Order, kwargs map[string]interface{}) *model.AppError {
+func (a *ServiceOrder) RecalculateOrder(transaction *gorm.DB, order *model.Order, kwargs map[string]interface{}) *model.AppError {
 	appErr := a.RecalculateOrderPrices(transaction, order, kwargs)
 	if appErr != nil {
 		return appErr
@@ -185,7 +185,7 @@ func (a *ServiceOrder) RecalculateOrder(transaction store_iface.SqlxExecutor, or
 }
 
 // ReCalculateOrderWeight
-func (a *ServiceOrder) ReCalculateOrderWeight(transaction store_iface.SqlxExecutor, order *model.Order) *model.AppError {
+func (a *ServiceOrder) ReCalculateOrderWeight(transaction *gorm.DB, order *model.Order) *model.AppError {
 	orderLines, appErr := a.OrderLinesByOption(&model.OrderLineFilterOption{
 		OrderID: squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
 	})
@@ -413,7 +413,7 @@ func (a *ServiceOrder) GetDiscountedLines(orderLines []*model.OrderLine, voucher
 
 	go func() {
 		categories, appErr := a.srv.ProductService().CategoriesByOption(&model.CategoryFilterOption{
-			VoucherID: squirrel.Eq{store.VoucherCategoryTableName + ".VoucherID": voucher.Id},
+			VoucherID: squirrel.Eq{model.VoucherCategoryTableName + ".VoucherID": voucher.Id},
 		})
 		if appErr != nil {
 			setFirstAppErr(appErr)
@@ -671,7 +671,7 @@ func (a *ServiceOrder) calculateQuantityIncludingReturns(ord model.Order) (int, 
 }
 
 // UpdateOrderStatus Update order status depending on fulfillments
-func (a *ServiceOrder) UpdateOrderStatus(transaction store_iface.SqlxExecutor, ord model.Order) *model.AppError {
+func (a *ServiceOrder) UpdateOrderStatus(transaction *gorm.DB, ord model.Order) *model.AppError {
 
 	totalQuantity, quantityFulfilled, quantityReturned, appErr := a.calculateQuantityIncludingReturns(ord)
 	if appErr != nil {
@@ -708,11 +708,11 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction store_iface.SqlxExecutor, o
 //
 // Returns an order line the variant was added to.
 func (s *ServiceOrder) AddVariantToOrder(orDer model.Order, variant model.ProductVariant, quantity int, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, discounts []*model.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model.AppError) {
-	transaction, err := s.srv.Store.GetMasterX().Beginx()
+	transaction, err := s.srv.Store.GetMaster().Begin()
 	if err != nil {
 		return nil, nil, model.NewAppError("AddVariantToOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
-	defer s.srv.Store.FinalizeTransaction(transaction)
+	defer store.FinalizeTransaction(transaction)
 
 	chanNel, appErr := s.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
 		Id: squirrel.Eq{model.ChannelTableName + ".Id": orDer.ChannelID},
@@ -895,7 +895,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer model.Order, variant model.Produc
 }
 
 // AddGiftcardsToOrder
-func (s *ServiceOrder) AddGiftcardsToOrder(transaction store_iface.SqlxExecutor, checkoutInfo model.CheckoutInfo, orDer *model.Order, totalPriceLeft *goprices.Money, user *model.User, _ interface{}) *model.AppError {
+func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo model.CheckoutInfo, orDer *model.Order, totalPriceLeft *goprices.Money, user *model.User, _ interface{}) *model.AppError {
 	var (
 		balanceData       = model.BalanceData{}
 		usedByUser        = checkoutInfo.User
@@ -993,7 +993,7 @@ func (a *ServiceOrder) updateAllocationsForLine(lineInfo *model.OrderLineData, o
 // ChangeOrderLineQuantity Change the quantity of ordered items in a order line.
 //
 // NOTE: userID can be empty
-func (a *ServiceOrder) ChangeOrderLineQuantity(transaction store_iface.SqlxExecutor, userID string, _ interface{}, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model.InsufficientStock, *model.AppError) {
+func (a *ServiceOrder) ChangeOrderLineQuantity(transaction *gorm.DB, userID string, _ interface{}, lineInfo *model.OrderLineData, oldQuantity int, newQuantity int, channelSlug string, manager interfaces.PluginManagerInterface, sendEvent bool) (*model.InsufficientStock, *model.AppError) {
 	orderLine := lineInfo.Line
 	// NOTE: this must be called
 	orderLine.PopulateNonDbFields()
@@ -1046,7 +1046,7 @@ func (a *ServiceOrder) ChangeOrderLineQuantity(transaction store_iface.SqlxExecu
 	return nil, nil
 }
 
-func (a *ServiceOrder) CreateOrderEvent(transaction store_iface.SqlxExecutor, orderLine *model.OrderLine, userID string, quantityDiff int) *model.AppError {
+func (a *ServiceOrder) CreateOrderEvent(transaction *gorm.DB, orderLine *model.OrderLine, userID string, quantityDiff int) *model.AppError {
 	var appErr *model.AppError
 
 	var savingUserID *string
@@ -1213,7 +1213,7 @@ func (a *ServiceOrder) RestockOrderLines(ord *model.Order, manager interfaces.Pl
 // RestockFulfillmentLines Return fulfilled products to corresponding stocks.
 //
 // Return products to stocks and update order lines quantity fulfilled values.
-func (a *ServiceOrder) RestockFulfillmentLines(transaction store_iface.SqlxExecutor, fulfillment *model.Fulfillment, warehouse *model.WareHouse) (appErr *model.AppError) {
+func (a *ServiceOrder) RestockFulfillmentLines(transaction *gorm.DB, fulfillment *model.Fulfillment, warehouse *model.WareHouse) (appErr *model.AppError) {
 	fulfillmentLines, appErr := a.FulfillmentLinesByOption(&model.FulfillmentLineFilterOption{
 		FulfillmentID: squirrel.Eq{model.FulfillmentLineTableName + ".FulfillmentID": fulfillment.Id},
 	})
@@ -1330,7 +1330,7 @@ func (a *ServiceOrder) GetValidShippingMethodsForOrder(ord *model.Order) ([]*mod
 // UpdateOrderDiscountForOrder Update the order_discount for an order and recalculate the order's prices
 //
 // `reason`, `valueType` and `value` can be nil
-func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction store_iface.SqlxExecutor, ord *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType model.DiscountType, value *decimal.Decimal) *model.AppError {
+func (a *ServiceOrder) UpdateOrderDiscountForOrder(transaction *gorm.DB, ord *model.Order, orderDiscountToUpdate *model.OrderDiscount, reason string, valueType model.DiscountType, value *decimal.Decimal) *model.AppError {
 	ord.PopulateNonDbFields() // NOTE: call this first
 
 	if value == nil {
@@ -1489,7 +1489,7 @@ func (a *ServiceOrder) GetOrderDiscounts(ord *model.Order) ([]*model.OrderDiscou
 }
 
 // CreateOrderDiscountForOrder Add new order discount and update the prices
-func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction store_iface.SqlxExecutor, ord *model.Order, reason string, valueType model.DiscountType, value *decimal.Decimal) (*model.OrderDiscount, *model.AppError) {
+func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction *gorm.DB, ord *model.Order, reason string, valueType model.DiscountType, value *decimal.Decimal) (*model.OrderDiscount, *model.AppError) {
 	ord.PopulateNonDbFields()
 
 	netTotal, err := a.ApplyDiscountToValue(value, valueType, ord.Currency, ord.Total.Net)
@@ -1528,7 +1528,7 @@ func (a *ServiceOrder) CreateOrderDiscountForOrder(transaction store_iface.SqlxE
 }
 
 // RemoveOrderDiscountFromOrder Remove the order discount from order and update the prices.
-func (a *ServiceOrder) RemoveOrderDiscountFromOrder(transaction store_iface.SqlxExecutor, ord *model.Order, orderDiscount *model.OrderDiscount) *model.AppError {
+func (a *ServiceOrder) RemoveOrderDiscountFromOrder(transaction *gorm.DB, ord *model.Order, orderDiscount *model.OrderDiscount) *model.AppError {
 	appErr := a.srv.DiscountService().BulkDeleteOrderDiscounts([]string{orderDiscount.Id})
 	if appErr != nil {
 		return appErr

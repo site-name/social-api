@@ -42,7 +42,7 @@ package discount
 // 	query := "INSERT INTO " + store.SaleCategoryRelationTableName +
 // 		"(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ") ON CONFLICT ON CONSTRAINT " + saleCategoryUniqueConstraint + " DO NOTHING"
 
-// 	if _, err := ss.GetMasterX().NamedExec(query, relation); err != nil {
+// 	if _, err := ss.GetMaster().NamedExec(query, relation); err != nil {
 // 		if ss.IsUniqueConstraintError(err, []string{"SaleID", "CategoryID", saleCategoryUniqueConstraint}) {
 // 			return nil, store.NewErrInvalidInput(store.SaleCategoryRelationTableName, "SaleID/CategoryID", "duplicate")
 // 		}
@@ -56,7 +56,7 @@ package discount
 // func (ss *SqlSaleCategoryRelationStore) Get(relationID string) (*model.SaleCategoryRelation, error) {
 // 	var res model.SaleCategoryRelation
 
-// 	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+store.SaleCategoryRelationTableName+" WHERE Id = ?", relationID)
+// 	err := ss.GetReplica().Get(&res, "SELECT * FROM "+store.SaleCategoryRelationTableName+" WHERE Id = ?", relationID)
 // 	if err != nil {
 // 		if errors.Is(err, gorm.ErrRecordNotFound) {
 // 			return nil, store.NewErrNotFound(store.SaleCategoryRelationTableName, relationID)
@@ -90,7 +90,7 @@ package discount
 // 	}
 
 // 	var res []*model.SaleCategoryRelation
-// 	err = ss.GetReplicaX().Select(&res, queryString, args...)
+// 	err = ss.GetReplica().Select(&res, queryString, args...)
 // 	if err != nil {
 // 		return nil, errors.Wrap(err, "failed to find sale-category relations with given option")
 // 	}

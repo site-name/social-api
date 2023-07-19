@@ -11,7 +11,6 @@ import (
 	"github.com/sitename/sitename/app/discount/types"
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -101,7 +100,7 @@ type DiscountService interface {
 	// SaleProductsByOptions returns a slice of sale-product relations filtered using given options
 	SaleProductsByOptions(options squirrel.Sqlizer) ([]*model.SaleProduct, *model.AppError)
 	// UpsertOrderDiscount updates or inserts given order discount
-	UpsertOrderDiscount(transaction store_iface.SqlxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, *model.AppError)
+	UpsertOrderDiscount(transaction *gorm.DB, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, *model.AppError)
 	// UpsertVoucher update or insert given voucher
 	UpsertVoucher(voucher *model.Voucher) (*model.Voucher, *model.AppError)
 	// ValidateMinSpent validates if the order cost at least a specific amount of money

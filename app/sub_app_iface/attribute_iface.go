@@ -5,7 +5,7 @@ package sub_app_iface
 
 import (
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // AttributeService contains methods for working with attributes
@@ -49,7 +49,7 @@ type AttributeService interface {
 	AttributeByOption(option *model.AttributeFilterOption) (*model.Attribute, *model.AppError)
 	AttributeProductsByOption(option *model.AttributeProductFilterOption) ([]*model.AttributeProduct, *model.AppError)
 	AttributeValuesOfAttribute(attributeID string) (model.AttributeValues, *model.AppError)
-	BulkUpsertAttributeValue(transaction store_iface.SqlxExecutor, values model.AttributeValues) (model.AttributeValues, *model.AppError)
+	BulkUpsertAttributeValue(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, *model.AppError)
 	DeleteAttributeValues(ids ...string) (int64, *model.AppError)
 	DeleteAttributes(ids ...string) (int64, *model.AppError)
 	FilterAttributeValuesByOptions(option model.AttributeValueFilterOptions) (model.AttributeValues, *model.AppError)

@@ -12,7 +12,7 @@ import (
 func (s *ServiceDiscount) SaleCategoriesByOption(option squirrel.Sqlizer) ([]*model.SaleCategory, *model.AppError) {
 
 	var res []*model.SaleCategory
-	err := s.srv.Store.GetReplica().Table("sale_categories").Find(&res, store.BuildSqlizer(option)...).Error
+	err := s.srv.Store.GetReplica().Table("SaleCategories").Find(&res, store.BuildSqlizer(option)...).Error
 	if err != nil {
 		return nil, model.NewAppError("SaleCategoriesByOption", "app.discount.sale_categories_by_options.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}

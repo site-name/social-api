@@ -6,11 +6,11 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
-func (a *ServiceGiftcard) UpsertOrderGiftcardRelations(transaction store_iface.SqlxExecutor, orderGiftCards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, *model.AppError) {
+func (a *ServiceGiftcard) UpsertOrderGiftcardRelations(transaction *gorm.DB, orderGiftCards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, *model.AppError) {
 	orderGiftCards, err := a.srv.Store.GiftCardOrder().BulkUpsert(transaction, orderGiftCards...)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

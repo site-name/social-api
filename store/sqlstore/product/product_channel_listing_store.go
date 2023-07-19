@@ -6,7 +6,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -56,8 +55,8 @@ func (ps *SqlProductChannelListingStore) ScanFields(prd *model.ProductChannelLis
 }
 
 // BulkUpsert performs bulk upsert on given product channel listings
-func (ps *SqlProductChannelListingStore) BulkUpsert(transaction store_iface.SqlxExecutor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
-	runner := ps.GetMasterX()
+func (ps *SqlProductChannelListingStore) BulkUpsert(transaction *gorm.DB, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
+	runner := ps.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -110,7 +109,7 @@ func (ps *SqlProductChannelListingStore) BulkUpsert(transaction store_iface.Sqlx
 func (ps *SqlProductChannelListingStore) Get(listingID string) (*model.ProductChannelListing, error) {
 	var res model.ProductChannelListing
 
-	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.ProductChannelListingTableName+" WHERE Id = ?", listingID)
+	err := ps.GetReplica().Get(&res, "SELECT * FROM "+model.ProductChannelListingTableName+" WHERE Id = ?", listingID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductChannelListingTableName, listingID)
@@ -172,7 +171,7 @@ func (ps *SqlProductChannelListingStore) FilterByOption(option *model.ProductCha
 	}
 
 	var listings model.ProductChannelListings
-	if err = ps.GetReplicaX().Select(&listings, sqlString, args...); err != nil {
+	if err = ps.GetReplica().Select(&listings, sqlString, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to find product channel listings with given option")
 	}
 

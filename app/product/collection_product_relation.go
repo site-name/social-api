@@ -5,7 +5,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // CollectionProductRelationsByOptions finds and returns a list of product-collection relations based on given filter options
@@ -18,7 +18,7 @@ func (s *ServiceProduct) CollectionProductRelationsByOptions(options *model.Coll
 	return relations, nil
 }
 
-func (s *ServiceProduct) CreateCollectionProductRelations(transaction store_iface.SqlxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, *model.AppError) {
+func (s *ServiceProduct) CreateCollectionProductRelations(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, *model.AppError) {
 	relations, err := s.srv.Store.CollectionProduct().BulkSave(transaction, relations)
 	if err != nil {
 		statusCode := http.StatusInternalServerError

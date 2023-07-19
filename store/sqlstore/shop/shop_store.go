@@ -112,7 +112,7 @@ func (ss *SqlShopStore) Upsert(shopInstance *model.Shop) (*model.Shop, error) {
 	)
 	if saving {
 		query := "INSERT INTO " + model.ShopTableName + "(" + ss.ModelFields("").Join(",") + ") VALUES (" + ss.ModelFields(":").Join(",") + ")"
-		_, err = ss.GetMasterX().NamedExec(query, shopInstance)
+		_, err = ss.GetMaster().NamedExec(query, shopInstance)
 
 	} else {
 		query := "UPDATE " + model.ShopTableName + " SET " + ss.
@@ -123,7 +123,7 @@ func (ss *SqlShopStore) Upsert(shopInstance *model.Shop) (*model.Shop, error) {
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = ss.GetMasterX().NamedExec(query, shopInstance)
+		result, err = ss.GetMaster().NamedExec(query, shopInstance)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -143,7 +143,7 @@ func (ss *SqlShopStore) Upsert(shopInstance *model.Shop) (*model.Shop, error) {
 // Get finds a shop with given id and returns it
 func (ss *SqlShopStore) Get(shopID string) (*model.Shop, error) {
 	var res model.Shop
-	err := ss.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShopTableName+" WHERE Id = ?", shopID)
+	err := ss.GetReplica().Get(&res, "SELECT * FROM "+model.ShopTableName+" WHERE Id = ?", shopID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShopTableName, shopID)
@@ -184,7 +184,7 @@ func (ss *SqlShopStore) FilterByOptions(options *model.ShopFilterOptions) ([]*mo
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	rows, err := ss.GetReplicaX().QueryX(queryString, args...)
+	rows, err := ss.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shops with given options")
 	}
@@ -221,7 +221,7 @@ func (ss *SqlShopStore) GetByOptions(options *model.ShopFilterOptions) (*model.S
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	row := ss.GetReplicaX().QueryRowX(queryString, args...)
+	row := ss.GetReplica().QueryRow(queryString, args...)
 
 	var res model.Shop
 	var address model.Address

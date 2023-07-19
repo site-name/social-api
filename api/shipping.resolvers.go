@@ -104,7 +104,7 @@ func (r *Resolver) ShippingMethodChannelListingUpdate(ctx context.Context, args 
 	}
 
 	// update
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("ShippingMethodChannelListingUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -177,7 +177,7 @@ func (r *Resolver) ShippingPriceCreate(ctx context.Context, args struct{ Input S
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// start transaction:
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("ShippingPriceCreate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -272,7 +272,7 @@ func (r *Resolver) ShippingPriceUpdate(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// start transaction:
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("ShippingPriceUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -418,7 +418,7 @@ func (r *Resolver) ShippingZoneCreate(ctx context.Context, args struct {
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// begin transaction
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("ShippingZoneCreate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -554,7 +554,7 @@ func (r *Resolver) ShippingZoneUpdate(ctx context.Context, args struct {
 
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("ShippingZoneUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

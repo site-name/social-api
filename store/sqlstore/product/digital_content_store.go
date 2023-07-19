@@ -61,7 +61,7 @@ func (ds *SqlDigitalContentStore) Save(content *model.DigitalContent) (*model.Di
 	}
 
 	query := "INSERT INTO " + model.DigitalContentTableName + "(" + ds.ModelFields("").Join(",") + ") VALUES (" + ds.ModelFields(":").Join(",") + ")"
-	_, err := ds.GetMasterX().NamedExec(query, content)
+	_, err := ds.GetMaster().NamedExec(query, content)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to save digital content with id=%s", content.Id)
 	}
@@ -93,7 +93,7 @@ func (ds *SqlDigitalContentStore) GetByOption(option *model.DigitalContentFilter
 	}
 
 	var res model.DigitalContent
-	err = ds.GetReplicaX().Get(&res, queryString, args...)
+	err = ds.GetReplica().Get(&res, queryString, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.DigitalContentTableName, "option")
@@ -111,7 +111,7 @@ func (ds *SqlDigitalContentStore) FilterByOption(option *model.DigitalContentFil
 	}
 
 	var res []*model.DigitalContent
-	err = ds.GetReplicaX().Select(&res, queryString, args...)
+	err = ds.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find digital contents with given options")
 	}

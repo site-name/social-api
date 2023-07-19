@@ -5,11 +5,11 @@ import (
 
 	"github.com/site-name/decimal"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // CommonCreateOrderEvent is common method for creating desired order event instance
-func (a *ServiceOrder) CommonCreateOrderEvent(transaction store_iface.SqlxExecutor, option *model.OrderEventOption) (*model.OrderEvent, *model.AppError) {
+func (a *ServiceOrder) CommonCreateOrderEvent(transaction *gorm.DB, option *model.OrderEventOption) (*model.OrderEvent, *model.AppError) {
 	newOrderEvent := &model.OrderEvent{
 		OrderID:    option.OrderID,
 		Type:       option.Type,
@@ -74,7 +74,7 @@ func prepareDiscountObject(orderDiscount *model.OrderDiscount, oldOrderDiscount 
 	return discountParameters
 }
 
-func (a *ServiceOrder) OrderDiscountsAutomaticallyUpdatedEvent(transaction store_iface.SqlxExecutor, ord *model.Order, changedOrderDiscounts [][2]*model.OrderDiscount) *model.AppError {
+func (a *ServiceOrder) OrderDiscountsAutomaticallyUpdatedEvent(transaction *gorm.DB, ord *model.Order, changedOrderDiscounts [][2]*model.OrderDiscount) *model.AppError {
 	for _, tuple := range changedOrderDiscounts {
 		_, appErr := a.OrderDiscountAutomaticallyUpdatedEvent(
 			transaction,
@@ -90,7 +90,7 @@ func (a *ServiceOrder) OrderDiscountsAutomaticallyUpdatedEvent(transaction store
 	return nil
 }
 
-func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction store_iface.SqlxExecutor, ord *model.Order, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError) {
+func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction *gorm.DB, ord *model.Order, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError) {
 	return a.OrderDiscountEvent(
 		transaction,
 		model.ORDER_EVENT_TYPE_ORDER_DISCOUNT_AUTOMATICALLY_UPDATED,
@@ -101,7 +101,7 @@ func (a *ServiceOrder) OrderDiscountAutomaticallyUpdatedEvent(transaction store_
 	)
 }
 
-func (a *ServiceOrder) OrderDiscountEvent(transaction store_iface.SqlxExecutor, eventType model.OrderEventType, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError) {
+func (a *ServiceOrder) OrderDiscountEvent(transaction *gorm.DB, eventType model.OrderEventType, ord *model.Order, user *model.User, orderDiscount *model.OrderDiscount, oldOrderDiscount *model.OrderDiscount) (*model.OrderEvent, *model.AppError) {
 	var userID *string
 	if user == nil || !model.IsValidId(user.Id) {
 		userID = nil
@@ -163,7 +163,7 @@ func (a *ServiceOrder) OrderLineDiscountEvent(eventType model.OrderEventType, or
 	})
 }
 
-func (s *ServiceOrder) FulfillmentCanceledEvent(transaction store_iface.SqlxExecutor, orDer *model.Order, user *model.User, _ interface{}, fulfillment *model.Fulfillment) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) FulfillmentCanceledEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillment *model.Fulfillment) (*model.OrderEvent, *model.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -182,7 +182,7 @@ func (s *ServiceOrder) FulfillmentCanceledEvent(transaction store_iface.SqlxExec
 	})
 }
 
-func (s *ServiceOrder) FulfillmentFulfilledItemsEvent(transaction store_iface.SqlxExecutor, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) FulfillmentFulfilledItemsEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model.AppError) {
 	var userID *string
 	if user != nil {
 		userID = &user.Id
@@ -234,7 +234,7 @@ func (s *ServiceOrder) OrderConfirmedEvent(orDer model.Order, user *model.User, 
 	})
 }
 
-func (s *ServiceOrder) FulfillmentAwaitsApprovalEvent(transaction store_iface.SqlxExecutor, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) FulfillmentAwaitsApprovalEvent(transaction *gorm.DB, orDer *model.Order, user *model.User, _ interface{}, fulfillmentLines model.FulfillmentLines) (*model.OrderEvent, *model.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
@@ -267,7 +267,7 @@ func (s *ServiceOrder) FulfillmentTrackingUpdatedEvent(orDer *model.Order, user 
 	})
 }
 
-func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction store_iface.SqlxExecutor, orDer model.Order, user *model.User, _ interface{}, transactionReference string) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction *gorm.DB, orDer model.Order, user *model.User, _ interface{}, transactionReference string) (*model.OrderEvent, *model.AppError) {
 	var (
 		userID     *string
 		parameters = model.StringInterface{}
@@ -287,7 +287,7 @@ func (s *ServiceOrder) OrderManuallyMarkedAsPaidEvent(transaction store_iface.Sq
 	})
 }
 
-func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction store_iface.SqlxExecutor, draftOrder model.Order, originalOrder model.Order, user *model.User, _ interface{}, lines []*model.QuantityOrderLine) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction *gorm.DB, draftOrder model.Order, originalOrder model.Order, user *model.User, _ interface{}, lines []*model.QuantityOrderLine) (*model.OrderEvent, *model.AppError) {
 	var userID *string
 	if user != nil && model.IsValidId(user.Id) {
 		userID = &user.Id
@@ -304,7 +304,7 @@ func (s *ServiceOrder) DraftOrderCreatedFromReplaceEvent(transaction store_iface
 	})
 }
 
-func (s *ServiceOrder) FulfillmentReplacedEvent(transaction store_iface.SqlxExecutor, orDer model.Order, user *model.User, _ interface{}, replacedLines []*model.QuantityOrderLine) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) FulfillmentReplacedEvent(transaction *gorm.DB, orDer model.Order, user *model.User, _ interface{}, replacedLines []*model.QuantityOrderLine) (*model.OrderEvent, *model.AppError) {
 	var userID *string
 
 	if user != nil && model.IsValidId(user.Id) {
@@ -321,7 +321,7 @@ func (s *ServiceOrder) FulfillmentReplacedEvent(transaction store_iface.SqlxExec
 	})
 }
 
-func (s *ServiceOrder) OrderReplacementCreated(transaction store_iface.SqlxExecutor, originalOrder model.Order, replaceOrder *model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model.AppError) {
+func (s *ServiceOrder) OrderReplacementCreated(transaction *gorm.DB, originalOrder model.Order, replaceOrder *model.Order, user *model.User, _ interface{}) (*model.OrderEvent, *model.AppError) {
 	var userID *string
 
 	if user != nil && model.IsValidId(user.Id) {

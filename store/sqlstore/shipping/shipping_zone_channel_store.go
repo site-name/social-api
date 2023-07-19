@@ -4,7 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlShippingZoneChannelStore struct {
@@ -15,8 +15,8 @@ func NewSqlShippingZoneChannelStore(s store.Store) store.ShippingZoneChannelStor
 	return &SqlShippingZoneChannelStore{s}
 }
 
-func (s *SqlShippingZoneChannelStore) BulkSave(transaction store_iface.SqlxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error) {
-	runner := s.GetMasterX()
+func (s *SqlShippingZoneChannelStore) BulkSave(transaction *gorm.DB, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error) {
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -44,7 +44,7 @@ func (s *SqlShippingZoneChannelStore) BulkSave(transaction store_iface.SqlxExecu
 	return res, nil
 }
 
-func (s *SqlShippingZoneChannelStore) BulkDelete(transaction store_iface.SqlxExecutor, options *model.ShippingZoneChannelFilterOptions) error {
+func (s *SqlShippingZoneChannelStore) BulkDelete(transaction *gorm.DB, options *model.ShippingZoneChannelFilterOptions) error {
 	if options == nil || options.Conditions == nil {
 		return errors.New("please provide valid conditions")
 	}
@@ -54,7 +54,7 @@ func (s *SqlShippingZoneChannelStore) BulkDelete(transaction store_iface.SqlxExe
 		return errors.Wrap(err, "BulkDelete_ToSql")
 	}
 
-	runner := s.GetMasterX()
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -79,7 +79,7 @@ func (s *SqlShippingZoneChannelStore) FilterByOptions(options *model.ShippingZon
 	}
 
 	rels := []*model.ShippingZoneChannel{}
-	err = s.GetReplicaX().Select(&rels, queryStr, args...)
+	err = s.GetReplica().Select(&rels, queryStr, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping zone channel relations with given options")
 	}

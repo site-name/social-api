@@ -8,7 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlWarehouseShippingZoneStore struct {
@@ -35,8 +35,8 @@ func (ws *SqlWarehouseShippingZoneStore) ModelFields(prefix string) util.AnyArra
 }
 
 // Save inserts given warehouse-shipping zone relation into database
-func (ws *SqlWarehouseShippingZoneStore) Save(transaction store_iface.SqlxExecutor, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
-	runner := ws.GetMasterX()
+func (ws *SqlWarehouseShippingZoneStore) Save(transaction *gorm.DB, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
+	runner := ws.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -113,7 +113,7 @@ func (s *SqlWarehouseShippingZoneStore) FilterByCountryCodeAndChannelID(countryC
 	}
 
 	var res []*model.WarehouseShippingZone
-	err = s.GetReplicaX().Select(&res, queryString, args...)
+	err = s.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find warehouse shipping zones by options")
 	}
@@ -137,7 +137,7 @@ func (s *SqlWarehouseShippingZoneStore) FilterByOptions(options *model.Warehouse
 	}
 
 	var res []*model.WarehouseShippingZone
-	err = s.GetReplicaX().Select(&res, queryString, args...)
+	err = s.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find warehouse shipping zones by given options")
 	}
@@ -145,7 +145,7 @@ func (s *SqlWarehouseShippingZoneStore) FilterByOptions(options *model.Warehouse
 	return res, nil
 }
 
-func (s *SqlWarehouseShippingZoneStore) Delete(transaction store_iface.SqlxExecutor, options *model.WarehouseShippingZoneFilterOption) error {
+func (s *SqlWarehouseShippingZoneStore) Delete(transaction *gorm.DB, options *model.WarehouseShippingZoneFilterOption) error {
 	if options == nil || options.Conditions == nil {
 		return errors.New("please provide valid options to delete")
 	}
@@ -154,7 +154,7 @@ func (s *SqlWarehouseShippingZoneStore) Delete(transaction store_iface.SqlxExecu
 		return errors.Wrap(err, "Delete_ToSql")
 	}
 
-	runner := s.GetMasterX()
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}

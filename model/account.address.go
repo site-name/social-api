@@ -47,18 +47,19 @@ type Address struct {
 	Users []*User `json:"-" gorm:"many2many:UserAddresses"`
 }
 
-func (a *Address) BeforeCreate(_ *gorm.DB) error {
-	a.commonPre()
-	return a.IsValid()
+func (a *Address) BeforeCreate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
+func (a *Address) BeforeUpdate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
+func (*Address) TableName() string               { return AddressTableName }
+func (add *Address) FullName() string            { return fmt.Sprintf("%s %s", add.FirstName, add.LastName) }
+func (a *Address) String() string {
+	if a.CompanyName != "" {
+		return fmt.Sprintf("%s - %s", a.CompanyName, a.FullName())
+	}
+	return a.FullName()
 }
 
-func (a *Address) BeforeUpdate(_ *gorm.DB) error {
-	a.commonPre()
-	return a.IsValid()
-}
-
-func (*Address) TableName() string {
-	return AddressTableName
+func (a *Address) Equal(other *Address) bool {
+	return reflect.DeepEqual(*a, *other)
 }
 
 type WhichOrderAddressID string
@@ -87,22 +88,6 @@ type AddressFilterOption struct {
 	Other   squirrel.Sqlizer
 }
 
-func (add *Address) FullName() string {
-	return fmt.Sprintf("%s %s", add.FirstName, add.LastName)
-}
-
-// String implements fmt.Stringer interface
-func (a *Address) String() string {
-	if a.CompanyName != "" {
-		return fmt.Sprintf("%s - %s", a.CompanyName, a.FullName())
-	}
-	return a.FullName()
-}
-
-func (a *Address) Equal(other *Address) bool {
-	return reflect.DeepEqual(*a, *other)
-}
-
 func (a *Address) commonPre() {
 	if a.FirstName == "" {
 		a.FirstName = "first_name"
@@ -124,12 +109,6 @@ func (a *Address) IsValid() *AppError {
 		"address_id=",
 		"Address.IsValid",
 	)
-	if a.CreateAt == 0 {
-		return outer("create_at", &a.Id)
-	}
-	if a.UpdateAt == 0 {
-		return outer("update_at", &a.Id)
-	}
 	if !IsValidNamePart(a.FirstName, FirstName) {
 		return outer("first_name", &a.Id)
 	}

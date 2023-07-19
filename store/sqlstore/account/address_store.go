@@ -71,25 +71,22 @@ func (as *SqlAddressStore) Upsert(transaction *gorm.DB, address *model.Address) 
 		transaction = as.GetMaster()
 	}
 
-	var result = transaction.Save(address)
-	if result.Error != nil {
-		return nil, errors.Wrap(result.Error, "failed to upsert address")
-	}
-	if result.RowsAffected != 1 {
-		return nil, errors.Errorf("%d address(es) upserted instead of 1", result.RowsAffected)
+	var err = transaction.Save(address).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to upsert address")
 	}
 
 	return address, nil
 }
 
-func (as *SqlAddressStore) Get(addressID string) (*model.Address, error) {
+func (as *SqlAddressStore) Get(id string) (*model.Address, error) {
 	var res model.Address
-	err := as.GetReplica().First(&res, "Id = ?", addressID).Error
+	err := as.GetReplica().First(&res, "Id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.AddressTableName, addressID)
+			return nil, store.NewErrNotFound(model.AddressTableName, id)
 		}
-		return nil, errors.Wrap(err, "failed to find address with id="+addressID)
+		return nil, errors.Wrap(err, "failed to find address with id="+id)
 	}
 	return &res, nil
 }

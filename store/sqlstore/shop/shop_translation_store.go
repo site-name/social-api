@@ -56,7 +56,7 @@ func (sts *SqlShopTranslationStore) Upsert(translation *model.ShopTranslation) (
 	)
 	if saving {
 		query := "INSERT INTO " + model.ShopTranslationTableName + "(" + sts.ModelFields("").Join(",") + ") VALUES (" + sts.ModelFields(":").Join(",") + ")"
-		_, err = sts.GetMasterX().NamedExec(query, translation)
+		_, err = sts.GetMaster().NamedExec(query, translation)
 
 	} else {
 		query := "UPDATE " + model.ShopTranslationTableName + " SET " + sts.
@@ -67,7 +67,7 @@ func (sts *SqlShopTranslationStore) Upsert(translation *model.ShopTranslation) (
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = sts.GetMasterX().NamedExec(query, translation)
+		result, err = sts.GetMaster().NamedExec(query, translation)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -90,7 +90,7 @@ func (sts *SqlShopTranslationStore) Upsert(translation *model.ShopTranslation) (
 // Get finds a shop translation with given id then return it with an error
 func (sts *SqlShopTranslationStore) Get(id string) (*model.ShopTranslation, error) {
 	var res model.ShopTranslation
-	err := sts.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShopTranslationTableName+" WHERE Id = ?", id)
+	err := sts.GetReplica().Get(&res, "SELECT * FROM "+model.ShopTranslationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShopTranslationTableName, id)

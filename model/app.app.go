@@ -34,19 +34,9 @@ type App struct {
 	Version          *string       `json:"version" gorm:"type:varchar(60);column:Version"`
 }
 
-func (a *App) BeforeCreate(_ *gorm.DB) error {
-	a.commonPre()
-	return a.IsValid()
-}
-
-func (a *App) BeforeUpdate(_ *gorm.DB) error {
-	a.commonPre()
-	return a.IsValid()
-}
-
-func (*App) TableName() string {
-	return "Apps"
-}
+func (a *App) BeforeCreate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
+func (a *App) BeforeUpdate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
+func (*App) TableName() string               { return "Apps" }
 
 func (a *App) IsValid() *AppError {
 	outer := CreateAppErrorForModel(

@@ -9,7 +9,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -59,10 +58,10 @@ func (fs *SqlFulfillmentStore) ScanFields(holder *model.Fulfillment) []interface
 }
 
 // Upsert depends on given fulfillment's Id to decide update or insert it
-func (fs *SqlFulfillmentStore) Upsert(transaction store_iface.SqlxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
+func (fs *SqlFulfillmentStore) Upsert(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
 	var (
 		isSaving bool
-		upsertor store_iface.SqlxExecutor = fs.GetMasterX()
+		upsertor *gorm.DB = fs.GetMaster()
 	)
 	if transaction != nil {
 		upsertor = transaction
@@ -124,7 +123,7 @@ func (fs *SqlFulfillmentStore) Upsert(transaction store_iface.SqlxExecutor, fulf
 // Get fidns and returns a fulfillment with given id
 func (fs *SqlFulfillmentStore) Get(id string) (*model.Fulfillment, error) {
 	var ffm model.Fulfillment
-	if err := fs.GetReplicaX().Get(
+	if err := fs.GetReplica().Get(
 		&ffm,
 		"SELECT * FROM "+model.FulfillmentTableName+" WHERE Id = ?",
 		id,
@@ -187,8 +186,8 @@ func (fs *SqlFulfillmentStore) commonQueryBuild(option *model.FulfillmentFilterO
 }
 
 // GetByOption returns 1 fulfillment, filtered by given option
-func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
-	var runner store_iface.SqlxExecutor = fs.GetReplicaX()
+func (fs *SqlFulfillmentStore) GetByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
+	var runner *gorm.DB = fs.GetReplica()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -207,7 +206,7 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxExecutor,
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	err = runner.QueryRowX(queryString, args...).Scan(scanFields...)
+	err = runner.QueryRow(queryString, args...).Scan(scanFields...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.FulfillmentTableName, "option")
@@ -223,8 +222,8 @@ func (fs *SqlFulfillmentStore) GetByOption(transaction store_iface.SqlxExecutor,
 }
 
 // FilterByOption finds and returns a slice of fulfillments by given option
-func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
-	var runner store_iface.SqlxExecutor = fs.GetReplicaX()
+func (fs *SqlFulfillmentStore) FilterByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
+	var runner *gorm.DB = fs.GetReplica()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -234,7 +233,7 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxExecut
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	rows, err := runner.QueryX(queryString, args...)
+	rows, err := runner.Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find fulfillments with given option")
 	}
@@ -267,8 +266,8 @@ func (fs *SqlFulfillmentStore) FilterByOption(transaction store_iface.SqlxExecut
 }
 
 // BulkDeleteFulfillments deletes given fulfillments
-func (fs *SqlFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxExecutor, fulfillments model.Fulfillments) error {
-	var exeFunc func(query string, args ...interface{}) (sql.Result, error) = fs.GetMasterX().Exec
+func (fs *SqlFulfillmentStore) BulkDeleteFulfillments(transaction *gorm.DB, fulfillments model.Fulfillments) error {
+	var exeFunc func(query string, args ...interface{}) (sql.Result, error) = fs.GetMaster().Exec
 	if transaction != nil {
 		exeFunc = transaction.Exec
 	}

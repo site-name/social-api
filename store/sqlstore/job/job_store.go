@@ -67,14 +67,14 @@ func (jss *SqlJobStore) Save(job *model.Job) (*model.Job, error) {
 		return nil, errors.Wrap(err, "Save_ToSql")
 	}
 
-	if _, err := jss.GetMasterX().Exec(query, args...); err != nil {
+	if _, err := jss.GetMaster().Exec(query, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to save Job")
 	}
 	return job, nil
 }
 
 func (jss *SqlJobStore) UpdateOptimistically(job *model.Job, currentStatus string) (bool, error) {
-	sqlResult, err := jss.GetMasterX().Exec(
+	sqlResult, err := jss.GetMaster().Exec(
 		`UPDATE `+model.JobTableName+`
 		SET
 			LastActivityAt = ?,
@@ -113,7 +113,7 @@ func (jss *SqlJobStore) UpdateStatus(id string, status string) (*model.Job, erro
 		LastActivityAt: model.GetMillis(),
 	}
 
-	if _, err := jss.GetMasterX().NamedExec(`UPDATE Jobs
+	if _, err := jss.GetMaster().NamedExec(`UPDATE Jobs
 		SET Status=:Status, LastActivityAt=:LastActivityAt
 		WHERE Id=:Id`, job); err != nil {
 		return nil, errors.Wrapf(err, "failed to update Job with id=%s", id)
@@ -123,7 +123,7 @@ func (jss *SqlJobStore) UpdateStatus(id string, status string) (*model.Job, erro
 }
 
 func (jss *SqlJobStore) UpdateStatusOptimistically(id string, currentStatus string, newStatus string) (bool, error) {
-	sqlResult, err := jss.GetMasterX().Exec(
+	sqlResult, err := jss.GetMaster().Exec(
 		`UPDATE `+model.JobTableName+`
 		SET
 			LastActivityAt = ?,
@@ -153,7 +153,7 @@ func (jss *SqlJobStore) Get(id string) (*model.Job, error) {
 		Data: map[string]string{},
 	}
 
-	var row = jss.GetReplicaX().QueryRowX("SELECT * FROM "+model.JobTableName+" WHERE Id = ?", id)
+	var row = jss.GetReplica().QueryRow("SELECT * FROM "+model.JobTableName+" WHERE Id = ?", id)
 	var jobData []byte
 
 	var err = row.Scan(
@@ -183,7 +183,7 @@ func (jss *SqlJobStore) Get(id string) (*model.Job, error) {
 
 func (jss *SqlJobStore) GetAllPage(offset int, limit int) ([]*model.Job, error) {
 	var statuses []*model.Job
-	if err := jss.GetReplicaX().Select(&statuses, "SELECT * FROM "+model.JobTableName+" LIMIT ? OFFSET ? ORDER BY CreateAt DESC", uint64(limit), uint64(offset)); err != nil {
+	if err := jss.GetReplica().Select(&statuses, "SELECT * FROM "+model.JobTableName+" LIMIT ? OFFSET ? ORDER BY CreateAt DESC", uint64(limit), uint64(offset)); err != nil {
 		return nil, errors.Wrap(err, "failed to find Jobs")
 	}
 	return statuses, nil
@@ -201,7 +201,7 @@ func (jss *SqlJobStore) GetAllByTypesPage(jobTypes []string, offset int, limit i
 	if err != nil {
 		return nil, errors.Wrap(err, "GetAllByTypesPage_ToSql")
 	}
-	if err := jss.GetReplicaX().Select(&jobs, query, args...); err != nil {
+	if err := jss.GetReplica().Select(&jobs, query, args...); err != nil {
 		return nil, errors.Wrapf(err, "failed to find Jobs with types")
 	}
 	return jobs, nil
@@ -209,7 +209,7 @@ func (jss *SqlJobStore) GetAllByTypesPage(jobTypes []string, offset int, limit i
 
 func (jss *SqlJobStore) GetAllByType(jobType string) ([]*model.Job, error) {
 	var statuses []*model.Job
-	if err := jss.GetReplicaX().Select(&statuses, "SELECT * FROM "+model.JobTableName+" WHERE Type = ? ORDER BY CreateAt DESC", jobType); err != nil {
+	if err := jss.GetReplica().Select(&statuses, "SELECT * FROM "+model.JobTableName+" WHERE Type = ? ORDER BY CreateAt DESC", jobType); err != nil {
 		return nil, errors.Wrapf(err, "failed to find Jobs with type=%s", jobType)
 	}
 	return statuses, nil
@@ -217,7 +217,7 @@ func (jss *SqlJobStore) GetAllByType(jobType string) ([]*model.Job, error) {
 
 func (jss *SqlJobStore) GetAllByTypePage(jobType string, offset int, limit int) ([]*model.Job, error) {
 	var statuses []*model.Job
-	if err := jss.GetReplicaX().Select(&statuses, "SELECT * FROM "+model.JobTableName+" WHERE Type = ? LIMIT ? OFFSET ? ORDER BY CreateAt DESC", jobType, uint64(limit), uint64(offset)); err != nil {
+	if err := jss.GetReplica().Select(&statuses, "SELECT * FROM "+model.JobTableName+" WHERE Type = ? LIMIT ? OFFSET ? ORDER BY CreateAt DESC", jobType, uint64(limit), uint64(offset)); err != nil {
 		return nil, errors.Wrapf(err, "failed to find Jobs with type=%s", jobType)
 	}
 	return statuses, nil
@@ -226,7 +226,7 @@ func (jss *SqlJobStore) GetAllByTypePage(jobType string, offset int, limit int) 
 func (jss *SqlJobStore) GetAllByStatus(status string) ([]*model.Job, error) {
 	var statuses []*model.Job
 
-	if err := jss.GetReplicaX().Select(&statuses, "SELECT * FROM "+model.JobTableName+" WHERE Status = ? ORDER By CreateAt ASC", status); err != nil {
+	if err := jss.GetReplica().Select(&statuses, "SELECT * FROM "+model.JobTableName+" WHERE Status = ? ORDER By CreateAt ASC", status); err != nil {
 		return nil, errors.Wrapf(err, "failed to find Jobs with status=%s", status)
 	}
 	return statuses, nil
@@ -251,7 +251,7 @@ func (jss *SqlJobStore) GetNewestJobByStatusesAndType(statuses []string, jobType
 		return nil, errors.Wrap(err, "GetNewestJobByStatusesAndType_ToSql")
 	}
 
-	if err := jss.GetReplicaX().Get(&job, queryString, args...); err != nil {
+	if err := jss.GetReplica().Get(&job, queryString, args...); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("Job", fmt.Sprintf("<status, type>=<%s, %s>", strings.Join(statuses, ","), jobType))
 		}
@@ -263,7 +263,7 @@ func (jss *SqlJobStore) GetNewestJobByStatusesAndType(statuses []string, jobType
 
 func (jss *SqlJobStore) GetCountByStatusAndType(status string, jobType string) (int64, error) {
 	var count int64
-	err := jss.GetReplicaX().Get(&count, "SELECT COUNT(*) FROM "+model.JobTableName+" WHERE Status = ? AND Type = ?", status, jobType)
+	err := jss.GetReplica().Get(&count, "SELECT COUNT(*) FROM "+model.JobTableName+" WHERE Status = ? AND Type = ?", status, jobType)
 	if err != nil {
 		return int64(0), errors.Wrapf(err, "failed to count Jobs with status=%s and type=%s", status, jobType)
 	}
@@ -271,7 +271,7 @@ func (jss *SqlJobStore) GetCountByStatusAndType(status string, jobType string) (
 }
 
 func (jss *SqlJobStore) Delete(id string) (string, error) {
-	if _, err := jss.GetMasterX().Exec("DELETE FROM "+model.JobTableName+" WHERE Id = ?", id); err != nil {
+	if _, err := jss.GetMaster().Exec("DELETE FROM "+model.JobTableName+" WHERE Id = ?", id); err != nil {
 		return "", errors.Wrapf(err, "failed to delete Job with id=%s", id)
 	}
 	return id, nil

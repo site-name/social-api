@@ -43,7 +43,7 @@ func (ms *SqlMenuStore) Save(mnu *model.Menu) (*model.Menu, error) {
 
 	query := "INSERT INTO " + model.MenuTableName + "(" + ms.ModelFields("").Join(",") + ") VALUES (" + ms.ModelFields(":").Join(",") + ")"
 
-	if _, err := ms.GetMasterX().NamedExec(query, mnu); err != nil {
+	if _, err := ms.GetMaster().NamedExec(query, mnu); err != nil {
 		if ms.IsUniqueConstraintError(err, []string{"Name", "menus_name_key", "idx_menus_name_unique"}) {
 			return nil, store.NewErrInvalidInput(model.MenuTableName, "Name", mnu.Name)
 		}
@@ -81,7 +81,7 @@ func (ms *SqlMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.M
 	}
 
 	var res model.Menu
-	err = ms.GetReplicaX().Get(&res, queryString, args...)
+	err = ms.GetReplica().Get(&res, queryString, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.MenuTableName, "")
@@ -99,7 +99,7 @@ func (ms *SqlMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*mo
 	}
 
 	var res []*model.Menu
-	err = ms.GetReplicaX().Select(&res, queryString, args...)
+	err = ms.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find menus with given options")
 	}

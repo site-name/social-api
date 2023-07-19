@@ -105,7 +105,7 @@ func (c *CustomerEvent) commonPre() {
 type StaffNotificationRecipient struct {
 	Id         string  `json:"id" gorm:"primaryKey;type:uuid;defautl:gen_random_uuid();column:Id"`
 	UserID     *string `json:"user_id" gorm:"type:uuid;column:UserID;index:staffnotificationrecipients_userid_key"`
-	StaffEmail *string `json:"staff_email" gorm:"uniqueIndex:staff_notification_recipients_staff_email_unique_key;column:StaffEmail"`
+	StaffEmail *string `json:"staff_email" gorm:"unique:staff_notification_recipients_staff_email_key;column:StaffEmail"`
 	Active     *bool   `json:"active" gorm:"default:true;column:Active"`
 }
 

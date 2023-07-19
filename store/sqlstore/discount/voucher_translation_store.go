@@ -42,7 +42,7 @@ func (vts *SqlVoucherTranslationStore) Save(translation *model.VoucherTranslatio
 	}
 
 	query := "INSERT INTO " + model.VoucherTranslationTableName + "(" + vts.ModelFields("").Join(",") + ") VALUES (" + vts.ModelFields(":").Join(",") + ")"
-	_, err := vts.GetMasterX().NamedExec(query, translation)
+	_, err := vts.GetMaster().NamedExec(query, translation)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to save voucher translation with id=%s", translation.Id)
 	}
@@ -53,7 +53,7 @@ func (vts *SqlVoucherTranslationStore) Save(translation *model.VoucherTranslatio
 // Get finds and returns a voucher translation with given id
 func (vts *SqlVoucherTranslationStore) Get(id string) (*model.VoucherTranslation, error) {
 	var res model.VoucherTranslation
-	err := vts.GetReplicaX().Get(&res, "SELECT * FROM "+model.VoucherTranslationTableName+" WHERE Id = ?", id)
+	err := vts.GetReplica().Get(&res, "SELECT * FROM "+model.VoucherTranslationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherTranslationTableName, id)
@@ -91,7 +91,7 @@ func (vts *SqlVoucherTranslationStore) FilterByOption(option *model.VoucherTrans
 	}
 
 	var res []*model.VoucherTranslation
-	err = vts.GetReplicaX().Select(&res, queryString, args...)
+	err = vts.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find voucher translations with given options")
 	}
@@ -109,7 +109,7 @@ func (vts *SqlVoucherTranslationStore) GetByOption(option *model.VoucherTranslat
 	}
 
 	var res model.VoucherTranslation
-	err = vts.GetReplicaX().Get(&res, queryString, args...)
+	err = vts.GetReplica().Get(&res, queryString, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherTranslationTableName, "options")

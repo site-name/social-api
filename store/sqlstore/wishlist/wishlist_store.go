@@ -55,7 +55,7 @@ func (ws *SqlWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishlist, e
 	if isSaving {
 		query := "INSERT INTO " + model.WishlistTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
 		for {
-			_, err = ws.GetMasterX().NamedExec(query, wishList)
+			_, err = ws.GetMaster().NamedExec(query, wishList)
 			if err != nil {
 				if ws.IsUniqueConstraintError(err, []string{"Token", "wishlists_token_key"}) {
 					wishList.Token = model.NewId()
@@ -74,7 +74,7 @@ func (ws *SqlWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishlist, e
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = ws.GetMasterX().NamedExec(query, wishList)
+		result, err = ws.GetMaster().NamedExec(query, wishList)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -115,7 +115,7 @@ func (ws *SqlWishlistStore) GetByOption(option *model.WishlistFilterOption) (*mo
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
 	var res model.Wishlist
-	err = ws.GetReplicaX().Get(&res, queryString, args...)
+	err = ws.GetReplica().Get(&res, queryString, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.WishlistTableName, "option")

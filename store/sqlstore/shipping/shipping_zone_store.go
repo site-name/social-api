@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -52,7 +51,7 @@ func (s *SqlShippingZoneStore) ScanFields(shippingZone *model.ShippingZone) []in
 }
 
 // Upsert depends on given shipping zone's Id to decide update or insert the zone
-func (s *SqlShippingZoneStore) Upsert(tran store_iface.SqlxExecutor, shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
+func (s *SqlShippingZoneStore) Upsert(tran *gorm.DB, shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
 	var isSaving bool
 
 	if shippingZone.Id == "" {
@@ -69,7 +68,7 @@ func (s *SqlShippingZoneStore) Upsert(tran store_iface.SqlxExecutor, shippingZon
 	var (
 		err    error
 		result sql.Result
-		runner = s.GetMasterX()
+		runner = s.GetMaster()
 	)
 	if tran != nil {
 		runner = tran
@@ -105,7 +104,7 @@ func (s *SqlShippingZoneStore) Upsert(tran store_iface.SqlxExecutor, shippingZon
 // Get finds 1 shipping zone for given shippingZoneID
 func (s *SqlShippingZoneStore) Get(shippingZoneID string) (*model.ShippingZone, error) {
 	var res model.ShippingZone
-	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShippingZoneTableName+" WHERE Id = ?", shippingZoneID)
+	err := s.GetReplica().Get(&res, "SELECT * FROM "+model.ShippingZoneTableName+" WHERE Id = ?", shippingZoneID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShippingZoneTableName, shippingZoneID)
@@ -149,7 +148,7 @@ func (s *SqlShippingZoneStore) FilterByOption(option *model.ShippingZoneFilterOp
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
-	rows, err := s.GetReplicaX().QueryX(queryString, args...)
+	rows, err := s.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping zones with given options")
 	}
@@ -214,7 +213,7 @@ func (s *SqlShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterO
 	}
 
 	var res int64
-	err = s.GetReplicaX().Select(&res, queryStr, args...)
+	err = s.GetReplica().Select(&res, queryStr, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count number of shipping zone by given options")
 	}
@@ -222,7 +221,7 @@ func (s *SqlShippingZoneStore) CountByOptions(options *model.ShippingZoneFilterO
 	return res, nil
 }
 
-func (s *SqlShippingZoneStore) Delete(transaction store_iface.SqlxExecutor, conditions *model.ShippingZoneFilterOption) (int64, error) {
+func (s *SqlShippingZoneStore) Delete(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, error) {
 	if conditions.Conditions == nil {
 		return 0, errors.New("please provide conditions to delete")
 	}
@@ -232,7 +231,7 @@ func (s *SqlShippingZoneStore) Delete(transaction store_iface.SqlxExecutor, cond
 		return 0, errors.Wrap(err, "Delete_ToSql")
 	}
 
-	runner := s.GetMasterX()
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}

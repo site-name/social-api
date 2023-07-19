@@ -8,7 +8,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // ShippingMethodChannelListingsByOption returns a list of shipping method channel listings by given option
@@ -37,7 +37,7 @@ func (a *ServiceShipping) GetShippingMethodToShippingPriceMapping(shippingMethod
 	}), nil
 }
 
-func (s *ServiceShipping) UpsertShippingMethodChannelListings(transaction store_iface.SqlxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model.AppError) {
+func (s *ServiceShipping) UpsertShippingMethodChannelListings(transaction *gorm.DB, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model.AppError) {
 	listings, err := s.srv.Store.ShippingMethodChannelListing().Upsert(transaction, listings)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -51,7 +51,7 @@ func (s *ServiceShipping) UpsertShippingMethodChannelListings(transaction store_
 	return listings, nil
 }
 
-func (s *ServiceShipping) DeleteShippingMethodChannelListings(transaction store_iface.SqlxExecutor, options *model.ShippingMethodChannelListingFilterOption) *model.AppError {
+func (s *ServiceShipping) DeleteShippingMethodChannelListings(transaction *gorm.DB, options *model.ShippingMethodChannelListingFilterOption) *model.AppError {
 	err := s.srv.Store.ShippingMethodChannelListing().BulkDelete(transaction, options)
 	if err != nil {
 		model.NewAppError("ShippingMethodChannelListingUpdate", "app.shipping.delete_shipping_method_channel_listings.app_error", nil, err.Error(), http.StatusInternalServerError)

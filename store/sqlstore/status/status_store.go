@@ -48,12 +48,12 @@ func (s SqlStatusStore) SaveOrUpdate(status *model.Status) error {
 			Join(",") + " WHERE Id=:Id"
 	)
 
-	if err := s.GetReplicaX().Get(&model.Status{}, "SELECT * FROM Status WHERE UserId = :UserId", map[string]interface{}{"UserId": status.UserId}); err == nil {
-		if _, err := s.GetMasterX().NamedExec(updateQuery, status); err != nil {
+	if err := s.GetReplica().Get(&model.Status{}, "SELECT * FROM Status WHERE UserId = :UserId", map[string]interface{}{"UserId": status.UserId}); err == nil {
+		if _, err := s.GetMaster().NamedExec(updateQuery, status); err != nil {
 			return errors.Wrap(err, "failed to update Status")
 		}
 	} else {
-		if _, err := s.GetMasterX().NamedExec(saveQuery, status); err != nil {
+		if _, err := s.GetMaster().NamedExec(saveQuery, status); err != nil {
 			if !(strings.Contains(err.Error(), "for key 'PRIMARY'") && strings.Contains(err.Error(), "Duplicate entry")) {
 				return errors.Wrap(err, "failed in save Status")
 			}
@@ -65,7 +65,7 @@ func (s SqlStatusStore) SaveOrUpdate(status *model.Status) error {
 func (s *SqlStatusStore) Get(userId string) (*model.Status, error) {
 	var status model.Status
 
-	if err := s.GetReplicaX().Get(&status, `SELECT	* FROM Status WHERE UserId = ?`, userId); err != nil {
+	if err := s.GetReplica().Get(&status, `SELECT	* FROM Status WHERE UserId = ?`, userId); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("Status", fmt.Sprintf("userId=%s", userId))
 		}
@@ -81,7 +81,7 @@ func (s *SqlStatusStore) GetByIds(userIds []string) ([]*model.Status, error) {
 	}
 
 	var statuses []*model.Status
-	err = s.GetReplicaX().Select(&statuses, query, args...)
+	err = s.GetReplica().Select(&statuses, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find Statuses")
 	}
@@ -90,7 +90,7 @@ func (s *SqlStatusStore) GetByIds(userIds []string) ([]*model.Status, error) {
 }
 
 func (s *SqlStatusStore) ResetAll() error {
-	if _, err := s.GetMasterX().Exec("UPDATE Status SET Status = ? WHERE Manual = false", model.STATUS_OFFLINE); err != nil {
+	if _, err := s.GetMaster().Exec("UPDATE Status SET Status = ? WHERE Manual = false", model.STATUS_OFFLINE); err != nil {
 		return errors.Wrap(err, "failed to update Statuses")
 	}
 	return nil
@@ -102,7 +102,7 @@ func (s *SqlStatusStore) GetTotalActiveUsersCount() (int64, error) {
 		time  = model.GetMillis() - (1000 * 60 * 60 * 24)
 		count int64
 	)
-	err := s.GetReplicaX().Get(&count, "SELECT COUNT(UserId) FROM Status WHERE LastActivityAt > ?", time)
+	err := s.GetReplica().Get(&count, "SELECT COUNT(UserId) FROM Status WHERE LastActivityAt > ?", time)
 	if err != nil {
 		return count, errors.Wrap(err, "failed to count active users")
 	}
@@ -110,7 +110,7 @@ func (s *SqlStatusStore) GetTotalActiveUsersCount() (int64, error) {
 }
 
 func (s *SqlStatusStore) UpdateLastActivityAt(userId string, lastActivityAt int64) error {
-	if _, err := s.GetMasterX().Exec("UPDATE Status SET LastActivityAt = ? WHERE UserId = ?", lastActivityAt, userId); err != nil {
+	if _, err := s.GetMaster().Exec("UPDATE Status SET LastActivityAt = ? WHERE UserId = ?", lastActivityAt, userId); err != nil {
 		return errors.Wrapf(err, "failed to update last activity for userId=%s", userId)
 	}
 

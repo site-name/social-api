@@ -426,7 +426,7 @@ func (ps *SqlProductStore) cleanProductAttributesFilterInput(filterValue valueLi
 	}
 
 	var attributeValues model.AttributeValues
-	err = ps.GetReplicaX().Select(&attributeValues, "SELECT * FROM "+model.AttributeValueTableName)
+	err = ps.GetReplica().Select(&attributeValues, "SELECT * FROM "+model.AttributeValueTableName)
 	if err != nil {
 		return errors.Wrap(err, "failed to find all attribute values")
 	}
@@ -728,7 +728,7 @@ func (ps *SqlProductStore) filterQuantity(
 	}
 
 	var products model.Products
-	err = ps.GetReplicaX().Select(&products, queryString, args...)
+	err = ps.GetReplica().Select(&products, queryString, args...)
 	if err != nil {
 		slog.Error("failed to find products", slog.Err(err))
 		return query
@@ -768,7 +768,7 @@ func (ps *SqlProductStore) filterQuantity(
 	}
 
 	var variants model.ProductVariants
-	err = ps.GetReplicaX().Select(&variants, queryString, args...)
+	err = ps.GetReplica().Select(&variants, queryString, args...)
 	if err != nil {
 		slog.Error("failed to find product variants", slog.Err(err))
 		return query

@@ -44,8 +44,10 @@ type Product struct {
 	medias                    FileInfos                 `json:"-" db:"-"`
 	productChannelListings    ProductChannelListings    `json:"-" db:"-"`
 
-	Sales    Sales    `json:"-" gorm:"many2many:sale_products"`
-	Vouchers Vouchers `json:"-" gorm:"many2many:voucher_products"`
+	Sales             Sales                       `json:"-" gorm:"many2many:SaleProducts"`
+	Vouchers          Vouchers                    `json:"-" gorm:"many2many:VoucherProducts"`
+	Attributes        []*AssignedProductAttribute `json:"-" gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"`
+	AttributesRelated []*AttributeProduct         `json:"-" gorm:"many2many:AssignedProductAttributes"`
 }
 
 func (p *Product) GetCollections() Collections {

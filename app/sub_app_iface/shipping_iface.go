@@ -6,7 +6,7 @@ package sub_app_iface
 import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // ShippingService contains methods for working with shippings
@@ -29,13 +29,13 @@ type ShippingService interface {
 	ShippingMethodsByOptions(options *model.ShippingMethodFilterOption) ([]*model.ShippingMethod, *model.AppError)
 	// ShippingZonesByOption returns all shipping zones that satisfy given options
 	ShippingZonesByOption(option *model.ShippingZoneFilterOption) ([]*model.ShippingZone, *model.AppError)
-	DropInvalidShippingMethodsRelationsForGivenChannels(transaction store_iface.SqlxExecutor, shippingMethodIds, channelIds []string) *model.AppError
+	DropInvalidShippingMethodsRelationsForGivenChannels(transaction *gorm.DB, shippingMethodIds, channelIds []string) *model.AppError
 	ShippingMethodPostalCodeRulesByOptions(options *model.ShippingMethodPostalCodeRuleFilterOptions) ([]*model.ShippingMethodPostalCodeRule, *model.AppError)
 	GetShippingMethodToShippingPriceMapping(shippingMethods model.ShippingMethods, channelSlug string) (map[string]*goprices.Money, *model.AppError)
-	CreateShippingMethodPostalCodeRules(transaction store_iface.SqlxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, *model.AppError)
-	UpsertShippingMethod(transaction store_iface.SqlxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, *model.AppError)
-	UpsertShippingMethodChannelListings(transaction store_iface.SqlxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model.AppError)
-	DeleteShippingMethodChannelListings(transaction store_iface.SqlxExecutor, options *model.ShippingMethodChannelListingFilterOption) *model.AppError
-	UpsertShippingZone(transaction store_iface.SqlxExecutor, zone *model.ShippingZone) (*model.ShippingZone, *model.AppError)
-	DeleteShippingZones(transaction store_iface.SqlxExecutor, conditions *model.ShippingZoneFilterOption) (int64, *model.AppError)
+	CreateShippingMethodPostalCodeRules(transaction *gorm.DB, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, *model.AppError)
+	UpsertShippingMethod(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, *model.AppError)
+	UpsertShippingMethodChannelListings(transaction *gorm.DB, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, *model.AppError)
+	DeleteShippingMethodChannelListings(transaction *gorm.DB, options *model.ShippingMethodChannelListingFilterOption) *model.AppError
+	UpsertShippingZone(transaction *gorm.DB, zone *model.ShippingZone) (*model.ShippingZone, *model.AppError)
+	DeleteShippingZones(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, *model.AppError)
 }

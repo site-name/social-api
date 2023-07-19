@@ -7,7 +7,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -36,9 +35,9 @@ func (s *SqlWishlistItemStore) ModelFields(prefix string) util.AnyArray[string] 
 }
 
 // BulkUpsert inserts or updates given wishlist items then returns it
-func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, error) {
+func (ws *SqlWishlistItemStore) BulkUpsert(transaction *gorm.DB, wishlistItems model.WishlistItems) (model.WishlistItems, error) {
 	var (
-		upsertor store_iface.SqlxExecutor = ws.GetMasterX()
+		upsertor *gorm.DB = ws.GetMaster()
 	)
 	if transaction != nil {
 		upsertor = transaction
@@ -95,8 +94,8 @@ func (ws *SqlWishlistItemStore) BulkUpsert(transaction store_iface.SqlxExecutor,
 }
 
 // GetById finds and returns a wishlist item by given id
-func (ws *SqlWishlistItemStore) GetById(transaction store_iface.SqlxExecutor, id string) (*model.WishlistItem, error) {
-	var executor store_iface.SqlxExecutor = ws.GetReplicaX()
+func (ws *SqlWishlistItemStore) GetById(transaction *gorm.DB, id string) (*model.WishlistItem, error) {
+	var executor *gorm.DB = ws.GetReplica()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -139,7 +138,7 @@ func (ws *SqlWishlistItemStore) FilterByOption(option *model.WishlistItemFilterO
 	}
 
 	var items []*model.WishlistItem
-	if err := ws.GetReplicaX().Select(&items, queryString, args...); err != nil {
+	if err := ws.GetReplica().Select(&items, queryString, args...); err != nil {
 		return nil, errors.Wrapf(err, "failed to find wishlist items by given options")
 	} else {
 		return items, nil
@@ -154,7 +153,7 @@ func (ws *SqlWishlistItemStore) GetByOption(option *model.WishlistItemFilterOpti
 	}
 
 	var res model.WishlistItem
-	err = ws.GetReplicaX().Get(&res, queryString, args...)
+	err = ws.GetReplica().Get(&res, queryString, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.WishlistItemTableName, "option")
@@ -166,8 +165,8 @@ func (ws *SqlWishlistItemStore) GetByOption(option *model.WishlistItemFilterOpti
 }
 
 // DeleteItemsByOption finds and deletes wishlist items that satisfy given filtering options
-func (ws *SqlWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxExecutor, option *model.WishlistItemFilterOption) (int64, error) {
-	var runner store_iface.SqlxExecutor = ws.GetMasterX()
+func (ws *SqlWishlistItemStore) DeleteItemsByOption(transaction *gorm.DB, option *model.WishlistItemFilterOption) (int64, error) {
+	var runner *gorm.DB = ws.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}

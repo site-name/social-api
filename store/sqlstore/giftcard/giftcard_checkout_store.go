@@ -34,7 +34,7 @@ func (gs *SqlGiftCardCheckoutStore) Save(giftcardCheckout *model.GiftCardCheckou
 	}
 
 	query := "INSERT INTO " + model.GiftcardCheckoutTableName + "(" + gs.ModelFields("").Join(",") + ") VALUES (" + gs.ModelFields(":").Join(",") + ")"
-	if _, err := gs.GetMasterX().NamedExec(query, giftcardCheckout); err != nil {
+	if _, err := gs.GetMaster().NamedExec(query, giftcardCheckout); err != nil {
 		if gs.IsUniqueConstraintError(err, []string{"GiftcardID", "CheckoutID", "giftcardcheckouts_giftcardid_checkoutid_key"}) {
 			return nil, store.NewErrInvalidInput(model.GiftcardCheckoutTableName, "GiftcardID/checkoutID", giftcardCheckout.GiftcardID+"/"+giftcardCheckout.CheckoutID)
 		}
@@ -46,7 +46,7 @@ func (gs *SqlGiftCardCheckoutStore) Save(giftcardCheckout *model.GiftCardCheckou
 
 func (gs *SqlGiftCardCheckoutStore) Get(id string) (*model.GiftCardCheckout, error) {
 	var res model.GiftCardCheckout
-	err := gs.GetReplicaX().Get(&res, "SELECT * FROM "+model.GiftcardCheckoutTableName+" WHERE Id = ?", id)
+	err := gs.GetReplica().Get(&res, "SELECT * FROM "+model.GiftcardCheckoutTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.GiftcardCheckoutTableName, id)
@@ -59,7 +59,7 @@ func (gs *SqlGiftCardCheckoutStore) Get(id string) (*model.GiftCardCheckout, err
 
 // Delete deletes a giftcard-checkout relation with given id
 func (gs *SqlGiftCardCheckoutStore) Delete(giftcardID string, checkoutToken string) error {
-	_, err := gs.GetMasterX().Exec("DELETE FROM "+model.GiftcardCheckoutTableName+" WHERE GiftcardID = ? AND CheckoutID = ?", giftcardID, checkoutToken)
+	_, err := gs.GetMaster().Exec("DELETE FROM "+model.GiftcardCheckoutTableName+" WHERE GiftcardID = ? AND CheckoutID = ?", giftcardID, checkoutToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to delete giftcard-checkout relation with GiftCardID=%s, CheckoutToken=%s", giftcardID, checkoutToken)
 	}

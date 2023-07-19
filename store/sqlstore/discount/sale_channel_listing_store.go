@@ -53,7 +53,7 @@ func (scls *SqlSaleChannelListingStore) Save(saleChannelListing *model.SaleChann
 	}
 
 	query := "INSERT INTO " + model.SaleChannelListingTableName + "(" + scls.ModelFields("").Join(",") + ") VALUES (" + scls.ModelFields(":").Join(",") + ")"
-	_, err := scls.GetMasterX().NamedExec(query, saleChannelListing)
+	_, err := scls.GetMaster().NamedExec(query, saleChannelListing)
 	if err != nil {
 		if scls.IsUniqueConstraintError(err, []string{"SaleID", "ChannelID", "salechannellistings_saleid_channelid_key"}) {
 			return nil, store.NewErrInvalidInput(model.SaleChannelListingTableName, "SaleID/ChannelID", "duplicate")
@@ -68,7 +68,7 @@ func (scls *SqlSaleChannelListingStore) Save(saleChannelListing *model.SaleChann
 func (scls *SqlSaleChannelListingStore) Get(saleChannelListingID string) (*model.SaleChannelListing, error) {
 	var res model.SaleChannelListing
 
-	err := scls.GetReplicaX().Get(
+	err := scls.GetReplica().Get(
 		&res,
 		"SELECT * FROM "+model.SaleChannelListingTableName+" WHERE Id = ?",
 		saleChannelListingID,
@@ -115,7 +115,7 @@ func (scls *SqlSaleChannelListingStore) SaleChannelListingsWithOption(option *mo
 		return nil, errors.Wrap(err, "SaleChannelListingsWithOption_ToSql")
 	}
 
-	rows, err := scls.GetReplicaX().QueryX(queryString, args...)
+	rows, err := scls.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find sale channel listing with given option")
 	}

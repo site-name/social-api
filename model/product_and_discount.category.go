@@ -40,8 +40,8 @@ type Category struct {
 	// Children      Categories `json:"children,omitempty" db:"-"` // this field gets populated sometimes
 	NumOfChildren int `json:"num_of_children" db:"-"`
 
-	Sales    Sales    `json:"-" gorm:"many2many:sale_categories"`
-	Vouchers Vouchers `json:"-" gorm:"many2many:voucher_categories"`
+	Sales    Sales    `json:"-" gorm:"many2many:SaleCategories"`
+	Vouchers Vouchers `json:"-" gorm:"many2many:VoucherCategories"`
 }
 
 func (c *Category) BeforeCreate(_ *gorm.DB) error {

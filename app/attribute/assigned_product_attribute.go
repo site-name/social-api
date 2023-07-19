@@ -24,16 +24,17 @@ func (a *ServiceAttribute) AssignedProductAttributeByOption(option *model.Assign
 
 // GetOrCreateAssignedProductAttribute get or create new instance from the given, then returns it
 func (a *ServiceAttribute) GetOrCreateAssignedProductAttribute(assignedProductAttribute *model.AssignedProductAttribute) (*model.AssignedProductAttribute, *model.AppError) {
-	// try get first:
-	option := new(model.AssignedProductAttributeFilterOption)
+	eqConds := squirrel.Eq{}
 	if assignedProductAttribute.ProductID != "" {
-		option.ProductID = squirrel.Eq{model.AssignedProductAttributeTableName + ".ProductID": assignedProductAttribute.ProductID}
+		eqConds[model.AssignedProductAttributeTableName+".ProductID"] = assignedProductAttribute.ProductID
 	}
 	if assignedProductAttribute.AssignmentID != "" {
-		option.AssignmentID = squirrel.Eq{model.AssignedProductAttributeTableName + ".AssignmentID": assignedProductAttribute.AssignmentID}
+		eqConds[model.AssignedProductAttributeTableName+".AssignmentID"] = assignedProductAttribute.AssignmentID
 	}
 
-	assignedProductAttr, appErr := a.AssignedProductAttributeByOption(option)
+	assignedProductAttr, appErr := a.AssignedProductAttributeByOption(&model.AssignedProductAttributeFilterOption{
+		Conditions: eqConds,
+	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError { // return immediately if error was caused by system
 			return nil, appErr

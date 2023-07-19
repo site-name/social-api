@@ -2,23 +2,13 @@ package model
 
 import (
 	"strings"
-	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
-)
-
-// max lengths for some fields
-const (
-	ATTRIBUTE_SLUG_MAX_LENGTH        = 255
-	ATTRIBUTE_NAME_MAX_LENGTH        = 250
-	ATTRIBUTE_TYPE_MAX_LENGTH        = 50
-	ATTRIBUTE_UNIT_MAX_LENGTH        = 100
-	ATTRIBUTE_INPUT_TYPE_MAX_LENGTH  = 50
-	ATTRIBUTE_ENTITY_TYPE_MAX_LENGTH = 50
+	"gorm.io/gorm"
 )
 
 // choices for attribute's type
@@ -116,34 +106,49 @@ var ATTRIBUTE_PROPERTIES_CONFIGURATION = map[string][]AttributeInputType{
 
 // ORDER BY Slug
 type Attribute struct {
-	Id                       string               `json:"id"`
-	Slug                     string               `json:"slug"` // unique
-	Name                     string               `json:"name"`
-	Type                     AttributeType        `json:"type"`
-	InputType                AttributeInputType   `json:"input_type"`
-	EntityType               *AttributeEntityType `json:"entity_type"`
-	Unit                     *string              `json:"unit"` // lower cased
-	ValueRequired            bool                 `json:"value_required"`
-	IsVariantOnly            bool                 `json:"is_variant_only"`
-	VisibleInStoreFront      bool                 `json:"visible_in_storefront"`
-	FilterableInStorefront   bool                 `json:"filterable_in_storefront"`
-	FilterableInDashboard    bool                 `json:"filterable_in_dashboard"`
-	StorefrontSearchPosition int                  `json:"storefront_search_position"`
-	AvailableInGrid          bool                 `json:"available_in_grid"`
+	Id                       string               `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Slug                     string               `json:"slug" gorm:"type:varchar(255);uniqueIndex:slug_unique_key;column:Slug"` // varchar(255); unique
+	Name                     string               `json:"name" gorm:"type:varchar(250);column:Name"`                             // varchar(250)
+	Type                     AttributeType        `json:"type" gorm:"type:varchar(50);column:Type"`                              // varchar(50)
+	InputType                AttributeInputType   `json:"input_type" gorm:"type:varchar(50);column:InputType"`                   // default "dropdown"
+	EntityType               *AttributeEntityType `json:"entity_type" gorm:"type:varchar(50);column:EntityType"`
+	Unit                     *string              `json:"unit" gorm:"type:varchar(100);column:Unit"` // lower cased
+	ValueRequired            bool                 `json:"value_required" gorm:"column:ValueRequired"`
+	IsVariantOnly            bool                 `json:"is_variant_only" gorm:"column:IsVariantOnly"`
+	VisibleInStoreFront      bool                 `json:"visible_in_storefront" gorm:"column:VisibleInStoreFront"`
+	FilterableInStorefront   bool                 `json:"filterable_in_storefront" gorm:"column:FilterableInStorefront"`
+	FilterableInDashboard    bool                 `json:"filterable_in_dashboard" gorm:"column:FilterableInDashboard"`
+	StorefrontSearchPosition int                  `json:"storefront_search_position" gorm:"column:StorefrontSearchPosition"`
+	AvailableInGrid          bool                 `json:"available_in_grid" gorm:"column:AvailableInGrid"`
 	ModelMetadata
 
-	attributeValues AttributeValues `db:"-"`
+	AttributeValues AttributeValues  `json:"-" gorm:"foreignKey:AttributeID;constraint:OnDelete:CASCADE;"`
+	AttributePages  []*AttributePage `json:"-" gorm:"foreignKey:AttributeID;constraint:OnDelete:CASCADE;"`
 }
 
-func (a *Attribute) SetAttributeValues(v AttributeValues) {
-	a.attributeValues = v
+func (a *Attribute) BeforeCreate(_ *gorm.DB) error { a.PreSave(); return a.IsValid() }
+func (a *Attribute) BeforeUpdate(_ *gorm.DB) error { a.PreUpdate(); return a.IsValid() }
+func (a *Attribute) TableName() string             { return AttributeTableName }
+func (a *Attribute) PreSave() {
+	a.commonPre()
+	if a.Slug == "" {
+		a.Slug = slug.Make(a.Name)
+	}
 }
 
-func (a *Attribute) GetAttributeValues() AttributeValues {
-	return a.attributeValues
+func (a *Attribute) commonPre() {
+	a.Name = SanitizeUnicode(a.Name)
+	if !a.InputType.IsValid() {
+		a.InputType = AttributeInputTypeDropDown
+	}
 }
+
+func (a *Attribute) PreUpdate()     { a.commonPre() }
+func (a *Attribute) String() string { return a.Name }
 
 type AttributeFilterOption struct {
+	Conditions squirrel.Sqlizer
+
 	Id                     squirrel.Sqlizer
 	Slug                   squirrel.Sqlizer
 	InputType              squirrel.Sqlizer
@@ -177,27 +182,16 @@ func (a *Attribute) IsValid() *AppError {
 		"attribute_id=",
 		"Attribute.IsValid",
 	)
-	if !IsValidId(a.Id) {
-		return outer("id", &a.Id)
-	}
-	if utf8.RuneCountInString(a.Name) > ATTRIBUTE_NAME_MAX_LENGTH {
-		return outer("name", &a.Id)
-	}
-	if len(a.Slug) > ATTRIBUTE_SLUG_MAX_LENGTH {
-		return outer("slug", &a.Id)
-	}
-	if len(a.Type) > ATTRIBUTE_TYPE_MAX_LENGTH || !a.Type.IsValid() {
+	if !a.Type.IsValid() {
 		return outer("type", &a.Id)
 	}
-	if len(a.InputType) > ATTRIBUTE_TYPE_MAX_LENGTH || !a.InputType.IsValid() {
+	if !a.InputType.IsValid() {
 		return outer("input_type", &a.Id)
 	}
-	if a.EntityType != nil &&
-		(len(*a.EntityType) > ATTRIBUTE_ENTITY_TYPE_MAX_LENGTH || !(*a.EntityType).IsValid()) {
+	if a.EntityType != nil && !(*a.EntityType).IsValid() {
 		return outer("entity_type", &a.Id)
 	}
-	if (a.Unit != nil && len(*a.Unit) > ATTRIBUTE_UNIT_MAX_LENGTH) ||
-		(a.Unit != nil && measurement.MeasurementUnitMap[strings.ToUpper(*a.Unit)] == "") {
+	if a.Unit != nil && measurement.MeasurementUnitMap[strings.ToUpper(*a.Unit)] == "" {
 		return outer("unit", &a.Id)
 	}
 
@@ -208,31 +202,6 @@ type Attributes []*Attribute
 
 func (as Attributes) IDs() []string {
 	return lo.Map(as, func(a *Attribute, _ int) string { return a.Id })
-}
-
-func (a *Attribute) PreSave() {
-	if a.Id == "" {
-		a.Id = NewId()
-	}
-	if a.InputType == "" {
-		a.InputType = AttributeInputTypeDropDown
-	}
-	a.Name = SanitizeUnicode(a.Name)
-	if a.Slug == "" {
-		a.Slug = slug.Make(a.Name)
-	}
-}
-
-func (a *Attribute) PreUpdate() {
-	a.Name = SanitizeUnicode(a.Name)
-}
-
-func (a *Attribute) String() string {
-	return a.Name
-}
-
-func (a *Attribute) ToJSON() string {
-	return ModelToJson(a)
 }
 
 func (a *Attribute) DeepCopy() *Attribute {
@@ -248,22 +217,21 @@ func (a *Attribute) DeepCopy() *Attribute {
 		res.Unit = NewPrimitive(*a.Unit)
 	}
 	res.ModelMetadata = a.ModelMetadata.DeepCopy()
-	res.attributeValues = a.attributeValues.DeepCopy()
+	res.AttributeValues = a.AttributeValues.DeepCopy()
 
 	return &res
 }
 
-// max lengths for attribute translation's fields
-const (
-	ATTRIBUTE_TRANSLATION_NAME_MAX_LENGTH = 100
-)
-
 type AttributeTranslation struct {
-	Id           string           `json:"id"`
-	AttributeID  string           `json:"attribute_id"`
-	LanguageCode LanguageCodeEnum `json:"language_code"`
-	Name         string           `json:"name"`
+	Id           string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	AttributeID  string           `json:"attribute_id" gorm:"type:uuid;column:AttributeID"`
+	LanguageCode LanguageCodeEnum `json:"language_code" gorm:"type:varchar(35);column:LanguageCode"`
+	Name         string           `json:"name" gorm:"type:varchar(100);column:Name"`
 }
+
+func (a *AttributeTranslation) BeforeCreate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
+func (a *AttributeTranslation) BeforeUpdate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
+func (a *AttributeTranslation) TableName() string             { return AttributeTranslationTableName }
 
 func (a *AttributeTranslation) IsValid() *AppError {
 	outer := CreateAppErrorForModel(
@@ -271,14 +239,8 @@ func (a *AttributeTranslation) IsValid() *AppError {
 		"attribute_translation_id=",
 		"AttributeTranslation.IsValid",
 	)
-	if !IsValidId(a.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(a.AttributeID) {
 		return outer("attribute_id", nil)
-	}
-	if utf8.RuneCountInString(a.Name) > ATTRIBUTE_TRANSLATION_NAME_MAX_LENGTH {
-		return outer("name", &a.Id)
 	}
 	if !a.LanguageCode.IsValid() {
 		return outer("language_code", &a.Id)
@@ -287,14 +249,7 @@ func (a *AttributeTranslation) IsValid() *AppError {
 	return nil
 }
 
-func (a *AttributeTranslation) PreSave() {
-	if a.Id == "" {
-		a.Id = NewId()
-	}
-	a.Name = SanitizeUnicode(a.Name)
-}
-
-func (a *AttributeTranslation) PreUpdate() {
+func (a *AttributeTranslation) commonPre() {
 	a.Name = SanitizeUnicode(a.Name)
 }
 

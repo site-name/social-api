@@ -30,25 +30,6 @@ func (e *ErrInvalidInput) InvalidInputInfo() (entity string, field string, value
 	return
 }
 
-// ErrLimitExceeded indicates an error that has occurred because some value exceeded a limit.
-type ErrLimitExceeded struct {
-	What  string // What was the object that exceeded.
-	Count int    // The value of the object.
-	meta  string // Any additional metadata.
-}
-
-func NewErrLimitExceeded(what string, count int, meta string) *ErrLimitExceeded {
-	return &ErrLimitExceeded{
-		What:  what,
-		Count: count,
-		meta:  meta,
-	}
-}
-
-func (e *ErrLimitExceeded) Error() string {
-	return fmt.Sprintf("limit exceeded: what: %s count: %d metadata: %s", e.What, e.Count, e.meta)
-}
-
 // ErrConflict indicates a conflict that occurred.
 type ErrConflict struct {
 	Resource string // The resource which created the conflict.
@@ -76,9 +57,23 @@ func (e *ErrConflict) Unwrap() error {
 	return e.err
 }
 
-// IsErrConflict allows easy type assertion without adding store as a dependency.
-func (e *ErrConflict) IsErrConflict() bool {
-	return true
+// ErrLimitExceeded indicates an error that has occurred because some value exceeded a limit.
+type ErrLimitExceeded struct {
+	What  string // What was the object that exceeded.
+	Count int    // The value of the object.
+	meta  string // Any additional metadata.
+}
+
+func NewErrLimitExceeded(what string, count int, meta string) *ErrLimitExceeded {
+	return &ErrLimitExceeded{
+		What:  what,
+		Count: count,
+		meta:  meta,
+	}
+}
+
+func (e *ErrLimitExceeded) Error() string {
+	return fmt.Sprintf("limit exceeded: what: %s count: %d metadata: %s", e.What, e.Count, e.meta)
 }
 
 // ErrNotFound indicates that a resource was not found

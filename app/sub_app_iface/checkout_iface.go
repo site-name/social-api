@@ -9,7 +9,6 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -90,7 +89,7 @@ type CheckoutService interface {
 	// CleanCheckoutShipping
 	CleanCheckoutShipping(checkoutInfo model.CheckoutInfo, lines model.CheckoutLineInfos) *model.AppError
 	// DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
-	DeleteCheckoutsByOption(transaction store_iface.SqlxExecutor, option *model.CheckoutFilterOption) *model.AppError
+	DeleteCheckoutsByOption(transaction *gorm.DB, option *model.CheckoutFilterOption) *model.AppError
 	// FetchCheckoutInfo Fetch checkout as CheckoutInfo object
 	FetchCheckoutInfo(checkOut *model.Checkout, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, manager interfaces.PluginManagerInterface) (*model.CheckoutInfo, *model.AppError)
 	// FetchCheckoutLines Fetch checkout lines as CheckoutLineInfo objects.
@@ -168,7 +167,7 @@ type CheckoutService interface {
 	CleanBillingAddress(checkoutInfo model.CheckoutInfo) *model.AppError
 	CleanCheckoutPayment(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo, lastPayment *model.Payment) (*model.PaymentError, *model.AppError)
 	ClearDeliveryMethod(checkoutInfo model.CheckoutInfo) *model.AppError
-	DeleteCheckoutLines(transaction store_iface.SqlxExecutor, checkoutLineIDs []string) *model.AppError
+	DeleteCheckoutLines(transaction *gorm.DB, checkoutLineIDs []string) *model.AppError
 	GetDiscountedLines(checkoutLineInfos []*model.CheckoutLineInfo, voucher *model.Voucher) ([]*model.CheckoutLineInfo, *model.AppError)
 	GetValidCollectionPointsForCheckoutInfo(shippingAddress *model.Address, lines []*model.CheckoutLineInfo, checkoutInfo *model.CheckoutInfo) ([]*model.WareHouse, *model.AppError)
 	UpsertCheckoutLine(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, *model.AppError)

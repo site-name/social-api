@@ -43,9 +43,9 @@ func (ss *SqlDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (
 		transaction = ss.GetMaster()
 	}
 
-	result := transaction.Save(sale)
-	if result.Error != nil {
-		return nil, errors.Wrap(result.Error, "failed to upsert sale")
+	err := transaction.Upsert(sale)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to upsert sale")
 	}
 
 	return sale, nil
@@ -54,12 +54,12 @@ func (ss *SqlDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (
 // Get finds and returns a sale with given saleID
 func (ss *SqlDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 	var sale model.Sale
-	result := ss.GetReplica().First(&sale, "id = ?", saleID)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+	err := ss.GetReplica().Get(&sale, "id = ?", saleID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("sales", saleID)
 		}
-		return nil, errors.Wrap(result.Error, "failed to find sale by id")
+		return nil, errors.Wrap(err, "failed to find sale by id")
 	}
 	return &sale, nil
 }
@@ -86,7 +86,7 @@ func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOpti
 	}
 
 	var sales []*model.Sale
-	err = ss.GetReplicaX().Select(&sales, queryString, args...)
+	err = ss.GetReplica().Select(&sales, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find sales with given condition.")
 	}

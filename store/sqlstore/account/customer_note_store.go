@@ -1,9 +1,12 @@
 package account
 
 import (
+	"errors"
+
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
+	"gorm.io/gorm"
 )
 
 type SqlCustomerNoteStore struct {
@@ -45,6 +48,9 @@ func (cs *SqlCustomerNoteStore) Get(id string) (*model.CustomerNote, error) {
 	var res model.CustomerNote
 	err := cs.GetReplica().First(&res, "Id = ?", id).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, store.NewErrNotFound(model.CustomerNoteTableName, id)
+		}
 		return nil, err
 	}
 	return &res, nil

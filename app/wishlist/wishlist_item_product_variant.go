@@ -5,11 +5,11 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // BulkUpsertWishlistItemProductVariantRelations
-func (a *ServiceWishlist) BulkUpsertWishlistItemProductVariantRelations(transaction store_iface.SqlxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, *model.AppError) {
+func (a *ServiceWishlist) BulkUpsertWishlistItemProductVariantRelations(transaction *gorm.DB, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, *model.AppError) {
 	relations, err := a.srv.Store.WishlistItemProductVariant().BulkUpsert(transaction, relations)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

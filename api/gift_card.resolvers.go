@@ -321,7 +321,7 @@ func (r *Resolver) GiftCardBulkActivate(ctx context.Context, args struct{ Ids []
 		return nil, appErr
 	}
 
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("GiftCardBulkActivate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -362,7 +362,7 @@ func (r *Resolver) GiftCardBulkDeactivate(ctx context.Context, args struct{ Ids 
 		return nil, appErr
 	}
 
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("GiftCardBulkActivate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

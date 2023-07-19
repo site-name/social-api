@@ -5,7 +5,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model.AppError) {
@@ -17,7 +17,7 @@ func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]
 	return lines, nil
 }
 
-func (a *ServiceCheckout) DeleteCheckoutLines(transaction store_iface.SqlxExecutor, checkoutLineIDs []string) *model.AppError {
+func (a *ServiceCheckout) DeleteCheckoutLines(transaction *gorm.DB, checkoutLineIDs []string) *model.AppError {
 	err := a.srv.Store.CheckoutLine().DeleteLines(transaction, checkoutLineIDs)
 	if err != nil {
 		return model.NewAppError("DeleteCheckoutLines", "app.checkout.error_deleting_checkoutlines.app_error", nil, err.Error(), http.StatusInternalServerError)

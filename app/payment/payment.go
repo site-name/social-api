@@ -13,7 +13,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // ServicePayment handle all logics related to payment
@@ -29,7 +29,7 @@ func init() {
 }
 
 // PaymentByID returns a payment with given id
-func (a *ServicePayment) PaymentByID(transaction store_iface.SqlxExecutor, paymentID string, lockForUpdate bool) (*model.Payment, *model.AppError) {
+func (a *ServicePayment) PaymentByID(transaction *gorm.DB, paymentID string, lockForUpdate bool) (*model.Payment, *model.AppError) {
 	payMent, err := a.srv.Store.Payment().Get(transaction, paymentID, lockForUpdate)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -141,7 +141,7 @@ func (a *ServicePayment) PaymentCanVoid(payMent *model.Payment) (bool, *model.Ap
 }
 
 // UpsertPayment updates or insert given payment, depends on the validity of its Id
-func (a *ServicePayment) UpsertPayment(transaction store_iface.SqlxExecutor, payMent *model.Payment) (*model.Payment, *model.AppError) {
+func (a *ServicePayment) UpsertPayment(transaction *gorm.DB, payMent *model.Payment) (*model.Payment, *model.AppError) {
 	var err error
 
 	if !model.IsValidId(payMent.Id) {
@@ -175,7 +175,7 @@ func (a *ServicePayment) GetAllPaymentsByCheckout(checkoutToken string) ([]*mode
 }
 
 // UpdatePaymentsOfCheckout updates payments of given checkout, with parameters specified in option
-func (s *ServicePayment) UpdatePaymentsOfCheckout(transaction store_iface.SqlxExecutor, checkoutToken string, option *model.PaymentPatch) *model.AppError {
+func (s *ServicePayment) UpdatePaymentsOfCheckout(transaction *gorm.DB, checkoutToken string, option *model.PaymentPatch) *model.AppError {
 	err := s.srv.Store.Payment().UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
 	if err != nil {
 		return model.NewAppError("UpdatePaymentsOfCheckout", "app.payment.error_updating_payments_of_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)

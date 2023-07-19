@@ -45,7 +45,7 @@ func (s sqlClusterDiscoveryStore) Save(ClusterDiscovery *model.ClusterDiscovery)
 
 	query := "INSERT INTO " + model.ClusterDiscoveryTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
 
-	if _, err := s.GetMasterX().NamedExec(query, ClusterDiscovery); err != nil {
+	if _, err := s.GetMaster().NamedExec(query, ClusterDiscovery); err != nil {
 		return errors.Wrap(err, "failed to save ClusterDiscovery")
 	}
 	return nil
@@ -64,7 +64,7 @@ func (s sqlClusterDiscoveryStore) Delete(ClusterDiscovery *model.ClusterDiscover
 	}
 
 	var count int64
-	err = s.GetMasterX().Get(&count, queryString, args...)
+	err = s.GetMaster().Get(&count, queryString, args...)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to delete ClusterDiscovery")
 	}
@@ -88,7 +88,7 @@ func (s sqlClusterDiscoveryStore) Exists(ClusterDiscovery *model.ClusterDiscover
 	}
 
 	var count int64
-	err = s.GetMasterX().Get(&count, queryString, args...)
+	err = s.GetMaster().Get(&count, queryString, args...)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to count ClusterDiscovery")
 	}
@@ -112,7 +112,7 @@ func (s sqlClusterDiscoveryStore) GetAll(ClusterDiscoveryType, clusterName strin
 	}
 
 	var list []*model.ClusterDiscovery
-	if err := s.GetMasterX().Select(&list, queryString, args...); err != nil {
+	if err := s.GetMaster().Select(&list, queryString, args...); err != nil {
 		return nil, errors.Wrapf(err, "failed to find ClusterDiscovery")
 	}
 	return list, nil
@@ -131,7 +131,7 @@ func (s sqlClusterDiscoveryStore) SetLastPingAt(ClusterDiscovery *model.ClusterD
 		return errors.Wrap(err, "cluster_discovery_tosql")
 	}
 
-	if _, err := s.GetMasterX().Exec(queryString, args...); err != nil {
+	if _, err := s.GetMaster().Exec(queryString, args...); err != nil {
 		return errors.Wrap(err, "failed to update ClusterDiscovery")
 	}
 	return nil
@@ -147,7 +147,7 @@ func (s sqlClusterDiscoveryStore) Cleanup() error {
 		return errors.Wrap(err, "cluster_discovery_tosql")
 	}
 
-	if _, err := s.GetMasterX().Exec(queryString, args...); err != nil {
+	if _, err := s.GetMaster().Exec(queryString, args...); err != nil {
 		return errors.Wrap(err, "failed to delete ClusterDiscoveries")
 	}
 	return nil

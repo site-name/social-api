@@ -1,48 +1,39 @@
 package model
 
 import (
-	"strings"
+	"net/http"
 	"time"
-	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/store/store_iface"
-	"golang.org/x/text/language"
-)
-
-// max lengths for some fields
-const (
-	ATTRIBUTE_VALUE_NAME_MAX_LENGTH         = 250
-	ATTRIBUTE_VALUE_VALUE_MAX_LENGTH        = 9
-	ATTRIBUTE_VALUE_SLUG_MAX_LENGTH         = 255
-	ATTRIBUTE_VALUE_CONTENT_TYPE_MAX_LENGTH = 50
+	"gorm.io/gorm"
 )
 
 type AttributeValue struct {
-	Id          string          `json:"id"`
-	Name        string          `json:"name"`
-	Value       string          `json:"value"`
-	Slug        string          `json:"slug"` // unique
-	FileUrl     *string         `json:"file_url"`
-	ContentType *string         `json:"content_file"`
-	AttributeID string          `json:"attribute_id"`
-	RichText    StringInterface `json:"rich_text"`
-	Boolean     *bool           `json:"boolean"`
-	Datetime    *time.Time      `json:"date_time"`
+	Id          string          `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Name        string          `json:"name" gorm:"type:varchar(250);column:Name"`                                                 // varchar(250)
+	Value       string          `json:"value" gorm:"type:varchar(9);column:Value"`                                                 // varchar(9)
+	Slug        string          `json:"slug" gorm:"uniqueIndex:,composite:idx_slug_attributeid_key;type:varchar(255);column:Slug"` // unique with attribute_id; varchar(255)
+	AttributeID string          `json:"attribute_id" gorm:"uniqueIndex:,composite:idx_slug_attributeid_key;type:uuid;column:AttributeID"`
+	FileUrl     *string         `json:"file_url" gorm:"type:varchar(500);column:FileUrl"`        // varchar(500)
+	ContentType *string         `json:"content_file" gorm:"type:varchar(50);column:ContentType"` // varchar(50)
+	RichText    StringInterface `json:"rich_text" gorm:"column:RichText"`
+	Boolean     *bool           `json:"boolean" gorm:"column:Boolean"`
+	Datetime    *time.Time      `json:"date_time" gorm:"column:Datetime"`
 	Sortable
 
-	attribute *Attribute `db:"-"`
+	VariantsAssignments     []*AssignedVariantAttribute      `json:"-" gorm:"many2many:AssignedVariantAttributeValues"`
+	VariantValueAssignment  []*AssignedVariantAttributeValue `json:"-" gorm:"foreignKey:ValueID;constraint:OnDelete:CASCADE;"`
+	PageValueAssignment     []*AssignedPageAttributeValue    `json:"-" gorm:"foreignKey:ValueID;constraint:OnDelete:CASCADE;"`
+	PageAssignments         []*AssignedPageAttribute         `json:"-" gorm:"many2many:AssignedPageAttributeValues"`
+	ProductAssignments      []*AssignedProductAttribute      `json:"-" gorm:"many2many:AssignedProductAttributeValues"`
+	ProductValueAssignments []*AssignedProductAttributeValue `json:"-" gorm:"foreignKey:ValueID;constraint:OnDelete:CASCADE;"`
 }
 
-func (v *AttributeValue) GetAttribute() *Attribute {
-	return v.attribute
-}
-
-func (v *AttributeValue) SetAttribute(a *Attribute) {
-	v.attribute = a
-}
+func (a *AttributeValue) BeforeCreate(_ *gorm.DB) error { a.PreSave(); return a.IsValid() }
+func (a *AttributeValue) BeforeUpdate(_ *gorm.DB) error { a.PreUpdate(); return a.IsValid() }
+func (a *AttributeValue) TableName() string             { return AttributeValueTableName }
 
 type AttributeValueFilterOptions struct {
 	Id          squirrel.Sqlizer
@@ -52,8 +43,8 @@ type AttributeValueFilterOptions struct {
 
 	SelectRelatedAttribute bool
 
-	Transaction     store_iface.SqlxExecutor // if provided, this will be responsible for perform queries
-	SelectForUpdate bool                     // is true, add `FOR UPDATE` suffic to the end of sql query
+	Transaction     *gorm.DB // if provided, this will be responsible for perform queries
+	SelectForUpdate bool     // is true, add `FOR UPDATE` suffic to the end of sql query
 
 	Ordering string
 }
@@ -68,65 +59,27 @@ func (a AttributeValues) DeepCopy() AttributeValues {
 	return lo.Map(a, func(v *AttributeValue, _ int) *AttributeValue { return v.DeepCopy() })
 }
 
-func (a *AttributeValue) String() string {
-	return a.Name
-}
-
+func (a *AttributeValue) String() string { return a.Name }
 func (a *AttributeValue) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.attribute_value.is_valid.%s.app_error",
-		"attribute_value_id=",
-		"AttributeValue.IsValid",
-	)
-	if !IsValidId(a.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(a.AttributeID) {
-		return outer("attribute_id", &a.Id)
-	}
-	if utf8.RuneCountInString(a.Name) > ATTRIBUTE_VALUE_NAME_MAX_LENGTH {
-		return outer("name", &a.Id)
-	}
-	if utf8.RuneCountInString(a.Value) > ATTRIBUTE_VALUE_VALUE_MAX_LENGTH {
-		return outer("value", &a.Id)
-	}
-	if len(a.Slug) > ATTRIBUTE_VALUE_SLUG_MAX_LENGTH {
-		return outer("slug", &a.Id)
-	}
-	if a.ContentType != nil && len(*a.ContentType) > ATTRIBUTE_VALUE_CONTENT_TYPE_MAX_LENGTH {
-		return outer("content_type", &a.Id)
+		return NewAppError("AttributeValue.IsValid", "model.attribute_value.is_valid.attribute_id.app_error", nil, "", http.StatusBadRequest)
 	}
 	if a.Datetime != nil && a.Datetime.IsZero() {
-		return outer("date_time", &a.Id)
+		return NewAppError("AttributeValue.IsValid", "model.attribute_value.is_valid.date_time.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	return nil
 }
 
-func (a *AttributeValue) PreSave() {
-	if a.Id == "" {
-		a.Id = NewId()
-	}
-	a.Name = SanitizeUnicode(a.Name)
-	a.Slug = slug.Make(a.Name)
-}
-
-func (a *AttributeValue) PreUpdate() {
-	a.Name = SanitizeUnicode(a.Name)
-}
-
-func (a *AttributeValue) ToJSON() string {
-	return ModelToJson(a)
-}
+func (a *AttributeValue) PreSave()   { a.commonPre(); a.Slug = slug.Make(a.Name) }
+func (a *AttributeValue) commonPre() { a.Name = SanitizeUnicode(a.Name) }
+func (a *AttributeValue) PreUpdate() { a.commonPre() }
 
 func (a *AttributeValue) DeepCopy() *AttributeValue {
 	res := *a
 
 	if a.RichText != nil {
 		res.RichText = a.RichText.DeepCopy()
-	}
-	if a.attribute != nil {
-		res.attribute = a.attribute.DeepCopy()
 	}
 	if a.FileUrl != nil {
 		res.FileUrl = NewPrimitive(*a.FileUrl)
@@ -141,57 +94,27 @@ func (a *AttributeValue) DeepCopy() *AttributeValue {
 	return &res
 }
 
-// max lengths for some fields of attribute value translation
-const (
-	ATTRIBUTE_VALUE_TRANSLATION_NAME_MAX_LENGTH = 100
-)
-
 // LanguageCode unique together AttributeValueID
 type AttributeValueTranslation struct {
-	Id               string          `json:"id"`
-	LanguageCode     string          `json:"language_code"`
-	AttributeValueID string          `json:"attribute_value"`
-	Name             string          `json:"name"`
-	RichText         StringInterface `json:"rich_text"`
+	Id               string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	LanguageCode     LanguageCodeEnum `json:"language_code" gorm:"type:varchar(35);uniqueIndex:,composite:languagecode_attributevalueid_key;column:LanguageCode"` // varchar(35); unique together with attributeid
+	AttributeValueID string           `json:"attribute_value" gorm:"type:uuid;uniqueIndex:,composite:languagecode_attributevalueid_key;column:AttributeValueID"`
+	Name             string           `json:"name" gorm:"type:varchar(100);column:Name"` // varchar(100)
+	RichText         StringInterface  `json:"rich_text" gorm:"column:RichText"`
 }
 
-func (a *AttributeValueTranslation) String() string {
-	return a.Name
-}
+func (a *AttributeValueTranslation) BeforeCreate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
+func (a *AttributeValueTranslation) BeforeUpdate(_ *gorm.DB) error { a.commonPre(); return a.IsValid() }
+func (a *AttributeValueTranslation) TableName() string             { return AttributeValueTranslationTableName }
+func (a *AttributeValueTranslation) String() string                { return a.Name }
+func (a *AttributeValueTranslation) commonPre()                    { a.Name = SanitizeUnicode(a.Name) }
 
 func (a *AttributeValueTranslation) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.attribute_value_translation.is_valid.%s.app_error",
-		"attribute_value_translation_id=",
-		"AttributeValueTranslation.IsValid",
-	)
-	if !IsValidId(a.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(a.AttributeValueID) {
-		return outer("attribute_value_id", &a.Id)
+		return NewAppError("AttributeValueTranslation.IsValid", "model.attribute_value_translation.is_valid.attribute_value_id.app_error", nil, "", http.StatusBadRequest)
 	}
-	if utf8.RuneCountInString(a.Name) > ATTRIBUTE_VALUE_TRANSLATION_NAME_MAX_LENGTH {
-		return outer("name", &a.Id)
+	if !a.LanguageCode.IsValid() {
+		return NewAppError("AttributeValueTranslation.IsValid", "model.attribute_value_translation.is_valid.language_code.app_error", nil, "", http.StatusBadRequest)
 	}
-	if tag, err := language.Parse(a.LanguageCode); err != nil || !strings.EqualFold(tag.String(), a.LanguageCode) {
-		return outer("language_code", &a.Id)
-	}
-
 	return nil
-}
-
-func (a *AttributeValueTranslation) PreSave() {
-	if a.Id == "" {
-		a.Id = NewId()
-	}
-	a.Name = SanitizeUnicode(a.Name)
-}
-
-func (a *AttributeValueTranslation) PreUpdate() {
-	a.Name = SanitizeUnicode(a.Name)
-}
-
-func (a *AttributeValueTranslation) ToJSON() string {
-	return ModelToJson(a)
 }

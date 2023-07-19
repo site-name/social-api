@@ -5,9 +5,9 @@ import (
 	"sort"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 )
 
@@ -21,20 +21,17 @@ import (
 //
 // Returned interface{} must be either: `*AssignedProductAttribute` or `*AssignedVariantAttribute` or `*AssignedPageAttribute`
 func (a *ServiceAttribute) AssociateAttributeValuesToInstance(instance interface{}, attributeID string, values model.AttributeValues) (interface{}, *model.AppError) {
-
-	// validate if valid `instance` was provided
 	switch instance.(type) {
 	case *model.Product, *model.ProductVariant, *model.Page:
 	default:
 		return nil, model.NewAppError("AssociateAttributeValuesToInstance", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "instance"}, "", http.StatusBadRequest)
 	}
 
-	valueIDs := values.IDs()
-
-	// Ensure the values are actually form the given attribute:
-	if appErr := a.validateAttributeOwnsValues(attributeID, valueIDs); appErr != nil {
-		return nil, appErr
+	if lo.SomeBy(values, func(item *model.AttributeValue) bool { return item.AttributeID != attributeID }) {
+		return nil, model.NewAppError("AssociateAttributeValuesToInstance", "app.attribute.attribute_does_not_own_values.app_error", nil, "given attribute does not own all given attribute values", http.StatusNotAcceptable)
 	}
+
+	valueIDs := values.IDs()
 
 	// Associate the attribute and the passed values
 	assignment, appErr := a.associateAttributeToInstance(instance, attributeID)
@@ -96,24 +93,6 @@ func (a *ServiceAttribute) AssociateAttributeValuesToInstance(instance interface
 	return assignment, nil
 }
 
-// validateAttributeOwnsValues Checks given value IDs are belonging to the given attribute.
-func (a *ServiceAttribute) validateAttributeOwnsValues(attributeID string, valueIDs util.AnyArray[string]) *model.AppError {
-	attributeValues, appErr := a.AttributeValuesOfAttribute(attributeID)
-	if appErr != nil {
-		return appErr
-	}
-	attributeActualValueIDs := attributeValues.IDs()
-	foundAssociatedIDs := valueIDs.InterSection(attributeActualValueIDs...)
-
-	for _, associatedID := range foundAssociatedIDs {
-		if !valueIDs.Contains(associatedID) {
-			return model.NewAppError("validateAttributeOwnsValues", "app.attribute.attribute_missing_some_values", nil, "", http.StatusNotFound)
-		}
-	}
-
-	return nil
-}
-
 // associateAttributeToInstance associates given attribute to given instance
 //
 // NOTE:
@@ -129,8 +108,10 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 	switch v := instance.(type) {
 	case *model.Product:
 		attributeProduct, appErr := a.AttributeProductByOption(&model.AttributeProductFilterOption{
-			ProductTypeID: squirrel.Eq{model.AttributeProductTableName + ".ProductTypeID": v.ProductTypeID},
-			AttributeID:   squirrel.Eq{model.AttributeProductTableName + ".AttributeID": attributeID},
+			Conditions: squirrel.Eq{
+				model.AttributeProductTableName + ".ProductTypeID": v.ProductTypeID,
+				model.AttributeProductTableName + ".AttributeID":   attributeID,
+			},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -143,8 +124,10 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 
 	case *model.ProductVariant:
 		attrVariant, appErr := a.AttributeVariantByOption(&model.AttributeVariantFilterOption{
-			ProductTypeID: squirrel.Eq{model.AttributeVariantTableName + ".ProductTypeID": v.ProductID},
-			AttributeID:   squirrel.Eq{model.AttributeVariantTableName + ".AttributeID": attributeID},
+			Conditions: squirrel.Eq{
+				model.AttributeVariantTableName + ".ProductTypeID": v.ProductID,
+				model.AttributeVariantTableName + ".AttributeID":   attributeID,
+			},
 		})
 		if appErr != nil {
 			return nil, appErr
@@ -157,8 +140,10 @@ func (a *ServiceAttribute) associateAttributeToInstance(instance interface{}, at
 
 	case *model.Page:
 		attributePage, appErr := a.AttributePageByOption(&model.AttributePageFilterOption{
-			AttributeID: squirrel.Eq{model.AttributePageTableName + ".AttributeID": attributeID},
-			PageTypeID:  squirrel.Eq{model.AttributePageTableName + ".PageTypeID": v.PageTypeID},
+			Conditions: squirrel.Eq{
+				model.AttributePageTableName + ".AttributeID": attributeID,
+				model.AttributePageTableName + ".PageTypeID":  v.PageTypeID,
+			},
 		})
 		if appErr != nil {
 			return nil, appErr

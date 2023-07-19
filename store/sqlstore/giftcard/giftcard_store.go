@@ -6,7 +6,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -49,8 +48,8 @@ func (s *SqlGiftCardStore) ModelFields(prefix string) util.AnyArray[string] {
 }
 
 // BulkUpsert depends on given giftcards's Id properties then perform according operation
-func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxExecutor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
-	var executor store_iface.SqlxExecutor = gcs.GetMasterX()
+func (gcs *SqlGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
+	var executor *gorm.DB = gcs.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -111,7 +110,7 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction store_iface.SqlxExecutor, gi
 
 func (gcs *SqlGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 	var res model.GiftCard
-	if err := gcs.GetReplicaX().Get(&res, "SELECT * FROM "+model.GiftcardTableName+" WHERE Id = ?", id); err != nil {
+	if err := gcs.GetReplica().Get(&res, "SELECT * FROM "+model.GiftcardTableName+" WHERE Id = ?", id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.GiftcardTableName, id)
 		}
@@ -172,7 +171,7 @@ func (gs *SqlGiftCardStore) FilterByOption(option *model.GiftCardFilterOption) (
 	}
 
 	var giftcards []*model.GiftCard
-	err = gs.GetReplicaX().Select(&giftcards, queryString, args...)
+	err = gs.GetReplica().Select(&giftcards, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds giftcards with code")
 	}
@@ -271,7 +270,7 @@ func (gs *SqlGiftCardStore) GetGiftcardLines(orderLineIDs []string) (model.Order
 	}
 
 	var res []*model.OrderLine
-	err = gs.GetReplicaX().Select(&res, queryString, args...)
+	err = gs.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order lines with given ids")
 	}
@@ -309,7 +308,7 @@ func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, 
 	}
 
 	var giftcards model.Giftcards
-	err = gs.GetReplicaX().Select(&giftcards, query, args...)
+	err = gs.GetReplica().Select(&giftcards, query, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find giftcards with Parameters.order_id = %s", orderID)
 	}
@@ -320,7 +319,7 @@ func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, 
 		Set("IsActive", false).
 		Where(squirrel.Eq{"Id": giftcardIDs}).
 		ToSql()
-	res, err := gs.GetMasterX().Exec(query, args...)
+	res, err := gs.GetMaster().Exec(query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to update giftcards")
 	}
@@ -331,8 +330,8 @@ func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, 
 	return giftcardIDs, nil
 }
 
-func (s *SqlGiftCardStore) DeleteGiftcards(transaction store_iface.SqlxExecutor, ids []string) error {
-	runner := s.GetMasterX()
+func (s *SqlGiftCardStore) DeleteGiftcards(transaction *gorm.DB, ids []string) error {
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}

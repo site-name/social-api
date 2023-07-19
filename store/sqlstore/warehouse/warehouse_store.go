@@ -7,7 +7,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -61,7 +60,7 @@ func (ws *SqlWareHouseStore) Save(wh *model.WareHouse) (*model.WareHouse, error)
 	}
 
 	query := "INSERT INTO " + model.WarehouseTableName + "(" + ws.ModelFields("").Join(",") + ") VALUES (" + ws.ModelFields(":").Join(",") + ")"
-	if _, err := ws.GetMasterX().NamedExec(query, wh); err != nil {
+	if _, err := ws.GetMaster().NamedExec(query, wh); err != nil {
 		if ws.IsUniqueConstraintError(err, []string{"Slug", "warehouses_slug_key", "idx_warehouses_slug_unique"}) {
 			return nil, store.NewErrInvalidInput("Warehouses", "Slug", wh.Slug)
 		}
@@ -84,7 +83,7 @@ func (ws *SqlWareHouseStore) Update(warehouse *model.WareHouse) (*model.WareHous
 		}).
 		Join(",") + " WHERE Id=:Id"
 
-	result, err := ws.GetMasterX().NamedExec(query, warehouse)
+	result, err := ws.GetMaster().NamedExec(query, warehouse)
 	if err != nil {
 		if ws.IsUniqueConstraintError(err, []string{"Slug", "warehouses_slug_key", "idx_warehouses_slug_unique"}) {
 			return nil, store.NewErrInvalidInput("Warehouses", "Slug", warehouse.Slug)
@@ -179,7 +178,7 @@ func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*
 		scanFields = append(scanFields, ws.Address().ScanFields(&address)...)
 	}
 
-	err = ws.GetReplicaX().QueryRowX(query, args...).Scan(scanFields...)
+	err = ws.GetReplica().QueryRow(query, args...).Scan(scanFields...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.WarehouseTableName, "options")
@@ -207,7 +206,7 @@ func (ws *SqlWareHouseStore) GetByOption(option *model.WarehouseFilterOption) (*
 		}
 
 		var shippingZones model.ShippingZones
-		err = ws.GetReplicaX().Select(&shippingZones, queryString, args...)
+		err = ws.GetReplica().Select(&shippingZones, queryString, args...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find shipping zones by warehouse ids")
 		}
@@ -224,7 +223,7 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
-	rows, err := wh.GetReplicaX().QueryX(query, args...)
+	rows, err := wh.GetReplica().Query(query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find warehouses with given option")
 	}
@@ -266,7 +265,7 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 			return nil, errors.Wrap(err, "FilerByOption_Prefetch_ToSql")
 		}
 
-		rows, err := wh.GetReplicaX().QueryX(query, args...)
+		rows, err := wh.GetReplica().Query(query, args...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find shipping zones of warehouses")
 		}
@@ -297,7 +296,7 @@ func (wh *SqlWareHouseStore) FilterByOprion(option *model.WarehouseFilterOption)
 // WarehouseByStockID returns 1 warehouse by given stock id
 func (ws *SqlWareHouseStore) WarehouseByStockID(stockID string) (*model.WareHouse, error) {
 	var res model.WareHouse
-	err := ws.GetReplicaX().QueryRowX(
+	err := ws.GetReplica().QueryRow(
 		`SELECT `+ws.ModelFields(model.WarehouseTableName+".").Join(",")+`
 		FROM `+model.WarehouseTableName+`
 		INNER JOIN `+model.StockTableName+` ON Stocks.WarehouseID = Warehouses.Id
@@ -328,8 +327,8 @@ func (ws *SqlWareHouseStore) ApplicableForClickAndCollectNoQuantityCheck(checkou
 	return ws.forCountryLinesAndStocks(checkoutLines, stocks, country)
 }
 
-func (w *SqlWareHouseStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
-	runner := w.GetMasterX()
+func (w *SqlWareHouseStore) Delete(transaction *gorm.DB, ids ...string) error {
+	runner := w.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}

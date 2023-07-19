@@ -5,12 +5,12 @@ import (
 )
 
 type Sortable struct {
-	SortOrder *int `json:"sort_order"`
+	SortOrder *int `json:"sort_order" gorm:"type:integer;column:SortOrder"`
 }
 
 type Publishable struct {
-	PublicationDate *time.Time `json:"publication_date"`
-	IsPublished     bool       `json:"is_published"`
+	PublicationDate *time.Time `json:"publication_date" gorm:"column:PublicationDate"`
+	IsPublished     bool       `json:"is_published" gorm:"column:IsPublished"`
 }
 
 // check is this publication is visible to users

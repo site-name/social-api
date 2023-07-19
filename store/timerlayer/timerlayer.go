@@ -13,7 +13,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -1136,7 +1135,7 @@ func (s *TimerLayerAddressStore) Upsert(transaction *gorm.DB, address *model.Add
 	return result, err
 }
 
-func (s *TimerLayerAllocationStore) BulkDelete(transaction store_iface.SqlxExecutor, allocationIDs []string) error {
+func (s *TimerLayerAllocationStore) BulkDelete(transaction *gorm.DB, allocationIDs []string) error {
 	start := timemodule.Now()
 
 	err := s.AllocationStore.BulkDelete(transaction, allocationIDs)
@@ -1152,7 +1151,7 @@ func (s *TimerLayerAllocationStore) BulkDelete(transaction store_iface.SqlxExecu
 	return err
 }
 
-func (s *TimerLayerAllocationStore) BulkUpsert(transaction store_iface.SqlxExecutor, allocations []*model.Allocation) ([]*model.Allocation, error) {
+func (s *TimerLayerAllocationStore) BulkUpsert(transaction *gorm.DB, allocations []*model.Allocation) ([]*model.Allocation, error) {
 	start := timemodule.Now()
 
 	result, err := s.AllocationStore.BulkUpsert(transaction, allocations)
@@ -1904,7 +1903,7 @@ func (s *TimerLayerAttributeProductStore) Save(attributeProduct *model.Attribute
 	return result, err
 }
 
-func (s *TimerLayerAttributeValueStore) BulkUpsert(transaction store_iface.SqlxExecutor, values model.AttributeValues) (model.AttributeValues, error) {
+func (s *TimerLayerAttributeValueStore) BulkUpsert(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, error) {
 	start := timemodule.Now()
 
 	result, err := s.AttributeValueStore.BulkUpsert(transaction, values)
@@ -2176,7 +2175,7 @@ func (s *TimerLayerCategoryStore) Upsert(category *model.Category) (*model.Categ
 	return result, err
 }
 
-func (s *TimerLayerChannelStore) DeleteChannels(transaction store_iface.SqlxExecutor, ids []string) error {
+func (s *TimerLayerChannelStore) DeleteChannels(transaction *gorm.DB, ids []string) error {
 	start := timemodule.Now()
 
 	err := s.ChannelStore.DeleteChannels(transaction, ids)
@@ -2240,7 +2239,7 @@ func (s *TimerLayerChannelStore) GetbyOption(option *model.ChannelFilterOption) 
 	return result, err
 }
 
-func (s *TimerLayerChannelStore) Upsert(transaction store_iface.SqlxExecutor, channel *model.Channel) (*model.Channel, error) {
+func (s *TimerLayerChannelStore) Upsert(transaction *gorm.DB, channel *model.Channel) (*model.Channel, error) {
 	start := timemodule.Now()
 
 	result, err := s.ChannelStore.Upsert(transaction, channel)
@@ -2272,7 +2271,7 @@ func (s *TimerLayerCheckoutStore) CountCheckouts(options *model.CheckoutFilterOp
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxExecutor, option *model.CheckoutFilterOption) error {
+func (s *TimerLayerCheckoutStore) DeleteCheckoutsByOption(transaction *gorm.DB, option *model.CheckoutFilterOption) error {
 	start := timemodule.Now()
 
 	err := s.CheckoutStore.DeleteCheckoutsByOption(transaction, option)
@@ -2336,7 +2335,7 @@ func (s *TimerLayerCheckoutStore) GetByOption(option *model.CheckoutFilterOption
 	return result, err
 }
 
-func (s *TimerLayerCheckoutStore) Upsert(transaction store_iface.SqlxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, error) {
+func (s *TimerLayerCheckoutStore) Upsert(transaction *gorm.DB, checkouts []*model.Checkout) ([]*model.Checkout, error) {
 	start := timemodule.Now()
 
 	result, err := s.CheckoutStore.Upsert(transaction, checkouts)
@@ -2432,7 +2431,7 @@ func (s *TimerLayerCheckoutLineStore) CheckoutLinesByOption(option *model.Checko
 	return result, err
 }
 
-func (s *TimerLayerCheckoutLineStore) DeleteLines(transaction store_iface.SqlxExecutor, checkoutLineIDs []string) error {
+func (s *TimerLayerCheckoutLineStore) DeleteLines(transaction *gorm.DB, checkoutLineIDs []string) error {
 	start := timemodule.Now()
 
 	err := s.CheckoutLineStore.DeleteLines(transaction, checkoutLineIDs)
@@ -2656,7 +2655,7 @@ func (s *TimerLayerCollectionStore) Upsert(collection *model.Collection) (*model
 	return result, err
 }
 
-func (s *TimerLayerCollectionChannelListingStore) Delete(transaction store_iface.SqlxExecutor, options *model.CollectionChannelListingFilterOptions) error {
+func (s *TimerLayerCollectionChannelListingStore) Delete(transaction *gorm.DB, options *model.CollectionChannelListingFilterOptions) error {
 	start := timemodule.Now()
 
 	err := s.CollectionChannelListingStore.Delete(transaction, options)
@@ -2688,7 +2687,7 @@ func (s *TimerLayerCollectionChannelListingStore) FilterByOptions(options *model
 	return result, err
 }
 
-func (s *TimerLayerCollectionChannelListingStore) Upsert(transaction store_iface.SqlxExecutor, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
+func (s *TimerLayerCollectionChannelListingStore) Upsert(transaction *gorm.DB, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.CollectionChannelListingStore.Upsert(transaction, relations...)
@@ -2704,7 +2703,7 @@ func (s *TimerLayerCollectionChannelListingStore) Upsert(transaction store_iface
 	return result, err
 }
 
-func (s *TimerLayerCollectionProductStore) BulkSave(transaction store_iface.SqlxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
+func (s *TimerLayerCollectionProductStore) BulkSave(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
 	start := timemodule.Now()
 
 	result, err := s.CollectionProductStore.BulkSave(transaction, relations)
@@ -2720,7 +2719,7 @@ func (s *TimerLayerCollectionProductStore) BulkSave(transaction store_iface.Sqlx
 	return result, err
 }
 
-func (s *TimerLayerCollectionProductStore) Delete(transaction store_iface.SqlxExecutor, options *model.CollectionProductFilterOptions) error {
+func (s *TimerLayerCollectionProductStore) Delete(transaction *gorm.DB, options *model.CollectionProductFilterOptions) error {
 	start := timemodule.Now()
 
 	err := s.CollectionProductStore.Delete(transaction, options)
@@ -3534,7 +3533,7 @@ func (s *TimerLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo,
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) BulkDeleteFulfillments(transaction store_iface.SqlxExecutor, fulfillments model.Fulfillments) error {
+func (s *TimerLayerFulfillmentStore) BulkDeleteFulfillments(transaction *gorm.DB, fulfillments model.Fulfillments) error {
 	start := timemodule.Now()
 
 	err := s.FulfillmentStore.BulkDeleteFulfillments(transaction, fulfillments)
@@ -3550,7 +3549,7 @@ func (s *TimerLayerFulfillmentStore) BulkDeleteFulfillments(transaction store_if
 	return err
 }
 
-func (s *TimerLayerFulfillmentStore) FilterByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) FilterByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) ([]*model.Fulfillment, error) {
 	start := timemodule.Now()
 
 	result, err := s.FulfillmentStore.FilterByOption(transaction, option)
@@ -3582,7 +3581,7 @@ func (s *TimerLayerFulfillmentStore) Get(id string) (*model.Fulfillment, error) 
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) GetByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) GetByOption(transaction *gorm.DB, option *model.FulfillmentFilterOption) (*model.Fulfillment, error) {
 	start := timemodule.Now()
 
 	result, err := s.FulfillmentStore.GetByOption(transaction, option)
@@ -3598,7 +3597,7 @@ func (s *TimerLayerFulfillmentStore) GetByOption(transaction store_iface.SqlxExe
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentStore) Upsert(transaction store_iface.SqlxExecutor, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
+func (s *TimerLayerFulfillmentStore) Upsert(transaction *gorm.DB, fulfillment *model.Fulfillment) (*model.Fulfillment, error) {
 	start := timemodule.Now()
 
 	result, err := s.FulfillmentStore.Upsert(transaction, fulfillment)
@@ -3614,7 +3613,7 @@ func (s *TimerLayerFulfillmentStore) Upsert(transaction store_iface.SqlxExecutor
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentLineStore) BulkUpsert(transaction store_iface.SqlxExecutor, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
+func (s *TimerLayerFulfillmentLineStore) BulkUpsert(transaction *gorm.DB, fulfillmentLines []*model.FulfillmentLine) ([]*model.FulfillmentLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.FulfillmentLineStore.BulkUpsert(transaction, fulfillmentLines)
@@ -3630,7 +3629,7 @@ func (s *TimerLayerFulfillmentLineStore) BulkUpsert(transaction store_iface.Sqlx
 	return result, err
 }
 
-func (s *TimerLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction store_iface.SqlxExecutor, option *model.FulfillmentLineFilterOption) error {
+func (s *TimerLayerFulfillmentLineStore) DeleteFulfillmentLinesByOption(transaction *gorm.DB, option *model.FulfillmentLineFilterOption) error {
 	start := timemodule.Now()
 
 	err := s.FulfillmentLineStore.DeleteFulfillmentLinesByOption(transaction, option)
@@ -3694,7 +3693,7 @@ func (s *TimerLayerFulfillmentLineStore) Save(fulfillmentLine *model.Fulfillment
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) BulkUpsert(transaction store_iface.SqlxExecutor, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
+func (s *TimerLayerGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardStore.BulkUpsert(transaction, giftCards...)
@@ -3726,7 +3725,7 @@ func (s *TimerLayerGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]st
 	return result, err
 }
 
-func (s *TimerLayerGiftCardStore) DeleteGiftcards(transaction store_iface.SqlxExecutor, ids []string) error {
+func (s *TimerLayerGiftCardStore) DeleteGiftcards(transaction *gorm.DB, ids []string) error {
 	start := timemodule.Now()
 
 	err := s.GiftCardStore.DeleteGiftcards(transaction, ids)
@@ -3822,7 +3821,7 @@ func (s *TimerLayerGiftCardCheckoutStore) Save(giftcardOrder *model.GiftCardChec
 	return result, err
 }
 
-func (s *TimerLayerGiftCardOrderStore) BulkUpsert(transaction store_iface.SqlxExecutor, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
+func (s *TimerLayerGiftCardOrderStore) BulkUpsert(transaction *gorm.DB, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftCardOrderStore.BulkUpsert(transaction, orderGiftcards...)
@@ -3886,7 +3885,7 @@ func (s *TimerLayerGiftCardOrderStore) Save(giftcardOrder *model.OrderGiftCard) 
 	return result, err
 }
 
-func (s *TimerLayerGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxExecutor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
+func (s *TimerLayerGiftcardEventStore) BulkUpsert(transaction *gorm.DB, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.GiftcardEventStore.BulkUpsert(transaction, events...)
@@ -3950,7 +3949,7 @@ func (s *TimerLayerGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.
 	return result, err
 }
 
-func (s *TimerLayerInvoiceStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
+func (s *TimerLayerInvoiceStore) Delete(transaction *gorm.DB, ids ...string) error {
 	start := timemodule.Now()
 
 	err := s.InvoiceStore.Delete(transaction, ids...)
@@ -4398,7 +4397,7 @@ func (s *TimerLayerOpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, e
 	return result, err
 }
 
-func (s *TimerLayerOrderStore) BulkUpsert(transaction store_iface.SqlxExecutor, orders []*model.Order) ([]*model.Order, error) {
+func (s *TimerLayerOrderStore) BulkUpsert(transaction *gorm.DB, orders []*model.Order) ([]*model.Order, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderStore.BulkUpsert(transaction, orders)
@@ -4494,7 +4493,7 @@ func (s *TimerLayerOrderDiscountStore) Get(orderDiscountID string) (*model.Order
 	return result, err
 }
 
-func (s *TimerLayerOrderDiscountStore) Upsert(transaction store_iface.SqlxExecutor, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
+func (s *TimerLayerOrderDiscountStore) Upsert(transaction *gorm.DB, orderDiscount *model.OrderDiscount) (*model.OrderDiscount, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderDiscountStore.Upsert(transaction, orderDiscount)
@@ -4542,7 +4541,7 @@ func (s *TimerLayerOrderEventStore) Get(orderEventID string) (*model.OrderEvent,
 	return result, err
 }
 
-func (s *TimerLayerOrderEventStore) Save(transaction store_iface.SqlxExecutor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
+func (s *TimerLayerOrderEventStore) Save(transaction *gorm.DB, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderEventStore.Save(transaction, orderEvent)
@@ -4574,7 +4573,7 @@ func (s *TimerLayerOrderLineStore) BulkDelete(orderLineIDs []string) error {
 	return err
 }
 
-func (s *TimerLayerOrderLineStore) BulkUpsert(transaction store_iface.SqlxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
+func (s *TimerLayerOrderLineStore) BulkUpsert(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderLineStore.BulkUpsert(transaction, orderLines)
@@ -4622,7 +4621,7 @@ func (s *TimerLayerOrderLineStore) Get(id string) (*model.OrderLine, error) {
 	return result, err
 }
 
-func (s *TimerLayerOrderLineStore) Upsert(transaction store_iface.SqlxExecutor, orderLine *model.OrderLine) (*model.OrderLine, error) {
+func (s *TimerLayerOrderLineStore) Upsert(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, error) {
 	start := timemodule.Now()
 
 	result, err := s.OrderLineStore.Upsert(transaction, orderLine)
@@ -4686,7 +4685,7 @@ func (s *TimerLayerPaymentStore) FilterByOption(option *model.PaymentFilterOptio
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Get(transaction store_iface.SqlxExecutor, id string, lockForUpdate bool) (*model.Payment, error) {
+func (s *TimerLayerPaymentStore) Get(transaction *gorm.DB, id string, lockForUpdate bool) (*model.Payment, error) {
 	start := timemodule.Now()
 
 	result, err := s.PaymentStore.Get(transaction, id, lockForUpdate)
@@ -4718,7 +4717,7 @@ func (s *TimerLayerPaymentStore) PaymentOwnedByUser(userID string, paymentID str
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Save(transaction store_iface.SqlxExecutor, model *model.Payment) (*model.Payment, error) {
+func (s *TimerLayerPaymentStore) Save(transaction *gorm.DB, model *model.Payment) (*model.Payment, error) {
 	start := timemodule.Now()
 
 	result, err := s.PaymentStore.Save(transaction, model)
@@ -4734,7 +4733,7 @@ func (s *TimerLayerPaymentStore) Save(transaction store_iface.SqlxExecutor, mode
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) Update(transaction store_iface.SqlxExecutor, model *model.Payment) (*model.Payment, error) {
+func (s *TimerLayerPaymentStore) Update(transaction *gorm.DB, model *model.Payment) (*model.Payment, error) {
 	start := timemodule.Now()
 
 	result, err := s.PaymentStore.Update(transaction, model)
@@ -4750,7 +4749,7 @@ func (s *TimerLayerPaymentStore) Update(transaction store_iface.SqlxExecutor, mo
 	return result, err
 }
 
-func (s *TimerLayerPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxExecutor, checkoutToken string, option *model.PaymentPatch) error {
+func (s *TimerLayerPaymentStore) UpdatePaymentsOfCheckout(transaction *gorm.DB, checkoutToken string, option *model.PaymentPatch) error {
 	start := timemodule.Now()
 
 	err := s.PaymentStore.UpdatePaymentsOfCheckout(transaction, checkoutToken, option)
@@ -4798,7 +4797,7 @@ func (s *TimerLayerPaymentTransactionStore) Get(id string) (*model.PaymentTransa
 	return result, err
 }
 
-func (s *TimerLayerPaymentTransactionStore) Save(transaction store_iface.SqlxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
+func (s *TimerLayerPaymentTransactionStore) Save(transaction *gorm.DB, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
 	start := timemodule.Now()
 
 	result, err := s.PaymentTransactionStore.Save(transaction, paymentTransaction)
@@ -5197,7 +5196,7 @@ func (s *TimerLayerPreferenceStore) Save(preferences model.Preferences) error {
 	return err
 }
 
-func (s *TimerLayerPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxExecutor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
+func (s *TimerLayerPreorderAllocationStore) BulkCreate(transaction *gorm.DB, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
 	start := timemodule.Now()
 
 	result, err := s.PreorderAllocationStore.BulkCreate(transaction, preorderAllocations)
@@ -5213,7 +5212,7 @@ func (s *TimerLayerPreorderAllocationStore) BulkCreate(transaction store_iface.S
 	return result, err
 }
 
-func (s *TimerLayerPreorderAllocationStore) Delete(transaction store_iface.SqlxExecutor, preorderAllocationIDs ...string) error {
+func (s *TimerLayerPreorderAllocationStore) Delete(transaction *gorm.DB, preorderAllocationIDs ...string) error {
 	start := timemodule.Now()
 
 	err := s.PreorderAllocationStore.Delete(transaction, preorderAllocationIDs...)
@@ -5425,7 +5424,7 @@ func (s *TimerLayerProductStore) VisibleToUserProductsQuery(channel_SlugOrID str
 	return result
 }
 
-func (s *TimerLayerProductChannelListingStore) BulkUpsert(transaction store_iface.SqlxExecutor, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
+func (s *TimerLayerProductChannelListingStore) BulkUpsert(transaction *gorm.DB, listings []*model.ProductChannelListing) ([]*model.ProductChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductChannelListingStore.BulkUpsert(transaction, listings)
@@ -5761,7 +5760,7 @@ func (s *TimerLayerProductVariantStore) GetWeight(productVariantID string) (*mea
 	return result, err
 }
 
-func (s *TimerLayerProductVariantStore) Save(transaction store_iface.SqlxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
+func (s *TimerLayerProductVariantStore) Save(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantStore.Save(transaction, variant)
@@ -5777,7 +5776,7 @@ func (s *TimerLayerProductVariantStore) Save(transaction store_iface.SqlxExecuto
 	return result, err
 }
 
-func (s *TimerLayerProductVariantStore) Update(transaction store_iface.SqlxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
+func (s *TimerLayerProductVariantStore) Update(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantStore.Update(transaction, variant)
@@ -5793,7 +5792,7 @@ func (s *TimerLayerProductVariantStore) Update(transaction store_iface.SqlxExecu
 	return result, err
 }
 
-func (s *TimerLayerProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxExecutor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
+func (s *TimerLayerProductVariantChannelListingStore) BulkUpsert(transaction *gorm.DB, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
 	start := timemodule.Now()
 
 	result, err := s.ProductVariantChannelListingStore.BulkUpsert(transaction, variantChannelListings)
@@ -6288,7 +6287,7 @@ func (s *TimerLayerShippingMethodStore) ApplicableShippingMethods(price *goprice
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
+func (s *TimerLayerShippingMethodStore) Delete(transaction *gorm.DB, ids ...string) error {
 	start := timemodule.Now()
 
 	err := s.ShippingMethodStore.Delete(transaction, ids...)
@@ -6352,7 +6351,7 @@ func (s *TimerLayerShippingMethodStore) GetbyOption(options *model.ShippingMetho
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodStore) Upsert(transaction store_iface.SqlxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, error) {
+func (s *TimerLayerShippingMethodStore) Upsert(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodStore.Upsert(transaction, method)
@@ -6368,7 +6367,7 @@ func (s *TimerLayerShippingMethodStore) Upsert(transaction store_iface.SqlxExecu
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxExecutor, options *model.ShippingMethodChannelListingFilterOption) error {
+func (s *TimerLayerShippingMethodChannelListingStore) BulkDelete(transaction *gorm.DB, options *model.ShippingMethodChannelListingFilterOption) error {
 	start := timemodule.Now()
 
 	err := s.ShippingMethodChannelListingStore.BulkDelete(transaction, options)
@@ -6416,7 +6415,7 @@ func (s *TimerLayerShippingMethodChannelListingStore) Get(listingID string) (*mo
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodChannelListingStore) Upsert(transaction store_iface.SqlxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) {
+func (s *TimerLayerShippingMethodChannelListingStore) Upsert(transaction *gorm.DB, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodChannelListingStore.Upsert(transaction, listings)
@@ -6432,7 +6431,7 @@ func (s *TimerLayerShippingMethodChannelListingStore) Upsert(transaction store_i
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodExcludedProductStore) Delete(transaction store_iface.SqlxExecutor, options *model.ShippingMethodExcludedProductFilterOptions) error {
+func (s *TimerLayerShippingMethodExcludedProductStore) Delete(transaction *gorm.DB, options *model.ShippingMethodExcludedProductFilterOptions) error {
 	start := timemodule.Now()
 
 	err := s.ShippingMethodExcludedProductStore.Delete(transaction, options)
@@ -6480,7 +6479,7 @@ func (s *TimerLayerShippingMethodExcludedProductStore) Save(instance *model.Ship
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodPostalCodeRuleStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
+func (s *TimerLayerShippingMethodPostalCodeRuleStore) Delete(transaction *gorm.DB, ids ...string) error {
 	start := timemodule.Now()
 
 	err := s.ShippingMethodPostalCodeRuleStore.Delete(transaction, ids...)
@@ -6512,7 +6511,7 @@ func (s *TimerLayerShippingMethodPostalCodeRuleStore) FilterByOptions(options *m
 	return result, err
 }
 
-func (s *TimerLayerShippingMethodPostalCodeRuleStore) Save(transaction store_iface.SqlxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
+func (s *TimerLayerShippingMethodPostalCodeRuleStore) Save(transaction *gorm.DB, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingMethodPostalCodeRuleStore.Save(transaction, rules)
@@ -6544,7 +6543,7 @@ func (s *TimerLayerShippingZoneStore) CountByOptions(options *model.ShippingZone
 	return result, err
 }
 
-func (s *TimerLayerShippingZoneStore) Delete(transaction store_iface.SqlxExecutor, conditions *model.ShippingZoneFilterOption) (int64, error) {
+func (s *TimerLayerShippingZoneStore) Delete(transaction *gorm.DB, conditions *model.ShippingZoneFilterOption) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingZoneStore.Delete(transaction, conditions)
@@ -6592,7 +6591,7 @@ func (s *TimerLayerShippingZoneStore) Get(shippingZoneID string) (*model.Shippin
 	return result, err
 }
 
-func (s *TimerLayerShippingZoneStore) Upsert(transaction store_iface.SqlxExecutor, shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
+func (s *TimerLayerShippingZoneStore) Upsert(transaction *gorm.DB, shippingZone *model.ShippingZone) (*model.ShippingZone, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingZoneStore.Upsert(transaction, shippingZone)
@@ -6608,7 +6607,7 @@ func (s *TimerLayerShippingZoneStore) Upsert(transaction store_iface.SqlxExecuto
 	return result, err
 }
 
-func (s *TimerLayerShippingZoneChannelStore) BulkDelete(transaction store_iface.SqlxExecutor, options *model.ShippingZoneChannelFilterOptions) error {
+func (s *TimerLayerShippingZoneChannelStore) BulkDelete(transaction *gorm.DB, options *model.ShippingZoneChannelFilterOptions) error {
 	start := timemodule.Now()
 
 	err := s.ShippingZoneChannelStore.BulkDelete(transaction, options)
@@ -6624,7 +6623,7 @@ func (s *TimerLayerShippingZoneChannelStore) BulkDelete(transaction store_iface.
 	return err
 }
 
-func (s *TimerLayerShippingZoneChannelStore) BulkSave(transaction store_iface.SqlxExecutor, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error) {
+func (s *TimerLayerShippingZoneChannelStore) BulkSave(transaction *gorm.DB, relations []*model.ShippingZoneChannel) ([]*model.ShippingZoneChannel, error) {
 	start := timemodule.Now()
 
 	result, err := s.ShippingZoneChannelStore.BulkSave(transaction, relations)
@@ -6944,7 +6943,7 @@ func (s *TimerLayerStatusStore) UpdateLastActivityAt(userID string, lastActivity
 	return err
 }
 
-func (s *TimerLayerStockStore) BulkUpsert(transaction store_iface.SqlxExecutor, stocks []*model.Stock) ([]*model.Stock, error) {
+func (s *TimerLayerStockStore) BulkUpsert(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, error) {
 	start := timemodule.Now()
 
 	result, err := s.StockStore.BulkUpsert(transaction, stocks)
@@ -8221,7 +8220,7 @@ func (s *TimerLayerVatStore) FilterByOptions(options *model.VatFilterOptions) ([
 	return result, err
 }
 
-func (s *TimerLayerVatStore) Upsert(transaction store_iface.SqlxExecutor, vats []*model.Vat) ([]*model.Vat, error) {
+func (s *TimerLayerVatStore) Upsert(transaction *gorm.DB, vats []*model.Vat) ([]*model.Vat, error) {
 	start := timemodule.Now()
 
 	result, err := s.VatStore.Upsert(transaction, vats)
@@ -8461,7 +8460,7 @@ func (s *TimerLayerWarehouseStore) ApplicableForClickAndCollectOrderLines(orderL
 	return result, err
 }
 
-func (s *TimerLayerWarehouseStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
+func (s *TimerLayerWarehouseStore) Delete(transaction *gorm.DB, ids ...string) error {
 	start := timemodule.Now()
 
 	err := s.WarehouseStore.Delete(transaction, ids...)
@@ -8557,7 +8556,7 @@ func (s *TimerLayerWarehouseStore) WarehouseByStockID(stockID string) (*model.Wa
 	return result, err
 }
 
-func (s *TimerLayerWarehouseShippingZoneStore) Delete(transaction store_iface.SqlxExecutor, options *model.WarehouseShippingZoneFilterOption) error {
+func (s *TimerLayerWarehouseShippingZoneStore) Delete(transaction *gorm.DB, options *model.WarehouseShippingZoneFilterOption) error {
 	start := timemodule.Now()
 
 	err := s.WarehouseShippingZoneStore.Delete(transaction, options)
@@ -8605,7 +8604,7 @@ func (s *TimerLayerWarehouseShippingZoneStore) FilterByOptions(options *model.Wa
 	return result, err
 }
 
-func (s *TimerLayerWarehouseShippingZoneStore) Save(transaction store_iface.SqlxExecutor, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
+func (s *TimerLayerWarehouseShippingZoneStore) Save(transaction *gorm.DB, warehouseShippingZones []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, error) {
 	start := timemodule.Now()
 
 	result, err := s.WarehouseShippingZoneStore.Save(transaction, warehouseShippingZones)
@@ -8653,7 +8652,7 @@ func (s *TimerLayerWishlistStore) Upsert(wishList *model.Wishlist) (*model.Wishl
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) BulkUpsert(transaction store_iface.SqlxExecutor, wishlistItems model.WishlistItems) (model.WishlistItems, error) {
+func (s *TimerLayerWishlistItemStore) BulkUpsert(transaction *gorm.DB, wishlistItems model.WishlistItems) (model.WishlistItems, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemStore.BulkUpsert(transaction, wishlistItems)
@@ -8669,7 +8668,7 @@ func (s *TimerLayerWishlistItemStore) BulkUpsert(transaction store_iface.SqlxExe
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) DeleteItemsByOption(transaction store_iface.SqlxExecutor, option *model.WishlistItemFilterOption) (int64, error) {
+func (s *TimerLayerWishlistItemStore) DeleteItemsByOption(transaction *gorm.DB, option *model.WishlistItemFilterOption) (int64, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemStore.DeleteItemsByOption(transaction, option)
@@ -8701,7 +8700,7 @@ func (s *TimerLayerWishlistItemStore) FilterByOption(option *model.WishlistItemF
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemStore) GetById(selector store_iface.SqlxExecutor, id string) (*model.WishlistItem, error) {
+func (s *TimerLayerWishlistItemStore) GetById(selector *gorm.DB, id string) (*model.WishlistItem, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemStore.GetById(selector, id)
@@ -8733,7 +8732,7 @@ func (s *TimerLayerWishlistItemStore) GetByOption(option *model.WishlistItemFilt
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
+func (s *TimerLayerWishlistItemProductVariantStore) BulkUpsert(transaction *gorm.DB, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemProductVariantStore.BulkUpsert(transaction, relations)
@@ -8765,7 +8764,7 @@ func (s *TimerLayerWishlistItemProductVariantStore) DeleteRelation(relation *mod
 	return result, err
 }
 
-func (s *TimerLayerWishlistItemProductVariantStore) GetById(selector store_iface.SqlxExecutor, id string) (*model.WishlistItemProductVariant, error) {
+func (s *TimerLayerWishlistItemProductVariantStore) GetById(selector *gorm.DB, id string) (*model.WishlistItemProductVariant, error) {
 	start := timemodule.Now()
 
 	result, err := s.WishlistItemProductVariantStore.GetById(selector, id)

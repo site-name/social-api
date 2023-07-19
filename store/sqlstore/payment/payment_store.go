@@ -6,7 +6,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -110,8 +109,8 @@ func (ps *SqlPaymentStore) ScanFields(payMent *model.Payment) []interface{} {
 }
 
 // Save inserts given payment into database then returns it
-func (ps *SqlPaymentStore) Save(transaction store_iface.SqlxExecutor, payment *model.Payment) (*model.Payment, error) {
-	var executor store_iface.SqlxExecutor = ps.GetMasterX()
+func (ps *SqlPaymentStore) Save(transaction *gorm.DB, payment *model.Payment) (*model.Payment, error) {
+	var executor *gorm.DB = ps.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -130,8 +129,8 @@ func (ps *SqlPaymentStore) Save(transaction store_iface.SqlxExecutor, payment *m
 }
 
 // Update updates given payment and returns the updated value
-func (ps *SqlPaymentStore) Update(transaction store_iface.SqlxExecutor, payment *model.Payment) (*model.Payment, error) {
-	var executor store_iface.SqlxExecutor = ps.GetMasterX()
+func (ps *SqlPaymentStore) Update(transaction *gorm.DB, payment *model.Payment) (*model.Payment, error) {
+	var executor *gorm.DB = ps.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -160,8 +159,8 @@ func (ps *SqlPaymentStore) Update(transaction store_iface.SqlxExecutor, payment 
 }
 
 // Get finds and returns the payment with given id
-func (ps *SqlPaymentStore) Get(transaction store_iface.SqlxExecutor, id string, lockForUpdate bool) (*model.Payment, error) {
-	var selector store_iface.SqlxExecutor = ps.GetReplicaX()
+func (ps *SqlPaymentStore) Get(transaction *gorm.DB, id string, lockForUpdate bool) (*model.Payment, error) {
+	var selector *gorm.DB = ps.GetReplica()
 	if transaction != nil {
 		selector = transaction
 	}
@@ -191,7 +190,7 @@ func (ps *SqlPaymentStore) Get(transaction store_iface.SqlxExecutor, id string, 
 
 // CancelActivePaymentsOfCheckout inactivate all payments that belong to given checkout and in active status
 func (ps *SqlPaymentStore) CancelActivePaymentsOfCheckout(checkoutID string) error {
-	_, err := ps.GetMasterX().Exec("UPDATE "+model.PaymentTableName+" SET IsActive = false WHERE CheckoutID = ? AND IsActive = true", checkoutID)
+	_, err := ps.GetMaster().Exec("UPDATE "+model.PaymentTableName+" SET IsActive = false WHERE CheckoutID = ? AND IsActive = true", checkoutID)
 	if err != nil {
 		return errors.Wrapf(err, "failed to deactivate payments that are active and belong to checkout with id=%s", checkoutID)
 	}
@@ -247,7 +246,7 @@ func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]
 	}
 
 	var payments []*model.Payment
-	err = ps.GetReplicaX().Select(&payments, queryString, args...)
+	err = ps.GetReplica().Select(&payments, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds payments with given option")
 	}
@@ -256,8 +255,8 @@ func (ps *SqlPaymentStore) FilterByOption(option *model.PaymentFilterOption) ([]
 }
 
 // UpdatePaymentsOfCheckout updates payments of given checkout
-func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction store_iface.SqlxExecutor, checkoutToken string, option *model.PaymentPatch) error {
-	var executor store_iface.SqlxExecutor = ps.GetMasterX()
+func (ps *SqlPaymentStore) UpdatePaymentsOfCheckout(transaction *gorm.DB, checkoutToken string, option *model.PaymentPatch) error {
+	var executor *gorm.DB = ps.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -295,7 +294,7 @@ func (ps *SqlPaymentStore) PaymentOwnedByUser(userID, paymentID string) (bool, e
 		` C ON C.Id = P.CheckoutID WHERE (O.UserID = $1 OR C.UserID = $2) AND (P.Id = $3 OR P.Token = $4)`
 
 	var payments []*model.Payment
-	err := ps.GetReplicaX().Select(&payments, query, userID, userID, paymentID, paymentID)
+	err := ps.GetReplica().Select(&payments, query, userID, userID, paymentID, paymentID)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to find payments belong to given user")
 	}

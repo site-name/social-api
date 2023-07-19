@@ -38,7 +38,7 @@ type ProductMedia struct {
 	OembedData  StringInterface `json:"oembed_data"`
 	Sortable
 
-	ProductVariants ProductVariants `json:"-" gorm:"many2many:variant_medias"`
+	ProductVariants ProductVariants `json:"-" gorm:"many2many:VariantMedias"`
 }
 
 type ProductMedias []*ProductMedia

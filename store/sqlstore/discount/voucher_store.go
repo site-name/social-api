@@ -97,7 +97,7 @@ func (vs *SqlVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error
 
 	if saving {
 		query := "INSERT INTO " + model.VoucherTableName + "(" + vs.ModelFields("").Join(",") + ") VALUES (" + vs.ModelFields(":").Join(",") + ")"
-		_, err = vs.GetMasterX().NamedExec(query, voucher)
+		_, err = vs.GetMaster().NamedExec(query, voucher)
 	} else {
 
 		oldVoucher, err = vs.Get(voucher.Id)
@@ -115,7 +115,7 @@ func (vs *SqlVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = vs.GetMasterX().NamedExec(query, voucher)
+		result, err = vs.GetMaster().NamedExec(query, voucher)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -137,7 +137,7 @@ func (vs *SqlVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error
 // Get finds a voucher with given id, then returns it with an error
 func (vs *SqlVoucherStore) Get(voucherID string) (*model.Voucher, error) {
 	var res model.Voucher
-	err := vs.GetReplicaX().Get(&res, "SELECT * FROM "+model.VoucherTableName+" WHERE Id = ?", voucherID)
+	err := vs.GetReplica().Get(&res, "SELECT * FROM "+model.VoucherTableName+" WHERE Id = ?", voucherID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherTableName, voucherID)
@@ -198,7 +198,7 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOpt
 	}
 
 	var vouchers []*model.Voucher
-	err = vs.GetReplicaX().Select(&vouchers, queryString, args...)
+	err = vs.GetReplica().Select(&vouchers, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find vouchers based on given option")
 	}
@@ -214,7 +214,7 @@ func (vs *SqlVoucherStore) GetByOptions(options *model.VoucherFilterOption) (*mo
 	}
 
 	var res model.Voucher
-	err = vs.GetReplicaX().Get(&res, queryString, args...)
+	err = vs.GetReplica().Get(&res, queryString, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherTableName, "options")
@@ -233,7 +233,7 @@ func (vs *SqlVoucherStore) ExpiredVouchers(date *time.Time) ([]*model.Voucher, e
 	beginOfDate := util.StartOfDay(*date)
 
 	var res []*model.Voucher
-	err := vs.GetReplicaX().Select(&res, "SELECT * FROM "+model.VoucherTableName+" WHERE (Used >= UsageLimit OR EndDate < $1) AND StartDate < $2", beginOfDate, beginOfDate)
+	err := vs.GetReplica().Select(&res, "SELECT * FROM "+model.VoucherTableName+" WHERE (Used >= UsageLimit OR EndDate < $1) AND StartDate < $2", beginOfDate, beginOfDate)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find expired vouchers with given date")
 	}

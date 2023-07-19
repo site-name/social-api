@@ -7,7 +7,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -38,8 +37,8 @@ func (s *SqlGiftcardEventStore) ModelFields(prefix string) util.AnyArray[string]
 }
 
 // BulkUpsert upserts and returns given giftcard events
-func (gs *SqlGiftcardEventStore) BulkUpsert(transaction store_iface.SqlxExecutor, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
-	var executor store_iface.SqlxExecutor = gs.GetMasterX()
+func (gs *SqlGiftcardEventStore) BulkUpsert(transaction *gorm.DB, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {
+	var executor *gorm.DB = gs.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -111,7 +110,7 @@ func (gs *SqlGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.GiftCa
 
 	query := "INSERT INTO " + model.GiftcardEventTableName + "(" + gs.ModelFields("").Join(",") + ") VALUES (" + gs.ModelFields(":").Join(",") + ")"
 
-	_, err := gs.GetMasterX().NamedExec(query, event)
+	_, err := gs.GetMaster().NamedExec(query, event)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to save giftcard event with id=%s", event.Id)
 	}
@@ -121,7 +120,7 @@ func (gs *SqlGiftcardEventStore) Save(event *model.GiftCardEvent) (*model.GiftCa
 
 func (gs *SqlGiftcardEventStore) Get(eventId string) (*model.GiftCardEvent, error) {
 	var res model.GiftCardEvent
-	err := gs.GetReplicaX().Get(&res, "SELECT * FROM "+model.GiftcardEventTableName+" WHERE Id = ?", eventId)
+	err := gs.GetReplica().Get(&res, "SELECT * FROM "+model.GiftcardEventTableName+" WHERE Id = ?", eventId)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.GiftcardEventTableName, eventId)
@@ -158,7 +157,7 @@ func (gs *SqlGiftcardEventStore) FilterByOptions(options *model.GiftCardEventFil
 	}
 
 	var res []*model.GiftCardEvent
-	err = gs.GetReplicaX().Select(&res, queryString, args...)
+	err = gs.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find giftcard events with given options")
 	}

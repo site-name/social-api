@@ -55,7 +55,7 @@ func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (*mode
 	)
 	if isSaing {
 		query := "INSERT INTO " + model.InvoiceEventTableName + "(" + ies.ModelFields("").Join(",") + ") VALUES (" + ies.ModelFields(":").Join(",") + ")"
-		_, err = ies.GetMasterX().NamedExec(query, invoiceEvent)
+		_, err = ies.GetMaster().NamedExec(query, invoiceEvent)
 
 	} else {
 		oldEvent, err := ies.Get(invoiceEvent.Id)
@@ -73,7 +73,7 @@ func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (*mode
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = ies.GetMasterX().NamedExec(query, invoiceEvent)
+		result, err = ies.GetMaster().NamedExec(query, invoiceEvent)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -93,7 +93,7 @@ func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (*mode
 // Get finds and returns 1 invoice event
 func (ies *SqlInvoiceEventStore) Get(invoiceEventID string) (*model.InvoiceEvent, error) {
 	var res model.InvoiceEvent
-	err := ies.GetReplicaX().Get(&res, "SELECT * FROM "+model.InvoiceEventTableName+" WHERE Id = ?", invoiceEventID)
+	err := ies.GetReplica().Get(&res, "SELECT * FROM "+model.InvoiceEventTableName+" WHERE Id = ?", invoiceEventID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.InvoiceEventTableName, invoiceEventID)

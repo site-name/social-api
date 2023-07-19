@@ -49,7 +49,7 @@ func (s *SqlComplianceStore) Save(compliance *model.Compliance) (*model.Complian
 
 	query := "INSERT INTO " + model.ComplianceTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
 
-	if _, err := s.GetMasterX().NamedExec(query, compliance); err != nil {
+	if _, err := s.GetMaster().NamedExec(query, compliance); err != nil {
 		return nil, errors.Wrap(err, "failed to save Compliance")
 	}
 	return compliance, nil
@@ -68,7 +68,7 @@ func (s *SqlComplianceStore) Update(compliance *model.Compliance) (*model.Compli
 		}).
 		Join(",") + " WHERE Id=:Id"
 
-	if _, err := s.GetMasterX().NamedExec(query, compliance); err != nil {
+	if _, err := s.GetMaster().NamedExec(query, compliance); err != nil {
 		return nil, errors.Wrap(err, "failed to update Compliance")
 	}
 	return compliance, nil
@@ -78,7 +78,7 @@ func (s *SqlComplianceStore) GetAll(offset, limit int) (model.Compliances, error
 	query := "SELECT * FROM Compliances ORDER BY CreateAt DESC LIMIT ? OFFSET ?"
 
 	var compliances model.Compliances
-	if err := s.GetReplicaX().Select(&compliances, query, limit, offset); err != nil {
+	if err := s.GetReplica().Select(&compliances, query, limit, offset); err != nil {
 		return nil, errors.Wrap(err, "failed to find all Compliances")
 	}
 	return compliances, nil
@@ -87,7 +87,7 @@ func (s *SqlComplianceStore) GetAll(offset, limit int) (model.Compliances, error
 func (s *SqlComplianceStore) Get(id string) (*model.Compliance, error) {
 	var res model.Compliance
 
-	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+model.ComplianceTableName+" WHERE Id = ?", id)
+	err := s.GetReplica().Get(&res, "SELECT * FROM "+model.ComplianceTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ComplianceTableName, id)
@@ -184,7 +184,7 @@ func (s *SqlComplianceStore) ComplianceExport(job *model.Compliance, cursor mode
 				` + keywordQuery + `
 		ORDER BY Posts.CreateAt, Posts.Id
 		LIMIT ?`
-		if err := s.GetReplicaX().Select(&channelPosts, channelsQuery, argsChannelsQuery...); err != nil {
+		if err := s.GetReplica().Select(&channelPosts, channelsQuery, argsChannelsQuery...); err != nil {
 			return nil, cursor, errors.Wrap(err, "unable to export compliance")
 		}
 		if len(channelPosts) < limit {
@@ -249,7 +249,7 @@ func (s *SqlComplianceStore) ComplianceExport(job *model.Compliance, cursor mode
 		ORDER BY Posts.CreateAt, Posts.Id
 		LIMIT ?`
 
-		if err := s.GetReplicaX().Select(&directMessagePosts, directMessagesQuery, argsDirectMessagesQuery...); err != nil {
+		if err := s.GetReplica().Select(&directMessagePosts, directMessagesQuery, argsDirectMessagesQuery...); err != nil {
 			return nil, cursor, errors.Wrap(err, "unable to export compliance")
 		}
 		if len(directMessagePosts) < limit {

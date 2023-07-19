@@ -2,8 +2,8 @@ package types
 
 import (
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // RecalculateOrderPricesFunc
-type RecalculateOrderPricesFunc func(store_iface.SqlxExecutor, *model.Order, map[string]interface{}) *model.AppError
+type RecalculateOrderPricesFunc func(*gorm.DB, *model.Order, map[string]interface{}) *model.AppError

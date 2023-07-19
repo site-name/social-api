@@ -7,7 +7,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -42,7 +41,7 @@ func (w *SqlWishlistItemProductVariantStore) Save(item *model.WishlistItemProduc
 	}
 
 	query := "INSERT INTO " + model.WishlistItemProductVariantTableName + "(" + w.ModelFields("").Join(",") + ") VALUES (" + w.ModelFields(":").Join(",") + ")"
-	if _, err := w.GetMasterX().NamedExec(query, item); err != nil {
+	if _, err := w.GetMaster().NamedExec(query, item); err != nil {
 		if w.IsUniqueConstraintError(err, []string{"WishlistItemID", "ProductVariantID", "wishlistitemproductvariants_wishlistitemid_productvariantid_key"}) {
 			return nil, store.NewErrInvalidInput(model.WishlistItemProductVariantTableName, "WishlistItemID/ProductVariantID", item.WishlistItemID+"/"+item.ProductVariantID)
 		}
@@ -52,11 +51,11 @@ func (w *SqlWishlistItemProductVariantStore) Save(item *model.WishlistItemProduc
 	return item, nil
 }
 
-func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.SqlxExecutor, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
+func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction *gorm.DB, relations []*model.WishlistItemProductVariant) ([]*model.WishlistItemProductVariant, error) {
 	var (
-		executor    store_iface.SqlxExecutor = w.GetMasterX()
-		saveQuery                            = "INSERT INTO " + model.WishlistItemProductVariantTableName + "(" + w.ModelFields("").Join(",") + ") VALUES (" + w.ModelFields(":").Join(",") + ")"
-		updateQuery                          = "UPDATE " + model.WishlistItemProductVariantTableName + " SET " + w.
+		executor    *gorm.DB = w.GetMaster()
+		saveQuery            = "INSERT INTO " + model.WishlistItemProductVariantTableName + "(" + w.ModelFields("").Join(",") + ") VALUES (" + w.ModelFields(":").Join(",") + ")"
+		updateQuery          = "UPDATE " + model.WishlistItemProductVariantTableName + " SET " + w.
 				ModelFields("").
 				Map(func(_ int, s string) string {
 				return s + "=:" + s
@@ -109,8 +108,8 @@ func (w *SqlWishlistItemProductVariantStore) BulkUpsert(transaction store_iface.
 }
 
 // GetById finds and returns a product variant-wishlist item relation and returns it
-func (w *SqlWishlistItemProductVariantStore) GetById(transaction store_iface.SqlxExecutor, id string) (*model.WishlistItemProductVariant, error) {
-	var selector store_iface.SqlxExecutor = w.GetReplicaX()
+func (w *SqlWishlistItemProductVariantStore) GetById(transaction *gorm.DB, id string) (*model.WishlistItemProductVariant, error) {
+	var selector *gorm.DB = w.GetReplica()
 	if transaction != nil {
 		selector = transaction
 	}
@@ -144,7 +143,7 @@ func (w *SqlWishlistItemProductVariantStore) DeleteRelation(relation *model.Wish
 		return 0, errors.Wrap(err, "DeleteRelation_ToSql")
 	}
 
-	result, err := w.GetMasterX().Exec(queryString, args...)
+	result, err := w.GetMaster().Exec(queryString, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to delete a wishlist item-product variant relation")
 	}
@@ -157,7 +156,7 @@ func (w *SqlWishlistItemProductVariantStore) DeleteRelation(relation *model.Wish
 	}
 
 	var numOfRelationsLeft int64
-	err = w.GetMasterX().Get(&numOfRelationsLeft, "SELECT COUNT(Id) FROM "+model.WishlistItemProductVariantTableName)
+	err = w.GetMaster().Get(&numOfRelationsLeft, "SELECT COUNT(Id) FROM "+model.WishlistItemProductVariantTableName)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count number of wishlist item-product variant left")
 	}

@@ -17,7 +17,6 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -118,7 +117,7 @@ func (a *ServiceCheckout) CheckoutSetCountry(ckout *model.Checkout, newCountryCo
 }
 
 // UpsertCheckout saves/updates given checkout
-func (a *ServiceCheckout) UpsertCheckouts(transaction store_iface.SqlxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, *model.AppError) {
+func (a *ServiceCheckout) UpsertCheckouts(transaction *gorm.DB, checkouts []*model.Checkout) ([]*model.Checkout, *model.AppError) {
 	checkouts, err := a.srv.Store.Checkout().Upsert(transaction, checkouts)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -262,7 +261,7 @@ func (a *ServiceCheckout) CheckoutTotalWeight(checkoutLineInfos []*model.Checkou
 }
 
 // DeleteCheckoutsByOption tells store to delete checkout(s) rows, filtered using given option
-func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction store_iface.SqlxExecutor, option *model.CheckoutFilterOption) *model.AppError {
+func (s *ServiceCheckout) DeleteCheckoutsByOption(transaction *gorm.DB, option *model.CheckoutFilterOption) *model.AppError {
 	err := s.srv.Store.Checkout().DeleteCheckoutsByOption(transaction, option)
 	if err != nil {
 		return model.NewAppError("DeleteCheckoutsByOption", "app.checkout.error_deleting_checkouts_by_option.app_error", nil, err.Error(), http.StatusInternalServerError)

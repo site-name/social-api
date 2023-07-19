@@ -37,7 +37,7 @@ func (s *SqlChannelShopStore) Save(relation *model.ChannelShopRelation) (*model.
 		return nil, appErr
 	}
 
-	_, err := s.GetMasterX().NamedExec("INSERT INTO "+model.ChannelShopRelationTableName+"("+s.ModelFields("").Join(",")+") VALUES ("+s.ModelFields(":").Join(",")+")", relation)
+	_, err := s.GetMaster().NamedExec("INSERT INTO "+model.ChannelShopRelationTableName+"("+s.ModelFields("").Join(",")+") VALUES ("+s.ModelFields(":").Join(",")+")", relation)
 	if err != nil {
 		if s.IsUniqueConstraintError(err, []string{"ChannelID", "channelshops_shopid_channelid_key"}) {
 			return nil, store.NewErrInvalidInput(model.ChannelShopRelationTableName, "channelID / shopID", "")
@@ -70,7 +70,7 @@ func (s *SqlChannelShopStore) FilterByOptions(options *model.ChannelShopRelation
 	}
 
 	var res []*model.ChannelShopRelation
-	err = s.GetReplicaX().Select(&res, queryString, args...)
+	err = s.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find channel-shop relations by options")
 	}

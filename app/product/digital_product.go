@@ -80,7 +80,7 @@ func (a *ServiceProduct) IncrementDownloadCount(contentURL *model.DigitalContent
 			_, appErr = a.srv.AccountService().CommonCustomerCreateEvent(
 				&userByOrderId.Id,
 				&orderLine.OrderID,
-				model.DIGITAL_LINK_DOWNLOADED,
+				model.CUSTOMER_EVENT_TYPE_DIGITAL_LINK_DOWNLOADED,
 				map[string]interface{}{"order_line_pk": orderLine.Id},
 			)
 			if appErr != nil {

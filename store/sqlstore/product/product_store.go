@@ -82,7 +82,7 @@ func (ps *SqlProductStore) Save(product *model.Product) (*model.Product, error) 
 	}
 
 	query := "INSERT INTO " + model.ProductTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
-	if _, err := ps.GetMasterX().NamedExec(query, product); err != nil {
+	if _, err := ps.GetMaster().NamedExec(query, product); err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"Name", "products_name_key", "idx_products_name_unique"}) {
 			return nil, store.NewErrInvalidInput("Product", "name", product.Name)
 		}
@@ -123,7 +123,7 @@ func (ps *SqlProductStore) commonQueryBuilder(option *model.ProductFilterOption)
 	}
 	if option.SaleID != nil {
 		query = query.
-			InnerJoin(store.SaleProductRelationTableName + " ON Products.Id = SaleProducts.ProductID").
+			InnerJoin(model.SaleProductTableName + " ON Products.Id = SaleProducts.ProductID").
 			Where(option.SaleID)
 	}
 	if option.HasNoProductVariants {
@@ -147,7 +147,7 @@ func (ps *SqlProductStore) FilterByOption(option *model.ProductFilterOption) ([]
 	}
 
 	var products model.Products
-	err = ps.GetReplicaX().Select(&products, queryString, args...)
+	err = ps.GetReplica().Select(&products, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products by given option")
 	}
@@ -262,7 +262,7 @@ func (ps *SqlProductStore) GetByOption(option *model.ProductFilterOption) (*mode
 	}
 
 	var res model.Product
-	err = ps.GetReplicaX().Get(&res, queryString, args...)
+	err = ps.GetReplica().Get(&res, queryString, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductTableName, "option")
@@ -331,7 +331,7 @@ func (ps *SqlProductStore) PublishedProducts(channelSlug string) ([]*model.Produ
 	}
 
 	var res model.Products
-	err = ps.GetReplicaX().Select(&res, queryString, args...)
+	err = ps.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find published products with channel slug=%s", channelSlug)
 	}
@@ -391,7 +391,7 @@ func (ps *SqlProductStore) NotPublishedProducts(channelSlug string) (
 		PublicationDate *time.Time
 	}
 
-	err = ps.GetReplicaX().Select(&res, queryString, args...)
+	err = ps.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find not published product with channel slug=%s", channelSlug)
 	}
@@ -515,7 +515,7 @@ func (ps *SqlProductStore) SelectForUpdateDiscountedPricesOfCatalogues(productID
 	}
 
 	var products model.Products
-	err = ps.GetReplicaX().Select(&products, queryString, args...)
+	err = ps.GetReplica().Select(&products, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products by given params")
 	}
@@ -691,7 +691,7 @@ func (ps *SqlProductStore) FilterByQuery(query squirrel.SelectBuilder) (model.Pr
 	}
 
 	var products model.Products
-	err = ps.GetReplicaX().Select(&products, queryString, args...)
+	err = ps.GetReplica().Select(&products, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find products with given query and conditions")
 	}
@@ -711,7 +711,7 @@ func (s *SqlProductStore) CountByCategoryIDs(categoryIDs []string) ([]*model.Pro
 		return nil, errors.Wrap(err, "CountByCategoryIDs_ToSql")
 	}
 	var res []*model.ProductCountByCategoryID
-	err = s.GetMasterX().Select(&res, query, args...)
+	err = s.GetMaster().Select(&res, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to count products by given category ids")
 	}

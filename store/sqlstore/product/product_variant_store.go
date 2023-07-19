@@ -7,7 +7,6 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -62,8 +61,8 @@ func (ps *SqlProductVariantStore) ScanFields(variant *model.ProductVariant) []in
 	}
 }
 
-func (ps *SqlProductVariantStore) Save(transaction store_iface.SqlxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
-	var executor store_iface.SqlxExecutor = ps.GetMasterX()
+func (ps *SqlProductVariantStore) Save(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
+	var executor *gorm.DB = ps.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -85,13 +84,13 @@ func (ps *SqlProductVariantStore) Save(transaction store_iface.SqlxExecutor, var
 }
 
 // Update updates given product variant and returns it
-func (ps *SqlProductVariantStore) Update(transaction store_iface.SqlxExecutor, variant *model.ProductVariant) (*model.ProductVariant, error) {
+func (ps *SqlProductVariantStore) Update(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, error) {
 	variant.PreUpdate()
 	if err := variant.IsValid(); err != nil {
 		return nil, err
 	}
 
-	var executor store_iface.SqlxExecutor = ps.GetMasterX()
+	var executor *gorm.DB = ps.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -119,7 +118,7 @@ func (ps *SqlProductVariantStore) Update(transaction store_iface.SqlxExecutor, v
 
 func (ps *SqlProductVariantStore) Get(id string) (*model.ProductVariant, error) {
 	var variant model.ProductVariant
-	err := ps.GetReplicaX().Get(
+	err := ps.GetReplica().Get(
 		&variant,
 		"SELECT * FROM "+model.ProductVariantTableName+" WHERE Id = ?",
 		id,
@@ -167,8 +166,8 @@ func (ps *SqlProductVariantStore) GetWeight(productVariantID string) (*measureme
 		productTypeWeightUnit   measurement.WeightUnit
 	)
 	err = ps.
-		GetReplicaX().
-		QueryRowX(queryString, args...).
+		GetReplica().
+		QueryRow(queryString, args...).
 		Scan(
 			&variantWeightAmount,
 			&variantWeightUnit,
@@ -207,7 +206,7 @@ func (vs *SqlProductVariantStore) GetByOrderLineID(orderLineID string) (*model.P
 		" INNER JOIN " + model.OrderLineTableName +
 		" ON ProductVariants.Id = Orderlines.VariantID WHERE Orderlines.Id = ?"
 
-	err := vs.GetReplicaX().Get(&res, query, orderLineID)
+	err := vs.GetReplica().Get(&res, query, orderLineID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductVariantTableName, "orderLineID="+orderLineID)
@@ -278,7 +277,7 @@ func (vs *SqlProductVariantStore) FilterByOption(option *model.ProductVariantFil
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	rows, err := vs.GetReplicaX().QueryX(queryString, args...)
+	rows, err := vs.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product variants by options")
 	}
@@ -319,7 +318,7 @@ func (s *SqlProductVariantStore) AddProductVariantMedias(transaction *gorm.DB, v
 	}
 
 	for _, variant := range variants {
-		err := transaction.Model(variant).Association("ProductMedias").Append(medias)
+		err := transaction.Model(variant).Association(model.ProductMediaTableName).Append(medias)
 		if err != nil {
 			return errors.Wrap(err, "failed to add product variant-productmedia relations")
 		}

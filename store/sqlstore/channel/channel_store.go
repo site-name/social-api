@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -49,8 +48,8 @@ func (cs *SqlChannelStore) ScanFields(ch *model.Channel) []interface{} {
 	}
 }
 
-func (s *SqlChannelStore) Upsert(transaction store_iface.SqlxExecutor, channel *model.Channel) (*model.Channel, error) {
-	runner := s.GetMasterX()
+func (s *SqlChannelStore) Upsert(transaction *gorm.DB, channel *model.Channel) (*model.Channel, error) {
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -97,7 +96,7 @@ func (s *SqlChannelStore) Upsert(transaction store_iface.SqlxExecutor, channel *
 func (cs *SqlChannelStore) Get(id string) (*model.Channel, error) {
 	var channel model.Channel
 
-	err := cs.GetReplicaX().Get(&channel, "SELECT * FROM "+model.ChannelTableName+" WHERE Id = ?", id)
+	err := cs.GetReplica().Get(&channel, "SELECT * FROM "+model.ChannelTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ChannelTableName, id)
@@ -157,7 +156,7 @@ func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*mode
 		scanFields = append(scanFields, &hasOrder)
 	}
 
-	err = cs.GetReplicaX().QueryRowX(queryString, args...).Scan(scanFields...)
+	err = cs.GetReplica().QueryRow(queryString, args...).Scan(scanFields...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ChannelTableName, "options")
@@ -179,7 +178,7 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	rows, err := cs.GetReplicaX().QueryX(queryString, args...)
+	rows, err := cs.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find channels with given option")
 	}
@@ -211,8 +210,8 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 	return res, nil
 }
 
-func (s *SqlChannelStore) DeleteChannels(transaction store_iface.SqlxExecutor, ids []string) error {
-	runner := s.GetMasterX()
+func (s *SqlChannelStore) DeleteChannels(transaction *gorm.DB, ids []string) error {
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}

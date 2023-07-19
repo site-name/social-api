@@ -6,9 +6,6 @@ import (
 	dbsql "database/sql"
 	"database/sql/driver"
 	"fmt"
-	"io/fs"
-	"log"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -19,20 +16,12 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	jackcpgconn "github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
-	"github.com/mattermost/morph"
-	"github.com/mattermost/morph/drivers"
-	ps "github.com/mattermost/morph/drivers/postgres"
-	mbindata "github.com/mattermost/morph/sources/embedded"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
-	"github.com/sitename/sitename/db"
 	"github.com/sitename/sitename/einterfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
-	"github.com/sitename/sitename/store/store_iface"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -42,8 +31,7 @@ const (
 	IndexTypeFullText              = "full_text"
 	IndexTypeFullTextFunc          = "full_text_func"
 	IndexTypeDefault               = "default"
-	PGDupTableErrorCode            = "42P07"      // see https://github.com/lib/pq/blob/master/error.go#L268
-	MySQLDupTableErrorCode         = uint16(1050) // see https://dev.mysql.com/doc/mysql-errors/5.7/en/server-error-reference.html#error_er_table_exists_error
+	PGDupTableErrorCode            = "42P07" // see https://github.com/lib/pq/blob/master/error.go#L268
 	PGForeignKeyViolationErrorCode = "23503"
 	PGDuplicateObjectErrorCode     = "42710"
 	DBPingAttempts                 = 18
@@ -70,9 +58,9 @@ type SqlStore struct {
 	replicas       []*gorm.DB
 	searchReplicas []*gorm.DB
 
-	masterX         *sqlxDBWrapper
-	replicaXs       []*sqlxDBWrapper
-	searchReplicaXs []*sqlxDBWrapper
+	// masterX         *sqlxDBWrapper
+	// replicaXs       []*sqlxDBWrapper
+	// searchReplicaXs []*sqlxDBWrapper
 
 	replicaLagHandles []*dbsql.DB
 	stores            *SqlStoreStores
@@ -177,46 +165,45 @@ func (ss *SqlStore) initConnection() error {
 	if err != nil {
 		return err
 	}
-	ss.masterX = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
-
-	// gorm master
-	ss.master, err = gorm.Open(postgres.New(postgres.Config{Conn: handle}), &gorm.Config{})
+	// ss.masterX = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), ss.settings)
+	ss.master, err = newGormDBWrapper(handle, ss.settings)
 	if err != nil {
 		return err
 	}
 
 	if len(ss.settings.DataSourceReplicas) > 0 {
-		ss.replicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceReplicas))
-
-		// gorm dbs
+		// ss.replicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceReplicas))
 		ss.replicas = make([]*gorm.DB, len(ss.settings.DataSourceReplicas))
 
 		for i, replica := range ss.settings.DataSourceReplicas {
-			handle, err := setupConnection(fmt.Sprintf("replica-%v", i), replica, ss.settings)
+			replicaName := fmt.Sprintf("replica-%v", i)
+			handle, err := setupConnection(replicaName, replica, ss.settings)
 			if err != nil {
-				slog.Warn("Failed to setup connection. Skipping..", slog.String("db", fmt.Sprintf("replica-%v", i)), slog.Err(err))
-				continue
+				return errors.Wrapf(err, "failed to setup replica connection: %s", replicaName)
 			}
-			ss.replicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
-
-			ss.replicas[i], _ = gorm.Open(postgres.New(postgres.Config{Conn: handle}))
+			// ss.replicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), ss.settings)
+			ss.replicas[i], err = newGormDBWrapper(handle, ss.settings)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	if len(ss.settings.DataSourceSearchReplicas) > 0 {
-		ss.searchReplicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceSearchReplicas))
-		// gorm dbs
+		// ss.searchReplicaXs = make([]*sqlxDBWrapper, len(ss.settings.DataSourceSearchReplicas))
 		ss.searchReplicas = make([]*gorm.DB, len(ss.settings.DataSourceSearchReplicas))
 
 		for i, replica := range ss.settings.DataSourceSearchReplicas {
-			handle, err := setupConnection(fmt.Sprintf("search-replica-%v", i), replica, ss.settings)
+			replicaName := fmt.Sprintf("search-replica-%v", i)
+			handle, err := setupConnection(replicaName, replica, ss.settings)
 			if err != nil {
-				slog.Warn("Failed to setup connection. Skipping..", slog.String("db", fmt.Sprintf("replica-%v", i)), slog.Err(err))
-				continue
+				return errors.Wrapf(err, "failed to setup search replica connection: %s", replicaName)
 			}
-			ss.searchReplicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), time.Duration(*ss.settings.QueryTimeout)*time.Second, *ss.settings.Trace)
-
-			ss.searchReplicas[i], _ = gorm.Open(postgres.New(postgres.Config{Conn: handle}))
+			// ss.searchReplicaXs[i] = newSqlxDBWrapper(sqlx.NewDb(handle, ss.DriverName()), ss.settings)
+			ss.searchReplicas[i], err = newGormDBWrapper(handle, ss.settings)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -243,7 +230,7 @@ func (ss *SqlStore) DriverName() string {
 
 func (ss *SqlStore) GetCurrentSchemaVersion() string {
 	var schemaVersion string
-	err := ss.GetMasterX().Get(&schemaVersion, "SELECT Value FROM Systems WHERE Name='Version'")
+	err := ss.GetMaster().Raw("SELECT Value FROM Systems WHERE Name='Version'").Scan(&schemaVersion).Error
 	if err != nil {
 		slog.Error("failed to check current schema version", slog.Err(err))
 	}
@@ -264,57 +251,56 @@ func (ss *SqlStore) GetDbVersion(numerical bool) (string, error) {
 
 	var version string
 
-	if err := ss.GetReplicaX().Get(&version, sqlVersion); err != nil {
+	if err := ss.GetReplica().Raw(sqlVersion).Scan(&sqlVersion).Error; err != nil {
 		return "", err
 	}
 
 	return version, nil
 }
 
-func (ss *SqlStore) GetMasterX() store_iface.SqlxExecutor {
-	return ss.masterX
+func (ss *SqlStore) GetMaster(noTimeout ...bool) *gorm.DB {
+	if len(noTimeout) > 0 && noTimeout[0] {
+		return ss.master
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(*ss.settings.QueryTimeout)*time.Second)
+	defer cancel()
+	return ss.master.WithContext(ctx)
 }
 
-func (ss *SqlStore) GetMaster() *gorm.DB {
-	return ss.master
-}
-
-func (ss *SqlStore) GetReplica() *gorm.DB {
+func (ss *SqlStore) GetReplica(noTimeout ...bool) *gorm.DB {
 	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
-		return ss.GetMaster()
+		return ss.GetMaster(noTimeout...)
 	}
-	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.replicaXs))
-	return ss.replicas[rrNum]
-}
+	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.replicas))
+	db := ss.replicas[rrNum]
 
-func (ss *SqlStore) SetMasterX(db *sql.DB) {
-	ss.masterX = newSqlxDBWrapper(
-		sqlx.NewDb(db, ss.DriverName()),
-		time.Duration(*ss.settings.QueryTimeout)*time.Second,
-		*ss.settings.Trace,
-	)
-}
-
-func (ss *SqlStore) GetSearchReplicaX() store_iface.SqlxExecutor {
-	if len(ss.settings.DataSourceSearchReplicas) == 0 {
-		return ss.GetReplicaX()
+	if len(noTimeout) > 0 && noTimeout[0] {
+		return db
 	}
 
-	rrNum := atomic.AddInt64(&ss.srCounter, 1) % int64(len(ss.searchReplicaXs))
-	return ss.searchReplicaXs[rrNum]
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(*ss.settings.QueryTimeout)*time.Second)
+	defer cancel()
+	return db.WithContext(ctx)
 }
 
-func (ss *SqlStore) GetReplicaX() store_iface.SqlxExecutor {
-	if len(ss.settings.DataSourceReplicas) == 0 || ss.lockedToMaster {
-		return ss.GetMasterX()
-	}
-	rrNum := atomic.AddInt64(&ss.rrCounter, 1) % int64(len(ss.replicaXs))
-	return ss.replicaXs[rrNum]
-}
+// func (ss *SqlStore) GetSearchReplicaX() *gorm.DB {
+// 	if len(ss.settings.DataSourceSearchReplicas) == 0 {
+// 		return ss.GetReplica()
+// 	}
+
+// 	rrNum := atomic.AddInt64(&ss.srCounter, 1) % int64(len(ss.searchReplicaXs))
+// 	return ss.searchReplicaXs[rrNum]
+// }
 
 // returns number of connections to master database
 func (ss *SqlStore) TotalMasterDbConnections() int {
-	return ss.masterX.Stats().OpenConnections
+	db, err := ss.master.DB()
+	if err != nil {
+		slog.Error("failed to retrieve underlying *sql.DB instance", slog.Err(err))
+		return 0
+	}
+	return db.Stats().OpenConnections
 }
 
 // ReplicaLagAbs queries all the replica databases to get the absolute replica lag value
@@ -361,7 +347,12 @@ func (ss *SqlStore) TotalReadDbConnections() int {
 	}
 
 	count := 0
-	for _, db := range ss.replicaXs {
+	for _, gormDB := range ss.replicas {
+		db, err := gormDB.DB()
+		if err != nil {
+			slog.Error("failed to retrieve underlying replica *sql.DB instance", slog.Err(err))
+			continue
+		}
 		count = count + db.Stats().OpenConnections
 	}
 
@@ -375,7 +366,12 @@ func (ss *SqlStore) TotalSearchDbConnections() int {
 	}
 
 	count := 0
-	for _, db := range ss.searchReplicaXs {
+	for _, gormDB := range ss.searchReplicas {
+		db, err := gormDB.DB()
+		if err != nil {
+			slog.Error("failed to retrieve underlying search replica *sql.DB instance", slog.Err(err))
+			continue
+		}
 		count = count + db.Stats().OpenConnections
 	}
 
@@ -398,7 +394,7 @@ func (ss *SqlStore) MarkSystemRanUnitTests() {
 // checks if table does exist in database
 func (ss *SqlStore) DoesTableExist(tableName string) bool {
 	var count int64
-	err := ss.GetMasterX().Get(&count, `SELECT count(relname) FROM pg_class WHERE relname=$1`, strings.ToLower(tableName))
+	err := ss.GetMaster().Raw(`SELECT COUNT(relname) FROM pg_class WHERE relname=$1`, strings.ToLower(tableName)).Scan(&count).Error
 	if err != nil {
 		slog.Fatal("Failed to check if table exists", slog.Err(err))
 	}
@@ -408,8 +404,7 @@ func (ss *SqlStore) DoesTableExist(tableName string) bool {
 
 func (ss *SqlStore) DoesColumnExist(tableName string, columnName string) bool {
 	var count int64
-	err := ss.GetMasterX().Get(
-		&count,
+	err := ss.GetMaster().Raw(
 		`SELECT COUNT(0)
 			FROM   pg_attribute
 			WHERE  attrelid = $1::regclass
@@ -417,7 +412,7 @@ func (ss *SqlStore) DoesColumnExist(tableName string, columnName string) bool {
 			AND    NOT attisdropped`,
 		strings.ToLower(tableName),
 		strings.ToLower(columnName),
-	)
+	).Scan(&count).Error
 
 	if err != nil {
 		if err.Error() == "pq: relation \""+strings.ToLower(tableName)+"\" does not exist" {
@@ -428,53 +423,6 @@ func (ss *SqlStore) DoesColumnExist(tableName string, columnName string) bool {
 	}
 
 	return count > 0
-}
-
-func (ss *SqlStore) DoesTriggerExist(triggerName string) bool {
-	var count int64
-	err := ss.GetMasterX().Get(&count, `SELECT COUNT(0) FROM pg_trigger WHERE tgname = $1`, triggerName)
-
-	if err != nil {
-		slog.Fatal("Failed to check if trigger exists", slog.Err(err))
-	}
-
-	return count > 0
-}
-
-func (ss *SqlStore) CreateColumnIfNotExists(tableName string, columnName string, mySqlColType string, postgresColType string, defaultValue string) bool {
-	if ss.DoesColumnExist(tableName, columnName) {
-		return false
-	}
-
-	_, err := ss.GetMasterX().ExecNoTimeout("ALTER TABLE " + tableName + " ADD " + columnName + " " + postgresColType + " DEFAULT '" + defaultValue + "'")
-	if err != nil {
-		slog.Fatal("Failed to create column", slog.Err(err))
-	}
-
-	return true
-}
-
-func (ss *SqlStore) RemoveTableIfExists(tableName string) bool {
-	if !ss.DoesTableExist(tableName) {
-		return false
-	}
-
-	_, err := ss.GetMasterX().ExecNoTimeout("DROP TABLE " + tableName)
-	if err != nil {
-		slog.Fatal("Failed to drop table", slog.Err(err))
-	}
-
-	return true
-}
-
-// check if given err is postgres's duplicate error
-func IsConstraintAlreadyExistsError(err error) bool {
-	if dbErr, ok := err.(*pq.Error); ok {
-		if dbErr.Code == PGDuplicateObjectErrorCode {
-			return true
-		}
-	}
-	return false
 }
 
 func (ss *SqlStore) IsUniqueConstraintError(err error, indexNames []string) bool {
@@ -494,10 +442,10 @@ func (ss *SqlStore) IsUniqueConstraintError(err error, indexNames []string) bool
 }
 
 // Get all databases connections
-func (ss *SqlStore) GetAllConns() []*sqlxDBWrapper {
-	all := make([]*sqlxDBWrapper, len(ss.replicaXs)+1)
-	copy(all, ss.replicaXs)
-	all[len(ss.replicaXs)] = ss.masterX
+func (ss *SqlStore) GetAllConns() []*gorm.DB {
+	all := make([]*gorm.DB, len(ss.replicas)+1)
+	copy(all, ss.replicas)
+	all[len(ss.replicas)] = ss.master
 	return all
 }
 
@@ -508,7 +456,8 @@ func (ss *SqlStore) RecycleDBConnections(d time.Duration) {
 	originalDuration := time.Duration(*ss.settings.ConnMaxLifetimeMilliseconds) * time.Millisecond
 	// Set the max lifetimes for all connections.
 	for _, conn := range ss.GetAllConns() {
-		if db, ok := conn.DB.(*sqlx.DB); ok {
+		db, err := conn.DB()
+		if err == nil && db != nil {
 			db.SetConnMaxLifetime(d)
 		}
 	}
@@ -516,7 +465,8 @@ func (ss *SqlStore) RecycleDBConnections(d time.Duration) {
 	time.Sleep(d + 2*time.Second)
 	// Reset max lifetime back to original value.
 	for _, conn := range ss.GetAllConns() {
-		if db, ok := conn.DB.(*sqlx.DB); ok {
+		db, err := conn.DB()
+		if err == nil && db != nil {
 			db.SetConnMaxLifetime(originalDuration)
 		}
 	}
@@ -524,11 +474,12 @@ func (ss *SqlStore) RecycleDBConnections(d time.Duration) {
 
 // close all database connections
 func (ss *SqlStore) Close() {
-	connections := append(ss.replicaXs, ss.searchReplicaXs...)
-	connections = append(connections, ss.masterX)
+	connections := append(ss.replicas, ss.searchReplicas...)
+	connections = append(connections, ss.master)
 
 	for _, conn := range connections {
-		if db, ok := conn.DB.(*sqlx.DB); ok {
+		db, err := conn.DB()
+		if err == nil && db != nil {
 			db.Close()
 		}
 	}
@@ -545,17 +496,17 @@ func (ss *SqlStore) UnlockFromMaster() {
 }
 
 func (ss *SqlStore) DropAllTables() {
-	ss.masterX.Exec(`DO
-			$func$
-			BEGIN
-			   EXECUTE
-			   (SELECT 'TRUNCATE TABLE ' || string_agg(oid::regclass::text, ', ') || ' CASCADE'
-			    FROM   pg_class
-			    WHERE  relkind = 'r'  -- only tables
-			    AND    relnamespace = 'public'::regnamespace
-			   );
-			END
-			$func$;`)
+	ss.master.Exec(`DO
+$func$
+BEGIN
+		EXECUTE
+		(SELECT 'TRUNCATE TABLE ' || string_agg(oid::regclass::text, ', ') || ' CASCADE'
+		FROM   pg_class
+		WHERE  relkind = 'r'  -- only tables
+		AND    relnamespace = 'public'::regnamespace
+		);
+END
+$func$;`)
 }
 
 func (ss *SqlStore) GetQueryBuilder(placeholderFormats ...squirrel.PlaceholderFormat) sq.StatementBuilderType {
@@ -572,77 +523,35 @@ func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {
 	return results
 }
 
+type m2mRelation struct {
+	model     any
+	field     string
+	joinTable any
+}
+
 func (ss *SqlStore) migrate(direction migrationDirection) error {
-	assets := db.Assets()
-
-	assetsList, err := assets.ReadDir(filepath.Join("migrations", ss.DriverName()))
-	if err != nil {
-		return err
-	}
-
-	src, err := mbindata.WithInstance(&mbindata.AssetSource{
-		Names: lo.Map(assetsList, func(entry fs.DirEntry, _ int) string { return entry.Name() }),
-		AssetFunc: func(name string) ([]byte, error) {
-			return assets.ReadFile(filepath.Join("migrations", ss.DriverName(), name))
-		},
-	})
-	if err != nil {
-		return err
-	}
-
-	driver, err := ps.WithInstance(ss.masterX.DB.(*sqlx.DB).DB, &ps.Config{
-		Config: drivers.Config{
-			StatementTimeoutInSecs: *ss.settings.MigrationsStatementTimeoutSeconds,
-		},
-	})
-	if err != nil {
-		return err
-	}
-
-	opts := []morph.EngineOption{
-		morph.WithLogger(log.New(&morphWriter{}, "", log.Lshortfile)),
-		morph.WithLock("sn-lock-key"),
-		morph.SetStatementTimeoutInSeconds(*ss.settings.MigrationsStatementTimeoutSeconds),
-	}
-	engine, err := morph.New(context.Background(), driver, src, opts...)
-	if err != nil {
-		return err
-	}
-	defer engine.Close()
-
-	switch direction {
-	case migrationsDirectionDown:
-		_, err = engine.ApplyDown(-1)
-		return err
-	default:
-		return engine.ApplyAll()
-	}
-}
-
-func convertMySQLFullTextColumnsToPostgres(columnNames string) string {
-	columns := strings.Split(columnNames, ", ")
-	concatenatedColumnNames := ""
-	for i, c := range columns {
-		concatenatedColumnNames += c
-		if i < len(columns)-1 {
-			concatenatedColumnNames += " || ' ' || "
+	// account
+	for _, model := range []any{&model.User{}, &model.Address{}, &model.Status{}, &model.UserAccessToken{}, &model.CustomerEvent{}, &model.CustomerNote{}, &model.AppToken{}} {
+		if err := ss.master.AutoMigrate(model); err != nil {
+			return err
 		}
 	}
 
-	return concatenatedColumnNames
-}
-
-// IsDuplicate checks whether an error is a duplicate key error, which comes when processes are competing on creating the same
-// tables in the database.
-func IsDuplicate(err error) bool {
-	var pqErr *pq.Error
-	if errors.As(errors.Cause(err), &pqErr) {
-		if pqErr.Code == PGDupTableErrorCode {
-			return true
+	// attribute
+	for _, m2mRel := range []m2mRelation{
+		{&model.AttributeVariant{}, "AssignedVariants", &model.AssignedVariantAttribute{}},
+		{&model.AssignedVariantAttribute{}, "Values", &model.AssignedVariantAttributeValue{}},
+		{&model.AttributePage{}, "AssignedPages", &model.AssignedPageAttribute{}},
+		{&model.AssignedPageAttribute{}, "Values", &model.AssignedPageAttributeValue{}},
+		{&model.AttributeProduct{}, "AssignedProducts", &model.AssignedProductAttribute{}},
+		{&model.AssignedProductAttribute{}, "Values", &model.AssignedProductAttributeValue{}},
+	} {
+		if err := ss.master.SetupJoinTable(m2mRel.model, m2mRel.field, m2mRel.joinTable); err != nil {
+			return err
 		}
 	}
 
-	return false
+	return nil
 }
 
 // ensureMinimumDBVersion gets the DB version and ensures it is
@@ -671,7 +580,7 @@ func versionString(v int, driver string) string {
 
 func (ss *SqlStore) GetDBSchemaVersion() (int, error) {
 	var version int
-	if err := ss.GetMasterX().Get(&version, "SELECT Version FROM db_migrations ORDER BY Version DESC LIMIT 1"); err != nil {
+	if err := ss.GetMaster().Raw("SELECT Version FROM db_migrations ORDER BY Version DESC LIMIT 1").Scan(&version).Error; err != nil {
 		return 0, errors.Wrap(err, "unable to select from db_migrations")
 	}
 	return version, nil
@@ -679,7 +588,7 @@ func (ss *SqlStore) GetDBSchemaVersion() (int, error) {
 
 func (ss *SqlStore) GetAppliedMigrations() ([]model.AppliedMigration, error) {
 	migrations := []model.AppliedMigration{}
-	if err := ss.GetMasterX().Select(&migrations, "SELECT Version, Name FROM db_migrations ORDER BY Version DESC"); err != nil {
+	if err := ss.GetMaster().Table("db_migrations").Order("Version DESC").Find(&migrations).Error; err != nil {
 		return nil, errors.Wrap(err, "unable to select from db_migrations")
 	}
 

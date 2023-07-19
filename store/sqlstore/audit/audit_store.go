@@ -1,7 +1,6 @@
 package audit
 
 import (
-	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 
 	"github.com/sitename/sitename/model"
@@ -37,13 +36,8 @@ func (s SqlAuditStore) ModelFields(prefix string) util.AnyArray[string] {
 }
 
 func (s *SqlAuditStore) Save(audit *model.Audit) error {
-	audit.PreSave()
-	if err := audit.IsValid(); err != nil {
-		return err
-	}
-
-	query := "INSERT INTO " + model.AuditTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
-	if _, err := s.GetMasterX().NamedExec(query, audit); err != nil {
+	err := s.GetMaster().Create(audit).Error
+	if err != nil {
 		return errors.Wrapf(err, "failed to save Audit with userId=%s and action=%s", audit.UserId, audit.Action)
 	}
 	return nil
@@ -54,32 +48,27 @@ func (s *SqlAuditStore) Get(userId string, offset int, limit int) (model.Audits,
 		return nil, store.NewErrOutOfBounds(limit)
 	}
 
-	query := s.GetQueryBuilder().
-		Select("*").
-		From("Audits").
-		OrderBy("CreateAt DESC").
-		Limit(uint64(limit)).
-		Offset(uint64(offset))
-
-	if userId != "" {
-		query = query.Where(sq.Eq{"UserId": userId})
+	query := s.GetQueryBuilder().Select("*").From(model.AuditTableName)
+	if offset > 0 {
+		query = query.Offset(uint64(offset))
+	}
+	if limit > 0 {
+		query = query.Limit(uint64(limit))
 	}
 
-	queryString, args, err := query.ToSql()
+	queryStr, args, err := query.ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "audits_tosql")
+		return nil, errors.Wrap(err, "Get_ToSql")
 	}
 
 	var audits model.Audits
-	if err := s.GetReplicaX().Select(&audits, queryString, args...); err != nil {
+	err = s.GetReplica().Raw(queryStr, args...).Scan(&audits).Error
+	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get Audit list for userId=%s", userId)
 	}
 	return audits, nil
 }
 
 func (s *SqlAuditStore) PermanentDeleteByUser(userId string) error {
-	if _, err := s.GetMasterX().Exec("DELETE FROM Audits WHERE UserId = ?", userId); err != nil {
-		return errors.Wrapf(err, "failed to delete Audit with userId=%s", userId)
-	}
-	return nil
+	return s.GetMaster().Raw("DELETE FROM "+model.AuditTableName+" WHERE UserId = ?", userId).Error
 }

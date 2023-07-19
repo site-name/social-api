@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -48,8 +47,8 @@ func (as *SqlAllocationStore) ScanFields(allocation *model.Allocation) []interfa
 }
 
 // BulkUpsert performs update, insert given allocations then returns them afterward
-func (as *SqlAllocationStore) BulkUpsert(transaction store_iface.SqlxExecutor, allocations []*model.Allocation) ([]*model.Allocation, error) {
-	var executor store_iface.SqlxExecutor = as.GetMasterX()
+func (as *SqlAllocationStore) BulkUpsert(transaction *gorm.DB, allocations []*model.Allocation) ([]*model.Allocation, error) {
+	var executor *gorm.DB = as.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -111,7 +110,7 @@ func (as *SqlAllocationStore) BulkUpsert(transaction store_iface.SqlxExecutor, a
 // Get finds an allocation with given id then returns it with an error
 func (as *SqlAllocationStore) Get(id string) (*model.Allocation, error) {
 	var res model.Allocation
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AllocationTableName+" WHERE Id = ?", id)
+	err := as.GetReplica().Get(&res, "SELECT * FROM "+model.AllocationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AllocationTableName, id)
@@ -201,7 +200,7 @@ func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOptio
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	rows, err := as.GetReplicaX().QueryX(queryString, args...)
+	rows, err := as.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find allocations with given option")
 	}
@@ -250,8 +249,8 @@ func (as *SqlAllocationStore) FilterByOption(option *model.AllocationFilterOptio
 }
 
 // BulkDelete perform bulk deletes given allocations.
-func (as *SqlAllocationStore) BulkDelete(transaction store_iface.SqlxExecutor, allocationIDs []string) error {
-	var executor = as.GetMasterX()
+func (as *SqlAllocationStore) BulkDelete(transaction *gorm.DB, allocationIDs []string) error {
+	var executor = as.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -278,7 +277,7 @@ func (as *SqlAllocationStore) BulkDelete(transaction store_iface.SqlxExecutor, a
 // CountAvailableQuantityForStock counts and returns available quantity of given stock
 func (as *SqlAllocationStore) CountAvailableQuantityForStock(stock *model.Stock) (int, error) {
 	var count int
-	err := as.GetReplicaX().Select(
+	err := as.GetReplica().Select(
 		&count,
 		`SELECT COALESCE(
 			SUM (

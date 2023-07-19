@@ -6,7 +6,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlCollectionProductStore struct {
@@ -40,8 +40,8 @@ func (ps *SqlCollectionProductStore) ScanFields(rel *model.CollectionProduct) []
 	}
 }
 
-func (ps *SqlCollectionProductStore) BulkSave(transaction store_iface.SqlxExecutor, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
-	runner := ps.GetMasterX()
+func (ps *SqlCollectionProductStore) BulkSave(transaction *gorm.DB, relations []*model.CollectionProduct) ([]*model.CollectionProduct, error) {
+	runner := ps.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -103,7 +103,7 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
-	rows, err := ps.GetReplicaX().QueryX(queryString, args...)
+	rows, err := ps.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product-collection relations")
 	}
@@ -143,7 +143,7 @@ func (ps *SqlCollectionProductStore) FilterByOptions(options *model.CollectionPr
 	return res, nil
 }
 
-func (s *SqlCollectionProductStore) Delete(transaction store_iface.SqlxExecutor, options *model.CollectionProductFilterOptions) error {
+func (s *SqlCollectionProductStore) Delete(transaction *gorm.DB, options *model.CollectionProductFilterOptions) error {
 	query := s.GetQueryBuilder().Delete(model.CollectionProductRelationTableName)
 
 	for _, opt := range []squirrel.Sqlizer{options.CollectionID, options.ProductID} {
@@ -157,7 +157,7 @@ func (s *SqlCollectionProductStore) Delete(transaction store_iface.SqlxExecutor,
 		return errors.Wrap(err, "Delete_ToSql")
 	}
 
-	runner := s.GetMasterX()
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}

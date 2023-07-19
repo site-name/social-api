@@ -6,7 +6,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -108,7 +107,7 @@ func (os *SqlOrderStore) ScanFields(holder *model.Order) []interface{} {
 }
 
 // BulkUpsert performs bulk upsert given orders
-func (os *SqlOrderStore) BulkUpsert(transaction store_iface.SqlxExecutor, orders []*model.Order) ([]*model.Order, error) {
+func (os *SqlOrderStore) BulkUpsert(transaction *gorm.DB, orders []*model.Order) ([]*model.Order, error) {
 	var (
 		saveQuery   = "INSERT INTO " + model.OrderTableName + "(" + os.ModelFields("").Join(",") + ") VALUES (" + os.ModelFields(":").Join(",") + ")"
 		updateQuery = "UPDATE " + model.OrderTableName + " SET " +
@@ -117,7 +116,7 @@ func (os *SqlOrderStore) BulkUpsert(transaction store_iface.SqlxExecutor, orders
 					return s + "=:" + s
 				}).
 				Join(",") + " WHERE Id=:Id"
-		runner = os.GetMasterX()
+		runner = os.GetMaster()
 	)
 	if transaction != nil {
 		runner = transaction
@@ -190,7 +189,7 @@ func (os *SqlOrderStore) BulkUpsert(transaction store_iface.SqlxExecutor, orders
 // Get finds and returns 1 order with given id
 func (os *SqlOrderStore) Get(id string) (*model.Order, error) {
 	var order model.Order
-	err := os.GetReplicaX().Get(&order, "SELECT * FROM "+model.OrderTableName+" WHERE Id = ?", id)
+	err := os.GetReplica().Get(&order, "SELECT * FROM "+model.OrderTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderTableName, id)
@@ -236,7 +235,7 @@ func (os *SqlOrderStore) FilterByOption(option *model.OrderFilterOption) ([]*mod
 	}
 
 	var res model.Orders
-	err = os.GetReplicaX().Select(&res, queryString, args...)
+	err = os.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find orders with given option")
 	}

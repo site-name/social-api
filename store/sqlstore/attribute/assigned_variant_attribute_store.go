@@ -41,7 +41,7 @@ func (as *SqlAssignedVariantAttributeStore) Save(variant *model.AssignedVariantA
 	}
 
 	query := "INSERT INTO " + model.AssignedVariantAttributeTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-	if _, err := as.GetMasterX().NamedExec(query, variant); err != nil {
+	if _, err := as.GetMaster().NamedExec(query, variant); err != nil {
 		if as.IsUniqueConstraintError(err, []string{"VariantID", "AssignmentID", strings.ToLower(model.AssignedVariantAttributeTableName) + "_variantid_assignmentid_key"}) {
 			return nil, store.NewErrInvalidInput(model.AssignedVariantAttributeTableName, "VariantID/AssignmentID", variant.VariantID+"/"+variant.AssignmentID)
 		}
@@ -54,7 +54,7 @@ func (as *SqlAssignedVariantAttributeStore) Save(variant *model.AssignedVariantA
 func (as *SqlAssignedVariantAttributeStore) Get(variantID string) (*model.AssignedVariantAttribute, error) {
 	var res model.AssignedVariantAttribute
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedVariantAttributeTableName+" WHERE Id = ?", variantID)
+	err := as.GetReplica().Get(&res, "SELECT * FROM "+model.AssignedVariantAttributeTableName+" WHERE Id = ?", variantID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedVariantAttributeTableName, variantID)
@@ -108,7 +108,7 @@ func (as *SqlAssignedVariantAttributeStore) GetWithOption(option *model.Assigned
 	}
 
 	var res model.AssignedVariantAttribute
-	err = as.GetReplicaX().Get(
+	err = as.GetReplica().Get(
 		&res,
 		queryString,
 		args...,
@@ -131,7 +131,7 @@ func (as *SqlAssignedVariantAttributeStore) FilterByOption(option *model.Assigne
 	}
 
 	var res []*model.AssignedVariantAttribute
-	err = as.GetReplicaX().Select(&res, queryString, args...)
+	err = as.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find assigned variant attributes by given option")
 	}

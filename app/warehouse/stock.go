@@ -5,11 +5,11 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // BulkUpsertStocks updates or insderts given stock based on its Id property
-func (a *ServiceWarehouse) BulkUpsertStocks(transaction store_iface.SqlxExecutor, stocks []*model.Stock) ([]*model.Stock, *model.AppError) {
+func (a *ServiceWarehouse) BulkUpsertStocks(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, *model.AppError) {
 	stocks, err := a.srv.Store.Stock().BulkUpsert(transaction, stocks)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

@@ -82,7 +82,7 @@ func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, e
 	var err error
 	if isSaving {
 		query := "INSERT INTO " + model.CategoryTableName + "(" + cs.ModelFields("").Join(",") + ") VALUES (" + cs.ModelFields(":").Join(",") + ")"
-		_, err = cs.GetMasterX().NamedExec(query, category)
+		_, err = cs.GetMaster().NamedExec(query, category)
 
 	} else {
 		query := "UPDATE " + model.CategoryTableName + " SET " + cs.
@@ -92,7 +92,7 @@ func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, e
 			}).
 			Join(",") + " WHERE Id=:Id"
 
-		_, err = cs.GetMasterX().NamedExec(query, category)
+		_, err = cs.GetMaster().NamedExec(query, category)
 	}
 	if err != nil {
 		// this error may be caused by category slug duplicate
@@ -135,12 +135,12 @@ func (cs *SqlCategoryStore) commonQueryBuilder(option *model.CategoryFilterOptio
 
 	if option.VoucherID != nil {
 		query = query.
-			InnerJoin("voucher_categories ON voucher_categories.CategoryID = Categories.Id").
+			InnerJoin("VoucherCategories ON VoucherCategories.CategoryID = Categories.Id").
 			Where(option.VoucherID)
 	}
 	if option.SaleID != nil {
 		query = query.
-			InnerJoin(store.SaleCategoryRelationTableName + " ON SaleCategories.CategoryID = Categories.Id").
+			InnerJoin(model.SaleCategoryTableName + " ON SaleCategories.CategoryID = Categories.Id").
 			Where(option.SaleID)
 	}
 	if option.ProductID != nil {
@@ -170,7 +170,7 @@ func (cs *SqlCategoryStore) FilterByOption(option *model.CategoryFilterOption) (
 	}
 
 	var res model.Categories
-	err = cs.GetReplicaX().Select(&res, queryString, args...)
+	err = cs.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find categories with given option")
 	}
@@ -186,8 +186,8 @@ func (cs *SqlCategoryStore) GetByOption(option *model.CategoryFilterOption) (*mo
 	}
 
 	var cate model.Category
-	err = cs.GetReplicaX().
-		QueryRowX(queryString, args...).
+	err = cs.GetReplica().
+		QueryRow(queryString, args...).
 		Scan(cs.ScanFields(&cate)...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

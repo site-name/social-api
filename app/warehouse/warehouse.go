@@ -8,7 +8,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type ServiceWarehouse struct {
@@ -114,7 +114,7 @@ func (s *ServiceWarehouse) CreateWarehouse(warehouse *model.WareHouse) (*model.W
 	return warehouse, nil
 }
 
-func (s *ServiceWarehouse) CreateWarehouseShippingZones(transaction store_iface.SqlxExecutor, relations []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, *model.AppError) {
+func (s *ServiceWarehouse) CreateWarehouseShippingZones(transaction *gorm.DB, relations []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, *model.AppError) {
 	relations, err := s.srv.Store.WarehouseShippingZone().Save(transaction, relations)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

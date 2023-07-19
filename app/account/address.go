@@ -7,7 +7,7 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 func (a *ServiceAccount) AddressById(id string) (*model.Address, *model.AppError) {
@@ -34,7 +34,7 @@ func (a *ServiceAccount) AddressesByOption(option *model.AddressFilterOption) ([
 }
 
 // UpsertAddress depends on given address's Id to decide update or insert it
-func (a *ServiceAccount) UpsertAddress(transaction store_iface.SqlxExecutor, address *model.Address) (*model.Address, *model.AppError) {
+func (a *ServiceAccount) UpsertAddress(transaction *gorm.DB, address *model.Address) (*model.Address, *model.AppError) {
 	_, err := a.srv.Store.Address().Upsert(transaction, address)
 
 	if err != nil {

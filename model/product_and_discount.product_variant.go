@@ -18,27 +18,29 @@ const (
 
 // sort by sku
 type ProductVariant struct {
-	Id                      string                 `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	Name                    string                 `json:"name" gorm:"type:varchar(255)"`
-	ProductID               string                 `json:"product_id"`
-	Sku                     string                 `json:"sku" gorm:"type:varchar(255)"`
-	Weight                  *float32               `json:"weight"`
-	WeightUnit              measurement.WeightUnit `json:"weight_unit"`
-	TrackInventory          *bool                  `json:"track_inventory"` // default *true
-	IsPreOrder              bool                   `json:"is_preorder"`
-	PreorderEndDate         *int64                 `json:"preorder_end_date"`
-	PreOrderGlobalThreshold *int                   `json:"preorder_global_threshold"`
+	Id                      string                 `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid();column:Id"`
+	Name                    string                 `json:"name" gorm:"type:varchar(255);column:Name"` // varchar(255)
+	ProductID               string                 `json:"product_id" gorm:"type:uuid;index:productvariants_productid_index_key;column:ProductID"`
+	Sku                     string                 `json:"sku" gorm:"type:varchar(255);column:Sku"` // varchar(255)
+	Weight                  *float32               `json:"weight" gorm:"column:Weight"`
+	WeightUnit              measurement.WeightUnit `json:"weight_unit" gorm:"column:WeightUnit"`
+	TrackInventory          *bool                  `json:"track_inventory" gorm:"column:TrackInventory"` // default *true
+	IsPreOrder              bool                   `json:"is_preorder" gorm:"column:IsPreOrder"`
+	PreorderEndDate         *int64                 `json:"preorder_end_date" column:"type:bigint;column:PreorderEndDate"`
+	PreOrderGlobalThreshold *int                   `json:"preorder_global_threshold" gorm:"type:smallint;column:PreOrderGlobalThreshold"`
 	Sortable
 	ModelMetadata
 
-	digitalContent         *DigitalContent               `db:"-"` // for storing value returned by prefetching
-	product                *Product                      `db:"-"`
-	stocks                 Stocks                        `db:"-"`
-	variantChannelListings ProductVariantChannelListings `db:"-"`
+	digitalContent         *DigitalContent               `gorm:"-"` // for storing value returned by prefetching
+	product                *Product                      `gorm:"-"`
+	stocks                 Stocks                        `gorm:"-"`
+	variantChannelListings ProductVariantChannelListings `gorm:"-"`
 
-	Sales         Sales         `json:"-" gorm:"many2many:sale_productvariants"`
-	Vouchers      Vouchers      `json:"-" gorm:"many2many:voucherproductvariants"`
-	ProductMedias ProductMedias `json:"-" gorm:"many2many:variant_medias"`
+	Sales             Sales                       `json:"-" gorm:"many2many:SaleProductVariants"`
+	Vouchers          Vouchers                    `json:"-" gorm:"many2many:voucherproductvariants"`
+	ProductMedias     ProductMedias               `json:"-" gorm:"many2many:VariantMedias"`
+	Attributes        []*AssignedVariantAttribute `json:"-" gorm:"foreignKey:VariantID"`
+	AttributesRelated []*AttributeVariant         `json:"-" gorm:"many2many:AssignedVariantAttributes"`
 }
 
 func (p *ProductVariant) BeforeCreate(_ *gorm.DB) error {

@@ -65,10 +65,10 @@ type Voucher struct {
 	UpdateAt                 int64        `json:"update_at"`
 	ModelMetadata
 
-	Products        Products        `json:"-" gorm:"many2many:voucher_products"`
-	Categories      Categories      `json:"-" gorm:"many2many:voucher_categories"`
+	Products        Products        `json:"-" gorm:"many2many:VoucherProducts"`
+	Categories      Categories      `json:"-" gorm:"many2many:VoucherCategories"`
 	ProductVariants ProductVariants `json:"-" gorm:"many2many:voucher_productvariants"`
-	Collections     Collections     `json:"-" gorm:"many2many:voucher_collections"`
+	Collections     Collections     `json:"-" gorm:"many2many:VoucherCollections"`
 }
 
 // VoucherFilterOption

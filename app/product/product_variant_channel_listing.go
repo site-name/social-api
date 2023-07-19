@@ -5,7 +5,7 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // ProductVariantChannelListingsByOption returns a slice of product variant channel listings by given option
@@ -19,7 +19,7 @@ func (a *ServiceProduct) ProductVariantChannelListingsByOption(options *model.Pr
 }
 
 // BulkUpsertProductVariantChannelListings tells store to bulk upserts given product variant channel listings
-func (s *ServiceProduct) BulkUpsertProductVariantChannelListings(transaction store_iface.SqlxExecutor, listings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, *model.AppError) {
+func (s *ServiceProduct) BulkUpsertProductVariantChannelListings(transaction *gorm.DB, listings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, *model.AppError) {
 	variantChannelListings, err := s.srv.Store.ProductVariantChannelListing().BulkUpsert(transaction, listings)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

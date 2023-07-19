@@ -38,7 +38,7 @@ func (as *SqlAttributeProductStore) Save(attributeProduct *model.AttributeProduc
 
 	query := "INSERT INTO " + model.AttributeProductTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
 
-	_, err := as.GetMasterX().NamedExec(query, attributeProduct)
+	_, err := as.GetMaster().NamedExec(query, attributeProduct)
 	if err != nil {
 		if as.IsUniqueConstraintError(err, []string{"attributeproducts_attributeid_producttypeid_key", "AttributeID", "ProductTypeID"}) {
 			return nil, store.NewErrInvalidInput(model.AttributeProductTableName, "AttributeID/ProductTypeID", attributeProduct.AttributeID+"/"+attributeProduct.ProductTypeID)
@@ -52,7 +52,7 @@ func (as *SqlAttributeProductStore) Save(attributeProduct *model.AttributeProduc
 func (as *SqlAttributeProductStore) Get(id string) (*model.AttributeProduct, error) {
 	var res model.AttributeProduct
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AttributeProductTableName+" WHERE Id = ?", id)
+	err := as.GetReplica().Get(&res, "SELECT * FROM "+model.AttributeProductTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributeProductTableName, id)
@@ -65,7 +65,7 @@ func (as *SqlAttributeProductStore) Get(id string) (*model.AttributeProduct, err
 
 func (s *SqlAttributeProductStore) commonQueryBuilder(option *model.AttributeProductFilterOption) squirrel.SelectBuilder {
 	query := s.GetQueryBuilder().
-		Select("*").
+		Select(s.ModelFields(model.AttributeProductTableName + ".")...).
 		From(model.AttributeProductTableName)
 
 	// parse option
@@ -90,7 +90,7 @@ func (as *SqlAttributeProductStore) GetByOption(option *model.AttributeProductFi
 	}
 
 	var attributeProduct model.AttributeProduct
-	err = as.GetReplicaX().Get(
+	err = as.GetReplica().Get(
 		&attributeProduct,
 		queryString,
 		args...,
@@ -112,7 +112,7 @@ func (s *SqlAttributeProductStore) FilterByOptions(option *model.AttributeProduc
 	}
 
 	var res []*model.AttributeProduct
-	err = s.GetReplicaX().Select(&res, queryString, args...)
+	err = s.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attribute products by given options")
 	}

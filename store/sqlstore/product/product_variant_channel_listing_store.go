@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -61,7 +60,7 @@ func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *mode
 	}
 
 	query := "INSERT INTO " + model.ProductVariantChannelListingTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
-	_, err := ps.GetMasterX().NamedExec(query, variantChannelListing)
+	_, err := ps.GetMaster().NamedExec(query, variantChannelListing)
 	if err != nil {
 		if ps.IsUniqueConstraintError(err, []string{"VariantID", "ChannelID", "productvariantchannellistings_variantid_channelid_key"}) {
 			return nil, store.NewErrNotFound(model.ProductVariantChannelListingTableName, variantChannelListing.Id)
@@ -76,7 +75,7 @@ func (ps *SqlProductVariantChannelListingStore) Save(variantChannelListing *mode
 func (ps *SqlProductVariantChannelListingStore) Get(variantChannelListingID string) (*model.ProductVariantChannelListing, error) {
 	var res model.ProductVariantChannelListing
 
-	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.ProductVariantChannelListingTableName+" WHERE Id = ?", variantChannelListingID)
+	err := ps.GetReplica().Get(&res, "SELECT * FROM "+model.ProductVariantChannelListingTableName+" WHERE Id = ?", variantChannelListingID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductVariantChannelListingTableName, variantChannelListingID)
@@ -156,7 +155,7 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *model.Pro
 		return nil, errors.Wrap(err, "FilterbyOption_ToSql")
 	}
 
-	rows, err := ps.GetReplicaX().QueryX(queryString, args...)
+	rows, err := ps.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product variant channel listings")
 	}
@@ -210,11 +209,11 @@ func (ps *SqlProductVariantChannelListingStore) FilterbyOption(option *model.Pro
 }
 
 // BulkUpsert performs bulk upsert given product variant channel listings then returns them
-func (ps *SqlProductVariantChannelListingStore) BulkUpsert(transaction store_iface.SqlxExecutor, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
+func (ps *SqlProductVariantChannelListingStore) BulkUpsert(transaction *gorm.DB, variantChannelListings []*model.ProductVariantChannelListing) ([]*model.ProductVariantChannelListing, error) {
 	var (
-		executor    store_iface.SqlxExecutor = ps.GetMasterX()
-		saveQuery                            = "INSERT INTO " + model.ProductVariantChannelListingTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
-		updateQuery                          = "UPDATE " + model.ProductVariantChannelListingTableName + " SET " + ps.
+		executor    *gorm.DB = ps.GetMaster()
+		saveQuery            = "INSERT INTO " + model.ProductVariantChannelListingTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
+		updateQuery          = "UPDATE " + model.ProductVariantChannelListingTableName + " SET " + ps.
 				ModelFields("").
 				Map(func(_ int, s string) string {
 				return s + "=:" + s

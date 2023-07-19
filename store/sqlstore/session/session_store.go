@@ -55,7 +55,7 @@ func (me *SqlSessionStore) Save(session *model.Session) (*model.Session, error) 
 	}
 
 	query := "INSERT INTO Sessions (" + me.ModelFields("").Join(",") + ") VALUES (" + me.ModelFields(":").Join(",") + ")"
-	if _, err := me.GetMasterX().NamedExec(query, session); err != nil {
+	if _, err := me.GetMaster().NamedExec(query, session); err != nil {
 		return nil, errors.Wrapf(err, "failed to save Session with id=%s", session.Id)
 	}
 
@@ -75,7 +75,7 @@ func (me *SqlSessionStore) Get(ctx context.Context, sessionIdOrToken string) (*m
 func (me *SqlSessionStore) GetSessions(userId string) ([]*model.Session, error) {
 	var sessions []*model.Session
 
-	if err := me.GetReplicaX().Select(&sessions, "SELECT * FROM Sessions WHERE UserId = ? ORDER BY LastActivityAt DESC", userId); err != nil {
+	if err := me.GetReplica().Select(&sessions, "SELECT * FROM Sessions WHERE UserId = ? ORDER BY LastActivityAt DESC", userId); err != nil {
 		return nil, errors.Wrapf(err, "failed to find Sessions with userId=%s", userId)
 	}
 
@@ -84,7 +84,7 @@ func (me *SqlSessionStore) GetSessions(userId string) ([]*model.Session, error) 
 
 func (me *SqlSessionStore) GetSessionsWithActiveDeviceIds(userId string) ([]*model.Session, error) {
 	var sessions []*model.Session
-	err := me.GetReplicaX().
+	err := me.GetReplica().
 		Select(&sessions, `SELECT * FROM Sessions WHERE UserId = ? AND ExpiresAt != 0 AND ExpiresAt >= ? AND DeviceId != ''`, userId, model.GetMillis())
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find Sessions with userId=%s", userId)
@@ -114,7 +114,7 @@ func (me *SqlSessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly 
 	}
 	var sessions []*model.Session
 
-	err = me.GetReplicaX().Select(&sessions, queryStr, args...)
+	err = me.GetReplica().Select(&sessions, queryStr, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find Sessions")
 	}
@@ -122,7 +122,7 @@ func (me *SqlSessionStore) GetSessionsExpired(thresholdMillis int64, mobileOnly 
 }
 
 func (me *SqlSessionStore) UpdateExpiredNotify(sessionId string, notified bool) error {
-	_, err := me.GetMasterX().Exec("UPDATE Sessions SET ExpiredNotify = ? WHERE Id = ?", notified, sessionId)
+	_, err := me.GetMaster().Exec("UPDATE Sessions SET ExpiredNotify = ? WHERE Id = ?", notified, sessionId)
 	if err != nil {
 		return errors.Wrapf(err, "failed to update Session with id=%s", sessionId)
 	}
@@ -130,7 +130,7 @@ func (me *SqlSessionStore) UpdateExpiredNotify(sessionId string, notified bool) 
 }
 
 func (me *SqlSessionStore) Remove(sessionIdOrToken string) error {
-	_, err := me.GetMasterX().Exec("DELETE FROM Sessions WHERE Id = ? Or Token = ?", sessionIdOrToken, sessionIdOrToken)
+	_, err := me.GetMaster().Exec("DELETE FROM Sessions WHERE Id = ? Or Token = ?", sessionIdOrToken, sessionIdOrToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to delete Session with sessionIdOrToken=%s", sessionIdOrToken)
 	}
@@ -138,7 +138,7 @@ func (me *SqlSessionStore) Remove(sessionIdOrToken string) error {
 }
 
 func (me *SqlSessionStore) RemoveAllSessions() error {
-	_, err := me.GetMasterX().Exec("DELETE FROM Sessions")
+	_, err := me.GetMaster().Exec("DELETE FROM Sessions")
 	if err != nil {
 		return errors.Wrap(err, "failed to delete all Sessions")
 	}
@@ -146,7 +146,7 @@ func (me *SqlSessionStore) RemoveAllSessions() error {
 }
 
 func (me *SqlSessionStore) PermanentDeleteSessionsByUser(userId string) error {
-	_, err := me.GetMasterX().Exec("DELETE FROM Sessions WHERE UserId = ?", userId)
+	_, err := me.GetMaster().Exec("DELETE FROM Sessions WHERE UserId = ?", userId)
 	if err != nil {
 		return errors.Wrapf(err, "failed to delete Session with userId=%s", userId)
 	}
@@ -155,7 +155,7 @@ func (me *SqlSessionStore) PermanentDeleteSessionsByUser(userId string) error {
 }
 
 func (me *SqlSessionStore) UpdateExpiresAt(sessionId string, time int64) error {
-	_, err := me.GetMasterX().Exec("UPDATE Sessions SET ExpiresAt = ?, ExpiredNotify = false WHERE Id = ?", time, sessionId)
+	_, err := me.GetMaster().Exec("UPDATE Sessions SET ExpiresAt = ?, ExpiredNotify = false WHERE Id = ?", time, sessionId)
 	if err != nil {
 		return errors.Wrapf(err, "failed to update Session with sessionId=%s", sessionId)
 	}
@@ -163,7 +163,7 @@ func (me *SqlSessionStore) UpdateExpiresAt(sessionId string, time int64) error {
 }
 
 func (me *SqlSessionStore) UpdateLastActivityAt(sessionId string, time int64) error {
-	_, err := me.GetMasterX().Exec("UPDATE Sessions SET LastActivityAt = ? WHERE Id = ?", time, sessionId)
+	_, err := me.GetMaster().Exec("UPDATE Sessions SET LastActivityAt = ? WHERE Id = ?", time, sessionId)
 	if err != nil {
 		return errors.Wrapf(err, "failed to update Session with id=%s", sessionId)
 	}
@@ -171,7 +171,7 @@ func (me *SqlSessionStore) UpdateLastActivityAt(sessionId string, time int64) er
 }
 
 func (me *SqlSessionStore) UpdateRoles(userId, roles string) (string, error) {
-	_, err := me.GetMasterX().Exec(
+	_, err := me.GetMaster().Exec(
 		"UPDATE Sessions SET Roles = ? WHERE UserId = ?",
 		roles,
 		userId,
@@ -183,7 +183,7 @@ func (me *SqlSessionStore) UpdateRoles(userId, roles string) (string, error) {
 }
 
 func (me *SqlSessionStore) UpdateDeviceId(id string, deviceId string, expiresAt int64) (string, error) {
-	_, err := me.GetMasterX().Exec(
+	_, err := me.GetMaster().Exec(
 		"UPDATE Sessions SET DeviceId = ?, ExpiresAt = ?, ExpiredNotify = false WHERE Id = ?",
 		deviceId,
 		expiresAt,
@@ -196,7 +196,7 @@ func (me *SqlSessionStore) UpdateDeviceId(id string, deviceId string, expiresAt 
 }
 
 func (me *SqlSessionStore) UpdateProps(session *model.Session) error {
-	res, err := me.GetMasterX().Exec("UPDATE Sessions SET Props = ? WHERE Id = ?", session.Props, session.Id)
+	res, err := me.GetMaster().Exec("UPDATE Sessions SET Props = ? WHERE Id = ?", session.Props, session.Id)
 	if err != nil {
 		return errors.Wrap(err, "failed to update session")
 	}
@@ -211,7 +211,7 @@ func (me *SqlSessionStore) UpdateProps(session *model.Session) error {
 
 func (me *SqlSessionStore) AnalyticsSessionCount() (int64, error) {
 	var count int64
-	err := me.GetMasterX().
+	err := me.GetMaster().
 		Get(&count, "SELECT COUNT(*) FROM Sessions WHERE ExpiresAt > ?", model.GetMillis())
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count Sessions")
@@ -225,7 +225,7 @@ func (me *SqlSessionStore) Cleanup(expiryTime int64, batchSize int64) {
 
 	var RowsAffected int64 = 1
 	for RowsAffected > 0 {
-		res, err := me.GetMasterX().
+		res, err := me.GetMaster().
 			Exec(
 				"DELETE FROM Sessions WHERE Id = any (array (SELECT Id FROM Sessions WHERE ExpiresAt != 0 AND ExpiresAt < ? LIMIT ?))",
 				expiryTime, batchSize)

@@ -18,7 +18,7 @@ func NewSqlOpenExchangeRateStore(s store.Store) store.OpenExchangeRateStore {
 
 // BulkUpsert performs bulk update/insert to given exchange rates
 func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) ([]*model.OpenExchangeRate, error) {
-	transaction, err := os.GetMasterX().Beginx()
+	transaction, err := os.GetMaster().Begin()
 	if err != nil {
 		return nil, errors.Wrap(err, "transaction_begin")
 	}
@@ -30,11 +30,10 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) 
 			isSaving bool
 		)
 		// try lookup:
-		err := transaction.
-			QueryRowX(
-				"SELECT * FROM "+model.OpenExchangeRateTableName+" WHERE ToCurrency = $1 FOR UPDATE",
-				rate.ToCurrency,
-			).
+		err := transaction.QueryRow(
+			"SELECT * FROM "+model.OpenExchangeRateTableName+" WHERE ToCurrency = $1 FOR UPDATE",
+			rate.ToCurrency,
+		).
 			Scan(&oldRate.Id, &oldRate.ToCurrency, &oldRate.Rate)
 		if err != nil {
 			if err != sql.ErrNoRows {
@@ -79,7 +78,7 @@ func (os *SqlOpenExchangeRateStore) BulkUpsert(rates []*model.OpenExchangeRate) 
 // GetAll returns all exchange currency rates
 func (os *SqlOpenExchangeRateStore) GetAll() ([]*model.OpenExchangeRate, error) {
 	var res []*model.OpenExchangeRate
-	err := os.GetReplicaX().Select(
+	err := os.GetReplica().Select(
 		&res,
 		"SELECT * FROM "+model.OpenExchangeRateTableName+" ORDER BY ToCurrency ASC",
 	)

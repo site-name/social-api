@@ -239,7 +239,7 @@ func (r *Resolver) AccountUpdate(ctx context.Context, args struct{ Input Account
 		user.LastName = *val
 	}
 	if val := args.Input.LanguageCode; val != nil && val.IsValid() {
-		user.Locale = *val
+		user.Locale = val.String()
 	}
 	// save user
 	user, appErr = embedCtx.App.Srv().AccountService().UpdateUser(user, false)

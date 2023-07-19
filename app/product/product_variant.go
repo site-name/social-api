@@ -8,7 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // ProductVariantById finds product variant by given id
@@ -111,7 +111,7 @@ func (a *ServiceProduct) ProductVariantsAvailableInChannel(channelSlug string) (
 }
 
 // UpsertProductVariant tells store to upsert given product variant and returns it
-func (s *ServiceProduct) UpsertProductVariant(transaction store_iface.SqlxExecutor, variant *model.ProductVariant) (*model.ProductVariant, *model.AppError) {
+func (s *ServiceProduct) UpsertProductVariant(transaction *gorm.DB, variant *model.ProductVariant) (*model.ProductVariant, *model.AppError) {
 	var (
 		upsertedVariant *model.ProductVariant
 		err             error

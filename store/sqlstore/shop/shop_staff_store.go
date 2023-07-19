@@ -56,7 +56,7 @@ func (sss *SqlShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.ShopStaff
 	}
 
 	query := "INSERT INTO " + model.ShopStaffTableName + "(" + sss.ModelFields("").Join(",") + ") VALUES (" + sss.ModelFields(":").Join(",") + ")"
-	if _, err := sss.GetMasterX().NamedExec(query, shopStaff); err != nil {
+	if _, err := sss.GetMaster().NamedExec(query, shopStaff); err != nil {
 		return nil, errors.Wrapf(err, "failed to save shop-staff relation with id=%s", shopStaff.Id)
 	}
 
@@ -66,7 +66,7 @@ func (sss *SqlShopStaffStore) Save(shopStaff *model.ShopStaff) (*model.ShopStaff
 // Get finds a shop staff with given id then returns it with an error
 func (sss *SqlShopStaffStore) Get(shopStaffID string) (*model.ShopStaff, error) {
 	var res model.ShopStaff
-	err := sss.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShopStaffTableName+" WHERE Id = ?", shopStaffID)
+	err := sss.GetReplica().Get(&res, "SELECT * FROM "+model.ShopStaffTableName+" WHERE Id = ?", shopStaffID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShopStaffTableName, shopStaffID)
@@ -107,7 +107,7 @@ func (s *SqlShopStaffStore) FilterByOptions(options *model.ShopStaffFilterOption
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	rows, err := s.GetReplicaX().QueryX(queryString, args...)
+	rows, err := s.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shop staff relations with given opsitons")
 	}
@@ -150,7 +150,7 @@ func (s *SqlShopStaffStore) GetByOptions(options *model.ShopStaffFilterOptions) 
 		scanFields = append(scanFields, s.User().ScanFields(&staff))
 	}
 
-	err = s.GetReplicaX().QueryRowX(queryString, args...).Scan(scanFields...)
+	err = s.GetReplica().QueryRow(queryString, args...).Scan(scanFields...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("ShopStaffs", "options")

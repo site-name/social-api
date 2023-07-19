@@ -6,7 +6,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlShippingMethodPostalCodeRuleStore struct {
@@ -60,7 +60,7 @@ func (s *SqlShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.Sh
 	}
 
 	var res []*model.ShippingMethodPostalCodeRule
-	err = s.GetReplicaX().Select(&res, queryStr, args...)
+	err = s.GetReplica().Select(&res, queryStr, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping method postal code rules by given options")
 	}
@@ -68,13 +68,13 @@ func (s *SqlShippingMethodPostalCodeRuleStore) FilterByOptions(options *model.Sh
 	return res, nil
 }
 
-func (s *SqlShippingMethodPostalCodeRuleStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
+func (s *SqlShippingMethodPostalCodeRuleStore) Delete(transaction *gorm.DB, ids ...string) error {
 	query, args, err := s.GetQueryBuilder().Delete(model.ShippingMethodPostalCodeRuleTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
 	if err != nil {
 		return errors.Wrap(err, "Delete_ToSql")
 	}
 
-	runner := s.GetMasterX()
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -91,10 +91,10 @@ func (s *SqlShippingMethodPostalCodeRuleStore) Delete(transaction store_iface.Sq
 	return nil
 }
 
-func (s *SqlShippingMethodPostalCodeRuleStore) Save(transaction store_iface.SqlxExecutor, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
+func (s *SqlShippingMethodPostalCodeRuleStore) Save(transaction *gorm.DB, rules model.ShippingMethodPostalCodeRules) (model.ShippingMethodPostalCodeRules, error) {
 	query := "INSERT INTO " + model.ShippingMethodPostalCodeRuleTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
 
-	runner := s.GetMasterX()
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}

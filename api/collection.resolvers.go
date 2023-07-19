@@ -48,7 +48,7 @@ func (r *Resolver) CollectionAddProducts(ctx context.Context, args struct {
 		return nil, model.NewAppError("CollectionAddProducts", "api.collection.cannot_add_products_without_variants.app_error", nil, "Cannot manage products without variants.", http.StatusBadRequest)
 	}
 
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("CollectionAddProducts", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -254,7 +254,7 @@ func (r *Resolver) CollectionChannelListingUpdate(ctx context.Context, args stru
 	embedCtx := GetContextValue[*web.Context](ctx, WebCtx)
 
 	// begin transaction:
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("CollectionChannelListingUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}

@@ -9,7 +9,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -81,7 +80,7 @@ func (as *SqlAttributeValueStore) Upsert(av *model.AttributeValue) (*model.Attri
 	)
 	if isSaving {
 		query := "INSERT INTO " + model.AttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-		_, err = as.GetMasterX().NamedExec(query, av)
+		_, err = as.GetMaster().NamedExec(query, av)
 
 	} else {
 		query := "UPDATE " + model.AttributeValueTableName + " SET " +
@@ -92,7 +91,7 @@ func (as *SqlAttributeValueStore) Upsert(av *model.AttributeValue) (*model.Attri
 				Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = as.GetMasterX().NamedExec(query, av)
+		result, err = as.GetMaster().NamedExec(query, av)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -115,7 +114,7 @@ func (as *SqlAttributeValueStore) Upsert(av *model.AttributeValue) (*model.Attri
 func (as *SqlAttributeValueStore) Get(id string) (*model.AttributeValue, error) {
 	var res model.AttributeValue
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
+	err := as.GetReplica().Get(&res, "SELECT * FROM "+model.AttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": id})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributeValueTableName, id)
@@ -128,7 +127,7 @@ func (as *SqlAttributeValueStore) Get(id string) (*model.AttributeValue, error) 
 
 // FilterByOptions finds and returns all matched attribute values based on given options
 func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFilterOptions) (model.AttributeValues, error) {
-	var executor store_iface.SqlxExecutor = as.GetReplicaX()
+	var executor *gorm.DB = as.GetReplica()
 	if options.Transaction != nil {
 		executor = options.Transaction
 	}
@@ -166,7 +165,7 @@ func (as *SqlAttributeValueStore) FilterByOptions(options model.AttributeValueFi
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	rows, err := executor.QueryX(queryString, args...)
+	rows, err := executor.Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attribute values")
 	}
@@ -208,7 +207,7 @@ func (as *SqlAttributeValueStore) Delete(ids ...string) (int64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "Delete_ToSql")
 	}
-	res, err := as.GetMasterX().Exec(query, args...)
+	res, err := as.GetMaster().Exec(query, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to delete attribute values")
 	}
@@ -221,8 +220,8 @@ func (as *SqlAttributeValueStore) Delete(ids ...string) (int64, error) {
 	return numDeleted, nil
 }
 
-func (as *SqlAttributeValueStore) BulkUpsert(transaction store_iface.SqlxExecutor, values model.AttributeValues) (model.AttributeValues, error) {
-	var executor store_iface.SqlxExecutor = as.GetMasterX()
+func (as *SqlAttributeValueStore) BulkUpsert(transaction *gorm.DB, values model.AttributeValues) (model.AttributeValues, error) {
+	var executor *gorm.DB = as.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -300,7 +299,7 @@ func (as *SqlAttributeValueStore) Count(options *model.AttributeValueFilterOptio
 	}
 
 	var count int64
-	err = as.GetReplicaX().Get(&count, queryStr, args...)
+	err = as.GetReplica().Get(&count, queryStr, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count number of attribute value with given options")
 	}

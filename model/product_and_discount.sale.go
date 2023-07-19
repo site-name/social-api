@@ -27,10 +27,10 @@ type Sale struct {
 	UpdateAt  int64        `json:"update_at" gorm:"autoUpdateTime:milli"`
 	ModelMetadata
 
-	Categories      Categories      `json:"-" gorm:"many2many:sale_categories"`
-	Products        Products        `json:"-" gorm:"many2many:sale_products"`
-	ProductVariants ProductVariants `json:"-" gorm:"many2many:sale_productvariants"`
-	Collections     Collections     `json:"-" gorm:"many2many:sale_collections"`
+	Categories      Categories      `json:"-" gorm:"many2many:SaleCategories"`
+	Products        Products        `json:"-" gorm:"many2many:SaleProducts"`
+	ProductVariants ProductVariants `json:"-" gorm:"many2many:SaleProductVariants"`
+	Collections     Collections     `json:"-" gorm:"many2many:SaleCollections"`
 }
 
 type SaleCollection struct {

@@ -7,7 +7,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 )
 
 // CollectionsByOption returns all collections that satisfy given option.
@@ -25,7 +24,7 @@ func (a *ServiceProduct) CollectionsByOption(option *model.CollectionFilterOptio
 // CollectionsByVoucherID finds all collections that have relationships with given voucher
 func (a *ServiceProduct) CollectionsByVoucherID(voucherID string) ([]*model.Collection, *model.AppError) {
 	return a.CollectionsByOption(&model.CollectionFilterOption{
-		VoucherID: squirrel.Eq{store.VoucherCollectionTableName + ".VoucherID": voucherID},
+		VoucherID: squirrel.Eq{model.VoucherCollectionTableName + ".VoucherID": voucherID},
 	})
 }
 

@@ -55,7 +55,7 @@ func (as *SqlAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *
 	}
 
 	query := "INSERT INTO " + model.AssignedVariantAttributeValueTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-	if _, err := as.GetMasterX().NamedExec(query, assignedVariantAttrValue); err != nil {
+	if _, err := as.GetMaster().NamedExec(query, assignedVariantAttrValue); err != nil {
 		if as.IsUniqueConstraintError(err, assignedVariantAttrValueDuplicateKeys) {
 			return nil, store.NewErrInvalidInput(model.AssignedVariantAttributeValueTableName, "ValueID/AssignmentID", assignedVariantAttrValue.ValueID+"/"+assignedVariantAttrValue.AssignmentID)
 		}
@@ -68,7 +68,7 @@ func (as *SqlAssignedVariantAttributeValueStore) Save(assignedVariantAttrValue *
 func (as *SqlAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID string) (*model.AssignedVariantAttributeValue, error) {
 	var res model.AssignedVariantAttributeValue
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedVariantAttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": assignedVariantAttrValueID})
+	err := as.GetReplica().Get(&res, "SELECT * FROM "+model.AssignedVariantAttributeValueTableName+" WHERE Id = :ID", map[string]interface{}{"ID": assignedVariantAttrValueID})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedVariantAttributeValueTableName, assignedVariantAttrValueID)
@@ -80,7 +80,7 @@ func (as *SqlAssignedVariantAttributeValueStore) Get(assignedVariantAttrValueID 
 }
 
 func (as *SqlAssignedVariantAttributeValueStore) SaveInBulk(assignmentID string, attributeValueIDs []string) ([]*model.AssignedVariantAttributeValue, error) {
-	tx, err := as.GetMasterX().Beginx()
+	tx, err := as.GetMaster().Begin()
 	if err != nil {
 		return nil, errors.Wrapf(err, "begin_transaction")
 	}
@@ -131,7 +131,7 @@ func (as *SqlAssignedVariantAttributeValueStore) SelectForSort(assignmentID stri
 		return nil, nil, errors.Wrap(err, "SelectForSort_ToSql")
 	}
 
-	rows, err := as.GetReplicaX().QueryX(query, args...)
+	rows, err := as.GetReplica().Query(query, args...)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "failed to find values with AssignmentID=%s", assignmentID)
 	}
@@ -178,7 +178,7 @@ func (as *SqlAssignedVariantAttributeValueStore) UpdateInBulk(attributeValues []
 			return err
 		}
 
-		result, err := as.GetMasterX().NamedExec(query, value)
+		result, err := as.GetMaster().NamedExec(query, value)
 		if err != nil {
 			// check if error is duplicate conflict error:
 			if as.IsUniqueConstraintError(err, assignedVariantAttrValueDuplicateKeys) {
@@ -209,7 +209,7 @@ func (s *SqlAssignedVariantAttributeValueStore) FilterByOptions(options *model.A
 	}
 
 	var res []*model.AssignedVariantAttributeValue
-	err = s.GetReplicaX().Select(&res, queryString, args...)
+	err = s.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find assigned variant attribute values by given options")
 	}

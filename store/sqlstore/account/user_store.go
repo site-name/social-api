@@ -12,7 +12,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -142,20 +141,17 @@ func (us *SqlUserStore) GetUnreadCount(userID string) (int64, error) {
 func (us *SqlUserStore) DeactivateGuests() ([]string, error) {
 	curTime := model.GetMillis()
 
-	err := us.GetMaster().
-		Table(model.UserTableName).
-		Where("Roles = ? AND DeleteAt = 0", "system_guest").
-		Updates(map[string]any{"DeleteAt": curTime}).Error
+	err := us.GetMaster().Table(model.UserTableName).
+		Where("Roles = ? AND DeleteAt = ?", "system_guest", 0).
+		Updates(&model.User{DeleteAt: curTime}).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to update Users with roles=system_guest")
 	}
 
 	userIds := []string{}
 	err = us.GetMaster().
-		Table(model.UserTableName).
-		Where("DeleteAt = ?", curTime).
-		Select("Id").
-		Find(&userIds).Error
+		Raw("SELECT Id FROM "+model.UserTableName+" WHERE DeleteAt = ?", curTime).
+		Scan(&userIds).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find Users")
 	}
@@ -187,23 +183,16 @@ func (us *SqlUserStore) ResetAuthDataToEmailForUsers(service string, userIDs []s
 			return 0, errors.Wrap(err, "select_count_users_tosql")
 		}
 		var numAffected int
-		err = us.GetReplica().Se(&numAffected, query, args...)
+		err = us.GetReplica().Raw(query, args...).Scan(&numAffected).Error
 		return numAffected, err
 	}
-	builder := us.GetQueryBuilder().
-		Update("Users").
-		Set("AuthData", "Email").
-		Where(whereEquals)
-	query, args, err := builder.ToSql()
-	if err != nil {
-		return 0, errors.Wrap(err, "update_users_tosql")
+
+	cond, args, _ := whereEquals.ToSql()
+	result := us.GetMaster().Table(model.UserTableName).Where(cond, args...).Updates(map[string]any{"AuthData": "Email"})
+	if result.Error != nil {
+		return 0, errors.Wrap(result.Error, "failed to update users' AuthData")
 	}
-	result, err := us.GetMasterX().Exec(query, args...)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to update users' AuthData")
-	}
-	numAffected, err := result.RowsAffected()
-	return int(numAffected), err
+	return int(result.RowsAffected), nil
 }
 
 func (us *SqlUserStore) InvalidateProfileCacheForUser(userId string) {}
@@ -214,7 +203,7 @@ func (us *SqlUserStore) GetEtagForProfiles(teamId string) string {
 
 func (us *SqlUserStore) GetEtagForAllProfiles() string {
 	var updateAt int64
-	err := us.GetReplica().Table(model.UserTableName).Select("UpdateAt").Order("UpdateAt DESC").First(&updateAt).Error
+	err := us.GetReplica().Raw("SELECT UpdateAt FROM " + model.UserTableName + " ORDER BY UpdateAt DESC LIMIT 1").Scan(&updateAt).Error
 	if err != nil {
 		return fmt.Sprintf("%v.%v", model.CurrentVersion, model.GetMillis())
 	}
@@ -300,7 +289,7 @@ func (us *SqlUserStore) Update(user *model.User, trustedUpdateData bool) (*model
 
 func (us *SqlUserStore) UpdateLastPictureUpdate(userId string) error {
 	now := model.GetMillis()
-	if _, err := us.GetMasterX().Exec("UPDATE "+model.UserTableName+" SET LastPictureUpdate = ?, UpdateAt = ? WHERE Id = ?", now, now, userId); err != nil {
+	if err := us.GetMaster().Raw("UPDATE "+model.UserTableName+" SET LastPictureUpdate = ? WHERE Id = ?", now, userId).Error; err != nil {
 		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
 	}
 
@@ -308,8 +297,7 @@ func (us *SqlUserStore) UpdateLastPictureUpdate(userId string) error {
 }
 
 func (us *SqlUserStore) ResetLastPictureUpdate(userId string) error {
-	now := model.GetMillis()
-	if _, err := us.GetMasterX().Exec("UPDATE "+model.UserTableName+" SET LastPictureUpdate = ?, UpdateAt = ? WHERE Id = ?", 0, now, userId); err != nil {
+	if err := us.GetMaster().Raw("UPDATE "+model.UserTableName+" SET LastPictureUpdate = ? WHERE Id = ?", 0, userId).Error; err != nil {
 		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
 	}
 
@@ -318,7 +306,7 @@ func (us *SqlUserStore) ResetLastPictureUpdate(userId string) error {
 
 func (us *SqlUserStore) UpdateUpdateAt(userId string) (int64, error) {
 	now := model.GetMillis()
-	if _, err := us.GetMasterX().Exec("UPDATE "+model.UserTableName+" SET UpdateAt = ? WHERE Id = ?", now, userId); err != nil {
+	if err := us.GetMaster().Raw("UPDATE "+model.UserTableName+" SET UpdateAt = ? WHERE Id = ?", now, userId).Error; err != nil {
 		return now, errors.Wrapf(err, "failed to update User with userId=%s", userId)
 	}
 
@@ -327,13 +315,12 @@ func (us *SqlUserStore) UpdateUpdateAt(userId string) (int64, error) {
 
 func (us *SqlUserStore) UpdatePassword(userId, hashedPassword string) error {
 	now := model.GetMillis()
-	if _, err := us.GetMasterX().
-		Exec("UPDATE "+model.UserTableName+" SET Password = ?, LastPasswordUpdate = ?, UpdateAt = ?, AuthData = NULL, AuthService = '', FailedAttempts = 0 WHERE Id = ?",
+	if err := us.GetMaster().
+		Exec("UPDATE "+model.UserTableName+" SET Password = ?, LastPasswordUpdate = ?, AuthData = NULL, AuthService = '', FailedAttempts = 0 WHERE Id = ?",
 			hashedPassword,
 			now,
-			now,
 			userId,
-		); err != nil {
+		).Error; err != nil {
 		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
 	}
 
@@ -341,10 +328,10 @@ func (us *SqlUserStore) UpdatePassword(userId, hashedPassword string) error {
 }
 
 func (us *SqlUserStore) UpdateFailedPasswordAttempts(userId string, attempts int) error {
-	if _, err := us.GetMasterX().Exec(
+	if err := us.GetMaster().Raw(
 		"UPDATE "+model.UserTableName+" SET FailedAttempts = ? WHERE Id = ?",
 		attempts, userId,
-	); err != nil {
+	).Error; err != nil {
 		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
 	}
 	return nil
@@ -370,8 +357,7 @@ func (us *SqlUserStore) UpdateAuthData(userId string, service string, authData *
 	}
 	query += " WHERE Id = ?"
 
-	if _, err := us.
-		GetMasterX().Exec(query, updateAt, updateAt, service, authData, email, userId); err != nil {
+	if err := us.GetMaster().Raw(query, updateAt, updateAt, service, authData, email, userId).Error; err != nil {
 		if us.IsUniqueConstraintError(err, []string{"Email", "users_email_key", "idx_users_email_unique", "AuthData", "users_authdata_key"}) {
 			return "", store.NewErrInvalidInput("User", "id", userId)
 		}
@@ -384,8 +370,7 @@ func (us *SqlUserStore) UpdateAuthData(userId string, service string, authData *
 func (us *SqlUserStore) UpdateMfaSecret(userId, secret string) error {
 	updateAt := model.GetMillis()
 
-	if _, err := us.
-		GetMasterX().Exec("UPDATE "+model.UserTableName+" SET MfaSecret = ?, UpdateAt = ? WHERE Id = ?", secret, updateAt, userId); err != nil {
+	if err := us.GetMaster().Raw("UPDATE "+model.UserTableName+" SET MfaSecret = ?, UpdateAt = ? WHERE Id = ?", secret, updateAt, userId).Error; err != nil {
 		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
 	}
 
@@ -394,7 +379,7 @@ func (us *SqlUserStore) UpdateMfaSecret(userId, secret string) error {
 
 func (us *SqlUserStore) UpdateMfaActive(userId string, active bool) error {
 	updateAt := model.GetMillis()
-	if _, err := us.GetMasterX().Exec("UPDATE "+model.UserTableName+" SET MfaActive = ?, UpdateAt = ? WHERE Id = ?", active, updateAt, userId); err != nil {
+	if err := us.GetMaster().Raw("UPDATE "+model.UserTableName+" SET MfaActive = ?, UpdateAt = ? WHERE Id = ?", active, updateAt, userId).Error; err != nil {
 		return errors.Wrapf(err, "failed to update User with userId=%s", userId)
 	}
 
@@ -419,7 +404,7 @@ func (us *SqlUserStore) GetProfileByIds(ctx context.Context, userIds []string, o
 		return nil, errors.Wrap(err, "get_profile_by_ids_tosql")
 	}
 
-	if err := us.DBXFromContext(ctx).Select(&users, queryString, args...); err != nil {
+	if err := us.DBXFromContext(ctx).Raw(queryString, args...).Find(&users).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to find Users")
 	}
 
@@ -434,7 +419,7 @@ func (us *SqlUserStore) GetSystemAdminProfiles() (map[string]*model.User, error)
 	}
 
 	var users []*model.User
-	if err := us.GetReplicaX().Select(&users, queryString, args...); err != nil {
+	if err := us.GetReplica().Raw(queryString, args...).Find(&users).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to find Users")
 	}
 
@@ -465,7 +450,7 @@ func (us *SqlUserStore) GetForLogin(loginId string, allowSignInWithUsername, all
 	}
 
 	users := []*model.User{}
-	if err := us.GetReplicaX().Select(&users, queryString, args...); err != nil {
+	if err := us.GetReplica().Raw(queryString, args...).Find(&users).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to find Users")
 	}
 
@@ -483,11 +468,11 @@ func (us *SqlUserStore) GetForLogin(loginId string, allowSignInWithUsername, all
 func (us *SqlUserStore) VerifyEmail(userId, email string) (string, error) {
 	now := model.GetMillis()
 
-	if _, err := us.
-		GetMasterX().
-		Exec("UPDATE "+model.UserTableName+" SET Email = lower(?), EmailVerified = true, UpdateAt = ? WHERE Id = ?",
+	if err := us.
+		GetMaster().
+		Raw("UPDATE "+model.UserTableName+" SET Email = lower(?), EmailVerified = true, UpdateAt = ? WHERE Id = ?",
 			email, now, userId,
-		); err != nil {
+		).Error; err != nil {
 		return "", errors.Wrapf(err, "failed to update Users with userId=%s and email=%s", userId, email)
 	}
 
@@ -495,7 +480,7 @@ func (us *SqlUserStore) VerifyEmail(userId, email string) (string, error) {
 }
 
 func (us *SqlUserStore) PermanentDelete(userId string) error {
-	if _, err := us.GetMasterX().Exec("DELETE FROM "+model.UserTableName+" WHERE Id = ?", userId); err != nil {
+	if err := us.GetMaster().Raw("DELETE FROM "+model.UserTableName+" WHERE Id = ?", userId).Error; err != nil {
 		return errors.Wrapf(err, "failed to delete User with userId=%s", userId)
 	}
 	return nil
@@ -526,7 +511,7 @@ func (us *SqlUserStore) Count(options model.UserCountOptions) (int64, error) {
 	}
 
 	var count int64
-	err = us.GetReplicaX().Get(&count, queryString, args...)
+	err = us.GetReplica().Raw(queryString, args...).Scan(&count).Error
 	if err != nil {
 		return int64(0), errors.Wrap(err, "failed to count Users")
 	}
@@ -547,7 +532,7 @@ func (us *SqlUserStore) AnalyticsActiveCount(timePeriod int64, options model.Use
 	}
 
 	var v int64
-	err = us.GetReplicaX().Get(&v, queryStr, args...)
+	err = us.GetReplica().Raw(queryStr, args...).Scan(&v).Error
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count Users")
 	}
@@ -566,7 +551,7 @@ func (us *SqlUserStore) AnalyticsActiveCountForPeriod(startTime int64, endTime i
 	}
 
 	var v int64
-	err = us.GetReplicaX().Get(&v, queryStr, args...)
+	err = us.GetReplica().Raw(queryStr, args...).Scan(&v).Error
 	if err != nil {
 		return 0, errors.Wrap(err, "Unable to get the active users during the requested period")
 	}
@@ -665,7 +650,7 @@ func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string,
 	}
 
 	var users []*model.User
-	if err := us.GetReplicaX().Select(&users, queryString, args...); err != nil {
+	if err := us.GetReplica().Raw(queryString, args...).Find(&users).Error; err != nil {
 		return nil, errors.Wrapf(err, "failed to find Users with term=%s and searchType=%v", term, searchType)
 	}
 	for _, u := range users {
@@ -677,7 +662,7 @@ func (us *SqlUserStore) performSearch(query squirrel.SelectBuilder, term string,
 
 func (us *SqlUserStore) AnalyticsGetInactiveUsersCount() (int64, error) {
 	var count int64
-	err := us.GetReplicaX().Get(&count, "SELECT COUNT(Id) FROM Users WHERE DeleteAt > 0")
+	err := us.GetReplica().Raw("SELECT COUNT(Id) FROM Users WHERE DeleteAt > 0").Scan(&count).Error
 	if err != nil {
 		return int64(0), errors.Wrap(err, "failed to count inactive Users")
 	}
@@ -686,7 +671,7 @@ func (us *SqlUserStore) AnalyticsGetInactiveUsersCount() (int64, error) {
 
 func (us *SqlUserStore) AnalyticsGetExternalUsers(hostDomain string) (bool, error) {
 	var count int64
-	err := us.GetReplicaX().Get(&count, "SELECT COUNT(Id) FROM Users WHERE LOWER(Email) NOT LIKE ?", "%@"+strings.ToLower(hostDomain))
+	err := us.GetReplica().Raw("SELECT COUNT(Id) FROM Users WHERE LOWER(Email) NOT LIKE ?", "%@"+strings.ToLower(hostDomain)).Scan(&count).Error
 	if err != nil {
 		return false, errors.Wrap(err, "failed to count inactive Users")
 	}
@@ -695,7 +680,7 @@ func (us *SqlUserStore) AnalyticsGetExternalUsers(hostDomain string) (bool, erro
 
 func (us *SqlUserStore) AnalyticsGetGuestCount() (int64, error) {
 	var count int64
-	err := us.GetReplicaX().Get(&count, "SELECT count(*) FROM Users WHERE Roles LIKE ? and DeleteAt = 0", "%system_guest%")
+	err := us.GetReplica().Raw("SELECT count(*) FROM Users WHERE Roles LIKE ? and DeleteAt = 0", "%system_guest%").Scan(&count).Error
 	if err != nil {
 		return int64(0), errors.Wrap(err, "failed to count guest Users")
 	}
@@ -704,7 +689,7 @@ func (us *SqlUserStore) AnalyticsGetGuestCount() (int64, error) {
 
 func (us *SqlUserStore) AnalyticsGetSystemAdminCount() (int64, error) {
 	var count int64
-	err := us.GetReplicaX().Get(&count, "SELECT count(*) FROM Users WHERE Roles LIKE ? and DeleteAt = 0", "%system_admin%")
+	err := us.GetReplica().Raw("SELECT count(*) FROM Users WHERE Roles LIKE ? and DeleteAt = 0", "%system_admin%").Scan(&count).Error
 	if err != nil {
 		return int64(0), errors.Wrap(err, "failed to count system admin Users")
 	}
@@ -716,16 +701,11 @@ func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
 	lastUserId := strings.Repeat("0", len(model.NewId()))
 
 	for {
-		var transaction store_iface.SqlxExecutor
-		var err error
-
-		if transaction, err = us.GetMasterX().Beginx(); err != nil {
-			return errors.Wrap(err, "begin_transaction")
-		}
-		defer store.FinalizeTransaction(transaction)
+		transaction := us.GetMaster().Begin()
+		defer transaction.Rollback()
 
 		var users []*model.User
-		if err := transaction.Select(&users, "SELECT * FROM Users WHERE Id > ? ORDER BY Id LIMIT 1000", lastUserId); err != nil {
+		if err := transaction.Raw("SELECT * FROM Users WHERE Id > ? ORDER BY Id LIMIT 1000", lastUserId).Find(&users).Error; err != nil {
 			return errors.Wrapf(err, "failed to find Users with id > %s", lastUserId)
 		}
 
@@ -748,13 +728,13 @@ func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
 
 			newRolesString := strings.Join(newRoles, " ")
 			if newRolesString != user.Roles {
-				if _, err := transaction.Exec("UPDATE Users SET Roles = ? WHERE Id = ?", newRolesString, user.Id); err != nil {
+				if err := transaction.Raw("UPDATE Users SET Roles = ? WHERE Id = ?", newRolesString, user.Id).Error; err != nil {
 					return errors.Wrap(err, "failed to update Users")
 				}
 			}
 		}
 
-		if err := transaction.Commit(); err != nil {
+		if err := transaction.Commit().Error; err != nil {
 			return errors.Wrap(err, "commit_transaction")
 		}
 	}
@@ -764,7 +744,7 @@ func (us *SqlUserStore) ClearAllCustomRoleAssignments() error {
 
 func (us *SqlUserStore) InferSystemInstallDate() (int64, error) {
 	var createAt int64
-	err := us.GetReplicaX().Get(&createAt, "SELECT CreateAt FROM Users WHERE CreateAt IS NOT NULL ORDER BY CreateAt ASC LIMIT 1")
+	err := us.GetReplica().Raw("SELECT CreateAt FROM Users WHERE CreateAt IS NOT NULL ORDER BY CreateAt ASC LIMIT 1").Scan(&createAt).Error
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to infer system install date")
 	}
@@ -822,7 +802,7 @@ func (s *SqlUserStore) commonSelectQueryBuilder(options *model.UserFilterOptions
 	if options.ExcludeBoardMembers {
 		query = query.
 			LeftJoin(model.ShopStaffTableName + " ON ShopStaffs.StaffID = Users.Id").
-			Where("hopStaffs.StaffID IS NULL")
+			Where("ShopStaffs.StaffID IS NULL")
 	}
 	if options.Limit > 0 {
 		query = query.Limit(uint64(options.Limit))
@@ -841,11 +821,10 @@ func (s *SqlUserStore) FilterByOptions(ctx context.Context, options *model.UserF
 	}
 
 	var users []*model.User
-	err = s.GetReplicaX().Select(&users, queryString, args...)
+	err = s.GetReplica().Raw(queryString, args...).Find(&users).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find users with given options")
 	}
-
 	return users, nil
 }
 
@@ -856,7 +835,7 @@ func (s *SqlUserStore) GetByOptions(ctx context.Context, options *model.UserFilt
 	}
 
 	var user model.User
-	err = s.DBXFromContext(ctx).Get(&user, queryString, args...)
+	err = s.DBXFromContext(ctx).Raw(queryString, args...).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.UserTableName, "options")

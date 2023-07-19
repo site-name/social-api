@@ -102,7 +102,7 @@ func (fs *SqlFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error
 
 	if isSaving {
 		query := "INSERT INTO " + model.FileInfoTableName + "(" + fs.ModelFields("").Join(",") + ") VALUES (" + fs.ModelFields(":").Join(",") + ")"
-		_, err = fs.GetMasterX().NamedExec(query, info)
+		_, err = fs.GetMaster().NamedExec(query, info)
 
 	} else {
 		query := "UPDATE " + model.FileInfoTableName + " SET " + fs.
@@ -113,7 +113,7 @@ func (fs *SqlFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = fs.GetMasterX().NamedExec(query, info)
+		result, err = fs.GetMaster().NamedExec(query, info)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -141,7 +141,7 @@ func (fs *SqlFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "GetByIds_ToSql")
 	}
-	if err := fs.GetReplicaX().Select(&infos, query, args...); err != nil {
+	if err := fs.GetReplica().Select(&infos, query, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to find FileInfos")
 	}
 	return infos, nil
@@ -160,9 +160,9 @@ func (fs *SqlFileInfoStore) get(id string, fromMaster bool) (*model.FileInfo, er
 		return nil, errors.Wrap(err, "file_info_tosql")
 	}
 
-	db := fs.GetReplicaX()
+	db := fs.GetReplica()
 	if fromMaster {
-		db = fs.GetMasterX()
+		db = fs.GetMaster()
 	}
 
 	if err := db.Get(info, queryString, args...); err != nil {
@@ -245,7 +245,7 @@ func (fs *SqlFileInfoStore) GetWithOptions(page, perPage *int, opt *model.GetFil
 		return nil, errors.Wrap(err, "file_info_tosql")
 	}
 	var infos []*model.FileInfo
-	if err := fs.GetReplicaX().Select(&infos, queryString, args...); err != nil {
+	if err := fs.GetReplica().Select(&infos, queryString, args...); err != nil {
 		return nil, errors.Wrap(err, "failed to find FileInfos")
 	}
 	return infos, nil
@@ -266,7 +266,7 @@ func (fs *SqlFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
 		return nil, errors.Wrap(err, "file_info_tosql")
 	}
 
-	if err := fs.GetReplicaX().Get(info, queryString, args...); err != nil {
+	if err := fs.GetReplica().Get(info, queryString, args...); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("FileInfos", fmt.Sprintf("path=%s", path))
 		}
@@ -293,7 +293,7 @@ func (fs *SqlFileInfoStore) GetForUser(userId string) ([]*model.FileInfo, error)
 		return nil, errors.Wrap(err, "file_info_tosql")
 	}
 
-	if err := fs.GetReplicaX().Select(&infos, queryString, args...); err != nil {
+	if err := fs.GetReplica().Select(&infos, queryString, args...); err != nil {
 		return nil, errors.Wrapf(err, "failed to find FileInfos with creatorId=%s", userId)
 	}
 
@@ -301,7 +301,7 @@ func (fs *SqlFileInfoStore) GetForUser(userId string) ([]*model.FileInfo, error)
 }
 
 func (fs *SqlFileInfoStore) SetContent(fileId, content string) error {
-	_, err := fs.GetMasterX().Exec("UPDATE "+model.FileInfoTableName+" SET Content=? WHERE Id=?", content, fileId)
+	_, err := fs.GetMaster().Exec("UPDATE "+model.FileInfoTableName+" SET Content=? WHERE Id=?", content, fileId)
 	if err != nil {
 		return errors.Wrapf(err, "failed to update FileInfos content with id=%s", fileId)
 	}
@@ -310,7 +310,7 @@ func (fs *SqlFileInfoStore) SetContent(fileId, content string) error {
 }
 
 func (fs *SqlFileInfoStore) PermanentDelete(fileId string) error {
-	if _, err := fs.GetMasterX().Exec(
+	if _, err := fs.GetMaster().Exec(
 		`DELETE FROM
 				FileInfos
 			WHERE
@@ -322,7 +322,7 @@ func (fs *SqlFileInfoStore) PermanentDelete(fileId string) error {
 }
 
 func (fs *SqlFileInfoStore) PermanentDeleteBatch(endTime int64, limit int64) (int64, error) {
-	sqlResult, err := fs.GetMasterX().Exec(
+	sqlResult, err := fs.GetMaster().Exec(
 		`DELETE FROM 
 			FileInfos 
 		WHERE Id = any (
@@ -352,7 +352,7 @@ func (fs *SqlFileInfoStore) PermanentDeleteBatch(endTime int64, limit int64) (in
 }
 
 func (fs SqlFileInfoStore) PermanentDeleteByUser(userId string) (int64, error) {
-	sqlResult, err := fs.GetMasterX().Exec("DELETE FROM FileInfos WHERE CreatorId = ?", userId)
+	sqlResult, err := fs.GetMaster().Exec("DELETE FROM FileInfos WHERE CreatorId = ?", userId)
 	if err != nil {
 		return 0, errors.Wrapf(err, "failed to delete FileInfos with creatorId=%s", userId)
 	}
@@ -377,7 +377,7 @@ func (fs *SqlFileInfoStore) CountAll() (int64, error) {
 	}
 
 	var count int64
-	err = fs.GetReplicaX().Get(&count, queryString, args...)
+	err = fs.GetReplica().Get(&count, queryString, args...)
 	if err != nil {
 		return int64(0), errors.Wrap(err, "failed to count Files")
 	}

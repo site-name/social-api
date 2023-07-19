@@ -9,7 +9,6 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -67,7 +66,7 @@ func (cls *SqlCheckoutLineStore) Upsert(checkoutLine *model.CheckoutLine) (*mode
 	)
 	if isSave {
 		query := "INSERT INTO " + model.CheckoutLineTableName + "(" + cls.ModelFields("").Join(",") + ") VALUES (" + cls.ModelFields(":").Join(",") + ")"
-		_, err = cls.GetMasterX().NamedExec(query, checkoutLine)
+		_, err = cls.GetMaster().NamedExec(query, checkoutLine)
 
 	} else {
 		query := "UPDATE " + model.CheckoutLineTableName + " SET " + cls.
@@ -78,7 +77,7 @@ func (cls *SqlCheckoutLineStore) Upsert(checkoutLine *model.CheckoutLine) (*mode
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = cls.GetMasterX().NamedExec(query, checkoutLine)
+		result, err = cls.GetMaster().NamedExec(query, checkoutLine)
 		if err == nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -97,7 +96,7 @@ func (cls *SqlCheckoutLineStore) Upsert(checkoutLine *model.CheckoutLine) (*mode
 func (cls *SqlCheckoutLineStore) Get(id string) (*model.CheckoutLine, error) {
 	var res model.CheckoutLine
 
-	err := cls.GetReplicaX().Get(&res, "SELECT * FROM "+model.CheckoutLineTableName+" WHERE Id = ?", id)
+	err := cls.GetReplica().Get(&res, "SELECT * FROM "+model.CheckoutLineTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.CheckoutLineTableName, id)
@@ -111,7 +110,7 @@ func (cls *SqlCheckoutLineStore) Get(id string) (*model.CheckoutLine, error) {
 func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutToken string) ([]*model.CheckoutLine, error) {
 	var res []*model.CheckoutLine
 
-	err := cls.GetReplicaX().Select(
+	err := cls.GetReplica().Select(
 		&res,
 		`SELECT * FROM `+model.CheckoutLineTableName+`
 		INNER JOIN `+model.CheckoutTableName+` ON	Checkouts.Id = CheckoutLines.CheckoutID
@@ -126,8 +125,8 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutToken string)
 	return res, nil
 }
 
-func (cls *SqlCheckoutLineStore) DeleteLines(transaction store_iface.SqlxExecutor, ids []string) error {
-	var executor store_iface.SqlxExecutor = cls.GetMasterX()
+func (cls *SqlCheckoutLineStore) DeleteLines(transaction *gorm.DB, ids []string) error {
+	var executor *gorm.DB = cls.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -153,7 +152,7 @@ func (cls *SqlCheckoutLineStore) DeleteLines(transaction store_iface.SqlxExecuto
 }
 
 func (cls *SqlCheckoutLineStore) BulkUpdate(lines []*model.CheckoutLine) error {
-	tx, err := cls.GetMasterX().Beginx()
+	tx, err := cls.GetMaster().Begin()
 	if err != nil {
 		return errors.Wrap(err, "begin_transaction")
 	}
@@ -189,7 +188,7 @@ func (cls *SqlCheckoutLineStore) BulkUpdate(lines []*model.CheckoutLine) error {
 }
 
 func (cls *SqlCheckoutLineStore) BulkCreate(lines []*model.CheckoutLine) ([]*model.CheckoutLine, error) {
-	tx, err := cls.GetMasterX().Beginx()
+	tx, err := cls.GetMaster().Begin()
 	if err != nil {
 		return nil, errors.Wrap(err, "begin_transaction")
 	}
@@ -245,7 +244,7 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutTok
 		return nil, nil, nil, errors.Wrap(err, "CheckoutLinesByCheckoutWithPrefetch_ToSql")
 	}
 
-	rows, err := cls.GetReplicaX().QueryX(query, args...)
+	rows, err := cls.GetReplica().Query(query, args...)
 	if err != nil {
 		return nil, nil, nil, errors.Wrapf(err, "failed to find checkout lines and prefetch related values, with checkoutToken=%s", checkoutToken)
 	}
@@ -306,7 +305,7 @@ func (cls *SqlCheckoutLineStore) TotalWeightForCheckoutLines(checkoutLineIDs []s
 		return nil, errors.Wrap(err, "TotalWeightForCheckoutLines_ToSql")
 	}
 
-	rows, err := cls.GetReplicaX().QueryX(query, args...)
+	rows, err := cls.GetReplica().Query(query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find values")
 	}
@@ -384,7 +383,7 @@ func (cls *SqlCheckoutLineStore) CheckoutLinesByOption(option *model.CheckoutLin
 	}
 
 	var res []*model.CheckoutLine
-	err = cls.GetReplicaX().Select(&res, queryString, args...)
+	err = cls.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find checkout lines by given options")
 	}

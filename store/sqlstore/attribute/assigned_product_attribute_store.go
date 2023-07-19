@@ -31,19 +31,11 @@ func (as *SqlAssignedProductAttributeStore) ModelFields(prefix string) util.AnyA
 }
 
 func (as *SqlAssignedProductAttributeStore) Save(newInstance *model.AssignedProductAttribute) (*model.AssignedProductAttribute, error) {
-	newInstance.PreSave()
-	if err := newInstance.IsValid(); err != nil {
-		return nil, err
-	}
-
-	if _, err := as.GetMasterX().Exec(
-		"INSERT INTO "+model.AssignedPageAttributeTableName+" (Id, ProductID, AssignmentID) VALUES (?, ?, ?)",
-		newInstance.Id, newInstance.ProductID, newInstance.AssignmentID,
-	); err != nil {
+	if err := as.GetMaster().Create(newInstance).Error; err != nil {
 		if as.IsUniqueConstraintError(err, []string{"ProductID", "AssignmentID", strings.ToLower(model.AssignedProductAttributeTableName) + "_productid_assignmentid_key"}) {
 			return nil, store.NewErrInvalidInput(model.AssignedProductAttributeTableName, "ProductID/AssignmentID", newInstance.ProductID+"/"+newInstance.AssignmentID)
 		}
-		return nil, errors.Wrapf(err, "failed to insert new assigned product attribute with id=%s", newInstance.Id)
+		return nil, errors.Wrap(err, "failed to insert new assigned product attribute with")
 	}
 
 	return newInstance, nil
@@ -52,7 +44,7 @@ func (as *SqlAssignedProductAttributeStore) Save(newInstance *model.AssignedProd
 func (as *SqlAssignedProductAttributeStore) Get(id string) (*model.AssignedProductAttribute, error) {
 	var res model.AssignedProductAttribute
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AssignedProductAttributeTableName+" WHERE Id = ?", id)
+	err := as.GetReplica().First(&res, "Id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedProductAttributeTableName, id)
@@ -64,15 +56,9 @@ func (as *SqlAssignedProductAttributeStore) Get(id string) (*model.AssignedProdu
 }
 
 func (as *SqlAssignedProductAttributeStore) commonQueryBuilder(options *model.AssignedProductAttributeFilterOption) squirrel.SelectBuilder {
-	query := as.GetQueryBuilder().Select("*").From(model.AssignedProductAttributeTableName)
+	query := as.GetQueryBuilder().Select("*").From(model.AssignedProductAttributeTableName).Where(options.Conditions)
 
 	// parse option
-	if options.AssignmentID != nil {
-		query = query.Where(options.AssignmentID)
-	}
-	if options.ProductID != nil {
-		query = query.Where(options.ProductID)
-	}
 	if value := options.AttributeProduct_Attribute_VisibleInStoreFront; value != nil {
 		query = query.
 			InnerJoin(model.AttributeProductTableName + " ON AttributeProducts.Id = AssignedProductAttributes.AssignmentID").
@@ -90,7 +76,7 @@ func (as *SqlAssignedProductAttributeStore) GetWithOption(option *model.Assigned
 	}
 
 	var res model.AssignedProductAttribute
-	err = as.GetReplicaX().Get(&res, queryString, args...)
+	err = as.GetReplica().Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AssignedProductAttributeTableName, "option")
@@ -104,11 +90,11 @@ func (as *SqlAssignedProductAttributeStore) GetWithOption(option *model.Assigned
 func (as *SqlAssignedProductAttributeStore) FilterByOptions(options *model.AssignedProductAttributeFilterOption) ([]*model.AssignedProductAttribute, error) {
 	queryString, args, err := as.commonQueryBuilder(options).ToSql()
 	if err != nil {
-		return nil, errors.Wrap(err, "GetWithOption_ToSql")
+		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
 	var res []*model.AssignedProductAttribute
-	err = as.GetReplicaX().Select(&res, queryString, args...)
+	err = as.GetReplica().Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find assigned product attributes with given options")
 	}

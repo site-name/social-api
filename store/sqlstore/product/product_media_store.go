@@ -61,7 +61,7 @@ func (ps *SqlProductMediaStore) Upsert(media *model.ProductMedia) (*model.Produc
 	)
 	if isSaving {
 		query := "INSERT INTO " + model.ProductMediaTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
-		_, err = ps.GetMasterX().NamedExec(query, media)
+		_, err = ps.GetMaster().NamedExec(query, media)
 
 	} else {
 		query := "UPDATE " + model.ProductMediaTableName + " SET " + ps.
@@ -72,7 +72,7 @@ func (ps *SqlProductMediaStore) Upsert(media *model.ProductMedia) (*model.Produc
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = ps.GetMasterX().NamedExec(query, media)
+		result, err = ps.GetMaster().NamedExec(query, media)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -91,7 +91,7 @@ func (ps *SqlProductMediaStore) Upsert(media *model.ProductMedia) (*model.Produc
 // Get finds and returns 1 product media with given id
 func (ps *SqlProductMediaStore) Get(id string) (*model.ProductMedia, error) {
 	var res model.ProductMedia
-	err := ps.GetReplicaX().Get(
+	err := ps.GetReplica().Get(
 		&res,
 		"SELECT * FROM "+model.ProductMediaTableName+" WHERE Id = ?",
 		id,
@@ -129,7 +129,7 @@ func (ps *SqlProductMediaStore) FilterByOption(option *model.ProductMediaFilterO
 	}
 
 	var res []*model.ProductMedia
-	err = ps.GetReplicaX().Select(&res, queryString, args...)
+	err = ps.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product medias by given option")
 	}

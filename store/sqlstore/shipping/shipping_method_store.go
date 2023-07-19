@@ -11,7 +11,6 @@ import (
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -65,7 +64,7 @@ func (s *SqlShippingMethodStore) ScanFields(shippingMethod *model.ShippingMethod
 }
 
 // Upsert bases on given method's Id to decide update or insert it
-func (s *SqlShippingMethodStore) Upsert(transaction store_iface.SqlxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, error) {
+func (s *SqlShippingMethodStore) Upsert(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, error) {
 	isSaving := false
 	if method.Id == "" {
 		isSaving = true
@@ -76,7 +75,7 @@ func (s *SqlShippingMethodStore) Upsert(transaction store_iface.SqlxExecutor, me
 		return nil, err
 	}
 
-	runner := s.GetMasterX()
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -154,7 +153,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 				FROM
 					ShippingMethodExcludedProducts
 				WHERE (
-					ShippingMethodExcludedProducts.ProductID IN :ExcludedProductIDs
+					ShippingMethodExcludedProducts.ProductID IN @ExcludedProductIDs
 					AND ShippingMethodExcludedProducts.ShippingMethodID = ShippingMethods.Id
 				)
 				LIMIT 1
@@ -171,7 +170,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 		FROM
 			ShippingMethodChannelListings
 		WHERE (
-			ShippingMethodChannelListings.ChannelID = :ChannelID
+			ShippingMethodChannelListings.ChannelID = @ChannelID
 			AND ShippingMethodChannelListings.ShippingMethodID = ShippingMethods.Id
 		)
 	) AS PriceAmount
@@ -192,18 +191,18 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 	WHERE
 		(
 			(
-				ShippingMethodChannelListings.ChannelID = :ChannelID
-				AND ShippingMethodChannelListings.Currency = :Currency
-				AND ShippingZoneChannels.ChannelID = :ChannelID
-				AND ShippingZones.Countries::text LIKE :CountryCode ` + forExcludedProductQuery + `
-				AND ShippingMethods.Type = :PriceBasedShipType
+				ShippingMethodChannelListings.ChannelID = @ChannelID
+				AND ShippingMethodChannelListings.Currency = @Currency
+				AND ShippingZoneChannels.ChannelID = @ChannelID
+				AND ShippingZones.Countries::text LIKE @CountryCode ` + forExcludedProductQuery + `
+				AND ShippingMethods.Type = @PriceBasedShipType
 				AND ShippingMethods.Id IN (
 				SELECT
 					ShippingMethodID
 				FROM
 					ShippingMethodChannelListings
 				WHERE (
-					ShippingMethodChannelListings.ChannelID = :ChannelID
+					ShippingMethodChannelListings.ChannelID = @ChannelID
 					AND ShippingMethodChannelListings.ShippingMethodID IN (
 						SELECT
 							Id
@@ -219,32 +218,32 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 							ShippingZoneChannels.ShippingZoneID = ShippingZones.Id
 						)
 						WHERE (
-							ShippingMethodChannelListings.ChannelID = :ChannelID
-							AND ShippingMethodChannelListings.Currency = :Currency
-							AND ShippingZoneChannels.ChannelID = :ChannelID
-							AND ShippingZones.Countries::text LIKE :CountryCode
-							AND ShippingMethods.Type = :PriceBasedShipType ` + forExcludedProductQuery + `
+							ShippingMethodChannelListings.ChannelID = @ChannelID
+							AND ShippingMethodChannelListings.Currency = @Currency
+							AND ShippingZoneChannels.ChannelID = @ChannelID
+							AND ShippingZones.Countries::text LIKE @CountryCode
+							AND ShippingMethods.Type = @PriceBasedShipType ` + forExcludedProductQuery + `
 						)
 					)
-					AND ShippingMethodChannelListings.MinimumOrderPriceAmount <= :MinimumOrderPriceAmount
+					AND ShippingMethodChannelListings.MinimumOrderPriceAmount <= @MinimumOrderPriceAmount
 					AND (
 						ShippingMethodChannelListings.MaximumOrderPriceAmount IS NULL
-						OR ShippingMethodChannelListings.MaximumOrderPriceAmount >= :MaximumOrderPriceAmount
+						OR ShippingMethodChannelListings.MaximumOrderPriceAmount >= @MaximumOrderPriceAmount
 					)
 				)
 			)
 			OR (
-				ShippingMethodChannelListings.ChannelID = :ChannelID
-				AND ShippingMethodChannelListings.Currency = :Currency
-				AND ShippingZoneChannels.ChannelID = :ChannelID
-				AND ShippingZones.Countries::text LIKE :CountryCode ` + forExcludedProductQuery + `
-				AND ShippingMethods.Type = :WeightBasedShippingType
+				ShippingMethodChannelListings.ChannelID = @ChannelID
+				AND ShippingMethodChannelListings.Currency = @Currency
+				AND ShippingZoneChannels.ChannelID = @ChannelID
+				AND ShippingZones.Countries::text LIKE @CountryCode ` + forExcludedProductQuery + `
+				AND ShippingMethods.Type = @WeightBasedShippingType
 				AND (
-					ShippingMethods.MinimumOrderWeight <= :MinimumOrderWeight
+					ShippingMethods.MinimumOrderWeight <= @MinimumOrderWeight
 					OR ShippingMethods.MinimumOrderWeight IS NULL
 				)
 				AND (
-					ShippingMethods.MaximumOrderWeight >= :MaximumOrderWeight
+					ShippingMethods.MaximumOrderWeight >= @MaximumOrderWeight
 					OR ShippingMethods.MaximumOrderWeight IS NULL
 				)
 			)
@@ -253,7 +252,7 @@ func (s *SqlShippingMethodStore) ApplicableShippingMethods(price *goprices.Money
 
 	// use Select() here since it can inteprets map[string]interface{} value mapping
 	// Query() cannot understand.
-	rows, err := s.GetReplicaX().NamedQuery(query, params)
+	rows, err := s.GetReplica().NamedQuery(query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to finds shipping methods for given conditions")
 	}
@@ -347,7 +346,7 @@ func (ss *SqlShippingMethodStore) GetbyOption(options *model.ShippingMethodFilte
 		scanFields = append(scanFields, ss.ShippingZone().ScanFields(&shippingZone)...)
 	}
 
-	err = ss.GetReplicaX().QueryRowX(queryString, args...).Scan(scanFields...)
+	err = ss.GetReplica().QueryRow(queryString, args...).Scan(scanFields...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShippingMethodTableName, "options")
@@ -368,7 +367,7 @@ func (ss *SqlShippingMethodStore) FilterByOptions(options *model.ShippingMethodF
 		return nil, errors.Wrap(err, "GetbyOption_ToSql")
 	}
 
-	rows, err := ss.GetReplicaX().QueryX(queryString, args...)
+	rows, err := ss.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping methods with given options.")
 	}
@@ -401,9 +400,9 @@ func (ss *SqlShippingMethodStore) FilterByOptions(options *model.ShippingMethodF
 	return lo.Values(shippingMethodMap), nil
 }
 
-func (s *SqlShippingMethodStore) Delete(transaction store_iface.SqlxExecutor, ids ...string) error {
+func (s *SqlShippingMethodStore) Delete(transaction *gorm.DB, ids ...string) error {
 	query := "DELETE FROM " + model.ShippingMethodTableName + " WHERE Id IN (" + squirrel.Placeholders(len(ids)) + ")"
-	runner := s.GetMasterX()
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}

@@ -14,8 +14,8 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"github.com/sitename/sitename/web"
+	"gorm.io/gorm"
 )
 
 // NOTE: Refer to ./schemas/channel.graphqls for directive used
@@ -49,7 +49,7 @@ func (r *Resolver) ChannelCreate(ctx context.Context, args struct{ Input Channel
 
 	// save channel shipping zone relations:
 	// begin transaction
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("ChannelCreate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -128,7 +128,7 @@ func (r *Resolver) ChannelUpdate(ctx context.Context, args struct {
 
 	// update m2m relations
 	// begin transaction
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+	transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 	if err != nil {
 		return nil, model.NewAppError("ChannelUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
@@ -216,7 +216,7 @@ func (r *Resolver) ChannelDelete(ctx context.Context, args struct {
 		return nil, model.NewAppError("ChannelDelete", app.InvalidArgumentAppErrorID, map[string]interface{}{"Fields": "channelID"}, "target channel cannot be the channel to be deleted", http.StatusBadRequest)
 	}
 
-	deleteCheckoutsByChannelID := func(channelID string, transaction store_iface.SqlxExecutor) *model.AppError {
+	deleteCheckoutsByChannelID := func(channelID string, transaction *gorm.DB) *model.AppError {
 		return embedCtx.App.Srv().
 			CheckoutService().
 			DeleteCheckoutsByOption(transaction, &model.CheckoutFilterOption{
@@ -236,7 +236,7 @@ func (r *Resolver) ChannelDelete(ctx context.Context, args struct {
 
 	// target channel does exist
 	if args.Input != nil && model.IsValidId(args.Input.ChannelID) {
-		transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
+		transaction, err := embedCtx.App.Srv().Store.GetMaster().Begin()
 		if err != nil {
 			return nil, model.NewAppError("ChannelDelete", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 		}

@@ -2225,7 +2225,6 @@ const (
 	CategoryTranslationTableName          = "CategoryTranslations"          //
 	ProductChannelListingTableName        = "ProductChannelListings"        //
 	CollectionChannelListingTableName     = "CollectionChannelListings"     //
-	CollectionProductRelationTableName    = "ProductCollections"            //
 	CollectionTableName                   = "Collections"                   //
 	CollectionTranslationTableName        = "CollectionTranslations"        //
 	DigitalContentTableName               = "DigitalContents"               //
@@ -2235,9 +2234,19 @@ const (
 	ProductTranslationTableName           = "ProductTranslations"           //
 	ProductTypeTableName                  = "ProductTypes"                  //
 	ProductVariantChannelListingTableName = "ProductVariantChannelListings" //
-	ProductVariantMediaTableName          = "VariantMedias"                 //
 	ProductVariantTableName               = "ProductVariants"               //
 	ProductVariantTranslationTableName    = "ProductVariantTranslations"    //
+
+	ProductVariantMediaTableName       = "VariantMedias"       //
+	CollectionProductRelationTableName = "ProductCollections"  //
+	SaleCategoryTableName              = "SaleCategories"      //
+	VoucherCategoryTableName           = "VoucherCategories"   //
+	VoucherCollectionTableName         = "VoucherCollections"  //
+	SaleCollectionTableName            = "SaleCollections"     //
+	VoucherProductTableName            = "VoucherProducts"     //
+	SaleProductTableName               = "SaleProducts"        //
+	SaleProductVariantTableName        = "SaleProductVariants" //
+	VoucherProductVariantTableName     = "VoucherVariants"     //
 )
 
 // wishlist-related table names

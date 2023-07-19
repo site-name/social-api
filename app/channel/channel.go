@@ -11,7 +11,7 @@ import (
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type ServiceChannel struct {
@@ -86,7 +86,7 @@ func (a *ServiceChannel) ChannelsByOption(option *model.ChannelFilterOption) (mo
 	return channels, nil
 }
 
-func (a *ServiceChannel) UpsertChannel(transaction store_iface.SqlxExecutor, channel *model.Channel) (*model.Channel, *model.AppError) {
+func (a *ServiceChannel) UpsertChannel(transaction *gorm.DB, channel *model.Channel) (*model.Channel, *model.AppError) {
 	channel, err := a.srv.Store.Channel().Upsert(transaction, channel)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -101,7 +101,7 @@ func (a *ServiceChannel) UpsertChannel(transaction store_iface.SqlxExecutor, cha
 	return channel, nil
 }
 
-func (s *ServiceChannel) DeleteChannels(transaction store_iface.SqlxExecutor, ids ...string) *model.AppError {
+func (s *ServiceChannel) DeleteChannels(transaction *gorm.DB, ids ...string) *model.AppError {
 	err := s.srv.Store.Channel().DeleteChannels(transaction, ids)
 	if err != nil {
 		return model.NewAppError("DeleteChannels", "app.channel.channel_delete_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)

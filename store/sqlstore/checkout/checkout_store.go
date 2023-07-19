@@ -6,7 +6,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -82,8 +81,8 @@ func (cs *SqlCheckoutStore) ScanFields(checkOut *model.Checkout) []interface{} {
 }
 
 // Upsert depends on given checkout's Token property to decide to update or insert it
-func (cs *SqlCheckoutStore) Upsert(transaction store_iface.SqlxExecutor, checkouts []*model.Checkout) ([]*model.Checkout, error) {
-	runner := cs.GetMasterX()
+func (cs *SqlCheckoutStore) Upsert(transaction *gorm.DB, checkouts []*model.Checkout) ([]*model.Checkout, error) {
+	runner := cs.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -215,7 +214,7 @@ func (cs *SqlCheckoutStore) GetByOption(option *model.CheckoutFilterOption) (*mo
 		return nil, errors.Wrap(err, "GetByOption_ToSql")
 	}
 
-	err = cs.GetReplicaX().QueryRowX(query, args...).Scan(scanFields...)
+	err = cs.GetReplica().QueryRow(query, args...).Scan(scanFields...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.CheckoutTableName, "option")
@@ -240,7 +239,7 @@ func (cs *SqlCheckoutStore) FilterByOption(option *model.CheckoutFilterOption) (
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	rows, err := cs.GetReplicaX().QueryX(query, args...)
+	rows, err := cs.GetReplica().Query(query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find checkouts with given options")
 	}
@@ -288,7 +287,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 		checkoutLines     model.CheckoutLines
 		productVariantIDs []string
 	)
-	err := cs.GetReplicaX().Select(
+	err := cs.GetReplica().Select(
 		&checkoutLines,
 		"SELECT * FROM "+model.CheckoutLineTableName+" WHERE CheckoutID = ? ORDER BY CreateAt ASC",
 		ckout.Token,
@@ -313,7 +312,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 			Where(squirrel.Eq{model.ProductVariantTableName + ".Id": productVariantIDs}).
 			ToSql()
 
-		err = cs.GetReplicaX().Select(
+		err = cs.GetReplica().Select(
 			&productVariants,
 			queryString, args...,
 		)
@@ -340,7 +339,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 			Where(squirrel.Eq{model.ProductTableName + ".Id": productIDs}).
 			ToSql()
 
-		err = cs.GetReplicaX().Select(
+		err = cs.GetReplica().Select(
 			&products,
 			query, args...,
 		)
@@ -372,7 +371,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 			Where(squirrel.Eq{"ProductCollections.ProductID": productIDs}).
 			ToSql()
 
-		err = cs.GetReplicaX().Select(&collectionXs, query, args...)
+		err = cs.GetReplica().Select(&collectionXs, query, args...)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to find collections")
 		}
@@ -395,7 +394,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 			Where(squirrel.Eq{model.ProductVariantChannelListingTableName + ".VariantID": productVariantIDs}).
 			ToSql()
 
-		err = cs.GetReplicaX().Select(
+		err = cs.GetReplica().Select(
 			&productVariantChannelListings,
 			query, args...,
 		)
@@ -412,7 +411,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 	var channels []*model.Channel
 	// check if we can proceed
 	if len(channelIDs) > 0 {
-		err = cs.GetReplicaX().Select(
+		err = cs.GetReplica().Select(
 			&channels,
 			"SELECT * FROM "+model.ChannelTableName+" WHERE Id in ? ORDER BY Slug ASC",
 			channelIDs,
@@ -435,7 +434,7 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 			From(model.ProductTypeTableName).
 			Where(squirrel.Eq{"Id": productTypeIDs}).
 			ToSql()
-		err = cs.GetReplicaX().Select(
+		err = cs.GetReplica().Select(
 			&productTypes,
 			query, args...,
 		)
@@ -490,8 +489,8 @@ func (cs *SqlCheckoutStore) FetchCheckoutLinesAndPrefetchRelatedValue(ckout *mod
 
 // DeleteCheckoutsByOption deletes checkout row(s) from database, filtered using given option.
 // It returns an error indicating if the operation was performed successfully.
-func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction store_iface.SqlxExecutor, option *model.CheckoutFilterOption) error {
-	var runner = cs.GetMasterX()
+func (cs *SqlCheckoutStore) DeleteCheckoutsByOption(transaction *gorm.DB, option *model.CheckoutFilterOption) error {
+	var runner = cs.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -520,7 +519,7 @@ func (cs *SqlCheckoutStore) CountCheckouts(options *model.CheckoutFilterOption) 
 	}
 
 	var count int64
-	err = cs.GetReplicaX().Get(&count, queryString, args...)
+	err = cs.GetReplica().Get(&count, queryString, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to count number of checkouts")
 	}

@@ -6,7 +6,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -45,8 +44,8 @@ func (s *SqlPaymentTransactionStore) ModelFields(prefix string) util.AnyArray[st
 }
 
 // Save insert given transaction into database then returns it
-func (ps *SqlPaymentTransactionStore) Save(transaction store_iface.SqlxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
-	var executor store_iface.SqlxExecutor = ps.GetMasterX()
+func (ps *SqlPaymentTransactionStore) Save(transaction *gorm.DB, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
+	var executor *gorm.DB = ps.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -78,7 +77,7 @@ func (ps *SqlPaymentTransactionStore) Update(transaction *model.PaymentTransacti
 		}).
 		Join(",") + " WHERE Id=:Id"
 
-	result, err := ps.GetMasterX().NamedExec(query, transaction)
+	result, err := ps.GetMaster().NamedExec(query, transaction)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update transaction with id=%s", transaction.Id)
 	}
@@ -92,7 +91,7 @@ func (ps *SqlPaymentTransactionStore) Update(transaction *model.PaymentTransacti
 
 func (ps *SqlPaymentTransactionStore) Get(id string) (*model.PaymentTransaction, error) {
 	var res model.PaymentTransaction
-	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.TransactionTableName+" WHERE Id = ?", id)
+	err := ps.GetReplica().Get(&res, "SELECT * FROM "+model.TransactionTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.TransactionTableName, id)
@@ -132,7 +131,7 @@ func (ps *SqlPaymentTransactionStore) FilterByOption(option *model.PaymentTransa
 	}
 
 	var res []*model.PaymentTransaction
-	err = ps.GetReplicaX().Select(&res, queryString, args...)
+	err = ps.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find payment transactions based on given option")
 	}

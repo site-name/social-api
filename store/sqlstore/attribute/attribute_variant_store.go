@@ -37,7 +37,7 @@ func (as *SqlAttributeVariantStore) Save(attributeVariant *model.AttributeVarian
 	}
 
 	query := "INSERT INTO " + model.AttributeVariantTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-	if _, err := as.GetMasterX().NamedExec(query, attributeVariant); err != nil {
+	if _, err := as.GetMaster().NamedExec(query, attributeVariant); err != nil {
 		if as.IsUniqueConstraintError(err, []string{"AttributeID", "ProductTypeID", "attributevariants_attributeid_producttypeid_key"}) {
 			return nil, store.NewErrInvalidInput(model.AttributeVariantTableName, "AttributeID/ProductTypeID", attributeVariant.AttributeID+"/"+attributeVariant.ProductTypeID)
 		}
@@ -50,7 +50,7 @@ func (as *SqlAttributeVariantStore) Save(attributeVariant *model.AttributeVarian
 func (as *SqlAttributeVariantStore) Get(attributeVariantID string) (*model.AttributeVariant, error) {
 	var res model.AttributeVariant
 
-	err := as.GetReplicaX().Get(&res, "SELECT * FROM "+model.AttributeVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": attributeVariantID})
+	err := as.GetReplica().Get(&res, "SELECT * FROM "+model.AttributeVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": attributeVariantID})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributeVariantTableName, attributeVariantID)
@@ -90,7 +90,7 @@ func (as *SqlAttributeVariantStore) GetByOption(option *model.AttributeVariantFi
 	}
 	var res model.AttributeVariant
 
-	err = as.GetReplicaX().Get(&res, queryString, args...)
+	err = as.GetReplica().Get(&res, queryString, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributeVariantTableName, "")
@@ -108,7 +108,7 @@ func (s *SqlAttributeVariantStore) FilterByOptions(options *model.AttributeVaria
 	}
 
 	var res []*model.AttributeVariant
-	err = s.GetReplicaX().Select(&res, queryString, args...)
+	err = s.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attribute variant by given options")
 	}

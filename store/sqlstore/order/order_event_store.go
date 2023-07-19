@@ -5,7 +5,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -35,8 +34,8 @@ func (s *SqlOrderEventStore) ModelFields(prefix string) util.AnyArray[string] {
 	})
 }
 
-func (oes *SqlOrderEventStore) Save(transaction store_iface.SqlxExecutor, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
-	var executor store_iface.SqlxExecutor = oes.GetMasterX()
+func (oes *SqlOrderEventStore) Save(transaction *gorm.DB, orderEvent *model.OrderEvent) (*model.OrderEvent, error) {
+	var executor *gorm.DB = oes.GetMaster()
 	if transaction != nil {
 		executor = transaction
 	}
@@ -56,7 +55,7 @@ func (oes *SqlOrderEventStore) Save(transaction store_iface.SqlxExecutor, orderE
 
 func (oes *SqlOrderEventStore) Get(orderEventID string) (*model.OrderEvent, error) {
 	var res model.OrderEvent
-	err := oes.GetReplicaX().Get(&res, "SELECT * FROM "+model.OrderEventTableName+" WHERE Id = ?", orderEventID)
+	err := oes.GetReplica().Get(&res, "SELECT * FROM "+model.OrderEventTableName+" WHERE Id = ?", orderEventID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderEventTableName, orderEventID)
@@ -89,7 +88,7 @@ func (s *SqlOrderEventStore) FilterByOptions(options *model.OrderEventFilterOpti
 	}
 
 	var res []*model.OrderEvent
-	err = s.GetReplicaX().Select(&res, queryStr, args...)
+	err = s.GetReplica().Select(&res, queryStr, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order events by given options")
 	}

@@ -8,7 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlCollectionChannelListingStore struct {
@@ -47,7 +47,7 @@ func (s *SqlCollectionChannelListingStore) FilterByOptions(options *model.Collec
 	}
 
 	var res []*model.CollectionChannelListing
-	err = s.GetReplicaX().Select(&res, queryStr, args...)
+	err = s.GetReplica().Select(&res, queryStr, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find collection channel listings by given options")
 	}
@@ -55,7 +55,7 @@ func (s *SqlCollectionChannelListingStore) FilterByOptions(options *model.Collec
 	return res, nil
 }
 
-func (s *SqlCollectionChannelListingStore) Delete(transaction store_iface.SqlxExecutor, options *model.CollectionChannelListingFilterOptions) error {
+func (s *SqlCollectionChannelListingStore) Delete(transaction *gorm.DB, options *model.CollectionChannelListingFilterOptions) error {
 	query := s.GetQueryBuilder().Delete(model.CollectionChannelListingTableName)
 
 	for _, opt := range []squirrel.Sqlizer{options.Id, options.ChannelID, options.CollectionID} {
@@ -69,7 +69,7 @@ func (s *SqlCollectionChannelListingStore) Delete(transaction store_iface.SqlxEx
 		return errors.Wrap(err, "Delete_ToSql")
 	}
 
-	runner := s.GetMasterX()
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -82,10 +82,10 @@ func (s *SqlCollectionChannelListingStore) Delete(transaction store_iface.SqlxEx
 	return nil
 }
 
-func (s *SqlCollectionChannelListingStore) Upsert(transaction store_iface.SqlxExecutor, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
+func (s *SqlCollectionChannelListingStore) Upsert(transaction *gorm.DB, relations ...*model.CollectionChannelListing) ([]*model.CollectionChannelListing, error) {
 	saveQuery := "INSERT INTO " + model.CollectionChannelListingTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
 	updateQuery := "UPDATE " + model.CollectionChannelListingTableName + " SET " + s.ModelFields("").Map(func(_ int, item string) string { return item + ":=" + item }).Join(",") + " WHERE Id=:Id"
-	runner := s.GetMasterX()
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}

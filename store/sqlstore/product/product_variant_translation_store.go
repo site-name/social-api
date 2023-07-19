@@ -55,7 +55,7 @@ func (ps *SqlProductVariantTranslationStore) Upsert(translation *model.ProductVa
 	)
 	if isSaving {
 		query := "INSERT INTO " + model.ProductVariantTranslationTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
-		_, err = ps.GetMasterX().NamedExec(query, translation)
+		_, err = ps.GetMaster().NamedExec(query, translation)
 
 	} else {
 		query := "UPDATE " + model.ProductVariantTranslationTableName + " SET " + ps.
@@ -66,7 +66,7 @@ func (ps *SqlProductVariantTranslationStore) Upsert(translation *model.ProductVa
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = ps.GetMasterX().NamedExec(query, translation)
+		result, err = ps.GetMaster().NamedExec(query, translation)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -89,7 +89,7 @@ func (ps *SqlProductVariantTranslationStore) Upsert(translation *model.ProductVa
 // Get finds and returns 1 product variant translation with given id
 func (ps *SqlProductVariantTranslationStore) Get(translationID string) (*model.ProductVariantTranslation, error) {
 	var res model.ProductVariantTranslation
-	err := ps.GetReplicaX().Get(&res, "SELECT * FROM "+model.ProductVariantTranslationTableName+" WHERE Id = ?", translationID)
+	err := ps.GetReplica().Get(&res, "SELECT * FROM "+model.ProductVariantTranslationTableName+" WHERE Id = ?", translationID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ProductVariantTranslationTableName, translationID)
@@ -126,7 +126,7 @@ func (ps *SqlProductVariantTranslationStore) FilterByOption(option *model.Produc
 	}
 
 	var res []*model.ProductVariantTranslation
-	err = ps.GetReplicaX().Select(&res, queryString, args...)
+	err = ps.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product variant translations with given options")
 	}

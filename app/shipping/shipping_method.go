@@ -9,7 +9,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // ApplicableShippingMethodsForCheckout finds all applicable shipping methods for given checkout, based on given additional arguments
@@ -155,7 +155,7 @@ func (s *ServiceShipping) ShippingMethodsByOptions(options *model.ShippingMethod
 	return methods, nil
 }
 
-func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(transaction store_iface.SqlxExecutor, shippingMethodIds, channelIds []string) *model.AppError {
+func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(transaction *gorm.DB, shippingMethodIds, channelIds []string) *model.AppError {
 	// unlink shipping methods from order and checkout instances
 	// when method is no longer available in given channels
 	checkouts, appErr := s.srv.CheckoutService().CheckoutsByOption(&model.CheckoutFilterOption{
@@ -190,7 +190,7 @@ func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(tr
 	return nil
 }
 
-func (s *ServiceShipping) UpsertShippingMethod(transaction store_iface.SqlxExecutor, method *model.ShippingMethod) (*model.ShippingMethod, *model.AppError) {
+func (s *ServiceShipping) UpsertShippingMethod(transaction *gorm.DB, method *model.ShippingMethod) (*model.ShippingMethod, *model.AppError) {
 	method, err := s.srv.Store.ShippingMethod().Upsert(transaction, method)
 	if err != nil {
 		return nil, model.NewAppError("UpsertShippingMethod", "app.shipping.error_upserting_shipping_method.app_error", nil, err.Error(), http.StatusInternalServerError)

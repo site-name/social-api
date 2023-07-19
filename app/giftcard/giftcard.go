@@ -13,7 +13,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type ServiceGiftcard struct {
@@ -69,7 +69,7 @@ func (a *ServiceGiftcard) GiftcardsByOption(option *model.GiftCardFilterOption) 
 }
 
 // UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
-func (a *ServiceGiftcard) UpsertGiftcards(transaction store_iface.SqlxExecutor, giftcards ...*model.GiftCard) ([]*model.GiftCard, *model.AppError) {
+func (a *ServiceGiftcard) UpsertGiftcards(transaction *gorm.DB, giftcards ...*model.GiftCard) ([]*model.GiftCard, *model.AppError) {
 	giftcards, err := a.srv.Store.GiftCard().BulkUpsert(transaction, giftcards...)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {
@@ -100,7 +100,7 @@ func (s *ServiceGiftcard) ActiveGiftcards(date time.Time) ([]*model.GiftCard, *m
 	})
 }
 
-func (s *ServiceGiftcard) DeleteGiftcards(transaction store_iface.SqlxExecutor, ids []string) *model.AppError {
+func (s *ServiceGiftcard) DeleteGiftcards(transaction *gorm.DB, ids []string) *model.AppError {
 	err := s.srv.Store.GiftCard().DeleteGiftcards(transaction, ids)
 	if err != nil {
 		return model.NewAppError("DeleteGiftcards", "app.giftcard.error_deleting_giftcards.app_error", nil, err.Error(), http.StatusInternalServerError)

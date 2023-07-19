@@ -43,7 +43,7 @@ func (us *SqlUploadSessionStore) Save(session *model.UploadSession) (*model.Uplo
 	}
 
 	query := "INSERT INTO " + model.UploadSessionTableName + "(" + us.ModelFields("").Join(",") + ") VALUES (" + us.ModelFields(":").Join(",") + ")"
-	if _, err := us.GetMasterX().NamedExec(query, session); err != nil {
+	if _, err := us.GetMaster().NamedExec(query, session); err != nil {
 		return nil, errors.Wrap(err, "SqlUploadSessionStore.Save: failed to insert")
 	}
 	return session, nil
@@ -61,7 +61,7 @@ func (us *SqlUploadSessionStore) Update(session *model.UploadSession) error {
 		}).
 		Join(",") + " WHERE Id=:Id"
 
-	if _, err := us.GetMasterX().NamedExec(query, session); err != nil {
+	if _, err := us.GetMaster().NamedExec(query, session); err != nil {
 		return errors.Wrapf(err, "SqlUploadSessionStore.Update: failed to update session with id=%s", session.Id)
 	}
 	return nil
@@ -69,7 +69,7 @@ func (us *SqlUploadSessionStore) Update(session *model.UploadSession) error {
 
 func (us SqlUploadSessionStore) Get(id string) (*model.UploadSession, error) {
 	var session *model.UploadSession
-	if err := us.GetReplicaX().Get(&session, "SELECT * FROM "+model.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
+	if err := us.GetReplica().Get(&session, "SELECT * FROM "+model.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.UploadSessionTableName, id)
 		}
@@ -81,7 +81,7 @@ func (us SqlUploadSessionStore) Get(id string) (*model.UploadSession, error) {
 func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*model.UploadSession, error) {
 	var sessions []*model.UploadSession
 
-	if err := us.GetReplicaX().Select(
+	if err := us.GetReplica().Select(
 		&sessions,
 		"SELECT * FROM "+model.UploadSessionTableName+" WHERE UserId = ? ORDER BY CreateAt ASC",
 		userId,
@@ -92,7 +92,7 @@ func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*model.UploadSessi
 }
 
 func (us *SqlUploadSessionStore) Delete(id string) error {
-	if _, err := us.GetMasterX().Exec("DELETE FROM "+model.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
+	if _, err := us.GetMaster().Exec("DELETE FROM "+model.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
 		return errors.Wrap(err, "failed to delete upload session with id="+id)
 	}
 

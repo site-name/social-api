@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -94,8 +93,8 @@ func (ols *SqlOrderLineStore) ScanFields(orderLine *model.OrderLine) []interface
 }
 
 // Upsert depends on given orderLine's Id to decide to update or save it
-func (ols *SqlOrderLineStore) Upsert(transaction store_iface.SqlxExecutor, orderLine *model.OrderLine) (*model.OrderLine, error) {
-	var upsertor store_iface.SqlxExecutor = ols.GetMasterX()
+func (ols *SqlOrderLineStore) Upsert(transaction *gorm.DB, orderLine *model.OrderLine) (*model.OrderLine, error) {
+	var upsertor *gorm.DB = ols.GetMaster()
 	if transaction != nil {
 		upsertor = transaction
 	}
@@ -147,7 +146,7 @@ func (ols *SqlOrderLineStore) Upsert(transaction store_iface.SqlxExecutor, order
 }
 
 // BulkUpsert performs upsert multiple order lines in once
-func (ols *SqlOrderLineStore) BulkUpsert(transaction store_iface.SqlxExecutor, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
+func (ols *SqlOrderLineStore) BulkUpsert(transaction *gorm.DB, orderLines []*model.OrderLine) ([]*model.OrderLine, error) {
 	for _, orderLine := range orderLines {
 		_, err := ols.Upsert(transaction, orderLine)
 		if err != nil {
@@ -160,7 +159,7 @@ func (ols *SqlOrderLineStore) BulkUpsert(transaction store_iface.SqlxExecutor, o
 
 func (ols *SqlOrderLineStore) Get(id string) (*model.OrderLine, error) {
 	var odl model.OrderLine
-	err := ols.GetReplicaX().Get(&odl, "SELECT * FROM "+model.OrderLineTableName+" WHERE Id = ?", id)
+	err := ols.GetReplica().Get(&odl, "SELECT * FROM "+model.OrderLineTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.OrderLineTableName, id)
@@ -177,7 +176,7 @@ func (ols *SqlOrderLineStore) BulkDelete(orderLineIDs []string) error {
 	if err != nil {
 		return errors.Wrap(err, "BulkDelete_ToSql")
 	}
-	_, err = ols.GetMasterX().Exec(query, args...)
+	_, err = ols.GetMaster().Exec(query, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete order lines with given ids")
 	}
@@ -248,7 +247,7 @@ func (ols *SqlOrderLineStore) FilterbyOption(option *model.OrderLineFilterOption
 		return nil, errors.Wrap(err, "OrderLineByOption_ToSql_1")
 	}
 
-	rows, err := ols.GetReplicaX().QueryX(queryString, args...)
+	rows, err := ols.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find order lines with given option")
 	}

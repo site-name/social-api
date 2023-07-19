@@ -11,7 +11,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/app"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store"
 	"github.com/sitename/sitename/web"
 )
 
@@ -50,11 +49,11 @@ func (r *Resolver) CheckoutBillingAddressUpdate(ctx context.Context, args struct
 
 	// update billing address
 	// create transaction
-	transaction, err := embedCtx.App.Srv().Store.GetMasterX().Beginx()
-	if err != nil {
-		return nil, model.NewAppError("CheckoutBillingAddressUpdate", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	transaction := embedCtx.App.Srv().Store.GetMaster().Begin()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("CheckoutBillingAddressUpdate", app.ErrorCreatingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
-	defer store.FinalizeTransaction(transaction)
+	defer transaction.Rollback()
 
 	billingAddress, appErr = embedCtx.App.Srv().AccountService().UpsertAddress(transaction, billingAddress)
 	if appErr != nil {
@@ -73,9 +72,9 @@ func (r *Resolver) CheckoutBillingAddressUpdate(ctx context.Context, args struct
 	}
 
 	// commit transaction
-	err = transaction.Commit()
-	if err != nil {
-		return nil, model.NewAppError("CheckoutBillingAddressUpdate", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
+	transaction.Commit()
+	if transaction.Error != nil {
+		return nil, model.NewAppError("CheckoutBillingAddressUpdate", app.ErrorCommittingTransactionErrorID, nil, transaction.Error.Error(), http.StatusInternalServerError)
 	}
 
 	return &CheckoutBillingAddressUpdate{

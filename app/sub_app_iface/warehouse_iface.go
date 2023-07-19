@@ -6,7 +6,7 @@ package sub_app_iface
 import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // WarehouseService contains methods for working with warehouses
@@ -30,14 +30,14 @@ type WarehouseService interface {
 	// validation steps, for instance in checkout completion.
 	ApplicableForClickAndCollectNoQuantityCheck(checkoutLines model.CheckoutLines, country string) (model.Warehouses, *model.AppError)
 	// BulkCreate tells store to insert given preorder allocations into database then returns them
-	BulkCreate(transaction store_iface.SqlxExecutor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, *model.AppError)
+	BulkCreate(transaction *gorm.DB, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, *model.AppError)
 	// BulkDeleteAllocations performs bulk delete given allocations.
 	// If non-nil transaction is provided, perform bulk delete operation within it.
-	BulkDeleteAllocations(transaction store_iface.SqlxExecutor, allocationIDs []string) *model.AppError
+	BulkDeleteAllocations(transaction *gorm.DB, allocationIDs []string) *model.AppError
 	// BulkUpsertAllocations upserts or inserts given allocations into database then returns them
-	BulkUpsertAllocations(transaction store_iface.SqlxExecutor, allocations []*model.Allocation) ([]*model.Allocation, *model.AppError)
+	BulkUpsertAllocations(transaction *gorm.DB, allocations []*model.Allocation) ([]*model.Allocation, *model.AppError)
 	// BulkUpsertStocks updates or insderts given stock based on its Id property
-	BulkUpsertStocks(transaction store_iface.SqlxExecutor, stocks []*model.Stock) ([]*model.Stock, *model.AppError)
+	BulkUpsertStocks(transaction *gorm.DB, stocks []*model.Stock) ([]*model.Stock, *model.AppError)
 	// CheckPreorderThresholdBulk Validate if there is enough preordered variants according to thresholds.
 	// :raises InsufficientStock: when there is not enough available items for a variant.
 	CheckPreorderThresholdBulk(variants model.ProductVariants, quantities []int, channelSlug string) (*model.InsufficientStock, *model.AppError)
@@ -81,7 +81,7 @@ type WarehouseService interface {
 	// DecreaseAllocations Decreate allocations for provided order lines.
 	DecreaseAllocations(lineInfos []*model.OrderLineData, manager interfaces.PluginManagerInterface) (*model.InsufficientStock, *model.AppError)
 	// DeletePreorderAllocations tells store to delete given preorder allocations
-	DeletePreorderAllocations(transaction store_iface.SqlxExecutor, preorderAllocationIDs ...string) *model.AppError
+	DeletePreorderAllocations(transaction *gorm.DB, preorderAllocationIDs ...string) *model.AppError
 	// FilterStocksForChannel returns a slice of stocks that filtered using given options
 	FilterStocksForChannel(option *model.StockFilterForChannelOption) ([]*model.Stock, *model.AppError)
 	// FilterStocksForCountryAndChannel finds stocks by given options
@@ -146,5 +146,5 @@ type WarehouseService interface {
 	// WarehouseCountries returns countries of given warehouse
 	WarehouseCountries(warehouseID string) ([]string, *model.AppError)
 	CreateWarehouse(warehouse *model.WareHouse) (*model.WareHouse, *model.AppError)
-	CreateWarehouseShippingZones(transaction store_iface.SqlxExecutor, relations []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, *model.AppError)
+	CreateWarehouseShippingZones(transaction *gorm.DB, relations []*model.WarehouseShippingZone) ([]*model.WarehouseShippingZone, *model.AppError)
 }

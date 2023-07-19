@@ -60,7 +60,7 @@ func (p *SqlPluginConfigurationStore) Upsert(config *model.PluginConfiguration) 
 	)
 	if isSaving {
 		query := "INSERT INTO " + model.PluginConfigurationTableName + "(" + p.ModelFields("").Join(",") + ") VALUES (" + p.ModelFields(":").Join(",") + ")"
-		_, err = p.GetMasterX().NamedExec(query, config)
+		_, err = p.GetMaster().NamedExec(query, config)
 
 	} else {
 		query := "UPDATE " + model.PluginConfigurationTableName + " SET " + p.
@@ -71,7 +71,7 @@ func (p *SqlPluginConfigurationStore) Upsert(config *model.PluginConfiguration) 
 			Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = p.GetMasterX().NamedExec(query, config)
+		result, err = p.GetMaster().NamedExec(query, config)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -93,7 +93,7 @@ func (p *SqlPluginConfigurationStore) Upsert(config *model.PluginConfiguration) 
 // Get finds a plugin configuration with given id then returns it
 func (p *SqlPluginConfigurationStore) Get(id string) (*model.PluginConfiguration, error) {
 	var res model.PluginConfiguration
-	err := p.GetReplicaX().Get(&res, "SELECT * FROM "+model.PluginConfigurationTableName+" WHERE Id = ?", id)
+	err := p.GetReplica().Get(&res, "SELECT * FROM "+model.PluginConfigurationTableName+" WHERE Id = ?", id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.PluginConfigurationTableName, id)
@@ -131,7 +131,7 @@ func (p *SqlPluginConfigurationStore) FilterPluginConfigurations(options model.P
 	}
 
 	var configs model.PluginConfigurations
-	err = p.GetReplicaX().Select(&configs, queryStr, args...)
+	err = p.GetReplica().Select(&configs, queryStr, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find plugin configurations with given options")
 	}
@@ -166,7 +166,7 @@ func (p *SqlPluginConfigurationStore) GetByOptions(options *model.PluginConfigur
 	}
 
 	var res model.PluginConfiguration
-	err = p.GetReplicaX().Get(&res, queryStr, args...)
+	err = p.GetReplica().Get(&res, queryStr, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.PluginConfigurationTableName, "options")

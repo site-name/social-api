@@ -6,7 +6,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type SqlPreorderAllocationStore struct {
@@ -42,8 +42,8 @@ func (ws *SqlPreorderAllocationStore) ScanFields(preorderAllocation *model.Preor
 }
 
 // BulkCreate bulk inserts given preorderAllocations and returns them
-func (ws *SqlPreorderAllocationStore) BulkCreate(transaction store_iface.SqlxExecutor, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
-	var upsertor store_iface.SqlxExecutor = ws.GetMasterX()
+func (ws *SqlPreorderAllocationStore) BulkCreate(transaction *gorm.DB, preorderAllocations []*model.PreorderAllocation) ([]*model.PreorderAllocation, error) {
+	var upsertor *gorm.DB = ws.GetMaster()
 	if transaction != nil {
 		upsertor = transaction
 	}
@@ -104,7 +104,7 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllo
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	rows, err := ws.GetReplicaX().QueryX(queryString, args...)
+	rows, err := ws.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find preorder allocations with given options")
 	}
@@ -146,8 +146,8 @@ func (ws *SqlPreorderAllocationStore) FilterByOption(options *model.PreorderAllo
 }
 
 // Delete deletes preorder-allocations by given ids
-func (ws *SqlPreorderAllocationStore) Delete(transaction store_iface.SqlxExecutor, preorderAllocationIDs ...string) error {
-	var runner store_iface.SqlxExecutor = ws.GetMasterX()
+func (ws *SqlPreorderAllocationStore) Delete(transaction *gorm.DB, preorderAllocationIDs ...string) error {
+	var runner *gorm.DB = ws.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}

@@ -7,7 +7,6 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
-	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
@@ -95,7 +94,7 @@ func (as *SqlAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, er
 
 	if isSaving {
 		query := "INSERT INTO " + model.AttributeTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-		_, err = as.GetMasterX().NamedExec(query, attr)
+		_, err = as.GetMaster().NamedExec(query, attr)
 
 	} else {
 		query := "UPDATE " + model.AttributeTableName + " SET " +
@@ -106,7 +105,7 @@ func (as *SqlAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, er
 				Join(",") + " WHERE Id=:Id"
 
 		var result sql.Result
-		result, err = as.GetMasterX().NamedExec(query, attr)
+		result, err = as.GetMaster().NamedExec(query, attr)
 		if err == nil && result != nil {
 			numUpdated, _ = result.RowsAffected()
 		}
@@ -259,7 +258,7 @@ func (as *SqlAttributeStore) GetByOption(option *model.AttributeFilterOption) (*
 	}
 
 	var res model.Attribute
-	err = as.GetReplicaX().Get(&res, queryString, args...)
+	err = as.GetReplica().Get(&res, queryString, args...)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributeTableName, "options")
@@ -290,7 +289,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption)
 	}
 
 	var attributes model.Attributes
-	err = as.GetReplicaX().Select(&attributes, queryString, args...)
+	err = as.GetReplica().Select(&attributes, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attributes with given option")
 	}
@@ -321,20 +320,13 @@ func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption)
 }
 
 func (as *SqlAttributeStore) Delete(ids ...string) (int64, error) {
-	args := lo.Map(ids, func(id string, _ int) any { return id })
-	queryStr := "DELETE FROM " + model.AttributeTableName + " WHERE Id IN (" + squirrel.Placeholders(len(ids)) + ")"
-
-	result, err := as.GetMasterX().Exec(queryStr, args...)
+	result, err := as.GetMaster().Exec("DELETE FROM "+model.AttributeTableName+" WHERE Id IN ?", ids)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to delete attributes")
 	}
 
-	numDeleted, err := result.RowsAffected()
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to count number of deleted attributes")
-	}
-
-	return numDeleted, nil
+	rows, _ := result.RowsAffected()
+	return rows, nil
 }
 
 func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.Attributes, error) {
@@ -375,7 +367,7 @@ func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unass
 	}
 
 	var res model.Attributes
-	err = s.GetReplicaX().Select(&res, query, args...)
+	err = s.GetReplica().Select(&res, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product type attributes with given product type id")
 	}
@@ -408,7 +400,7 @@ func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned 
 	}
 
 	var res model.Attributes
-	err := s.GetReplicaX().Select(&res, query, model.PAGE_TYPE, pageTypeID)
+	err := s.GetReplica().Select(&res, query, model.PAGE_TYPE, pageTypeID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find page type attribute with given page type id")
 	}

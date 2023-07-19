@@ -8,7 +8,7 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 type sqlVatStore struct {
@@ -31,8 +31,8 @@ func (s *sqlVatStore) ModelFields(prefix string) util.AnyArray[string] {
 	})
 }
 
-func (s *sqlVatStore) Upsert(transaction store_iface.SqlxExecutor, vats []*model.Vat) ([]*model.Vat, error) {
-	runner := s.GetMasterX()
+func (s *sqlVatStore) Upsert(transaction *gorm.DB, vats []*model.Vat) ([]*model.Vat, error) {
+	runner := s.GetMaster()
 	if transaction != nil {
 		runner = transaction
 	}
@@ -102,7 +102,7 @@ func (s *sqlVatStore) FilterByOptions(options *model.VatFilterOptions) ([]*model
 	}
 
 	var res []*model.Vat
-	err = s.GetReplicaX().Select(&res, queryString, args...)
+	err = s.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find vat objects by options")
 	}

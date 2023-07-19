@@ -11,7 +11,6 @@ import (
 
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 )
 
 type Role struct {
@@ -83,7 +82,7 @@ func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
 	}
 
 	if role.Id == "" { // this means create new Role
-		transaction, err := s.GetMasterX().Beginx()
+		transaction, err := s.GetMaster().Begin()
 		if err != nil {
 			return nil, errors.Wrap(err, "begin_transaction")
 		}
@@ -101,7 +100,7 @@ func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
 	dbRole := NewRoleFromModel(role)
 	dbRole.UpdateAt = model.GetMillis()
 
-	res, err := s.GetMasterX().NamedExec(`UPDATE Roles
+	res, err := s.GetMaster().NamedExec(`UPDATE Roles
 		SET UpdateAt=:UpdateAt, DeleteAt=:DeleteAt, CreateAt=:CreateAt,  Name=:Name, DisplayName=:DisplayName,
 		Description=:Description, Permissions=:Permissions, SchemeManaged=:SchemeManaged, BuiltIn=:BuiltIn
 		 WHERE Id=:Id`, &dbRole)
@@ -122,7 +121,7 @@ func (s *SqlRoleStore) Save(role *model.Role) (*model.Role, error) {
 	return dbRole.ToModel(), nil
 }
 
-func (s *SqlRoleStore) createRole(role *model.Role, transaction store_iface.SqlxExecutor) (*model.Role, error) {
+func (s *SqlRoleStore) createRole(role *model.Role, transaction *gorm.DB) (*model.Role, error) {
 	// Check the role is valid before proceeding.
 	if !role.IsValidWithoutId() {
 		return nil, store.NewErrInvalidInput("Role", "<any>", fmt.Sprintf("%v", role))
@@ -146,7 +145,7 @@ func (s *SqlRoleStore) createRole(role *model.Role, transaction store_iface.Sqlx
 
 func (s *SqlRoleStore) Get(roleId string) (*model.Role, error) {
 	var role Role
-	if err := s.GetReplicaX().Get(&role, "SELECT * from Roles WHERE Id = ?", roleId); err != nil {
+	if err := s.GetReplica().Get(&role, "SELECT * from Roles WHERE Id = ?", roleId); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.RoleTableName, roleId)
 		}
@@ -159,7 +158,7 @@ func (s *SqlRoleStore) Get(roleId string) (*model.Role, error) {
 func (s *SqlRoleStore) GetAll() ([]*model.Role, error) {
 	dbRoles := []Role{}
 
-	if err := s.GetReplicaX().Select(&dbRoles, "SELECT * from Roles"); err != nil {
+	if err := s.GetReplica().Select(&dbRoles, "SELECT * from Roles"); err != nil {
 		return nil, errors.Wrap(err, "failed to find Roles")
 	}
 
@@ -196,7 +195,7 @@ func (s *SqlRoleStore) GetByNames(names []string) ([]*model.Role, error) {
 		return nil, errors.Wrap(err, "role_tosql")
 	}
 
-	rows, err := s.GetReplicaX().QueryX(queryString, args...)
+	rows, err := s.GetReplica().Query(queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find Roles")
 	}
@@ -224,7 +223,7 @@ func (s *SqlRoleStore) GetByNames(names []string) ([]*model.Role, error) {
 func (s *SqlRoleStore) Delete(roleId string) (*model.Role, error) {
 	// Get the role.
 	var role Role
-	if err := s.GetReplicaX().Get(&role, "SELECT * from Roles WHERE Id = ?", roleId); err != nil {
+	if err := s.GetReplica().Get(&role, "SELECT * from Roles WHERE Id = ?", roleId); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("Role", roleId)
 		}
@@ -235,7 +234,7 @@ func (s *SqlRoleStore) Delete(roleId string) (*model.Role, error) {
 	role.DeleteAt = time
 	role.UpdateAt = time
 
-	res, err := s.GetMasterX().NamedExec(`UPDATE Roles
+	res, err := s.GetMaster().NamedExec(`UPDATE Roles
 		SET UpdateAt=:UpdateAt, DeleteAt=:DeleteAt, CreateAt=:CreateAt,  Name=:Name, DisplayName=:DisplayName,
 		Description=:Description, Permissions=:Permissions, SchemeManaged=:SchemeManaged, BuiltIn=:BuiltIn
 		 WHERE Id=:Id`, &role)
@@ -257,7 +256,7 @@ func (s *SqlRoleStore) Delete(roleId string) (*model.Role, error) {
 }
 
 func (s *SqlRoleStore) PermanentDeleteAll() error {
-	if _, err := s.GetMasterX().Exec("DELETE FROM Roles"); err != nil {
+	if _, err := s.GetMaster().Exec("DELETE FROM Roles"); err != nil {
 		return errors.Wrap(err, "failed to delete Roles")
 	}
 

@@ -8,7 +8,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"github.com/sitename/sitename/store/store_iface"
 	"gorm.io/gorm"
 )
 
@@ -41,7 +40,7 @@ func (s *SqlShippingMethodChannelListingStore) ModelFields(prefix string) util.A
 }
 
 // Upsert depends on given listing's Id to decide whether to save or update the listing
-func (s *SqlShippingMethodChannelListingStore) Upsert(transaction store_iface.SqlxExecutor, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) {
+func (s *SqlShippingMethodChannelListingStore) Upsert(transaction *gorm.DB, listings model.ShippingMethodChannelListings) (model.ShippingMethodChannelListings, error) {
 	var (
 		saveQuery   = "INSERT INTO " + model.ShippingMethodChannelListingTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
 		updateQuery = "UPDATE " + model.ShippingMethodChannelListingTableName + " SET " + s.
@@ -50,7 +49,7 @@ func (s *SqlShippingMethodChannelListingStore) Upsert(transaction store_iface.Sq
 				return s + "=:" + s
 			}).
 			Join(",") + " WHERE Id=:Id"
-		runner = s.GetMasterX()
+		runner = s.GetMaster()
 	)
 	if transaction != nil {
 		runner = transaction
@@ -99,7 +98,7 @@ func (s *SqlShippingMethodChannelListingStore) Upsert(transaction store_iface.Sq
 // Get finds a shipping method channel listing with given listingID
 func (s *SqlShippingMethodChannelListingStore) Get(listingID string) (*model.ShippingMethodChannelListing, error) {
 	var res model.ShippingMethodChannelListing
-	err := s.GetReplicaX().Get(&res, "SELECT * FROM "+model.ShippingMethodChannelListingTableName+" WHERE Id = ?", listingID)
+	err := s.GetReplica().Get(&res, "SELECT * FROM "+model.ShippingMethodChannelListingTableName+" WHERE Id = ?", listingID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ShippingMethodChannelListingTableName, listingID)
@@ -141,7 +140,7 @@ func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *model.Ship
 	}
 
 	var res []*model.ShippingMethodChannelListing
-	err = s.GetReplicaX().Select(&res, queryString, args...)
+	err = s.GetReplica().Select(&res, queryString, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find shipping method channel listings by option")
 	}
@@ -149,7 +148,7 @@ func (s *SqlShippingMethodChannelListingStore) FilterByOption(option *model.Ship
 	return res, nil
 }
 
-func (s *SqlShippingMethodChannelListingStore) BulkDelete(transaction store_iface.SqlxExecutor, options *model.ShippingMethodChannelListingFilterOption) error {
+func (s *SqlShippingMethodChannelListingStore) BulkDelete(transaction *gorm.DB, options *model.ShippingMethodChannelListingFilterOption) error {
 	query := s.GetQueryBuilder().Delete(model.ShippingMethodChannelListingTableName)
 	for _, opt := range []squirrel.Sqlizer{options.ShippingMethodID, options.ChannelID, options.Id} {
 		if opt != nil {
@@ -162,7 +161,7 @@ func (s *SqlShippingMethodChannelListingStore) BulkDelete(transaction store_ifac
 		return errors.Wrap(err, "BulkDelete_ToSql")
 	}
 
-	runner := s.GetReplicaX()
+	runner := s.GetReplica()
 	if transaction != nil {
 		runner = transaction
 	}

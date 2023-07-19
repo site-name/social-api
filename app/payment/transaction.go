@@ -5,7 +5,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/store/store_iface"
+	"gorm.io/gorm"
 )
 
 // TransactionsByOption returns a list of transactions filtered based on given option
@@ -59,7 +59,7 @@ func (a *ServicePayment) GetLastPaymentTransaction(paymentID string) (*model.Pay
 	return lastTran, nil
 }
 
-func (a *ServicePayment) SaveTransaction(transaction store_iface.SqlxExecutor, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model.AppError) {
+func (a *ServicePayment) SaveTransaction(transaction *gorm.DB, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, *model.AppError) {
 	paymentTransaction, err := a.srv.Store.PaymentTransaction().Save(transaction, paymentTransaction)
 	if err != nil {
 		if appErr, ok := err.(*model.AppError); ok {

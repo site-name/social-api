@@ -40,38 +40,38 @@ const (
 // This struct's serializer methods are auto-generated. If a new field is added/removed,
 // please run make gen-serialized.
 type User struct {
-	Id                       string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	Email                    string           `json:"email" gorm:"type:varchar(128);unique:users_email_key;index:users_email_index_key;column:Email"`            // unique; varchar(128)
-	Username                 string           `json:"username" gorm:"type:varchar(64);unique:users_username_key;index:users_username_index_key;column:Username"` // unique; varchar(64)
-	FirstName                string           `json:"first_name" gorm:"type:varchar(64);index:users_firstname_key;column:FirstName"`                             // can be empty, varchar(64)
-	LastName                 string           `json:"last_name" gorm:"type:varchar(64);index:users_lastname_key;column:LastName"`                                // can be empty, varchar(64)
-	DefaultShippingAddressID *string          `json:"default_shipping_address,omitempty" gorm:"type:uuid;column:DefaultShippingAddressID"`
-	DefaultBillingAddressID  *string          `json:"default_billing_address,omitempty" gorm:"type:uuid;column:DefaultBillingAddressID"`
-	Password                 string           `json:"password,omitempty" gorm:"column:Password;type:varchar(128)"`  // varchar(128)
-	AuthData                 *string          `json:"auth_data,omitempty" gorm:"type:varchar(128);column:AuthData"` // varchar(128)
-	AuthService              string           `json:"auth_service" gorm:"type:varchar(20);column:AuthService"`      // varchar(20)
-	EmailVerified            bool             `json:"email_verified,omitempty" gorm:"column:EmailVerified"`
-	Nickname                 string           `json:"nickname" gorm:"type:varchar(64);column:Nickname"` // varchar(64)
-	Roles                    string           `json:"roles" gorm:"type:varchar(200);column:Roles"`      // varchar(200)
-	Props                    StringMap        `json:"props,omitempty" gorm:"type:jsonb;column:Props"`
-	NotifyProps              StringMap        `json:"notify_props,omitempty" gorm:"type:jsonb;column:NotifyProps"`
-	LastPasswordUpdate       int64            `json:"last_password_update,omitempty" gorm:"column:LastPasswordUpdate"`
-	LastPictureUpdate        int64            `json:"last_picture_update,omitempty" gorm:"column:LastPictureUpdate"`
-	FailedAttempts           int              `json:"failed_attempts,omitempty" gorm:"column:FailedAttempts"`
-	Locale                   LanguageCodeEnum `json:"locale" gorm:"type:varchar(5);column:Locale"` // user's language; varchar(5)
-	Timezone                 StringMap        `json:"timezone" gorm:"type:jsonb;column:Timezone"`
-	MfaActive                bool             `json:"mfa_active,omitempty" gorm:"column:MfaActive"`
-	MfaSecret                string           `json:"mfa_secret,omitempty" gorm:"type:varchar(100);column:MfaSecret"`  // varchar(100)
-	CreateAt                 int64            `json:"create_at,omitempty" gorm:"autoCreateTime:milli;column:CreateAt"` // read and create only
-	UpdateAt                 int64            `json:"update_at,omitempty" gorm:"autoUpdateTime:milli;column:UpdateAt"`
-	DeleteAt                 int64            `json:"delete_at" gorm:"type:bigint;column:DeleteAt"`
-	IsActive                 bool             `json:"is_active" gorm:"column:IsActive"`
-	Note                     *string          `json:"note" gorm:"type:varchar(500);column:Note"`                 // varchar(500)
-	JwtTokenKey              string           `json:"jwt_token_key" gorm:"type:varchar(200);column:JwtTokenKey"` // varchar(200)
-	LastActivityAt           int64            `json:"last_activity_at,omitempty" gorm:"type:bigint;column:LastActivityAt"`
-	TermsOfServiceId         string           `json:"terms_of_service_id,omitempty" gorm:"type:uuid;column:TermsOfServiceId"`
-	TermsOfServiceCreateAt   int64            `json:"terms_of_service_create_at,omitempty" gorm:"type:bigint;column:TermsOfServiceCreateAt"`
-	DisableWelcomeEmail      bool             `json:"disable_welcome_email" gorm:"column:DisableWelcomeEmail"`
+	Id                       string    `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Email                    string    `json:"email" gorm:"type:varchar(128);unique:users_email_key;index:users_email_index_key;column:Email"`            // unique; varchar(128)
+	Username                 string    `json:"username" gorm:"type:varchar(64);unique:users_username_key;index:users_username_index_key;column:Username"` // unique; varchar(64)
+	FirstName                string    `json:"first_name" gorm:"type:varchar(64);index:users_firstname_key;column:FirstName"`                             // can be empty, varchar(64)
+	LastName                 string    `json:"last_name" gorm:"type:varchar(64);index:users_lastname_key;column:LastName"`                                // can be empty, varchar(64)
+	DefaultShippingAddressID *string   `json:"default_shipping_address,omitempty" gorm:"type:uuid;column:DefaultShippingAddressID"`
+	DefaultBillingAddressID  *string   `json:"default_billing_address,omitempty" gorm:"type:uuid;column:DefaultBillingAddressID"`
+	Password                 string    `json:"password,omitempty" gorm:"column:Password;type:varchar(128)"`  // varchar(128)
+	AuthData                 *string   `json:"auth_data,omitempty" gorm:"type:varchar(128);column:AuthData"` // varchar(128)
+	AuthService              string    `json:"auth_service" gorm:"type:varchar(20);column:AuthService"`      // varchar(20)
+	EmailVerified            bool      `json:"email_verified,omitempty" gorm:"column:EmailVerified"`
+	Nickname                 string    `json:"nickname" gorm:"type:varchar(64);column:Nickname"` // varchar(64)
+	Roles                    string    `json:"roles" gorm:"type:varchar(200);column:Roles"`      // varchar(200)
+	Props                    StringMap `json:"props,omitempty" gorm:"type:jsonb;column:Props"`
+	NotifyProps              StringMap `json:"notify_props,omitempty" gorm:"type:jsonb;column:NotifyProps"`
+	LastPasswordUpdate       int64     `json:"last_password_update,omitempty" gorm:"column:LastPasswordUpdate"`
+	LastPictureUpdate        int64     `json:"last_picture_update,omitempty" gorm:"column:LastPictureUpdate"`
+	FailedAttempts           int       `json:"failed_attempts,omitempty" gorm:"column:FailedAttempts"`
+	Locale                   string    `json:"locale" gorm:"type:varchar(5);column:Locale"` // user's language; varchar(5); E.g EN
+	Timezone                 StringMap `json:"timezone" gorm:"type:jsonb;column:Timezone"`
+	MfaActive                bool      `json:"mfa_active,omitempty" gorm:"column:MfaActive"`
+	MfaSecret                string    `json:"mfa_secret,omitempty" gorm:"type:varchar(100);column:MfaSecret"`  // varchar(100)
+	CreateAt                 int64     `json:"create_at,omitempty" gorm:"autoCreateTime:milli;column:CreateAt"` // read and create only
+	UpdateAt                 int64     `json:"update_at,omitempty" gorm:"autoUpdateTime:milli;column:UpdateAt"`
+	DeleteAt                 int64     `json:"delete_at" gorm:"type:bigint;column:DeleteAt"`
+	IsActive                 bool      `json:"is_active" gorm:"column:IsActive"`
+	Note                     *string   `json:"note" gorm:"type:varchar(500);column:Note"`                 // varchar(500)
+	JwtTokenKey              string    `json:"jwt_token_key" gorm:"type:varchar(200);column:JwtTokenKey"` // varchar(200)
+	LastActivityAt           int64     `json:"last_activity_at,omitempty" gorm:"type:bigint;column:LastActivityAt"`
+	TermsOfServiceId         string    `json:"terms_of_service_id,omitempty" gorm:"type:uuid;column:TermsOfServiceId"`
+	TermsOfServiceCreateAt   int64     `json:"terms_of_service_create_at,omitempty" gorm:"type:bigint;column:TermsOfServiceCreateAt"`
+	DisableWelcomeEmail      bool      `json:"disable_welcome_email" gorm:"column:DisableWelcomeEmail"`
 	ModelMetadata
 
 	Addresses                   []*Address                    `json:"-" gorm:"many2many:UserAddresses"`
@@ -81,19 +81,9 @@ type User struct {
 	StaffNotificationRecipients []*StaffNotificationRecipient `json:"-" gorm:"foreignKey:UserID"`
 }
 
-func (u *User) BeforeCreate(_ *gorm.DB) error {
-	u.PreSave()
-	return u.IsValid()
-}
-
-func (u *User) BeforeUpdate(_ *gorm.DB) error {
-	u.PreUpdate()
-	return u.IsValid()
-}
-
-func (*User) TableName() string {
-	return UserTableName
-}
+func (u *User) BeforeCreate(_ *gorm.DB) error { u.PreSave(); return u.IsValid() }
+func (u *User) BeforeUpdate(_ *gorm.DB) error { u.PreUpdate(); return u.IsValid() }
+func (u *User) TableName() string             { return UserTableName }
 
 // UserMap is a map from a userId to a user object.
 // It is used to generate methods which can be used for fast serialization/de-serialization.
@@ -107,15 +97,15 @@ type UserUpdate struct {
 
 //msgp:ignore UserPatch
 type UserPatch struct {
-	Username    *string           `json:"username"`
-	Password    *string           `json:"password,omitempty"`
-	Nickname    *string           `json:"nickname"`
-	FirstName   *string           `json:"first_name"`
-	LastName    *string           `json:"last_name"`
-	Email       *string           `json:"email"`
-	Locale      *LanguageCodeEnum `json:"locale"`
-	Timezone    StringMap         `json:"timezone"`
-	NotifyProps StringMap         `json:"notify_props,omitempty"`
+	Username    *string   `json:"username"`
+	Password    *string   `json:"password,omitempty"`
+	Nickname    *string   `json:"nickname"`
+	FirstName   *string   `json:"first_name"`
+	LastName    *string   `json:"last_name"`
+	Email       *string   `json:"email"`
+	Locale      *string   `json:"locale"`
+	Timezone    StringMap `json:"timezone"`
+	NotifyProps StringMap `json:"notify_props,omitempty"`
 }
 
 //msgp:ignore UserAuth
@@ -246,7 +236,7 @@ func (u *User) IsValid() *AppError {
 	if u.Password != "" && u.AuthData != nil && *u.AuthData != "" {
 		return outer("auth_data_pwd", &u.Id)
 	}
-	if !u.Locale.IsValid() {
+	if !LanguageCodeEnum(u.Locale).IsValid() {
 		return outer("locale", &u.Id)
 	}
 	if len(u.Timezone) > 0 {
@@ -288,8 +278,8 @@ func (u *User) commonPre() {
 	if u.Props == nil {
 		u.Props = make(map[string]string)
 	}
-	if u.Locale == "" {
-		u.Locale = DEFAULT_LOCALE
+	if !LanguageCodeEnum(u.Locale).IsValid() {
+		u.Locale = DEFAULT_LOCALE.String()
 	}
 	if u.Timezone == nil {
 		u.Timezone = timezones.DefaultUserTimezone()
@@ -346,7 +336,7 @@ func (u *User) Patch(patch *UserPatch) {
 	if patch.Email != nil {
 		u.Email = *patch.Email
 	}
-	if patch.Locale != nil {
+	if patch.Locale != nil && LanguageCodeEnum(*patch.Locale).IsValid() {
 		u.Locale = *patch.Locale
 	}
 	if patch.Timezone != nil {
