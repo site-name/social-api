@@ -15,7 +15,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
@@ -106,8 +105,10 @@ func (a *ServiceCheckout) AddVariantToCheckout(checkoutInfo *model.CheckoutInfo,
 
 	if line == nil {
 		checkoutLines, appErr := a.CheckoutLinesByOption(&model.CheckoutLineFilterOption{
-			CheckoutID: squirrel.Eq{model.CheckoutLineTableName + ".CheckoutID": checkout.Token},
-			VariantID:  squirrel.Eq{model.CheckoutLineTableName + ".VariantID": variant.Id},
+			Conditions: squirrel.Eq{
+				model.CheckoutLineTableName + ".CheckoutID": checkout.Token,
+				model.CheckoutLineTableName + ".VariantID":  variant.Id,
+			},
 		})
 		if appErr != nil && appErr.StatusCode != http.StatusNotFound { // ignore not found error
 			return nil, nil, appErr
@@ -500,7 +501,7 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*model.Checkout
 
 	go func() {
 		categories, appErr := a.srv.ProductService().CategoriesByOption(&model.CategoryFilterOption{
-			VoucherID: squirrel.Eq{store.VoucherCategoryTableName + ".VoucherID": voucher.Id},
+			VoucherID: squirrel.Eq{model.VoucherCategoryTableName + ".VoucherID": voucher.Id},
 		})
 		if appErr != nil {
 			setErr(appErr)
@@ -875,7 +876,7 @@ func (s *ServiceCheckout) GetValidCollectionPointsForCheckout(lines model.Checko
 		return model.Warehouses{}, nil
 	}
 	checkoutLines, appErr := s.CheckoutLinesByOption(&model.CheckoutLineFilterOption{
-		Id: squirrel.Eq{model.CheckoutLineTableName + ".Id": lines.CheckoutLines().IDs()},
+		Conditions: squirrel.Eq{model.CheckoutLineTableName + ".Id": lines.CheckoutLines().IDs()},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

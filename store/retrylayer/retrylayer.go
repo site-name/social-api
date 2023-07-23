@@ -40,7 +40,6 @@ type RetryLayer struct {
 	CategoryStore                      store.CategoryStore
 	CategoryTranslationStore           store.CategoryTranslationStore
 	ChannelStore                       store.ChannelStore
-	ChannelShopStore                   store.ChannelShopStore
 	CheckoutStore                      store.CheckoutStore
 	CheckoutLineStore                  store.CheckoutLineStore
 	ClusterDiscoveryStore              store.ClusterDiscoveryStore
@@ -63,8 +62,6 @@ type RetryLayer struct {
 	FulfillmentStore                   store.FulfillmentStore
 	FulfillmentLineStore               store.FulfillmentLineStore
 	GiftCardStore                      store.GiftCardStore
-	GiftCardCheckoutStore              store.GiftCardCheckoutStore
-	GiftCardOrderStore                 store.GiftCardOrderStore
 	GiftcardEventStore                 store.GiftcardEventStore
 	InvoiceStore                       store.InvoiceStore
 	InvoiceEventStore                  store.InvoiceEventStore
@@ -210,10 +207,6 @@ func (s *RetryLayer) Channel() store.ChannelStore {
 	return s.ChannelStore
 }
 
-func (s *RetryLayer) ChannelShop() store.ChannelShopStore {
-	return s.ChannelShopStore
-}
-
 func (s *RetryLayer) Checkout() store.CheckoutStore {
 	return s.CheckoutStore
 }
@@ -300,14 +293,6 @@ func (s *RetryLayer) FulfillmentLine() store.FulfillmentLineStore {
 
 func (s *RetryLayer) GiftCard() store.GiftCardStore {
 	return s.GiftCardStore
-}
-
-func (s *RetryLayer) GiftCardCheckout() store.GiftCardCheckoutStore {
-	return s.GiftCardCheckoutStore
-}
-
-func (s *RetryLayer) GiftCardOrder() store.GiftCardOrderStore {
-	return s.GiftCardOrderStore
 }
 
 func (s *RetryLayer) GiftcardEvent() store.GiftcardEventStore {
@@ -651,11 +636,6 @@ type RetryLayerChannelStore struct {
 	Root *RetryLayer
 }
 
-type RetryLayerChannelShopStore struct {
-	store.ChannelShopStore
-	Root *RetryLayer
-}
-
 type RetryLayerCheckoutStore struct {
 	store.CheckoutStore
 	Root *RetryLayer
@@ -763,16 +743,6 @@ type RetryLayerFulfillmentLineStore struct {
 
 type RetryLayerGiftCardStore struct {
 	store.GiftCardStore
-	Root *RetryLayer
-}
-
-type RetryLayerGiftCardCheckoutStore struct {
-	store.GiftCardCheckoutStore
-	Root *RetryLayer
-}
-
-type RetryLayerGiftCardOrderStore struct {
-	store.GiftCardOrderStore
 	Root *RetryLayer
 }
 
@@ -1888,26 +1858,6 @@ func (s *RetryLayerAttributeStore) FilterbyOption(option *model.AttributeFilterO
 
 }
 
-func (s *RetryLayerAttributeStore) GetByOption(option *model.AttributeFilterOption) (*model.Attribute, error) {
-
-	tries := 0
-	for {
-		result, err := s.AttributeStore.GetByOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error) {
 
 	tries := 0
@@ -2508,26 +2458,6 @@ func (s *RetryLayerChannelStore) Get(id string) (*model.Channel, error) {
 
 }
 
-func (s *RetryLayerChannelStore) GetbyOption(option *model.ChannelFilterOption) (*model.Channel, error) {
-
-	tries := 0
-	for {
-		result, err := s.ChannelStore.GetbyOption(option)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
 func (s *RetryLayerChannelStore) Upsert(transaction *gorm.DB, channel *model.Channel) (*model.Channel, error) {
 
 	tries := 0
@@ -2703,26 +2633,6 @@ func (s *RetryLayerCheckoutLineStore) BulkUpdate(checkoutLines []*model.Checkout
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID string) ([]*model.CheckoutLine, error) {
-
-	tries := 0
-	for {
-		result, err := s.CheckoutLineStore.CheckoutLinesByCheckoutID(checkoutID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
 		}
 	}
 
@@ -3894,11 +3804,11 @@ func (s *RetryLayerFileInfoStore) CountAll() (int64, error) {
 
 }
 
-func (s *RetryLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) Get(id string, fromMaster bool) (*model.FileInfo, error) {
 
 	tries := 0
 	for {
-		result, err := s.FileInfoStore.Get(id)
+		result, err := s.FileInfoStore.Get(id, fromMaster)
 		if err == nil {
 			return result, nil
 		}
@@ -3914,87 +3824,7 @@ func (s *RetryLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
 
 }
 
-func (s *RetryLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
-
-	tries := 0
-	for {
-		result, err := s.FileInfoStore.GetByIds(ids)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
-
-	tries := 0
-	for {
-		result, err := s.FileInfoStore.GetByPath(path)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerFileInfoStore) GetForUser(userID string) ([]*model.FileInfo, error) {
-
-	tries := 0
-	for {
-		result, err := s.FileInfoStore.GetForUser(userID)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerFileInfoStore) GetFromMaster(id string) (*model.FileInfo, error) {
-
-	tries := 0
-	for {
-		result, err := s.FileInfoStore.GetFromMaster(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerFileInfoStore) GetWithOptions(page *int, perPage *int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+func (s *RetryLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
 
 	tries := 0
 	for {
@@ -4075,26 +3905,6 @@ func (s *RetryLayerFileInfoStore) PermanentDeleteByUser(userID string) (int64, e
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerFileInfoStore) SetContent(fileID string, content string) error {
-
-	tries := 0
-	for {
-		err := s.FileInfoStore.SetContent(fileID, content)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
 		}
 	}
 
@@ -4405,146 +4215,6 @@ func (s *RetryLayerGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 	tries := 0
 	for {
 		result, err := s.GiftCardStore.GetById(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerGiftCardCheckoutStore) Delete(giftcardID string, checkoutID string) error {
-
-	tries := 0
-	for {
-		err := s.GiftCardCheckoutStore.Delete(giftcardID, checkoutID)
-		if err == nil {
-			return nil
-		}
-		if !isRepeatableError(err) {
-			return err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return err
-		}
-	}
-
-}
-
-func (s *RetryLayerGiftCardCheckoutStore) Get(id string) (*model.GiftCardCheckout, error) {
-
-	tries := 0
-	for {
-		result, err := s.GiftCardCheckoutStore.Get(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerGiftCardCheckoutStore) Save(giftcardOrder *model.GiftCardCheckout) (*model.GiftCardCheckout, error) {
-
-	tries := 0
-	for {
-		result, err := s.GiftCardCheckoutStore.Save(giftcardOrder)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerGiftCardOrderStore) BulkUpsert(transaction *gorm.DB, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
-
-	tries := 0
-	for {
-		result, err := s.GiftCardOrderStore.BulkUpsert(transaction, orderGiftcards...)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerGiftCardOrderStore) FilterByOptions(options *model.OrderGiftCardFilterOptions) ([]*model.OrderGiftCard, error) {
-
-	tries := 0
-	for {
-		result, err := s.GiftCardOrderStore.FilterByOptions(options)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerGiftCardOrderStore) Get(id string) (*model.OrderGiftCard, error) {
-
-	tries := 0
-	for {
-		result, err := s.GiftCardOrderStore.Get(id)
-		if err == nil {
-			return result, nil
-		}
-		if !isRepeatableError(err) {
-			return result, err
-		}
-		tries++
-		if tries >= 3 {
-			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
-			return result, err
-		}
-	}
-
-}
-
-func (s *RetryLayerGiftCardOrderStore) Save(giftcardOrder *model.OrderGiftCard) (*model.OrderGiftCard, error) {
-
-	tries := 0
-	for {
-		result, err := s.GiftCardOrderStore.Save(giftcardOrder)
 		if err == nil {
 			return result, nil
 		}
@@ -10586,7 +10256,6 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.CategoryStore = &RetryLayerCategoryStore{CategoryStore: childStore.Category(), Root: &newStore}
 	newStore.CategoryTranslationStore = &RetryLayerCategoryTranslationStore{CategoryTranslationStore: childStore.CategoryTranslation(), Root: &newStore}
 	newStore.ChannelStore = &RetryLayerChannelStore{ChannelStore: childStore.Channel(), Root: &newStore}
-	newStore.ChannelShopStore = &RetryLayerChannelShopStore{ChannelShopStore: childStore.ChannelShop(), Root: &newStore}
 	newStore.CheckoutStore = &RetryLayerCheckoutStore{CheckoutStore: childStore.Checkout(), Root: &newStore}
 	newStore.CheckoutLineStore = &RetryLayerCheckoutLineStore{CheckoutLineStore: childStore.CheckoutLine(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &RetryLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
@@ -10609,8 +10278,6 @@ func New(childStore store.Store) *RetryLayer {
 	newStore.FulfillmentStore = &RetryLayerFulfillmentStore{FulfillmentStore: childStore.Fulfillment(), Root: &newStore}
 	newStore.FulfillmentLineStore = &RetryLayerFulfillmentLineStore{FulfillmentLineStore: childStore.FulfillmentLine(), Root: &newStore}
 	newStore.GiftCardStore = &RetryLayerGiftCardStore{GiftCardStore: childStore.GiftCard(), Root: &newStore}
-	newStore.GiftCardCheckoutStore = &RetryLayerGiftCardCheckoutStore{GiftCardCheckoutStore: childStore.GiftCardCheckout(), Root: &newStore}
-	newStore.GiftCardOrderStore = &RetryLayerGiftCardOrderStore{GiftCardOrderStore: childStore.GiftCardOrder(), Root: &newStore}
 	newStore.GiftcardEventStore = &RetryLayerGiftcardEventStore{GiftcardEventStore: childStore.GiftcardEvent(), Root: &newStore}
 	newStore.InvoiceStore = &RetryLayerInvoiceStore{InvoiceStore: childStore.Invoice(), Root: &newStore}
 	newStore.InvoiceEventStore = &RetryLayerInvoiceEventStore{InvoiceEventStore: childStore.InvoiceEvent(), Root: &newStore}

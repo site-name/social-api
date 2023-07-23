@@ -31,13 +31,8 @@ func (as *SqlAttributeVariantStore) ModelFields(prefix string) util.AnyArray[str
 }
 
 func (as *SqlAttributeVariantStore) Save(attributeVariant *model.AttributeVariant) (*model.AttributeVariant, error) {
-	attributeVariant.PreSave()
-	if err := attributeVariant.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.AttributeVariantTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-	if _, err := as.GetMaster().NamedExec(query, attributeVariant); err != nil {
+	err := as.GetMaster().Create(attributeVariant).Error
+	if err != nil {
 		if as.IsUniqueConstraintError(err, []string{"AttributeID", "ProductTypeID", "attributevariants_attributeid_producttypeid_key"}) {
 			return nil, store.NewErrInvalidInput(model.AttributeVariantTableName, "AttributeID/ProductTypeID", attributeVariant.AttributeID+"/"+attributeVariant.ProductTypeID)
 		}
@@ -47,33 +42,23 @@ func (as *SqlAttributeVariantStore) Save(attributeVariant *model.AttributeVarian
 	return attributeVariant, nil
 }
 
-func (as *SqlAttributeVariantStore) Get(attributeVariantID string) (*model.AttributeVariant, error) {
+func (as *SqlAttributeVariantStore) Get(id string) (*model.AttributeVariant, error) {
 	var res model.AttributeVariant
-
-	err := as.GetReplica().Get(&res, "SELECT * FROM "+model.AttributeVariantTableName+" WHERE Id = :ID", map[string]interface{}{"ID": attributeVariantID})
+	err := as.GetReplica().First(&res, "Id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.AttributeVariantTableName, attributeVariantID)
+			return nil, store.NewErrNotFound(model.AttributeVariantTableName, id)
 		}
-		return nil, errors.Wrapf(err, "failed to find attribute variant with id=%s", attributeVariantID)
+		return nil, errors.Wrapf(err, "failed to find attribute variant with id=%s", id)
 	}
 
 	return &res, nil
 }
 
 func (s *SqlAttributeVariantStore) commonQueryBuilder(options *model.AttributeVariantFilterOption) squirrel.SelectBuilder {
-	query := s.GetQueryBuilder().Select("*").From(model.AttributeVariantTableName)
+	query := s.GetQueryBuilder().Select("*").From(model.AttributeVariantTableName).Where(options.Conditions)
 
 	// parse option
-	if options.AttributeID != nil {
-		query = query.Where(options.AttributeID)
-	}
-	if options.Id != nil {
-		query = query.Where(options.Id)
-	}
-	if options.ProductTypeID != nil {
-		query = query.Where(options.ProductTypeID)
-	}
 	if value := options.AttributeVisibleInStoreFront; value != nil {
 		query = query.
 			InnerJoin(model.AttributeTableName + " ON Attributes.Id = AttributeVariants.AttributeID").
@@ -90,7 +75,7 @@ func (as *SqlAttributeVariantStore) GetByOption(option *model.AttributeVariantFi
 	}
 	var res model.AttributeVariant
 
-	err = as.GetReplica().Get(&res, queryString, args...)
+	err = as.GetReplica().Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributeVariantTableName, "")
@@ -108,7 +93,7 @@ func (s *SqlAttributeVariantStore) FilterByOptions(options *model.AttributeVaria
 	}
 
 	var res []*model.AttributeVariant
-	err = s.GetReplica().Select(&res, queryString, args...)
+	err = s.GetReplica().Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attribute variant by given options")
 	}

@@ -1,7 +1,6 @@
 package discount
 
 import (
-	"database/sql"
 	"strings"
 	"time"
 
@@ -77,58 +76,12 @@ func (vs *SqlVoucherStore) ScanFields(voucher *model.Voucher) []interface{} {
 
 // Upsert saves or updates given voucher then returns it with an error
 func (vs *SqlVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error) {
-	var saving bool
-
-	if voucher.Id == "" {
-		voucher.PreSave()
-		saving = true
-	} else {
-		voucher.PreUpdate()
-	}
-	if appErr := voucher.IsValid(); appErr != nil {
-		return nil, appErr
-	}
-
-	var (
-		oldVoucher *model.Voucher
-		err        error
-		numUpdated int64
-	)
-
-	if saving {
-		query := "INSERT INTO " + model.VoucherTableName + "(" + vs.ModelFields("").Join(",") + ") VALUES (" + vs.ModelFields(":").Join(",") + ")"
-		_, err = vs.GetMaster().NamedExec(query, voucher)
-	} else {
-
-		oldVoucher, err = vs.Get(voucher.Id)
-		if err != nil {
-			return nil, err
-		}
-
-		voucher.Used = oldVoucher.Used
-
-		query := "UPDATE " + model.VoucherTableName + " SET " + vs.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id=:Id"
-
-		var result sql.Result
-		result, err = vs.GetMaster().NamedExec(query, voucher)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
-		}
-	}
-
+	err := vs.GetMaster().Save(voucher).Error
 	if err != nil {
 		if vs.IsUniqueConstraintError(err, []string{"Code", "vouchers_code_key"}) {
 			return nil, store.NewErrInvalidInput(model.VoucherTableName, "code", voucher.Code)
 		}
 		return nil, errors.Wrapf(err, "failed to upsert voucher with id=%s", voucher.Id)
-	}
-	if numUpdated > 1 {
-		return nil, errors.Errorf("multiple vouchers were updated: %d instead of 1", numUpdated)
 	}
 
 	return voucher, nil
@@ -137,7 +90,7 @@ func (vs *SqlVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error
 // Get finds a voucher with given id, then returns it with an error
 func (vs *SqlVoucherStore) Get(voucherID string) (*model.Voucher, error) {
 	var res model.Voucher
-	err := vs.GetReplica().Get(&res, "SELECT * FROM "+model.VoucherTableName+" WHERE Id = ?", voucherID)
+	err := vs.GetReplica().First(&res, "Id = ?", voucherID).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.VoucherTableName, voucherID)

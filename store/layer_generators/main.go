@@ -96,18 +96,14 @@ func buildStoreImplement() error {
 		"FromWhichPackage": func(s string) string {
 			switch s {
 			case "User", "Address", "UserAddress", "CustomerEvent", "StaffNotificationRecipient",
-				"CustomerNote", "UserAccessToken", "TermsOfService", "Token":
+				"CustomerNote", "UserAccessToken", "TermsOfService", "Token", "Session", "Status":
 				return "account"
 			case "System":
 				return "system"
 			case "Job":
 				return "job"
-			case "Session":
-				return "session"
 			case "Preference":
 				return "preference"
-			case "Status":
-				return "status"
 			case "Role":
 				return "role"
 			case "ClusterDiscovery":
@@ -127,7 +123,7 @@ func buildStoreImplement() error {
 				"VoucherCollection", "VoucherCategory", "VoucherProduct", "VoucherCustomer", "SaleCategoryRelation",
 				"SaleProductRelation", "SaleCollectionRelation", "VoucherProductVariant", "SaleProductVariant":
 				return "discount"
-			case "GiftCard", "GiftCardOrder", "GiftCardCheckout", "GiftcardEvent":
+			case "GiftCard", "GiftcardEvent":
 				return "giftcard"
 			case "InvoiceEvent", "Invoice":
 				return "invoice"

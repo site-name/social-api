@@ -16,7 +16,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
@@ -99,8 +98,10 @@ func (a *ServiceOrder) OrderNeedsAutomaticFulfillment(order model.Order) (bool, 
 func (a *ServiceOrder) GetVoucherDiscountAssignedToOrder(order *model.Order) (*model.OrderDiscount, *model.AppError) {
 	orderDiscountsOfOrder, appErr := a.srv.DiscountService().
 		OrderDiscountsByOption(&model.OrderDiscountFilterOption{
-			Type:    squirrel.Eq{model.OrderDiscountTableName + ".Type": model.VOUCHER},
-			OrderID: squirrel.Eq{model.OrderDiscountTableName + ".OrderID": order.Id},
+			Conditions: squirrel.Eq{
+				model.OrderDiscountTableName + ".Type":    model.VOUCHER,
+				model.OrderDiscountTableName + ".OrderID": order.Id,
+			},
 		})
 
 	if appErr != nil {
@@ -118,8 +119,10 @@ func (a *ServiceOrder) RecalculateOrderDiscounts(transaction *gorm.DB, order *mo
 	var changedOrderDiscounts [][2]*model.OrderDiscount
 
 	orderDiscounts, appErr := a.srv.DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
-		OrderID: squirrel.Eq{model.OrderDiscountTableName + ".OrderID": order.Id},
-		Type:    squirrel.Eq{model.OrderDiscountTableName + ".Type": model.MANUAL},
+		Conditions: squirrel.Eq{
+			model.OrderDiscountTableName + ".OrderID": order.Id,
+			model.OrderDiscountTableName + ".Type":    model.MANUAL,
+		},
 	})
 
 	if appErr != nil {
@@ -707,22 +710,19 @@ func (a *ServiceOrder) UpdateOrderStatus(transaction *gorm.DB, ord model.Order) 
 // AddVariantToOrder Add total_quantity of variant to order.
 //
 // Returns an order line the variant was added to.
-func (s *ServiceOrder) AddVariantToOrder(orDer model.Order, variant model.ProductVariant, quantity int, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, discounts []*model.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model.AppError) {
-	transaction, err := s.srv.Store.GetMaster().Begin()
-	if err != nil {
-		return nil, nil, model.NewAppError("AddVariantToOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-	defer store.FinalizeTransaction(transaction)
+func (s *ServiceOrder) AddVariantToOrder(order model.Order, variant model.ProductVariant, quantity int, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, discounts []*model.DiscountInfo, allocateStock bool) (*model.OrderLine, *model.InsufficientStock, *model.AppError) {
+	transaction := s.srv.Store.GetMaster().Begin()
+	defer transaction.Rollback()
 
 	chanNel, appErr := s.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{model.ChannelTableName + ".Id": orDer.ChannelID},
+		Conditions: squirrel.Eq{model.ChannelTableName + ".Id": order.ChannelID},
 	})
 	if appErr != nil {
 		return nil, nil, appErr
 	}
 
 	orderLinesOfOrder, appErr := s.OrderLinesByOption(&model.OrderLineFilterOption{
-		OrderID:   squirrel.Eq{model.OrderLineTableName + ".OrderID": orDer.Id},
+		OrderID:   squirrel.Eq{model.OrderLineTableName + ".OrderID": order.Id},
 		VariantID: squirrel.Eq{model.OrderLineTableName + ".VariantID": variant.Id},
 	})
 	if appErr != nil {
@@ -843,12 +843,12 @@ func (s *ServiceOrder) AddVariantToOrder(orDer model.Order, variant model.Produc
 			return nil, nil, appErr
 		}
 
-		unitPrice, appErr := manager.CalculateOrderLineUnit(orDer, *orderLine, variant, *product)
+		unitPrice, appErr := manager.CalculateOrderLineUnit(order, *orderLine, variant, *product)
 		if appErr != nil {
 			return nil, nil, appErr
 		}
 
-		totalPrice, appErr = manager.CalculateOrderlineTotal(orDer, *orderLine, variant, *product)
+		totalPrice, appErr = manager.CalculateOrderlineTotal(order, *orderLine, variant, *product)
 		if appErr != nil {
 			return nil, nil, appErr
 		}
@@ -857,7 +857,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer model.Order, variant model.Produc
 		orderLine.TotalPrice = totalPrice
 		orderLine.UnDiscountedUnitPrice = unitPrice
 		orderLine.UnDiscountedTotalPrice = totalPrice
-		orderLine.TaxRate, appErr = manager.GetOrderLineTaxRate(orDer, *product, variant, nil, *unitPrice)
+		orderLine.TaxRate, appErr = manager.GetOrderLineTaxRate(order, *product, variant, nil, *unitPrice)
 		if appErr != nil {
 			return nil, nil, appErr
 		}
@@ -887,7 +887,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer model.Order, variant model.Produc
 	}
 
 	// commit transaction
-	if err := transaction.Commit(); err != nil {
+	if err := transaction.Commit().Error; err != nil {
 		return nil, nil, model.NewAppError("AddVariantToOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -895,7 +895,7 @@ func (s *ServiceOrder) AddVariantToOrder(orDer model.Order, variant model.Produc
 }
 
 // AddGiftcardsToOrder
-func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo model.CheckoutInfo, orDer *model.Order, totalPriceLeft *goprices.Money, user *model.User, _ interface{}) *model.AppError {
+func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo model.CheckoutInfo, order *model.Order, totalPriceLeft *goprices.Money, user *model.User, _ interface{}) *model.AppError {
 	var (
 		balanceData       = model.BalanceData{}
 		usedByUser        = checkoutInfo.User
@@ -917,7 +917,7 @@ func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo mo
 	for _, giftCard := range giftcards {
 		if totalPriceLeft.Amount.GreaterThan(decimal.Zero) {
 			orderGiftcards = append(orderGiftcards, &model.OrderGiftCard{
-				OrderID:    orDer.Id,
+				OrderID:    order.Id,
 				GiftCardID: giftCard.Id,
 			})
 
@@ -939,7 +939,7 @@ func (s *ServiceOrder) AddGiftcardsToOrder(transaction *gorm.DB, checkoutInfo mo
 		return appErr
 	}
 
-	_, appErr = s.srv.GiftcardService().GiftcardsUsedInOrderEvent(transaction, balanceData, orDer.Id, user, nil)
+	_, appErr = s.srv.GiftcardService().GiftcardsUsedInOrderEvent(transaction, balanceData, order.Id, user, nil)
 	return appErr
 }
 
@@ -1451,7 +1451,7 @@ func (a *ServiceOrder) MatchOrdersWithNewUser(user *model.User) *model.AppError 
 // GetTotalOrderDiscount Return total order discount assigned to the order
 func (a *ServiceOrder) GetTotalOrderDiscount(ord *model.Order) (*goprices.Money, *model.AppError) {
 	orderDiscountsOfOrder, appErr := a.srv.DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
-		OrderID: squirrel.Eq{model.OrderDiscountTableName + ".OrderID": ord.Id},
+		Conditions: squirrel.Eq{model.OrderDiscountTableName + ".OrderID": ord.Id},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -1478,8 +1478,10 @@ func (a *ServiceOrder) GetTotalOrderDiscount(ord *model.Order) (*goprices.Money,
 // GetOrderDiscounts Return all discounts applied to the order by staff user
 func (a *ServiceOrder) GetOrderDiscounts(ord *model.Order) ([]*model.OrderDiscount, *model.AppError) {
 	orderDiscounts, appErr := a.srv.DiscountService().OrderDiscountsByOption(&model.OrderDiscountFilterOption{
-		Type:    squirrel.Eq{model.OrderDiscountTableName + ".Type": model.MANUAL},
-		OrderID: squirrel.Eq{model.OrderDiscountTableName + ".OrderID": ord.Id},
+		Conditions: squirrel.Eq{
+			model.OrderDiscountTableName + ".Type":    model.MANUAL,
+			model.OrderDiscountTableName + ".OrderID": ord.Id,
+		},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -1676,7 +1678,7 @@ func (s *ServiceOrder) ValidateDraftOrder(order *model.Order) *model.AppError {
 
 	// validate channel is active
 	channel, appErr := s.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{model.ChannelTableName + ".Id": order.ChannelID},
+		Conditions: squirrel.Eq{model.ChannelTableName + ".Id": order.ChannelID},
 	})
 	if appErr != nil {
 		return appErr

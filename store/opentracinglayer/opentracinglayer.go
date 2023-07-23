@@ -41,7 +41,6 @@ type OpenTracingLayer struct {
 	CategoryStore                      store.CategoryStore
 	CategoryTranslationStore           store.CategoryTranslationStore
 	ChannelStore                       store.ChannelStore
-	ChannelShopStore                   store.ChannelShopStore
 	CheckoutStore                      store.CheckoutStore
 	CheckoutLineStore                  store.CheckoutLineStore
 	ClusterDiscoveryStore              store.ClusterDiscoveryStore
@@ -64,8 +63,6 @@ type OpenTracingLayer struct {
 	FulfillmentStore                   store.FulfillmentStore
 	FulfillmentLineStore               store.FulfillmentLineStore
 	GiftCardStore                      store.GiftCardStore
-	GiftCardCheckoutStore              store.GiftCardCheckoutStore
-	GiftCardOrderStore                 store.GiftCardOrderStore
 	GiftcardEventStore                 store.GiftcardEventStore
 	InvoiceStore                       store.InvoiceStore
 	InvoiceEventStore                  store.InvoiceEventStore
@@ -211,10 +208,6 @@ func (s *OpenTracingLayer) Channel() store.ChannelStore {
 	return s.ChannelStore
 }
 
-func (s *OpenTracingLayer) ChannelShop() store.ChannelShopStore {
-	return s.ChannelShopStore
-}
-
 func (s *OpenTracingLayer) Checkout() store.CheckoutStore {
 	return s.CheckoutStore
 }
@@ -301,14 +294,6 @@ func (s *OpenTracingLayer) FulfillmentLine() store.FulfillmentLineStore {
 
 func (s *OpenTracingLayer) GiftCard() store.GiftCardStore {
 	return s.GiftCardStore
-}
-
-func (s *OpenTracingLayer) GiftCardCheckout() store.GiftCardCheckoutStore {
-	return s.GiftCardCheckoutStore
-}
-
-func (s *OpenTracingLayer) GiftCardOrder() store.GiftCardOrderStore {
-	return s.GiftCardOrderStore
 }
 
 func (s *OpenTracingLayer) GiftcardEvent() store.GiftcardEventStore {
@@ -652,11 +637,6 @@ type OpenTracingLayerChannelStore struct {
 	Root *OpenTracingLayer
 }
 
-type OpenTracingLayerChannelShopStore struct {
-	store.ChannelShopStore
-	Root *OpenTracingLayer
-}
-
 type OpenTracingLayerCheckoutStore struct {
 	store.CheckoutStore
 	Root *OpenTracingLayer
@@ -764,16 +744,6 @@ type OpenTracingLayerFulfillmentLineStore struct {
 
 type OpenTracingLayerGiftCardStore struct {
 	store.GiftCardStore
-	Root *OpenTracingLayer
-}
-
-type OpenTracingLayerGiftCardCheckoutStore struct {
-	store.GiftCardCheckoutStore
-	Root *OpenTracingLayer
-}
-
-type OpenTracingLayerGiftCardOrderStore struct {
-	store.GiftCardOrderStore
 	Root *OpenTracingLayer
 }
 
@@ -1805,24 +1775,6 @@ func (s *OpenTracingLayerAttributeStore) FilterbyOption(option *model.AttributeF
 	return result, err
 }
 
-func (s *OpenTracingLayerAttributeStore) GetByOption(option *model.AttributeFilterOption) (*model.Attribute, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.GetByOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.AttributeStore.GetByOption(option)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "AttributeStore.GetPageTypeAttributes")
@@ -2363,24 +2315,6 @@ func (s *OpenTracingLayerChannelStore) Get(id string) (*model.Channel, error) {
 	return result, err
 }
 
-func (s *OpenTracingLayerChannelStore) GetbyOption(option *model.ChannelFilterOption) (*model.Channel, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelStore.GetbyOption")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.ChannelStore.GetbyOption(option)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
 func (s *OpenTracingLayerChannelStore) Upsert(transaction *gorm.DB, channel *model.Channel) (*model.Channel, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "ChannelStore.Upsert")
@@ -2541,24 +2475,6 @@ func (s *OpenTracingLayerCheckoutLineStore) BulkUpdate(checkoutLines []*model.Ch
 	}
 
 	return err
-}
-
-func (s *OpenTracingLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID string) ([]*model.CheckoutLine, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "CheckoutLineStore.CheckoutLinesByCheckoutID")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.CheckoutLineStore.CheckoutLinesByCheckoutID(checkoutID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
 }
 
 func (s *OpenTracingLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*model.CheckoutLine, []*model.ProductVariant, []*model.Product, error) {
@@ -3618,7 +3534,7 @@ func (s *OpenTracingLayerFileInfoStore) CountAll() (int64, error) {
 	return result, err
 }
 
-func (s *OpenTracingLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
+func (s *OpenTracingLayerFileInfoStore) Get(id string, fromMaster bool) (*model.FileInfo, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.Get")
 	s.Root.Store.SetContext(newCtx)
@@ -3627,7 +3543,7 @@ func (s *OpenTracingLayerFileInfoStore) Get(id string) (*model.FileInfo, error) 
 	}()
 
 	defer span.Finish()
-	result, err := s.FileInfoStore.Get(id)
+	result, err := s.FileInfoStore.Get(id, fromMaster)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -3636,79 +3552,7 @@ func (s *OpenTracingLayerFileInfoStore) Get(id string) (*model.FileInfo, error) 
 	return result, err
 }
 
-func (s *OpenTracingLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetByIds")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.FileInfoStore.GetByIds(ids)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetByPath")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.FileInfoStore.GetByPath(path)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerFileInfoStore) GetForUser(userID string) ([]*model.FileInfo, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetForUser")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.FileInfoStore.GetForUser(userID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerFileInfoStore) GetFromMaster(id string) (*model.FileInfo, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetFromMaster")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.FileInfoStore.GetFromMaster(id)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerFileInfoStore) GetWithOptions(page *int, perPage *int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+func (s *OpenTracingLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
 	origCtx := s.Root.Store.Context()
 	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.GetWithOptions")
 	s.Root.Store.SetContext(newCtx)
@@ -3791,24 +3635,6 @@ func (s *OpenTracingLayerFileInfoStore) PermanentDeleteByUser(userID string) (in
 	}
 
 	return result, err
-}
-
-func (s *OpenTracingLayerFileInfoStore) SetContent(fileID string, content string) error {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "FileInfoStore.SetContent")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	err := s.FileInfoStore.SetContent(fileID, content)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
 }
 
 func (s *OpenTracingLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
@@ -4091,132 +3917,6 @@ func (s *OpenTracingLayerGiftCardStore) GetById(id string) (*model.GiftCard, err
 
 	defer span.Finish()
 	result, err := s.GiftCardStore.GetById(id)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerGiftCardCheckoutStore) Delete(giftcardID string, checkoutID string) error {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardCheckoutStore.Delete")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	err := s.GiftCardCheckoutStore.Delete(giftcardID, checkoutID)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return err
-}
-
-func (s *OpenTracingLayerGiftCardCheckoutStore) Get(id string) (*model.GiftCardCheckout, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardCheckoutStore.Get")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.GiftCardCheckoutStore.Get(id)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerGiftCardCheckoutStore) Save(giftcardOrder *model.GiftCardCheckout) (*model.GiftCardCheckout, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardCheckoutStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.GiftCardCheckoutStore.Save(giftcardOrder)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerGiftCardOrderStore) BulkUpsert(transaction *gorm.DB, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardOrderStore.BulkUpsert")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.GiftCardOrderStore.BulkUpsert(transaction, orderGiftcards...)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerGiftCardOrderStore) FilterByOptions(options *model.OrderGiftCardFilterOptions) ([]*model.OrderGiftCard, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardOrderStore.FilterByOptions")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.GiftCardOrderStore.FilterByOptions(options)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerGiftCardOrderStore) Get(id string) (*model.OrderGiftCard, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardOrderStore.Get")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.GiftCardOrderStore.Get(id)
-	if err != nil {
-		span.LogFields(spanlog.Error(err))
-		ext.Error.Set(span, true)
-	}
-
-	return result, err
-}
-
-func (s *OpenTracingLayerGiftCardOrderStore) Save(giftcardOrder *model.OrderGiftCard) (*model.OrderGiftCard, error) {
-	origCtx := s.Root.Store.Context()
-	span, newCtx := tracing.StartSpanWithParentByContext(s.Root.Store.Context(), "GiftCardOrderStore.Save")
-	s.Root.Store.SetContext(newCtx)
-	defer func() {
-		s.Root.Store.SetContext(origCtx)
-	}()
-
-	defer span.Finish()
-	result, err := s.GiftCardOrderStore.Save(giftcardOrder)
 	if err != nil {
 		span.LogFields(spanlog.Error(err))
 		ext.Error.Set(span, true)
@@ -9745,7 +9445,6 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.CategoryStore = &OpenTracingLayerCategoryStore{CategoryStore: childStore.Category(), Root: &newStore}
 	newStore.CategoryTranslationStore = &OpenTracingLayerCategoryTranslationStore{CategoryTranslationStore: childStore.CategoryTranslation(), Root: &newStore}
 	newStore.ChannelStore = &OpenTracingLayerChannelStore{ChannelStore: childStore.Channel(), Root: &newStore}
-	newStore.ChannelShopStore = &OpenTracingLayerChannelShopStore{ChannelShopStore: childStore.ChannelShop(), Root: &newStore}
 	newStore.CheckoutStore = &OpenTracingLayerCheckoutStore{CheckoutStore: childStore.Checkout(), Root: &newStore}
 	newStore.CheckoutLineStore = &OpenTracingLayerCheckoutLineStore{CheckoutLineStore: childStore.CheckoutLine(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &OpenTracingLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
@@ -9768,8 +9467,6 @@ func New(childStore store.Store, ctx context.Context) *OpenTracingLayer {
 	newStore.FulfillmentStore = &OpenTracingLayerFulfillmentStore{FulfillmentStore: childStore.Fulfillment(), Root: &newStore}
 	newStore.FulfillmentLineStore = &OpenTracingLayerFulfillmentLineStore{FulfillmentLineStore: childStore.FulfillmentLine(), Root: &newStore}
 	newStore.GiftCardStore = &OpenTracingLayerGiftCardStore{GiftCardStore: childStore.GiftCard(), Root: &newStore}
-	newStore.GiftCardCheckoutStore = &OpenTracingLayerGiftCardCheckoutStore{GiftCardCheckoutStore: childStore.GiftCardCheckout(), Root: &newStore}
-	newStore.GiftCardOrderStore = &OpenTracingLayerGiftCardOrderStore{GiftCardOrderStore: childStore.GiftCardOrder(), Root: &newStore}
 	newStore.GiftcardEventStore = &OpenTracingLayerGiftcardEventStore{GiftcardEventStore: childStore.GiftcardEvent(), Root: &newStore}
 	newStore.InvoiceStore = &OpenTracingLayerInvoiceStore{InvoiceStore: childStore.Invoice(), Root: &newStore}
 	newStore.InvoiceEventStore = &OpenTracingLayerInvoiceEventStore{InvoiceEventStore: childStore.InvoiceEvent(), Root: &newStore}

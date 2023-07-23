@@ -15,7 +15,7 @@ import (
 
 func (a *ServiceAttribute) AttributeValuesOfAttribute(attributeID string) (model.AttributeValues, *model.AppError) {
 	return a.FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
-		AttributeID: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attributeID},
+		Conditions: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attributeID},
 	})
 }
 
@@ -99,7 +99,7 @@ func (r *Reordering) orderedNodeMap(transaction *gorm.DB) (map[string]*int, *mod
 		attributeValues, appErr := r.s.FilterAttributeValuesByOptions(model.AttributeValueFilterOptions{
 			Transaction:     transaction,
 			Ordering:        model.AttributeValueTableName + ".SortOrder ASC NULLS LAST",
-			Id:              squirrel.Eq{model.AttributeValueTableName + ".Id": r.Values.IDs()},
+			Conditions:      squirrel.Eq{model.AttributeValueTableName + ".Id": r.Values.IDs()},
 			SelectForUpdate: true,
 		})
 		if appErr != nil {

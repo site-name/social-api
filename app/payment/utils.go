@@ -13,7 +13,6 @@ import (
 	"github.com/sitename/sitename/app/plugin/interfaces"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
@@ -34,7 +33,7 @@ func (a *ServicePayment) CreatePaymentInformation(payMent *model.Payment, paymen
 
 	if payMent.CheckoutID != nil {
 		checkoutOfPayment, appErr := a.srv.CheckoutService().CheckoutByOption(&model.CheckoutFilterOption{
-			Token: squirrel.Eq{model.CheckoutTableName + ".Token": *payMent.CheckoutID},
+			Conditions: squirrel.Eq{model.CheckoutTableName + ".Token": *payMent.CheckoutID},
 		})
 		if appErr != nil && appErr.StatusCode == http.StatusInternalServerError {
 			return nil, appErr // ignore not found error
@@ -384,11 +383,8 @@ func (a *ServicePayment) ValidateGatewayResponse(response *model.GatewayResponse
 // GatewayPostProcess
 func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTransaction, payMent *model.Payment) *model.AppError {
 	// create transaction
-	transaction, err := a.srv.Store.GetMaster().Begin()
-	if err != nil {
-		return model.NewAppError("GatewayPostProcess", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-	defer store.FinalizeTransaction(transaction)
+	transaction := a.srv.Store.GetMaster().Begin()
+	defer transaction.Rollback()
 
 	var (
 		changedFields util.AnyArray[string]
@@ -489,7 +485,7 @@ func (a *ServicePayment) GatewayPostProcess(paymentTransaction model.PaymentTran
 	}
 
 	// commit transaction
-	if err = transaction.Commit(); err != nil {
+	if err := transaction.Commit().Error; err != nil {
 		return model.NewAppError("GatewayPostProcess", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 

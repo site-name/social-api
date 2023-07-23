@@ -4,7 +4,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -15,36 +14,6 @@ type SqlGiftCardStore struct {
 
 func NewSqlGiftCardStore(sqlStore store.Store) store.GiftCardStore {
 	return &SqlGiftCardStore{sqlStore}
-}
-
-func (s *SqlGiftCardStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Code",
-		"CreatedByID",
-		"UsedByID",
-		"CreatedByEmail",
-		"UsedByEmail",
-		"CreateAt",
-		"StartDate",
-		"ExpiryDate",
-		"Tag",
-		"ProductID",
-		"LastUsedOn",
-		"IsActive",
-		"Currency",
-		"InitialBalanceAmount",
-		"CurrentBalanceAmount",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
 }
 
 // BulkUpsert depends on given giftcards's Id properties then perform according operation
@@ -110,7 +79,7 @@ func (gcs *SqlGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...*mode
 
 func (gcs *SqlGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 	var res model.GiftCard
-	if err := gcs.GetReplica().Get(&res, "SELECT * FROM "+model.GiftcardTableName+" WHERE Id = ?", id); err != nil {
+	if err := gcs.GetReplica().First(&res, "Id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.GiftcardTableName, id)
 		}
@@ -331,23 +300,12 @@ func (gs *SqlGiftCardStore) DeactivateOrderGiftcards(orderID string) ([]string, 
 }
 
 func (s *SqlGiftCardStore) DeleteGiftcards(transaction *gorm.DB, ids []string) error {
-	runner := s.GetMaster()
-	if transaction != nil {
-		runner = transaction
+	if transaction == nil {
+		transaction = s.GetMaster()
 	}
-
-	query, args, err := s.GetQueryBuilder().Delete(model.GiftcardTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
-	if err != nil {
-		return errors.Wrap(err, "DeleteGiftcards_ToSql")
-	}
-
-	result, err := runner.Exec(query, args...)
+	err := transaction.Delete(&model.GiftCard{}, "Id IN ?", ids).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete gift cards")
-	}
-	numDeleted, _ := result.RowsAffected()
-	if int(numDeleted) != len(ids) {
-		return errors.Errorf("%d gift card(s) was/were deleted instead of %d", numDeleted, len(ids))
 	}
 
 	return nil

@@ -10,12 +10,12 @@ import (
 // AttributeID unique with PageTypeID
 type AttributePage struct {
 	Id          string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	AttributeID string `json:"attribute_id" gorm:"type:uuid;uniqueIndex:,composite:attributeid_pagetypeid_key;column:AttributeID"` // to Attribute
-	PageTypeID  string `json:"page_type_id" gorm:"type:uuid;uniqueIndex:,composite:attributeid_pagetypeid_key;column:PageTypeID"`  // to PageType
+	AttributeID string `json:"attribute_id" gorm:"type:uuid;index:attributeid_pagetypeid_key;column:AttributeID"` // to Attribute
+	PageTypeID  string `json:"page_type_id" gorm:"type:uuid;index:attributeid_pagetypeid_key;column:PageTypeID"`  // to PageType
 	Sortable
 
 	PageAssignments []*AssignedPageAttribute `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
-	AssignedPages   []*Page                  `json:"-" gorm:"many2many:AssignedPageAttributes"`
+	AssignedPages   []*Page                  `json:"-" gorm:"many2many:AssignedPageAttributes"` // through AssignedPageAttribute
 }
 
 func (*AttributePage) TableName() string               { return AttributePageTableName }
@@ -39,8 +39,9 @@ func (a *AttributePage) IsValid() *AppError {
 
 // ValueID unique together with AssignmentID
 type AssignedPageAttributeValue struct {
-	ValueID      string `json:"value_id" gorm:"primeryKey;type:uuid;column:ValueID;uniqueIndex:,composite:valueid_assignmentid_key"`           // AttributeValue
-	AssignmentID string `json:"assignment_id" gorm:"primeryKey;type:uuid;column:AssignmentID;uniqueIndex:,composite:valueid_assignmentid_key"` // AssignedPageAttribute
+	Id           string `json:"id" gorm:"type:uuid;primaryKey;column:Id;default:gen_random_uuid()"`
+	ValueID      string `json:"value_id" gorm:"primeryKey;type:uuid;column:ValueID;index:valueid_assignmentid_key"`           // AttributeValue
+	AssignmentID string `json:"assignment_id" gorm:"primeryKey;type:uuid;column:AssignmentID;index:valueid_assignmentid_key"` // AssignedPageAttribute
 	Sortable
 }
 
@@ -71,8 +72,8 @@ func (a *AssignedPageAttributeValue) DeepCopy() *AssignedPageAttributeValue {
 // PageID unique together with AssignmentID
 type AssignedPageAttribute struct {
 	Id           string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	PageID       string `json:"page_id" gorm:"type:uuid;column:PageID;uniqueIndex:,composite:pageid_assignmentid_key"`             // Page
-	AssignmentID string `json:"assignment_id" gorm:"type:uuid;column:AssignmentID;uniqueIndex:,composite:pageid_assignmentid_key"` // AttributePage
+	PageID       string `json:"page_id" gorm:"type:uuid;column:PageID;index:pageid_assignmentid_key"`             // Page
+	AssignmentID string `json:"assignment_id" gorm:"type:uuid;column:AssignmentID;index:pageid_assignmentid_key"` // AttributePage
 
 	PageValueAssignments []*AssignedPageAttributeValue `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
 	Values               AttributeValues               `json:"-" gorm:"many2many:AssignedPageAttributeValues"`
@@ -88,16 +89,11 @@ type AssignedPageAttributeFilterOption struct {
 }
 
 func (a *AssignedPageAttribute) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.assigned_page_attribute.is_valid.%s.app_error",
-		"assigned_page_attribute_id=",
-		"AssignedPageAttribute.IsValid",
-	)
 	if !IsValidId(a.PageID) {
-		return outer("page_id", &a.Id)
+		return NewAppError("AssignedPageAttribute.IsValid", "model.assigned_page_attribute.is_valid.page_id.app_error", nil, "", http.StatusBadRequest)
 	}
 	if !IsValidId(a.AssignmentID) {
-		return outer("assignment_id", &a.Id)
+		return NewAppError("AssignedPageAttribute.IsValid", "model.assigned_page_attribute.is_valid.assignment_id.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	return nil

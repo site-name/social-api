@@ -1,11 +1,13 @@
 package model
 
 import (
+	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
+	"gorm.io/gorm"
 )
 
 const (
@@ -26,7 +28,6 @@ const (
 	SESSION_PROP_IS_GUEST             = "is_guest"
 	SESSION_ACTIVITY_TIMEOUT          = 1000 * 60 * 5 // 5 minutes
 	SESSION_USER_ACCESS_TOKEN_EXPIRY  = 100 * 365     // 100 years
-	SESSION_DEVICE_ID_MAX_LENGTH      = 512
 )
 
 type StringMap = StringMAP
@@ -35,19 +36,23 @@ type StringMap = StringMAP
 // This struct's serializer methods are auto-generated. If a new field is added/removed,
 // please run make gen-serialized.
 type Session struct {
-	Id             string    `json:"id"`
-	Token          string    `json:"token"`
-	CreateAt       int64     `json:"create_at"`
-	ExpiresAt      int64     `json:"expires_at"`
-	LastActivityAt int64     `json:"last_activity_at"`
-	UserId         string    `json:"user_id"` // uuid
-	DeviceId       string    `json:"device_id"`
-	Roles          string    `json:"roles"`
-	IsOAuth        bool      `json:"is_oauth"`
-	ExpiredNotify  bool      `json:"expired_notify"`
-	Props          StringMap `json:"props"`
-	Local          bool      `json:"local" db:"-"`
+	Id             string    `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Token          string    `json:"token" gorm:"type:uuid;default:gen_random_uuid();column:Token;index:token_key"` // index, uuid
+	CreateAt       int64     `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`
+	ExpiresAt      int64     `json:"expires_at" gorm:"type:bigint;column:ExpiresAt"`
+	LastActivityAt int64     `json:"last_activity_at" gorm:"type:bigint;column:LastActivityAt;autoUpdateTime:milli;autoCreateTime:milli"`
+	UserId         string    `json:"user_id" column:"type:uuid;column:UserId;index:userid_key"` // uuid, index
+	DeviceId       string    `json:"device_id" gorm:"type:varchar(512);column:DeviceId"`
+	Roles          string    `json:"roles" gorm:"type:varchar(256);column:Roles"`
+	IsOAuth        bool      `json:"is_oauth" gorm:"column:IsOauth"`
+	ExpiredNotify  bool      `json:"expired_notify" gorm:"column:ExpiredNotify"`
+	Props          StringMap `json:"props" gorm:"type:jsonb;column:Props"`
+	Local          bool      `json:"local" gorm:"-"` // this field is populated at some point
 }
+
+func (s *Session) BeforeCreate(_ *gorm.DB) error { s.commonPre(); return s.IsValid() }
+func (s *Session) BeforeUpdate(_ *gorm.DB) error { s.commonPre(); return s.IsValid() }
+func (s *Session) TableName() string             { return SessionTableName }
 
 // Returns true if the session is unrestricted, which should grant it
 // with all permissions. This is used for local mode sessions
@@ -69,35 +74,15 @@ func (s *Session) ToJSON() string {
 	return ModelToJson(s)
 }
 
-func (s *Session) PreSave() {
-	if s.Id == "" {
-		s.Id = NewId()
-	}
-	if s.Token == "" {
-		s.Token = NewId()
-	}
-	s.CreateAt = GetMillis()
-	s.LastActivityAt = s.CreateAt
-
+func (s *Session) commonPre() {
 	if s.Props == nil {
 		s.Props = make(map[string]string)
 	}
 }
 
 func (s *Session) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.session.is_valid.%s.app_error",
-		"session_id=",
-		"Session.IsValid",
-	)
-	if !IsValidId(s.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(s.UserId) {
-		return outer("user_id", &s.Id)
-	}
-	if s.DeviceId != "" && len(s.DeviceId) > SESSION_DEVICE_ID_MAX_LENGTH {
-		return outer("device_id", &s.Id)
+		return NewAppError("Session.IsValid", "model.session.is_valid.user_id.app_error", nil, "", http.StatusBadRequest)
 	}
 	return nil
 }

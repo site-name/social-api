@@ -1,7 +1,6 @@
 package attribute
 
 import (
-	"database/sql"
 	"fmt"
 	"strings"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
-	"gorm.io/gorm"
 )
 
 type SqlAttributeStore struct {
@@ -73,53 +71,13 @@ func (as *SqlAttributeStore) ScanFields(v *model.Attribute) []interface{} {
 
 // Upsert inserts or updates given attribute then returns it
 func (as *SqlAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, error) {
-	var isSaving bool
-
-	if !model.IsValidId(attr.Id) {
-		attr.Id = ""
-		isSaving = true
-		attr.PreSave()
-	} else {
-		attr.PreUpdate()
-	}
-
-	if err := attr.IsValid(); err != nil {
-		return nil, err
-	}
-
-	var (
-		err        error
-		numUpdated int64
-	)
-
-	if isSaving {
-		query := "INSERT INTO " + model.AttributeTableName + " (" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-		_, err = as.GetMaster().NamedExec(query, attr)
-
-	} else {
-		query := "UPDATE " + model.AttributeTableName + " SET " +
-			as.ModelFields("").
-				Map(func(_ int, s string) string {
-					return s + "=:" + s
-				}).
-				Join(",") + " WHERE Id=:Id"
-
-		var result sql.Result
-		result, err = as.GetMaster().NamedExec(query, attr)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
-		}
-	}
+	err := as.GetMaster().Save(attr).Error
 
 	if err != nil {
-		if as.IsUniqueConstraintError(err, []string{"Slug", "attributes_slug_key", "idx_attributes_slug_unique"}) {
-			attr.Slug = attr.Slug + model.NewRandomString(5)
-			return as.Upsert(attr)
+		if as.IsUniqueConstraintError(err, []string{"Slug", "attributes_slug_key", "idx_attributes_slug_unique", "slug_unique_key"}) {
+			return nil, store.NewErrInvalidInput(model.AttributeTableName, "Slug", attr.Slug)
 		}
 		return nil, errors.Wrap(err, "failed to upsert attribute")
-	}
-	if numUpdated > 1 {
-		return nil, errors.Errorf("%d attribute(s) was/were updated instead of 1", numUpdated)
 	}
 
 	return attr, nil
@@ -128,55 +86,29 @@ func (as *SqlAttributeStore) Upsert(attr *model.Attribute) (*model.Attribute, er
 func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOption) squirrel.SelectBuilder {
 	query := as.GetQueryBuilder().
 		Select(as.ModelFields(model.AttributeTableName + ".")...).
-		From(model.AttributeTableName)
+		From(model.AttributeTableName).
+		Where(option.Conditions)
 
 	// parse options
 	if option.OrderBy != "" {
 		query = query.OrderBy(option.OrderBy)
 	}
-	if option.Id != nil {
-		query = query.Where(option.Id)
-	}
-
-	fieldValuesMap := map[string]*bool{
-		"Attributes.VisibleInStoreFront":    option.VisibleInStoreFront,
-		"Attributes.ValueRequired":          option.ValueRequired,
-		"Attributes.IsVariantOnly":          option.IsVariantOnly,
-		"Attributes.FilterableInStorefront": option.FilterableInStorefront,
-		"Attributes.FilterableInDashboard":  option.FilterableInDashboard,
-		"Attributes.AvailableInGrid":        option.AvailableInGrid,
-	}
-
-	for fieldName, value := range fieldValuesMap {
-		if value != nil {
-			query = query.Where(squirrel.Eq{fieldName: *value})
-		}
-	}
-
-	if option.Type != nil {
-		query = query.Where(option.Type)
-	}
 	if option.Distinct {
 		query = query.Distinct()
 	}
-	if option.Slug != nil {
-		query = query.Where(option.Slug)
+	if option.Limit > 0 {
+		query = query.Limit(uint64(option.Limit))
 	}
-	if option.InputType != nil {
-		query = query.Where(option.InputType)
-	}
-	if option.Extra != nil {
-		query = query.Where(option.Extra)
-	}
-	if option.ProductTypes != nil {
+
+	if option.AttributeProduct_ProductTypeID != nil {
 		query = query.
 			InnerJoin(model.AttributeProductTableName + " ON (AttributeProducts.AttributeID = Attributes.Id)").
-			Where(option.ProductTypes)
+			Where(option.AttributeProduct_ProductTypeID)
 	}
-	if option.ProductVariantTypes != nil {
+	if option.AttributeVariant_ProductTypeID != nil {
 		query = query.
 			InnerJoin(model.AttributeVariantTableName + " ON (AttributeVariants.AttributeID = Attributes.Id)").
-			Where(option.ProductVariantTypes)
+			Where(option.AttributeVariant_ProductTypeID)
 	}
 	if option.Metadata != nil && len(option.Metadata) > 0 {
 		delete(option.Metadata, "")
@@ -199,7 +131,6 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 	}
 
 	if option.InCategory != nil || option.InCollection != nil {
-
 		var channelIdOrSlug string
 		if option.Channel != nil {
 			channelIdOrSlug = *option.Channel
@@ -214,12 +145,12 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 
 			if !option.UserIsShopStaff {
 				productQuery = productQuery.Column(`(
-					SELECT PC.VisibleInListings
-					FROM ProductChannelListings PC
-					INNER JOIN Channels C ON C.Id = PC.ChannelID
+					SELECT ProductChannelListings.VisibleInListings
+					FROM ProductChannelListings
+					INNER JOIN Channels ON Channels.Id = ProductChannelListings.ChannelID
 					WHERE (
-						(C.Id = ? OR C.Slug = ?)
-						AND PC.ProductID = Products.Id
+						(Channels.Id = ? OR Channels.Slug = ?)
+						AND ProductChannelListings.ProductID = Products.Id
 					)
 					LIMIT 1
 				) AS VisibleInListings`, channelIdOrSlug, channelIdOrSlug).
@@ -228,8 +159,8 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 
 		} else if option.InCollection != nil {
 			productQuery = productQuery.
-				InnerJoin(model.CollectionProductRelationTableName+" PC ON PC.ProductID = Products.Id").
-				Where("PC.CollectionID = ?", *option.InCollection)
+				InnerJoin(model.CollectionProductRelationTableName+" ON ProductCollections.ProductID = Products.Id").
+				Where("ProductCollections.CollectionID = ?", *option.InCollection)
 		}
 		//
 		products, err := as.Product().FilterByQuery(productQuery)
@@ -240,45 +171,15 @@ func (as *SqlAttributeStore) commonQueryBuilder(option *model.AttributeFilterOpt
 
 		productTypeIDs := products.ProductTypeIDs()
 		query = query.
-			LeftJoin(model.AttributeVariantTableName + " AV ON AV.AttributeID = Attributes.Id").
-			LeftJoin(model.AttributeProductTableName + " AP ON AP.AttributeID = Attributes.Id").
+			LeftJoin(model.AttributeVariantTableName + " ON AttributeVariants.AttributeID = Attributes.Id").
+			LeftJoin(model.AttributeProductTableName + " ON AttributeProducts.AttributeID = Attributes.Id").
 			Where(squirrel.Or{
-				squirrel.Eq{"AV.ProductTypeID": productTypeIDs},
-				squirrel.Eq{"AP.ProductTypeID": productTypeIDs},
+				squirrel.Eq{"AttributeVariants.ProductTypeID": productTypeIDs},
+				squirrel.Eq{"AttributeProducts.ProductTypeID": productTypeIDs},
 			})
 	}
 
 	return query
-}
-
-func (as *SqlAttributeStore) GetByOption(option *model.AttributeFilterOption) (*model.Attribute, error) {
-	queryString, args, err := as.commonQueryBuilder(option).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "GetByOption_ToSql")
-	}
-
-	var res model.Attribute
-	err = as.GetReplica().Get(&res, queryString, args...)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.AttributeTableName, "options")
-		}
-		return nil, errors.Wrap(err, "failed to find attribute by option")
-	}
-
-	// check if we need to prefetch related attribute values of found attributes
-	if option.PrefetchRelatedAttributeValues {
-		attributeValues, err := as.AttributeValue().FilterByOptions(model.AttributeValueFilterOptions{
-			AttributeID: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": res.Id},
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		res.SetAttributeValues(attributeValues)
-	}
-
-	return &res, nil
 }
 
 // FilterbyOption returns a list of attributes by given option
@@ -289,7 +190,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption)
 	}
 
 	var attributes model.Attributes
-	err = as.GetReplica().Select(&attributes, queryString, args...)
+	err = as.GetReplica().Raw(queryString, args...).Scan(&attributes).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attributes with given option")
 	}
@@ -297,7 +198,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption)
 	// check if we need to prefetch related attribute values of found attributes
 	if option.PrefetchRelatedAttributeValues && len(attributes) > 0 {
 		attributeValues, err := as.AttributeValue().FilterByOptions(model.AttributeValueFilterOptions{
-			AttributeID: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attributes.IDs()},
+			Conditions: squirrel.Eq{model.AttributeValueTableName + ".AttributeID": attributes.IDs()},
 		})
 		if err != nil {
 			return nil, err
@@ -309,10 +210,7 @@ func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption)
 		}
 
 		for _, attr := range attributes {
-			values, ok := attributeValueMap[attr.Id]
-			if ok {
-				attr.SetAttributeValues(values)
-			}
+			attr.AttributeValues = attributeValueMap[attr.Id]
 		}
 	}
 
@@ -320,20 +218,19 @@ func (as *SqlAttributeStore) FilterbyOption(option *model.AttributeFilterOption)
 }
 
 func (as *SqlAttributeStore) Delete(ids ...string) (int64, error) {
-	result, err := as.GetMaster().Exec("DELETE FROM "+model.AttributeTableName+" WHERE Id IN ?", ids)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to delete attributes")
+	result := as.GetMaster().Raw("DELETE FROM "+model.AttributeTableName+" WHERE Id IN ?", ids)
+	if result.Error != nil {
+		return 0, errors.Wrap(result.Error, "failed to delete attributes")
 	}
 
-	rows, _ := result.RowsAffected()
-	return rows, nil
+	return result.RowsAffected, nil
 }
 
 func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.Attributes, error) {
 	if filter == nil {
 		filter = new(model.AttributeFilterOption)
 	}
-	filter.Type = squirrel.Eq{model.AttributeTableName + ".Type": model.PRODUCT_TYPE}
+	filter.Conditions = squirrel.Eq{model.AttributeTableName + ".Type": model.PRODUCT_TYPE}
 	filter.Distinct = true
 	sqQuery := s.commonQueryBuilder(filter)
 
@@ -367,7 +264,7 @@ func (s *SqlAttributeStore) GetProductTypeAttributes(productTypeID string, unass
 	}
 
 	var res model.Attributes
-	err = s.GetReplica().Select(&res, query, args...)
+	err = s.GetReplica().Raw(query, args...).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find product type attributes with given product type id")
 	}
@@ -400,7 +297,7 @@ func (s *SqlAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned 
 	}
 
 	var res model.Attributes
-	err := s.GetReplica().Select(&res, query, model.PAGE_TYPE, pageTypeID)
+	err := s.GetReplica().Raw(query, model.PAGE_TYPE, pageTypeID).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find page type attribute with given page type id")
 	}

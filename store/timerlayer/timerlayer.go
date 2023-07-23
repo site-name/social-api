@@ -40,7 +40,6 @@ type TimerLayer struct {
 	CategoryStore                      store.CategoryStore
 	CategoryTranslationStore           store.CategoryTranslationStore
 	ChannelStore                       store.ChannelStore
-	ChannelShopStore                   store.ChannelShopStore
 	CheckoutStore                      store.CheckoutStore
 	CheckoutLineStore                  store.CheckoutLineStore
 	ClusterDiscoveryStore              store.ClusterDiscoveryStore
@@ -63,8 +62,6 @@ type TimerLayer struct {
 	FulfillmentStore                   store.FulfillmentStore
 	FulfillmentLineStore               store.FulfillmentLineStore
 	GiftCardStore                      store.GiftCardStore
-	GiftCardCheckoutStore              store.GiftCardCheckoutStore
-	GiftCardOrderStore                 store.GiftCardOrderStore
 	GiftcardEventStore                 store.GiftcardEventStore
 	InvoiceStore                       store.InvoiceStore
 	InvoiceEventStore                  store.InvoiceEventStore
@@ -210,10 +207,6 @@ func (s *TimerLayer) Channel() store.ChannelStore {
 	return s.ChannelStore
 }
 
-func (s *TimerLayer) ChannelShop() store.ChannelShopStore {
-	return s.ChannelShopStore
-}
-
 func (s *TimerLayer) Checkout() store.CheckoutStore {
 	return s.CheckoutStore
 }
@@ -300,14 +293,6 @@ func (s *TimerLayer) FulfillmentLine() store.FulfillmentLineStore {
 
 func (s *TimerLayer) GiftCard() store.GiftCardStore {
 	return s.GiftCardStore
-}
-
-func (s *TimerLayer) GiftCardCheckout() store.GiftCardCheckoutStore {
-	return s.GiftCardCheckoutStore
-}
-
-func (s *TimerLayer) GiftCardOrder() store.GiftCardOrderStore {
-	return s.GiftCardOrderStore
 }
 
 func (s *TimerLayer) GiftcardEvent() store.GiftcardEventStore {
@@ -651,11 +636,6 @@ type TimerLayerChannelStore struct {
 	Root *TimerLayer
 }
 
-type TimerLayerChannelShopStore struct {
-	store.ChannelShopStore
-	Root *TimerLayer
-}
-
 type TimerLayerCheckoutStore struct {
 	store.CheckoutStore
 	Root *TimerLayer
@@ -763,16 +743,6 @@ type TimerLayerFulfillmentLineStore struct {
 
 type TimerLayerGiftCardStore struct {
 	store.GiftCardStore
-	Root *TimerLayer
-}
-
-type TimerLayerGiftCardCheckoutStore struct {
-	store.GiftCardCheckoutStore
-	Root *TimerLayer
-}
-
-type TimerLayerGiftCardOrderStore struct {
-	store.GiftCardOrderStore
 	Root *TimerLayer
 }
 
@@ -1727,22 +1697,6 @@ func (s *TimerLayerAttributeStore) FilterbyOption(option *model.AttributeFilterO
 	return result, err
 }
 
-func (s *TimerLayerAttributeStore) GetByOption(option *model.AttributeFilterOption) (*model.Attribute, error) {
-	start := timemodule.Now()
-
-	result, err := s.AttributeStore.GetByOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("AttributeStore.GetByOption", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerAttributeStore) GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error) {
 	start := timemodule.Now()
 
@@ -2223,22 +2177,6 @@ func (s *TimerLayerChannelStore) Get(id string) (*model.Channel, error) {
 	return result, err
 }
 
-func (s *TimerLayerChannelStore) GetbyOption(option *model.ChannelFilterOption) (*model.Channel, error) {
-	start := timemodule.Now()
-
-	result, err := s.ChannelStore.GetbyOption(option)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.GetbyOption", success, elapsed)
-	}
-	return result, err
-}
-
 func (s *TimerLayerChannelStore) Upsert(transaction *gorm.DB, channel *model.Channel) (*model.Channel, error) {
 	start := timemodule.Now()
 
@@ -2381,22 +2319,6 @@ func (s *TimerLayerCheckoutLineStore) BulkUpdate(checkoutLines []*model.Checkout
 		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.BulkUpdate", success, elapsed)
 	}
 	return err
-}
-
-func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutID(checkoutID string) ([]*model.CheckoutLine, error) {
-	start := timemodule.Now()
-
-	result, err := s.CheckoutLineStore.CheckoutLinesByCheckoutID(checkoutID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("CheckoutLineStore.CheckoutLinesByCheckoutID", success, elapsed)
-	}
-	return result, err
 }
 
 func (s *TimerLayerCheckoutLineStore) CheckoutLinesByCheckoutWithPrefetch(checkoutID string) ([]*model.CheckoutLine, []*model.ProductVariant, []*model.Product, error) {
@@ -3342,10 +3264,10 @@ func (s *TimerLayerFileInfoStore) CountAll() (int64, error) {
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) Get(id string, fromMaster bool) (*model.FileInfo, error) {
 	start := timemodule.Now()
 
-	result, err := s.FileInfoStore.Get(id)
+	result, err := s.FileInfoStore.Get(id, fromMaster)
 
 	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
 	if s.Root.Metrics != nil {
@@ -3358,71 +3280,7 @@ func (s *TimerLayerFileInfoStore) Get(id string) (*model.FileInfo, error) {
 	return result, err
 }
 
-func (s *TimerLayerFileInfoStore) GetByIds(ids []string) ([]*model.FileInfo, error) {
-	start := timemodule.Now()
-
-	result, err := s.FileInfoStore.GetByIds(ids)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.GetByIds", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerFileInfoStore) GetByPath(path string) (*model.FileInfo, error) {
-	start := timemodule.Now()
-
-	result, err := s.FileInfoStore.GetByPath(path)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.GetByPath", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerFileInfoStore) GetForUser(userID string) ([]*model.FileInfo, error) {
-	start := timemodule.Now()
-
-	result, err := s.FileInfoStore.GetForUser(userID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.GetForUser", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerFileInfoStore) GetFromMaster(id string) (*model.FileInfo, error) {
-	start := timemodule.Now()
-
-	result, err := s.FileInfoStore.GetFromMaster(id)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.GetFromMaster", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerFileInfoStore) GetWithOptions(page *int, perPage *int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
+func (s *TimerLayerFileInfoStore) GetWithOptions(page int, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) {
 	start := timemodule.Now()
 
 	result, err := s.FileInfoStore.GetWithOptions(page, perPage, opt)
@@ -3499,22 +3357,6 @@ func (s *TimerLayerFileInfoStore) PermanentDeleteByUser(userID string) (int64, e
 		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.PermanentDeleteByUser", success, elapsed)
 	}
 	return result, err
-}
-
-func (s *TimerLayerFileInfoStore) SetContent(fileID string, content string) error {
-	start := timemodule.Now()
-
-	err := s.FileInfoStore.SetContent(fileID, content)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("FileInfoStore.SetContent", success, elapsed)
-	}
-	return err
 }
 
 func (s *TimerLayerFileInfoStore) Upsert(info *model.FileInfo) (*model.FileInfo, error) {
@@ -3769,118 +3611,6 @@ func (s *TimerLayerGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.GetById", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerGiftCardCheckoutStore) Delete(giftcardID string, checkoutID string) error {
-	start := timemodule.Now()
-
-	err := s.GiftCardCheckoutStore.Delete(giftcardID, checkoutID)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardCheckoutStore.Delete", success, elapsed)
-	}
-	return err
-}
-
-func (s *TimerLayerGiftCardCheckoutStore) Get(id string) (*model.GiftCardCheckout, error) {
-	start := timemodule.Now()
-
-	result, err := s.GiftCardCheckoutStore.Get(id)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardCheckoutStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerGiftCardCheckoutStore) Save(giftcardOrder *model.GiftCardCheckout) (*model.GiftCardCheckout, error) {
-	start := timemodule.Now()
-
-	result, err := s.GiftCardCheckoutStore.Save(giftcardOrder)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardCheckoutStore.Save", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerGiftCardOrderStore) BulkUpsert(transaction *gorm.DB, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) {
-	start := timemodule.Now()
-
-	result, err := s.GiftCardOrderStore.BulkUpsert(transaction, orderGiftcards...)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardOrderStore.BulkUpsert", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerGiftCardOrderStore) FilterByOptions(options *model.OrderGiftCardFilterOptions) ([]*model.OrderGiftCard, error) {
-	start := timemodule.Now()
-
-	result, err := s.GiftCardOrderStore.FilterByOptions(options)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardOrderStore.FilterByOptions", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerGiftCardOrderStore) Get(id string) (*model.OrderGiftCard, error) {
-	start := timemodule.Now()
-
-	result, err := s.GiftCardOrderStore.Get(id)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardOrderStore.Get", success, elapsed)
-	}
-	return result, err
-}
-
-func (s *TimerLayerGiftCardOrderStore) Save(giftcardOrder *model.OrderGiftCard) (*model.OrderGiftCard, error) {
-	start := timemodule.Now()
-
-	result, err := s.GiftCardOrderStore.Save(giftcardOrder)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if err == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardOrderStore.Save", success, elapsed)
 	}
 	return result, err
 }
@@ -8847,7 +8577,6 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.CategoryStore = &TimerLayerCategoryStore{CategoryStore: childStore.Category(), Root: &newStore}
 	newStore.CategoryTranslationStore = &TimerLayerCategoryTranslationStore{CategoryTranslationStore: childStore.CategoryTranslation(), Root: &newStore}
 	newStore.ChannelStore = &TimerLayerChannelStore{ChannelStore: childStore.Channel(), Root: &newStore}
-	newStore.ChannelShopStore = &TimerLayerChannelShopStore{ChannelShopStore: childStore.ChannelShop(), Root: &newStore}
 	newStore.CheckoutStore = &TimerLayerCheckoutStore{CheckoutStore: childStore.Checkout(), Root: &newStore}
 	newStore.CheckoutLineStore = &TimerLayerCheckoutLineStore{CheckoutLineStore: childStore.CheckoutLine(), Root: &newStore}
 	newStore.ClusterDiscoveryStore = &TimerLayerClusterDiscoveryStore{ClusterDiscoveryStore: childStore.ClusterDiscovery(), Root: &newStore}
@@ -8870,8 +8599,6 @@ func New(childStore store.Store, metrics einterfaces.MetricsInterface) *TimerLay
 	newStore.FulfillmentStore = &TimerLayerFulfillmentStore{FulfillmentStore: childStore.Fulfillment(), Root: &newStore}
 	newStore.FulfillmentLineStore = &TimerLayerFulfillmentLineStore{FulfillmentLineStore: childStore.FulfillmentLine(), Root: &newStore}
 	newStore.GiftCardStore = &TimerLayerGiftCardStore{GiftCardStore: childStore.GiftCard(), Root: &newStore}
-	newStore.GiftCardCheckoutStore = &TimerLayerGiftCardCheckoutStore{GiftCardCheckoutStore: childStore.GiftCardCheckout(), Root: &newStore}
-	newStore.GiftCardOrderStore = &TimerLayerGiftCardOrderStore{GiftCardOrderStore: childStore.GiftCardOrder(), Root: &newStore}
 	newStore.GiftcardEventStore = &TimerLayerGiftcardEventStore{GiftcardEventStore: childStore.GiftcardEvent(), Root: &newStore}
 	newStore.InvoiceStore = &TimerLayerInvoiceStore{InvoiceStore: childStore.Invoice(), Root: &newStore}
 	newStore.InvoiceEventStore = &TimerLayerInvoiceEventStore{InvoiceEventStore: childStore.InvoiceEvent(), Root: &newStore}

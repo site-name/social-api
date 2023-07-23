@@ -920,7 +920,7 @@ func (a *ServiceFile) generateMiniPreviewForInfos(fileInfos []*model.FileInfo) {
 
 // GetFileInfo get fileInfo object from database with given fileID, populates its "MiniPreview" and returns it.
 func (a *ServiceFile) GetFileInfos(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, *model.AppError) {
-	fileInfos, err := a.srv.Store.FileInfo().GetWithOptions(&page, &perPage, opt)
+	fileInfos, err := a.srv.Store.FileInfo().GetWithOptions(page, perPage, opt)
 	if err != nil {
 		var invErr *store.ErrInvalidInput
 		var ltErr *store.ErrLimitExceeded
@@ -940,7 +940,7 @@ func (a *ServiceFile) GetFileInfos(page, perPage int, opt *model.GetFileInfosOpt
 }
 
 func (a *ServiceFile) GetFileInfo(fileID string) (*model.FileInfo, *model.AppError) {
-	fileInfo, err := a.srv.Store.FileInfo().Get(fileID)
+	fileInfo, err := a.srv.Store.FileInfo().Get(fileID, false)
 	if err != nil {
 		var nfErr *store.ErrNotFound
 		switch {
@@ -975,7 +975,7 @@ func (a *ServiceFile) CopyFileInfos(userID string, fileIDs []string) ([]string, 
 	now := model.GetMillis()
 
 	for _, fileID := range fileIDs {
-		fileInfo, err := a.srv.Store.FileInfo().Get(fileID)
+		fileInfo, err := a.srv.Store.FileInfo().Get(fileID, false)
 		if err != nil {
 			var nfErr *store.ErrNotFound
 			switch {

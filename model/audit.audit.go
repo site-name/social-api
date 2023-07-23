@@ -31,12 +31,6 @@ func (a *Audit) IsValid() *AppError {
 	return nil
 }
 
-func AuditFromJson(data io.Reader) *Audit {
-	var a *Audit
-	ModelFromJson(&a, data)
-	return a
-}
-
 type Audits []Audit
 
 func (o Audits) Etag() string {

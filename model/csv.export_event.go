@@ -1,7 +1,10 @@
 package model
 
 import (
+	"net/http"
+
 	"github.com/Masterminds/squirrel"
+	"gorm.io/gorm"
 )
 
 type ExportEventType string
@@ -31,53 +34,26 @@ func (t ExportEventType) IsValid() bool {
 
 // Model used to store events that happened during the export file lifecycle.
 type ExportEvent struct {
-	Id           string          `json:"id"`
-	Date         int64           `json:"date"`
-	Type         ExportEventType `json:"type"`
-	Parameters   *StringMap      `json:"parameters"`
-	ExportFileID string          `json:"export_file_id"`
-	UserID       *string         `json:"user_id"`
+	Id           string          `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Date         int64           `json:"date" gorm:"type:bigint;column:Date;autoCreateTime:milli"` // NOTE editable
+	Type         ExportEventType `json:"type" gorm:"type:varchar(255);column:Type"`
+	Parameters   *StringMap      `json:"parameters" gorm:"type:jsonb;column:Parameters"`
+	ExportFileID string          `json:"export_file_id" gorm:"type:uuid;column:ExportFileID"` // delete CASCADE
+	UserID       *string         `json:"user_id" gorm:"type:uuid;column:UserID"`              // delete CASCADE
 }
+
+func (c *ExportEvent) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
+func (c *ExportEvent) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }
+func (c *ExportEvent) TableName() string             { return CsvExportEventTableName }
 
 // ExportEventFilterOption is used to build squirrel queries
 type ExportEventFilterOption struct {
-	Id           squirrel.Sqlizer
-	ExportFileID squirrel.Sqlizer
-	UserID       squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
 func (e *ExportEvent) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"export_event.is_valid.%s.app_error",
-		"export_event_id",
-		"ExportEvent.IsValid",
-	)
-	if !IsValidId(e.Id) {
-		return outer("id", nil)
-	}
-	if !IsValidId(e.ExportFileID) {
-		return outer("export_file_id", &e.Id)
-	}
-	if e.UserID != nil && !IsValidId(*e.UserID) {
-		return outer("user_id", &e.Id)
-	}
 	if !e.Type.IsValid() {
-		return outer("type", &e.Id)
+		return NewAppError("ExportEvent.IsValid", "model.export_event.is_valid.type.app_error", nil, "export event type is invalid", http.StatusBadRequest)
 	}
-	if e.Date == 0 {
-		return outer("date", &e.Id)
-	}
-
 	return nil
-}
-
-func (e *ExportEvent) ToJSON() string {
-	return ModelToJson(e)
-}
-
-func (e *ExportEvent) PreSave() {
-	if e.Id == "" {
-		e.Id = NewId()
-	}
-	e.Date = GetMillis()
 }

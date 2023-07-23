@@ -37,30 +37,32 @@ type Store interface {
 	//
 	// If no placeholder format is passed, defaut to squirrel.Dollar ($)
 	GetQueryBuilder(placeholderFormats ...squirrel.PlaceholderFormat) squirrel.StatementBuilderType
-	IsUniqueConstraintError(err error, indexName []string) bool //
-	MarkSystemRanUnitTests()                                    //
+	// IsUniqueConstraintError checks if given error is unique constraint error in postgres (code 23505).
+	// indexNames are used to double check for specific unique constraint was violated (code == 23505 && on which constraint).
+	IsUniqueConstraintError(err error, indexNames []string) bool
+	MarkSystemRanUnitTests() //
 	DBXFromContext(ctx context.Context) *gorm.DB
 
-	User() UserStore                                                   // account
-	Address() AddressStore                                             //
-	CustomerEvent() CustomerEventStore                                 //
-	StaffNotificationRecipient() StaffNotificationRecipientStore       //
-	CustomerNote() CustomerNoteStore                                   //
-	System() SystemStore                                               // system
-	Job() JobStore                                                     // job
-	Session() SessionStore                                             // session
-	Preference() PreferenceStore                                       // preference
-	Token() TokenStore                                                 // token
-	Status() StatusStore                                               // status
-	Role() RoleStore                                                   // role
-	UserAccessToken() UserAccessTokenStore                             // user access token
-	TermsOfService() TermsOfServiceStore                               // term of service
-	ClusterDiscovery() ClusterDiscoveryStore                           // cluster
-	Audit() AuditStore                                                 // audit
-	App() AppStore                                                     // app
-	AppToken() AppTokenStore                                           //
-	Channel() ChannelStore                                             // channel
-	ChannelShop() ChannelShopStore                                     //
+	User() UserStore                                             // account
+	Address() AddressStore                                       //
+	CustomerEvent() CustomerEventStore                           //
+	StaffNotificationRecipient() StaffNotificationRecipientStore //
+	CustomerNote() CustomerNoteStore                             //
+	System() SystemStore                                         // system
+	Job() JobStore                                               // job
+	Session() SessionStore                                       // session
+	Preference() PreferenceStore                                 // preference
+	Token() TokenStore                                           // token
+	Status() StatusStore                                         // status
+	Role() RoleStore                                             // role
+	UserAccessToken() UserAccessTokenStore                       // user access token
+	TermsOfService() TermsOfServiceStore                         // term of service
+	ClusterDiscovery() ClusterDiscoveryStore                     // cluster
+	Audit() AuditStore                                           // audit
+	App() AppStore                                               // app
+	AppToken() AppTokenStore                                     //
+	Channel() ChannelStore                                       // channel
+	// ChannelShop() ChannelShopStore                                     //
 	Checkout() CheckoutStore                                           // checkout
 	CheckoutLine() CheckoutLineStore                                   //
 	CsvExportEvent() CsvExportEventStore                               // csv
@@ -75,8 +77,6 @@ type Store interface {
 	VoucherCustomer() VoucherCustomerStore                             //
 	GiftCard() GiftCardStore                                           // giftcard
 	GiftcardEvent() GiftcardEventStore                                 //
-	GiftCardOrder() GiftCardOrderStore                                 //
-	GiftCardCheckout() GiftCardCheckoutStore                           //
 	InvoiceEvent() InvoiceEventStore                                   // invoice
 	Invoice() InvoiceStore                                             //
 	Menu() MenuStore                                                   // menu
@@ -198,17 +198,12 @@ type UploadSessionStore interface {
 // fileinfo
 type FileInfoStore interface {
 	Upsert(info *model.FileInfo) (*model.FileInfo, error)
-	Get(id string) (*model.FileInfo, error)
-	GetFromMaster(id string) (*model.FileInfo, error)
-	GetByIds(ids []string) ([]*model.FileInfo, error)
-	GetByPath(path string) (*model.FileInfo, error)
-	GetForUser(userID string) ([]*model.FileInfo, error)
-	GetWithOptions(page, perPage *int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) // Leave perPage and page nil to get all result
+	Get(id string, fromMaster bool) (*model.FileInfo, error)
+	GetWithOptions(page, perPage int, opt *model.GetFileInfosOptions) ([]*model.FileInfo, error) // Leave perPage and page nil to get all result
 	InvalidateFileInfosForPostCache(postID string, deleted bool)
 	PermanentDelete(fileID string) error
 	PermanentDeleteBatch(endTime int64, limit int64) (int64, error)
 	PermanentDeleteByUser(userID string) (int64, error)
-	SetContent(fileID, content string) error
 	ClearCaches()
 	CountAll() (int64, error)
 
@@ -226,7 +221,6 @@ type (
 		Delete(ids ...string) (int64, error)
 		ScanFields(attr *model.Attribute) []interface{}
 		Upsert(attr *model.Attribute) (*model.Attribute, error)                       // Upsert inserts or updates given model then returns it
-		GetByOption(option *model.AttributeFilterOption) (*model.Attribute, error)    // GetByOption finds and returns 1 model
 		FilterbyOption(option *model.AttributeFilterOption) (model.Attributes, error) // FilterbyOption returns a list of attributes by given option
 		GetProductTypeAttributes(productTypeID string, unassigned bool, filter *model.AttributeFilterOption) (model.Attributes, error)
 		GetPageTypeAttributes(pageTypeID string, unassigned bool) (model.Attributes, error)
@@ -683,17 +677,6 @@ type (
 		BulkUpsert(transaction *gorm.DB, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) // BulkUpsert upserts and returns given giftcard events
 		FilterByOptions(options *model.GiftCardEventFilterOption) ([]*model.GiftCardEvent, error)        // FilterByOptions finds and returns a list of giftcard events with given options
 	}
-	GiftCardOrderStore interface {
-		Save(giftcardOrder *model.OrderGiftCard) (*model.OrderGiftCard, error)                                   // Save inserts new giftcard-order relation into database then returns it
-		Get(id string) (*model.OrderGiftCard, error)                                                             // Get returns giftcard-order relation table with given id
-		BulkUpsert(transaction *gorm.DB, orderGiftcards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, error) // BulkUpsert upserts given order-giftcard relations and returns it
-		FilterByOptions(options *model.OrderGiftCardFilterOptions) ([]*model.OrderGiftCard, error)
-	}
-	GiftCardCheckoutStore interface {
-		Save(giftcardOrder *model.GiftCardCheckout) (*model.GiftCardCheckout, error) // Save inserts new giftcard-model relation into database then returns it
-		Get(id string) (*model.GiftCardCheckout, error)                              // Get returns giftcard-model relation table with given id
-		Delete(giftcardID string, checkoutID string) error                           // Delete deletes a giftcard-model relation with given id
-	}
 )
 
 // discount
@@ -766,7 +749,6 @@ type (
 		ScanFields(line *model.CheckoutLine) []interface{}
 		Upsert(checkoutLine *model.CheckoutLine) (*model.CheckoutLine, error)          // Upsert checks whether to update or insert given model line then performs according operation
 		Get(id string) (*model.CheckoutLine, error)                                    // Get returns a model line with given id
-		CheckoutLinesByCheckoutID(checkoutID string) ([]*model.CheckoutLine, error)    // CheckoutLinesByCheckoutID returns a list of model lines that belong to given model
 		DeleteLines(transaction *gorm.DB, checkoutLineIDs []string) error              // DeleteLines deletes all model lines with given uuids
 		BulkUpdate(checkoutLines []*model.CheckoutLine) error                          // BulkUpdate receives a list of modified model lines, updates them in bulk.
 		BulkCreate(checkoutLines []*model.CheckoutLine) ([]*model.CheckoutLine, error) // BulkCreate takes a list of raw model lines, save them into database then returns them fully with an error
@@ -796,13 +778,8 @@ type ChannelStore interface {
 	ScanFields(chanNel *model.Channel) []interface{}
 	Get(id string) (*model.Channel, error)                                      // Get returns channel by given id
 	FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) // FilterByOption returns a list of channels with given option
-	GetbyOption(option *model.ChannelFilterOption) (*model.Channel, error)      // GetbyOption finds and returns 1 channel filtered using given options
 	Upsert(transaction *gorm.DB, channel *model.Channel) (*model.Channel, error)
 	DeleteChannels(transaction *gorm.DB, ids []string) error
-}
-type ChannelShopStore interface {
-	// FilterByOptions(options *model.ChannelShopRelationFilterOptions) ([]*model.ChannelShopRelation, error)
-	// Save(relation *model.ChannelShopRelation) (*model.ChannelShopRelation, error)
 }
 
 // app
@@ -966,6 +943,24 @@ type (
 		Save(note *model.CustomerNote) (*model.CustomerNote, error) // Save insert given customer note into database and returns it
 		Get(id string) (*model.CustomerNote, error)                 // Get find customer note with given id and returns it
 	}
+	SessionStore interface {
+		Get(ctx context.Context, sessionIDOrToken string) (*model.Session, error)
+		Save(session *model.Session) (*model.Session, error)
+		GetSessions(userID string) ([]*model.Session, error)
+		GetSessionsWithActiveDeviceIds(userID string) ([]*model.Session, error)
+		GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) ([]*model.Session, error)
+		UpdateExpiredNotify(sessionid string, notified bool) error
+		Remove(sessionIDOrToken string) error
+		RemoveAllSessions() error
+		PermanentDeleteSessionsByUser(teamID string) error
+		UpdateExpiresAt(sessionID string, time int64) error
+		UpdateLastActivityAt(sessionID string, time int64) error                    // UpdateLastActivityAt
+		UpdateRoles(userID string, roles string) (string, error)                    // UpdateRoles updates roles for all sessions that have userId of given userID,
+		UpdateDeviceId(id string, deviceID string, expiresAt int64) (string, error) // UpdateDeviceId updates device id for sessions
+		UpdateProps(session *model.Session) error                                   // UpdateProps update session's props
+		AnalyticsSessionCount() (int64, error)                                      // AnalyticsSessionCount counts numbers of sessions
+		Cleanup(expiryTime int64, batchSize int64)                                  // Cleanup is called periodicly to remove sessions that are expired
+	}
 )
 
 type SystemStore interface {
@@ -977,26 +972,6 @@ type SystemStore interface {
 	PermanentDeleteByName(name string) (*model.System, error)
 	InsertIfExists(system *model.System) (*model.System, error)
 	SaveOrUpdateWithWarnMetricHandling(system *model.System) error
-}
-
-// session
-type SessionStore interface {
-	Get(ctx context.Context, sessionIDOrToken string) (*model.Session, error)
-	Save(session *model.Session) (*model.Session, error)
-	GetSessions(userID string) ([]*model.Session, error)
-	GetSessionsWithActiveDeviceIds(userID string) ([]*model.Session, error)
-	GetSessionsExpired(thresholdMillis int64, mobileOnly bool, unnotifiedOnly bool) ([]*model.Session, error)
-	UpdateExpiredNotify(sessionid string, notified bool) error
-	Remove(sessionIDOrToken string) error
-	RemoveAllSessions() error
-	PermanentDeleteSessionsByUser(teamID string) error
-	UpdateExpiresAt(sessionID string, time int64) error
-	UpdateLastActivityAt(sessionID string, time int64) error                    // UpdateLastActivityAt
-	UpdateRoles(userID string, roles string) (string, error)                    // UpdateRoles updates roles for all sessions that have userId of given userID,
-	UpdateDeviceId(id string, deviceID string, expiresAt int64) (string, error) // UpdateDeviceId updates device id for sessions
-	UpdateProps(session *model.Session) error                                   // UpdateProps update session's props
-	AnalyticsSessionCount() (int64, error)                                      // AnalyticsSessionCount counts numbers of sessions
-	Cleanup(expiryTime int64, batchSize int64)                                  // Cleanup is called periodicly to remove sessions that are expired
 }
 
 type RoleStore interface {

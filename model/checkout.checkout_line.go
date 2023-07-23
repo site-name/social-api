@@ -1,41 +1,31 @@
 package model
 
 import (
+	"net/http"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
-)
-
-// max lengths for checkout line table's fields
-const (
-	CHECKOUT_LINE_MIN_QUANTITY = 1
+	"gorm.io/gorm"
 )
 
 // A single checkout line.
 // Multiple lines in the same checkout can refer to the same product variant if
 // their `data` field is different.
 type CheckoutLine struct {
-	Id         string `json:"id"`
-	CreateAt   int64  `json:"create_at"`
-	CheckoutID string `json:"checkout_id"`
-	VariantID  string `json:"variant_id"`
-	Quantity   int    `json:"quantity"`
-
-	productVariant *ProductVariant `db:"-"`
+	Id         string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt   int64  `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`
+	CheckoutID string `json:"checkout_id" gorm:"type:uuid;column:CheckoutID"`
+	VariantID  string `json:"variant_id" gorm:"type:uuid;column:VariantID"`
+	Quantity   int    `json:"quantity" gorm:"column:Quantity;minimum:1"` // min 1
 }
 
-func (c *CheckoutLine) GetProductVariant() *ProductVariant {
-	return c.productVariant
-}
-
-func (c *CheckoutLine) SetProductVariant(p *ProductVariant) {
-	c.productVariant = p
-}
+func (c *CheckoutLine) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
+func (c *CheckoutLine) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }
+func (c *CheckoutLine) TableName() string             { return CheckoutLineTableName }
 
 // CheckoutLineFilterOption is used to build squirrel sql queries
 type CheckoutLineFilterOption struct {
-	Id         squirrel.Sqlizer
-	CheckoutID squirrel.Sqlizer
-	VariantID  squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
 type CheckoutLines []*CheckoutLine
@@ -57,43 +47,17 @@ func (c *CheckoutLine) NotEqual(other *CheckoutLine) bool {
 }
 
 func (c *CheckoutLine) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.checkout_line.is_valid.%s.app_error",
-		"checkout_id=",
-		"CheckoutLine.IsValid",
-	)
-	if !IsValidId(c.Id) {
-		return outer("id", nil)
-	}
-	if c.CreateAt == 0 {
-		return outer("create_at", &c.Id)
-	}
 	if !IsValidId(c.CheckoutID) {
-		return outer("checkout_id", &c.Id)
+		return NewAppError("CheckoutLine.IsValid", "model.checkout_line.is_valid.checkout_id.app_error", nil, "", http.StatusBadRequest)
 	}
 	if !IsValidId(c.VariantID) {
-		return outer("variant_id", &c.Id)
-	}
-	if c.Quantity < CHECKOUT_LINE_MIN_QUANTITY {
-		return outer("quantity", &c.Id)
+		return NewAppError("CheckoutLine.IsValid", "model.checkout_line.is_valid.variant_id.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	return nil
 }
 
-func (c *CheckoutLine) PreSave() {
-	if c.Id == "" {
-		c.Id = NewId()
-	}
-	if c.CreateAt == 0 {
-		c.CreateAt = GetMillis()
-	}
-}
-
 func (c *CheckoutLine) DeepCopy() *CheckoutLine {
 	res := *c
-	if c.productVariant != nil {
-		res.productVariant = c.productVariant.DeepCopy()
-	}
 	return &res
 }

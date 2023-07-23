@@ -1,6 +1,8 @@
 package model
 
 import (
+	"net/http"
+
 	"github.com/Masterminds/squirrel"
 	"gorm.io/gorm"
 )
@@ -8,11 +10,10 @@ import (
 // AttributeID unique together with ProductTypeID
 type AttributeProduct struct {
 	Id            string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	AttributeID   string `json:"attribute_id" gorm:"type:uuid;column:AttributeID;uniqueIndex:,composite:attributeid_producttypeid_key"`      // to Attribute
-	ProductTypeID string `json:"product_type_id" gorm:"type:uuid;column:ProductTypeID;uniqueIndex:,composite:attributeid_producttypeid_key"` // to ProductType
+	AttributeID   string `json:"attribute_id" gorm:"type:uuid;column:AttributeID;index:attributeid_producttypeid_key"`      // to Attribute
+	ProductTypeID string `json:"product_type_id" gorm:"type:uuid;column:ProductTypeID;index:attributeid_producttypeid_key"` // to ProductType
 	Sortable
 
-	Attribute          *Attribute                  `json:"-"`
 	AssignedProducts   Products                    `json:"-" gorm:"many2many:AssignedProductAttributes"`
 	ProductAssignments []*AssignedProductAttribute `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
 }
@@ -28,16 +29,11 @@ type AttributeProductFilterOption struct {
 }
 
 func (a *AttributeProduct) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.attribute_product.is_valid.%s.app_error",
-		"attribute_product_id=",
-		"AttributeProduct.IsValid",
-	)
 	if !IsValidId(a.AttributeID) {
-		return outer("attribute_id", &a.Id)
+		return NewAppError("AttributeProduct.IsValid", "model.attribute_product.is_valid.attribute_id.app_error", nil, "", http.StatusBadRequest)
 	}
 	if !IsValidId(a.ProductTypeID) {
-		return outer("product_type_id", &a.Id)
+		return NewAppError("AttributeProduct.IsValid", "model.attribute_product.is_valid.product_type_id.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	return nil
@@ -51,9 +47,6 @@ func (a *AttributeProduct) DeepCopy() *AttributeProduct {
 	if a.SortOrder != nil {
 		res.SortOrder = NewPrimitive(*a.SortOrder)
 	}
-	if a.Attribute != nil {
-		res.Attribute = a.Attribute.DeepCopy()
-	}
 	return &res
 }
 
@@ -61,8 +54,8 @@ func (a *AttributeProduct) DeepCopy() *AttributeProduct {
 // ProductID unique with AssignmentID
 type AssignedProductAttribute struct {
 	Id           string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
-	ProductID    string `json:"product_id" gorm:"type:uuid;uniqueIndex:,composite:productid_assignmentid_key;column:ProductID"`       // to Product
-	AssignmentID string `json:"assignment_id" gorm:"type:uuid;uniqueIndex:,composite:productid_assignmentid_key;column:AssignmentID"` // to AttributeProduct
+	ProductID    string `json:"product_id" gorm:"type:uuid;index:productid_assignmentid_key;column:ProductID"`       // to Product
+	AssignmentID string `json:"assignment_id" gorm:"type:uuid;index:productid_assignmentid_key;column:AssignmentID"` // to AttributeProduct
 
 	Values                  AttributeValues                  `json:"-" gorm:"many2many:AssignedProductAttributeValues"`
 	ProductValueAssignments []*AssignedProductAttributeValue `json:"-" gorm:"foreignKey:AssignmentID;constraint:OnDelete:CASCADE;"`
@@ -82,16 +75,11 @@ type AssignedProductAttributeFilterOption struct {
 }
 
 func (a *AssignedProductAttribute) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.assigned_product_attribute.is_valid.%s.app_error",
-		"assigned_product_attribute_id=",
-		"AssignedProductAttribute.IsValid",
-	)
 	if !IsValidId(a.ProductID) {
-		return outer("product_id", &a.Id)
+		return NewAppError("AssignedProductAttribute.IsValid", "model.assigned_product_attribute.is_valid.product_id.app_error", nil, "", http.StatusBadRequest)
 	}
 	if !IsValidId(a.AssignmentID) {
-		return outer("assignment_id", &a.Id)
+		return NewAppError("AssignedProductAttribute.IsValid", "model.assigned_product_attribute.is_valid.assignment_id.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	return nil
@@ -104,9 +92,6 @@ func (a *AssignedProductAttribute) DeepCopy() *AssignedProductAttribute {
 
 	res := *a
 	res.Values = a.Values.DeepCopy()
-	// if a.attributeProduct != nil {
-	// 	res.attributeProduct = a.attributeProduct.DeepCopy()
-	// }
 	return &res
 }
 
@@ -121,8 +106,9 @@ func (a AssignedProductAttributes) DeepCopy() AssignedProductAttributes {
 
 // ValueID unique together AssignmentID
 type AssignedProductAttributeValue struct {
-	ValueID      string `json:"value_id" gorm:"type:uuid;uniqueIndex:,composite:valueid_assignmentid_key;column:ValueID"`           // to AttributeValue
-	AssignmentID string `json:"assignment_id" gorm:"type:uuid;uniqueIndex:,composite:valueid_assignmentid_key;column:AssignmentID"` // to AssignedProductAttribute
+	Id           string `json:"id" gorm:"type:uuid;primaryKey;column:Id;default:gen_random_uuid()"`
+	ValueID      string `json:"value_id" gorm:"type:uuid;index:valueid_assignmentid_key;column:ValueID"`           // to AttributeValue
+	AssignmentID string `json:"assignment_id" gorm:"type:uuid;index:valueid_assignmentid_key;column:AssignmentID"` // to AssignedProductAttribute
 	Sortable
 }
 
@@ -137,16 +123,11 @@ type AssignedProductAttributeValueFilterOptions struct {
 }
 
 func (a *AssignedProductAttributeValue) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.assigned_product_attribute.is_valid.%s.app_error",
-		"assigned_product_attribute_id=",
-		"AssignedProductAttributeValue.IsValid",
-	)
 	if !IsValidId(a.ValueID) {
-		return outer("value_id", nil)
+		return NewAppError("AssignedProductAttributeValue.IsValid", "model.assigned_product_attribute.is_valid.value_id.app_error", nil, "", http.StatusBadRequest)
 	}
 	if !IsValidId(a.AssignmentID) {
-		return outer("assignment_id", nil)
+		return NewAppError("AssignedProductAttributeValue.IsValid", "model.assigned_product_attribute.is_valid.value_id.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	return nil

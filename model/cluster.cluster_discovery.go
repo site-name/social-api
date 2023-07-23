@@ -1,7 +1,10 @@
 package model
 
 import (
+	"net/http"
 	"os"
+
+	"gorm.io/gorm"
 )
 
 const (
@@ -10,24 +13,19 @@ const (
 )
 
 type ClusterDiscovery struct {
-	Id          string `json:"id"`
-	Type        string `json:"type"`
-	ClusterName string `json:"cluster_name"`
-	Hostname    string `json:"hostname"`
-	GossipPort  int32  `json:"gossip_port"`
-	Port        int32  `json:"port"`
-	CreateAt    int64  `json:"create_at"`
-	LastPingAt  int64  `json:"last_ping_at"`
+	Id          string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Type        string `json:"type" gorm:"type:varchar(64);column:Type"`
+	ClusterName string `json:"cluster_name" gorm:"type:varchar(64);column:ClusterName"`
+	Hostname    string `json:"hostname" gorm:"type:varchar(512);column:Hostname"`
+	GossipPort  int32  `json:"gossip_port" gorm:"type:integer;column:GossipPort"`
+	Port        int32  `json:"port" gorm:"column:Port"`
+	CreateAt    int64  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	LastPingAt  int64  `json:"last_ping_at" gorm:"type:bigint;column:LastPingAt;autoCreateTime:milli"`
 }
 
-func (o *ClusterDiscovery) PreSave() {
-	if o.Id == "" {
-		o.Id = NewId()
-	}
-
-	o.CreateAt = GetMillis()
-	o.LastPingAt = o.CreateAt
-}
+func (c *ClusterDiscovery) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
+func (c *ClusterDiscovery) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }
+func (c *ClusterDiscovery) TableName() string             { return ClusterDiscoveryTableName }
 
 func (o *ClusterDiscovery) AutoFillHostname() {
 	// attempt to set the hostname from the OS
@@ -53,19 +51,15 @@ func (o *ClusterDiscovery) IsEqual(in *ClusterDiscovery) bool {
 	if in == nil {
 		return false
 	}
-
 	if o.Type != in.Type {
 		return false
 	}
-
 	if o.ClusterName != in.ClusterName {
 		return false
 	}
-
 	if o.Hostname != in.Hostname {
 		return false
 	}
-
 	return true
 }
 
@@ -81,28 +75,14 @@ func FilterClusterDiscovery(vs []*ClusterDiscovery, f func(*ClusterDiscovery) bo
 }
 
 func (o *ClusterDiscovery) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.cluster.is_valid.%s.app_error",
-		"cluster_discovery_id=",
-		"ClusterDiscovery.IsValid",
-	)
-	if !IsValidId(o.Id) {
-		return outer("id", nil)
-	}
 	if o.ClusterName == "" {
-		return outer("cluster_name", &o.Id)
+		return NewAppError("ClusterDiscovery.IsValid", "model.cluster.is_valid.cluster_name.app_error", nil, "please provide cluster name", http.StatusBadRequest)
 	}
 	if o.Type == "" {
-		return outer("type", &o.Id)
+		return NewAppError("ClusterDiscovery.IsValid", "model.cluster.is_valid.type.app_error", nil, "please provide cluster type", http.StatusBadRequest)
 	}
 	if o.Hostname == "" {
-		return outer("host_name", &o.Id)
-	}
-	if o.CreateAt == 0 {
-		return outer("create_at", &o.Id)
-	}
-	if o.LastPingAt == 0 {
-		return outer("last_ping_at", &o.Id)
+		return NewAppError("ClusterDiscovery.IsValid", "model.cluster.is_valid.host_name.app_error", nil, "please provide host name", http.StatusBadRequest)
 	}
 
 	return nil

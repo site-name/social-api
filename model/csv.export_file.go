@@ -1,56 +1,31 @@
 package model
 
 import (
+	"net/http"
+
 	"github.com/Masterminds/squirrel"
+	"gorm.io/gorm"
 )
 
 type ExportFile struct {
-	Id          string  `json:"id"`
-	UserID      *string `json:"user_id"`
-	ContentFile *string `json:"content_file"`
-	CreateAt    int64   `json:"create_at"`
-	UpdateAt    int64   `json:"update_at"`
+	Id          string  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	UserID      *string `json:"user_id" gorm:"type:uuid;column:UserID"`
+	ContentFile *string `json:"content_file" gorm:"column:ContentFile"`
+	CreateAt    int64   `json:"create_at" gorm:"column:CreateAt;autoCreateTime:milli"`
+	UpdateAt    int64   `json:"update_at" gorm:"type:UpdateAt;autoCreateTime:milli;autoUpdateTime:milli"`
 }
+
+func (c *ExportFile) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
+func (c *ExportFile) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }
+func (c *ExportFile) TableName() string             { return CsvExportFileTableName }
 
 type ExportFileFilterOption struct {
-	Id squirrel.Sqlizer
-}
-
-func (e *ExportFile) ToJSON() string {
-	return ModelToJson(e)
+	Conditions squirrel.Sqlizer
 }
 
 func (e *ExportFile) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.export_file.is_valid.%s.app_error",
-		"export_file_id=",
-		"ExportFile.IsValid",
-	)
-
-	if !IsValidId(e.Id) {
-		return outer("id", nil)
-	}
 	if e.UserID != nil && !IsValidId(*e.UserID) {
-		return outer("user_id", &e.Id)
+		return NewAppError("ExportFile.IsValid", "model.export_file.is_valid.user_id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
 	}
-	if e.CreateAt == 0 {
-		return outer("create_at", &e.Id)
-	}
-	if e.UpdateAt == 0 {
-		return outer("update_at", &e.Id)
-	}
-
 	return nil
-}
-
-func (e *ExportFile) PreSave() {
-	if e.Id == "" {
-		e.Id = NewId()
-	}
-	e.CreateAt = GetMillis()
-	e.UpdateAt = e.CreateAt
-}
-
-func (e *ExportFile) PreUpdate() {
-	e.UpdateAt = GetMillis()
 }

@@ -3,7 +3,6 @@ package discount
 import (
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -16,34 +15,13 @@ func NewSqlDiscountSaleStore(sqlStore store.Store) store.DiscountSaleStore {
 	return &SqlDiscountSaleStore{sqlStore}
 }
 
-func (s *SqlDiscountSaleStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Name",
-		"Type",
-		"StartDate",
-		"EndDate",
-		"CreateAt",
-		"UpdateAt",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
-
 // Upsert bases on sale's Id to decide to update or insert given sale
 func (ss *SqlDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (*model.Sale, error) {
 	if transaction == nil {
 		transaction = ss.GetMaster()
 	}
 
-	err := transaction.Upsert(sale)
+	err := transaction.Save(sale).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to upsert sale")
 	}
@@ -54,7 +32,7 @@ func (ss *SqlDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (
 // Get finds and returns a sale with given saleID
 func (ss *SqlDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 	var sale model.Sale
-	err := ss.GetReplica().Get(&sale, "id = ?", saleID)
+	err := ss.GetReplica().First(&sale, "Id = ?", saleID).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound("sales", saleID)
@@ -66,27 +44,8 @@ func (ss *SqlDiscountSaleStore) Get(saleID string) (*model.Sale, error) {
 
 // FilterSalesByOption filter sales by option
 func (ss *SqlDiscountSaleStore) FilterSalesByOption(option *model.SaleFilterOption) ([]*model.Sale, error) {
-	query := ss.
-		GetQueryBuilder().
-		Select(ss.ModelFields(model.SaleTableName + ".")...).
-		From(model.SaleTableName)
-
-	// check sale start date
-	if option.StartDate != nil {
-		query = query.Where(option.StartDate)
-	}
-	// check sale end date
-	if option.EndDate != nil {
-		query = query.Where(option.EndDate)
-	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterSalesByOption_ToSql")
-	}
-
 	var sales []*model.Sale
-	err = ss.GetReplica().Select(&sales, queryString, args...)
+	err := ss.GetReplica().Find(&sales, store.BuildSqlizer(option.Conditions)...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find sales with given condition.")
 	}

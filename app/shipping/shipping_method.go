@@ -159,8 +159,10 @@ func (s *ServiceShipping) DropInvalidShippingMethodsRelationsForGivenChannels(tr
 	// unlink shipping methods from order and checkout instances
 	// when method is no longer available in given channels
 	checkouts, appErr := s.srv.CheckoutService().CheckoutsByOption(&model.CheckoutFilterOption{
-		ShippingMethodID: squirrel.Eq{model.CheckoutTableName + ".ShippingMethodID": shippingMethodIds},
-		ChannelID:        squirrel.Eq{model.CheckoutTableName + ".ChannelID": channelIds},
+		Conditions: squirrel.Eq{
+			model.CheckoutTableName + ".ShippingMethodID": shippingMethodIds,
+			model.CheckoutTableName + ".ChannelID":        channelIds,
+		},
 	})
 	if appErr != nil {
 		return appErr

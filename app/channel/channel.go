@@ -27,22 +27,22 @@ func init() {
 
 // ChannelByOption returns a channel that satisfies given options
 func (s *ServiceChannel) ChannelByOption(option *model.ChannelFilterOption) (*model.Channel, *model.AppError) {
-	foundChannel, err := s.srv.Store.Channel().GetbyOption(option)
-	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
-		return nil, model.NewAppError("ChannelByOption", "app.channel.error_finding_channel_by_options.app_error", nil, err.Error(), statusCode)
+	option.Limit = 1
+	channels, appErr := s.ChannelsByOption(option)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if channels.Len() == 0 {
+		return nil, model.NewAppError("ChannelByOption", "app.channel.channel_by_options.app_error", nil, "", http.StatusNotFound)
 	}
 
-	return foundChannel, nil
+	return channels[0], nil
 }
 
 // ValidateChannel check if a channel with given id is active
 func (a *ServiceChannel) ValidateChannel(channelID string) (*model.Channel, *model.AppError) {
 	channel, appErr := a.ChannelByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{model.ChannelTableName + ".Id": channelID},
+		Conditions: squirrel.Eq{model.ChannelTableName + ".Id": channelID},
 	})
 	if appErr != nil {
 		return nil, appErr
@@ -66,7 +66,7 @@ func (a *ServiceChannel) CleanChannel(channelID *string) (*model.Channel, *model
 		channel, appErr = a.ValidateChannel(*channelID)
 	} else {
 		channel, appErr = a.ChannelByOption(&model.ChannelFilterOption{
-			IsActive: squirrel.Eq{model.ChannelTableName + ".IsActive": true},
+			Conditions: squirrel.Eq{model.ChannelTableName + ".IsActive": true},
 		})
 	}
 	if appErr != nil {

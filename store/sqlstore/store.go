@@ -2,9 +2,7 @@ package sqlstore
 
 import (
 	"context"
-	"database/sql"
 	dbsql "database/sql"
-	"database/sql/driver"
 	"fmt"
 	"strconv"
 	"strings"
@@ -437,8 +435,7 @@ func (ss *SqlStore) IsUniqueConstraintError(err error, indexNames []string) bool
 		unique = errT.Code == "23505"
 	}
 
-	strErr := err.Error()
-	return unique && lo.SomeBy(indexNames, func(index string) bool { return strings.Contains(strErr, index) })
+	return unique && lo.SomeBy(indexNames, func(index string) bool { return strings.Contains(err.Error(), index) })
 }
 
 // Get all databases connections
@@ -524,14 +521,28 @@ func (ss *SqlStore) CheckIntegrity() <-chan model.IntegrityCheckResult {
 }
 
 type m2mRelation struct {
-	model     any
+	model     tableModel
 	field     string
-	joinTable any
+	joinTable tableModel
+}
+
+type tableModel interface {
+	TableName() string
 }
 
 func (ss *SqlStore) migrate(direction migrationDirection) error {
 	// account
-	for _, model := range []any{&model.User{}, &model.Address{}, &model.Status{}, &model.UserAccessToken{}, &model.CustomerEvent{}, &model.CustomerNote{}, &model.AppToken{}} {
+	for _, model := range []tableModel{
+		&model.User{},
+		&model.Address{},
+		&model.Status{},
+		&model.UserAccessToken{},
+		&model.CustomerEvent{},
+		&model.CustomerNote{},
+		&model.AppToken{},
+		&model.Session{},
+	} {
+		slog.Debug("migrating table", slog.String("model", model.TableName()))
 		if err := ss.master.AutoMigrate(model); err != nil {
 			return err
 		}
@@ -546,7 +557,22 @@ func (ss *SqlStore) migrate(direction migrationDirection) error {
 		{&model.AttributeProduct{}, "AssignedProducts", &model.AssignedProductAttribute{}},
 		{&model.AssignedProductAttribute{}, "Values", &model.AssignedProductAttributeValue{}},
 	} {
+		slog.Debug("setting up intermediate table", slog.String("model", m2mRel.model.TableName()), slog.String("joinModel", m2mRel.joinTable.TableName()))
 		if err := ss.master.SetupJoinTable(m2mRel.model, m2mRel.field, m2mRel.joinTable); err != nil {
+			return err
+		}
+	}
+	for _, model := range []tableModel{
+		&model.Attribute{},
+		&model.AttributeValue{},
+		&model.AttributeTranslation{},
+		&model.AttributeValueTranslation{},
+		&model.AttributeVariant{},
+		&model.AttributePage{},
+		&model.AttributeProduct{},
+	} {
+		slog.Debug("migrating table", slog.String("model", model.TableName()))
+		if err := ss.master.AutoMigrate(model); err != nil {
 			return err
 		}
 	}
@@ -596,8 +622,8 @@ func (ss *SqlStore) GetAppliedMigrations() ([]model.AppliedMigration, error) {
 }
 
 // finalizeTransaction ensures a transaction is closed after use, rolling back if not already committed.
-func (s *SqlStore) FinalizeTransaction(transaction driver.Tx) {
-	if err := transaction.Rollback(); err != nil && err != sql.ErrTxDone {
-		slog.Error("Failed to rollback transaction", slog.Err(err))
-	}
-}
+// func (s *SqlStore) FinalizeTransaction(transaction driver.Tx) {
+// 	if err := transaction.Rollback(); err != nil && err != sql.ErrTxDone {
+// 		slog.Error("Failed to rollback transaction", slog.Err(err))
+// 	}
+// }

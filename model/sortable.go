@@ -5,7 +5,7 @@ import (
 )
 
 type Sortable struct {
-	SortOrder *int `json:"sort_order" gorm:"type:integer;column:SortOrder"`
+	SortOrder *int `json:"sort_order" gorm:"type:integer;column:SortOrder;index:sort_order_key;"`
 }
 
 type Publishable struct {

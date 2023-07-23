@@ -2292,6 +2292,7 @@ const (
 	UserAddressTableName                = "UserAddresses"               //
 	TermsOfServiceTableName             = "TermsOfServices"             //
 	StatusTableName                     = "Status"                      //
+	SessionTableName                    = "Sessions"                    //
 )
 
 // channel-related table names

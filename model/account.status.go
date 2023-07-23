@@ -14,7 +14,7 @@ const (
 )
 
 type Status struct {
-	UserId         string `json:"user_id" gorm:"type:uuid;index:statuses_userid_key;column:UserId"`
+	UserId         string `json:"user_id" gorm:"primaryKey;type:uuid;index:statuses_userid_key;column:UserId"`
 	Status         string `json:"status" gorm:"type:varchar(10);column:Status"`
 	Manual         bool   `json:"manual" gorm:"column:Manual"`
 	LastActivityAt int64  `json:"last_activity_at" gorm:"type:bigint;column:LastActivityAt"`

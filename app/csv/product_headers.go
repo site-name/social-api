@@ -86,9 +86,11 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 		defer wg.Done()
 
 		attributes, appErr := a.srv.AttributeService().AttributesByOption(&model.AttributeFilterOption{
-			Distinct:     true,
-			Id:           squirrel.Eq{model.AttributeTableName + ".Id": exportInfo.Attributes},
-			ProductTypes: squirrel.NotEq{model.AttributeProductTableName + ".ProductTypeID": nil},
+			Distinct: true,
+			Conditions: squirrel.And{
+				squirrel.Eq{model.AttributeTableName + ".Id": exportInfo.Attributes},
+				squirrel.NotEq{model.AttributeProductTableName + ".ProductTypeID": nil},
+			},
 		})
 		if appErr != nil {
 			syncSetAppError(appErr)
@@ -101,9 +103,11 @@ func (a *ServiceCsv) GetAttributeHeaders(exportInfo struct {
 		defer wg.Done()
 
 		attributes, appErr := a.srv.AttributeService().AttributesByOption(&model.AttributeFilterOption{
-			Distinct:            true,
-			Id:                  squirrel.Eq{model.AttributeTableName + ".Id": exportInfo.Attributes},
-			ProductVariantTypes: squirrel.NotEq{model.AttributeVariantTableName + ".ProductTypeID": nil},
+			Distinct: true,
+			Conditions: squirrel.And{
+				squirrel.Eq{model.AttributeTableName + ".Id": exportInfo.Attributes},
+				squirrel.NotEq{model.AttributeVariantTableName + ".ProductTypeID": nil},
+			},
 		})
 		if appErr != nil {
 			syncSetAppError(appErr)
@@ -177,7 +181,7 @@ func (a *ServiceCsv) GetChannelsHeaders(exportInfo struct {
 	}
 
 	channels, appErr := a.srv.ChannelService().ChannelsByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{model.ChannelTableName + ".Id": exportInfo.Channels},
+		Conditions: squirrel.Eq{model.ChannelTableName + ".Id": exportInfo.Channels},
 	})
 	if appErr != nil {
 		return nil, appErr

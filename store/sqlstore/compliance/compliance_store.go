@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -14,71 +13,27 @@ type SqlComplianceStore struct {
 	store.Store
 }
 
-func (s *SqlComplianceStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"CreateAt",
-		"UserId",
-		"Status",
-		"Count",
-		"Desc",
-		"Type",
-		"StartAt",
-		"EndAt",
-		"Keywords",
-		"Emails",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
-
 func NewSqlComplianceStore(s store.Store) store.ComplianceStore {
 	return &SqlComplianceStore{s}
 }
 
 func (s *SqlComplianceStore) Save(compliance *model.Compliance) (*model.Compliance, error) {
-	compliance.PreSave()
-	if err := compliance.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.ComplianceTableName + " (" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
-
-	if _, err := s.GetMaster().NamedExec(query, compliance); err != nil {
+	if err := s.GetMaster().Create(compliance).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to save Compliance")
 	}
 	return compliance, nil
 }
 
 func (s *SqlComplianceStore) Update(compliance *model.Compliance) (*model.Compliance, error) {
-	compliance.PreSave()
-	if err := compliance.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "UPDATE " + model.ComplianceTableName + " SET " + s.
-		ModelFields("").
-		Map(func(_ int, s string) string {
-			return s + "=:" + s
-		}).
-		Join(",") + " WHERE Id=:Id"
-
-	if _, err := s.GetMaster().NamedExec(query, compliance); err != nil {
+	if err := s.GetMaster().Table(model.ComplianceTableName).Updates(compliance).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to update Compliance")
 	}
 	return compliance, nil
 }
 
 func (s *SqlComplianceStore) GetAll(offset, limit int) (model.Compliances, error) {
-	query := "SELECT * FROM Compliances ORDER BY CreateAt DESC LIMIT ? OFFSET ?"
-
 	var compliances model.Compliances
-	if err := s.GetReplica().Select(&compliances, query, limit, offset); err != nil {
+	if err := s.GetReplica().Raw("SELECT * FROM Compliances ORDER BY CreateAt DESC LIMIT ? OFFSET ?", limit, offset).Scan(&compliances).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to find all Compliances")
 	}
 	return compliances, nil
@@ -87,7 +42,7 @@ func (s *SqlComplianceStore) GetAll(offset, limit int) (model.Compliances, error
 func (s *SqlComplianceStore) Get(id string) (*model.Compliance, error) {
 	var res model.Compliance
 
-	err := s.GetReplica().Get(&res, "SELECT * FROM "+model.ComplianceTableName+" WHERE Id = ?", id)
+	err := s.GetReplica().First(&res, "Id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ComplianceTableName, id)
@@ -184,7 +139,7 @@ func (s *SqlComplianceStore) ComplianceExport(job *model.Compliance, cursor mode
 				` + keywordQuery + `
 		ORDER BY Posts.CreateAt, Posts.Id
 		LIMIT ?`
-		if err := s.GetReplica().Select(&channelPosts, channelsQuery, argsChannelsQuery...); err != nil {
+		if err := s.GetReplica().Raw(channelsQuery, argsChannelsQuery...).Scan(&channelPosts).Error; err != nil {
 			return nil, cursor, errors.Wrap(err, "unable to export compliance")
 		}
 		if len(channelPosts) < limit {
@@ -249,7 +204,7 @@ func (s *SqlComplianceStore) ComplianceExport(job *model.Compliance, cursor mode
 		ORDER BY Posts.CreateAt, Posts.Id
 		LIMIT ?`
 
-		if err := s.GetReplica().Select(&directMessagePosts, directMessagesQuery, argsDirectMessagesQuery...); err != nil {
+		if err := s.GetReplica().Raw(directMessagesQuery, argsDirectMessagesQuery...).Scan(&directMessagePosts).Error; err != nil {
 			return nil, cursor, errors.Wrap(err, "unable to export compliance")
 		}
 		if len(directMessagePosts) < limit {

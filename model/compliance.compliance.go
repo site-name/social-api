@@ -2,6 +2,8 @@ package model
 
 import (
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 const (
@@ -16,18 +18,22 @@ const (
 )
 
 type Compliance struct {
-	Id       string `json:"id"`
-	CreateAt int64  `json:"create_at"`
-	UserId   string `json:"user_id"`
-	Status   string `json:"status"`
-	Count    int    `json:"count"`
-	Desc     string `json:"desc"`
-	Type     string `json:"type"`
-	StartAt  int64  `json:"start_at"`
-	EndAt    int64  `json:"end_at"`
-	Keywords string `json:"keywords"`
-	Emails   string `json:"emails"`
+	Id       string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt int64  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	UserId   string `json:"user_id" gorm:"type:uuid;column:UserId"`
+	Status   string `json:"status" gorm:"type:varchar(64);column:Status"`
+	Count    int    `json:"count" gorm:"column:Count"`
+	Desc     string `json:"desc" gorm:"type:varchar(512);column:Desc"`
+	Type     string `json:"type" gorm:"type:varchar(64);column:Type"`
+	StartAt  int64  `json:"start_at" gorm:"type:bigint;column:StartAt"`
+	EndAt    int64  `json:"end_at" gorm:"type:bingint;column:EndAt"`
+	Keywords string `json:"keywords" gorm:"type:varchar(512);column:Keywords"`
+	Emails   string `json:"emails" gorm:"type:varchar(1024);column:Emails"`
 }
+
+func (c *Compliance) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
+func (c *Compliance) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }
+func (c *Compliance) TableName() string             { return ComplianceTableName }
 
 type Compliances []Compliance
 
@@ -49,19 +55,11 @@ func (c *Compliance) ToJSON() string {
 }
 
 func (c *Compliance) PreSave() {
-	if c.Id == "" {
-		c.Id = NewId()
-	}
-
 	if c.Status == "" {
 		c.Status = ComplianceStatusCreated
 	}
-
-	c.Count = 0
 	c.Emails = NormalizeEmail(c.Emails)
 	c.Keywords = strings.ToLower(c.Keywords)
-
-	c.CreateAt = GetMillis()
 }
 
 func (c *Compliance) DeepCopy() *Compliance {
@@ -86,13 +84,7 @@ func (c *Compliance) IsValid() *AppError {
 		"compliance_id=",
 		"Compliance.IsValid",
 	)
-	if !IsValidId(c.Id) {
-		return outer("id", nil)
-	}
-	if c.CreateAt == 0 {
-		return outer("create_at", &c.Id)
-	}
-	if c.Desc == "" || len(c.Desc) > 512 {
+	if c.Desc == "" {
 		return outer("desc", &c.Id)
 	}
 	if c.StartAt == 0 {

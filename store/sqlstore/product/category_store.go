@@ -96,7 +96,7 @@ func (cs *SqlCategoryStore) Upsert(category *model.Category) (*model.Category, e
 	}
 	if err != nil {
 		// this error may be caused by category slug duplicate
-		if cs.IsUniqueConstraintError(err, []string{"Slug", "categories_slug_key"}) {
+		if cs.IsUniqueConstraintError(err, []string{"slug", "categories_slug_key"}) {
 			return nil, store.NewErrInvalidInput(model.CategoryTableName, "Slug", category.Slug)
 		}
 		return nil, errors.Wrapf(err, "failed to upsert category with id=%s", category.Id)

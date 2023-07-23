@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/Masterminds/squirrel"
+	"gorm.io/gorm"
 )
 
 // The different gift card event types
@@ -42,16 +43,10 @@ var GiftCardEventsString = map[GiftcardEventType]string{
 	GIFT_CARD_EVENT_TYPE_USED_IN_ORDER:       "The gift card was used in order.",
 }
 
-// max lengths for some fields of giftcard event
-const (
-	GiftCardEventTypeMaxLength = 255
-)
-
 type GiftCardEvent struct {
-	Id   string            `json:"id"`
-	Date int64             `json:"date"` // not editable
-	Type GiftcardEventType `json:"type"`
-
+	Id   string            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Date int64             `json:"date" gorm:"type:bigint;column:Date"` // not editable
+	Type GiftcardEventType `json:"type" gorm:"type:varchar(255);column:Type"`
 	// if "expiry_date" presents, its value should has format of "2006-01-02" or of type time.Time
 	// To reduce number of type checking steps, below are possible keys and their according value Types you must follow:
 	//  "message": string
@@ -62,17 +57,20 @@ type GiftCardEvent struct {
 	//  "balance": map[string]any{}
 	//  "expiry_date": *time.Time
 	//  "old_expiry_date": *time.Time
-	Parameters StringInterface `json:"parameters"`  // default map[stirng]string{}
-	UserID     *string         `json:"user_id"`     // ON DELETE SET NULL
-	GiftcardID string          `json:"giftcard_id"` // ON DELETE CASCADE
+	Parameters StringInterface `json:"parameters" gorm:"type:jsonb;column:Parameters"` // default map[stirng]string{}
+	UserID     *string         `json:"user_id" gorm:"type:uuid;column:UserID"`         // ON DELETE SET NULL
+	GiftcardID string          `json:"giftcard_id" gorm:"type:uuid;column:GiftcardID"` // ON DELETE CASCADE
 }
+
+func (c *GiftCardEvent) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *GiftCardEvent) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *GiftCardEvent) TableName() string             { return UploadSessionTableName }
 
 // GiftCardEventFilterOption is used for building squirrel queries.
 type GiftCardEventFilterOption struct {
-	Id         squirrel.Sqlizer
-	Type       squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
+
 	Parameters squirrel.Sqlizer
-	GiftcardID squirrel.Sqlizer
 }
 
 func (g *GiftCardEvent) IsValid() *AppError {
@@ -82,9 +80,6 @@ func (g *GiftCardEvent) IsValid() *AppError {
 		"GiftcardEvent.IsValid",
 	)
 
-	if !IsValidId(g.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(g.GiftcardID) {
 		return outer("giftcard_id", &g.Id)
 	}
@@ -94,18 +89,11 @@ func (g *GiftCardEvent) IsValid() *AppError {
 	if !g.Type.IsValid() {
 		return outer("type", &g.Id)
 	}
-	if g.Date <= 0 {
-		return outer("date", &g.Id)
-	}
 
 	return nil
 }
 
-func (g *GiftCardEvent) PreSave() {
-	if !IsValidId(g.Id) {
-		g.Id = NewId()
-	}
-	g.Date = GetMillis()
+func (g *GiftCardEvent) commonPre() {
 	if g.Parameters == nil {
 		g.Parameters = make(StringInterface)
 	}

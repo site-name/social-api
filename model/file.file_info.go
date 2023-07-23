@@ -9,7 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
+	"gorm.io/gorm"
 )
 
 const (
@@ -19,12 +21,8 @@ const (
 
 // GetFileInfosOptions contains options for getting FileInfos
 type GetFileInfosOptions struct {
-	UserIds        []string `json:"user_ids"`
-	Since          int64    `json:"since"`
-	IncludeDeleted bool     `json:"include_deleted"`
-	SortBy         string   `json:"sort_by"`
-	SortDescending bool     `json:"sort_descending"`
-	ParentID       []string `json:"parent_id"`
+	Conditions squirrel.Sqlizer
+	OrderBy    string // E.g "CreateAt ASC"
 }
 
 type FileForIndexing struct {
@@ -33,26 +31,30 @@ type FileForIndexing struct {
 }
 
 type FileInfo struct {
-	Id              string  `json:"id"`
-	CreatorId       string  `json:"user_id"`
-	ParentID        string  `json:"parent_id,omitempty"` // can be a product's id, comment's id
-	CreateAt        int64   `json:"create_at"`
-	UpdateAt        int64   `json:"update_at"`
-	DeleteAt        int64   `json:"delete_at"`
-	Path            string  `json:"-"` // not sent back to the client
-	ThumbnailPath   string  `json:"-"` // not sent back to the client
-	PreviewPath     string  `json:"-"` // not sent back to the client
-	Name            string  `json:"name"`
-	Extension       string  `json:"extension"`
-	Size            int64   `json:"size"`
-	MimeType        string  `json:"mime_type"`
-	Width           int     `json:"width,omitempty"`
-	Height          int     `json:"height,omitempty"`
-	HasPreviewImage bool    `json:"has_preview_image,omitempty"`
-	MiniPreview     *[]byte `json:"mini_preview"` // declared as *[]byte to avoid postgres/mysql differences in deserialization
-	Content         string  `json:"-"`
-	RemoteId        *string `json:"remote_id"`
+	Id              string  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreatorId       string  `json:"user_id" gorm:"type:uuid;column:CreatorId"`
+	ParentID        string  `json:"parent_id,omitempty" gorm:"type:uuid;column:ParentID"` // can be a product's id, comment's id
+	CreateAt        int64   `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	UpdateAt        int64   `json:"update_at" gorm:"type:bigint;column:UpdateAt;autoUpdateTime:milli"`
+	DeleteAt        int64   `json:"delete_at" gorm:"type:bigint;column:DeleteAt"`
+	Path            string  `json:"-" gorm:"type:varchar(512);column:Path"`          // not sent back to the client
+	ThumbnailPath   string  `json:"-" gorm:"type:varchar(512);column:ThumbnailPath"` // not sent back to the client
+	PreviewPath     string  `json:"-" gorm:"type:varchar(512);column:PreviewPath"`   // not sent back to the client
+	Name            string  `json:"name" gorm:"type:varchar(256);column:Name"`
+	Extension       string  `json:"extension" gorm:"type:varchar(64);column:Extension"`
+	Size            int64   `json:"size" gorm:"type:bigint;column:Size"`
+	MimeType        string  `json:"mime_type" gorm:"type:varchar(256);column:MimeType"`
+	Width           int     `json:"width,omitempty" gorm:"column:Width"`
+	Height          int     `json:"height,omitempty" gorm:"column:Height"`
+	HasPreviewImage bool    `json:"has_preview_image,omitempty" gorm:"column:HasPreviewImage"`
+	MiniPreview     *[]byte `json:"mini_preview" gorm:"column:MiniPreview;type:bytea"` // declared as *[]byte to avoid postgres/mysql differences in deserialization
+	Content         string  `json:"-" gorm:"column:Content"`
+	RemoteId        *string `json:"remote_id" gorm:"column:RemoteId;type:uuid"`
 }
+
+func (c *FileInfo) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
+func (c *FileInfo) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }
+func (c *FileInfo) TableName() string             { return FileInfoTableName }
 
 type FileInfos []*FileInfo
 
@@ -61,13 +63,6 @@ func (fi *FileInfo) ToJSON() string {
 }
 
 func (fi *FileInfo) PreSave() {
-	if fi.Id == "" {
-		fi.Id = NewId()
-	}
-
-	if fi.CreateAt == 0 {
-		fi.CreateAt = GetMillis()
-	}
 	if fi.UpdateAt < fi.CreateAt {
 		fi.UpdateAt = fi.CreateAt
 	}
@@ -103,20 +98,12 @@ func (fi *FileInfo) IsValid() *AppError {
 		"file_info_id=",
 		"FileInfo.IsValid",
 	)
-	if !IsValidId(fi.Id) {
-		return outer("id", nil)
-	}
+
 	if !IsValidId(fi.CreatorId) && fi.CreatorId != "nouser" {
 		return outer("creator_id", &fi.Id)
 	}
 	if fi.ParentID != "" && !IsValidId(fi.ParentID) {
 		return outer("product_id", &fi.Id)
-	}
-	if fi.CreateAt == 0 {
-		return outer("create_at", &fi.Id)
-	}
-	if fi.UpdateAt == 0 {
-		return outer("update_at", &fi.Id)
 	}
 	if fi.Path == "" {
 		return outer("path", &fi.Id)

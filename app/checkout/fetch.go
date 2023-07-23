@@ -61,7 +61,7 @@ func (a *ServiceCheckout) FetchCheckoutInfo(checkOut *model.Checkout, lines []*m
 	}
 
 	chanNel, appErr := a.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{model.ChannelTableName + ".Id": checkOut.ChannelID},
+		Conditions: squirrel.Eq{model.ChannelTableName + ".Id": checkOut.ChannelID},
 	})
 	if appErr != nil {
 		return nil, appErr

@@ -14,7 +14,6 @@ import (
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/slog"
 	"github.com/sitename/sitename/modules/util"
-	"github.com/sitename/sitename/store"
 )
 
 // IncreaseVoucherUsage increase voucher's uses by 1
@@ -575,7 +574,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 		defer wg.Done()
 
 		cates, appErr := s.srv.ProductService().CategoriesByOption(&model.CategoryFilterOption{
-			SaleID: squirrel.Eq{store.SaleCategoryRelationTableName + ".SaleID": instance.Id},
+			SaleID: squirrel.Eq{model.SaleCategoryTableName + ".SaleID": instance.Id},
 		})
 		trySetAppError(appErr)
 		categorieIDs = cates.IDs(false)
@@ -585,7 +584,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 		defer wg.Done()
 
 		collecs, appErr := s.srv.ProductService().CollectionsByOption(&model.CollectionFilterOption{
-			SaleID: squirrel.Eq{store.SaleCollectionRelationTableName + ".SaleID": instance.Id},
+			SaleID: squirrel.Eq{model.SaleCollectionTableName + ".SaleID": instance.Id},
 		})
 		trySetAppError(appErr)
 		collectionIDs = collecs.IDs()
@@ -595,7 +594,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 		defer wg.Done()
 
 		products, appErr := s.srv.ProductService().ProductsByOption(&model.ProductFilterOption{
-			SaleID: squirrel.Eq{store.SaleProductRelationTableName + ".SaleID": instance.Id},
+			SaleID: squirrel.Eq{model.SaleProductTableName + ".SaleID": instance.Id},
 		})
 		trySetAppError(appErr)
 		productIDs = products.IDs()
@@ -605,7 +604,7 @@ func (s *ServiceDiscount) FetchCatalogueInfo(instance model.Sale) (map[string][]
 		defer wg.Done()
 
 		productVariants, appErr := s.srv.ProductService().ProductVariantsByOption(&model.ProductVariantFilterOption{
-			SaleID: squirrel.Eq{store.VoucherProductVariantTableName + ".SaleID": instance.Id},
+			SaleID: squirrel.Eq{model.VoucherProductVariantTableName + ".SaleID": instance.Id},
 		})
 		trySetAppError(appErr)
 		variantIDs = productVariants.IDs()

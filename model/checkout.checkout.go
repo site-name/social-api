@@ -2,12 +2,12 @@ package model
 
 import (
 	"strings"
-	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"golang.org/x/text/currency"
+	"gorm.io/gorm"
 )
 
 // max lengths for Checkout table
@@ -21,43 +21,51 @@ const (
 
 // A Shopping checkout
 type Checkout struct {
-	Token                  string           `json:"token"` // uuid4, primary_key, NO EDITABLE
-	CreateAt               int64            `json:"create_at"`
-	UpdateAt               int64            `json:"update_at"`
-	UserID                 *string          `json:"user_id"`
-	Email                  string           `json:"email"`
-	Quantity               int              `json:"quantity"`
-	ChannelID              string           `json:"channel_id"`
-	BillingAddressID       *string          `json:"billing_address_id,omitempty"`  // NO EDITABLE
-	ShippingAddressID      *string          `json:"shipping_address_id,omitempty"` // NO EDITABLE
-	ShippingMethodID       *string          `json:"shipping_method_id,omitempty"`
-	CollectionPointID      *string          `json:"collection_point_id"` // foreign key *Warehouse
-	Note                   string           `json:"note"`
-	Currency               string           `json:"currency"`        // default "USD"
-	Country                CountryCode      `json:"country"`         // one country only
-	DiscountAmount         *decimal.Decimal `json:"discount_amount"` // default decimal(0)
-	Discount               *goprices.Money  `db:"-" json:"discount,omitempty"`
-	DiscountName           *string          `json:"discount_name"`
-	TranslatedDiscountName *string          `json:"translated_discount_name"`
-	VoucherCode            *string          `json:"voucher_code"`
-	RedirectURL            *string          `json:"redirect_url"`
-	TrackingCode           *string          `json:"tracking_code"`
-	LanguageCode           LanguageCodeEnum `json:"language_code"`
+	Token                  string           `json:"token" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"` // uuid4, primary_key, NO EDITABLE
+	CreateAt               int64            `json:"create_at" gorm:"column:CreateAt;autoCreateTime:milli"`
+	UpdateAt               int64            `json:"update_at" gorm:"column:UpdateAt;autoUpdateTime:milli"`
+	UserID                 *string          `json:"user_id" gorm:"type:uuid;column:UserID"`
+	Email                  string           `json:"email" gorm:"type:varchar(128);column:Email"`
+	Quantity               int              `json:"quantity" gorm:"column:Quantity"`
+	ChannelID              string           `json:"channel_id" gorm:"column:ChannelID;type:uuid"`
+	BillingAddressID       *string          `json:"billing_address_id,omitempty" gorm:"column:BillingAddressID;type:uuid"`   // NOT EDITABLE
+	ShippingAddressID      *string          `json:"shipping_address_id,omitempty" gorm:"column:ShippingAddressID;type:uuid"` // NOT EDITABLE
+	ShippingMethodID       *string          `json:"shipping_method_id,omitempty" gorm:"type:uuid;column:ShippingMethodID"`
+	CollectionPointID      *string          `json:"collection_point_id" gorm:"type:uuid;column:CollectionPointID"` // foreign key *Warehouse
+	Note                   string           `json:"note" gorm:"column:Note"`
+	Currency               string           `json:"currency" gorm:"type:varchar(3);column:Currency"`        // default "USD"
+	Country                CountryCode      `json:"country" gorm:"column:Country;type:varchar(20)"`         // one country only
+	DiscountAmount         *decimal.Decimal `json:"discount_amount" gorm:"column:DiscountAmount;default:0"` // default decimal(0)
+	DiscountName           *string          `json:"discount_name" gorm:"column:DiscountName;type:varchar(255)"`
+	TranslatedDiscountName *string          `json:"translated_discount_name" gorm:"type:varchar(255);column:TranslatedDiscountName"`
+	VoucherCode            *string          `json:"voucher_code" gorm:"column:VoucherCode;type:varchar(12)"`
+	RedirectURL            *string          `json:"redirect_url" gorm:"type:varchar(200);column:RedirectURL"`
+	TrackingCode           *string          `json:"tracking_code" gorm:"type:varchar(255);column:TrackingCode"`
+	LanguageCode           LanguageCodeEnum `json:"language_code" gorm:"type:varchar(35);column:LanguageCode"`
 	ModelMetadata
 
-	channel        *Channel `db:"-"`
-	billingAddress *Address `db:"-"`
+	channel        *Channel        `db:"-"`
+	billingAddress *Address        `db:"-"`
+	Discount       *goprices.Money `gorm:"-" json:"discount,omitempty"`
+	Giftcards      Giftcards       `json:"-" gorm:"many2many:CheckoutGiftcards"`
 }
+
+func (c *Checkout) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
+func (c *Checkout) BeforeUpdate(_ *gorm.DB) error {
+	c.PreUpdate()
+	return c.IsValid()
+}
+func (c *Checkout) TableName() string              { return CheckoutLineTableName }
+func (c *Checkout) SetChannel(ch *Channel)         { c.channel = ch }
+func (c *Checkout) GetChannel() *Channel           { return c.channel }
+func (c *Checkout) SetBilingAddress(addr *Address) { c.billingAddress = addr }
+func (c *Checkout) GetBilingAddress() *Address     { return c.billingAddress }
 
 // CheckoutFilterOption is used for bulding sql queries
 type CheckoutFilterOption struct {
-	Token            squirrel.Sqlizer
-	UserID           squirrel.Sqlizer
-	ChannelID        squirrel.Sqlizer
-	ChannelIsActive  *bool // INNER JOIN Channels ON ... WHERE Channels.IsActive = ?
-	ShippingMethodID squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 
-	Extra squirrel.Sqlizer
+	ChannelIsActive *bool // INNER JOIN Channels ON ... WHERE Channels.IsActive = ?
 
 	SelectRelatedChannel        bool // this will populate the field `channel`
 	SelectRelatedBillingAddress bool // this will populate the field 'billingAddress'
@@ -91,32 +99,11 @@ func (c *Checkout) IsValid() *AppError {
 	if un, err := currency.ParseISO(c.Currency); err != nil || !strings.EqualFold(un.String(), c.Currency) {
 		return outer("currency", &c.Token)
 	}
-	if c.CreateAt == 0 {
-		return outer("create_at", &c.Token)
-	}
-	if c.UpdateAt == 0 {
-		return outer("update_at", &c.Token)
-	}
-	if !IsValidEmail(c.Email) || len(c.Email) > USER_EMAIL_MAX_LENGTH {
+	if !IsValidEmail(c.Email) {
 		return outer("email", &c.Token)
-	}
-	if c.DiscountName != nil && utf8.RuneCountInString(*c.DiscountName) > CHECKOUT_DISCOUNT_NAME_MAX_LENGTH {
-		return outer("discount_name", &c.Token)
-	}
-	if c.TranslatedDiscountName != nil && utf8.RuneCountInString(*c.TranslatedDiscountName) > CHECKOUT_TRANSLATED_DISCOUNT_NAME_MAX_LENGTH {
-		return outer("translated_discount_name", &c.Token)
-	}
-	if c.VoucherCode != nil && len(*c.VoucherCode) > CHECKOUT_VOUCHER_CODE_MAX_LENGTH || *c.VoucherCode == "" {
-		return outer("voucher_code", &c.Token)
-	}
-	if c.RedirectURL != nil && len(*c.RedirectURL) > URL_LINK_MAX_LENGTH {
-		return outer("redirect_url", &c.Token)
 	}
 	if !c.LanguageCode.IsValid() {
 		return outer("language_code", &c.Token)
-	}
-	if c.TrackingCode != nil && len(*c.TrackingCode) > CHECKOUT_TRACKING_CODE_MAX_LENGTH || *c.TrackingCode == "" {
-		return outer("tracking_code", &c.Token)
 	}
 	if !c.Country.IsValid() {
 		return outer("country", &c.Token)
@@ -136,29 +123,7 @@ func (c *Checkout) PopulateNonDbFields() {
 	}
 }
 
-func (s *Checkout) SetChannel(c *Channel) {
-	s.channel = c
-}
-
-func (s *Checkout) GetChannel() *Channel {
-	return s.channel
-}
-
-func (s *Checkout) SetBilingAddress(addr *Address) {
-	s.billingAddress = addr
-}
-
-func (s *Checkout) GetBilingAddress() *Address {
-	return s.billingAddress
-}
-
 func (c *Checkout) PreSave() {
-	if c.Token == "" {
-		c.Token = NewId()
-	}
-
-	c.CreateAt = GetMillis()
-	c.UpdateAt = c.CreateAt
 	c.commonPre()
 }
 
@@ -176,8 +141,6 @@ func (c *Checkout) commonPre() {
 	}
 	if c.Currency == "" {
 		c.Currency = DEFAULT_CURRENCY
-	} else {
-		c.Currency = strings.ToUpper(c.Currency)
 	}
 	if c.Country == "" {
 		c.Country = DEFAULT_COUNTRY
@@ -185,7 +148,6 @@ func (c *Checkout) commonPre() {
 }
 
 func (c *Checkout) PreUpdate() {
-	c.UpdateAt = GetMillis()
 	c.commonPre()
 }
 

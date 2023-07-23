@@ -202,7 +202,7 @@ func (s *ServiceGiftcard) GiftcardsCreate(orDer *model.Order, giftcardLines mode
 	}
 
 	channelOfOrder, appErr := s.srv.ChannelService().ChannelByOption(&model.ChannelFilterOption{
-		Id: squirrel.Eq{model.ChannelTableName + ".Id": orDer.ChannelID},
+		Conditions: squirrel.Eq{model.ChannelTableName + ".Id": orDer.ChannelID},
 	})
 	if appErr != nil {
 		return nil, appErr

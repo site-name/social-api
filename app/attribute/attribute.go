@@ -24,17 +24,17 @@ func init() {
 }
 
 func (a *ServiceAttribute) AttributeByOption(option *model.AttributeFilterOption) (*model.Attribute, *model.AppError) {
-	attr, err := a.srv.Store.Attribute().GetByOption(option)
-	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if _, ok := err.(*store.ErrNotFound); ok {
-			statusCode = http.StatusNotFound
-		}
+	option.Limit = 1
 
-		return nil, model.NewAppError("AttributeByOption", "app.attribute.error_finding_attribute_by_option.app_error", nil, err.Error(), statusCode)
+	attributes, appErr := a.AttributesByOption(option)
+	if appErr != nil {
+		return nil, appErr
+	}
+	if len(attributes) == 0 {
+		return nil, model.NewAppError("AttributeByOption", "app.attribute.error_finding_attribute_by_option.app_error", nil, "", http.StatusNotFound)
 	}
 
-	return attr, nil
+	return attributes[0], nil
 }
 
 // AttributesByOption returns a list of attributes filtered using given options

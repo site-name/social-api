@@ -29,47 +29,41 @@ const (
 )
 
 type GiftCard struct {
-	Id                   string           `json:"id"`
-	Code                 string           `json:"code"`          // unique, db_index, looks like ABCD-EFGH-IJKL
-	CreatedByID          *string          `json:"created_by_id"` // foreign key User, ON DELETE SET NULL
-	UsedByID             *string          `json:"used_by_id"`
-	CreatedByEmail       *string          `json:"created_by_email"`
-	UsedByEmail          *string          `json:"used_by_email"`
-	CreateAt             int64            `json:"created_at"`
-	StartDate            *time.Time       `json:"start_date"`
-	ExpiryDate           *time.Time       `json:"expiry_date"`
-	Tag                  *string          `json:"tag"`
-	ProductID            *string          `json:"product_id"` // foreign key to Product
-	LastUsedOn           *int64           `json:"last_used_on"`
-	IsActive             *bool            `json:"is_active"`              // default true
-	Currency             string           `json:"currency"`               // UPPER cased
-	InitialBalanceAmount *decimal.Decimal `json:"initial_balance_amount"` // default 0
-	InitialBalance       *goprices.Money  `json:"initial_balance,omitempty" db:"-"`
-	CurrentBalanceAmount *decimal.Decimal `json:"current_balance_amount"` // default 0
-	CurrentBalance       *goprices.Money  `json:"current_balance,omitempty" db:"-"`
+	Id                   string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Code                 string           `json:"code" gorm:"type:varchar(16);column:Code"`          // unique, db_index, looks like ABCD-EFGH-IJKL
+	CreatedByID          *string          `json:"created_by_id" gorm:"type:uuid;column:CreatedByID"` // foreign key User, ON DELETE SET NULL
+	UsedByID             *string          `json:"used_by_id" gorm:"type:uuid;column:UsedByID"`
+	CreatedByEmail       *string          `json:"created_by_email" gorm:"type:varchar(254);column:CreatedByEmail"`
+	UsedByEmail          *string          `json:"used_by_email" gorm:"type:varchar(254);column:UsedByEmail"`
+	CreateAt             int64            `json:"created_at" gorm:"type:bigint;column:CreateAt"`
+	StartDate            *time.Time       `json:"start_date" gorm:"column:StartDate"`
+	ExpiryDate           *time.Time       `json:"expiry_date" gorm:"column:ExpiryDate"`
+	Tag                  *string          `json:"tag" gorm:"type:varchar(255);column:Tag"`
+	ProductID            *string          `json:"product_id" gorm:"type:uuid;column:ProductID"` // foreign key to Product
+	LastUsedOn           *int64           `json:"last_used_on" gorm:"type:bigint;column:LastUsedOn"`
+	IsActive             *bool            `json:"is_active" gorm:"column:IsActive"`                                    // default true
+	Currency             string           `json:"currency" gorm:"type:varchar(3);column:Currency"`                     // UPPER cased
+	InitialBalanceAmount *decimal.Decimal `json:"initial_balance_amount" gorm:"default:0;column:InitialBalanceAmount"` // default 0
+	CurrentBalanceAmount *decimal.Decimal `json:"current_balance_amount" gorm:"default:0;column:CurrentBalanceAmount"` // default 0
 	ModelMetadata
 
+	CurrentBalance *goprices.Money `json:"current_balance,omitempty" gorm:"-"`
+	InitialBalance *goprices.Money `json:"initial_balance,omitempty" gorm:"-"`
+
 	populatedNonDBFields bool `db:"-"`
+
+	Checkouts []*Checkout `json:"-" gorm:"many2many:CheckoutGiftcards"`
+	Orders    Orders      `json:"-" gorm:"many2many:OrderGiftCards"`
 }
 
 // GiftCardFilterOption is used to buil sql queries
 type GiftCardFilterOption struct {
-	Id                   squirrel.Sqlizer
-	ExpiryDate           squirrel.Sqlizer
-	StartDate            squirrel.Sqlizer
-	Tag                  squirrel.Sqlizer
-	ProductID            squirrel.Sqlizer
-	Code                 squirrel.Sqlizer
-	Currency             squirrel.Sqlizer // value must be uppser-cased
-	CreatedByID          squirrel.Sqlizer
-	UsedByID             squirrel.Sqlizer
-	CheckoutToken        squirrel.Sqlizer // SELECT * FROM 'Giftcards' WHERE 'Id' IN (SELECT 'GiftcardID' FROM 'GiftCardCheckouts' WHERE 'GiftCardCheckouts.CheckoutID' ...)
-	IsActive             squirrel.Sqlizer
-	Distinct             bool             // if true, SELECT DISTINCT
-	OrderID              squirrel.Sqlizer // INNER JOIN OrderGiftCards ON OrderGiftCards.GiftcardID = Giftcards.Id WHERE OrderGiftCards.OrderID ...
-	CurrentBalanceAmount squirrel.Sqlizer
-	InitialBalanceAmount squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 
+	CheckoutToken squirrel.Sqlizer // SELECT * FROM 'Giftcards' WHERE 'Id' IN (SELECT 'GiftcardID' FROM 'GiftCardCheckouts' WHERE 'GiftCardCheckouts.CheckoutID' ...)
+	OrderID       squirrel.Sqlizer // INNER JOIN OrderGiftCards ON OrderGiftCards.GiftcardID = Giftcards.Id WHERE OrderGiftCards.OrderID ...
+
+	Distinct        bool // if true, SELECT DISTINCT
 	OrderBy         string
 	SelectForUpdate bool // if true, concat `FOR UPDATE` to the end of SQL queries
 }
@@ -92,7 +86,7 @@ func (gc *GiftCard) PopulateNonDbFields() {
 	if gc.populatedNonDBFields {
 		return
 	}
-	defer func() { gc.populatedNonDBFields = true }()
+	gc.populatedNonDBFields = true
 
 	if gc.InitialBalanceAmount == nil {
 		gc.InitialBalanceAmount = &decimal.Zero

@@ -2,6 +2,8 @@ package model
 
 import (
 	"fmt"
+
+	"gorm.io/gorm"
 )
 
 // UploadType defines the type of an upload.
@@ -17,15 +19,19 @@ const UploadNoUserID = "nouser"
 
 // UploadSession contains information used to keep track of a file upload.
 type UploadSession struct {
-	Id         string     `json:"id"`          // The unique identifier for the session.
-	Type       UploadType `json:"type"`        // The type of the upload.
-	CreateAt   int64      `json:"create_at"`   // The timestamp of creation.
-	UserID     string     `json:"user_id"`     // The id of the user performing the upload.
-	FileName   string     `json:"filename"`    // The name of the file to upload.
-	Path       string     `json:"-"`           // The path where the file is stored.
-	FileSize   int64      `json:"file_size"`   // The size of the file to upload.
-	FileOffset int64      `json:"file_offset"` // The amount of received data in bytes. If equal to FileSize it means the upload has finished.
+	Id         string     `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"` // The unique identifier for the session.
+	Type       UploadType `json:"type" gorm:"type:varchar(32);column:Type"`                           // The type of the upload.
+	CreateAt   int64      `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`  // The timestamp of creation.
+	UserID     string     `json:"user_id" gorm:"type:uuid;column:UserID"`                             // The id of the user performing the upload.
+	FileName   string     `json:"filename" gorm:"type:varchar(256);column:FileName"`                  // The name of the file to upload.
+	Path       string     `json:"-" gorm:"type:varchar(512);column:Path"`                             // The path where the file is stored.
+	FileSize   int64      `json:"file_size" gorm:"type:bigint;column:FileSize"`                       // The size of the file to upload.
+	FileOffset int64      `json:"file_offset" gorm:"type:bigint;column:FileOffset"`                   // The amount of received data in bytes. If equal to FileSize it means the upload has finished.
 }
+
+func (c *UploadSession) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
+func (c *UploadSession) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }
+func (c *UploadSession) TableName() string             { return UploadSessionTableName }
 
 func (us *UploadSession) ToJSON() string {
 	return ModelToJson(us)
@@ -35,15 +41,6 @@ func (us *UploadSession) ToJSON() string {
 // returns it as string.
 func UploadSessionsToJson(uss []*UploadSession) string {
 	return ModelToJson(uss)
-}
-
-// PreSave is a utility function used to fill required information.
-func (us *UploadSession) PreSave() {
-	if us.Id == "" {
-		us.Id = NewId()
-	}
-
-	us.CreateAt = GetMillis()
 }
 
 // IsValid validates an UploadType. It returns an error in case of
@@ -65,17 +62,12 @@ func (us *UploadSession) IsValid() *AppError {
 		"upload_session_id=",
 		"UploadSession.IsValid",
 	)
-	if !IsValidId(us.Id) {
-		return outer("id", nil)
-	}
+
 	if err := us.Type.IsValid(); err != nil {
 		return outer("type", &us.Id)
 	}
 	if !IsValidId(us.UserID) && us.UserID != UploadNoUserID {
 		return outer("user_id", &us.Id)
-	}
-	if us.CreateAt == 0 {
-		return outer("create_at", &us.Id)
 	}
 	if us.FileName == "" {
 		return outer("file_name", &us.Id)

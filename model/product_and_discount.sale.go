@@ -66,8 +66,7 @@ func (s *Sale) BeforeUpdate() error {
 
 // SaleFilterOption can be used to
 type SaleFilterOption struct {
-	StartDate squirrel.Sqlizer
-	EndDate   squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
 type Sales []*Sale

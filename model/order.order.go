@@ -119,6 +119,8 @@ type Order struct {
 	ModelMetadata
 
 	populatedNonDBFields bool `db:"-"`
+
+	GiftCards []*GiftCard `json:"-" gorm:"many2many:OrderGiftCards"`
 }
 
 // OrderFilterOption is used to buils sql queries for filtering orders

@@ -149,29 +149,19 @@ func (a *Attribute) String() string { return a.Name }
 type AttributeFilterOption struct {
 	Conditions squirrel.Sqlizer
 
-	Id                     squirrel.Sqlizer
-	Slug                   squirrel.Sqlizer
-	InputType              squirrel.Sqlizer
-	ProductTypes           squirrel.Sqlizer // INNER JOIN AttributeProducts ON ... WHERE AttributeProducts.ProductTypeID ...
-	ProductVariantTypes    squirrel.Sqlizer // INNER JOIN AttributeVariants ON ... WHERE AttributeVariants.ProductTypeID ...
-	Type                   squirrel.Sqlizer
-	VisibleInStoreFront    *bool
-	ValueRequired          *bool
-	IsVariantOnly          *bool
-	FilterableInStorefront *bool
-	FilterableInDashboard  *bool
-	AvailableInGrid        *bool
-	Metadata               StringMAP
-	Search                 string // Slug or Name ILIKE ...
-	InCollection           *string
-	InCategory             *string
-	Channel                *string // channel id or slug in which attributes reside
+	AttributeProduct_ProductTypeID squirrel.Sqlizer // INNER JOIN AttributeProducts ON ... WHERE AttributeProducts.ProductTypeID ...
+	AttributeVariant_ProductTypeID squirrel.Sqlizer // INNER JOIN AttributeVariants ON ... WHERE AttributeVariants.ProductTypeID ...
+
+	Metadata     StringMAP
+	Search       string // Slug or Name ILIKE ...
+	InCollection *string
+	InCategory   *string
+	Channel      *string // channel id or slug in which attributes reside
 
 	OrderBy         string
 	Distinct        bool
 	UserIsShopStaff bool // user has role 'shop_admin' or 'shop_staff'
-
-	Extra squirrel.Sqlizer
+	Limit           int
 
 	PrefetchRelatedAttributeValues bool
 }

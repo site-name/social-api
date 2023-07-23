@@ -55,7 +55,7 @@ func (scls *SqlSaleChannelListingStore) Save(saleChannelListing *model.SaleChann
 	query := "INSERT INTO " + model.SaleChannelListingTableName + "(" + scls.ModelFields("").Join(",") + ") VALUES (" + scls.ModelFields(":").Join(",") + ")"
 	_, err := scls.GetMaster().NamedExec(query, saleChannelListing)
 	if err != nil {
-		if scls.IsUniqueConstraintError(err, []string{"SaleID", "ChannelID", "salechannellistings_saleid_channelid_key"}) {
+		if scls.IsUniqueConstraintError(err, []string{"SaleID", "ChannelID", "salechannellistings_saleid_channelid_key"}, false) {
 			return nil, store.NewErrInvalidInput(model.SaleChannelListingTableName, "SaleID/ChannelID", "duplicate")
 		}
 		return nil, errors.Wrapf(err, "failed to save sale channel listing with id=%s", saleChannelListing.Id)

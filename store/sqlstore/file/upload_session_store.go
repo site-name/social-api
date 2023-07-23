@@ -37,62 +37,43 @@ func (s *SqlUploadSessionStore) ModelFields(prefix string) util.AnyArray[string]
 }
 
 func (us *SqlUploadSessionStore) Save(session *model.UploadSession) (*model.UploadSession, error) {
-	session.PreSave()
-	if err := session.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.UploadSessionTableName + "(" + us.ModelFields("").Join(",") + ") VALUES (" + us.ModelFields(":").Join(",") + ")"
-	if _, err := us.GetMaster().NamedExec(query, session); err != nil {
+	err := us.GetMaster().Create(session).Error
+	if err != nil {
 		return nil, errors.Wrap(err, "SqlUploadSessionStore.Save: failed to insert")
 	}
 	return session, nil
 }
 
 func (us *SqlUploadSessionStore) Update(session *model.UploadSession) error {
-	if err := session.IsValid(); err != nil {
-		return err
-	}
-
-	query := "UPDATE " + model.UploadSessionTableName + " SET " + us.
-		ModelFields("").
-		Map(func(_ int, s string) string {
-			return s + "=:" + s
-		}).
-		Join(",") + " WHERE Id=:Id"
-
-	if _, err := us.GetMaster().NamedExec(query, session); err != nil {
+	err := us.GetMaster().Updates(session).Error
+	if err != nil {
 		return errors.Wrapf(err, "SqlUploadSessionStore.Update: failed to update session with id=%s", session.Id)
 	}
 	return nil
 }
 
 func (us SqlUploadSessionStore) Get(id string) (*model.UploadSession, error) {
-	var session *model.UploadSession
-	if err := us.GetReplica().Get(&session, "SELECT * FROM "+model.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
+	var session model.UploadSession
+	if err := us.GetReplica().First(&session, "Id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.UploadSessionTableName, id)
 		}
 		return nil, errors.Wrapf(err, "SqlUploadSessionStore.Get: failed to select session with id=%s", id)
 	}
-	return session, nil
+	return &session, nil
 }
 
 func (us *SqlUploadSessionStore) GetForUser(userId string) ([]*model.UploadSession, error) {
 	var sessions []*model.UploadSession
-
-	if err := us.GetReplica().Select(
-		&sessions,
-		"SELECT * FROM "+model.UploadSessionTableName+" WHERE UserId = ? ORDER BY CreateAt ASC",
-		userId,
-	); err != nil {
+	err := us.GetReplica().Order("CreateAt ASC").Find(&sessions, "UserID = ?", userId).Error
+	if err != nil {
 		return nil, errors.Wrap(err, "failed to find upload session for user id="+userId)
 	}
 	return sessions, nil
 }
 
 func (us *SqlUploadSessionStore) Delete(id string) error {
-	if _, err := us.GetMaster().Exec("DELETE FROM "+model.UploadSessionTableName+" WHERE Id = ?", id); err != nil {
+	if err := us.GetMaster().Raw("DELETE FROM "+model.UploadSessionTableName+" WHERE Id = ?", id).Error; err != nil {
 		return errors.Wrap(err, "failed to delete upload session with id="+id)
 	}
 

@@ -1,42 +1,29 @@
 package model
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/site-name/decimal"
+	"gorm.io/gorm"
 )
 
 type OpenExchangeRate struct {
-	Id         string           `json:"id"`
-	ToCurrency string           `json:"to_currency"` // db_index
-	Rate       *decimal.Decimal `json:"rate"`        // default 0
+	Id         string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	ToCurrency string           `json:"to_currency" gorm:"type:varchar(5);column:ToCurrency"` // db_index
+	Rate       *decimal.Decimal `json:"rate" gorm:"column:Rate;default:0"`                    // default 0
 }
 
-func (o *OpenExchangeRate) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.open_exchange.is_valid.%s.app_error",
-		"open_exchange_id=",
-		"OpenExchangeRate.IsValid",
-	)
+func (c *OpenExchangeRate) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *OpenExchangeRate) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *OpenExchangeRate) TableName() string             { return OpenExchangeRateTableName }
 
-	if !IsValidId(o.Id) {
-		return outer("id", nil)
-	}
-	if len(o.ToCurrency) > CURRENCY_CODE_MAX_LENGTH {
-		return outer("to_currency", &o.Id)
-	}
-	if o.Rate.LessThan(decimal.Zero) || o.Rate == nil {
-		return outer("rate", &o.Id)
+func (o *OpenExchangeRate) IsValid() *AppError {
+	if o.Rate != nil && o.Rate.LessThan(decimal.Zero) {
+		return NewAppError("OpenExchangeRate.IsValid", "model.open_exchange.is_valid.rate.app_error", nil, "rate cannot be less than zero", http.StatusBadRequest)
 	}
 
 	return nil
-}
-
-func (o *OpenExchangeRate) PreSave() {
-	if o.Id == "" {
-		o.Id = NewId()
-	}
-	o.commonPre()
 }
 
 func (o *OpenExchangeRate) commonPre() {
@@ -44,8 +31,4 @@ func (o *OpenExchangeRate) commonPre() {
 	if o.Rate == nil {
 		o.Rate = &decimal.Zero
 	}
-}
-
-func (o *OpenExchangeRate) PreUpdate() {
-	o.commonPre()
 }

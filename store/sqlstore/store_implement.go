@@ -28,10 +28,8 @@ import (
 	"github.com/sitename/sitename/store/sqlstore/preference"
 	"github.com/sitename/sitename/store/sqlstore/product"
 	"github.com/sitename/sitename/store/sqlstore/role"
-	"github.com/sitename/sitename/store/sqlstore/session"
 	"github.com/sitename/sitename/store/sqlstore/shipping"
 	"github.com/sitename/sitename/store/sqlstore/shop"
-	"github.com/sitename/sitename/store/sqlstore/status"
 	"github.com/sitename/sitename/store/sqlstore/system"
 	"github.com/sitename/sitename/store/sqlstore/warehouse"
 	"github.com/sitename/sitename/store/sqlstore/wishlist"
@@ -59,7 +57,6 @@ type SqlStoreStores struct {
 	category                      store.CategoryStore
 	categoryTranslation           store.CategoryTranslationStore
 	channel                       store.ChannelStore
-	channelShop                   store.ChannelShopStore
 	checkout                      store.CheckoutStore
 	checkoutLine                  store.CheckoutLineStore
 	clusterDiscovery              store.ClusterDiscoveryStore
@@ -82,8 +79,6 @@ type SqlStoreStores struct {
 	fulfillment                   store.FulfillmentStore
 	fulfillmentLine               store.FulfillmentLineStore
 	giftCard                      store.GiftCardStore
-	giftCardCheckout              store.GiftCardCheckoutStore
-	giftCardOrder                 store.GiftCardOrderStore
 	giftcardEvent                 store.GiftcardEventStore
 	invoice                       store.InvoiceStore
 	invoiceEvent                  store.InvoiceEventStore
@@ -169,7 +164,6 @@ func (store *SqlStore) setupTables() {
 		category:                      product.NewSqlCategoryStore(store),
 		categoryTranslation:           product.NewSqlCategoryTranslationStore(store),
 		channel:                       channel.NewSqlChannelStore(store),
-		channelShop:                   channel.NewSqlChannelShopStore(store),
 		checkout:                      checkout.NewSqlCheckoutStore(store),
 		checkoutLine:                  checkout.NewSqlCheckoutLineStore(store),
 		clusterDiscovery:              cluster.NewSqlClusterDiscoveryStore(store),
@@ -192,8 +186,6 @@ func (store *SqlStore) setupTables() {
 		fulfillment:                   order.NewSqlFulfillmentStore(store),
 		fulfillmentLine:               order.NewSqlFulfillmentLineStore(store),
 		giftCard:                      giftcard.NewSqlGiftCardStore(store),
-		giftCardCheckout:              giftcard.NewSqlGiftCardCheckoutStore(store),
-		giftCardOrder:                 giftcard.NewSqlGiftCardOrderStore(store),
 		giftcardEvent:                 giftcard.NewSqlGiftcardEventStore(store),
 		invoice:                       invoice.NewSqlInvoiceStore(store),
 		invoiceEvent:                  invoice.NewSqlInvoiceEventStore(store),
@@ -224,7 +216,7 @@ func (store *SqlStore) setupTables() {
 		productVariantChannelListing:  product.NewSqlProductVariantChannelListingStore(store),
 		productVariantTranslation:     product.NewSqlProductVariantTranslationStore(store),
 		role:                          role.NewSqlRoleStore(store),
-		session:                       session.NewSqlSessionStore(store),
+		session:                       account.NewSqlSessionStore(store),
 		shippingMethod:                shipping.NewSqlShippingMethodStore(store),
 		shippingMethodChannelListing:  shipping.NewSqlShippingMethodChannelListingStore(store),
 		shippingMethodExcludedProduct: shipping.NewSqlShippingMethodExcludedProductStore(store),
@@ -236,7 +228,7 @@ func (store *SqlStore) setupTables() {
 		shopStaff:                     shop.NewSqlShopStaffStore(store),
 		shopTranslation:               shop.NewSqlShopTranslationStore(store),
 		staffNotificationRecipient:    account.NewSqlStaffNotificationRecipientStore(store),
-		status:                        status.NewSqlStatusStore(store),
+		status:                        account.NewSqlStatusStore(store),
 		stock:                         warehouse.NewSqlStockStore(store),
 		system:                        system.NewSqlSystemStore(store),
 		termsOfService:                account.NewSqlTermsOfServiceStore(store, store.metrics),
@@ -340,10 +332,6 @@ func (ss *SqlStore) Channel() store.ChannelStore {
 	return ss.stores.channel
 }
 
-func (ss *SqlStore) ChannelShop() store.ChannelShopStore {
-	return ss.stores.channelShop
-}
-
 func (ss *SqlStore) Checkout() store.CheckoutStore {
 	return ss.stores.checkout
 }
@@ -430,14 +418,6 @@ func (ss *SqlStore) FulfillmentLine() store.FulfillmentLineStore {
 
 func (ss *SqlStore) GiftCard() store.GiftCardStore {
 	return ss.stores.giftCard
-}
-
-func (ss *SqlStore) GiftCardCheckout() store.GiftCardCheckoutStore {
-	return ss.stores.giftCardCheckout
-}
-
-func (ss *SqlStore) GiftCardOrder() store.GiftCardOrderStore {
-	return ss.stores.giftCardOrder
 }
 
 func (ss *SqlStore) GiftcardEvent() store.GiftcardEventStore {

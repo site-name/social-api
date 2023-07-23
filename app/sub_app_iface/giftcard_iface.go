@@ -22,10 +22,6 @@ type GiftcardService interface {
 	BulkUpsertGiftcardEvents(transaction *gorm.DB, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, *model.AppError)
 	// CalculateExpiryDate calculate expiry date based on giftcard settings.
 	CalculateExpiryDate(shopSettings *model.Shop) *time.Time
-	// CreateGiftCardCheckout create a new giftcard-checkout relation and returns it
-	CreateGiftCardCheckout(giftcardID string, checkoutToken string) (*model.GiftCardCheckout, *model.AppError)
-	// DeleteGiftCardCheckout drops a giftcard-checkout relation
-	DeleteGiftCardCheckout(giftcardID string, checkoutToken string) *model.AppError
 	// FulfillNonShippableGiftcards
 	FulfillNonShippableGiftcards(orDer *model.Order, orderLines model.OrderLines, siteSettings *model.Shop, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface) ([]*model.GiftCard, *model.InsufficientStock, *model.AppError)
 	// GiftcardEventsByOptions returns a list of giftcard events filtered using given options

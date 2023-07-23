@@ -71,7 +71,7 @@ func (vcls *SqlVoucherChannelListingStore) Upsert(voucherChannelListing *model.V
 	}
 
 	if err != nil {
-		if vcls.IsUniqueConstraintError(err, VoucherChannelListingDuplicateList) {
+		if vcls.IsUniqueConstraintError(err, VoucherChannelListingDuplicateList, false) {
 			return nil, store.NewErrInvalidInput(model.VoucherChannelListingTableName, "VoucherID/ChannelID", "duplicate values")
 		}
 		return nil, errors.Wrapf(err, "failed to upsert voucher channel listing with id=%s", voucherChannelListing.Id)

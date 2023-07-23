@@ -1,7 +1,6 @@
 package attribute
 
 import (
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/model"
@@ -82,18 +81,12 @@ func (as *SqlAssignedPageAttributeValueStore) SaveInBulk(assignmentID string, at
 }
 
 func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string) ([]*model.AssignedPageAttributeValue, []*model.AttributeValue, error) {
-	query, args, err := as.GetQueryBuilder().
-		Select(append(as.ModelFields(model.AssignedPageAttributeValueTableName+"."), as.AttributeValue().ModelFields(model.AttributeValueTableName+".")...)...).
-		From(model.AssignedPageAttributeValueTableName).
-		InnerJoin(model.AttributeValueTableName + " ON (AttributeValues.Id = AssignedPageAttributeValues.ValueID)").
-		Where(squirrel.Eq{"AssignedPageAttributeValues.AssignmentID": assignmentID}).
-		ToSql()
-
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "SelectForSort_ToSql")
-	}
-
-	rows, err := as.GetReplica().Query(query, args...)
+	rows, err := as.GetReplica().
+		Raw("SELECT AssignedPageAttributeValues.*, AttributeValues.* FROM "+
+			model.AssignedPageAttributeValueTableName+
+			" INNER JOIN "+model.AttributeValueTableName+
+			" ON AttributeValues.Id = AssignedPageAttributeValues.ValueID WHERE AssignedPageAttributeValues.AssignmentID = ?", assignmentID).
+		Rows()
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "failed to find assignment attribute values with given assignment Id")
 	}
@@ -123,26 +116,10 @@ func (as *SqlAssignedPageAttributeValueStore) SelectForSort(assignmentID string)
 }
 
 func (as *SqlAssignedPageAttributeValueStore) UpdateInBulk(attributeValues []*model.AssignedPageAttributeValue) error {
-	query := "UPDATE " + model.AssignedPageAttributeValueTableName + " SET " + as.
-		ModelFields("").
-		Map(func(_ int, s string) string {
-			return s + "=:" + s
-		}).
-		Join(",") + " WHERE Id=:Id"
-
 	for _, value := range attributeValues {
-		result, err := as.GetMaster().NamedExec(query, value)
+		err := as.GetMaster().Raw("UPDATE "+model.AssignedPageAttributeValueTableName+" SET SortOrder = ? WHERE ValueID = ? AND AssignmentID = ?", value.SortOrder, value.ValueID, value.AssignmentID).Error
 		if err != nil {
-			// check if error is duplicate conflict error:
-			if as.IsUniqueConstraintError(err, assignedPageAttrValueDuplicateKeys) {
-				return store.NewErrInvalidInput(model.AssignedPageAttributeValueTableName, "ValueID/AssignmentID", value.ValueID+"/"+value.AssignmentID)
-			}
-			return errors.Wrapf(err, "failed to update value with id=%s", value.Id)
-		}
-
-		numUpdated, _ := result.RowsAffected()
-		if numUpdated > 1 {
-			return errors.Errorf("more than one value with id=%s were updated(%d)", value.Id, numUpdated)
+			return errors.Wrapf(err, "failed to update AssignedPageAttributeValue with ValueID = %s and AssignmentID = %s", value.ValueID, value.AssignmentID)
 		}
 	}
 

@@ -42,7 +42,11 @@ func (d *DriverImpl) Conn(isMaster bool) (string, error) {
 	if !isMaster {
 		dbFunc = d.s.Store.GetReplica
 	}
-	conn, err := dbFunc().Conn(context.Background())
+	db, err := dbFunc().DB()
+	if err != nil {
+		return "", err
+	}
+	conn, err := db.Conn(context.Background())
 	if err != nil {
 		return "", err
 	}

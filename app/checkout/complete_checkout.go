@@ -494,11 +494,8 @@ func (s *ServiceCheckout) prepareOrderData(manager interfaces.PluginManagerInter
 // NOTE: the unused underscore param originally is `app`, but we are not gonna present the feature in early versions.
 func (s *ServiceCheckout) createOrder(checkoutInfo model.CheckoutInfo, orderData model.StringInterface, user *model.User, _ interface{}, manager interfaces.PluginManagerInterface, siteSettings *model.Shop) (*model.Order, *model.InsufficientStock, *model.AppError) {
 	// create transaction
-	transaction, err := s.srv.Store.GetMaster().Begin()
-	if err != nil {
-		return nil, nil, model.NewAppError("createOrder", app.ErrorCreatingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
-	}
-	defer s.srv.Store.FinalizeTransaction(transaction)
+	transaction := s.srv.Store.GetMaster().Begin()
+	defer transaction.Rollback()
 
 	checkout := checkoutInfo.Checkout
 	// checkout.PopulateNonDbFields() // this call is important
@@ -632,7 +629,7 @@ func (s *ServiceCheckout) createOrder(checkoutInfo model.CheckoutInfo, orderData
 	}
 
 	// commit transaction
-	if err = transaction.Commit(); err != nil {
+	if err := transaction.Commit().Error; err != nil {
 		return nil, nil, model.NewAppError("createOrder", app.ErrorCommittingTransactionErrorID, nil, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -915,7 +912,7 @@ func (s *ServiceCheckout) CompleteCheckout(
 
 		// if not appError nor insufficient stock error, remove checkout after order is successfully created:
 		appErr = s.DeleteCheckoutsByOption(nil, &model.CheckoutFilterOption{
-			Token: squirrel.Eq{model.CheckoutTableName + ".Token": checkout.Token},
+			Conditions: squirrel.Eq{model.CheckoutTableName + ".Token": checkout.Token},
 		})
 		if appErr != nil {
 			return nil, false, nil, nil, appErr

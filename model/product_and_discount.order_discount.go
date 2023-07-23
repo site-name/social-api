@@ -50,9 +50,7 @@ type OrderDiscount struct {
 
 // OrderDiscountFilterOption is used to build sql queries
 type OrderDiscountFilterOption struct {
-	Id      squirrel.Sqlizer
-	OrderID squirrel.Sqlizer
-	Type    squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
 type OrderDiscounts []*OrderDiscount

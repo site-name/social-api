@@ -3,18 +3,16 @@ package checkout
 import (
 	"net/http"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
 
 func (a *ServiceCheckout) CheckoutLinesByCheckoutToken(checkoutToken string) ([]*model.CheckoutLine, *model.AppError) {
-	lines, err := a.srv.Store.CheckoutLine().CheckoutLinesByCheckoutID(checkoutToken)
-	if err != nil {
-		return nil, model.NewAppError("CheckoutLinesByCheckoutToken", "app.checkout.checkout_lines_by_checkout.app_error", nil, err.Error(), http.StatusInternalServerError)
-	}
-
-	return lines, nil
+	return a.CheckoutLinesByOption(&model.CheckoutLineFilterOption{
+		Conditions: squirrel.Eq{model.CheckoutLineTableName + ".CheckoutID": checkoutToken},
+	})
 }
 
 func (a *ServiceCheckout) DeleteCheckoutLines(transaction *gorm.DB, checkoutLineIDs []string) *model.AppError {

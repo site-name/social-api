@@ -335,10 +335,10 @@ func (a *ServiceFile) ExtractContentFromFileInfo(fileInfo *model.FileInfo) error
 		if len(text) > maxContentExtractionSize {
 			text = text[0:maxContentExtractionSize]
 		}
-		if storeErr := a.srv.Store.FileInfo().SetContent(fileInfo.Id, text); storeErr != nil {
+		if _, storeErr := a.srv.Store.FileInfo().Upsert(&model.FileInfo{Id: fileInfo.Id, Content: text}); storeErr != nil {
 			return errors.Wrap(storeErr, "failed to save the extracted file content")
 		}
-		_, storeErr := a.srv.Store.FileInfo().Get(fileInfo.Id)
+		_, storeErr := a.srv.Store.FileInfo().Get(fileInfo.Id, false)
 		if storeErr != nil {
 			slog.Warn("failed to invalidate the fileInfo cache.", slog.Err(storeErr), slog.String("file_info_id", fileInfo.Id))
 		} else {

@@ -31,19 +31,12 @@ func (as *SqlAttributeProductStore) ModelFields(prefix string) util.AnyArray[str
 }
 
 func (as *SqlAttributeProductStore) Save(attributeProduct *model.AttributeProduct) (*model.AttributeProduct, error) {
-	attributeProduct.PreSave()
-	if err := attributeProduct.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.AttributeProductTableName + "(" + as.ModelFields("").Join(",") + ") VALUES (" + as.ModelFields(":").Join(",") + ")"
-
-	_, err := as.GetMaster().NamedExec(query, attributeProduct)
+	err := as.GetMaster().Create(attributeProduct).Error
 	if err != nil {
 		if as.IsUniqueConstraintError(err, []string{"attributeproducts_attributeid_producttypeid_key", "AttributeID", "ProductTypeID"}) {
 			return nil, store.NewErrInvalidInput(model.AttributeProductTableName, "AttributeID/ProductTypeID", attributeProduct.AttributeID+"/"+attributeProduct.ProductTypeID)
 		}
-		return nil, errors.Wrapf(err, "failed to save new attributeProduct with id=%s", attributeProduct.Id)
+		return nil, errors.Wrap(err, "failed to save new attributeProduct")
 	}
 
 	return attributeProduct, nil
@@ -51,13 +44,12 @@ func (as *SqlAttributeProductStore) Save(attributeProduct *model.AttributeProduc
 
 func (as *SqlAttributeProductStore) Get(id string) (*model.AttributeProduct, error) {
 	var res model.AttributeProduct
-
-	err := as.GetReplica().Get(&res, "SELECT * FROM "+model.AttributeProductTableName+" WHERE Id = ?", id)
+	err := as.GetReplica().First(&res, "Id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributeProductTableName, id)
 		}
-		return nil, errors.Wrapf(err, "failed to find attribute product with id=%s", id)
+		return nil, errors.Wrap(err, "failed to find attribute product by given id")
 	}
 
 	return &res, nil
@@ -66,15 +58,10 @@ func (as *SqlAttributeProductStore) Get(id string) (*model.AttributeProduct, err
 func (s *SqlAttributeProductStore) commonQueryBuilder(option *model.AttributeProductFilterOption) squirrel.SelectBuilder {
 	query := s.GetQueryBuilder().
 		Select(s.ModelFields(model.AttributeProductTableName + ".")...).
-		From(model.AttributeProductTableName)
+		From(model.AttributeProductTableName).
+		Where(option.Conditions)
 
 	// parse option
-	if option.AttributeID != nil {
-		query = query.Where(option.AttributeID)
-	}
-	if option.ProductTypeID != nil {
-		query = query.Where(option.ProductTypeID)
-	}
 	if option.AttributeVisibleInStoreFront != nil {
 		query = query.
 			InnerJoin(model.AttributeTableName + " ON Attributes.Id = AttributeProducts.AttributeID").
@@ -90,16 +77,12 @@ func (as *SqlAttributeProductStore) GetByOption(option *model.AttributeProductFi
 	}
 
 	var attributeProduct model.AttributeProduct
-	err = as.GetReplica().Get(
-		&attributeProduct,
-		queryString,
-		args...,
-	)
+	err = as.GetReplica().Raw(queryString, args...).Scan(&attributeProduct).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.AttributeProductTableName, "")
 		}
-		return nil, errors.Wrapf(err, "failed to find attribute product with AttributeID = %s, ProductTypeID = %s", option.AttributeID, option.ProductTypeID)
+		return nil, errors.Wrapf(err, "failed to find attribute product with given options")
 	}
 
 	return &attributeProduct, nil
@@ -112,7 +95,7 @@ func (s *SqlAttributeProductStore) FilterByOptions(option *model.AttributeProduc
 	}
 
 	var res []*model.AttributeProduct
-	err = s.GetReplica().Select(&res, queryString, args...)
+	err = s.GetReplica().Raw(queryString, args...).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find attribute products by given options")
 	}

@@ -1,9 +1,6 @@
 package channel
 
 import (
-	"database/sql"
-
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
 	"github.com/sitename/sitename/modules/util"
@@ -49,54 +46,20 @@ func (cs *SqlChannelStore) ScanFields(ch *model.Channel) []interface{} {
 }
 
 func (s *SqlChannelStore) Upsert(transaction *gorm.DB, channel *model.Channel) (*model.Channel, error) {
-	runner := s.GetMaster()
-	if transaction != nil {
-		runner = transaction
-	}
-
-	isSaving := false
-	if !model.IsValidId(channel.Id) {
-		channel.Id = ""
-		isSaving = true
-		channel.PreSave()
-	} else {
-		channel.PreUpdate()
-	}
-
-	if appErr := channel.IsValid(); appErr != nil {
-		return nil, appErr
-	}
-
-	var (
-		err    error
-		result sql.Result
-	)
-	if isSaving {
-		query := "INSERT INTO " + model.ChannelTableName + "(" + s.ModelFields("").Join(",") + ") VALUES (" + s.ModelFields(":").Join(",") + ")"
-		result, err = runner.NamedExec(query, channel)
-	} else {
-		query := "UPDATE " + model.ChannelTableName + " SET " + s.ModelFields(":").Join(",") + " WHERE Id=:Id"
-		result, err = runner.NamedExec(query, channel)
-	}
-
+	err := transaction.Save(channel).Error
 	if err != nil {
-		if s.IsUniqueConstraintError(err, []string{"Slug", "channels_slug_key", "idx_channels_slug_unique"}) {
+		if s.IsUniqueConstraintError(err, []string{"slug", "channels_slug_key", "idx_channels_slug_unique"}) {
 			return nil, store.NewErrInvalidInput(model.ChannelTableName, "Slug", channel.Slug)
 		}
 		return nil, errors.Wrap(err, "failed to upsert channel")
 	}
-	rowsAffected, _ := result.RowsAffected()
-	if rowsAffected != 1 {
-		return nil, errors.Errorf("%d rows affected instead of 1", rowsAffected)
-	}
-
 	return channel, nil
 }
 
 func (cs *SqlChannelStore) Get(id string) (*model.Channel, error) {
 	var channel model.Channel
 
-	err := cs.GetReplica().Get(&channel, "SELECT * FROM "+model.ChannelTableName+" WHERE Id = ?", id)
+	err := cs.GetReplica().First(&channel, "Id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.ChannelTableName, id)
@@ -107,7 +70,8 @@ func (cs *SqlChannelStore) Get(id string) (*model.Channel, error) {
 	return &channel, nil
 }
 
-func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption) (string, []interface{}, error) {
+// FilterByOption returns a list of channels with given option
+func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) {
 	selectFields := cs.ModelFields(model.ChannelTableName + ".")
 	if option.AnnotateHasOrders {
 		selectFields = append(selectFields, `EXISTS ( SELECT (1) AS "a" FROM Orders WHERE Orders.ChannelID = Channels.Id LIMIT 1 ) AS HasOrders`)
@@ -115,76 +79,31 @@ func (cs *SqlChannelStore) commonQueryBuilder(option *model.ChannelFilterOption)
 
 	query := cs.GetQueryBuilder().
 		Select(selectFields...).
-		From(model.ChannelTableName)
+		From(model.ChannelTableName).
+		Where(option.Conditions)
 
 	// parse options
-	for _, opt := range []squirrel.Sqlizer{
-		option.Id,
-		option.Name,
-		option.IsActive,
-		option.Slug,
-		option.Currency,
-		option.Extra,
-		option.ShippingZoneChannels_ShippingZoneID, //
-	} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
-	}
-
 	if option.ShippingZoneChannels_ShippingZoneID != nil {
-		query = query.InnerJoin(model.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ChannelID = Channels.Id")
+		query = query.
+			InnerJoin(model.ShippingZoneChannelTableName + " ON ShippingZoneChannels.ChannelID = Channels.Id").
+			Where(option.ShippingZoneChannels_ShippingZoneID)
+	}
+	if option.Limit > 0 {
+		query = query.Limit(uint64(option.Limit))
 	}
 
-	return query.ToSql()
-}
-
-// GetbyOption finds and returns 1 channel filtered using given options
-func (cs *SqlChannelStore) GetbyOption(option *model.ChannelFilterOption) (*model.Channel, error) {
-	queryString, args, err := cs.commonQueryBuilder(option)
-	if err != nil {
-		return nil, errors.Wrap(err, "GetbyOption_ToSql")
-	}
-
-	var (
-		res        model.Channel
-		hasOrder   bool
-		scanFields = cs.ScanFields(&res)
-	)
-
-	if option.AnnotateHasOrders {
-		scanFields = append(scanFields, &hasOrder)
-	}
-
-	err = cs.GetReplica().QueryRow(queryString, args...).Scan(scanFields...)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.ChannelTableName, "options")
-		}
-		return nil, errors.Wrap(err, "failed to find channel by given options")
-	}
-
-	if option.AnnotateHasOrders {
-		res.SetHasOrders(hasOrder)
-	}
-
-	return &res, nil
-}
-
-// FilterByOption returns a list of channels with given option
-func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]*model.Channel, error) {
-	queryString, args, err := cs.commonQueryBuilder(option)
+	queryString, args, err := query.ToSql()
 	if err != nil {
 		return nil, errors.Wrap(err, "FilterByOption_ToSql")
 	}
 
-	rows, err := cs.GetReplica().Query(queryString, args...)
+	var res model.Channels
+
+	rows, err := cs.GetReplica().Raw(queryString, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find channels with given option")
 	}
 	defer rows.Close()
-
-	var res model.Channels
 
 	for rows.Next() {
 		var (
@@ -211,22 +130,8 @@ func (cs *SqlChannelStore) FilterByOption(option *model.ChannelFilterOption) ([]
 }
 
 func (s *SqlChannelStore) DeleteChannels(transaction *gorm.DB, ids []string) error {
-	runner := s.GetMaster()
-	if transaction != nil {
-		runner = transaction
+	if transaction == nil {
+		transaction = s.GetMaster()
 	}
-
-	query, args, err := s.GetQueryBuilder().Delete(model.ChannelTableName).Where(squirrel.Eq{"Id": ids}).ToSql()
-	if err != nil {
-		return errors.Wrap(err, "DeleteChannels_ToSql")
-	}
-	result, err := runner.Exec(query, args...)
-	if err != nil {
-		return errors.Wrap(err, "failed to delete channels by given ids")
-	}
-	numOfChannelDeleted, _ := result.RowsAffected()
-	if int(numOfChannelDeleted) != len(ids) {
-		return errors.Errorf("%d channel(s) deleted instead of %d", numOfChannelDeleted, len(ids))
-	}
-	return nil
+	return transaction.Raw("DELETE FROM "+model.ChannelTableName+" WHERE Id IN ?", ids).Error
 }
