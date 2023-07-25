@@ -19,7 +19,7 @@ import (
 // :raises NotApplicable: When the voucher is not applicable in the current checkout.
 func (s *ServiceCheckout) getVoucherDataForOrder(checkoutInfo model.CheckoutInfo) (map[string]*model.Voucher, *model.NotApplicable, *model.AppError) {
 	checkout := checkoutInfo.Checkout
-	voucher, appErr := s.GetVoucherForCheckout(checkoutInfo, true)
+	voucher, appErr := s.GetVoucherForCheckout(checkoutInfo, nil, true)
 	if appErr != nil {
 		return nil, nil, appErr
 	}
@@ -498,10 +498,9 @@ func (s *ServiceCheckout) createOrder(checkoutInfo model.CheckoutInfo, orderData
 	defer transaction.Rollback()
 
 	checkout := checkoutInfo.Checkout
-	// checkout.PopulateNonDbFields() // this call is important
 
 	orders, appErr := s.srv.OrderService().FilterOrdersByOptions(&model.OrderFilterOption{
-		CheckoutToken: squirrel.Eq{model.OrderTableName + ".CheckoutToken": checkout.Token},
+		Conditions: squirrel.Eq{model.OrderTableName + ".CheckoutToken": checkout.Token},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

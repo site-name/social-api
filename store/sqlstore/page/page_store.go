@@ -15,23 +15,8 @@ func NewSqlPageStore(s store.Store) store.PageStore {
 }
 
 func (s *SqlPageStore) FilterByOptions(options *model.PageFilterOptions) ([]*model.Page, error) {
-	query := s.GetQueryBuilder().Select("*").From(model.PageTableName)
-
-	if options.Id != nil {
-		query = query.Where(options.Id)
-	}
-	if options.Title != nil {
-		query = query.Where(options.Title)
-	}
-
-	queryStr, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
-	}
-
 	var res []*model.Page
-
-	err = s.GetReplica().Select(&res, queryStr, args...)
+	err := s.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find pages by options")
 	}

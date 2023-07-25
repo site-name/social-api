@@ -6,7 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -34,105 +33,28 @@ func (s *SqlInvoiceStore) ScanFields(iv *model.Invoice) []any {
 	}
 }
 
-func (s *SqlInvoiceStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"OrderID",
-		"Number",
-		"CreateAt",
-		"ExternalUrl",
-		"Status",
-		"Message",
-		"UpdateAt",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
-
 // Upsert depends on given invoice's Id to decide update or delete it
 func (is *SqlInvoiceStore) Upsert(invoice *model.Invoice) (*model.Invoice, error) {
-	var isSaving bool
-	if invoice.Id == "" {
-		isSaving = true
-		invoice.PreSave()
-	} else {
-		invoice.PreUpdate()
-	}
-
-	if err := invoice.IsValid(); err != nil {
-		return nil, err
-	}
-
-	var (
-		err        error
-		numUpdated int64
-	)
-	if isSaving {
-		query := "INSERT INTO " + model.InvoiceTableName + "(" + is.ModelFields("").Join(",") + ") VALUES (" + is.ModelFields(":").Join(",") + ")"
-		_, err = is.GetMaster().NamedExec(query, invoice)
-
-	} else {
-		oldInvoice, err := is.GetbyOptions(&model.InvoiceFilterOptions{
-			Id: squirrel.Eq{model.InvoiceTableName + ".Id": invoice.Id},
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		// keep
-		invoice.CreateAt = oldInvoice.CreateAt
-
-		query := "UPDATE " + model.InvoiceEventTableName + " SET " + is.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id=:Id"
-
-		var result sql.Result
-		result, err = is.GetMaster().NamedExec(query, invoice)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
-		}
-	}
-
+	err := is.GetMaster().Save(invoice).Error
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to upsert invoice with id=%s", invoice.Id)
+		return nil, errors.Wrap(err, "failed to upsert invoice")
 	}
-
-	if numUpdated > 1 {
-		return nil, errors.Errorf("multiple invoices were updated: %d instead of 1", numUpdated)
-	}
-
 	return invoice, nil
 }
 
 func (s *SqlInvoiceStore) commonQueryBuilder(options *model.InvoiceFilterOptions) squirrel.SelectBuilder {
-	selectFields := s.ModelFields(model.InvoiceTableName + ".")
+	selectFields := []string{model.InvoiceTableName + ".*"}
 	if options.SelectRelatedOrder {
-		selectFields = append(selectFields, s.Order().ModelFields(model.OrderTableName+".")...)
+		selectFields = append(selectFields, model.OrderTableName+".*")
 	}
 
-	query := s.GetQueryBuilder().Select(selectFields...).From(model.InvoiceTableName)
+	query := s.GetQueryBuilder().Select(selectFields...).From(model.InvoiceTableName).Where(options.Conditions)
 
 	if options.SelectRelatedOrder {
 		query = query.InnerJoin(model.OrderTableName + " ON Orders.Id = Invoices.OrderID")
 	}
 	if options.Limit > 0 {
 		query = query.Limit(options.Limit)
-	}
-
-	for _, opt := range []squirrel.Sqlizer{options.Id, options.OrderID} {
-		if opt != nil {
-			query = query.Where(opt)
-		}
 	}
 
 	return query
@@ -154,9 +76,9 @@ func (is *SqlInvoiceStore) GetbyOptions(options *model.InvoiceFilterOptions) (*m
 		scanFields = append(scanFields, is.Order().ScanFields(&order)...)
 	}
 
-	err = is.GetReplica().QueryRow(query, args...).Scan(scanFields...)
+	err = is.GetReplica().Raw(query, args...).Row().Scan(scanFields...)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if err == sql.ErrNoRows {
 			return nil, store.NewErrNotFound(model.InvoiceTableName, "options")
 		}
 		return nil, errors.Wrap(err, "failed to find invoice with given options")
@@ -175,7 +97,7 @@ func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) 
 		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
 	}
 
-	rows, err := is.GetReplica().Query(queryStr, args...)
+	rows, err := is.GetReplica().Raw(queryStr, args...).Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find invoices by given options")
 	}
@@ -208,23 +130,9 @@ func (is *SqlInvoiceStore) FilterByOptions(options *model.InvoiceFilterOptions) 
 }
 
 func (s *SqlInvoiceStore) Delete(transaction *gorm.DB, ids ...string) error {
-	var runner *gorm.DB = s.GetMaster()
-	if transaction != nil {
-		runner = transaction
-	}
-
-	query, args, err := s.GetQueryBuilder().Delete(model.InvoiceTableName).Where(squirrel.Eq{model.InvoiceTableName + ".Id": ids}).ToSql()
+	err := transaction.Raw("DELETE FROM "+model.InvoiceTableName+" WHERE Id IN ?", ids).Error
 	if err != nil {
-		return errors.Wrap(err, "Delete_ToSql")
-	}
-
-	result, err := runner.Exec(query, args...)
-	if err != nil {
-		return errors.Wrap(err, "failed to delete invoices with given ids")
-	}
-	rows, _ := result.RowsAffected()
-	if rows != int64(len(ids)) {
-		return errors.Errorf("%d invoices were deleted instead of %d", rows, len(ids))
+		return errors.Wrap(err, "failed to delete invoice by given ids")
 	}
 	return nil
 }

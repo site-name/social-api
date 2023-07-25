@@ -2,25 +2,19 @@ package model
 
 import (
 	"fmt"
-	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gosimple/slug"
 	"github.com/samber/lo"
 	"github.com/sitename/sitename/modules/measurement"
 	"github.com/sitename/sitename/modules/util"
-)
-
-// max lengths for some fields of products
-const (
-	PRODUCT_NAME_MAX_LENGTH = 250
-	PRODUCT_SLUG_MAX_LENGTH = 255
+	"gorm.io/gorm"
 )
 
 // ordering slug
 type Product struct {
 	Id                   string                 `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	ProductTypeID        string                 `json:"product_type_id" gorm:"type:uuid;index:"`
+	ProductTypeID        string                 `json:"product_type_id" gorm:"type:uuid;index:producttypeid_key"`
 	Name                 string                 `json:"name" gorm:"type:varchar(250)"`
 	Slug                 string                 `json:"slug" gorm:"type:varchar(255);uniqueIndex:product_slug_unique_key"`
 	Description          StringInterface        `json:"description"`
@@ -36,75 +30,32 @@ type Product struct {
 	ModelMetadata
 	Seo
 
-	collections               Collections               `json:"-" db:"-"`
-	productType               *ProductType              `json:"-" db:"-"`
-	assignedProductAttributes AssignedProductAttributes `json:"-" db:"-"`
-	productVariants           ProductVariants           `json:"-" db:"-"`
-	category                  *Category                 `json:"-" db:"-"`
-	medias                    FileInfos                 `json:"-" db:"-"`
-	productChannelListings    ProductChannelListings    `json:"-" db:"-"`
+	productType            *ProductType           `json:"-" gorm:"-"`
+	productVariants        ProductVariants        `json:"-" gorm:"-"`
+	category               *Category              `json:"-" gorm:"-"`
+	medias                 FileInfos              `json:"-" gorm:"-"`
+	productChannelListings ProductChannelListings `json:"-" gorm:"-"`
 
-	Sales             Sales                       `json:"-" gorm:"many2many:SaleProducts"`
-	Vouchers          Vouchers                    `json:"-" gorm:"many2many:VoucherProducts"`
-	Attributes        []*AssignedProductAttribute `json:"-" gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"`
-	AttributesRelated []*AttributeProduct         `json:"-" gorm:"many2many:AssignedProductAttributes"`
+	Collections       Collections               `json:"-" gorm:"many2many:ProductCollections"`
+	Sales             Sales                     `json:"-" gorm:"many2many:SaleProducts"`
+	Vouchers          Vouchers                  `json:"-" gorm:"many2many:VoucherProducts"`
+	Attributes        AssignedProductAttributes `json:"-" gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"`
+	AttributesRelated []*AttributeProduct       `json:"-" gorm:"many2many:AssignedProductAttributes"`
 }
 
-func (p *Product) GetCollections() Collections {
-	return p.collections
-}
-
-func (p *Product) SetCollections(cs Collections) {
-	p.collections = cs
-}
-
-func (p *Product) GetProductType() *ProductType {
-	return p.productType
-}
-
-func (p *Product) SetProductType(pt *ProductType) {
-	p.productType = pt
-}
-
-func (p *Product) GetAssignedProductAttributes() AssignedProductAttributes {
-	return p.assignedProductAttributes
-}
-
-func (p *Product) SetAssignedProductAttributes(ap AssignedProductAttributes) {
-	p.assignedProductAttributes = ap
-}
-
-func (p *Product) GetProductVariants() ProductVariants {
-	return p.productVariants
-}
-
-func (p *Product) SetProductVariants(pvs ProductVariants) {
-	p.productVariants = pvs
-}
-
-func (p *Product) GetCategory() *Category {
-	return p.category
-}
-
-func (p *Product) SetCategory(c *Category) {
-	p.category = c
-}
-
-func (p *Product) GetMedias() FileInfos {
-	return p.medias
-}
-
-func (p *Product) SetMedias(ms FileInfos) {
-	p.medias = ms
-}
-
-func (p *Product) GetProductChannelListings() ProductChannelListings {
-	return p.productChannelListings
-}
-
-func (p *Product) SetProductChannelListings(pc ProductChannelListings) {
-	p.productChannelListings = pc
-}
+func (p *Product) GetProductType() *ProductType                        { return p.productType }
+func (p *Product) SetProductType(pt *ProductType)                      { p.productType = pt }
+func (p *Product) GetProductVariants() ProductVariants                 { return p.productVariants }
+func (p *Product) SetProductVariants(pvs ProductVariants)              { p.productVariants = pvs }
+func (p *Product) GetCategory() *Category                              { return p.category }
+func (p *Product) SetCategory(c *Category)                             { p.category = c }
+func (p *Product) GetMedias() FileInfos                                { return p.medias }
+func (p *Product) SetMedias(ms FileInfos)                              { p.medias = ms }
+func (p *Product) GetProductChannelListings() ProductChannelListings   { return p.productChannelListings }
+func (p *Product) SetProductChannelListings(pc ProductChannelListings) { p.productChannelListings = pc }
+func (c *Product) BeforeCreate(_ *gorm.DB) error                       { c.PreSave(); return c.IsValid() }
+func (c *Product) BeforeUpdate(_ *gorm.DB) error                       { c.PreUpdate(); return c.IsValid() }
+func (c *Product) TableName() string                                   { return ProductTableName }
 
 type ProductCountByCategoryID struct {
 	CategoryID   string `json:"category_id"`
@@ -189,9 +140,9 @@ func (ps Products) Flat() []StringInterface {
 
 	for _, prd := range ps {
 		maxLength := util.AnyArray[int]{
-			len(prd.collections),
+			len(prd.Collections),
 			len(prd.medias),
-			len(prd.assignedProductAttributes),
+			len(prd.Attributes),
 			len(prd.productVariants),
 		}.GetMinMax().Max
 
@@ -216,13 +167,13 @@ func (ps Products) Flat() []StringInterface {
 				"product_weight":     prd.WeightString(),
 			}
 
-			if i < len(prd.collections) {
-				data["collections__slug"] = prd.collections[i].Slug
+			if i < len(prd.Collections) {
+				data["collections__slug"] = prd.Collections[i].Slug
 			}
 			if i < len(prd.medias) {
 				data["media__image"] = prd.medias[i].Path
 			}
-			if i < len(prd.assignedProductAttributes) {
+			if i < len(prd.Attributes) {
 				panic("not implemented")
 			}
 			if i < len(prd.productVariants) {
@@ -257,26 +208,11 @@ func (p *Product) IsValid() *AppError {
 		"Product.IsValid",
 	)
 
-	if !IsValidId(p.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(p.ProductTypeID) {
 		return outer("product_type_id", &p.Id)
 	}
 	if p.CategoryID != nil && !IsValidId(*p.CategoryID) {
 		return outer("category_id", &p.Id)
-	}
-	if utf8.RuneCountInString(p.Name) > PRODUCT_NAME_MAX_LENGTH {
-		return outer("name", &p.Id)
-	}
-	if p.CreateAt == 0 {
-		return outer("create_at", &p.Id)
-	}
-	if p.UpdateAt == 0 {
-		return outer("update_at", &p.Id)
-	}
-	if utf8.RuneCountInString(p.Slug) > PRODUCT_SLUG_MAX_LENGTH {
-		return outer("slug", &p.Id)
 	}
 	if p.Weight != nil {
 		if _, ok := measurement.WEIGHT_UNIT_STRINGS[p.WeightUnit]; !ok {
@@ -289,17 +225,11 @@ func (p *Product) IsValid() *AppError {
 
 func (p *Product) PreSave() {
 	p.commonPre()
-	if p.Id == "" {
-		p.Id = NewId()
-	}
-	p.CreateAt = GetMillis()
-	p.UpdateAt = p.CreateAt
 	p.Slug = slug.Make(p.Name)
 }
 
 func (p *Product) PreUpdate() {
 	p.commonPre()
-	p.UpdateAt = GetMillis()
 }
 
 func (p *Product) commonPre() {
@@ -310,6 +240,7 @@ func (p *Product) commonPre() {
 	if p.ChargeTaxes == nil {
 		p.ChargeTaxes = NewPrimitive(true)
 	}
+	p.Seo.commonPre()
 }
 
 // String returns exact product's name
@@ -321,26 +252,26 @@ func (p *Product) DeepCopy() *Product {
 	res := *p
 
 	if p.CategoryID != nil {
-		res.CategoryID = NewPrimitive(*p.CategoryID)
+		*res.CategoryID = *p.CategoryID
 	}
 	if p.DefaultVariantID != nil {
-		res.DefaultVariantID = NewPrimitive(*p.DefaultVariantID)
+		*res.DefaultVariantID = *p.DefaultVariantID
 	}
 	if p.Weight != nil {
-		res.Weight = NewPrimitive(*p.Weight)
+		*res.Weight = *p.Weight
 	}
 	if p.Rating != nil {
-		res.Rating = NewPrimitive(*p.Rating)
+		*res.Rating = *p.Rating
 	}
 
-	if p.collections != nil {
-		res.collections = p.collections.DeepCopy()
+	if p.Collections != nil {
+		res.Collections = p.Collections.DeepCopy()
 	}
 	if p.productType != nil {
 		res.productType = p.productType.DeepCopy()
 	}
-	if p.assignedProductAttributes != nil {
-		res.assignedProductAttributes = p.assignedProductAttributes.DeepCopy()
+	if p.Attributes != nil {
+		res.Attributes = p.Attributes.DeepCopy()
 	}
 	if p.productVariants != nil {
 		res.productVariants = p.productVariants.DeepCopy()

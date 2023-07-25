@@ -68,6 +68,12 @@ const (
 	IP_ADDRESS_MAX_LENGTH          = 39
 	DEFAULT_LOCALE                 = LanguageCodeEnumEn // this is default language also
 	DEFAULT_COUNTRY                = CountryCodeUs
+	// E.g
+	//  Decimal("123.45") == true
+	DECIMAL_TOTAL_DIGITS_ALLOWED = 12
+	// E.g
+	//  Decimal("123.4567") == false
+	DECIMAL_MAX_DECIMAL_PLACES_ALLOWED = 3
 )
 
 var (

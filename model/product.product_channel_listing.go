@@ -42,12 +42,13 @@ type ProductChannelListingFilterOption struct {
 	ChannelID            squirrel.Sqlizer
 	AvailableForPurchase squirrel.Sqlizer
 	Currency             squirrel.Sqlizer
-	ProductVariantsId    squirrel.Sqlizer // INNER JOIN Products ON ... INNER JOIN ProductVariants ON ... WHERE ProductVariants.Id ...
-	PublicationDate      squirrel.Sqlizer //
-	ChannelSlug          *string          // INNER JOIN Channels ON ... WHERE Channels.Slug ...
-	VisibleInListings    *bool
-	IsPublished          *bool
-	PrefetchChannel      bool // this tell store to prefetch channel instances also
+	PublicationDate      squirrel.Sqlizer
+
+	ProductVariantsId squirrel.Sqlizer // INNER JOIN Products ON ... INNER JOIN ProductVariants ON ... WHERE ProductVariants.Id ...
+	ChannelSlug       *string          // INNER JOIN Channels ON ... WHERE Channels.Slug ...
+	VisibleInListings *bool
+	IsPublished       *bool
+	PrefetchChannel   bool // this tell store to prefetch channel instances also
 }
 
 func (p *ProductChannelListing) IsAvailableForPurchase() bool {

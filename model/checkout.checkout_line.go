@@ -16,7 +16,7 @@ type CheckoutLine struct {
 	CreateAt   int64  `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`
 	CheckoutID string `json:"checkout_id" gorm:"type:uuid;column:CheckoutID"`
 	VariantID  string `json:"variant_id" gorm:"type:uuid;column:VariantID"`
-	Quantity   int    `json:"quantity" gorm:"column:Quantity;minimum:1"` // min 1
+	Quantity   int    `json:"quantity" gorm:"column:Quantity;check:Quantity >= 1"` // min 1
 }
 
 func (c *CheckoutLine) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }

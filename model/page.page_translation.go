@@ -1,58 +1,37 @@
 package model
 
 import (
-	"strings"
-	"unicode/utf8"
+	"net/http"
 
-	"golang.org/x/text/language"
-)
-
-// max lengths for page translation' fields
-const (
-	PAGE_TRANSLATION_TITLE_MAX_LENGTH = 255
+	"gorm.io/gorm"
 )
 
 // unique together language_code, page_id
 type PageTranslation struct {
-	Id           string           `json:"id"`
-	LanguageCode string           `json:"language_code"`
-	PageID       string           `json:"page_id"`
-	Title        string           `json:"title"` // unique
-	Content      *StringInterface `json:"content"`
+	Id           string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	LanguageCode LanguageCodeEnum `json:"language_code" gorm:"type:varchar(5);column:LanguageCode;uniqueIndex:languagecode_pageid_key"` // unique with page_id
+	PageID       string           `json:"page_id" gorm:"type:uuid;column:PageID;uniqueIndex:languagecode_pageid_key"`
+	Title        string           `json:"title" gorm:"type:varchar(255);column:Title"`
+	Content      *StringInterface `json:"content" gorm:"type:jsonb;column:Content"`
 	SeoTranslation
 }
 
+func (c *PageTranslation) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *PageTranslation) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *PageTranslation) TableName() string             { return PageTranslationTableName }
+
 func (p *PageTranslation) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"page_translation.is_valid.%s.app_error",
-		"page_translation_id=",
-		"PageTranslation.IsValid",
-	)
-	if !IsValidId(p.Id) {
-		return outer("Id", nil)
-	}
 	if !IsValidId(p.PageID) {
-		return outer("page_id", &p.Id)
+		return NewAppError("PageTranslation.IsValid", "model.page_translation.is_valid.page_id.app_error", nil, "please provide valid page id", http.StatusBadRequest)
 	}
-	if utf8.RuneCountInString(p.Title) > PAGE_TRANSLATION_TITLE_MAX_LENGTH {
-		return outer("title", &p.Id)
-	}
-	if tag, err := language.Parse(p.LanguageCode); err != nil || !strings.EqualFold(tag.String(), p.LanguageCode) {
-		return outer("language_code", &p.Id)
+	if !p.LanguageCode.IsValid() {
+		return NewAppError("PageTranslation.IsValid", "model.page_translation.is_valid.language_code.app_error", nil, "please provide valid language code", http.StatusBadRequest)
 	}
 
 	return nil
 }
 
-func (p *PageTranslation) ToJSON() string {
-	return ModelToJson(p)
-}
-
-func (p *PageTranslation) PreSave() {
-	p.Title = SanitizeUnicode(p.Title)
-}
-
-func (p *PageTranslation) PreUpdate() {
+func (p *PageTranslation) commonPre() {
 	p.Title = SanitizeUnicode(p.Title)
 }
 

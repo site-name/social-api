@@ -30,7 +30,7 @@ func (a *ServicePayment) TransactionsByOption(option *model.PaymentTransactionFi
 
 func (a *ServicePayment) GetAllPaymentTransactions(paymentID string) ([]*model.PaymentTransaction, *model.AppError) {
 	transactions, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
-		PaymentID: squirrel.Eq{model.TransactionTableName + ".PaymentID": paymentID},
+		Conditions: squirrel.Eq{model.TransactionTableName + ".PaymentID": paymentID},
 	})
 	if appErr != nil {
 		return nil, appErr

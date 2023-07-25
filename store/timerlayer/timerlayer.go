@@ -3535,6 +3535,22 @@ func (s *TimerLayerFulfillmentLineStore) Save(fulfillmentLine *model.Fulfillment
 	return result, err
 }
 
+func (s *TimerLayerGiftCardStore) AddRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
+	start := timemodule.Now()
+
+	err := s.GiftCardStore.AddRelations(transaction, giftcards, relations)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.AddRelations", success, elapsed)
+	}
+	return err
+}
+
 func (s *TimerLayerGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
 	start := timemodule.Now()
 
@@ -3613,6 +3629,22 @@ func (s *TimerLayerGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.GetById", success, elapsed)
 	}
 	return result, err
+}
+
+func (s *TimerLayerGiftCardStore) RemoveRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
+	start := timemodule.Now()
+
+	err := s.GiftCardStore.RemoveRelations(transaction, giftcards, relations)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("GiftCardStore.RemoveRelations", success, elapsed)
+	}
+	return err
 }
 
 func (s *TimerLayerGiftcardEventStore) BulkUpsert(transaction *gorm.DB, events ...*model.GiftCardEvent) ([]*model.GiftCardEvent, error) {

@@ -3,13 +3,13 @@ package model
 import (
 	"fmt"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"golang.org/x/text/currency"
+	"gorm.io/gorm"
 )
 
 // max lengths for some fields of OrderLine
@@ -22,72 +22,59 @@ const (
 )
 
 type OrderLine struct {
-	Id                                string               `json:"id"`
-	CreateAt                          int64                `json:"create_at"` // for database ordering
-	OrderID                           string               `json:"order_id"`
-	VariantID                         *string              `json:"variant_id"` // FOREIGN KEY ProductVariant
-	ProductName                       string               `json:"product_name"`
-	VariantName                       string               `json:"variant_name"`
-	TranslatedProductName             string               `json:"translated_product_name"`
-	TranslatedVariantName             string               `json:"translated_variant_name"`
-	ProductSku                        *string              `json:"product_sku"`
-	ProductVariantID                  *string              `json:"product_variant_id"` // GraphQL ID used as fallback when product SKU is not available
-	IsShippingRequired                bool                 `json:"is_shipping_required"`
-	IsGiftcard                        bool                 `json:"is_gift_card"`
-	Quantity                          int                  `json:"quantity"`
-	QuantityFulfilled                 int                  `json:"quantity_fulfilled"`
-	Currency                          string               `json:"currency"`
-	UnitDiscountAmount                *decimal.Decimal     `json:"unit_discount_amount"` // default 0
-	UnitDiscount                      *goprices.Money      `json:"unit_dsicount" db:"-"`
-	UnitDiscountType                  DiscountType         `json:"unit_discount_type"` // default 'fixed'
-	UnitDiscountReason                *string              `json:"unit_discount_reason"`
-	UnitPriceNetAmount                *decimal.Decimal     `json:"unit_price_net_amount"` // default 0
-	UnitDiscountValue                 *decimal.Decimal     `json:"unit_discount_value"`   // store the value of the applied discount. Like 20%, default 0
-	UnitPriceNet                      *goprices.Money      `json:"unit_price_net" db:"-"`
-	UnitPriceGrossAmount              *decimal.Decimal     `json:"unit_price_gross_amount"` // default 0
-	UnitPriceGross                    *goprices.Money      `json:"unit_price_gross" db:"-"`
-	UnitPrice                         *goprices.TaxedMoney `json:"unit_price" db:"-"`
-	TotalPriceNetAmount               *decimal.Decimal     `json:"total_price_net_amount"`
-	TotalPriceNet                     *goprices.Money      `json:"total_price_net" db:"-"`
-	TotalPriceGrossAmount             *decimal.Decimal     `json:"total_price_gross_amount"`
-	TotalPriceGross                   *goprices.Money      `json:"total_price_gross" db:"-"`
-	TotalPrice                        *goprices.TaxedMoney `json:"total_price" db:"-"`
-	UnDiscountedUnitPriceGrossAmount  *decimal.Decimal     `json:"undiscounted_unit_price_gross_amount"`
-	UnDiscountedUnitPriceNetAmount    *decimal.Decimal     `json:"undiscounted_unit_price_net_amount"`
-	UnDiscountedUnitPrice             *goprices.TaxedMoney `json:"undiscounted_unit_price" db:"-"`
-	UnDiscountedTotalPriceGrossAmount *decimal.Decimal     `json:"undiscounted_total_price_gross_amount"`
-	UnDiscountedTotalPriceNetAmount   *decimal.Decimal     `json:"undiscounted_total_price_net_amount"`
-	UnDiscountedTotalPrice            *goprices.TaxedMoney `json:"undiscounted_total_price" db:"-"`
-	TaxRate                           *decimal.Decimal     `json:"tax_rate"` // decimal places: 4
+	Id                                string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt                          int64            `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"` // for database ordering
+	OrderID                           string           `json:"order_id" gorm:"type:uuid;column:OrderID"`                          // NOTE editable
+	VariantID                         *string          `json:"variant_id" gorm:"type:uuid;column:VariantID"`                      // FOREIGN KEY ProductVariant
+	ProductName                       string           `json:"product_name" gorm:"type:varchar(386);column:ProductName"`
+	VariantName                       string           `json:"variant_name" gorm:"type:varchar(255);column:VariantName"`
+	TranslatedProductName             string           `json:"translated_product_name" gorm:"type:varchar(386);column:TranslatedProductName"`
+	TranslatedVariantName             string           `json:"translated_variant_name" gorm:"type:varchar(255);column:TranslatedVariantName"`
+	ProductSku                        *string          `json:"product_sku" gorm:"type:varchar(255);column:ProductSKU"`
+	ProductVariantID                  *string          `json:"product_variant_id" gorm:"type:varchar(255);column:ProductVariantID"` // GraphQL ID used as fallback when product SKU is not available
+	IsShippingRequired                bool             `json:"is_shipping_required" gorm:"column:IsShippingRequired"`
+	IsGiftcard                        bool             `json:"is_gift_card" gorm:"column:IsGiftCard"`
+	Quantity                          int              `json:"quantity" gorm:"type:integer;check:Quantity >= 1;column:Quantity"`
+	QuantityFulfilled                 int              `json:"quantity_fulfilled" gorm:"type:integer;check:QuantityFulfilled >= 0;column:QuantityFulfilled"`
+	Currency                          string           `json:"currency" gorm:"type:varchar(3);column:Currency"`
+	UnitDiscountAmount                *decimal.Decimal `json:"unit_discount_amount" gorm:"default:0;column:UnitDiscountAmount"`    // default 0
+	UnitDiscountType                  DiscountType     `json:"unit_discount_type" gorm:"type:varchar(10);column:UnitDiscountType"` // default 'fixed'
+	UnitDiscountReason                *string          `json:"unit_discount_reason" gorm:"column:UnitDiscountReason"`
+	UnitPriceNetAmount                *decimal.Decimal `json:"unit_price_net_amount" gorm:"default:0;column:UnitPriceNetAmount"`     // default 0
+	UnitDiscountValue                 *decimal.Decimal `json:"unit_discount_value" gorm:"default:0;column:UnitDiscountValue"`        // store the value of the applied discount. Like 20%, default 0
+	UnitPriceGrossAmount              *decimal.Decimal `json:"unit_price_gross_amount" gorm:"default:0;column:UnitPriceGrossAmount"` // default 0
+	TotalPriceNetAmount               *decimal.Decimal `json:"total_price_net_amount" gorm:"column:TotalPriceNetAmount"`
+	TotalPriceGrossAmount             *decimal.Decimal `json:"total_price_gross_amount" gorm:"column:TotalPriceGrossAmount"`
+	UnDiscountedUnitPriceGrossAmount  *decimal.Decimal `json:"undiscounted_unit_price_gross_amount" gorm:"column:UnDiscountedUnitPriceGrossAmount;default:0"`
+	UnDiscountedUnitPriceNetAmount    *decimal.Decimal `json:"undiscounted_unit_price_net_amount" gorm:"column:UnDiscountedUnitPriceNetAmount;default:0"`
+	UnDiscountedTotalPriceGrossAmount *decimal.Decimal `json:"undiscounted_total_price_gross_amount" gorm:"column:UnDiscountedTotalPriceGrossAmount;default:0"` // default 0
+	UnDiscountedTotalPriceNetAmount   *decimal.Decimal `json:"undiscounted_total_price_net_amount" gorm:"column:UnDiscountedTotalPriceNetAmount;default:0"`     // default 0
+	TaxRate                           *decimal.Decimal `json:"tax_rate" gorm:"column:TaxRate"`                                                                  // decimal places: 4, default: 0
 
-	productVariant *ProductVariant `db:"-"` // for storing value returned by prefetching
-	order          *Order          `db:"-"` // related data, get popularized in some calls to database
-	allocations    Allocations     `db:"-"`
+	UnitDiscount           *goprices.Money      `json:"unit_dsicount" gorm:"-"`
+	UnDiscountedTotalPrice *goprices.TaxedMoney `json:"undiscounted_total_price" gorm:"-"`
+	UnDiscountedUnitPrice  *goprices.TaxedMoney `json:"undiscounted_unit_price" gorm:"-"`
+	TotalPrice             *goprices.TaxedMoney `json:"total_price" gorm:"-"`
+	TotalPriceGross        *goprices.Money      `json:"total_price_gross" gorm:"-"`
+	TotalPriceNet          *goprices.Money      `json:"total_price_net" gorm:"-"`
+	UnitPrice              *goprices.TaxedMoney `json:"unit_price" gorm:"-"`
+	UnitPriceGross         *goprices.Money      `json:"unit_price_gross" gorm:"-"`
+	UnitPriceNet           *goprices.Money      `json:"unit_price_net" gorm:"-"`
+
+	productVariant *ProductVariant `gorm:"-"` // for storing value returned by prefetching
+	order          *Order          `gorm:"-"` // related data, get popularized in some calls to database
+	allocations    Allocations     `gorm:"-"`
 }
 
-func (o *OrderLine) SetAllocations(allocations Allocations) {
-	o.allocations = allocations
-}
-
-func (o *OrderLine) GetAllocations() Allocations {
-	return o.allocations
-}
-
-func (o *OrderLine) SetOrder(order *Order) {
-	o.order = order
-}
-
-func (o *OrderLine) GetOrder() *Order {
-	return o.order
-}
-
-func (o *OrderLine) GetProductVariant() *ProductVariant {
-	return o.productVariant
-}
-
-func (o *OrderLine) SetProductVariant(variant *ProductVariant) {
-	o.productVariant = variant
-}
+func (c *OrderLine) BeforeCreate(_ *gorm.DB) error             { c.commonPre(); return c.IsValid() }
+func (c *OrderLine) BeforeUpdate(_ *gorm.DB) error             { c.commonPre(); return c.IsValid() }
+func (c *OrderLine) TableName() string                         { return OrderLineTableName }
+func (o *OrderLine) SetAllocations(allocations Allocations)    { o.allocations = allocations }
+func (o *OrderLine) GetAllocations() Allocations               { return o.allocations }
+func (o *OrderLine) SetOrder(order *Order)                     { o.order = order }
+func (o *OrderLine) GetOrder() *Order                          { return o.order }
+func (o *OrderLine) GetProductVariant() *ProductVariant        { return o.productVariant }
+func (o *OrderLine) SetProductVariant(variant *ProductVariant) { o.productVariant = variant }
 
 // OrderLinePrefetchRelated
 type OrderLinePrefetchRelated struct {
@@ -99,13 +86,9 @@ type OrderLinePrefetchRelated struct {
 
 // OrderLineFilterOption is used for build sql queries
 type OrderLineFilterOption struct {
-	Id                 squirrel.Sqlizer
-	OrderID            squirrel.Sqlizer
-	OrderChannelID     squirrel.Sqlizer // inner join Orders ON Orders.Id = OrderLines.OrderID WHERE Orders.ChannelID ...
-	IsShippingRequired squirrel.Sqlizer
-	IsGiftcard         squirrel.Sqlizer
-	VariantID          squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 
+	OrderChannelID   squirrel.Sqlizer // INNER JOIN Orders ON Orders.Id = OrderLines.OrderID WHERE Orders.ChannelID ...
 	VariantProductID squirrel.Sqlizer // INNER JOIN ProductVariants INNER JOIN Products WHERE Products.Id ...
 
 	// INNER JOIN ProductVariants ON OrderLines.VariantID = ProductVariants.Id
@@ -159,44 +142,42 @@ func (o *OrderLine) IsValid() *AppError {
 		"order_line_id=",
 		"OrderLine.IsValid",
 	)
-	if !IsValidId(o.Id) {
-		return outer("id", nil)
-	}
-	if o.CreateAt == 0 {
-		return outer("create_at", &o.Id)
-	}
+
 	if !IsValidId(o.OrderID) {
 		return outer("order_id", &o.Id)
 	}
 	if o.VariantID != nil && !IsValidId(*o.VariantID) {
 		return outer("variant_id", &o.Id)
 	}
-	if utf8.RuneCountInString(o.ProductName) > ORDER_LINE_PRODUCT_NAME_MAX_LENGTH {
-		return outer("product_name", &o.Id)
-	}
-	if utf8.RuneCountInString(o.VariantName) > ORDER_LINE_VARIANT_NAME_MAX_LENGTH {
-		return outer("variant_name", &o.Id)
-	}
-	if utf8.RuneCountInString(o.TranslatedProductName) > ORDER_LINE_PRODUCT_NAME_MAX_LENGTH {
-		return outer("translated_product_name", &o.Id)
-	}
-	if utf8.RuneCountInString(o.TranslatedVariantName) > ORDER_LINE_VARIANT_NAME_MAX_LENGTH {
-		return outer("translated_variant_name", &o.Id)
-	}
-	if o.ProductSku != nil && len(*o.ProductSku) > ORDER_LINE_PRODUCT_SKU_MAX_LENGTH {
-		return outer("product_sku", &o.Id)
-	}
-	if o.ProductVariantID != nil && len(*o.ProductVariantID) > ORDER_LINE_PRODUCT_VARIANT_ID_MAX_LENGTH {
-		return outer("product_variant_id", &o.Id)
-	}
-	if len(o.UnitDiscountType) > ORDER_LINE_UNIT_DISCOUNT_TYPE_MAX_LENGTH {
-		return outer("unit_discount_type", &o.Id)
-	}
 	if o.Quantity < 1 {
 		return outer("quantity", &o.Id)
 	}
 	if unit, err := currency.ParseISO(o.Currency); err != nil || !strings.EqualFold(unit.String(), o.Currency) {
 		return outer("currency", &o.Id)
+	}
+
+	if err := ValidateDecimal("OrderLine.IsValid.TaxRate", o.TaxRate, 5, 4); err != nil {
+		return err
+	}
+
+	for _, deci := range []struct {
+		name  string
+		value *decimal.Decimal
+	}{
+		{name: "UnitDiscountAmount", value: o.UnitDiscountAmount},
+		{name: "UnitPriceNetAmount", value: o.UnitPriceNetAmount},
+		{name: "UnitDiscountValue", value: o.UnitDiscountValue},
+		{name: "UnitPriceGrossAmount", value: o.UnitPriceGrossAmount},
+		{name: "TotalPriceNetAmount", value: o.TotalPriceNetAmount},
+		{name: "TotalPriceGrossAmount", value: o.TotalPriceGrossAmount},
+		{name: "UnDiscountedUnitPriceGrossAmount", value: o.UnDiscountedUnitPriceGrossAmount},
+		{name: "UnDiscountedUnitPriceNetAmount", value: o.UnDiscountedUnitPriceNetAmount},
+		{name: "UnDiscountedTotalPriceGrossAmount", value: o.UnDiscountedTotalPriceGrossAmount},
+		{name: "UnDiscountedTotalPriceNetAmount", value: o.UnDiscountedTotalPriceNetAmount},
+	} {
+		if err := ValidateDecimal("OrderLine.IsValid."+deci.name, deci.value, 12, 3); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -258,15 +239,6 @@ func (o *OrderLine) PopulateNonDbFields() {
 	}
 }
 
-func (o *OrderLine) PreSave() {
-	if o.Id == "" {
-		o.Id = NewId()
-	}
-	o.CreateAt = GetMillis()
-
-	o.commonPre()
-}
-
 func (o *OrderLine) commonPre() {
 	o.ProductName = SanitizeUnicode(o.ProductName)
 	o.VariantName = SanitizeUnicode(o.VariantName)
@@ -321,10 +293,6 @@ func (o *OrderLine) commonPre() {
 	if o.TaxRate == nil {
 		o.TaxRate = &decimal.Zero
 	}
-}
-
-func (o *OrderLine) PreUpdate() {
-	o.commonPre()
 }
 
 // QuantityUnFulfilled return current order's Quantity subtract QuantityFulfilled

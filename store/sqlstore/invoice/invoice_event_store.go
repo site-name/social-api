@@ -1,11 +1,8 @@
 package invoice
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -18,82 +15,19 @@ func NewSqlInvoiceEventStore(sqlStore store.Store) store.InvoiceEventStore {
 	return &SqlInvoiceEventStore{sqlStore}
 }
 
-func (s *SqlInvoiceEventStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"CreateAt",
-		"Type",
-		"InvoiceID",
-		"OrderID",
-		"UserID",
-		"Parameters",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
-
 // Upsert depends on given invoice event's Id to update/insert it
 func (ies *SqlInvoiceEventStore) Upsert(invoiceEvent *model.InvoiceEvent) (*model.InvoiceEvent, error) {
-	var isSaing bool
-	if invoiceEvent.Id == "" {
-		invoiceEvent.PreSave()
-		isSaing = true
-	}
-
-	if err := invoiceEvent.IsValid(); err != nil {
-		return nil, err
-	}
-
-	var (
-		err        error
-		numUpdated int64
-	)
-	if isSaing {
-		query := "INSERT INTO " + model.InvoiceEventTableName + "(" + ies.ModelFields("").Join(",") + ") VALUES (" + ies.ModelFields(":").Join(",") + ")"
-		_, err = ies.GetMaster().NamedExec(query, invoiceEvent)
-
-	} else {
-		oldEvent, err := ies.Get(invoiceEvent.Id)
-		if err != nil {
-			return nil, err
-		}
-
-		invoiceEvent.CreateAt = oldEvent.CreateAt
-
-		query := "UPDATE " + model.InvoiceEventTableName + " SET " + ies.
-			ModelFields("").
-			Map(func(_ int, s string) string {
-				return s + "=:" + s
-			}).
-			Join(",") + " WHERE Id=:Id"
-
-		var result sql.Result
-		result, err = ies.GetMaster().NamedExec(query, invoiceEvent)
-		if err == nil && result != nil {
-			numUpdated, _ = result.RowsAffected()
-		}
-	}
-
+	err := ies.GetMaster().Save(invoiceEvent).Error
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to upsert given invoice event with id=%s", invoiceEvent.Id)
+		return nil, errors.Wrap(err, "failed to upsert invoice event")
 	}
-
-	if numUpdated > 1 {
-		return nil, errors.Errorf("multiple invoice events were updated: %d instead of 1", numUpdated)
-	}
-
 	return invoiceEvent, nil
 }
 
 // Get finds and returns 1 invoice event
 func (ies *SqlInvoiceEventStore) Get(invoiceEventID string) (*model.InvoiceEvent, error) {
 	var res model.InvoiceEvent
-	err := ies.GetReplica().Get(&res, "SELECT * FROM "+model.InvoiceEventTableName+" WHERE Id = ?", invoiceEventID)
+	err := ies.GetReplica().First(&res, "Id = ?", invoiceEventID).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.InvoiceEventTableName, invoiceEventID)

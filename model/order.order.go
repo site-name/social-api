@@ -2,8 +2,6 @@ package model
 
 import (
 	"strings"
-	"unicode/utf8"
-	"unsafe"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
@@ -11,6 +9,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/modules/measurement"
 	"golang.org/x/text/currency"
+	"gorm.io/gorm"
 )
 
 // max lengths for some fields of order model
@@ -72,67 +71,68 @@ func (e OrderStatus) IsValid() bool {
 }
 
 type Order struct {
-	Id                           string                 `json:"id"`
-	CreateAt                     int64                  `json:"create_at"`           // NOT editable
-	Status                       OrderStatus            `json:"status"`              // default: ORDER_STATUS_UNFULFILLED
-	UserID                       *string                `json:"user_id"`             //
-	LanguageCode                 LanguageCodeEnum       `json:"language_code"`       // default: "en"
-	TrackingClientID             string                 `json:"tracking_client_id"`  // NOT editable
-	BillingAddressID             *string                `json:"billing_address_id"`  // NOT editable
-	ShippingAddressID            *string                `json:"shipping_address_id"` // NOT editable
-	UserEmail                    string                 `json:"user_email"`          //
-	OriginalID                   *string                `json:"original_id"`         // original order id
-	Origin                       OrderOrigin            `json:"origin"`
-	Currency                     string                 `json:"currency"`
-	ShippingMethodID             *string                `json:"shipping_method_id"`
-	CollectionPointID            *string                `json:"collection_point_id"`         // foreign key warehosue
-	ShippingMethodName           *string                `json:"shipping_method_name"`        // NUL, NOT editable
-	CollectionPointName          *string                `json:"collection_point_name"`       // NUL, NOTE editable
-	ChannelID                    string                 `json:"channel_id"`                  //
-	ShippingPriceNetAmount       *decimal.Decimal       `json:"shipping_price_net_amount"`   // NOT editable, default Zero
-	ShippingPriceNet             *goprices.Money        `json:"shipping_price_net" db:"-"`   //
-	ShippingPriceGrossAmount     *decimal.Decimal       `json:"shipping_price_gross_amount"` // NOT editable
-	ShippingPriceGross           *goprices.Money        `json:"shipping_price_gross" db:"-"`
-	ShippingPrice                *goprices.TaxedMoney   `json:"shipping_price" db:"-"`
-	ShippingTaxRate              *decimal.Decimal       `json:"shipping_tax_rate"` // default: Decimal(0)
-	Token                        string                 `json:"token"`             // unique
-	CheckoutToken                string                 `json:"checkout_token"`    //
-	TotalNetAmount               *decimal.Decimal       `json:"total_net_amount"`  // default 0
-	UnDiscountedTotalNetAmount   *decimal.Decimal       `json:"undiscounted_total_net_amount"`
-	TotalNet                     *goprices.Money        `json:"total_net" db:"-"`
-	UnDiscountedTotalNet         *goprices.Money        `json:"undiscounted_total_net" db:"-"`
-	TotalGrossAmount             *decimal.Decimal       `json:"total_gross_amount"`
-	UnDiscountedTotalGrossAmount *decimal.Decimal       `json:"undiscounted_total_gross_amount"`
-	TotalGross                   *goprices.Money        `json:"total_gross" db:"-"`
-	UnDiscountedTotalGross       *goprices.Money        `json:"undiscounted_total_gross" db:"-"`
-	Total                        *goprices.TaxedMoney   `json:"total" db:"-"`
-	UnDiscountedTotal            *goprices.TaxedMoney   `json:"undiscounted_total" db:"-"`
-	TotalPaidAmount              *decimal.Decimal       `json:"total_paid_amount"`
-	TotalPaid                    *goprices.Money        `json:"total_paid" db:"-"`
-	VoucherID                    *string                `json:"voucher_id"`
-	DisplayGrossPrices           *bool                  `json:"display_gross_prices"` // default *true
-	CustomerNote                 string                 `json:"customer_note"`
-	WeightAmount                 float32                `json:"weight_amount"`
-	WeightUnit                   measurement.WeightUnit `json:"weight_unit"`   // default 'kg'
-	Weight                       *measurement.Weight    `json:"weight" db:"-"` // default 0
-	RedirectUrl                  *string                `json:"redirect_url"`
+	Id                  string                 `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt            int64                  `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`         // NOT editable
+	Status              OrderStatus            `json:"status" gorm:"type:varchar(32);column:Status"`                              // default: ORDER_STATUS_UNFULFILLED
+	UserID              *string                `json:"user_id" gorm:"type:uuid;column:UserID"`                                    //
+	LanguageCode        LanguageCodeEnum       `json:"language_code" gorm:"type:varchar(35);column:LanguageCode"`                 // default: "en"
+	TrackingClientID    string                 `json:"tracking_client_id" gorm:"type:varchar(36);column:TrackingClientID"`        // NOT editable
+	BillingAddressID    *string                `json:"billing_address_id" gorm:"type:uuid;column:BillingAddressID"`               // NOT editable
+	ShippingAddressID   *string                `json:"shipping_address_id" gorm:"type:uuid;column:ShippingAddressID"`             // NOT editable
+	UserEmail           string                 `json:"user_email" gorm:"type:varchar(128);column:UserEmail;index:user_email_key"` //
+	OriginalID          *string                `json:"original_id" gorm:"type:uuid;column:OriginalID"`                            // original order id
+	Origin              OrderOrigin            `json:"origin" gorm:"type:varchar(32);column:Origin"`
+	Currency            string                 `json:"currency" gorm:"type:varchar(3);column:Currency"`
+	ShippingMethodID    *string                `json:"shipping_method_id" gorm:"type:uuid;column:ShippingMethodID"`
+	CollectionPointID   *string                `json:"collection_point_id" gorm:"type:uuid;column:CollectionPointID"`             // foreign key warehosue
+	ShippingMethodName  *string                `json:"shipping_method_name" gorm:"type:varchar(255);column:ShippingMethodName"`   // NUL, NOT editable
+	CollectionPointName *string                `json:"collection_point_name" gorm:"type:varchar(255);column:CollectionPointName"` // NUL, NOTE editable
+	ChannelID           string                 `json:"channel_id" gorm:"type:uuid;column:ChannelID"`                              //
+	Token               string                 `json:"token" gorm:"type:varchar(36);column:Token;uniqueIndex:token_key"`          // unique
+	CheckoutToken       string                 `json:"checkout_token" gorm:"type:varchar(36);column:CheckoutToken"`               //
+	VoucherID           *string                `json:"voucher_id" gorm:"type:uuid;column:VoucherID"`
+	DisplayGrossPrices  *bool                  `json:"display_gross_prices" gorm:"column:DisplayGrossPrices"` // default *true
+	CustomerNote        string                 `json:"customer_note" gorm:"column:CustomerNote"`
+	WeightAmount        float32                `json:"weight_amount" gorm:"default:0;column:WeightAmount"`
+	WeightUnit          measurement.WeightUnit `json:"weight_unit" gorm:"column:WeightUnit;type:varchar(5)"` // default 'kg'
+	RedirectUrl         *string                `json:"redirect_url" gorm:"type:varchar(200);column:RedirectUrl"`
 	ModelMetadata
+
+	ShippingPriceNetAmount       *decimal.Decimal `json:"shipping_price_net_amount" gorm:"default:0;column:ShippingPriceNetAmount"`     // NOT editable, default Zero
+	ShippingPriceGrossAmount     *decimal.Decimal `json:"shipping_price_gross_amount" gorm:"default:0;column:ShippingPriceGrossAmount"` // NOT editable
+	ShippingTaxRate              *decimal.Decimal `json:"shipping_tax_rate" gorm:"default:0;column:ShippingTaxRate"`                    // default: Decimal(0)
+	TotalNetAmount               *decimal.Decimal `json:"total_net_amount" gorm:"default:0;column:TotalNetAmount"`                      // default 0
+	UnDiscountedTotalNetAmount   *decimal.Decimal `json:"undiscounted_total_net_amount" gorm:"default:0;column:UnDiscountedTotalNetAmount"`
+	TotalGrossAmount             *decimal.Decimal `json:"total_gross_amount" gorm:"default:0;column:TotalGrossAmount"`
+	UnDiscountedTotalGrossAmount *decimal.Decimal `json:"undiscounted_total_gross_amount" gorm:"default:0;column:UnDiscountedTotalGrossAmount"`
+	TotalPaidAmount              *decimal.Decimal `json:"total_paid_amount" gorm:"default:0;column:TotalPaidAmount"`
+
+	TotalNet               *goprices.Money      `json:"total_net" gorm:"-"`
+	ShippingPriceNet       *goprices.Money      `json:"shipping_price_net" gorm:"-"` //
+	ShippingPriceGross     *goprices.Money      `json:"shipping_price_gross" gorm:"-"`
+	ShippingPrice          *goprices.TaxedMoney `json:"shipping_price" gorm:"-"`
+	UnDiscountedTotalNet   *goprices.Money      `json:"undiscounted_total_net" gorm:"-"`
+	TotalGross             *goprices.Money      `json:"total_gross" gorm:"-"`
+	UnDiscountedTotalGross *goprices.Money      `json:"undiscounted_total_gross" gorm:"-"`
+	Total                  *goprices.TaxedMoney `json:"total" gorm:"-"`
+	UnDiscountedTotal      *goprices.TaxedMoney `json:"undiscounted_total" gorm:"-"`
+	TotalPaid              *goprices.Money      `json:"total_paid" gorm:"-"`
+	Weight                 *measurement.Weight  `json:"weight" gorm:"-"` // default 0
 
 	populatedNonDBFields bool `db:"-"`
 
 	GiftCards []*GiftCard `json:"-" gorm:"many2many:OrderGiftCards"`
 }
 
+func (c *Order) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *Order) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *Order) TableName() string             { return OrderTableName }
+
 // OrderFilterOption is used to buils sql queries for filtering orders
 type OrderFilterOption struct {
-	Id               squirrel.Sqlizer // filter by order's id
-	Status           squirrel.Sqlizer // for filtering order's Status
-	CheckoutToken    squirrel.Sqlizer // for filtering order's CheckoutToken
-	ChannelSlug      squirrel.Sqlizer // for comparing the channel of this order's slug
-	UserEmail        squirrel.Sqlizer // for filtering order's UserEmail
-	UserID           squirrel.Sqlizer // for filtering order's UserID
-	ChannelID        squirrel.Sqlizer
-	ShippingMethodID squirrel.Sqlizer
+	Conditions squirrel.Sqlizer // filter by order's id
+
+	ChannelSlug squirrel.Sqlizer // for comparing the channel of this order's slug
 
 	SelectForUpdate bool // if true, add FOR UPDATE to the end of sql queries
 }
@@ -142,6 +142,7 @@ func (o *Order) PopulateNonDbFields() {
 	if o.populatedNonDBFields {
 		return
 	}
+	o.populatedNonDBFields = true
 
 	// errors can be ignored since orders's Currencies were checked before saving into database
 	o.ShippingPriceNet = &goprices.Money{
@@ -205,9 +206,6 @@ func (o *Order) IsValid() *AppError {
 		"order_id=",
 		"Order.IsValid",
 	)
-	if !IsValidId(o.Id) {
-		return outer("id", nil)
-	}
 	if o.UserID != nil && !IsValidId(*o.UserID) {
 		return outer("user_id", &o.Id)
 	}
@@ -226,64 +224,46 @@ func (o *Order) IsValid() *AppError {
 	if o.CollectionPointID != nil && !IsValidId(*o.CollectionPointID) {
 		return outer("collection_point_id", &o.Id)
 	}
-	if o.CollectionPointName != nil && utf8.RuneCountInString(*o.CollectionPointName) > ORDER_COLLECTION_POINT_NAME_MAX_LENGTH {
-		return outer("collection_point_name", &o.Id)
-	}
 	if !IsValidId(o.ChannelID) {
 		return outer("channel_id", &o.Id)
 	}
 	if o.VoucherID != nil && !IsValidId(*o.VoucherID) {
 		return outer("voucher_id", &o.Id)
 	}
-	if len(o.Status) > ORDER_STATUS_MAX_LENGTH {
-		return outer("status", &o.Id)
-	}
-	if len(o.TrackingClientID) > ORDER_TRACKING_CLIENT_ID_MAX_LENGTH {
-		return outer("tracking_client_id", &o.Id)
-	}
-	if len(o.Origin) > ORDER_ORIGIN_MAX_LENGTH {
-		return outer("origin", &o.Id)
-	}
-	if o.ShippingMethodName != nil && utf8.RuneCountInString(*o.ShippingMethodName) > ORDER_SHIPPING_METHOD_NAME_MAX_LENGTH {
-		return outer("shipping_method_name", &o.Id)
-	}
-	if len(o.Token) > ORDER_TOKEN_MAX_LENGTH {
-		return outer("token", &o.Id)
-	}
-	if len(o.CheckoutToken) > ORDER_CHECKOUT_TOKEN_MAX_LENGTH {
-		return outer("checkout_token", &o.Id)
-	}
 	if !o.LanguageCode.IsValid() {
 		return outer("language_code", &o.Id)
 	}
-	if !IsValidEmail(o.UserEmail) || len(o.UserEmail) > USER_EMAIL_MAX_LENGTH {
+	if !IsValidEmail(o.UserEmail) {
 		return outer("user_email", &o.Id)
 	}
 	if unit, err := currency.ParseISO(o.Currency); err != nil || !strings.EqualFold(unit.String(), o.Currency) {
 		return outer("currency", &o.Id)
 	}
-	if o.CreateAt == 0 {
-		return outer("create_at", &o.Id)
-	}
 	if o.RedirectUrl != nil && !IsValidHTTPURL(*o.RedirectUrl) {
 		return outer("redirect_url", &o.Id)
 	}
 
-	return nil
-}
-
-func (o *Order) PreSave() {
-	if o.Id == "" {
-		o.Id = NewId()
+	for _, deci := range []struct {
+		field string
+		value *decimal.Decimal
+	}{
+		{"ShippingPriceNetAmount", o.ShippingPriceNetAmount},
+		{"ShippingPriceGrossAmount", o.ShippingPriceGrossAmount},
+		{"TotalNetAmount", o.TotalNetAmount},
+		{"UnDiscountedTotalNetAmount", o.UnDiscountedTotalNetAmount},
+		{"TotalGrossAmount", o.TotalGrossAmount},
+		{"UnDiscountedTotalGrossAmount", o.UnDiscountedTotalGrossAmount},
+		{"TotalPaidAmount", o.TotalPaidAmount},
+	} {
+		if err := ValidateDecimal("Order.IsValid."+deci.field, deci.value, 12, 3); err != nil {
+			return err
+		}
 	}
-	o.CreateAt = GetMillis()
+	if err := ValidateDecimal("Order.IsValid.ShippingTaxRate", o.ShippingTaxRate, 5, 4); err != nil {
+		return err
+	}
 
-	o.commonPre()
-}
-
-// PreUpdate
-func (o *Order) PreUpdate() {
-	o.commonPre()
+	return nil
 }
 
 func (o *Order) commonPre() {
@@ -354,17 +334,13 @@ func (o *Order) NewToken() {
 
 // IsFullyPaid checks current order's total paid is greater than its total gross
 func (o *Order) IsFullyPaid() bool {
-	if !o.populatedNonDBFields {
-		o.PopulateNonDbFields()
-	}
+	o.PopulateNonDbFields()
 	return o.Total.Gross.LessThanOrEqual(o.TotalPaid)
 }
 
 // IsPartlyPaid checks if order has `TotalPaidAmount` > 0
 func (o *Order) IsPartlyPaid() bool {
-	if !o.populatedNonDBFields {
-		o.PopulateNonDbFields()
-	}
+	o.PopulateNonDbFields()
 	return o.TotalPaidAmount != nil && decimal.Zero.LessThan(*o.TotalPaidAmount)
 }
 
@@ -385,9 +361,7 @@ func (o *Order) IsOpen() bool {
 
 // TotalCaptured returns current order's TotalPaid money
 func (o *Order) TotalCaptured() *goprices.Money {
-	if !o.populatedNonDBFields {
-		o.PopulateNonDbFields()
-	}
+	o.PopulateNonDbFields()
 	return o.TotalPaid
 }
 
@@ -399,33 +373,31 @@ func (o *Order) TotalBalance() *goprices.Money {
 
 // GetTotalWeight returns current order's Weight
 func (o *Order) GetTotalWeight() *measurement.Weight {
-	if !o.populatedNonDBFields {
-		o.PopulateNonDbFields()
-	}
+	o.PopulateNonDbFields()
 	return o.Weight
 }
 
 func (s *Order) DeepCopy() *Order {
 	order := *s
 
-	s.UserID = (*string)(unsafe.Pointer(s.UserID))
-	s.VoucherID = (*string)(unsafe.Pointer(s.VoucherID))
-	s.OriginalID = (*string)(unsafe.Pointer(s.OriginalID))
-	s.RedirectUrl = (*string)(unsafe.Pointer(s.RedirectUrl))
-	s.BillingAddressID = (*string)(unsafe.Pointer(s.BillingAddressID))
-	s.ShippingMethodID = (*string)(unsafe.Pointer(s.ShippingMethodID))
-	s.ShippingAddressID = (*string)(unsafe.Pointer(s.ShippingAddressID))
-	s.CollectionPointID = (*string)(unsafe.Pointer(s.CollectionPointID))
-	s.ShippingMethodName = (*string)(unsafe.Pointer(s.ShippingMethodName))
-	s.CollectionPointName = (*string)(unsafe.Pointer(s.CollectionPointName))
-	s.TotalNetAmount = (*decimal.Decimal)(unsafe.Pointer(s.TotalNetAmount))
-	s.ShippingTaxRate = (*decimal.Decimal)(unsafe.Pointer(s.ShippingTaxRate))
-	s.TotalPaidAmount = (*decimal.Decimal)(unsafe.Pointer(s.TotalPaidAmount))
-	s.TotalGrossAmount = (*decimal.Decimal)(unsafe.Pointer(s.TotalGrossAmount))
-	s.ShippingPriceNetAmount = (*decimal.Decimal)(unsafe.Pointer(s.ShippingPriceNetAmount))
-	s.ShippingPriceGrossAmount = (*decimal.Decimal)(unsafe.Pointer(s.ShippingPriceGrossAmount))
-	s.UnDiscountedTotalNetAmount = (*decimal.Decimal)(unsafe.Pointer(s.UnDiscountedTotalNetAmount))
-	s.UnDiscountedTotalGrossAmount = (*decimal.Decimal)(unsafe.Pointer(s.UnDiscountedTotalGrossAmount))
+	s.UserID = CopyPointer(s.UserID)
+	s.VoucherID = CopyPointer(s.VoucherID)
+	s.OriginalID = CopyPointer(s.OriginalID)
+	s.RedirectUrl = CopyPointer(s.RedirectUrl)
+	s.TotalNetAmount = CopyPointer(s.TotalNetAmount)
+	s.ShippingTaxRate = CopyPointer(s.ShippingTaxRate)
+	s.TotalPaidAmount = CopyPointer(s.TotalPaidAmount)
+	s.BillingAddressID = CopyPointer(s.BillingAddressID)
+	s.ShippingMethodID = CopyPointer(s.ShippingMethodID)
+	s.TotalGrossAmount = CopyPointer(s.TotalGrossAmount)
+	s.ShippingAddressID = CopyPointer(s.ShippingAddressID)
+	s.CollectionPointID = CopyPointer(s.CollectionPointID)
+	s.ShippingMethodName = CopyPointer(s.ShippingMethodName)
+	s.CollectionPointName = CopyPointer(s.CollectionPointName)
+	s.ShippingPriceNetAmount = CopyPointer(s.ShippingPriceNetAmount)
+	s.ShippingPriceGrossAmount = CopyPointer(s.ShippingPriceGrossAmount)
+	s.UnDiscountedTotalNetAmount = CopyPointer(s.UnDiscountedTotalNetAmount)
+	s.UnDiscountedTotalGrossAmount = CopyPointer(s.UnDiscountedTotalGrossAmount)
 
 	return &order
 }

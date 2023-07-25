@@ -1,9 +1,11 @@
 package model
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/sitename/sitename/modules/util"
+	"gorm.io/gorm"
 )
 
 // job types
@@ -69,48 +71,33 @@ var ALL_JOB_STATUSES = util.AnyArray[string]{
 }
 
 type Job struct {
-	Id             string    `json:"id"`
-	Type           string    `json:"type"`
-	Priority       int64     `json:"priority"`
-	CreateAt       int64     `json:"create_at"`
-	StartAt        int64     `json:"start_at"`
-	LastActivityAt int64     `json:"last_activity_at"`
-	Status         string    `json:"status"`
-	Progress       int64     `json:"progress"`
-	Data           StringMAP `json:"data"`
+	Id             string    `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Type           string    `json:"type" gorm:"type:varchar(100);column:Type"`
+	Priority       int64     `json:"priority" gorm:"type:varchar(30);column:Priority"`
+	CreateAt       int64     `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	StartAt        int64     `json:"start_at" gorm:"type:bigint;column:StartAt"`
+	LastActivityAt int64     `json:"last_activity_at" gorm:"type:bigint;column:LastActivityAt;autoUpdateTime:milli"`
+	Status         string    `json:"status" gorm:"type:varchar(20);column:Status"`
+	Progress       int64     `json:"progress" gorm:"type:bigint;column:Progress"`
+	Data           StringMAP `json:"data" gorm:"type:jsonb;column:Data"`
 }
 
+func (c *Job) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
+func (c *Job) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }
+func (c *Job) TableName() string             { return JobTableName }
+
 func (j *Job) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.job.is_valid.%s.app_error",
-		"job_id=",
-		"Job.IsValid",
-	)
-	if !IsValidId(j.Id) {
-		return outer("id", nil)
-	}
-	if j.CreateAt == 0 {
-		return outer("create_at", &j.Id)
-	}
 	if !ALL_JOB_TYPES.Contains(j.Type) {
-		return outer("type", &j.Id)
+		return NewAppError("Job.IsValid", "model.jon.is_valid.type.app_error", nil, "please provide valid type", http.StatusBadRequest)
 	}
 	if !ALL_JOB_STATUSES.Contains(j.Status) {
-		return outer("status", &j.Id)
+		return NewAppError("Job.IsValid", "model.jon.is_valid.status.app_error", nil, "please provide valid status", http.StatusBadRequest)
 	}
-
 	return nil
 }
 
 func (j *Job) ToJSON() string {
 	return ModelToJson(j)
-}
-
-func (j *Job) PreSave() {
-	if j.Id == "" {
-		j.Id = NewId()
-	}
-	j.CreateAt = GetMillis()
 }
 
 func JobsToJson(jobs []*Job) string {

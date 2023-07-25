@@ -55,11 +55,13 @@ func (a *ServiceDiscount) ActiveSales(date *time.Time) (model.Sales, *model.AppE
 
 	activeSalesByDate, err := a.srv.Store.DiscountSale().
 		FilterSalesByOption(&model.SaleFilterOption{
-			EndDate: squirrel.Or{
-				squirrel.Eq{model.SaleTableName + ".EndDate": nil},
-				squirrel.GtOrEq{model.SaleTableName + ".EndDate": *date},
+			Conditions: squirrel.And{
+				squirrel.LtOrEq{model.SaleTableName + ".StartDate": *date},
+				squirrel.Or{
+					squirrel.Eq{model.SaleTableName + ".EndDate": nil},
+					squirrel.GtOrEq{model.SaleTableName + ".EndDate": *date},
+				},
 			},
-			StartDate: squirrel.LtOrEq{model.SaleTableName + ".StartDate": *date},
 		})
 	if err != nil {
 		statusCode := http.StatusInternalServerError
@@ -82,8 +84,10 @@ func (a *ServiceDiscount) ExpiredSales(date *time.Time) ([]*model.Sale, *model.A
 
 	expiredSalesByDate, err := a.srv.Store.DiscountSale().
 		FilterSalesByOption(&model.SaleFilterOption{
-			EndDate:   squirrel.Lt{model.SaleTableName + ".EndDate": *date},
-			StartDate: squirrel.Lt{model.SaleTableName + ".StartDate": *date},
+			Conditions: squirrel.Lt{
+				model.SaleTableName + ".EndDate":   *date,
+				model.SaleTableName + ".StartDate": *date,
+			},
 		})
 
 	if err != nil {

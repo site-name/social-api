@@ -21,7 +21,13 @@ func (ss *SqlDiscountSaleStore) Upsert(transaction *gorm.DB, sale *model.Sale) (
 		transaction = ss.GetMaster()
 	}
 
-	err := transaction.Save(sale).Error
+	var err error
+	if sale.Id == "" {
+		err = transaction.Create(sale).Error
+	} else {
+		sale.CreateAt = 0
+		err = transaction.Table(model.SaleTableName).Updates(sale).Error
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to upsert sale")
 	}
@@ -78,9 +84,11 @@ func (s *SqlDiscountSaleStore) AddSaleRelations(transaction *gorm.DB, sales mode
 	}
 
 	for _, sale := range sales {
-		err := transaction.Model(sale).Association(association).Append(relations)
-		if err != nil {
-			return errors.Wrap(err, "failed to insert sale-collection relations")
+		if sale != nil && sale.Id != "" {
+			err := transaction.Model(sale).Association(association).Append(relations)
+			if err != nil {
+				return errors.Wrap(err, "failed to insert sale-collection relations")
+			}
 		}
 	}
 

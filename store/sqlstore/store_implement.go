@@ -215,7 +215,7 @@ func (store *SqlStore) setupTables() {
 		productVariant:                product.NewSqlProductVariantStore(store),
 		productVariantChannelListing:  product.NewSqlProductVariantChannelListingStore(store),
 		productVariantTranslation:     product.NewSqlProductVariantTranslationStore(store),
-		role:                          role.NewSqlRoleStore(store),
+		role:                          account.NewSqlRoleStore(store),
 		session:                       account.NewSqlSessionStore(store),
 		shippingMethod:                shipping.NewSqlShippingMethodStore(store),
 		shippingMethodChannelListing:  shipping.NewSqlShippingMethodChannelListingStore(store),

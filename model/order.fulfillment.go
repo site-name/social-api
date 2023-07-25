@@ -2,11 +2,13 @@ package model
 
 import (
 	"fmt"
+	"net/http"
 	"regexp"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
 	"github.com/site-name/decimal"
+	"gorm.io/gorm"
 )
 
 var (
@@ -15,8 +17,8 @@ var (
 
 // max lengths for some fulfillment's fields
 const (
-	FULFILLMENT_STATUS_MAX_LENGTH          = 32
-	FULFILLMENT_TRACKING_NUMBER_MAX_LENGTH = 255
+	FULFILLMENT_DECIMAL_FIELD_MAX_DIGITS     = 12
+	FULFILLMENT_DECIMAL_FIELD_DECIMAL_PLACES = 3
 )
 
 type FulfillmentStatus string
@@ -47,33 +49,32 @@ func (f FulfillmentStatus) IsValid() bool {
 }
 
 type Fulfillment struct {
-	Id                   string            `json:"id"`
-	FulfillmentOrder     int               `json:"fulfillment_order"`
-	OrderID              string            `json:"order_id"` // not null nor editable
-	Status               FulfillmentStatus `json:"status"`
-	TrackingNumber       string            `json:"tracking_numdber"`
-	CreateAt             int64             `json:"create_at"`
-	ShippingRefundAmount *decimal.Decimal  `json:"shipping_refund_amount"`
-	TotalRefundAmount    *decimal.Decimal  `json:"total_refund_amount"`
+	Id                   string            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	FulfillmentOrder     int               `json:"fulfillment_order" gorm:"column:FulfillmentOrder"` // > 0
+	OrderID              string            `json:"order_id" gorm:"type:uuid;column:OrderID"`         // not null nor editable
+	Status               FulfillmentStatus `json:"status" gorm:"type:varchar(32);column:Status"`     // default "fulfilled"
+	TrackingNumber       string            `json:"tracking_numdber" gorm:"type:varchar(255);column:TrackingNumber"`
+	CreateAt             int64             `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	ShippingRefundAmount *decimal.Decimal  `json:"shipping_refund_amount" gorm:"column:ShippingRefundAmount"` // max digits 12, decimal places 3
+	TotalRefundAmount    *decimal.Decimal  `json:"total_refund_amount" gorm:"column:TotalRefundAmount"`       // max digits 12, decimal places 3
 	ModelMetadata
 
 	order *Order // this field get populated in queries that require select related data
 }
 
-func (f *Fulfillment) GetOrder() *Order  { return f.order }
-func (f *Fulfillment) SetOrder(o *Order) { f.order = o }
+func (c *Fulfillment) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *Fulfillment) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *Fulfillment) TableName() string             { return FulfillmentTableName }
+func (f *Fulfillment) GetOrder() *Order              { return f.order }
+func (f *Fulfillment) SetOrder(o *Order)             { f.order = o }
 
 // FulfillmentFilterOption is used to build squirrel sql queries
 type FulfillmentFilterOption struct {
-	Id      squirrel.Sqlizer
-	OrderID squirrel.Sqlizer
-	Status  squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 
-	SelectRelatedOrder bool // if true, tells store to select related order also
-
-	FulfillmentLineID squirrel.Sqlizer // LEFT/INNER JOIN FulfillmentLines ON (...) WHERE FulfillmentLines.Id ...
-
-	SelectForUpdate bool // if true, add `FOR UPDATE`to the end of sql queries
+	SelectRelatedOrder bool             // if true, tells store to select related order also
+	FulfillmentLineID  squirrel.Sqlizer // LEFT/INNER JOIN FulfillmentLines ON (...) WHERE FulfillmentLines.Id ...
+	SelectForUpdate    bool             // if true, add `FOR UPDATE`to the end of sql queries
 }
 
 type Fulfillments []*Fulfillment
@@ -83,47 +84,22 @@ func (f Fulfillments) IDs() []string {
 }
 
 func (f *Fulfillment) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.fulfillment.is_valid.%s.app_error",
-		"fulfillment_id=",
-		"Fulfillment.IsValid",
-	)
-	if !IsValidId(f.Id) {
-		return outer("id", nil)
+	if !f.Status.IsValid() {
+		return NewAppError("Fulfillment.IsValid", "model.fulfillment.is_valid.status.app_error", nil, "please provide valid status", http.StatusBadRequest)
 	}
-	if f.CreateAt == 0 {
-		return outer("create_at", &f.Id)
+	if appErr := ValidateDecimal("Fulfillment.IsValid", f.ShippingRefundAmount, FULFILLMENT_DECIMAL_FIELD_MAX_DIGITS, FULFILLMENT_DECIMAL_FIELD_DECIMAL_PLACES); appErr != nil {
+		return appErr
 	}
-	if len(f.Status) > FULFILLMENT_STATUS_MAX_LENGTH || FulfillmentStrings[f.Status] == "" {
-		return outer("status", &f.Id)
+	if appErr := ValidateDecimal("Fulfillment.IsValid", f.TotalRefundAmount, FULFILLMENT_DECIMAL_FIELD_MAX_DIGITS, FULFILLMENT_DECIMAL_FIELD_DECIMAL_PLACES); appErr != nil {
+		return appErr
 	}
-	if len(f.TrackingNumber) > FULFILLMENT_TRACKING_NUMBER_MAX_LENGTH {
-		return outer("tracking_number", &f.Id)
-	}
-
 	return nil
-}
-
-func (f *Fulfillment) ToJSON() string {
-	return ModelToJson(f)
-}
-
-func (f *Fulfillment) PreSave() {
-	if f.Id == "" {
-		f.Id = NewId()
-	}
-	f.CreateAt = GetMillis()
-	f.commonPre()
 }
 
 func (f *Fulfillment) commonPre() {
 	if f.Status == "" {
 		f.Status = FULFILLMENT_FULFILLED
 	}
-}
-
-func (f *Fulfillment) PreUpdate() {
-	f.commonPre()
 }
 
 func (f *Fulfillment) ComposedId() string {

@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -11,14 +10,7 @@ import (
 	goprices "github.com/site-name/go-prices"
 	"github.com/sitename/sitename/modules/util"
 	"golang.org/x/text/currency"
-)
-
-// max lengths for some fields of giftcard
-const (
-	GiftcardCodeMaxLength             = 40
-	GiftcardExpiryTypeMaxLength       = 32
-	GiftcardExpiryPeriodTypeMaxLength = 32
-	GiftcardTagMaxLength              = 255
+	"gorm.io/gorm"
 )
 
 // valid values for giftcard's ExpiryType
@@ -33,8 +25,8 @@ type GiftCard struct {
 	Code                 string           `json:"code" gorm:"type:varchar(16);column:Code"`          // unique, db_index, looks like ABCD-EFGH-IJKL
 	CreatedByID          *string          `json:"created_by_id" gorm:"type:uuid;column:CreatedByID"` // foreign key User, ON DELETE SET NULL
 	UsedByID             *string          `json:"used_by_id" gorm:"type:uuid;column:UsedByID"`
-	CreatedByEmail       *string          `json:"created_by_email" gorm:"type:varchar(254);column:CreatedByEmail"`
-	UsedByEmail          *string          `json:"used_by_email" gorm:"type:varchar(254);column:UsedByEmail"`
+	CreatedByEmail       *string          `json:"created_by_email" gorm:"type:varchar(128);column:CreatedByEmail"`
+	UsedByEmail          *string          `json:"used_by_email" gorm:"type:varchar(128);column:UsedByEmail"`
 	CreateAt             int64            `json:"created_at" gorm:"type:bigint;column:CreateAt"`
 	StartDate            *time.Time       `json:"start_date" gorm:"column:StartDate"`
 	ExpiryDate           *time.Time       `json:"expiry_date" gorm:"column:ExpiryDate"`
@@ -52,9 +44,13 @@ type GiftCard struct {
 
 	populatedNonDBFields bool `db:"-"`
 
-	Checkouts []*Checkout `json:"-" gorm:"many2many:CheckoutGiftcards"`
+	Checkouts []*Checkout `json:"-" gorm:"many2many:GiftcardCheckouts"`
 	Orders    Orders      `json:"-" gorm:"many2many:OrderGiftCards"`
 }
+
+func (c *GiftCard) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
+func (c *GiftCard) BeforeUpdate(_ *gorm.DB) error { c.PreUpdate(); return c.IsValid() }
+func (c *GiftCard) TableName() string             { return GiftcardTableName }
 
 // GiftCardFilterOption is used to buil sql queries
 type GiftCardFilterOption struct {
@@ -112,35 +108,23 @@ func (gc *GiftCard) IsValid() *AppError {
 		"GiftCard.IsValid",
 	)
 
-	if !IsValidId(gc.Id) {
-		return outer("id", nil)
-	}
 	if gc.CreatedByID != nil && !IsValidId(*gc.CreatedByID) {
 		return outer("created_by_id", &gc.Id)
 	}
 	if gc.UsedByID != nil && !IsValidId(*gc.UsedByID) {
 		return outer("used_by_id", &gc.Id)
 	}
-	if gc.CreatedByEmail != nil && len(*gc.CreatedByEmail) > USER_EMAIL_MAX_LENGTH {
+	if gc.CreatedByEmail != nil && !IsValidEmail(*gc.CreatedByEmail) {
 		return outer("created_by_email", &gc.Id)
 	}
-	if gc.UsedByEmail != nil && len(*gc.UsedByEmail) > USER_EMAIL_MAX_LENGTH {
+	if gc.UsedByEmail != nil && !IsValidEmail(*gc.UsedByEmail) {
 		return outer("used_by_email", &gc.Id)
-	}
-	if gc.Tag != nil && len(*gc.Tag) > GiftcardTagMaxLength {
-		return outer("tag", &gc.Id)
 	}
 	if gc.ProductID != nil && !IsValidId(*gc.ProductID) {
 		return outer("product_id", &gc.Id)
 	}
-	if gc.CreateAt == 0 {
-		return outer("create_at", &gc.Id)
-	}
 	if gc.LastUsedOn != nil && *gc.LastUsedOn <= 0 {
 		return outer("last_used_on", &gc.Id)
-	}
-	if len(gc.Code) > GiftcardCodeMaxLength {
-		return outer("code", &gc.Id)
 	}
 	if _, err := currency.ParseISO(gc.Currency); err != nil {
 		return outer("currency", &gc.Id)
@@ -150,15 +134,10 @@ func (gc *GiftCard) IsValid() *AppError {
 }
 
 func (gc *GiftCard) PreSave() {
-	if gc.Id == "" {
-		gc.Id = NewId()
-	}
 	if gc.Code == "" {
 		rawString := NewRandomString(16)
 		gc.Code = fmt.Sprintf("%s-%s-%s-%s", rawString[:4], rawString[4:8], rawString[8:12], rawString[12:])
 	}
-	gc.CreateAt = GetMillis()
-
 	gc.commonPre()
 }
 
@@ -177,8 +156,6 @@ func (gc *GiftCard) commonPre() {
 
 	if gc.Currency == "" {
 		gc.Currency = DEFAULT_CURRENCY
-	} else {
-		gc.Currency = strings.ToUpper(gc.Currency)
 	}
 	if gc.StartDate == nil {
 		today := util.StartOfDay(time.Now())

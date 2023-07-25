@@ -42,8 +42,6 @@ type GiftcardService interface {
 	ToggleGiftcardStatus(giftCard *model.GiftCard) *model.AppError
 	// UpsertGiftcards depends on given giftcard's Id to decide saves or updates it
 	UpsertGiftcards(transaction *gorm.DB, giftcards ...*model.GiftCard) ([]*model.GiftCard, *model.AppError)
-	// UpsertOrderGiftcardRelations takes an order-giftcard relation instance then save it
-	UpsertOrderGiftcardRelations(transaction *gorm.DB, orderGiftCards ...*model.OrderGiftCard) ([]*model.OrderGiftCard, *model.AppError)
 	DeactivateOrderGiftcards(orderID string, user *model.User, _ interface{}) *model.AppError
 	FulfillGiftcardLines(giftcardLines model.OrderLines, requestorUser *model.User, _ interface{}, order *model.Order, manager interfaces.PluginManagerInterface) ([]*model.Fulfillment, *model.InsufficientStock, *model.AppError)
 	GetDefaultGiftcardPayload(giftCard model.GiftCard) model.StringInterface
@@ -53,4 +51,6 @@ type GiftcardService interface {
 	GiftcardsByCheckout(checkoutToken string) ([]*model.GiftCard, *model.AppError)
 	OrderHasGiftcardLines(orDer *model.Order) (bool, *model.AppError)
 	SendGiftcardsToCustomer(giftcards []*model.GiftCard, userEmail string, requestorUser *model.User, _ interface{}, customerUser *model.User, manager interfaces.PluginManagerInterface, channelSlug string) *model.AppError
+	AddGiftcardRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) *model.AppError // relations must be []*Order || []*Checkout
+	RemoveGiftcardRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) *model.AppError // relations must be []*Order || []*Checkout
 }

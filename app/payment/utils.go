@@ -522,7 +522,7 @@ func (a *ServicePayment) StoreCustomerId(userID string, gateway string, customer
 	if trimmedGateway := strings.TrimSpace(gateway); trimmedGateway == "" || len(trimmedGateway) > model.MAX_LENGTH_PAYMENT_GATEWAY {
 		argumentErrFields += ", gateway"
 	}
-	if trimmedCustomerID := strings.TrimSpace(customerID); trimmedCustomerID == "" || len(trimmedCustomerID) > model.TRANSACTION_CUSTOMER_ID_MAX_LENGTH {
+	if trimmedCustomerID := strings.TrimSpace(customerID); trimmedCustomerID == "" {
 		argumentErrFields += ", customerID"
 	}
 
@@ -599,8 +599,10 @@ func (a *ServicePayment) UpdatePaymentMethodDetails(payMent model.Payment, payme
 
 func (a *ServicePayment) GetPaymentToken(payMent *model.Payment) (string, *model.PaymentError, *model.AppError) {
 	authTransactions, appErr := a.TransactionsByOption(&model.PaymentTransactionFilterOpts{
-		Kind:      squirrel.Eq{model.TransactionTableName + ".Kind": model.AUTH},
-		IsSuccess: model.NewPrimitive(true),
+		Conditions: squirrel.Eq{
+			model.TransactionTableName + ".Kind":      model.AUTH,
+			model.TransactionTableName + ".IsSuccess": true,
+		},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {

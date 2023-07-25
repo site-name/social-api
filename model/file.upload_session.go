@@ -33,10 +33,6 @@ func (c *UploadSession) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
 func (c *UploadSession) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }
 func (c *UploadSession) TableName() string             { return UploadSessionTableName }
 
-func (us *UploadSession) ToJSON() string {
-	return ModelToJson(us)
-}
-
 // UploadSessionsToJson serializes a list of UploadSession into JSON and
 // returns it as string.
 func UploadSessionsToJson(uss []*UploadSession) string {

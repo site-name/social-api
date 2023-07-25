@@ -6,11 +6,6 @@ import (
 	"github.com/Masterminds/squirrel"
 )
 
-// max lengths for some fields
-const (
-	DIGITAL_CONTENT_CONTENT_TYPE_MAX_LENGTH = 128
-)
-
 const (
 	FILE = "file"
 )
@@ -55,10 +50,6 @@ func (d *DigitalContent) IsValid() *AppError {
 	}
 
 	return nil
-}
-
-func (d *DigitalContent) ToJSON() string {
-	return ModelToJson(d)
 }
 
 func (d *DigitalContent) DeepCopy() *DigitalContent {

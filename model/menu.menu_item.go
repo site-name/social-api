@@ -1,35 +1,29 @@
 package model
 
 import (
-	"unicode/utf8"
-
 	"github.com/Masterminds/squirrel"
-)
-
-// max length for some menu item's fiedlds
-const (
-	MENU_ITEM_NAME_MAX_LENGTH = 128
-	MENU_ITEM_URL_MAX_LENGTH  = 256
+	"gorm.io/gorm"
 )
 
 type MenuItem struct {
-	Id           string  `json:"id"`
-	MenuID       string  `json:"menu_id"`
-	Name         string  `json:"name"`
-	ParentID     *string `json:"parent_id"`
-	Url          *string `json:"url"`
-	CategoryID   *string `json:"category_id"`
-	CollectionID *string `json:"collection_id"`
-	PageID       *string `json:"page_id"`
+	Id           string  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	MenuID       string  `json:"menu_id" gorm:"type:uuid;column:MenuID"`
+	Name         string  `json:"name" gorm:"type:varchar(128);column:Name"`
+	ParentID     *string `json:"parent_id" gorm:"type:uuid;column:ParentID"` // foreign key menu item
+	Url          *string `json:"url" gorm:"type:varchar(256);column:Url"`
+	CategoryID   *string `json:"category_id" gorm:"type:uuid;column:CategoryID"`     // to category
+	CollectionID *string `json:"collection_id" gorm:"type:uuid;column:CollectionID"` // to collection
+	PageID       *string `json:"page_id" gorm:"type:uuid;column:PageID"`
 	ModelMetadata
 	Sortable
 }
 
+func (c *MenuItem) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *MenuItem) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *MenuItem) TableName() string             { return MenuItemTableName }
+
 type MenuItemFilterOptions struct {
-	Id       squirrel.Sqlizer
-	Name     squirrel.Sqlizer
-	MenuID   squirrel.Sqlizer
-	ParentID squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
 func (m *MenuItem) IsValid() *AppError {
@@ -38,17 +32,8 @@ func (m *MenuItem) IsValid() *AppError {
 		"menu_item_id=",
 		"MenuItem.IsValid",
 	)
-	if !IsValidId(m.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(m.MenuID) {
 		return outer("menu_id", &m.Id)
-	}
-	if utf8.RuneCountInString(m.Name) > MENU_ITEM_NAME_MAX_LENGTH {
-		return outer("name", &m.Id)
-	}
-	if m.Url != nil && len(*m.Url) > MENU_ITEM_URL_MAX_LENGTH {
-		return outer("url", &m.Id)
 	}
 	if m.ParentID != nil && !IsValidId(*m.ParentID) {
 		return outer("parent_id", &m.Id)
@@ -66,13 +51,6 @@ func (m *MenuItem) IsValid() *AppError {
 	return nil
 }
 
-func (m *MenuItem) PreSave() {
-	if m.Id == "" {
-		m.Id = NewId()
-	}
-	m.Name = SanitizeUnicode(m.Name)
-}
-
-func (m *MenuItem) PreUpdate() {
+func (m *MenuItem) commonPre() {
 	m.Name = SanitizeUnicode(m.Name)
 }

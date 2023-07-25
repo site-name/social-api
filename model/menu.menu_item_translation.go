@@ -1,52 +1,33 @@
 package model
 
 import (
-	"strings"
-	"unicode/utf8"
+	"net/http"
 
-	"golang.org/x/text/language"
+	"gorm.io/gorm"
 )
 
 type MenuItemTranslation struct {
-	Id           string `json:"id"`
-	LanguageCode string `json:"language_code"`
-	MenuItemID   string `json:"menu_item_id"`
-	Name         string `json:"name"`
+	Id           string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	LanguageCode LanguageCodeEnum `json:"language_code" gorm:"type:varchar(3);column:LanguageCode"`
+	MenuItemID   string           `json:"menu_item_id" gorm:"type:uuid;column:MenuItemID"`
+	Name         string           `json:"name" gorm:"type:varchar(128);column:Name"`
 }
 
+func (c *MenuItemTranslation) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *MenuItemTranslation) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *MenuItemTranslation) TableName() string             { return MenuItemTranslationTableName }
+
 func (m *MenuItemTranslation) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.menu_item_translation.is_valid.%s.app_error",
-		"menu_item_id=",
-		"MenuItemTranslation.IsValid",
-	)
-	if !IsValidId(m.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(m.MenuItemID) {
-		return outer("menu_item_id", &m.Id)
+		return NewAppError("MenuItemTranslation.IsValid", "model.menu_item_translation.is_valid.menu_item_id.app_error", nil, "please provide valid menu item id", http.StatusBadRequest)
 	}
-	if utf8.RuneCountInString(m.Name) > MENU_ITEM_NAME_MAX_LENGTH {
-		return outer("name", &m.Id)
-	}
-	if tag, err := language.Parse(m.LanguageCode); err != nil || strings.EqualFold(tag.String(), m.LanguageCode) {
-		return outer("language_code", &m.Id)
+	if !m.LanguageCode.IsValid() {
+		return NewAppError("MenuItemTranslation.IsValid", "model.menu_item_translation.is_valid.language_code.app_error", nil, "please provide valid language code", http.StatusBadRequest)
 	}
 
 	return nil
 }
 
-func (m *MenuItemTranslation) PreSave() {
-	if m.Id == "" {
-		m.Id = NewId()
-	}
+func (m *MenuItemTranslation) commonPre() {
 	m.Name = SanitizeUnicode(m.Name)
-}
-
-func (m *MenuItemTranslation) PreUpdate() {
-	m.Name = SanitizeUnicode(m.Name)
-}
-
-func (m *MenuItemTranslation) ToJSON() string {
-	return ModelToJson(m)
 }

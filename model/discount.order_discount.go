@@ -2,12 +2,13 @@ package model
 
 import (
 	"strings"
-	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/samber/lo"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"golang.org/x/text/currency"
+	"gorm.io/gorm"
 )
 
 // max lengths for order discount
@@ -35,20 +36,24 @@ var OrderDiscountTypeStrings = map[OrderDiscountType]string{
 }
 
 type OrderDiscount struct {
-	Id             string            `json:"id"`
-	OrderID        *string           `json:"order_id"`
-	Type           OrderDiscountType `json:"type"`
-	ValueType      DiscountType      `json:"value_type"`
-	Value          *decimal.Decimal  `json:"value"`        // default 0
-	AmountValue    *decimal.Decimal  `json:"amount_value"` // default 0
-	Amount         *goprices.Money   `json:"amount,omitempty" db:"-"`
-	Currency       string            `json:"currency"`
-	Name           *string           `json:"name"`
-	TranslatedName *string           `json:"translated_name"`
-	Reason         *string           `json:"reason"`
+	Id             string            `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	OrderID        *string           `json:"order_id" gorm:"type:uuid;column:OrderID"`
+	Type           OrderDiscountType `json:"type" gorm:"type:varchar(10);column:Type"`
+	ValueType      DiscountType      `json:"value_type" gorm:"type:varchar(10);column:ValueType"`
+	Value          *decimal.Decimal  `json:"value" gorm:"default:0;column:Value"`              // default 0
+	AmountValue    *decimal.Decimal  `json:"amount_value" gorm:"default:0;column:AmountValue"` // default 0
+	Currency       string            `json:"currency" gorm:"type:varchar(3);column:Currency"`
+	Name           *string           `json:"name" gorm:"type:varchar(255);column:Name"`
+	TranslatedName *string           `json:"translated_name" gorm:"type:varchar(255);column:TranslatedName"`
+	Reason         *string           `json:"reason" gorm:"column:Reason"`
+
+	Amount *goprices.Money `json:"amount,omitempty" gorm:"-"`
 }
 
-// OrderDiscountFilterOption is used to build sql queries
+func (c *OrderDiscount) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *OrderDiscount) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *OrderDiscount) TableName() string             { return OrderDiscountTableName }
+
 type OrderDiscountFilterOption struct {
 	Conditions squirrel.Sqlizer
 }
@@ -56,35 +61,19 @@ type OrderDiscountFilterOption struct {
 type OrderDiscounts []*OrderDiscount
 
 func (o OrderDiscounts) IDs() []string {
-	res := make([]string, len(o))
-	for i := range o {
-		res[i] = o[i].Id
-	}
-
-	return res
+	return lo.Map(o, func(item *OrderDiscount, _ int) string { return item.Id })
 }
 
 func (o *OrderDiscount) DeepCopy() *OrderDiscount {
 	res := *o
 
-	if o.OrderID != nil {
-		res.OrderID = NewPrimitive(*o.OrderID)
-	}
-	if o.Name != nil {
-		res.Name = NewPrimitive(*o.Name)
-	}
-	if o.TranslatedName != nil {
-		res.TranslatedName = NewPrimitive(*o.TranslatedName)
-	}
-	if o.Reason != nil {
-		res.Reason = NewPrimitive(*o.Reason)
-	}
-	if o.Value != nil {
-		res.Value = NewPrimitive(*o.Value)
-	}
-	if o.AmountValue != nil {
-		res.AmountValue = NewPrimitive(*o.AmountValue)
-	}
+	res.OrderID = CopyPointer(o.OrderID)
+	res.Name = CopyPointer(o.Name)
+	res.TranslatedName = CopyPointer(o.TranslatedName)
+	res.Reason = CopyPointer(o.Reason)
+	res.Value = CopyPointer(o.Value)
+	res.AmountValue = CopyPointer(o.AmountValue)
+
 	return &res
 }
 
@@ -95,26 +84,23 @@ func (o *OrderDiscount) IsValid() *AppError {
 		"OrderDiscount.IsValid",
 	)
 
-	if !IsValidId(o.Id) {
-		return outer("id", nil)
-	}
 	if o.OrderID != nil && !IsValidId(*o.OrderID) {
 		return outer("order_id", &o.Id)
 	}
-	if OrderDiscountTypeStrings[o.Type] == "" {
+	if !o.Type.IsValid() {
 		return outer("type", &o.Id)
 	}
 	if !o.ValueType.IsValid() {
 		return outer("value_type", &o.Id)
 	}
-	if o.Name != nil && utf8.RuneCountInString(*o.Name) > ORDER_DISCOUNT_NAME_MAX_LENGTH {
-		return outer("name", &o.Id)
-	}
-	if o.TranslatedName != nil && utf8.RuneCountInString(*o.TranslatedName) > ORDER_DISCOUNT_NAME_MAX_LENGTH {
-		return outer("translated_name", &o.Id)
-	}
 	if unit, err := currency.ParseISO(o.Currency); err != nil || !strings.EqualFold(unit.String(), o.Currency) {
 		return outer("currency", &o.Id)
+	}
+	if err := ValidateDecimal("OrderDiscount.IsValid.Value", o.Value, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED); err != nil {
+		return err
+	}
+	if err := ValidateDecimal("OrderDiscount.IsValid.AmountValue", o.AmountValue, DECIMAL_TOTAL_DIGITS_ALLOWED, DECIMAL_MAX_DECIMAL_PLACES_ALLOWED); err != nil {
+		return err
 	}
 
 	return nil
@@ -127,13 +113,6 @@ func (o *OrderDiscount) PopulateNonDbFields() {
 	}
 }
 
-func (o *OrderDiscount) PreSave() {
-	if o.Id == "" {
-		o.Id = NewId()
-	}
-	o.commonPre()
-}
-
 func (o *OrderDiscount) commonPre() {
 	if !o.Type.IsValid() {
 		o.Type = MANUAL
@@ -144,11 +123,9 @@ func (o *OrderDiscount) commonPre() {
 	if o.Value == nil {
 		o.Value = &decimal.Zero
 	}
-
 	if o.AmountValue == nil {
 		o.AmountValue = &decimal.Zero
 	}
-
 	if o.Name != nil {
 		*o.Name = SanitizeUnicode(*o.Name)
 	}
@@ -163,8 +140,7 @@ func (o *OrderDiscount) commonPre() {
 	} else {
 		o.Currency = DEFAULT_CURRENCY
 	}
-}
-
-func (o *OrderDiscount) PreUpdate() {
-	o.commonPre()
+	if o.Amount != nil {
+		o.AmountValue = &o.Amount.Amount
+	}
 }

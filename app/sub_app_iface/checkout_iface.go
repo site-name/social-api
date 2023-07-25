@@ -119,7 +119,7 @@ type CheckoutService interface {
 	// GetVoucherForCheckout returns voucher with voucher code saved in checkout if active or None
 	//
 	// `withLock` default to false
-	GetVoucherForCheckout(checkoutInfo model.CheckoutInfo, withLock bool) (*model.Voucher, *model.AppError)
+	GetVoucherForCheckout(checkoutInfo model.CheckoutInfo, vouchers model.Vouchers, withLock bool) (*model.Voucher, *model.AppError)
 	// IsFullyPaid Check if provided payment methods cover the checkout's total amount.
 	// Note that these payments may not be captured or charged at all.
 	IsFullyPaid(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) (bool, *model.AppError)

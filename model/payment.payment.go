@@ -102,13 +102,10 @@ type Payment struct {
 
 // PaymentFilterOption is used to build sql queries
 type PaymentFilterOption struct {
-	Id                         squirrel.Sqlizer
-	OrderID                    squirrel.Sqlizer
-	CheckoutID                 squirrel.Sqlizer
-	IsActive                   *bool
-	TransactionsKind           squirrel.Sqlizer // for filtering payment's transactions's `Kind`
-	TransactionsActionRequired *bool            // for filtering payment's transactions's `ActionRequired`
-	TransactionsIsSuccess      *bool            // for filtering payment's transactions's `IsSuccess`
+	Conditions                 squirrel.Sqlizer
+	TransactionsKind           squirrel.Sqlizer // INNER JOIN Transactions ON ... WHERE Transactions.Kind ...
+	TransactionsActionRequired squirrel.Sqlizer // INNER JOIN Transactions ON ... WHERE Transactions.ActionRequired ...
+	TransactionsIsSuccess      squirrel.Sqlizer // INNER JOIN Transactions ON ... WHERE Transactions.IsSuccess ...
 }
 
 // PaymentPatch is used to update payments

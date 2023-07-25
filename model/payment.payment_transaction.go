@@ -2,13 +2,14 @@ package model
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/site-name/decimal"
 	goprices "github.com/site-name/go-prices"
 	"golang.org/x/text/currency"
+	"gorm.io/gorm"
 )
 
 type TransactionKind string
@@ -51,40 +52,33 @@ var TransactionKindString = map[TransactionKind]string{
 	CANCEL:            "Cancel",
 }
 
-// max lengths for some of payment transaction's fields
-const (
-	TRANSACTION_KIND_MAX_LENGTH        = 25
-	TRANSACTION_ERROR_MAX_LENGTH       = 256
-	TRANSACTION_CUSTOMER_ID_MAX_LENGTH = 256
-)
-
 // Represents a single payment operation.
 // Transaction is an attempt to transfer money between your store
 // and your customers, with a chosen payment method.
 type PaymentTransaction struct {
-	Id                 string           `json:"id"`
-	CreateAt           int64            `json:"create_at"` // NOT editable
-	PaymentID          string           `json:"payment_id"`
-	Token              string           `json:"token"`
-	Kind               TransactionKind  `json:"kind"`
-	IsSuccess          bool             `json:"is_success"`
-	ActionRequired     bool             `json:"action_required"`
-	ActionRequiredData StringMap        `json:"action_required_data"`
-	Currency           string           `json:"currency"`
-	Amount             *decimal.Decimal `json:"amount"` // DEFAULT decimal(0)
-	Error              *string          `json:"error"`
-	CustomerID         *string          `json:"customer_id"`
-	GatewayResponse    StringInterface  `json:"gateway_response"`
-	AlreadyProcessed   bool             `json:"already_processed"`
+	Id                 string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt           int64            `json:"create_at" gorm:"type:bigint;column:CreateAt"` // NOT editable
+	PaymentID          string           `json:"payment_id" gorm:"type:uuid;column:PaymentID"`
+	Token              string           `json:"token" gorm:"type:varchar(512);column:Token"`
+	Kind               TransactionKind  `json:"kind" gorm:"type:varchar(25);column:Kind"`
+	IsSuccess          bool             `json:"is_success" gorm:"column:IsSuccess"`
+	ActionRequired     bool             `json:"action_required" gorm:"column:ActionRequired"`
+	ActionRequiredData StringMap        `json:"action_required_data" gorm:"type:jsonb;column:ActionRequiredData"`
+	Currency           string           `json:"currency" gorm:"type:varchar(5);column:Currency"`
+	Amount             *decimal.Decimal `json:"amount" gorm:"default:0;column:Amount"` // DEFAULT decimal(0)
+	Error              *string          `json:"error" gorm:"type:varchar(256);column:Error"`
+	CustomerID         *string          `json:"customer_id" gorm:"type:varchar(256);column:CustomerID"`
+	GatewayResponse    StringInterface  `json:"gateway_response" gorm:"type:jsonb;column:GatewayResponse"`
+	AlreadyProcessed   bool             `json:"already_processed" gorm:"column:AlreadyProcessed"`
 }
+
+func (c *PaymentTransaction) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *PaymentTransaction) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *PaymentTransaction) TableName() string             { return TransactionTableName }
 
 // PaymentTransactionFilterOpts contains options for filter payment's transactions
 type PaymentTransactionFilterOpts struct {
-	Id             squirrel.Sqlizer
-	PaymentID      squirrel.Sqlizer
-	Kind           squirrel.Sqlizer
-	ActionRequired *bool
-	IsSuccess      *bool
+	Conditions squirrel.Sqlizer
 }
 
 func (p *PaymentTransaction) String() string {
@@ -104,59 +98,26 @@ func (p *PaymentTransaction) GetAmount() *goprices.Money {
 }
 
 func (p *PaymentTransaction) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.payment_transaction.is_valid.%s.app_error",
-		"transaction_id=",
-		"PaymentTransaction.IsValid",
-	)
-	if !IsValidId(p.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(p.PaymentID) {
-		return outer("payment_id", &p.Id)
-	}
-	// NOTE: not sure CustomerID is uuid or not
-	if p.CustomerID != nil && len(*p.CustomerID) > TRANSACTION_CUSTOMER_ID_MAX_LENGTH {
-		return outer("customer_id", &p.Id)
-	}
-	if p.CreateAt == 0 {
-		return outer("create_at", &p.Id)
-	}
-	if len(p.Token) > MAX_LENGTH_PAYMENT_TOKEN {
-		return outer("token", &p.Id)
-	}
-	if len(p.Kind) > TRANSACTION_KIND_MAX_LENGTH {
-		return outer("kind", &p.Id)
-	}
-	if p.Error != nil && utf8.RuneCountInString(*p.Error) > TRANSACTION_ERROR_MAX_LENGTH {
-		return outer("error", &p.Id)
+		return NewAppError("Transaction.IsValid", "model.transaction.is_valid.payment_id.app_error", nil, "please provide valid payment id", http.StatusBadRequest)
 	}
 	if un, err := currency.ParseISO(p.Currency); err != nil || !strings.EqualFold(un.String(), p.Currency) {
-		return outer("currency", &p.Id)
+		return NewAppError("Transaction.IsValid", "model.transaction.is_valid.currency.app_error", nil, "please provide valid currency", http.StatusBadRequest)
 	}
-	if p.Amount == nil {
-		return outer("amount", &p.Id)
+	if !p.Kind.IsValid() {
+		return NewAppError("Transaction.IsValid", "model.transaction.is_valid.kind.app_error", nil, "please provide valid kind", http.StatusBadRequest)
+	}
+	if err := ValidateDecimal("Transaction.IsValid.Amount", p.Amount, 12, 3); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func (p *PaymentTransaction) PreSave() {
-	if p.Id == "" {
-		p.Id = NewId()
-	}
-	p.CreateAt = GetMillis()
-
-	if p.ActionRequiredData == nil {
-		p.ActionRequiredData = make(StringMap)
-	}
+func (p *PaymentTransaction) commonPre() {
 	if p.Error != nil {
 		*p.Error = SanitizeUnicode(*p.Error)
 	}
-	p.commonPre()
-}
-
-func (p *PaymentTransaction) commonPre() {
 	if p.Amount == nil || p.Amount.LessThanOrEqual(decimal.Zero) {
 		p.Amount = &decimal.Zero
 	}
@@ -166,12 +127,4 @@ func (p *PaymentTransaction) commonPre() {
 	if p.GatewayResponse == nil {
 		p.GatewayResponse = make(StringInterface)
 	}
-}
-
-func (p *PaymentTransaction) PreUpdate() {
-	p.commonPre()
-}
-
-func (p *PaymentTransaction) ToJSON() string {
-	return ModelToJson(p)
 }

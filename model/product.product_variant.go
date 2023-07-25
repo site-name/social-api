@@ -37,7 +37,7 @@ type ProductVariant struct {
 	variantChannelListings ProductVariantChannelListings `gorm:"-"`
 
 	Sales             Sales                       `json:"-" gorm:"many2many:SaleProductVariants"`
-	Vouchers          Vouchers                    `json:"-" gorm:"many2many:voucherproductvariants"`
+	Vouchers          Vouchers                    `json:"-" gorm:"many2many:VoucherVariants"`
 	ProductMedias     ProductMedias               `json:"-" gorm:"many2many:VariantMedias"`
 	Attributes        []*AssignedVariantAttribute `json:"-" gorm:"foreignKey:VariantID"`
 	AttributesRelated []*AttributeVariant         `json:"-" gorm:"many2many:AssignedVariantAttributes"`

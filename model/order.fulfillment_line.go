@@ -1,30 +1,35 @@
 package model
 
 import (
+	"net/http"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
+	"gorm.io/gorm"
 )
 
 type FulfillmentLine struct {
-	Id            string  `json:"id"`
-	OrderLineID   string  `json:"order_line_id"`
-	FulfillmentID string  `json:"fulfillment_id"`
-	Quantity      int     `json:"quantity"`
-	StockID       *string `json:"stock_id"`
+	Id            string  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	OrderLineID   string  `json:"order_line_id" gorm:"type:uuid;column:OrderLineID"`
+	FulfillmentID string  `json:"fulfillment_id" gorm:"type:uuid;column:FulfillmentID"`
+	Quantity      int     `json:"quantity" gorm:"type:integer;column:Quantity"`
+	StockID       *string `json:"stock_id" gorm:"type:uuid;column:StockID"`
 
 	OrderLine *OrderLine `json:"-" db:"-"`
 }
 
+func (c *FulfillmentLine) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
+func (c *FulfillmentLine) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }
+func (c *FulfillmentLine) TableName() string             { return FulfillmentLineTableName }
+
 // FulfillmentLineFilterOption is used to build sql queries
 type FulfillmentLineFilterOption struct {
-	Id                 squirrel.Sqlizer
-	OrderLineID        squirrel.Sqlizer
-	FulfillmentID      squirrel.Sqlizer
-	FulfillmentOrderID squirrel.Sqlizer // INNER JOIN 'Fulfillments' WHERE Fulfillments.OrderID...
-	FulfillmentStatus  squirrel.Sqlizer // INNER JOIN 'Fulfillments' WHERE Fulfillments.Status...
+	Conditions squirrel.Sqlizer
 
-	PrefetchRelatedOrderLine                bool // this asks to prefetch related order lines of returning fulfillment lines
-	PrefetchRelatedOrderLine_ProductVariant bool // this asks to prefetch related product variants of associated order lines of returning fulfillment lines
+	FulfillmentOrderID                      squirrel.Sqlizer // INNER JOIN 'Fulfillments' WHERE Fulfillments.OrderID...
+	FulfillmentStatus                       squirrel.Sqlizer // INNER JOIN 'Fulfillments' WHERE Fulfillments.Status...
+	PrefetchRelatedOrderLine                bool             // this asks to prefetch related order lines of returning fulfillment lines
+	PrefetchRelatedOrderLine_ProductVariant bool             // this asks to prefetch related product variants of associated order lines of returning fulfillment lines
 
 	PrefetchRelatedStock bool
 }
@@ -66,33 +71,18 @@ func (f FulfillmentLines) StockIDs() []string {
 }
 
 func (f *FulfillmentLine) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.fulfillment_line.is_valid.%s.app_error",
-		"fulfillment_line_id=",
-		"FulfillmentLine.IsValid",
-	)
-	if !IsValidId(f.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(f.OrderLineID) {
-		return outer("order_id", &f.Id)
+		return NewAppError("FulfillmentLine.IsValid", "model.fulfillment_line.is_valid.order_line_id.app_error", nil, "please provide valid order line id", http.StatusBadRequest)
 	}
 	if !IsValidId(f.FulfillmentID) {
-		return outer("fulfillment_id", &f.Id)
+		return NewAppError("FulfillmentLine.IsValid", "model.fulfillment_line.is_valid.fulfillment_id.app_error", nil, "please provide valid fullfillment id", http.StatusBadRequest)
 	}
 	if f.StockID != nil && !IsValidId(*f.StockID) {
-		return outer("stock_id", &f.Id)
+		return NewAppError("FulfillmentLine.IsValid", "model.fulfillment_line.is_valid.stock_id.app_error", nil, "please provide valid stock id", http.StatusBadRequest)
+	}
+	if f.Quantity <= 0 {
+		return NewAppError("FulfillmentLine.IsValid", "model.fulfillment_line.is_valid.quantity.app_error", nil, "quantity must be greater than 0", http.StatusBadRequest)
 	}
 
 	return nil
-}
-
-func (f *FulfillmentLine) ToJSON() string {
-	return ModelToJson(f)
-}
-
-func (f *FulfillmentLine) PreSave() {
-	if f.Id == "" {
-		f.Id = NewId()
-	}
 }

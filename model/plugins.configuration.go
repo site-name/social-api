@@ -1,29 +1,28 @@
 package model
 
 import (
-	"unicode/utf8"
+	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/samber/lo"
-)
-
-// max length for some fields
-const (
-	PLUGIN_CONFIGURATION_COMMON_MAX_LENGHT      = 128
-	PLUGIN_CONFIGURATION_DESCRIPTION_MAX_LENGHT = 1000
+	"gorm.io/gorm"
 )
 
 type PluginConfiguration struct {
-	Id            string            `json:"id"`
-	Identifier    string            `json:"identifier"`
-	Name          string            `json:"name"`
-	ChannelID     string            `json:"channel_id"`
-	Description   string            `json:"description"`
-	Active        bool              `json:"active"`
-	Configuration []StringInterface `json:"configuration"` // default [{}]
+	Id            string          `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Identifier    string          `json:"identifier" gorm:"type:varchar(128);column:Identifier;uniqueIndex:identifier_channelid_key"`
+	Name          string          `json:"name" gorm:"type:varchar(128);column:Name"`
+	ChannelID     string          `json:"channel_id" gorm:"type:uuid;column:ChannelID;uniqueIndex:identifier_channelid_key"`
+	Description   string          `json:"description" gorm:"column:Description"`
+	Active        bool            `json:"active" gorm:"column:Active"`
+	Configuration StringInterface `json:"configuration" gorm:"type:jsonb;column:Configuration"`
 
 	relatedChannel *Channel `db:"-"` // this field is populated in some sql queries
 }
+
+func (c *PluginConfiguration) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *PluginConfiguration) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *PluginConfiguration) TableName() string             { return TransactionTableName }
 
 type PluginConfigurations []*PluginConfiguration
 
@@ -37,9 +36,7 @@ func (p PluginConfigurations) ChannelIDs() []string {
 
 // PluginConfigurationFilterOptions is used to build sql queries
 type PluginConfigurationFilterOptions struct {
-	Id         squirrel.Sqlizer
-	Identifier squirrel.Sqlizer
-	ChannelID  squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 
 	PrefetchRelatedChannel bool // this tells store to prefetch related channel also
 }
@@ -53,39 +50,11 @@ func (p *PluginConfiguration) GetRelatedChannel() *Channel {
 }
 
 func (p *PluginConfiguration) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"plugin.is_valid.%s.app_error",
-		"plugin_id=",
-		"Plugin.IsValid",
-	)
-	if !IsValidId(p.Id) {
-		return outer("id", nil)
-	}
 	if !IsValidId(p.ChannelID) {
-		return outer("channel_id", &p.Id)
-	}
-	if utf8.RuneCountInString(p.Identifier) > PLUGIN_CONFIGURATION_COMMON_MAX_LENGHT {
-		return outer("identifier", &p.Id)
-	}
-	if utf8.RuneCountInString(p.Name) > PLUGIN_CONFIGURATION_COMMON_MAX_LENGHT {
-		return outer("name", &p.Id)
-	}
-	if utf8.RuneCountInString(p.Description) > PLUGIN_CONFIGURATION_DESCRIPTION_MAX_LENGHT {
-		return outer("description", &p.Id)
+		return NewAppError("PluginConfiguration.IsValid", "model.plugin_config.is_valid.channel_id.app_error", nil, "please provide valid channel id", http.StatusBadRequest)
 	}
 
 	return nil
-}
-
-func (p *PluginConfiguration) ToJSON() string {
-	return ModelToJson(p)
-}
-
-func (p *PluginConfiguration) PreSave() {
-	if p.Id == "" {
-		p.Id = NewId()
-	}
-	p.commonPre()
 }
 
 func (p *PluginConfiguration) commonPre() {
@@ -94,10 +63,6 @@ func (p *PluginConfiguration) commonPre() {
 	p.Description = SanitizeUnicode(p.Description)
 
 	if p.Configuration == nil {
-		p.Configuration = []StringInterface{}
+		p.Configuration = StringInterface{}
 	}
-}
-
-func (p *PluginConfiguration) PreUpdate() {
-	p.commonPre()
 }

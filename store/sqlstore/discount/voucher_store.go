@@ -76,7 +76,15 @@ func (vs *SqlVoucherStore) ScanFields(voucher *model.Voucher) []interface{} {
 
 // Upsert saves or updates given voucher then returns it with an error
 func (vs *SqlVoucherStore) Upsert(voucher *model.Voucher) (*model.Voucher, error) {
-	err := vs.GetMaster().Save(voucher).Error
+
+	var err error
+	if voucher.Id == "" {
+		err = vs.GetMaster().Create(voucher).Error
+	} else {
+		voucher.Used = 0 // prevent updates by gorm
+		voucher.CreateAt = 0
+		err = vs.GetMaster().Table(model.VoucherTableName).Updates(voucher).Error
+	}
 	if err != nil {
 		if vs.IsUniqueConstraintError(err, []string{"Code", "vouchers_code_key"}) {
 			return nil, store.NewErrInvalidInput(model.VoucherTableName, "code", voucher.Code)
@@ -105,39 +113,24 @@ func (vs *SqlVoucherStore) commonQueryBuilder(option *model.VoucherFilterOption)
 	query := vs.
 		GetQueryBuilder().
 		Select(vs.ModelFields(model.VoucherTableName + ".")...).
-		From(model.VoucherTableName)
+		From(model.VoucherTableName).
+		Where(option.Conditions)
 
 	// parse options:
-	if option.UsageLimit != nil {
-		query = query.Where(option.UsageLimit)
-	}
-	if option.Id != nil {
-		query = query.Where(option.Id)
-	}
-	if option.EndDate != nil {
-		query = query.Where(option.EndDate)
-	}
-	if option.StartDate != nil {
-		query = query.Where(option.StartDate)
-	}
-	if option.Code != nil {
-		query = query.Where(option.Code)
-	}
-	if option.ChannelListingSlug != nil || option.ChannelListingActive != nil {
+	if option.VoucherChannelListing_ChannelSlug != nil || option.VoucherChannelListing_ChannelIsActive != nil {
 		query = query.
 			InnerJoin(model.VoucherChannelListingTableName + " ON (VoucherChannelListings.VoucherID = Vouchers.Id)").
 			InnerJoin(model.ChannelTableName + " ON (Channels.Id = VoucherChannelListings.ChannelID)")
 
-		if option.ChannelListingSlug != nil {
-			query = query.Where(option.ChannelListingSlug)
+		if option.VoucherChannelListing_ChannelSlug != nil {
+			query = query.Where(option.VoucherChannelListing_ChannelSlug)
 		}
-
-		if option.ChannelListingActive != nil {
-			query = query.Where(squirrel.Eq{"Channels.IsActive": *option.ChannelListingActive})
+		if option.VoucherChannelListing_ChannelIsActive != nil {
+			query = query.Where(option.VoucherChannelListing_ChannelIsActive)
 		}
 	}
-	if option.WithLook {
-		query = query.Suffix("FOR UPDATE") // SELECT ... FOR UPDATE
+	if option.ForUpdate && option.Trnsaction != nil {
+		query = query.Suffix("FOR UPDATE")
 	}
 
 	return query
@@ -150,8 +143,13 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOpt
 		return nil, errors.Wrap(err, "FilterVouchersByOption_tosql")
 	}
 
+	runner := vs.GetReplica()
+	if option.Trnsaction != nil {
+		runner = option.Trnsaction
+	}
+
 	var vouchers []*model.Voucher
-	err = vs.GetReplica().Select(&vouchers, queryString, args...)
+	err = runner.Raw(queryString, args...).Scan(&vouchers).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find vouchers based on given option")
 	}
@@ -161,21 +159,14 @@ func (vs *SqlVoucherStore) FilterVouchersByOption(option *model.VoucherFilterOpt
 
 // GetByOptions finds and returns 1 voucher filtered using given options
 func (vs *SqlVoucherStore) GetByOptions(options *model.VoucherFilterOption) (*model.Voucher, error) {
-	queryString, args, err := vs.commonQueryBuilder(options).ToSql()
+	vouchers, err := vs.FilterVouchersByOption(options)
 	if err != nil {
-		return nil, errors.Wrap(err, "GetByOptions_tosql")
+		return nil, err
 	}
-
-	var res model.Voucher
-	err = vs.GetReplica().Get(&res, queryString, args...)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, store.NewErrNotFound(model.VoucherTableName, "options")
-		}
-		return nil, errors.Wrap(err, "failed voucher with given options")
+	if len(vouchers) == 0 {
+		return nil, store.NewErrNotFound(model.VoucherTableName, "options")
 	}
-
-	return &res, nil
+	return vouchers[0], nil
 }
 
 // ExpiredVouchers finds and returns vouchers that are expired before given date
@@ -186,7 +177,7 @@ func (vs *SqlVoucherStore) ExpiredVouchers(date *time.Time) ([]*model.Voucher, e
 	beginOfDate := util.StartOfDay(*date)
 
 	var res []*model.Voucher
-	err := vs.GetReplica().Select(&res, "SELECT * FROM "+model.VoucherTableName+" WHERE (Used >= UsageLimit OR EndDate < $1) AND StartDate < $2", beginOfDate, beginOfDate)
+	err := vs.GetReplica().Raw("SELECT * FROM "+model.VoucherTableName+" WHERE (Used >= UsageLimit OR EndDate < $1) AND StartDate < $2", beginOfDate, beginOfDate).Scan(&res).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find expired vouchers with given date")
 	}

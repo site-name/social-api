@@ -49,7 +49,7 @@ func (a *ServiceGiftcard) GiftcardsByCheckout(checkoutToken string) ([]*model.Gi
 // PromoCodeIsGiftCard checks whether there is giftcard with given code
 func (a *ServiceGiftcard) PromoCodeIsGiftCard(code string) (bool, *model.AppError) {
 	giftcards, appErr := a.GiftcardsByOption(&model.GiftCardFilterOption{
-		Code: squirrel.Eq{model.GiftcardTableName + ".Code": code},
+		Conditions: squirrel.Eq{model.GiftcardTableName + ".Code": code},
 	})
 	if appErr != nil {
 		return false, appErr
@@ -92,11 +92,13 @@ func (a *ServiceGiftcard) UpsertGiftcards(transaction *gorm.DB, giftcards ...*mo
 // ActiveGiftcards finds giftcards wich have `ExpiryDate` are either NULL OR >= given date
 func (s *ServiceGiftcard) ActiveGiftcards(date time.Time) ([]*model.GiftCard, *model.AppError) {
 	return s.GiftcardsByOption(&model.GiftCardFilterOption{
-		ExpiryDate: squirrel.Or{
-			squirrel.Eq{model.GiftcardTableName + ".ExpiryDate": nil},
-			squirrel.GtOrEq{model.GiftcardTableName + ".ExpiryDate": util.StartOfDay(date)},
+		Conditions: squirrel.And{
+			squirrel.Or{
+				squirrel.Eq{model.GiftcardTableName + ".ExpiryDate": nil},
+				squirrel.GtOrEq{model.GiftcardTableName + ".ExpiryDate": util.StartOfDay(date)},
+			},
+			squirrel.Eq{model.GiftcardTableName + ".IsActive": true},
 		},
-		IsActive: squirrel.Eq{model.GiftcardTableName + ".IsActive": true},
 	})
 }
 
@@ -104,6 +106,34 @@ func (s *ServiceGiftcard) DeleteGiftcards(transaction *gorm.DB, ids []string) *m
 	err := s.srv.Store.GiftCard().DeleteGiftcards(transaction, ids)
 	if err != nil {
 		return model.NewAppError("DeleteGiftcards", "app.giftcard.error_deleting_giftcards.app_error", nil, err.Error(), http.StatusInternalServerError)
+	}
+
+	return nil
+}
+
+// relations must be []*Order || []*Checkout
+func (s *ServiceGiftcard) AddGiftcardRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) *model.AppError {
+	err := s.srv.Store.GiftCard().AddRelations(transaction, giftcards, relations)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return model.NewAppError("AddGiftcardRelations", "app.giftcard.add_relations.app_error", nil, err.Error(), statusCode)
+	}
+
+	return nil
+}
+
+// relations must be []*Order || []*Checkout
+func (s *ServiceGiftcard) RemoveGiftcardRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) *model.AppError {
+	err := s.srv.Store.GiftCard().RemoveRelations(transaction, giftcards, relations)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if _, ok := err.(*store.ErrInvalidInput); ok {
+			statusCode = http.StatusBadRequest
+		}
+		return model.NewAppError("AddGiftcardRelations", "app.giftcard.add_relations.app_error", nil, err.Error(), statusCode)
 	}
 
 	return nil

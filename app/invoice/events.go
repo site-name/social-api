@@ -9,7 +9,7 @@ import (
 )
 
 // UpsertInvoiceEvent is shortcut for creating invoice events
-func (a *ServiceInvoice) UpsertInvoiceEvent(option *model.InvoiceEventOption) (*model.InvoiceEvent, *model.AppError) {
+func (a *ServiceInvoice) UpsertInvoiceEvent(option *model.InvoiceEventCreationOptions) (*model.InvoiceEvent, *model.AppError) {
 	invoiceEvent := new(model.InvoiceEvent)
 
 	invoiceEvent.Type = option.Type

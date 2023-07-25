@@ -33,8 +33,10 @@ func (a *ServiceDiscount) DecreaseVoucherUsage(voucher *model.Voucher) *model.Ap
 // AddVoucherUsageByCustomer adds an usage for given voucher, by given customer
 func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *model.Voucher, customerEmail string) (*model.NotApplicable, *model.AppError) {
 	_, appErr := a.VoucherCustomerByOptions(&model.VoucherCustomerFilterOption{
-		VoucherID:     squirrel.Eq{model.VoucherCustomerTableName + ".VoucherID": voucher.Id},
-		CustomerEmail: squirrel.Eq{model.VoucherCustomerTableName + ".CustomerEmail": customerEmail},
+		Conditions: squirrel.Eq{
+			model.VoucherCustomerTableName + ".VoucherID":     voucher.Id,
+			model.VoucherCustomerTableName + ".CustomerEmail": customerEmail,
+		},
 	})
 	if appErr != nil {
 		if appErr.StatusCode == http.StatusInternalServerError {
@@ -54,8 +56,10 @@ func (a *ServiceDiscount) AddVoucherUsageByCustomer(voucher *model.Voucher, cust
 // RemoveVoucherUsageByCustomer deletes voucher customers for given voucher
 func (a *ServiceDiscount) RemoveVoucherUsageByCustomer(voucher *model.Voucher, customerEmail string) *model.AppError {
 	err := a.srv.Store.VoucherCustomer().DeleteInBulk(&model.VoucherCustomerFilterOption{
-		VoucherID:     squirrel.Eq{model.VoucherCustomerTableName + ".VoucherID": voucher.Id},
-		CustomerEmail: squirrel.Eq{model.VoucherCustomerTableName + ".CustomerEmail": customerEmail},
+		Conditions: squirrel.Eq{
+			model.VoucherCustomerTableName + ".VoucherID":     voucher.Id,
+			model.VoucherCustomerTableName + ".CustomerEmail": customerEmail,
+		},
 	})
 	if err != nil {
 		return model.NewAppError("RemoveVoucherUsageByCustomer", "app.discount.error_delating_voucher_customer_relations.app_error", nil, err.Error(), http.StatusInternalServerError)
@@ -436,7 +440,7 @@ func (a *ServiceDiscount) FetchSaleChannelListings(saleIDs []string) (map[string
 	channelListings, err := a.srv.Store.
 		DiscountSaleChannelListing().
 		SaleChannelListingsWithOption(&model.SaleChannelListingFilterOption{
-			SaleID:               squirrel.Eq{model.SaleChannelListingTableName + ".SaleID": saleIDs},
+			Conditions:           squirrel.Eq{model.SaleChannelListingTableName + ".SaleID": saleIDs},
 			SelectRelatedChannel: true,
 		})
 	if err != nil {

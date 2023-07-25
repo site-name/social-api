@@ -75,7 +75,7 @@ func (r *Resolver) InvoiceRequest(ctx context.Context, args struct {
 		return nil, appErr
 	}
 
-	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventOption{
+	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventCreationOptions{
 		UserID:     &embedCtx.AppContext.Session().UserId,
 		OrderID:    &order.Id,
 		Parameters: model.StringMAP{"number": args.Number},
@@ -119,7 +119,7 @@ func (r *Resolver) InvoiceRequestDelete(ctx context.Context, args struct{ Id str
 		return nil, appErr
 	}
 
-	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventOption{
+	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventCreationOptions{
 		UserID:    &embedCtx.AppContext.Session().UserId,
 		InvoiceID: &updatedInvoice.Id,
 		OrderID:   updatedInvoice.OrderID,
@@ -189,7 +189,7 @@ func (r *Resolver) InvoiceCreate(ctx context.Context, args struct {
 	}
 
 	// upsert invoice event
-	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventOption{
+	_, appErr = embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventCreationOptions{
 		UserID:    &embedCtx.AppContext.Session().UserId,
 		InvoiceID: &savedInvoice.Id,
 		Type:      model.INVOICE_EVENT_TYPE_CREATED,
@@ -233,7 +233,7 @@ func (r *Resolver) InvoiceDelete(ctx context.Context, args struct{ Id string }) 
 		return nil, model.NewAppError("InvoiceDelete", "app.invoice.delete_by_ids.app_error", nil, err.Error(), http.StatusInternalServerError)
 	}
 
-	_, appErr := embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventOption{
+	_, appErr := embedCtx.App.Srv().InvoiceService().UpsertInvoiceEvent(&model.InvoiceEventCreationOptions{
 		Type:   model.INVOICE_EVENT_TYPE_DELETED,
 		UserID: &embedCtx.AppContext.Session().UserId,
 		Parameters: model.StringMAP{

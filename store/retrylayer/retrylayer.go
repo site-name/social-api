@@ -4130,6 +4130,26 @@ func (s *RetryLayerFulfillmentLineStore) Save(fulfillmentLine *model.Fulfillment
 
 }
 
+func (s *RetryLayerGiftCardStore) AddRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
+
+	tries := 0
+	for {
+		err := s.GiftCardStore.AddRelations(transaction, giftcards, relations)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
+		}
+	}
+
+}
+
 func (s *RetryLayerGiftCardStore) BulkUpsert(transaction *gorm.DB, giftCards ...*model.GiftCard) ([]*model.GiftCard, error) {
 
 	tries := 0
@@ -4225,6 +4245,26 @@ func (s *RetryLayerGiftCardStore) GetById(id string) (*model.GiftCard, error) {
 		if tries >= 3 {
 			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
 			return result, err
+		}
+	}
+
+}
+
+func (s *RetryLayerGiftCardStore) RemoveRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error {
+
+	tries := 0
+	for {
+		err := s.GiftCardStore.RemoveRelations(transaction, giftcards, relations)
+		if err == nil {
+			return nil
+		}
+		if !isRepeatableError(err) {
+			return err
+		}
+		tries++
+		if tries >= 3 {
+			err = errors.Wrap(err, "giving up after 3 consecutive repeatable transaction failures")
+			return err
 		}
 	}
 

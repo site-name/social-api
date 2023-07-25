@@ -44,10 +44,10 @@ type Checkout struct {
 	LanguageCode           LanguageCodeEnum `json:"language_code" gorm:"type:varchar(35);column:LanguageCode"`
 	ModelMetadata
 
-	channel        *Channel        `db:"-"`
-	billingAddress *Address        `db:"-"`
+	channel        *Channel        `gorm:"-"`
+	billingAddress *Address        `gorm:"-"`
 	Discount       *goprices.Money `gorm:"-" json:"discount,omitempty"`
-	Giftcards      Giftcards       `json:"-" gorm:"many2many:CheckoutGiftcards"`
+	Giftcards      Giftcards       `json:"-" gorm:"many2many:GiftcardCheckouts"`
 }
 
 func (c *Checkout) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }

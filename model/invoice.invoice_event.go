@@ -1,19 +1,16 @@
 package model
 
-// max lengths for some invoice event's fields
-const (
-	INVOICE_EVENT_TYPE_MAX_LENGTH = 255
-)
+import "gorm.io/gorm"
 
 type InvoiceEventType string
 
 // types for invoice events
 const (
-	INVOICE_EVENT_TYPE_REQUESTED          = "requested"
-	INVOICE_EVENT_TYPE_REQUESTED_DELETION = "requested_deletion"
-	INVOICE_EVENT_TYPE_CREATED            = "created"
-	INVOICE_EVENT_TYPE_DELETED            = "deleted"
-	INVOICE_EVENT_TYPE_SENT               = "sent"
+	INVOICE_EVENT_TYPE_REQUESTED          InvoiceEventType = "requested"
+	INVOICE_EVENT_TYPE_REQUESTED_DELETION InvoiceEventType = "requested_deletion"
+	INVOICE_EVENT_TYPE_CREATED            InvoiceEventType = "created"
+	INVOICE_EVENT_TYPE_DELETED            InvoiceEventType = "deleted"
+	INVOICE_EVENT_TYPE_SENT               InvoiceEventType = "sent"
 )
 
 func (e InvoiceEventType) IsValid() bool {
@@ -30,17 +27,23 @@ var InVoiceEventTypeString = map[InvoiceEventType]string{
 
 // Model used to store events that happened during the invoice lifecycle.
 type InvoiceEvent struct {
-	Id         string           `json:"id"`
-	CreateAt   int64            `json:"create_at"`
-	Type       InvoiceEventType `json:"type"`
-	InvoiceID  *string          `json:"invoice_id"`
-	OrderID    *string          `json:"order_id"`
-	UserID     *string          `json:"user_id"`
-	Parameters StringMap        `json:"parameters"`
+	Id        string           `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt  int64            `json:"create_at" gorm:"type:bigint;autoCreateTime:milli;column:CreateAt"`
+	Type      InvoiceEventType `json:"type" gorm:"type:varchar(255);column:Type"`
+	InvoiceID *string          `json:"invoice_id" gorm:"type:uuid;column:InvoiceID"`
+	OrderID   *string          `json:"order_id" gorm:"type:uuid;column:OrderID"`
+	UserID    *string          `json:"user_id" gorm:"type:uuid;column:UserID"`
+	// if provided, it should contains below keys:
+	//  "number", "url", "invoice_id"
+	Parameters StringMap `json:"parameters" gorm:"type:jsonb;column:Parameters"`
 }
 
-// InvoiceEventOption is used for creating new invoice events
-type InvoiceEventOption struct {
+func (c *InvoiceEvent) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *InvoiceEvent) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
+func (c *InvoiceEvent) TableName() string             { return InvoiceEventTableName }
+
+// InvoiceEventCreationOptions is used for creating new invoice events
+type InvoiceEventCreationOptions struct {
 	Type      InvoiceEventType
 	InvoiceID *string
 	OrderID   *string
@@ -56,12 +59,7 @@ func (i *InvoiceEvent) IsValid() *AppError {
 		"invoice_event_id=",
 		"InvoiceEvent.IsValid",
 	)
-	if !IsValidId(i.Id) {
-		return outer("id", nil)
-	}
-	if i.CreateAt == 0 {
-		return outer("create_at", &i.Id)
-	}
+
 	if !i.Type.IsValid() {
 		return outer("type", &i.Id)
 	}
@@ -78,11 +76,7 @@ func (i *InvoiceEvent) IsValid() *AppError {
 	return nil
 }
 
-func (i *InvoiceEvent) PreSave() {
-	if i.Id == "" {
-		i.Id = NewId()
-	}
-	i.CreateAt = GetMillis()
+func (i *InvoiceEvent) commonPre() {
 	if i.Parameters == nil {
 		i.Parameters = make(StringMap)
 	}

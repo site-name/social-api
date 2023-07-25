@@ -670,6 +670,8 @@ type (
 		// which have giftcard events with type == 'bought', parameters.order_id == given order id
 		// by setting their IsActive model to false
 		DeactivateOrderGiftcards(orderID string) ([]string, error)
+		AddRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error    // relations must be either []*Order or []*Checkout
+		RemoveRelations(transaction *gorm.DB, giftcards model.Giftcards, relations any) error // relations must be either []*Order or []*Checkout
 	}
 	GiftcardEventStore interface {
 		Save(event *model.GiftCardEvent) (*model.GiftCardEvent, error)                                   // Save insdert given giftcard event into database then returns it

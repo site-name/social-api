@@ -1,6 +1,11 @@
 package model
 
-import "github.com/Masterminds/squirrel"
+import (
+	"net/http"
+
+	"github.com/Masterminds/squirrel"
+	"gorm.io/gorm"
+)
 
 // OrderEventType represents type of order event
 type OrderEventType string
@@ -96,17 +101,12 @@ var OrderEventTypeStrings = map[OrderEventType]string{
 	ORDER_EVENT_TYPE_OTHER:                                "An unknown order event containing a message",
 }
 
-// max lengths for some order event's type
-const (
-	ORDER_EVENT_TYPE_MAX_LENGTH = 255
-)
-
 // Model used to store events that happened during the order lifecycle.
 type OrderEvent struct {
-	Id       string         `json:"id"`
-	CreateAt int64          `json:"create_at"`
-	Type     OrderEventType `json:"type"`
-	OrderID  string         `json:"order_id"`
+	Id       string         `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	CreateAt int64          `json:"create_at" gorm:"type:bigint;column:CreateAt;autoCreateTime:milli"`
+	Type     OrderEventType `json:"type" gorm:"type:varchar(255);column:Type"`
+	OrderID  string         `json:"order_id" gorm:"type:uuid;column:OrderID"`
 	// To reduce number of type assertion steps, below are
 	// possible keys and their according values TYPES you must follow when storing things into this field:
 	//  "email": string
@@ -155,9 +155,13 @@ type OrderEvent struct {
 	//    "old_value_type": string,
 	//    "old_amount_value": float64,
 	//  }
-	Parameters StringInterface `json:"parameters"`
-	UserID     *string         `json:"user_id"`
+	Parameters StringInterface `json:"parameters" gorm:"type:jsonb;column:Parameters"`
+	UserID     *string         `json:"user_id" gorm:"type:uuid;column:UserID"`
 }
+
+func (c *OrderEvent) BeforeCreate(_ *gorm.DB) error { return c.IsValid() }
+func (c *OrderEvent) BeforeUpdate(_ *gorm.DB) error { return c.IsValid() }
+func (c *OrderEvent) TableName() string             { return OrderEventTableName }
 
 // OrderEventOption contains parameters to create new order event instance
 type OrderEventOption struct {
@@ -172,43 +176,19 @@ type OrderEventOption struct {
 }
 
 type OrderEventFilterOptions struct {
-	Id      squirrel.Sqlizer
-	Type    squirrel.Sqlizer
-	OrderID squirrel.Sqlizer
+	Conditions squirrel.Sqlizer
 }
 
 func (o *OrderEvent) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.order_event.is_valid.%s.app_error",
-		"order_event_id=",
-		"OrderEvent.IsValid",
-	)
-	if !IsValidId(o.Id) {
-		return outer("id", nil)
-	}
-	if o.CreateAt == 0 {
-		return outer("create_st", &o.Id)
-	}
 	if o.UserID != nil && !IsValidId(*o.UserID) {
-		return outer("user_id", &o.Id)
+		return NewAppError("OrderEvent.IsValid", "model.order_event.is_valid.user_id.app_error", nil, "please provide valid user id", http.StatusBadRequest)
 	}
 	if !IsValidId(o.OrderID) {
-		return outer("order_id", &o.Id)
+		return NewAppError("OrderEvent.IsValid", "model.order_event.is_valid.order_id.app_error", nil, "please provide valid order id", http.StatusBadRequest)
 	}
 	if !o.Type.IsValid() {
-		return outer("type", &o.Id)
+		return NewAppError("OrderEvent.IsValid", "model.order_event.is_valid.type.app_error", nil, "please provide valid type", http.StatusBadRequest)
 	}
 
 	return nil
-}
-
-func (o *OrderEvent) ToJSON() string {
-	return ModelToJson(o)
-}
-
-func (o *OrderEvent) PreSave() {
-	if o.Id == "" {
-		o.Id = NewId()
-	}
-	o.CreateAt = GetMillis()
 }

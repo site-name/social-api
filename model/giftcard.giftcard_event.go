@@ -1,6 +1,8 @@
 package model
 
 import (
+	"net/http"
+
 	"github.com/Masterminds/squirrel"
 	"gorm.io/gorm"
 )
@@ -64,30 +66,22 @@ type GiftCardEvent struct {
 
 func (c *GiftCardEvent) BeforeCreate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
 func (c *GiftCardEvent) BeforeUpdate(_ *gorm.DB) error { c.commonPre(); return c.IsValid() }
-func (c *GiftCardEvent) TableName() string             { return UploadSessionTableName }
+func (c *GiftCardEvent) TableName() string             { return GiftcardEventTableName }
 
 // GiftCardEventFilterOption is used for building squirrel queries.
 type GiftCardEventFilterOption struct {
 	Conditions squirrel.Sqlizer
-
-	Parameters squirrel.Sqlizer
 }
 
 func (g *GiftCardEvent) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"model.giftcard_event.is_valid.%s.app_error",
-		"giftcard_event_id=",
-		"GiftcardEvent.IsValid",
-	)
-
 	if !IsValidId(g.GiftcardID) {
-		return outer("giftcard_id", &g.Id)
+		return NewAppError("GiftcardEvent.IsValid", "model.giftcard_event.is_valid.giftcard_id.app_error", nil, "", http.StatusBadRequest)
 	}
 	if g.UserID != nil && !IsValidId(*g.UserID) {
-		return outer("user_id", &g.Id)
+		return NewAppError("GiftcardEvent.IsValid", "model.giftcard_event.is_valid.user_id.app_error", nil, "", http.StatusBadRequest)
 	}
 	if !g.Type.IsValid() {
-		return outer("type", &g.Id)
+		return NewAppError("GiftcardEvent.IsValid", "model.giftcard_event.is_valid.type.app_error", nil, "", http.StatusBadRequest)
 	}
 
 	return nil

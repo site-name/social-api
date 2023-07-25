@@ -1,42 +1,24 @@
 package model
 
 import (
-	"io"
-	"unicode/utf8"
-
 	"github.com/gosimple/slug"
-)
-
-const (
-	PAGE_TYPE_NAME_MAX_LENGTH = 250
-	PAGE_TYPE_SLUG_MAX_LENGTH = 255
+	"gorm.io/gorm"
 )
 
 type PageType struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	Slug string `json:"alug"`
+	Id   string `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid();column:Id"`
+	Name string `json:"name" gorm:"type:varchar(250);column:Name"`
+	Slug string `json:"alug" gorm:"uniqueIndex:slug_key;type:varchar(255);column:Slug"`
 	ModelMetadata
 
 	AttributePages []*AttributePage `json:"-" gorm:"foreignKey:PageTypeID;constraint:OnDelete:CASCADE;"`
 }
 
-func (pt *PageType) IsValid() *AppError {
-	outer := CreateAppErrorForModel(
-		"page_type.is_valid.%s.app_error",
-		"page_type_id=",
-		"PageType.IsValid",
-	)
-	if !IsValidId(pt.Id) {
-		return outer("id", nil)
-	}
-	if utf8.RuneCountInString(pt.Name) > PAGE_TYPE_NAME_MAX_LENGTH {
-		return outer("name", &pt.Id)
-	}
-	if len(pt.Slug) > PAGE_TYPE_SLUG_MAX_LENGTH {
-		return outer("slug", &pt.Id)
-	}
+func (c *PageType) BeforeCreate(_ *gorm.DB) error { c.PreSave(); return c.IsValid() }
+func (c *PageType) BeforeUpdate(_ *gorm.DB) error { c.PreUpdate(); return c.IsValid() }
+func (c *PageType) TableName() string             { return PageTypeTableName }
 
+func (pt *PageType) IsValid() *AppError {
 	return nil
 }
 
@@ -47,15 +29,4 @@ func (pt *PageType) PreSave() {
 
 func (pt *PageType) PreUpdate() {
 	pt.Name = SanitizeUnicode(pt.Name)
-	// slug should be kept unchanged
-}
-
-func (p *PageType) ToJSON() string {
-	return ModelToJson(p)
-}
-
-func PageTypeFromJson(data io.Reader) *PageType {
-	var p PageType
-	ModelFromJson(&p, data)
-	return &p
 }

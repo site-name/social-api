@@ -581,44 +581,51 @@ func (a *ServiceCheckout) GetDiscountedLines(checkoutLineInfos []*model.Checkout
 // GetVoucherForCheckout returns voucher with voucher code saved in checkout if active or None
 //
 // `withLock` default to false
-func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo model.CheckoutInfo, withLock bool) (*model.Voucher, *model.AppError) {
+func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo model.CheckoutInfo, vouchers model.Vouchers, withLock bool) (*model.Voucher, *model.AppError) {
 	now := util.NewTime(time.Now().UTC()) // NOTE: not sure to use UTC or system time
-	checKout := checkoutInfo.Checkout
+	checkout := checkoutInfo.Checkout
 
-	voucherFilterOption := &model.VoucherFilterOption{
-		UsageLimit: squirrel.Or{
-			squirrel.Eq{model.VoucherTableName + ".UsageLimit": nil},
-			squirrel.Gt{model.VoucherTableName + ".UsageLimit": model.VoucherTableName + ".Used"},
-		},
-		EndDate: squirrel.Or{
-			squirrel.Eq{model.VoucherTableName + ".EndDate": nil},
-			squirrel.GtOrEq{model.VoucherTableName + ".EndDate": now},
-		},
-		StartDate:            squirrel.LtOrEq{model.VoucherTableName + ".StartDate": now},
-		ChannelListingSlug:   squirrel.Eq{model.ChannelTableName + ".Slug": checkoutInfo.Channel.Slug},
-		ChannelListingActive: model.NewPrimitive(true),
-	}
-
-	if checKout.VoucherCode != nil {
-		// finds vouchers that are active in a channel
-		activeInChannelVouchers, appErr := a.srv.DiscountService().VouchersByOption(voucherFilterOption)
-
-		if appErr != nil || len(activeInChannelVouchers) == 0 {
-			return nil, appErr
+	if checkout.VoucherCode != nil {
+		if vouchers == nil || len(vouchers) == 0 {
+			// finds vouchers that are active in a channel
+			var appErr *model.AppError
+			vouchers, appErr = a.srv.DiscountService().VouchersByOption(&model.VoucherFilterOption{
+				VoucherChannelListing_ChannelSlug:     squirrel.Eq{model.ChannelTableName + ".Slug": checkoutInfo.Channel.Slug},
+				VoucherChannelListing_ChannelIsActive: squirrel.Eq{model.ChannelTableName + ".IsActive": true},
+				Conditions: squirrel.And{
+					squirrel.Or{
+						squirrel.Eq{model.VoucherTableName + ".UsageLimit": nil},
+						squirrel.GtOrEq{model.VoucherTableName + ".UsageLimit": model.VoucherTableName + ".Used"},
+					},
+					squirrel.Or{
+						squirrel.Eq{model.VoucherTableName + ".EndDate": nil},
+						squirrel.GtOrEq{model.VoucherTableName + ".EndDate": now},
+					},
+					squirrel.LtOrEq{model.VoucherTableName + ".StartDate": now},
+				},
+			})
+			if appErr != nil {
+				return nil, appErr
+			}
+			if len(vouchers) == 0 {
+				return nil, nil
+			}
 		}
 
-		// find voucher with code
-		for _, voucher := range activeInChannelVouchers {
-			if voucher.Code == *checKout.VoucherCode && voucher.UsageLimit != nil && withLock {
-
-				voucherFilterOption.WithLook = true // this tell database to append `FOR UPDATE` to the end of query
-				voucher, appErr = a.srv.DiscountService().VoucherByOption(voucherFilterOption)
-				if appErr != nil {
-					return nil, appErr
-				}
+		voucher, found := lo.Find(vouchers, func(v *model.Voucher) bool { return v != nil && v.UsageLimit != nil })
+		if found && withLock {
+			voucher, appErr := a.srv.DiscountService().VoucherByOption(&model.VoucherFilterOption{
+				Conditions: squirrel.Eq{model.VoucherTableName + ".Id": voucher.Id},
+				ForUpdate:  true,
+			})
+			if appErr != nil {
+				return nil, appErr
 			}
+
 			return voucher, nil
 		}
+
+		return nil, nil
 	}
 
 	return nil, nil
@@ -628,7 +635,7 @@ func (a *ServiceCheckout) GetVoucherForCheckout(checkoutInfo model.CheckoutInfo,
 // Will clear both voucher and discount if the discount is no longer applicable.
 func (s *ServiceCheckout) RecalculateCheckoutDiscount(manager interfaces.PluginManagerInterface, checkoutInfo model.CheckoutInfo, lines []*model.CheckoutLineInfo, discounts []*model.DiscountInfo) *model.AppError {
 	checkout := checkoutInfo.Checkout
-	voucher, appErr := s.GetVoucherForCheckout(checkoutInfo, false)
+	voucher, appErr := s.GetVoucherForCheckout(checkoutInfo, nil, false)
 	if appErr != nil {
 		return appErr
 	}
@@ -805,7 +812,7 @@ func (a *ServiceCheckout) RemovePromoCodeFromCheckout(checkoutInfo model.Checkou
 
 // RemoveVoucherCodeFromCheckout Remove voucher data from checkout by code.
 func (a *ServiceCheckout) RemoveVoucherCodeFromCheckout(checkoutInfo model.CheckoutInfo, voucherCode string) *model.AppError {
-	existingVoucher, appErr := a.GetVoucherForCheckout(checkoutInfo, false)
+	existingVoucher, appErr := a.GetVoucherForCheckout(checkoutInfo, nil, false)
 	if appErr != nil {
 		return appErr
 	}

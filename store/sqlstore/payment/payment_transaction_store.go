@@ -1,10 +1,8 @@
 package payment
 
 import (
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -17,46 +15,12 @@ func NewSqlPaymentTransactionStore(s store.Store) store.PaymentTransactionStore 
 	return &SqlPaymentTransactionStore{s}
 }
 
-func (s *SqlPaymentTransactionStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"CreateAt",
-		"PaymentID",
-		"Token",
-		"Kind",
-		"IsSuccess",
-		"ActionRequired",
-		"ActionRequiredData",
-		"Currency",
-		"Amount",
-		"Error",
-		"CustomerID",
-		"GatewayResponse",
-		"AlreadyProcessed",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
-
 // Save insert given transaction into database then returns it
 func (ps *SqlPaymentTransactionStore) Save(transaction *gorm.DB, paymentTransaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
-	var executor *gorm.DB = ps.GetMaster()
-	if transaction != nil {
-		executor = transaction
+	if transaction == nil {
+		transaction = ps.GetMaster()
 	}
-
-	paymentTransaction.PreSave()
-	if err := paymentTransaction.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.TransactionTableName + "(" + ps.ModelFields("").Join(",") + ") VALUES (" + ps.ModelFields(":").Join(",") + ")"
-	if _, err := executor.NamedExec(query, paymentTransaction); err != nil {
+	if err := transaction.Create(paymentTransaction).Error; err != nil {
 		return nil, errors.Wrapf(err, "failed to save payment paymentTransaction with id=%s", paymentTransaction.Id)
 	}
 
@@ -65,25 +29,10 @@ func (ps *SqlPaymentTransactionStore) Save(transaction *gorm.DB, paymentTransact
 
 // Update updates given transaction then return it
 func (ps *SqlPaymentTransactionStore) Update(transaction *model.PaymentTransaction) (*model.PaymentTransaction, error) {
-	transaction.PreUpdate()
-	if err := transaction.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "UPDATE " + model.TransactionTableName + " SET " + ps.
-		ModelFields("").
-		Map(func(_ int, s string) string {
-			return s + "=:" + s
-		}).
-		Join(",") + " WHERE Id=:Id"
-
-	result, err := ps.GetMaster().NamedExec(query, transaction)
+	transaction.CreateAt = 0 // prevent update this field
+	err := ps.GetMaster().Model(transaction).Updates(transaction).Error
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to update transaction with id=%s", transaction.Id)
-	}
-
-	if numUpdates, _ := result.RowsAffected(); numUpdates > 1 {
-		return nil, errors.Errorf("multiple transactions updated: %d", numUpdates)
 	}
 
 	return transaction, nil
@@ -91,7 +40,7 @@ func (ps *SqlPaymentTransactionStore) Update(transaction *model.PaymentTransacti
 
 func (ps *SqlPaymentTransactionStore) Get(id string) (*model.PaymentTransaction, error) {
 	var res model.PaymentTransaction
-	err := ps.GetReplica().Get(&res, "SELECT * FROM "+model.TransactionTableName+" WHERE Id = ?", id)
+	err := ps.GetReplica().First(&res, "Id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.TransactionTableName, id)
@@ -104,34 +53,8 @@ func (ps *SqlPaymentTransactionStore) Get(id string) (*model.PaymentTransaction,
 
 // FilterByOption finds and returns a list of transactions with given option
 func (ps *SqlPaymentTransactionStore) FilterByOption(option *model.PaymentTransactionFilterOpts) ([]*model.PaymentTransaction, error) {
-	query := ps.GetQueryBuilder().
-		Select(ps.ModelFields(model.TransactionTableName + ".")...).
-		From(model.TransactionTableName)
-
-	// parse options:
-	if option.Id != nil {
-		query = query.Where(option.Id)
-	}
-	if option.PaymentID != nil {
-		query = query.Where(option.PaymentID)
-	}
-	if option.Kind != nil {
-		query = query.Where(option.Kind)
-	}
-	if option.ActionRequired != nil {
-		query = query.Where(squirrel.Eq{"ActionRequired": *option.ActionRequired})
-	}
-	if option.IsSuccess != nil {
-		query = query.Where(squirrel.Eq{"IsSuccess": *option.IsSuccess})
-	}
-
-	queryString, args, err := query.ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOption_ToSql")
-	}
-
 	var res []*model.PaymentTransaction
-	err = ps.GetReplica().Select(&res, queryString, args...)
+	err := ps.GetReplica().Find(&res, store.BuildSqlizer(option.Conditions)...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find payment transactions based on given option")
 	}

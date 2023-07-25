@@ -96,7 +96,7 @@ func buildStoreImplement() error {
 		"FromWhichPackage": func(s string) string {
 			switch s {
 			case "User", "Address", "UserAddress", "CustomerEvent", "StaffNotificationRecipient",
-				"CustomerNote", "UserAccessToken", "TermsOfService", "Token", "Session", "Status":
+				"CustomerNote", "UserAccessToken", "TermsOfService", "Token", "Session", "Status", "Role":
 				return "account"
 			case "System":
 				return "system"
@@ -104,8 +104,6 @@ func buildStoreImplement() error {
 				return "job"
 			case "Preference":
 				return "preference"
-			case "Role":
-				return "role"
 			case "ClusterDiscovery":
 				return "cluster"
 			case "Audit":

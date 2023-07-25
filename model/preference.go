@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"unicode/utf8"
+
+	"gorm.io/gorm"
 )
 
 const (
@@ -44,11 +45,15 @@ const (
 )
 
 type Preference struct {
-	UserId   string `json:"user_id"`
-	Category string `json:"category"`
-	Name     string `json:"name"`
-	Value    string `json:"value"`
+	UserId   string `json:"user_id" gorm:"type:uuid;primaryKey;index:userid_key;column:UserId"`
+	Category string `json:"category" gorm:"type:varchar(32);column:Category"`
+	Name     string `json:"name" gorm:"type:varchar(32);column:Name"`
+	Value    string `json:"value" gorm:"type:varchar(2000);column:Value"`
 }
+
+func (c *Preference) BeforeCreate(_ *gorm.DB) error { c.PreUpdate(); return c.IsValid() }
+func (c *Preference) BeforeUpdate(_ *gorm.DB) error { c.PreUpdate(); return c.IsValid() }
+func (c *Preference) TableName() string             { return PreferenceTableName }
 
 func (o *Preference) ToJSON() string {
 	return ModelToJson(o)
@@ -58,19 +63,9 @@ func (o *Preference) IsValid() *AppError {
 	if !IsValidId(o.UserId) {
 		return NewAppError("Preference.IsValid", "model.preference.is_valid.id.app_error", nil, "user_id="+o.UserId, http.StatusBadRequest)
 	}
-
-	if o.Category == "" || len(o.Category) > 32 {
+	if o.Category == "" {
 		return NewAppError("Preference.IsValid", "model.preference.is_valid.category.app_error", nil, "category="+o.Category, http.StatusBadRequest)
 	}
-
-	if len(o.Name) > 32 {
-		return NewAppError("Preference.IsValid", "model.preference.is_valid.name.app_error", nil, "name="+o.Name, http.StatusBadRequest)
-	}
-
-	if utf8.RuneCountInString(o.Value) > 2000 {
-		return NewAppError("Preference.IsValid", "model.preference.is_valid.value.app_error", nil, "value="+o.Value, http.StatusBadRequest)
-	}
-
 	if o.Category == PREFERENCE_CATEGORY_THEME {
 		var unused map[string]string
 		if err := ModelFromJson(&unused, strings.NewReader(o.Value)); err != nil {

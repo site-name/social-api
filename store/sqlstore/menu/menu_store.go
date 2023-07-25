@@ -1,10 +1,8 @@
 package menu
 
 import (
-	"github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/sitename/sitename/model"
-	"github.com/sitename/sitename/modules/util"
 	"github.com/sitename/sitename/store"
 	"gorm.io/gorm"
 )
@@ -17,71 +15,23 @@ func NewSqlMenuStore(sqlStore store.Store) store.MenuStore {
 	return &SqlMenuStore{sqlStore}
 }
 
-func (s *SqlMenuStore) ModelFields(prefix string) util.AnyArray[string] {
-	res := util.AnyArray[string]{
-		"Id",
-		"Name",
-		"Slug",
-		"CreateAt",
-		"Metadata",
-		"PrivateMetadata",
-	}
-	if prefix == "" {
-		return res
-	}
-
-	return res.Map(func(_ int, s string) string {
-		return prefix + s
-	})
-}
-
-func (ms *SqlMenuStore) Save(mnu *model.Menu) (*model.Menu, error) {
-	mnu.PreSave()
-	if err := mnu.IsValid(); err != nil {
-		return nil, err
-	}
-
-	query := "INSERT INTO " + model.MenuTableName + "(" + ms.ModelFields("").Join(",") + ") VALUES (" + ms.ModelFields(":").Join(",") + ")"
-
-	if _, err := ms.GetMaster().NamedExec(query, mnu); err != nil {
+func (ms *SqlMenuStore) Save(menu *model.Menu) (*model.Menu, error) {
+	if err := ms.GetMaster().Create(menu).Error; err != nil {
 		if ms.IsUniqueConstraintError(err, []string{"Name", "menus_name_key", "idx_menus_name_unique"}) {
-			return nil, store.NewErrInvalidInput(model.MenuTableName, "Name", mnu.Name)
+			return nil, store.NewErrInvalidInput(model.MenuTableName, "Name", menu.Name)
 		}
 		if ms.IsUniqueConstraintError(err, []string{"Slug", "menus_slug_key", "idx_menus_slug_unique"}) {
-			return nil, store.NewErrInvalidInput(model.MenuTableName, "Slug", mnu.Slug)
+			return nil, store.NewErrInvalidInput(model.MenuTableName, "Slug", menu.Slug)
 		}
-		return nil, errors.Wrapf(err, "failed to save menu with id=%s", mnu.Id)
+		return nil, errors.Wrapf(err, "failed to save menu with id=%s", menu.Id)
 	}
 
-	return mnu, nil
-}
-
-func (ms *SqlMenuStore) commonQueryBuilder(options *model.MenuFilterOptions) squirrel.SelectBuilder {
-	query := ms.GetQueryBuilder().
-		Select(ms.ModelFields(model.MenuTableName + ".")...).
-		From(model.MenuTableName)
-
-	if options.Id != nil {
-		query = query.Where(options.Id)
-	}
-	if options.Name != nil {
-		query = query.Where(options.Name)
-	}
-	if options.Slug != nil {
-		query = query.Where(options.Slug)
-	}
-
-	return query
+	return menu, nil
 }
 
 func (ms *SqlMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.Menu, error) {
-	queryString, args, err := ms.commonQueryBuilder(options).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "GetByOptions_ToSql")
-	}
-
 	var res model.Menu
-	err = ms.GetReplica().Get(&res, queryString, args...)
+	err := ms.GetReplica().First(&res, store.BuildSqlizer(options.Conditions)...).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, store.NewErrNotFound(model.MenuTableName, "")
@@ -93,13 +43,8 @@ func (ms *SqlMenuStore) GetByOptions(options *model.MenuFilterOptions) (*model.M
 }
 
 func (ms *SqlMenuStore) FilterByOptions(options *model.MenuFilterOptions) ([]*model.Menu, error) {
-	queryString, args, err := ms.commonQueryBuilder(options).ToSql()
-	if err != nil {
-		return nil, errors.Wrap(err, "FilterByOptions_ToSql")
-	}
-
 	var res []*model.Menu
-	err = ms.GetReplica().Select(&res, queryString, args...)
+	err := ms.GetReplica().Find(&res, store.BuildSqlizer(options.Conditions)...).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find menus with given options")
 	}
